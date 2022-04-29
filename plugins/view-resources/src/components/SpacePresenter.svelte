@@ -13,12 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { Space } from '@anticrm/core'
 
   export let value: Space
-
 </script>
 
 {value.name}

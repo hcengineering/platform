@@ -15,10 +15,10 @@
 <script lang="ts">
   import { Event } from '@anticrm/calendar'
   import contact from '@anticrm/contact'
-  import { getClient,UserBoxList } from '@anticrm/presentation'
+  import { getClient, UserBoxList } from '@anticrm/presentation'
   import { StyledTextBox } from '@anticrm/text-editor'
-  import { Label,StylishEdit } from '@anticrm/ui'
-  import { createEventDispatcher,onMount } from 'svelte'
+  import { Label, StylishEdit } from '@anticrm/ui'
+  import { createEventDispatcher, onMount } from 'svelte'
   import calendar from '../plugin'
 
   export let object: Event
@@ -62,7 +62,6 @@
         _class={contact.class.Employee}
         items={object.participants}
         label={calendar.string.Participants}
-        noItems={calendar.string.NoParticipants}
         on:open={(evt) => {
           client.update(object, { $push: { participants: evt.detail._id } })
         }}

@@ -15,8 +15,37 @@
 import type { IntlString, Plugin, StatusCode } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import { Mixin, Version } from '.'
-import type { Account, AnyAttribute, ArrOf, AttachedDoc, Backlink, Class, Collection, Doc, Interface, Obj, PluginConfiguration, PropertyType, Ref, RefTo, Space, Timestamp, Type, UserStatus } from './classes'
-import type { Tx, TxBulkWrite, TxCollectionCUD, TxCreateDoc, TxCUD, TxMixin, TxPutBag, TxRemoveDoc, TxUpdateDoc } from './tx'
+import type {
+  Account,
+  AnyAttribute,
+  ArrOf,
+  AttachedDoc,
+  Backlink,
+  Class,
+  Collection,
+  Doc,
+  Interface,
+  Obj,
+  PluginConfiguration,
+  PropertyType,
+  Ref,
+  RefTo,
+  Space,
+  Timestamp,
+  Type,
+  UserStatus
+} from './classes'
+import type {
+  Tx,
+  TxBulkWrite,
+  TxCollectionCUD,
+  TxCreateDoc,
+  TxCUD,
+  TxMixin,
+  TxPutBag,
+  TxRemoveDoc,
+  TxUpdateDoc
+} from './tx'
 
 /**
  * @public

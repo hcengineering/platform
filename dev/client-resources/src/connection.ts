@@ -13,18 +13,41 @@
 // limitations under the License.
 //
 
-import { Class, ClientConnection, Doc, DocumentQuery, FindOptions, FindResult, Ref, ServerStorage, Tx, TxHander, TxResult, DOMAIN_TX, MeasureMetricsContext } from '@anticrm/core'
+import {
+  Class,
+  ClientConnection,
+  Doc,
+  DocumentQuery,
+  FindOptions,
+  FindResult,
+  Ref,
+  ServerStorage,
+  Tx,
+  TxHander,
+  TxResult,
+  DOMAIN_TX,
+  MeasureMetricsContext
+} from '@anticrm/core'
 import { createInMemoryTxAdapter } from '@anticrm/dev-storage'
 import { protoDeserialize, protoSerialize, setMetadata } from '@anticrm/platform'
-import { createInMemoryAdapter, createServerStorage, DbConfiguration, FullTextAdapter, IndexedDoc } from '@anticrm/server-core'
+import {
+  createInMemoryAdapter,
+  createServerStorage,
+  DbConfiguration,
+  FullTextAdapter,
+  IndexedDoc
+} from '@anticrm/server-core'
 import devmodel from '@anticrm/devmodel'
 
 class ServerStorageWrapper implements ClientConnection {
   measureCtx = new MeasureMetricsContext('client', {})
-  constructor (private readonly storage: ServerStorage, private readonly handler: TxHander) {
-  }
+  constructor (private readonly storage: ServerStorage, private readonly handler: TxHander) {}
 
-  findAll <T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<FindResult<T>> {
+  findAll<T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ): Promise<FindResult<T>> {
     const [c, q, o] = protoDeserialize(protoSerialize([_class, query, options]))
     return this.storage.findAll(this.measureCtx, c, q, o)
   }
@@ -32,7 +55,9 @@ class ServerStorageWrapper implements ClientConnection {
   async tx (tx: Tx): Promise<TxResult> {
     const _tx = protoDeserialize(protoSerialize(tx))
     const [result, derived] = await this.storage.tx(this.measureCtx, _tx)
-    for (const tx of derived) { this.handler(tx) }
+    for (const tx of derived) {
+      this.handler(tx)
+    }
     return result
   }
 
@@ -52,9 +77,7 @@ class NullFullTextAdapter implements FullTextAdapter {
     return []
   }
 
-  async remove (id: Ref<Doc>): Promise<void> {
-
-  }
+  async remove (id: Ref<Doc>): Promise<void> {}
 
   async close (): Promise<void> {}
 }

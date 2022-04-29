@@ -24,7 +24,7 @@
   const dispatch = createEventDispatcher()
 
   let digits: string[] = []
-  let areas: HTMLInputElement[] = []
+  const areas: HTMLInputElement[] = []
   let selected: number = 0
   let filled: number
 
@@ -94,8 +94,8 @@
   {/each}
 </div>
 {#if error}
-  <div class='error-message flex-row-center'>
-    <IconInfo size={'small'}/>
+  <div class="error-message flex-row-center">
+    <IconInfo size={'small'} />
     <div>{error}</div>
   </div>
 {/if}
@@ -112,7 +112,7 @@
 
     &.error {
       border: 1.2px solid var(--system-error-color);
-      background-color: #FAA9981A;
+      background-color: #faa9981a;
     }
 
     &:focus {

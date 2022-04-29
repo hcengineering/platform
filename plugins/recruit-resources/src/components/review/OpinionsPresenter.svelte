@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { Review } from '@anticrm/recruit'
   import { Icon, Tooltip } from '@anticrm/ui'

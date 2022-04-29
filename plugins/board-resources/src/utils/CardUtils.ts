@@ -6,14 +6,14 @@ import { showPanel } from '@anticrm/ui'
 import board from '../plugin'
 
 export function updateCard (client: Client, card: Card, field: string, value: any): Promise<TxResult> | undefined {
-  if (!card) {
+  if (card === undefined) {
     return
   }
   return client.update(card, { [field]: value })
 }
 
 export function openCardPanel (card: Card): boolean {
-  if (!card) {
+  if (card === undefined) {
     return false
   }
 
@@ -21,16 +21,16 @@ export function openCardPanel (card: Card): boolean {
   return true
 }
 
-export function deleteCard (card: Card, client: Client): Promise<TxResult> {
-  return client.remove(card)
+export async function deleteCard (card: Card, client: Client): Promise<TxResult> {
+  return await client.remove(card)
 }
 
 export function isArchived (card: Card): boolean {
-  return !!card.isArchived
+  return card.isArchived !== undefined && card.isArchived
 }
 
 export function isUnarchived (card: Card): boolean {
-  return !card.isArchived
+  return card.isArchived === undefined || !card.isArchived
 }
 
 export function canAddCurrentUser (card: Card): boolean {
@@ -43,17 +43,17 @@ export function canAddCurrentUser (card: Card): boolean {
 }
 
 export function hasCover (card: Card): boolean {
-  return !!card.coverColor || !!card.coverImage
+  return card.coverColor !== undefined || card.coverImage !== undefined
 }
 
 export function hasDate (card: Card): boolean {
-  return !!card.date && (!!card.date.dueDate || !!card.date.startDate)
+  return card.date !== undefined && (card.date.dueDate !== undefined || card.date.startDate !== undefined)
 }
 
 export function addCurrentUser (card: Card, client: Client): Promise<TxResult> | undefined {
   const employee = (getCurrentAccount() as EmployeeAccount).employee
 
-  if (card.members?.includes(employee)) {
+  if (card.members?.includes(employee) === true) {
     return
   }
 

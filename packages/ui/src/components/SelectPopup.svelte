@@ -21,12 +21,16 @@
   export let placeholder: IntlString | undefined = undefined
   export let placeholderParam: any | undefined = undefined
   export let searchable: boolean = false
-  export let value: Array<{id: number | string, icon: Asset, label?: IntlString, text?: string}>
+  export let value: Array<{ id: number | string; icon: Asset; label?: IntlString; text?: string }>
 
   let search: string = ''
 
   let phTraslate: string = ''
-  $: if (placeholder) translate(placeholder, placeholderParam ?? {}).then(res => { phTraslate = res })
+  $: if (placeholder) {
+    translate(placeholder, placeholderParam ?? {}).then((res) => {
+      phTraslate = res
+    })
+  }
 
   const dispatch = createEventDispatcher()
 </script>
@@ -34,13 +38,18 @@
 <div class="selectPopup">
   {#if searchable}
     <div class="header">
-      <input type='text' bind:value={search} placeholder={phTraslate} on:input={(ev) => { }} on:change/>
+      <input type="text" bind:value={search} placeholder={phTraslate} on:input={(ev) => {}} on:change />
     </div>
   {/if}
   <div class="scroll">
     <div class="box">
-      {#each value.filter(el => (el.label ?? el.text ?? '').toLowerCase().includes(search.toLowerCase())) as item}
-        <button class="menu-item" on:click={() => { dispatch('close', item.id) }}>
+      {#each value.filter((el) => (el.label ?? el.text ?? '').toLowerCase().includes(search.toLowerCase())) as item}
+        <button
+          class="menu-item"
+          on:click={() => {
+            dispatch('close', item.id)
+          }}
+        >
           <div class="icon"><Icon icon={item.icon} size={'small'} /></div>
           <span class="label">
             {#if item.label}

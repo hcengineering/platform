@@ -12,11 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { EmployeeAccount } from '@anticrm/contact'
-  import { Class,Doc,getCurrentAccount,Ref } from '@anticrm/core'
-  import { Button,showPopup } from '@anticrm/ui'
+  import { Class, Doc, getCurrentAccount, Ref } from '@anticrm/core'
+  import { Button, showPopup } from '@anticrm/ui'
   import { Table } from '@anticrm/view-resources'
   import calendar from '../plugin'
   import CreateReminder from './CreateReminder.svelte'
@@ -32,15 +31,15 @@
   const currentUser = getCurrentAccount() as EmployeeAccount
 </script>
 
-<div class='antiPopup'>
+<div class="antiPopup">
   <Button label={calendar.string.CreateReminder} kind={'primary'} on:click={(e) => click(e)} />
   <div class="ap-space" />
   <Table
     _class={calendar.mixin.Reminder}
     config={['']}
-    options={ {} }
-    query={ { attachedTo, state: 'active', participants: currentUser.employee } }
-    />
+    options={{}}
+    query={{ attachedTo, state: 'active', participants: currentUser.employee }}
+  />
 </div>
 
 <style lang="scss">

@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { translate } from "@anticrm/platform"
+  import { translate } from '@anticrm/platform'
   import ui from '../plugin'
 
   export let value: number
@@ -47,7 +47,6 @@
   }
 
   $: formatTime(value)
-
 </script>
 
 <span style="white-space: nowrap;">{time}</span>

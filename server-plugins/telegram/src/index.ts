@@ -28,6 +28,16 @@ export const serverTelegramId = 'server-telegram' as Plugin
  */
 export default plugin(serverTelegramId, {
   function: {
-    FindMessages: '' as Resource<(doc: Doc, hiearachy: Hierarchy, findAll: <T extends Doc> (clazz: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>) => Promise<FindResult<T>>) => Promise<Doc[]>>
+    FindMessages: '' as Resource<
+    (
+      doc: Doc,
+      hiearachy: Hierarchy,
+      findAll: <T extends Doc>(
+        clazz: Ref<Class<T>>,
+        query: DocumentQuery<T>,
+        options?: FindOptions<T>
+      ) => Promise<FindResult<T>>
+    ) => Promise<Doc[]>
+    >
   }
 })

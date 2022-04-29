@@ -35,7 +35,11 @@ export interface DbAdapter {
    */
   init: (model: Tx[]) => Promise<void>
   close: () => Promise<void>
-  findAll: <T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>) => Promise<FindResult<T>>
+  findAll: <T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ) => Promise<FindResult<T>>
   tx: (tx: Tx) => Promise<TxResult>
 }
 
@@ -66,7 +70,11 @@ class InMemoryAdapter implements DbAdapter {
     this.modeldb = new ModelDb(hierarchy)
   }
 
-  async findAll<T extends Doc> (_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<FindResult<T>> {
+  async findAll<T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ): Promise<FindResult<T>> {
     return await this.modeldb.findAll(_class, query, options)
   }
 

@@ -87,7 +87,12 @@ const combineThreshold = 5 * 60 * 1000
  * Allow to recieve a list of transactions and notify client about it.
  */
 export interface Activity {
-  update: (object: Doc, listener: DisplayTxListener, sort: SortingOrder, editable: Map<Ref<Class<Doc>>, boolean>) => void
+  update: (
+    object: Doc,
+    listener: DisplayTxListener,
+    sort: SortingOrder,
+    editable: Map<Ref<Class<Doc>>, boolean>
+  ) => void
 }
 
 class ActivityImpl implements Activity {
@@ -105,7 +110,12 @@ class ActivityImpl implements Activity {
     this.txQuery2 = createQuery()
   }
 
-  private notify (object: Doc, listener: DisplayTxListener, sort: SortingOrder, editable: Map<Ref<Class<Doc>>, boolean>): void {
+  private notify (
+    object: Doc,
+    listener: DisplayTxListener,
+    sort: SortingOrder,
+    editable: Map<Ref<Class<Doc>>, boolean>
+  ): void {
     this.combineTransactions(object, this.txes1, this.txes2, editable).then(
       (result) => {
         const sorted = result.sort((a, b) => (a.tx.modifiedOn - b.tx.modifiedOn) * sort)
@@ -153,7 +163,12 @@ class ActivityImpl implements Activity {
     )
   }
 
-  async combineTransactions (object: Doc, txes1: Array<TxCUD<Doc>>, txes2: Array<TxCUD<Doc>>, editable: Map<Ref<Class<Doc>>, boolean>): Promise<DisplayTx[]> {
+  async combineTransactions (
+    object: Doc,
+    txes1: Array<TxCUD<Doc>>,
+    txes2: Array<TxCUD<Doc>>,
+    editable: Map<Ref<Class<Doc>>, boolean>
+  ): Promise<DisplayTx[]> {
     const hierarchy = this.client.getHierarchy()
 
     // We need to sort with with natural order, to build a proper doc values.
@@ -254,7 +269,7 @@ class ActivityImpl implements Activity {
           // Ignore
         }
       }
-      collectionCUD = (cltx.tx._class === core.class.TxUpdateDoc) || (cltx.tx._class === core.class.TxMixin)
+      collectionCUD = cltx.tx._class === core.class.TxUpdateDoc || cltx.tx._class === core.class.TxMixin
     }
     let firstTx = parents.get(tx.objectId)
     const result: DisplayTx = newDisplayTx(tx, hierarchy)
@@ -301,7 +316,11 @@ class ActivityImpl implements Activity {
     return false
   }
 
-  integrateTxWithResults (results: DisplayTx[], result: DisplayTx, editable: Map<Ref<Class<Doc>>, boolean>): DisplayTx[] {
+  integrateTxWithResults (
+    results: DisplayTx[],
+    result: DisplayTx,
+    editable: Map<Ref<Class<Doc>>, boolean>
+  ): DisplayTx[] {
     const curUpdate: any = getCombineOpFromTx(result)
 
     if (curUpdate === undefined || (result.doc !== undefined && editable.has(result.doc._class))) {
@@ -311,7 +330,7 @@ class ActivityImpl implements Activity {
     const newResult = results.filter((prevTx) => {
       const prevUpdate: any = getCombineOpFromTx(prevTx)
       // If same tx or same collection
-      if (this.isSameKindTx(prevTx, result, result.tx._class) || (prevUpdate === curUpdate)) {
+      if (this.isSameKindTx(prevTx, result, result.tx._class) || prevUpdate === curUpdate) {
         if (result.tx.modifiedOn - prevTx.tx.modifiedOn < combineThreshold && isEqualOps(prevUpdate, curUpdate)) {
           // we have same keys,
           // Remember previous transactions

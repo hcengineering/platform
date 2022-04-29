@@ -26,7 +26,7 @@
 
   let monthYear: string
   const today: Date = new Date(Date.now())
-  let viewDate: Date = new Date(currentDate ?? today)
+  const viewDate: Date = new Date(currentDate ?? today)
   $: firstDayOfCurrentMonth = firstDay(viewDate, mondayStart)
   const isToday = (n: number): boolean => {
     if (areDatesEqual(today, new Date(viewDate.getFullYear(), viewDate.getMonth(), n))) return true
@@ -36,7 +36,7 @@
 
   let days: Array<ICell> = []
   const getDateStyle = (date: Date): TCellStyle => {
-    if (currentDate != undefined && areDatesEqual(currentDate, date)) return 'selected'
+    if (currentDate != null && areDatesEqual(currentDate, date)) return 'selected'
     return 'not-selected'
   }
   const renderCellStyles = (): void => {
@@ -44,7 +44,7 @@
     for (let i = 1; i <= daysInMonth(viewDate); i++) {
       const tempDate = new Date(viewDate.getFullYear(), viewDate.getMonth(), i)
       days.push({
-        dayOfWeek: (tempDate.getDay() === 0) ? 7 : tempDate.getDay(),
+        dayOfWeek: tempDate.getDay() === 0 ? 7 : tempDate.getDay(),
         style: getDateStyle(tempDate)
       })
     }
@@ -62,16 +62,22 @@
     {#if viewDate}
       <div class="monthYear">{monthYear}</div>
       <div class="group" class:hideNavigator>
-        <div class="btn" on:click={() => {
-          viewDate.setMonth(viewDate.getMonth() - 1)
-          renderCellStyles()
-        }}>
+        <div
+          class="btn"
+          on:click={() => {
+            viewDate.setMonth(viewDate.getMonth() - 1)
+            renderCellStyles()
+          }}
+        >
           <div class="icon-btn"><Icon icon={IconNavPrev} size={'full'} /></div>
         </div>
-        <div class="btn" on:click={() => {
-          viewDate.setMonth(viewDate.getMonth() + 1)
-          renderCellStyles()
-        }}>
+        <div
+          class="btn"
+          on:click={() => {
+            viewDate.setMonth(viewDate.getMonth() + 1)
+            renderCellStyles()
+          }}
+        >
           <div class="icon-btn"><Icon icon={IconNavNext} size={'full'} /></div>
         </div>
       </div>
@@ -81,7 +87,9 @@
   {#if viewDate}
     <div class="calendar">
       {#each [...Array(7).keys()] as dayOfWeek}
-        <span class="caption">{capitalizeFirstLetter(getWeekDayName(day(firstDayOfCurrentMonth, dayOfWeek), 'short'))}</span>
+        <span class="caption"
+          >{capitalizeFirstLetter(getWeekDayName(day(firstDayOfCurrentMonth, dayOfWeek), 'short'))}</span
+        >
       {/each}
       {#each days as day, i}
         <div
@@ -114,19 +122,23 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 1rem 1rem .75rem;
+      padding: 1rem 1rem 0.75rem;
       color: var(--caption-color);
 
       .monthYear {
         font-weight: 500;
         font-size: 1rem;
-        &::first-letter { text-transform: capitalize; }
+        &::first-letter {
+          text-transform: capitalize;
+        }
       }
       .group {
         display: flex;
         align-items: center;
 
-        &.hideNavigator { visibility: hidden; }
+        &.hideNavigator {
+          visibility: hidden;
+        }
         .btn {
           display: flex;
           justify-content: center;
@@ -136,8 +148,12 @@
           color: var(--dark-color);
           cursor: pointer;
 
-          .icon-btn { height: .75rem; }
-          &:hover { color: var(--accent-color); }
+          .icon-btn {
+            height: 0.75rem;
+          }
+          &:hover {
+            color: var(--accent-color);
+          }
         }
       }
     }
@@ -147,10 +163,11 @@
     position: relative;
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: .5rem;
+    gap: 0.5rem;
     padding: 0 1rem 1rem;
 
-    .caption, .day {
+    .caption,
+    .day {
       display: flex;
       justify-content: center;
       align-items: center;
@@ -163,25 +180,32 @@
       align-items: start;
       height: 2rem;
       color: var(--dark-color);
-      &::first-letter { text-transform: capitalize; }
+      &::first-letter {
+        text-transform: capitalize;
+      }
     }
     .day {
       position: relative;
       color: var(--accent-color);
-      background-color: rgba(var(--accent-color), .05);
+      background-color: rgba(var(--accent-color), 0.05);
       border: 1px solid transparent;
       border-radius: 50%;
       cursor: pointer;
 
-      &.day-off { color: var(--content-color); }
+      &.day-off {
+        color: var(--content-color);
+      }
       &.today {
         font-weight: 500;
         color: var(--caption-color);
         background-color: var(--button-bg-color);
         border-color: var(--dark-color);
       }
-      &.focused { box-shadow: 0 0 0 3px var(--primary-button-outline); }
-      &.selected, &:hover {
+      &.focused {
+        box-shadow: 0 0 0 3px var(--primary-button-outline);
+      }
+      &.selected,
+      &:hover {
         color: var(--caption-color);
         background-color: var(--primary-bg-color);
       }
@@ -189,7 +213,7 @@
       &:before {
         content: '';
         position: absolute;
-        inset: -.625rem;
+        inset: -0.625rem;
       }
     }
 

@@ -91,11 +91,16 @@
       checked = []
     }
     const items = checked.length > 0 ? checked : object
-    showPopup(Menu, { object: items, baseMenuClass }, {
-      getBoundingClientRect: () => DOMRect.fromRect({ width: 1, height: 1, x: ev.clientX, y: ev.clientY })
-    }, () => {
-      selection = undefined
-    })
+    showPopup(
+      Menu,
+      { object: items, baseMenuClass },
+      {
+        getBoundingClientRect: () => DOMRect.fromRect({ width: 1, height: 1, x: ev.clientX, y: ev.clientY })
+      },
+      () => {
+        selection = undefined
+      }
+    )
   }
 
   function changeSorting (key: string): void {
@@ -110,7 +115,7 @@
     }
   }
 
-  $: checkedSet = new Set<Ref<Doc>>(checked.map(it => it._id))
+  $: checkedSet = new Set<Ref<Doc>>(checked.map((it) => it._id))
 
   export function check (docs: Doc[], value: boolean) {
     if (!enableChecking) return
@@ -128,7 +133,7 @@
   }
 
   export function select (offset: 1 | -1 | 0, of?: Doc): void {
-    let pos = (((of !== undefined) ? objects.findIndex(it => it._id === of._id) : selection) ?? -1)
+    let pos = (of !== undefined ? objects.findIndex((it) => it._id === of._id) : selection) ?? -1
     pos += offset
     if (pos < 0) {
       pos = 0

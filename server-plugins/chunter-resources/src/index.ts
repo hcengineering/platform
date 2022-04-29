@@ -55,13 +55,25 @@ export function channelTextPresenter (doc: Doc): string {
 /**
  * @public
  */
-export async function CommentRemove (doc: Doc, hiearachy: Hierarchy, findAll: <T extends Doc> (clazz: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>) => Promise<FindResult<T>>): Promise<Doc[]> {
+export async function CommentRemove (
+  doc: Doc,
+  hiearachy: Hierarchy,
+  findAll: <T extends Doc>(
+    clazz: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ) => Promise<FindResult<T>>
+): Promise<Doc[]> {
   if (!hiearachy.isDerived(doc._class, chunter.class.Comment)) {
     return []
   }
 
   const comment = doc as Comment
-  const result = await findAll(core.class.Backlink, { backlinkId: comment.attachedTo, backlinkClass: comment.attachedToClass, attachedDocId: comment._id })
+  const result = await findAll(core.class.Backlink, {
+    backlinkId: comment.attachedTo,
+    backlinkClass: comment.attachedToClass,
+    attachedDocId: comment._id
+  })
   return result
 }
 
@@ -81,13 +93,23 @@ export async function CommentCreate (tx: Tx, control: TriggerControl): Promise<T
     return []
   }
 
-  const lastReplyTx = control.txFactory.createTxUpdateDoc<Message>(chunter.class.Message, comment.space, comment.attachedTo as Ref<Message>, {
-    lastReply: tx.modifiedOn
-  })
+  const lastReplyTx = control.txFactory.createTxUpdateDoc<Message>(
+    chunter.class.Message,
+    comment.space,
+    comment.attachedTo as Ref<Message>,
+    {
+      lastReply: tx.modifiedOn
+    }
+  )
   const employee = control.modelDb.getObject(tx.modifiedBy) as EmployeeAccount
-  const employeeTx = control.txFactory.createTxUpdateDoc<Message>(chunter.class.Message, comment.space, comment.attachedTo as Ref<Message>, {
-    $push: { replies: employee.employee }
-  })
+  const employeeTx = control.txFactory.createTxUpdateDoc<Message>(
+    chunter.class.Message,
+    comment.space,
+    comment.attachedTo as Ref<Message>,
+    {
+      $push: { replies: employee.employee }
+    }
+  )
   const result: TxUpdateDoc<Message>[] = []
   result.push(lastReplyTx)
   result.push(employeeTx)
@@ -105,9 +127,15 @@ export async function CommentDelete (tx: Tx, control: TriggerControl): Promise<T
   if (!hierarchy.isDerived(rmTx.objectClass, chunter.class.ThreadMessage)) {
     return []
   }
-  const createTx = (await control.findAll(core.class.TxCreateDoc, {
-    objectId: rmTx.objectId
-  }, { limit: 1 }))[0]
+  const createTx = (
+    await control.findAll(
+      core.class.TxCreateDoc,
+      {
+        objectId: rmTx.objectId
+      },
+      { limit: 1 }
+    )
+  )[0]
 
   if (createTx === undefined) {
     return []
@@ -123,13 +151,8 @@ export async function CommentDelete (tx: Tx, control: TriggerControl): Promise<T
     comment.space,
     comment.attachedTo,
     {
-      replies:
-        comments
-          .map(comm => (control.modelDb.getObject(comm.createBy) as EmployeeAccount).employee),
-      lastReply:
-        comments.length > 0
-          ? Math.max(...comments.map(comm => comm.createOn))
-          : undefined
+      replies: comments.map((comm) => (control.modelDb.getObject(comm.createBy) as EmployeeAccount).employee),
+      lastReply: comments.length > 0 ? Math.max(...comments.map((comm) => comm.createOn)) : undefined
     }
   )
 
@@ -149,9 +172,15 @@ export async function MessageCreate (tx: Tx, control: TriggerControl): Promise<T
 
   const message = doc as Message
 
-  const channel = (await control.findAll(chunter.class.ChunterSpace, {
-    _id: message.space
-  }, { limit: 1 }))[0]
+  const channel = (
+    await control.findAll(
+      chunter.class.ChunterSpace,
+      {
+        _id: message.space
+      },
+      { limit: 1 }
+    )
+  )[0]
 
   if (channel?.lastMessage === undefined || channel.lastMessage < message.createOn) {
     const res = control.txFactory.createTxUpdateDoc<ChunterSpace>(channel._class, channel.space, channel._id, {
@@ -173,9 +202,15 @@ export async function MessageDelete (tx: Tx, control: TriggerControl): Promise<T
   if (!hierarchy.isDerived(rmTx.objectClass, chunter.class.Message)) {
     return []
   }
-  const createTx = (await control.findAll(core.class.TxCreateDoc, {
-    objectId: rmTx.objectId
-  }, { limit: 1 }))[0]
+  const createTx = (
+    await control.findAll(
+      core.class.TxCreateDoc,
+      {
+        objectId: rmTx.objectId
+      },
+      { limit: 1 }
+    )
+  )[0]
 
   if (createTx === undefined) {
     return []
@@ -183,15 +218,21 @@ export async function MessageDelete (tx: Tx, control: TriggerControl): Promise<T
 
   const message = TxProcessor.createDoc2Doc(createTx as TxCreateDoc<Message>)
 
-  const channel = (await control.findAll(chunter.class.ChunterSpace, {
-    _id: message.space
-  }, { limit: 1 }))[0]
+  const channel = (
+    await control.findAll(
+      chunter.class.ChunterSpace,
+      {
+        _id: message.space
+      },
+      { limit: 1 }
+    )
+  )[0]
 
   if (channel?.lastMessage === message.createOn) {
     const messages = await control.findAll(chunter.class.Message, {
       attachedTo: channel._id
     })
-    const lastMessageDate = messages.reduce((maxDate, mess) => mess.createOn > maxDate ? mess.createOn : maxDate, 0)
+    const lastMessageDate = messages.reduce((maxDate, mess) => (mess.createOn > maxDate ? mess.createOn : maxDate), 0)
 
     const updateTx = control.txFactory.createTxUpdateDoc<ChunterSpace>(channel._class, channel.space, channel._id, {
       lastMessage: lastMessageDate > 0 ? lastMessageDate : undefined

@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { Ref, SortingOrder } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
@@ -34,7 +33,7 @@
   let maskRight: boolean = false
   let mask: 'left' | 'right' | 'both' | 'none' = 'none'
   let stepStyle: string
-  $: stepStyle = (gap === 'small') ? 'gap-1' : 'gap-2'
+  $: stepStyle = gap === 'small' ? 'gap-1' : 'gap-2'
 
   const dispatch = createEventDispatcher()
 
@@ -66,7 +65,11 @@
     const el: HTMLElement = ev.currentTarget as HTMLElement
     const rect = el.getBoundingClientRect()
     const rectScroll = div.getBoundingClientRect()
-    div.scrollBy({ top: 0, left: rect.left + (rect.width / 2) - (rectScroll.left + rectScroll.width / 2), behavior: 'smooth' })
+    div.scrollBy({
+      top: 0,
+      left: rect.left + rect.width / 2 - (rectScroll.left + rectScroll.width / 2),
+      behavior: 'smooth'
+    })
     if (state === item._id) {
       state = undefined
     } else {
@@ -87,7 +90,9 @@
       div.addEventListener('scroll', checkMask)
     }
   })
-  onDestroy(() => { if (div) div.removeEventListener('scroll', checkMask) })
+  onDestroy(() => {
+    if (div) div.removeEventListener('scroll', checkMask)
+  })
 </script>
 
 <div bind:this={div} class="antiStatesBar mask-{mask} {stepStyle}">

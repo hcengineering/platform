@@ -13,18 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import {
-    AttributeEditor,
-    createQuery,
-    EditableAvatar,
-    getClient
-  } from '@anticrm/presentation'
+  import { AttributeEditor, createQuery, EditableAvatar, getClient } from '@anticrm/presentation'
 
   import setting from '@anticrm/setting'
   import { EditBox, Icon, Label } from '@anticrm/ui'
   import contact, { Employee, EmployeeAccount, getFirstName, getLastName } from '@anticrm/contact'
   import contactRes from '@anticrm/contact-resources/src/plugin'
-  import { getCurrentAccount, Ref } from '@anticrm/core'
+  import { getCurrentAccount } from '@anticrm/core'
   import { getResource } from '@anticrm/platform'
   import attachment from '@anticrm/attachment'
   import { changeName } from '@anticrm/login-resources'

@@ -22,7 +22,9 @@ import { handleRequest } from './account'
 export function handle (req: string | null | undefined, serverEndpoint: string): { statusCode: number, body: string } {
   if (req === null || req === undefined) return { statusCode: 401, body: 'unauthorized' }
   const resp = handleRequest(JSON.parse(req), serverEndpoint)
-  if (resp.error !== undefined) { return { statusCode: 401, body: '' } }
+  if (resp.error !== undefined) {
+    return { statusCode: 401, body: '' }
+  }
   return {
     statusCode: 200,
     body: JSON.stringify(resp)

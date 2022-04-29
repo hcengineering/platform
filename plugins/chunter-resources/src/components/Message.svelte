@@ -211,7 +211,7 @@
         </div>
       {/if}
       {#each links as link}
-        <LinkPresenter {link}/>
+        <LinkPresenter {link} />
       {/each}
     {/if}
     {#if reactions || (!thread && hasReplies)}

@@ -20,21 +20,21 @@ import { getResource } from '@anticrm/platform'
 import { NavigatorModel } from '@anticrm/workbench'
 import view from '@anticrm/view'
 
-export function classIcon(client: Client, _class: Ref<Class<Obj>>): Asset | undefined {
+export function classIcon (client: Client, _class: Ref<Class<Obj>>): Asset | undefined {
   return client.getHierarchy().getClass(_class).icon
 }
-export function getSpecialSpaceClass(model: NavigatorModel): Array<Ref<Class<Space>>> {
+export function getSpecialSpaceClass (model: NavigatorModel): Array<Ref<Class<Space>>> {
   const spaceResult = model.spaces.map((x) => x.spaceClass)
   const result = (model.specials ?? []).map((it) => it.spaceClass).filter((it) => it !== undefined)
   return spaceResult.concat(result as Array<Ref<Class<Space>>>)
 }
 
-export async function getSpaceName(client: Client, space: Space) {
+export async function getSpaceName (client: Client, space: Space): Promise<string> {
   const hierarchy = client.getHierarchy()
   const clazz = hierarchy.getClass(space._class)
   const nameMixin = hierarchy.as(clazz, view.mixin.SpaceName)
 
-  if (nameMixin.getName) {
+  if (nameMixin?.getName !== undefined) {
     const getSpaceName = await getResource(nameMixin.getName)
     const name = await getSpaceName(client, space)
 

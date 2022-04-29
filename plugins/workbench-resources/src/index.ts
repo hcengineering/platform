@@ -21,7 +21,7 @@ import { Space } from '@anticrm/core'
 import SpacePanel from './components/navigator/SpacePanel.svelte'
 import SpaceBrowser from './components/SpaceBrowser.svelte'
 
-function hasArchiveSpaces(spaces: Space[]): boolean {
+function hasArchiveSpaces (spaces: Space[]): boolean {
   return spaces.find((sp) => sp.archived) !== undefined
 }
 

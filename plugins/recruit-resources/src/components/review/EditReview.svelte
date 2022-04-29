@@ -54,18 +54,24 @@
       bind:value={object.title}
       on:change={() => client.update(object, { title: object.title })}
     />
-    <div class="clear-mins" on:click={() => {
-      if (candidate !== undefined) {
-        showPanel(view.component.EditDoc, candidate._id, candidate._class, 'content')
-      }
-    }}>
+    <div
+      class="clear-mins"
+      on:click={() => {
+        if (candidate !== undefined) {
+          showPanel(view.component.EditDoc, candidate._id, candidate._class, 'content')
+        }
+      }}
+    >
       <UserBox
         readonly
         _class={contact.class.Person}
         label={recruit.string.Candidate}
         placeholder={recruit.string.Candidates}
         value={object.attachedTo}
-        kind={'link'} size={'x-large'} justify={'left'} width={'100%'}
+        kind={'link'}
+        size={'x-large'}
+        justify={'left'}
+        width={'100%'}
       />
     </div>
   </Grid>
@@ -93,7 +99,6 @@
       on:delete={(evt) => {
         client.update(object, { $pull: { participants: evt.detail._id } })
       }}
-      noItems={calendar.string.NoParticipants}
     />
   </div>
   <StylishEdit

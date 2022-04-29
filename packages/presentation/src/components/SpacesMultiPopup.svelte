@@ -18,11 +18,11 @@
   import { createEventDispatcher, onMount } from 'svelte'
 
   import core, { Class, getCurrentAccount, Ref, Space } from '@anticrm/core'
-  import { Tooltip, CheckBox, Label } from '@anticrm/ui'
+  import { Tooltip, CheckBox } from '@anticrm/ui'
 
   import { createQuery } from '../utils'
   import presentation from '..'
-  import SpaceInfo from './SpaceInfo.svelte';
+  import SpaceInfo from './SpaceInfo.svelte'
 
   export let _classes: Ref<Class<Space>>[] = []
   export let allowDeselect: boolean = false
@@ -44,9 +44,9 @@
     core.class.Space,
     {
       name: { $like: '%' + searchQuery + '%' },
-      _class: { $in: _classes },
+      _class: { $in: _classes }
     },
-    result => {
+    (result) => {
       spaces = result
     },
     { limit: 200 }
@@ -57,21 +57,28 @@
     shownSpaces = spaces_.filter((sp) => {
       // don't show archived unless search is specified or this space is selected
       // show private only if it includes the current user
-      return (!sp.archived || searchQuery || selectedSpaces.includes(sp._id)) && (!sp.private || sp.members.includes(myAccId))
+      return (
+        (!sp.archived || searchQuery || selectedSpaces.includes(sp._id)) &&
+        (!sp.private || sp.members.includes(myAccId))
+      )
     })
   }
 
   let phTraslate: string = ''
-  $: if (placeholder) translate(placeholder, {}).then(res => { phTraslate = res })
+  $: if (placeholder) {
+    translate(placeholder, {}).then((res) => {
+      phTraslate = res
+    })
+  }
 
   const isSelected = (space: Space): boolean => {
-    if (selectedSpaces.filter(s => s === space._id).length > 0) return true
+    if (selectedSpaces.filter((s) => s === space._id).length > 0) return true
     return false
   }
 
   const checkSelected = (space: Space): void => {
     if (isSelected(space)) {
-      selectedSpaces = selectedSpaces.filter(s => s !== space._id)
+      selectedSpaces = selectedSpaces.filter((s) => s !== space._id)
     } else {
       selectedSpaces.push(space._id)
     }
@@ -79,19 +86,24 @@
     dispatch('update', selectedSpaces)
   }
 
-  onMount(() => { if (input) input.focus() })
+  onMount(() => {
+    if (input) input.focus()
+  })
 </script>
 
 <div class="selectPopup">
   <div class="header">
-    <input bind:this={input} type='text' bind:value={searchQuery} placeholder={phTraslate} on:change/>
+    <input bind:this={input} type="text" bind:value={searchQuery} placeholder={phTraslate} on:change />
   </div>
   <div class="scroll">
     <div class="box">
       {#each shownSpaces as space}
-        <button class="menu-item" on:click={() => {
-          checkSelected(space)
-        }}>
+        <button
+          class="menu-item"
+          on:click={() => {
+            checkSelected(space)
+          }}
+        >
           <div class="check pointer-events-none">
             <CheckBox checked={isSelected(space)} primary />
           </div>

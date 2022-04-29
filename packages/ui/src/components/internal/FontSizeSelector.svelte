@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { getContext } from 'svelte'
   import FontSize from './icons/FontSize.svelte'
@@ -30,5 +29,5 @@
 </script>
 
 <div class="flex-center" on:click={changeFontSize}>
-  <FontSize size={'small'}/>
+  <FontSize size={'small'} />
 </div>

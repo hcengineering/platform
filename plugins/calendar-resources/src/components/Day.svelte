@@ -67,9 +67,9 @@
   </Tooltip>
 {:else if size === 'huge'}
   <!-- <div class="cell" class:huge={size === 'huge'}> -->
-    <div class="flex flex-reverse fs-title flex-grow title">
-      {date.getDate()}
-    </div>
+  <div class="flex flex-reverse fs-title flex-grow title">
+    {date.getDate()}
+  </div>
   <!-- </div> -->
 {:else}
   <div class="cell">

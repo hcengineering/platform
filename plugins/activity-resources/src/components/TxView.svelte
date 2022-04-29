@@ -51,7 +51,7 @@
 
   const client = getClient()
 
-  function getProps(props: any, edit: boolean): any {
+  function getProps (props: any, edit: boolean): any {
     return { ...props, edit }
   }
 
@@ -87,7 +87,7 @@
           ...actions.map((a) => ({
             label: a.label,
             icon: a.icon,
-            action: async (ctx:any, evt: Event) => {
+            action: async (ctx: any, evt: Event) => {
               const impl = await getResource(a.action)
               await impl(tx.doc as Doc, evt)
             }
@@ -101,7 +101,7 @@
     edit = false
     props = getProps(props, edit)
   }
-  function isMessageType(attr?: AnyAttribute): boolean {
+  function isMessageType (attr?: AnyAttribute): boolean {
     return attr?.type._class === core.class.TypeMarkup
   }
 
@@ -211,7 +211,7 @@
             {#if tx.collectionAttribute !== undefined && (tx.txDocIds?.size ?? 0) > 1}
               <ShowMore ignore={edit}>
                 <div class="flex-row-center flex-grow flex-wrap">
-                  <TxViewTx {tx} {onCancelEdit} {edit} {viewlet}/>
+                  <TxViewTx {tx} {onCancelEdit} {edit} {viewlet} />
                 </div>
               </ShowMore>
             {:else if typeof viewlet.component === 'string'}

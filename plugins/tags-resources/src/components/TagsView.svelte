@@ -54,11 +54,12 @@
   }
   let category: Ref<TagCategory> | undefined = undefined
 
-  type TagElementInfo = { count: number, modifiedOn: number }
+  type TagElementInfo = { count: number; modifiedOn: number }
   let tagElements: Map<Ref<TagElement>, TagElementInfo> | undefined
   const refQuery = createQuery()
   $: refQuery.query(
-    tags.class.TagReference, { },
+    tags.class.TagReference,
+    {},
     (res) => {
       const result = new Map<Ref<TagElement>, TagElementInfo>()
 
@@ -70,13 +71,18 @@
       }
 
       tagElements = result
-    }, {
+    },
+    {
       projection: {
-        _id: 1, tag: 1, modifiedOn: 1
+        _id: 1,
+        tag: 1,
+        modifiedOn: 1
       }
     }
   )
-  const countSorting = (a:Doc, b:Doc) => ((tagElements?.get(b._id as Ref<TagElement>)?.count ?? 0) - (tagElements?.get(a._id as Ref<TagElement>)?.count ?? 0)) ?? 0
+  const countSorting = (a: Doc, b: Doc) =>
+    (tagElements?.get(b._id as Ref<TagElement>)?.count ?? 0) -
+      (tagElements?.get(a._id as Ref<TagElement>)?.count ?? 0) ?? 0
 </script>
 
 <div class="ac-header full">

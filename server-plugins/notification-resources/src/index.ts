@@ -15,7 +15,23 @@
 //
 
 import contact, { Employee, EmployeeAccount, formatName } from '@anticrm/contact'
-import core, { AttachedDoc, Backlink, Class, Data, Doc, generateId, Hierarchy, Obj, Ref, Space, Tx, TxCollectionCUD, TxCreateDoc, TxCUD, TxProcessor } from '@anticrm/core'
+import core, {
+  AttachedDoc,
+  Backlink,
+  Class,
+  Data,
+  Doc,
+  generateId,
+  Hierarchy,
+  Obj,
+  Ref,
+  Space,
+  Tx,
+  TxCollectionCUD,
+  TxCreateDoc,
+  TxCUD,
+  TxProcessor
+} from '@anticrm/core'
 import notification, { EmailNotification, Notification, NotificationStatus } from '@anticrm/notification'
 import { getResource } from '@anticrm/platform'
 import type { TriggerControl } from '@anticrm/server-core'
@@ -24,7 +40,7 @@ import view, { HTMLPresenter, TextPresenter } from '@anticrm/view'
 
 const extractTx = (tx: Tx): Tx => {
   if (tx._class === core.class.TxCollectionCUD) {
-    const ctx = (tx as TxCollectionCUD<Doc, AttachedDoc>)
+    const ctx = tx as TxCollectionCUD<Doc, AttachedDoc>
     if (ctx.tx._class === core.class.TxCreateDoc) {
       const create = ctx.tx as TxCreateDoc<AttachedDoc>
       create.attributes.attachedTo = ctx.objectId
@@ -91,13 +107,25 @@ export async function UpdateLastView (tx: Tx, control: TriggerControl): Promise<
       }
       if (control.hierarchy.isDerived(createTx.objectClass, core.class.AttachedDoc)) {
         const doc = TxProcessor.createDoc2Doc(createTx as TxCreateDoc<AttachedDoc>)
-        const attachedTx = await getUpdateLastViewTx(control.findAll, doc.attachedTo, doc.attachedToClass, createTx.modifiedOn, createTx.modifiedBy)
+        const attachedTx = await getUpdateLastViewTx(
+          control.findAll,
+          doc.attachedTo,
+          doc.attachedToClass,
+          createTx.modifiedOn,
+          createTx.modifiedBy
+        )
         if (attachedTx !== undefined) {
           result.push(attachedTx)
         }
       } else {
         const doc = TxProcessor.createDoc2Doc(createTx)
-        const tx = await getUpdateLastViewTx(control.findAll, doc._id, doc._class, createTx.modifiedOn, createTx.modifiedBy)
+        const tx = await getUpdateLastViewTx(
+          control.findAll,
+          doc._id,
+          doc._class,
+          createTx.modifiedOn,
+          createTx.modifiedBy
+        )
         if (tx !== undefined) {
           result.push(tx)
         }
@@ -123,21 +151,38 @@ export async function UpdateLastView (tx: Tx, control: TriggerControl): Promise<
   return result
 }
 
-async function getPlatformNotificationTx (ptx: TxCollectionCUD<Doc, Backlink>, control: TriggerControl): Promise<TxCollectionCUD<Doc, Notification> | undefined> {
-  const attached = (await control.modelDb.findAll(contact.class.EmployeeAccount, {
-    employee: ptx.objectId as Ref<Employee>
-  }, { limit: 1 }))[0]
+async function getPlatformNotificationTx (
+  ptx: TxCollectionCUD<Doc, Backlink>,
+  control: TriggerControl
+): Promise<TxCollectionCUD<Doc, Notification> | undefined> {
+  const attached = (
+    await control.modelDb.findAll(
+      contact.class.EmployeeAccount,
+      {
+        employee: ptx.objectId as Ref<Employee>
+      },
+      { limit: 1 }
+    )
+  )[0]
   if (attached === undefined) return
 
-  const setting = (await control.findAll(notification.class.NotificationSetting, {
-    provider: notification.ids.PlatformNotification,
-    type: notification.ids.MentionNotification,
-    space: attached._id as unknown as Ref<Space>
-  }, { limit: 1 }))[0]
+  const setting = (
+    await control.findAll(
+      notification.class.NotificationSetting,
+      {
+        provider: notification.ids.PlatformNotification,
+        type: notification.ids.MentionNotification,
+        space: attached._id as unknown as Ref<Space>
+      },
+      { limit: 1 }
+    )
+  )[0]
   if (setting === undefined) {
-    const provider = (await control.modelDb.findAll(notification.class.NotificationProvider, {
-      _id: notification.ids.PlatformNotification
-    }))[0]
+    const provider = (
+      await control.modelDb.findAll(notification.class.NotificationProvider, {
+        _id: notification.ids.PlatformNotification
+      })
+    )[0]
     if (provider === undefined) return
     if (!provider.default) return
   }
@@ -167,37 +212,66 @@ async function getPlatformNotificationTx (ptx: TxCollectionCUD<Doc, Backlink>, c
   return createNotificationTx
 }
 
-async function getEmailTx (ptx: TxCollectionCUD<Doc, Backlink>, control: TriggerControl): Promise<TxCreateDoc<EmailNotification> | undefined> {
+async function getEmailTx (
+  ptx: TxCollectionCUD<Doc, Backlink>,
+  control: TriggerControl
+): Promise<TxCreateDoc<EmailNotification> | undefined> {
   const hierarchy = control.hierarchy
   const backlink = TxProcessor.createDoc2Doc(ptx.tx as TxCreateDoc<Backlink>)
-  const account = (await control.modelDb.findAll(contact.class.EmployeeAccount, {
-    _id: ptx.modifiedBy as Ref<EmployeeAccount>
-  }, { limit: 1 }))[0]
+  const account = (
+    await control.modelDb.findAll(
+      contact.class.EmployeeAccount,
+      {
+        _id: ptx.modifiedBy as Ref<EmployeeAccount>
+      },
+      { limit: 1 }
+    )
+  )[0]
   if (account === undefined) return undefined
 
   const sender = formatName(account.name)
-  const attached = (await control.modelDb.findAll(contact.class.EmployeeAccount, {
-    employee: ptx.objectId as Ref<Employee>
-  }, { limit: 1 }))[0]
+  const attached = (
+    await control.modelDb.findAll(
+      contact.class.EmployeeAccount,
+      {
+        employee: ptx.objectId as Ref<Employee>
+      },
+      { limit: 1 }
+    )
+  )[0]
   if (attached === undefined) return undefined
 
-  const setting = (await control.findAll(notification.class.NotificationSetting, {
-    provider: notification.ids.EmailNotification,
-    type: notification.ids.MentionNotification,
-    space: attached._id as unknown as Ref<Space>
-  }, { limit: 1 }))[0]
+  const setting = (
+    await control.findAll(
+      notification.class.NotificationSetting,
+      {
+        provider: notification.ids.EmailNotification,
+        type: notification.ids.MentionNotification,
+        space: attached._id as unknown as Ref<Space>
+      },
+      { limit: 1 }
+    )
+  )[0]
   if (setting === undefined) {
-    const provider = (await control.modelDb.findAll(notification.class.NotificationProvider, {
-      _id: notification.ids.PlatformNotification
-    }))[0]
+    const provider = (
+      await control.modelDb.findAll(notification.class.NotificationProvider, {
+        _id: notification.ids.PlatformNotification
+      })
+    )[0]
     if (provider === undefined) return
     if (!provider.default) return
   }
 
   const receiver = attached.email
-  const doc = (await control.findAll(backlink.backlinkClass, {
-    _id: backlink.backlinkId
-  }, { limit: 1 }))[0]
+  const doc = (
+    await control.findAll(
+      backlink.backlinkClass,
+      {
+        _id: backlink.backlinkId
+      },
+      { limit: 1 }
+    )
+  )[0]
   if (doc === undefined) return undefined
 
   const TextPresenter = getTextPresenter(doc._class, hierarchy)
@@ -206,7 +280,9 @@ async function getEmailTx (ptx: TxCollectionCUD<Doc, Backlink>, control: Trigger
   const HTMLPresenter = getHTMLPresenter(doc._class, hierarchy)
   const htmlPart = HTMLPresenter !== undefined ? (await getResource(HTMLPresenter.presenter))(doc) : undefined
   const textPart = (await getResource(TextPresenter.presenter))(doc)
-  const html = `<p><b>${sender}</b> mentioned you in ${htmlPart !== undefined ? htmlPart : textPart}</p> ${backlink.message}`
+  const html = `<p><b>${sender}</b> mentioned you in ${htmlPart !== undefined ? htmlPart : textPart}</p> ${
+    backlink.message
+  }`
   const text = `${sender} mentioned you in ${textPart}`
   return {
     _id: generateId(),

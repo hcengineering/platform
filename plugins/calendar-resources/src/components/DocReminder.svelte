@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { EmployeeAccount } from '@anticrm/contact'
-  import { Doc,getCurrentAccount } from '@anticrm/core'
+  import { Doc, getCurrentAccount } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
   import { Button, showPopup, Tooltip } from '@anticrm/ui'
   import calendar from '../plugin'
@@ -35,21 +35,28 @@
       showPopup(SaveEventReminder, { objectId: value._id, objectClass: value._class }, ev.target as HTMLElement)
     } else {
       const currentUser = getCurrentAccount() as EmployeeAccount
-      const current = await client.findOne(calendar.mixin.Reminder, { attachedTo: value._id, state: 'active', participants: currentUser.employee })
+      const current = await client.findOne(calendar.mixin.Reminder, {
+        attachedTo: value._id,
+        state: 'active',
+        participants: currentUser.employee
+      })
       if (current === undefined) {
-        showPopup(CreateReminder, { attachedTo: value._id, attachedToClass: value._class, title }, ev.target as HTMLElement)
+        showPopup(
+          CreateReminder,
+          { attachedTo: value._id, attachedToClass: value._class, title },
+          ev.target as HTMLElement
+        )
       } else {
-        showPopup(DocRemindersPopup, { attachedTo: value._id, attachedToClass: value._class, title }, ev.target as HTMLElement )
+        showPopup(
+          DocRemindersPopup,
+          { attachedTo: value._id, attachedToClass: value._class, title },
+          ev.target as HTMLElement
+        )
       }
     }
   }
 </script>
 
 <Tooltip label={isEvent ? calendar.string.RemindMeAt : calendar.string.Reminders}>
-  <Button
-    size={'medium'}
-    kind={'transparent'}
-    icon={calendar.icon.Reminder}
-    on:click={(e) => click(e)}
-  />
+  <Button size={'medium'} kind={'transparent'} icon={calendar.icon.Reminder} on:click={(e) => click(e)} />
 </Tooltip>

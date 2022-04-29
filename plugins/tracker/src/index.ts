@@ -89,7 +89,7 @@ export enum IssuesOrdering {
 export enum IssuesDateModificationPeriod {
   All = 'all',
   PastWeek = 'pastWeek',
-  PastMonth = 'pastMonth',
+  PastMonth = 'pastMonth'
 }
 
 /**

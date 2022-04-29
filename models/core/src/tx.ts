@@ -85,8 +85,7 @@ export class TTxUpdateDoc<T extends Doc> extends TTxCUD<T> implements TxUpdateDo
 }
 
 @Model(core.class.TxRemoveDoc, core.class.TxCUD)
-export class TTxRemoveDoc<T extends Doc> extends TTxCUD<T> implements TxRemoveDoc<T> {
-}
+export class TTxRemoveDoc<T extends Doc> extends TTxCUD<T> implements TxRemoveDoc<T> {}
 
 @Model(core.class.TxBulkWrite, core.class.Tx)
 export class TTxBulkWrite extends TTx implements TxBulkWrite {

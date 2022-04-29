@@ -28,12 +28,24 @@ export const serverNotificationId = 'server-notification' as Plugin
 /**
  * @public
  */
-export async function getUpdateLastViewTx (findAll: TriggerControl['findAll'], attachedTo: Ref<Doc>, attachedToClass: Ref<Class<Doc>>, lastView: number, user: Ref<Account>): Promise<TxUpdateDoc<LastView> | TxCreateDoc<LastView> | undefined> {
-  const current = (await findAll(notification.class.LastView, {
-    attachedTo,
-    attachedToClass,
-    user
-  }, { limit: 1 }))[0]
+export async function getUpdateLastViewTx (
+  findAll: TriggerControl['findAll'],
+  attachedTo: Ref<Doc>,
+  attachedToClass: Ref<Class<Doc>>,
+  lastView: number,
+  user: Ref<Account>
+): Promise<TxUpdateDoc<LastView> | TxCreateDoc<LastView> | undefined> {
+  const current = (
+    await findAll(
+      notification.class.LastView,
+      {
+        attachedTo,
+        attachedToClass,
+        user
+      },
+      { limit: 1 }
+    )
+  )[0]
   const factory = new TxFactory(user)
   if (current !== undefined) {
     if (current.lastView === -1) {

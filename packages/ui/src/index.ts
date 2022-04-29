@@ -20,7 +20,18 @@ import { readable } from 'svelte/store'
 
 import Root from './components/internal/Root.svelte'
 
-export type { AnyComponent, AnySvelteComponent, Action, LabelAndProps, TooltipAlignment, AnySvelteComponentWithProps, Location, PopupAlignment, ButtonKind, ButtonSize } from './types'
+export type {
+  AnyComponent,
+  AnySvelteComponent,
+  Action,
+  LabelAndProps,
+  TooltipAlignment,
+  AnySvelteComponentWithProps,
+  Location,
+  PopupAlignment,
+  ButtonKind,
+  ButtonSize
+} from './types'
 // export { applicationShortcutKey } from './utils'
 export { getCurrentLocation, locationToUrl, navigate, location } from './location'
 
@@ -108,6 +119,7 @@ export { default as IconNavNext } from './components/icons/NavNext.svelte'
 export { default as IconDPCalendar } from './components/calendar/icons/DPCalendar.svelte'
 export { default as IconDPCalendarOver } from './components/calendar/icons/DPCalendarOver.svelte'
 export { default as IconOptions } from './components/icons/Options.svelte'
+export { default as IconDetails } from './components/icons/Details.svelte'
 
 export { default as PanelInstance } from './components/PanelInstance.svelte'
 export { default as Panel } from './components/Panel.svelte'

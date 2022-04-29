@@ -13,10 +13,14 @@ test.describe('contact tests', () => {
     await page.click('#profile-button')
     // Click text=Setting
     await page.click('text=Setting')
-    await expect(page).toHaveURL('http://localhost:8083/workbench%3Acomponent%3AWorkbenchApp/setting%3Aids%3ASettingApp/setting')
+    await expect(page).toHaveURL(
+      'http://localhost:8083/workbench%3Acomponent%3AWorkbenchApp/setting%3Aids%3ASettingApp/setting'
+    )
     // Click text=Edit profile
     await page.click('text=Edit profile')
-    await expect(page).toHaveURL('http://localhost:8083/workbench%3Acomponent%3AWorkbenchApp/setting%3Aids%3ASettingApp/profile')
+    await expect(page).toHaveURL(
+      'http://localhost:8083/workbench%3Acomponent%3AWorkbenchApp/setting%3Aids%3ASettingApp/profile'
+    )
     // Click [placeholder="Location"]
     await page.click('[placeholder="Location"]')
     // Fill [placeholder="Location"]
@@ -39,9 +43,13 @@ test.describe('contact tests', () => {
     await page.click('#profile-button')
     // Click text=Templates
     await page.click('text=Templates')
-    await expect(page).toHaveURL('http://localhost:8083/workbench%3Acomponent%3AWorkbenchApp/setting%3Aids%3ASettingApp/message-templates')
+    await expect(page).toHaveURL(
+      'http://localhost:8083/workbench%3Acomponent%3AWorkbenchApp/setting%3Aids%3ASettingApp/message-templates'
+    )
     // Go to http://localhost:8083/workbench%3Acomponent%3AWorkbenchApp/setting%3Aids%3ASettingApp/message-templates
-    await page.goto('http://localhost:8083/workbench%3Acomponent%3AWorkbenchApp/setting%3Aids%3ASettingApp/message-templates')
+    await page.goto(
+      'http://localhost:8083/workbench%3Acomponent%3AWorkbenchApp/setting%3Aids%3ASettingApp/message-templates'
+    )
     // Click .flex-center.icon-button
     await page.click('#create-template >> .flex-center.icon-button')
     // Click [placeholder="New\ template"]
@@ -71,7 +79,9 @@ test.describe('contact tests', () => {
     await page.click('#profile-button')
     // Click text=Manage Statuses
     await page.click('text=Manage Statuses')
-    await expect(page).toHaveURL('http://localhost:8083/workbench%3Acomponent%3AWorkbenchApp/setting%3Aids%3ASettingApp/statuses')
+    await expect(page).toHaveURL(
+      'http://localhost:8083/workbench%3Acomponent%3AWorkbenchApp/setting%3Aids%3ASettingApp/statuses'
+    )
     // Click text=Vacancies
     await page.click('text=Vacancies')
     // Click #create-template div

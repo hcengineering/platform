@@ -13,79 +13,81 @@
 // limitations under the License.
 -->
 <script lang="ts">
-import Cropper from 'cropperjs'
-import smartcrop from 'smartcrop'
+  import Cropper from 'cropperjs'
+  import smartcrop from 'smartcrop'
 
-export let image: Blob
-export let cropSize = 1200
+  export let image: Blob
+  export let cropSize = 1200
 
-let imgRef: HTMLImageElement
-let cropper: Cropper | undefined
+  let imgRef: HTMLImageElement
+  let cropper: Cropper | undefined
 
-async function init (image: Blob) {
-  const bitmap = await createImageBitmap(image)
-  const canvas = document.createElement('canvas')
-  canvas.height = bitmap.height
-  canvas.width = bitmap.width
+  async function init (image: Blob) {
+    const bitmap = await createImageBitmap(image)
+    const canvas = document.createElement('canvas')
+    canvas.height = bitmap.height
+    canvas.width = bitmap.width
 
-  const ctx = canvas.getContext('2d')
+    const ctx = canvas.getContext('2d')
 
-  if (ctx == null) {
-    return
-  }
-
-  ctx.drawImage(bitmap, 0, 0)
-
-  imgRef.src = canvas.toDataURL('image/jpeg', 1.0)
-  imgRef.width = bitmap.width
-  imgRef.height = bitmap.height
-
-  const initialArea = (await smartcrop.crop(canvas, { width: 100, height: 100 })).topCrop
-
-  if (cropper !== undefined) {
-    cropper.destroy()
-    cropper = undefined
-  }
-  const cropperInst = new Cropper(imgRef, {
-    aspectRatio: 1,
-    viewMode: 1,
-    autoCrop: true,
-    rotatable: false,
-    ready: () => {
-      const imgData = cropperInst.getImageData()
-      const xC = imgData.width / bitmap.width
-      const yC = imgData.height / bitmap.height
-
-      cropperInst.setCropBoxData({
-        left: initialArea.x * xC,
-        top: initialArea.y * yC,
-        height: initialArea.height * yC,
-        width: initialArea.width * yC
-      })
-      cropper = cropperInst
+    if (ctx == null) {
+      return
     }
-  })
-}
 
-export async function crop () {
-  if (cropper === undefined) {
-    return
+    ctx.drawImage(bitmap, 0, 0)
+
+    imgRef.src = canvas.toDataURL('image/jpeg', 1.0)
+    imgRef.width = bitmap.width
+    imgRef.height = bitmap.height
+
+    const initialArea = (await smartcrop.crop(canvas, { width: 100, height: 100 })).topCrop
+
+    if (cropper !== undefined) {
+      cropper.destroy()
+      cropper = undefined
+    }
+    const cropperInst = new Cropper(imgRef, {
+      aspectRatio: 1,
+      viewMode: 1,
+      autoCrop: true,
+      rotatable: false,
+      ready: () => {
+        const imgData = cropperInst.getImageData()
+        const xC = imgData.width / bitmap.width
+        const yC = imgData.height / bitmap.height
+
+        cropperInst.setCropBoxData({
+          left: initialArea.x * xC,
+          top: initialArea.y * yC,
+          height: initialArea.height * yC,
+          width: initialArea.width * yC
+        })
+        cropper = cropperInst
+      }
+    })
   }
 
-  const res = cropper.getCroppedCanvas({ maxWidth: cropSize, maxHeight: cropSize, imageSmoothingQuality: 'high' })
+  export async function crop () {
+    if (cropper === undefined) {
+      return
+    }
 
-  return new Promise(
-    (resolve) => res.toBlob(
-      (blob) => {
-        resolve(blob)
-      },
-      'image/jpeg',
-      0.95))
-}
+    const res = cropper.getCroppedCanvas({ maxWidth: cropSize, maxHeight: cropSize, imageSmoothingQuality: 'high' })
+
+    return new Promise((resolve) =>
+      res.toBlob(
+        (blob) => {
+          resolve(blob)
+        },
+        'image/jpeg',
+        0.95
+      )
+    )
+  }
 </script>
 
 <div class="w-full h-full flex">
-  <img class="image" bind:this={imgRef} alt="img"/>
+  <img class="image" bind:this={imgRef} alt="img" />
   {#await init(image)}
     Waiting...
   {/await}

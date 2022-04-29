@@ -15,8 +15,22 @@
 //
 
 import core, {
-  AnyAttribute, ArrOf, AttachedDoc, Class, Client, Collection, Doc, DocumentQuery,
-  FindOptions, FindResult, getCurrentAccount, Ref, RefTo, Tx, TxOperations, TxResult
+  AnyAttribute,
+  ArrOf,
+  AttachedDoc,
+  Class,
+  Client,
+  Collection,
+  Doc,
+  DocumentQuery,
+  FindOptions,
+  FindResult,
+  getCurrentAccount,
+  Ref,
+  RefTo,
+  Tx,
+  TxOperations,
+  TxResult
 } from '@anticrm/core'
 import login from '@anticrm/login'
 import { getMetadata } from '@anticrm/platform'
@@ -27,7 +41,7 @@ import { deepEqual } from 'fast-equals'
 let liveQuery: LQ
 let client: TxOperations
 
-const txListeners: Array<((tx: Tx) => void)> = []
+const txListeners: Array<(tx: Tx) => void> = []
 
 export function addTxListener (l: (tx: Tx) => void): void {
   txListeners.push(l)
@@ -53,7 +67,7 @@ export function setClient (_client: Client): void {
   _client.notify = (tx: Tx) => {
     liveQuery.tx(tx).catch((err) => console.log(err))
 
-    txListeners.forEach(it => it(tx))
+    txListeners.forEach((it) => it(tx))
   }
 }
 

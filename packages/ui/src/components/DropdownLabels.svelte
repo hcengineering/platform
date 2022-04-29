@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { IntlString, Asset } from '@anticrm/platform'
   import DropdownLabelsPopup from './DropdownLabelsPopup.svelte'
@@ -45,15 +44,16 @@
   }
 
   const dispatch = createEventDispatcher()
-  const none = ui.string.None
 </script>
 
 <div bind:this={container} class="min-w-0">
-  <Tooltip label={label} fill={width === '100%'} direction={labelDirection}>
+  <Tooltip {label} fill={width === '100%'} direction={labelDirection}>
     <Button
       {icon}
       width={width ?? 'min-content'}
-      {size} {kind} {justify}
+      {size}
+      {kind}
+      {justify}
       on:click={() => {
         if (!opened) {
           opened = true

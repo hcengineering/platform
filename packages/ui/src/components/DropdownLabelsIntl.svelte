@@ -1,21 +1,20 @@
 <!--
 // Copyright © 2022 Hardcore Engineering Inc.
-// 
+//
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// 
+//
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { IntlString, Asset } from '@anticrm/platform'
-  import DropdownLabelsPopupIntl from './DropdownLabelsPopupIntl.svelte';
+  import DropdownLabelsPopupIntl from './DropdownLabelsPopupIntl.svelte'
   import type { AnySvelteComponent, TooltipAlignment, ButtonKind, ButtonSize, DropdownIntlItem } from '../types'
   import { showPopup, Tooltip, Button, Label } from '..'
   import { createEventDispatcher } from 'svelte'
@@ -35,8 +34,6 @@
 
   let container: HTMLElement
   let opened: boolean = false
-  let isDisabled = false
-  $: isDisabled = items.length === 0
 
   let selectedItem = items.find((x) => x.id === selected)
   $: selectedItem = items.find((x) => x.id === selected)
@@ -45,15 +42,16 @@
   }
 
   const dispatch = createEventDispatcher()
-  const none = ui.string.None
 </script>
 
 <div bind:this={container} class="min-w-0">
-  <Tooltip label={label} fill={width === '100%'} direction={labelDirection}>
+  <Tooltip {label} fill={width === '100%'} direction={labelDirection}>
     <Button
       {icon}
       width={width ?? 'min-content'}
-      {size} {kind} {justify}
+      {size}
+      {kind}
+      {justify}
       on:click={() => {
         if (!opened) {
           opened = true
@@ -68,7 +66,10 @@
       }}
     >
       <span slot="content" style="overflow: hidden">
-        {#if selectedItem} <Label label={selectedItem.label} /> {:else} <Label label={label ?? ui.string.NotSelected} />{/if}
+        {#if selectedItem}
+          <Label label={selectedItem.label} />
+        {:else}
+          <Label label={label ?? ui.string.NotSelected} />{/if}
       </span>
     </Button>
   </Tooltip>

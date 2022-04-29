@@ -5,7 +5,7 @@
     "build": ""
   },
   "devDependencies": {
-    "@rushstack/heft": "^0.41.1",
+    "@rushstack/heft": "^0.44.13",
     "eslint-config-standard-with-typescript": "^21.0.1"
   },
   "peerDependencies": {

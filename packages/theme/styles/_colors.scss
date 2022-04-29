@@ -80,6 +80,8 @@
   --popup-bg-hover: #37373c;
   --popup-divider: #313236;
   --popup-shadow: rgb(0 0 0 / 20%) 0px 4px 24px;
+  --popup-panel-shadow: rgb(0 0 0 / 55%) 0px 7px 24px;
+  --popup-aside-shadow: rgb(0 0 0 / 25%) 0px 8px 16px;
   --card-shadow: rgb(0 0 0 / 50%) 0px 16px 70px;
   --card-overlay-color: rgba(28, 29, 31, .5);
   --avatar-bg-color: #4f5358;
@@ -220,6 +222,7 @@
   --popup-bg-hover: #f8f9fb;
   --popup-divider: #eff1f4;
   --popup-shadow: rgb(0 0 0 / 20%) 0px 4px 24px;  // Dark
+  --popup-panel-shadow: rgb(0 0 0 / 55%) 0px 7px 24px;  // Dark
   --card-shadow: rgb(0 0 0 / 50%) 0px 16px 70px;
   --card-overlay-color: rgba(144, 149, 157, .4);
   --avatar-bg-color: #e0e0e0;  // HZ

@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import contact, { ChannelProvider, formatName } from '@anticrm/contact'
-  import core, { Class, ClassifierKind, Doc, getCurrentAccount, Hierarchy, Mixin, Obj, Ref, Space } from '@anticrm/core'
+  import core, { Class, ClassifierKind, Doc, getCurrentAccount, Mixin, Obj, Ref, Space } from '@anticrm/core'
   import notification from '@anticrm/notification'
   import { Panel } from '@anticrm/panel'
   import { Asset, getResource, IntlString, translate } from '@anticrm/platform'
@@ -27,8 +27,7 @@
     KeyedAttribute
   } from '@anticrm/presentation'
   import setting, { IntegrationType } from '@anticrm/setting'
-  import { AnyComponent, Button, Component, IconActivity } from '@anticrm/ui'
-  import Tooltip from '@anticrm/ui/src/components/Tooltip.svelte'
+  import { AnyComponent, Component } from '@anticrm/ui'
   import view from '@anticrm/view'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import { getCollectionCounter } from '../utils'
@@ -38,7 +37,6 @@
   export let _id: Ref<Doc>
   export let _class: Ref<Class<Doc>>
   export let rightSection: AnyComponent | undefined = undefined
-  // export let position: PopupAlignment | undefined = undefined
 
   let lastId: Ref<Doc> = _id
   let lastClass: Ref<Class<Doc>> = _class
@@ -49,7 +47,6 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const notificationClient = getResource(notification.function.GetNotificationClient).then((res) => res())
-
   const docKeys: Set<string> = new Set<string>(hierarchy.getAllAttributes(core.class.AttachedDoc).keys())
 
   $: read(_id)
@@ -76,18 +73,11 @@
 
   $: if (object !== undefined) objectClass = hierarchy.getClass(object._class)
 
-  let selectedClass: Ref<Class<Doc>> | undefined
-  let prevSelected = selectedClass
-
   let keys: KeyedAttribute[] = []
   let collectionEditors: { key: KeyedAttribute; editor: AnyComponent }[] = []
 
   let mixins: Mixin<Doc>[] = []
-
-  $: if (object && prevSelected !== object._class) {
-    prevSelected = object._class
-    selectedClass = Hierarchy.mixinOrClass(object)
-
+  $: if (object) {
     parentClass = getParentClass(object._class)
     getMixins()
   }
@@ -119,9 +109,13 @@
   let ignoreMixins: Set<Ref<Mixin<Doc>>> = new Set<Ref<Mixin<Doc>>>()
 
   async function updateKeys (): Promise<void> {
-    const filtredKeys = getFiltredKeys(selectedClass ?? object._class, ignoreKeys)
+    let filtredKeys = getFiltredKeys(object._class, ignoreKeys)
+    for (const m of mixins) {
+      const mkeys = getFiltredKeys(m._id, ignoreKeys)
+      filtredKeys = filtredKeys.concat(mkeys).filter((it, idx, arr) => arr.indexOf(it) === idx)
+    }
     keys = collectionsFilter(filtredKeys, false)
-
+  
     const collectionKeys = collectionsFilter(filtredKeys, true)
     const editors: { key: KeyedAttribute; editor: AnyComponent }[] = []
     for (const k of collectionKeys) {
@@ -151,9 +145,7 @@
   }
 
   let mainEditor: AnyComponent
-
-  $: if (object) getEditorOrDefault(selectedClass, object._class)
-
+  $: if (object) getEditorOrDefault(object._class, object._class)
   async function getEditorOrDefault (_class: Ref<Class<Doc>> | undefined, defaultClass: Ref<Class<Doc>>): Promise<void> {
     let editor = _class !== undefined ? await getEditor(_class) : undefined
     if (editor === undefined) {
@@ -286,6 +278,8 @@
         })
       })
     })
+
+  let minimize: boolean = false
 </script>
 
 <ActionContext
@@ -300,6 +294,9 @@
     {title}
     {rightSection}
     {object}
+    bind:minimize
+    isHeader={false}
+    isAside={!minimize}
     bind:panelWidth
     bind:innerWidth
     on:update={(ev) => _update(ev.detail)}
@@ -307,56 +304,20 @@
       dispatch('close')
     }}
   >
-    <svelte:fragment slot="navigate-actions">
+    <svelte:fragment slot="navigator">
       <UpDownNavigator element={object} />
     </svelte:fragment>
-    <svelte:fragment slot="subtitle">
+
+    <svelte:fragment slot="attributes" let:direction={dir}>
       {#if !headerLoading}
         {#if headerEditor !== undefined}
-          <Component is={headerEditor} props={{ object, keys }} />
+          <Component is={headerEditor} props={{ object, keys, vertical: dir === 'column' }} />
         {:else}
-          <AttributesBar {object} {keys} />
+          <AttributesBar {object} {keys} vertical={dir === 'column'} />
         {/if}
       {/if}
     </svelte:fragment>
-    <svelte:fragment slot="properties">
-      {#if !headerLoading}
-        <div class="p-4">
-          {#if headerEditor !== undefined}
-            <Component is={headerEditor} props={{ object, keys, vertical: true }} />
-          {:else}
-            <AttributesBar {object} {keys} vertical />
-          {/if}
-        </div>
-      {/if}
-    </svelte:fragment>
-    <svelte:fragment slot="actions">
-      {#if displayedIntegrations && displayedIntegrations.length > 0}
-        <div class="actions-divider" />
-        {#each displayedIntegrations as pr}
-          <Tooltip label={pr.label}>
-            <Button
-              icon={pr.icon}
-              size={'medium'}
-              kind={'transparent'}
-              highlight={rightSection === pr.presenter}
-              on:click={() => {
-                if (rightSection !== pr.presenter) rightSection = pr.presenter
-              }}
-            />
-          </Tooltip>
-        {/each}
-        <Button
-          icon={IconActivity}
-          size={'medium'}
-          kind={'transparent'}
-          highlight={!rightSection}
-          on:click={() => {
-            if (rightSection) rightSection = undefined
-          }}
-        />
-      {/if}
-    </svelte:fragment>
+
     <div class="main-editor">
       {#if mainEditor}
         <Component
@@ -376,7 +337,7 @@
     </div>
     {#each collectionEditors as collection}
       {#if collection.editor}
-        <div class="mt-14">
+        <div class="mt-6">
           <Component
             is={collection.editor}
             props={{
@@ -399,13 +360,5 @@
     display: flex;
     justify-content: center;
     flex-direction: column;
-  }
-
-  .actions-divider {
-    margin: 0 0.25rem;
-    min-width: 1px;
-    width: 1px;
-    height: 1.5rem;
-    background-color: var(--divider-color);
   }
 </style>

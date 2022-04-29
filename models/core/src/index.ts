@@ -30,7 +30,12 @@ import {
   TRefTo,
   TType,
   TTypeBoolean,
-  TTypeDate, TTypeIntlString, TTypeMarkup, TTypeNumber, TTypeString, TTypeTimestamp,
+  TTypeDate,
+  TTypeIntlString,
+  TTypeMarkup,
+  TTypeNumber,
+  TTypeString,
+  TTypeTimestamp,
   TVersion
 } from './core'
 import { TAccount, TSpace } from './security'

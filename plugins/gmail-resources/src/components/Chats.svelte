@@ -195,6 +195,7 @@
     border-bottom: 1px solid var(--theme-zone-bg);
 
     .icon {
+      flex-shrink: 0;
       margin-right: 1rem;
       width: 2.25rem;
       height: 2.25rem;
@@ -206,6 +207,6 @@
 
   .right-content {
     flex-grow: 1;
-    padding: 1.5rem 1rem;
+    padding: 1.5rem 0;
   }
 </style>

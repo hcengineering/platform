@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { getPlatformColor } from '../colors'
   export let value: number
@@ -36,23 +35,26 @@
 </script>
 
 <div class="container" on:click={click} class:cursor-pointer={editable}>
-  <div class="bar" style="background-color: {getPlatformColor(color)}; width: calc(100% * {Math.round((value - min) / proc)} / 100);"/>
+  <div
+    class="bar"
+    style="background-color: {getPlatformColor(color)}; width: calc(100% * {Math.round((value - min) / proc)} / 100);"
+  />
 </div>
 
 <style lang="scss">
   .container {
     position: relative;
     width: 100%;
-    height: .25rem;
+    height: 0.25rem;
     background-color: var(--theme-bg-accent-hover);
-    border-radius: .125rem;
+    border-radius: 0.125rem;
 
     .bar {
       position: absolute;
       top: 0;
       left: 0;
       height: 100%;
-      border-radius: .125rem;
+      border-radius: 0.125rem;
     }
   }
 </style>

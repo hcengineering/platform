@@ -47,14 +47,18 @@
     dispatch('close', null)
   }
 
-
   function selectAnother () {
     inputRef.click()
   }
 </script>
 
-<input style="display: none;" type="file" bind:this={inputRef} on:change={onSelect} accept={targetMimes.join(',')}/>
-<div class="overlay" on:click={() => { dispatch('close') }} />
+<input style="display: none;" type="file" bind:this={inputRef} on:change={onSelect} accept={targetMimes.join(',')} />
+<div
+  class="overlay"
+  on:click={() => {
+    dispatch('close')
+  }}
+/>
 <div class="root">
   {#await CropperP then Cropper}
     <div class="cropper">
@@ -83,7 +87,7 @@
     right: 0;
 
     background: var(--theme-menu-color);
-    opacity: .7;
+    opacity: 0.7;
   }
 
   .root {
@@ -102,7 +106,7 @@
 
     background: var(--theme-bg-color);
     border-radius: 1.25rem;
-    box-shadow: 0px 44px 154px rgba(0, 0, 0, .75);
+    box-shadow: 0px 44px 154px rgba(0, 0, 0, 0.75);
 
     display: grid;
     grid-template-rows: minmax(min-content, 1fr) auto;

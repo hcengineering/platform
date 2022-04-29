@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { Organization } from '@anticrm/contact'
   import { Ref } from '@anticrm/core'
@@ -55,7 +54,6 @@
     resolved = true
   })
 
-
   $: if (resolved) {
     setValue(selected)
   }
@@ -71,7 +69,14 @@
 </script>
 
 <Dropdown
-  icon={Company} label={label} placeholder={label}
-  {items} bind:selected
-  {kind} {size} {justify} {width} {labelDirection}
+  icon={Company}
+  {label}
+  placeholder={label}
+  {items}
+  bind:selected
+  {kind}
+  {size}
+  {justify}
+  {width}
+  {labelDirection}
 />

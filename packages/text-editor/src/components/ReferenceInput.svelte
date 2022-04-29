@@ -37,7 +37,6 @@
   export let showSend = true
   export let withoutTopBorder = false
   export let actions: RefAction[] | undefined = undefined
-  export let clearContent: boolean = true
   const client = getClient()
 
   let textEditor: TextEditor
@@ -145,20 +144,14 @@
         bind:this={textEditor}
         on:content={(ev) => {
           dispatch('message', ev.detail)
-          if (clearContent) {
-            content = ''
-            textEditor.clear()
-          }
+          content = ''
+          textEditor.clear()
         }}
         extensions={editorExtensions}
       />
     </div>
     {#if showSend}
-      <button class="sendButton" on:click={submit}
-        ><div class="icon">
-          <Send size={'medium'} />
-        </div></button
-      >
+      <button class="sendButton" on:click={submit}><div class="icon"><Send size={'medium'} /></div></button>
     {/if}
   </div>
   {#if actions}

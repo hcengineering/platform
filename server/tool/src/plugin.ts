@@ -6,8 +6,8 @@ import { Metadata, plugin, Plugin } from '@anticrm/platform'
 export const toolId = 'tool' as Plugin
 
 /**
-  * @public
-  */
+ * @public
+ */
 const toolPlugin = plugin(toolId, {
   metadata: {
     Endpoint: '' as Metadata<string>,

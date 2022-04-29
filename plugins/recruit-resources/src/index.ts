@@ -67,9 +67,9 @@ async function createReview (object: Doc): Promise<void> {
   showPopup(CreateReview, { application: object._id, preserveApplication: true })
 }
 
-async function createCandidate (object: Doc|undefined, evt: Event): Promise<void> {
+async function createCandidate (object: Doc | undefined, evt: Event): Promise<void> {
   evt.preventDefault()
-  showPopup(CreateCandidate, { })
+  showPopup(CreateCandidate, {})
 }
 
 export async function applicantValidator (applicant: Applicant, client: Client): Promise<Status> {
@@ -102,13 +102,17 @@ export async function reviewValidator (review: Review, client: Client): Promise<
 export async function queryApplication (client: Client, search: string): Promise<ObjectSearchResult[]> {
   const _class = recruit.class.Applicant
   const cl = client.getHierarchy().getClass(_class)
-  const shortLabel = (await translate(cl.shortLabel ?? '' as IntlString, {})).toUpperCase()
+  const shortLabel = (await translate(cl.shortLabel ?? ('' as IntlString), {})).toUpperCase()
 
   // Check number pattern
 
   const sequence = (await client.findOne(task.class.Sequence, { attachedTo: _class }))?.sequence ?? 0
 
-  const named = new Map((await client.findAll(_class, { $search: search }, { limit: 200, lookup: { attachedTo: recruit.mixin.Candidate } })).map(e => [e._id, e]))
+  const named = new Map(
+    (
+      await client.findAll(_class, { $search: search }, { limit: 200, lookup: { attachedTo: recruit.mixin.Candidate } })
+    ).map((e) => [e._id, e])
+  )
   const nids: number[] = []
   if (sequence > 0) {
     for (let n = 0; n < sequence; n++) {
@@ -117,7 +121,11 @@ export async function queryApplication (client: Client, search: string): Promise
         nids.push(n)
       }
     }
-    const numbered = await client.findAll<Applicant>(_class, { number: { $in: nids } }, { limit: 200, lookup: { attachedTo: recruit.mixin.Candidate } })
+    const numbered = await client.findAll<Applicant>(
+      _class,
+      { number: { $in: nids } },
+      { limit: 200, lookup: { attachedTo: recruit.mixin.Candidate } }
+    )
     for (const d of numbered) {
       if (!named.has(d._id)) {
         named.set(d._id, d)
@@ -125,7 +133,7 @@ export async function queryApplication (client: Client, search: string): Promise
     }
   }
 
-  return Array.from(named.values()).map(e => ({
+  return Array.from(named.values()).map((e) => ({
     doc: e,
     title: `${shortLabel}-${e.number}`,
     icon: recruit.icon.Application,

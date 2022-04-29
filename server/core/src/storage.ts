@@ -32,9 +32,12 @@ import core, {
   FindOptions,
   FindResult,
   Hierarchy,
-  MeasureContext, Mixin, ModelDb,
+  MeasureContext,
+  Mixin,
+  ModelDb,
   Ref,
-  ServerStorage, Tx,
+  ServerStorage,
+  Tx,
   TxBulkWrite,
   TxCollectionCUD,
   TxCreateDoc,
@@ -211,7 +214,10 @@ class TServerStorage implements ServerStorage {
     let doc: T
     let createTx = txes.find((tx) => tx._class === core.class.TxCreateDoc)
     if (createTx === undefined) {
-      const collectionTxes = txes.filter((tx) => tx._class === core.class.TxCollectionCUD) as TxCollectionCUD<T, AttachedDoc>[]
+      const collectionTxes = txes.filter((tx) => tx._class === core.class.TxCollectionCUD) as TxCollectionCUD<
+      T,
+      AttachedDoc
+      >[]
       createTx = collectionTxes.find((p) => p.tx._class === core.class.TxCreateDoc)
     }
     if (createTx === undefined) return
@@ -230,7 +236,7 @@ class TServerStorage implements ServerStorage {
 
   extractTx (tx: Tx): Tx {
     if (tx._class === core.class.TxCollectionCUD) {
-      const ctx = (tx as TxCollectionCUD<Doc, AttachedDoc>)
+      const ctx = tx as TxCollectionCUD<Doc, AttachedDoc>
       return ctx.tx
     }
 
@@ -244,12 +250,12 @@ class TServerStorage implements ServerStorage {
     const result: Tx[] = []
     const object = await this.buildDoc(ctx, rtx)
     if (object === undefined) return []
-    result.push(...await this.deleteClassCollections(ctx, object._class, rtx.objectId))
+    result.push(...(await this.deleteClassCollections(ctx, object._class, rtx.objectId)))
     const mixins = this.getMixins(object._class, object)
     for (const mixin of mixins) {
-      result.push(...await this.deleteClassCollections(ctx, mixin, rtx.objectId))
+      result.push(...(await this.deleteClassCollections(ctx, mixin, rtx.objectId)))
     }
-    result.push(...await this.deleteRelatedDocuments(ctx, object))
+    result.push(...(await this.deleteRelatedDocuments(ctx, object)))
     return result
   }
 
@@ -261,7 +267,7 @@ class TServerStorage implements ServerStorage {
         const collection = attribute[1].type as Collection<AttachedDoc>
         const allAttached = await this.findAll(ctx, collection.of, { attachedTo: objectId })
         for (const attached of allAttached) {
-          result.push(...await this.deleteObject(ctx, attached))
+          result.push(...(await this.deleteObject(ctx, attached)))
         }
       }
     }
@@ -285,12 +291,12 @@ class TServerStorage implements ServerStorage {
     } else {
       result.push(factory.createTxRemoveDoc(object._class, object.space, object._id))
     }
-    result.push(...await this.deleteClassCollections(ctx, object._class, object._id))
+    result.push(...(await this.deleteClassCollections(ctx, object._class, object._id)))
     const mixins = this.getMixins(object._class, object)
     for (const mixin of mixins) {
-      result.push(...await this.deleteClassCollections(ctx, mixin, object._id))
+      result.push(...(await this.deleteClassCollections(ctx, mixin, object._id)))
     }
-    result.push(...await this.deleteRelatedDocuments(ctx, object))
+    result.push(...(await this.deleteRelatedDocuments(ctx, object)))
     return result
   }
 
@@ -298,13 +304,16 @@ class TServerStorage implements ServerStorage {
     const result: Tx[] = []
     const objectClass = this.hierarchy.getClass(object._class)
     if (this.hierarchy.hasMixin(objectClass, serverCore.mixin.ObjectDDParticipant)) {
-      const removeParticipand: ObjectDDParticipant = this.hierarchy.as(objectClass, serverCore.mixin.ObjectDDParticipant)
+      const removeParticipand: ObjectDDParticipant = this.hierarchy.as(
+        objectClass,
+        serverCore.mixin.ObjectDDParticipant
+      )
       const collector = await getResource(removeParticipand.collectDocs)
       const docs = await collector(object, this.hierarchy, async (_class, query, options) => {
         return await this.findAll(ctx, _class, query, options)
       })
       for (const d of docs) {
-        result.push(...await this.deleteObject(ctx, d))
+        result.push(...(await this.deleteObject(ctx, d)))
       }
     }
     return result
@@ -418,11 +427,14 @@ class TServerStorage implements ServerStorage {
         await this.modelDb.tx(tx)
       }
 
-      const fAll = (mctx: MeasureContext) => <T extends Doc>(
-        clazz: Ref<Class<T>>,
-        query: DocumentQuery<T>,
-        options?: FindOptions<T>
-      ): Promise<FindResult<T>> => this.findAll(mctx, clazz, query, options)
+      const fAll =
+        (mctx: MeasureContext) =>
+        <T extends Doc>(
+            clazz: Ref<Class<T>>,
+            query: DocumentQuery<T>,
+            options?: FindOptions<T>
+          ): Promise<FindResult<T>> =>
+            this.findAll(mctx, clazz, query, options)
 
       const triggerFx = new Effects()
       let derived: Tx[] = []
@@ -506,7 +518,10 @@ export interface ServerStorageOptions {
 /**
  * @public
  */
-export async function createServerStorage (conf: DbConfiguration, options?: ServerStorageOptions): Promise<ServerStorage> {
+export async function createServerStorage (
+  conf: DbConfiguration,
+  options?: ServerStorageOptions
+): Promise<ServerStorage> {
   const hierarchy = new Hierarchy()
   const triggers = new Triggers()
   const adapters = new Map<string, DbAdapter>()
@@ -548,5 +563,16 @@ export async function createServerStorage (conf: DbConfiguration, options?: Serv
   const fulltextAdapter = await conf.fulltextAdapter.factory(conf.fulltextAdapter.url, conf.workspace)
   const storageAdapter = conf.storageFactory?.()
 
-  return new TServerStorage(conf.domains, conf.defaultAdapter, adapters, hierarchy, triggers, fulltextAdapter, storageAdapter, modelDb, conf.workspace, options)
+  return new TServerStorage(
+    conf.domains,
+    conf.defaultAdapter,
+    adapters,
+    hierarchy,
+    triggers,
+    fulltextAdapter,
+    storageAdapter,
+    modelDb,
+    conf.workspace,
+    options
+  )
 }

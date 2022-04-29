@@ -12,27 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
-import { getMetadata } from '@anticrm/platform'
+  import { getMetadata } from '@anticrm/platform'
 
-import { connect, versionError } from '@anticrm/presentation'
-import { Loading } from '@anticrm/ui'
-import Workbench from './Workbench.svelte'
-import workbench from '../plugin'
-
+  import { connect, versionError } from '@anticrm/presentation'
+  import { Loading } from '@anticrm/ui'
+  import Workbench from './Workbench.svelte'
+  import workbench from '../plugin'
 </script>
 
 {#await connect(getMetadata(workbench.metadata.PlatformTitle) ?? 'Platform')}
-  <Loading/>
+  <Loading />
 {:then client}
   {#if !client && versionError}
-    <div class='antiPopup version-popup'>
+    <div class="antiPopup version-popup">
       <h1>Server is under maintenance.</h1>
       {versionError}
     </div>
   {:else if client}
-    <Workbench {client}/>
+    <Workbench {client} />
   {/if}
 {:catch error}
   <div>{error} -- {error.stack}</div>

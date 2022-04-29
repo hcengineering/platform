@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
 
@@ -34,17 +33,35 @@
 </script>
 
 <div class="dialog-container">
-  <form class="dialog" on:submit|preventDefault={() => { okAction(); dispatch('close') }}>
+  <form
+    class="dialog"
+    on:submit|preventDefault={() => {
+      okAction()
+      dispatch('close')
+    }}
+  >
     <div class="flex-between header">
       <div class="title"><Label {label} /></div>
-      <div class="tool" on:click={() => { dispatch('close') }}><Close size={'small'} /></div>
+      <div
+        class="tool"
+        on:click={() => {
+          dispatch('close')
+        }}
+      >
+        <Close size={'small'} />
+      </div>
     </div>
     <div class="content">
       <ScrollBox vertical stretch><slot /></ScrollBox>
     </div>
     <div class="footer">
       <Button label={okLabel} kind={'primary'} />
-      <Button label={ui.string.Cancel} on:click={() => { dispatch('close') }} />
+      <Button
+        label={ui.string.Cancel}
+        on:click={() => {
+          dispatch('close')
+        }}
+      />
     </div>
   </form>
 </div>
@@ -59,7 +76,7 @@
     max-height: 100vh;
     background-color: var(--theme-bg-color);
     border-radius: 1.875rem 0 0 1.875rem;
-    box-shadow: 0px 3.125rem 7.5rem rgba(0, 0, 0, .4);
+    box-shadow: 0px 3.125rem 7.5rem rgba(0, 0, 0, 0.4);
 
     .header {
       flex-shrink: 0;
@@ -75,10 +92,12 @@
       }
 
       .tool {
-        margin-left: .75rem;
-        opacity: .4;
+        margin-left: 0.75rem;
+        opacity: 0.4;
         cursor: pointer;
-        &:hover { opacity: 1; }
+        &:hover {
+          opacity: 1;
+        }
       }
     }
 
@@ -96,7 +115,7 @@
       direction: rtl;
       justify-content: start;
       align-items: center;
-      column-gap: .75rem;
+      column-gap: 0.75rem;
       padding: 0 2.5rem;
       height: 6rem;
       mask-image: linear-gradient(90deg, rgba(0, 0, 0, 0) 1.25rem, rgba(0, 0, 0, 1) 2.5rem);

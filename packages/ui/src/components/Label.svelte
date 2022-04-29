@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
   import { translate } from '@anticrm/platform'
@@ -28,5 +27,3 @@
 {:then text}
   {text}
 {/await}
-
-

@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getCurrentAccount,Ref,Space,Tx, TxProcessor } from '@anticrm/core'
-  import type { NotificationProvider,NotificationSetting,NotificationType } from '@anticrm/notification'
-  import presentation,{ createQuery,getClient } from '@anticrm/presentation'
-  import { Button,Grid,Icon,Label,ToggleWithLabel } from '@anticrm/ui'
+  import { getCurrentAccount, Ref, Space, TxProcessor } from '@anticrm/core'
+  import type { NotificationProvider, NotificationSetting, NotificationType } from '@anticrm/notification'
+  import presentation, { createQuery, getClient } from '@anticrm/presentation'
+  import { Button, Grid, Icon, Label, ToggleWithLabel } from '@anticrm/ui'
   import notification from '../plugin'
   import justClone from 'just-clone'
 
@@ -29,17 +29,25 @@
 
   let types: NotificationType[] = []
   let providers: NotificationProvider[] = []
-  let settings: Map<Ref<NotificationType>, Map<Ref<NotificationProvider>, NotificationSetting>> = new Map<Ref<NotificationType>, Map<Ref<NotificationProvider>, NotificationSetting>>()
-  let oldSettings: Map<Ref<NotificationType>, Map<Ref<NotificationProvider>, NotificationSetting>> = new Map<Ref<NotificationType>, Map<Ref<NotificationProvider>, NotificationSetting>>()
+  let settings: Map<Ref<NotificationType>, Map<Ref<NotificationProvider>, NotificationSetting>> = new Map<
+    Ref<NotificationType>,
+    Map<Ref<NotificationProvider>, NotificationSetting>
+  >()
+  let oldSettings: Map<Ref<NotificationType>, Map<Ref<NotificationProvider>, NotificationSetting>> = new Map<
+    Ref<NotificationType>,
+    Map<Ref<NotificationProvider>, NotificationSetting>
+  >()
 
   typeQuery.query(notification.class.NotificationType, {}, (res) => (types = res))
-  providersQuery.query(notification.class.NotificationProvider, { }, (res) => (providers = res))
+  providersQuery.query(notification.class.NotificationProvider, {}, (res) => (providers = res))
   settingsQuery.query(notification.class.NotificationSetting, { space }, (res) => {
     settings = convertToMap(res)
     oldSettings = convertToMap(justClone(res))
   })
 
-  function convertToMap (settings: NotificationSetting[]): Map<Ref<NotificationType>, Map<Ref<NotificationProvider>, NotificationSetting>> {
+  function convertToMap (
+    settings: NotificationSetting[]
+  ): Map<Ref<NotificationType>, Map<Ref<NotificationProvider>, NotificationSetting>> {
     const result = new Map<Ref<NotificationType>, Map<Ref<NotificationProvider>, NotificationSetting>>()
     for (const setting of settings) {
       setSetting(result, setting)
@@ -62,13 +70,20 @@
     }
   }
 
-  function getSetting (map: Map<Ref<NotificationType>, Map<Ref<NotificationProvider>, NotificationSetting>>, type: Ref<NotificationType>, provider: Ref<NotificationProvider>): NotificationSetting | undefined {
-    const typeMap = map.get(type) 
+  function getSetting (
+    map: Map<Ref<NotificationType>, Map<Ref<NotificationProvider>, NotificationSetting>>,
+    type: Ref<NotificationType>,
+    provider: Ref<NotificationProvider>
+  ): NotificationSetting | undefined {
+    const typeMap = map.get(type)
     if (typeMap === undefined) return
     return typeMap.get(provider)
   }
 
-  function setSetting (result: Map<Ref<NotificationType>, Map<Ref<NotificationProvider>, NotificationSetting>>, setting: NotificationSetting): void {
+  function setSetting (
+    result: Map<Ref<NotificationType>, Map<Ref<NotificationProvider>, NotificationSetting>>,
+    setting: NotificationSetting
+  ): void {
     let typeMap = result.get(setting.type)
     if (typeMap === undefined) {
       typeMap = new Map<Ref<NotificationProvider>, NotificationSetting>()
@@ -85,9 +100,11 @@
         if (old === undefined) {
           promises.push(client.createDoc(setting._class, setting.space, setting))
         } else if (old.enabled !== setting.enabled) {
-          promises.push(client.updateDoc(old._class, old.space, old._id, {
-            enabled: setting.enabled
-          }))
+          promises.push(
+            client.updateDoc(old._class, old.space, old._id, {
+              enabled: setting.enabled
+            })
+          )
         }
       }
     }
@@ -96,7 +113,11 @@
 
   $: column = providers.length + 1
 
-  function getStatus (map: Map<Ref<NotificationType>, Map<Ref<NotificationProvider>, NotificationSetting>>, type: Ref<NotificationType>, provider: Ref<NotificationProvider>): boolean {
+  function getStatus (
+    map: Map<Ref<NotificationType>, Map<Ref<NotificationProvider>, NotificationSetting>>,
+    type: Ref<NotificationType>,
+    provider: Ref<NotificationProvider>
+  ): boolean {
     const setting = getSetting(map, type, provider)
     if (setting !== undefined) return setting.enabled
     const prov = providers.find((p) => p._id === provider)
@@ -108,28 +129,32 @@
 <div class="antiComponent">
   <div class="ac-header short divide">
     <div class="ac-header__icon"><Icon icon={notification.icon.Notifications} size={'medium'} /></div>
-    <div class="ac-header__title"><Label label={notification.string.Notifications}/></div>
+    <div class="ac-header__title"><Label label={notification.string.Notifications} /></div>
   </div>
   <div class="flex-row-stretch flex-grow container">
     <div class="flex-col flex-grow">
       <div class="flex-grow">
-        <Grid {column} columnGap={5} rowGap={1.5} >
+        <Grid {column} columnGap={5} rowGap={1.5}>
           {#each types as type (type._id)}
             <Label label={type.label} />
             {#each providers as provider (provider._id)}
-              <ToggleWithLabel label={provider.label} on={getStatus(settings, type._id, provider._id)} on:change={(e) => change(type._id, provider._id, e.detail)} />
+              <ToggleWithLabel
+                label={provider.label}
+                on={getStatus(settings, type._id, provider._id)}
+                on:change={(e) => change(type._id, provider._id, e.detail)}
+              />
             {/each}
           {/each}
         </Grid>
       </div>
       <div class="flex-row-reverse">
         <Button
-        label={presentation.string.Save}
-        kind={'primary'}
-        on:click={() => {
-          save()
-        }}
-      />
+          label={presentation.string.Save}
+          kind={'primary'}
+          on:click={() => {
+            save()
+          }}
+        />
       </div>
     </div>
   </div>
@@ -140,4 +165,3 @@
     padding: 3rem;
   }
 </style>
-

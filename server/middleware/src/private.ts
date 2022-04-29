@@ -50,7 +50,12 @@ export class PrivateMiddleware extends BaseMiddleware implements Middleware {
     return [res[0], res[1], res[2] ?? target]
   }
 
-  override async findAll <T extends Doc>(ctx: SessionContext, _class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<FindAllMiddlewareResult<T>> {
+  override async findAll<T extends Doc>(
+    ctx: SessionContext,
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ): Promise<FindAllMiddlewareResult<T>> {
     let newQuery = query
     const domain = this.storage.hierarchy.getDomain(_class)
     if (this.targetDomains.includes(domain)) {

@@ -24,7 +24,7 @@
     rank: object.rank
   }
 
-  async function move(): Promise<void> {
+  async function move (): Promise<void> {
     const update: DocumentUpdate<Card> = {}
 
     if (selected.space !== object.space) {

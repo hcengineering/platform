@@ -28,18 +28,23 @@ const extractTx = (tx: Tx): Tx => {
   return tx
 }
 
-const findCreateTx = async (id: Ref<Attachment>, findAll: TriggerControl['findAll']): Promise<TxCreateDoc<Attachment> | undefined> => {
+const findCreateTx = async (
+  id: Ref<Attachment>,
+  findAll: TriggerControl['findAll']
+): Promise<TxCreateDoc<Attachment> | undefined> => {
   const createTx = (await findAll<TxCreateDoc<Attachment>>(core.class.TxCreateDoc, { objectId: id }))[0]
 
   if (createTx !== undefined) {
     return createTx
   }
 
-  const colTx = (await findAll<TxCollectionCUD<Doc, Attachment>>(core.class.TxCollectionCUD, {
-    'tx._class': core.class.TxCreateDoc,
-    'tx.objectClass': attachment.class.Attachment,
-    'tx.objectId': id
-  }))[0]
+  const colTx = (
+    await findAll<TxCollectionCUD<Doc, Attachment>>(core.class.TxCollectionCUD, {
+      'tx._class': core.class.TxCreateDoc,
+      'tx.objectClass': attachment.class.Attachment,
+      'tx.objectId': id
+    })
+  )[0]
 
   if (colTx === undefined) return
 
@@ -49,7 +54,10 @@ const findCreateTx = async (id: Ref<Attachment>, findAll: TriggerControl['findAl
 /**
  * @public
  */
-export async function OnAttachmentDelete (tx: Tx, { findAll, hierarchy, fulltextFx, storageFx }: TriggerControl): Promise<Tx[]> {
+export async function OnAttachmentDelete (
+  tx: Tx,
+  { findAll, hierarchy, fulltextFx, storageFx }: TriggerControl
+): Promise<Tx[]> {
   const actualTx = extractTx(tx)
   if (actualTx._class !== core.class.TxRemoveDoc) {
     return []

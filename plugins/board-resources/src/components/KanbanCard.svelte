@@ -67,7 +67,6 @@
   function updateDate (e: CustomEvent<CardDate>) {
     client.update(object, { date: e.detail })
   }
-
 </script>
 
 <AttachmentDroppable
@@ -76,7 +75,8 @@
   objectClass={object._class}
   objectId={object._id}
   space={object.space}
-  canDrop={canDropAttachment}>
+  canDrop={canDropAttachment}
+>
   <div class="relative flex-col pt-2 pb-1 pr-2 pl-2" bind:this={ref}>
     {#if dragoverAttachment}
       <div style:pointer-events="none" class="abs-full-content h-full w-full flex-center fs-title">
@@ -85,7 +85,8 @@
       <div
         style:opacity="0.3"
         style:pointer-events="none"
-        class="abs-full-content background-theme-content-accent h-full w-full flex-center fs-title" />
+        class="abs-full-content background-theme-content-accent h-full w-full flex-center fs-title"
+      />
     {/if}
     <div class="ml-1">
       <CardLabels bind:value={object} isInline={true} />
@@ -102,7 +103,8 @@
             bind:value={object.title}
             maxWidth="39rem"
             focus
-            on:change={() => updateCard(client, object, 'title', object?.title)} />
+            on:change={() => updateCard(client, object, 'title', object?.title)}
+          />
         </div>
       {:else}
         <div class="flex-row-center w-full">
@@ -138,8 +140,8 @@
           _class={contact.class.Employee}
           items={object.members}
           label={board.string.Members}
-          noItems={board.string.Members}
-          on:update={updateMembers} />
+          on:update={updateMembers}
+        />
       </div>
     {/if}
   </div>

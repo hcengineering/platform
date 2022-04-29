@@ -78,7 +78,7 @@ export async function createAttachments (
   client: Client,
   list: FileList,
   attachTo: { objectClass: Ref<Class<Doc>>, space: Ref<Space>, objectId: Ref<Doc> }
-) {
+): Promise<void> {
   const { objectClass, objectId, space } = attachTo
   try {
     for (let index = 0; index < list.length; index++) {
@@ -86,7 +86,7 @@ export async function createAttachments (
       if (file !== null) {
         const uuid = await uploadFile(file, { space, attachedTo: objectId })
         console.log('uploaded file uuid', uuid)
-        client.addCollection(attachment.class.Attachment, space, objectId, objectClass, 'attachments', {
+        await client.addCollection(attachment.class.Attachment, space, objectId, objectClass, 'attachments', {
           name: file.name,
           file: uuid,
           type: file.type,
@@ -96,7 +96,7 @@ export async function createAttachments (
       }
     }
   } catch (err: any) {
-    setPlatformStatus(unknownError(err))
+    await setPlatformStatus(unknownError(err))
   }
 }
 

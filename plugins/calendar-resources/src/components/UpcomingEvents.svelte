@@ -49,33 +49,35 @@
     icon: Asset
   }
 
-  $: viewlets = [{
-    component: CalendarView,
-    icon: calendar.icon.Calendar,
-    label: calendar.string.Calendar,
-    props: {
-      _class,
-      space: undefined,
-      query: resultQuery,
-      options,
-      baseMenuClass,
-      config,
-      search
+  $: viewlets = [
+    {
+      component: CalendarView,
+      icon: calendar.icon.Calendar,
+      label: calendar.string.Calendar,
+      props: {
+        _class,
+        space: undefined,
+        query: resultQuery,
+        options,
+        baseMenuClass,
+        config,
+        search
+      }
+    },
+    {
+      component: Table,
+      icon: view.icon.Table,
+      label: calendar.string.TableView,
+      props: {
+        _class,
+        query: resultQuery,
+        options,
+        baseMenuClass,
+        config,
+        search
+      }
     }
-  },
-  {
-    component: Table,
-    icon: view.icon.Table,
-    label: calendar.string.TableView,
-    props: {
-      _class,
-      query: resultQuery,
-      options,
-      baseMenuClass,
-      config,
-      search
-    }
-  }] as CalendarViewlet[]
+  ] as CalendarViewlet[]
   let selectedViewlet = 0
 </script>
 
@@ -112,5 +114,5 @@
 </div>
 
 {#if viewlets[selectedViewlet]}
-  <svelte:component this={viewlets[selectedViewlet].component} {...(viewlets[selectedViewlet].props)} />
+  <svelte:component this={viewlets[selectedViewlet].component} {...viewlets[selectedViewlet].props} />
 {/if}

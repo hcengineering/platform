@@ -11,13 +11,18 @@
     select(evt, pn ? 1 : -1, element, 'vertical')
     await tick()
     if ($focusStore.focus !== undefined && $panelstore.panel !== undefined) {
-      showPanel($panelstore.panel.component, $focusStore.focus._id, $focusStore.focus._class, $panelstore.panel?.element ?? 'content', $panelstore.panel.rightSection)
+      showPanel(
+        $panelstore.panel.component,
+        $focusStore.focus._id,
+        $focusStore.focus._class,
+        $panelstore.panel?.element ?? 'content',
+        $panelstore.panel.rightSection
+      )
     }
   }
-  
-  $: select(undefined, 0, element, 'vertical')
 
+  $: select(undefined, 0, element, 'vertical')
 </script>
 
-<Button icon={IconDownOutline} kind={'secondary'} size={'medium'} on:click={(evt) => next(evt, true)}/>
-<Button icon={IconUpOutline} kind={'secondary'} size={'medium'} on:click={(evt) => next(evt, false)}/>
+<Button icon={IconDownOutline} kind={'secondary'} size={'medium'} on:click={(evt) => next(evt, true)} />
+<Button icon={IconUpOutline} kind={'secondary'} size={'medium'} on:click={(evt) => next(evt, false)} />

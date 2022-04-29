@@ -15,15 +15,18 @@
 -->
 <script lang="ts">
   import { ChunterSpace } from '@anticrm/chunter'
+  import { EmployeeAccount } from '@anticrm/contact'
   import type { Class, Ref } from '@anticrm/core'
   import type { IntlString } from '@anticrm/platform'
   import { createQuery, getClient, Members } from '@anticrm/presentation'
-  import { Icon, IconClose, Label, ActionIcon, Scroller } from '@anticrm/ui'
+  import { ActionIcon, Icon, IconClose, Label, Scroller, showPopup } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
 
   import chunter from '../plugin'
+  import AddMembersPopup from './AddMembersPopup.svelte'
   import EditChannelDescriptionTab from './EditChannelDescriptionTab.svelte'
   import EditChannelSettingsTab from './EditChannelSettingsTab.svelte'
+  import Lock from './icons/Lock.svelte'
 
   export let _id: Ref<ChunterSpace>
   export let _class: Ref<Class<ChunterSpace>>
@@ -46,6 +49,24 @@
     ...(_class === chunter.class.Channel ? [chunter.string.Settings] : [])
   ]
   let selectedTabIndex = 0
+
+  function openAddMembersPopup () {
+    showPopup(
+      AddMembersPopup,
+      { channel },
+      undefined,
+      () => {},
+      async (membersIds: Ref<EmployeeAccount>[]) => {
+        if (membersIds) {
+          membersIds
+            .filter((m: Ref<EmployeeAccount>) => !channel.members.includes(m))
+            .forEach(async (m) => {
+              await client.update(channel, { $push: { members: m } })
+            })
+        }
+      }
+    )
+  }
 </script>
 
 <div
@@ -57,7 +78,11 @@
   <div class="ac-header short mirror divide">
     <div class="ac-header__wrap-title">
       <div class="ac-header__icon">
-        {#if clazz.icon}<Icon icon={clazz.icon} size={'medium'} />{/if}
+        {#if channel}
+          {#if channel.private}
+            <Lock size={'medium'} />
+          {:else if clazz.icon}<Icon icon={clazz.icon} size={'medium'} />{/if}
+        {/if}
       </div>
       <div class="ac-header__title"><Label label={clazz.label} /></div>
     </div>
@@ -91,7 +116,7 @@
         <EditChannelDescriptionTab {channel} on:close />
       </Scroller>
     {:else if selectedTabIndex === 1}
-      <Members space={channel} />
+      <Members space={channel} withAddButton={true} on:addMembers={openAddMembersPopup} />
     {:else if selectedTabIndex === 2}
       <EditChannelSettingsTab {channel} on:close />
     {/if}

@@ -36,12 +36,5 @@
   }}
 />
 <Scroller>
-  <TableBrowser
-    {_class}
-    {config}
-    {options}
-    query={resultQuery}
-    {baseMenuClass}
-    showNotification
-  />
+  <TableBrowser {_class} {config} {options} query={resultQuery} {baseMenuClass} showNotification />
 </Scroller>

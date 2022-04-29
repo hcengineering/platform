@@ -20,6 +20,7 @@
   import chunter from '../plugin'
   import { classIcon } from '../utils'
   import Header from './Header.svelte'
+  import Lock from './icons/Lock.svelte'
 
   export let spaceId: Ref<Channel> | undefined
 
@@ -40,7 +41,7 @@
 <div class="ac-header divide full">
   {#if channel}
     <Header
-      icon={classIcon(client, channel._class)}
+      icon={channel.private ? Lock : classIcon(client, channel._class)}
       label={channel.name}
       description={channel.topic}
       on:click={onSpaceEdit}

@@ -14,7 +14,6 @@
   function setEditMode (isEdit: boolean, object?: CardLabel) {
     editMode = { isEdit, object }
   }
-
 </script>
 
 {#if editMode.isEdit}

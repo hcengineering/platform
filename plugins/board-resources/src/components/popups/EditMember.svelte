@@ -13,7 +13,7 @@
   <div class="absolute pt-3 pr-3" style:top="0" style:right="0">
     <ActionIcon icon={IconClose} size={'small'} action={onClose} />
   </div>
-  <div class='flex p-3'>
+  <div class="flex p-3">
     <ContactPresenter value={member} />
   </div>
   {#if menuItems && menuItems.length > 0}

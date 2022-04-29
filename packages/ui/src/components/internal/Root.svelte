@@ -17,23 +17,25 @@
   import FontSizeSelector from './FontSizeSelector.svelte'
   import LangSelector from './LangSelector.svelte'
   import uiPlugin from '../../plugin'
-  
+
   let application: AnyComponent | undefined
 
-  onDestroy(location.subscribe((loc) => {
-    if (loc.path[0]) {
-      application = loc.path[0] as AnyComponent
-    }
-
-    if (application === undefined) {
-      application = getMetadata(uiPlugin.metadata.DefaultApplication)
-      if (application !== undefined) {
-        const loc = getCurrentLocation()
-        loc.path = [application]
-        navigate(loc)
+  onDestroy(
+    location.subscribe((loc) => {
+      if (loc.path[0]) {
+        application = loc.path[0] as AnyComponent
       }
-    }
-  }))
+
+      if (application === undefined) {
+        application = getMetadata(uiPlugin.metadata.DefaultApplication)
+        if (application !== undefined) {
+          const loc = getCurrentLocation()
+          loc.path = [application]
+          navigate(loc)
+        }
+      }
+    })
+  )
 
   let status = OK
 
@@ -63,7 +65,7 @@
             <FontSizeSelector />
           </div>
           <div class="flex-center widget mr-3">
-            <WiFi size={'small'}/>
+            <WiFi size={'small'} />
           </div>
         </div>
       </div>

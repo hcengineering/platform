@@ -19,7 +19,7 @@ function Delete (object: Doc): void {
       if (result === true) {
         const objs = Array.isArray(object) ? object : [object]
         for (const o of objs) {
-          deleteObject(getClient(), o).catch(err => console.error(err))
+          deleteObject(getClient(), o).catch((err) => console.error(err))
         }
       }
     }
@@ -36,11 +36,11 @@ focusStore.subscribe((it) => {
   $focusStore = it
 })
 
-export function select (evt: Event|undefined, offset: 1 | -1 | 0, of?: Doc, direction?: SelectDirection): void {
+export function select (evt: Event | undefined, offset: 1 | -1 | 0, of?: Doc, direction?: SelectDirection): void {
   if ($focusStore.provider?.select !== undefined) {
     $focusStore.provider?.select(offset, of, direction)
     evt?.preventDefault()
-    previewDocument.update(old => {
+    previewDocument.update((old) => {
       if (old !== undefined) {
         return $focusStore.focus
       }
@@ -51,7 +51,7 @@ export function select (evt: Event|undefined, offset: 1 | -1 | 0, of?: Doc, dire
 function SelectItem (doc: Doc | undefined, evt: Event): void {
   if (doc !== undefined) {
     selectionStore.update((selection) => {
-      const ind = selection.findIndex(it => it._id === doc._id)
+      const ind = selection.findIndex((it) => it._id === doc._id)
       if (ind === -1) {
         selection.push(doc)
       } else {
@@ -84,7 +84,7 @@ function ShowActions (doc: Doc | Doc[] | undefined, evt: Event): void {
 }
 
 function ShowPreview (doc: Doc | undefined, evt: Event): void {
-  previewDocument.update(old => {
+  previewDocument.update((old) => {
     if (old?._id === doc?._id) {
       return undefined
     }

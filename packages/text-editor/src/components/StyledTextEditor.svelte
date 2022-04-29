@@ -80,7 +80,7 @@
     .buttons {
       visibility: hidden;
     }
-    
+
     .shown {
       visibility: visible;
     }

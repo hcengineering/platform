@@ -18,8 +18,7 @@ import { IntlString, mergeIds } from '@anticrm/platform'
 import { AnyComponent } from '@anticrm/ui'
 
 export default mergeIds(calendarId, calendar, {
-  component: {
-  },
+  component: {},
   activity: {
     ReminderViewlet: '' as AnyComponent
   },

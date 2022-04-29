@@ -16,7 +16,7 @@ import {
   SeagullColor
 } from '@anticrm/ui'
 
-export async function createBoard(
+export async function createBoard (
   client: TxOperations,
   name: string,
   description: string,
@@ -97,7 +97,9 @@ export async function createMissingLabels (
     return targetBoardLabels.findIndex((targetLabel) => isEqualLabel(targetLabel, srcLabel)) === -1
   })
 
-  await Promise.all(missingLabels.map((l) => createCardLabel(client, targetBoard, l.color, l.title, l.isHidden)))
+  await Promise.all(
+    missingLabels.map(async (l) => await createCardLabel(client, targetBoard, l.color, l.title, l.isHidden))
+  )
 
   const updatedTargetBoardLabels = await getBoardLabels(client, targetBoard)
 
