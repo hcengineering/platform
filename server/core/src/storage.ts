@@ -333,8 +333,8 @@ class TServerStorage implements ServerStorage {
   async processBacklinks (ctx: MeasureContext, tx: Tx): Promise<Tx[]> {
     const actualTx = this.extractTx(tx)
     const result: Tx[] = []
-    if (!this.hierarchy.isDerived(actualTx._class, core.class.TxUpdateDoc) || !this.hierarchy.isDerived(actualTx._class, core.class.TxCreateDoc)) return result
-    const rtx = actualTx as (TxCreateDoc<Doc> | TxUpdateDoc<Doc>)
+    if (!this.hierarchy.isDerived(actualTx._class, core.class.TxUpdateDoc) && !this.hierarchy.isDerived(actualTx._class, core.class.TxCreateDoc)) return result
+    const rtx = actualTx as (TxCreateDoc<Doc> | TxUpdateDoc<Doc> | TxCollectionCUD<Doc, AttachedDoc>)
     if (!this.hierarchy.isDerived(rtx.objectClass, core.class.AttachedDoc)) return result
     const attributes = this.hierarchy.getAllAttributes(rtx.objectClass)
     const markupAttributes: AnyAttribute[] = []
@@ -353,10 +353,18 @@ class TServerStorage implements ServerStorage {
     if (this.hierarchy.isDerived(actualTx._class, core.class.TxUpdateDoc)) {
       attachedDoc = await this.buildDoc(ctx, actualTx as TxUpdateDoc<AttachedDoc>)
     }
+
     if (attachedDoc === undefined) return []
-    const backlinkId = attachedDoc.attachedTo
-    const backlinkClass = attachedDoc.attachedToClass
+    let backlinkId = attachedDoc.attachedTo
+    let backlinkClass = attachedDoc.attachedToClass
     const attachedDocId = attachedDoc._id ?? rtx.objectId
+
+    // Update backlink info for collection operations
+    if (this.hierarchy.isDerived(tx._class, core.class.TxCollectionCUD)) {
+      const collectionTx = tx as TxCollectionCUD<Doc, AttachedDoc>
+      backlinkId = collectionTx.objectId
+      backlinkClass = collectionTx.objectClass
+    }
 
     if (backlinkId === undefined || backlinkClass === undefined) return []
     const existingBacklinks = isNew ? [] : await this.findAll<Backlink>(ctx, core.class.Backlink, { backlinkId, backlinkClass, attachedDocId })
@@ -364,7 +372,7 @@ class TServerStorage implements ServerStorage {
 
     for (const attribute of markupAttributes) {
       const attrValue = (attachedDoc as Data<any>)[attribute.name]
-      const backlinks: Array<Data<Backlink>> = extractBacklinks(backlinkId, backlinkClass, rtx.objectId, attrValue)
+      const backlinks: Array<Data<Backlink>> = extractBacklinks(backlinkId, backlinkClass, attachedDocId, attrValue)
       if (backlinks.length <= 0) continue
       for (const backlink of backlinks) {
         const { attachedTo, attachedToClass, message } = backlink
