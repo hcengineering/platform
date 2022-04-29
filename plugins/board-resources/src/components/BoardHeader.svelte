@@ -9,7 +9,9 @@
 
   let space: Space
   const query = createQuery()
-  $: query.query(core.class.Space, { _id: spaceId }, result => { space = result[0] })
+  $: query.query(core.class.Space, { _id: spaceId }, (result) => {
+    space = result[0]
+  })
 
   const client = getClient()
 
@@ -22,7 +24,7 @@
 
 <div class="ac-header divide full">
   {#if space}
-      <Header icon={classIcon(client, space._class)} label={space.name} description={space.description}/>
-      <Button label={border.string.ShowMenu} on:click={showMenu}/>
+    <Header icon={classIcon(client, space._class)} label={space.name} description={space.description} />
+    <Button label={border.string.ShowMenu} on:click={showMenu} />
   {/if}
 </div>
