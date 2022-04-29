@@ -15,7 +15,7 @@
 
 import { plugin } from '@anticrm/platform'
 import type { Plugin } from '@anticrm/platform'
-import type { Doc, Ref, Class, Space, AttachedDoc } from '@anticrm/core'
+import type { Doc, Ref, Class, Space, AttachedDoc, Timestamp } from '@anticrm/core'
 import type { AnyComponent } from '@anticrm/ui'
 import type { IntegrationType, Handler } from '@anticrm/setting'
 
@@ -32,6 +32,8 @@ export interface BaseTelegramMessage extends Doc {
  */
 export interface TelegramMessage extends BaseTelegramMessage, AttachedDoc {
   incoming: boolean
+
+  sendOn: Timestamp
 }
 
 /**
@@ -47,6 +49,7 @@ export interface NewTelegramMessage extends BaseTelegramMessage, AttachedDoc {
 export interface SharedTelegramMessage extends BaseTelegramMessage {
   incoming: boolean
   sender: string
+  sendOn: Timestamp
 }
 
 /**
