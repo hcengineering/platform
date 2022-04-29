@@ -109,13 +109,16 @@
   let ignoreMixins: Set<Ref<Mixin<Doc>>> = new Set<Ref<Mixin<Doc>>>()
 
   async function updateKeys (): Promise<void> {
-    let filtredKeys = getFiltredKeys(object._class, ignoreKeys)
+    const keysMap = new Map(getFiltredKeys(object._class, ignoreKeys).map((p) => [p.attr._id, p]))
     for (const m of mixins) {
       const mkeys = getFiltredKeys(m._id, ignoreKeys)
-      filtredKeys = filtredKeys.concat(mkeys).filter((it, idx, arr) => arr.indexOf(it) === idx)
+      for (const key of mkeys) {
+        keysMap.set(key.attr._id, key)
+      }
     }
+    const filtredKeys = Array.from(keysMap.values())
     keys = collectionsFilter(filtredKeys, false)
-  
+
     const collectionKeys = collectionsFilter(filtredKeys, true)
     const editors: { key: KeyedAttribute; editor: AnyComponent }[] = []
     for (const k of collectionKeys) {
