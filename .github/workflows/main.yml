@@ -39,9 +39,9 @@ jobs:
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-            
-      # - name: Checking for mis-matching dependencies...
-      #   run: node common/scripts/install-run-rush.js check
+
+      - name: Checking for mis-matching dependencies...
+        run: node common/scripts/install-run-rush.js check
 
       # - name: Checking for missing change logs...
       #   run: node common/scripts/install-run-rush.js change -v
