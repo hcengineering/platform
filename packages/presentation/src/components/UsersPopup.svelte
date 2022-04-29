@@ -42,16 +42,7 @@
 
   const dispatch = createEventDispatcher()
   const query = createQuery()
-  $: if (search.length)
-    query.query<Person>(
-      _class,
-      { name: { $like: '%' + search + '%' }, _id: { $nin: ignoreUsers } },
-      (result) => {
-        objects = result
-      },
-      { limit: 200 }
-    )
-  else objects = []
+  $: query.query<Person>(_class, { name: { $like: '%' + search + '%' }, _id: { $nin: ignoreUsers } }, result => { objects = result }, { limit: 200 })
 
   let phTraslate: string = ''
   $: if (placeholder) translate(placeholder, {}).then(res => { phTraslate = res })
@@ -69,7 +60,7 @@
   onMount(() => { if (input) input.focus() })
 </script>
 
-<div class="selectPopup {!shadows && "plainContainer"}">
+<div class="selectPopup" class:plainContainer={!shadows}>
   <div class="header">
     <input bind:this={input} type='text' bind:value={search} placeholder={phTraslate} on:change/>
   </div>

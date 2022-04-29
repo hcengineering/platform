@@ -58,11 +58,11 @@
       () => {},
       async (membersIds: Ref<EmployeeAccount>[]) => {
         if (membersIds) {
-          const newMembers = channel.members.concat(
-            membersIds.filter((m: Ref<EmployeeAccount>) => !channel.members.includes(m))
-          )
-
-          await client.update(channel, { members: newMembers })
+          membersIds
+            .filter((m: Ref<EmployeeAccount>) => !channel.members.includes(m))
+            .forEach(async (m) => {
+              await client.update(channel, { $push: { members: m } })
+            })
         }
       }
     )
