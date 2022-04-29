@@ -19,8 +19,12 @@ import type { IntlString } from '@anticrm/platform'
 
 import attachment, { attachmentId } from '@anticrm/attachment'
 import { ViewAction } from '@anticrm/view'
+import { AnyComponent } from '@anticrm/ui'
 
 export default mergeIds(attachmentId, attachment, {
+  component: {
+    Detail: '' as AnyComponent
+  },
   string: {
     NoAttachments: '' as IntlString,
     UploadDropFilesHere: '' as IntlString,

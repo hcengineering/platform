@@ -18,7 +18,7 @@ import type { Attachment, Photo, SavedAttachments } from '@anticrm/attachment'
 import { Domain, IndexKind, Ref } from '@anticrm/core'
 import { Builder, Index, Model, Prop, TypeRef, TypeString, TypeTimestamp, UX } from '@anticrm/model'
 import core, { TAttachedDoc } from '@anticrm/model-core'
-import view from '@anticrm/model-view'
+import view, { actionTarget, createAction } from '@anticrm/model-view'
 import preference, { TPreference } from '@anticrm/model-preference'
 import attachment from './plugin'
 
@@ -71,6 +71,12 @@ export function createModel (builder: Builder): void {
   builder.mixin(attachment.class.Photo, core.class.Class, view.mixin.AttributeEditor, {
     editor: attachment.component.Photos
   })
+
+  createAction(builder, attachment.action.CopyDirectLink, attachment.string.CopyDirectLink, attachment.actionImpl.CopyDirectLink)
+  actionTarget(builder, attachment.action.CopyDirectLink, attachment.class.Attachment, { mode: ['context'], group: 'tools' })
+
+  createAction(builder, attachment.action.OpenInNewTab, attachment.string.OpenInNewTab, attachment.actionImpl.OpenInNewTab)
+  actionTarget(builder, attachment.action.OpenInNewTab, attachment.class.Attachment, { mode: ['context'], group: 'tools' })
 
   builder.createDoc(
     activity.class.TxViewlet,

@@ -44,6 +44,8 @@
     "FileBrowserTypeFilterPDFs": "PDFs",
     "AddAttachmentToSaved": "Add attachment to saved",
     "RemoveAttachmentFromSaved": "Remove attachment from saved",
-    "DeleteFile": "Delete file"
+    "DeleteFile": "Delete file",
+    "CopyDirectLink": "Copy link to file",
+    "OpenInNewTab": "Open in a new tab"
   }
 }

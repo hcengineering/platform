@@ -25,13 +25,16 @@ import TxAttachmentCreate from './components/activity/TxAttachmentCreate.svelte'
 import Attachments from './components/Attachments.svelte'
 import FileBrowser from './components/FileBrowser.svelte'
 import Photos from './components/Photos.svelte'
+import Detail from './components/Detail.svelte'
 import FileDownload from './components/icons/FileDownload.svelte'
 import { uploadFile, deleteFile } from './utils'
-import attachment, { Attachment } from '@anticrm/attachment'
+import { Attachment } from '@anticrm/attachment'
+import attachment from './plugin'
 import { ObjQueryType, SortingOrder, SortingQuery } from '@anticrm/core'
 import { IntlString, Resources } from '@anticrm/platform'
 import preference from '@anticrm/preference'
 import { getClient } from '@anticrm/presentation'
+import { getCurrentLocation, getPanelURI, locationToUrl } from '@anticrm/ui'
 
 export {
   AddAttachment,
@@ -205,6 +208,23 @@ export async function DeleteAttachmentFromSaved (attach: Attachment): Promise<vo
   }
 }
 
+function getInnerLink (object: Attachment): string {
+  const location = getCurrentLocation()
+  location.path.length = 1
+  location.query = undefined
+  location.fragment = getPanelURI(attachment.component.Detail, object._id, object._class, 'right')
+  return window.location.origin + locationToUrl(location)
+}
+
+export function CopyDirectLink (object: Attachment): void {
+  const link = getInnerLink(object)
+  navigator.clipboard.writeText(link)
+}
+
+export function OpenInNewTab (object: Attachment): void {
+  window.open(getInnerLink(object), '_blank')
+}
+
 export default async (): Promise<Resources> => ({
   component: {
     AttachmentsPresenter,
@@ -212,7 +232,8 @@ export default async (): Promise<Resources> => ({
     AttachmentGalleryPresenter,
     Attachments,
     FileBrowser,
-    Photos
+    Photos,
+    Detail
   },
   activity: {
     TxAttachmentCreate
@@ -223,6 +244,8 @@ export default async (): Promise<Resources> => ({
   },
   actionImpl: {
     AddAttachmentToSaved,
-    DeleteAttachmentFromSaved
+    DeleteAttachmentFromSaved,
+    CopyDirectLink,
+    OpenInNewTab
   }
 })

@@ -20,11 +20,21 @@ import { mergeIds } from '@anticrm/platform'
 import type { Ref } from '@anticrm/core'
 import type { AnyComponent } from '@anticrm/ui'
 import type { TxViewlet } from '@anticrm/activity'
+import { ViewAction } from '@anticrm/model-view'
+import { Action } from '@anticrm/view'
 
 export default mergeIds(attachmentId, attachment, {
   component: {
     AttachmentPresenter: '' as AnyComponent,
     FileBrowser: '' as AnyComponent
+  },
+  action: {
+    CopyDirectLink: '' as Ref<Action>,
+    OpenInNewTab: '' as Ref<Action>
+  },
+  actionImpl: {
+    CopyDirectLink: '' as ViewAction,
+    OpenInNewTab: '' as ViewAction
   },
   string: {
     AddAttachment: '' as IntlString,
@@ -34,7 +44,9 @@ export default mergeIds(attachmentId, attachment, {
     Type: '' as IntlString,
     Photo: '' as IntlString,
     Date: '' as IntlString,
-    SavedAttachments: '' as IntlString
+    SavedAttachments: '' as IntlString,
+    CopyDirectLink: '' as IntlString,
+    OpenInNewTab: '' as IntlString
   },
   ids: {
     TxAttachmentCreate: '' as Ref<TxViewlet>

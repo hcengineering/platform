@@ -44,6 +44,8 @@
     "FileBrowserTypeFilterPDFs": "PDF-файлы",
     "AddAttachmentToSaved": "Добавить вложение в сохраненные",
     "RemoveAttachmentFromSaved": "Удалить вложение из сохраненных",
-    "DeleteFile": "Удалить файл"
+    "DeleteFile": "Удалить файл",
+    "CopyDirectLink": "Копировать ссылку на файл",
+    "OpenInNewTab": "Открыть в новой вкладке"
   }
 }

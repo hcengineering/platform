@@ -1,29 +1,30 @@
 <!--
 // Copyright © 2022 Hardcore Engineering Inc.
-// 
+//
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// 
+//
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
 <script lang="ts">
   import type { Attachment } from '@anticrm/attachment'
   import { getResource } from '@anticrm/platform'
-  import { showPopup, ActionIcon, IconMoreH, Menu, Icon } from '@anticrm/ui'
+  import { getClient, getFileUrl } from '@anticrm/presentation'
+  import { ActionIcon, Icon, IconMoreH, Menu, showPopup } from '@anticrm/ui'
   import { Action } from '@anticrm/view'
-  import { getFileUrl } from '@anticrm/presentation'
-
+  import { getActions } from '@anticrm/view-resources'
   import attachmentPlugin from '../plugin'
   import FileDownload from './icons/FileDownload.svelte'
 
   export let attachment: Attachment
   export let isSaved = false
+  const client = getClient()
 
   $: saveAttachmentAction = isSaved
     ? ({
@@ -35,11 +36,20 @@
         action: attachmentPlugin.actionImpl.AddAttachmentToSaved
       } as Action)
 
-  const showMenu = (ev: Event) => {
+  const showMenu = async (ev: Event) => {
+    const actions = await getActions(client, attachment, attachment._class)
     showPopup(
       Menu,
       {
         actions: [
+          ...actions.map((a) => ({
+            label: a.label,
+            icon: a.icon,
+            action: async (ctx: any, evt: MouseEvent) => {
+              const impl = await getResource(a.action)
+              await impl(attachment, evt)
+            }
+          })),
           {
             label: saveAttachmentAction.label,
             icon: saveAttachmentAction.icon,
