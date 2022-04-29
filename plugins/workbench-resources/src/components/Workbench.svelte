@@ -298,7 +298,7 @@
     }
   }
 
-  let navFloat: boolean = window.innerWidth < 1024 ? false : true
+  let navFloat: boolean = !(window.innerWidth < 1024)
   const windowResize = (): void => {
     if (window.innerWidth < 1024 && !navFloat) {
       visibileNav = false

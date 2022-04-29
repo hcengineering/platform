@@ -99,6 +99,7 @@ class ActivityImpl implements Activity {
   private readonly txQuery1: LiveQuery
   private readonly txQuery2: LiveQuery
   private readonly hiddenAttributes: Set<string>
+  private editable: Map<Ref<Class<Doc>>, boolean> | undefined
 
   private txes1: Array<TxCUD<Doc>> = []
   private txes2: Array<TxCUD<Doc>> = []
@@ -110,27 +111,26 @@ class ActivityImpl implements Activity {
     this.txQuery2 = createQuery()
   }
 
-  private notify (
-    object: Doc,
-    listener: DisplayTxListener,
-    sort: SortingOrder,
-    editable: Map<Ref<Class<Doc>>, boolean>
-  ): void {
-    this.combineTransactions(object, this.txes1, this.txes2, editable).then(
-      (result) => {
-        const sorted = result.sort((a, b) => (a.tx.modifiedOn - b.tx.modifiedOn) * sort)
-        listener(sorted)
-      },
-      (err) => {
-        console.error(err)
-      }
-    )
+  private notify (object: Doc, listener: DisplayTxListener, sort: SortingOrder): void {
+    if (this.editable != null) {
+      this.combineTransactions(object, this.txes1, this.txes2, this.editable).then(
+        (result) => {
+          const sorted = result.sort((a, b) => (a.tx.modifiedOn - b.tx.modifiedOn) * sort)
+          listener(sorted)
+        },
+        (err) => {
+          console.error(err)
+        }
+      )
+    }
   }
 
   update (object: Doc, listener: DisplayTxListener, sort: SortingOrder, editable: Map<Ref<Class<Doc>>, boolean>): void {
     let isAttached = false
 
     isAttached = this.client.getHierarchy().isDerived(object._class, core.class.AttachedDoc)
+
+    this.editable = editable
 
     this.txQuery1.query<TxCollectionCUD<Doc, AttachedDoc>>(
       isAttached ? core.class.TxCollectionCUD : core.class.TxCUD,
@@ -144,7 +144,7 @@ class ActivityImpl implements Activity {
           },
       (result) => {
         this.txes1 = result
-        this.notify(object, listener, sort, editable)
+        this.notify(object, listener, sort)
       },
       { sort: { modifiedOn: SortingOrder.Descending } }
     )
@@ -157,10 +157,12 @@ class ActivityImpl implements Activity {
       },
       (result) => {
         this.txes2 = result
-        this.notify(object, listener, sort, editable)
+        this.notify(object, listener, sort)
       },
       { sort: { modifiedOn: SortingOrder.Descending } }
     )
+    // In case editable is changed
+    this.notify(object, listener, sort)
   }
 
   async combineTransactions (

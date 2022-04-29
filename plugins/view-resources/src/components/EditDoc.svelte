@@ -115,7 +115,7 @@
       filtredKeys = filtredKeys.concat(mkeys).filter((it, idx, arr) => arr.indexOf(it) === idx)
     }
     keys = collectionsFilter(filtredKeys, false)
-  
+
     const collectionKeys = collectionsFilter(filtredKeys, true)
     const editors: { key: KeyedAttribute; editor: AnyComponent }[] = []
     for (const k of collectionKeys) {
