@@ -17,7 +17,7 @@
   import { AttachmentRefInput } from '@anticrm/attachment-resources'
   import type { ChunterSpace, Message, ThreadMessage } from '@anticrm/chunter'
   import contact, { Employee, EmployeeAccount, formatName } from '@anticrm/contact'
-  import core, { createBacklinks, FindOptions, generateId, getCurrentAccount, Ref, SortingOrder, TxFactory } from '@anticrm/core'
+  import core, { FindOptions, generateId, getCurrentAccount, Ref, SortingOrder, TxFactory } from '@anticrm/core'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { Label } from '@anticrm/ui'
@@ -151,9 +151,6 @@
     tx.attributes.createOn = tx.modifiedOn
     await notificationClient.updateLastView(_id, chunter.class.Message, tx.modifiedOn, true)
     await client.tx(tx)
-
-    // Create an backlink to document
-    await createBacklinks(client, parent.space, chunter.class.ChunterSpace, commentId, message)
 
     commentId = generateId()
   }

@@ -15,7 +15,6 @@
 <script lang="ts">
   import type { Comment } from '@anticrm/chunter'
   import type { TxCreateDoc } from '@anticrm/core'
-  import { updateBacklinks } from '@anticrm/core'
   import { getClient, MessageViewer } from '@anticrm/presentation'
   import { AttachmentDocList } from '@anticrm/attachment-resources'
   import { Button } from '@anticrm/ui'
@@ -46,8 +45,6 @@
         attachments
       }
     )
-    // We need to update backlinks before and after.
-    await updateBacklinks(client, value.attachedTo, value.attachedToClass, value._id, event.detail)
 
     dispatch('close', false)
   }

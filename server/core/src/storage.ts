@@ -320,7 +320,6 @@ class TServerStorage implements ServerStorage {
   }
 
   async processMove (ctx: MeasureContext, tx: Tx): Promise<Tx[]> {
-    console.log('processMove')
     const actualTx = this.extractTx(tx)
     if (!this.hierarchy.isDerived(actualTx._class, core.class.TxUpdateDoc)) return []
     const rtx = actualTx as TxUpdateDoc<Doc>

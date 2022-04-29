@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import { Comment } from '@anticrm/chunter'
-  import { createBacklinks, Doc, generateId, Ref } from '@anticrm/core'
+  import { Doc, generateId, Ref } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
   import { AttachmentRefInput } from '@anticrm/attachment-resources'
   import chunter from '../plugin'
@@ -37,8 +37,6 @@
       _id
     )
 
-    // Create an backlink to document
-    await createBacklinks(client, object._id, object._class, _id, message)
     _id = generateId()
   }
 </script>
