@@ -34,6 +34,7 @@
   export let placeholder: IntlString = presentation.string.Search
   export let selectedUsers: Ref<Person>[] = []
   export let ignoreUsers: Ref<Person>[] = []
+  export let shadows: boolean = true
 
   let search: string = ''
   let objects: Person[] = []
@@ -72,7 +73,7 @@
   })
 </script>
 
-<div class="selectPopup">
+<div class="selectPopup" class:plainContainer={!shadows}>
   <div class="header">
     <input bind:this={input} type="text" bind:value={search} placeholder={phTraslate} on:change />
   </div>
@@ -110,3 +111,13 @@
     </div>
   </div>
 </div>
+
+<style lang="scss">
+  .plainContainer {
+    color: var(--caption-color);
+    background-color: var(--body-color);
+    border: 1px solid var(--button-border-color);
+    border-radius: .25rem;
+    box-shadow: none;
+  }
+</style>
