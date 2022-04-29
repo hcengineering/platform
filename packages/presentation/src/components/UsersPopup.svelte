@@ -117,7 +117,7 @@
     color: var(--caption-color);
     background-color: var(--body-color);
     border: 1px solid var(--button-border-color);
-    border-radius: .25rem;
+    border-radius: 0.25rem;
     box-shadow: none;
   }
 </style>

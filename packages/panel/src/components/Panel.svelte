@@ -92,9 +92,9 @@
     {/if}
     {#if $$slots['custom-attributes']}
       {#if isSub}<div class="header-row"><slot name="custom-attributes" direction="row" /></div>{/if}
-    {:else}
-      {#if $$slots.attributes && minimize}<div class="header-row"><slot name="attributes" direction="row" /></div>{/if}
-    {/if}
+    {:else if $$slots.attributes && minimize}<div class="header-row">
+        <slot name="attributes" direction="row" />
+      </div>{/if}
   </svelte:fragment>
 
   <svelte:fragment slot="aside">
@@ -109,9 +109,7 @@
       {/if}
       {#if $$slots['custom-attributes']}
         <slot name="custom-attributes" direction="column" />
-      {:else}
-        {#if $$slots.attributes}<slot name="attributes" direction="column" />{/if}
-      {/if}
+      {:else if $$slots.attributes}<slot name="attributes" direction="column" />{/if}
       {#if $$slots.aside}<slot name="aside" />{/if}
     </div>
   </svelte:fragment>

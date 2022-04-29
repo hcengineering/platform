@@ -86,7 +86,7 @@
     on:close={() => dispatch('close')}
   >
     <svelte:fragment slot="navigator">
-      <UpDownNavigator element={object}/>
+      <UpDownNavigator element={object} />
     </svelte:fragment>
 
     <!-- TODO cover -->

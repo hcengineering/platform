@@ -31,13 +31,7 @@
     if (ev.detail.presenter !== undefined && Array.isArray(value)) {
       const channel = value[0]
       if (channel !== undefined) {
-        showPanel(
-          ev.detail.presenter,
-          channel.attachedTo,
-          channel.attachedToClass,
-          'float',
-          ev.detail.presenter
-        )
+        showPanel(ev.detail.presenter, channel.attachedTo, channel.attachedToClass, 'float', ev.detail.presenter)
       }
     }
   }

@@ -37,7 +37,14 @@
 <svelte:window bind:innerWidth={docWidth} />
 <div class="popupPanel" bind:clientWidth={panelWidth}>
   <div class="popupPanel-title">
-    <Button icon={IconClose} kind={'transparent'} size={'medium'} on:click={() => { dispatch('close') }} />
+    <Button
+      icon={IconClose}
+      kind={'transparent'}
+      size={'medium'}
+      on:click={() => {
+        dispatch('close')
+      }}
+    />
     <div class="popupPanel-title__content"><slot name="title" /></div>
     <div class="buttons-group xsmall-gap">
       <slot name="utils" />

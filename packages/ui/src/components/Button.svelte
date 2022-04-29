@@ -218,7 +218,9 @@
       }
     }
     &.transparent:hover,
-    &.transparent.selected { background-color: var(--button-bg-hover); }
+    &.transparent.selected {
+      background-color: var(--button-bg-hover);
+    }
     &.link {
       padding: 0 0.875rem;
       &:hover {

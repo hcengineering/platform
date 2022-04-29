@@ -45,12 +45,7 @@
         {#if $$slots.space}
           <slot name="space" />
         {:else}
-          <SpaceSelect
-            _class={spaceClass}
-            {spaceQuery}
-            label={spaceLabel}
-            bind:value={space}
-          />
+          <SpaceSelect _class={spaceClass} {spaceQuery} label={spaceLabel} bind:value={space} />
         {/if}
         <span class="antiCard-header__divider">›</span>
       {/if}
