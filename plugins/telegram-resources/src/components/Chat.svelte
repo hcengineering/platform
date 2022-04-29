@@ -19,7 +19,7 @@
   import { Panel } from '@anticrm/panel'
   import { createEventDispatcher } from 'svelte'
   import contact, { Channel, Contact, EmployeeAccount, formatName } from '@anticrm/contact'
-  import { generateId, getCurrentAccount, Ref, SortingOrder, Space, Doc, Class } from '@anticrm/core'
+  import { generateId, getCurrentAccount, Ref, SortingOrder, Space, Class } from '@anticrm/core'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
   import { createQuery, getClient } from '@anticrm/presentation'
   import setting, { Integration } from '@anticrm/setting'
