@@ -18,7 +18,8 @@ import { AnyComponent } from '@anticrm/ui'
 export default mergeIds(tagsId, tags, {
   component: {
     TagElementPresenter: '' as AnyComponent,
-    CategoryPresenter: '' as AnyComponent
+    CategoryPresenter: '' as AnyComponent,
+    TagElementCountPresenter: '' as AnyComponent
   },
   string: {
     NoTags: '' as IntlString,
@@ -40,6 +41,9 @@ export default mergeIds(tagsId, tags, {
     TagName: '' as IntlString,
     SaveLabel: '' as IntlString,
     CategoryLabel: '' as IntlString,
-    AllCategories: '' as IntlString
+    AllCategories: '' as IntlString,
+    SelectAll: '' as IntlString,
+    SelectNone: '' as IntlString,
+    ApplyTags: '' as IntlString
   }
 })

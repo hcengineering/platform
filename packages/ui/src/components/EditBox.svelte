@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { createEventDispatcher, onMount, afterUpdate } from 'svelte'
   import type { IntlString, Asset } from '@anticrm/platform'
@@ -28,7 +27,7 @@
   export let value: string | number | undefined
   export let placeholder: IntlString = plugin.string.EditBoxPlaceholder
   export let placeholderParam: any | undefined = undefined
-  export let format: 'text'| 'password' | 'number' = 'text'
+  export let format: 'text' | 'password' | 'number' = 'text'
   export let kind: 'editbox' | 'large-style' | 'small-style' = 'editbox'
   export let focus: boolean = false
 
@@ -40,7 +39,9 @@
   let phTraslate: string = ''
 
   $: style = maxWidth ? `max-width: ${maxWidth};` : ''
-  $: translate(placeholder, placeholderParam ?? {}).then(res => { phTraslate = res })
+  $: translate(placeholder, placeholderParam ?? {}).then((res) => {
+    phTraslate = res
+  })
 
   function computeSize (t: HTMLInputElement | EventTarget | null) {
     const target = t as HTMLInputElement
@@ -67,21 +68,50 @@
   })
 </script>
 
-<div class="editbox-container" on:click={() => { input.focus() }}>
-  <div class="hidden-text {kind}" bind:this={text}></div>
-  {#if label}<div class="label"><Label label={label}/></div>{/if}
+<div
+  class="editbox-container"
+  on:click={() => {
+    input.focus()
+  }}
+>
+  <div class="hidden-text {kind}" bind:this={text} />
+  {#if label}<div class="label"><Label {label} /></div>{/if}
   <div class="{kind} flex-row-center clear-mins">
     {#if icon}
       <div class="content-trans-color mr-1">
-        <Icon {icon} size={'small'}/>
+        <Icon {icon} size={'small'} />
       </div>
     {/if}
     {#if format === 'password'}
-      <input bind:this={input} type='passsword' bind:value placeholder={phTraslate} {style} on:input={(ev) => ev.target && computeSize(ev.target)} on:change/>
+      <input
+        bind:this={input}
+        type="passsword"
+        bind:value
+        placeholder={phTraslate}
+        {style}
+        on:input={(ev) => ev.target && computeSize(ev.target)}
+        on:change
+      />
     {:else if format === 'number'}
-      <input bind:this={input} type='number' bind:value placeholder={phTraslate} {style} on:input={(ev) => ev.target && computeSize(ev.target)} on:change/>
+      <input
+        bind:this={input}
+        type="number"
+        bind:value
+        placeholder={phTraslate}
+        {style}
+        on:input={(ev) => ev.target && computeSize(ev.target)}
+        on:change
+      />
     {:else}
-      <input bind:this={input} type='text' bind:value placeholder={phTraslate} {style} on:input={(ev) => ev.target && computeSize(ev.target)} on:change/>
+      <input
+        bind:this={input}
+        type="text"
+        bind:value
+        placeholder={phTraslate}
+        {style}
+        on:input={(ev) => ev.target && computeSize(ev.target)}
+        on:change
+      />
     {/if}
   </div>
 </div>
@@ -93,8 +123,8 @@
     align-items: flex-start;
 
     .label {
-      margin-bottom: .25rem;
-      font-size: .75rem;
+      margin-bottom: 0.25rem;
+      font-size: 0.75rem;
       font-weight: 500;
       color: var(--theme-content-accent-color);
       pointer-events: none;
@@ -107,7 +137,7 @@
     }
     .small-style {
       font-weight: 400;
-      font-size: .75rem;
+      font-size: 0.75rem;
     }
 
     input {

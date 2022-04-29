@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { Class, Doc, DocumentQuery, Obj, Ref } from '@anticrm/core'
   import core from '@anticrm/core'
@@ -37,13 +36,19 @@
   const dispatch = createEventDispatcher()
 
   const kanbanQ = createQuery()
-  $: kanbanQ.query(task.class.Kanban, { attachedTo: _id }, result => { kanban = result[0] })
+  $: kanbanQ.query(task.class.Kanban, { attachedTo: _id }, (result) => {
+    kanban = result[0]
+  })
 
   const spaceQ = createQuery()
-  $: spaceQ.query<Class<SpaceWithStates>>(core.class.Class, { _id: spaceClass }, result => { spaceClassInstance = result.shift() })
+  $: spaceQ.query<Class<SpaceWithStates>>(core.class.Class, { _id: spaceClass }, (result) => {
+    spaceClassInstance = result.shift()
+  })
 
   const spaceI = createQuery()
-  $: spaceI.query<SpaceWithStates>(spaceClass, { _id: _id }, result => { spaceInstance = result.shift() })
+  $: spaceI.query<SpaceWithStates>(spaceClass, { _id: _id }, (result) => {
+    spaceInstance = result.shift()
+  })
 
   async function deleteState ({ state }: { state: State | DoneState }) {
     if (spaceInstance === undefined) {
@@ -69,19 +74,29 @@
         message: task.string.CantStatusDeleteError
       })
     } else {
-      showPopup(MessageBox, {
-        label: task.string.StatusDelete,
-        message: task.string.StatusDeleteConfirm
-      }, undefined, async (result) => {
-        if (result && kanban !== undefined) {
-          client.removeDoc(state._class, state.space, state._id)
+      showPopup(
+        MessageBox,
+        {
+          label: task.string.StatusDelete,
+          message: task.string.StatusDeleteConfirm
+        },
+        undefined,
+        async (result) => {
+          if (result && kanban !== undefined) {
+            client.removeDoc(state._class, state.space, state._id)
+          }
         }
-      })
+      )
     }
   }
 </script>
 
-<div class="antiOverlay" on:click={() => { dispatch('close') }}/>
+<div
+  class="antiOverlay"
+  on:click={() => {
+    dispatch('close')
+  }}
+/>
 <div class="antiDialogs antiComponent">
   <div class="ac-header short mirror divide">
     <div class="ac-header__wrap-description">
@@ -89,12 +104,20 @@
         <div class="ac-header__icon"><Icon icon={task.icon.ManageStatuses} size={'small'} /></div>
         <span class="ac-header__title">
           <Label label={task.string.ManageStatusesWithin} />
-          {#if spaceClassInstance}<Label label={spaceClassInstance?.label}/>{:else}...{/if}
+          {#if spaceClassInstance}<Label label={spaceClassInstance?.label} />{:else}...{/if}
         </span>
       </div>
-      {#if spaceInstance?.name }<span class="ac-header__description">{spaceInstance?.name}</span>{/if}
+      {#if spaceInstance?.name}<span class="ac-header__description">{spaceInstance?.name}</span>{/if}
     </div>
-    <div class="tool"><ActionIcon icon={IconClose} size={'small'} action={() => { dispatch('close') }} /></div>
+    <div class="tool">
+      <ActionIcon
+        icon={IconClose}
+        size={'small'}
+        action={() => {
+          dispatch('close')
+        }}
+      />
+    </div>
   </div>
   <div class="p-10 flex-grow">
     <ScrollBox vertical stretch>

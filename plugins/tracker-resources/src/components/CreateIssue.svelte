@@ -19,7 +19,15 @@
   import presentation, { getClient, UserBox, Card, createQuery } from '@anticrm/presentation'
   import { Issue, IssuePriority, IssueStatus, Team, calcRank } from '@anticrm/tracker'
   import { StyledTextBox } from '@anticrm/text-editor'
-  import { EditBox, Button, showPopup, DatePresenter, SelectPopup, IconAttachment, eventToHTMLElement } from '@anticrm/ui'
+  import {
+    EditBox,
+    Button,
+    showPopup,
+    DatePresenter,
+    SelectPopup,
+    IconAttachment,
+    eventToHTMLElement
+  } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../plugin'
   import StatusSelector from './StatusSelector.svelte'
@@ -27,7 +35,7 @@
 
   export let space: Ref<Team>
   export let parent: Ref<Issue> | undefined
-  export let issueStatus: Ref<IssueStatus> | undefined = undefined
+  export let status: Ref<IssueStatus> | undefined = undefined
   export let priority: IssuePriority = IssuePriority.NoPriority
   export let assignee: Ref<Employee> | null = null
 
@@ -53,17 +61,22 @@
 
   $: _space = space
   $: _parent = parent
-  $: updateIssueStatusId(space, issueStatus)
-  $: statusesQuery.query(tracker.class.IssueStatus, { attachedTo: space }, (statuses) => {
-    issueStatuses = statuses
-  }, {
-    lookup: { category: tracker.class.IssueStatusCategory },
-    sort: { rank: SortingOrder.Ascending }
-  })
+  $: updateIssueStatusId(space, status)
+  $: statusesQuery.query(
+    tracker.class.IssueStatus,
+    { attachedTo: space },
+    (statuses) => {
+      issueStatuses = statuses
+    },
+    {
+      lookup: { category: tracker.class.IssueStatusCategory },
+      sort: { rank: SortingOrder.Ascending }
+    }
+  )
 
-  async function updateIssueStatusId (teamId: Ref<Team>, status?: Ref<IssueStatus>) {
-    if (status !== undefined) {
-      object.status = status
+  async function updateIssueStatusId (teamId: Ref<Team>, issueStatusId?: Ref<IssueStatus>) {
+    if (issueStatusId !== undefined) {
+      object.status = issueStatusId
       return
     }
 

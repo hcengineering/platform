@@ -20,7 +20,12 @@ import serverCore, { ObjectDDParticipant } from '@anticrm/server-core'
 import serverCalendar from '@anticrm/server-calendar'
 
 export function createModel (builder: Builder): void {
-  builder.mixin<Class<Doc>, ObjectDDParticipant>(core.class.Doc, core.class.Class, serverCore.mixin.ObjectDDParticipant, {
-    collectDocs: serverCalendar.function.FindReminders
-  })
+  builder.mixin<Class<Doc>, ObjectDDParticipant>(
+    core.class.Doc,
+    core.class.Class,
+    serverCore.mixin.ObjectDDParticipant,
+    {
+      collectDocs: serverCalendar.function.FindReminders
+    }
+  )
 }

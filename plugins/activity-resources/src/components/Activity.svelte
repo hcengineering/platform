@@ -23,7 +23,7 @@
   import TxView from './TxView.svelte'
 
   export let object: Doc
-  export let fullSize: boolean = false
+  export let integrate: boolean = false
   export let showCommenInput: boolean = true
   export let transparent: boolean = false
 
@@ -41,7 +41,7 @@
   $: descriptors.query(activity.class.TxViewlet, {}, (result) => {
     viewlets = new Map(result.map((r) => [activityKey(r.objectClass, r.txClass), r]))
 
-    editable = new Map(result.map(it => [it.objectClass, it.editable ?? false]))
+    editable = new Map(result.map((it) => [it.objectClass, it.editable ?? false]))
   })
 
   $: activityQuery.update(
@@ -52,10 +52,9 @@
     SortingOrder.Descending,
     editable
   )
-
 </script>
 
-{#if fullSize || transparent}
+{#if !integrate || transparent}
   {#if transparent !== undefined && !transparent}
     <div class="ac-header short mirror-tool highlight">
       <div class="ac-header__wrap-title">
@@ -64,16 +63,13 @@
       </div>
     </div>
   {/if}
-  <div class="flex-col h-full min-h-0" class:background-accent-bg-color={!transparent}>
+  <div class="flex-col flex-grow min-h-0" class:background-accent-bg-color={!transparent}>
     <Scroller>
       <div class="p-10 select-text">
         {#if txes}
           <Grid column={1} rowGap={1.5}>
             {#each txes as tx (tx.tx._id)}
-              <TxView
-                {tx}
-                {viewlets}
-              />
+              <TxView {tx} {viewlets} />
             {/each}
           </Grid>
         {/if}
@@ -87,32 +83,30 @@
   </div>
 {:else}
   <Scroller>
-    <div class="p-10">
+    <div class="p-10 bottom-highlight-select">
       <slot />
     </div>
-    <div class="scroller-back">
-      <div class="ac-header short mirror-tool">
-        <div class="ac-header__wrap-title">
-          <div class="flex-center icon"><IconActivity size={'small'} /></div>
-          <span class="ac-header__title"><Label label={activity.string.Activity} /></span>
-        </div>
+    <div class="ac-header short mirror-tool mt-2">
+      <div class="ac-header__wrap-title">
+        <div class="flex-center icon"><IconActivity size={'small'} /></div>
+        <span class="ac-header__title"><Label label={activity.string.Activity} /></span>
       </div>
-      <div class="p-activity">
-        {#if txes}
-          <Grid column={1} rowGap={1.5}>
-            {#each txes as tx}
-              <TxView {tx} {viewlets} />
-            {/each}
-          </Grid>
-        {/if}
+    </div>
+    {#if showCommenInput}
+      <div class="ref-input">
+        <Component is={chunter.component.CommentInput} props={{ object }} />
       </div>
+    {/if}
+    <div class="p-activity">
+      {#if txes}
+        <Grid column={1} rowGap={1.5}>
+          {#each txes as tx}
+            <TxView {tx} {viewlets} />
+          {/each}
+        </Grid>
+      {/if}
     </div>
   </Scroller>
-  {#if showCommenInput}
-    <div class="ref-input">
-      <Component is={chunter.component.CommentInput} props={{ object }} />
-    </div>
-  {/if}
 {/if}
 
 <style lang="scss">
@@ -120,8 +114,8 @@
     margin-right: 1rem;
     width: 2.25rem;
     height: 2.25rem;
-    color: var(--primary-button-color);
-    background-color: var(--primary-button-enabled);
+    color: var(--white-color);
+    background-color: var(--primary-bg-color);
     border-radius: 50%;
   }
   .ref-input {
@@ -129,10 +123,7 @@
     padding: 1.5rem 2.5rem;
   }
   .p-activity {
-    padding: 1.5rem 2.5rem 2.5rem;
-  }
-  .scroller-back {
-    background-color: var(--body-accent);
+    padding: 1.5rem 2.5rem;
   }
 
   :global(.grid .msgactivity-container:last-child::after) {

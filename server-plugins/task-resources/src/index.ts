@@ -56,14 +56,26 @@ export async function OnTaskCreate (tx: Tx, control: TriggerControl): Promise<Tx
   const doc = TxProcessor.createDoc2Doc(createTx)
   const txes: Tx[] = []
 
-  const mainTx = await getUpdateLastViewTx(control.findAll, doc._id, doc._class, createTx.modifiedOn, createTx.modifiedBy)
+  const mainTx = await getUpdateLastViewTx(
+    control.findAll,
+    doc._id,
+    doc._class,
+    createTx.modifiedOn,
+    createTx.modifiedBy
+  )
   if (mainTx !== undefined) {
     txes.push(mainTx)
   }
   if (doc.assignee != null) {
     const assignee = (await control.modelDb.findAll(core.class.Account, { emoloyee: doc.assignee }, { limit: 1 }))[0]
     if (assignee !== undefined) {
-      const assigneeTx = await getUpdateLastViewTx(control.findAll, doc._id, doc._class, createTx.modifiedOn, assignee._id)
+      const assigneeTx = await getUpdateLastViewTx(
+        control.findAll,
+        doc._id,
+        doc._class,
+        createTx.modifiedOn,
+        assignee._id
+      )
       if (assigneeTx !== undefined) {
         txes.push(assigneeTx)
       }
@@ -88,14 +100,28 @@ export async function OnTaskUpdate (tx: Tx, control: TriggerControl): Promise<Tx
   }
   const txes: Tx[] = []
 
-  const mainTx = await getUpdateLastViewTx(control.findAll, updateTx.objectId, updateTx.objectClass, updateTx.modifiedOn, updateTx.modifiedBy)
+  const mainTx = await getUpdateLastViewTx(
+    control.findAll,
+    updateTx.objectId,
+    updateTx.objectClass,
+    updateTx.modifiedOn,
+    updateTx.modifiedBy
+  )
   if (mainTx !== undefined) {
     txes.push(mainTx)
   }
   if (updateTx.operations.assignee != null) {
-    const assignee = (await control.modelDb.findAll(core.class.Account, { emoloyee: updateTx.operations.assignee }, { limit: 1 }))[0]
+    const assignee = (
+      await control.modelDb.findAll(core.class.Account, { emoloyee: updateTx.operations.assignee }, { limit: 1 })
+    )[0]
     if (assignee !== undefined) {
-      const assigneeTx = await getUpdateLastViewTx(control.findAll, updateTx.objectId, updateTx.objectClass, updateTx.modifiedOn, assignee._id)
+      const assigneeTx = await getUpdateLastViewTx(
+        control.findAll,
+        updateTx.objectId,
+        updateTx.objectClass,
+        updateTx.modifiedOn,
+        assignee._id
+      )
       if (assigneeTx !== undefined) {
         txes.push(assigneeTx)
       }

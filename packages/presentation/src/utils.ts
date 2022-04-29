@@ -15,18 +15,33 @@
 //
 
 import core, {
-  AnyAttribute, ArrOf, AttachedDoc, Class, Client, Collection, Doc, DocumentQuery,
-  FindOptions, FindResult, getCurrentAccount, Ref, RefTo, Tx, TxOperations, TxResult
+  AnyAttribute,
+  ArrOf,
+  AttachedDoc,
+  Class,
+  Client,
+  Collection,
+  Doc,
+  DocumentQuery,
+  FindOptions,
+  FindResult,
+  getCurrentAccount,
+  Ref,
+  RefTo,
+  Tx,
+  TxOperations,
+  TxResult
 } from '@anticrm/core'
 import login from '@anticrm/login'
 import { getMetadata } from '@anticrm/platform'
 import { LiveQuery as LQ } from '@anticrm/query'
 import { onDestroy } from 'svelte'
+import { deepEqual } from 'fast-equals'
 
 let liveQuery: LQ
 let client: TxOperations
 
-const txListeners: Array<((tx: Tx) => void)> = []
+const txListeners: Array<(tx: Tx) => void> = []
 
 export function addTxListener (l: (tx: Tx) => void): void {
   txListeners.push(l)
@@ -52,11 +67,15 @@ export function setClient (_client: Client): void {
   _client.notify = (tx: Tx) => {
     liveQuery.tx(tx).catch((err) => console.log(err))
 
-    txListeners.forEach(it => it(tx))
+    txListeners.forEach((it) => it(tx))
   }
 }
 
 export class LiveQuery {
+  private oldClass: Ref<Class<Doc>> | undefined
+  private oldQuery: DocumentQuery<Doc> | undefined
+  private oldOptions: FindOptions<Doc> | undefined
+  private oldCallback: ((result: FindResult<any>) => void) | undefined
   unsubscribe = () => {}
 
   constructor () {
@@ -71,13 +90,34 @@ export class LiveQuery {
     query: DocumentQuery<T>,
     callback: (result: FindResult<T>) => void,
     options?: FindOptions<T>
-  ): void {
+  ): boolean {
+    if (!this.needUpdate(_class, query, callback, options)) {
+      return false
+    }
+    this.oldCallback = callback
+    this.oldClass = _class
+    this.oldOptions = options
+    this.oldQuery = query
     this.unsubscribe()
     const unsub = liveQuery.query(_class, query, callback, options)
     this.unsubscribe = () => {
       unsub()
       this.unsubscribe = () => {}
     }
+    return true
+  }
+
+  private needUpdate<T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    callback: (result: FindResult<T>) => void,
+    options?: FindOptions<T>
+  ): boolean {
+    if (!deepEqual(_class, this.oldClass)) return true
+    if (!deepEqual(query, this.oldQuery)) return true
+    if (!deepEqual(callback.toString(), this.oldCallback?.toString())) return true
+    if (!deepEqual(options, this.oldOptions)) return true
+    return false
   }
 }
 

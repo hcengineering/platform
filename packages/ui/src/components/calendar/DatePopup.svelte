@@ -25,7 +25,7 @@
 
   const dispatch = createEventDispatcher()
 
-  let popupCaption: IntlString = currentDate != null ? ui.string.EditDueDate : ui.string.AddDueDate
+  const popupCaption: IntlString = currentDate != null ? ui.string.EditDueDate : ui.string.AddDueDate
   type TEdits = 'day' | 'month' | 'year' | 'hour' | 'min'
   interface IEdits {
     id: TEdits
@@ -37,18 +37,25 @@
   const today: Date = new Date(Date.now())
   let selected: TEdits | null = 'day'
   let startTyping: boolean = false
-  let edits: IEdits[] = editsType.map(edit => { return { id: edit, value: -1 } })
+  let edits: IEdits[] = editsType.map((edit) => {
+    return { id: edit, value: -1 }
+  })
   let viewDate: Date = currentDate ?? today
   let viewDateSec: Date
 
   const getValue = (date: Date | null | undefined, id: TEdits): number => {
-    if (date == undefined) date = today
+    if (date == null) date = today
     switch (id) {
-      case 'day': return date.getDate()
-      case 'month': return date.getMonth() + 1
-      case 'year': return date.getFullYear()
-      case 'hour': return date.getHours()
-      case 'min': return date.getMinutes()
+      case 'day':
+        return date.getDate()
+      case 'month':
+        return date.getMonth() + 1
+      case 'year':
+        return date.getFullYear()
+      case 'hour':
+        return date.getHours()
+      case 'min':
+        return date.getMinutes()
     }
   }
   const setValue = (val: number, date: Date, id: TEdits): Date => {
@@ -73,22 +80,27 @@
   }
   const getMaxValue = (date: Date, id: TEdits): number => {
     switch (id) {
-      case 'day': return daysInMonth(date)
-      case 'month': return 12
-      case 'year': return 3000
-      case 'hour': return 23
-      case 'min': return 59
+      case 'day':
+        return daysInMonth(date)
+      case 'month':
+        return 12
+      case 'year':
+        return 3000
+      case 'hour':
+        return 23
+      case 'min':
+        return 59
     }
   }
 
   const dateToEdits = (): void => {
-    edits.forEach(edit => {
+    edits.forEach((edit) => {
       edit.value = getValue(currentDate, edit.id)
     })
     edits = edits
   }
   const clearEdits = (): void => {
-    edits.forEach(edit => edit.value = -1)
+    edits.forEach((edit) => (edit.value = -1))
     if (edits[0].el) edits[0].el.focus()
   }
   const fixEdits = (): void => {
@@ -161,11 +173,9 @@
         edits[index].value = -1
         startTyping = true
       }
-      if (ev.code === 'ArrowUp' || ev.code === 'ArrowDown' && edits[index].el) {
+      if (ev.code === 'ArrowUp' || (ev.code === 'ArrowDown' && edits[index].el)) {
         if (edits[index].value !== -1) {
-          let val = (ev.code === 'ArrowUp')
-                  ? edits[index].value + 1
-                  : edits[index].value - 1
+          const val = ev.code === 'ArrowUp' ? edits[index].value + 1 : edits[index].value - 1
           if (currentDate) {
             currentDate = setValue(val, currentDate, ed)
             dateToEdits()
@@ -188,14 +198,14 @@
     startTyping = true
   }
   const updateDate = (date: Date | null): void => {
-    if (date != undefined) {
+    if (date) {
       currentDate = date
       dateToEdits()
       closeDP()
     }
   }
   const navigateMonth = (result: any): void => {
-    if (result != undefined) {
+    if (result) {
       if (result.charAt(1) === 'm') viewDate.setMonth(viewDate.getMonth() + (result === '-m' ? -1 : 1))
       viewDate = viewDate
     }
@@ -204,19 +214,25 @@
     return new Date(date.getFullYear(), date.getMonth() + (up ? 1 : -1), date.getDate())
   }
 
-  if (currentDate != undefined) dateToEdits()
+  if (currentDate) dateToEdits()
   $: if (selected && edits[getIndex(selected)].el) edits[getIndex(selected)].el?.focus()
   $: if (viewDate) viewDateSec = changeMonth(viewDate, true)
 
   afterUpdate(() => {
-    if (selected != undefined) edits[getIndex(selected)].el?.focus()
+    if (selected) edits[getIndex(selected)].el?.focus()
   })
 </script>
 
 <div class="date-popup-container">
   <div class="header">
     <span class="fs-title overflow-label"><Label label={popupCaption} /></span>
-    <ActionIcon icon={IconClose} size={'small'} action={() => { dispatch('close') }} />
+    <ActionIcon
+      icon={IconClose}
+      size={'small'}
+      action={() => {
+        dispatch('close')
+      }}
+    />
   </div>
   <div class="content">
     <div class="label">
@@ -227,53 +243,68 @@
 
     <div class="datetime-input">
       <div class="flex-row-center">
-        <span bind:this={edits[0].el} class="digit" tabindex="0"
+        <span
+          bind:this={edits[0].el}
+          class="digit"
+          tabindex="0"
           on:keydown={(ev) => keyDown(ev, edits[0].id)}
           on:focus={() => focused(edits[0].id)}
-          on:blur={() => selected = null}
+          on:blur={() => (selected = null)}
         >
-          {#if (edits[0].value > -1)}
+          {#if edits[0].value > -1}
             {edits[0].value.toString().padStart(2, '0')}
           {:else}ДД{/if}
         </span>
         <span class="separator">.</span>
-        <span bind:this={edits[1].el} class="digit" tabindex="0"
+        <span
+          bind:this={edits[1].el}
+          class="digit"
+          tabindex="0"
           on:keydown={(ev) => keyDown(ev, edits[1].id)}
           on:focus={() => focused(edits[1].id)}
-          on:blur={() => selected = null}
+          on:blur={() => (selected = null)}
         >
-          {#if (edits[1].value > -1)}
+          {#if edits[1].value > -1}
             {edits[1].value.toString().padStart(2, '0')}
           {:else}ММ{/if}
         </span>
         <span class="separator">.</span>
-        <span bind:this={edits[2].el} class="digit" tabindex="0"
+        <span
+          bind:this={edits[2].el}
+          class="digit"
+          tabindex="0"
           on:keydown={(ev) => keyDown(ev, edits[2].id)}
           on:focus={() => focused(edits[2].id)}
-          on:blur={() => selected = null}
+          on:blur={() => (selected = null)}
         >
-          {#if (edits[2].value > -1)}
+          {#if edits[2].value > -1}
             {edits[2].value.toString().padStart(4, '0')}
           {:else}ГГГГ{/if}
         </span>
         {#if withTime}
           <div class="time-divider" />
-          <span bind:this={edits[3].el} class="digit" tabindex="0"
+          <span
+            bind:this={edits[3].el}
+            class="digit"
+            tabindex="0"
             on:keydown={(ev) => keyDown(ev, edits[3].id)}
             on:focus={() => focused(edits[3].id)}
-            on:blur={() => selected = null}
+            on:blur={() => (selected = null)}
           >
-            {#if (edits[3].value > -1)}
+            {#if edits[3].value > -1}
               {edits[3].value.toString().padStart(2, '0')}
             {:else}ЧЧ{/if}
           </span>
           <span class="separator">:</span>
-          <span bind:this={edits[4].el} class="digit" tabindex="0"
+          <span
+            bind:this={edits[4].el}
+            class="digit"
+            tabindex="0"
             on:keydown={(ev) => keyDown(ev, edits[4].id)}
             on:focus={() => focused(edits[4].id)}
-            on:blur={() => selected = null}
+            on:blur={() => (selected = null)}
           >
-            {#if (edits[4].value > -1)}
+            {#if edits[4].value > -1}
               {edits[4].value.toString().padStart(2, '0')}
             {:else}ММ{/if}
           </span>
@@ -281,14 +312,15 @@
       </div>
       {#if currentDate}
         <div
-          class="close-btn" tabindex="0"
+          class="close-btn"
+          tabindex="0"
           on:click={() => {
             selected = 'day'
             startTyping = true
             currentDate = null
             clearEdits()
           }}
-          on:blur={() => selected = null}
+          on:blur={() => (selected = null)}
         >
           <Icon icon={IconClose} size={'x-small'} />
         </div>
@@ -297,7 +329,7 @@
 
     <div class="month-group">
       <MonthSquare
-        bind:currentDate={currentDate}
+        bind:currentDate
         {viewDate}
         {mondayStart}
         viewUpdate={false}
@@ -305,7 +337,7 @@
         on:update={(result) => updateDate(result.detail)}
       />
       <MonthSquare
-        bind:currentDate={currentDate}
+        bind:currentDate
         viewDate={viewDateSec}
         {mondayStart}
         viewUpdate={false}
@@ -331,7 +363,7 @@
     color: var(--theme-caption-color);
     background: var(--board-card-bg-color);
     border: 1px solid var(--divider-color);
-    border-radius: .5rem;
+    border-radius: 0.5rem;
     box-shadow: var(--card-shadow);
 
     .header {
@@ -351,8 +383,8 @@
 
       .label {
         padding-left: 2px;
-        margin-bottom: .25rem;
-        font-size: .8125rem;
+        margin-bottom: 0.25rem;
+        font-size: 0.8125rem;
         color: var(--content-color);
 
         .bold {
@@ -360,7 +392,7 @@
           color: var(--accent-color);
         }
         .divider {
-          margin: 0 .25rem;
+          margin: 0 0.25rem;
           line-height: 1.4375rem;
           color: var(--dark-color);
         }
@@ -369,7 +401,7 @@
       .month-group {
         display: flex;
         flex-wrap: nowrap;
-        margin: .5rem -.5rem 0;
+        margin: 0.5rem -0.5rem 0;
       }
     }
 
@@ -385,17 +417,19 @@
     align-items: center;
     flex-shrink: 0;
     margin: 0;
-    padding: .75rem;
+    padding: 0.75rem;
     height: 3rem;
     font-family: inherit;
     font-size: 1rem;
     color: var(--content-color);
     background-color: var(--body-color);
     border: 1px solid var(--button-border-color);
-    border-radius: .25rem;
-    transition: border-color .15s ease;
+    border-radius: 0.25rem;
+    transition: border-color 0.15s ease;
 
-    &:hover { border-color: var(--button-border-hover); }
+    &:hover {
+      border-color: var(--button-border-hover);
+    }
     &:focus-within {
       color: var(--caption-color);
       border-color: var(--primary-edit-border-color);
@@ -405,9 +439,9 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      margin: 0 .25rem;
-      width: .75rem;
-      height: .75rem;
+      margin: 0 0.25rem;
+      width: 0.75rem;
+      height: 0.75rem;
       color: var(--content-color);
       background-color: var(--button-bg-color);
       outline: none;
@@ -422,14 +456,16 @@
 
     .digit {
       position: relative;
-      padding: 0 .125rem;
+      padding: 0 0.125rem;
       height: 1.5rem;
       line-height: 1.5rem;
       color: var(--accent-color);
       outline: none;
-      border-radius: .125rem;
+      border-radius: 0.125rem;
 
-      &:focus { background-color: var(--primary-bg-color); }
+      &:focus {
+        background-color: var(--primary-bg-color);
+      }
       &::after {
         position: absolute;
         top: 0;
@@ -442,12 +478,14 @@
     }
     .time-divider {
       flex-shrink: 0;
-      margin: 0 .25rem;
+      margin: 0 0.25rem;
       width: 1px;
       min-width: 1px;
-      height: .75rem;
+      height: 0.75rem;
       background-color: var(--button-border-color);
     }
-    .separator { margin: 0 .1rem; }
+    .separator {
+      margin: 0 0.1rem;
+    }
   }
 </style>

@@ -8,7 +8,7 @@
 
   let isChecked = value?.isChecked
   const dispatch = createEventDispatcher()
-  const isOverdue = !!value?.dueDate && (new Date()).getTime() > value.dueDate
+  const isOverdue = !!value?.dueDate && new Date().getTime() > value.dueDate
 
   function check () {
     if (isChecked === undefined || !value) return
@@ -28,7 +28,13 @@
         {/if}
         {#if value.startDate && value.dueDate}-{/if}
         {#if value.dueDate}
-          <DatePresenter bind:value={value.dueDate} withTime={true} icon={isOverdue ? 'overdue' : undefined} {size} kind="transparent" />
+          <DatePresenter
+            bind:value={value.dueDate}
+            withTime={true}
+            icon={isOverdue ? 'overdue' : undefined}
+            {size}
+            kind="transparent"
+          />
         {/if}
       </div>
     </div>

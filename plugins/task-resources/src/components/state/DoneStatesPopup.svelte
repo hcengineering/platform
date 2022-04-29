@@ -47,14 +47,24 @@
   <div class="scroll">
     <div class="box">
       {#each states as state}
-        <button class="menu-item" on:click={() => { dispatch('close', state) }}>
+        <button
+          class="menu-item"
+          on:click={() => {
+            dispatch('close', state)
+          }}
+        >
           <div class="color" style="background-color: {getColor(state._class)}" />
           <span class="label">{state.title}</span>
         </button>
       {/each}
-      <button class="menu-item" on:click={() => { dispatch('close', null) }}>
+      <button
+        class="menu-item"
+        on:click={() => {
+          dispatch('close', null)
+        }}
+      >
         <div class="color background-card-divider" />
-        <Label label={task.string.NoDoneState}/>
+        <Label label={task.string.NoDoneState} />
       </button>
     </div>
   </div>
@@ -63,9 +73,9 @@
 <style lang="scss">
   .color {
     flex-shrink: 0;
-    margin-right: .75rem;
-    width: .5rem;
-    height: .5rem;
-    border-radius: .5rem;
+    margin-right: 0.75rem;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 0.5rem;
   }
 </style>

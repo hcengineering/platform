@@ -60,11 +60,11 @@
     }
   }
 
-  function selectSpace(id: Ref<Space>, spaceSpecial?: string) {
+  function selectSpace (id: Ref<Space>, spaceSpecial?: string) {
     dispatch('space', { space: id, spaceSpecial })
   }
 
-  async function getActions(space: Space): Promise<Action[]> {
+  async function getActions (space: Space): Promise<Action[]> {
     const result = [unStarSpace]
 
     const extraActions = await getContributedActions(client, space, core.class.Space)
@@ -85,7 +85,7 @@
   const lastViews = notificationClient.getLastViews()
   const hierarchy = client.getHierarchy()
 
-  function isChanged(space: Space, lastViews: Map<Ref<Doc>, number>): boolean {
+  function isChanged (space: Space, lastViews: Map<Ref<Doc>, number>): boolean {
     const clazz = hierarchy.getClass(space._class)
     const lastEditMixin = hierarchy.as(clazz, notification.mixin.SpaceLastEdit)
     const field = lastEditMixin?.lastEditField

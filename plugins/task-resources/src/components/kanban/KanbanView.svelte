@@ -21,7 +21,13 @@
   import type { Kanban, SpaceWithStates, State, Task } from '@anticrm/task'
   import task from '@anticrm/task'
   import { showPopup } from '@anticrm/ui'
-  import { ActionContext, focusStore, ListSelectionProvider, SelectDirection, selectionStore } from '@anticrm/view-resources'
+  import {
+    ActionContext,
+    focusStore,
+    ListSelectionProvider,
+    SelectDirection,
+    selectionStore
+  } from '@anticrm/view-resources'
   import Menu from '@anticrm/view-resources/src/components/Menu.svelte'
   import { onMount } from 'svelte'
   import KanbanDragDone from './KanbanDragDone.svelte'
@@ -67,22 +73,25 @@
 
   let kanbanUI: KanbanUI
   let objects: Doc[] = []
-  const listProvider = new ListSelectionProvider(
-    (offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
-      kanbanUI.select(offset, of, dir)
-    }
-  )
+  const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
+    kanbanUI.select(offset, of, dir)
+  })
   onMount(() => {
-    (document.activeElement as HTMLElement)?.blur()
+    ;(document.activeElement as HTMLElement)?.blur()
   })
 
   const showMenu = async (ev: MouseEvent, items: Doc[]): Promise<void> => {
     ev.preventDefault()
-    showPopup(Menu, { object: items, baseMenuClass }, {
-      getBoundingClientRect: () => DOMRect.fromRect({ width: 1, height: 1, x: ev.clientX, y: ev.clientY })
-    }, () => {
-      // selection = undefined
-    })
+    showPopup(
+      Menu,
+      { object: items, baseMenuClass },
+      {
+        getBoundingClientRect: () => DOMRect.fromRect({ width: 1, height: 1, x: ev.clientX, y: ev.clientY })
+      },
+      () => {
+        // selection = undefined
+      }
+    )
   }
 </script>
 

@@ -12,9 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
-  import type { Class, Doc, Ref,Space } from '@anticrm/core'
+  import type { Class, Doc, Ref, Space } from '@anticrm/core'
   import core, { WithLookup } from '@anticrm/core'
   import { IntlString } from '@anticrm/platform'
   import presentation, { createQuery, getClient } from '@anticrm/presentation'
@@ -41,7 +40,9 @@
 
   const prevSpaceId = spaceId
 
-  $: query.query(core.class.Space, { _id: spaceId }, result => { space = result[0] })
+  $: query.query(core.class.Space, { _id: spaceId }, (result) => {
+    space = result[0]
+  })
 
   function showCreateDialog (ev: Event) {
     showPopup(createItemDialog as AnyComponent, { space: spaceId }, 'top')
@@ -67,7 +68,6 @@
     showPanel(editor ?? plugin.component.SpacePanel, space._id, space._class, 'right')
   }
 
-
   function updateViewlets (viewlets: WithLookup<Viewlet>[]) {
     const index = viewlets.findIndex((p) => p.descriptor === viewlet?.descriptor)
     viewlet = index === -1 ? viewlets[0] : viewlets[index]
@@ -76,12 +76,23 @@
 
 <div class="ac-header divide full">
   {#if space}
-    <Header icon={classIcon(client, space._class)} label={space.name} description={space.description} on:click={onSpaceEdit} />
+    <Header
+      icon={classIcon(client, space._class)}
+      label={space.name}
+      description={space.description}
+      on:click={onSpaceEdit}
+    />
     {#if viewlets.length > 1}
       <div class="flex">
         {#each viewlets as v, i}
           <Tooltip label={v.$lookup?.descriptor?.label} direction={'top'}>
-            <button class="ac-header__icon-button" class:selected={viewlet?._id === v._id} on:click={() => { viewlet = v }}>
+            <button
+              class="ac-header__icon-button"
+              class:selected={viewlet?._id === v._id}
+              on:click={() => {
+                viewlet = v
+              }}
+            >
               {#if v.$lookup?.descriptor?.icon}
                 <Icon icon={v.$lookup?.descriptor?.icon} size={'small'} />
               {/if}
@@ -90,11 +101,14 @@
         {/each}
       </div>
     {/if}
-    <SearchEdit bind:value={search} on:change={() => {
-      dispatch('search', search)
-    }}/>
+    <SearchEdit
+      bind:value={search}
+      on:change={() => {
+        dispatch('search', search)
+      }}
+    />
     {#if createItemDialog}
-      <Button icon={IconAdd} label={createItemLabel} kind={'primary'} on:click={(ev) => showCreateDialog(ev)}/>
+      <Button icon={IconAdd} label={createItemLabel} kind={'primary'} on:click={(ev) => showCreateDialog(ev)} />
     {/if}
   {/if}
 </div>

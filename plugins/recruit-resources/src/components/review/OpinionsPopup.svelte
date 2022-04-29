@@ -13,24 +13,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
-
   import type { Review } from '@anticrm/recruit'
   import recruit from '@anticrm/recruit'
   import { Table } from '@anticrm/view-resources'
 
   export let value: Review
-
 </script>
 
-<Table 
+<Table
   _class={recruit.class.Opinion}
   config={['', 'value', 'description']}
-  options={
-    {
-    }
-  }
-  query={ { attachedTo: value._id } }
+  options={{}}
+  query={{ attachedTo: value._id }}
   loadingProps={{ length: value.opinions ?? 0 }}
 />

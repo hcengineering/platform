@@ -19,11 +19,6 @@ import { migrateOperations } from '@anticrm/model-all'
 import { connect } from './connection'
 import clientPlugin from '@anticrm/client'
 
-/*!
- * Anticrm Platform™ Client Dev Plugin
- * © 2020 Anticrm Platform Contributors. All Rights Reserved.
- * Licensed under the Eclipse Public License, Version 2.0
- */
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => {
   let client: Client

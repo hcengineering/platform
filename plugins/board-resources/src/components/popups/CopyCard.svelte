@@ -12,6 +12,7 @@
   import type { TxOperations } from '@anticrm/core'
   import { generateId, AttachedData } from '@anticrm/core'
   import task from '@anticrm/task'
+  import { createMissingLabels } from '../../utils/BoardUtils'
 
   export let object: Card
   export let client: TxOperations
@@ -28,7 +29,7 @@
     rank: object.rank
   }
 
-  async function copyCard(): Promise<void> {
+  async function copyCard (): Promise<void> {
     const newCardId = generateId() as Ref<Card>
 
     const sequence = await client.findOne(task.class.Sequence, { attachedTo: board.class.Card })
@@ -37,6 +38,9 @@
     }
 
     const incResult = await client.update(sequence, { $inc: { sequence: 1 } }, true)
+
+    const labels =
+      object.space !== selected.space ? await createMissingLabels(client, object, selected.space) : object.labels
 
     const value: AttachedData<Card> = {
       state: selected.state,
@@ -47,7 +51,8 @@
       assignee: null,
       description: '',
       members: [],
-      location: ''
+      location: '',
+      labels
     }
 
     await client.addCollection(
@@ -62,14 +67,14 @@
     dispatch('close')
   }
 
-  async function invokeValidate(
+  async function invokeValidate (
     action: Resource<<T extends Doc>(doc: T, client: Client) => Promise<Status>>
   ): Promise<Status> {
     const impl = await getResource(action)
     return await impl(object, client)
   }
 
-  async function validate(doc: Doc, _class: Ref<Class<Doc>>): Promise<void> {
+  async function validate (doc: Doc, _class: Ref<Class<Doc>>): Promise<void> {
     const clazz = hierarchy.getClass(_class)
     const validatorMixin = hierarchy.as(clazz, view.mixin.ObjectValidator)
     if (validatorMixin?.validator != null) {

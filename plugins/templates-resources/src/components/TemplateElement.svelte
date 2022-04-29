@@ -29,18 +29,23 @@
       showPopup(ContextMenu, { object }, ev.target as HTMLElement)
     }
   }
-
 </script>
 
 <div
-  class="flex-between ac-column__list-item" class:active={active}
+  class="flex-between ac-column__list-item"
+  class:active
   on:click|stopPropagation={() => {
     dispatch('click')
   }}
 >
   {label}
   {#if object}
-    <div class="hover-trans" on:click|stopPropagation={(ev) => { showMenu(ev, object) }}>
+    <div
+      class="hover-trans"
+      on:click|stopPropagation={(ev) => {
+        showMenu(ev, object)
+      }}
+    >
       <IconMoreH size={'medium'} />
     </div>
   {/if}

@@ -14,11 +14,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { formatName } from '@anticrm/contact'
-  import core, { Class, ClassifierKind, Doc, Hierarchy, Mixin, Obj, Ref } from '@anticrm/core'
+  import contact, { ChannelProvider, formatName } from '@anticrm/contact'
+  import core, { Class, ClassifierKind, Doc, getCurrentAccount, Hierarchy, Mixin, Obj, Ref, Space } from '@anticrm/core'
   import notification from '@anticrm/notification'
   import { Panel } from '@anticrm/panel'
-  import { Asset, getResource, translate } from '@anticrm/platform'
+  import { Asset, getResource, IntlString, translate } from '@anticrm/platform'
   import {
     AttributesBar,
     createQuery,
@@ -26,24 +26,25 @@
     getClient,
     KeyedAttribute
   } from '@anticrm/presentation'
-  import { AnyComponent, Component, Label, PopupAlignment } from '@anticrm/ui'
+  import setting, { IntegrationType } from '@anticrm/setting'
+  import { AnyComponent, Button, Component, IconActivity } from '@anticrm/ui'
+  import Tooltip from '@anticrm/ui/src/components/Tooltip.svelte'
   import view from '@anticrm/view'
   import { createEventDispatcher, onDestroy } from 'svelte'
-  import { getCollectionCounter, getMixinStyle } from '../utils'
+  import { getCollectionCounter } from '../utils'
   import ActionContext from './ActionContext.svelte'
   import UpDownNavigator from './UpDownNavigator.svelte'
 
   export let _id: Ref<Doc>
   export let _class: Ref<Class<Doc>>
   export let rightSection: AnyComponent | undefined = undefined
-  export let position: PopupAlignment | undefined = undefined
+  // export let position: PopupAlignment | undefined = undefined
 
   let lastId: Ref<Doc> = _id
   let lastClass: Ref<Class<Doc>> = _class
   let object: Doc
   let objectClass: Class<Doc>
   let parentClass: Ref<Class<Doc>>
-  let fullSize: boolean = true
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -79,7 +80,7 @@
   let prevSelected = selectedClass
 
   let keys: KeyedAttribute[] = []
-  let collectionEditors: {key: KeyedAttribute, editor: AnyComponent} [] = []
+  let collectionEditors: { key: KeyedAttribute; editor: AnyComponent }[] = []
 
   let mixins: Mixin<Doc>[] = []
 
@@ -118,15 +119,11 @@
   let ignoreMixins: Set<Ref<Mixin<Doc>>> = new Set<Ref<Mixin<Doc>>>()
 
   async function updateKeys (): Promise<void> {
-    const filtredKeys = getFiltredKeys(
-      selectedClass ?? object._class,
-      ignoreKeys,
-      selectedClass !== objectClass._id ? objectClass._id : undefined
-    )
+    const filtredKeys = getFiltredKeys(selectedClass ?? object._class, ignoreKeys)
     keys = collectionsFilter(filtredKeys, false)
 
     const collectionKeys = collectionsFilter(filtredKeys, true)
-    const editors: {key: KeyedAttribute, editor: AnyComponent}[] = []
+    const editors: { key: KeyedAttribute; editor: AnyComponent }[] = []
     for (const k of collectionKeys) {
       const editor = await getCollectionEditor(k)
       editors.push({ key: k, editor })
@@ -239,27 +236,81 @@
       headerLoading = false
     })
   }
+
+  const _update = (result: any): void => {
+    dispatch('update', result)
+  }
+  let panelWidth: number = 0
+  let innerWidth: number = 0
+
+  const accountId = getCurrentAccount()._id
+  let channelProviders: ChannelProvider[] | undefined
+  let currentProviders: ChannelProvider[] | undefined
+  let integrations: Set<Ref<IntegrationType>> = new Set<Ref<IntegrationType>>()
+  let displayedIntegrations:
+    | {
+        icon: Asset | undefined
+        label: IntlString
+        presenter: AnyComponent | undefined
+        value: string
+      }[]
+    | undefined = []
+
+  client.findAll(contact.class.ChannelProvider, {}).then((res) => {
+    channelProviders = res
+  })
+  const settingsQuery = createQuery()
+  $: settingsQuery.query(
+    setting.class.Integration,
+    { space: accountId as string as Ref<Space>, disabled: false },
+    (res) => {
+      integrations = new Set(res.map((p) => p.type))
+    }
+  )
+  const channelsQuery = createQuery()
+  $: _id &&
+    integrations &&
+    channelProviders &&
+    channelsQuery.query(contact.class.Channel, { attachedTo: _id }, (res) => {
+      const channels = res
+      currentProviders = channelProviders?.filter((provider) =>
+        provider.integrationType ? integrations.has(provider.integrationType as Ref<IntegrationType>) : false
+      )
+      displayedIntegrations = []
+      currentProviders?.forEach((provider) => {
+        displayedIntegrations?.push({
+          icon: provider.icon,
+          label: provider.label,
+          presenter: provider.presenter,
+          value: channels.filter((ch) => ch.provider === provider._id)[0].value
+        })
+      })
+    })
 </script>
-<ActionContext context={{
-  mode: 'editor'
-}}/>
+
+<ActionContext
+  context={{
+    mode: 'editor'
+  }}
+/>
 
 {#if object !== undefined && title !== undefined}
   <Panel
     {icon}
     {title}
     {rightSection}
-    {fullSize}
     {object}
-    {position}
+    bind:panelWidth
+    bind:innerWidth
+    on:update={(ev) => _update(ev.detail)}
     on:close={() => {
       dispatch('close')
     }}
   >
     <svelte:fragment slot="navigate-actions">
-      <UpDownNavigator element={object}/>
+      <UpDownNavigator element={object} />
     </svelte:fragment>
-    <div class="w-full" slot="subtitle">
+    <svelte:fragment slot="subtitle">
       {#if !headerLoading}
         {#if headerEditor !== undefined}
           <Component is={headerEditor} props={{ object, keys }} />
@@ -267,7 +318,45 @@
           <AttributesBar {object} {keys} />
         {/if}
       {/if}
-    </div>
+    </svelte:fragment>
+    <svelte:fragment slot="properties">
+      {#if !headerLoading}
+        <div class="p-4">
+          {#if headerEditor !== undefined}
+            <Component is={headerEditor} props={{ object, keys, vertical: true }} />
+          {:else}
+            <AttributesBar {object} {keys} vertical />
+          {/if}
+        </div>
+      {/if}
+    </svelte:fragment>
+    <svelte:fragment slot="actions">
+      {#if displayedIntegrations && displayedIntegrations.length > 0}
+        <div class="actions-divider" />
+        {#each displayedIntegrations as pr}
+          <Tooltip label={pr.label}>
+            <Button
+              icon={pr.icon}
+              size={'medium'}
+              kind={'transparent'}
+              highlight={rightSection === pr.presenter}
+              on:click={() => {
+                if (rightSection !== pr.presenter) rightSection = pr.presenter
+              }}
+            />
+          </Tooltip>
+        {/each}
+        <Button
+          icon={IconActivity}
+          size={'medium'}
+          kind={'transparent'}
+          highlight={!rightSection}
+          on:click={() => {
+            if (rightSection) rightSection = undefined
+          }}
+        />
+      {/if}
+    </svelte:fragment>
     <div class="main-editor">
       {#if mainEditor}
         <Component
@@ -280,36 +369,11 @@
             getMixins()
           }}
           on:click={(ev) => {
-            fullSize = true
             rightSection = ev.detail.presenter
           }}
         />
       {/if}
     </div>
-    {#if mixins.length > 0}
-      <div class="mixin-container">
-        <div
-          class="mixin-selector"
-          style={getMixinStyle(objectClass._id, selectedClass === objectClass._id)}
-          on:click={() => {
-            selectedClass = objectClass._id
-          }}
-        >
-          <Label label={objectClass.label} />
-        </div>
-        {#each mixins as mixin}
-          <div
-            class="mixin-selector"
-            style={getMixinStyle(mixin._id, selectedClass === mixin._id)}
-            on:click={() => {
-              selectedClass = mixin._id
-            }}
-          >
-            <Label label={mixin.label} />
-          </div>
-        {/each}
-      </div>
-    {/if}
     {#each collectionEditors as collection}
       {#if collection.editor}
         <div class="mt-14">
@@ -324,37 +388,24 @@
               [collection.key.key]: getCollectionCounter(hierarchy, object, collection.key)
             }}
           />
-          </div>
+        </div>
       {/if}
     {/each}
   </Panel>
 {/if}
+
 <style lang="scss">
   .main-editor {
     display: flex;
     justify-content: center;
     flex-direction: column;
   }
-  .mixin-container {
-    margin-top: 2rem;
-    display: flex;
-    .mixin-selector {
-      margin-left: 0.5rem;
-      cursor: pointer;
-      height: 1.5rem;
-      min-width: 5.25rem;
 
-      border-radius: 0.5rem;
-
-      font-weight: 500;
-      font-size: 0.625rem;
-
-      text-transform: uppercase;
-      color: var(--theme-caption-color);
-
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+  .actions-divider {
+    margin: 0 0.25rem;
+    min-width: 1px;
+    width: 1px;
+    height: 1.5rem;
+    background-color: var(--divider-color);
   }
 </style>

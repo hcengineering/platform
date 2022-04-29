@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import activity from '@anticrm/activity'
   import { Attachments } from '@anticrm/attachment-resources'
@@ -36,19 +35,25 @@
 
   const query = createQuery()
   const clazz = client.getHierarchy().getClass(recruit.class.ReviewCategory)
-  $: query.query(recruit.class.ReviewCategory, { _id }, result => { object = result[0] })
+  $: query.query(recruit.class.ReviewCategory, { _id }, (result) => {
+    object = result[0]
+  })
 
   const tabs: IntlString[] = ['General' as IntlString, 'Members' as IntlString, 'Activity' as IntlString]
   let selected = 0
   let textEditor: TextEditor
 
-  function onChange (key:string, value: any): void {
+  function onChange (key: string, value: any): void {
     client.updateDoc(object._class, object.space, object._id, { [key]: value })
   }
-
 </script>
 
-<div class="overlay" on:click={() => { dispatch('close') }}/>
+<div
+  class="overlay"
+  on:click={() => {
+    dispatch('close')
+  }}
+/>
 <div class="dialog-container">
   {#if object}
     <div class="flex-row-center header">
@@ -63,38 +68,78 @@
         </div>
         <div class="small-text">{object.description}</div>
       </div>
-      <div class="tool" on:click={() => { dispatch('close') }}><IconClose size={'small'} /></div>
+      <div
+        class="tool"
+        on:click={() => {
+          dispatch('close')
+        }}
+      >
+        <IconClose size={'small'} />
+      </div>
     </div>
     <div class="flex-row-center subtitle">
       <AttributesBar {object} keys={[]} />
     </div>
     <div class="flex-stretch tab-container">
       {#each tabs as tab, i}
-        <div class="flex-row-center tab" class:selected={i === selected}
-            on:click={() => { selected = i }}>
-          <Label label={tab}/>
+        <div
+          class="flex-row-center tab"
+          class:selected={i === selected}
+          on:click={() => {
+            selected = i
+          }}
+        >
+          <Label label={tab} />
         </div>
       {/each}
-      <div class="grow"/>
+      <div class="grow" />
     </div>
     <div class="scroll">
       <div class="flex-col box">
         {#if selected === 0}
           <Grid column={1} rowGap={1.5}>
-            <EditBox label={recruit.string.ReviewCategoryName} bind:value={object.name} placeholder={recruit.string.ReviewCategoryPlaceholder} maxWidth="39rem" focus on:change={() => { onChange('name', object.name) }}/>
-            <EditBox label={recruit.string.Description} bind:value={object.description} placeholder={recruit.string.ReviewCategoryDescription} maxWidth="39rem" focus on:change={() => { onChange('description', object.description) }}/>
+            <EditBox
+              label={recruit.string.ReviewCategoryName}
+              bind:value={object.name}
+              placeholder={recruit.string.ReviewCategoryPlaceholder}
+              maxWidth="39rem"
+              focus
+              on:change={() => {
+                onChange('name', object.name)
+              }}
+            />
+            <EditBox
+              label={recruit.string.Description}
+              bind:value={object.description}
+              placeholder={recruit.string.ReviewCategoryDescription}
+              maxWidth="39rem"
+              focus
+              on:change={() => {
+                onChange('description', object.description)
+              }}
+            />
           </Grid>
           <div class="mt-10">
             <span class="title">Description</span>
             <div class="description-container">
-              <TextEditor bind:this={textEditor} bind:content={object.fullDescription} on:blur={textEditor.submit} on:content={() => { onChange('fullDescription', object.fullDescription) }} />
+              <TextEditor
+                bind:this={textEditor}
+                bind:content={object.fullDescription}
+                on:blur={textEditor.submit}
+                on:content={() => {
+                  onChange('fullDescription', object.fullDescription)
+                }}
+              />
             </div>
           </div>
           <div class="mt-14">
             <Attachments objectId={object._id} _class={object._class} space={object.space} />
           </div>
         {:else if selected === 1}
-          <ToggleWithLabel label={recruit.string.ThisReviewCategoryIsPrivate} description={recruit.string.MakePrivateDescription}/>
+          <ToggleWithLabel
+            label={recruit.string.ThisReviewCategoryIsPrivate}
+            description={recruit.string.MakePrivateDescription}
+          />
         {:else if selected === 2}
           <Component is={activity.component.Activity} props={{ object, transparent: true }} />
         {/if}
@@ -125,10 +170,12 @@
       border-bottom: 1px solid var(--theme-dialog-divider);
 
       .tool {
-        margin-left: .75rem;
+        margin-left: 0.75rem;
         color: var(--theme-content-accent-color);
         cursor: pointer;
-        &:hover { color: var(--theme-caption-color); }
+        &:hover {
+          color: var(--theme-caption-color);
+        }
       }
     }
 
@@ -155,8 +202,8 @@
       user-select: none;
 
       &.selected {
-        border-top: .125rem solid transparent;
-        border-bottom: .125rem solid var(--theme-caption-color);
+        border-top: 0.125rem solid transparent;
+        border-bottom: 0.125rem solid var(--theme-caption-color);
         color: var(--theme-caption-color);
         cursor: default;
       }
@@ -175,7 +222,7 @@
     overflow-x: hidden;
     overflow-y: auto;
     margin: 1rem 2rem;
-    padding: 1.5rem .5rem;
+    padding: 1.5rem 0.5rem;
     height: 100%;
 
     .box {
@@ -191,11 +238,11 @@
     width: 100%;
     height: 100%;
     background-color: #000;
-    opacity: .5;
+    opacity: 0.5;
   }
 
   .title {
-    margin-right: .75rem;
+    margin-right: 0.75rem;
     font-weight: 500;
     font-size: 1.25rem;
     color: var(--theme-caption-color);
@@ -211,7 +258,7 @@
     border: 1px solid var(--theme-bg-accent-color);
     border-top: 20px solid transparent;
     border-bottom: 20px solid transparent;
-    border-radius: .75rem;
+    border-radius: 0.75rem;
     margin-top: 1.5rem;
   }
 </style>

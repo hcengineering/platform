@@ -51,7 +51,6 @@
   <UserBoxList
     _class={contact.class.Employee}
     label={chunter.string.Members}
-    noItems={chunter.string.NoMembers}
     on:update={(evt) => (employeeIds = evt.detail)}
   />
 </SpaceCreateCard>

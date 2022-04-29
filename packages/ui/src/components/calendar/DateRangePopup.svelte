@@ -21,21 +21,25 @@
 
   const today: Date = new Date(Date.now())
   $: currentDate = $dpstore.currentDate ?? today
-  let mondayStart: boolean = true
+  const mondayStart: boolean = true
 </script>
 
 <div class="month-popup-container">
-  <Month bind:currentDate={currentDate} {mondayStart} on:update={(result) => {
-    if (result.detail !== undefined) {
-      dispatch('close', result.detail)
-    }
-  }} />
+  <Month
+    bind:currentDate
+    {mondayStart}
+    on:update={(result) => {
+      if (result.detail !== undefined) {
+        dispatch('close', result.detail)
+      }
+    }}
+  />
 </div>
 
 <style lang="scss">
   .month-popup-container {
     background: var(--popup-bg-color);
-    border-radius: .5rem;
+    border-radius: 0.5rem;
     box-shadow: var(--popup-shadow);
   }
 </style>

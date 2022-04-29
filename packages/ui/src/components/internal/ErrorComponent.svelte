@@ -12,27 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script>
   export let error = null
-  </script>
-  <style>
-    .error {
-      border: 1px solid red;
-    
-    }
-    .trace {
-      font-family: monospace;
-    }
-  </style>
-  <slot>
-    {#if error}
+</script>
+
+<slot>
+  {#if error}
     <div class="error">
       <b>{error.message}</b>
       <pre class="trace">
         {error.stack}
       </pre>
     </div>
-    {/if}
-    
-  </slot>
+  {/if}
+</slot>
+
+<style>
+  .error {
+    border: 1px solid red;
+  }
+  .trace {
+    font-family: monospace;
+  }
+</style>

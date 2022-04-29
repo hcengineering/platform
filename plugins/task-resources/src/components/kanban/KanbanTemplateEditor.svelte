@@ -37,24 +37,44 @@
   const hierarchy = client.getHierarchy()
 
   const statesQ = createQuery()
-  $: statesQ.query(task.class.StateTemplate, { attachedTo: kanban._id }, result => { states = result }, {
-    sort: {
-      rank: SortingOrder.Ascending
+  $: statesQ.query(
+    task.class.StateTemplate,
+    { attachedTo: kanban._id },
+    (result) => {
+      states = result
+    },
+    {
+      sort: {
+        rank: SortingOrder.Ascending
+      }
     }
-  })
+  )
 
   const doneStatesQ = createQuery()
-  $: doneStatesQ.query(task.class.DoneStateTemplate, { attachedTo: kanban._id }, (result) => { doneStates = result }, {
-    sort: {
-      rank: SortingOrder.Ascending
+  $: doneStatesQ.query(
+    task.class.DoneStateTemplate,
+    { attachedTo: kanban._id },
+    (result) => {
+      doneStates = result
+    },
+    {
+      sort: {
+        rank: SortingOrder.Ascending
+      }
     }
-  })
+  )
 
   let space: Space | undefined
   const spaceQ = createQuery()
-  $: spaceQ.query(core.class.Space, { _id: kanban.space }, (result) => { space = result[0] })
+  $: spaceQ.query(core.class.Space, { _id: kanban.space }, (result) => {
+    space = result[0]
+  })
 
-  async function onMove ({ detail: { stateID, position } }: { detail: { stateID: Ref<StateTemplate>, position: number } }) {
+  async function onMove ({
+    detail: { stateID, position }
+  }: {
+    detail: { stateID: Ref<StateTemplate>; position: number }
+  }) {
     const [prev, next] = [states[position - 1], states[position + 1]]
     const state = states.find((x) => x._id === stateID)
 
@@ -62,14 +82,9 @@
       return
     }
 
-    await client.updateDoc(
-      state._class,
-      state.space,
-      state._id,
-      {
-        rank: calcRank(prev, next)
-      }
-    )
+    await client.updateDoc(state._class, state.space, state._id, {
+      rank: calcRank(prev, next)
+    })
   }
 
   async function onAdd (_class: Ref<Class<State | DoneState>>) {
@@ -81,35 +96,20 @@
 
     if (hierarchy.isDerived(_class, task.class.DoneState)) {
       const targetClass = _class === task.class.WonState ? task.class.WonStateTemplate : task.class.LostStateTemplate
-      await client.addCollection(
-        targetClass,
-        kanban.space,
-        kanban._id,
-        kanban._class,
-        'doneStatesC',
-        {
-          title: 'New Done State',
-          rank: calcRank(lastOne, undefined)
-        }
-      )
+      await client.addCollection(targetClass, kanban.space, kanban._id, kanban._class, 'doneStatesC', {
+        title: 'New Done State',
+        rank: calcRank(lastOne, undefined)
+      })
     } else {
-      await client.addCollection( 
-        task.class.StateTemplate,
-        kanban.space,
-        kanban._id,
-        kanban._class,
-        'statesC',
-        {
-          title: 'New State',
-          color: 9,
-          rank: calcRank(lastOne, undefined)
-        }
-      )
+      await client.addCollection(task.class.StateTemplate, kanban.space, kanban._id, kanban._class, 'statesC', {
+        title: 'New State',
+        color: 9,
+        rank: calcRank(lastOne, undefined)
+      })
     }
-
   }
 
-  function onDelete ({ detail: { state } }: { detail: { state: State | DoneState }}) {
+  function onDelete ({ detail: { state } }: { detail: { state: State | DoneState } }) {
     if (space === undefined) {
       return
     }
@@ -118,4 +118,13 @@
   }
 </script>
 
-<StatesEditor {states} {wonStates} {lostStates} on:add={(e) => { onAdd(e.detail) }} on:delete={onDelete} on:move={onMove}/>
+<StatesEditor
+  {states}
+  {wonStates}
+  {lostStates}
+  on:add={(e) => {
+    onAdd(e.detail)
+  }}
+  on:delete={onDelete}
+  on:move={onMove}
+/>

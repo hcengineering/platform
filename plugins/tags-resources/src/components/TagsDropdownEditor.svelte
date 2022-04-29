@@ -58,11 +58,11 @@
         keyLabel
       },
       evt.target as HTMLElement,
-      () => { },
+      () => {},
       (result) => {
-        if (result != undefined) {
+        if (result !== undefined) {
           if (result.action === 'add') addRef(result.tag)
-          else if (result.action === 'remove') removeTag(items.filter(it => it.tag === result.tag._id)[0]._id)
+          else if (result.action === 'remove') removeTag(items.filter((it) => it.tag === result.tag._id)[0]._id)
         }
       }
     )
@@ -78,7 +78,9 @@
     icon={tags.icon.Tags}
     label={items.length > 0 ? undefined : key.attr.label}
     width={width ?? 'min-content'}
-    {kind} {size} {justify}
+    {kind}
+    {size}
+    {justify}
     on:click={addTag}
   >
     <svelte:fragment slot="content">

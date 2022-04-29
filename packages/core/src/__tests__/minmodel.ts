@@ -89,31 +89,154 @@ export function genMinModel (): TxCUD<Doc>[] {
   const txes = []
   // Fill Tx'es with basic model classes.
   txes.push(createClass(core.class.Obj, { label: 'Obj' as IntlString, kind: ClassifierKind.CLASS }))
-  txes.push(createClass(core.class.Doc, { label: 'Doc' as IntlString, extends: core.class.Obj, kind: ClassifierKind.CLASS }))
-  txes.push(createClass(core.class.AttachedDoc, { label: 'AttachedDoc' as IntlString, extends: core.class.Doc, kind: ClassifierKind.MIXIN }))
-  txes.push(createClass(core.class.Class, { label: 'Class' as IntlString, extends: core.class.Doc, kind: ClassifierKind.CLASS, domain: DOMAIN_MODEL }))
-  txes.push(createClass(core.class.Interface, { label: 'Interface' as IntlString, extends: core.class.Doc, kind: ClassifierKind.CLASS }))
-  txes.push(createClass(core.class.Space, { label: 'Space' as IntlString, extends: core.class.Doc, kind: ClassifierKind.CLASS, domain: DOMAIN_MODEL }))
-  txes.push(createClass(core.class.Account, { label: 'Account' as IntlString, extends: core.class.Doc, kind: ClassifierKind.CLASS, domain: DOMAIN_MODEL }))
+  txes.push(
+    createClass(core.class.Doc, { label: 'Doc' as IntlString, extends: core.class.Obj, kind: ClassifierKind.CLASS })
+  )
+  txes.push(
+    createClass(core.class.AttachedDoc, {
+      label: 'AttachedDoc' as IntlString,
+      extends: core.class.Doc,
+      kind: ClassifierKind.MIXIN
+    })
+  )
+  txes.push(
+    createClass(core.class.Class, {
+      label: 'Class' as IntlString,
+      extends: core.class.Doc,
+      kind: ClassifierKind.CLASS,
+      domain: DOMAIN_MODEL
+    })
+  )
+  txes.push(
+    createClass(core.class.Interface, {
+      label: 'Interface' as IntlString,
+      extends: core.class.Doc,
+      kind: ClassifierKind.CLASS
+    })
+  )
+  txes.push(
+    createClass(core.class.Space, {
+      label: 'Space' as IntlString,
+      extends: core.class.Doc,
+      kind: ClassifierKind.CLASS,
+      domain: DOMAIN_MODEL
+    })
+  )
+  txes.push(
+    createClass(core.class.Account, {
+      label: 'Account' as IntlString,
+      extends: core.class.Doc,
+      kind: ClassifierKind.CLASS,
+      domain: DOMAIN_MODEL
+    })
+  )
 
-  txes.push(createInterface(test.interface.WithState, { label: 'WithState' as IntlString, extends: [], kind: ClassifierKind.INTERFACE }))
+  txes.push(
+    createInterface(test.interface.WithState, {
+      label: 'WithState' as IntlString,
+      extends: [],
+      kind: ClassifierKind.INTERFACE
+    })
+  )
 
-  txes.push(createClass(core.class.Tx, { label: 'Tx' as IntlString, extends: core.class.Doc, kind: ClassifierKind.CLASS, domain: DOMAIN_TX }))
-  txes.push(createClass(core.class.TxCUD, { label: 'TxCUD' as IntlString, extends: core.class.Tx, kind: ClassifierKind.CLASS, domain: DOMAIN_TX }))
-  txes.push(createClass(core.class.TxCreateDoc, { label: 'TxCreateDoc' as IntlString, extends: core.class.TxCUD, kind: ClassifierKind.CLASS }))
-  txes.push(createClass(core.class.TxUpdateDoc, { label: 'TxUpdateDoc' as IntlString, extends: core.class.TxCUD, kind: ClassifierKind.CLASS }))
-  txes.push(createClass(core.class.TxRemoveDoc, { label: 'TxRemoveDoc' as IntlString, extends: core.class.TxCUD, kind: ClassifierKind.CLASS }))
-  txes.push(createClass(core.class.TxCollectionCUD, { label: 'TxCollectionCUD' as IntlString, extends: core.class.TxCUD, kind: ClassifierKind.CLASS }))
+  txes.push(
+    createClass(core.class.Tx, {
+      label: 'Tx' as IntlString,
+      extends: core.class.Doc,
+      kind: ClassifierKind.CLASS,
+      domain: DOMAIN_TX
+    })
+  )
+  txes.push(
+    createClass(core.class.TxCUD, {
+      label: 'TxCUD' as IntlString,
+      extends: core.class.Tx,
+      kind: ClassifierKind.CLASS,
+      domain: DOMAIN_TX
+    })
+  )
+  txes.push(
+    createClass(core.class.TxCreateDoc, {
+      label: 'TxCreateDoc' as IntlString,
+      extends: core.class.TxCUD,
+      kind: ClassifierKind.CLASS
+    })
+  )
+  txes.push(
+    createClass(core.class.TxUpdateDoc, {
+      label: 'TxUpdateDoc' as IntlString,
+      extends: core.class.TxCUD,
+      kind: ClassifierKind.CLASS
+    })
+  )
+  txes.push(
+    createClass(core.class.TxRemoveDoc, {
+      label: 'TxRemoveDoc' as IntlString,
+      extends: core.class.TxCUD,
+      kind: ClassifierKind.CLASS
+    })
+  )
+  txes.push(
+    createClass(core.class.TxCollectionCUD, {
+      label: 'TxCollectionCUD' as IntlString,
+      extends: core.class.TxCUD,
+      kind: ClassifierKind.CLASS
+    })
+  )
 
-  txes.push(createClass(test.mixin.TestMixin, { label: 'TestMixin' as IntlString, extends: core.class.Doc, kind: ClassifierKind.MIXIN }))
+  txes.push(
+    createClass(test.mixin.TestMixin, {
+      label: 'TestMixin' as IntlString,
+      extends: core.class.Doc,
+      kind: ClassifierKind.MIXIN
+    })
+  )
 
-  txes.push(createInterface(test.interface.DummyWithState, { label: 'DummyWithState' as IntlString, extends: [test.interface.WithState], kind: ClassifierKind.INTERFACE }))
-  txes.push(createClass(test.class.TestComment, { label: 'TestComment' as IntlString, extends: core.class.AttachedDoc, kind: ClassifierKind.CLASS }))
-  txes.push(createClass(test.class.Task, { label: 'Task' as IntlString, extends: core.class.Doc, implements: [test.interface.DummyWithState], kind: ClassifierKind.CLASS }))
-  txes.push(createClass(test.class.TaskCheckItem, { label: 'Task' as IntlString, extends: core.class.AttachedDoc, implements: [test.interface.WithState], kind: ClassifierKind.CLASS }))
+  txes.push(
+    createInterface(test.interface.DummyWithState, {
+      label: 'DummyWithState' as IntlString,
+      extends: [test.interface.WithState],
+      kind: ClassifierKind.INTERFACE
+    })
+  )
+  txes.push(
+    createClass(test.class.TestComment, {
+      label: 'TestComment' as IntlString,
+      extends: core.class.AttachedDoc,
+      kind: ClassifierKind.CLASS
+    })
+  )
+  txes.push(
+    createClass(test.class.Task, {
+      label: 'Task' as IntlString,
+      extends: core.class.Doc,
+      implements: [test.interface.DummyWithState],
+      kind: ClassifierKind.CLASS
+    })
+  )
+  txes.push(
+    createClass(test.class.TaskCheckItem, {
+      label: 'Task' as IntlString,
+      extends: core.class.AttachedDoc,
+      implements: [test.interface.WithState],
+      kind: ClassifierKind.CLASS
+    })
+  )
 
-  txes.push(createClass(test.mixin.TaskMixinTodos, { label: 'TaskMixinTodos' as IntlString, extends: test.class.Task, kind: ClassifierKind.MIXIN }))
-  txes.push(createClass(test.class.TestMixinTodo, { label: 'TestMixinTodo' as IntlString, extends: core.class.AttachedDoc, kind: ClassifierKind.CLASS }))
+  txes.push(
+    createClass(test.mixin.TaskMixinTodos, {
+      label: 'TaskMixinTodos' as IntlString,
+      extends: test.class.Task,
+      kind: ClassifierKind.MIXIN
+    })
+  )
+  txes.push(
+    createClass(test.class.TestMixinTodo, {
+      label: 'TestMixinTodo' as IntlString,
+      extends: core.class.AttachedDoc,
+      kind: ClassifierKind.CLASS
+    })
+  )
 
   txes.push(
     createDoc(core.class.Space, {

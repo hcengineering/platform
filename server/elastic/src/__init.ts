@@ -24,15 +24,13 @@ if (url === undefined) {
 
 const client = new Client({ node: url })
 
-client.ingest.putPipeline({
-  id: 'anticrm-pipeline',
-  body: {
-    processors: [
-      { attachment: { field: 'data' } },
-      { remove: { field: 'data' } }
-    ]
-  }
-})
+client.ingest
+  .putPipeline({
+    id: 'anticrm-pipeline',
+    body: {
+      processors: [{ attachment: { field: 'data' } }, { remove: { field: 'data' } }]
+    }
+  })
   .then(function () {
     console.log('putPipeline Resolved')
   })

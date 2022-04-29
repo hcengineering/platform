@@ -24,7 +24,9 @@ import {
   FindResult,
   Hierarchy,
   ModelDb,
-  Ref, toFindResult, Tx,
+  Ref,
+  toFindResult,
+  Tx,
   TxResult
 } from '@anticrm/core'
 import { createElasticAdapter } from '@anticrm/elastic'
@@ -32,10 +34,17 @@ import { PrivateMiddleware, ModifiedMiddleware } from '@anticrm/middleware'
 import { createMongoAdapter, createMongoTxAdapter } from '@anticrm/mongo'
 import { addLocation } from '@anticrm/platform'
 import { serverAttachmentId } from '@anticrm/server-attachment'
+import { serverBoardId } from '@anticrm/server-board'
 import { serverCalendarId } from '@anticrm/server-calendar'
 import { serverChunterId } from '@anticrm/server-chunter'
 import { serverContactId } from '@anticrm/server-contact'
-import { createInMemoryAdapter, createPipeline, DbAdapter, DbConfiguration, MiddlewareCreator } from '@anticrm/server-core'
+import {
+  createInMemoryAdapter,
+  createPipeline,
+  DbAdapter,
+  DbConfiguration,
+  MiddlewareCreator
+} from '@anticrm/server-core'
 import { serverGmailId } from '@anticrm/server-gmail'
 import { serverInventoryId } from '@anticrm/server-inventory'
 import { serverLeadId } from '@anticrm/server-lead'
@@ -90,6 +99,7 @@ export function start (
   host?: string
 ): () => void {
   addLocation(serverAttachmentId, () => import('@anticrm/server-attachment-resources'))
+  addLocation(serverBoardId, () => import('@anticrm/server-board-resources'))
   addLocation(serverContactId, () => import('@anticrm/server-contact-resources'))
   addLocation(serverNotificationId, () => import('@anticrm/server-notification-resources'))
   addLocation(serverSettingId, () => import('@anticrm/server-setting-resources'))
@@ -103,10 +113,7 @@ export function start (
   addLocation(serverGmailId, () => import('@anticrm/server-gmail-resources'))
   addLocation(serverTelegramId, () => import('@anticrm/server-telegram-resources'))
 
-  const middlewares: MiddlewareCreator[] = [
-    ModifiedMiddleware.create,
-    PrivateMiddleware.create
-  ]
+  const middlewares: MiddlewareCreator[] = [ModifiedMiddleware.create, PrivateMiddleware.create]
 
   return startJsonRpc(
     metricsContext,

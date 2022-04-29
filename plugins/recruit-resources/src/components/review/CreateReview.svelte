@@ -157,14 +157,8 @@
   }}
 >
   <StatusControl slot="error" {status} />
-  <EditBox
-    placeholder={recruit.string.Title} bind:value={title}
-    maxWidth={'37.5rem'} kind={'large-style'} focus
-  />
-  <EditBox
-    placeholder={recruit.string.Location} bind:value={location}
-    maxWidth={'37.5rem'} kind={'small-style'}
-  />
+  <EditBox placeholder={recruit.string.Title} bind:value={title} maxWidth={'37.5rem'} kind={'large-style'} focus />
+  <EditBox placeholder={recruit.string.Location} bind:value={location} maxWidth={'37.5rem'} kind={'small-style'} />
   <StyledTextBox
     emphasized
     showButtons={false}
@@ -176,16 +170,22 @@
   <svelte:fragment slot="pool">
     {#if !preserveCandidate}
       <UserBox
-        _class={contact.class.Person} bind:value={doc.attachedTo}
-        label={recruit.string.Candidate} placeholder={recruit.string.Candidates}
-        kind={'no-border'} size={'small'}
+        _class={contact.class.Person}
+        bind:value={doc.attachedTo}
+        label={recruit.string.Candidate}
+        placeholder={recruit.string.Candidates}
+        kind={'no-border'}
+        size={'small'}
       />
     {/if}
-    <OrganizationSelector
-      bind:value={company} label={recruit.string.Company}
-      kind={'no-border'} size={'small'}
+    <OrganizationSelector bind:value={company} label={recruit.string.Company} kind={'no-border'} size={'small'} />
+    <DateRangePresenter
+      bind:value={startDate}
+      labelNull={recruit.string.StartDate}
+      withTime
+      editable
+      on:change={updateStart}
     />
-    <DateRangePresenter bind:value={startDate} labelNull={recruit.string.StartDate} withTime editable on:change={updateStart} />
     <DateRangePresenter bind:value={dueDate} labelNull={recruit.string.DueDate} withTime editable />
     <UserBoxList
       _class={contact.class.Employee}
@@ -194,7 +194,6 @@
       on:update={(evt) => {
         doc.participants = evt.detail
       }}
-      noItems={calendar.string.NoParticipants}
     />
   </svelte:fragment>
 </Card>

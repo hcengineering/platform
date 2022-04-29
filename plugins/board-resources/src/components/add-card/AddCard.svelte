@@ -17,7 +17,7 @@
   import board from '../../plugin'
   import task, { calcRank } from '@anticrm/task'
   import { AttachedData, generateId, Ref, SortingOrder, Space } from '@anticrm/core'
-  import { IconAdd, Button, showPopup, AnySvelteComponent } from '@anticrm/ui'
+  import { IconAdd, Button, showPopup } from '@anticrm/ui'
   import { getClient } from '@anticrm/presentation'
   import AddCardEditor from './AddCardEditor.svelte'
   import AddMultipleCardsPopup from './AddMultipleCardsPopup.svelte'

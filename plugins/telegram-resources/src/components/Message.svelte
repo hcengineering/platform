@@ -33,13 +33,17 @@
 </script>
 
 <div
-  class="flex-between"
+  class="message-row"
   class:selectable
+  class:selected-row={selected}
   on:click={() => {
     dispatch('select', message)
   }}
 >
-  <div class="flex-grow ml-6 flex" class:mr-6={!selectable} class:justify-end={!message.incoming}>
+  <div class="check-box">
+    {#if selectable}<CheckBox circle primary bind:checked={selected} />{/if}
+  </div>
+  <div class="message-container" class:out={!message.incoming}>
     <div class="message" class:outcoming={!message.incoming} class:selected>
       {#if showName}
         <div class="name" style="color: {getPlatformColorForText(message.sender)}">{formatName(message.sender)}</div>
@@ -55,22 +59,71 @@
       </div>
     </div>
   </div>
-  {#if selectable}
-    <div class="ml-4 mr-1"><CheckBox circle primary bind:checked={selected} /></div>
-  {/if}
 </div>
 
 <style lang="scss">
+  .message-row {
+    display: flex;
+    justify-content: stretch;
+    align-items: center;
+
+    &.selectable {
+      cursor: pointer;
+
+      &:hover {
+        background-color: var(--highlight-hover);
+      }
+      &.selected-row {
+        background-color: var(--highlight-select);
+
+        &:hover {
+          background-color: var(--highlight-hover);
+        }
+      }
+      .message {
+        cursor: pointer;
+      }
+      .selected {
+        background-color: var(--primary-bg-color);
+
+        &:hover {
+          background-color: var(--primary-bg-hover);
+        }
+      }
+    }
+  }
+  .check-box {
+    display: flex;
+    justify-content: center;
+    width: 2.5rem;
+    min-width: 2.5rem;
+    pointer-events: none;
+  }
+  .message-container {
+    display: flex;
+    justify-content: stretch;
+    align-items: center;
+    flex-grow: 1;
+    margin-right: 2.5rem;
+    padding: 0.25rem 0;
+
+    &.out {
+      justify-content: flex-end;
+    }
+  }
   .message {
     padding: 0.5rem 0.75rem;
     max-width: 66%;
     width: fit-content;
     background-color: var(--theme-incoming-msg);
-    border-radius: 0.75rem;
+    border-radius: 0.75rem 0.75rem 0.75rem 0.25rem;
     overflow-wrap: anywhere;
+    user-select: text;
+    cursor: default;
 
     &.outcoming {
       background-color: var(--theme-outcoming-msg);
+      border-radius: 0.75rem 0.75rem 0.25rem 0.75rem;
     }
     .time {
       align-self: flex-end;
@@ -79,14 +132,6 @@
       font-size: 0.75rem;
       font-style: italic;
       white-space: nowrap;
-    }
-  }
-
-  .selectable {
-    margin: 0 0.25rem 0 0;
-    cursor: pointer;
-    .selected {
-      background-color: var(--primary-button-enabled);
     }
   }
 </style>

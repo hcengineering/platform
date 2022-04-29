@@ -8,16 +8,20 @@ export interface PanelProps {
   _class: string
   element?: PopupAlignment
   rightSection?: AnyComponent
+  fullSize?: boolean
 }
 
-export const panelstore = writable < {panel?: PanelProps|undefined}>({ panel: undefined })
+export const panelstore = writable<{ panel?: PanelProps | undefined }>({ panel: undefined })
 let currentLocation: string | undefined
 
 location.subscribe((loc) => {
   if (loc.fragment !== currentLocation && loc.fragment !== undefined && loc.fragment.trim().length > 0) {
     const props = decodeURIComponent(loc.fragment).split('|')
     showPanel(props[0] as AnyComponent, props[1], props[2], (props[3] ?? undefined) as PopupAlignment)
-  } else if ((loc.fragment === undefined || (loc.fragment !== undefined && loc.fragment.trim().length === 0)) && currentLocation !== undefined) {
+  } else if (
+    (loc.fragment === undefined || (loc.fragment !== undefined && loc.fragment.trim().length === 0)) &&
+    currentLocation !== undefined
+  ) {
     closePanel()
   }
 })

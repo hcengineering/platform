@@ -28,30 +28,40 @@ export const DOMAIN_TEMPLATES = 'templates' as Domain
 export class TMessageTemplate extends TDoc implements MessageTemplate {
   @Prop(TypeString(), templates.string.Title)
   @Index(IndexKind.FullText)
-  title!: string;
+  title!: string
 
   @Prop(TypeString(), templates.string.Message)
   @Index(IndexKind.FullText)
-  message!: string;
+  message!: string
 }
 
 export function createModel (builder: Builder): void {
   builder.createModel(TMessageTemplate)
 
-  builder.createDoc(setting.class.SettingsCategory, core.space.Model, {
-    name: 'message-templates',
-    label: templates.string.Templates,
-    icon: templates.icon.Templates,
-    component: templates.component.Templates,
-    order: 3500
-  }, templates.ids.Templates)
+  builder.createDoc(
+    setting.class.SettingsCategory,
+    core.space.Model,
+    {
+      name: 'message-templates',
+      label: templates.string.Templates,
+      icon: templates.icon.Templates,
+      component: templates.component.Templates,
+      order: 3500
+    },
+    templates.ids.Templates
+  )
 
-  builder.createDoc(textEditor.class.RefInputActionItem, core.space.Model, {
-    label: templates.string.Templates,
-    icon: templates.icon.Templates,
-    action: templates.action.ShowTemplates,
-    order: 1500
-  }, templates.ids.TemplatePopupAction)
+  builder.createDoc(
+    textEditor.class.RefInputActionItem,
+    core.space.Model,
+    {
+      label: templates.string.Templates,
+      icon: templates.icon.Templates,
+      action: templates.action.ShowTemplates,
+      order: 1500
+    },
+    templates.ids.TemplatePopupAction
+  )
 }
 
 export { templatesOperation } from './migration'

@@ -12,22 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import Label from '../Label.svelte'
-  
+
   export let langs: any
 
-  const dispatch = createEventDispatcher()  
+  const dispatch = createEventDispatcher()
 </script>
 
 <div class="antiPopup">
   <div class="ap-space" />
   {#each langs as lang}
-    <div class="ap-menuItem ap-woScroll flex-row-center" on:click={() => { 
-      dispatch('close', lang.id)
-    }}>
+    <div
+      class="ap-menuItem ap-woScroll flex-row-center"
+      on:click={() => {
+        dispatch('close', lang.id)
+      }}
+    >
       <svg class="svg-small">
         <use href="#{lang.id}-flag" />
       </svg>

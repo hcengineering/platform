@@ -15,15 +15,26 @@
 
 import {
   Account,
-  AnyAttribute, ArrOf, AttachedDoc,
+  AnyAttribute,
+  ArrOf,
+  AttachedDoc,
   Class,
-  ClassifierKind, Collection, Doc,
-  Domain, DOMAIN_MODEL, IndexKind, Interface, Mixin,
+  ClassifierKind,
+  Collection,
+  Doc,
+  Domain,
+  DOMAIN_MODEL,
+  IndexKind,
+  Interface,
+  Mixin,
   Obj,
   PluginConfiguration,
-  Ref, RefTo, Space,
+  Ref,
+  RefTo,
+  Space,
   Timestamp,
-  Type, Version
+  Type,
+  Version
 } from '@anticrm/core'
 import { Index, Model, Prop, TypeIntlString, TypeRef, TypeString, TypeTimestamp } from '@anticrm/model'
 import type { IntlString } from '@anticrm/platform'
@@ -147,6 +158,6 @@ export class TVersion extends TDoc implements Version {
 
 @Model(core.class.PluginConfiguration, core.class.Doc, DOMAIN_MODEL)
 export class TPluginConfiguration extends TDoc implements PluginConfiguration {
-  pluginId!: string;
+  pluginId!: string
   transactions!: Ref<Doc>[]
 }

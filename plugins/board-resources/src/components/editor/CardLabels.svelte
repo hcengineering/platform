@@ -66,7 +66,6 @@
   function hoverOut () {
     isHovered = false
   }
-
 </script>
 
 {#if labels && labels.length > 0}
@@ -77,13 +76,15 @@
     on:mouseover={hoverIn}
     on:focus={hoverIn}
     on:mouseout={hoverOut}
-    on:blur={hoverOut}>
+    on:blur={hoverOut}
+  >
     {#each labels as label}
       <LabelPresenter
         value={label}
         size={isCompact ? 'tiny' : isInline ? 'x-small' : undefined}
         {isHovered}
-        on:click={labelsHandler} />
+        on:click={labelsHandler}
+      />
     {/each}
     {#if !isInline}
       <Button icon={IconAdd} kind="no-border" size="large" on:click={labelsHandler} />

@@ -14,10 +14,10 @@
 -->
 <script lang="ts">
   import contact from '@anticrm/contact'
-  import core, { Doc, DocumentQuery, Lookup, Ref, WithLookup } from '@anticrm/core'
+  import core, { Doc, DocumentQuery, Lookup, Ref } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
-  import { Applicant, Vacancy } from '@anticrm/recruit'
-  import { Button, getCurrentLocation, Icon, Label, navigate, Scroller, showPopup, IconAdd } from '@anticrm/ui'
+  import { Vacancy } from '@anticrm/recruit'
+  import { Button, getCurrentLocation, Icon, IconAdd, Label, navigate, Scroller, showPopup } from '@anticrm/ui'
   import SearchEdit from '@anticrm/ui/src/components/SearchEdit.svelte'
   import { Table } from '@anticrm/view-resources'
   import recruit from '../plugin'
@@ -31,73 +31,49 @@
   }
 
   let search: string = ''
-  let vquery: string = ''
   let resultQuery: DocumentQuery<Doc> = {}
-  let vacancyQuery: DocumentQuery<Doc> = {}
-
-  let vacancies: WithLookup<Vacancy>[] = []
-  const query = createQuery()
-  let appQuery = false
-
   const lookup: Lookup<Vacancy> = {
     company: contact.class.Organization
   }
 
-  $: query.query(recruit.class.Vacancy, { archived: false }, (res) => {
-    vacancies = res
-  }, { lookup })
+  $: resultQuery = search === '' ? {} : { $search: search }
 
-  function lowerIncludes (a: string | undefined, b: string): boolean {
-    return (a ?? '').toLowerCase().includes(b.toLowerCase())
-  }
-
-  $: if (vacancies.length > 0 && !appQuery) {
-    vacancyQuery = {
-      _id: {
-        $in: vacancies
-          .filter(
-            (it) =>
-              lowerIncludes(it.name, vquery) ||
-              lowerIncludes(it.description, vquery) ||
-              lowerIncludes(it.$lookup?.company?.name, vquery) ||
-              (applications?.get(it._id) ?? 0) > 0
-          )
-          .map((it) => it._id)
-      }
-    }
-  }
-
-  $: resultQuery = vquery === '' ? {} : { $search: vquery }
-  type ApplicationInfo = { count: number, modifiedOn: number }
+  type ApplicationInfo = { count: number; modifiedOn: number }
   let applications: Map<Ref<Vacancy>, ApplicationInfo> | undefined
 
   const applicantQuery = createQuery()
-  $: if (vacancies.length > 0) {
-    appQuery = true
-    applicantQuery.query(
-      recruit.class.Applicant,
-      { ...(resultQuery as DocumentQuery<Applicant>), space: { $in: vacancies.map((it) => it._id) } },
-      (res) => {
-        const result = new Map<Ref<Vacancy>, ApplicationInfo>()
+  $: applicantQuery.query(
+    recruit.class.Applicant,
+    {},
+    (res) => {
+      const result = new Map<Ref<Vacancy>, ApplicationInfo>()
 
-        for (const d of res) {
-          const v = result.get(d.space) ?? { count: 0, modifiedOn: 0 }
-          v.count++
-          v.modifiedOn = Math.max(v.modifiedOn, d.modifiedOn)
-          result.set(d.space, v)
-        }
-
-        applications = result
-        appQuery = false
+      for (const d of res) {
+        const v = result.get(d.space) ?? { count: 0, modifiedOn: 0 }
+        v.count++
+        v.modifiedOn = Math.max(v.modifiedOn, d.modifiedOn)
+        result.set(d.space, v)
       }
-    )
-  }
+
+      applications = result
+    },
+    {
+      projection: {
+        _id: 1,
+        modifiedOn: 1,
+        space: 1
+      }
+    }
+  )
 
   function showCreateDialog () {
     showPopup(CreateVacancy, { space: recruit.space.CandidatesPublic }, 'top')
   }
-  const applicationSorting = (a:Doc, b:Doc) => ((applications?.get(b._id as Ref<Vacancy>)?.count ?? 0) - (applications?.get(a._id as Ref<Vacancy>)?.count ?? 0)) ?? 0
-  const modifiedSorting = (a:Doc, b:Doc) => ((applications?.get(b._id as Ref<Vacancy>)?.modifiedOn ?? 0) - (applications?.get(a._id as Ref<Vacancy>)?.modifiedOn ?? 0)) ?? 0
+  const applicationSorting = (a: Doc, b: Doc) =>
+    (applications?.get(b._id as Ref<Vacancy>)?.count ?? 0) - (applications?.get(a._id as Ref<Vacancy>)?.count ?? 0) ?? 0
+  const modifiedSorting = (a: Doc, b: Doc) =>
+    (applications?.get(b._id as Ref<Vacancy>)?.modifiedOn ?? 0) -
+      (applications?.get(a._id as Ref<Vacancy>)?.modifiedOn ?? 0) ?? 0
 </script>
 
 <div class="ac-header full">
@@ -107,8 +83,8 @@
   </div>
   <SearchEdit
     bind:value={search}
-    on:change={() => {
-      vquery = search
+    on:change={(e) => {
+      search = e.detail
     }}
   />
   <Button icon={IconAdd} label={recruit.string.VacancyCreateLabel} kind={'primary'} on:click={showCreateDialog} />
@@ -128,7 +104,7 @@
         key: '',
         presenter: recruit.component.VacancyCountPresenter,
         label: recruit.string.Applications,
-        props: { applications, resultQuery },
+        props: { applications },
         sortingKey: '@applications',
         sortingFunction: applicationSorting
       },
@@ -148,7 +124,7 @@
       lookup
     }}
     query={{
-      ...vacancyQuery,
+      ...resultQuery,
       archived: false
     }}
     showNotification

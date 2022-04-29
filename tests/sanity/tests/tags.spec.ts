@@ -14,7 +14,9 @@ test.describe('recruit tests', () => {
     await expect(page).toHaveURL('http://localhost:8083/workbench%3Acomponent%3AWorkbenchApp/recruit%3Aapp%3ARecruit')
     // Click text=Candidates
     await page.click('text=Candidates')
-    await expect(page).toHaveURL('http://localhost:8083/workbench%3Acomponent%3AWorkbenchApp/recruit%3Aapp%3ARecruit/candidates')
+    await expect(page).toHaveURL(
+      'http://localhost:8083/workbench%3Acomponent%3AWorkbenchApp/recruit%3Aapp%3ARecruit/candidates'
+    )
     // Click button:has-text("Candidate")
     await page.click('button:has-text("Candidate")')
     // Fill [placeholder="John"]
@@ -49,7 +51,9 @@ test.describe('recruit tests', () => {
     await expect(page).toHaveURL('http://localhost:8083/workbench%3Acomponent%3AWorkbenchApp/recruit%3Aapp%3ARecruit')
     // Click text=Skills
     await page.click('text=Skills')
-    await expect(page).toHaveURL('http://localhost:8083/workbench%3Acomponent%3AWorkbenchApp/recruit%3Aapp%3ARecruit/skills')
+    await expect(page).toHaveURL(
+      'http://localhost:8083/workbench%3Acomponent%3AWorkbenchApp/recruit%3Aapp%3ARecruit/skills'
+    )
     // Click button:has-text("Skill")
     await page.click('button:has-text("Skill")')
     // Click [placeholder="Please\ type\ skill\ title"]
@@ -72,7 +76,9 @@ test.describe('recruit tests', () => {
     await page.click('button:has-text("Create")')
     // Click text=Candidates
     await page.click('text=Candidates')
-    await expect(page).toHaveURL('http://localhost:8083/workbench%3Acomponent%3AWorkbenchApp/recruit%3Aapp%3ARecruit/candidates')
+    await expect(page).toHaveURL(
+      'http://localhost:8083/workbench%3Acomponent%3AWorkbenchApp/recruit%3Aapp%3ARecruit/candidates'
+    )
     // Click button:has-text("Candidate")
     await page.click('button:has-text("Candidate")')
     // Click #add-tag div div

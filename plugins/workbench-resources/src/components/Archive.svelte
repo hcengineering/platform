@@ -27,7 +27,7 @@
 <div class="flex-col h-full">
   <div class="flex-row-center header">
     <div class="content-color mr-3"><Icon icon={view.icon.Archive} size={'medium'} /></div>
-    <div class="fs-title"><Label label={workbench.string.Archived}/></div>
+    <div class="fs-title"><Label label={workbench.string.Archived} /></div>
   </div>
   {#if model}
     <TableBrowser

@@ -17,11 +17,14 @@
   import contact from '@anticrm/contact'
   import core, { Class, Doc, Ref, RefTo } from '@anticrm/core'
   import { AttributesBar, getClient, KeyedAttribute, UserBox } from '@anticrm/presentation'
+  import { Label } from '@anticrm/ui'
   import { Task } from '@anticrm/task'
   import task from '../plugin'
 
   export let object: Task
   export let keys: KeyedAttribute[]
+  export let vertical: boolean = false
+
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
@@ -51,26 +54,62 @@
   $: filtredKeys = keys.filter((p) => p.key !== 'state' && p.key !== 'assignee' && p.key !== 'doneState') // todo
 </script>
 
-<div class="flex-between header">
-  <div class="flex-center">
+{#if !vertical}
+  <div class="task-attr-header">
+    <div class="flex-center">
+      <UserBox
+        _class={getAssigneeClass(object)}
+        label={assigneeTitle}
+        placeholder={assigneeTitle}
+        bind:value={object.assignee}
+        on:change={change}
+        allowDeselect
+        titleDeselect={task.string.TaskUnAssign}
+      />
+      <div class="column">
+        <AttributesBar {object} keys={filtredKeys} />
+      </div>
+    </div>
+    <AttributesBar {object} keys={['doneState', 'state']} showHeader={false} />
+  </div>
+{:else}
+  <div class="task-attr-prop">
+    <span class="fs-bold"><Label label={task.string.TaskAssignee} /></span>
     <UserBox
       _class={getAssigneeClass(object)}
       label={assigneeTitle}
       placeholder={assigneeTitle}
+      kind={'link'}
+      size={'large'}
       bind:value={object.assignee}
       on:change={change}
       allowDeselect
       titleDeselect={task.string.TaskUnAssign}
     />
-    <div class="column">
-      <AttributesBar {object} keys={filtredKeys} />
+    <div style:grid-column={'1/3'}>
+      <AttributesBar {object} keys={['doneState', 'state']} vertical />
+      <AttributesBar {object} keys={filtredKeys} vertical />
     </div>
   </div>
-  <AttributesBar {object} keys={['doneState', 'state']} showHeader={false} />
-</div>
+{/if}
 
 <style lang="scss">
-  .header {
+  .task-attr-prop {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    grid-template-rows: minmax(2rem, auto);
+    grid-auto-flow: row;
+    justify-content: start;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    height: min-content;
+  }
+  .task-attr-header {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: nowrap;
+    align-items: center;
     width: 100%;
     // padding: 0 0.5rem;
 

@@ -56,7 +56,7 @@ export class Hierarchy {
     return _toDoc(doc)
   }
 
-  static mixinClass<D extends Doc, M extends D>(doc: D): Ref<Mixin<M>>|undefined {
+  static mixinClass<D extends Doc, M extends D>(doc: D): Ref<Mixin<M>> | undefined {
     return _mixinClass(doc)
   }
 
@@ -130,7 +130,11 @@ export class Hierarchy {
   }
 
   private txCreateDoc (tx: TxCreateDoc<Doc>): void {
-    if (tx.objectClass === core.class.Class || tx.objectClass === core.class.Interface || tx.objectClass === core.class.Mixin) {
+    if (
+      tx.objectClass === core.class.Class ||
+      tx.objectClass === core.class.Interface ||
+      tx.objectClass === core.class.Mixin
+    ) {
       const _id = tx.objectId as Ref<Classifier>
       this.classifiers.set(_id, TxProcessor.createDoc2Doc(tx as TxCreateDoc<Classifier>))
       this.addAncestors(_id)
@@ -296,7 +300,7 @@ export class Hierarchy {
           break
         }
       }
-      ancestors = ancestors.filter(c => this.isDerived(c, to as Ref<Class<Doc>>) && c !== to)
+      ancestors = ancestors.filter((c) => this.isDerived(c, to as Ref<Class<Doc>>) && c !== to)
     }
 
     for (const cls of ancestors) {
@@ -335,7 +339,11 @@ export class Hierarchy {
     }
   }
 
-  updateLookupMixin<T extends Doc>(_class: Ref<Class<T>>, result: WithLookup<T>, options?: FindOptions<T>): WithLookup<T> {
+  updateLookupMixin<T extends Doc>(
+    _class: Ref<Class<T>>,
+    result: WithLookup<T>,
+    options?: FindOptions<T>
+  ): WithLookup<T> {
     const baseClass = this.getBaseClass(_class)
     const vResult = baseClass !== _class ? this.as(result, _class) : result
     const lookup = result.$lookup
@@ -349,9 +357,9 @@ export class Hierarchy {
             const mval = (lookup as any)[k]
             if (mval !== undefined) {
               if (Array.isArray(mval)) {
-                (lookup as any)[k] = mval.map(it => this.as(it, _cl))
+                ;(lookup as any)[k] = mval.map((it) => this.as(it, _cl))
               } else {
-                (lookup as any)[k] = this.as(mval, _cl)
+                ;(lookup as any)[k] = this.as(mval, _cl)
               }
             }
           }
@@ -365,7 +373,7 @@ export class Hierarchy {
         if (this.isMixin(_cl)) {
           const mval = (lookup as any)[k]
           if (mval != null) {
-            (lookup as any)[k] = this.as(mval, _cl)
+            ;(lookup as any)[k] = this.as(mval, _cl)
           }
         }
       }

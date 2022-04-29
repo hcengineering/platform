@@ -15,6 +15,7 @@
 <script lang="ts">
   import { Class, Doc, DocumentQuery, FindOptions, Ref } from '@anticrm/core'
   import { IntlString, translate } from '@anticrm/platform'
+  import { createQuery } from '@anticrm/presentation'
   import { TagCategory, TagElement } from '@anticrm/tags'
   import { Button, Icon, Label, Scroller, SearchEdit, showPopup, IconAdd } from '@anticrm/ui'
   import { TableBrowser } from '@anticrm/view-resources'
@@ -26,6 +27,7 @@
   export let item: IntlString = tags.string.Tag
   export let сreateItemLabel: IntlString = tags.string.TagCreateLabel
   export let targetClass: Ref<Class<Doc>>
+  export let onTag: ((tag: TagElement) => void) | undefined = undefined
 
   let keyTitle: string
   $: translate(item, {}).then((t) => {
@@ -51,6 +53,36 @@
     }
   }
   let category: Ref<TagCategory> | undefined = undefined
+
+  type TagElementInfo = { count: number; modifiedOn: number }
+  let tagElements: Map<Ref<TagElement>, TagElementInfo> | undefined
+  const refQuery = createQuery()
+  $: refQuery.query(
+    tags.class.TagReference,
+    {},
+    (res) => {
+      const result = new Map<Ref<TagElement>, TagElementInfo>()
+
+      for (const d of res) {
+        const v = result.get(d.tag) ?? { count: 0, modifiedOn: 0 }
+        v.count++
+        v.modifiedOn = Math.max(v.modifiedOn, d.modifiedOn)
+        result.set(d.tag, v)
+      }
+
+      tagElements = result
+    },
+    {
+      projection: {
+        _id: 1,
+        tag: 1,
+        modifiedOn: 1
+      }
+    }
+  )
+  const countSorting = (a: Doc, b: Doc) =>
+    (tagElements?.get(b._id as Ref<TagElement>)?.count ?? 0) -
+      (tagElements?.get(a._id as Ref<TagElement>)?.count ?? 0) ?? 0
 </script>
 
 <div class="ac-header full">
@@ -97,6 +129,14 @@
             }
           ]
         : []),
+      {
+        key: '',
+        presenter: tags.component.TagElementCountPresenter,
+        label: item,
+        props: { tagElements, label: item, onTag },
+        sortingKey: '@tagCount',
+        sortingFunction: countSorting
+      },
       'description',
       'modifiedOn'
     ]}

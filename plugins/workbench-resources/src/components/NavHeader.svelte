@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
   import { fetchMetadataLocalStorage, Label } from '@anticrm/ui'
@@ -23,9 +22,8 @@
 </script>
 
 <div class="antiNav-header">
-  <div class='flex-row'>
-
-    <span class="fs-title overflow-label"><Label {label}></Label></span>
+  <div class="flex-row">
+    <span class="fs-title overflow-label"><Label {label} /></span>
     <div>
       {fetchMetadataLocalStorage(login.metadata.CurrentWorkspace)}
     </div>

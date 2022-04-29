@@ -33,23 +33,23 @@
 
 <style lang="scss">
   .notify-block-kind {
-    width: .5rem;
-    height: .5rem;
+    width: 0.5rem;
+    height: 0.5rem;
     background-color: currentColor;
-    border-radius: .5rem;
+    border-radius: 0.5rem;
   }
   .notify-table-kind {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: .5rem;
-    height: .5rem;
+    width: 0.5rem;
+    height: 0.5rem;
     background-color: currentColor;
-    border-radius: .25rem;
+    border-radius: 0.25rem;
     outline: 1px solid transparent;
     outline-offset: 2px;
     transform: translate(-50%, -50%);
-    transition: all .1s ease-in-out;
+    transition: all 0.1s ease-in-out;
     z-index: -1;
   }
 </style>

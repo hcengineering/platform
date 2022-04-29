@@ -53,7 +53,7 @@
     if (Object.keys(ops).length === 0) {
       return
     }
-  
+
     await client.update(item, ops)
   }
 </script>
@@ -66,27 +66,28 @@
   on:close={() => {
     dispatch('close')
   }}
-  okLabel={recruit.string.OpinionSave}>
-    <Grid column={1} rowGap={1.75}>
-      <EditBox
+  okLabel={recruit.string.OpinionSave}
+>
+  <Grid column={1} rowGap={1.75}>
+    <EditBox
       label={recruit.string.OpinionValue}
-      bind:value={value}
+      bind:value
       icon={recruit.icon.Application}
       placeholder={recruit.string.OpinionValue}
       maxWidth="39rem"
       focus
     />
-    <div class='mt-1 mb-1'>
-      <Label label={recruit.string.Description}/>:
+    <div class="mt-1 mb-1">
+      <Label label={recruit.string.Description} />:
     </div>
-    <div class='description flex'>
-      <StyledTextEditor bind:content={description} placeholder={recruit.string.Description}/>
+    <div class="description flex">
+      <StyledTextEditor bind:content={description} placeholder={recruit.string.Description} />
     </div>
   </Grid>
 </Card>
 
 <style lang="scss">
-  .description{
+  .description {
     height: 10rem;
     padding: 0.5rem;
     border: 1px solid var(--theme-menu-divider);

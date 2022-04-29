@@ -112,7 +112,7 @@ jobs:
 
       - name: Checking svelte sources...
         run: node common/scripts/install-run-rush.js svelte-check
-  linting:
+  formatting:
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -144,8 +144,9 @@ jobs:
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
 
-      - name: Linting...
-        run: node common/scripts/install-run-rush.js lint
+      - name: Formatting...
+        run: node common/scripts/install-run-rush.js format
+        
   test:
     needs: build
     runs-on: ubuntu-latest
@@ -250,7 +251,7 @@ jobs:
           path: ./tests/sanity/playwright-report/
   docker-build:
     if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') }}
-    needs: [ build, uitest, test, linting, svelte-check ]
+    needs: [ build, uitest, test, formatting, svelte-check ]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3

@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { Ref, Space, Doc, Class } from '@anticrm/core'
   import type { TodoItem } from '@anticrm/task'
@@ -31,7 +30,9 @@
   let todos: TodoItem[] = []
 
   const query = createQuery()
-  $: query.query(task.class.TodoItem, { attachedTo: objectId }, result => { todos = result })
+  $: query.query(task.class.TodoItem, { attachedTo: objectId }, (result) => {
+    todos = result
+  })
 
   const createApp = (ev: MouseEvent): void => {
     showPopup(CreateTodo, { objectId, _class, space }, ev.target as HTMLElement)
@@ -44,21 +45,23 @@
     <CircleButton icon={IconAdd} size={'small'} selected on:click={createApp} />
   </div>
   {#if todos.length > 0}
-    <Table 
+    <Table
       _class={task.class.TodoItem}
-      config={[{ key: '', label: plugin.string.TodoName }, 'dueTo', { key: 'done', presenter: plugin.component.TodoStatePresenter, label: plugin.string.TodoState }]}
-      options={
-        {
-          // lookup: {
-          // }
-        }
-      }
-      query={ { attachedTo: objectId } }
+      config={[
+        { key: '', label: plugin.string.TodoName },
+        'dueTo',
+        { key: 'done', presenter: plugin.component.TodoStatePresenter, label: plugin.string.TodoState }
+      ]}
+      options={{
+        // lookup: {
+        // }
+      }}
+      query={{ attachedTo: objectId }}
     />
   {:else}
     <div class="flex-col-center mt-5 createapp-container">
       <div class="text-sm">
-        <div class='over-underline' on:click={createApp}><Label label={plugin.string.NoTodoItems} /></div>
+        <div class="over-underline" on:click={createApp}><Label label={plugin.string.NoTodoItems} /></div>
       </div>
     </div>
   {/if}
@@ -70,7 +73,7 @@
     flex-direction: column;
 
     .title {
-      margin-right: .75rem;
+      margin-right: 0.75rem;
       font-weight: 500;
       font-size: 1.25rem;
       color: var(--theme-caption-color);
@@ -82,6 +85,6 @@
     color: var(--theme-caption-color);
     background: var(--theme-bg-accent-color);
     border: 1px solid var(--theme-bg-accent-color);
-    border-radius: .75rem;
+    border-radius: 0.75rem;
   }
 </style>

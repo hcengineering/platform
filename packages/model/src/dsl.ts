@@ -14,7 +14,35 @@
 //
 
 import core, {
-  Account, ArrOf as TypeArrOf, AttachedDoc, Attribute, Class, Classifier, ClassifierKind, Collection as TypeCollection, Data, Doc, Domain, generateId, IndexKind, Interface, Markup, Mixin as IMixin, MixinUpdate, Obj, PropertyType, Ref, RefTo, Space, Timestamp, Tx, TxCreateDoc, TxFactory, TxProcessor, Type, TypeDate as TypeDateType
+  Account,
+  ArrOf as TypeArrOf,
+  AttachedDoc,
+  Attribute,
+  Class,
+  Classifier,
+  ClassifierKind,
+  Collection as TypeCollection,
+  Data,
+  Doc,
+  Domain,
+  generateId,
+  IndexKind,
+  Interface,
+  Markup,
+  Mixin as IMixin,
+  MixinUpdate,
+  Obj,
+  PropertyType,
+  Ref,
+  RefTo,
+  Space,
+  Timestamp,
+  Tx,
+  TxCreateDoc,
+  TxFactory,
+  TxProcessor,
+  Type,
+  TypeDate as TypeDateType
 } from '@anticrm/core'
 import type { Asset, IntlString } from '@anticrm/platform'
 import toposort from 'toposort'
@@ -158,10 +186,7 @@ export function Model<T extends Obj> (
 /**
  * @public
  */
-export function Implements<T extends Doc> (
-  _interface: Ref<Interface<T>>,
-  _extends?: Ref<Interface<Doc>>[]
-) {
+export function Implements<T extends Doc> (_interface: Ref<Interface<T>>, _extends?: Ref<Interface<Doc>>[]) {
   return function classDecorator<C extends new () => T> (constructor: C): void {
     const txes = getTxes(constructor.prototype)
     txes._id = _interface
@@ -173,10 +198,7 @@ export function Implements<T extends Doc> (
 /**
  * @public
  */
-export function Mixin<T extends Obj> (
-  _class: Ref<Class<T>>,
-  _extends: Ref<Class<Obj>>
-) {
+export function Mixin<T extends Obj> (_class: Ref<Class<T>>, _extends: Ref<Class<Obj>>) {
   return function classDecorator<C extends new () => T> (constructor: C): void {
     const txes = getTxes(constructor.prototype)
     txes._id = _class
@@ -191,12 +213,7 @@ export function Mixin<T extends Obj> (
  * @param icon -
  * @returns
  */
-export function UX<T extends Obj> (
-  label: IntlString,
-  icon?: Asset,
-  shortLabel?: IntlString,
-  sortingKey?: string
-) {
+export function UX<T extends Obj> (label: IntlString, icon?: Asset, shortLabel?: IntlString, sortingKey?: string) {
   return function classDecorator<C extends new () => T> (constructor: C): void {
     const txes = getTxes(constructor.prototype)
     txes.label = label
@@ -233,7 +250,9 @@ function _generateTx (tx: ClassTxes): Tx[] {
     {
       ...(tx.domain !== undefined ? { domain: tx.domain } : {}),
       kind: tx.kind,
-      ...(tx.kind === ClassifierKind.INTERFACE ? { extends: tx.implements } : { extends: tx.extends, implements: tx.implements }),
+      ...(tx.kind === ClassifierKind.INTERFACE
+        ? { extends: tx.implements }
+        : { extends: tx.extends, implements: tx.implements }),
       label: tx.label,
       icon: tx.icon,
       shortLabel: tx.shortLabel,
@@ -269,10 +288,7 @@ export class Builder {
     }
   }
 
-  private generateTransactions (
-    txes: ClassTxes[],
-    byId: Map<string, ClassTxes>
-  ): Tx[] {
+  private generateTransactions (txes: ClassTxes[], byId: Map<string, ClassTxes>): Tx[] {
     const graph = this.createGraph(txes)
     const sorted = toposort(graph)
       .reverse()
@@ -281,9 +297,7 @@ export class Builder {
   }
 
   private createGraph (txes: ClassTxes[]): [string, string | undefined][] {
-    return txes.map(
-      (tx) => [tx._id, tx.extends] as [string, string | undefined]
-    )
+    return txes.map((tx) => [tx._id, tx.extends] as [string, string | undefined])
   }
 
   // do we need this?
@@ -294,12 +308,7 @@ export class Builder {
     objectId?: Ref<T>,
     modifiedBy?: Ref<Account>
   ): T {
-    const tx = txFactory.createTxCreateDoc(
-      _class,
-      space,
-      attributes,
-      objectId
-    )
+    const tx = txFactory.createTxCreateDoc(_class, space, attributes, objectId)
     if (modifiedBy !== undefined) {
       tx.modifiedBy = modifiedBy
     }
@@ -308,7 +317,7 @@ export class Builder {
     return TxProcessor.createDoc2Doc(tx)
   }
 
-  mixin<D extends Doc, M extends D> (
+  mixin<D extends Doc, M extends D>(
     objectId: Ref<D>,
     objectClass: Ref<Class<D>>,
     mixin: Ref<IMixin<M>>,
@@ -392,7 +401,7 @@ export function Collection<T extends AttachedDoc> (clazz: Ref<Class<T>>, itemLab
 /**
  * @public
  */
-export function ArrOf<T extends PropertyType> (type: Type<T>): TypeArrOf<T> {
+export function ArrOf<T extends PropertyType | Ref<Doc>> (type: Type<T>): TypeArrOf<T> {
   return { _class: core.class.ArrOf, of: type, label: 'Array' as IntlString }
 }
 

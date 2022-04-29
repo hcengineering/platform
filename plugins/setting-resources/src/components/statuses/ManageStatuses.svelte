@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { getClient, MessageBox } from '@anticrm/presentation'
   import { Label, Icon, showPopup, Component } from '@anticrm/ui'
@@ -35,35 +34,51 @@
     }
     const hierarchy = client.getHierarchy()
 
-    showPopup(MessageBox, {
-      label: setting.string.DeleteStatus,
-      message: setting.string.DeleteStatusConfirm
-    }, undefined, async (result) => {
-      if (result && template !== undefined) {
-        const collection = hierarchy.isDerived(state._class, task.class.DoneStateTemplate) ? 'doneStatesC' : 'statesC'
-        await client.removeCollection(state._class, template.space, state._id, template._id, template._class, collection)
+    showPopup(
+      MessageBox,
+      {
+        label: setting.string.DeleteStatus,
+        message: setting.string.DeleteStatusConfirm
+      },
+      undefined,
+      async (result) => {
+        if (result && template !== undefined) {
+          const collection = hierarchy.isDerived(state._class, task.class.DoneStateTemplate) ? 'doneStatesC' : 'statesC'
+          await client.removeCollection(
+            state._class,
+            template.space,
+            state._id,
+            template._id,
+            template._class,
+            collection
+          )
+        }
       }
-    })
+    )
   }
 </script>
 
 <div class="antiComponent">
   <div class="ac-header short divide">
     <div class="ac-header__icon"><Icon icon={task.icon.ManageStatuses} size={'medium'} /></div>
-    <div class="ac-header__title"><Label label={setting.string.ManageStatuses}/></div>
+    <div class="ac-header__title"><Label label={setting.string.ManageStatuses} /></div>
   </div>
   <div class="ac-body columns hScroll">
     <div class="ac-column">
-      <Folders bind:folder={folder}/>
+      <Folders bind:folder />
     </div>
     <div class="ac-column">
       {#if folder !== undefined}
-        <Templates {folder} bind:template={template}/>
+        <Templates {folder} bind:template />
       {/if}
     </div>
     <div class="ac-column max">
       {#if template !== undefined}
-        <Component is={task.component.KanbanTemplateEditor} props={{ kanban: template }} on:delete={(e) => deleteState(e.detail)}/>
+        <Component
+          is={task.component.KanbanTemplateEditor}
+          props={{ kanban: template }}
+          on:delete={(e) => deleteState(e.detail)}
+        />
       {/if}
     </div>
   </div>

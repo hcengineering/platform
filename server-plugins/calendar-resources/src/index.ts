@@ -19,7 +19,15 @@ import { Class, Doc, DocumentQuery, FindOptions, FindResult, Hierarchy, Ref } fr
 /**
  * @public
  */
-export async function FindReminders (doc: Doc, hiearachy: Hierarchy, findAll: <T extends Doc> (clazz: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>) => Promise<FindResult<T>>): Promise<Doc[]> {
+export async function FindReminders (
+  doc: Doc,
+  hiearachy: Hierarchy,
+  findAll: <T extends Doc>(
+    clazz: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ) => Promise<FindResult<T>>
+): Promise<Doc[]> {
   const result = await findAll(calendar.mixin.Reminder, { attachedTo: doc._id })
   return result
 }

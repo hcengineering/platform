@@ -31,7 +31,8 @@
 </script>
 
 <div
-  class="tooltip-trigger" class:fill={fill}
+  class="tooltip-trigger"
+  class:fill
   name={`tooltip-${label}`}
   bind:this={triggerHTML}
   on:mousemove={() => {
@@ -48,5 +49,5 @@
       width: 100%;
       height: 100%;
     }
-  }  
+  }
 </style>

@@ -30,7 +30,7 @@
   const label = client.getHierarchy().getClass(value._class).shortLabel
 
   if (label !== undefined) {
-    translate(label, {}).then(r => {
+    translate(label, {}).then((r) => {
       shortLabel = r
     })
   }

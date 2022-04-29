@@ -30,7 +30,7 @@ export type Metadata<T> = Id & { __metadata: T }
  * @public
  */
 export type ExtractType<T, X extends Record<string, Metadata<T>>> = {
-  [P in keyof X]: X[P] extends Metadata<infer Z> ? Z : never;
+  [P in keyof X]: X[P] extends Metadata<infer Z> ? Z : never
 }
 
 const metadata = new Map<Metadata<any>, any>()
@@ -58,10 +58,7 @@ export function setMetadata<T> (id: Metadata<T>, value: T): void {
  * @param ids -
  * @param data -
  */
-export function loadMetadata<T, X extends Record<string, Metadata<T>>> (
-  ids: X,
-  data: ExtractType<T, X>
-): void {
+export function loadMetadata<T, X extends Record<string, Metadata<T>>> (ids: X, data: ExtractType<T, X>): void {
   for (const key in ids) {
     const id = ids[key]
     const resource = data[key]

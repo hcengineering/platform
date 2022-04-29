@@ -13,16 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import attachmentP,{ Attachment } from '@anticrm/attachment'
+  import attachmentP, { Attachment } from '@anticrm/attachment'
   import { AttachmentPresenter } from '@anticrm/attachment-resources'
-  import { Channel,Contact,formatName } from '@anticrm/contact'
-  import { Data,generateId } from '@anticrm/core'
-  import { NewMessage,SharedMessage } from '@anticrm/gmail'
+  import { Channel, Contact, formatName } from '@anticrm/contact'
+  import { Data, generateId } from '@anticrm/core'
+  import { NewMessage, SharedMessage } from '@anticrm/gmail'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
-  import { getResource,setPlatformStatus,unknownError } from '@anticrm/platform'
-  import { createQuery,getClient } from '@anticrm/presentation'
+  import { getResource, setPlatformStatus, unknownError } from '@anticrm/platform'
+  import { createQuery, getClient } from '@anticrm/presentation'
   import { TextEditor } from '@anticrm/text-editor'
-  import { ActionIcon,IconArrowLeft,IconAttachment,IconClose,Label } from '@anticrm/ui'
+  import { ActionIcon, IconArrowLeft, IconAttachment, IconClose, Label } from '@anticrm/ui'
   import Button from '@anticrm/ui/src/components/Button.svelte'
   import EditBox from '@anticrm/ui/src/components/EditBox.svelte'
   import { createEventDispatcher } from 'svelte'
@@ -47,11 +47,19 @@
   }
 
   async function sendMsg () {
-    await client.createDoc(plugin.class.NewMessage, plugin.space.Gmail, {
-      ...obj,
-      attachments: attachments.length,
-      copy: copy.split(',').map((m) => m.trim()).filter((m) => m.length)
-    }, objectId)
+    await client.createDoc(
+      plugin.class.NewMessage,
+      plugin.space.Gmail,
+      {
+        ...obj,
+        attachments: attachments.length,
+        copy: copy
+          .split(',')
+          .map((m) => m.trim())
+          .filter((m) => m.length)
+      },
+      objectId
+    )
     await notificationClient.updateLastView(channel._id, channel._class, undefined, true)
     objectId = generateId()
     dispatch('close')
@@ -84,13 +92,20 @@
       const uploadFile = await getResource(attachmentP.helper.UploadFile)
       const uuid = await uploadFile(file, { space: plugin.space.Gmail, attachedTo: objectId })
       console.log('uploaded file uuid', uuid)
-      await client.addCollection(attachmentP.class.Attachment, plugin.space.Gmail, objectId, plugin.class.NewMessage, 'attachments', {
-        name: file.name,
-        file: uuid,
-        type: file.type,
-        size: file.size,
-        lastModified: file.lastModified
-      })
+      await client.addCollection(
+        attachmentP.class.Attachment,
+        plugin.space.Gmail,
+        objectId,
+        plugin.class.NewMessage,
+        'attachments',
+        {
+          name: file.name,
+          file: uuid,
+          type: file.type,
+          size: file.size,
+          lastModified: file.lastModified
+        }
+      )
     } catch (err: any) {
       setPlatformStatus(unknownError(err))
     }
@@ -100,15 +115,27 @@
 
   async function removeAttachment (attachment: Attachment): Promise<void> {
     const deleteFile = await getResource(attachmentP.helper.DeleteFile)
-    await client.removeCollection(attachment._class, attachment.space, attachment._id, attachment.attachedTo, attachment.attachedToClass, 'attachments')
+    await client.removeCollection(
+      attachment._class,
+      attachment.space,
+      attachment._id,
+      attachment.attachedTo,
+      attachment.attachedToClass,
+      'attachments'
+    )
     await deleteFile(attachment.file)
   }
 
   let attachments: Attachment[] = []
 
-  $: objectId && query.query(attachmentP.class.Attachment, {
-    attachedTo: objectId
-  }, (res) => attachments = res)
+  $: objectId &&
+    query.query(
+      attachmentP.class.Attachment,
+      {
+        attachedTo: objectId
+      },
+      (res) => (attachments = res)
+    )
 </script>
 
 <input
@@ -138,12 +165,19 @@
   </div>
   <div class="mr-3 flex-row-center">
     <div class="mr-2">
-      <ActionIcon icon={IconAttachment} size={'small'} action={() => {inputFile.click()}} />
+      <ActionIcon
+        icon={IconAttachment}
+        size={'small'}
+        action={() => {
+          inputFile.click()
+        }}
+      />
     </div>
     <Button label={plugin.string.Send} size={'small'} kind={'primary'} on:click={sendMsg} />
   </div>
 </div>
-<div class="flex-col clear-mins right-content"
+<div
+  class="flex-col clear-mins right-content"
   on:dragover|preventDefault={() => {}}
   on:dragleave={() => {}}
   on:drop|preventDefault|stopPropagation={fileDrop}
@@ -165,12 +199,18 @@
     />
   </div>
   {#if attachments.length}
-    <div class='flex-row-center list mt-2'>
+    <div class="flex-row-center list mt-2">
       {#each attachments as attachment}
-        <div class='item flex'>
+        <div class="item flex">
           <AttachmentPresenter value={attachment} />
-          <div class='remove'>
-            <ActionIcon icon={IconClose} action={() => { removeAttachment(attachment) }} size='small' />
+          <div class="remove">
+            <ActionIcon
+              icon={IconClose}
+              action={() => {
+                removeAttachment(attachment)
+              }}
+              size="small"
+            />
           </div>
         </div>
       {/each}
@@ -211,7 +251,7 @@
       overflow-y: hidden;
       background-color: var(--theme-bg-accent-color);
       border: 1px solid var(--theme-bg-accent-color);
-      border-radius: .75rem;
+      border-radius: 0.75rem;
 
       .item + .item {
         padding-left: 1rem;

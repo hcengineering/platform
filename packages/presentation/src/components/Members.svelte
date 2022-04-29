@@ -12,10 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
-  import contact,{ Employee,EmployeeAccount } from '@anticrm/contact'
-  import { Account,DocumentQuery,Ref,SortingOrder,Space } from '@anticrm/core'
+  import contact, { Employee, EmployeeAccount } from '@anticrm/contact'
+  import { Account, DocumentQuery, Ref, SortingOrder, Space } from '@anticrm/core'
   import { translate } from '@anticrm/platform'
   import { IconAdd, Label, Scroller, SearchEdit } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
@@ -31,18 +30,25 @@
   const hierarchy = client.getHierarchy()
   $: label = hierarchy.getClass(space._class).label
   let spaceClass = ''
-  $: { translate(label, {}).then((p) => spaceClass = p.toLowerCase()) }
+  $: {
+    translate(label, {}).then((p) => (spaceClass = p.toLowerCase()))
+  }
   let search: string = ''
   $: isSearch = search.trim().length
   let members: Set<Ref<Employee>> = new Set<Ref<Employee>>()
 
   async function getUsers (accounts: Ref<Account>[], search: string): Promise<Employee[]> {
-    const query: DocumentQuery<EmployeeAccount> = isSearch > 0 ? { name: { $like: '%' + search + '%' } } : { _id: { $in: accounts as Ref<EmployeeAccount>[] } }
+    const query: DocumentQuery<EmployeeAccount> =
+      isSearch > 0 ? { name: { $like: '%' + search + '%' } } : { _id: { $in: accounts as Ref<EmployeeAccount>[] } }
     const employess = await client.findAll(contact.class.EmployeeAccount, query)
     members = new Set(employess.filter((p) => accounts.includes(p._id)).map((p) => p.employee))
-    return await client.findAll(contact.class.Employee, {
-      _id: { $in: employess.map((e) => e.employee) }
-    }, { sort: { name: SortingOrder.Descending } })
+    return await client.findAll(
+      contact.class.Employee,
+      {
+        _id: { $in: employess.map((e) => e.employee) }
+      },
+      { sort: { name: SortingOrder.Descending } }
+    )
   }
 
   async function add (employee: Ref<Employee>): Promise<void> {
@@ -54,7 +60,6 @@
       }
     })
   }
-
 </script>
 
 <div class="flex-col h-full">
@@ -90,16 +95,18 @@
           <div class="item fs-title"><UserInfo size={'medium'} value={person} /></div>
         {/each}
         {#if foreign.length}
-        <div class="mt-4 notIn h-full">
-          <div class="divider w-full mb-4" />
-          <div class="pr-8 pl-8"><Label label={presentation.string.NotInThis} params={{ space: spaceClass }}  /></div>
-          {#each foreign as person}
-            <div class="item flex-between">
-              <div class="fs-title"><UserInfo size={'medium'} value={person} /></div>
-              <div class="over-underline" on:click={() => add(person._id)}><Label label={presentation.string.Add} /></div>
-            </div>
-          {/each}
-        </div>
+          <div class="mt-4 notIn h-full">
+            <div class="divider w-full mb-4" />
+            <div class="pr-8 pl-8"><Label label={presentation.string.NotInThis} params={{ space: spaceClass }} /></div>
+            {#each foreign as person}
+              <div class="item flex-between">
+                <div class="fs-title"><UserInfo size={'medium'} value={person} /></div>
+                <div class="over-underline" on:click={() => add(person._id)}>
+                  <Label label={presentation.string.Add} />
+                </div>
+              </div>
+            {/each}
+          </div>
         {/if}
       </Scroller>
     {/if}
@@ -121,6 +128,9 @@
     cursor: pointer;
     padding: 0.5rem 2rem;
 
-    &:hover, &:focus { background-color: var(--popup-bg-hover); }
+    &:hover,
+    &:focus {
+      background-color: var(--popup-bg-hover);
+    }
   }
 </style>

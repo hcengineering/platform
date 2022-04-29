@@ -33,7 +33,11 @@ export class MeasureMetricsContext implements MeasureContext {
     return new MeasureMetricsContext(name, params, childMetrics(this.metrics, [name]))
   }
 
-  async with<T>(name: string, params: Record<string, ParamType>, op: (ctx: MeasureContext) => T | Promise<T>): Promise<T> {
+  async with<T>(
+    name: string,
+    params: Record<string, ParamType>,
+    op: (ctx: MeasureContext) => T | Promise<T>
+  ): Promise<T> {
     const c = this.newChild(name, params)
     try {
       let value = op(c)

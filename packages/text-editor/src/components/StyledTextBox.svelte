@@ -44,11 +44,16 @@
   }
 </script>
 
-<div class="antiComponent styled-box" class:emphasized class:emphasized-focus={(mode === Mode.Edit || alwaysEdit) && focused} on:click={() => {
-  if (alwaysEdit && focused) {
-    textEditor?.focus()
-  }
-}}>
+<div
+  class="antiComponent styled-box"
+  class:emphasized
+  class:emphasized-focus={(mode === Mode.Edit || alwaysEdit) && focused}
+  on:click={() => {
+    if (alwaysEdit && focused) {
+      textEditor?.focus()
+    }
+  }}
+>
   {#if label}
     <div class="label"><Label {label} /></div>
   {/if}
@@ -72,32 +77,32 @@
         rawValue = evt.detail
       }}
     >
-    {#if !alwaysEdit}
-      <div class="flex flex-reverse flex-grow">
-        <div class="ml-2">
-          <!-- disabled={rawValue.trim().length === 0} -->
+      {#if !alwaysEdit}
+        <div class="flex flex-reverse flex-grow">
+          <div class="ml-2">
+            <!-- disabled={rawValue.trim().length === 0} -->
+            <ActionIcon
+              icon={IconCheck}
+              size={'medium'}
+              direction={'bottom'}
+              label={presentation.string.Save}
+              action={() => {
+                dispatch('value', rawValue)
+                content = rawValue
+                mode = Mode.View
+              }}
+            />
+          </div>
           <ActionIcon
-            icon={IconCheck}
             size={'medium'}
-            direction={'bottom'}
-            label={presentation.string.Save}
+            icon={IconClose}
+            direction={'top'}
+            label={presentation.string.Cancel}
             action={() => {
-              dispatch('value', rawValue)
-              content = rawValue
               mode = Mode.View
             }}
           />
         </div>
-        <ActionIcon
-          size={'medium'}
-          icon={IconClose}
-          direction={'top'}
-          label={presentation.string.Cancel}
-          action={() => {
-            mode = Mode.View
-          }}
-        />
-      </div>
       {/if}
     </StyledTextEditor>
   {:else}
@@ -142,7 +147,7 @@
     padding: 1rem;
     background-color: var(--theme-bg-accent-color);
     border: 1px solid var(--theme-bg-accent-hover);
-    border-radius: .5rem;
+    border-radius: 0.5rem;
     &.emphasized-focus {
       background-color: var(--theme-bg-focused-color);
       border-color: var(--theme-bg-focused-border);

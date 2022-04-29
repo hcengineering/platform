@@ -39,7 +39,7 @@
     }
     &.mirror {
       justify-content: space-between;
-      padding: 0 0.5rem;
+      padding: 0 1rem;
 
       &-tool {
         justify-content: space-between;
@@ -49,73 +49,73 @@
     &.divide {
       border-bottom: 1px solid var(--divider-color);
     }
+  }
 
-    .ac-header__wrap-description,
-    .ac-header__wrap-title {
-      display: flex;
-      flex-wrap: nowrap;
-      min-width: 0;
-      cursor: default;
-    }
-    .ac-header__wrap-description {
-      flex-direction: column;
-      flex-grow: 1;
-    }
-    .ac-header__wrap-title {
-      align-items: center;
-    }
+  .ac-header__wrap-description,
+  .ac-header__wrap-title {
+    display: flex;
+    flex-wrap: nowrap;
+    min-width: 0;
+    cursor: default;
+  }
+  .ac-header__wrap-description {
+    flex-direction: column;
+    flex-grow: 1;
+  }
+  .ac-header__wrap-title {
+    align-items: center;
+  }
 
-    .ac-header__icon {
-      margin-right: 0.5rem;
-      color: var(--theme-content-color);
-    }
-    .ac-header__title {
-      min-width: 0;
-      font-weight: 500;
-      font-size: 1rem;
+  .ac-header__icon {
+    margin-right: 0.5rem;
+    color: var(--theme-content-color);
+  }
+  .ac-header__title {
+    min-width: 0;
+    font-weight: 500;
+    font-size: 1rem;
+    color: var(--theme-caption-color);
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    user-select: none;
+  }
+  .ac-header__description {
+    min-width: 0;
+    font-size: 0.75rem;
+    color: var(--theme-content-dark-color);
+
+    overflow: hidden;
+    visibility: visible;
+    display: -webkit-box;
+    /* autoprefixer: ignore next */
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    user-select: none;
+  }
+
+  .ac-header__icon-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 2rem;
+    height: 2rem;
+    color: var(--theme-content-trans-color);
+    background-color: transparent;
+    border-radius: .25rem;
+    cursor: pointer;
+
+    &:hover {
       color: var(--theme-caption-color);
-
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      user-select: none;
     }
-    .ac-header__description {
-      min-width: 0;
-      font-size: 0.75rem;
-      color: var(--theme-content-dark-color);
-
-      overflow: hidden;
-      visibility: visible;
-      display: -webkit-box;
-      /* autoprefixer: ignore next */
-      -webkit-box-orient: vertical;
-      -webkit-line-clamp: 2;
-      line-clamp: 2;
-      user-select: none;
-    }
-
-    .ac-header__icon-button {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      width: 2rem;
-      height: 2rem;
-      color: var(--theme-content-trans-color);
-      background-color: transparent;
-      border-radius: .25rem;
-      cursor: pointer;
-
+    &.selected {
+      color: var(--theme-content-accent-color);
+      background-color: var(--menu-bg-select);
+      cursor: default;
       &:hover {
         color: var(--theme-caption-color);
-      }
-      &.selected {
-        color: var(--theme-content-accent-color);
-        background-color: var(--menu-bg-select);
-        cursor: default;
-        &:hover {
-          color: var(--theme-caption-color);
-        }
       }
     }
   }
@@ -125,6 +125,7 @@
     align-items: center;
     overflow-x: auto;
     flex-shrink: 0;
+    margin: 0 2.5rem;
     min-height: 0;
     height: 3.5rem;
     border-bottom: 1px solid var(--theme-zone-bg);
@@ -144,10 +145,11 @@
     }
 
     .ac-subtitle-content {
+      overflow-x: auto;
+      overflow-y: hidden;
       flex-grow: 1;
       display: flex;
-      align-items: center;
-      margin: 0 2.5rem;
+      // align-items: center;
     }
   }
 
@@ -410,8 +412,8 @@
   }
 
   &.highlightRows .antiTable-body__row {
-    &.checking { background-color: var(--theme-table-bg-hover); }
-    &.selected { background-color: var(--menu-bg-select); }
+    &.checking { background-color: var(--highlight-select); } // --theme-table-bg-hover
+    &.selected { background-color: var(--highlight-hover); } // --menu-bg-select
   }
 }
 

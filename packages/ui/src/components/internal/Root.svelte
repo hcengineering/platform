@@ -17,23 +17,25 @@
   import FontSizeSelector from './FontSizeSelector.svelte'
   import LangSelector from './LangSelector.svelte'
   import uiPlugin from '../../plugin'
-  
+
   let application: AnyComponent | undefined
 
-  onDestroy(location.subscribe((loc) => {
-    if (loc.path[0]) {
-      application = loc.path[0] as AnyComponent
-    }
-
-    if (application === undefined) {
-      application = getMetadata(uiPlugin.metadata.DefaultApplication)
-      if (application !== undefined) {
-        const loc = getCurrentLocation()
-        loc.path = [application]
-        navigate(loc)
+  onDestroy(
+    location.subscribe((loc) => {
+      if (loc.path[0]) {
+        application = loc.path[0] as AnyComponent
       }
-    }
-  }))
+
+      if (application === undefined) {
+        application = getMetadata(uiPlugin.metadata.DefaultApplication)
+        if (application !== undefined) {
+          const loc = getCurrentLocation()
+          loc.path = [application]
+          navigate(loc)
+        }
+      }
+    })
+  )
 
   let status = OK
 
@@ -63,7 +65,7 @@
             <FontSizeSelector />
           </div>
           <div class="flex-center widget mr-3">
-            <WiFi size={'small'}/>
+            <WiFi size={'small'} />
           </div>
         </div>
       </div>
@@ -81,7 +83,9 @@
 </Theme>
 
 <style lang="scss">
-  $status-bar-height: 32px;
+  * {
+    --status-bar-height: 32px;
+  }
 
   #ui-root {
     position: relative;
@@ -90,8 +94,8 @@
     height: 100vh;
 
     .status-bar {
-      min-height: $status-bar-height;
-      height: $status-bar-height;
+      min-height: var(--status-bar-height);
+      height: var(--status-bar-height);
       min-width: 1200px;
       font-size: 12px;
       line-height: 150%;
@@ -115,7 +119,7 @@
     }
 
     .app {
-      height: calc(100vh - #{$status-bar-height});
+      height: calc(100vh - var(--status-bar-height));
       min-width: 1200px;
       min-height: 480px;
 

@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
   import { createEventDispatcher } from 'svelte'
@@ -30,7 +29,13 @@
   <div class="overflow-label fs-title mb-4"><Label {label} /></div>
   <div class="message"><Label label={message} {params} /></div>
   <div class="footer">
-    <Button focus label={presentation.string.Ok} size={'small'} kind={'primary'} on:click={() => dispatch('close', true)} />
+    <Button
+      focus
+      label={presentation.string.Ok}
+      size={'small'}
+      kind={'primary'}
+      on:click={() => dispatch('close', true)}
+    />
     <Button label={presentation.string.Cancel} size={'small'} on:click={() => dispatch('close', false)} />
   </div>
 </div>
@@ -58,7 +63,7 @@
       direction: rtl;
       justify-content: start;
       align-items: center;
-      column-gap: .5rem;
+      column-gap: 0.5rem;
       // mask-image: linear-gradient(90deg, rgba(0, 0, 0, 0) 1.25rem, rgba(0, 0, 0, 1) 2.5rem);
       // overflow: hidden;
     }

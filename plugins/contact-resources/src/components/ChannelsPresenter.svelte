@@ -32,24 +32,10 @@
     if (ev.detail.presenter !== undefined && Array.isArray(value)) {
       const channel = value[0]
       if (channel !== undefined) {
-        showPanel(
-          view.component.EditDoc,
-          channel.attachedTo,
-          channel.attachedToClass,
-          'full',
-          ev.detail.presenter
-        )
+        showPanel(view.component.EditDoc, channel.attachedTo, channel.attachedToClass, 'content', ev.detail.presenter)
       }
     }
   }
 </script>
 
-<ChannelsDropdown
-  bind:value
-  {length}
-  {kind}
-  {size}
-  {shape}
-  {editable}
-  on:click={click}
-/>
+<ChannelsDropdown bind:value {length} {kind} {size} {shape} {editable} on:click={click} />

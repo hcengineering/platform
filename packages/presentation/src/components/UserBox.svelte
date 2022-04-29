@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import contact, { Contact, formatName } from '@anticrm/contact'
   import type { Class, Ref } from '@anticrm/core'
@@ -62,21 +61,28 @@
 <div bind:this={container} class="min-w-0">
   <Tooltip {label} fill={width === '100%'} direction={labelDirection}>
     <Button
-      icon={(size === 'x-large' && selected) ? undefined : IconPerson}
+      icon={size === 'x-large' && selected ? undefined : IconPerson}
       width={width ?? 'min-content'}
-      {size} {kind} {justify}
+      {size}
+      {kind}
+      {justify}
       on:click={() => {
         if (!readonly) {
-          showPopup(UsersPopup, { _class, allowDeselect, selected: value, titleDeselect, placeholder }, container, (result) => {
-            if (result === null) {
-              value = null
-              selected = undefined
-              dispatch('change', null)
-            } else if (result !== undefined && result._id !== value) {
-              value = result._id
-              dispatch('change', value)
+          showPopup(
+            UsersPopup,
+            { _class, allowDeselect, selected: value, titleDeselect, placeholder },
+            container,
+            (result) => {
+              if (result === null) {
+                value = null
+                selected = undefined
+                dispatch('change', null)
+              } else if (result !== undefined && result._id !== value) {
+                value = result._id
+                dispatch('change', value)
+              }
             }
-          })
+          )
         }
       }}
     >
@@ -88,7 +94,7 @@
             {getName(selected)}
           {/if}
         {:else}
-          <Label label={label} />
+          <Label {label} />
         {/if}
       </span>
     </Button>

@@ -12,11 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { afterUpdate, onDestroy, onMount } from 'svelte'
 
   export let padding: boolean = false
+  export let autoscroll: boolean = false
+  export let correctPadding: number = 0
+  export let bottomStart: boolean = false
 
   let mask: 'top' | 'bottom' | 'both' | 'none' = 'bottom'
 
@@ -27,13 +29,16 @@
   let divTrack: HTMLElement
   let divTHead: HTMLElement
   let elTHead: Element
-  let isBack: boolean = false  // ?
+  let isBack: boolean = false // ?
   let isTHead: boolean = false
-  let hasTHeads: boolean = false  // ?
+  let hasTHeads: boolean = false // ?
   let isScrolling: boolean = false
   let enabledChecking: boolean = false
   let dY: number
   let visibleEl: number | undefined = undefined
+  let belowContent: number | undefined = undefined
+  let scrolling: boolean = false
+  let firstScroll: boolean = autoscroll
 
   const checkBack = (): void => {
     if (divBox) {
@@ -62,8 +67,8 @@
 
   const checkTHeadSizes = (): void => {
     if (elTHead && divTHead && divScroll) {
-      const elements = divTHead.querySelectorAll('div')
-      elements.forEach((el, i) => {
+      const elems = divTHead.querySelectorAll('div')
+      elems.forEach((el, i) => {
         const th = elTHead.children.item(i)
         if (th) el.style.width = th.clientWidth + 'px'
       })
@@ -85,11 +90,11 @@
         const th = tr.children.item(i)
         if (th) {
           let newStyle = `flex-shrink: 0; width: ${th.clientWidth}px; `
-          if ((i === 0 && !enabledChecking) || (i === 1 && enabledChecking)) newStyle += `padding-right: 1.5rem;`
-          else if (i === tr.children.length - 1) newStyle += `padding-left: 1.5rem;`
-          else if (i === 0 && enabledChecking) newStyle += `padding: 0 .75rem;`
-          else newStyle += `padding: 0 1.5rem;`
-          if (th.classList.contains('sorted')) newStyle += ` margin-right: .25rem;`
+          if ((i === 0 && !enabledChecking) || (i === 1 && enabledChecking)) newStyle += 'padding-right: 1.5rem;'
+          else if (i === tr.children.length - 1) newStyle += 'padding-left: 1.5rem;'
+          else if (i === 0 && enabledChecking) newStyle += 'padding: 0 .75rem;'
+          else newStyle += 'padding: 0 1.5rem;'
+          if (th.classList.contains('sorted')) newStyle += ' margin-right: .25rem;'
           divTHead.insertAdjacentHTML('beforeend', `<div style="${newStyle}">${tr.children.item(i)?.textContent}</div>`)
         }
       }
@@ -102,7 +107,7 @@
   const findTHeaders = (): void => {
     if (divBox) {
       const elements = divBox.querySelectorAll('.scroller-thead')
-      if (elements.length > 0 && divScroll) {
+      if (elements && elements.length > 0 && divScroll) {
         const rectScroll = divScroll.getBoundingClientRect()
         hasTHeads = true
         elements.forEach((el, i) => {
@@ -111,10 +116,9 @@
           const rectTable = el.parentElement?.getBoundingClientRect()
           if (rectTable) {
             if (rectTable.top < rectScroll.top && rectTable.bottom > rectScroll.top + rect.height) {
-              if (!isTHead && divTHead)
-                if (fillTHead(el)) visibleEl = i
+              if (!isTHead && divTHead) if (fillTHead(el)) visibleEl = i
               if (isTHead) {
-                if (rect.width > rectScroll.width) divTHead.style.width = rectScroll.width + 'px'
+                if (rect.width > rectScroll.width) divTHead.style.width = rectScroll.width - correctPadding + 'px'
                 else divTHead.style.width = rect.width + 'px'
                 divTHead.style.height = rect.height + 'px'
                 divTHead.style.left = rect.left + 'px'
@@ -128,8 +132,13 @@
                   divTHead.style.opacity = '0'
                 }
               }
-            } else if ((rectTable.top > rectScroll.top + rect.height || rectTable.bottom < rectScroll.top + rect.height) && isTHead && visibleEl === i)
+            } else if (
+              (rectTable.top > rectScroll.top + rect.height || rectTable.bottom < rectScroll.top + rect.height) &&
+              isTHead &&
+              visibleEl === i
+            ) {
               clearTHead()
+            }
           }
         })
       } else hasTHeads = false
@@ -138,13 +147,14 @@
 
   const checkBar = (): void => {
     if (divBar && divScroll) {
-      const proc = divScroll.clientHeight / divScroll.scrollHeight * 100
+      const proc = (divScroll.clientHeight / divScroll.scrollHeight) * 100
       const procScroll = (divScroll.clientHeight - 4) / 100
       const procTop = divScroll.scrollTop / divScroll.scrollHeight
       divBar.style.height = procScroll * proc + 'px'
       divBar.style.top = procTop * (divScroll.clientHeight - 4) + 2 + 'px'
       if (mask === 'none') divBar.style.visibility = 'hidden'
       else divBar.style.visibility = 'visible'
+      if (divScroll.clientHeight >= divScroll.scrollHeight) divBar.style.visibility = 'hidden'
     }
   }
 
@@ -182,9 +192,10 @@
       isScrolling = true
     }
   }
-  
+
   const checkFade = (): void => {
     if (divScroll) {
+      scrolling = false
       const t = divScroll.scrollTop
       const b = divScroll.scrollHeight - divScroll.clientHeight - t
       if (t > 0 && b > 0) mask = 'both'
@@ -198,7 +209,16 @@
     if (!isScrolling) checkBar()
   }
 
-  let observer = new IntersectionObserver(() => checkFade(), { root: null, threshold: .1 })
+  const observer = new IntersectionObserver(() => checkFade(), { root: null, threshold: 0.1 })
+
+  $: if (firstScroll && divScroll && divScroll.clientHeight !== divScroll.scrollHeight) {
+    divScroll.scrollTop = divScroll.scrollHeight - divScroll.clientHeight
+    firstScroll = false
+  }
+  $: if (autoscroll && belowContent && belowContent <= 50) scrolling = true
+  $: if (scrolling && belowContent && belowContent > 50) {
+    divScroll.scrollTop = divScroll.scrollHeight - divScroll.clientHeight
+  }
 
   onMount(() => {
     if (divScroll && divBox) {
@@ -209,20 +229,34 @@
     }
     if (divBack) checkBack()
   })
-  onDestroy(() => { if (divScroll) divScroll.removeEventListener('scroll', checkFade) })
+  onDestroy(() => {
+    if (divScroll) divScroll.removeEventListener('scroll', checkFade)
+  })
   afterUpdate(() => {
     if (divScroll && divBox) {
       const tempEl = divBox.querySelector('*') as HTMLElement
       if (tempEl) observer.observe(tempEl)
+      if (scrolling) divScroll.scrollTop = divScroll.scrollHeight - divScroll.clientHeight
       checkFade()
+      clearTHead()
+      findTHeaders()
+      belowContent = divScroll.scrollHeight - divScroll.clientHeight - divScroll.scrollTop
     }
   })
+
+  let divWidth: number = 0
+  const _resize = (): void => {
+    clearTHead()
+    checkFade()
+  }
+  $: if (divWidth) _resize()
 </script>
 
-<svelte:window on:resize={checkFade} />
-<div class="scroller-container">
+<svelte:window on:resize={_resize} />
+<div class="scroller-container" class:bottomStart>
   <div
     bind:this={divScroll}
+    bind:clientWidth={divWidth}
     class="scroll relative"
     class:antiNav-topFade={mask === 'top'}
     class:antiNav-bottomFade={mask === 'bottom'}
@@ -234,17 +268,8 @@
     </div>
   </div>
   <div bind:this={divBack} class="back" />
-  <div
-    class="bar"
-    class:hovered={isScrolling}
-    bind:this={divBar}
-    on:mousedown={onScrollStart}
-  />
-  <div
-    class="track"
-    class:hovered={isScrolling}
-    bind:this={divTrack}
-  />
+  <div class="bar" class:hovered={isScrolling} bind:this={divBar} on:mousedown={onScrollStart} />
+  <div class="track" class:hovered={isScrolling} bind:this={divTrack} />
   <div bind:this={divTHead} class="fly-head thead-style" />
 </div>
 
@@ -263,12 +288,24 @@
     overflow-x: hidden;
     overflow-y: auto;
 
-    &::-webkit-scrollbar:vertical { width: 0; }
+    &::-webkit-scrollbar:vertical {
+      width: 0;
+    }
   }
   .box {
     display: flex;
     flex-direction: column;
     height: 100%;
+  }
+  .scroller-container.bottomStart {
+    justify-content: flex-end;
+    .scroll {
+      flex-grow: 0;
+      height: min-content;
+      .box {
+        height: min-content;
+      }
+    }
   }
 
   .track {
@@ -280,9 +317,9 @@
     width: 8px;
     transform-origin: center;
     transform: scaleX(0);
-    transition: all .1s ease-in-out;
+    transition: all 0.1s ease-in-out;
     background-color: var(--theme-menu-color);
-    border-radius: .5rem;
+    border-radius: 0.5rem;
   }
   .bar {
     visibility: hidden;
@@ -293,18 +330,19 @@
     min-height: 2rem;
     max-height: calc(100% - 12px);
     transform-origin: center;
-    transform: scaleX(.5);
+    transform: scaleX(0.5);
     background-color: var(--theme-button-bg-focused);
-    border-radius: .125rem;
-    opacity: .5;
+    border-radius: 0.125rem;
+    opacity: 0.5;
     cursor: pointer;
     z-index: 1;
-    transition: all .1s;
+    transition: all 0.1s;
 
-    &:hover, &.hovered {
+    &:hover,
+    &.hovered {
       background-color: var(--theme-button-bg-hovered);
       transform: scaleX(1);
-      border-radius: .25rem;
+      border-radius: 0.25rem;
       opacity: 1;
       filter: drop-shadow(0 0 1px black);
 
@@ -314,7 +352,9 @@
         transform: scaleX(1);
       }
     }
-    &.hovered { transition: none; }
+    &.hovered {
+      transition: none;
+    }
   }
 
   .back {
@@ -331,7 +371,7 @@
     position: fixed;
     pointer-events: none;
     visibility: hidden;
-    transition: top .2s ease-out, opacity .2s;
+    transition: top 0.2s ease-out, opacity 0.2s;
   }
   .thead-style {
     display: flex;

@@ -13,75 +13,133 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, DocumentQuery, FindOptions, Ref, getObjectValue } from '@anticrm/core'
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import { CheckBox, Loading, showPopup, Spinner, IconMoreV, Tooltip } from '@anticrm/ui'
-  import { BuildModelKey } from '@anticrm/view'
+  import contact, { Employee } from '@anticrm/contact'
+  import { Class, Doc, FindOptions, getObjectValue, Ref, WithLookup } from '@anticrm/core'
+  import { getClient } from '@anticrm/presentation'
+  import { Issue, IssueStatus, Team } from '@anticrm/tracker'
+  import {
+    Button,
+    CheckBox,
+    Component,
+    eventToHTMLElement,
+    IconAdd,
+    IconMoreV,
+    showPopup,
+    Spinner,
+    Tooltip
+  } from '@anticrm/ui'
+  import { AttributeModel, BuildModelKey } from '@anticrm/view'
+  import { buildModel, getObjectPresenter, LoadingProps, Menu } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
-  import { buildModel, LoadingProps, Menu } from '@anticrm/view-resources'
   import tracker from '../../plugin'
+  import { IssuesGroupByKeys, issuesGroupPresenterMap, IssuesOrderByKeys, issuesSortOrderMap } from '../../utils'
+  import CreateIssue from '../CreateIssue.svelte'
 
   export let _class: Ref<Class<Doc>>
+  export let currentSpace: Ref<Team> | undefined = undefined
+  export let groupByKey: IssuesGroupByKeys | undefined = undefined
+  export let orderBy: IssuesOrderByKeys
+  export let statuses: WithLookup<IssueStatus>[]
+  export let employees: (WithLookup<Employee> | undefined)[] = []
+  export let categories: any[] = []
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
   export let itemsConfig: (BuildModelKey | string)[]
-  export let options: FindOptions<Doc> | undefined = undefined
-  export let query: DocumentQuery<Doc>
-
-  // If defined, will show a number of dummy items before real data will appear.
+  export let selectedObjectIds: Doc[] = []
+  export let selectedRowIndex: number | undefined = undefined
+  export let groupedIssues: { [key: string | number | symbol]: Issue[] } = {}
   export let loadingProps: LoadingProps | undefined = undefined
 
   const dispatch = createEventDispatcher()
 
-  const DOCS_MAX_AMOUNT = 200
-  const liveQuery = createQuery()
+  const client = getClient()
+  const objectRefs: HTMLElement[] = []
+  const baseOptions: FindOptions<Issue> = {
+    lookup: {
+      assignee: contact.class.Employee,
+      status: tracker.class.IssueStatus
+    }
+  }
 
-  let selectedIssueIds = new Set<Ref<Doc>>()
-  let selectedRowIndex: number | undefined
-  let isLoading = false
-  let docObjects: Doc[] | undefined
-  let queryIndex = 0
+  let personPresenter: AttributeModel
 
-  const updateData = async (_class: Ref<Class<Doc>>, query: DocumentQuery<Doc>, options?: FindOptions<Doc>) => {
-    const i = ++queryIndex
+  $: combinedGroupedIssues = Object.values(groupedIssues).flat(1)
+  $: options = { ...baseOptions, sort: { [orderBy]: issuesSortOrderMap[orderBy] } } as FindOptions<Issue>
+  $: headerComponent =
+    groupByKey === undefined || groupByKey === 'assignee' ? null : issuesGroupPresenterMap[groupByKey]
+  $: selectedObjectIdsSet = new Set<Ref<Doc>>(selectedObjectIds.map((it) => it._id))
+  $: objectRefs.length = combinedGroupedIssues.length
 
-    isLoading = true
+  $: getObjectPresenter(client, contact.class.Person, { key: '' }).then((p) => {
+    personPresenter = p
+  })
 
-    liveQuery.query(
-      _class,
-      query,
-      (result) => {
-        if (i !== queryIndex) {
-          return // our data is invalid.
-        }
+  const handleMenuOpened = async (event: MouseEvent, object: Doc, rowIndex: number) => {
+    selectedRowIndex = rowIndex
 
-        docObjects = result
-        dispatch('content', docObjects)
-        isLoading = false
+    if (!selectedObjectIdsSet.has(object._id)) {
+      onObjectChecked(combinedGroupedIssues, false)
+
+      selectedObjectIds = []
+    }
+
+    const items = selectedObjectIds.length > 0 ? selectedObjectIds : object
+
+    showPopup(
+      Menu,
+      { object: items, baseMenuClass },
+      {
+        getBoundingClientRect: () => DOMRect.fromRect({ width: 1, height: 1, x: event.clientX, y: event.clientY })
       },
-      { ...options, limit: DOCS_MAX_AMOUNT }
+      () => {
+        selectedRowIndex = undefined
+      }
     )
   }
 
-  $: updateData(_class, query, options)
-
-  const client = getClient()
-
-  const showMenu = async (event: MouseEvent, docObject: Doc, rowIndex: number) => {
-    selectedRowIndex = rowIndex
-
-    showPopup(Menu, { object: docObject, baseMenuClass }, event.target as HTMLElement, () => {
-      selectedRowIndex = undefined
-    })
+  export const onObjectChecked = (docs: Doc[], value: boolean) => {
+    dispatch('check', { docs, value })
   }
 
-  const handleIssueSelected = (id: Ref<Doc>, event: CustomEvent<boolean>) => {
-    if (event.detail) {
-      selectedIssueIds.add(id)
-    } else {
-      selectedIssueIds.delete(id)
+  const handleRowFocused = (object: Doc) => {
+    dispatch('row-focus', object)
+  }
+
+  export const onElementSelected = (offset: 1 | -1 | 0, docObject?: Doc) => {
+    let position =
+      (docObject !== undefined ? combinedGroupedIssues.findIndex((x) => x._id === docObject?._id) : selectedRowIndex) ??
+      -1
+
+    position += offset
+
+    if (position < 0) {
+      position = 0
     }
 
-    selectedIssueIds = selectedIssueIds
+    if (position >= combinedGroupedIssues.length) {
+      position = combinedGroupedIssues.length - 1
+    }
+
+    const objectRef = objectRefs[position]
+
+    selectedRowIndex = position
+
+    handleRowFocused(combinedGroupedIssues[position])
+
+    if (objectRef !== undefined) {
+      objectRef.scrollIntoView({ behavior: 'auto', block: 'nearest' })
+    }
+  }
+
+  const handleNewIssueAdded = (event: MouseEvent, category: any) => {
+    if (!currentSpace) {
+      return
+    }
+
+    showPopup(
+      CreateIssue,
+      { space: currentSpace, ...(groupByKey ? { [groupByKey]: category } : {}) },
+      eventToHTMLElement(event)
+    )
   }
 
   const getLoadingElementsLength = (props: LoadingProps, options?: FindOptions<Doc>) => {
@@ -93,101 +151,173 @@
   }
 </script>
 
-{#await buildModel({ client, _class, keys: itemsConfig, options })}
-  {#if !isLoading}
-    <Loading />
-  {/if}
-{:then itemModels}
-  <div class="listRoot">
-    {#if docObjects}
-      {#each docObjects as docObject, rowIndex (docObject._id)}
-        <div
-          class="listGrid"
-          class:mListGridChecked={selectedIssueIds.has(docObject._id)}
-          class:mListGridFixed={rowIndex === selectedRowIndex}
-        >
-          {#each itemModels as attributeModel, attributeModelIndex}
-            {#if attributeModelIndex === 0}
-              <div class="gridElement">
-                <Tooltip direction={'bottom'} label={tracker.string.SelectIssue}>
-                  <div class="eListGridCheckBox ml-2">
-                    <CheckBox
-                      checked={selectedIssueIds.has(docObject._id)}
-                      on:value={(event) => {
-                        handleIssueSelected(docObject._id, event)
-                      }}
-                    />
-                  </div>
-                </Tooltip>
-                <div class="priorityPresenter">
-                  <svelte:component
-                    this={attributeModel.presenter}
-                    value={getObjectValue(attributeModel.key, docObject) ?? ''}
-                    {...attributeModel.props}
-                  />
-                </div>
-              </div>
-            {:else if attributeModelIndex === 1}
-              <div class="issuePresenter">
-                <svelte:component
-                  this={attributeModel.presenter}
-                  value={getObjectValue(attributeModel.key, docObject) ?? ''}
-                  {...attributeModel.props}
-                />
-                <div
-                  id="context-menu"
-                  class="eIssuePresenterContextMenu"
-                  on:click={(event) => showMenu(event, docObject, rowIndex)}
-                >
-                  <IconMoreV size={'small'} />
-                </div>
-              </div>
-            {:else if attributeModelIndex === 3}
-              <svelte:component
-                this={attributeModel.presenter}
-                value={getObjectValue(attributeModel.key, docObject) ?? ''}
-                {...attributeModel.props}
-              />
-              <div class="filler" />
-            {:else}
-              <div class="gridElement">
-                <svelte:component
-                  this={attributeModel.presenter}
-                  value={getObjectValue(attributeModel.key, docObject) ?? ''}
-                  {...attributeModel.props}
-                />
-              </div>
-            {/if}
-          {/each}
+<div>
+  {#each categories as category}
+    {#if headerComponent || groupByKey === 'assignee'}
+      <div class="header categoryHeader flex-between label">
+        <div class="flex-row-center gap-2">
+          {#if groupByKey === 'assignee' && personPresenter}
+            <svelte:component
+              this={personPresenter.presenter}
+              shouldShowLabel={true}
+              value={employees.find((x) => x?._id === category)}
+              defaultName={tracker.string.NoAssignee}
+              shouldShowPlaceholder={true}
+              isInteractive={false}
+              avatarSize={'tiny'}
+            />
+          {:else if headerComponent}
+            <Component
+              is={headerComponent}
+              props={{
+                isEditable: false,
+                shouldShowLabel: true,
+                value: groupByKey ? { [groupByKey]: category } : {},
+                statuses: groupByKey === 'status' ? statuses : undefined
+              }}
+            />
+          {/if}
+          <span class="eLabelCounter ml-2">{(groupedIssues[category] ?? []).length}</span>
         </div>
-      {/each}
-    {:else if loadingProps !== undefined}
-      {#each Array(getLoadingElementsLength(loadingProps, options)) as _, rowIndex}
-        <div class="listGrid mListGridIsLoading" class:fixed={rowIndex === selectedRowIndex}>
-          <div class="gridElement">
-            <CheckBox checked={false} />
-            <div class="ml-4">
-              <Spinner size="small" />
-            </div>
-          </div>
+        <div class="flex">
+          <Tooltip label={tracker.string.AddIssueTooltip} direction={'left'}>
+            <Button icon={IconAdd} kind={'transparent'} on:click={(event) => handleNewIssueAdded(event, category)} />
+          </Tooltip>
         </div>
-      {/each}
+      </div>
     {/if}
-  </div>
-{/await}
-
-{#if isLoading}
-  <Loading />
-{/if}
+    {#await buildModel({ client, _class, keys: itemsConfig, options }) then itemModels}
+      <div class="listRoot">
+        {#if groupedIssues[category]}
+          {#each groupedIssues[category] as docObject (docObject._id)}
+            <div
+              bind:this={objectRefs[combinedGroupedIssues.findIndex((x) => x === docObject)]}
+              class="listGrid"
+              class:mListGridChecked={selectedObjectIdsSet.has(docObject._id)}
+              class:mListGridFixed={selectedRowIndex === combinedGroupedIssues.findIndex((x) => x === docObject)}
+              class:mListGridSelected={selectedRowIndex === combinedGroupedIssues.findIndex((x) => x === docObject)}
+              on:contextmenu|preventDefault={(event) =>
+                handleMenuOpened(
+                  event,
+                  docObject,
+                  combinedGroupedIssues.findIndex((x) => x === docObject)
+                )}
+              on:focus={() => {}}
+              on:mouseover={() => handleRowFocused(docObject)}
+            >
+              <div class="contentWrapper">
+                {#each itemModels as attributeModel, attributeModelIndex}
+                  {#if attributeModelIndex === 0}
+                    <div class="gridElement">
+                      <Tooltip direction={'bottom'} label={tracker.string.SelectIssue}>
+                        <div class="eListGridCheckBox">
+                          <CheckBox
+                            checked={selectedObjectIdsSet.has(docObject._id)}
+                            on:value={(event) => {
+                              onObjectChecked([docObject], event.detail)
+                            }}
+                          />
+                        </div>
+                      </Tooltip>
+                      <div class="priorityPresenter">
+                        <svelte:component
+                          this={attributeModel.presenter}
+                          value={getObjectValue(attributeModel.key, docObject) ?? ''}
+                          {...attributeModel.props}
+                        />
+                      </div>
+                    </div>
+                  {:else if attributeModelIndex === 1}
+                    <div class="issuePresenter">
+                      <svelte:component
+                        this={attributeModel.presenter}
+                        value={getObjectValue(attributeModel.key, docObject) ?? ''}
+                        {...attributeModel.props}
+                      />
+                      <div
+                        id="context-menu"
+                        class="eIssuePresenterContextMenu"
+                        on:click={(event) =>
+                          handleMenuOpened(
+                            event,
+                            docObject,
+                            combinedGroupedIssues.findIndex((x) => x === docObject)
+                          )}
+                      >
+                        <IconMoreV size={'small'} />
+                      </div>
+                    </div>
+                  {:else if attributeModelIndex === 3}
+                    <svelte:component
+                      this={attributeModel.presenter}
+                      value={getObjectValue(attributeModel.key, docObject) ?? ''}
+                      {...attributeModel.props}
+                    />
+                    <div class="filler" />
+                  {:else}
+                    <div class="gridElement">
+                      <svelte:component
+                        this={attributeModel.presenter}
+                        value={getObjectValue(attributeModel.key, docObject) ?? ''}
+                        issueId={docObject._id}
+                        {...attributeModel.props}
+                      />
+                    </div>
+                  {/if}
+                {/each}
+              </div>
+            </div>
+          {/each}
+        {:else if loadingProps !== undefined}
+          {#each Array(getLoadingElementsLength(loadingProps, options)) as _, rowIndex}
+            <div class="listGrid" class:fixed={rowIndex === selectedRowIndex}>
+              <div class="contentWrapper">
+                <div class="gridElement">
+                  <CheckBox checked={false} />
+                  <div class="ml-4">
+                    <Spinner size="small" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          {/each}
+        {/if}
+      </div>
+    {/await}
+  {/each}
+</div>
 
 <style lang="scss">
+  .categoryHeader {
+    height: 2.5rem;
+    background-color: var(--theme-table-bg-hover);
+    padding-left: 2.25rem;
+    padding-right: 1.35rem;
+  }
+
+  .label {
+    font-weight: 500;
+    color: var(--theme-caption-color);
+    .eLabelCounter {
+      opacity: 0.8;
+      font-weight: initial;
+    }
+  }
+
   .listRoot {
     width: 100%;
   }
 
-  .listGrid {
+  .contentWrapper {
     display: flex;
     align-items: center;
+    height: 100%;
+    padding-left: 0.75rem;
+    padding-right: 1.15rem;
+  }
+
+  .listGrid {
+    width: 100%;
     height: 3.25rem;
     color: var(--theme-caption-color);
     border-bottom: 1px solid var(--theme-button-border-hovered);
@@ -206,12 +336,8 @@
       }
     }
 
-    &.mListGridIsLoading {
-      justify-content: flex-start;
-    }
-
-    &:hover {
-      background-color: var(--theme-table-bg-hover);
+    &.mListGridSelected {
+      background-color: var(--menu-bg-select);
     }
 
     .eListGridCheckBox {
@@ -243,7 +369,7 @@
   }
 
   .priorityPresenter {
-    padding-left: 0.75rem;
+    padding-left: 0.65rem;
   }
 
   .issuePresenter {

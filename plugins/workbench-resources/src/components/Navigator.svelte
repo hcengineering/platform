@@ -70,7 +70,7 @@
     )
   })
 
-  async function update(model: NavigatorModel, spaces: Space[], preferences: Map<Ref<Doc>, SpacePreference>) {
+  async function update (model: NavigatorModel, spaces: Space[], preferences: Map<Ref<Doc>, SpacePreference>) {
     if (model.specials !== undefined) {
       topSpecials = await getSpecials(model.specials, 'top', spaces)
       bottomSpecials = await getSpecials(model.specials, 'bottom', spaces)
@@ -78,13 +78,15 @@
       topSpecials = []
       bottomSpecials = []
     }
-    shownSpaces = spaces.filter((sp) => !sp.archived && !preferences.has(sp._id) && (!sp.members.length || sp.members.includes(myAccId)))
+    shownSpaces = spaces.filter(
+      (sp) => !sp.archived && !preferences.has(sp._id) && (!sp.members.length || sp.members.includes(myAccId))
+    )
     starred = spaces.filter((sp) => preferences.has(sp._id))
   }
 
   $: if (model) update(model, spaces, preferences)
 
-  async function getSpecials(
+  async function getSpecials (
     specials: SpecialNavModel[],
     state: 'top' | 'bottom',
     spaces: Space[]
@@ -146,6 +148,7 @@
         hasSpaceBrowser={model.specials?.find((p) => p.id === 'spaceBrowser') !== undefined}
         model={m}
         on:space
+        on:open
         {currentSpecial}
       />
     {/each}

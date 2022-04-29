@@ -12,9 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
-  import { afterUpdate } from "svelte"
+  import { afterUpdate } from 'svelte'
 
   export let vertical: boolean = false
   export let stretch: boolean = false
@@ -36,7 +35,7 @@
 
 <div class="scroll" bind:this={div} class:vertical class:bothScroll class:noShift on:scroll={setAutoscroll}>
   <div class="box" class:stretch>
-    <slot/>
+    <slot />
   </div>
 </div>
 
@@ -48,12 +47,12 @@
     overflow-x: auto;
     overflow-y: hidden;
     margin-right: 0;
-    margin-bottom: -.75rem;
+    margin-bottom: -0.75rem;
 
     .box {
       position: absolute;
       display: flex;
-      padding: 0 0 .375rem 0;
+      padding: 0 0 0.375rem 0;
       top: 0;
       left: 0;
       width: auto;
@@ -64,12 +63,12 @@
     }
 
     &.vertical {
-      margin: 0 -.5rem 0 -.5rem;
+      margin: 0 -0.5rem 0 -0.5rem;
       overflow-x: hidden;
       overflow-y: auto;
       .box {
         flex-direction: column;
-        padding: 0 .5rem 0 .5rem;
+        padding: 0 0.5rem 0 0.5rem;
         width: 100%;
         height: auto;
         &.stretch {
@@ -79,16 +78,18 @@
     }
 
     &.bothScroll {
-      margin: 0 -.375rem -.375rem 0;
+      margin: 0 -0.375rem -0.375rem 0;
       overflow: auto;
       .box {
-        padding: 0 .375rem .375rem 0;
+        padding: 0 0.375rem 0.375rem 0;
       }
     }
 
     &.noShift {
       margin: 0;
-      .box { padding: 0; }
+      .box {
+        padding: 0;
+      }
     }
   }
 </style>

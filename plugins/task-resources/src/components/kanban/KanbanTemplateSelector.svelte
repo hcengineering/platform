@@ -27,16 +27,22 @@
 
   let templates: KanbanTemplate[] = []
   const templatesQ = createQuery()
-  $: templatesQ.query(task.class.KanbanTemplate, { space: { $in: (folders as Ref<Doc>[] as Ref<Space>[]) } }, (result) => { templates = result })
+  $: templatesQ.query(
+    task.class.KanbanTemplate,
+    { space: { $in: folders as Ref<Doc>[] as Ref<Space>[] } },
+    (result) => {
+      templates = result
+    }
+  )
 
   let items: DropdownTextItem[] = []
-  $: items = templates.map(x => ({ id: x._id, label: x.title }))
+  $: items = templates.map((x) => ({ id: x._id, label: x.title }))
 
   let selectedItem: string | undefined
 
   const dispatch = createEventDispatcher()
   $: {
-    template = selectedItem === undefined ? undefined : selectedItem as Ref<KanbanTemplate>
+    template = selectedItem === undefined ? undefined : (selectedItem as Ref<KanbanTemplate>)
     dispatch('change', template)
   }
 </script>

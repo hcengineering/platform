@@ -27,6 +27,7 @@ import type {
   HTMLPresenter,
   IgnoreActions,
   KeyBinding,
+  LinkPresenter,
   ObjectEditor,
   ObjectEditorHeader,
   ObjectFactory,
@@ -199,6 +200,13 @@ export class TPreviewPresenter extends TClass implements PreviewPresenter {
   presenter!: AnyComponent
 }
 
+@Model(view.class.LinkPresenter, core.class.Doc, DOMAIN_MODEL)
+export class TLinkPresenter extends TDoc implements LinkPresenter {
+  pattern!: string
+
+  component!: AnyComponent
+}
+
 export function createModel (builder: Builder): void {
   builder.createModel(
     TAttributeEditor,
@@ -216,7 +224,8 @@ export function createModel (builder: Builder): void {
     TSpaceName,
     TTextPresenter,
     TIgnoreActions,
-    TPreviewPresenter
+    TPreviewPresenter,
+    TLinkPresenter
   )
 
   classPresenter(builder, core.class.TypeString, view.component.StringPresenter, view.component.StringEditor)
@@ -241,7 +250,7 @@ export function createModel (builder: Builder): void {
 
   createAction(builder, view.action.Delete, view.string.Delete, view.actionImpl.Delete, {
     icon: view.icon.Delete,
-    keyBinding: ['Meta + Backspace']
+    keyBinding: ['Meta + Backspace', 'Ctrl + Backspace']
   })
   actionTarget(builder, view.action.Delete, core.class.Doc, { mode: ['context', 'browser'], group: 'tools' })
 
@@ -280,7 +289,7 @@ export function createModel (builder: Builder): void {
   actionTarget(builder, view.action.SelectItem, core.class.Doc, { mode: 'browser' })
 
   createAction(builder, view.action.SelectItemAll, view.string.SelectItemAll, view.actionImpl.SelectItemAll, {
-    keyBinding: ['meta + keyA']
+    keyBinding: ['meta + keyA', 'ctrl + keyA']
   })
   actionTarget(builder, view.action.SelectItemAll, core.class.Doc, { mode: 'browser' })
 
@@ -290,7 +299,7 @@ export function createModel (builder: Builder): void {
   actionTarget(builder, view.action.SelectItemNone, core.class.Doc, { mode: 'browser' })
 
   createAction(builder, view.action.ShowActions, view.string.ShowActions, view.actionImpl.ShowActions, {
-    keyBinding: ['meta + keyk']
+    keyBinding: ['meta + keyK', 'ctrl + keyK']
   })
   actionTarget(builder, view.action.ShowActions, core.class.Doc, {
     mode: ['workbench', 'browser', 'popup', 'panel', 'editor']
@@ -306,6 +315,16 @@ export function createModel (builder: Builder): void {
     icon: view.icon.Open,
     keyBinding: ['Enter'],
     singleInput: true
+  })
+
+  builder.createDoc(view.class.LinkPresenter, core.space.Model, {
+    pattern: '(www.)?youtube.(com|ru)',
+    component: view.component.YoutubePresenter
+  })
+
+  builder.createDoc(view.class.LinkPresenter, core.space.Model, {
+    pattern: '(www.)?github.com/',
+    component: view.component.GithubPresenter
   })
 
   // Should be contributed via individual plugins.

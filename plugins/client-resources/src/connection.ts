@@ -15,7 +15,18 @@
 //
 
 import client, { ClientSocket } from '@anticrm/client'
-import type { Class, ClientConnection, Doc, DocumentQuery, FindOptions, FindResult, Ref, Tx, TxHander, TxResult } from '@anticrm/core'
+import type {
+  Class,
+  ClientConnection,
+  Doc,
+  DocumentQuery,
+  FindOptions,
+  FindResult,
+  Ref,
+  Tx,
+  TxHander,
+  TxResult
+} from '@anticrm/core'
 import { getMetadata, PlatformError, readResponse, ReqId, serialize } from '@anticrm/platform'
 
 class DeferredPromise {
@@ -51,14 +62,17 @@ class Connection implements ClientConnection {
 
   private openConnection (): Promise<ClientSocket> {
     // Use defined factory or browser default one.
-    const clientSocketFactory = getMetadata(client.metadata.ClientSocketFactory) ?? ((url: string) => new WebSocket(url) as ClientSocket)
+    const clientSocketFactory =
+      getMetadata(client.metadata.ClientSocketFactory) ?? ((url: string) => new WebSocket(url) as ClientSocket)
 
     const websocket = clientSocketFactory(this.url)
     websocket.onmessage = (event: MessageEvent) => {
       const resp = readResponse(event.data)
       if (resp.id !== undefined) {
         const promise = this.requests.get(resp.id)
-        if (promise === undefined) { throw new Error(`unknown response id: ${resp.id}`) }
+        if (promise === undefined) {
+          throw new Error(`unknown response id: ${resp.id}`)
+        }
         this.requests.delete(resp.id)
         if (resp.error !== undefined) {
           promise.reject(new PlatformError(resp.error))
@@ -86,19 +100,27 @@ class Connection implements ClientConnection {
   }
 
   private async sendRequest (method: string, ...params: any[]): Promise<any> {
-    if (this.websocket === null) { this.websocket = await this.openConnection() }
+    if (this.websocket === null) {
+      this.websocket = await this.openConnection()
+    }
     const id = this.lastId++
-    this.websocket.send(serialize({
-      method,
-      params,
-      id
-    }))
+    this.websocket.send(
+      serialize({
+        method,
+        params,
+        id
+      })
+    )
     const promise = new DeferredPromise()
     this.requests.set(id, promise)
     return await promise.promise
   }
 
-  findAll<T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<FindResult<T>> {
+  findAll<T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ): Promise<FindResult<T>> {
     return this.sendRequest('findAll', _class, query, options)
   }
 

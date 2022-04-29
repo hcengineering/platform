@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { Asset, IntlString } from '@anticrm/platform'
   import type { Action } from '@anticrm/ui'
@@ -26,9 +25,8 @@
   export let parent = false
   export let collapsed = false
   export let indent: 'default' | 'ml-2' | 'ml-4' | 'ml-8' = 'default'
-
 </script>
 
 <TreeElement {title} {label} {icon} {notifications} {collapsed} {actions} node {parent} {indent}>
-  <slot/>
+  <slot />
 </TreeElement>

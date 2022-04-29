@@ -12,14 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   export let on: boolean = false
 </script>
 
 <label class="toggle">
-  <input class="chBox" type="checkbox" bind:checked={on} on:change>
-  <span class="toggle-switch"></span>
+  <input class="chBox" type="checkbox" bind:checked={on} on:change />
+  <span class="toggle-switch" />
 </label>
 
 <style lang="scss">
@@ -41,19 +40,25 @@
       padding: 0;
       clip: rect(0 0 0 0);
       overflow: hidden;
-      
+
       &:checked + .toggle-switch {
         background-color: var(--toggle-on-bg-color);
-        &:hover { background-color: var(--toggle-on-bg-hover); }
+        &:hover {
+          background-color: var(--toggle-on-bg-hover);
+        }
         &:before {
-          left: .75rem;
+          left: 0.75rem;
           background: var(--toggle-on-sw-color);
         }
       }
-      &:not(:disabled) + .toggle-switch { cursor: pointer; }
+      &:not(:disabled) + .toggle-switch {
+        cursor: pointer;
+      }
       &:disabled + .toggle-switch {
         filter: grayscale(70%);
-        &:before { background: #eee; }
+        &:before {
+          background: #eee;
+        }
       }
       // &:focus-within + .toggle-switch { box-shadow: 0 0 0 2px var(--primary-button-outline); }
     }
@@ -65,21 +70,23 @@
       height: 1.5rem;
       border-radius: 4.5rem;
       background-color: var(--toggle-bg-color);
-      transition: left .2s, background-color .2s;
+      transition: left 0.2s, background-color 0.2s;
       &:before {
         content: '';
         position: absolute;
-        top: .25rem;
-        left: .25rem;
+        top: 0.25rem;
+        left: 0.25rem;
         display: inline-block;
         width: 1rem;
         height: 1rem;
         border-radius: 50%;
         background: var(--toggle-sw-color);
         box-shadow: 1px 2px 7px rgba(119, 129, 142, 0.1);
-        transition: .15s;
+        transition: 0.15s;
       }
-      &:hover { background-color: var(--toggle-bg-hover); }
+      &:hover {
+        background-color: var(--toggle-bg-hover);
+      }
     }
   }
 </style>

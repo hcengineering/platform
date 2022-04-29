@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { Organization } from '@anticrm/contact'
   import core, { Ref } from '@anticrm/core'
@@ -38,7 +37,10 @@
   const client = getClient()
 
   async function createVacancy () {
-    if (templateId !== undefined && await client.findOne(task.class.KanbanTemplate, { _id: templateId }) === undefined) {
+    if (
+      templateId !== undefined &&
+      (await client.findOne(task.class.KanbanTemplate, { _id: templateId })) === undefined
+    ) {
       throw Error(`Failed to find target kanban template: ${templateId}`)
     }
 
@@ -55,11 +57,13 @@
   }
 </script>
 
-<Card 
-  label={recruit.string.CreateVacancy} 
+<Card
+  label={recruit.string.CreateVacancy}
   okAction={createVacancy}
   canSave={!!name}
-  on:close={() => { dispatch('close') }}
+  on:close={() => {
+    dispatch('close')
+  }}
 >
   <div class="flex-row-center clear-mins">
     <div class="mr-3">
@@ -68,19 +72,22 @@
     <EditBox
       bind:value={name}
       placeholder={recruit.string.VacancyPlaceholder}
-      maxWidth={'37.5rem'} kind={'large-style'} focus
+      maxWidth={'37.5rem'}
+      kind={'large-style'}
+      focus
     />
   </div>
   <svelte:fragment slot="pool">
-    <OrganizationSelector
-      bind:value={company} label={recruit.string.Company}
-      kind={'no-border'} size={'small'}
+    <OrganizationSelector bind:value={company} label={recruit.string.Company} kind={'no-border'} size={'small'} />
+    <Component
+      is={task.component.KanbanTemplateSelector}
+      props={{
+        folders: [recruit.space.VacancyTemplates],
+        template: templateId
+      }}
+      on:change={(evt) => {
+        templateId = evt.detail
+      }}
     />
-    <Component is={task.component.KanbanTemplateSelector} props={{
-      folders: [recruit.space.VacancyTemplates],
-      template: templateId
-    }} on:change={(evt) => {
-      templateId = evt.detail
-    }}/>
   </svelte:fragment>
 </Card>

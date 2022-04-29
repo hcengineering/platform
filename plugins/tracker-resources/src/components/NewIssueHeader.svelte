@@ -19,7 +19,7 @@
   import CreateIssue from './CreateIssue.svelte'
   export let currentSpace: Ref<Space>
 
-  async function newIssue (target: EventTarget | null): Promise<void> {
+  async function newIssue (): Promise<void> {
     showPopup(CreateIssue, { space: currentSpace }, 'top')
   }
 </script>
@@ -31,7 +31,7 @@
       label={tracker.string.NewIssue}
       justify={'left'}
       width={'100%'}
-      on:click={() => newIssue(null)}
+      on:click={() => newIssue()}
     />
   </div>
   <Button icon={tracker.icon.Magnifier} on:click={async () => {}} />

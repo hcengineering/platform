@@ -69,7 +69,7 @@
   <Scroller>
     {#await tableDescriptor then descr}
       {#if descr}
-        <TableBrowser          
+        <TableBrowser
           _class={contact.class.Contact}
           config={descr.config}
           options={descr.options}

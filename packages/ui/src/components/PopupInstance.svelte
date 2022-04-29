@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { afterUpdate } from 'svelte'
   import { fitPopupElement } from '../popups'
@@ -68,7 +67,15 @@
 <svelte:window on:resize={fitPopup} on:keydown={handleKeydown} />
 
 <div class="popup" bind:this={modalHTML} bind:clientHeight={height} style={`z-index: ${zIndex + 1};`}>
-  <svelte:component bind:this={componentInstance} this={is} {...props} on:update={(ev) => _update(ev.detail)} on:close={(ev) => _close(ev.detail)} />
+  <svelte:component
+    this={is}
+    bind:this={componentInstance}
+    {...props}
+    on:update={(ev) => {
+      _update(ev.detail)
+    }}
+    on:close={(ev) => _close(ev.detail)}
+  />
 </div>
 <div class="modal-overlay" class:antiOverlay={show} style={`z-index: ${zIndex};`} on:click={() => escapeClose()} />
 
@@ -87,6 +94,6 @@
     left: 0;
     width: 100%;
     height: 100vh;
-    transition: background-color .5s ease;
+    transition: background-color 0.5s ease;
   }
 </style>

@@ -14,17 +14,7 @@
 //
 
 import type { Employee } from '@anticrm/contact'
-import {
-  AttachedDoc,
-  Class,
-  Doc,
-  Interface,
-  Mixin,
-  Ref,
-  Space,
-  Timestamp,
-  TxOperations
-} from '@anticrm/core'
+import { AttachedDoc, Class, Doc, Interface, Mixin, Ref, Space, Timestamp, TxOperations } from '@anticrm/core'
 import type { Asset, IntlString, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'

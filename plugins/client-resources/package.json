@@ -1,6 +1,6 @@
 {
   "name": "@anticrm/client-resources",
-  "version": "0.6.6",
+  "version": "0.6.7",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
@@ -15,7 +15,7 @@
   "devDependencies": {
     "@anticrm/platform-rig": "~0.6.0",
     "@types/heft-jest": "^1.0.2",
-    "@typescript-eslint/eslint-plugin": "^5.4.0",
+    "@typescript-eslint/eslint-plugin": "^5.21.0",
     "eslint-plugin-import": "^2.25.3",
     "eslint-plugin-promise": "^5.1.1",
     "eslint-plugin-node": "^11.1.0",
@@ -25,11 +25,11 @@
     "prettier": "^2.4.1",
     "@rushstack/heft": "^0.44.13",
     "typescript": "^4.3.5",
-    "svelte-check": "^2.2.10"
+    "svelte-check": "^2.7.0"
   },
   "dependencies": {
-    "@anticrm/platform": "~0.6.5",
+    "@anticrm/platform": "~0.6.6",
     "@anticrm/core": "~0.6.16",
-    "@anticrm/client": "~0.6.1"
+    "@anticrm/client": "~0.6.2"
   }
 }

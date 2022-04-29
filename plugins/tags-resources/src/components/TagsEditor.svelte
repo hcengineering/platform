@@ -14,15 +14,14 @@
 -->
 <script lang="ts">
   import type { AttachedDoc, Class, Collection, Doc, Ref } from '@anticrm/core'
-  import { IntlString, translate } from '@anticrm/platform'
+  import { translate } from '@anticrm/platform'
   import { KeyedAttribute } from '@anticrm/presentation'
   import { TagElement, TagReference } from '@anticrm/tags'
-  import type { ButtonKind, ButtonSize, TooltipAlignment } from '@anticrm/ui'
-  import { ShowMore, Label, CircleButton, Button, showPopup, Tooltip, IconAdd, IconClose } from '@anticrm/ui'
-  import { createEventDispatcher, afterUpdate } from 'svelte'
+  import { CircleButton, IconAdd, IconClose, Label, ShowMore, showPopup, Tooltip } from '@anticrm/ui'
+  import { createEventDispatcher } from 'svelte'
   import tags from '../plugin'
-  import TagsPopup from './TagsPopup.svelte'
   import TagItem from './TagItem.svelte'
+  import TagsPopup from './TagsPopup.svelte'
 
   export let items: TagReference[] = []
   export let targetClass: Ref<Class<Doc>>
@@ -53,11 +52,11 @@
         hideAdd: true
       },
       evt.target as HTMLElement,
-      () => { },
+      () => {},
       (result) => {
-        if (result != undefined) {
+        if (result !== undefined) {
           if (result.action === 'add') addRef(result.tag)
-          else if (result.action === 'remove') removeTag(items.filter(it => it.tag === result.tag._id)[0]._id)
+          else if (result.action === 'remove') removeTag(items.filter((it) => it.tag === result.tag._id)[0]._id)
         }
       }
     )
@@ -74,7 +73,7 @@
       <div class="title">
         <Label label={key.attr.label} />
       </div>
-      <div id='add-tag'>
+      <div id="add-tag">
         <Tooltip label={tags.string.AddTagTooltip} props={{ word: keyLabel }}>
           <CircleButton icon={IconAdd} size={'small'} selected on:click={addTag} />
         </Tooltip>
@@ -86,9 +85,9 @@
       <div class="tag-items" class:tag-items-scroll={!showTitle}>
         {#if items.length === 0}
           {#if keyLabel}
-          <div class="flex flex-grow title-center">
-            <Label label={tags.string.NoItems} params={{ word: keyLabel }} />
-          </div>
+            <div class="flex flex-grow title-center">
+              <Label label={tags.string.NoItems} params={{ word: keyLabel }} />
+            </div>
           {/if}
         {/if}
         {#each items as tag}

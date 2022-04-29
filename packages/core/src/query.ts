@@ -19,7 +19,7 @@ export function findProperty (objects: Doc[], propertyKey: string, value: any): 
   const result: Doc[] = []
   for (const object of objects) {
     const val = getObjectValue(propertyKey, object)
-    if ((val === value) || isArrayValueCheck(val, value)) {
+    if (val === value || isArrayValueCheck(val, value)) {
       result.push(object)
     }
   }
@@ -38,7 +38,7 @@ export function resultSort<T extends Doc> (result: T[], sortOptions: SortingQuer
     for (const key in sortOptions) {
       const aValue = getValue(key, a)
       const bValue = getValue(key, b)
-      const result = getSortingResult(aValue, bValue, (sortOptions[key] as SortingOrder))
+      const result = getSortingResult(aValue, bValue, sortOptions[key] as SortingOrder)
       if (result !== 0) return result
     }
     return 0
@@ -57,7 +57,7 @@ function getSortingResult (aValue: any, bValue: any, order: SortingOrder): numbe
   if (Array.isArray(aValue) && Array.isArray(bValue)) {
     res = (aValue.sort((a, b) => (a - b) * order)[0] ?? 0) - (bValue.sort((a, b) => (a - b) * order)[0] ?? 0)
   } else {
-    res = typeof aValue === 'string' ? aValue.localeCompare(bValue) : (aValue - bValue)
+    res = typeof aValue === 'string' ? aValue.localeCompare(bValue) : aValue - bValue
   }
   return res * order
 }
@@ -72,7 +72,12 @@ function getValue (key: string, obj: any): any {
 /**
  * @public
  */
-export function matchQuery<T extends Doc> (docs: Doc[], query: DocumentQuery<T>, clazz: Ref<Class<T>>, hierarchy: Hierarchy): Doc[] {
+export function matchQuery<T extends Doc> (
+  docs: Doc[],
+  query: DocumentQuery<T>,
+  clazz: Ref<Class<T>>,
+  hierarchy: Hierarchy
+): Doc[] {
   let result = [...docs]
   for (const key in query) {
     const value = (query as any)[key]

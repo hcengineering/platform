@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   export let size: 'small' | 'medium' = 'medium'
 </script>
@@ -43,11 +42,19 @@
     }
   }
   @-webkit-keyframes spinCircle {
-    from { -webkit-transform: rotate(0deg); }
-    to { -webkit-transform: rotate(359deg); }
+    from {
+      -webkit-transform: rotate(0deg);
+    }
+    to {
+      -webkit-transform: rotate(359deg);
+    }
   }
   @keyframes spinCircle {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(359deg); }
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(359deg);
+    }
   }
 </style>

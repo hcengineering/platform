@@ -4,16 +4,16 @@
 export type ParamType = string | number | boolean | undefined
 
 /**
-  * @public
-  */
+ * @public
+ */
 export interface MetricsData {
   operations: number
   time: number
 }
 
 /**
-  * @public
-  */
+ * @public
+ */
 export interface Metrics extends MetricsData {
   params: Record<string, Record<string, MetricsData>>
   measurements: Record<string, Metrics>

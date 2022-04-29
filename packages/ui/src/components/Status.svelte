@@ -10,8 +10,8 @@
 
 <div class="flex-center overflow-label container {status.severity}">
   {#if status.severity !== Severity.OK}
-    <Info size={'small'}/>
-    <div class="text-sm ml-2 overflow-label"><Label label={status.code} params={status.params}/></div>
+    <Info size={'small'} />
+    <div class="text-sm ml-2 overflow-label"><Label label={status.code} params={status.params} /></div>
   {/if}
 </div>
 
@@ -20,7 +20,11 @@
     user-select: none;
     font-size: 14px;
     color: var(--theme-content-color);
-    &.WARNING { color: yellow; }
-    &.ERROR { color: var(--system-error-color); }
+    &.WARNING {
+      color: yellow;
+    }
+    &.ERROR {
+      color: var(--system-error-color);
+    }
   }
 </style>

@@ -17,14 +17,7 @@
   import contact, { Channel, ChannelProvider, combineName, findPerson, Person } from '@anticrm/contact'
   import { ChannelsDropdown } from '@anticrm/contact-resources'
   import PersonPresenter from '@anticrm/contact-resources/src/components/PersonPresenter.svelte'
-  import {
-    Account,
-    AttachedData,
-    Data,
-    Doc, generateId, MixinData,
-    Ref,
-    TxProcessor
-  } from '@anticrm/core'
+  import { Account, AttachedData, Data, Doc, generateId, MixinData, Ref, TxProcessor } from '@anticrm/core'
   import login from '@anticrm/login'
   import { getMetadata, getResource, setPlatformStatus, unknownError } from '@anticrm/platform'
   import {
@@ -267,7 +260,7 @@
       const categoriesMap = new Map(Array.from(categories.map((it) => [it._id, it])))
 
       const newSkills: TagReference[] = []
-  
+
       // Create missing tag elemnts
       for (const s of doc.skills ?? []) {
         const title = s.trim().toLowerCase()
@@ -396,15 +389,32 @@
 >
   <div class="flex-between">
     <div class="flex-col">
-      <EditBox placeholder={recruit.string.PersonFirstNamePlaceholder} bind:value={firstName} kind={'large-style'} maxWidth={'32rem'} focus />
-      <EditBox placeholder={recruit.string.PersonLastNamePlaceholder} bind:value={lastName} kind={'large-style'} maxWidth={'32rem'} />
+      <EditBox
+        placeholder={recruit.string.PersonFirstNamePlaceholder}
+        bind:value={firstName}
+        kind={'large-style'}
+        maxWidth={'32rem'}
+        focus
+      />
+      <EditBox
+        placeholder={recruit.string.PersonLastNamePlaceholder}
+        bind:value={lastName}
+        kind={'large-style'}
+        maxWidth={'32rem'}
+      />
       <div class="mt-1">
         <EditBox placeholder={recruit.string.Title} bind:value={object.title} kind={'small-style'} maxWidth={'32rem'} />
       </div>
       <EditBox placeholder={recruit.string.Location} bind:value={object.city} kind={'small-style'} maxWidth={'32rem'} />
     </div>
     <div class="ml-4">
-      <EditableAvatar bind:direct={avatar} avatar={object.avatar} size={'large'} on:remove={removeAvatar} on:done={onAvatarDone} />
+      <EditableAvatar
+        bind:direct={avatar}
+        avatar={object.avatar}
+        size={'large'}
+        on:remove={removeAvatar}
+        on:done={onAvatarDone}
+      />
     </div>
   </div>
   <svelte:fragment slot="pool">
@@ -480,11 +490,13 @@
 
 <style lang="scss">
   .resume {
-    padding: .5rem .75rem;
+    padding: 0.5rem 0.75rem;
     background: var(--accent-bg-color);
     border: 1px dashed var(--divider-color);
-    border-radius: .5rem;
+    border-radius: 0.5rem;
 
-    &.solid { border-style: solid; }
+    &.solid {
+      border-style: solid;
+    }
   }
 </style>

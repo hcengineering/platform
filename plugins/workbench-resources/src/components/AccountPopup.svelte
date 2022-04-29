@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import contact, { Employee, EmployeeAccount, formatName } from '@anticrm/contact'
   import { getCurrentAccount } from '@anticrm/core'
@@ -30,12 +29,16 @@
   let employee: Employee | undefined
   const employeeQ = createQuery()
 
-  employeeQ.query(contact.class.Employee, {
-    _id: account.employee
-  }, (res) => {
-    employee = res[0]
-  }, { limit: 1 })
-
+  employeeQ.query(
+    contact.class.Employee,
+    {
+      _id: account.employee
+    },
+    (res) => {
+      employee = res[0]
+    },
+    { limit: 1 }
+  )
 
   function selectCategory (sp: SettingsCategory): void {
     closePopup()
@@ -70,41 +73,48 @@
 </script>
 
 <div class="selectPopup autoHeight">
-  <div class="scroll"><div class="box">
-    {#await getItems() then items}
-      <div class="menu-item high flex-row-center" on:click={() => { editProfile(items) }}>
-        {#if employee}
-          <Avatar avatar={employee.avatar} size={'medium'} />
-        {/if}
-        <div class="ml-2 flex-col">
-          {#if account}
-            <div class="overflow-label fs-bold caption-color">{formatName(account.name)}</div>
-            <div class="overflow-label text-sm content-dark-color">{account.email}</div>
+  <div class="scroll">
+    <div class="box">
+      {#await getItems() then items}
+        <div
+          class="menu-item high flex-row-center"
+          on:click={() => {
+            editProfile(items)
+          }}
+        >
+          {#if employee}
+            <Avatar avatar={employee.avatar} size={'medium'} />
           {/if}
+          <div class="ml-2 flex-col">
+            {#if account}
+              <div class="overflow-label fs-bold caption-color">{formatName(account.name)}</div>
+              <div class="overflow-label text-sm content-dark-color">{account.email}</div>
+            {/if}
+          </div>
         </div>
-      </div>
-      {#if items}
-        {#each filterItems(items) as item }
-          <button class="menu-item" on:click={() => selectCategory(item)}>
-            <div class='mr-2'>
-              <Icon icon={item.icon} size={'small'}/>
-            </div>
-            <Label label={item.label} />
-          </button>
-        {/each}
-      {/if}
-      <button class="menu-item" on:click={selectWorkspace}>
-        <div class='mr-2'>
-          <Icon icon={setting.icon.SelectWorkspace} size={'small'}/>
-        </div>
-        <Label label={setting.string.SelectWorkspace} />
-      </button>
-      <button class="menu-item" on:click={signOut}>
-        <div class='mr-2'>
-          <Icon icon={setting.icon.Signout} size={'small'}/>
-        </div>
-        <Label label={setting.string.Signout} />
-      </button>
-    {/await}
-  </div></div>
+        {#if items}
+          {#each filterItems(items) as item}
+            <button class="menu-item" on:click={() => selectCategory(item)}>
+              <div class="mr-2">
+                <Icon icon={item.icon} size={'small'} />
+              </div>
+              <Label label={item.label} />
+            </button>
+          {/each}
+        {/if}
+        <button class="menu-item" on:click={selectWorkspace}>
+          <div class="mr-2">
+            <Icon icon={setting.icon.SelectWorkspace} size={'small'} />
+          </div>
+          <Label label={setting.string.SelectWorkspace} />
+        </button>
+        <button class="menu-item" on:click={signOut}>
+          <div class="mr-2">
+            <Icon icon={setting.icon.Signout} size={'small'} />
+          </div>
+          <Label label={setting.string.Signout} />
+        </button>
+      {/await}
+    </div>
+  </div>
 </div>

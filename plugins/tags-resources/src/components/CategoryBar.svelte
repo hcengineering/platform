@@ -16,14 +16,17 @@
   import { Class, Doc, Ref, SortingOrder } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
   import { TagCategory, TagElement } from '@anticrm/tags'
-  import { getPlatformColorForText, Button } from '@anticrm/ui'
+  import { Button, getPlatformColorForText, showPopup } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import tags from '../plugin'
   import { getTagStyle } from '../utils'
+  import TagsCategoryPopup from './TagsCategoryPopup.svelte'
 
   export let targetClass: Ref<Class<Doc>>
   export let category: Ref<TagCategory> | undefined = undefined
+  export let selected: Ref<TagElement>[] = []
   export let gap: 'small' | 'big' = 'small'
+  export let mode: 'item' | 'category' = 'category'
 
   let categories: TagCategory[] = []
   let visibleCategories: TagCategory[] = []
@@ -55,6 +58,9 @@
     const counts = new Map<Ref<TagCategory>, TagElement[]>()
     for (const e of elements) {
       if (e.category !== undefined) {
+        if (selected.includes(e._id) && category === undefined) {
+          category = e.category
+        }
         const els = counts.get(e.category) ?? []
         els.push(e)
         counts.set(e.category, els)
@@ -82,7 +88,38 @@
     } else {
       category = item._id
     }
-    dispatch('change', { category, elements: category !== undefined ? categoryCounts.get(category) ?? [] : [] })
+    selected = (category !== undefined ? categoryCounts.get(category) ?? [] : []).map((it) => it._id)
+    dispatch('change', { category, elements: selected })
+  }
+
+  function selectTag (evt: Event, category: TagCategory): void {
+    showPopup(
+      TagsCategoryPopup,
+      {
+        category,
+        targetClass,
+        selected,
+        keyLabel: category.label,
+        hideAdd: true
+      },
+      evt.target as HTMLElement,
+      (result) => {
+        if (result !== undefined) {
+          selected = result.map((it: TagElement) => it._id)
+          dispatch('change', { category: category._id, elements: result })
+        }
+      }
+    )
+  }
+  const visibleCategoriesRef: HTMLElement[] = []
+
+  $: visibleCategoriesRef.length = visibleCategories.length
+
+  $: if (category !== undefined && visibleCategories.length > 0 && visibleCategoriesRef.length > 0) {
+    const idx = visibleCategories.findIndex((it) => it._id === category)
+    if (idx !== -1) {
+      visibleCategoriesRef[idx]?.scrollIntoView({ block: 'nearest' })
+    }
   }
 </script>
 
@@ -101,16 +138,26 @@
     </div>
     <div class="flex-row-center caption-color states">
       <div class="antiStatesBar mask-none {stepStyle}">
-        {#each visibleCategories as item (item._id)}
+        {#each visibleCategories as item, i}
           <div
+            bind:this={visibleCategoriesRef[i]}
             class="categoryElement flex-center"
             label={item.label}
             style={getTagStyle(getPlatformColorForText(item.label), item._id === category)}
-            on:click={() => {
-              if (item._id !== category) selectItem(item)
+            on:click={(evt) => {
+              if (mode === 'category') {
+                selectItem(item)
+              } else {
+                selectTag(evt, item)
+              }
             }}
           >
-            {item.label} ({categoryCounts.get(item._id)?.length ?? ''})
+            {item.label}
+            {#if item._id === category && mode === 'item'}
+              ({selected.length}/{categoryCounts.get(item._id)?.length ?? ''})
+            {:else}
+              ({categoryCounts.get(item._id)?.length ?? ''})
+            {/if}
           </div>
         {/each}
       </div>
@@ -120,15 +167,15 @@
 
 <style lang="scss">
   .categoryElement {
-    padding: .375rem .75rem;
+    padding: 0.375rem 0.75rem;
     // height: 2.5rem;
     white-space: nowrap;
     border: 1px solid var(--theme-button-border-enabled);
-    border-radius: .25rem;
+    border-radius: 0.25rem;
     cursor: pointer;
   }
   .categoryElement + .categoryElement {
-    margin-left: .125rem;
+    margin-left: 0.125rem;
   }
 
   .header {

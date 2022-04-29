@@ -29,9 +29,9 @@
 
 <style lang="scss">
   .state-container {
-    margin-right: .5rem;
-    width: .875rem;
-    height: .875rem;
+    margin-right: 0.5rem;
+    width: 0.875rem;
+    height: 0.875rem;
     border: 1px solid rgba(0, 0, 0, 0.1);
     border-radius: 0.25rem;
   }

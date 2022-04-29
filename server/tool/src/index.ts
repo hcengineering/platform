@@ -123,10 +123,7 @@ export async function initModel (transactorUrl: string, dbName: string): Promise
 /**
  * @public
  */
-export async function upgradeModel (
-  transactorUrl: string,
-  dbName: string
-): Promise<void> {
+export async function upgradeModel (transactorUrl: string, dbName: string): Promise<void> {
   const { mongodbUri, txes } = prepareTools()
 
   if (txes.some((tx) => tx.objectSpace !== core.space.Model)) {

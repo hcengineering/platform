@@ -73,11 +73,6 @@
       maxWidth={'16rem'}
       focus
     />
-    <EditBox
-      label={inventory.string.SKU}
-      bind:value={doc.sku}
-      placeholder={inventory.string.SKU}
-      maxWidth={'16rem'}
-    />
+    <EditBox label={inventory.string.SKU} bind:value={doc.sku} placeholder={inventory.string.SKU} maxWidth={'16rem'} />
   </Grid>
 </Card>

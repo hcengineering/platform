@@ -39,18 +39,11 @@
   }
 
   async function createTodo () {
-    await client.addCollection(
-      task.class.TodoItem,
-      space,
-      objectId,
-      _class,
-      'todos',
-      {
-        name,
-        done,
-        dueTo: dueTo ?? undefined
-      }
-    )
+    await client.addCollection(task.class.TodoItem, space, objectId, _class, 'todos', {
+      name,
+      done,
+      dueTo: dueTo ?? undefined
+    })
   }
 </script>
 

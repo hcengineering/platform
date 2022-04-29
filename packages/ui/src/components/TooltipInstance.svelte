@@ -152,11 +152,19 @@
     {#if $tooltip.label}<div class="fs-title mb-4">
         <Label label={$tooltip.label} params={$tooltip.props ?? {}} />
       </div>{/if}
-      {#if typeof $tooltip.component === 'string'}
-        <Component is={$tooltip.component} props={$tooltip.props} on:update={onUpdate !== undefined ? onUpdate : async () => {}} />
-      {:else}
-        <svelte:component this={$tooltip.component} {...$tooltip.props} on:update={onUpdate !== undefined ? onUpdate : async () => {}} />
-      {/if}
+    {#if typeof $tooltip.component === 'string'}
+      <Component
+        is={$tooltip.component}
+        props={$tooltip.props}
+        on:update={onUpdate !== undefined ? onUpdate : async () => {}}
+      />
+    {:else}
+      <svelte:component
+        this={$tooltip.component}
+        {...$tooltip.props}
+        on:update={onUpdate !== undefined ? onUpdate : async () => {}}
+      />
+    {/if}
   </div>
   <div bind:this={nubHTML} class="nub {nubDirection ?? ''}" />
 {:else if $tooltip.label}

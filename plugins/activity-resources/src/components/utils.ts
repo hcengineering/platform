@@ -41,7 +41,11 @@ async function createPseudoViewlet (
       display,
       icon: docClass.icon ?? activity.icon.Activity,
       label: label,
-      labelParams: { _class: trLabel, collection: dtx.collectionAttribute?.label !== undefined ? await translate(dtx.collectionAttribute?.label, {}) : '' },
+      labelParams: {
+        _class: trLabel,
+        collection:
+          dtx.collectionAttribute?.label !== undefined ? await translate(dtx.collectionAttribute?.label, {}) : ''
+      },
       component: presenter.presenter,
       pseudo: true
     }

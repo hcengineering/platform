@@ -122,10 +122,7 @@ export default mergeIds(boardId, board, {
     SearchArchive: '' as IntlString
   },
   component: {
-    Boards: '' as AnyComponent,
     EditCard: '' as AnyComponent,
-    Members: '' as AnyComponent,
-    Settings: '' as AnyComponent,
     BoardHeader: '' as AnyComponent
   }
 })

@@ -1,4 +1,4 @@
-import { AnySvelteComponent, AnyComponent, PopupAlignment, PopupPositionElement } from './types'
+import type { AnySvelteComponent, AnyComponent, PopupAlignment, PopupPositionElement } from './types'
 import { getResource } from '@anticrm/platform'
 import { writable } from 'svelte/store'
 
@@ -113,7 +113,11 @@ export function closeDatePopup (): void {
  *
  * return boolean to show or not modal overlay.
  */
-export function fitPopupPositionedElement (modalHTML: HTMLElement, alignment: PopupPositionElement, newProps: Record<string, string|number>): boolean {
+export function fitPopupPositionedElement (
+  modalHTML: HTMLElement,
+  alignment: PopupPositionElement,
+  newProps: Record<string, string | number>
+): boolean {
   const rect = alignment.getBoundingClientRect()
   const rectPopup = modalHTML.getBoundingClientRect()
   newProps.left = newProps.right = newProps.top = newProps.bottom = ''
@@ -134,9 +138,9 @@ export function fitPopupPositionedElement (modalHTML: HTMLElement, alignment: Po
   } else {
     // Vertical
     if (rect.bottom + rectPopup.height + 28 <= document.body.clientHeight) {
-      newProps.top = `calc(${rect.bottom}px + .125rem)`
+      newProps.top = `${rect.bottom + 1}px`
     } else if (rectPopup.height + 28 < rect.top) {
-      newProps.bottom = `calc(${document.body.clientHeight - rect.y}px + .125rem)`
+      newProps.bottom = `${document.body.clientHeight - rect.top + 1}px`
     } else {
       newProps.top = modalHTML.style.bottom = '1rem'
     }
@@ -151,11 +155,11 @@ export function fitPopupPositionedElement (modalHTML: HTMLElement, alignment: Po
   return false
 }
 
-function applyStyle (values: Record<string, string| number>, modalHTML: HTMLElement): void {
+function applyStyle (values: Record<string, string | number>, modalHTML: HTMLElement): void {
   for (const [k, v] of Object.entries(values)) {
     const old = (modalHTML.style as any)[k]
     if (old !== v) {
-      (modalHTML.style as any)[k] = v
+      ;(modalHTML.style as any)[k] = v
     }
   }
 }
@@ -169,11 +173,12 @@ function applyStyle (values: Record<string, string| number>, modalHTML: HTMLElem
  */
 export function fitPopupElement (modalHTML: HTMLElement, element?: PopupAlignment, contentPanel?: HTMLElement): boolean {
   let show = true
-  const newProps: Record<string, string|number> = {}
+  const newProps: Record<string, string | number> = {}
   if (element != null) {
     show = false
     newProps.left = newProps.right = newProps.top = newProps.bottom = ''
     newProps.maxHeight = newProps.height = ''
+    newProps.maxWidth = newProps.width = ''
     if (typeof element !== 'string') {
       const result = fitPopupPositionedElement(modalHTML, element, newProps)
       applyStyle(newProps, modalHTML)
@@ -195,17 +200,19 @@ export function fitPopupElement (modalHTML: HTMLElement, element?: PopupAlignmen
       newProps.left = '5rem'
     } else if (element === 'full' && contentPanel !== undefined) {
       const rect = contentPanel.getBoundingClientRect()
-      newProps.top = `calc(${rect.top}px + 0.25rem)`
-      newProps.bottom = '0.25rem'
-      newProps.left = '0.25rem'
-      newProps.right = '0.25rem'
+      newProps.top = `${rect.top + 1}px`
+      newProps.bottom = '.25rem'
+      newProps.left = '.25rem'
+      newProps.right = '.25rem'
       show = true
     } else if (element === 'content' && contentPanel !== undefined) {
       const rect = contentPanel.getBoundingClientRect()
       newProps.top = `${rect.top + 1}px`
-      newProps.height = `${Math.min(rect.height - 1, window.innerHeight - rect.top - 1)}px`
+      // newProps.bottom = `${Math.min(document.body.clientHeight - rect.bottom + 1, window.innerHeight - rect.top - 1)}px`
+      newProps.height = `${Math.min(rect.height, window.innerHeight - rect.top)}px`
       newProps.left = `${rect.left + 1}px`
-      newProps.width = `${Math.min(rect.width - 1, window.innerWidth - rect.left - 1)}px`
+      // newProps.right = `${Math.min(document.body.clientWidth - rect.right, window.innerWidth - rect.left - 5)}px`
+      newProps.width = `${Math.min(rect.width, window.innerWidth - rect.left)}px`
     } else if (element === 'middle') {
       if (contentPanel !== undefined) {
         const rect = contentPanel.getBoundingClientRect()
