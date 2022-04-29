@@ -45,6 +45,7 @@
     "@anticrm/attachment": "~0.6.1",
     "@anticrm/attachment-resources": "~0.6.0",
     "@anticrm/login": "~0.6.1",
-    "@anticrm/core": "~0.6.16"
+    "@anticrm/core": "~0.6.16",
+    "@anticrm/panel": "~0.6.0"
   }
 }

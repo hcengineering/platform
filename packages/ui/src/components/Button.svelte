@@ -32,6 +32,7 @@
   export let width: string | undefined = undefined
   export let resetIconSize: boolean = false
   export let highlight: boolean = false
+  export let selected: boolean = false
   export let focus: boolean = false
   export let click: boolean = false
   export let title: string | undefined = undefined
@@ -60,6 +61,7 @@
   class:border-radius-2={shape === 'round'}
   class:border-radius-4={shape === 'circle'}
   class:highlight
+  class:selected
   disabled={disabled || loading}
   style={width ? 'width: ' + width : ''}
   {title}
@@ -215,9 +217,8 @@
         }
       }
     }
-    &.transparent:hover {
-      background-color: var(--button-bg-hover);
-    }
+    &.transparent:hover,
+    &.transparent.selected { background-color: var(--button-bg-hover); }
     &.link {
       padding: 0 0.875rem;
       &:hover {

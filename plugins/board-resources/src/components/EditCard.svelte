@@ -22,7 +22,7 @@
   import type { State } from '@anticrm/task'
   import task from '@anticrm/task'
   import { StyledTextBox } from '@anticrm/text-editor'
-  import { EditBox, Icon, Label } from '@anticrm/ui'
+  import { Button, EditBox, Icon, Label } from '@anticrm/ui'
   import { UpDownNavigator } from '@anticrm/view-resources'
   import { createEventDispatcher, onMount } from 'svelte'
   import board from '../plugin'
@@ -72,12 +72,21 @@
   onMount(() => {
     dispatch('open', { ignoreKeys: ['comments', 'number', 'title'] })
   })
+  let minimize: boolean = false
 </script>
 
 {#if object !== undefined}
-  <Panel icon={board.icon.Card} title={object?.title} {object} on:close={() => dispatch('close')}>
-    <svelte:fragment slot="navigate-actions">
-      <UpDownNavigator element={object} />
+  <Panel
+    icon={board.icon.Card}
+    title={object?.title}
+    {object}
+    bind:minimize
+    isHeader={minimize}
+    isAside={!minimize}
+    on:close={() => dispatch('close')}
+  >
+    <svelte:fragment slot="navigator">
+      <UpDownNavigator element={object}/>
     </svelte:fragment>
 
     <!-- TODO cover -->
@@ -128,8 +137,12 @@
       </div>
     </div>
 
-    <svelte:fragment slot="properties">
-      <div class="p-4"><CardActions bind:value={object} /></div>
+    <svelte:fragment slot="custom-attributes" let:direction>
+      {#if direction === 'column'}
+        <CardActions bind:value={object} />
+      {:else}
+        <Button icon={board.icon.Card} label={board.string.Actions} kind={'no-border'} size={'small'} />
+      {/if}
     </svelte:fragment>
   </Panel>
 {/if}

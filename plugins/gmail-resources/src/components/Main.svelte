@@ -14,29 +14,47 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Channel, Contact } from '@anticrm/contact'
+  import type { AnyComponent } from '@anticrm/ui'
+  import { Ref, Doc, Class } from '@anticrm/core'
+  import contact, { Channel } from '@anticrm/contact'
   import { SharedMessage } from '@anticrm/gmail'
   import NewMessage from './NewMessage.svelte'
   import FullMessage from './FullMessage.svelte'
   import Chats from './Chats.svelte'
-  import { getClient } from '@anticrm/presentation'
+  import { createQuery, getClient } from '@anticrm/presentation'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
+  import { Panel } from '@anticrm/panel'
+  import { createEventDispatcher } from 'svelte'
 
-  export let object: Contact
+  export let _id: Ref<Doc>
+  export let _class: Ref<Class<Doc>>
+  export let rightSection: AnyComponent | undefined = undefined
+
+  // export let object: Contact
+  // $: console.log('!!!!!!!!!!!! id: ', _id, ' - class: ', _class)
+  let object: any
   let newMessage: boolean = false
   let currentMessage: SharedMessage | undefined = undefined
   let channel: Channel | undefined = undefined
   const notificationClient = NotificationClientImpl.getClient()
 
   const client = getClient()
+  const dispatch = createEventDispatcher()
 
   client
     .findOne(contact.class.Channel, {
-      attachedTo: object._id,
+      attachedTo: _id,
       provider: contact.channelProvider.Email
     })
     .then((res) => {
       channel = res
+    })
+
+  const query = createQuery()
+  $: _id &&
+    _class &&
+    query.query(_class, { _id }, (result) => {
+      object = result[0]
     })
 
   function back () {
@@ -54,12 +72,24 @@
   }
 </script>
 
-{#if channel}
-  {#if newMessage}
-    <NewMessage {object} {channel} {currentMessage} on:close={back} />
-  {:else if currentMessage}
-    <FullMessage {currentMessage} bind:newMessage on:close={back} />
-  {:else}
-    <Chats {object} {channel} bind:newMessage on:select={selectHandler} />
-  {/if}
+{#if channel && object}
+  <Panel
+    icon={contact.icon.Email}
+    title={'Email'}
+    {rightSection}
+    {object}
+    isHeader={false}
+    isAside={false}
+    on:close={() => {
+      dispatch('close')
+    }}
+  >
+    {#if newMessage}
+      <NewMessage {object} {channel} {currentMessage} on:close={back} />
+    {:else if currentMessage}
+      <FullMessage {currentMessage} bind:newMessage on:close={back} />
+    {:else}
+      <Chats {object} {channel} bind:newMessage on:select={selectHandler} />
+    {/if}
+  </Panel>
 {/if}
