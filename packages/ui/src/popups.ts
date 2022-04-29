@@ -198,7 +198,8 @@ export function fitPopupElement (modalHTML: HTMLElement, element?: PopupAlignmen
     } else if (element === 'float') {
       newProps.top = 'calc(var(--status-bar-height) + .25rem)'
       newProps.bottom = '.25rem'
-      newProps.left = '60%'
+      newProps.width = '40rem'
+      newProps.maxWidth = '40%'
       newProps.right = '.25rem'
       show = true
     } else if (element === 'account') {

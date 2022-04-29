@@ -18,7 +18,6 @@
   import type { ButtonKind, ButtonSize } from '@anticrm/ui'
   import ChannelsDropdown from './ChannelsDropdown.svelte'
   import { showPanel } from '@anticrm/ui'
-  import view from '@anticrm/view'
 
   export let value: Channel[] | Channel | null
 

@@ -116,7 +116,7 @@
     </div>
   </svelte:fragment>
 
-  {#if rightSection != undefined}
+  {#if rightSection !== undefined}
     <slot />
   {:else}
     <Component is={activity.component.Activity} props={{ object, integrate: true }}>
