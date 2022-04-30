@@ -75,8 +75,6 @@ export default mergeIds(boardId, board, {
     Move: '' as IntlString,
     Copy: '' as IntlString,
     MakeTemplate: '' as IntlString,
-    Watch: '' as IntlString,
-    Unwatch: '' as IntlString,
     Archive: '' as IntlString,
     SendToBoard: '' as IntlString,
     Delete: '' as IntlString,

@@ -33,8 +33,7 @@ export default mergeIds(boardId, board, {
     BoardPresenter: '' as AnyComponent,
     TemplatesIcon: '' as AnyComponent,
     Cards: '' as AnyComponent,
-    KanbanView: '' as AnyComponent,
-    WatchCard: '' as AnyComponent
+    KanbanView: '' as AnyComponent
   },
   space: {
     DefaultBoard: '' as Ref<Space>

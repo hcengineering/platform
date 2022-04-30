@@ -421,19 +421,6 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       icon: board.icon.Card,
-      isInline: false,
-      label: board.string.Watch,
-      position: 130,
-      type: board.cardActionType.Action,
-      component: board.component.WatchCard
-    },
-    board.cardAction.Watch
-  )
-  builder.createDoc(
-    board.class.CardAction,
-    core.space.Model,
-    {
-      icon: board.icon.Card,
       isInline: true,
       label: board.string.ToArchive,
       position: 140,
