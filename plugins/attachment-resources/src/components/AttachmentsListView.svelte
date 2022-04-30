@@ -71,15 +71,14 @@
   .attachmentRow {
     display: flex;
     align-items: center;
-    margin: 0 1.5rem;
-    padding: 0.25rem 0;
+    margin: 0.5rem 1.5rem;
+    padding: 0.5rem;
+    border: 1px solid var(--theme-button-border-hovered);
+    border-radius: 0.5rem;
 
     .eAttachmentRowActions {
       display: flex;
       visibility: hidden;
-      border: 1px solid var(--theme-bg-focused-border);
-      padding: 0.2rem;
-      border-radius: 0.375rem;
     }
 
     .eAttachmentRowMenu {

@@ -285,6 +285,7 @@ const view = plugin(viewId, {
   },
   icon: {
     Table: '' as Asset,
+    Card: '' as Asset,
     Delete: '' as Asset,
     MoreH: '' as Asset,
     Move: '' as Asset,

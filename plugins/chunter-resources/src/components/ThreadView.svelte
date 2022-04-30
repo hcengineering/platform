@@ -143,8 +143,7 @@
   async function onMessage (event: CustomEvent) {
     const { message, attachments } = event.detail
     const me = getCurrentAccount()._id
-    const txFactory = new TxFactory(me)
-    const tx = txFactory.createTxCreateDoc<ThreadMessage>(
+    await client.createDoc(
       chunter.class.ThreadMessage,
       currentSpace,
       {
@@ -153,14 +152,11 @@
         collection: 'replies',
         content: message,
         createBy: me,
-        createOn: 0,
+        createOn: Date.now(),
         attachments
       },
       commentId
     )
-    tx.attributes.createOn = tx.modifiedOn
-    await notificationClient.updateLastView(_id, chunter.class.Message, tx.modifiedOn, true)
-    await client.tx(tx)
 
     // Create an backlink to document
     await createBacklinks(client, currentSpace, chunter.class.ChunterSpace, commentId, message)
