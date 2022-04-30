@@ -17,7 +17,7 @@
   import { AttachmentRefInput } from '@anticrm/attachment-resources'
   import type { ThreadMessage, Message, ChunterMessage } from '@anticrm/chunter'
   import contact, { Employee } from '@anticrm/contact'
-  import core, { Doc, generateId, getCurrentAccount, Ref, Space, TxFactory } from '@anticrm/core'
+  import core, { Doc, generateId, getCurrentAccount, Ref, Space } from '@anticrm/core'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { IconClose, Label, getCurrentLocation, navigate } from '@anticrm/ui'

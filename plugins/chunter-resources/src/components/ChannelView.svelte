@@ -16,7 +16,7 @@
   import attachment, { Attachment } from '@anticrm/attachment'
   import { AttachmentRefInput } from '@anticrm/attachment-resources'
   import { ChunterMessage, Message, ChunterSpace } from '@anticrm/chunter'
-  import { generateId, getCurrentAccount, Ref, Space, TxFactory } from '@anticrm/core'
+  import { generateId, getCurrentAccount, Ref, Space } from '@anticrm/core'
   import notification from '@anticrm/notification'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { getCurrentLocation, navigate } from '@anticrm/ui'
