@@ -16,8 +16,7 @@
   import attachment, { Attachment } from '@anticrm/attachment'
   import { AttachmentRefInput } from '@anticrm/attachment-resources'
   import { ChunterMessage, Message, ChunterSpace } from '@anticrm/chunter'
-  import { generateId, getCurrentAccount, Ref, Space, TxFactory } from '@anticrm/core'
-  import { NotificationClientImpl } from '@anticrm/notification-resources'
+  import { generateId, getCurrentAccount, Ref, Space } from '@anticrm/core'
   import notification from '@anticrm/notification'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { getCurrentLocation, navigate } from '@anticrm/ui'
@@ -33,13 +32,11 @@
   const client = getClient()
   const _class = chunter.class.Message
   let _id = generateId() as Ref<Message>
-  const notificationClient = NotificationClientImpl.getClient()
 
   async function onMessage (event: CustomEvent) {
     const { message, attachments } = event.detail
     const me = getCurrentAccount()._id
-    const txFactory = new TxFactory(me)
-    const tx = txFactory.createTxCreateDoc<Message>(
+    await client.createDoc<Message>(
       _class,
       space,
       {
@@ -47,14 +44,12 @@
         attachedToClass: chunter.class.ChunterSpace,
         collection: 'messages',
         content: message,
-        createOn: 0,
+        createOn: Date.now(),
         createBy: me,
         attachments
       },
       _id
     )
-    tx.attributes.createOn = tx.modifiedOn
-
     if (
       chunterSpace._class === chunter.class.DirectMessage &&
       !chunterSpace.lastMessage &&
@@ -74,8 +69,6 @@
           )
       )
     }
-    await notificationClient.updateLastView(space, chunter.class.ChunterSpace, tx.modifiedOn, true)
-    await client.tx(tx)
 
     // Create an backlink to document
     await createBacklinks(client, space, chunter.class.ChunterSpace, _id, message)
