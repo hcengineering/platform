@@ -71,11 +71,8 @@ export function unarchiveCard (card: Card, client: Client): Promise<TxResult> | 
 export function updateCardMembers (card: Card, client: Client, users: Array<Ref<Employee>>): void {
   if (card?.members == null) return
   const { members } = card
-  members
-    .filter((member) => !users.includes(member))
-    .forEach((member) => {
-      void updateCard(client, card, '$pull', { members: member })
-    })
+  const membersToPull = members.filter((member) => !users.includes(member))
   const usersToPush = users.filter((member) => !members.includes(member))
+  if (membersToPull.length > 0) void updateCard(client, card, '$pull', { members: { $in: membersToPull } })
   if (usersToPush.length > 0) void updateCard(client, card, '$push', { members: { $each: usersToPush, $position: 0 } })
 }
