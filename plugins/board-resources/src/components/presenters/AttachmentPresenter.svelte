@@ -25,7 +25,7 @@
   export let value: Attachment
 
   const maxLenght: number = 30
-  
+
   function handleClick () {
     closeTooltip()
     showPopup(PDFViewer, { file: value.file, name: value.name, contentType: value.type }, 'right')

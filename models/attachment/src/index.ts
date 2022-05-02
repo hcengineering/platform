@@ -72,11 +72,27 @@ export function createModel (builder: Builder): void {
     editor: attachment.component.Photos
   })
 
-  createAction(builder, attachment.action.CopyDirectLink, attachment.string.CopyDirectLink, attachment.actionImpl.CopyDirectLink)
-  actionTarget(builder, attachment.action.CopyDirectLink, attachment.class.Attachment, { mode: ['context'], group: 'tools' })
+  createAction(
+    builder,
+    attachment.action.CopyDirectLink,
+    attachment.string.CopyDirectLink,
+    attachment.actionImpl.CopyDirectLink
+  )
+  actionTarget(builder, attachment.action.CopyDirectLink, attachment.class.Attachment, {
+    mode: ['context'],
+    group: 'tools'
+  })
 
-  createAction(builder, attachment.action.OpenInNewTab, attachment.string.OpenInNewTab, attachment.actionImpl.OpenInNewTab)
-  actionTarget(builder, attachment.action.OpenInNewTab, attachment.class.Attachment, { mode: ['context'], group: 'tools' })
+  createAction(
+    builder,
+    attachment.action.OpenInNewTab,
+    attachment.string.OpenInNewTab,
+    attachment.actionImpl.OpenInNewTab
+  )
+  actionTarget(builder, attachment.action.OpenInNewTab, attachment.class.Attachment, {
+    mode: ['context'],
+    group: 'tools'
+  })
 
   builder.createDoc(
     activity.class.TxViewlet,

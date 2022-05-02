@@ -47,7 +47,17 @@ export { default as LinkPresenter } from './components/LinkPresenter.svelte'
 export * from './context'
 export * from './selection'
 export { buildModel, getCollectionCounter, getObjectPresenter, LoadingProps } from './utils'
-export { Table, TableView, EditDoc, ColorsPopup, Menu, SpacePresenter, ObjectPresenter, UpDownNavigator, TimestampPresenter }
+export {
+  Table,
+  TableView,
+  EditDoc,
+  ColorsPopup,
+  Menu,
+  SpacePresenter,
+  ObjectPresenter,
+  UpDownNavigator,
+  TimestampPresenter
+}
 
 export default async (): Promise<Resources> => ({
   actionImpl: actionImpl,
