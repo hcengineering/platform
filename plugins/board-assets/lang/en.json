@@ -54,8 +54,6 @@
     "Move": "Move",
     "Copy": "Copy",
     "MakeTemplate": "Make Template",
-    "Watch": "Watch",
-    "Unwatch": "Unwatch",
     "Archive": "Archive",
     "SendToBoard": "Send to board",
     "Delete": "Delete",
