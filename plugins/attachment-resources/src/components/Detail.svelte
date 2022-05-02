@@ -12,40 +12,51 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { Attachment } from '@anticrm/attachment'
-  import { Class, Ref } from '@anticrm/core'
+  import core, { Class, Ref } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
-import { ActionIcon, IconClose } from '@anticrm/ui';
-import TimestampPresenter from '@anticrm/view-resources/src/components/TimestampPresenter.svelte';
+  import { ObjectPresenter, TimestampPresenter } from '@anticrm/view-resources'
   import filesize from 'filesize'
+  import { Panel } from '@anticrm/panel'
   import { createEventDispatcher } from 'svelte'
   import AttachmentPreview from './AttachmentPreview.svelte'
+  import attachment from '../plugin'
+  import { trimFilename } from '../utils'
 
   export let _id: Ref<Attachment>
   export let _class: Ref<Class<Attachment>>
 
   const dispatch = createEventDispatcher()
-  let value: Attachment
+  let object: Attachment
   const query = createQuery()
-  $: query.query(_class, { _id }, (result) => {
-    value = result[0]
-  }, { limit: 1 })
-
+  $: query.query(
+    _class,
+    { _id },
+    (result) => {
+      object = result[0]
+    },
+    { limit: 1 }
+  )
 </script>
 
-<div class="antiOverlay" on:click={() => { dispatch('close') }} />
-<div class="antiDialogs antiComponent">
-  {#if value}
-  <div class="ac-header short mirror">
-    <div class="ac-header__wrap-title">
-      <span class="ac-header__title">{value.name}</span>
+{#if object}
+  <Panel
+    icon={attachment.icon.Attachment}
+    title={trimFilename(object.name, 55)}
+    {object}
+    rightSection={attachment.component.Detail}
+    isHeader={false}
+    isAside={false}
+    on:close={() => {
+      dispatch('close')
+    }}
+  >
+    <div class="flex-col">
+      <div class="mt-4"><ObjectPresenter objectId={object.space} _class={core.class.Space} value={undefined} /></div>
+      <div class="mt-2"><TimestampPresenter value={object.modifiedOn} /></div>
+      <div class="mt-2 mb-4">{filesize(object.size)}</div>
+      <AttachmentPreview value={object} />
     </div>
-    <ActionIcon icon={IconClose} size={'medium'} action={() => dispatch('close')} />
-  </div>
-    <div>{filesize(value.size)}</div>
-    <div><TimestampPresenter value={value.modifiedOn}/></div>
-    <AttachmentPreview {value}/>
-  {/if}
-</div>
+  </Panel>
+{/if}

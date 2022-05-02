@@ -1,14 +1,14 @@
 <!--
 // Copyright © 2022 Hardcore Engineering Inc.
-// 
+//
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// 
+//
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
@@ -17,28 +17,11 @@
   import { showPopup, closeTooltip } from '@anticrm/ui'
   import { PDFViewer, getFileUrl } from '@anticrm/presentation'
   import filesize from 'filesize'
+  import { extensionIconLabel, isEmbedded, isImage, isPDF, trimFilename } from '../utils'
 
   export let value: Attachment
 
   const maxLength: number = 18
-  const trimFilename = (fname: string): string =>
-    fname.length > maxLength ? fname.substr(0, (maxLength - 1) / 2) + '...' + fname.substr(-(maxLength - 1) / 2) : fname
-
-  function extensionIconLabel (name: string): string {
-    const parts = name.split('.')
-    const ext = parts[parts.length - 1]
-    return ext.substring(0, 4).toUpperCase()
-  }
-
-  function isPDF (contentType: string) {
-    return contentType.includes('application/pdf')
-  }
-  function isImage (contentType: string) {
-    return contentType.startsWith('image/')
-  }
-  function isEmbedded (contentType: string) {
-    return isPDF(contentType) || isImage(contentType)
-  }
 
   function openAttachment () {
     closeTooltip()
@@ -79,11 +62,11 @@
       <div class="eCellInfoData">
         {#if isEmbedded(value.type)}
           <div class="eCellInfoFilename" on:click={openAttachment}>
-            {trimFilename(value.name)}
+            {trimFilename(value.name, maxLength)}
           </div>
         {:else}
           <div class="eCellInfoFilename">
-            <a href={getFileUrl(value.file)} download={value.name}>{trimFilename(value.name)}</a>
+            <a href={getFileUrl(value.file)} download={value.name}>{trimFilename(value.name, maxLength)}</a>
           </div>
         {/if}
         <div class="eCellInfoFilesize">{filesize(value.size)}</div>
@@ -147,10 +130,6 @@
     }
 
     .eCellInfoMenu {
-      margin-left: auto;
-      position: absolute;
-      bottom: 1rem;
-      right: 0.5rem;
     }
 
     .eCellInfoFilename {

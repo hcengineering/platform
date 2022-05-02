@@ -33,6 +33,6 @@
 
 <style lang="scss">
   .item {
-    padding: 0.5rem;
+    padding: 0.5rem 0;
   }
 </style>

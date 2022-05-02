@@ -13,40 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import attachment, { Attachment } from '@anticrm/attachment'
-  import { Doc, getCurrentAccount } from '@anticrm/core'
-  import { getFileUrl, getClient } from '@anticrm/presentation'
-  import { Icon, IconMoreV, showPopup, Menu } from '@anticrm/ui'
-  import FileDownload from './icons/FileDownload.svelte'
+  import { Attachment } from '@anticrm/attachment'
   import { AttachmentPresenter } from '..'
+  import AttachmentActions from './AttachmentActions.svelte'
 
   export let attachments: Attachment[]
   let selectedFileNumber: number | undefined
-  const myAccId = getCurrentAccount()._id
-  const client = getClient()
-
-  const showFileMenu = async (ev: MouseEvent, object: Doc, fileNumber: number): Promise<void> => {
-    selectedFileNumber = fileNumber
-    showPopup(
-      Menu,
-      {
-        actions: [
-          ...(myAccId === object.modifiedBy
-            ? [
-                {
-                  label: attachment.string.DeleteFile,
-                  action: async () => await client.removeDoc(object._class, object.space, object._id)
-                }
-              ]
-            : [])
-        ]
-      },
-      ev.target as HTMLElement,
-      () => {
-        selectedFileNumber = undefined
-      }
-    )
-  }
 </script>
 
 <div class="flex-col">
@@ -56,12 +28,7 @@
         <AttachmentPresenter value={attachment} />
       </div>
       <div class="eAttachmentRowActions" class:fixed={i === selectedFileNumber}>
-        <a href={getFileUrl(attachment.file)} download={attachment.name}>
-          <Icon icon={FileDownload} size={'small'} />
-        </a>
-        <div class="eAttachmentRowMenu" on:click={(event) => showFileMenu(event, attachment, i)}>
-          <IconMoreV size={'small'} />
-        </div>
+        <AttachmentActions {attachment} />
       </div>
     </div>
   {/each}
@@ -70,6 +37,7 @@
 <style lang="scss">
   .attachmentRow {
     display: flex;
+    position: relative;
     align-items: center;
     margin: 0.5rem 1.5rem;
     padding: 0.5rem;
@@ -77,34 +45,16 @@
     border-radius: 0.5rem;
 
     .eAttachmentRowActions {
-      display: flex;
       visibility: hidden;
-    }
-
-    .eAttachmentRowMenu {
-      visibility: hidden;
-      margin-left: 0.2rem;
-      opacity: 0.6;
-      cursor: pointer;
-
-      &:hover {
-        opacity: 1;
-      }
     }
 
     &:hover {
       .eAttachmentRowActions {
         visibility: visible;
       }
-      .eAttachmentRowMenu {
-        visibility: visible;
-      }
     }
     &.fixed {
       .eAttachmentRowActions {
-        visibility: visible;
-      }
-      .eAttachmentRowMenu {
         visibility: visible;
       }
     }

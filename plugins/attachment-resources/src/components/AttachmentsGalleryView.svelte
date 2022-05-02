@@ -13,40 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import attachment, { Attachment } from '@anticrm/attachment'
-  import { Doc, getCurrentAccount } from '@anticrm/core'
-  import { getFileUrl, getClient } from '@anticrm/presentation'
-  import { Icon, IconMoreV, showPopup, Menu } from '@anticrm/ui'
-  import FileDownload from './icons/FileDownload.svelte'
+  import { Attachment } from '@anticrm/attachment'
   import { AttachmentGalleryPresenter } from '..'
+  import AttachmentActions from './AttachmentActions.svelte'
 
   export let attachments: Attachment[]
   let selectedFileNumber: number | undefined
-  const myAccId = getCurrentAccount()._id
-  const client = getClient()
-
-  const showFileMenu = async (ev: MouseEvent, object: Doc, fileNumber: number): Promise<void> => {
-    selectedFileNumber = fileNumber
-    showPopup(
-      Menu,
-      {
-        actions: [
-          ...(myAccId === object.modifiedBy
-            ? [
-                {
-                  label: attachment.string.DeleteFile,
-                  action: async () => await client.removeDoc(object._class, object.space, object._id)
-                }
-              ]
-            : [])
-        ]
-      },
-      ev.target as HTMLElement,
-      () => {
-        selectedFileNumber = undefined
-      }
-    )
-  }
 </script>
 
 <div class="galleryGrid">
@@ -55,12 +27,7 @@
       <AttachmentGalleryPresenter value={attachment}>
         <svelte:fragment slot="rowMenu">
           <div class="eAttachmentCellActions" class:fixed={i === selectedFileNumber}>
-            <a href={getFileUrl(attachment.file)} download={attachment.name}>
-              <Icon icon={FileDownload} size={'small'} />
-            </a>
-            <div class="eAttachmentCellMenu" on:click={(event) => showFileMenu(event, attachment, i)}>
-              <IconMoreV size={'small'} />
-            </div>
+            <AttachmentActions {attachment} />
           </div>
         </svelte:fragment>
       </AttachmentGalleryPresenter>
@@ -77,12 +44,7 @@
 
   .attachmentCell {
     .eAttachmentCellActions {
-      display: flex;
       visibility: hidden;
-      padding: 0.5rem;
-      border: 1px solid var(--theme-button-border-hovered);
-      border-radius: 0.25rem;
-      background-color: var(--board-bg-color);
     }
 
     .eAttachmentCellMenu {

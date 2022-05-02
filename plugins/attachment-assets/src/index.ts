@@ -18,7 +18,7 @@ import attachment, { attachmentId } from '@anticrm/attachment'
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(attachment.icon, {
-  Attachment: `${icons}#chunter`,
+  Attachment: `${icons}#file`,
   FileBrowser: `${icons}#fileBrowser`
 })
 

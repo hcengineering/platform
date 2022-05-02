@@ -31,7 +31,7 @@
 <div class="flex-row-center">
   {#if type === 'image'}
     <div
-      class="content flex-center buttonContainer cursor-pointer"
+      class="content buttonContainer cursor-pointer"
       on:click={() => {
         closeTooltip()
         showPopup(PDFViewer, { file: value.file, name: value.name, contentType: value.type }, 'right')
@@ -82,8 +82,8 @@
 
   .buttonContainer {
     align-items: flex-start;
+    position: relative;
     .actions {
-      margin-left: 0.5rem;
       visibility: hidden;
     }
   }
@@ -95,7 +95,6 @@
   }
 
   .content {
-    max-width: 20rem;
     max-height: 20rem;
 
     img,

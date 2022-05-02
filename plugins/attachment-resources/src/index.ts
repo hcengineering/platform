@@ -35,6 +35,7 @@ import { IntlString, Resources } from '@anticrm/platform'
 import preference from '@anticrm/preference'
 import { getClient } from '@anticrm/presentation'
 import { getCurrentLocation, getPanelURI, locationToUrl } from '@anticrm/ui'
+export { isPDF, isEmbedded, isImage, extensionIconLabel, trimFilename } from './utils'
 
 export {
   AddAttachment,
@@ -212,13 +213,13 @@ function getInnerLink (object: Attachment): string {
   const location = getCurrentLocation()
   location.path.length = 1
   location.query = undefined
-  location.fragment = getPanelURI(attachment.component.Detail, object._id, object._class, 'right')
+  location.fragment = getPanelURI(attachment.component.Detail, object._id, object._class, 'float')
   return window.location.origin + locationToUrl(location)
 }
 
-export function CopyDirectLink (object: Attachment): void {
+export async function CopyDirectLink (object: Attachment): Promise<void> {
   const link = getInnerLink(object)
-  navigator.clipboard.writeText(link)
+  await navigator.clipboard.writeText(link)
 }
 
 export function OpenInNewTab (object: Attachment): void {

@@ -116,3 +116,25 @@ export function getType (type: string): 'image' | 'video' | 'audio' | 'pdf' | 'o
 
   return 'other'
 }
+
+export function trimFilename (fname: string, maxLength: number): string {
+  return fname.length > maxLength
+    ? fname.substr(0, (maxLength - 1) / 2) + '...' + fname.substr(-(maxLength - 1) / 2)
+    : fname
+}
+
+export function extensionIconLabel (name: string): string {
+  const parts = name.split('.')
+  const ext = parts[parts.length - 1]
+  return ext.substring(0, 4).toUpperCase()
+}
+
+export function isPDF (contentType: string): boolean {
+  return getType(contentType) === 'pdf'
+}
+export function isImage (contentType: string): boolean {
+  return getType(contentType) === 'image'
+}
+export function isEmbedded (contentType: string): boolean {
+  return isPDF(contentType) || isImage(contentType)
+}

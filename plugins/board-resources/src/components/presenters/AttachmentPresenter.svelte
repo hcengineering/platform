@@ -14,6 +14,7 @@
 -->
 <script lang="ts">
   import type { Attachment } from '@anticrm/attachment'
+  import { extensionIconLabel, isEmbedded, isImage, trimFilename } from '@anticrm/attachment-resources'
   import { PDFViewer, getFileUrl } from '@anticrm/presentation'
   import { Button, showPopup, TimeSince, closeTooltip } from '@anticrm/ui'
   import board from '../../plugin'
@@ -24,25 +25,7 @@
   export let value: Attachment
 
   const maxLenght: number = 30
-  const trimFilename = (fname: string): string =>
-    fname.length > maxLenght
-      ? fname.substring(0, (maxLenght - 1) / 2) + '...' + fname.substring(-(maxLenght - 1) / 2)
-      : fname
-
-  function iconLabel (name: string): string {
-    const parts = name.split('.')
-    const ext = parts[parts.length - 1]
-    return ext.substring(0, 4).toUpperCase()
-  }
-
-  function openEmbedded (contentType: string) {
-    return contentType.includes('application/pdf') || contentType.startsWith('image/')
-  }
-
-  function showPreview (contentType: string) {
-    return contentType.startsWith('image/')
-  }
-
+  
   function handleClick () {
     closeTooltip()
     showPopup(PDFViewer, { file: value.file, name: value.name, contentType: value.type }, 'right')
@@ -50,23 +33,23 @@
 </script>
 
 <div class="flex-row-center">
-  {#if openEmbedded(value.type)}
+  {#if isEmbedded(value.type)}
     <div class="flex-center cursor-pointer icon" on:click={handleClick}>
-      {#if showPreview(value.type)}
+      {#if isImage(value.type)}
         <img src={getFileUrl(value.file)} alt={value.name} />
       {:else}
-        {iconLabel(value.name)}
+        {extensionIconLabel(value.name)}
       {/if}
     </div>
   {:else}
     <a class="no-line" href={getFileUrl(value.file)} download={value.name}>
       <div class="flex-center icon">
-        {iconLabel(value.name)}
+        {extensionIconLabel(value.name)}
       </div>
     </a>
   {/if}
   <div class="flex-col-centre info">
-    <div class="fs-title">{trimFilename(value.name)}</div>
+    <div class="fs-title">{trimFilename(value.name, maxLenght)}</div>
     <div class="flex-row-center flex-gap-1">
       <TimeSince value={value.lastModified} />
       <Button

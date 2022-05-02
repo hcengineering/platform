@@ -18,26 +18,15 @@
   import { showPopup, closeTooltip } from '@anticrm/ui'
   import { PDFViewer, getFileUrl } from '@anticrm/presentation'
   import filesize from 'filesize'
+  import { extensionIconLabel, isEmbedded, trimFilename } from '../utils'
 
   export let value: Attachment
 
   const maxLenght: number = 16
-  const trimFilename = (fname: string): string =>
-    fname.length > maxLenght ? fname.substr(0, (maxLenght - 1) / 2) + '...' + fname.substr(-(maxLenght - 1) / 2) : fname
-
-  function iconLabel (name: string): string {
-    const parts = name.split('.')
-    const ext = parts[parts.length - 1]
-    return ext.substring(0, 4).toUpperCase()
-  }
-
-  function openEmbedded (contentType: string) {
-    return contentType.includes('application/pdf') || contentType.startsWith('image/')
-  }
 </script>
 
 <div class="flex-row-center">
-  {#if openEmbedded(value.type)}
+  {#if isEmbedded(value.type)}
     <div
       class="flex-center icon"
       on:click={() => {
@@ -45,15 +34,15 @@
         showPopup(PDFViewer, { file: value.file, name: value.name, contentType: value.type }, 'right')
       }}
     >
-      {iconLabel(value.name)}
+      {extensionIconLabel(value.name)}
     </div>
   {:else}
     <a class="no-line" href={getFileUrl(value.file)} download={value.name}
-      ><div class="flex-center icon">{iconLabel(value.name)}</div></a
+      ><div class="flex-center icon">{extensionIconLabel(value.name)}</div></a
     >
   {/if}
   <div class="flex-col info">
-    {#if openEmbedded(value.type)}
+    {#if isEmbedded(value.type)}
       <div
         class="name"
         on:click={() => {
@@ -61,10 +50,12 @@
           showPopup(PDFViewer, { file: value.file, name: value.name, contentType: value.type }, 'right')
         }}
       >
-        {trimFilename(value.name)}
+        {trimFilename(value.name, maxLenght)}
       </div>
     {:else}
-      <div class="name"><a href={getFileUrl(value.file)} download={value.name}>{trimFilename(value.name)}</a></div>
+      <div class="name">
+        <a href={getFileUrl(value.file)} download={value.name}>{trimFilename(value.name, maxLenght)}</a>
+      </div>
     {/if}
     <div class="type">{filesize(value.size)}</div>
   </div>
