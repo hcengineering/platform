@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { ChannelProvider, formatName } from '@anticrm/contact'
+  import contact, { formatName } from '@anticrm/contact'
   import core, { Class, ClassifierKind, Doc, Mixin, Obj, Ref } from '@anticrm/core'
   import notification from '@anticrm/notification'
   import { Panel } from '@anticrm/panel'
