@@ -145,8 +145,6 @@
             {editable}
             bind:integrations
             shape={'circle'}
-            on:update
-            on:open
           />
         </div>
 

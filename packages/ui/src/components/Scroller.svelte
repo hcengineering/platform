@@ -130,7 +130,9 @@
     divScroll.scrollTop = divScroll.scrollHeight - divScroll.clientHeight
     scrolling = true
   }
-  $: if (scrolling && divScroll && divScroll.scrollHeight - divScroll.scrollTop - divScroll.clientHeight < 5) { divScroll.scrollTop = divScroll.scrollHeight - divScroll.clientHeight }
+  $: if (scrolling && divScroll && divScroll.scrollHeight - divScroll.scrollTop - divScroll.clientHeight < 5) {
+    divScroll.scrollTop = divScroll.scrollHeight - divScroll.clientHeight
+  }
 
   onMount(() => {
     if (divScroll && divBox) {

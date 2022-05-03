@@ -32,14 +32,11 @@
   export let size: ButtonSize = 'small'
   export let length: 'short' | 'full' = 'full'
   export let shape: 'circle' | undefined = undefined
-  // export let reverse: boolean = false
   export let integrations: Set<Ref<Doc>> = new Set<Ref<Doc>>()
 
   const notificationClient = NotificationClientImpl.getClient()
   const lastViews = notificationClient.getLastViews()
   const dispatch = createEventDispatcher()
-
-  // let editMode: boolean = false
 
   interface Item {
     label: IntlString
@@ -140,8 +137,7 @@
   $: if (providers) updateMenu()
 
   const dropItem = (n: number): Item[] => {
-    const result = displayItems.filter((it, i) => i !== n)
-    return result
+    return displayItems.filter((it, i) => i !== n)
   }
   const saveItems = (): void => {
     value = filterUndefined(displayItems)
@@ -158,10 +154,9 @@
         if (result !== undefined) {
           if (result === null || result === '') displayItems = dropItem(n)
           else displayItems[n].value = result
-          displayItems = displayItems
           saveItems()
-          if (addBtn) addBtn.click()
-        } else closePopup()
+          if (displayItems.length < providers.size && addBtn) addBtn.click()
+        }
       },
       (result) => {
         if (result !== undefined) {
@@ -198,11 +193,7 @@
       Menu,
       { actions },
       ev.target as HTMLElement,
-      (result) => {
-        if (result === undefined) {
-          // closePopup()
-        }
-      },
+      () => {},
       (result) => {
         if (result !== undefined && displayItems.length > 0) {
           if (result === 'left') {
@@ -217,28 +208,6 @@
     )
   }
   let copied: boolean = false
-  // let div: HTMLDivElement
-
-  // function listener (e: MouseEvent): void {
-  //   if (e.target !== null && !div.contains(e.target as Node)) {
-  //     disableEdit()
-  //   }
-  // }
-
-  // function enableEdit () {
-  //   window.addEventListener('click', listener)
-  //   editMode = true
-  // }
-
-  // function disableEdit () {
-  //   closePopup()
-  //   window.removeEventListener('click', listener)
-  //   editMode = false
-  // }
-
-  // onDestroy(() => {
-  //   window.removeEventListener('click', listener)
-  // })
 </script>
 
 <div
