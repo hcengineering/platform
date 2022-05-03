@@ -99,7 +99,7 @@
   on:change={(evt) => updateCategory(evt.detail)}
 />
 
-<Scroller>
+<Scroller tableFade>
   <Table
     {_class}
     config={[

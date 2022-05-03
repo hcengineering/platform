@@ -127,8 +127,9 @@
         width: calc(100% - 5rem);
         min-width: 0;
         max-width: 900px;
-        border-bottom: 1px solid var(--divider-color);
 
+        &.bottom-divider { border-bottom: 1px solid var(--divider-color); }
+        &.top-divider { border-top: 1px solid var(--divider-color); }
         .header-row {
           display: flex;
           align-items: center;

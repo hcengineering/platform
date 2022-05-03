@@ -28,10 +28,9 @@
 
   export let _id: Ref<Doc>
   export let _class: Ref<Class<Doc>>
-  export let rightSection: AnyComponent | undefined = undefined
+  // export let rightSection: AnyComponent | undefined = undefined
 
   // export let object: Contact
-  // $: console.log('!!!!!!!!!!!! id: ', _id, ' - class: ', _class)
   let object: any
   let newMessage: boolean = false
   let currentMessage: SharedMessage | undefined = undefined
@@ -76,7 +75,7 @@
   <Panel
     icon={contact.icon.Email}
     title={'Email'}
-    {rightSection}
+    withoutActivity
     {object}
     isHeader={false}
     isAside={false}

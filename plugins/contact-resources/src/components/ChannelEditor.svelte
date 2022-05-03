@@ -16,7 +16,7 @@
   import { createEventDispatcher, onMount } from 'svelte'
   import type { IntlString } from '@anticrm/platform'
   import { translate } from '@anticrm/platform'
-  import { Button, Icon, IconClose, IconBlueCheck } from '@anticrm/ui'
+  import { Button, Icon, IconClose, IconBlueCheck, IconArrowRight } from '@anticrm/ui'
 
   export let value: string = ''
   export let placeholder: IntlString
@@ -60,6 +60,7 @@
         >
           <div class="icon"><Icon icon={IconClose} size={'inline'} /></div>
         </div>
+        <Button kind={'transparent'} size={'small'} icon={IconArrowRight} on:click={() => dispatch('update', 'open')} />
         <Button kind={'transparent'} size={'small'} icon={IconBlueCheck} on:click={() => dispatch('close', value)} />
       </div>
     </div>

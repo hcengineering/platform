@@ -87,7 +87,7 @@
     {/if}
   </div>
 {:else}
-  <div class="mt-4 pb-4 bottom-highlight-select">
+  <div class="pb-6 bottom-highlight-select">
     <slot />
   </div>
   <div class="flex-row-center h-14 px-3 mt-4 antiTitle">

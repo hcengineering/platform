@@ -16,7 +16,6 @@
   import { createEventDispatcher } from 'svelte'
   import { Button, IconClose, IconDetails, Scroller } from '..'
 
-  export let rightSection: boolean = false
   export let innerWidth: number = 0
   export let panelWidth: number = 0
   export let isHeader: boolean = true
@@ -65,15 +64,11 @@
   <div class="popupPanel-body" class:asideShown>
     <div class="popupPanel-body__main" bind:clientWidth={innerWidth}>
       {#if $$slots.header && isHeader}
-        <div class="popupPanel-body__main-header">
+        <div class="popupPanel-body__main-header bottom-divider">
           <slot name="header" />
         </div>
       {/if}
-      <Scroller>
-        <div class="popupPanel-body__main-content">
-          <slot />
-        </div>
-      </Scroller>
+      <slot />
     </div>
     {#if $$slots.aside && isAside}
       <div class="popupPanel-body__aside" class:float={asideFloat} class:shown={asideShown}>
@@ -82,3 +77,9 @@
     {/if}
   </div>
 </div>
+
+<!-- <Scroller>
+  <div class="popupPanel-body__main-content">
+    <slot />
+  </div>
+</Scroller> -->

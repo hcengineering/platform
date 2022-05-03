@@ -25,10 +25,9 @@
   import { getChannelProviders } from '../utils'
   import ChannelEditor from './ChannelEditor.svelte'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
-  import { onDestroy } from 'svelte'
 
   export let value: AttachedData<Channel>[] | Channel | null
-  export let editable = false
+  export let editable: boolean = false
   export let kind: ButtonKind = 'no-border'
   export let size: ButtonSize = 'small'
   export let length: 'short' | 'full' = 'full'
@@ -40,7 +39,7 @@
   const lastViews = notificationClient.getLastViews()
   const dispatch = createEventDispatcher()
 
-  let editMode = false
+  // let editMode: boolean = false
 
   interface Item {
     label: IntlString
@@ -140,8 +139,9 @@
   }
   $: if (providers) updateMenu()
 
-  const dropItem = (n: number): void => {
-    displayItems = displayItems.filter((it, i) => i !== n)
+  const dropItem = (n: number): Item[] => {
+    const result = displayItems.filter((it, i) => i !== n)
+    return result
   }
   const saveItems = (): void => {
     value = filterUndefined(displayItems)
@@ -156,38 +156,38 @@
       ev.target as HTMLElement,
       (result) => {
         if (result !== undefined) {
-          if (result == null || result === '') dropItem(n)
+          if (result === null || result === '') displayItems = dropItem(n)
           else displayItems[n].value = result
-        } else if (displayItems[n].value === '') dropItem(n)
-        saveItems()
-        if (actions.length > 0 && addBtn) {
-          if (result !== undefined) addBtn.click()
-          else disableEdit()
-        } else {
-          disableEdit()
-        }
+          displayItems = displayItems
+          saveItems()
+          if (addBtn) addBtn.click()
+        } else closePopup()
       },
       (result) => {
         if (result !== undefined) {
           if (result === 'left') {
             closePopup()
             if (displayItems[n].value === '') {
-              dropItem(n)
+              displayItems = dropItem(n)
               saveItems()
             }
-            if (n === 0) addBtn.click()
-            else btns[n - 1].click()
+            if (n === 0) {
+              if (addBtn) addBtn.click()
+              else btns[displayItems.length - 1].click() 
+            } else btns[n - 1].click()
           } else if (result === 'right') {
             closePopup()
             if (displayItems[n].value === '') {
-              dropItem(n)
+              displayItems = dropItem(n)
               saveItems()
-              if (n === displayItems.length) addBtn.click()
-              else btns[n + 1].click()
-            } else {
-              if (n === displayItems.length - 1) addBtn.click()
-              else btns[n + 1].click()
             }
+            if (n === displayItems.length - 1) {
+              if (addBtn) addBtn.click()
+              else btns[0].click()
+            } else btns[n + 1].click()
+          } else if (result === 'open') {
+            closePopup()
+            dispatch('open', { presenter: channel.presenter })
           }
         }
       }
@@ -200,7 +200,7 @@
       ev.target as HTMLElement,
       (result) => {
         if (result === undefined) {
-          disableEdit()
+          // closePopup()
         }
       },
       (result) => {
@@ -217,31 +217,31 @@
     )
   }
   let copied: boolean = false
-  let div: HTMLDivElement
+  // let div: HTMLDivElement
 
-  function listener (e: MouseEvent): void {
-    if (e.target !== null && !div.contains(e.target as Node)) {
-      disableEdit()
-    }
-  }
+  // function listener (e: MouseEvent): void {
+  //   if (e.target !== null && !div.contains(e.target as Node)) {
+  //     disableEdit()
+  //   }
+  // }
 
-  function enableEdit () {
-    window.addEventListener('click', listener)
-    editMode = true
-  }
+  // function enableEdit () {
+  //   window.addEventListener('click', listener)
+  //   editMode = true
+  // }
 
-  function disableEdit () {
-    window.removeEventListener('click', listener)
-    editMode = false
-  }
+  // function disableEdit () {
+  //   closePopup()
+  //   window.removeEventListener('click', listener)
+  //   editMode = false
+  // }
 
-  onDestroy(() => {
-    window.removeEventListener('click', listener)
-  })
+  // onDestroy(() => {
+  //   window.removeEventListener('click', listener)
+  // })
 </script>
 
 <div
-  bind:this={div}
   class="{displayItems.length === 0 ? 'clear-mins' : 'buttons-group'} {kind === 'no-border'
     ? 'xsmall-gap'
     : 'xxsmall-gap'}"
@@ -256,7 +256,7 @@
         {shape}
         click={item.value === ''}
         on:click={(ev) => {
-          if (editMode) editChannel(item, i, ev)
+          if (editable) editChannel(item, i, ev)
         }}
       />
     {:else}
@@ -270,12 +270,12 @@
           {kind}
           {size}
           {shape}
-          highlight={item.integration || item.notification || editMode}
+          highlight={item.integration || item.notification}
           on:click={(ev) => {
-            if (editMode) {
+            if (editable) {
               editChannel(item, i, ev)
             } else {
-              dispatch('click', item)
+              dispatch('open', item)
               if (!copied) {
                 navigator.clipboard.writeText(item.value)
                 copied = true
@@ -293,12 +293,11 @@
     <Button
       bind:input={addBtn}
       icon={contact.icon.SocialEdit}
-      highlight={editMode}
       label={displayItems.length === 0 ? presentation.string.AddSocialLinks : undefined}
       {kind}
       {size}
       {shape}
-      on:click={editMode ? showMenu : enableEdit}
+      on:click={showMenu}
     />
   {/if}
 </div>
@@ -334,6 +333,7 @@
       transition-duration: 0.15s;
       transition-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.275);
       pointer-events: none;
+      z-index: 1000;
     }
     &:hover .tooltip {
       transform: translate(-50%, -0.5rem) scale(1);

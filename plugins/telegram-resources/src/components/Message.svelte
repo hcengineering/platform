@@ -33,28 +33,34 @@
 </script>
 
 <div
-  class="message-row"
+  class="message-row-bg"
   class:selectable
   class:selected-row={selected}
-  on:click={() => {
-    dispatch('select', message)
-  }}
 >
-  <div class="check-box">
-    {#if selectable}<CheckBox circle primary bind:checked={selected} />{/if}
-  </div>
-  <div class="message-container" class:out={!message.incoming}>
-    <div class="message" class:outcoming={!message.incoming} class:selected>
-      {#if showName}
-        <div class="name" style="color: {getPlatformColorForText(message.sender)}">{formatName(message.sender)}</div>
-      {/if}
-      {#if attachments}
-        <AttachmentList {attachments} />
-      {/if}
-      <div class="flex">
-        <div class="caption-color mr-4"><MessageViewer message={message.content} /></div>
-        <div class="time">
-          {new Date(message.sendOn).toLocaleString('default', { hour: 'numeric', minute: 'numeric' })}
+  <div
+    class="message-row"
+    class:selectable
+    class:selected-row={selected}
+    on:click={() => {
+      dispatch('select', message)
+    }}
+  >
+    <div class="check-box">
+      {#if selectable}<CheckBox circle primary bind:checked={selected} />{/if}
+    </div>
+    <div class="message-container" class:out={!message.incoming}>
+      <div class="message" class:outcoming={!message.incoming} class:selected>
+        {#if showName}
+          <div class="name" style="color: {getPlatformColorForText(message.sender)}">{formatName(message.sender)}</div>
+        {/if}
+        {#if attachments}
+          <AttachmentList {attachments} />
+        {/if}
+        <div class="flex">
+          <div class="caption-color mr-4"><MessageViewer message={message.content} /></div>
+          <div class="time">
+            {new Date(message.sendOn).toLocaleString('default', { hour: 'numeric', minute: 'numeric' })}
+          </div>
         </div>
       </div>
     </div>
@@ -62,36 +68,52 @@
 </div>
 
 <style lang="scss">
+  .message-row-bg {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    min-height: 0;
+
+  }
   .message-row {
     display: flex;
     justify-content: stretch;
     align-items: center;
+    margin: 0 auto;
+    width: 100%;
+    min-width: 0;
+    max-width: 900px;
+  }
 
-    &.selectable {
-      cursor: pointer;
+  .message-row.selectable,
+  .message-row-bg.selectable {
+    cursor: pointer;
+
+    &:hover {
+      background-color: var(--button-bg-hover);
+    }
+    &.selected-row {
+      background-color: var(--button-bg-color);
 
       &:hover {
-        background-color: var(--highlight-hover);
+        background-color: var(--button-bg-hover);
       }
-      &.selected-row {
-        background-color: var(--highlight-select);
+    }
+    .message {
+      cursor: pointer;
+    }
+    .selected {
+      background-color: var(--primary-bg-color);
 
-        &:hover {
-          background-color: var(--highlight-hover);
-        }
-      }
-      .message {
-        cursor: pointer;
-      }
-      .selected {
-        background-color: var(--primary-bg-color);
-
-        &:hover {
-          background-color: var(--primary-bg-hover);
-        }
+      &:hover {
+        background-color: var(--primary-bg-hover);
       }
     }
   }
+
   .check-box {
     display: flex;
     justify-content: center;
@@ -107,9 +129,7 @@
     margin-right: 2.5rem;
     padding: 0.25rem 0;
 
-    &.out {
-      justify-content: flex-end;
-    }
+    &.out { justify-content: flex-end; }
   }
   .message {
     padding: 0.5rem 0.75rem;

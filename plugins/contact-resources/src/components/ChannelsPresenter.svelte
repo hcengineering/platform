@@ -27,14 +27,14 @@
   export let length: 'short' | 'full' = 'short'
   export let shape: 'circle' | undefined = 'circle'
 
-  function click (ev: any) {
+  function _open (ev: any) {
     if (ev.detail.presenter !== undefined && Array.isArray(value)) {
       const channel = value[0]
       if (channel !== undefined) {
-        showPanel(ev.detail.presenter, channel.attachedTo, channel.attachedToClass, 'float', ev.detail.presenter)
+        showPanel(ev.detail.presenter, channel.attachedTo, channel.attachedToClass, 'float')
       }
     }
   }
 </script>
 
-<ChannelsDropdown bind:value {length} {kind} {size} {shape} {editable} on:click={click} />
+<ChannelsDropdown bind:value {length} {kind} {size} {shape} {editable} on:open={_open} />

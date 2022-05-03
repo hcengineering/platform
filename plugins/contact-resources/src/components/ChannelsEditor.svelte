@@ -20,7 +20,6 @@
 
   import { ChannelProvider, Channel } from '@anticrm/contact'
   import { showPanel } from '@anticrm/ui'
-  import view from '@anticrm/view'
   import contact from '../plugin'
   import ChannelsDropdown from './ChannelsDropdown.svelte'
 
@@ -105,11 +104,11 @@
     Promise.all(promises)
   }
 
-  function click (ev: any) {
+  function _open (ev: any) {
     if (ev.detail.presenter !== undefined && Array.isArray(channels)) {
       const channel = channels[0]
       if (channel !== undefined) {
-        showPanel(view.component.EditDoc, channel.attachedTo, channel.attachedToClass, 'content', ev.detail.presenter)
+        showPanel(ev.detail.presenter, channel.attachedTo, channel.attachedToClass, 'float')
       }
     }
   }
@@ -126,5 +125,5 @@
   on:change={(e) => {
     if (editable) save(e.detail)
   }}
-  on:click={click}
+  on:open={_open}
 />

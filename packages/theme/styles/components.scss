@@ -324,6 +324,7 @@
 
 /* Table */
 .antiTable {
+  position: relative;
   width: 100%;
 
   th, td {
@@ -414,6 +415,13 @@
   &.highlightRows .antiTable-body__row {
     &.checking { background-color: var(--highlight-select); } // --theme-table-bg-hover
     &.selected { background-color: var(--highlight-hover); } // --menu-bg-select
+  }
+
+  .scroller-thead {
+    position: sticky;
+    top: 0;
+    z-index: 999;
+    background-color: var(--body-color);
   }
 }
 
