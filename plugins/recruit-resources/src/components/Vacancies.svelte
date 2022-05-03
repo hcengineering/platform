@@ -89,7 +89,7 @@
   />
   <Button icon={IconAdd} label={recruit.string.VacancyCreateLabel} kind={'primary'} on:click={showCreateDialog} />
 </div>
-<Scroller>
+<Scroller tableFade>
   <Table
     _class={recruit.class.Vacancy}
     config={[

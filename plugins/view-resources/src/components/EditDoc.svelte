@@ -14,11 +14,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { ChannelProvider, formatName } from '@anticrm/contact'
-  import core, { Class, ClassifierKind, Doc, getCurrentAccount, Mixin, Obj, Ref, Space } from '@anticrm/core'
+  import contact, { formatName } from '@anticrm/contact'
+  import core, { Class, ClassifierKind, Doc, Mixin, Obj, Ref } from '@anticrm/core'
   import notification from '@anticrm/notification'
   import { Panel } from '@anticrm/panel'
-  import { Asset, getResource, IntlString, translate } from '@anticrm/platform'
+  import { Asset, getResource, translate } from '@anticrm/platform'
   import {
     AttributesBar,
     createQuery,
@@ -26,7 +26,6 @@
     getClient,
     KeyedAttribute
   } from '@anticrm/presentation'
-  import setting, { IntegrationType } from '@anticrm/setting'
   import { AnyComponent, Component } from '@anticrm/ui'
   import view from '@anticrm/view'
   import { createEventDispatcher, onDestroy } from 'svelte'
@@ -36,7 +35,6 @@
 
   export let _id: Ref<Doc>
   export let _class: Ref<Class<Doc>>
-  export let rightSection: AnyComponent | undefined = undefined
 
   let lastId: Ref<Doc> = _id
   let lastClass: Ref<Class<Doc>> = _class
@@ -237,51 +235,6 @@
   }
   let panelWidth: number = 0
   let innerWidth: number = 0
-
-  const accountId = getCurrentAccount()._id
-  let channelProviders: ChannelProvider[] | undefined
-  let currentProviders: ChannelProvider[] | undefined
-  let integrations: Set<Ref<IntegrationType>> = new Set<Ref<IntegrationType>>()
-  let displayedIntegrations:
-    | {
-        icon: Asset | undefined
-        label: IntlString
-        presenter: AnyComponent | undefined
-        value: string
-      }[]
-    | undefined = []
-
-  client.findAll(contact.class.ChannelProvider, {}).then((res) => {
-    channelProviders = res
-  })
-  const settingsQuery = createQuery()
-  $: settingsQuery.query(
-    setting.class.Integration,
-    { space: accountId as string as Ref<Space>, disabled: false },
-    (res) => {
-      integrations = new Set(res.map((p) => p.type))
-    }
-  )
-  const channelsQuery = createQuery()
-  $: _id &&
-    integrations &&
-    channelProviders &&
-    channelsQuery.query(contact.class.Channel, { attachedTo: _id }, (res) => {
-      const channels = res
-      currentProviders = channelProviders?.filter((provider) =>
-        provider.integrationType ? integrations.has(provider.integrationType as Ref<IntegrationType>) : false
-      )
-      displayedIntegrations = []
-      currentProviders?.forEach((provider) => {
-        displayedIntegrations?.push({
-          icon: provider.icon,
-          label: provider.label,
-          presenter: provider.presenter,
-          value: channels.filter((ch) => ch.provider === provider._id)[0].value
-        })
-      })
-    })
-
   let minimize: boolean = false
 </script>
 
@@ -295,7 +248,6 @@
   <Panel
     {icon}
     {title}
-    {rightSection}
     {object}
     bind:minimize
     isHeader={false}
@@ -321,23 +273,18 @@
       {/if}
     </svelte:fragment>
 
-    <div class="main-editor">
-      {#if mainEditor}
-        <Component
-          is={mainEditor}
-          props={{ object }}
-          on:open={(ev) => {
-            ignoreKeys = ev.detail.ignoreKeys
-            ignoreMixins = new Set(ev.detail.ignoreMixins)
-            updateKeys()
-            getMixins()
-          }}
-          on:click={(ev) => {
-            rightSection = ev.detail.presenter
-          }}
-        />
-      {/if}
-    </div>
+    {#if mainEditor}
+      <Component
+        is={mainEditor}
+        props={{ object }}
+        on:open={(ev) => {
+          ignoreKeys = ev.detail.ignoreKeys
+          ignoreMixins = new Set(ev.detail.ignoreMixins)
+          updateKeys()
+          getMixins()
+        }}
+      />
+    {/if}
     {#each collectionEditors as collection}
       {#if collection.editor}
         <div class="mt-6">
@@ -357,11 +304,3 @@
     {/each}
   </Panel>
 {/if}
-
-<style lang="scss">
-  .main-editor {
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
-  }
-</style>

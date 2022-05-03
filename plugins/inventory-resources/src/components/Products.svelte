@@ -67,7 +67,7 @@
   />
 </div>
 
-<Scroller>
+<Scroller tableFade>
   {#await tableDescriptor then descr}
     {#if descr}
       <Table

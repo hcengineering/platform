@@ -24,7 +24,6 @@
   import { createQuery, getClient } from '@anticrm/presentation'
   import setting, { Integration } from '@anticrm/setting'
   import type { NewTelegramMessage, SharedTelegramMessage, TelegramMessage } from '@anticrm/telegram'
-  import type { AnyComponent } from '@anticrm/ui'
   import { Button, eventToHTMLElement, IconShare, Tooltip, Scroller, showPopup } from '@anticrm/ui'
   import telegram from '../plugin'
   import Connect from './Connect.svelte'
@@ -34,7 +33,6 @@
 
   export let _id: Ref<Contact>
   export let _class: Ref<Class<Contact>>
-  export let rightSection: AnyComponent | undefined = undefined
 
   let object: Contact
   let channel: Channel | undefined = undefined
@@ -77,7 +75,7 @@
       telegram.class.Message,
       { attachedTo: channelId },
       (res) => {
-        messages = res.reverse()
+        messages = res
         if (channel !== undefined) {
           notificationClient.updateLastView(channel._id, channel._class, undefined, true)
         }
@@ -191,7 +189,7 @@
   <Panel
     icon={TelegramIcon}
     title={'Telegram'}
-    {rightSection}
+    withoutActivity
     {object}
     isHeader={false}
     isAside={false}
@@ -203,27 +201,43 @@
       You and {formatName(object.name)}
     </svelte:fragment>
     <svelte:fragment slot="tools">
-      <Tooltip label={telegram.string.Share}>
+      {#if integration === undefined}
         <Button
-          icon={IconShare}
-          kind={'transparent'}
-          size={'medium'}
-          on:click={async () => {
-            selectable = !selectable
+          label={telegram.string.Connect}
+          kind={'primary'}
+          on:click={(e) => {
+            showPopup(Connect, {}, eventToHTMLElement(e), onConnectClose)
           }}
         />
-      </Tooltip>
+      {:else if integration.disabled}
+        <Button
+          label={setting.string.Reconnect}
+          kind={'primary'}
+          on:click={(e) => {
+            showPopup(Reconnect, {}, eventToHTMLElement(e), onReconnect)
+          }}
+        />
+      {:else}
+        <Tooltip label={telegram.string.Share}>
+          <Button
+            icon={IconShare}
+            kind={'transparent'}
+            size={'medium'}
+            on:click={async () => {
+              selectable = !selectable
+            }}
+          />
+        </Tooltip>
+      {/if}
     </svelte:fragment>
 
-    <div class="telegram-content" class:selectable>
-      <Scroller bottomStart autoscroll>
-        {#if messages && accounts}
-          <Messages messages={convertMessages(messages, accounts)} {selectable} bind:selected />
-        {/if}
-      </Scroller>
-    </div>
+    <Scroller bottomStart autoscroll>
+      {#if messages && accounts}
+        <Messages messages={convertMessages(messages, accounts)} {selectable} bind:selected />
+      {/if}
+    </Scroller>
 
-    <div class="ref-input" class:selectable>
+    <div class="popupPanel-body__main-header ref-input" class:selectable>
       {#if selectable}
         <div class="flex-between">
           <span>{selected.size} messages selected</span>
@@ -242,26 +256,8 @@
             </div>
           </div>
         </div>
-      {:else if integration === undefined}
-        <div class="flex-center">
-          <Button
-            label={telegram.string.Connect}
-            kind={'primary'}
-            on:click={(e) => {
-              showPopup(Connect, {}, eventToHTMLElement(e), onConnectClose)
-            }}
-          />
-        </div>
-      {:else if integration.disabled}
-        <div class="flex-center">
-          <Button
-            label={setting.string.Reconnect}
-            kind={'primary'}
-            on:click={(e) => {
-              showPopup(Reconnect, {}, eventToHTMLElement(e), onReconnect)
-            }}
-          />
-        </div>
+      {:else if integration === undefined || integration.disabled}
+        <div class="flex-center h-18">No integration</div>
       {:else}
         <AttachmentRefInput
           space={telegram.space.Telegram}
@@ -276,22 +272,12 @@
 
 <style lang="scss">
   .ref-input {
-    padding: 0 0 1.5rem;
+    padding: 0.5rem 0 1.5rem;
 
     &.selectable {
       padding: 1rem 0;
       color: var(--theme-caption-color);
       border-top: 1px solid var(--divider-color);
-    }
-  }
-
-  .telegram-content {
-    padding-bottom: 1.5rem;
-    min-height: 0;
-    height: 100%;
-
-    &.selectable {
-      padding-bottom: 0;
     }
   }
 </style>

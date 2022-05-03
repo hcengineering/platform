@@ -143,9 +143,8 @@
             attachedTo={object._id}
             attachedClass={object._class}
             {editable}
-            {integrations}
+            bind:integrations
             shape={'circle'}
-            on:click
           />
         </div>
 

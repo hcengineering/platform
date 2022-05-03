@@ -108,7 +108,7 @@
     updateResultQuery(search, category)
   }}
 />
-<Scroller>
+<Scroller tableFade>
   <TableBrowser
     _class={tags.class.TagElement}
     config={[

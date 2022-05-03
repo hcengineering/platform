@@ -82,6 +82,6 @@
   <Button icon={IconAdd} label={recruit.string.ApplicationCreateLabel} kind={'primary'} on:click={showCreateDialog} />
 </div>
 
-<Scroller>
+<Scroller tableFade>
   <TableBrowser _class={recruit.class.Applicant} {config} {options} query={resultQuery} showNotification />
 </Scroller>
