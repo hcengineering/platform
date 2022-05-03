@@ -27,7 +27,7 @@
     KeyedAttribute
   } from '@anticrm/presentation'
   import setting, { IntegrationType } from '@anticrm/setting'
-  import { AnyComponent, Component, Scroller } from '@anticrm/ui'
+  import { AnyComponent, Component } from '@anticrm/ui'
   import view from '@anticrm/view'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import { getCollectionCounter } from '../utils'

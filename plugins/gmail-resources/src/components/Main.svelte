@@ -14,7 +14,6 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { AnyComponent } from '@anticrm/ui'
   import { Ref, Doc, Class } from '@anticrm/core'
   import contact, { Channel } from '@anticrm/contact'
   import { SharedMessage } from '@anticrm/gmail'
@@ -28,7 +27,6 @@
 
   export let _id: Ref<Doc>
   export let _class: Ref<Class<Doc>>
-  // export let rightSection: AnyComponent | undefined = undefined
 
   // export let object: Contact
   let object: any

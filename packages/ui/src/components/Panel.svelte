@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { Button, IconClose, IconDetails, Scroller } from '..'
+  import { Button, IconClose, IconDetails } from '..'
 
   export let innerWidth: number = 0
   export let panelWidth: number = 0
@@ -77,9 +77,3 @@
     {/if}
   </div>
 </div>
-
-<!-- <Scroller>
-  <div class="popupPanel-body__main-content">
-    <slot />
-  </div>
-</Scroller> -->

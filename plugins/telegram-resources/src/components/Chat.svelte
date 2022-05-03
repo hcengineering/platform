@@ -24,7 +24,6 @@
   import { createQuery, getClient } from '@anticrm/presentation'
   import setting, { Integration } from '@anticrm/setting'
   import type { NewTelegramMessage, SharedTelegramMessage, TelegramMessage } from '@anticrm/telegram'
-  import type { AnyComponent } from '@anticrm/ui'
   import { Button, eventToHTMLElement, IconShare, Tooltip, Scroller, showPopup } from '@anticrm/ui'
   import telegram from '../plugin'
   import Connect from './Connect.svelte'
