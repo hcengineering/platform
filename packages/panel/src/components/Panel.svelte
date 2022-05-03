@@ -40,13 +40,7 @@
 </script>
 
 <svelte:window bind:innerWidth={docWidth} />
-<Panel
-  bind:isAside
-  isHeader={needHeader}
-  bind:panelWidth
-  bind:innerWidth
-  on:close
->
+<Panel bind:isAside isHeader={needHeader} bind:panelWidth bind:innerWidth on:close>
   <svelte:fragment slot="title">
     <div class="popupPanel-title__content-container antiTitle">
       {#if $$slots.navigator}

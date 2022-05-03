@@ -67,7 +67,7 @@
     }
 
     span {
-      margin-left: .25rem;
+      margin-left: 0.25rem;
       width: 1.6rem;
       white-space: nowrap;
       text-transform: capitalize;

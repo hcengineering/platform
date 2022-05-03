@@ -257,9 +257,7 @@
           </div>
         </div>
       {:else if integration === undefined || integration.disabled}
-        <div class="flex-center h-18">
-          No integration
-        </div>
+        <div class="flex-center h-18">No integration</div>
       {:else}
         <AttachmentRefInput
           space={telegram.space.Telegram}
@@ -274,7 +272,7 @@
 
 <style lang="scss">
   .ref-input {
-    padding: .5rem 0 1.5rem;
+    padding: 0.5rem 0 1.5rem;
 
     &.selectable {
       padding: 1rem 0;

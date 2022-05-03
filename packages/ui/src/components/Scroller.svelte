@@ -130,9 +130,7 @@
     divScroll.scrollTop = divScroll.scrollHeight - divScroll.clientHeight
     scrolling = true
   }
-  $: if (scrolling &&
-         divScroll &&
-         divScroll.scrollHeight - divScroll.scrollTop - divScroll.clientHeight < 5) divScroll.scrollTop = divScroll.scrollHeight - divScroll.clientHeight
+  $: if (scrolling && divScroll && divScroll.scrollHeight - divScroll.scrollTop - divScroll.clientHeight < 5) { divScroll.scrollTop = divScroll.scrollHeight - divScroll.clientHeight }
 
   onMount(() => {
     if (divScroll && divBox) {
@@ -164,7 +162,7 @@
 
   const _scroll = (ev: Event): void => {
     if (ev.type === 'scroll') {
-      firstScroll ? firstScroll = false : scrolling = false
+      firstScroll ? (firstScroll = false) : (scrolling = false)
       if (ev.target) {
         const el: HTMLElement = ev.target as HTMLElement
         if (el.scrollHeight - el.scrollTop - el.clientHeight < 5) scrolling = true

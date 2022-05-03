@@ -173,7 +173,7 @@
             }
             if (n === 0) {
               if (addBtn) addBtn.click()
-              else btns[displayItems.length - 1].click() 
+              else btns[displayItems.length - 1].click()
             } else btns[n - 1].click()
           } else if (result === 'right') {
             closePopup()

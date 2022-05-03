@@ -32,11 +32,7 @@
   const dispatch = createEventDispatcher()
 </script>
 
-<div
-  class="message-row-bg"
-  class:selectable
-  class:selected-row={selected}
->
+<div class="message-row-bg" class:selectable class:selected-row={selected}>
   <div
     class="message-row"
     class:selectable
@@ -76,7 +72,6 @@
     max-width: 100%;
     min-width: 0;
     min-height: 0;
-
   }
   .message-row {
     display: flex;
@@ -129,7 +124,9 @@
     margin-right: 2.5rem;
     padding: 0.25rem 0;
 
-    &.out { justify-content: flex-end; }
+    &.out {
+      justify-content: flex-end;
+    }
   }
   .message {
     padding: 0.5rem 0.75rem;
