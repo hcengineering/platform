@@ -42,7 +42,13 @@
       <div class="ac-header__icon"><Avatar size={'medium'} /></div>
       <span class="ac-header__title">{name}</span>
     </div>
-    <ActionIcon icon={IconClose} size={'medium'} action={() => dispatch('close')} />
+    <ActionIcon
+      icon={IconClose}
+      size={'medium'}
+      action={(_) => {
+        dispatch('close')
+      }}
+    />
   </div>
 
   {#if contentType && contentType.startsWith('image/')}

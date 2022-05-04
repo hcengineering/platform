@@ -98,8 +98,7 @@ export async function doNavigate (
         if (ex === undefined) {
           const r = await client.findOne(props.spaceClass, {})
           if (r !== undefined) {
-            loc.path[3] = r._id
-            navigate(loc)
+            loc.path[2] = r._id
           }
         }
       }

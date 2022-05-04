@@ -29,7 +29,6 @@
   },
   "dependencies": {
     "@anticrm/platform": "~0.6.6",
-    "@anticrm/core": "~0.6.16",
-    "just-clone": "^3.2.1"
+    "@anticrm/core": "~0.6.16"
   }
 }
