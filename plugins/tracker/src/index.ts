@@ -14,7 +14,7 @@
 //
 
 import { Employee } from '@anticrm/contact'
-import type { AttachedDoc, Class, Doc, Markup, Ref, Space, Timestamp } from '@anticrm/core'
+import type { AttachedDoc, Class, Doc, Markup, Ref, Space, Timestamp, Type } from '@anticrm/core'
 import type { Asset, IntlString, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import { AnyComponent } from '@anticrm/ui'
@@ -181,7 +181,8 @@ export default plugin(trackerId, {
     Document: '' as Ref<Class<Document>>,
     Project: '' as Ref<Class<Project>>,
     IssueStatus: '' as Ref<Class<IssueStatus>>,
-    IssueStatusCategory: '' as Ref<Class<IssueStatusCategory>>
+    IssueStatusCategory: '' as Ref<Class<IssueStatusCategory>>,
+    TypeIssuePriority: '' as Ref<Class<Type<IssuePriority>>>
   },
   component: {
     Tracker: '' as AnyComponent,

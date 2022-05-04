@@ -15,7 +15,7 @@
 
 import type { Employee } from '@anticrm/contact'
 import contact from '@anticrm/contact'
-import { Domain, DOMAIN_MODEL, IndexKind, Markup, Ref, Timestamp } from '@anticrm/core'
+import { Domain, DOMAIN_MODEL, IndexKind, Markup, Ref, Timestamp, Type } from '@anticrm/core'
 import {
   ArrOf,
   Builder,
@@ -33,7 +33,7 @@ import {
 } from '@anticrm/model'
 import attachment from '@anticrm/model-attachment'
 import chunter from '@anticrm/model-chunter'
-import core, { DOMAIN_SPACE, TAttachedDoc, TDoc, TSpace } from '@anticrm/model-core'
+import core, { DOMAIN_SPACE, TAttachedDoc, TDoc, TSpace, TType } from '@anticrm/model-core'
 import { createAction } from '@anticrm/model-view'
 import workbench, { createNavigateAction } from '@anticrm/model-workbench'
 import { Asset, IntlString } from '@anticrm/platform'
@@ -87,6 +87,19 @@ export class TIssueStatusCategory extends TDoc implements IssueStatusCategory {
 /**
  * @public
  */
+export function TypeIssuePriority (): Type<IssuePriority> {
+  return { _class: tracker.class.TypeIssuePriority, label: 'TypeIssuePriority' as IntlString }
+}
+
+/**
+ * @public
+ */
+@Model(tracker.class.TypeIssuePriority, core.class.Type, DOMAIN_MODEL)
+export class TTypeIssuePriority extends TType {}
+
+/**
+ * @public
+ */
 @Model(tracker.class.Team, core.class.Space, DOMAIN_SPACE)
 @UX(tracker.string.Team, tracker.icon.Team, tracker.string.Team)
 export class TTeam extends TSpace implements Team {
@@ -126,7 +139,7 @@ export class TIssue extends TDoc implements Issue {
   @Prop(TypeRef(tracker.class.IssueStatus), tracker.string.Status)
   status!: Ref<IssueStatus>
 
-  @Prop(TypeNumber(), tracker.string.Priority)
+  @Prop(TypeIssuePriority(), tracker.string.Priority)
   priority!: IssuePriority
 
   @Prop(TypeNumber(), tracker.string.Number)
@@ -227,7 +240,7 @@ export class TProject extends TDoc implements Project {
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TTeam, TProject, TIssue, TIssueStatus, TIssueStatusCategory)
+  builder.createModel(TTeam, TProject, TIssue, TIssueStatus, TIssueStatusCategory, TTypeIssuePriority)
 
   builder.createDoc(
     tracker.class.IssueStatusCategory,
@@ -299,6 +312,10 @@ export function createModel (builder: Builder): void {
   const backlogId = 'backlog'
   const boardId = 'board'
   const projectsId = 'projects'
+
+  builder.mixin(tracker.class.TypeIssuePriority, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: tracker.component.PriorityPresenter
+  })
 
   builder.mixin(tracker.class.IssueStatus, core.class.Class, view.mixin.AttributePresenter, {
     presenter: tracker.component.StatusPresenter

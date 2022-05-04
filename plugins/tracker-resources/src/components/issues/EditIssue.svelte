@@ -24,7 +24,7 @@
   import { createEventDispatcher, onMount } from 'svelte'
   import tracker from '../../plugin'
   import IssuePresenter from './IssuePresenter.svelte'
-  import PriorityPresenter from './PriorityPresenter.svelte'
+  import PriorityEditor from './PriorityEditor.svelte'
   import StatusEditor from './StatusEditor.svelte'
 
   export let _id: Ref<Issue>
@@ -174,7 +174,7 @@
             <span class="label w-24">
               <Label label={tracker.string.Priority} />
             </span>
-            <PriorityPresenter value={issue} currentSpace={currentTeam._id} shouldShowLabel />
+            <PriorityEditor value={issue} currentSpace={currentTeam._id} shouldShowLabel />
           </div>
 
           <div class="flex-row-center mb-4">

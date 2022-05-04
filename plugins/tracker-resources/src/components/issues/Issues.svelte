@@ -349,7 +349,7 @@
         {employees}
         categories={displayedCategories}
         itemsConfig={[
-          { key: '', presenter: tracker.component.PriorityPresenter, props: { currentSpace } },
+          { key: '', presenter: tracker.component.PriorityEditor, props: { currentSpace } },
           { key: '', presenter: tracker.component.IssuePresenter, props: { currentTeam } },
           { key: '', presenter: tracker.component.StatusEditor, props: { currentSpace, statuses } },
           { key: '', presenter: tracker.component.TitlePresenter, props: { shouldUseMargin: true } },
