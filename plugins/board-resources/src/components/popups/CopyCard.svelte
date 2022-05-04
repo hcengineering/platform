@@ -51,7 +51,6 @@
       assignee: null,
       description: '',
       members: [],
-      checklists: [],
       location: '',
       labels: labels ?? []
     }
