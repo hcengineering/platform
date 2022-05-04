@@ -93,8 +93,8 @@ export const issuesSortOrderMap: Record<IssuesOrderByKeys, SortingOrder> = {
   dueDate: SortingOrder.Descending
 }
 
-export const issuesGroupPresenterMap: Record<'status' | 'priority', AnyComponent | undefined> = {
-  status: tracker.component.StatusPresenter,
+export const issuesGroupEditorMap: Record<'status' | 'priority', AnyComponent | undefined> = {
+  status: tracker.component.StatusEditor,
   priority: tracker.component.PriorityEditor
 }
 
