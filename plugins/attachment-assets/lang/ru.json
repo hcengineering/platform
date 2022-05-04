@@ -17,8 +17,8 @@
     "Name": "Название",
     "FileBrowser": "Браузер файлов",
     "FileBrowserFileCounter": "{results, plural, =1 {# результат} =2 {# результата} =3 {# результата} =4 {# результата} other {# результатов}}",
-    "FileBrowserListView": "Показать в виде списка",
-    "FileBrowserGridView": "Показать в виде таблицы",
+    "FileBrowserListView": "Список",
+    "FileBrowserGridView": "Таблица",
     "FileBrowserFilterFrom": "От",
     "FileBrowserFilterIn": "В",
     "FileBrowserFilterDate": "Дата",
@@ -43,6 +43,7 @@
     "FileBrowserTypeFilterVideos": "Видео",
     "FileBrowserTypeFilterPDFs": "PDF-файлы",
     "AddAttachmentToSaved": "Добавить вложение в сохраненные",
-    "RemoveAttachmentFromSaved": "Удалить вложение из сохраненных"
+    "RemoveAttachmentFromSaved": "Удалить вложение из сохраненных",
+    "DeleteFile": "Удалить файл"
   }
 }

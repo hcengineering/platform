@@ -26,24 +26,37 @@
   let search: string = ''
   let objects: Space[] = []
   let phTraslate: string = ''
-  $: translate(presentation.string.Search, {}).then(res => { phTraslate = res })
+  $: translate(presentation.string.Search, {}).then((res) => {
+    phTraslate = res
+  })
   let input: HTMLInputElement
 
   const dispatch = createEventDispatcher()
   const query = createQuery()
-  $: query.query(_class, { ...(spaceQuery ?? {}), name: { $like: '%' + search + '%' } }, result => { objects = result })
-  afterUpdate(() => { dispatch('update', Date.now()) })
-  onMount(() => { if (input) input.focus() })
+  $: query.query(_class, { ...(spaceQuery ?? {}), name: { $like: '%' + search + '%' } }, (result) => {
+    objects = result
+  })
+  afterUpdate(() => {
+    dispatch('update', Date.now())
+  })
+  onMount(() => {
+    if (input) input.focus()
+  })
 </script>
 
 <div class="selectPopup">
   <div class="header">
-    <input bind:this={input} type='text' bind:value={search} placeholder={phTraslate} on:input={() => { }} on:change/>
+    <input bind:this={input} type="text" bind:value={search} placeholder={phTraslate} on:input={() => {}} on:change />
   </div>
   <div class="scroll">
     <div class="box">
       {#each objects as space}
-        <button class="menu-item flex-between" on:click={() => { dispatch('close', space) }}>
+        <button
+          class="menu-item flex-between"
+          on:click={() => {
+            dispatch('close', space)
+          }}
+        >
           <SpaceInfo size={'large'} value={space} />
         </button>
       {/each}

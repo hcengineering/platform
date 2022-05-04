@@ -44,7 +44,7 @@
       </div>
       <div class="content-trans-color flex">
         <AttachmentsPresenter value={message} />
-        {getTime(message.modifiedOn)}
+        {getTime(message.sendOn)}
       </div>
     </div>
     <div class="content-trans-color text-sm overflow-label mr-4 mb-4">

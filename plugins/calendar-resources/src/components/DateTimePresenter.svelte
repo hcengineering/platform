@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { Event } from '@anticrm/calendar'
   import { translate } from '@anticrm/platform'
@@ -20,7 +19,7 @@
   import calendar from '../plugin'
 
   export let value: Event
-  
+
   $: date = value ? new Date(value.date) : undefined
   $: dueDate = value ? new Date(value.dueDate ?? value.date) : undefined
 
@@ -42,15 +41,17 @@
       return await translate(calendar.string.DueDays, { days: Math.floor(passed / DAY) })
     }
   }
-
 </script>
 
 <div class="antiSelect">
   {#if date}
-    <DateRangePresenter value={date.getTime()} withTime={date.getMinutes() !== 0 && date.getHours() !== 0 && interval < DAY} />
+    <DateRangePresenter
+      value={date.getTime()}
+      withTime={date.getMinutes() !== 0 && date.getHours() !== 0 && interval < DAY}
+    />
     {#if interval > 0}
       {#await formatDueDate(interval) then t}
-        <span class='ml-2 mr-1 whitespace-nowrap'>({t})</span>
+        <span class="ml-2 mr-1 whitespace-nowrap">({t})</span>
       {/await}
     {/if}
   {:else}

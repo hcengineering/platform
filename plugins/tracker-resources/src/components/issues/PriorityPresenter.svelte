@@ -54,11 +54,6 @@
       />
     </Tooltip>
   {:else}
-    <PrioritySelector
-      kind={'icon'}
-      {isEditable}
-      {shouldShowLabel}
-      priority={value.priority}
-    />
+    <PrioritySelector kind={'icon'} {isEditable} {shouldShowLabel} priority={value.priority} />
   {/if}
 {/if}

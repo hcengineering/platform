@@ -36,8 +36,10 @@ import DateRangePicker from './components/popups/DateRangePicker.svelte'
 import CardDatePresenter from './components/presenters/DatePresenter.svelte'
 import CardLabelPresenter from './components/presenters/LabelPresenter.svelte'
 import TemplatesIcon from './components/TemplatesIcon.svelte'
-import WatchCard from './components/WatchCard.svelte'
 import BoardHeader from './components/BoardHeader.svelte'
+import BoardMenu from './components/BoardMenu.svelte'
+import MenuMainPage from './components/MenuMainPage.svelte'
+import Archive from './components/Archive.svelte'
 import board from './plugin'
 import {
   addCurrentUser,
@@ -45,7 +47,8 @@ import {
   isArchived,
   isUnarchived,
   archiveCard,
-  unarchiveCard
+  unarchiveCard,
+  updateCardMembers
 } from './utils/CardUtils'
 import { getPopupAlignment } from './utils/PopupUtils'
 
@@ -82,7 +85,7 @@ async function showEditMembersPopup (object: Card, client: Client, e?: Event): P
     getPopupAlignment(e),
     undefined,
     (result: Array<Ref<Employee>>) => {
-      client.update(object, { members: result })
+      updateCardMembers(object, client, result)
     }
   )
 }
@@ -103,8 +106,10 @@ export default async (): Promise<Resources> => ({
     TemplatesIcon,
     KanbanView,
     BoardPresenter,
-    WatchCard,
-    BoardHeader
+    BoardHeader,
+    BoardMenu,
+    Archive,
+    MenuMainPage
   },
   cardActionHandler: {
     Join: addCurrentUser,

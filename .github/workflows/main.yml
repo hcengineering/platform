@@ -39,9 +39,9 @@ jobs:
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-            
-      # - name: Checking for mis-matching dependencies...
-      #   run: node common/scripts/install-run-rush.js check
+
+      - name: Checking for mis-matching dependencies...
+        run: node common/scripts/install-run-rush.js check
 
       # - name: Checking for missing change logs...
       #   run: node common/scripts/install-run-rush.js change -v
@@ -53,7 +53,7 @@ jobs:
         run: node common/scripts/install-run-rush.js bump-model-version
 
       - name: Building...
-        run: node common/scripts/install-run-rush.js rebuild -l --verbose
+        run: node common/scripts/install-run-rush.js rebuild -p 16 -l --verbose
 
       - name: Cache build results
         uses: actions/cache@v3
@@ -145,7 +145,49 @@ jobs:
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
 
       - name: Linting...
-        run: node common/scripts/install-run-rush.js lint
+        run: node common/scripts/install-run-rush.js lint -p 16
+  formatting:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Cache build results
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-build-results
+        with:
+          path: |
+            cloud
+            common
+            deploy
+            dev
+            models
+            packages
+            plugins
+            pods
+            products
+            server
+            server-plugins
+            templates
+            tests
+            rush.json
+            .prettierrc
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
+
+      - name: Formatting...
+        run: node common/scripts/install-run-rush.js format -p 16
+      - name: Check files formatting
+        run: |
+          echo '================================================================'
+          echo 'Checking for diff files'
+          echo '================================================================'
+          git diff '*.ts' '*.svelte' | cat
+          [ -z "$(git diff --name-only '*.ts' '*.svelte' | cat)" ]
+          echo '================================================================'        
   test:
     needs: build
     runs-on: ubuntu-latest
@@ -286,7 +328,7 @@ jobs:
       - name: Setting model version from git release...
         run: node common/scripts/install-run-rush.js bump-model-version
       - name: Build, to include new model version
-        run: node common/scripts/install-run-rush.js build
+        run: node common/scripts/install-run-rush.js build -p 16
       - name: Bundle
         run: node common/scripts/install-run-rush.js bundle
       - name: Docker build

@@ -12,7 +12,7 @@
   let categoryId: string = ''
 
   let categories: SettingsCategory[] = []
-  client.findAll(setting.class.SettingsCategory, {}, { sort: { order: 1 } }).then(s => {
+  client.findAll(setting.class.SettingsCategory, {}, { sort: { order: 1 } }).then((s) => {
     categories = s
     category = findCategory(categoryId)
   })
@@ -49,17 +49,28 @@
   <div class="antiPanel-navigator filled indent">
     <div class="antiNav-header">
       <span class="fs-title overflow-label">
-        <Label label={setting.string.Settings}/>
+        <Label label={setting.string.Settings} />
       </span>
     </div>
     {#each categories as category}
-      <CategoryElement icon={category.icon} label={category.label} selected={category.name === categoryId} on:click={() => { selectCategory(category.name) }}/>
+      <CategoryElement
+        icon={category.icon}
+        label={category.label}
+        selected={category.name === categoryId}
+        on:click={() => {
+          selectCategory(category.name)
+        }}
+      />
     {/each}
     <div class="signout">
-      <CategoryElement icon={setting.icon.Signout} label={setting.string.Signout} on:click={signOut}/>
-      <CategoryElement icon={setting.icon.SelectWorkspace} label={setting.string.SelectWorkspace} on:click={selectWorkspace}/>
+      <CategoryElement icon={setting.icon.Signout} label={setting.string.Signout} on:click={signOut} />
+      <CategoryElement
+        icon={setting.icon.SelectWorkspace}
+        label={setting.string.SelectWorkspace}
+        on:click={selectWorkspace}
+      />
     </div>
-  </div>    
+  </div>
 
   <div class="antiPanel-component filled">
     {#if category}
@@ -70,10 +81,9 @@
 
 <style lang="scss">
   .signout {
-    display: flex;        
+    display: flex;
     flex-direction: column-reverse;
     flex-grow: 1;
     margin-bottom: 2rem;
   }
 </style>
-

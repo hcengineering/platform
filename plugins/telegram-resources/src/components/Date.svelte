@@ -18,7 +18,7 @@
   export let message: SharedTelegramMessage
 
   const current = new Date()
-  const target = new Date(message.modifiedOn)
+  const target = new Date(message.sendOn)
   let options: Intl.DateTimeFormatOptions = {
     day: 'numeric',
     month: 'long'
@@ -32,17 +32,18 @@
 </script>
 
 <div class="datetime-container">
-  {new Intl.DateTimeFormat('default', options).format(message.modifiedOn)}
+  {new Intl.DateTimeFormat('default', options).format(message.sendOn)}
 </div>
 
 <style lang="scss">
   .datetime-container {
     justify-self: center;
-    margin: 0.3rem 0;
+    margin: 0.3rem auto;
     padding: 0.25rem 0.75rem;
     width: fit-content;
     color: var(--theme-content-accent-color);
     background-color: var(--theme-menu-divider);
     border-radius: 1.25rem;
+    user-select: text;
   }
 </style>

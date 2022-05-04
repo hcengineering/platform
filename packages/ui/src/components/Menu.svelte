@@ -51,9 +51,9 @@
   <div class="ap-scroll">
     <div class="ap-box">
       {#if actions.length === 0}
-      <div class='p-6 error-color'>
-        <Label label={ui.string.NoActionsDefined}/>
-      </div>
+        <div class="p-6 error-color">
+          <Label label={ui.string.NoActionsDefined} />
+        </div>
       {/if}
       {#each actions as action, i}
         <!-- svelte-ignore a11y-mouse-events-have-key-events -->
@@ -84,7 +84,11 @@
   .withIcon {
     margin: 0;
 
-    .icon { color: var(--content-color); }
-    &:focus .icon { color: var(--accent-color); }
+    .icon {
+      color: var(--content-color);
+    }
+    &:focus .icon {
+      color: var(--accent-color);
+    }
   }
 </style>

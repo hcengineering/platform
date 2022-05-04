@@ -61,6 +61,9 @@
   --accent-bg-color: #27282b;
   --accent-shadow: rgb(0 0 0 / 10%) 0px 2px 4px;
 
+  --highlight-select: #8a8f9810;
+  --highlight-hover: #8a8f9820;
+
   --dark-color: #62666d;
   --content-color: #8a8f98;
   --accent-color: #d7d8db;
@@ -77,6 +80,8 @@
   --popup-bg-hover: #37373c;
   --popup-divider: #313236;
   --popup-shadow: rgb(0 0 0 / 20%) 0px 4px 24px;
+  --popup-panel-shadow: rgb(0 0 0 / 55%) 0px 7px 24px;
+  --popup-aside-shadow: rgb(0 0 0 / 25%) 0px 8px 16px;
   --card-shadow: rgb(0 0 0 / 50%) 0px 16px 70px;
   --card-overlay-color: rgba(28, 29, 31, .5);
   --avatar-bg-color: #4f5358;
@@ -198,6 +203,9 @@
   --accent-bg-color: #f8f9fb;  // HZ
   --accent-shadow: rgb(0 0 0 / 10%) 0px 2px 4px;  // Dark
 
+  --highlight-select: #3c414910;
+  --highlight-hover: #3c414920;
+
   --dark-color: #90959d;
   --content-color: #3c4149;
   --accent-color: #282a30;
@@ -214,6 +222,7 @@
   --popup-bg-hover: #f8f9fb;
   --popup-divider: #eff1f4;
   --popup-shadow: rgb(0 0 0 / 20%) 0px 4px 24px;  // Dark
+  --popup-panel-shadow: rgb(0 0 0 / 55%) 0px 7px 24px;  // Dark
   --card-shadow: rgb(0 0 0 / 50%) 0px 16px 70px;
   --card-overlay-color: rgba(144, 149, 157, .4);
   --avatar-bg-color: #e0e0e0;  // HZ

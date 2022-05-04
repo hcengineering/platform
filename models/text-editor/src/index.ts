@@ -34,7 +34,5 @@ export class TRefInputActionItem extends TDoc implements RefInputActionItem {
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(
-    TRefInputActionItem
-  )
+  builder.createModel(TRefInputActionItem)
 }

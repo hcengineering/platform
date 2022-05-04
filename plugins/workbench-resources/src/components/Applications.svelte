@@ -12,9 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
-
   import type { Ref } from '@anticrm/core'
   import type { Application } from '@anticrm/workbench'
   import { createEventDispatcher } from 'svelte'
@@ -28,8 +26,14 @@
 
 <div class="flex-col">
   {#each apps as app}
-    <AppItem selected={app._id === active} icon={app.icon} label={app.label} action={async () => {
-      dispatch('active', app)
-      }} notify={false}/>
+    <AppItem
+      selected={app._id === active}
+      icon={app.icon}
+      label={app.label}
+      action={async () => {
+        dispatch('active', app)
+      }}
+      notify={false}
+    />
   {/each}
 </div>

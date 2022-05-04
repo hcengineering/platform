@@ -38,7 +38,6 @@
   const sortKey = 'modifiedOn'
   const sortOrder = SortingOrder.Descending
 
-  let loading = false
   let resultQuery: DocumentQuery<Event>
   $: spaceOpt = space ? { space } : {}
   $: resultQuery = search === '' ? { ...query, ...spaceOpt } : { ...query, $search: search, ...spaceOpt }
@@ -54,13 +53,11 @@
     sortOrder: SortingOrder,
     options?: FindOptions<Event>
   ) {
-    loading = true
     q.query<Event>(
       _class,
       query,
       (result) => {
         objects = result
-        loading = false
       },
       { sort: { [sortKey]: sortOrder }, ...options }
     )
@@ -91,13 +88,17 @@
 
       if (minutes) {
         if (isSameDay(d1, date)) {
-          return (date.getTime() < d1.getTime() && d1.getTime() < date.getTime() + 3600 * 1000) ||
-                  (d1.getTime() < date.getTime() && date.getTime() <= d2.getTime())
+          return (
+            (date.getTime() < d1.getTime() && d1.getTime() < date.getTime() + 3600 * 1000) ||
+            (d1.getTime() < date.getTime() && date.getTime() <= d2.getTime())
+          )
         }
 
         if (isSameDay(d2, date)) {
-          return (date.getTime() < d2.getTime() && d2.getTime() < date.getTime() + 3600000) ||
-                  (date.getTime() < d2.getTime() && d1.getTime() < date.getTime())
+          return (
+            (date.getTime() < d2.getTime() && d2.getTime() < date.getTime() + 3600000) ||
+            (date.getTime() < d2.getTime() && d1.getTime() < date.getTime())
+          )
         }
 
         // Somethere in middle
@@ -171,6 +172,7 @@
     return res
   }
 
+  /* eslint-disable no-unused-vars */
   enum CalendarMode {
     Day,
     Week,
@@ -196,7 +198,6 @@
       }
     }
   }
-  /* eslint-disable no-undef */
 </script>
 
 <div class="fs-title ml-10 mb-2 flex-row-center">

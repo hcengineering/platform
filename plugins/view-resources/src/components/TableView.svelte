@@ -35,13 +35,6 @@
     mode: 'browser'
   }}
 />
-<Scroller>
-  <TableBrowser
-    {_class}
-    {config}
-    {options}
-    query={resultQuery}
-    {baseMenuClass}
-    showNotification
-  />
+<Scroller tableFade>
+  <TableBrowser {_class} {config} {options} query={resultQuery} {baseMenuClass} showNotification />
 </Scroller>

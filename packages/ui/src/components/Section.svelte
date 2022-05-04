@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { Asset, IntlString } from '@anticrm/platform'
   import type { AnySvelteComponent } from '../types'
@@ -26,16 +25,20 @@
   export let closed: boolean = false
 </script>
 
-<div class="flex-row-center section-container"
+<div
+  class="flex-row-center section-container"
   on:click|preventDefault={() => {
     closed = !closed
-  }}>
-  <Icon icon={icon} size={'small'}/>
+  }}
+>
+  <Icon {icon} size={'small'} />
   <!-- <svelte:component this={icon} size={'small'} /> -->
   <div class="title"><Label {label} /></div>
-  <div class="arrow">{#if closed}<ArrowUp size={'small'} />{:else}<ArrowDown size={'small'} />{/if}</div>
+  <div class="arrow">
+    {#if closed}<ArrowUp size={'small'} />{:else}<ArrowDown size={'small'} />{/if}
+  </div>
 </div>
-{#if !closed }<div class="section-content"><slot/></div>{/if}
+{#if !closed}<div class="section-content"><slot /></div>{/if}
 
 <style lang="scss">
   .section-container {
@@ -47,12 +50,12 @@
 
     .title {
       flex-grow: 1;
-      margin-left: .75rem;
+      margin-left: 0.75rem;
       font-weight: 500;
       color: var(--theme-caption-color);
     }
     .arrow {
-      margin: .5rem;
+      margin: 0.5rem;
     }
   }
   .section-content {

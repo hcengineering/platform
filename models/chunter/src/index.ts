@@ -408,7 +408,7 @@ export function createModel (builder: Builder): void {
       editable: false,
       hideOnRemove: true
     },
-    chunter.ids.TxCommentCreate
+    chunter.ids.TxBacklinkCreate
   )
 
   // We need to define this one, to hide default attached object removed case

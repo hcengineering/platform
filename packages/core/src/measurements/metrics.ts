@@ -75,16 +75,19 @@ function aggregate (m: Metrics): Metrics {
   const keysLen = Object.keys(ms).length
   const childAverage = m.time === 0 && keysLen > 0
   const sumVal: Metrics | undefined = childAverage
-    ? Object.values(ms).reduce((p, v) => {
-      p.operations += v.operations
-      p.time += v.time
-      return p
-    }, {
-      operations: 0,
-      time: 0,
-      measurements: ms,
-      params: {}
-    })
+    ? Object.values(ms).reduce(
+      (p, v) => {
+        p.operations += v.operations
+        p.time += v.time
+        return p
+      },
+      {
+        operations: 0,
+        time: 0,
+        measurements: ms,
+        params: {}
+      }
+    )
     : undefined
   if (sumVal !== undefined) {
     return {
@@ -129,20 +132,23 @@ function printMetricsParams (params: Record<string, Record<string, MetricsData>>
   let r = ''
   const joinP = (key: string, data: Record<string, MetricsData>): string[] => {
     return Object.entries(data).map(([k, vv]) =>
-      `${toLen('', ' ', offset)}${toLen(key + '=' + k, '-', 70 - offset)}: avg ${vv.time / (vv.operations > 0 ? vv.operations : 1)} total: ${vv.time} ops: ${vv.operations}`.trim()
+      `${toLen('', ' ', offset)}${toLen(key + '=' + k, '-', 70 - offset)}: avg ${
+        vv.time / (vv.operations > 0 ? vv.operations : 1)
+      } total: ${vv.time} ops: ${vv.operations}`.trim()
     )
   }
   const joinParams = Object.entries(params).reduce<string[]>((p, c) => [...p, ...joinP(c[0], c[1])], [])
   if (Object.keys(joinParams).length > 0) {
     r += '\n' + toLen('', ' ', offset)
-    r += joinParams
-      .join('\n' + toLen('', ' ', offset))
+    r += joinParams.join('\n' + toLen('', ' ', offset))
   }
   return r
 }
 
 function toString (name: string, m: Metrics, offset: number): string {
-  let r = `${toLen('', ' ', offset)}${toLen(name, '-', 70 - offset)}: avg ${m.time / (m.operations > 0 ? m.operations : 1)} total: ${m.time} ops: ${m.operations}`.trim()
+  let r = `${toLen('', ' ', offset)}${toLen(name, '-', 70 - offset)}: avg ${
+    m.time / (m.operations > 0 ? m.operations : 1)
+  } total: ${m.time} ops: ${m.operations}`.trim()
   r += printMetricsParams(m.params, offset + 4)
   r += printMetricsChildren(m.measurements, offset + 4)
   return r

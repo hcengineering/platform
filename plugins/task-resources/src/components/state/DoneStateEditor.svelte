@@ -65,16 +65,17 @@
   {#if state}
     <DoneStatePresenter value={state} showTitle />
   {:else}
-    <div class="color background-card-divider"/>
+    <div class="color background-card-divider" />
     <Label label={task.string.NoDoneState} />
   {/if}
 </div>
+
 <style lang="scss">
   .color {
-    margin-right: .75rem;
-    min-width: .5rem;
-    width: .5rem;
-    height: .5rem;
-    border-radius: .5rem;
+    margin-right: 0.75rem;
+    min-width: 0.5rem;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 0.5rem;
   }
 </style>

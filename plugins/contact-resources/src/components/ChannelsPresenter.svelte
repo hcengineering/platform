@@ -18,7 +18,6 @@
   import type { ButtonKind, ButtonSize } from '@anticrm/ui'
   import ChannelsDropdown from './ChannelsDropdown.svelte'
   import { showPanel } from '@anticrm/ui'
-  import view from '@anticrm/view'
 
   export let value: Channel[] | Channel | null
 
@@ -28,28 +27,14 @@
   export let length: 'short' | 'full' = 'short'
   export let shape: 'circle' | undefined = 'circle'
 
-  function click (ev: any) {
+  function _open (ev: any) {
     if (ev.detail.presenter !== undefined && Array.isArray(value)) {
       const channel = value[0]
       if (channel !== undefined) {
-        showPanel(
-          view.component.EditDoc,
-          channel.attachedTo,
-          channel.attachedToClass,
-          'full',
-          ev.detail.presenter
-        )
+        showPanel(ev.detail.presenter, channel.attachedTo, channel.attachedToClass, 'float')
       }
     }
   }
 </script>
 
-<ChannelsDropdown
-  bind:value
-  {length}
-  {kind}
-  {size}
-  {shape}
-  {editable}
-  on:click={click}
-/>
+<ChannelsDropdown bind:value {length} {kind} {size} {shape} {editable} on:open={_open} />

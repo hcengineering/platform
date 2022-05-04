@@ -14,86 +14,109 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
   import activity from '@anticrm/activity'
   import calendar from '@anticrm/calendar'
   import type { Doc } from '@anticrm/core'
   import notification from '@anticrm/notification'
   import type { Asset } from '@anticrm/platform'
-  import { Button, AnyComponent, AnySvelteComponent, Component, IconExpand, Panel, Scroller } from '@anticrm/ui'
-  import { PopupAlignment } from '@anticrm/ui'
+  import { AnySvelteComponent, Component, Panel, Icon, Scroller } from '@anticrm/ui'
 
   export let title: string | undefined = undefined
   export let subtitle: string | undefined = undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
-  export let fullSize: boolean = true
-  export let showHeader: boolean = true
-  export let rightSection: AnyComponent | undefined = undefined
+  export let withoutActivity: boolean = false
   export let object: Doc
-  export let position: PopupAlignment | undefined = undefined
   export let panelWidth: number = 0
   export let innerWidth: number = 0
-  export let isSubtitle: boolean = false
-  export let isProperties: boolean = false
+  export let isHeader: boolean = true
+  export let isSub: boolean = true
+  export let isAside: boolean = true
+  export let isCustomAttr: boolean = true
+  export let minimize: boolean = false
 
-  const dispatch = createEventDispatcher()
-
-  $: allowFullSize = panelWidth > 1200 && (position === 'full' || position === 'content')
-  $: isFullSize = allowFullSize && fullSize
-
-  const resizePanel = () => {
-    isFullSize = !isFullSize
-  }
+  let docWidth: number = 0
+  $: minimize = docWidth < 1280 && docWidth >= 1024
+  $: needHeader = $$slots.header || minimize || isHeader
 </script>
 
-<Panel
-  {title}
-  {subtitle}
-  {icon}
-  rightSection={isFullSize}
-  {showHeader}
-  bind:panelWidth
-  bind:innerWidth
-  isProperties={innerWidth >= 500 || isProperties}
-  isSubtitle={innerWidth < 900 || isSubtitle}
-  on:close
->
-  <svelte:fragment slot="subtitle">
-    {#if $$slots.subtitle}<slot name="subtitle" />{/if}
-  </svelte:fragment>
-  <svelte:fragment slot="properties">
-    {#if $$slots.properties}<slot name="properties" />{/if}
-  </svelte:fragment>
-  <svelte:fragment slot="navigate-actions">
-    <slot name="navigate-actions" />
-  </svelte:fragment>
-  <svelte:fragment slot="commands">
-    <div class="buttons-group xsmall-gap">
-      <slot name="actions" />
-      <Component is={calendar.component.DocReminder} props={{ value: object, title }} />
-      <Component is={notification.component.LastViewEditor} props={{ value: object }} />
+<svelte:window bind:innerWidth={docWidth} />
+<Panel bind:isAside isHeader={needHeader} bind:panelWidth bind:innerWidth on:close>
+  <svelte:fragment slot="title">
+    <div class="popupPanel-title__content-container antiTitle">
+      {#if $$slots.navigator}
+        <div class="buttons-group xsmall-gap mr-4">
+          <slot name="navigator" />
+        </div>
+      {/if}
+      {#if $$slots.title}
+        <slot name="title" />
+      {:else}
+        <div class="icon-wrapper">
+          {#if icon}<div class="wrapped-icon"><Icon {icon} size={'medium'} /></div>{/if}
+          <div class="title-wrapper">
+            {#if title}<span class="wrapped-title">{title}</span>{/if}
+            {#if subtitle}<span class="wrapped-subtitle">{subtitle}</span>{/if}
+          </div>
+        </div>
+      {/if}
     </div>
   </svelte:fragment>
 
-  <svelte:fragment slot="rightSection">
-    {#if isFullSize}
-      <div class="ad-section-50">
-        <Component is={rightSection ?? activity.component.Activity} props={{ object, fullSize: isFullSize }} />
+  <svelte:fragment slot="utils">
+    <Component is={calendar.component.DocReminder} props={{ value: object, title }} />
+    <Component is={notification.component.LastViewEditor} props={{ value: object }} />
+    {#if $$slots.utils}
+      <div class="buttons-divider" />
+      <slot name="utils" />
+    {/if}
+  </svelte:fragment>
+
+  <svelte:fragment slot="header">
+    {#if $$slots.header || ($$slots.actions && minimize)}
+      <div class="header-row between">
+        {#if $$slots.header}<slot name="header" />{/if}
+        <div class="buttons-group xsmall-gap ml-4">
+          <slot name="tools" />
+          {#if $$slots.actions && minimize}
+            <div class="buttons-divider" />
+            <slot name="actions" />
+          {/if}
+        </div>
       </div>
     {/if}
+    {#if $$slots['custom-attributes'] && isCustomAttr}
+      {#if isSub}<div class="header-row"><slot name="custom-attributes" direction="row" /></div>{/if}
+    {:else if $$slots.attributes && minimize}<div class="header-row">
+        <slot name="attributes" direction="row" />
+      </div>{/if}
   </svelte:fragment>
-  <svelte:fragment slot="actions">
-    {#if allowFullSize}
-      <Button icon={IconExpand} size={'medium'} kind={'transparent'} on:click={resizePanel} />
-    {/if}
+
+  <svelte:fragment slot="aside">
+    <div style="padding: .75rem 1.5rem">
+      {#if $$slots.actions}
+        <div class="flex-row-center pb-3 bottom-divider">
+          <span class="fs-bold w-24 mr-6"><slot name="actions-label" /></span>
+          <div class="buttons-group xsmall-gap">
+            <slot name="actions" />
+          </div>
+        </div>
+      {/if}
+      {#if $$slots['custom-attributes'] && isCustomAttr}
+        <slot name="custom-attributes" direction="column" />
+      {:else if $$slots.attributes}<slot name="attributes" direction="column" />{/if}
+      {#if $$slots.aside}<slot name="aside" />{/if}
+    </div>
   </svelte:fragment>
-  {#if isFullSize}
-    <Scroller correctPadding={40}>
-      <div class="p-10 clear-mins"><slot /></div>
-    </Scroller>
+
+  {#if withoutActivity}
+    <slot />
   {:else}
-    <Component is={activity.component.Activity} props={{ object, fullSize: isFullSize }}>
-      <slot />
-    </Component>
+    <Scroller>
+      <div class="popupPanel-body__main-content py-10 clear-mins">
+        <Component is={activity.component.Activity} props={{ object, integrate: true }}>
+          <slot />
+        </Component>
+      </div>
+    </Scroller>
   {/if}
 </Panel>

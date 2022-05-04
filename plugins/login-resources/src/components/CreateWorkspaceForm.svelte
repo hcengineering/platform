@@ -23,7 +23,7 @@
   import workbench from '@anticrm/workbench'
   import InviteLink from './InviteLink.svelte'
 
-  const fields = [{ name: 'workspace', i18n: login.string.Workspace, rule: /^[0-9a-z#%&^\-@!\()]{3,63}$/ }]
+  const fields = [{ name: 'workspace', i18n: login.string.Workspace, rule: /^[0-9a-z#%&^\-@!)(]{3,63}$/ }]
 
   const object = {
     workspace: ''

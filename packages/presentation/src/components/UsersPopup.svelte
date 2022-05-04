@@ -34,6 +34,7 @@
   export let placeholder: IntlString = presentation.string.Search
   export let selectedUsers: Ref<Person>[] = []
   export let ignoreUsers: Ref<Person>[] = []
+  export let shadows: boolean = true
 
   let search: string = ''
   let objects: Person[] = []
@@ -41,37 +42,52 @@
 
   const dispatch = createEventDispatcher()
   const query = createQuery()
-  $: query.query<Person>(_class, { name: { $like: '%' + search + '%' }, _id: { $nin: ignoreUsers } }, result => { objects = result }, { limit: 200 })
+  $: query.query<Person>(
+    _class,
+    { name: { $like: '%' + search + '%' }, _id: { $nin: ignoreUsers } },
+    (result) => {
+      objects = result
+    },
+    { limit: 200 }
+  )
 
   let phTraslate: string = ''
-  $: if (placeholder) translate(placeholder, {}).then(res => { phTraslate = res })
+  $: if (placeholder) {
+    translate(placeholder, {}).then((res) => {
+      phTraslate = res
+    })
+  }
 
   const isSelected = (person: Person): boolean => {
-    if (selectedUsers.filter(p => p === person._id).length > 0) return true
+    if (selectedUsers.filter((p) => p === person._id).length > 0) return true
     return false
   }
   const checkSelected = (person: Person): void => {
-    if (isSelected(person)) selectedUsers = selectedUsers.filter(p => p !== person._id)
-    else selectedUsers.push(person._id)
+    selectedUsers = isSelected(person) ? selectedUsers.filter((p) => p !== person._id) : [...selectedUsers, person._id]
     objects = objects
     dispatch('update', selectedUsers)
   }
-  onMount(() => { if (input) input.focus() })
+  onMount(() => {
+    if (input) input.focus()
+  })
 </script>
 
-<div class="selectPopup">
+<div class="selectPopup" class:plainContainer={!shadows}>
   <div class="header">
-    <input bind:this={input} type='text' bind:value={search} placeholder={phTraslate} on:change/>
+    <input bind:this={input} type="text" bind:value={search} placeholder={phTraslate} on:change />
   </div>
   <div class="scroll">
     <div class="box">
       {#each objects as person}
-        <button class="menu-item" on:click={() => {
-          if (!multiSelect) {
-            selected = person._id === selected ? undefined : person._id
-            dispatch('close', selected != undefined ? person : undefined)
-          } else checkSelected(person)
-        }}>
+        <button
+          class="menu-item"
+          on:click={() => {
+            if (!multiSelect) {
+              selected = person._id === selected ? undefined : person._id
+              dispatch('close', selected !== undefined ? person : undefined)
+            } else checkSelected(person)
+          }}
+        >
           {#if multiSelect}
             <div class="check pointer-events-none">
               <CheckBox checked={isSelected(person)} primary />
@@ -94,3 +110,13 @@
     </div>
   </div>
 </div>
+
+<style lang="scss">
+  .plainContainer {
+    color: var(--caption-color);
+    background-color: var(--body-color);
+    border: 1px solid var(--button-border-color);
+    border-radius: 0.25rem;
+    box-shadow: none;
+  }
+</style>

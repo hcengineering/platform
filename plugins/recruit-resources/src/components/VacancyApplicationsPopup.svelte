@@ -12,9 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
-
   import core, { Doc, DocumentQuery, FindOptions, Ref, Space } from '@anticrm/core'
   import recruit, { Applicant } from '@anticrm/recruit'
   import task from '@anticrm/task'
@@ -34,15 +32,16 @@
   }
 </script>
 
-<div class='popup-table'>
-    <Table 
+<div class="popup-table">
+  <Table
     _class={recruit.class.Applicant}
     config={['', '$lookup.attachedTo', '$lookup.state', '$lookup.doneState', 'modifiedOn']}
-    options={options}
-    query={ { ...(resultQuery ?? {}), space: value } }
+    {options}
+    query={{ ...(resultQuery ?? {}), space: value }}
     loadingProps={{ length: 0 }}
-    />
+  />
 </div>
+
 <style lang="scss">
   .popup-table {
     overflow: auto;

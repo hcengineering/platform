@@ -56,6 +56,7 @@
     "SharedBy": "Доступ открыт {name} {time}",
     "LeaveChannel": "Покинуть канал",
     "ChannelBrowser": "Браузер каналов",
-    "SavedItems": "Сохраненные объекты"
+    "SavedItems": "Сохраненные объекты",
+    "AddMembersHeader": "Добавить пользователей в {channel}:"
   }
 }

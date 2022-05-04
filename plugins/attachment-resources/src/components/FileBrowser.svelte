@@ -17,6 +17,7 @@
   import contact, { Employee } from '@anticrm/contact'
   import { EmployeeAccount } from '@anticrm/contact'
   import core, { Class, getCurrentAccount, Ref, Space } from '@anticrm/core'
+  import view from '@anticrm/view'
   import { getClient } from '@anticrm/presentation'
   import ui, {
     getCurrentLocation,
@@ -135,7 +136,7 @@
           isListDisplayMode = true
         }}
       >
-        <Icon icon={contact.icon.Person} size={'small'} />
+        <Icon icon={view.icon.Table} size={'small'} />
       </button>
     </Tooltip>
     <Tooltip label={attachment.string.FileBrowserGridView} direction={'bottom'}>
@@ -146,7 +147,7 @@
           isListDisplayMode = false
         }}
       >
-        <Icon icon={contact.icon.Edit} size={'small'} />
+        <Icon icon={view.icon.Card} size={'small'} />
       </button>
     </Tooltip>
   </div>
@@ -169,7 +170,7 @@
       <AttachmentsGalleryView {attachments} />
     {/if}
   {:else}
-    <div class="flex-between attachmentRow">
+    <div class="flex-between ml-6">
       <Label label={attachment.string.NoFiles} />
     </div>
   {/if}

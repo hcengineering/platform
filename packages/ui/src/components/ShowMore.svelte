@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import Label from './Label.svelte'
   import ui from '..'
@@ -26,7 +25,9 @@
   let bigger: boolean = false
   let crop: boolean = false
 
-  const toggle = (): void => { crop = !crop }
+  const toggle = (): void => {
+    crop = !crop
+  }
 
   $: if (cHeight > limit && !bigger) bigger = true
   $: if (bigger && !ignore) crop = true
@@ -38,12 +39,14 @@
     class="showMore-content"
     class:crop={!ignore && crop}
     class:full={bigger && !ignore && !crop}
-    style={(!ignore && crop) ? `max-height: ${limit}px;` : ''}
-  ><slot /></div>
+    style={!ignore && crop ? `max-height: ${limit}px;` : ''}
+  >
+    <slot />
+  </div>
 
   {#if !ignore && bigger && !fixed}
     <div class="showMore" class:outter={cHeight > limit} on:click={toggle}>
-      <Label label={(cHeight > limit) ? ui.string.ShowLess : ui.string.ShowMore} />
+      <Label label={cHeight > limit ? ui.string.ShowLess : ui.string.ShowMore} />
     </div>
   {/if}
 </div>
@@ -57,26 +60,28 @@
       max-height: 15rem;
       mask: linear-gradient(to top, rgba(0, 0, 0, 0) 0, black 5rem);
     }
-    &.full { margin-bottom: 2.75rem; }
+    &.full {
+      margin-bottom: 2.75rem;
+    }
   }
 
   .showMore {
     position: absolute;
     left: 50%;
     bottom: 0;
-    padding: .5rem 1rem;
+    padding: 0.5rem 1rem;
     transform: translateX(-50%);
 
     word-wrap: none;
-    font-size: .75rem;
+    font-size: 0.75rem;
     color: var(--theme-caption-color);
     background: var(--theme-showmore-color);
-    border: .5px solid var(--theme-card-divider);
-    box-shadow: 0px 8px 15px rgba(0, 0, 0, .1);
+    border: 0.5px solid var(--theme-card-divider);
+    box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
     border-radius: 2.5rem;
     user-select: none;
     cursor: pointer;
-    
+
     &.outter {
       bottom: -2.75rem;
       transform: translateX(-50%);

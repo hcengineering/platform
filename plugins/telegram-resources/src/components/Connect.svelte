@@ -90,7 +90,11 @@
     secondFactor = false
   }
 
-  $: label = connecting ? telegram.string.Connecting : requested || secondFactor ? telegram.string.Connect : telegram.string.Next
+  $: label = connecting
+    ? telegram.string.Connecting
+    : requested || secondFactor
+      ? telegram.string.Connect
+      : telegram.string.Next
 
   $: disabled = checkDisabled(connecting, secondFactor, password, requested, error, code, phone)
 
@@ -134,13 +138,24 @@
   <div class="content">
     {#if secondFactor}
       <p><Label label={telegram.string.PasswordDescr} /></p>
-      <EditBox label={telegram.string.Password} maxWidth="10rem" format='password' placeholder={telegram.string.Password} bind:value={password} />
+      <EditBox
+        label={telegram.string.Password}
+        maxWidth="10rem"
+        format="password"
+        placeholder={telegram.string.Password}
+        bind:value={password}
+      />
     {:else if requested}
       <p><Label label={telegram.string.CodeDescr} /></p>
       <PinPad length={5} bind:value={code} bind:error />
     {:else}
       <p><Label label={telegram.string.PhoneDescr} /></p>
-      <EditBox label={telegram.string.Phone} maxWidth="10rem" placeholder={telegram.string.PhonePlaceholder} bind:value={phone} />
+      <EditBox
+        label={telegram.string.Phone}
+        maxWidth="10rem"
+        placeholder={telegram.string.PhonePlaceholder}
+        bind:value={phone}
+      />
     {/if}
     <div class="footer">
       <Button {label} kind={'primary'} {disabled} on:click={click} />
@@ -161,8 +176,8 @@
     max-width: 20rem;
     background-color: var(--theme-tooltip-color);
     border: 1px solid var(--theme-bg-accent-color);
-    border-radius: .75rem;
-    box-shadow: 0px 10px 20px rgba(0, 0, 0, .2);
+    border-radius: 0.75rem;
+    box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
 
     .header {
       flex-shrink: 0;

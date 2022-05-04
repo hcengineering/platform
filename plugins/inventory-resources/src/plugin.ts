@@ -17,7 +17,6 @@
 import inventory, { inventoryId } from '@anticrm/inventory'
 import { IntlString, mergeIds, StatusCode } from '@anticrm/platform'
 
-
 export default mergeIds(inventoryId, inventory, {
   status: {
     CategoryRequired: '' as StatusCode,

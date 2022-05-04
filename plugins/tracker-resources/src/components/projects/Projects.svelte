@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { FindOptions, Ref, SortingOrder } from '@anticrm/core'
   import { Button, IconAdd, Label, showPopup } from '@anticrm/ui'
@@ -29,11 +28,11 @@
       startDate: SortingOrder.Ascending
     },
     lookup: {
-      lead: contact.class.Employee,
+      lead: contact.class.Employee
     }
   }
 
-  async function showCreateDialog (ev: Event) {
+  async function showCreateDialog () {
     showPopup(NewProject, { space, targetElement: null }, null)
   }
 </script>
@@ -44,12 +43,7 @@
       <Label label={plugin.string.Projects} />
     </div>
     <div class="header-right">
-      <Button
-        icon={IconAdd}
-        label={plugin.string.Project}
-        kind="secondary"
-        on:click={showCreateDialog}
-      />
+      <Button icon={IconAdd} label={plugin.string.Project} kind="secondary" on:click={showCreateDialog} />
     </div>
   </div>
 

@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  export let gap: number = .75
+  export let gap: number = 0.75
   export let vertical: boolean = false
   export let stretch: boolean = false
   export let bothScroll: boolean = false
@@ -33,13 +33,13 @@
     overflow-x: auto;
     overflow-y: hidden;
     margin-right: 0;
-    margin-bottom: -.375rem;
+    margin-bottom: -0.375rem;
 
     .box {
       position: absolute;
       display: grid;
       grid-auto-flow: column;
-      padding: 0 0 .375rem 0;
+      padding: 0 0 0.375rem 0;
       gap: 1.5rem;
       top: 0;
       left: 0;
@@ -51,11 +51,11 @@
     }
 
     &.vertical {
-      margin: 0 -.75rem 0 -.75rem;
+      margin: 0 -0.75rem 0 -0.75rem;
       overflow-x: hidden;
       overflow-y: auto;
       .box {
-        padding: 0 .75rem 0 .75rem;
+        padding: 0 0.75rem 0 0.75rem;
         width: 100%;
         height: auto;
         grid-auto-flow: row;
@@ -66,10 +66,10 @@
     }
 
     &.bothScroll {
-      margin: 0 -.375rem -.375rem 0;
+      margin: 0 -0.375rem -0.375rem 0;
       overflow: auto;
       .box {
-        padding: 0 .375rem .375rem 0;
+        padding: 0 0.375rem 0.375rem 0;
       }
     }
   }

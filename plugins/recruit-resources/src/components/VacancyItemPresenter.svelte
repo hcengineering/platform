@@ -22,19 +22,19 @@
   export let inline: boolean = false
   export let action: (item: Ref<Vacancy>) => void
 
-  function editVacancy ():void {
+  function editVacancy (): void {
     showPanel(recruit.component.EditVacancy, value._id, value._class, 'right')
   }
 </script>
 
 {#if value}
-  <div class="flex-presenter" class:inline-presenter={inline} on:click={() => (action(value._id))}>
+  <div class="flex-presenter" class:inline-presenter={inline} on:click={() => action(value._id)}>
     <div class="icon">
       <Icon icon={recruit.icon.Vacancy} size={'small'} />
     </div>
     <span class="label">{value.name}</span>
     <div class="action">
-      <ActionIcon label={recruit.string.Edit} size={'small'} icon={IconEdit} action={editVacancy}/>
+      <ActionIcon label={recruit.string.Edit} size={'small'} icon={IconEdit} action={editVacancy} />
     </div>
   </div>
 {/if}

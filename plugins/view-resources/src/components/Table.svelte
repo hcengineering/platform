@@ -21,7 +21,6 @@
   import { CheckBox, Component, IconDown, IconUp, Label, Loading, showPopup, Spinner } from '@anticrm/ui'
   import { BuildModelKey } from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
-  import { SelectDirection } from '../selection'
   import { buildModel, LoadingProps } from '../utils'
   import Menu from './Menu.svelte'
 
@@ -42,7 +41,7 @@
 
   let sortKey = 'modifiedOn'
   let sortOrder = SortingOrder.Descending
-  let loading = false
+  let loading = 0
 
   let objects: Doc[] = []
   const refs: HTMLElement[] = []
@@ -73,13 +72,12 @@
           objects.sort((a, b) => -1 * sortOrder * sf(a, b))
         }
         dispatch('content', objects)
-        loading = false
+        loading = loading === 1 ? 0 : -1
       },
       { sort: { [sortKey]: sortOrder }, limit: 200, ...options }
     )
-    if (update) {
+    if (update && ++loading > 0) {
       objects = []
-      loading = true
     }
   }
   $: update(_class, query, sortKey, sortOrder, options)
@@ -93,11 +91,16 @@
       checked = []
     }
     const items = checked.length > 0 ? checked : object
-    showPopup(Menu, { object: items, baseMenuClass }, {
-      getBoundingClientRect: () => DOMRect.fromRect({ width: 1, height: 1, x: ev.clientX, y: ev.clientY })
-    }, () => {
-      selection = undefined
-    })
+    showPopup(
+      Menu,
+      { object: items, baseMenuClass },
+      {
+        getBoundingClientRect: () => DOMRect.fromRect({ width: 1, height: 1, x: ev.clientX, y: ev.clientY })
+      },
+      () => {
+        selection = undefined
+      }
+    )
   }
 
   function changeSorting (key: string): void {
@@ -112,7 +115,7 @@
     }
   }
 
-  $: checkedSet = new Set<Ref<Doc>>(checked.map(it => it._id))
+  $: checkedSet = new Set<Ref<Doc>>(checked.map((it) => it._id))
 
   export function check (docs: Doc[], value: boolean) {
     if (!enableChecking) return
@@ -129,8 +132,8 @@
     dispatch('row-focus', object)
   }
 
-  export function select (offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection): void {
-    let pos = (((of !== undefined) ? objects.findIndex(it => it._id === of._id) : selection) ?? -1)
+  export function select (offset: 1 | -1 | 0, of?: Doc): void {
+    let pos = (of !== undefined ? objects.findIndex((it) => it._id === of._id) : selection) ?? -1
     pos += offset
     if (pos < 0) {
       pos = 0
@@ -290,6 +293,6 @@
   </table>
 {/await}
 
-{#if loading}
+{#if loading > 0}
   <Loading />
 {/if}

@@ -58,17 +58,24 @@ program
   .option('-r, --random', 'generate random ids. So every call will add count <count> more candidates.', false)
   .option('-l, --lite', 'use same pdf and same account for applicant and candidates', false)
   .action(async (workspace: string, count: number, cmd) => {
-    return await generateContacts(transactorUrl, workspace, {
-      contacts: count,
-      random: (cmd.random as boolean),
-      comments: { min: 1, max: 10, paragraphMin: 1, paragraphMax: 20, updateFactor: 30 },
-      attachments: {
-        min: 1, max: 3, deleteFactor: 20
+    return await generateContacts(
+      transactorUrl,
+      workspace,
+      {
+        contacts: count,
+        random: cmd.random as boolean,
+        comments: { min: 1, max: 10, paragraphMin: 1, paragraphMax: 20, updateFactor: 30 },
+        attachments: {
+          min: 1,
+          max: 3,
+          deleteFactor: 20
+        },
+        vacancy: 3,
+        applicants: { min: 50, max: 200, applicantUpdateFactor: 70 },
+        lite: cmd.lite as boolean
       },
-      vacancy: 3,
-      applicants: { min: 50, max: 200, applicantUpdateFactor: 70 },
-      lite: (cmd.lite as boolean)
-    }, minio)
+      minio
+    )
   })
 
 program.parse(process.argv)

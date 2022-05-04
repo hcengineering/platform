@@ -8,7 +8,6 @@ export let metricsContext: MeasureContext
  */
 export function createAPMAgent (apmUrl: string): Agent {
   const agent: Agent = apm.start({
-
     // Override the service name from package.json
     // Allowed characters: a-z, A-Z, 0-9, -, _, and space
     serviceName: 'transactor',
@@ -30,7 +29,13 @@ export class APMMeasureContext implements MeasureContext {
   logger: MeasureLogger
   private readonly transaction?: Transaction | Span
   private readonly parent?: Transaction | Span
-  constructor (private readonly agent: Agent, name: string, params: Record<string, ParamType>, parent?: Transaction | Span, noTransaction?: boolean) {
+  constructor (
+    private readonly agent: Agent,
+    name: string,
+    params: Record<string, ParamType>,
+    parent?: Transaction | Span,
+    noTransaction?: boolean
+  ) {
     this.parent = parent
     this.logger = {
       info: (msg, args) => {
@@ -56,7 +61,11 @@ export class APMMeasureContext implements MeasureContext {
     return new APMMeasureContext(this.agent, name, params, this.transaction)
   }
 
-  async with<T>(name: string, params: Record<string, ParamType>, op: (ctx: MeasureContext) => T | Promise<T>): Promise<T> {
+  async with<T>(
+    name: string,
+    params: Record<string, ParamType>,
+    op: (ctx: MeasureContext) => T | Promise<T>
+  ): Promise<T> {
     const c = this.newChild(name, params)
     try {
       let value = op(c)

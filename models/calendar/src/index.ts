@@ -18,7 +18,20 @@ import { Calendar, Event, Reminder } from '@anticrm/calendar'
 import { Employee } from '@anticrm/contact'
 import type { Domain, Markup, Ref, Timestamp } from '@anticrm/core'
 import { IndexKind } from '@anticrm/core'
-import { Builder, Collection, Index, Mixin, Model, Prop, TypeDate, TypeMarkup, TypeString, UX } from '@anticrm/model'
+import {
+  ArrOf,
+  Builder,
+  Collection,
+  Index,
+  Mixin,
+  Model,
+  Prop,
+  TypeDate,
+  TypeMarkup,
+  TypeRef,
+  TypeString,
+  UX
+} from '@anticrm/model'
 import attachment from '@anticrm/model-attachment'
 import chunter from '@anticrm/model-chunter'
 import contact from '@anticrm/model-contact'
@@ -64,7 +77,7 @@ export class TEvent extends TAttachedDoc implements Event {
   @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
   comments?: number
 
-  @Prop(Collection(contact.class.Employee), calendar.string.Participants)
+  @Prop(ArrOf(TypeRef(contact.class.Employee)), calendar.string.Participants)
   participants!: Ref<Employee>[]
 }
 
@@ -82,36 +95,51 @@ export class TReminder extends TEvent implements Reminder {
 export function createModel (builder: Builder): void {
   builder.createModel(TCalendar, TEvent, TReminder)
 
-  builder.createDoc(workbench.class.Application, core.space.Model, {
-    label: calendar.string.ApplicationLabelCalendar,
-    icon: calendar.icon.Calendar,
-    hidden: true,
-    navigatorModel: {
-      spaces: [
-        {
-          label: calendar.string.Calendars,
-          spaceClass: calendar.class.Calendar,
-          addSpaceLabel: calendar.string.CreateCalendar,
-          createComponent: calendar.component.CreateCalendar
-        }
-      ]
-    }
-  }, calendar.app.Calendar)
+  builder.createDoc(
+    workbench.class.Application,
+    core.space.Model,
+    {
+      label: calendar.string.ApplicationLabelCalendar,
+      icon: calendar.icon.Calendar,
+      hidden: true,
+      navigatorModel: {
+        spaces: [
+          {
+            label: calendar.string.Calendars,
+            spaceClass: calendar.class.Calendar,
+            addSpaceLabel: calendar.string.CreateCalendar,
+            createComponent: calendar.component.CreateCalendar
+          }
+        ]
+      }
+    },
+    calendar.app.Calendar
+  )
 
-  builder.createDoc(notification.class.NotificationType, core.space.Model, {
-    label: calendar.string.Reminder
-  }, calendar.ids.ReminderNotification)
+  builder.createDoc(
+    notification.class.NotificationType,
+    core.space.Model,
+    {
+      label: calendar.string.Reminder
+    },
+    calendar.ids.ReminderNotification
+  )
 
-  builder.createDoc(activity.class.TxViewlet, core.space.Model, {
-    objectClass: calendar.mixin.Reminder,
-    icon: calendar.icon.Reminder,
-    txClass: core.class.TxMixin,
-    label: calendar.string.CreatedReminder,
-    component: calendar.activity.ReminderViewlet,
-    display: 'emphasized',
-    editable: false,
-    hideOnRemove: true
-  }, calendar.ids.ReminderViewlet)
+  builder.createDoc(
+    activity.class.TxViewlet,
+    core.space.Model,
+    {
+      objectClass: calendar.mixin.Reminder,
+      icon: calendar.icon.Reminder,
+      txClass: core.class.TxMixin,
+      label: calendar.string.CreatedReminder,
+      component: calendar.activity.ReminderViewlet,
+      display: 'emphasized',
+      editable: false,
+      hideOnRemove: true
+    },
+    calendar.ids.ReminderViewlet
+  )
 
   builder.createDoc(
     view.class.ViewletDescriptor,

@@ -28,7 +28,8 @@
 <style lang="scss">
   .color-presenter {
     background-color: var(--color-presenter-color);
-    &:hover, &.hovered {
+    &:hover,
+    &.hovered {
       background-color: var(--color-presenter-hoverColor);
     }
   }

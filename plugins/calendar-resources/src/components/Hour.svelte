@@ -36,7 +36,7 @@
     return `${addZero(date.getHours())}:${addZero(dd.getMinutes())}`
   }
 
-  function to (dueDate: number, date:Date): string {
+  function to (dueDate: number, date: Date): string {
     return `${addZero(date.getHours())}:${addZero(Math.min(59, Math.floor((dueDate - date.getTime()) / 60000)))}`
   }
 </script>
@@ -48,23 +48,23 @@
     component={EventsPopup}
     props={{ value: events, _class, query, options, baseMenuClass, config }}
   >
-      <div class="cell">
-        <div class="flex flex-col flex-grow">
-          {#each sorted.slice(0, 4) as e, ei}
-            <div class="overflow-label flex flex-between">
-              {e.title}
-              <div>
-                {from(e.date, date)}
-                -
-                {to(e.dueDate ?? e.date, date)}
-              </div>
+    <div class="cell">
+      <div class="flex flex-col flex-grow">
+        {#each sorted.slice(0, 4) as e, ei}
+          <div class="overflow-label flex flex-between">
+            {e.title}
+            <div>
+              {from(e.date, date)}
+              -
+              {to(e.dueDate ?? e.date, date)}
             </div>
-          {/each}
-          {#if events.length > 4}
-            And {events.length - 4} more
-          {/if}
-        </div>
-      </div>  
+          </div>
+        {/each}
+        {#if events.length > 4}
+          And {events.length - 4} more
+        {/if}
+      </div>
+    </div>
   </Tooltip>
 {/if}
 

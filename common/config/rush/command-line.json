@@ -188,6 +188,16 @@
     },
     {
       "commandKind": "bulk",
+      "name": "format",
+      "summary": "format",
+      "description": "Format and autofix linting issues",
+      "enableParallelism": true,
+      "incremental": true,
+      "ignoreDependencyOrder": true,
+      "ignoreMissingScript": true
+    },
+    {
+      "commandKind": "bulk",
       "name": "build:watch",
       "summary": "Build and watch",
       "description": "Perform build with tsc and watch for changes with rush",
@@ -204,7 +214,7 @@
       "description": "Perform svelte-check",
       "enableParallelism": true,
       "incremental": true,
-      "ignoreDependencyOrder": false,
+      "ignoreDependencyOrder": true,
       "ignoreMissingScript": true
     },
     {

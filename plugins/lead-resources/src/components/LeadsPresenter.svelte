@@ -13,16 +13,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
-
   import type { Customer } from '@anticrm/lead'
   import { Icon, Tooltip } from '@anticrm/ui'
   import LeadsPopup from './LeadsPopup.svelte'
   import leads from '../plugin'
 
   export let value: Customer
-
 </script>
 
 {#if value.leads && value.leads > 0}

@@ -20,7 +20,7 @@ import { Builder, Collection, Index, Model, Prop, TypeRef, TypeString, UX } from
 import attachment from '@anticrm/model-attachment'
 import core, { TAttachedDoc } from '@anticrm/model-core'
 import workbench from '@anticrm/model-workbench'
-import type { } from '@anticrm/view'
+import type {} from '@anticrm/view'
 import view from '@anticrm/view'
 import inventory from './plugin'
 

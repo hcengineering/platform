@@ -16,7 +16,7 @@
     "@types/heft-jest": "^1.0.2",
     "@types/node": "~16.11.12",
     "@types/minio": "~7.0.11",
-    "@typescript-eslint/eslint-plugin": "^5.4.0",
+    "@typescript-eslint/eslint-plugin": "^5.21.0",
     "eslint-plugin-import": "^2.25.3",
     "eslint-plugin-promise": "^5.1.1",
     "eslint-plugin-node": "^11.1.0",
@@ -29,7 +29,7 @@
   },
   "dependencies": {
     "@anticrm/core": "~0.6.16",
-    "@anticrm/platform": "~0.6.5",
+    "@anticrm/platform": "~0.6.6",
     "minio": "~7.0.26"
   }
 }

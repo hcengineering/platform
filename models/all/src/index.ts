@@ -28,6 +28,7 @@ import { createModel as leadModel } from '@anticrm/model-lead'
 import { createModel as presentationModel } from '@anticrm/model-presentation'
 import { createModel as recruitModel } from '@anticrm/model-recruit'
 import { createModel as serverAttachmentModel } from '@anticrm/model-server-attachment'
+import { createModel as serverBoardModel } from '@anticrm/model-server-board'
 import { createModel as serverContactModel } from '@anticrm/model-server-contact'
 import { createModel as serverNotificationModel } from '@anticrm/model-server-notification'
 import { createModel as serverChunterModel } from '@anticrm/model-server-chunter'
@@ -84,6 +85,7 @@ const builders: [(b: Builder) => void, string][] = [
 
   [serverCoreModel, 'server-core'],
   [serverAttachmentModel, 'server-attachment'],
+  [serverBoardModel, 'server-board'],
   [serverContactModel, 'server-contact'],
   [serverNotificationModel, 'server-notification'],
   [serveSettingModel, 'server-setting'],

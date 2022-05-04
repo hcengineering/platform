@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
 
@@ -39,21 +38,27 @@
   const dispatch = createEventDispatcher()
 </script>
 
-<form class="antiCard dialog" on:submit|preventDefault={ () => {} }>
+<form class="antiCard dialog" on:submit|preventDefault={() => {}}>
   <div class="antiCard-header">
     <div class="antiCard-header__title-wrap">
       {#if spaceClass && spaceLabel && spacePlaceholder}
         {#if $$slots.space}
           <slot name="space" />
         {:else}
-          <SpaceSelect _class={spaceClass} spaceQuery={spaceQuery} label={spaceLabel} placeholder={spacePlaceholder} bind:value={space} />
+          <SpaceSelect _class={spaceClass} {spaceQuery} label={spaceLabel} bind:value={space} />
         {/if}
         <span class="antiCard-header__divider">›</span>
       {/if}
       <span class="antiCard-header__title"><Label {label} params={labelProps ?? {}} /></span>
     </div>
     <div class="buttons-group small-gap">
-      <Button icon={IconClose} kind={'transparent'} on:click={() => { dispatch('close') }} />
+      <Button
+        icon={IconClose}
+        kind={'transparent'}
+        on:click={() => {
+          dispatch('close')
+        }}
+      />
     </div>
   </div>
   <div class="antiCard-content"><slot /></div>
@@ -67,7 +72,15 @@
       {#if createMore !== undefined}
         <MiniToggle label={presentation.string.CreateMore} bind:on={createMore} />
       {/if}
-      <Button disabled={!canSave} label={okLabel} kind={'primary'} on:click={() => { okAction(); dispatch('close') }} />
+      <Button
+        disabled={!canSave}
+        label={okLabel}
+        kind={'primary'}
+        on:click={() => {
+          okAction()
+          dispatch('close')
+        }}
+      />
     </div>
     <div class="buttons-group small-gap text-sm">
       <slot name="footer" />

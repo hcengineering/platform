@@ -20,10 +20,7 @@
 
   import { ChannelProvider, Channel } from '@anticrm/contact'
   import { showPanel } from '@anticrm/ui'
-  import view from '@anticrm/view'
   import contact from '../plugin'
-  import Channels from './Channels.svelte'
-  import ChannelsView from './ChannelsView.svelte'
   import ChannelsDropdown from './ChannelsDropdown.svelte'
 
   export let attachedTo: Ref<Doc>
@@ -46,15 +43,16 @@
   }
 
   const query = createQuery()
-  $: attachedTo && query.query(
-    contact.class.Channel,
-    {
-      attachedTo: attachedTo
-    },
-    (res) => {
-      channels = res
-    }
-  )
+  $: attachedTo &&
+    query.query(
+      contact.class.Channel,
+      {
+        attachedTo: attachedTo
+      },
+      (res) => {
+        channels = res
+      }
+    )
 
   const client = getClient()
 
@@ -105,6 +103,15 @@
     }
     Promise.all(promises)
   }
+
+  function _open (ev: any) {
+    if (ev.detail.presenter !== undefined && Array.isArray(channels)) {
+      const channel = channels[0]
+      if (channel !== undefined) {
+        showPanel(ev.detail.presenter, channel.attachedTo, channel.attachedToClass, 'float')
+      }
+    }
+  }
 </script>
 
 <ChannelsDropdown
@@ -118,4 +125,5 @@
   on:change={(e) => {
     if (editable) save(e.detail)
   }}
+  on:open={_open}
 />

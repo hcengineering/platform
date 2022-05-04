@@ -17,7 +17,18 @@
 import attachment, { Attachment } from '@anticrm/attachment'
 import chunter, { Comment } from '@anticrm/chunter'
 import contact, { Channel, ChannelProvider, EmployeeAccount, Person } from '@anticrm/contact'
-import core, { AttachedData, Class, Data, Doc, MixinData, Ref, SortingOrder, Space, TxOperations, TxResult } from '@anticrm/core'
+import core, {
+  AttachedData,
+  Class,
+  Data,
+  Doc,
+  MixinData,
+  Ref,
+  SortingOrder,
+  Space,
+  TxOperations,
+  TxResult
+} from '@anticrm/core'
 import recruit from '@anticrm/model-recruit'
 import { Applicant, Candidate, Vacancy } from '@anticrm/recruit'
 import task, { calcRank, DoneState, genRanks, Kanban, State } from '@anticrm/task'
@@ -103,12 +114,14 @@ export async function importXml (
     // const attributes = new Set<string>()
     const client = new TxOperations(connection, 'core:account:xml-importer' as Ref<EmployeeAccount>)
 
-    const statuses = candidates.map((c: any) => get(c, _.status)).filter((c: any) => c !== undefined)
+    const statuses = candidates
+      .map((c: any) => get(c, _.status))
+      .filter((c: any) => c !== undefined)
       .filter(onlyUniq)
 
     console.log(statuses)
 
-    const withStatus: {candidateId: Ref<Candidate>, status: string}[] = []
+    const withStatus: { candidateId: Ref<Candidate>, status: string }[] = []
     let pos = 0
     const len = candidates.length as number
     for (const c of candidates) {
@@ -141,7 +154,7 @@ export async function importXml (
             try {
               await minio.statObject(dbName, attachId)
             } catch (err: any) {
-            // No object, put new one.
+              // No object, put new one.
               await minio.putObject(dbName, attachId, data, data.length, {
                 'Content-Type': type
               })
@@ -149,17 +162,24 @@ export async function importXml (
 
             const stats = await stat(fileName)
 
-            const attachedDoc = await findOrUpdateAttached<Attachment>(client, recruit.space.CandidatesPublic, attachment.class.Attachment, attachId, {
-              name: f,
-              file: attachId,
-              type: type,
-              size: stats.size,
-              lastModified: stats.mtime.getTime()
-            }, {
-              attachedTo: candId,
-              attachedClass: contact.class.Person,
-              collection: 'attachments'
-            })
+            const attachedDoc = await findOrUpdateAttached<Attachment>(
+              client,
+              recruit.space.CandidatesPublic,
+              attachment.class.Attachment,
+              attachId,
+              {
+                name: f,
+                file: attachId,
+                type: type,
+                size: stats.size,
+                lastModified: stats.mtime.getTime()
+              },
+              {
+                attachedTo: candId,
+                attachedClass: contact.class.Person,
+                collection: 'attachments'
+              }
+            )
 
             await tool.indexAttachmentDoc(attachedDoc, data)
           }
@@ -216,7 +236,14 @@ export async function importXml (
 }
 const onlyUniq = (value: any, index: number, self: any[]): boolean => self.indexOf(value) === index
 
-async function createApplicant (vacancyId: Ref<Vacancy>, candidateId: Ref<Candidate>, incResult: TxResult, state: Ref<State>, lastOne: Applicant | undefined, client: TxOperations): Promise<void> {
+async function createApplicant (
+  vacancyId: Ref<Vacancy>,
+  candidateId: Ref<Candidate>,
+  incResult: TxResult,
+  state: Ref<State>,
+  lastOne: Applicant | undefined,
+  client: TxOperations
+): Promise<void> {
   const applicantId = `vacancy-${vacancyId}-${candidateId}` as Ref<Applicant>
 
   const applicant: AttachedData<Applicant> = {
@@ -228,10 +255,17 @@ async function createApplicant (vacancyId: Ref<Vacancy>, candidateId: Ref<Candid
   }
 
   // Update or create candidate
-  await findOrUpdateAttached(client, vacancyId, recruit.class.Applicant, applicantId, applicant, { attachedTo: candidateId, attachedClass: contact.class.Person, collection: 'applications' })
+  await findOrUpdateAttached(client, vacancyId, recruit.class.Applicant, applicantId, applicant, {
+    attachedTo: candidateId,
+    attachedClass: contact.class.Person,
+    collection: 'applications'
+  })
 }
 
-async function createUpdateVacancy (client: TxOperations, statuses: any): Promise<{states: Map<string, Ref<State>>, vacancyId: Ref<Vacancy>}> {
+async function createUpdateVacancy (
+  client: TxOperations,
+  statuses: any
+): Promise<{ states: Map<string, Ref<State>>, vacancyId: Ref<Vacancy> }> {
   const vacancy: Data<Vacancy> = {
     name: 'Imported Vacancy',
     description: '',
@@ -253,7 +287,14 @@ async function createUpdateVacancy (client: TxOperations, statuses: any): Promis
   return { states, vacancyId }
 }
 
-async function createCandidate (_name: string, pos: number, len: number, c: any, client: TxOperations, candId: Ref<Candidate>): Promise<void> {
+async function createCandidate (
+  _name: string,
+  pos: number,
+  len: number,
+  c: any,
+  client: TxOperations,
+  candId: Ref<Candidate>
+): Promise<void> {
   const names = _name.trim().split(' ')
   console.log(`(${pos} pf ${len})`, names[0] + ',', names.slice(1).join(' '))
 
@@ -265,15 +306,14 @@ async function createCandidate (_name: string, pos: number, len: number, c: any,
   }
 
   const candidateData: MixinData<Person, Candidate> = {
-    title: [
-      get(c, _.vacancyKind),
-      get(c, _.area)
-    ].filter(p => p !== undefined && p.trim().length > 0).filter(onlyUniq).join('/'),
-    source: [
-      get(c, _.socialContacted),
-      get(c, _.socialChannel),
-      sourceFields.filter(onlyUniq).join(', ')
-    ].filter(p => p !== undefined && p.trim().length > 0).filter(onlyUniq).join('/')
+    title: [get(c, _.vacancyKind), get(c, _.area)]
+      .filter((p) => p !== undefined && p.trim().length > 0)
+      .filter(onlyUniq)
+      .join('/'),
+    source: [get(c, _.socialContacted), get(c, _.socialChannel), sourceFields.filter(onlyUniq).join(', ')]
+      .filter((p) => p !== undefined && p.trim().length > 0)
+      .filter(onlyUniq)
+      .join('/')
   }
 
   const channels: AttachedData<Channel>[] = []
@@ -301,20 +341,36 @@ async function createCandidate (_name: string, pos: number, len: number, c: any,
     channels.push({ provider: contact.channelProvider.GitHub, value: github })
   }
   await findOrUpdate(client, recruit.space.CandidatesPublic, contact.class.Person, candId, data)
-  await client.updateMixin(candId, contact.class.Person, recruit.space.CandidatesPublic, recruit.mixin.Candidate, candidateData)
+  await client.updateMixin(
+    candId,
+    contact.class.Person,
+    recruit.space.CandidatesPublic,
+    recruit.mixin.Candidate,
+    candidateData
+  )
 
   for (let i = 0; i < channels.length; i++) {
     const element = channels[i]
     const channelId = (candId + '.channel.' + i.toString()) as Ref<Channel>
-    await findOrUpdateAttached(client, recruit.space.CandidatesPublic, contact.class.Channel, channelId,
-      element, { attachedTo: candId, attachedClass: recruit.mixin.Candidate, collection: 'channels' })
+    await findOrUpdateAttached(client, recruit.space.CandidatesPublic, contact.class.Channel, channelId, element, {
+      attachedTo: candId,
+      attachedClass: recruit.mixin.Candidate,
+      collection: 'channels'
+    })
   }
   const commentId = (candId + '.description.comment') as Ref<Comment>
 
   if (commentData.length > 0) {
-    await findOrUpdateAttached(client, recruit.space.CandidatesPublic, chunter.class.Comment, commentId, {
-      message: commentData.join('\n<br/>')
-    }, { attachedTo: candId, attachedClass: recruit.mixin.Candidate, collection: 'comments' })
+    await findOrUpdateAttached(
+      client,
+      recruit.space.CandidatesPublic,
+      chunter.class.Comment,
+      commentId,
+      {
+        message: commentData.join('\n<br/>')
+      },
+      { attachedTo: candId, attachedClass: recruit.mixin.Candidate, collection: 'comments' }
+    )
   }
 }
 
@@ -325,19 +381,26 @@ function addComment (data: string[], c: any, key: string): void {
   }
 }
 
-function parseSocials (c: any): { sourceFields: string[], telegram: string | undefined, linkedin: string | undefined, github: string | undefined } {
+function parseSocials (c: any): {
+  sourceFields: string[]
+  telegram: string | undefined
+  linkedin: string | undefined
+  github: string | undefined
+} {
   let telegram: string | undefined
   let linkedin: string | undefined
   let github: string | undefined
 
-  const sourceFields = ([
-    get(c, _.socialLink),
-    get(c, _.socialLink2),
-    get(c, _.socialLink3),
-    get(c, _.otherContact),
-    get(c, _.area2),
-    get(c, _.area3)
-  ].filter(p => p !== undefined && p.trim().length > 0) as string[]).filter(t => {
+  const sourceFields = (
+    [
+      get(c, _.socialLink),
+      get(c, _.socialLink2),
+      get(c, _.socialLink3),
+      get(c, _.otherContact),
+      get(c, _.area2),
+      get(c, _.area3)
+    ].filter((p) => p !== undefined && p.trim().length > 0) as string[]
+  ).filter((t) => {
     const lc = t.toLocaleLowerCase()
     if (lc.startsWith('telegram')) {
       telegram = t.substring(8).replace(':', '').trim()
@@ -362,7 +425,13 @@ function pushChannel (c: any, channels: AttachedData<Channel>[], key: string, pr
     channels.push({ provider, value })
   }
 }
-export async function findOrUpdate<T extends Doc> (client: TxOperations, space: Ref<Space>, _class: Ref<Class<T>>, objectId: Ref<T>, data: Data<T>): Promise<void> {
+export async function findOrUpdate<T extends Doc> (
+  client: TxOperations,
+  space: Ref<Space>,
+  _class: Ref<Class<T>>,
+  objectId: Ref<T>,
+  data: Data<T>
+): Promise<void> {
   const existingObj = await client.findOne<Doc>(_class, { _id: objectId, space })
   if (existingObj !== undefined) {
     // Check some field changes
@@ -375,7 +444,11 @@ export async function findOrUpdate<T extends Doc> (client: TxOperations, space: 
   }
 }
 
-async function createUpdateSpaceKanban (spaceId: Ref<Vacancy>, client: TxOperations, stateNames: string[]): Promise<Map<string, Ref<State>>> {
+async function createUpdateSpaceKanban (
+  spaceId: Ref<Vacancy>,
+  client: TxOperations,
+  stateNames: string[]
+): Promise<Map<string, Ref<State>>> {
   const states: Map<string, Ref<State>> = new Map()
   const stateRanks = genRanks(stateNames.length)
 
@@ -389,14 +462,11 @@ async function createUpdateSpaceKanban (spaceId: Ref<Vacancy>, client: TxOperati
     }
 
     const sid = ('generated-' + spaceId + '.state.' + st.toLowerCase().replace(' ', '_')) as Ref<State>
-    await findOrUpdate(client, spaceId, task.class.State,
-      sid,
-      {
-        title: st,
-        color: pos++,
-        rank
-      }
-    )
+    await findOrUpdate(client, spaceId, task.class.State, sid, {
+      title: st,
+      color: pos++,
+      rank
+    })
     states.set(st, sid)
   }
 
@@ -414,21 +484,14 @@ async function createUpdateSpaceKanban (spaceId: Ref<Vacancy>, client: TxOperati
     }
 
     const sid = ('generated-' + spaceId + '.done-state.' + st.title.toLowerCase().replace(' ', '_')) as Ref<DoneState>
-    await findOrUpdate(client, spaceId, st.class,
-      sid,
-      {
-        title: st.title,
-        rank
-      }
-    )
+    await findOrUpdate(client, spaceId, st.class, sid, {
+      title: st.title,
+      rank
+    })
   }
 
-  await findOrUpdate(client, spaceId,
-    task.class.Kanban,
-    ('generated-' + spaceId + '.kanban') as Ref<Kanban>,
-    {
-      attachedTo: spaceId
-    }
-  )
+  await findOrUpdate(client, spaceId, task.class.Kanban, ('generated-' + spaceId + '.kanban') as Ref<Kanban>, {
+    attachedTo: spaceId
+  })
   return states
 }

@@ -38,9 +38,13 @@
   const accountId = getCurrentAccount()._id
   let integrations: Set<Ref<IntegrationType>> = new Set<Ref<IntegrationType>>()
   const settingsQuery = createQuery()
-  $: settingsQuery.query(setting.class.Integration, { space: accountId as string as Ref<Space>, disabled: false }, (res) => {
-    integrations = new Set(res.map((p) => p.type))
-  })
+  $: settingsQuery.query(
+    setting.class.Integration,
+    { space: accountId as string as Ref<Space>, disabled: false },
+    (res) => {
+      integrations = new Set(res.map((p) => p.type))
+    }
+  )
 
   onMount(() => {
     dispatch('open', { ignoreKeys: ['comments', 'name', 'channels'] })
@@ -54,7 +58,12 @@
     </div>
     <div class="flex-grow flex-col">
       <div class="name">
-        <EditBox placeholder={contact.string.PersonFirstNamePlaceholder} maxWidth="20rem" bind:value={object.name} on:change={nameChange} />
+        <EditBox
+          placeholder={contact.string.PersonFirstNamePlaceholder}
+          maxWidth="20rem"
+          bind:value={object.name}
+          on:change={nameChange}
+        />
       </div>
       <div class="flex-between channels">
         <div class="flex-row-center">
@@ -62,7 +71,7 @@
         </div>
 
         <div class="flex-row-center">
-          <div class='over-underline flex-row-center' on:click>
+          <div class="over-underline flex-row-center" on:click>
             <CircleButton icon={IconActivity} size={'small'} primary on:click />
             <span class="ml-2 text-sm"><Label label={contact.string.ViewActivity} /></span>
           </div>

@@ -15,7 +15,7 @@
 //
 
 import type { Doc, PropertyType } from './classes'
-import type { Position } from './tx'
+import type { Position, PullArray } from './tx'
 
 /**
  * @internal
@@ -43,7 +43,12 @@ function $pull (document: Doc, keyval: Record<string, PropertyType>): void {
   const doc = document as any
   for (const key in keyval) {
     const arr = doc[key] as Array<any>
-    doc[key] = arr.filter(val => val !== keyval[key])
+    if (typeof keyval[key] === 'object') {
+      const { $in } = keyval[key] as PullArray<PropertyType>
+      doc[key] = arr.filter((val) => !$in.includes(val))
+    } else {
+      doc[key] = arr.filter((val) => val !== keyval[key])
+    }
   }
 }
 
@@ -52,7 +57,7 @@ function $move (document: Doc, keyval: Record<string, PropertyType>): void {
   for (const key in keyval) {
     const arr = doc[key] as Array<any>
     const desc = keyval[key]
-    doc[key] = arr.filter(val => val !== desc.$value)
+    doc[key] = arr.filter((val) => val !== desc.$value)
     doc[key].splice(desc.$position, 0, desc.$value)
   }
 }
@@ -60,7 +65,9 @@ function $move (document: Doc, keyval: Record<string, PropertyType>): void {
 function $pushMixin (document: Doc, options: any): void {
   const doc = document as any
   const mixinId = options.$mixin
-  if (mixinId === undefined) { throw new Error('$mixin must be specified for $push_mixin operation') }
+  if (mixinId === undefined) {
+    throw new Error('$mixin must be specified for $push_mixin operation')
+  }
   const mixin = doc[mixinId]
   const keyval = options.values
   for (const key in keyval) {
@@ -93,7 +100,9 @@ const operators: Record<string, _OperatorFunc> = {
  * @public
  */
 export function isOperator (o: Record<string, any>): boolean {
-  if (o === null || typeof o !== 'object') { return false }
+  if (o === null || typeof o !== 'object') {
+    return false
+  }
   const keys = Object.keys(o)
   return keys.length > 0 && keys.every((key) => key.startsWith('$'))
 }

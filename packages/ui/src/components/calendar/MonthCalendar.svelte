@@ -56,7 +56,7 @@
                 currentDate.getMonth()}
               on:click={() => onSelect(weekday(firstDayOfCurrentMonth, weekIndex, dayOfWeek))}
             >
-              {#if !$$slots.cell }
+              {#if !$$slots.cell}
                 {weekday(firstDayOfCurrentMonth, weekIndex, dayOfWeek).getDate()}
               {:else}
                 <slot name="cell" date={weekday(firstDayOfCurrentMonth, weekIndex, dayOfWeek)} />

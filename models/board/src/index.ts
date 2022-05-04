@@ -14,10 +14,11 @@
 //
 
 // To help typescript locate view plugin properly
-import type { Board, Card, CardAction, CardChecklist, CardChecklistItem, CardDate, CardLabel } from '@anticrm/board'
+import type { Board, Card, CardAction, CardChecklist, CardChecklistItem, CardDate, CardLabel, MenuPage } from '@anticrm/board'
 import type { Employee } from '@anticrm/contact'
 import { TxOperations as Client, Doc, DOMAIN_MODEL, FindOptions, IndexKind, Ref, Type, Timestamp, Markup } from '@anticrm/core'
 import {
+  ArrOf,
   Builder,
   Collection,
   Index,
@@ -109,7 +110,7 @@ export class TCard extends TTask implements Card {
   @Prop(TypeRef(contact.class.Employee), board.string.Assignee)
   declare assignee: Ref<Employee> | null
 
-  @Prop(Collection(contact.class.Employee), board.string.Members)
+  @Prop(ArrOf(TypeRef(contact.class.Employee)), board.string.Members)
   members?: Ref<Employee>[]
 
   @Prop(Collection(board.class.CardChecklist), board.string.Checklist)
@@ -130,8 +131,26 @@ export class TCardAction extends TDoc implements CardAction {
   supported?: Resource<(card: Card, client: Client) => boolean>
 }
 
+@Model(board.class.MenuPage, core.class.Doc, DOMAIN_MODEL)
+export class TMenuPage extends TDoc implements MenuPage {
+  component!: AnyComponent
+  pageId!: string
+  label!: IntlString
+}
+
 export function createModel (builder: Builder): void {
-  builder.createModel(TBoard, TCard, TCardLabel, TCardDate, TCardChecklist, TCardAction)
+  builder.createModel(TBoard, TCard, TCardLabel, TCardDate, TCardAction, TMenuPage)
+
+  builder.createDoc(board.class.MenuPage, core.space.Model, {
+    component: board.component.Archive,
+    pageId: board.menuPageId.Archive,
+    label: board.string.Archive
+  })
+  builder.createDoc(board.class.MenuPage, core.space.Model, {
+    component: board.component.MenuMainPage,
+    pageId: board.menuPageId.Main,
+    label: board.string.Menu
+  })
 
   builder.mixin(board.class.Board, core.class.Class, workbench.mixin.SpaceView, {
     view: {
@@ -159,7 +178,8 @@ export function createModel (builder: Builder): void {
             addSpaceLabel: board.string.BoardCreateLabel,
             createComponent: board.component.CreateBoard
           }
-        ]
+        ],
+        aside: board.component.BoardMenu
       }
     },
     board.app.Board
@@ -404,19 +424,6 @@ export function createModel (builder: Builder): void {
       handler: board.cardActionHandler.MakeTemplate
     },
     board.cardAction.MakeTemplate
-  )
-  builder.createDoc(
-    board.class.CardAction,
-    core.space.Model,
-    {
-      icon: board.icon.Card,
-      isInline: false,
-      label: board.string.Watch,
-      position: 130,
-      type: board.cardActionType.Action,
-      component: board.component.WatchCard
-    },
-    board.cardAction.Watch
   )
   builder.createDoc(
     board.class.CardAction,

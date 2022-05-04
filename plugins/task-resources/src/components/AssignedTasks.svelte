@@ -37,9 +37,9 @@
 
   let documentIds: Ref<Task>[] = []
   function updateResultQuery (search: string, documentIds: Ref<Task>[], doneStates: DoneState[]): void {
-    resultQuery = search === '' ? { } : { $search: search }
+    resultQuery = search === '' ? {} : { $search: search }
     resultQuery.assignee = currentUser.employee
-    resultQuery.doneState = { $nin: doneStates.map(it => it._id) }
+    resultQuery.doneState = { $nin: doneStates.map((it) => it._id) }
     if (documentIds.length > 0) {
       resultQuery._id = { $in: documentIds }
     }
@@ -48,18 +48,19 @@
   let doneStates: DoneState[] = []
 
   const doneStateQuery = createQuery()
-  doneStateQuery.query(
-    task.class.DoneState,
-    {
-    },
-    (res) => (doneStates = res)
-  )
+  doneStateQuery.query(task.class.DoneState, {}, (res) => (doneStates = res))
 
   // Find all tags for object classe with matched elements
   const query = createQuery()
 
   $: query.query(tags.class.TagReference, { tag: { $in: $selectedTagElements } }, (result) => {
-    documentIds = Array.from(new Set<Ref<Task>>(result.filter(it => client.getHierarchy().isDerived(it.attachedToClass, _class)).map((it) => it.attachedTo as Ref<Task>)).values())
+    documentIds = Array.from(
+      new Set<Ref<Task>>(
+        result
+          .filter((it) => client.getHierarchy().isDerived(it.attachedToClass, _class))
+          .map((it) => it.attachedTo as Ref<Task>)
+      ).values()
+    )
   })
 
   $: updateResultQuery(search, documentIds, doneStates)
@@ -98,9 +99,9 @@
   on:change={(evt) => updateCategory(evt.detail)}
 />
 
-<Scroller>
+<Scroller tableFade>
   <Table
-    _class={_class}
+    {_class}
     config={[
       '',
       '$lookup.attachedTo',

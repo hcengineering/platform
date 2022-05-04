@@ -31,15 +31,16 @@
   }
 </script>
 
-<div class='flex item'>
-    <Icon icon={task.icon.Task} size={'large'} />
-    <div class='ml-2'>
-      {#if shortLabel}<Label label={shortLabel} />-{/if}{value.number}
-    </div>
-    {#if name}
-      <div class='ml-1'>{name}</div>
-    {/if}
+<div class="flex item">
+  <Icon icon={task.icon.Task} size={'large'} />
+  <div class="ml-2">
+    {#if shortLabel}<Label label={shortLabel} />-{/if}{value.number}
+  </div>
+  {#if name}
+    <div class="ml-1">{name}</div>
+  {/if}
 </div>
+
 <style lang="scss">
   .item {
     align-items: center;

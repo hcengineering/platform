@@ -68,7 +68,7 @@
     }
   }
 
-  const _update = (): void  => {
+  const _update = (): void => {
     if (props) fitPopup(props, contentPanel)
   }
 
@@ -92,7 +92,7 @@
   {#if !component}
     <Spinner />
   {:else}
-    <slot name='panel-header'/>
+    <slot name="panel-header" />
     <div class="panel-instance" class:bg={props.element === 'content'} bind:this={modalHTML}>
       <div class="panel-container" class:padding={props.element === 'content'}>
         <svelte:component
@@ -119,13 +119,17 @@
     position: fixed;
     background-color: transparent;
 
-    &.bg { background-color: var(--body-color); }
+    &.bg {
+      background-color: var(--board-bg-color);
+    }
     .panel-container {
-      padding: .5rem;
+      padding: 0.5rem;
       width: 100%;
       height: 100%;
 
-      &.padding { padding: .75rem; }
+      &.padding {
+        padding: 0.75rem;
+      }
     }
   }
   .modal-overlay {
@@ -136,6 +140,8 @@
     width: 100%;
     height: 100%;
 
-    &.show { background: rgba(0, 0, 0, .5); }
+    &.show {
+      background: rgba(0, 0, 0, 0.5);
+    }
   }
 </style>

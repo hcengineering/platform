@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import contact, { formatName } from '@anticrm/contact'
-  import core, { Class, ClassifierKind, Doc, Hierarchy, Mixin, Obj, Ref } from '@anticrm/core'
+  import core, { Class, ClassifierKind, Doc, Mixin, Obj, Ref } from '@anticrm/core'
   import notification from '@anticrm/notification'
   import { Panel } from '@anticrm/panel'
   import { Asset, getResource, translate } from '@anticrm/platform'
@@ -26,29 +26,25 @@
     getClient,
     KeyedAttribute
   } from '@anticrm/presentation'
-  import { AnyComponent, Component, Label, PopupAlignment } from '@anticrm/ui'
+  import { AnyComponent, Component } from '@anticrm/ui'
   import view from '@anticrm/view'
   import { createEventDispatcher, onDestroy } from 'svelte'
-  import { getCollectionCounter, getMixinStyle } from '../utils'
+  import { getCollectionCounter } from '../utils'
   import ActionContext from './ActionContext.svelte'
   import UpDownNavigator from './UpDownNavigator.svelte'
 
   export let _id: Ref<Doc>
   export let _class: Ref<Class<Doc>>
-  export let rightSection: AnyComponent | undefined = undefined
-  export let position: PopupAlignment | undefined = undefined
 
   let lastId: Ref<Doc> = _id
   let lastClass: Ref<Class<Doc>> = _class
   let object: Doc
   let objectClass: Class<Doc>
   let parentClass: Ref<Class<Doc>>
-  let fullSize: boolean = true
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const notificationClient = getResource(notification.function.GetNotificationClient).then((res) => res())
-
   const docKeys: Set<string> = new Set<string>(hierarchy.getAllAttributes(core.class.AttachedDoc).keys())
 
   $: read(_id)
@@ -75,18 +71,11 @@
 
   $: if (object !== undefined) objectClass = hierarchy.getClass(object._class)
 
-  let selectedClass: Ref<Class<Doc>> | undefined
-  let prevSelected = selectedClass
-
   let keys: KeyedAttribute[] = []
-  let collectionEditors: {key: KeyedAttribute, editor: AnyComponent} [] = []
+  let collectionEditors: { key: KeyedAttribute; editor: AnyComponent }[] = []
 
   let mixins: Mixin<Doc>[] = []
-
-  $: if (object && prevSelected !== object._class) {
-    prevSelected = object._class
-    selectedClass = Hierarchy.mixinOrClass(object)
-
+  $: if (object) {
     parentClass = getParentClass(object._class)
     getMixins()
   }
@@ -118,15 +107,18 @@
   let ignoreMixins: Set<Ref<Mixin<Doc>>> = new Set<Ref<Mixin<Doc>>>()
 
   async function updateKeys (): Promise<void> {
-    const filtredKeys = getFiltredKeys(
-      selectedClass ?? object._class,
-      ignoreKeys,
-      selectedClass !== objectClass._id ? objectClass._id : undefined
-    )
+    const keysMap = new Map(getFiltredKeys(object._class, ignoreKeys).map((p) => [p.attr._id, p]))
+    for (const m of mixins) {
+      const mkeys = getFiltredKeys(m._id, ignoreKeys)
+      for (const key of mkeys) {
+        keysMap.set(key.attr._id, key)
+      }
+    }
+    const filtredKeys = Array.from(keysMap.values())
     keys = collectionsFilter(filtredKeys, false)
 
     const collectionKeys = collectionsFilter(filtredKeys, true)
-    const editors: {key: KeyedAttribute, editor: AnyComponent}[] = []
+    const editors: { key: KeyedAttribute; editor: AnyComponent }[] = []
     for (const k of collectionKeys) {
       const editor = await getCollectionEditor(k)
       editors.push({ key: k, editor })
@@ -154,9 +146,7 @@
   }
 
   let mainEditor: AnyComponent
-
-  $: if (object) getEditorOrDefault(selectedClass, object._class)
-
+  $: if (object) getEditorOrDefault(object._class, object._class)
   async function getEditorOrDefault (_class: Ref<Class<Doc>> | undefined, defaultClass: Ref<Class<Doc>>): Promise<void> {
     let editor = _class !== undefined ? await getEditor(_class) : undefined
     if (editor === undefined) {
@@ -245,20 +235,23 @@
   }
   let panelWidth: number = 0
   let innerWidth: number = 0
+  let minimize: boolean = false
 </script>
 
-<ActionContext context={{
-  mode: 'editor'
-}}/>
+<ActionContext
+  context={{
+    mode: 'editor'
+  }}
+/>
 
 {#if object !== undefined && title !== undefined}
   <Panel
     {icon}
     {title}
-    {rightSection}
-    {fullSize}
     {object}
-    {position}
+    bind:minimize
+    isHeader={false}
+    isAside={!minimize}
     bind:panelWidth
     bind:innerWidth
     on:update={(ev) => _update(ev.detail)}
@@ -266,74 +259,35 @@
       dispatch('close')
     }}
   >
-    <svelte:fragment slot="navigate-actions">
-      <UpDownNavigator element={object}/>
+    <svelte:fragment slot="navigator">
+      <UpDownNavigator element={object} />
     </svelte:fragment>
-    <svelte:fragment slot="subtitle">
+
+    <svelte:fragment slot="attributes" let:direction={dir}>
       {#if !headerLoading}
         {#if headerEditor !== undefined}
-          <Component is={headerEditor} props={{ object, keys }} />
+          <Component is={headerEditor} props={{ object, keys, vertical: dir === 'column' }} />
         {:else}
-          <AttributesBar {object} {keys} />
+          <AttributesBar {object} {keys} vertical={dir === 'column'} />
         {/if}
       {/if}
     </svelte:fragment>
-    <svelte:fragment slot="properties">
-      {#if !headerLoading}
-        <div class="p-4">
-          {#if headerEditor !== undefined}
-            <Component is={headerEditor} props={{ object, keys, vertical: true }} />
-          {:else}
-            <AttributesBar {object} {keys} vertical />
-          {/if}
-        </div>
-      {/if}
-    </svelte:fragment>
-    <div class="main-editor">
-      {#if mainEditor}
-        <Component
-          is={mainEditor}
-          props={{ object }}
-          on:open={(ev) => {
-            ignoreKeys = ev.detail.ignoreKeys
-            ignoreMixins = new Set(ev.detail.ignoreMixins)
-            updateKeys()
-            getMixins()
-          }}
-          on:click={(ev) => {
-            fullSize = true
-            rightSection = ev.detail.presenter
-          }}
-        />
-      {/if}
-    </div>
-    {#if mixins.length > 0}
-      <div class="mixin-container">
-        <div
-          class="mixin-selector"
-          style={getMixinStyle(objectClass._id, selectedClass === objectClass._id)}
-          on:click={() => {
-            selectedClass = objectClass._id
-          }}
-        >
-          <Label label={objectClass.label} />
-        </div>
-        {#each mixins as mixin}
-          <div
-            class="mixin-selector"
-            style={getMixinStyle(mixin._id, selectedClass === mixin._id)}
-            on:click={() => {
-              selectedClass = mixin._id
-            }}
-          >
-            <Label label={mixin.label} />
-          </div>
-        {/each}
-      </div>
+
+    {#if mainEditor}
+      <Component
+        is={mainEditor}
+        props={{ object }}
+        on:open={(ev) => {
+          ignoreKeys = ev.detail.ignoreKeys
+          ignoreMixins = new Set(ev.detail.ignoreMixins)
+          updateKeys()
+          getMixins()
+        }}
+      />
     {/if}
     {#each collectionEditors as collection}
       {#if collection.editor}
-        <div class="mt-14">
+        <div class="mt-6">
           <Component
             is={collection.editor}
             props={{
@@ -345,38 +299,8 @@
               [collection.key.key]: getCollectionCounter(hierarchy, object, collection.key)
             }}
           />
-          </div>
+        </div>
       {/if}
     {/each}
   </Panel>
 {/if}
-
-<style lang="scss">
-  .main-editor {
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
-  }
-  .mixin-container {
-    margin-top: 2rem;
-    display: flex;
-    .mixin-selector {
-      margin-left: 0.5rem;
-      cursor: pointer;
-      height: 1.5rem;
-      min-width: 5.25rem;
-
-      border-radius: 0.5rem;
-
-      font-weight: 500;
-      font-size: 0.625rem;
-
-      text-transform: uppercase;
-      color: var(--theme-caption-color);
-
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-  }
-</style>

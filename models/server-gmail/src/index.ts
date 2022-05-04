@@ -21,7 +21,12 @@ import contact from '@anticrm/contact'
 import serverGmail from '@anticrm/server-gmail'
 
 export function createModel (builder: Builder): void {
-  builder.mixin<Class<Doc>, ObjectDDParticipant>(contact.class.Channel, core.class.Class, serverCore.mixin.ObjectDDParticipant, {
-    collectDocs: serverGmail.function.FindMessages
-  })
+  builder.mixin<Class<Doc>, ObjectDDParticipant>(
+    contact.class.Channel,
+    core.class.Class,
+    serverCore.mixin.ObjectDDParticipant,
+    {
+      collectDocs: serverGmail.function.FindMessages
+    }
+  )
 }

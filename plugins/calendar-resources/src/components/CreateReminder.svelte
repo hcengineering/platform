@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact,{ Employee, EmployeeAccount } from '@anticrm/contact'
-  import { Class,Doc,getCurrentAccount,Ref } from '@anticrm/core'
-  import { Card,getClient,UserBoxList } from '@anticrm/presentation'
-  import { TimeShiftPicker,Grid,StylishEdit } from '@anticrm/ui'
+  import contact, { Employee, EmployeeAccount } from '@anticrm/contact'
+  import { Class, Doc, getCurrentAccount, Ref } from '@anticrm/core'
+  import { Card, getClient, UserBoxList } from '@anticrm/presentation'
+  import { TimeShiftPicker, Grid, StylishEdit } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import calendar from '../plugin'
 
@@ -67,7 +67,7 @@
   <Grid column={1} rowGap={1.75}>
     <StylishEdit bind:value={title} label={calendar.string.Title} />
     <div class="antiComponentBox">
-      <TimeShiftPicker title={calendar.string.Date} bind:value={shift} direction='after' />
+      <TimeShiftPicker title={calendar.string.Date} bind:value={shift} direction="after" />
     </div>
     <UserBoxList
       _class={contact.class.Employee}
@@ -85,7 +85,6 @@
           participants = participants
         }
       }}
-      noItems={calendar.string.NoParticipants}
     />
   </Grid>
 </Card>

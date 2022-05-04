@@ -16,8 +16,7 @@
   import { createEventDispatcher, onMount } from 'svelte'
   import type { IntlString } from '@anticrm/platform'
   import { translate } from '@anticrm/platform'
-  import contact from '@anticrm/contact'
-  import { Button, Icon, IconClose, IconBlueCheck, Label } from '@anticrm/ui'
+  import { Button, Icon, IconClose, IconBlueCheck, IconArrowRight } from '@anticrm/ui'
 
   export let value: string = ''
   export let placeholder: IntlString
@@ -25,9 +24,11 @@
   const dispatch = createEventDispatcher()
   let input: HTMLInputElement
   let phTraslate: string
-  translate(placeholder, {}).then(tr => phTraslate = tr)
+  translate(placeholder, {}).then((tr) => (phTraslate = tr))
 
-  onMount(() => { if (input) input.focus() })
+  onMount(() => {
+    if (input) input.focus()
+  })
 </script>
 
 <div class="selectPopup relative">
@@ -51,9 +52,15 @@
         />
       </div>
       <div class="buttons-group small-gap">
-        <div class="clear-btn show" on:click={() => { dispatch('close', value) }}>
+        <div
+          class="clear-btn show"
+          on:click={() => {
+            dispatch('close', value)
+          }}
+        >
           <div class="icon"><Icon icon={IconClose} size={'inline'} /></div>
         </div>
+        <Button kind={'transparent'} size={'small'} icon={IconArrowRight} on:click={() => dispatch('update', 'open')} />
         <Button kind={'transparent'} size={'small'} icon={IconBlueCheck} on:click={() => dispatch('close', value)} />
       </div>
     </div>

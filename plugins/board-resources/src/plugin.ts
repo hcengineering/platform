@@ -75,8 +75,6 @@ export default mergeIds(boardId, board, {
     Move: '' as IntlString,
     Copy: '' as IntlString,
     MakeTemplate: '' as IntlString,
-    Watch: '' as IntlString,
-    Unwatch: '' as IntlString,
     Archive: '' as IntlString,
     SendToBoard: '' as IntlString,
     Delete: '' as IntlString,
@@ -112,6 +110,7 @@ export default mergeIds(boardId, board, {
     SearchMembers: '' as IntlString,
     DeleteCard: '' as IntlString,
     Menu: '' as IntlString,
+    ShowMenu: '' as IntlString,
     ToArchive: '' as IntlString,
     CopyCard: '' as IntlString,
     AlsoCopy: '' as IntlString,
@@ -123,6 +122,11 @@ export default mergeIds(boardId, board, {
   },
   component: {
     EditCard: '' as AnyComponent,
-    BoardHeader: '' as AnyComponent
+    Members: '' as AnyComponent,
+    Settings: '' as AnyComponent,
+    BoardHeader: '' as AnyComponent,
+    BoardMenu: '' as AnyComponent,
+    Archive: '' as AnyComponent,
+    MenuMainPage: '' as AnyComponent
   }
 })

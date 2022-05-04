@@ -27,7 +27,9 @@ export async function OnIntegrationDisable (tx: Tx, control: TriggerControl): Pr
   const ctx = tx as TxUpdateDoc<Integration>
   if (!control.hierarchy.isDerived(ctx.objectClass, setting.class.Integration)) return []
   if (ctx.operations.disabled === true) {
-    const account = (await control.modelDb.findAll(core.class.Account, { _id: ctx.objectSpace as string as Ref<Account> }))[0]
+    const account = (
+      await control.modelDb.findAll(core.class.Account, { _id: ctx.objectSpace as string as Ref<Account> })
+    )[0]
     if (account === undefined) return []
     const employeeRef = (account as EmployeeAccount).employee
     if (employeeRef === undefined) return []

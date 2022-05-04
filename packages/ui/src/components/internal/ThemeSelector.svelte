@@ -15,5 +15,5 @@
 </script>
 
 <div class="flex-center" on:click={changeTheme}>
-  <Mute size={'small'}/>
+  <Mute size={'small'} />
 </div>

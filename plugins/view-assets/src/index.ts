@@ -19,6 +19,7 @@ import view, { viewId } from '@anticrm/view'
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(view.icon, {
   Table: `${icons}#table`,
+  Card: `${icons}#card`,
   Delete: `${icons}#delete`,
   Move: `${icons}#move`,
   MoreH: `${icons}#more-h`,

@@ -34,13 +34,11 @@
   const label = client.getHierarchy().getClass(value._class).shortLabel
 
   if (label !== undefined) {
-    translate(label, {}).then(r => {
+    translate(label, {}).then((r) => {
       shortLabel = r
     })
   }
-  let element:HTMLElement
-
-  
+  let element: HTMLElement
 </script>
 
 {#if value}
@@ -49,7 +47,7 @@
       <Icon icon={recruit.icon.Review} size={'small'} />
     </span>&nbsp;
     {#if value && shortLabel}
-     {shortLabel}-{value.number}
-    {/if} 
+      {shortLabel}-{value.number}
+    {/if}
   </div>
 {/if}

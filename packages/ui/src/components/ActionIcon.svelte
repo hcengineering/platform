@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { IntlString, Asset } from '@anticrm/platform'
   import type { AnySvelteComponent, TooltipAlignment } from '../types'
@@ -25,14 +24,14 @@
   export let direction: TooltipAlignment | undefined = undefined
   export let icon: Asset | AnySvelteComponent
   export let size: 'small' | 'medium' | 'large'
-  export let action: (ev: Event) => Promise<void> | void = async () => { }
+  export let action: (ev: Event) => Promise<void> | void = async () => {}
   export let invisible: boolean = false
 </script>
 
 <Tooltip {label} {direction} props={labelProps}>
   <button class="button {size}" on:click|stopPropagation={action}>
-    <div class="icon {size}" class:invisible={invisible}>
-      <Icon {icon} {size}/>
+    <div class="icon {size}" class:invisible>
+      <Icon {icon} {size} />
     </div>
   </button>
 </Tooltip>
@@ -40,12 +39,14 @@
 <style lang="scss">
   .button {
     color: inherit;
-    border-radius: .125rem;
+    border-radius: 0.125rem;
     cursor: pointer;
 
     .icon {
       color: var(--dark-color);
-      &.invisible { opacity: 0; }
+      &.invisible {
+        opacity: 0;
+      }
     }
     &:hover .icon {
       color: var(--accent-color);

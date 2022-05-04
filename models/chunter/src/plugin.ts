@@ -65,6 +65,7 @@ export default mergeIds(chunterId, chunter, {
   },
   ids: {
     TxCommentCreate: '' as Ref<TxViewlet>,
+    TxBacklinkCreate: '' as Ref<TxViewlet>,
     TxCommentRemove: '' as Ref<TxViewlet>,
     TxBacklinkRemove: '' as Ref<TxViewlet>
   },

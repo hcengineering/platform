@@ -14,11 +14,11 @@
 -->
 <script lang="ts">
   import { Event } from '@anticrm/calendar'
-  import contact,{ Employee } from '@anticrm/contact'
+  import contact, { Employee } from '@anticrm/contact'
   import { Ref } from '@anticrm/core'
-  import presentation, { Card,getClient,UserBoxList } from '@anticrm/presentation'
+  import presentation, { Card, getClient, UserBoxList } from '@anticrm/presentation'
   import { StyledTextBox } from '@anticrm/text-editor'
-  import ui, { DatePicker,Grid,StylishEdit } from '@anticrm/ui'
+  import { DatePicker, Grid, StylishEdit } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import calendar from '../plugin'
 
@@ -91,7 +91,6 @@
           participants = participants
         }
       }}
-      noItems={calendar.string.NoParticipants}
     />
   </Grid>
 </Card>

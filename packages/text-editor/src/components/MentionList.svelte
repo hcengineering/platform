@@ -20,7 +20,7 @@
   import { onDestroy, onMount } from 'svelte'
   import plugin from '../plugin'
   import DummyPopup from './DummyPopup.svelte'
-  
+
   export let query: string = ''
   export let items: ObjectSearchResult[]
   export let clientRect: () => ClientRect
@@ -28,7 +28,7 @@
   export let close: () => void
   export let categories: ObjectSearchCategory[]
   export let category: ObjectSearchCategory
-  
+
   export let onCategory: (cat: ObjectSearchCategory) => void
 
   const client = getClient()
@@ -76,19 +76,20 @@
     return false
   }
 
-  export function done () {
-  }
+  export function done () {}
 
   function updateStyle (): void {
     const rect = clientRect()
     const docW = document.body.clientWidth
     let tempStyle = ''
-    if (rect.top < 292) { // 20rem - 1.75rem
+    if (rect.top < 292) {
+      // 20rem - 1.75rem
       tempStyle = `top: calc(${rect.bottom}px + .75rem); max-heigth: calc(100vh - ${rect.bottom}px - 1.75rem); `
     } else {
       tempStyle = `bottom: calc(100vh - ${rect.top}px + .75rem); max-heigth: calc(${rect.top}px - 1.75rem); `
     }
-    if (docW - rect.left > 452) { // 30rem - 1.75rem
+    if (docW - rect.left > 452) {
+      // 30rem - 1.75rem
       tempStyle += `left: ${rect.left}px;`
     } else {
       tempStyle += `right: calc(100vw - ${rect.right}px);`
@@ -121,20 +122,35 @@
     close()
   }}
 />
-<div bind:this={popup} class="antiPopup antiPopup-withHeader antiPopup-withCategory completion" {style} on:keydown={onKeyDown}>
+<div
+  bind:this={popup}
+  class="antiPopup antiPopup-withHeader antiPopup-withCategory completion"
+  {style}
+  on:keydown={onKeyDown}
+>
   <div class="ap-category">
     {#each categories as c}
       <div class="ap-categoryItem" class:selected={category.label === c.label}>
-        <ActionIcon label={c.label} icon={c.icon} size={'medium'} action={() => {
-          category = c
-          onCategory(c)
-          updateItems(c, query)
-        } }/>
+        <ActionIcon
+          label={c.label}
+          icon={c.icon}
+          size={'medium'}
+          action={() => {
+            category = c
+            onCategory(c)
+            updateItems(c, query)
+          }}
+        />
       </div>
     {/each}
   </div>
   <div class="ap-header">
-    <EditWithIcon icon={IconSearch} bind:value={query} on:input={() => updateItems(category, query) } placeholder={category.label} />
+    <EditWithIcon
+      icon={IconSearch}
+      bind:value={query}
+      on:input={() => updateItems(category, query)}
+      placeholder={category.label}
+    />
     <div class="ap-caption"><Label label={plugin.string.Suggested} /></div>
   </div>
   <div class="ap-space" />

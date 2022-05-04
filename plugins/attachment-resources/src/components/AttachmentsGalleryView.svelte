@@ -13,22 +13,39 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Attachment } from '@anticrm/attachment'
-  import { Doc } from '@anticrm/core'
-  import { getFileUrl } from '@anticrm/presentation'
-  import { Icon, IconMoreV, showPopup } from '@anticrm/ui'
-  import { Menu } from '@anticrm/view-resources'
+  import attachment, { Attachment } from '@anticrm/attachment'
+  import { Doc, getCurrentAccount } from '@anticrm/core'
+  import { getFileUrl, getClient } from '@anticrm/presentation'
+  import { Icon, IconMoreV, showPopup, Menu } from '@anticrm/ui'
   import FileDownload from './icons/FileDownload.svelte'
   import { AttachmentGalleryPresenter } from '..'
 
   export let attachments: Attachment[]
   let selectedFileNumber: number | undefined
+  const myAccId = getCurrentAccount()._id
+  const client = getClient()
 
   const showFileMenu = async (ev: MouseEvent, object: Doc, fileNumber: number): Promise<void> => {
     selectedFileNumber = fileNumber
-    showPopup(Menu, { object }, ev.target as HTMLElement, () => {
-      selectedFileNumber = undefined
-    })
+    showPopup(
+      Menu,
+      {
+        actions: [
+          ...(myAccId === object.modifiedBy
+            ? [
+                {
+                  label: attachment.string.DeleteFile,
+                  action: async () => await client.removeDoc(object._class, object.space, object._id)
+                }
+              ]
+            : [])
+        ]
+      },
+      ev.target as HTMLElement,
+      () => {
+        selectedFileNumber = undefined
+      }
+    )
   }
 </script>
 
@@ -55,16 +72,17 @@
   .galleryGrid {
     display: grid;
     margin: 0 1.5rem;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
   }
 
   .attachmentCell {
     .eAttachmentCellActions {
       display: flex;
       visibility: hidden;
-      border: 1px solid var(--theme-bg-focused-border);
-      padding: 0.2rem;
-      border-radius: 0.375rem;
+      padding: 0.5rem;
+      border: 1px solid var(--theme-button-border-hovered);
+      border-radius: 0.25rem;
+      background-color: var(--board-bg-color);
     }
 
     .eAttachmentCellMenu {

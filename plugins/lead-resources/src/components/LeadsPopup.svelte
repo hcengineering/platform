@@ -13,9 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
-
   import { FindOptions } from '@anticrm/core'
   import type { Customer, Lead } from '@anticrm/lead'
   import task from '@anticrm/task'
@@ -30,9 +28,4 @@
   }
 </script>
 
-<Table 
-  _class={leads.class.Lead}
-  config={['', '$lookup.state']}
-  options={options}
-  query={ { attachedTo: value._id } }
-/>
+<Table _class={leads.class.Lead} config={['', '$lookup.state']} {options} query={{ attachedTo: value._id }} />

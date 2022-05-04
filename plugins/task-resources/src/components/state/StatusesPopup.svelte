@@ -12,20 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import { Label, IconDelete as Delete } from '@anticrm/ui'
   import task from '../../plugin'
 
   export let onDelete: () => void
-  
+
   const dispatch = createEventDispatcher()
 </script>
 
 <div class="antiPopup">
   <div class="ap-space" />
-  <div class="ap-menuItem ap-woScroll flex-row-center redlight" on:click={() => { dispatch('close'); onDelete() }}>
+  <div
+    class="ap-menuItem ap-woScroll flex-row-center redlight"
+    on:click={() => {
+      dispatch('close')
+      onDelete()
+    }}
+  >
     <div class="mr-3">
       <Delete size={'small'} />
     </div>

@@ -28,6 +28,7 @@
   export let pinnedIds: Ref<ChunterMessage>[]
   export let savedMessagesIds: Ref<ChunterMessage>[]
   export let savedAttachmentsIds: Ref<Attachment>[]
+  export let isScrollForced = false
 
   let div: HTMLDivElement | undefined
   let autoscroll: boolean = false
@@ -37,7 +38,10 @@
   })
 
   afterUpdate(() => {
-    if (div && autoscroll) div.scrollTo(0, div.scrollHeight)
+    if (div && (autoscroll || isScrollForced)) {
+      div.scrollTo(0, div.scrollHeight)
+      isScrollForced = false
+    }
   })
 
   let messages: WithLookup<Message>[] | undefined

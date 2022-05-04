@@ -73,7 +73,7 @@ export const sortModeToOptionObject = (sortMode: FileBrowserSortMode): SortingQu
 }
 
 const msInDay = 24 * 60 * 60 * 1000
-const getBeginningOfDate = (customDate?: Date) => {
+const getBeginningOfDate = (customDate?: Date): number => {
   if (customDate == null) {
     customDate = new Date()
   }

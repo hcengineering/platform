@@ -36,7 +36,7 @@
 &nbsp;
 {#await getTypeLabel(tx) then typeLabel}
   {#if typeLabel}
-    <Label label={typeLabel}/>
+    <Label label={typeLabel} />
   {/if}
 {/await}
 <Label label={setting.string.IntegrationDisabled} />

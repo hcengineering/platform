@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import { Button, Icon, Label, showPopup, SelectPopup, eventToHTMLElement } from '@anticrm/ui'
   import { ProjectStatus } from '@anticrm/tracker'

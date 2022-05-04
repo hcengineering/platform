@@ -25,7 +25,7 @@
   let resultQuery: DocumentQuery<Category> = {}
 
   function updateResultQuery (search: string): void {
-    resultQuery = (search === '') ? { } : { $search: search }
+    resultQuery = search === '' ? {} : { $search: search }
   }
 
   function showCreateDialog (ev: MouseEvent) {
@@ -39,9 +39,12 @@
     <span class="ac-header__title"><Label label={inventory.string.Categories} /></span>
   </div>
 
-  <SearchEdit bind:value={search} on:change={() => {
-    updateResultQuery(search)
-  }}/>
+  <SearchEdit
+    bind:value={search}
+    on:change={() => {
+      updateResultQuery(search)
+    }}
+  />
   <Button
     label={inventory.string.CategoryCreateLabel}
     icon={IconAdd}

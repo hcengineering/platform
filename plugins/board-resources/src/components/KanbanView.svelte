@@ -21,7 +21,13 @@
   import type { Kanban, SpaceWithStates, State } from '@anticrm/task'
   import task, { calcRank } from '@anticrm/task'
   import { showPopup } from '@anticrm/ui'
-  import { ActionContext, focusStore, ListSelectionProvider, SelectDirection, selectionStore } from '@anticrm/view-resources'
+  import {
+    ActionContext,
+    focusStore,
+    ListSelectionProvider,
+    SelectDirection,
+    selectionStore
+  } from '@anticrm/view-resources'
   import { onMount } from 'svelte'
   import AddCard from './add-card/AddCard.svelte'
   import CardInlineActions from './editor/CardInlineActions.svelte'
@@ -74,13 +80,11 @@
   /* eslint-disable no-undef */
 
   let kanbanUI: KanbanUI
-  const listProvider = new ListSelectionProvider(
-    (offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
-      kanbanUI.select(offset, of, dir)
-    }
-  )
+  const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
+    kanbanUI.select(offset, of, dir)
+  })
   onMount(() => {
-    (document.activeElement as HTMLElement)?.blur()
+    ;(document.activeElement as HTMLElement)?.blur()
   })
 
   const showMenu = async (ev: MouseEvent, object: Doc): Promise<void> => {
@@ -89,17 +93,21 @@
       return
     }
 
-    showPopup(CardInlineActions, { value: object }, {
-      getBoundingClientRect: () => DOMRect.fromRect({ width: 1, height: 1, x: ev.clientX, y: ev.clientY })
-    })
+    showPopup(
+      CardInlineActions,
+      { value: object },
+      {
+        getBoundingClientRect: () => DOMRect.fromRect({ width: 1, height: 1, x: ev.clientX, y: ev.clientY })
+      }
+    )
   }
 </script>
 
 <ActionContext
-    context={{
-      mode: 'browser'
-    }}
-  />
+  context={{
+    mode: 'browser'
+  }}
+/>
 <KanbanUI
   bind:this={kanbanUI}
   {_class}
@@ -136,7 +144,7 @@
   </svelte:fragment>
 
   <svelte:fragment slot="header" let:state>
-    <ListHeader {state}/>
+    <ListHeader {state} />
   </svelte:fragment>
 
   <svelte:fragment slot="afterCard" let:space={targetSpace} let:state={targetState}>

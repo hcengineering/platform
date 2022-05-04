@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
   import type { TabModel } from '../types'
   import Label from './Label.svelte'
@@ -24,16 +23,21 @@
 
 <div class="flex-stretch container">
   {#each model as tab, i}
-    <div class="flex-row-center tab" class:selected={i === selected}
-         on:click={() => { selected = i }}>
-      <Label label={tab.label}/>
+    <div
+      class="flex-row-center tab"
+      class:selected={i === selected}
+      on:click={() => {
+        selected = i
+      }}
+    >
+      <Label label={tab.label} />
     </div>
   {/each}
-  <div class="grow"/>
+  <div class="grow" />
 </div>
 {#each model as tab, i}
   {#if selected === i}
-    <Component is = {tab.component} props={tab.props}/>
+    <Component is={tab.component} props={tab.props} />
   {/if}
 {/each}
 
@@ -53,8 +57,8 @@
       user-select: none;
 
       &.selected {
-        border-top: .125rem solid transparent;
-        border-bottom: .125rem solid var(--theme-caption-color);
+        border-top: 0.125rem solid transparent;
+        border-bottom: 0.125rem solid var(--theme-caption-color);
         color: var(--theme-caption-color);
         cursor: default;
       }

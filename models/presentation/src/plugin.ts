@@ -18,6 +18,4 @@ import { mergeIds } from '@anticrm/platform'
 // Import plugin directly to prevent .svelte components to being exposed to type typescript.
 import presentation, { presentationId } from '@anticrm/presentation/src/plugin'
 
-export default mergeIds(presentationId, presentation, {
-
-})
+export default mergeIds(presentationId, presentation, {})

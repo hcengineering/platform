@@ -16,14 +16,14 @@
 <script lang="ts">
   import activity, { TxViewlet } from '@anticrm/activity'
   import chunter from '@anticrm/chunter'
-  import { Class, Doc, Ref, SortingOrder } from '@anticrm/core'
+  import core, { Doc, SortingOrder } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { Component, Grid, IconActivity, Label, Scroller } from '@anticrm/ui'
   import { ActivityKey, activityKey, DisplayTx, newActivity } from '../activity'
   import TxView from './TxView.svelte'
 
   export let object: Doc
-  export let fullSize: boolean = false
+  export let integrate: boolean = false
   export let showCommenInput: boolean = true
   export let transparent: boolean = false
 
@@ -35,14 +35,15 @@
   const activityQuery = newActivity(client, attrs)
 
   let viewlets: Map<ActivityKey, TxViewlet>
-  let editable: Map<Ref<Class<Doc>>, boolean> = new Map()
+
+  let allViewlets: TxViewlet[] = []
 
   const descriptors = createQuery()
   $: descriptors.query(activity.class.TxViewlet, {}, (result) => {
-    viewlets = new Map(result.map((r) => [activityKey(r.objectClass, r.txClass), r]))
-
-    editable = new Map(result.map(it => [it.objectClass, it.editable ?? false]))
+    allViewlets = result
   })
+
+  $: viewlets = new Map(allViewlets.map((r) => [activityKey(r.objectClass, r.txClass), r]))
 
   $: activityQuery.update(
     object,
@@ -50,12 +51,15 @@
       txes = result
     },
     SortingOrder.Descending,
-    editable
+    new Map(
+      allViewlets
+        .filter((tx) => tx.txClass === core.class.TxCreateDoc)
+        .map((it) => [it.objectClass, it.editable ?? false])
+    )
   )
-
 </script>
 
-{#if fullSize || transparent}
+{#if !integrate || transparent}
   {#if transparent !== undefined && !transparent}
     <div class="ac-header short mirror-tool highlight">
       <div class="ac-header__wrap-title">
@@ -70,10 +74,7 @@
         {#if txes}
           <Grid column={1} rowGap={1.5}>
             {#each txes as tx (tx.tx._id)}
-              <TxView
-                {tx}
-                {viewlets}
-              />
+              <TxView {tx} {viewlets} />
             {/each}
           </Grid>
         {/if}
@@ -86,31 +87,29 @@
     {/if}
   </div>
 {:else}
-  <Scroller autoscroll>
-    <div class="p-10">
-      <slot />
+  <div class="pb-6 bottom-highlight-select">
+    <slot />
+  </div>
+  <div class="flex-row-center h-14 px-3 mt-4 antiTitle">
+    <div class="icon-wrapper">
+      <div class="wrapped-icon icon flex-center"><IconActivity size={'small'} /></div>
+      <span class="wrapped-title"><Label label={activity.string.Activity} /></span>
     </div>
-    <div class="ac-header short mirror-tool">
-      <div class="ac-header__wrap-title">
-        <div class="flex-center icon"><IconActivity size={'small'} /></div>
-        <span class="ac-header__title"><Label label={activity.string.Activity} /></span>
-      </div>
+  </div>
+  {#if showCommenInput}
+    <div class="ref-input">
+      <Component is={chunter.component.CommentInput} props={{ object }} />
     </div>
-    {#if showCommenInput}
-      <div class="ref-input">
-        <Component is={chunter.component.CommentInput} props={{ object }} />
-      </div>
+  {/if}
+  <div class="p-activity">
+    {#if txes}
+      <Grid column={1} rowGap={1.5}>
+        {#each txes as tx}
+          <TxView {tx} {viewlets} />
+        {/each}
+      </Grid>
     {/if}
-    <div class="p-activity">
-      {#if txes}
-        <Grid column={1} rowGap={1.5}>
-          {#each txes as tx}
-            <TxView {tx} {viewlets} />
-          {/each}
-        </Grid>
-      {/if}
-    </div>
-  </Scroller>
+  </div>
 {/if}
 
 <style lang="scss">
@@ -124,11 +123,10 @@
   }
   .ref-input {
     flex-shrink: 0;
-    padding: 1.5rem 2.5rem;
-
+    padding: 1.5rem 0;
   }
   .p-activity {
-    padding: 1.5rem 2.5rem;
+    padding: 1.5rem 0;
   }
 
   :global(.grid .msgactivity-container:last-child::after) {

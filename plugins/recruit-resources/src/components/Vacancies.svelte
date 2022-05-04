@@ -38,12 +38,13 @@
 
   $: resultQuery = search === '' ? {} : { $search: search }
 
-  type ApplicationInfo = { count: number, modifiedOn: number }
+  type ApplicationInfo = { count: number; modifiedOn: number }
   let applications: Map<Ref<Vacancy>, ApplicationInfo> | undefined
 
   const applicantQuery = createQuery()
   $: applicantQuery.query(
-    recruit.class.Applicant, { },
+    recruit.class.Applicant,
+    {},
     (res) => {
       const result = new Map<Ref<Vacancy>, ApplicationInfo>()
 
@@ -55,7 +56,8 @@
       }
 
       applications = result
-    }, {
+    },
+    {
       projection: {
         _id: 1,
         modifiedOn: 1,
@@ -67,8 +69,11 @@
   function showCreateDialog () {
     showPopup(CreateVacancy, { space: recruit.space.CandidatesPublic }, 'top')
   }
-  const applicationSorting = (a:Doc, b:Doc) => ((applications?.get(b._id as Ref<Vacancy>)?.count ?? 0) - (applications?.get(a._id as Ref<Vacancy>)?.count ?? 0)) ?? 0
-  const modifiedSorting = (a:Doc, b:Doc) => ((applications?.get(b._id as Ref<Vacancy>)?.modifiedOn ?? 0) - (applications?.get(a._id as Ref<Vacancy>)?.modifiedOn ?? 0)) ?? 0
+  const applicationSorting = (a: Doc, b: Doc) =>
+    (applications?.get(b._id as Ref<Vacancy>)?.count ?? 0) - (applications?.get(a._id as Ref<Vacancy>)?.count ?? 0) ?? 0
+  const modifiedSorting = (a: Doc, b: Doc) =>
+    (applications?.get(b._id as Ref<Vacancy>)?.modifiedOn ?? 0) -
+      (applications?.get(a._id as Ref<Vacancy>)?.modifiedOn ?? 0) ?? 0
 </script>
 
 <div class="ac-header full">
@@ -84,7 +89,7 @@
   />
   <Button icon={IconAdd} label={recruit.string.VacancyCreateLabel} kind={'primary'} on:click={showCreateDialog} />
 </div>
-<Scroller>
+<Scroller tableFade>
   <Table
     _class={recruit.class.Vacancy}
     config={[

@@ -96,7 +96,7 @@
 <style lang="scss">
   .gridCellOverlay {
     position: relative;
-    padding: 4px;
+    padding: 0.25rem;
   }
 
   .gridCell {
@@ -104,19 +104,17 @@
     height: 100%;
     display: flex;
     flex-direction: column;
-    border-radius: 12px;
+    border-radius: 0.75rem;
     justify-content: space-between;
     overflow: hidden;
-    box-shadow: 0 0 0 1px var(--theme-bg-focused-border);
+    border: 1px solid var(--theme-button-border-hovered);
   }
 
   .cellImagePreview {
     display: flex;
     justify-content: center;
-    height: 160px;
+    height: 10rem;
     overflow: hidden;
-    margin: 0 1.5rem;
-    border-radius: 0.5rem;
     background-color: var(--theme-menu-color);
     cursor: pointer;
   }
@@ -125,7 +123,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 160px;
+    height: 10rem;
   }
 
   .img-fit {
@@ -137,8 +135,9 @@
   .cellInfo {
     display: flex;
     flex-direction: row;
-    padding: 12px;
-    min-height: 36px;
+    border: 1px solid var(--theme-button-border-hovered);
+    padding: 0.75rem;
+    height: 4rem;
     align-items: center;
 
     .eCellInfoData {
@@ -149,6 +148,9 @@
 
     .eCellInfoMenu {
       margin-left: auto;
+      position: absolute;
+      bottom: 1rem;
+      right: 0.5rem;
     }
 
     .eCellInfoFilename {

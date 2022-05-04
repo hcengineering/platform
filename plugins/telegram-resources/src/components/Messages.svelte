@@ -15,7 +15,6 @@
 -->
 <script lang="ts">
   import type { SharedTelegramMessage } from '@anticrm/telegram'
-  import { Grid } from '@anticrm/ui'
   import Message from './Message.svelte'
   import { Ref } from '@anticrm/core'
   import DateView from './Date.svelte'
@@ -26,8 +25,8 @@
 
   function isNewDate (messages: SharedTelegramMessage[], i: number): boolean {
     if (i === 0) return true
-    const current = new Date(messages[i].modifiedOn).toLocaleDateString()
-    const prev = new Date(messages[i - 1].modifiedOn).toLocaleDateString()
+    const current = new Date(messages[i].sendOn).toLocaleDateString()
+    const prev = new Date(messages[i - 1].sendOn).toLocaleDateString()
     return current !== prev
   }
 
@@ -49,21 +48,19 @@
   }
 </script>
 
-<Grid column={1} rowGap={0.3}>
-  {#if messages}
-    {#each messages as message, i (message._id)}
-      {#if isNewDate(messages, i)}
-        <DateView {message} />
-      {/if}
-      <Message
-        {message}
-        {selectable}
-        selected={selected.has(message._id)}
-        showName={needName(messages, i)}
-        on:select={() => {
-          select(message._id)
-        }}
-      />
-    {/each}
-  {/if}
-</Grid>
+{#if messages}
+  {#each messages as message, i (message._id)}
+    {#if isNewDate(messages, i)}
+      <DateView {message} />
+    {/if}
+    <Message
+      {message}
+      {selectable}
+      selected={selected.has(message._id)}
+      showName={needName(messages, i)}
+      on:select={() => {
+        select(message._id)
+      }}
+    />
+  {/each}
+{/if}

@@ -106,7 +106,7 @@
   <div class="spaceSelect">
     {#await getSpace() then}
       {#if currentSpace && _class}
-        <SpaceSelect _class={currentSpace._class} label={_class} placeholder={_class} bind:value={object.space} />
+        <SpaceSelect _class={currentSpace._class} label={_class} bind:value={object.space} />
       {/if}
     {/await}
   </div>

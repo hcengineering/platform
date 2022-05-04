@@ -84,7 +84,7 @@
 
 <Component
   is={tags.component.TagsCategoryBar}
-  props={{ targetClass: recruit.mixin.Candidate, category }}
+  props={{ targetClass: recruit.mixin.Candidate, category, selected: $selectedTagElements, mode: 'item' }}
   on:change={(evt) => updateCategory(evt.detail)}
 />
 
@@ -93,7 +93,7 @@
     mode: 'browser'
   }}
 />
-<Scroller>
+<Scroller tableFade>
   {#await tableDescriptor then descr}
     {#if descr}
       <TableBrowser

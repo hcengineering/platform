@@ -13,152 +13,67 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Asset } from '@anticrm/platform'
   import { createEventDispatcher } from 'svelte'
-  import { AnySvelteComponent } from '../types'
-  import Button from './Button.svelte'
-  import Icon from './Icon.svelte'
-  import IconClose from './icons/Close.svelte'
+  import { Button, IconClose, IconDetails } from '..'
 
-  export let title: string | undefined = undefined
-  export let subtitle: string | undefined = undefined
-  export let icon: Asset | AnySvelteComponent | undefined = undefined
-  export let rightSection: boolean = false
-  export let reverseCommands: boolean = false
-  export let showHeader: boolean = true
   export let innerWidth: number = 0
   export let panelWidth: number = 0
-  export let isSubtitle: boolean = true
-  export let isProperties: boolean = true
+  export let isHeader: boolean = true
+  export let isAside: boolean = true
 
   const dispatch = createEventDispatcher()
+
+  let asideFloat: boolean = false
+  let asideShown: boolean = false
+  let docWidth: number
+  $: if (docWidth < 1024 && !asideFloat) asideFloat = true
+  $: if (docWidth >= 1024 && asideFloat) {
+    asideFloat = false
+    asideShown = false
+  }
 </script>
 
-<div class="antiPanel antiComponent" bind:clientWidth={panelWidth}>
-  <div class='panel-content-container'>
-    {#if showHeader}
-      <div class="ac-header short mirror divide highlight">
-        <div class="buttons-group">
-          <Button
-            icon={IconClose}
-            size={'medium'}
-            kind={'transparent'}
-            on:click={() => {
-              dispatch('close')
-            }}
-          />
-          {#if $$slots['navigate-actions']}
-            <div class="buttons-group xsmall-gap">
-              <slot name="navigate-actions" />
-            </div>
-          {/if}
-        </div>
-        <div class="ml-4 ac-header__wrap-title flex-grow">
-          {#if icon}
-            <div class="ac-header__icon">
-              <Icon {icon} size={'large'} />
-            </div>
-          {/if}
-          <div class="ac-header__wrap-description">
-            {#if title}<span class="ac-header__title">{title}</span>{/if}
-            {#if subtitle}<span class="ac-header__description">{subtitle}</span>{/if}
-          </div>
-        </div>
-        <div class="buttons-group xsmall-gap mr-4">
-          <slot name="commands" />
-          <slot name="actions" />
-        </div>
-      </div>
-    {:else}
-      <div class="ac-header short mirror divide highlight">
-        <div class="buttons-group">
-          <Button
-            icon={IconClose}
-            size={'medium'}
-            kind={'transparent'}
-            on:click={() => {
-              dispatch('close')
-            }}
-          />
-          {#if $$slots['navigate-actions']}
-            <div class="buttons-group xsmall-gap">
-              <slot name="navigate-actions" />
-            </div>
-          {/if}
-        </div>
-        {#if $$slots['custom-title']}
-          <div class="ml-4 flex-row-center flex-grow">
-            <slot name="custom-title" />
-          </div>
-        {/if}
-      </div>
-    {/if}
-    <div class="main-content" class:withProperties={$$slots.properties} bind:clientWidth={innerWidth}>
-      {#if $$slots.subtitle && $$slots.properties && isSubtitle}
-        <div class="flex-col flex-grow clear-mins">
-          <div class="ac-subtitle">
-            <div class="ac-subtitle-content">
-              <slot name="subtitle" />
-            </div>
-          </div>
-          <div class="flex-col flex-grow clear-mins">
-            <slot />
-          </div>
-        </div>
-      {:else}
-        <div class="flex-col flex-grow clear-mins">
-          <slot />
-        </div>
-      {/if}
-      {#if rightSection}
-        <slot name="rightSection" />
-      {/if}
-      {#if $$slots.properties && isProperties}
-        <div class="properties-container">
-          <slot name="properties" />
-        </div>
+<svelte:window bind:innerWidth={docWidth} />
+<div class="popupPanel" bind:clientWidth={panelWidth}>
+  <div class="popupPanel-title">
+    <Button
+      icon={IconClose}
+      kind={'transparent'}
+      size={'medium'}
+      on:click={() => {
+        dispatch('close')
+      }}
+    />
+    <div class="popupPanel-title__content"><slot name="title" /></div>
+    <div class="buttons-group xsmall-gap">
+      <slot name="utils" />
+      {#if asideFloat}
+        {#if $$slots.utils}<div class="buttons-divider" />{/if}
+        <Button
+          icon={IconDetails}
+          kind={'transparent'}
+          size={'medium'}
+          selected={asideShown}
+          on:click={() => {
+            asideShown = !asideShown
+          }}
+        />
       {/if}
     </div>
   </div>
+  <div class="popupPanel-body" class:asideShown>
+    <div class="popupPanel-body__main" bind:clientWidth={innerWidth}>
+      {#if $$slots.header && isHeader}
+        <div class="popupPanel-body__main-header bottom-divider">
+          <slot name="header" />
+        </div>
+      {/if}
+      <slot />
+    </div>
+    {#if $$slots.aside && isAside}
+      <div class="popupPanel-body__aside" class:float={asideFloat} class:shown={asideShown}>
+        <slot name="aside" />
+      </div>
+    {/if}
+  </div>
 </div>
-
-<style lang="scss"> 
-  .panel-content-container {
-    display: flex;
-    flex-grow: 1;
-    flex-direction: column;
-  }
-  .main-content {
-    display: flex;
-    flex-direction: column;
-    flex-wrap: nowrap;
-    min-width: 0;
-    min-height: 0;
-    flex-grow: 1;
-    // height: 100%;
-
-    &.withProperties {
-      flex-direction: row;
-    }
-
-    .properties-container {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      flex-shrink: 0;
-      min-width: 20rem;
-      width: 20rem;
-      // background-color: var(--board-card-bg-color);
-
-      &::before {
-        position: absolute;
-        content: '';
-        top: 1.5rem;
-        bottom: 1.5rem;
-        left: 0;
-        width: 1px;
-        background-color: var(--divider-color);
-      }
-    }
-  }
-</style>

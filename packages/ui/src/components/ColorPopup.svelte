@@ -21,12 +21,16 @@
   export let placeholder: IntlString | undefined = undefined
   export let placeholderParam: any | undefined = undefined
   export let searchable: boolean = false
-  export let value: Array<{id: number | string, color: number, label: string}>
+  export let value: Array<{ id: number | string; color: number; label: string }>
 
   let search: string = ''
 
   let phTraslate: string = ''
-  $: if (placeholder) translate(placeholder, placeholderParam ?? {}).then(res => { phTraslate = res })
+  $: if (placeholder) {
+    translate(placeholder, placeholderParam ?? {}).then((res) => {
+      phTraslate = res
+    })
+  }
 
   const dispatch = createEventDispatcher()
 </script>
@@ -34,13 +38,18 @@
 <div class="selectPopup">
   {#if searchable}
     <div class="header">
-      <input type='text' bind:value={search} placeholder={phTraslate} on:input={(ev) => { }} on:change/>
+      <input type="text" bind:value={search} placeholder={phTraslate} on:input={(ev) => {}} on:change />
     </div>
   {/if}
   <div class="scroll">
     <div class="box">
-      {#each value.filter(el => el.label.toLowerCase().includes(search.toLowerCase())) as item}
-        <button class="menu-item" on:click={() => { dispatch('close', item) }}>
+      {#each value.filter((el) => el.label.toLowerCase().includes(search.toLowerCase())) as item}
+        <button
+          class="menu-item"
+          on:click={() => {
+            dispatch('close', item)
+          }}
+        >
           <div class="color" style="background-color: {getPlatformColor(item.color)}" />
           <span class="label">{item.label}</span>
         </button>
