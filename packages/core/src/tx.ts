@@ -111,6 +111,13 @@ export interface Position<X extends PropertyType> {
 /**
  * @public
  */
+export interface PullArray<X extends PropertyType> {
+  $in: X[]
+}
+
+/**
+ * @public
+ */
 export interface MoveDescriptor<X extends PropertyType> {
   $value: X
   $position: number

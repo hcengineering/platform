@@ -47,7 +47,8 @@ import {
   isArchived,
   isUnarchived,
   archiveCard,
-  unarchiveCard
+  unarchiveCard,
+  updateCardMembers
 } from './utils/CardUtils'
 import { getPopupAlignment } from './utils/PopupUtils'
 
@@ -84,7 +85,7 @@ async function showEditMembersPopup (object: Card, client: Client, e?: Event): P
     getPopupAlignment(e),
     undefined,
     (result: Array<Ref<Employee>>) => {
-      void client.update(object, { members: result })
+      updateCardMembers(object, client, result)
     }
   )
 }

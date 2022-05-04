@@ -26,7 +26,7 @@
   import CardInlineActions from './editor/CardInlineActions.svelte'
   import CardLabels from './editor/CardLabels.svelte'
   import DatePresenter from './presenters/DatePresenter.svelte'
-  import { hasDate, openCardPanel, updateCard } from '../utils/CardUtils'
+  import { hasDate, openCardPanel, updateCard, updateCardMembers } from '../utils/CardUtils'
   import { getElementPopupAlignment } from '../utils/PopupUtils'
 
   export let object: WithLookup<Card>
@@ -61,7 +61,7 @@
   }
 
   function updateMembers (e: CustomEvent<Ref<Employee>[]>) {
-    client.update(object, { members: e.detail })
+    updateCardMembers(object, client, e.detail)
   }
 
   function updateDate (e: CustomEvent<CardDate>) {

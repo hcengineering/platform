@@ -15,7 +15,7 @@
 //
 
 import type { Doc, PropertyType } from './classes'
-import type { Position } from './tx'
+import type { Position, PullArray } from './tx'
 
 /**
  * @internal
@@ -43,7 +43,12 @@ function $pull (document: Doc, keyval: Record<string, PropertyType>): void {
   const doc = document as any
   for (const key in keyval) {
     const arr = doc[key] as Array<any>
-    doc[key] = arr.filter((val) => val !== keyval[key])
+    if (typeof keyval[key] === 'object') {
+      const { $in } = keyval[key] as PullArray<PropertyType>
+      doc[key] = arr.filter((val) => !$in.includes(val))
+    } else {
+      doc[key] = arr.filter((val) => val !== keyval[key])
+    }
   }
 }
 

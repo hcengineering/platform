@@ -22,7 +22,7 @@
 
   import board from '../../plugin'
   import { getCardActions } from '../../utils/CardActionUtils'
-  import { hasDate } from '../../utils/CardUtils'
+  import { hasDate, updateCardMembers } from '../../utils/CardUtils'
   import DatePresenter from '../presenters/DatePresenter.svelte'
   import MemberPresenter from '../presenters/MemberPresenter.svelte'
   import CardLabels from './CardLabels.svelte'
@@ -49,7 +49,7 @@
           title: board.string.RemoveFromCard,
           handler: () => {
             const newMembers = membersIds.filter((m) => m !== member._id)
-            client.update(value, { members: newMembers })
+            updateCardMembers(value, client, newMembers)
           }
         }
       ]

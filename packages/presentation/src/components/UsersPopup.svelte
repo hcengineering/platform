@@ -63,8 +63,7 @@
     return false
   }
   const checkSelected = (person: Person): void => {
-    if (isSelected(person)) selectedUsers = selectedUsers.filter((p) => p !== person._id)
-    else selectedUsers.push(person._id)
+    selectedUsers = isSelected(person) ? selectedUsers.filter((p) => p !== person._id) : [...selectedUsers, person._id]
     objects = objects
     dispatch('update', selectedUsers)
   }
