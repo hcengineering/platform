@@ -14,7 +14,7 @@
 //
 
 // To help typescript locate view plugin properly
-import type { Board, Card, CardAction, CardChecklist, CardChecklistItem, CardDate, CardLabel, MenuPage } from '@anticrm/board'
+import type { Board, Card, CardAction, CardDate, CardLabel, MenuPage } from '@anticrm/board'
 import type { Employee } from '@anticrm/contact'
 import { TxOperations as Client, Doc, DOMAIN_MODEL, FindOptions, IndexKind, Ref, Type, Timestamp, Markup } from '@anticrm/core'
 import {
@@ -71,12 +71,6 @@ export class TCardLabel extends TAttachedDoc implements CardLabel {
   isHidden?: boolean
 }
 
-@Model(board.class.CardChecklist, core.class.Obj, DOMAIN_MODEL)
-@UX(board.string.Checklist)
-export class TCardChecklist extends TObj implements CardChecklist {
-  items!: CardChecklistItem[]
-}
-
 @Model(board.class.Card, task.class.Task)
 @UX(board.string.Card, board.icon.Card, undefined, 'title')
 export class TCard extends TTask implements Card {
@@ -112,9 +106,6 @@ export class TCard extends TTask implements Card {
 
   @Prop(ArrOf(TypeRef(contact.class.Employee)), board.string.Members)
   members?: Ref<Employee>[]
-
-  @Prop(Collection(board.class.CardChecklist), board.string.Checklist)
-  checklists!: CardChecklist[]
 }
 
 @Model(board.class.CardAction, core.class.Doc, DOMAIN_MODEL)

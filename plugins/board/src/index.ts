@@ -59,23 +59,6 @@ export interface CardDate extends Obj {
 /**
  * @public
  */
-export interface CardChecklistItem extends Obj {
-  assignee?: Ref<Employee>
-  dueDate?: Timestamp
-  isChecked: boolean
-  name: Markup
-}
-
-/**
- * @public
- */
-export interface CardChecklist extends Obj {
-  items: CardChecklistItem[]
-}
-
-/**
- * @public
- */
 export interface Card extends Task {
   title: string
 
@@ -95,7 +78,6 @@ export interface Card extends Task {
 
   comments?: number
   attachments?: number
-  checklists: CardChecklist[]
 }
 /**
  * @public
@@ -139,8 +121,6 @@ const boards = plugin(boardId, {
     CardAction: '' as Ref<Class<CardAction>>,
     CardDate: '' as Ref<Class<CardDate>>,
     CardLabel: '' as Ref<Class<CardLabel>>,
-    CardChecklist: '' as Ref<Class<CardChecklist>>,
-    CardChecklistItem: '' as Ref<Class<CardChecklistItem>>,
     MenuPage: '' as Ref<Class<MenuPage>>
   },
   icon: {

@@ -79,36 +79,13 @@ async function createDefaults (tx: TxOperations): Promise<void> {
 async function migrateLabels (client: MigrationClient): Promise<void> {
   const cards = await client.find(DOMAIN_TASK, { _class: board.class.Card, labels: { $exists: false, $in: [null] } })
   for (const card of cards) {
-    await client.update(
-      DOMAIN_TASK,
-      {
-        _id: card._id
-      },
-      {
-        labels: []
-      }
-    )
-  }
-}
-
-async function migrateChecklists (client: MigrationClient): Promise<void> {
-  const cards = await client.find(DOMAIN_TASK, { _class: board.class.Card, checklists: { $exists: false, $in: [null] } })
-  for (const card of cards) {
-    await client.update(
-      DOMAIN_TASK,
-      {
-        _id: card._id
-      },
-      {
-        checklists: []
-      }
-    )
+    await client.update(DOMAIN_TASK, { _id: card._id }, { labels: [] })
   }
 }
 
 export const boardOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
-    await Promise.all([migrateLabels(client), migrateChecklists(client)])
+    await Promise.all([migrateLabels(client)])
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const ops = new TxOperations(client, core.account.System)

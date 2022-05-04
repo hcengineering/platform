@@ -17,6 +17,7 @@ import { Class, Doc, Ref, Space, TxOperations } from '@anticrm/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
 import core from '@anticrm/model-core'
 import { KanbanTemplate, StateTemplate, DoneStateTemplate, genRanks, createKanban } from '@anticrm/task'
+import { DOMAIN_TASK } from '.'
 import task from './plugin'
 
 /**
@@ -176,8 +177,22 @@ async function createDefaults (tx: TxOperations): Promise<void> {
   await createDefaultKanban(tx)
 }
 
+async function migrateTodoItems (client: MigrationClient): Promise<void> {
+  const assigneeTodos = await client.find(DOMAIN_TASK, { _class: task.class.TodoItem, assignee: { $exists: false } })
+  for (const todo of assigneeTodos) {
+    await client.update(DOMAIN_TASK, { _id: todo._id }, { assignee: null })
+  }
+
+  const dueToTodos = await client.find(DOMAIN_TASK, { _class: task.class.TodoItem, dueTo: { $exists: false } })
+  for (const todo of dueToTodos) {
+    await client.update(DOMAIN_TASK, { _id: todo._id }, { dueTo: null })
+  }
+}
+
 export const taskOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {},
+  async migrate (client: MigrationClient): Promise<void> {
+    await Promise.all([migrateTodoItems(client)])
+  },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)
     await createDefaults(tx)

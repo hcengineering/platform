@@ -123,15 +123,21 @@ export class TTask extends TAttachedDoc implements Task {
 @Model(task.class.TodoItem, core.class.AttachedDoc, DOMAIN_TASK)
 @UX(task.string.Todo)
 export class TTodoItem extends TAttachedDoc implements TodoItem {
-  @Prop(TypeString(), task.string.TodoName, task.icon.Task)
+  @Prop(TypeMarkup(), task.string.TodoName, task.icon.Task)
   @Index(IndexKind.FullText)
   name!: string
+
+  @Prop(TypeRef(contact.class.Employee), task.string.TaskAssignee)
+  assignee!: Ref<Employee> | null
 
   @Prop(TypeBoolean(), task.string.TaskDone)
   done!: boolean
 
   @Prop(TypeDate(), task.string.TaskDueTo)
-  dueTo?: Timestamp
+  dueTo!: Timestamp | null
+
+  @Prop(Collection(task.class.TodoItem), task.string.Todos)
+  items!: number
 }
 
 @Model(task.class.SpaceWithStates, core.class.Space)
