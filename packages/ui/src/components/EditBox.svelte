@@ -23,8 +23,8 @@
 
   export let label: IntlString | undefined = undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
-  export let maxWidth: string | undefined
-  export let value: string | number | undefined
+  export let maxWidth: string | undefined = undefined
+  export let value: string | number | undefined = undefined
   export let placeholder: IntlString = plugin.string.EditBoxPlaceholder
   export let placeholderParam: any | undefined = undefined
   export let format: 'text' | 'password' | 'number' = 'text'
@@ -90,7 +90,7 @@
         placeholder={phTraslate}
         {style}
         on:input={(ev) => ev.target && computeSize(ev.target)}
-        on:change
+        on:change={()=> dispatch('change', value)}
       />
     {:else if format === 'number'}
       <input
@@ -100,7 +100,7 @@
         placeholder={phTraslate}
         {style}
         on:input={(ev) => ev.target && computeSize(ev.target)}
-        on:change
+        on:change={()=> dispatch('change', value)}
       />
     {:else}
       <input
@@ -110,7 +110,7 @@
         placeholder={phTraslate}
         {style}
         on:input={(ev) => ev.target && computeSize(ev.target)}
-        on:change
+        on:change={()=> dispatch('change', value)}
       />
     {/if}
   </div>

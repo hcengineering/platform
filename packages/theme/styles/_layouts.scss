@@ -185,6 +185,7 @@ p:last-child { margin-block-end: 0; }
 .justify-end { justify-content: flex-end; }
 .justify-center { justify-content: center; }
 .items-baseline { align-items: baseline; }
+.items-center { align-items: center; }
 
 .flex-gap-3 { gap: .75rem; }
 .flex-gap-2 { gap: .5rem; }
@@ -526,6 +527,7 @@ a.no-line {
 .text-lg { font-size: 1.125rem; }
 .font-normal { font-weight: 400; }
 .font-medium { font-weight: 500; }
+.font-semi-bold { font-weight: 600; }
 .fs-bold { font-weight: 500; }
 .uppercase { text-transform: uppercase; }
 .text-left { text-align: left; }
@@ -613,6 +615,7 @@ a.no-line {
 .background-highlight-red { background-color: var(--highlight-red); }
 .background-button-bg-color { background-color: var(--button-bg-color); }
 .background-button-bg-enabled { background-color: var(--theme-button-bg-enabled); }
+.background-button-noborder-bg-hover { background-color: var(--noborder-bg-hover); }
 .background-menu-divider { background-color: var(--theme-menu-divider); }
 .background-card-divider { background-color: var(--theme-card-divider); }
 .background-primary-color { background-color: var(--primary-button-enabled); }

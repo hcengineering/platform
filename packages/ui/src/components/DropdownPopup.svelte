@@ -49,47 +49,8 @@
   onMount(() => {
     if (searchInput) searchInput.focus()
   })
-</script>
 
-<div class="selectPopup">
-  <div class="header">
-    <input
-      bind:this={searchInput}
-      type="text"
-      bind:value={search}
-      placeholder={phTraslate}
-      on:input={(ev) => {}}
-      on:change
-    />
-  </div>
-  <div class="scroll">
-    <div class="box">
-      {#each items.filter((x) => x.label.toLowerCase().includes(search.toLowerCase())) as item, i}
-        <!-- svelte-ignore a11y-mouse-events-have-key-events -->
-        <button
-          bind:this={btns[i]}
-          class="menu-item flex-between"
-          on:mouseover={(ev) => ev.currentTarget.focus()}
-          on:keydown={(ev) => keyDown(ev, i)}
-          on:click={() => {
-            dispatch('close', item)
-          }}
-        >
-          <div class="flex-center img" class:image={item.image}>
-            {#if item.image}
-              <img src={item.image} alt={item.label} />
-            {:else if typeof icon === 'string'}
-              <Icon {icon} size={'small'} />
-            {:else}
-              <svelte:component this={icon} size={'small'} />
-            {/if}
-          </div>
-          <div class="flex-grow caption-color">{item.label}</div>
-        </button>
-      {/each}
-    </div>
-  </div>
-</div>
+</script>
 
 <style lang="scss">
   .img {
@@ -109,4 +70,48 @@
       max-width: fit-content;
     }
   }
+
 </style>
+
+<div class="selectPopup">
+  <div class="header">
+    <input
+      bind:this={searchInput}
+      type="text"
+      bind:value={search}
+      placeholder={phTraslate}
+      on:input={(ev) => {}}
+      on:change />
+  </div>
+  <div class="scroll">
+    <div class="box">
+      {#each items.filter((x) => x.label.toLowerCase().includes(search.toLowerCase())) as item, i}
+        <!-- svelte-ignore a11y-mouse-events-have-key-events -->
+        <button
+          bind:this={btns[i]}
+          class="flex-between menu-item"
+          disabled={item.isSelectable === false}
+          on:mouseover={(ev) => ev.currentTarget.focus()}
+          on:keydown={(ev) => keyDown(ev, i)}
+          on:click={() => {
+            if (item.isSelectable ?? true) {
+              dispatch('close', item)
+            }
+          }}>
+          {#if item.image || icon}
+            <div class="flex-center img" class:image={item.image}>
+              {#if item.image}
+                <img src={item.image} alt={item.label} />
+              {:else if typeof icon === 'string'}
+                <Icon {icon} size={'small'} />
+              {:else}
+                <svelte:component this={icon} size={'small'} />
+              {/if}
+            </div>
+          {/if}
+          <div class="flex-grow caption-color font-{item.fontWeight} pl-{item.paddingLeft}">{item.label}</div>
+        </button>
+      {/each}
+    </div>
+  </div>
+</div>

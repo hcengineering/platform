@@ -30,6 +30,7 @@
   import { updateCard } from '../utils/CardUtils'
   import CardActions from './editor/CardActions.svelte'
   import CardAttachments from './editor/CardAttachments.svelte'
+  import CardChecklist from './editor/CardChecklist.svelte'
   import CardDetails from './editor/CardDetails.svelte'
 
   export let _id: Ref<Card>
@@ -42,6 +43,17 @@
   let object: Card | undefined
   let state: State | undefined
   let handleMove: (e: Event) => void
+  let checklists: TodoItem[] = []
+  
+  async function fetchChecklists () {
+      checklists = await client.findAll(task.class.TodoItem, { space: object.space, attachedTo: object._id })
+  }
+
+  function change (field: string, value: any) {
+    if (object) {
+      updateCard(client, object, field, value)
+    }
+  }
 
   $: cardQuery.query(_class, { _id }, async (result) => {
     object = result[0]
@@ -51,6 +63,8 @@
     stateQuery.query(task.class.State, { _id: object.state }, async (result) => {
       state = result[0]
     })
+
+  $: object?.todoItems && object.todoItems > 0 && fetchChecklists()
 
   getCardActions(client, { _id: board.cardAction.Move }).then(async (result) => {
     if (result[0]?.handler) {
@@ -62,12 +76,6 @@
       }
     }
   })
-
-  function change (field: string, value: any) {
-    if (object) {
-      updateCard(client, object, field, value)
-    }
-  }
 
   onMount(() => {
     dispatch('open', { ignoreKeys: ['comments', 'number', 'title'] })
@@ -132,8 +140,9 @@
           </div>
         </div>
         <CardAttachments value={object} />
-        <!-- TODO checklists -->
-        <!-- <CardActivity bind:value={object} /> -->
+        {#each checklists as checklist }
+          <CardChecklist value={checklist} />
+        {/each}
       </div>
     </div>
 
