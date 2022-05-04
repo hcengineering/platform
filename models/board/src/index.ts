@@ -16,7 +16,17 @@
 // To help typescript locate view plugin properly
 import type { Board, Card, CardAction, CardDate, CardLabel, MenuPage } from '@anticrm/board'
 import type { Employee } from '@anticrm/contact'
-import { TxOperations as Client, Doc, DOMAIN_MODEL, FindOptions, IndexKind, Ref, Type, Timestamp, Markup } from '@anticrm/core'
+import {
+  TxOperations as Client,
+  Doc,
+  DOMAIN_MODEL,
+  FindOptions,
+  IndexKind,
+  Ref,
+  Type,
+  Timestamp,
+  Markup
+} from '@anticrm/core'
 import {
   ArrOf,
   Builder,
