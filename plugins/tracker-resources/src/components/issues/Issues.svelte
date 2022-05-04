@@ -351,7 +351,7 @@
         itemsConfig={[
           { key: '', presenter: tracker.component.PriorityPresenter, props: { currentSpace } },
           { key: '', presenter: tracker.component.IssuePresenter, props: { currentTeam } },
-          { key: '', presenter: tracker.component.StatusPresenter, props: { currentSpace, statuses } },
+          { key: '', presenter: tracker.component.StatusEditor, props: { currentSpace, statuses } },
           { key: '', presenter: tracker.component.TitlePresenter, props: { shouldUseMargin: true } },
           { key: '', presenter: tracker.component.DueDatePresenter, props: { currentSpace } },
           { key: 'modifiedOn', presenter: tracker.component.ModificationDatePresenter },

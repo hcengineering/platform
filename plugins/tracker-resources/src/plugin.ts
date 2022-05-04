@@ -137,6 +137,7 @@ export default mergeIds(trackerId, tracker, {
     ModificationDatePresenter: '' as AnyComponent,
     PriorityPresenter: '' as AnyComponent,
     StatusPresenter: '' as AnyComponent,
+    StatusEditor: '' as AnyComponent,
     AssigneePresenter: '' as AnyComponent,
     DueDatePresenter: '' as AnyComponent,
     EditIssue: '' as AnyComponent,
