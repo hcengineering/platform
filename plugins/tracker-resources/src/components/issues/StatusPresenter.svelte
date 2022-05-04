@@ -13,56 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, WithLookup } from '@anticrm/core'
-  import { Issue, IssueStatus, Team } from '@anticrm/tracker'
-  import { getClient } from '@anticrm/presentation'
-  import { Tooltip } from '@anticrm/ui'
-  import tracker from '../../plugin'
-  import StatusSelector from '../StatusSelector.svelte'
+  import { IssueStatus } from '@anticrm/tracker'
 
-  export let value: Issue
-  export let statuses: WithLookup<IssueStatus>[]
-  export let currentSpace: Ref<Team> | undefined = undefined
-  export let isEditable: boolean = true
-  export let shouldShowLabel: boolean = false
-
-  const client = getClient()
-
-  const handleStatusChanged = async (newStatus: Ref<IssueStatus> | undefined) => {
-    if (!isEditable || newStatus === undefined) {
-      return
-    }
-
-    const currentIssue = await client.findOne(tracker.class.Issue, { space: currentSpace, _id: value._id })
-
-    if (currentIssue === undefined) {
-      return
-    }
-
-    await client.update(currentIssue, { status: newStatus })
-  }
+  export let value: IssueStatus | undefined
 </script>
 
 {#if value}
-  {#if isEditable}
-    <Tooltip direction={'bottom'} label={tracker.string.SetStatus}>
-      <StatusSelector
-        kind={'icon'}
-        {isEditable}
-        {shouldShowLabel}
-        {statuses}
-        selectedStatusId={value.status}
-        onStatusChange={handleStatusChanged}
-      />
-    </Tooltip>
-  {:else}
-    <StatusSelector
-      kind={'icon'}
-      {isEditable}
-      {shouldShowLabel}
-      {statuses}
-      selectedStatusId={value.status}
-      onStatusChange={handleStatusChanged}
-    />
-  {/if}
+  <span class="overflow-label">
+    {value.name}
+  </span>
 {/if}

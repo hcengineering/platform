@@ -25,7 +25,7 @@
   import tracker from '../../plugin'
   import IssuePresenter from './IssuePresenter.svelte'
   import PriorityPresenter from './PriorityPresenter.svelte'
-  import StatusPresenter from './StatusPresenter.svelte'
+  import StatusEditor from './StatusEditor.svelte'
 
   export let _id: Ref<Issue>
   export let _class: Ref<Class<Issue>>
@@ -167,7 +167,7 @@
             <span class="label w-24">
               <Label label={tracker.string.Status} />
             </span>
-            <StatusPresenter value={issue} statuses={issueStatuses} currentSpace={currentTeam._id} shouldShowLabel />
+            <StatusEditor value={issue} statuses={issueStatuses} currentSpace={currentTeam._id} shouldShowLabel />
           </div>
 
           <div class="flex-row-center mb-4">
