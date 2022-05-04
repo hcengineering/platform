@@ -46,7 +46,7 @@
       const typeClass = hierarchy.getClass(typeClassId)
       const editorMixin = hierarchy.as(typeClass, view.mixin.AttributeEditor)
       editor = getResource(editorMixin.editor).catch((cause) => {
-        console.error('failed to find editor for', _class, attribute, typeClassId)
+        console.error(`failed to find editor for ${_class} ${attribute} ${typeClassId} cause: ${cause}`)
       })
     }
   }

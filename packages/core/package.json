@@ -28,7 +28,6 @@
     "typescript": "^4.3.5"
   },
   "dependencies": {
-    "@anticrm/platform": "~0.6.6",
-    "just-clone": "^3.2.1"
+    "@anticrm/platform": "~0.6.6"
   }
 }

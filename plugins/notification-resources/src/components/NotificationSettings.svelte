@@ -18,7 +18,6 @@
   import presentation, { createQuery, getClient } from '@anticrm/presentation'
   import { Button, Grid, Icon, Label, ToggleWithLabel } from '@anticrm/ui'
   import notification from '../plugin'
-  import justClone from 'just-clone'
 
   const accountId = getCurrentAccount()._id
   const typeQuery = createQuery()
@@ -42,7 +41,7 @@
   providersQuery.query(notification.class.NotificationProvider, {}, (res) => (providers = res))
   settingsQuery.query(notification.class.NotificationSetting, { space }, (res) => {
     settings = convertToMap(res)
-    oldSettings = convertToMap(justClone(res))
+    oldSettings = convertToMap(client.getHierarchy().clone(res))
   })
 
   function convertToMap (

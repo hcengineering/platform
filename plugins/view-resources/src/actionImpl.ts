@@ -160,7 +160,7 @@ function ShowPopup (
     props?: Record<string, any>
   }
 ): void {
-  const docs = Array.isArray(doc) ? doc : [doc]
+  const docs = Array.isArray(doc) ? doc : doc !== undefined ? [doc] : []
   evt.preventDefault()
   let cprops = {
     ...(props?.props ?? {})
