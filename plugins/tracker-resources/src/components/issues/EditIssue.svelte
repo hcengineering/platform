@@ -67,13 +67,13 @@
 
   $: issueLabel = currentTeam && issue && `${currentTeam.identifier}-${issue.number}`
 
-  function change(field: string, value: any) {
+  function change (field: string, value: any) {
     if (issue !== undefined) {
       client.update(issue, { [field]: value })
     }
   }
 
-  function copy(text: string): void {
+  function copy (text: string): void {
     navigator.clipboard.writeText(text)
   }
 
