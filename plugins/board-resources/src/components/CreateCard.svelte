@@ -64,6 +64,7 @@
       assignee: null,
       description: '',
       members: [],
+      labels: [],
       location: ''
     }
 

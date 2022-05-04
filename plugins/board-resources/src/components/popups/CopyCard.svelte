@@ -52,7 +52,7 @@
       description: '',
       members: [],
       location: '',
-      labels
+      labels: labels ?? []
     }
 
     await client.addCollection(

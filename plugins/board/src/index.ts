@@ -69,7 +69,7 @@ export interface Card extends Task {
 
   members?: Ref<Employee>[]
 
-  labels?: Ref<CardLabel>[]
+  labels: Ref<CardLabel>[]
 
   location?: string
 
