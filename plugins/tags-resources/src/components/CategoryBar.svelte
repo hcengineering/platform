@@ -41,15 +41,43 @@
   let categoryKeys: Ref<TagCategory>[] = []
 
   const elementsQuery = createQuery()
-  $: elementsQuery.query(
-    tags.class.TagElement,
-    { targetClass },
+  $: if ((tagElements?.size ?? 0) > 0) {
+    elementsQuery.query(
+      tags.class.TagElement,
+      { targetClass },
+      (res) => {
+        elements = res
+      },
+      {
+        sort: {
+          title: SortingOrder.Ascending
+        }
+      }
+    )
+  }
+
+  type TagElementInfo = { count: number; modifiedOn: number }
+  let tagElements: Map<Ref<TagElement>, TagElementInfo> | undefined = undefined
+  const refQuery = createQuery()
+  $: refQuery.query(
+    tags.class.TagReference,
+    {},
     (res) => {
-      elements = res
+      const result = new Map<Ref<TagElement>, TagElementInfo>()
+
+      for (const d of res) {
+        const v = result.get(d.tag) ?? { count: 0, modifiedOn: 0 }
+        v.count++
+        v.modifiedOn = Math.max(v.modifiedOn, d.modifiedOn)
+        result.set(d.tag, v)
+      }
+
+      tagElements = result
     },
     {
-      sort: {
-        title: SortingOrder.Ascending
+      projection: {
+        _id: 1,
+        tag: 1
       }
     }
   )
