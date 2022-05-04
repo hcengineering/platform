@@ -32,6 +32,10 @@
     max-height: calc(100vh - 2rem);
     height: auto;
   }
+  &.width-40 {
+    max-width: 40rem !important;
+    width: 40rem !important;
+  }
   .header {
     border-bottom: 1px solid var(--popup-divider);
 

@@ -13,13 +13,14 @@
 // limitations under the License.
 //
 
-import WorkbenchApp from './components/WorkbenchApp.svelte'
-import ApplicationPresenter from './components/ApplicationPresenter.svelte'
-import { Resources } from '@anticrm/platform'
-import Archive from './components/Archive.svelte'
 import { Space } from '@anticrm/core'
+import { Resources } from '@anticrm/platform'
+import ApplicationPresenter from './components/ApplicationPresenter.svelte'
+import Archive from './components/Archive.svelte'
 import SpacePanel from './components/navigator/SpacePanel.svelte'
 import SpaceBrowser from './components/SpaceBrowser.svelte'
+import WorkbenchApp from './components/WorkbenchApp.svelte'
+import { doNavigate } from './utils'
 
 function hasArchiveSpaces (spaces: Space[]): boolean {
   return spaces.find((sp) => sp.archived) !== undefined
@@ -35,5 +36,8 @@ export default async (): Promise<Resources> => ({
   },
   function: {
     HasArchiveSpaces: hasArchiveSpaces
+  },
+  actionImpl: {
+    Navigate: doNavigate
   }
 })

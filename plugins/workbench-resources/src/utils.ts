@@ -14,11 +14,13 @@
 // limitations under the License.
 //
 
-import type { Class, Client, Obj, Ref, Space } from '@anticrm/core'
+import type { Class, Client, Doc, Obj, Ref, Space } from '@anticrm/core'
 import type { Asset } from '@anticrm/platform'
 import { getResource } from '@anticrm/platform'
-import { NavigatorModel } from '@anticrm/workbench'
+import { Application, NavigatorModel } from '@anticrm/workbench'
 import view from '@anticrm/view'
+import { closePanel, getCurrentLocation, navigate } from '@anticrm/ui'
+import { getClient } from '@anticrm/presentation'
 
 export function classIcon (client: Client, _class: Ref<Class<Obj>>): Asset | undefined {
   return client.getHierarchy().getClass(_class).icon
@@ -42,4 +44,69 @@ export async function getSpaceName (client: Client, space: Space): Promise<strin
   }
 
   return space.name
+}
+
+/**
+ * @public
+ */
+export async function doNavigate (
+  doc: Doc | Doc[],
+  evt: Event | undefined,
+  props: {
+    mode: 'app' | 'special' | 'space'
+    application?: Ref<Application>
+    special?: string
+    spaceSpecial?: string
+    space?: Ref<Space>
+    // If no space is selected, select first space from list
+    spaceClass?: Ref<Class<Space>>
+  }
+): Promise<void> {
+  evt?.preventDefault()
+
+  closePanel()
+  const loc = getCurrentLocation()
+  const client = getClient()
+  switch (props.mode) {
+    case 'app':
+      loc.path[1] = props.application ?? ''
+      if (props.special !== undefined) {
+        loc.path[2] = props.special
+        loc.path.length = 3
+      } else {
+        loc.path.length = 2
+      }
+      navigate(loc)
+      break
+    case 'special':
+      if (props.application !== undefined && loc.path[1] !== props.application) {
+        loc.path[1] = props.application
+      }
+      loc.path[2] = props.special ?? ''
+      loc.path.length = 3
+      navigate(loc)
+      break
+    case 'space': {
+      if (props.space !== undefined) {
+        loc.path[2] = props.space
+      }
+      if (props.spaceSpecial !== undefined) {
+        loc.path[3] = props.spaceSpecial
+      }
+      if (props.spaceClass !== undefined) {
+        const ex = await client.findOne(props.spaceClass, { _id: loc.path[2] as Ref<Space> })
+        if (ex === undefined) {
+          const r = await client.findOne(props.spaceClass, {})
+          if (r !== undefined) {
+            loc.path[3] = r._id
+            navigate(loc)
+          }
+        }
+      }
+      loc.path.length = 4
+      navigate(loc)
+
+      break
+    }
+  }
 }

@@ -23,6 +23,7 @@ import workbench from '@anticrm/model-workbench'
 import type {} from '@anticrm/view'
 import view from '@anticrm/view'
 import inventory from './plugin'
+import { createAction } from '@anticrm/model-view'
 
 export const DOMAIN_INVENTORY = 'inventory' as Domain
 @Model(inventory.class.Category, core.class.AttachedDoc, DOMAIN_INVENTORY)
@@ -131,25 +132,24 @@ export function createModel (builder: Builder): void {
     inventory.app.Inventory
   )
 
-  builder.createDoc(view.class.ActionTarget, core.space.Model, {
+  builder.createDoc(
+    view.class.ActionCategory,
+    core.space.Model,
+    { label: inventory.string.Inventory, visible: true },
+    inventory.category.Inventory
+  )
+
+  createAction(builder, {
+    label: inventory.string.CreateSubcategory,
+    icon: inventory.icon.Categories,
+    action: inventory.actionImpl.CreateSubcategory,
+    input: 'focus',
+    category: inventory.category.Inventory,
     target: inventory.class.Category,
-    action: inventory.action.CreateSubcategory,
     context: {
       mode: ['context', 'browser']
     }
   })
-
-  builder.createDoc(
-    view.class.Action,
-    core.space.Model,
-    {
-      label: inventory.string.CreateSubcategory,
-      icon: inventory.icon.Categories,
-      action: inventory.actionImpl.CreateSubcategory,
-      singleInput: true
-    },
-    inventory.action.CreateSubcategory
-  )
 }
 
 export { default } from './plugin'

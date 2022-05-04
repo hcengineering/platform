@@ -19,7 +19,7 @@ import { inventoryId } from '@anticrm/inventory'
 import inventory from '@anticrm/inventory-resources/src/plugin'
 import { mergeIds } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'
-import { Action, ViewAction } from '@anticrm/view'
+import { Action, ActionCategory, ViewAction } from '@anticrm/view'
 
 export default mergeIds(inventoryId, inventory, {
   action: {
@@ -27,6 +27,9 @@ export default mergeIds(inventoryId, inventory, {
   },
   actionImpl: {
     CreateSubcategory: '' as ViewAction
+  },
+  category: {
+    Inventory: '' as Ref<ActionCategory>
   },
   component: {
     Categories: '' as AnyComponent,

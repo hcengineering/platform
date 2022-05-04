@@ -15,9 +15,13 @@
 //
 
 import { IntlString, mergeIds } from '@anticrm/platform'
+import { AnyComponent } from '@anticrm/ui'
 import view, { viewId } from '@anticrm/view'
 
 export default mergeIds(viewId, view, {
+  component: {
+    ActionsPopup: '' as AnyComponent
+  },
   string: {
     MoveClass: '' as IntlString,
     SelectToMove: '' as IntlString,
@@ -30,6 +34,7 @@ export default mergeIds(viewId, view, {
     DeleteObject: '' as IntlString,
     DeleteObjectConfirm: '' as IntlString,
     Assignees: '' as IntlString,
-    Labels: '' as IntlString
+    Labels: '' as IntlString,
+    ActionPlaceholder: '' as IntlString
   }
 })

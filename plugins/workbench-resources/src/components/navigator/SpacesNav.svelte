@@ -52,7 +52,7 @@
   const addSpace: Action = {
     label: model.addSpaceLabel,
     icon: IconAdd,
-    action: async (_id: Ref<Doc>, ev?: Event): Promise<void> => {
+    action: async (_id: Ref<Doc>): Promise<void> => {
       dispatch('open')
       showPopup(model.createComponent, {}, 'top')
     }
@@ -61,7 +61,7 @@
   const browseSpaces: Action = {
     label: plugin.string.BrowseSpaces,
     icon: IconSearch,
-    action: async (_id: Ref<Doc>, ev?: Event): Promise<void> => {
+    action: async (_id: Ref<Doc>): Promise<void> => {
       const loc = getCurrentLocation()
       loc.path[2] = 'spaceBrowser'
       dispatch('open')
@@ -111,7 +111,7 @@
         label: act.label,
         action: async (evt: Event) => {
           const impl = await getResource(act.action)
-          await impl(space, evt)
+          await impl(space, evt, act.actionProps)
         }
       })
     }

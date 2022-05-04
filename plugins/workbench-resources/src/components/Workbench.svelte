@@ -22,10 +22,10 @@
   import { Avatar, createQuery, setClient } from '@anticrm/presentation'
   import {
     AnyComponent,
-    closePanel,
     closePopup,
     closeTooltip,
     Component,
+    DatePickerPopup,
     getCurrentLocation,
     location,
     Location,
@@ -33,12 +33,12 @@
     PanelInstance,
     Popup,
     showPopup,
-    DatePickerPopup,
     TooltipInstance
   } from '@anticrm/ui'
   import { ActionContext, ActionHandler } from '@anticrm/view-resources'
   import type { Application, NavigatorModel, SpecialNavModel, ViewConfiguration } from '@anticrm/workbench'
   import { onDestroy, tick } from 'svelte'
+  import { doNavigate } from '../utils'
   import workbench from '../plugin'
   import AccountPopup from './AccountPopup.svelte'
   import AppItem from './AppItem.svelte'
@@ -182,36 +182,31 @@
     }
     visibileNav = true
 
-    closePanel()
-    const loc = getCurrentLocation()
-    loc.path[1] = app._id
-    loc.path.length = 2
-    navigate(loc)
+    doNavigate([], undefined, {
+      mode: 'app',
+      application: app._id
+    })
   }
 
   function selectSpecial (id: string): void {
     if (currentSpecial === id) return
-    closePanel()
-    const loc = getCurrentLocation()
-    loc.path[2] = id
-    loc.path.length = 3
+
+    doNavigate([], undefined, {
+      mode: 'special',
+      special: id
+    })
     checkOnHide()
-    navigate(loc)
   }
 
   function selectSpace (spaceId?: Ref<Space>, spaceSpecial?: string): void {
     if (currentSpace === spaceId && (spaceSpecial === currentSpecial || spaceSpecial === asideId)) return
-    closePanel()
-    const loc = getCurrentLocation()
-    if (spaceId !== undefined) {
-      loc.path[2] = spaceId
-      const special = spaceSpecial
-      if (special !== undefined) {
-        loc.path[3] = special
-      }
-    }
+
+    doNavigate([], undefined, {
+      mode: 'space',
+      space: spaceId,
+      spaceSpecial: spaceSpecial
+    })
     checkOnHide()
-    navigate(loc)
   }
 
   function closeAside (): void {

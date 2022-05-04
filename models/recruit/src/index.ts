@@ -36,10 +36,12 @@ import contact, { TPerson } from '@anticrm/model-contact'
 import core, { TSpace } from '@anticrm/model-core'
 import presentation from '@anticrm/model-presentation'
 import tags from '@anticrm/model-tags'
-import task, { TSpaceWithStates, TTask } from '@anticrm/model-task'
-import view, { actionTarget, createAction } from '@anticrm/model-view'
-import workbench from '@anticrm/model-workbench'
+import task, { TSpaceWithStates, TTask, actionTemplates } from '@anticrm/model-task'
+import view, { createAction, actionTemplates as viewTemplates } from '@anticrm/model-view'
+import workbench, { Application, createNavigateAction } from '@anticrm/model-workbench'
+import { IntlString } from '@anticrm/platform'
 import { Applicant, Candidate, Candidates, Vacancy } from '@anticrm/recruit'
+import { KeyBinding } from '@anticrm/view'
 import recruit from './plugin'
 import { createReviewModel, reviewTableConfig, reviewTableOptions } from './review'
 import { TOpinion, TReview, TReviewCategory } from './review-model'
@@ -139,6 +141,13 @@ export function createModel (builder: Builder): void {
     component: recruit.component.CreateCandidate
   })
 
+  const vacanciesId = 'vacancies'
+  const candidatesId = 'candidates'
+  const skillsId = 'skills'
+  const applicantsId = 'applicants'
+  const archiveId = 'archive'
+  const assignedId = 'assigned'
+
   builder.createDoc(
     workbench.class.Application,
     core.space.Model,
@@ -157,7 +166,7 @@ export function createModel (builder: Builder): void {
         ],
         specials: [
           {
-            id: 'vacancies',
+            id: vacanciesId,
             component: recruit.component.Vacancies,
             icon: recruit.icon.Vacancy,
             label: recruit.string.Vacancies,
@@ -165,7 +174,7 @@ export function createModel (builder: Builder): void {
             position: 'bottom'
           },
           {
-            id: 'applicants',
+            id: applicantsId,
             component: recruit.component.ApplicationsView,
             icon: recruit.icon.Application,
             label: recruit.string.Applications,
@@ -173,7 +182,7 @@ export function createModel (builder: Builder): void {
             position: 'bottom'
           },
           {
-            id: 'candidates',
+            id: candidatesId,
             component: recruit.component.Candidates,
             icon: contact.icon.Person,
             label: recruit.string.Candidates,
@@ -181,7 +190,7 @@ export function createModel (builder: Builder): void {
             position: 'bottom'
           },
           {
-            id: 'archive',
+            id: archiveId,
             component: workbench.component.Archive,
             icon: view.icon.Archive,
             label: workbench.string.Archive,
@@ -190,7 +199,7 @@ export function createModel (builder: Builder): void {
             spaceClass: recruit.class.Vacancy
           },
           {
-            id: 'skills',
+            id: skillsId,
             component: recruit.component.SkillsView,
             icon: tags.icon.Tags,
             label: recruit.string.SkillsLabel,
@@ -198,7 +207,7 @@ export function createModel (builder: Builder): void {
             position: 'bottom'
           },
           {
-            id: 'assigned',
+            id: assignedId,
             label: task.string.Assigned,
             icon: task.icon.Task,
             component: task.component.AssignedTasks,
@@ -352,40 +361,46 @@ export function createModel (builder: Builder): void {
     validator: recruit.validator.ApplicantValidator
   })
 
-  createAction(
-    builder,
-    recruit.action.CreateApplication,
-    recruit.string.CreateAnApplication,
-    recruit.actionImpl.CreateApplication,
-    {
-      icon: recruit.icon.Create,
-      singleInput: true
-    }
-  )
-  actionTarget(builder, recruit.action.CreateApplication, contact.class.Person, { mode: ['context', 'browser'] })
-
-  createAction(
-    builder,
-    recruit.action.CreateCandidate,
-    recruit.string.CreateCandidate,
-    recruit.actionImpl.CreateCandidate,
-    {
-      icon: recruit.icon.Create,
-      keyBinding: ['c'],
-      singleInput: true
-    }
+  builder.createDoc(
+    view.class.ActionCategory,
+    core.space.Model,
+    { label: recruit.string.RecruitApplication, visible: true },
+    recruit.category.Recruit
   )
 
-  actionTarget(builder, recruit.action.CreateCandidate, core.class.Doc, {
-    mode: ['workbench', 'browser'],
-    application: recruit.app.Recruit
+  createAction(builder, {
+    action: view.actionImpl.ShowPopup,
+    actionProps: {
+      component: recruit.component.CreateApplication,
+      _id: 'candidate',
+      element: 'top',
+      props: {
+        preserveCandidate: true
+      }
+    },
+    label: recruit.string.CreateAnApplication,
+    icon: recruit.icon.Create,
+    input: 'focus',
+    category: recruit.category.Recruit,
+    target: contact.class.Person,
+    context: { mode: ['context', 'browser'] }
   })
 
-  builder.createDoc(view.class.ActionTarget, core.space.Model, {
-    target: recruit.mixin.Candidate,
-    action: task.action.CreateTask,
+  createAction(builder, {
+    action: view.actionImpl.ShowPopup,
+    actionProps: {
+      component: recruit.component.CreateCandidate,
+      element: 'top'
+    },
+    label: recruit.string.CreateCandidate,
+    icon: recruit.icon.Create,
+    keyBinding: ['c'],
+    input: 'none',
+    category: recruit.category.Recruit,
+    target: core.class.Doc,
     context: {
-      mode: ['context', 'browser']
+      mode: ['workbench', 'browser'],
+      application: recruit.app.Recruit
     }
   })
 
@@ -411,55 +426,21 @@ export function createModel (builder: Builder): void {
     recruit.completion.ApplicationCategory
   )
 
-  builder.createDoc(view.class.ActionTarget, core.space.Model, {
+  createAction(builder, { ...actionTemplates.archiveSpace, target: recruit.class.Vacancy })
+  createAction(builder, { ...actionTemplates.unarchiveSpace, target: recruit.class.Vacancy })
+
+  createAction(builder, {
+    label: recruit.string.EditVacancy,
+    icon: recruit.icon.Vacancy,
+    action: view.actionImpl.ShowPanel,
+    actionProps: {
+      component: recruit.component.EditVacancy,
+      element: 'right'
+    },
+    input: 'focus',
+    category: recruit.category.Recruit,
+    keyBinding: ['e'],
     target: recruit.class.Vacancy,
-    action: task.action.ArchiveSpace,
-    query: {
-      archived: false
-    },
-    context: {
-      mode: ['context', 'browser']
-    }
-  })
-
-  builder.createDoc(view.class.ActionTarget, core.space.Model, {
-    target: recruit.class.Vacancy,
-    action: task.action.UnarchiveSpace,
-    query: {
-      archived: true
-    },
-    context: {
-      mode: ['context', 'browser']
-    }
-  })
-
-  builder.createDoc(view.class.ActionTarget, core.space.Model, {
-    target: recruit.class.ReviewCategory,
-    action: task.action.UnarchiveSpace,
-    query: {
-      archived: true
-    },
-    context: {
-      mode: ['context', 'browser']
-    }
-  })
-
-  builder.createDoc(
-    view.class.Action,
-    core.space.Model,
-    {
-      label: recruit.string.EditVacancy,
-      icon: recruit.icon.Vacancy,
-      action: recruit.actionImpl.EditVacancy,
-      singleInput: true
-    },
-    recruit.action.EditVacancy
-  )
-
-  builder.createDoc(view.class.ActionTarget, core.space.Model, {
-    target: recruit.class.Vacancy,
-    action: recruit.action.EditVacancy,
-    query: {},
     context: {
       mode: ['context', 'browser']
     }
@@ -470,8 +451,43 @@ export function createModel (builder: Builder): void {
   })
   createReviewModel(builder)
 
-  actionTarget(builder, view.action.Open, recruit.class.Vacancy, { mode: ['browser', 'context'] })
-  actionTarget(builder, view.action.Open, recruit.class.Applicant, { mode: ['browser', 'context'] })
+  // createAction(builder, { ...viewTemplates.open, target: recruit.class.Vacancy, context: { mode: ['browser', 'context'] } })
+  createAction(builder, {
+    ...viewTemplates.open,
+    target: recruit.class.Applicant,
+    context: { mode: ['browser', 'context'] }
+  })
+
+  function createGotoSpecialAction (builder: Builder, id: string, key: KeyBinding, label: IntlString): void {
+    createNavigateAction(builder, key, label, {
+      application: recruit.app.Recruit as Ref<Application>,
+      mode: 'special',
+      special: id
+    })
+  }
+
+  createGotoSpecialAction(builder, candidatesId, 'g->e', recruit.string.GotoCandidates)
+  createGotoSpecialAction(builder, vacanciesId, 'g->v', recruit.string.GotoVacancies)
+  createGotoSpecialAction(builder, skillsId, 'g->s', recruit.string.GotoSkills)
+  createGotoSpecialAction(builder, assignedId, 'g->h', recruit.string.GotoAssigned)
+  createGotoSpecialAction(builder, applicantsId, 'g->a', recruit.string.GotoApplicants)
+
+  createAction(builder, {
+    action: workbench.actionImpl.Navigate,
+    actionProps: {
+      mode: 'app',
+      application: recruit.app.Recruit as Ref<Application>,
+      special: candidatesId
+    },
+    label: recruit.string.GotoRecruitApplication,
+    icon: view.icon.ArrowRight,
+    input: 'none',
+    category: view.category.Navigation,
+    target: core.class.Doc,
+    context: {
+      mode: ['workbench', 'browser', 'editor', 'panel', 'popup']
+    }
+  })
 }
 
 export { recruitOperation } from './migration'

@@ -75,6 +75,7 @@
   let collectionEditors: { key: KeyedAttribute; editor: AnyComponent }[] = []
 
   let mixins: Mixin<Doc>[] = []
+
   $: if (object) {
     parentClass = getParentClass(object._class)
     getMixins()
@@ -147,6 +148,7 @@
 
   let mainEditor: AnyComponent
   $: if (object) getEditorOrDefault(object._class, object._class)
+
   async function getEditorOrDefault (_class: Ref<Class<Doc>> | undefined, defaultClass: Ref<Class<Doc>>): Promise<void> {
     let editor = _class !== undefined ? await getEditor(_class) : undefined
     if (editor === undefined) {

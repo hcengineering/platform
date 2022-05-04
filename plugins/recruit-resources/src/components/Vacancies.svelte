@@ -18,8 +18,8 @@
   import { createQuery } from '@anticrm/presentation'
   import { Vacancy } from '@anticrm/recruit'
   import { Button, getCurrentLocation, Icon, IconAdd, Label, navigate, Scroller, showPopup } from '@anticrm/ui'
-  import SearchEdit from '@anticrm/ui/src/components/SearchEdit.svelte'
-  import { Table } from '@anticrm/view-resources'
+  import { SearchEdit } from '@anticrm/ui'
+  import { TableBrowser } from '@anticrm/view-resources'
   import recruit from '../plugin'
   import CreateVacancy from './CreateVacancy.svelte'
 
@@ -90,7 +90,7 @@
   <Button icon={IconAdd} label={recruit.string.VacancyCreateLabel} kind={'primary'} on:click={showCreateDialog} />
 </div>
 <Scroller tableFade>
-  <Table
+  <TableBrowser
     _class={recruit.class.Vacancy}
     config={[
       {
@@ -128,6 +128,5 @@
       archived: false
     }}
     showNotification
-    highlightRows
   />
 </Scroller>
