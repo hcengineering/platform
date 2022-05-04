@@ -27,7 +27,7 @@
   import CreateIssue from '../CreateIssue.svelte'
   import AssigneePresenter from './AssigneePresenter.svelte'
   import IssuePresenter from './IssuePresenter.svelte'
-  import PriorityPresenter from './PriorityPresenter.svelte'
+  import PriorityEditor from './PriorityEditor.svelte'
 
   export let currentSpace: Ref<Team>
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
@@ -161,7 +161,7 @@
           {object.title}
         </span>
         <div class="flex gap-2 mt-2 mb-2">
-          <PriorityPresenter value={issue} {currentSpace} isEditable={true} />
+          <PriorityEditor value={issue} {currentSpace} isEditable={true} />
         </div>
       </div>
     </svelte:fragment>

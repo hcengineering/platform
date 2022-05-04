@@ -95,7 +95,7 @@ export const issuesSortOrderMap: Record<IssuesOrderByKeys, SortingOrder> = {
 
 export const issuesGroupPresenterMap: Record<'status' | 'priority', AnyComponent | undefined> = {
   status: tracker.component.StatusPresenter,
-  priority: tracker.component.PriorityPresenter
+  priority: tracker.component.PriorityEditor
 }
 
 export const getIssuesModificationDatePeriodTime = (period: IssuesDateModificationPeriod | null): number => {

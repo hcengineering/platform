@@ -24,7 +24,7 @@
   import { createEventDispatcher, onMount } from 'svelte'
   import tracker from '../../plugin'
   import IssuePresenter from './IssuePresenter.svelte'
-  import PriorityPresenter from './PriorityPresenter.svelte'
+  import PriorityEditor from './PriorityEditor.svelte'
   import StatusPresenter from './StatusPresenter.svelte'
 
   export let _id: Ref<Issue>
@@ -67,13 +67,13 @@
 
   $: issueLabel = currentTeam && issue && `${currentTeam.identifier}-${issue.number}`
 
-  function change (field: string, value: any) {
+  function change(field: string, value: any) {
     if (issue !== undefined) {
       client.update(issue, { [field]: value })
     }
   }
 
-  function copy (text: string): void {
+  function copy(text: string): void {
     navigator.clipboard.writeText(text)
   }
 
@@ -174,7 +174,7 @@
             <span class="label w-24">
               <Label label={tracker.string.Priority} />
             </span>
-            <PriorityPresenter value={issue} currentSpace={currentTeam._id} shouldShowLabel />
+            <PriorityEditor value={issue} currentSpace={currentTeam._id} shouldShowLabel />
           </div>
 
           <div class="flex-row-center mb-4">
