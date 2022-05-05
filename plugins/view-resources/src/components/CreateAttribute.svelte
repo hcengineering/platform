@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Class, generateId, PropertyType, Ref, Space, Type } from '@anticrm/core'
+  import core, { AnyAttribute, Class, Data, generateId, IndexKind, PropertyType, Ref, Space, Type } from '@anticrm/core'
   import presentation, { getClient, MessageBox } from '@anticrm/presentation'
   import { AnyComponent, EditBox, DropdownLabelsIntl, Label, Component, Button, showPopup } from '@anticrm/ui'
   import { DropdownIntlItem } from '@anticrm/ui/src/types'
@@ -24,6 +24,7 @@
   export let _class: Ref<Class<Space>>
   let name: string
   let type: Type<PropertyType> | undefined
+  let index: IndexKind | undefined
   let is: AnyComponent | undefined
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -40,13 +41,17 @@
       undefined,
       async (result) => {
         if (result && type !== undefined) {
-          await client.createDoc(core.class.Attribute, core.space.Model, {
+          const data: Data<AnyAttribute> = {
             attributeOf: _class,
             name: name + generateId(),
             label: getEmbeddedLabel(name),
             isCustom: true,
             type
-          })
+          }
+          if (index !== undefined) {
+            data.index = index
+          }
+          await client.createDoc(core.class.Attribute, core.space.Model, data)
           dispatch('close')
         }
       }
@@ -98,7 +103,8 @@
     <Component
       {is}
       on:change={(e) => {
-        type = e.detail
+        type = e.detail?.type
+        index = e.detail?.index
       }}
     />
   {/if}

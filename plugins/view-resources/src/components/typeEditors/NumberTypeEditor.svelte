@@ -14,12 +14,11 @@
 -->
 <script lang="ts">
   import { TypeNumber } from '@anticrm/model'
-  import { onMount } from 'svelte'
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, onMount } from 'svelte'
 
   const dispatch = createEventDispatcher()
 
   onMount(() => {
-    dispatch('change', TypeNumber())
+    dispatch('change', { type: TypeNumber() })
   })
 </script>

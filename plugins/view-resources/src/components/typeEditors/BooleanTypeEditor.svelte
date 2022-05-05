@@ -14,12 +14,13 @@
 -->
 <script lang="ts">
   import { TypeBoolean } from '@anticrm/model'
-  import { onMount } from 'svelte'
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, onMount } from 'svelte'
 
   const dispatch = createEventDispatcher()
 
   onMount(() => {
-    dispatch('change', TypeBoolean())
+    dispatch('change', {
+      type: TypeBoolean()
+    })
   })
 </script>

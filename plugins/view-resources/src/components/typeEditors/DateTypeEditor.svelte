@@ -15,8 +15,7 @@
 <script lang="ts">
   import { TypeDate } from '@anticrm/model'
   import { Label } from '@anticrm/ui'
-  import { onMount } from 'svelte'
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, onMount } from 'svelte'
   import view from '../../plugin'
   import BooleanEditor from '../BooleanEditor.svelte'
 
@@ -25,7 +24,7 @@
   let withTime: boolean = false
 
   onMount(() => {
-    dispatch('change', TypeDate(withTime))
+    dispatch('change', { type: TypeDate(withTime) })
   })
 </script>
 

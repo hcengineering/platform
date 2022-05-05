@@ -13,13 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { IndexKind } from '@anticrm/core'
   import { TypeString } from '@anticrm/model'
-  import { onMount } from 'svelte'
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, onMount } from 'svelte'
 
   const dispatch = createEventDispatcher()
 
   onMount(() => {
-    dispatch('change', TypeString())
+    dispatch('change', { type: TypeString(), index: IndexKind.FullText })
   })
 </script>
