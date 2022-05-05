@@ -45,6 +45,7 @@
     "Medium": "Medium",
     "Low": "Low",
     "Unassigned": "Unassigned",
+    "Back": "Back",
 
     "CategoryBacklog": "Backlog",
     "CategoryUnstarted": "Unstarted",
@@ -101,7 +102,14 @@
     "GotoBacklog": "Go to backlog",
     "GotoBoard": "Go to issue board",
     "GotoProjects": "Go to projects",
-    "GotoTrackerApplication": "Switch to Tracker Application"
+    "GotoTrackerApplication": "Switch to Tracker Application",
+
+    "Filter": "Filter",
+    "ClearFilters": "Clear filters",
+    "FilterIs": "is",
+    "FilterIsNot": "is not",
+    "FilterIsEither": "is either of",
+    "FilterStatesCount": "{value, plural, =1 {1 state} other {# states}}"
   },
   "status": {}
 }
