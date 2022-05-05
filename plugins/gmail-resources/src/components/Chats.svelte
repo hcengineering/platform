@@ -19,10 +19,9 @@
   import gmail from '../plugin'
   import { Channel, Contact, EmployeeAccount, formatName } from '@anticrm/contact'
   import contact from '@anticrm/contact'
-  import plugin, { IconShare, Button, Tooltip, showPopup, Icon, Label, eventToHTMLElement, Scroller } from '@anticrm/ui'
+  import plugin, { IconShare, Button, Tooltip, Icon, Label, Scroller } from '@anticrm/ui'
   import { getCurrentAccount, Ref, SortingOrder, Space } from '@anticrm/core'
   import setting from '@anticrm/setting'
-  import Connect from './Connect.svelte'
   import Messages from './Messages.svelte'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
   import IconInbox from './icons/Inbox.svelte'
@@ -30,13 +29,13 @@
   export let object: Contact
   export let channel: Channel
   export let newMessage: boolean
+  export let enabled: boolean
 
   const EMAIL_REGEX =
     /(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/
 
   let messages: Message[] = []
   let accounts: EmployeeAccount[] = []
-  let enabled: boolean
   let selected: Set<Ref<SharedMessage>> = new Set<Ref<SharedMessage>>()
   let selectable = false
 
@@ -122,50 +121,42 @@
   }
 </script>
 
-<div class="popupPanel-body__main-header bottom-divider">
-  {#if selectable}
-    <div class="flex-between w-full">
-      <span><b>{selected.size}</b> <Label label={gmail.string.MessagesSelected} /></span>
-      <div class="flex">
-        <div>
-          <Button label={gmail.string.Cancel} on:click={clear} />
-        </div>
-        <div class="ml-3">
-          <Button label={gmail.string.PublishSelected} kind={'primary'} disabled={!selected.size} on:click={share} />
+{#if enabled}
+  <div class="popupPanel-body__main-header bottom-divider">
+    {#if selectable}
+      <div class="flex-between w-full">
+        <span><b>{selected.size}</b> <Label label={gmail.string.MessagesSelected} /></span>
+        <div class="flex">
+          <div>
+            <Button label={gmail.string.Cancel} on:click={clear} />
+          </div>
+          <div class="ml-3">
+            <Button label={gmail.string.PublishSelected} kind={'primary'} disabled={!selected.size} on:click={share} />
+          </div>
         </div>
       </div>
-    </div>
-  {:else if enabled}
-    <div class="flex-between">
-      <Button
-        label={gmail.string.CreateMessage}
-        kind={'primary'}
-        on:click={() => {
-          newMessage = true
-        }}
-      />
-      <Tooltip label={gmail.string.ShareMessages}>
+    {:else}
+      <div class="flex-between">
         <Button
-          icon={IconShare}
-          kind={'transparent'}
-          on:click={async () => {
-            selectable = !selectable
+          label={gmail.string.CreateMessage}
+          kind={'primary'}
+          on:click={() => {
+            newMessage = true
           }}
         />
-      </Tooltip>
-    </div>
-  {:else}
-    <div class="flex-center flex-grow">
-      <Button
-        label={gmail.string.Connect}
-        kind={'primary'}
-        on:click={(e) => {
-          showPopup(Connect, {}, eventToHTMLElement(e))
-        }}
-      />
-    </div>
-  {/if}
-</div>
+        <Tooltip label={gmail.string.ShareMessages}>
+          <Button
+            icon={IconShare}
+            kind={'transparent'}
+            on:click={async () => {
+              selectable = !selectable
+            }}
+          />
+        </Tooltip>
+      </div>
+    {/if}
+  </div>
+{/if}
 <Scroller>
   <div class="popupPanel-body__main-content py-4 clear-mins flex-no-shrink">
     {#if messages && messages.length > 0}
