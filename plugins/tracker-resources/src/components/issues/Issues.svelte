@@ -26,19 +26,22 @@
     IssueStatusCategory,
     IssuePriority
   } from '@anticrm/tracker'
-  import { Button, Label, ScrollBox, IconOptions, showPopup, eventToHTMLElement } from '@anticrm/ui'
+  import { Button, Label, ScrollBox, IconOptions, showPopup, eventToHTMLElement, IconAdd, IconClose } from '@anticrm/ui'
   import { IntlString } from '@anticrm/platform'
+  import { createEventDispatcher } from 'svelte'
+  import ViewOptionsPopup from './ViewOptionsPopup.svelte'
+  import IssuesListBrowser from './IssuesListBrowser.svelte'
+  import IssuesFilterMenu from './IssuesFilterMenu.svelte'
+  import FilterSummary from '../FilterSummary.svelte'
   import tracker from '../../plugin'
   import {
     IssuesGroupByKeys,
     issuesGroupKeyMap,
     issuesOrderKeyMap,
     getIssuesModificationDatePeriodTime,
-    groupBy,
-    issuesSortOrderMap
+    issuesSortOrderMap,
+    getGroupedIssues
   } from '../../utils'
-  import ViewOptionsPopup from './ViewOptionsPopup.svelte'
-  import IssuesListBrowser from './IssuesListBrowser.svelte'
 
   export let currentSpace: Ref<Team>
   export let title: IntlString = tracker.string.AllIssues
@@ -50,19 +53,25 @@
   export let shouldShowEmptyGroups: boolean | undefined = false
   export let includedGroups: Partial<Record<IssuesGroupByKeys, Array<any>>> = {}
 
+  const dispatch = createEventDispatcher()
   const ENTRIES_LIMIT = 200
   const spaceQuery = createQuery()
   const issuesQuery = createQuery()
   const resultIssuesQuery = createQuery()
   const statusesQuery = createQuery()
   const issuesMap: { [status: string]: number } = {}
+
+  let filterElement: HTMLElement | null = null
+  let filters: { [p: string]: any[] } = {}
   let currentTeam: Team | undefined
   let issues: Issue[] = []
   let resultIssues: Issue[] = []
   let statusesById: ReadonlyMap<Ref<IssueStatus>, WithLookup<IssueStatus>> = new Map()
   let employees: (WithLookup<Employee> | undefined)[] = []
 
-  $: totalIssues = issues.length
+  $: totalIssuesCount = issues.length
+  $: resultIssuesCount = resultIssues.length
+  $: isFiltersEmpty = Object.keys(filters).length === 0
 
   const options: FindOptions<Issue> = {
     sort: { [issuesOrderKeyMap[orderingKey]]: issuesSortOrderMap[issuesOrderKeyMap[orderingKey]] },
@@ -73,7 +82,7 @@
   $: baseQuery = {
     space: currentSpace,
     ...includedIssuesQuery,
-    ...filteredIssuesQuery,
+    ...modifiedOnIssuesQuery,
     ...query
   }
 
@@ -100,7 +109,7 @@
     return includedGroups[groupByKey]?.includes(x)
   })
   $: includedIssuesQuery = getIncludedIssuesQuery(includedGroups, statuses)
-  $: filteredIssuesQuery = getModifiedOnIssuesFilterQuery(issues, completedIssuesPeriod)
+  $: modifiedOnIssuesQuery = getModifiedOnIssuesFilterQuery(issues, completedIssuesPeriod)
   $: statuses = [...statusesById.values()]
 
   const getIncludedIssuesQuery = (
@@ -154,7 +163,7 @@
 
   $: resultIssuesQuery.query<Issue>(
     tracker.class.Issue,
-    { ...resultQuery },
+    { ...resultQuery, ...getFiltersQuery(filters) },
     (result) => {
       resultIssues = result
 
@@ -174,29 +183,6 @@
       sort: { rank: SortingOrder.Ascending }
     }
   )
-
-  const getGroupedIssues = (key: IssuesGroupByKeys | undefined, elements: Issue[], orderedCategories: any[]) => {
-    if (!groupByKey) {
-      return { [undefined as any]: issues }
-    }
-
-    const unorderedIssues = groupBy(elements, key)
-
-    return Object.keys(unorderedIssues)
-      .sort((o1, o2) => {
-        const key1 = o1 === 'null' ? null : o1
-        const key2 = o2 === 'null' ? null : o2
-
-        const i1 = orderedCategories.findIndex((x) => x === key1)
-        const i2 = orderedCategories.findIndex((x) => x === key2)
-
-        return i1 - i2
-      })
-      .reduce((obj: { [p: string]: any[] }, objKey) => {
-        obj[objKey] = unorderedIssues[objKey]
-        return obj
-      }, {})
-  }
 
   const getCategories = (key: IssuesGroupByKeys | undefined, elements: Issue[], shouldShowAll: boolean) => {
     if (!key) {
@@ -331,38 +317,168 @@
       handleOptionsUpdated
     )
   }
+
+  const getFiltersQuery = (filterParams: { [f: string]: any[] }) => {
+    const result: { [f: string]: { $in: any[] } } = {}
+
+    for (const [key, value] of Object.entries(filterParams)) {
+      result[key] = { $in: [...value] }
+    }
+
+    return result
+  }
+
+  const handleFilterDeleted = (filterKey?: string) => {
+    if (filterKey) {
+      delete filters[filterKey]
+
+      filters = filters
+    } else {
+      filters = {}
+    }
+  }
+
+  const handleAllFiltersDeleted = () => {
+    handleFilterDeleted()
+  }
+
+  const handleFiltersModified = (result: { [p: string]: any }) => {
+    const entries = Object.entries(result)
+
+    if (entries.length !== 1) {
+      return
+    }
+
+    const [filter, filterValue] = entries[0]
+
+    if (filter in filters) {
+      if (filters[filter].includes(filterValue)) {
+        filters[filter] = filters[filter].filter((x) => x !== filterValue)
+
+        if (Object.keys(filters).length === 1 && filters[filter].length === 0) {
+          filters = {}
+        }
+      } else {
+        filters[filter] = [...filters[filter], filterValue]
+      }
+    } else {
+      filters[filter] = [filterValue]
+    }
+  }
+
+  const handleFiltersBackButtonPressed = (event: MouseEvent) => {
+    dispatch('close')
+
+    handleFilterMenuOpened(event)
+  }
+
+  const handleFilterMenuOpened = (event: MouseEvent) => {
+    if (!currentSpace) {
+      return
+    }
+
+    if (filterElement === null) {
+      filterElement = eventToHTMLElement(event)
+    }
+
+    showPopup(
+      IssuesFilterMenu,
+      {
+        issues,
+        currentFilter: getFiltersQuery(filters),
+        defaultStatuses: statuses,
+        onBack: handleFiltersBackButtonPressed,
+        targetHtml: filterElement,
+        onUpdate: handleFiltersModified
+      },
+      filterElement
+    )
+  }
 </script>
 
 {#if currentTeam}
   <ScrollBox vertical stretch>
-    <div class="fs-title flex-between mt-1 mr-1 ml-1">
-      <Label label={title} params={{ value: totalIssues }} />
+    <div class="fs-title flex-between header">
+      <div class="titleContainer">
+        {#if totalIssuesCount === resultIssuesCount}
+          <Label label={title} params={{ value: totalIssuesCount }} />
+        {:else}
+          <div class="labelsContainer">
+            <Label label={title} params={{ value: resultIssuesCount }} />
+            <div class="totalIssuesLabel">/{totalIssuesCount}</div>
+          </div>
+        {/if}
+        <div class="ml-3">
+          <Button
+            icon={isFiltersEmpty ? IconAdd : IconClose}
+            kind={'link-bordered'}
+            borderStyle={'dashed'}
+            label={isFiltersEmpty ? tracker.string.Filter : tracker.string.ClearFilters}
+            on:click={isFiltersEmpty ? handleFilterMenuOpened : handleAllFiltersDeleted}
+          />
+        </div>
+      </div>
       <Button icon={IconOptions} kind={'link'} on:click={handleOptionsEditorOpened} />
     </div>
-    <div class="mt-4">
-      <IssuesListBrowser
-        _class={tracker.class.Issue}
-        {currentSpace}
-        {groupByKey}
-        orderBy={issuesOrderKeyMap[orderingKey]}
-        {statuses}
-        {employees}
-        categories={displayedCategories}
-        itemsConfig={[
-          { key: '', presenter: tracker.component.PriorityEditor, props: { currentSpace } },
-          { key: '', presenter: tracker.component.IssuePresenter, props: { currentTeam } },
-          { key: '', presenter: tracker.component.StatusEditor, props: { currentSpace, statuses } },
-          { key: '', presenter: tracker.component.TitlePresenter, props: { shouldUseMargin: true } },
-          { key: '', presenter: tracker.component.DueDatePresenter, props: { currentSpace } },
-          { key: 'modifiedOn', presenter: tracker.component.ModificationDatePresenter },
-          {
-            key: '$lookup.assignee',
-            presenter: tracker.component.AssigneePresenter,
-            props: { currentSpace, defaultClass: contact.class.Employee, shouldShowLabel: false }
-          }
-        ]}
-        {groupedIssues}
-      />
-    </div>
+    {#if Object.keys(filters).length > 0}
+      <div class="filterSummaryWrapper">
+        <FilterSummary {filters} onDeleteFilter={handleFilterDeleted} />
+      </div>
+    {/if}
+    <IssuesListBrowser
+      _class={tracker.class.Issue}
+      {currentSpace}
+      {groupByKey}
+      orderBy={issuesOrderKeyMap[orderingKey]}
+      {statuses}
+      {employees}
+      categories={displayedCategories}
+      itemsConfig={[
+        { key: '', presenter: tracker.component.PriorityEditor, props: { currentSpace } },
+        { key: '', presenter: tracker.component.IssuePresenter, props: { currentTeam } },
+        { key: '', presenter: tracker.component.StatusEditor, props: { currentSpace, statuses } },
+        { key: '', presenter: tracker.component.TitlePresenter, props: { shouldUseMargin: true } },
+        { key: '', presenter: tracker.component.DueDatePresenter, props: { currentSpace } },
+        { key: 'modifiedOn', presenter: tracker.component.ModificationDatePresenter },
+        {
+          key: '$lookup.assignee',
+          presenter: tracker.component.AssigneePresenter,
+          props: { currentSpace, defaultClass: contact.class.Employee, shouldShowLabel: false }
+        }
+      ]}
+      {groupedIssues}
+    />
   </ScrollBox>
 {/if}
+
+<style lang="scss">
+  .header {
+    min-height: 3.5rem;
+    padding-left: 2.25rem;
+    padding-right: 1.35rem;
+  }
+
+  .titleContainer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  .labelsContainer {
+    display: flex;
+    align-items: center;
+  }
+
+  .totalIssuesLabel {
+    color: var(--content-color);
+  }
+
+  .filterSummaryWrapper {
+    display: flex;
+    align-items: center;
+    min-height: 3.5rem;
+    padding-left: 2.25rem;
+    padding-right: 1.35rem;
+    border-top: 1px solid var(--theme-button-border-hovered);
+  }
+</style>
