@@ -22,8 +22,6 @@
   import { Account, Class, Doc, generateId, Ref, Space } from '@anticrm/core'
   import { Attachment } from '@anticrm/attachment'
   import AttachmentPresenter from './AttachmentPresenter.svelte'
-  import { IconClose } from '@anticrm/ui'
-  import { ActionIcon } from '@anticrm/ui'
 
   export let objectId: Ref<Doc>
   export let space: Ref<Space>
