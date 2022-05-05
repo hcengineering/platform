@@ -123,18 +123,20 @@
         </div>
       {:else}
         <span class="fs-bold"><Label label={attribute.label} /></span>
-        <svelte:component
-          this={instance}
-          label={attribute?.label}
-          placeholder={attribute?.label}
-          kind={'link'}
-          size={'large'}
-          {maxWidth}
-          value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
-          space={object.space}
-          {onChange}
-          {focus}
-        />
+        <div class="flex flex-grow">
+          <svelte:component
+            this={instance}
+            label={attribute?.label}
+            placeholder={attribute?.label}
+            kind={'link'}
+            size={'large'}
+            {maxWidth}
+            value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
+            space={object.space}
+            {onChange}
+            {focus}
+          />
+        </div>
       {/if}
     {:else}
       <div style="grid-column: 1/3;">
