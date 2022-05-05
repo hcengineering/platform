@@ -31,7 +31,8 @@ export default mergeIds(leadId, lead, {
     Title: '' as IntlString,
     Assignee: '' as IntlString,
     ManageFunnelStatuses: '' as IntlString,
-    FunnelBrowser: '' as IntlString
+    FunnelBrowser: '' as IntlString,
+    GotoLeadApplication: '' as IntlString
   },
   component: {
     CreateFunnel: '' as AnyComponent,

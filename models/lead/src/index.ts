@@ -23,9 +23,8 @@ import chunter from '@anticrm/model-chunter'
 import contact, { TPerson } from '@anticrm/model-contact'
 import core from '@anticrm/model-core'
 import task, { TSpaceWithStates, TTask } from '@anticrm/model-task'
-import view from '@anticrm/model-view'
-import workbench from '@anticrm/model-workbench'
-import type {} from '@anticrm/view'
+import view, { createAction } from '@anticrm/model-view'
+import workbench, { Application } from '@anticrm/model-workbench'
 import lead from './plugin'
 
 @Model(lead.class.Funnel, task.class.SpaceWithStates)
@@ -102,7 +101,7 @@ export function createModel (builder: Builder): void {
             label: lead.string.Customers,
             icon: contact.icon.Person, // <-- Put contact general icon here.
             component: lead.component.Customers,
-            position: 'bottom'
+            position: 'top'
           }
         ],
         spaces: [
@@ -200,6 +199,22 @@ export function createModel (builder: Builder): void {
     },
     lead.space.FunnelTemplates
   )
+
+  createAction(builder, {
+    action: workbench.actionImpl.Navigate,
+    actionProps: {
+      mode: 'app',
+      application: lead.app.Lead as Ref<Application>
+    },
+    label: lead.string.GotoLeadApplication,
+    icon: view.icon.ArrowRight,
+    input: 'none',
+    category: view.category.Navigation,
+    target: core.class.Doc,
+    context: {
+      mode: ['workbench', 'browser', 'editor', 'panel', 'popup']
+    }
+  })
 }
 
 export { leadOperation } from './migration'
