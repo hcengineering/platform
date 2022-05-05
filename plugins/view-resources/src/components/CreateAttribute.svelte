@@ -14,8 +14,8 @@
 -->
 <script lang="ts">
   import core, { Class, generateId, PropertyType, Ref, Space, Type } from '@anticrm/core'
-  import presentation, { getClient } from '@anticrm/presentation'
-  import { AnyComponent, EditBox, DropdownLabelsIntl, Label, Component, Button } from '@anticrm/ui'
+  import presentation, { getClient, MessageBox } from '@anticrm/presentation'
+  import { AnyComponent, EditBox, DropdownLabelsIntl, Label, Component, Button, showPopup } from '@anticrm/ui'
   import { DropdownIntlItem } from '@anticrm/ui/src/types'
   import { createEventDispatcher } from 'svelte'
   import view from '../plugin'
@@ -31,14 +31,26 @@
 
   async function save (): Promise<void> {
     if (type === undefined) return
-    await client.createDoc(core.class.Attribute, core.space.Model, {
-      attributeOf: _class,
-      name: name + generateId(),
-      label: getEmbeddedLabel(name),
-      isCustom: true,
-      type
-    })
-    dispatch('close')
+    showPopup(
+      MessageBox,
+      {
+        label: view.string.CreatingAttribute,
+        message: view.string.CreatingAttributeConfirm
+      },
+      undefined,
+      async (result) => {
+        if (result && type !== undefined) {
+          await client.createDoc(core.class.Attribute, core.space.Model, {
+            attributeOf: _class,
+            name: name + generateId(),
+            label: getEmbeddedLabel(name),
+            isCustom: true,
+            type
+          })
+          dispatch('close')
+        }
+      }
+    )
   }
 
   function getTypes (): DropdownIntlItem[] {

@@ -31,7 +31,6 @@ import {
   ArrOf,
   Builder,
   Collection,
-  getType,
   Index,
   Model,
   Prop,
@@ -56,7 +55,7 @@ import board from './plugin'
  * @public
  */
 export function TypeCardDate (): Type<CardDate> {
-  return getType(board.class.CardDate, board.string.Dates)
+  return { _class: board.class.CardDate, label: board.string.Dates }
 }
 
 @Model(board.class.Board, task.class.SpaceWithStates)

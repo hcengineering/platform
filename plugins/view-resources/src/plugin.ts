@@ -37,6 +37,8 @@ export default mergeIds(viewId, view, {
     Labels: '' as IntlString,
     WithTime: '' as IntlString,
     Type: '' as IntlString,
-    ActionPlaceholder: '' as IntlString
+    ActionPlaceholder: '' as IntlString,
+    CreatingAttribute: '' as IntlString,
+    CreatingAttributeConfirm: '' as IntlString
   }
 })

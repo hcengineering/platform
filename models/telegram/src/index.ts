@@ -23,8 +23,7 @@ import {
   ArrOf,
   Index,
   Collection,
-  TypeTimestamp,
-  getType
+  TypeTimestamp
 } from '@anticrm/model'
 import core, { TAttachedDoc } from '@anticrm/model-core'
 import contact from '@anticrm/model-contact'
@@ -43,7 +42,7 @@ import attachment from '@anticrm/model-attachment'
 export const DOMAIN_TELEGRAM = 'telegram' as Domain
 
 function TypeSharedMessage (): Type<SharedTelegramMessage> {
-  return getType(telegram.class.SharedMessage, telegram.string.SharedMessage)
+  return { _class: telegram.class.SharedMessage, label: telegram.string.SharedMessage }
 }
 
 @Model(telegram.class.Message, core.class.AttachedDoc, DOMAIN_TELEGRAM)

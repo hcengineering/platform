@@ -80,7 +80,7 @@ export interface AttachedDoc extends Doc {
  * @public
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export interface Type<T extends PropertyType> extends Doc, UXObject {}
+export interface Type<T extends PropertyType> extends UXObject {}
 
 /**
  * @public

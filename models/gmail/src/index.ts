@@ -26,8 +26,7 @@ import {
   Prop,
   TypeBoolean,
   TypeString,
-  TypeTimestamp,
-  getType
+  TypeTimestamp
 } from '@anticrm/model'
 import contact from '@anticrm/model-contact'
 import core, { TDoc, TAttachedDoc } from '@anticrm/model-core'
@@ -38,7 +37,7 @@ import gmail from './plugin'
 export const DOMAIN_GMAIL = 'gmail' as Domain
 
 function TypeSharedMessage (): Type<SharedMessage> {
-  return getType(gmail.class.SharedMessage, gmail.string.SharedMessage)
+  return { _class: gmail.class.SharedMessage, label: gmail.string.SharedMessage }
 }
 
 @Model(gmail.class.Message, core.class.AttachedDoc, DOMAIN_GMAIL)

@@ -39,11 +39,7 @@ async function createPseudoViewlet (
   if (presenter !== undefined) {
     let collection = ''
     if (dtx.collectionAttribute?.label !== undefined) {
-      if (dtx.collectionAttribute.isCustom === true) {
-        collection = dtx.collectionAttribute.label
-      } else {
-        collection = await translate(dtx.collectionAttribute.label, {})
-      }
+      collection = await translate(dtx.collectionAttribute.label, {})
     }
     return {
       display,

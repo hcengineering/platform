@@ -22,6 +22,8 @@
     "Editor": "Редактор",
     "MarkdownFormatting": "Форматирование",
     "Type": "Тип",
-    "WithTime": "Со временем"
+    "WithTime": "Со временем",
+    "CreatingAttribute": "Создание атрибута",
+    "CreatingAttributeConfirm": "Вы хотите создать атрибут? Изменить или удалить его будет невозможно"
   }
 }
