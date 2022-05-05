@@ -74,6 +74,7 @@
   on:click
   on:focus
   on:blur
+  on:mousemove
 >
   {#if icon && !loading}
     <div

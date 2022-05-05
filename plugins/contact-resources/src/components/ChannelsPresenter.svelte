@@ -17,7 +17,7 @@
   import type { Channel } from '@anticrm/contact'
   import type { ButtonKind, ButtonSize } from '@anticrm/ui'
   import ChannelsDropdown from './ChannelsDropdown.svelte'
-  import { showPanel } from '@anticrm/ui'
+  import { showPopup } from '@anticrm/ui'
 
   export let value: Channel[] | Channel | null
 
@@ -31,7 +31,7 @@
     if (ev.detail.presenter !== undefined && Array.isArray(value)) {
       const channel = value[0]
       if (channel !== undefined) {
-        showPanel(ev.detail.presenter, channel.attachedTo, channel.attachedToClass, 'float')
+        showPopup(ev.detail.presenter, { _id: channel.attachedTo, _class: channel.attachedToClass }, 'float')
       }
     }
   }

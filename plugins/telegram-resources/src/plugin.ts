@@ -33,6 +33,7 @@ export default mergeIds(telegramId, telegram, {
     CodeDescr: '' as IntlString,
     Cancel: '' as IntlString,
     Share: '' as IntlString,
-    PublishSelected: '' as IntlString
+    PublishSelected: '' as IntlString,
+    YouAnd: '' as IntlString
   }
 })

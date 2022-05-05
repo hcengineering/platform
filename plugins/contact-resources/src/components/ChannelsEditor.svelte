@@ -16,10 +16,10 @@
 <script lang="ts">
   import type { Class, Doc, Ref } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
-  import type { ButtonKind, ButtonSize } from '@anticrm/ui'
+  import { ButtonKind, ButtonSize, closeTooltip } from '@anticrm/ui'
 
   import { ChannelProvider, Channel } from '@anticrm/contact'
-  import { showPanel } from '@anticrm/ui'
+  import { showPopup } from '@anticrm/ui'
   import contact from '../plugin'
   import ChannelsDropdown from './ChannelsDropdown.svelte'
 
@@ -108,7 +108,8 @@
     if (ev.detail.presenter !== undefined && Array.isArray(channels)) {
       const channel = channels[0]
       if (channel !== undefined) {
-        showPanel(ev.detail.presenter, channel.attachedTo, channel.attachedToClass, 'float')
+        closeTooltip()
+        showPopup(ev.detail.presenter, { _id: channel.attachedTo, _class: channel.attachedToClass }, 'float')
       }
     }
   }

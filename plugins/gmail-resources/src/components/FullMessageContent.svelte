@@ -22,11 +22,13 @@
 <style lang="scss">
   iframe {
     overflow: auto;
-    border: none;
-    border-radius: 0.5rem;
     height: 100%;
-    background-color: #fff;
-    color: #1f212b;
+    font-family: var(--font-family);
+    font-weight: 400;
+    font-size: 0.875rem;
+    background-color: #ffffffc0;
+    border: none;
+    border-radius: 0.25rem;
 
     :global(a) {
       font: inherit;
