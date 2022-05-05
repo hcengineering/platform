@@ -19,7 +19,7 @@
   import gmail from '../plugin'
   import { Channel, Contact, EmployeeAccount, formatName } from '@anticrm/contact'
   import contact from '@anticrm/contact'
-  import plugin, { ActionIcon, IconShare, Button, Tooltip, showPopup, Icon, Label, eventToHTMLElement, Scroller } from '@anticrm/ui'
+  import plugin, { IconShare, Button, Tooltip, showPopup, Icon, Label, eventToHTMLElement, Scroller } from '@anticrm/ui'
   import { getCurrentAccount, Ref, SortingOrder, Space } from '@anticrm/core'
   import setting from '@anticrm/setting'
   import Connect from './Connect.svelte'
@@ -179,7 +179,7 @@
     {:else}
       <div class="flex-col-center justify-center h-full">
         <Icon icon={IconInbox} size={'full'} />
-        <div class="mt-4 fs-bold dark-color"><Label label={gmail.string.Incoming} /></div>
+        <div class="mt-4 fs-bold dark-color"><Label label={plugin.string.Incoming} /></div>
       </div>
     {/if}
   </div>

@@ -16,7 +16,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import type { Attachment } from '@anticrm/attachment'
-  import { showPopup, closeTooltip, Icon, IconClose, Button } from '@anticrm/ui'
+  import { showPopup, closeTooltip, Icon, IconClose } from '@anticrm/ui'
   import { PDFViewer, getFileUrl } from '@anticrm/presentation'
   import filesize from 'filesize'
 
@@ -51,7 +51,7 @@
     >
       {iconLabel(value.name)}
       {#if removable}
-        <div class="remove-btn" on:click|stopPropagation={() => { dispatch('remove') }}>
+        <div class="remove-btn" on:click|preventDefault={() => { dispatch('remove') }}>
           <Icon icon={IconClose} size={'medium'} />
         </div>
       {/if}
@@ -61,7 +61,7 @@
       <div class="flex-center icon">
         {iconLabel(value.name)}
         {#if removable}
-          <div class="remove-btn" on:click|stopPropagation={() => { dispatch('remove') }}>
+          <div class="remove-btn" on:click|preventDefault={() => { dispatch('remove') }}>
             <Icon icon={IconClose} size={'medium'} />
           </div>
         {/if}
@@ -110,7 +110,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background-color: var(--primary-bg-color);
+      background-color: var(--primary-bg-hover);
       border-radius: 0.5rem;
       opacity: 0;
     }

@@ -16,7 +16,7 @@
   import { createEventDispatcher, onMount } from 'svelte'
   import type { IntlString } from '@anticrm/platform'
   import { translate } from '@anticrm/platform'
-  import { Button, Icon, IconClose, IconBlueCheck, IconArrowRight, closeTooltip } from '@anticrm/ui'
+  import { Button, IconClose, closeTooltip } from '@anticrm/ui'
   import IconCopy from './icons/Copy.svelte'
 
   export let value: string = ''

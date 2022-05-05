@@ -22,7 +22,7 @@
   import { getResource, setPlatformStatus, unknownError } from '@anticrm/platform'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { TextEditor } from '@anticrm/text-editor'
-  import { Scroller, IconArrowLeft, IconAttachment, IconClose, Label } from '@anticrm/ui'
+  import { Scroller, IconArrowLeft, IconAttachment, Label } from '@anticrm/ui'
   import Button from '@anticrm/ui/src/components/Button.svelte'
   import EditBox from '@anticrm/ui/src/components/EditBox.svelte'
   import { createEventDispatcher } from 'svelte'
