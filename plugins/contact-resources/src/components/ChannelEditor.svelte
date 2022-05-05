@@ -74,9 +74,14 @@
     }}
   />
   {#if editable}
-    <Button kind={'transparent'} size={'small'} icon={IconBlueCheck} on:click={() => {
-      dispatch('update', value)
-      closeTooltip()
-    }} />
+    <Button
+      kind={'transparent'}
+      size={'small'}
+      icon={IconBlueCheck}
+      on:click={() => {
+        dispatch('update', value)
+        closeTooltip()
+      }}
+    />
   {/if}
 </div>
