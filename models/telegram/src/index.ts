@@ -14,17 +14,7 @@
 // limitations under the License.
 //
 
-import {
-  Builder,
-  Model,
-  TypeString,
-  TypeBoolean,
-  Prop,
-  ArrOf,
-  Index,
-  Collection,
-  TypeTimestamp
-} from '@anticrm/model'
+import { Builder, Model, TypeString, TypeBoolean, Prop, ArrOf, Index, Collection, TypeTimestamp } from '@anticrm/model'
 import core, { TAttachedDoc } from '@anticrm/model-core'
 import contact from '@anticrm/model-contact'
 import telegram from './plugin'

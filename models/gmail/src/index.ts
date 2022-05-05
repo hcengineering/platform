@@ -17,17 +17,7 @@
 import activity from '@anticrm/activity'
 import { Domain, IndexKind, Timestamp, Type } from '@anticrm/core'
 import type { Message, NewMessage, SharedMessage, SharedMessages } from '@anticrm/gmail'
-import {
-  ArrOf,
-  Builder,
-  Collection,
-  Index,
-  Model,
-  Prop,
-  TypeBoolean,
-  TypeString,
-  TypeTimestamp
-} from '@anticrm/model'
+import { ArrOf, Builder, Collection, Index, Model, Prop, TypeBoolean, TypeString, TypeTimestamp } from '@anticrm/model'
 import contact from '@anticrm/model-contact'
 import core, { TDoc, TAttachedDoc } from '@anticrm/model-core'
 import attachment from '@anticrm/model-attachment'
