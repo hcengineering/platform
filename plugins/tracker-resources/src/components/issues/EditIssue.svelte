@@ -20,12 +20,21 @@
   import { createQuery, getClient, UserBox } from '@anticrm/presentation'
   import { StyledTextBox } from '@anticrm/text-editor'
   import type { Issue, IssueStatus, Team } from '@anticrm/tracker'
-  import { Button, EditBox, IconDownOutline, IconEdit, IconMoreH, IconUpOutline, Label } from '@anticrm/ui'
+  import {
+    Button,
+    DatePresenter,
+    EditBox,
+    IconDownOutline,
+    IconEdit,
+    IconMoreH,
+    IconUpOutline,
+    Label
+  } from '@anticrm/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import tracker from '../../plugin'
   import IssuePresenter from './IssuePresenter.svelte'
-  import PriorityPresenter from './PriorityPresenter.svelte'
-  import StatusPresenter from './StatusPresenter.svelte'
+  import PriorityEditor from './PriorityEditor.svelte'
+  import StatusEditor from './StatusEditor.svelte'
 
   export let _id: Ref<Issue>
   export let _class: Ref<Class<Issue>>
@@ -80,16 +89,14 @@
   onMount(() => {
     dispatch('open', { ignoreKeys: ['comments', 'name', 'description', 'number'] })
   })
-  let minimize: boolean = false
 </script>
 
 {#if issue !== undefined}
   <Panel
     object={issue}
-    bind:minimize
     isHeader
-    isAside={!minimize}
-    isSub={minimize}
+    isAside={true}
+    isSub={false}
     bind:innerWidth
     on:close={() => {
       dispatch('close')
@@ -136,7 +143,7 @@
         alwaysEdit
         bind:content={issue.description}
         placeholder={tracker.string.IssueDescriptionPlaceholder}
-        on:value={(evt) => change('description', evt.detail)}
+        on:value={(evt) => evt.detail !== issue?.description && change('description', evt.detail)}
       />
     </div>
 
@@ -167,14 +174,14 @@
             <span class="label w-24">
               <Label label={tracker.string.Status} />
             </span>
-            <StatusPresenter value={issue} statuses={issueStatuses} currentSpace={currentTeam._id} shouldShowLabel />
+            <StatusEditor value={issue} statuses={issueStatuses} currentSpace={currentTeam._id} shouldShowLabel />
           </div>
 
           <div class="flex-row-center mb-4">
             <span class="label w-24">
               <Label label={tracker.string.Priority} />
             </span>
-            <PriorityPresenter value={issue} currentSpace={currentTeam._id} shouldShowLabel />
+            <PriorityEditor value={issue} currentSpace={currentTeam._id} shouldShowLabel />
           </div>
 
           <div class="flex-row-center mb-4">
@@ -221,6 +228,21 @@
               kind="link"
             />
           </div>
+
+          {#if issue.dueDate !== null}
+            <div class="devider" />
+
+            <div class="flex-row-center mb-4">
+              <span class="label w-24">
+                <Label label={tracker.string.DueDate} />
+              </span>
+              <DatePresenter
+                bind:value={issue.dueDate}
+                editable
+                on:change={({ detail }) => change('dueDate', detail)}
+              />
+            </div>
+          {/if}
         </div>
       {:else}
         <div class="buttons-group small-gap">

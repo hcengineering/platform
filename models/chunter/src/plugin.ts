@@ -20,7 +20,7 @@ import type { Ref } from '@anticrm/core'
 import type { IntlString } from '@anticrm/platform'
 import { mergeIds } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'
-import type { Action, ViewAction, ViewletDescriptor } from '@anticrm/view'
+import type { Action, ActionCategory, ViewAction, ViewletDescriptor } from '@anticrm/view'
 
 export default mergeIds(chunterId, chunter, {
   component: {
@@ -42,6 +42,9 @@ export default mergeIds(chunterId, chunter, {
     MarkCommentUnread: '' as ViewAction,
     ArchiveChannel: '' as ViewAction,
     UnarchiveChannel: '' as ViewAction
+  },
+  category: {
+    Chunter: '' as Ref<ActionCategory>
   },
   string: {
     ApplicationLabelChunter: '' as IntlString,

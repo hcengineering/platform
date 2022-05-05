@@ -16,7 +16,8 @@
 import { Space } from '@anticrm/core'
 import { IntlString, mergeIds, Resource } from '@anticrm/platform'
 import { AnyComponent } from '@anticrm/ui'
-import workbench, { workbenchId } from '@anticrm/workbench'
+import { workbenchId } from '@anticrm/workbench'
+import workbench from '@anticrm/workbench-resources/src/plugin'
 
 export default mergeIds(workbenchId, workbench, {
   component: {
@@ -25,7 +26,6 @@ export default mergeIds(workbenchId, workbench, {
     SpaceBrowser: '' as AnyComponent
   },
   string: {
-    Archive: '' as IntlString,
     Application: '' as IntlString,
     SpaceBrowser: '' as IntlString
   },

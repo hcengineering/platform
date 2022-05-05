@@ -15,7 +15,7 @@
 
 import type { Employee } from '@anticrm/contact'
 import contact from '@anticrm/contact'
-import { Domain, DOMAIN_MODEL, IndexKind, Markup, Ref, Timestamp } from '@anticrm/core'
+import { Domain, DOMAIN_MODEL, IndexKind, Markup, Ref, Timestamp, Type } from '@anticrm/core'
 import {
   ArrOf,
   Builder,
@@ -33,19 +33,21 @@ import {
 } from '@anticrm/model'
 import attachment from '@anticrm/model-attachment'
 import chunter from '@anticrm/model-chunter'
-import core, { DOMAIN_SPACE, TAttachedDoc, TDoc, TSpace } from '@anticrm/model-core'
+import core, { DOMAIN_SPACE, TAttachedDoc, TDoc, TSpace, TType } from '@anticrm/model-core'
+import { createAction } from '@anticrm/model-view'
+import workbench, { createNavigateAction } from '@anticrm/model-workbench'
+import { Asset, IntlString } from '@anticrm/platform'
+import view, { KeyBinding } from '@anticrm/view'
 import {
   Document,
   Issue,
   IssuePriority,
   IssueStatus,
-  Project,
   IssueStatusCategory,
+  Project,
   ProjectStatus,
   Team
 } from '@anticrm/tracker'
-import workbench from '@anticrm/model-workbench'
-import { Asset, IntlString } from '@anticrm/platform'
 import tracker from './plugin'
 
 export { trackerOperation } from './migration'
@@ -81,6 +83,19 @@ export class TIssueStatusCategory extends TDoc implements IssueStatusCategory {
   defaultStatusName!: string
   order!: number
 }
+
+/**
+ * @public
+ */
+export function TypeIssuePriority (): Type<IssuePriority> {
+  return { _class: tracker.class.TypeIssuePriority, label: 'TypeIssuePriority' as IntlString }
+}
+
+/**
+ * @public
+ */
+@Model(tracker.class.TypeIssuePriority, core.class.Type, DOMAIN_MODEL)
+export class TTypeIssuePriority extends TType {}
 
 /**
  * @public
@@ -124,7 +139,7 @@ export class TIssue extends TDoc implements Issue {
   @Prop(TypeRef(tracker.class.IssueStatus), tracker.string.Status)
   status!: Ref<IssueStatus>
 
-  @Prop(TypeNumber(), tracker.string.Priority)
+  @Prop(TypeIssuePriority(), tracker.string.Priority)
   priority!: IssuePriority
 
   @Prop(TypeNumber(), tracker.string.Number)
@@ -153,7 +168,7 @@ export class TIssue extends TDoc implements Issue {
 
   declare space: Ref<Team>
 
-  @Prop(TypeDate(true), tracker.string.Number)
+  @Prop(TypeDate(true), tracker.string.DueDate)
   dueDate!: Timestamp | null
 
   @Prop(TypeString(), tracker.string.Rank)
@@ -225,7 +240,7 @@ export class TProject extends TDoc implements Project {
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TTeam, TProject, TIssue, TIssueStatus, TIssueStatusCategory)
+  builder.createModel(TTeam, TProject, TIssue, TIssueStatus, TIssueStatusCategory, TTypeIssuePriority)
 
   builder.createDoc(
     tracker.class.IssueStatusCategory,
@@ -292,6 +307,20 @@ export function createModel (builder: Builder): void {
     tracker.issueStatusCategory.Canceled
   )
 
+  const issuesId = 'issues'
+  const activeId = 'active'
+  const backlogId = 'backlog'
+  const boardId = 'board'
+  const projectsId = 'projects'
+
+  builder.mixin(tracker.class.TypeIssuePriority, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: tracker.component.PriorityPresenter
+  })
+
+  builder.mixin(tracker.class.IssueStatus, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: tracker.component.StatusPresenter
+  })
+
   builder.createDoc(
     workbench.class.Application,
     core.space.Model,
@@ -332,31 +361,31 @@ export function createModel (builder: Builder): void {
             icon: tracker.icon.Home,
             specials: [
               {
-                id: 'issues',
+                id: issuesId,
                 label: tracker.string.Issues,
                 icon: tracker.icon.Issues,
                 component: tracker.component.Issues
               },
               {
-                id: 'active',
+                id: activeId,
                 label: tracker.string.Active,
                 // icon: tracker.icon.TrackerApplication,
                 component: tracker.component.Active
               },
               {
-                id: 'backlog',
+                id: backlogId,
                 label: tracker.string.Backlog,
                 // icon: tracker.icon.TrackerApplication,
                 component: tracker.component.Backlog
               },
               {
-                id: 'board',
+                id: boardId,
                 label: tracker.string.Board,
                 // icon: tracker.icon.TrackerApplication,
                 component: tracker.component.Board
               },
               {
-                id: 'projects',
+                id: projectsId,
                 label: tracker.string.Projects,
                 icon: tracker.icon.Projects,
                 component: tracker.component.Projects
@@ -369,4 +398,35 @@ export function createModel (builder: Builder): void {
     },
     tracker.app.Tracker
   )
+
+  function createGotoSpecialAction (builder: Builder, id: string, key: KeyBinding, label: IntlString): void {
+    createNavigateAction(builder, key, label, {
+      application: tracker.app.Tracker,
+      mode: 'space',
+      spaceSpecial: id,
+      spaceClass: tracker.class.Team
+    })
+  }
+
+  createGotoSpecialAction(builder, issuesId, 'g->e', tracker.string.GotoIssues)
+  createGotoSpecialAction(builder, activeId, 'g->a', tracker.string.GotoActive)
+  createGotoSpecialAction(builder, backlogId, 'g->b', tracker.string.GotoBacklog)
+  createGotoSpecialAction(builder, boardId, 'g->d', tracker.string.GotoBoard)
+  createGotoSpecialAction(builder, projectsId, 'g->p', tracker.string.GotoProjects)
+
+  createAction(builder, {
+    action: workbench.actionImpl.Navigate,
+    actionProps: {
+      mode: 'app',
+      application: tracker.app.Tracker
+    },
+    label: tracker.string.GotoTrackerApplication,
+    icon: view.icon.ArrowRight,
+    input: 'none',
+    category: view.category.Navigation,
+    target: core.class.Doc,
+    context: {
+      mode: ['workbench', 'browser', 'editor', 'panel', 'popup']
+    }
+  })
 }

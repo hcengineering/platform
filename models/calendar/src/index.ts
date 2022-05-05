@@ -22,6 +22,7 @@ import {
   ArrOf,
   Builder,
   Collection,
+  Hidden,
   Index,
   Mixin,
   Model,
@@ -37,7 +38,7 @@ import chunter from '@anticrm/model-chunter'
 import contact from '@anticrm/model-contact'
 import core, { TAttachedDoc } from '@anticrm/model-core'
 import { TSpaceWithStates } from '@anticrm/model-task'
-import view from '@anticrm/model-view'
+import view, { createAction } from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
 import notification from '@anticrm/notification'
 import calendar from './plugin'
@@ -85,10 +86,12 @@ export class TEvent extends TAttachedDoc implements Event {
 @UX(calendar.string.Reminder, calendar.icon.Calendar)
 export class TReminder extends TEvent implements Reminder {
   @Prop(TypeDate(true), calendar.string.Shift)
+  @Hidden()
   shift!: Timestamp
 
   @Prop(TypeString(), calendar.string.State)
   @Index(IndexKind.Indexed)
+  @Hidden()
   state!: 'active' | 'done'
 }
 
@@ -153,24 +156,27 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
-    view.class.Action,
+    view.class.ActionCategory,
     core.space.Model,
+    { label: calendar.string.Calendar, visible: true },
+    calendar.category.Calendar
+  )
+
+  createAction(
+    builder,
     {
+      action: calendar.actionImpl.SaveEventReminder,
       label: calendar.string.RemindMeAt,
       icon: calendar.icon.Reminder,
-      action: calendar.actionImpl.SaveEventReminder,
-      singleInput: true
+      input: 'focus',
+      category: calendar.category.Calendar,
+      target: calendar.class.Event,
+      context: {
+        mode: 'context'
+      }
     },
     calendar.action.SaveEventReminder
   )
-
-  builder.createDoc(view.class.ActionTarget, core.space.Model, {
-    target: calendar.class.Event,
-    action: calendar.action.SaveEventReminder,
-    context: {
-      mode: 'context'
-    }
-  })
 
   builder.mixin(calendar.mixin.Reminder, core.class.Class, view.mixin.AttributePresenter, {
     presenter: calendar.component.ReminderPresenter

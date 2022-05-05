@@ -13,47 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref } from '@anticrm/core'
-  import { Issue, IssuePriority, Team } from '@anticrm/tracker'
-  import { getClient } from '@anticrm/presentation'
-  import { Tooltip } from '@anticrm/ui'
-  import tracker from '../../plugin'
-  import PrioritySelector from '../PrioritySelector.svelte'
+  import { IssuePriority } from '@anticrm/tracker'
+  import { Label } from '@anticrm/ui'
+  import { issuePriorities } from '../../utils'
 
-  export let value: Issue
-  export let currentSpace: Ref<Team> | undefined = undefined
-  export let isEditable: boolean = true
-  export let shouldShowLabel: boolean = false
-
-  const client = getClient()
-
-  const handlePriorityChanged = async (newPriority: IssuePriority | undefined) => {
-    if (!isEditable || newPriority === undefined) {
-      return
-    }
-
-    const currentIssue = await client.findOne(tracker.class.Issue, { space: currentSpace, _id: value._id })
-
-    if (currentIssue === undefined) {
-      return
-    }
-
-    await client.update(currentIssue, { priority: newPriority })
-  }
+  export let value: IssuePriority | undefined
 </script>
 
-{#if value}
-  {#if isEditable}
-    <Tooltip direction={'bottom'} label={tracker.string.SetPriority}>
-      <PrioritySelector
-        kind={'icon'}
-        {isEditable}
-        {shouldShowLabel}
-        priority={value.priority}
-        onPriorityChange={handlePriorityChanged}
-      />
-    </Tooltip>
-  {:else}
-    <PrioritySelector kind={'icon'} {isEditable} {shouldShowLabel} priority={value.priority} />
-  {/if}
+{#if value !== undefined}
+  <span class="overflow-label">
+    <Label label={issuePriorities[value].label} />
+  </span>
 {/if}

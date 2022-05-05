@@ -32,6 +32,8 @@
     "EditReminder": "Edit reminder",
     "CreateReminder": "Create reminder",
     "CreatedReminder": "Created a reminder",
-    "Reminders": "Reminders"
+    "Reminders": "Reminders",
+    "Shift": "Shift",
+    "State": "State"
   }
 }

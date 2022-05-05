@@ -78,7 +78,7 @@
   selectedObjectIds={$selectionStore ?? []}
   selectedRowIndex={listProvider.current($focusStore)}
   on:row-focus={(event) => {
-    listProvider.updateFocus(event.detail)
+    listProvider.updateFocus(event.detail ?? undefined)
   }}
   on:check={(event) => {
     listProvider.updateSelection(event.detail.docs, event.detail.value)

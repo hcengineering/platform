@@ -128,7 +128,7 @@
       {#if elements.length > 0}
         <div class="sticky-wrapper">
           <div class="menu-group" style:overflow="visible">
-            {#each elements as element}
+            {#each elements.filter((it) => tagElements?.has(it._id)) as element}
               <button
                 class="menu-item"
                 on:click={() => {
@@ -183,13 +183,6 @@
 </div>
 
 <style lang="scss">
-  // .counter {
-  //   padding-right: 0.125rem;
-  //   min-width: 1.5rem;
-  //   text-align: right;
-  //   font-size: 0.8125rem;
-  //   color: var(--caption-color);
-  // }
   .empty {
     display: flex;
     justify-content: center;

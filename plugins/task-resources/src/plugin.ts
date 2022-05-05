@@ -23,7 +23,6 @@ export default mergeIds(taskId, task, {
     CreateProject: '' as IntlString,
     ProjectName: '' as IntlString,
     ProjectNamePlaceholder: '' as IntlString,
-    CreateTask: '' as IntlString,
     TaskCreateLabel: '' as IntlString,
     TaskAssignee: '' as IntlString,
     TaskNamePlaceholder: '' as IntlString,

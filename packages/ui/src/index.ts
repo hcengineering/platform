@@ -30,6 +30,7 @@ export type {
   AnySvelteComponentWithProps,
   Location,
   PopupAlignment,
+  PopupPositionElement,
   ButtonKind,
   ButtonSize
 } from './types'

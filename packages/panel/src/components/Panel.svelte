@@ -32,15 +32,9 @@
   export let isSub: boolean = true
   export let isAside: boolean = true
   export let isCustomAttr: boolean = true
-  export let minimize: boolean = false
-
-  let docWidth: number = 0
-  $: minimize = docWidth < 1280 && docWidth >= 1024
-  $: needHeader = $$slots.header || minimize || isHeader
 </script>
 
-<svelte:window bind:innerWidth={docWidth} />
-<Panel bind:isAside isHeader={needHeader} bind:panelWidth bind:innerWidth on:close>
+<Panel bind:isAside isHeader={$$slots.header || isHeader} bind:panelWidth bind:innerWidth on:close>
   <svelte:fragment slot="title">
     <div class="popupPanel-title__content-container antiTitle">
       {#if $$slots.navigator}
@@ -72,23 +66,17 @@
   </svelte:fragment>
 
   <svelte:fragment slot="header">
-    {#if $$slots.header || ($$slots.actions && minimize)}
+    {#if $$slots.header}
       <div class="header-row between">
         {#if $$slots.header}<slot name="header" />{/if}
         <div class="buttons-group xsmall-gap ml-4">
           <slot name="tools" />
-          {#if $$slots.actions && minimize}
-            <div class="buttons-divider" />
-            <slot name="actions" />
-          {/if}
         </div>
       </div>
     {/if}
     {#if $$slots['custom-attributes'] && isCustomAttr}
       {#if isSub}<div class="header-row"><slot name="custom-attributes" direction="row" /></div>{/if}
-    {:else if $$slots.attributes && minimize}<div class="header-row">
-        <slot name="attributes" direction="row" />
-      </div>{/if}
+    {/if}
   </svelte:fragment>
 
   <svelte:fragment slot="aside">

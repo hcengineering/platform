@@ -30,6 +30,7 @@ import type {
 import type { Asset, IntlString, Plugin, Resource, Status } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import type { AnyComponent, AnySvelteComponent } from '@anticrm/ui'
+import { PopupPosAlignment } from '@anticrm/ui/src/types'
 
 /**
  * @public
@@ -116,41 +117,70 @@ export type KeyBinding = string
 /**
  * @public
  */
-export type ViewAction = Resource<(doc: Doc | Doc[] | undefined, evt: Event) => Promise<void>>
+export type ViewActionInput = 'focus' | 'selection' | 'any' | 'none'
+
 /**
  * @public
  */
-export interface Action extends Doc, UXObject {
-  keyBinding?: KeyBinding[]
-  action: ViewAction
+export type ViewAction<T = Record<string, any>> = Resource<
+(doc: Doc | Doc[] | undefined, evt: Event, params?: T) => Promise<void>
+>
+
+/**
+ * @public
+ */
+export interface ActionCategory extends Doc, UXObject {
+  // Does category is visible for use in popup.
+  visible: boolean
+}
+
+/**
+ * @public
+ */
+export interface Action<T extends Doc = Doc, P = Record<string, any>> extends Doc, UXObject {
+  // Action implementation details
+  action: ViewAction<P>
+  // Action implementation parameters
+  actionProps?: P
 
   // If specified, action could be used only with one item selected.
-  // By default it is treated as false
-  singleInput?: boolean
-}
+  // single - one object is required
+  // any - one or multiple objects are required
+  // any - any input is suitable.
+  input: ViewActionInput
 
-/**
- * Define action to 'object' mapping.
- * @public
- */
-export interface ActionTarget<T extends Doc = Doc> extends Doc {
-  target: Ref<Class<T>>
-  action: Ref<Action>
+  // Focus and/or all selection document should match target class.
+  target: Ref<Class<Doc>>
+  // Action is applicable only for objects matching criteria
   query?: DocumentQuery<T>
-  context: ViewContext
 
-  // If specified, will be used instead of action from Action.
-  override?: ViewAction
+  // If defined, types should be matched to proposed list
+  inputProps?: Record<string, Ref<Class<Doc>>>
+
+  // Kayboard bindings
+  keyBinding?: KeyBinding[]
+
+  // short description for action.
+  description?: IntlString
+
+  // Action category, for UI.
+  category: Ref<ActionCategory>
+
+  // Context action is defined for
+  context: ViewContext
 }
 
 /**
  * @public
+ *  context - only for context menu actions.
  *  workbench - global actions per application or entire workbench.
  *  browser - actions for list/table/kanban browsing.
  *  editor - actions for selected editor context.
- *  context - only for context menu actions.
+ *  panel - for panel based actions.
+ *  popup - for popup based actions, like Close of Popup.
+ *  input - for input based actions, some actions should be available for input controls.
  */
-export type ViewContextType = 'context' | 'workbench' | 'browser' | 'editor' | 'panel' | 'popup' | 'context'
+export type ViewContextType = 'context' | 'workbench' | 'browser' | 'editor' | 'panel' | 'popup' | 'input' | 'none'
 
 /**
  * @public
@@ -272,7 +302,7 @@ const view = plugin(viewId, {
     ViewletDescriptor: '' as Ref<Class<ViewletDescriptor>>,
     Viewlet: '' as Ref<Class<Viewlet>>,
     Action: '' as Ref<Class<Action>>,
-    ActionTarget: '' as Ref<Class<ActionTarget>>,
+    ActionCategory: '' as Ref<Class<ActionCategory>>,
     LinkPresenter: '' as Ref<Class<LinkPresenter>>
   },
   viewlet: {
@@ -281,6 +311,7 @@ const view = plugin(viewId, {
   component: {
     ObjectPresenter: '' as AnyComponent,
     EditDoc: '' as AnyComponent,
+    CreateAttribute: '' as AnyComponent,
     SpacePresenter: '' as AnyComponent
   },
   icon: {
@@ -291,7 +322,39 @@ const view = plugin(viewId, {
     Move: '' as Asset,
     Archive: '' as Asset,
     Statuses: '' as Asset,
-    Open: '' as Asset
+    Open: '' as Asset,
+    ArrowRight: '' as Asset
+  },
+  category: {
+    General: '' as Ref<ActionCategory>,
+    GeneralNavigation: '' as Ref<ActionCategory>,
+    Navigation: '' as Ref<ActionCategory>,
+    Editor: '' as Ref<ActionCategory>,
+    MarkdownFormatting: '' as Ref<ActionCategory>
+  },
+  actionImpl: {
+    UpdateDocument: '' as ViewAction<{
+      key: string
+      value: any
+      ask?: boolean
+      label?: IntlString
+      message?: IntlString
+    }>,
+    ShowPanel: '' as ViewAction<{
+      component?: AnyComponent
+      element?: PopupPosAlignment
+      rightSection?: AnyComponent
+    }>,
+    ShowPopup: '' as ViewAction<{
+      component: AnyComponent
+      element?: PopupPosAlignment
+      _id?: string
+      _class?: string
+      _space?: string
+      value?: string
+      values?: string
+      props?: Record<string, any>
+    }>
   }
 })
 export default view

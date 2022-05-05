@@ -84,7 +84,6 @@
   onMount(() => {
     dispatch('open', { ignoreKeys: ['comments', 'number', 'title'] })
   })
-  let minimize: boolean = false
 </script>
 
 {#if object !== undefined}
@@ -92,9 +91,8 @@
     icon={board.icon.Card}
     title={object?.title}
     {object}
-    bind:minimize
-    isHeader={minimize}
-    isAside={!minimize}
+    isHeader={false}
+    isAside={true}
     on:close={() => dispatch('close')}
   >
     <svelte:fragment slot="navigator">

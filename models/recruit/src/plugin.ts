@@ -21,22 +21,17 @@ import { recruitId } from '@anticrm/recruit'
 import recruit from '@anticrm/recruit-resources/src/plugin'
 import { KanbanTemplate } from '@anticrm/task'
 import type { AnyComponent } from '@anticrm/ui'
-import type { Action, ViewAction } from '@anticrm/view'
+import type { Action, ActionCategory, ViewAction } from '@anticrm/view'
 
 export default mergeIds(recruitId, recruit, {
   action: {
-    CreateCandidate: '' as Ref<Action>,
-    CreateApplication: '' as Ref<Action>,
-    EditVacancy: '' as Ref<Action>,
-    CreateReview: '' as Ref<Action>,
     CreateOpinion: '' as Ref<Action>
   },
   actionImpl: {
-    CreateCandidate: '' as ViewAction,
-    CreateApplication: '' as ViewAction,
-    EditVacancy: '' as ViewAction,
-    CreateReview: '' as ViewAction,
     CreateOpinion: '' as ViewAction
+  },
+  category: {
+    Recruit: '' as Ref<ActionCategory>
   },
   string: {
     ApplicationShort: '' as IntlString,
@@ -50,7 +45,13 @@ export default mergeIds(recruitId, recruit, {
     Due: '' as IntlString,
     Source: '' as IntlString,
     ManageVacancyStatuses: '' as IntlString,
-    EditVacancy: '' as IntlString
+    EditVacancy: '' as IntlString,
+    GotoCandidates: '' as IntlString,
+    GotoVacancies: '' as IntlString,
+    GotoSkills: '' as IntlString,
+    GotoAssigned: '' as IntlString,
+    GotoApplicants: '' as IntlString,
+    GotoRecruitApplication: '' as IntlString
   },
   validator: {
     ApplicantValidator: '' as Resource<<T extends Doc>(doc: T, client: Client) => Promise<Status>>,

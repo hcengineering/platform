@@ -31,6 +31,7 @@ test.describe('contact tests', () => {
     // Click [placeholder="john\.appleseed\@apple\.com"]
     await page.click('button:has-text("Email")')
     // Fill [placeholder="john\.appleseed\@apple\.com"]
+    await page.click('text=Edit profile John Appleseed LoPlaza >> button')
     await page.fill('[placeholder="john\\.appleseed\\@apple\\.com"]', 'wer@qwe.com')
     // Click text=Apply
     await page.click('button:nth-child(3)')

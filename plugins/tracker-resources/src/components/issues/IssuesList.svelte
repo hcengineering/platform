@@ -32,7 +32,7 @@
   import { buildModel, getObjectPresenter, LoadingProps, Menu } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
-  import { IssuesGroupByKeys, issuesGroupPresenterMap, IssuesOrderByKeys, issuesSortOrderMap } from '../../utils'
+  import { IssuesGroupByKeys, issuesGroupEditorMap, IssuesOrderByKeys, issuesSortOrderMap } from '../../utils'
   import CreateIssue from '../CreateIssue.svelte'
 
   export let _class: Ref<Class<Doc>>
@@ -64,8 +64,7 @@
 
   $: combinedGroupedIssues = Object.values(groupedIssues).flat(1)
   $: options = { ...baseOptions, sort: { [orderBy]: issuesSortOrderMap[orderBy] } } as FindOptions<Issue>
-  $: headerComponent =
-    groupByKey === undefined || groupByKey === 'assignee' ? null : issuesGroupPresenterMap[groupByKey]
+  $: headerComponent = groupByKey === undefined || groupByKey === 'assignee' ? null : issuesGroupEditorMap[groupByKey]
   $: selectedObjectIdsSet = new Set<Ref<Doc>>(selectedObjectIds.map((it) => it._id))
   $: objectRefs.length = combinedGroupedIssues.length
 
@@ -125,7 +124,7 @@
 
     handleRowFocused(combinedGroupedIssues[position])
 
-    if (objectRef !== undefined) {
+    if (objectRef) {
       objectRef.scrollIntoView({ behavior: 'auto', block: 'nearest' })
     }
   }
@@ -360,7 +359,7 @@
   .gridElement {
     display: flex;
     align-items: center;
-    justify-content: start;
+    justify-content: flex-start;
     margin-left: 0.5rem;
 
     &:first-child {

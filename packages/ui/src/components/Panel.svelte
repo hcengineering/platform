@@ -25,15 +25,13 @@
 
   let asideFloat: boolean = false
   let asideShown: boolean = false
-  let docWidth: number
-  $: if (docWidth < 1024 && !asideFloat) asideFloat = true
-  $: if (docWidth >= 1024 && asideFloat) {
+  $: if (panelWidth < 900 && !asideFloat) asideFloat = true
+  $: if (panelWidth >= 900 && asideFloat) {
     asideFloat = false
     asideShown = false
   }
 </script>
 
-<svelte:window bind:innerWidth={docWidth} />
 <div class="popupPanel" bind:clientWidth={panelWidth}>
   <div class="popupPanel-title">
     <Button
@@ -47,7 +45,7 @@
     <div class="popupPanel-title__content"><slot name="title" /></div>
     <div class="buttons-group xsmall-gap">
       <slot name="utils" />
-      {#if asideFloat}
+      {#if asideFloat && $$slots.aside && isAside}
         {#if $$slots.utils}<div class="buttons-divider" />{/if}
         <Button
           icon={IconDetails}

@@ -27,18 +27,18 @@
 
   const client = getClient()
 
-  async function invokeAction (evt: Event, action: ViewAction) {
+  async function invokeAction (evt: Event, action: ViewAction, props?: Record<string, any>) {
     const impl = await getResource(action)
-    await impl(Array.isArray(object) && object.length === 1 ? object[0] : object, evt)
+    await impl(Array.isArray(object) && object.length === 1 ? object[0] : object, evt, props)
   }
   let loaded = 0
 
-  getActions(client, object, baseMenuClass, !Array.isArray(object) || object.length === 1).then((result) => {
+  getActions(client, object, baseMenuClass).then((result) => {
     actions = result.map((a) => ({
       label: a.label,
       icon: a.icon as Asset,
       action: async (_: any, evt: Event) => {
-        invokeAction(evt, a.action)
+        invokeAction(evt, a.action, a.actionProps)
       }
     }))
     loaded = 1

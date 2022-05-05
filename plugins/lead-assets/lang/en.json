@@ -21,6 +21,7 @@
     "Title": "Title",
     "LeadPlaceholder": "The simple lead",
     "ManageFunnelStatuses": "Manage funnel statuses",
-    "FunnelBrowser": "Funnel browser"
+    "FunnelBrowser": "Funnel browser",
+    "GotoLeadApplication": "Switch to Lead Application"
   }
 }

@@ -14,10 +14,24 @@
 // limitations under the License.
 //
 
-import type { Doc } from '@anticrm/core'
-import core, { Class, Client, FindResult, matchQuery, Ref } from '@anticrm/core'
-import type { Action, ActionTarget, ViewContext } from '@anticrm/view'
+import type { Doc, WithLookup } from '@anticrm/core'
+import core, { Class, Client, matchQuery, Ref } from '@anticrm/core'
+import type { Action, ViewActionInput, ViewContextType } from '@anticrm/view'
 import view from './plugin'
+import { FocusSelection } from './selection'
+
+/**
+ * @public
+ */
+export function getSelection (focusStore: FocusSelection, selectionStore: Doc[]): Doc[] {
+  let docs: Doc[] = []
+  if (selectionStore.find((it) => it._id === focusStore.focus?._id) === undefined && focusStore.focus !== undefined) {
+    docs = [focusStore.focus]
+  } else {
+    docs = selectionStore
+  }
+  return docs
+}
 
 /**
  * @public
@@ -31,77 +45,86 @@ export async function getActions (
   client: Client,
   doc: Doc | Doc[],
   derived: Ref<Class<Doc>> = core.class.Doc,
-  singleInput = false
-): Promise<FindResult<Action>> {
-  const targets = await client.findAll(view.class.ActionTarget, {
-    'context.mode': 'context'
+  mode: ViewContextType = 'context'
+): Promise<Action[]> {
+  const actions: Action[] = await client.findAll(view.class.Action, {
+    'context.mode': mode
   })
-  const tmap = new Map(targets.map((it) => [it.action, it.context?.group]))
 
   const categories: Record<string, number> = { top: 1, filter: 50, tools: 100 }
 
-  let filter = targets.map((it) => it.action)
+  let filteredActions = actions
+
   if (Array.isArray(doc)) {
     for (const d of doc) {
-      const b = filterActions(client, d, targets, derived)
-      filter = filter.filter((it) => b.includes(it))
+      filteredActions = filterActions(client, d, filteredActions, derived)
     }
   } else {
-    filter = filterActions(client, doc, targets, derived)
+    filteredActions = filterActions(client, doc, filteredActions, derived)
   }
-  const result = await client.findAll(view.class.Action, {
-    _id: { $in: filter },
-    singleInput: { $in: [undefined, singleInput] }
-  })
-  result.sort((a, b) => {
-    const aTarget = categories[tmap.get(a._id) ?? 'top'] ?? 0
-    const bTarget = categories[tmap.get(b._id) ?? 'top'] ?? 0
+  const inputVal: ViewActionInput[] = ['none']
+  if (!Array.isArray(doc) || doc.length === 1) {
+    inputVal.push('focus')
+    inputVal.push('any')
+  }
+  if (Array.isArray(doc) && doc.length > 0) {
+    inputVal.push('selection')
+    inputVal.push('any')
+  }
+  filteredActions = filteredActions.filter((it) => inputVal.includes(it.input))
+  filteredActions.sort((a, b) => {
+    const aTarget = categories[a.context.group ?? 'top'] ?? 0
+    const bTarget = categories[b.context.group ?? 'top'] ?? 0
     return aTarget - bTarget
   })
-  return result
+  return filteredActions
 }
 
 export async function getContextActions (
   client: Client,
-  target: Ref<Class<Doc>>,
-  context: ViewContext,
-  multiple: boolean
-): Promise<FindResult<Action>> {
-  const desc = client.getHierarchy().getAncestors(target)
-  const targets = await client.findAll(view.class.ActionTarget, {
-    target: { $in: desc },
-    'context.mode': context.mode,
-    'context.application': { $in: [context.application, undefined] }
-  })
-  return await client.findAll(view.class.Action, {
-    _id: { $in: targets.map((it) => it.action) },
-    singleInput: { $in: [undefined, !multiple] }
-  })
+  doc: Doc | Doc[],
+  context: {
+    mode: ViewContextType
+    application?: Ref<Doc>
+  }
+): Promise<Action[]> {
+  const result = await getActions(client, doc, undefined, context.mode)
+
+  if (context.application !== undefined) {
+    return result.filter((it) => it.context.application === context.application || it.context.application === undefined)
+  }
+  return result
 }
 
-function filterActions (
+/**
+ * @public
+ */
+export function filterActions (
   client: Client,
   doc: Doc,
-  targets: ActionTarget[],
+  actions: Array<WithLookup<Action>>,
   derived: Ref<Class<Doc>> = core.class.Doc
-): Array<Ref<Action>> {
-  const result: Array<Ref<Action>> = []
+): Array<WithLookup<Action>> {
+  const result: Array<WithLookup<Action>> = []
   const hierarchy = client.getHierarchy()
   const clazz = hierarchy.getClass(doc._class)
   const ignoreActions = hierarchy.as(clazz, view.mixin.IgnoreActions)
   const ignore = ignoreActions?.actions ?? []
-  for (const target of targets) {
-    if (ignore.includes(target.action)) {
+  for (const action of actions) {
+    if (ignore.includes(action._id)) {
       continue
     }
-    if (target.query !== undefined) {
-      const r = matchQuery([doc], target.query, doc._class, hierarchy)
+    if (action.query !== undefined) {
+      const r = matchQuery([doc], action.query, doc._class, hierarchy)
       if (r.length === 0) {
         continue
       }
     }
-    if (hierarchy.isDerived(doc._class, target.target) && client.getHierarchy().isDerived(target.target, derived)) {
-      result.push(target.action)
+    if (
+      (hierarchy.isDerived(doc._class, action.target) && client.getHierarchy().isDerived(action.target, derived)) ||
+      (hierarchy.isMixin(action.target) && hierarchy.hasMixin(doc, action.target))
+    ) {
+      result.push(action)
     }
   }
   return result
