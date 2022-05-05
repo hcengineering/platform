@@ -14,7 +14,18 @@
 // limitations under the License.
 //
 
-import { Builder, Model, TypeString, TypeBoolean, Prop, ArrOf, Index, Collection, TypeTimestamp } from '@anticrm/model'
+import {
+  Builder,
+  Model,
+  TypeString,
+  TypeBoolean,
+  Prop,
+  ArrOf,
+  Index,
+  Collection,
+  TypeTimestamp,
+  getType
+} from '@anticrm/model'
 import core, { TAttachedDoc } from '@anticrm/model-core'
 import contact from '@anticrm/model-contact'
 import telegram from './plugin'
@@ -32,7 +43,7 @@ import attachment from '@anticrm/model-attachment'
 export const DOMAIN_TELEGRAM = 'telegram' as Domain
 
 function TypeSharedMessage (): Type<SharedTelegramMessage> {
-  return { _class: telegram.class.SharedMessage, label: telegram.string.SharedMessage }
+  return getType(telegram.class.SharedMessage, telegram.string.SharedMessage)
 }
 
 @Model(telegram.class.Message, core.class.AttachedDoc, DOMAIN_TELEGRAM)

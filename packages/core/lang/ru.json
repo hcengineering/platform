@@ -11,6 +11,17 @@
     "Description": "Описание",
     "Private": "Личный",
     "Archived": "Архивный",
-    "ClassLabel": "Тип"
+    "ClassLabel": "Тип",
+    "String": "Строка",
+    "Markup": "Разметка",
+    "Number": "Число",
+    "Boolean": "Логическое",
+    "Timestamp": "Времянная отметка",
+    "Date": "Дата",
+    "IntlString": "Интернационализированная строка",
+    "Ref": "Ссылка",
+    "Collection": "Коллекция",
+    "Array": "Массив",
+    "Bag": "Bag"
   }
 }

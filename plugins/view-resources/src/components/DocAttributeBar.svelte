@@ -1,0 +1,33 @@
+<!--
+// Copyright © 2022 Hardcore Engineering Inc.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+-->
+<script lang="ts">
+  import { Doc, Mixin } from '@anticrm/core'
+  import { getClient } from '@anticrm/presentation'
+  import ClassAttributeBar from './ClassAttributeBar.svelte'
+
+  export let object: Doc
+  export let mixins: Mixin<Doc>[]
+  export let ignoreKeys: string[]
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+
+  $: objectClass = hierarchy.getClass(object._class)
+</script>
+
+<ClassAttributeBar {objectClass} {object} {ignoreKeys} to={undefined} vertical on:update />
+{#each mixins as mixin}
+  <div class="bottom-divider mt-4 mb-2" />
+  <ClassAttributeBar objectClass={mixin} {object} {ignoreKeys} to={objectClass._id} vertical on:update />
+{/each}

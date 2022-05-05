@@ -1,5 +1,5 @@
-//
-// Copyright © 2020 Anticrm Platform Contributors.
+<!--
+// Copyright © 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -11,16 +11,15 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+-->
+<script lang="ts">
+  import { TypeNumber } from '@anticrm/model'
+  import { onMount } from 'svelte'
+  import { createEventDispatcher } from 'svelte'
 
-import core, { coreId } from '@anticrm/core'
-import { IntlString, mergeIds } from '@anticrm/platform'
+  const dispatch = createEventDispatcher()
 
-export default mergeIds(coreId, core, {
-  string: {
-    Description: '' as IntlString,
-    Private: '' as IntlString,
-    Archived: '' as IntlString,
-    ClassLabel: '' as IntlString
-  }
-})
+  onMount(() => {
+    dispatch('change', TypeNumber())
+  })
+</script>

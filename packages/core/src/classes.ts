@@ -80,7 +80,7 @@ export interface AttachedDoc extends Doc {
  * @public
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export interface Type<T extends PropertyType> extends UXObject {}
+export interface Type<T extends PropertyType> extends Doc, UXObject {}
 
 /**
  * @public
@@ -98,6 +98,7 @@ export interface Attribute<T extends PropertyType> extends Doc, UXObject {
   name: string
   type: Type<T>
   index?: IndexKind
+  isCustom?: boolean
 }
 
 /**

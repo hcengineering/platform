@@ -35,6 +35,8 @@ export default mergeIds(viewId, view, {
     DeleteObjectConfirm: '' as IntlString,
     Assignees: '' as IntlString,
     Labels: '' as IntlString,
+    WithTime: '' as IntlString,
+    Type: '' as IntlString,
     ActionPlaceholder: '' as IntlString
   }
 })

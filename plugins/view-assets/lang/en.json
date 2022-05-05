@@ -32,6 +32,8 @@
     "General": "General",
     "Navigation": "Navigation",
     "Editor": "Editor",
-    "MarkdownFormatting": "Formatting"
+    "MarkdownFormatting": "Formatting",
+    "Type": "Type",
+    "WithTime": "WithTime"
   }
 }

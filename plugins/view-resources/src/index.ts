@@ -38,6 +38,11 @@ import UpDownNavigator from './components/UpDownNavigator.svelte'
 import GithubPresenter from './components/linkPresenters/GithubPresenter.svelte'
 import YoutubePresenter from './components/linkPresenters/YoutubePresenter.svelte'
 import ActionsPopup from './components/ActionsPopup.svelte'
+import CreateAttribute from './components/CreateAttribute.svelte'
+import StringTypeEditor from './components/typeEditors/StringTypeEditor.svelte'
+import BooleanTypeEditor from './components/typeEditors/BooleanTypeEditor.svelte'
+import DateTypeEditor from './components/typeEditors/DateTypeEditor.svelte'
+import NumberTypeEditor from './components/typeEditors/NumberTypeEditor.svelte'
 
 export { getActions } from './actions'
 export { default as ActionContext } from './components/ActionContext.svelte'
@@ -53,6 +58,11 @@ export { Table, TableView, EditDoc, ColorsPopup, Menu, SpacePresenter, UpDownNav
 export default async (): Promise<Resources> => ({
   actionImpl: actionImpl,
   component: {
+    CreateAttribute,
+    StringTypeEditor,
+    BooleanTypeEditor,
+    NumberTypeEditor,
+    DateTypeEditor,
     SpacePresenter,
     StringEditor,
     StringPresenter,

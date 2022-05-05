@@ -37,14 +37,21 @@ async function createPseudoViewlet (
   // Check if it is attached doc and collection have title override.
   const presenter = await getObjectPresenter(client, doc._class, { key: 'doc-presenter' })
   if (presenter !== undefined) {
+    let collection = ''
+    if (dtx.collectionAttribute?.label !== undefined) {
+      if (dtx.collectionAttribute.isCustom) {
+        collection = dtx.collectionAttribute.label
+      } else {
+        collection = await translate(dtx.collectionAttribute.label, {})
+      }
+    }
     return {
       display,
       icon: docClass.icon ?? activity.icon.Activity,
       label: label,
       labelParams: {
         _class: trLabel,
-        collection:
-          dtx.collectionAttribute?.label !== undefined ? await translate(dtx.collectionAttribute?.label, {}) : ''
+        collection
       },
       component: presenter.presenter,
       pseudo: true

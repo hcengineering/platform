@@ -36,7 +36,7 @@ import {
   Type,
   Version
 } from '@anticrm/core'
-import { Index, Model, Prop, TypeIntlString, TypeRef, TypeString, TypeTimestamp } from '@anticrm/model'
+import { Index, Model, Prop, TypeIntlString, TypeRef, TypeString, TypeTimestamp, UX } from '@anticrm/model'
 import type { IntlString } from '@anticrm/platform'
 import core from './component'
 
@@ -106,46 +106,57 @@ export class TAttribute extends TDoc implements AnyAttribute {
   name!: string
   type!: Type<any>
   label!: IntlString
+  isCustom?: boolean
 }
 
-@Model(core.class.Type, core.class.Obj)
-export class TType extends TObj implements Type<any> {
+@Model(core.class.Type, core.class.Doc, DOMAIN_MODEL)
+export class TType extends TDoc implements Type<any> {
   label!: IntlString
 }
 
+@UX(core.string.String)
 @Model(core.class.TypeString, core.class.Type)
 export class TTypeString extends TType {}
 
+@UX(core.string.IntlString)
 @Model(core.class.TypeIntlString, core.class.Type)
 export class TTypeIntlString extends TType {}
 
+@UX(core.string.Number)
 @Model(core.class.TypeNumber, core.class.Type)
 export class TTypeNumber extends TType {}
 
+@UX(core.string.Markup)
 @Model(core.class.TypeMarkup, core.class.Type)
 export class TTypeMarkup extends TType {}
 
+@UX(core.string.Ref)
 @Model(core.class.RefTo, core.class.Type)
 export class TRefTo extends TType implements RefTo<Doc> {
   to!: Ref<Class<Doc>>
 }
 
+@UX(core.string.Collection)
 @Model(core.class.Collection, core.class.Type)
 export class TCollection extends TType implements Collection<AttachedDoc> {
   of!: Ref<Class<Doc>>
 }
 
+@UX(core.string.Array)
 @Model(core.class.ArrOf, core.class.Type)
 export class TArrOf extends TType implements ArrOf<Doc> {
   of!: Type<Doc>
 }
 
+@UX(core.string.Boolean)
 @Model(core.class.TypeBoolean, core.class.Type)
 export class TTypeBoolean extends TType {}
 
+@UX(core.string.Timestamp)
 @Model(core.class.TypeTimestamp, core.class.Type)
 export class TTypeTimestamp extends TType {}
 
+@UX(core.string.Date)
 @Model(core.class.TypeDate, core.class.Type)
 export class TTypeDate extends TType {}
 

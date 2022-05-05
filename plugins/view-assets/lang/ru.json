@@ -20,6 +20,8 @@
     "General": "Общее",
     "Navigation": "Навигация",
     "Editor": "Редактор",
-    "MarkdownFormatting": "Форматирование"
+    "MarkdownFormatting": "Форматирование",
+    "Type": "Тип",
+    "WithTime": "Со временем"
   }
 }

@@ -22,6 +22,7 @@ import {
   Collection,
   Hidden,
   Index,
+  getType,
   Model,
   Prop,
   TypeDate,
@@ -88,7 +89,7 @@ export class TIssueStatusCategory extends TDoc implements IssueStatusCategory {
  * @public
  */
 export function TypeIssuePriority (): Type<IssuePriority> {
-  return { _class: tracker.class.TypeIssuePriority, label: 'TypeIssuePriority' as IntlString }
+  return getType(tracker.class.TypeIssuePriority, 'TypeIssuePriority' as IntlString)
 }
 
 /**
