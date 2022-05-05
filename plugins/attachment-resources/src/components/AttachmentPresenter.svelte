@@ -53,7 +53,8 @@
       {#if removable}
         <div
           class="remove-btn"
-          on:click|preventDefault={() => {
+          on:click|preventDefault={(ev) => {
+            ev.stopPropagation()
             dispatch('remove')
           }}
         >
@@ -68,7 +69,8 @@
         {#if removable}
           <div
             class="remove-btn"
-            on:click|preventDefault={() => {
+            on:click={(ev) => {
+              ev.stopPropagation()
               dispatch('remove')
             }}
           >
@@ -133,13 +135,14 @@
   }
 
   .name {
+    white-space: nowrap;
     font-weight: 500;
     color: var(--theme-content-accent-color);
-    white-space: nowrap;
     cursor: pointer;
   }
 
   .type {
+    white-space: nowrap;
     font-size: 0.75rem;
     color: var(--theme-content-dark-color);
   }

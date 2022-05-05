@@ -149,7 +149,7 @@
   let states: Array<{ id: number | string; color: number; label: string }> = []
   let selectedState: State
   const statesQuery = createQuery()
-  $: if (doc.space !== undefined) {
+  $: if (doc.space) {
     statesQuery.query(
       task.class.State,
       { space: doc.space },
@@ -158,6 +158,7 @@
           return { id: s._id, label: s.title, color: s.color }
         })
         selectedState = res.filter((s) => s._id === doc.state)[0] ?? res[0]
+        doc.state = selectedState._id
       },
       { sort: { rank: SortingOrder.Ascending } }
     )
