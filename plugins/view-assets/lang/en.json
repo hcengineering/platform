@@ -36,6 +36,6 @@
     "Type": "Type",
     "WithTime": "WithTime",
     "CreatingAttribute": "Creating an attribute",
-    "CreatingAttributeConfirm": "Do you want to create an attribute? It will not be possible to change or delete it."
+    "CreatingAttributeConfirm": "Warning: It will not be possible for now to change or delete created attribute."
   }
 }

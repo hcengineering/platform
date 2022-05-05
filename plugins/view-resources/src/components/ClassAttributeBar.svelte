@@ -48,7 +48,7 @@
       icon={IconAdd}
       size="small"
       action={() => {
-        showPopup(view.component.CreateAttribute, { _class: objectClass._id }, undefined, () => {
+        showPopup(view.component.CreateAttribute, { _class: objectClass._id }, 'top', () => {
           updateKeys(ignoreKeys)
           dispatch('update')
         })
