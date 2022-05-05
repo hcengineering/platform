@@ -188,7 +188,9 @@
     user-select: none;
     z-index: 10000;
 
-    &.doublePadding { padding: 1rem; }
+    &.doublePadding {
+      padding: 1rem;
+    }
   }
 
   .nub {

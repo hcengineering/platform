@@ -151,13 +151,21 @@
   }
 
   const editChannel = (el: HTMLElement, n: number, item: Item): void => {
-    showTooltip(undefined, el, undefined, ChannelEditor, { value: item.value, placeholder: item.placeholder, editable }, anchor, result => {
-      if (result.detail !== undefined) {
-        if (result.detail === '') displayItems = dropItem(n)
-        else displayItems[n].value = result.detail
-        saveItems()
+    showTooltip(
+      undefined,
+      el,
+      undefined,
+      ChannelEditor,
+      { value: item.value, placeholder: item.placeholder, editable },
+      anchor,
+      (result) => {
+        if (result.detail !== undefined) {
+          if (result.detail === '') displayItems = dropItem(n)
+          else displayItems[n].value = result.detail
+          saveItems()
+        }
       }
-    })
+    )
   }
   const _focus = (ev: Event, n: number, item: Item): void => {
     const el = ev.target as HTMLButtonElement
@@ -180,8 +188,12 @@
       {size}
       {shape}
       highlight={item.integration || item.notification}
-      on:mousemove={(ev) => { _focus(ev, i, item) }}
-      on:focus={(ev) => { _focus(ev, i, item) }}
+      on:mousemove={(ev) => {
+        _focus(ev, i, item)
+      }}
+      on:focus={(ev) => {
+        _focus(ev, i, item)
+      }}
       on:click={(ev) => {
         if (editable) editChannel(eventToHTMLElement(ev), i, item)
         else closeTooltip()

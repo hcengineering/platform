@@ -25,7 +25,7 @@
     height: 100%;
     font-family: var(--font-family);
     font-weight: 400;
-    font-size: .875rem;
+    font-size: 0.875rem;
     background-color: #ffffffc0;
     border: none;
     border-radius: 0.25rem;

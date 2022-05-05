@@ -50,14 +50,27 @@
       }}
       on:change
     />
-    <Button kind={'transparent'} size={'small'} icon={IconClose} disabled={value === ''} on:click={() => {
-      if (input) {
-        value = ''
-        input.focus()
-      }
-    }}/>
+    <Button
+      kind={'transparent'}
+      size={'small'}
+      icon={IconClose}
+      disabled={value === ''}
+      on:click={() => {
+        if (input) {
+          value = ''
+          input.focus()
+        }
+      }}
+    />
   {:else}
     <span>{value}</span>
   {/if}
-  <Button kind={'transparent'} size={'small'} icon={IconCopy} on:click={() => { navigator.clipboard.writeText(value) }} />
+  <Button
+    kind={'transparent'}
+    size={'small'}
+    icon={IconCopy}
+    on:click={() => {
+      navigator.clipboard.writeText(value)
+    }}
+  />
 </div>

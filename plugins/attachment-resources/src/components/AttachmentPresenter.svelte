@@ -51,7 +51,12 @@
     >
       {iconLabel(value.name)}
       {#if removable}
-        <div class="remove-btn" on:click|preventDefault={() => { dispatch('remove') }}>
+        <div
+          class="remove-btn"
+          on:click|preventDefault={() => {
+            dispatch('remove')
+          }}
+        >
           <Icon icon={IconClose} size={'medium'} />
         </div>
       {/if}
@@ -61,7 +66,12 @@
       <div class="flex-center icon">
         {iconLabel(value.name)}
         {#if removable}
-          <div class="remove-btn" on:click|preventDefault={() => { dispatch('remove') }}>
+          <div
+            class="remove-btn"
+            on:click|preventDefault={() => {
+              dispatch('remove')
+            }}
+          >
             <Icon icon={IconClose} size={'medium'} />
           </div>
         {/if}
@@ -115,9 +125,11 @@
       opacity: 0;
     }
   }
-  .attachment-container{
+  .attachment-container {
     margin-right: 1rem;
-    &:hover .remove-btn { opacity: 1; }
+    &:hover .remove-btn {
+      opacity: 1;
+    }
   }
 
   .name {

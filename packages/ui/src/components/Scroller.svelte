@@ -120,7 +120,9 @@
       else if (belowContent > 1) mask = 'top'
       else mask = 'none'
 
-      if (scrolling && divScroll.scrollHeight - divScroll.clientHeight - divScroll.scrollTop > 10 && !firstScroll) scrolling = false
+      if (scrolling && divScroll.scrollHeight - divScroll.clientHeight - divScroll.scrollTop > 10 && !firstScroll) {
+        scrolling = false
+      }
       if (!scrolling && belowContent && belowContent <= 10) scrolling = true
     }
     checkBack()
@@ -129,7 +131,9 @@
 
   const observer = new IntersectionObserver(() => checkFade(), { root: null, threshold: 0.1 })
 
-  const scrollDown = (): void => { divScroll.scrollTop = divScroll.scrollHeight }
+  const scrollDown = (): void => {
+    divScroll.scrollTop = divScroll.scrollHeight
+  }
   $: if (scrolling && belowContent && belowContent > 10) scrollDown()
   onMount(() => {
     if (divScroll && divBox) {

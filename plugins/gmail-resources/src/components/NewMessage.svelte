@@ -150,14 +150,26 @@
 <div class="popupPanel-body__main-header bottom-divider">
   <div class="flex-between">
     <div class="buttons-group">
-      <Button icon={IconArrowLeft} kind={'transparent'} on:click={() => { dispatch('close') }} />
+      <Button
+        icon={IconArrowLeft}
+        kind={'transparent'}
+        on:click={() => {
+          dispatch('close')
+        }}
+      />
       <div class="flex-grow flex-col">
         <Label label={plugin.string.NewMessage} />
         <span class="content-accent-color"><b>{formatName(object.name)} ({channel.value})</b></span>
       </div>
     </div>
     <div class="buttons-group small-gap">
-      <Button icon={IconAttachment} kind={'transparent'} on:click={() => { inputFile.click() }} />
+      <Button
+        icon={IconAttachment}
+        kind={'transparent'}
+        on:click={() => {
+          inputFile.click()
+        }}
+      />
       <Button label={plugin.string.Send} kind={'primary'} on:click={sendMsg} />
     </div>
   </div>
@@ -189,9 +201,13 @@
       <div class="flex-row-center list mt-2 scroll-divider-color">
         {#each attachments as attachment}
           <div class="item flex-row-center flex-no-shrink">
-            <AttachmentPresenter value={attachment} removable on:remove={result => {
-              if (result !== undefined) removeAttachment(attachment)
-            }} />
+            <AttachmentPresenter
+              value={attachment}
+              removable
+              on:remove={(result) => {
+                if (result !== undefined) removeAttachment(attachment)
+              }}
+            />
           </div>
         {/each}
       </div>

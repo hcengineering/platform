@@ -51,7 +51,13 @@
 <div class="popupPanel-body__main-header bottom-divider">
   <div class="flex-between">
     <div class="buttons-group">
-      <Button icon={IconArrowLeft} kind={'transparent'} on:click={() => { dispatch('close') }} />
+      <Button
+        icon={IconArrowLeft}
+        kind={'transparent'}
+        on:click={() => {
+          dispatch('close')
+        }}
+      />
       <div class="flex-grow flex-col">
         <span>{currentMessage.subject}</span>
         <span class="content-accent-color">

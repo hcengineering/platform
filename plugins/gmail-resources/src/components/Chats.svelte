@@ -131,12 +131,7 @@
           <Button label={gmail.string.Cancel} on:click={clear} />
         </div>
         <div class="ml-3">
-          <Button
-            label={gmail.string.PublishSelected}
-            kind={'primary'}
-            disabled={!selected.size}
-            on:click={share}
-          />
+          <Button label={gmail.string.PublishSelected} kind={'primary'} disabled={!selected.size} on:click={share} />
         </div>
       </div>
     </div>
