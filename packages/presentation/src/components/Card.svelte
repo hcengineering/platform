@@ -45,7 +45,7 @@
         {#if $$slots.space}
           <slot name="space" />
         {:else if spaceClass && spaceLabel && spacePlaceholder}
-          <SpaceSelect _class={spaceClass} {spaceQuery} label={spaceLabel} bind:value={space} />
+          <SpaceSelect focus focusIndex={-10} _class={spaceClass} {spaceQuery} label={spaceLabel} bind:value={space} />
         {/if}
         <span class="antiCard-header__divider">›</span>
       {/if}
@@ -53,6 +53,7 @@
     </div>
     <div class="buttons-group small-gap">
       <Button
+        focusIndex={10002}
         icon={IconClose}
         kind={'transparent'}
         on:click={() => {
@@ -73,6 +74,7 @@
         <MiniToggle label={presentation.string.CreateMore} bind:on={createMore} />
       {/if}
       <Button
+        focusIndex={10001}
         disabled={!canSave}
         label={okLabel}
         kind={'primary'}

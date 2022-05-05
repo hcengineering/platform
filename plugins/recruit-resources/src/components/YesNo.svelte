@@ -14,8 +14,8 @@
 -->
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
-  import { Label, Tooltip, Button } from '@anticrm/ui'
-  import type { TooltipAlignment, ButtonKind, ButtonSize } from '@anticrm/ui'
+  import type { ButtonKind, ButtonSize, TooltipAlignment } from '@anticrm/ui'
+  import { Button, Label, Tooltip } from '@anticrm/ui'
 
   export let label: IntlString
   export let tooltip: IntlString
@@ -27,10 +27,13 @@
   export let size: ButtonSize = 'small'
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = 'fit-content'
+
+  export let focusIndex = -1
 </script>
 
 <Tooltip direction={labelDirection} label={tooltip}>
   <Button
+    {focusIndex}
     {kind}
     {size}
     {justify}

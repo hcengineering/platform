@@ -1,8 +1,8 @@
-import { AnySvelteComponent, AnyComponent, LabelAndProps, TooltipAlignment } from './types'
 import { IntlString } from '@anticrm/platform'
 import { writable } from 'svelte/store'
+import { AnyComponent, AnySvelteComponent, LabelAndProps, TooltipAlignment } from './types'
 
-export const tooltipstore = writable<LabelAndProps>({
+const emptyTooltip: LabelAndProps = {
   label: undefined,
   element: undefined,
   direction: undefined,
@@ -10,7 +10,8 @@ export const tooltipstore = writable<LabelAndProps>({
   props: undefined,
   anchor: undefined,
   onUpdate: undefined
-})
+}
+export const tooltipstore = writable<LabelAndProps>(emptyTooltip)
 
 export function showTooltip (
   label: IntlString | undefined,
@@ -33,13 +34,5 @@ export function showTooltip (
 }
 
 export function closeTooltip (): void {
-  tooltipstore.set({
-    label: undefined,
-    element: undefined,
-    direction: undefined,
-    component: undefined,
-    props: undefined,
-    anchor: undefined,
-    onUpdate: undefined
-  })
+  tooltipstore.set(emptyTooltip)
 }

@@ -1,0 +1,115 @@
+import { getContext, setContext } from 'svelte'
+
+/**
+ * @public
+ */
+export interface FocusManager {
+  next: (inc?: 1 | -1) => void
+  setFocus: (idx: number) => void
+  setFocusPos: (order: number) => void
+  updateFocus: (idx: number, order: number) => void
+
+  // Check if current manager has focus
+  hasFocus: () => boolean
+}
+
+class FocusManagerImpl implements FocusManager {
+  counter = 0
+  elements: Array<{
+    id: number
+    order: number
+    focus: () => boolean
+    isFocus: () => boolean
+  }> = []
+
+  current = 0
+  register (order: number, focus: () => boolean, isFocus: () => boolean): number {
+    const el = { id: this.counter++, order, focus, isFocus }
+    this.elements.push(el)
+    this.sort()
+    return el.id
+  }
+
+  sort (): void {
+    // this.needSort = 0
+    this.elements.sort((a, b) => {
+      return a.order - b.order
+    })
+  }
+
+  next (inc?: 1 | -1): void {
+    while (true) {
+      this.current = this.current + (inc ?? 1)
+      if (this.elements[Math.abs(this.current) % this.elements.length].focus()) {
+        break
+      }
+    }
+  }
+
+  setFocus (idx: number): void {
+    this.current = this.elements.findIndex((it) => it.id === idx) ?? 0
+    this.elements[Math.abs(this.current) % this.elements.length].focus()
+  }
+
+  setFocusPos (order: number): void {
+    const idx = this.elements.findIndex((it) => it.order === order)
+    if (idx !== undefined) {
+      this.current = idx
+      this.elements[Math.abs(this.current) % this.elements.length].focus()
+    }
+  }
+
+  updateFocus (idx: number, order: number): void {
+    const el = this.elements.find((it) => it.id === idx)
+    if (el !== undefined) {
+      if (el.order !== order) {
+        el.order = order
+        this.sort()
+      }
+    }
+  }
+
+  hasFocus (): boolean {
+    for (const el of this.elements) {
+      if (el.isFocus()) {
+        return true
+      }
+    }
+    return false
+  }
+}
+
+/**
+ * @public
+ */
+export function createFocusManager (): FocusManager {
+  const mgr = new FocusManagerImpl()
+  setFocusManager(mgr)
+  return mgr
+}
+
+export function setFocusManager (manager: FocusManager): void {
+  setContext('ui.focus.elements', manager)
+}
+
+/**
+ * @public
+ */
+export function getFocusManager (): FocusManager | undefined {
+  return getContext('ui.focus.elements')
+}
+
+/**
+ * Register new focus reciever if order !== -1
+ * @public
+ */
+export function registerFocus (
+  order: number,
+  item: { focus: () => boolean, isFocus: () => boolean }
+): { idx: number, focusManager?: FocusManager } {
+  const focusManager = getFocusManager() as FocusManagerImpl
+  if (order === -1) {
+    return { idx: -1, focusManager }
+  }
+  return { idx: focusManager?.register(order, item.focus, item.isFocus) ?? -1, focusManager }
+}

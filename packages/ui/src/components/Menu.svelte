@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher, afterUpdate, onMount } from 'svelte'
+  import { afterUpdate, createEventDispatcher, onMount } from 'svelte'
+  import ui from '../plugin'
   import { Action } from '../types'
   import Icon from './Icon.svelte'
   import Label from './Label.svelte'
-  import ui from '../plugin'
 
   export let actions: Action[] = []
   export let ctx: any = undefined
@@ -26,6 +26,9 @@
   const btns: HTMLButtonElement[] = []
 
   const keyDown = (ev: KeyboardEvent, n: number): void => {
+    if (ev.key === 'Tab') {
+      dispatch('close')
+    }
     if (ev.key === 'ArrowDown') {
       if (n === btns.length - 1) btns[0].focus()
       else btns[n + 1].focus()

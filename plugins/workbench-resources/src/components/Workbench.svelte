@@ -438,6 +438,7 @@
     {/if}
   </div>
   <div bind:this={cover} class="cover" />
+  <TooltipInstance />
   <PanelInstance bind:this={panelInstance} {contentPanel}>
     <svelte:fragment slot="panel-header">
       <ActionContext context={{ mode: 'panel' }} />
@@ -448,7 +449,6 @@
       <ActionContext context={{ mode: 'popup' }} />
     </svelte:fragment>
   </Popup>
-  <TooltipInstance />
   <DatePickerPopup />
 {:else}
   No client

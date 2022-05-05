@@ -13,12 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { IntlString, Asset } from '@anticrm/platform'
-  import type { AnySvelteComponent, ButtonKind, ButtonSize } from '../types'
-  import Spinner from './Spinner.svelte'
-  import Label from './Label.svelte'
-  import Icon from './Icon.svelte'
+  import type { Asset, IntlString } from '@anticrm/platform'
   import { onMount } from 'svelte'
+  import { registerFocus } from '../focus'
+  import type { AnySvelteComponent, ButtonKind, ButtonSize } from '../types'
+  import Icon from './Icon.svelte'
+  import Label from './Label.svelte'
+  import Spinner from './Spinner.svelte'
 
   export let label: IntlString | undefined = undefined
   export let labelParams: Record<string, any> = {}
@@ -38,7 +39,6 @@
   export let title: string | undefined = undefined
   export let borderStyle: 'solid' | 'dashed' = 'solid'
   export let id: string | undefined = undefined
-
   export let input: HTMLButtonElement | undefined = undefined
 
   $: iconOnly = label === undefined && $$slots.content === undefined
@@ -53,8 +53,31 @@
       click = false
     }
   })
+
+  // Focusable control with index
+  export let focusIndex = -1
+  const { idx, focusManager } = registerFocus(focusIndex, {
+    focus: () => {
+      if (!disabled) {
+        input?.focus()
+      }
+      return !disabled && input != null
+    },
+    isFocus: () => document.activeElement === input
+  })
+
+  $: if (idx !== -1 && focusManager) {
+    focusManager.updateFocus(idx, focusIndex)
+  }
+
+  $: if (input != null) {
+    input.addEventListener('focus', () => {
+      focusManager?.setFocus(idx)
+    })
+  }
 </script>
 
+<!-- {focusIndex} -->
 <button
   bind:this={input}
   class="button {kind} {size} jf-{justify}"
@@ -172,7 +195,7 @@
       }
     }
     &:focus {
-      border-color: var(--primary-edit-border-color);
+      border-color: var(--accent-color) !important;
     }
     &:disabled {
       color: rgb(var(--caption-color) / 40%);
