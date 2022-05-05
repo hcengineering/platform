@@ -121,6 +121,7 @@
     closeTooltip()
   }
 
+  let timeout: number
   const whileShow = (ev: MouseEvent): void => {
     if ($tooltip.element && tooltipHTML) {
       const rectP = tooltipHTML.getBoundingClientRect()
@@ -129,10 +130,20 @@
       const inTrigger: boolean = ev.x >= rect.left && ev.x <= rect.right && ev.y >= rect.top && ev.y <= rect.bottom
       const inPopup: boolean =
         ev.x >= rectP.left && ev.x <= rectP.right && ev.y >= rectP.top - dT && ev.y <= rectP.bottom + dB
+  
+      clearTimeout(timeout)
       if (tooltipSW) {
-        if (!inTrigger) hideTooltip()
+        if (!inTrigger) {
+          timeout = setTimeout(() => {
+            hideTooltip()
+          }, 200)
+        }
       } else {
-        if (!(inTrigger || inPopup)) hideTooltip()
+        if (!(inTrigger || inPopup)) {
+          timeout = setTimeout(() => {
+            hideTooltip()
+          }, 200)
+        }
       }
     }
   }

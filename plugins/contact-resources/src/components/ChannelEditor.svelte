@@ -16,7 +16,7 @@
   import { createEventDispatcher, onMount } from 'svelte'
   import type { IntlString } from '@anticrm/platform'
   import { translate } from '@anticrm/platform'
-  import { Button, IconClose, closeTooltip } from '@anticrm/ui'
+  import { Button, IconClose, closeTooltip, IconBlueCheck } from '@anticrm/ui'
   import IconCopy from './icons/Copy.svelte'
 
   export let value: string = ''
@@ -73,4 +73,8 @@
       navigator.clipboard.writeText(value)
     }}
   />
+  <Button kind={'transparent'} size={'small'} icon={IconBlueCheck} on:click={() => {
+     dispatch('update', value)
+     closeTooltip()
+  }} />
 </div>
