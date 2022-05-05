@@ -14,12 +14,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
   import type { Attachment } from '@anticrm/attachment'
-  import { showPopup, closeTooltip } from '@anticrm/ui'
+  import { showPopup, closeTooltip, Icon, IconClose, Button } from '@anticrm/ui'
   import { PDFViewer, getFileUrl } from '@anticrm/presentation'
   import filesize from 'filesize'
 
   export let value: Attachment
+  export let removable: boolean = false
+
+  const dispatch = createEventDispatcher()
 
   const maxLenght: number = 16
   const trimFilename = (fname: string): string =>
@@ -36,7 +40,7 @@
   }
 </script>
 
-<div class="flex-row-center">
+<div class="flex-row-center attachment-container">
   {#if openEmbedded(value.type)}
     <div
       class="flex-center icon"
@@ -46,11 +50,23 @@
       }}
     >
       {iconLabel(value.name)}
+      {#if removable}
+        <div class="remove-btn" on:click|stopPropagation={() => { dispatch('remove') }}>
+          <Icon icon={IconClose} size={'medium'} />
+        </div>
+      {/if}
     </div>
   {:else}
-    <a class="no-line" href={getFileUrl(value.file)} download={value.name}
-      ><div class="flex-center icon">{iconLabel(value.name)}</div></a
-    >
+    <a class="no-line" href={getFileUrl(value.file)} download={value.name}>
+      <div class="flex-center icon">
+        {iconLabel(value.name)}
+        {#if removable}
+          <div class="remove-btn" on:click|stopPropagation={() => { dispatch('remove') }}>
+            <Icon icon={IconClose} size={'medium'} />
+          </div>
+        {/if}
+      </div>
+    </a>
   {/if}
   <div class="flex-col info">
     {#if openEmbedded(value.type)}
@@ -72,17 +88,36 @@
 
 <style lang="scss">
   .icon {
+    position: relative;
     flex-shrink: 0;
     margin-right: 1rem;
     width: 2rem;
     height: 2rem;
     font-weight: 500;
     font-size: 0.625rem;
-    color: var(--primary-button-color);
-    background-color: var(--primary-button-enabled);
+    color: var(--white-color);
+    background-color: var(--primary-bg-color);
     border: 1px solid rgba(0, 0, 0, 0.1);
     border-radius: 0.5rem;
     cursor: pointer;
+
+    .remove-btn {
+      position: absolute;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: var(--primary-bg-color);
+      border-radius: 0.5rem;
+      opacity: 0;
+    }
+  }
+  .attachment-container{
+    margin-right: 1rem;
+    &:hover .remove-btn { opacity: 1; }
   }
 
   .name {

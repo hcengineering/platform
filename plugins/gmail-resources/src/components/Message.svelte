@@ -34,21 +34,20 @@
     dispatch('select', message)
   }}
 >
-  {#if selectable}
-    <div class="mr-4"><CheckBox circle primary bind:checked={selected} /></div>
-  {/if}
   <div class="flex-col message" class:selected>
     <div class="flex-between text-sm mb-1">
-      <div class="content-trans-color overflow-label mr-4">
-        <Label label={gmail.string.From} /><span class="content-accent-color">{message.sender}</span>
+      <div class="dark-color overflow-label mr-4">
+        <Label label={gmail.string.From} />
+        <span class="content-accent-color">{message.sender}</span>
       </div>
-      <div class="content-trans-color flex">
+      <div class="dark-color flex">
         <AttachmentsPresenter value={message} />
-        {getTime(message.sendOn)}
+        <span class="content-accent-color">{getTime(message.sendOn)}</span>
       </div>
     </div>
-    <div class="content-trans-color text-sm overflow-label mr-4 mb-4">
-      <Label label={gmail.string.To} /><span class="content-accent-color">{message.receiver}</span>
+    <div class="dark-color text-sm overflow-label mr-4 mb-4">
+      <Label label={gmail.string.To} />
+      <span class="content-accent-color">{message.receiver}</span>
     </div>
     <div class="fs-title overflow-label mb-1">
       {message.subject}
@@ -57,18 +56,22 @@
       {message.textContent}
     </div>
   </div>
+  {#if selectable}
+    <div class="ml-4"><CheckBox circle primary bind:checked={selected} /></div>
+  {/if}
 </div>
 
 <style lang="scss">
   .message-conatiner {
-    margin: 0 1.5rem;
+    flex-shrink: 0;
+    margin: 0.25rem 0;
     cursor: pointer;
   }
 
   .message {
     padding: 1rem;
     min-width: 0;
-    background-color: var(--theme-incoming-msg);
+    background-color: var(--incoming-msg);
     border-radius: 0.75rem;
     white-space: nowrap;
     flex-grow: 1;

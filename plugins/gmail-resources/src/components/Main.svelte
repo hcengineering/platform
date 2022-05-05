@@ -15,15 +15,16 @@
 -->
 <script lang="ts">
   import { Ref, Doc, Class } from '@anticrm/core'
-  import contact, { Channel } from '@anticrm/contact'
+  import contact, { Channel, formatName } from '@anticrm/contact'
   import { SharedMessage } from '@anticrm/gmail'
   import NewMessage from './NewMessage.svelte'
   import FullMessage from './FullMessage.svelte'
   import Chats from './Chats.svelte'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
-  import { Panel } from '@anticrm/panel'
+  import { Panel, Icon, Label } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
+  import gmail from '../plugin'
 
   export let _id: Ref<Doc>
   export let _class: Ref<Class<Doc>>
@@ -71,16 +72,24 @@
 
 {#if channel && object}
   <Panel
-    icon={contact.icon.Email}
-    title={'Email'}
-    withoutActivity
-    {object}
-    isHeader={false}
+    isHeader={true}
     isAside={false}
     on:close={() => {
       dispatch('close')
     }}
   >
+    <svelte:fragment slot="title">
+      <div class="antiTitle icon-wrapper">
+        <div class="wrapped-icon"><Icon icon={contact.icon.Email} size={'medium'} /></div>
+        <div class="title-wrapper">
+          <span class="wrapped-title">Email</span>
+          <span class="wrapped-subtitle">
+            <Label label={gmail.string.YouAnd} />
+            <b>{formatName(object.name)}</b>
+          </span>
+        </div>
+      </div>
+    </svelte:fragment>
     {#if newMessage}
       <NewMessage {object} {channel} {currentMessage} on:close={back} />
     {:else if currentMessage}

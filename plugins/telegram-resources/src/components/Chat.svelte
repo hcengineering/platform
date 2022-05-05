@@ -16,7 +16,6 @@
 <script lang="ts">
   import attachment from '@anticrm/attachment'
   import { AttachmentRefInput } from '@anticrm/attachment-resources'
-  import { Panel } from '@anticrm/panel'
   import { createEventDispatcher } from 'svelte'
   import contact, { Channel, Contact, EmployeeAccount, formatName } from '@anticrm/contact'
   import { generateId, getCurrentAccount, Ref, SortingOrder, Space, Class } from '@anticrm/core'
@@ -24,7 +23,7 @@
   import { createQuery, getClient } from '@anticrm/presentation'
   import setting, { Integration } from '@anticrm/setting'
   import type { NewTelegramMessage, SharedTelegramMessage, TelegramMessage } from '@anticrm/telegram'
-  import { Button, eventToHTMLElement, IconShare, Tooltip, Scroller, showPopup } from '@anticrm/ui'
+  import { Button, eventToHTMLElement, IconShare, Tooltip, Scroller, showPopup, Panel, Icon, Label } from '@anticrm/ui'
   import telegram from '../plugin'
   import Connect from './Connect.svelte'
   import TelegramIcon from './icons/Telegram.svelte'
@@ -187,20 +186,26 @@
 
 {#if object !== undefined}
   <Panel
-    icon={TelegramIcon}
-    title={'Telegram'}
-    withoutActivity
-    {object}
-    isHeader={false}
+    isHeader={true}
     isAside={false}
     on:close={() => {
       dispatch('close')
     }}
   >
-    <svelte:fragment slot="header">
-      You and {formatName(object.name)}
+    <svelte:fragment slot="title">
+      <div class="antiTitle icon-wrapper">
+        <div class="wrapped-icon"><Icon icon={TelegramIcon} size={'medium'} /></div>
+        <div class="title-wrapper">
+          <span class="wrapped-title">Telegram</span>
+          <span class="wrapped-subtitle">
+            <Label label={telegram.string.YouAnd} />
+            <b>{formatName(object.name)}</b>
+          </span>
+        </div>
+      </div>
+      <!-- You and {formatName(object.name)} -->
     </svelte:fragment>
-    <svelte:fragment slot="tools">
+    <svelte:fragment slot="utils">
       {#if integration === undefined}
         <Button
           label={telegram.string.Connect}
@@ -257,7 +262,7 @@
           </div>
         </div>
       {:else if integration === undefined || integration.disabled}
-        <div class="flex-center h-18">No integration</div>
+        <div class="flex-center h-18" />
       {:else}
         <AttachmentRefInput
           space={telegram.space.Telegram}

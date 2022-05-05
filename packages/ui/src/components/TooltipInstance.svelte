@@ -148,7 +148,7 @@
   }}
 />
 {#if $tooltip.component}
-  <div class="popup-tooltip antiPopup" bind:clientWidth={clWidth} bind:this={tooltipHTML}>
+  <div class="popup-tooltip" class:doublePadding={$tooltip.label} bind:clientWidth={clWidth} bind:this={tooltipHTML}>
     {#if $tooltip.label}<div class="fs-title mb-4">
         <Label label={$tooltip.label} params={$tooltip.props ?? {}} />
       </div>{/if}
@@ -179,14 +179,16 @@
     position: fixed;
     display: flex;
     flex-direction: column;
-    padding: 1rem;
-    color: var(--theme-caption-color);
-    background-color: var(--theme-tooltip-color);
-    border: 1px solid var(--theme-bg-accent-color);
+    padding: 0.5rem;
+    color: var(--caption-color);
+    background-color: var(--accent-bg-color);
+    border: 1px solid var(--divider-color);
     border-radius: 0.75rem;
     box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
     user-select: none;
     z-index: 10000;
+
+    &.doublePadding { padding: 1rem; }
   }
 
   .nub {
@@ -203,12 +205,12 @@
       height: 7px;
     }
     &::before {
-      background-color: var(--theme-tooltip-color);
+      background-color: var(--accent-bg-color);
       clip-path: url('#nub-bg');
       z-index: 1;
     }
     &::after {
-      background-color: var(--theme-bg-accent-color);
+      background-color: var(--divider-color);
       clip-path: url('#nub-border');
       z-index: 2;
     }
@@ -265,9 +267,9 @@
     position: fixed;
     padding: 0.5rem 0.75rem;
     text-align: center;
-    color: var(--theme-caption-color);
-    background-color: var(--theme-tooltip-color);
-    border: 1px solid var(--theme-bg-accent-color);
+    color: var(--caption-color);
+    background-color: var(--accent-bg-color);
+    border: 1px solid var(--divider-color);
     border-radius: 0.75rem;
     box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
     user-select: none;
@@ -281,12 +283,12 @@
       height: 7px;
     }
     &::before {
-      background-color: var(--theme-tooltip-color);
+      background-color: var(--accent-bg-color);
       clip-path: url('#nub-bg');
       z-index: 1;
     }
     &::after {
-      background-color: var(--theme-bg-accent-color);
+      background-color: var(--divider-color);
       clip-path: url('#nub-border');
       z-index: 2;
     }
@@ -302,7 +304,7 @@
       bottom: 100%;
       &::after,
       &::before {
-        bottom: -7px;
+        bottom: -6px;
         transform: rotate(180deg);
       }
     }

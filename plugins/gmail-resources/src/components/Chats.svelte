@@ -19,12 +19,13 @@
   import gmail from '../plugin'
   import { Channel, Contact, EmployeeAccount, formatName } from '@anticrm/contact'
   import contact from '@anticrm/contact'
-  import { ActionIcon, IconShare, Button, ScrollBox, showPopup, Icon, Label, eventToHTMLElement } from '@anticrm/ui'
+  import plugin, { ActionIcon, IconShare, Button, Tooltip, showPopup, Icon, Label, eventToHTMLElement, Scroller } from '@anticrm/ui'
   import { getCurrentAccount, Ref, SortingOrder, Space } from '@anticrm/core'
   import setting from '@anticrm/setting'
   import Connect from './Connect.svelte'
   import Messages from './Messages.svelte'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
+  import IconInbox from './icons/Inbox.svelte'
 
   export let object: Contact
   export let channel: Channel
@@ -121,18 +122,17 @@
   }
 </script>
 
-<div class="flex-between header">
+<div class="popupPanel-body__main-header bottom-divider">
   {#if selectable}
     <div class="flex-between w-full">
-      <span>{selected.size} <Label label={gmail.string.MessagesSelected} /></span>
+      <span><b>{selected.size}</b> <Label label={gmail.string.MessagesSelected} /></span>
       <div class="flex">
         <div>
-          <Button label={gmail.string.Cancel} size={'small'} on:click={clear} />
+          <Button label={gmail.string.Cancel} on:click={clear} />
         </div>
         <div class="ml-3">
           <Button
             label={gmail.string.PublishSelected}
-            size={'small'}
             kind={'primary'}
             disabled={!selected.size}
             on:click={share}
@@ -141,36 +141,29 @@
       </div>
     </div>
   {:else if enabled}
-    <div class="flex-center icon"><Icon icon={contact.icon.Email} size="small" /></div>
-    <div class="flex-grow flex-col">
-      <div class="fs-title">Gmail</div>
-      <div class="text-sm content-dark-color"><Label label={gmail.string.YouAnd} /> {formatName(object.name)}</div>
-    </div>
-    <div class="mr-3">
+    <div class="flex-between">
       <Button
         label={gmail.string.CreateMessage}
-        size={'small'}
         kind={'primary'}
         on:click={() => {
           newMessage = true
         }}
       />
+      <Tooltip label={gmail.string.ShareMessages}>
+        <Button
+          icon={IconShare}
+          kind={'transparent'}
+          on:click={async () => {
+            selectable = !selectable
+          }}
+        />
+      </Tooltip>
     </div>
-    <ActionIcon
-      icon={IconShare}
-      size={'medium'}
-      label={gmail.string.ShareMessages}
-      direction={'bottom'}
-      action={async () => {
-        selectable = !selectable
-      }}
-    />
   {:else}
-    <div class="flex-center">
+    <div class="flex-center flex-grow">
       <Button
         label={gmail.string.Connect}
         kind={'primary'}
-        size={'small'}
         on:click={(e) => {
           showPopup(Connect, {}, eventToHTMLElement(e))
         }}
@@ -178,35 +171,16 @@
     </div>
   {/if}
 </div>
-<div class="h-full right-content">
-  <ScrollBox vertical stretch>
-    {#if messages}
+<Scroller>
+  <div class="popupPanel-body__main-content py-4 clear-mins flex-no-shrink">
+    {#if messages && messages.length > 0}
       <Messages messages={convertMessages(messages, accounts)} {selectable} bind:selected on:select />
+      <div class="clear-mins h-4 flex-no-shrink" />
+    {:else}
+      <div class="flex-col-center justify-center h-full">
+        <Icon icon={IconInbox} size={'full'} />
+        <div class="mt-4 fs-bold dark-color"><Label label={gmail.string.Incoming} /></div>
+      </div>
     {/if}
-  </ScrollBox>
-</div>
-
-<style lang="scss">
-  .header {
-    flex-shrink: 0;
-    padding: 0 6rem 0 2.5rem;
-    height: 4rem;
-    color: var(--theme-content-accent-color);
-    border-bottom: 1px solid var(--theme-zone-bg);
-
-    .icon {
-      flex-shrink: 0;
-      margin-right: 1rem;
-      width: 2.25rem;
-      height: 2.25rem;
-      color: var(--theme-caption-color);
-      background-color: var(--primary-button-enabled);
-      border-radius: 50%;
-    }
-  }
-
-  .right-content {
-    flex-grow: 1;
-    padding: 1.5rem 0;
-  }
-</style>
+  </div>
+</Scroller>

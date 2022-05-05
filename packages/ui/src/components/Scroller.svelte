@@ -32,6 +32,7 @@
   let isScrolling: boolean = false
   let dY: number
   let belowContent: number | undefined = undefined
+  let beforeContent: number | undefined = undefined
   let scrolling: boolean = autoscroll
   let firstScroll: boolean = autoscroll
 
@@ -74,6 +75,7 @@
   }
 
   const onScroll = (event: MouseEvent): void => {
+    scrolling = false
     if (isScrolling && divBar && divScroll) {
       const rectScroll = divScroll.getBoundingClientRect()
       let Y = event.clientY - dY
@@ -97,6 +99,7 @@
     isScrolling = false
   }
   const onScrollStart = (event: MouseEvent): void => {
+    scrolling = false
     const el: HTMLElement = event.currentTarget as HTMLElement
     if (el && divScroll) {
       dY = event.clientY - el.getBoundingClientRect().y
@@ -110,35 +113,33 @@
 
   const checkFade = (): void => {
     if (divScroll) {
-      const t = divScroll.scrollTop
-      const b = divScroll.scrollHeight - divScroll.clientHeight - t
-      if (t > 0 && b > 0) mask = 'both'
-      else if (t > 0) mask = 'bottom'
-      else if (b > 0) mask = 'top'
+      beforeContent = divScroll.scrollTop
+      belowContent = divScroll.scrollHeight - divScroll.clientHeight - beforeContent
+      if (beforeContent > 1 && belowContent > 1) mask = 'both'
+      else if (beforeContent > 1) mask = 'bottom'
+      else if (belowContent > 1) mask = 'top'
       else mask = 'none'
+
+      if (scrolling && divScroll.scrollHeight - divScroll.clientHeight - divScroll.scrollTop > 10 && !firstScroll) scrolling = false
+      if (!scrolling && belowContent && belowContent <= 10) scrolling = true
     }
     checkBack()
     if (!isScrolling) checkBar()
-    if (scrolling && belowContent && belowContent > 1) {
-      divScroll.scrollTop = divScroll.scrollHeight - divScroll.clientHeight
-    }
   }
 
   const observer = new IntersectionObserver(() => checkFade(), { root: null, threshold: 0.1 })
 
-  $: if (autoscroll && !scrolling && belowContent && belowContent < 1 && divScroll) {
-    divScroll.scrollTop = divScroll.scrollHeight - divScroll.clientHeight
-    scrolling = true
-  }
-  $: if (scrolling && divScroll && divScroll.scrollHeight - divScroll.scrollTop - divScroll.clientHeight < 5) {
-    divScroll.scrollTop = divScroll.scrollHeight - divScroll.clientHeight
-  }
-
+  const scrollDown = (): void => { divScroll.scrollTop = divScroll.scrollHeight }
+  $: if (scrolling && belowContent && belowContent > 10) scrollDown()
   onMount(() => {
     if (divScroll && divBox) {
       divScroll.addEventListener('scroll', checkFade)
       const tempEl = divBox.querySelector('*') as HTMLElement
       if (tempEl) observer.observe(tempEl)
+      if (scrolling) {
+        scrollDown()
+        firstScroll = false
+      }
       checkFade()
     }
     if (divBack) checkBack()
@@ -150,27 +151,14 @@
     if (divScroll && divBox) {
       const tempEl = divBox.querySelector('*') as HTMLElement
       if (tempEl) observer.observe(tempEl)
-      if (scrolling) divScroll.scrollTop = divScroll.scrollHeight - divScroll.clientHeight
-      belowContent = divScroll.scrollHeight - divScroll.clientHeight - divScroll.scrollTop
+      if (scrolling) scrollDown()
       checkFade()
     }
   })
 
   let divWidth: number = 0
-  const _resize = (): void => {
-    checkFade()
-  }
+  const _resize = (): void => checkFade()
   $: if (divWidth) _resize()
-
-  const _scroll = (ev: Event): void => {
-    if (ev.type === 'scroll') {
-      firstScroll ? (firstScroll = false) : (scrolling = false)
-      if (ev.target) {
-        const el: HTMLElement = ev.target as HTMLElement
-        if (el.scrollHeight - el.scrollTop - el.clientHeight < 5) scrolling = true
-      }
-    }
-  }
 </script>
 
 <svelte:window on:resize={_resize} />
@@ -178,7 +166,6 @@
   <div
     bind:this={divScroll}
     bind:clientWidth={divWidth}
-    on:scroll={_scroll}
     class="scroll relative"
     class:tableFade
     class:antiNav-topFade={mask === 'top'}

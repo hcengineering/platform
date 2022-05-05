@@ -47,7 +47,7 @@
     <div class="popupPanel-title__content"><slot name="title" /></div>
     <div class="buttons-group xsmall-gap">
       <slot name="utils" />
-      {#if asideFloat}
+      {#if asideFloat && $$slots.aside && isAside}
         {#if $$slots.utils}<div class="buttons-divider" />{/if}
         <Button
           icon={IconDetails}

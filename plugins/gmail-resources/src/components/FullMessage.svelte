@@ -17,7 +17,7 @@
   import { SharedMessage } from '@anticrm/gmail'
   import Button from '@anticrm/ui/src/components/Button.svelte'
   import { createEventDispatcher } from 'svelte'
-  import { IconArrowLeft, Label } from '@anticrm/ui'
+  import { IconArrowLeft, Label, Scroller } from '@anticrm/ui'
   import gmail from '../plugin'
   import FullMessageContent from './FullMessageContent.svelte'
   import { createQuery } from '@anticrm/presentation'
@@ -48,89 +48,70 @@
   $: user = currentMessage.incoming ? currentMessage.receiver : currentMessage.sender
 </script>
 
-<div class="flex-between clear-mins header">
-  <div
-    class="flex-center icon"
-    on:click={() => {
-      dispatch('close')
-    }}
-  >
-    <IconArrowLeft size="medium" />
-  </div>
-  <div class="flex-grow flex-col mr-4 min-w-0">
-    <div class="fs-title overflow-label">{currentMessage.subject}</div>
-    <div class="text-sm content-dark-color overflow-label">
-      <Label label={currentMessage.incoming ? gmail.string.From : gmail.string.To} />
-      {title}
+<div class="popupPanel-body__main-header bottom-divider">
+  <div class="flex-between">
+    <div class="buttons-group">
+      <Button icon={IconArrowLeft} kind={'transparent'} on:click={() => { dispatch('close') }} />
+      <div class="flex-grow flex-col">
+        <span>{currentMessage.subject}</span>
+        <span class="content-accent-color">
+          <Label label={currentMessage.incoming ? gmail.string.From : gmail.string.To} />
+          <b>{title}</b>
+        </span>
+      </div>
+    </div>
+    <div class="buttons-group small-gap">
+      <Button
+        label={gmail.string.Reply}
+        size={'small'}
+        kind={'primary'}
+        on:click={() => {
+          newMessage = true
+        }}
+      />
     </div>
   </div>
-  <div class="mr-3">
-    <Button
-      label={gmail.string.Reply}
-      size={'small'}
-      kind={'primary'}
-      on:click={() => {
-        newMessage = true
-      }}
-    />
-  </div>
 </div>
-<div class="flex-col clear-mins content">
-  <Label label={currentMessage.incoming ? gmail.string.To : gmail.string.From} />
-  {user}
-  {#if currentMessage.copy?.length}
-    <Label label={gmail.string.Copy} />: {currentMessage.copy.join(', ')}
-  {/if}
-  {#if attachments.length}
-    <div class="flex-row-center list mt-2">
-      {#each attachments as attachment}
-        <div class="item flex">
-          <AttachmentPresenter value={attachment} />
-        </div>
-      {/each}
+<Scroller>
+  <div class="popupPanel-body__main-content py-4">
+    <Label label={currentMessage.incoming ? gmail.string.To : gmail.string.From} />
+    {user}
+    {#if currentMessage.copy?.length}
+      <Label label={gmail.string.Copy} />: {currentMessage.copy.join(', ')}
+    {/if}
+    {#if attachments.length}
+      <div class="flex-row-center list mt-2">
+        {#each attachments as attachment}
+          <div class="item flex">
+            <AttachmentPresenter value={attachment} />
+          </div>
+        {/each}
+      </div>
+    {/if}
+    <div class="flex-col content clear-mins">
+      <FullMessageContent content={currentMessage.content} />
     </div>
-  {/if}
-  <div class="flex-col h-full clear-mins mt-4">
-    <FullMessageContent content={currentMessage.content} />
   </div>
-</div>
+</Scroller>
 
 <style lang="scss">
-  .header {
-    flex-shrink: 0;
-    padding: 0 6rem 0 2.5rem;
-    height: 4rem;
-    color: var(--theme-content-accent-color);
-    border-bottom: 1px solid var(--theme-zone-bg);
+  .list {
+    padding: 0.5rem;
+    color: var(--theme-caption-color);
+    overflow-x: auto;
+    overflow-y: hidden;
+    background-color: var(--accent-bg-color);
+    border: 1px solid var(--divider-color);
+    border-radius: 0.25rem;
 
-    .icon {
-      flex-shrink: 0;
-      margin-right: 1rem;
-      width: 2.25rem;
-      height: 2.25rem;
-      color: var(--theme-caption-color);
-      border-radius: 50%;
-      cursor: pointer;
+    .item + .item {
+      padding-left: 1rem;
+      border-left: 1px solid var(--divider-color);
     }
   }
-
   .content {
-    flex-grow: 1;
-    padding: 1.5rem 2.5rem;
-
-    .list {
-      padding: 1rem;
-      color: var(--theme-caption-color);
-      overflow-x: auto;
-      overflow-y: hidden;
-      background-color: var(--theme-bg-accent-color);
-      border: 1px solid var(--theme-bg-accent-color);
-      border-radius: 0.75rem;
-
-      .item + .item {
-        padding-left: 1rem;
-        border-left: 1px solid var(--theme-bg-accent-color);
-      }
-    }
+    margin-top: 1rem;
+    background-color: var(--incoming-msg);
+    border-radius: 0.25rem;
   }
 </style>

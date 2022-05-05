@@ -22,7 +22,7 @@
   import { getResource, setPlatformStatus, unknownError } from '@anticrm/platform'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { TextEditor } from '@anticrm/text-editor'
-  import { ActionIcon, IconArrowLeft, IconAttachment, IconClose, Label } from '@anticrm/ui'
+  import { Scroller, IconArrowLeft, IconAttachment, IconClose, Label } from '@anticrm/ui'
   import Button from '@anticrm/ui/src/components/Button.svelte'
   import EditBox from '@anticrm/ui/src/components/EditBox.svelte'
   import { createEventDispatcher } from 'svelte'
@@ -147,161 +147,109 @@
   style="display: none"
   on:change={fileSelected}
 />
-<div class="flex-between clear-mins header">
-  <div
-    class="flex-center icon"
-    on:click={() => {
-      dispatch('close')
-    }}
-  >
-    <IconArrowLeft size="medium" />
-  </div>
-  <div class="flex-grow flex-col">
-    <div class="fs-title">Gmail</div>
-    <div class="text-sm content-dark-color overflow-label">
-      <Label label={plugin.string.NewMessageTo} />
-      <span class="content-accent-color">{formatName(object.name)} ({channel.value})</span>
+<div class="popupPanel-body__main-header bottom-divider">
+  <div class="flex-between">
+    <div class="buttons-group">
+      <Button icon={IconArrowLeft} kind={'transparent'} on:click={() => { dispatch('close') }} />
+      <div class="flex-grow flex-col">
+        <Label label={plugin.string.NewMessage} />
+        <span class="content-accent-color"><b>{formatName(object.name)} ({channel.value})</b></span>
+      </div>
+    </div>
+    <div class="buttons-group small-gap">
+      <Button icon={IconAttachment} kind={'transparent'} on:click={() => { inputFile.click() }} />
+      <Button label={plugin.string.Send} kind={'primary'} on:click={sendMsg} />
     </div>
   </div>
-  <div class="mr-3 flex-row-center">
-    <div class="mr-2">
-      <ActionIcon
-        icon={IconAttachment}
-        size={'small'}
-        action={() => {
-          inputFile.click()
-        }}
+</div>
+<Scroller>
+  <div
+    class="popupPanel-body__main-content py-4"
+    on:dragover|preventDefault={() => {}}
+    on:dragleave={() => {}}
+    on:drop|preventDefault|stopPropagation={fileDrop}
+  >
+    <div class="mb-2">
+      <EditBox
+        label={plugin.string.Subject}
+        bind:value={obj.subject}
+        placeholder={plugin.string.SubjectPlaceholder}
+        maxWidth={'min-content'}
       />
     </div>
-    <Button label={plugin.string.Send} size={'small'} kind={'primary'} on:click={sendMsg} />
-  </div>
-</div>
-<div
-  class="flex-col clear-mins right-content"
-  on:dragover|preventDefault={() => {}}
-  on:dragleave={() => {}}
-  on:drop|preventDefault|stopPropagation={fileDrop}
->
-  <div class="mb-2">
-    <EditBox
-      label={plugin.string.Subject}
-      bind:value={obj.subject}
-      placeholder={plugin.string.SubjectPlaceholder}
-      maxWidth={'min-content'}
-    />
-  </div>
-  <div>
-    <EditBox
-      label={plugin.string.Copy}
-      bind:value={copy}
-      placeholder={plugin.string.CopyPlaceholder}
-      maxWidth={'min-content'}
-    />
-  </div>
-  {#if attachments.length}
-    <div class="flex-row-center list mt-2">
-      {#each attachments as attachment}
-        <div class="item flex">
-          <AttachmentPresenter value={attachment} />
-          <div class="remove">
-            <ActionIcon
-              icon={IconClose}
-              action={() => {
-                removeAttachment(attachment)
-              }}
-              size="small"
-            />
-          </div>
-        </div>
-      {/each}
+    <div>
+      <EditBox
+        label={plugin.string.Copy}
+        bind:value={copy}
+        placeholder={plugin.string.CopyPlaceholder}
+        maxWidth={'min-content'}
+      />
     </div>
-  {/if}
-  <div class="input mt-4 clear-mins">
-    <TextEditor bind:this={editor} bind:content={obj.content} on:blur={editor.submit} />
+    {#if attachments.length}
+      <div class="flex-row-center list mt-2 scroll-divider-color">
+        {#each attachments as attachment}
+          <div class="item flex-row-center flex-no-shrink">
+            <AttachmentPresenter value={attachment} removable on:remove={result => {
+              if (result !== undefined) removeAttachment(attachment)
+            }} />
+          </div>
+        {/each}
+      </div>
+    {/if}
+    <div class="input mt-4 clear-mins">
+      <TextEditor bind:this={editor} bind:content={obj.content} on:blur={editor.submit} />
+    </div>
   </div>
-</div>
+</Scroller>
 
 <style lang="scss">
-  .header {
-    flex-shrink: 0;
-    padding: 0 6rem 0 2.5rem;
-    height: 4rem;
-    color: var(--theme-content-accent-color);
-    border-bottom: 1px solid var(--theme-zone-bg);
+  .list {
+    padding: 0.5rem;
+    color: var(--theme-caption-color);
+    overflow-x: auto;
+    overflow-y: hidden;
+    background-color: var(--accent-bg-color);
+    border: 1px solid var(--divider-color);
+    border-radius: 0.25rem;
 
-    .icon {
-      flex-shrink: 0;
-      margin-right: 1rem;
-      width: 2.25rem;
-      height: 2.25rem;
-      color: var(--theme-caption-color);
-      border-radius: 50%;
-      cursor: pointer;
+    .item + .item {
+      padding-left: 1rem;
+      border-left: 1px solid var(--divider-color);
     }
   }
 
-  .right-content {
-    flex-grow: 1;
-    padding: 1.5rem 2.5rem;
+  .input {
+    overflow: auto;
+    padding: 1rem;
+    background-color: var(--outcoming-msg);
+    color: #d6d6d6;
+    caret-color: var(--caret-color);
+    min-height: 0;
+    height: calc(100% - 12rem);
+    border-radius: 0.25rem;
 
-    .list {
-      padding: 1rem;
-      color: var(--theme-caption-color);
-      overflow-x: auto;
-      overflow-y: hidden;
-      background-color: var(--theme-bg-accent-color);
-      border: 1px solid var(--theme-bg-accent-color);
-      border-radius: 0.75rem;
-
-      .item + .item {
-        padding-left: 1rem;
-        border-left: 1px solid var(--theme-bg-accent-color);
-      }
-
-      .item {
-        .remove {
-          visibility: hidden;
-        }
-      }
-
-      .item:hover {
-        .remove {
-          visibility: visible;
-        }
-      }
+    :global(.ProseMirror) {
+      min-height: 0;
+      max-height: 100%;
+      height: auto;
     }
 
-    .input {
-      overflow: auto;
-      padding: 1rem;
-      background-color: #fff;
-      color: #1f212b;
-      height: 100%;
-      border-radius: 0.5rem;
-
-      :global(.ProseMirror) {
-        min-height: 0;
-        max-height: 100%;
-        height: 100%;
-      }
-
-      :global(a) {
-        font: inherit;
-        font-weight: 500;
-        text-decoration: initial;
+    :global(a) {
+      font: inherit;
+      font-weight: 500;
+      text-decoration: initial;
+      color: initial;
+      outline: initial;
+      &:hover {
         color: initial;
-        outline: initial;
-        &:hover {
-          color: initial;
-          text-decoration: initial;
-        }
-        &:active {
-          color: initial;
-          text-decoration: initial;
-        }
-        &:visited {
-          color: initial;
-        }
+        text-decoration: initial;
+      }
+      &:active {
+        color: initial;
+        text-decoration: initial;
+      }
+      &:visited {
+        color: initial;
       }
     }
   }
