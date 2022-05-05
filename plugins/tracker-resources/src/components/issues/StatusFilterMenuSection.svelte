@@ -30,7 +30,7 @@
   let backButtonTitle = ''
 
   $: actions = getFilterElements(groups, statuses, selectedElements, backButtonTitle)
-  
+
   $: translate(tracker.string.Back, {}).then((result) => {
     backButtonTitle = result
   })

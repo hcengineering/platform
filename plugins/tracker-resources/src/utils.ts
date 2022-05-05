@@ -148,8 +148,10 @@ export interface FilterSectionElement extends Omit<FilterAction, 'label'> {
 }
 
 export const getGroupedIssues = (
-  key: IssuesGroupByKeys | undefined, elements: Issue[], orderedCategories?: any[]
-): {[p: string]: Issue[]} => {
+  key: IssuesGroupByKeys | undefined,
+  elements: Issue[],
+  orderedCategories?: any[]
+): { [p: string]: Issue[] } => {
   if (key === undefined) {
     return { [undefined as any]: elements }
   }
@@ -176,7 +178,7 @@ export const getGroupedIssues = (
     }, {})
 }
 
-export const getIssueFilterAssetsByType = (type: string): {icon: Asset, label: IntlString} | undefined => {
+export const getIssueFilterAssetsByType = (type: string): { icon: Asset, label: IntlString } | undefined => {
   switch (type) {
     case 'status': {
       return {
