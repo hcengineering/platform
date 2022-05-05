@@ -112,6 +112,9 @@ export default mergeIds(trackerId, tracker, {
     All: '' as IntlString,
     PastWeek: '' as IntlString,
     PastMonth: '' as IntlString,
+    Filter: '' as IntlString,
+    ClearFilters: '' as IntlString,
+    Back: '' as IntlString,
 
     IssueTitlePlaceholder: '' as IntlString,
     IssueDescriptionPlaceholder: '' as IntlString,
@@ -119,7 +122,12 @@ export default mergeIds(trackerId, tracker, {
     AddIssueTooltip: '' as IntlString,
 
     CopyIssueUrl: '' as IntlString,
-    CopyIssueId: '' as IntlString
+    CopyIssueId: '' as IntlString,
+
+    FilterIs: '' as IntlString,
+    FilterIsNot: '' as IntlString,
+    FilterIsEither: '' as IntlString,
+    FilterStatesCount: '' as IntlString
   },
   component: {
     NopeComponent: '' as AnyComponent,
