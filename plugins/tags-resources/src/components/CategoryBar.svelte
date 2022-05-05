@@ -41,10 +41,10 @@
   let categoryKeys: Ref<TagCategory>[] = []
 
   const elementsQuery = createQuery()
-  $: if ((tagElements?.size ?? 0) > 0) {
+  $: if (tagElements !== undefined && tagElements.size > 0) {
     elementsQuery.query(
       tags.class.TagElement,
-      { targetClass },
+      { _id: { $in: Array.from(tagElements?.keys()) }, targetClass },
       (res) => {
         elements = res
       },
