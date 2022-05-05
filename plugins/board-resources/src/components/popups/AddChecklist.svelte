@@ -28,20 +28,37 @@
     dispatch('close')
   }
 
-  function addChecklist () {
+  async function addChecklist () {
     if (!name || name.trim().length <= 0) {
       return
     }
 
     const template = selectedTemplate ? templatesMap.get(selectedTemplate._id) : undefined
-    client.addCollection(task.class.TodoItem, object.space, object._id, object._class, 'todoItems', {
-      name,
-      done: false,
-      dueTo: null,
-      assignee: null
-    })
-    if (template) {
-      // TODO: copy template items
+    const items: TodoItem[] = template ? await client.findAll(task.class.TodoItem, { attachedTo: template._id }) : []
+    const checklistRef = await client.addCollection(
+      task.class.TodoItem,
+      object.space,
+      object._id,
+      object._class,
+      'todoItems',
+      {
+        name,
+        done: false,
+        dueTo: null,
+        assignee: null
+      }
+    )
+    if (items.length > 0) {
+      await Promise.all(
+        items.map((item) =>
+          client.addCollection(task.class.TodoItem, object.space, checklistRef, task.class.TodoItem, 'items', {
+            name: item.name,
+            dueTo: item.dueTo,
+            done: item.done,
+            assignee: item.assignee
+          })
+        )
+      )
     }
     dispatch('close')
   }
@@ -109,6 +126,12 @@
   </div>
 
   <div class="ap-footer">
-    <Button label={presentation.string.Add} size={'small'} kind={'primary'} on:click={addChecklist} />
+    <Button
+      label={presentation.string.Add}
+      size="small"
+      kind="primary"
+      disabled={(name?.length ?? 0) <= 0}
+      on:click={addChecklist}
+    />
   </div>
 </div>

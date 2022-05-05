@@ -25,17 +25,10 @@
 
   export let value: TodoItem
   const client = getClient()
-  type EditTodoItem = Pick<TodoItem, 'assignee' | 'dueTo' | 'done' | 'name'>
-  const emptyItem: EditTodoItem = {
-    assignee: null,
-    dueTo: null,
-    done: false,
-    name: ''
-  }
-  let editingItem: EditTodoItem = { ...emptyItem }
   let checklistItems: TodoItem[] = []
   let done = 0
-  let isAdding: boolean = false
+  let editingName: string | undefined = undefined
+  let addingItemName: string | undefined = undefined
   let hovered: Ref<TodoItem> | undefined
 
   async function fetch () {
@@ -59,18 +52,33 @@
     )
   }
 
-  function addItem () {
-    editingItem = { ...emptyItem }
-    isAdding = true
+  function startAddingItem () {
+    addingItemName = ''
   }
 
-  async function addChecklistItem () {
-    isAdding = false
-    if (!editingItem.name) {
+  async function addItem () {
+    const item = {
+      name: addingItemName ?? '',
+      assignee: null,
+      dueTo: null,
+      done: false
+    }
+    addingItemName = undefined
+    if (item.name.length <= 0) {
       return
     }
-    await client.addCollection(task.class.TodoItem, value.space, value._id, value._class, 'items', editingItem)
+    await client.addCollection(task.class.TodoItem, value.space, value._id, value._class, 'items', item)
     fetch()
+  }
+
+  function updateName () {
+    if (editingName !== undefined && editingName.length > 0 && editingName !== value.name) {
+      value.name = editingName
+      editingName = undefined
+      client.update(value, { name: value.name })
+    } else {
+      editingName = undefined
+    }
   }
 
   async function setDoneToChecklistItem (item: TodoItem, event: CustomEvent<boolean>) {
@@ -121,8 +129,19 @@
       <div class="w-9">
         <Icon icon={board.icon.Card} size="large" />
       </div>
-      <div class="flex-grow fs-title">{value.name}</div>
-      <Button label={board.string.Delete} kind="no-border" size="small" on:click={deleteChecklist} />
+      {#if editingName !== undefined}
+        <EditWithIcon bind:value={editingName} on:change={updateName} />
+      {:else}
+        <div
+          class="flex-grow fs-title"
+          on:click={() => {
+            editingName = value.name ?? ''
+          }}
+        >
+          {value.name}
+        </div>
+        <Button label={board.string.Delete} kind="no-border" size="small" on:click={deleteChecklist} />
+      {/if}
     </div>
     <div class="flex-row-stretch mb-2 mt-1">
       <div class="w-9 text-sm pl-1 pr-1">
@@ -160,14 +179,14 @@
         </div>
       </div>
     {/each}
-    <div class="flex-row-stretch mt-4 mb-2">
+    <div class="flex-row-stretch mt-2 mb-2">
       <div class="w-9" />
-      {#if isAdding}
+      {#if addingItemName !== undefined}
         <div class="w-full p-1">
-          <EditWithIcon bind:value={editingItem.name} on:change={addChecklistItem} />
+          <EditWithIcon bind:value={addingItemName} on:change={addItem} />
         </div>
       {:else}
-        <Button label={board.string.AddCard} kind="no-border" size="small" on:click={addItem} />
+        <Button label={board.string.AddChecklistItem} kind="no-border" size="small" on:click={startAddingItem} />
       {/if}
     </div>
   </div>
