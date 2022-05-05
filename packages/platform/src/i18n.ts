@@ -108,17 +108,24 @@ export async function translate<P extends Record<string, any>> (message: IntlStr
     }
     return compiled.format(params)
   } else {
-    const id = _parseId(message)
-    if (id.component === 'embedded') {
-      return id.name
-    }
-    const translation = (await getTranslation(id, locale)) ?? message
-    if (translation instanceof Status) {
-      cache.set(message, translation)
+    try {
+      const id = _parseId(message)
+      if (id.component === 'embedded') {
+        return id.name
+      }
+      const translation = (await getTranslation(id, locale)) ?? message
+      if (translation instanceof Status) {
+        cache.set(message, translation)
+        return message
+      }
+      const compiled = new IntlMessageFormat(translation, locale)
+      cache.set(message, compiled)
+      return compiled.format(params)
+    } catch (err) {
+      const status = unknownError(err)
+      await setPlatformStatus(status)
+      cache.set(message, status)
       return message
     }
-    const compiled = new IntlMessageFormat(translation, locale)
-    cache.set(message, compiled)
-    return compiled.format(params)
   }
 }
