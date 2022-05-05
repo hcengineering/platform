@@ -1,8 +1,9 @@
 <script lang="ts">
-  import { Button, getPlatformColor, IconEdit, showPopup } from '@anticrm/ui'
+  import { Button, Component, getPlatformColor, IconEdit, showPopup } from '@anticrm/ui'
   import { State } from '@anticrm/task'
   import { getElementPopupAlignment } from '../utils/PopupUtils'
   import ListInlineActions from './editor/ListInlineActions.svelte'
+  import notification from '@anticrm/notification'
   export let state: State
 
   let ref: HTMLElement
@@ -16,6 +17,9 @@
   <div class="h-2 border-radius-1" style="background-color: {getPlatformColor(state.color)}" />
   <div class="flex-between h-full font-medium pr-2 pl-4" bind:this={ref}>
     <span class="lines-limit-2">{state.title}</span>
-    <Button icon={IconEdit} kind="transparent" on:click={onArchive} />
+    <div class="flex">
+      <Component is={notification.component.LastViewEditor} props={{ value: state }} />
+      <Button icon={IconEdit} kind="transparent" on:click={onArchive} />
+    </div>
   </div>
 </div>
