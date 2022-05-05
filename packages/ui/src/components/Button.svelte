@@ -24,7 +24,7 @@
   export let labelParams: Record<string, any> = {}
   export let kind: ButtonKind = 'secondary'
   export let size: ButtonSize = 'medium'
-  export let shape: 'circle' | 'round' | undefined = undefined
+  export let shape: 'rectangle' | 'rectangle-left' | 'rectangle-right' | 'circle' | 'round' | undefined = undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let justify: 'left' | 'center' = 'center'
   export let disabled: boolean = false
@@ -36,6 +36,7 @@
   export let focus: boolean = false
   export let click: boolean = false
   export let title: string | undefined = undefined
+  export let borderStyle: 'solid' | 'dashed' = 'solid'
 
   export let input: HTMLButtonElement | undefined = undefined
 
@@ -57,9 +58,13 @@
   bind:this={input}
   class="button {kind} {size} jf-{justify}"
   class:only-icon={iconOnly}
-  class:border-radius-1={shape !== 'circle' && shape !== 'round'}
+  class:border-radius-1={shape === undefined}
   class:border-radius-2={shape === 'round'}
   class:border-radius-4={shape === 'circle'}
+  class:border-radius-left-1={shape === 'rectangle-right'}
+  class:border-radius-right-1={shape === 'rectangle-left'}
+  class:border-solid={borderStyle === 'solid'}
+  class:border-dashed={borderStyle === 'dashed'}
   class:highlight
   class:selected
   disabled={disabled || loading}
@@ -134,6 +139,14 @@
     border: 1px solid transparent;
     transition-property: border, background-color, color, box-shadow;
     transition-duration: 0.15s;
+
+    &.border-solid {
+      border-style: solid;
+    }
+
+    &.border-dashed {
+      border-style: dashed;
+    }
 
     .btn-icon {
       color: var(--content-color);
