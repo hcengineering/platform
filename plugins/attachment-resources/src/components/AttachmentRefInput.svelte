@@ -22,8 +22,6 @@
   import { Account, Class, Doc, generateId, Ref, Space } from '@anticrm/core'
   import { Attachment } from '@anticrm/attachment'
   import AttachmentPresenter from './AttachmentPresenter.svelte'
-  import { IconClose } from '@anticrm/ui'
-  import { ActionIcon } from '@anticrm/ui'
 
   export let objectId: Ref<Doc>
   export let space: Ref<Space>
@@ -173,19 +171,16 @@
   on:drop|preventDefault|stopPropagation={fileDrop}
 >
   {#if attachments.size}
-    <div class="flex-row-center list">
+    <div class="flex-row-center list scroll-divider-color">
       {#each Array.from(attachments.values()) as attachment}
         <div class="item flex">
-          <AttachmentPresenter value={attachment} />
-          <div class="remove">
-            <ActionIcon
-              icon={IconClose}
-              action={() => {
-                removeAttachment(attachment)
-              }}
-              size="small"
-            />
-          </div>
+          <AttachmentPresenter
+            value={attachment}
+            removable
+            on:remove={(result) => {
+              if (result !== undefined) removeAttachment(attachment)
+            }}
+          />
         </div>
       {/each}
     </div>
@@ -204,30 +199,18 @@
 
 <style lang="scss">
   .list {
-    padding: 1rem;
+    padding: 0.5rem;
     color: var(--theme-caption-color);
     overflow-x: auto;
-    background-color: var(--theme-bg-accent-color);
-    border: 1px solid var(--theme-bg-accent-color);
-    border-radius: 0.75rem;
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
+    overflow-y: hidden;
+    background-color: var(--accent-bg-color);
+    border: 1px solid var(--divider-color);
+    border-radius: 0.5rem 0.5rem 0 0;
+    border-bottom: none;
 
     .item + .item {
       padding-left: 1rem;
-      border-left: 1px solid var(--theme-bg-accent-color);
-    }
-
-    .item {
-      .remove {
-        visibility: hidden;
-      }
-    }
-
-    .item:hover {
-      .remove {
-        visibility: visible;
-      }
+      border-left: 1px solid var(--divider-color);
     }
   }
 </style>

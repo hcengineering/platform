@@ -65,7 +65,7 @@
   }
 
   async function createApplication () {
-    const state = await client.findOne(task.class.State, { space: doc.space, _id: selectedState._id })
+    const state = await client.findOne(task.class.State, { space: doc.space, _id: doc.state })
     if (state === undefined) {
       throw new Error(`create application: state not found space:${doc.space}`)
     }
@@ -149,7 +149,7 @@
   let states: Array<{ id: number | string; color: number; label: string }> = []
   let selectedState: State
   const statesQuery = createQuery()
-  $: if (doc.space !== undefined) {
+  $: if (doc.space) {
     statesQuery.query(
       task.class.State,
       { space: doc.space },
@@ -158,6 +158,7 @@
           return { id: s._id, label: s.title, color: s.color }
         })
         selectedState = res.filter((s) => s._id === doc.state)[0] ?? res[0]
+        doc.state = selectedState._id
       },
       { sort: { rank: SortingOrder.Ascending } }
     )
@@ -211,9 +212,10 @@
             { value: states, searchable: true, placeholder: ui.string.SearchDots },
             eventToHTMLElement(ev),
             (result) => {
-              if (result && result.id !== doc.state) {
+              if (result && result.id) {
                 doc.state = result.id
                 selectedState = result
+                selectedState.title = result.label
               }
             }
           )
