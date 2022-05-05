@@ -74,7 +74,7 @@ export const _ID_SEPARATOR = ':'
 /**
  * @internal
  */
-export const embeddedId = 'embedded'
+export const _EmbeddedId = 'embedded'
 
 function identify (result: Record<string, any>, prefix: string, namespace: Record<string, any>): Namespace {
   for (const key in namespace) {
@@ -92,7 +92,7 @@ function identify (result: Record<string, any>, prefix: string, namespace: Recor
  * @public
  */
 export function getEmbeddedLabel (str: string): IntlString {
-  return (embeddedId + _ID_SEPARATOR + embeddedId + _ID_SEPARATOR + str) as IntlString
+  return (_EmbeddedId + _ID_SEPARATOR + _EmbeddedId + _ID_SEPARATOR + str) as IntlString
 }
 
 /**
