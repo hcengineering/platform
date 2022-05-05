@@ -211,7 +211,6 @@
   }
   let panelWidth: number = 0
   let innerWidth: number = 0
-  let minimize: boolean = false
 </script>
 
 <ActionContext
@@ -225,9 +224,8 @@
     {icon}
     {title}
     {object}
-    bind:minimize
     isHeader={false}
-    isAside={!minimize}
+    isAside={true}
     bind:panelWidth
     bind:innerWidth
     on:update={(ev) => _update(ev.detail)}

@@ -89,16 +89,14 @@
   onMount(() => {
     dispatch('open', { ignoreKeys: ['comments', 'name', 'description', 'number'] })
   })
-  let minimize: boolean = false
 </script>
 
 {#if issue !== undefined}
   <Panel
     object={issue}
-    bind:minimize
     isHeader
-    isAside={!minimize}
-    isSub={minimize}
+    isAside={true}
+    isSub={false}
     bind:innerWidth
     on:close={() => {
       dispatch('close')
