@@ -71,6 +71,11 @@ export type Namespace = Record<string, Record<string, string>>
  */
 export const _ID_SEPARATOR = ':'
 
+/**
+ * @internal
+ */
+export const _EmbeddedId = 'embedded'
+
 function identify (result: Record<string, any>, prefix: string, namespace: Record<string, any>): Namespace {
   for (const key in namespace) {
     const value = namespace[key]
@@ -81,6 +86,13 @@ function identify (result: Record<string, any>, prefix: string, namespace: Recor
     result[key] = typeof value === 'string' ? ident : identify(result[key] ?? {}, ident, value)
   }
   return result
+}
+
+/**
+ * @public
+ */
+export function getEmbeddedLabel (str: string): IntlString {
+  return (_EmbeddedId + _ID_SEPARATOR + _EmbeddedId + _ID_SEPARATOR + str) as IntlString
 }
 
 /**

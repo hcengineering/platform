@@ -339,75 +339,75 @@ export class Builder {
  * @public
  */
 export function TypeString (): Type<string> {
-  return { _class: core.class.TypeString, label: 'TypeString' as IntlString }
+  return { _class: core.class.TypeString, label: core.string.String }
 }
 
 /**
  * @public
  */
 export function TypeNumber (): Type<number> {
-  return { _class: core.class.TypeNumber, label: 'TypeNumber' as IntlString }
+  return { _class: core.class.TypeNumber, label: core.string.Number }
 }
 
 /**
  * @public
  */
 export function TypeMarkup (): Type<Markup> {
-  return { _class: core.class.TypeMarkup, label: 'TypeMarkup' as IntlString }
+  return { _class: core.class.TypeMarkup, label: core.string.Markup }
 }
 
 /**
  * @public
  */
 export function TypeIntlString (): Type<IntlString> {
-  return { _class: core.class.TypeIntlString, label: 'TypeIntlString' as IntlString }
+  return { _class: core.class.TypeIntlString, label: core.string.IntlString }
 }
 
 /**
  * @public
  */
 export function TypeBoolean (): Type<boolean> {
-  return { _class: core.class.TypeBoolean, label: 'TypeBoolean' as IntlString }
+  return { _class: core.class.TypeBoolean, label: core.string.Boolean }
 }
 
 /**
  * @public
  */
 export function TypeTimestamp (): Type<Timestamp> {
-  return { _class: core.class.TypeTimestamp, label: 'TypeTimestamp' as IntlString }
+  return { _class: core.class.TypeTimestamp, label: core.string.Timestamp }
 }
 
 /**
  * @public
  */
 export function TypeDate (withTime?: boolean): TypeDateType {
-  return { _class: core.class.TypeDate, label: 'TypeDate' as IntlString, withTime }
+  return { _class: core.class.TypeDate, label: core.string.Date, withTime }
 }
 
 /**
  * @public
  */
 export function TypeRef (_class: Ref<Class<Doc>>): RefTo<Doc> {
-  return { _class: core.class.RefTo, to: _class, label: 'TypeRef' as IntlString }
+  return { _class: core.class.RefTo, label: core.string.Ref, to: _class }
 }
 
 /**
  * @public
  */
 export function Collection<T extends AttachedDoc> (clazz: Ref<Class<T>>, itemLabel?: IntlString): TypeCollection<T> {
-  return { _class: core.class.Collection, of: clazz, label: 'Collection' as IntlString, itemLabel }
+  return { _class: core.class.Collection, label: core.string.Collection, of: clazz, itemLabel }
 }
 
 /**
  * @public
  */
 export function ArrOf<T extends PropertyType | Ref<Doc>> (type: Type<T>): TypeArrOf<T> {
-  return { _class: core.class.ArrOf, of: type, label: 'Array' as IntlString }
+  return { _class: core.class.ArrOf, label: core.string.Array, of: type }
 }
 
 /**
  * @public
  */
 export function Bag (): Type<Record<string, PropertyType>> {
-  return { _class: core.class.Bag, label: 'Bag' as IntlString }
+  return { _class: core.class.Bag, label: core.string.Bag }
 }

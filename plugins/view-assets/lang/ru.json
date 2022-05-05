@@ -20,6 +20,10 @@
     "General": "Общее",
     "Navigation": "Навигация",
     "Editor": "Редактор",
-    "MarkdownFormatting": "Форматирование"
+    "MarkdownFormatting": "Форматирование",
+    "Type": "Тип",
+    "WithTime": "Со временем",
+    "CreatingAttribute": "Создание атрибута",
+    "CreatingAttributeConfirm": "Вы хотите создать атрибут? Изменить или удалить его будет невозможно"
   }
 }

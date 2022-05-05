@@ -98,6 +98,7 @@ export interface Attribute<T extends PropertyType> extends Doc, UXObject {
   name: string
   type: Type<T>
   index?: IndexKind
+  isCustom?: boolean
 }
 
 /**

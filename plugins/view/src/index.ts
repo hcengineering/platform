@@ -311,6 +311,7 @@ const view = plugin(viewId, {
   component: {
     ObjectPresenter: '' as AnyComponent,
     EditDoc: '' as AnyComponent,
+    CreateAttribute: '' as AnyComponent,
     SpacePresenter: '' as AnyComponent
   },
   icon: {

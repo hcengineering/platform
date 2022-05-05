@@ -16,7 +16,7 @@
 
 import type { Plugin, IntlString } from './platform'
 import { Status, Severity, unknownError } from './status'
-import { _parseId } from './ident'
+import { _IdInfo, _parseId } from './ident'
 import { setPlatformStatus } from './event'
 import { IntlMessageFormat } from 'intl-messageformat'
 
@@ -73,9 +73,8 @@ async function loadTranslationsForComponent (plugin: Plugin, locale: string): Pr
   }
 }
 
-async function getTranslation (message: IntlString, locale: string): Promise<IntlString | Status> {
+async function getTranslation (id: _IdInfo, locale: string): Promise<IntlString | Status | undefined> {
   try {
-    const id = _parseId(message)
     let messages = translations.get(id.component)
     if (messages === undefined) {
       messages = await loadTranslationsForComponent(id.component, locale)
@@ -84,11 +83,9 @@ async function getTranslation (message: IntlString, locale: string): Promise<Int
     if (messages instanceof Status) {
       return messages
     }
-    return (
-      (id.kind !== undefined
-        ? (messages[id.kind] as Record<string, IntlString>)?.[id.name]
-        : (messages[id.name] as IntlString)) ?? message
-    )
+    return id.kind !== undefined
+      ? (messages[id.kind] as Record<string, IntlString>)?.[id.name]
+      : (messages[id.name] as IntlString)
   } catch (err) {
     const status = unknownError(err)
     await setPlatformStatus(status)
@@ -111,13 +108,24 @@ export async function translate<P extends Record<string, any>> (message: IntlStr
     }
     return compiled.format(params)
   } else {
-    const translation = await getTranslation(message, locale)
-    if (translation instanceof Status) {
-      cache.set(message, translation)
+    try {
+      const id = _parseId(message)
+      if (id.component === 'embedded') {
+        return id.name
+      }
+      const translation = (await getTranslation(id, locale)) ?? message
+      if (translation instanceof Status) {
+        cache.set(message, translation)
+        return message
+      }
+      const compiled = new IntlMessageFormat(translation, locale)
+      cache.set(message, compiled)
+      return compiled.format(params)
+    } catch (err) {
+      const status = unknownError(err)
+      await setPlatformStatus(status)
+      cache.set(message, status)
       return message
     }
-    const compiled = new IntlMessageFormat(translation, locale)
-    cache.set(message, compiled)
-    return compiled.format(params)
   }
 }

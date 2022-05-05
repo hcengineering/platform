@@ -32,6 +32,10 @@
     "General": "General",
     "Navigation": "Navigation",
     "Editor": "Editor",
-    "MarkdownFormatting": "Formatting"
+    "MarkdownFormatting": "Formatting",
+    "Type": "Type",
+    "WithTime": "WithTime",
+    "CreatingAttribute": "Creating an attribute",
+    "CreatingAttributeConfirm": "Do you want to create an attribute? It will not be possible to change or delete it."
   }
 }

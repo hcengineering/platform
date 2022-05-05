@@ -236,6 +236,22 @@ export function createModel (builder: Builder): void {
   classPresenter(builder, core.class.TypeDate, view.component.DatePresenter, view.component.DateEditor)
   classPresenter(builder, core.class.Space, view.component.ObjectPresenter)
 
+  builder.mixin(core.class.TypeString, core.class.Class, view.mixin.ObjectEditor, {
+    editor: view.component.StringTypeEditor
+  })
+
+  builder.mixin(core.class.TypeBoolean, core.class.Class, view.mixin.ObjectEditor, {
+    editor: view.component.BooleanTypeEditor
+  })
+
+  builder.mixin(core.class.TypeDate, core.class.Class, view.mixin.ObjectEditor, {
+    editor: view.component.DateTypeEditor
+  })
+
+  builder.mixin(core.class.TypeNumber, core.class.Class, view.mixin.ObjectEditor, {
+    editor: view.component.NumberTypeEditor
+  })
+
   builder.createDoc(
     view.class.ActionCategory,
     core.space.Model,
