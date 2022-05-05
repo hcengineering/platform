@@ -17,26 +17,35 @@
   import { getClient } from '@anticrm/presentation'
   import type { TodoItem } from '@anticrm/task'
   import task from '@anticrm/task'
-  import { Button, CheckBox, EditBox, Icon, Progress } from '@anticrm/ui'
+  import { Button, CheckBox, EditWithIcon, Icon, IconMoreH, Menu, Progress, showPopup } from '@anticrm/ui'
   import { HTMLPresenter } from '@anticrm/view-resources'
 
   import board from '../../plugin'
+  import { getPopupAlignment } from '../../utils/PopupUtils'
 
   export let value: TodoItem
   const client = getClient()
+  type EditTodoItem = Pick<TodoItem, 'assignee' | 'dueTo' | 'done' | 'name'>
+  const emptyItem: EditTodoItem = {
+    assignee: null,
+    dueTo: null,
+    done: false,
+    name: ''
+  }
+  let editingItem: EditTodoItem = { ...emptyItem }
   let checklistItems: TodoItem[] = []
   let done = 0
   let isAdding: boolean = false
   let hovered: Ref<TodoItem> | undefined
 
-  async function fetch() {
+  async function fetch () {
     checklistItems = await client.findAll(task.class.TodoItem, { space: value.space, attachedTo: value._id })
     done = checklistItems.reduce((result: number, current: TodoItem) => {
       return current.done ? result + 1 : result
     }, 0)
   }
 
-  async function deleteChecklist () {
+  function deleteChecklist () {
     if (!value) {
       return
     }
@@ -50,18 +59,17 @@
     )
   }
 
-  async function addChecklistItem (event: CustomEvent<string>) {
+  function addItem () {
+    editingItem = { ...emptyItem }
+    isAdding = true
+  }
+
+  async function addChecklistItem () {
     isAdding = false
-    const name = event.detail
-    if (!name || !value) {
+    if (!editingItem.name) {
       return
     }
-    await client.addCollection(task.class.TodoItem, value.space, value._id, value._class, 'items', {
-      name,
-      dueTo: null,
-      assignee: null,
-      done: false
-    })
+    await client.addCollection(task.class.TodoItem, value.space, value._id, value._class, 'items', editingItem)
     fetch()
   }
 
@@ -74,8 +82,37 @@
     fetch()
   }
 
-  $: value?.items && value.items > 0 && fetch()
+  function showItemMenu (item: TodoItem, e?: Event) {
+    showPopup(
+      Menu,
+      {
+        actions: [
+          {
+            label: board.string.Delete,
+            action: async () => {
+              await client.removeCollection(
+                item._class,
+                item.space,
+                item._id,
+                item.attachedTo,
+                item.attachedToClass,
+                item.collection
+              )
+              fetch()
+            }
+          }
+        ]
+      },
+      getPopupAlignment(e)
+    )
+  }
 
+  $: if (value?.items) {
+    fetch()
+  } else {
+    checklistItems = []
+    done = 0
+  }
 </script>
 
 {#if value !== undefined}
@@ -88,46 +125,49 @@
       <Button label={board.string.Delete} kind="no-border" size="small" on:click={deleteChecklist} />
     </div>
     <div class="flex-row-stretch mb-2 mt-1">
-      <Progress min={0} max={checklistItems.length} value={done} />
+      <div class="w-9 text-sm pl-1 pr-1">
+        {checklistItems.length > 0 ? Math.round((done / checklistItems.length) * 100) : 0}%
+      </div>
+      <div class="flex-center flex-grow w-full">
+        <Progress min={0} max={checklistItems?.length ?? 0} value={done} />
+      </div>
     </div>
     {#each checklistItems as item}
-      <div class="flex-row-stretch mb-1 mt-1 pl-1"
-      class:background-button-noborder-bg-hover={hovered === item._id}
-      on:mouseover={() => {
-        hovered = item._id
-      }}
-      on:focus={() => {
-        hovered = item._id
-      }}
-      on:mouseout={() => {
-        hovered = undefined
-      }}
-      on:blur={() => {
-        hovered = undefined
-      }}
+      <div
+        class="flex-row-stretch mb-1 mt-1 pl-1 h-7 border-radius-1"
+        class:background-button-noborder-bg-hover={hovered === item._id}
+        on:mouseover={() => {
+          hovered = item._id
+        }}
+        on:focus={() => {
+          hovered = item._id
+        }}
+        on:mouseout={() => {
+          hovered = undefined
+        }}
+        on:blur={() => {
+          hovered = undefined
+        }}
       >
         <div class="w-9 flex items-center">
           <CheckBox bind:checked={item.done} on:value={(event) => setDoneToChecklistItem(item, event)} />
         </div>
-        <div class="flex-col flex-gap-1 w-full">
+        <div class="flex-col justify-center flex-gap-1 w-full" class:text-line-through={item.done}>
           <HTMLPresenter bind:value={item.name} />
+        </div>
+        <div class="flex-center">
+          <Button icon={IconMoreH} kind="transparent" size="small" on:click={(e) => showItemMenu(item, e)} />
         </div>
       </div>
     {/each}
     <div class="flex-row-stretch mt-4 mb-2">
       <div class="w-9" />
       {#if isAdding}
-        <div class="border-bg-accent border-radius-3 w-full h-8 p-1">
-          <EditBox on:change={addChecklistItem} />
+        <div class="w-full p-1">
+          <EditWithIcon bind:value={editingItem.name} on:change={addChecklistItem} />
         </div>
       {:else}
-        <Button
-          label={board.string.AddCard}
-          kind="no-border"
-          size="small"
-          on:click={() => {
-            isAdding = true
-          }} />
+        <Button label={board.string.AddCard} kind="no-border" size="small" on:click={addItem} />
       {/if}
     </div>
   </div>

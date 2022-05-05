@@ -19,7 +19,7 @@
   import { Panel } from '@anticrm/panel'
   import { getResource } from '@anticrm/platform'
   import { createQuery, getClient } from '@anticrm/presentation'
-  import type { State } from '@anticrm/task'
+  import type { State, TodoItem } from '@anticrm/task'
   import task from '@anticrm/task'
   import { StyledTextBox } from '@anticrm/text-editor'
   import { Button, EditBox, Icon, Label } from '@anticrm/ui'
@@ -44,9 +44,9 @@
   let state: State | undefined
   let handleMove: (e: Event) => void
   let checklists: TodoItem[] = []
-  
+
   async function fetchChecklists () {
-      checklists = await client.findAll(task.class.TodoItem, { space: object.space, attachedTo: object._id })
+    checklists = await client.findAll(task.class.TodoItem, { space: object.space, attachedTo: object._id })
   }
 
   function change (field: string, value: any) {
@@ -64,7 +64,11 @@
       state = result[0]
     })
 
-  $: object?.todoItems && object.todoItems > 0 && fetchChecklists()
+  $: if (object?.todoItems) {
+    fetchChecklists()
+  } else {
+    checklists = []
+  }
 
   getCardActions(client, { _id: board.cardAction.Move }).then(async (result) => {
     if (result[0]?.handler) {
@@ -140,7 +144,7 @@
           </div>
         </div>
         <CardAttachments value={object} />
-        {#each checklists as checklist }
+        {#each checklists as checklist}
           <CardChecklist value={checklist} />
         {/each}
       </div>

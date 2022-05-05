@@ -537,6 +537,8 @@ a.no-line {
   &:hover { text-decoration: underline; }
 }
 
+.text-line-through { text-decoration: line-through; }
+
 .hidden-text {
   position: absolute;
   visibility: hidden;

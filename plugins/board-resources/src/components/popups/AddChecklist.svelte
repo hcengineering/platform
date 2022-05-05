@@ -24,11 +24,11 @@
   const client = getClient()
   const dispatch = createEventDispatcher()
 
-  function close() {
+  function close () {
     dispatch('close')
   }
 
-  function addChecklist() {
+  function addChecklist () {
     if (!name || name.trim().length <= 0) {
       return
     }
@@ -51,14 +51,13 @@
     .then((result: WithLookup<Card>[]) => {
       templateListItems = [noneListItem]
       templatesMap = new Map()
-      
+
       for (const card of result) {
         const todoItems = card.$lookup?.todoItems as TodoItem[]
         if (!todoItems) {
           continue
         }
 
-        
         templateListItems.push({
           _id: card._id,
           label: card.title,
@@ -76,7 +75,6 @@
         }
       }
     })
-
 </script>
 
 <div class="antiPopup w-85">
