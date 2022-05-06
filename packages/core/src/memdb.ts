@@ -57,12 +57,12 @@ export abstract class MemDb extends TxProcessor {
     const result: T[] = []
     if (typeof query._id === 'string') {
       const obj = this.objectById.get(query._id) as T
-      if (obj !== undefined) result.push(obj)
+      if (obj !== undefined && this.hierarchy.isDerived(obj._class, _class)) result.push(obj)
     } else if (query._id?.$in !== undefined) {
       const ids = query._id.$in
       for (const id of ids) {
         const obj = this.objectById.get(id) as T
-        if (obj !== undefined) result.push(obj)
+        if (obj !== undefined && this.hierarchy.isDerived(obj._class, _class)) result.push(obj)
       }
     }
     return result

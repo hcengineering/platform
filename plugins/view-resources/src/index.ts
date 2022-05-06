@@ -43,6 +43,7 @@ import StringTypeEditor from './components/typeEditors/StringTypeEditor.svelte'
 import BooleanTypeEditor from './components/typeEditors/BooleanTypeEditor.svelte'
 import DateTypeEditor from './components/typeEditors/DateTypeEditor.svelte'
 import NumberTypeEditor from './components/typeEditors/NumberTypeEditor.svelte'
+import DocAttributeBar from './components/DocAttributeBar.svelte'
 
 export { getActions } from './actions'
 export { default as ActionContext } from './components/ActionContext.svelte'
@@ -53,7 +54,7 @@ export { default as LinkPresenter } from './components/LinkPresenter.svelte'
 export * from './context'
 export * from './selection'
 export { buildModel, getCollectionCounter, getObjectPresenter, LoadingProps } from './utils'
-export { HTMLPresenter, Table, TableView, EditDoc, ColorsPopup, Menu, SpacePresenter, UpDownNavigator }
+export { HTMLPresenter, Table, TableView, DocAttributeBar, EditDoc, ColorsPopup, Menu, SpacePresenter, UpDownNavigator }
 
 export default async (): Promise<Resources> => ({
   actionImpl: actionImpl,

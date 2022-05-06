@@ -59,6 +59,15 @@ export interface CardDate extends Obj {
 /**
  * @public
  */
+export interface CardCover {
+  color?: number
+  image?: string
+  size: 'large' | 'small'
+}
+
+/**
+ * @public
+ */
 export interface Card extends Task {
   title: string
 
@@ -73,8 +82,7 @@ export interface Card extends Task {
 
   location?: string
 
-  coverColor?: number
-  coverImage?: string
+  cover?: CardCover | null
 
   comments?: number
   attachments?: number
