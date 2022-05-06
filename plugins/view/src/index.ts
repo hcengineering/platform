@@ -42,6 +42,13 @@ export interface AttributeEditor extends Class<Doc> {
 /**
  * @public
  */
+export interface CollectionEditor extends Class<Doc> {
+  editor: AnyComponent
+}
+
+/**
+ * @public
+ */
 export interface AttributePresenter extends Class<Doc> {
   presenter: AnyComponent
 }
@@ -286,6 +293,7 @@ export interface ObjectFactory extends Class<Obj> {
 const view = plugin(viewId, {
   mixin: {
     AttributeEditor: '' as Ref<Mixin<AttributeEditor>>,
+    CollectionEditor: '' as Ref<Mixin<CollectionEditor>>,
     AttributePresenter: '' as Ref<Mixin<AttributePresenter>>,
     ObjectEditor: '' as Ref<Mixin<ObjectEditor>>,
     ObjectEditorHeader: '' as Ref<Mixin<ObjectEditorHeader>>,

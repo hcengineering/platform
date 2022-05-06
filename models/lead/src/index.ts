@@ -185,7 +185,7 @@ export function createModel (builder: Builder): void {
     presenter: lead.component.LeadPresenter
   })
 
-  builder.mixin(lead.class.Lead, core.class.Class, view.mixin.AttributeEditor, {
+  builder.mixin(lead.class.Lead, core.class.Class, view.mixin.CollectionEditor, {
     editor: lead.component.Leads
   })
 

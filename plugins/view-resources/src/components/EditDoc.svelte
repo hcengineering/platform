@@ -135,8 +135,8 @@
 
   async function getCollectionEditor (key: KeyedAttribute): Promise<AnyComponent> {
     const attrClass = getAttributePresenterClass(key.attr)
-    const clazz = client.getHierarchy().getClass(attrClass)
-    const editorMixin = client.getHierarchy().as(clazz, view.mixin.AttributeEditor)
+    const clazz = hierarchy.getClass(attrClass)
+    const editorMixin = hierarchy.as(clazz, view.mixin.CollectionEditor)
     return editorMixin.editor
   }
 
