@@ -20,6 +20,7 @@
 
   export let value: any
   export let maxWidth: string | undefined = undefined
+  export let withoutUndefined: boolean = false
   export let onChange: (value: any) => void
 </script>
 
@@ -31,7 +32,7 @@
   style={maxWidth ? `max-width: ${maxWidth};` : ''}
   on:click={() => {
     if (value === true) value = false
-    else if (value === false) value = undefined
+    else if (value === false && !withoutUndefined) value = undefined
     else value = true
     onChange(value)
   }}

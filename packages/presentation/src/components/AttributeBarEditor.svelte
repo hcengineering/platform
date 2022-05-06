@@ -38,6 +38,7 @@
   $: attribute = typeof key === 'string' ? hierarchy.getAttribute(_class, key) : key.attr
   $: attributeKey = typeof key === 'string' ? key : key.key
   $: typeClassId = attribute !== undefined ? getAttributePresenterClass(attribute) : undefined
+  $: console.log(attribute.type)
 
   let editor: Promise<void | AnySvelteComponent> | undefined
 
@@ -76,6 +77,7 @@
                   this={instance}
                   label={attribute?.label}
                   placeholder={attribute?.label}
+                  type={attribute?.type}
                   {maxWidth}
                   value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
                   space={object.space}
@@ -97,6 +99,7 @@
           this={instance}
           label={attribute?.label}
           placeholder={attribute?.label}
+          type={attribute?.type}
           {maxWidth}
           value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
           space={object.space}
@@ -113,6 +116,7 @@
               this={instance}
               label={attribute?.label}
               placeholder={attribute?.label}
+              type={attribute?.type}
               {maxWidth}
               value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
               space={object.space}
@@ -130,6 +134,7 @@
             placeholder={attribute?.label}
             kind={'link'}
             size={'large'}
+            type={attribute?.type}
             {maxWidth}
             value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
             space={object.space}
@@ -142,6 +147,7 @@
       <div style="grid-column: 1/3;">
         <svelte:component
           this={instance}
+          type={attribute?.type}
           {maxWidth}
           value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
           space={object.space}
