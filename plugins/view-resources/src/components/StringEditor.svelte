@@ -21,7 +21,7 @@
   export let placeholder: IntlString
   export let value: any
   export let focus: boolean
-  export let maxWidth: string
+  export let maxWidth: string = '10rem'
   export let onChange: (value: string) => void
 
   function _onchange (ev: Event) {

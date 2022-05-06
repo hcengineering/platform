@@ -24,6 +24,7 @@ import LeadPresenter from './components/LeadPresenter.svelte'
 import Leads from './components/Leads.svelte'
 import LeadsPresenter from './components/LeadsPresenter.svelte'
 import TemplatesIcon from './components/TemplatesIcon.svelte'
+import CreateCustomer from './components/CreateCustomer.svelte'
 
 export default async (): Promise<Resources> => ({
   component: {
@@ -35,6 +36,7 @@ export default async (): Promise<Resources> => ({
     TemplatesIcon,
     Customers,
     LeadsPresenter,
-    Leads
+    Leads,
+    CreateCustomer
   }
 })
