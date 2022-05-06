@@ -38,7 +38,6 @@
   $: attribute = typeof key === 'string' ? hierarchy.getAttribute(_class, key) : key.attr
   $: attributeKey = typeof key === 'string' ? key : key.key
   $: typeClassId = attribute !== undefined ? getAttributePresenterClass(attribute) : undefined
-  $: console.log(attribute.type)
 
   let editor: Promise<void | AnySvelteComponent> | undefined
 
