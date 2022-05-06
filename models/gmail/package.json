@@ -30,6 +30,7 @@
     "@anticrm/core": "~0.6.16",
     "@anticrm/platform": "~0.6.6",
     "@anticrm/model-core": "~0.6.0",
+    "@anticrm/contact": "~0.6.5",
     "@anticrm/model-contact": "~0.6.1",
     "@anticrm/gmail": "~0.6.0",
     "@anticrm/gmail-resources": "~0.6.0",

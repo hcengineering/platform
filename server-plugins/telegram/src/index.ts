@@ -17,6 +17,7 @@
 import { Class, Doc, DocumentQuery, FindOptions, FindResult, Hierarchy, Ref } from '@anticrm/core'
 import type { Plugin, Resource } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
+import { TriggerFunc } from '@anticrm/server-core'
 
 /**
  * @public
@@ -27,6 +28,9 @@ export const serverTelegramId = 'server-telegram' as Plugin
  * @public
  */
 export default plugin(serverTelegramId, {
+  trigger: {
+    OnMessageCreate: '' as Resource<TriggerFunc>
+  },
   function: {
     FindMessages: '' as Resource<
     (

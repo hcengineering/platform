@@ -24,6 +24,7 @@ import {
   FindResult,
   Ref,
   Space,
+  Timestamp,
   UXObject
 } from '@anticrm/core'
 import type { Asset, Plugin } from '@anticrm/platform'
@@ -56,6 +57,7 @@ export interface Channel extends AttachedDoc {
   provider: Ref<ChannelProvider>
   value: string
   items?: number
+  lastMessage?: Timestamp
 }
 
 /**

@@ -14,8 +14,25 @@
 //
 
 import contact, { Channel } from '@anticrm/contact'
-import telegram from '@anticrm/telegram'
-import { Class, Doc, DocumentQuery, FindOptions, FindResult, Hierarchy, Ref } from '@anticrm/core'
+import core, { AttachedDoc, Class, Doc, DocumentQuery, FindOptions, FindResult, Hierarchy, Ref, Tx, TxCollectionCUD, TxCreateDoc, TxProcessor } from '@anticrm/core'
+import { TriggerControl } from '@anticrm/server-core'
+import telegram, { TelegramMessage } from '@anticrm/telegram'
+
+const extractTx = (tx: Tx): Tx => {
+  if (tx._class === core.class.TxCollectionCUD) {
+    const ctx = tx as TxCollectionCUD<Doc, AttachedDoc>
+    if (ctx.tx._class === core.class.TxCreateDoc) {
+      const create = ctx.tx as TxCreateDoc<AttachedDoc>
+      create.attributes.attachedTo = ctx.objectId
+      create.attributes.attachedToClass = ctx.objectClass
+      create.attributes.collection = ctx.collection
+      return create
+    }
+    return ctx.tx
+  }
+
+  return tx
+}
 
 /**
  * @public
@@ -33,13 +50,45 @@ export async function FindMessages (
   if (channel.provider !== contact.channelProvider.Telegram) {
     return []
   }
-  const messages = await findAll(telegram.class.Message, { attachedTo: doc._id })
-  const newMessages = await findAll(telegram.class.NewMessage, { attachedTo: doc._id })
+  const messages = await findAll(telegram.class.Message, { attachedTo: channel._id })
+  const newMessages = await findAll(telegram.class.NewMessage, { attachedTo: channel._id })
   return [...messages, ...newMessages]
+}
+
+/**
+ * @public
+ */
+export async function OnMessageCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+  const actualTx = extractTx(tx)
+  if (actualTx._class !== core.class.TxCreateDoc) {
+    return []
+  }
+
+  const createTx = tx as TxCreateDoc<TelegramMessage>
+
+  if (!control.hierarchy.isDerived(createTx.objectClass, telegram.class.Message)) {
+    return []
+  }
+  const message = TxProcessor.createDoc2Doc<TelegramMessage>(createTx)
+
+  const channel = (await control.findAll(contact.class.Channel, { _id: message.attachedTo }, { limit: 1 }))[0]
+  if (channel === undefined) {
+    return []
+  }
+  if (channel.lastMessage === undefined || channel.lastMessage < message.sendOn) {
+    const tx = control.txFactory.createTxUpdateDoc(channel._class, channel.space, channel._id, {
+      lastMessage: message.sendOn
+    })
+    return [tx]
+  }
+  return []
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
+  trigger: {
+    OnMessageCreate
+  },
   function: {
     FindMessages
   }

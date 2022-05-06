@@ -74,7 +74,7 @@
 
   function isNew (item: Channel, lastViews: Map<Ref<Doc>, Timestamp>): boolean {
     const lastView = (item as Channel)._id !== undefined ? lastViews.get((item as Channel)._id) : undefined
-    return lastView ? lastView < item.modifiedOn : (item.items ?? 0) > 0
+    return lastView ? lastView < item.lastMessage : (item.items ?? 0) > 0
   }
 
   async function update (value: AttachedData<Channel>[] | Channel | null, lastViews: Map<Ref<Doc>, Timestamp>) {
