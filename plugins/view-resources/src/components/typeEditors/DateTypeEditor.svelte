@@ -28,12 +28,14 @@
   })
 </script>
 
-<div class="flex-between">
+<div class="flex-row-center">
   <Label label={view.string.WithTime} />
-  <BooleanEditor
-    bind:value={withTime}
-    onChange={(e) => {
-      dispatch('change', TypeDate(e))
-    }}
-  />
+  <div class="ml-2">
+    <BooleanEditor
+      bind:value={withTime}
+      onChange={(e) => {
+        dispatch('change', TypeDate(e))
+      }}
+    />
+  </div>
 </div>

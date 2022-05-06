@@ -14,12 +14,12 @@
 -->
 <script lang="ts">
   import core, { AnyAttribute, Class, Data, generateId, IndexKind, PropertyType, Ref, Space, Type } from '@anticrm/core'
-  import presentation, { getClient, MessageBox } from '@anticrm/presentation'
-  import { AnyComponent, EditBox, DropdownLabelsIntl, Label, Component, Button, showPopup } from '@anticrm/ui'
+  import { getEmbeddedLabel } from '@anticrm/platform'
+  import { Card, getClient } from '@anticrm/presentation'
+  import { AnyComponent, Component, DropdownLabelsIntl, EditBox, Label } from '@anticrm/ui'
   import { DropdownIntlItem } from '@anticrm/ui/src/types'
   import { createEventDispatcher } from 'svelte'
   import view from '../plugin'
-  import { getEmbeddedLabel } from '@anticrm/platform'
 
   export let _class: Ref<Class<Space>>
   let name: string
@@ -32,30 +32,19 @@
 
   async function save (): Promise<void> {
     if (type === undefined) return
-    showPopup(
-      MessageBox,
-      {
-        label: view.string.CreatingAttribute,
-        message: view.string.CreatingAttributeConfirm
-      },
-      undefined,
-      async (result) => {
-        if (result && type !== undefined) {
-          const data: Data<AnyAttribute> = {
-            attributeOf: _class,
-            name: name + generateId(),
-            label: getEmbeddedLabel(name),
-            isCustom: true,
-            type
-          }
-          if (index !== undefined) {
-            data.index = index
-          }
-          await client.createDoc(core.class.Attribute, core.space.Model, data)
-          dispatch('close')
-        }
-      }
-    )
+
+    const data: Data<AnyAttribute> = {
+      attributeOf: _class,
+      name: name + generateId(),
+      label: getEmbeddedLabel(name),
+      isCustom: true,
+      type
+    }
+    if (index !== undefined) {
+      data.index = index
+    }
+    await client.createDoc(core.class.Attribute, core.space.Model, data)
+    dispatch('close')
   }
 
   function getTypes (): DropdownIntlItem[] {
@@ -87,38 +76,42 @@
   }
 </script>
 
-<div class="antiPopup w-60 p-4 flex-col">
+<Card
+  label={view.string.CreatingAttribute}
+  okAction={save}
+  canSave={!(type === undefined || name === undefined || name.trim().length === 0)}
+  on:close={() => {
+    dispatch('close')
+  }}
+>
   <div class="mb-2"><EditBox bind:value={name} placeholder={core.string.Name} maxWidth="13rem" /></div>
-  <div class="flex-between mb-2">
-    <Label label={view.string.Type} />
-    <DropdownLabelsIntl
-      label={view.string.Type}
-      {items}
-      width="8rem"
-      bind:selected={selectedType}
-      on:selected={(e) => selectType(e.detail)}
-    />
+  <div class="flex-col mb-2">
+    <div class="flex-row-center flex-grow">
+      <Label label={view.string.Type} />
+      <div class="ml-4">
+        <DropdownLabelsIntl
+          label={view.string.Type}
+          {items}
+          width="8rem"
+          bind:selected={selectedType}
+          on:selected={(e) => selectType(e.detail)}
+        />
+      </div>
+    </div>
+    {#if is}
+      <div class="flex mt-4">
+        <Component
+          {is}
+          on:change={(e) => {
+            type = e.detail?.type
+            index = e.detail?.index
+          }}
+        />
+      </div>
+    {/if}
+    <Label label={view.string.CreatingAttributeConfirm} />
   </div>
-  {#if is}
-    <Component
-      {is}
-      on:change={(e) => {
-        type = e.detail?.type
-        index = e.detail?.index
-      }}
-    />
-  {/if}
-  <div class="mt-2">
-    <Button
-      width="100%"
-      disabled={type === undefined || name === undefined || name.trim().length === 0}
-      label={presentation.string.Create}
-      on:click={() => {
-        save()
-      }}
-    />
-  </div>
-</div>
+</Card>
 
 <style lang="scss">
 </style>
