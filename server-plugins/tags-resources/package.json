@@ -29,6 +29,6 @@
     "@anticrm/core": "~0.6.16",
     "@anticrm/platform": "~0.6.6",
     "@anticrm/server-core": "~0.6.1",
-    "@anticrm/tags": "~0.6.1"
+    "@anticrm/tags": "~0.6.2"
   }
 }

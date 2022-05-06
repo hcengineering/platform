@@ -30,6 +30,6 @@
     "@anticrm/platform": "~0.6.6",
     "@anticrm/server-tags": "~0.6.0",
     "@anticrm/server-core": "~0.6.1",
-    "@anticrm/tags": "~0.6.1"
+    "@anticrm/tags": "~0.6.2"
   }
 }
