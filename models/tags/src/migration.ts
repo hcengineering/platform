@@ -5,12 +5,16 @@ import tags from './plugin'
 
 export const tagsOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
-    await client.update(DOMAIN_TAGS, {
-      _class: tags.class.TagElement,
-      category: 'tags:category:Other'
-    }, {
-      category: 'recruit:category:Other'
-    })
+    await client.update(
+      DOMAIN_TAGS,
+      {
+        _class: tags.class.TagElement,
+        category: 'tags:category:Other'
+      },
+      {
+        category: 'recruit:category:Other'
+      }
+    )
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)
