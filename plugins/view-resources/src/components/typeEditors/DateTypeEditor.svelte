@@ -32,9 +32,10 @@
   <Label label={view.string.WithTime} />
   <div class="ml-2">
     <BooleanEditor
+      withoutUndefined
       bind:value={withTime}
       onChange={(e) => {
-        dispatch('change', TypeDate(e))
+        dispatch('change', { type: TypeDate(e) })
       }}
     />
   </div>
