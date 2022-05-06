@@ -90,7 +90,7 @@
         placeholder={phTraslate}
         {style}
         on:input={(ev) => ev.target && computeSize(ev.target)}
-        on:change={()=> dispatch('change', value)}
+        on:change
       />
     {:else if format === 'number'}
       <input
@@ -100,7 +100,7 @@
         placeholder={phTraslate}
         {style}
         on:input={(ev) => ev.target && computeSize(ev.target)}
-        on:change={()=> dispatch('change', value)}
+        on:change
       />
     {:else}
       <input
@@ -110,7 +110,7 @@
         placeholder={phTraslate}
         {style}
         on:input={(ev) => ev.target && computeSize(ev.target)}
-        on:change={()=> dispatch('change', value)}
+        on:change
       />
     {/if}
   </div>

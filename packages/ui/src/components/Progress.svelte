@@ -37,7 +37,9 @@
 <div class="container" on:click={click} class:cursor-pointer={editable}>
   <div
     class="bar"
-    style="background-color: {getPlatformColor(color)}; width: calc(100% * {proc !== 0 ? Math.round((value - min) / proc) : 0} / 100);"
+    style="background-color: {getPlatformColor(color)}; width: calc(100% * {proc !== 0
+      ? Math.round((value - min) / proc)
+      : 0} / 100);"
   />
 </div>
 
