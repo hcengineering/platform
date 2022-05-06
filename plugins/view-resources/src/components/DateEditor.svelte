@@ -27,7 +27,7 @@
 
 <DateRangePresenter
   {value}
-  withTime={withTime}
+  {withTime}
   editable
   on:change={(res) => {
     if (res.detail !== undefined) onChange(res.detail)
