@@ -29,6 +29,7 @@
   let done = 0
   let editingName: string | undefined = undefined
   let addingItemName: string | undefined = undefined
+  let hideDoneItems: boolean = false
   let hovered: Ref<TodoItem> | undefined
 
   async function fetch () {
@@ -115,12 +116,7 @@
     )
   }
 
-  $: if (value?.items) {
-    fetch()
-  } else {
-    checklistItems = []
-    done = 0
-  }
+  $: fetch()
 </script>
 
 {#if value !== undefined}
@@ -140,6 +136,19 @@
         >
           {value.name}
         </div>
+        {#if done > 0}
+          <div class="mr-1">
+            <Button
+              label={hideDoneItems ? board.string.ShowDoneChecklistItems : board.string.HideDoneChecklistItems}
+              labelParams={{ done }}
+              kind="no-border"
+              size="small"
+              on:click={() => {
+                hideDoneItems = !hideDoneItems
+              }}
+            />
+          </div>
+        {/if}
         <Button label={board.string.Delete} kind="no-border" size="small" on:click={deleteChecklist} />
       {/if}
     </div>
@@ -151,7 +160,7 @@
         <Progress min={0} max={checklistItems?.length ?? 0} value={done} />
       </div>
     </div>
-    {#each checklistItems as item}
+    {#each checklistItems.filter((item) => !hideDoneItems || !item.done) as item}
       <div
         class="flex-row-stretch mb-1 mt-1 pl-1 h-7 border-radius-1"
         class:background-button-noborder-bg-hover={hovered === item._id}

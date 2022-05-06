@@ -40,6 +40,8 @@
     "Checklist": "Списки",
     "AddChecklistItem": "Добавить",
     "ChecklistDropdownNone": "(не выбрано)",
+    "ShowDoneChecklistItems": "Показать отмеченные ({done})",
+    "HideDoneChecklistItems": "Скрыть отмеченные",
     "Dates": "Дата",
     "Attachments": "Прикрепленное",
     "AddAttachment": "Прикрепить",

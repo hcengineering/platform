@@ -40,6 +40,8 @@
     "Checklist": "Checklist",
     "AddChecklistItem": "Add an item",
     "ChecklistDropdownNone": "(none)",
+    "ShowDoneChecklistItems": "Show checked items ({done})",
+    "HideDoneChecklistItems": "Hide checked items",
     "Dates": "Dates",
     "Attachments": "Attachments",
     "AddAttachment": "Add an attachment",
