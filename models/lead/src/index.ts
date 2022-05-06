@@ -215,6 +215,10 @@ export function createModel (builder: Builder): void {
       mode: ['workbench', 'browser', 'editor', 'panel', 'popup']
     }
   })
+
+  builder.mixin(lead.mixin.Customer, core.class.Mixin, view.mixin.ObjectFactory, {
+    component: lead.component.CreateCustomer
+  })
 }
 
 export { leadOperation } from './migration'
