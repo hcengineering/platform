@@ -24,6 +24,7 @@ import {
   FindResult,
   Ref,
   Space,
+  Timestamp,
   UXObject
 } from '@anticrm/core'
 import type { Asset, Plugin } from '@anticrm/platform'
@@ -79,6 +80,16 @@ export interface Person extends Contact {}
  * @public
  */
 export interface Organization extends Contact {}
+
+/**
+ * @public
+ */
+export interface Status extends AttachedDoc {
+  attachedTo: Ref<Employee>
+  attachedToClass: Ref<Class<Employee>>
+  name: string
+  dueDate: Timestamp
+}
 
 /**
  * @public
@@ -141,7 +152,8 @@ const contactPlugin = plugin(contactId, {
     Organization: '' as Ref<Class<Organization>>,
     Organizations: '' as Ref<Class<Organizations>>,
     Employee: '' as Ref<Class<Employee>>,
-    EmployeeAccount: '' as Ref<Class<EmployeeAccount>>
+    EmployeeAccount: '' as Ref<Class<EmployeeAccount>>,
+    Status: '' as Ref<Class<Status>>
   },
   component: {
     SocialEditor: '' as AnyComponent

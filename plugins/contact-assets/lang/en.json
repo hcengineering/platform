@@ -45,6 +45,12 @@
     "Facebook": "Facebook",
     "SocialLinks": "Socail links",
     "ViewActivity": "View activity",
-    "PersonAlreadyExists": "Person already exists..."
+    "PersonAlreadyExists": "Person already exists...",
+    "Status": "Status",
+    "SetStatus": "Set status",
+    "ClearStatus": "Clear status",
+    "SaveStatus": "Save",
+    "Cancel": "Cancel",
+    "StatusDueDate": "Due date"
   }
 }

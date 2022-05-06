@@ -22,9 +22,10 @@ import type {
   Organization,
   Organizations,
   Person,
-  Persons
+  Persons,
+  Status
 } from '@anticrm/contact'
-import type { Domain, Ref } from '@anticrm/core'
+import type { Class, Domain, Ref, Timestamp } from '@anticrm/core'
 import { DOMAIN_MODEL, IndexKind } from '@anticrm/core'
 import { Builder, Collection, Index, Model, Prop, TypeRef, TypeString, UX } from '@anticrm/model'
 import attachment from '@anticrm/model-attachment'
@@ -38,6 +39,7 @@ import contact from './plugin'
 
 export const DOMAIN_CONTACT = 'contact' as Domain
 export const DOMAIN_CHANNEL = 'channel' as Domain
+export const DOMAIN_STATUS = 'status' as Domain
 
 @Model(contact.class.ChannelProvider, core.class.Doc, DOMAIN_MODEL)
 export class TChannelProvider extends TDoc implements ChannelProvider {
@@ -90,6 +92,14 @@ export class TPerson extends TContact implements Person {}
 @UX(contact.string.Organization, contact.icon.Company, undefined, 'name')
 export class TOrganization extends TContact implements Organization {}
 
+@Model(contact.class.Status, core.class.AttachedDoc, DOMAIN_STATUS)
+export class TStatus extends TAttachedDoc implements Status {
+  attachedTo!: Ref<Employee>;
+  attachedToClass!: Ref<Class<Employee>>;
+  name!: string
+  dueDate!: Timestamp
+}
+
 @Model(contact.class.Employee, contact.class.Person)
 @UX(contact.string.Employee, contact.icon.Person)
 export class TEmployee extends TPerson implements Employee {}
@@ -118,7 +128,8 @@ export function createModel (builder: Builder): void {
     TOrganizations,
     TEmployee,
     TEmployeeAccount,
-    TChannel
+    TChannel,
+    TStatus
   )
 
   builder.mixin(contact.class.Person, core.class.Class, view.mixin.ObjectFactory, {
@@ -251,6 +262,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(contact.class.Contact, core.class.Class, view.mixin.AttributePresenter, {
     presenter: contact.component.ContactPresenter
+  })
+
+  builder.mixin(contact.class.Employee, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: contact.component.EmployeePresenter
   })
 
   builder.mixin(contact.class.Employee, core.class.Class, view.mixin.IgnoreActions, {

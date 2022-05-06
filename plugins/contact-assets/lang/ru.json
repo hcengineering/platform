@@ -45,6 +45,12 @@
     "Facebook": "Facebook",
     "SocialLinks": "Контактная информация",
     "ViewActivity": "Посмотреть активность",
-    "PersonAlreadyExists": "Контакт уже существует..."
+    "PersonAlreadyExists": "Контакт уже существует...",
+    "Status": "Статус",
+    "SetStatus": "Установить статус",
+    "ClearStatus": "Очистить статус",
+    "SaveStatus": "Сохранить",
+    "Cancel": "Отмена",
+    "StatusDueDate": "Дата конца"
   }
 }

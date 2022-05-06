@@ -246,6 +246,7 @@
   }}
 />
 
+editor
 {#if object !== undefined && title !== undefined}
   <Panel
     {icon}

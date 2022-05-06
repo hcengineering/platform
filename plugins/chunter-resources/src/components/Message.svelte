@@ -16,7 +16,8 @@
   import { Attachment } from '@anticrm/attachment'
   import { AttachmentList, AttachmentRefInput } from '@anticrm/attachment-resources'
   import type { ChunterMessage, Message } from '@anticrm/chunter'
-  import { Employee, EmployeeAccount, formatName } from '@anticrm/contact'
+  import { Employee, EmployeeAccount } from '@anticrm/contact'
+  import { EmployeePresenter } from '@anticrm/contact-resources'
   import { Ref, WithLookup, getCurrentAccount } from '@anticrm/core'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
   import { getResource } from '@anticrm/platform'
@@ -179,7 +180,9 @@
   <div class="avatar"><Avatar size={'medium'} avatar={employee?.avatar} /></div>
   <div class="message">
     <div class="header">
-      {#if employee}{formatName(employee.name)}{/if}
+      {#if employee}
+        <EmployeePresenter value={employee} shouldShowAvatar={false} />
+      {/if}
       <span>{getTime(message.createOn)}</span>
       {#if message.editedOn}
         <span>
