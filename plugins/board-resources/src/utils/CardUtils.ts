@@ -43,7 +43,7 @@ export function canAddCurrentUser (card: Card): boolean {
 }
 
 export function hasCover (card: Card): boolean {
-  return card.coverColor !== undefined || card.coverImage !== undefined
+  return card.cover != null
 }
 
 export function hasDate (card: Card): boolean {

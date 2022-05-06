@@ -51,6 +51,7 @@ import {
   updateCardMembers
 } from './utils/CardUtils'
 import { getPopupAlignment } from './utils/PopupUtils'
+import CardCoverEditor from './components/popups/CardCoverEditor.svelte'
 
 async function showMoveCardPopup (object: Card, client: Client, e?: Event): Promise<void> {
   showPopup(MoveCard, { object }, getPopupAlignment(e))
@@ -94,6 +95,10 @@ async function showAttachmentsPopup (object: Card, client: Client, e?: Event): P
   showPopup(AttachmentPicker, { object }, getPopupAlignment(e))
 }
 
+async function showCoverPopup (object: Card, client: Client, e?: Event): Promise<void> {
+  showPopup(CardCoverEditor, { object }, getPopupAlignment(e))
+}
+
 export default async (): Promise<Resources> => ({
   component: {
     CreateBoard,
@@ -121,7 +126,8 @@ export default async (): Promise<Resources> => ({
     SendToBoard: unarchiveCard,
     Delete: showDeleteCardPopup,
     Members: showEditMembersPopup,
-    Copy: showCopyCardPopup
+    Copy: showCopyCardPopup,
+    Cover: showCoverPopup
   },
   cardActionSupportedHandler: {
     Join: canAddCurrentUser,
