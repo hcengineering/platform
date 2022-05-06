@@ -43,6 +43,7 @@ import StringTypeEditor from './components/typeEditors/StringTypeEditor.svelte'
 import BooleanTypeEditor from './components/typeEditors/BooleanTypeEditor.svelte'
 import DateTypeEditor from './components/typeEditors/DateTypeEditor.svelte'
 import NumberTypeEditor from './components/typeEditors/NumberTypeEditor.svelte'
+import RefEditor from './components/typeEditors/RefEditor.svelte'
 import DocAttributeBar from './components/DocAttributeBar.svelte'
 
 export { getActions } from './actions'
@@ -63,6 +64,7 @@ export default async (): Promise<Resources> => ({
     StringTypeEditor,
     BooleanTypeEditor,
     NumberTypeEditor,
+    RefEditor,
     DateTypeEditor,
     SpacePresenter,
     StringEditor,

@@ -178,6 +178,14 @@ export function createModel (builder: Builder): void {
     editor: contact.component.OrganizationEditor
   })
 
+  builder.mixin(contact.class.Person, core.class.Class, view.mixin.AttributeEditor, {
+    editor: contact.component.PersonEditor
+  })
+
+  builder.mixin(contact.class.Employee, core.class.Class, view.mixin.AttributeEditor, {
+    editor: contact.component.PersonEditor
+  })
+
   builder.mixin(contact.class.Channel, core.class.Class, view.mixin.AttributePresenter, {
     presenter: contact.component.ChannelsPresenter
   })

@@ -24,6 +24,7 @@ import type {
   ActionCategory,
   AttributeEditor,
   AttributePresenter,
+  CollectionEditor,
   HTMLPresenter,
   IgnoreActions,
   KeyBinding,
@@ -74,6 +75,11 @@ export function classPresenter (
 
 @Mixin(view.mixin.AttributeEditor, core.class.Class)
 export class TAttributeEditor extends TClass implements AttributeEditor {
+  editor!: AnyComponent
+}
+
+@Mixin(view.mixin.CollectionEditor, core.class.Class)
+export class TCollectionEditor extends TClass implements CollectionEditor {
   editor!: AnyComponent
 }
 
@@ -210,6 +216,7 @@ export function createModel (builder: Builder): void {
   builder.createModel(
     TAttributeEditor,
     TAttributePresenter,
+    TCollectionEditor,
     TObjectEditor,
     TViewletDescriptor,
     TViewlet,
@@ -250,6 +257,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(core.class.TypeNumber, core.class.Class, view.mixin.ObjectEditor, {
     editor: view.component.NumberTypeEditor
+  })
+
+  builder.mixin(core.class.RefTo, core.class.Class, view.mixin.ObjectEditor, {
+    editor: view.component.RefEditor
   })
 
   builder.createDoc(

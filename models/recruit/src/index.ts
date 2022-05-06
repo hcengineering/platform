@@ -133,7 +133,7 @@ export function createModel (builder: Builder): void {
     }
   })
 
-  builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.AttributeEditor, {
+  builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.CollectionEditor, {
     editor: recruit.component.Applications
   })
 
