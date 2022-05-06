@@ -14,7 +14,20 @@
 //
 
 import contact, { Channel } from '@anticrm/contact'
-import core, { AttachedDoc, Class, Doc, DocumentQuery, FindOptions, FindResult, Hierarchy, Ref, Tx, TxCollectionCUD, TxCreateDoc, TxProcessor } from '@anticrm/core'
+import core, {
+  AttachedDoc,
+  Class,
+  Doc,
+  DocumentQuery,
+  FindOptions,
+  FindResult,
+  Hierarchy,
+  Ref,
+  Tx,
+  TxCollectionCUD,
+  TxCreateDoc,
+  TxProcessor
+} from '@anticrm/core'
 import gmail, { Message } from '@anticrm/gmail'
 import { TriggerControl } from '@anticrm/server-core'
 

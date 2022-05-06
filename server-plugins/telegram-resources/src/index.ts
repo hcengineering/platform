@@ -14,7 +14,20 @@
 //
 
 import contact, { Channel } from '@anticrm/contact'
-import core, { AttachedDoc, Class, Doc, DocumentQuery, FindOptions, FindResult, Hierarchy, Ref, Tx, TxCollectionCUD, TxCreateDoc, TxProcessor } from '@anticrm/core'
+import core, {
+  AttachedDoc,
+  Class,
+  Doc,
+  DocumentQuery,
+  FindOptions,
+  FindResult,
+  Hierarchy,
+  Ref,
+  Tx,
+  TxCollectionCUD,
+  TxCreateDoc,
+  TxProcessor
+} from '@anticrm/core'
 import { TriggerControl } from '@anticrm/server-core'
 import telegram, { TelegramMessage } from '@anticrm/telegram'
 
