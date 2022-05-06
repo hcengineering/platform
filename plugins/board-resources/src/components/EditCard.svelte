@@ -46,7 +46,9 @@
   let checklists: TodoItem[] = []
 
   async function fetchChecklists () {
-    checklists = await client.findAll(task.class.TodoItem, { space: object.space, attachedTo: object._id })
+    if (object) {
+      checklists = await client.findAll(task.class.TodoItem, { space: object.space, attachedTo: object._id })
+    }
   }
 
   function change (field: string, value: any) {

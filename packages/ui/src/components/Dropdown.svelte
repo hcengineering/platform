@@ -19,7 +19,7 @@
   import Label from './Label.svelte'
 
   export let icon: Asset | AnySvelteComponent | undefined = undefined
-  export let label: IntlString
+  export let label: IntlString | undefined = undefined
   export let placeholder: IntlString
   export let items: ListItem[] = []
   export let selected: ListItem | undefined = undefined

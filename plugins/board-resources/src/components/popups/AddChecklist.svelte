@@ -4,6 +4,7 @@
   import { Card } from '@anticrm/board'
   import { WithLookup } from '@anticrm/core'
   import task, { TodoItem } from '@anticrm/task'
+  import { translate } from '@anticrm/platform'
   import presentation, { getClient } from '@anticrm/presentation'
   import { Label, Button, Dropdown, EditBox, IconClose } from '@anticrm/ui'
   import type { ListItem } from '@anticrm/ui'
@@ -14,15 +15,19 @@
 
   const noneListItem: ListItem = {
     _id: 'none',
-    label: '(none)'
+    label: ''
   }
 
   let name: string | undefined
-  let selectedTemplate: ListItem = noneListItem
+  let selectedTemplate: ListItem | undefined = undefined
   let templateListItems: ListItem[] = [noneListItem]
   let templatesMap: Map<string, TodoItem> = new Map()
   const client = getClient()
   const dispatch = createEventDispatcher()
+
+  translate(board.string.ChecklistDropdownNone, {}).then((result) => {
+    noneListItem.label = result
+  })
 
   function close () {
     dispatch('close')
@@ -121,7 +126,13 @@
     </div>
 
     <div class="mt-1 mb-1 w-full">
-      <Dropdown bind:selected={selectedTemplate} items={templateListItems} justify="left" width="100%" />
+      <Dropdown
+        bind:selected={selectedTemplate}
+        items={templateListItems}
+        justify="left"
+        width="100%"
+        placeholder={board.string.ChecklistDropdownNone}
+      />
     </div>
   </div>
 

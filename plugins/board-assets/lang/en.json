@@ -39,6 +39,7 @@
     "NoColorInfo": "This won't show up on the front of cards.",
     "Checklist": "Checklist",
     "AddChecklistItem": "Add an item",
+    "ChecklistDropdownNone": "(none)",
     "Dates": "Dates",
     "Attachments": "Attachments",
     "AddAttachment": "Add an attachment",
