@@ -240,7 +240,11 @@
     <svelte:fragment slot="attributes" let:direction={dir}>
       {#if !headerLoading}
         {#if headerEditor !== undefined}
-          <Component is={headerEditor} props={{ object, keys, mixins, ignoreKeys, vertical: dir === 'column' }} on:update={updateKeys}/>
+          <Component
+            is={headerEditor}
+            props={{ object, keys, mixins, ignoreKeys, vertical: dir === 'column' }}
+            on:update={updateKeys}
+          />
         {:else if dir === 'column'}
           <DocAttributeBar {object} {mixins} {ignoreKeys} on:update={updateKeys} />
         {:else}
