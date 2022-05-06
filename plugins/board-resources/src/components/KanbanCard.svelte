@@ -21,7 +21,7 @@
   import type { Ref, WithLookup } from '@anticrm/core'
   import notification from '@anticrm/notification'
   import { getClient, UserBoxList } from '@anticrm/presentation'
-  import { Button, Component, EditBox, IconEdit, Label, showPopup } from '@anticrm/ui'
+  import { Button, Component, EditBox, IconEdit, Label, numberToHexColor, showPopup } from '@anticrm/ui'
   import board from '../plugin'
   import CardInlineActions from './editor/CardInlineActions.svelte'
   import CardLabels from './editor/CardLabels.svelte'
@@ -67,6 +67,7 @@
   function updateDate (e: CustomEvent<CardDate>) {
     client.update(object, { date: e.detail })
   }
+  $: coverBackground = object.cover?.color ? `background-color: ${numberToHexColor(object.cover.color)}` : ''
 </script>
 
 <AttachmentDroppable
@@ -77,72 +78,131 @@
   space={object.space}
   canDrop={canDropAttachment}
 >
-  <div class="relative flex-col pt-2 pb-1 pr-2 pl-2" bind:this={ref}>
-    {#if dragoverAttachment}
-      <div style:pointer-events="none" class="abs-full-content h-full w-full flex-center fs-title">
-        <Label label={board.string.DropFileToUpload} />
-      </div>
-      <div
-        style:opacity="0.3"
-        style:pointer-events="none"
-        class="abs-full-content background-theme-content-accent h-full w-full flex-center fs-title"
-      />
-    {/if}
-    <div class="ml-1">
-      <CardLabels bind:value={object} isInline={true} />
-    </div>
-    {#if !isEditMode}
-      <div class="absolute mr-1 mt-1" style:top="0" style:right="0">
-        <Button icon={IconEdit} kind="transparent" on:click={enterEditMode} />
-      </div>
-    {/if}
-    <div class="flex-between pb-2 ml-1" style:pointer-events={dragoverAttachment ? 'none' : 'all'} on:click={showCard}>
-      {#if isEditMode}
-        <div class="fs-title text-lg">
-          <EditBox
-            bind:value={object.title}
-            maxWidth="39rem"
-            focus
-            on:change={() => updateCard(client, object, 'title', object?.title)}
-          />
+  {#if object.cover?.size === 'large'}
+    <div class="relative flex-col pt-2 pb-1 pr-2 pl-2 border-radius-1" style={coverBackground} bind:this={ref}>
+      {#if dragoverAttachment}
+        <div style:pointer-events="none" class="abs-full-content h-full w-full flex-center fs-title">
+          <Label label={board.string.DropFileToUpload} />
         </div>
-      {:else}
-        <div class="flex-row-center w-full">
-          <div class="fs-title cursor-pointer">{object.title}</div>
-          <div class="ml-2">
-            <Component is={notification.component.NotificationPresenter} props={{ value: object }} />
+        <div
+          style:opacity="0.3"
+          style:pointer-events="none"
+          class="abs-full-content background-theme-content-accent h-full w-full flex-center fs-title"
+        />
+      {/if}
+      <div class="ml-1">
+        <CardLabels bind:value={object} isInline={true} />
+      </div>
+      {#if !isEditMode}
+        <div class="absolute mr-1 mt-1" style:top="0" style:right="0">
+          <Button icon={IconEdit} kind="transparent" on:click={enterEditMode} />
+        </div>
+      {/if}
+      <div
+        class="flex-between pb-2 ml-1"
+        style:pointer-events={dragoverAttachment ? 'none' : 'all'}
+        on:click={showCard}
+      >
+        <div class="mt-6 mb-2">
+          {#if isEditMode}
+            <div class="fs-title text-lg">
+              <EditBox
+                bind:value={object.title}
+                maxWidth="39rem"
+                focus
+                on:change={() => updateCard(client, object, 'title', object?.title)}
+              />
+            </div>
+          {:else}
+            <div class="flex-row-center w-full">
+              <div class="fs-title text-lg cursor-pointer">{object.title}</div>
+              <div class="ml-2">
+                <Component is={notification.component.NotificationPresenter} props={{ value: object }} />
+              </div>
+            </div>
+          {/if}
+        </div>
+      </div>
+    </div>
+  {:else}
+    {#if object.cover}
+      <div class="relative h-9 border-radius-top-1" style={coverBackground}>
+        <div class="absolute mr-1 mt-1" style:top="0" style:right="0">
+          <Button icon={IconEdit} kind="transparent" on:click={enterEditMode} />
+        </div>
+      </div>
+    {/if}
+    <div class="relative flex-col pt-2 pb-1 pr-2 pl-2" bind:this={ref}>
+      {#if dragoverAttachment}
+        <div style:pointer-events="none" class="abs-full-content h-full w-full flex-center fs-title">
+          <Label label={board.string.DropFileToUpload} />
+        </div>
+        <div
+          style:opacity="0.3"
+          style:pointer-events="none"
+          class="abs-full-content background-theme-content-accent h-full w-full flex-center fs-title"
+        />
+      {/if}
+      <div class="ml-1">
+        <CardLabels bind:value={object} isInline={true} />
+      </div>
+      {#if !isEditMode && !object.cover}
+        <div class="absolute mr-1 mt-1" style:top="0" style:right="0">
+          <Button icon={IconEdit} kind="transparent" on:click={enterEditMode} />
+        </div>
+      {/if}
+      <div
+        class="flex-between pb-2 ml-1"
+        style:pointer-events={dragoverAttachment ? 'none' : 'all'}
+        on:click={showCard}
+      >
+        {#if isEditMode}
+          <div class="fs-title text-lg">
+            <EditBox
+              bind:value={object.title}
+              maxWidth="39rem"
+              focus
+              on:change={() => updateCard(client, object, 'title', object?.title)}
+            />
           </div>
+        {:else}
+          <div class="flex-row-center w-full">
+            <div class="fs-title cursor-pointer">{object.title}</div>
+            <div class="ml-2">
+              <Component is={notification.component.NotificationPresenter} props={{ value: object }} />
+            </div>
+          </div>
+        {/if}
+      </div>
+      <div class="flex-between mb-1" style:pointer-events={dragoverAttachment ? 'none' : 'all'}>
+        <div class="float-left-box">
+          {#if object.date && hasDate(object)}
+            <div class="float-left ml-1">
+              <DatePresenter value={object.date} size="x-small" on:update={updateDate} />
+            </div>
+          {/if}
+          {#if (object.attachments ?? 0) > 0}
+            <div class="float-left">
+              <AttachmentsPresenter value={object} size="small" />
+            </div>
+          {/if}
+          {#if (object.comments ?? 0) > 0}
+            <div class="float-left">
+              <CommentsPresenter value={object} />
+            </div>
+          {/if}
+        </div>
+      </div>
+      {#if (object.members?.length ?? 0) > 0}
+        <div class="flex justify-end mt-1 mb-2" style:pointer-events={dragoverAttachment ? 'none' : 'all'}>
+          <UserBoxList
+            _class={contact.class.Employee}
+            items={object.members}
+            label={board.string.Members}
+            on:update={updateMembers}
+          />
         </div>
       {/if}
     </div>
-    <div class="flex-between mb-1" style:pointer-events={dragoverAttachment ? 'none' : 'all'}>
-      <div class="float-left-box">
-        {#if object.date && hasDate(object)}
-          <div class="float-left ml-1">
-            <DatePresenter value={object.date} size="x-small" on:update={updateDate} />
-          </div>
-        {/if}
-        {#if (object.attachments ?? 0) > 0}
-          <div class="float-left">
-            <AttachmentsPresenter value={object} size="small" />
-          </div>
-        {/if}
-        {#if (object.comments ?? 0) > 0}
-          <div class="float-left">
-            <CommentsPresenter value={object} />
-          </div>
-        {/if}
-      </div>
-    </div>
-    {#if (object.members?.length ?? 0) > 0}
-      <div class="flex justify-end mt-1 mb-2" style:pointer-events={dragoverAttachment ? 'none' : 'all'}>
-        <UserBoxList
-          _class={contact.class.Employee}
-          items={object.members}
-          label={board.string.Members}
-          on:update={updateMembers}
-        />
-      </div>
-    {/if}
-  </div>
+  {/if}
 </AttachmentDroppable>
