@@ -17,6 +17,7 @@
   import { Issue, IssuePriority, Team } from '@anticrm/tracker'
   import { getClient } from '@anticrm/presentation'
   import { Tooltip } from '@anticrm/ui'
+  import type { ButtonKind, ButtonSize } from '@anticrm/ui'
   import tracker from '../../plugin'
   import PrioritySelector from '../PrioritySelector.svelte'
 
@@ -24,6 +25,11 @@
   export let currentSpace: Ref<Team> | undefined = undefined
   export let isEditable: boolean = true
   export let shouldShowLabel: boolean = false
+
+  export let kind: ButtonKind = 'link'
+  export let size: ButtonSize = 'large'
+  export let justify: 'left' | 'center' = 'left'
+  export let width: string | undefined = '100%'
 
   const client = getClient()
 
@@ -44,9 +50,12 @@
 
 {#if value}
   {#if isEditable}
-    <Tooltip direction={'bottom'} label={tracker.string.SetPriority}>
+    <Tooltip label={tracker.string.SetPriority} fill>
       <PrioritySelector
-        kind={'icon'}
+        {kind}
+        {size}
+        {width}
+        {justify}
         {isEditable}
         {shouldShowLabel}
         priority={value.priority}
@@ -54,6 +63,6 @@
       />
     </Tooltip>
   {:else}
-    <PrioritySelector kind={'icon'} {isEditable} {shouldShowLabel} priority={value.priority} />
+    <PrioritySelector {kind} {size} {width} {justify} {isEditable} {shouldShowLabel} priority={value.priority} />
   {/if}
 {/if}

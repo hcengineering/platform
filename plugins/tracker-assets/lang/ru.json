@@ -46,7 +46,7 @@
 
     "Title": "Заголовок",
     "Description": "",
-    "Status": "",
+    "Status": "Статус",
     "Number": "Number",
     "Assignee": "Исполнитель",
     "AssignTo": "Назначить...",

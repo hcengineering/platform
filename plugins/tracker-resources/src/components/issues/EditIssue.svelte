@@ -169,79 +169,67 @@
 
     <svelte:fragment slot="custom-attributes" let:direction>
       {#if issue && currentTeam && issueStatuses && direction === 'column'}
-        <div class="content mt-4">
-          <div class="flex-row-center mb-4">
-            <span class="label w-24">
-              <Label label={tracker.string.Status} />
-            </span>
-            <StatusEditor value={issue} statuses={issueStatuses} currentSpace={currentTeam._id} shouldShowLabel />
-          </div>
+        <div class="content">
+          <span class="label">
+            <Label label={tracker.string.Status} />
+          </span>
+          <StatusEditor value={issue} statuses={issueStatuses} currentSpace={currentTeam._id} shouldShowLabel />
 
-          <div class="flex-row-center mb-4">
-            <span class="label w-24">
-              <Label label={tracker.string.Priority} />
-            </span>
-            <PriorityEditor value={issue} currentSpace={currentTeam._id} shouldShowLabel />
-          </div>
+          <span class="label">
+            <Label label={tracker.string.Priority} />
+          </span>
+          <PriorityEditor value={issue} currentSpace={currentTeam._id} shouldShowLabel />
 
-          <div class="flex-row-center mb-4">
-            <span class="label w-24">
-              <Label label={tracker.string.Assignee} />
-            </span>
-            <UserBox
-              _class={contact.class.Employee}
-              label={tracker.string.Assignee}
-              placeholder={tracker.string.Assignee}
-              bind:value={issue.assignee}
-              allowDeselect
-              titleDeselect={tracker.string.Unassigned}
-              size="large"
-              kind="link"
-              on:change={() => change('assignee', issue?.assignee)}
-            />
-          </div>
+          <span class="label">
+            <Label label={tracker.string.Assignee} />
+          </span>
+          <UserBox
+            _class={contact.class.Employee}
+            label={tracker.string.Assignee}
+            placeholder={tracker.string.Assignee}
+            bind:value={issue.assignee}
+            allowDeselect
+            titleDeselect={tracker.string.Unassigned}
+            size={'large'}
+            kind={'link'}
+            width={'100%'}
+            justify={'left'}
+            on:change={() => change('assignee', issue?.assignee)}
+          />
 
-          <div class="flex-row-center mb-4">
-            <span class="label w-24">
-              <Label label={tracker.string.Labels} />
-            </span>
-            <Button
-              label={tracker.string.Labels}
-              icon={tracker.icon.Labels}
-              width="max-content"
-              size="large"
-              kind="link"
-            />
-          </div>
+          <span class="label">
+            <Label label={tracker.string.Labels} />
+          </span>
+          <Button
+            label={tracker.string.Labels}
+            icon={tracker.icon.Labels}
+            size={'large'}
+            kind={'link'}
+            width={'100%'}
+            justify={'left'}
+          />
 
-          <div class="devider" />
+          <div class="divider" />
 
-          <div class="flex-row-center mb-4">
-            <span class="label w-24">
-              <Label label={tracker.string.Project} />
-            </span>
-            <Button
-              label={tracker.string.Project}
-              icon={tracker.icon.Projects}
-              width="fit-content"
-              size="large"
-              kind="link"
-            />
-          </div>
+          <span class="label">
+            <Label label={tracker.string.Project} />
+          </span>
+          <Button
+            label={tracker.string.Project}
+            icon={tracker.icon.Projects}
+            size={'large'}
+            kind={'link'}
+            width={'100%'}
+            justify={'left'}
+          />
 
           {#if issue.dueDate !== null}
-            <div class="devider" />
+            <div class="divider" />
 
-            <div class="flex-row-center mb-4">
-              <span class="label w-24">
-                <Label label={tracker.string.DueDate} />
-              </span>
-              <DatePresenter
-                bind:value={issue.dueDate}
-                editable
-                on:change={({ detail }) => change('dueDate', detail)}
-              />
-            </div>
+            <span class="label">
+              <Label label={tracker.string.DueDate} />
+            </span>
+            <DatePresenter bind:value={issue.dueDate} editable on:change={({ detail }) => change('dueDate', detail)} />
           {/if}
         </div>
       {:else}
@@ -268,22 +256,20 @@
 
 <style lang="scss">
   .content {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    grid-auto-flow: row;
+    justify-content: start;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1rem;
     width: 100%;
+    height: min-content;
   }
 
-  .content {
-    position: absolute;
-    inset: 2.5rem 0 0;
-    padding: 1.5rem 0.5rem 1.5rem 1.5rem;
-
-    .label {
-      margin: 0.625rem 0;
-    }
-  }
-
-  .devider {
+  .divider {
+    grid-column: 1 / 3;
     height: 1px;
-    border-bottom: 1px solid var(--divider-color);
-    margin: 0.75rem 1.5rem 1.25rem 0;
+    background-color: var(--divider-color);
   }
 </style>

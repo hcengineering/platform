@@ -229,13 +229,13 @@
                   {#if i !== 0}
                     <div class="ml-2 mr-2">or</div>
                   {/if}
-                  <div class="flex-row-center" class:ml-2={i !== 0}>
+                  <div class="flex-row-center">
                     {#each formatKey(key) as k, jj}
                       {#if jj !== 0}
                         <div class="ml-1 mr-1">then</div>
                       {/if}
                       {#each k as kk, j}
-                        <div class="flex-center text-sm key-box" class:ml-2={j !== 0}>
+                        <div class="flex-center text-sm key-box">
                           {kk}
                         </div>
                       {/each}
@@ -253,10 +253,15 @@
 
 <style lang="scss">
   .key-box {
-    background-color: var(--divider-color);
+    background-color: var(--button-bg-color);
     color: var(--caption-color);
     min-width: 1.5rem;
-    padding: 0.25rem;
+    padding: 0 0.5rem;
+    border: 1px solid var(--button-border-color);
+    border-radius: 0.25rem;
+  }
+  .key-box + .key-box {
+    margin-left: 0.5rem;
   }
   .item-box {
     display: inline-block;

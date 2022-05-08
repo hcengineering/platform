@@ -15,7 +15,7 @@
 <script lang="ts">
   import core from '@anticrm/core'
   import { getClient, SpaceCreateCard } from '@anticrm/presentation'
-  import { EditBox, Grid } from '@anticrm/ui'
+  import { EditBox } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../../plugin'
   import Review from '../icons/Review.svelte'
@@ -50,14 +50,12 @@
     dispatch('close')
   }}
 >
-  <Grid column={1} rowGap={1.5}>
-    <EditBox
-      label={recruit.string.ReviewCategoryName}
-      bind:value={name}
-      icon={Review}
-      placeholder={recruit.string.ReviewCategoryPlaceholder}
-      maxWidth={'16rem'}
-      focus
-    />
-  </Grid>
+  <EditBox
+    label={recruit.string.ReviewCategoryName}
+    bind:value={name}
+    icon={Review}
+    placeholder={recruit.string.ReviewCategoryPlaceholder}
+    maxWidth={'16rem'}
+    focus
+  />
 </SpaceCreateCard>
