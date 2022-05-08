@@ -70,7 +70,8 @@ const lead = plugin(leadId, {
   icon: {
     Funnel: '' as Asset,
     Lead: '' as Asset,
-    LeadApplication: '' as Asset
+    LeadApplication: '' as Asset,
+    CreateCustomer: '' as Asset
   },
   space: {
     FunnelTemplates: '' as Ref<KanbanTemplateSpace>

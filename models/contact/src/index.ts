@@ -149,10 +149,11 @@ export function createModel (builder: Builder): void {
     descriptor: view.viewlet.Table,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
-      lookup: { _id: { channels: contact.class.Channel } }
+      lookup: { _id: { channels: contact.class.Channel }, _class: core.class.Class }
     },
     config: [
       '',
+      '$lookup._class.label',
       'city',
       {
         presenter: attachment.component.AttachmentsPresenter,

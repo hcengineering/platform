@@ -21,7 +21,8 @@ const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(lead.icon, {
   Funnel: `${icons}#funnel`,
   Lead: `${icons}#lead`,
-  LeadApplication: `${icons}#leadapplication`
+  LeadApplication: `${icons}#leadapplication`,
+  CreateCustomer: `${icons}#new-customer`
 })
 
 addStringsLoader(leadId, async (lang: string) => await import(`../lang/${lang}.json`))
