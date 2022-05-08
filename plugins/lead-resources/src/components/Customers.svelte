@@ -16,11 +16,10 @@
 <script lang="ts">
   import { Doc, DocumentQuery } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
-  import { Button, Icon, IconAdd, Label, Scroller, SearchEdit, showPopup } from '@anticrm/ui'
+  import { Icon, Label, Scroller, SearchEdit } from '@anticrm/ui'
   import view, { Viewlet } from '@anticrm/view'
   import { Table } from '@anticrm/view-resources'
   import lead from '../plugin'
-  import CreateCustomer from './CreateCustomer.svelte'
 
   let search = ''
   let resultQuery: DocumentQuery<Doc> = {}
@@ -33,10 +32,6 @@
 
   function updateResultQuery (search: string): void {
     resultQuery = search === '' ? {} : { $search: search }
-  }
-
-  function showCreateDialog (ev: Event) {
-    showPopup(CreateCustomer, {}, 'top')
   }
 </script>
 
@@ -51,13 +46,6 @@
     on:change={() => {
       updateResultQuery(search)
     }}
-  />
-
-  <Button
-    icon={IconAdd}
-    label={lead.string.CreateCustomerLabel}
-    kind={'primary'}
-    on:click={(ev) => showCreateDialog(ev)}
   />
 </div>
 

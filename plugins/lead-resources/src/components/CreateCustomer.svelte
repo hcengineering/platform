@@ -14,53 +14,58 @@
 -->
 <script lang="ts">
   import attachment from '@anticrm/attachment'
-  import { Channel, combineName, findPerson, Person } from '@anticrm/contact'
+  import { Channel, combineName, Contact, findPerson } from '@anticrm/contact'
   import { ChannelsDropdown } from '@anticrm/contact-resources'
   import PersonPresenter from '@anticrm/contact-resources/src/components/PersonPresenter.svelte'
   import contact from '@anticrm/contact-resources/src/plugin'
-  import { AttachedData, Data, generateId, MixinData, Ref } from '@anticrm/core'
+  import { AttachedData, Class, Data, Doc, generateId, MixinData, Ref } from '@anticrm/core'
   import type { Customer } from '@anticrm/lead'
   import { getResource } from '@anticrm/platform'
   import { Card, EditableAvatar, getClient } from '@anticrm/presentation'
-  import { EditBox, IconInfo, Label } from '@anticrm/ui'
+  import { Button, EditBox, eventToHTMLElement, IconInfo, Label, SelectPopup, showPopup } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import lead from '../plugin'
 
   let firstName = ''
   let lastName = ''
+  let createMore: boolean = false
 
   export function canClose (): boolean {
     return firstName === '' && lastName === ''
   }
 
-  const object: Customer = {
+  let object: Customer = {
     _class: contact.class.Person
   } as Customer
 
   const dispatch = createEventDispatcher()
   const client = getClient()
-  const customerId = generateId()
+  let customerId = generateId()
 
   let channels: AttachedData<Channel>[] = []
   let avatar: File | undefined
 
+  function formatName (targetClass: Ref<Class<Doc>>, firstName: string, lastName: string, objectName: string): string {
+    return targetClass === contact.class.Person ? combineName(firstName, lastName) : objectName
+  }
+
   async function createCustomer () {
-    const candidate: Data<Person> = {
-      name: combineName(firstName, lastName),
+    const candidate: Data<Contact> = {
+      name: formatName(targetClass._id, firstName, lastName, object.name),
       city: object.city
     }
     if (avatar !== undefined) {
       const uploadFile = await getResource(attachment.helper.UploadFile)
       candidate.avatar = await uploadFile(avatar)
     }
-    const candidateData: MixinData<Person, Customer> = {
+    const candidateData: MixinData<Contact, Customer> = {
       description: object.description
     }
 
-    const id = await client.createDoc(contact.class.Person, contact.space.Contacts, candidate, customerId)
+    const id = await client.createDoc(targetClass._id, contact.space.Contacts, candidate, customerId)
     await client.createMixin(
-      id as Ref<Person>,
-      contact.class.Person,
+      id as Ref<Contact>,
+      targetClass._id,
       contact.space.Contacts,
       lead.mixin.Customer,
       candidateData
@@ -71,7 +76,7 @@
         contact.class.Channel,
         contact.space.Contacts,
         customerId,
-        contact.class.Person,
+        targetClass._id,
         'channels',
         {
           value: channel.value,
@@ -80,7 +85,17 @@
       )
     }
 
-    dispatch('close')
+    if (createMore) {
+      // Prepare for next
+      object = {
+        _class: targetClass._id
+      } as Customer
+      customerId = generateId()
+      avatar = undefined
+      firstName = ''
+      lastName = ''
+      channels = []
+    }
   }
 
   function onAvatarDone (e: any) {
@@ -89,65 +104,127 @@
     avatar = file
   }
 
-  let matches: Person[] = []
-  $: findPerson(client, { ...object, name: combineName(firstName, lastName) }, channels).then((p) => {
+  let matches: Contact[] = []
+  $: findPerson(
+    client,
+    { ...object, name: formatName(targetClass._id, firstName, lastName, object.name) },
+    channels
+  ).then((p) => {
     matches = p
   })
 
   function removeAvatar (): void {
     avatar = undefined
   }
+  const targets = [
+    client.getModel().getObject(contact.class.Person),
+    client.getModel().getObject(contact.class.Organization)
+  ]
+  let targetClass = targets[0]
+
+  function selectTarget (evt: MouseEvent): void {
+    showPopup(
+      SelectPopup,
+      {
+        value: targets.map((it) => ({ id: it._id, label: it.label, icon: it.icon })),
+        placeholder: contact.string.Contacts,
+        searchable: false
+      },
+      eventToHTMLElement(evt),
+      (ref) => {
+        if (ref != null) {
+          const newT = targets.find((it) => it._id === ref)
+          if (newT !== undefined) {
+            if (targetClass._id !== newT._id) {
+              targetClass = newT
+              object.name = ''
+              firstName = ''
+              lastName = ''
+              customerId = generateId()
+              avatar = undefined
+            }
+          }
+        }
+      }
+    )
+  }
+  $: canSave = formatName(targetClass._id, firstName, lastName, object.name).length > 0
 </script>
 
 <Card
   label={lead.string.CreateCustomer}
   okAction={createCustomer}
-  canSave={firstName.length > 0 && lastName.length > 0 && matches.length === 0}
+  {canSave}
   space={contact.space.Contacts}
   on:close={() => {
     dispatch('close')
   }}
+  bind:createMore
 >
-  <div class="flex-between flex-row-top">
-    <div class="flex-col flex-grow">
-      <EditBox
-        placeholder={contact.string.PersonFirstNamePlaceholder}
-        bind:value={firstName}
-        kind={'large-style'}
-        maxWidth={'32rem'}
-        focus
-      />
-      <EditBox
-        placeholder={contact.string.PersonLastNamePlaceholder}
-        bind:value={lastName}
-        kind={'large-style'}
-        maxWidth={'32rem'}
-      />
-      <div class="mt-1">
+  <svelte:fragment slot="space">
+    <Button
+      icon={targetClass.icon}
+      label={targetClass.label}
+      size={'small'}
+      kind={'no-border'}
+      on:click={selectTarget}
+    />
+  </svelte:fragment>
+  {#if targetClass._id === contact.class.Person}
+    <div class="flex-between flex-row-top mt-2 mb-2">
+      <div class="flex-col flex-grow">
         <EditBox
-          placeholder={contact.string.PersonLocationPlaceholder}
-          bind:value={object.city}
+          placeholder={contact.string.PersonFirstNamePlaceholder}
+          bind:value={firstName}
+          kind={'large-style'}
+          maxWidth={'32rem'}
+          focus
+        />
+        <EditBox
+          placeholder={contact.string.PersonLastNamePlaceholder}
+          bind:value={lastName}
+          kind={'large-style'}
+          maxWidth={'32rem'}
+        />
+        <div class="mt-1">
+          <EditBox
+            placeholder={contact.string.PersonLocationPlaceholder}
+            bind:value={object.city}
+            kind={'small-style'}
+            maxWidth={'32rem'}
+          />
+        </div>
+        <EditBox
+          placeholder={lead.string.IssueDescriptionPlaceholder}
+          bind:value={object.description}
           kind={'small-style'}
           maxWidth={'32rem'}
         />
       </div>
+      <div class="ml-4 flex">
+        <EditableAvatar
+          bind:direct={avatar}
+          avatar={object.avatar}
+          size={'large'}
+          on:remove={removeAvatar}
+          on:done={onAvatarDone}
+        />
+      </div>
+    </div>
+  {:else}
+    <div class="flex-row-center clear-mins mt-2 mb-2">
+      <div class="mr-3">
+        <Button icon={contact.icon.Company} size={'medium'} kind={'link-bordered'} disabled />
+      </div>
       <EditBox
-        placeholder={lead.string.IssueDescriptionPlaceholder}
-        bind:value={object.description}
-        kind={'small-style'}
-        maxWidth={'32rem'}
+        placeholder={contact.string.OrganizationNamePlaceholder}
+        bind:value={object.name}
+        maxWidth={'37.5rem'}
+        kind={'large-style'}
+        focus
       />
     </div>
-    <div class="ml-4 flex">
-      <EditableAvatar
-        bind:direct={avatar}
-        avatar={object.avatar}
-        size={'large'}
-        on:remove={removeAvatar}
-        on:done={onAvatarDone}
-      />
-    </div>
-  </div>
+  {/if}
   <svelte:fragment slot="pool">
     <ChannelsDropdown bind:value={channels} editable />
   </svelte:fragment>
