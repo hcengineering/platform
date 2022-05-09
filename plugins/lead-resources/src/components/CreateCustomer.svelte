@@ -240,16 +240,3 @@
     {/if}
   </svelte:fragment>
 </Card>
-
-<style lang="scss">
-  .resume {
-    padding: 0.5rem 0.75rem;
-    background: var(--accent-bg-color);
-    border: 1px dashed var(--divider-color);
-    border-radius: 0.5rem;
-
-    &.solid {
-      border-style: solid;
-    }
-  }
-</style>

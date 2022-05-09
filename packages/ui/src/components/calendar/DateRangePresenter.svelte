@@ -22,7 +22,7 @@
   import DPCalendarOver from './icons/DPCalendarOver.svelte'
   import DateRangePopup from './DateRangePopup.svelte'
 
-  export let value: number | null | undefined
+  export let value: number | null | undefined = null
   export let withTime: boolean = false
   export let editable: boolean = false
   export let icon: 'normal' | 'warning' | 'overdue' = 'normal'
@@ -363,10 +363,10 @@
     <div class="btn-icon {icon}">
       <Icon icon={icon === 'overdue' ? DPCalendarOver : DPCalendar} size={'full'} />
     </div>
-    {#if value !== null && value !== undefined}
+    {#if value !== undefined && value !== null && value.toString() !== ''}
       {#if labelOver !== undefined}
         <Label label={labelOver} />
-      {:else}
+      {:else if value}
         {new Date(value).getDate()}
         {getMonthName(new Date(value), 'short')}
         {#if new Date(value).getFullYear() !== today.getFullYear()}
