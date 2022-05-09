@@ -133,6 +133,8 @@
             placeholder={attribute?.label}
             kind={'link'}
             size={'large'}
+            width={'100%'}
+            justify={'left'}
             type={attribute?.type}
             {maxWidth}
             value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
