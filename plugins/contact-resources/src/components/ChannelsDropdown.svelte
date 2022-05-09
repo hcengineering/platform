@@ -183,6 +183,7 @@
 >
   {#each displayItems as item, i}
     <Button
+      id={item.label}
       bind:input={btns[i]}
       icon={item.icon}
       {kind}
@@ -204,6 +205,7 @@
   {/each}
   {#if actions.length > 0 && editable}
     <Button
+      id={presentation.string.AddSocialLinks}
       bind:input={addBtn}
       icon={contact.icon.SocialEdit}
       label={displayItems.length === 0 ? presentation.string.AddSocialLinks : undefined}

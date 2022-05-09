@@ -1,25 +1,8 @@
-import { Page } from '@playwright/test'
-
-export async function openWorkbench (page: Page): Promise<void> {
-  page.on('pageerror', (exception) => {
-    console.log('Uncaught exception:')
-    console.log(exception.message)
-  })
-
-  await page.goto('http://localhost:8083/login%3Acomponent%3ALoginApp/login')
-
-  await page.evaluate(() => {
-    localStorage.setItem(
-      'login:metadata:LoginToken',
-      'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InVzZXIxIiwid29ya3NwYWNlIjoic2FuaXR5LXdzIn0.hfUCqePHO-WNps2by4B-CYGKIpDpLG0WVCUUtU-SVI4'
-    )
-    localStorage.setItem('login:metadata:LoginEmail', 'user1')
-    localStorage.setItem('login:metadata:LoginEndpoint', 'ws://localhost:3334')
-  })
-
-  await page.goto('http://localhost:8083/workbench%3Acomponent%3AWorkbenchApp')
-  await page.waitForSelector('[id="app-contact\\:string\\:Contacts"]')
-}
+export const PlatformURI = process.env.PLATFORM_URI as string
+export const PlatformTransactor = process.env.PLATFORM_TRANSACTOR as string
+export const PlatformUser = process.env.PLATFORM_USER as string
+export const PlatformToken = process.env.PLATFORM_TOKEN as string
+export const PlatformSetting = process.env.SETTING as string
 
 function toHex (value: number, chars: number): string {
   const result = value.toString(16)
