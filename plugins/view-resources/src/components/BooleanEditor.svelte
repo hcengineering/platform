@@ -31,7 +31,10 @@
 </script>
 
 <Button
-  {kind} {size} {justify} {width}
+  {kind}
+  {size}
+  {justify}
+  {width}
   on:click={() => {
     if (value === true) value = false
     else if (value === false && !withoutUndefined) value = undefined
@@ -52,7 +55,10 @@
         {#if value === true}
           <polygon fill="#fff" points="7.4,10.9 4.9,8.4 5.7,7.6 7.3,9.1 10.2,5.6 11.1,6.4 " />
         {:else if value === false}
-          <polygon fill="#fff" points="10.7,6 10,5.3 8,7.3 6,5.3 5.3,6 7.3,8 5.3,10 6,10.7 8,8.7 10,10.7 10.7,10 8.7,8 " />
+          <polygon
+            fill="#fff"
+            points="10.7,6 10,5.3 8,7.3 6,5.3 5.3,6 7.3,8 5.3,10 6,10.7 8,8.7 10,10.7 10.7,10 8.7,8 "
+          />
         {:else}
           <path
             fill="#fff"
