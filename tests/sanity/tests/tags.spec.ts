@@ -1,21 +1,25 @@
 import { expect, test } from '@playwright/test'
-import { generateId, openWorkbench } from './utils'
+import { generateId, PlatformSetting, PlatformURI } from './utils'
+
+test.use({
+  storageState: PlatformSetting
+})
 
 test.describe('recruit tests', () => {
   test.beforeEach(async ({ page }) => {
     // Create user and workspace
-    await openWorkbench(page)
+    await page.goto(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp`)
   })
   test('create-candidate-with-skill', async ({ page }) => {
     // Go to http://localhost:8083/workbench%3Acomponent%3AWorkbenchApp
-    await page.goto('http://localhost:8083/workbench%3Acomponent%3AWorkbenchApp')
+    await page.goto(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp`)
     // Click [id="app-recruit\:string\:RecruitApplication"]
     await page.click('[id="app-recruit\\:string\\:RecruitApplication"]')
-    await expect(page).toHaveURL('http://localhost:8083/workbench%3Acomponent%3AWorkbenchApp/recruit%3Aapp%3ARecruit')
+    await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/recruit%3Aapp%3ARecruit`)
     // Click text=Candidates
     await page.click('text=Candidates')
     await expect(page).toHaveURL(
-      'http://localhost:8083/workbench%3Acomponent%3AWorkbenchApp/recruit%3Aapp%3ARecruit/candidates'
+      `${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/recruit%3Aapp%3ARecruit/candidates`
     )
     // Click button:has-text("Candidate")
     await page.click('button:has-text("Candidate")')
@@ -45,15 +49,13 @@ test.describe('recruit tests', () => {
 
   test('create-tag-candidate', async ({ page }) => {
     // Go to http://localhost:8083/workbench%3Acomponent%3AWorkbenchApp
-    await page.goto('http://localhost:8083/workbench%3Acomponent%3AWorkbenchApp')
+    await page.goto(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp`)
     // Click [id="app-recruit\:string\:RecruitApplication"]
     await page.click('[id="app-recruit\\:string\\:RecruitApplication"]')
-    await expect(page).toHaveURL('http://localhost:8083/workbench%3Acomponent%3AWorkbenchApp/recruit%3Aapp%3ARecruit')
+    await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/recruit%3Aapp%3ARecruit`)
     // Click text=Skills
     await page.click('text=Skills')
-    await expect(page).toHaveURL(
-      'http://localhost:8083/workbench%3Acomponent%3AWorkbenchApp/recruit%3Aapp%3ARecruit/skills'
-    )
+    await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/recruit%3Aapp%3ARecruit/skills`)
     // Click button:has-text("Skill")
     await page.click('button:has-text("Skill")')
     // Click [placeholder="Please\ type\ skill\ title"]
@@ -77,7 +79,7 @@ test.describe('recruit tests', () => {
     // Click text=Candidates
     await page.click('text=Candidates')
     await expect(page).toHaveURL(
-      'http://localhost:8083/workbench%3Acomponent%3AWorkbenchApp/recruit%3Aapp%3ARecruit/candidates'
+      `${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/recruit%3Aapp%3ARecruit/candidates`
     )
     // Click button:has-text("Candidate")
     await page.click('button:has-text("Candidate")')

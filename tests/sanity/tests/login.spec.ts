@@ -1,4 +1,5 @@
-import { test, expect } from '@playwright/test'
+import { expect, test } from '@playwright/test'
+import { PlatformURI, PlatformUser } from './utils'
 
 test.describe('login test', () => {
   test('check login', async ({ page }) => {
@@ -8,11 +9,11 @@ test.describe('login test', () => {
     })
 
     // Create user and workspace
-    await page.goto('http://localhost:8083/login%3Acomponent%3ALoginApp/login')
+    await page.goto(`${PlatformURI}/login%3Acomponent%3ALoginApp/login`)
 
     const emaillocator = page.locator('[name=email]')
     await emaillocator.click()
-    await emaillocator.fill('user1')
+    await emaillocator.fill(PlatformUser)
 
     const password = page.locator('[name=current-password]')
     await password.click()
