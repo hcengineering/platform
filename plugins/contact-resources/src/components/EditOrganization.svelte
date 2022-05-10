@@ -65,17 +65,9 @@
           on:change={nameChange}
         />
       </div>
-      <div class="flex-between channels">
-        <div class="flex-row-center">
-          <ChannelsEditor attachedTo={object._id} attachedClass={object._class} {integrations} on:click />
-        </div>
-
-        <div class="flex-row-center">
-          <div class="over-underline flex-row-center" on:click>
-            <CircleButton icon={IconActivity} size={'small'} primary on:click />
-            <span class="ml-2 text-sm"><Label label={contact.string.ViewActivity} /></span>
-          </div>
-        </div>
+      <div class="separator" />
+      <div class="flex-row-center">
+        <ChannelsEditor attachedTo={object._id} attachedClass={object._class} {integrations} on:click />
       </div>
     </div>
   </div>
@@ -94,7 +86,9 @@
     font-size: 1.25rem;
     color: var(--theme-caption-color);
   }
-  .channels {
-    margin-top: 0.75rem;
+  .separator {
+    margin: 1rem 0;
+    height: 1px;
+    background-color: var(--divider-color);
   }
 </style>
