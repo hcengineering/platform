@@ -20,7 +20,7 @@
   import { getResource } from '@anticrm/platform'
   import { AttributeEditor, Avatar, createQuery, EditableAvatar, getClient } from '@anticrm/presentation'
   import setting, { IntegrationType } from '@anticrm/setting'
-  import { CircleButton, EditBox, IconActivity, Label } from '@anticrm/ui'
+  import { EditBox } from '@anticrm/ui'
   import { afterUpdate, createEventDispatcher, onMount } from 'svelte'
   import contact from '../plugin'
   import ChannelsEditor from './ChannelsEditor.svelte'

@@ -16,7 +16,7 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte'
   import { getCurrentAccount, Ref, Space } from '@anticrm/core'
-  import { CircleButton, EditBox, IconActivity, Label } from '@anticrm/ui'
+  import { EditBox } from '@anticrm/ui'
   import { getClient, createQuery } from '@anticrm/presentation'
   import setting from '@anticrm/setting'
   import { IntegrationType } from '@anticrm/setting'
