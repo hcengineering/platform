@@ -127,7 +127,7 @@ export function createModel (builder: Builder): void {
     } as FindOptions<Doc>, // TODO: fix
     config: [
       '',
-      '$lookup._class.label',
+      { key: '$lookup._class.label', label: contact.string.TypeLabel },
       { key: 'leads', presenter: lead.component.LeadsPresenter, label: lead.string.Leads },
       'modifiedOn',
       '$lookup.channels'

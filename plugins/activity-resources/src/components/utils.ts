@@ -120,7 +120,7 @@ async function checkInlineViewlets (
     viewlet = await createPseudoViewlet(client, dtx, activity.string.DocCreated)
   } else if (dtx.tx._class === core.class.TxRemoveDoc) {
     viewlet = await createPseudoViewlet(client, dtx, activity.string.DocDeleted)
-  } else if (dtx.tx._class === core.class.TxUpdateDoc) {
+  } else if (dtx.tx._class === core.class.TxUpdateDoc || dtx.tx._class === core.class.TxMixin) {
     model = await createUpdateModel(dtx, client, model)
   }
   return { viewlet, model }

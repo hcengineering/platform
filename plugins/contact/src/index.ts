@@ -183,7 +183,8 @@ const contactPlugin = plugin(contactId, {
     Contacts: '' as Ref<Doc>
   },
   string: {
-    PersonAlreadyExists: '' as IntlString
+    PersonAlreadyExists: '' as IntlString,
+    Person: '' as IntlString
   }
 })
 

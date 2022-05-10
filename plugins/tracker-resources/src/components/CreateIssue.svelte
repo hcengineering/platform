@@ -73,7 +73,7 @@
       sort: { rank: SortingOrder.Ascending }
     }
   )
-  $: canSave = !!(space && object.status && getTitle())
+  $: canSave = getTitle(object.title ?? '').length > 0
 
   async function updateIssueStatusId (teamId: Ref<Team>, issueStatusId?: Ref<IssueStatus>) {
     if (issueStatusId !== undefined) {
@@ -93,26 +93,12 @@
     }
   }
 
-  function getTitle () {
-    return object.title.trim()
+  function getTitle (value: string) {
+    return value.trim()
   }
 
   export function canClose (): boolean {
-    // if (object.title !== undefined) {
-    //   showPopup(
-    //     MessageBox,
-    //     {
-    //       label: 'Close create dialog',
-    //       message: 'Do you sure to cloase create dialog'
-    //     },
-    //     undefined,
-    //     (result?: boolean) => {
-    //       if (result === true) {
-    //       }
-    //     }
-    //   )
-    // }
-    return canSave
+    return !canSave
   }
 
   async function createIssue () {
@@ -136,7 +122,7 @@
     )
 
     const value: Data<Issue> = {
-      title: getTitle(),
+      title: getTitle(object.title),
       description: object.description,
       assignee: currentAssignee,
       number: (incResult as any).object.sequence,
