@@ -136,7 +136,9 @@ async function createUpdateModel (
     const ops = {
       client,
       _class,
-      keys: Object.keys(dtx.updateTx.operations).filter((id) => !id.startsWith('$')),
+      keys: Object.entries(dtx.updateTx.operations)
+        .flatMap(([id, val]) => (['$push', '$pull'].includes(id) ? Object.keys(val) : id))
+        .filter((id) => !id.startsWith('$')),
       ignoreMissing: true
     }
     const hiddenAttrs = getHiddenAttrs(client, _class)
@@ -164,11 +166,30 @@ function getHiddenAttrs (client: TxOperations, _class: Ref<Class<Doc>>): Set<str
 }
 
 export async function getValue (client: TxOperations, m: AttributeModel, utx: any): Promise<any> {
-  const val = utx[m.key]
-
-  if (client.getHierarchy().isDerived(m._class, core.class.Doc) && typeof val === 'string') {
-    // We have an reference, we need to find a real object to pass for presenter
-    return await client.findOne(m._class, { _id: val as Ref<Doc> })
+  async function getRealValue (value: any): Promise<any> {
+    if (client.getHierarchy().isDerived(m._class, core.class.Doc) && typeof value === 'string') {
+      // We have an reference, we need to find a real object to pass for presenter
+      return await client.findOne(m._class, { _id: value as Ref<Doc> })
+    }
   }
-  return val
+  const value = {
+    set: utx[m.key],
+    added: utx.$push?.[m.key],
+    removed: utx.$pull?.[m.key]
+  }
+  if (value.set !== undefined) {
+    value.set = await getRealValue(value.set)
+  }
+  if (value.added !== undefined) {
+    value.added = Array.isArray(value.added.$each)
+      ? (value.added.$each as any[]).map(getRealValue)
+      : [await getRealValue(value.added)]
+  }
+  if (value.removed !== undefined) {
+    value.removed = Array.isArray(value.removed.$in)
+      ? (value.removed.$in as any[]).map(getRealValue)
+      : [await getRealValue(value.removed)]
+  }
+
+  return value
 }
