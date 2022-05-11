@@ -189,20 +189,12 @@ export async function migrateBacklinks (client: MigrationClient): Promise<void> 
 
   const classTxes = await client.find<TxCreateDoc<Comment>>(DOMAIN_TX, { 'tx.objectClass': 'chunter:class:Backlink' })
   for (const tx of classTxes) {
-    await client.update(
-      DOMAIN_TX,
-      { _id: tx._id },
-      { 'tx.objectClass': core.class.Backlink }
-    )
+    await client.update(DOMAIN_TX, { _id: tx._id }, { 'tx.objectClass': core.class.Backlink })
   }
 
   const spaceTxes = await client.find<TxCreateDoc<Comment>>(DOMAIN_TX, { 'tx.objectSpace': 'chunter:space:Backlinks' })
   for (const tx of spaceTxes) {
-    await client.update(
-      DOMAIN_TX,
-      { _id: tx._id },
-      { 'tx.objectSpace': core.space.Backlinks }
-    )
+    await client.update(DOMAIN_TX, { _id: tx._id }, { 'tx.objectSpace': core.space.Backlinks })
   }
 }
 

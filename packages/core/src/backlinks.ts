@@ -1,4 +1,3 @@
-
 import { Backlink, Class, Data, Doc, Ref } from './classes'
 import plugin from './component'
 import { TxOperations } from './operations'
