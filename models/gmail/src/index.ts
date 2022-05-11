@@ -1,6 +1,5 @@
 //
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -15,12 +14,13 @@
 //
 
 import activity from '@anticrm/activity'
-import { Domain, IndexKind, Timestamp, Type } from '@anticrm/core'
+import { Channel } from '@anticrm/contact'
+import { Class, Domain, IndexKind, Ref, Timestamp, Type } from '@anticrm/core'
 import type { Message, NewMessage, SharedMessage, SharedMessages } from '@anticrm/gmail'
 import { ArrOf, Builder, Collection, Index, Model, Prop, TypeBoolean, TypeString, TypeTimestamp } from '@anticrm/model'
-import contact from '@anticrm/model-contact'
-import core, { TDoc, TAttachedDoc } from '@anticrm/model-core'
 import attachment from '@anticrm/model-attachment'
+import contact from '@anticrm/model-contact'
+import core, { TAttachedDoc, TDoc } from '@anticrm/model-core'
 import setting from '@anticrm/setting'
 import gmail from './plugin'
 
@@ -32,6 +32,9 @@ function TypeSharedMessage (): Type<SharedMessage> {
 
 @Model(gmail.class.Message, core.class.AttachedDoc, DOMAIN_GMAIL)
 export class TMessage extends TAttachedDoc implements Message {
+  declare attachedTo: Ref<Channel>
+  declare attachedToClass: Ref<Class<Channel>>
+
   @Prop(TypeString(), gmail.string.MessageID)
   messageId!: string
 

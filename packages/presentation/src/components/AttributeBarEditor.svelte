@@ -76,6 +76,7 @@
                   this={instance}
                   label={attribute?.label}
                   placeholder={attribute?.label}
+                  type={attribute?.type}
                   {maxWidth}
                   value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
                   space={object.space}
@@ -97,6 +98,7 @@
           this={instance}
           label={attribute?.label}
           placeholder={attribute?.label}
+          type={attribute?.type}
           {maxWidth}
           value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
           space={object.space}
@@ -113,6 +115,7 @@
               this={instance}
               label={attribute?.label}
               placeholder={attribute?.label}
+              type={attribute?.type}
               {maxWidth}
               value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
               space={object.space}
@@ -130,6 +133,9 @@
             placeholder={attribute?.label}
             kind={'link'}
             size={'large'}
+            width={'100%'}
+            justify={'left'}
+            type={attribute?.type}
             {maxWidth}
             value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
             space={object.space}
@@ -142,6 +148,7 @@
       <div style="grid-column: 1/3;">
         <svelte:component
           this={instance}
+          type={attribute?.type}
           {maxWidth}
           value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
           space={object.space}

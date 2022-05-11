@@ -124,7 +124,7 @@
             {
               key: '$lookup.category',
               presenter: tags.component.CategoryPresenter,
-              sortingKey: '$lookup.category',
+              sortingKey: 'category',
               label: tags.string.CategoryLabel
             }
           ]

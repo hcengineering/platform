@@ -1,10 +1,14 @@
 import { expect, test } from '@playwright/test'
-import { generateId, openWorkbench } from './utils'
+import { generateId, PlatformSetting, PlatformURI } from './utils'
+
+test.use({
+  storageState: PlatformSetting
+})
 
 test.describe('contact tests', () => {
   test.beforeEach(async ({ page }) => {
     // Create user and workspace
-    await openWorkbench(page)
+    await page.goto(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp`)
   })
   test('create-contact', async ({ page }) => {
     // Create a new context with the saved storage state.

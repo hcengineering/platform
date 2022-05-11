@@ -112,7 +112,7 @@
     "@anticrm/core": "~0.6.16",
     "@anticrm/rekoni": "~0.6.0",
     "@anticrm/tags-assets": "~0.6.0",
-    "@anticrm/tags": "~0.6.1",
+    "@anticrm/tags": "~0.6.2",
     "@anticrm/tags-resources": "~0.6.0",
     "@anticrm/server-chunter": "~0.6.0",
     "@anticrm/server-chunter-resources": "~0.6.0",

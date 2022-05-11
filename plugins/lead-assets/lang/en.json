@@ -22,6 +22,9 @@
     "LeadPlaceholder": "The simple lead",
     "ManageFunnelStatuses": "Manage funnel statuses",
     "FunnelBrowser": "Funnel browser",
-    "GotoLeadApplication": "Switch to Lead Application"
+    "GotoLeadApplication": "Switch to Lead Application",
+    "IssueDescriptionPlaceholder": "Add description...",
+    "CreateCustomer": "Create Customer",
+    "CreateCustomerLabel": "Customer"
   }
 }

@@ -659,6 +659,7 @@ a.no-line {
 .border-radius-1 { border-radius: 0.25rem; }
 .border-radius-left-1 { border-top-left-radius: 0.25rem; border-bottom-left-radius: 0.25rem; }
 .border-radius-right-1 { border-top-right-radius: 0.25rem; border-bottom-right-radius: 0.25rem; }
+.border-radius-top-1 { border-top-right-radius: 0.25rem; border-top-left-radius: 0.25rem; }
 .border-bg-accent {border: 1px solid var(--theme-bg-accent-color);}
 .border-primary-button { border-color: var(--primary-button-border); }
 .border-button-enabled { border: 1px solid var(--theme-button-border-enabled); }

@@ -32,7 +32,7 @@ const extractTx = (tx: Tx): Tx => {
       create.attributes.collection = ctx.collection
       return create
     }
-    return ctx
+    return ctx.tx
   }
 
   return tx

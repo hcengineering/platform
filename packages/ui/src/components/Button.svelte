@@ -37,6 +37,7 @@
   export let click: boolean = false
   export let title: string | undefined = undefined
   export let borderStyle: 'solid' | 'dashed' = 'solid'
+  export let id: string | undefined = undefined
 
   export let input: HTMLButtonElement | undefined = undefined
 
@@ -75,6 +76,7 @@
   on:focus
   on:blur
   on:mousemove
+  {id}
 >
   {#if icon && !loading}
     <div

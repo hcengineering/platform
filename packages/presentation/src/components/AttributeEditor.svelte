@@ -59,6 +59,7 @@
       this={instance}
       label={attribute?.label}
       placeholder={attribute?.label}
+      type={attribute?.type}
       {maxWidth}
       value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
       {onChange}

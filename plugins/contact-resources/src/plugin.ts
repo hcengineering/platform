@@ -33,6 +33,7 @@ export default mergeIds(contactId, contact, {
     CreateOrganizations: '' as IntlString,
     Organizations: '' as IntlString,
     Organization: '' as IntlString,
+    Person: '' as IntlString,
     SelectFolder: '' as IntlString,
     OrganizationsFolder: '' as IntlString,
     PersonsFolder: '' as IntlString,

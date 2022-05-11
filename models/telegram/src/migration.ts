@@ -13,9 +13,31 @@
 // limitations under the License.
 //
 
-import core, { TxOperations } from '@anticrm/core'
+import core, { SortingOrder, TxOperations } from '@anticrm/core'
 import telegram from './plugin'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
+import contact from '@anticrm/model-contact'
+
+async function updateChannlLastMessage (client: TxOperations): Promise<void> {
+  const channels = await client.findAll(contact.class.Channel, {
+    provider: contact.channelProvider.Telegram
+  })
+  const targets = channels.filter((p) => p.lastMessage === undefined)
+  for (const channel of targets) {
+    const lastMessage = await client.findOne(
+      telegram.class.Message,
+      {
+        attachedTo: channel._id
+      },
+      { sort: { sendOn: SortingOrder.Descending } }
+    )
+    if (lastMessage !== undefined) {
+      await client.updateDoc(channel._class, channel.space, channel._id, {
+        lastMessage: lastMessage.sendOn
+      })
+    }
+  }
+}
 
 export const telegramOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {},
@@ -38,5 +60,7 @@ export const telegramOperation: MigrateOperation = {
         telegram.space.Telegram
       )
     }
+
+    await updateChannlLastMessage(tx)
   }
 }

@@ -43,7 +43,7 @@ export function createReviewModel (builder: Builder): void {
     }
   })
 
-  builder.mixin(recruit.class.Review, core.class.Class, view.mixin.AttributeEditor, {
+  builder.mixin(recruit.class.Review, core.class.Class, view.mixin.CollectionEditor, {
     editor: recruit.component.Reviews
   })
 
@@ -135,7 +135,7 @@ function createTableViewlet (builder: Builder): void {
     config: reviewTableConfig
   })
 
-  builder.mixin(recruit.class.Opinion, core.class.Class, view.mixin.AttributeEditor, {
+  builder.mixin(recruit.class.Opinion, core.class.Class, view.mixin.CollectionEditor, {
     editor: recruit.component.Opinions
   })
 }
