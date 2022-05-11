@@ -27,4 +27,4 @@
   $: _class = type?.to ?? contact.class.Person
 </script>
 
-<UserBox {_class} {label} kind={'link'} size={'large'} bind:value on:change={onChange} />
+<UserBox {_class} {label} kind={'link'} size={'large'} bind:value on:change={(e) => onChange(e.detail)} />
