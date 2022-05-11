@@ -25,15 +25,13 @@
 
   let asideFloat: boolean = false
   let asideShown: boolean = false
-  let docWidth: number
-  $: if (docWidth < 1024 && !asideFloat) asideFloat = true
-  $: if (docWidth >= 1024 && asideFloat) {
+  $: if (panelWidth < 900 && !asideFloat) asideFloat = true
+  $: if (panelWidth >= 900 && asideFloat) {
     asideFloat = false
     asideShown = false
   }
 </script>
 
-<svelte:window bind:innerWidth={docWidth} />
 <div class="popupPanel" bind:clientWidth={panelWidth}>
   <div class="popupPanel-title">
     <Button

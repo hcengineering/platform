@@ -24,9 +24,10 @@ import type {
   SharedTelegramMessage,
   SharedTelegramMessages
 } from '@anticrm/telegram'
-import { Domain, IndexKind, Timestamp, Type } from '@anticrm/core'
+import { Class, Domain, IndexKind, Ref, Timestamp, Type } from '@anticrm/core'
 import setting from '@anticrm/setting'
 import activity from '@anticrm/activity'
+import { Channel } from '@anticrm/contact'
 import attachment from '@anticrm/model-attachment'
 
 export const DOMAIN_TELEGRAM = 'telegram' as Domain
@@ -37,6 +38,9 @@ function TypeSharedMessage (): Type<SharedTelegramMessage> {
 
 @Model(telegram.class.Message, core.class.AttachedDoc, DOMAIN_TELEGRAM)
 export class TTelegramMessage extends TAttachedDoc implements TelegramMessage {
+  declare attachedTo: Ref<Channel>
+  declare attachedToClass: Ref<Class<Channel>>
+
   @Prop(TypeString(), telegram.string.Content)
   @Index(IndexKind.FullText)
   content!: string

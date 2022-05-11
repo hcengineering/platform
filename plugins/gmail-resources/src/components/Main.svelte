@@ -22,9 +22,10 @@
   import Chats from './Chats.svelte'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
-  import { Panel, Icon, Label } from '@anticrm/ui'
+  import { Panel, Icon, Label, Button, eventToHTMLElement, showPopup } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import gmail from '../plugin'
+  import Connect from './Connect.svelte'
 
   export let _id: Ref<Doc>
   export let _class: Ref<Class<Doc>>
@@ -35,6 +36,7 @@
   let currentMessage: SharedMessage | undefined = undefined
   let channel: Channel | undefined = undefined
   const notificationClient = NotificationClientImpl.getClient()
+  let enabled: boolean
 
   const client = getClient()
   const dispatch = createEventDispatcher()
@@ -90,12 +92,25 @@
         </div>
       </div>
     </svelte:fragment>
+
+    <svelte:fragment slot="utils">
+      {#if !enabled}
+        <Button
+          label={gmail.string.Connect}
+          kind={'primary'}
+          on:click={(e) => {
+            showPopup(Connect, {}, eventToHTMLElement(e))
+          }}
+        />
+      {/if}
+    </svelte:fragment>
+
     {#if newMessage}
       <NewMessage {object} {channel} {currentMessage} on:close={back} />
     {:else if currentMessage}
       <FullMessage {currentMessage} bind:newMessage on:close={back} />
     {:else}
-      <Chats {object} {channel} bind:newMessage on:select={selectHandler} />
+      <Chats {object} {channel} bind:newMessage bind:enabled on:select={selectHandler} />
     {/if}
   </Panel>
 {/if}

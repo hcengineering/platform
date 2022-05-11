@@ -86,7 +86,7 @@ export function createModel (builder: Builder): void {
     presenter: inventory.component.VariantPresenter
   })
 
-  builder.mixin(inventory.class.Variant, core.class.Class, view.mixin.AttributeEditor, {
+  builder.mixin(inventory.class.Variant, core.class.Class, view.mixin.CollectionEditor, {
     editor: inventory.component.Variants
   })
 

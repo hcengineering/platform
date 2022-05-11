@@ -27,6 +27,7 @@
   export let attachedClass: Ref<Class<Doc>>
   export let integrations: Set<Ref<Doc>> | undefined = undefined
   export let editable = true
+  export let allowOpen = true
 
   export let kind: ButtonKind = 'link-bordered'
   export let size: ButtonSize = 'small'
@@ -107,7 +108,7 @@
   function _open (ev: any) {
     if (ev.detail.presenter !== undefined && Array.isArray(channels)) {
       const channel = channels[0]
-      if (channel !== undefined) {
+      if (channel !== undefined && allowOpen) {
         closeTooltip()
         showPopup(ev.detail.presenter, { _id: channel.attachedTo, _class: channel.attachedToClass }, 'float')
       }

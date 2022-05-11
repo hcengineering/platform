@@ -56,7 +56,7 @@
         { attachTo },
         {
           lookup: {
-            descriptor: core.class.Class
+            descriptor: view.class.ViewletDescriptor
           }
         }
       )

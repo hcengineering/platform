@@ -121,6 +121,7 @@
       <Button
         label={action.i18n}
         kind={'primary'}
+        size={'x-large'}
         width="100%"
         loading={inAction}
         disabled={status.severity !== Severity.OK && status.severity !== Severity.ERROR}

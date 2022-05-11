@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import contact, { formatName } from '@anticrm/contact'
-  import core, { Class, ClassifierKind, Doc, Mixin, Obj, Ref } from '@anticrm/core'
+  import { Class, ClassifierKind, Doc, Mixin, Obj, Ref } from '@anticrm/core'
   import notification from '@anticrm/notification'
   import { Panel } from '@anticrm/panel'
   import { Asset, getResource, translate } from '@anticrm/platform'
@@ -29,8 +29,9 @@
   import { AnyComponent, Component } from '@anticrm/ui'
   import view from '@anticrm/view'
   import { createEventDispatcher, onDestroy } from 'svelte'
-  import { getCollectionCounter } from '../utils'
+  import { collectionsFilter, getCollectionCounter, getFiltredKeys } from '../utils'
   import ActionContext from './ActionContext.svelte'
+  import DocAttributeBar from './DocAttributeBar.svelte'
   import UpDownNavigator from './UpDownNavigator.svelte'
 
   export let _id: Ref<Doc>
@@ -45,7 +46,6 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const notificationClient = getResource(notification.function.GetNotificationClient).then((res) => res())
-  const docKeys: Set<string> = new Set<string>(hierarchy.getAllAttributes(core.class.AttachedDoc).keys())
 
   $: read(_id)
   function read (_id: Ref<Doc>) {
@@ -90,53 +90,27 @@
     )
   }
 
-  function filterKeys (keys: KeyedAttribute[], ignoreKeys: string[]): KeyedAttribute[] {
-    keys = keys.filter((k) => !docKeys.has(k.key))
-    keys = keys.filter((k) => !ignoreKeys.includes(k.key))
-    return keys
-  }
-
-  function getFiltredKeys (objectClass: Ref<Class<Doc>>, ignoreKeys: string[], to?: Ref<Class<Doc>>): KeyedAttribute[] {
-    const keys = [...hierarchy.getAllAttributes(objectClass, to).entries()]
-      .filter(([, value]) => value.hidden !== true)
-      .map(([key, attr]) => ({ key, attr }))
-
-    return filterKeys(keys, ignoreKeys)
-  }
-
   let ignoreKeys: string[] = []
   let ignoreMixins: Set<Ref<Mixin<Doc>>> = new Set<Ref<Mixin<Doc>>>()
 
   async function updateKeys (): Promise<void> {
-    const keysMap = new Map(getFiltredKeys(object._class, ignoreKeys).map((p) => [p.attr._id, p]))
+    const keysMap = new Map(getFiltredKeys(hierarchy, object._class, ignoreKeys).map((p) => [p.attr._id, p]))
     for (const m of mixins) {
-      const mkeys = getFiltredKeys(m._id, ignoreKeys)
+      const mkeys = getFiltredKeys(hierarchy, m._id, ignoreKeys)
       for (const key of mkeys) {
         keysMap.set(key.attr._id, key)
       }
     }
     const filtredKeys = Array.from(keysMap.values())
-    keys = collectionsFilter(filtredKeys, false)
+    keys = collectionsFilter(hierarchy, filtredKeys, false)
 
-    const collectionKeys = collectionsFilter(filtredKeys, true)
+    const collectionKeys = collectionsFilter(hierarchy, filtredKeys, true)
     const editors: { key: KeyedAttribute; editor: AnyComponent }[] = []
     for (const k of collectionKeys) {
       const editor = await getCollectionEditor(k)
       editors.push({ key: k, editor })
     }
     collectionEditors = editors
-  }
-
-  function collectionsFilter (keys: KeyedAttribute[], get: boolean): KeyedAttribute[] {
-    const result: KeyedAttribute[] = []
-    for (const key of keys) {
-      if (isCollectionAttr(key) === get) result.push(key)
-    }
-    return result
-  }
-
-  function isCollectionAttr (key: KeyedAttribute): boolean {
-    return hierarchy.isDerived(key.attr.type._class, core.class.Collection)
   }
 
   async function getEditor (_class: Ref<Class<Doc>>): Promise<AnyComponent> {
@@ -161,8 +135,8 @@
 
   async function getCollectionEditor (key: KeyedAttribute): Promise<AnyComponent> {
     const attrClass = getAttributePresenterClass(key.attr)
-    const clazz = client.getHierarchy().getClass(attrClass)
-    const editorMixin = client.getHierarchy().as(clazz, view.mixin.AttributeEditor)
+    const clazz = hierarchy.getClass(attrClass)
+    const editorMixin = hierarchy.as(clazz, view.mixin.CollectionEditor)
     return editorMixin.editor
   }
 
@@ -237,7 +211,6 @@
   }
   let panelWidth: number = 0
   let innerWidth: number = 0
-  let minimize: boolean = false
 </script>
 
 <ActionContext
@@ -251,9 +224,8 @@
     {icon}
     {title}
     {object}
-    bind:minimize
     isHeader={false}
-    isAside={!minimize}
+    isAside={true}
     bind:panelWidth
     bind:innerWidth
     on:update={(ev) => _update(ev.detail)}
@@ -268,9 +240,15 @@
     <svelte:fragment slot="attributes" let:direction={dir}>
       {#if !headerLoading}
         {#if headerEditor !== undefined}
-          <Component is={headerEditor} props={{ object, keys, vertical: dir === 'column' }} />
+          <Component
+            is={headerEditor}
+            props={{ object, keys, mixins, ignoreKeys, vertical: dir === 'column' }}
+            on:update={updateKeys}
+          />
+        {:else if dir === 'column'}
+          <DocAttributeBar {object} {mixins} {ignoreKeys} on:update={updateKeys} />
         {:else}
-          <AttributesBar {object} {keys} vertical={dir === 'column'} />
+          <AttributesBar {object} {keys} />
         {/if}
       {/if}
     </svelte:fragment>

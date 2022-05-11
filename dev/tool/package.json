@@ -103,6 +103,6 @@
     "@anticrm/server-telegram-resources": "~0.6.0",
     "@anticrm/rekoni": "~0.6.0",
     "request": "~2.88.2",
-    "@anticrm/tags": "~0.6.1"
+    "@anticrm/tags": "~0.6.2"
   }
 }

@@ -17,6 +17,7 @@
   import { Issue, IssueStatus, Team } from '@anticrm/tracker'
   import { getClient } from '@anticrm/presentation'
   import { Tooltip } from '@anticrm/ui'
+  import type { ButtonKind, ButtonSize } from '@anticrm/ui'
   import tracker from '../../plugin'
   import StatusSelector from '../StatusSelector.svelte'
 
@@ -25,6 +26,11 @@
   export let currentSpace: Ref<Team> | undefined = undefined
   export let isEditable: boolean = true
   export let shouldShowLabel: boolean = false
+
+  export let kind: ButtonKind = 'link'
+  export let size: ButtonSize = 'large'
+  export let justify: 'left' | 'center' = 'left'
+  export let width: string | undefined = '100%'
 
   const client = getClient()
 
@@ -45,9 +51,12 @@
 
 {#if value}
   {#if isEditable}
-    <Tooltip direction={'bottom'} label={tracker.string.SetStatus}>
+    <Tooltip label={tracker.string.SetStatus} fill>
       <StatusSelector
-        kind={'icon'}
+        {kind}
+        {size}
+        {width}
+        {justify}
         {isEditable}
         {shouldShowLabel}
         {statuses}
@@ -57,7 +66,10 @@
     </Tooltip>
   {:else}
     <StatusSelector
-      kind={'icon'}
+      {kind}
+      {size}
+      {width}
+      {justify}
       {isEditable}
       {shouldShowLabel}
       {statuses}

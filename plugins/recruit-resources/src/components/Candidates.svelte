@@ -18,11 +18,10 @@
   import { Doc, DocumentQuery, Ref } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
   import tags, { selectedTagElements, TagCategory, TagElement } from '@anticrm/tags'
-  import { Button, Component, Icon, IconAdd, Label, Scroller, SearchEdit, showPopup } from '@anticrm/ui'
+  import { Component, Icon, Label, Scroller, SearchEdit } from '@anticrm/ui'
   import view, { Viewlet } from '@anticrm/view'
   import { ActionContext, TableBrowser } from '@anticrm/view-resources'
   import recruit from '../plugin'
-  import CreateCandidate from './CreateCandidate.svelte'
 
   let search = ''
   let resultQuery: DocumentQuery<Doc> = {}
@@ -32,10 +31,6 @@
     attachTo: recruit.mixin.Candidate,
     descriptor: view.viewlet.Table
   })
-
-  function showCreateDialog (ev: Event) {
-    showPopup(CreateCandidate, { space: recruit.space.CandidatesPublic }, 'top')
-  }
 
   let category: Ref<TagCategory> | undefined = undefined
 
@@ -73,12 +68,6 @@
     on:change={() => {
       updateResultQuery(search, documentIds)
     }}
-  />
-  <Button
-    icon={IconAdd}
-    label={recruit.string.CandidateCreateLabel}
-    kind={'primary'}
-    on:click={(ev) => showCreateDialog(ev)}
   />
 </div>
 

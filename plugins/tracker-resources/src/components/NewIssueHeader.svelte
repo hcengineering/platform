@@ -14,13 +14,32 @@
 -->
 <script lang="ts">
   import { Ref, Space } from '@anticrm/core'
+  import { getClient } from '@anticrm/presentation'
   import { Button, showPopup } from '@anticrm/ui'
   import tracker from '../plugin'
   import CreateIssue from './CreateIssue.svelte'
-  export let currentSpace: Ref<Space>
+
+  export let currentSpace: Ref<Space> | undefined
+
+  const client = getClient()
+
+  let space: Ref<Space> | undefined
+  $: updateSpace(currentSpace)
+
+  async function updateSpace (spaceId: Ref<Space> | undefined): Promise<void> {
+    if (space) {
+      space = spaceId
+      return
+    }
+
+    const team = await client.findOne(tracker.class.Team, {})
+    space = team?._id
+  }
 
   async function newIssue (): Promise<void> {
-    showPopup(CreateIssue, { space: currentSpace }, 'top')
+    if (space) {
+      showPopup(CreateIssue, { space }, 'top')
+    }
   }
 </script>
 
@@ -31,7 +50,7 @@
       label={tracker.string.NewIssue}
       justify={'left'}
       width={'100%'}
-      on:click={() => newIssue()}
+      on:click={newIssue}
     />
   </div>
   <Button icon={tracker.icon.Magnifier} on:click={async () => {}} />

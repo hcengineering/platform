@@ -55,8 +55,7 @@
     )
   }
 
-  let topSpecials: SpecialNavModel[] = []
-  let bottomSpecials: SpecialNavModel[] = []
+  let specials: SpecialNavModel[] = []
 
   let preferences: Map<Ref<Doc>, SpacePreference> = new Map<Ref<Doc>, SpacePreference>()
 
@@ -72,11 +71,22 @@
 
   async function update (model: NavigatorModel, spaces: Space[], preferences: Map<Ref<Doc>, SpacePreference>) {
     if (model.specials !== undefined) {
-      topSpecials = await getSpecials(model.specials, 'top', spaces)
-      bottomSpecials = await getSpecials(model.specials, 'bottom', spaces)
+      const sp = await updateSpecials(model.specials, spaces)
+      const topSpecials = sp.get('top') ?? []
+      const bottomSpecials = sp.get('bottom') ?? []
+      sp.delete('top')
+      sp.delete('bottom')
+
+      const result = [...topSpecials]
+
+      for (const k of Array.from(sp.keys()).sort()) {
+        result.push(...(sp.get(k) ?? []))
+      }
+
+      result.push(...bottomSpecials)
+      specials = result
     } else {
-      topSpecials = []
-      bottomSpecials = []
+      specials = []
     }
     shownSpaces = spaces.filter(
       (sp) => !sp.archived && !preferences.has(sp._id) && (!sp.members.length || sp.members.includes(myAccId))
@@ -86,22 +96,19 @@
 
   $: if (model) update(model, spaces, preferences)
 
-  async function getSpecials (
-    specials: SpecialNavModel[],
-    state: 'top' | 'bottom',
-    spaces: Space[]
-  ): Promise<SpecialNavModel[]> {
-    const result: SpecialNavModel[] = []
+  async function updateSpecials (specials: SpecialNavModel[], spaces: Space[]): Promise<Map<string, SpecialNavModel[]>> {
+    const result = new Map<string, SpecialNavModel[]>()
     for (const sp of specials) {
-      if ((sp.position ?? 'top') === state) {
-        if (sp.visibleIf !== undefined) {
-          const f = await getResource(sp.visibleIf)
-          if (f(spaces)) {
-            result.push(sp)
-          }
-        } else {
-          result.push(sp)
-        }
+      const pos = sp.position ?? 'top'
+      let visible = true
+      if (sp.visibleIf !== undefined) {
+        const f = await getResource(sp.visibleIf)
+        visible = f(spaces)
+      }
+      if (visible) {
+        const list = result.get(pos) ?? []
+        list.push(sp)
+        result.set(pos, list)
       }
     }
     return result
@@ -112,19 +119,10 @@
 {#if model}
   <Scroller>
     {#if model.specials}
-      {#each topSpecials as special}
-        <SpecialElement
-          label={special.label}
-          icon={special.icon}
-          on:click={() => dispatch('special', special.id)}
-          selected={special.id === currentSpecial}
-          indent={'ml-2'}
-        />
-      {/each}
-      {#if topSpecials.length > 0 && bottomSpecials.length > 0}
-        <TreeSeparator />
-      {/if}
-      {#each bottomSpecials as special}
+      {#each specials as special, row}
+        {#if row > 0 && specials[row].position !== specials[row - 1].position}
+          <TreeSeparator />
+        {/if}
         <SpecialElement
           label={special.label}
           icon={special.icon}
@@ -135,7 +133,7 @@
       {/each}
     {/if}
 
-    {#if topSpecials.length > 0 || bottomSpecials.length > 0}<TreeSeparator />{/if}
+    {#if specials.length > 0}<TreeSeparator />{/if}
 
     {#if starred.length}
       <StarredNav label={preference.string.Starred} spaces={starred} on:space {currentSpace} />

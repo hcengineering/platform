@@ -11,6 +11,17 @@
     "Description": "Description",
     "Private": "Private",
     "Archived": "Archived",
-    "ClassLabel": "Label"
+    "ClassLabel": "Label",
+    "String": "String",
+    "Markup": "Markup",
+    "Number": "Number",
+    "Boolean": "Boolean",
+    "Timestamp": "Timestamp",
+    "Date": "Date",
+    "IntlString": "IntlString",
+    "Ref": "Ref",
+    "Collection": "Collection",
+    "Array": "Array",
+    "Bag": "Bag"
   }
 }

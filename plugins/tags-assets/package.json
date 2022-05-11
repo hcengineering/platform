@@ -30,6 +30,6 @@
   },
   "dependencies": {
     "@anticrm/platform": "~0.6.6",
-    "@anticrm/tags": "~0.6.1"
+    "@anticrm/tags": "~0.6.2"
   }
 }

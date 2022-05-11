@@ -32,6 +32,7 @@
     "@anticrm/model-core": "~0.6.0",
     "@anticrm/model-attachment": "~0.6.0",
     "@anticrm/model-contact": "~0.6.1",
+    "@anticrm/contact": "~0.6.5",
     "@anticrm/telegram": "~0.6.2",
     "@anticrm/telegram-resources": "~0.6.0",
     "@anticrm/setting": "~0.6.1",

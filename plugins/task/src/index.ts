@@ -14,12 +14,29 @@
 //
 
 import type { Employee } from '@anticrm/contact'
-import { AttachedDoc, Class, Doc, Interface, Markup, Mixin, Ref, Space, Timestamp, TxOperations } from '@anticrm/core'
+import {
+  AttachedDoc,
+  Class,
+  Doc,
+  Domain,
+  Interface,
+  Markup,
+  Mixin,
+  Ref,
+  Space,
+  Timestamp,
+  TxOperations
+} from '@anticrm/core'
 import type { Asset, IntlString, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'
 import { ViewletDescriptor } from '@anticrm/view'
 import { genRanks } from './utils'
+
+/**
+ * @public
+ */
+export const DOMAIN_STATE = 'state' as Domain
 
 /**
  * @public

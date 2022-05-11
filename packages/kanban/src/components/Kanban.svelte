@@ -188,7 +188,7 @@
   $: stateRefs.length = states.length
 
   function scrollInto (statePos: number): void {
-    stateRefs[statePos].scrollIntoView({ behavior: 'auto', block: 'nearest' })
+    stateRefs[statePos]?.scrollIntoView({ behavior: 'auto', block: 'nearest' })
   }
 
   export function select (offset: 1 | -1 | 0, of?: Doc, dir?: 'vertical' | 'horizontal'): void {

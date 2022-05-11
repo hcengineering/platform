@@ -133,7 +133,7 @@ export function createModel (builder: Builder): void {
     }
   })
 
-  builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.AttributeEditor, {
+  builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.CollectionEditor, {
     editor: recruit.component.Applications
   })
 
@@ -171,7 +171,7 @@ export function createModel (builder: Builder): void {
             icon: recruit.icon.Vacancy,
             label: recruit.string.Vacancies,
             createItemLabel: recruit.string.VacancyCreateLabel,
-            position: 'bottom'
+            position: 'vacancy'
           },
           {
             id: applicantsId,
@@ -179,7 +179,7 @@ export function createModel (builder: Builder): void {
             icon: recruit.icon.Application,
             label: recruit.string.Applications,
             createItemLabel: recruit.string.ApplicationCreateLabel,
-            position: 'bottom'
+            position: 'vacancy'
           },
           {
             id: candidatesId,
@@ -187,14 +187,14 @@ export function createModel (builder: Builder): void {
             icon: contact.icon.Person,
             label: recruit.string.Candidates,
             createItemLabel: recruit.string.CandidateCreateLabel,
-            position: 'bottom'
+            position: 'vacancy'
           },
           {
             id: archiveId,
             component: workbench.component.Archive,
             icon: view.icon.Archive,
             label: workbench.string.Archive,
-            position: 'top',
+            position: 'bottom',
             visibleIf: workbench.function.HasArchiveSpaces,
             spaceClass: recruit.class.Vacancy
           },
@@ -211,6 +211,7 @@ export function createModel (builder: Builder): void {
             label: task.string.Assigned,
             icon: task.icon.Task,
             component: task.component.AssignedTasks,
+            position: 'event',
             componentProps: {
               labelTasks: recruit.string.Applications,
               _class: recruit.class.Applicant
@@ -226,10 +227,11 @@ export function createModel (builder: Builder): void {
             },
             icon: calendar.icon.Calendar,
             label: calendar.string.UpcomingEvents,
-            position: 'top'
+            position: 'event'
           }
         ]
-      }
+      },
+      navHeaderComponent: recruit.component.NewCandidateHeader
     },
     recruit.app.Recruit
   )
