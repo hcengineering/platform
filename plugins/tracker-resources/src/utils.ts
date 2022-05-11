@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Ref, SortingOrder } from '@anticrm/core'
+import { DocumentQuery, Ref, SortingOrder } from '@anticrm/core'
 import type { Asset, IntlString } from '@anticrm/platform'
 import {
   IssuePriority,
@@ -147,6 +147,11 @@ export interface FilterSectionElement extends Omit<FilterAction, 'label'> {
   isSelected?: boolean
 }
 
+export interface IssueFilter {
+  mode: '$in' | '$nin'
+  query: DocumentQuery<Issue>
+}
+
 export const getGroupedIssues = (
   key: IssuesGroupByKeys | undefined,
   elements: Issue[],
@@ -186,8 +191,40 @@ export const getIssueFilterAssetsByType = (type: string): { icon: Asset, label: 
         label: tracker.string.Status
       }
     }
+    case 'priority': {
+      return {
+        icon: tracker.icon.PriorityHigh,
+        label: tracker.string.Priority
+      }
+    }
     default: {
       return undefined
     }
   }
+}
+
+export const defaultPriorities = [
+  IssuePriority.NoPriority,
+  IssuePriority.Urgent,
+  IssuePriority.High,
+  IssuePriority.Medium,
+  IssuePriority.Low
+]
+
+export const getArraysIntersection = (a: any[], b: any[]): any[] => {
+  const setB = new Set(b)
+  const intersection = new Set(a.filter((x) => setB.has(x)))
+
+  return Array.from(intersection)
+}
+
+export const getArraysUnion = (a: any[], b: any[]): any[] => {
+  const setB = new Set(b)
+  const union = new Set(a)
+
+  for (const element of setB) {
+    union.add(element)
+  }
+
+  return Array.from(union)
 }
