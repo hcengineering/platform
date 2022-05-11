@@ -17,24 +17,35 @@
   import { Issue, IssueStatus } from '@anticrm/tracker'
   import { showPopup } from '@anticrm/ui'
   import StatusFilterMenuSection from './StatusFilterMenuSection.svelte'
+  import PriorityFilterMenuSection from './PriorityFilterMenuSection.svelte'
   import FilterMenu from '../FilterMenu.svelte'
-  import { FilterAction, getGroupedIssues, getIssueFilterAssetsByType } from '../../utils'
+  import {
+    defaultPriorities,
+    FilterAction,
+    getGroupedIssues,
+    getIssueFilterAssetsByType,
+    IssueFilter
+  } from '../../utils'
 
   export let targetHtml: HTMLElement
-  export let currentFilter: { [p: string]: { $in: any[] } } = {}
+  export let filters: IssueFilter[] = []
+  export let index: number = 0
   export let defaultStatuses: Array<WithLookup<IssueStatus>> = []
   export let issues: Issue[] = []
-  export let onUpdate: (result: { [p: string]: any }) => void
-  export let onBack: () => void
+  export let onUpdate: (result: { [p: string]: any }, filterIndex: number) => void
+  export let onBack: (() => void) | undefined = undefined
 
+  $: currentFilterQuery = filters[index]?.query as { [p: string]: { $in?: any[]; $nin?: any[] } } | undefined
+  $: currentFilterMode = filters[index]?.mode
   $: defaultStatusIds = defaultStatuses.map((x) => x._id)
   $: groupedByStatus = getGroupedIssues('status', issues, defaultStatusIds)
+  $: groupedByPriority = getGroupedIssues('priority', issues, defaultPriorities)
 
   const handleStatusFilterMenuSectionOpened = (event: MouseEvent | KeyboardEvent) => {
     const statusGroups: { [key: string]: number } = {}
 
-    for (const defaultStatus of defaultStatuses) {
-      statusGroups[defaultStatus._id] = groupedByStatus[defaultStatus._id]?.length ?? 0
+    for (const status of defaultStatuses) {
+      statusGroups[status._id] = groupedByStatus[status._id]?.length ?? 0
     }
 
     showPopup(
@@ -42,7 +53,28 @@
       {
         groups: statusGroups,
         statuses: defaultStatuses,
-        selectedElements: currentFilter.status?.$in,
+        selectedElements: currentFilterQuery?.status?.[currentFilterMode] ?? [],
+        index,
+        onUpdate,
+        onBack
+      },
+      targetHtml
+    )
+  }
+
+  const handlePriorityFilterMenuSectionOpened = (event: MouseEvent | KeyboardEvent) => {
+    const priorityGroups: { [key: string]: number } = {}
+
+    for (const priority of defaultPriorities) {
+      priorityGroups[priority] = groupedByPriority[priority]?.length ?? 0
+    }
+
+    showPopup(
+      PriorityFilterMenuSection,
+      {
+        groups: priorityGroups,
+        selectedElements: currentFilterQuery?.priority?.[currentFilterMode] ?? [],
+        index,
         onUpdate,
         onBack
       },
@@ -54,6 +86,10 @@
     {
       ...getIssueFilterAssetsByType('status'),
       onSelect: handleStatusFilterMenuSectionOpened
+    },
+    {
+      ...getIssueFilterAssetsByType('priority'),
+      onSelect: handlePriorityFilterMenuSectionOpened
     }
   ]
 </script>
