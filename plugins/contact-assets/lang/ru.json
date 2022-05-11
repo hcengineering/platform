@@ -45,6 +45,7 @@
     "Facebook": "Facebook",
     "SocialLinks": "Контактная информация",
     "ViewActivity": "Посмотреть активность",
-    "PersonAlreadyExists": "Контакт уже существует..."
+    "PersonAlreadyExists": "Контакт уже существует...",
+    "TypeLabel": "Тип"
   }
 }

@@ -128,7 +128,8 @@ const recruit = plugin(recruitId, {
     Create: '' as Asset,
     Application: '' as Asset,
     Review: '' as Asset,
-    Opinion: '' as Asset
+    Opinion: '' as Asset,
+    CreateCandidate: '' as Asset
   },
   space: {
     VacancyTemplates: '' as Ref<KanbanTemplateSpace>,

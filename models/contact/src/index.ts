@@ -153,7 +153,7 @@ export function createModel (builder: Builder): void {
     },
     config: [
       '',
-      '$lookup._class.label',
+      { key: '$lookup._class.label', label: contact.string.TypeLabel },
       'city',
       {
         presenter: attachment.component.AttachmentsPresenter,

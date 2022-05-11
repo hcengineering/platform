@@ -28,7 +28,6 @@ test.describe('workbench tests', () => {
       `${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/recruit%3Aapp%3ARecruit/candidates`
     )
 
-    await expect(page.locator('text=Candidates Candidate')).toBeVisible()
     await expect(page.locator('text=Andrey P.')).toBeVisible()
 
     // Click text=Vacancies

@@ -58,7 +58,8 @@ export default mergeIds(contactId, contact, {
     FacebookPlaceholder: '' as IntlString,
     Twitter: '' as IntlString,
     GitHub: '' as IntlString,
-    Facebook: '' as IntlString
+    Facebook: '' as IntlString,
+    TypeLabel: '' as IntlString
   },
   completion: {
     PersonQuery: '' as Resource<ObjectSearchFactory>,

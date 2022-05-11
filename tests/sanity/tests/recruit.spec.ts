@@ -15,7 +15,7 @@ test.describe('recruit tests', () => {
 
     await page.click('text=Candidates')
 
-    await page.click('button:has-text("Candidate")')
+    await page.click('button:has-text("New Candidate")')
 
     const first = 'Elton-' + generateId(4)
     const last = 'John-' + generateId(4)
@@ -87,9 +87,9 @@ test.describe('recruit tests', () => {
 
     // Create Applicatio n1
     await page.click('button:has-text("Application")')
-    await page.click('button:has-text("Candidate")')
+    await page.click('form[id="recruit:string:CreateApplication"] button:has-text("Candidate")')
     await page.click('button:has-text("Alex P.")')
-    await page.click('button:has-text("Create")')
+    await page.click('form[id="recruit:string:CreateApplication"] button:has-text("Create")')
 
     await expect(page.locator('text=APP-').first()).toBeVisible()
     await expect(page.locator('text=Alex P.').first()).toBeVisible()
@@ -158,7 +158,7 @@ test.describe('recruit tests', () => {
     // Click button:has-text("Apple")
     // await page.click('button:has-text("Apple")')
     // Click text=Candidate Not selected >> span
-    await page.click('button:has-text("Candidate")')
+    await page.click('form button:has-text("Candidate")')
     // Click button:has-text("Andrey P.")
     await page.click('button:has-text("Andrey P.")')
     // Click text=Create

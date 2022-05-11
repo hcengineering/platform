@@ -38,7 +38,7 @@
   const dispatch = createEventDispatcher()
 </script>
 
-<form class="antiCard dialog" on:submit|preventDefault={() => {}}>
+<form id={label} class="antiCard dialog" on:submit|preventDefault={() => {}}>
   <div class="antiCard-header">
     <div class="antiCard-header__title-wrap">
       {#if (spaceClass && spaceLabel && spacePlaceholder) || $$slots.space}

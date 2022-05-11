@@ -32,10 +32,9 @@ test.describe('contact tests', () => {
 
     if ((await page.locator('[id="gmail:string:Email"]').count()) === 0) {
       await page.click('[id="presentation:string:AddSocialLinks"]')
-      await page.click('button:has-text("Email")')
+      await page.click('.popup button:has-text("Email")')
     }
     await page.hover('[id="gmail:string:Email"]')
-    await page.click('text=Edit profile John Appleseed LoPlaza >> button')
     await page.fill('[placeholder="john\\.appleseed\\@apple\\.com"]', 'wer@qwe.com')
     // Click text=Apply
     await page.click('button:nth-child(4)')

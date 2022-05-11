@@ -36,7 +36,7 @@ test.describe('recruit tests', () => {
     // Fill [placeholder="Please\ type\ Skill\ title"]
     await page.fill('[placeholder="Please\\ type\\ \\ title"]', 's1')
     // Click text=Create Skill s1 Please type description here Category Other Create Cancel >> button
-    await page.click('text=Create more Create >> button')
+    await page.click('form[id="tags:string:AddTag"]  button:has-text("Create")')
     await page.click('button:has-text("Other")')
     // Click text=s1
     await page.click('text=s1')
