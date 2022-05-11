@@ -42,7 +42,8 @@ export default mergeIds(leadId, lead, {
     LeadPresenter: '' as AnyComponent,
     TemplatesIcon: '' as AnyComponent,
     Customers: '' as AnyComponent,
-    Leads: '' as AnyComponent
+    Leads: '' as AnyComponent,
+    NewItemsHeader: '' as AnyComponent
   },
   space: {
     DefaultFunnel: '' as Ref<Space>

@@ -73,8 +73,9 @@
   }
 
   function isNew (item: Channel, lastViews: Map<Ref<Doc>, Timestamp>): boolean {
+    if (item.lastMessage === undefined) return false
     const lastView = (item as Channel)._id !== undefined ? lastViews.get((item as Channel)._id) : undefined
-    return lastView ? lastView < item.modifiedOn : (item.items ?? 0) > 0
+    return lastView ? lastView < item.lastMessage : (item.items ?? 0) > 0
   }
 
   async function update (value: AttachedData<Channel>[] | Channel | null, lastViews: Map<Ref<Doc>, Timestamp>) {
@@ -182,6 +183,7 @@
 >
   {#each displayItems as item, i}
     <Button
+      id={item.label}
       bind:input={btns[i]}
       icon={item.icon}
       {kind}
@@ -203,6 +205,7 @@
   {/each}
   {#if actions.length > 0 && editable}
     <Button
+      id={presentation.string.AddSocialLinks}
       bind:input={addBtn}
       icon={contact.icon.SocialEdit}
       label={displayItems.length === 0 ? presentation.string.AddSocialLinks : undefined}

@@ -20,7 +20,7 @@
   import { getResource } from '@anticrm/platform'
   import { AttributeEditor, Avatar, createQuery, EditableAvatar, getClient } from '@anticrm/presentation'
   import setting, { IntegrationType } from '@anticrm/setting'
-  import { CircleButton, EditBox, IconActivity, Label } from '@anticrm/ui'
+  import { EditBox } from '@anticrm/ui'
   import { afterUpdate, createEventDispatcher, onMount } from 'svelte'
   import contact from '../plugin'
   import ChannelsEditor from './ChannelsEditor.svelte'
@@ -138,24 +138,14 @@
       </div>
 
       <div class="separator" />
-
-      <div class="flex-between">
-        <div class="flex-row-center">
-          <ChannelsEditor
-            attachedTo={object._id}
-            attachedClass={object._class}
-            {editable}
-            bind:integrations
-            shape={'circle'}
-          />
-        </div>
-
-        <div class="flex-row-center">
-          <div class="over-underline flex-row-center" on:click>
-            <CircleButton icon={IconActivity} size={'small'} primary on:click />
-            <span class="ml-2 text-sm"><Label label={contact.string.ViewActivity} /></span>
-          </div>
-        </div>
+      <div class="flex-row-center">
+        <ChannelsEditor
+          attachedTo={object._id}
+          attachedClass={object._class}
+          {editable}
+          bind:integrations
+          shape={'circle'}
+        />
       </div>
     </div>
   </div>
@@ -175,6 +165,6 @@
   .separator {
     margin: 1rem 0;
     height: 1px;
-    background-color: var(--theme-card-divider);
+    background-color: var(--divider-color);
   }
 </style>

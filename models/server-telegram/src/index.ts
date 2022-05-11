@@ -29,4 +29,8 @@ export function createModel (builder: Builder): void {
       collectDocs: serverTelegram.function.FindMessages
     }
   )
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverTelegram.trigger.OnMessageCreate
+  })
 }

@@ -17,7 +17,6 @@
   import contact from '@anticrm/contact'
   import core, { Class, Doc, Mixin, Ref, RefTo } from '@anticrm/core'
   import { AttributesBar, getClient, KeyedAttribute, UserBox } from '@anticrm/presentation'
-  import { Label } from '@anticrm/ui'
   import { Task } from '@anticrm/task'
   import task from '../plugin'
   import { DocAttributeBar } from '@anticrm/view-resources'
@@ -78,38 +77,10 @@
     <AttributesBar {object} keys={['doneState', 'state']} showHeader={false} />
   </div>
 {:else}
-  <div class="task-attr-prop mb-4">
-    <span class="fs-bold"><Label label={task.string.TaskAssignee} /></span>
-    <UserBox
-      _class={getAssigneeClass(object)}
-      label={assigneeTitle}
-      placeholder={assigneeTitle}
-      kind={'link'}
-      size={'large'}
-      bind:value={object.assignee}
-      on:change={change}
-      allowDeselect
-      titleDeselect={task.string.TaskUnAssign}
-    />
-    <div style:grid-column={'1/3'}>
-      <AttributesBar {object} keys={['doneState', 'state']} vertical />
-    </div>
-  </div>
-  <DocAttributeBar {object} ignoreKeys={[...ignoreKeys, ...taskKeys]} {mixins} on:update />
+  <DocAttributeBar {object} {ignoreKeys} {mixins} on:update />
 {/if}
 
 <style lang="scss">
-  .task-attr-prop {
-    display: grid;
-    grid-template-columns: 1fr 1.5fr;
-    grid-template-rows: minmax(2rem, auto);
-    grid-auto-flow: row;
-    justify-content: start;
-    align-items: center;
-    gap: 1rem;
-    width: 100%;
-    height: min-content;
-  }
   .task-attr-header {
     display: flex;
     justify-content: space-between;

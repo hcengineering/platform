@@ -77,7 +77,8 @@ export default mergeIds(viewId, view, {
     StringTypeEditor: '' as AnyComponent,
     BooleanTypeEditor: '' as AnyComponent,
     NumberTypeEditor: '' as AnyComponent,
-    DateTypeEditor: '' as AnyComponent
+    DateTypeEditor: '' as AnyComponent,
+    RefEditor: '' as AnyComponent
   },
   string: {
     Table: '' as IntlString,

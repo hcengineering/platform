@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref } from '@anticrm/core'
+  import { Ref, Space } from '@anticrm/core'
   import task, { State } from '@anticrm/task'
   import { createQuery } from '@anticrm/presentation'
   import type { ButtonKind, ButtonSize } from '@anticrm/ui'
@@ -23,6 +23,7 @@
   import StatesPopup from './StatesPopup.svelte'
 
   export let value: Ref<State>
+  export let space: Ref<Space>
   export let onChange: (value: any) => void
   export let kind: ButtonKind = 'no-border'
   export let size: ButtonSize = 'small'
@@ -41,26 +42,26 @@
   )
 </script>
 
-{#if state}
-  <Button
-    width="min-content"
-    {kind}
-    {size}
-    on:click={(ev) => {
-      if (!opened) {
-        opened = true
-        showPopup(StatesPopup, { space: state.space }, eventToHTMLElement(ev), (result) => {
-          if (result && result._id !== value) {
-            value = result._id
-            onChange(value)
-          }
-          opened = false
-        })
-      }
-    }}
-  >
-    <svelte:fragment slot="content">
+<Button
+  width="min-content"
+  {kind}
+  {size}
+  on:click={(ev) => {
+    if (!opened) {
+      opened = true
+      showPopup(StatesPopup, { space }, eventToHTMLElement(ev), (result) => {
+        if (result && result._id !== value) {
+          value = result._id
+          onChange(value)
+        }
+        opened = false
+      })
+    }
+  }}
+>
+  <svelte:fragment slot="content">
+    {#if state}
       <StatePresenter value={state} />
-    </svelte:fragment>
-  </Button>
-{/if}
+    {/if}
+  </svelte:fragment>
+</Button>

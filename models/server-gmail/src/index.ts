@@ -29,4 +29,8 @@ export function createModel (builder: Builder): void {
       collectDocs: serverGmail.function.FindMessages
     }
   )
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverGmail.trigger.OnMessageCreate
+  })
 }

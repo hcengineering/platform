@@ -45,6 +45,7 @@
     "Facebook": "Facebook",
     "SocialLinks": "Socail links",
     "ViewActivity": "View activity",
-    "PersonAlreadyExists": "Person already exists..."
+    "PersonAlreadyExists": "Person already exists...",
+    "TypeLabel": "Type"
   }
 }

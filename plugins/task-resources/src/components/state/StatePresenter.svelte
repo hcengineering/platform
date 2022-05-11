@@ -23,7 +23,7 @@
 {#if value}
   <div class="flex-row-center">
     <div class="state-container" style="background-color: {getPlatformColor(value.color)}" />
-    <span class="overflow-label">{value.title ?? ''}</span>
+    <span class="overflow-label">{value.title}</span>
   </div>
 {/if}
 

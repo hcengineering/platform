@@ -27,7 +27,7 @@
 
   let name: string
   const done = false
-  let dueTo: number
+  let dueTo: number | null = null
 
   $: _space = space
 

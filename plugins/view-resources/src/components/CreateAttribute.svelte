@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { AnyAttribute, Class, Data, generateId, IndexKind, PropertyType, Ref, Space, Type } from '@anticrm/core'
+  import core, { AnyAttribute, Class, Data, Doc, generateId, IndexKind, PropertyType, Ref, Type } from '@anticrm/core'
   import { getEmbeddedLabel } from '@anticrm/platform'
   import { Card, getClient } from '@anticrm/presentation'
   import { AnyComponent, Component, DropdownLabelsIntl, EditBox, Label } from '@anticrm/ui'
@@ -21,7 +21,7 @@
   import { createEventDispatcher } from 'svelte'
   import view from '../plugin'
 
-  export let _class: Ref<Class<Space>>
+  export let _class: Ref<Class<Doc>>
   let name: string
   let type: Type<PropertyType> | undefined
   let index: IndexKind | undefined

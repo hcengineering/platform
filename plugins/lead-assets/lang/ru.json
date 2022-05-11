@@ -22,6 +22,9 @@
     "LeadPlaceholder": "Простая сделка",
     "ManageFunnelStatuses": "Управление статусами воронки",
     "FunnelBrowser": "Браузер воронок",
-    "GotoLeadApplication": "Открыть приложение Сделки"
+    "GotoLeadApplication": "Открыть приложение Сделки",
+    "IssueDescriptionPlaceholder": "Добавить описание...",
+    "CreateCustomer": "Добавить Клиента",
+    "CreateCustomerLabel": "Новый Клиент"
   }
 }
