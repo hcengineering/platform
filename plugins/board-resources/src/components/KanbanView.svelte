@@ -32,7 +32,7 @@
   import AddCard from './add-card/AddCard.svelte'
   import CardInlineActions from './editor/CardInlineActions.svelte'
   import KanbanCard from './KanbanCard.svelte'
-  import KanbanPanelEmpty from './KanbanPanelEmpty.svelte'
+  import AddPanel from './AddPanel.svelte'
   import ListHeader from './ListHeader.svelte'
 
   export let _class: Ref<Class<Card>>
@@ -135,12 +135,8 @@
     <KanbanCard object={castObject(object)} />
   </svelte:fragment>
 
-  <svelte:fragment slot="additionalPanel">
-    <KanbanPanelEmpty
-      on:add={(e) => {
-        addItem(e.detail)
-      }}
-    />
+  <svelte:fragment slot="afterPanel">
+    <AddPanel on:add={(e) => { addItem(e.detail) }} />
   </svelte:fragment>
 
   <svelte:fragment slot="header" let:state>
