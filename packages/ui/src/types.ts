@@ -93,6 +93,9 @@ export interface ListItem {
   _id: string
   label: string
   image?: string
+  isSelectable?: boolean
+  fontWeight?: 'normal' | 'medium' | 'semi-bold'
+  paddingLeft?: number
 }
 
 export interface DropdownTextItem {

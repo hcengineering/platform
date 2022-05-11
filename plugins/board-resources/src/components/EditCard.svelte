@@ -19,7 +19,7 @@
   import { Panel } from '@anticrm/panel'
   import { getResource } from '@anticrm/platform'
   import { createQuery, getClient } from '@anticrm/presentation'
-  import type { State } from '@anticrm/task'
+  import type { State, TodoItem } from '@anticrm/task'
   import task from '@anticrm/task'
   import { StyledTextBox } from '@anticrm/text-editor'
   import { Button, EditBox, Icon, Label } from '@anticrm/ui'
@@ -30,6 +30,7 @@
   import { updateCard } from '../utils/CardUtils'
   import CardActions from './editor/CardActions.svelte'
   import CardAttachments from './editor/CardAttachments.svelte'
+  import CardChecklist from './editor/CardChecklist.svelte'
   import CardDetails from './editor/CardDetails.svelte'
 
   export let _id: Ref<Card>
@@ -38,18 +39,31 @@
   const client = getClient()
   const cardQuery = createQuery()
   const stateQuery = createQuery()
+  const checklistsQuery = createQuery()
 
   let object: Card | undefined
   let state: State | undefined
   let handleMove: (e: Event) => void
+  let checklists: TodoItem[] = []
 
-  $: cardQuery.query(_class, { _id }, async (result) => {
+  function change (field: string, value: any) {
+    if (object) {
+      updateCard(client, object, field, value)
+    }
+  }
+
+  $: cardQuery.query(_class, { _id }, (result) => {
     object = result[0]
   })
 
   $: object?.state &&
-    stateQuery.query(task.class.State, { _id: object.state }, async (result) => {
+    stateQuery.query(task.class.State, { _id: object.state }, (result) => {
       state = result[0]
+    })
+
+  $: object &&
+    checklistsQuery.query(task.class.TodoItem, { space: object.space, attachedTo: object._id }, (result) => {
+      checklists = result
     })
 
   getCardActions(client, { _id: board.cardAction.Move }).then(async (result) => {
@@ -62,12 +76,6 @@
       }
     }
   })
-
-  function change (field: string, value: any) {
-    if (object) {
-      updateCard(client, object, field, value)
-    }
-  }
 
   onMount(() => {
     dispatch('open', { ignoreKeys: ['comments', 'number', 'title'] })
@@ -130,8 +138,9 @@
           </div>
         </div>
         <CardAttachments value={object} />
-        <!-- TODO checklists -->
-        <!-- <CardActivity bind:value={object} /> -->
+        {#each checklists as checklist}
+          <CardChecklist value={checklist} />
+        {/each}
       </div>
     </div>
 

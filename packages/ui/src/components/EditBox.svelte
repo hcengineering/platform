@@ -23,8 +23,8 @@
 
   export let label: IntlString | undefined = undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
-  export let maxWidth: string | undefined
-  export let value: string | number | undefined
+  export let maxWidth: string | undefined = undefined
+  export let value: string | number | undefined = undefined
   export let placeholder: IntlString = plugin.string.EditBoxPlaceholder
   export let placeholderParam: any | undefined = undefined
   export let format: 'text' | 'password' | 'number' = 'text'

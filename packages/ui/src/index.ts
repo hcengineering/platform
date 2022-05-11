@@ -25,6 +25,7 @@ export type {
   AnySvelteComponent,
   Action,
   LabelAndProps,
+  ListItem,
   TooltipAlignment,
   AnySvelteComponentWithProps,
   Location,
