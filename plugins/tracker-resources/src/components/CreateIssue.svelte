@@ -73,6 +73,7 @@
       sort: { rank: SortingOrder.Ascending }
     }
   )
+  $: canSave = getTitle(object.title ?? '').length > 0
 
   async function updateIssueStatusId (teamId: Ref<Team>, issueStatusId?: Ref<IssueStatus>) {
     if (issueStatusId !== undefined) {
@@ -92,26 +93,16 @@
     }
   }
 
+  function getTitle (value: string) {
+    return value.trim()
+  }
+
   export function canClose (): boolean {
-    // if (object.title !== undefined) {
-    //   showPopup(
-    //     MessageBox,
-    //     {
-    //       label: 'Close create dialog',
-    //       message: 'Do you sure to cloase create dialog'
-    //     },
-    //     undefined,
-    //     (result?: boolean) => {
-    //       if (result === true) {
-    //       }
-    //     }
-    //   )
-    // }
-    return object.title === ''
+    return !canSave
   }
 
   async function createIssue () {
-    if (!object.status) {
+    if (!canSave) {
       return
     }
 
@@ -131,7 +122,7 @@
     )
 
     const value: Data<Issue> = {
-      title: object.title,
+      title: getTitle(object.title),
       description: object.description,
       assignee: currentAssignee,
       number: (incResult as any).object.sequence,
@@ -166,11 +157,10 @@
   }
 </script>
 
-<!-- canSave: object.title.length > 0 && _space != null -->
 <Card
   label={tracker.string.NewIssue}
   okAction={createIssue}
-  canSave={true}
+  {canSave}
   okLabel={tracker.string.SaveIssue}
   spaceClass={tracker.class.Team}
   spaceLabel={tracker.string.Team}

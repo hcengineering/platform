@@ -27,7 +27,7 @@ import type {
 } from '@anticrm/contact'
 import type { Class, Domain, Ref, Timestamp } from '@anticrm/core'
 import { DOMAIN_MODEL, IndexKind } from '@anticrm/core'
-import { Builder, Collection, Index, Model, Prop, TypeRef, TypeString, UX } from '@anticrm/model'
+import { Builder, Collection, Index, Model, Prop, TypeRef, TypeString, TypeTimestamp, UX } from '@anticrm/model'
 import attachment from '@anticrm/model-attachment'
 import chunter from '@anticrm/model-chunter'
 import core, { TAccount, TAttachedDoc, TDoc, TSpace } from '@anticrm/model-core'
@@ -71,7 +71,7 @@ export class TContact extends TDoc implements Contact {
 }
 
 @Model(contact.class.Channel, core.class.AttachedDoc, DOMAIN_CHANNEL)
-@UX(contact.string.Channel, contact.icon.Person, undefined, 'modifiedOn')
+@UX(contact.string.Channel, contact.icon.Person, undefined, 'lastMessage')
 export class TChannel extends TAttachedDoc implements Channel {
   @Prop(TypeRef(contact.class.ChannelProvider), contact.string.ChannelProvider)
   provider!: Ref<ChannelProvider>
@@ -81,6 +81,9 @@ export class TChannel extends TAttachedDoc implements Channel {
   value!: string
 
   items?: number
+
+  @Prop(TypeTimestamp(), core.string.Modified)
+  lastMessage?: Timestamp
 }
 
 @Model(contact.class.Person, contact.class.Contact)
@@ -159,10 +162,11 @@ export function createModel (builder: Builder): void {
     descriptor: view.viewlet.Table,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
-      lookup: { _id: { channels: contact.class.Channel } }
+      lookup: { _id: { channels: contact.class.Channel }, _class: core.class.Class }
     },
     config: [
       '',
+      { key: '$lookup._class.label', label: contact.string.TypeLabel },
       'city',
       {
         presenter: attachment.component.AttachmentsPresenter,
@@ -189,6 +193,14 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(contact.class.Organization, core.class.Class, view.mixin.AttributeEditor, {
     editor: contact.component.OrganizationEditor
+  })
+
+  builder.mixin(contact.class.Person, core.class.Class, view.mixin.AttributeEditor, {
+    editor: contact.component.PersonEditor
+  })
+
+  builder.mixin(contact.class.Employee, core.class.Class, view.mixin.AttributeEditor, {
+    editor: contact.component.PersonEditor
   })
 
   builder.mixin(contact.class.Channel, core.class.Class, view.mixin.AttributePresenter, {

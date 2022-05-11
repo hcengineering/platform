@@ -38,13 +38,13 @@
   const dispatch = createEventDispatcher()
 </script>
 
-<form class="antiCard dialog" on:submit|preventDefault={() => {}}>
+<form id={label} class="antiCard dialog" on:submit|preventDefault={() => {}}>
   <div class="antiCard-header">
     <div class="antiCard-header__title-wrap">
-      {#if spaceClass && spaceLabel && spacePlaceholder}
+      {#if (spaceClass && spaceLabel && spacePlaceholder) || $$slots.space}
         {#if $$slots.space}
           <slot name="space" />
-        {:else}
+        {:else if spaceClass && spaceLabel && spacePlaceholder}
           <SpaceSelect _class={spaceClass} {spaceQuery} label={spaceLabel} bind:value={space} />
         {/if}
         <span class="antiCard-header__divider">›</span>
@@ -78,7 +78,9 @@
         kind={'primary'}
         on:click={() => {
           okAction()
-          dispatch('close')
+          if (!createMore) {
+            dispatch('close')
+          }
         }}
       />
     </div>

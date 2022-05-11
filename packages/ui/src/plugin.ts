@@ -28,6 +28,7 @@ export default plugin(uiId, {
     EditBoxPlaceholder: '' as IntlString,
     Ok: '' as IntlString,
     Cancel: '' as IntlString,
+    Save: '' as IntlString,
     Minutes: '' as IntlString,
     Hours: '' as IntlString,
     Days: '' as IntlString,
@@ -57,7 +58,8 @@ export default plugin(uiId, {
     MinutesAfter: '' as IntlString,
     HoursAfter: '' as IntlString,
     DaysAfter: '' as IntlString,
-    NoActionsDefined: '' as IntlString
+    NoActionsDefined: '' as IntlString,
+    Incoming: '' as IntlString
   },
   metadata: {
     DefaultApplication: '' as Metadata<AnyComponent>

@@ -3,6 +3,7 @@
     "EditBoxPlaceholder": "Type text...",
     "Ok": "Ok",
     "Cancel": "Cancel",
+    "Save": "Save",
     "Minutes": "{minutes, plural, =0 {less than a minute ago} =1 {a minute ago} other {# minutes ago}}",
     "Hours": "{hours, plural, =0 {less than an hour ago} =1 {an hour ago} other {# hours ago}}",
     "Days": "{days, plural, =0 {today} =1 {yesterday} other {# days ago}}",
@@ -32,6 +33,7 @@
     "MinutesAfter": "{minutes, plural, =1 {in a minute} other {in # minutes}}",
     "HoursAfter": "{hours, plural, =1 {in an hour} other {in # hours}}",
     "DaysAfter": "{days, plural, =1 {in a day} other {in # days}}",
-    "NoActionsDefined": "No actions applicable"
+    "NoActionsDefined": "No actions applicable",
+    "Incoming": "Incoming"
   }
 }

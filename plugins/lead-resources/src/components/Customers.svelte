@@ -17,8 +17,8 @@
   import { Doc, DocumentQuery } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
   import { Icon, Label, Scroller, SearchEdit } from '@anticrm/ui'
-  import { Table } from '@anticrm/view-resources'
   import view, { Viewlet } from '@anticrm/view'
+  import { Table } from '@anticrm/view-resources'
   import lead from '../plugin'
 
   let search = ''

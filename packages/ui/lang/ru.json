@@ -3,6 +3,7 @@
     "EditBoxPlaceholder": "Введите текст здесь",
     "Ok": "Ок",
     "Cancel": "Отменить",
+    "Save": "Сохранить",
     "Minutes": "{minutes, plural, =0 {меньше минуты назад} =1 {минуту назад} other {# минут назад}}",
     "Hours": "{hours, plural, =0 {меньше часа назад} =1 {час назад} other {# часов назад}}",
     "Days": "{days, plural, =0 {сегода} =1 {вчера} other {# дней назад}}",
@@ -32,6 +33,7 @@
     "MinutesAfter": "{minutes, plural, =1 {через минуту} other {через # минут}}",
     "HoursAfter": "{hours, plural, =1 {через час} other {через # часа}}",
     "DaysAfter": "{days, plural, =1 {через день} other {через # дней}}",
-    "NoActionsDefined": "Нет доступных действий"
+    "NoActionsDefined": "Нет доступных действий",
+    "Incoming": "Входящие"
   }
 }

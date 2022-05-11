@@ -20,7 +20,7 @@
   export let value: IssuePriority | undefined
 </script>
 
-{#if value}
+{#if value !== undefined}
   <span class="overflow-label">
     <Label label={issuePriorities[value].label} />
   </span>

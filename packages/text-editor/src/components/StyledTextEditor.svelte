@@ -60,14 +60,16 @@
       </ScrollBox>
     </div>
   </div>
-  <div class="buttons" class:shown={showButtons}>
-    <div class="tool"><TextStyle size={'large'} /></div>
-    <div class="tool"><Emoji size={'large'} /></div>
-    <div class="tool"><GIF size={'large'} /></div>
-    <div class="flex-grow">
-      <slot />
+  {#if showButtons}
+    <div class="buttons">
+      <div class="tool"><TextStyle size={'large'} /></div>
+      <div class="tool"><Emoji size={'large'} /></div>
+      <div class="tool"><GIF size={'large'} /></div>
+      <div class="flex-grow">
+        <slot />
+      </div>
     </div>
-  </div>
+  {/if}
 </div>
 
 <style lang="scss">
@@ -76,14 +78,6 @@
     display: flex;
     flex-direction: column;
     min-height: 4.5rem;
-
-    .buttons {
-      visibility: hidden;
-    }
-
-    .shown {
-      visibility: visible;
-    }
 
     .textInput {
       flex-grow: 1;

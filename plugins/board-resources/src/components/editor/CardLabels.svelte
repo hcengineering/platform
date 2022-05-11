@@ -70,7 +70,7 @@
 
 {#if labels && labels.length > 0}
   <div
-    class="flex-row-center flex-gap-1 mb-1"
+    class="flex-row-center flex-wrap flex-gap-1 mb-1"
     class:labels-inline-container={isInline}
     on:click={toggleCompact}
     on:mouseover={hoverIn}

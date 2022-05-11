@@ -36,7 +36,8 @@ export default mergeIds(contactId, contact, {
     Contacts: '' as AnyComponent,
     EmployeeAccountPresenter: '' as AnyComponent,
     OrganizationEditor: '' as AnyComponent,
-    EmployeePresenter: '' as AnyComponent
+    EmployeePresenter: '' as AnyComponent,
+    PersonEditor: '' as AnyComponent
   },
   string: {
     Persons: '' as IntlString,
@@ -48,7 +49,6 @@ export default mergeIds(contactId, contact, {
     Location: '' as IntlString,
     Channel: '' as IntlString,
     ChannelProvider: '' as IntlString,
-    Person: '' as IntlString,
     Employee: '' as IntlString,
     Value: '' as IntlString,
     Phone: '' as IntlString,
@@ -59,7 +59,8 @@ export default mergeIds(contactId, contact, {
     FacebookPlaceholder: '' as IntlString,
     Twitter: '' as IntlString,
     GitHub: '' as IntlString,
-    Facebook: '' as IntlString
+    Facebook: '' as IntlString,
+    TypeLabel: '' as IntlString
   },
   completion: {
     PersonQuery: '' as Resource<ObjectSearchFactory>,

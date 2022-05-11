@@ -67,7 +67,8 @@ export interface SpecialNavModel {
   icon?: Asset
   component: AnyComponent
   componentProps?: Record<string, string>
-  position?: 'top' | 'bottom' // undefined == 'top
+  // If not top and bottom, position will be sorted alphabetically.
+  position?: 'top' | 'bottom' | string // undefined == 'top
   visibleIf?: Resource<(spaces: Space[]) => boolean>
   // If defined, will be used to find spaces for visibleIf
   spaceClass?: Ref<Class<Space>>

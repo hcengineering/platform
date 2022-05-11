@@ -22,7 +22,6 @@
 
   import plugin from '../../plugin'
   import { cardActionSorter, getCardActions } from '../../utils/CardActionUtils'
-  import { hasCover } from '../../utils/CardUtils'
 
   export let value: Card
   const client = getClient()
@@ -44,7 +43,7 @@
       if (supported) {
         if (action.type === board.cardActionType.Suggested) {
           suggestedActions.push(action)
-        } else if (action.type === board.cardActionType.Cover && !hasCover(value)) {
+        } else if (action.type === board.cardActionType.Cover) {
           addToCardActions.push(action)
         } else if (action.type === board.cardActionType.AddToCard) {
           addToCardActions.push(action)

@@ -49,7 +49,7 @@
 
   let issuesList: IssuesList
 
-  $: listProvider.update(Object.values(groupedIssues).flat(1))
+  $: if (issuesList !== undefined) listProvider.update(Object.values(groupedIssues).flat(1))
 
   onMount(() => {
     ;(document.activeElement as HTMLElement)?.blur()
@@ -78,7 +78,7 @@
   selectedObjectIds={$selectionStore ?? []}
   selectedRowIndex={listProvider.current($focusStore)}
   on:row-focus={(event) => {
-    listProvider.updateFocus(event.detail)
+    listProvider.updateFocus(event.detail ?? undefined)
   }}
   on:check={(event) => {
     listProvider.updateSelection(event.detail.docs, event.detail.value)

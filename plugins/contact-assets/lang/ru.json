@@ -52,6 +52,7 @@
     "SaveStatus": "Сохранить",
     "Cancel": "Отмена",
     "StatusDueDate": "Дата конца",
-    "NoExpire": "Бессрочно"
+    "NoExpire": "Бессрочно",
+    "TypeLabel": "Тип"
   }
 }

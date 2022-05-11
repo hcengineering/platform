@@ -124,7 +124,7 @@
 
     handleRowFocused(combinedGroupedIssues[position])
 
-    if (objectRef !== undefined) {
+    if (objectRef) {
       objectRef.scrollIntoView({ behavior: 'auto', block: 'nearest' })
     }
   }
@@ -359,7 +359,7 @@
   .gridElement {
     display: flex;
     align-items: center;
-    justify-content: start;
+    justify-content: flex-start;
     margin-left: 0.5rem;
 
     &:first-child {

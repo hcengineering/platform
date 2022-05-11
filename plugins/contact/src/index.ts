@@ -57,6 +57,7 @@ export interface Channel extends AttachedDoc {
   provider: Ref<ChannelProvider>
   value: string
   items?: number
+  lastMessage?: Timestamp
 }
 
 /**
@@ -195,7 +196,8 @@ const contactPlugin = plugin(contactId, {
     Contacts: '' as Ref<Doc>
   },
   string: {
-    PersonAlreadyExists: '' as IntlString
+    PersonAlreadyExists: '' as IntlString,
+    Person: '' as IntlString
   }
 })
 

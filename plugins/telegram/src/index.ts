@@ -18,6 +18,7 @@ import type { Plugin } from '@anticrm/platform'
 import type { Doc, Ref, Class, Space, AttachedDoc, Timestamp } from '@anticrm/core'
 import type { AnyComponent } from '@anticrm/ui'
 import type { IntegrationType, Handler } from '@anticrm/setting'
+import { Channel } from '@anticrm/contact'
 
 /**
  * @public
@@ -31,6 +32,9 @@ export interface BaseTelegramMessage extends Doc {
  * @public
  */
 export interface TelegramMessage extends BaseTelegramMessage, AttachedDoc {
+  attachedTo: Ref<Channel>
+  attachedToClass: Ref<Class<Channel>>
+
   incoming: boolean
 
   sendOn: Timestamp

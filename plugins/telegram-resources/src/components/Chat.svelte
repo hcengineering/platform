@@ -16,7 +16,6 @@
 <script lang="ts">
   import attachment from '@anticrm/attachment'
   import { AttachmentRefInput } from '@anticrm/attachment-resources'
-  import { Panel } from '@anticrm/panel'
   import { createEventDispatcher } from 'svelte'
   import contact, { Channel, Contact, EmployeeAccount, formatName } from '@anticrm/contact'
   import { generateId, getCurrentAccount, Ref, SortingOrder, Space, Class } from '@anticrm/core'
@@ -24,7 +23,7 @@
   import { createQuery, getClient } from '@anticrm/presentation'
   import setting, { Integration } from '@anticrm/setting'
   import type { NewTelegramMessage, SharedTelegramMessage, TelegramMessage } from '@anticrm/telegram'
-  import { Button, eventToHTMLElement, IconShare, Tooltip, Scroller, showPopup } from '@anticrm/ui'
+  import { Button, eventToHTMLElement, IconShare, Tooltip, Scroller, showPopup, Panel, Icon, Label } from '@anticrm/ui'
   import telegram from '../plugin'
   import Connect from './Connect.svelte'
   import TelegramIcon from './icons/Telegram.svelte'
@@ -187,20 +186,26 @@
 
 {#if object !== undefined}
   <Panel
-    icon={TelegramIcon}
-    title={'Telegram'}
-    withoutActivity
-    {object}
-    isHeader={false}
+    isHeader={true}
     isAside={false}
     on:close={() => {
       dispatch('close')
     }}
   >
-    <svelte:fragment slot="header">
-      You and {formatName(object.name)}
+    <svelte:fragment slot="title">
+      <div class="antiTitle icon-wrapper">
+        <div class="wrapped-icon"><Icon icon={TelegramIcon} size={'medium'} /></div>
+        <div class="title-wrapper">
+          <span class="wrapped-title">Telegram</span>
+          <span class="wrapped-subtitle">
+            <Label label={telegram.string.YouAnd} />
+            <b>{formatName(object.name)}</b>
+          </span>
+        </div>
+      </div>
+      <!-- You and {formatName(object.name)} -->
     </svelte:fragment>
-    <svelte:fragment slot="tools">
+    <svelte:fragment slot="utils">
       {#if integration === undefined}
         <Button
           label={telegram.string.Connect}
@@ -237,36 +242,36 @@
       {/if}
     </Scroller>
 
-    <div class="popupPanel-body__main-header ref-input" class:selectable>
-      {#if selectable}
-        <div class="flex-between">
-          <span>{selected.size} messages selected</span>
-          <div class="flex">
-            <div>
-              <Button label={telegram.string.Cancel} size={'medium'} on:click={clear} />
-            </div>
-            <div class="ml-3">
-              <Button
-                label={telegram.string.PublishSelected}
-                size={'medium'}
-                kind={'primary'}
-                disabled={!selected.size}
-                on:click={share}
-              />
+    {#if integration !== undefined && !integration.disabled}
+      <div class="popupPanel-body__main-header ref-input" class:selectable>
+        {#if selectable}
+          <div class="flex-between">
+            <span>{selected.size} messages selected</span>
+            <div class="flex">
+              <div>
+                <Button label={telegram.string.Cancel} size={'medium'} on:click={clear} />
+              </div>
+              <div class="ml-3">
+                <Button
+                  label={telegram.string.PublishSelected}
+                  size={'medium'}
+                  kind={'primary'}
+                  disabled={!selected.size}
+                  on:click={share}
+                />
+              </div>
             </div>
           </div>
-        </div>
-      {:else if integration === undefined || integration.disabled}
-        <div class="flex-center h-18">No integration</div>
-      {:else}
-        <AttachmentRefInput
-          space={telegram.space.Telegram}
-          _class={telegram.class.NewMessage}
-          {objectId}
-          on:message={onMessage}
-        />
-      {/if}
-    </div>
+        {:else}
+          <AttachmentRefInput
+            space={telegram.space.Telegram}
+            _class={telegram.class.NewMessage}
+            {objectId}
+            on:message={onMessage}
+          />
+        {/if}
+      </div>
+    {/if}
   </Panel>
 {/if}
 

@@ -33,6 +33,7 @@
   import { recognizeDocument } from '@anticrm/rekoni'
   import tags, { findTagCategory, TagElement, TagReference } from '@anticrm/tags'
   import {
+    Button,
     Component,
     EditBox,
     getColorNumberByText,
@@ -50,12 +51,13 @@
 
   let firstName = ''
   let lastName = ''
+  let createMore: boolean = false
 
   export function canClose (): boolean {
     return firstName === '' && lastName === '' && resume.uuid === undefined
   }
 
-  const object: Candidate = {} as Candidate
+  let object: Candidate = {} as Candidate
 
   const resume = {} as {
     name: string
@@ -67,7 +69,7 @@
 
   const dispatch = createEventDispatcher()
   const client = getClient()
-  const candidateId = generateId()
+  let candidateId = generateId()
 
   let inputFile: HTMLInputElement
   let loading = false
@@ -185,7 +187,15 @@
       })
     }
 
-    dispatch('close')
+    if (createMore) {
+      // Prepare for next
+      object = {} as Candidate
+      candidateId = generateId()
+      avatar = undefined
+      firstName = ''
+      lastName = ''
+      channels = []
+    }
   }
 
   function isUndef (value?: string): boolean {
@@ -386,7 +396,18 @@
   on:close={() => {
     dispatch('close')
   }}
+  bind:createMore
 >
+  <svelte:fragment slot="space">
+    <Button
+      icon={contact.icon.Person}
+      label={contact.string.Person}
+      size={'small'}
+      kind={'no-border'}
+      disabled
+      on:click={() => {}}
+    />
+  </svelte:fragment>
   <div class="flex-between">
     <div class="flex-col">
       <EditBox

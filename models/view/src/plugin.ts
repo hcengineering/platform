@@ -73,7 +73,12 @@ export default mergeIds(viewId, view, {
     TableView: '' as AnyComponent,
     RolePresenter: '' as AnyComponent,
     YoutubePresenter: '' as AnyComponent,
-    GithubPresenter: '' as AnyComponent
+    GithubPresenter: '' as AnyComponent,
+    StringTypeEditor: '' as AnyComponent,
+    BooleanTypeEditor: '' as AnyComponent,
+    NumberTypeEditor: '' as AnyComponent,
+    DateTypeEditor: '' as AnyComponent,
+    RefEditor: '' as AnyComponent
   },
   string: {
     Table: '' as IntlString,

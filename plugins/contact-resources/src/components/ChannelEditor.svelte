@@ -16,10 +16,12 @@
   import { createEventDispatcher, onMount } from 'svelte'
   import type { IntlString } from '@anticrm/platform'
   import { translate } from '@anticrm/platform'
-  import { Button, Icon, IconClose, IconBlueCheck, IconArrowRight } from '@anticrm/ui'
+  import { Button, IconClose, closeTooltip, IconBlueCheck } from '@anticrm/ui'
+  import IconCopy from './icons/Copy.svelte'
 
   export let value: string = ''
   export let placeholder: IntlString
+  export let editable: boolean = false
 
   const dispatch = createEventDispatcher()
   let input: HTMLInputElement
@@ -31,38 +33,55 @@
   })
 </script>
 
-<div class="selectPopup relative">
-  <div class="header no-border">
-    <div class="flex-between flex-grow pr-2">
-      <div class="flex-grow">
-        <input
-          bind:this={input}
-          type="text"
-          bind:value
-          placeholder={phTraslate}
-          style="width: 100%;"
-          on:keypress={(ev) => {
-            if (ev.key === 'Enter') dispatch('close', value)
-          }}
-          on:keydown={(ev) => {
-            if (ev.key === 'ArrowLeft' && ev.altKey) dispatch('update', 'left')
-            if (ev.key === 'ArrowRight' && ev.altKey) dispatch('update', 'right')
-          }}
-          on:change
-        />
-      </div>
-      <div class="buttons-group small-gap">
-        <div
-          class="clear-btn show"
-          on:click={() => {
-            dispatch('close', value)
-          }}
-        >
-          <div class="icon"><Icon icon={IconClose} size={'inline'} /></div>
-        </div>
-        <Button kind={'transparent'} size={'small'} icon={IconArrowRight} on:click={() => dispatch('update', 'open')} />
-        <Button kind={'transparent'} size={'small'} icon={IconBlueCheck} on:click={() => dispatch('close', value)} />
-      </div>
-    </div>
-  </div>
+<div class="buttons-group xsmall-gap">
+  {#if editable}
+    <input
+      bind:this={input}
+      class="search"
+      type="text"
+      bind:value
+      placeholder={phTraslate}
+      style="width: 100%;"
+      on:keypress={(ev) => {
+        if (ev.key === 'Enter') {
+          dispatch('update', value)
+          closeTooltip()
+        }
+      }}
+      on:change
+    />
+    <Button
+      kind={'transparent'}
+      size={'small'}
+      icon={IconClose}
+      disabled={value === ''}
+      on:click={() => {
+        if (input) {
+          value = ''
+          input.focus()
+        }
+      }}
+    />
+  {:else}
+    <span>{value}</span>
+  {/if}
+  <Button
+    kind={'transparent'}
+    size={'small'}
+    icon={IconCopy}
+    on:click={() => {
+      navigator.clipboard.writeText(value)
+    }}
+  />
+  {#if editable}
+    <Button
+      kind={'transparent'}
+      size={'small'}
+      icon={IconBlueCheck}
+      on:click={() => {
+        dispatch('update', value)
+        closeTooltip()
+      }}
+    />
+  {/if}
 </div>

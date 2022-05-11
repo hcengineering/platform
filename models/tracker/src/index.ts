@@ -168,7 +168,7 @@ export class TIssue extends TDoc implements Issue {
 
   declare space: Ref<Team>
 
-  @Prop(TypeDate(true), tracker.string.Number)
+  @Prop(TypeDate(true), tracker.string.DueDate)
   dueDate!: Timestamp | null
 
   @Prop(TypeString(), tracker.string.Rank)

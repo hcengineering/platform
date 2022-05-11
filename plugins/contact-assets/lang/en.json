@@ -52,6 +52,7 @@
     "SaveStatus": "Save",
     "Cancel": "Cancel",
     "StatusDueDate": "Due date",
-    "NoExpire": "No expire"
+    "NoExpire": "No expire",
+    "TypeLabel": "Type"
   }
 }

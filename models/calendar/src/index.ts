@@ -22,6 +22,7 @@ import {
   ArrOf,
   Builder,
   Collection,
+  Hidden,
   Index,
   Mixin,
   Model,
@@ -85,10 +86,12 @@ export class TEvent extends TAttachedDoc implements Event {
 @UX(calendar.string.Reminder, calendar.icon.Calendar)
 export class TReminder extends TEvent implements Reminder {
   @Prop(TypeDate(true), calendar.string.Shift)
+  @Hidden()
   shift!: Timestamp
 
   @Prop(TypeString(), calendar.string.State)
   @Index(IndexKind.Indexed)
+  @Hidden()
   state!: 'active' | 'done'
 }
 

@@ -24,7 +24,7 @@ import {
   IssuesDateModificationPeriod,
   ProjectStatus
 } from '@anticrm/tracker'
-import { AnyComponent, getMillisecondsInMonth, MILLISECONDS_IN_WEEK } from '@anticrm/ui'
+import { AnyComponent, AnySvelteComponent, getMillisecondsInMonth, MILLISECONDS_IN_WEEK } from '@anticrm/ui'
 import tracker from './plugin'
 
 export interface NavigationItem {
@@ -133,4 +133,61 @@ export const groupBy = (data: any, key: any): { [key: string]: any[] } => {
 
     return storage
   }, {})
+}
+
+export interface FilterAction {
+  icon?: Asset | AnySvelteComponent
+  label?: IntlString
+  onSelect: (event: MouseEvent | KeyboardEvent) => void
+}
+
+export interface FilterSectionElement extends Omit<FilterAction, 'label'> {
+  title?: string
+  count?: number
+  isSelected?: boolean
+}
+
+export const getGroupedIssues = (
+  key: IssuesGroupByKeys | undefined,
+  elements: Issue[],
+  orderedCategories?: any[]
+): { [p: string]: Issue[] } => {
+  if (key === undefined) {
+    return { [undefined as any]: elements }
+  }
+
+  const unorderedIssues = groupBy(elements, key)
+
+  if (orderedCategories === undefined || orderedCategories.length === 0) {
+    return unorderedIssues
+  }
+
+  return Object.keys(unorderedIssues)
+    .sort((o1, o2) => {
+      const key1 = o1 === 'null' ? null : o1
+      const key2 = o2 === 'null' ? null : o2
+
+      const i1 = orderedCategories.findIndex((x) => x === key1)
+      const i2 = orderedCategories.findIndex((x) => x === key2)
+
+      return i1 - i2
+    })
+    .reduce((obj: { [p: string]: any[] }, objKey) => {
+      obj[objKey] = unorderedIssues[objKey]
+      return obj
+    }, {})
+}
+
+export const getIssueFilterAssetsByType = (type: string): { icon: Asset, label: IntlString } | undefined => {
+  switch (type) {
+    case 'status': {
+      return {
+        icon: tracker.icon.CategoryBacklog,
+        label: tracker.string.Status
+      }
+    }
+    default: {
+      return undefined
+    }
+  }
 }

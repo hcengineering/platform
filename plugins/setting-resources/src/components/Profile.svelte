@@ -108,7 +108,7 @@
           </div>
         </div>
         <div class="separator" />
-        <ChannelsEditor attachedTo={employee._id} attachedClass={employee._class} />
+        <ChannelsEditor attachedTo={employee._id} attachedClass={employee._class} allowOpen={false} />
       </div>
     </div>
   {/if}

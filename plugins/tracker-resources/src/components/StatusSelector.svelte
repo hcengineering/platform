@@ -16,15 +16,20 @@
   import { Ref, WithLookup } from '@anticrm/core'
 
   import { IssueStatus } from '@anticrm/tracker'
-  import { Button, Icon, showPopup, SelectPopup, eventToHTMLElement } from '@anticrm/ui'
+  import { Button, showPopup, SelectPopup, eventToHTMLElement } from '@anticrm/ui'
+  import type { ButtonKind, ButtonSize } from '@anticrm/ui'
   import tracker from '../plugin'
 
   export let selectedStatusId: Ref<IssueStatus>
   export let statuses: WithLookup<IssueStatus>[]
-  export let kind: 'button' | 'icon' = 'button'
   export let shouldShowLabel: boolean = true
   export let onStatusChange: ((newStatus: Ref<IssueStatus> | undefined) => void) | undefined = undefined
   export let isEditable: boolean = true
+
+  export let kind: ButtonKind = 'no-border'
+  export let size: ButtonSize = 'small'
+  export let justify: 'left' | 'center' = 'center'
+  export let width: string | undefined = 'min-content'
 
   $: selectedStatus = statuses.find((status) => status._id === selectedStatusId) ?? statuses[0]
   $: selectedStatusIcon = selectedStatus?.$lookup?.category?.icon
@@ -44,42 +49,18 @@
   }
 </script>
 
-{#if kind === 'button'}
-  <Button
-    icon={selectedStatusIcon}
-    width="min-content"
-    size="small"
-    kind="no-border"
-    on:click={handleStatusEditorOpened}
-  >
-    <svelte:fragment slot="content">
-      {#if selectedStatusLabel}
-        <span class="nowrap">{selectedStatusLabel}</span>
-      {/if}
-    </svelte:fragment>
-  </Button>
-{:else if kind === 'icon'}
-  <div class={isEditable ? 'flex-presenter' : 'presenter'} on:click={handleStatusEditorOpened}>
-    {#if selectedStatusIcon}
-      <div class="statusIcon">
-        <Icon icon={selectedStatusIcon} size={'small'} />
-      </div>
-    {/if}
+<Button
+  icon={selectedStatusIcon}
+  {justify}
+  {width}
+  {size}
+  {kind}
+  disabled={!isEditable}
+  on:click={handleStatusEditorOpened}
+>
+  <svelte:fragment slot="content">
     {#if selectedStatusLabel}
-      <div class="label nowrap ml-2">{selectedStatusLabel}</div>
+      <span class="nowrap">{selectedStatusLabel}</span>
     {/if}
-  </div>
-{/if}
-
-<style lang="scss">
-  .presenter {
-    display: flex;
-    align-items: center;
-    flex-wrap: nowrap;
-  }
-
-  .statusIcon {
-    width: 1rem;
-    height: 1rem;
-  }
-</style>
+  </svelte:fragment>
+</Button>

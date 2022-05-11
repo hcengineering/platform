@@ -39,7 +39,8 @@ import presentation from '@anticrm/model-presentation'
 import view, { actionTemplates as viewTemplates, createAction, template } from '@anticrm/model-view'
 import { IntlString } from '@anticrm/platform'
 import { ViewAction } from '@anticrm/view'
-import type {
+import {
+  DOMAIN_STATE,
   DoneState,
   DoneStateTemplate,
   Issue,
@@ -65,7 +66,6 @@ export { createKanbanTemplate, createSequence, taskOperation } from './migration
 export { default } from './plugin'
 
 export const DOMAIN_TASK = 'task' as Domain
-export const DOMAIN_STATE = 'state' as Domain
 export const DOMAIN_KANBAN = 'kanban' as Domain
 @Model(task.class.State, core.class.Doc, DOMAIN_STATE, [task.interface.DocWithRank])
 @UX(task.string.TaskState, task.icon.TaskState, undefined, 'rank')
@@ -454,7 +454,7 @@ export function createModel (builder: Builder): void {
     task.viewlet.Kanban
   )
 
-  builder.mixin(task.class.TodoItem, core.class.Class, view.mixin.AttributeEditor, {
+  builder.mixin(task.class.TodoItem, core.class.Class, view.mixin.CollectionEditor, {
     editor: task.component.Todos
   })
 

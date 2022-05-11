@@ -132,14 +132,14 @@
     padding: 0.5rem 0.75rem;
     max-width: 66%;
     width: fit-content;
-    background-color: var(--theme-incoming-msg);
+    background-color: var(--incoming-msg);
     border-radius: 0.75rem 0.75rem 0.75rem 0.25rem;
     overflow-wrap: anywhere;
     user-select: text;
     cursor: default;
 
     &.outcoming {
-      background-color: var(--theme-outcoming-msg);
+      background-color: var(--outcoming-msg);
       border-radius: 0.75rem 0.75rem 0.25rem 0.75rem;
     }
     .time {
