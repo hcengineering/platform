@@ -18,9 +18,9 @@
 </script>
 
 <TextAreaEditor
-    bind:value
-    placeholder={board.string.CardTitlePlaceholder}
-    submitLabel={board.string.AddCard}
-    on:submit={addCard}
-    on:cancel={onClose}
-  />
+  bind:value
+  placeholder={board.string.CardTitlePlaceholder}
+  submitLabel={board.string.AddCard}
+  on:submit={addCard}
+  on:cancel={onClose}
+/>
