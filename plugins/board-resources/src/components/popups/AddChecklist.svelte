@@ -5,7 +5,7 @@
   import { WithLookup } from '@anticrm/core'
   import task, { TodoItem } from '@anticrm/task'
   import { translate } from '@anticrm/platform'
-  import presentation, { getClient } from '@anticrm/presentation'
+  import presentation, { createQuery, getClient } from '@anticrm/presentation'
   import { Label, Button, Dropdown, EditBox, IconClose } from '@anticrm/ui'
   import type { ListItem } from '@anticrm/ui'
 
@@ -23,6 +23,7 @@
   let templateListItems: ListItem[] = [noneListItem]
   let templatesMap: Map<string, TodoItem> = new Map()
   const client = getClient()
+  const templatesQuery = createQuery()
   const dispatch = createEventDispatcher()
 
   translate(board.string.ChecklistDropdownNone, {}).then((result) => {
@@ -68,9 +69,10 @@
     dispatch('close')
   }
 
-  client
-    .findAll(board.class.Card, { todoItems: { $gt: 0 } }, { lookup: { _id: { todoItems: task.class.TodoItem } } })
-    .then((result: WithLookup<Card>[]) => {
+  $: templatesQuery.query(
+    board.class.Card,
+    { todoItems: { $gt: 0 } },
+    (result: WithLookup<Card>[]) => {
       templateListItems = [noneListItem]
       templatesMap = new Map()
 
@@ -96,7 +98,9 @@
           templatesMap.set(todoItem._id, todoItem)
         }
       }
-    })
+    },
+    { lookup: { _id: { todoItems: task.class.TodoItem } } }
+  )
 </script>
 
 <div class="antiPopup w-85">
