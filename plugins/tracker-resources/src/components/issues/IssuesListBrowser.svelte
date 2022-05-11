@@ -49,7 +49,7 @@
 
   let issuesList: IssuesList
 
-  $: listProvider.update(Object.values(groupedIssues).flat(1))
+  $: if (issuesList !== undefined) listProvider.update(Object.values(groupedIssues).flat(1))
 
   onMount(() => {
     ;(document.activeElement as HTMLElement)?.blur()

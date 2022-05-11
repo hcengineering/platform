@@ -28,6 +28,7 @@ export default plugin(uiId, {
     EditBoxPlaceholder: '' as IntlString,
     Ok: '' as IntlString,
     Cancel: '' as IntlString,
+    Save: '' as IntlString,
     Minutes: '' as IntlString,
     Hours: '' as IntlString,
     Days: '' as IntlString,
