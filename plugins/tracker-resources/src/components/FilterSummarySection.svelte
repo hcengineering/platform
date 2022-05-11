@@ -19,8 +19,11 @@
   import tracker from '../plugin'
 
   export let type: string = ''
+  export let mode: '$in' | '$nin' = '$in'
   export let selectedFilters: any[] = []
   export let onDelete: () => void
+  export let onChangeMode: () => void
+  export let onEditFilter: (event: MouseEvent) => void
 </script>
 
 <div class="root">
@@ -30,7 +33,12 @@
   <div class="buttonWrapper">
     <Button
       shape="rectangle"
-      label={selectedFilters.length < 2 ? tracker.string.FilterIs : tracker.string.FilterIsEither}
+      label={mode === '$nin'
+        ? tracker.string.FilterIsNot
+        : selectedFilters.length < 2
+        ? tracker.string.FilterIs
+        : tracker.string.FilterIsEither}
+      on:click={onChangeMode}
     />
   </div>
   <div class="buttonWrapper">
@@ -38,6 +46,7 @@
       shape={'rectangle'}
       label={tracker.string.FilterStatesCount}
       labelParams={{ value: selectedFilters.length }}
+      on:click={onEditFilter}
     />
   </div>
   <div class="buttonWrapper">
@@ -49,6 +58,10 @@
   .root {
     display: flex;
     align-items: center;
+
+    &:not(:first-child) {
+      margin-left: 0.5rem;
+    }
   }
 
   .buttonWrapper {
