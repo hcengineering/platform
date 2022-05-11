@@ -166,11 +166,11 @@ function getHiddenAttrs (client: TxOperations, _class: Ref<Class<Doc>>): Set<str
 }
 
 export async function getValue (client: TxOperations, m: AttributeModel, utx: any): Promise<any> {
-  async function getRealValue (value: any): Promise<any> {
-    if (client.getHierarchy().isDerived(m._class, core.class.Doc) && typeof value === 'string') {
-      // We have an reference, we need to find a real object to pass for presenter
-      return await client.findOne(m._class, { _id: value as Ref<Doc> })
-    }
+  async function getAllRealValues (values: any[]): Promise<any[]> {
+    return client.getHierarchy().isDerived(m._class, core.class.Doc) &&
+      values.every((value) => typeof value === 'string')
+      ? await client.findAll(m._class, { _id: { $in: values } })
+      : values
   }
   const value = {
     set: utx[m.key],
@@ -178,17 +178,13 @@ export async function getValue (client: TxOperations, m: AttributeModel, utx: an
     removed: utx.$pull?.[m.key]
   }
   if (value.set !== undefined) {
-    value.set = await getRealValue(value.set)
+    ;[value.set] = await getAllRealValues([value.set])
   }
   if (value.added !== undefined) {
-    value.added = Array.isArray(value.added.$each)
-      ? (value.added.$each as any[]).map(getRealValue)
-      : [await getRealValue(value.added)]
+    value.added = await getAllRealValues(Array.isArray(value.added.$each) ? value.added.$each : [value.added])
   }
   if (value.removed !== undefined) {
-    value.removed = Array.isArray(value.removed.$in)
-      ? (value.removed.$in as any[]).map(getRealValue)
-      : [await getRealValue(value.removed)]
+    value.removed = await getAllRealValues(Array.isArray(value.removed.$in) ? value.removed.$in : [value.removed])
   }
 
   return value
