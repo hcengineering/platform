@@ -17,7 +17,7 @@
   import { getClient } from '@anticrm/presentation'
   import type { TodoItem } from '@anticrm/task'
   import task from '@anticrm/task'
-  import { Button, CheckBox, EditWithIcon, Icon, IconMoreH, Menu, Progress, showPopup } from '@anticrm/ui'
+  import { Button, CheckBox, TextAreaEditor, Icon, IconMoreH, Menu, Progress, showPopup } from '@anticrm/ui'
   import { HTMLPresenter } from '@anticrm/view-resources'
 
   import board from '../../plugin'
@@ -27,9 +27,11 @@
   const client = getClient()
   let checklistItems: TodoItem[] = []
   let done = 0
-  let editingName: string | undefined = undefined
-  let addingItemName: string | undefined = undefined
+  let isEditingName: boolean = false
+  let isAddingItem: boolean = false
   let hideDoneItems: boolean = false
+  let newItemName = ''
+  let editingItemId: Ref<TodoItem> | undefined = undefined
   let hovered: Ref<TodoItem> | undefined
 
   async function fetch () {
@@ -54,17 +56,17 @@
   }
 
   function startAddingItem () {
-    addingItemName = ''
+    isAddingItem = true
   }
 
-  async function addItem () {
+  async function addItem (event: CustomEvent<string>) {
+    newItemName = ''
     const item = {
-      name: addingItemName ?? '',
+      name: event.detail ?? '',
       assignee: null,
       dueTo: null,
       done: false
     }
-    addingItemName = undefined
     if (item.name.length <= 0) {
       return
     }
@@ -72,13 +74,19 @@
     fetch()
   }
 
-  function updateName () {
-    if (editingName !== undefined && editingName.length > 0 && editingName !== value.name) {
-      value.name = editingName
-      editingName = undefined
+  function updateName (event: CustomEvent<string>) {
+    isEditingName = false
+    const name = event.detail
+    if (name !== undefined && name.length > 0 && name !== value.name) {
+      value.name = name
       client.update(value, { name: value.name })
-    } else {
-      editingName = undefined
+    }
+  }
+
+  function updateItemName (item: TodoItem, name: string) {
+    if (name !== undefined && name.length > 0 && name !== value.name) {
+      item.name = name
+      client.update(item, { name: item.name })
     }
   }
 
@@ -125,13 +133,21 @@
       <div class="w-9">
         <Icon icon={board.icon.Card} size="large" />
       </div>
-      {#if editingName !== undefined}
-        <EditWithIcon bind:value={editingName} on:change={updateName} />
+      {#if isEditingName}
+        <div class="flex-grow">
+          <TextAreaEditor
+            value={value.name}
+            on:submit={updateName}
+            on:cancel={() => {
+              isEditingName = false
+            }}
+          />
+        </div>
       {:else}
         <div
           class="flex-grow fs-title"
           on:click={() => {
-            editingName = value.name ?? ''
+            isEditingName = true
           }}
         >
           {value.name}
@@ -162,8 +178,8 @@
     </div>
     {#each checklistItems.filter((item) => !hideDoneItems || !item.done) as item}
       <div
-        class="flex-row-stretch mb-1 mt-1 pl-1 h-7 border-radius-1"
-        class:background-button-noborder-bg-hover={hovered === item._id}
+        class="flex-row-stretch mb-1 mt-1 pl-1 min-h-7 border-radius-1"
+        class:background-button-noborder-bg-hover={hovered === item._id && editingItemId !== item._id}
         on:mouseover={() => {
           hovered = item._id
         }}
@@ -180,19 +196,47 @@
         <div class="w-9 flex items-center">
           <CheckBox bind:checked={item.done} on:value={(event) => setDoneToChecklistItem(item, event)} />
         </div>
-        <div class="flex-col justify-center flex-gap-1 w-full" class:text-line-through={item.done}>
-          <HTMLPresenter bind:value={item.name} />
-        </div>
-        <div class="flex-center">
-          <Button icon={IconMoreH} kind="transparent" size="small" on:click={(e) => showItemMenu(item, e)} />
-        </div>
+        {#if editingItemId === item._id}
+          <div class="flex-grow">
+            <TextAreaEditor
+              value={item.name}
+              on:submit={(event) => {
+                editingItemId = undefined
+                updateItemName(item, event.detail)
+              }}
+              on:cancel={() => {
+                editingItemId = undefined
+              }}
+            />
+          </div>
+        {:else}
+          <div
+            class="flex-col justify-center flex-gap-1 w-full"
+            class:text-line-through={item.done}
+            on:click={() => {
+              editingItemId = item._id
+            }}
+          >
+            <HTMLPresenter bind:value={item.name} />
+          </div>
+          <div class="flex-center">
+            <Button icon={IconMoreH} kind="transparent" size="small" on:click={(e) => showItemMenu(item, e)} />
+          </div>
+        {/if}
       </div>
     {/each}
     <div class="flex-row-stretch mt-2 mb-2">
       <div class="w-9" />
-      {#if addingItemName !== undefined}
+      {#if isAddingItem}
         <div class="w-full p-1">
-          <EditWithIcon bind:value={addingItemName} on:change={addItem} />
+          <TextAreaEditor
+            bind:value={newItemName}
+            on:submit={addItem}
+            on:cancel={() => {
+              newItemName = ''
+              isAddingItem = false
+            }}
+          />
         </div>
       {:else}
         <Button label={board.string.AddChecklistItem} kind="no-border" size="small" on:click={startAddingItem} />

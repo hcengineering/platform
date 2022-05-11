@@ -12,7 +12,7 @@
   export let width: string | undefined = undefined
   export let height: string | undefined = undefined
   export let submitLabel: IntlString = ui.string.Save
-  export let placeholder: IntlString | undefined
+  export let placeholder: IntlString | undefined = undefined
 
   const dispatch = createEventDispatcher()
   let isEditing = false

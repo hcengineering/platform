@@ -21,7 +21,7 @@
   import IconClose from './icons/Close.svelte'
   import plugin from '../plugin'
 
-  export let icon: Asset | AnySvelteComponent | undefined = undefined
+  export let icon: Asset | AnySvelteComponent
   export let width: string | undefined = undefined
   export let value: string | undefined = undefined
   export let placeholder: IntlString = plugin.string.EditBoxPlaceholder
@@ -43,9 +43,7 @@
 </script>
 
 <div class="flex-between editbox" style={width ? 'width: ' + width : ''} on:click={() => textHTML.focus()}>
-  {#if icon}
-    <div class="mr-2 icon"><Icon {icon} size={'small'} /></div>
-  {/if}
+  <div class="mr-2 icon"><Icon {icon} size={'small'} /></div>
   <input bind:this={textHTML} type="text" bind:value placeholder={phTraslate} on:change on:input on:keydown />
   <slot name="extra" />
   {#if value}
