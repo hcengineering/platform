@@ -39,17 +39,12 @@
   const client = getClient()
   const cardQuery = createQuery()
   const stateQuery = createQuery()
+  const checklistsQuery = createQuery()
 
   let object: Card | undefined
   let state: State | undefined
   let handleMove: (e: Event) => void
   let checklists: TodoItem[] = []
-
-  async function fetchChecklists () {
-    if (object) {
-      checklists = await client.findAll(task.class.TodoItem, { space: object.space, attachedTo: object._id })
-    }
-  }
 
   function change (field: string, value: any) {
     if (object) {
@@ -57,20 +52,19 @@
     }
   }
 
-  $: cardQuery.query(_class, { _id }, async (result) => {
+  $: cardQuery.query(_class, { _id }, (result) => {
     object = result[0]
   })
 
   $: object?.state &&
-    stateQuery.query(task.class.State, { _id: object.state }, async (result) => {
+    stateQuery.query(task.class.State, { _id: object.state }, (result) => {
       state = result[0]
     })
 
-  $: if (object?.todoItems) {
-    fetchChecklists()
-  } else {
-    checklists = []
-  }
+  $: object &&
+    checklistsQuery.query(task.class.TodoItem, { space: object.space, attachedTo: object._id }, (result) => {
+      checklists = result
+    })
 
   getCardActions(client, { _id: board.cardAction.Move }).then(async (result) => {
     if (result[0]?.handler) {

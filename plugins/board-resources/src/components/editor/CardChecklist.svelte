@@ -14,17 +14,18 @@
 -->
 <script lang="ts">
   import { Ref } from '@anticrm/core'
-  import { getClient } from '@anticrm/presentation'
+  import { createQuery, getClient } from '@anticrm/presentation'
   import type { TodoItem } from '@anticrm/task'
   import task from '@anticrm/task'
-  import { Button, CheckBox, TextAreaEditor, Icon, IconMoreH, Menu, Progress, showPopup } from '@anticrm/ui'
-  import { HTMLPresenter } from '@anticrm/view-resources'
+  import { Button, CheckBox, TextAreaEditor, Icon, IconMoreH, Progress, showPopup } from '@anticrm/ui'
+  import { ContextMenu, HTMLPresenter } from '@anticrm/view-resources'
 
   import board from '../../plugin'
   import { getPopupAlignment } from '../../utils/PopupUtils'
 
   export let value: TodoItem
   const client = getClient()
+  const checklistItemsQuery = createQuery()
   let checklistItems: TodoItem[] = []
   let done = 0
   let isEditingName: boolean = false
@@ -33,13 +34,6 @@
   let newItemName = ''
   let editingItemId: Ref<TodoItem> | undefined = undefined
   let hovered: Ref<TodoItem> | undefined
-
-  async function fetch () {
-    checklistItems = await client.findAll(task.class.TodoItem, { space: value.space, attachedTo: value._id })
-    done = checklistItems.reduce((result: number, current: TodoItem) => {
-      return current.done ? result + 1 : result
-    }, 0)
-  }
 
   function deleteChecklist () {
     if (!value) {
@@ -71,7 +65,6 @@
       return
     }
     await client.addCollection(task.class.TodoItem, value.space, value._id, value._class, 'items', item)
-    fetch()
   }
 
   function updateName (event: CustomEvent<string>) {
@@ -96,35 +89,18 @@
       return
     }
     await client.update(item, { done: isDone })
-    fetch()
   }
 
   function showItemMenu (item: TodoItem, e?: Event) {
-    showPopup(
-      Menu,
-      {
-        actions: [
-          {
-            label: board.string.Delete,
-            action: async () => {
-              await client.removeCollection(
-                item._class,
-                item.space,
-                item._id,
-                item.attachedTo,
-                item.attachedToClass,
-                item.collection
-              )
-              fetch()
-            }
-          }
-        ]
-      },
-      getPopupAlignment(e)
-    )
+    showPopup(ContextMenu, { object: item }, getPopupAlignment(e))
   }
 
-  $: fetch()
+  $: checklistItemsQuery.query(task.class.TodoItem, { space: value.space, attachedTo: value._id }, (result) => {
+    checklistItems = result
+    done = checklistItems.reduce((result: number, current: TodoItem) => {
+      return current.done ? result + 1 : result
+    }, 0)
+  })
 </script>
 
 {#if value !== undefined}
