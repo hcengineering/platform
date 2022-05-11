@@ -51,6 +51,7 @@
     "ClearStatus": "Очистить статус",
     "SaveStatus": "Сохранить",
     "Cancel": "Отмена",
-    "StatusDueDate": "Дата конца"
+    "StatusDueDate": "Дата конца",
+    "NoExpire": "Бессрочно"
   }
 }

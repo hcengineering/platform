@@ -48,6 +48,7 @@ export default mergeIds(contactId, contact, {
     SaveStatus: '' as IntlString,
     Cancel: '' as IntlString,
     StatusDueDate: '' as IntlString,
-    StatusName: '' as IntlString
+    StatusName: '' as IntlString,
+    NoExpire: '' as IntlString
   }
 })

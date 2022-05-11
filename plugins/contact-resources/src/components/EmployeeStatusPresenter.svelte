@@ -1,9 +1,11 @@
 <script lang="ts">
   import { Employee, Status } from '@anticrm/contact'
   import { Ref } from '@anticrm/core'
+  import { Label } from '@anticrm/ui'
   import { createQuery, getClient } from '@anticrm/presentation'
   import contact from '../plugin'
   import { formatDate } from '../utils'
+
   export let employeeId: Ref<Employee>
   export let withTooltip: boolean = true
 
@@ -27,14 +29,22 @@
   {#if withTooltip}
     <div class="tooltip-container">
       <div class="tooltip">
-        {formatDate(status?.dueDate)}
+        {#if status?.dueDate}
+          <div>{formatDate(status?.dueDate)}</div>
+        {:else}
+          <Label label={contact.string.NoExpire} />
+        {/if}
       </div>
       <div>{status?.name}</div>
     </div>
   {:else}
     <div class="flex">
       <div class="pr-4">{status?.name}</div>
-      <div>{formatDate(status?.dueDate)}</div>
+      {#if status?.dueDate}
+        <div>{formatDate(status?.dueDate)}</div>
+      {:else}
+        <Label label={contact.string.NoExpire} />
+      {/if}
     </div>
   {/if}
 {/if}

@@ -30,13 +30,11 @@ export async function getChannelProviders (): Promise<Map<Ref<ChannelProvider>, 
   return map
 }
 
-export function formatDate (dueDateMs: Timestamp | undefined): string {
-  return dueDateMs === undefined || dueDateMs === null
-    ? 'no exp'
-    : new Date(dueDateMs).toLocaleString('default', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
+export function formatDate (dueDateMs: Timestamp): string {
+  return new Date(dueDateMs).toLocaleString('default', {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
 }

@@ -94,7 +94,9 @@ export interface Status extends AttachedDoc {
 /**
  * @public
  */
-export interface Employee extends Person {}
+export interface Employee extends Person {
+  statuses?: number
+}
 
 /**
  * @public

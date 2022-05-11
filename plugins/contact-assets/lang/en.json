@@ -51,6 +51,7 @@
     "ClearStatus": "Clear status",
     "SaveStatus": "Save",
     "Cancel": "Cancel",
-    "StatusDueDate": "Due date"
+    "StatusDueDate": "Due date",
+    "NoExpire": "No expire"
   }
 }

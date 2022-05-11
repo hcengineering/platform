@@ -39,7 +39,6 @@ import contact from './plugin'
 
 export const DOMAIN_CONTACT = 'contact' as Domain
 export const DOMAIN_CHANNEL = 'channel' as Domain
-export const DOMAIN_STATUS = 'status' as Domain
 
 @Model(contact.class.ChannelProvider, core.class.Doc, DOMAIN_MODEL)
 export class TChannelProvider extends TDoc implements ChannelProvider {
@@ -92,7 +91,7 @@ export class TPerson extends TContact implements Person {}
 @UX(contact.string.Organization, contact.icon.Company, undefined, 'name')
 export class TOrganization extends TContact implements Organization {}
 
-@Model(contact.class.Status, core.class.AttachedDoc, DOMAIN_STATUS)
+@Model(contact.class.Status, core.class.AttachedDoc, DOMAIN_CONTACT)
 export class TStatus extends TAttachedDoc implements Status {
   attachedTo!: Ref<Employee>;
   attachedToClass!: Ref<Class<Employee>>;
@@ -102,7 +101,10 @@ export class TStatus extends TAttachedDoc implements Status {
 
 @Model(contact.class.Employee, contact.class.Person)
 @UX(contact.string.Employee, contact.icon.Person)
-export class TEmployee extends TPerson implements Employee {}
+export class TEmployee extends TPerson implements Employee {
+  @Prop(Collection(contact.class.Status), contact.string.Status)
+  statuses?: number
+}
 
 @Model(contact.class.EmployeeAccount, core.class.Account)
 export class TEmployeeAccount extends TAccount implements EmployeeAccount {

@@ -1,22 +1,20 @@
 <script lang="ts">
   import { Timestamp } from '@anticrm/core'
-  import { DatePresenter, Tooltip } from '@anticrm/ui'
+  import { DatePresenter, ticker, Tooltip } from '@anticrm/ui'
   import EmployeeStatusDueDatePopup from './EmployeeStatusDueDatePopup.svelte'
   import { formatDate } from '../utils'
 
   export let statusDueDate: Timestamp | undefined
 
-  $: today = new Date(Date.now())
-  $: dueDateMs = statusDueDate
-  $: isOverdue = dueDateMs !== undefined && dueDateMs !== null && dueDateMs < today.getTime()
-  $: formattedDate = formatDate(dueDateMs)
+  $: isOverdue = statusDueDate && statusDueDate < $ticker
+  $: formattedDate = statusDueDate && formatDate(statusDueDate)
 </script>
 
 <Tooltip
   direction={'top'}
   component={EmployeeStatusDueDatePopup}
   props={{
-    formattedDate: formattedDate,
+    formattedDate,
     isOverdue
   }}
 >
