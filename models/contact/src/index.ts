@@ -96,8 +96,8 @@ export class TOrganization extends TContact implements Organization {}
 
 @Model(contact.class.Status, core.class.AttachedDoc, DOMAIN_CONTACT)
 export class TStatus extends TAttachedDoc implements Status {
-  attachedTo!: Ref<Employee>;
-  attachedToClass!: Ref<Class<Employee>>;
+  attachedTo!: Ref<Employee>
+  attachedToClass!: Ref<Class<Employee>>
   name!: string
   dueDate!: Timestamp
 }
