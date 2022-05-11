@@ -14,15 +14,20 @@
 -->
 <script lang="ts">
   import { IssuePriority } from '@anticrm/tracker'
-  import { Button, showPopup, SelectPopup, Icon, Label, eventToHTMLElement } from '@anticrm/ui'
+  import { Button, showPopup, SelectPopup, eventToHTMLElement } from '@anticrm/ui'
+  import type { ButtonKind, ButtonSize } from '@anticrm/ui'
   import { issuePriorities } from '../utils'
   import tracker from '../plugin'
 
   export let priority: IssuePriority
-  export let kind: 'button' | 'icon' = 'button'
   export let shouldShowLabel: boolean = true
   export let onPriorityChange: ((newPriority: IssuePriority | undefined) => void) | undefined = undefined
   export let isEditable: boolean = true
+
+  export let kind: ButtonKind = 'no-border'
+  export let size: ButtonSize = 'small'
+  export let justify: 'left' | 'center' = 'center'
+  export let width: string | undefined = 'min-content'
 
   const prioritiesInfo = [
     IssuePriority.NoPriority,
@@ -45,44 +50,13 @@
   }
 </script>
 
-{#if kind === 'button'}
-  <Button
-    label={shouldShowLabel ? issuePriorities[priority].label : undefined}
-    icon={issuePriorities[priority].icon}
-    width="min-content"
-    size="small"
-    kind="no-border"
-    on:click={handlePriorityEditorOpened}
-  />
-{:else if kind === 'icon'}
-  <div class={isEditable ? 'flex-presenter' : 'presenter'} on:click={handlePriorityEditorOpened}>
-    <div class="priorityIcon" class:mPriorityIconEditable={isEditable}>
-      <Icon icon={issuePriorities[priority].icon} size={'small'} />
-    </div>
-    {#if shouldShowLabel}
-      <div class="label nowrap ml-2">
-        <Label label={issuePriorities[priority].label} />
-      </div>
-    {/if}
-  </div>
-{/if}
-
-<style lang="scss">
-  .presenter {
-    display: flex;
-    align-items: center;
-    flex-wrap: nowrap;
-  }
-
-  .priorityIcon {
-    width: 1rem;
-    height: 1rem;
-    color: var(--theme-content-dark-color);
-
-    &.mPriorityIconEditable {
-      &:hover {
-        color: var(--theme-caption-color);
-      }
-    }
-  }
-</style>
+<Button
+  label={shouldShowLabel ? issuePriorities[priority].label : undefined}
+  icon={issuePriorities[priority].icon}
+  {justify}
+  {width}
+  {size}
+  {kind}
+  disabled={!isEditable}
+  on:click={handlePriorityEditorOpened}
+/>

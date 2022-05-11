@@ -13,8 +13,11 @@
     "ci": "playwright install --with-deps chromium",
     "test": "",
     "uitest": "playwright test --browser chromium --reporter list,html -c ./tests/playwright.config.ts",
+    "dev-uitest": "cross-env PLATFORM_URI=http://localhost:8080 PLATFORM_TRANSACTOR=ws://localhost:3333 SETTING=storage-dev.json playwright test --browser chromium --reporter list,html -c ./tests/playwright.config.ts",
     "debug": "playwright test --browser chromium -c ./tests/playwright.config.ts --debug --headed",
-    "codegen": "playwright codegen --load-storage storage.json http://localhost:8083/workbench%3Acomponent%3AWorkbenchApp"
+    "dev-debug": "cross-env PLATFORM_URI=http://localhost:8080 PLATFORM_TRANSACTOR=ws://localhost:3333 SETTING=storage-dev.json playwright test --browser chromium -c ./tests/playwright.config.ts --debug --headed",
+    "codegen": "playwright codegen --load-storage storage.json http://localhost:8083/workbench%3Acomponent%3AWorkbenchApp",
+    "dev-codegen": "cross-env playwright codegen --load-storage storage-dev.json http://localhost:8080/workbench%3Acomponent%3AWorkbenchApp"
   },
   "devDependencies": {
     "@anticrm/platform-rig": "~0.6.0",
@@ -30,5 +33,9 @@
     "prettier": "^2.4.1",
     "typescript": "^4.3.5",
     "@playwright/test": "~1.18.0"
+  },
+  "dependencies": {
+    "dotenv": "~16.0.0",
+    "cross-env": "~7.0.3"
   }
 }

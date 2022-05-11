@@ -92,7 +92,7 @@ export async function createMissingLabels (
   const targetBoardLabels = await getBoardLabels(client, targetBoard)
 
   const missingLabels = sourceBoardLabels.filter((srcLabel) => {
-    if (object.labels?.includes(srcLabel._id) === false) return false
+    if (!object.labels?.includes(srcLabel._id)) return false
 
     return targetBoardLabels.findIndex((targetLabel) => isEqualLabel(targetLabel, srcLabel)) === -1
   })

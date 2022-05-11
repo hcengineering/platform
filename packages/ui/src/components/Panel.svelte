@@ -14,9 +14,8 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { Button, IconClose, IconDetails, Scroller } from '..'
+  import { Button, IconClose, IconDetails } from '..'
 
-  export let rightSection: boolean = false
   export let innerWidth: number = 0
   export let panelWidth: number = 0
   export let isHeader: boolean = true
@@ -26,22 +25,27 @@
 
   let asideFloat: boolean = false
   let asideShown: boolean = false
-  let docWidth: number
-  $: if (docWidth < 1024 && !asideFloat) asideFloat = true
-  $: if (docWidth >= 1024 && asideFloat) {
+  $: if (panelWidth < 900 && !asideFloat) asideFloat = true
+  $: if (panelWidth >= 900 && asideFloat) {
     asideFloat = false
     asideShown = false
   }
 </script>
 
-<svelte:window bind:innerWidth={docWidth} />
 <div class="popupPanel" bind:clientWidth={panelWidth}>
   <div class="popupPanel-title">
-    <Button icon={IconClose} kind={'transparent'} size={'medium'} on:click={() => { dispatch('close') }} />
+    <Button
+      icon={IconClose}
+      kind={'transparent'}
+      size={'medium'}
+      on:click={() => {
+        dispatch('close')
+      }}
+    />
     <div class="popupPanel-title__content"><slot name="title" /></div>
     <div class="buttons-group xsmall-gap">
       <slot name="utils" />
-      {#if asideFloat}
+      {#if asideFloat && $$slots.aside && isAside}
         {#if $$slots.utils}<div class="buttons-divider" />{/if}
         <Button
           icon={IconDetails}
@@ -58,15 +62,11 @@
   <div class="popupPanel-body" class:asideShown>
     <div class="popupPanel-body__main" bind:clientWidth={innerWidth}>
       {#if $$slots.header && isHeader}
-        <div class="popupPanel-body__main-header">
+        <div class="popupPanel-body__main-header bottom-divider">
           <slot name="header" />
         </div>
       {/if}
-      <Scroller>
-        <div class="popupPanel-body__main-content">
-          <slot />
-        </div>
-      </Scroller>
+      <slot />
     </div>
     {#if $$slots.aside && isAside}
       <div class="popupPanel-body__aside" class:float={asideFloat} class:shown={asideShown}>

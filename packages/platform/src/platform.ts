@@ -71,16 +71,28 @@ export type Namespace = Record<string, Record<string, string>>
  */
 export const _ID_SEPARATOR = ':'
 
+/**
+ * @internal
+ */
+export const _EmbeddedId = 'embedded'
+
 function identify (result: Record<string, any>, prefix: string, namespace: Record<string, any>): Namespace {
   for (const key in namespace) {
     const value = namespace[key]
     if (typeof result[key] === 'string') {
-      throw new Error(`'identify' overwrites '${key}'.`)
+      throw new Error(`'identify' overwrites '${key}' for ${prefix}`)
     }
     const ident = prefix + _ID_SEPARATOR + key
     result[key] = typeof value === 'string' ? ident : identify(result[key] ?? {}, ident, value)
   }
   return result
+}
+
+/**
+ * @public
+ */
+export function getEmbeddedLabel (str: string): IntlString {
+  return (_EmbeddedId + _ID_SEPARATOR + _EmbeddedId + _ID_SEPARATOR + str) as IntlString
 }
 
 /**

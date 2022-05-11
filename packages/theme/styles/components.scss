@@ -324,6 +324,7 @@
 
 /* Table */
 .antiTable {
+  position: relative;
   width: 100%;
 
   th, td {
@@ -415,7 +416,19 @@
     &.checking { background-color: var(--highlight-select); } // --theme-table-bg-hover
     &.selected { background-color: var(--highlight-hover); } // --menu-bg-select
   }
+
+  .scroller-thead {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background-color: var(--body-color);
+  }
 }
+
+// THead background-color in Tooltip and Popups
+.popup-tooltip .antiTable .scroller-thead,
+.popup .antiTable .scroller-thead,
+.antiDialogs .antiTable .scroller-thead { background-color: var(--accent-bg-color); }
 
 // Hide row menu in Tooltip
 .popup-tooltip .antiTable .antiTable-body__row:hover .antiTable-cells__firstCell .antiTable-cells__firstCell-menuRow { visibility: hidden; }

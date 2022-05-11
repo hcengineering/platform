@@ -380,6 +380,31 @@ export class Hierarchy {
     }
     return vResult
   }
+
+  clone (obj: any): any {
+    if (typeof obj === 'function') {
+      return obj
+    }
+    const result: any = Array.isArray(obj) ? [] : {}
+    for (const key in obj) {
+      // include prototype properties
+      const value = obj[key]
+      const type = {}.toString.call(value).slice(8, -1)
+      if (type === 'Array') {
+        result[key] = this.clone(value)
+      }
+      if (type === 'Object') {
+        const m = Hierarchy.mixinClass(value)
+        const valClone = this.clone(value)
+        result[key] = m !== undefined ? this.as(valClone, m) : valClone
+      } else if (type === 'Date') {
+        result[key] = new Date(value.getTime())
+      } else {
+        result[key] = value
+      }
+    }
+    return result
+  }
 }
 
 function addNew<T> (val: Set<T>, value: T): boolean {

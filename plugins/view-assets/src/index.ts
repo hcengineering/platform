@@ -19,12 +19,14 @@ import view, { viewId } from '@anticrm/view'
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(view.icon, {
   Table: `${icons}#table`,
+  Card: `${icons}#card`,
   Delete: `${icons}#delete`,
   Move: `${icons}#move`,
   MoreH: `${icons}#more-h`,
   Archive: `${icons}#archive`,
   Statuses: `${icons}#statuses`,
-  Open: `${icons}#open`
+  Open: `${icons}#open`,
+  ArrowRight: `${icons}#arrow-right`
 })
 
 addStringsLoader(viewId, async (lang: string) => await import(`../lang/${lang}.json`))

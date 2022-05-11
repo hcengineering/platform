@@ -59,6 +59,15 @@ export interface CardDate extends Obj {
 /**
  * @public
  */
+export interface CardCover {
+  color?: number
+  image?: string
+  size: 'large' | 'small'
+}
+
+/**
+ * @public
+ */
 export interface Card extends Task {
   title: string
 
@@ -69,12 +78,11 @@ export interface Card extends Task {
 
   members?: Ref<Employee>[]
 
-  labels?: Ref<CardLabel>[]
+  labels: Ref<CardLabel>[]
 
   location?: string
 
-  coverColor?: number
-  coverImage?: string
+  cover?: CardCover | null
 
   comments?: number
   attachments?: number
@@ -94,6 +102,14 @@ export interface CardAction extends Doc {
   handler?: Resource<(card: Card, client: Client, e?: Event) => void>
   supported?: Resource<(card: Card, client: Client) => boolean>
 }
+/**
+ * @public
+ */
+export interface MenuPage extends Doc {
+  component: AnyComponent
+  pageId: string
+  label: IntlString
+}
 
 /**
  * @public
@@ -112,7 +128,8 @@ const boards = plugin(boardId, {
     Card: '' as Ref<Class<Card>>,
     CardAction: '' as Ref<Class<CardAction>>,
     CardDate: '' as Ref<Class<CardDate>>,
-    CardLabel: '' as Ref<Class<CardLabel>>
+    CardLabel: '' as Ref<Class<CardLabel>>,
+    MenuPage: '' as Ref<Class<MenuPage>>
   },
   icon: {
     Board: '' as Asset,
@@ -120,6 +137,10 @@ const boards = plugin(boardId, {
   },
   space: {
     BoardTemplates: '' as Ref<KanbanTemplateSpace>
+  },
+  menuPageId: {
+    Main: 'main',
+    Archive: 'archive'
   },
   cardActionType: {
     Suggested: 'Suggested',

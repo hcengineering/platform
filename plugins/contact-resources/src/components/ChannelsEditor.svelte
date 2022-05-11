@@ -16,11 +16,10 @@
 <script lang="ts">
   import type { Class, Doc, Ref } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
-  import type { ButtonKind, ButtonSize } from '@anticrm/ui'
+  import { ButtonKind, ButtonSize, closeTooltip } from '@anticrm/ui'
 
   import { ChannelProvider, Channel } from '@anticrm/contact'
-  import { showPanel } from '@anticrm/ui'
-  import view from '@anticrm/view'
+  import { showPopup } from '@anticrm/ui'
   import contact from '../plugin'
   import ChannelsDropdown from './ChannelsDropdown.svelte'
 
@@ -28,6 +27,7 @@
   export let attachedClass: Ref<Class<Doc>>
   export let integrations: Set<Ref<Doc>> | undefined = undefined
   export let editable = true
+  export let allowOpen = true
 
   export let kind: ButtonKind = 'link-bordered'
   export let size: ButtonSize = 'small'
@@ -105,11 +105,12 @@
     Promise.all(promises)
   }
 
-  function click (ev: any) {
+  function _open (ev: any) {
     if (ev.detail.presenter !== undefined && Array.isArray(channels)) {
       const channel = channels[0]
-      if (channel !== undefined) {
-        showPanel(view.component.EditDoc, channel.attachedTo, channel.attachedToClass, 'content', ev.detail.presenter)
+      if (channel !== undefined && allowOpen) {
+        closeTooltip()
+        showPopup(ev.detail.presenter, { _id: channel.attachedTo, _class: channel.attachedToClass }, 'float')
       }
     }
   }
@@ -126,5 +127,5 @@
   on:change={(e) => {
     if (editable) save(e.detail)
   }}
-  on:click={click}
+  on:open={_open}
 />

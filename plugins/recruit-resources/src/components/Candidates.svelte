@@ -93,7 +93,7 @@
     mode: 'browser'
   }}
 />
-<Scroller>
+<Scroller tableFade>
   {#await tableDescriptor then descr}
     {#if descr}
       <TableBrowser

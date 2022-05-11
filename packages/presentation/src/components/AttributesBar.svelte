@@ -69,7 +69,6 @@
     &.vertical {
       display: grid;
       grid-template-columns: 1fr 1.5fr;
-      grid-template-rows: minmax(2rem, auto);
       grid-auto-flow: row;
       justify-content: start;
       align-items: center;

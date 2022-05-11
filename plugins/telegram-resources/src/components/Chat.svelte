@@ -16,27 +16,24 @@
 <script lang="ts">
   import attachment from '@anticrm/attachment'
   import { AttachmentRefInput } from '@anticrm/attachment-resources'
-  import { Panel } from '@anticrm/panel'
   import { createEventDispatcher } from 'svelte'
-  import contact, { Channel, EmployeeAccount, formatName } from '@anticrm/contact'
-  import { generateId, getCurrentAccount, Ref, SortingOrder, Space, Doc, Class } from '@anticrm/core'
+  import contact, { Channel, Contact, EmployeeAccount, formatName } from '@anticrm/contact'
+  import { generateId, getCurrentAccount, Ref, SortingOrder, Space, Class } from '@anticrm/core'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
   import { createQuery, getClient } from '@anticrm/presentation'
   import setting, { Integration } from '@anticrm/setting'
   import type { NewTelegramMessage, SharedTelegramMessage, TelegramMessage } from '@anticrm/telegram'
-  import type { AnyComponent } from '@anticrm/ui'
-  import { Button, eventToHTMLElement, IconShare, Tooltip, Scroller, showPopup } from '@anticrm/ui'
+  import { Button, eventToHTMLElement, IconShare, Tooltip, Scroller, showPopup, Panel, Icon, Label } from '@anticrm/ui'
   import telegram from '../plugin'
   import Connect from './Connect.svelte'
   import TelegramIcon from './icons/Telegram.svelte'
   import Messages from './Messages.svelte'
   import Reconnect from './Reconnect.svelte'
 
-  export let _id: Ref<Doc>
-  export let _class: Ref<Class<Doc>>
-  export let rightSection: AnyComponent | undefined = undefined
+  export let _id: Ref<Contact>
+  export let _class: Ref<Class<Contact>>
 
-  let object: any
+  let object: Contact
   let channel: Channel | undefined = undefined
   let objectId: Ref<NewTelegramMessage> = generateId()
 
@@ -77,7 +74,7 @@
       telegram.class.Message,
       { attachedTo: channelId },
       (res) => {
-        messages = res.reverse()
+        messages = res
         if (channel !== undefined) {
           notificationClient.updateLastView(channel._id, channel._class, undefined, true)
         }
@@ -85,7 +82,7 @@
         updateAccountsQuery(accountsIds)
       },
       {
-        sort: { modifiedOn: SortingOrder.Descending },
+        sort: { sendOn: SortingOrder.Descending },
         limit: 500,
         lookup: {
           _id: { attachments: attachment.class.Attachment }
@@ -189,109 +186,103 @@
 
 {#if object !== undefined}
   <Panel
-    icon={TelegramIcon}
-    title={'Telegram'}
-    {rightSection}
-    {object}
-    isHeader={false}
+    isHeader={true}
     isAside={false}
     on:close={() => {
       dispatch('close')
     }}
   >
-    <svelte:fragment slot="header">
-      You and {formatName(object.name)}
+    <svelte:fragment slot="title">
+      <div class="antiTitle icon-wrapper">
+        <div class="wrapped-icon"><Icon icon={TelegramIcon} size={'medium'} /></div>
+        <div class="title-wrapper">
+          <span class="wrapped-title">Telegram</span>
+          <span class="wrapped-subtitle">
+            <Label label={telegram.string.YouAnd} />
+            <b>{formatName(object.name)}</b>
+          </span>
+        </div>
+      </div>
+      <!-- You and {formatName(object.name)} -->
     </svelte:fragment>
-    <svelte:fragment slot="tools">
-      <Tooltip label={telegram.string.Share}>
+    <svelte:fragment slot="utils">
+      {#if integration === undefined}
         <Button
-          icon={IconShare}
-          kind={'transparent'}
-          size={'medium'}
-          on:click={async () => {
-            selectable = !selectable
+          label={telegram.string.Connect}
+          kind={'primary'}
+          on:click={(e) => {
+            showPopup(Connect, {}, eventToHTMLElement(e), onConnectClose)
           }}
         />
-      </Tooltip>
+      {:else if integration.disabled}
+        <Button
+          label={setting.string.Reconnect}
+          kind={'primary'}
+          on:click={(e) => {
+            showPopup(Reconnect, {}, eventToHTMLElement(e), onReconnect)
+          }}
+        />
+      {:else}
+        <Tooltip label={telegram.string.Share}>
+          <Button
+            icon={IconShare}
+            kind={'transparent'}
+            size={'medium'}
+            on:click={async () => {
+              selectable = !selectable
+            }}
+          />
+        </Tooltip>
+      {/if}
     </svelte:fragment>
 
-    <div class="telegram-content" class:selectable>
-      <Scroller bottomStart autoscroll>
-        {#if messages && accounts}
-          <Messages messages={convertMessages(messages, accounts)} {selectable} bind:selected />
-        {/if}
-      </Scroller>
-    </div>
+    <Scroller bottomStart autoscroll>
+      {#if messages && accounts}
+        <Messages messages={convertMessages(messages, accounts)} {selectable} bind:selected />
+      {/if}
+    </Scroller>
 
-    <div class="ref-input" class:selectable>
-      {#if selectable}
-        <div class="flex-between">
-          <span>{selected.size} messages selected</span>
-          <div class="flex">
-            <div>
-              <Button label={telegram.string.Cancel} size={'medium'} on:click={clear} />
-            </div>
-            <div class="ml-3">
-              <Button
-                label={telegram.string.PublishSelected}
-                size={'medium'}
-                kind={'primary'}
-                disabled={!selected.size}
-                on:click={share}
-              />
+    {#if integration !== undefined && !integration.disabled}
+      <div class="popupPanel-body__main-header ref-input" class:selectable>
+        {#if selectable}
+          <div class="flex-between">
+            <span>{selected.size} messages selected</span>
+            <div class="flex">
+              <div>
+                <Button label={telegram.string.Cancel} size={'medium'} on:click={clear} />
+              </div>
+              <div class="ml-3">
+                <Button
+                  label={telegram.string.PublishSelected}
+                  size={'medium'}
+                  kind={'primary'}
+                  disabled={!selected.size}
+                  on:click={share}
+                />
+              </div>
             </div>
           </div>
-        </div>
-      {:else if integration === undefined}
-        <div class="flex-center">
-          <Button
-            label={telegram.string.Connect}
-            kind={'primary'}
-            on:click={(e) => {
-              showPopup(Connect, {}, eventToHTMLElement(e), onConnectClose)
-            }}
+        {:else}
+          <AttachmentRefInput
+            space={telegram.space.Telegram}
+            _class={telegram.class.NewMessage}
+            {objectId}
+            on:message={onMessage}
           />
-        </div>
-      {:else if integration.disabled}
-        <div class="flex-center">
-          <Button
-            label={setting.string.Reconnect}
-            kind={'primary'}
-            on:click={(e) => {
-              showPopup(Reconnect, {}, eventToHTMLElement(e), onReconnect)
-            }}
-          />
-        </div>
-      {:else}
-        <AttachmentRefInput
-          space={telegram.space.Telegram}
-          _class={telegram.class.NewMessage}
-          {objectId}
-          on:message={onMessage}
-        />
-      {/if}
-    </div>
+        {/if}
+      </div>
+    {/if}
   </Panel>
 {/if}
 
 <style lang="scss">
   .ref-input {
-    padding: 0 0 1.5rem;
+    padding: 0.5rem 0 1.5rem;
 
     &.selectable {
       padding: 1rem 0;
       color: var(--theme-caption-color);
       border-top: 1px solid var(--divider-color);
-    }
-  }
-
-  .telegram-content {
-    padding-bottom: 1.5rem;
-    min-height: 0;
-    height: 100%;
-
-    &.selectable {
-      padding-bottom: 0;
     }
   }
 </style>

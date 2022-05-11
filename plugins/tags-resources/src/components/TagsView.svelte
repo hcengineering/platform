@@ -108,7 +108,7 @@
     updateResultQuery(search, category)
   }}
 />
-<Scroller>
+<Scroller tableFade>
   <TableBrowser
     _class={tags.class.TagElement}
     config={[
@@ -124,7 +124,7 @@
             {
               key: '$lookup.category',
               presenter: tags.component.CategoryPresenter,
-              sortingKey: '$lookup.category',
+              sortingKey: 'category',
               label: tags.string.CategoryLabel
             }
           ]

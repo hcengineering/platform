@@ -73,6 +73,7 @@
       sort: { rank: SortingOrder.Ascending }
     }
   )
+  $: canSave = !!(space && object.status && getTitle())
 
   async function updateIssueStatusId (teamId: Ref<Team>, issueStatusId?: Ref<IssueStatus>) {
     if (issueStatusId !== undefined) {
@@ -92,6 +93,10 @@
     }
   }
 
+  function getTitle () {
+    return object.title.trim()
+  }
+
   export function canClose (): boolean {
     // if (object.title !== undefined) {
     //   showPopup(
@@ -107,11 +112,11 @@
     //     }
     //   )
     // }
-    return object.title === ''
+    return canSave
   }
 
   async function createIssue () {
-    if (!object.status) {
+    if (!canSave) {
       return
     }
 
@@ -131,7 +136,7 @@
     )
 
     const value: Data<Issue> = {
-      title: object.title,
+      title: getTitle(),
       description: object.description,
       assignee: currentAssignee,
       number: (incResult as any).object.sequence,
@@ -166,11 +171,10 @@
   }
 </script>
 
-<!-- canSave: object.title.length > 0 && _space != null -->
 <Card
   label={tracker.string.NewIssue}
   okAction={createIssue}
-  canSave={true}
+  {canSave}
   okLabel={tracker.string.SaveIssue}
   spaceClass={tracker.class.Team}
   spaceLabel={tracker.string.Team}

@@ -21,7 +21,7 @@
   import tags, { selectedTagElements, TagCategory, TagElement } from '@anticrm/tags'
   import { DoneState, Task } from '@anticrm/task'
   import { Component, Icon, Label, Scroller, SearchEdit } from '@anticrm/ui'
-  import { Table } from '@anticrm/view-resources'
+  import { TableBrowser } from '@anticrm/view-resources'
   import task from '../plugin'
 
   export let _class: Ref<Class<Task>> = task.class.Task
@@ -99,8 +99,8 @@
   on:change={(evt) => updateCategory(evt.detail)}
 />
 
-<Scroller>
-  <Table
+<Scroller tableFade>
+  <TableBrowser
     {_class}
     config={[
       '',
@@ -125,6 +125,5 @@
     options={taskOptions}
     query={resultQuery}
     showNotification
-    highlightRows
   />
 </Scroller>

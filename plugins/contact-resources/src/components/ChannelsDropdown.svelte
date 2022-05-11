@@ -19,28 +19,24 @@
   import contact from '@anticrm/contact'
   import type { AttachedData, Doc, Ref, Timestamp } from '@anticrm/core'
   import type { Asset, IntlString } from '@anticrm/platform'
-  import { AnyComponent, showPopup, Button, Menu, closePopup } from '@anticrm/ui'
+  import { AnyComponent, showPopup, Button, Menu, showTooltip, closeTooltip, eventToHTMLElement } from '@anticrm/ui'
   import type { Action, ButtonKind, ButtonSize } from '@anticrm/ui'
   import presentation from '@anticrm/presentation'
   import { getChannelProviders } from '../utils'
   import ChannelEditor from './ChannelEditor.svelte'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
-  import { onDestroy } from 'svelte'
 
   export let value: AttachedData<Channel>[] | Channel | null
-  export let editable = false
+  export let editable: boolean = false
   export let kind: ButtonKind = 'no-border'
   export let size: ButtonSize = 'small'
   export let length: 'short' | 'full' = 'full'
   export let shape: 'circle' | undefined = undefined
-  // export let reverse: boolean = false
   export let integrations: Set<Ref<Doc>> = new Set<Ref<Doc>>()
 
   const notificationClient = NotificationClientImpl.getClient()
   const lastViews = notificationClient.getLastViews()
   const dispatch = createEventDispatcher()
-
-  let editMode = false
 
   interface Item {
     label: IntlString
@@ -77,8 +73,9 @@
   }
 
   function isNew (item: Channel, lastViews: Map<Ref<Doc>, Timestamp>): boolean {
+    if (item.lastMessage === undefined) return false
     const lastView = (item as Channel)._id !== undefined ? lastViews.get((item as Channel)._id) : undefined
-    return lastView ? lastView < item.modifiedOn : (item.items ?? 0) > 0
+    return lastView ? lastView < item.lastMessage : (item.items ?? 0) > 0
   }
 
   async function update (value: AttachedData<Channel>[] | Channel | null, lastViews: Map<Ref<Doc>, Timestamp>) {
@@ -112,6 +109,7 @@
   let actions: Action[] = []
   let addBtn: HTMLButtonElement
   const btns: HTMLButtonElement[] = []
+  let anchor: HTMLElement
 
   function filterUndefined (channels: AttachedData<Channel>[]): AttachedData<Channel>[] {
     return channels.filter((channel) => channel.value !== undefined && channel.value.length > 0)
@@ -140,8 +138,8 @@
   }
   $: if (providers) updateMenu()
 
-  const dropItem = (n: number): void => {
-    displayItems = displayItems.filter((it, i) => i !== n)
+  const dropItem = (n: number): Item[] => {
+    return displayItems.filter((it, i) => i !== n)
   }
   const saveItems = (): void => {
     value = filterUndefined(displayItems)
@@ -149,195 +147,72 @@
     updateMenu()
   }
 
-  const editChannel = (channel: Item, n: number, ev: MouseEvent): void => {
-    showPopup(
-      ChannelEditor,
-      { value: channel.value, placeholder: channel.placeholder },
-      ev.target as HTMLElement,
-      (result) => {
-        if (result !== undefined) {
-          if (result == null || result === '') dropItem(n)
-          else displayItems[n].value = result
-        } else if (displayItems[n].value === '') dropItem(n)
-        saveItems()
-        if (actions.length > 0 && addBtn) {
-          if (result !== undefined) addBtn.click()
-          else disableEdit()
-        } else {
-          disableEdit()
-        }
-      },
-      (result) => {
-        if (result !== undefined) {
-          if (result === 'left') {
-            closePopup()
-            if (displayItems[n].value === '') {
-              dropItem(n)
-              saveItems()
-            }
-            if (n === 0) addBtn.click()
-            else btns[n - 1].click()
-          } else if (result === 'right') {
-            closePopup()
-            if (displayItems[n].value === '') {
-              dropItem(n)
-              saveItems()
-              if (n === displayItems.length) addBtn.click()
-              else btns[n + 1].click()
-            } else {
-              if (n === displayItems.length - 1) addBtn.click()
-              else btns[n + 1].click()
-            }
-          }
-        }
-      }
-    )
-  }
   const showMenu = (ev: MouseEvent): void => {
-    showPopup(
-      Menu,
-      { actions },
-      ev.target as HTMLElement,
+    showPopup(Menu, { actions }, ev.target as HTMLElement)
+  }
+
+  const editChannel = (el: HTMLElement, n: number, item: Item): void => {
+    showTooltip(
+      undefined,
+      el,
+      undefined,
+      ChannelEditor,
+      { value: item.value, placeholder: item.placeholder, editable },
+      anchor,
       (result) => {
-        if (result === undefined) {
-          disableEdit()
-        }
-      },
-      (result) => {
-        if (result !== undefined && displayItems.length > 0) {
-          if (result === 'left') {
-            closePopup()
-            btns[displayItems.length - 1].click()
-          } else if (result === 'right') {
-            closePopup()
-            btns[0].click()
-          }
+        if (result.detail !== undefined) {
+          if (result.detail === '') displayItems = dropItem(n)
+          else displayItems[n].value = result.detail
+          saveItems()
         }
       }
     )
   }
-  let copied: boolean = false
-  let div: HTMLDivElement
-
-  function listener (e: MouseEvent): void {
-    if (e.target !== null && !div.contains(e.target as Node)) {
-      disableEdit()
-    }
+  const _focus = (ev: Event, n: number, item: Item): void => {
+    const el = ev.target as HTMLButtonElement
+    if (el) editChannel(el, n, item)
   }
-
-  function enableEdit () {
-    window.addEventListener('click', listener)
-    editMode = true
-  }
-
-  function disableEdit () {
-    window.removeEventListener('click', listener)
-    editMode = false
-  }
-
-  onDestroy(() => {
-    window.removeEventListener('click', listener)
-  })
 </script>
 
 <div
-  bind:this={div}
+  bind:this={anchor}
   class="{displayItems.length === 0 ? 'clear-mins' : 'buttons-group'} {kind === 'no-border'
     ? 'xsmall-gap'
     : 'xxsmall-gap'}"
   class:short={displayItems.length > 4 && length === 'short'}
 >
   {#each displayItems as item, i}
-    {#if item.value === ''}
-      <Button
-        icon={item.icon}
-        {kind}
-        {size}
-        {shape}
-        click={item.value === ''}
-        on:click={(ev) => {
-          if (editMode) editChannel(item, i, ev)
-        }}
-      />
-    {:else}
-      <div class="tooltip-container">
-        <div class="tooltip">
-          {item.value}{#if copied}<span class="ml-1 text-sm dark-color">(copied)</span>{/if}
-        </div>
-        <Button
-          bind:input={btns[i]}
-          icon={item.icon}
-          {kind}
-          {size}
-          {shape}
-          highlight={item.integration || item.notification || editMode}
-          on:click={(ev) => {
-            if (editMode) {
-              editChannel(item, i, ev)
-            } else {
-              dispatch('click', item)
-              if (!copied) {
-                navigator.clipboard.writeText(item.value)
-                copied = true
-                setTimeout(() => {
-                  copied = false
-                }, 1000)
-              }
-            }
-          }}
-        />
-      </div>
-    {/if}
+    <Button
+      id={item.label}
+      bind:input={btns[i]}
+      icon={item.icon}
+      {kind}
+      {size}
+      {shape}
+      highlight={item.integration || item.notification}
+      on:mousemove={(ev) => {
+        _focus(ev, i, item)
+      }}
+      on:focus={(ev) => {
+        _focus(ev, i, item)
+      }}
+      on:click={(ev) => {
+        if (editable) editChannel(eventToHTMLElement(ev), i, item)
+        else closeTooltip()
+        dispatch('open', item)
+      }}
+    />
   {/each}
   {#if actions.length > 0 && editable}
     <Button
+      id={presentation.string.AddSocialLinks}
       bind:input={addBtn}
       icon={contact.icon.SocialEdit}
-      highlight={editMode}
       label={displayItems.length === 0 ? presentation.string.AddSocialLinks : undefined}
       {kind}
       {size}
       {shape}
-      on:click={editMode ? showMenu : enableEdit}
+      on:click={showMenu}
     />
   {/if}
 </div>
-
-<style lang="scss">
-  .tooltip-container {
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-width: 0;
-    min-height: 0;
-    width: min-content;
-
-    .tooltip {
-      overflow: hidden;
-      position: absolute;
-      padding: 0.25rem 0.5rem;
-      bottom: 100%;
-      left: 50%;
-      width: auto;
-      min-width: 0;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-      background-color: var(--accent-bg-color);
-      border: 1px solid var(--button-border-color);
-      border-radius: 0.25rem;
-      transform-origin: center center;
-      transform: translate(-50%, -0.25rem) scale(0.9);
-      opacity: 0;
-      box-shadow: var(--accent-shadow);
-      transition-property: transform, opacity;
-      transition-duration: 0.15s;
-      transition-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      pointer-events: none;
-    }
-    &:hover .tooltip {
-      transform: translate(-50%, -0.5rem) scale(1);
-      opacity: 1;
-    }
-  }
-</style>

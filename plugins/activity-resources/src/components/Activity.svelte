@@ -16,7 +16,7 @@
 <script lang="ts">
   import activity, { TxViewlet } from '@anticrm/activity'
   import chunter from '@anticrm/chunter'
-  import { Class, Doc, Ref, SortingOrder } from '@anticrm/core'
+  import core, { Doc, SortingOrder } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { Component, Grid, IconActivity, Label, Scroller } from '@anticrm/ui'
   import { ActivityKey, activityKey, DisplayTx, newActivity } from '../activity'
@@ -35,14 +35,15 @@
   const activityQuery = newActivity(client, attrs)
 
   let viewlets: Map<ActivityKey, TxViewlet>
-  let editable: Map<Ref<Class<Doc>>, boolean> = new Map()
+
+  let allViewlets: TxViewlet[] = []
 
   const descriptors = createQuery()
   $: descriptors.query(activity.class.TxViewlet, {}, (result) => {
-    viewlets = new Map(result.map((r) => [activityKey(r.objectClass, r.txClass), r]))
-
-    editable = new Map(result.map((it) => [it.objectClass, it.editable ?? false]))
+    allViewlets = result
   })
+
+  $: viewlets = new Map(allViewlets.map((r) => [activityKey(r.objectClass, r.txClass), r]))
 
   $: activityQuery.update(
     object,
@@ -50,7 +51,11 @@
       txes = result
     },
     SortingOrder.Descending,
-    editable
+    new Map(
+      allViewlets
+        .filter((tx) => tx.txClass === core.class.TxCreateDoc)
+        .map((it) => [it.objectClass, it.editable ?? false])
+    )
   )
 </script>
 
@@ -82,7 +87,7 @@
     {/if}
   </div>
 {:else}
-  <div class="mt-4 pb-4 bottom-highlight-select">
+  <div class="pb-6 bottom-highlight-select">
     <slot />
   </div>
   <div class="flex-row-center h-14 px-3 mt-4 antiTitle">
@@ -119,7 +124,6 @@
   .ref-input {
     flex-shrink: 0;
     padding: 1.5rem 0;
-
   }
   .p-activity {
     padding: 1.5rem 0;

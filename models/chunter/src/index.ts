@@ -19,10 +19,10 @@ import type {
   ChunterMessage,
   ChunterSpace,
   Comment,
+  DirectMessage,
   Message,
   SavedMessages,
-  ThreadMessage,
-  DirectMessage
+  ThreadMessage
 } from '@anticrm/chunter'
 import contact, { Employee } from '@anticrm/contact'
 import type { Account, Class, Domain, Ref, Space, Timestamp } from '@anticrm/core'
@@ -42,11 +42,11 @@ import {
 } from '@anticrm/model'
 import attachment from '@anticrm/model-attachment'
 import core, { TAttachedDoc, TSpace } from '@anticrm/model-core'
-import view from '@anticrm/model-view'
-import workbench from '@anticrm/model-workbench'
-import chunter from './plugin'
 import notification from '@anticrm/model-notification'
 import preference, { TPreference } from '@anticrm/model-preference'
+import view, { createAction } from '@anticrm/model-view'
+import workbench from '@anticrm/model-workbench'
+import chunter from './plugin'
 
 export const DOMAIN_CHUNTER = 'chunter' as Domain
 export const DOMAIN_COMMENT = 'comment' as Domain
@@ -195,86 +195,79 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(
-    view.class.Action,
+    view.class.ActionCategory,
     core.space.Model,
+    { label: chunter.string.Chat, visible: true },
+    chunter.category.Chunter
+  )
+
+  createAction(
+    builder,
     {
-      label: chunter.string.MarkUnread,
       action: chunter.actionImpl.MarkUnread,
-      singleInput: true
+      label: chunter.string.MarkUnread,
+      input: 'focus',
+      category: chunter.category.Chunter,
+      target: chunter.class.Message,
+      context: {
+        mode: 'context'
+      }
     },
     chunter.action.MarkUnread
   )
 
-  builder.createDoc(
-    view.class.Action,
-    core.space.Model,
+  createAction(
+    builder,
     {
       label: chunter.string.MarkUnread,
       action: chunter.actionImpl.MarkCommentUnread,
-      singleInput: true
+      input: 'focus',
+      category: chunter.category.Chunter,
+      target: chunter.class.ThreadMessage,
+      context: {
+        mode: 'context'
+      }
     },
     chunter.action.MarkCommentUnread
   )
 
-  builder.createDoc(view.class.ActionTarget, core.space.Model, {
-    target: chunter.class.Message,
-    action: chunter.action.MarkUnread,
-    context: {
-      mode: 'context'
-    }
-  })
-
-  builder.createDoc(
-    view.class.Action,
-    core.space.Model,
+  createAction(
+    builder,
     {
+      action: chunter.actionImpl.ArchiveChannel,
       label: chunter.string.ArchiveChannel,
       icon: view.icon.Archive,
-      action: chunter.actionImpl.ArchiveChannel
+      input: 'focus',
+      category: chunter.category.Chunter,
+      target: chunter.class.Channel,
+      query: {
+        archived: false
+      },
+      context: {
+        mode: 'context'
+      }
     },
     chunter.action.ArchiveChannel
   )
 
-  builder.createDoc(
-    view.class.Action,
-    core.space.Model,
+  createAction(
+    builder,
     {
+      action: chunter.actionImpl.UnarchiveChannel,
       label: chunter.string.UnarchiveChannel,
       icon: view.icon.Archive,
-      action: chunter.actionImpl.UnarchiveChannel
+      input: 'focus',
+      category: chunter.category.Chunter,
+      target: chunter.class.Channel,
+      query: {
+        archived: true
+      },
+      context: {
+        mode: 'context'
+      }
     },
     chunter.action.UnarchiveChannel
   )
-
-  builder.createDoc(view.class.ActionTarget, core.space.Model, {
-    target: chunter.class.Channel,
-    action: chunter.action.ArchiveChannel,
-    query: {
-      archived: false
-    },
-    context: {
-      mode: 'context'
-    }
-  })
-
-  builder.createDoc(view.class.ActionTarget, core.space.Model, {
-    target: chunter.class.Channel,
-    action: chunter.action.UnarchiveChannel,
-    query: {
-      archived: true
-    },
-    context: {
-      mode: 'context'
-    }
-  })
-
-  builder.createDoc(view.class.ActionTarget, core.space.Model, {
-    target: chunter.class.ThreadMessage,
-    action: chunter.action.MarkCommentUnread,
-    context: {
-      mode: 'context'
-    }
-  })
 
   builder.createDoc(
     workbench.class.Application,

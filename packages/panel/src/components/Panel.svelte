@@ -19,34 +19,22 @@
   import type { Doc } from '@anticrm/core'
   import notification from '@anticrm/notification'
   import type { Asset } from '@anticrm/platform'
-  import { AnyComponent, AnySvelteComponent, Component, Panel, Icon } from '@anticrm/ui'
+  import { AnySvelteComponent, Component, Panel, Icon, Scroller } from '@anticrm/ui'
 
   export let title: string | undefined = undefined
   export let subtitle: string | undefined = undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
-  export let rightSection: AnyComponent | undefined = undefined
+  export let withoutActivity: boolean = false
   export let object: Doc
   export let panelWidth: number = 0
   export let innerWidth: number = 0
   export let isHeader: boolean = true
   export let isSub: boolean = true
   export let isAside: boolean = true
-  export let minimize: boolean = false
-
-  let docWidth: number = 0
-  $: minimize = docWidth < 1280 && docWidth >= 1024
-  $: needHeader = $$slots.header || minimize || isHeader
+  export let isCustomAttr: boolean = true
 </script>
 
-<svelte:window bind:innerWidth={docWidth} />
-<Panel
-  rightSection={rightSection !== undefined}
-  bind:isAside
-  isHeader={needHeader}
-  bind:panelWidth
-  bind:innerWidth
-  on:close
->
+<Panel bind:isAside isHeader={$$slots.header || isHeader} bind:panelWidth bind:innerWidth on:close>
   <svelte:fragment slot="title">
     <div class="popupPanel-title__content-container antiTitle">
       {#if $$slots.navigator}
@@ -78,22 +66,16 @@
   </svelte:fragment>
 
   <svelte:fragment slot="header">
-    {#if $$slots.header || ($$slots.actions && minimize)}
+    {#if $$slots.header}
       <div class="header-row between">
         {#if $$slots.header}<slot name="header" />{/if}
         <div class="buttons-group xsmall-gap ml-4">
           <slot name="tools" />
-          {#if $$slots.actions && minimize}
-            <div class="buttons-divider" />
-            <slot name="actions" />
-          {/if}
         </div>
       </div>
     {/if}
-    {#if $$slots['custom-attributes']}
+    {#if $$slots['custom-attributes'] && isCustomAttr}
       {#if isSub}<div class="header-row"><slot name="custom-attributes" direction="row" /></div>{/if}
-    {:else}
-      {#if $$slots.attributes && minimize}<div class="header-row"><slot name="attributes" direction="row" /></div>{/if}
     {/if}
   </svelte:fragment>
 
@@ -107,20 +89,22 @@
           </div>
         </div>
       {/if}
-      {#if $$slots['custom-attributes']}
+      {#if $$slots['custom-attributes'] && isCustomAttr}
         <slot name="custom-attributes" direction="column" />
-      {:else}
-        {#if $$slots.attributes}<slot name="attributes" direction="column" />{/if}
-      {/if}
+      {:else if $$slots.attributes}<slot name="attributes" direction="column" />{/if}
       {#if $$slots.aside}<slot name="aside" />{/if}
     </div>
   </svelte:fragment>
 
-  {#if rightSection !== undefined}
+  {#if withoutActivity}
     <slot />
   {:else}
-    <Component is={activity.component.Activity} props={{ object, integrate: true }}>
-      <slot />
-    </Component>
+    <Scroller>
+      <div class="popupPanel-body__main-content py-10 clear-mins">
+        <Component is={activity.component.Activity} props={{ object, integrate: true }}>
+          <slot />
+        </Component>
+      </div>
+    </Scroller>
   {/if}
 </Panel>

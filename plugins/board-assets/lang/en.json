@@ -54,8 +54,6 @@
     "Move": "Move",
     "Copy": "Copy",
     "MakeTemplate": "Make Template",
-    "Watch": "Watch",
-    "Unwatch": "Unwatch",
     "Archive": "Archive",
     "SendToBoard": "Send to board",
     "Delete": "Delete",
@@ -91,6 +89,7 @@
     "DeleteCard": "All actions will be removed from the activity feed and you won’t be able to re-open the card. There is no undo.",
     "SearchMembers": "Search members",
     "Menu": "Menu",
+    "ShowMenu": "Show menu",
     "ToArchive": "Archive",
     "CopyCard": "Copy card",
     "AlsoCopy": "Keep...",
@@ -98,6 +97,8 @@
     "NoResults": "No results",
     "SwitchToLists": "Switch to lists",
     "SwitchToCards": "Switch to cards",
-    "SearchArchive": "Search archive..."
+    "SearchArchive": "Search archive...",
+    "Size": "Size",
+    "RemoveCover": "Remove cover"
   }
 }

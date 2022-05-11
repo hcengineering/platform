@@ -14,12 +14,29 @@
 //
 
 import type { Employee } from '@anticrm/contact'
-import { AttachedDoc, Class, Doc, Interface, Mixin, Ref, Space, Timestamp, TxOperations } from '@anticrm/core'
+import {
+  AttachedDoc,
+  Class,
+  Doc,
+  Domain,
+  Interface,
+  Markup,
+  Mixin,
+  Ref,
+  Space,
+  Timestamp,
+  TxOperations
+} from '@anticrm/core'
 import type { Asset, IntlString, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'
 import { ViewletDescriptor } from '@anticrm/view'
 import { genRanks } from './utils'
+
+/**
+ * @public
+ */
+export const DOMAIN_STATE = 'state' as Domain
 
 /**
  * @public
@@ -72,9 +89,11 @@ export interface Task extends AttachedDoc, DocWithRank {
  * @public
  */
 export interface TodoItem extends AttachedDoc {
-  name: string
+  name: Markup
+  assignee: Ref<Employee> | null
   done: boolean
-  dueTo?: Timestamp
+  dueTo: Timestamp | null
+  items?: number
 }
 
 /**

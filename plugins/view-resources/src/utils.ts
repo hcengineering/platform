@@ -283,3 +283,35 @@ export function getCollectionCounter (hierarchy: Hierarchy, object: Doc, key: Ke
   }
   return (object as any)[key.key] ?? 0
 }
+
+function filterKeys (hierarchy: Hierarchy, keys: KeyedAttribute[], ignoreKeys: string[]): KeyedAttribute[] {
+  const docKeys: Set<string> = new Set<string>(hierarchy.getAllAttributes(core.class.AttachedDoc).keys())
+  keys = keys.filter((k) => !docKeys.has(k.key))
+  keys = keys.filter((k) => !ignoreKeys.includes(k.key))
+  return keys
+}
+
+export function getFiltredKeys (
+  hierarchy: Hierarchy,
+  objectClass: Ref<Class<Doc>>,
+  ignoreKeys: string[],
+  to?: Ref<Class<Doc>>
+): KeyedAttribute[] {
+  const keys = [...hierarchy.getAllAttributes(objectClass, to).entries()]
+    .filter(([, value]) => value.hidden !== true)
+    .map(([key, attr]) => ({ key, attr }))
+
+  return filterKeys(hierarchy, keys, ignoreKeys)
+}
+
+export function collectionsFilter (hierarchy: Hierarchy, keys: KeyedAttribute[], get: boolean): KeyedAttribute[] {
+  const result: KeyedAttribute[] = []
+  for (const key of keys) {
+    if (isCollectionAttr(hierarchy, key) === get) result.push(key)
+  }
+  return result
+}
+
+function isCollectionAttr (hierarchy: Hierarchy, key: KeyedAttribute): boolean {
+  return hierarchy.isDerived(key.attr.type._class, core.class.Collection)
+}

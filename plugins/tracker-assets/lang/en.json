@@ -45,6 +45,7 @@
     "Medium": "Medium",
     "Low": "Low",
     "Unassigned": "Unassigned",
+    "Back": "Back",
 
     "CategoryBacklog": "Backlog",
     "CategoryUnstarted": "Unstarted",
@@ -94,7 +95,21 @@
     "PastWeek": "Past week",
     "PastMonth": "Past month",
     "CopyIssueUrl": "Copy Issue URL to clipboard",
-    "CopyIssueId": "Copy Issue ID to clipboard"
+    "CopyIssueId": "Copy Issue ID to clipboard",
+
+    "GotoIssues": "Go to issues",
+    "GotoActive": "Go to active issues",
+    "GotoBacklog": "Go to backlog",
+    "GotoBoard": "Go to issue board",
+    "GotoProjects": "Go to projects",
+    "GotoTrackerApplication": "Switch to Tracker Application",
+
+    "Filter": "Filter",
+    "ClearFilters": "Clear filters",
+    "FilterIs": "is",
+    "FilterIsNot": "is not",
+    "FilterIsEither": "is either of",
+    "FilterStatesCount": "{value, plural, =1 {1 state} other {# states}}"
   },
   "status": {}
 }

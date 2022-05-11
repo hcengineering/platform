@@ -29,6 +29,7 @@ export type {
   AnySvelteComponentWithProps,
   Location,
   PopupAlignment,
+  PopupPositionElement,
   ButtonKind,
   ButtonSize
 } from './types'
@@ -114,6 +115,7 @@ export { default as IconInfo } from './components/icons/Info.svelte'
 export { default as IconBlueCheck } from './components/icons/BlueCheck.svelte'
 export { default as IconCheck } from './components/icons/Check.svelte'
 export { default as IconArrowLeft } from './components/icons/ArrowLeft.svelte'
+export { default as IconArrowRight } from './components/icons/ArrowRight.svelte'
 export { default as IconNavPrev } from './components/icons/NavPrev.svelte'
 export { default as IconNavNext } from './components/icons/NavNext.svelte'
 export { default as IconDPCalendar } from './components/calendar/icons/DPCalendar.svelte'

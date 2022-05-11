@@ -73,6 +73,7 @@ export default plugin(coreId, {
     TxPutBag: '' as Ref<Class<TxPutBag<PropertyType>>>,
     Space: '' as Ref<Class<Space>>,
     Account: '' as Ref<Class<Account>>,
+    Type: '' as Ref<Class<Type<any>>>,
     TypeString: '' as Ref<Class<Type<string>>>,
     TypeIntlString: '' as Ref<Class<Type<IntlString>>>,
     TypeNumber: '' as Ref<Class<Type<string>>>,
@@ -112,6 +113,18 @@ export default plugin(coreId, {
     ModifiedBy: '' as IntlString,
     Class: '' as IntlString,
     AttachedTo: '' as IntlString,
-    AttachedToClass: '' as IntlString
+    AttachedToClass: '' as IntlString,
+    String: '' as IntlString,
+    Markup: '' as IntlString,
+    Number: '' as IntlString,
+    Boolean: '' as IntlString,
+    Timestamp: '' as IntlString,
+    Date: '' as IntlString,
+    IntlString: '' as IntlString,
+    Ref: '' as IntlString,
+    Collection: '' as IntlString,
+    Array: '' as IntlString,
+    Bag: '' as IntlString,
+    Name: '' as IntlString
   }
 })

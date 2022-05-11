@@ -1,11 +1,25 @@
+<!--
+// Copyright © 2022 Hardcore Engineering Inc.
+// 
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// 
+// See the License for the specific language governing permissions and
+// limitations under the License.
+-->
 <script lang="ts">
-  import core, { Class, Doc, Ref, TxRemoveDoc } from '@anticrm/core'
+  import core, { Doc, Ref, TxRemoveDoc } from '@anticrm/core'
   import { getResource } from '@anticrm/platform'
   import { addTxListener, getClient } from '@anticrm/presentation'
   import { AnyComponent, Component } from '@anticrm/ui'
-  import { Action, ViewContext } from '@anticrm/view'
+  import { Action, ViewContextType } from '@anticrm/view'
   import { fly } from 'svelte/transition'
-  import { getContextActions } from '../actions'
+  import { getContextActions, getSelection } from '../actions'
   import { contextStore } from '../context'
   import { focusStore, previewDocument, selectionStore } from '../selection'
   import { getObjectPreview } from '../utils'
@@ -14,8 +28,6 @@
 
   let actions: Action[] = []
   let q = 0
-
-  $: selectionClass = $focusStore.focus?._class
 
   addTxListener((tx) => {
     if (tx._class === core.class.TxRemoveDoc) {
@@ -28,56 +40,98 @@
     }
   })
 
-  // let lastKey: KeyboardEvent | undefined
+  let lastKey: KeyboardEvent | undefined
 
   async function updateActions (
-    context: ViewContext,
-    selectionClass: Ref<Class<Doc>> | undefined,
-    multiSelection: boolean
+    context: {
+      mode: ViewContextType
+      application?: Ref<Doc>
+    },
+    focus: Doc | undefined | null,
+    selection: Doc[]
   ): Promise<void> {
     const t = ++q
-    const r = await getContextActions(client, selectionClass ?? core.class.Doc, context, multiSelection)
+
+    let docs: Doc | Doc[] = []
+    if (selection.find((it) => it._id === focus?._id) === undefined && focus != null) {
+      docs = focus
+    } else {
+      docs = selection
+    }
+
+    const r = await getContextActions(client, docs, context)
     if (t === q) {
       actions = r
     }
   }
-  $: ctx = $contextStore[$contextStore.length - 1]
-  $: if (ctx !== undefined) updateActions(ctx, selectionClass, $selectionStore.length > 1)
 
-  function matchKey (key: KeyboardEvent, pattern: string): boolean {
-    const fp = (
+  $: ctx = $contextStore[$contextStore.length - 1]
+  $: if (ctx !== undefined) {
+    updateActions(
+      { mode: ctx.mode as ViewContextType, application: ctx.application },
+      $focusStore.focus,
+      $selectionStore
+    )
+  }
+  function keyPrefix (key: KeyboardEvent): string {
+    return (
       (key.altKey ? 'Alt + ' : '') +
       (key.shiftKey ? 'Shift + ' : '') +
       (key.metaKey ? 'Meta + ' : '') +
-      (key.ctrlKey ? 'Ctrl + ' : '') +
-      key.key
-    ).toLowerCase()
-    const fp2 = (
-      (key.altKey ? 'Alt + ' : '') +
-      (key.shiftKey ? 'Shift + ' : '') +
-      (key.metaKey ? 'Meta + ' : '') +
-      (key.ctrlKey ? 'Ctrl + ' : '') +
-      key.code
-    ).toLowerCase()
-    return fp === pattern.toLowerCase() || fp2 === pattern.toLowerCase()
+      (key.ctrlKey ? 'Ctrl + ' : '')
+    )
+  }
+  function m (s1: string, s2: string): boolean {
+    return s1 === s2.toLowerCase()
+  }
+  function matchKey (key: KeyboardEvent, pattern: string, lastKey?: KeyboardEvent): boolean {
+    const fp = (keyPrefix(key) + key.key).toLowerCase()
+    const fp2 = (keyPrefix(key) + key.code).toLowerCase()
+    const lc = pattern.toLowerCase()
+    if (m(fp, lc) || m(fp2, lc)) {
+      return true
+    }
+    if (lastKey !== undefined) {
+      // Check with last key
+      const pfp = (keyPrefix(key) + lastKey.key).toLowerCase()
+      const pfp2 = (keyPrefix(key) + lastKey.code).toLowerCase()
+
+      return m(`${pfp}->${fp}`, lc) || m(`${pfp2}->${fp}`, lc) || m(`${pfp}->${fp2}`, lc) || m(`${pfp2}->${fp2}`, lc)
+    }
+    return false
   }
 
   async function handleKeys (evt: KeyboardEvent): Promise<void> {
     const targetTagName = (evt.target as any)?.tagName?.toLowerCase()
-    if (targetTagName === 'input' || targetTagName === 'button' || targetTagName === 'textarea') {
-      console.log('no keyboard because', targetTagName, evt.target)
+    let currentActions = actions
+
+    // For none we ignore all actions.
+    if (ctx.mode === 'none') {
       return
     }
-    // lastKey = evt
-    for (const a of actions) {
+
+    const docs = getSelection($focusStore, $selectionStore)
+
+    if (targetTagName === 'input' || targetTagName === 'button' || targetTagName === 'textarea') {
+      // Retrieve actual list of actions for input context
+      currentActions = await getContextActions(client, docs, { ...ctx, mode: 'input' })
+    }
+    for (const a of currentActions) {
       // TODO: Handle multiple keys here
-      if (a.keyBinding?.find((it) => matchKey(evt, it)) !== undefined) {
+      if (a.keyBinding?.find((it) => matchKey(evt, it, lastKey)) !== undefined) {
+        lastKey = undefined
         const action = await getResource(a.action)
         if (action !== undefined) {
-          action($focusStore.focus, evt)
+          await action($focusStore.focus, evt, a.actionProps)
         }
       }
     }
+
+    lastKey = evt
+
+    setTimeout(() => {
+      lastKey = undefined
+    }, 500)
   }
 
   let presenter: AnyComponent | undefined

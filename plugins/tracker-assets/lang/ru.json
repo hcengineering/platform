@@ -1,18 +1,18 @@
 {
   "string": {
-    "TrackerApplication": "Tracker",
-    "Teams": "Your teams",
-    "More": "More",
-    "Delete": "Delete",
-    "Open": "Open",
-    "Members": "Members",
-    "Inbox": "Inbox",
-    "MyIssues": "My issues",
-    "Issues": "Issues",
-    "Views": "Views",
-    "Active": "Active",
-    "Backlog": "Backlog",
-    "Board": "Board",
+    "TrackerApplication": "Трекер",
+    "Teams": "Команды",
+    "More": "Больше",
+    "Delete": "Удалить",
+    "Open": "Открыть",
+    "Members": "Участиники",
+    "Inbox": "Входящие",
+    "MyIssues": "Мои задачи",
+    "Issues": "Задачи",
+    "Views": "Отображения",
+    "Active": "Активные",
+    "Backlog": "Пул задач",
+    "Board": "Канбан",
     "Projects": "Проекты",
     "NewProject": "Новый проект",
     "CreateProject": "Создать проект",
@@ -46,7 +46,7 @@
 
     "Title": "Заголовок",
     "Description": "",
-    "Status": "",
+    "Status": "Статус",
     "Number": "Number",
     "Assignee": "Исполнитель",
     "AssignTo": "Назначить...",
@@ -66,7 +66,14 @@
     "DocumentColor": "",
     "Rank": "",
     "IssueTitlePlaceholder": "Имя задачи",
-    "IssueDescriptionPlaceholder": "Описание задачи"
+    "IssueDescriptionPlaceholder": "Описание задачи",
+
+    "GotoIssues": "Перейти к задачам",
+    "GotoActive": "Перейти к активным задачам",
+    "GotoBacklog": "Перейти к пулу задач",
+    "GotoBoard": "Перейти к канбану",
+    "GotoProjects": "Перейти к проекту",
+    "GotoTrackerApplication": "Перейти к приложению Трекер"
   },
   "status": {}
 }

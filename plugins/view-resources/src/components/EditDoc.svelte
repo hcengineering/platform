@@ -14,11 +14,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { ChannelProvider, formatName } from '@anticrm/contact'
-  import core, { Class, ClassifierKind, Doc, getCurrentAccount, Mixin, Obj, Ref, Space } from '@anticrm/core'
+  import contact, { formatName } from '@anticrm/contact'
+  import { Class, ClassifierKind, Doc, Mixin, Obj, Ref } from '@anticrm/core'
   import notification from '@anticrm/notification'
   import { Panel } from '@anticrm/panel'
-  import { Asset, getResource, IntlString, translate } from '@anticrm/platform'
+  import { Asset, getResource, translate } from '@anticrm/platform'
   import {
     AttributesBar,
     createQuery,
@@ -26,17 +26,16 @@
     getClient,
     KeyedAttribute
   } from '@anticrm/presentation'
-  import setting, { IntegrationType } from '@anticrm/setting'
   import { AnyComponent, Component } from '@anticrm/ui'
   import view from '@anticrm/view'
   import { createEventDispatcher, onDestroy } from 'svelte'
-  import { getCollectionCounter } from '../utils'
+  import { collectionsFilter, getCollectionCounter, getFiltredKeys } from '../utils'
   import ActionContext from './ActionContext.svelte'
+  import DocAttributeBar from './DocAttributeBar.svelte'
   import UpDownNavigator from './UpDownNavigator.svelte'
 
   export let _id: Ref<Doc>
   export let _class: Ref<Class<Doc>>
-  export let rightSection: AnyComponent | undefined = undefined
 
   let lastId: Ref<Doc> = _id
   let lastClass: Ref<Class<Doc>> = _class
@@ -47,7 +46,6 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const notificationClient = getResource(notification.function.GetNotificationClient).then((res) => res())
-  const docKeys: Set<string> = new Set<string>(hierarchy.getAllAttributes(core.class.AttachedDoc).keys())
 
   $: read(_id)
   function read (_id: Ref<Doc>) {
@@ -77,6 +75,7 @@
   let collectionEditors: { key: KeyedAttribute; editor: AnyComponent }[] = []
 
   let mixins: Mixin<Doc>[] = []
+
   $: if (object) {
     parentClass = getParentClass(object._class)
     getMixins()
@@ -91,50 +90,27 @@
     )
   }
 
-  function filterKeys (keys: KeyedAttribute[], ignoreKeys: string[]): KeyedAttribute[] {
-    keys = keys.filter((k) => !docKeys.has(k.key))
-    keys = keys.filter((k) => !ignoreKeys.includes(k.key))
-    return keys
-  }
-
-  function getFiltredKeys (objectClass: Ref<Class<Doc>>, ignoreKeys: string[], to?: Ref<Class<Doc>>): KeyedAttribute[] {
-    const keys = [...hierarchy.getAllAttributes(objectClass, to).entries()]
-      .filter(([, value]) => value.hidden !== true)
-      .map(([key, attr]) => ({ key, attr }))
-
-    return filterKeys(keys, ignoreKeys)
-  }
-
   let ignoreKeys: string[] = []
   let ignoreMixins: Set<Ref<Mixin<Doc>>> = new Set<Ref<Mixin<Doc>>>()
 
   async function updateKeys (): Promise<void> {
-    let filtredKeys = getFiltredKeys(object._class, ignoreKeys)
+    const keysMap = new Map(getFiltredKeys(hierarchy, object._class, ignoreKeys).map((p) => [p.attr._id, p]))
     for (const m of mixins) {
-      const mkeys = getFiltredKeys(m._id, ignoreKeys)
-      filtredKeys = filtredKeys.concat(mkeys).filter((it, idx, arr) => arr.indexOf(it) === idx)
+      const mkeys = getFiltredKeys(hierarchy, m._id, ignoreKeys)
+      for (const key of mkeys) {
+        keysMap.set(key.attr._id, key)
+      }
     }
-    keys = collectionsFilter(filtredKeys, false)
-  
-    const collectionKeys = collectionsFilter(filtredKeys, true)
+    const filtredKeys = Array.from(keysMap.values())
+    keys = collectionsFilter(hierarchy, filtredKeys, false)
+
+    const collectionKeys = collectionsFilter(hierarchy, filtredKeys, true)
     const editors: { key: KeyedAttribute; editor: AnyComponent }[] = []
     for (const k of collectionKeys) {
       const editor = await getCollectionEditor(k)
       editors.push({ key: k, editor })
     }
     collectionEditors = editors
-  }
-
-  function collectionsFilter (keys: KeyedAttribute[], get: boolean): KeyedAttribute[] {
-    const result: KeyedAttribute[] = []
-    for (const key of keys) {
-      if (isCollectionAttr(key) === get) result.push(key)
-    }
-    return result
-  }
-
-  function isCollectionAttr (key: KeyedAttribute): boolean {
-    return hierarchy.isDerived(key.attr.type._class, core.class.Collection)
   }
 
   async function getEditor (_class: Ref<Class<Doc>>): Promise<AnyComponent> {
@@ -146,6 +122,7 @@
 
   let mainEditor: AnyComponent
   $: if (object) getEditorOrDefault(object._class, object._class)
+
   async function getEditorOrDefault (_class: Ref<Class<Doc>> | undefined, defaultClass: Ref<Class<Doc>>): Promise<void> {
     let editor = _class !== undefined ? await getEditor(_class) : undefined
     if (editor === undefined) {
@@ -158,8 +135,8 @@
 
   async function getCollectionEditor (key: KeyedAttribute): Promise<AnyComponent> {
     const attrClass = getAttributePresenterClass(key.attr)
-    const clazz = client.getHierarchy().getClass(attrClass)
-    const editorMixin = client.getHierarchy().as(clazz, view.mixin.AttributeEditor)
+    const clazz = hierarchy.getClass(attrClass)
+    const editorMixin = hierarchy.as(clazz, view.mixin.CollectionEditor)
     return editorMixin.editor
   }
 
@@ -234,52 +211,6 @@
   }
   let panelWidth: number = 0
   let innerWidth: number = 0
-
-  const accountId = getCurrentAccount()._id
-  let channelProviders: ChannelProvider[] | undefined
-  let currentProviders: ChannelProvider[] | undefined
-  let integrations: Set<Ref<IntegrationType>> = new Set<Ref<IntegrationType>>()
-  let displayedIntegrations:
-    | {
-        icon: Asset | undefined
-        label: IntlString
-        presenter: AnyComponent | undefined
-        value: string
-      }[]
-    | undefined = []
-
-  client.findAll(contact.class.ChannelProvider, {}).then((res) => {
-    channelProviders = res
-  })
-  const settingsQuery = createQuery()
-  $: settingsQuery.query(
-    setting.class.Integration,
-    { space: accountId as string as Ref<Space>, disabled: false },
-    (res) => {
-      integrations = new Set(res.map((p) => p.type))
-    }
-  )
-  const channelsQuery = createQuery()
-  $: _id &&
-    integrations &&
-    channelProviders &&
-    channelsQuery.query(contact.class.Channel, { attachedTo: _id }, (res) => {
-      const channels = res
-      currentProviders = channelProviders?.filter((provider) =>
-        provider.integrationType ? integrations.has(provider.integrationType as Ref<IntegrationType>) : false
-      )
-      displayedIntegrations = []
-      currentProviders?.forEach((provider) => {
-        displayedIntegrations?.push({
-          icon: provider.icon,
-          label: provider.label,
-          presenter: provider.presenter,
-          value: channels.filter((ch) => ch.provider === provider._id)[0].value
-        })
-      })
-    })
-
-  let minimize: boolean = false
 </script>
 
 <ActionContext
@@ -292,11 +223,9 @@
   <Panel
     {icon}
     {title}
-    {rightSection}
     {object}
-    bind:minimize
     isHeader={false}
-    isAside={!minimize}
+    isAside={true}
     bind:panelWidth
     bind:innerWidth
     on:update={(ev) => _update(ev.detail)}
@@ -311,30 +240,31 @@
     <svelte:fragment slot="attributes" let:direction={dir}>
       {#if !headerLoading}
         {#if headerEditor !== undefined}
-          <Component is={headerEditor} props={{ object, keys, vertical: dir === 'column' }} />
+          <Component
+            is={headerEditor}
+            props={{ object, keys, mixins, ignoreKeys, vertical: dir === 'column' }}
+            on:update={updateKeys}
+          />
+        {:else if dir === 'column'}
+          <DocAttributeBar {object} {mixins} {ignoreKeys} on:update={updateKeys} />
         {:else}
-          <AttributesBar {object} {keys} vertical={dir === 'column'} />
+          <AttributesBar {object} {keys} />
         {/if}
       {/if}
     </svelte:fragment>
 
-    <div class="main-editor">
-      {#if mainEditor}
-        <Component
-          is={mainEditor}
-          props={{ object }}
-          on:open={(ev) => {
-            ignoreKeys = ev.detail.ignoreKeys
-            ignoreMixins = new Set(ev.detail.ignoreMixins)
-            updateKeys()
-            getMixins()
-          }}
-          on:click={(ev) => {
-            rightSection = ev.detail.presenter
-          }}
-        />
-      {/if}
-    </div>
+    {#if mainEditor}
+      <Component
+        is={mainEditor}
+        props={{ object }}
+        on:open={(ev) => {
+          ignoreKeys = ev.detail.ignoreKeys
+          ignoreMixins = new Set(ev.detail.ignoreMixins)
+          updateKeys()
+          getMixins()
+        }}
+      />
+    {/if}
     {#each collectionEditors as collection}
       {#if collection.editor}
         <div class="mt-6">
@@ -354,11 +284,3 @@
     {/each}
   </Panel>
 {/if}
-
-<style lang="scss">
-  .main-editor {
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
-  }
-</style>

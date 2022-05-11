@@ -1,6 +1,6 @@
 import { Card } from '@anticrm/board'
-import { EmployeeAccount } from '@anticrm/contact'
-import { TxOperations as Client, TxResult, getCurrentAccount } from '@anticrm/core'
+import { Employee, EmployeeAccount } from '@anticrm/contact'
+import { TxOperations as Client, TxResult, getCurrentAccount, Ref } from '@anticrm/core'
 import { showPanel } from '@anticrm/ui'
 
 import board from '../plugin'
@@ -43,7 +43,7 @@ export function canAddCurrentUser (card: Card): boolean {
 }
 
 export function hasCover (card: Card): boolean {
-  return card.coverColor !== undefined || card.coverImage !== undefined
+  return card.cover != null
 }
 
 export function hasDate (card: Card): boolean {
@@ -66,4 +66,13 @@ export function archiveCard (card: Card, client: Client): Promise<TxResult> | un
 
 export function unarchiveCard (card: Card, client: Client): Promise<TxResult> | undefined {
   return updateCard(client, card, 'isArchived', false)
+}
+
+export function updateCardMembers (card: Card, client: Client, users: Array<Ref<Employee>>): void {
+  if (card?.members == null) return
+  const { members } = card
+  const membersToPull = members.filter((member) => !users.includes(member))
+  const usersToPush = users.filter((member) => !members.includes(member))
+  if (membersToPull.length > 0) void updateCard(client, card, '$pull', { members: { $in: membersToPull } })
+  if (usersToPush.length > 0) void updateCard(client, card, '$push', { members: { $each: usersToPush, $position: 0 } })
 }

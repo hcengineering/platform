@@ -20,12 +20,11 @@ import type { Customer, Funnel, Lead } from '@anticrm/lead'
 import { Builder, Collection, Index, Mixin, Model, Prop, TypeRef, TypeString, UX } from '@anticrm/model'
 import attachment from '@anticrm/model-attachment'
 import chunter from '@anticrm/model-chunter'
-import contact, { TPerson } from '@anticrm/model-contact'
+import contact, { TContact } from '@anticrm/model-contact'
 import core from '@anticrm/model-core'
 import task, { TSpaceWithStates, TTask } from '@anticrm/model-task'
-import view from '@anticrm/model-view'
-import workbench from '@anticrm/model-workbench'
-import type {} from '@anticrm/view'
+import view, { createAction } from '@anticrm/model-view'
+import workbench, { Application } from '@anticrm/model-workbench'
 import lead from './plugin'
 
 @Model(lead.class.Funnel, task.class.SpaceWithStates)
@@ -54,7 +53,7 @@ export class TLead extends TTask implements Lead {
 
 @Mixin(lead.mixin.Customer, contact.class.Contact)
 @UX(lead.string.Customer, lead.icon.LeadApplication)
-export class TCustomer extends TPerson implements Customer {
+export class TCustomer extends TContact implements Customer {
   @Prop(Collection(lead.class.Lead), lead.string.Leads)
   leads?: number
 
@@ -102,7 +101,7 @@ export function createModel (builder: Builder): void {
             label: lead.string.Customers,
             icon: contact.icon.Person, // <-- Put contact general icon here.
             component: lead.component.Customers,
-            position: 'bottom'
+            position: 'top'
           }
         ],
         spaces: [
@@ -113,7 +112,8 @@ export function createModel (builder: Builder): void {
             createComponent: lead.component.CreateFunnel
           }
         ]
-      }
+      },
+      navHeaderComponent: lead.component.NewItemsHeader
     },
     lead.app.Lead
   )
@@ -123,10 +123,11 @@ export function createModel (builder: Builder): void {
     descriptor: view.viewlet.Table,
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     options: {
-      lookup: { _id: { channels: contact.class.Channel } } as any
+      lookup: { _id: { channels: contact.class.Channel }, _class: core.class.Class }
     } as FindOptions<Doc>, // TODO: fix
     config: [
       '',
+      '$lookup._class.label',
       { key: 'leads', presenter: lead.component.LeadsPresenter, label: lead.string.Leads },
       'modifiedOn',
       '$lookup.channels'
@@ -186,7 +187,7 @@ export function createModel (builder: Builder): void {
     presenter: lead.component.LeadPresenter
   })
 
-  builder.mixin(lead.class.Lead, core.class.Class, view.mixin.AttributeEditor, {
+  builder.mixin(lead.class.Lead, core.class.Class, view.mixin.CollectionEditor, {
     editor: lead.component.Leads
   })
 
@@ -200,6 +201,26 @@ export function createModel (builder: Builder): void {
     },
     lead.space.FunnelTemplates
   )
+
+  createAction(builder, {
+    action: workbench.actionImpl.Navigate,
+    actionProps: {
+      mode: 'app',
+      application: lead.app.Lead as Ref<Application>
+    },
+    label: lead.string.GotoLeadApplication,
+    icon: view.icon.ArrowRight,
+    input: 'none',
+    category: view.category.Navigation,
+    target: core.class.Doc,
+    context: {
+      mode: ['workbench', 'browser', 'editor', 'panel', 'popup']
+    }
+  })
+
+  builder.mixin(lead.mixin.Customer, core.class.Mixin, view.mixin.ObjectFactory, {
+    component: lead.component.CreateCustomer
+  })
 }
 
 export { leadOperation } from './migration'

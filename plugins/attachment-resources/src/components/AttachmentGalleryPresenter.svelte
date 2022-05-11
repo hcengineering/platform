@@ -107,7 +107,7 @@
     border-radius: 0.75rem;
     justify-content: space-between;
     overflow: hidden;
-    box-shadow: 0 0 0 1px var(--theme-bg-focused-border);
+    border: 1px solid var(--theme-button-border-hovered);
   }
 
   .cellImagePreview {
@@ -115,8 +115,6 @@
     justify-content: center;
     height: 10rem;
     overflow: hidden;
-    margin: 0 1.5rem;
-    border-radius: 0.5rem;
     background-color: var(--theme-menu-color);
     cursor: pointer;
   }
@@ -137,6 +135,7 @@
   .cellInfo {
     display: flex;
     flex-direction: row;
+    border: 1px solid var(--theme-button-border-hovered);
     padding: 0.75rem;
     height: 4rem;
     align-items: center;
@@ -149,6 +148,9 @@
 
     .eCellInfoMenu {
       margin-left: auto;
+      position: absolute;
+      bottom: 1rem;
+      right: 0.5rem;
     }
 
     .eCellInfoFilename {

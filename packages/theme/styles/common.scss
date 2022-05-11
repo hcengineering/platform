@@ -77,7 +77,7 @@
   display: flex;
   justify-content: stretch;
   align-items: stretch;
-  margin: .5rem .75rem .75rem;
+  margin: .5rem 0.5rem .75rem 1rem;
 }
 .antiNav-element {
   flex-shrink: 0;
@@ -202,26 +202,30 @@
 .antiNav-bottomFade { mask-image: linear-gradient(0deg, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 1) 1px, rgba(0, 0, 0, 1) calc(100% - 2rem), rgba(0, 0, 0, 0) 100%); }
 .antiNav-bothFade { mask-image: linear-gradient(0deg, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 1) 2rem, rgba(0, 0, 0, 1) calc(100% - 2rem), rgba(0, 0, 0, 0) 100%); }
 .antiNav-noneFade { mask-image: linear-gradient(0deg, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 1) 1px, rgba(0, 0, 0, 1) calc(100% - 1px), rgba(0, 0, 0, 0) 100%); }
+.tableFade.antiNav-topFade { mask-image: linear-gradient(0deg, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 1) 2rem, rgba(0, 0, 0, 1) calc(100% - 1px), rgba(0, 0, 0, 0) 100%); }
+.tableFade.antiNav-bottomFade { mask-image: linear-gradient(0deg, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 1) 1px, rgba(0, 0, 0, 1) calc(100% - 4.5rem - 1px), rgba(0, 0, 0, 0) calc(100% - 2.5rem), rgba(0, 0, 0, 1) calc(100% - 2.5rem + .5px)); }
+.tableFade.antiNav-bothFade { mask-image: linear-gradient(0deg, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 1) 2rem, rgba(0, 0, 0, 1) calc(100% - 4.5rem - 1px), rgba(0, 0, 0, 0) calc(100% - 2.5rem), rgba(0, 0, 0, 1) calc(100% - 2.5rem + .5px)); }
+.tableFade.antiNav-noneFade { mask-image: linear-gradient(0deg, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 1) 1px, rgba(0, 0, 0, 1) calc(100% - 1px), rgba(0, 0, 0, 0) 100%); }
 
 /* Basic */
 .antiTitle {
-  .icon-wrapper,
-  .title-wrapper {
+  .icon-wrapper, &.icon-wrapper,
+  .title-wrapper, &.title-wrapper {
     display: flex;
     flex-wrap: nowrap;
     min-width: 0;
   }
-  .title-wrapper {
+  .title-wrapper, &.title-wrapper {
     flex-direction: column;
     flex-grow: 1;
   }
-  .icon-wrapper { align-items: center; }
+  .icon-wrapper, &.icon-wrapper { align-items: center; }
 
-  .wrapped-icon {
+  .wrapped-icon, &.wrapped-icon {
     margin-right: .75rem;
     color: var(--content-color);
   }
-  .wrapped-title {
+  .wrapped-title, &.wrapped-title {
     min-width: 0;
     font-weight: 500;
     font-size: 1rem;
@@ -232,7 +236,7 @@
     white-space: nowrap;
     user-select: none;
   }
-  .wrapped-subtitle {
+  .wrapped-subtitle, &.wrapped-subtitle {
     min-width: 0;
     font-size: 0.75rem;
     color: var(--dark-color);
@@ -245,5 +249,7 @@
     -webkit-line-clamp: 2;
     line-clamp: 2;
     user-select: none;
+
+    b { color: var(--content-color); }
   }
 }

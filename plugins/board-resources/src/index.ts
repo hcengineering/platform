@@ -36,8 +36,10 @@ import DateRangePicker from './components/popups/DateRangePicker.svelte'
 import CardDatePresenter from './components/presenters/DatePresenter.svelte'
 import CardLabelPresenter from './components/presenters/LabelPresenter.svelte'
 import TemplatesIcon from './components/TemplatesIcon.svelte'
-import WatchCard from './components/WatchCard.svelte'
 import BoardHeader from './components/BoardHeader.svelte'
+import BoardMenu from './components/BoardMenu.svelte'
+import MenuMainPage from './components/MenuMainPage.svelte'
+import Archive from './components/Archive.svelte'
 import board from './plugin'
 import {
   addCurrentUser,
@@ -45,9 +47,11 @@ import {
   isArchived,
   isUnarchived,
   archiveCard,
-  unarchiveCard
+  unarchiveCard,
+  updateCardMembers
 } from './utils/CardUtils'
 import { getPopupAlignment } from './utils/PopupUtils'
+import CardCoverEditor from './components/popups/CardCoverEditor.svelte'
 
 async function showMoveCardPopup (object: Card, client: Client, e?: Event): Promise<void> {
   showPopup(MoveCard, { object }, getPopupAlignment(e))
@@ -82,13 +86,17 @@ async function showEditMembersPopup (object: Card, client: Client, e?: Event): P
     getPopupAlignment(e),
     undefined,
     (result: Array<Ref<Employee>>) => {
-      void client.update(object, { members: result })
+      updateCardMembers(object, client, result)
     }
   )
 }
 
 async function showAttachmentsPopup (object: Card, client: Client, e?: Event): Promise<void> {
   showPopup(AttachmentPicker, { object }, getPopupAlignment(e))
+}
+
+async function showCoverPopup (object: Card, client: Client, e?: Event): Promise<void> {
+  showPopup(CardCoverEditor, { object }, getPopupAlignment(e))
 }
 
 export default async (): Promise<Resources> => ({
@@ -103,8 +111,10 @@ export default async (): Promise<Resources> => ({
     TemplatesIcon,
     KanbanView,
     BoardPresenter,
-    WatchCard,
-    BoardHeader
+    BoardHeader,
+    BoardMenu,
+    Archive,
+    MenuMainPage
   },
   cardActionHandler: {
     Join: addCurrentUser,
@@ -116,7 +126,8 @@ export default async (): Promise<Resources> => ({
     SendToBoard: unarchiveCard,
     Delete: showDeleteCardPopup,
     Members: showEditMembersPopup,
-    Copy: showCopyCardPopup
+    Copy: showCopyCardPopup,
+    Cover: showCoverPopup
   },
   cardActionSupportedHandler: {
     Join: canAddCurrentUser,

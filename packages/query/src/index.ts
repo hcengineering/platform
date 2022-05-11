@@ -44,7 +44,6 @@ import core, {
   WithLookup,
   toFindResult
 } from '@anticrm/core'
-import justClone from 'just-clone'
 
 interface Query {
   _class: Ref<Class<Doc>>
@@ -325,13 +324,7 @@ export class LiveQuery extends TxProcessor implements Client {
    * Clone document with respect to mixin inner document cloning.
    */
   private clone<T extends Doc>(results: T[]): T[] {
-    const result: T[] = []
-    const h = this.getHierarchy()
-    for (const doc of results) {
-      const m = Hierarchy.mixinClass(doc)
-      result.push(m !== undefined ? h.as(Hierarchy.toDoc(doc), m) : justClone(doc))
-    }
-    return result
+    return this.getHierarchy().clone(results) as T[]
   }
 
   private async refresh (q: Query): Promise<void> {

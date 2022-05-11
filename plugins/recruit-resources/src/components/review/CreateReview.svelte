@@ -68,7 +68,7 @@
   const hierarchy = client.getHierarchy()
 
   export function canClose (): boolean {
-    return (!preserveCandidate ? candidate === undefined : true) && title.length === 0
+    return (preserveCandidate || candidate === undefined) && title.length === 0
   }
 
   let spaceLabel: string = ''

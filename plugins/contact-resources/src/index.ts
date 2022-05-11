@@ -37,6 +37,7 @@ import SocialEditor from './components/SocialEditor.svelte'
 import contact from './plugin'
 import EmployeeAccountPresenter from './components/EmployeeAccountPresenter.svelte'
 import OrganizationEditor from './components/OrganizationEditor.svelte'
+import PersonEditor from './components/PersonEditor.svelte'
 import OrganizationSelector from './components/OrganizationSelector.svelte'
 
 export { Channels, ChannelsEditor, ContactPresenter, ChannelsView, OrganizationSelector, ChannelsDropdown }
@@ -58,6 +59,7 @@ async function queryContact (
 
 export default async (): Promise<Resources> => ({
   component: {
+    PersonEditor,
     OrganizationEditor,
     ContactPresenter,
     PersonPresenter,

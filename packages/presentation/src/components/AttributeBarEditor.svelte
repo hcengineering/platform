@@ -46,7 +46,7 @@
       const typeClass = hierarchy.getClass(typeClassId)
       const editorMixin = hierarchy.as(typeClass, view.mixin.AttributeEditor)
       editor = getResource(editorMixin.editor).catch((cause) => {
-        console.error('failed to find editor for', _class, attribute, typeClassId)
+        console.error(`failed to find editor for ${_class} ${attribute} ${typeClassId} cause: ${cause}`)
       })
     }
   }
@@ -76,6 +76,7 @@
                   this={instance}
                   label={attribute?.label}
                   placeholder={attribute?.label}
+                  type={attribute?.type}
                   {maxWidth}
                   value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
                   space={object.space}
@@ -97,6 +98,7 @@
           this={instance}
           label={attribute?.label}
           placeholder={attribute?.label}
+          type={attribute?.type}
           {maxWidth}
           value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
           space={object.space}
@@ -113,6 +115,7 @@
               this={instance}
               label={attribute?.label}
               placeholder={attribute?.label}
+              type={attribute?.type}
               {maxWidth}
               value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
               space={object.space}
@@ -123,23 +126,29 @@
         </div>
       {:else}
         <span class="fs-bold"><Label label={attribute.label} /></span>
-        <svelte:component
-          this={instance}
-          label={attribute?.label}
-          placeholder={attribute?.label}
-          kind={'link'}
-          size={'large'}
-          {maxWidth}
-          value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
-          space={object.space}
-          {onChange}
-          {focus}
-        />
+        <div class="flex flex-grow">
+          <svelte:component
+            this={instance}
+            label={attribute?.label}
+            placeholder={attribute?.label}
+            kind={'link'}
+            size={'large'}
+            width={'100%'}
+            justify={'left'}
+            type={attribute?.type}
+            {maxWidth}
+            value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
+            space={object.space}
+            {onChange}
+            {focus}
+          />
+        </div>
       {/if}
     {:else}
       <div style="grid-column: 1/3;">
         <svelte:component
           this={instance}
+          type={attribute?.type}
           {maxWidth}
           value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
           space={object.space}

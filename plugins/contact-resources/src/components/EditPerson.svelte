@@ -98,11 +98,13 @@
 {#if object !== undefined}
   <div class="flex-row-stretch flex-grow">
     <div class="mr-8">
-      {#if editable}
-        <EditableAvatar avatar={object.avatar} size={'x-large'} on:done={onAvatarDone} on:remove={removeAvatar} />
-      {:else}
-        <Avatar avatar={object.avatar} size={'x-large'} />
-      {/if}
+      {#key object}
+        {#if editable}
+          <EditableAvatar avatar={object.avatar} size={'x-large'} on:done={onAvatarDone} on:remove={removeAvatar} />
+        {:else}
+          <Avatar avatar={object.avatar} size={'x-large'} />
+        {/if}
+      {/key}
     </div>
     <div class="flex-grow flex-col">
       <div class="flex-grow flex-col">
@@ -143,9 +145,8 @@
             attachedTo={object._id}
             attachedClass={object._class}
             {editable}
-            {integrations}
+            bind:integrations
             shape={'circle'}
-            on:click
           />
         </div>
 

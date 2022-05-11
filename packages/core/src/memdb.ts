@@ -14,7 +14,6 @@
 //
 
 import { PlatformError, Severity, Status } from '@anticrm/platform'
-import clone from 'just-clone'
 import { Lookup, ReverseLookups } from '.'
 import type { Class, Doc, Ref } from './classes'
 import core from './component'
@@ -58,12 +57,12 @@ export abstract class MemDb extends TxProcessor {
     const result: T[] = []
     if (typeof query._id === 'string') {
       const obj = this.objectById.get(query._id) as T
-      if (obj !== undefined) result.push(obj)
+      if (obj !== undefined && this.hierarchy.isDerived(obj._class, _class)) result.push(obj)
     } else if (query._id?.$in !== undefined) {
       const ids = query._id.$in
       for (const id of ids) {
         const obj = this.objectById.get(id) as T
-        if (obj !== undefined) result.push(obj)
+        if (obj !== undefined && this.hierarchy.isDerived(obj._class, _class)) result.push(obj)
       }
     }
     return result
@@ -157,7 +156,7 @@ export abstract class MemDb extends TxProcessor {
     if (options?.sort !== undefined) resultSort(result, options?.sort)
     const total = result.length
     result = result.slice(0, options?.limit)
-    const tresult = clone(result) as WithLookup<T>[]
+    const tresult = this.hierarchy.clone(result) as WithLookup<T>[]
     const res = tresult.map((it) => this.hierarchy.updateLookupMixin(_class, it, options))
     return toFindResult(res, total)
   }

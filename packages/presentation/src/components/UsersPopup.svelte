@@ -63,8 +63,7 @@
     return false
   }
   const checkSelected = (person: Person): void => {
-    if (isSelected(person)) selectedUsers = selectedUsers.filter((p) => p !== person._id)
-    else selectedUsers.push(person._id)
+    selectedUsers = isSelected(person) ? selectedUsers.filter((p) => p !== person._id) : [...selectedUsers, person._id]
     objects = objects
     dispatch('update', selectedUsers)
   }
@@ -117,7 +116,7 @@
     color: var(--caption-color);
     background-color: var(--body-color);
     border: 1px solid var(--button-border-color);
-    border-radius: .25rem;
+    border-radius: 0.25rem;
     box-shadow: none;
   }
 </style>

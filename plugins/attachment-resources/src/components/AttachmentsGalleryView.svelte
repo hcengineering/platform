@@ -79,9 +79,10 @@
     .eAttachmentCellActions {
       display: flex;
       visibility: hidden;
-      border: 1px solid var(--theme-bg-focused-border);
-      padding: 0.2rem;
-      border-radius: 0.375rem;
+      padding: 0.5rem;
+      border: 1px solid var(--theme-button-border-hovered);
+      border-radius: 0.25rem;
+      background-color: var(--board-bg-color);
     }
 
     .eAttachmentCellMenu {

@@ -15,18 +15,22 @@
 
 import { plugin } from '@anticrm/platform'
 import type { Plugin } from '@anticrm/platform'
-import type { Doc, Ref, Class, Space, AttachedDoc } from '@anticrm/core'
+import type { Doc, Ref, Class, Space, AttachedDoc, Timestamp } from '@anticrm/core'
 import type { AnyComponent } from '@anticrm/ui'
 import type { IntegrationType, Handler } from '@anticrm/setting'
+import { Channel } from '@anticrm/contact'
 
 /**
  * @public
  */
 export interface Message extends BaseMessage, AttachedDoc {
+  attachedTo: Ref<Channel>
+  attachedToClass: Ref<Class<Channel>>
   messageId: string
   from: string
   textContent: string
   incoming: boolean
+  sendOn: Timestamp
 }
 
 /**
@@ -61,6 +65,7 @@ export interface SharedMessage extends Doc {
   textContent: string
   attachments?: number
   copy?: string[]
+  sendOn: Timestamp
 }
 
 /**

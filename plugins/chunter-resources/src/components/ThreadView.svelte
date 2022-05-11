@@ -17,7 +17,7 @@
   import { AttachmentRefInput } from '@anticrm/attachment-resources'
   import type { ThreadMessage, Message, ChunterMessage } from '@anticrm/chunter'
   import contact, { Employee } from '@anticrm/contact'
-  import core, { createBacklinks, Doc, generateId, getCurrentAccount, Ref, Space, TxFactory } from '@anticrm/core'
+  import core, { createBacklinks, Doc, generateId, getCurrentAccount, Ref, Space } from '@anticrm/core'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { IconClose, Label, getCurrentLocation, navigate } from '@anticrm/ui'
@@ -38,13 +38,17 @@
 
   let div: HTMLDivElement | undefined
   let autoscroll: boolean = false
+  let isScrollForced = false
 
   beforeUpdate(() => {
     autoscroll = div !== undefined && div.offsetHeight + div.scrollTop > div.scrollHeight - 20
   })
 
   afterUpdate(() => {
-    if (div && autoscroll) div.scrollTo(0, div.scrollHeight)
+    if (div && (autoscroll || isScrollForced)) {
+      div.scrollTo(0, div.scrollHeight)
+      isScrollForced = false
+    }
   })
 
   const notificationClient = NotificationClientImpl.getClient()
@@ -138,8 +142,7 @@
   async function onMessage (event: CustomEvent) {
     const { message, attachments } = event.detail
     const me = getCurrentAccount()._id
-    const txFactory = new TxFactory(me)
-    const tx = txFactory.createTxCreateDoc<ThreadMessage>(
+    await client.createDoc(
       chunter.class.ThreadMessage,
       currentSpace,
       {
@@ -148,19 +151,17 @@
         collection: 'replies',
         content: message,
         createBy: me,
-        createOn: 0,
+        createOn: Date.now(),
         attachments
       },
       commentId
     )
-    tx.attributes.createOn = tx.modifiedOn
-    await notificationClient.updateLastView(_id, chunter.class.Message, tx.modifiedOn, true)
-    await client.tx(tx)
 
     // Create an backlink to document
     await createBacklinks(client, currentSpace, chunter.class.ChunterSpace, commentId, message)
 
     commentId = generateId()
+    isScrollForced = true
   }
   let comments: ThreadMessage[] = []
 

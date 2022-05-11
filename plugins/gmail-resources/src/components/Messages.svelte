@@ -15,7 +15,6 @@
 -->
 <script lang="ts">
   import type { SharedMessage } from '@anticrm/gmail'
-  import { Grid } from '@anticrm/ui'
   import MessageView from './Message.svelte'
   import { Ref } from '@anticrm/core'
   import { createEventDispatcher } from 'svelte'
@@ -40,17 +39,15 @@
   }
 </script>
 
-<Grid column={1} rowGap={0.5}>
-  {#if messages}
-    {#each messages as message (message._id)}
-      <MessageView
-        {message}
-        {selectable}
-        selected={selected.has(message._id)}
-        on:select={() => {
-          select(message._id)
-        }}
-      />
-    {/each}
-  {/if}
-</Grid>
+{#if messages}
+  {#each messages as message (message._id)}
+    <MessageView
+      {message}
+      {selectable}
+      selected={selected.has(message._id)}
+      on:select={() => {
+        select(message._id)
+      }}
+    />
+  {/each}
+{/if}

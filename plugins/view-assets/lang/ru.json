@@ -15,6 +15,24 @@
     "DeleteObjectConfirm": "Вы действительно хотите удалить {count, plural, =1 {этот обьект} other {эти # обьекта}}?",
     "Open": "Открыть",
     "Assignees": "Исполнители",
-    "Labels": "Метки"
+    "Labels": "Метки",
+    "ActionPlaceholder": "введите для филтрации...",
+    "General": "Общее",
+    "Navigation": "Навигация",
+    "Editor": "Редактор",
+    "MarkdownFormatting": "Форматирование",
+    "Type": "Тип",
+    "WithTime": "Со временем",
+    "CreatingAttribute": "Создание атрибута",
+    "CreatingAttributeConfirm": "Предупреждение: Изменить или удалить аттрибут в текущей версии невозможно.",
+    "MoveLeft": "Переместить влево",
+    "MoveRight": "Переместить вправо",
+    "MoveUp": "Переместить вверх",
+    "MoveDown": "Переместить вниз",
+    "SelectItem": "Выбрать",
+    "SelectItemAll": "Выбрать все",
+    "SelectItemNone": "Снять все выделения",
+    "ShowPreview": "Предпросмотр документа",
+    "ShowActions": "Показать действия"
   }
 }

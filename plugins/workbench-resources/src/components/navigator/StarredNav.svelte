@@ -74,7 +74,7 @@
         label: act.label,
         action: async (evt: Event) => {
           const impl = await getResource(act.action)
-          await impl(space, evt)
+          await impl(space, evt, act.actionProps)
         }
       })
     }

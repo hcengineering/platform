@@ -37,6 +37,14 @@ import TimestampPresenter from './components/TimestampPresenter.svelte'
 import UpDownNavigator from './components/UpDownNavigator.svelte'
 import GithubPresenter from './components/linkPresenters/GithubPresenter.svelte'
 import YoutubePresenter from './components/linkPresenters/YoutubePresenter.svelte'
+import ActionsPopup from './components/ActionsPopup.svelte'
+import CreateAttribute from './components/CreateAttribute.svelte'
+import StringTypeEditor from './components/typeEditors/StringTypeEditor.svelte'
+import BooleanTypeEditor from './components/typeEditors/BooleanTypeEditor.svelte'
+import DateTypeEditor from './components/typeEditors/DateTypeEditor.svelte'
+import NumberTypeEditor from './components/typeEditors/NumberTypeEditor.svelte'
+import RefEditor from './components/typeEditors/RefEditor.svelte'
+import DocAttributeBar from './components/DocAttributeBar.svelte'
 
 export { getActions } from './actions'
 export { default as ActionContext } from './components/ActionContext.svelte'
@@ -47,11 +55,17 @@ export { default as LinkPresenter } from './components/LinkPresenter.svelte'
 export * from './context'
 export * from './selection'
 export { buildModel, getCollectionCounter, getObjectPresenter, LoadingProps } from './utils'
-export { Table, TableView, EditDoc, ColorsPopup, Menu, SpacePresenter, UpDownNavigator }
+export { Table, TableView, DocAttributeBar, EditDoc, ColorsPopup, Menu, SpacePresenter, UpDownNavigator }
 
 export default async (): Promise<Resources> => ({
   actionImpl: actionImpl,
   component: {
+    CreateAttribute,
+    StringTypeEditor,
+    BooleanTypeEditor,
+    NumberTypeEditor,
+    RefEditor,
+    DateTypeEditor,
     SpacePresenter,
     StringEditor,
     StringPresenter,
@@ -69,6 +83,7 @@ export default async (): Promise<Resources> => ({
     HTMLPresenter,
     IntlStringPresenter,
     GithubPresenter,
-    YoutubePresenter
+    YoutubePresenter,
+    ActionsPopup
   }
 })

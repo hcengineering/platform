@@ -27,7 +27,7 @@
 
   let name: string
   const done = false
-  let dueTo: number
+  let dueTo: number | null = null
 
   $: _space = space
 
@@ -41,8 +41,9 @@
   async function createTodo () {
     await client.addCollection(task.class.TodoItem, space, objectId, _class, 'todos', {
       name,
+      assignee: null,
       done,
-      dueTo: dueTo ?? undefined
+      dueTo: dueTo ?? null
     })
   }
 </script>

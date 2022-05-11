@@ -1,10 +1,8 @@
 <script lang="ts">
   import core, { Ref, Space } from '@anticrm/core'
-  import { Button, showPopup } from '@anticrm/ui'
+  import { Button, getCurrentLocation, navigate, location } from '@anticrm/ui'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { Header, classIcon } from '@anticrm/chunter-resources'
-  import Menu from './popups/Menu.svelte'
-  import { getPopupAlignment } from '../utils/PopupUtils'
   import border from '../plugin'
 
   export let spaceId: Ref<Space> | undefined
@@ -17,14 +15,19 @@
 
   const client = getClient()
 
-  function showMenu (e: MouseEvent) {
-    showPopup(Menu, { space: space._id }, getPopupAlignment(e, { h: 'left', v: 'top' }))
+  function showMenu () {
+    const loc = getCurrentLocation()
+    loc.path[3] = space._id
+    navigate(loc)
   }
+  $: showMenuButton = $location.path[3] !== spaceId
 </script>
 
 <div class="ac-header divide full">
   {#if space}
     <Header icon={classIcon(client, space._class)} label={space.name} description={space.description} />
-    <Button label={border.string.Menu} on:click={showMenu} />
+    {#if showMenuButton}
+      <Button label={border.string.ShowMenu} on:click={showMenu} />
+    {/if}
   {/if}
 </div>

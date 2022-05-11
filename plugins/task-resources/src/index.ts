@@ -14,13 +14,12 @@
 // limitations under the License.
 //
 
-import { Class, Client, Doc, Ref } from '@anticrm/core'
+import { Class, Client, Ref } from '@anticrm/core'
 import { IntlString, Resources, translate } from '@anticrm/platform'
-import { getClient, MessageBox, ObjectSearchResult } from '@anticrm/presentation'
-import { SpaceWithStates, Task, TodoItem } from '@anticrm/task'
+import { ObjectSearchResult } from '@anticrm/presentation'
+import { SpaceWithStates, Task } from '@anticrm/task'
 import { showPopup } from '@anticrm/ui'
 import CreateProject from './components/CreateProject.svelte'
-import CreateTask from './components/CreateTask.svelte'
 import EditIssue from './components/EditIssue.svelte'
 import KanbanTemplateEditor from './components/kanban/KanbanTemplateEditor.svelte'
 import KanbanTemplateSelector from './components/kanban/KanbanTemplateSelector.svelte'
@@ -43,54 +42,8 @@ import TodoStatePresenter from './components/todos/TodoStatePresenter.svelte'
 import AssignedTasks from './components/AssignedTasks.svelte'
 import task from './plugin'
 
-async function createTask (object: Doc): Promise<void> {
-  showPopup(CreateTask, { parent: object._id, space: object.space })
-}
-
 async function editStatuses (object: SpaceWithStates): Promise<void> {
   showPopup(EditStatuses, { _id: object._id, spaceClass: object._class }, 'right')
-}
-
-async function toggleDone (value: boolean, object: TodoItem): Promise<void> {
-  await getClient().update(object, { done: value })
-}
-
-async function ArchiveSpace (object: SpaceWithStates): Promise<void> {
-  showPopup(
-    MessageBox,
-    {
-      label: task.string.Archive,
-      message: task.string.ArchiveConfirm
-    },
-    undefined,
-    (result: boolean) => {
-      if (result) {
-        const client = getClient()
-
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        client.update(object, { archived: true })
-      }
-    }
-  )
-}
-
-async function UnarchiveSpace (object: SpaceWithStates): Promise<void> {
-  showPopup(
-    MessageBox,
-    {
-      label: task.string.Unarchive,
-      message: task.string.UnarchiveConfirm
-    },
-    undefined,
-    (result: boolean) => {
-      if (result) {
-        const client = getClient()
-
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        client.update(object, { archived: false })
-      }
-    }
-  )
 }
 
 export async function queryTask<D extends Task> (
@@ -136,7 +89,6 @@ export type StatesBarPosition = 'start' | 'middle' | 'end' | undefined
 
 export default async (): Promise<Resources> => ({
   component: {
-    CreateTask,
     CreateProject,
     TaskPresenter,
     EditIssue,
@@ -158,12 +110,7 @@ export default async (): Promise<Resources> => ({
     TodoItemsPopup
   },
   actionImpl: {
-    CreateTask: createTask,
-    EditStatuses: editStatuses,
-    TodoItemMarkDone: async (obj: TodoItem) => await toggleDone(true, obj),
-    TodoItemMarkUnDone: async (obj: TodoItem) => await toggleDone(false, obj),
-    ArchiveSpace,
-    UnarchiveSpace
+    EditStatuses: editStatuses
   },
   completion: {
     IssueQuery: async (client: Client, query: string) => await queryTask(task.class.Issue, client, query)
