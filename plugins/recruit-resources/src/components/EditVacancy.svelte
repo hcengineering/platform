@@ -14,15 +14,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import activity from '@anticrm/activity'
   import { Attachments } from '@anticrm/attachment-resources'
   import type { Ref } from '@anticrm/core'
-  import type { IntlString } from '@anticrm/platform'
   import { Panel } from '@anticrm/panel'
   import { AttributesBar, createQuery, getClient, Members } from '@anticrm/presentation'
   import { Vacancy } from '@anticrm/recruit'
   import { StyledTextBox } from '@anticrm/text-editor'
-  import { ActionIcon, Component, EditBox, Grid, Icon, IconClose, Label, Scroller } from '@anticrm/ui'
+  import { EditBox } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
 
@@ -45,8 +43,7 @@
 
   $: updateObject(_id)
 
-  const tabs: IntlString[] = [recruit.string.General, recruit.string.Members, activity.string.Activity]
-  let selected = 0
+  // const tabs: IntlString[] = [recruit.string.General, recruit.string.Members, activity.string.Activity]
 
   function onChange (key: string, value: any): void {
     client.updateDoc(object._class, object.space, object._id, { [key]: value })

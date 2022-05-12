@@ -114,7 +114,12 @@
     size={'small'}
     icon={IconCopy}
     on:mousemove={() => { show = true }}
+    on:focus={() => { show = true }}
     on:mouseleave={() => {
+      show = false
+      label = plugin.string.CopyToClipboard
+    }}
+    on:blur={() => {
       show = false
       label = plugin.string.CopyToClipboard
     }}
