@@ -33,13 +33,10 @@ import EditVacancy from './components/EditVacancy.svelte'
 import KanbanCard from './components/KanbanCard.svelte'
 import CreateOpinion from './components/review/CreateOpinion.svelte'
 import CreateReview from './components/review/CreateReview.svelte'
-import CreateReviewCategory from './components/review/CreateReviewCategory.svelte'
 import EditReview from './components/review/EditReview.svelte'
-import EditReviewCategory from './components/review/EditReviewCategory.svelte'
 import OpinionPresenter from './components/review/OpinionPresenter.svelte'
 import Opinions from './components/review/Opinions.svelte'
 import OpinionsPresenter from './components/review/OpinionsPresenter.svelte'
-import ReviewCategoryPresenter from './components/review/ReviewCategoryPresenter.svelte'
 import ReviewPresenter from './components/review/ReviewPresenter.svelte'
 import Reviews from './components/review/Reviews.svelte'
 import SkillsView from './components/SkillsView.svelte'
@@ -152,8 +149,6 @@ export default async (): Promise<Resources> => ({
     VacancyCountPresenter,
     VacancyModifiedPresenter,
 
-    CreateReviewCategory,
-    EditReviewCategory,
     CreateReview,
     ReviewPresenter,
     EditReview,
@@ -161,7 +156,6 @@ export default async (): Promise<Resources> => ({
     Opinions,
     OpinionPresenter,
     OpinionsPresenter,
-    ReviewCategoryPresenter,
     ApplicationsView,
 
     NewCandidateHeader

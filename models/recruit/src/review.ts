@@ -3,9 +3,7 @@ import { Builder } from '@anticrm/model'
 import calendar from '@anticrm/model-calendar'
 import contact from '@anticrm/model-contact'
 import core from '@anticrm/model-core'
-import { actionTemplates } from '@anticrm/model-task'
 import view, { createAction } from '@anticrm/model-view'
-import workbench from '@anticrm/model-workbench'
 import { Review } from '@anticrm/recruit'
 import { BuildModelKey } from '@anticrm/view'
 import recruit from './plugin'
@@ -35,14 +33,6 @@ export const reviewTableConfig: (BuildModelKey | string)[] = [
 ]
 
 export function createReviewModel (builder: Builder): void {
-  builder.mixin(recruit.class.ReviewCategory, core.class.Class, workbench.mixin.SpaceView, {
-    view: {
-      class: recruit.class.Review,
-      createItemDialog: recruit.component.CreateReview,
-      createItemLabel: recruit.string.ReviewCreateLabel
-    }
-  })
-
   builder.mixin(recruit.class.Review, core.class.Class, view.mixin.CollectionEditor, {
     editor: recruit.component.Reviews
   })
@@ -105,9 +95,6 @@ export function createReviewModel (builder: Builder): void {
       mode: ['context', 'browser']
     }
   })
-
-  createAction(builder, { ...actionTemplates.archiveSpace, target: recruit.class.ReviewCategory })
-  createAction(builder, { ...actionTemplates.unarchiveSpace, target: recruit.class.ReviewCategory })
 
   const reviewOptions: FindOptions<Review> = {
     lookup: {

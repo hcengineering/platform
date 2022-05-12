@@ -115,12 +115,7 @@
   </div>
   <div class="scroll">
     <div class="box">
-      <ListView
-        bind:this={list}
-        count={objects.length}
-        bind:selection
-        on:click={(evt) => handleSelection(evt, evt.detail)}
-      >
+      <ListView bind:this={list} count={objects.length} bind:selection>
         <svelte:fragment slot="item" let:item>
           {@const person = objects[item]}
           <button

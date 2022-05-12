@@ -20,7 +20,7 @@
   import { Doc, DocumentQuery, FindOptions } from '@anticrm/core'
   import { Applicant } from '@anticrm/recruit'
   import task from '@anticrm/task'
-  import { Button, Icon, IconAdd, Label, Scroller, SearchEdit, showPopup } from '@anticrm/ui'
+  import { Button, Icon, IconAdd, Label, SearchEdit, showPopup } from '@anticrm/ui'
   import { BuildModelKey } from '@anticrm/view'
   import { TableBrowser } from '@anticrm/view-resources'
   import recruit from '../plugin'
@@ -82,6 +82,4 @@
   <Button icon={IconAdd} label={recruit.string.ApplicationCreateLabel} kind={'primary'} on:click={showCreateDialog} />
 </div>
 
-<Scroller tableFade>
-  <TableBrowser _class={recruit.class.Applicant} {config} {options} query={resultQuery} showNotification />
-</Scroller>
+<TableBrowser _class={recruit.class.Applicant} {config} {options} query={resultQuery} showNotification />

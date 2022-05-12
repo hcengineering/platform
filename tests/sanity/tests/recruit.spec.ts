@@ -136,34 +136,20 @@ test.describe('recruit tests', () => {
 
     await page.locator('[id="app-recruit\\:string\\:RecruitApplication"]').click()
 
-    await page.hover('text=Reviews')
-    await page.click('[name="tooltip-recruit:string:CreateReviewCategory"]')
+    await page.click('text=Reviews')
 
-    await page.fill('[placeholder="Interview"]', interviewId)
-    await page.click('button:has-text("Create")')
-    await page.locator(`text=${interviewId}`).click()
-
-    // Click button:has-text("Review")
     await page.click('button:has-text("Review")')
-    // Click [placeholder="\ "]
-    await page.click('[placeholder="Title"]')
-    // Fill [placeholder="\ "]
-    await page.fill('[placeholder="Title"]', 'Meet PEterson')
-    // Click text=Location Company Company >> [placeholder="\ "]
-    await page.click('[placeholder="Location"]')
-    // Fill text=Location Company Company >> [placeholder="\ "]
-    await page.fill('[placeholder="Location"]', 'NSK')
-    // Click text=Company Company >> div
-    // await page.click('text=Company Company >> div')
-    // Click button:has-text("Apple")
-    // await page.click('button:has-text("Apple")')
-    // Click text=Candidate Not selected >> span
-    await page.click('form button:has-text("Candidate")')
-    // Click button:has-text("Andrey P.")
-    await page.click('button:has-text("Andrey P.")')
-    // Click text=Create
-    await page.click('text=Create')
 
+    await page.click('[placeholder="Title"]')
+
+    await page.fill('[placeholder="Title"]', `Meet Peterson ${interviewId}`)
+
+    await page.click('[placeholder="Location"]')
+
+    await page.fill('[placeholder="Location"]', 'NSK')
+    await page.click('form button:has-text("Candidate")')
+    await page.click('button:has-text("Andrey P.")')
+    await page.click('text=Create')
     await page.click('td:has-text("RVE-")')
   })
 })

@@ -64,7 +64,6 @@ export default mergeIds(recruitId, recruit, {
     ApplicationPresenter: '' as AnyComponent,
     ApplicationsPresenter: '' as AnyComponent,
     VacancyPresenter: '' as AnyComponent,
-    ReviewCategoryPresenter: '' as AnyComponent,
     EditApplication: '' as AnyComponent,
     TemplatesIcon: '' as AnyComponent,
     Applications: '' as AnyComponent,
@@ -73,7 +72,6 @@ export default mergeIds(recruitId, recruit, {
     SkillsView: '' as AnyComponent,
     Vacancies: '' as AnyComponent,
 
-    CreateReviewCategory: '' as AnyComponent,
     CreateReview: '' as AnyComponent,
     Reviews: '' as AnyComponent,
     KanbanReviewCard: '' as AnyComponent,
@@ -86,8 +84,6 @@ export default mergeIds(recruitId, recruit, {
   },
   template: {
     DefaultVacancy: '' as Ref<KanbanTemplate>,
-
-    Interview: '' as Ref<KanbanTemplate>,
     Task: '' as Ref<KanbanTemplate>
   },
   completion: {

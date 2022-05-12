@@ -17,13 +17,12 @@
   import { Class, DocumentQuery, FindOptions, Ref, SortingOrder } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
   import { DoneState, SpaceWithStates, State, Task } from '@anticrm/task'
-  import { ScrollBox } from '@anticrm/ui'
   import Label from '@anticrm/ui/src/components/Label.svelte'
   import { TableBrowser } from '@anticrm/view-resources'
+  import task from '../plugin'
   import Lost from './icons/Lost.svelte'
   import Won from './icons/Won.svelte'
   import StatesBar from './state/StatesBar.svelte'
-  import task from '../plugin'
 
   export let _class: Ref<Class<Task>>
   export let space: Ref<SpaceWithStates>
@@ -176,9 +175,7 @@
   </div>
 </div>
 <div class="statustableview-container">
-  <ScrollBox vertical stretch noShift>
-    <TableBrowser {_class} {query} config={resConfig} {options} showNotification />
-  </ScrollBox>
+  <TableBrowser {_class} {query} config={resConfig} {options} showNotification />
 </div>
 
 <style lang="scss">

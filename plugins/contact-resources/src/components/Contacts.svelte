@@ -16,7 +16,7 @@
 <script lang="ts">
   import { Doc, DocumentQuery } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
-  import { Button, Icon, IconAdd, Label, Scroller, SearchEdit, showPopup } from '@anticrm/ui'
+  import { Button, Icon, IconAdd, Label, SearchEdit, showPopup } from '@anticrm/ui'
   import view, { Viewlet } from '@anticrm/view'
   import { ActionContext, TableBrowser } from '@anticrm/view-resources'
   import contact from '../plugin'
@@ -66,17 +66,15 @@
     />
   </div>
 
-  <Scroller tableFade>
-    {#await tableDescriptor then descr}
-      {#if descr}
-        <TableBrowser
-          _class={contact.class.Contact}
-          config={descr.config}
-          options={descr.options}
-          query={resultQuery}
-          showNotification
-        />
-      {/if}
-    {/await}
-  </Scroller>
+  {#await tableDescriptor then descr}
+    {#if descr}
+      <TableBrowser
+        _class={contact.class.Contact}
+        config={descr.config}
+        options={descr.options}
+        query={resultQuery}
+        showNotification
+      />
+    {/if}
+  {/await}
 </div>

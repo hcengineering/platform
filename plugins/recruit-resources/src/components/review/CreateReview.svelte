@@ -21,14 +21,14 @@
   import { getResource, OK, Resource, Severity, Status } from '@anticrm/platform'
   import { Card, getClient, UserBox, UserBoxList } from '@anticrm/presentation'
   import type { Candidate, Review } from '@anticrm/recruit'
-  import task, { SpaceWithStates } from '@anticrm/task'
+  import task from '@anticrm/task'
   import { StyledTextBox } from '@anticrm/text-editor'
   import { DateRangePresenter, EditBox, Status as StatusControl } from '@anticrm/ui'
   import view from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../../plugin'
 
-  export let space: Ref<SpaceWithStates>
+  // export let space: Ref<SpaceWithStates>
   export let candidate: Ref<Person>
 
   export let preserveCandidate = false
@@ -49,7 +49,7 @@
     attachedTo: candidate,
     attachedToClass: recruit.mixin.Candidate,
     _class: recruit.class.Review,
-    space: space,
+    space: recruit.space.Reviews,
     _id: generateId(),
     collection: 'reviews',
     modifiedOn: Date.now(),
@@ -147,11 +147,6 @@
   labelProps={{ label: spaceLabel }}
   okAction={createReview}
   canSave={status.severity === Severity.OK && title.trim().length > 0}
-  spaceClass={recruit.class.ReviewCategory}
-  spaceQuery={{ archived: false }}
-  spaceLabel={recruit.string.ReviewCategory}
-  spacePlaceholder={recruit.string.SelectReviewCategory}
-  bind:space={doc.space}
   on:close={() => {
     dispatch('close')
   }}

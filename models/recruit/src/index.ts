@@ -44,7 +44,7 @@ import { Applicant, Candidate, Candidates, Vacancy } from '@anticrm/recruit'
 import { KeyBinding } from '@anticrm/view'
 import recruit from './plugin'
 import { createReviewModel, reviewTableConfig, reviewTableOptions } from './review'
-import { TOpinion, TReview, TReviewCategory } from './review-model'
+import { TOpinion, TReview } from './review-model'
 
 @Model(recruit.class.Vacancy, task.class.SpaceWithStates)
 @UX(recruit.string.Vacancy, recruit.icon.Vacancy)
@@ -123,7 +123,7 @@ export class TApplicant extends TTask implements Applicant {
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TVacancy, TCandidates, TCandidate, TApplicant, TReviewCategory, TReview, TOpinion)
+  builder.createModel(TVacancy, TCandidates, TCandidate, TApplicant, TReview, TOpinion)
 
   builder.mixin(recruit.class.Vacancy, core.class.Class, workbench.mixin.SpaceView, {
     view: {
@@ -156,14 +156,7 @@ export function createModel (builder: Builder): void {
       icon: recruit.icon.RecruitApplication,
       hidden: false,
       navigatorModel: {
-        spaces: [
-          {
-            label: recruit.string.ReviewCategory,
-            spaceClass: recruit.class.ReviewCategory,
-            addSpaceLabel: recruit.string.CreateReviewCategory,
-            createComponent: recruit.component.CreateReviewCategory
-          }
-        ],
+        spaces: [],
         specials: [
           {
             id: vacanciesId,
@@ -218,15 +211,19 @@ export function createModel (builder: Builder): void {
             }
           },
           {
-            id: 'upcoming',
-            component: calendar.component.UpcomingEvents,
+            id: 'reviews',
+            component: calendar.component.Events,
             componentProps: {
+              viewLabel: recruit.string.Reviews,
+              viewIcon: recruit.icon.Review,
               _class: recruit.class.Review,
               options: reviewTableOptions,
-              config: reviewTableConfig
+              config: reviewTableConfig,
+              createLabel: recruit.string.ReviewCreateLabel,
+              createComponent: recruit.component.CreateReview
             },
             icon: calendar.icon.Calendar,
-            label: calendar.string.UpcomingEvents,
+            label: recruit.string.Reviews,
             position: 'event'
           }
         ]
@@ -343,20 +340,12 @@ export function createModel (builder: Builder): void {
     editor: recruit.component.EditVacancy
   })
 
-  builder.mixin(recruit.class.ReviewCategory, core.class.Class, view.mixin.ObjectEditor, {
-    editor: recruit.component.EditReviewCategory
-  })
-
   builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.AttributePresenter, {
     presenter: recruit.component.ApplicationPresenter
   })
 
   builder.mixin(recruit.class.Vacancy, core.class.Class, view.mixin.AttributePresenter, {
     presenter: recruit.component.VacancyPresenter
-  })
-
-  builder.mixin(recruit.class.ReviewCategory, core.class.Class, view.mixin.AttributePresenter, {
-    presenter: recruit.component.ReviewCategoryPresenter
   })
 
   builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.ObjectValidator, {

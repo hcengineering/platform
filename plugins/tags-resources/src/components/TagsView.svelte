@@ -17,7 +17,7 @@
   import { IntlString, translate } from '@anticrm/platform'
   import { createQuery } from '@anticrm/presentation'
   import { TagCategory, TagElement } from '@anticrm/tags'
-  import { Button, Icon, Label, Scroller, SearchEdit, showPopup, IconAdd } from '@anticrm/ui'
+  import { Button, Icon, IconAdd, Label, SearchEdit, showPopup } from '@anticrm/ui'
   import { TableBrowser } from '@anticrm/view-resources'
   import tags from '../plugin'
   import CategoryBar from './CategoryBar.svelte'
@@ -108,40 +108,38 @@
     updateResultQuery(search, category)
   }}
 />
-<Scroller tableFade>
-  <TableBrowser
-    _class={tags.class.TagElement}
-    config={[
-      {
-        key: '',
-        label: item,
-        presenter: tags.component.TagElementPresenter,
-        props: { edit: true, keyTitle },
-        sortingKey: 'title'
-      },
-      ...(category === undefined
-        ? [
-            {
-              key: '$lookup.category',
-              presenter: tags.component.CategoryPresenter,
-              sortingKey: 'category',
-              label: tags.string.CategoryLabel
-            }
-          ]
-        : []),
-      {
-        key: '',
-        presenter: tags.component.TagElementCountPresenter,
-        label: item,
-        props: { tagElements, label: item, onTag },
-        sortingKey: '@tagCount',
-        sortingFunction: countSorting
-      },
-      'description',
-      'modifiedOn'
-    ]}
-    options={opt}
-    query={resultQuery}
-    showNotification
-  />
-</Scroller>
+<TableBrowser
+  _class={tags.class.TagElement}
+  config={[
+    {
+      key: '',
+      label: item,
+      presenter: tags.component.TagElementPresenter,
+      props: { edit: true, keyTitle },
+      sortingKey: 'title'
+    },
+    ...(category === undefined
+      ? [
+          {
+            key: '$lookup.category',
+            presenter: tags.component.CategoryPresenter,
+            sortingKey: 'category',
+            label: tags.string.CategoryLabel
+          }
+        ]
+      : []),
+    {
+      key: '',
+      presenter: tags.component.TagElementCountPresenter,
+      label: item,
+      props: { tagElements, label: item, onTag },
+      sortingKey: '@tagCount',
+      sortingFunction: countSorting
+    },
+    'description',
+    'modifiedOn'
+  ]}
+  options={opt}
+  query={resultQuery}
+  showNotification
+/>
