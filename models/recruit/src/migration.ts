@@ -13,8 +13,10 @@
 // limitations under the License.
 //
 
-import core, { Doc, Ref, Space, TxOperations } from '@anticrm/core'
+import core, { Class, Doc, DOMAIN_TX, Ref, Space, TxOperations } from '@anticrm/core'
 import { createOrUpdate, MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
+import { DOMAIN_CALENDAR } from '@anticrm/model-calendar'
+import { DOMAIN_SPACE } from '@anticrm/model-core'
 import tags, { TagCategory } from '@anticrm/model-tags'
 import { createKanbanTemplate, createSequence } from '@anticrm/model-task'
 import { getCategories } from '@anticrm/skillset'
@@ -22,7 +24,31 @@ import { KanbanTemplate } from '@anticrm/task'
 import recruit from './plugin'
 
 export const recruitOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {},
+  async migrate (client: MigrationClient): Promise<void> {
+    await client.update(
+      DOMAIN_CALENDAR,
+      {
+        _class: recruit.class.Review,
+        space: { $nin: [recruit.space.Reviews] }
+      },
+      {
+        space: recruit.space.Reviews
+      }
+    )
+    const categories = await client.find(DOMAIN_SPACE, {
+      _class: 'recruit:class:ReviewCategory' as Ref<Class<Doc>>
+    })
+    for (const cat of categories) {
+      await client.delete(DOMAIN_SPACE, cat._id)
+    }
+
+    const catTx = await client.find(DOMAIN_TX, {
+      objectClass: 'recruit:class:ReviewCategory' as Ref<Class<Doc>>
+    })
+    for (const cat of catTx) {
+      await client.delete(DOMAIN_TX, cat._id)
+    }
+  },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)
     await createDefaults(tx)
@@ -30,7 +56,7 @@ export const recruitOperation: MigrateOperation = {
 }
 
 async function createDefaults (tx: TxOperations): Promise<void> {
-  await createSpace(tx)
+  await createSpaces(tx)
 
   await createOrUpdate(
     tx,
@@ -66,44 +92,6 @@ async function createDefaults (tx: TxOperations): Promise<void> {
   await createSequence(tx, recruit.class.Opinion)
   await createSequence(tx, recruit.class.Applicant)
   await createDefaultKanbanTemplate(tx)
-  await createReviewTemplates(tx)
-}
-
-async function createReviewTemplates (tx: TxOperations): Promise<void> {
-  if ((await tx.findOne(core.class.TxCreateDoc, { objectId: recruit.template.Interview })) === undefined) {
-    await createKanbanTemplate(tx, {
-      kanbanId: recruit.template.Interview,
-      space: recruit.space.ReviewTemplates as Ref<Doc> as Ref<Space>,
-      title: 'Interview',
-      states: [
-        { color: 9, title: 'Prepare' },
-        { color: 10, title: 'Appointment' },
-        { color: 1, title: 'Opinions' }
-      ],
-      doneStates: [
-        { isWon: true, title: 'Pass' },
-        { isWon: false, title: 'Failed' }
-      ]
-    })
-  }
-
-  if ((await tx.findOne(core.class.TxCreateDoc, { objectId: recruit.template.Task })) === undefined) {
-    await createKanbanTemplate(tx, {
-      kanbanId: recruit.template.Task,
-      space: recruit.space.ReviewTemplates as Ref<Doc> as Ref<Space>,
-      title: 'Test task',
-      states: [
-        { color: 9, title: 'Prepare' },
-        { color: 10, title: 'Assigned' },
-        { color: 1, title: 'Review' },
-        { color: 4, title: 'Opinions' }
-      ],
-      doneStates: [
-        { isWon: true, title: 'Pass' },
-        { isWon: false, title: 'Failed' }
-      ]
-    })
-  }
 }
 
 async function createDefaultKanbanTemplate (tx: TxOperations): Promise<Ref<KanbanTemplate>> {
@@ -129,7 +117,7 @@ async function createDefaultKanbanTemplate (tx: TxOperations): Promise<Ref<Kanba
   })
 }
 
-async function createSpace (tx: TxOperations): Promise<void> {
+async function createSpaces (tx: TxOperations): Promise<void> {
   const current = await tx.findOne(core.class.Space, {
     _id: recruit.space.CandidatesPublic
   })
@@ -145,6 +133,24 @@ async function createSpace (tx: TxOperations): Promise<void> {
         archived: false
       },
       recruit.space.CandidatesPublic
+    )
+  }
+
+  const currentReviews = await tx.findOne(core.class.Space, {
+    _id: recruit.space.Reviews
+  })
+  if (currentReviews === undefined) {
+    await tx.createDoc(
+      core.class.Space,
+      core.space.Space,
+      {
+        name: 'Reviews',
+        description: 'Public reviews',
+        private: true,
+        members: [],
+        archived: false
+      },
+      recruit.space.Reviews
     )
   }
 }

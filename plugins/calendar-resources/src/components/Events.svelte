@@ -14,12 +14,21 @@
 -->
 <script lang="ts">
   import { Event } from '@anticrm/calendar'
-  import { EmployeeAccount } from '@anticrm/contact'
-  import { Class, DocumentQuery, FindOptions, getCurrentAccount, Ref } from '@anticrm/core'
+  import { Class, DocumentQuery, FindOptions, Ref } from '@anticrm/core'
   import { Asset, IntlString } from '@anticrm/platform'
-  import { AnySvelteComponent, Icon, Label, SearchEdit, Tooltip } from '@anticrm/ui'
-  import { Table } from '@anticrm/view-resources'
+  import {
+    AnyComponent,
+    AnySvelteComponent,
+    Button,
+    Icon,
+    IconAdd,
+    Label,
+    SearchEdit,
+    showPopup,
+    Tooltip
+  } from '@anticrm/ui'
   import view from '@anticrm/view'
+  import { TableBrowser } from '@anticrm/view-resources'
   import calendar from '../plugin'
   import CalendarView from './CalendarView.svelte'
 
@@ -29,15 +38,17 @@
   export let baseMenuClass: Ref<Class<Event>> | undefined = undefined
   export let config: string[]
 
-  const currentUser = getCurrentAccount() as EmployeeAccount
+  export let viewIcon: Asset = calendar.icon.Calendar
+  export let viewLabel: IntlString = calendar.string.Events
+
+  export let createComponent: AnyComponent | undefined
+  export let createLabel: IntlString | undefined
 
   let search = ''
   let resultQuery: DocumentQuery<Event> = {}
 
   function updateResultQuery (search: string): void {
     resultQuery = search === '' ? { ...query } : { ...query, $search: search }
-
-    resultQuery.participants = currentUser.employee
   }
 
   $: updateResultQuery(search)
@@ -51,6 +62,19 @@
 
   $: viewlets = [
     {
+      component: TableBrowser,
+      icon: view.icon.Table,
+      label: calendar.string.TableView,
+      props: {
+        _class,
+        query: resultQuery,
+        options,
+        baseMenuClass,
+        config,
+        search
+      }
+    },
+    {
       component: CalendarView,
       icon: calendar.icon.Calendar,
       label: calendar.string.Calendar,
@@ -63,28 +87,22 @@
         config,
         search
       }
-    },
-    {
-      component: Table,
-      icon: view.icon.Table,
-      label: calendar.string.TableView,
-      props: {
-        _class,
-        query: resultQuery,
-        options,
-        baseMenuClass,
-        config,
-        search
-      }
     }
   ] as CalendarViewlet[]
   let selectedViewlet = 0
+
+  function showCreateDialog () {
+    if (createComponent === undefined) {
+      return
+    }
+    showPopup(createComponent, {}, 'top')
+  }
 </script>
 
 <div class="ac-header full">
   <div class="ac-header__wrap-title">
-    <div class="ac-header__icon"><Icon icon={calendar.icon.Calendar} size={'small'} /></div>
-    <span class="ac-header__title"><Label label={calendar.string.UpcomingEvents} /></span>
+    <div class="ac-header__icon"><Icon icon={viewIcon} size={'small'} /></div>
+    <span class="ac-header__title"><Label label={viewLabel} /></span>
   </div>
 
   {#if viewlets.length > 1}
@@ -111,6 +129,7 @@
       updateResultQuery(search)
     }}
   />
+  <Button icon={IconAdd} label={createLabel} kind={'primary'} on:click={showCreateDialog} />
 </div>
 
 {#if viewlets[selectedViewlet]}

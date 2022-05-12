@@ -5,17 +5,10 @@ import attachment from '@anticrm/model-attachment'
 import calendar, { TEvent } from '@anticrm/model-calendar'
 import chunter from '@anticrm/model-chunter'
 import contact from '@anticrm/model-contact'
-import core, { TAttachedDoc, TSpace } from '@anticrm/model-core'
+import core, { TAttachedDoc } from '@anticrm/model-core'
 import task from '@anticrm/model-task'
-import { Candidate, Opinion, Review, ReviewCategory } from '@anticrm/recruit'
+import { Candidate, Opinion, Review } from '@anticrm/recruit'
 import recruit from './plugin'
-
-@Model(recruit.class.ReviewCategory, core.class.Space)
-@UX(recruit.string.ReviewCategory, recruit.icon.Review)
-export class TReviewCategory extends TSpace implements ReviewCategory {
-  @Prop(TypeString(), recruit.string.FullDescription)
-  fullDescription?: string
-}
 
 @Model(recruit.class.Review, calendar.class.Event)
 @UX(recruit.string.Review, recruit.icon.Review, recruit.string.ReviewShortLabel, 'number')

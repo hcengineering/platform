@@ -15,7 +15,6 @@
 -->
 <script lang="ts">
   import type { Class, Doc, DocumentQuery, FindOptions, Ref, Space } from '@anticrm/core'
-  import { Scroller } from '@anticrm/ui'
   import { TableBrowser } from '..'
   import ActionContext from './ActionContext.svelte'
 
@@ -35,6 +34,4 @@
     mode: 'browser'
   }}
 />
-<Scroller tableFade>
-  <TableBrowser {_class} {config} {options} query={resultQuery} {baseMenuClass} showNotification />
-</Scroller>
+<TableBrowser {_class} {config} {options} query={resultQuery} {baseMenuClass} showNotification />

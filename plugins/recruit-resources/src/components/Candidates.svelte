@@ -18,7 +18,7 @@
   import { Doc, DocumentQuery, Ref } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
   import tags, { selectedTagElements, TagCategory, TagElement } from '@anticrm/tags'
-  import { Component, Icon, Label, Scroller, SearchEdit } from '@anticrm/ui'
+  import { Component, Icon, Label, SearchEdit } from '@anticrm/ui'
   import view, { Viewlet } from '@anticrm/view'
   import { ActionContext, TableBrowser } from '@anticrm/view-resources'
   import recruit from '../plugin'
@@ -82,16 +82,14 @@
     mode: 'browser'
   }}
 />
-<Scroller tableFade>
-  {#await tableDescriptor then descr}
-    {#if descr}
-      <TableBrowser
-        _class={recruit.mixin.Candidate}
-        config={descr.config}
-        options={descr.options}
-        query={resultQuery}
-        showNotification
-      />
-    {/if}
-  {/await}
-</Scroller>
+{#await tableDescriptor then descr}
+  {#if descr}
+    <TableBrowser
+      _class={recruit.mixin.Candidate}
+      config={descr.config}
+      options={descr.options}
+      query={resultQuery}
+      showNotification
+    />
+  {/if}
+{/await}
