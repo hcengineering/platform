@@ -346,7 +346,7 @@
             </div>
           </div>
         {/each}
-        <slot name="additionalPanel" />
+        <slot name="afterPanel" />
       </div>
     </ScrollBox>
   </div>
