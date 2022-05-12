@@ -15,7 +15,7 @@
 //
 
 import contact, { ChannelProvider } from '@anticrm/contact'
-import { Ref } from '@anticrm/core'
+import { Ref, Timestamp } from '@anticrm/core'
 import { getClient } from '@anticrm/presentation'
 
 const client = getClient()
@@ -28,4 +28,13 @@ export async function getChannelProviders (): Promise<Map<Ref<ChannelProvider>, 
     map.set(provider._id, provider)
   }
   return map
+}
+
+export function formatDate (dueDateMs: Timestamp): string {
+  return new Date(dueDateMs).toLocaleString('default', {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
 }

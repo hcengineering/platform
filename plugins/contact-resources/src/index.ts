@@ -35,12 +35,21 @@ import OrganizationPresenter from './components/OrganizationPresenter.svelte'
 import PersonPresenter from './components/PersonPresenter.svelte'
 import SocialEditor from './components/SocialEditor.svelte'
 import contact from './plugin'
+import EmployeePresenter from './components/EmployeePresenter.svelte'
 import EmployeeAccountPresenter from './components/EmployeeAccountPresenter.svelte'
 import OrganizationEditor from './components/OrganizationEditor.svelte'
 import PersonEditor from './components/PersonEditor.svelte'
 import OrganizationSelector from './components/OrganizationSelector.svelte'
 
-export { Channels, ChannelsEditor, ContactPresenter, ChannelsView, OrganizationSelector, ChannelsDropdown }
+export {
+  Channels,
+  ChannelsEditor,
+  ContactPresenter,
+  ChannelsView,
+  OrganizationSelector,
+  ChannelsDropdown,
+  EmployeePresenter
+}
 
 async function queryContact (
   _class: Ref<Class<Contact>>,
@@ -73,7 +82,8 @@ export default async (): Promise<Resources> => ({
     CreateOrganizations,
     SocialEditor,
     Contacts,
-    EmployeeAccountPresenter
+    EmployeeAccountPresenter,
+    EmployeePresenter
   },
   completion: {
     EmployeeQuery: async (client: Client, query: string) => await queryContact(contact.class.Employee, client, query),

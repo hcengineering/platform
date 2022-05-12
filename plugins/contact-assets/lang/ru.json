@@ -46,6 +46,14 @@
     "SocialLinks": "Контактная информация",
     "ViewActivity": "Посмотреть активность",
     "PersonAlreadyExists": "Контакт уже существует...",
-    "TypeLabel": "Тип"
+    "Status": "Статус",
+    "SetStatus": "Установить статус",
+    "ClearStatus": "Очистить статус",
+    "SaveStatus": "Сохранить",
+    "Cancel": "Отмена",
+    "StatusDueDate": "Дата конца",
+    "NoExpire": "Бессрочно",
+    "TypeLabel": "Тип",
+    "StatusDueDateTooltip": "До {date}"
   }
 }

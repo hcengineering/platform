@@ -23,6 +23,7 @@
   export let value: Person | undefined
   export let inline: boolean = false
   export let isInteractive = true
+  export let shouldShowAvatar: boolean = true
   export let shouldShowName = true
   export let shouldShowPlaceholder = false
   export let defaultName: IntlString | undefined = undefined
@@ -63,9 +64,11 @@
     ? undefined
     : `#${getPanelURI(view.component.EditDoc, value._id, Hierarchy.mixinOrClass(value), 'content')}`}
 >
-  <div class="eContentPresenterIcon">
-    <Avatar size={avatarSize} avatar={value?.avatar} />
-  </div>
+  {#if shouldShowAvatar}
+    <div class="eContentPresenterIcon">
+      <Avatar size={avatarSize} avatar={value?.avatar} />
+    </div>
+  {/if}
   {#if value && shouldShowName}
     <span class="eContentPresenterLabel">{formatName(value.name)}</span>
   {/if}

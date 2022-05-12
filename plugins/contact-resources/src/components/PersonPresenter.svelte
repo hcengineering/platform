@@ -21,6 +21,7 @@
   export let value: Person
   export let inline = false
   export let isInteractive = true
+  export let shouldShowAvatar = true
   export let shouldShowName = true
   export let shouldShowPlaceholder = false
   export let defaultName: IntlString | undefined = undefined
@@ -42,6 +43,7 @@
         {avatarSize}
         {defaultName}
         {isInteractive}
+        {shouldShowAvatar}
         {shouldShowName}
         {shouldShowPlaceholder}
       />
@@ -54,6 +56,7 @@
       {avatarSize}
       {defaultName}
       {isInteractive}
+      {shouldShowAvatar}
       {shouldShowName}
       {shouldShowPlaceholder}
     />

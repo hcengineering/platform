@@ -35,8 +35,9 @@ export default mergeIds(contactId, contact, {
     OrganizationPresenter: '' as AnyComponent,
     Contacts: '' as AnyComponent,
     EmployeeAccountPresenter: '' as AnyComponent,
-    PersonEditor: '' as AnyComponent,
-    OrganizationEditor: '' as AnyComponent
+    OrganizationEditor: '' as AnyComponent,
+    EmployeePresenter: '' as AnyComponent,
+    PersonEditor: '' as AnyComponent
   },
   string: {
     Persons: '' as IntlString,

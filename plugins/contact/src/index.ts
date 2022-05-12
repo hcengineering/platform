@@ -85,7 +85,19 @@ export interface Organization extends Contact {}
 /**
  * @public
  */
-export interface Employee extends Person {}
+export interface Status extends AttachedDoc {
+  attachedTo: Ref<Employee>
+  attachedToClass: Ref<Class<Employee>>
+  name: string
+  dueDate: Timestamp
+}
+
+/**
+ * @public
+ */
+export interface Employee extends Person {
+  statuses?: number
+}
 
 /**
  * @public
@@ -143,7 +155,8 @@ const contactPlugin = plugin(contactId, {
     Organization: '' as Ref<Class<Organization>>,
     Organizations: '' as Ref<Class<Organizations>>,
     Employee: '' as Ref<Class<Employee>>,
-    EmployeeAccount: '' as Ref<Class<EmployeeAccount>>
+    EmployeeAccount: '' as Ref<Class<EmployeeAccount>>,
+    Status: '' as Ref<Class<Status>>
   },
   component: {
     SocialEditor: '' as AnyComponent

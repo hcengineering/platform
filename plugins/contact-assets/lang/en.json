@@ -46,6 +46,14 @@
     "SocialLinks": "Socail links",
     "ViewActivity": "View activity",
     "PersonAlreadyExists": "Person already exists...",
-    "TypeLabel": "Type"
+    "Status": "Status",
+    "SetStatus": "Set status",
+    "ClearStatus": "Clear status",
+    "SaveStatus": "Save",
+    "Cancel": "Cancel",
+    "StatusDueDate": "Due date",
+    "NoExpire": "No expire",
+    "TypeLabel": "Type",
+    "StatusDueDateTooltip": "Until {date}"
   }
 }
