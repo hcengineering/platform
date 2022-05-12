@@ -49,6 +49,7 @@ export default mergeIds(contactId, contact, {
     Cancel: '' as IntlString,
     StatusDueDate: '' as IntlString,
     StatusName: '' as IntlString,
-    NoExpire: '' as IntlString
+    NoExpire: '' as IntlString,
+    StatusDueDateTooltip: '' as IntlString
   }
 })

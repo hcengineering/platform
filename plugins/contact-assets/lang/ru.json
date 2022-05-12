@@ -53,6 +53,7 @@
     "Cancel": "Отмена",
     "StatusDueDate": "Дата конца",
     "NoExpire": "Бессрочно",
-    "TypeLabel": "Тип"
+    "TypeLabel": "Тип",
+    "StatusDueDateTooltip": "До {date}"
   }
 }

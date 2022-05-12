@@ -54,14 +54,14 @@
 </script>
 
 <div class="antiPopup p-4 flex-col">
-  <div class="pb-2">
+  <div class="flex-col-center pb-2">
     <Avatar size="x-large" avatar={employee?.avatar} />
   </div>
   <div class="pb-2">{formatName(employee?.name ?? '')}</div>
   <div class="pb-2">
     <Label label={contact.string.Status} />
     {#if status}
-      <div class="flex-row-center statusContainer">
+      <div class="flex-row-stretch statusContainer">
         <div class="pr-2">
           <EmployeeStatusPresenter {employeeId} withTooltip={false} />
         </div>
@@ -70,7 +70,7 @@
         </div>
       </div>
     {:else}
-      <div class="over-underline" on:click={onEdit}>
+      <div class="flex-row-stretch over-underline" on:click={onEdit}>
         <Label label={contact.string.SetStatus} />
       </div>
     {/if}

@@ -53,6 +53,7 @@
     "Cancel": "Cancel",
     "StatusDueDate": "Due date",
     "NoExpire": "No expire",
-    "TypeLabel": "Type"
+    "TypeLabel": "Type",
+    "StatusDueDateTooltip": "Until {date}"
   }
 }

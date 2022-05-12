@@ -22,8 +22,8 @@
   }
 </script>
 
-<div bind:this={container} class="container">
-  <div class="over-underline">
+<div bind:this={container} class="flex container">
+  <div class="pr-2 over-underline">
     <PersonPresenter {value} {onEdit} {shouldShowAvatar} />
   </div>
   <div class="status">

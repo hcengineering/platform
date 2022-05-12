@@ -1,7 +1,8 @@
 <script lang="ts">
   import { Status } from '@anticrm/contact'
   import { Timestamp } from '@anticrm/core'
-  import { Button, EditBox, Label } from '@anticrm/ui'
+  import { Card } from '@anticrm/presentation'
+  import { EditBox, Grid, Label, ticker } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import contact from '../plugin'
   import EmployeeStatusDueDatePresenter from './EmployeeStatusDueDatePresenter.svelte'
@@ -15,52 +16,36 @@
   const handleDueDateChanged = async (event: CustomEvent<Timestamp>) => {
     statusDueDate = event.detail
   }
+
+  $: statusChanged = statusName !== currentStatus?.name || statusDueDate !== currentStatus?.dueDate
+  $: isOverdue = statusDueDate && statusDueDate < $ticker
+  $: canSave = statusName.length > 0 && !isOverdue
 </script>
 
-<div class="antiPopup antiPopup-withHeader popup">
-  <div class="ap-header">
-    <div class="ap-caption">
-      <Label label={contact.string.SetStatus} />
-    </div>
-  </div>
-  <div class="p-4 flex-col flex-gap-1">
-    <EditBox bind:value={statusName} maxWidth={'8rem'} />
-    <Label label={contact.string.StatusDueDate} />
+<Card
+  label={contact.string.SetStatus}
+  okAction={() => {
+    if (statusChanged) {
+      dispatch('update', {
+        name: statusName,
+        dueDate: statusDueDate
+      })
+      dispatch('close')
+    } else {
+      dispatch('update', undefined)
+      dispatch('close')
+    }
+  }}
+  {canSave}
+  okLabel={statusChanged ? contact.string.SaveStatus : contact.string.ClearStatus}
+  on:close={() => {
+    dispatch('close')
+  }}
+>
+  <Grid column={1} rowGap={1}>
+    <EditBox bind:value={statusName} maxWidth={'16rem'} />
+    <div><Label label={contact.string.StatusDueDate} /></div>
 
-    <EmployeeStatusDueDatePresenter bind:statusDueDate on:change={handleDueDateChanged} />
-  </div>
-  <div class="ap-footer">
-    {#if statusName.length > 0 && (statusName !== currentStatus?.name || statusDueDate !== currentStatus?.dueDate)}
-      <Button
-        on:click={() => {
-          dispatch('close')
-        }}
-        label={contact.string.Cancel}
-      />
-      <Button
-        on:click={() => {
-          dispatch('update', {
-            name: statusName,
-            dueDate: statusDueDate
-          })
-          dispatch('close')
-        }}
-        label={contact.string.SaveStatus}
-      />
-    {:else}
-      <Button
-        on:click={() => {
-          dispatch('update', undefined)
-          dispatch('close')
-        }}
-        label={contact.string.ClearStatus}
-      />
-    {/if}
-  </div>
-</div>
-
-<style lang="scss">
-  .popup {
-    width: 10rem;
-  }
-</style>
+    <EmployeeStatusDueDatePresenter {statusDueDate} on:change={handleDueDateChanged} />
+  </Grid>
+</Card>
