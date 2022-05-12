@@ -18,6 +18,7 @@
   import { Attachments } from '@anticrm/attachment-resources'
   import type { Ref } from '@anticrm/core'
   import type { IntlString } from '@anticrm/platform'
+  import { Panel } from '@anticrm/panel'
   import { AttributesBar, createQuery, getClient, Members } from '@anticrm/presentation'
   import { Vacancy } from '@anticrm/recruit'
   import { StyledTextBox } from '@anticrm/text-editor'
@@ -52,104 +53,72 @@
   }
 </script>
 
-<div
-  class="antiOverlay"
-  on:click={() => {
-    dispatch('close')
-  }}
-/>
-<div class="antiDialogs antiComponent">
-  {#if object}
-    <div class="ac-header short mirror divide">
-      <div class="ac-header__wrap-description">
-        <div class="ac-header__wrap-title">
-          <div class="ac-header__icon">
-            {#if clazz.icon}<Icon icon={clazz.icon} size={'medium'} />{/if}
+{#if object}
+  <Panel
+    title={object.name}
+    subtitle={object.description}
+    icon={clazz.icon}
+    isHeader={false}
+    isAside={true}
+    {object}
+    on:close={() => {
+      dispatch('close')
+    }}
+  >
+    <svelte:fragment slot="attributes" let:direction={dir}>
+      {#if dir === 'column'}
+        <div class="ac-subtitle">
+          <div class="ac-subtitle-content">
+            <AttributesBar {object} keys={['dueTo', 'location', 'company']} vertical={dir === 'column'} />
           </div>
-          <div class="ac-header__title">{object.name}</div>
         </div>
-        <div class="ac-header__description">{object.description}</div>
-      </div>
-      <div class="tool">
-        <ActionIcon
-          icon={IconClose}
-          size={'small'}
-          action={() => {
-            dispatch('close')
+      {/if}
+    </svelte:fragment>
+
+    <EditBox
+      label={recruit.string.VacancyName}
+      bind:value={object.name}
+      placeholder={recruit.string.VacancyPlaceholder}
+      maxWidth="39rem"
+      focus
+      on:change={() => {
+        if (object.name.trim().length > 0) {
+          onChange('name', object.name)
+        } else {
+          // Revert previos object.name
+          updateObject(_id)
+        }
+      }}
+    />
+    <EditBox
+      label={recruit.string.Description}
+      bind:value={object.description}
+      placeholder={recruit.string.VacancyDescription}
+      maxWidth="39rem"
+      focus
+      on:change={() => {
+        onChange('description', object.description)
+      }}
+    />
+    <div class="mt-10">
+      <span class="title">Details</span>
+      <div class="description-container">
+        <StyledTextBox
+          bind:content={object.fullDescription}
+          on:value={(evt) => {
+            onChange('fullDescription', evt.detail)
           }}
         />
       </div>
     </div>
-    <div class="ac-subtitle">
-      <div class="ac-subtitle-content">
-        <AttributesBar {object} keys={['dueTo', 'location', 'company']} />
-      </div>
+    <div class="mt-14">
+      <Attachments objectId={object._id} _class={object._class} space={object.space} />
     </div>
-    <div class="ac-tabs">
-      {#each tabs as tab, i}
-        <div
-          class="ac-tabs__tab"
-          class:selected={i === selected}
-          on:click={() => {
-            selected = i
-          }}
-        >
-          <Label label={tab} />
-        </div>
-      {/each}
-      <div class="ac-tabs__empty" />
-    </div>
-    {#if selected === 0}
-      <Scroller padding>
-        <Grid column={1} rowGap={1.5}>
-          <EditBox
-            label={recruit.string.VacancyName}
-            bind:value={object.name}
-            placeholder={recruit.string.VacancyPlaceholder}
-            maxWidth="39rem"
-            focus
-            on:change={() => {
-              if (object.name.trim().length > 0) {
-                onChange('name', object.name)
-              } else {
-                // Revert previos object.name
-                updateObject(_id)
-              }
-            }}
-          />
-          <EditBox
-            label={recruit.string.Description}
-            bind:value={object.description}
-            placeholder={recruit.string.VacancyDescription}
-            maxWidth="39rem"
-            focus
-            on:change={() => {
-              onChange('description', object.description)
-            }}
-          />
-        </Grid>
-        <div class="mt-10">
-          <span class="title">Details</span>
-          <div class="description-container">
-            <StyledTextBox
-              bind:content={object.fullDescription}
-              on:value={(evt) => {
-                onChange('fullDescription', evt.detail)
-              }}
-            />
-          </div>
-        </div>
-        <div class="mt-14">
-          <Attachments objectId={object._id} _class={object._class} space={object.space} />
-        </div>
-      </Scroller>
-    {:else if selected === 1}
+    <div class="mt-14">
       <Members space={object} />
-    {:else if selected === 2}
-      <Component is={activity.component.Activity} props={{ object, transparent: true }} />
-    {/if}
-  {/if}
-</div>
+    </div>
+  </Panel>
+{/if}
 
 <style lang="scss">
   .description-container {

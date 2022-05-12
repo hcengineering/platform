@@ -99,6 +99,7 @@
   on:focus
   on:blur
   on:mousemove
+  on:mouseleave
   {id}
 >
   {#if icon && !loading}

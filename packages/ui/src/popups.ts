@@ -214,7 +214,7 @@ export function fitPopupElement (modalHTML: HTMLElement, element?: PopupAlignmen
       show = true
     } else if (element === 'content' && contentPanel !== undefined) {
       const rect = contentPanel.getBoundingClientRect()
-      newProps.top = `${rect.top + 1}px`
+      newProps.top = `${rect.top}px`
       // newProps.bottom = `${Math.min(document.body.clientHeight - rect.bottom + 1, window.innerHeight - rect.top - 1)}px`
       newProps.height = `${Math.min(rect.height, window.innerHeight - rect.top)}px`
       newProps.left = `${rect.left + 1}px`

@@ -118,7 +118,7 @@ p:last-child { margin-block-end: 0; }
 
 input.search {
   margin: 0;
-  color: #d6d6d6;
+  color: var(--accent-color);
   border: none;
   caret-color: var(--caret-color);
 
@@ -567,7 +567,6 @@ a.no-line {
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
-  user-select: none;
   min-width: 0;
 }
 

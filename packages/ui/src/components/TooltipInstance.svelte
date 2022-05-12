@@ -342,7 +342,7 @@
       &::after,
       &::before {
         transform-origin: right top;
-        left: -25px;
+        left: -24px;
         transform: rotate(-90deg);
       }
     }
@@ -351,7 +351,7 @@
       &::after,
       &::before {
         transform-origin: left top;
-        right: -25px;
+        right: -24px;
         transform: rotate(90deg);
       }
     }

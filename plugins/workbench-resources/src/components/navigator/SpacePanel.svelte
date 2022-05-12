@@ -18,7 +18,7 @@
   import core from '@anticrm/core'
   import type { IntlString } from '@anticrm/platform'
   import { createQuery, getClient, Members } from '@anticrm/presentation'
-  import { ActionIcon, EditBox, Grid, Icon, IconClose, Label, Scroller } from '@anticrm/ui'
+  import { EditBox, Icon, Label, Scroller, Panel, Button } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import workbench from '../../plugin'
 
@@ -56,48 +56,38 @@
   }
 </script>
 
-<div
-  class="antiOverlay"
-  on:click={() => {
+<Panel
+  isHeader={false}
+  isAside={false}
+  on:close={() => {
     dispatch('close')
   }}
-/>
-<div class="antiDialogs antiComponent">
-  <div class="ac-header short mirror divide">
-    <div class="ac-header__wrap-title">
-      {#if clazz.icon}
-        <div class="ac-header__icon"><Icon icon={clazz.icon} size={'medium'} /></div>
-      {/if}
-      <div class="ac-header__title"><Label label={clazz.label} /></div>
+>
+  <svelte:fragment slot="title">
+    <div class="antiTitle icon-wrapper">
+      <div class="wrapped-icon">{#if clazz.icon}<Icon icon={clazz.icon} size={'medium'} />{/if}</div>
+      <span class="wrapped-title"><Label label={clazz.label} /></span>
     </div>
-    <div class="tool">
-      <ActionIcon
-        icon={IconClose}
-        size={'small'}
-        action={() => {
-          dispatch('close')
-        }}
-      />
-    </div>
-  </div>
-  <div class="ac-tabs">
+  </svelte:fragment>
+
+  <svelte:fragment slot="utils">
     {#each tabs as tab, i}
-      <div
-        class="ac-tabs__tab"
-        class:selected={i === selected}
+      <Button
+        kind={'transparent'}
+        selected={i === selected}
         on:click={() => {
           selected = i
         }}
       >
-        <Label label={tab} />
-      </div>
+        <Label slot="content" label={tab} />
+      </Button>
     {/each}
-    <div class="ac-tabs__empty" />
-  </div>
-  <Scroller padding>
-    {#if selected === 0}
-      {#if space}
-        <Grid column={1} rowGap={1.5}>
+  </svelte:fragment>
+
+  <Scroller>
+    <div class="popupPanel-body__main-content py-10 clear-mins">
+      {#if selected === 0}
+        {#if space}
           <EditBox
             label={clazz.label}
             icon={clazz.icon}
@@ -109,10 +99,10 @@
           />
           <!-- <AttributeBarEditor maxWidth="39rem" object={space} key="name"/> -->
           <!-- <ToggleWithLabel label={workbench.string.MakePrivate} description={workbench.string.MakePrivateDescription}/> -->
-        </Grid>
+        {/if}
+      {:else}
+        <Members {space} />
       {/if}
-    {:else}
-      <Members {space} />
-    {/if}
+    </div>
   </Scroller>
-</div>
+</Panel>

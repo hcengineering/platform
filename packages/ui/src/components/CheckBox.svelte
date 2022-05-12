@@ -60,7 +60,7 @@
       border-radius: 50%;
     }
     &.checked {
-      background-color: var(--accent-color);
+      background-color: var(--primary-bg-color);
       border-color: transparent;
     }
     &.primary.checked {
@@ -81,7 +81,7 @@
       &:checked + .checkSVG {
         & .check {
           visibility: visible;
-          fill: var(--theme-button-bg-enabled);
+          fill: var(--white-color);
           &.primary {
             fill: var(--primary-button-color);
           }
@@ -100,7 +100,7 @@
 
       .check {
         visibility: hidden;
-        fill: var(--theme-button-bg-enabled);
+        fill: var(--button-bg-color);
       }
     }
   }

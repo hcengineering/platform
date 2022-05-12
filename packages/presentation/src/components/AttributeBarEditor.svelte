@@ -88,17 +88,18 @@
           {/if}
         </div>
       {:else}
-        <div class="flex-row-center">
-          <CircleButton icon={attribute.icon} size={'large'} />
-          {#if showHeader}
-            <span class="ml-2 fs-bold"><Label label={attribute.label} /></span>
-          {/if}
-        </div>
+        {#if showHeader}
+          <span class="fs-bold overflow-label"><Label label={attribute.label} /></span>
+        {/if}
         <svelte:component
           this={instance}
           label={attribute?.label}
           placeholder={attribute?.label}
           type={attribute?.type}
+          kind={'link'}
+          size={'large'}
+          width={'100%'}
+          justify={'left'}
           {maxWidth}
           value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
           space={object.space}
@@ -116,6 +117,10 @@
               label={attribute?.label}
               placeholder={attribute?.label}
               type={attribute?.type}
+              kind={'link'}
+              size={'large'}
+              width={'100%'}
+              justify={'left'}
               {maxWidth}
               value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
               space={object.space}

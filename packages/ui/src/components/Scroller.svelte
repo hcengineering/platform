@@ -231,7 +231,7 @@
     transform-origin: center;
     transform: scaleX(0);
     transition: all 0.1s ease-in-out;
-    background-color: var(--theme-menu-color);
+    background-color: var(--scrollbar-track-color);
     border-radius: 0.5rem;
   }
   .bar {
@@ -244,7 +244,7 @@
     max-height: calc(100% - 12px);
     transform-origin: center;
     transform: scaleX(0.5);
-    background-color: var(--theme-button-bg-focused);
+    background-color: var(--scrollbar-bar-color);
     border-radius: 0.125rem;
     opacity: 0.5;
     cursor: pointer;
@@ -253,11 +253,11 @@
 
     &:hover,
     &.hovered {
-      background-color: var(--theme-button-bg-hovered);
+      background-color: var(--scrollbar-bar-hover);
       transform: scaleX(1);
       border-radius: 0.25rem;
       opacity: 1;
-      filter: drop-shadow(0 0 1px black);
+      box-shadow: 0 0 1px black;
 
       & + .track {
         visibility: visible;
