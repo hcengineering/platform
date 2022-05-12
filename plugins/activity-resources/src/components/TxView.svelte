@@ -207,7 +207,7 @@
           {:else if viewlet === undefined && model.length > 0 && tx.mixinTx}
             {#each model as m}
               {#await getValue(client, m, tx.mixinTx.attributes) then value}
-                {#if value === null}
+                {#if value.set === null}
                   <span>
                     <Label label={activity.string.Unset} /> <span class="lower"><Label label={m.label} /></span>
                   </span>
@@ -219,11 +219,11 @@
                   </span>
                   {#if isMessageType(m.attribute)}
                     <div class="strong message emphasized">
-                      <svelte:component this={m.presenter} {value} />
+                      <svelte:component this={m.presenter} value={value.set} />
                     </div>
                   {:else}
                     <div class="strong">
-                      <svelte:component this={m.presenter} {value} />
+                      <svelte:component this={m.presenter} value={value.set} />
                     </div>
                   {/if}
                 {/if}
