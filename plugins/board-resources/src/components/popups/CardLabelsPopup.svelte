@@ -3,7 +3,7 @@
   import CardLabelsEditor from './CardLabelsEditor.svelte'
   import CardLabelsPicker from './CardLabelsPicker.svelte'
 
-  export let object: Card
+  export let value: Card
 
   let editMode: {
     isEdit?: boolean
@@ -19,7 +19,7 @@
 {#if editMode.isEdit}
   <CardLabelsEditor
     on:close
-    boardRef={object.space}
+    boardRef={value.space}
     object={editMode.object}
     onBack={() => setEditMode(false, undefined)}
   />
@@ -27,7 +27,7 @@
   <CardLabelsPicker
     bind:search
     on:close
-    {object}
+    object={value}
     onCreate={() => setEditMode(true, undefined)}
     onEdit={(o) => setEditMode(true, o)}
   />

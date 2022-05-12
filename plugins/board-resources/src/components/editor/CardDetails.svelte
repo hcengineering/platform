@@ -69,15 +69,13 @@
   }
 
   getCardActions(client, {
-    _id: { $in: [board.cardAction.Dates, board.cardAction.Members] }
+    _id: { $in: [board.action.Dates] }
   }).then(async (result) => {
     for (const action of result) {
       if (action.handler) {
         const handler = await getResource(action.handler)
-        if (action._id === board.cardAction.Dates) {
+        if (action._id === board.action.Dates) {
           dateHandler = (e) => handler(value, client, e)
-        } else if (action._id === board.cardAction.Members) {
-          membersHandler = (e) => handler(value, client, e)
         }
       }
     }

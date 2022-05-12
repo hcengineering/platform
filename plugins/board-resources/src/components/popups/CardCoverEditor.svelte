@@ -6,9 +6,9 @@
   import board from '../../plugin'
   import { getBoardAvailableColors } from '../../utils/BoardUtils'
   import ColorPresenter from '../presenters/ColorPresenter.svelte'
-  export let object: Card
+  export let value: Card
 
-  let cover = object.cover
+  let cover = value.cover
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -19,7 +19,7 @@
 
   function updateCover (newCover?: Partial<CardCover>) {
     cover = newCover ? { size: 'small', ...cover, ...newCover } : null
-    client.update(object, { cover })
+    client.update(value, { cover })
   }
 </script>
 

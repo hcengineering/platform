@@ -42,7 +42,7 @@
 
   if (!isInline) {
     getCardActions(client, {
-      _id: board.cardAction.Labels
+      _id: board.action.Labels
     }).then(async (result) => {
       if (result?.[0]?.handler) {
         const handler = await getResource(result[0].handler)

@@ -14,71 +14,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import board from '@anticrm/board'
   import type { Card, CardAction } from '@anticrm/board'
   import { IntlString, getResource } from '@anticrm/platform'
   import { getClient } from '@anticrm/presentation'
   import { Button, Component, Label } from '@anticrm/ui'
 
-  import plugin from '../../plugin'
-  import { cardActionSorter, getCardActions } from '../../utils/CardActionUtils'
-
   export let value: Card
   const client = getClient()
 
-  let actionGroups: { label: IntlString; actions: CardAction[] }[] = []
-
-  async function fetch () {
-    const suggestedActions: CardAction[] = []
-    const addToCardActions: CardAction[] = []
-    const automationActions: CardAction[] = []
-    const actions: CardAction[] = []
-    const result = await getCardActions(client)
-    for (const action of result) {
-      let supported = true
-      if (action.supported) {
-        const supportedHandler = await getResource(action.supported)
-        supported = supportedHandler(value, client)
-      }
-      if (supported) {
-        if (action.type === board.cardActionType.Suggested) {
-          suggestedActions.push(action)
-        } else if (action.type === board.cardActionType.Cover) {
-          addToCardActions.push(action)
-        } else if (action.type === board.cardActionType.AddToCard) {
-          addToCardActions.push(action)
-        } else if (action.type === board.cardActionType.Automation) {
-          automationActions.push(action)
-        } else if (action.type === board.cardActionType.Action) {
-          actions.push(action)
-        }
-      }
-    }
-
-    actionGroups = [
-      {
-        label: plugin.string.Suggested,
-        actions: suggestedActions.sort(cardActionSorter)
-      },
-      {
-        label: plugin.string.AddToCard,
-        actions: addToCardActions.sort(cardActionSorter)
-      },
-      {
-        label: plugin.string.Automation,
-        actions: automationActions.sort(cardActionSorter)
-      },
-      {
-        label: plugin.string.Actions,
-        actions: actions.sort(cardActionSorter)
-      }
-    ]
-  }
-
-  fetch()
-  $: value.members && fetch()
-  $: value.isArchived && fetch()
-  $: !value.isArchived && fetch()
+  const actionGroups: { label: IntlString; actions: CardAction[] }[] = []
 </script>
 
 {#if value}
