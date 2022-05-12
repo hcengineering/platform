@@ -99,6 +99,7 @@
   on:focus
   on:blur
   on:mousemove
+  on:mouseleave
   {id}
 >
   {#if icon && !loading}
@@ -195,7 +196,7 @@
       }
     }
     &:focus {
-      border-color: var(--accent-color) !important;
+      border-color: var(--primary-edit-border-color) !important;
     }
     &:disabled {
       color: rgb(var(--caption-color) / 40%);

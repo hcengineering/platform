@@ -87,10 +87,9 @@
     {/if}
   </div>
 {:else}
-  <div class="pb-6 bottom-highlight-select">
-    <slot />
-  </div>
-  <div class="flex-row-center h-14 px-3 mt-4 antiTitle">
+  <slot />
+  <div class="antiDivider" style:margin={'1rem 0 .25rem'} />
+  <div class="header antiTitle">
     <div class="icon-wrapper">
       <div class="wrapped-icon icon flex-center"><IconActivity size={'small'} /></div>
       <span class="wrapped-title"><Label label={activity.string.Activity} /></span>
@@ -101,7 +100,7 @@
       <Component is={chunter.component.CommentInput} props={{ object }} />
     </div>
   {/if}
-  <div class="p-activity">
+  <div class="p-activity select-text">
     {#if txes}
       <Grid column={1} rowGap={1.5}>
         {#each txes as tx}
@@ -113,13 +112,19 @@
 {/if}
 
 <style lang="scss">
+  .header {
+    display: flex;
+    align-items: center;
+    min-height: 2.5rem;
+    height: 2.5rem;
+    background-color: var(--highlight-select);
+    border: 1px solid var(--highlight-select-border);
+    border-radius: 0.125rem;
+  }
   .icon {
-    margin-right: 1rem;
-    width: 2.25rem;
-    height: 2.25rem;
-    color: var(--white-color);
-    background-color: var(--primary-bg-color);
-    border-radius: 50%;
+    margin-left: 1rem;
+    height: 2rem;
+    color: var(--primary-bg-color);
   }
   .ref-input {
     flex-shrink: 0;

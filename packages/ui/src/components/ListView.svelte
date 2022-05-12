@@ -79,7 +79,7 @@
     user-select: none;
 
     .selection {
-      background-color: var(--theme-bg-checked-hover);
+      background-color: var(--menu-bg-select);
     }
   }
 </style>

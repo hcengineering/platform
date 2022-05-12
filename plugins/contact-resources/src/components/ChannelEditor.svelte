@@ -19,6 +19,7 @@
   import { Button, IconClose, closeTooltip, IconBlueCheck, registerFocus, createFocusManager } from '@anticrm/ui'
   import IconCopy from './icons/Copy.svelte'
   import { FocusHandler } from '@anticrm/ui'
+  import plugin from '../plugin'
 
   export let value: string = ''
   export let placeholder: IntlString
@@ -27,7 +28,20 @@
   const dispatch = createEventDispatcher()
   let input: HTMLInputElement
   let phTraslate: string
-  translate(placeholder, {}).then((tr) => (phTraslate = tr))
+  $: translate(placeholder, {}).then((tr) => (phTraslate = tr))
+  let label: IntlString = plugin.string.CopyToClipboard
+  let lTraslate: string
+  $: translate(label, {}).then((tr) => (lTraslate = tr))
+  let show: boolean = false
+
+  const copyChannel = (): void => {
+    if (label === plugin.string.CopyToClipboard) {
+      navigator.clipboard.writeText(value).then(() => (label = plugin.string.Copied))
+      setTimeout(() => {
+        label = plugin.string.CopyToClipboard
+      }, 3000)
+    }
+  }
 
   onMount(() => {
     if (input) input.focus()
@@ -53,21 +67,23 @@
 <FocusHandler manager={mgr} />
 <div class="buttons-group xsmall-gap">
   {#if editable}
-    <input
-      bind:this={input}
-      class="search"
-      type="text"
-      bind:value
-      placeholder={phTraslate}
-      style="width: 100%;"
-      on:keypress={(ev) => {
-        if (ev.key === 'Enter') {
-          dispatch('update', value)
-          closeTooltip()
-        }
-      }}
-      on:change
-    />
+    <div class="cover-channel" class:show class:copied={label === plugin.string.Copied} data-tooltip={lTraslate}>
+      <input
+        bind:this={input}
+        class="search"
+        type="text"
+        bind:value
+        placeholder={phTraslate}
+        style="width: 100%;"
+        on:keypress={(ev) => {
+          if (ev.key === 'Enter') {
+            dispatch('update', value)
+            closeTooltip()
+          }
+        }}
+        on:change
+      />
+    </div>
     <Button
       focusIndex={2}
       kind={'transparent'}
@@ -82,16 +98,33 @@
       }}
     />
   {:else}
-    <span>{value}</span>
+    <span
+      class="select-text cover-channel"
+      class:show
+      class:copied={label === plugin.string.Copied}
+      data-tooltip={lTraslate}>{value}</span
+    >
   {/if}
   <Button
     focusIndex={3}
     kind={'transparent'}
     size={'small'}
     icon={IconCopy}
-    on:click={() => {
-      navigator.clipboard.writeText(value)
+    on:mousemove={() => {
+      show = true
     }}
+    on:focus={() => {
+      show = true
+    }}
+    on:mouseleave={() => {
+      show = false
+      label = plugin.string.CopyToClipboard
+    }}
+    on:blur={() => {
+      show = false
+      label = plugin.string.CopyToClipboard
+    }}
+    on:click={copyChannel}
   />
   {#if editable}
     <Button
@@ -106,3 +139,41 @@
     />
   {/if}
 </div>
+
+<style lang="scss">
+  .cover-channel {
+    position: relative;
+    min-width: 0;
+    min-height: 0;
+
+    &.show::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: var(--board-bg-color);
+      border-radius: 0.25rem;
+      opacity: 0.95;
+    }
+    &.show.copied::before {
+      background-color: var(--body-accent);
+    }
+    &.show::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      min-width: 0;
+      top: 50%;
+      left: 50%;
+      width: calc(100% - 0.5rem);
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--content-color);
+      transform: translate(-50%, -50%);
+    }
+  }
+</style>

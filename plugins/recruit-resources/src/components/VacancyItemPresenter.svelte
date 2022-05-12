@@ -23,7 +23,7 @@
   export let action: (item: Ref<Vacancy>) => void
 
   function editVacancy (): void {
-    showPanel(recruit.component.EditVacancy, value._id, value._class, 'right')
+    showPanel(recruit.component.EditVacancy, value._id, value._class, 'content')
   }
 </script>
 

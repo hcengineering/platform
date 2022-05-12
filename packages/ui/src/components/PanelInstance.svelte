@@ -120,7 +120,7 @@
     background-color: transparent;
 
     &.bg {
-      background-color: var(--board-bg-color);
+      background-color: var(--body-color);
     }
     .panel-container {
       padding: 0.5rem;

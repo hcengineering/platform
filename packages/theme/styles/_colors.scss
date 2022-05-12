@@ -57,12 +57,18 @@
   --board-bg-color: #1c1d1f;
   --board-card-bg-color: #27282b;
   --board-card-bg-hover: #2a2b2e;
-  --board-card-shadow: rgb(0 0 0 / 6%) 0px 0px 1px;
+  --board-card-shadow: rgb(0 0 0 / 15%) 0px 0px 2px;
   --accent-bg-color: #27282b;
   --accent-shadow: rgb(0 0 0 / 10%) 0px 2px 4px;
 
-  --highlight-select: #8a8f9810;
-  --highlight-hover: #8a8f9820;
+  --highlight-hover: #222325;
+  --highlight-select: #252b3a;
+  --highlight-select-border: #2f3544;
+  --highlight-select-hover: #2c3346;
+
+  --scrollbar-bar-color: #ffffff10;
+  --scrollbar-bar-hover: #ffffff15;
+  --scrollbar-track-color: #ffffff0a;
 
   --dark-color: #62666d;
   --content-color: #8a8f98;
@@ -85,6 +91,7 @@
   --card-shadow: rgb(0 0 0 / 50%) 0px 16px 70px;
   --card-overlay-color: rgba(28, 29, 31, .5);
   --avatar-bg-color: #4f5358;
+  --tooltip-bg-color: #1f2023f0;
 
   --button-bg-color: #303236;
   --button-bg-hover: #37383b;
@@ -204,8 +211,13 @@
   --accent-bg-color: #f8f9fb;  // HZ
   --accent-shadow: rgb(0 0 0 / 10%) 0px 2px 4px;  // Dark
 
-  --highlight-select: #3c414910;
-  --highlight-hover: #3c414920;
+  --highlight-hover: #fcfcfc;
+  --highlight-select: #f0f4ff;
+  --highlight-select-border: #e6eaff;
+  --highlight-select-hover: #e4ebff;
+  --scrollbar-bar-color: #00000010;
+  --scrollbar-bar-hover: #00000015;
+  --scrollbar-track-color: #0000000a;
 
   --dark-color: #90959d;
   --content-color: #3c4149;
@@ -223,10 +235,11 @@
   --popup-bg-hover: #f8f9fb;
   --popup-divider: #eff1f4;
   --popup-shadow: rgb(0 0 0 / 20%) 0px 4px 24px;  // Dark
-  --popup-panel-shadow: rgb(0 0 0 / 55%) 0px 7px 24px;  // Dark
+  --popup-panel-shadow: rgb(0 0 0 / 10%) 0px 4px 18px;
   --card-shadow: rgb(0 0 0 / 50%) 0px 16px 70px;
   --card-overlay-color: rgba(144, 149, 157, .4);
   --avatar-bg-color: #e0e0e0;  // HZ
+  --tooltip-bg-color: #fffffff0;
 
   --button-bg-color: #fff;
   --button-bg-hover: #f4f5f8;

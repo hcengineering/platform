@@ -54,6 +54,8 @@
     "StatusDueDate": "Due date",
     "NoExpire": "No expire",
     "TypeLabel": "Type",
-    "StatusDueDateTooltip": "Until {date}"
+    "StatusDueDateTooltip": "Until {date}",
+    "CopyToClipboard": "Copy to clipboard",
+    "Copied": "Copied"
   }
 }

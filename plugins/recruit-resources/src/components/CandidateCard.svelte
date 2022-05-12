@@ -88,11 +88,12 @@
     transition-property: box-shadow, background-color, border-color;
     transition-timing-function: var(--timing-shadow);
     transition-duration: 0.15s;
+    user-select: text;
 
     &:hover {
       background-color: var(--board-card-bg-hover);
       border-color: var(--button-border-color);
-      box-shadow: rgb(0 0 0 / 15%) 0px 4px 8px;
+      box-shadow: var(--accent-shadow);
     }
 
     .label {
