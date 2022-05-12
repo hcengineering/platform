@@ -55,6 +55,19 @@
       title: 'New Template'
     })
 
+    await client.addCollection(
+      task.class.StateTemplate,
+      space as Ref<Doc> as Ref<Space>,
+      template,
+      task.class.KanbanTemplate,
+      'statesC',
+      {
+        title: 'New State',
+        color: 9,
+        rank: [...genRanks(1)][0]
+      }
+    )
+
     const ranks = [...genRanks(2)]
     const doneStates = [
       {
@@ -99,14 +112,16 @@
   {#each templates as t (t._id)}
     <div class="ac-column__list-item" class:selected={t._id === template?._id} on:click={() => select(t)}>
       <AttributeEditor maxWidth={'15rem'} _class={task.class.KanbanTemplate} object={t} key="title" />
-      <div
-        class="hover-trans"
-        on:click|stopPropagation={(ev) => {
-          showPopup(ContextMenu, { object: t }, eventToHTMLElement(ev), () => {})
-        }}
-      >
-        <IconMoreH size={'medium'} />
-      </div>
+      {#if templates.length > 1}
+        <div
+          class="hover-trans"
+          on:click|stopPropagation={(ev) => {
+            showPopup(ContextMenu, { object: t }, eventToHTMLElement(ev), () => {})
+          }}
+        >
+          <IconMoreH size={'medium'} />
+        </div>
+      {/if}
     </div>
   {/each}
 </div>
