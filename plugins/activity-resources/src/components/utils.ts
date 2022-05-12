@@ -1,5 +1,18 @@
 import type { TxViewlet } from '@anticrm/activity'
-import core, { AttachedDoc, Class, Collection, Doc, Ref, TxCUD, TxOperations } from '@anticrm/core'
+import core, {
+  AttachedDoc,
+  Class,
+  Collection,
+  Doc,
+  Ref,
+  TxCollectionCUD,
+  TxCreateDoc,
+  TxCUD,
+  TxMixin,
+  TxOperations,
+  TxProcessor,
+  TxUpdateDoc
+} from '@anticrm/core'
 import { Asset, IntlString, translate } from '@anticrm/platform'
 import { AnyComponent, AnySvelteComponent } from '@anticrm/ui'
 import { AttributeModel } from '@anticrm/view'
@@ -165,27 +178,77 @@ function getHiddenAttrs (client: TxOperations, _class: Ref<Class<Doc>>): Set<str
   )
 }
 
-export async function getValue (client: TxOperations, m: AttributeModel, utx: any): Promise<any> {
-  async function getAllRealValues (values: any[]): Promise<any[]> {
-    return client.getHierarchy().isDerived(m._class, core.class.Doc) &&
-      values.every((value) => typeof value === 'string')
-      ? await client.findAll(m._class, { _id: { $in: values } })
-      : values
+function getModifiedAttributes (tx: DisplayTx): any[] {
+  if (tx.tx._class === core.class.TxUpdateDoc) {
+    return ([tx.tx, ...tx.txes.map(({ tx }) => tx)] as unknown as Array<TxUpdateDoc<Doc>>).map(
+      ({ operations }) => operations
+    )
   }
+  if (tx.tx._class === core.class.TxMixin) {
+    return ([tx.tx, ...tx.txes.map(({ tx }) => tx)] as unknown as Array<TxMixin<Doc, Doc>>).map(
+      ({ attributes }) => attributes
+    )
+  }
+  return [{}]
+}
+
+async function buildRemovedDoc (client: TxOperations, objectId: Ref<Doc>): Promise<Doc | undefined> {
+  const txes = await client.findAll(core.class.TxCUD, { objectId }, { sort: { modifiedOn: 1 } })
+  let doc: Doc
+  let createTx = txes.find((tx) => tx._class === core.class.TxCreateDoc)
+  if (createTx === undefined) {
+    const collectionTxes = txes.filter((tx) => tx._class === core.class.TxCollectionCUD) as Array<
+    TxCollectionCUD<Doc, AttachedDoc>
+    >
+    createTx = collectionTxes.find((p) => p.tx._class === core.class.TxCreateDoc)
+  }
+  if (createTx === undefined) return
+  doc = TxProcessor.createDoc2Doc(createTx as TxCreateDoc<Doc>)
+  for (const tx of txes) {
+    if (tx._class === core.class.TxUpdateDoc) {
+      doc = TxProcessor.updateDoc2Doc(doc, tx as TxUpdateDoc<Doc>)
+    } else if (tx._class === core.class.TxMixin) {
+      const mixinTx = tx as TxMixin<Doc, Doc>
+      doc = TxProcessor.updateMixin4Doc(doc, mixinTx.mixin, mixinTx.attributes)
+    }
+  }
+  return doc
+}
+
+async function getAllRealValues (client: TxOperations, values: any[], _class: Ref<Class<Doc>>): Promise<any[]> {
+  if (!client.getHierarchy().isDerived(_class, core.class.Doc) || values.some((value) => typeof value !== 'string')) {
+    return values
+  }
+  const realValues = await client.findAll(_class, { _id: { $in: values } })
+  const realValuesIds = realValues.map(({ _id }) => _id)
+  return [
+    ...realValues,
+    ...(await Promise.all(
+      values
+        .filter((value) => !realValuesIds.includes(value))
+        .map(async (value) => await buildRemovedDoc(client, value))
+    ))
+  ].filter((v) => v != null)
+}
+
+export async function getValue (client: TxOperations, m: AttributeModel, tx: DisplayTx): Promise<any> {
+  function combineAttributes (attributes: any[], key: string, operator: string, arrayKey: string): any[] {
+    return Array.from(
+      new Set(
+        attributes.flatMap((attr) =>
+          Array.isArray(attr[operator]?.[key]?.[arrayKey]) ? attr[operator]?.[key]?.[arrayKey] : attr[operator]?.[key]
+        )
+      )
+    ).filter((v) => v != null)
+  }
+  const utxs = getModifiedAttributes(tx)
   const value = {
-    set: utx[m.key],
-    added: utx.$push?.[m.key],
-    removed: utx.$pull?.[m.key]
+    set: utxs[0][m.key],
+    added: await getAllRealValues(client, combineAttributes(utxs, m.key, '$push', '$each'), m._class),
+    removed: await getAllRealValues(client, combineAttributes(utxs, m.key, '$pull', '$in'), m._class)
   }
   if (value.set !== undefined) {
-    ;[value.set] = await getAllRealValues([value.set])
+    ;[value.set] = await getAllRealValues(client, [value.set], m._class)
   }
-  if (value.added !== undefined) {
-    value.added = await getAllRealValues(Array.isArray(value.added.$each) ? value.added.$each : [value.added])
-  }
-  if (value.removed !== undefined) {
-    value.removed = await getAllRealValues(Array.isArray(value.removed.$in) ? value.removed.$in : [value.removed])
-  }
-
   return value
 }

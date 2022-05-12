@@ -158,30 +158,34 @@
           {/if}
           {#if viewlet === undefined && model.length > 0 && tx.updateTx}
             {#each model as m, i}
-              {#await getValue(client, m, tx.updateTx.operations) then value}
+              {#await getValue(client, m, tx) then value}
                 {#if value.set === null}
                   <span class="lower"><Label label={activity.string.Unset} /> <Label label={m.label} /></span>
-                {:else if value.added}
+                {:else if value.added.length}
                   <span class="lower" class:flex-grow={hasMessageType}>
                     <Label label={activity.string.Added} />
                     <Label label={activity.string.To} />
                     <Label label={m.label} />
                   </span>
                   <div class="strong">
-                    {#each value.added as value}
-                      <svelte:component this={m.presenter} {value} />
-                    {/each}
+                    <div class="flex">
+                      {#each value.added as value}
+                        <svelte:component this={m.presenter} {value} />
+                      {/each}
+                    </div>
                   </div>
-                {:else if value.removed}
+                {:else if value.removed.length}
                   <span class="lower" class:flex-grow={hasMessageType}>
                     <Label label={activity.string.Removed} />
                     <Label label={activity.string.From} />
                     <Label label={m.label} />
                   </span>
                   <div class="strong">
-                    {#each value.removed as value}
-                      <svelte:component this={m.presenter} {value} />
-                    {/each}
+                    <div class="flex">
+                      {#each value.removed as value}
+                        <svelte:component this={m.presenter} {value} />
+                      {/each}
+                    </div>
                   </div>
                 {:else}
                   <span class="lower" class:flex-grow={hasMessageType}
@@ -206,7 +210,7 @@
             {/each}
           {:else if viewlet === undefined && model.length > 0 && tx.mixinTx}
             {#each model as m}
-              {#await getValue(client, m, tx.mixinTx.attributes) then value}
+              {#await getValue(client, m, tx) then value}
                 {#if value.set === null}
                   <span>
                     <Label label={activity.string.Unset} /> <span class="lower"><Label label={m.label} /></span>
