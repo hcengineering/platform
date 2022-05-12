@@ -13,10 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Card, CardLabel } from '@anticrm/board'
+  import type { Card, CardLabel, LabelsCompactMode } from '@anticrm/board'
 
   import { getResource } from '@anticrm/platform'
-  import { getClient } from '@anticrm/presentation'
+  import preference from '@anticrm/preference'
+  import { createQuery, getClient } from '@anticrm/presentation'
   import { Button, IconAdd } from '@anticrm/ui'
 
   import board from '../../plugin'
@@ -27,10 +28,14 @@
   export let isInline: boolean = false
 
   const client = getClient()
+  const query = createQuery()
+
   let labels: CardLabel[]
   let labelsHandler: (e: Event) => void
-  let isCompact: boolean = false
   let isHovered: boolean = false
+  let modePreference: LabelsCompactMode | undefined
+
+  $: isCompact = isInline ? !!modePreference : false
 
   $: if (value.labels && value.labels.length > 0) {
     client.findAll(board.class.CardLabel, { _id: { $in: value.labels } }).then((result) => {
@@ -39,6 +44,9 @@
   } else {
     labels = []
   }
+  $: query.query(board.class.LabelsCompactMode, { attachedTo: value.space }, (result) => {
+    ;[modePreference] = result
+  })
 
   if (!isInline) {
     getCardActions(client, {
@@ -52,9 +60,9 @@
   }
 
   function toggleCompact () {
-    if (isInline) {
-      isCompact = !isCompact
-    }
+    if (!isInline) return
+    if (modePreference) client.remove(modePreference)
+    else client.createDoc(board.class.LabelsCompactMode, preference.space.Preference, { attachedTo: value.space })
   }
 
   function hoverIn () {

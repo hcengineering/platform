@@ -14,7 +14,7 @@
 //
 
 // To help typescript locate view plugin properly
-import type { Board, Card, CardAction, CardDate, CardLabel, MenuPage } from '@anticrm/board'
+import type { Board, Card, CardAction, CardDate, CardLabel, MenuPage, LabelsCompactMode } from '@anticrm/board'
 import type { Employee } from '@anticrm/contact'
 import {
   TxOperations as Client,
@@ -49,6 +49,7 @@ import view from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
 import { Asset, IntlString, Resource } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'
+import preference, { TPreference } from '@anticrm/model-preference'
 import board from './plugin'
 
 /**
@@ -79,6 +80,12 @@ export class TCardLabel extends TAttachedDoc implements CardLabel {
   title!: string
   color!: number
   isHidden?: boolean
+}
+
+@Model(board.class.LabelsCompactMode, preference.class.Preference)
+export class TLabelsCompactMode extends TPreference implements LabelsCompactMode {
+  @Prop(TypeRef(board.class.Board), board.string.LabelsCompactMode)
+  attachedTo!: Ref<Board>
 }
 
 @Model(board.class.Card, task.class.Task)
@@ -140,7 +147,7 @@ export class TMenuPage extends TDoc implements MenuPage {
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TBoard, TCard, TCardLabel, TCardDate, TCardAction, TMenuPage)
+  builder.createModel(TBoard, TCard, TCardLabel, TCardDate, TCardAction, TMenuPage, TLabelsCompactMode)
 
   builder.createDoc(board.class.MenuPage, core.space.Model, {
     component: board.component.Archive,
