@@ -126,7 +126,7 @@
 
   <div class="flex-col ml-4 mt-4 mr-4 flex-gap-1">
     <div class="text-md font-medium">
-      <Label label={board.string.Title} />
+      <Label label={board.string.CopyChecklistFrom} />
     </div>
 
     <div class="mt-1 mb-1 w-full">

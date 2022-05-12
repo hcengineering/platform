@@ -42,6 +42,7 @@
     "ChecklistDropdownNone": "(none)",
     "ShowDoneChecklistItems": "Show checked items ({done})",
     "HideDoneChecklistItems": "Hide checked items",
+    "CopyChecklistFrom": "Copy items from...",
     "Dates": "Dates",
     "Attachments": "Attachments",
     "AddAttachment": "Add an attachment",

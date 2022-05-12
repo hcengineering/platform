@@ -42,6 +42,7 @@
     "ChecklistDropdownNone": "(не выбрано)",
     "ShowDoneChecklistItems": "Показать отмеченные ({done})",
     "HideDoneChecklistItems": "Скрыть отмеченные",
+    "CopyChecklistFrom": "Копировать из...",
     "Dates": "Дата",
     "Attachments": "Прикрепленное",
     "AddAttachment": "Прикрепить",
