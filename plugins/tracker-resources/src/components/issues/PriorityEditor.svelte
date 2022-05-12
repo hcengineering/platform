@@ -37,11 +37,13 @@
   const dispatch = createEventDispatcher()
 
   const handlePriorityChanged = async (newPriority: IssuePriority | undefined) => {
-    if (isEditable) {
-      dispatch('change', newPriority)
+    if (!isEditable || newPriority === undefined) {
+      return
     }
 
-    if (!shouldSaveOnChange || !isEditable || newPriority === undefined) {
+    dispatch('change', newPriority)
+
+    if (!shouldSaveOnChange) {
       return
     }
 

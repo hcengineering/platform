@@ -38,11 +38,13 @@
   const dispatch = createEventDispatcher()
 
   const handleStatusChanged = async (newStatus: Ref<IssueStatus> | undefined) => {
-    if (isEditable) {
-      dispatch('change', newStatus)
+    if (!isEditable || newStatus === undefined) {
+      return
     }
 
-    if (!isEditable || !shouldSaveOnChange || newStatus === undefined) {
+    dispatch('change', newStatus)
+
+    if (!shouldSaveOnChange) {
       return
     }
 
