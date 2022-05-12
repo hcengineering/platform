@@ -16,6 +16,7 @@
   import { Doc, DocumentQuery } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { Applicant } from '@anticrm/recruit'
+  import task from '@anticrm/task'
   import { ActionIcon, Button, Icon, IconAdd, Label, Loading, SearchEdit, showPopup } from '@anticrm/ui'
   import view, { Viewlet, ViewletPreference } from '@anticrm/view'
   import { TableBrowser, ViewletSetting } from '@anticrm/view-resources'
@@ -38,7 +39,7 @@
   client
     .findOne<Viewlet>(view.class.Viewlet, {
       attachTo: recruit.class.Applicant,
-      descriptor: view.viewlet.Table
+      descriptor: task.viewlet.StatusTable
     })
     .then((res) => {
       descr = res

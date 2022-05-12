@@ -276,32 +276,6 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: recruit.class.Applicant,
-    descriptor: view.viewlet.Table,
-    config: [
-      '',
-      '$lookup.space',
-      '$lookup.attachedTo',
-      '$lookup.assignee',
-      '$lookup.state',
-      {
-        key: '',
-        presenter: attachment.component.AttachmentsPresenter,
-        label: attachment.string.Files,
-        sortingKey: 'attachments'
-      },
-      {
-        key: '',
-        presenter: chunter.component.CommentsPresenter,
-        label: chunter.string.Comments,
-        sortingKey: 'comments'
-      },
-      'modifiedOn',
-      '$lookup.attachedTo.$lookup.channels'
-    ]
-  })
-
-  builder.createDoc(view.class.Viewlet, core.space.Model, {
-    attachTo: recruit.class.Applicant,
     descriptor: task.viewlet.StatusTable,
     config: [
       '',

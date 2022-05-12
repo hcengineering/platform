@@ -20,7 +20,7 @@
   import { buildModel } from '@anticrm/view-resources'
   import { Category } from '@anticrm/inventory'
   import HierarchyElement from './HierarchyElement.svelte'
-import { buildConfigLookup } from '@anticrm/view-resources/src/utils';
+  import { buildConfigLookup } from '@anticrm/view-resources/src/utils'
 
   export let _class: Ref<Class<Category>>
   export let query: DocumentQuery<Category> = {}

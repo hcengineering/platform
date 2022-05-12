@@ -64,6 +64,7 @@
   )
 
   async function updateQuery (search: string, selectedDoneStates: Set<Ref<DoneState>>): Promise<void> {
+    resConfig = updateConfig(config)
     const result = {} as DocumentQuery<Task>
     if (search !== '') {
       result.$search = search
