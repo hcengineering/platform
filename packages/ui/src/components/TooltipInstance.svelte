@@ -14,8 +14,8 @@
 -->
 <script lang="ts">
   import { afterUpdate, onDestroy } from 'svelte'
-  import { tooltipstore as tooltip, closeTooltip, Component } from '..'
   import type { TooltipAlignment } from '..'
+  import { closeTooltip, Component, tooltipstore as tooltip } from '..'
   import Label from './Label.svelte'
 
   let tooltipHTML: HTMLElement
@@ -150,6 +150,13 @@
   on:resize={hideTooltip}
   on:mousemove={(ev) => {
     whileShow(ev)
+  }}
+  on:keydown={(evt) => {
+    if (($tooltip.component || $tooltip.label) && evt.key === 'Escape') {
+      evt.preventDefault()
+      evt.stopImmediatePropagation()
+      hideTooltip()
+    }
   }}
 />
 {#if $tooltip.component}

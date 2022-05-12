@@ -16,7 +16,7 @@
   import type { IntlString } from '@anticrm/platform'
   import { getClient } from '../utils'
 
-  import { Label, showPopup, IconFolder, Button, eventToHTMLElement } from '@anticrm/ui'
+  import { Label, showPopup, IconFolder, Button, eventToHTMLElement, getFocusManager } from '@anticrm/ui'
   import SpacesPopup from './SpacesPopup.svelte'
 
   import type { Ref, Class, Space, DocumentQuery } from '@anticrm/core'
@@ -25,11 +25,14 @@
   export let spaceQuery: DocumentQuery<Space> | undefined = { archived: false }
   export let label: IntlString
   export let value: Ref<Space> | undefined
+  export let focusIndex = -1
+  export let focus = false
 
   let selected: Space | undefined
 
   const client = getClient()
 
+  const mgr = getFocusManager()
   async function updateSelected (value: Ref<Space> | undefined) {
     selected = value !== undefined ? await client.findOne(_class, { ...(spaceQuery ?? {}), _id: value }) : undefined
   }
@@ -38,6 +41,8 @@
 </script>
 
 <Button
+  {focus}
+  {focusIndex}
   icon={IconFolder}
   size={'small'}
   kind={'no-border'}
@@ -45,6 +50,7 @@
     showPopup(SpacesPopup, { _class, spaceQuery }, eventToHTMLElement(ev), (result) => {
       if (result) {
         value = result._id
+        mgr?.setFocusPos(focusIndex)
       }
     })
   }}

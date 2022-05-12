@@ -35,7 +35,9 @@
   import {
     Button,
     Component,
+    createFocusManager,
     EditBox,
+    FocusHandler,
     getColorNumberByText,
     IconFile as FileIcon,
     IconInfo,
@@ -351,6 +353,7 @@
     if (file !== undefined) {
       createAttachment(file)
     }
+    manager.setFocusPos(102)
   }
 
   function onAvatarDone (e: any) {
@@ -386,7 +389,11 @@
   function removeAvatar (): void {
     avatar = undefined
   }
+
+  const manager = createFocusManager()
 </script>
+
+<FocusHandler {manager} />
 
 <Card
   label={recruit.string.CreateCandidate}
@@ -416,17 +423,31 @@
         kind={'large-style'}
         maxWidth={'32rem'}
         focus
+        focusIndex={1}
       />
       <EditBox
         placeholder={recruit.string.PersonLastNamePlaceholder}
         bind:value={lastName}
         kind={'large-style'}
         maxWidth={'32rem'}
+        focusIndex={2}
       />
       <div class="mt-1">
-        <EditBox placeholder={recruit.string.Title} bind:value={object.title} kind={'small-style'} maxWidth={'32rem'} />
+        <EditBox
+          placeholder={recruit.string.Title}
+          bind:value={object.title}
+          kind={'small-style'}
+          maxWidth={'32rem'}
+          focusIndex={3}
+        />
       </div>
-      <EditBox placeholder={recruit.string.Location} bind:value={object.city} kind={'small-style'} maxWidth={'32rem'} />
+      <EditBox
+        placeholder={recruit.string.Location}
+        bind:value={object.city}
+        kind={'small-style'}
+        maxWidth={'32rem'}
+        focusIndex={4}
+      />
     </div>
     <div class="ml-4">
       <EditableAvatar
@@ -439,12 +460,23 @@
     </div>
   </div>
   <svelte:fragment slot="pool">
-    <ChannelsDropdown bind:value={channels} editable />
-    <YesNo label={recruit.string.Onsite} tooltip={recruit.string.WorkLocationPreferences} bind:value={object.onsite} />
-    <YesNo label={recruit.string.Remote} tooltip={recruit.string.WorkLocationPreferences} bind:value={object.remote} />
+    <ChannelsDropdown focusIndex={10} bind:value={channels} editable />
+    <YesNo
+      focusIndex={100}
+      label={recruit.string.Onsite}
+      tooltip={recruit.string.WorkLocationPreferences}
+      bind:value={object.onsite}
+    />
+    <YesNo
+      focusIndex={101}
+      label={recruit.string.Remote}
+      tooltip={recruit.string.WorkLocationPreferences}
+      bind:value={object.remote}
+    />
     <Component
       is={tags.component.TagsDropdownEditor}
       props={{
+        focusIndex: 102,
         items: skills,
         key,
         targetClass: recruit.mixin.Candidate,
@@ -474,20 +506,26 @@
       on:drop|preventDefault|stopPropagation={drop}
     >
       {#if resume.uuid}
-        <Link
-          label={resume.name}
+        <Button
+          kind={'transparent'}
+          focusIndex={103}
           icon={FileIcon}
-          maxLenght={16}
           on:click={() => {
             showPopup(PDFViewer, { file: resume.uuid, name: resume.name }, 'right')
           }}
-        />
+        >
+          <svelte:fragment slot="content">
+            {resume.name}
+          </svelte:fragment>
+        </Button>
       {:else}
         {#if loading}
           <Link label={'Uploading...'} icon={Spinner} disabled />
         {:else}
-          <Link
-            label={'Add or drop resume'}
+          <Button
+            kind={'transparent'}
+            focusIndex={103}
+            label={recruit.string.AddDropHere}
             icon={FileUpload}
             on:click={() => {
               inputFile.click()

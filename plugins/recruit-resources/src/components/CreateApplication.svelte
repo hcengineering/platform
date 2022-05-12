@@ -23,7 +23,9 @@
   import ui, {
     Button,
     ColorPopup,
+    createFocusManager,
     eventToHTMLElement,
+    FocusHandler,
     getPlatformColor,
     showPopup,
     Status as StatusControl
@@ -163,7 +165,10 @@
       { sort: { rank: SortingOrder.Ascending } }
     )
   }
+  const manager = createFocusManager()
 </script>
+
+<FocusHandler {manager} />
 
 <Card
   label={recruit.string.CreateApplication}
@@ -183,6 +188,7 @@
   <svelte:fragment slot="pool">
     {#if !preserveCandidate}
       <UserBox
+        focusIndex={1}
         _class={contact.class.Person}
         label={recruit.string.Candidate}
         placeholder={recruit.string.Candidates}
@@ -192,6 +198,7 @@
       />
     {/if}
     <UserBox
+      focusIndex={2}
       _class={contact.class.Employee}
       label={recruit.string.AssignRecruiter}
       placeholder={recruit.string.Recruiters}
@@ -203,6 +210,7 @@
     />
     {#if states && doc.space}
       <Button
+        focusIndex={3}
         width="min-content"
         size="small"
         kind="no-border"
@@ -217,6 +225,7 @@
                 selectedState = result
                 selectedState.title = result.label
               }
+              manager.setFocusPos(3)
             }
           )
         }}

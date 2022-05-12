@@ -23,7 +23,7 @@
   import view from '../plugin'
   import { focusStore, selectionStore } from '../selection'
   import ActionContext from './ActionContext.svelte'
-  import ListView from './ListView.svelte'
+  import { ListView } from '@anticrm/ui'
   import ObjectPresenter from './ObjectPresenter.svelte'
 
   export let viewContext: ViewContext

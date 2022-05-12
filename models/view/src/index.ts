@@ -389,7 +389,7 @@ export function createModel (builder: Builder): void {
       action: view.actionImpl.SelectItem,
       keyBinding: ['keyX'],
       category: view.category.General,
-      input: 'focus',
+      input: 'any',
       target: core.class.Doc,
       context: { mode: 'browser' }
     },
@@ -434,7 +434,7 @@ export function createModel (builder: Builder): void {
       input: 'none',
       target: core.class.Doc,
       context: {
-        mode: ['workbench', 'browser', 'popup', 'panel', 'editor', 'input']
+        mode: ['workbench', 'browser', 'panel', 'editor', 'input']
       }
     },
     view.action.ShowActions

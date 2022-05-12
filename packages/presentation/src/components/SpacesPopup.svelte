@@ -19,6 +19,7 @@
   import { createQuery } from '../utils'
   import SpaceInfo from './SpaceInfo.svelte'
   import presentation from '..'
+  import { ListView } from '@anticrm/ui'
 
   export let _class: Ref<Class<Space>>
   export let spaceQuery: DocumentQuery<Space> | undefined
@@ -42,24 +43,64 @@
   onMount(() => {
     if (input) input.focus()
   })
+
+  let selection = 0
+  let list: ListView
+
+  async function handleSelection (evt: Event | undefined, selection: number): Promise<void> {
+    const space = objects[selection]
+    dispatch('close', space)
+  }
+
+  function onKeydown (key: KeyboardEvent): void {
+    if (key.code === 'ArrowUp') {
+      key.stopPropagation()
+      key.preventDefault()
+      list.select(selection - 1)
+    }
+    if (key.code === 'ArrowDown') {
+      key.stopPropagation()
+      key.preventDefault()
+      list.select(selection + 1)
+    }
+    if (key.code === 'Enter') {
+      key.preventDefault()
+      key.stopPropagation()
+      handleSelection(key, selection)
+    }
+    if (key.code === 'Escape') {
+      key.preventDefault()
+      key.stopPropagation()
+      dispatch('close')
+    }
+  }
 </script>
 
-<div class="selectPopup">
+<div class="selectPopup" on:keydown={onKeydown}>
   <div class="header">
     <input bind:this={input} type="text" bind:value={search} placeholder={phTraslate} on:input={() => {}} on:change />
   </div>
   <div class="scroll">
     <div class="box">
-      {#each objects as space}
-        <button
-          class="menu-item flex-between"
-          on:click={() => {
-            dispatch('close', space)
-          }}
-        >
-          <SpaceInfo size={'large'} value={space} />
-        </button>
-      {/each}
+      <ListView
+        bind:this={list}
+        count={objects.length}
+        bind:selection
+        on:click={(evt) => handleSelection(evt, evt.detail)}
+      >
+        <svelte:fragment slot="item" let:item>
+          {@const space = objects[item]}
+
+          <button
+            class="menu-item flex-between"
+            on:click={() => {
+              handleSelection(undefined, item)
+            }}
+          >
+            <SpaceInfo size={'large'} value={space} />
+          </button>
+        </svelte:fragment>
+      </ListView>
     </div>
   </div>
 </div>

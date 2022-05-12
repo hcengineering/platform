@@ -95,7 +95,8 @@
     "GotoSkills": "Перейти к навыкам",
     "GotoAssigned": "Перейти к моим назначениям",
     "GotoApplicants": "Перейти к претендентам",
-    "GotoRecruitApplication": "Перейти к Приложению Рекрутинг"
+    "GotoRecruitApplication": "Перейти к Приложению Рекрутинг",
+    "AddDropHere": "Добавить или перетянуть резюме"
   },
   "status": {
     "CandidateRequired": "Пожалуйста выберите кандидата",

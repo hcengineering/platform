@@ -15,8 +15,8 @@
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
   import { translate } from '@anticrm/platform'
-  import { createEventDispatcher } from 'svelte'
-  import { getPlatformColor } from '..'
+  import { createEventDispatcher, onMount } from 'svelte'
+  import { getPlatformColor, ListView } from '..'
 
   export let placeholder: IntlString | undefined = undefined
   export let placeholderParam: any | undefined = undefined
@@ -33,27 +33,79 @@
   }
 
   const dispatch = createEventDispatcher()
+
+  $: objects = value.filter((el) => el.label.toLowerCase().includes(search.toLowerCase()))
+
+  let selection = 0
+  let list: ListView
+
+  async function handleSelection (evt: Event | undefined, selection: number): Promise<void> {
+    const space = objects[selection]
+    dispatch('close', space)
+  }
+
+  function onKeydown (key: KeyboardEvent): void {
+    if (key.code === 'ArrowUp') {
+      key.stopPropagation()
+      key.preventDefault()
+      list.select(selection - 1)
+    }
+    if (key.code === 'ArrowDown') {
+      key.stopPropagation()
+      key.preventDefault()
+      list.select(selection + 1)
+    }
+    if (key.code === 'Enter') {
+      key.preventDefault()
+      key.stopPropagation()
+      handleSelection(key, selection)
+    }
+    if (key.code === 'Escape') {
+      key.preventDefault()
+      key.stopPropagation()
+      dispatch('close')
+    }
+  }
+  let input: HTMLElement
+  onMount(() => {
+    if (input) input.focus()
+  })
 </script>
 
-<div class="selectPopup">
+<div class="selectPopup" on:keydown={onKeydown}>
   {#if searchable}
     <div class="header">
-      <input type="text" bind:value={search} placeholder={phTraslate} on:input={(ev) => {}} on:change />
+      <input
+        bind:this={input}
+        type="text"
+        bind:value={search}
+        placeholder={phTraslate}
+        on:input={(ev) => {}}
+        on:change
+      />
     </div>
   {/if}
   <div class="scroll">
     <div class="box">
-      {#each value.filter((el) => el.label.toLowerCase().includes(search.toLowerCase())) as item}
-        <button
-          class="menu-item"
-          on:click={() => {
-            dispatch('close', item)
-          }}
-        >
-          <div class="color" style="background-color: {getPlatformColor(item.color)}" />
-          <span class="label">{item.label}</span>
-        </button>
-      {/each}
+      <ListView
+        bind:this={list}
+        count={objects.length}
+        bind:selection
+        on:click={(evt) => handleSelection(evt, evt.detail)}
+      >
+        <svelte:fragment slot="item" let:item>
+          {@const itemValue = objects[item]}
+          <button
+            class="menu-item"
+            on:click={() => {
+              dispatch('close', itemValue)
+            }}
+          >
+            <div class="color" style="background-color: {getPlatformColor(itemValue.color)}" />
+            <span class="label">{itemValue.label}</span>
+          </button>
+        </svelte:fragment>
+      </ListView>
     </div>
   </div>
 </div>
