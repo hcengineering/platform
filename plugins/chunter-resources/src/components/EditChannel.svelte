@@ -17,7 +17,6 @@
   import { ChunterSpace } from '@anticrm/chunter'
   import { EmployeeAccount } from '@anticrm/contact'
   import type { Class, Ref } from '@anticrm/core'
-  import type { IntlString } from '@anticrm/platform'
   import { createQuery, getClient, Members } from '@anticrm/presentation'
   import { Icon, Label, Scroller, showPopup, Panel } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
@@ -36,7 +35,7 @@
   const dispatch = createEventDispatcher()
 
   const client = getClient()
-  const clazz = client.getHierarchy().getClass(_class)
+  $: clazz = client.getHierarchy().getClass(_class)
 
   const query = createQuery()
   $: query.query(chunter.class.ChunterSpace, { _id }, (result) => {
@@ -60,6 +59,7 @@
       }
     )
   }
+  $: if (_id && _class && channel) console.log('!!!!!!!!!!!!!!!! id:', _id, ' - class:', _class, ' - channel:', channel)
 </script>
 
 <Panel
