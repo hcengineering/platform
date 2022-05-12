@@ -13,18 +13,19 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher, onMount, afterUpdate } from 'svelte'
-  import type { IntlString, Asset } from '@anticrm/platform'
+  import type { Asset, IntlString } from '@anticrm/platform'
   import { translate } from '@anticrm/platform'
-  import type { AnySvelteComponent } from '../types'
-  import Label from './Label.svelte'
-  import Icon from './Icon.svelte'
+  import { afterUpdate, createEventDispatcher, onMount } from 'svelte'
+  import { registerFocus } from '../focus'
   import plugin from '../plugin'
+  import type { AnySvelteComponent } from '../types'
+  import Icon from './Icon.svelte'
+  import Label from './Label.svelte'
 
   export let label: IntlString | undefined = undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
-  export let maxWidth: string | undefined
-  export let value: string | number | undefined
+  export let maxWidth: string | undefined = undefined
+  export let value: string | number | undefined = undefined
   export let placeholder: IntlString = plugin.string.EditBoxPlaceholder
   export let placeholderParam: any | undefined = undefined
   export let format: 'text' | 'password' | 'number' = 'text'
@@ -66,6 +67,22 @@
   afterUpdate(() => {
     computeSize(input)
   })
+
+  // Focusable control with index
+  export let focusIndex = -1
+  const { idx, focusManager } = registerFocus(focusIndex, {
+    focus: () => {
+      input?.focus()
+      return input != null
+    },
+    isFocus: () => document.activeElement === input
+  })
+
+  $: if (input) {
+    input.addEventListener('focus', () => {
+      focusManager?.setFocus(idx)
+    })
+  }
 </script>
 
 <div
@@ -74,6 +91,7 @@
     input.focus()
   }}
 >
+  <!-- {focusIndex} -->
   <div class="hidden-text {kind}" bind:this={text} />
   {#if label}<div class="label"><Label {label} /></div>{/if}
   <div class="{kind} flex-row-center clear-mins">

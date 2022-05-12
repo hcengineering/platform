@@ -13,9 +13,9 @@
 // limitations under the License.
 //
 
+import type { Asset, IntlString } from '@anticrm/platform'
 import { /* Metadata, Plugin, plugin, */ Resource /*, Service */ } from '@anticrm/platform'
 import { /* getContext, */ SvelteComponent } from 'svelte'
-import type { Asset, IntlString } from '@anticrm/platform'
 
 /**
  * Describe a browser URI location parsed to path, query and fragment.
@@ -93,6 +93,9 @@ export interface ListItem {
   _id: string
   label: string
   image?: string
+  isSelectable?: boolean
+  fontWeight?: 'normal' | 'medium' | 'semi-bold'
+  paddingLeft?: number
 }
 
 export interface DropdownTextItem {

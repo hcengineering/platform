@@ -18,7 +18,7 @@
   import { FilterSectionElement } from '../utils'
 
   export let actions: FilterSectionElement[] = []
-  export let onBack: () => void
+  export let onBack: (() => void) | undefined = undefined
 
   const dispatch = createEventDispatcher()
   const actionElements: HTMLButtonElement[] = []
@@ -28,7 +28,7 @@
   const getSelectedElementsMap = (actions: FilterSectionElement[]) => {
     const result: { [k: number]: boolean } = {}
 
-    for (let i = 1; i < actions.length; ++i) {
+    for (let i = onBack ? 1 : 0; i < actions.length; ++i) {
       result[i] = !!actions[i].isSelected
     }
 
@@ -46,7 +46,8 @@
 
     if (event.key === 'ArrowLeft') {
       dispatch('close')
-      onBack()
+
+      onBack?.()
     }
   }
 
@@ -74,25 +75,27 @@
             event.currentTarget.focus()
           }}
           on:click={(event) => {
-            if (i === 0) {
+            if (i === 0 && onBack) {
               dispatch('close')
             }
 
             action.onSelect(event)
 
-            if (i !== 0) {
+            if (i !== 0 || !onBack) {
               selectedElementsMap[i] = !selectedElementsMap[i]
             }
           }}
         >
           <div class="buttonContent">
-            {#if i !== 0}
+            {#if i !== 0 || (i === 0 && !onBack)}
               <div class="flex check pointer-events-none">
                 <CheckBox checked={selectedElementsMap[i]} primary />
               </div>
             {/if}
             {#if action.icon}
-              <div class="icon" class:ml-3={i > 0}><Icon icon={action.icon} size={'small'} /></div>
+              <div class="icon" class:ml-3={i > 0 || (i === 0 && !onBack)}>
+                <Icon icon={action.icon} size={'small'} />
+              </div>
             {/if}
             {#if action.title}
               <div class="ml-3 pr-1">{action.title}</div>

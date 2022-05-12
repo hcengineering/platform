@@ -108,7 +108,7 @@
       </div>
     </div>
     {#if props.element !== 'content'}
-      <div class="modal-overlay" class:show on:click={() => escapeClose()} />
+      <div class="modal-overlay" class:show on:click={() => escapeClose()} on:keydown={() => {}} on:keyup={() => {}} />
     {/if}
   {/if}
 {/if}

@@ -17,7 +17,7 @@
   import contact, { Contact, formatName } from '@anticrm/contact'
   import type { Class, Ref } from '@anticrm/core'
   import type { IntlString } from '@anticrm/platform'
-  import type { TooltipAlignment, ButtonKind, ButtonSize } from '@anticrm/ui'
+  import { TooltipAlignment, ButtonKind, ButtonSize, getFocusManager } from '@anticrm/ui'
   import { Button, Label, showPopup, Tooltip } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation from '..'
@@ -38,6 +38,7 @@
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = undefined
   export let labelDirection: TooltipAlignment | undefined = undefined
+  export let focusIndex = -1
 
   const dispatch = createEventDispatcher()
 
@@ -56,11 +57,13 @@
     const isPerson = client.getHierarchy().isDerived(obj._class, contact.class.Person)
     return isPerson ? formatName(obj.name) : obj.name
   }
+  const mgr = getFocusManager()
 </script>
 
 <div bind:this={container} class="min-w-0">
   <Tooltip {label} fill={width === '100%'} direction={labelDirection}>
     <Button
+      {focusIndex}
       icon={size === 'x-large' && selected ? undefined : IconPerson}
       width={width ?? 'min-content'}
       {size}
@@ -81,6 +84,7 @@
                 value = result._id
                 dispatch('change', value)
               }
+              mgr?.setFocusPos(focusIndex)
             }
           )
         }

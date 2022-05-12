@@ -12,7 +12,7 @@
     "VacancyCreateLabel": "Vacancy",
     "VacancyPlaceholder": "Software Engineer",
     "MakePrivateDescription": "Only members can see it",
-    "CreateAnApplication": "Create an Application",
+    "CreateAnApplication": "New Application",
     "NoApplicationsForCandidate": "There are no applications for this candidate.",
     "CreateApplication": "Create an Application",
     "ApplicationCreateLabel": "Application",
@@ -93,7 +93,8 @@
     "GotoSkills": "Go to Skills",
     "GotoAssigned": "Go to my Assigned",
     "GotoApplicants": "Go to Applications",
-    "GotoRecruitApplication": "Switch to Recruit Application"
+    "GotoRecruitApplication": "Switch to Recruit Application",
+    "AddDropHere": "Add or drop resume"
   },
   "status": {
     "CandidateRequired": "Please select candidate",

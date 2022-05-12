@@ -194,6 +194,7 @@ input.search {
 .justify-end { justify-content: flex-end; }
 .justify-center { justify-content: center; }
 .items-baseline { align-items: baseline; }
+.items-center { align-items: center; }
 
 .flex-gap-3 { gap: .75rem; }
 .flex-gap-2 { gap: .5rem; }
@@ -456,6 +457,7 @@ input.search {
 .min-w-80 { min-width: 20rem; }
 .min-w-min { min-width: min-content; }
 .min-h-0 { min-height: 0; }
+.min-h-7 { min-height: 1.75rem; }
 .max-h-125 { max-height: 31.25rem; }
 .max-h-60 { max-height: 15rem; }
 .max-w-60 { max-width: 15rem; }
@@ -540,6 +542,7 @@ a.no-line {
 .text-lg { font-size: 1.125rem; }
 .font-normal { font-weight: 400; }
 .font-medium { font-weight: 500; }
+.font-semi-bold { font-weight: 600; }
 .fs-bold { font-weight: 500; }
 .uppercase { text-transform: uppercase; }
 .text-left { text-align: left; }
@@ -548,6 +551,8 @@ a.no-line {
   cursor: pointer;
   &:hover { text-decoration: underline; }
 }
+
+.text-line-through { text-decoration: line-through; }
 
 .hidden-text {
   position: absolute;
@@ -632,6 +637,7 @@ a.no-line {
 .background-highlight-red { background-color: var(--highlight-red); }
 .background-button-bg-color { background-color: var(--button-bg-color); }
 .background-button-bg-enabled { background-color: var(--theme-button-bg-enabled); }
+.background-button-noborder-bg-hover { background-color: var(--noborder-bg-hover); }
 .background-menu-divider { background-color: var(--theme-menu-divider); }
 .background-card-divider { background-color: var(--theme-card-divider); }
 .background-primary-color { background-color: var(--primary-button-enabled); }

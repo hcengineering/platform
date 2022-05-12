@@ -14,17 +14,28 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
   import type { Channel, ChannelProvider } from '@anticrm/contact'
   import contact from '@anticrm/contact'
   import type { AttachedData, Doc, Ref, Timestamp } from '@anticrm/core'
+  import { NotificationClientImpl } from '@anticrm/notification-resources'
   import type { Asset, IntlString } from '@anticrm/platform'
-  import { AnyComponent, showPopup, Button, Menu, showTooltip, closeTooltip, eventToHTMLElement } from '@anticrm/ui'
-  import type { Action, ButtonKind, ButtonSize } from '@anticrm/ui'
   import presentation from '@anticrm/presentation'
+  import {
+    Action,
+    AnyComponent,
+    Button,
+    ButtonKind,
+    ButtonSize,
+    closeTooltip,
+    eventToHTMLElement,
+    getFocusManager,
+    Menu,
+    showPopup,
+    showTooltip
+  } from '@anticrm/ui'
+  import { createEventDispatcher, tick } from 'svelte'
   import { getChannelProviders } from '../utils'
   import ChannelEditor from './ChannelEditor.svelte'
-  import { NotificationClientImpl } from '@anticrm/notification-resources'
 
   export let value: AttachedData<Channel>[] | Channel | null
   export let editable: boolean = false
@@ -33,6 +44,7 @@
   export let length: 'short' | 'full' = 'full'
   export let shape: 'circle' | undefined = undefined
   export let integrations: Set<Ref<Doc>> = new Set<Ref<Doc>>()
+  export let focusIndex = -1
 
   const notificationClient = NotificationClientImpl.getClient()
   const lastViews = notificationClient.getLastViews()
@@ -79,7 +91,7 @@
   }
 
   async function update (value: AttachedData<Channel>[] | Channel | null, lastViews: Map<Ref<Doc>, Timestamp>) {
-    if (value === null) {
+    if (value == null) {
       displayItems = []
       return
     }
@@ -99,7 +111,7 @@
       }
     }
     displayItems = result
-    updateMenu()
+    updateMenu(displayItems)
   }
 
   $: if (value) update(value, $lastViews)
@@ -112,23 +124,30 @@
   let anchor: HTMLElement
 
   function filterUndefined (channels: AttachedData<Channel>[]): AttachedData<Channel>[] {
-    return channels.filter((channel) => channel.value !== undefined && channel.value.length > 0)
+    return channels.filter((channel) => channel.value !== undefined)
   }
+  const focusManager = getFocusManager()
 
   getChannelProviders().then((pr) => (providers = pr))
 
-  const updateMenu = (): void => {
+  const updateMenu = (_displayItems: Item[]): void => {
     actions = []
     providers.forEach((pr) => {
-      if (displayItems.filter((it) => it.provider === pr._id).length === 0) {
+      if (_displayItems.filter((it) => it.provider === pr._id).length === 0) {
         actions.push({
           icon: pr.icon ?? contact.icon.SocialEdit,
           label: pr.label,
           action: async () => {
             const provider = getProvider({ provider: pr._id, value: '' }, providers, $lastViews)
             if (provider !== undefined) {
-              if (displayItems.filter((it) => it.provider === pr._id).length === 0) {
-                displayItems = [...displayItems, provider]
+              if (_displayItems.filter((it) => it.provider === pr._id).length === 0) {
+                displayItems = [..._displayItems, provider]
+                if (focusIndex !== -1) {
+                  await tick()
+                  focusManager?.setFocusPos(focusIndex + displayItems.length)
+                  await tick()
+                  editChannel(btns[displayItems.length - 1], displayItems.length - 1, provider)
+                }
               }
             }
           }
@@ -136,7 +155,7 @@
       }
     })
   }
-  $: if (providers) updateMenu()
+  $: if (providers) updateMenu(displayItems)
 
   const dropItem = (n: number): Item[] => {
     return displayItems.filter((it, i) => i !== n)
@@ -144,11 +163,15 @@
   const saveItems = (): void => {
     value = filterUndefined(displayItems)
     dispatch('change', value)
-    updateMenu()
+    updateMenu(displayItems)
   }
 
   const showMenu = (ev: MouseEvent): void => {
-    showPopup(Menu, { actions }, ev.target as HTMLElement)
+    showPopup(Menu, { actions }, ev.target as HTMLElement, (result) => {
+      if (result == null) {
+        focusManager?.setFocusPos(focusIndex + 2 + displayItems.length)
+      }
+    })
   }
 
   const editChannel = (el: HTMLElement, n: number, item: Item): void => {
@@ -157,13 +180,21 @@
       el,
       undefined,
       ChannelEditor,
-      { value: item.value, placeholder: item.placeholder, editable },
+      {
+        value: item.value,
+        placeholder: item.placeholder,
+        editable
+      },
       anchor,
       (result) => {
-        if (result.detail !== undefined) {
-          if (result.detail === '') displayItems = dropItem(n)
-          else displayItems[n].value = result.detail
+        if (result.detail != null) {
+          if (result.detail === '') {
+            displayItems = dropItem(n)
+          } else {
+            displayItems[n].value = result.detail
+          }
           saveItems()
+          focusManager?.setFocusPos(focusIndex + 1 + n)
         }
       }
     )
@@ -183,6 +214,7 @@
 >
   {#each displayItems as item, i}
     <Button
+      focusIndex={focusIndex === -1 ? focusIndex : focusIndex + 1 + i}
       id={item.label}
       bind:input={btns[i]}
       icon={item.icon}
@@ -193,18 +225,19 @@
       on:mousemove={(ev) => {
         _focus(ev, i, item)
       }}
-      on:focus={(ev) => {
-        _focus(ev, i, item)
-      }}
       on:click={(ev) => {
-        if (editable) editChannel(eventToHTMLElement(ev), i, item)
-        else closeTooltip()
+        if (editable) {
+          editChannel(eventToHTMLElement(ev), i, item)
+        } else {
+          closeTooltip()
+        }
         dispatch('open', item)
       }}
     />
   {/each}
   {#if actions.length > 0 && editable}
     <Button
+      focusIndex={focusIndex === -1 ? focusIndex : focusIndex + 2 + displayItems.length}
       id={presentation.string.AddSocialLinks}
       bind:input={addBtn}
       icon={contact.icon.SocialEdit}

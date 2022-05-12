@@ -16,8 +16,9 @@
   import { createEventDispatcher, onMount } from 'svelte'
   import type { IntlString } from '@anticrm/platform'
   import { translate } from '@anticrm/platform'
-  import { Button, IconClose, closeTooltip, IconBlueCheck } from '@anticrm/ui'
+  import { Button, IconClose, closeTooltip, IconBlueCheck, registerFocus, createFocusManager } from '@anticrm/ui'
   import IconCopy from './icons/Copy.svelte'
+  import { FocusHandler } from '@anticrm/ui'
 
   export let value: string = ''
   export let placeholder: IntlString
@@ -31,8 +32,25 @@
   onMount(() => {
     if (input) input.focus()
   })
+
+  const mgr = createFocusManager()
+
+  const { idx } = registerFocus(1, {
+    focus: () => {
+      input?.focus()
+      return true
+    },
+    isFocus: () => document.activeElement === input
+  })
+
+  $: if (input) {
+    input.addEventListener('focus', () => {
+      mgr.setFocus(idx)
+    })
+  }
 </script>
 
+<FocusHandler manager={mgr} />
 <div class="buttons-group xsmall-gap">
   {#if editable}
     <input
@@ -51,6 +69,7 @@
       on:change
     />
     <Button
+      focusIndex={2}
       kind={'transparent'}
       size={'small'}
       icon={IconClose}
@@ -66,6 +85,7 @@
     <span>{value}</span>
   {/if}
   <Button
+    focusIndex={3}
     kind={'transparent'}
     size={'small'}
     icon={IconCopy}
@@ -75,6 +95,7 @@
   />
   {#if editable}
     <Button
+      focusIndex={4}
       kind={'transparent'}
       size={'small'}
       icon={IconBlueCheck}

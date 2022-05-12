@@ -13,58 +13,44 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { WithLookup } from '@anticrm/core'
   import { translate } from '@anticrm/platform'
-  import { IssueStatus } from '@anticrm/tracker'
+  import { IssuePriority } from '@anticrm/tracker'
   import { IconNavPrev } from '@anticrm/ui'
   import FilterMenuSection from '../FilterMenuSection.svelte'
   import tracker from '../../plugin'
-  import { FilterSectionElement } from '../../utils'
+  import { FilterSectionElement, issuePriorities } from '../../utils'
 
   export let selectedElements: any[] = []
-  export let statuses: Array<WithLookup<IssueStatus>> = []
   export let groups: { [key: string]: number }
   export let index: number = 0
   export let onUpdate: (result: { [p: string]: any }, filterIndex?: number) => void
   export let onBack: (() => void) | undefined = undefined
 
-  let backButtonTitle = ''
-
-  $: actions = getFilterElements(groups, statuses, selectedElements, backButtonTitle)
-
-  $: translate(tracker.string.Back, {}).then((result) => {
-    backButtonTitle = result
-  })
-
-  const getFilterElements = (
-    groups: { [key: string]: number },
-    defaultStatuses: Array<WithLookup<IssueStatus>>,
-    selected: any[],
-    backButtonTitle: string
-  ) => {
+  const getFilterElements = async (groups: { [key: string]: number }, selected: any[]) => {
     const elements: FilterSectionElement[] = onBack
       ? [
           {
             icon: IconNavPrev,
-            title: backButtonTitle,
+            title: await translate(tracker.string.Back, {}),
             onSelect: onBack
           }
         ]
       : []
 
     for (const [key, value] of Object.entries(groups)) {
-      const status = defaultStatuses.find((x) => x._id === key)
+      const priority = Number(key) as IssuePriority
+      const assets = issuePriorities[priority]
 
-      if (!status) {
+      if (!assets) {
         continue
       }
 
       elements.push({
-        icon: status.$lookup?.category?.icon,
-        title: status.name,
+        icon: assets.icon,
+        title: await translate(assets.label, {}),
         count: value,
-        isSelected: selected.includes(key),
-        onSelect: () => onUpdate({ status: key }, index)
+        isSelected: selected.includes(priority),
+        onSelect: () => onUpdate({ priority }, index)
       })
     }
 
@@ -72,4 +58,6 @@
   }
 </script>
 
-<FilterMenuSection {actions} {onBack} on:close />
+{#await getFilterElements(groups, selectedElements) then actions}
+  <FilterMenuSection {actions} {onBack} on:close />
+{/await}

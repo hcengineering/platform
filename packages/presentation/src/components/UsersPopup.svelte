@@ -17,7 +17,7 @@
   import { translate } from '@anticrm/platform'
   import { createEventDispatcher, onMount } from 'svelte'
 
-  import { Tooltip, CheckBox } from '@anticrm/ui'
+  import { Tooltip, CheckBox, ListView } from '@anticrm/ui'
   import UserInfo from './UserInfo.svelte'
 
   import type { Ref, Class } from '@anticrm/core'
@@ -70,43 +70,85 @@
   onMount(() => {
     if (input) input.focus()
   })
+
+  let selection = 0
+  let list: ListView
+
+  async function handleSelection (evt: Event | undefined, selection: number): Promise<void> {
+    const person = objects[selection]
+
+    if (!multiSelect) {
+      selected = person._id === selected ? undefined : person._id
+      dispatch('close', selected !== undefined ? person : undefined)
+    } else {
+      checkSelected(person)
+    }
+  }
+
+  function onKeydown (key: KeyboardEvent): void {
+    if (key.code === 'ArrowUp') {
+      key.stopPropagation()
+      key.preventDefault()
+      list.select(selection - 1)
+    }
+    if (key.code === 'ArrowDown') {
+      key.stopPropagation()
+      key.preventDefault()
+      list.select(selection + 1)
+    }
+    if (key.code === 'Enter') {
+      key.preventDefault()
+      key.stopPropagation()
+      handleSelection(key, selection)
+    }
+    if (key.code === 'Escape') {
+      key.preventDefault()
+      key.stopPropagation()
+      dispatch('close')
+    }
+  }
 </script>
 
-<div class="selectPopup" class:plainContainer={!shadows}>
+<div class="selectPopup" class:plainContainer={!shadows} on:keydown={onKeydown}>
   <div class="header">
     <input bind:this={input} type="text" bind:value={search} placeholder={phTraslate} on:change />
   </div>
   <div class="scroll">
     <div class="box">
-      {#each objects as person}
-        <button
-          class="menu-item"
-          on:click={() => {
-            if (!multiSelect) {
-              selected = person._id === selected ? undefined : person._id
-              dispatch('close', selected !== undefined ? person : undefined)
-            } else checkSelected(person)
-          }}
-        >
-          {#if multiSelect}
-            <div class="check pointer-events-none">
-              <CheckBox checked={isSelected(person)} primary />
-            </div>
-          {/if}
-          <UserInfo size={'x-small'} value={person} />
-          {#if allowDeselect && person._id === selected}
-            <div class="check-right pointer-events-none">
-              {#if titleDeselect}
-                <Tooltip label={titleDeselect ?? presentation.string.Deselect}>
+      <ListView
+        bind:this={list}
+        count={objects.length}
+        bind:selection
+        on:click={(evt) => handleSelection(evt, evt.detail)}
+      >
+        <svelte:fragment slot="item" let:item>
+          {@const person = objects[item]}
+          <button
+            class="menu-item w-full"
+            on:click={() => {
+              handleSelection(undefined, item)
+            }}
+          >
+            {#if multiSelect}
+              <div class="check pointer-events-none">
+                <CheckBox checked={isSelected(person)} primary />
+              </div>
+            {/if}
+            <UserInfo size={'x-small'} value={person} />
+            {#if allowDeselect && person._id === selected}
+              <div class="check-right pointer-events-none">
+                {#if titleDeselect}
+                  <Tooltip label={titleDeselect ?? presentation.string.Deselect}>
+                    <CheckBox checked circle primary />
+                  </Tooltip>
+                {:else}
                   <CheckBox checked circle primary />
-                </Tooltip>
-              {:else}
-                <CheckBox checked circle primary />
-              {/if}
-            </div>
-          {/if}
-        </button>
-      {/each}
+                {/if}
+              </div>
+            {/if}
+          </button>
+        </svelte:fragment>
+      </ListView>
     </div>
   </div>
 </div>

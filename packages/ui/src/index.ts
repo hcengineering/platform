@@ -25,6 +25,7 @@ export type {
   AnySvelteComponent,
   Action,
   LabelAndProps,
+  ListItem,
   TooltipAlignment,
   AnySvelteComponentWithProps,
   Location,
@@ -127,11 +128,22 @@ export { default as IconDetails } from './components/icons/Details.svelte'
 export { default as PanelInstance } from './components/PanelInstance.svelte'
 export { default as Panel } from './components/Panel.svelte'
 
+export { default as MonthCalendar } from './components/calendar/MonthCalendar.svelte'
+export { default as YearCalendar } from './components/calendar/YearCalendar.svelte'
+export { default as WeekCalendar } from './components/calendar/WeekCalendar.svelte'
+
+export { default as FocusHandler } from './components/FocusHandler.svelte'
+export { default as ListView } from './components/ListView.svelte'
+
+export * from './types'
+export * from './location'
 export * from './utils'
 export * from './popups'
 export * from './tooltips'
 export * from './panelup'
 export * from './components/calendar/internal/DateUtils'
+export * from './colors'
+export * from './focus'
 
 export function createApp (target: HTMLElement): SvelteComponent {
   return new Root({ target })
@@ -150,8 +162,3 @@ addStringsLoader(uiId, async (lang: string) => {
 addLocation(uiId, async () => ({ default: async () => ({}) }))
 
 export { default } from './plugin'
-export * from './colors'
-
-export { default as MonthCalendar } from './components/calendar/MonthCalendar.svelte'
-export { default as YearCalendar } from './components/calendar/YearCalendar.svelte'
-export { default as WeekCalendar } from './components/calendar/WeekCalendar.svelte'

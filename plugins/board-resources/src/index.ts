@@ -27,6 +27,7 @@ import CreateCard from './components/CreateCard.svelte'
 import EditCard from './components/EditCard.svelte'
 import KanbanCard from './components/KanbanCard.svelte'
 import KanbanView from './components/KanbanView.svelte'
+import AddChecklist from './components/popups/AddChecklist.svelte'
 import AttachmentPicker from './components/popups/AttachmentPicker.svelte'
 import CardLabelsPopup from './components/popups/CardLabelsPopup.svelte'
 import MoveCard from './components/popups/MoveCard.svelte'
@@ -71,6 +72,10 @@ async function showDatePickerPopup (object: Card, client: Client, e?: Event): Pr
 
 async function showCardLabelsPopup (object: Card, client: Client, e?: Event): Promise<void> {
   showPopup(CardLabelsPopup, { object }, getPopupAlignment(e))
+}
+
+async function showChecklistsPopup (object: Card, client: Client, e?: Event): Promise<void> {
+  showPopup(AddChecklist, { object }, getPopupAlignment(e))
 }
 
 async function showEditMembersPopup (object: Card, client: Client, e?: Event): Promise<void> {
@@ -126,6 +131,7 @@ export default async (): Promise<Resources> => ({
     SendToBoard: unarchiveCard,
     Delete: showDeleteCardPopup,
     Members: showEditMembersPopup,
+    Checklist: showChecklistsPopup,
     Copy: showCopyCardPopup,
     Cover: showCoverPopup
   },

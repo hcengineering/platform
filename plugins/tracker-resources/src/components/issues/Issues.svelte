@@ -23,8 +23,7 @@
     IssuesOrdering,
     IssuesDateModificationPeriod,
     IssueStatus,
-    IssueStatusCategory,
-    IssuePriority
+    IssueStatusCategory
   } from '@anticrm/tracker'
   import { Button, Label, ScrollBox, IconOptions, showPopup, eventToHTMLElement, IconAdd, IconClose } from '@anticrm/ui'
   import { IntlString } from '@anticrm/platform'
@@ -40,7 +39,11 @@
     issuesOrderKeyMap,
     getIssuesModificationDatePeriodTime,
     issuesSortOrderMap,
-    getGroupedIssues
+    getGroupedIssues,
+    defaultPriorities,
+    getArraysIntersection,
+    IssueFilter,
+    getArraysUnion
   } from '../../utils'
 
   export let currentSpace: Ref<Team>
@@ -62,7 +65,7 @@
   const issuesMap: { [status: string]: number } = {}
 
   let filterElement: HTMLElement | null = null
-  let filters: { [p: string]: any[] } = {}
+  let filters: IssueFilter[] = []
   let currentTeam: Team | undefined
   let issues: Issue[] = []
   let resultIssues: Issue[] = []
@@ -71,7 +74,7 @@
 
   $: totalIssuesCount = issues.length
   $: resultIssuesCount = resultIssues.length
-  $: isFiltersEmpty = Object.keys(filters).length === 0
+  $: isFiltersEmpty = filters.length === 0
 
   const options: FindOptions<Issue> = {
     sort: { [issuesOrderKeyMap[orderingKey]]: issuesSortOrderMap[issuesOrderKeyMap[orderingKey]] },
@@ -189,13 +192,6 @@
       return [undefined] // No grouping
     }
 
-    const defaultPriorities = [
-      IssuePriority.NoPriority,
-      IssuePriority.Urgent,
-      IssuePriority.High,
-      IssuePriority.Medium,
-      IssuePriority.Low
-    ]
     const defaultStatuses = Object.values(statuses).map((x) => x._id)
 
     const existingCategories = Array.from(
@@ -318,66 +314,104 @@
     )
   }
 
-  const getFiltersQuery = (filterParams: { [f: string]: any[] }) => {
-    const result: { [f: string]: { $in: any[] } } = {}
+  const getFiltersQuery = (filters: IssueFilter[]) => {
+    const result: { [f: string]: { $in?: any[]; $nin?: any[] } } = {}
 
-    for (const [key, value] of Object.entries(filterParams)) {
-      result[key] = { $in: [...value] }
+    for (const filter of filters) {
+      for (const [key, value] of Object.entries(filter.query)) {
+        const { mode } = filter
+
+        if (result[key] === undefined) {
+          result[key] = { ...value }
+
+          continue
+        }
+
+        if (result[key][mode] === undefined) {
+          result[key][mode] = [...value[mode]]
+
+          continue
+        }
+
+        const resultFunction = mode === '$nin' ? getArraysUnion : getArraysIntersection
+
+        result[key][mode] = resultFunction(result[key]?.[mode] ?? [], value[mode])
+      }
     }
 
     return result
   }
 
-  const handleFilterDeleted = (filterKey?: string) => {
-    if (filterKey) {
-      delete filters[filterKey]
-
-      filters = filters
+  const handleFilterDeleted = (filterIndex?: number) => {
+    if (filterIndex !== undefined) {
+      filters.splice(filterIndex, 1)
     } else {
-      filters = {}
+      filters.length = 0
     }
+
+    filters = filters
   }
 
   const handleAllFiltersDeleted = () => {
     handleFilterDeleted()
   }
 
-  const handleFiltersModified = (result: { [p: string]: any }) => {
+  const handleFiltersModified = (result: { [p: string]: any }, index?: number) => {
+    const i = index === undefined ? filters.length : index
     const entries = Object.entries(result)
 
     if (entries.length !== 1) {
       return
     }
 
-    const [filter, filterValue] = entries[0]
+    const [filterKey, filterValue] = entries[0]
 
-    if (filter in filters) {
-      if (filters[filter].includes(filterValue)) {
-        filters[filter] = filters[filter].filter((x) => x !== filterValue)
+    if (filters[i]) {
+      const { mode, query: currentFilterQuery } = filters[i]
+      const currentFilterQueryConditions: any[] = currentFilterQuery[filterKey]?.[mode] ?? []
 
-        if (Object.keys(filters).length === 1 && filters[filter].length === 0) {
-          filters = {}
+      if (currentFilterQueryConditions.includes(filterValue)) {
+        const updatedFilterConditions = currentFilterQueryConditions.filter((x: any) => x !== filterValue)
+
+        filters[i] = { mode, query: { [filterKey]: { [mode]: updatedFilterConditions } } }
+
+        if (filters.length === 1 && updatedFilterConditions.length === 0) {
+          filters.length = 0
         }
       } else {
-        filters[filter] = [...filters[filter], filterValue]
+        filters[i] = { mode, query: { [filterKey]: { $in: [...currentFilterQueryConditions, filterValue] } } }
       }
     } else {
-      filters[filter] = [filterValue]
+      filters[i] = { mode: '$in', query: { [filterKey]: { $in: [filterValue] } } }
     }
+
+    filters = filters
+  }
+
+  const handleFilterModeChanged = (index: number) => {
+    if (!filters[index]) {
+      return
+    }
+
+    const { mode: currentMode, query: currentQuery } = filters[index]
+    const newMode = currentMode === '$in' ? '$nin' : '$in'
+    const [filterKey, filterValue] = Object.entries(currentQuery)[0]
+
+    filters[index] = { mode: newMode, query: { [filterKey]: { [newMode]: [...filterValue[currentMode]] } } }
   }
 
   const handleFiltersBackButtonPressed = (event: MouseEvent) => {
     dispatch('close')
 
-    handleFilterMenuOpened(event)
+    handleFilterMenuOpened(event, false)
   }
 
-  const handleFilterMenuOpened = (event: MouseEvent) => {
+  const handleFilterMenuOpened = (event: MouseEvent, shouldUpdateFilterTargetElement: boolean = true) => {
     if (!currentSpace) {
       return
     }
 
-    if (filterElement === null) {
+    if (!filterElement || shouldUpdateFilterTargetElement) {
       filterElement = eventToHTMLElement(event)
     }
 
@@ -385,7 +419,8 @@
       IssuesFilterMenu,
       {
         issues,
-        currentFilter: getFiltersQuery(filters),
+        filters: filters,
+        index: filters.length,
         defaultStatuses: statuses,
         onBack: handleFiltersBackButtonPressed,
         targetHtml: filterElement,
@@ -410,6 +445,7 @@
         {/if}
         <div class="ml-3">
           <Button
+            size="small"
             icon={isFiltersEmpty ? IconAdd : IconClose}
             kind={'link-bordered'}
             borderStyle={'dashed'}
@@ -420,9 +456,17 @@
       </div>
       <Button icon={IconOptions} kind={'link'} on:click={handleOptionsEditorOpened} />
     </div>
-    {#if Object.keys(filters).length > 0}
+    {#if filters.length > 0}
       <div class="filterSummaryWrapper">
-        <FilterSummary {filters} onDeleteFilter={handleFilterDeleted} />
+        <FilterSummary
+          {filters}
+          {issues}
+          defaultStatuses={statuses}
+          onAddFilter={handleFilterMenuOpened}
+          onUpdateFilter={handleFiltersModified}
+          onDeleteFilter={handleFilterDeleted}
+          onChangeMode={handleFilterModeChanged}
+        />
       </div>
     {/if}
     <IssuesListBrowser

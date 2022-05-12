@@ -1,0 +1,222 @@
+<!--
+// Copyright © 2022 Hardcore Engineering Inc.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+-->
+<script lang="ts">
+  import { Ref } from '@anticrm/core'
+  import { createQuery, getClient } from '@anticrm/presentation'
+  import type { TodoItem } from '@anticrm/task'
+  import task from '@anticrm/task'
+  import { Button, CheckBox, TextAreaEditor, Icon, IconMoreH, Progress, showPopup } from '@anticrm/ui'
+  import { ContextMenu, HTMLPresenter } from '@anticrm/view-resources'
+
+  import board from '../../plugin'
+  import { getPopupAlignment } from '../../utils/PopupUtils'
+
+  export let value: TodoItem
+  const client = getClient()
+  const checklistItemsQuery = createQuery()
+  let checklistItems: TodoItem[] = []
+  let done = 0
+  let isEditingName: boolean = false
+  let isAddingItem: boolean = false
+  let hideDoneItems: boolean = false
+  let newItemName = ''
+  let editingItemId: Ref<TodoItem> | undefined = undefined
+  let hovered: Ref<TodoItem> | undefined
+
+  function deleteChecklist () {
+    if (!value) {
+      return
+    }
+    client.removeCollection(
+      value._class,
+      value.space,
+      value._id,
+      value.attachedTo,
+      value.attachedToClass,
+      value.collection
+    )
+  }
+
+  function startAddingItem () {
+    isAddingItem = true
+  }
+
+  async function addItem (event: CustomEvent<string>) {
+    newItemName = ''
+    const item = {
+      name: event.detail ?? '',
+      assignee: null,
+      dueTo: null,
+      done: false
+    }
+    if (item.name.length <= 0) {
+      return
+    }
+    await client.addCollection(task.class.TodoItem, value.space, value._id, value._class, 'items', item)
+  }
+
+  function updateName (event: CustomEvent<string>) {
+    isEditingName = false
+    const name = event.detail
+    if (name !== undefined && name.length > 0 && name !== value.name) {
+      value.name = name
+      client.update(value, { name: value.name })
+    }
+  }
+
+  function updateItemName (item: TodoItem, name: string) {
+    if (name !== undefined && name.length > 0 && name !== value.name) {
+      item.name = name
+      client.update(item, { name: item.name })
+    }
+  }
+
+  async function setDoneToChecklistItem (item: TodoItem, event: CustomEvent<boolean>) {
+    const isDone = event.detail
+    if (!value) {
+      return
+    }
+    await client.update(item, { done: isDone })
+  }
+
+  function showItemMenu (item: TodoItem, e?: Event) {
+    showPopup(ContextMenu, { object: item }, getPopupAlignment(e))
+  }
+
+  $: checklistItemsQuery.query(task.class.TodoItem, { space: value.space, attachedTo: value._id }, (result) => {
+    checklistItems = result
+    done = checklistItems.reduce((result: number, current: TodoItem) => {
+      return current.done ? result + 1 : result
+    }, 0)
+  })
+</script>
+
+{#if value !== undefined}
+  <div class="flex-col w-full">
+    <div class="flex-row-stretch mt-4 mb-2">
+      <div class="w-9">
+        <Icon icon={board.icon.Card} size="large" />
+      </div>
+      {#if isEditingName}
+        <div class="flex-grow">
+          <TextAreaEditor
+            value={value.name}
+            on:submit={updateName}
+            on:cancel={() => {
+              isEditingName = false
+            }}
+          />
+        </div>
+      {:else}
+        <div
+          class="flex-grow fs-title"
+          on:click={() => {
+            isEditingName = true
+          }}
+        >
+          {value.name}
+        </div>
+        {#if done > 0}
+          <div class="mr-1">
+            <Button
+              label={hideDoneItems ? board.string.ShowDoneChecklistItems : board.string.HideDoneChecklistItems}
+              labelParams={{ done }}
+              kind="no-border"
+              size="small"
+              on:click={() => {
+                hideDoneItems = !hideDoneItems
+              }}
+            />
+          </div>
+        {/if}
+        <Button label={board.string.Delete} kind="no-border" size="small" on:click={deleteChecklist} />
+      {/if}
+    </div>
+    <div class="flex-row-stretch mb-2 mt-1">
+      <div class="w-9 text-sm pl-1 pr-1">
+        {checklistItems.length > 0 ? Math.round((done / checklistItems.length) * 100) : 0}%
+      </div>
+      <div class="flex-center flex-grow w-full">
+        <Progress min={0} max={checklistItems?.length ?? 0} value={done} />
+      </div>
+    </div>
+    {#each checklistItems.filter((item) => !hideDoneItems || !item.done) as item}
+      <div
+        class="flex-row-stretch mb-1 mt-1 pl-1 min-h-7 border-radius-1"
+        class:background-button-noborder-bg-hover={hovered === item._id && editingItemId !== item._id}
+        on:mouseover={() => {
+          hovered = item._id
+        }}
+        on:focus={() => {
+          hovered = item._id
+        }}
+        on:mouseout={() => {
+          hovered = undefined
+        }}
+        on:blur={() => {
+          hovered = undefined
+        }}
+      >
+        <div class="w-9 flex items-center">
+          <CheckBox bind:checked={item.done} on:value={(event) => setDoneToChecklistItem(item, event)} />
+        </div>
+        {#if editingItemId === item._id}
+          <div class="flex-grow">
+            <TextAreaEditor
+              value={item.name}
+              on:submit={(event) => {
+                editingItemId = undefined
+                updateItemName(item, event.detail)
+              }}
+              on:cancel={() => {
+                editingItemId = undefined
+              }}
+            />
+          </div>
+        {:else}
+          <div
+            class="flex-col justify-center flex-gap-1 w-full"
+            class:text-line-through={item.done}
+            on:click={() => {
+              editingItemId = item._id
+            }}
+          >
+            <HTMLPresenter bind:value={item.name} />
+          </div>
+          <div class="flex-center">
+            <Button icon={IconMoreH} kind="transparent" size="small" on:click={(e) => showItemMenu(item, e)} />
+          </div>
+        {/if}
+      </div>
+    {/each}
+    <div class="flex-row-stretch mt-2 mb-2">
+      <div class="w-9" />
+      {#if isAddingItem}
+        <div class="w-full p-1">
+          <TextAreaEditor
+            bind:value={newItemName}
+            on:submit={addItem}
+            on:cancel={() => {
+              newItemName = ''
+              isAddingItem = false
+            }}
+          />
+        </div>
+      {:else}
+        <Button label={board.string.AddChecklistItem} kind="no-border" size="small" on:click={startAddingItem} />
+      {/if}
+    </div>
+  </div>
+{/if}

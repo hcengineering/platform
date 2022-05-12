@@ -16,7 +16,7 @@
   import { IssuePriority } from '@anticrm/tracker'
   import { Button, showPopup, SelectPopup, eventToHTMLElement } from '@anticrm/ui'
   import type { ButtonKind, ButtonSize } from '@anticrm/ui'
-  import { issuePriorities } from '../utils'
+  import { defaultPriorities, issuePriorities } from '../utils'
   import tracker from '../plugin'
 
   export let priority: IssuePriority
@@ -29,13 +29,7 @@
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = 'min-content'
 
-  const prioritiesInfo = [
-    IssuePriority.NoPriority,
-    IssuePriority.Urgent,
-    IssuePriority.High,
-    IssuePriority.Medium,
-    IssuePriority.Low
-  ].map((p) => ({ id: p, ...issuePriorities[p] }))
+  const prioritiesInfo = defaultPriorities.map((p) => ({ id: p, ...issuePriorities[p] }))
 
   const handlePriorityEditorOpened = (event: MouseEvent) => {
     if (!isEditable) {
