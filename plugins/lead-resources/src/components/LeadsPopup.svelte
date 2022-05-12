@@ -14,18 +14,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { FindOptions } from '@anticrm/core'
-  import type { Customer, Lead } from '@anticrm/lead'
-  import task from '@anticrm/task'
+  import type { Customer } from '@anticrm/lead'
   import { Table } from '@anticrm/view-resources'
   import leads from '../plugin'
 
   export let value: Customer
-  const options: FindOptions<Lead> = {
-    lookup: {
-      state: task.class.State
-    }
-  }
 </script>
 
-<Table _class={leads.class.Lead} config={['', '$lookup.state']} {options} query={{ attachedTo: value._id }} />
+<Table _class={leads.class.Lead} config={['', '$lookup.state']} query={{ attachedTo: value._id }} />

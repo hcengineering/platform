@@ -16,7 +16,8 @@
 import { Ref } from '@anticrm/core'
 import { IntlString, mergeIds } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'
-import view, { Action, ViewAction, viewId } from '@anticrm/view'
+import { Action, ViewAction, viewId } from '@anticrm/view'
+import view from '@anticrm/view-resources/src/plugin'
 
 export default mergeIds(viewId, view, {
   action: {
@@ -70,7 +71,7 @@ export default mergeIds(viewId, view, {
     TimestampPresenter: '' as AnyComponent,
     DateEditor: '' as AnyComponent,
     DatePresenter: '' as AnyComponent,
-    TableView: '' as AnyComponent,
+    TableBrowser: '' as AnyComponent,
     RolePresenter: '' as AnyComponent,
     YoutubePresenter: '' as AnyComponent,
     GithubPresenter: '' as AnyComponent,
@@ -83,7 +84,6 @@ export default mergeIds(viewId, view, {
   string: {
     Table: '' as IntlString,
     Delete: '' as IntlString,
-    Move: '' as IntlString,
     Role: '' as IntlString,
     // Keybaord actions
     MoveUp: '' as IntlString,

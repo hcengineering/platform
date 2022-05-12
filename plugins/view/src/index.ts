@@ -21,6 +21,7 @@ import type {
   Doc,
   DocumentQuery,
   FindOptions,
+  Lookup,
   Mixin,
   Obj,
   Ref,
@@ -31,6 +32,7 @@ import type { Asset, IntlString, Plugin, Resource, Status } from '@anticrm/platf
 import { plugin } from '@anticrm/platform'
 import type { AnyComponent, AnySvelteComponent } from '@anticrm/ui'
 import { PopupPosAlignment } from '@anticrm/ui/src/types'
+import type { Preference } from '@anticrm/preference'
 
 /**
  * @public
@@ -102,7 +104,7 @@ export interface Viewlet extends Doc {
   attachTo: Ref<Class<Space>>
   descriptor: Ref<ViewletDescriptor>
   options?: FindOptions<Doc>
-  config: any
+  config: (BuildModelKey | string)[]
 }
 
 /**
@@ -273,7 +275,7 @@ export interface BuildModelOptions {
   client: Client
   _class: Ref<Class<Obj>>
   keys: (BuildModelKey | string)[]
-  options?: FindOptions<Doc>
+  lookup?: Lookup<Doc>
   ignoreMissing?: boolean
 }
 
@@ -285,6 +287,14 @@ export interface BuildModelOptions {
  */
 export interface ObjectFactory extends Class<Obj> {
   component: AnyComponent
+}
+
+/**
+ * @public
+ */
+export interface ViewletPreference extends Preference {
+  attachedTo: Ref<Viewlet>
+  config: (BuildModelKey | string)[]
 }
 
 /**
@@ -307,6 +317,7 @@ const view = plugin(viewId, {
     PreviewPresenter: '' as Ref<Mixin<PreviewPresenter>>
   },
   class: {
+    ViewletPreference: '' as Ref<Class<ViewletPreference>>,
     ViewletDescriptor: '' as Ref<Class<ViewletDescriptor>>,
     Viewlet: '' as Ref<Class<Viewlet>>,
     Action: '' as Ref<Class<Action>>,
@@ -320,7 +331,11 @@ const view = plugin(viewId, {
     ObjectPresenter: '' as AnyComponent,
     EditDoc: '' as AnyComponent,
     CreateAttribute: '' as AnyComponent,
+    ViewletSetting: '' as AnyComponent,
     SpacePresenter: '' as AnyComponent
+  },
+  string: {
+    CustomizeView: '' as IntlString
   },
   icon: {
     Table: '' as Asset,
@@ -330,6 +345,7 @@ const view = plugin(viewId, {
     Move: '' as Asset,
     Archive: '' as Asset,
     Statuses: '' as Asset,
+    Setting: '' as Asset,
     Open: '' as Asset,
     ArrowRight: '' as Asset
   },

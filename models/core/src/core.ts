@@ -36,7 +36,7 @@ import {
   Type,
   Version
 } from '@anticrm/core'
-import { Index, Model, Prop, TypeIntlString, TypeRef, TypeString, TypeTimestamp, UX } from '@anticrm/model'
+import { Hidden, Index, Model, Prop, TypeIntlString, TypeRef, TypeString, TypeTimestamp, UX } from '@anticrm/model'
 import type { IntlString } from '@anticrm/platform'
 import core from './component'
 
@@ -75,7 +75,8 @@ export class TAttachedDoc extends TDoc implements AttachedDoc {
   @Index(IndexKind.Indexed)
   attachedToClass!: Ref<Class<Doc>>
 
-  @Prop(TypeString(), 'Collection' as IntlString)
+  @Prop(TypeString(), core.string.Collection)
+  @Hidden()
   collection!: string
 }
 

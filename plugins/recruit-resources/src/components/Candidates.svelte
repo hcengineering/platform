@@ -18,19 +18,43 @@
   import { Doc, DocumentQuery, Ref } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
   import tags, { selectedTagElements, TagCategory, TagElement } from '@anticrm/tags'
-  import { Component, Icon, Label, SearchEdit } from '@anticrm/ui'
-  import view, { Viewlet } from '@anticrm/view'
-  import { ActionContext, TableBrowser } from '@anticrm/view-resources'
+  import { ActionIcon, showPopup, Component, Icon, Label, Loading, SearchEdit } from '@anticrm/ui'
+  import view, { Viewlet, ViewletPreference } from '@anticrm/view'
+  import { ActionContext, TableBrowser, ViewletSetting } from '@anticrm/view-resources'
   import recruit from '../plugin'
 
   let search = ''
   let resultQuery: DocumentQuery<Doc> = {}
 
   const client = getClient()
-  const tableDescriptor = client.findOne<Viewlet>(view.class.Viewlet, {
-    attachTo: recruit.mixin.Candidate,
-    descriptor: view.viewlet.Table
-  })
+
+  let descr: Viewlet | undefined
+  let loading = true
+
+  const preferenceQuery = createQuery()
+  let preference: ViewletPreference | undefined
+
+  client
+    .findOne<Viewlet>(view.class.Viewlet, {
+      attachTo: recruit.mixin.Candidate,
+      descriptor: view.viewlet.Table
+    })
+    .then((res) => {
+      descr = res
+      if (res !== undefined) {
+        preferenceQuery.query(
+          view.class.ViewletPreference,
+          {
+            attachedTo: res._id
+          },
+          (res) => {
+            preference = res[0]
+            loading = false
+          },
+          { limit: 1 }
+        )
+      }
+    })
 
   let category: Ref<TagCategory> | undefined = undefined
 
@@ -63,6 +87,17 @@
     <span class="ac-header__title"><Label label={recruit.string.Candidates} /></span>
   </div>
 
+  {#if descr}
+    <ActionIcon
+      icon={view.icon.Setting}
+      direction={'top'}
+      size={'small'}
+      label={view.string.CustomizeView}
+      action={() => {
+        showPopup(ViewletSetting, { viewlet: descr })
+      }}
+    />
+  {/if}
   <SearchEdit
     bind:value={search}
     on:change={() => {
@@ -82,14 +117,16 @@
     mode: 'browser'
   }}
 />
-{#await tableDescriptor then descr}
-  {#if descr}
+{#if descr}
+  {#if loading}
+    <Loading />
+  {:else}
     <TableBrowser
       _class={recruit.mixin.Candidate}
-      config={descr.config}
+      config={preference?.config ?? descr.config}
       options={descr.options}
       query={resultQuery}
       showNotification
     />
   {/if}
-{/await}
+{/if}

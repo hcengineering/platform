@@ -1,28 +1,24 @@
 <!--
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
-// 
+// Copyright © 2022 Hardcore Engineering Inc.
+//
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// 
+//
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
 <script lang="ts">
-  import attachment from '@anticrm/attachment'
-  import chunter from '@anticrm/chunter'
-  import contact from '@anticrm/contact'
-  import { Doc, DocumentQuery, FindOptions } from '@anticrm/core'
+  import { Doc, DocumentQuery } from '@anticrm/core'
+  import { createQuery, getClient } from '@anticrm/presentation'
   import { Applicant } from '@anticrm/recruit'
-  import task from '@anticrm/task'
-  import { Button, Icon, IconAdd, Label, SearchEdit, showPopup } from '@anticrm/ui'
-  import { BuildModelKey } from '@anticrm/view'
-  import { TableBrowser } from '@anticrm/view-resources'
+  import { ActionIcon, Button, Icon, IconAdd, Label, Loading, SearchEdit, showPopup } from '@anticrm/ui'
+  import view, { Viewlet, ViewletPreference } from '@anticrm/view'
+  import { TableBrowser, ViewletSetting } from '@anticrm/view-resources'
   import recruit from '../plugin'
   import CreateApplication from './CreateApplication.svelte'
 
@@ -31,32 +27,35 @@
   const baseQuery: DocumentQuery<Applicant> = {
     doneState: null
   }
+  const client = getClient()
 
-  const config: (BuildModelKey | string)[] = [
-    '',
-    '$lookup.space',
-    '$lookup.attachedTo',
-    '$lookup.assignee',
-    '$lookup.state',
-    {
-      key: '',
-      presenter: attachment.component.AttachmentsPresenter,
-      label: attachment.string.Files,
-      sortingKey: 'attachments'
-    },
-    { key: '', presenter: chunter.component.CommentsPresenter, label: chunter.string.Comments, sortingKey: 'comments' },
-    'modifiedOn',
-    '$lookup.attachedTo.$lookup.channels'
-  ]
+  let descr: Viewlet | undefined
+  let loading = true
 
-  const options: FindOptions<Applicant> = {
-    lookup: {
-      attachedTo: [recruit.mixin.Candidate, { _id: { channels: contact.class.Channel } }],
-      state: task.class.State,
-      assignee: contact.class.Employee,
-      space: recruit.class.Vacancy
-    }
-  }
+  const preferenceQuery = createQuery()
+  let preference: ViewletPreference | undefined
+
+  client
+    .findOne<Viewlet>(view.class.Viewlet, {
+      attachTo: recruit.class.Applicant,
+      descriptor: view.viewlet.Table
+    })
+    .then((res) => {
+      descr = res
+      if (res !== undefined) {
+        preferenceQuery.query(
+          view.class.ViewletPreference,
+          {
+            attachedTo: res._id
+          },
+          (res) => {
+            preference = res[0]
+            loading = false
+          },
+          { limit: 1 }
+        )
+      }
+    })
 
   function showCreateDialog () {
     showPopup(CreateApplication, {}, 'top')
@@ -73,6 +72,17 @@
     <span class="ac-header__title"><Label label={recruit.string.Applications} /></span>
   </div>
 
+  {#if descr}
+    <ActionIcon
+      icon={view.icon.Setting}
+      direction={'top'}
+      size={'small'}
+      label={view.string.CustomizeView}
+      action={() => {
+        showPopup(ViewletSetting, { viewlet: descr })
+      }}
+    />
+  {/if}
   <SearchEdit
     bind:value={search}
     on:change={() => {
@@ -82,4 +92,16 @@
   <Button icon={IconAdd} label={recruit.string.ApplicationCreateLabel} kind={'primary'} on:click={showCreateDialog} />
 </div>
 
-<TableBrowser _class={recruit.class.Applicant} {config} {options} query={resultQuery} showNotification />
+{#if descr}
+  {#if loading}
+    <Loading />
+  {:else}
+    <TableBrowser
+      _class={recruit.class.Applicant}
+      config={preference?.config ?? descr.config}
+      options={descr.options}
+      query={resultQuery}
+      showNotification
+    />
+  {/if}
+{/if}

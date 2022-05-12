@@ -26,6 +26,7 @@ loadMetadata(view.icon, {
   Archive: `${icons}#archive`,
   Statuses: `${icons}#statuses`,
   Open: `${icons}#open`,
+  Setting: `${icons}#setting`,
   ArrowRight: `${icons}#arrow-right`
 })
 
