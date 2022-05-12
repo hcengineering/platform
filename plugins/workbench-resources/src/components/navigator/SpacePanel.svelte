@@ -16,9 +16,8 @@
 <script lang="ts">
   import type { Class, Ref, Space } from '@anticrm/core'
   import core from '@anticrm/core'
-  import type { IntlString } from '@anticrm/platform'
   import { createQuery, getClient, Members } from '@anticrm/presentation'
-  import { EditBox, Icon, Label, Scroller, Panel, Button } from '@anticrm/ui'
+  import { EditBox, Icon, Label, Scroller, Panel } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import workbench from '../../plugin'
 
@@ -39,9 +38,6 @@
   $: query.query(core.class.Space, { _id }, (result) => {
     space = result[0]
   })
-
-  const tabs: IntlString[] = [workbench.string.General, workbench.string.Members]
-  let selected = 0
 
   function onNameChange (ev: Event) {
     const value = (ev.target as HTMLInputElement).value
@@ -72,38 +68,24 @@
     </div>
   </svelte:fragment>
 
-  <svelte:fragment slot="utils">
-    {#each tabs as tab, i}
-      <Button
-        kind={'transparent'}
-        selected={i === selected}
-        on:click={() => {
-          selected = i
-        }}
-      >
-        <Label slot="content" label={tab} />
-      </Button>
-    {/each}
-  </svelte:fragment>
-
   <Scroller>
     <div class="popupPanel-body__main-content py-10 clear-mins">
-      {#if selected === 0}
-        {#if space}
-          <EditBox
-            label={clazz.label}
-            icon={clazz.icon}
-            bind:value={space.name}
-            placeholder={clazz.label}
-            maxWidth="39rem"
-            focus
-            on:change={onNameChange}
-          />
-          <!-- <AttributeBarEditor maxWidth="39rem" object={space} key="name"/> -->
-          <!-- <ToggleWithLabel label={workbench.string.MakePrivate} description={workbench.string.MakePrivateDescription}/> -->
-        {/if}
-      {:else}
-        <Members {space} />
+      {#if space}
+        <EditBox
+          label={clazz.label}
+          icon={clazz.icon}
+          bind:value={space.name}
+          placeholder={clazz.label}
+          maxWidth="39rem"
+          focus
+          on:change={onNameChange}
+        />
+        <!-- <AttributeBarEditor maxWidth="39rem" object={space} key="name"/> -->
+        <!-- <ToggleWithLabel label={workbench.string.MakePrivate} description={workbench.string.MakePrivateDescription}/> -->
+        <div class="flex-col mt-10">
+          <span class="fs-title text-xl overflow-label mb-2"><Label label={workbench.string.Members} /></span>
+          <Members {space} />
+        </div>
       {/if}
     </div>
   </Scroller>
