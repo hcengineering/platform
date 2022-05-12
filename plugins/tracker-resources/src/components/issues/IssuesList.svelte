@@ -30,6 +30,7 @@
   } from '@anticrm/ui'
   import { AttributeModel, BuildModelKey } from '@anticrm/view'
   import { buildModel, getObjectPresenter, LoadingProps, Menu } from '@anticrm/view-resources'
+import { buildConfigLookup } from '@anticrm/view-resources/src/utils';
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
   import { IssuesGroupByKeys, issuesGroupEditorMap, IssuesOrderByKeys, issuesSortOrderMap } from '../../utils'
@@ -185,7 +186,7 @@
         </div>
       </div>
     {/if}
-    {#await buildModel({ client, _class, keys: itemsConfig, options }) then itemModels}
+    {#await buildModel({ client, _class, keys: itemsConfig, lookup: options.lookup }) then itemModels}
       <div class="listRoot">
         {#if groupedIssues[category]}
           {#each groupedIssues[category] as docObject (docObject._id)}

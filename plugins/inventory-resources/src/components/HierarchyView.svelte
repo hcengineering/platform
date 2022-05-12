@@ -20,6 +20,7 @@
   import { buildModel } from '@anticrm/view-resources'
   import { Category } from '@anticrm/inventory'
   import HierarchyElement from './HierarchyElement.svelte'
+import { buildConfigLookup } from '@anticrm/view-resources/src/utils';
 
   export let _class: Ref<Class<Category>>
   export let query: DocumentQuery<Category> = {}
@@ -59,9 +60,11 @@
   }
 
   const client = getClient()
+
+  $: lookup = buildConfigLookup(client.getHierarchy(), _class, config)
 </script>
 
-{#await buildModel({ client, _class, keys: config, options })}
+{#await buildModel({ client, _class, keys: config, lookup })}
   <Loading />
 {:then model}
   <table class="table-body">
