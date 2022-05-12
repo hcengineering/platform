@@ -96,6 +96,7 @@
     "PastMonth": "Past month",
     "CopyIssueUrl": "Copy Issue URL to clipboard",
     "CopyIssueId": "Copy Issue ID to clipboard",
+    "CopyIssueBranch": "Copy Git branch name to clipboard",
 
     "GotoIssues": "Go to issues",
     "GotoActive": "Go to active issues",
@@ -109,7 +110,9 @@
     "FilterIs": "is",
     "FilterIsNot": "is not",
     "FilterIsEither": "is either of",
-    "FilterStatesCount": "{value, plural, =1 {1 state} other {# states}}"
+    "FilterStatesCount": "{value, plural, =1 {1 state} other {# states}}",
+
+    "EditIssue": "Edit {title}"
   },
   "status": {}
 }

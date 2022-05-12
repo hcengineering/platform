@@ -123,11 +123,14 @@ export default mergeIds(trackerId, tracker, {
 
     CopyIssueUrl: '' as IntlString,
     CopyIssueId: '' as IntlString,
+    CopyIssueBranch: '' as IntlString,
 
     FilterIs: '' as IntlString,
     FilterIsNot: '' as IntlString,
     FilterIsEither: '' as IntlString,
-    FilterStatesCount: '' as IntlString
+    FilterStatesCount: '' as IntlString,
+
+    EditIssue: '' as IntlString
   },
   component: {
     NopeComponent: '' as AnyComponent,
@@ -149,6 +152,7 @@ export default mergeIds(trackerId, tracker, {
     StatusEditor: '' as AnyComponent,
     AssigneePresenter: '' as AnyComponent,
     DueDatePresenter: '' as AnyComponent,
+    PreviewIssue: '' as AnyComponent,
     EditIssue: '' as AnyComponent,
     CreateTeam: '' as AnyComponent,
     NewIssueHeader: '' as AnyComponent

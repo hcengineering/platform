@@ -20,12 +20,14 @@
   import type { ButtonKind, ButtonSize } from '@anticrm/ui'
   import tracker from '../../plugin'
   import StatusSelector from '../StatusSelector.svelte'
+  import { createEventDispatcher } from 'svelte'
 
   export let value: Issue
   export let statuses: WithLookup<IssueStatus>[]
   export let currentSpace: Ref<Team> | undefined = undefined
   export let isEditable: boolean = true
   export let shouldShowLabel: boolean = false
+  export let shouldSaveOnChange = true
 
   export let kind: ButtonKind = 'link'
   export let size: ButtonSize = 'large'
@@ -33,9 +35,14 @@
   export let width: string | undefined = '100%'
 
   const client = getClient()
+  const dispatch = createEventDispatcher()
 
   const handleStatusChanged = async (newStatus: Ref<IssueStatus> | undefined) => {
-    if (!isEditable || newStatus === undefined) {
+    if (isEditable) {
+      dispatch('change', newStatus)
+    }
+
+    if (!isEditable || !shouldSaveOnChange || newStatus === undefined) {
       return
     }
 

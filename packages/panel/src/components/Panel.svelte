@@ -28,13 +28,14 @@
   export let object: Doc
   export let panelWidth: number = 0
   export let innerWidth: number = 0
+  export let isTitle: boolean = true
   export let isHeader: boolean = true
   export let isSub: boolean = true
   export let isAside: boolean = true
   export let isCustomAttr: boolean = true
 </script>
 
-<Panel bind:isAside isHeader={$$slots.header || isHeader} bind:panelWidth bind:innerWidth on:close>
+<Panel bind:isAside {isTitle} isHeader={$$slots.header || isHeader} bind:panelWidth bind:innerWidth on:close>
   <svelte:fragment slot="title">
     <div class="popupPanel-title__content-container antiTitle">
       {#if $$slots.navigator}
@@ -97,7 +98,9 @@
   </svelte:fragment>
 
   {#if withoutActivity}
-    <slot />
+    <div class="popupPanel-body__main-content py-10 clear-mins">
+      <slot />
+    </div>
   {:else}
     <Scroller>
       <div class="popupPanel-body__main-content py-10 clear-mins">
