@@ -379,13 +379,18 @@
       background-color: var(--highlight-select);
       box-shadow: inset 0 0 1px 1px var(--highlight-select-border);
 
-      &:hover { background-color: var(--highlight-select-hover); }
+      &:hover {
+        background-color: var(--highlight-select-hover);
+      }
     }
-    &.selection, &.checked.selection {
+    &.selection,
+    &.checked.selection {
       box-shadow: inset 0 0 1px 1px var(--primary-bg-color);
       animation: anim-border 1s ease-in-out;
 
-      &:hover { background-color: var(--highlight-hover); }
+      &:hover {
+        background-color: var(--highlight-hover);
+      }
     }
     &.checked.selection:hover {
       background-color: var(--highlight-select-hover);
@@ -399,8 +404,12 @@
     }
   }
   @keyframes anim-border {
-    from { box-shadow: inset 0 0 1px 1px var(--primary-edit-border-color); }
-    to { box-shadow: inset 0 0 1px 1px var(--primary-bg-color); }
+    from {
+      box-shadow: inset 0 0 1px 1px var(--primary-edit-border-color);
+    }
+    to {
+      box-shadow: inset 0 0 1px 1px var(--primary-bg-color);
+    }
   }
 
   .panel-container {

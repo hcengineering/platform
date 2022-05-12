@@ -65,7 +65,9 @@
 >
   <svelte:fragment slot="title">
     <div class="antiTitle icon-wrapper">
-      <div class="wrapped-icon">{#if clazz.icon}<Icon icon={clazz.icon} size={'medium'} />{/if}</div>
+      <div class="wrapped-icon">
+        {#if clazz.icon}<Icon icon={clazz.icon} size={'medium'} />{/if}
+      </div>
       <span class="wrapped-title"><Label label={clazz.label} /></span>
     </div>
   </svelte:fragment>

@@ -36,8 +36,10 @@
 
   const copyChannel = (): void => {
     if (label === plugin.string.CopyToClipboard) {
-      navigator.clipboard.writeText(value).then(() => label = plugin.string.Copied)
-      setTimeout(() => { label = plugin.string.CopyToClipboard }, 3000)
+      navigator.clipboard.writeText(value).then(() => (label = plugin.string.Copied))
+      setTimeout(() => {
+        label = plugin.string.CopyToClipboard
+      }, 3000)
     }
   }
 
@@ -65,12 +67,7 @@
 <FocusHandler manager={mgr} />
 <div class="buttons-group xsmall-gap">
   {#if editable}
-    <div
-      class="cover-channel"
-      class:show
-      class:copied={label === plugin.string.Copied}
-      data-tooltip={lTraslate}
-    >
+    <div class="cover-channel" class:show class:copied={label === plugin.string.Copied} data-tooltip={lTraslate}>
       <input
         bind:this={input}
         class="search"
@@ -105,16 +102,20 @@
       class="select-text cover-channel"
       class:show
       class:copied={label === plugin.string.Copied}
-      data-tooltip={lTraslate}
-    >{value}</span>
+      data-tooltip={lTraslate}>{value}</span
+    >
   {/if}
   <Button
     focusIndex={3}
     kind={'transparent'}
     size={'small'}
     icon={IconCopy}
-    on:mousemove={() => { show = true }}
-    on:focus={() => { show = true }}
+    on:mousemove={() => {
+      show = true
+    }}
+    on:focus={() => {
+      show = true
+    }}
     on:mouseleave={() => {
       show = false
       label = plugin.string.CopyToClipboard
@@ -156,7 +157,9 @@
       border-radius: 0.25rem;
       opacity: 0.95;
     }
-    &.show.copied::before { background-color: var(--body-accent); }
+    &.show.copied::before {
+      background-color: var(--body-accent);
+    }
     &.show::after {
       content: attr(data-tooltip);
       position: absolute;
