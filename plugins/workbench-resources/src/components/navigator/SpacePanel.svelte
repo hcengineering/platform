@@ -60,12 +60,14 @@
   }}
 >
   <svelte:fragment slot="title">
-    <div class="antiTitle icon-wrapper">
-      <div class="wrapped-icon">
-        {#if clazz.icon}<Icon icon={clazz.icon} size={'medium'} />{/if}
+    {#if clazz}
+      <div class="antiTitle icon-wrapper">
+        <div class="wrapped-icon">
+          {#if clazz.icon}<Icon icon={clazz.icon} size={'medium'} />{/if}
+        </div>
+        <span class="wrapped-title"><Label label={clazz.label} /></span>
       </div>
-      <span class="wrapped-title"><Label label={clazz.label} /></span>
-    </div>
+    {/if}
   </svelte:fragment>
 
   <Scroller>
