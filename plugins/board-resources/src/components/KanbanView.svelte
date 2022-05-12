@@ -136,7 +136,11 @@
   </svelte:fragment>
 
   <svelte:fragment slot="afterPanel">
-    <AddPanel on:add={(e) => { addItem(e.detail) }} />
+    <AddPanel
+      on:add={(e) => {
+        addItem(e.detail)
+      }}
+    />
   </svelte:fragment>
 
   <svelte:fragment slot="header" let:state>
