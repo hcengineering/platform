@@ -28,6 +28,7 @@
   export let icon: 'normal' | 'warning' | 'overdue' = 'normal'
   export let labelOver: IntlString | undefined = undefined // label instead of date
   export let labelNull: IntlString = ui.string.NoDate
+  export let kind: 'no-border' | 'link' = 'no-border'
 
   const dispatch = createEventDispatcher()
 
@@ -266,7 +267,7 @@
 
 <button
   bind:this={datePresenter}
-  class="datetime-button"
+  class="datetime-button {kind}"
   class:editable
   class:edit
   on:click={() => {
@@ -389,6 +390,7 @@
   .datetime-button {
     position: relative;
     display: flex;
+    justify-content: flex-start;
     align-items: center;
     flex-shrink: 0;
     padding: 0 0.5rem;
@@ -399,13 +401,11 @@
     white-space: nowrap;
     line-height: 1.5rem;
     color: var(--accent-color);
-    background-color: var(--noborder-bg-color);
     border: 1px solid transparent;
     border-radius: 0.25rem;
-    box-shadow: var(--button-shadow);
     transition-property: border, background-color, color, box-shadow;
     transition-duration: 0.15s;
-    cursor: default;
+    cursor: pointer;
 
     .btn-icon {
       margin-right: 0.375rem;
@@ -424,56 +424,87 @@
         color: var(--error-color);
       }
     }
-
-    &:hover {
-      color: var(--caption-color);
-      transition-duration: 0;
-    }
-    &.editable {
-      cursor: pointer;
+    
+    &.no-border {
+      font-weight: 400;
+      color: var(--accent-color);
+      background-color: var(--noborder-bg-color);
+      box-shadow: var(--button-shadow);
 
       &:hover {
+        color: var(--caption-color);
         background-color: var(--noborder-bg-hover);
+        transition-duration: 0;
+
         .btn-icon {
-          &.normal {
-            color: var(--caption-color);
-          }
-          &.warning {
-            color: var(--warning-color);
-          }
-          &.overdue {
-            color: var(--error-color);
-          }
-        }
-        .time-divider {
-          background-color: var(--button-border-hover);
+          color: var(--caption-color);
         }
       }
-      &:focus-within {
-        background-color: var(--button-bg-color);
+      &:disabled {
+        color: var(--content-color);
+        background-color: var(--button-disabled-color);
+        cursor: default;
+        &:hover {
+          color: var(--content-color);
+          .btn-icon {
+            color: var(--content-color);
+          }
+        }
+      }
+
+      &.editable {
+        cursor: pointer;
+
+        &:hover {
+          background-color: var(--noborder-bg-hover);
+          .btn-icon {
+            &.normal {
+              color: var(--caption-color);
+            }
+            &.warning {
+              color: var(--warning-color);
+            }
+            &.overdue {
+              color: var(--error-color);
+            }
+          }
+          .time-divider {
+            background-color: var(--button-border-hover);
+          }
+        }
+        &:focus-within {
+          background-color: var(--button-bg-color);
+          border-color: var(--primary-edit-border-color);
+          &:hover {
+            background-color: var(--button-bg-color);
+          }
+        }
+      }
+
+      &.edit {
+        padding: 0 0.125rem;
+        background-color: transparent;
         border-color: var(--primary-edit-border-color);
         &:hover {
-          background-color: var(--button-bg-color);
+          background-color: transparent;
         }
       }
     }
-    &:disabled {
-      background-color: var(--button-disabled-color);
-      cursor: default;
 
+    &.link {
+      padding: 0 0.875rem;
+      width: 100%;
+      height: 2rem;
       &:hover {
-        color: var(--content-color);
+        color: var(--caption-color);
+        background-color: var(--body-color);
+        border-color: var(--divider-color);
         .btn-icon {
           color: var(--content-color);
         }
       }
-    }
-    &.edit {
-      padding: 0 0.125rem;
-      background-color: transparent;
-      border-color: var(--primary-edit-border-color);
-      &:hover {
-        background-color: transparent;
+      &.edit {
+        padding: 0 0.5rem;
       }
     }
 

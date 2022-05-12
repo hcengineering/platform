@@ -25,6 +25,7 @@
   export let value: Ref<Organization> | undefined
   export let label: IntlString = contact.string.Organization
   export let onChange: (value: any) => void
+  export let kind: 'no-border' | 'link' = 'no-border'
 
   const query = createQuery()
 
@@ -60,7 +61,7 @@
 </script>
 
 <div
-  class="caption-color cursor-pointer"
+  class="org-container {kind}"
   bind:this={container}
   class:empty={selected === undefined}
   on:click|preventDefault={() => {
@@ -73,11 +74,47 @@
     }
   }}
 >
-  {#if selected}{selected.label}{:else}<Label {label} />{/if}
+  {#if selected}
+    <div class="flex-row-center">
+      <div class="icon"><Company size={'small'} /></div>
+      {selected.label}
+    </div>
+  {:else}
+    <Label {label} />
+  {/if}
 </div>
 
 <style lang="scss">
-  .empty {
-    color: var(--theme-content-trans-color);
+  .org-container {
+    display: flex;
+    align-items: center;
+    color: var(--caption-color);
+    border: 1px solid transparent;
+    border-radius: 0.25rem;
+    transition-property: border, background-color, color, box-shadow;
+    transition-duration: 0.15s;
+    cursor: pointer;
+
+    .icon {
+      margin-right: 0.5rem;
+      padding: 0.25rem;
+      color: var(--caption-color);
+      background-color: var(--avatar-bg-color);
+      border-radius: 50%;
+    }
+
+    &.empty {
+      color: var(--theme-content-trans-color);
+    }
+
+    &.link {
+      padding: 0 0.875rem;
+      height: 2rem;
+      &:hover {
+        color: var(--caption-color);
+        background-color: var(--body-color);
+        border-color: var(--divider-color);
+      }
+    }
   }
 </style>

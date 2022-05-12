@@ -15,7 +15,8 @@
 -->
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
-  import { EditBox } from '@anticrm/ui'
+  import { EditBox, Label, showPopup, eventToHTMLElement } from '@anticrm/ui'
+  import StringEditorPopup from './StringEditorPopup.svelte'
 
   // export let label: IntlString
   export let placeholder: IntlString
@@ -23,10 +24,56 @@
   export let focus: boolean
   export let maxWidth: string = '10rem'
   export let onChange: (value: string) => void
+  export let kind: 'no-border' | 'link' = 'no-border'
+
+  let shown: boolean = false
 
   function _onchange (ev: Event) {
     onChange((ev.target as HTMLInputElement).value)
   }
 </script>
 
-<EditBox {placeholder} {maxWidth} bind:value {focus} on:change={_onchange} />
+{#if kind === 'link'}
+  <div
+    class="link-container"
+    on:click={(ev) => {
+      if (!shown) {
+        showPopup(StringEditorPopup, { value }, eventToHTMLElement(ev),
+          (res) => {
+            if (res !== undefined) value = res
+            onChange(value)
+            shown = false
+          },
+          (res) => { if (res !== undefined) value = res }
+        )
+      }
+    }}
+  >
+    {#if value}
+      <span class="overflow-label">{value}</span>
+    {:else}
+      <span class="dark-color"><Label label={placeholder} /></span>
+    {/if}
+  </div>
+{:else}
+  <EditBox {placeholder} {maxWidth} bind:value {focus} on:change={_onchange} />
+{/if}
+
+<style lang="scss">
+  .link-container {
+    display: flex;
+    align-items: center;
+    padding: 0 0.875rem;
+    width: 100%;
+    height: 2rem;
+    border: 1px solid transparent;
+    border-radius: 0.25rem;
+    cursor: pointer;
+
+    &:hover {
+      color: var(--caption-color);
+      background-color: var(--body-color);
+      border-color: var(--divider-color);
+    }
+  }
+</style>
