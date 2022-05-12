@@ -60,6 +60,7 @@
   }
 
   async function addCards (title: string, checkNewLine: boolean = false) {
+    onClose()
     if (!checkNewLine) {
       return addCard(title.replace('\n', ' '))
     }
