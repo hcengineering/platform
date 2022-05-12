@@ -59,7 +59,6 @@
       }
     )
   }
-  $: if (_id && _class && channel) console.log('!!!!!!!!!!!!!!!! id:', _id, ' - class:', _class, ' - channel:', channel)
 </script>
 
 <Panel
@@ -76,7 +75,9 @@
           {#if clazz.icon}<Icon icon={channel.private ? Lock : clazz.icon} size={'medium'} />{/if}
         </div>
         <div class="title-wrapper">
-          <span class="wrapped-title"><span class="trans-title content-color"><Label label={clazz.label} />›</span> {channel.name}</span>
+          <span class="wrapped-title"
+            ><span class="trans-title content-color"><Label label={clazz.label} />›</span> {channel.name}</span
+          >
           <span class="wrapped-subtitle">{channel.description}</span>
         </div>
       </div>
@@ -96,11 +97,14 @@
     <div class="popupPanel-body__main-content py-10 h-full clear-mins">
       {#if channel}
         <div class="flex-col flex-no-shrink">
-          <span class="fs-title text-xl overflow-label mb-2 flex-no-shrink"><Label label={chunter.string.About} /></span>
+          <span class="fs-title text-xl overflow-label mb-2 flex-no-shrink"><Label label={chunter.string.About} /></span
+          >
           <EditChannelDescriptionTab {channel} on:close />
         </div>
         <div class="flex-col mt-10 flex-no-shrink">
-          <span class="fs-title text-xl overflow-label mb-2 flex-no-shrink"><Label label={chunter.string.Members} /></span>
+          <span class="fs-title text-xl overflow-label mb-2 flex-no-shrink"
+            ><Label label={chunter.string.Members} /></span
+          >
           <Members space={channel} withAddButton={true} on:addMembers={openAddMembersPopup} />
         </div>
       {/if}
