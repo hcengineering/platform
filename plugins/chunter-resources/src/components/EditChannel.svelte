@@ -97,14 +97,15 @@
     <div class="popupPanel-body__main-content py-10 h-full clear-mins">
       {#if channel}
         <div class="flex-col flex-no-shrink">
-          <span class="fs-title text-xl overflow-label mb-2 flex-no-shrink"><Label label={chunter.string.About} /></span
-          >
+          <span class="fs-title text-xl overflow-label mb-2 flex-no-shrink">
+            <Label label={chunter.string.About} />
+          </span>
           <EditChannelDescriptionTab {channel} on:close />
         </div>
         <div class="flex-col mt-10 flex-no-shrink">
-          <span class="fs-title text-xl overflow-label mb-2 flex-no-shrink"
-            ><Label label={chunter.string.Members} /></span
-          >
+          <span class="fs-title text-xl overflow-label mb-2 flex-no-shrink">
+            <Label label={chunter.string.Members} />
+          </span>
           <Members space={channel} withAddButton={true} on:addMembers={openAddMembersPopup} />
         </div>
       {/if}
