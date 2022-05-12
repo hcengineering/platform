@@ -15,7 +15,7 @@
 <script lang="ts">
   import presentation, { Card, createQuery, getAttributePresenterClass, getClient } from '@anticrm/presentation'
   import { BuildModelKey, Viewlet, ViewletPreference } from '@anticrm/view'
-  import core, { Class, Doc, Lookup, Ref } from '@anticrm/core'
+  import core, { ArrOf, Class, Doc, Lookup, Ref, Type } from '@anticrm/core'
   import { Grid, MiniToggle } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import { IntlString } from '@anticrm/platform'
@@ -87,14 +87,22 @@
     return result
   }
 
+  function getValue (name: string, type: Type<any>): string {
+    if (hierarchy.isDerived(type._class, core.class.RefTo)) {
+      return '$lookup.' + name
+    }
+    if (hierarchy.isDerived(type._class, core.class.ArrOf)) {
+      return getValue(name, (type as ArrOf<any>).of)
+    }
+    return name
+  }
+
   function getConfig (viewlet: Viewlet, preference: ViewletPreference | undefined): AttributeConfig[] {
     const result = getBaseConfig(viewlet)
 
     const allAttributes = hierarchy.getAllAttributes(viewlet.attachTo)
     for (const [, attribute] of allAttributes) {
-      const value = hierarchy.isDerived(attribute.type._class, core.class.RefTo)
-        ? '$lookup.' + attribute.name
-        : attribute.name
+      const value = getValue(attribute.name, attribute.type)
       if (result.findIndex((p) => p.value === value) !== -1) continue
       if (hierarchy.isDerived(attribute.type._class, core.class.Collection)) continue
 
