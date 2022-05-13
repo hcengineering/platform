@@ -15,6 +15,7 @@
 //
 
 import LoginApp from './components/LoginApp.svelte'
+import InviteLink from './components/InviteLink.svelte'
 
 /*!
  * Anticrm Platform™ Login Plugin
@@ -25,7 +26,8 @@ import LoginApp from './components/LoginApp.svelte'
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   component: {
-    LoginApp
+    LoginApp,
+    InviteLink
   }
 })
 

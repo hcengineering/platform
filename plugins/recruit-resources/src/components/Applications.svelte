@@ -13,18 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Doc, FindOptions, Ref } from '@anticrm/core'
-  import core from '@anticrm/core'
-  import task from '@anticrm/task'
+  import attachment from '@anticrm/attachment'
+  import chunter from '@anticrm/chunter'
+  import type { Doc, Ref } from '@anticrm/core'
   import { CircleButton, IconAdd, Label, showPopup } from '@anticrm/ui'
+  import { BuildModelKey } from '@anticrm/view'
   import { Table } from '@anticrm/view-resources'
   import recruit from '../plugin'
   import CreateApplication from './CreateApplication.svelte'
   import FileDuo from './icons/FileDuo.svelte'
-  import chunter from '@anticrm/chunter'
-  import attachment from '@anticrm/attachment'
-  import { Applicant } from '@anticrm/recruit'
-  import { BuildModelKey } from '@anticrm/view'
 
   export let objectId: Ref<Doc>
   // export let space: Ref<Space>
@@ -34,13 +31,6 @@
 
   const createApp = (ev: MouseEvent): void => {
     showPopup(CreateApplication, { candidate: objectId, preserveCandidate: true }, ev.target as HTMLElement)
-  }
-  const options: FindOptions<Applicant> = {
-    lookup: {
-      state: task.class.State,
-      space: core.class.Space,
-      doneState: task.class.DoneState
-    }
   }
   const config: (BuildModelKey | string)[] = [
     '',
@@ -66,7 +56,6 @@
     <Table
       _class={recruit.class.Applicant}
       {config}
-      {options}
       query={{ attachedTo: objectId }}
       loadingProps={{ length: applications }}
     />

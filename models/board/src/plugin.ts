@@ -17,7 +17,7 @@
 import { boardId } from '@anticrm/board'
 import board from '@anticrm/board-resources/src/plugin'
 import type { Ref, Space } from '@anticrm/core'
-import { mergeIds } from '@anticrm/platform'
+import { IntlString, mergeIds } from '@anticrm/platform'
 import { KanbanTemplate, Sequence } from '@anticrm/task'
 import type { AnyComponent } from '@anticrm/ui'
 import { ViewletDescriptor } from '@anticrm/view'
@@ -46,5 +46,8 @@ export default mergeIds(boardId, board, {
   },
   viewlet: {
     Kanban: '' as Ref<ViewletDescriptor>
+  },
+  string: {
+    LabelsCompactMode: '' as IntlString
   }
 })

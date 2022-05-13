@@ -39,8 +39,10 @@
     "@anticrm/view": "~0.6.0",
     "@anticrm/ui": "~0.6.0",
     "@anticrm/task": "~0.6.0",
+    "@anticrm/preference": "~0.6.0",
     "@anticrm/notification": "~0.6.0",
     "@anticrm/presentation": "~0.6.2",
-    "@anticrm/setting": "~0.6.1"
+    "@anticrm/setting": "~0.6.1",
+    "fast-equals": "^2.0.3"
   }
 }

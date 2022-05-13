@@ -14,16 +14,33 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Candidate } from '@anticrm/recruit'
-  import recruit from '@anticrm/recruit'
-  import { Table } from '@anticrm/view-resources'
+  import type { IntlString } from '@anticrm/platform'
+  import { createEventDispatcher } from 'svelte'
+  import { EditBox } from '@anticrm/ui'
 
-  export let value: Candidate
+  export let value: string
+  export let placeholder: IntlString
+
+  const dispatch = createEventDispatcher()
+
+  function _onchange (ev: Event) {
+    dispatch('update', value)
+  }
+  function _onkeypress (ev: KeyboardEvent) {
+    if (ev.key === 'Enter') dispatch('close', value)
+  }
 </script>
 
-<Table
-  _class={recruit.class.Applicant}
-  config={['', '$lookup.space.name', '$lookup.state', '$lookup.doneState']}
-  query={{ attachedTo: value._id }}
-  loadingProps={{ length: value.applications ?? 0 }}
-/>
+<div class="selectPopup">
+  <div class="header no-border">
+    <EditBox
+      bind:value
+      {placeholder}
+      kind={'search-style'}
+      maxWidth={'10rem'}
+      focus
+      on:change={_onchange}
+      on:keypress={_onkeypress}
+    />
+  </div>
+</div>

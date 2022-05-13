@@ -1,6 +1,5 @@
 //
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021, 2022 Hardcore Engineering Inc.
+// Copyright © 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,16 +13,16 @@
 // limitations under the License.
 //
 
-import { Doc, Domain, FindOptions, IndexKind, Ref } from '@anticrm/core'
+import { Domain, IndexKind, Ref } from '@anticrm/core'
 import type { Category, Product, Variant } from '@anticrm/inventory'
 import { Builder, Collection, Index, Model, Prop, TypeRef, TypeString, UX } from '@anticrm/model'
 import attachment from '@anticrm/model-attachment'
 import core, { TAttachedDoc } from '@anticrm/model-core'
+import { createAction } from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
 import type {} from '@anticrm/view'
 import view from '@anticrm/view'
 import inventory from './plugin'
-import { createAction } from '@anticrm/model-view'
 
 export const DOMAIN_INVENTORY = 'inventory' as Domain
 @Model(inventory.class.Category, core.class.AttachedDoc, DOMAIN_INVENTORY)
@@ -97,10 +96,6 @@ export function createModel (builder: Builder): void {
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: inventory.class.Product,
     descriptor: view.viewlet.Table,
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    options: {
-      lookup: { attachedTo: inventory.class.Category }
-    } as FindOptions<Doc>,
     config: ['', '$lookup.attachedTo', 'modifiedOn']
   })
 

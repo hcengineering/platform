@@ -114,6 +114,7 @@ export default plugin(settingId, {
     EnterNewPassword: '' as IntlString,
     RepeatNewPassword: '' as IntlString,
     Signout: '' as IntlString,
+    InviteWorkspace: '' as IntlString,
     SelectWorkspace: '' as IntlString,
     Reconnect: '' as IntlString
   },

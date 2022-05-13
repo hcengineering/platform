@@ -35,9 +35,9 @@
       () => {},
       (newStatus: Status) => {
         if (status && newStatus) {
-          client.update(status, { ...newStatus })
+          client.updateDoc(contact.class.Status, status.space, status._id, { ...newStatus })
         } else if (status && !newStatus) {
-          client.remove(status)
+          client.removeDoc(contact.class.Status, status.space, status._id)
         } else {
           client.createDoc(contact.class.Status, space, {
             attachedTo: employeeId,

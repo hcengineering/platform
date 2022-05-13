@@ -236,32 +236,31 @@ export function createModel (builder: Builder): void {
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: recruit.mixin.Candidate,
     descriptor: view.viewlet.Table,
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    options: {
-      lookup: {
-        _id: {
-          channels: contact.class.Channel
-          // skills: tags.class.TagReference // Required if TagsItemPresenter is used
-        }
-      }
-    } as FindOptions<Doc>, // TODO: fix
     config: [
       '',
       'title',
       'city',
       {
+        key: '',
         presenter: recruit.component.ApplicationsPresenter,
         label: recruit.string.ApplicationsShort,
         sortingKey: 'applications'
       },
       {
+        key: '',
         presenter: attachment.component.AttachmentsPresenter,
         label: attachment.string.Files,
         sortingKey: 'attachments'
       },
-      { presenter: chunter.component.CommentsPresenter, label: chunter.string.Comments, sortingKey: 'comments' },
+      {
+        key: '',
+        presenter: chunter.component.CommentsPresenter,
+        label: chunter.string.Comments,
+        sortingKey: 'comments'
+      },
       {
         // key: '$lookup.skills', // Required, since presenter require list of tag references or '' and TagsPopupPresenter
+        key: '',
         presenter: tags.component.TagsPresenter, // tags.component.TagsPresenter,
         label: recruit.string.SkillsLabel,
         sortingKey: 'skills',
@@ -275,20 +274,9 @@ export function createModel (builder: Builder): void {
     ]
   })
 
-  const applicantTableLookup: Lookup<Applicant> = {
-    attachedTo: [recruit.mixin.Candidate, { _id: { channels: contact.class.Channel } }],
-    state: task.class.State,
-    assignee: contact.class.Employee,
-    doneState: task.class.DoneState
-  }
-
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: recruit.class.Applicant,
     descriptor: task.viewlet.StatusTable,
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    options: {
-      lookup: applicantTableLookup
-    } as FindOptions<Doc>, // TODO: fix
     config: [
       '',
       '$lookup.attachedTo',
@@ -296,11 +284,17 @@ export function createModel (builder: Builder): void {
       '$lookup.state',
       '$lookup.doneState',
       {
+        key: '',
         presenter: attachment.component.AttachmentsPresenter,
         label: attachment.string.Files,
         sortingKey: 'attachments'
       },
-      { presenter: chunter.component.CommentsPresenter, label: chunter.string.Comments, sortingKey: 'comments' },
+      {
+        key: '',
+        presenter: chunter.component.CommentsPresenter,
+        label: chunter.string.Comments,
+        sortingKey: 'comments'
+      },
       'modifiedOn',
       '$lookup.attachedTo.$lookup.channels'
     ]

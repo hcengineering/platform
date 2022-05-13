@@ -33,21 +33,19 @@
   let doneStatusesView: boolean = false
   let state: Ref<State> | undefined = undefined
   let selectedDoneStates: Set<Ref<DoneState>> = new Set<Ref<DoneState>>()
-  let resConfig = config
+  $: resConfig = updateConfig(config)
   let query = {}
   let doneStates: DoneState[] = []
   let withoutDone: boolean = false
 
-  function updateConfig (): void {
+  function updateConfig (config: string[]): string[] {
     if (state !== undefined) {
-      resConfig = config.filter((p) => p !== '$lookup.state')
-      return
+      return config.filter((p) => p !== '$lookup.state')
     }
     if (selectedDoneStates.size === 1) {
-      resConfig = config.filter((p) => p !== '$lookup.doneState')
-      return
+      return config.filter((p) => p !== '$lookup.doneState')
     }
-    resConfig = config
+    return config
   }
 
   const doneStateQuery = createQuery()
@@ -66,7 +64,7 @@
   )
 
   async function updateQuery (search: string, selectedDoneStates: Set<Ref<DoneState>>): Promise<void> {
-    updateConfig()
+    resConfig = updateConfig(config)
     const result = {} as DocumentQuery<Task>
     if (search !== '') {
       result.$search = search
