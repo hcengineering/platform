@@ -111,17 +111,6 @@
         {/each}
       </div>
     {/if}
-    {#if viewlet}
-      <ActionIcon
-        icon={view.icon.Setting}
-        direction={'top'}
-        size={'small'}
-        label={view.string.CustomizeView}
-        action={() => {
-          showPopup(ViewletSetting, { viewlet })
-        }}
-      />
-    {/if}
     <SearchEdit
       bind:value={search}
       on:change={() => {
@@ -130,6 +119,16 @@
     />
     {#if createItemDialog}
       <Button icon={IconAdd} label={createItemLabel} kind={'primary'} on:click={(ev) => showCreateDialog(ev)} />
+    {/if}
+    {#if viewlet}
+      <ActionIcon
+        icon={view.icon.Setting}
+        size={'small'}
+        label={view.string.CustomizeView}
+        action={() => {
+          showPopup(ViewletSetting, { viewlet })
+        }}
+      />
     {/if}
   {/if}
 </div>

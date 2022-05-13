@@ -105,6 +105,7 @@ export interface Viewlet extends Doc {
   descriptor: Ref<ViewletDescriptor>
   options?: FindOptions<Doc>
   config: (BuildModelKey | string)[]
+  hiddenKeys?: string[]
 }
 
 /**

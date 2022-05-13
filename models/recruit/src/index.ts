@@ -271,7 +271,8 @@ export function createModel (builder: Builder): void {
       },
       'modifiedOn',
       '$lookup.channels'
-    ]
+    ],
+    hiddenKeys: ['name']
   })
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {

@@ -173,7 +173,8 @@ export function createModel (builder: Builder): void {
       'modifiedOn',
       { key: '', presenter: view.component.RolePresenter, label: view.string.Role },
       '$lookup.channels'
-    ]
+    ],
+    hiddenKeys: ['name']
   })
 
   builder.mixin(contact.class.Person, core.class.Class, view.mixin.ObjectEditor, {

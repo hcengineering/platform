@@ -73,17 +73,6 @@
     <span class="ac-header__title"><Label label={recruit.string.Applications} /></span>
   </div>
 
-  {#if descr}
-    <ActionIcon
-      icon={view.icon.Setting}
-      direction={'top'}
-      size={'small'}
-      label={view.string.CustomizeView}
-      action={() => {
-        showPopup(ViewletSetting, { viewlet: descr })
-      }}
-    />
-  {/if}
   <SearchEdit
     bind:value={search}
     on:change={() => {
@@ -91,6 +80,16 @@
     }}
   />
   <Button icon={IconAdd} label={recruit.string.ApplicationCreateLabel} kind={'primary'} on:click={showCreateDialog} />
+  {#if descr}
+    <ActionIcon
+      icon={view.icon.Setting}
+      size={'small'}
+      label={view.string.CustomizeView}
+      action={() => {
+        showPopup(ViewletSetting, { viewlet: descr })
+      }}
+    />
+  {/if}
 </div>
 
 {#if descr}
