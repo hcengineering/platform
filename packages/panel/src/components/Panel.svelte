@@ -98,9 +98,7 @@
   </svelte:fragment>
 
   {#if withoutActivity}
-    <div class="popupPanel-body__main-content py-10 clear-mins">
-      <slot />
-    </div>
+    <slot />
   {:else}
     <Scroller>
       <div class="popupPanel-body__main-content py-10 clear-mins">

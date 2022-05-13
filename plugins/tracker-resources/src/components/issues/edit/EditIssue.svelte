@@ -125,22 +125,24 @@
       <Button disabled={!canSave} label={presentation.string.Save} on:click={save} />
     </svelte:fragment>
 
-    <div class="mt-6">
-      <EditBox
-        value={updatedIssue.title}
-        placeholder={tracker.string.IssueTitlePlaceholder}
-        kind="large-style"
-        focus
-        on:change={updateTitle}
-      />
-    </div>
-    <div class="mt-6 mb-6">
-      <StyledTextBox
-        alwaysEdit
-        bind:content={updatedIssue.description}
-        placeholder={tracker.string.IssueDescriptionPlaceholder}
-        on:value={({ detail }) => update('description', detail)}
-      />
+    <div class="popupPanel-body__main-content py-10 clear-mins">
+      <div class="mt-6">
+        <EditBox
+          value={updatedIssue.title}
+          placeholder={tracker.string.IssueTitlePlaceholder}
+          kind="large-style"
+          focus
+          on:change={updateTitle}
+        />
+      </div>
+      <div class="mt-6 mb-6">
+        <StyledTextBox
+          alwaysEdit
+          bind:content={updatedIssue.description}
+          placeholder={tracker.string.IssueDescriptionPlaceholder}
+          on:value={({ detail }) => update('description', detail)}
+        />
+      </div>
     </div>
 
     <span slot="actions-label">{issueTitle}</span>
