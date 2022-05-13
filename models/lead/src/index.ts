@@ -15,7 +15,7 @@
 
 // To help typescript locate view plugin properly
 import type { Employee } from '@anticrm/contact'
-import { Doc, FindOptions, IndexKind, Lookup, Ref } from '@anticrm/core'
+import { Doc, FindOptions, IndexKind, Ref } from '@anticrm/core'
 import type { Customer, Funnel, Lead } from '@anticrm/lead'
 import { Builder, Collection, Index, Mixin, Model, Prop, TypeRef, TypeString, UX } from '@anticrm/model'
 import attachment from '@anticrm/model-attachment'
@@ -121,10 +121,6 @@ export function createModel (builder: Builder): void {
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: lead.mixin.Customer,
     descriptor: view.viewlet.Table,
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    options: {
-      lookup: { _id: { channels: contact.class.Channel }, _class: core.class.Class }
-    } as FindOptions<Doc>, // TODO: fix
     config: [
       '',
       { key: '$lookup._class.label', label: contact.string.TypeLabel },
@@ -134,30 +130,26 @@ export function createModel (builder: Builder): void {
     ]
   })
 
-  const leadLookup: Lookup<Lead> = {
-    attachedTo: [lead.mixin.Customer, { _id: { channels: contact.class.Channel } }],
-    state: task.class.State,
-    doneState: task.class.DoneState
-  }
-
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: lead.class.Lead,
     descriptor: task.viewlet.StatusTable,
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    options: {
-      lookup: leadLookup
-    } as FindOptions<Doc>, // TODO: fix
     config: [
       '',
       '$lookup.attachedTo',
       '$lookup.state',
       '$lookup.doneState',
       {
+        key: '',
         presenter: attachment.component.AttachmentsPresenter,
         label: attachment.string.Files,
         sortingKey: 'attachments'
       },
-      { presenter: chunter.component.CommentsPresenter, label: chunter.string.Comments, sortingKey: 'comments' },
+      {
+        key: '',
+        presenter: chunter.component.CommentsPresenter,
+        label: chunter.string.Comments,
+        sortingKey: 'comments'
+      },
       'modifiedOn',
       '$lookup.attachedTo.$lookup.channels'
     ]

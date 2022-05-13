@@ -117,8 +117,6 @@ function createTableViewlet (builder: Builder): void {
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: recruit.class.Review,
     descriptor: view.viewlet.Table,
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    options: reviewTableOptions,
     config: reviewTableConfig
   })
 

@@ -14,7 +14,6 @@
 -->
 <script lang="ts">
   import type { Doc, Ref } from '@anticrm/core'
-  import core from '@anticrm/core'
   import { CircleButton, IconAdd, Label, showPopup } from '@anticrm/ui'
   import { Table } from '@anticrm/view-resources'
   import recruit from '../../plugin'
@@ -39,11 +38,6 @@
     <Table
       _class={recruit.class.Opinion}
       config={['', 'value', 'description', '$lookup.modifiedBy']}
-      options={{
-        lookup: {
-          modifiedBy: core.class.Account
-        }
-      }}
       query={{ attachedTo: objectId }}
       loadingProps={{ length: opinions }}
     />

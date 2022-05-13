@@ -12330,7 +12330,7 @@ packages:
     dev: false
 
   file:projects/model-view.tgz_typescript@4.6.4:
-    resolution: {integrity: sha512-eOmBJcwkfKRTRYPUIafUMhYYHXQXdaJhsqtEyw5121DxfzuEASwRpEYjb+goTQt32HL5bS8mv/aWInucJ4T7Xg==, tarball: file:projects/model-view.tgz}
+    resolution: {integrity: sha512-nc18WwMGJkHbrQf1H/3DYbKFLMpnM/GqvIpt8ckVhTvQyW9DAsOYHQc3GlqyU/6Hf1lMdR5UyReqy4JImLQmhQ==, tarball: file:projects/model-view.tgz}
     id: file:projects/model-view.tgz
     name: '@rush-temp/model-view'
     version: 0.0.0
@@ -14294,7 +14294,7 @@ packages:
     dev: false
 
   file:projects/view-resources.tgz_3b42a51b6c974062237d417c554d9dd7:
-    resolution: {integrity: sha512-3wR1mN5HyfqA1Kl5zeGA3dZf6UAu35FXWL/RYZN9/wvKAehyLH01K3nEUwI3cDXhghyPirrZ4MSEfs1x5/PBSw==, tarball: file:projects/view-resources.tgz}
+    resolution: {integrity: sha512-+5Q3eSxOc4MwOBrOolxvoT9s6AdaP3kj8foIwjOPpszUz3TWzavM8efyWyr850tdj8MGhhdXeo3zf6XACxe2Ww==, tarball: file:projects/view-resources.tgz}
     id: file:projects/view-resources.tgz
     name: '@rush-temp/view-resources'
     version: 0.0.0
@@ -14307,6 +14307,7 @@ packages:
       eslint-plugin-node: 11.1.0_eslint@7.32.0
       eslint-plugin-promise: 5.2.0_eslint@7.32.0
       eslint-plugin-svelte3: 3.4.1_eslint@7.32.0+svelte@3.48.0
+      fast-equals: 2.0.4
       prettier: 2.6.2
       prettier-plugin-svelte: 2.7.0_prettier@2.6.2+svelte@3.48.0
       sass: 1.51.0
@@ -14329,7 +14330,7 @@ packages:
     dev: false
 
   file:projects/view.tgz:
-    resolution: {integrity: sha512-Jklo2DsV/p/JMq+2JgfoWsxbnRN80cejYdIKuNtw+FT25g7IPwlLMl45iojXyB4PND4xvmkw4Krv1dOaFA1DMw==, tarball: file:projects/view.tgz}
+    resolution: {integrity: sha512-gOlokrk6mKu6jlbghqfjkgcXqezcPbW5NcnzBhbK2FOUchPiuSLMbpa3e+3sCnYDuoZHjewbLVonizUqbamgJg==, tarball: file:projects/view.tgz}
     name: '@rush-temp/view'
     version: 0.0.0
     dependencies:

@@ -15,20 +15,43 @@
 -->
 <script lang="ts">
   import { Doc, DocumentQuery } from '@anticrm/core'
-  import { getClient } from '@anticrm/presentation'
-  import { Icon, Label, Scroller, SearchEdit } from '@anticrm/ui'
-  import view, { Viewlet } from '@anticrm/view'
-  import { Table } from '@anticrm/view-resources'
+  import { createQuery, getClient } from '@anticrm/presentation'
+  import { ActionIcon, Icon, Label, Loading, showPopup, SearchEdit } from '@anticrm/ui'
+  import view, { Viewlet, ViewletPreference } from '@anticrm/view'
+  import { ViewletSetting, TableBrowser } from '@anticrm/view-resources'
   import lead from '../plugin'
 
   let search = ''
   let resultQuery: DocumentQuery<Doc> = {}
 
+  let descr: Viewlet | undefined
+  let loading = true
+
+  const preferenceQuery = createQuery()
+  let preference: ViewletPreference | undefined
+
   const client = getClient()
-  const tableDescriptor = client.findOne<Viewlet>(view.class.Viewlet, {
-    attachTo: lead.mixin.Customer,
-    descriptor: view.viewlet.Table
-  })
+  client
+    .findOne<Viewlet>(view.class.Viewlet, {
+      attachTo: lead.mixin.Customer,
+      descriptor: view.viewlet.Table
+    })
+    .then((res) => {
+      descr = res
+      if (res !== undefined) {
+        preferenceQuery.query(
+          view.class.ViewletPreference,
+          {
+            attachedTo: res._id
+          },
+          (res) => {
+            preference = res[0]
+            loading = false
+          },
+          { limit: 1 }
+        )
+      }
+    })
 
   function updateResultQuery (search: string): void {
     resultQuery = search === '' ? {} : { $search: search }
@@ -41,6 +64,17 @@
     <span class="ac-header__title"><Label label={lead.string.Customers} /></span>
   </div>
 
+  {#if descr}
+    <ActionIcon
+      icon={view.icon.Setting}
+      direction={'top'}
+      size={'small'}
+      label={view.string.CustomizeView}
+      action={() => {
+        showPopup(ViewletSetting, { viewlet: descr })
+      }}
+    />
+  {/if}
   <SearchEdit
     bind:value={search}
     on:change={() => {
@@ -49,17 +83,16 @@
   />
 </div>
 
-<Scroller tableFade>
-  {#await tableDescriptor then descr}
-    {#if descr}
-      <Table
-        _class={lead.mixin.Customer}
-        config={descr.config}
-        options={descr.options}
-        query={resultQuery}
-        showNotification
-        highlightRows
-      />
-    {/if}
-  {/await}
-</Scroller>
+{#if descr}
+  {#if loading}
+    <Loading />
+  {:else}
+    <TableBrowser
+      _class={lead.mixin.Customer}
+      config={preference?.config ?? descr.config}
+      options={descr.options}
+      query={resultQuery}
+      showNotification
+    />
+  {/if}
+{/if}

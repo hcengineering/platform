@@ -14,14 +14,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Class, Doc, DocumentQuery, FindOptions, Ref } from '@anticrm/core'
+  import type { Class, Doc, DocumentQuery, FindOptions, Lookup, Ref } from '@anticrm/core'
   import { getObjectValue, SortingOrder } from '@anticrm/core'
   import notification from '@anticrm/notification'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { CheckBox, Component, IconDown, IconUp, Label, Loading, showPopup, Spinner } from '@anticrm/ui'
   import { BuildModelKey } from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
-  import { buildModel, LoadingProps } from '../utils'
+  import { buildConfigLookup, buildModel, LoadingProps } from '../utils'
   import Menu from './Menu.svelte'
 
   export let _class: Ref<Class<Doc>>
@@ -38,6 +38,11 @@
 
   export let selection: number | undefined = undefined
   export let checked: Doc[] = []
+
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+
+  $: lookup = buildConfigLookup(hierarchy, _class, config)
 
   let sortKey = 'modifiedOn'
   let sortOrder = SortingOrder.Descending
@@ -60,6 +65,7 @@
     query: DocumentQuery<Doc>,
     sortKey: string,
     sortOrder: SortingOrder,
+    lookup: Lookup<Doc>,
     options?: FindOptions<Doc>
   ) {
     const update = q.query(
@@ -74,15 +80,13 @@
         dispatch('content', objects)
         loading = loading === 1 ? 0 : -1
       },
-      { sort: { [sortKey]: sortOrder }, limit: 200, ...options }
+      { sort: { [sortKey]: sortOrder }, limit: 200, lookup, ...options }
     )
     if (update && ++loading > 0) {
       objects = []
     }
   }
-  $: update(_class, query, sortKey, sortOrder, options)
-
-  const client = getClient()
+  $: update(_class, query, sortKey, sortOrder, lookup, options)
 
   const showMenu = async (ev: MouseEvent, object: Doc, row: number): Promise<void> => {
     selection = row
@@ -150,7 +154,7 @@
   }
 </script>
 
-{#await buildModel({ client, _class, keys: config, options })}
+{#await buildModel({ client, _class, keys: config, lookup })}
   <Loading />
 {:then model}
   <table class="antiTable" class:metaColumn={enableChecking || showNotification} class:highlightRows>
@@ -244,6 +248,7 @@
                     <svelte:component
                       this={attribute.presenter}
                       value={getObjectValue(attribute.key, object) ?? ''}
+                      {object}
                       {...attribute.props}
                     />
                     <!-- <div
@@ -260,6 +265,7 @@
                   <svelte:component
                     this={attribute.presenter}
                     value={getObjectValue(attribute.key, object) ?? ''}
+                    {object}
                     {...attribute.props}
                   />
                 </td>

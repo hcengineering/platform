@@ -15,8 +15,8 @@
 <script lang="ts">
   import attachment from '@anticrm/attachment'
   import chunter from '@anticrm/chunter'
-  import contact, { EmployeeAccount } from '@anticrm/contact'
-  import { Class, DocumentQuery, FindOptions, getCurrentAccount, Ref } from '@anticrm/core'
+  import { EmployeeAccount } from '@anticrm/contact'
+  import { Class, DocumentQuery, getCurrentAccount, Ref } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
   import tags, { selectedTagElements, TagCategory, TagElement } from '@anticrm/tags'
   import { DoneState, Task } from '@anticrm/task'
@@ -69,14 +69,6 @@
     category = detail.category ?? undefined
     selectedTagElements.set(Array.from(detail.elements ?? []).map((it) => it._id))
   }
-  const taskOptions: FindOptions<Task> = {
-    lookup: {
-      attachedTo: [contact.class.Person, { _id: { channels: contact.class.Channel } }],
-      state: task.class.State,
-      assignee: contact.class.Employee,
-      doneState: task.class.DoneState
-    }
-  }
 </script>
 
 <div class="ac-header full">
@@ -121,7 +113,6 @@
     },
     'modifiedOn'
   ]}
-  options={taskOptions}
   query={resultQuery}
   showNotification
 />

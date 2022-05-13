@@ -16,17 +16,7 @@
 // To help typescript locate view plugin properly
 import type { Board, Card, CardAction, CardDate, CardLabel, MenuPage, LabelsCompactMode } from '@anticrm/board'
 import type { Employee } from '@anticrm/contact'
-import {
-  TxOperations as Client,
-  Doc,
-  DOMAIN_MODEL,
-  FindOptions,
-  IndexKind,
-  Ref,
-  Type,
-  Timestamp,
-  Markup
-} from '@anticrm/core'
+import { DOMAIN_MODEL, IndexKind, Markup, Ref, Timestamp, TxOperations as Client, Type } from '@anticrm/core'
 import {
   ArrOf,
   Builder,
@@ -221,10 +211,6 @@ export function createModel (builder: Builder): void {
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: board.class.Card,
     descriptor: board.viewlet.Kanban,
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    options: {
-      lookup: {}
-    } as FindOptions<Doc>, // TODO: fix
     config: []
   })
 

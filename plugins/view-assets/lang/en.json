@@ -36,6 +36,7 @@
     "Type": "Type",
     "WithTime": "WithTime",
     "CreatingAttribute": "Creating an attribute",
-    "CreatingAttributeConfirm": "Warning: It will not be possible for now to change or delete created attribute."
+    "CreatingAttributeConfirm": "Warning: It will not be possible for now to change or delete created attribute.",
+    "CustomizeView": "Customize view"
   }
 }

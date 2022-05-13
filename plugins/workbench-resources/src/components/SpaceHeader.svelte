@@ -17,9 +17,19 @@
   import core, { WithLookup } from '@anticrm/core'
   import { IntlString } from '@anticrm/platform'
   import presentation, { createQuery, getClient } from '@anticrm/presentation'
-  import { AnyComponent, showPanel } from '@anticrm/ui'
-  import { Button, Icon, SearchEdit, showPopup, Tooltip, IconAdd } from '@anticrm/ui'
+  import {
+    ActionIcon,
+    AnyComponent,
+    showPanel,
+    Button,
+    Icon,
+    SearchEdit,
+    showPopup,
+    Tooltip,
+    IconAdd
+  } from '@anticrm/ui'
   import view, { Viewlet } from '@anticrm/view'
+  import { ViewletSetting } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../plugin'
   import { classIcon } from '../utils'
@@ -100,6 +110,17 @@
           </Tooltip>
         {/each}
       </div>
+    {/if}
+    {#if viewlet}
+      <ActionIcon
+        icon={view.icon.Setting}
+        direction={'top'}
+        size={'small'}
+        label={view.string.CustomizeView}
+        action={() => {
+          showPopup(ViewletSetting, { viewlet })
+        }}
+      />
     {/if}
     <SearchEdit
       bind:value={search}

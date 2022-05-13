@@ -33,11 +33,6 @@
     <TableBrowser
       _class={core.class.Space}
       config={['', '$lookup._class.label', 'modifiedOn']}
-      options={{
-        lookup: {
-          _class: core.class.Class
-        }
-      }}
       showNotification
       baseMenuClass={core.class.Space}
       query={{

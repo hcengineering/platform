@@ -14,26 +14,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { FindOptions } from '@anticrm/core'
-  import type { Applicant, Candidate } from '@anticrm/recruit'
+  import type { Candidate } from '@anticrm/recruit'
   import recruit from '@anticrm/recruit'
-  import task from '@anticrm/task'
   import { Table } from '@anticrm/view-resources'
 
   export let value: Candidate
-  const options: FindOptions<Applicant> = {
-    lookup: {
-      state: task.class.State,
-      space: core.class.Space,
-      doneState: task.class.DoneState
-    }
-  }
 </script>
 
 <Table
   _class={recruit.class.Applicant}
   config={['', '$lookup.space.name', '$lookup.state', '$lookup.doneState']}
-  {options}
   query={{ attachedTo: value._id }}
   loadingProps={{ length: value.applications ?? 0 }}
 />
