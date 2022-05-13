@@ -165,7 +165,7 @@
     }
     .search-style {
       font-weight: 400;
-      padding: .625rem .75rem;
+      padding: 0.625rem 0.75rem;
     }
 
     input {

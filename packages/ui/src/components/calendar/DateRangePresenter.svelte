@@ -424,7 +424,7 @@
         color: var(--error-color);
       }
     }
-    
+
     &.no-border {
       font-weight: 400;
       color: var(--accent-color);
