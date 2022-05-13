@@ -106,7 +106,12 @@
           <span class="fs-title text-xl overflow-label mb-2 flex-no-shrink">
             <Label label={chunter.string.Members} />
           </span>
-          <Members space={channel} withAddButton={true} on:addMembers={openAddMembersPopup} />
+          <Members
+            space={channel}
+            withAddButton={true}
+            withInviteWorkspaceButton={true}
+            on:addMembers={openAddMembersPopup}
+          />
         </div>
       {/if}
     </div>
