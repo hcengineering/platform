@@ -15,9 +15,9 @@
 <script lang="ts">
   import { Ref } from '@anticrm/core'
   import { Project } from '@anticrm/tracker'
-  import { translate } from '@anticrm/platform'
+  import { IntlString, translate } from '@anticrm/platform'
   import { getClient } from '@anticrm/presentation'
-  import { Button, showPopup, SelectPopup, eventToHTMLElement } from '@anticrm/ui'
+  import { Button, showPopup, SelectPopup, eventToHTMLElement, ButtonShape } from '@anticrm/ui'
   import type { ButtonKind, ButtonSize } from '@anticrm/ui'
   import tracker from '../plugin'
 
@@ -25,8 +25,11 @@
   export let projects: Project[] = []
   export let shouldShowLabel: boolean = true
   export let isEditable: boolean = true
+  export let onProjectIdChange: ((newProjectId: Ref<Project> | undefined) => void) | undefined = undefined
+  export let popupPlaceholder: IntlString = tracker.string.AddToProject
   export let kind: ButtonKind = 'no-border'
   export let size: ButtonSize = 'small'
+  export let shape: ButtonShape = undefined
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = 'min-content'
 
@@ -36,12 +39,12 @@
   let defaultProjectLabel = ''
 
   $: if (value !== undefined) {
-    handleSelectedProjectUpdated(value)
+    handleSelectedProjectIdUpdated(value)
   }
 
   $: translate(tracker.string.Project, {}).then((result) => (defaultProjectLabel = result))
   $: projectIcon = selectedProject?.icon ?? tracker.icon.Projects
-  $: projectLabel = selectedProject?.label ?? defaultProjectLabel
+  $: projectText = shouldShowLabel ? selectedProject?.label ?? defaultProjectLabel : undefined
 
   $: projectsInfo = [
     { id: null, icon: tracker.icon.Projects, label: tracker.string.NoProject },
@@ -52,20 +55,14 @@
     }))
   ]
 
-  const handleSelectedProjectUpdated = async (value: Ref<Project> | null) => {
-    if (value === null) {
+  const handleSelectedProjectIdUpdated = async (newProjectId: Ref<Project> | null) => {
+    if (newProjectId === null) {
       selectedProject = undefined
 
       return
     }
 
-    selectedProject = await client.findOne(tracker.class.Project, { _id: value })
-  }
-
-  const handleProjectChanged = (newProject: Ref<Project> | undefined) => {
-    if (newProject !== undefined && newProject !== value) {
-      value = newProject
-    }
+    selectedProject = await client.findOne(tracker.class.Project, { _id: newProjectId })
   }
 
   const handlePriorityEditorOpened = (event: MouseEvent) => {
@@ -75,17 +72,21 @@
 
     showPopup(
       SelectPopup,
-      { value: projectsInfo, placeholder: tracker.string.AddToProject, searchable: true },
+      { value: projectsInfo, placeholder: popupPlaceholder, searchable: true },
       eventToHTMLElement(event),
-      handleProjectChanged
+      onProjectIdChange
     )
   }
 </script>
 
-<Button icon={projectIcon} {justify} {width} {size} {kind} disabled={!isEditable} on:click={handlePriorityEditorOpened}>
-  <svelte:fragment slot="content">
-    {#if shouldShowLabel}
-      <span class="nowrap">{projectLabel}</span>
-    {/if}
-  </svelte:fragment>
-</Button>
+<Button
+  {kind}
+  {size}
+  {shape}
+  {width}
+  {justify}
+  icon={projectIcon}
+  text={projectText}
+  disabled={!isEditable}
+  on:click={handlePriorityEditorOpened}
+/>

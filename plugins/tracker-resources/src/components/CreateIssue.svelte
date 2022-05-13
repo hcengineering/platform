@@ -42,15 +42,14 @@
   export let project: Ref<Project> | null = null
 
   let currentAssignee: Ref<Employee> | null = assignee
-  let currentProject: Ref<Project> | null = project
   let issueStatuses: WithLookup<IssueStatus>[] = []
   let availableProjects: WithLookup<Project>[] = []
 
-  const object: Data<Issue> = {
+  let object: Data<Issue> = {
     title: '',
     description: '',
     assignee: null,
-    project: null,
+    project: project,
     number: 0,
     rank: '',
     status: '' as Ref<IssueStatus>,
@@ -144,7 +143,7 @@
       title: getTitle(object.title),
       description: object.description,
       assignee: currentAssignee,
-      project: currentProject,
+      project: object.project,
       number: (incResult as any).object.sequence,
       status: object.status,
       priority: object.priority,
@@ -171,9 +170,19 @@
   }
 
   const handleStatusChanged = (statusId: Ref<IssueStatus> | undefined) => {
-    if (statusId !== undefined) {
-      object.status = statusId
+    if (statusId === undefined) {
+      return
     }
+
+    object.status = statusId
+  }
+
+  const handleProjectIdChanged = (projectId: Ref<Project> | null | undefined) => {
+    if (projectId === undefined) {
+      return
+    }
+
+    object = { ...object, project: projectId }
   }
 </script>
 
@@ -232,7 +241,7 @@
       size="small"
       kind="no-border"
     />
-    <ProjectSelector bind:value={currentProject} projects={availableProjects} />
+    <ProjectSelector value={object.project} projects={availableProjects} onProjectIdChange={handleProjectIdChanged} />
     <DatePresenter bind:value={object.dueDate} editable />
     <Button
       icon={tracker.icon.MoreActions}

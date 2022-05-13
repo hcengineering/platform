@@ -116,6 +116,7 @@ export default mergeIds(trackerId, tracker, {
     ClearFilters: '' as IntlString,
     Back: '' as IntlString,
     AddToProject: '' as IntlString,
+    MoveToProject: '' as IntlString,
     NoProject: '' as IntlString,
 
     IssueTitlePlaceholder: '' as IntlString,
