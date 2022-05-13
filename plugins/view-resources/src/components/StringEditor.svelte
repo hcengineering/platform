@@ -38,13 +38,18 @@
     class="link-container"
     on:click={(ev) => {
       if (!shown) {
-        showPopup(StringEditorPopup, { value }, eventToHTMLElement(ev),
+        showPopup(
+          StringEditorPopup,
+          { value },
+          eventToHTMLElement(ev),
           (res) => {
             if (res !== undefined) value = res
             onChange(value)
             shown = false
           },
-          (res) => { if (res !== undefined) value = res }
+          (res) => {
+            if (res !== undefined) value = res
+          }
         )
       }
     }}

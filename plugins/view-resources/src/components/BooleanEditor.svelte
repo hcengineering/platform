@@ -14,7 +14,6 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  // import type { IntlString } from '@anticrm/platform'
   import { Button, showPopup, eventToHTMLElement } from '@anticrm/ui'
   import type { ButtonKind, ButtonSize } from '@anticrm/ui'
   import BooleanPresenter from './BooleanPresenter.svelte'

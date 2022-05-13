@@ -16,7 +16,7 @@
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
   import { createEventDispatcher } from 'svelte'
-  import { EditBox, Label, showPopup, eventToHTMLElement } from '@anticrm/ui'
+  import { EditBox } from '@anticrm/ui'
 
   export let value: string
   export let placeholder: IntlString

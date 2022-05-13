@@ -59,7 +59,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: .25rem .75rem;
+    padding: 0.25rem 0.75rem;
     min-height: 2rem;
     text-align: left;
     color: var(--caption-color);
