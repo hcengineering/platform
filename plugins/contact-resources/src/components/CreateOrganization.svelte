@@ -51,7 +51,7 @@
       )
     }
 
-    dispatch('close')
+    dispatch('close', id)
   }
 
   let channels: AttachedData<Channel>[] = []
@@ -65,7 +65,6 @@
   label={contact.string.CreateOrganization}
   okAction={createOrganization}
   canSave={object.name.length > 0}
-  space={contact.space.Contacts}
   on:close={() => {
     dispatch('close')
   }}

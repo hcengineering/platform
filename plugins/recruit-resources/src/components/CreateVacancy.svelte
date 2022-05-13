@@ -13,14 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Organization } from '@anticrm/contact'
+  import contact, { Organization } from '@anticrm/contact'
   import core, { Ref } from '@anticrm/core'
-  import { getClient, Card } from '@anticrm/presentation'
+  import { Card, getClient, UserBox } from '@anticrm/presentation'
   import task, { createKanban, KanbanTemplate } from '@anticrm/task'
-  import { Component, EditBox, Button } from '@anticrm/ui'
+  import { Button, Component, createFocusManager, EditBox, FocusHandler } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
-  import { OrganizationSelector } from '@anticrm/contact-resources'
+  import Company from './icons/Company.svelte'
   import Vacancy from './icons/Vacancy.svelte'
 
   const dispatch = createEventDispatcher()
@@ -54,9 +54,12 @@
     })
 
     await createKanban(client, id, templateId)
+    dispatch('close', id)
   }
+  const manager = createFocusManager()
 </script>
 
+<FocusHandler {manager} />
 <Card
   label={recruit.string.CreateVacancy}
   okAction={createVacancy}
@@ -67,9 +70,10 @@
 >
   <div class="flex-row-center clear-mins">
     <div class="mr-3">
-      <Button icon={Vacancy} size={'medium'} kind={'link-bordered'} disabled />
+      <Button focusIndex={1} icon={Vacancy} size={'medium'} kind={'link-bordered'} disabled />
     </div>
     <EditBox
+      focusIndex={2}
       bind:value={name}
       placeholder={recruit.string.VacancyPlaceholder}
       maxWidth={'37.5rem'}
@@ -78,12 +82,25 @@
     />
   </div>
   <svelte:fragment slot="pool">
-    <OrganizationSelector bind:value={company} label={recruit.string.Company} kind={'no-border'} size={'small'} />
+    <UserBox
+      focusIndex={3}
+      _class={contact.class.Organization}
+      label={recruit.string.Company}
+      placeholder={recruit.string.Company}
+      bind:value={company}
+      allowDeselect
+      titleDeselect={recruit.string.UnAssignCompany}
+      kind={'no-border'}
+      size={'small'}
+      icon={Company}
+      create={{ component: contact.component.CreateOrganization, label: contact.string.CreateOrganization }}
+    />
     <Component
       is={task.component.KanbanTemplateSelector}
       props={{
         folders: [recruit.space.VacancyTemplates],
-        template: templateId
+        template: templateId,
+        focusIndex: 4
       }}
       on:change={(evt) => {
         templateId = evt.detail

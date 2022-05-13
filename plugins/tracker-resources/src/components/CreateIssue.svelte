@@ -16,23 +16,23 @@
   import contact, { Employee } from '@anticrm/contact'
   import core, { Data, generateId, Ref, SortingOrder, WithLookup } from '@anticrm/core'
   import { Asset, IntlString } from '@anticrm/platform'
-  import presentation, { getClient, UserBox, Card, createQuery } from '@anticrm/presentation'
-  import { Issue, IssuePriority, IssueStatus, Team, calcRank, Project } from '@anticrm/tracker'
+  import presentation, { Card, createQuery, getClient, SpaceSelector, UserBox } from '@anticrm/presentation'
   import { StyledTextBox } from '@anticrm/text-editor'
+  import { calcRank, Issue, IssuePriority, IssueStatus, Project, Team } from '@anticrm/tracker'
   import {
-    EditBox,
     Button,
-    showPopup,
     DatePresenter,
-    SelectPopup,
+    EditBox,
+    eventToHTMLElement,
     IconAttachment,
-    eventToHTMLElement
+    SelectPopup,
+    showPopup
   } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../plugin'
-  import StatusSelector from './StatusSelector.svelte'
   import PrioritySelector from './PrioritySelector.svelte'
   import ProjectSelector from './ProjectSelector.svelte'
+  import StatusSelector from './StatusSelector.svelte'
 
   export let space: Ref<Team>
   export let parent: Ref<Issue> | undefined
@@ -178,15 +178,14 @@
   okAction={createIssue}
   {canSave}
   okLabel={tracker.string.SaveIssue}
-  spaceClass={tracker.class.Team}
-  spaceLabel={tracker.string.Team}
-  spacePlaceholder={tracker.string.SelectTeam}
-  createMore={false}
-  bind:space={_space}
   on:close={() => {
     dispatch('close')
   }}
+  createMore={false}
 >
+  <svelte:fragment slot="header">
+    <SpaceSelector _class={tracker.class.Team} label={tracker.string.Team} bind:space={_space} />
+  </svelte:fragment>
   <svelte:fragment slot="space">
     <Button
       icon={tracker.icon.Home}

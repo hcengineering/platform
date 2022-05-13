@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Data, Ref } from '@anticrm/core'
-  import { DatePresenter, EditBox } from '@anticrm/ui'
-  import { Card, getClient, UserBox, UserBoxList } from '@anticrm/presentation'
-  import { IntlString } from '@anticrm/platform'
   import contact from '@anticrm/contact'
+  import { Data, Ref } from '@anticrm/core'
+  import { IntlString } from '@anticrm/platform'
+  import { Card, getClient, SpaceSelector, UserBox, UserBoxList } from '@anticrm/presentation'
   import { Project, ProjectStatus, Team } from '@anticrm/tracker'
+  import { DatePresenter, EditBox } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
   import ProjectStatusSelector from './ProjectStatusSelector.svelte'
@@ -51,12 +51,11 @@
   okAction={onSave}
   canSave={object.label !== ''}
   okLabel={tracker.string.CreateProject}
-  spaceClass={tracker.class.Team}
-  spaceLabel={tracker.string.Team}
-  spacePlaceholder={tracker.string.SelectTeam}
-  bind:space
   on:close={() => dispatch('close')}
 >
+  <svelte:fragment slot="header">
+    <SpaceSelector _class={tracker.class.Team} label={tracker.string.Team} bind:space />
+  </svelte:fragment>
   <div class="label">
     <EditBox
       bind:value={object.label}

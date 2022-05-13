@@ -52,7 +52,6 @@
   label={plugin.string.TodoCreate}
   okAction={createTodo}
   canSave={name?.length > 0}
-  bind:space={_space}
   on:close={() => {
     dispatch('close')
   }}

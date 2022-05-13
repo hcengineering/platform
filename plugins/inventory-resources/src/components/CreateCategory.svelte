@@ -58,7 +58,6 @@
 <Card
   label={inventory.string.CreateCategory}
   okAction={create}
-  space={inventory.space.Category}
   canSave={name.length > 0}
   on:close={() => {
     dispatch('close')

@@ -32,7 +32,8 @@ export type {
   PopupAlignment,
   PopupPositionElement,
   ButtonKind,
-  ButtonSize
+  ButtonSize,
+  IconSize
 } from './types'
 // export { applicationShortcutKey } from './utils'
 export { getCurrentLocation, locationToUrl, navigate, location } from './location'

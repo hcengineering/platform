@@ -13,94 +13,43 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { afterUpdate, createEventDispatcher, onMount } from 'svelte'
-  import { translate } from '@anticrm/platform'
-  import type { Ref, Class, Space, DocumentQuery } from '@anticrm/core'
-  import { createQuery } from '../utils'
+  import type { Class, Doc, DocumentQuery, Ref, Space } from '@anticrm/core'
+  import { IntlString } from '@anticrm/platform'
+  import { AnyComponent } from '@anticrm/ui'
+  import ObjectPopup from './ObjectPopup.svelte'
   import SpaceInfo from './SpaceInfo.svelte'
-  import presentation from '..'
-  import { ListView } from '@anticrm/ui'
 
   export let _class: Ref<Class<Space>>
+  export let selected: Ref<Space> | undefined
   export let spaceQuery: DocumentQuery<Space> | undefined
+  export let create:
+    | {
+        component: AnyComponent
+        label: IntlString
+      }
+    | undefined = undefined
 
-  let search: string = ''
-  let objects: Space[] = []
-  let phTraslate: string = ''
-  $: translate(presentation.string.Search, {}).then((res) => {
-    phTraslate = res
-  })
-  let input: HTMLInputElement
-
-  const dispatch = createEventDispatcher()
-  const query = createQuery()
-  $: query.query(_class, { ...(spaceQuery ?? {}), name: { $like: '%' + search + '%' } }, (result) => {
-    objects = result
-  })
-  afterUpdate(() => {
-    dispatch('update', Date.now())
-  })
-  onMount(() => {
-    if (input) input.focus()
-  })
-
-  let selection = 0
-  let list: ListView
-
-  async function handleSelection (evt: Event | undefined, selection: number): Promise<void> {
-    const space = objects[selection]
-    dispatch('close', space)
-  }
-
-  function onKeydown (key: KeyboardEvent): void {
-    if (key.code === 'ArrowUp') {
-      key.stopPropagation()
-      key.preventDefault()
-      list.select(selection - 1)
-    }
-    if (key.code === 'ArrowDown') {
-      key.stopPropagation()
-      key.preventDefault()
-      list.select(selection + 1)
-    }
-    if (key.code === 'Enter') {
-      key.preventDefault()
-      key.stopPropagation()
-      handleSelection(key, selection)
-    }
-    if (key.code === 'Escape') {
-      key.preventDefault()
-      key.stopPropagation()
-      dispatch('close')
-    }
-  }
+  $: _create =
+    create !== undefined
+      ? {
+          ...create,
+          update: (doc: Doc) => (doc as Space).name
+        }
+      : undefined
 </script>
 
-<div class="selectPopup" on:keydown={onKeydown}>
-  <div class="header">
-    <input bind:this={input} type="text" bind:value={search} placeholder={phTraslate} on:input={() => {}} on:change />
-  </div>
-  <div class="scroll">
-    <div class="box">
-      <ListView
-        bind:this={list}
-        count={objects.length}
-        bind:selection
-        on:click={(evt) => handleSelection(evt, evt.detail)}
-      >
-        <svelte:fragment slot="item" let:item>
-          {@const space = objects[item]}
-
-          <button
-            class="menu-item flex-between"
-            on:click={() => {
-              handleSelection(undefined, item)
-            }}
-          >
-            <SpaceInfo size={'large'} value={space} />
-          </button>
-        </svelte:fragment>
-      </ListView>
-    </div>
-  </div>
-</div>
+<ObjectPopup
+  {_class}
+  {selected}
+  bind:docQuery={spaceQuery}
+  multiSelect={false}
+  allowDeselect={false}
+  shadows={true}
+  create={_create}
+  on:update
+  on:close
+>
+  <svelte:fragment slot="item" let:item={space}>
+    <SpaceInfo size={'large'} value={space} />
+  </svelte:fragment>
+</ObjectPopup>

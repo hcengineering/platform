@@ -16,7 +16,17 @@
   import type { IntlString } from '@anticrm/platform'
   import { getClient } from '../utils'
 
-  import { Label, showPopup, IconFolder, Button, eventToHTMLElement, getFocusManager } from '@anticrm/ui'
+  import {
+    Label,
+    showPopup,
+    IconFolder,
+    Button,
+    eventToHTMLElement,
+    getFocusManager,
+    AnyComponent,
+    Tooltip,
+    TooltipAlignment
+  } from '@anticrm/ui'
   import SpacesPopup from './SpacesPopup.svelte'
 
   import type { Ref, Class, Space, DocumentQuery } from '@anticrm/core'
@@ -27,6 +37,13 @@
   export let value: Ref<Space> | undefined
   export let focusIndex = -1
   export let focus = false
+  export let create:
+    | {
+        component: AnyComponent
+        label: IntlString
+      }
+    | undefined = undefined
+  export let labelDirection: TooltipAlignment | undefined = undefined
 
   let selected: Space | undefined
 
@@ -40,22 +57,36 @@
   $: updateSelected(value)
 </script>
 
-<Button
-  {focus}
-  {focusIndex}
-  icon={IconFolder}
-  size={'small'}
-  kind={'no-border'}
-  on:click={(ev) => {
-    showPopup(SpacesPopup, { _class, spaceQuery }, eventToHTMLElement(ev), (result) => {
-      if (result) {
-        value = result._id
-        mgr?.setFocusPos(focusIndex)
-      }
-    })
-  }}
->
-  <span slot="content" class="text-sm">
-    {#if selected}{selected.name}{:else}<Label {label} />{/if}
-  </span>
-</Button>
+<Tooltip {label} fill={false} direction={labelDirection}>
+  <Button
+    {focus}
+    {focusIndex}
+    icon={IconFolder}
+    size={'small'}
+    kind={'no-border'}
+    on:click={(ev) => {
+      showPopup(
+        SpacesPopup,
+        {
+          _class,
+          label,
+          options: { sort: { modifiedOn: -1 } },
+          selected,
+          spaceQuery,
+          create
+        },
+        eventToHTMLElement(ev),
+        (result) => {
+          if (result) {
+            value = result._id
+            mgr?.setFocusPos(focusIndex)
+          }
+        }
+      )
+    }}
+  >
+    <span slot="content" class="text-sm">
+      {#if selected}{selected.name}{:else}<Label {label} />{/if}
+    </span>
+  </Button>
+</Tooltip>

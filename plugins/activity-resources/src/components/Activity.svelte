@@ -73,7 +73,7 @@
       <div class="p-10 select-text">
         {#if txes}
           <Grid column={1} rowGap={1.5}>
-            {#each txes as tx (tx.tx._id)}
+            {#each txes as tx}
               <TxView {tx} {viewlets} />
             {/each}
           </Grid>
