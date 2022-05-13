@@ -1,10 +1,19 @@
 <script lang="ts">
   import { getClient } from '@anticrm/presentation'
   import setting, { SettingsCategory } from '@anticrm/setting'
-  import { Component, getCurrentLocation, Label, location, navigate, setMetadataLocalStorage } from '@anticrm/ui'
+  import {
+    Component,
+    getCurrentLocation,
+    Label,
+    location,
+    navigate,
+    setMetadataLocalStorage,
+    showPopup
+  } from '@anticrm/ui'
   import { onDestroy } from 'svelte'
   import CategoryElement from './CategoryElement.svelte'
   import login from '@anticrm/login'
+  import { InviteLink } from '@anticrm/login-resources'
 
   const client = getClient()
 
@@ -43,6 +52,9 @@
   function selectWorkspace (): void {
     navigate({ path: [login.component.LoginApp, 'selectWorkspace'] })
   }
+  function inviteWorkspace (): void {
+    showPopup(InviteLink, {})
+  }
 </script>
 
 <div class="flex h-full">
@@ -64,6 +76,7 @@
     {/each}
     <div class="signout">
       <CategoryElement icon={setting.icon.Signout} label={setting.string.Signout} on:click={signOut} />
+      <CategoryElement label={setting.string.InviteWorkspace} on:click={inviteWorkspace} />
       <CategoryElement
         icon={setting.icon.SelectWorkspace}
         label={setting.string.SelectWorkspace}

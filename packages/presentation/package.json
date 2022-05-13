@@ -41,6 +41,8 @@
     "@anticrm/login": "~0.6.1",
     "@anticrm/image-cropper": "~0.6.0",
     "@anticrm/client": "~0.6.2",
-    "fast-equals": "^2.0.3"
+    "fast-equals": "^2.0.3",
+    "@anticrm/setting": "~0.6.1",
+    "@anticrm/login-resources": "~0.6.2"
   }
 }

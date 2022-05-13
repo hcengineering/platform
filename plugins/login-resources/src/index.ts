@@ -15,6 +15,7 @@
 //
 
 import LoginApp from './components/LoginApp.svelte'
+import InviteLink from './components/InviteLink.svelte'
 
 /*!
  * Anticrm Platform™ Login Plugin
@@ -28,5 +29,7 @@ export default async () => ({
     LoginApp
   }
 })
+
+export { InviteLink }
 
 export * from './utils'

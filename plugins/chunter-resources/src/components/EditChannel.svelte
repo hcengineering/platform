@@ -116,7 +116,12 @@
         <EditChannelDescriptionTab {channel} on:close />
       </Scroller>
     {:else if selectedTabIndex === 1}
-      <Members space={channel} withAddButton={true} on:addMembers={openAddMembersPopup} />
+      <Members
+        space={channel}
+        withAddButton={true}
+        withInviteWorkspaceButton={true}
+        on:addMembers={openAddMembersPopup}
+      />
     {:else if selectedTabIndex === 2}
       <EditChannelSettingsTab {channel} on:close />
     {/if}

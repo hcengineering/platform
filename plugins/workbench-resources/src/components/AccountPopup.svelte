@@ -16,9 +16,18 @@
   import contact, { Employee, EmployeeAccount, formatName } from '@anticrm/contact'
   import { getCurrentAccount } from '@anticrm/core'
   import login from '@anticrm/login'
+  import { InviteLink } from '@anticrm/login-resources'
   import { Avatar, createQuery, getClient } from '@anticrm/presentation'
   import setting, { SettingsCategory } from '@anticrm/setting'
-  import { closePopup, getCurrentLocation, Icon, Label, navigate, setMetadataLocalStorage } from '@anticrm/ui'
+  import {
+    closePopup,
+    getCurrentLocation,
+    Icon,
+    Label,
+    navigate,
+    setMetadataLocalStorage,
+    showPopup
+  } from '@anticrm/ui'
 
   const client = getClient()
   async function getItems (): Promise<SettingsCategory[]> {
@@ -59,6 +68,10 @@
 
   function selectWorkspace (): void {
     navigate({ path: [login.component.LoginApp, 'selectWorkspace'] })
+  }
+
+  function inviteWorkspace (): void {
+    showPopup(InviteLink, {})
   }
 
   function filterItems (items: SettingsCategory[]): SettingsCategory[] {
@@ -107,6 +120,11 @@
             <Icon icon={setting.icon.SelectWorkspace} size={'small'} />
           </div>
           <Label label={setting.string.SelectWorkspace} />
+        </button>
+        <button class="menu-item" on:click={inviteWorkspace}>
+          <div class="ml-6">
+            <Label label={setting.string.InviteWorkspace} />
+          </div>
         </button>
         <button class="menu-item" on:click={signOut}>
           <div class="mr-2">

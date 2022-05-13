@@ -15,8 +15,10 @@
 <script lang="ts">
   import contact, { Employee, EmployeeAccount } from '@anticrm/contact'
   import { Account, DocumentQuery, Ref, SortingOrder, Space } from '@anticrm/core'
+  import { InviteLink } from '@anticrm/login-resources'
   import { translate } from '@anticrm/platform'
-  import { IconAdd, Label, Scroller, SearchEdit } from '@anticrm/ui'
+  import setting from '@anticrm/setting'
+  import { IconAdd, Label, Scroller, SearchEdit, showPopup } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation from '../plugin'
   import { getClient } from '../utils'
@@ -24,6 +26,7 @@
 
   export let space: Space
   export let withAddButton: boolean = false
+  export let withInviteWorkspaceButton: boolean = false
 
   const client = getClient()
   const dispatch = createEventDispatcher()
@@ -59,6 +62,10 @@
         members: account._id
       }
     })
+  }
+
+  function inviteWorkspace (): void {
+    showPopup(InviteLink, {})
   }
 </script>
 
@@ -111,6 +118,13 @@
       </Scroller>
     {/if}
   {/await}
+  {#if withInviteWorkspaceButton}
+    <div class="item fs-title mb-4 mt-2">
+      <div class="flex-row-center p-1" on:click={inviteWorkspace}>
+        <Label label={setting.string.InviteWorkspace} />
+      </div>
+    </div>
+  {/if}
 </div>
 
 <style lang="scss">
