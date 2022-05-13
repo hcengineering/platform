@@ -148,6 +148,42 @@ async function upgradeIssueStatuses (tx: TxOperations): Promise<void> {
   }
 }
 
+async function upgradeIssueProjects (tx: TxOperations): Promise<void> {
+  const issues = await tx.findAll(tracker.class.Issue, {})
+
+  if (issues.length === 0) {
+    return
+  }
+
+  for (const issue of issues) {
+    const currentProject = issue.project as unknown
+
+    if (currentProject !== undefined) {
+      continue
+    }
+
+    await tx.update(issue, { project: null })
+  }
+}
+
+async function upgradeProjectIcons (tx: TxOperations): Promise<void> {
+  const projects = await tx.findAll(tracker.class.Project, {})
+
+  if (projects.length === 0) {
+    return
+  }
+
+  for (const project of projects) {
+    const icon = project.icon as unknown
+
+    if (icon !== undefined) {
+      continue
+    }
+
+    await tx.update(project, { icon: tracker.icon.Projects })
+  }
+}
+
 async function createDefaults (tx: TxOperations): Promise<void> {
   await createDefaultTeam(tx)
 }
@@ -158,6 +194,11 @@ async function upgradeTeams (tx: TxOperations): Promise<void> {
 
 async function upgradeIssues (tx: TxOperations): Promise<void> {
   await upgradeIssueStatuses(tx)
+  await upgradeIssueProjects(tx)
+}
+
+async function upgradeProjects (tx: TxOperations): Promise<void> {
+  await upgradeProjectIcons(tx)
 }
 
 export const trackerOperation: MigrateOperation = {
@@ -167,5 +208,6 @@ export const trackerOperation: MigrateOperation = {
     await createDefaults(tx)
     await upgradeTeams(tx)
     await upgradeIssues(tx)
+    await upgradeProjects(tx)
   }
 }
