@@ -21,6 +21,7 @@
   export let type: TypeDate | undefined
   // export let label: IntlString
   export let onChange: (value: any) => void
+  export let kind: 'no-border' | 'link' = 'no-border'
 
   $: withTime = type?.withTime ?? true
 </script>
@@ -29,6 +30,7 @@
   {value}
   {withTime}
   editable
+  {kind}
   on:change={(res) => {
     if (res.detail !== undefined) onChange(res.detail)
   }}

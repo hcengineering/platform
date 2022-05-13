@@ -34,7 +34,7 @@
 
   async function onSpaceEdit (): Promise<void> {
     if (channel === undefined) return
-    showPanel(chunter.component.EditChannel, channel._id, channel._class, 'right')
+    showPanel(chunter.component.EditChannel, channel._id, channel._class, 'content')
   }
 </script>
 

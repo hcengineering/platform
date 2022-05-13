@@ -27,7 +27,7 @@
   <a
     class="flex-presenter"
     class:inline-presenter={inline}
-    href="#{getPanelURI(recruit.component.EditVacancy, value._id, value._class, 'right')}"
+    href="#{getPanelURI(recruit.component.EditVacancy, value._id, value._class, 'content')}"
   >
     <div class="icon">
       <Icon icon={recruit.icon.Vacancy} size={'small'} />

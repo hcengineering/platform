@@ -75,7 +75,7 @@
   async function onSpaceEdit (): Promise<void> {
     if (space === undefined) return
     const editor = await getEditor(space._class)
-    showPanel(editor ?? plugin.component.SpacePanel, space._id, space._class, 'right')
+    showPanel(editor ?? plugin.component.SpacePanel, space._id, space._class, 'content')
   }
 
   function updateViewlets (viewlets: WithLookup<Viewlet>[]) {

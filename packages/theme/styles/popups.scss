@@ -131,7 +131,8 @@
       margin-right: .75rem;
     }
     .check-right { margin: 0 0 0 2rem; }
-    &:focus {
+    &:focus,
+    &:hover {
       background-color: var(--popup-bg-hover);
 
       .icon { color: var(--accent-color); }

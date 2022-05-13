@@ -18,13 +18,18 @@
   import { IntlString } from '@anticrm/platform'
   import { UserBox } from '@anticrm/presentation'
   import contact from '../plugin'
+  import { ButtonKind, ButtonSize } from '@anticrm/ui'
 
   export let value: Ref<Person> | undefined
   export let label: IntlString = contact.string.Person
   export let onChange: (value: any) => void
   export let type: RefTo<Person> | undefined
+  export let kind: ButtonKind = 'no-border'
+  export let size: ButtonSize = 'small'
+  export let justify: 'left' | 'center' = 'center'
+  export let width: string | undefined = undefined
 
   $: _class = type?.to ?? contact.class.Person
 </script>
 
-<UserBox {_class} {label} kind={'link'} size={'large'} bind:value on:change={(e) => onChange(e.detail)} />
+<UserBox {_class} {label} {kind} {size} {justify} {width} bind:value on:change={(e) => onChange(e.detail)} />

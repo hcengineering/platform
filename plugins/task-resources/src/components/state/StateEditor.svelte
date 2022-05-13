@@ -27,6 +27,8 @@
   export let onChange: (value: any) => void
   export let kind: ButtonKind = 'no-border'
   export let size: ButtonSize = 'small'
+  export let width: string = 'min-content'
+  export let justify: 'left' | 'center' = 'center'
 
   let state: State
   let opened: boolean = false
@@ -43,9 +45,10 @@
 </script>
 
 <Button
-  width="min-content"
   {kind}
   {size}
+  {width}
+  {justify}
   on:click={(ev) => {
     if (!opened) {
       opened = true
