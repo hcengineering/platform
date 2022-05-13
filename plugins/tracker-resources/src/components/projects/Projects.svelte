@@ -44,7 +44,8 @@
         key: '',
         presenter: plugin.component.ProjectPresenter,
         label: plugin.string.Project,
-        sortingKey: 'name'
+        sortingKey: 'name',
+        props: { space }
       }
     ]}
     query={{}}
