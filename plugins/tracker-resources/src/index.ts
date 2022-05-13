@@ -30,6 +30,7 @@ import IssuePresenter from './components/issues/IssuePresenter.svelte'
 import TitlePresenter from './components/issues/TitlePresenter.svelte'
 import PriorityPresenter from './components/issues/PriorityPresenter.svelte'
 import PriorityEditor from './components/issues/PriorityEditor.svelte'
+import ProjectEditor from './components/issues/ProjectEditor.svelte'
 import StatusPresenter from './components/issues/StatusPresenter.svelte'
 import StatusEditor from './components/issues/StatusEditor.svelte'
 import DueDatePresenter from './components/issues/DueDatePresenter.svelte'
@@ -57,6 +58,7 @@ export default async (): Promise<Resources> => ({
     ModificationDatePresenter,
     PriorityPresenter,
     PriorityEditor,
+    ProjectEditor,
     StatusPresenter,
     StatusEditor,
     AssigneePresenter,
