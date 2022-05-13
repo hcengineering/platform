@@ -64,10 +64,15 @@
     <span class="ac-header__title"><Label label={lead.string.Customers} /></span>
   </div>
 
+  <SearchEdit
+    bind:value={search}
+    on:change={() => {
+      updateResultQuery(search)
+    }}
+  />
   {#if descr}
     <ActionIcon
       icon={view.icon.Setting}
-      direction={'top'}
       size={'small'}
       label={view.string.CustomizeView}
       action={() => {
@@ -75,12 +80,6 @@
       }}
     />
   {/if}
-  <SearchEdit
-    bind:value={search}
-    on:change={() => {
-      updateResultQuery(search)
-    }}
-  />
 </div>
 
 {#if descr}

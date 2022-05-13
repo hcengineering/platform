@@ -39,6 +39,7 @@ export default mergeIds(viewId, view, {
     Type: '' as IntlString,
     ActionPlaceholder: '' as IntlString,
     CreatingAttribute: '' as IntlString,
+    RestoreDefaults: '' as IntlString,
     CreatingAttributeConfirm: '' as IntlString
   }
 })

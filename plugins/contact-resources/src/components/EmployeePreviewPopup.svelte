@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { Employee, formatName, Status } from '@anticrm/contact'
-  import { Ref, Space, WithLookup } from '@anticrm/core'
+  import { Employee, EmployeeAccount, formatName, Status } from '@anticrm/contact'
+  import { getCurrentAccount, Ref, Space, WithLookup } from '@anticrm/core'
   import { Avatar, createQuery, getClient } from '@anticrm/presentation'
   import { Button, Label, showPopup } from '@anticrm/ui'
   import EmployeeSetStatusPopup from './EmployeeSetStatusPopup.svelte'
@@ -13,6 +13,8 @@
   export let space: Ref<Space>
 
   const client = getClient()
+  const me = (getCurrentAccount() as EmployeeAccount).employee
+  $: editable = employeeId === me
 
   const stattusQuery = createQuery()
   let status: WithLookup<Status>
@@ -58,23 +60,25 @@
     <Avatar size="x-large" avatar={employee?.avatar} />
   </div>
   <div class="pb-2">{formatName(employee?.name ?? '')}</div>
-  <div class="pb-2">
-    <Label label={contact.string.Status} />
-    {#if status}
+  {#if status}
+    <div class="pb-2">
+      <Label label={contact.string.Status} />
       <div class="flex-row-stretch statusContainer">
         <div class="pr-2">
           <EmployeeStatusPresenter {employeeId} withTooltip={false} />
         </div>
-        <div class="setStatusButton">
-          <Button icon={Edit} title={contact.string.SetStatus} on:click={onEdit} />
-        </div>
+        {#if editable}
+          <div class="setStatusButton">
+            <Button icon={Edit} title={contact.string.SetStatus} on:click={onEdit} />
+          </div>
+        {/if}
       </div>
-    {:else}
-      <div class="flex-row-stretch over-underline" on:click={onEdit}>
-        <Label label={contact.string.SetStatus} />
-      </div>
-    {/if}
-  </div>
+    </div>
+  {:else if editable}
+    <div class="flex-row-stretch over-underline pb-2" on:click={onEdit}>
+      <Label label={contact.string.SetStatus} />
+    </div>
+  {/if}
 </div>
 
 <style lang="scss">
