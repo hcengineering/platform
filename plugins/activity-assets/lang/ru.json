@@ -10,6 +10,9 @@
     "To": "на",
     "Unset": "сбросил",
     "System": "Система",
-    "CollectionUpdated": "Обновлена {collection}"
+    "CollectionUpdated": "Обновлена {collection}",
+    "Added": "добавила(а)",
+    "Removed": "удалил(а)",
+    "From": "из"
   }
 }
