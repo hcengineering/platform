@@ -109,7 +109,6 @@
     object={updatedIssue}
     isHeader
     withoutActivity
-    isTitle={false}
     isAside={true}
     isSub={false}
     bind:innerWidth

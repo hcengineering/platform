@@ -18,7 +18,6 @@
 
   export let innerWidth: number = 0
   export let panelWidth: number = 0
-  export let isTitle: boolean = true
   export let isHeader: boolean = true
   export let isAside: boolean = true
 
@@ -34,34 +33,32 @@
 </script>
 
 <div class="popupPanel" bind:clientWidth={panelWidth}>
-  {#if isTitle}
-    <div class="popupPanel-title">
-      <Button
-        icon={IconClose}
-        kind={'transparent'}
-        size={'medium'}
-        on:click={() => {
-          dispatch('close')
-        }}
-      />
-      <div class="popupPanel-title__content"><slot name="title" /></div>
-      <div class="buttons-group xsmall-gap">
-        <slot name="utils" />
-        {#if asideFloat && $$slots.aside && isAside}
-          {#if $$slots.utils}<div class="buttons-divider" />{/if}
-          <Button
-            icon={IconDetails}
-            kind={'transparent'}
-            size={'medium'}
-            selected={asideShown}
-            on:click={() => {
-              asideShown = !asideShown
-            }}
-          />
-        {/if}
-      </div>
+  <div class="popupPanel-title">
+    <Button
+      icon={IconClose}
+      kind={'transparent'}
+      size={'medium'}
+      on:click={() => {
+        dispatch('close')
+      }}
+    />
+    <div class="popupPanel-title__content"><slot name="title" /></div>
+    <div class="buttons-group xsmall-gap">
+      <slot name="utils" />
+      {#if asideFloat && $$slots.aside && isAside}
+        {#if $$slots.utils}<div class="buttons-divider" />{/if}
+        <Button
+          icon={IconDetails}
+          kind={'transparent'}
+          size={'medium'}
+          selected={asideShown}
+          on:click={() => {
+            asideShown = !asideShown
+          }}
+        />
+      {/if}
     </div>
-  {/if}
+  </div>
   <div class="popupPanel-body" class:asideShown>
     <div class="popupPanel-body__main" bind:clientWidth={innerWidth}>
       {#if $$slots.header && isHeader}
