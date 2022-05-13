@@ -14,7 +14,19 @@
 // limitations under the License.
 //
 
-import core, { AttachedDoc, Class, Client, Doc, Hierarchy, Lookup, Obj, Ref, TxOperations } from '@anticrm/core'
+import core, {
+  AttachedDoc,
+  Class,
+  Client,
+  Collection,
+  Doc,
+  Hierarchy,
+  Lookup,
+  Obj,
+  Ref,
+  RefTo,
+  TxOperations
+} from '@anticrm/core'
 import type { IntlString } from '@anticrm/platform'
 import { getResource } from '@anticrm/platform'
 import { getAttributePresenterClass, KeyedAttribute } from '@anticrm/presentation'
@@ -142,6 +154,52 @@ async function getPresenter<T extends Doc> (
   }
 }
 
+function getKeyLookup<T extends Doc> (
+  hierarchy: Hierarchy,
+  _class: Ref<Class<T>>,
+  key: string,
+  lookup: Lookup<T>,
+  lastIndex: number = 1
+): Lookup<T> {
+  if (!key.startsWith('$lookup')) return lookup
+  const parts = key.split('.')
+  const attrib = parts[1]
+  const attribute = hierarchy.getAttribute(_class, attrib)
+  if (hierarchy.isDerived(attribute.type._class, core.class.RefTo)) {
+    const lookupClass = (attribute.type as RefTo<Doc>).to
+    const index = key.indexOf('$lookup', lastIndex)
+    if (index === -1) {
+      ;(lookup as any)[attrib] = lookupClass
+    } else {
+      let nested = Array.isArray((lookup as any)[attrib]) ? (lookup as any)[attrib][1] : {}
+      nested = getKeyLookup(hierarchy, lookupClass, key.slice(index), nested)
+      ;(lookup as any)[attrib] = [lookupClass, nested]
+    }
+  } else if (hierarchy.isDerived(attribute.type._class, core.class.Collection)) {
+    if ((lookup as any)._id === undefined) {
+      ;(lookup as any)._id = {}
+    }
+    ;(lookup as any)._id[attrib] = (attribute.type as Collection<AttachedDoc>).of
+  }
+  return lookup
+}
+
+export function buildConfigLookup<T extends Doc> (
+  hierarchy: Hierarchy,
+  _class: Ref<Class<T>>,
+  config: Array<BuildModelKey | string>
+): Lookup<T> {
+  let res: Lookup<T> = {}
+  for (const key of config) {
+    if (typeof key === 'string') {
+      res = getKeyLookup(hierarchy, _class, key, res)
+    } else {
+      res = getKeyLookup(hierarchy, _class, key.key, res)
+    }
+  }
+  return res
+}
+
 export async function buildModel (options: BuildModelOptions): Promise<AttributeModel[]> {
   console.log('building table model for', options)
   // eslint-disable-next-line array-callback-return
@@ -149,7 +207,7 @@ export async function buildModel (options: BuildModelOptions): Promise<Attribute
     .map((key) => (typeof key === 'string' ? { key: key } : key))
     .map(async (key) => {
       try {
-        return await getPresenter(options.client, options._class, key, key, options.options?.lookup)
+        return await getPresenter(options.client, options._class, key, key, options.lookup)
       } catch (err: any) {
         if (options.ignoreMissing ?? false) {
           return undefined
@@ -205,7 +263,7 @@ async function getLookupPresenter<T extends Doc> (
   return model
 }
 
-function getLookupLabel<T extends Doc> (
+export function getLookupLabel<T extends Doc> (
   client: Client,
   _class: Ref<Class<T>>,
   lookupClass: Ref<Class<Doc>>,
@@ -226,7 +284,7 @@ function getLookupLabel<T extends Doc> (
   }
 }
 
-function getLookupClass<T extends Doc> (
+export function getLookupClass<T extends Doc> (
   key: string,
   lookup: Lookup<T>,
   parent: Ref<Class<T>>
@@ -238,7 +296,7 @@ function getLookupClass<T extends Doc> (
   return _class
 }
 
-function getLookupProperty (key: string): [string, string] {
+export function getLookupProperty (key: string): [string, string] {
   const parts = key.split('$lookup')
   const lastPart = parts[parts.length - 1]
   const split = lastPart.split('.').filter((p) => p.length > 0)

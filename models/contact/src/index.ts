@@ -160,21 +160,18 @@ export function createModel (builder: Builder): void {
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: contact.class.Contact,
     descriptor: view.viewlet.Table,
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    options: {
-      lookup: { _id: { channels: contact.class.Channel }, _class: core.class.Class }
-    },
     config: [
       '',
       { key: '$lookup._class.label', label: contact.string.TypeLabel },
       'city',
       {
+        key: '',
         presenter: attachment.component.AttachmentsPresenter,
         label: attachment.string.Files,
         sortingKey: 'attachments'
       },
       'modifiedOn',
-      { presenter: view.component.RolePresenter, label: view.string.Role },
+      { key: '', presenter: view.component.RolePresenter, label: view.string.Role },
       '$lookup.channels'
     ]
   })

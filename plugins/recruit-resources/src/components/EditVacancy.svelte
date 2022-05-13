@@ -20,7 +20,7 @@
   import { AttributesBar, createQuery, getClient, Members } from '@anticrm/presentation'
   import { Vacancy } from '@anticrm/recruit'
   import { StyledTextBox } from '@anticrm/text-editor'
-  import { EditBox } from '@anticrm/ui'
+  import { EditBox, Label, Grid } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
 
@@ -66,37 +66,39 @@
       {#if dir === 'column'}
         <div class="ac-subtitle">
           <div class="ac-subtitle-content">
-            <AttributesBar {object} keys={['dueTo', 'location', 'company']} vertical={dir === 'column'} />
+            <AttributesBar {object} keys={['dueTo', 'location', 'company']} vertical />
           </div>
         </div>
       {/if}
     </svelte:fragment>
 
-    <EditBox
-      label={recruit.string.VacancyName}
-      bind:value={object.name}
-      placeholder={recruit.string.VacancyPlaceholder}
-      maxWidth="39rem"
-      focus
-      on:change={() => {
-        if (object.name.trim().length > 0) {
-          onChange('name', object.name)
-        } else {
-          // Revert previos object.name
-          updateObject(_id)
-        }
-      }}
-    />
-    <EditBox
-      label={recruit.string.Description}
-      bind:value={object.description}
-      placeholder={recruit.string.VacancyDescription}
-      maxWidth="39rem"
-      focus
-      on:change={() => {
-        onChange('description', object.description)
-      }}
-    />
+    <Grid column={1} rowGap={1.5}>
+      <EditBox
+        label={recruit.string.VacancyName}
+        bind:value={object.name}
+        placeholder={recruit.string.VacancyPlaceholder}
+        maxWidth="39rem"
+        focus
+        on:change={() => {
+          if (object.name.trim().length > 0) {
+            onChange('name', object.name)
+          } else {
+            // Revert previos object.name
+            updateObject(_id)
+          }
+        }}
+      />
+      <EditBox
+        label={recruit.string.Description}
+        bind:value={object.description}
+        placeholder={recruit.string.VacancyDescription}
+        maxWidth="39rem"
+        focus
+        on:change={() => {
+          onChange('description', object.description)
+        }}
+      />
+    </Grid>
     <div class="mt-10">
       <span class="title">Details</span>
       <div class="description-container">
@@ -108,10 +110,13 @@
         />
       </div>
     </div>
-    <div class="mt-14">
+    <div class="mt-10">
       <Attachments objectId={object._id} _class={object._class} space={object.space} />
     </div>
-    <div class="mt-14">
+    <div class="flex-col mt-10 flex-no-shrink">
+      <span class="fs-title text-xl overflow-label mb-2 flex-no-shrink">
+        <Label label={recruit.string.Members} />
+      </span>
       <Members space={object} />
     </div>
   </Panel>

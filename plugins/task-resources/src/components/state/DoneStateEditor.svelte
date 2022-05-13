@@ -17,7 +17,8 @@
   import { Ref } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
   import { DoneState, SpaceWithStates } from '@anticrm/task'
-  import { Label, showPopup } from '@anticrm/ui'
+  import { Label, showPopup, Button } from '@anticrm/ui'
+  import type { ButtonKind, ButtonSize } from '@anticrm/ui'
   import DoneStatePresenter from './DoneStatePresenter.svelte'
   import DoneStatesPopup from './DoneStatesPopup.svelte'
   import task from '../../plugin'
@@ -25,8 +26,13 @@
   export let value: Ref<DoneState> | null | undefined
   export let onChange: (value: any) => void
   export let space: Ref<SpaceWithStates>
+  export let kind: ButtonKind = 'no-border'
+  export let size: ButtonSize = 'small'
+  export let justify: 'left' | 'center' = 'center'
+  export let width: string = 'min-content'
+
   let state: DoneState | undefined
-  let container: HTMLElement
+  let container: HTMLButtonElement
   let opened: boolean = false
 
   const query = createQuery()
@@ -42,10 +48,13 @@
   }
 </script>
 
-<div
-  class="flex-row-center cursor-pointer p-4"
-  bind:this={container}
-  on:click|preventDefault={() => {
+<Button
+  {kind}
+  {size}
+  {justify}
+  {width}
+  bind:input={container}
+  on:click={() => {
     if (!opened) {
       opened = true
       showPopup(DoneStatesPopup, { space }, container, (result) => {
@@ -62,13 +71,17 @@
     }
   }}
 >
-  {#if state}
-    <DoneStatePresenter value={state} showTitle />
-  {:else}
-    <div class="color background-card-divider" />
-    <Label label={task.string.NoDoneState} />
-  {/if}
-</div>
+  <svelte:fragment slot="content">
+    {#if state}
+      <DoneStatePresenter value={state} showTitle />
+    {:else}
+      <div class="flex-center clear-mins">
+        <div class="color background-card-divider" />
+        <Label label={task.string.NoDoneState} />
+      </div>
+    {/if}
+  </svelte:fragment>
+</Button>
 
 <style lang="scss">
   .color {

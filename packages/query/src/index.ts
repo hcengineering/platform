@@ -630,7 +630,11 @@ export class LiveQuery extends TxProcessor implements Client {
   private async __updateDoc (q: Query, updatedDoc: WithLookup<Doc>, tx: TxUpdateDoc<Doc>): Promise<void> {
     TxProcessor.updateDoc2Doc(updatedDoc, tx)
 
-    const ops = tx.operations as any
+    const ops = {
+      ...tx.operations,
+      modifiedBy: tx.modifiedBy,
+      modifiedOn: tx.modifiedOn
+    } as any
     for (const key in ops) {
       if (!key.startsWith('$')) {
         if (q.options !== undefined) {

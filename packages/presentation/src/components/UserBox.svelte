@@ -58,10 +58,55 @@
     return isPerson ? formatName(obj.name) : obj.name
   }
   const mgr = getFocusManager()
+
+  const _click = (): void => {
+    if (!readonly) {
+      showPopup(
+        UsersPopup,
+        { _class, allowDeselect, selected: value, titleDeselect, placeholder },
+        container,
+        (result) => {
+          if (result === null) {
+            value = null
+            selected = undefined
+            dispatch('change', null)
+          } else if (result !== undefined && result._id !== value) {
+            value = result._id
+            dispatch('change', value)
+          }
+          mgr?.setFocusPos(focusIndex)
+        }
+      )
+    }
+  }
 </script>
 
-<div bind:this={container} class="min-w-0">
-  <Tooltip {label} fill={width === '100%'} direction={labelDirection}>
+<div bind:this={container} class="min-w-0" class:w-full={width === '100%'}>
+  {#if kind !== 'link'}
+    <Tooltip {label} fill={width === '100%'} direction={labelDirection}>
+      <Button
+        {focusIndex}
+        icon={size === 'x-large' && selected ? undefined : IconPerson}
+        width={width ?? 'min-content'}
+        {size}
+        {kind}
+        {justify}
+        on:click={_click}
+      >
+        <span slot="content" style="overflow: hidden">
+          {#if selected}
+            {#if size === 'x-large'}
+              <UserInfo value={selected} size={'medium'} />
+            {:else}
+              {getName(selected)}
+            {/if}
+          {:else}
+            <Label {label} />
+          {/if}
+        </span>
+      </Button>
+    </Tooltip>
+  {:else}
     <Button
       {focusIndex}
       icon={size === 'x-large' && selected ? undefined : IconPerson}
@@ -69,26 +114,7 @@
       {size}
       {kind}
       {justify}
-      on:click={() => {
-        if (!readonly) {
-          showPopup(
-            UsersPopup,
-            { _class, allowDeselect, selected: value, titleDeselect, placeholder },
-            container,
-            (result) => {
-              if (result === null) {
-                value = null
-                selected = undefined
-                dispatch('change', null)
-              } else if (result !== undefined && result._id !== value) {
-                value = result._id
-                dispatch('change', value)
-              }
-              mgr?.setFocusPos(focusIndex)
-            }
-          )
-        }
-      }}
+      on:click={_click}
     >
       <span slot="content" style="overflow: hidden">
         {#if selected}
@@ -102,5 +128,5 @@
         {/if}
       </span>
     </Button>
-  </Tooltip>
+  {/if}
 </div>

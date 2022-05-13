@@ -257,6 +257,12 @@ export async function createKanban (
   templateId?: Ref<KanbanTemplate>
 ): Promise<Ref<Kanban>> {
   if (templateId === undefined) {
+    await client.createDoc(task.class.State, attachedTo, {
+      title: 'New State',
+      color: 9,
+      rank: [...genRanks(1)][0]
+    })
+
     const ranks = [...genRanks(2)]
     await Promise.all([
       client.createDoc(task.class.WonState, attachedTo, {

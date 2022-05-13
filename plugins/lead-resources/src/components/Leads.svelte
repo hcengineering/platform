@@ -13,9 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { FindOptions, Ref } from '@anticrm/core'
-  import type { Customer, Lead } from '@anticrm/lead'
-  import task from '@anticrm/task'
+  import type { Ref } from '@anticrm/core'
+  import type { Customer } from '@anticrm/lead'
   import { CircleButton, IconAdd, Label, showPopup } from '@anticrm/ui'
   import { Table } from '@anticrm/view-resources'
   import lead from '../plugin'
@@ -28,12 +27,6 @@
   const createLead = (ev: MouseEvent): void => {
     showPopup(CreateLead, { candidate: objectId, preserveCandidate: true }, ev.target as HTMLElement)
   }
-
-  const options: FindOptions<Lead> = {
-    lookup: {
-      state: task.class.State
-    }
-  }
 </script>
 
 <div class="applications-container">
@@ -42,13 +35,7 @@
     <CircleButton icon={IconAdd} size={'small'} selected on:click={createLead} />
   </div>
   {#if leads !== undefined && leads > 0}
-    <Table
-      _class={lead.class.Lead}
-      config={['', '$lookup.state']}
-      {options}
-      query={{ attachedTo: objectId }}
-      {loadingProps}
-    />
+    <Table _class={lead.class.Lead} config={['', '$lookup.state']} query={{ attachedTo: objectId }} {loadingProps} />
   {:else}
     <div class="flex-col-center mt-5 createapp-container">
       <div class="text-sm content-dark-color mt-2">

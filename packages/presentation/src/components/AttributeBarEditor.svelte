@@ -117,10 +117,6 @@
               label={attribute?.label}
               placeholder={attribute?.label}
               type={attribute?.type}
-              kind={'link'}
-              size={'large'}
-              width={'100%'}
-              justify={'left'}
               {maxWidth}
               value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
               space={object.space}
@@ -131,7 +127,7 @@
         </div>
       {:else}
         <span class="fs-bold"><Label label={attribute.label} /></span>
-        <div class="flex flex-grow">
+        <div class="flex flex-grow min-w-0">
           <svelte:component
             this={instance}
             label={attribute?.label}

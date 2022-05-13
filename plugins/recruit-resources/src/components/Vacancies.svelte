@@ -13,8 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact from '@anticrm/contact'
-  import core, { Doc, DocumentQuery, Lookup, Ref } from '@anticrm/core'
+  import core, { Doc, DocumentQuery, Ref } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
   import { Vacancy } from '@anticrm/recruit'
   import { Button, getCurrentLocation, Icon, IconAdd, Label, navigate, SearchEdit, showPopup } from '@anticrm/ui'
@@ -31,9 +30,6 @@
 
   let search: string = ''
   let resultQuery: DocumentQuery<Doc> = {}
-  const lookup: Lookup<Vacancy> = {
-    company: contact.class.Organization
-  }
 
   $: resultQuery = search === '' ? {} : { $search: search }
 
@@ -118,9 +114,6 @@
       sortingFunction: modifiedSorting
     }
   ]}
-  options={{
-    lookup
-  }}
   query={{
     ...resultQuery,
     archived: false

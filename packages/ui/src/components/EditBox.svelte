@@ -29,7 +29,7 @@
   export let placeholder: IntlString = plugin.string.EditBoxPlaceholder
   export let placeholderParam: any | undefined = undefined
   export let format: 'text' | 'password' | 'number' = 'text'
-  export let kind: 'editbox' | 'large-style' | 'small-style' = 'editbox'
+  export let kind: 'editbox' | 'large-style' | 'small-style' | 'search-style' = 'editbox'
   export let focus: boolean = false
 
   const dispatch = createEventDispatcher()
@@ -109,6 +109,8 @@
         {style}
         on:input={(ev) => ev.target && computeSize(ev.target)}
         on:change
+        on:keydown
+        on:keypress
       />
     {:else if format === 'number'}
       <input
@@ -119,6 +121,8 @@
         {style}
         on:input={(ev) => ev.target && computeSize(ev.target)}
         on:change
+        on:keydown
+        on:keypress
       />
     {:else}
       <input
@@ -129,6 +133,8 @@
         {style}
         on:input={(ev) => ev.target && computeSize(ev.target)}
         on:change
+        on:keydown
+        on:keypress
       />
     {/if}
   </div>
@@ -156,6 +162,10 @@
     .small-style {
       font-weight: 400;
       font-size: 0.75rem;
+    }
+    .search-style {
+      font-weight: 400;
+      padding: 0.625rem 0.75rem;
     }
 
     input {

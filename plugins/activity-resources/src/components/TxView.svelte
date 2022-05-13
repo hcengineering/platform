@@ -158,9 +158,35 @@
           {/if}
           {#if viewlet === undefined && model.length > 0 && tx.updateTx}
             {#each model as m, i}
-              {#await getValue(client, m, tx.updateTx.operations) then value}
-                {#if value === null}
+              {#await getValue(client, m, tx) then value}
+                {#if value.set === null}
                   <span class="lower"><Label label={activity.string.Unset} /> <Label label={m.label} /></span>
+                {:else if value.added.length}
+                  <span class="lower" class:flex-grow={hasMessageType}>
+                    <Label label={activity.string.Added} />
+                    <Label label={activity.string.To} />
+                    <Label label={m.label} />
+                  </span>
+                  <div class="strong">
+                    <div class="flex">
+                      {#each value.added as value}
+                        <svelte:component this={m.presenter} {value} />
+                      {/each}
+                    </div>
+                  </div>
+                {:else if value.removed.length}
+                  <span class="lower" class:flex-grow={hasMessageType}>
+                    <Label label={activity.string.Removed} />
+                    <Label label={activity.string.From} />
+                    <Label label={m.label} />
+                  </span>
+                  <div class="strong">
+                    <div class="flex">
+                      {#each value.removed as value}
+                        <svelte:component this={m.presenter} {value} />
+                      {/each}
+                    </div>
+                  </div>
                 {:else}
                   <span class="lower" class:flex-grow={hasMessageType}
                     ><Label label={activity.string.Changed} />
@@ -172,11 +198,11 @@
                   {/if}
                   {#if isMessageType(m.attribute)}
                     <div class="strong message emphasized">
-                      <svelte:component this={m.presenter} {value} />
+                      <svelte:component this={m.presenter} value={value.set} />
                     </div>
                   {:else}
                     <div class="strong">
-                      <svelte:component this={m.presenter} {value} />
+                      <svelte:component this={m.presenter} value={value.set} />
                     </div>
                   {/if}
                 {/if}
@@ -184,8 +210,8 @@
             {/each}
           {:else if viewlet === undefined && model.length > 0 && tx.mixinTx}
             {#each model as m}
-              {#await getValue(client, m, tx.mixinTx.attributes) then value}
-                {#if value === null}
+              {#await getValue(client, m, tx) then value}
+                {#if value.set === null}
                   <span>
                     <Label label={activity.string.Unset} /> <span class="lower"><Label label={m.label} /></span>
                   </span>
@@ -197,11 +223,11 @@
                   </span>
                   {#if isMessageType(m.attribute)}
                     <div class="strong message emphasized">
-                      <svelte:component this={m.presenter} {value} />
+                      <svelte:component this={m.presenter} value={value.set} />
                     </div>
                   {:else}
                     <div class="strong">
-                      <svelte:component this={m.presenter} {value} />
+                      <svelte:component this={m.presenter} value={value.set} />
                     </div>
                   {/if}
                 {/if}

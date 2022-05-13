@@ -15,10 +15,10 @@
 -->
 <script lang="ts">
   import { Doc, DocumentQuery } from '@anticrm/core'
-  import { getClient } from '@anticrm/presentation'
-  import { Button, Icon, IconAdd, Label, SearchEdit, showPopup } from '@anticrm/ui'
-  import view, { Viewlet } from '@anticrm/view'
-  import { ActionContext, TableBrowser } from '@anticrm/view-resources'
+  import { createQuery, getClient } from '@anticrm/presentation'
+  import { ActionIcon, Button, Icon, IconAdd, Label, Loading, SearchEdit, showPopup } from '@anticrm/ui'
+  import view, { Viewlet, ViewletPreference } from '@anticrm/view'
+  import { ActionContext, TableBrowser, ViewletSetting } from '@anticrm/view-resources'
   import contact from '../plugin'
   import CreateContact from './CreateContact.svelte'
 
@@ -29,11 +29,34 @@
     resultQuery = search === '' ? {} : { $search: search }
   }
 
+  let viewlet: Viewlet | undefined
+  let loading = true
+
+  const preferenceQuery = createQuery()
+  let preference: ViewletPreference | undefined
+
   const client = getClient()
-  const tableDescriptor = client.findOne<Viewlet>(view.class.Viewlet, {
-    attachTo: contact.class.Contact,
-    descriptor: view.viewlet.Table
-  })
+  client
+    .findOne<Viewlet>(view.class.Viewlet, {
+      attachTo: contact.class.Contact,
+      descriptor: view.viewlet.Table
+    })
+    .then((res) => {
+      viewlet = res
+      if (res !== undefined) {
+        preferenceQuery.query(
+          view.class.ViewletPreference,
+          {
+            attachedTo: res._id
+          },
+          (res) => {
+            preference = res[0]
+            loading = false
+          },
+          { limit: 1 }
+        )
+      }
+    })
 
   function showCreateDialog (ev: Event) {
     showPopup(CreateContact, { space: contact.space.Contacts, targetElement: ev.target }, ev.target as HTMLElement)
@@ -52,6 +75,17 @@
       <span class="ac-header__title"><Label label={contact.string.Contacts} /></span>
     </div>
 
+    {#if viewlet}
+      <ActionIcon
+        icon={view.icon.Setting}
+        direction={'top'}
+        size={'small'}
+        label={view.string.CustomizeView}
+        action={() => {
+          showPopup(ViewletSetting, { viewlet })
+        }}
+      />
+    {/if}
     <SearchEdit
       bind:value={search}
       on:change={() => {
@@ -66,15 +100,17 @@
     />
   </div>
 
-  {#await tableDescriptor then descr}
-    {#if descr}
+  {#if viewlet}
+    {#if loading}
+      <Loading />
+    {:else}
       <TableBrowser
         _class={contact.class.Contact}
-        config={descr.config}
-        options={descr.options}
+        config={preference?.config ?? viewlet.config}
+        options={viewlet.options}
         query={resultQuery}
         showNotification
       />
     {/if}
-  {/await}
+  {/if}
 </div>
