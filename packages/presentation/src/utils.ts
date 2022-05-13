@@ -153,7 +153,8 @@ export function getAttributePresenterClass (attribute: AnyAttribute): Ref<Class<
     attrClass = (attribute.type as Collection<AttachedDoc>).of
   }
   if (attrClass === core.class.ArrOf) {
-    attrClass = (attribute.type as ArrOf<AttachedDoc>).of._class
+    const of = (attribute.type as ArrOf<AttachedDoc>).of
+    attrClass = of._class === core.class.RefTo ? (of as RefTo<Doc>).to : of._class
   }
   return attrClass
 }
