@@ -15,7 +15,7 @@
 <script lang="ts">
   import contact, { Employee, EmployeeAccount } from '@anticrm/contact'
   import { Account, DocumentQuery, Ref, SortingOrder, Space } from '@anticrm/core'
-  import { InviteLink } from '@anticrm/login-resources'
+  import login from '@anticrm/login'
   import { translate } from '@anticrm/platform'
   import setting from '@anticrm/setting'
   import { IconAdd, Label, Scroller, SearchEdit, showPopup } from '@anticrm/ui'
@@ -65,7 +65,7 @@
   }
 
   function inviteWorkspace (): void {
-    showPopup(InviteLink, {})
+    showPopup(login.component.InviteLink, {})
   }
 </script>
 

@@ -13,7 +13,6 @@
   import { onDestroy } from 'svelte'
   import CategoryElement from './CategoryElement.svelte'
   import login from '@anticrm/login'
-  import { InviteLink } from '@anticrm/login-resources'
 
   const client = getClient()
 
@@ -53,7 +52,7 @@
     navigate({ path: [login.component.LoginApp, 'selectWorkspace'] })
   }
   function inviteWorkspace (): void {
-    showPopup(InviteLink, {})
+    showPopup(login.component.InviteLink, {})
   }
 </script>
 

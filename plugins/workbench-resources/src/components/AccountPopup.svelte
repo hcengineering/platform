@@ -16,7 +16,6 @@
   import contact, { Employee, EmployeeAccount, formatName } from '@anticrm/contact'
   import { getCurrentAccount } from '@anticrm/core'
   import login from '@anticrm/login'
-  import { InviteLink } from '@anticrm/login-resources'
   import { Avatar, createQuery, getClient } from '@anticrm/presentation'
   import setting, { SettingsCategory } from '@anticrm/setting'
   import {
@@ -71,7 +70,7 @@
   }
 
   function inviteWorkspace (): void {
-    showPopup(InviteLink, {})
+    showPopup(login.component.InviteLink, {})
   }
 
   function filterItems (items: SettingsCategory[]): SettingsCategory[] {
