@@ -36,101 +36,82 @@
   }
 </script>
 
-{#if direction === 'column'}
-  <div class="content">
-    <span class="label">
-      <Label label={tracker.string.Status} />
-    </span>
-    <StatusEditor
-      value={issue}
-      statuses={issueStatuses}
-      currentSpace={teamId}
-      shouldSaveOnChange={false}
-      shouldShowLabel
-      on:change={({ detail }) => detail && change('status', detail)}
-    />
+<div class="content">
+  <span class="label">
+    <Label label={tracker.string.Status} />
+  </span>
+  <StatusEditor
+    value={issue}
+    statuses={issueStatuses}
+    currentSpace={teamId}
+    shouldSaveOnChange={false}
+    shouldShowLabel
+    on:change={({ detail }) => detail && change('status', detail)}
+  />
 
-    <span class="label">
-      <Label label={tracker.string.Priority} />
-    </span>
-    <PriorityEditor
-      value={issue}
-      currentSpace={teamId}
-      shouldSaveOnChange={false}
-      shouldShowLabel
-      on:change={({ detail }) => detail !== undefined && change('priority', detail)}
-    />
+  <span class="label">
+    <Label label={tracker.string.Priority} />
+  </span>
+  <PriorityEditor
+    value={issue}
+    currentSpace={teamId}
+    shouldSaveOnChange={false}
+    shouldShowLabel
+    on:change={({ detail }) => detail !== undefined && change('priority', detail)}
+  />
 
-    <span class="label">
-      <Label label={tracker.string.Assignee} />
-    </span>
-    <UserBox
-      _class={contact.class.Employee}
-      label={tracker.string.Assignee}
-      placeholder={tracker.string.Assignee}
-      value={issue.assignee}
-      allowDeselect
-      titleDeselect={tracker.string.Unassigned}
-      size={'large'}
-      kind={'link'}
-      width={'100%'}
-      justify={'left'}
-      on:change={({ detail }) => change('assignee', detail)}
-    />
+  <span class="label">
+    <Label label={tracker.string.Assignee} />
+  </span>
+  <UserBox
+    _class={contact.class.Employee}
+    label={tracker.string.Assignee}
+    placeholder={tracker.string.Assignee}
+    value={issue.assignee}
+    allowDeselect
+    titleDeselect={tracker.string.Unassigned}
+    size={'large'}
+    kind={'link'}
+    width={'100%'}
+    justify={'left'}
+    on:change={({ detail }) => change('assignee', detail)}
+  />
 
-    <span class="label">
-      <Label label={tracker.string.Labels} />
-    </span>
-    <Button
-      label={tracker.string.Labels}
-      icon={tracker.icon.Labels}
-      size={'large'}
-      kind={'link'}
-      width={'100%'}
-      justify={'left'}
-    />
+  <span class="label">
+    <Label label={tracker.string.Labels} />
+  </span>
+  <Button
+    label={tracker.string.Labels}
+    icon={tracker.icon.Labels}
+    size={'large'}
+    kind={'link'}
+    width={'100%'}
+    justify={'left'}
+  />
 
+  <div class="divider" />
+
+  <span class="label">
+    <Label label={tracker.string.Project} />
+  </span>
+  <Button
+    label={tracker.string.Project}
+    icon={tracker.icon.Projects}
+    size={'large'}
+    kind={'link'}
+    width={'100%'}
+    justify={'left'}
+  />
+
+  {#if issue.dueDate !== null}
     <div class="divider" />
 
     <span class="label">
-      <Label label={tracker.string.Project} />
+      <Label label={tracker.string.DueDate} />
     </span>
-    <Button
-      label={tracker.string.Project}
-      icon={tracker.icon.Projects}
-      size={'large'}
-      kind={'link'}
-      width={'100%'}
-      justify={'left'}
-    />
-
-    {#if issue.dueDate !== null}
-      <div class="divider" />
-
-      <span class="label">
-        <Label label={tracker.string.DueDate} />
-      </span>
-      <DatePresenter bind:value={issue.dueDate} editable on:change={({ detail }) => change('dueDate', detail)} />
-    {/if}
-  </div>
-{:else}
-  <div class="buttons-group small-gap">
-    <Button
-      label={tracker.string.Labels}
-      icon={tracker.icon.Labels}
-      width="min-content"
-      size="small"
-      kind="no-border"
-    />
-    <Button
-      label={tracker.string.Project}
-      icon={tracker.icon.Projects}
-      width="min-content"
-      size="small"
-      kind="no-border"
-    />
-  </div>
-{/if}
+    <DatePresenter bind:value={issue.dueDate} editable on:change={({ detail }) => change('dueDate', detail)} />
+  {/if}
+</div>
 
 <style lang="scss">
   .content {
