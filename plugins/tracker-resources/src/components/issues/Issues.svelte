@@ -19,6 +19,7 @@
   import {
     Issue,
     Team,
+    Project,
     IssuesGrouping,
     IssuesOrdering,
     IssuesDateModificationPeriod,
@@ -62,6 +63,7 @@
   const issuesQuery = createQuery()
   const resultIssuesQuery = createQuery()
   const statusesQuery = createQuery()
+  const projectsQuery = createQuery()
   const issuesMap: { [status: string]: number } = {}
 
   let filterElement: HTMLElement | null = null
@@ -71,6 +73,7 @@
   let resultIssues: Issue[] = []
   let statusesById: ReadonlyMap<Ref<IssueStatus>, WithLookup<IssueStatus>> = new Map()
   let employees: (WithLookup<Employee> | undefined)[] = []
+  let projects: Project[] = []
 
   $: totalIssuesCount = issues.length
   $: resultIssuesCount = resultIssues.length
@@ -184,6 +187,17 @@
     {
       lookup: { category: tracker.class.IssueStatusCategory },
       sort: { rank: SortingOrder.Ascending }
+    }
+  )
+
+  $: projectsQuery.query(
+    tracker.class.Project,
+    {},
+    (currentProjects) => {
+      projects = currentProjects
+    },
+    {
+      sort: { modifiedOn: SortingOrder.Ascending }
     }
   )
 
@@ -483,6 +497,18 @@
         { key: '', presenter: tracker.component.StatusEditor, props: { currentSpace, statuses } },
         { key: '', presenter: tracker.component.TitlePresenter, props: { shouldUseMargin: true } },
         { key: '', presenter: tracker.component.DueDatePresenter, props: { currentSpace } },
+        {
+          key: '',
+          presenter: tracker.component.ProjectEditor,
+          props: {
+            currentSpace,
+            projects,
+            kind: 'secondary',
+            size: 'small',
+            shape: 'round',
+            shouldShowPlaceholder: false
+          }
+        },
         { key: 'modifiedOn', presenter: tracker.component.ModificationDatePresenter },
         {
           key: '$lookup.assignee',

@@ -19,7 +19,7 @@
   import { Panel } from '@anticrm/panel'
   import { createQuery, getClient, UserBox } from '@anticrm/presentation'
   import { StyledTextBox } from '@anticrm/text-editor'
-  import type { Issue, IssueStatus, Team } from '@anticrm/tracker'
+  import type { Issue, IssueStatus, Project, Team } from '@anticrm/tracker'
   import {
     Button,
     DatePresenter,
@@ -34,19 +34,22 @@
   import tracker from '../../plugin'
   import IssuePresenter from './IssuePresenter.svelte'
   import PriorityEditor from './PriorityEditor.svelte'
+  import ProjectEditor from './ProjectEditor.svelte'
   import StatusEditor from './StatusEditor.svelte'
 
   export let _id: Ref<Issue>
   export let _class: Ref<Class<Issue>>
 
-  const query = createQuery()
-  const statusesQuery = createQuery()
   const dispatch = createEventDispatcher()
   const client = getClient()
+  const query = createQuery()
+  const statusesQuery = createQuery()
+  const projectsQuery = createQuery()
 
   let issue: Issue | undefined
   let currentTeam: Team | undefined
   let issueStatuses: WithLookup<IssueStatus>[] | undefined
+  let projects: Project[] = []
   let innerWidth: number
 
   $: _id &&
@@ -75,6 +78,15 @@
     )
 
   $: issueLabel = currentTeam && issue && `${currentTeam.identifier}-${issue.number}`
+
+  $: projectsQuery.query(
+    tracker.class.Project,
+    {},
+    (currentProjects) => {
+      projects = currentProjects
+    },
+    { sort: { modifiedOn: SortingOrder.Ascending } }
+  )
 
   function change (field: string, value: any) {
     if (issue !== undefined) {
@@ -214,18 +226,9 @@
           <span class="label">
             <Label label={tracker.string.Project} />
           </span>
-          <Button
-            label={tracker.string.Project}
-            icon={tracker.icon.Projects}
-            size={'large'}
-            kind={'link'}
-            width={'100%'}
-            justify={'left'}
-          />
-
+          <ProjectEditor {projects} value={issue} currentSpace={currentTeam?._id} />
           {#if issue.dueDate !== null}
             <div class="divider" />
-
             <span class="label">
               <Label label={tracker.string.DueDate} />
             </span>
@@ -241,12 +244,13 @@
             size="small"
             kind="no-border"
           />
-          <Button
-            label={tracker.string.Project}
-            icon={tracker.icon.Projects}
-            width="min-content"
-            size="small"
-            kind="no-border"
+          <ProjectEditor
+            {projects}
+            value={issue}
+            size={'small'}
+            kind={'no-border'}
+            width={'min-content'}
+            currentSpace={currentTeam?._id}
           />
         </div>
       {/if}
