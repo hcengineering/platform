@@ -139,6 +139,7 @@ export class TViewlet extends TDoc implements Viewlet {
   descriptor!: Ref<ViewletDescriptor>
   open!: AnyComponent
   config!: (BuildModelKey | string)[]
+  hiddenKeys?: string[]
 }
 
 @Model(view.class.Action, core.class.Doc, DOMAIN_MODEL)

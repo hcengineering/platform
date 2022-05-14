@@ -20,7 +20,7 @@
     "MoveRight": "Move right",
     "MoveUp": "Move up",
     "MoveDown": "Move down",
-
+    "RestoreDefaults": "Restore defaults",
     "SelectItem": "Select focused item",
     "SelectItemAll": "Select all items",
     "SelectItemNone": "Deselect all items",

@@ -16,7 +16,7 @@
   import presentation, { Card, createQuery, getAttributePresenterClass, getClient } from '@anticrm/presentation'
   import { BuildModelKey, Viewlet, ViewletPreference } from '@anticrm/view'
   import core, { ArrOf, Class, Doc, Lookup, Ref, Type } from '@anticrm/core'
-  import { Grid, MiniToggle } from '@anticrm/ui'
+  import { Button, Grid, MiniToggle } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import { IntlString } from '@anticrm/platform'
   import { buildConfigLookup, getLookupClass, getLookupLabel, getLookupProperty } from '../utils'
@@ -105,7 +105,7 @@
       const value = getValue(attribute.name, attribute.type)
       if (result.findIndex((p) => p.value === value) !== -1) continue
       if (hierarchy.isDerived(attribute.type._class, core.class.Collection)) continue
-
+      if (viewlet.hiddenKeys?.includes(value)) continue
       if (attribute.hidden !== true && attribute.label !== undefined) {
         const typeClassId = getAttributePresenterClass(attribute)
         const typeClass = hierarchy.getClass(typeClassId)
@@ -142,6 +142,10 @@
     }
   }
 
+  async function restoreDefault (): Promise<void> {
+    attributes = getConfig(viewlet, undefined)
+  }
+
   function getKeyLabel<T extends Doc> (_class: Ref<Class<T>>, key: string, lookup: Lookup<T> | undefined): IntlString {
     if (key.startsWith('$lookup') && lookup !== undefined) {
       const lookupClass = getLookupClass(key, lookup, _class)
@@ -176,4 +180,7 @@
       <MiniToggle label={attribute.label} bind:on={attribute.enabled} />
     {/each}
   </Grid>
+  <svelte:fragment slot="footer">
+    <Button label={view.string.RestoreDefaults} on:click={() => restoreDefault()} />
+  </svelte:fragment>
 </Card>

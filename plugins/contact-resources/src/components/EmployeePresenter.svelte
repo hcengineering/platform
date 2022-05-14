@@ -22,11 +22,11 @@
   }
 </script>
 
-<div bind:this={container} class="flex container">
+<div bind:this={container} class="flex-center container">
   <div class="pr-2 over-underline">
     <PersonPresenter {value} {onEdit} {shouldShowAvatar} />
   </div>
-  <div class="status">
+  <div class="status content-color">
     <EmployeeStatusPresenter employeeId={value._id} />
   </div>
 </div>
