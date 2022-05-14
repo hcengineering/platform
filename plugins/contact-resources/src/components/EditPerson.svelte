@@ -20,7 +20,7 @@
   import { getResource } from '@anticrm/platform'
   import { AttributeEditor, Avatar, createQuery, EditableAvatar, getClient } from '@anticrm/presentation'
   import setting, { IntegrationType } from '@anticrm/setting'
-  import { EditBox } from '@anticrm/ui'
+  import { EditBox, createFocusManager, FocusHandler } from '@anticrm/ui'
   import { afterUpdate, createEventDispatcher, onMount } from 'svelte'
   import contact from '../plugin'
   import ChannelsEditor from './ChannelsEditor.svelte'
@@ -93,7 +93,11 @@
       await deleteFile(object.avatar)
     }
   }
+
+  const manager = createFocusManager()
 </script>
+
+<FocusHandler {manager} />
 
 {#if object !== undefined}
   <div class="flex-row-stretch flex-grow">
@@ -115,6 +119,7 @@
               maxWidth="20rem"
               bind:value={firstName}
               on:change={firstNameChange}
+              focusIndex={1}
             />
           {:else}
             {firstName}
@@ -127,13 +132,14 @@
               maxWidth="20rem"
               bind:value={lastName}
               on:change={lastNameChange}
+              focusIndex={2}
             />
           {:else}
             {lastName}
           {/if}
         </div>
         <div class="location">
-          <AttributeEditor maxWidth="20rem" _class={contact.class.Person} {editable} {object} key="city" />
+          <AttributeEditor maxWidth="20rem" _class={contact.class.Person} {editable} {object} key="city" focusIndex={3} />
         </div>
       </div>
 
@@ -145,6 +151,7 @@
           {editable}
           bind:integrations
           shape={'circle'}
+          focusIndex={10}
         />
       </div>
     </div>

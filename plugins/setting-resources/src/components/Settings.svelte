@@ -84,7 +84,7 @@
     </div>
   </div>
 
-  <div class="antiPanel-component filled">
+  <div class="antiPanel-component border-left filled">
     {#if category}
       <Component is={category.component} />
     {/if}

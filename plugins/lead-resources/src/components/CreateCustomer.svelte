@@ -22,7 +22,7 @@
   import type { Customer } from '@anticrm/lead'
   import { getResource } from '@anticrm/platform'
   import { Card, EditableAvatar, getClient } from '@anticrm/presentation'
-  import { Button, EditBox, eventToHTMLElement, IconInfo, Label, SelectPopup, showPopup } from '@anticrm/ui'
+  import { Button, EditBox, eventToHTMLElement, IconInfo, Label, SelectPopup, showPopup, createFocusManager, FocusHandler } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import lead from '../plugin'
 
@@ -149,7 +149,11 @@
     )
   }
   $: canSave = formatName(targetClass._id, firstName, lastName, object.name).length > 0
+
+  const manager = createFocusManager()
 </script>
+
+<FocusHandler {manager} />
 
 <Card
   label={lead.string.CreateCustomer}
@@ -168,6 +172,7 @@
       size={'small'}
       kind={'no-border'}
       on:click={selectTarget}
+      focusIndex={100}
     />
   </svelte:fragment>
   {#if targetClass._id === contact.class.Person}
@@ -179,12 +184,14 @@
           kind={'large-style'}
           maxWidth={'32rem'}
           focus
+          focusIndex={1}
         />
         <EditBox
           placeholder={contact.string.PersonLastNamePlaceholder}
           bind:value={lastName}
           kind={'large-style'}
           maxWidth={'32rem'}
+          focusIndex={2}
         />
         <div class="mt-1">
           <EditBox
@@ -192,6 +199,7 @@
             bind:value={object.city}
             kind={'small-style'}
             maxWidth={'32rem'}
+            focusIndex={3}
           />
         </div>
         <EditBox
@@ -199,6 +207,7 @@
           bind:value={object.description}
           kind={'small-style'}
           maxWidth={'32rem'}
+          focusIndex={4}
         />
       </div>
       <div class="ml-4 flex">
@@ -222,11 +231,12 @@
         maxWidth={'37.5rem'}
         kind={'large-style'}
         focus
+        focusIndex={1}
       />
     </div>
   {/if}
   <svelte:fragment slot="pool">
-    <ChannelsDropdown bind:value={channels} editable />
+    <ChannelsDropdown bind:value={channels} focusIndex={10} editable />
   </svelte:fragment>
   <svelte:fragment slot="footer">
     {#if matches.length > 0}
