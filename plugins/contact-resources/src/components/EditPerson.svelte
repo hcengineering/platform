@@ -139,7 +139,14 @@
           {/if}
         </div>
         <div class="location">
-          <AttributeEditor maxWidth="20rem" _class={contact.class.Person} {editable} {object} key="city" focusIndex={3} />
+          <AttributeEditor
+            maxWidth="20rem"
+            _class={contact.class.Person}
+            {editable}
+            {object}
+            key="city"
+            focusIndex={3}
+          />
         </div>
       </div>
 

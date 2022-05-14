@@ -16,7 +16,7 @@
   import { AttributeEditor, createQuery, EditableAvatar, getClient } from '@anticrm/presentation'
 
   import setting from '@anticrm/setting'
-  import { EditBox, Icon, Label } from '@anticrm/ui'
+  import { EditBox, Icon, Label, createFocusManager, FocusHandler } from '@anticrm/ui'
   import contact, { Employee, EmployeeAccount, getFirstName, getLastName } from '@anticrm/contact'
   import contactRes from '@anticrm/contact-resources/src/plugin'
   import { getCurrentAccount } from '@anticrm/core'
@@ -69,7 +69,11 @@
       await deleteFile(employee.avatar)
     }
   }
+
+  const manager = createFocusManager()
 </script>
+
+<FocusHandler {manager} />
 
 <div class="antiComponent">
   <div class="ac-header short divide">
@@ -88,6 +92,8 @@
               placeholder={contactRes.string.PersonFirstNamePlaceholder}
               maxWidth="20rem"
               bind:value={firstName}
+              focus
+              focusIndex={1}
               on:change={() => {
                 changeName(firstName, lastName)
               }}
@@ -98,17 +104,18 @@
               placeholder={contactRes.string.PersonLastNamePlaceholder}
               maxWidth="20rem"
               bind:value={lastName}
+              focusIndex={2}
               on:change={() => {
                 changeName(firstName, lastName)
               }}
             />
           </div>
           <div class="location">
-            <AttributeEditor maxWidth="20rem" _class={contact.class.Person} object={employee} key="city" />
+            <AttributeEditor maxWidth="20rem" _class={contact.class.Person} object={employee} focusIndex={3} key="city" />
           </div>
         </div>
         <div class="separator" />
-        <ChannelsEditor attachedTo={employee._id} attachedClass={employee._class} allowOpen={false} />
+        <ChannelsEditor attachedTo={employee._id} attachedClass={employee._class} focusIndex={10} allowOpen={false} />
       </div>
     </div>
   {/if}

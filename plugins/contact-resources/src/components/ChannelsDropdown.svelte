@@ -212,10 +212,6 @@
       )
     }
   }
-  const _focus = (ev: Event, n: number, item: Item): void => {
-    const el = ev.target as HTMLButtonElement
-    if (el) editChannel(el, n, item)
-  }
 </script>
 
 <div

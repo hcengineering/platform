@@ -16,7 +16,15 @@
   import { createEventDispatcher, onMount } from 'svelte'
   import type { IntlString } from '@anticrm/platform'
   import { translate } from '@anticrm/platform'
-  import { Button, IconClose, closeTooltip, IconBlueCheck, registerFocus, createFocusManager, IconArrowRight } from '@anticrm/ui'
+  import {
+    Button,
+    IconClose,
+    closeTooltip,
+    IconBlueCheck,
+    registerFocus,
+    createFocusManager,
+    IconArrowRight
+  } from '@anticrm/ui'
   import IconCopy from './icons/Copy.svelte'
   import { FocusHandler } from '@anticrm/ui'
   import plugin from '../plugin'
@@ -103,7 +111,9 @@
       kind={'transparent'}
       size={'small'}
       icon={IconBlueCheck}
-      on:click={() => { dispatch('close', value) }}
+      on:click={() => {
+        dispatch('close', value)
+      }}
     />
   </div>
 {:else}
@@ -141,7 +151,9 @@
         kind={'transparent'}
         size={'small'}
         icon={IconArrowRight}
-        on:click={() => { dispatch('update', 'open') }}
+        on:click={() => {
+          dispatch('update', 'open')
+        }}
       />
     {/if}
   </div>
