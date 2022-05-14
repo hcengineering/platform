@@ -17,7 +17,7 @@
   import { ChunterSpace } from '@anticrm/chunter'
   import { EmployeeAccount } from '@anticrm/contact'
   import type { Class, Ref } from '@anticrm/core'
-  import { createQuery, getClient, Members } from '@anticrm/presentation'
+  import { createQuery, getClient, Members, UserInfo } from '@anticrm/presentation'
   import { Icon, Label, Scroller, showPopup, Panel } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
 
@@ -70,17 +70,21 @@
 >
   <svelte:fragment slot="title">
     {#if clazz && channel}
-      <div class="antiTitle icon-wrapper">
-        <div class="wrapped-icon">
-          {#if clazz.icon}<Icon icon={channel.private ? Lock : clazz.icon} size={'medium'} />{/if}
+      {#if _class === chunter.class.DirectMessage}
+        <span class="fs-title"><Label label={clazz.label} /></span>
+      {:else}
+        <div class="antiTitle icon-wrapper">
+          <div class="wrapped-icon">
+            {#if clazz.icon}<Icon icon={channel.private ? Lock : clazz.icon} size={'medium'} />{/if}
+          </div>
+          <div class="title-wrapper">
+            <span class="wrapped-title">
+              <span class="trans-title content-color"><Label label={clazz.label} />›</span> {channel.name}
+            </span>
+            <span class="wrapped-subtitle">{channel.description}</span>
+          </div>
         </div>
-        <div class="title-wrapper">
-          <span class="wrapped-title"
-            ><span class="trans-title content-color"><Label label={clazz.label} />›</span> {channel.name}</span
-          >
-          <span class="wrapped-subtitle">{channel.description}</span>
-        </div>
-      </div>
+      {/if}
     {/if}
   </svelte:fragment>
 
