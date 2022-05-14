@@ -38,7 +38,7 @@
   import ChannelEditor from './ChannelEditor.svelte'
 
   export let value: AttachedData<Channel>[] | Channel | null
-  export let editable: boolean = false
+  export let editable: boolean | undefined = undefined
   export let kind: ButtonKind = 'no-border'
   export let size: ButtonSize = 'small'
   export let length: 'short' | 'full' = 'full'
@@ -224,11 +224,19 @@
   {#each displayItems as item, i}
     <Tooltip
       component={opened !== i ? ChannelEditor : undefined}
-      props={{ value: item.value, placeholder: item.placeholder, editable: false, integration: item.integration }}
+      props={{
+        value: item.value,
+        placeholder: item.placeholder,
+        editable: editable !== undefined ? false : undefined,
+        openable: item.presenter ?? false
+      }}
       onUpdate={(result) => {
         if (result.detail === 'open') {
           closeTooltip()
           dispatch('open', item)
+        } else if (result.detail === 'edit') {
+          closeTooltip()
+          editChannel(btns[i], i, item)
         }
       }}
     >
