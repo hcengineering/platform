@@ -10,7 +10,7 @@
 
   let container: HTMLElement
 
-  function onEdit (event: MouseEvent) {
+  function onEdit () {
     showPopup(
       EmployeePreviewPopup,
       {
