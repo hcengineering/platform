@@ -65,6 +65,7 @@
       value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
       {onChange}
       {focus}
+      {focusIndex}
     />
   {/await}
 {/if}

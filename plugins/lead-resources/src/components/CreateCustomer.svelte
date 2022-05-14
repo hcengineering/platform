@@ -22,7 +22,17 @@
   import type { Customer } from '@anticrm/lead'
   import { getResource } from '@anticrm/platform'
   import { Card, EditableAvatar, getClient } from '@anticrm/presentation'
-  import { Button, EditBox, eventToHTMLElement, IconInfo, Label, SelectPopup, showPopup, createFocusManager, FocusHandler } from '@anticrm/ui'
+  import {
+    Button,
+    EditBox,
+    eventToHTMLElement,
+    IconInfo,
+    Label,
+    SelectPopup,
+    showPopup,
+    createFocusManager,
+    FocusHandler
+  } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import lead from '../plugin'
 

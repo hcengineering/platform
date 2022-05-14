@@ -111,7 +111,13 @@
             />
           </div>
           <div class="location">
-            <AttributeEditor maxWidth="20rem" _class={contact.class.Person} object={employee} focusIndex={3} key="city" />
+            <AttributeEditor
+              maxWidth="20rem"
+              _class={contact.class.Person}
+              object={employee}
+              focusIndex={3}
+              key="city"
+            />
           </div>
         </div>
         <div class="separator" />
