@@ -115,7 +115,6 @@
       }
     }
   }
-  $: console.log('!!!!!!!!!!!!!!!!!!! CHANNEL editable:', editable)
 </script>
 
 <ChannelsDropdown
