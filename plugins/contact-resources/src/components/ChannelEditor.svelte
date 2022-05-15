@@ -23,7 +23,8 @@
     IconBlueCheck,
     registerFocus,
     createFocusManager,
-    IconArrowRight
+    IconArrowRight,
+    IconEdit
   } from '@anticrm/ui'
   import IconCopy from './icons/Copy.svelte'
   import { FocusHandler } from '@anticrm/ui'
@@ -31,8 +32,8 @@
 
   export let value: string = ''
   export let placeholder: IntlString
-  export let editable: boolean = false
-  export let integration: boolean = false
+  export let editable: boolean | undefined = undefined
+  export let openable: boolean = false
 
   const dispatch = createEventDispatcher()
   let input: HTMLInputElement
@@ -74,7 +75,7 @@
 </script>
 
 <FocusHandler manager={mgr} />
-{#if editable}
+{#if editable && editable === true}
   <div class="editor-container buttons-group xsmall-gap">
     <div class="cover-channel" class:show class:copied={label === plugin.string.Copied} data-tooltip={lTraslate}>
       <input
@@ -145,9 +146,20 @@
       }}
       on:click={copyChannel}
     />
-    {#if integration}
+    {#if editable !== undefined}
       <Button
         focusIndex={4}
+        kind={'transparent'}
+        size={'small'}
+        icon={IconEdit}
+        on:click={() => {
+          dispatch('update', 'edit')
+        }}
+      />
+    {/if}
+    {#if openable}
+      <Button
+        focusIndex={5}
         kind={'transparent'}
         size={'small'}
         icon={IconArrowRight}
