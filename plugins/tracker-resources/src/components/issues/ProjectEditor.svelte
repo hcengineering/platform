@@ -20,6 +20,7 @@
   import tracker from '../../plugin'
   import ProjectSelector from '../ProjectSelector.svelte'
   import { IntlString } from '@anticrm/platform'
+  import { createEventDispatcher } from 'svelte'
 
   export let value: Issue
   export let isEditable: boolean = true
@@ -31,15 +32,21 @@
   export let shape: ButtonShape = undefined
   export let justify: 'left' | 'center' = 'left'
   export let width: string | undefined = '100%'
+  export let shouldSaveOnChange = true
 
   const client = getClient()
+  const dispatch = createEventDispatcher()
 
   const handleProjectIdChanged = async (newProjectId: Ref<Project> | null | undefined) => {
     if (!isEditable || newProjectId === undefined || value.project === newProjectId) {
       return
     }
 
-    await client.update(value, { project: newProjectId })
+    dispatch('change', newProjectId)
+
+    if (shouldSaveOnChange) {
+      await client.update(value, { project: newProjectId })
+    }
   }
 </script>
 

@@ -23,7 +23,7 @@
   import PriorityEditor from '../PriorityEditor.svelte'
   import StatusEditor from '../StatusEditor.svelte'
   import DatePresenter from '@anticrm/ui/src/components/calendar/DatePresenter.svelte'
-import ProjectEditor from '../ProjectEditor.svelte'
+  import ProjectEditor from '../ProjectEditor.svelte'
 
   export let issue: Issue
   export let issueStatuses: WithLookup<IssueStatus>[]
@@ -91,7 +91,7 @@ import ProjectEditor from '../ProjectEditor.svelte'
   <span class="label">
     <Label label={tracker.string.Project} />
   </span>
-  <ProjectEditor value={issue} />
+  <ProjectEditor value={issue} shouldSaveOnChange={false} on:change={({ detail }) => change('project', detail)} />
 
   {#if issue.dueDate !== null}
     <div class="divider" />
