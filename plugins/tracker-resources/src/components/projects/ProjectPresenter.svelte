@@ -19,8 +19,8 @@
   import contact from '@anticrm/contact'
   import ObjectPresenter from '@anticrm/view-resources/src/components/ObjectPresenter.svelte'
   import { Project, ProjectStatus, Team } from '@anticrm/tracker'
-  import plugin from '../../plugin'
   import ProjectStatusSelector from './ProjectStatusSelector.svelte'
+  import tracker from '../../plugin'
 
   export let value: WithLookup<Project>
   export let space: Ref<Team>
@@ -29,13 +29,13 @@
   const lead = value.$lookup?.lead
 
   async function updateStatus (status: ProjectStatus) {
-    await client.updateDoc(plugin.class.Project, space, value._id, { status })
+    await client.updateDoc(tracker.class.Project, space, value._id, { status })
   }
 </script>
 
 <div class="flex-presenter">
   <div class="icon">
-    <Icon icon={plugin.icon.Project} size="small" />
+    <Icon icon={value.icon} size="small" />
   </div>
   <span class="label nowrap project-label">{value.label}</span>
   {#if lead}

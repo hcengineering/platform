@@ -57,7 +57,6 @@
   okAction={saveReminder}
   okLabel={presentation.string.Save}
   canSave={title.trim().length > 0 && startDate > 0 && participants.length > 0}
-  {space}
   on:close={() => {
     dispatch('close')
   }}

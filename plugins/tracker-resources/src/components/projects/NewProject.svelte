@@ -13,14 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Data, Ref } from '@anticrm/core'
-  import { DatePresenter, EditBox } from '@anticrm/ui'
-  import { Card, getClient, UserBox, UserBoxList } from '@anticrm/presentation'
-  import { IntlString } from '@anticrm/platform'
   import contact from '@anticrm/contact'
+  import { Data, Ref } from '@anticrm/core'
+  import { IntlString } from '@anticrm/platform'
+  import { Card, getClient, SpaceSelector, UserBox, UserBoxList } from '@anticrm/presentation'
   import { Project, ProjectStatus, Team } from '@anticrm/tracker'
+  import { DatePresenter, EditBox } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
-  import plugin from '../../plugin'
+  import tracker from '../../plugin'
   import ProjectStatusSelector from './ProjectStatusSelector.svelte'
 
   export let space: Ref<Team>
@@ -30,6 +30,7 @@
   const object: Data<Project> = {
     label: '' as IntlString,
     description: '',
+    icon: tracker.icon.Projects,
     status: ProjectStatus.Planned,
     lead: null,
     members: [],
@@ -41,25 +42,24 @@
   }
 
   async function onSave () {
-    await client.createDoc(plugin.class.Project, space, object)
+    await client.createDoc(tracker.class.Project, space, object)
   }
 </script>
 
 <Card
-  label={plugin.string.NewProject}
+  label={tracker.string.NewProject}
   okAction={onSave}
   canSave={object.label !== ''}
-  okLabel={plugin.string.CreateProject}
-  spaceClass={plugin.class.Team}
-  spaceLabel={plugin.string.Team}
-  spacePlaceholder={plugin.string.SelectTeam}
-  bind:space
+  okLabel={tracker.string.CreateProject}
   on:close={() => dispatch('close')}
 >
+  <svelte:fragment slot="header">
+    <SpaceSelector _class={tracker.class.Team} label={tracker.string.Team} bind:space />
+  </svelte:fragment>
   <div class="label">
     <EditBox
       bind:value={object.label}
-      placeholder={plugin.string.ProjectNamePlaceholder}
+      placeholder={tracker.string.ProjectNamePlaceholder}
       maxWidth="37.5rem"
       kind="large-style"
       focus
@@ -68,7 +68,7 @@
   <div class="description">
     <EditBox
       bind:value={object.description}
-      placeholder={plugin.string.ProjectDescriptionPlaceholder}
+      placeholder={tracker.string.ProjectDescriptionPlaceholder}
       maxWidth="37.5rem"
       kind="editbox"
     />
@@ -82,20 +82,20 @@
     />
     <UserBox
       _class={contact.class.Employee}
-      label={plugin.string.ProjectLead}
-      placeholder={plugin.string.AssignTo}
+      label={tracker.string.ProjectLead}
+      placeholder={tracker.string.AssignTo}
       bind:value={object.lead}
       allowDeselect
-      titleDeselect={plugin.string.Unassigned}
+      titleDeselect={tracker.string.Unassigned}
     />
     <UserBoxList
       _class={contact.class.Employee}
       bind:items={object.members}
-      label={plugin.string.ProjectStatusPlaceholder}
+      label={tracker.string.ProjectStatusPlaceholder}
     />
     <!-- TODO: add labels after customize IssueNeedsToBeCompletedByThisDate -->
-    <DatePresenter bind:value={object.startDate} labelNull={plugin.string.StartDate} editable />
-    <DatePresenter bind:value={object.targetDate} labelNull={plugin.string.TargetDate} editable />
+    <DatePresenter bind:value={object.startDate} labelNull={tracker.string.StartDate} editable />
+    <DatePresenter bind:value={object.targetDate} labelNull={tracker.string.TargetDate} editable />
   </div>
 </Card>
 

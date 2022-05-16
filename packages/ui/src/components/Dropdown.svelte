@@ -15,6 +15,7 @@
 <script lang="ts">
   import type { Asset, IntlString } from '@anticrm/platform'
   import { Button, DropdownPopup, showPopup, Tooltip } from '..'
+  import { getFocusManager } from '../focus'
   import type { AnySvelteComponent, ButtonKind, ButtonSize, ListItem, TooltipAlignment } from '../types'
   import Label from './Label.svelte'
 
@@ -29,14 +30,18 @@
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = undefined
   export let labelDirection: TooltipAlignment | undefined = undefined
+  export let focusIndex = -1
 
   let container: HTMLElement
   let opened: boolean = false
+
+  const mgr = getFocusManager()
 </script>
 
 <div bind:this={container} class="min-w-0">
   <Tooltip {label} fill={width === '100%'} direction={labelDirection}>
     <Button
+      {focusIndex}
       {icon}
       width={width ?? 'min-content'}
       {size}
@@ -48,6 +53,7 @@
           showPopup(DropdownPopup, { title: label, items, icon }, container, (result) => {
             if (result) selected = result
             opened = false
+            mgr?.setFocusPos(focusIndex)
           })
         }
       }}

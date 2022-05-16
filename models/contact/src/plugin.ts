@@ -29,7 +29,6 @@ export default mergeIds(contactId, contact, {
     CreatePerson: '' as AnyComponent,
     EditPerson: '' as AnyComponent,
     EditOrganization: '' as AnyComponent,
-    CreateOrganization: '' as AnyComponent,
     CreatePersons: '' as AnyComponent,
     CreateOrganizations: '' as AnyComponent,
     OrganizationPresenter: '' as AnyComponent,

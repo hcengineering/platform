@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Ref, WithLookup } from '@anticrm/core'
-  import { Issue, IssueStatus, Team } from '@anticrm/tracker'
+  import { Issue, IssueStatus } from '@anticrm/tracker'
   import { getClient } from '@anticrm/presentation'
   import { Tooltip } from '@anticrm/ui'
   import type { ButtonKind, ButtonSize } from '@anticrm/ui'
@@ -24,7 +24,6 @@
 
   export let value: Issue
   export let statuses: WithLookup<IssueStatus>[]
-  export let currentSpace: Ref<Team> | undefined = undefined
   export let isEditable: boolean = true
   export let shouldShowLabel: boolean = false
   export let shouldSaveOnChange = true
@@ -38,24 +37,16 @@
   const dispatch = createEventDispatcher()
 
   const handleStatusChanged = async (newStatus: Ref<IssueStatus> | undefined) => {
-    if (!isEditable || newStatus === undefined) {
+    if (!isEditable || newStatus === undefined || value.status === newStatus) {
       return
     }
 
     dispatch('change', newStatus)
 
-    if (!shouldSaveOnChange) {
-      return
+    if (shouldSaveOnChange) {
+      await client.update(value, { status: newStatus })
     }
-
-    const currentIssue = await client.findOne(tracker.class.Issue, { space: currentSpace, _id: value._id })
-
-    if (currentIssue === undefined) {
-      return
-    }
-
-    await client.update(currentIssue, { status: newStatus })
-  }
+}
 </script>
 
 {#if value}

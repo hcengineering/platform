@@ -14,10 +14,10 @@
 -->
 <script lang="ts">
   import { Asset, getMetadata } from '@anticrm/platform'
-  import { AnySvelteComponent } from '../types'
+  import { AnySvelteComponent, IconSize } from '../types'
 
   export let icon: Asset | AnySvelteComponent
-  export let size: 'inline' | 'x-small' | 'small' | 'medium' | 'large' | 'full'
+  export let size: IconSize
   export let fill = 'currentColor'
   export let filled: boolean = false
 

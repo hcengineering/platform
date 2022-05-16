@@ -28,6 +28,8 @@
   let triggerHTML: HTMLElement
   let shown: boolean = false
   $: shown = !!($tooltip.label || $tooltip.component)
+
+  let toHandler: number = -1
 </script>
 
 <div
@@ -35,8 +37,16 @@
   class:fill
   name={`tooltip-${label}`}
   bind:this={triggerHTML}
+  on:mouseleave={() => {
+    clearTimeout(toHandler)
+  }}
   on:mousemove={() => {
-    if (!shown) showTooltip(label, triggerHTML, direction, component, props, anchor, onUpdate)
+    if (!shown) {
+      clearTimeout(toHandler)
+      toHandler = setTimeout(() => {
+        showTooltip(label, triggerHTML, direction, component, props, anchor, onUpdate)
+      }, 250)
+    }
   }}
 >
   <slot />

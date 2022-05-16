@@ -13,8 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref } from '@anticrm/core'
-  import { Issue, IssuePriority, Team } from '@anticrm/tracker'
+  import { Issue, IssuePriority } from '@anticrm/tracker'
   import { getClient } from '@anticrm/presentation'
   import { Tooltip } from '@anticrm/ui'
   import type { ButtonKind, ButtonSize } from '@anticrm/ui'
@@ -23,7 +22,6 @@
   import { createEventDispatcher } from 'svelte'
 
   export let value: Issue
-  export let currentSpace: Ref<Team> | undefined = undefined
   export let isEditable: boolean = true
   export let shouldShowLabel: boolean = false
   export let shouldSaveOnChange = true
@@ -37,23 +35,15 @@
   const dispatch = createEventDispatcher()
 
   const handlePriorityChanged = async (newPriority: IssuePriority | undefined) => {
-    if (!isEditable || newPriority === undefined) {
+    if (!isEditable || newPriority === undefined || value.priority === newPriority) {
       return
     }
 
     dispatch('change', newPriority)
 
-    if (!shouldSaveOnChange) {
-      return
+    if (shouldSaveOnChange) {
+      await client.update(value, { priority: newPriority })
     }
-
-    const currentIssue = await client.findOne(tracker.class.Issue, { space: currentSpace, _id: value._id })
-
-    if (currentIssue === undefined) {
-      return
-    }
-
-    await client.update(currentIssue, { priority: newPriority })
   }
 </script>
 

@@ -14,17 +14,17 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { Ref, WithLookup } from '@anticrm/core'
+  import { WithLookup } from '@anticrm/core'
   import { UserBox } from '@anticrm/presentation'
   import contact from '@anticrm/contact'
-  import type { Issue, IssueStatus, Team } from '@anticrm/tracker'
+  import type { Issue, IssueStatus } from '@anticrm/tracker'
   import { Button, Label } from '@anticrm/ui'
   import tracker from '../../../plugin'
   import PriorityEditor from '../PriorityEditor.svelte'
   import StatusEditor from '../StatusEditor.svelte'
   import DatePresenter from '@anticrm/ui/src/components/calendar/DatePresenter.svelte'
+import ProjectEditor from '../ProjectEditor.svelte'
 
-  export let teamId: Ref<Team>
   export let issue: Issue
   export let issueStatuses: WithLookup<IssueStatus>[]
 
@@ -42,7 +42,6 @@
   <StatusEditor
     value={issue}
     statuses={issueStatuses}
-    currentSpace={teamId}
     shouldSaveOnChange={false}
     shouldShowLabel
     on:change={({ detail }) => detail && change('status', detail)}
@@ -53,7 +52,6 @@
   </span>
   <PriorityEditor
     value={issue}
-    currentSpace={teamId}
     shouldSaveOnChange={false}
     shouldShowLabel
     on:change={({ detail }) => detail !== undefined && change('priority', detail)}
@@ -93,14 +91,7 @@
   <span class="label">
     <Label label={tracker.string.Project} />
   </span>
-  <Button
-    label={tracker.string.Project}
-    icon={tracker.icon.Projects}
-    size={'large'}
-    kind={'link'}
-    width={'100%'}
-    justify={'left'}
-  />
+  <ProjectEditor value={issue} />
 
   {#if issue.dueDate !== null}
     <div class="divider" />

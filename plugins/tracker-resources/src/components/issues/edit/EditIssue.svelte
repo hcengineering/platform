@@ -187,7 +187,6 @@
         <ControlPanel
           {issue}
           {issueStatuses}
-          teamId={currentTeam._id}
           on:issueChange={({ detail }) => change(detail.field, detail.value)}
         />
       {/if}

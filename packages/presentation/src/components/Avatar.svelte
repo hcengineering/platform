@@ -13,13 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import Avatar from './icons/Avatar.svelte'
-
+  import { Asset } from '@anticrm/platform'
+  import { AnySvelteComponent, Icon, IconSize } from '@anticrm/ui'
   import { getBlobURL, getFileUrl } from '../utils'
+  import Avatar from './icons/Avatar.svelte'
 
   export let avatar: string | null | undefined = undefined
   export let direct: Blob | undefined = undefined
-  export let size: 'inline' | 'tiny' | 'x-small' | 'small' | 'medium' | 'large' | 'x-large'
+  export let size: IconSize
+  export let icon: Asset | AnySvelteComponent | undefined = undefined
 
   let url: string | undefined
   $: if (direct !== undefined) {
@@ -40,7 +42,7 @@
     {/if}
     <img class="ava-{size} ava-mask" src={url} alt={''} />
   {:else}
-    <Avatar {size} />
+    <Icon icon={icon ?? Avatar} {size} />
   {/if}
 </div>
 

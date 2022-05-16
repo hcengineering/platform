@@ -88,7 +88,6 @@
   label={contact.string.CreatePerson}
   okAction={createPerson}
   canSave={firstName.length > 0 && lastName.length > 0 && matches.length === 0}
-  bind:space={contact.space.Contacts}
   on:close={() => {
     dispatch('close')
   }}

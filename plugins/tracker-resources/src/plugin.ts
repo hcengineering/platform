@@ -115,6 +115,10 @@ export default mergeIds(trackerId, tracker, {
     Filter: '' as IntlString,
     ClearFilters: '' as IntlString,
     Back: '' as IntlString,
+    AssetLabel: '' as IntlString,
+    AddToProject: '' as IntlString,
+    MoveToProject: '' as IntlString,
+    NoProject: '' as IntlString,
 
     IssueTitlePlaceholder: '' as IntlString,
     IssueDescriptionPlaceholder: '' as IntlString,
@@ -148,6 +152,7 @@ export default mergeIds(trackerId, tracker, {
     ModificationDatePresenter: '' as AnyComponent,
     PriorityPresenter: '' as AnyComponent,
     PriorityEditor: '' as AnyComponent,
+    ProjectEditor: '' as AnyComponent,
     StatusPresenter: '' as AnyComponent,
     StatusEditor: '' as AnyComponent,
     AssigneePresenter: '' as AnyComponent,

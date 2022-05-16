@@ -169,7 +169,6 @@
   label={lead.string.CreateCustomer}
   okAction={createCustomer}
   {canSave}
-  space={contact.space.Contacts}
   on:close={() => {
     dispatch('close')
   }}

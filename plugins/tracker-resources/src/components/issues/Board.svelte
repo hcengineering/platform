@@ -161,7 +161,7 @@
           {object.title}
         </span>
         <div class="flex gap-2 mt-2 mb-2">
-          <PriorityEditor value={issue} {currentSpace} isEditable={true} />
+          <PriorityEditor value={issue} isEditable={true} />
         </div>
       </div>
     </svelte:fragment>
