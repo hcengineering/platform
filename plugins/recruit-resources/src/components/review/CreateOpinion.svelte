@@ -83,7 +83,6 @@
   label={recruit.string.CreateOpinion}
   okAction={createOpinion}
   canSave={(doc.value ?? '').trim().length > 0}
-  bind:space={doc.space}
   on:close={() => {
     dispatch('close')
   }}

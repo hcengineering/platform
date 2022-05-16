@@ -96,6 +96,10 @@
     "PastMonth": "Past month",
     "CopyIssueUrl": "Copy Issue URL to clipboard",
     "CopyIssueId": "Copy Issue ID to clipboard",
+    "AssetLabel": "Asset",
+    "AddToProject": "Add to project\u2026",
+    "MoveToProject": "Move to project\u2026",
+    "NoProject": "No project",
 
     "GotoIssues": "Go to issues",
     "GotoActive": "Go to active issues",

@@ -31,14 +31,14 @@
     getFocusManager,
     Menu,
     showPopup,
-    showTooltip
+    Tooltip
   } from '@anticrm/ui'
   import { createEventDispatcher, tick } from 'svelte'
   import { getChannelProviders } from '../utils'
   import ChannelEditor from './ChannelEditor.svelte'
 
   export let value: AttachedData<Channel>[] | Channel | null
-  export let editable: boolean = false
+  export let editable: boolean | undefined = undefined
   export let kind: ButtonKind = 'no-border'
   export let size: ButtonSize = 'small'
   export let length: 'short' | 'full' = 'full'
@@ -121,7 +121,7 @@
   let actions: Action[] = []
   let addBtn: HTMLButtonElement
   const btns: HTMLButtonElement[] = []
-  let anchor: HTMLElement
+  let opened: number | undefined = undefined
 
   function filterUndefined (channels: AttachedData<Channel>[]): AttachedData<Channel>[] {
     return channels.filter((channel) => channel.value !== undefined)
@@ -175,77 +175,115 @@
   }
 
   const editChannel = (el: HTMLElement, n: number, item: Item): void => {
-    showTooltip(
-      undefined,
-      el,
-      undefined,
-      ChannelEditor,
-      {
-        value: item.value,
-        placeholder: item.placeholder,
-        editable
-      },
-      anchor,
-      (result) => {
-        if (result.detail != null) {
-          if (result.detail === '') {
-            displayItems = dropItem(n)
-          } else {
-            displayItems[n].value = result.detail
+    if (opened !== n) {
+      opened = n
+      showPopup(
+        ChannelEditor,
+        {
+          value: item.value,
+          placeholder: item.placeholder,
+          editable
+        },
+        el,
+        (result) => {
+          if (result != null) {
+            if (result === '') {
+              displayItems = dropItem(n)
+            } else {
+              displayItems[n].value = result
+            }
+            saveItems()
+            focusManager?.setFocusPos(focusIndex + 1 + n)
           }
-          saveItems()
-          focusManager?.setFocusPos(focusIndex + 1 + n)
+          if (result === undefined && item.value === '') displayItems = dropItem(n)
+          opened = undefined
+        },
+        (result) => {
+          if (result != null) {
+            if (result === '') {
+              displayItems = dropItem(n)
+            } else {
+              displayItems[n].value = result
+            }
+            saveItems()
+          }
         }
-      }
-    )
-  }
-  const _focus = (ev: Event, n: number, item: Item): void => {
-    const el = ev.target as HTMLButtonElement
-    if (el) editChannel(el, n, item)
+      )
+    }
   }
 </script>
 
 <div
-  bind:this={anchor}
   class="{displayItems.length === 0 ? 'clear-mins' : 'buttons-group'} {kind === 'no-border'
     ? 'xsmall-gap'
     : 'xxsmall-gap'}"
   class:short={displayItems.length > 4 && length === 'short'}
 >
   {#each displayItems as item, i}
-    <Button
-      focusIndex={focusIndex === -1 ? focusIndex : focusIndex + 1 + i}
-      id={item.label}
-      bind:input={btns[i]}
-      icon={item.icon}
-      {kind}
-      {size}
-      {shape}
-      highlight={item.integration || item.notification}
-      on:mousemove={(ev) => {
-        _focus(ev, i, item)
+    <Tooltip
+      component={opened !== i ? ChannelEditor : undefined}
+      props={{
+        value: item.value,
+        placeholder: item.placeholder,
+        editable: editable !== undefined ? false : undefined,
+        openable: item.presenter ?? false
       }}
-      on:click={(ev) => {
-        if (editable) {
-          editChannel(eventToHTMLElement(ev), i, item)
-        } else {
+      onUpdate={(result) => {
+        if (result.detail === 'open') {
           closeTooltip()
+          dispatch('open', item)
+        } else if (result.detail === 'edit') {
+          closeTooltip()
+          editChannel(btns[i], i, item)
         }
-        dispatch('open', item)
       }}
-    />
+    >
+      <Button
+        focusIndex={focusIndex === -1 ? focusIndex : focusIndex + 1 + i}
+        id={item.label}
+        bind:input={btns[i]}
+        icon={item.icon}
+        {kind}
+        {size}
+        {shape}
+        highlight={item.integration || item.notification}
+        on:click={(ev) => {
+          if (editable) {
+            closeTooltip()
+            editChannel(eventToHTMLElement(ev), i, item)
+          } else {
+            dispatch('open', item)
+          }
+        }}
+      />
+    </Tooltip>
   {/each}
   {#if actions.length > 0 && editable}
-    <Button
-      focusIndex={focusIndex === -1 ? focusIndex : focusIndex + 2 + displayItems.length}
-      id={presentation.string.AddSocialLinks}
-      bind:input={addBtn}
-      icon={contact.icon.SocialEdit}
-      label={displayItems.length === 0 ? presentation.string.AddSocialLinks : undefined}
-      {kind}
-      {size}
-      {shape}
-      on:click={showMenu}
-    />
+    {#if displayItems.length === 0}
+      <Button
+        focusIndex={focusIndex === -1 ? focusIndex : focusIndex + 2 + displayItems.length}
+        id={presentation.string.AddSocialLinks}
+        bind:input={addBtn}
+        icon={contact.icon.SocialEdit}
+        label={presentation.string.AddSocialLinks}
+        {kind}
+        {size}
+        {shape}
+        on:click={showMenu}
+      />
+    {:else}
+      <Tooltip label={presentation.string.AddSocialLinks}>
+        <Button
+          focusIndex={focusIndex === -1 ? focusIndex : focusIndex + 2 + displayItems.length}
+          id={presentation.string.AddSocialLinks}
+          bind:input={addBtn}
+          icon={contact.icon.SocialEdit}
+          {kind}
+          {size}
+          {shape}
+          on:click={showMenu}
+        />
+      </Tooltip>
+    {/if}
   {/if}
 </div>

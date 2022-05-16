@@ -60,7 +60,6 @@
   label={inventory.string.CreateVariant}
   okAction={create}
   canSave={doc.name.trim().length > 0 && doc.sku.trim().length > 0}
-  bind:space={doc.space}
   on:close={() => {
     dispatch('close')
   }}

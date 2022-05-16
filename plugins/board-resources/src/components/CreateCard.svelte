@@ -18,6 +18,7 @@
   import { AttachedData, generateId, Ref, SortingOrder, Space } from '@anticrm/core'
   import { OK, Status } from '@anticrm/platform'
   import { Card, getClient } from '@anticrm/presentation'
+  import SpaceSelector from '@anticrm/presentation/src/components/SpaceSelector.svelte'
   import task, { calcRank } from '@anticrm/task'
   import { EditBox, Grid, Status as StatusControl } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
@@ -77,14 +78,13 @@
   label={board.string.CreateCard}
   okAction={createCard}
   canSave={title.length > 0}
-  spaceClass={board.class.Board}
-  spaceLabel={board.string.BoardName}
-  spacePlaceholder={board.string.SelectBoard}
-  bind:space={_space}
   on:close={() => {
     dispatch('close')
   }}
 >
+  <svelte:fragment slot="header">
+    <SpaceSelector _class={board.class.Board} label={board.string.BoardName} bind:space={_space} />
+  </svelte:fragment>
   <StatusControl slot="error" {status} />
   <Grid column={1} rowGap={1.5}>
     <EditBox

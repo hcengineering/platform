@@ -65,6 +65,7 @@ export type TabModel = Tab[]
 
 export type ButtonKind = 'primary' | 'secondary' | 'no-border' | 'transparent' | 'link' | 'link-bordered' | 'dangerous'
 export type ButtonSize = 'small' | 'medium' | 'large' | 'x-large'
+export type ButtonShape = 'rectangle' | 'rectangle-left' | 'rectangle-right' | 'circle' | 'round' | undefined
 export interface PopupPositionElement {
   getBoundingClientRect: () => DOMRect
   position?: {
@@ -78,6 +79,8 @@ export type PopupAlignment = PopupPosAlignment | PopupPositionElement | null
 export type TooltipAlignment = 'top' | 'bottom' | 'left' | 'right'
 export type VerticalAlignment = 'top' | 'bottom'
 export type HorizontalAlignment = 'left' | 'right'
+
+export type IconSize = 'inline' | 'tiny' | 'x-small' | 'small' | 'medium' | 'large' | 'x-large' | 'full'
 
 export interface LabelAndProps {
   label: IntlString | undefined

@@ -72,7 +72,6 @@
   label={inventory.string.CreateProduct}
   okAction={create}
   canSave={doc.name.trim().length > 0 && doc.attachedTo.length > 0}
-  bind:space={doc.space}
   on:close={() => {
     dispatch('close')
   }}

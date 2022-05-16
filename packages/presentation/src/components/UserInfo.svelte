@@ -16,14 +16,17 @@
   import Avatar from './Avatar.svelte'
 
   import { formatName, Person } from '@anticrm/contact'
+  import { Asset } from '@anticrm/platform'
+  import { AnySvelteComponent, IconSize } from '@anticrm/ui'
 
   export let value: Person
   export let subtitle: string | undefined = undefined
-  export let size: 'x-small' | 'small' | 'medium' | 'large' | 'x-large'
+  export let size: IconSize
+  export let icon: Asset | AnySvelteComponent | undefined = undefined
 </script>
 
 <div class="flex-row-center" on:click>
-  <Avatar avatar={value.avatar} {size} />
+  <Avatar avatar={value.avatar} {size} {icon} />
   <div class="flex-col ml-2 min-w-0">
     {#if subtitle}<div class="content-dark-color text-sm">{subtitle}</div>{/if}
     <div class="content-accent-color overflow-label text-left">{formatName(value.name)}</div>

@@ -87,10 +87,15 @@
     <span class="ac-header__title"><Label label={recruit.string.Candidates} /></span>
   </div>
 
+  <SearchEdit
+    bind:value={search}
+    on:change={() => {
+      updateResultQuery(search, documentIds)
+    }}
+  />
   {#if descr}
     <ActionIcon
       icon={view.icon.Setting}
-      direction={'top'}
       size={'small'}
       label={view.string.CustomizeView}
       action={() => {
@@ -98,12 +103,6 @@
       }}
     />
   {/if}
-  <SearchEdit
-    bind:value={search}
-    on:change={() => {
-      updateResultQuery(search, documentIds)
-    }}
-  />
 </div>
 
 <Component

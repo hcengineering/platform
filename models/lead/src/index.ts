@@ -127,7 +127,8 @@ export function createModel (builder: Builder): void {
       { key: 'leads', presenter: lead.component.LeadsPresenter, label: lead.string.Leads },
       'modifiedOn',
       '$lookup.channels'
-    ]
+    ],
+    hiddenKeys: ['name']
   })
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {

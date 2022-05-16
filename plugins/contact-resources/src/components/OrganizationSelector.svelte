@@ -17,8 +17,8 @@
   import { Ref } from '@anticrm/core'
   import { IntlString } from '@anticrm/platform'
   import { createQuery } from '@anticrm/presentation'
+  import type { ButtonKind, ButtonSize, TooltipAlignment } from '@anticrm/ui'
   import { Dropdown } from '@anticrm/ui'
-  import type { TooltipAlignment, ButtonKind, ButtonSize } from '@anticrm/ui'
   import { ListItem } from '@anticrm/ui/src/types'
   import { createEventDispatcher } from 'svelte'
   import contact from '../plugin'
@@ -32,6 +32,7 @@
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = undefined
   export let labelDirection: TooltipAlignment | undefined = undefined
+  export let focusIndex = -1
 
   const query = createQuery()
   const dispatch = createEventDispatcher()
@@ -69,6 +70,7 @@
 </script>
 
 <Dropdown
+  {focusIndex}
   icon={Company}
   {label}
   placeholder={label}

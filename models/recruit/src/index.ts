@@ -271,7 +271,8 @@ export function createModel (builder: Builder): void {
       },
       'modifiedOn',
       '$lookup.channels'
-    ]
+    ],
+    hiddenKeys: ['name']
   })
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {
@@ -389,6 +390,42 @@ export function createModel (builder: Builder): void {
     }
   })
 
+  createAction(builder, {
+    action: view.actionImpl.ShowPopup,
+    actionProps: {
+      component: recruit.component.CreateVacancy,
+      element: 'top'
+    },
+    label: recruit.string.CreateVacancy,
+    icon: recruit.icon.Create,
+    keyBinding: [],
+    input: 'none',
+    category: recruit.category.Recruit,
+    target: core.class.Doc,
+    context: {
+      mode: ['workbench', 'browser'],
+      application: recruit.app.Recruit
+    }
+  })
+
+  createAction(builder, {
+    action: view.actionImpl.ShowPopup,
+    actionProps: {
+      component: recruit.component.CreateApplication,
+      element: 'top'
+    },
+    label: recruit.string.CreateApplication,
+    icon: recruit.icon.Create,
+    keyBinding: [],
+    input: 'none',
+    category: recruit.category.Recruit,
+    target: core.class.Doc,
+    context: {
+      mode: ['workbench', 'browser'],
+      application: recruit.app.Recruit
+    }
+  })
+
   builder.createDoc(
     task.class.KanbanTemplateSpace,
     core.space.Model,
@@ -437,6 +474,17 @@ export function createModel (builder: Builder): void {
   createReviewModel(builder)
 
   // createAction(builder, { ...viewTemplates.open, target: recruit.class.Vacancy, context: { mode: ['browser', 'context'] } })
+
+  createAction(builder, {
+    ...viewTemplates.open,
+    target: recruit.class.Vacancy,
+    context: { mode: ['browser', 'context'] },
+    action: workbench.actionImpl.Navigate,
+    actionProps: {
+      mode: 'space'
+    }
+  })
+
   createAction(builder, {
     ...viewTemplates.open,
     target: recruit.class.Applicant,

@@ -75,17 +75,6 @@
     <span class="ac-header__title"><Label label={inventory.string.Products} /></span>
   </div>
 
-  {#if descr}
-    <ActionIcon
-      icon={view.icon.Setting}
-      direction={'top'}
-      size={'small'}
-      label={view.string.CustomizeView}
-      action={() => {
-        showPopup(ViewletSetting, { viewlet: descr })
-      }}
-    />
-  {/if}
   <EditWithIcon
     icon={IconSearch}
     placeholder={ui.string.Search}
@@ -100,6 +89,16 @@
     kind={'primary'}
     on:click={(ev) => showCreateDialog(ev)}
   />
+  {#if descr}
+    <ActionIcon
+      icon={view.icon.Setting}
+      size={'small'}
+      label={view.string.CustomizeView}
+      action={() => {
+        showPopup(ViewletSetting, { viewlet: descr })
+      }}
+    />
+  {/if}
 </div>
 
 {#if descr}

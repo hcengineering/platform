@@ -38,7 +38,7 @@ export function resultSort<T extends Doc> (result: T[], sortOptions: SortingQuer
     for (const key in sortOptions) {
       const aValue = getValue(key, a)
       const bValue = getValue(key, b)
-      const result = getSortingResult(aValue, bValue, sortOptions[key] as SortingOrder)
+      const result = getSortingResult(aValue, bValue, sortOptions[key])
       if (result !== 0) return result
     }
     return 0

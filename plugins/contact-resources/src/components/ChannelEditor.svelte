@@ -16,14 +16,24 @@
   import { createEventDispatcher, onMount } from 'svelte'
   import type { IntlString } from '@anticrm/platform'
   import { translate } from '@anticrm/platform'
-  import { Button, IconClose, closeTooltip, IconBlueCheck, registerFocus, createFocusManager } from '@anticrm/ui'
+  import {
+    Button,
+    IconClose,
+    closeTooltip,
+    IconBlueCheck,
+    registerFocus,
+    createFocusManager,
+    IconArrowRight,
+    IconEdit
+  } from '@anticrm/ui'
   import IconCopy from './icons/Copy.svelte'
   import { FocusHandler } from '@anticrm/ui'
   import plugin from '../plugin'
 
   export let value: string = ''
   export let placeholder: IntlString
-  export let editable: boolean = false
+  export let editable: boolean | undefined = undefined
+  export let openable: boolean = false
 
   const dispatch = createEventDispatcher()
   let input: HTMLInputElement
@@ -65,8 +75,8 @@
 </script>
 
 <FocusHandler manager={mgr} />
-<div class="buttons-group xsmall-gap">
-  {#if editable}
+{#if editable && editable === true}
+  <div class="editor-container buttons-group xsmall-gap">
     <div class="cover-channel" class:show class:copied={label === plugin.string.Copied} data-tooltip={lTraslate}>
       <input
         bind:this={input}
@@ -77,7 +87,7 @@
         style="width: 100%;"
         on:keypress={(ev) => {
           if (ev.key === 'Enter') {
-            dispatch('update', value)
+            dispatch('close', value)
             closeTooltip()
           }
         }}
@@ -97,48 +107,69 @@
         }
       }}
     />
-  {:else}
+    <Button
+      focusIndex={3}
+      kind={'transparent'}
+      size={'small'}
+      icon={IconBlueCheck}
+      on:click={() => {
+        dispatch('close', value)
+      }}
+    />
+  </div>
+{:else}
+  <div class="buttons-group xsmall-gap">
     <span
       class="select-text cover-channel"
       class:show
       class:copied={label === plugin.string.Copied}
       data-tooltip={lTraslate}>{value}</span
     >
-  {/if}
-  <Button
-    focusIndex={3}
-    kind={'transparent'}
-    size={'small'}
-    icon={IconCopy}
-    on:mousemove={() => {
-      show = true
-    }}
-    on:focus={() => {
-      show = true
-    }}
-    on:mouseleave={() => {
-      show = false
-      label = plugin.string.CopyToClipboard
-    }}
-    on:blur={() => {
-      show = false
-      label = plugin.string.CopyToClipboard
-    }}
-    on:click={copyChannel}
-  />
-  {#if editable}
     <Button
-      focusIndex={4}
+      focusIndex={3}
       kind={'transparent'}
       size={'small'}
-      icon={IconBlueCheck}
-      on:click={() => {
-        dispatch('update', value)
-        closeTooltip()
+      icon={IconCopy}
+      on:mousemove={() => {
+        show = true
       }}
+      on:focus={() => {
+        show = true
+      }}
+      on:mouseleave={() => {
+        show = false
+        label = plugin.string.CopyToClipboard
+      }}
+      on:blur={() => {
+        show = false
+        label = plugin.string.CopyToClipboard
+      }}
+      on:click={copyChannel}
     />
-  {/if}
-</div>
+    {#if editable !== undefined}
+      <Button
+        focusIndex={4}
+        kind={'transparent'}
+        size={'small'}
+        icon={IconEdit}
+        on:click={() => {
+          dispatch('update', 'edit')
+        }}
+      />
+    {/if}
+    {#if openable}
+      <Button
+        focusIndex={5}
+        kind={'transparent'}
+        size={'small'}
+        icon={IconArrowRight}
+        on:click={() => {
+          dispatch('update', 'open')
+        }}
+      />
+    {/if}
+  </div>
+{/if}
 
 <style lang="scss">
   .cover-channel {
@@ -175,5 +206,14 @@
       color: var(--content-color);
       transform: translate(-50%, -50%);
     }
+  }
+
+  .editor-container {
+    margin-top: 0.25rem;
+    padding: 0.5rem;
+    background-color: var(--accent-bg-color);
+    border: 1px solid var(--divider-color);
+    border-radius: 0.25rem;
+    box-shadow: var(--popup-panel-shadow);
   }
 </style>

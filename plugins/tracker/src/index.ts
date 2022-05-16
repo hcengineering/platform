@@ -103,6 +103,7 @@ export interface Issue extends Doc {
 
   number: number
   assignee: Ref<Employee> | null
+  project: Ref<Project> | null
 
   // For subtasks
   parentIssue?: Ref<Issue>
@@ -149,6 +150,7 @@ export enum ProjectStatus {
 export interface Project extends Doc {
   label: string
   description?: Markup
+  icon: Asset
 
   status: ProjectStatus
 

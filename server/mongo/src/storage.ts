@@ -30,6 +30,7 @@ import core, {
   Ref,
   ReverseLookups,
   SortingOrder,
+  SortingQuery,
   toFindResult,
   Tx,
   TxCreateDoc,
@@ -51,6 +52,14 @@ function translateDoc (doc: Doc): Document {
 
 function isLookupQuery<T extends Doc> (query: DocumentQuery<T>): boolean {
   for (const key in query) {
+    if (key.includes('$lookup.')) return true
+  }
+  return false
+}
+
+function isLookupSort<T extends Doc> (sort: SortingQuery<T> | undefined): boolean {
+  if (sort === undefined) return false
+  for (const key in sort) {
     if (key.includes('$lookup.')) return true
   }
   return false
@@ -212,7 +221,7 @@ abstract class MongoAdapterBase extends TxProcessor {
         }
       }
     } else {
-      targetObject.$lookup[key] = this.modelDb.getObject(targetObject[key])
+      targetObject.$lookup[key] = (await this.modelDb.findAll(_class, { _id: targetObject[key] }))[0]
     }
   }
 
@@ -281,7 +290,7 @@ abstract class MongoAdapterBase extends TxProcessor {
   ): Promise<FindResult<T>> {
     const pipeline = []
     const match = { $match: this.translateQuery(clazz, query) }
-    const slowPipeline = isLookupQuery(query)
+    const slowPipeline = isLookupQuery(query) || isLookupSort(options.sort)
     const steps = await this.getLookups(options.lookup)
     if (slowPipeline) {
       for (const step of steps) {
@@ -293,11 +302,28 @@ abstract class MongoAdapterBase extends TxProcessor {
     if (options.sort !== undefined) {
       const sort = {} as any
       for (const _key in options.sort) {
-        // Check if key is belong to mixin class, we need to add prefix.
-        const key = this.checkMixinKey<T>(_key, clazz)
+        let key: string = _key
+        const arr = key.split('.').filter((p) => p)
+        key = ''
+        for (let i = 0; i < arr.length; i++) {
+          const element = arr[i]
+          if (element === '$lookup') {
+            key += arr[++i] + '_lookup'
+          } else {
+            if (!key.endsWith('.') && i > 0) {
+              key += '.'
+            }
+            key += arr[i]
+            if (i !== arr.length - 1) {
+              key += '.'
+            }
+          }
+          // Check if key is belong to mixin class, we need to add prefix.
+          key = this.checkMixinKey<T>(key, clazz)
+        }
         sort[key] = options.sort[_key] === SortingOrder.Ascending ? 1 : -1
       }
-      resultPipeline.push({ $sort: sort })
+      pipeline.push({ $sort: sort })
     }
     if (options.limit !== undefined) {
       resultPipeline.push({ $limit: options.limit })

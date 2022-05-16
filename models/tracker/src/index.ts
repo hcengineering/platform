@@ -148,6 +148,9 @@ export class TIssue extends TDoc implements Issue {
   @Prop(TypeRef(contact.class.Employee), tracker.string.Assignee)
   assignee!: Ref<Employee> | null
 
+  @Prop(TypeRef(tracker.class.Project), tracker.string.Project)
+  project!: Ref<Project> | null
+
   @Prop(TypeRef(tracker.class.Issue), tracker.string.Parent)
   parentIssue!: Ref<Issue>
 
@@ -211,6 +214,9 @@ export class TProject extends TDoc implements Project {
 
   @Prop(TypeMarkup(), tracker.string.Project)
   description?: Markup
+
+  @Prop(TypeString(), tracker.string.AssetLabel)
+  icon!: Asset
 
   @Prop(TypeNumber(), tracker.string.Status)
   status!: ProjectStatus

@@ -62,7 +62,6 @@
   label={recruit.string.Opinion}
   okAction={editOpinion}
   canSave={value.length > 0}
-  space={item.space}
   on:close={() => {
     dispatch('close')
   }}

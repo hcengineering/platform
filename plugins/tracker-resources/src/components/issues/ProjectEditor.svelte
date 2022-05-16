@@ -13,48 +13,47 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Issue, IssuePriority } from '@anticrm/tracker'
+  import { Ref } from '@anticrm/core'
+  import { Issue, Project } from '@anticrm/tracker'
   import { getClient } from '@anticrm/presentation'
-  import { Tooltip } from '@anticrm/ui'
-  import type { ButtonKind, ButtonSize } from '@anticrm/ui'
+  import type { ButtonKind, ButtonShape, ButtonSize } from '@anticrm/ui'
   import tracker from '../../plugin'
-  import PrioritySelector from '../PrioritySelector.svelte'
+  import ProjectSelector from '../ProjectSelector.svelte'
+  import { IntlString } from '@anticrm/platform'
 
   export let value: Issue
   export let isEditable: boolean = true
-  export let shouldShowLabel: boolean = false
-
+  export let shouldShowLabel: boolean = true
+  export let popupPlaceholder: IntlString = tracker.string.MoveToProject
+  export let shouldShowPlaceholder = true
   export let kind: ButtonKind = 'link'
   export let size: ButtonSize = 'large'
+  export let shape: ButtonShape = undefined
   export let justify: 'left' | 'center' = 'left'
   export let width: string | undefined = '100%'
 
   const client = getClient()
 
-  const handlePriorityChanged = async (newPriority: IssuePriority | undefined) => {
-    if (!isEditable || newPriority === undefined || value.priority === newPriority) {
+  const handleProjectIdChanged = async (newProjectId: Ref<Project> | null | undefined) => {
+    if (!isEditable || newProjectId === undefined || value.project === newProjectId) {
       return
     }
 
-    await client.update(value, { priority: newPriority })
+    await client.update(value, { project: newProjectId })
   }
 </script>
 
-{#if value}
-  {#if isEditable}
-    <Tooltip label={tracker.string.SetPriority} fill>
-      <PrioritySelector
-        {kind}
-        {size}
-        {width}
-        {justify}
-        {isEditable}
-        {shouldShowLabel}
-        priority={value.priority}
-        onPriorityChange={handlePriorityChanged}
-      />
-    </Tooltip>
-  {:else}
-    <PrioritySelector {kind} {size} {width} {justify} {isEditable} {shouldShowLabel} priority={value.priority} />
-  {/if}
+{#if value.project || shouldShowPlaceholder}
+  <ProjectSelector
+    {kind}
+    {size}
+    {shape}
+    {width}
+    {justify}
+    {isEditable}
+    {shouldShowLabel}
+    {popupPlaceholder}
+    value={value.project}
+    onProjectIdChange={handleProjectIdChanged}
+  />
 {/if}
