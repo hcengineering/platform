@@ -43,8 +43,10 @@
           { value, format: 'number' },
           eventToHTMLElement(ev),
           (res) => {
-            if (res !== undefined) value = res
-            onChange(value)
+            if (res !== undefined) {
+              value = res
+              onChange(value)
+            }
             shown = false
           },
           (res) => {
