@@ -27,7 +27,6 @@
   export let teamId: Ref<Team>
   export let issue: Issue
   export let issueStatuses: WithLookup<IssueStatus>[]
-  export let direction: string
 
   const dispatch = createEventDispatcher()
 

@@ -13,6 +13,10 @@
   export let emphasized = false
   export let alwaysEdit = false
   export let showButtons = true
+  export let isEditable = true
+  export let isEmpty = false
+  export let isScrollable = true
+  export let focus = false
 
   let rawValue: string
   let oldContent = ''
@@ -36,7 +40,7 @@
   const dispatch = createEventDispatcher()
   let focused = false
 
-  let needFocus = false
+  let needFocus = alwaysEdit && focus
 
   $: if (textEditor && needFocus) {
     textEditor.focus()
@@ -61,6 +65,9 @@
     <StyledTextEditor
       {placeholder}
       {showButtons}
+      {isEditable}
+      {isScrollable}
+      bind:isEmpty
       bind:content={rawValue}
       bind:this={textEditor}
       on:focus={() => {

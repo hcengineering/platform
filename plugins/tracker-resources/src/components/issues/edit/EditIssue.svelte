@@ -14,15 +14,17 @@
 -->
 <script lang="ts">
   import { Class, Data, Ref, SortingOrder, WithLookup } from '@anticrm/core'
-  import presentation, { createQuery, getClient } from '@anticrm/presentation'
+  import { AttachmentDocList } from '@anticrm/attachment-resources'
   import { Panel } from '@anticrm/panel'
-  import { StyledTextBox } from '@anticrm/text-editor'
+  import presentation, { createQuery, getClient } from '@anticrm/presentation'
   import type { Issue, IssueStatus, Team } from '@anticrm/tracker'
-  import { Button, EditBox, Label, showPanel } from '@anticrm/ui'
+  import { Button, EditBox, IconDownOutline, IconEdit, IconMoreH, IconUpOutline } from '@anticrm/ui'
+  import { StyledTextBox } from '@anticrm/text-editor'
   import { createEventDispatcher, onMount } from 'svelte'
   import tracker from '../../../plugin'
   import ControlPanel from './ControlPanel.svelte'
   import CopyToClipboard from './CopyToClipboard.svelte'
+  import ContentWrapper from './ContentWrapper.svelte'
 
   export let _id: Ref<Issue>
   export let _class: Ref<Class<Issue>>
@@ -35,68 +37,84 @@
   let issue: Issue | undefined
   let currentTeam: Team | undefined
   let issueStatuses: WithLookup<IssueStatus>[] | undefined
+  let title = ''
+  let description = ''
+  let isDescriptionEmpty: boolean
   let innerWidth: number
-  let issueUpdates: Partial<Data<Issue>> = {}
+  let isEditing = false
 
   $: _id &&
     _class &&
     query.query(_class, { _id }, async (result) => {
-      issue = result[0]
+      ;[issue] = result
+      title = issue.title
+      description = issue.description
     })
 
   $: if (issue) {
-    client.findOne(tracker.class.Team, { _id: issue.space }).then((r) => {
-      currentTeam = r
-    })
+    client.findOne(tracker.class.Team, { _id: issue.space }).then((r) => (currentTeam = r))
   }
 
   $: currentTeam &&
     statusesQuery.query(
       tracker.class.IssueStatus,
       { attachedTo: currentTeam._id },
-      (statuses) => {
-        issueStatuses = statuses
-      },
+      (statuses) => (issueStatuses = statuses),
       {
         lookup: { category: tracker.class.IssueStatusCategory },
         sort: { rank: SortingOrder.Ascending }
       }
     )
 
-  $: issueTitle = currentTeam && issue && `${currentTeam.identifier}-${issue.number}`
-  $: updatedIssue = issue && { ...issue, ...issueUpdates }
-  $: canSave = updatedIssue && updatedIssue.title.trim().length > 0
+  $: issueId = currentTeam && issue && `${currentTeam.identifier}-${issue.number}`
+  $: canSave = title.trim().length > 0
 
-  function updateTitle (event: Event) {
-    update('title', (event.target as HTMLInputElement).value)
+  function edit (ev: MouseEvent) {
+    ev.preventDefault()
+
+    isEditing = true
   }
 
-  function update<K extends keyof Data<Issue>> (field: K, value: Issue[K]) {
-    issueUpdates = { ...issueUpdates, [field]: value }
-  }
+  function cancelEditing (ev: MouseEvent) {
+    ev.preventDefault()
 
-  function cancel () {
+    isEditing = false
+
     if (issue) {
-      showPanel(tracker.component.PreviewIssue, issue._id, issue._class, 'content')
+      title = issue.title
+      description = issue.description
     }
   }
 
-  async function save () {
-    if (issue && canSave) {
-      for (const [key, value] of Object.entries(issueUpdates)) {
-        if (issue[key as keyof Issue] === value) {
-          delete issueUpdates[key as keyof Data<Issue>]
-        } else if (key === 'title') {
-          issueUpdates[key] = issueUpdates[key]?.trim()
-        }
-      }
-
-      if (Object.keys(issueUpdates).length > 0) {
-        await client.update(issue, issueUpdates)
-      }
-
-      showPanel(tracker.component.PreviewIssue, issue._id, issue._class, 'content')
+  async function change (field: string, value: any) {
+    if (issue !== undefined) {
+      await client.update(issue, { [field]: value })
     }
+  }
+
+  async function save (ev: MouseEvent) {
+    ev.preventDefault()
+
+    if (!issue || !canSave) {
+      return
+    }
+
+    const updates: Partial<Data<Issue>> = {}
+    const trimmedTitle = title.trim()
+
+    if (trimmedTitle.length > 0 && trimmedTitle !== issue.title) {
+      updates.title = trimmedTitle
+    }
+
+    if (description !== issue.description) {
+      updates.description = description
+    }
+
+    if (Object.keys(updates).length > 0) {
+      await client.update(issue, updates)
+    }
+
+    isEditing = false
   }
 
   onMount(() => {
@@ -104,61 +122,93 @@
   })
 </script>
 
-{#if updatedIssue}
+{#if issue !== undefined}
   <Panel
-    object={updatedIssue}
+    object={issue}
     isHeader
-    withoutActivity
     isAside={true}
     isSub={false}
+    withoutActivity={isEditing}
     bind:innerWidth
-    on:close={() => {
-      dispatch('close')
-    }}
+    on:close={() => dispatch('close')}
   >
+    <svelte:fragment slot="subtitle">
+      <div class="flex-between flex-grow">
+        <div class="buttons-group xsmall-gap">
+          <Button icon={IconEdit} kind={'transparent'} size="medium" on:click={edit} />
+          {#if innerWidth < 900}
+            <Button icon={IconMoreH} kind={'transparent'} size="medium" />
+          {/if}
+        </div>
+      </div>
+    </svelte:fragment>
+    <svelte:fragment slot="navigator">
+      <Button icon={IconDownOutline} kind="secondary" size="medium" />
+      <Button icon={IconUpOutline} kind="secondary" size="medium" />
+    </svelte:fragment>
     <svelte:fragment slot="header">
-      <Label label={tracker.string.EditIssue} params={{ title: issueTitle }} />
+      <span class="fs-title">
+        {#if issueId}{issueId}{/if}
+      </span>
     </svelte:fragment>
     <svelte:fragment slot="tools">
-      <Button kind="transparent" label={presentation.string.Cancel} on:click={cancel} />
-      <Button disabled={!canSave} label={presentation.string.Save} on:click={save} />
+      {#if isEditing}
+        <Button kind="transparent" label={presentation.string.Cancel} on:click={cancelEditing} />
+        <Button disabled={!canSave} label={presentation.string.Save} on:click={save} />
+      {:else}
+        <Button icon={IconEdit} kind="transparent" size="medium" on:click={edit} />
+        <Button icon={IconMoreH} kind="transparent" size="medium" />
+      {/if}
     </svelte:fragment>
 
-    <div class="popupPanel-body__main-content py-10 clear-mins">
-      <div class="mt-6">
-        <EditBox
-          value={updatedIssue.title}
-          placeholder={tracker.string.IssueTitlePlaceholder}
-          kind="large-style"
-          focus
-          on:change={updateTitle}
-        />
-      </div>
-      <div class="mt-6 mb-6">
+    <ContentWrapper {isEditing}>
+      {#if isEditing}
+        <EditBox bind:value={title} placeholder={tracker.string.IssueTitlePlaceholder} kind="large-style" />
+      {:else}
+        <span class="title">{title}</span>
+      {/if}
+
+      <div class="mt-6" on:click={(ev) => isDescriptionEmpty && edit(ev)}>
         <StyledTextBox
-          alwaysEdit
-          bind:content={updatedIssue.description}
+          bind:content={description}
+          bind:isEmpty={isDescriptionEmpty}
+          isEditable={isEditing}
           placeholder={tracker.string.IssueDescriptionPlaceholder}
-          on:value={({ detail }) => update('description', detail)}
+          isScrollable={false}
+          alwaysEdit
+          focus
         />
       </div>
-    </div>
 
-    <span slot="actions-label">{issueTitle}</span>
+      {#if isEditing}
+        <AttachmentDocList value={issue} />
+      {/if}
+    </ContentWrapper>
+
+    <span slot="actions-label">
+      {#if issueId}{issueId}{/if}
+    </span>
     <svelte:fragment slot="actions">
-      <CopyToClipboard issueUrl={window.location.href} issueId={issueTitle} />
+      <CopyToClipboard issueUrl={window.location.href} {issueId} />
     </svelte:fragment>
 
-    <svelte:fragment slot="custom-attributes" let:direction>
-      {#if currentTeam && issueStatuses}
+    <svelte:fragment slot="custom-attributes">
+      {#if issue && currentTeam && issueStatuses}
         <ControlPanel
+          {issue}
           {issueStatuses}
-          {direction}
-          issue={updatedIssue}
           teamId={currentTeam._id}
-          on:issueChange={({ detail }) => update(detail.field, detail.value)}
+          on:issueChange={({ detail }) => change(detail.field, detail.value)}
         />
       {/if}
     </svelte:fragment>
   </Panel>
 {/if}
+
+<style lang="scss">
+  .title {
+    font-weight: 500;
+    font-size: 1.125rem;
+    color: var(--theme-caption-color);
+  }
+</style>

@@ -28,7 +28,7 @@
   $: issueName = `${currentTeam.identifier}-${value.number}`
 
   const handleIssuePreviewOpened = () => {
-    showPanel(tracker.component.PreviewIssue, value._id, value._class, 'content')
+    showPanel(tracker.component.EditIssue, value._id, value._class, 'content')
   }
 </script>
 
