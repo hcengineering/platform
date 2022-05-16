@@ -77,7 +77,7 @@
 
 <FocusHandler manager={mgr} />
 {#if editable && editable === true}
-  <div class="editor-container buttons-group xsmall-gap">
+  <div class="editor-container bottom buttons-group xsmall-gap">
     <div class="cover-channel" class:show class:copied={label === plugin.string.Copied} data-tooltip={lTraslate}>
       <input
         bind:this={input}
@@ -214,7 +214,29 @@
     padding: 0.5rem;
     background-color: var(--accent-bg-color);
     border: 1px solid var(--divider-color);
-    border-radius: 0.25rem;
-    box-shadow: var(--popup-panel-shadow);
+    border-radius: 0.75rem;
+    transform: translate(calc(-50% + 0.75rem), 0.25rem);
+    box-shadow: var(--popup-aside-shadow);
+
+    &::after,
+    &::before {
+      content: '';
+      position: absolute;
+      margin-left: -9px;
+      top: -6px;
+      left: 50%;
+      width: 18px;
+      height: 7px;
+    }
+    &::before {
+      background-color: var(--accent-bg-color);
+      clip-path: url('#nub-bg');
+      z-index: 1;
+    }
+    &::after {
+      background-color: var(--divider-color);
+      clip-path: url('#nub-border');
+      z-index: 2;
+    }
   }
 </style>
