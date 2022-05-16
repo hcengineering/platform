@@ -28,8 +28,6 @@
   export let content: string = ''
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
   export let showButtons = true
-  export let isEditable = true
-  export let isEmpty = false
   export let isScrollable = true
 
   let textEditor: TextEditor
@@ -50,8 +48,6 @@
           <TextEditor
             bind:content
             {placeholder}
-            {isEditable}
-            bind:isEmpty
             bind:this={textEditor}
             on:value
             on:content={(ev) => {
@@ -68,8 +64,6 @@
         <TextEditor
           bind:content
           {placeholder}
-          {isEditable}
-          bind:isEmpty
           bind:this={textEditor}
           on:value
           on:content={(ev) => {

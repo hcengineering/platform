@@ -16,15 +16,14 @@
   import { Class, Data, Ref, SortingOrder, WithLookup } from '@anticrm/core'
   import { AttachmentDocList } from '@anticrm/attachment-resources'
   import { Panel } from '@anticrm/panel'
-  import presentation, { createQuery, getClient } from '@anticrm/presentation'
+  import presentation, { createQuery, getClient, MessageViewer } from '@anticrm/presentation'
   import type { Issue, IssueStatus, Team } from '@anticrm/tracker'
-  import { Button, EditBox, IconDownOutline, IconEdit, IconMoreH, IconUpOutline } from '@anticrm/ui'
-  import { StyledTextBox } from '@anticrm/text-editor'
+  import { Button, EditBox, IconDownOutline, IconEdit, IconMoreH, IconUpOutline, Scroller } from '@anticrm/ui'
+  import { StyledTextArea } from '@anticrm/text-editor'
   import { createEventDispatcher, onMount } from 'svelte'
   import tracker from '../../../plugin'
   import ControlPanel from './ControlPanel.svelte'
   import CopyToClipboard from './CopyToClipboard.svelte'
-  import ContentWrapper from './ContentWrapper.svelte'
 
   export let _id: Ref<Issue>
   export let _class: Ref<Class<Issue>>
@@ -39,7 +38,6 @@
   let issueStatuses: WithLookup<IssueStatus>[] | undefined
   let title = ''
   let description = ''
-  let isDescriptionEmpty: boolean
   let innerWidth: number
   let isEditing = false
 
@@ -160,29 +158,22 @@
       {/if}
     </svelte:fragment>
 
-    <ContentWrapper {isEditing}>
-      {#if isEditing}
-        <EditBox bind:value={title} placeholder={tracker.string.IssueTitlePlaceholder} kind="large-style" />
-      {:else}
-        <span class="title">{title}</span>
-      {/if}
-
-      <div class="mt-6" on:click={(ev) => isDescriptionEmpty && edit(ev)}>
-        <StyledTextBox
-          bind:content={description}
-          bind:isEmpty={isDescriptionEmpty}
-          isEditable={isEditing}
-          placeholder={tracker.string.IssueDescriptionPlaceholder}
-          isScrollable={false}
-          alwaysEdit
-          focus
-        />
+    {#if isEditing}
+      <Scroller>
+        <div class="popupPanel-body__main-content py-10 clear-mins content">
+          <EditBox bind:value={title} placeholder={tracker.string.IssueTitlePlaceholder} kind="large-style" />
+          <div class="mt-6">
+            <StyledTextArea bind:content={description} placeholder={tracker.string.IssueDescriptionPlaceholder} focus />
+          </div>
+        </div>
+      </Scroller>
+    {:else}
+      <span class="title">{title}</span>
+      <div class="mt-6">
+        <MessageViewer message={issue.description} />
       </div>
-
-      {#if isEditing}
-        <AttachmentDocList value={issue} />
-      {/if}
-    </ContentWrapper>
+    {/if}
+    <AttachmentDocList value={issue} />
 
     <span slot="actions-label">
       {#if issueId}{issueId}{/if}
@@ -209,5 +200,9 @@
     font-weight: 500;
     font-size: 1.125rem;
     color: var(--theme-caption-color);
+  }
+
+  .content {
+    height: auto;
   }
 </style>

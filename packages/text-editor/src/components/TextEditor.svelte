@@ -29,8 +29,6 @@
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
   export let extensions: AnyExtension[] = []
   export let supportSubmit = true
-  export let isEditable = true
-  export let isEmpty = false
 
   let element: HTMLElement
   let editor: Editor
@@ -63,14 +61,6 @@
   $: if (editor && needFocus) {
     editor.commands.focus()
     needFocus = false
-  }
-
-  $: if (editor && isEditable !== editor.isEditable) {
-    editor.setEditable(isEditable)
-  }
-
-  $: if (editor && isEmpty !== editor.isEmpty) {
-    isEmpty = editor.isEmpty
   }
 
   const Handle = Extension.create({
@@ -107,7 +97,7 @@
           Link,
           ...(supportSubmit ? [Handle] : []), // order important
           // Typography, // we need to disable 1/2 -> ½ rule (https://github.com/hcengineering/anticrm/issues/345)
-          Placeholder.configure({ placeholder: placeHolderStr, showOnlyWhenEditable: false }),
+          Placeholder.configure({ placeholder: placeHolderStr }),
           ...extensions
         ],
         onTransaction: () => {
