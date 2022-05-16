@@ -13,16 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref } from '@anticrm/core'
+  import { Ref, SortingOrder } from '@anticrm/core'
   import { Project } from '@anticrm/tracker'
   import { IntlString, translate } from '@anticrm/platform'
-  import { getClient } from '@anticrm/presentation'
+  import { createQuery, getClient } from '@anticrm/presentation'
   import { Button, showPopup, SelectPopup, eventToHTMLElement, ButtonShape } from '@anticrm/ui'
   import type { ButtonKind, ButtonSize } from '@anticrm/ui'
   import tracker from '../plugin'
 
   export let value: Ref<Project> | null | undefined
-  export let projects: Project[] = []
   export let shouldShowLabel: boolean = true
   export let isEditable: boolean = true
   export let onProjectIdChange: ((newProjectId: Ref<Project> | undefined) => void) | undefined = undefined
@@ -34,9 +33,22 @@
   export let width: string | undefined = 'min-content'
 
   const client = getClient()
+  const projectsQuery = createQuery()
 
+  let projects: Project[] = []
   let selectedProject: Project | undefined
   let defaultProjectLabel = ''
+
+  $: projectsQuery.query(
+    tracker.class.Project,
+    {},
+    (currentProjects) => {
+      projects = currentProjects
+    },
+    {
+      sort: { modifiedOn: SortingOrder.Ascending }
+    }
+  )
 
   $: if (value !== undefined) {
     handleSelectedProjectIdUpdated(value)

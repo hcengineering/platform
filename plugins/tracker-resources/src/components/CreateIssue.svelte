@@ -43,7 +43,6 @@
 
   let currentAssignee: Ref<Employee> | null = assignee
   let issueStatuses: WithLookup<IssueStatus>[] = []
-  let availableProjects: WithLookup<Project>[] = []
 
   let object: Data<Issue> = {
     title: '',
@@ -61,7 +60,6 @@
   const dispatch = createEventDispatcher()
   const client = getClient()
   const statusesQuery = createQuery()
-  const projectsQuery = createQuery()
   const taskId: Ref<Issue> = generateId()
 
   $: _space = space
@@ -77,17 +75,6 @@
     {
       lookup: { category: tracker.class.IssueStatusCategory },
       sort: { rank: SortingOrder.Ascending }
-    }
-  )
-
-  $: projectsQuery.query(
-    tracker.class.Project,
-    {},
-    (projects) => {
-      availableProjects = projects
-    },
-    {
-      sort: { modifiedOn: SortingOrder.Ascending }
     }
   )
 
@@ -241,7 +228,7 @@
       size="small"
       kind="no-border"
     />
-    <ProjectSelector value={object.project} projects={availableProjects} onProjectIdChange={handleProjectIdChanged} />
+    <ProjectSelector value={object.project} onProjectIdChange={handleProjectIdChanged} />
     <DatePresenter bind:value={object.dueDate} editable />
     <Button
       icon={tracker.icon.MoreActions}

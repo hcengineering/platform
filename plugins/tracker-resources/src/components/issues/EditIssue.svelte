@@ -15,11 +15,10 @@
 <script lang="ts">
   import contact from '@anticrm/contact'
   import { Class, Ref, SortingOrder, WithLookup } from '@anticrm/core'
-  // import Card from '../Card.svelte'
   import { Panel } from '@anticrm/panel'
   import { createQuery, getClient, UserBox } from '@anticrm/presentation'
   import { StyledTextBox } from '@anticrm/text-editor'
-  import type { Issue, IssueStatus, Project, Team } from '@anticrm/tracker'
+  import type { Issue, IssueStatus, Team } from '@anticrm/tracker'
   import {
     Button,
     DatePresenter,
@@ -44,12 +43,10 @@
   const client = getClient()
   const query = createQuery()
   const statusesQuery = createQuery()
-  const projectsQuery = createQuery()
 
   let issue: Issue | undefined
   let currentTeam: Team | undefined
   let issueStatuses: WithLookup<IssueStatus>[] | undefined
-  let projects: Project[] = []
   let innerWidth: number
 
   $: _id &&
@@ -78,15 +75,6 @@
     )
 
   $: issueLabel = currentTeam && issue && `${currentTeam.identifier}-${issue.number}`
-
-  $: projectsQuery.query(
-    tracker.class.Project,
-    {},
-    (currentProjects) => {
-      projects = currentProjects
-    },
-    { sort: { modifiedOn: SortingOrder.Ascending } }
-  )
 
   function change (field: string, value: any) {
     if (issue !== undefined) {
@@ -226,7 +214,7 @@
           <span class="label">
             <Label label={tracker.string.Project} />
           </span>
-          <ProjectEditor {projects} value={issue} currentSpace={currentTeam?._id} />
+          <ProjectEditor value={issue} currentSpace={currentTeam?._id} />
           {#if issue.dueDate !== null}
             <div class="divider" />
             <span class="label">
@@ -245,7 +233,6 @@
             kind="no-border"
           />
           <ProjectEditor
-            {projects}
             value={issue}
             size={'small'}
             kind={'no-border'}

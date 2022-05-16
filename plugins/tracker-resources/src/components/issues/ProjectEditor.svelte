@@ -22,7 +22,6 @@
   import { IntlString } from '@anticrm/platform'
 
   export let value: Issue
-  export let projects: Project[] = []
   export let currentSpace: Ref<Team> | undefined = undefined
   export let isEditable: boolean = true
   export let shouldShowLabel: boolean = true
@@ -58,7 +57,6 @@
     {shape}
     {width}
     {justify}
-    {projects}
     {isEditable}
     {shouldShowLabel}
     {popupPlaceholder}
