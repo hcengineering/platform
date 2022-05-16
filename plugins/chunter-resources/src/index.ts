@@ -16,10 +16,9 @@
 import core from '@anticrm/core'
 import chunter, { ChunterSpace, Channel, ChunterMessage, Message, ThreadMessage, DirectMessage } from '@anticrm/chunter'
 import { NotificationClientImpl } from '@anticrm/notification-resources'
-import { Resources, getResource } from '@anticrm/platform'
+import { Resources } from '@anticrm/platform'
 import preference from '@anticrm/preference'
 import { getClient, MessageBox } from '@anticrm/presentation'
-import workbench from '@anticrm/workbench'
 import { getCurrentLocation, navigate, showPopup } from '@anticrm/ui'
 import TxBacklinkCreate from './components/activity/TxBacklinkCreate.svelte'
 import TxBacklinkReference from './components/activity/TxBacklinkReference.svelte'
@@ -38,6 +37,7 @@ import EditChannel from './components/EditChannel.svelte'
 import ThreadView from './components/ThreadView.svelte'
 import Threads from './components/Threads.svelte'
 import SavedMessages from './components/SavedMessages.svelte'
+import ConvertDmToPrivateChannelModal from './components/ConvertDmToPrivateChannel.svelte'
 
 import { getDmName } from './utils'
 
@@ -137,23 +137,9 @@ async function UnarchiveChannel (channel: Channel): Promise<void> {
 }
 
 async function ConvertDmToPrivateChannel (dm: DirectMessage): Promise<void> {
-  const client = getClient()
-
-  await client.updateDoc(dm._class, dm.space, dm._id, {
-    _class: chunter.class.Channel,
-    name: await getDmName(client, dm, true)
-  } as any)
-
-  const navigate = await getResource(workbench.actionImpl.Navigate)
-
-  await navigate([], undefined as any, {
-    mode: 'space',
-    space: dm.space
-  })
-
-  await navigate([], undefined as any, {
-    mode: 'space',
-    space: dm._id
+  showPopup(ConvertDmToPrivateChannelModal, {
+    label: chunter.string.ConvertToPrivate,
+    dm
   })
 }
 
