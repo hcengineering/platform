@@ -215,6 +215,7 @@ export class TProject extends TDoc implements Project {
   @Prop(TypeMarkup(), tracker.string.Project)
   description?: Markup
 
+  @Prop(TypeString(), tracker.string.AssetLabel)
   icon!: Asset
 
   @Prop(TypeNumber(), tracker.string.Status)
