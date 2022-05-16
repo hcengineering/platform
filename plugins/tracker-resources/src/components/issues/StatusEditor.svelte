@@ -46,7 +46,7 @@
     if (shouldSaveOnChange) {
       await client.update(value, { status: newStatus })
     }
-}
+  }
 </script>
 
 {#if value}

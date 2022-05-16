@@ -184,11 +184,7 @@
 
     <svelte:fragment slot="custom-attributes">
       {#if issue && currentTeam && issueStatuses}
-        <ControlPanel
-          {issue}
-          {issueStatuses}
-          on:issueChange={({ detail }) => change(detail.field, detail.value)}
-        />
+        <ControlPanel {issue} {issueStatuses} on:issueChange={({ detail }) => change(detail.field, detail.value)} />
       {/if}
     </svelte:fragment>
   </Panel>
