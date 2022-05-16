@@ -15,7 +15,6 @@
 <script lang="ts">
   import type { Card, CardLabel, LabelsCompactMode } from '@anticrm/board'
 
-  import { getResource } from '@anticrm/platform'
   import preference from '@anticrm/preference'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { Button, IconAdd } from '@anticrm/ui'

@@ -16,7 +16,7 @@
 // To help typescript locate view plugin properly
 import type { Board, Card, CardDate, CardLabel, MenuPage, LabelsCompactMode } from '@anticrm/board'
 import type { Employee } from '@anticrm/contact'
-import { DOMAIN_MODEL, IndexKind, Markup, Ref, Timestamp, TxOperations as Client, Type } from '@anticrm/core'
+import { DOMAIN_MODEL, IndexKind, Markup, Ref, Timestamp, Type } from '@anticrm/core'
 import {
   ArrOf,
   Builder,

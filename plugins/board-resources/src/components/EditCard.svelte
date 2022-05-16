@@ -68,6 +68,9 @@
   getCardActions(client, { _id: board.action.Move }).then(async (result) => {
     if (result[0]) {
       handleMove = (e) => {
+        if (!object) {
+          return
+        }
         invokeAction(object, e, result[0].action, result[0].actionProps)
       }
     }

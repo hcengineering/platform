@@ -42,7 +42,7 @@
     const labels =
       value.space !== selected.space ? await createMissingLabels(client, value, selected.space) : value.labels
 
-    const value: AttachedData<Card> = {
+    const copy: AttachedData<Card> = {
       state: selected.state,
       doneState: null,
       number: (incResult as any).object.sequence,
@@ -61,7 +61,7 @@
       selected.space,
       board.class.Board,
       'cards',
-      value,
+      copy,
       newCardId
     )
     dispatch('close')
