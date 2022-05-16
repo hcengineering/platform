@@ -77,7 +77,7 @@
     selectedProject = await client.findOne(tracker.class.Project, { _id: newProjectId })
   }
 
-  const handlePriorityEditorOpened = (event: MouseEvent) => {
+  const handleProjectEditorOpened = (event: MouseEvent) => {
     if (!isEditable) {
       return
     }
@@ -99,7 +99,7 @@
   {justify}
   icon={projectIcon}
   disabled={!isEditable}
-  on:click={handlePriorityEditorOpened}
+  on:click={handleProjectEditorOpened}
 >
   <svelte:fragment slot="content">
     {#if projectText}

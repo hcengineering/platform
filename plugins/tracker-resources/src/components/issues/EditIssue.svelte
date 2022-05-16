@@ -173,13 +173,11 @@
           <span class="label">
             <Label label={tracker.string.Status} />
           </span>
-          <StatusEditor value={issue} statuses={issueStatuses} currentSpace={currentTeam._id} shouldShowLabel />
-
+          <StatusEditor value={issue} statuses={issueStatuses} shouldShowLabel />
           <span class="label">
             <Label label={tracker.string.Priority} />
           </span>
-          <PriorityEditor value={issue} currentSpace={currentTeam._id} shouldShowLabel />
-
+          <PriorityEditor value={issue} shouldShowLabel />
           <span class="label">
             <Label label={tracker.string.Assignee} />
           </span>
@@ -214,7 +212,7 @@
           <span class="label">
             <Label label={tracker.string.Project} />
           </span>
-          <ProjectEditor value={issue} currentSpace={currentTeam?._id} />
+          <ProjectEditor value={issue} />
           {#if issue.dueDate !== null}
             <div class="divider" />
             <span class="label">
@@ -232,13 +230,7 @@
             size="small"
             kind="no-border"
           />
-          <ProjectEditor
-            value={issue}
-            size={'small'}
-            kind={'no-border'}
-            width={'min-content'}
-            currentSpace={currentTeam?._id}
-          />
+          <ProjectEditor value={issue} size={'small'} kind={'no-border'} width={'min-content'} />
         </div>
       {/if}
     </svelte:fragment>

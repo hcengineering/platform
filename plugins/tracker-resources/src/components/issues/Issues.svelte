@@ -478,21 +478,15 @@
       {employees}
       categories={displayedCategories}
       itemsConfig={[
-        { key: '', presenter: tracker.component.PriorityEditor, props: { currentSpace } },
+        { key: '', presenter: tracker.component.PriorityEditor },
         { key: '', presenter: tracker.component.IssuePresenter, props: { currentTeam } },
-        { key: '', presenter: tracker.component.StatusEditor, props: { currentSpace, statuses } },
+        { key: '', presenter: tracker.component.StatusEditor, props: { statuses } },
         { key: '', presenter: tracker.component.TitlePresenter, props: { shouldUseMargin: true } },
-        { key: '', presenter: tracker.component.DueDatePresenter, props: { currentSpace } },
+        { key: '', presenter: tracker.component.DueDatePresenter },
         {
           key: '',
           presenter: tracker.component.ProjectEditor,
-          props: {
-            currentSpace,
-            kind: 'secondary',
-            size: 'small',
-            shape: 'round',
-            shouldShowPlaceholder: false
-          }
+          props: { kind: 'secondary', size: 'small', shape: 'round', shouldShowPlaceholder: false }
         },
         { key: 'modifiedOn', presenter: tracker.component.ModificationDatePresenter },
         {

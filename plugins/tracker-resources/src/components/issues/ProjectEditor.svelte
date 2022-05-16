@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Ref } from '@anticrm/core'
-  import { Issue, Project, Team } from '@anticrm/tracker'
+  import { Issue, Project } from '@anticrm/tracker'
   import { getClient } from '@anticrm/presentation'
   import type { ButtonKind, ButtonShape, ButtonSize } from '@anticrm/ui'
   import tracker from '../../plugin'
@@ -22,7 +22,6 @@
   import { IntlString } from '@anticrm/platform'
 
   export let value: Issue
-  export let currentSpace: Ref<Team> | undefined = undefined
   export let isEditable: boolean = true
   export let shouldShowLabel: boolean = true
   export let popupPlaceholder: IntlString = tracker.string.MoveToProject
@@ -36,17 +35,11 @@
   const client = getClient()
 
   const handleProjectIdChanged = async (newProjectId: Ref<Project> | null | undefined) => {
-    if (!isEditable || newProjectId === undefined) {
+    if (!isEditable || newProjectId === undefined || value.project === newProjectId) {
       return
     }
 
-    const currentIssue = await client.findOne(tracker.class.Issue, { space: currentSpace, _id: value._id })
-
-    if (currentIssue === undefined) {
-      return
-    }
-
-    await client.update(currentIssue, { project: newProjectId })
+    await client.update(value, { project: newProjectId })
   }
 </script>
 

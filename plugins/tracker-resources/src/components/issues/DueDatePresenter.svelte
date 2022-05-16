@@ -13,15 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, Timestamp, WithLookup } from '@anticrm/core'
-  import { Issue, Team } from '@anticrm/tracker'
+  import { Timestamp, WithLookup } from '@anticrm/core'
+  import { Issue } from '@anticrm/tracker'
   import { DatePresenter, Tooltip, getDaysDifference } from '@anticrm/ui'
   import { getClient } from '@anticrm/presentation'
   import DueDatePopup from './DueDatePopup.svelte'
   import tracker from '../../plugin'
 
   export let value: WithLookup<Issue>
-  export let currentSpace: Ref<Team> | undefined = undefined
 
   const WARNING_DAYS = 7
   const client = getClient()
@@ -37,17 +36,11 @@
   const handleDueDateChanged = async (event: CustomEvent<Timestamp>) => {
     const newDate = event.detail
 
-    if (newDate === undefined) {
+    if (newDate === undefined || value.dueDate === newDate) {
       return
     }
 
-    const currentIssue = await client.findOne(tracker.class.Issue, { space: currentSpace, _id: value._id })
-
-    if (currentIssue === undefined) {
-      return
-    }
-
-    await client.update(currentIssue, { dueDate: newDate })
+    await client.update(value, { dueDate: newDate })
   }
 
   const getIconModifier = (isOverdue: boolean, daysDifference: number | null) => {
