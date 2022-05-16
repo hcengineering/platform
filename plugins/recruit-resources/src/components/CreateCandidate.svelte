@@ -17,7 +17,7 @@
   import contact, { Channel, ChannelProvider, combineName, findPerson, Person } from '@anticrm/contact'
   import { ChannelsDropdown } from '@anticrm/contact-resources'
   import PersonPresenter from '@anticrm/contact-resources/src/components/PersonPresenter.svelte'
-  import { Account, AttachedData, Data, Doc, generateId, MixinData, Ref, TxProcessor } from '@anticrm/core'
+  import { Account, AttachedData, Data, Doc, generateId, MixinData, Ref, TxProcessor, WithLookup } from '@anticrm/core'
   import login from '@anticrm/login'
   import { getMetadata, getResource, setPlatformStatus, unknownError } from '@anticrm/platform'
   import {
@@ -79,6 +79,7 @@
 
   let avatar: File | undefined
   let channels: AttachedData<Channel>[] = []
+  let matchedChannels: Channel[] = []
 
   let skills: TagReference[] = []
   const key: KeyedAttribute = {
@@ -383,10 +384,30 @@
     ]
   }
 
-  let matches: Person[] = []
+  let matches: WithLookup<Person>[] = []
   $: findPerson(client, { ...object, name: combineName(firstName, lastName) }, channels).then((p) => {
     matches = p
   })
+
+  $: if (matches.length > 0) {
+    const res: Channel[] = []
+    for (const ci in channels) {
+      let matched = false
+      for (const m of matches) {
+        for (const c of (m.$lookup?.channels as Channel[]) ?? []) {
+          if (c.provider === channels[ci].provider && c.value === channels[ci].value) {
+            res.push(c)
+            matched = true
+            break
+          }
+        }
+        if (matched) {
+          break
+        }
+      }
+    }
+    matchedChannels = res
+  }
 
   function removeAvatar (): void {
     avatar = undefined
@@ -461,7 +482,12 @@
     </div>
   </div>
   <svelte:fragment slot="pool">
-    <ChannelsDropdown focusIndex={10} bind:value={channels} editable />
+    <ChannelsDropdown
+      focusIndex={10}
+      bind:value={channels}
+      editable
+      highlighted={matchedChannels.map((it) => it.provider)}
+    />
     <YesNo
       focusIndex={100}
       label={recruit.string.Onsite}
@@ -537,12 +563,14 @@
       {/if}
     </div>
     {#if matches.length > 0}
-      <div class="flex-row-center error-color">
-        <IconInfo size={'small'} />
-        <span class="text-sm overflow-label ml-2">
-          <Label label={contact.string.PersonAlreadyExists} />
-        </span>
-        <div class="ml-4"><PersonPresenter value={matches[0]} /></div>
+      <div class="flex-col-stretch flex-grow error-color">
+        <div class="flex mb-1">
+          <IconInfo size={'medium'} />
+          <span class="text-sm overflow-label ml-2">
+            <Label label={contact.string.PersonAlreadyExists} />
+          </span>
+        </div>
+        <PersonPresenter value={matches[0]} avatarSize={'tiny'} />
       </div>
     {/if}
   </svelte:fragment>

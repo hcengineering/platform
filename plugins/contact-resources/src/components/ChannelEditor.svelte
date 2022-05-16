@@ -67,10 +67,11 @@
     isFocus: () => document.activeElement === input
   })
 
+  const updateFocus = () => {
+    mgr.setFocus(idx)
+  }
   $: if (input) {
-    input.addEventListener('focus', () => {
-      mgr.setFocus(idx)
-    })
+    input.addEventListener('focus', updateFocus, { once: true })
   }
 </script>
 

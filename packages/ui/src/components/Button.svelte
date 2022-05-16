@@ -70,10 +70,11 @@
     focusManager.updateFocus(idx, focusIndex)
   }
 
+  const updateFocus = () => {
+    focusManager?.setFocus(idx)
+  }
   $: if (input != null) {
-    input.addEventListener('focus', () => {
-      focusManager?.setFocus(idx)
-    })
+    input.addEventListener('focus', updateFocus, { once: true })
   }
 </script>
 

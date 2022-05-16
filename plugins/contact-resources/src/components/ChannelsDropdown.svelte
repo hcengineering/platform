@@ -38,6 +38,7 @@
   import ChannelEditor from './ChannelEditor.svelte'
 
   export let value: AttachedData<Channel>[] | Channel | null
+  export let highlighted: Ref<ChannelProvider>[] = []
   export let editable: boolean | undefined = undefined
   export let kind: ButtonKind = 'no-border'
   export let size: ButtonSize = 'small'
@@ -243,7 +244,7 @@
         id={item.label}
         bind:input={btns[i]}
         icon={item.icon}
-        {kind}
+        kind={highlighted.includes(item.provider) ? 'dangerous' : kind}
         {size}
         {shape}
         highlight={item.integration || item.notification}
