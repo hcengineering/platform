@@ -56,6 +56,7 @@
     "TypeLabel": "Type",
     "StatusDueDateTooltip": "Until {date}",
     "CopyToClipboard": "Copy to clipboard",
-    "Copied": "Copied"
+    "Copied": "Copied",
+    "ViewFullProfile": "View full profile"
   }
 }
