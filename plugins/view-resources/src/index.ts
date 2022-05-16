@@ -46,7 +46,7 @@ import NumberTypeEditor from './components/typeEditors/NumberTypeEditor.svelte'
 import RefEditor from './components/typeEditors/RefEditor.svelte'
 import DocAttributeBar from './components/DocAttributeBar.svelte'
 
-export { getActions } from './actions'
+export { getActions, invokeAction } from './actions'
 export { default as ActionContext } from './components/ActionContext.svelte'
 export { default as ActionHandler } from './components/ActionHandler.svelte'
 export { default as ContextMenu } from './components/Menu.svelte'

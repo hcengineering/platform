@@ -15,8 +15,8 @@
 //
 
 import { Employee } from '@anticrm/contact'
-import type { AttachedDoc, Class, TxOperations as Client, Doc, Markup, Ref, Timestamp, Obj } from '@anticrm/core'
-import type { Asset, IntlString, Plugin, Resource } from '@anticrm/platform'
+import type { AttachedDoc, Class, Doc, Markup, Ref, Timestamp, Obj } from '@anticrm/core'
+import type { Asset, IntlString, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import type { KanbanTemplateSpace, SpaceWithStates, Task } from '@anticrm/task'
 import type { AnyComponent } from '@anticrm/ui'
@@ -88,21 +88,7 @@ export interface Card extends Task {
   comments?: number
   attachments?: number
 }
-/**
- * @public
- */
-export interface CardAction extends Doc {
-  component?: AnyComponent
-  hint?: IntlString
-  icon: Asset
-  isInline?: boolean
-  kind?: 'primary' | 'secondary' | 'no-border' | 'transparent' | 'dangerous'
-  label: IntlString
-  position: number
-  type: string
-  handler?: Resource<(card: Card, client: Client, e?: Event) => void>
-  supported?: Resource<(card: Card, client: Client) => boolean>
-}
+
 /**
  * @public
  */
@@ -127,16 +113,12 @@ const boards = plugin(boardId, {
   class: {
     Board: '' as Ref<Class<Board>>,
     Card: '' as Ref<Class<Card>>,
-    CardAction: '' as Ref<Class<CardAction>>,
     CardDate: '' as Ref<Class<CardDate>>,
     CardLabel: '' as Ref<Class<CardLabel>>,
     MenuPage: '' as Ref<Class<MenuPage>>
   },
   category: {
-    Action: '' as Ref<ActionCategory>,
-    Add: '' as Ref<ActionCategory>,
-    Archived: '' as Ref<ActionCategory>,
-    Archive: '' as Ref<ActionCategory>
+    Card: '' as Ref<ActionCategory>
   },
   action: {
     Cover: '' as Ref<Action>,
@@ -144,9 +126,9 @@ const boards = plugin(boardId, {
     Labels: '' as Ref<Action>,
     Move: '' as Ref<Action>,
     Copy: '' as Ref<Action>,
-    MakeTemplate: '' as Ref<Action>,
     Archive: '' as Ref<Action>,
-    SendToBoard: '' as Ref<Action>
+    SendToBoard: '' as Ref<Action>,
+    Delete: '' as Ref<Action>
   },
   icon: {
     Board: '' as Asset,

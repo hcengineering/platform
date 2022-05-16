@@ -15,9 +15,9 @@
 <script lang="ts">
   import type { Card, CardLabel } from '@anticrm/board'
 
-  import { getResource } from '@anticrm/platform'
   import { getClient } from '@anticrm/presentation'
   import { Button, IconAdd } from '@anticrm/ui'
+  import { invokeAction } from '@anticrm/view-resources'
 
   import board from '../../plugin'
   import { getCardActions } from '../../utils/CardActionUtils'
@@ -44,9 +44,8 @@
     getCardActions(client, {
       _id: board.action.Labels
     }).then(async (result) => {
-      if (result?.[0]?.handler) {
-        const handler = await getResource(result[0].handler)
-        labelsHandler = (e: Event) => handler(value, client, e)
+      if (result?.[0]) {
+        labelsHandler = (e: Event) => invokeAction(value, e, result[0].action, result[0].actionProps)
       }
     })
   }

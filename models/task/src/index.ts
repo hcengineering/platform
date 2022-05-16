@@ -511,11 +511,15 @@ export function createModel (builder: Builder): void {
     task.completion.IssueCategory
   )
 
-  createAction(builder, {
-    ...viewTemplates.move,
-    target: task.class.Task,
-    context: {
-      mode: ['context', 'browser']
-    }
-  })
+  createAction(
+    builder,
+    {
+      ...viewTemplates.move,
+      target: task.class.Task,
+      context: {
+        mode: ['context', 'browser']
+      }
+    },
+    task.action.Move
+  )
 }

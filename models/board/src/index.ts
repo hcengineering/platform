@@ -14,19 +14,9 @@
 //
 
 // To help typescript locate view plugin properly
-import type { Board, Card, CardAction, CardDate, CardLabel, MenuPage } from '@anticrm/board'
+import type { Board, Card, CardDate, CardLabel, MenuPage } from '@anticrm/board'
 import type { Employee } from '@anticrm/contact'
-import {
-  TxOperations as Client,
-  Doc,
-  DOMAIN_MODEL,
-  FindOptions,
-  IndexKind,
-  Ref,
-  Type,
-  Timestamp,
-  Markup
-} from '@anticrm/core'
+import { Doc, DOMAIN_MODEL, FindOptions, IndexKind, Ref, Type, Timestamp, Markup } from '@anticrm/core'
 import {
   ArrOf,
   Builder,
@@ -45,9 +35,9 @@ import chunter from '@anticrm/model-chunter'
 import contact from '@anticrm/model-contact'
 import core, { TAttachedDoc, TDoc, TObj } from '@anticrm/model-core'
 import task, { TSpaceWithStates, TTask } from '@anticrm/model-task'
-import view, { createAction } from '@anticrm/model-view'
+import view, { actionTemplates, createAction } from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
-import { Asset, IntlString, Resource } from '@anticrm/platform'
+import { IntlString } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'
 import board from './plugin'
 
@@ -118,20 +108,6 @@ export class TCard extends TTask implements Card {
   members?: Ref<Employee>[]
 }
 
-@Model(board.class.CardAction, core.class.Doc, DOMAIN_MODEL)
-export class TCardAction extends TDoc implements CardAction {
-  component?: AnyComponent
-  hint?: IntlString
-  icon!: Asset
-  isInline?: boolean
-  kind?: 'primary' | 'secondary' | 'no-border' | 'transparent' | 'dangerous'
-  label!: IntlString
-  position!: number
-  type!: string
-  handler?: Resource<(card: Card, client: Client, e?: Event) => void>
-  supported?: Resource<(card: Card, client: Client) => boolean>
-}
-
 @Model(board.class.MenuPage, core.class.Doc, DOMAIN_MODEL)
 export class TMenuPage extends TDoc implements MenuPage {
   component!: AnyComponent
@@ -140,7 +116,7 @@ export class TMenuPage extends TDoc implements MenuPage {
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TBoard, TCard, TCardLabel, TCardDate, TCardAction, TMenuPage)
+  builder.createModel(TBoard, TCard, TCardLabel, TCardDate, TMenuPage)
 
   builder.createDoc(board.class.MenuPage, core.space.Model, {
     component: board.component.Archive,
@@ -268,108 +244,156 @@ export function createModel (builder: Builder): void {
   )
 
   // card actions
-  createAction(builder, {
-    action: view.actionImpl.ShowPopup,
-    actionProps: {
-      component: board.component.LabelsActionPopup
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.ShowPopup,
+      actionProps: {
+        component: board.component.LabelsActionPopup,
+        element: 'top'
+      },
+      label: board.string.Labels,
+      icon: board.icon.Card,
+      input: 'any',
+      category: board.category.Card,
+      target: board.class.Card,
+      context: { mode: 'context', application: board.app.Board, group: 'top' }
     },
-    label: board.string.Labels,
-    icon: board.icon.Card,
-    input: 'any',
-    category: board.category.Add,
-    target: board.class.Card,
-    context: { mode: ['context', 'panel'] }
-  }, board.action.Labels)
-  createAction(builder, {
-    action: view.actionImpl.ShowPopup,
-    actionProps: {
-      component: board.component.DatesActionPopup
+    board.action.Labels
+  )
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.ShowPopup,
+      actionProps: {
+        component: board.component.DatesActionPopup,
+        element: 'top'
+      },
+      label: board.string.Dates,
+      icon: board.icon.Card,
+      input: 'any',
+      category: board.category.Card,
+      target: board.class.Card,
+      context: { mode: 'context', application: board.app.Board, group: 'top' }
     },
-    label: board.string.Dates,
-    icon: board.icon.Card,
-    input: 'any',
-    category: board.category.Add,
-    target: board.class.Card,
-    context: { mode: ['context', 'panel'] }
-  }, board.action.Dates)
-  createAction(builder, {
-    action: view.actionImpl.ShowPopup,
-    actionProps: {
-      component: board.component.CoverActionPopup
+    board.action.Dates
+  )
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.ShowPopup,
+      actionProps: {
+        component: board.component.CoverActionPopup,
+        element: 'top'
+      },
+      label: board.string.Cover,
+      icon: board.icon.Card,
+      input: 'any',
+      category: board.category.Card,
+      target: board.class.Card,
+      context: { mode: 'context', application: board.app.Board, group: 'top' }
     },
-    label: board.string.Cover,
-    icon: board.icon.Card,
-    input: 'any',
-    category: board.category.Add,
-    target: board.class.Card,
-    context: { mode: ['context', 'panel'] }
-  }, board.action.Cover)
-  createAction(builder, {
-    action: view.actionImpl.ShowPopup,
-    actionProps: {
-      component: board.component.MoveActionPopup
+    board.action.Cover
+  )
+  createAction(
+    builder,
+    {
+      ...actionTemplates.move,
+      action: view.actionImpl.ShowPopup,
+      actionProps: {
+        component: board.component.MoveActionPopup,
+        element: 'top'
+      },
+      input: 'any',
+      category: board.category.Card,
+      target: board.class.Card,
+      context: { mode: 'context', application: board.app.Board, group: 'tools' }
     },
-    label: board.string.Move,
-    icon: board.icon.Card,
-    input: 'any',
-    category: board.category.Action,
-    target: board.class.Card,
-    context: { mode: ['context', 'panel'] }
-  }, board.action.Move)
-  createAction(builder, {
-    action: view.actionImpl.ShowPopup,
-    actionProps: {
-      component: board.component.CopyActionPopup
+    board.action.Move
+  )
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.ShowPopup,
+      actionProps: {
+        component: board.component.CopyActionPopup,
+        element: 'top'
+      },
+      label: board.string.Copy,
+      icon: board.icon.Card,
+      input: 'any',
+      category: board.category.Card,
+      target: board.class.Card,
+      context: { mode: 'context', application: board.app.Board, group: 'tools' }
     },
-    label: board.string.Copy,
-    icon: board.icon.Card,
-    input: 'any',
-    category: board.category.Action,
-    target: board.class.Card,
-    context: { mode: ['context', 'panel'] }
-  }, board.action.Copy)
-  createAction(builder, {
-    action: view.actionImpl.ShowPopup,
-    actionProps: {
-      component: board.component.MakeTemplateActionPopup
-    },
-    label: board.string.MakeTemplate,
-    icon: board.icon.Card,
-    input: 'any',
-    category: board.category.Action,
-    target: board.class.Card,
-    context: { mode: ['panel'] }
-  }, board.action.MakeTemplate)
+    board.action.Copy
+  )
 
-  createAction(builder, {
-    action: view.actionImpl.UpdateDocument,
-    actionProps: {
-      key: 'isArchived',
-      value: true,
-      ask: true,
-      label: task.string.Archive,
-      message: task.string.ArchiveConfirm
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.UpdateDocument,
+      actionProps: {
+        key: 'isArchived',
+        value: true,
+        ask: true,
+        label: task.string.Archive,
+        message: task.string.ArchiveConfirm
+      },
+      query: {
+        isArchived: { $nin: [true] }
+      },
+      label: board.string.Archive,
+      icon: board.icon.Card,
+      input: 'any',
+      category: board.category.Card,
+      target: board.class.Card,
+      context: { mode: 'context', application: board.app.Board, group: 'tools' }
     },
-    label: board.string.Archive,
-    icon: board.icon.Card,
-    input: 'any',
-    category: board.category.Archive,
-    target: board.class.Card,
-    context: { mode: ['context', 'panel'] }
-  }, board.action.Archive)
-  createAction(builder, {
-    action: view.actionImpl.UpdateDocument,
-    actionProps: {
-      key: 'isArchived',
-      value: false
+    board.action.Archive
+  )
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.UpdateDocument,
+      actionProps: {
+        key: 'isArchived',
+        value: false
+      },
+      query: {
+        isArchived: true
+      },
+      label: board.string.SendToBoard,
+      icon: board.icon.Card,
+      input: 'any',
+      category: board.category.Card,
+      target: board.class.Card,
+      context: { mode: 'context', application: board.app.Board, group: 'tools' }
     },
-    label: board.string.SendToBoard,
-    icon: board.icon.Card,
-    input: 'any',
-    category: board.category.Archived,
-    target: board.class.Card,
-    context: { mode: ['context', 'panel'] }
-  }, board.action.SendToBoard)
+    board.action.SendToBoard
+  )
+
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.Delete,
+      query: {
+        isArchived: true
+      },
+      label: view.string.Delete,
+      icon: view.icon.Delete,
+      keyBinding: ['Meta + Backspace', 'Ctrl + Backspace'],
+      category: board.category.Card,
+      input: 'any',
+      target: board.class.Card,
+      context: { mode: 'context', application: board.app.Board, group: 'tools' }
+    },
+    board.action.Delete
+  )
+
+  builder.mixin(board.class.Card, core.class.Class, view.mixin.IgnoreActions, {
+    actions: [view.action.Delete, task.action.Move]
+  })
 }
 
 export { boardOperation } from './migration'

@@ -11,7 +11,7 @@
 
   import board from '../../plugin'
 
-  export let object: Card
+  export let value: Card
 
   const noneListItem: ListItem = {
     _id: 'none',
@@ -43,9 +43,9 @@
     const items: TodoItem[] = template ? await client.findAll(task.class.TodoItem, { attachedTo: template._id }) : []
     const checklistRef = await client.addCollection(
       task.class.TodoItem,
-      object.space,
-      object._id,
-      object._class,
+      value.space,
+      value._id,
+      value._class,
       'todoItems',
       {
         name,
@@ -57,7 +57,7 @@
     if (items.length > 0) {
       await Promise.all(
         items.map((item) =>
-          client.addCollection(task.class.TodoItem, object.space, checklistRef, task.class.TodoItem, 'items', {
+          client.addCollection(task.class.TodoItem, value.space, checklistRef, task.class.TodoItem, 'items', {
             name: item.name,
             dueTo: item.dueTo,
             done: item.done,

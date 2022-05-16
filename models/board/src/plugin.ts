@@ -38,8 +38,7 @@ export default mergeIds(boardId, board, {
     DatesActionPopup: '' as AnyComponent,
     CoverActionPopup: '' as AnyComponent,
     MoveActionPopup: '' as AnyComponent,
-    CopyActionPopup: '' as AnyComponent,
-    MakeTemplateActionPopup: '' as AnyComponent
+    CopyActionPopup: '' as AnyComponent
   },
   space: {
     DefaultBoard: '' as Ref<Space>

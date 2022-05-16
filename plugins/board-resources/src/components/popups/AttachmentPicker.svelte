@@ -6,7 +6,7 @@
 
   import board from '../../plugin'
 
-  export let object: Card
+  export let value: Card
 
   let inputFile: HTMLInputElement
   let loading: number = 0
@@ -36,9 +36,9 @@
     <AddAttachment
       bind:inputFile
       bind:loading
-      objectClass={object._class}
-      objectId={object._id}
-      space={object.space}
+      objectClass={value._class}
+      objectId={value._id}
+      space={value.space}
       on:attached={onAttached}
     >
       <svelte:fragment slot="control" let:click>

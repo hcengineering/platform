@@ -14,9 +14,10 @@
 // limitations under the License.
 //
 
-import type { Doc, WithLookup } from '@anticrm/core'
+import type { Doc, DocumentQuery, WithLookup } from '@anticrm/core'
 import core, { Class, Client, matchQuery, Ref } from '@anticrm/core'
-import type { Action, ViewActionInput, ViewContextType } from '@anticrm/view'
+import { getResource } from '@anticrm/platform'
+import type { Action, ViewAction, ViewActionInput, ViewContextType } from '@anticrm/view'
 import view from './plugin'
 import { FocusSelection } from './selection'
 
@@ -78,6 +79,16 @@ export async function getActions (
     return aTarget - bTarget
   })
   return filteredActions
+}
+
+export async function invokeAction (
+  object: Doc | Doc[],
+  evt: Event,
+  action: ViewAction,
+  props?: Record<string, any>
+): Promise<void> {
+  const impl = await getResource(action)
+  await impl(Array.isArray(object) && object.length === 1 ? object[0] : object, evt, props)
 }
 
 export async function getContextActions (

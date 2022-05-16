@@ -14,45 +14,79 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Card, CardAction } from '@anticrm/board'
-  import { IntlString, getResource } from '@anticrm/platform'
+  import type { Card } from '@anticrm/board'
   import { getClient } from '@anticrm/presentation'
-  import { Button, Component, Label } from '@anticrm/ui'
+  import { Button, IconAttachment, Label, showPopup } from '@anticrm/ui'
+  import type { Action } from '@anticrm/view'
+  import { getActions, invokeAction } from '@anticrm/view-resources'
+  import AddChecklist from '../popups/AddChecklist.svelte'
+  import AttachmentPicker from '../popups/AttachmentPicker.svelte'
+  import plugin from '../../plugin'
+  import { getPopupAlignment } from '../../utils/PopupUtils'
 
   export let value: Card
   const client = getClient()
 
-  const actionGroups: { label: IntlString; actions: CardAction[] }[] = []
+  let topActions: Action[] = []
+  let toolsActions: Action[] = []
+  async function fetch () {
+    const result = await getActions(client, value, value._class)
+    topActions = result.filter((action) => action.context.group === 'top')
+    toolsActions = result.filter((action) => action.context.group !== 'top')
+  }
+  fetch()
+  $: value.members && fetch()
+  $: value.isArchived && fetch()
+  $: !value.isArchived && fetch()
 </script>
 
 {#if value}
   <div class="flex-col flex-gap-3">
-    {#each actionGroups as group}
-      {#if group.actions.length > 0}
-        <div class="flex-col flex-gap-1">
-          <Label label={group.label} />
-          {#each group.actions as action}
-            {#if action.component}
-              <Component is={action.component} props={{ object: value }}>
-                <slot />
-              </Component>
-            {:else}
-              <Button
-                icon={action.icon}
-                label={action.label}
-                kind={action.kind ?? 'no-border'}
-                justify="left"
-                on:click={async (e) => {
-                  if (action.handler) {
-                    const handler = await getResource(action.handler)
-                    handler(value, client, e)
-                  }
-                }}
-              />
-            {/if}
-          {/each}
-        </div>
-      {/if}
-    {/each}
+    <div class="flex-col flex-gap-1">
+      <Label label={plugin.string.AddToCard} />
+      {#each topActions as action}
+        <Button
+          icon={action.icon}
+          label={action.label}
+          kind="no-border"
+          justify="left"
+          on:click={(e) => {
+            invokeAction(value, e, action.action, action.actionProps)
+          }}
+        />
+      {/each}
+      <Button
+        icon={plugin.icon.Card}
+        label={plugin.string.Checklist}
+        kind="no-border"
+        justify="left"
+        on:click={(e) => {
+          showPopup(AddChecklist, { value }, getPopupAlignment(e))
+        }}
+      />
+      <Button
+        icon={IconAttachment}
+        label={plugin.string.Attachments}
+        kind="no-border"
+        justify="left"
+        on:click={(e) => {
+          showPopup(AttachmentPicker, { value }, getPopupAlignment(e))
+        }}
+      />
+    </div>
+    <div class="flex-col flex-gap-1">
+      <Label label={plugin.string.Actions} />
+      {#each toolsActions as action}
+        <Button
+          icon={action.icon}
+          label={action.label}
+          kind="no-border"
+          justify="left"
+          on:click={(e) => {
+            invokeAction(value, e, action.action, action.actionProps)
+          }}
+        />
+      {/each}
+    </div>
   </div>
 {/if}
