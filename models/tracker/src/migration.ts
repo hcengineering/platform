@@ -16,6 +16,7 @@
 import core, { generateId, Ref, TxOperations } from '@anticrm/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
 import { IssueStatus, IssueStatusCategory, Team, genRanks } from '@anticrm/tracker'
+import { DOMAIN_TRACKER } from '.'
 import tracker from './plugin'
 
 enum DeprecatedIssueStatus {
@@ -148,21 +149,15 @@ async function upgradeIssueStatuses (tx: TxOperations): Promise<void> {
   }
 }
 
-async function upgradeIssueProjects (tx: TxOperations): Promise<void> {
-  const issues = await tx.findAll(tracker.class.Issue, {})
+async function migrateIssueProjects (client: MigrationClient): Promise<void> {
+  const issues = await client.find(DOMAIN_TRACKER, { _class: tracker.class.Issue, project: { $exists: false } })
 
   if (issues.length === 0) {
     return
   }
 
   for (const issue of issues) {
-    const currentProject = issue.project as unknown
-
-    if (currentProject !== undefined) {
-      continue
-    }
-
-    await tx.update(issue, { project: null })
+    await client.update(DOMAIN_TRACKER, { _id: issue._id }, { project: null })
   }
 }
 
@@ -194,7 +189,6 @@ async function upgradeTeams (tx: TxOperations): Promise<void> {
 
 async function upgradeIssues (tx: TxOperations): Promise<void> {
   await upgradeIssueStatuses(tx)
-  await upgradeIssueProjects(tx)
 }
 
 async function upgradeProjects (tx: TxOperations): Promise<void> {
@@ -202,7 +196,9 @@ async function upgradeProjects (tx: TxOperations): Promise<void> {
 }
 
 export const trackerOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {},
+  async migrate (client: MigrationClient): Promise<void> {
+    await Promise.all([migrateIssueProjects(client)])
+  },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)
     await createDefaults(tx)
