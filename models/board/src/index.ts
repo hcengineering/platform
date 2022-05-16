@@ -214,6 +214,12 @@ export function createModel (builder: Builder): void {
     config: []
   })
 
+  builder.createDoc(view.class.Viewlet, core.space.Model, {
+    attachTo: board.class.Card,
+    descriptor: board.viewlet.Table,
+    config: []
+  })
+
   builder.mixin(board.class.Card, core.class.Class, task.mixin.KanbanCard, {
     card: board.component.KanbanCard
   })
@@ -258,6 +264,17 @@ export function createModel (builder: Builder): void {
       component: board.component.KanbanView
     },
     board.viewlet.Kanban
+  )
+
+  builder.createDoc(
+    view.class.ViewletDescriptor,
+    core.space.Model,
+    {
+      label: view.string.Table,
+      icon: view.icon.Table,
+      component: board.component.TableView
+    },
+    board.viewlet.Table
   )
 
   // card actions
