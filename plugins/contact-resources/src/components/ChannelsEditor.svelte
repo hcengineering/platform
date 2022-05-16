@@ -28,6 +28,7 @@
   export let integrations: Set<Ref<Doc>> | undefined = undefined
   export let editable = true
   export let allowOpen = true
+  export let focusIndex = -1
 
   export let kind: ButtonKind = 'link-bordered'
   export let size: ButtonSize = 'small'
@@ -124,6 +125,7 @@
   {integrations}
   {editable}
   {shape}
+  {focusIndex}
   on:change={(e) => {
     if (editable) save(e.detail)
   }}

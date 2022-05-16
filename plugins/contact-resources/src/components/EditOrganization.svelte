@@ -16,7 +16,7 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte'
   import { getCurrentAccount, Ref, Space } from '@anticrm/core'
-  import { EditBox } from '@anticrm/ui'
+  import { EditBox, createFocusManager, FocusHandler } from '@anticrm/ui'
   import { getClient, createQuery } from '@anticrm/presentation'
   import setting from '@anticrm/setting'
   import { IntegrationType } from '@anticrm/setting'
@@ -49,7 +49,11 @@
   onMount(() => {
     dispatch('open', { ignoreKeys: ['comments', 'name', 'channels'] })
   })
+
+  const manager = createFocusManager()
 </script>
+
+<FocusHandler {manager} />
 
 {#if object !== undefined}
   <div class="flex-row-center">
@@ -63,11 +67,13 @@
           maxWidth="20rem"
           bind:value={object.name}
           on:change={nameChange}
+          focus
+          focusIndex={1}
         />
       </div>
       <div class="separator" />
       <div class="flex-row-center">
-        <ChannelsEditor attachedTo={object._id} attachedClass={object._class} {integrations} on:click />
+        <ChannelsEditor attachedTo={object._id} attachedClass={object._class} {integrations} focusIndex={10} on:click />
       </div>
     </div>
   </div>
