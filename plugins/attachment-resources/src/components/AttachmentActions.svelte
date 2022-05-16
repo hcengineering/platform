@@ -55,19 +55,10 @@
   }
 </script>
 
-<div class="actions">
-  <a class="downloadButton" href={getFileUrl(attachment.file)} download={attachment.name} on:click|stopPropagation>
-    <Icon icon={FileDownload} size={'small'} />
+<div class="flex">
+  <a class="mr-1" href={getFileUrl(attachment.file)} download={attachment.name} on:click|stopPropagation>
+    <ActionIcon icon={FileDownload} size={'small'} action={() => {}} />
+    <!-- <Icon icon={FileDownload} size={'small'} /> -->
   </a>
   <ActionIcon icon={IconMoreH} size={'small'} action={showMenu} />
 </div>
-
-<style lang="scss">
-  .actions {
-    display: flex;
-  }
-
-  .downloadButton {
-    margin-right: 0.2rem;
-  }
-</style>

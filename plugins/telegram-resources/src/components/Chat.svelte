@@ -82,7 +82,7 @@
         updateAccountsQuery(accountsIds)
       },
       {
-        sort: { sendOn: SortingOrder.Descending },
+        sort: { sendOn: SortingOrder.Ascending },
         limit: 500,
         lookup: {
           _id: { attachments: attachment.class.Attachment }
