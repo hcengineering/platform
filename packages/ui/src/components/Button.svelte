@@ -22,7 +22,6 @@
   import Spinner from './Spinner.svelte'
 
   export let label: IntlString | undefined = undefined
-  export let text: string | undefined = undefined
   export let labelParams: Record<string, any> = {}
   export let kind: ButtonKind = 'secondary'
   export let size: ButtonSize = 'medium'
@@ -42,7 +41,7 @@
   export let id: string | undefined = undefined
   export let input: HTMLButtonElement | undefined = undefined
 
-  $: iconOnly = label === undefined && text === undefined && $$slots.content === undefined
+  $: iconOnly = label === undefined && $$slots.content === undefined
 
   onMount(() => {
     if (focus && input) {
@@ -119,8 +118,6 @@
     <span class="overflow-label pointer-events-none">
       {#if label}
         <Label {label} params={labelParams} />
-      {:else if text}
-        {text}
       {:else if $$slots.content}
         <slot name="content" />
       {/if}

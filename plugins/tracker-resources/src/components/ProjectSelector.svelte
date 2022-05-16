@@ -86,7 +86,12 @@
   {width}
   {justify}
   icon={projectIcon}
-  text={projectText}
   disabled={!isEditable}
   on:click={handlePriorityEditorOpened}
-/>
+>
+  <svelte:fragment slot="content">
+    {#if projectText}
+      <span class="nowrap">{projectText}</span>
+    {/if}
+  </svelte:fragment>
+</Button>
