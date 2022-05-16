@@ -25,7 +25,7 @@
     '$lookup.state',
     { key: '', presenter: board.component.CardLabels, label: board.string.Labels },
     'date',
-    { key: '', presenter: board.component.MembersPresenter, label: board.string.Members, sortingKey: '' },
+    { key: 'members', presenter: board.component.UserBoxList, label: board.string.Members, sortingKey: '' },
     'modifiedOn'
   ]}
   {options}

@@ -42,7 +42,7 @@ import BoardMenu from './components/BoardMenu.svelte'
 import MenuMainPage from './components/MenuMainPage.svelte'
 import Archive from './components/Archive.svelte'
 import TableView from './components/TableView.svelte'
-import MembersPresenter from './components/presenters/MembersPresenter.svelte'
+import UserBoxList from './components/UserBoxList.svelte'
 import CardLabels from './components/editor/CardLabels.svelte'
 import board from './plugin'
 import {
@@ -124,7 +124,7 @@ export default async (): Promise<Resources> => ({
     Archive,
     MenuMainPage,
     TableView,
-    MembersPresenter,
+    UserBoxList,
     CardLabels
   },
   cardActionHandler: {
