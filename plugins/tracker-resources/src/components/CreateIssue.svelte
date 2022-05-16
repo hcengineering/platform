@@ -17,7 +17,7 @@
   import core, { Data, generateId, Ref, SortingOrder, WithLookup } from '@anticrm/core'
   import { Asset, IntlString } from '@anticrm/platform'
   import presentation, { getClient, UserBox, Card, createQuery } from '@anticrm/presentation'
-  import { Issue, IssuePriority, IssueStatus, Team, calcRank } from '@anticrm/tracker'
+  import { Issue, IssuePriority, IssueStatus, Team, calcRank, Project } from '@anticrm/tracker'
   import { StyledTextBox } from '@anticrm/text-editor'
   import {
     EditBox,
@@ -32,20 +32,23 @@
   import tracker from '../plugin'
   import StatusSelector from './StatusSelector.svelte'
   import PrioritySelector from './PrioritySelector.svelte'
+  import ProjectSelector from './ProjectSelector.svelte'
 
   export let space: Ref<Team>
   export let parent: Ref<Issue> | undefined
   export let status: Ref<IssueStatus> | undefined = undefined
   export let priority: IssuePriority = IssuePriority.NoPriority
   export let assignee: Ref<Employee> | null = null
+  export let project: Ref<Project> | null = null
 
   let currentAssignee: Ref<Employee> | null = assignee
   let issueStatuses: WithLookup<IssueStatus>[] = []
 
-  const object: Data<Issue> = {
+  let object: Data<Issue> = {
     title: '',
     description: '',
     assignee: null,
+    project: project,
     number: 0,
     rank: '',
     status: '' as Ref<IssueStatus>,
@@ -62,6 +65,7 @@
   $: _space = space
   $: _parent = parent
   $: updateIssueStatusId(space, status)
+
   $: statusesQuery.query(
     tracker.class.IssueStatus,
     { attachedTo: space },
@@ -73,6 +77,7 @@
       sort: { rank: SortingOrder.Ascending }
     }
   )
+
   $: canSave = getTitle(object.title ?? '').length > 0
 
   async function updateIssueStatusId (teamId: Ref<Team>, issueStatusId?: Ref<IssueStatus>) {
@@ -125,6 +130,7 @@
       title: getTitle(object.title),
       description: object.description,
       assignee: currentAssignee,
+      project: object.project,
       number: (incResult as any).object.sequence,
       status: object.status,
       priority: object.priority,
@@ -151,9 +157,19 @@
   }
 
   const handleStatusChanged = (statusId: Ref<IssueStatus> | undefined) => {
-    if (statusId !== undefined) {
-      object.status = statusId
+    if (statusId === undefined) {
+      return
     }
+
+    object.status = statusId
+  }
+
+  const handleProjectIdChanged = (projectId: Ref<Project> | null | undefined) => {
+    if (projectId === undefined) {
+      return
+    }
+
+    object = { ...object, project: projectId }
   }
 </script>
 
@@ -212,13 +228,7 @@
       size="small"
       kind="no-border"
     />
-    <Button
-      label={tracker.string.Project}
-      icon={tracker.icon.Projects}
-      width="min-content"
-      size="small"
-      kind="no-border"
-    />
+    <ProjectSelector value={object.project} onProjectIdChange={handleProjectIdChanged} />
     <DatePresenter bind:value={object.dueDate} editable />
     <Button
       icon={tracker.icon.MoreActions}

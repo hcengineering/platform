@@ -16,6 +16,7 @@
 import core, { generateId, Ref, TxOperations } from '@anticrm/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
 import { IssueStatus, IssueStatusCategory, Team, genRanks } from '@anticrm/tracker'
+import { DOMAIN_TRACKER } from '.'
 import tracker from './plugin'
 
 enum DeprecatedIssueStatus {
@@ -148,6 +149,36 @@ async function upgradeIssueStatuses (tx: TxOperations): Promise<void> {
   }
 }
 
+async function migrateIssueProjects (client: MigrationClient): Promise<void> {
+  const issues = await client.find(DOMAIN_TRACKER, { _class: tracker.class.Issue, project: { $exists: false } })
+
+  if (issues.length === 0) {
+    return
+  }
+
+  for (const issue of issues) {
+    await client.update(DOMAIN_TRACKER, { _id: issue._id }, { project: null })
+  }
+}
+
+async function upgradeProjectIcons (tx: TxOperations): Promise<void> {
+  const projects = await tx.findAll(tracker.class.Project, {})
+
+  if (projects.length === 0) {
+    return
+  }
+
+  for (const project of projects) {
+    const icon = project.icon as unknown
+
+    if (icon !== undefined) {
+      continue
+    }
+
+    await tx.update(project, { icon: tracker.icon.Projects })
+  }
+}
+
 async function createDefaults (tx: TxOperations): Promise<void> {
   await createDefaultTeam(tx)
 }
@@ -160,12 +191,19 @@ async function upgradeIssues (tx: TxOperations): Promise<void> {
   await upgradeIssueStatuses(tx)
 }
 
+async function upgradeProjects (tx: TxOperations): Promise<void> {
+  await upgradeProjectIcons(tx)
+}
+
 export const trackerOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {},
+  async migrate (client: MigrationClient): Promise<void> {
+    await Promise.all([migrateIssueProjects(client)])
+  },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)
     await createDefaults(tx)
     await upgradeTeams(tx)
     await upgradeIssues(tx)
+    await upgradeProjects(tx)
   }
 }
