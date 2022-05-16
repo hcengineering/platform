@@ -26,7 +26,7 @@
   export let attachedTo: Ref<Doc>
   export let attachedClass: Ref<Class<Doc>>
   export let integrations: Set<Ref<Doc>> | undefined = undefined
-  export let editable = true
+  export let editable: boolean | undefined = true
   export let allowOpen = true
   export let focusIndex = -1
 

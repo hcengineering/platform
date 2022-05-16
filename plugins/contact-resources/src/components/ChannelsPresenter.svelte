@@ -21,7 +21,7 @@
 
   export let value: Channel[] | Channel | null
 
-  export let editable = false
+  export let editable: boolean | undefined = undefined
   export let kind: ButtonKind = 'link-bordered'
   export let size: ButtonSize = 'small'
   export let length: 'short' | 'full' = 'short'

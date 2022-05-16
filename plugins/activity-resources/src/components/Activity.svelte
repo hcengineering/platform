@@ -88,7 +88,7 @@
   </div>
 {:else}
   <slot />
-  <div class="antiDivider" style:margin={'1rem 0 .25rem'} />
+  <div class="antiDivider" style:margin={'1rem -1.5rem'} />
   <div class="header antiTitle">
     <div class="icon-wrapper">
       <div class="wrapped-icon icon flex-center"><IconActivity size={'small'} /></div>
@@ -117,14 +117,14 @@
     align-items: center;
     min-height: 2.5rem;
     height: 2.5rem;
-    background-color: var(--highlight-select);
-    border: 1px solid var(--highlight-select-border);
+    background-color: var(--accent-bg-color);
+    border: 1px solid var(--divider-color);
     border-radius: 0.125rem;
   }
   .icon {
     margin-left: 1rem;
     height: 2rem;
-    color: var(--primary-bg-color);
+    color: var(--caption-color);
   }
   .ref-input {
     flex-shrink: 0;

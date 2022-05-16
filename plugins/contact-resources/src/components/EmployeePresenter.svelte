@@ -4,8 +4,9 @@
   import PersonPresenter from '../components/PersonPresenter.svelte'
   import { showPopup } from '@anticrm/ui'
   import EmployeePreviewPopup from './EmployeePreviewPopup.svelte'
+  import { WithLookup } from '@anticrm/core'
 
-  export let value: Employee
+  export let value: WithLookup<Employee>
   export let shouldShowAvatar: boolean = true
 
   let container: HTMLElement
@@ -14,8 +15,7 @@
     showPopup(
       EmployeePreviewPopup,
       {
-        employeeId: value._id,
-        space: value.space
+        employeeId: value._id
       },
       container
     )
@@ -26,9 +26,11 @@
   <div class="pr-2 over-underline">
     <PersonPresenter {value} {onEdit} {shouldShowAvatar} />
   </div>
-  <div class="status content-color">
-    <EmployeeStatusPresenter employeeId={value._id} />
-  </div>
+  {#if value.$lookup?.statuses?.length}
+    <div class="status content-color">
+      <EmployeeStatusPresenter employee={value} />
+    </div>
+  {/if}
 </div>
 
 <style lang="scss">
