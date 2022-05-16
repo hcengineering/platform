@@ -4,6 +4,7 @@
   import { createQuery } from '@anticrm/presentation'
   import task, { SpaceWithStates, State } from '@anticrm/task'
   import { TableBrowser } from '@anticrm/view-resources'
+  import board from '../plugin'
 
   export let _class: Ref<Class<Card>>
   export let space: Ref<SpaceWithStates>
@@ -17,5 +18,16 @@
   })
 </script>
 
-<!-- TODO: implement tableview -->
-<TableBrowser {_class} config={['']} {options} query={{ isArchived, state: { $in: states } }} />
+<TableBrowser
+  {_class}
+  config={[
+    'title',
+    '$lookup.state',
+    { key: '', presenter: board.component.CardLabels, label: board.string.Labels },
+    'date',
+    { key: '', presenter: board.component.MembersPresenter, label: board.string.Members, sortingKey: '' },
+    'modifiedOn'
+  ]}
+  {options}
+  query={{ isArchived, state: { $in: states } }}
+/>

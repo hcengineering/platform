@@ -15,54 +15,21 @@
 <script lang="ts">
   import type { Card, CardDate } from '@anticrm/board'
 
-  import contact, { Employee } from '@anticrm/contact'
   import { getResource } from '@anticrm/platform'
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import { Button, IconAdd, Label } from '@anticrm/ui'
+  import { getClient } from '@anticrm/presentation'
+  import { Label } from '@anticrm/ui'
 
   import board from '../../plugin'
   import { getCardActions } from '../../utils/CardActionUtils'
-  import { hasDate, updateCardMembers } from '../../utils/CardUtils'
+  import { hasDate } from '../../utils/CardUtils'
   import DatePresenter from '../presenters/DatePresenter.svelte'
-  import MemberPresenter from '../presenters/MemberPresenter.svelte'
+  import MembersPresenter from '../presenters/MembersPresenter.svelte'
   import CardLabels from './CardLabels.svelte'
 
   export let value: Card
-  const query = createQuery()
   const client = getClient()
-  let members: Employee[]
   let membersHandler: (e: Event) => void
   let dateHandler: (e: Event) => void
-
-  $: membersIds = members?.map((m) => m._id) ?? []
-
-  const getMenuItems = (member: Employee) => {
-    return [
-      [
-        {
-          title: board.string.ViewProfile,
-          handler: () => console.log('TODO: implement')
-        }
-      ],
-      [
-        {
-          title: board.string.RemoveFromCard,
-          handler: () => {
-            const newMembers = membersIds.filter((m) => m !== member._id)
-            updateCardMembers(value, client, newMembers)
-          }
-        }
-      ]
-    ]
-  }
-
-  $: if (value.members && value.members.length > 0) {
-    query.query(contact.class.Employee, { _id: { $in: value.members } }, (result) => {
-      members = result
-    })
-  } else {
-    members = []
-  }
 
   function updateDate (e: CustomEvent<CardDate>) {
     client.update(value, { date: e.detail })
@@ -85,17 +52,12 @@
 </script>
 
 {#if value}
-  {#if members && members.length > 0}
+  {#if value.members?.length}
     <div class="flex-col mt-4 mr-6">
       <div class="text-md font-medium">
         <Label label={board.string.Members} />
       </div>
-      <div class="flex-row-center flex-gap-1">
-        {#each members as member}
-          <MemberPresenter value={member} size="large" menuItems={getMenuItems(member)} />
-        {/each}
-        <Button icon={IconAdd} shape="circle" kind="no-border" size="large" on:click={membersHandler} />
-      </div>
+      <MembersPresenter object={value} {membersHandler} />
     </div>
   {/if}
   {#if value.labels && value.labels.length > 0}
