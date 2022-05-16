@@ -33,11 +33,11 @@ function isArrayValueCheck<T, P> (val: T, value: P): boolean {
 /**
  * @public
  */
-export function resultSort<T extends Doc> (result: T[], sortOptions: SortingQuery<T>): void {
+export function resultSort<T extends Doc> (result: T[], sortOptions: SortingQuery<T>, _class: Ref<Class<T>>, hierarchy: Hierarchy): void {
   const sortFunc = (a: any, b: any): number => {
     for (const key in sortOptions) {
-      const aValue = getValue(key, a)
-      const bValue = getValue(key, b)
+      const aValue = getValue(key, a, _class, hierarchy)
+      const bValue = getValue(key, b, _class, hierarchy)
       const result = getSortingResult(aValue, bValue, sortOptions[key])
       if (result !== 0) return result
     }
@@ -62,8 +62,9 @@ function getSortingResult (aValue: any, bValue: any, order: SortingOrder): numbe
   return res * order
 }
 
-function getValue (key: string, obj: any): any {
-  let value = getObjectValue(key, obj)
+function getValue<T extends Doc> (key: string, obj: any, _class: Ref<Class<T>>, hierarchy: Hierarchy): any {
+  const tkey = checkMixinKey(key, _class, hierarchy)
+  let value = getObjectValue(tkey, obj)
   if (typeof value === 'object' && !Array.isArray(value)) {
     value = JSON.stringify(value)
   }
@@ -76,10 +77,14 @@ export function matchQuery<T extends Doc> (
   docs: Doc[],
   query: DocumentQuery<T>,
   clazz: Ref<Class<T>>,
-  hierarchy: Hierarchy
+  hierarchy: Hierarchy,
+  skipLookup: boolean = false
 ): Doc[] {
   let result = [...docs]
   for (const key in query) {
+    if (skipLookup && key.startsWith('$lookup.')) {
+      continue
+    }
     const value = (query as any)[key]
     const tkey = checkMixinKey(key, clazz, hierarchy)
     result = findProperty(result, tkey, value)
