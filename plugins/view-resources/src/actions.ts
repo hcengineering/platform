@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import type { Doc, DocumentQuery, WithLookup } from '@anticrm/core'
+import type { Doc, WithLookup } from '@anticrm/core'
 import core, { Class, Client, matchQuery, Ref } from '@anticrm/core'
 import { getResource } from '@anticrm/platform'
 import type { Action, ViewAction, ViewActionInput, ViewContextType } from '@anticrm/view'
