@@ -124,7 +124,10 @@
         res.map((r) => {
           return [r._id, r]
         })
-      ))
+      )),
+    {
+      lookup: { _id: { statuses: contact.class.Status } }
+    }
   )
 
   const savedMessagesQuery = createQuery()

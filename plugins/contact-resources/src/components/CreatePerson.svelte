@@ -18,7 +18,7 @@
   import { AttachedData, Data, generateId } from '@anticrm/core'
   import { getResource } from '@anticrm/platform'
   import { Card, EditableAvatar, getClient } from '@anticrm/presentation'
-  import { EditBox, IconInfo, Label } from '@anticrm/ui'
+  import { EditBox, IconInfo, Label, createFocusManager, FocusHandler } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import { ChannelsDropdown } from '..'
   import contact from '../plugin'
@@ -78,13 +78,16 @@
   $: findPerson(client, { ...object, name: combineName(firstName, lastName) }, channels).then((p) => {
     matches = p
   })
+
+  const manager = createFocusManager()
 </script>
+
+<FocusHandler {manager} />
 
 <Card
   label={contact.string.CreatePerson}
   okAction={createPerson}
   canSave={firstName.length > 0 && lastName.length > 0 && matches.length === 0}
-  bind:space={contact.space.Contacts}
   on:close={() => {
     dispatch('close')
   }}
@@ -108,12 +111,14 @@
         kind={'large-style'}
         maxWidth={'32rem'}
         focus
+        focusIndex={1}
       />
       <EditBox
         placeholder={contact.string.PersonLastNamePlaceholder}
         bind:value={lastName}
         kind={'large-style'}
         maxWidth={'32rem'}
+        focusIndex={2}
       />
       <div class="mt-1">
         <EditBox
@@ -121,6 +126,7 @@
           bind:value={object.city}
           kind={'small-style'}
           maxWidth={'32rem'}
+          focusIndex={3}
         />
       </div>
     </div>
@@ -129,6 +135,6 @@
     </div>
   </div>
   <svelte:fragment slot="pool">
-    <ChannelsDropdown bind:value={channels} kind={'no-border'} editable />
+    <ChannelsDropdown bind:value={channels} focusIndex={10} kind={'no-border'} editable />
   </svelte:fragment>
 </Card>

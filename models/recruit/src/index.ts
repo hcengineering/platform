@@ -44,7 +44,7 @@ import { Applicant, Candidate, Candidates, Vacancy } from '@anticrm/recruit'
 import { KeyBinding } from '@anticrm/view'
 import recruit from './plugin'
 import { createReviewModel, reviewTableConfig, reviewTableOptions } from './review'
-import { TOpinion, TReview, TReviewCategory } from './review-model'
+import { TOpinion, TReview } from './review-model'
 
 @Model(recruit.class.Vacancy, task.class.SpaceWithStates)
 @UX(recruit.string.Vacancy, recruit.icon.Vacancy)
@@ -123,7 +123,7 @@ export class TApplicant extends TTask implements Applicant {
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TVacancy, TCandidates, TCandidate, TApplicant, TReviewCategory, TReview, TOpinion)
+  builder.createModel(TVacancy, TCandidates, TCandidate, TApplicant, TReview, TOpinion)
 
   builder.mixin(recruit.class.Vacancy, core.class.Class, workbench.mixin.SpaceView, {
     view: {
@@ -156,14 +156,7 @@ export function createModel (builder: Builder): void {
       icon: recruit.icon.RecruitApplication,
       hidden: false,
       navigatorModel: {
-        spaces: [
-          {
-            label: recruit.string.ReviewCategory,
-            spaceClass: recruit.class.ReviewCategory,
-            addSpaceLabel: recruit.string.CreateReviewCategory,
-            createComponent: recruit.component.CreateReviewCategory
-          }
-        ],
+        spaces: [],
         specials: [
           {
             id: vacanciesId,
@@ -218,15 +211,19 @@ export function createModel (builder: Builder): void {
             }
           },
           {
-            id: 'upcoming',
-            component: calendar.component.UpcomingEvents,
+            id: 'reviews',
+            component: calendar.component.Events,
             componentProps: {
+              viewLabel: recruit.string.Reviews,
+              viewIcon: recruit.icon.Review,
               _class: recruit.class.Review,
               options: reviewTableOptions,
-              config: reviewTableConfig
+              config: reviewTableConfig,
+              createLabel: recruit.string.ReviewCreateLabel,
+              createComponent: recruit.component.CreateReview
             },
             icon: calendar.icon.Calendar,
-            label: calendar.string.UpcomingEvents,
+            label: recruit.string.Reviews,
             position: 'event'
           }
         ]
@@ -239,32 +236,31 @@ export function createModel (builder: Builder): void {
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: recruit.mixin.Candidate,
     descriptor: view.viewlet.Table,
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    options: {
-      lookup: {
-        _id: {
-          channels: contact.class.Channel
-          // skills: tags.class.TagReference // Required if TagsItemPresenter is used
-        }
-      }
-    } as FindOptions<Doc>, // TODO: fix
     config: [
       '',
       'title',
       'city',
       {
+        key: '',
         presenter: recruit.component.ApplicationsPresenter,
         label: recruit.string.ApplicationsShort,
         sortingKey: 'applications'
       },
       {
+        key: '',
         presenter: attachment.component.AttachmentsPresenter,
         label: attachment.string.Files,
         sortingKey: 'attachments'
       },
-      { presenter: chunter.component.CommentsPresenter, label: chunter.string.Comments, sortingKey: 'comments' },
+      {
+        key: '',
+        presenter: chunter.component.CommentsPresenter,
+        label: chunter.string.Comments,
+        sortingKey: 'comments'
+      },
       {
         // key: '$lookup.skills', // Required, since presenter require list of tag references or '' and TagsPopupPresenter
+        key: '',
         presenter: tags.component.TagsPresenter, // tags.component.TagsPresenter,
         label: recruit.string.SkillsLabel,
         sortingKey: 'skills',
@@ -275,23 +271,13 @@ export function createModel (builder: Builder): void {
       },
       'modifiedOn',
       '$lookup.channels'
-    ]
+    ],
+    hiddenKeys: ['name']
   })
-
-  const applicantTableLookup: Lookup<Applicant> = {
-    attachedTo: [recruit.mixin.Candidate, { _id: { channels: contact.class.Channel } }],
-    state: task.class.State,
-    assignee: contact.class.Employee,
-    doneState: task.class.DoneState
-  }
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: recruit.class.Applicant,
     descriptor: task.viewlet.StatusTable,
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    options: {
-      lookup: applicantTableLookup
-    } as FindOptions<Doc>, // TODO: fix
     config: [
       '',
       '$lookup.attachedTo',
@@ -299,11 +285,17 @@ export function createModel (builder: Builder): void {
       '$lookup.state',
       '$lookup.doneState',
       {
+        key: '',
         presenter: attachment.component.AttachmentsPresenter,
         label: attachment.string.Files,
         sortingKey: 'attachments'
       },
-      { presenter: chunter.component.CommentsPresenter, label: chunter.string.Comments, sortingKey: 'comments' },
+      {
+        key: '',
+        presenter: chunter.component.CommentsPresenter,
+        label: chunter.string.Comments,
+        sortingKey: 'comments'
+      },
       'modifiedOn',
       '$lookup.attachedTo.$lookup.channels'
     ]
@@ -343,20 +335,12 @@ export function createModel (builder: Builder): void {
     editor: recruit.component.EditVacancy
   })
 
-  builder.mixin(recruit.class.ReviewCategory, core.class.Class, view.mixin.ObjectEditor, {
-    editor: recruit.component.EditReviewCategory
-  })
-
   builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.AttributePresenter, {
     presenter: recruit.component.ApplicationPresenter
   })
 
   builder.mixin(recruit.class.Vacancy, core.class.Class, view.mixin.AttributePresenter, {
     presenter: recruit.component.VacancyPresenter
-  })
-
-  builder.mixin(recruit.class.ReviewCategory, core.class.Class, view.mixin.AttributePresenter, {
-    presenter: recruit.component.ReviewCategoryPresenter
   })
 
   builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.ObjectValidator, {
@@ -397,6 +381,42 @@ export function createModel (builder: Builder): void {
     label: recruit.string.CreateCandidate,
     icon: recruit.icon.Create,
     keyBinding: ['c'],
+    input: 'none',
+    category: recruit.category.Recruit,
+    target: core.class.Doc,
+    context: {
+      mode: ['workbench', 'browser'],
+      application: recruit.app.Recruit
+    }
+  })
+
+  createAction(builder, {
+    action: view.actionImpl.ShowPopup,
+    actionProps: {
+      component: recruit.component.CreateVacancy,
+      element: 'top'
+    },
+    label: recruit.string.CreateVacancy,
+    icon: recruit.icon.Create,
+    keyBinding: [],
+    input: 'none',
+    category: recruit.category.Recruit,
+    target: core.class.Doc,
+    context: {
+      mode: ['workbench', 'browser'],
+      application: recruit.app.Recruit
+    }
+  })
+
+  createAction(builder, {
+    action: view.actionImpl.ShowPopup,
+    actionProps: {
+      component: recruit.component.CreateApplication,
+      element: 'top'
+    },
+    label: recruit.string.CreateApplication,
+    icon: recruit.icon.Create,
+    keyBinding: [],
     input: 'none',
     category: recruit.category.Recruit,
     target: core.class.Doc,
@@ -454,6 +474,17 @@ export function createModel (builder: Builder): void {
   createReviewModel(builder)
 
   // createAction(builder, { ...viewTemplates.open, target: recruit.class.Vacancy, context: { mode: ['browser', 'context'] } })
+
+  createAction(builder, {
+    ...viewTemplates.open,
+    target: recruit.class.Vacancy,
+    context: { mode: ['browser', 'context'] },
+    action: workbench.actionImpl.Navigate,
+    actionProps: {
+      mode: 'space'
+    }
+  })
+
   createAction(builder, {
     ...viewTemplates.open,
     target: recruit.class.Applicant,

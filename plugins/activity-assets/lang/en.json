@@ -10,6 +10,9 @@
     "To": "to",
     "Unset": "unset",
     "System": "System",
-    "CollectionUpdated": "Update {collection}"
+    "CollectionUpdated": "Update {collection}",
+    "Added": "added",
+    "Removed": "removed",
+    "From": "from"
   }
 }

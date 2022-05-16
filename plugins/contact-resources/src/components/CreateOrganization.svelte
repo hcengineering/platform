@@ -16,7 +16,7 @@
   import { Channel, Organization } from '@anticrm/contact'
   import { AttachedData, generateId } from '@anticrm/core'
   import { Card, getClient } from '@anticrm/presentation'
-  import { Button, EditBox } from '@anticrm/ui'
+  import { Button, EditBox, createFocusManager, FocusHandler } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import contact from '../plugin'
   import ChannelsDropdown from './ChannelsDropdown.svelte'
@@ -51,17 +51,20 @@
       )
     }
 
-    dispatch('close')
+    dispatch('close', id)
   }
 
   let channels: AttachedData<Channel>[] = []
+
+  const manager = createFocusManager()
 </script>
+
+<FocusHandler {manager} />
 
 <Card
   label={contact.string.CreateOrganization}
   okAction={createOrganization}
   canSave={object.name.length > 0}
-  space={contact.space.Contacts}
   on:close={() => {
     dispatch('close')
   }}
@@ -76,9 +79,10 @@
       maxWidth={'37.5rem'}
       kind={'large-style'}
       focus
+      focusIndex={1}
     />
   </div>
   <svelte:fragment slot="pool">
-    <ChannelsDropdown bind:value={channels} editable />
+    <ChannelsDropdown bind:value={channels} focusIndex={10} editable />
   </svelte:fragment>
 </Card>

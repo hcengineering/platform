@@ -15,28 +15,51 @@
 -->
 <script lang="ts">
   import type { Class, Doc, Ref, Space, WithLookup } from '@anticrm/core'
-  import { Component } from '@anticrm/ui'
-  import type { Viewlet } from '@anticrm/view'
+  import { createQuery } from '@anticrm/presentation'
+  import { Component, Loading } from '@anticrm/ui'
+  import view, { Viewlet, ViewletPreference } from '@anticrm/view'
 
   export let _class: Ref<Class<Doc>>
   export let space: Ref<Space>
   export let search: string
   export let viewlet: WithLookup<Viewlet> | undefined
+
+  const preferenceQuery = createQuery()
+  let preference: ViewletPreference | undefined
+  let loading = true
+
+  $: viewlet &&
+    preferenceQuery.query(
+      view.class.ViewletPreference,
+      {
+        attachedTo: viewlet._id
+      },
+      (res) => {
+        preference = res[0]
+        loading = false
+      },
+      { limit: 1 }
+    )
 </script>
 
 {#if viewlet}
   {#key space}
     {#if viewlet.$lookup?.descriptor?.component}
-      <Component
-        is={viewlet.$lookup?.descriptor?.component}
-        props={{
-          _class,
-          space,
-          options: viewlet.options,
-          config: viewlet.config,
-          search
-        }}
-      />
+      {#if loading}
+        <Loading />
+      {:else}
+        <Component
+          is={viewlet.$lookup?.descriptor?.component}
+          props={{
+            _class,
+            space,
+            options: viewlet.options,
+            config: preference?.config ?? viewlet.config,
+            viewlet,
+            search
+          }}
+        />
+      {/if}
     {/if}
   {/key}
 {/if}

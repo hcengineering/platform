@@ -13,12 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact from '@anticrm/contact'
-  import core, { Doc, DocumentQuery, Lookup, Ref } from '@anticrm/core'
+  import core, { Doc, DocumentQuery, Ref } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
   import { Vacancy } from '@anticrm/recruit'
-  import { Button, getCurrentLocation, Icon, IconAdd, Label, navigate, Scroller, showPopup } from '@anticrm/ui'
-  import { SearchEdit } from '@anticrm/ui'
+  import { Button, getCurrentLocation, Icon, IconAdd, Label, navigate, SearchEdit, showPopup } from '@anticrm/ui'
   import { TableBrowser } from '@anticrm/view-resources'
   import recruit from '../plugin'
   import CreateVacancy from './CreateVacancy.svelte'
@@ -32,9 +30,6 @@
 
   let search: string = ''
   let resultQuery: DocumentQuery<Doc> = {}
-  const lookup: Lookup<Vacancy> = {
-    company: contact.class.Organization
-  }
 
   $: resultQuery = search === '' ? {} : { $search: search }
 
@@ -89,44 +84,39 @@
   />
   <Button icon={IconAdd} label={recruit.string.VacancyCreateLabel} kind={'primary'} on:click={showCreateDialog} />
 </div>
-<Scroller tableFade>
-  <TableBrowser
-    _class={recruit.class.Vacancy}
-    config={[
-      {
-        key: '',
-        presenter: recruit.component.VacancyItemPresenter,
-        label: recruit.string.Vacancy,
-        sortingKey: 'name',
-        props: { action }
-      },
-      {
-        key: '',
-        presenter: recruit.component.VacancyCountPresenter,
-        label: recruit.string.Applications,
-        props: { applications },
-        sortingKey: '@applications',
-        sortingFunction: applicationSorting
-      },
-      '$lookup.company',
-      'location',
-      'description',
-      {
-        key: '',
-        presenter: recruit.component.VacancyModifiedPresenter,
-        label: core.string.Modified,
-        props: { applications },
-        sortingKey: 'modifiedOn',
-        sortingFunction: modifiedSorting
-      }
-    ]}
-    options={{
-      lookup
-    }}
-    query={{
-      ...resultQuery,
-      archived: false
-    }}
-    showNotification
-  />
-</Scroller>
+<TableBrowser
+  _class={recruit.class.Vacancy}
+  config={[
+    {
+      key: '',
+      presenter: recruit.component.VacancyItemPresenter,
+      label: recruit.string.Vacancy,
+      sortingKey: 'name',
+      props: { action }
+    },
+    {
+      key: '',
+      presenter: recruit.component.VacancyCountPresenter,
+      label: recruit.string.Applications,
+      props: { applications },
+      sortingKey: '@applications',
+      sortingFunction: applicationSorting
+    },
+    '$lookup.company',
+    'location',
+    'description',
+    {
+      key: '',
+      presenter: recruit.component.VacancyModifiedPresenter,
+      label: core.string.Modified,
+      props: { applications },
+      sortingKey: 'modifiedOn',
+      sortingFunction: modifiedSorting
+    }
+  ]}
+  query={{
+    ...resultQuery,
+    archived: false
+  }}
+  showNotification
+/>

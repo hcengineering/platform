@@ -16,7 +16,7 @@
   import type { Asset, IntlString } from '@anticrm/platform'
   import { onMount } from 'svelte'
   import { registerFocus } from '../focus'
-  import type { AnySvelteComponent, ButtonKind, ButtonSize } from '../types'
+  import type { AnySvelteComponent, ButtonKind, ButtonShape, ButtonSize } from '../types'
   import Icon from './Icon.svelte'
   import Label from './Label.svelte'
   import Spinner from './Spinner.svelte'
@@ -25,7 +25,7 @@
   export let labelParams: Record<string, any> = {}
   export let kind: ButtonKind = 'secondary'
   export let size: ButtonSize = 'medium'
-  export let shape: 'rectangle' | 'rectangle-left' | 'rectangle-right' | 'circle' | 'round' | undefined = undefined
+  export let shape: ButtonShape = undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let justify: 'left' | 'center' = 'center'
   export let disabled: boolean = false
@@ -99,6 +99,7 @@
   on:focus
   on:blur
   on:mousemove
+  on:mouseleave
   {id}
 >
   {#if icon && !loading}
@@ -195,7 +196,7 @@
       }
     }
     &:focus {
-      border-color: var(--accent-color) !important;
+      border-color: var(--primary-edit-border-color) !important;
     }
     &:disabled {
       color: rgb(var(--caption-color) / 40%);

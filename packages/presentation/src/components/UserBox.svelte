@@ -15,10 +15,20 @@
 -->
 <script lang="ts">
   import contact, { Contact, formatName } from '@anticrm/contact'
-  import type { Class, Ref } from '@anticrm/core'
-  import type { IntlString } from '@anticrm/platform'
-  import { TooltipAlignment, ButtonKind, ButtonSize, getFocusManager } from '@anticrm/ui'
-  import { Button, Label, showPopup, Tooltip } from '@anticrm/ui'
+  import type { Class, FindOptions, Ref } from '@anticrm/core'
+  import type { Asset, IntlString } from '@anticrm/platform'
+  import {
+    AnyComponent,
+    AnySvelteComponent,
+    Button,
+    ButtonKind,
+    ButtonSize,
+    getFocusManager,
+    Label,
+    showPopup,
+    Tooltip,
+    TooltipAlignment
+  } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation from '..'
   import { getClient } from '../utils'
@@ -27,7 +37,10 @@
   import UsersPopup from './UsersPopup.svelte'
 
   export let _class: Ref<Class<Contact>>
+  export let excluded: Ref<Contact>[] | undefined = undefined
+  export let options: FindOptions<Contact> | undefined = undefined
   export let label: IntlString
+  export let icon: Asset | AnySvelteComponent | undefined = IconPerson
   export let placeholder: IntlString = presentation.string.Search
   export let value: Ref<Contact> | null | undefined
   export let allowDeselect = false
@@ -39,6 +52,13 @@
   export let width: string | undefined = undefined
   export let labelDirection: TooltipAlignment | undefined = undefined
   export let focusIndex = -1
+
+  export let create:
+    | {
+        component: AnyComponent
+        label: IntlString
+      }
+    | undefined = undefined
 
   const dispatch = createEventDispatcher()
 
@@ -58,10 +78,65 @@
     return isPerson ? formatName(obj.name) : obj.name
   }
   const mgr = getFocusManager()
+
+  const _click = (): void => {
+    if (!readonly) {
+      showPopup(
+        UsersPopup,
+        {
+          _class,
+          options,
+          ignoreUsers: excluded ?? [],
+          icon,
+          allowDeselect,
+          selected: value,
+          titleDeselect,
+          placeholder,
+          create
+        },
+        container,
+        (result) => {
+          if (result === null) {
+            value = null
+            selected = undefined
+            dispatch('change', null)
+          } else if (result !== undefined && result._id !== value) {
+            value = result._id
+            dispatch('change', value)
+          }
+          mgr?.setFocusPos(focusIndex)
+        }
+      )
+    }
+  }
 </script>
 
-<div bind:this={container} class="min-w-0">
-  <Tooltip {label} fill={width === '100%'} direction={labelDirection}>
+<div bind:this={container} class="min-w-0" class:w-full={width === '100%'}>
+  {#if kind !== 'link'}
+    <Tooltip {label} fill={width === '100%'} direction={labelDirection}>
+      <Button
+        {focusIndex}
+        icon={size === 'x-large' && selected ? undefined : icon}
+        width={width ?? 'min-content'}
+        {size}
+        {kind}
+        {justify}
+        on:click={_click}
+      >
+        <span slot="content" style="overflow: hidden">
+          {#if selected}
+            {#if size === 'x-large'}
+              <UserInfo value={selected} size={'medium'} />
+            {:else}
+              {getName(selected)}
+            {/if}
+          {:else}
+            <Label {label} />
+          {/if}
+        </span>
+      </Button>
+    </Tooltip>
+  {:else}
     <Button
       {focusIndex}
       icon={size === 'x-large' && selected ? undefined : IconPerson}
@@ -69,31 +144,12 @@
       {size}
       {kind}
       {justify}
-      on:click={() => {
-        if (!readonly) {
-          showPopup(
-            UsersPopup,
-            { _class, allowDeselect, selected: value, titleDeselect, placeholder },
-            container,
-            (result) => {
-              if (result === null) {
-                value = null
-                selected = undefined
-                dispatch('change', null)
-              } else if (result !== undefined && result._id !== value) {
-                value = result._id
-                dispatch('change', value)
-              }
-              mgr?.setFocusPos(focusIndex)
-            }
-          )
-        }
-      }}
+      on:click={_click}
     >
       <span slot="content" style="overflow: hidden">
         {#if selected}
           {#if size === 'x-large'}
-            <UserInfo value={selected} size={'medium'} />
+            <UserInfo value={selected} size={'medium'} {icon} />
           {:else}
             {getName(selected)}
           {/if}
@@ -102,5 +158,5 @@
         {/if}
       </span>
     </Button>
-  </Tooltip>
+  {/if}
 </div>

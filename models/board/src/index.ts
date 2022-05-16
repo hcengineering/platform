@@ -14,9 +14,9 @@
 //
 
 // To help typescript locate view plugin properly
-import type { Board, Card, CardDate, CardLabel, MenuPage } from '@anticrm/board'
+import type { Board, Card, CardDate, CardLabel, MenuPage, LabelsCompactMode } from '@anticrm/board'
 import type { Employee } from '@anticrm/contact'
-import { Doc, DOMAIN_MODEL, FindOptions, IndexKind, Ref, Type, Timestamp, Markup } from '@anticrm/core'
+import { DOMAIN_MODEL, IndexKind, Markup, Ref, Timestamp, TxOperations as Client, Type } from '@anticrm/core'
 import {
   ArrOf,
   Builder,
@@ -39,6 +39,7 @@ import view, { actionTemplates, createAction } from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
 import { IntlString } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'
+import preference, { TPreference } from '@anticrm/model-preference'
 import board from './plugin'
 
 /**
@@ -69,6 +70,12 @@ export class TCardLabel extends TAttachedDoc implements CardLabel {
   title!: string
   color!: number
   isHidden?: boolean
+}
+
+@Model(board.class.LabelsCompactMode, preference.class.Preference)
+export class TLabelsCompactMode extends TPreference implements LabelsCompactMode {
+  @Prop(TypeRef(board.class.Board), board.string.LabelsCompactMode)
+  attachedTo!: Ref<Board>
 }
 
 @Model(board.class.Card, task.class.Task)
@@ -116,7 +123,7 @@ export class TMenuPage extends TDoc implements MenuPage {
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TBoard, TCard, TCardLabel, TCardDate, TMenuPage)
+  builder.createModel(TBoard, TCard, TCardLabel, TCardDate, TMenuPage, TLabelsCompactMode)
 
   builder.createDoc(board.class.MenuPage, core.space.Model, {
     component: board.component.Archive,
@@ -190,10 +197,6 @@ export function createModel (builder: Builder): void {
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: board.class.Card,
     descriptor: board.viewlet.Kanban,
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    options: {
-      lookup: {}
-    } as FindOptions<Doc>, // TODO: fix
     config: []
   })
 

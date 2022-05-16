@@ -15,12 +15,12 @@
 <script lang="ts">
   import attachment from '@anticrm/attachment'
   import chunter from '@anticrm/chunter'
-  import contact, { EmployeeAccount } from '@anticrm/contact'
-  import { Class, DocumentQuery, FindOptions, getCurrentAccount, Ref } from '@anticrm/core'
+  import { EmployeeAccount } from '@anticrm/contact'
+  import { Class, DocumentQuery, getCurrentAccount, Ref } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
   import tags, { selectedTagElements, TagCategory, TagElement } from '@anticrm/tags'
   import { DoneState, Task } from '@anticrm/task'
-  import { Component, Icon, Label, Scroller, SearchEdit } from '@anticrm/ui'
+  import { Component, Icon, Label, SearchEdit } from '@anticrm/ui'
   import { TableBrowser } from '@anticrm/view-resources'
   import task from '../plugin'
 
@@ -69,14 +69,6 @@
     category = detail.category ?? undefined
     selectedTagElements.set(Array.from(detail.elements ?? []).map((it) => it._id))
   }
-  const taskOptions: FindOptions<Task> = {
-    lookup: {
-      attachedTo: [contact.class.Person, { _id: { channels: contact.class.Channel } }],
-      state: task.class.State,
-      assignee: contact.class.Employee,
-      doneState: task.class.DoneState
-    }
-  }
 </script>
 
 <div class="ac-header full">
@@ -99,31 +91,28 @@
   on:change={(evt) => updateCategory(evt.detail)}
 />
 
-<Scroller tableFade>
-  <TableBrowser
-    {_class}
-    config={[
-      '',
-      '$lookup.attachedTo',
-      '$lookup.assignee',
-      '$lookup.state',
-      '$lookup.doneState',
-      {
-        key: '',
-        presenter: attachment.component.AttachmentsPresenter,
-        label: attachment.string.Files,
-        sortingKey: 'attachments'
-      },
-      {
-        key: '',
-        presenter: chunter.component.CommentsPresenter,
-        label: chunter.string.Comments,
-        sortingKey: 'comments'
-      },
-      'modifiedOn'
-    ]}
-    options={taskOptions}
-    query={resultQuery}
-    showNotification
-  />
-</Scroller>
+<TableBrowser
+  {_class}
+  config={[
+    '',
+    '$lookup.attachedTo',
+    '$lookup.assignee',
+    '$lookup.state',
+    '$lookup.doneState',
+    {
+      key: '',
+      presenter: attachment.component.AttachmentsPresenter,
+      label: attachment.string.Files,
+      sortingKey: 'attachments'
+    },
+    {
+      key: '',
+      presenter: chunter.component.CommentsPresenter,
+      label: chunter.string.Comments,
+      sortingKey: 'comments'
+    },
+    'modifiedOn'
+  ]}
+  query={resultQuery}
+  showNotification
+/>

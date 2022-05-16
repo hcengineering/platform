@@ -335,14 +335,6 @@ export function createModel (builder: Builder): void {
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: task.class.Issue,
     descriptor: task.viewlet.StatusTable,
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    options: {
-      lookup: {
-        assignee: contact.class.Employee,
-        state: task.class.State,
-        doneState: task.class.DoneState
-      }
-    } as FindOptions<Doc>,
     config: [
       '',
       'name',
@@ -350,11 +342,17 @@ export function createModel (builder: Builder): void {
       '$lookup.state',
       '$lookup.doneState',
       {
+        key: '',
         presenter: attachment.component.AttachmentsPresenter,
         label: attachment.string.Files,
         sortingKey: 'attachments'
       },
-      { presenter: chunter.component.CommentsPresenter, label: chunter.string.Comments, sortingKey: 'comments' },
+      {
+        key: '',
+        presenter: chunter.component.CommentsPresenter,
+        label: chunter.string.Comments,
+        sortingKey: 'comments'
+      },
       'modifiedOn'
     ]
   })

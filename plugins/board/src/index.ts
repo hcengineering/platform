@@ -18,6 +18,7 @@ import { Employee } from '@anticrm/contact'
 import type { AttachedDoc, Class, Doc, Markup, Ref, Timestamp, Obj } from '@anticrm/core'
 import type { Asset, IntlString, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
+import type { Preference } from '@anticrm/preference'
 import type { KanbanTemplateSpace, SpaceWithStates, Task } from '@anticrm/task'
 import type { AnyComponent } from '@anticrm/ui'
 import { Action, ActionCategory } from '@anticrm/view'
@@ -101,6 +102,12 @@ export interface MenuPage extends Doc {
 /**
  * @public
  */
+export interface LabelsCompactMode extends Preference {
+  attachedTo: Ref<Board>
+}
+/**
+ * @public
+ */
 export const boardId = 'board' as Plugin
 
 /**
@@ -115,7 +122,8 @@ const boards = plugin(boardId, {
     Card: '' as Ref<Class<Card>>,
     CardDate: '' as Ref<Class<CardDate>>,
     CardLabel: '' as Ref<Class<CardLabel>>,
-    MenuPage: '' as Ref<Class<MenuPage>>
+    MenuPage: '' as Ref<Class<MenuPage>>,
+    LabelsCompactMode: '' as Ref<Class<LabelsCompactMode>>
   },
   category: {
     Card: '' as Ref<ActionCategory>

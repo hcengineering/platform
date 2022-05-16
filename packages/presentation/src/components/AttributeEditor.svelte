@@ -28,6 +28,7 @@
   export let maxWidth: string
   export let focus: boolean = false
   export let editable = true
+  export let focusIndex = -1
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -64,6 +65,7 @@
       value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
       {onChange}
       {focus}
+      {focusIndex}
     />
   {/await}
 {/if}

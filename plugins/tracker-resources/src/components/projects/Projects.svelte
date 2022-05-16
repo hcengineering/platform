@@ -13,24 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { FindOptions, Ref, SortingOrder } from '@anticrm/core'
+  import { Ref } from '@anticrm/core'
+  import { Team } from '@anticrm/tracker'
   import { Button, IconAdd, Label, showPopup } from '@anticrm/ui'
   import { Table } from '@anticrm/view-resources'
-  import contact from '@anticrm/contact'
-  import { Project, Team } from '@anticrm/tracker'
-  import NewProject from './NewProject.svelte'
   import plugin from '../../plugin'
+  import NewProject from './NewProject.svelte'
 
   export let space: Ref<Team>
-
-  const options: FindOptions<Project> = {
-    sort: {
-      startDate: SortingOrder.Ascending
-    },
-    lookup: {
-      lead: contact.class.Employee
-    }
-  }
 
   async function showCreateDialog () {
     showPopup(NewProject, { space, targetElement: null }, null)
@@ -54,11 +44,11 @@
         key: '',
         presenter: plugin.component.ProjectPresenter,
         label: plugin.string.Project,
-        sortingKey: 'name'
+        sortingKey: 'name',
+        props: { space }
       }
     ]}
     query={{}}
-    {options}
   />
 </div>
 

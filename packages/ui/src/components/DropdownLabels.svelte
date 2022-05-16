@@ -19,6 +19,7 @@
   import { showPopup, Tooltip, Button, Label } from '..'
   import { createEventDispatcher } from 'svelte'
   import ui from '../plugin'
+  import { getFocusManager } from '../focus'
 
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let label: IntlString
@@ -31,6 +32,7 @@
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = undefined
   export let labelDirection: TooltipAlignment | undefined = undefined
+  export let focusIndex = -1
 
   let container: HTMLElement
   let opened: boolean = false
@@ -44,11 +46,13 @@
   }
 
   const dispatch = createEventDispatcher()
+  const mgr = getFocusManager()
 </script>
 
 <div bind:this={container} class="min-w-0">
   <Tooltip {label} fill={width === '100%'} direction={labelDirection}>
     <Button
+      {focusIndex}
       {icon}
       width={width ?? 'min-content'}
       {size}
@@ -63,6 +67,7 @@
               dispatch('selected', result)
             }
             opened = false
+            mgr?.setFocusPos(focusIndex)
           })
         }
       }}

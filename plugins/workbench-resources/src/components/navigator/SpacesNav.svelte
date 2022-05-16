@@ -75,7 +75,7 @@
     action: async (_id: Ref<Doc>): Promise<void> => {
       const editor = await getEditor(model.spaceClass)
       dispatch('open')
-      showPanel(editor ?? plugin.component.SpacePanel, _id, model.spaceClass, 'right')
+      showPanel(editor ?? plugin.component.SpacePanel, _id, model.spaceClass, 'content')
     }
   }
 

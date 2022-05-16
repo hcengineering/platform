@@ -23,7 +23,6 @@ export default mergeIds(contactId, contact, {
     Contacts: '' as IntlString,
     CreatePerson: '' as IntlString,
     CreatePersons: '' as IntlString,
-    CreateOrganization: '' as IntlString,
     OrganizationNamePlaceholder: '' as IntlString,
     OrganizationsNamePlaceholder: '' as IntlString,
     PersonFirstNamePlaceholder: '' as IntlString,
@@ -50,6 +49,9 @@ export default mergeIds(contactId, contact, {
     StatusDueDate: '' as IntlString,
     StatusName: '' as IntlString,
     NoExpire: '' as IntlString,
-    StatusDueDateTooltip: '' as IntlString
+    StatusDueDateTooltip: '' as IntlString,
+    CopyToClipboard: '' as IntlString,
+    Copied: '' as IntlString,
+    ViewFullProfile: '' as IntlString
   }
 })

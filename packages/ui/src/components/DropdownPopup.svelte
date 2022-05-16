@@ -20,6 +20,7 @@
   import type { AnySvelteComponent, ListItem } from '../types'
   import plugin from '../plugin'
   import Icon from './Icon.svelte'
+  import ListView from './ListView.svelte'
 
   export let icon: Asset | AnySvelteComponent
   export let placeholder: IntlString = plugin.string.SearchDots
@@ -33,25 +34,50 @@
     })
   }
   const dispatch = createEventDispatcher()
-  const btns: HTMLButtonElement[] = []
   let searchInput: HTMLInputElement
-
-  const keyDown = (ev: KeyboardEvent, n: number): void => {
-    if (ev.key === 'ArrowDown') {
-      if (n === btns.length - 1) btns[0].focus()
-      else btns[n + 1].focus()
-    } else if (ev.key === 'ArrowUp') {
-      if (n === 0) btns[btns.length - 1].focus()
-      else btns[n - 1].focus()
-    } else searchInput.focus()
-  }
 
   onMount(() => {
     if (searchInput) searchInput.focus()
   })
+
+  let selection = 0
+  let list: ListView
+
+  $: objects = items.filter((x) => x.label.toLowerCase().includes(search.toLowerCase()))
+
+  async function handleSelection (evt: Event | undefined, selection: number): Promise<void> {
+    const item = objects[selection]
+
+    if (item.isSelectable ?? true) {
+      dispatch('close', item)
+    }
+  }
+
+  function onKeydown (key: KeyboardEvent): void {
+    if (key.code === 'ArrowUp') {
+      key.stopPropagation()
+      key.preventDefault()
+      list.select(selection - 1)
+    }
+    if (key.code === 'ArrowDown') {
+      key.stopPropagation()
+      key.preventDefault()
+      list.select(selection + 1)
+    }
+    if (key.code === 'Enter') {
+      key.preventDefault()
+      key.stopPropagation()
+      handleSelection(key, selection)
+    }
+    if (key.code === 'Escape') {
+      key.preventDefault()
+      key.stopPropagation()
+      dispatch('close')
+    }
+  }
 </script>
 
-<div class="selectPopup">
+<div class="selectPopup" on:keydown={onKeydown}>
   <div class="header">
     <input
       bind:this={searchInput}
@@ -64,34 +90,32 @@
   </div>
   <div class="scroll">
     <div class="box">
-      {#each items.filter((x) => x.label.toLowerCase().includes(search.toLowerCase())) as item, i}
-        <!-- svelte-ignore a11y-mouse-events-have-key-events -->
-        <button
-          bind:this={btns[i]}
-          class="flex-between menu-item"
-          disabled={item.isSelectable === false}
-          on:mouseover={(ev) => ev.currentTarget.focus()}
-          on:keydown={(ev) => keyDown(ev, i)}
-          on:click={() => {
-            if (item.isSelectable ?? true) {
-              dispatch('close', item)
-            }
-          }}
-        >
-          {#if item.image || icon}
-            <div class="flex-center img" class:image={item.image}>
-              {#if item.image}
-                <img src={item.image} alt={item.label} />
-              {:else if typeof icon === 'string'}
-                <Icon {icon} size={'small'} />
-              {:else}
-                <svelte:component this={icon} size={'small'} />
-              {/if}
-            </div>
-          {/if}
-          <div class="flex-grow caption-color font-{item.fontWeight} pl-{item.paddingLeft}">{item.label}</div>
-        </button>
-      {/each}
+      <ListView bind:this={list} count={objects.length} bind:selection>
+        <svelte:fragment slot="item" let:item={idx}>
+          {@const item = objects[idx]}
+
+          <button
+            class="flex-between menu-item w-full"
+            disabled={item.isSelectable === false}
+            on:click={(evt) => {
+              handleSelection(evt, idx)
+            }}
+          >
+            {#if item.image || icon}
+              <div class="flex-center img" class:image={item.image}>
+                {#if item.image}
+                  <img src={item.image} alt={item.label} />
+                {:else if typeof icon === 'string'}
+                  <Icon {icon} size={'small'} />
+                {:else}
+                  <svelte:component this={icon} size={'small'} />
+                {/if}
+              </div>
+            {/if}
+            <div class="flex-grow caption-color font-{item.fontWeight} pl-{item.paddingLeft}">{item.label}</div>
+          </button>
+        </svelte:fragment>
+      </ListView>
     </div>
   </div>
 </div>

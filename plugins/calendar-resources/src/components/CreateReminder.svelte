@@ -59,7 +59,6 @@
   label={calendar.string.CreateReminder}
   okAction={saveReminder}
   canSave={title !== undefined && title.trim().length > 0 && participants.length > 0}
-  {space}
   on:close={() => {
     dispatch('close')
   }}

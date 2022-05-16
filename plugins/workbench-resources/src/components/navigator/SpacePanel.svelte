@@ -16,9 +16,8 @@
 <script lang="ts">
   import type { Class, Ref, Space } from '@anticrm/core'
   import core from '@anticrm/core'
-  import type { IntlString } from '@anticrm/platform'
   import { createQuery, getClient, Members } from '@anticrm/presentation'
-  import { ActionIcon, EditBox, Grid, Icon, IconClose, Label, Scroller } from '@anticrm/ui'
+  import { EditBox, Icon, Label, Scroller, Panel } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import workbench from '../../plugin'
 
@@ -40,9 +39,6 @@
     space = result[0]
   })
 
-  const tabs: IntlString[] = [workbench.string.General, workbench.string.Members]
-  let selected = 0
-
   function onNameChange (ev: Event) {
     const value = (ev.target as HTMLInputElement).value
     if (value.trim().length > 0) {
@@ -56,63 +52,43 @@
   }
 </script>
 
-<div
-  class="antiOverlay"
-  on:click={() => {
+<Panel
+  isHeader={false}
+  isAside={false}
+  on:close={() => {
     dispatch('close')
   }}
-/>
-<div class="antiDialogs antiComponent">
-  <div class="ac-header short mirror divide">
-    <div class="ac-header__wrap-title">
-      {#if clazz.icon}
-        <div class="ac-header__icon"><Icon icon={clazz.icon} size={'medium'} /></div>
-      {/if}
-      <div class="ac-header__title"><Label label={clazz.label} /></div>
-    </div>
-    <div class="tool">
-      <ActionIcon
-        icon={IconClose}
-        size={'small'}
-        action={() => {
-          dispatch('close')
-        }}
-      />
-    </div>
-  </div>
-  <div class="ac-tabs">
-    {#each tabs as tab, i}
-      <div
-        class="ac-tabs__tab"
-        class:selected={i === selected}
-        on:click={() => {
-          selected = i
-        }}
-      >
-        <Label label={tab} />
+>
+  <svelte:fragment slot="title">
+    {#if clazz}
+      <div class="antiTitle icon-wrapper">
+        <div class="wrapped-icon">
+          {#if clazz.icon}<Icon icon={clazz.icon} size={'medium'} />{/if}
+        </div>
+        <span class="wrapped-title"><Label label={clazz.label} /></span>
       </div>
-    {/each}
-    <div class="ac-tabs__empty" />
-  </div>
-  <Scroller padding>
-    {#if selected === 0}
-      {#if space}
-        <Grid column={1} rowGap={1.5}>
-          <EditBox
-            label={clazz.label}
-            icon={clazz.icon}
-            bind:value={space.name}
-            placeholder={clazz.label}
-            maxWidth="39rem"
-            focus
-            on:change={onNameChange}
-          />
-          <!-- <AttributeBarEditor maxWidth="39rem" object={space} key="name"/> -->
-          <!-- <ToggleWithLabel label={workbench.string.MakePrivate} description={workbench.string.MakePrivateDescription}/> -->
-        </Grid>
-      {/if}
-    {:else}
-      <Members {space} />
     {/if}
+  </svelte:fragment>
+
+  <Scroller>
+    <div class="popupPanel-body__main-content py-10 clear-mins">
+      {#if space}
+        <EditBox
+          label={clazz.label}
+          icon={clazz.icon}
+          bind:value={space.name}
+          placeholder={clazz.label}
+          maxWidth="39rem"
+          focus
+          on:change={onNameChange}
+        />
+        <!-- <AttributeBarEditor maxWidth="39rem" object={space} key="name"/> -->
+        <!-- <ToggleWithLabel label={workbench.string.MakePrivate} description={workbench.string.MakePrivateDescription}/> -->
+        <div class="flex-col mt-10">
+          <span class="fs-title text-xl overflow-label mb-2"><Label label={workbench.string.Members} /></span>
+          <Members {space} />
+        </div>
+      {/if}
+    </div>
   </Scroller>
-</div>
+</Panel>

@@ -401,7 +401,7 @@
       .antiTable-cells__notifyCell .notify-table-kind {
         width: 1.15rem;
         height: 1.15rem;
-        background-color: var(--menu-bg-select);
+        background-color: var(--highlight-hover);
         border: 1px solid currentColor;
         border-radius: .375rem;
       }
@@ -413,8 +413,13 @@
   }
 
   &.highlightRows .antiTable-body__row {
-    &.checking { background-color: var(--highlight-select); } // --theme-table-bg-hover
-    &.selected { background-color: var(--highlight-hover); } // --menu-bg-select
+    &.selected { background-color: var(--highlight-hover); }
+    &.checking {
+      background-color: var(--highlight-select);
+      border-bottom-color: var(--highlight-select-border);
+
+      &:hover { background-color: var(--highlight-select-hover); }
+    }
   }
 
   .scroller-thead {

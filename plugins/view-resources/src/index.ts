@@ -32,7 +32,6 @@ import NumberPresenter from './components/NumberPresenter.svelte'
 import ObjectPresenter from './components/ObjectPresenter.svelte'
 import RolePresenter from './components/RolePresenter.svelte'
 import Table from './components/Table.svelte'
-import TableView from './components/TableView.svelte'
 import TimestampPresenter from './components/TimestampPresenter.svelte'
 import UpDownNavigator from './components/UpDownNavigator.svelte'
 import GithubPresenter from './components/linkPresenters/GithubPresenter.svelte'
@@ -45,6 +44,8 @@ import DateTypeEditor from './components/typeEditors/DateTypeEditor.svelte'
 import NumberTypeEditor from './components/typeEditors/NumberTypeEditor.svelte'
 import RefEditor from './components/typeEditors/RefEditor.svelte'
 import DocAttributeBar from './components/DocAttributeBar.svelte'
+import ViewletSetting from './components/ViewletSetting.svelte'
+import TableBrowser from './components/TableBrowser.svelte'
 
 export { getActions, invokeAction } from './actions'
 export { default as ActionContext } from './components/ActionContext.svelte'
@@ -58,19 +59,21 @@ export { buildModel, getCollectionCounter, getObjectPresenter, LoadingProps } fr
 export {
   HTMLPresenter,
   Table,
-  TableView,
   DateEditor,
   DocAttributeBar,
   EditDoc,
   ColorsPopup,
   Menu,
   SpacePresenter,
-  UpDownNavigator
+  UpDownNavigator,
+  ViewletSetting
 }
 
 export default async (): Promise<Resources> => ({
   actionImpl: actionImpl,
   component: {
+    TableBrowser,
+    ViewletSetting,
     CreateAttribute,
     StringTypeEditor,
     BooleanTypeEditor,
@@ -84,7 +87,6 @@ export default async (): Promise<Resources> => ({
     NumberPresenter,
     BooleanPresenter,
     BooleanEditor,
-    TableView,
     TimestampPresenter,
     DateEditor,
     DatePresenter,

@@ -58,22 +58,18 @@ export default mergeIds(recruitId, recruit, {
     ReviewValidator: '' as Resource<<T extends Doc>(doc: T, client: Client) => Promise<Status>>
   },
   component: {
-    CreateVacancy: '' as AnyComponent,
     CreateApplication: '' as AnyComponent,
     KanbanCard: '' as AnyComponent,
     ApplicationPresenter: '' as AnyComponent,
     ApplicationsPresenter: '' as AnyComponent,
     VacancyPresenter: '' as AnyComponent,
-    ReviewCategoryPresenter: '' as AnyComponent,
     EditApplication: '' as AnyComponent,
     TemplatesIcon: '' as AnyComponent,
     Applications: '' as AnyComponent,
     Candidates: '' as AnyComponent,
-    CreateCandidate: '' as AnyComponent,
     SkillsView: '' as AnyComponent,
     Vacancies: '' as AnyComponent,
 
-    CreateReviewCategory: '' as AnyComponent,
     CreateReview: '' as AnyComponent,
     Reviews: '' as AnyComponent,
     KanbanReviewCard: '' as AnyComponent,
@@ -86,8 +82,6 @@ export default mergeIds(recruitId, recruit, {
   },
   template: {
     DefaultVacancy: '' as Ref<KanbanTemplate>,
-
-    Interview: '' as Ref<KanbanTemplate>,
     Task: '' as Ref<KanbanTemplate>
   },
   completion: {

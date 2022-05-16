@@ -133,7 +133,7 @@ const recruit = plugin(recruitId, {
   },
   space: {
     VacancyTemplates: '' as Ref<KanbanTemplateSpace>,
-    ReviewTemplates: '' as Ref<KanbanTemplateSpace>
+    Reviews: '' as Ref<Space>
   }
 })
 

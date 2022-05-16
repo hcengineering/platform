@@ -14,14 +14,14 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { showPopup } from '@anticrm/ui'
+  import { IconSize, showPopup } from '@anticrm/ui'
 
   import Avatar from './Avatar.svelte'
   import EditAvatarPopup from './EditAvatarPopup.svelte'
   import { getFileUrl } from '../utils'
 
   export let avatar: string | null | undefined = undefined
-  export let size: 'x-small' | 'small' | 'medium' | 'large' | 'x-large'
+  export let size: IconSize
   export let direct: Blob | undefined = undefined
 
   const dispatch = createEventDispatcher()

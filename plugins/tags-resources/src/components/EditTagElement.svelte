@@ -94,7 +94,6 @@
   labelProps={{ word: keyTitle }}
   okAction={updateElement}
   canSave={value.title.length > 0}
-  space={tags.space.Tags}
   on:close={() => {
     dispatch('close')
   }}

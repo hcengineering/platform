@@ -34,10 +34,10 @@ test.describe('contact tests', () => {
       await page.click('[id="presentation:string:AddSocialLinks"]')
       await page.click('.popup button:has-text("Email")')
     }
-    await page.hover('[id="gmail:string:Email"]')
+    // await page.hover('[id="gmail:string:Email"]')
     await page.fill('[placeholder="john\\.appleseed\\@apple\\.com"]', 'wer@qwe.com')
     // Click text=Apply
-    await page.click('button:nth-child(4)')
+    await page.click('button:nth-child(3)')
   })
   test('create-template', async ({ page }) => {
     // Go to http://localhost:8083/workbench%3Acomponent%3AWorkbenchApp

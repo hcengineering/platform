@@ -54,6 +54,9 @@
     "StatusDueDate": "Дата конца",
     "NoExpire": "Бессрочно",
     "TypeLabel": "Тип",
-    "StatusDueDateTooltip": "До {date}"
+    "StatusDueDateTooltip": "До {date}",
+    "CopyToClipboard": "Скопировать в буфер обмена",
+    "Copied": "Скопировано",
+    "ViewFullProfile": "Посмотреть профиль"
   }
 }

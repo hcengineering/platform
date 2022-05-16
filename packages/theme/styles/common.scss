@@ -56,7 +56,7 @@
 }
 .antiPanel-component:not(.aside) {
   flex-grow: 1;
-  background-color: var(--board-bg-color);
+  // background-color: var(--board-bg-color);
 }
 .antiPanel-component.aside {
   min-width: 30rem;
@@ -234,7 +234,6 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    user-select: none;
   }
   .wrapped-subtitle, &.wrapped-subtitle {
     min-width: 0;
@@ -248,8 +247,15 @@
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
     line-clamp: 2;
-    user-select: none;
+    user-select: text;
 
     b { color: var(--content-color); }
   }
+}
+
+.antiDivider {
+  margin: .25rem 0;
+  min-height: 1px;
+  height: 1px;
+  background-color: var(--divider-color);
 }

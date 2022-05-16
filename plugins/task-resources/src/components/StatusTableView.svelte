@@ -17,13 +17,12 @@
   import { Class, DocumentQuery, FindOptions, Ref, SortingOrder } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
   import { DoneState, SpaceWithStates, State, Task } from '@anticrm/task'
-  import { ScrollBox } from '@anticrm/ui'
   import Label from '@anticrm/ui/src/components/Label.svelte'
   import { TableBrowser } from '@anticrm/view-resources'
+  import task from '../plugin'
   import Lost from './icons/Lost.svelte'
   import Won from './icons/Won.svelte'
   import StatesBar from './state/StatesBar.svelte'
-  import task from '../plugin'
 
   export let _class: Ref<Class<Task>>
   export let space: Ref<SpaceWithStates>
@@ -34,21 +33,19 @@
   let doneStatusesView: boolean = false
   let state: Ref<State> | undefined = undefined
   let selectedDoneStates: Set<Ref<DoneState>> = new Set<Ref<DoneState>>()
-  let resConfig = config
+  $: resConfig = updateConfig(config)
   let query = {}
   let doneStates: DoneState[] = []
   let withoutDone: boolean = false
 
-  function updateConfig (): void {
+  function updateConfig (config: string[]): string[] {
     if (state !== undefined) {
-      resConfig = config.filter((p) => p !== '$lookup.state')
-      return
+      return config.filter((p) => p !== '$lookup.state')
     }
     if (selectedDoneStates.size === 1) {
-      resConfig = config.filter((p) => p !== '$lookup.doneState')
-      return
+      return config.filter((p) => p !== '$lookup.doneState')
     }
-    resConfig = config
+    return config
   }
 
   const doneStateQuery = createQuery()
@@ -67,7 +64,7 @@
   )
 
   async function updateQuery (search: string, selectedDoneStates: Set<Ref<DoneState>>): Promise<void> {
-    updateConfig()
+    resConfig = updateConfig(config)
     const result = {} as DocumentQuery<Task>
     if (search !== '') {
       result.$search = search
@@ -176,9 +173,7 @@
   </div>
 </div>
 <div class="statustableview-container">
-  <ScrollBox vertical stretch noShift>
-    <TableBrowser {_class} {query} config={resConfig} {options} showNotification />
-  </ScrollBox>
+  <TableBrowser {_class} {query} config={resConfig} {options} showNotification />
 </div>
 
 <style lang="scss">

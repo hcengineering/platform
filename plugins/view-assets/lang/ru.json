@@ -33,6 +33,8 @@
     "SelectItemAll": "Выбрать все",
     "SelectItemNone": "Снять все выделения",
     "ShowPreview": "Предпросмотр документа",
-    "ShowActions": "Показать действия"
+    "ShowActions": "Показать действия",
+    "RestoreDefaults": "По умолчанию",
+    "CustomizeView": "Настроить отображение"
   }
 }

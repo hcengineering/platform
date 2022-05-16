@@ -51,6 +51,7 @@ export default mergeIds(recruitId, recruit, {
     AssignRecruiter: '' as IntlString,
     Recruiters: '' as IntlString,
     UnAssignRecruiter: '' as IntlString,
+    UnAssignCompany: '' as IntlString,
     Create: '' as IntlString,
     Applications: '' as IntlString,
     ThisVacancyIsPrivate: '' as IntlString,
@@ -118,6 +119,8 @@ export default mergeIds(recruitId, recruit, {
     VacancyCountPresenter: '' as AnyComponent,
     OpinionsPresenter: '' as AnyComponent,
     VacancyModifiedPresenter: '' as AnyComponent,
-    EditReviewCategory: '' as AnyComponent
+    EditReviewCategory: '' as AnyComponent,
+    CreateVacancy: '' as AnyComponent,
+    CreateCandidate: '' as AnyComponent
   }
 })

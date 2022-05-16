@@ -17,9 +17,19 @@
   import core, { WithLookup } from '@anticrm/core'
   import { IntlString } from '@anticrm/platform'
   import presentation, { createQuery, getClient } from '@anticrm/presentation'
-  import { AnyComponent, showPanel } from '@anticrm/ui'
-  import { Button, Icon, SearchEdit, showPopup, Tooltip, IconAdd } from '@anticrm/ui'
+  import {
+    ActionIcon,
+    AnyComponent,
+    showPanel,
+    Button,
+    Icon,
+    SearchEdit,
+    showPopup,
+    Tooltip,
+    IconAdd
+  } from '@anticrm/ui'
   import view, { Viewlet } from '@anticrm/view'
+  import { ViewletSetting } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../plugin'
   import { classIcon } from '../utils'
@@ -65,7 +75,7 @@
   async function onSpaceEdit (): Promise<void> {
     if (space === undefined) return
     const editor = await getEditor(space._class)
-    showPanel(editor ?? plugin.component.SpacePanel, space._id, space._class, 'right')
+    showPanel(editor ?? plugin.component.SpacePanel, space._id, space._class, 'content')
   }
 
   function updateViewlets (viewlets: WithLookup<Viewlet>[]) {
@@ -109,6 +119,16 @@
     />
     {#if createItemDialog}
       <Button icon={IconAdd} label={createItemLabel} kind={'primary'} on:click={(ev) => showCreateDialog(ev)} />
+    {/if}
+    {#if viewlet}
+      <ActionIcon
+        icon={view.icon.Setting}
+        size={'small'}
+        label={view.string.CustomizeView}
+        action={() => {
+          showPopup(ViewletSetting, { viewlet })
+        }}
+      />
     {/if}
   {/if}
 </div>

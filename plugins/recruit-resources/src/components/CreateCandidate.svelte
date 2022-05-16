@@ -197,6 +197,8 @@
       firstName = ''
       lastName = ''
       channels = []
+    } else {
+      dispatch('close', id)
     }
   }
 
@@ -399,7 +401,6 @@
   label={recruit.string.CreateCandidate}
   okAction={createCandidate}
   canSave={firstName.length > 0 && lastName.length > 0 && matches.length === 0}
-  space={contact.space.Contacts}
   on:close={() => {
     dispatch('close')
   }}

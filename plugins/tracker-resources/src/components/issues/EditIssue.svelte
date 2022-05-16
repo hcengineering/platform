@@ -15,7 +15,6 @@
 <script lang="ts">
   import contact from '@anticrm/contact'
   import { Class, Ref, SortingOrder, WithLookup } from '@anticrm/core'
-  // import Card from '../Card.svelte'
   import { Panel } from '@anticrm/panel'
   import { createQuery, getClient, UserBox } from '@anticrm/presentation'
   import { StyledTextBox } from '@anticrm/text-editor'
@@ -34,15 +33,16 @@
   import tracker from '../../plugin'
   import IssuePresenter from './IssuePresenter.svelte'
   import PriorityEditor from './PriorityEditor.svelte'
+  import ProjectEditor from './ProjectEditor.svelte'
   import StatusEditor from './StatusEditor.svelte'
 
   export let _id: Ref<Issue>
   export let _class: Ref<Class<Issue>>
 
-  const query = createQuery()
-  const statusesQuery = createQuery()
   const dispatch = createEventDispatcher()
   const client = getClient()
+  const query = createQuery()
+  const statusesQuery = createQuery()
 
   let issue: Issue | undefined
   let currentTeam: Team | undefined
@@ -173,13 +173,11 @@
           <span class="label">
             <Label label={tracker.string.Status} />
           </span>
-          <StatusEditor value={issue} statuses={issueStatuses} currentSpace={currentTeam._id} shouldShowLabel />
-
+          <StatusEditor value={issue} statuses={issueStatuses} shouldShowLabel />
           <span class="label">
             <Label label={tracker.string.Priority} />
           </span>
-          <PriorityEditor value={issue} currentSpace={currentTeam._id} shouldShowLabel />
-
+          <PriorityEditor value={issue} shouldShowLabel />
           <span class="label">
             <Label label={tracker.string.Assignee} />
           </span>
@@ -214,18 +212,9 @@
           <span class="label">
             <Label label={tracker.string.Project} />
           </span>
-          <Button
-            label={tracker.string.Project}
-            icon={tracker.icon.Projects}
-            size={'large'}
-            kind={'link'}
-            width={'100%'}
-            justify={'left'}
-          />
-
+          <ProjectEditor value={issue} />
           {#if issue.dueDate !== null}
             <div class="divider" />
-
             <span class="label">
               <Label label={tracker.string.DueDate} />
             </span>
@@ -241,13 +230,7 @@
             size="small"
             kind="no-border"
           />
-          <Button
-            label={tracker.string.Project}
-            icon={tracker.icon.Projects}
-            width="min-content"
-            size="small"
-            kind="no-border"
-          />
+          <ProjectEditor value={issue} size={'small'} kind={'no-border'} width={'min-content'} />
         </div>
       {/if}
     </svelte:fragment>

@@ -1,7 +1,15 @@
 <script lang="ts">
   import { getClient } from '@anticrm/presentation'
   import setting, { SettingsCategory } from '@anticrm/setting'
-  import { Component, getCurrentLocation, Label, location, navigate, setMetadataLocalStorage } from '@anticrm/ui'
+  import {
+    Component,
+    getCurrentLocation,
+    Label,
+    location,
+    navigate,
+    setMetadataLocalStorage,
+    showPopup
+  } from '@anticrm/ui'
   import { onDestroy } from 'svelte'
   import CategoryElement from './CategoryElement.svelte'
   import login from '@anticrm/login'
@@ -43,6 +51,9 @@
   function selectWorkspace (): void {
     navigate({ path: [login.component.LoginApp, 'selectWorkspace'] })
   }
+  function inviteWorkspace (): void {
+    showPopup(login.component.InviteLink, {})
+  }
 </script>
 
 <div class="flex h-full">
@@ -64,6 +75,7 @@
     {/each}
     <div class="signout">
       <CategoryElement icon={setting.icon.Signout} label={setting.string.Signout} on:click={signOut} />
+      <CategoryElement label={setting.string.InviteWorkspace} on:click={inviteWorkspace} />
       <CategoryElement
         icon={setting.icon.SelectWorkspace}
         label={setting.string.SelectWorkspace}
@@ -72,7 +84,7 @@
     </div>
   </div>
 
-  <div class="antiPanel-component filled">
+  <div class="antiPanel-component border-left filled">
     {#if category}
       <Component is={category.component} />
     {/if}

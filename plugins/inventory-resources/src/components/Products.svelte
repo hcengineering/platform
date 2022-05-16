@@ -20,25 +20,49 @@
     Icon,
     IconSearch,
     Label,
-    Scroller,
     showPopup,
     IconAdd,
-    eventToHTMLElement
+    eventToHTMLElement,
+    Loading,
+    ActionIcon
   } from '@anticrm/ui'
   import CreateProduct from './CreateProduct.svelte'
   import inventory from '../plugin'
-  import { Table } from '@anticrm/view-resources'
-  import { getClient } from '@anticrm/presentation'
-  import view, { Viewlet } from '@anticrm/view'
+  import { TableBrowser, ViewletSetting } from '@anticrm/view-resources'
+  import { createQuery, getClient } from '@anticrm/presentation'
+  import view, { Viewlet, ViewletPreference } from '@anticrm/view'
 
   let search = ''
   $: resultQuery = search === '' ? {} : { $search: search }
 
+  let descr: Viewlet | undefined
+  let loading = true
+
+  const preferenceQuery = createQuery()
+  let preference: ViewletPreference | undefined
+
   const client = getClient()
-  const tableDescriptor = client.findOne<Viewlet>(view.class.Viewlet, {
-    attachTo: inventory.class.Product,
-    descriptor: view.viewlet.Table
-  })
+  client
+    .findOne<Viewlet>(view.class.Viewlet, {
+      attachTo: inventory.class.Product,
+      descriptor: view.viewlet.Table
+    })
+    .then((res) => {
+      descr = res
+      if (res !== undefined) {
+        preferenceQuery.query(
+          view.class.ViewletPreference,
+          {
+            attachedTo: res._id
+          },
+          (res) => {
+            preference = res[0]
+            loading = false
+          },
+          { limit: 1 }
+        )
+      }
+    })
 
   function showCreateDialog (ev: MouseEvent) {
     showPopup(CreateProduct, { space: inventory.space.Products }, eventToHTMLElement(ev))
@@ -65,19 +89,28 @@
     kind={'primary'}
     on:click={(ev) => showCreateDialog(ev)}
   />
+  {#if descr}
+    <ActionIcon
+      icon={view.icon.Setting}
+      size={'small'}
+      label={view.string.CustomizeView}
+      action={() => {
+        showPopup(ViewletSetting, { viewlet: descr })
+      }}
+    />
+  {/if}
 </div>
 
-<Scroller tableFade>
-  {#await tableDescriptor then descr}
-    {#if descr}
-      <Table
-        _class={inventory.class.Product}
-        config={descr.config}
-        options={descr.options}
-        query={resultQuery}
-        showNotification
-        highlightRows
-      />
-    {/if}
-  {/await}
-</Scroller>
+{#if descr}
+  {#if loading}
+    <Loading />
+  {:else}
+    <TableBrowser
+      _class={inventory.class.Product}
+      config={preference?.config ?? descr.config}
+      options={descr.options}
+      query={resultQuery}
+      showNotification
+    />
+  {/if}
+{/if}

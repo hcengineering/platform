@@ -159,7 +159,8 @@ const contactPlugin = plugin(contactId, {
     Status: '' as Ref<Class<Status>>
   },
   component: {
-    SocialEditor: '' as AnyComponent
+    SocialEditor: '' as AnyComponent,
+    CreateOrganization: '' as AnyComponent
   },
   channelProvider: {
     Email: '' as Ref<ChannelProvider>,
@@ -197,7 +198,8 @@ const contactPlugin = plugin(contactId, {
   },
   string: {
     PersonAlreadyExists: '' as IntlString,
-    Person: '' as IntlString
+    Person: '' as IntlString,
+    CreateOrganization: '' as IntlString
   }
 })
 

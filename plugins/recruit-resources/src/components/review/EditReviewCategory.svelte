@@ -14,14 +14,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import activity from '@anticrm/activity'
   import { Attachments } from '@anticrm/attachment-resources'
   import type { Ref } from '@anticrm/core'
-  import type { IntlString } from '@anticrm/platform'
   import { AttributesBar, createQuery, getClient } from '@anticrm/presentation'
   import { ReviewCategory } from '@anticrm/recruit'
   import { TextEditor } from '@anticrm/text-editor'
-  import { Component, EditBox, Grid, Icon, IconClose, Label, ToggleWithLabel } from '@anticrm/ui'
+  import { Panel } from '@anticrm/panel'
+  import { EditBox, Grid, Label, ToggleWithLabel } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../../plugin'
 
@@ -39,8 +38,7 @@
     object = result[0]
   })
 
-  const tabs: IntlString[] = ['General' as IntlString, 'Members' as IntlString, 'Activity' as IntlString]
-  let selected = 0
+  // const tabs: IntlString[] = ['General' as IntlString, 'Members' as IntlString, 'Activity' as IntlString]
   let textEditor: TextEditor
 
   function onChange (key: string, value: any): void {
@@ -48,199 +46,75 @@
   }
 </script>
 
-<div
-  class="overlay"
-  on:click={() => {
-    dispatch('close')
-  }}
-/>
-<div class="dialog-container">
-  {#if object}
-    <div class="flex-row-center header">
-      <div class="flex-grow">
-        <div class="flex">
-          <div class="svg-medium flex-no-shrink">
-            {#if clazz.icon}<Icon icon={clazz.icon} size={'medium'} />{/if}
-          </div>
-          <div class="flex-grow fs-title ml-2">
-            {object.name}
-          </div>
+{#if object}
+  <Panel
+    icon={clazz.icon}
+    title={object.name}
+    subtitle={object.description}
+    isHeader={false}
+    isAside={true}
+    {object}
+    on:close={() => {
+      dispatch('close')
+    }}
+  >
+    <svelte:fragment slot="attributes" let:direction={dir}>
+      {#if dir === 'column'}
+        <div class="flex-row-center subtitle">
+          <AttributesBar {object} keys={[]} vertical />
         </div>
-        <div class="small-text">{object.description}</div>
-      </div>
-      <div
-        class="tool"
-        on:click={() => {
-          dispatch('close')
+      {/if}
+    </svelte:fragment>
+
+    <Grid column={1} rowGap={1.5}>
+      <EditBox
+        label={recruit.string.ReviewCategoryName}
+        bind:value={object.name}
+        placeholder={recruit.string.ReviewCategoryPlaceholder}
+        maxWidth="39rem"
+        focus
+        on:change={() => {
+          onChange('name', object.name)
         }}
-      >
-        <IconClose size={'small'} />
-      </div>
-    </div>
-    <div class="flex-row-center subtitle">
-      <AttributesBar {object} keys={[]} />
-    </div>
-    <div class="flex-stretch tab-container">
-      {#each tabs as tab, i}
-        <div
-          class="flex-row-center tab"
-          class:selected={i === selected}
-          on:click={() => {
-            selected = i
+      />
+      <EditBox
+        label={recruit.string.Description}
+        bind:value={object.description}
+        placeholder={recruit.string.ReviewCategoryDescription}
+        maxWidth="39rem"
+        focus
+        on:change={() => {
+          onChange('description', object.description)
+        }}
+      />
+    </Grid>
+    <div class="mt-10">
+      <span class="title">Description</span>
+      <div class="description-container">
+        <TextEditor
+          bind:this={textEditor}
+          bind:content={object.fullDescription}
+          on:blur={textEditor.submit}
+          on:content={() => {
+            onChange('fullDescription', object.fullDescription)
           }}
-        >
-          <Label label={tab} />
-        </div>
-      {/each}
-      <div class="grow" />
-    </div>
-    <div class="scroll">
-      <div class="flex-col box">
-        {#if selected === 0}
-          <Grid column={1} rowGap={1.5}>
-            <EditBox
-              label={recruit.string.ReviewCategoryName}
-              bind:value={object.name}
-              placeholder={recruit.string.ReviewCategoryPlaceholder}
-              maxWidth="39rem"
-              focus
-              on:change={() => {
-                onChange('name', object.name)
-              }}
-            />
-            <EditBox
-              label={recruit.string.Description}
-              bind:value={object.description}
-              placeholder={recruit.string.ReviewCategoryDescription}
-              maxWidth="39rem"
-              focus
-              on:change={() => {
-                onChange('description', object.description)
-              }}
-            />
-          </Grid>
-          <div class="mt-10">
-            <span class="title">Description</span>
-            <div class="description-container">
-              <TextEditor
-                bind:this={textEditor}
-                bind:content={object.fullDescription}
-                on:blur={textEditor.submit}
-                on:content={() => {
-                  onChange('fullDescription', object.fullDescription)
-                }}
-              />
-            </div>
-          </div>
-          <div class="mt-14">
-            <Attachments objectId={object._id} _class={object._class} space={object.space} />
-          </div>
-        {:else if selected === 1}
-          <ToggleWithLabel
-            label={recruit.string.ThisReviewCategoryIsPrivate}
-            description={recruit.string.MakePrivateDescription}
-          />
-        {:else if selected === 2}
-          <Component is={activity.component.Activity} props={{ object, transparent: true }} />
-        {/if}
+        />
       </div>
     </div>
-  {/if}
-</div>
+    <div class="mt-10">
+      <Attachments objectId={object._id} _class={object._class} space={object.space} />
+    </div>
+    <div class="mt-10">
+      <span class="title"><Label label={recruit.string.Members} /></span>
+      <ToggleWithLabel
+        label={recruit.string.ThisReviewCategoryIsPrivate}
+        description={recruit.string.MakePrivateDescription}
+      />
+    </div>
+  </Panel>
+{/if}
 
 <style lang="scss">
-  .dialog-container {
-    overflow: hidden;
-    position: fixed;
-    top: 32px;
-    bottom: 1.25rem;
-    left: 50%;
-    right: 1rem;
-
-    display: flex;
-    flex-direction: column;
-    height: calc(100% - 32px - 1.25rem);
-    background: var(--theme-bg-color);
-    border-radius: 1.25rem;
-
-    .header {
-      flex-shrink: 0;
-      padding: 0 2rem 0 2.5rem;
-      height: 4.5rem;
-      border-bottom: 1px solid var(--theme-dialog-divider);
-
-      .tool {
-        margin-left: 0.75rem;
-        color: var(--theme-content-accent-color);
-        cursor: pointer;
-        &:hover {
-          color: var(--theme-caption-color);
-        }
-      }
-    }
-
-    .subtitle {
-      flex-shrink: 0;
-      padding: 0 2.5rem;
-      height: 3.5rem;
-      border-bottom: 1px solid var(--theme-dialog-divider);
-    }
-  }
-
-  .tab-container {
-    flex-shrink: 0;
-    flex-wrap: nowrap;
-    margin: 0 2.5rem;
-    height: 4.5rem;
-    border-bottom: 1px solid var(--theme-menu-divider);
-
-    .tab {
-      height: 4.5rem;
-      font-weight: 500;
-      color: var(--theme-content-trans-color);
-      cursor: pointer;
-      user-select: none;
-
-      &.selected {
-        border-top: 0.125rem solid transparent;
-        border-bottom: 0.125rem solid var(--theme-caption-color);
-        color: var(--theme-caption-color);
-        cursor: default;
-      }
-    }
-    .tab + .tab {
-      margin-left: 2.5rem;
-    }
-    .grow {
-      min-width: 2.5rem;
-      flex-grow: 1;
-    }
-  }
-
-  .scroll {
-    flex-grow: 1;
-    overflow-x: hidden;
-    overflow-y: auto;
-    margin: 1rem 2rem;
-    padding: 1.5rem 0.5rem;
-    height: 100%;
-
-    .box {
-      margin-right: 1px;
-      height: 100%;
-    }
-  }
-
-  .overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: #000;
-    opacity: 0.5;
-  }
-
   .title {
     margin-right: 0.75rem;
     font-weight: 500;

@@ -24,6 +24,7 @@ import type {
   ActionCategory,
   AttributeEditor,
   AttributePresenter,
+  BuildModelKey,
   CollectionEditor,
   HTMLPresenter,
   IgnoreActions,
@@ -41,8 +42,10 @@ import type {
   ViewActionInput,
   ViewContext,
   Viewlet,
-  ViewletDescriptor
+  ViewletDescriptor,
+  ViewletPreference
 } from '@anticrm/view'
+import preference, { TPreference } from '@anticrm/model-preference'
 import view from './plugin'
 
 export { viewOperation } from './migration'
@@ -118,6 +121,12 @@ export class TObjectFactory extends TClass implements ObjectFactory {
   component!: AnyComponent
 }
 
+@Model(view.class.ViewletPreference, preference.class.Preference)
+export class TViewletPreference extends TPreference implements ViewletPreference {
+  attachedTo!: Ref<Viewlet>
+  config!: (BuildModelKey | string)[]
+}
+
 @Model(view.class.ViewletDescriptor, core.class.Doc, DOMAIN_MODEL)
 export class TViewletDescriptor extends TDoc implements ViewletDescriptor {
   component!: AnyComponent
@@ -129,7 +138,8 @@ export class TViewlet extends TDoc implements Viewlet {
   attachTo!: Ref<Class<Space>>
   descriptor!: Ref<ViewletDescriptor>
   open!: AnyComponent
-  config: any
+  config!: (BuildModelKey | string)[]
+  hiddenKeys?: string[]
 }
 
 @Model(view.class.Action, core.class.Doc, DOMAIN_MODEL)
@@ -218,6 +228,7 @@ export function createModel (builder: Builder): void {
     TAttributePresenter,
     TCollectionEditor,
     TObjectEditor,
+    TViewletPreference,
     TViewletDescriptor,
     TViewlet,
     TAction,
@@ -300,7 +311,7 @@ export function createModel (builder: Builder): void {
     {
       label: view.string.Table,
       icon: view.icon.Table,
-      component: view.component.TableView
+      component: view.component.TableBrowser
     },
     view.viewlet.Table
   )
