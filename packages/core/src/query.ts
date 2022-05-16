@@ -33,7 +33,12 @@ function isArrayValueCheck<T, P> (val: T, value: P): boolean {
 /**
  * @public
  */
-export function resultSort<T extends Doc> (result: T[], sortOptions: SortingQuery<T>, _class: Ref<Class<T>>, hierarchy: Hierarchy): void {
+export function resultSort<T extends Doc> (
+  result: T[],
+  sortOptions: SortingQuery<T>,
+  _class: Ref<Class<T>>,
+  hierarchy: Hierarchy
+): void {
   const sortFunc = (a: any, b: any): number => {
     for (const key in sortOptions) {
       const aValue = getValue(key, a, _class, hierarchy)
