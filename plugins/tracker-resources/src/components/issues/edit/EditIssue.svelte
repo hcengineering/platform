@@ -157,7 +157,6 @@
         <Button disabled={!canSave} label={presentation.string.Save} on:click={save} />
       {:else}
         <Button icon={IconEdit} kind="transparent" size="medium" on:click={edit} />
-        <Button icon={IconMoreH} kind="transparent" size="medium" />
       {/if}
     </svelte:fragment>
 
