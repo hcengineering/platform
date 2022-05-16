@@ -24,6 +24,7 @@
 
   export let folders: Ref<KanbanTemplateSpace>[]
   export let template: Ref<KanbanTemplate> | undefined = undefined
+  export let focusIndex = -1
 
   let templates: KanbanTemplate[] = []
   const templatesQ = createQuery()
@@ -47,4 +48,10 @@
   }
 </script>
 
-<DropdownLabels {items} icon={task.icon.ManageStatuses} bind:selected={selectedItem} label={plugin.string.States} />
+<DropdownLabels
+  {focusIndex}
+  {items}
+  icon={task.icon.ManageStatuses}
+  bind:selected={selectedItem}
+  label={plugin.string.States}
+/>

@@ -18,7 +18,7 @@
   import { AttachedData, generateId, Ref, SortingOrder, Space } from '@anticrm/core'
   import type { Customer, Lead } from '@anticrm/lead'
   import { OK, Status } from '@anticrm/platform'
-  import { Card, getClient, UserBox } from '@anticrm/presentation'
+  import { Card, getClient, SpaceSelector, UserBox } from '@anticrm/presentation'
   import task, { calcRank } from '@anticrm/task'
   import { EditBox, Status as StatusControl } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
@@ -90,14 +90,13 @@
   label={lead.string.CreateLead}
   okAction={createLead}
   canSave={title.length > 0 && customer !== null}
-  spaceClass={lead.class.Funnel}
-  spaceLabel={lead.string.FunnelName}
-  spacePlaceholder={lead.string.SelectFunnel}
-  bind:space={_space}
   on:close={() => {
     dispatch('close')
   }}
 >
+  <svelte:fragment slot="header">
+    <SpaceSelector _class={lead.class.Funnel} label={lead.string.FunnelName} bind:space={_space} />
+  </svelte:fragment>
   <StatusControl slot="error" {status} />
   <EditBox
     label={lead.string.LeadName}

@@ -15,19 +15,10 @@
 -->
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
-
+  import { Button, IconClose, Label, MiniToggle } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
-  import type { Ref, Class, Space, DocumentQuery } from '@anticrm/core'
-
-  import { Button, Label, IconClose, MiniToggle } from '@anticrm/ui'
-  import SpaceSelect from './SpaceSelect.svelte'
   import presentation from '..'
 
-  export let spaceClass: Ref<Class<Space>> | undefined = undefined
-  export let space: Ref<Space> | undefined = undefined
-  export let spaceQuery: DocumentQuery<Space> | undefined = { archived: false }
-  export let spaceLabel: IntlString | undefined = undefined
-  export let spacePlaceholder: IntlString | undefined = undefined
   export let label: IntlString
   export let labelProps: any | undefined = undefined
   export let okAction: () => void
@@ -41,12 +32,8 @@
 <form id={label} class="antiCard dialog" on:submit|preventDefault={() => {}}>
   <div class="antiCard-header">
     <div class="antiCard-header__title-wrap">
-      {#if (spaceClass && spaceLabel && spacePlaceholder) || $$slots.space}
-        {#if $$slots.space}
-          <slot name="space" />
-        {:else if spaceClass && spaceLabel && spacePlaceholder}
-          <SpaceSelect focus focusIndex={-10} _class={spaceClass} {spaceQuery} label={spaceLabel} bind:value={space} />
-        {/if}
+      {#if $$slots.header}
+        <slot name="header" />
         <span class="antiCard-header__divider">›</span>
       {/if}
       <span class="antiCard-header__title"><Label {label} params={labelProps ?? {}} /></span>
@@ -63,7 +50,7 @@
     </div>
   </div>
   <div class="antiCard-content"><slot /></div>
-  {#if (spaceClass && spaceLabel && spacePlaceholder) || $$slots.pool}
+  {#if $$slots.header || $$slots.pool}
     <div class="antiCard-pool">
       <slot name="pool" />
     </div>

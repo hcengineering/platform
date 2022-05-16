@@ -66,7 +66,6 @@
   label={plugin.string.TodoEdit}
   okAction={editTodo}
   canSave={name.length > 0}
-  space={item.space}
   on:close={() => {
     dispatch('close')
   }}

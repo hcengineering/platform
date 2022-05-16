@@ -80,6 +80,8 @@ export type TooltipAlignment = 'top' | 'bottom' | 'left' | 'right'
 export type VerticalAlignment = 'top' | 'bottom'
 export type HorizontalAlignment = 'left' | 'right'
 
+export type IconSize = 'inline' | 'tiny' | 'x-small' | 'small' | 'medium' | 'large' | 'x-large' | 'full'
+
 export interface LabelAndProps {
   label: IntlString | undefined
   element: HTMLElement | undefined

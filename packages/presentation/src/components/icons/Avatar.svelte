@@ -14,7 +14,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  export let size: 'inline' | 'tiny' | 'x-small' | 'small' | 'medium' | 'large' | 'x-large'
+  import { IconSize } from '@anticrm/ui'
+
+  export let size: IconSize
 
   const fill: string = 'var(--theme-caption-color)'
 </script>

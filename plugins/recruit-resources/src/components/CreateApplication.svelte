@@ -17,7 +17,7 @@
   import contact from '@anticrm/contact'
   import { Account, Class, Client, Doc, generateId, Ref, SortingOrder } from '@anticrm/core'
   import { getResource, OK, Resource, Severity, Status } from '@anticrm/platform'
-  import { Card, createQuery, getClient, UserBox } from '@anticrm/presentation'
+  import { Card, createQuery, getClient, SpaceSelector, UserBox } from '@anticrm/presentation'
   import type { Applicant, Candidate, Vacancy } from '@anticrm/recruit'
   import task, { calcRank, SpaceWithStates, State } from '@anticrm/task'
   import ui, {
@@ -166,6 +166,24 @@
     )
   }
   const manager = createFocusManager()
+
+  const existingApplicationsQuery = createQuery()
+  let existingApplicants: Ref<Contact>[] = []
+  $: existingApplicationsQuery.query(
+    recruit.class.Applicant,
+    {
+      space: doc.space
+    },
+    (result) => {
+      existingApplicants = result.map((it) => it.attachedTo)
+    },
+    {
+      projection: {
+        _id: 1,
+        attachedTo: 1
+      }
+    }
+  )
 </script>
 
 <FocusHandler {manager} />
@@ -174,27 +192,37 @@
   label={recruit.string.CreateApplication}
   okAction={createApplication}
   canSave={status.severity === Severity.OK}
-  spaceClass={recruit.class.Vacancy}
-  spaceQuery={{ archived: false }}
-  spaceLabel={recruit.string.Vacancy}
-  spacePlaceholder={recruit.string.SelectVacancy}
   createMore={false}
-  bind:space={doc.space}
   on:close={() => {
     dispatch('close')
   }}
 >
+  <svelte:fragment slot="header">
+    <SpaceSelector
+      _class={recruit.class.Vacancy}
+      query={{ archived: false }}
+      label={recruit.string.Vacancy}
+      create={{
+        component: recruit.component.CreateVacancy,
+        label: recruit.string.CreateVacancy
+      }}
+      bind:space={doc.space}
+    />
+  </svelte:fragment>
   <StatusControl slot="error" {status} />
   <svelte:fragment slot="pool">
     {#if !preserveCandidate}
       <UserBox
         focusIndex={1}
         _class={contact.class.Person}
+        options={{ sort: { modifiedOn: -1 } }}
+        excluded={existingApplicants}
         label={recruit.string.Candidate}
         placeholder={recruit.string.Candidates}
         bind:value={doc.attachedTo}
         kind={'no-border'}
         size={'small'}
+        create={{ component: recruit.component.CreateCandidate, label: recruit.string.CreateCandidate }}
       />
     {/if}
     <UserBox

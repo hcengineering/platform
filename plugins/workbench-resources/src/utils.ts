@@ -15,6 +15,7 @@
 //
 
 import type { Class, Client, Doc, Obj, Ref, Space } from '@anticrm/core'
+import core from '@anticrm/core'
 import type { Asset } from '@anticrm/platform'
 import { getResource } from '@anticrm/platform'
 import { Application, NavigatorModel } from '@anticrm/workbench'
@@ -89,6 +90,10 @@ export async function doNavigate (
     case 'space': {
       if (props.space !== undefined) {
         loc.path[2] = props.space
+      } else {
+        if (doc !== undefined && !Array.isArray(doc) && client.getHierarchy().isDerived(doc._class, core.class.Space)) {
+          loc.path[2] = doc._id
+        }
       }
       if (props.spaceSpecial !== undefined) {
         loc.path[3] = props.spaceSpecial

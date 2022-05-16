@@ -121,7 +121,6 @@
   let actions: Action[] = []
   let addBtn: HTMLButtonElement
   const btns: HTMLButtonElement[] = []
-  let anchor: HTMLElement
   let opened: number | undefined = undefined
 
   function filterUndefined (channels: AttachedData<Channel>[]): AttachedData<Channel>[] {
@@ -215,7 +214,6 @@
 </script>
 
 <div
-  bind:this={anchor}
   class="{displayItems.length === 0 ? 'clear-mins' : 'buttons-group'} {kind === 'no-border'
     ? 'xsmall-gap'
     : 'xxsmall-gap'}"

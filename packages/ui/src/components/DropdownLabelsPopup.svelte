@@ -19,6 +19,7 @@
   import CheckBox from './CheckBox.svelte'
   import type { DropdownTextItem } from '../types'
   import plugin from '../plugin'
+  import ListView from './ListView.svelte'
 
   export let placeholder: IntlString = plugin.string.SearchDots
   export let items: DropdownTextItem[]
@@ -30,25 +31,48 @@
     phTraslate = res
   })
   const dispatch = createEventDispatcher()
-  const btns: HTMLButtonElement[] = []
   let searchInput: HTMLInputElement
-
-  const keyDown = (ev: KeyboardEvent, n: number): void => {
-    if (ev.key === 'ArrowDown') {
-      if (n === btns.length - 1) btns[0].focus()
-      else btns[n + 1].focus()
-    } else if (ev.key === 'ArrowUp') {
-      if (n === 0) btns[btns.length - 1].focus()
-      else btns[n - 1].focus()
-    } else searchInput.focus()
-  }
 
   onMount(() => {
     if (searchInput) searchInput.focus()
   })
+
+  let selection = 0
+  let list: ListView
+
+  $: objects = items.filter((x) => x.label.toLowerCase().includes(search.toLowerCase()))
+
+  async function handleSelection (evt: Event | undefined, selection: number): Promise<void> {
+    const item = objects[selection]
+
+    dispatch('close', item.id)
+  }
+
+  function onKeydown (key: KeyboardEvent): void {
+    if (key.code === 'ArrowUp') {
+      key.stopPropagation()
+      key.preventDefault()
+      list.select(selection - 1)
+    }
+    if (key.code === 'ArrowDown') {
+      key.stopPropagation()
+      key.preventDefault()
+      list.select(selection + 1)
+    }
+    if (key.code === 'Enter') {
+      key.preventDefault()
+      key.stopPropagation()
+      handleSelection(key, selection)
+    }
+    if (key.code === 'Escape') {
+      key.preventDefault()
+      key.stopPropagation()
+      dispatch('close')
+    }
+  }
 </script>
 
-<div class="selectPopup">
+<div class="selectPopup" on:keydown={onKeydown}>
   <div class="header">
     <input
       bind:this={searchInput}
@@ -61,22 +85,23 @@
   </div>
   <div class="scroll">
     <div class="box">
-      {#each items.filter((x) => x.label.toLowerCase().includes(search.toLowerCase())) as item, i}
-        <!-- svelte-ignore a11y-mouse-events-have-key-events -->
-        <button
-          class="menu-item flex-between"
-          on:mouseover={(ev) => ev.currentTarget.focus()}
-          on:keydown={(ev) => keyDown(ev, i)}
-          on:click={() => {
-            dispatch('close', item.id)
-          }}
-        >
-          <div class="flex-grow caption-color lines-limit-2">{item.label}</div>
-          {#if item.id === selected}
-            <div class="check-right"><CheckBox checked primary /></div>
-          {/if}
-        </button>
-      {/each}
+      <ListView bind:this={list} count={objects.length} bind:selection>
+        <svelte:fragment slot="item" let:item={idx}>
+          {@const item = objects[idx]}
+
+          <button
+            class="menu-item flex-between w-full"
+            on:click={() => {
+              dispatch('close', item.id)
+            }}
+          >
+            <div class="flex-grow caption-color lines-limit-2">{item.label}</div>
+            {#if item.id === selected}
+              <div class="check-right"><CheckBox checked primary /></div>
+            {/if}
+          </button>
+        </svelte:fragment>
+      </ListView>
     </div>
   </div>
 </div>

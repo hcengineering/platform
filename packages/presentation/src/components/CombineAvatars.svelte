@@ -17,10 +17,11 @@
   import { createQuery } from '../utils'
   import { Person } from '@anticrm/contact'
   import Avatar from './Avatar.svelte'
+  import { IconSize } from '@anticrm/ui'
 
   export let _class: Ref<Class<Doc>>
   export let items: Ref<Person>[] = []
-  export let size: 'inline' | 'x-small' | 'small' | 'medium' | 'large' | 'x-large'
+  export let size: IconSize
   export let limit: number = 3
 
   let persons: Person[] = []
