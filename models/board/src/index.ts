@@ -14,9 +14,9 @@
 //
 
 // To help typescript locate view plugin properly
-import type { Board, Card, CardAction, CardDate, CardLabel, MenuPage, LabelsCompactMode } from '@anticrm/board'
+import type { Board, Card, CardDate, CardLabel, MenuPage, LabelsCompactMode } from '@anticrm/board'
 import type { Employee } from '@anticrm/contact'
-import { DOMAIN_MODEL, IndexKind, Markup, Ref, Timestamp, TxOperations as Client, Type } from '@anticrm/core'
+import { DOMAIN_MODEL, IndexKind, Markup, Ref, Timestamp, Type } from '@anticrm/core'
 import {
   ArrOf,
   Builder,
@@ -35,9 +35,9 @@ import chunter from '@anticrm/model-chunter'
 import contact from '@anticrm/model-contact'
 import core, { TAttachedDoc, TDoc, TObj } from '@anticrm/model-core'
 import task, { TSpaceWithStates, TTask } from '@anticrm/model-task'
-import view from '@anticrm/model-view'
+import view, { actionTemplates, createAction } from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
-import { Asset, IntlString, Resource } from '@anticrm/platform'
+import { IntlString } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'
 import preference, { TPreference } from '@anticrm/model-preference'
 import board from './plugin'
@@ -115,20 +115,6 @@ export class TCard extends TTask implements Card {
   members?: Ref<Employee>[]
 }
 
-@Model(board.class.CardAction, core.class.Doc, DOMAIN_MODEL)
-export class TCardAction extends TDoc implements CardAction {
-  component?: AnyComponent
-  hint?: IntlString
-  icon!: Asset
-  isInline?: boolean
-  kind?: 'primary' | 'secondary' | 'no-border' | 'transparent' | 'dangerous'
-  label!: IntlString
-  position!: number
-  type!: string
-  handler?: Resource<(card: Card, client: Client, e?: Event) => void>
-  supported?: Resource<(card: Card, client: Client) => boolean>
-}
-
 @Model(board.class.MenuPage, core.class.Doc, DOMAIN_MODEL)
 export class TMenuPage extends TDoc implements MenuPage {
   component!: AnyComponent
@@ -137,7 +123,7 @@ export class TMenuPage extends TDoc implements MenuPage {
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TBoard, TCard, TCardLabel, TCardDate, TCardAction, TMenuPage, TLabelsCompactMode)
+  builder.createModel(TBoard, TCard, TCardLabel, TCardDate, TMenuPage, TLabelsCompactMode)
 
   builder.createDoc(board.class.MenuPage, core.space.Model, {
     component: board.component.Archive,
@@ -278,207 +264,156 @@ export function createModel (builder: Builder): void {
   )
 
   // card actions
-  builder.createDoc(
-    board.class.CardAction,
-    core.space.Model,
+  createAction(
+    builder,
     {
-      icon: board.icon.Card,
-      isInline: false,
-      label: board.string.Join,
-      position: 10,
-      type: board.cardActionType.Suggested,
-      handler: board.cardActionHandler.Join,
-      supported: board.cardActionSupportedHandler.Join
-    },
-    board.cardAction.Join
-  )
-  builder.createDoc(
-    board.class.CardAction,
-    core.space.Model,
-    {
-      icon: board.icon.Card,
-      isInline: true,
-      label: board.string.Members,
-      position: 20,
-      type: board.cardActionType.AddToCard,
-      handler: board.cardActionHandler.Members
-    },
-    board.cardAction.Members
-  )
-  builder.createDoc(
-    board.class.CardAction,
-    core.space.Model,
-    {
-      icon: board.icon.Card,
-      isInline: true,
+      action: view.actionImpl.ShowPopup,
+      actionProps: {
+        component: board.component.LabelsActionPopup,
+        element: 'top'
+      },
       label: board.string.Labels,
-      position: 30,
-      type: board.cardActionType.AddToCard,
-      handler: board.cardActionHandler.Labels
-    },
-    board.cardAction.Labels
-  )
-  builder.createDoc(
-    board.class.CardAction,
-    core.space.Model,
-    {
       icon: board.icon.Card,
-      isInline: false,
-      label: board.string.Checklist,
-      position: 40,
-      type: board.cardActionType.AddToCard,
-      handler: board.cardActionHandler.Checklist
+      input: 'any',
+      category: board.category.Card,
+      target: board.class.Card,
+      context: { mode: 'context', application: board.app.Board, group: 'top' }
     },
-    board.cardAction.Checklist
+    board.action.Labels
   )
-  builder.createDoc(
-    board.class.CardAction,
-    core.space.Model,
+  createAction(
+    builder,
     {
-      icon: board.icon.Card,
-      isInline: true,
+      action: view.actionImpl.ShowPopup,
+      actionProps: {
+        component: board.component.DatesActionPopup,
+        element: 'top'
+      },
       label: board.string.Dates,
-      position: 50,
-      type: board.cardActionType.AddToCard,
-      handler: board.cardActionHandler.Dates
-    },
-    board.cardAction.Dates
-  )
-  builder.createDoc(
-    board.class.CardAction,
-    core.space.Model,
-    {
       icon: board.icon.Card,
-      isInline: false,
-      label: board.string.Attachments,
-      position: 60,
-      type: board.cardActionType.AddToCard,
-      handler: board.cardActionHandler.Attachments
+      input: 'any',
+      category: board.category.Card,
+      target: board.class.Card,
+      context: { mode: 'context', application: board.app.Board, group: 'top' }
     },
-    board.cardAction.Attachments
+    board.action.Dates
   )
-  builder.createDoc(
-    board.class.CardAction,
-    core.space.Model,
+  createAction(
+    builder,
     {
-      icon: board.icon.Card,
-      isInline: true,
+      action: view.actionImpl.ShowPopup,
+      actionProps: {
+        component: board.component.CoverActionPopup,
+        element: 'top'
+      },
       label: board.string.Cover,
-      position: 70,
-      type: board.cardActionType.Cover,
-      handler: board.cardActionHandler.Cover
-    },
-    board.cardAction.Cover
-  )
-  builder.createDoc(
-    board.class.CardAction,
-    core.space.Model,
-    {
       icon: board.icon.Card,
-      isInline: false,
-      label: board.string.CustomFields,
-      position: 80,
-      type: board.cardActionType.AddToCard,
-      handler: board.cardActionHandler.CustomFields
+      input: 'any',
+      category: board.category.Card,
+      target: board.class.Card,
+      context: { mode: 'context', application: board.app.Board, group: 'top' }
     },
-    board.cardAction.CustomFields
+    board.action.Cover
   )
-  builder.createDoc(
-    board.class.CardAction,
-    core.space.Model,
+  createAction(
+    builder,
     {
-      icon: board.icon.Card,
-      isInline: false,
-      kind: 'transparent',
-      label: board.string.AddButton,
-      position: 90,
-      type: board.cardActionType.Automation,
-      handler: board.cardActionHandler.AddButton
+      ...actionTemplates.move,
+      action: view.actionImpl.ShowPopup,
+      actionProps: {
+        component: board.component.MoveActionPopup,
+        element: 'top'
+      },
+      input: 'any',
+      category: board.category.Card,
+      target: board.class.Card,
+      context: { mode: 'context', application: board.app.Board, group: 'tools' }
     },
-    board.cardAction.AddButton
+    board.action.Move
   )
-  builder.createDoc(
-    board.class.CardAction,
-    core.space.Model,
+  createAction(
+    builder,
     {
-      icon: board.icon.Card,
-      isInline: true,
-      label: board.string.Move,
-      position: 100,
-      type: board.cardActionType.Action,
-      handler: board.cardActionHandler.Move
-    },
-    board.cardAction.Move
-  )
-  builder.createDoc(
-    board.class.CardAction,
-    core.space.Model,
-    {
-      icon: board.icon.Card,
-      isInline: true,
+      action: view.actionImpl.ShowPopup,
+      actionProps: {
+        component: board.component.CopyActionPopup,
+        element: 'top'
+      },
       label: board.string.Copy,
-      position: 110,
-      type: board.cardActionType.Action,
-      handler: board.cardActionHandler.Copy
-    },
-    board.cardAction.Copy
-  )
-  builder.createDoc(
-    board.class.CardAction,
-    core.space.Model,
-    {
       icon: board.icon.Card,
-      isInline: false,
-      label: board.string.MakeTemplate,
-      position: 120,
-      type: board.cardActionType.Action,
-      handler: board.cardActionHandler.MakeTemplate
+      input: 'any',
+      category: board.category.Card,
+      target: board.class.Card,
+      context: { mode: 'context', application: board.app.Board, group: 'tools' }
     },
-    board.cardAction.MakeTemplate
+    board.action.Copy
   )
-  builder.createDoc(
-    board.class.CardAction,
-    core.space.Model,
+
+  createAction(
+    builder,
     {
+      action: view.actionImpl.UpdateDocument,
+      actionProps: {
+        key: 'isArchived',
+        value: true,
+        ask: true,
+        label: task.string.Archive,
+        message: task.string.ArchiveConfirm
+      },
+      query: {
+        isArchived: { $nin: [true] }
+      },
+      label: board.string.Archive,
       icon: board.icon.Card,
-      isInline: true,
-      label: board.string.ToArchive,
-      position: 140,
-      type: board.cardActionType.Action,
-      handler: board.cardActionHandler.Archive,
-      supported: board.cardActionSupportedHandler.Archive
+      input: 'any',
+      category: board.category.Card,
+      target: board.class.Card,
+      context: { mode: 'context', application: board.app.Board, group: 'tools' }
     },
-    board.cardAction.Archive
+    board.action.Archive
   )
-  builder.createDoc(
-    board.class.CardAction,
-    core.space.Model,
+  createAction(
+    builder,
     {
-      icon: board.icon.Card,
-      isInline: true,
+      action: view.actionImpl.UpdateDocument,
+      actionProps: {
+        key: 'isArchived',
+        value: false
+      },
+      query: {
+        isArchived: true
+      },
       label: board.string.SendToBoard,
-      position: 140,
-      type: board.cardActionType.Action,
-      handler: board.cardActionHandler.SendToBoard,
-      supported: board.cardActionSupportedHandler.SendToBoard
-    },
-    board.cardAction.SendToBoard
-  )
-  builder.createDoc(
-    board.class.CardAction,
-    core.space.Model,
-    {
       icon: board.icon.Card,
-      isInline: false,
-      kind: 'dangerous',
-      label: board.string.Delete,
-      position: 150,
-      type: board.cardActionType.Action,
-      handler: board.cardActionHandler.Delete,
-      supported: board.cardActionSupportedHandler.Delete
+      input: 'any',
+      category: board.category.Card,
+      target: board.class.Card,
+      context: { mode: 'context', application: board.app.Board, group: 'tools' }
     },
-    board.cardAction.Delete
+    board.action.SendToBoard
   )
+
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.Delete,
+      query: {
+        isArchived: true
+      },
+      label: view.string.Delete,
+      icon: view.icon.Delete,
+      keyBinding: ['Meta + Backspace', 'Ctrl + Backspace'],
+      category: board.category.Card,
+      input: 'any',
+      target: board.class.Card,
+      context: { mode: 'context', application: board.app.Board, group: 'tools' }
+    },
+    board.action.Delete
+  )
+
+  builder.mixin(board.class.Card, core.class.Class, view.mixin.IgnoreActions, {
+    actions: [view.action.Delete, task.action.Move]
+  })
 }
 
 export { boardOperation } from './migration'

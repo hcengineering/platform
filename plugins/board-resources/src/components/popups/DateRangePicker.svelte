@@ -6,29 +6,29 @@
   import board from '../../plugin'
   import { getClient } from '@anticrm/presentation'
 
-  export let object: Card
+  export let value: Card
 
   const client = getClient()
   const dispatch = createEventDispatcher()
 
-  let startDate = object.date?.startDate
-  let savedStartDate = object.date?.startDate ?? Date.now()
+  let startDate = value.date?.startDate
+  let savedStartDate = value.date?.startDate ?? Date.now()
   let startDateEnabled = startDate !== undefined
   $: startDate && (savedStartDate = startDate)
-  let dueDate = object.date?.dueDate
-  let savedDueDate = object.date?.dueDate ?? Date.now()
+  let dueDate = value.date?.dueDate
+  let savedDueDate = value.date?.dueDate ?? Date.now()
   let dueDateEnabled = dueDate !== undefined
   $: dueDate && (savedDueDate = dueDate)
 
   function getEmptyDate (): CardDate {
-    return { _class: object.date?._class ?? board.class.CardDate }
+    return { _class: value.date?._class ?? board.class.CardDate }
   }
 
   function update () {
     const date: CardDate = getEmptyDate()
     if (startDate !== undefined) date.startDate = startDate
     if (dueDate !== undefined) date.dueDate = dueDate
-    client.update(object, { date })
+    client.update(value, { date })
   }
 </script>
 
@@ -82,7 +82,7 @@
       label={board.string.Remove}
       size={'small'}
       on:click={() => {
-        client.update(object, { date: getEmptyDate() })
+        client.update(value, { date: getEmptyDate() })
         dispatch('close')
       }}
     />
@@ -96,7 +96,7 @@
       }}
     />
     <div class="flex-center mr-2">
-      <Component is={calendar.component.DocReminder} props={{ value: object }} />
+      <Component is={calendar.component.DocReminder} props={{ value }} />
     </div>
   </div>
 </div>

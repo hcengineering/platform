@@ -1,15 +1,18 @@
 <script lang="ts">
-  import { Button, Label } from '@anticrm/ui'
-  import { createQuery, getClient } from '@anticrm/presentation'
   import { Card } from '@anticrm/board'
   import { DocumentQuery, SortingOrder } from '@anticrm/core'
-  import { getResource } from '@anticrm/platform'
+  import { createQuery, getClient } from '@anticrm/presentation'
+  import { Button, Label } from '@anticrm/ui'
+  import type { Action } from '@anticrm/view'
+  import { invokeAction } from '@anticrm/view-resources'
   import board from '../plugin'
+  import { getCardActions } from '../utils/CardActionUtils'
   import KanbanCard from './KanbanCard.svelte'
 
   export let query: DocumentQuery<Card> = {}
 
   let archivedCards: Card[]
+  let actions: Action[] = []
   const client = getClient()
   const cardQuery = createQuery()
   $: cardQuery.query(
@@ -20,6 +23,9 @@
     },
     { sort: { rank: SortingOrder.Descending } }
   )
+  getCardActions(client, { _id: { $in: [board.action.SendToBoard, board.action.Delete] } }).then(async (result) => {
+    actions = result
+  })
 </script>
 
 {#if archivedCards}
@@ -33,16 +39,20 @@
     <div class="flex-center flex-gap-2 w-full">
       <Button
         label={board.string.SendToBoard}
-        on:click={async (e) => {
-          const unarchiveAction = await getResource(board.cardActionHandler.SendToBoard)
-          unarchiveAction(card, client, e)
+        on:click={(e) => {
+          const unarchiveAction = actions.find((a) => a._id === board.action.SendToBoard)
+          if (unarchiveAction) {
+            invokeAction(card, e, unarchiveAction.action, unarchiveAction.actionProps)
+          }
         }}
       />
       <Button
         label={board.string.Delete}
         on:click={async (e) => {
-          const deleteAction = await getResource(board.cardActionHandler.Delete)
-          deleteAction(card, client, e)
+          const deleteAction = actions.find((a) => a._id === board.action.Delete)
+          if (deleteAction) {
+            invokeAction(card, e, deleteAction.action, deleteAction.actionProps)
+          }
         }}
       />
     </div>

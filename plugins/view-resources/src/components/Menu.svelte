@@ -15,11 +15,9 @@
 <script lang="ts">
   import type { Class, Doc, Ref } from '@anticrm/core'
   import type { Asset } from '@anticrm/platform'
-  import { getResource } from '@anticrm/platform'
   import { getClient } from '@anticrm/presentation'
   import { Action, Menu } from '@anticrm/ui'
-  import { ViewAction } from '@anticrm/view'
-  import { getActions } from '../actions'
+  import { getActions, invokeAction } from '../actions'
 
   export let object: Doc | Doc[]
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
@@ -27,10 +25,6 @@
 
   const client = getClient()
 
-  async function invokeAction (evt: Event, action: ViewAction, props?: Record<string, any>) {
-    const impl = await getResource(action)
-    await impl(Array.isArray(object) && object.length === 1 ? object[0] : object, evt, props)
-  }
   let loaded = 0
 
   getActions(client, object, baseMenuClass).then((result) => {
@@ -38,7 +32,7 @@
       label: a.label,
       icon: a.icon as Asset,
       action: async (_: any, evt: Event) => {
-        invokeAction(evt, a.action, a.actionProps)
+        invokeAction(object, evt, a.action, a.actionProps)
       }
     }))
     loaded = 1

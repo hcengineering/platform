@@ -23,6 +23,7 @@
   import { showPopup } from '@anticrm/ui'
   import {
     ActionContext,
+    ContextMenu,
     focusStore,
     ListSelectionProvider,
     SelectDirection,
@@ -30,7 +31,6 @@
   } from '@anticrm/view-resources'
   import { onMount } from 'svelte'
   import AddCard from './add-card/AddCard.svelte'
-  import CardInlineActions from './editor/CardInlineActions.svelte'
   import KanbanCard from './KanbanCard.svelte'
   import AddPanel from './AddPanel.svelte'
   import ListHeader from './ListHeader.svelte'
@@ -94,8 +94,8 @@
     }
 
     showPopup(
-      CardInlineActions,
-      { value: object },
+      ContextMenu,
+      { object },
       {
         getBoundingClientRect: () => DOMRect.fromRect({ width: 1, height: 1, x: ev.clientX, y: ev.clientY })
       }

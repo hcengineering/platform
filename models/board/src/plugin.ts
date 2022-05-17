@@ -34,7 +34,12 @@ export default mergeIds(boardId, board, {
     TemplatesIcon: '' as AnyComponent,
     Cards: '' as AnyComponent,
     KanbanView: '' as AnyComponent,
-    TableView: '' as AnyComponent
+    TableView: '' as AnyComponent,
+    LabelsActionPopup: '' as AnyComponent,
+    DatesActionPopup: '' as AnyComponent,
+    CoverActionPopup: '' as AnyComponent,
+    MoveActionPopup: '' as AnyComponent,
+    CopyActionPopup: '' as AnyComponent
   },
   space: {
     DefaultBoard: '' as Ref<Space>
