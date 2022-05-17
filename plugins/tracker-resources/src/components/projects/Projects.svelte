@@ -123,7 +123,7 @@
         props: { currentSpace, defaultClass: contact.class.Employee, shouldShowLabel: false }
       },
       { key: '', presenter: tracker.component.ProjectMembersPresenter, props: { kind: 'link' } },
-      { key: '', presenter: tracker.component.DueDatePresenter },
+      { key: '', presenter: tracker.component.TargetDatePresenter },
       { key: '', presenter: tracker.component.ProjectStatusPresenter }
     ]}
     projects={resultProjects}
