@@ -33,6 +33,9 @@ import BoardHeader from './components/BoardHeader.svelte'
 import BoardMenu from './components/BoardMenu.svelte'
 import MenuMainPage from './components/MenuMainPage.svelte'
 import Archive from './components/Archive.svelte'
+import TableView from './components/TableView.svelte'
+import UserBoxList from './components/UserBoxList.svelte'
+import CardLabels from './components/editor/CardLabels.svelte'
 import CardCoverEditor from './components/popups/CardCoverEditor.svelte'
 
 export default async (): Promise<Resources> => ({
@@ -51,6 +54,9 @@ export default async (): Promise<Resources> => ({
     BoardMenu,
     Archive,
     MenuMainPage,
+        TableView,
+        UserBoxList,
+        CardLabels
     // action popups
     LabelsActionPopup: CardLabelsPopup,
     DatesActionPopup: DateRangePicker,

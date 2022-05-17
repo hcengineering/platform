@@ -34,6 +34,8 @@ export default mergeIds(boardId, board, {
     TemplatesIcon: '' as AnyComponent,
     Cards: '' as AnyComponent,
     KanbanView: '' as AnyComponent,
+    TableView: '' as AnyComponent,
+    KanbanView: '' as AnyComponent,
     LabelsActionPopup: '' as AnyComponent,
     DatesActionPopup: '' as AnyComponent,
     CoverActionPopup: '' as AnyComponent,
@@ -50,7 +52,8 @@ export default mergeIds(boardId, board, {
     Sequence: '' as Ref<Sequence>
   },
   viewlet: {
-    Kanban: '' as Ref<ViewletDescriptor>
+    Kanban: '' as Ref<ViewletDescriptor>,
+    Table: '' as Ref<ViewletDescriptor>
   },
   string: {
     LabelsCompactMode: '' as IntlString

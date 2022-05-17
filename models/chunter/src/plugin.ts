@@ -35,13 +35,15 @@ export default mergeIds(chunterId, chunter, {
     MarkCommentUnread: '' as Ref<Action>,
     MarkUnread: '' as Ref<Action>,
     ArchiveChannel: '' as Ref<Action>,
-    UnarchiveChannel: '' as Ref<Action>
+    UnarchiveChannel: '' as Ref<Action>,
+    ConvertToPrivate: '' as Ref<Action>
   },
   actionImpl: {
     MarkUnread: '' as ViewAction,
     MarkCommentUnread: '' as ViewAction,
     ArchiveChannel: '' as ViewAction,
-    UnarchiveChannel: '' as ViewAction
+    UnarchiveChannel: '' as ViewAction,
+    ConvertDmToPrivateChannel: '' as ViewAction
   },
   category: {
     Chunter: '' as Ref<ActionCategory>

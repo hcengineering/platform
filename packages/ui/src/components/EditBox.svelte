@@ -77,11 +77,11 @@
     },
     isFocus: () => document.activeElement === input
   })
-
+  const updateFocus = () => {
+    focusManager?.setFocus(idx)
+  }
   $: if (input) {
-    input.addEventListener('focus', () => {
-      focusManager?.setFocus(idx)
-    })
+    input.addEventListener('focus', updateFocus, { once: true })
   }
 </script>
 
