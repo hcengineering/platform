@@ -75,7 +75,6 @@
     input.addEventListener('focus', updateFocus, { once: true })
   }
 
-  let tHeight: number
   const vDir = (d: string): string => d.split('|')[0]
   const fitEditor = (): void => {
     dir = vDir(direction)
@@ -89,7 +88,7 @@
 <svelte:window on:resize={fitEditor} on:scroll={fitEditor} />
 <FocusHandler manager={mgr} />
 {#if editable && editable === true}
-  <div class="editor-container {dir} buttons-group xsmall-gap" bind:clientHeight={tHeight}>
+  <div class="editor-container {dir} buttons-group xsmall-gap">
     <div class="cover-channel" class:show class:copied={label === plugin.string.Copied} data-tooltip={lTraslate}>
       <input
         bind:this={input}
