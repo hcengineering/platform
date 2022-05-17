@@ -14,7 +14,6 @@
 -->
 <script lang="ts">
   import { Ref, WithLookup } from '@anticrm/core'
-
   import { IssueStatus } from '@anticrm/tracker'
   import { Button, showPopup, SelectPopup, eventToHTMLElement } from '@anticrm/ui'
   import type { ButtonKind, ButtonSize } from '@anticrm/ui'
