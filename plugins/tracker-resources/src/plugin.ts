@@ -36,6 +36,10 @@ export default mergeIds(trackerId, tracker, {
     Board: '' as IntlString,
     Project: '' as IntlString,
     Projects: '' as IntlString,
+    AllProjects: '' as IntlString,
+    BacklogProjects: '' as IntlString,
+    ActiveProjects: '' as IntlString,
+    ClosedProjects: '' as IntlString,
     NewProject: '' as IntlString,
     CreateProject: '' as IntlString,
     ProjectNamePlaceholder: '' as IntlString,
@@ -119,6 +123,10 @@ export default mergeIds(trackerId, tracker, {
     AddToProject: '' as IntlString,
     MoveToProject: '' as IntlString,
     NoProject: '' as IntlString,
+    ProjectLeadTitle: '' as IntlString,
+    ProjectMembersTitle: '' as IntlString,
+    ProjectLeadSearchPlaceholder: '' as IntlString,
+    ProjectMembersSearchPlaceholder: '' as IntlString,
 
     IssueTitlePlaceholder: '' as IntlString,
     IssueDescriptionPlaceholder: '' as IntlString,
@@ -156,6 +164,11 @@ export default mergeIds(trackerId, tracker, {
     DueDatePresenter: '' as AnyComponent,
     EditIssue: '' as AnyComponent,
     CreateTeam: '' as AnyComponent,
-    NewIssueHeader: '' as AnyComponent
+    NewIssueHeader: '' as AnyComponent,
+    IconPresenter: '' as AnyComponent,
+    LeadPresenter: '' as AnyComponent,
+    TargetDatePresenter: '' as AnyComponent,
+    ProjectMembersPresenter: '' as AnyComponent,
+    ProjectStatusPresenter: '' as AnyComponent
   }
 })

@@ -114,8 +114,16 @@ export const getIssuesModificationDatePeriodTime = (period: IssuesDateModificati
   }
 }
 
+export const defaultProjectStatuses = [
+  ProjectStatus.Planned,
+  ProjectStatus.InProgress,
+  ProjectStatus.Paused,
+  ProjectStatus.Completed,
+  ProjectStatus.Canceled
+]
+
 // TODO: update icons
-export const projectStatuses: Record<ProjectStatus, { icon: Asset, label: IntlString }> = {
+export const projectStatusAssets: Record<ProjectStatus, { icon: Asset, label: IntlString }> = {
   [ProjectStatus.Planned]: { icon: tracker.icon.CategoryBacklog, label: tracker.string.Planned },
   [ProjectStatus.InProgress]: { icon: tracker.icon.CategoryStarted, label: tracker.string.InProgress },
   [ProjectStatus.Paused]: { icon: tracker.icon.CategoryUnstarted, label: tracker.string.Paused },
