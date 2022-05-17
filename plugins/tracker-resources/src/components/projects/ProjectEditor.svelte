@@ -16,11 +16,10 @@
   import { Ref } from '@anticrm/core'
   import { Issue, Project } from '@anticrm/tracker'
   import { getClient } from '@anticrm/presentation'
-  import type { ButtonKind, ButtonShape, ButtonSize } from '@anticrm/ui'
+  import { ButtonKind, ButtonShape, ButtonSize, Tooltip } from '@anticrm/ui'
+  import { IntlString } from '@anticrm/platform'
   import tracker from '../../plugin'
   import ProjectSelector from '../ProjectSelector.svelte'
-  import { IntlString } from '@anticrm/platform'
-  import { createEventDispatcher } from 'svelte'
 
   export let value: Issue
   export let isEditable: boolean = true
@@ -32,35 +31,31 @@
   export let shape: ButtonShape = undefined
   export let justify: 'left' | 'center' = 'left'
   export let width: string | undefined = '100%'
-  export let shouldSaveOnChange = true
 
   const client = getClient()
-  const dispatch = createEventDispatcher()
 
   const handleProjectIdChanged = async (newProjectId: Ref<Project> | null | undefined) => {
     if (!isEditable || newProjectId === undefined || value.project === newProjectId) {
       return
     }
 
-    dispatch('change', newProjectId)
-
-    if (shouldSaveOnChange) {
-      await client.update(value, { project: newProjectId })
-    }
+    await client.update(value, { project: newProjectId })
   }
 </script>
 
 {#if value.project || shouldShowPlaceholder}
-  <ProjectSelector
-    {kind}
-    {size}
-    {shape}
-    {width}
-    {justify}
-    {isEditable}
-    {shouldShowLabel}
-    {popupPlaceholder}
-    value={value.project}
-    onProjectIdChange={handleProjectIdChanged}
-  />
+  <Tooltip label={value.project ? tracker.string.MoveToProject : tracker.string.AddToProject} fill>
+    <ProjectSelector
+      {kind}
+      {size}
+      {shape}
+      {width}
+      {justify}
+      {isEditable}
+      {shouldShowLabel}
+      {popupPlaceholder}
+      value={value.project}
+      onProjectIdChange={handleProjectIdChanged}
+    />
+  </Tooltip>
 {/if}

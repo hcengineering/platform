@@ -19,12 +19,10 @@
   import type { ButtonKind, ButtonSize } from '@anticrm/ui'
   import tracker from '../../plugin'
   import PrioritySelector from '../PrioritySelector.svelte'
-  import { createEventDispatcher } from 'svelte'
 
   export let value: Issue
   export let isEditable: boolean = true
   export let shouldShowLabel: boolean = false
-  export let shouldSaveOnChange = true
 
   export let kind: ButtonKind = 'link'
   export let size: ButtonSize = 'large'
@@ -32,18 +30,13 @@
   export let width: string | undefined = '100%'
 
   const client = getClient()
-  const dispatch = createEventDispatcher()
 
   const handlePriorityChanged = async (newPriority: IssuePriority | undefined) => {
     if (!isEditable || newPriority === undefined || value.priority === newPriority) {
       return
     }
 
-    dispatch('change', newPriority)
-
-    if (shouldSaveOnChange) {
-      await client.update(value, { priority: newPriority })
-    }
+    await client.update(value, { priority: newPriority })
   }
 </script>
 

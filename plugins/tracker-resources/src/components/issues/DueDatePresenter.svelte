@@ -19,10 +19,10 @@
   import { getClient } from '@anticrm/presentation'
   import DueDatePopup from './DueDatePopup.svelte'
   import tracker from '../../plugin'
+  import { getDueDateIconModifier } from '../../utils'
 
   export let value: WithLookup<Issue>
 
-  const WARNING_DAYS = 7
   const client = getClient()
 
   $: today = new Date(new Date(Date.now()).setHours(0, 0, 0, 0))
@@ -30,7 +30,7 @@
   $: isOverdue = dueDateMs !== null && dueDateMs < today.getTime()
   $: dueDate = dueDateMs === null ? null : new Date(dueDateMs)
   $: daysDifference = dueDate === null ? null : getDaysDifference(today, dueDate)
-  $: iconModifier = getIconModifier(isOverdue, daysDifference)
+  $: iconModifier = getDueDateIconModifier(isOverdue, daysDifference)
   $: formattedDate = !dueDateMs ? '' : new Date(dueDateMs).toLocaleString('default', { month: 'short', day: 'numeric' })
 
   const handleDueDateChanged = async (event: CustomEvent<Timestamp>) => {
@@ -41,20 +41,6 @@
     }
 
     await client.update(value, { dueDate: newDate })
-  }
-
-  const getIconModifier = (isOverdue: boolean, daysDifference: number | null) => {
-    if (isOverdue) {
-      return 'overdue' as 'overdue' // Fixes `DatePresenter` icon type issue
-    }
-
-    if (daysDifference === 0) {
-      return 'critical' as 'critical'
-    }
-
-    if (daysDifference !== null && daysDifference <= WARNING_DAYS) {
-      return 'warning' as 'warning'
-    }
   }
 
   $: shouldRenderPresenter =

@@ -13,66 +13,35 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
   import { WithLookup } from '@anticrm/core'
-  import { UserBox } from '@anticrm/presentation'
-  import contact from '@anticrm/contact'
   import type { Issue, IssueStatus } from '@anticrm/tracker'
   import { Button, Label } from '@anticrm/ui'
   import tracker from '../../../plugin'
   import PriorityEditor from '../PriorityEditor.svelte'
   import StatusEditor from '../StatusEditor.svelte'
-  import DatePresenter from '@anticrm/ui/src/components/calendar/DatePresenter.svelte'
-  import ProjectEditor from '../ProjectEditor.svelte'
+  import ProjectEditor from '../../projects/ProjectEditor.svelte'
+  import AssigneeEditor from '../AssigneeEditor.svelte'
+  import DueDateEditor from '../DueDateEditor.svelte'
 
   export let issue: Issue
   export let issueStatuses: WithLookup<IssueStatus>[]
-
-  const dispatch = createEventDispatcher()
-
-  function change<K extends keyof Issue> (field: K, value: Issue[K]) {
-    dispatch('issueChange', { field, value })
-  }
 </script>
 
 <div class="content">
   <span class="label">
     <Label label={tracker.string.Status} />
   </span>
-  <StatusEditor
-    value={issue}
-    statuses={issueStatuses}
-    shouldSaveOnChange={false}
-    shouldShowLabel
-    on:change={({ detail }) => detail && change('status', detail)}
-  />
+  <StatusEditor value={issue} statuses={issueStatuses} shouldShowLabel />
 
   <span class="label">
     <Label label={tracker.string.Priority} />
   </span>
-  <PriorityEditor
-    value={issue}
-    shouldSaveOnChange={false}
-    shouldShowLabel
-    on:change={({ detail }) => detail !== undefined && change('priority', detail)}
-  />
+  <PriorityEditor value={issue} shouldShowLabel />
 
   <span class="label">
     <Label label={tracker.string.Assignee} />
   </span>
-  <UserBox
-    _class={contact.class.Employee}
-    label={tracker.string.Assignee}
-    placeholder={tracker.string.Assignee}
-    value={issue.assignee}
-    allowDeselect
-    titleDeselect={tracker.string.Unassigned}
-    size={'large'}
-    kind={'link'}
-    width={'100%'}
-    justify={'left'}
-    on:change={({ detail }) => change('assignee', detail)}
-  />
+  <AssigneeEditor value={issue} />
 
   <span class="label">
     <Label label={tracker.string.Labels} />
@@ -91,7 +60,7 @@
   <span class="label">
     <Label label={tracker.string.Project} />
   </span>
-  <ProjectEditor value={issue} shouldSaveOnChange={false} on:change={({ detail }) => change('project', detail)} />
+  <ProjectEditor value={issue} />
 
   {#if issue.dueDate !== null}
     <div class="divider" />
@@ -99,7 +68,7 @@
     <span class="label">
       <Label label={tracker.string.DueDate} />
     </span>
-    <DatePresenter bind:value={issue.dueDate} editable on:change={({ detail }) => change('dueDate', detail)} />
+    <DueDateEditor value={issue} />
   {/if}
 </div>
 

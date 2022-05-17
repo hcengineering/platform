@@ -84,12 +84,6 @@
     }
   }
 
-  async function change (field: string, value: any) {
-    if (issue !== undefined) {
-      await client.update(issue, { [field]: value })
-    }
-  }
-
   async function save (ev: MouseEvent) {
     ev.preventDefault()
 
@@ -184,7 +178,7 @@
 
     <svelte:fragment slot="custom-attributes">
       {#if issue && currentTeam && issueStatuses}
-        <ControlPanel {issue} {issueStatuses} on:issueChange={({ detail }) => change(detail.field, detail.value)} />
+        <ControlPanel {issue} {issueStatuses} />
       {/if}
     </svelte:fragment>
   </Panel>
