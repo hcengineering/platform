@@ -178,7 +178,11 @@ function applyStyle (values: Record<string, string | number>, modalHTML: HTMLEle
  *
  * return boolean to show or not modal overlay.
  */
-export function fitPopupElement (modalHTML: HTMLElement, element?: PopupAlignment, contentPanel?: HTMLElement): { show: boolean, direction: string } {
+export function fitPopupElement (
+  modalHTML: HTMLElement,
+  element?: PopupAlignment,
+  contentPanel?: HTMLElement
+): { show: boolean, direction: string } {
   let show = true
   const newProps: Record<string, string | number> = {}
   if (element != null) {

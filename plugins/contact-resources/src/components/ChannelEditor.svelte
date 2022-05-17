@@ -76,7 +76,7 @@
   }
 
   let tHeight: number
-  let vDir = (d: string): string => d.split('|')[0]
+  const vDir = (d: string): string => d.split('|')[0]
   const fitEditor = (): void => {
     dir = vDir(direction)
   }

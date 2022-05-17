@@ -26,7 +26,7 @@
   let componentInstance: any
 
   let options: {
-    show: boolean,
+    show: boolean
     direction: string
   } = { show: false, direction: 'bottom' }
 
@@ -112,7 +112,13 @@
       </div>
     </div>
     {#if props.element !== 'content'}
-      <div class="modal-overlay" class:show={options.show} on:click={() => escapeClose()} on:keydown={() => {}} on:keyup={() => {}} />
+      <div
+        class="modal-overlay"
+        class:show={options.show}
+        on:click={() => escapeClose()}
+        on:keydown={() => {}}
+        on:keyup={() => {}}
+      />
     {/if}
   {/if}
 {/if}

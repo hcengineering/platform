@@ -32,7 +32,7 @@
   let height: number
 
   let options: {
-    show: boolean,
+    show: boolean
     direction: string
   } = { show: false, direction: 'bottom' }
 
@@ -82,7 +82,12 @@
     on:close={(ev) => _close(ev.detail)}
   />
 </div>
-<div class="modal-overlay" class:antiOverlay={options.show} style={`z-index: ${zIndex};`} on:click={() => escapeClose()} />
+<div
+  class="modal-overlay"
+  class:antiOverlay={options.show}
+  style={`z-index: ${zIndex};`}
+  on:click={() => escapeClose()}
+/>
 
 <style lang="scss">
   .popup {
