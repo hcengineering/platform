@@ -11,13 +11,11 @@
   const todoListQuery = createQuery()
   let todoLists: Ref<TodoItem>[]
   $: todoListQuery.query(task.class.TodoItem, { space: value.space, attachedTo: value._id }, (result) => {
-    console.debug(result)
     todoLists = result.map(({ _id }) => _id)
   })
   const query = createQuery()
   let done: number, total: number
   $: query.query(task.class.TodoItem, { space: value.space, attachedTo: { $in: todoLists } }, (result) => {
-    console.debug(result)
     total = result.total
     done = result.filter((t) => t.done).length
   })
