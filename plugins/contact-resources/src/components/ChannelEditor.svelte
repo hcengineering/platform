@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher, onMount } from 'svelte'
+  import { createEventDispatcher, onMount, afterUpdate } from 'svelte'
   import type { IntlString } from '@anticrm/platform'
   import { translate } from '@anticrm/platform'
   import {
@@ -34,6 +34,7 @@
   export let placeholder: IntlString
   export let editable: boolean | undefined = undefined
   export let openable: boolean = false
+  export let trigger: HTMLElement
 
   const dispatch = createEventDispatcher()
   let input: HTMLInputElement
@@ -73,11 +74,25 @@
   $: if (input) {
     input.addEventListener('focus', updateFocus, { once: true })
   }
+
+  let tHeight: number
+  let vertical: 'top' | 'bottom' = 'bottom'
+  const fitEditor = (): void => {
+    if (trigger) {
+      const rect = trigger.getBoundingClientRect()
+      if (rect && rect.bottom + tHeight + 29 >= window.innerHeight) vertical = 'top'
+      else vertical = 'bottom'
+    }
+  }
+  afterUpdate(() => {
+    fitEditor()
+  })
 </script>
 
+<svelte:window on:resize={fitEditor} on:scroll={fitEditor} />
 <FocusHandler manager={mgr} />
 {#if editable && editable === true}
-  <div class="editor-container bottom buttons-group xsmall-gap">
+  <div class="editor-container {vertical} buttons-group xsmall-gap" bind:clientHeight={tHeight}>
     <div class="cover-channel" class:show class:copied={label === plugin.string.Copied} data-tooltip={lTraslate}>
       <input
         bind:this={input}
@@ -210,16 +225,22 @@
   }
 
   .editor-container {
-    margin-top: 0.25rem;
     padding: 0.5rem;
     background-color: var(--accent-bg-color);
     border: 1px solid var(--divider-color);
     border-radius: 0.75rem;
-    transform: translate(calc(-50% + 0.75rem), 0.25rem);
     box-shadow: var(--popup-aside-shadow);
 
-    &::after,
-    &::before {
+    &.top {
+      transform: translate(calc(-50% + 0.75rem), -0.5rem);
+    }
+    &.bottom {
+      transform: translate(calc(-50% + 0.75rem), 0.5rem);
+    }
+    &.top::after,
+    &.top::before,
+    &.bottom::after,
+    &.bottom::before {
       content: '';
       position: absolute;
       margin-left: -9px;
@@ -228,15 +249,23 @@
       width: 18px;
       height: 7px;
     }
-    &::before {
+    &.top::before,
+    &.bottom::before {
       background-color: var(--accent-bg-color);
       clip-path: url('#nub-bg');
       z-index: 1;
     }
-    &::after {
+    &.top::after,
+    &.bottom::after {
       background-color: var(--divider-color);
       clip-path: url('#nub-border');
       z-index: 2;
+    }
+    &.top::after,
+    &.top::before {
+      top: calc(100% - 1px);
+      transform-origin: center center;
+      transform: rotate(180deg);
     }
   }
 </style>
