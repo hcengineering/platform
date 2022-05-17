@@ -54,9 +54,9 @@ export default async (): Promise<Resources> => ({
     BoardMenu,
     Archive,
     MenuMainPage,
-        TableView,
-        UserBoxList,
-        CardLabels
+    TableView,
+    UserBoxList,
+    CardLabels,
     // action popups
     LabelsActionPopup: CardLabelsPopup,
     DatesActionPopup: DateRangePicker,
