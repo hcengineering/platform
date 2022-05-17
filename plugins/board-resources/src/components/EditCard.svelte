@@ -15,22 +15,23 @@
 -->
 <script lang="ts">
   import type { Card } from '@anticrm/board'
-  import { Class, Ref } from '@anticrm/core'
+  import core, { Class, Ref, Space } from '@anticrm/core'
   import { Panel } from '@anticrm/panel'
   import { createQuery, getClient } from '@anticrm/presentation'
   import type { State, TodoItem } from '@anticrm/task'
   import task from '@anticrm/task'
   import { StyledTextBox } from '@anticrm/text-editor'
-  import { Button, EditBox, Icon, Label } from '@anticrm/ui'
-  import { invokeAction, UpDownNavigator } from '@anticrm/view-resources'
+  import { Button, EditBox, Icon, IconAttachment, IconMoreH, Label, showPopup } from '@anticrm/ui'
+  import { ContextMenu, invokeAction, UpDownNavigator } from '@anticrm/view-resources'
   import { createEventDispatcher, onMount } from 'svelte'
   import board from '../plugin'
   import { getCardActions } from '../utils/CardActionUtils'
   import { updateCard } from '../utils/CardUtils'
+  import { getPopupAlignment } from '../utils/PopupUtils'
   import CardActions from './editor/CardActions.svelte'
   import CardAttachments from './editor/CardAttachments.svelte'
   import CardChecklist from './editor/CardChecklist.svelte'
-  import CardDetails from './editor/CardDetails.svelte'
+  import AttachmentPicker from './popups/AttachmentPicker.svelte'
 
   export let _id: Ref<Card>
   export let _class: Ref<Class<Card>>
@@ -38,10 +39,12 @@
   const client = getClient()
   const cardQuery = createQuery()
   const stateQuery = createQuery()
+  const spaceQuery = createQuery()
   const checklistsQuery = createQuery()
 
   let object: Card | undefined
   let state: State | undefined
+  let space: Space | undefined
   let handleMove: (e: Event) => void
   let checklists: TodoItem[] = []
 
@@ -58,6 +61,11 @@
   $: object?.state &&
     stateQuery.query(task.class.State, { _id: object.state }, (result) => {
       state = result[0]
+    })
+
+  $: object?.space &&
+    spaceQuery.query(core.class.Space, { _id: object.space }, (result) => {
+      space = result[0]
     })
 
   $: object &&
@@ -86,15 +94,32 @@
     icon={board.icon.Card}
     title={object?.title}
     {object}
-    isHeader={false}
+    isHeader
     isAside={true}
+    isSub={false}
     on:close={() => dispatch('close')}
   >
     <svelte:fragment slot="navigator">
       <UpDownNavigator element={object} />
     </svelte:fragment>
-
-    <!-- TODO cover -->
+    <svelte:fragment slot="header">
+      <div class="flex fs-title flex-gap-1">
+        <span class="over-underline" on:click={handleMove}>{space?.name}</span>><span
+          class="over-underline"
+          on:click={handleMove}>{state?.title}</span
+        >
+      </div>
+    </svelte:fragment>
+    <svelte:fragment slot="tools">
+      <Button
+        icon={IconMoreH}
+        kind="transparent"
+        size="medium"
+        on:click={(e) => {
+          showPopup(ContextMenu, { object }, getPopupAlignment(e))
+        }}
+      />
+    </svelte:fragment>
     <div class="flex-row-stretch">
       <div class="w-9">
         <Icon icon={board.icon.Card} size="large" />
@@ -104,18 +129,7 @@
       </div>
     </div>
     <div class="flex-row-stretch">
-      <div class="w-9" />
-      <div>
-        <Label label={board.string.InList} />
-        <span class="state-name ml-1" on:click={handleMove}>{state?.title}</span>
-      </div>
-    </div>
-    <div class="flex-row-stretch">
       <div class="flex-grow mr-4">
-        <div class="flex-row-stretch">
-          <div class="w-9" />
-          <CardDetails bind:value={object} />
-        </div>
         <div class="flex-row-stretch mt-4 mb-2">
           <div class="w-9">
             <Icon icon={board.icon.Card} size="large" />
@@ -142,7 +156,19 @@
         {/each}
       </div>
     </div>
-
+    <span slot="actions-label"><Label label={board.string.Actions} /></span>
+    <svelte:fragment slot="actions">
+      <Button
+        icon={IconAttachment}
+        title={board.string.AddAttachment}
+        width="min-content"
+        size="small"
+        kind="transparent"
+        on:click={(e) => {
+          showPopup(AttachmentPicker, { value: object }, getPopupAlignment(e))
+        }}
+      />
+    </svelte:fragment>
     <svelte:fragment slot="custom-attributes" let:direction>
       {#if direction === 'column'}
         <CardActions bind:value={object} />

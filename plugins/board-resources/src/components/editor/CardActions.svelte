@@ -14,79 +14,83 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Card } from '@anticrm/board'
+  import type { Card, CardDate } from '@anticrm/board'
+  import board from '@anticrm/board'
   import { getClient } from '@anticrm/presentation'
-  import { Button, IconAttachment, Label, showPopup } from '@anticrm/ui'
-  import type { Action } from '@anticrm/view'
-  import { getActions, invokeAction } from '@anticrm/view-resources'
+  import { Button, Label, IconAdd, showPopup } from '@anticrm/ui'
+  import { invokeAction } from '@anticrm/view-resources'
   import AddChecklist from '../popups/AddChecklist.svelte'
-  import AttachmentPicker from '../popups/AttachmentPicker.svelte'
   import plugin from '../../plugin'
   import { getPopupAlignment } from '../../utils/PopupUtils'
+  import UserBoxList from '../UserBoxList.svelte'
+  import CardLabels from './CardLabels.svelte'
+  import DatePresenter from '../presenters/DatePresenter.svelte'
+  import { getCardActions } from '../../utils/CardActionUtils'
+  import ColorPresenter from '../presenters/ColorPresenter.svelte'
 
   export let value: Card
   const client = getClient()
 
-  let topActions: Action[] = []
-  let toolsActions: Action[] = []
-  async function fetch () {
-    const result = await getActions(client, value, value._class)
-    topActions = result.filter((action) => action.context.group === 'top')
-    toolsActions = result.filter((action) => action.context.group !== 'top')
+  let dateHandler: (e: Event) => void
+  let coverHandler: (e: Event) => void
+  function updateDate (e: CustomEvent<CardDate>) {
+    client.update(value, { date: e.detail })
   }
-  fetch()
-  $: value.members && fetch()
-  $: value.isArchived && fetch()
-  $: !value.isArchived && fetch()
+
+  getCardActions(client, {
+    _id: { $in: [board.action.Dates, board.action.Cover] }
+  }).then(async (result) => {
+    for (const action of result) {
+      if (action._id === board.action.Dates) {
+        dateHandler = (e: Event) => invokeAction(value, e, action.action, action.actionProps)
+      }
+      if (action._id === board.action.Cover) {
+        coverHandler = (e: Event) => invokeAction(value, e, action.action, action.actionProps)
+      }
+    }
+  })
 </script>
 
 {#if value}
   <div class="flex-col flex-gap-3">
-    <div class="flex-col flex-gap-1">
-      <Label label={plugin.string.AddToCard} />
-      {#each topActions as action}
-        <Button
-          icon={action.icon}
-          label={action.label}
-          kind="no-border"
-          justify="left"
-          on:click={(e) => {
-            invokeAction(value, e, action.action, action.actionProps)
-          }}
-        />
-      {/each}
-      <Button
-        icon={plugin.icon.Card}
-        label={plugin.string.Checklist}
-        kind="no-border"
-        justify="left"
-        on:click={(e) => {
-          showPopup(AddChecklist, { value }, getPopupAlignment(e))
-        }}
-      />
-      <Button
-        icon={IconAttachment}
-        label={plugin.string.Attachments}
-        kind="no-border"
-        justify="left"
-        on:click={(e) => {
-          showPopup(AttachmentPicker, { value }, getPopupAlignment(e))
-        }}
-      />
+    <div class="flex-row-stretch flex-gap-1">
+      <div class="label">
+        <Label label={plugin.string.Members} />
+      </div>
+      <UserBoxList value={value.members} />
     </div>
-    <div class="flex-col flex-gap-1">
-      <Label label={plugin.string.Actions} />
-      {#each toolsActions as action}
-        <Button
-          icon={action.icon}
-          label={action.label}
-          kind="no-border"
-          justify="left"
-          on:click={(e) => {
-            invokeAction(value, e, action.action, action.actionProps)
-          }}
-        />
-      {/each}
+    <div class="flex-row-stretch flex-gap-1">
+      <div class="label">
+        <Label label={plugin.string.Labels} />
+      </div>
+      <CardLabels {value} />
     </div>
+    <div class="flex-row-stretch flex-gap-1">
+      <div class="label">
+        <Label label={plugin.string.Dates} />
+      </div>
+      {#key value.date}
+        <DatePresenter value={value.date ?? {}} on:click={dateHandler} on:update={updateDate} />
+      {/key}
+    </div>
+    <div class="flex-row-stretch flex-gap-1">
+      <div class="label">
+        <Label label={plugin.string.Cover} />
+      </div>
+      {#if !value.cover?.color}
+        <Button icon={IconAdd} kind="no-border" on:click={coverHandler} />
+      {:else}
+        <ColorPresenter value={value.cover.color} on:click={coverHandler} />
+      {/if}
+    </div>
+    <Button
+      icon={plugin.icon.Card}
+      label={plugin.string.Checklist}
+      kind="no-border"
+      justify="left"
+      on:click={(e) => {
+        showPopup(AddChecklist, { value }, getPopupAlignment(e))
+      }}
+    />
   </div>
 {/if}
