@@ -35,7 +35,6 @@ export default mergeIds(boardId, board, {
     Cards: '' as AnyComponent,
     KanbanView: '' as AnyComponent,
     TableView: '' as AnyComponent,
-    KanbanView: '' as AnyComponent,
     LabelsActionPopup: '' as AnyComponent,
     DatesActionPopup: '' as AnyComponent,
     CoverActionPopup: '' as AnyComponent,
