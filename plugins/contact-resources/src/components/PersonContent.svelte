@@ -100,7 +100,7 @@
       }
     }
     .eContentPresenterIcon {
-      margin-right: 0.5rem;
+      margin-right: 0.25rem;
       color: var(--theme-content-dark-color);
     }
     .eContentPresenterLabel {
