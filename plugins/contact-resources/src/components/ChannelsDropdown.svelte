@@ -183,8 +183,7 @@
         {
           value: item.value,
           placeholder: item.placeholder,
-          editable,
-          trigger: el
+          editable
         },
         el,
         (result) => {

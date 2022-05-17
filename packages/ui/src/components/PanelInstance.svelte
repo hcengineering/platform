@@ -24,7 +24,11 @@
 
   let modalHTML: HTMLElement
   let componentInstance: any
-  let show: boolean = false
+
+  let options: {
+    show: boolean,
+    direction: string
+  } = { show: false, direction: 'bottom' }
 
   let component: AnySvelteComponent
 
@@ -58,7 +62,7 @@
 
   const fitPopup = (props: PanelProps, contentPanel: HTMLElement): void => {
     if (modalHTML) {
-      show = fitPopupElement(modalHTML, props.element, contentPanel)
+      options = fitPopupElement(modalHTML, props.element, contentPanel)
     }
   }
 
@@ -108,7 +112,7 @@
       </div>
     </div>
     {#if props.element !== 'content'}
-      <div class="modal-overlay" class:show on:click={() => escapeClose()} on:keydown={() => {}} on:keyup={() => {}} />
+      <div class="modal-overlay" class:show={options.show} on:click={() => escapeClose()} on:keydown={() => {}} on:keyup={() => {}} />
     {/if}
   {/if}
 {/if}

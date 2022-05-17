@@ -34,7 +34,7 @@
   export let placeholder: IntlString
   export let editable: boolean | undefined = undefined
   export let openable: boolean = false
-  export let trigger: HTMLElement
+  export let direction: string = 'bottom'
 
   const dispatch = createEventDispatcher()
   let input: HTMLInputElement
@@ -76,14 +76,11 @@
   }
 
   let tHeight: number
-  let vertical: 'top' | 'bottom' = 'bottom'
+  let vDir = (d: string): string => d.split('|')[0]
   const fitEditor = (): void => {
-    if (trigger) {
-      const rect = trigger.getBoundingClientRect()
-      if (rect && rect.bottom + tHeight + 29 >= window.innerHeight) vertical = 'top'
-      else vertical = 'bottom'
-    }
+    dir = vDir(direction)
   }
+  $: dir = vDir(direction)
   afterUpdate(() => {
     fitEditor()
   })
@@ -92,7 +89,7 @@
 <svelte:window on:resize={fitEditor} on:scroll={fitEditor} />
 <FocusHandler manager={mgr} />
 {#if editable && editable === true}
-  <div class="editor-container {vertical} buttons-group xsmall-gap" bind:clientHeight={tHeight}>
+  <div class="editor-container {dir} buttons-group xsmall-gap" bind:clientHeight={tHeight}>
     <div class="cover-channel" class:show class:copied={label === plugin.string.Copied} data-tooltip={lTraslate}>
       <input
         bind:this={input}
