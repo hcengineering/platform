@@ -74,7 +74,7 @@
       telegram.class.Message,
       { attachedTo: channelId },
       (res) => {
-        messages = res
+        messages = res.reverse()
         if (channel !== undefined) {
           notificationClient.updateLastView(channel._id, channel._class, undefined, true)
         }
@@ -82,7 +82,7 @@
         updateAccountsQuery(accountsIds)
       },
       {
-        sort: { sendOn: SortingOrder.Ascending },
+        sort: { sendOn: SortingOrder.Descending },
         limit: 500,
         lookup: {
           _id: { attachments: attachment.class.Attachment }
