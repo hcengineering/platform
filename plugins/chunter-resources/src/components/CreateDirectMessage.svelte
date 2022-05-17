@@ -35,11 +35,10 @@
 
     const accIds = [myAccId, ...employeeAccounts.filter((ea) => ea._id !== myAccId).map((ea) => ea._id)].sort()
     const existingDms = await client.findAll(chunter.class.DirectMessage, {})
+    const navigate = await getResource(workbench.actionImpl.Navigate)
 
     for (const dm of existingDms) {
       if (deepEqual(dm.members.sort(), accIds)) {
-        const navigate = await getResource(workbench.actionImpl.Navigate)
-
         await navigate([], undefined as any, {
           mode: 'space',
           space: dm._id
@@ -49,12 +48,17 @@
       }
     }
 
-    client.createDoc(chunter.class.DirectMessage, core.space.Space, {
+    const dmId = await client.createDoc(chunter.class.DirectMessage, core.space.Space, {
       name: '',
       description: '',
       private: true,
       archived: false,
       members: accIds
+    })
+
+    await navigate([], undefined as any, {
+      mode: 'space',
+      space: dmId
     })
   }
 </script>
