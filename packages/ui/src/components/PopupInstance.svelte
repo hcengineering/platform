@@ -29,8 +29,12 @@
 
   let modalHTML: HTMLElement
   let componentInstance: any
-  let show: boolean = false
   let height: number
+
+  let options: {
+    show: boolean
+    direction: string
+  } = { show: false, direction: 'bottom' }
 
   function _update (result: any): void {
     if (onUpdate !== undefined) onUpdate(result)
@@ -51,7 +55,7 @@
 
   const fitPopup = (): void => {
     if (modalHTML) {
-      show = fitPopupElement(modalHTML, element)
+      options = fitPopupElement(modalHTML, element)
     }
   }
 
@@ -71,13 +75,19 @@
     this={is}
     bind:this={componentInstance}
     {...props}
+    direction={options.direction}
     on:update={(ev) => {
       _update(ev.detail)
     }}
     on:close={(ev) => _close(ev.detail)}
   />
 </div>
-<div class="modal-overlay" class:antiOverlay={show} style={`z-index: ${zIndex};`} on:click={() => escapeClose()} />
+<div
+  class="modal-overlay"
+  class:antiOverlay={options.show}
+  style={`z-index: ${zIndex};`}
+  on:click={() => escapeClose()}
+/>
 
 <style lang="scss">
   .popup {
