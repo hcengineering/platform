@@ -14,11 +14,12 @@
 -->
 <script lang="ts">
   import { Ref } from '@anticrm/core'
-  import { createQuery, getClient } from '@anticrm/presentation'
+  import { createQuery, getClient, UserBox } from '@anticrm/presentation'
   import type { TodoItem } from '@anticrm/task'
   import task from '@anticrm/task'
   import { Button, CheckBox, TextAreaEditor, Icon, IconMoreH, Progress, showPopup } from '@anticrm/ui'
   import { ContextMenu, HTMLPresenter } from '@anticrm/view-resources'
+  import contact, { Employee } from '@anticrm/contact'
 
   import board from '../../plugin'
   import { getPopupAlignment } from '../../utils/PopupUtils'
@@ -77,10 +78,12 @@
   }
 
   function updateItemName (item: TodoItem, name: string) {
-    if (name !== undefined && name.length > 0 && name !== value.name) {
-      item.name = name
-      client.update(item, { name: item.name })
-    }
+    if (name === undefined || name.length === 0 || name === value.name) return
+    client.update(item, { name })
+  }
+
+  function updateItemAssignee (item: TodoItem, assignee: Ref<Employee>) {
+    client.update(item, { assignee })
   }
 
   async function setDoneToChecklistItem (item: TodoItem, event: CustomEvent<boolean>) {
@@ -196,6 +199,15 @@
             <HTMLPresenter bind:value={item.name} />
           </div>
           <div class="flex-center">
+            <UserBox
+              _class={contact.class.Employee}
+              label={board.string.Assignee}
+              bind:value={item.assignee}
+              allowDeselect={true}
+              on:change={(e) => {
+                updateItemAssignee(item, e.detail)
+              }}
+            />
             <Button icon={IconMoreH} kind="transparent" size="small" on:click={(e) => showItemMenu(item, e)} />
           </div>
         {/if}
