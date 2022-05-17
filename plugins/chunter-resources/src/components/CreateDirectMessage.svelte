@@ -14,10 +14,13 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
+  import { deepEqual } from 'fast-equals'
 
   import contact, { Employee } from '@anticrm/contact'
   import core, { getCurrentAccount, Ref } from '@anticrm/core'
   import { getClient, SpaceCreateCard, UserBoxList } from '@anticrm/presentation'
+  import workbench from '@anticrm/workbench'
+  import { getResource } from '@anticrm/platform'
 
   import chunter from '../plugin'
 
@@ -27,15 +30,31 @@
 
   let employeeIds: Ref<Employee>[] = []
 
-  function createDirectMessage () {
-    client.findAll(contact.class.EmployeeAccount, { employee: { $in: employeeIds } }).then((employeeAccounts) => {
-      client.createDoc(chunter.class.DirectMessage, core.space.Space, {
-        name: '',
-        description: '',
-        private: true,
-        archived: false,
-        members: [myAccId, ...employeeAccounts.filter((ea) => ea._id !== myAccId).map((ea) => ea._id)]
-      })
+  async function createDirectMessage () {
+    const employeeAccounts = await client.findAll(contact.class.EmployeeAccount, { employee: { $in: employeeIds } })
+
+    const accIds = [myAccId, ...employeeAccounts.filter((ea) => ea._id !== myAccId).map((ea) => ea._id)].sort()
+    const existingDms = await client.findAll(chunter.class.DirectMessage, {})
+
+    for (const dm of existingDms) {
+      if (deepEqual(dm.members.sort(), accIds)) {
+        const navigate = await getResource(workbench.actionImpl.Navigate)
+
+        await navigate([], undefined as any, {
+          mode: 'space',
+          space: dm._id
+        })
+
+        return
+      }
+    }
+
+    client.createDoc(chunter.class.DirectMessage, core.space.Space, {
+      name: '',
+      description: '',
+      private: true,
+      archived: false,
+      members: accIds
     })
   }
 </script>
