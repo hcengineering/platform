@@ -30,6 +30,8 @@
     loc.query = {
       workspace: hash
     }
+    loc.fragment = undefined
+
     const link = locationToUrl(loc)
     return document.location.origin + link
   }
