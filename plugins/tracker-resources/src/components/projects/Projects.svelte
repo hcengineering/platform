@@ -37,7 +37,7 @@
     limit: ENTRIES_LIMIT,
     lookup: { lead: contact.class.Employee, members: contact.class.Employee }
   }
-  
+
   let resultProjects: Project[] = []
 
   $: baseQuery = {

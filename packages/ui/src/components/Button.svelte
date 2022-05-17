@@ -235,7 +235,7 @@
         background-color: var(--button-bg-hover);
         border-color: var(--button-border-hover);
         color: var(--caption-color);
-        
+
         .btn-icon {
           color: var(--accent-color);
         }
