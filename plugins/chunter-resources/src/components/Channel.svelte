@@ -22,6 +22,7 @@
   import { afterUpdate, beforeUpdate } from 'svelte'
   import chunter from '../plugin'
   import ChannelSeparator from './ChannelSeparator.svelte'
+  import JumpToDateSelector from './JumpToDateSelector.svelte'
   import MessageComponent from './Message.svelte'
 
   export let space: Ref<Space> | undefined
@@ -114,14 +115,43 @@
   }
 
   let newMessagesPos: number = -1
+
+  const pinnedHeight = 30
+  const headerHeight = 70
+  const handleJumpToDate = (e: CustomEvent<any>) => {
+    const date = e.detail.date
+    if (!date) {
+      return
+    }
+
+    let closestLaterMessage
+    closestLaterMessage = messages?.reduce((prev, cur) => {
+      if (prev.createOn < date) return cur
+      if (cur.createOn < date) return prev
+      if (cur.createOn - date < prev.createOn - date) return cur
+      else return prev
+    })
+    if (closestLaterMessage && closestLaterMessage?.createOn < date) closestLaterMessage = undefined
+
+    if (closestLaterMessage) {
+      let offset = document.getElementById(closestLaterMessage.createOn.toString())?.offsetTop
+      if (offset) {
+        offset = offset - headerHeight
+        if (pinnedIds.length > 0) offset = offset - pinnedHeight
+        div?.scrollTo({ left: 0, top: offset })
+      }
+    }
+  }
 </script>
 
+<JumpToDateSelector selectedDate={Date.now()} on:jumpToDate={handleJumpToDate} />
 <div class="flex-col vScroll" bind:this={div}>
   {#if messages}
     {#each messages as message, i (message._id)}
       {#if newMessagesPos === i}
         <ChannelSeparator title={chunter.string.New} line reverse isNew />
       {/if}
+      <div id={message.createOn.toString()} />
       <MessageComponent
         {message}
         {employees}
