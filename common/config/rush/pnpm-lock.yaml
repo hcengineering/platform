@@ -10458,7 +10458,7 @@ packages:
     dev: false
 
   file:projects/board-resources.tgz_3b42a51b6c974062237d417c554d9dd7:
-    resolution: {integrity: sha512-fO4O8Yz4OujuBHBfqx5CbTuzBZOuQSRGxVEEB5dBGFtrnATKX/UemZwtPCRn7XUVSOegvAFLrzWyPrXQDGqZVg==, tarball: file:projects/board-resources.tgz}
+    resolution: {integrity: sha512-JTTZMYUKVbavhuCPcuyMaTLlR4FkyMTr1tjEBvbSPvwxhK/7jCiDFeteZjiTaIk5TRTHbY5/6au0ZVeNJT/ZCA==, tarball: file:projects/board-resources.tgz}
     id: file:projects/board-resources.tgz
     name: '@rush-temp/board-resources'
     version: 0.0.0
@@ -10493,7 +10493,7 @@ packages:
     dev: false
 
   file:projects/board.tgz:
-    resolution: {integrity: sha512-YupcXpMW/JAjV4x9/Zyc73dbsAiF268NTA7YxoY1pSV9CxwDP3/ZVxv+LIJV/Uc9icpkQj2oxsjR/oMRQDICOQ==, tarball: file:projects/board.tgz}
+    resolution: {integrity: sha512-Lu5CQoDP90pXdtHP1TrELTX530sM7On4qQlxztDjBVc1aBpyzQyBByqYAR8D9QtkboUxlu3PF5BtjgjMaja0LA==, tarball: file:projects/board.tgz}
     name: '@rush-temp/board'
     version: 0.0.0
     dependencies:
@@ -10612,7 +10612,7 @@ packages:
     dev: false
 
   file:projects/chunter-resources.tgz_3b42a51b6c974062237d417c554d9dd7:
-    resolution: {integrity: sha512-x65ZPd0ProE8YaFA2Q1+s7BRJJnMdXCb14OnuZBSSqjEsjob1MWspl/DVCdova0xOjNDrzlBtJmK6dPCApsQyQ==, tarball: file:projects/chunter-resources.tgz}
+    resolution: {integrity: sha512-0Ky+HnrxF3cQe/YSrZycxJwW9dJmn+0+bJx4tb4Hlcf14/agLl/ayNtqP8EVHhRK2W1dax0sQzYWPFiV5KNTBQ==, tarball: file:projects/chunter-resources.tgz}
     id: file:projects/chunter-resources.tgz
     name: '@rush-temp/chunter-resources'
     version: 0.0.0
@@ -10625,6 +10625,7 @@ packages:
       eslint-plugin-node: 11.1.0_eslint@7.32.0
       eslint-plugin-promise: 5.2.0_eslint@7.32.0
       eslint-plugin-svelte3: 3.4.1_eslint@7.32.0+svelte@3.48.0
+      fast-equals: 2.0.4
       prettier: 2.6.2
       prettier-plugin-svelte: 2.7.0_prettier@2.6.2+svelte@3.48.0
       sass: 1.51.0
@@ -11575,7 +11576,7 @@ packages:
     dev: false
 
   file:projects/model-board.tgz_typescript@4.6.4:
-    resolution: {integrity: sha512-zMjxdsiSgM4Ce4LCSZaAPhmEsNHrfFhTjoFkdR9nRHutoBARmPzJLl1ulPvIvyrJ02w5Io71j0VUtyXzCFf0oA==, tarball: file:projects/model-board.tgz}
+    resolution: {integrity: sha512-rI+fB33ZgVhDuupletdugfFSQPYCPWC5HGxRTvTcUe4sMlU017qUqmuXd9oyn1kxFcrJApQsHwJgrtCT62Ac1g==, tarball: file:projects/model-board.tgz}
     id: file:projects/model-board.tgz
     name: '@rush-temp/model-board'
     version: 0.0.0
@@ -12330,7 +12331,7 @@ packages:
     dev: false
 
   file:projects/model-view.tgz_typescript@4.6.4:
-    resolution: {integrity: sha512-nc18WwMGJkHbrQf1H/3DYbKFLMpnM/GqvIpt8ckVhTvQyW9DAsOYHQc3GlqyU/6Hf1lMdR5UyReqy4JImLQmhQ==, tarball: file:projects/model-view.tgz}
+    resolution: {integrity: sha512-Nkl+OIWsiGeMBH5tABMnhDcpmQpgO50eng5pZsRfxn8aSMhbeNyKwK9051abGhkzy2wDeSRPmT2RuWpYHy69AA==, tarball: file:projects/model-view.tgz}
     id: file:projects/model-view.tgz
     name: '@rush-temp/model-view'
     version: 0.0.0
@@ -12651,7 +12652,7 @@ packages:
     dev: false
 
   file:projects/presentation.tgz_3b42a51b6c974062237d417c554d9dd7:
-    resolution: {integrity: sha512-ZFD4da3Bn3tD5pVb6KmK3eq8XX9j8IU8qUQVwwwiWtnZ4G/pCem9aAO+Ivs69m2ako7Rzo0umK8fThFd4P9sfA==, tarball: file:projects/presentation.tgz}
+    resolution: {integrity: sha512-psHNI1+ln+6JO/MYeW8zVNv4SCoehxFW1jf7t6ortcGzXmtVdnNrWJf4Nq7so5gb2Z0laLnHisAKxvkL34z6vQ==, tarball: file:projects/presentation.tgz}
     id: file:projects/presentation.tgz
     name: '@rush-temp/presentation'
     version: 0.0.0
@@ -14294,7 +14295,7 @@ packages:
     dev: false
 
   file:projects/view-resources.tgz_3b42a51b6c974062237d417c554d9dd7:
-    resolution: {integrity: sha512-+5Q3eSxOc4MwOBrOolxvoT9s6AdaP3kj8foIwjOPpszUz3TWzavM8efyWyr850tdj8MGhhdXeo3zf6XACxe2Ww==, tarball: file:projects/view-resources.tgz}
+    resolution: {integrity: sha512-Tl17zUpJyWh9QgAoy6vWEGkqorWR7nLlFQGvkWRo565DUHR96rL3vNdYWt1oxKPoF2PgViqXdio/5+Q1tpeH/g==, tarball: file:projects/view-resources.tgz}
     id: file:projects/view-resources.tgz
     name: '@rush-temp/view-resources'
     version: 0.0.0
