@@ -18,10 +18,11 @@
   import { Doc, DocumentQuery, Ref } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
   import tags, { selectedTagElements, TagCategory, TagElement } from '@anticrm/tags'
-  import { ActionIcon, showPopup, Component, Icon, Label, Loading, SearchEdit } from '@anticrm/ui'
+  import { ActionIcon, showPopup, Component, Icon, Label, Loading, SearchEdit, Button, IconAdd } from '@anticrm/ui'
   import view, { Viewlet, ViewletPreference } from '@anticrm/view'
   import { ActionContext, TableBrowser, ViewletSetting } from '@anticrm/view-resources'
   import recruit from '../plugin'
+  import CreateCandidate from './CreateCandidate.svelte'
 
   let search = ''
   let resultQuery: DocumentQuery<Doc> = {}
@@ -79,6 +80,10 @@
     category = detail.category ?? undefined
     selectedTagElements.set(Array.from(detail.elements ?? []).map((it) => it._id))
   }
+
+  function showCreateDialog () {
+    showPopup(CreateCandidate, {}, 'top')
+  }
 </script>
 
 <div class="ac-header full">
@@ -93,6 +98,7 @@
       updateResultQuery(search, documentIds)
     }}
   />
+  <Button icon={IconAdd} label={recruit.string.CandidateCreateLabel} kind={'primary'} on:click={showCreateDialog} />
   {#if descr}
     <ActionIcon
       icon={view.icon.Setting}

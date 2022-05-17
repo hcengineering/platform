@@ -1,4 +1,4 @@
-import { getContext, setContext } from 'svelte'
+import { getContext, onDestroy, setContext } from 'svelte'
 
 /**
  * @public
@@ -28,6 +28,11 @@ class FocusManagerImpl implements FocusManager {
     this.elements.push(el)
     this.sort()
     return el.id
+  }
+
+  unregister (idx: number): void {
+    this.elements = this.elements.filter((it) => it.id !== idx)
+    this.sort()
   }
 
   sort (): void {
@@ -111,5 +116,11 @@ export function registerFocus (
   if (order === -1) {
     return { idx: -1, focusManager }
   }
-  return { idx: focusManager?.register(order, item.focus, item.isFocus) ?? -1, focusManager }
+  const idx = focusManager?.register(order, item.focus, item.isFocus) ?? -1
+  if (idx !== -1) {
+    onDestroy(() => {
+      focusManager.unregister(idx)
+    })
+  }
+  return { idx, focusManager }
 }
