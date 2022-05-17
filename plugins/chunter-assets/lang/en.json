@@ -58,6 +58,7 @@
     "LeaveChannel": "Leave channel",
     "ChannelBrowser": "Channel browser",
     "SavedItems": "Saved items",
-    "AddMembersHeader": "Add members to {channel}:"
+    "AddMembersHeader": "Add members to {channel}:",
+    "ConvertToPrivate": "Convert to private channel"
   }
 }

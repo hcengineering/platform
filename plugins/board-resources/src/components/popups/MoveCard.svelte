@@ -12,29 +12,29 @@
   import RankSelect from '../selectors/RankSelect.svelte'
   import { createMissingLabels } from '../../utils/BoardUtils'
 
-  export let object: Card
+  export let value: Card
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const dispatch = createEventDispatcher()
   let status: Status = OK
   const selected = {
-    space: object.space,
-    state: object.state,
-    rank: object.rank
+    space: value.space,
+    state: value.state,
+    rank: value.rank
   }
 
   async function move (): Promise<void> {
     const update: DocumentUpdate<Card> = {}
 
-    if (selected.space !== object.space) {
-      update.labels = await createMissingLabels(client, object, selected.space)
+    if (selected.space !== value.space) {
+      update.labels = await createMissingLabels(client, value, selected.space)
       update.space = selected.space
     }
 
-    if (selected.state !== object.state) update.state = selected.state
-    if (selected.rank !== object.rank) update.rank = selected.rank
-    client.update(object, update)
+    if (selected.state !== value.state) update.state = selected.state
+    if (selected.rank !== value.rank) update.rank = selected.rank
+    client.update(value, update)
     dispatch('close')
   }
 
@@ -42,7 +42,7 @@
     action: Resource<<T extends Doc>(doc: T, client: Client) => Promise<Status>>
   ): Promise<Status> {
     const impl = await getResource(action)
-    return await impl(object, client)
+    return await impl(value, client)
   }
 
   async function validate (doc: Doc, _class: Ref<Class<Doc>>): Promise<void> {
@@ -57,7 +57,7 @@
     }
   }
 
-  $: validate({ ...object, ...selected }, object._class)
+  $: validate({ ...value, ...selected }, value._class)
 </script>
 
 <div class="antiPopup antiPopup-withHeader antiPopup-withTitle antiPopup-withCategory w-85">
@@ -72,18 +72,18 @@
   </div>
   <div class="ap-category">
     <div class="categoryItem w-full border-radius-2 p-2 background-button-bg-enabled">
-      <SpaceSelect label={board.string.Board} {object} bind:selected={selected.space} />
+      <SpaceSelect label={board.string.Board} object={value} bind:selected={selected.space} />
     </div>
   </div>
   <div class="ap-category flex-gap-3">
     <div class="categoryItem w-full border-radius-2 p-2 background-button-bg-enabled">
       {#key selected.space}
-        <StateSelect label={board.string.List} {object} space={selected.space} bind:selected={selected.state} />
+        <StateSelect label={board.string.List} object={value} space={selected.space} bind:selected={selected.state} />
       {/key}
     </div>
     <div class="categoryItem w-full border-radius-2 p-2 background-button-bg-enabled">
       {#key selected.state}
-        <RankSelect label={board.string.Position} {object} state={selected.state} bind:selected={selected.rank} />
+        <RankSelect label={board.string.Position} object={value} state={selected.state} bind:selected={selected.rank} />
       {/key}
     </div>
   </div>
@@ -98,7 +98,7 @@
     <Button
       label={board.string.Move}
       size={'small'}
-      disabled={status !== OK || (object.state === selected.state && object.rank === selected.rank)}
+      disabled={status !== OK || (value.state === selected.state && value.rank === selected.rank)}
       kind={'primary'}
       on:click={move}
     />

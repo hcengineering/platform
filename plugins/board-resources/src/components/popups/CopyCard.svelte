@@ -3,30 +3,30 @@
   import { Label, Button, Status as StatusControl, TextArea } from '@anticrm/ui'
   import { Class, Client, Doc, Ref } from '@anticrm/core'
   import { getResource, OK, Resource, Status } from '@anticrm/platform'
+  import { getClient } from '@anticrm/presentation'
   import { Card } from '@anticrm/board'
   import view from '@anticrm/view'
   import board from '../../plugin'
   import SpaceSelect from '../selectors/SpaceSelect.svelte'
   import StateSelect from '../selectors/StateSelect.svelte'
   import RankSelect from '../selectors/RankSelect.svelte'
-  import type { TxOperations } from '@anticrm/core'
   import { generateId, AttachedData } from '@anticrm/core'
   import task from '@anticrm/task'
   import { createMissingLabels } from '../../utils/BoardUtils'
 
-  export let object: Card
-  export let client: TxOperations
+  export let value: Card
+  const client = getClient()
 
   const hierarchy = client.getHierarchy()
   const dispatch = createEventDispatcher()
 
   let inputRef: TextArea
-  let title = object.title
+  let title = value.title
   let status: Status = OK
   const selected = {
-    space: object.space,
-    state: object.state,
-    rank: object.rank
+    space: value.space,
+    state: value.state,
+    rank: value.rank
   }
 
   async function copyCard (): Promise<void> {
@@ -40,9 +40,9 @@
     const incResult = await client.update(sequence, { $inc: { sequence: 1 } }, true)
 
     const labels =
-      object.space !== selected.space ? await createMissingLabels(client, object, selected.space) : object.labels
+      value.space !== selected.space ? await createMissingLabels(client, value, selected.space) : value.labels
 
-    const value: AttachedData<Card> = {
+    const copy: AttachedData<Card> = {
       state: selected.state,
       doneState: null,
       number: (incResult as any).object.sequence,
@@ -61,7 +61,7 @@
       selected.space,
       board.class.Board,
       'cards',
-      value,
+      copy,
       newCardId
     )
     dispatch('close')
@@ -71,7 +71,7 @@
     action: Resource<<T extends Doc>(doc: T, client: Client) => Promise<Status>>
   ): Promise<Status> {
     const impl = await getResource(action)
-    return await impl(object, client)
+    return await impl(value, client)
   }
 
   async function validate (doc: Doc, _class: Ref<Class<Doc>>): Promise<void> {
@@ -86,7 +86,7 @@
     }
   }
 
-  $: validate({ ...object, ...selected }, object._class)
+  $: validate({ ...value, ...selected }, value._class)
 
   onMount(() => inputRef.focus())
 </script>
@@ -109,20 +109,20 @@
   </div>
   <div class="ap-category">
     <div class="categoryItem w-full border-radius-2 p-2 background-button-bg-enabled">
-      <SpaceSelect label={board.string.Board} {object} bind:selected={selected.space} />
+      <SpaceSelect label={board.string.Board} object={value} bind:selected={selected.space} />
     </div>
   </div>
   <div class="ap-category flex-gap-3">
     <div class="categoryItem w-full border-radius-2 p-2 background-button-bg-enabled">
       {#key selected.space}
-        <StateSelect label={board.string.List} {object} space={selected.space} bind:selected={selected.state} />
+        <StateSelect label={board.string.List} object={value} space={selected.space} bind:selected={selected.state} />
       {/key}
     </div>
     <div class="categoryItem w-full border-radius-2 p-2 background-button-bg-enabled">
       {#key selected.state}
         <RankSelect
           label={board.string.Position}
-          {object}
+          object={value}
           state={selected.state}
           bind:selected={selected.rank}
           isCopying={true}

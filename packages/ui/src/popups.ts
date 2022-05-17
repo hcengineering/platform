@@ -117,7 +117,8 @@ export function fitPopupPositionedElement (
   modalHTML: HTMLElement,
   alignment: PopupPositionElement,
   newProps: Record<string, string | number>
-): boolean {
+): { show: boolean, direction: string } {
+  let direction: string = ''
   const rect = alignment.getBoundingClientRect()
   const rectPopup = modalHTML.getBoundingClientRect()
   newProps.left = newProps.right = newProps.top = newProps.bottom = ''
@@ -135,24 +136,30 @@ export function fitPopupPositionedElement (
     } else if (alignment.position.h === 'left') {
       newProps.left = `calc(${rect.left - rectPopup.width}px - .125rem)`
     }
+    direction = alignment.position.v + '|' + alignment.position.h
   } else {
     // Vertical
     if (rect.bottom + rectPopup.height + 28 <= document.body.clientHeight) {
       newProps.top = `${rect.bottom + 1}px`
+      direction = 'bottom'
     } else if (rectPopup.height + 28 < rect.top) {
       newProps.bottom = `${document.body.clientHeight - rect.top + 1}px`
+      direction = 'top'
     } else {
       newProps.top = modalHTML.style.bottom = '1rem'
+      direction = 'top'
     }
 
     // Horizontal
     if (rect.left + rectPopup.width + 16 > document.body.clientWidth) {
       newProps.right = `${document.body.clientWidth - rect.right}px`
+      direction += '|left'
     } else {
       newProps.left = `${rect.left}px`
+      direction += '|right'
     }
   }
-  return false
+  return { show: false, direction }
 }
 
 function applyStyle (values: Record<string, string | number>, modalHTML: HTMLElement): void {
@@ -171,7 +178,11 @@ function applyStyle (values: Record<string, string | number>, modalHTML: HTMLEle
  *
  * return boolean to show or not modal overlay.
  */
-export function fitPopupElement (modalHTML: HTMLElement, element?: PopupAlignment, contentPanel?: HTMLElement): boolean {
+export function fitPopupElement (
+  modalHTML: HTMLElement,
+  element?: PopupAlignment,
+  contentPanel?: HTMLElement
+): { show: boolean, direction: string } {
   let show = true
   const newProps: Record<string, string | number> = {}
   if (element != null) {
@@ -238,7 +249,7 @@ export function fitPopupElement (modalHTML: HTMLElement, element?: PopupAlignmen
     show = true
   }
   applyStyle(newProps, modalHTML)
-  return show
+  return { show, direction: '' }
 }
 
 export function eventToHTMLElement (evt: MouseEvent): HTMLElement {

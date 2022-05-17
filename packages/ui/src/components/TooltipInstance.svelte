@@ -196,7 +196,7 @@
     background-color: var(--accent-bg-color);
     border: 1px solid var(--divider-color);
     border-radius: 0.75rem;
-    box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--popup-aside-shadow);
     user-select: none;
     z-index: 10000;
 
@@ -285,7 +285,7 @@
     background-color: var(--accent-bg-color);
     border: 1px solid var(--divider-color);
     border-radius: 0.75rem;
-    box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--popup-aside-shadow);
     user-select: none;
     z-index: 10000;
 

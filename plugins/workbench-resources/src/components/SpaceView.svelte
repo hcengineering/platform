@@ -74,11 +74,18 @@
     if (headerMixin?.header == null && clazz.extends != null) return getHeader(clazz.extends)
     return headerMixin.header
   }
+  function setViewlet (e: CustomEvent<WithLookup<Viewlet>>) {
+    viewlet = e.detail
+  }
 </script>
 
 {#if _class && space}
   {#if header}
-    <Component is={header} props={{ spaceId: space._id, viewlets, createItemDialog, createItemLabel }} />
+    <Component
+      is={header}
+      props={{ spaceId: space._id, viewlets, viewlet, createItemDialog, createItemLabel }}
+      on:change={setViewlet}
+    />
   {:else}
     <SpaceHeader spaceId={space._id} {viewlets} {createItemDialog} {createItemLabel} bind:search bind:viewlet />
   {/if}

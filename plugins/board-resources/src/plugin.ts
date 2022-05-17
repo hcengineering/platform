@@ -134,6 +134,8 @@ export default mergeIds(boardId, board, {
     BoardHeader: '' as AnyComponent,
     BoardMenu: '' as AnyComponent,
     Archive: '' as AnyComponent,
-    MenuMainPage: '' as AnyComponent
+    MenuMainPage: '' as AnyComponent,
+    UserBoxList: '' as AnyComponent,
+    CardLabels: '' as AnyComponent
   }
 })

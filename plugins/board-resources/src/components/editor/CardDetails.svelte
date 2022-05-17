@@ -16,13 +16,15 @@
   import type { Card, CardDate } from '@anticrm/board'
 
   import contact, { Employee } from '@anticrm/contact'
-  import { getResource } from '@anticrm/platform'
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import { Button, IconAdd, Label } from '@anticrm/ui'
+  import { Ref } from '@anticrm/core'
+  import { createQuery, getClient, UsersPopup } from '@anticrm/presentation'
+  import { Button, IconAdd, Label, showPopup } from '@anticrm/ui'
+  import { invokeAction } from '@anticrm/view-resources'
 
   import board from '../../plugin'
   import { getCardActions } from '../../utils/CardActionUtils'
   import { hasDate, updateCardMembers } from '../../utils/CardUtils'
+  import { getPopupAlignment } from '../../utils/PopupUtils'
   import DatePresenter from '../presenters/DatePresenter.svelte'
   import MemberPresenter from '../presenters/MemberPresenter.svelte'
   import CardLabels from './CardLabels.svelte'
@@ -30,20 +32,30 @@
   export let value: Card
   const query = createQuery()
   const client = getClient()
-  let members: Employee[]
-  let membersHandler: (e: Event) => void
+  let members: Employee[] = []
+  const membersHandler = (e?: Event) => {
+    showPopup(
+      UsersPopup,
+      {
+        _class: contact.class.Employee,
+        multiSelect: true,
+        allowDeselect: true,
+        selectedUsers: members?.map((m) => m._id) ?? [],
+        placeholder: board.string.SearchMembers
+      },
+      getPopupAlignment(e),
+      undefined,
+      (result: Array<Ref<Employee>>) => {
+        updateCardMembers(value, client, result)
+      }
+    )
+  }
   let dateHandler: (e: Event) => void
 
   $: membersIds = members?.map((m) => m._id) ?? []
 
   const getMenuItems = (member: Employee) => {
     return [
-      [
-        {
-          title: board.string.ViewProfile,
-          handler: () => console.log('TODO: implement')
-        }
-      ],
       [
         {
           title: board.string.RemoveFromCard,
@@ -56,29 +68,20 @@
     ]
   }
 
-  $: if (value.members && value.members.length > 0) {
-    query.query(contact.class.Employee, { _id: { $in: value.members } }, (result) => {
-      members = result
-    })
-  } else {
-    members = []
-  }
+  $: query.query(contact.class.Employee, { _id: { $in: value.members } }, (result) => {
+    members = result
+  })
 
   function updateDate (e: CustomEvent<CardDate>) {
     client.update(value, { date: e.detail })
   }
 
   getCardActions(client, {
-    _id: { $in: [board.cardAction.Dates, board.cardAction.Members] }
+    _id: { $in: [board.action.Dates] }
   }).then(async (result) => {
     for (const action of result) {
-      if (action.handler) {
-        const handler = await getResource(action.handler)
-        if (action._id === board.cardAction.Dates) {
-          dateHandler = (e) => handler(value, client, e)
-        } else if (action._id === board.cardAction.Members) {
-          membersHandler = (e) => handler(value, client, e)
-        }
+      if (action._id === board.action.Dates) {
+        dateHandler = (e: Event) => invokeAction(value, e, action.action, action.actionProps)
       }
     }
   })

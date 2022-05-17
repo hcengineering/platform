@@ -57,6 +57,7 @@
     "LeaveChannel": "Покинуть канал",
     "ChannelBrowser": "Браузер каналов",
     "SavedItems": "Сохраненные объекты",
-    "AddMembersHeader": "Добавить пользователей в {channel}:"
+    "AddMembersHeader": "Добавить пользователей в {channel}:",
+    "ConvertToPrivate": "Конвертировать в закрытый канал"
   }
 }
