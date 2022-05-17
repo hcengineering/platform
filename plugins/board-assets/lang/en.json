@@ -104,6 +104,8 @@
     "SwitchToCards": "Switch to cards",
     "SearchArchive": "Search archive...",
     "Size": "Size",
-    "RemoveCover": "Remove cover"
+    "RemoveCover": "Remove cover",
+    "DeleteChecklist": "Delete checklist",
+    "DeleteChecklistConfirm": "Deleting a checklist is permanent and there is no way to get it back."
   }
 }
