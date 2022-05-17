@@ -28,6 +28,7 @@
   import DatePresenter from './presenters/DatePresenter.svelte'
   import { hasDate, openCardPanel, updateCard, updateCardMembers } from '../utils/CardUtils'
   import { getElementPopupAlignment } from '../utils/PopupUtils'
+  import CheckListsPresenter from './presenters/ChecklistsPresenter.svelte'
 
   export let object: WithLookup<Card>
 
@@ -189,6 +190,11 @@
           {#if (object.comments ?? 0) > 0}
             <div class="float-left">
               <CommentsPresenter value={object} />
+            </div>
+          {/if}
+          {#if (object.todoItems ?? 0) > 0}
+            <div class="float-left">
+              <CheckListsPresenter value={object} />
             </div>
           {/if}
         </div>
