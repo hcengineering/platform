@@ -123,32 +123,33 @@
     location.subscribe(async (loc) => {
       closeTooltip()
       closePopup()
-      await setApp(loc)
-      const currentFolder = loc.path[2] as Ref<Space>
 
-      if (currentSpecial !== undefined && currentSpecial === currentFolder) {
-        return
-      } else {
-        const newSpecial = getSpecialComponent(currentFolder)
-        if (newSpecial !== undefined) {
-          clear(2)
-          specialComponent = newSpecial
-          currentSpecial = currentFolder
-          return
-        }
-      }
-
-      updateSpace(currentFolder)
-      setSpaceSpecial(loc.path[3])
+      await syncLoc(loc)
     })
   )
 
-  async function setApp (loc: Location): Promise<void> {
-    if (currentApp !== loc.path[1]) {
+  async function syncLoc (loc: Location): Promise<void> {
+    const app = loc.path.length > 0 ? (loc.path[1] as Ref<Application>) : undefined
+    const space = loc.path.length > 1 ? (loc.path[2] as Ref<Space>) : undefined
+    const special = loc.path.length > 2 ? loc.path[3] : undefined
+
+    if (currentApp !== app) {
       clear(1)
-      currentApp = loc.path[1] as Ref<Application>
+      currentApp = app
       currentApplication = await client.findOne(workbench.class.Application, { _id: currentApp })
       navigatorModel = currentApplication?.navigatorModel
+    }
+
+    if (currentSpecial === undefined || currentSpecial !== space) {
+      const newSpecial = space !== undefined ? getSpecialComponent(space) : undefined
+      if (newSpecial !== undefined) {
+        clear(2)
+        specialComponent = newSpecial
+        currentSpecial = space
+      } else {
+        await updateSpace(space)
+        setSpaceSpecial(special)
+      }
     }
   }
 
