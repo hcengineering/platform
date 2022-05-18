@@ -123,23 +123,21 @@
     location.subscribe(async (loc) => {
       closeTooltip()
       closePopup()
-      await setApp(loc)
+
       const currentFolder = loc.path[2] as Ref<Space>
 
-      if (currentSpecial !== undefined && currentSpecial === currentFolder) {
-        return
-      } else {
+      if (currentSpecial === undefined || currentSpecial !== currentFolder) {
         const newSpecial = getSpecialComponent(currentFolder)
         if (newSpecial !== undefined) {
           clear(2)
           specialComponent = newSpecial
           currentSpecial = currentFolder
-          return
         }
+      } else {
+        setSpaceSpecial(loc.path[3])
       }
-
-      updateSpace(currentFolder)
-      setSpaceSpecial(loc.path[3])
+      await updateSpace(currentFolder)
+      await setApp(loc)
     })
   )
 
