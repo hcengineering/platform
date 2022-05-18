@@ -22,17 +22,11 @@
 </script>
 
 {#if attachments.length}
-  <div class="container">
+  <div class="flex-col">
     {#each attachments as attachment}
-      <div class="item">
+      <div class="step-tb75">
         <AttachmentPreview value={attachment} isSaved={savedAttachmentsIds?.includes(attachment._id) ?? false} />
       </div>
     {/each}
   </div>
 {/if}
-
-<style lang="scss">
-  .item {
-    padding: 0.5rem;
-  }
-</style>

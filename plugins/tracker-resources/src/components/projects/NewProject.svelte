@@ -44,6 +44,14 @@
   async function onSave () {
     await client.createDoc(tracker.class.Project, space, object)
   }
+
+  const handleProjectStatusChanged = (newProjectStatus: ProjectStatus | undefined) => {
+    if (newProjectStatus === undefined) {
+      return
+    }
+
+    object.status = newProjectStatus
+  }
 </script>
 
 <Card
@@ -74,12 +82,7 @@
     />
   </div>
   <div slot="pool" class="flex-row-center text-sm gap-1-5">
-    <ProjectStatusSelector
-      bind:status={object.status}
-      onStatusChange={(newStatus) => {
-        newStatus !== undefined && (object.status = newStatus)
-      }}
-    />
+    <ProjectStatusSelector selectedProjectStatus={object.status} onProjectStatusChange={handleProjectStatusChanged} />
     <UserBox
       _class={contact.class.Employee}
       label={tracker.string.ProjectLead}

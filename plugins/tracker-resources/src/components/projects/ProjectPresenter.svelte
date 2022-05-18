@@ -13,61 +13,31 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, WithLookup } from '@anticrm/core'
-  import { getClient } from '@anticrm/presentation'
-  import { Icon } from '@anticrm/ui'
-  import contact from '@anticrm/contact'
-  import ObjectPresenter from '@anticrm/view-resources/src/components/ObjectPresenter.svelte'
-  import { Project, ProjectStatus, Team } from '@anticrm/tracker'
-  import ProjectStatusSelector from './ProjectStatusSelector.svelte'
-  import tracker from '../../plugin'
+  import { WithLookup } from '@anticrm/core'
+  import { Project } from '@anticrm/tracker'
 
   export let value: WithLookup<Project>
-  export let space: Ref<Team>
-
-  const client = getClient()
-  const lead = value.$lookup?.lead
-
-  async function updateStatus (status: ProjectStatus) {
-    await client.updateDoc(tracker.class.Project, space, value._id, { status })
-  }
 </script>
 
-<div class="flex-presenter">
-  <div class="icon">
-    <Icon icon={value.icon} size="small" />
+{#if value}
+  <div class="flex-presenter projectPresenterRoot">
+    <span title={value.label} class="projectLabel">{value.label}</span>
   </div>
-  <span class="label nowrap project-label">{value.label}</span>
-  {#if lead}
-    <div class="lead-container">
-      <ObjectPresenter value={lead} objectId={lead._id} _class={lead._class} props={{ shouldShowName: false }} />
-    </div>
-  {:else}
-    <div class="lead-placeholder">
-      <Icon icon={contact.icon.Person} size="large" />
-    </div>
-  {/if}
-  <div class="icon">
-    <ProjectStatusSelector
-      kind="icon"
-      shouldShowLabel={false}
-      status={value.status}
-      onStatusChange={(status) => status !== undefined && updateStatus(status)}
-    />
-  </div>
-</div>
+{/if}
 
-<style>
-  .project-label {
-    width: 250px;
+<style lang="scss">
+  .projectPresenterRoot {
+    max-width: 5rem;
   }
 
-  .lead-container {
-    padding-bottom: 5px;
-    margin-right: 12px;
-  }
-
-  .lead-placeholder {
-    margin-right: 20px;
+  .projectLabel {
+    display: block;
+    min-width: 0;
+    font-weight: 500;
+    text-align: left;
+    color: var(--theme-caption-color);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
   }
 </style>

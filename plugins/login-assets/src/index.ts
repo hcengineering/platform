@@ -14,9 +14,14 @@
 // limitations under the License.
 //
 
-import { addStringsLoader } from '@anticrm/platform'
-import { loginId } from '@anticrm/login'
+import { addStringsLoader, loadMetadata } from '@anticrm/platform'
+import login, { loginId } from '@anticrm/login'
 
 addStringsLoader(loginId, async (lang: string) => {
   return await import(`../lang/${lang}.json`)
+})
+
+const icons = require('../assets/icons.svg') as string // eslint-disable-line
+loadMetadata(login.icon, {
+  InviteWorkspace: `${icons}#inviteWorkspace`
 })

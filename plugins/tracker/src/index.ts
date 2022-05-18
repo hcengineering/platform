@@ -226,6 +226,10 @@ export default plugin(trackerId, {
     PriorityUrgent: '' as Asset,
     PriorityHigh: '' as Asset,
     PriorityMedium: '' as Asset,
-    PriorityLow: '' as Asset
+    PriorityLow: '' as Asset,
+
+    ProjectsList: '' as Asset,
+    ProjectsTimeline: '' as Asset,
+    ProjectMembers: '' as Asset
   }
 })

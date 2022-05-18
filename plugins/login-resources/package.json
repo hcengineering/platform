@@ -34,6 +34,7 @@
     "svelte": "^3.47",
     "@anticrm/login": "~0.6.1",
     "@anticrm/ui": "~0.6.0",
-    "@anticrm/workbench": "~0.6.1"
+    "@anticrm/workbench": "~0.6.1",
+    "@anticrm/core": "~0.6.16"
   }
 }

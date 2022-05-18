@@ -25,20 +25,26 @@ import Issues from './components/issues/Issues.svelte'
 import MyIssues from './components/myissues/MyIssues.svelte'
 import Projects from './components/projects/Projects.svelte'
 import ProjectPresenter from './components/projects/ProjectPresenter.svelte'
+import ProjectTitlePresenter from './components/projects/ProjectTitlePresenter.svelte'
 import Views from './components/views/Views.svelte'
 import IssuePresenter from './components/issues/IssuePresenter.svelte'
 import TitlePresenter from './components/issues/TitlePresenter.svelte'
 import PriorityPresenter from './components/issues/PriorityPresenter.svelte'
 import PriorityEditor from './components/issues/PriorityEditor.svelte'
-import ProjectEditor from './components/issues/ProjectEditor.svelte'
+import ProjectEditor from './components/projects/ProjectEditor.svelte'
 import StatusPresenter from './components/issues/StatusPresenter.svelte'
 import StatusEditor from './components/issues/StatusEditor.svelte'
 import DueDatePresenter from './components/issues/DueDatePresenter.svelte'
 import AssigneePresenter from './components/issues/AssigneePresenter.svelte'
 import ViewOptionsPopup from './components/issues/ViewOptionsPopup.svelte'
+import IconPresenter from './components/projects/IconPresenter.svelte'
+import LeadPresenter from './components/projects/LeadPresenter.svelte'
+import TargetDatePresenter from './components/projects/TargetDatePresenter.svelte'
+import ProjectMembersPresenter from './components/projects/ProjectMembersPresenter.svelte'
+import ProjectStatusPresenter from './components/projects/ProjectStatusPresenter.svelte'
 
 import ModificationDatePresenter from './components/issues/ModificationDatePresenter.svelte'
-import EditIssue from './components/issues/EditIssue.svelte'
+import EditIssue from './components/issues/edit/EditIssue.svelte'
 import NewIssueHeader from './components/NewIssueHeader.svelte'
 
 export default async (): Promise<Resources> => ({
@@ -54,6 +60,7 @@ export default async (): Promise<Resources> => ({
     Views,
     IssuePresenter,
     ProjectPresenter,
+    ProjectTitlePresenter,
     TitlePresenter,
     ModificationDatePresenter,
     PriorityPresenter,
@@ -65,6 +72,11 @@ export default async (): Promise<Resources> => ({
     DueDatePresenter,
     EditIssue,
     NewIssueHeader,
-    ViewOptionsPopup
+    ViewOptionsPopup,
+    IconPresenter,
+    LeadPresenter,
+    TargetDatePresenter,
+    ProjectMembersPresenter,
+    ProjectStatusPresenter
   }
 })

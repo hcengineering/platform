@@ -17,6 +17,10 @@
     "Backlog": "Backlog",
     "Board": "Board",
     "Projects": "Projects",
+    "AllProjects": "All",
+    "BacklogProjects": "Backlog",
+    "ActiveProjects": "Active",
+    "ClosedProjects": "Closed",
     "NewProject": "New project",
     "CreateProject": "Create project",
     "ProjectNamePlaceholder": "Project name",
@@ -96,10 +100,15 @@
     "PastMonth": "Past month",
     "CopyIssueUrl": "Copy Issue URL to clipboard",
     "CopyIssueId": "Copy Issue ID to clipboard",
+    "CopyIssueBranch": "Copy Git branch name to clipboard",
     "AssetLabel": "Asset",
     "AddToProject": "Add to project\u2026",
     "MoveToProject": "Move to project\u2026",
     "NoProject": "No project",
+    "ProjectLeadTitle": "Project lead",
+    "ProjectMembersTitle": "Project members",
+    "ProjectLeadSearchPlaceholder": "Set project lead\u2026",
+    "ProjectMembersSearchPlaceholder": "Change project members\u2026",
 
     "GotoIssues": "Go to issues",
     "GotoActive": "Go to active issues",
@@ -113,7 +122,9 @@
     "FilterIs": "is",
     "FilterIsNot": "is not",
     "FilterIsEither": "is either of",
-    "FilterStatesCount": "{value, plural, =1 {1 state} other {# states}}"
+    "FilterStatesCount": "{value, plural, =1 {1 state} other {# states}}",
+
+    "EditIssue": "Edit {title}"
   },
   "status": {}
 }

@@ -15,8 +15,9 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import { IconFolder, EditBox, ToggleWithLabel, Grid } from '@anticrm/ui'
-
+  import workbench from '@anticrm/workbench'
   import { getClient, SpaceCreateCard } from '@anticrm/presentation'
+  import { getResource } from '@anticrm/platform'
 
   import chunter from '../plugin'
   import core, { getCurrentAccount } from '@anticrm/core'
@@ -30,13 +31,19 @@
   }
   const client = getClient()
 
-  function createChannel () {
-    client.createDoc(chunter.class.Channel, core.space.Space, {
+  async function createChannel () {
+    const channelId = await client.createDoc(chunter.class.Channel, core.space.Space, {
       name,
       description: '',
       private: isPrivate,
       archived: false,
       members: [getCurrentAccount()._id]
+    })
+    const navigate = await getResource(workbench.actionImpl.Navigate)
+
+    await navigate([], undefined as any, {
+      mode: 'space',
+      space: channelId
     })
   }
 </script>
