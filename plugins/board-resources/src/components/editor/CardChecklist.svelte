@@ -17,12 +17,22 @@
   import { createQuery, getClient, UserBox, MessageBox } from '@anticrm/presentation'
   import type { TodoItem } from '@anticrm/task'
   import task from '@anticrm/task'
-  import { Button, CheckBox, TextAreaEditor, Icon, IconMoreH, Progress, showPopup } from '@anticrm/ui'
+  import {
+    Button,
+    CheckBox,
+    TextAreaEditor,
+    Icon,
+    IconMoreH,
+    Progress,
+    showPopup,
+    DateRangePresenter
+  } from '@anticrm/ui'
   import { ContextMenu, HTMLPresenter } from '@anticrm/view-resources'
   import contact, { Employee } from '@anticrm/contact'
 
   import board from '../../plugin'
   import { getPopupAlignment } from '../../utils/PopupUtils'
+  import { getDateIcon } from '../../utils/BoardUtils'
 
   export let value: TodoItem
   const client = getClient()
@@ -92,6 +102,10 @@
 
   function updateItemAssignee (item: TodoItem, assignee: Ref<Employee>) {
     client.update(item, { assignee })
+  }
+
+  function updateDueDate (item: TodoItem, dueTo: number) {
+    client.update(item, { dueTo })
   }
 
   async function setDoneToChecklistItem (item: TodoItem, event: CustomEvent<boolean>) {
@@ -206,7 +220,13 @@
           >
             <HTMLPresenter bind:value={item.name} />
           </div>
-          <div class="flex-center">
+          <div class="flex-center gap-1">
+            <DateRangePresenter
+              editable
+              bind:value={item.dueTo}
+              icon={getDateIcon(item)}
+              on:change={(e) => updateDueDate(item, e.detail)}
+            />
             <UserBox
               _class={contact.class.Employee}
               label={board.string.Assignee}

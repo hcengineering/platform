@@ -1,6 +1,6 @@
 import board, { Board, CardLabel, Card } from '@anticrm/board'
 import core, { Ref, TxOperations, Space } from '@anticrm/core'
-import type { KanbanTemplate } from '@anticrm/task'
+import type { KanbanTemplate, TodoItem } from '@anticrm/task'
 import { createKanban } from '@anticrm/task'
 import {
   hexColorToNumber,
@@ -13,7 +13,8 @@ import {
   FeijoaColor,
   EastSideColor,
   SalmonColor,
-  SeagullColor
+  SeagullColor,
+  areDatesEqual
 } from '@anticrm/ui'
 
 export async function createBoard (
@@ -118,4 +119,11 @@ export async function createMissingLabels (
     .filter((l) => l !== null) as Array<Ref<CardLabel>> | undefined
 
   return labelsUpdate
+}
+
+export function getDateIcon (item: TodoItem): 'normal' | 'warning' | 'overdue' {
+  if (item.dueTo === null) return 'normal'
+  const date = new Date()
+  const dueDate = new Date(item.dueTo)
+  return areDatesEqual(date, dueDate) ? 'warning' : dueDate < date ? 'overdue' : 'normal'
 }
