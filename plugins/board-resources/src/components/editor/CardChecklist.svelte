@@ -14,11 +14,12 @@
 -->
 <script lang="ts">
   import { Ref } from '@anticrm/core'
-  import { createQuery, getClient, MessageBox } from '@anticrm/presentation'
+  import { createQuery, getClient, UserBox, MessageBox } from '@anticrm/presentation'
   import type { TodoItem } from '@anticrm/task'
   import task from '@anticrm/task'
   import { Button, CheckBox, TextAreaEditor, Icon, IconMoreH, Progress, showPopup } from '@anticrm/ui'
   import { ContextMenu, HTMLPresenter } from '@anticrm/view-resources'
+  import contact, { Employee } from '@anticrm/contact'
 
   import board from '../../plugin'
   import { getPopupAlignment } from '../../utils/PopupUtils'
@@ -79,20 +80,18 @@
     await client.addCollection(task.class.TodoItem, value.space, value._id, value._class, 'items', item)
   }
 
-  function updateName (event: CustomEvent<string>) {
-    isEditingName = false
-    const name = event.detail
-    if (name !== undefined && name.length > 0 && name !== value.name) {
-      value.name = name
-      client.update(value, { name: value.name })
-    }
+  function updateItemName (item: TodoItem, name: string) {
+    if (name === undefined || name.length === 0 || name === item.name) return
+    client.update(item, { name })
   }
 
-  function updateItemName (item: TodoItem, name: string) {
-    if (name !== undefined && name.length > 0 && name !== value.name) {
-      item.name = name
-      client.update(item, { name: item.name })
-    }
+  function updateName (event: CustomEvent<string>) {
+    isEditingName = false
+    updateItemName(value, event.detail)
+  }
+
+  function updateItemAssignee (item: TodoItem, assignee: Ref<Employee>) {
+    client.update(item, { assignee })
   }
 
   async function setDoneToChecklistItem (item: TodoItem, event: CustomEvent<boolean>) {
@@ -208,6 +207,15 @@
             <HTMLPresenter bind:value={item.name} />
           </div>
           <div class="flex-center">
+            <UserBox
+              _class={contact.class.Employee}
+              label={board.string.Assignee}
+              bind:value={item.assignee}
+              allowDeselect={true}
+              on:change={(e) => {
+                updateItemAssignee(item, e.detail)
+              }}
+            />
             <Button icon={IconMoreH} kind="transparent" size="small" on:click={(e) => showItemMenu(item, e)} />
           </div>
         {/if}
