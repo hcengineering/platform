@@ -75,7 +75,11 @@
     {/each}
     <div class="signout">
       <CategoryElement icon={setting.icon.Signout} label={setting.string.Signout} on:click={signOut} />
-      <CategoryElement label={setting.string.InviteWorkspace} on:click={inviteWorkspace} />
+      <CategoryElement
+        icon={login.icon.InviteWorkspace}
+        label={setting.string.InviteWorkspace}
+        on:click={inviteWorkspace}
+      />
       <CategoryElement
         icon={setting.icon.SelectWorkspace}
         label={setting.string.SelectWorkspace}

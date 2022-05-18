@@ -14,10 +14,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Button, getCurrentLocation, Label, locationToUrl } from '@anticrm/ui'
+  import { Timestamp } from '@anticrm/core'
+  import { Button, getCurrentLocation, Label, locationToUrl, ticker } from '@anticrm/ui'
   import { getWorkspaceHash } from '../utils'
   import { createEventDispatcher } from 'svelte'
   import login from '../plugin'
+  import InviteWorkspace from './icons/InviteWorkspace.svelte'
 
   const dispatch = createEventDispatcher()
 
@@ -36,28 +38,40 @@
     return document.location.origin + link
   }
 
+  let copiedTime: Timestamp | undefined
+  let copied = false
+  $: {
+    if (copiedTime) {
+      if (copied && $ticker - copiedTime > 1000) {
+        copied = false
+      }
+    }
+  }
   function copy (link: string): void {
     navigator.clipboard.writeText(link)
+    copied = true
+    copiedTime = Date.now()
   }
 </script>
 
-<div class="popup">
-  <div class="fs-title flex-center">
+<div class="antiPopup popup">
+  <div class="flex-between fs-title">
     <Label label={login.string.InviteDescription} />
+    <InviteWorkspace size="large" />
   </div>
   {#await getLink() then link}
-    <div class="link">{link}</div>
+    <div class="over-underline link" on:click={() => copy(link)}>{link}</div>
     <div class="buttons flex">
       <Button
-        label={login.string.Copy}
-        size={'small'}
+        label={copied ? login.string.Copied : login.string.Copy}
+        size={'medium'}
         on:click={() => {
           copy(link)
         }}
       />
       <Button
         label={login.string.Close}
-        size={'small'}
+        size={'medium'}
         kind={'primary'}
         on:click={() => {
           dispatch('close')
@@ -76,11 +90,13 @@
     background-color: var(--theme-button-bg-hovered);
     border: 1px solid var(--theme-button-border-enabled);
     border-radius: 0.75rem;
+    min-width: 30rem;
     filter: drop-shadow(0 1.5rem 4rem rgba(0, 0, 0, 0.35));
 
     .link {
       margin-top: 2rem;
       margin-bottom: 2rem;
+      overflow-wrap: break-word;
     }
 
     .buttons {

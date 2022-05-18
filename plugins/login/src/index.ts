@@ -39,5 +39,8 @@ export default plugin(loginId, {
   component: {
     LoginApp: '' as AnyComponent,
     InviteLink: '' as AnyComponent
+  },
+  icon: {
+    InviteWorkspace: '' as Asset
   }
 })
