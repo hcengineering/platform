@@ -137,6 +137,7 @@ export interface Document extends Doc {
  * @public
  */
 export enum ProjectStatus {
+  Backlog,
   Planned,
   InProgress,
   Paused,
@@ -230,6 +231,13 @@ export default plugin(trackerId, {
 
     ProjectsList: '' as Asset,
     ProjectsTimeline: '' as Asset,
-    ProjectMembers: '' as Asset
+    ProjectMembers: '' as Asset,
+
+    ProjectStatusBacklog: '' as Asset,
+    ProjectStatusPlanned: '' as Asset,
+    ProjectStatusInProgress: '' as Asset,
+    ProjectStatusPaused: '' as Asset,
+    ProjectStatusCompleted: '' as Asset,
+    ProjectStatusCanceled: '' as Asset
   }
 })
