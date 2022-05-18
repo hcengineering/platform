@@ -125,7 +125,9 @@ export default mergeIds(boardId, board, {
     SwitchToCards: '' as IntlString,
     SearchArchive: '' as IntlString,
     Size: '' as IntlString,
-    RemoveCover: '' as IntlString
+    RemoveCover: '' as IntlString,
+    DeleteChecklist: '' as IntlString,
+    DeleteChecklistConfirm: '' as IntlString
   },
   component: {
     EditCard: '' as AnyComponent,
