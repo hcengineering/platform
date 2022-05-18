@@ -85,8 +85,6 @@
     selectedObjects = Array.from(selectedElements)
 
     dispatch('update', selectedObjects)
-
-    selectedElements = selectedElements
   }
 
   const client = getClient()
