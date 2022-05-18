@@ -132,11 +132,12 @@
           clear(2)
           specialComponent = newSpecial
           currentSpecial = currentFolder
+        } else {
+          await updateSpace(currentFolder)
+          setSpaceSpecial(loc.path[3])
         }
-      } else {
-        setSpaceSpecial(loc.path[3])
       }
-      await updateSpace(currentFolder)
+
       await setApp(loc)
     })
   )
