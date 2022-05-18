@@ -123,7 +123,7 @@ async function getAttributePresenter (
   }
 }
 
-async function getPresenter<T extends Doc> (
+export async function getPresenter<T extends Doc> (
   client: Client,
   _class: Ref<Class<T>>,
   key: BuildModelKey,

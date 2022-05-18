@@ -46,6 +46,8 @@ import RefEditor from './components/typeEditors/RefEditor.svelte'
 import DocAttributeBar from './components/DocAttributeBar.svelte'
 import ViewletSetting from './components/ViewletSetting.svelte'
 import TableBrowser from './components/TableBrowser.svelte'
+import ValueFilter from './components/filter/ValueFilter.svelte'
+import ObjectFilter from './components/filter/ObjectFilter.svelte'
 
 export { getActions, invokeAction } from './actions'
 export { default as ActionContext } from './components/ActionContext.svelte'
@@ -72,6 +74,8 @@ export {
 export default async (): Promise<Resources> => ({
   actionImpl: actionImpl,
   component: {
+    ObjectFilter,
+    ValueFilter,
     TableBrowser,
     ViewletSetting,
     CreateAttribute,

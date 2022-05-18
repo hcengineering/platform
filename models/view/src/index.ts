@@ -23,12 +23,15 @@ import type {
   Action,
   ActionCategory,
   AttributeEditor,
+  AttributeFilter,
   AttributePresenter,
   BuildModelKey,
+  ClassFilters,
   CollectionEditor,
   HTMLPresenter,
   IgnoreActions,
   KeyBinding,
+  KeyFilter,
   LinkPresenter,
   ObjectEditor,
   ObjectEditorHeader,
@@ -74,6 +77,16 @@ export function classPresenter (
       editor
     })
   }
+}
+
+@Mixin(view.mixin.ClassFilters, core.class.Class)
+export class TClassFilters extends TClass implements ClassFilters {
+  filters!: (string | KeyFilter)[]
+}
+
+@Mixin(view.mixin.AttributeFilter, core.class.Class)
+export class TAttributeFilter extends TClass implements AttributeFilter {
+  component!: AnyComponent
 }
 
 @Mixin(view.mixin.AttributeEditor, core.class.Class)
@@ -224,6 +237,8 @@ export const actionTemplates = template({
 
 export function createModel (builder: Builder): void {
   builder.createModel(
+    TClassFilters,
+    TAttributeFilter,
     TAttributeEditor,
     TAttributePresenter,
     TCollectionEditor,
@@ -473,6 +488,26 @@ export function createModel (builder: Builder): void {
   builder.createDoc(view.class.LinkPresenter, core.space.Model, {
     pattern: '(www.)?github.com/',
     component: view.component.GithubPresenter
+  })
+
+  builder.mixin(core.class.TypeString, core.class.Class, view.mixin.AttributeFilter, {
+    component: view.component.ValueFilter
+  })
+
+  builder.mixin(core.class.TypeBoolean, core.class.Class, view.mixin.AttributeFilter, {
+    component: view.component.ValueFilter
+  })
+
+  builder.mixin(core.class.TypeNumber, core.class.Class, view.mixin.AttributeFilter, {
+    component: view.component.ValueFilter
+  })
+
+  builder.mixin(core.class.TypeDate, core.class.Class, view.mixin.AttributeFilter, {
+    component: view.component.ValueFilter
+  })
+
+  builder.mixin(core.class.RefTo, core.class.Class, view.mixin.AttributeFilter, {
+    component: view.component.ObjectFilter
   })
 }
 
