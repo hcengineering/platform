@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Icon, Label, IconDPCalendarOver, IconDPCalendar } from '@anticrm/ui'
-  import tracker from '../../plugin'
+  import tracker from '../plugin'
 
   export let formattedDate: string = ''
   export let daysDifference: number = 0

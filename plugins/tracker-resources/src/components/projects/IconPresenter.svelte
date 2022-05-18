@@ -15,29 +15,9 @@
 <script lang="ts">
   import { WithLookup } from '@anticrm/core'
   import { Project } from '@anticrm/tracker'
+  import { Button } from '@anticrm/ui'
 
   export let value: WithLookup<Project>
 </script>
 
-{#if value}
-  <div class="flex-presenter projectPresenterRoot">
-    <span title={value.label} class="projectLabel">{value.label}</span>
-  </div>
-{/if}
-
-<style lang="scss">
-  .projectPresenterRoot {
-    max-width: 5rem;
-  }
-
-  .projectLabel {
-    display: block;
-    min-width: 0;
-    font-weight: 500;
-    text-align: left;
-    color: var(--theme-caption-color);
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-  }
-</style>
+<Button size="small" kind="link" icon={value.icon} />

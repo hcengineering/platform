@@ -15,16 +15,17 @@
 <script lang="ts">
   import contact, { Employee } from '@anticrm/contact'
   import { Class, Doc, Ref } from '@anticrm/core'
-  import { Issue, Team } from '@anticrm/tracker'
+  import { Project, Team } from '@anticrm/tracker'
   import { UsersPopup, getClient } from '@anticrm/presentation'
   import { AttributeModel } from '@anticrm/view'
-  import { eventToHTMLElement, showPopup } from '@anticrm/ui'
+  import { eventToHTMLElement, showPopup, Tooltip } from '@anticrm/ui'
   import { getObjectPresenter } from '@anticrm/view-resources'
   import { IntlString } from '@anticrm/platform'
   import tracker from '../../plugin'
+  import LeadPopup from './LeadPopup.svelte'
 
   export let value: Employee | null
-  export let issueId: Ref<Issue>
+  export let projectId: Ref<Project>
   export let defaultClass: Ref<Class<Doc>> | undefined = undefined
   export let currentSpace: Ref<Team> | undefined = undefined
   export let isEditable: boolean = true
@@ -47,42 +48,55 @@
     }
   }
 
-  const handleAssigneeChanged = async (result: Employee | null | undefined) => {
+  const handleLeadChanged = async (result: Employee | null | undefined) => {
     if (!isEditable || result === undefined) {
       return
     }
 
-    const currentIssue = await client.findOne(tracker.class.Issue, { space: currentSpace, _id: issueId })
+    const currentProject = await client.findOne(tracker.class.Project, { space: currentSpace, _id: projectId })
 
-    if (currentIssue === undefined) {
+    if (currentProject === undefined) {
       return
     }
 
-    const newAssignee = result === null ? null : result._id
+    const newLead = result === null ? null : result._id
 
-    await client.update(currentIssue, { assignee: newAssignee })
+    await client.update(currentProject, { lead: newLead })
   }
 
-  const handleAssigneeEditorOpened = async (event: MouseEvent) => {
+  const handleLeadEditorOpened = async (event: MouseEvent) => {
     if (!isEditable) {
       return
     }
-
     showPopup(
       UsersPopup,
       {
         _class: contact.class.Employee,
         selected: value?._id,
         allowDeselect: true,
-        placeholder: tracker.string.AssignTo
+        placeholder: tracker.string.ProjectLeadSearchPlaceholder
       },
       eventToHTMLElement(event),
-      handleAssigneeChanged
+      handleLeadChanged
     )
   }
 </script>
 
-{#if presenter}
+{#if value && presenter}
+  <Tooltip component={LeadPopup} props={{ lead: value }}>
+    <svelte:component
+      this={presenter.presenter}
+      {value}
+      {defaultName}
+      avatarSize={'tiny'}
+      isInteractive={true}
+      shouldShowPlaceholder={true}
+      shouldShowName={shouldShowLabel}
+      onEmployeeEdit={handleLeadEditorOpened}
+      tooltipLabels={{ personLabel: tracker.string.AssignedTo, placeholderLabel: tracker.string.AssignTo }}
+    />
+  </Tooltip>
+{:else if presenter}
   <svelte:component
     this={presenter.presenter}
     {value}
@@ -91,7 +105,7 @@
     isInteractive={true}
     shouldShowPlaceholder={true}
     shouldShowName={shouldShowLabel}
-    onEmployeeEdit={handleAssigneeEditorOpened}
+    onEmployeeEdit={handleLeadEditorOpened}
     tooltipLabels={{ personLabel: tracker.string.AssignedTo, placeholderLabel: tracker.string.AssignTo }}
   />
 {/if}

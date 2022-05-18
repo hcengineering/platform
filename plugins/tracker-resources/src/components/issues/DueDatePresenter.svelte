@@ -13,59 +13,30 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Timestamp, WithLookup } from '@anticrm/core'
+  import { WithLookup } from '@anticrm/core'
   import { Issue } from '@anticrm/tracker'
-  import { DatePresenter, Tooltip, getDaysDifference } from '@anticrm/ui'
   import { getClient } from '@anticrm/presentation'
-  import DueDatePopup from './DueDatePopup.svelte'
+  import CommonTrackerDatePresenter from '../CommonTrackerDatePresenter.svelte'
   import tracker from '../../plugin'
-  import { getDueDateIconModifier } from '../../utils'
 
   export let value: WithLookup<Issue>
 
   const client = getClient()
 
-  $: today = new Date(new Date(Date.now()).setHours(0, 0, 0, 0))
   $: dueDateMs = value.dueDate
-  $: isOverdue = dueDateMs !== null && dueDateMs < today.getTime()
-  $: dueDate = dueDateMs === null ? null : new Date(dueDateMs)
-  $: daysDifference = dueDate === null ? null : getDaysDifference(today, dueDate)
-  $: iconModifier = getDueDateIconModifier(isOverdue, daysDifference)
-  $: formattedDate = !dueDateMs ? '' : new Date(dueDateMs).toLocaleString('default', { month: 'short', day: 'numeric' })
 
-  const handleDueDateChanged = async (event: CustomEvent<Timestamp>) => {
-    const newDate = event.detail
-
-    if (newDate === undefined || value.dueDate === newDate) {
-      return
-    }
-
+  const handleDueDateChanged = async (newDate: number | null) => {
     await client.update(value, { dueDate: newDate })
   }
 
   $: shouldRenderPresenter =
-    dueDateMs &&
+    dueDateMs !== null &&
     value.$lookup?.status?.category !== tracker.issueStatusCategory.Completed &&
     value.$lookup?.status?.category !== tracker.issueStatusCategory.Canceled
 </script>
 
-{#if shouldRenderPresenter}
-  <Tooltip
-    direction={'top'}
-    component={DueDatePopup}
-    props={{
-      formattedDate: formattedDate,
-      daysDifference: daysDifference,
-      isOverdue: isOverdue,
-      iconModifier: iconModifier
-    }}
-  >
-    <DatePresenter
-      value={dueDateMs}
-      editable={true}
-      shouldShowLabel={false}
-      icon={iconModifier}
-      on:change={handleDueDateChanged}
-    />
-  </Tooltip>
-{/if}
+<CommonTrackerDatePresenter
+  dateMs={dueDateMs}
+  shouldRender={shouldRenderPresenter}
+  onDateChange={handleDueDateChanged}
+/>

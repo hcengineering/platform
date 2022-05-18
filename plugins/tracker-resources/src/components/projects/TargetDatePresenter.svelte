@@ -13,31 +13,19 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { WithLookup } from '@anticrm/core'
   import { Project } from '@anticrm/tracker'
+  import { getClient } from '@anticrm/presentation'
+  import CommonTrackerDatePresenter from '../CommonTrackerDatePresenter.svelte'
 
-  export let value: WithLookup<Project>
+  export let value: Project
+
+  const client = getClient()
+
+  $: dueDateMs = value.targetDate
+
+  const handleDueDateChanged = async (newDate: number | null) => {
+    await client.update(value, { targetDate: newDate })
+  }
 </script>
 
-{#if value}
-  <div class="flex-presenter projectPresenterRoot">
-    <span title={value.label} class="projectLabel">{value.label}</span>
-  </div>
-{/if}
-
-<style lang="scss">
-  .projectPresenterRoot {
-    max-width: 5rem;
-  }
-
-  .projectLabel {
-    display: block;
-    min-width: 0;
-    font-weight: 500;
-    text-align: left;
-    color: var(--theme-caption-color);
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-  }
-</style>
+<CommonTrackerDatePresenter dateMs={dueDateMs} shouldRender={true} onDateChange={handleDueDateChanged} />

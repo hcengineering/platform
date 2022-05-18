@@ -8,10 +8,12 @@
 
   export let value: WithLookup<Employee>
   export let shouldShowAvatar: boolean = true
+  export let shouldShowName: boolean = true
+  export let onEmployeeEdit: ((event: MouseEvent) => void) | undefined = undefined
 
   let container: HTMLElement
 
-  function onEdit () {
+  const onEdit = () => {
     showPopup(
       EmployeePreviewPopup,
       {
@@ -20,11 +22,13 @@
       container
     )
   }
+
+  $: handlePersonEdit = onEmployeeEdit ?? onEdit
 </script>
 
 <div bind:this={container} class="flex-center container">
-  <div class="pr-2 over-underline">
-    <PersonPresenter {value} {onEdit} {shouldShowAvatar} />
+  <div class="over-underline" class:pr-2={shouldShowName}>
+    <PersonPresenter {value} onEdit={handlePersonEdit} {shouldShowAvatar} {shouldShowName} />
   </div>
   {#if value.$lookup?.statuses?.length}
     <div class="status content-color">

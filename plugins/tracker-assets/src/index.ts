@@ -45,7 +45,11 @@ loadMetadata(tracker.icon, {
   PriorityUrgent: `${icons}#priority-urgent`,
   PriorityHigh: `${icons}#priority-high`,
   PriorityMedium: `${icons}#priority-medium`,
-  PriorityLow: `${icons}#priority-low`
+  PriorityLow: `${icons}#priority-low`,
+
+  ProjectsList: `${icons}#list`,
+  ProjectsTimeline: `${icons}#timeline`,
+  ProjectMembers: `${icons}#projectMembers`
 })
 
 addStringsLoader(trackerId, async (lang: string) => await import(`../lang/${lang}.json`))
