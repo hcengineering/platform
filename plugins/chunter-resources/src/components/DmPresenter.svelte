@@ -19,15 +19,15 @@
 
   import { getSpaceLink, getDmName } from '../utils'
 
-  export let dm: DirectMessage
+  export let value: DirectMessage
   const client = getClient()
 
-  $: icon = client.getHierarchy().getClass(dm._class).icon
-  $: link = getSpaceLink(dm._id)
+  $: icon = client.getHierarchy().getClass(value._class).icon
+  $: link = getSpaceLink(value._id)
 </script>
 
-{#if dm}
-  {#await getDmName(client, dm) then name}
+{#if value}
+  {#await getDmName(client, value) then name}
     <a class="flex-presenter" href={link}>
       <div class="icon">
         {#if icon}

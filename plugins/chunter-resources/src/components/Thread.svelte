@@ -171,7 +171,7 @@
       {#if channel?._class === chunter.class.Channel}
         <ChannelPresenter value={channel} />
       {:else if channel}
-        <DmPresenter dm={channel} />
+        <DmPresenter value={channel} />
       {/if}
     {/await}
     {#await getParticipants(comments, parent, employees) then participants}
