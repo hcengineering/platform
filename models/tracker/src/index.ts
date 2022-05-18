@@ -327,6 +327,10 @@ export function createModel (builder: Builder): void {
     presenter: tracker.component.StatusPresenter
   })
 
+  builder.mixin(tracker.class.Project, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: tracker.component.ProjectTitlePresenter
+  })
+
   builder.createDoc(
     workbench.class.Application,
     core.space.Model,

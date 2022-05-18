@@ -28,6 +28,7 @@
   export let content: string = ''
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
   export let showButtons = true
+  export let isScrollable = true
 
   let textEditor: TextEditor
 
@@ -42,7 +43,24 @@
 <div class="ref-container">
   <div class="textInput">
     <div class="inputMsg">
-      <ScrollBox bothScroll stretch>
+      {#if isScrollable}
+        <ScrollBox bothScroll stretch>
+          <TextEditor
+            bind:content
+            {placeholder}
+            bind:this={textEditor}
+            on:value
+            on:content={(ev) => {
+              dispatch('message', ev.detail)
+              content = ''
+              textEditor.clear()
+            }}
+            on:blur
+            on:focus
+            supportSubmit={false}
+          />
+        </ScrollBox>
+      {:else}
         <TextEditor
           bind:content
           {placeholder}
@@ -57,7 +75,7 @@
           on:focus
           supportSubmit={false}
         />
-      </ScrollBox>
+      {/if}
     </div>
   </div>
   {#if showButtons}
