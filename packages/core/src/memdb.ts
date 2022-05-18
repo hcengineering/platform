@@ -144,7 +144,7 @@ export abstract class MemDb extends TxProcessor {
       result = this.getObjectsByClass(baseClass)
     }
 
-    result = matchQuery(result, query, _class, this.hierarchy)
+    result = matchQuery(result, query, _class, this.hierarchy, true)
 
     if (baseClass !== _class) {
       // We need to filter instances without mixin was set
@@ -153,7 +153,7 @@ export abstract class MemDb extends TxProcessor {
 
     if (options?.lookup !== undefined) result = await this.lookup(result as T[], options.lookup)
 
-    if (options?.sort !== undefined) resultSort(result, options?.sort)
+    if (options?.sort !== undefined) resultSort(result, options?.sort, _class, this.hierarchy)
     const total = result.length
     result = result.slice(0, options?.limit)
     const tresult = this.hierarchy.clone(result) as WithLookup<T>[]

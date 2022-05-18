@@ -288,7 +288,7 @@ export class LiveQuery extends TxProcessor implements Client {
 
     if (needCallback) {
       if (q.options?.sort !== undefined) {
-        resultSort(q.result, q.options?.sort)
+        resultSort(q.result, q.options?.sort, q._class, this.getHierarchy())
       }
       await this.callback(q)
     }
@@ -446,7 +446,7 @@ export class LiveQuery extends TxProcessor implements Client {
       q.total++
 
       if (q.options?.sort !== undefined) {
-        resultSort(q.result, q.options?.sort)
+        resultSort(q.result, q.options?.sort, q._class, this.getHierarchy())
       }
 
       if (q.options?.limit !== undefined && q.result.length > q.options.limit) {
@@ -480,7 +480,7 @@ export class LiveQuery extends TxProcessor implements Client {
 
     if (needCallback) {
       if (q.options?.sort !== undefined) {
-        resultSort(q.result, q.options?.sort)
+        resultSort(q.result, q.options?.sort, q._class, this.getHierarchy())
       }
       await this.callback(q)
     }
@@ -577,7 +577,7 @@ export class LiveQuery extends TxProcessor implements Client {
     }
     if (needCallback) {
       if (q.options?.sort !== undefined) {
-        resultSort(q.result, q.options?.sort)
+        resultSort(q.result, q.options?.sort, q._class, this.getHierarchy())
       }
       await this.callback(q)
     }
@@ -715,7 +715,7 @@ export class LiveQuery extends TxProcessor implements Client {
     let needSort = sort.modifiedBy !== undefined || sort.modifiedOn !== undefined
     if (!needSort) needSort = this.checkNeedSort(sort, tx)
 
-    if (needSort) resultSort(q.result as Doc[], sort)
+    if (needSort) resultSort(q.result as Doc[], sort, q._class, this.getHierarchy())
   }
 
   private checkNeedSort (sort: SortingQuery<Doc>, tx: TxUpdateDoc<Doc>): boolean {

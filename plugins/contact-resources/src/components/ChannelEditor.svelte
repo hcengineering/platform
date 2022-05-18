@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher, onMount } from 'svelte'
+  import { createEventDispatcher, onMount, afterUpdate } from 'svelte'
   import type { IntlString } from '@anticrm/platform'
   import { translate } from '@anticrm/platform'
   import {
@@ -34,6 +34,7 @@
   export let placeholder: IntlString
   export let editable: boolean | undefined = undefined
   export let openable: boolean = false
+  export let direction: string = 'bottom'
 
   const dispatch = createEventDispatcher()
   let input: HTMLInputElement
@@ -67,16 +68,27 @@
     isFocus: () => document.activeElement === input
   })
 
-  $: if (input) {
-    input.addEventListener('focus', () => {
-      mgr.setFocus(idx)
-    })
+  const updateFocus = () => {
+    mgr.setFocus(idx)
   }
+  $: if (input) {
+    input.addEventListener('focus', updateFocus, { once: true })
+  }
+
+  const vDir = (d: string): string => d.split('|')[0]
+  const fitEditor = (): void => {
+    dir = vDir(direction)
+  }
+  $: dir = vDir(direction)
+  afterUpdate(() => {
+    fitEditor()
+  })
 </script>
 
+<svelte:window on:resize={fitEditor} on:scroll={fitEditor} />
 <FocusHandler manager={mgr} />
 {#if editable && editable === true}
-  <div class="editor-container buttons-group xsmall-gap">
+  <div class="editor-container {dir} buttons-group xsmall-gap">
     <div class="cover-channel" class:show class:copied={label === plugin.string.Copied} data-tooltip={lTraslate}>
       <input
         bind:this={input}
@@ -209,11 +221,47 @@
   }
 
   .editor-container {
-    margin-top: 0.25rem;
     padding: 0.5rem;
     background-color: var(--accent-bg-color);
     border: 1px solid var(--divider-color);
-    border-radius: 0.25rem;
-    box-shadow: var(--popup-panel-shadow);
+    border-radius: 0.75rem;
+    box-shadow: var(--popup-aside-shadow);
+
+    &.top {
+      transform: translate(calc(-50% + 0.75rem), -0.5rem);
+    }
+    &.bottom {
+      transform: translate(calc(-50% + 0.75rem), 0.5rem);
+    }
+    &.top::after,
+    &.top::before,
+    &.bottom::after,
+    &.bottom::before {
+      content: '';
+      position: absolute;
+      margin-left: -9px;
+      top: -6px;
+      left: 50%;
+      width: 18px;
+      height: 7px;
+    }
+    &.top::before,
+    &.bottom::before {
+      background-color: var(--accent-bg-color);
+      clip-path: url('#nub-bg');
+      z-index: 1;
+    }
+    &.top::after,
+    &.bottom::after {
+      background-color: var(--divider-color);
+      clip-path: url('#nub-border');
+      z-index: 2;
+    }
+    &.top::after,
+    &.top::before {
+      top: calc(100% - 1px);
+      transform-origin: center center;
+      transform: rotate(180deg);
+    }
   }
 </style>

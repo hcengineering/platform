@@ -73,7 +73,9 @@
     "GotoBacklog": "Перейти к пулу задач",
     "GotoBoard": "Перейти к канбану",
     "GotoProjects": "Перейти к проекту",
-    "GotoTrackerApplication": "Перейти к приложению Трекер"
+    "GotoTrackerApplication": "Перейти к приложению Трекер",
+
+    "EditIssue": "Редактирование {title}"
   },
   "status": {}
 }

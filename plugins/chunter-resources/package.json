@@ -38,6 +38,7 @@
     "@anticrm/chunter": "~0.6.1",
     "@anticrm/login": "~0.6.1",
     "svelte": "^3.47",
+    "fast-equals": "^2.0.3",
     "@anticrm/text-editor": "~0.6.0",
     "@anticrm/contact": "~0.6.5",
     "@anticrm/contact-resources": "~0.6.0",

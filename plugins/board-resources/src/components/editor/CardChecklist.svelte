@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Ref } from '@anticrm/core'
-  import { createQuery, getClient } from '@anticrm/presentation'
+  import { createQuery, getClient, MessageBox } from '@anticrm/presentation'
   import type { TodoItem } from '@anticrm/task'
   import task from '@anticrm/task'
   import { Button, CheckBox, TextAreaEditor, Icon, IconMoreH, Progress, showPopup } from '@anticrm/ui'
@@ -39,13 +39,25 @@
     if (!value) {
       return
     }
-    client.removeCollection(
-      value._class,
-      value.space,
-      value._id,
-      value.attachedTo,
-      value.attachedToClass,
-      value.collection
+    showPopup(
+      MessageBox,
+      {
+        label: board.string.DeleteChecklist,
+        message: board.string.DeleteChecklistConfirm
+      },
+      undefined,
+      (result?: boolean) => {
+        if (result === true) {
+          client.removeCollection(
+            value._class,
+            value.space,
+            value._id,
+            value.attachedTo,
+            value.attachedToClass,
+            value.collection
+          )
+        }
+      }
     )
   }
 
@@ -92,7 +104,7 @@
   }
 
   function showItemMenu (item: TodoItem, e?: Event) {
-    showPopup(ContextMenu, { object: item }, getPopupAlignment(e))
+    showPopup(ContextMenu, { object: item, baseMenuClass: board.class.Card }, getPopupAlignment(e))
   }
 
   $: checklistItemsQuery.query(task.class.TodoItem, { space: value.space, attachedTo: value._id }, (result) => {

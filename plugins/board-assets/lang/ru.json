@@ -104,6 +104,8 @@
     "SwitchToCards": "К карточкам",
     "SearchArchive": "Поиск в архиве...",
     "Size": "Размер",
-    "RemoveCover": "Удалить обложку"
+    "RemoveCover": "Удалить обложку",
+    "DeleteChecklist": "Удалить список задач",
+    "DeleteChecklistConfirm": "Удаление списка задач необратимо, и не будет возможности его вернуть."
   }
 }

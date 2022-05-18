@@ -22,12 +22,13 @@
   import notification from '@anticrm/notification'
   import { getClient, UserBoxList } from '@anticrm/presentation'
   import { Button, Component, EditBox, IconEdit, Label, numberToHexColor, showPopup } from '@anticrm/ui'
+  import { ContextMenu } from '@anticrm/view-resources'
   import board from '../plugin'
-  import CardInlineActions from './editor/CardInlineActions.svelte'
   import CardLabels from './editor/CardLabels.svelte'
   import DatePresenter from './presenters/DatePresenter.svelte'
   import { hasDate, openCardPanel, updateCard, updateCardMembers } from '../utils/CardUtils'
   import { getElementPopupAlignment } from '../utils/PopupUtils'
+  import CheckListsPresenter from './presenters/ChecklistsPresenter.svelte'
 
   export let object: WithLookup<Card>
 
@@ -44,12 +45,7 @@
 
   function enterEditMode (): void {
     isEditMode = true
-    showPopup(
-      CardInlineActions,
-      { value: object },
-      getElementPopupAlignment(ref, { h: 'right', v: 'top' }),
-      exitEditMode
-    )
+    showPopup(ContextMenu, { object }, getElementPopupAlignment(ref, { h: 'right', v: 'top' }), exitEditMode)
   }
 
   function showCard () {
@@ -189,6 +185,11 @@
           {#if (object.comments ?? 0) > 0}
             <div class="float-left">
               <CommentsPresenter value={object} />
+            </div>
+          {/if}
+          {#if (object.todoItems ?? 0) > 0}
+            <div class="float-left">
+              <CheckListsPresenter value={object} />
             </div>
           {/if}
         </div>

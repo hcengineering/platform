@@ -45,7 +45,7 @@
   }
 
   onMount(() => {
-    (document.activeElement as HTMLElement)?.blur()
+    ;(document.activeElement as HTMLElement)?.blur()
   })
 </script>
 

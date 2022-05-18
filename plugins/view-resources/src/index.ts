@@ -47,7 +47,7 @@ import DocAttributeBar from './components/DocAttributeBar.svelte'
 import ViewletSetting from './components/ViewletSetting.svelte'
 import TableBrowser from './components/TableBrowser.svelte'
 
-export { getActions } from './actions'
+export { getActions, invokeAction } from './actions'
 export { default as ActionContext } from './components/ActionContext.svelte'
 export { default as ActionHandler } from './components/ActionHandler.svelte'
 export { default as ContextMenu } from './components/Menu.svelte'

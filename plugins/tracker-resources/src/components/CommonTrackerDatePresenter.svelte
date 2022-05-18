@@ -16,18 +16,17 @@
   import { Timestamp } from '@anticrm/core'
   import { DatePresenter, Tooltip, getDaysDifference } from '@anticrm/ui'
   import DueDatePopup from './DueDatePopup.svelte'
+  import { getDueDateIconModifier } from '../utils'
 
   export let dateMs: number | null = null
   export let shouldRender: boolean = true
   export let onDateChange: (newDate: number | null) => void
 
-  const WARNING_DAYS = 7
-
   $: today = new Date(new Date(Date.now()).setHours(0, 0, 0, 0))
   $: isOverdue = dateMs !== null && dateMs < today.getTime()
   $: dueDate = dateMs === null ? null : new Date(dateMs)
   $: daysDifference = dueDate === null ? null : getDaysDifference(today, dueDate)
-  $: iconModifier = getIconModifier(isOverdue, daysDifference)
+  $: iconModifier = getDueDateIconModifier(isOverdue, daysDifference)
   $: formattedDate = !dateMs ? '' : new Date(dateMs).toLocaleString('default', { month: 'short', day: 'numeric' })
 
   const handleDueDateChanged = async (event: CustomEvent<Timestamp>) => {
@@ -38,20 +37,6 @@
     }
 
     onDateChange(newDate)
-  }
-
-  const getIconModifier = (isOverdue: boolean, daysDifference: number | null) => {
-    if (isOverdue) {
-      return 'overdue' as 'overdue' // Fixes `DatePresenter` icon type issue
-    }
-
-    if (daysDifference === 0) {
-      return 'critical' as 'critical'
-    }
-
-    if (daysDifference !== null && daysDifference <= WARNING_DAYS) {
-      return 'warning' as 'warning'
-    }
   }
 </script>
 

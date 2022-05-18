@@ -14,7 +14,7 @@
 //
 
 import core from '@anticrm/core'
-import chunter, { ChunterSpace, Channel, ChunterMessage, Message, ThreadMessage } from '@anticrm/chunter'
+import chunter, { ChunterSpace, Channel, ChunterMessage, Message, ThreadMessage, DirectMessage } from '@anticrm/chunter'
 import { NotificationClientImpl } from '@anticrm/notification-resources'
 import { Resources } from '@anticrm/platform'
 import preference from '@anticrm/preference'
@@ -37,6 +37,7 @@ import EditChannel from './components/EditChannel.svelte'
 import ThreadView from './components/ThreadView.svelte'
 import Threads from './components/Threads.svelte'
 import SavedMessages from './components/SavedMessages.svelte'
+import ConvertDmToPrivateChannelModal from './components/ConvertDmToPrivateChannel.svelte'
 
 import { getDmName } from './utils'
 
@@ -135,6 +136,13 @@ async function UnarchiveChannel (channel: Channel): Promise<void> {
   )
 }
 
+async function ConvertDmToPrivateChannel (dm: DirectMessage): Promise<void> {
+  showPopup(ConvertDmToPrivateChannelModal, {
+    label: chunter.string.ConvertToPrivate,
+    dm
+  })
+}
+
 export async function AddMessageToSaved (message: ChunterMessage): Promise<void> {
   const client = getClient()
 
@@ -185,6 +193,7 @@ export default async (): Promise<Resources> => ({
     PinMessage,
     UnpinMessage,
     ArchiveChannel,
-    UnarchiveChannel
+    UnarchiveChannel,
+    ConvertDmToPrivateChannel
   }
 })

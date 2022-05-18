@@ -278,6 +278,22 @@ export function createModel (builder: Builder): void {
     chunter.action.UnarchiveChannel
   )
 
+  createAction(
+    builder,
+    {
+      action: chunter.actionImpl.ConvertDmToPrivateChannel,
+      label: chunter.string.ConvertToPrivate,
+      icon: chunter.icon.Lock,
+      input: 'focus',
+      category: chunter.category.Chunter,
+      target: chunter.class.DirectMessage,
+      context: {
+        mode: 'context'
+      }
+    },
+    chunter.action.ConvertToPrivate
+  )
+
   builder.createDoc(
     workbench.class.Application,
     core.space.Model,
