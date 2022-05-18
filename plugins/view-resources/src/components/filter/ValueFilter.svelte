@@ -60,10 +60,13 @@
   $: getValues(search)
 
   async function getValues (search: string): Promise<void> {
-    const resultQuery = {
-      [filter.key.key]: { $like: '%' + search + '%' },
-      ...query
-    }
+    const resultQuery =
+      search !== ''
+        ? {
+            [filter.key.key]: { $like: '%' + search + '%' },
+            ...query
+          }
+        : query
     const res = await client.findAll(_class, resultQuery)
     values = new Set(res.map((obj) => getObjectValue(filter.key.key, obj)))
   }

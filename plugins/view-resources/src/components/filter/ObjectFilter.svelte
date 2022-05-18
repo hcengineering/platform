@@ -64,10 +64,13 @@
 
   async function getValues (search: string): Promise<void> {
     const attrib = await promise
-    const resultQuery = {
-      [attrib.sortingKey]: { $like: '%' + search + '%' },
-      ...query
-    }
+    const resultQuery =
+      search !== ''
+        ? {
+            [attrib.sortingKey]: { $like: '%' + search + '%' },
+            ...query
+          }
+        : query
     const res = await client.findAll(_class, resultQuery, { lookup })
     const objects = []
     const set: Set<any> = new Set<any>()

@@ -51,7 +51,7 @@
       FilterTypePopup,
       {
         _class,
-        makeQuery: (key: string) => makeQuery(filters, key),
+        makeQuery: (key: string) => makeQuery(query, filters, key),
         target,
         onChange
       },
@@ -64,7 +64,7 @@
     filters = filters
   }
 
-  function makeQuery (filters: Filter[], skipKey?: string): DocumentQuery<Doc> {
+  function makeQuery (query: DocumentQuery<Doc>, filters: Filter[], skipKey?: string): DocumentQuery<Doc> {
     const newQuery = hierarchy.clone(query)
     for (let i = 0; i < filters.length; i++) {
       const filter = filters[i]
@@ -72,7 +72,40 @@
       if (newQuery[filter.key.key] === undefined) {
         newQuery[filter.key.key] = filter.mode.result(filter.value)
       } else {
-        Object.assign(newQuery[filter.key.key], filter.mode.result(filter.value))
+        const newValue = filter.mode.result(filter.value)
+        let merged = false
+        for (const key in newValue) {
+          if (newQuery[filter.key.key][key] === undefined) {
+            newQuery[filter.key.key][key] = newValue[key]
+            merged = true
+            continue
+          }
+          if (key === '$in') {
+            newQuery[filter.key.key][key] = newQuery[filter.key.key][key].filter((p: any) => newValue[key].includes(p))
+            merged = true
+            continue
+          }
+          if (key === '$nin') {
+            newQuery[filter.key.key][key] = [...newQuery[filter.key.key][key], ...newValue[key]]
+            merged = true
+            continue
+          }
+          if (key === '$lt') {
+            newQuery[filter.key.key][key] =
+              newQuery[filter.key.key][key] < newValue[key] ? newQuery[filter.key.key][key] : newValue[key]
+            merged = true
+            continue
+          }
+          if (key === '$gt') {
+            newQuery[filter.key.key][key] =
+              newQuery[filter.key.key][key] > newValue[key] ? newQuery[filter.key.key][key] : newValue[key]
+            merged = true
+            continue
+          }
+        }
+        if (!merged) {
+          Object.assign(newQuery[filter.key.key], filter.mode.result(filter.value))
+        }
       }
     }
     if (skipKey === undefined) {
@@ -81,21 +114,21 @@
     return newQuery
   }
 
-  $: makeQuery(filters)
+  $: makeQuery(query, filters)
 
   $: clazz = hierarchy.getClass(_class)
   $: visible = hierarchy.hasMixin(clazz, view.mixin.ClassFilters)
 </script>
 
 {#if visible}
-  <div class="flex p-4">
+  <div class="flex pl-4 pr-4">
     {#each filters as filter, i}
       <FilterSection
         {_class}
-        query={makeQuery(filters, filter.key.key)}
+        query={makeQuery(query, filters, filter.key.key)}
         {filter}
         on:change={() => {
-          makeQuery(filters)
+          makeQuery(query, filters)
         }}
         on:remove={() => {
           remove(i)
