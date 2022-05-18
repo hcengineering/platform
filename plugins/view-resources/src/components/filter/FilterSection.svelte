@@ -27,7 +27,7 @@
   const dispatch = createEventDispatcher()
 
   function toggle () {
-    const modes = filter.modes.filter((p) => p.isAvaible(filter.value))
+    const modes = filter.modes.filter((p) => p.isAvailable(filter.value))
     current++
     filter.mode = modes[current % modes.length]
     dispatch('change')

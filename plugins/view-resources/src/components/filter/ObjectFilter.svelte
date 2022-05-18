@@ -36,27 +36,26 @@
   filter.modes = [
     {
       label: view.string.FilterIs,
-      isAvaible: (res: any[]) => res.length <= 1,
+      isAvailable: (res: any[]) => res.length <= 1,
       result: (res: any[]) => {
         return { $in: res }
       }
     },
     {
       label: view.string.FilterIsEither,
-      isAvaible: (res: any[]) => res.length > 1,
+      isAvailable: (res: any[]) => res.length > 1,
       result: (res: any[]) => {
         return { $in: res }
       }
     },
     {
       label: view.string.FilterIsNot,
-      isAvaible: () => true,
+      isAvailable: () => true,
       result: (res: any[]) => {
         return { $nin: res }
       }
     }
   ]
-  filter.mode = filter.modes[0]
 
   let values: Set<Doc> = new Set<Doc>()
 
@@ -88,8 +87,8 @@
   }
 
   function checkMode () {
-    if (filter.mode?.isAvaible(filter.value)) return
-    const newMode = filter.modes.find((p) => p.isAvaible(filter.value))
+    if (filter.mode?.isAvailable(filter.value)) return
+    const newMode = filter.modes.find((p) => p.isAvailable(filter.value))
     filter.mode = newMode !== undefined ? newMode : filter.mode
   }
 

@@ -25,6 +25,8 @@
   const MINUTE = SECOND * 60
   const HOUR = MINUTE * 60
   const DAY = HOUR * 24
+  const MONTH = DAY * 30
+  const YEAR = MONTH * 12
 
   let time: string = ''
 
@@ -35,8 +37,12 @@
       time = await translate(ui.string.Minutes, { minutes: Math.floor(passed / MINUTE) })
     } else if (passed < DAY) {
       time = await translate(ui.string.Hours, { hours: Math.floor(passed / HOUR) })
-    } else {
+    } else if (passed < MONTH) {
       time = await translate(ui.string.Days, { days: Math.floor(passed / DAY) })
+    } else if (passed < YEAR) {
+      time = await translate(ui.string.Months, { months: Math.floor(passed / MONTH) })
+    } else {
+      time = await translate(ui.string.Years, { years: Math.floor(passed / YEAR) })
     }
   }
 

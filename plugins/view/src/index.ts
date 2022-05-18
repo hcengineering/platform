@@ -51,7 +51,7 @@ export interface KeyFilter {
  */
 export interface FilterMode {
   label: IntlString
-  isAvaible: (values: any[]) => boolean
+  isAvailable: (values: any[]) => boolean
   result: (values: any[]) => ObjQueryType<any>
 }
 

@@ -43,6 +43,8 @@
     "FilterIs": "is",
     "FilterIsNot": "is not",
     "FilterIsEither": "is either of",
-    "FilterStatesCount": "{value, plural, =1 {1 state} other {# states}}"
+    "FilterStatesCount": "{value, plural, =1 {1 state} other {# states}}",
+    "Before": "Before",
+    "After": "After"
   }
 }

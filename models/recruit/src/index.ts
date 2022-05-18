@@ -473,11 +473,11 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(recruit.mixin.Candidate, core.class.Class, view.mixin.ClassFilters, {
-    filters: ['title', 'source', 'city']
+    filters: ['title', 'source', 'city', 'modifiedOn']
   })
 
   builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.ClassFilters, {
-    filters: ['attachedTo', 'assignee']
+    filters: ['attachedTo', 'assignee', 'modifiedOn']
   })
 
   createReviewModel(builder)
