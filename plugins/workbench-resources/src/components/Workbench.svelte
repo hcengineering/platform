@@ -141,7 +141,7 @@
     }
 
     if (currentSpecial === undefined || currentSpecial !== space) {
-      const newSpecial = getSpecialComponent(space)
+      const newSpecial = space !== undefined ? getSpecialComponent(space) : undefined
       if (newSpecial !== undefined) {
         clear(2)
         specialComponent = newSpecial
