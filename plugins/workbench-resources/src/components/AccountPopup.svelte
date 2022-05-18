@@ -121,9 +121,10 @@
           <Label label={setting.string.SelectWorkspace} />
         </button>
         <button class="menu-item" on:click={inviteWorkspace}>
-          <div class="ml-6">
-            <Label label={setting.string.InviteWorkspace} />
+          <div class="mr-2">
+            <Icon icon={login.icon.InviteWorkspace} size={'small'} />
           </div>
+          <Label label={setting.string.InviteWorkspace} />
         </button>
         <button class="menu-item" on:click={signOut}>
           <div class="mr-2">

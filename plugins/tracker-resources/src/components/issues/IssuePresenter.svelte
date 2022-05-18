@@ -27,13 +27,13 @@
 
   $: issueName = `${currentTeam.identifier}-${value.number}`
 
-  const handleIssueEditorOpened = () => {
+  const handleIssuePreviewOpened = () => {
     showPanel(tracker.component.EditIssue, value._id, value._class, 'content')
   }
 </script>
 
 {#if value && shortLabel}
-  <div class="flex-presenter issuePresenterRoot" class:inline-presenter={inline} on:click={handleIssueEditorOpened}>
+  <div class="flex-presenter issuePresenterRoot" class:inline-presenter={inline} on:click={handleIssuePreviewOpened}>
     <div class="icon">
       <Icon icon={tracker.icon.Issue} size={'small'} />
     </div>

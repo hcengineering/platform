@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Ref } from '@anticrm/core'
-  import { createQuery, getClient, UserBox } from '@anticrm/presentation'
+  import { createQuery, getClient, UserBox, MessageBox } from '@anticrm/presentation'
   import type { TodoItem } from '@anticrm/task'
   import task from '@anticrm/task'
   import { Button, CheckBox, TextAreaEditor, Icon, IconMoreH, Progress, showPopup } from '@anticrm/ui'
@@ -40,13 +40,25 @@
     if (!value) {
       return
     }
-    client.removeCollection(
-      value._class,
-      value.space,
-      value._id,
-      value.attachedTo,
-      value.attachedToClass,
-      value.collection
+    showPopup(
+      MessageBox,
+      {
+        label: board.string.DeleteChecklist,
+        message: board.string.DeleteChecklistConfirm
+      },
+      undefined,
+      (result?: boolean) => {
+        if (result === true) {
+          client.removeCollection(
+            value._class,
+            value.space,
+            value._id,
+            value.attachedTo,
+            value.attachedToClass,
+            value.collection
+          )
+        }
+      }
     )
   }
 
@@ -68,18 +80,14 @@
     await client.addCollection(task.class.TodoItem, value.space, value._id, value._class, 'items', item)
   }
 
-  function updateName (event: CustomEvent<string>) {
-    isEditingName = false
-    const name = event.detail
-    if (name !== undefined && name.length > 0 && name !== value.name) {
-      value.name = name
-      client.update(value, { name: value.name })
-    }
+  function updateItemName (item: TodoItem, name: string) {
+    if (name === undefined || name.length === 0 || name === item.name) return
+    client.update(item, { name })
   }
 
-  function updateItemName (item: TodoItem, name: string) {
-    if (name === undefined || name.length === 0 || name === value.name) return
-    client.update(item, { name })
+  function updateName (event: CustomEvent<string>) {
+    isEditingName = false
+    updateItemName(value, event.detail)
   }
 
   function updateItemAssignee (item: TodoItem, assignee: Ref<Employee>) {

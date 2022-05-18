@@ -15,7 +15,7 @@
 <script lang="ts">
   import type { Attachment } from '@anticrm/attachment'
   import { getResource } from '@anticrm/platform'
-  import { showPopup, ActionIcon, IconMoreH, Menu, Icon } from '@anticrm/ui'
+  import { showPopup, ActionIcon, IconMoreH, Menu } from '@anticrm/ui'
   import { Action } from '@anticrm/view'
   import { getFileUrl } from '@anticrm/presentation'
 
@@ -55,19 +55,9 @@
   }
 </script>
 
-<div class="actions">
-  <a class="downloadButton" href={getFileUrl(attachment.file)} download={attachment.name} on:click|stopPropagation>
-    <Icon icon={FileDownload} size={'small'} />
+<div class="flex">
+  <a class="mr-1" href={getFileUrl(attachment.file)} download={attachment.name} on:click|stopPropagation>
+    <ActionIcon icon={FileDownload} size={'small'} action={() => {}} />
   </a>
   <ActionIcon icon={IconMoreH} size={'small'} action={showMenu} />
 </div>
-
-<style lang="scss">
-  .actions {
-    display: flex;
-  }
-
-  .downloadButton {
-    margin-right: 0.2rem;
-  }
-</style>
