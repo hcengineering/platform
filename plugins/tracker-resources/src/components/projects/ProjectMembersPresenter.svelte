@@ -41,7 +41,16 @@
       return
     }
 
-    await client.update(value, { members: result })
+    const memberToPull = value.members.filter((x) => !result.includes(x))[0]
+    const memberToPush = result.filter((x) => !value.members.includes(x))[0]
+
+    if (memberToPull) {
+      await client.update(value, { $pull: { members: memberToPull } })
+    }
+
+    if (memberToPush) {
+      await client.update(value, { $push: { members: memberToPush } })
+    }
   }
 
   const handleProjectMembersEditorOpened = async (event: MouseEvent) => {
