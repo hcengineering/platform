@@ -33,7 +33,7 @@
     class="content flex-center buttonContainer cursor-pointer"
     on:click={() => {
       closeTooltip()
-      showPopup(PDFViewer, { file: value.file, name: value.name, contentType: value.type }, 'right')
+      showPopup(PDFViewer, { file: value.file, name: value.name, contentType: value.type }, 'float')
     }}
   >
     <img src={getFileUrl(value.file)} alt={value.name} />

@@ -25,6 +25,7 @@
     "GotoLeadApplication": "Switch to Lead Application",
     "IssueDescriptionPlaceholder": "Add description...",
     "CreateCustomer": "Create Customer",
-    "CreateCustomerLabel": "New Customer"
+    "CreateCustomerLabel": "New Customer",
+    "NoLeadsForDocument": "No leads for document"
   }
 }

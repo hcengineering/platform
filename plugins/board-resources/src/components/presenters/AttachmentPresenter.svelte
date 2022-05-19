@@ -45,7 +45,7 @@
 
   function handleClick () {
     closeTooltip()
-    showPopup(PDFViewer, { file: value.file, name: value.name, contentType: value.type }, 'right')
+    showPopup(PDFViewer, { file: value.file, name: value.name, contentType: value.type }, 'float')
   }
 </script>
 
