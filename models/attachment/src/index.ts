@@ -64,6 +64,10 @@ export function createModel (builder: Builder): void {
     presenter: attachment.component.AttachmentPresenter
   })
 
+  builder.mixin(attachment.class.Attachment, core.class.Class, view.mixin.CollectionPresenter, {
+    presenter: attachment.component.AttachmentsPresenter
+  })
+
   builder.mixin(attachment.class.Attachment, core.class.Class, view.mixin.CollectionEditor, {
     editor: attachment.component.Attachments
   })

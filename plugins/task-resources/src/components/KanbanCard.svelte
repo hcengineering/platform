@@ -64,12 +64,12 @@
     <div class="flex-row-center">
       {#if (object.attachments ?? 0) > 0}
         <div class="step-lr75">
-          <AttachmentsPresenter value={object} />
+          <AttachmentsPresenter value={object.attachments} {object} />
         </div>
       {/if}
       {#if (object.comments ?? 0) > 0}
         <div class="step-lr75">
-          <CommentsPresenter value={object} />
+          <CommentsPresenter value={object.comments} {object} />
         </div>
       {/if}
     </div>

@@ -41,7 +41,7 @@
         <span class="content-accent-color">{message.sender}</span>
       </div>
       <div class="dark-color flex">
-        <AttachmentsPresenter value={message} />
+        <AttachmentsPresenter value={message.attachments} object={message} />
         <span class="content-accent-color">{getTime(message.sendOn)}</span>
       </div>
     </div>

@@ -233,7 +233,7 @@ export class TProject extends TDoc implements Project {
   @Prop(Collection(tracker.class.Document), tracker.string.Document)
   documents!: number
 
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments)
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, undefined, attachment.string.Files)
   attachments?: number
 
   @Prop(TypeDate(true), tracker.string.Project)

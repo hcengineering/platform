@@ -59,7 +59,7 @@ export class TContact extends TDoc implements Contact {
   @Prop(Collection(contact.class.Channel), contact.string.ContactInfo)
   channels?: number
 
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments)
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, undefined, attachment.string.Files)
   attachments?: number
 
   @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
@@ -164,12 +164,7 @@ export function createModel (builder: Builder): void {
       '',
       { key: '$lookup._class.label', label: contact.string.TypeLabel },
       'city',
-      {
-        key: '',
-        presenter: attachment.component.AttachmentsPresenter,
-        label: attachment.string.Files,
-        sortingKey: 'attachments'
-      },
+      'attachments',
       'modifiedOn',
       { key: '', presenter: view.component.RolePresenter, label: view.string.Role },
       '$lookup.channels'

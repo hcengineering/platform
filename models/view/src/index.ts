@@ -28,6 +28,7 @@ import type {
   BuildModelKey,
   ClassFilters,
   CollectionEditor,
+  CollectionPresenter,
   HTMLPresenter,
   IgnoreActions,
   KeyBinding,
@@ -92,6 +93,11 @@ export class TAttributeFilter extends TClass implements AttributeFilter {
 @Mixin(view.mixin.AttributeEditor, core.class.Class)
 export class TAttributeEditor extends TClass implements AttributeEditor {
   editor!: AnyComponent
+}
+
+@Mixin(view.mixin.CollectionPresenter, core.class.Class)
+export class TCollectionPresenter extends TClass implements CollectionPresenter {
+  presenter!: AnyComponent
 }
 
 @Mixin(view.mixin.CollectionEditor, core.class.Class)
@@ -242,6 +248,7 @@ export function createModel (builder: Builder): void {
     TAttributeEditor,
     TAttributePresenter,
     TCollectionEditor,
+    TCollectionPresenter,
     TObjectEditor,
     TViewletPreference,
     TViewletDescriptor,
