@@ -13,15 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class,Doc,DocumentQuery,Ref } from '@anticrm/core'
   import { Filter } from '@anticrm/view'
-import { onMount } from 'svelte';
   import { createEventDispatcher } from 'svelte'
   import view from '../../plugin'
   import TimestampPresenter from '../TimestampPresenter.svelte'
 
-  export let _class: Ref<Class<Doc>>
-  export let query: DocumentQuery<Doc>
   export let filter: Filter
   export let onChange: (e: Filter) => void
 
