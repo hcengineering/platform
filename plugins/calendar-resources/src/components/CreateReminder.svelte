@@ -16,7 +16,7 @@
   import contact, { Employee, EmployeeAccount } from '@anticrm/contact'
   import { Class, Doc, getCurrentAccount, Ref } from '@anticrm/core'
   import { Card, getClient, UserBoxList } from '@anticrm/presentation'
-  import { TimeShiftPicker, Grid, StylishEdit } from '@anticrm/ui'
+  import { DateOrShift, TimeShiftPicker, Grid, StylishEdit } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import calendar from '../plugin'
 
@@ -24,7 +24,7 @@
   export let attachedToClass: Ref<Class<Doc>>
   export let title: string = ''
 
-  let shift = 30 * 60 * 1000
+  let value: DateOrShift = { shift: 30 * 60 * 1000 }
   const currentUser = getCurrentAccount() as EmployeeAccount
   let participants: Ref<Employee>[] = [currentUser.employee]
   const space = calendar.space.PersonalEvents
@@ -37,7 +37,7 @@
   }
 
   async function saveReminder () {
-    const date = new Date().getTime() + shift
+    const date = value.date !== undefined ? new Date(value.date).getTime() : new Date().getTime() + value.shift
     const _id = await client.createDoc(calendar.class.Event, space, {
       attachedTo,
       attachedToClass,
@@ -58,7 +58,10 @@
 <Card
   label={calendar.string.CreateReminder}
   okAction={saveReminder}
-  canSave={title !== undefined && title.trim().length > 0 && participants.length > 0}
+  canSave={title !== undefined &&
+    title.trim().length > 0 &&
+    participants.length > 0 &&
+    (value.date !== undefined || value.shift !== undefined)}
   on:close={() => {
     dispatch('close')
   }}
@@ -66,7 +69,7 @@
   <Grid column={1} rowGap={1.75}>
     <StylishEdit bind:value={title} label={calendar.string.Title} />
     <div class="antiComponentBox">
-      <TimeShiftPicker title={calendar.string.Date} bind:value={shift} direction="after" />
+      <TimeShiftPicker title={calendar.string.Date} bind:value direction="after" />
     </div>
     <UserBoxList
       _class={contact.class.Employee}

@@ -38,6 +38,7 @@ export default plugin(uiId, {
     SearchDots: '' as IntlString,
     Suggested: '' as IntlString,
     TimeTooltip: '' as IntlString,
+    SelectDate: '' as IntlString,
     None: '' as IntlString,
     NotSelected: '' as IntlString,
     Today: '' as IntlString,
