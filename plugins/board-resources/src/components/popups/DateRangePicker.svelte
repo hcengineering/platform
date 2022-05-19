@@ -1,7 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import { Label, Button, DateRangePresenter, CheckBox, Component } from '@anticrm/ui'
-  import { Card, CardDate } from '@anticrm/board'
+  import { Card } from '@anticrm/board'
   import calendar from '@anticrm/calendar'
   import board from '../../plugin'
   import { getClient } from '@anticrm/presentation'
@@ -11,24 +11,20 @@
   const client = getClient()
   const dispatch = createEventDispatcher()
 
-  let startDate = value.date?.startDate
-  let savedStartDate = value.date?.startDate ?? Date.now()
+  let startDate = value.startDate
+  let savedStartDate = value.startDate ?? Date.now()
   let startDateEnabled = startDate !== undefined
   $: startDate && (savedStartDate = startDate)
-  let dueDate = value.date?.dueDate
-  let savedDueDate = value.date?.dueDate ?? Date.now()
+  let dueDate = value.dueDate
+  let savedDueDate = value.dueDate ?? Date.now()
   let dueDateEnabled = dueDate !== undefined
   $: dueDate && (savedDueDate = dueDate)
 
-  function getEmptyDate (): CardDate {
-    return { _class: value.date?._class ?? board.class.CardDate }
-  }
-
   function update () {
-    const date: CardDate = getEmptyDate()
+    const date = {}
     if (startDate !== undefined) date.startDate = startDate
     if (dueDate !== undefined) date.dueDate = dueDate
-    client.update(value, { date })
+    client.update(value, date)
   }
 </script>
 
@@ -82,8 +78,7 @@
       label={board.string.Remove}
       size={'small'}
       on:click={() => {
-        client.update(value, { date: getEmptyDate() })
-        dispatch('close')
+        client.update(value, { startDate: null, dueDate: null })
       }}
     />
     <Button

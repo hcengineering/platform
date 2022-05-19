@@ -47,7 +47,7 @@ export function hasCover (card: Card): boolean {
 }
 
 export function hasDate (card: Card): boolean {
-  return card.date !== undefined && (card.date.dueDate !== undefined || card.date.startDate !== undefined)
+  return card.dueDate !== undefined || card.startDate !== undefined
 }
 
 export function addCurrentUser (card: Card, client: Client): Promise<TxResult> | undefined {

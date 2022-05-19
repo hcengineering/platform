@@ -21,7 +21,7 @@
   import type { State, TodoItem } from '@anticrm/task'
   import task from '@anticrm/task'
   import { StyledTextBox } from '@anticrm/text-editor'
-  import { Button, EditBox, Icon, IconAttachment, IconMoreH, Label, showPopup } from '@anticrm/ui'
+  import { Button, EditBox, IconAdd, IconMoreH, Label, showPopup } from '@anticrm/ui'
   import { ContextMenu, invokeAction, UpDownNavigator } from '@anticrm/view-resources'
   import { createEventDispatcher, onMount } from 'svelte'
   import board from '../plugin'
@@ -31,7 +31,7 @@
   import CardActions from './editor/CardActions.svelte'
   import CardAttachments from './editor/CardAttachments.svelte'
   import CardChecklist from './editor/CardChecklist.svelte'
-  import AttachmentPicker from './popups/AttachmentPicker.svelte'
+  import AddChecklist from './popups/AddChecklist.svelte'
 
   export let _id: Ref<Card>
   export let _class: Ref<Class<Card>>
@@ -52,6 +52,10 @@
     if (object) {
       updateCard(client, object, field, value)
     }
+  }
+
+  function addChecklist (e) {
+    showPopup(AddChecklist, { value: object }, getPopupAlignment(e))
   }
 
   $: cardQuery.query(_class, { _id }, (result) => {
@@ -123,26 +127,14 @@
       />
     </svelte:fragment>
     <div class="flex-row-stretch">
-      <div class="w-9">
-        <Icon icon={board.icon.Card} size="large" />
-      </div>
       <div class="fs-title text-lg">
         <EditBox bind:value={object.title} maxWidth="39rem" focus on:change={() => change('title', object?.title)} />
       </div>
     </div>
     <div class="flex-row-stretch">
       <div class="flex-grow mr-4">
-        <div class="flex-row-stretch mt-4 mb-2">
-          <div class="w-9">
-            <Icon icon={board.icon.Card} size="large" />
-          </div>
-          <div class="fs-title">
-            <Label label={board.string.Description} />
-          </div>
-        </div>
         <div class="flex-row-stretch">
-          <div class="w-9" />
-          <div class="background-bg-accent border-bg-accent border-radius-3 p-2 w-full">
+          <div class="background-bg-accent border-bg-accent border-radius-3 p-2 mt-2 w-full">
             <StyledTextBox
               alwaysEdit={true}
               showButtons={false}
@@ -153,24 +145,17 @@
           </div>
         </div>
         <CardAttachments value={object} />
-        {#each checklists as checklist}
-          <CardChecklist value={checklist} />
-        {/each}
+        {#if checklists.length > 0}
+          {#each checklists as checklist}
+            <CardChecklist value={checklist} />
+          {/each}
+        {:else}
+          <Button icon={IconAdd} label={board.string.Checklist} kind="no-border" size="small" on:click={addChecklist} />
+        {/if}
       </div>
     </div>
-    <span slot="actions-label"><Label label={board.string.Actions} /></span>
-    <svelte:fragment slot="actions">
-      <Button
-        icon={IconAttachment}
-        title={board.string.AddAttachment}
-        width="min-content"
-        size="small"
-        kind="transparent"
-        on:click={(e) => {
-          showPopup(AttachmentPicker, { value: object }, getPopupAlignment(e))
-        }}
-      />
-    </svelte:fragment>
+    <span slot="actions-label"><Label label={board.string.Card} /></span>
+    <span slot="actions" />
     <svelte:fragment slot="custom-attributes" let:direction>
       {#if direction === 'column'}
         <CardActions bind:value={object} />
@@ -180,13 +165,3 @@
     </svelte:fragment>
   </Panel>
 {/if}
-
-<style lang="scss">
-  .state-name {
-    text-decoration: underline;
-
-    &:hover {
-      color: var(--caption-color);
-    }
-  }
-</style>

@@ -17,7 +17,7 @@
   import attachment, { Attachment } from '@anticrm/attachment'
   import type { Card } from '@anticrm/board'
   import { getClient } from '@anticrm/presentation'
-  import { Button, Icon, IconAttachment, Label, showPopup } from '@anticrm/ui'
+  import { Button, Icon, IconAdd, IconAttachment, Label, showPopup } from '@anticrm/ui'
   import AttachmentPicker from '../popups/AttachmentPicker.svelte'
   import AttachmentPresenter from '../presenters/AttachmentPresenter.svelte'
   import board from '../../plugin'
@@ -32,32 +32,36 @@
   }
 
   function addAttachment (e: Event) {
-    showPopup(AttachmentPicker, { object: value }, getPopupAlignment(e))
+    showPopup(AttachmentPicker, { value }, getPopupAlignment(e))
   }
 
   $: value?.attachments && value.attachments > 0 && fetch()
 </script>
 
-{#if value !== undefined && value.attachments !== undefined && value.attachments > 0}
-  <div class="flex-col w-full">
-    <div class="flex-row-stretch mt-4 mb-2">
-      <div class="w-9">
-        <Icon icon={IconAttachment} size="large" />
+{#if value !== undefined}
+  {#if value.attachments !== undefined && value.attachments > 0}
+    <div class="flex-col w-full">
+      <div class="flex-row-stretch mt-4 mb-2">
+        <div class="w-9">
+          <Icon icon={IconAttachment} size="large" />
+        </div>
+        <div class="flex-grow fs-title">
+          <Label label={board.string.Attachments} />
+        </div>
       </div>
-      <div class="flex-grow fs-title">
-        <Label label={board.string.Attachments} />
-      </div>
-    </div>
-    <div class="flex-row-stretch">
-      <div class="w-9" />
-      <div class="flex-col flex-gap-1 w-full">
-        {#each attachments as attach}
-          <AttachmentPresenter value={attach} />
-        {/each}
-        <div class="mt-2">
-          <Button label={board.string.AddAttachment} kind="no-border" on:click={addAttachment} />
+      <div class="flex-row-stretch">
+        <div class="w-9" />
+        <div class="flex-col flex-gap-1 w-full">
+          {#each attachments as attach}
+            <AttachmentPresenter value={attach} />
+          {/each}
+          <div class="mt-2">
+            <Button icon={IconAdd} label={board.string.Attachments} kind="no-border" on:click={addAttachment} />
+          </div>
         </div>
       </div>
     </div>
-  </div>
+  {:else}
+    <Button icon={IconAdd} label={board.string.Attachments} kind="no-border" on:click={addAttachment} />
+  {/if}
 {/if}

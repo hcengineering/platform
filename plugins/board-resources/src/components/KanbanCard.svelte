@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import { AttachmentDroppable, AttachmentsPresenter } from '@anticrm/attachment-resources'
-  import type { Card, CardDate } from '@anticrm/board'
+  import type { Card } from '@anticrm/board'
   import { CommentsPresenter } from '@anticrm/chunter-resources'
   import contact, { Employee } from '@anticrm/contact'
   import type { Ref, WithLookup } from '@anticrm/core'
@@ -60,9 +60,6 @@
     updateCardMembers(object, client, e.detail)
   }
 
-  function updateDate (e: CustomEvent<CardDate>) {
-    client.update(object, { date: e.detail })
-  }
   $: coverBackground = object.cover?.color ? `background-color: ${numberToHexColor(object.cover.color)}` : ''
 </script>
 
@@ -172,9 +169,9 @@
       </div>
       <div class="flex-between mb-1" style:pointer-events={dragoverAttachment ? 'none' : 'all'}>
         <div class="float-left-box">
-          {#if object.date && hasDate(object)}
+          {#if object && hasDate(object)}
             <div class="float-left ml-1">
-              <DatePresenter value={object.date} size="x-small" on:update={updateDate} />
+              <DatePresenter value={object} size="x-small" />
             </div>
           {/if}
           {#if (object.attachments ?? 0) > 0}

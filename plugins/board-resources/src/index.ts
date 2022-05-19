@@ -26,7 +26,6 @@ import CardLabelsPopup from './components/popups/CardLabelsPopup.svelte'
 import MoveCard from './components/popups/MoveCard.svelte'
 import CopyCard from './components/popups/CopyCard.svelte'
 import DateRangePicker from './components/popups/DateRangePicker.svelte'
-import CardDatePresenter from './components/presenters/DatePresenter.svelte'
 import CardLabelPresenter from './components/presenters/LabelPresenter.svelte'
 import TemplatesIcon from './components/TemplatesIcon.svelte'
 import BoardHeader from './components/BoardHeader.svelte'
@@ -45,7 +44,6 @@ export default async (): Promise<Resources> => ({
     EditCard,
     KanbanCard,
     CardPresenter,
-    CardDatePresenter,
     CardLabelPresenter,
     TemplatesIcon,
     KanbanView,

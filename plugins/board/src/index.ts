@@ -15,7 +15,7 @@
 //
 
 import { Employee } from '@anticrm/contact'
-import type { AttachedDoc, Class, Doc, Markup, Ref, Timestamp, Obj } from '@anticrm/core'
+import type { AttachedDoc, Class, Doc, Markup, Ref, Timestamp } from '@anticrm/core'
 import type { Asset, IntlString, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import type { Preference } from '@anticrm/preference'
@@ -52,15 +52,6 @@ export interface CardLabel extends AttachedDoc {
 /**
  * @public
  */
-export interface CardDate extends Obj {
-  dueDate?: Timestamp
-  isChecked?: boolean
-  startDate?: Timestamp
-}
-
-/**
- * @public
- */
 export interface CardCover {
   color?: number
   image?: string
@@ -73,7 +64,8 @@ export interface CardCover {
 export interface Card extends Task {
   title: string
 
-  date?: CardDate
+  dueDate: Timestamp | null
+  startDate: Timestamp | null
   description: Markup
 
   isArchived?: boolean
@@ -120,7 +112,6 @@ const boards = plugin(boardId, {
   class: {
     Board: '' as Ref<Class<Board>>,
     Card: '' as Ref<Class<Card>>,
-    CardDate: '' as Ref<Class<CardDate>>,
     CardLabel: '' as Ref<Class<CardLabel>>,
     MenuPage: '' as Ref<Class<MenuPage>>,
     LabelsCompactMode: '' as Ref<Class<LabelsCompactMode>>

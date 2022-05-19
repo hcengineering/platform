@@ -14,36 +14,27 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Card, CardDate } from '@anticrm/board'
+  import type { Card } from '@anticrm/board'
   import board from '@anticrm/board'
   import { getClient } from '@anticrm/presentation'
-  import { Button, Label, IconAdd, showPopup } from '@anticrm/ui'
+  import task from '@anticrm/task'
+  import ui, { Button, CheckBox, DateRangePresenter, Label, IconAdd } from '@anticrm/ui'
   import { invokeAction } from '@anticrm/view-resources'
-  import AddChecklist from '../popups/AddChecklist.svelte'
   import plugin from '../../plugin'
-  import { getPopupAlignment } from '../../utils/PopupUtils'
   import UserBoxList from '../UserBoxList.svelte'
   import CardLabels from './CardLabels.svelte'
-  import DatePresenter from '../presenters/DatePresenter.svelte'
   import { getCardActions } from '../../utils/CardActionUtils'
   import ColorPresenter from '../presenters/ColorPresenter.svelte'
 
   export let value: Card
   const client = getClient()
 
-  let dateHandler: (e: Event) => void
   let coverHandler: (e: Event) => void
-  function updateDate (e: CustomEvent<CardDate>) {
-    client.update(value, { date: e.detail })
-  }
 
   getCardActions(client, {
-    _id: { $in: [board.action.Dates, board.action.Cover] }
+    _id: { $in: [board.action.Cover] }
   }).then(async (result) => {
     for (const action of result) {
-      if (action._id === board.action.Dates) {
-        dateHandler = (e: Event) => invokeAction(value, e, action.action, action.actionProps)
-      }
       if (action._id === board.action.Cover) {
         coverHandler = (e: Event) => invokeAction(value, e, action.action, action.actionProps)
       }
@@ -53,6 +44,12 @@
 
 {#if value}
   <div class="flex-col flex-gap-3">
+    <div class="flex-row-stretch flex-gap-1">
+      <div class="label">
+        <Label label={task.string.TaskStateDone} />
+      </div>
+      <CheckBox checked={value.doneState !== null} />
+    </div>
     <div class="flex-row-stretch flex-gap-1">
       <div class="label">
         <Label label={plugin.string.Members} />
@@ -67,11 +64,28 @@
     </div>
     <div class="flex-row-stretch flex-gap-1">
       <div class="label">
-        <Label label={plugin.string.Dates} />
+        <Label label={ui.string.StartDate} />
       </div>
-      {#key value.date}
-        <DatePresenter value={value.date ?? {}} on:click={dateHandler} on:update={updateDate} />
-      {/key}
+      <DateRangePresenter
+        value={value.startDate}
+        editable={true}
+        withTime={false}
+        on:change={(e) => {
+          console.log(e)
+          client.update(value, { startDate: e.detail })
+        }}
+      />
+    </div>
+    <div class="flex-row-stretch flex-gap-1">
+      <div class="label">
+        <Label label={ui.string.DueDate} />
+      </div>
+      <DateRangePresenter
+        value={value.dueDate}
+        editable={true}
+        withTime={false}
+        on:change={(e) => client.update(value, { dueDate: e.detail })}
+      />
     </div>
     <div class="flex-row-stretch flex-gap-1">
       <div class="label">
@@ -83,14 +97,5 @@
         <ColorPresenter value={value.cover.color} on:click={coverHandler} />
       {/if}
     </div>
-    <Button
-      icon={plugin.icon.Card}
-      label={plugin.string.Checklist}
-      kind="no-border"
-      justify="left"
-      on:click={(e) => {
-        showPopup(AddChecklist, { value }, getPopupAlignment(e))
-      }}
-    />
   </div>
 {/if}

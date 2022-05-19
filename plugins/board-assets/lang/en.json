@@ -36,7 +36,6 @@
     "NoColor": "No color.",
     "NoColorInfo": "This won't show up on the front of cards.",
     "Checklist": "Checklist",
-    "AddChecklistItem": "Add an item",
     "ChecklistDropdownNone": "(none)",
     "ShowDoneChecklistItems": "Show checked items ({done})",
     "HideDoneChecklistItems": "Hide checked items",
