@@ -53,6 +53,9 @@
   export function insertText (text: string): void {
     editor.commands.insertContent(text as HTMLContent)
   }
+  export function toggleBold () {
+    editor.commands.toggleBold()
+  }
   let needFocus = false
   export function focus (): void {
     needFocus = true
