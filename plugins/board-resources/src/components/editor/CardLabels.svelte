@@ -13,14 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Card, CardLabel, LabelsCompactMode } from '@anticrm/board'
-
-  import preference from '@anticrm/preference'
-  import { createQuery, getClient } from '@anticrm/presentation'
+  import type { Card, CardLabel } from '@anticrm/board'
+  import { getClient } from '@anticrm/presentation'
   import { Button, IconAdd } from '@anticrm/ui'
   import { invokeAction } from '@anticrm/view-resources'
 
   import board from '../../plugin'
+  import { commonBoardPreference } from '../../utils/BoardUtils'
   import { getCardActions } from '../../utils/CardActionUtils'
   import LabelPresenter from '../presenters/LabelPresenter.svelte'
 
@@ -28,14 +27,12 @@
   export let isInline: boolean = false
 
   const client = getClient()
-  const query = createQuery()
 
   let labels: CardLabel[]
   let labelsHandler: (e: Event) => void
   let isHovered: boolean = false
-  let modePreference: LabelsCompactMode | undefined
 
-  $: isCompact = isInline ? !!modePreference : false
+  $: isCompact = $commonBoardPreference?.cardLabelsCompactMode
 
   $: if (value.labels && value.labels.length > 0) {
     client.findAll(board.class.CardLabel, { _id: { $in: value.labels } }).then((result) => {
@@ -44,9 +41,6 @@
   } else {
     labels = []
   }
-  $: query.query(board.class.LabelsCompactMode, { attachedTo: value.space }, (result) => {
-    ;[modePreference] = result
-  })
 
   if (!isInline) {
     getCardActions(client, {
@@ -60,8 +54,7 @@
 
   function toggleCompact () {
     if (!isInline) return
-    if (modePreference) client.remove(modePreference)
-    else client.createDoc(board.class.LabelsCompactMode, preference.space.Preference, { attachedTo: value.space })
+    client.update($commonBoardPreference, { cardLabelsCompactMode: !isCompact })
   }
 
   function hoverIn () {
@@ -88,7 +81,7 @@
     {#each labels as label}
       <LabelPresenter
         value={label}
-        size={isCompact ? 'tiny' : isInline ? 'x-small' : undefined}
+        size={isInline ? (isCompact ? 'tiny' : 'x-small') : undefined}
         {isHovered}
         on:click={labelsHandler}
       />

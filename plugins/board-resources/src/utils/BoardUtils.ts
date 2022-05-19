@@ -1,7 +1,10 @@
-import board, { Board, CardLabel, Card } from '@anticrm/board'
+import { readable } from 'svelte/store'
+import board, { Board, CardLabel, Card, CommonBoardPreference } from '@anticrm/board'
 import core, { Ref, TxOperations, Space } from '@anticrm/core'
 import type { KanbanTemplate, TodoItem } from '@anticrm/task'
+import preference from '@anticrm/preference'
 import { createKanban } from '@anticrm/task'
+import { createQuery, getClient } from '@anticrm/presentation'
 import {
   hexColorToNumber,
   FernColor,
@@ -127,3 +130,13 @@ export function getDateIcon (item: TodoItem): 'normal' | 'warning' | 'overdue' {
   const dueDate = new Date(item.dueTo)
   return areDatesEqual(date, dueDate) ? 'warning' : dueDate < date ? 'overdue' : 'normal'
 }
+
+export const commonBoardPreference = readable<CommonBoardPreference>(undefined, (set) => {
+  createQuery().query(board.class.CommonBoardPreference, { attachedTo: board.app.Board }, (result) => {
+    if (result.total > 0) return set(result[0])
+    void getClient().createDoc(board.class.CommonBoardPreference, preference.space.Preference, {
+      attachedTo: board.app.Board,
+      cardLabelsCompactMode: false
+    })
+  })
+})
