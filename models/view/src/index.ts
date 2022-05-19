@@ -23,12 +23,16 @@ import type {
   Action,
   ActionCategory,
   AttributeEditor,
+  AttributeFilter,
   AttributePresenter,
   BuildModelKey,
+  ClassFilters,
   CollectionEditor,
+  CollectionPresenter,
   HTMLPresenter,
   IgnoreActions,
   KeyBinding,
+  KeyFilter,
   LinkPresenter,
   ObjectEditor,
   ObjectEditorHeader,
@@ -76,9 +80,24 @@ export function classPresenter (
   }
 }
 
+@Mixin(view.mixin.ClassFilters, core.class.Class)
+export class TClassFilters extends TClass implements ClassFilters {
+  filters!: (string | KeyFilter)[]
+}
+
+@Mixin(view.mixin.AttributeFilter, core.class.Class)
+export class TAttributeFilter extends TClass implements AttributeFilter {
+  component!: AnyComponent
+}
+
 @Mixin(view.mixin.AttributeEditor, core.class.Class)
 export class TAttributeEditor extends TClass implements AttributeEditor {
   editor!: AnyComponent
+}
+
+@Mixin(view.mixin.CollectionPresenter, core.class.Class)
+export class TCollectionPresenter extends TClass implements CollectionPresenter {
+  presenter!: AnyComponent
 }
 
 @Mixin(view.mixin.CollectionEditor, core.class.Class)
@@ -224,9 +243,12 @@ export const actionTemplates = template({
 
 export function createModel (builder: Builder): void {
   builder.createModel(
+    TClassFilters,
+    TAttributeFilter,
     TAttributeEditor,
     TAttributePresenter,
     TCollectionEditor,
+    TCollectionPresenter,
     TObjectEditor,
     TViewletPreference,
     TViewletDescriptor,
@@ -473,6 +495,26 @@ export function createModel (builder: Builder): void {
   builder.createDoc(view.class.LinkPresenter, core.space.Model, {
     pattern: '(www.)?github.com/',
     component: view.component.GithubPresenter
+  })
+
+  builder.mixin(core.class.TypeString, core.class.Class, view.mixin.AttributeFilter, {
+    component: view.component.ValueFilter
+  })
+
+  builder.mixin(core.class.TypeNumber, core.class.Class, view.mixin.AttributeFilter, {
+    component: view.component.ValueFilter
+  })
+
+  builder.mixin(core.class.TypeDate, core.class.Class, view.mixin.AttributeFilter, {
+    component: view.component.ValueFilter
+  })
+
+  builder.mixin(core.class.RefTo, core.class.Class, view.mixin.AttributeFilter, {
+    component: view.component.ObjectFilter
+  })
+
+  builder.mixin(core.class.TypeTimestamp, core.class.Class, view.mixin.AttributeFilter, {
+    component: view.component.TimestampFilter
   })
 }
 

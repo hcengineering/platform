@@ -35,6 +35,14 @@
     "ShowPreview": "Предпросмотр документа",
     "ShowActions": "Показать действия",
     "RestoreDefaults": "По умолчанию",
-    "CustomizeView": "Настроить отображение"
+    "CustomizeView": "Настроить отображение",
+    "Filter": "Фильтр",
+    "ClearFilters": "Очистить",
+    "FilterIs": "равен",
+    "FilterIsNot": "не равен",
+    "FilterIsEither": "один из",
+    "FilterStatesCount": "{value, plural, =1 {1 состоянию} other {# состояний}}",
+    "Before": "До",
+    "After": "После"
   }
 }

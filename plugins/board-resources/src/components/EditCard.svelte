@@ -88,6 +88,8 @@
     {object}
     isHeader={false}
     isAside={true}
+    isFullSize
+    on:fullsize
     on:close={() => dispatch('close')}
   >
     <svelte:fragment slot="navigator">

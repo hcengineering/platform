@@ -64,6 +64,8 @@
 <Panel
   isHeader={false}
   isAside={_class === chunter.class.Channel}
+  isFullSize
+  on:fullsize
   on:close={() => {
     dispatch('close')
   }}

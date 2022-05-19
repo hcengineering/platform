@@ -1,4 +1,4 @@
-import type { AnySvelteComponent, AnyComponent, PopupAlignment, PopupPositionElement } from './types'
+import type { AnySvelteComponent, AnyComponent, PopupAlignment, PopupPositionElement, PopupOptions } from './types'
 import { getResource } from '@anticrm/platform'
 import { writable } from 'svelte/store'
 
@@ -117,7 +117,7 @@ export function fitPopupPositionedElement (
   modalHTML: HTMLElement,
   alignment: PopupPositionElement,
   newProps: Record<string, string | number>
-): { show: boolean, direction: string } {
+): PopupOptions {
   let direction: string = ''
   const rect = alignment.getBoundingClientRect()
   const rectPopup = modalHTML.getBoundingClientRect()
@@ -159,17 +159,17 @@ export function fitPopupPositionedElement (
       direction += '|right'
     }
   }
-  return { show: false, direction }
+  return { props: newProps, showOverlay: false, direction }
 }
 
-function applyStyle (values: Record<string, string | number>, modalHTML: HTMLElement): void {
-  for (const [k, v] of Object.entries(values)) {
-    const old = (modalHTML.style as any)[k]
-    if (old !== v) {
-      ;(modalHTML.style as any)[k] = v
-    }
-  }
-}
+// function applyStyle (values: Record<string, string | number>, modalHTML: HTMLElement): void {
+//   for (const [k, v] of Object.entries(values)) {
+//     const old = (modalHTML.style as any)[k]
+//     if (old !== v) {
+//       ;(modalHTML.style as any)[k] = v
+//     }
+//   }
+// }
 
 /**
  * @public
@@ -182,7 +182,7 @@ export function fitPopupElement (
   modalHTML: HTMLElement,
   element?: PopupAlignment,
   contentPanel?: HTMLElement
-): { show: boolean, direction: string } {
+): PopupOptions {
   let show = true
   const newProps: Record<string, string | number> = {}
   if (element != null) {
@@ -192,7 +192,7 @@ export function fitPopupElement (
     newProps.maxWidth = newProps.width = newProps.minWidth = ''
     if (typeof element !== 'string') {
       const result = fitPopupPositionedElement(modalHTML, element, newProps)
-      applyStyle(newProps, modalHTML)
+      // applyStyle(newProps, modalHTML)
       return result
     } else if (element === 'right' && contentPanel !== undefined) {
       const rect = contentPanel.getBoundingClientRect()
@@ -209,13 +209,20 @@ export function fitPopupElement (
     } else if (element === 'float') {
       newProps.top = 'calc(var(--status-bar-height) + .25rem)'
       newProps.bottom = '.25rem'
-      newProps.minWidth = '40rem'
-      newProps.width = '40%'
+      newProps.left = '60%'
       newProps.right = '.25rem'
       show = true
     } else if (element === 'account') {
       newProps.bottom = '2.75rem'
       newProps.left = '5rem'
+    } else if (element === 'full' && contentPanel === undefined) {
+      newProps.top = '0'
+      newProps.bottom = '0'
+      newProps.left = '0'
+      newProps.right = '0'
+      // newProps.width = '100vw'
+      newProps.height = '100vh'
+      show = false
     } else if (element === 'full' && contentPanel !== undefined) {
       const rect = contentPanel.getBoundingClientRect()
       newProps.top = `${rect.top + 1}px`
@@ -248,8 +255,8 @@ export function fitPopupElement (
     newProps.transform = 'translate(-50%, -50%)'
     show = true
   }
-  applyStyle(newProps, modalHTML)
-  return { show, direction: '' }
+  // applyStyle(newProps, modalHTML)
+  return { props: newProps, showOverlay: show, direction: '' }
 }
 
 export function eventToHTMLElement (evt: MouseEvent): HTMLElement {

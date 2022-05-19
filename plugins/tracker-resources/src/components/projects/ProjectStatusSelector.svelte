@@ -31,12 +31,12 @@
 
   $: selectedStatusIcon = selectedProjectStatus
     ? projectStatusAssets[selectedProjectStatus].icon
-    : tracker.icon.CategoryBacklog
+    : tracker.icon.ProjectStatusBacklog
 
   $: selectedStatusLabel = shouldShowLabel
     ? selectedProjectStatus
       ? projectStatusAssets[selectedProjectStatus].label
-      : tracker.string.Planned
+      : tracker.string.Backlog
     : undefined
 
   $: statusesInfo = defaultProjectStatuses.map((s) => ({ id: s, ...projectStatusAssets[s] }))
@@ -55,12 +55,12 @@
 </script>
 
 <Button
+  {kind}
+  {size}
+  {width}
+  {justify}
+  disabled={!isEditable}
   icon={selectedStatusIcon}
   label={selectedStatusLabel}
-  {justify}
-  {width}
-  {size}
-  {kind}
-  disabled={!isEditable}
   on:click={handleProjectStatusEditorOpened}
 />

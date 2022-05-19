@@ -119,7 +119,7 @@ function getAttrs (target: any, prop: string): Record<string, any> {
  * @param icon -
  * @returns
  */
-export function Prop (type: Type<PropertyType>, label: IntlString, icon?: Asset) {
+export function Prop (type: Type<PropertyType>, label: IntlString, icon?: Asset, shortLabel?: IntlString) {
   return function (target: any, propertyKey: string): void {
     const txes = getTxes(target)
     const tx: NoIDs<TxCreateDoc<Attribute<PropertyType>>> = {
@@ -135,6 +135,7 @@ export function Prop (type: Type<PropertyType>, label: IntlString, icon?: Asset)
         type,
         label,
         icon,
+        shortLabel,
         attributeOf: txes._id, // undefined, need to fix later
         ...getAttrs(target, propertyKey)
       }

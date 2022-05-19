@@ -31,7 +31,7 @@
     label: '' as IntlString,
     description: '',
     icon: tracker.icon.Projects,
-    status: ProjectStatus.Planned,
+    status: ProjectStatus.Backlog,
     lead: null,
     members: [],
     comments: 0,

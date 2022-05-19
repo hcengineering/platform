@@ -7,6 +7,8 @@
     "Minutes": "{minutes, plural, =0 {less than a minute ago} =1 {a minute ago} other {# minutes ago}}",
     "Hours": "{hours, plural, =0 {less than an hour ago} =1 {an hour ago} other {# hours ago}}",
     "Days": "{days, plural, =0 {today} =1 {yesterday} other {# days ago}}",
+    "Months": "{months, plural, =0 {this month} =1 {a month aago} other {# months ago}}",
+    "Years": "{years, plural, =0 {this year} =1 {a year ago} other {# years ago}}",
     "ShowMore": "Show more",
     "ShowLess": "Show less",
     "Search": "Search",

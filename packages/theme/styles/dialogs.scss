@@ -13,51 +13,6 @@
 // limitations under the License.
 //
 
-/* Dialogs */
-.antiDialogs {
-  overflow: hidden;
-  position: fixed;
-  top: 32px;
-  bottom: 1.25rem;
-  left: 50%;
-  right: 1rem;
-
-  height: calc(100% - 32px - 1.25rem);
-  background: var(--popup-bg-color);
-  border-radius: .5rem;
-
-  &.fullSize {
-    flex-direction: row;
-    left: 1rem;
-  }
-
-  .ac-header.divide { border-bottom: 1px solid var(--theme-card-divider); }
-
-  .ad-section-50 {
-    display: flex;
-    flex-direction: column;
-    flex-basis: 50%;
-    min-height: 0;
-    width: 50%;
-
-    &.divide { border-right: 1px solid var(--theme-card-divider); }
-  }
-
-  .ad-tools {
-    position: absolute;
-    display: flex;
-    top: 1.375rem;
-    right: 2rem;
-  }
-  .tool {
-    margin-left: 1rem;
-    color: var(--theme-content-accent-color);
-    cursor: pointer;
-
-    &:hover { color: var(--theme-caption-color); }
-  }
-}
-
 /* Overlays */
 .antiOverlay {
   position: fixed;

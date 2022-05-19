@@ -43,7 +43,7 @@ import AssignedTasks from './components/AssignedTasks.svelte'
 import task from './plugin'
 
 async function editStatuses (object: SpaceWithStates): Promise<void> {
-  showPopup(EditStatuses, { _id: object._id, spaceClass: object._class }, 'right')
+  showPopup(EditStatuses, { _id: object._id, spaceClass: object._class }, 'float')
 }
 
 export async function queryTask<D extends Task> (

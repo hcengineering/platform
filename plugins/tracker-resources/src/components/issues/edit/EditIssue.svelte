@@ -18,7 +18,18 @@
   import { Panel } from '@anticrm/panel'
   import presentation, { createQuery, getClient, MessageViewer } from '@anticrm/presentation'
   import type { Issue, IssueStatus, Team } from '@anticrm/tracker'
-  import { Button, EditBox, IconDownOutline, IconEdit, IconMoreH, IconUpOutline, Scroller } from '@anticrm/ui'
+  import {
+    ActionIcon,
+    Button,
+    EditBox,
+    IconDownOutline,
+    IconEdit,
+    IconMoreH,
+    IconUpOutline,
+    Scroller,
+    showPopup
+  } from '@anticrm/ui'
+  import { ContextMenu } from '@anticrm/view-resources'
   import { StyledTextArea } from '@anticrm/text-editor'
   import { createEventDispatcher, onMount } from 'svelte'
   import tracker from '../../../plugin'
@@ -109,6 +120,12 @@
     isEditing = false
   }
 
+  function showMenu (ev?: Event): void {
+    if (issue) {
+      showPopup(ContextMenu, { object: issue }, (ev as MouseEvent).target as HTMLElement)
+    }
+  }
+
   onMount(() => {
     dispatch('open', { ignoreKeys: ['comments', 'name', 'description', 'number'] })
   })
@@ -122,6 +139,8 @@
     isSub={false}
     withoutActivity={isEditing}
     bind:innerWidth
+    isFullSize
+    on:fullsize
     on:close={() => dispatch('close')}
   >
     <svelte:fragment slot="subtitle">
@@ -149,6 +168,7 @@
         <Button disabled={!canSave} label={presentation.string.Save} on:click={save} />
       {:else}
         <Button icon={IconEdit} kind="transparent" size="medium" on:click={edit} />
+        <ActionIcon icon={IconMoreH} size={'medium'} action={showMenu} />
       {/if}
     </svelte:fragment>
 

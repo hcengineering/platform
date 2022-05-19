@@ -212,3 +212,24 @@
     }
   }
 }
+
+// Full size state
+.panel-instance.fullsize .panel-container {
+  padding: 0 !important;
+}
+.panel-instance.fullsize .panel-container .popupPanel,
+.popup.fullsize .popupPanel {
+  border-radius: 0;
+  box-shadow: none !important;
+
+  .popupPanel-title,
+  .popupPanel-body {
+    border-radius: 0;
+    border: none;
+  }
+  .popupPanel-title { border-bottom: 1px solid var(--divider-color); }
+}
+.panel-instance.fullsize,
+.popup.fullsize {
+  transition-timing-function: cubic-bezier(0.55, 0.055, 0.675, 0.19) !important;
+}

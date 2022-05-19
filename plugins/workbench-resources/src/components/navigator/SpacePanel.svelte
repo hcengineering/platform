@@ -55,6 +55,8 @@
 <Panel
   isHeader={false}
   isAside={false}
+  isFullSize
+  on:fullsize
   on:close={() => {
     dispatch('close')
   }}

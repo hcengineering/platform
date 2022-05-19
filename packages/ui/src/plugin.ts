@@ -32,6 +32,8 @@ export default plugin(uiId, {
     Minutes: '' as IntlString,
     Hours: '' as IntlString,
     Days: '' as IntlString,
+    Months: '' as IntlString,
+    Years: '' as IntlString,
     ShowMore: '' as IntlString,
     ShowLess: '' as IntlString,
     Search: '' as IntlString,
