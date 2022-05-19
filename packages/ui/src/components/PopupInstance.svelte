@@ -113,7 +113,6 @@
     bind:this={componentInstance}
     {...props}
     bind:options
-    direction={options.direction}
     on:update={(ev) => {
       _update(ev.detail)
     }}
