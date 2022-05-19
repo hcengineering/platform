@@ -415,6 +415,7 @@ export function createModel (builder: Builder): void {
     actions: [view.action.Delete, task.action.Move]
   })
 
+  // TODO: update query when nested query is available
   createAction(
     builder,
     {

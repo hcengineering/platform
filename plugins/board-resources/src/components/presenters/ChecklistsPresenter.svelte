@@ -10,7 +10,7 @@
   export let size: 'small' | 'medium' | 'large' = 'small'
 
   const todoListQuery = createQuery()
-  let todoLists: Ref<TodoItem>[]
+  let todoLists: Ref<TodoItem>[] = []
   $: todoListQuery.query(task.class.TodoItem, { space: value.space, attachedTo: value._id }, (result) => {
     todoLists = result.map(({ _id }) => _id)
   })
