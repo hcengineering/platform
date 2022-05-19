@@ -62,7 +62,7 @@
 >
   <Grid column={1} rowGap={1.75}>
     <div class="antiComponentBox">
-    <TimeShiftPicker title={calendar.string.RemindMeAt} direction="before" bind:value />
+      <TimeShiftPicker title={calendar.string.RemindMeAt} direction="before" bind:value />
     </div>
   </Grid>
 </Card>

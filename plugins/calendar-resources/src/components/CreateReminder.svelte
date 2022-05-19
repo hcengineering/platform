@@ -37,7 +37,15 @@
   }
 
   async function saveReminder () {
-    const date = value.date !== undefined ? new Date(value.date).getTime() : new Date().getTime() + value.shift
+    let date: number | undefined = undefined
+    if (value.date !== undefined) {
+      date = new Date(value.date).getTime()
+    } else if (value.shift !== undefined) {
+      date = new Date().getTime() + value.shift
+    }
+    if (date === undefined) {
+      return
+    }
     const _id = await client.createDoc(calendar.class.Event, space, {
       attachedTo,
       attachedToClass,
