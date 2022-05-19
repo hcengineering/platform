@@ -151,7 +151,10 @@ export abstract class MemDb extends TxProcessor {
       result = result.filter((r) => (r as any)[_class] !== undefined)
     }
 
-    if (options?.lookup !== undefined) result = await this.lookup(result as T[], options.lookup)
+    if (options?.lookup !== undefined) {
+      result = await this.lookup(result as T[], options.lookup)
+      result = matchQuery(result, query, _class, this.hierarchy)
+    }
 
     if (options?.sort !== undefined) resultSort(result, options?.sort, _class, this.hierarchy)
     const total = result.length

@@ -471,6 +471,15 @@ export function createModel (builder: Builder): void {
   builder.mixin(recruit.class.Vacancy, core.class.Class, view.mixin.IgnoreActions, {
     actions: [view.action.Delete]
   })
+
+  builder.mixin(recruit.mixin.Candidate, core.class.Class, view.mixin.ClassFilters, {
+    filters: ['title', 'source', 'city', 'modifiedOn']
+  })
+
+  builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.ClassFilters, {
+    filters: ['attachedTo', 'assignee', 'modifiedOn']
+  })
+
   createReviewModel(builder)
 
   // createAction(builder, { ...viewTemplates.open, target: recruit.class.Vacancy, context: { mode: ['browser', 'context'] } })

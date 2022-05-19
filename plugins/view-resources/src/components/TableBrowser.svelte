@@ -20,6 +20,7 @@
   import { ActionContext } from '..'
   import { focusStore, ListSelectionProvider, SelectDirection, selectionStore } from '../selection'
   import { LoadingProps } from '../utils'
+  import FilterBar from './filter/FilterBar.svelte'
   import Table from './Table.svelte'
 
   export let _class: Ref<Class<Doc>>
@@ -31,6 +32,8 @@
 
   // If defined, will show a number of dummy items before real data will appear.
   export let loadingProps: LoadingProps | undefined = undefined
+
+  let resultQuery = query
 
   let table: Table
   const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
@@ -51,13 +54,14 @@
   }}
 />
 
+<FilterBar {_class} {query} on:change={(e) => (resultQuery = e.detail)} />
 <Scroller tableFade>
   <Table
     bind:this={table}
     {_class}
     {config}
     {options}
-    {query}
+    query={resultQuery}
     {showNotification}
     {baseMenuClass}
     {loadingProps}

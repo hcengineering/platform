@@ -40,6 +40,14 @@ export default mergeIds(viewId, view, {
     ActionPlaceholder: '' as IntlString,
     CreatingAttribute: '' as IntlString,
     RestoreDefaults: '' as IntlString,
-    CreatingAttributeConfirm: '' as IntlString
+    CreatingAttributeConfirm: '' as IntlString,
+    Filter: '' as IntlString,
+    ClearFilters: '' as IntlString,
+    FilterIs: '' as IntlString,
+    FilterIsNot: '' as IntlString,
+    FilterIsEither: '' as IntlString,
+    FilterStatesCount: '' as IntlString,
+    Before: '' as IntlString,
+    After: '' as IntlString
   }
 })
