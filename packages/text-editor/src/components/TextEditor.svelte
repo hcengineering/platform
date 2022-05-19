@@ -56,6 +56,9 @@
   export function toggleBold () {
     editor.commands.toggleBold()
   }
+  export function toggleItalic () {
+    editor.commands.toggleItalic()
+  }
   let needFocus = false
   export function focus (): void {
     needFocus = true

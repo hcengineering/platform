@@ -23,6 +23,7 @@
   import { RefInputAction, RefInputActionItem, TextEditorHandler } from '../types'
   import Attach from './icons/Attach.svelte'
   import Bold from './icons/Bold.svelte'
+  import Italic from './icons/Italic.svelte'
   import Emoji from './icons/Emoji.svelte'
   import GIF from './icons/GIF.svelte'
   import Send from './icons/Send.svelte'
@@ -40,6 +41,7 @@
   let textEditor: TextEditor
   let isFormatting = false
   let isBold = false
+  let isItalic = false
 
   export let categories: ObjectSearchCategory[] = []
 
@@ -66,7 +68,7 @@
       icon: TextStyle,
       action: () => {
         isFormatting = !isFormatting
-        textEditor.focus()        
+        textEditor.focus()
       },
       order: 2000
     },
@@ -169,6 +171,12 @@
     textEditor.focus()
     isBold = !isBold
   }
+
+  function toggleItalic () {
+    textEditor.toggleItalic()
+    textEditor.focus()
+    isItalic = !isItalic
+  }
 </script>
 
 <div class="ref-container">
@@ -176,6 +184,9 @@
     <div class="formatPanel" class:withoutTopBorder>
       <div class="tool" class:active={isBold} on:click={toggleBold}>
         <Icon icon={Bold} size={'large'} />
+      </div>
+      <div class="tool" class:active={isItalic} on:click={toggleItalic}>
+        <Icon icon={Italic} size={'large'} />
       </div>
     </div>
   {/if}
