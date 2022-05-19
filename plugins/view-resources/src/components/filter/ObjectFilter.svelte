@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, DocumentQuery, getObjectValue, Ref } from '@anticrm/core'
+  import { Class, Doc, DocumentQuery, getObjectValue, Ref, RefTo } from '@anticrm/core'
   import { translate } from '@anticrm/platform'
   import presentation, { getClient } from '@anticrm/presentation'
-  import { CheckBox } from '@anticrm/ui'
+  import ui, { CheckBox, Label } from '@anticrm/ui'
   import { Filter } from '@anticrm/view'
   import { onMount } from 'svelte'
   import { buildConfigLookup, getPresenter } from '../../utils'
@@ -57,33 +57,37 @@
     }
   ]
 
-  let values: Set<Doc> = new Set<Doc>()
+  let values: (Doc | undefined | null)[] = []
 
   $: getValues(search)
 
+  const targets = new Map<any, number>()
   async function getValues (search: string): Promise<void> {
-    const attrib = await promise
-    const resultQuery =
-      search !== ''
-        ? {
-            [attrib.sortingKey]: { $like: '%' + search + '%' },
-            ...query
-          }
-        : query
-    const res = await client.findAll(_class, resultQuery, { lookup })
-    const objects = []
-    const set: Set<any> = new Set<any>()
-    for (const obj of res) {
-      const value = (obj as any)[filter.key.key]
-      if (set.has(value)) continue
-      objects.push(obj)
-      set.add(value)
+    targets.clear()
+    const baseObjects = await client.findAll(_class, query)
+    for (const object of baseObjects) {
+      const value = getObjectValue(filter.key.key, object) ?? undefined
+      targets.set(value, (targets.get(value) ?? 0) + 1)
     }
-    values = new Set(objects.map((obj) => getObjectValue(tkey, obj)))
+    const targetClass = (hierarchy.getAttribute(_class, filter.key.key).type as RefTo<Doc>).to
+    const clazz = hierarchy.getClass(targetClass)
+    const resultQuery =
+      search !== '' && clazz.sortingKey
+        ? {
+            [clazz.sortingKey]: { $like: '%' + search + '%' },
+            _id: { $in: Array.from(targets.keys()) }
+          }
+        : {
+            _id: { $in: Array.from(targets.keys()) }
+          }
+    values = await client.findAll(targetClass, resultQuery)
+    if (targets.has(undefined)) {
+      values.unshift(undefined)
+    }
   }
 
-  function isSelected (value: Doc, values: any[]): boolean {
-    return values.includes(value?._id ?? '')
+  function isSelected (value: Doc | undefined | null, values: any[]): boolean {
+    return values.includes(value?._id ?? value)
   }
 
   function checkMode () {
@@ -92,11 +96,15 @@
     filter.mode = newMode !== undefined ? newMode : filter.mode
   }
 
-  function toggle (value: Doc): void {
+  function toggle (value: Doc | undefined | null): void {
     if (isSelected(value, filter.value)) {
-      filter.value = filter.value.filter((p) => p !== value._id)
+      filter.value = filter.value.filter((p) => value ? p !== value._id : p != null)
     } else {
-      filter.value = [...filter.value, value._id]
+      if (value) {
+        filter.value = [...filter.value, value._id]
+      } else {
+        filter.value = [...filter.value, undefined]
+      }
     }
     checkMode()
     onChange(filter)
@@ -128,18 +136,29 @@
   <div class="scroll">
     <div class="box">
       {#await promise then attribute}
-        {#each Array.from(values) as value}
-          <button
-            class="menu-item"
-            on:click={() => {
-              toggle(value)
-            }}
-          >
-            <div class="check pointer-events-none">
-              <CheckBox checked={isSelected(value, filter.value)} primary />
+        {#each values as value}
+        <button
+          class="menu-item"
+          on:click={() => {
+            toggle(value)
+          }}
+        >
+          <div class="flex-between w-full">
+            <div class="flex">
+              <div class="check pointer-events-none">
+                <CheckBox checked={isSelected(value, filter.value)} primary />
+              </div>
+              {#if value}
+                <svelte:component this={attribute.presenter} {value} {...attribute.props} />
+              {:else}
+                <Label label={ui.string.NotSelected} />
+              {/if}
             </div>
-            <svelte:component this={attribute.presenter} {value} {...attribute.props} />
-          </button>
+            <div class="content-trans-color">
+              {targets.get(value?._id)}
+            </div>
+          </div>
+        </button>
         {/each}
       {/await}
     </div>
