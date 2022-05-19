@@ -31,7 +31,15 @@
 
   let options: PopupOptions = {
     props: {
-      top: '', bottom: '', left: '', right: '', width: '', height: '', maxWidth: '', maxHeight: '', minWidth: ''
+      top: '',
+      bottom: '',
+      left: '',
+      right: '',
+      width: '',
+      height: '',
+      maxWidth: '',
+      maxHeight: '',
+      minWidth: ''
     },
     showOverlay: false,
     direction: 'bottom'
@@ -146,7 +154,9 @@
           bind:options
           on:close={_close}
           on:update={_update}
-          on:fullsize={() => { fullSize = !fullSize }}
+          on:fullsize={() => {
+            fullSize = !fullSize
+          }}
         />
       </div>
     </div>
@@ -169,8 +179,8 @@
     background-color: transparent;
     will-change: top, bottom, left, right;
     transition-property: top, bottom, left, right, width, height;
-    transition-duration: .15s;
-    transition-timing-function: cubic-bezier(0.215, 0.610, 0.355, 1);
+    transition-duration: 0.15s;
+    transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
 
     &.bg {
       background-color: var(--body-color);

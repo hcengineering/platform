@@ -43,7 +43,9 @@
   isAside={options && options.fullSize}
   isFullSize
   on:fullsize
-  on:close={() => { dispatch('close') }}
+  on:close={() => {
+    dispatch('close')
+  }}
 >
   <svelte:fragment slot="title">
     <div class="antiTitle icon-wrapper">
