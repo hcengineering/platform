@@ -15,6 +15,7 @@
 
 import { Employee } from '@anticrm/contact'
 import type { AttachedDoc, Class, Doc, Markup, Ref, Space, Timestamp, Type } from '@anticrm/core'
+import { Action, ActionCategory } from '@anticrm/view'
 import type { Asset, IntlString, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import { AnyComponent } from '@anticrm/ui'
@@ -213,7 +214,6 @@ export default plugin(trackerId, {
     Magnifier: '' as Asset,
     Home: '' as Asset,
     Labels: '' as Asset,
-    MoreActions: '' as Asset,
     DueDate: '' as Asset,
     Parent: '' as Asset,
 
@@ -239,5 +239,11 @@ export default plugin(trackerId, {
     ProjectStatusPaused: '' as Asset,
     ProjectStatusCompleted: '' as Asset,
     ProjectStatusCanceled: '' as Asset
+  },
+  category: {
+    Tracker: '' as Ref<ActionCategory>
+  },
+  action: {
+    SetDueDate: '' as Ref<Action>
   }
 })

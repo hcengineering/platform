@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
 import type { IntlString } from '@anticrm/platform'
 import { mergeIds } from '@anticrm/platform'
 import tracker, { trackerId } from '../../tracker/lib'
@@ -95,6 +94,7 @@ export default mergeIds(trackerId, tracker, {
     Labels: '' as IntlString,
     Space: '' as IntlString,
     SetDueDate: '' as IntlString,
+    ChangeDueDate: '' as IntlString,
     ModificationDate: '' as IntlString,
     Issue: '' as IntlString,
     Document: '' as IntlString,
@@ -173,6 +173,7 @@ export default mergeIds(trackerId, tracker, {
     LeadPresenter: '' as AnyComponent,
     TargetDatePresenter: '' as AnyComponent,
     ProjectMembersPresenter: '' as AnyComponent,
-    ProjectStatusPresenter: '' as AnyComponent
+    ProjectStatusPresenter: '' as AnyComponent,
+    SetDueDateActionPopup: '' as AnyComponent
   }
 })
