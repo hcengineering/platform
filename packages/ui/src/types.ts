@@ -110,3 +110,10 @@ export interface DropdownIntlItem {
   id: string
   label: IntlString
 }
+
+export interface PopupOptions {
+  props: Record<string, string | number>
+  showOverlay: boolean
+  direction: string
+  fullSize?: boolean
+}

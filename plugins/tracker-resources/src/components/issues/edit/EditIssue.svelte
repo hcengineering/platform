@@ -139,6 +139,8 @@
     isSub={false}
     withoutActivity={isEditing}
     bind:innerWidth
+    isFullSize
+    on:fullsize
     on:close={() => dispatch('close')}
   >
     <svelte:fragment slot="subtitle">

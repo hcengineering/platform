@@ -75,68 +75,66 @@
   }
 </script>
 
-<div>
-  <div class="flex-no-shrink flex-between trans-title uppercase">
-    <Label label={task.string.ActiveStates} />
-    <CircleButton
-      icon={IconAdd}
-      size={'medium'}
-      on:click={() => {
-        onAdd(task.class.State)
-      }}
-    />
-  </div>
-  <div class="mt-3">
-    {#each states as state, i}
-      {#if state}
+<div class="flex-no-shrink flex-between trans-title uppercase">
+  <Label label={task.string.ActiveStates} />
+  <CircleButton
+    icon={IconAdd}
+    size={'medium'}
+    on:click={() => {
+      onAdd(task.class.State)
+    }}
+  />
+</div>
+<div class="mt-3">
+  {#each states as state, i}
+    {#if state}
+      <div
+        bind:this={elements[i]}
+        class="flex-between states"
+        draggable={true}
+        on:dragover|preventDefault={(ev) => {
+          dragover(ev, i)
+        }}
+        on:drop|preventDefault={() => {
+          onMove(i)
+        }}
+        on:dragstart={() => {
+          selected = i
+          dragState = states[i]._id
+        }}
+        on:dragend={() => {
+          selected = undefined
+        }}
+      >
+        <div class="bar"><Circles /></div>
         <div
-          bind:this={elements[i]}
-          class="flex-between states"
-          draggable={true}
-          on:dragover|preventDefault={(ev) => {
-            dragover(ev, i)
+          class="color"
+          style="background-color: {getPlatformColor(state.color)}"
+          on:click={() => {
+            showPopup(ColorsPopup, {}, elements[i], onColorChange(state))
           }}
-          on:drop|preventDefault={() => {
-            onMove(i)
-          }}
-          on:dragstart={() => {
-            selected = i
-            dragState = states[i]._id
-          }}
-          on:dragend={() => {
-            selected = undefined
-          }}
-        >
-          <div class="bar"><Circles /></div>
-          <div
-            class="color"
-            style="background-color: {getPlatformColor(state.color)}"
-            on:click={() => {
-              showPopup(ColorsPopup, {}, elements[i], onColorChange(state))
-            }}
-          />
-          <div class="flex-grow caption-color">
-            <AttributeEditor maxWidth={'20rem'} _class={state._class} object={state} key="title" />
-          </div>
-          {#if states.length > 1}
-            <div
-              class="tool hover-trans"
-              on:click={(ev) => {
-                showPopup(
-                  StatusesPopup,
-                  { onDelete: () => dispatch('delete', { state }) },
-                  eventToHTMLElement(ev),
-                  () => {}
-                )
-              }}
-            >
-              <IconMoreH size={'medium'} />
-            </div>
-          {/if}
+        />
+        <div class="flex-grow caption-color">
+          <AttributeEditor maxWidth={'20rem'} _class={state._class} object={state} key="title" />
         </div>
-      {/if}
-    {/each}
-  </div>
+        {#if states.length > 1}
+          <div
+            class="tool hover-trans"
+            on:click={(ev) => {
+              showPopup(
+                StatusesPopup,
+                { onDelete: () => dispatch('delete', { state }) },
+                eventToHTMLElement(ev),
+                () => {}
+              )
+            }}
+          >
+            <IconMoreH size={'medium'} />
+          </div>
+        {/if}
+      </div>
+    {/if}
+  {/each}
 </div>
 <div class="mt-9">
   <div class="flex-no-shrink flex-between trans-title uppercase">
@@ -189,7 +187,7 @@
       }}
     />
   </div>
-  <div class="mt-4">
+  <div class="mt-4 mb-10">
     {#each lostStates as state}
       {#if state}
         <div class="states flex-row-center">
@@ -222,10 +220,10 @@
 <style lang="scss">
   .states {
     padding: 0.5rem 1rem;
-    color: var(--theme-caption-color);
-    background-color: var(--theme-button-bg-enabled);
-    border: 1px solid var(--theme-bg-accent-color);
-    border-radius: 0.75rem;
+    color: var(--caption-color);
+    background-color: var(--button-bg-color);
+    border: 1px solid var(--button-border-color);
+    border-radius: 0.5rem;
     user-select: none;
 
     .bar {

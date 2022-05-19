@@ -13,43 +13,86 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Button, CircleButton, IconClose, ActionIcon } from '@anticrm/ui'
+  import { Button, Tooltip, Panel } from '@anticrm/ui'
+  import type { PopupOptions } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation from '..'
   import { getFileUrl } from '../utils'
-  import Avatar from './Avatar.svelte'
   import MaximizeH from './icons/MaximizeH.svelte'
   import MaximizeV from './icons/MaximizeV.svelte'
   import MaximizeO from './icons/MaximizeO.svelte'
+  import Download from './icons/Download.svelte'
 
   export let file: string
   export let name: string
   export let contentType: string | undefined
+  export let options: PopupOptions
 
   const dispatch = createEventDispatcher()
   let imgView: 'img-horizontal-fit' | 'img-vertical-fit' | 'img-original-fit' = 'img-horizontal-fit'
+
+  function iconLabel (name: string): string {
+    const parts = name.split('.')
+    const ext = parts[parts.length - 1]
+    return ext.substring(0, 4).toUpperCase()
+  }
 </script>
 
-<div
-  class="antiOverlay"
-  on:click={() => {
-    dispatch('close')
-  }}
-/>
-<div class="antiDialogs antiComponent pdfviewer-container">
-  <div class="ac-header short mirror">
-    <div class="ac-header__wrap-title">
-      <div class="ac-header__icon"><Avatar size={'medium'} /></div>
-      <span class="ac-header__title">{name}</span>
+<Panel
+  isHeader={false}
+  isAside={options && options.fullSize}
+  isFullSize
+  on:fullsize
+  on:close={() => { dispatch('close') }}
+>
+  <svelte:fragment slot="title">
+    <div class="antiTitle icon-wrapper">
+      <div class="wrapped-icon">
+        <div class="flex-center icon">
+          {iconLabel(name)}
+        </div>
+      </div>
+      <span class="wrapped-title">{name}</span>
     </div>
-    <ActionIcon
-      icon={IconClose}
-      size={'medium'}
-      action={(_) => {
-        dispatch('close')
-      }}
-    />
-  </div>
+  </svelte:fragment>
+
+  <svelte:fragment slot="utils">
+    {#if contentType && contentType.startsWith('image/')}
+      <Button
+        icon={MaximizeH}
+        kind={'transparent'}
+        shape={'circle'}
+        on:click={() => {
+          imgView = 'img-horizontal-fit'
+        }}
+        selected={imgView === 'img-horizontal-fit'}
+      />
+      <Button
+        icon={MaximizeV}
+        kind={'transparent'}
+        shape={'circle'}
+        on:click={() => {
+          imgView = 'img-vertical-fit'
+        }}
+        selected={imgView === 'img-vertical-fit'}
+      />
+      <Button
+        icon={MaximizeO}
+        kind={'transparent'}
+        shape={'circle'}
+        on:click={() => {
+          imgView = 'img-original-fit'
+        }}
+        selected={imgView === 'img-original-fit'}
+      />
+      <div class="buttons-divider" />
+    {/if}
+    <a class="no-line" href={getFileUrl(file)} download={name}>
+      <Tooltip label={presentation.string.Download}>
+        <Button icon={Download} kind={'transparent'} shape={'circle'} />
+      </Tooltip>
+    </a>
+  </svelte:fragment>
 
   {#if contentType && contentType.startsWith('image/')}
     <div class="pdfviewer-content">
@@ -58,55 +101,26 @@
   {:else}
     <iframe class="pdfviewer-content" src={getFileUrl(file)} title="" />
   {/if}
-
-  <div class="pdfviewer-footer">
-    <div class="flex-row-reverse">
-      <a class="no-line ml-4" href={getFileUrl(file)} download={name}
-        ><Button label={presentation.string.Download} kind={'primary'} /></a
-      >
-      <Button
-        label={presentation.string.Close}
-        on:click={() => {
-          dispatch('close')
-        }}
-      />
-    </div>
-    {#if contentType && contentType.startsWith('image/')}
-      <div class="img-nav">
-        <CircleButton
-          icon={MaximizeH}
-          on:click={() => {
-            imgView = 'img-horizontal-fit'
-          }}
-          selected={imgView === 'img-horizontal-fit'}
-        />
-        <CircleButton
-          icon={MaximizeV}
-          on:click={() => {
-            imgView = 'img-vertical-fit'
-          }}
-          selected={imgView === 'img-vertical-fit'}
-        />
-        <CircleButton
-          icon={MaximizeO}
-          on:click={() => {
-            imgView = 'img-original-fit'
-          }}
-          selected={imgView === 'img-original-fit'}
-        />
-      </div>
-    {/if}
-  </div>
-</div>
+</Panel>
 
 <style lang="scss">
-  .pdfviewer-container {
-    left: 40%;
+  .icon {
+    position: relative;
+    flex-shrink: 0;
+    width: 2rem;
+    height: 2rem;
+    font-weight: 500;
+    font-size: 0.625rem;
+    color: var(--white-color);
+    background-color: var(--primary-bg-color);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 0.5rem;
+    cursor: pointer;
   }
   .pdfviewer-content {
     flex-grow: 1;
     overflow: auto;
-    margin: 0 1.5rem;
+    margin: 1.5rem;
     border-style: none;
     border-radius: 0.5rem;
     background-color: var(--theme-menu-color);
@@ -124,14 +138,12 @@
   .img-vertical-fit {
     height: 100%;
   }
-  .pdfviewer-footer {
+  .pdfviewer-header {
     flex-shrink: 0;
     display: flex;
     justify-content: space-between;
     flex-direction: row-reverse;
     align-items: center;
-    padding: 0 2.25rem;
-    height: 5.25rem;
   }
   .img-nav {
     display: grid;

@@ -538,7 +538,7 @@
           focusIndex={103}
           icon={FileIcon}
           on:click={() => {
-            showPopup(PDFViewer, { file: resume.uuid, name: resume.name }, 'right')
+            showPopup(PDFViewer, { file: resume.uuid, name: resume.name }, 'float')
           }}
         >
           <svelte:fragment slot="content">
