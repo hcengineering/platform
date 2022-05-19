@@ -166,6 +166,11 @@
     a.action(evt?.target as HTMLElement, editorHandler)
   }
 
+  function updateFormattingState () {
+    isBold = textEditor.checkIsActive('bold')
+    isItalic = textEditor.checkIsActive('italic')
+  }
+
   function toggleBold () {
     textEditor.toggleBold()
     textEditor.focus()
@@ -201,6 +206,7 @@
           textEditor.clear()
         }}
         extensions={editorExtensions}
+        on:selection-update={updateFormattingState}
       />
     </div>
     {#if showSend}
