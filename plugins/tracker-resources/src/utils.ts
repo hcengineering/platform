@@ -278,3 +278,10 @@ export const getIncludedProjectStatuses = (mode: ProjectsViewMode): ProjectStatu
     }
   }
 }
+
+export const projectsTitleMap: Record<ProjectsViewMode, IntlString> = Object.freeze({
+  all: tracker.string.AllProjects,
+  backlog: tracker.string.BacklogProjects,
+  active: tracker.string.ActiveProjects,
+  closed: tracker.string.ClosedProjects
+})

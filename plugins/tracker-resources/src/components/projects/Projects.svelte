@@ -15,18 +15,15 @@
 <script lang="ts">
   import contact from '@anticrm/contact'
   import { DocumentQuery, FindOptions, Ref, SortingOrder } from '@anticrm/core'
-  import { IntlString } from '@anticrm/platform'
   import { createQuery } from '@anticrm/presentation'
   import { Project, Team } from '@anticrm/tracker'
   import { Button, IconAdd, IconOptions, Label, showPopup } from '@anticrm/ui'
-
-  import tracker from '../../plugin'
-  import { getIncludedProjectStatuses, ProjectsViewMode } from '../../utils'
   import NewProject from './NewProject.svelte'
   import ProjectsListBrowser from './ProjectsListBrowser.svelte'
+  import tracker from '../../plugin'
+  import { getIncludedProjectStatuses, ProjectsViewMode, projectsTitleMap } from '../../utils'
 
   export let currentSpace: Ref<Team>
-  export let title: IntlString = tracker.string.AllProjects
   export let query: DocumentQuery<Project> = {}
   export let search: string = ''
   export let mode: ProjectsViewMode = 'all'
@@ -43,6 +40,7 @@
   let resultProjects: Project[] = []
 
   $: includedProjectStatuses = getIncludedProjectStatuses(mode)
+  $: title = projectsTitleMap[mode]
   $: includedProjectsQuery = { status: { $in: includedProjectStatuses } }
 
   $: baseQuery = {
