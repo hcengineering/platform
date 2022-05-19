@@ -46,21 +46,37 @@
     onChange(filter)
     dispatch('close')
   }
- 
+
   const today = new Date().setHours(0, 0, 0, 0)
   function shiftDays (diff: number): number {
     return new Date(today).setDate(new Date(today).getDate() - diff)
   }
 
-  const values = [shiftDays(1), shiftDays(2), shiftDays(3), shiftDays(7), shiftDays(14), shiftDays(21), shiftDays(30), shiftDays(90), shiftDays(180), shiftDays(365)]
+  const values = [
+    shiftDays(1),
+    shiftDays(2),
+    shiftDays(3),
+    shiftDays(7),
+    shiftDays(14),
+    shiftDays(21),
+    shiftDays(30),
+    shiftDays(90),
+    shiftDays(180),
+    shiftDays(365)
+  ]
 </script>
 
 <div class="selectPopup">
   <div class="scroll">
     <div class="box">
       {#each values as value, i}
-        <div class="menu-item" on:click={() => { click(value)}}>
-          <TimestampPresenter {value}/>
+        <div
+          class="menu-item"
+          on:click={() => {
+            click(value)
+          }}
+        >
+          <TimestampPresenter {value} />
         </div>
       {/each}
     </div>
