@@ -68,7 +68,7 @@ export class TMessage extends TAttachedDoc implements Message {
   @Prop(TypeBoolean(), gmail.string.Incoming)
   incoming!: boolean
 
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments)
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, undefined, attachment.string.Files)
   attachments?: number
 
   @Prop(TypeTimestamp(), core.string.Modified)
@@ -99,7 +99,7 @@ export class TNewMessage extends TDoc implements NewMessage {
   @Prop(ArrOf(TypeString()), gmail.string.Copy)
   copy?: string[]
 
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments)
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, undefined, attachment.string.Files)
   attachments?: number
 }
 

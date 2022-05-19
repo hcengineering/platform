@@ -164,7 +164,7 @@ export class TIssue extends TTask implements Issue {
   @Prop(Collection(chunter.class.Comment), task.string.TaskComments)
   comments!: number
 
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments)
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, undefined, attachment.string.Files)
   attachments!: number
 
   @Prop(TypeString(), task.string.TaskLabels)
@@ -341,18 +341,8 @@ export function createModel (builder: Builder): void {
       '$lookup.assignee',
       '$lookup.state',
       '$lookup.doneState',
-      {
-        key: '',
-        presenter: attachment.component.AttachmentsPresenter,
-        label: attachment.string.Files,
-        sortingKey: 'attachments'
-      },
-      {
-        key: '',
-        presenter: chunter.component.CommentsPresenter,
-        label: chunter.string.Comments,
-        sortingKey: 'comments'
-      },
+      'attachments',
+      'comments',
       'modifiedOn'
     ]
   })

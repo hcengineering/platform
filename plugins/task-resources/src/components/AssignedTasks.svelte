@@ -13,8 +13,6 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import attachment from '@anticrm/attachment'
-  import chunter from '@anticrm/chunter'
   import { EmployeeAccount } from '@anticrm/contact'
   import { Class, DocumentQuery, getCurrentAccount, Ref } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
@@ -99,18 +97,8 @@
     '$lookup.assignee',
     '$lookup.state',
     '$lookup.doneState',
-    {
-      key: '',
-      presenter: attachment.component.AttachmentsPresenter,
-      label: attachment.string.Files,
-      sortingKey: 'attachments'
-    },
-    {
-      key: '',
-      presenter: chunter.component.CommentsPresenter,
-      label: chunter.string.Comments,
-      sortingKey: 'comments'
-    },
+    'attachments',
+    'comments',
     'modifiedOn'
   ]}
   query={resultQuery}

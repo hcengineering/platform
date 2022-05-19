@@ -72,7 +72,7 @@ export class TEvent extends TAttachedDoc implements Event {
   @Prop(TypeDate(true), calendar.string.DueTo)
   dueDate!: Timestamp
 
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments)
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, undefined, attachment.string.Files)
   attachments?: number
 
   @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
