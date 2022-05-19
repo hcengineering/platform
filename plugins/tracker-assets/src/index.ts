@@ -32,7 +32,6 @@ loadMetadata(tracker.icon, {
   Magnifier: `${icons}#magnifier`,
   Home: `${icons}#home`,
   Labels: `${icons}#priority-nopriority`, // TODO: add icon
-  MoreActions: `${icons}#priority-nopriority`, // TODO: add icon
   DueDate: `${icons}#inbox`, // TODO: add icon
   Parent: `${icons}#myissues`, // TODO: add icon
 

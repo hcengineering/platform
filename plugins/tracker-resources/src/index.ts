@@ -34,6 +34,7 @@ import PriorityEditor from './components/issues/PriorityEditor.svelte'
 import ProjectEditor from './components/projects/ProjectEditor.svelte'
 import StatusPresenter from './components/issues/StatusPresenter.svelte'
 import StatusEditor from './components/issues/StatusEditor.svelte'
+import SetDueDateActionPopup from './components/SetDueDateActionPopup.svelte'
 import DueDatePresenter from './components/issues/DueDatePresenter.svelte'
 import AssigneePresenter from './components/issues/AssigneePresenter.svelte'
 import ViewOptionsPopup from './components/issues/ViewOptionsPopup.svelte'
@@ -77,6 +78,7 @@ export default async (): Promise<Resources> => ({
     LeadPresenter,
     TargetDatePresenter,
     ProjectMembersPresenter,
-    ProjectStatusPresenter
+    ProjectStatusPresenter,
+    SetDueDateActionPopup
   }
 })
