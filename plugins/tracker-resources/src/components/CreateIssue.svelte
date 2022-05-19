@@ -15,7 +15,6 @@
 <script lang="ts">
   import contact, { Employee } from '@anticrm/contact'
   import core, { Data, generateId, Ref, SortingOrder, WithLookup } from '@anticrm/core'
-  import { Asset, IntlString } from '@anticrm/platform'
   import presentation, { Card, createQuery, getClient, SpaceSelector, UserBox } from '@anticrm/presentation'
   import { StyledTextBox } from '@anticrm/text-editor'
   import { calcRank, Issue, IssuePriority, IssueStatus, Project, Team } from '@anticrm/tracker'
@@ -23,10 +22,13 @@
     Button,
     DatePresenter,
     EditBox,
-    eventToHTMLElement,
     IconAttachment,
-    SelectPopup,
-    showPopup
+    showPopup,
+    Spinner,
+    IconMoreH,
+    ActionIcon,
+    DatePopup,
+    Menu
   } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../plugin'
@@ -42,7 +44,7 @@
   export let project: Ref<Project> | null = null
 
   let currentAssignee: Ref<Employee> | null = assignee
-  let issueStatuses: WithLookup<IssueStatus>[] = []
+  let issueStatuses: WithLookup<IssueStatus>[] | undefined
 
   let object: Data<Issue> = {
     title: '',
@@ -65,20 +67,12 @@
   $: _space = space
   $: _parent = parent
   $: updateIssueStatusId(space, status)
-
-  $: statusesQuery.query(
-    tracker.class.IssueStatus,
-    { attachedTo: space },
-    (statuses) => {
-      issueStatuses = statuses
-    },
-    {
-      lookup: { category: tracker.class.IssueStatusCategory },
-      sort: { rank: SortingOrder.Ascending }
-    }
-  )
-
   $: canSave = getTitle(object.title ?? '').length > 0
+
+  $: statusesQuery.query(tracker.class.IssueStatus, { attachedTo: space }, (statuses) => (issueStatuses = statuses), {
+    lookup: { category: tracker.class.IssueStatusCategory },
+    sort: { rank: SortingOrder.Ascending }
+  })
 
   async function updateIssueStatusId (teamId: Ref<Team>, issueStatusId?: Ref<IssueStatus>) {
     if (issueStatusId !== undefined) {
@@ -143,10 +137,31 @@
     await client.createDoc(tracker.class.Issue, _space, value, taskId)
   }
 
-  const moreActions: Array<{ icon: Asset; label: IntlString }> = [
-    { icon: tracker.icon.DueDate, label: tracker.string.SetDueDate },
-    { icon: tracker.icon.Parent, label: tracker.string.Parent }
-  ]
+  async function showMoreActions (ev: Event) {
+    ev.preventDefault()
+
+    const selectDueDate = {
+      label: object.dueDate === null ? tracker.string.SetDueDate : tracker.string.ChangeDueDate,
+      icon: tracker.icon.DueDate,
+      action: async () => {
+        showPopup(
+          DatePopup,
+          { mondayStart: true, withTime: false, currentDate: object.dueDate },
+          undefined,
+          undefined,
+          (newDueDate) => newDueDate !== undefined && (object.dueDate = newDueDate)
+        )
+      }
+    }
+
+    showPopup(
+      Menu,
+      {
+        actions: [selectDueDate]
+      },
+      ev.target as HTMLElement
+    )
+  }
 
   const handlePriorityChanged = (newPriority: IssuePriority | undefined) => {
     if (newPriority === undefined) {
@@ -210,34 +225,32 @@
     placeholder={tracker.string.IssueDescriptionPlaceholder}
   />
   <svelte:fragment slot="pool">
-    <StatusSelector selectedStatusId={object.status} statuses={issueStatuses} onStatusChange={handleStatusChanged} />
-    <PrioritySelector priority={object.priority} onPriorityChange={handlePriorityChanged} />
-    <UserBox
-      _class={contact.class.Employee}
-      label={tracker.string.Assignee}
-      placeholder={tracker.string.AssignTo}
-      bind:value={currentAssignee}
-      allowDeselect
-      titleDeselect={tracker.string.Unassigned}
-    />
-    <Button
-      label={tracker.string.Labels}
-      icon={tracker.icon.Labels}
-      width="min-content"
-      size="small"
-      kind="no-border"
-    />
-    <ProjectSelector value={object.project} onProjectIdChange={handleProjectIdChanged} />
-    <DatePresenter bind:value={object.dueDate} editable />
-    <Button
-      icon={tracker.icon.MoreActions}
-      width="min-content"
-      size="small"
-      kind="transparent"
-      on:click={(ev) => {
-        showPopup(SelectPopup, { value: moreActions }, eventToHTMLElement(ev))
-      }}
-    />
+    {#if issueStatuses}
+      <StatusSelector selectedStatusId={object.status} statuses={issueStatuses} onStatusChange={handleStatusChanged} />
+      <PrioritySelector priority={object.priority} onPriorityChange={handlePriorityChanged} />
+      <UserBox
+        _class={contact.class.Employee}
+        label={tracker.string.Assignee}
+        placeholder={tracker.string.AssignTo}
+        bind:value={currentAssignee}
+        allowDeselect
+        titleDeselect={tracker.string.Unassigned}
+      />
+      <Button
+        label={tracker.string.Labels}
+        icon={tracker.icon.Labels}
+        width="min-content"
+        size="small"
+        kind="no-border"
+      />
+      <ProjectSelector value={object.project} onProjectIdChange={handleProjectIdChanged} />
+      {#if object.dueDate !== null}
+        <DatePresenter bind:value={object.dueDate} editable />
+      {/if}
+      <ActionIcon icon={IconMoreH} size={'medium'} action={showMoreActions} />
+    {:else}
+      <Spinner size="small" />
+    {/if}
   </svelte:fragment>
   <svelte:fragment slot="footer">
     <Button icon={IconAttachment} kind={'transparent'} on:click={() => {}} />

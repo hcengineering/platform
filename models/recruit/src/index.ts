@@ -53,7 +53,7 @@ export class TVacancy extends TSpaceWithStates implements Vacancy {
   @Index(IndexKind.FullText)
   fullDescription?: string
 
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments)
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, undefined, attachment.string.Files)
   attachments?: number
 
   @Prop(TypeDate(), recruit.string.Due, recruit.icon.Calendar)
@@ -81,7 +81,7 @@ export class TCandidate extends TPerson implements Candidate {
   @Index(IndexKind.FullText)
   title?: string
 
-  @Prop(Collection(recruit.class.Applicant), recruit.string.Applications)
+  @Prop(Collection(recruit.class.Applicant), recruit.string.Applications, undefined, recruit.string.ApplicationsShort)
   applications?: number
 
   @Prop(TypeBoolean(), recruit.string.Onsite)
@@ -112,7 +112,7 @@ export class TApplicant extends TTask implements Applicant {
   @Prop(TypeRef(recruit.class.Vacancy), recruit.string.Vacancy)
   declare space: Ref<Vacancy>
 
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments)
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, undefined, attachment.string.Files)
   attachments?: number
 
   @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
@@ -240,24 +240,9 @@ export function createModel (builder: Builder): void {
       '',
       'title',
       'city',
-      {
-        key: '',
-        presenter: recruit.component.ApplicationsPresenter,
-        label: recruit.string.ApplicationsShort,
-        sortingKey: 'applications'
-      },
-      {
-        key: '',
-        presenter: attachment.component.AttachmentsPresenter,
-        label: attachment.string.Files,
-        sortingKey: 'attachments'
-      },
-      {
-        key: '',
-        presenter: chunter.component.CommentsPresenter,
-        label: chunter.string.Comments,
-        sortingKey: 'comments'
-      },
+      'applications',
+      'attachments',
+      'comments',
       {
         // key: '$lookup.skills', // Required, since presenter require list of tag references or '' and TagsPopupPresenter
         key: '',
@@ -284,18 +269,8 @@ export function createModel (builder: Builder): void {
       '$lookup.assignee',
       '$lookup.state',
       '$lookup.doneState',
-      {
-        key: '',
-        presenter: attachment.component.AttachmentsPresenter,
-        label: attachment.string.Files,
-        sortingKey: 'attachments'
-      },
-      {
-        key: '',
-        presenter: chunter.component.CommentsPresenter,
-        label: chunter.string.Comments,
-        sortingKey: 'comments'
-      },
+      'attachments',
+      'comments',
       'modifiedOn',
       '$lookup.attachedTo.$lookup.channels'
     ]
@@ -337,6 +312,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.AttributePresenter, {
     presenter: recruit.component.ApplicationPresenter
+  })
+
+  builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.CollectionPresenter, {
+    presenter: recruit.component.ApplicationsPresenter
   })
 
   builder.mixin(recruit.class.Vacancy, core.class.Class, view.mixin.AttributePresenter, {
@@ -471,6 +450,15 @@ export function createModel (builder: Builder): void {
   builder.mixin(recruit.class.Vacancy, core.class.Class, view.mixin.IgnoreActions, {
     actions: [view.action.Delete]
   })
+
+  builder.mixin(recruit.mixin.Candidate, core.class.Class, view.mixin.ClassFilters, {
+    filters: ['title', 'source', 'city', 'modifiedOn']
+  })
+
+  builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.ClassFilters, {
+    filters: ['attachedTo', 'assignee', 'modifiedOn']
+  })
+
   createReviewModel(builder)
 
   // createAction(builder, { ...viewTemplates.open, target: recruit.class.Vacancy, context: { mode: ['browser', 'context'] } })

@@ -28,13 +28,14 @@
   } from '@anticrm/ui'
   import IconCopy from './icons/Copy.svelte'
   import { FocusHandler } from '@anticrm/ui'
+  import type { PopupOptions } from '@anticrm/ui'
   import plugin from '../plugin'
 
   export let value: string = ''
   export let placeholder: IntlString
   export let editable: boolean | undefined = undefined
   export let openable: boolean = false
-  export let direction: string = 'bottom'
+  export let options: PopupOptions
 
   const dispatch = createEventDispatcher()
   let input: HTMLInputElement
@@ -75,11 +76,12 @@
     input.addEventListener('focus', updateFocus, { once: true })
   }
 
+  let dir: string = 'bottom'
   const vDir = (d: string): string => d.split('|')[0]
   const fitEditor = (): void => {
-    dir = vDir(direction)
+    if (options) dir = vDir(options.direction)
   }
-  $: dir = vDir(direction)
+  $: if (options) dir = vDir(options.direction)
   afterUpdate(() => {
     fitEditor()
   })

@@ -20,7 +20,7 @@
   import type { DoneState, Kanban, SpaceWithStates, State } from '@anticrm/task'
   import task from '../../plugin'
   import KanbanEditor from '../kanban/KanbanEditor.svelte'
-  import { Icon, IconClose, Label, showPopup, ActionIcon, ScrollBox } from '@anticrm/ui'
+  import { Icon, Label, showPopup, Panel, Scroller } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import workbench from '@anticrm/workbench'
 
@@ -91,39 +91,35 @@
   }
 </script>
 
-<div
-  class="antiOverlay"
-  on:click={() => {
+<Panel
+  isHeader={false}
+  isAside={false}
+  isFullSize
+  on:fullsize
+  on:close={() => {
     dispatch('close')
   }}
-/>
-<div class="antiDialogs antiComponent">
-  <div class="ac-header short mirror divide">
-    <div class="ac-header__wrap-description">
-      <div class="ac-header__wrap-title">
-        <div class="ac-header__icon"><Icon icon={task.icon.ManageStatuses} size={'small'} /></div>
-        <span class="ac-header__title">
+>
+  <svelte:fragment slot="title">
+    <div class="antiTitle icon-wrapper">
+      <div class="wrapped-icon">
+        <Icon icon={task.icon.ManageStatuses} size={'small'} />
+      </div>
+      <div class="title-wrapper">
+        <span class="wrapped-title">
           <Label label={task.string.ManageStatusesWithin} />
           {#if spaceClassInstance}<Label label={spaceClassInstance?.label} />{:else}...{/if}
         </span>
+        {#if spaceInstance?.name}<span class="wrapped-subtitle">{spaceInstance?.name}</span>{/if}
       </div>
-      {#if spaceInstance?.name}<span class="ac-header__description">{spaceInstance?.name}</span>{/if}
     </div>
-    <div class="tool">
-      <ActionIcon
-        icon={IconClose}
-        size={'small'}
-        action={() => {
-          dispatch('close')
-        }}
-      />
-    </div>
-  </div>
-  <div class="p-10 flex-grow">
-    <ScrollBox vertical stretch>
+  </svelte:fragment>
+
+  <Scroller>
+    <div class="popupPanel-body__main-content py-10 clear-mins">
       {#if kanban !== undefined}
         <KanbanEditor {kanban} on:delete={(e) => deleteState(e.detail)} />
       {/if}
-    </ScrollBox>
-  </div>
-</div>
+    </div>
+  </Scroller>
+</Panel>

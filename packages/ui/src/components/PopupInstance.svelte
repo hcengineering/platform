@@ -14,9 +14,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { afterUpdate } from 'svelte'
+  import { afterUpdate, onMount } from 'svelte'
   import { fitPopupElement } from '../popups'
-  import type { AnyComponent, AnySvelteComponent, PopupAlignment } from '../types'
+  import type { AnyComponent, AnySvelteComponent, PopupAlignment, PopupOptions } from '../types'
 
   export let is: AnyComponent | AnySvelteComponent
   export let props: object
@@ -29,12 +29,25 @@
 
   let modalHTML: HTMLElement
   let componentInstance: any
-  let height: number
+  let docWidth: number
+  let docSize: boolean = false
+  let fullSize: boolean = false
 
-  let options: {
-    show: boolean
-    direction: string
-  } = { show: false, direction: 'bottom' }
+  let options: PopupOptions = {
+    props: {
+      top: '',
+      bottom: '',
+      left: '',
+      right: '',
+      width: '',
+      height: '',
+      maxWidth: '',
+      maxHeight: '',
+      minWidth: ''
+    },
+    showOverlay: false,
+    direction: 'bottom'
+  }
 
   function _update (result: any): void {
     if (onUpdate !== undefined) onUpdate(result)
@@ -55,7 +68,14 @@
 
   const fitPopup = (): void => {
     if (modalHTML) {
-      options = fitPopupElement(modalHTML, element)
+      if ((fullSize || docSize) && (element === 'float' || element === 'content')) {
+        options = fitPopupElement(modalHTML, 'full')
+        modalHTML.classList.add('fullsize')
+      } else {
+        options = fitPopupElement(modalHTML, element)
+        modalHTML.classList.remove('fullsize')
+      }
+      options.fullSize = fullSize
     }
   }
 
@@ -64,27 +84,47 @@
       escapeClose()
     }
   }
+
+  onMount(() => fitPopup())
+  $: if (docWidth <= 900 && !docSize) docSize = true
+  $: if (docWidth > 900 && docSize) docSize = false
+
   afterUpdate(() => fitPopup())
-  $: if (height) fitPopup()
 </script>
 
-<svelte:window on:resize={fitPopup} on:keydown={handleKeydown} />
+<svelte:window on:resize={fitPopup} on:keydown={handleKeydown} bind:innerWidth={docWidth} />
 
-<div class="popup" bind:this={modalHTML} bind:clientHeight={height} style={`z-index: ${zIndex + 1};`}>
+<div
+  class="popup"
+  bind:this={modalHTML}
+  style={`z-index: ${zIndex + 1};`}
+  style:top={options.props.top}
+  style:bottom={options.props.bottom}
+  style:left={options.props.left}
+  style:right={options.props.right}
+  style:width={options.props.width}
+  style:height={options.props.height}
+  style:max-width={options.props.maxWidth}
+  style:max-height={options.props.maxHeight}
+  style:min-width={options.props.minWidth}
+>
   <svelte:component
     this={is}
     bind:this={componentInstance}
     {...props}
-    direction={options.direction}
+    bind:options
     on:update={(ev) => {
       _update(ev.detail)
     }}
     on:close={(ev) => _close(ev.detail)}
+    on:fullsize={() => {
+      fullSize = !fullSize
+    }}
   />
 </div>
 <div
   class="modal-overlay"
-  class:antiOverlay={options.show}
+  class:antiOverlay={options.showOverlay}
   style={`z-index: ${zIndex};`}
   on:click={() => escapeClose()}
 />
@@ -97,6 +137,10 @@
     justify-content: center;
     max-height: calc(100vh - 2rem);
     background-color: transparent;
+    will-change: top, bottom, left, right;
+    transition-property: top, bottom, left, right, width, height;
+    transition-duration: 0.15s;
+    transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
   }
   .modal-overlay {
     position: fixed;

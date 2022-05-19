@@ -233,7 +233,7 @@ export class TProject extends TDoc implements Project {
   @Prop(Collection(tracker.class.Document), tracker.string.Document)
   documents!: number
 
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments)
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, undefined, attachment.string.Files)
   attachments?: number
 
   @Prop(TypeDate(true), tracker.string.Project)
@@ -439,4 +439,34 @@ export function createModel (builder: Builder): void {
       mode: ['workbench', 'browser', 'editor', 'panel', 'popup']
     }
   })
+
+  builder.createDoc(
+    view.class.ActionCategory,
+    core.space.Model,
+    { label: tracker.string.TrackerApplication, visible: true },
+    tracker.category.Tracker
+  )
+
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.ShowPopup,
+      actionProps: {
+        component: tracker.component.SetDueDateActionPopup,
+        props: { mondayStart: true, withTime: false },
+        element: 'top'
+      },
+      label: tracker.string.SetDueDate,
+      icon: tracker.icon.DueDate,
+      keyBinding: [],
+      input: 'none',
+      category: tracker.category.Tracker,
+      target: tracker.class.Issue,
+      context: {
+        mode: ['context', 'browser'],
+        application: tracker.app.Tracker
+      }
+    },
+    tracker.action.SetDueDate
+  )
 }

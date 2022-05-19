@@ -82,6 +82,11 @@ export type HorizontalAlignment = 'left' | 'right'
 
 export type IconSize = 'inline' | 'tiny' | 'x-small' | 'small' | 'medium' | 'large' | 'x-large' | 'full'
 
+export interface DateOrShift {
+  date?: number
+  shift?: number
+}
+
 export interface LabelAndProps {
   label: IntlString | undefined
   element: HTMLElement | undefined
@@ -109,4 +114,11 @@ export interface DropdownTextItem {
 export interface DropdownIntlItem {
   id: string
   label: IntlString
+}
+
+export interface PopupOptions {
+  props: Record<string, string | number>
+  showOverlay: boolean
+  direction: string
+  fullSize?: boolean
 }

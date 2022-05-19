@@ -14,24 +14,21 @@
 -->
 <script lang="ts">
   import { Attachment } from '@anticrm/attachment'
-  import contact, { Employee } from '@anticrm/contact'
-  import { EmployeeAccount } from '@anticrm/contact'
+  import contact, { Employee, EmployeeAccount } from '@anticrm/contact'
   import core, { Class, getCurrentAccount, Ref, Space } from '@anticrm/core'
-  import view from '@anticrm/view'
   import { getClient } from '@anticrm/presentation'
   import ui, {
+    EditWithIcon,
     getCurrentLocation,
-    location,
+    Icon,
     IconSearch,
     Label,
     navigate,
-    EditWithIcon,
     Spinner,
-    Tooltip,
-    Icon
+    Tooltip
   } from '@anticrm/ui'
-  import { onDestroy } from 'svelte'
-  import { FileBrowserSortMode, dateFileBrowserFilters, fileTypeFileBrowserFilters, sortModeToOptionObject } from '..'
+  import view from '@anticrm/view'
+  import { dateFileBrowserFilters, FileBrowserSortMode, fileTypeFileBrowserFilters, sortModeToOptionObject } from '..'
   import attachment from '../plugin'
   import AttachmentsGalleryView from './AttachmentsGalleryView.svelte'
   import AttachmentsListView from './AttachmentsListView.svelte'
@@ -41,6 +38,12 @@
   const client = getClient()
   const loc = getCurrentLocation()
   const spaceId: Ref<Space> | undefined = loc.query?.spaceId as Ref<Space> | undefined
+
+  $: if (spaceId !== undefined) {
+    const loc = getCurrentLocation()
+    loc.query = undefined
+    navigate(loc)
+  }
   export let requestedSpaceClasses: Ref<Class<Space>>[] = []
   const currentUser = getCurrentAccount() as EmployeeAccount
   let selectedParticipants: Ref<Employee>[] = [currentUser.employee]
@@ -103,13 +106,6 @@
     )
     isLoading = false
   }
-
-  onDestroy(
-    location.subscribe(async (loc) => {
-      loc.query = undefined
-      navigate(loc)
-    })
-  )
 </script>
 
 <div class="ac-header full divide">

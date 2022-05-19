@@ -50,7 +50,7 @@ export class TProduct extends TAttachedDoc implements Product {
   @Prop(Collection(inventory.class.Variant), inventory.string.Variants)
   variants?: number
 
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments)
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, undefined, attachment.string.Files)
   attachments?: number
 }
 

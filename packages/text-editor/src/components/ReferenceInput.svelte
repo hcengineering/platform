@@ -22,6 +22,8 @@
   import textEditorPlugin from '../plugin'
   import { RefInputAction, RefInputActionItem, TextEditorHandler } from '../types'
   import Attach from './icons/Attach.svelte'
+  import Bold from './icons/Bold.svelte'
+  import Italic from './icons/Italic.svelte'
   import Emoji from './icons/Emoji.svelte'
   import GIF from './icons/GIF.svelte'
   import Send from './icons/Send.svelte'
@@ -37,6 +39,9 @@
   const client = getClient()
 
   let textEditor: TextEditor
+  let isFormatting = false
+  let isBold = false
+  let isItalic = false
 
   export let categories: ObjectSearchCategory[] = []
 
@@ -61,7 +66,10 @@
     {
       label: textEditorPlugin.string.TextStyle,
       icon: TextStyle,
-      action: () => {},
+      action: () => {
+        isFormatting = !isFormatting
+        textEditor.focus()
+      },
       order: 2000
     },
     {
@@ -157,10 +165,32 @@
     console.log('handle event', a.label)
     a.action(evt?.target as HTMLElement, editorHandler)
   }
+
+  function toggleBold () {
+    textEditor.toggleBold()
+    textEditor.focus()
+    isBold = !isBold
+  }
+
+  function toggleItalic () {
+    textEditor.toggleItalic()
+    textEditor.focus()
+    isItalic = !isItalic
+  }
 </script>
 
 <div class="ref-container">
-  <div class="textInput" class:withoutTopBorder>
+  {#if isFormatting}
+    <div class="formatPanel" class:withoutTopBorder>
+      <div class="tool" class:active={isBold} on:click={toggleBold}>
+        <Icon icon={Bold} size={'large'} />
+      </div>
+      <div class="tool" class:active={isItalic} on:click={toggleItalic}>
+        <Icon icon={Italic} size={'large'} />
+      </div>
+    </div>
+  {/if}
+  <div class="textInput" class:withoutTopBorder={withoutTopBorder || isFormatting}>
     <div class="inputMsg">
       <TextEditor
         bind:content
@@ -191,6 +221,21 @@
     display: flex;
     flex-direction: column;
     min-height: 4.5rem;
+
+    .formatPanel {
+      display: flex;
+      padding: 0.625rem 0.5rem;
+      background-color: var(--theme-bg-accent-color);
+      border: 1px solid var(--theme-bg-accent-color);
+      border-top-left-radius: 0.75rem;
+      border-top-right-radius: 0.75rem;
+      border-bottom: 0;
+
+      &.withoutTopBorder {
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+      }
+    }
 
     .textInput {
       display: flex;
@@ -283,23 +328,27 @@
     .buttons {
       display: flex;
       margin: 0.625rem 0 0 0.5rem;
+    }
 
-      .tool {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: 1.25rem;
-        height: 1.25rem;
-        color: var(--theme-content-dark-color);
-        cursor: pointer;
+    .tool {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 1.25rem;
+      height: 1.25rem;
+      color: var(--theme-content-dark-color);
+      cursor: pointer;
 
-        &:hover {
-          color: var(--theme-caption-color);
-        }
+      &.active {
+        color: var(--theme-caption-color);
       }
-      .tool + .tool {
-        margin-left: 1rem;
+
+      &:hover {
+        color: var(--theme-caption-color);
       }
+    }
+    .tool + .tool {
+      margin-left: 1rem;
     }
   }
 </style>

@@ -19,6 +19,7 @@
   import { Avatar, createQuery, getClient } from '@anticrm/presentation'
   import setting, { SettingsCategory } from '@anticrm/setting'
   import {
+    closePanel,
     closePopup,
     getCurrentLocation,
     Icon,
@@ -50,6 +51,7 @@
 
   function selectCategory (sp: SettingsCategory): void {
     closePopup()
+    closePanel()
     const loc = getCurrentLocation()
     loc.path[1] = setting.ids.SettingApp
     loc.path[2] = sp.name

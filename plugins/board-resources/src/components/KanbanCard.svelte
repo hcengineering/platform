@@ -179,12 +179,12 @@
           {/if}
           {#if (object.attachments ?? 0) > 0}
             <div class="float-left">
-              <AttachmentsPresenter value={object} size="small" />
+              <AttachmentsPresenter value={object.attachments} {object} size="small" />
             </div>
           {/if}
           {#if (object.comments ?? 0) > 0}
             <div class="float-left">
-              <CommentsPresenter value={object} />
+              <CommentsPresenter value={object.comments} {object} />
             </div>
           {/if}
           {#if (object.todoItems ?? 0) > 0}

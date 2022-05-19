@@ -15,19 +15,18 @@
 <script lang="ts">
   import contact from '@anticrm/contact'
   import { DocumentQuery, FindOptions, Ref, SortingOrder } from '@anticrm/core'
-  import { IntlString } from '@anticrm/platform'
   import { createQuery } from '@anticrm/presentation'
   import { Project, Team } from '@anticrm/tracker'
   import { Button, IconAdd, IconOptions, Label, showPopup } from '@anticrm/ui'
-
-  import tracker from '../../plugin'
   import NewProject from './NewProject.svelte'
   import ProjectsListBrowser from './ProjectsListBrowser.svelte'
+  import tracker from '../../plugin'
+  import { getIncludedProjectStatuses, ProjectsViewMode, projectsTitleMap } from '../../utils'
 
   export let currentSpace: Ref<Team>
-  export let title: IntlString = tracker.string.AllProjects
   export let query: DocumentQuery<Project> = {}
   export let search: string = ''
+  export let mode: ProjectsViewMode = 'all'
 
   const ENTRIES_LIMIT = 200
   const resultProjectsQuery = createQuery()
@@ -40,8 +39,13 @@
 
   let resultProjects: Project[] = []
 
+  $: includedProjectStatuses = getIncludedProjectStatuses(mode)
+  $: title = projectsTitleMap[mode]
+  $: includedProjectsQuery = { status: { $in: includedProjectStatuses } }
+
   $: baseQuery = {
     space: currentSpace,
+    ...includedProjectsQuery,
     ...query
   }
 
@@ -59,6 +63,14 @@
   const showCreateDialog = async () => {
     showPopup(NewProject, { space: currentSpace, targetElement: null }, null)
   }
+
+  const handleViewModeChanged = (newMode: ProjectsViewMode) => {
+    if (newMode === undefined || newMode === mode) {
+      return
+    }
+
+    mode = newMode
+  }
 </script>
 
 <div>
@@ -75,16 +87,40 @@
     <div class="flex-center">
       <div class="flex-center">
         <div class="buttonWrapper">
-          <Button selected size="small" shape="rectangle-right" label={tracker.string.AllProjects} />
+          <Button
+            size="small"
+            shape="rectangle-right"
+            selected={mode === 'all'}
+            label={tracker.string.AllProjects}
+            on:click={() => handleViewModeChanged('all')}
+          />
         </div>
         <div class="buttonWrapper">
-          <Button size="small" shape="rectangle" label={tracker.string.BacklogProjects} />
+          <Button
+            size="small"
+            shape="rectangle"
+            selected={mode === 'backlog'}
+            label={tracker.string.BacklogProjects}
+            on:click={() => handleViewModeChanged('backlog')}
+          />
         </div>
         <div class="buttonWrapper">
-          <Button size="small" shape="rectangle" label={tracker.string.ActiveProjects} />
+          <Button
+            size="small"
+            shape="rectangle"
+            selected={mode === 'active'}
+            label={tracker.string.ActiveProjects}
+            on:click={() => handleViewModeChanged('active')}
+          />
         </div>
         <div class="buttonWrapper">
-          <Button size="small" shape="rectangle-left" label={tracker.string.ClosedProjects} />
+          <Button
+            size="small"
+            shape="rectangle-left"
+            selected={mode === 'closed'}
+            label={tracker.string.ClosedProjects}
+            on:click={() => handleViewModeChanged('closed')}
+          />
         </div>
       </div>
       <div class="ml-3 filterButton">
@@ -108,7 +144,7 @@
         </div>
       </div>
       <div class="ml-3">
-        <Button size="small" icon={IconOptions} on:click={() => {}} />
+        <Button size="small" icon={IconOptions} />
       </div>
     </div>
   </div>
@@ -134,7 +170,7 @@
   .header {
     min-height: 3.5rem;
     padding-left: 2.25rem;
-    padding-right: 0.5rem;
+    padding-right: 1.35rem;
     border-bottom: 1px solid var(--theme-button-border-hovered);
   }
 

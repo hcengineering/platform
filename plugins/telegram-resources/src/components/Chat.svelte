@@ -188,6 +188,8 @@
   <Panel
     isHeader={true}
     isAside={false}
+    isFullSize
+    on:fullsize
     on:close={() => {
       dispatch('close')
     }}

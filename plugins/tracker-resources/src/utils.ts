@@ -115,6 +115,7 @@ export const getIssuesModificationDatePeriodTime = (period: IssuesDateModificati
 }
 
 export const defaultProjectStatuses = [
+  ProjectStatus.Backlog,
   ProjectStatus.Planned,
   ProjectStatus.InProgress,
   ProjectStatus.Paused,
@@ -122,13 +123,13 @@ export const defaultProjectStatuses = [
   ProjectStatus.Canceled
 ]
 
-// TODO: update icons
 export const projectStatusAssets: Record<ProjectStatus, { icon: Asset, label: IntlString }> = {
-  [ProjectStatus.Planned]: { icon: tracker.icon.CategoryBacklog, label: tracker.string.Planned },
-  [ProjectStatus.InProgress]: { icon: tracker.icon.CategoryStarted, label: tracker.string.InProgress },
-  [ProjectStatus.Paused]: { icon: tracker.icon.CategoryUnstarted, label: tracker.string.Paused },
-  [ProjectStatus.Completed]: { icon: tracker.icon.CategoryCompleted, label: tracker.string.Completed },
-  [ProjectStatus.Canceled]: { icon: tracker.icon.CategoryCanceled, label: tracker.string.Canceled }
+  [ProjectStatus.Backlog]: { icon: tracker.icon.ProjectStatusBacklog, label: tracker.string.Backlog },
+  [ProjectStatus.Planned]: { icon: tracker.icon.ProjectStatusPlanned, label: tracker.string.Planned },
+  [ProjectStatus.InProgress]: { icon: tracker.icon.ProjectStatusInProgress, label: tracker.string.InProgress },
+  [ProjectStatus.Paused]: { icon: tracker.icon.ProjectStatusPaused, label: tracker.string.Paused },
+  [ProjectStatus.Completed]: { icon: tracker.icon.ProjectStatusCompleted, label: tracker.string.Completed },
+  [ProjectStatus.Canceled]: { icon: tracker.icon.ProjectStatusCanceled, label: tracker.string.Canceled }
 }
 
 export const groupBy = (data: any, key: any): { [key: string]: any[] } => {
@@ -255,3 +256,32 @@ export const getDueDateIconModifier = (
     return 'warning'
   }
 }
+
+export type ProjectsViewMode = 'all' | 'backlog' | 'active' | 'closed'
+
+export const getIncludedProjectStatuses = (mode: ProjectsViewMode): ProjectStatus[] => {
+  switch (mode) {
+    case 'all': {
+      return defaultProjectStatuses
+    }
+    case 'active': {
+      return [ProjectStatus.Planned, ProjectStatus.InProgress, ProjectStatus.Paused]
+    }
+    case 'backlog': {
+      return [ProjectStatus.Backlog]
+    }
+    case 'closed': {
+      return [ProjectStatus.Completed, ProjectStatus.Canceled]
+    }
+    default: {
+      return []
+    }
+  }
+}
+
+export const projectsTitleMap: Record<ProjectsViewMode, IntlString> = Object.freeze({
+  all: tracker.string.AllProjects,
+  backlog: tracker.string.BacklogProjects,
+  active: tracker.string.ActiveProjects,
+  closed: tracker.string.ClosedProjects
+})
