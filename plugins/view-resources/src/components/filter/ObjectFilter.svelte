@@ -83,7 +83,7 @@
   }
 
   function isSelected (value: Doc, values: any[]): boolean {
-    return values.includes(value._id)
+    return values.includes(value?._id ?? '')
   }
 
   function checkMode () {
