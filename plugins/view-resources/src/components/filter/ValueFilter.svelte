@@ -71,10 +71,10 @@
             ...query
           }
         : query
-    const res = await client.findAll(_class, resultQuery)
+    const res = await client.findAll(_class, resultQuery, { projection: { [filter.key.key]: 1 } })
     for (const object of res) {
       const realValue = getObjectValue(filter.key.key, object)
-      const value = typeof realValue === 'string' ? realValue.trim().toUpperCase() : (realValue ?? undefined)
+      const value = typeof realValue === 'string' ? realValue.trim().toUpperCase() : realValue ?? undefined
       values.set(value, (values.get(value) ?? 0) + 1)
       realValues.set(value, (realValues.get(value) ?? new Set()).add(realValue))
     }
@@ -98,7 +98,9 @@
       selectedValues.add(value)
     }
     selectedValues = selectedValues
-    filter.value = Array.from(selectedValues.values()).map((p) => Array.from(realValues.get(p) ?? [])).flat()
+    filter.value = Array.from(selectedValues.values())
+      .map((p) => Array.from(realValues.get(p) ?? []))
+      .flat()
     checkMode()
     onChange(filter)
   }

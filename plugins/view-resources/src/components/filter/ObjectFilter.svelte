@@ -64,7 +64,7 @@
   const targets = new Map<any, number>()
   async function getValues (search: string): Promise<void> {
     targets.clear()
-    const baseObjects = await client.findAll(_class, query)
+    const baseObjects = await client.findAll(_class, query, { projection: { [filter.key.key]: 1 } })
     for (const object of baseObjects) {
       const value = getObjectValue(filter.key.key, object) ?? undefined
       targets.set(value, (targets.get(value) ?? 0) + 1)
@@ -80,7 +80,7 @@
         : {
             _id: { $in: Array.from(targets.keys()) }
           }
-    values = await client.findAll(targetClass, resultQuery)
+    values = await client.findAll(targetClass, resultQuery, { projection: { _id: 1 } })
     if (targets.has(undefined)) {
       values.unshift(undefined)
     }
@@ -98,7 +98,7 @@
 
   function toggle (value: Doc | undefined | null): void {
     if (isSelected(value, filter.value)) {
-      filter.value = filter.value.filter((p) => value ? p !== value._id : p != null)
+      filter.value = filter.value.filter((p) => (value ? p !== value._id : p != null))
     } else {
       if (value) {
         filter.value = [...filter.value, value._id]
@@ -137,28 +137,28 @@
     <div class="box">
       {#await promise then attribute}
         {#each values as value}
-        <button
-          class="menu-item"
-          on:click={() => {
-            toggle(value)
-          }}
-        >
-          <div class="flex-between w-full">
-            <div class="flex">
-              <div class="check pointer-events-none">
-                <CheckBox checked={isSelected(value, filter.value)} primary />
+          <button
+            class="menu-item"
+            on:click={() => {
+              toggle(value)
+            }}
+          >
+            <div class="flex-between w-full">
+              <div class="flex">
+                <div class="check pointer-events-none">
+                  <CheckBox checked={isSelected(value, filter.value)} primary />
+                </div>
+                {#if value}
+                  <svelte:component this={attribute.presenter} {value} {...attribute.props} />
+                {:else}
+                  <Label label={ui.string.NotSelected} />
+                {/if}
               </div>
-              {#if value}
-                <svelte:component this={attribute.presenter} {value} {...attribute.props} />
-              {:else}
-                <Label label={ui.string.NotSelected} />
-              {/if}
+              <div class="content-trans-color">
+                {targets.get(value?._id)}
+              </div>
             </div>
-            <div class="content-trans-color">
-              {targets.get(value?._id)}
-            </div>
-          </div>
-        </button>
+          </button>
         {/each}
       {/await}
     </div>
