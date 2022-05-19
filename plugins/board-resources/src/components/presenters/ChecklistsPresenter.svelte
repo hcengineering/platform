@@ -19,6 +19,7 @@
   $: query.query(task.class.TodoItem, { space: value.space, attachedTo: { $in: todoLists } }, (result) => {
     total = result.total
     done = result.filter((t) => t.done).length
+    if (!total) return
     item = result.reduce((min, cur) =>
       cur.dueTo === null ? min : min.dueTo === null || cur.dueTo < min.dueTo ? cur : min
     )

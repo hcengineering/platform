@@ -106,6 +106,7 @@
     "Size": "Size",
     "RemoveCover": "Remove cover",
     "DeleteChecklist": "Delete checklist",
-    "DeleteChecklistConfirm": "Deleting a checklist is permanent and there is no way to get it back."
+    "DeleteChecklistConfirm": "Deleting a checklist is permanent and there is no way to get it back.",
+    "ConvertToCard": "Convert to card"
   }
 }

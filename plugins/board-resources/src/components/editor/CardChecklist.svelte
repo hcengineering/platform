@@ -117,7 +117,7 @@
   }
 
   function showItemMenu (item: TodoItem, e?: Event) {
-    showPopup(ContextMenu, { object: item, baseMenuClass: board.class.Card }, getPopupAlignment(e))
+    showPopup(ContextMenu, { object: item }, getPopupAlignment(e))
   }
 
   $: checklistItemsQuery.query(task.class.TodoItem, { space: value.space, attachedTo: value._id }, (result) => {

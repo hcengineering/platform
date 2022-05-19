@@ -14,6 +14,9 @@
 // limitations under the License.
 //
 import { Resources } from '@anticrm/platform'
+import { TodoItem } from '@anticrm/task'
+import { getClient } from '@anticrm/presentation'
+import board from '@anticrm/board'
 
 import BoardPresenter from './components/BoardPresenter.svelte'
 import CardPresenter from './components/CardPresenter.svelte'
@@ -37,6 +40,23 @@ import TableView from './components/TableView.svelte'
 import UserBoxList from './components/UserBoxList.svelte'
 import CardLabels from './components/editor/CardLabels.svelte'
 import CardCoverEditor from './components/popups/CardCoverEditor.svelte'
+import { createCard, getCardFromTodoItem } from './utils/CardUtils'
+
+async function ConvertToCard (object: TodoItem): Promise<void> {
+  const client = getClient()
+  const todoItemCard = await getCardFromTodoItem(client, object)
+  if (todoItemCard === undefined) return
+  const date =
+    object.dueTo === null
+      ? {}
+      : { date: { _class: board.class.CardDate, dueDate: object.dueTo, isChecked: object.done } }
+  await createCard(client, todoItemCard.space, todoItemCard.state, {
+    title: object.name,
+    assignee: object.assignee,
+    ...date
+  })
+  await client.remove(object)
+}
 
 export default async (): Promise<Resources> => ({
   component: {
@@ -63,5 +83,8 @@ export default async (): Promise<Resources> => ({
     CoverActionPopup: CardCoverEditor,
     MoveActionPopup: MoveCard,
     CopyActionPopup: CopyCard
+  },
+  actionImpl: {
+    ConvertToCard
   }
 })

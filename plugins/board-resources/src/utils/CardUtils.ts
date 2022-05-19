@@ -1,9 +1,57 @@
 import { Card } from '@anticrm/board'
 import { Employee, EmployeeAccount } from '@anticrm/contact'
-import { TxOperations as Client, TxResult, getCurrentAccount, Ref } from '@anticrm/core'
+import {
+  TxOperations as Client,
+  TxResult,
+  getCurrentAccount,
+  Ref,
+  Space,
+  AttachedData,
+  SortingOrder
+} from '@anticrm/core'
 import { showPanel } from '@anticrm/ui'
-
+import task, { calcRank, State, TodoItem } from '@anticrm/task'
 import board from '../plugin'
+
+export async function createCard (
+  client: Client,
+  space: Ref<Space>,
+  state: Ref<State>,
+  attribues: Partial<AttachedData<Card>>
+): Promise<Ref<Card>> {
+  const sequence = await client.findOne(task.class.Sequence, { attachedTo: board.class.Card })
+  if (sequence === undefined) {
+    throw new Error('sequence object not found')
+  }
+
+  const lastOne = await client.findOne(board.class.Card, { state }, { sort: { rank: SortingOrder.Descending } })
+  const incResult = await client.update(sequence, { $inc: { sequence: 1 } }, true)
+
+  const value: AttachedData<Card> = {
+    title: '',
+    state,
+    doneState: null,
+    number: (incResult as any).object.sequence,
+    rank: calcRank(lastOne, undefined),
+    assignee: null,
+    description: '',
+    labels: [],
+    ...attribues
+  }
+
+  return await client.addCollection(board.class.Card, space, space, board.class.Board, 'cards', value)
+}
+
+export async function getCardFromTodoItem (client: Client, todoItem: TodoItem | undefined): Promise<Card | undefined> {
+  if (todoItem === undefined) return
+  if (todoItem.attachedToClass === todoItem._class) {
+    return await getCardFromTodoItem(
+      client,
+      await client.findOne(todoItem._class, { _id: todoItem.attachedTo as Ref<TodoItem> })
+    )
+  }
+  return await client.findOne(board.class.Card, { _id: todoItem.attachedTo as Ref<Card> })
+}
 
 export function updateCard (client: Client, card: Card, field: string, value: any): Promise<TxResult> | undefined {
   if (card === undefined) {
