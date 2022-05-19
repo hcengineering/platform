@@ -33,4 +33,4 @@
   $: currentDate = value.dueDate !== null ? new Date(value.dueDate) : null
 </script>
 
-<DatePopup currentDate={currentDate} {mondayStart} {withTime} on:close on:update={onUpdate} />
+<DatePopup {currentDate} {mondayStart} {withTime} on:close on:update={onUpdate} />

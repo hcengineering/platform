@@ -447,22 +447,26 @@ export function createModel (builder: Builder): void {
     tracker.category.Tracker
   )
 
-  createAction(builder, {
-    action: view.actionImpl.ShowPopup,
-    actionProps: {
-      component: tracker.component.SetDueDateActionPopup,
-      props: { mondayStart: true, withTime: false },
-      element: 'top'
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.ShowPopup,
+      actionProps: {
+        component: tracker.component.SetDueDateActionPopup,
+        props: { mondayStart: true, withTime: false },
+        element: 'top'
+      },
+      label: tracker.string.SetDueDate,
+      icon: tracker.icon.DueDate,
+      keyBinding: [],
+      input: 'none',
+      category: tracker.category.Tracker,
+      target: tracker.class.Issue,
+      context: {
+        mode: ['context', 'browser'],
+        application: tracker.app.Tracker
+      }
     },
-    label: tracker.string.SetDueDate,
-    icon: tracker.icon.DueDate,
-    keyBinding: [],
-    input: 'none',
-    category: tracker.category.Tracker,
-    target: tracker.class.Issue,
-    context: {
-      mode: ['context', 'browser'],
-      application: tracker.app.Tracker
-    }
-  }, tracker.action.SetDueDate)
+    tracker.action.SetDueDate
+  )
 }
