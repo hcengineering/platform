@@ -270,7 +270,7 @@
 
       .header {
         display: flex;
-        align-items: center;
+        align-items: baseline;
         font-weight: 500;
         font-size: 1rem;
         line-height: 150%;
