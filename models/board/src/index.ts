@@ -14,7 +14,7 @@
 //
 
 // To help typescript locate view plugin properly
-import type { Board, Card, CardDate, CardLabel, MenuPage, LabelsCompactMode } from '@anticrm/board'
+import type { Board, Card, CardDate, CardLabel, MenuPage, CommonBoardPreference } from '@anticrm/board'
 import type { Employee } from '@anticrm/contact'
 import { DOMAIN_MODEL, IndexKind, Markup, Ref, Timestamp, Type } from '@anticrm/core'
 import {
@@ -36,7 +36,7 @@ import contact from '@anticrm/model-contact'
 import core, { TAttachedDoc, TDoc, TObj } from '@anticrm/model-core'
 import task, { TSpaceWithStates, TTask } from '@anticrm/model-task'
 import view, { actionTemplates, createAction } from '@anticrm/model-view'
-import workbench from '@anticrm/model-workbench'
+import workbench, { Application } from '@anticrm/model-workbench'
 import { IntlString } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'
 import preference, { TPreference } from '@anticrm/model-preference'
@@ -72,10 +72,12 @@ export class TCardLabel extends TAttachedDoc implements CardLabel {
   isHidden?: boolean
 }
 
-@Model(board.class.LabelsCompactMode, preference.class.Preference)
-export class TLabelsCompactMode extends TPreference implements LabelsCompactMode {
-  @Prop(TypeRef(board.class.Board), board.string.LabelsCompactMode)
-  attachedTo!: Ref<Board>
+@Model(board.class.CommonBoardPreference, preference.class.Preference)
+export class TCommonBoardPreference extends TPreference implements CommonBoardPreference {
+  @Prop(TypeRef(workbench.class.Application), board.string.CommonBoardPreference)
+  attachedTo!: Ref<Application>
+
+  cardLabelsCompactMode!: boolean
 }
 
 @Model(board.class.Card, task.class.Task)
@@ -123,7 +125,7 @@ export class TMenuPage extends TDoc implements MenuPage {
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TBoard, TCard, TCardLabel, TCardDate, TMenuPage, TLabelsCompactMode)
+  builder.createModel(TBoard, TCard, TCardLabel, TCardDate, TMenuPage, TCommonBoardPreference)
 
   builder.createDoc(board.class.MenuPage, core.space.Model, {
     component: board.component.Archive,
