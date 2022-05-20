@@ -156,7 +156,7 @@
           { value: object, shouldSaveOnChange: false },
           undefined,
           undefined,
-          (newDueDate) => (object.dueDate = newDueDate)
+          (newDueDate) => newDueDate !== undefined && (object.dueDate = newDueDate)
         )
     }
 
@@ -169,8 +169,10 @@
           { value: { ...object, space }, shouldSaveOnChange: false },
           undefined,
           (selectedIssue) => {
-            parentIssue = selectedIssue
-            object.parentIssue = parentIssue?._id
+            if (selectedIssue !== undefined) {
+              parentIssue = selectedIssue
+              object.parentIssue = parentIssue?._id
+            }
           }
         )
     }

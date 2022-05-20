@@ -43,11 +43,7 @@
   }
 
   async function onClose ({ detail: parentIssue }: CustomEvent<Issue | undefined | null>) {
-    if (parentIssue === undefined) {
-      return
-    }
-
-    if (shouldSaveOnChange && parentIssue?._id !== value.parentIssue) {
+    if (shouldSaveOnChange && parentIssue !== undefined && parentIssue?._id !== value.parentIssue) {
       await client.update(value, { parentIssue: parentIssue?._id })
     }
 

@@ -27,13 +27,9 @@
   const dispatch = createEventDispatcher()
 
   async function onUpdate ({ detail }: CustomEvent<Date | null | undefined>) {
-    if (detail === undefined) {
-      return
-    }
+    const newDueDate = detail && detail?.getTime()
 
-    const newDueDate = detail?.getTime() ?? null
-
-    if (shouldSaveOnChange && newDueDate !== value.dueDate) {
+    if (shouldSaveOnChange && newDueDate !== undefined && newDueDate !== value.dueDate) {
       await client.update(value, { dueDate: newDueDate })
     }
 
