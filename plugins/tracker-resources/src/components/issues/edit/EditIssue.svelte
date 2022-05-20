@@ -26,6 +26,7 @@
     IconEdit,
     IconMoreH,
     IconUpOutline,
+    Label,
     Scroller,
     showPopup
   } from '@anticrm/ui'
@@ -77,6 +78,7 @@
 
   $: issueId = currentTeam && issue && `${currentTeam.identifier}-${issue.number}`
   $: canSave = title.trim().length > 0
+  $: isDescriptionEmpty = !new DOMParser().parseFromString(description, 'text/html').documentElement.innerText?.trim()
 
   function edit (ev: MouseEvent) {
     ev.preventDefault()
@@ -175,7 +177,12 @@
     {#if isEditing}
       <Scroller>
         <div class="popupPanel-body__main-content py-10 clear-mins content">
-          <EditBox bind:value={title} placeholder={tracker.string.IssueTitlePlaceholder} kind="large-style" />
+          <EditBox
+            bind:value={title}
+            maxWidth="53.75rem"
+            placeholder={tracker.string.IssueTitlePlaceholder}
+            kind="large-style"
+          />
           <div class="mt-6">
             <StyledTextArea bind:content={description} placeholder={tracker.string.IssueDescriptionPlaceholder} focus />
           </div>
@@ -183,8 +190,14 @@
       </Scroller>
     {:else}
       <span class="title">{title}</span>
-      <div class="mt-6">
-        <MessageViewer message={issue.description} />
+      <div class="mt-6 description-preview">
+        {#if isDescriptionEmpty}
+          <div class="placeholder" on:click={edit}>
+            <Label label={tracker.string.IssueDescriptionPlaceholder} />
+          </div>
+        {:else}
+          <MessageViewer message={issue.description} />
+        {/if}
       </div>
     {/if}
     <AttachmentDocList value={issue} />
@@ -213,5 +226,16 @@
 
   .content {
     height: auto;
+  }
+
+  .description-preview {
+    line-height: 150%;
+    color: var(--theme-content-color);
+    overflow: hidden;
+    word-wrap: break-word;
+
+    .placeholder {
+      color: var(--theme-content-trans-color);
+    }
   }
 </style>
