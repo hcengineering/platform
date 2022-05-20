@@ -25,41 +25,14 @@
 
   let divScroll: HTMLElement
   let divBox: HTMLElement
-  let divBack: HTMLElement
   let divBar: HTMLElement
   let divTrack: HTMLElement
-  let isBack: boolean = false // ?
   let isScrolling: boolean = false
   let dY: number
   let belowContent: number | undefined = undefined
   let beforeContent: number | undefined = undefined
   let scrolling: boolean = autoscroll
   let firstScroll: boolean = autoscroll
-
-  const checkBack = (): void => {
-    if (divBox) {
-      const el = divBox.querySelector('.scroller-back')
-      if (el && divScroll) {
-        const rectScroll = divScroll.getBoundingClientRect()
-        const rectEl = el.getBoundingClientRect()
-        const bottom = document.body.clientHeight - rectScroll.bottom
-        let top = rectEl.top
-        if (top < rectScroll.top) top = rectScroll.top
-        if (top > rectScroll.bottom) top = rectScroll.top + rectScroll.height
-        divBack.style.left = rectScroll.left + 'px'
-        divBack.style.right = document.body.clientWidth - rectScroll.right + 'px'
-        divBack.style.top = top + 'px'
-        divBack.style.bottom = bottom + 'px'
-        divBack.style.height = 'auto'
-        divBack.style.width = 'auto'
-        divBack.style.visibility = 'visible'
-        isBack = true
-      } else {
-        divBack.style.visibility = 'hidden'
-        isBack = false
-      }
-    }
-  }
 
   const checkBar = (): void => {
     if (divBar && divScroll) {
@@ -120,19 +93,20 @@
       else if (belowContent > 1) mask = 'top'
       else mask = 'none'
 
-      if (scrolling && divScroll.scrollHeight - divScroll.clientHeight - divScroll.scrollTop > 10 && !firstScroll) {
-        scrolling = false
+      if (autoscroll) {
+        if (scrolling && divScroll.scrollHeight - divScroll.clientHeight - divScroll.scrollTop > 10 && !firstScroll) {
+          scrolling = false
+        }
+        if (!scrolling && belowContent && belowContent <= 10) scrolling = true
       }
-      if (!scrolling && belowContent && belowContent <= 10) scrolling = true
     }
-    checkBack()
     if (!isScrolling) checkBar()
   }
 
   const observer = new IntersectionObserver(() => checkFade(), { root: null, threshold: 0.1 })
 
   const scrollDown = (): void => {
-    divScroll.scrollTop = divScroll.scrollHeight
+    divScroll.scrollTop = divScroll.scrollHeight - divHeight
   }
   $: if (scrolling && belowContent && belowContent > 10) scrollDown()
   onMount(() => {
@@ -140,13 +114,12 @@
       divScroll.addEventListener('scroll', checkFade)
       const tempEl = divBox.querySelector('*') as HTMLElement
       if (tempEl) observer.observe(tempEl)
-      if (scrolling) {
+      if (autoscroll && scrolling) {
         scrollDown()
         firstScroll = false
       }
       checkFade()
     }
-    if (divBack) checkBack()
   })
   onDestroy(() => {
     if (divScroll) divScroll.removeEventListener('scroll', checkFade)
@@ -155,21 +128,20 @@
     if (divScroll && divBox) {
       const tempEl = divBox.querySelector('*') as HTMLElement
       if (tempEl) observer.observe(tempEl)
-      if (scrolling) scrollDown()
+      if (autoscroll && scrolling) scrollDown()
       checkFade()
     }
   })
 
-  let divWidth: number = 0
+  let divHeight: number
   const _resize = (): void => checkFade()
-  $: if (divWidth) _resize()
 </script>
 
 <svelte:window on:resize={_resize} />
 <div class="scroller-container" class:bottomStart>
   <div
     bind:this={divScroll}
-    bind:clientWidth={divWidth}
+    bind:clientHeight={divHeight}
     class="scroll relative"
     class:tableFade
     class:antiNav-topFade={mask === 'top'}
@@ -181,7 +153,6 @@
       <slot />
     </div>
   </div>
-  <div bind:this={divBack} class="back" />
   <div class="bar" class:hovered={isScrolling} bind:this={divBar} on:mousedown={onScrollStart} />
   <div class="track" class:hovered={isScrolling} bind:this={divTrack} />
 </div>
@@ -192,6 +163,7 @@
     display: flex;
     flex-direction: column;
     height: 100%;
+    min-width: 0;
     min-height: 0;
   }
   .scroll {
@@ -208,7 +180,6 @@
   .box {
     display: flex;
     flex-direction: column;
-    height: 100%;
   }
   .scroller-container.bottomStart {
     justify-content: flex-end;
@@ -268,15 +239,5 @@
     &.hovered {
       transition: none;
     }
-  }
-
-  .back {
-    visibility: hidden;
-    position: fixed;
-    width: 0;
-    height: 0;
-    // background-color: red;
-    background-color: var(--body-color);
-    z-index: -1;
   }
 </style>

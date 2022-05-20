@@ -38,7 +38,7 @@
     } else {
       return inputRef.click()
     }
-    showPopup(EditAvatarPopup, { file }, undefined, (blob) => {
+    showPopup(EditAvatarPopup, { file }, 'full', (blob) => {
       if (blob === undefined) {
         return
       }

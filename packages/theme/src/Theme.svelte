@@ -53,11 +53,16 @@
     }
   })
 
+  const setDocumentLanguage = (): void => {
+    document.documentElement.lang = currentLanguage
+  }
+
   onMount(() => {
     setRootColors(currentTheme)
     setRootFontSize(currentFontSize)
     setMetadata(platform.metadata.locale, currentLanguage)
     loadPluginStrings(currentLanguage)
+    setDocumentLanguage()
   })
 </script>
 
