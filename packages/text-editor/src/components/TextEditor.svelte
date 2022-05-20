@@ -53,6 +53,9 @@
   export function insertText (text: string): void {
     editor.commands.insertContent(text as HTMLContent)
   }
+  export function checkIsActive (markName: string) {
+    return editor.isActive(markName)
+  }
   export function toggleBold () {
     editor.commands.toggleBold()
   }
@@ -119,7 +122,8 @@
         onUpdate: () => {
           content = editor.getHTML()
           dispatch('value', content)
-        }
+        },
+        onSelectionUpdate: () => dispatch('selection-update')
       })
     })
   })
