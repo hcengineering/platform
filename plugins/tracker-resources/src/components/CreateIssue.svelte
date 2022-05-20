@@ -67,7 +67,6 @@
   const taskId: Ref<Issue> = generateId()
 
   $: _space = space
-  $: _parent = parent
   $: updateIssueStatusId(space, status)
   $: canSave = getTitle(object.title ?? '').length > 0
 
