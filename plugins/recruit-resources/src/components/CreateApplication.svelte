@@ -18,7 +18,7 @@
   import { Account, Class, Client, Doc, generateId, Ref, SortingOrder } from '@anticrm/core'
   import { getResource, OK, Resource, Severity, Status } from '@anticrm/platform'
   import { Card, createQuery, getClient, SpaceSelector, UserBox } from '@anticrm/presentation'
-  import type { Applicant, Candidate, Vacancy } from '@anticrm/recruit'
+  import type { Applicant, Candidate } from '@anticrm/recruit'
   import task, { calcRank, SpaceWithStates, State } from '@anticrm/task'
   import ui, {
     Button,
