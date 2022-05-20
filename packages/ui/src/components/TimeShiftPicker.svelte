@@ -16,13 +16,15 @@
   import type { IntlString } from '@anticrm/platform'
   import { createEventDispatcher, onMount } from 'svelte'
   import { Label, showPopup } from '..'
+  import { DateOrShift } from '../types'
+  import DateRangePresenter from './calendar/DateRangePresenter.svelte'
   import Calendar from './icons/Calendar.svelte'
   import Close from './icons/Close.svelte'
   import TimeShiftPopup from './TimeShiftPopup.svelte'
   import TimeShiftPresenter from './TimeShiftPresenter.svelte'
 
   export let title: IntlString
-  export let value: number
+  export let value: DateOrShift | undefined
   export let show: boolean = false
   export let direction: 'before' | 'after' = 'before'
 
@@ -32,7 +34,7 @@
   let container: HTMLElement
   let btn: HTMLElement
 
-  const changeValue = (result: any): void => {
+  const changeValue = (result: DateOrShift): void => {
     if (result !== undefined) {
       value = result
       dispatch('change', result)
@@ -61,7 +63,7 @@
     }
   }}
 >
-  <button bind:this={btn} class="button round-2" class:selected={value}>
+  <button bind:this={btn} class="button round-2" class:selected={value?.shift}>
     <div class="icon">
       {#if show}<Close size={'small'} />{:else}<Calendar size={'medium'} />{/if}
     </div>
@@ -69,6 +71,10 @@
 
   <div class="group">
     <span class="label"><Label label={title} /></span>
-    <TimeShiftPresenter {value} />
+    {#if value?.shift !== undefined}
+      <TimeShiftPresenter value={value.shift} />
+    {:else}
+      <DateRangePresenter value={value?.date} withTime={true} editable={false} />
+    {/if}
   </div>
 </div>

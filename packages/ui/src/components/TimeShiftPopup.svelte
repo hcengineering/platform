@@ -14,12 +14,18 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
+  import ui from '../plugin'
+  import { DateOrShift } from '../types'
+  import DateRangePresenter from './calendar/DateRangePresenter.svelte'
   import TimeShiftPresenter from './TimeShiftPresenter.svelte'
 
   export let direction: 'before' | 'after'
+  export let value: DateOrShift | undefined = undefined
   export let minutes: number[] = [5, 15, 30]
   export let hours: number[] = [1, 2, 4]
   export let days: number[] = [1, 3, 7, 30]
+
+  let date = value?.date
   const dispatch = createEventDispatcher()
 
   $: base = direction === 'before' ? -1 : 1
@@ -30,11 +36,25 @@
 </script>
 
 <div class="antiPopup">
+  <div class="flex-center mt-1 mb-1">
+    <DateRangePresenter
+      bind:value={date}
+      withTime={true}
+      editable={true}
+      labelNull={ui.string.SelectDate}
+      on:change={() => {
+        if (date) {
+          dispatch('close', { date })
+        }
+      }}
+    />
+  </div>
+  <div class="bottom-divider mb-2" />
   {#each values as value}
     <div
       class="ap-menuItem"
       on:click={() => {
-        dispatch('close', value)
+        dispatch('close', { shift: value })
       }}
     >
       <TimeShiftPresenter value={value * base} />

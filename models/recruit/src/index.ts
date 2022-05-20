@@ -75,7 +75,7 @@ export class TVacancy extends TSpaceWithStates implements Vacancy {
 export class TCandidates extends TSpace implements Candidates {}
 
 @Mixin(recruit.mixin.Candidate, contact.class.Person)
-@UX(recruit.string.Candidate, recruit.icon.RecruitApplication)
+@UX(recruit.string.Candidate, recruit.icon.RecruitApplication, undefined, 'name')
 export class TCandidate extends TPerson implements Candidate {
   @Prop(TypeString(), recruit.string.Title)
   @Index(IndexKind.FullText)
@@ -452,7 +452,7 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(recruit.mixin.Candidate, core.class.Class, view.mixin.ClassFilters, {
-    filters: ['title', 'source', 'city', 'modifiedOn']
+    filters: ['title', 'source', 'city', 'modifiedOn', 'onsite', 'remote']
   })
 
   builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.ClassFilters, {

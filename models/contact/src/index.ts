@@ -103,7 +103,7 @@ export class TStatus extends TAttachedDoc implements Status {
 }
 
 @Model(contact.class.Employee, contact.class.Person)
-@UX(contact.string.Employee, contact.icon.Person)
+@UX(contact.string.Employee, contact.icon.Person, undefined, 'name')
 export class TEmployee extends TPerson implements Employee {
   @Prop(Collection(contact.class.Status), contact.string.Status)
   statuses?: number

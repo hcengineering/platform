@@ -55,7 +55,7 @@ export default mergeIds(boardId, board, {
     Table: '' as Ref<ViewletDescriptor>
   },
   string: {
-    LabelsCompactMode: '' as IntlString,
+    CommonBoardPreference: '' as IntlString,
     ConvertToCard: '' as IntlString
   },
   action: {
