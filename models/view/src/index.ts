@@ -501,6 +501,10 @@ export function createModel (builder: Builder): void {
     component: view.component.ValueFilter
   })
 
+  builder.mixin(core.class.TypeBoolean, core.class.Class, view.mixin.AttributeFilter, {
+    component: view.component.ValueFilter
+  })
+
   builder.mixin(core.class.TypeNumber, core.class.Class, view.mixin.AttributeFilter, {
     component: view.component.ValueFilter
   })

@@ -16,7 +16,7 @@
   import { Class, Doc, DocumentQuery, getObjectValue, Ref } from '@anticrm/core'
   import { translate } from '@anticrm/platform'
   import presentation, { getClient } from '@anticrm/presentation'
-  import { CheckBox } from '@anticrm/ui'
+  import ui, { CheckBox, Label } from '@anticrm/ui'
   import { Filter } from '@anticrm/view'
   import { onMount } from 'svelte'
   import { getPresenter } from '../../utils'
@@ -55,11 +55,15 @@
   const key = { key: filter.key.key }
   const promise = getPresenter(client, _class, key, key)
 
-  let values: Set<any> = new Set<any>()
+  let values = new Map<any, number>()
+  let selectedValues: Set<any> = new Set<any>()
+  const realValues = new Map<any, Set<any>>()
 
   $: getValues(search)
 
   async function getValues (search: string): Promise<void> {
+    values.clear()
+    realValues.clear()
     const resultQuery =
       search !== ''
         ? {
@@ -67,12 +71,18 @@
             ...query
           }
         : query
-    const res = await client.findAll(_class, resultQuery)
-    values = new Set(res.map((obj) => getObjectValue(filter.key.key, obj)))
+    const res = await client.findAll(_class, resultQuery, { projection: { [filter.key.key]: 1 } })
+    for (const object of res) {
+      const realValue = getObjectValue(filter.key.key, object)
+      const value = typeof realValue === 'string' ? realValue.trim().toUpperCase() : realValue ?? undefined
+      values.set(value, (values.get(value) ?? 0) + 1)
+      realValues.set(value, (realValues.get(value) ?? new Set()).add(realValue))
+    }
+    values = values
   }
 
-  function isSelected (value: any, values: any[]): boolean {
-    return values.includes(value)
+  function isSelected (value: any, values: Set<any>): boolean {
+    return values.has(value)
   }
 
   function checkMode () {
@@ -82,11 +92,15 @@
   }
 
   function toggle (value: any): void {
-    if (isSelected(value, filter.value)) {
-      filter.value = filter.value.filter((p) => p !== value)
+    if (isSelected(value, selectedValues)) {
+      selectedValues.delete(value)
     } else {
-      filter.value = [...filter.value, value]
+      selectedValues.add(value)
     }
+    selectedValues = selectedValues
+    filter.value = Array.from(selectedValues.values())
+      .map((p) => Array.from(realValues.get(p) ?? []))
+      .flat()
     checkMode()
     onChange(filter)
   }
@@ -117,17 +131,28 @@
   <div class="scroll">
     <div class="box">
       {#await promise then attribute}
-        {#each Array.from(values) as value}
+        {#each Array.from(values.keys()) as value}
           <button
             class="menu-item"
             on:click={() => {
               toggle(value)
             }}
           >
-            <div class="check pointer-events-none">
-              <CheckBox checked={isSelected(value, filter.value)} primary />
+            <div class="flex-between w-full">
+              <div class="flex">
+                <div class="check pointer-events-none">
+                  <CheckBox checked={isSelected(value, selectedValues)} primary />
+                </div>
+                {#if value}
+                  <svelte:component this={attribute.presenter} {value} {...attribute.props} />
+                {:else}
+                  <Label label={ui.string.NotSelected} />
+                {/if}
+              </div>
+              <div class="content-trans-color">
+                {values.get(value)}
+              </div>
             </div>
-            <svelte:component this={attribute.presenter} {value} {...attribute.props} />
           </button>
         {/each}
       {/await}
