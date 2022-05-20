@@ -224,6 +224,10 @@ export function createModel (builder: Builder): void {
     presenter: board.component.CardLabelPresenter
   })
 
+  builder.mixin(board.class.CardLabel, core.class.Class, view.mixin.CollectionPresenter, {
+    presenter: board.component.CardLabelPresenter
+  })
+
   builder.mixin(board.class.CardDate, core.class.Class, view.mixin.AttributePresenter, {
     presenter: board.component.CardDatePresenter
   })
