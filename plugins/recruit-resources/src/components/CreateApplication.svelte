@@ -200,7 +200,7 @@
   label={recruit.string.CreateApplication}
   okAction={createApplication}
   canSave={status.severity === Severity.OK}
-  bind:createMore={createMore}
+  bind:createMore
   on:close={() => {
     dispatch('close')
   }}
