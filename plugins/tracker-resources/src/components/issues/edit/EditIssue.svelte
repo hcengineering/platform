@@ -175,7 +175,12 @@
     {#if isEditing}
       <Scroller>
         <div class="popupPanel-body__main-content py-10 clear-mins content">
-          <EditBox bind:value={title} placeholder={tracker.string.IssueTitlePlaceholder} kind="large-style" />
+          <EditBox
+            bind:value={title}
+            maxWidth="53.75rem"
+            placeholder={tracker.string.IssueTitlePlaceholder}
+            kind="large-style"
+          />
           <div class="mt-6">
             <StyledTextArea bind:content={description} placeholder={tracker.string.IssueDescriptionPlaceholder} focus />
           </div>
