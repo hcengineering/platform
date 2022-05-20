@@ -469,4 +469,26 @@ export function createModel (builder: Builder): void {
     },
     tracker.action.SetDueDate
   )
+
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.ShowPopup,
+      actionProps: {
+        component: tracker.component.SetParentIssueActionPopup,
+        element: 'top'
+      },
+      label: tracker.string.SetParent,
+      icon: tracker.icon.Parent,
+      keyBinding: [],
+      input: 'none',
+      category: tracker.category.Tracker,
+      target: tracker.class.Issue,
+      context: {
+        mode: ['context', 'browser'],
+        application: tracker.app.Tracker
+      }
+    },
+    tracker.action.SetParent
+  )
 }

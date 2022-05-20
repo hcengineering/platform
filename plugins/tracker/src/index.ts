@@ -244,6 +244,7 @@ export default plugin(trackerId, {
     Tracker: '' as Ref<ActionCategory>
   },
   action: {
-    SetDueDate: '' as Ref<Action>
+    SetDueDate: '' as Ref<Action>,
+    SetParent: '' as Ref<Action>
   }
 })

@@ -27,17 +27,18 @@
     Spinner,
     IconMoreH,
     ActionIcon,
-    DatePopup,
     Menu
   } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../plugin'
+  import ParentIssue from './issues/ParentIssue.svelte'
+  import SetParentIssueActionPopup from './SetParentIssueActionPopup.svelte'
   import PrioritySelector from './PrioritySelector.svelte'
   import ProjectSelector from './ProjectSelector.svelte'
+  import SetDueDateActionPopup from './SetDueDateActionPopup.svelte'
   import StatusSelector from './StatusSelector.svelte'
 
   export let space: Ref<Team>
-  export let parent: Ref<Issue> | undefined
   export let status: Ref<IssueStatus> | undefined = undefined
   export let priority: IssuePriority = IssuePriority.NoPriority
   export let assignee: Ref<Employee> | null = null
@@ -45,6 +46,7 @@
 
   let currentAssignee: Ref<Employee> | null = assignee
   let issueStatuses: WithLookup<IssueStatus>[] | undefined
+  let parentIssue: Issue | undefined
 
   let object: Data<Issue> = {
     title: '',
@@ -92,6 +94,11 @@
     }
   }
 
+  function clearParentIssue () {
+    parentIssue = undefined
+    object.parentIssue = undefined
+  }
+
   function getTitle (value: string) {
     return value.trim()
   }
@@ -129,7 +136,7 @@
       status: object.status,
       priority: object.priority,
       rank: calcRank(lastOne, undefined),
-      parentIssue: _parent,
+      parentIssue: object.parentIssue,
       comments: 0,
       dueDate: object.dueDate
     }
@@ -143,21 +150,41 @@
     const selectDueDate = {
       label: object.dueDate === null ? tracker.string.SetDueDate : tracker.string.ChangeDueDate,
       icon: tracker.icon.DueDate,
-      action: async () => {
+      action: async () =>
         showPopup(
-          DatePopup,
-          { mondayStart: true, withTime: false, currentDate: object.dueDate },
+          SetDueDateActionPopup,
+          { value: object, shouldSaveOnChange: false },
           undefined,
           undefined,
-          (newDueDate) => newDueDate !== undefined && (object.dueDate = newDueDate)
+          (newDueDate) => (object.dueDate = newDueDate)
         )
-      }
+    }
+
+    const setParentIssue = {
+      label: object.parentIssue ? tracker.string.ChangeParent : tracker.string.SetParent,
+      icon: tracker.icon.Parent,
+      action: async () =>
+        showPopup(
+          SetParentIssueActionPopup,
+          { value: { ...object, space }, shouldSaveOnChange: false },
+          undefined,
+          (selectedIssue) => {
+            parentIssue = selectedIssue
+            object.parentIssue = parentIssue?._id
+          }
+        )
+    }
+
+    const removeParentIssue = object.parentIssue && {
+      label: tracker.string.RemoveParent,
+      icon: tracker.icon.Parent,
+      action: clearParentIssue
     }
 
     showPopup(
       Menu,
       {
-        actions: [selectDueDate]
+        actions: [selectDueDate, setParentIssue, ...(removeParentIssue ? [removeParentIssue] : [])]
       },
       ev.target as HTMLElement
     )
@@ -211,6 +238,9 @@
       on:click={() => {}}
     />
   </svelte:fragment>
+  {#if parentIssue}
+    <ParentIssue issue={parentIssue} on:close={clearParentIssue} />
+  {/if}
   <EditBox
     bind:value={object.title}
     placeholder={tracker.string.IssueTitlePlaceholder}

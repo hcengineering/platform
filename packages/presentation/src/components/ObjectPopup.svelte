@@ -44,6 +44,7 @@
   export let selectedObjects: Ref<Doc>[] = []
   export let ignoreObjects: Ref<Doc>[] = []
   export let shadows: boolean = true
+  export let width: 'medium' | 'large' = 'medium'
 
   export let searchField: string = 'name'
 
@@ -72,7 +73,7 @@
     (result) => {
       objects = result
     },
-    { ...(options ?? {}), limit: 200 }
+    { limit: 200, ...(options ?? {}) }
   )
 
   const checkSelected = (person: Doc, objects: Doc[]): void => {
@@ -146,7 +147,7 @@
 
 <FocusHandler {manager} />
 
-<div class="selectPopup" class:plainContainer={!shadows} on:keydown={onKeydown}>
+<div class="selectPopup" class:plainContainer={!shadows} class:width-40={width === 'large'} on:keydown={onKeydown}>
   <div class="header flex-row-center flex-bletween p-1">
     <div class="flex-grow">
       <EditBox kind={'search-style'} focusIndex={1} focus bind:value={search} {placeholder} />
