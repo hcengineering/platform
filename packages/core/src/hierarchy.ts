@@ -405,6 +405,15 @@ export class Hierarchy {
     }
     return result
   }
+
+  domains (): Domain[] {
+    const classes = Array.from(this.classifiers.values()).filter(
+      (it) => this.isClass(it) || this._isMixin(it)
+    ) as Class<Doc>[]
+    return (classes.map((it) => it.domain).filter((it) => it !== undefined) as Domain[]).filter(
+      (it, idx, array) => array.findIndex((pt) => pt === it) === idx
+    )
+  }
 }
 
 function addNew<T> (val: Set<T>, value: T): boolean {

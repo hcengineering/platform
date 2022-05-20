@@ -33,6 +33,7 @@ import toolPlugin, { prepareTools, version } from '@anticrm/server-tool'
 import { program } from 'commander'
 import { Db, MongoClient } from 'mongodb'
 import { exit } from 'process'
+import { backupWorkspace } from './backup'
 import { rebuildElastic } from './elastic'
 import { importXml } from './importer'
 import { updateCandidates } from './recruit'
@@ -182,6 +183,13 @@ program
   .description('dump workspace transactions and minio resources')
   .action(async (workspace, dirName, cmd) => {
     return await dumpWorkspace(mongodbUri, workspace, dirName, minio)
+  })
+
+program
+  .command('backup-workspace <workspace> <dirName>')
+  .description('dump workspace transactions and minio resources')
+  .action(async (workspace, dirName, cmd) => {
+    return await backupWorkspace(transactorUrl, workspace, dirName)
   })
 
 program

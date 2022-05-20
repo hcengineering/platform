@@ -13,7 +13,18 @@
 // limitations under the License.
 //
 
-import type { Class, Doc, DocumentQuery, FindOptions, FindResult, Ref, Tx, TxResult } from '@anticrm/core'
+import type {
+  Class,
+  Doc,
+  DocumentQuery,
+  Domain,
+  FindOptions,
+  FindResult,
+  Ref,
+  StorageIterator,
+  Tx,
+  TxResult
+} from '@anticrm/core'
 import { Hierarchy, TxDb } from '@anticrm/core'
 import builder from '@anticrm/model-all'
 import type { TxAdapter } from '@anticrm/server-core'
@@ -48,6 +59,17 @@ class InMemoryTxAdapter implements TxAdapter {
   }
 
   async close (): Promise<void> {}
+
+  find (domain: Domain): StorageIterator {
+    return {
+      next: async () => await Promise.reject(new Error('Not implemented')),
+      close: async () => {}
+    }
+  }
+
+  async load (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
+    return []
+  }
 }
 
 /**

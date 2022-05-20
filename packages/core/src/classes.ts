@@ -234,6 +234,12 @@ export const DOMAIN_MODEL = 'model' as Domain
  */
 export const DOMAIN_TRANSIENT = 'transient' as Domain
 
+/**
+ * Special domain to access s3 blob data.
+ * @public
+ */
+export const DOMAIN_BLOB = 'blob' as Domain
+
 // S P A C E
 
 /**
@@ -268,4 +274,15 @@ export interface Version extends Doc {
   major: number
   minor: number
   patch: number
+}
+
+/**
+ * Blob data from s3 storage
+ * @public
+ */
+export interface BlobData extends Doc {
+  name: string
+  size: number
+  type: string
+  base64Data: string // base64 encoded data
 }

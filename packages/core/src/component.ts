@@ -20,6 +20,7 @@ import type {
   AnyAttribute,
   ArrOf,
   AttachedDoc,
+  BlobData,
   Class,
   Collection,
   Doc,
@@ -85,7 +86,8 @@ export default plugin(coreId, {
     Bag: '' as Ref<Class<Type<Record<string, PropertyType>>>>,
     Version: '' as Ref<Class<Version>>,
     PluginConfiguration: '' as Ref<Class<PluginConfiguration>>,
-    UserStatus: '' as Ref<Class<UserStatus>>
+    UserStatus: '' as Ref<Class<UserStatus>>,
+    BlobData: '' as Ref<Class<BlobData>>
   },
   space: {
     Tx: '' as Ref<Space>,

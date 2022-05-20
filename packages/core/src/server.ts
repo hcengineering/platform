@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { MeasureContext } from '.'
-import type { Doc, Class, Ref } from './classes'
+import { MeasureContext } from './measurements'
+import type { Doc, Class, Ref, Domain } from './classes'
 import { Hierarchy } from './hierarchy'
 import { ModelDb } from './memdb'
 import type { DocumentQuery, FindOptions, FindResult, TxResult } from './storage'
@@ -23,7 +23,31 @@ import type { Tx } from './tx'
 /**
  * @public
  */
-export interface ServerStorage {
+export interface DocInfo {
+  id: string
+  hash: string
+  size: number // Aprox size
+}
+/**
+ * @public
+ */
+export interface StorageIterator {
+  next: () => Promise<DocInfo | undefined>
+  close: () => Promise<void>
+}
+
+/**
+ * @public
+ */
+export interface LowLevelStorage {
+  // Low level streaming API to retrieve information
+  find: (domain: Domain) => StorageIterator
+  load: (domain: Domain, docs: Ref<Doc>[]) => Promise<Doc[]>
+}
+/**
+ * @public
+ */
+export interface ServerStorage extends LowLevelStorage {
   hierarchy: Hierarchy
   modelDb: ModelDb
   findAll: <T extends Doc>(

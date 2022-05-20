@@ -19,7 +19,9 @@ import type {
   Class,
   ClientConnection,
   Doc,
+  DocChunk,
   DocumentQuery,
+  Domain,
   FindOptions,
   FindResult,
   Ref,
@@ -126,6 +128,18 @@ class Connection implements ClientConnection {
 
   tx (tx: Tx): Promise<TxResult> {
     return this.sendRequest('tx', tx)
+  }
+
+  loadChunk (domain: Domain, idx?: number): Promise<DocChunk> {
+    return this.sendRequest('loadChunk', domain, idx)
+  }
+
+  closeChunk (idx: number): Promise<void> {
+    return this.sendRequest('closeChunk', idx)
+  }
+
+  loadDocs (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
+    return this.sendRequest('loadDocs', domain, docs)
   }
 }
 

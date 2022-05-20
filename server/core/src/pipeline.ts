@@ -17,11 +17,13 @@ import {
   Class,
   Doc,
   DocumentQuery,
+  Domain,
   FindOptions,
   FindResult,
   ModelDb,
   Ref,
   ServerStorage,
+  StorageIterator,
   Tx,
   TxResult
 } from '@anticrm/core'
@@ -39,7 +41,7 @@ export async function createPipeline (conf: DbConfiguration, constructors: Middl
 class TPipeline implements Pipeline {
   private readonly head: Middleware | undefined
   readonly modelDb: ModelDb
-  constructor (private readonly storage: ServerStorage, constructors: MiddlewareCreator[]) {
+  constructor (readonly storage: ServerStorage, constructors: MiddlewareCreator[]) {
     this.head = this.buildChain(constructors)
     this.modelDb = storage.modelDb
   }
@@ -72,5 +74,13 @@ class TPipeline implements Pipeline {
 
   async close (): Promise<void> {
     await this.storage.close()
+  }
+
+  find (domain: Domain): StorageIterator {
+    return this.storage.find(domain)
+  }
+
+  async load (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
+    return await this.storage.load(domain, docs)
   }
 }

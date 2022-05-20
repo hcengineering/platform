@@ -30,6 +30,7 @@ export * from './server'
 export * from './storage'
 export * from './tx'
 export * from './utils'
+export * from './backup'
 
 addStringsLoader(coreId, async (lang: string) => {
   return await import(`../lang/${lang}.json`)

@@ -24,6 +24,7 @@ import {
   Doc,
   Domain,
   DOMAIN_MODEL,
+  DOMAIN_BLOB,
   IndexKind,
   Interface,
   Mixin,
@@ -34,7 +35,8 @@ import {
   Space,
   Timestamp,
   Type,
-  Version
+  Version,
+  BlobData
 } from '@anticrm/core'
 import { Hidden, Index, Model, Prop, TypeIntlString, TypeRef, TypeString, TypeTimestamp, UX } from '@anticrm/model'
 import type { IntlString } from '@anticrm/platform'
@@ -172,4 +174,13 @@ export class TVersion extends TDoc implements Version {
 export class TPluginConfiguration extends TDoc implements PluginConfiguration {
   pluginId!: string
   transactions!: Ref<Doc>[]
+}
+
+@Model(core.class.BlobData, core.class.Doc, DOMAIN_BLOB)
+export class TBlobData extends TDoc implements BlobData {
+  name!: string
+  file!: string
+  size!: number
+  type!: string
+  base64Data!: string
 }

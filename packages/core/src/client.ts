@@ -14,7 +14,8 @@
 //
 
 import { Plugin } from '@anticrm/platform'
-import type { Class, Doc, PluginConfiguration, Ref } from './classes'
+import { BackupClient, DocChunk } from './backup'
+import type { Class, Doc, Domain, PluginConfiguration, Ref } from './classes'
 import { DOMAIN_MODEL } from './classes'
 import core from './component'
 import { Hierarchy } from './hierarchy'
@@ -47,11 +48,11 @@ export interface Client extends Storage {
 /**
  * @public
  */
-export interface ClientConnection extends Storage {
+export interface ClientConnection extends Storage, BackupClient {
   close: () => Promise<void>
 }
 
-class ClientImpl implements Client {
+class ClientImpl implements Client, BackupClient {
   notify?: (tx: Tx) => void
 
   constructor (
@@ -118,6 +119,18 @@ class ClientImpl implements Client {
 
   async close (): Promise<void> {
     await this.conn.close()
+  }
+
+  async loadChunk (domain: Domain, idx?: number | undefined): Promise<DocChunk> {
+    return await this.conn.loadChunk(domain, idx)
+  }
+
+  async closeChunk (idx: number): Promise<void> {
+    return await this.conn.closeChunk(idx)
+  }
+
+  async loadDocs (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
+    return await this.conn.loadDocs(domain, docs)
   }
 }
 

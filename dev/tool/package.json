@@ -39,7 +39,8 @@
     "@types/ws": "^8.2.1",
     "@types/xml2js": "~0.4.9",
     "@types/mime-types": "~2.1.1",
-    "@types/request": "~2.48.8"
+    "@types/request": "~2.48.8",
+    "@types/tar-stream": "~2.2.2"
   },
   "dependencies": {
     "mongodb": "^4.1.1",
@@ -103,6 +104,7 @@
     "@anticrm/server-telegram-resources": "~0.6.0",
     "@anticrm/rekoni": "~0.6.0",
     "request": "~2.88.2",
-    "@anticrm/tags": "~0.6.2"
+    "@anticrm/tags": "~0.6.2",
+    "tar-stream": "~2.2.0"
   }
 }

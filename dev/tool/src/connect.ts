@@ -7,9 +7,13 @@ import { generateToken } from '@anticrm/server-token'
 // eslint-disable-next-line
 const WebSocket = require('ws')
 
-export async function connect (transactorUrl: string, workspace: string): Promise<Client> {
+export async function connect (
+  transactorUrl: string,
+  workspace: string,
+  extra?: Record<string, string>
+): Promise<Client> {
   console.log('connecting to transactor...')
-  const token = generateToken('anticrm@hc.engineering', workspace)
+  const token = generateToken('anticrm@hc.engineering', workspace, extra)
 
   // We need to override default factory with 'ws' one.
   setMetadata(client.metadata.ClientSocketFactory, (url) => new WebSocket(url))

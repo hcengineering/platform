@@ -19,6 +19,7 @@ import {
   TArrOf,
   TAttachedDoc,
   TAttribute,
+  TBlobData,
   TClass,
   TCollection,
   TDoc,
@@ -90,6 +91,7 @@ export function createModel (builder: Builder): void {
     TTypeNumber,
     TTypeIntlString,
     TPluginConfiguration,
-    TUserStatus
+    TUserStatus,
+    TBlobData
   )
 }

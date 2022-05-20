@@ -32,7 +32,7 @@ export async function connect (
   const token = generateToken(
     email ?? 'anticrm@hc.engineering',
     workspace,
-    reloadModel ? { model: 'reload' } : undefined
+    reloadModel ? { model: 'upgrade' } : undefined
   )
 
   // We need to override default factory with 'ws' one.

@@ -24,7 +24,7 @@ import {
   FullTextAdapter,
   IndexedDoc
 } from '@anticrm/server-core'
-import { start as startJsonRpc } from '@anticrm/server-ws'
+import { ClientSession, start as startJsonRpc } from '@anticrm/server-ws'
 
 class NullFullTextAdapter implements FullTextAdapter {
   async index (doc: IndexedDoc): Promise<TxResult> {
@@ -78,6 +78,7 @@ export async function start (port: number, host?: string): Promise<void> {
       }
       return createPipeline(conf, [])
     },
+    (token, pipeline, broadcast) => new ClientSession(broadcast, token, pipeline),
     port,
     host
   )

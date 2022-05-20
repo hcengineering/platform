@@ -15,3 +15,5 @@
 //
 
 export { start } from './server'
+export * from './types'
+export * from './client'

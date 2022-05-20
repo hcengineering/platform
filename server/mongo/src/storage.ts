@@ -17,6 +17,7 @@ import core, {
   Class,
   Doc,
   DocumentQuery,
+  Domain,
   DOMAIN_MODEL,
   DOMAIN_TX,
   escapeLikeForRegexp,
@@ -31,6 +32,7 @@ import core, {
   ReverseLookups,
   SortingOrder,
   SortingQuery,
+  StorageIterator,
   toFindResult,
   Tx,
   TxCreateDoc,
@@ -45,6 +47,8 @@ import core, {
 import type { DbAdapter, TxAdapter } from '@anticrm/server-core'
 import { Collection, Db, Document, Filter, MongoClient, Sort } from 'mongodb'
 import { getMongoClient } from './utils'
+
+import { createHash } from 'node:crypto'
 
 function translateDoc (doc: Doc): Document {
   return doc as Document
@@ -419,6 +423,39 @@ abstract class MongoAdapterBase extends TxProcessor {
     }
     const res = await cursor.toArray()
     return toFindResult(res, total)
+  }
+
+  find (domain: Domain): StorageIterator {
+    const coll = this.db.collection<Doc>(domain)
+    const iterator = coll.find({}, {})
+
+    return {
+      next: async () => {
+        const d = await iterator.next()
+        if (d === null) {
+          return undefined
+        }
+        const doc = JSON.stringify(d)
+        const hash = createHash('sha256')
+        hash.update(doc)
+        const digest = hash.digest('base64')
+        return {
+          id: d._id,
+          hash: digest,
+          size: doc.length // Some approx size for document.
+        }
+      },
+      close: async () => {
+        await iterator.close()
+      }
+    }
+  }
+
+  async load (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
+    return await this.db
+      .collection(domain)
+      .find<Doc>({ _id: { $in: docs } })
+      .toArray()
   }
 }
 
