@@ -78,11 +78,13 @@ export class LiveQuery {
   private oldCallback: ((result: FindResult<any>) => void) | undefined
   unsubscribe = () => {}
 
-  constructor () {
-    onDestroy(() => {
-      console.log('onDestroy query')
-      this.unsubscribe()
-    })
+  constructor (dontDestroy: boolean = false) {
+    if (!dontDestroy) {
+      onDestroy(() => {
+        console.log('onDestroy query')
+        this.unsubscribe()
+      })
+    }
   }
 
   query<T extends Doc>(
@@ -121,8 +123,8 @@ export class LiveQuery {
   }
 }
 
-export function createQuery (): LiveQuery {
-  return new LiveQuery()
+export function createQuery (dontDestroy?: boolean): LiveQuery {
+  return new LiveQuery(dontDestroy)
 }
 
 export function getFileUrl (file: string): string {

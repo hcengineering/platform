@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import { Class, Doc, Domain, IndexKind, Ref } from '@anticrm/core'
-import { ArrOf, Builder, Index, Model, Prop, TypeRef, TypeString, UX } from '@anticrm/model'
+import { ArrOf, Builder, Index, Model, Prop, TypeNumber, TypeRef, TypeString, UX } from '@anticrm/model'
 import core, { TAttachedDoc, TDoc } from '@anticrm/model-core'
 import view from '@anticrm/model-view'
 import { Asset, IntlString } from '@anticrm/platform'
@@ -45,6 +45,9 @@ export class TTagElement extends TDoc implements TagElement {
 
   @Prop(TypeRef(tags.class.TagCategory), tags.string.CategoryLabel)
   category!: Ref<TagCategory>
+
+  @Prop(TypeNumber(), tags.string.TagReference)
+  refCount?: number
 }
 
 @Model(tags.class.TagReference, core.class.AttachedDoc, DOMAIN_TAGS)
@@ -93,5 +96,9 @@ export function createModel (builder: Builder): void {
   })
   builder.mixin(tags.class.TagElement, core.class.Class, view.mixin.AttributePresenter, {
     presenter: tags.component.TagElementPresenter
+  })
+
+  builder.mixin(tags.class.TagReference, core.class.Class, view.mixin.AttributeFilter, {
+    component: tags.component.TagsFilter
   })
 }

@@ -13,27 +13,95 @@
 // limitations under the License.
 //
 
-import { Class, Doc, DocumentQuery, FindOptions, FindResult, Hierarchy, Ref } from '@anticrm/core'
-import tags, { TagElement } from '@anticrm/tags'
+import core, {
+  AttachedDoc,
+  Class,
+  Doc,
+  DocumentQuery,
+  FindOptions,
+  FindResult,
+  Hierarchy,
+  Ref,
+  Tx,
+  TxCollectionCUD,
+  TxCreateDoc,
+  TxCUD,
+  TxProcessor,
+  TxRemoveDoc
+} from '@anticrm/core'
+import { TriggerControl } from '@anticrm/server-core'
+import tags, { TagElement, TagReference } from '@anticrm/tags'
+
+const extractTx = (tx: Tx): Tx => {
+  if (tx._class === core.class.TxCollectionCUD) {
+    const ctx = tx as TxCollectionCUD<Doc, AttachedDoc>
+    if (ctx.tx._class === core.class.TxCreateDoc) {
+      const create = ctx.tx as TxCreateDoc<AttachedDoc>
+      create.attributes.attachedTo = ctx.objectId
+      create.attributes.attachedToClass = ctx.objectClass
+      create.attributes.collection = ctx.collection
+      return create
+    }
+    return ctx.tx
+  }
+
+  return tx
+}
 
 /**
  * @public
  */
 export async function TagElementRemove (
   doc: Doc,
-  hiearachy: Hierarchy,
+  hierarchy: Hierarchy,
   findAll: <T extends Doc>(
     clazz: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ) => Promise<FindResult<T>>
 ): Promise<Doc[]> {
-  if (!hiearachy.isDerived(doc._class, tags.class.TagElement)) return []
+  if (!hierarchy.isDerived(doc._class, tags.class.TagElement)) return []
   return await findAll(tags.class.TagReference, { tag: doc._id as Ref<TagElement> })
+}
+
+/**
+ * @public
+ */
+export async function onTagReference (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+  const actualTx = extractTx(tx)
+  const isCreate = control.hierarchy.isDerived(actualTx._class, core.class.TxCreateDoc)
+  const isRemove = control.hierarchy.isDerived(actualTx._class, core.class.TxRemoveDoc)
+  if (!isCreate && !isRemove) return []
+  if (!control.hierarchy.isDerived((actualTx as TxCUD<Doc>).objectClass, tags.class.TagReference)) return []
+  if (isCreate) {
+    const doc = TxProcessor.createDoc2Doc(actualTx as TxCreateDoc<TagReference>)
+    const res = control.txFactory.createTxUpdateDoc(tags.class.TagElement, tags.space.Tags, doc.tag, {
+      $inc: { refCount: 1 }
+    })
+    return [res]
+  }
+  if (isRemove) {
+    const ctx = actualTx as TxRemoveDoc<TagReference>
+    const createTx = (
+      await control.findAll(core.class.TxCollectionCUD, { 'tx.objectId': ctx.objectId }, { limit: 1 })
+    )[0]
+    if (createTx !== undefined) {
+      const actualCreateTx = extractTx(createTx)
+      const doc = TxProcessor.createDoc2Doc(actualCreateTx as TxCreateDoc<TagReference>)
+      const res = control.txFactory.createTxUpdateDoc(tags.class.TagElement, tags.space.Tags, doc.tag, {
+        $inc: { refCount: -1 }
+      })
+      return [res]
+    }
+  }
+  return []
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
+  trigger: {
+    onTagReference
+  },
   function: {
     TagElementRemove
   }

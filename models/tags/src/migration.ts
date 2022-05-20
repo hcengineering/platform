@@ -1,7 +1,35 @@
-import core, { TxOperations } from '@anticrm/core'
-import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
+import core, { Ref, TxOperations } from '@anticrm/core'
+import { MigrateOperation, MigrationClient, MigrationResult, MigrationUpgradeClient } from '@anticrm/model'
+import { TagElement, TagReference } from '@anticrm/tags'
 import { DOMAIN_TAGS } from './index'
 import tags from './plugin'
+
+async function updateTagRefCount (client: MigrationClient): Promise<void> {
+  const tagElements = await client.find(DOMAIN_TAGS, { _class: tags.class.TagElement, refCount: { $exists: false } })
+  const refs = await client.find<TagReference>(DOMAIN_TAGS, {
+    _class: tags.class.TagReference,
+    tag: { $in: tagElements.map((p) => p._id as Ref<TagElement>) }
+  })
+  const map = new Map<Ref<TagElement>, number>()
+  for (const ref of refs) {
+    map.set(ref.tag, (map.get(ref.tag) ?? 0) + 1)
+  }
+  const promises: Promise<MigrationResult>[] = []
+  for (const tag of map) {
+    promises.push(
+      client.update(
+        DOMAIN_TAGS,
+        {
+          _id: tag[0]
+        },
+        {
+          refCount: tag[1]
+        }
+      )
+    )
+  }
+  await Promise.all(promises)
+}
 
 export const tagsOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
@@ -15,6 +43,8 @@ export const tagsOperation: MigrateOperation = {
         category: 'recruit:category:Other'
       }
     )
+
+    await updateTagRefCount(client)
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)

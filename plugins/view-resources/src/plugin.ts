@@ -48,6 +48,7 @@ export default mergeIds(viewId, view, {
     FilterIsEither: '' as IntlString,
     FilterStatesCount: '' as IntlString,
     Before: '' as IntlString,
-    After: '' as IntlString
+    After: '' as IntlString,
+    Apply: '' as IntlString
   }
 })
