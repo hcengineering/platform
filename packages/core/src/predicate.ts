@@ -39,13 +39,15 @@ const predicates: Record<string, PredicateFactory> = {
     if (!Array.isArray(o)) {
       throw new Error('$in predicate requires array')
     }
-    return (docs) => execPredicate(docs, propertyKey, (value) => o.includes(value))
+    // eslint-disable-next-line eqeqeq
+    return (docs) => execPredicate(docs, propertyKey, (value) => o.some((p) => p == value))
   },
   $nin: (o, propertyKey) => {
     if (!Array.isArray(o)) {
       throw new Error('$nin predicate requires array')
     }
-    return (docs) => execPredicate(docs, propertyKey, (value) => !o.includes(value))
+    // eslint-disable-next-line eqeqeq
+    return (docs) => execPredicate(docs, propertyKey, (value) => !o.some((p) => p == value))
   },
 
   $like: (query: string, propertyKey: string): Predicate => {

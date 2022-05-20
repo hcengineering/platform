@@ -94,8 +94,8 @@ export interface MenuPage extends Doc {
 /**
  * @public
  */
-export interface LabelsCompactMode extends Preference {
-  attachedTo: Ref<Board>
+export interface CommonBoardPreference extends Preference {
+  cardLabelsCompactMode: boolean
 }
 /**
  * @public
@@ -114,7 +114,7 @@ const boards = plugin(boardId, {
     Card: '' as Ref<Class<Card>>,
     CardLabel: '' as Ref<Class<CardLabel>>,
     MenuPage: '' as Ref<Class<MenuPage>>,
-    LabelsCompactMode: '' as Ref<Class<LabelsCompactMode>>
+    CommonBoardPreference: '' as Ref<Class<CommonBoardPreference>>
   },
   category: {
     Card: '' as Ref<ActionCategory>
