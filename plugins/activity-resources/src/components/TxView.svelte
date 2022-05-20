@@ -19,7 +19,18 @@
   import core, { AnyAttribute, Doc, getCurrentAccount, Ref } from '@anticrm/core'
   import { Asset, getResource } from '@anticrm/platform'
   import { getClient } from '@anticrm/presentation'
-  import { Component, Icon, IconEdit, IconMoreH, Label, Menu, ShowMore, showPopup, TimeSince, Button } from '@anticrm/ui'
+  import {
+    Component,
+    Icon,
+    IconEdit,
+    IconMoreH,
+    Label,
+    Menu,
+    ShowMore,
+    showPopup,
+    TimeSince,
+    Button
+  } from '@anticrm/ui'
   import type { AttributeModel } from '@anticrm/view'
   import { getActions } from '@anticrm/view-resources'
   import { ActivityKey, DisplayTx } from '../activity'
