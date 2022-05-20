@@ -219,7 +219,8 @@ const task = plugin(taskId, {
     ApplicationLabelTask: '' as IntlString,
     Projects: '' as IntlString,
     SearchTask: '' as IntlString,
-    ManageProjectStatues: '' as IntlString
+    ManageProjectStatues: '' as IntlString,
+    TodoItems: '' as IntlString
   },
   class: {
     Issue: '' as Ref<Class<Issue>>,
@@ -264,9 +265,6 @@ const task = plugin(taskId, {
     KanbanTemplateEditor: '' as AnyComponent,
     KanbanTemplateSelector: '' as AnyComponent,
     TodoItemsPopup: '' as AnyComponent
-  },
-  string: {
-    TodoItems: '' as IntlString
   }
 })
 

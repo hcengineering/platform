@@ -35,7 +35,7 @@
     "SelectColor": "Выберите цвет",
     "NoColor": "Без цвета.",
     "NoColorInfo": "Не будет показываться на доске.",
-    "Checklist": "Списки",
+    "Checklists": "Списки",
     "ChecklistDropdownNone": "(не выбрано)",
     "ShowDoneChecklistItems": "Показать отмеченные ({done})",
     "HideDoneChecklistItems": "Скрыть отмеченные",

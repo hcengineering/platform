@@ -152,17 +152,15 @@
           {value.name}
         </div>
         {#if done > 0}
-          <div class="mr-1">
-            <Button
-              label={hideDoneItems ? board.string.ShowDoneChecklistItems : board.string.HideDoneChecklistItems}
-              labelParams={{ done }}
-              kind="no-border"
-              size="small"
-              on:click={() => {
-                hideDoneItems = !hideDoneItems
-              }}
-            />
-          </div>
+          <Button
+            label={hideDoneItems ? board.string.ShowDoneChecklistItems : board.string.HideDoneChecklistItems}
+            labelParams={{ done }}
+            kind="transparent"
+            size="small"
+            on:click={() => {
+              hideDoneItems = !hideDoneItems
+            }}
+          />
         {/if}
         <Button icon={IconAdd} kind="transparent" size="small" on:click={startAddingItem} />
         <Button icon={IconDelete} kind="transparent" size="small" on:click={deleteChecklist} />

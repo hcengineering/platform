@@ -56,7 +56,7 @@ export default mergeIds(boardId, board, {
     SelectColor: '' as IntlString,
     NoColor: '' as IntlString,
     NoColorInfo: '' as IntlString,
-    Checklist: '' as IntlString,
+    Checklists: '' as IntlString,
     ChecklistDropdownNone: '' as IntlString,
     ShowDoneChecklistItems: '' as IntlString,
     HideDoneChecklistItems: '' as IntlString,

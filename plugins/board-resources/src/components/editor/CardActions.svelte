@@ -43,27 +43,27 @@
 </script>
 
 {#if value}
-  <div class="flex-col flex-gap-3">
-    <div class="flex-row-stretch flex-gap-1">
-      <div class="label">
+  <div class="flex-col flex-gap-3 mt-4">
+    <div class="flex-row-stretch flex-gap-1 items-center">
+      <div class="label w-24">
         <Label label={task.string.TaskStateDone} />
       </div>
       <CheckBox checked={value.doneState !== null} />
     </div>
-    <div class="flex-row-stretch flex-gap-1">
-      <div class="label">
+    <div class="flex-row-stretch flex-gap-1 items-center">
+      <div class="label w-24">
         <Label label={plugin.string.Members} />
       </div>
       <UserBoxList value={value.members} />
     </div>
-    <div class="flex-row-stretch flex-gap-1">
-      <div class="label">
+    <div class="flex-row-stretch flex-gap-1 items-center">
+      <div class="label w-24">
         <Label label={plugin.string.Labels} />
       </div>
       <CardLabels {value} />
     </div>
-    <div class="flex-row-stretch flex-gap-1">
-      <div class="label">
+    <div class="flex-row-stretch flex-gap-1 items-center">
+      <div class="label w-24">
         <Label label={ui.string.StartDate} />
       </div>
       <DateRangePresenter
@@ -76,8 +76,8 @@
         }}
       />
     </div>
-    <div class="flex-row-stretch flex-gap-1">
-      <div class="label">
+    <div class="flex-row-stretch flex-gap-1 items-center">
+      <div class="label w-24">
         <Label label={ui.string.DueDate} />
       </div>
       <DateRangePresenter
@@ -87,8 +87,8 @@
         on:change={(e) => client.update(value, { dueDate: e.detail })}
       />
     </div>
-    <div class="flex-row-stretch flex-gap-1">
-      <div class="label">
+    <div class="flex-row-stretch flex-gap-1 items-center">
+      <div class="label w-24">
         <Label label={plugin.string.Cover} />
       </div>
       {#if !value.cover?.color}

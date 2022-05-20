@@ -16,7 +16,7 @@
 
 import type { Ref, Space } from '@anticrm/core'
 import { ObjectSearchCategory, ObjectSearchFactory } from '@anticrm/model-presentation'
-import type { IntlString, Resource } from '@anticrm/platform'
+import type { Resource } from '@anticrm/platform'
 import { mergeIds } from '@anticrm/platform'
 import { KanbanTemplate, taskId } from '@anticrm/task'
 import task from '@anticrm/task-resources/src/plugin'

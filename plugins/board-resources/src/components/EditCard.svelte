@@ -14,6 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Attachments } from '@anticrm/attachment-resources'
   import type { Card } from '@anticrm/board'
   import core, { Class, Ref, Space } from '@anticrm/core'
   import { Panel } from '@anticrm/panel'
@@ -21,7 +22,7 @@
   import type { State, TodoItem } from '@anticrm/task'
   import task from '@anticrm/task'
   import { StyledTextBox } from '@anticrm/text-editor'
-  import { Button, EditBox, IconAdd, IconMoreH, Label, showPopup } from '@anticrm/ui'
+  import { Button, CircleButton, EditBox, IconAdd, IconMoreH, Label, showPopup } from '@anticrm/ui'
   import { ContextMenu, invokeAction, UpDownNavigator } from '@anticrm/view-resources'
   import { createEventDispatcher, onMount } from 'svelte'
   import board from '../plugin'
@@ -29,7 +30,6 @@
   import { updateCard } from '../utils/CardUtils'
   import { getPopupAlignment } from '../utils/PopupUtils'
   import CardActions from './editor/CardActions.svelte'
-  import CardAttachments from './editor/CardAttachments.svelte'
   import CardChecklist from './editor/CardChecklist.svelte'
   import AddChecklist from './popups/AddChecklist.svelte'
 
@@ -127,7 +127,7 @@
       />
     </svelte:fragment>
     <div class="flex-row-stretch">
-      <div class="fs-title text-lg">
+      <div class="fs-title text-xl">
         <EditBox bind:value={object.title} maxWidth="39rem" focus on:change={() => change('title', object?.title)} />
       </div>
     </div>
@@ -144,14 +144,18 @@
             />
           </div>
         </div>
-        <CardAttachments value={object} />
-        {#if checklists.length > 0}
+        <div class="mt-4">
+          <Attachments objectId={_id} {space} {_class} attachments={object.attachments ?? 0} />
+        </div>
+        <div class="flex-row-center mt-4">
+          <span class="text-xl font-medium caption-color mr-3"><Label label={board.string.Checklists} /></span>
+          <CircleButton icon={IconAdd} size="small" selected on:click={addChecklist} />
+        </div>
+        <div class="mr-2 ml-2 mb-4">
           {#each checklists as checklist}
             <CardChecklist value={checklist} />
           {/each}
-        {:else}
-          <Button icon={IconAdd} label={board.string.Checklist} kind="no-border" size="small" on:click={addChecklist} />
-        {/if}
+        </div>
       </div>
     </div>
     <span slot="actions-label"><Label label={board.string.Card} /></span>
