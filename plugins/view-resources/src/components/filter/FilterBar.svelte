@@ -30,29 +30,29 @@
   const dispatch = createEventDispatcher()
 
   let filters: Filter[] = []
-  let isNew = true
+  let maxIndex = 0
 
   function onChange (e: Filter | undefined) {
     if (e === undefined) return
-    if (isNew) {
+    const index = filters.findIndex((p) => p.index === e.index)
+    if (index === -1) {
       filters.push(e)
-      isNew = false
       filters = filters
     } else {
-      filters[filters.length - 1] = e
+      filters[index] = e
       filters = filters
     }
   }
 
   function add (e: MouseEvent) {
     const target = eventToHTMLElement(e)
-    isNew = true
     showPopup(
       FilterTypePopup,
       {
         _class,
-        makeQuery: (key: string) => makeQuery(query, filters, key),
+        query,
         target,
+        index: ++maxIndex,
         onChange
       },
       target
@@ -60,19 +60,21 @@
   }
 
   function remove (i: number) {
+    filters[i]?.onRemove?.()
     filters.splice(i, 1)
     filters = filters
   }
 
-  function makeQuery (query: DocumentQuery<Doc>, filters: Filter[], skipKey?: string): DocumentQuery<Doc> {
+  async function makeQuery (query: DocumentQuery<Doc>, filters: Filter[]): Promise<void> {
     const newQuery = hierarchy.clone(query)
     for (let i = 0; i < filters.length; i++) {
       const filter = filters[i]
-      if (skipKey !== undefined && filter.key.key === skipKey) continue
+      const newValue = await filter.mode.result(filter.value, () => {
+        makeQuery(query, filters)
+      })
       if (newQuery[filter.key.key] === undefined) {
-        newQuery[filter.key.key] = filter.mode.result(filter.value)
+        newQuery[filter.key.key] = newValue
       } else {
-        const newValue = filter.mode.result(filter.value)
         let merged = false
         for (const key in newValue) {
           if (newQuery[filter.key.key][key] === undefined) {
@@ -104,14 +106,11 @@
           }
         }
         if (!merged) {
-          Object.assign(newQuery[filter.key.key], filter.mode.result(filter.value))
+          Object.assign(newQuery[filter.key.key], newValue)
         }
       }
     }
-    if (skipKey === undefined) {
-      dispatch('change', newQuery)
-    }
-    return newQuery
+    dispatch('change', newQuery)
   }
 
   $: makeQuery(query, filters)
@@ -125,7 +124,7 @@
     {#each filters as filter, i}
       <FilterSection
         {_class}
-        query={makeQuery(query, filters, filter.key.key)}
+        {query}
         {filter}
         on:change={() => {
           makeQuery(query, filters)

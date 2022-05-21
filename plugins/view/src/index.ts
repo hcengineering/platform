@@ -52,7 +52,7 @@ export interface KeyFilter {
 export interface FilterMode {
   label: IntlString
   isAvailable: (values: any[]) => boolean
-  result: (values: any[]) => ObjQueryType<any>
+  result: (values: any[], onUpdate: () => void) => Promise<ObjQueryType<any>>
 }
 
 /**
@@ -63,6 +63,8 @@ export interface Filter {
   mode: FilterMode
   modes: FilterMode[]
   value: any[]
+  index: number
+  onRemove?: () => void
 }
 
 /**

@@ -28,6 +28,7 @@ export interface TagElement extends Doc {
   description: string
   color: number
   category: Ref<TagCategory>
+  refCount?: number
 }
 
 /**
