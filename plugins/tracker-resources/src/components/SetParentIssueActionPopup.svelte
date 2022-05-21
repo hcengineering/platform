@@ -73,15 +73,13 @@
   on:close={onClose}
 >
   <svelte:fragment slot="item" let:item={issue}>
-    {#if team && statusCategoryById}
-      {@const { icon } = statusCategoryById.get(issue.$lookup?.status.category) ?? {}}
-      {@const issueId = `${team.identifier}-${issue.number}`}
+    {@const { icon } = statusCategoryById?.get(issue.$lookup?.status.category) ?? {}}
+    {@const issueId = team && `${team.identifier}-${issue.number}`}
+    {#if issueId && icon}
       <div class="flex-center clear-mins w-full h-9">
-        {#if icon}
-          <div class="icon mr-4 h-8">
-            <Icon {icon} size="small" />
-          </div>
-        {/if}
+        <div class="icon mr-4 h-8">
+          <Icon {icon} size="small" />
+        </div>
         <span class="overflow-label flex-no-shrink mr-3">{issueId}</span>
         <span class="overflow-label w-full issue-title">{issue.title}</span>
       </div>
