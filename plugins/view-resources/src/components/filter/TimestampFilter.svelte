@@ -27,14 +27,14 @@
     {
       label: view.string.Before,
       isAvailable: (res: any[]) => true,
-      result: (res: any[]) => {
+      result: async (res: any[]) => {
         return { $lt: res[0] }
       }
     },
     {
       label: view.string.After,
       isAvailable: () => true,
-      result: (res: any[]) => {
+      result: async (res: any[]) => {
         return { $gt: res[0] }
       }
     }
