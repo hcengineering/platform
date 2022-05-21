@@ -18,7 +18,7 @@
   import login from '@anticrm/login'
   import { translate } from '@anticrm/platform'
   import setting from '@anticrm/setting'
-  import { IconAdd, Label, Scroller, SearchEdit, showPopup } from '@anticrm/ui'
+  import { IconAdd, Label, SearchEdit, showPopup } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation from '../plugin'
   import { getClient } from '../utils'
