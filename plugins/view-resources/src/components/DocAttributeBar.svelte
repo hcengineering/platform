@@ -14,20 +14,15 @@
 -->
 <script lang="ts">
   import { Doc, Mixin } from '@anticrm/core'
-  import { getClient } from '@anticrm/presentation'
   import ClassAttributeBar from './ClassAttributeBar.svelte'
 
   export let object: Doc
   export let mixins: Mixin<Doc>[]
   export let ignoreKeys: string[]
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
-
-  $: objectClass = hierarchy.getClass(object._class)
 </script>
 
-<ClassAttributeBar {objectClass} {object} {ignoreKeys} to={undefined} vertical on:update />
+<ClassAttributeBar _class={object._class} {object} {ignoreKeys} to={undefined} vertical on:update />
 {#each mixins as mixin}
   <div class="bottom-divider mt-4 mb-2" />
-  <ClassAttributeBar objectClass={mixin} {object} {ignoreKeys} to={objectClass._id} vertical on:update />
+  <ClassAttributeBar _class={mixin._id} {object} {ignoreKeys} to={object._class} vertical on:update />
 {/each}

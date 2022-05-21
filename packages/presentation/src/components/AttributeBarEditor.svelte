@@ -22,16 +22,15 @@
   import { getAttribute, KeyedAttribute, updateAttribute } from '../attributes'
   import { getAttributePresenterClass, getClient } from '../utils'
 
-  // export let _class: Ref<Class<Doc>>
   export let key: KeyedAttribute | string
   export let object: Doc
+  export let _class: Ref<Class<Doc>>
   export let maxWidth: string | undefined = undefined
   export let focus: boolean = false
   export let minimize: boolean = false
   export let showHeader: boolean = true
   export let vertical: boolean = false
 
-  const _class = object._class
   const client = getClient()
   const hierarchy = client.getHierarchy()
 

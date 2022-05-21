@@ -23,9 +23,6 @@
 
   const dispatch = createEventDispatcher()
 
-  function _onchange (ev: Event) {
-    dispatch('update', value)
-  }
   function _onkeypress (ev: KeyboardEvent) {
     if (ev.key === 'Enter') dispatch('close', value)
   }
@@ -33,14 +30,6 @@
 
 <div class="selectPopup">
   <div class="header no-border">
-    <EditBox
-      bind:value
-      {placeholder}
-      kind={'search-style'}
-      maxWidth={'10rem'}
-      focus
-      on:change={_onchange}
-      on:keypress={_onkeypress}
-    />
+    <EditBox bind:value {placeholder} kind={'search-style'} maxWidth={'10rem'} focus on:keypress={_onkeypress} />
   </div>
 </div>

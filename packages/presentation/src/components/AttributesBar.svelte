@@ -28,10 +28,10 @@
   {#each keys as key}
     {#if !vertical}
       <div class="flex-center column">
-        <AttributeBarEditor {key} {object} {showHeader} />
+        <AttributeBarEditor {key} _class={object._class} {object} {showHeader} />
       </div>
     {:else}
-      <AttributeBarEditor {key} {object} {showHeader} vertical />
+      <AttributeBarEditor {key} _class={object._class} {object} {showHeader} vertical />
     {/if}
   {/each}
 </div>

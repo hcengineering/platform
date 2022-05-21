@@ -21,7 +21,7 @@
   import { collectionsFilter, getFiltredKeys } from '../utils'
 
   export let object: Doc
-  export let objectClass: Class<Doc>
+  export let _class: Ref<Class<Doc>>
   export let to: Ref<Class<Doc>> | undefined
   export let ignoreKeys: string[] = []
   export let vertical: boolean
@@ -31,24 +31,26 @@
   let keys: KeyedAttribute[] = []
 
   function updateKeys (ignoreKeys: string[]): void {
-    const filtredKeys = getFiltredKeys(hierarchy, objectClass._id, ignoreKeys, to)
+    const filtredKeys = getFiltredKeys(hierarchy, _class, ignoreKeys, to)
     keys = collectionsFilter(hierarchy, filtredKeys, false)
   }
 
   $: updateKeys(ignoreKeys)
+
+  $: label = hierarchy.getClass(_class).label
 
   const dispatch = createEventDispatcher()
 </script>
 
 {#if vertical}
   <div class="flex-between text-sm mb-4">
-    <Label label={objectClass.label} />
+    <Label {label} />
     <ActionIcon
       label={presentation.string.Create}
       icon={IconAdd}
       size="small"
       action={() => {
-        showPopup(view.component.CreateAttribute, { _class: objectClass._id }, 'top', () => {
+        showPopup(view.component.CreateAttribute, { _class }, 'top', () => {
           updateKeys(ignoreKeys)
           dispatch('update')
         })
