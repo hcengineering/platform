@@ -94,6 +94,9 @@ p:first-child { margin-block-start: 0; } // First and last padding
 p:last-child { margin-block-end: 0; }
 
 .p-inline {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  hyphens: auto;
   line-height: 150%;
   a {
     word-break: break-all;

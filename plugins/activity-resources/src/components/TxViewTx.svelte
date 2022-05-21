@@ -51,6 +51,7 @@
 <style lang="scss">
   .content {
     padding: 1rem;
+    min-width: 0;
     color: var(--accent-color);
     background: var(--theme-bg-accent-color);
     border: 1px solid var(--theme-bg-accent-color);

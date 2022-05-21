@@ -20,8 +20,9 @@
   import contact, { Employee } from '@anticrm/contact'
   import type { Ref, WithLookup } from '@anticrm/core'
   import notification from '@anticrm/notification'
+  import view from '@anticrm/view'
   import { getClient, UserBoxList } from '@anticrm/presentation'
-  import { Button, Component, EditBox, IconEdit, Label, numberToHexColor, showPopup } from '@anticrm/ui'
+  import { Button, Component, EditBox, Icon, IconEdit, Label, numberToHexColor, showPopup } from '@anticrm/ui'
   import { ContextMenu } from '@anticrm/view-resources'
   import board from '../plugin'
   import CardLabels from './editor/CardLabels.svelte'
@@ -29,6 +30,7 @@
   import { hasDate, openCardPanel, updateCard, updateCardMembers } from '../utils/CardUtils'
   import { getElementPopupAlignment } from '../utils/PopupUtils'
   import CheckListsPresenter from './presenters/ChecklistsPresenter.svelte'
+  import NotificationPresenter from './presenters/NotificationPresenter.svelte'
 
   export let object: WithLookup<Card>
 
@@ -172,9 +174,20 @@
       </div>
       <div class="flex-between mb-1" style:pointer-events={dragoverAttachment ? 'none' : 'all'}>
         <div class="float-left-box">
+          <!-- TODO: adjust icons -->
+          <div class="float-left">
+            <NotificationPresenter {object} />
+          </div>
           {#if object.date && hasDate(object)}
-            <div class="float-left ml-1">
+            <div class="float-left">
               <DatePresenter value={object.date} size="x-small" on:update={updateDate} />
+            </div>
+          {/if}
+          {#if object.description}
+            <div class="float-left">
+              <div class="sm-tool-icon ml-1 mr-1">
+                <span class="icon"><Icon icon={view.icon.Table} size="small" /></span>
+              </div>
             </div>
           {/if}
           {#if (object.attachments ?? 0) > 0}

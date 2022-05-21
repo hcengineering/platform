@@ -80,7 +80,7 @@
       if ((fullSize || docSize) && (props.element === 'float' || props.element === 'content')) {
         options = fitPopupElement(modalHTML, 'full')
         options.props.width = '100vw'
-        options.props.maxHeight = 'max-content'
+        options.props.maxHeight = '100vh'
         options.showOverlay = false
         modalHTML.classList.add('fullsize')
       } else {
@@ -142,6 +142,7 @@
       style:max-width={options.props.maxWidth}
       style:max-height={options.props.maxHeight}
       style:min-width={options.props.minWidth}
+      style:transform={options.props.transform}
     >
       <div class="panel-container" class:padding={props.element === 'content'}>
         <svelte:component

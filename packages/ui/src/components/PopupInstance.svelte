@@ -70,6 +70,7 @@
     if (modalHTML) {
       if ((fullSize || docSize) && (element === 'float' || element === 'content')) {
         options = fitPopupElement(modalHTML, 'full')
+        options.props.maxHeight = '100vh'
         modalHTML.classList.add('fullsize')
       } else {
         options = fitPopupElement(modalHTML, element)
@@ -107,6 +108,7 @@
   style:max-width={options.props.maxWidth}
   style:max-height={options.props.maxHeight}
   style:min-width={options.props.minWidth}
+  style:transform={options.props.transform}
 >
   <svelte:component
     this={is}
