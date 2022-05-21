@@ -110,7 +110,7 @@
       class:mr-2={!iconOnly && kind !== 'no-border' && shape !== 'circle'}
       class:resetIconSize
     >
-      <Icon {icon} size={'small'} />
+      <Icon bind:icon size={'small'} />
     </div>
   {/if}
   {#if loading}

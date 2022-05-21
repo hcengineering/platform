@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Asset, getResource, IntlString } from '@anticrm/platform'
   import presentation, { getClient, ObjectSearchCategory } from '@anticrm/presentation'
-  import { AnySvelteComponent, Icon } from '@anticrm/ui'
+  import { AnySvelteComponent, Icon, Button, Tooltip } from '@anticrm/ui'
   import { AnyExtension } from '@tiptap/core'
   import { createEventDispatcher } from 'svelte'
   import { Completion } from '../Completion'
@@ -24,6 +24,12 @@
   import Attach from './icons/Attach.svelte'
   import Bold from './icons/Bold.svelte'
   import Italic from './icons/Italic.svelte'
+  import Strikethrough from './icons/Strikethrough.svelte'
+  import ListNumber from './icons/ListNumber.svelte'
+  import ListBullet from './icons/ListBullet.svelte'
+  import Quote from './icons/Quote.svelte'
+  import Code from './icons/Code.svelte'
+  import CodeBlock from './icons/CodeBlock.svelte'
   import Emoji from './icons/Emoji.svelte'
   import GIF from './icons/GIF.svelte'
   import Send from './icons/Send.svelte'
@@ -186,13 +192,34 @@
 
 <div class="ref-container">
   {#if isFormatting}
-    <div class="formatPanel" class:withoutTopBorder>
-      <div class="tool" class:active={isBold} on:click={toggleBold}>
-        <Icon icon={Bold} size={'large'} />
-      </div>
-      <div class="tool" class:active={isItalic} on:click={toggleItalic}>
-        <Icon icon={Italic} size={'large'} />
-      </div>
+    <div class="formatPanel buttons-group xsmall-gap" class:withoutTopBorder>
+      <Tooltip label={textEditorPlugin.string.Bold}>
+        <Button icon={Bold} kind={'transparent'} size={'small'} selected={isBold} on:click={toggleBold} />
+      </Tooltip>
+      <Tooltip label={textEditorPlugin.string.Italic}>
+        <Button icon={Italic} kind={'transparent'} size={'small'} selected={isItalic} on:click={toggleItalic} />
+      </Tooltip>
+      <Tooltip label={textEditorPlugin.string.Strikethrough}>
+        <Button icon={Strikethrough} kind={'transparent'} size={'small'} selected={undefined} on:click={() => {}} />
+      </Tooltip>
+      <div class="buttons-divider" />
+      <Tooltip label={textEditorPlugin.string.OrderedList}>
+        <Button icon={ListNumber} kind={'transparent'} size={'small'} selected={undefined} on:click={() => {}} />
+      </Tooltip>
+      <Tooltip label={textEditorPlugin.string.BulletedList}>
+        <Button icon={ListBullet} kind={'transparent'} size={'small'} selected={undefined} on:click={() => {}} />
+      </Tooltip>
+      <div class="buttons-divider" />
+      <Tooltip label={textEditorPlugin.string.Blockquote}>
+        <Button icon={Quote} kind={'transparent'} size={'small'} selected={undefined} on:click={() => {}} />
+      </Tooltip>
+      <div class="buttons-divider" />
+      <Tooltip label={textEditorPlugin.string.Code}>
+        <Button icon={Code} kind={'transparent'} size={'small'} selected={undefined} on:click={() => {}} />
+      </Tooltip>
+      <Tooltip label={textEditorPlugin.string.CodeBlock}>
+        <Button icon={CodeBlock} kind={'transparent'} size={'small'} selected={undefined} on:click={() => {}} />
+      </Tooltip>
     </div>
   {/if}
   <div class="textInput" class:withoutTopBorder={withoutTopBorder || isFormatting}>
@@ -229,17 +256,17 @@
     min-height: 4.5rem;
 
     .formatPanel {
-      display: flex;
-      padding: 0.625rem 0.5rem;
-      background-color: var(--theme-bg-accent-color);
-      border: 1px solid var(--theme-bg-accent-color);
-      border-top-left-radius: 0.75rem;
-      border-top-right-radius: 0.75rem;
+      padding: 0.5rem;
+      background-color: var(--body-accent);
+      border: 1px solid var(--divider-color);
+      border-radius: 0.75rem 0.75rem 0 0;
       border-bottom: 0;
 
       &.withoutTopBorder {
-        border-top-left-radius: 0;
-        border-top-right-radius: 0;
+        border-radius: 0;
+      }
+      & + .textInput {
+        border-top: none;
       }
     }
 
@@ -249,8 +276,8 @@
       align-items: flex-end;
       min-height: 2.75rem;
       padding: 0.75rem 1rem;
-      background-color: var(--theme-bg-accent-color);
-      border: 1px solid var(--theme-bg-accent-color);
+      background-color: var(--accent-bg-color);
+      border: 1px solid var(--divider-color);
       border-radius: 0.75rem;
 
       &.withoutTopBorder {
@@ -345,9 +372,9 @@
       color: var(--theme-content-dark-color);
       cursor: pointer;
 
-      &.active {
-        color: var(--theme-caption-color);
-      }
+      // &.active {
+      //   color: var(--theme-caption-color);
+      // }
 
       &:hover {
         color: var(--theme-caption-color);

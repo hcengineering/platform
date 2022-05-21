@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { Button, IconClose, IconDetails, IconExpand } from '..'
+  import { Button, IconClose, IconDetails, IconScale, IconScaleFull } from '..'
 
   export let innerWidth: number = 0
   export let panelWidth: number = 0
@@ -33,8 +33,9 @@
   }
   let docWidth: number
   let fullSize: boolean = false
-  $: if (docWidth <= 900 && !fullSize) fullSize = true
-  $: if (docWidth > 900 && fullSize) fullSize = false
+  let docSize: boolean = false
+  $: if (docWidth <= 900 && !docSize) docSize = true
+  $: if (docWidth > 900 && docSize) docSize = false
 </script>
 
 <svelte:window bind:innerWidth={docWidth} />
@@ -65,7 +66,7 @@
       {/if}
       {#if isFullSize}
         <Button
-          icon={IconExpand}
+          icon={fullSize || docWidth <= 900 ? IconScale : IconScaleFull}
           kind={'transparent'}
           size={'medium'}
           selected={fullSize}
