@@ -66,6 +66,7 @@ export type TabModel = Tab[]
 export type ButtonKind = 'primary' | 'secondary' | 'no-border' | 'transparent' | 'link' | 'link-bordered' | 'dangerous'
 export type ButtonSize = 'small' | 'medium' | 'large' | 'x-large'
 export type ButtonShape = 'rectangle' | 'rectangle-left' | 'rectangle-right' | 'circle' | 'round' | undefined
+export type EditStyle = 'editbox' | 'large-style' | 'small-style' | 'search-style'
 export interface PopupPositionElement {
   getBoundingClientRect: () => DOMRect
   position?: {

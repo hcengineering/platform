@@ -72,7 +72,8 @@
       grid-auto-flow: row;
       justify-content: start;
       align-items: center;
-      gap: 1rem;
+      gap: 0.5rem;
+      padding-bottom: 0.5rem;
       width: 100%;
       height: min-content;
 
