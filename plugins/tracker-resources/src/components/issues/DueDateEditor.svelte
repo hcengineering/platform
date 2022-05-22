@@ -40,7 +40,7 @@
 {#if value}
   <!-- TODO: fix button style and alignment -->
   <DatePresenter
-    kind="transparent"
+    kind={'link'}
     value={value.dueDate}
     icon={iconModifier}
     editable
