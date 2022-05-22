@@ -2,7 +2,7 @@
   import { Card } from '@anticrm/board'
   import calendar from '@anticrm/calendar'
   import { DocumentUpdate } from '@anticrm/core'
-  import { getClient } from '@anticrm/presentation'
+  import { createQuery, getClient } from '@anticrm/presentation'
   import { Label, Button, DateRangePresenter, Component } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
 
@@ -11,6 +11,7 @@
   export let value: Card
 
   const client = getClient()
+  const query = createQuery()
   const dispatch = createEventDispatcher()
 
   let startDate = value.startDate
@@ -22,6 +23,14 @@
     if (dueDate !== undefined) date.dueDate = dueDate
     client.update(value, date)
   }
+
+  $: value?._id &&
+    query.query(board.class.Card, { _id: value._id }, (result) => {
+      if (result?.[0]) {
+        startDate = result[0].startDate
+        dueDate = result[0].dueDate
+      }
+    })
 </script>
 
 <div class="antiPopup antiPopup-withHeader antiPopup-withTitle antiPopup-withCategory w-85">
@@ -31,7 +40,7 @@
   </div>
   <div class="ap-space bottom-divider" />
   <div class="ap-category">
-    <div class="categoryItem flex-center whitespace-nowrap">
+    <div class="categoryItem flex-center whitespace-nowrap w-22">
       <Label label={board.string.StartDate} />
     </div>
     <div class="categoryItem w-full p-2">
@@ -39,7 +48,7 @@
     </div>
   </div>
   <div class="ap-category">
-    <div class="categoryItem flex-center whitespace-nowrap">
+    <div class="categoryItem flex-center whitespace-nowrap w-22">
       <Label label={board.string.DueDate} />
     </div>
     <div class="categoryItem w-full p-2">
@@ -57,8 +66,10 @@
     <Button
       label={board.string.Remove}
       size={'small'}
-      on:click={() => {
-        client.update(value, { startDate: null, dueDate: null })
+      on:click={async () => {
+        await client.update(value, { startDate: null, dueDate: null })
+        startDate = null
+        dueDate = null
       }}
     />
     <Button
