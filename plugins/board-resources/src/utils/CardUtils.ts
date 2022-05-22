@@ -31,6 +31,8 @@ export async function createCard (
     title: '',
     state,
     doneState: null,
+    startDate: null,
+    dueDate: null,
     number: (incResult as any).object.sequence,
     rank: calcRank(lastOne, undefined),
     assignee: null,
