@@ -1,5 +1,6 @@
 {
   "string": {
+    "Completed": "Completed",
     "Name": "Name",
     "CreateBoard": "Create board",
     "OpenCard": "Open Card",

@@ -19,7 +19,7 @@ import type { AttachedDoc, Class, Doc, Markup, Ref, Timestamp } from '@anticrm/c
 import type { Asset, IntlString, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import type { Preference } from '@anticrm/preference'
-import type { KanbanTemplateSpace, SpaceWithStates, Task } from '@anticrm/task'
+import type { DoneState, KanbanTemplateSpace, SpaceWithStates, Task } from '@anticrm/task'
 import type { AnyComponent } from '@anticrm/ui'
 import { Action, ActionCategory } from '@anticrm/view'
 
@@ -118,6 +118,9 @@ const boards = plugin(boardId, {
   },
   category: {
     Card: '' as Ref<ActionCategory>
+  },
+  state: {
+    Completed: '' as Ref<DoneState>
   },
   action: {
     Cover: '' as Ref<Action>,

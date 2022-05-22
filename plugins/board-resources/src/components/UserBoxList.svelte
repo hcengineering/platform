@@ -8,4 +8,4 @@
   export let value: Ref<Employee>[]
 </script>
 
-<UserBoxList items={value} _class={contact.class.Employee} label={board.string.Members} />
+<UserBoxList items={value} _class={contact.class.Employee} label={board.string.Members} on:update />

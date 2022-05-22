@@ -251,6 +251,16 @@ export function createModel (builder: Builder): void {
     board.viewlet.Table
   )
 
+  builder.createDoc(
+    task.class.WonState,
+    core.space.Model,
+    {
+      title: board.string.Completed,
+      rank: '0'
+    },
+    board.state.Completed
+  )
+
   // card actions
   createAction(
     builder,

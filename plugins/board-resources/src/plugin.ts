@@ -19,6 +19,7 @@ import type { AnyComponent } from '@anticrm/ui'
 
 export default mergeIds(boardId, board, {
   string: {
+    Completed: '' as IntlString,
     Name: '' as IntlString,
     BoardName: '' as IntlString,
     MakePrivate: '' as IntlString,

@@ -16,20 +16,34 @@
 <script lang="ts">
   import type { Card } from '@anticrm/board'
   import board from '@anticrm/board'
+  import contact, { Employee } from '@anticrm/contact'
+  import { Ref } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
-  import task from '@anticrm/task'
   import ui, { Button, CheckBox, DateRangePresenter, Label, IconAdd } from '@anticrm/ui'
   import { invokeAction } from '@anticrm/view-resources'
+
   import plugin from '../../plugin'
+  import { getCardActions } from '../../utils/CardActionUtils'
+  import { updateCardMembers } from '../../utils/CardUtils'
+  import ColorPresenter from '../presenters/ColorPresenter.svelte'
   import UserBoxList from '../UserBoxList.svelte'
   import CardLabels from './CardLabels.svelte'
-  import { getCardActions } from '../../utils/CardActionUtils'
-  import ColorPresenter from '../presenters/ColorPresenter.svelte'
 
   export let value: Card
   const client = getClient()
 
   let coverHandler: (e: Event) => void
+
+  function updateMembers (e: CustomEvent<Ref<Employee>[]>) {
+    updateCardMembers(value, client, e.detail)
+  }
+  function updateState (e: CustomEvent<boolean>) {
+    if (e.detail) {
+      client.update(value, { doneState: board.state.Completed })
+    } else {
+      client.update(value, { doneState: null })
+    }
+  }
 
   getCardActions(client, {
     _id: { $in: [board.action.Cover] }
@@ -46,15 +60,20 @@
   <div class="flex-col flex-gap-3 mt-4">
     <div class="flex-row-stretch flex-gap-1 items-center">
       <div class="label w-24">
-        <Label label={task.string.TaskStateDone} />
+        <Label label={plugin.string.Completed} />
       </div>
-      <CheckBox checked={value.doneState !== null} />
+      <CheckBox checked={value.doneState === board.state.Completed} on:value={updateState} />
     </div>
     <div class="flex-row-stretch flex-gap-1 items-center">
       <div class="label w-24">
         <Label label={plugin.string.Members} />
       </div>
-      <UserBoxList value={value.members} />
+      <UserBoxList
+        _class={contact.class.Employee}
+        value={value.members ?? []}
+        label={plugin.string.Members}
+        on:update={updateMembers}
+      />
     </div>
     <div class="flex-row-stretch flex-gap-1 items-center">
       <div class="label w-24">
