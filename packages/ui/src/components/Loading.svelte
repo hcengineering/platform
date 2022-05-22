@@ -22,6 +22,8 @@
 <style lang="scss">
   .spinner-container {
     display: flex;
+    justify-content: center;
+    align-items: center;
     height: 100%;
   }
 
@@ -35,7 +37,6 @@
   }
 
   .spinner-container .inner {
-    margin: auto;
     opacity: 0;
     animation-name: makeVisible;
     animation-duration: 0.25s;

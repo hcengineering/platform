@@ -180,6 +180,8 @@
   .box {
     display: flex;
     flex-direction: column;
+    justify-content: flex-start;
+    height: 100%;
   }
   .scroller-container.bottomStart {
     justify-content: flex-end;
