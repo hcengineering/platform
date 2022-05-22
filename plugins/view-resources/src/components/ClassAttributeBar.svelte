@@ -80,7 +80,7 @@
 {/if}
 {#if keys.length || !vertical}
   <div class="collapsed-container" class:collapsed>
-    <AttributesBar {_class} {object} {keys} {vertical} />
+    <AttributesBar {_class} {object} keys={keys.map((p) => p.key)} {vertical} />
   </div>
 {/if}
 
