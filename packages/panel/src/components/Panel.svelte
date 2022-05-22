@@ -89,20 +89,22 @@
   </svelte:fragment>
 
   <svelte:fragment slot="aside">
-    <div style="padding: .75rem 1.5rem">
-      {#if $$slots.actions}
-        <div class="flex-row-center pb-3 bottom-divider">
-          <span class="fs-bold w-24 mr-6"><slot name="actions-label" /></span>
-          <div class="buttons-group xsmall-gap">
-            <slot name="actions" />
+    <Scroller>
+      <div style="padding: .75rem 1.5rem">
+        {#if $$slots.actions}
+          <div class="flex-row-center pb-3 bottom-divider">
+            <span class="fs-bold w-24 mr-6"><slot name="actions-label" /></span>
+            <div class="buttons-group xsmall-gap">
+              <slot name="actions" />
+            </div>
           </div>
-        </div>
-      {/if}
-      {#if $$slots['custom-attributes'] && isCustomAttr}
-        <slot name="custom-attributes" direction="column" />
-      {:else if $$slots.attributes}<slot name="attributes" direction="column" />{/if}
-      {#if $$slots.aside}<slot name="aside" />{/if}
-    </div>
+        {/if}
+        {#if $$slots['custom-attributes'] && isCustomAttr}
+          <slot name="custom-attributes" direction="column" />
+        {:else if $$slots.attributes}<slot name="attributes" direction="column" />{/if}
+        {#if $$slots.aside}<slot name="aside" />{/if}
+      </div>
+    </Scroller>
   </svelte:fragment>
 
   {#if withoutActivity}
