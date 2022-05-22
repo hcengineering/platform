@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, DocumentQuery, getObjectValue, Ref, RefTo } from '@anticrm/core'
+  import { Class, Doc, DocumentQuery, FindResult, getObjectValue, Ref, RefTo, SortingOrder } from '@anticrm/core'
   import { translate } from '@anticrm/platform'
   import presentation, { getClient } from '@anticrm/presentation'
-  import ui, { Button, CheckBox, Label } from '@anticrm/ui'
+  import ui, { Button, CheckBox, Label, Loading } from '@anticrm/ui'
   import { Filter } from '@anticrm/view'
   import { onMount } from 'svelte'
   import { buildConfigLookup, getPresenter } from '../../utils'
@@ -59,11 +59,13 @@
   ]
 
   let values: (Doc | undefined | null)[] = []
-
-  $: getValues(search)
+  let objectsPromise: Promise<FindResult<Doc>> | undefined
 
   const targets = new Map<any, number>()
   async function getValues (search: string): Promise<void> {
+    if (objectsPromise) {
+      await objectsPromise
+    }
     targets.clear()
     const baseObjects = await client.findAll(_class, query, { projection: { [filter.key.key]: 1 } })
     for (const object of baseObjects) {
@@ -81,10 +83,13 @@
         : {
             _id: { $in: Array.from(targets.keys()) }
           }
-    values = await client.findAll(targetClass, resultQuery)
+    const options = clazz.sortingKey !== undefined ? { sort: { [clazz.sortingKey]: SortingOrder.Ascending } } : {}
+    objectsPromise = client.findAll(targetClass, resultQuery, options)
+    values = await objectsPromise
     if (targets.has(undefined)) {
       values.unshift(undefined)
     }
+    objectsPromise = undefined
   }
 
   function isSelected (value: Doc | undefined | null, values: any[]): boolean {
@@ -122,39 +127,52 @@
   })
 
   const dispatch = createEventDispatcher()
+  getValues(search)
 </script>
 
 <div class="selectPopup">
   <div class="header">
-    <input bind:this={searchInput} type="text" bind:value={search} placeholder={phTraslate} />
+    <input
+      bind:this={searchInput}
+      type="text"
+      bind:value={search}
+      on:change={() => {
+        getValues(search)
+      }}
+      placeholder={phTraslate}
+    />
   </div>
   <div class="scroll">
     <div class="box">
       {#await promise then attribute}
-        {#each values as value}
-          <button
-            class="menu-item"
-            on:click={() => {
-              toggle(value)
-            }}
-          >
-            <div class="flex-between w-full">
-              <div class="flex">
-                <div class="check pointer-events-none">
-                  <CheckBox checked={isSelected(value, filter.value)} primary />
+        {#if objectsPromise}
+          <Loading />
+        {:else}
+          {#each values as value}
+            <button
+              class="menu-item"
+              on:click={() => {
+                toggle(value)
+              }}
+            >
+              <div class="flex-between w-full">
+                <div class="flex">
+                  <div class="check pointer-events-none">
+                    <CheckBox checked={isSelected(value, filter.value)} primary />
+                  </div>
+                  {#if value}
+                    <svelte:component this={attribute.presenter} {value} {...attribute.props} />
+                  {:else}
+                    <Label label={ui.string.NotSelected} />
+                  {/if}
                 </div>
-                {#if value}
-                  <svelte:component this={attribute.presenter} {value} {...attribute.props} />
-                {:else}
-                  <Label label={ui.string.NotSelected} />
-                {/if}
+                <div class="content-trans-color ml-2">
+                  {targets.get(value?._id)}
+                </div>
               </div>
-              <div class="content-trans-color ml-2">
-                {targets.get(value?._id)}
-              </div>
-            </div>
-          </button>
-        {/each}
+            </button>
+          {/each}
+        {/if}
       {/await}
     </div>
   </div>

@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, DocumentQuery, getObjectValue, Ref } from '@anticrm/core'
+  import { Class, Doc, DocumentQuery, FindResult, getObjectValue, Ref, SortingOrder } from '@anticrm/core'
   import { translate } from '@anticrm/platform'
   import presentation, { getClient } from '@anticrm/presentation'
-  import ui, { Button, CheckBox, Label } from '@anticrm/ui'
+  import ui, { Button, CheckBox, Label, Loading } from '@anticrm/ui'
   import { Filter } from '@anticrm/view'
   import { onMount } from 'svelte'
   import { getPresenter } from '../../utils'
@@ -60,9 +60,12 @@
   let selectedValues: Set<any> = new Set<any>(filter.value.map((p) => p[0]))
   const realValues = new Map<any, Set<any>>()
 
-  $: getValues(search)
+  let objectsPromise: Promise<FindResult<Doc>> | undefined
 
   async function getValues (search: string): Promise<void> {
+    if (objectsPromise) {
+      await objectsPromise
+    }
     values.clear()
     realValues.clear()
     const resultQuery =
@@ -79,15 +82,29 @@
       prefix = attr.attributeOf + '.'
       console.log('prefix', prefix)
     }
-    const res = await client.findAll(_class, resultQuery, { projection: { [prefix + filter.key.key]: 1 } })
+    objectsPromise = client.findAll(_class, resultQuery, {
+      sort: { [filter.key.key]: SortingOrder.Ascending },
+      projection: { [prefix + filter.key.key]: 1 }
+    })
+    const res = await objectsPromise
 
     for (const object of res) {
       const realValue = getObjectValue(filter.key.key, object)
-      const value = typeof realValue === 'string' ? realValue.trim().toUpperCase() : realValue ?? undefined
+      const value = getValue(realValue)
       values.set(value, (values.get(value) ?? 0) + 1)
       realValues.set(value, (realValues.get(value) ?? new Set()).add(realValue))
     }
     values = values
+    objectsPromise = undefined
+  }
+
+  function getValue (obj: any): any {
+    if (typeof obj === 'string') {
+      const trim = obj.trim()
+      return trim.length > 0 ? trim.toUpperCase() : undefined
+    } else {
+      return obj ?? undefined
+    }
   }
 
   function isSelected (value: any, values: Set<any>): boolean {
@@ -121,44 +138,57 @@
   onMount(() => {
     if (searchInput) searchInput.focus()
   })
+  getValues(search)
 </script>
 
 <div class="selectPopup">
   <div class="header">
-    <input bind:this={searchInput} type="text" bind:value={search} placeholder={phTraslate} />
+    <input
+      bind:this={searchInput}
+      type="text"
+      bind:value={search}
+      on:change={() => {
+        getValues(search)
+      }}
+      placeholder={phTraslate}
+    />
   </div>
   <div class="scroll">
     <div class="box">
       {#await promise then attribute}
-        {#each Array.from(values.keys()) as value}
-          {@const realValue = [...(realValues.get(value) ?? [])][0]}
-          <button
-            class="menu-item"
-            on:click={() => {
-              toggle(value)
-            }}
-          >
-            <div class="flex-between w-full">
-              <div class="flex">
-                <div class="check pointer-events-none">
-                  <CheckBox checked={isSelected(value, selectedValues)} primary />
+        {#if objectsPromise}
+          <Loading />
+        {:else}
+          {#each Array.from(values.keys()) as value}
+            {@const realValue = [...(realValues.get(value) ?? [])][0]}
+            <button
+              class="menu-item"
+              on:click={() => {
+                toggle(value)
+              }}
+            >
+              <div class="flex-between w-full">
+                <div class="flex">
+                  <div class="check pointer-events-none">
+                    <CheckBox checked={isSelected(value, selectedValues)} primary />
+                  </div>
+                  {#if value}
+                    <svelte:component
+                      this={attribute.presenter}
+                      value={typeof value === 'string' ? realValue : value}
+                      {...attribute.props}
+                    />
+                  {:else}
+                    <Label label={ui.string.NotSelected} />
+                  {/if}
                 </div>
-                {#if value}
-                  <svelte:component
-                    this={attribute.presenter}
-                    value={typeof value === 'string' ? realValue : value}
-                    {...attribute.props}
-                  />
-                {:else}
-                  <Label label={ui.string.NotSelected} />
-                {/if}
+                <div class="content-trans-color ml-2">
+                  {values.get(value)}
+                </div>
               </div>
-              <div class="content-trans-color ml-2">
-                {values.get(value)}
-              </div>
-            </div>
-          </button>
-        {/each}
+            </button>
+          {/each}
+        {/if}
       {/await}
     </div>
   </div>
