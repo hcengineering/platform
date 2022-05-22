@@ -177,7 +177,7 @@
           </div>
           {#if object.date && hasDate(object)}
             <div class="float-left">
-              <DatePresenter value={object} size="x-small" on:update={updateDate} />
+              <DatePresenter value={object} size="x-small" />
             </div>
           {/if}
           {#if object.description}
