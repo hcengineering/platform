@@ -17,9 +17,13 @@
   import type { IntlString } from '@anticrm/platform'
   import { createEventDispatcher } from 'svelte'
   import { EditBox } from '@anticrm/ui'
+  import type { EditStyle } from '@anticrm/ui'
 
-  export let value: string
+  export let value: string | number | undefined
+  export let format: 'text' | 'password' | 'number'
   export let placeholder: IntlString
+  export let kind: EditStyle = 'search-style'
+  export let maxWidth: string = '10rem'
 
   const dispatch = createEventDispatcher()
 
@@ -30,6 +34,14 @@
 
 <div class="selectPopup">
   <div class="header no-border">
-    <EditBox bind:value {placeholder} kind={'search-style'} maxWidth={'10rem'} focus on:keypress={_onkeypress} />
+    <EditBox
+      bind:value
+      {placeholder}
+      {format}
+      {kind}
+      {maxWidth}
+      focus
+      on:keypress={_onkeypress}
+    />
   </div>
 </div>

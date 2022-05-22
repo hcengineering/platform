@@ -23,6 +23,5 @@
 
 <ClassAttributeBar _class={object._class} {object} {ignoreKeys} to={undefined} vertical on:update />
 {#each mixins as mixin}
-  <div class="bottom-divider mt-4 mb-2" />
   <ClassAttributeBar _class={mixin._id} {object} {ignoreKeys} to={object._class} vertical on:update />
 {/each}
