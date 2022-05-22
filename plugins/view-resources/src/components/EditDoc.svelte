@@ -120,6 +120,8 @@
   async function getEditorOrDefault (_class: Ref<Class<Doc>>): Promise<void> {
     parentClass = getParentClass(_class)
     mainEditor = await getEditor(_class)
+    getMixins()
+    updateKeys()
   }
 
   async function getCollectionEditor (key: KeyedAttribute): Promise<AnyComponent> {
