@@ -206,7 +206,7 @@
       padding: 0 0.875rem;
       height: 2rem;
       border-radius: 0.25rem;
-      
+
       .btn-icon {
         margin-right: 0.5rem;
       }
