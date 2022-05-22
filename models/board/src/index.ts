@@ -214,6 +214,10 @@ export function createModel (builder: Builder): void {
     presenter: board.component.CardLabelPresenter
   })
 
+  builder.mixin(board.class.CardLabel, core.class.Class, view.mixin.CollectionPresenter, {
+    presenter: board.component.CardLabelPresenter
+  })
+
   builder.mixin(board.class.Board, core.class.Class, view.mixin.AttributePresenter, {
     presenter: board.component.BoardPresenter
   })
@@ -412,6 +416,24 @@ export function createModel (builder: Builder): void {
   builder.mixin(board.class.Card, core.class.Class, view.mixin.IgnoreActions, {
     actions: [view.action.Delete, task.action.Move]
   })
+
+  // TODO: update query when nested query is available
+  createAction(
+    builder,
+    {
+      action: board.actionImpl.ConvertToCard,
+      label: board.string.ConvertToCard,
+      icon: board.icon.Card,
+      category: board.category.Card,
+      query: {
+        attachedToClass: task.class.TodoItem
+      },
+      input: 'any',
+      target: task.class.TodoItem,
+      context: { mode: ['context', 'browser'] }
+    },
+    board.action.ConvertToCard
+  )
 }
 
 export { boardOperation } from './migration'

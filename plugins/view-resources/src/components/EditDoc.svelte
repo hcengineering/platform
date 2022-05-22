@@ -37,10 +37,10 @@
   export let _id: Ref<Doc>
   export let _class: Ref<Class<Doc>>
 
+  let realObjectClass: Ref<Class<Doc>> = _class
   let lastId: Ref<Doc> = _id
   let lastClass: Ref<Class<Doc>> = _class
   let object: Doc
-  let objectClass: Class<Doc>
   let parentClass: Ref<Class<Doc>>
 
   const client = getClient()
@@ -67,19 +67,13 @@
     _class &&
     query.query(_class, { _id }, (result) => {
       object = result[0]
+      realObjectClass = object._class
     })
-
-  $: if (object !== undefined) objectClass = hierarchy.getClass(object._class)
 
   let keys: KeyedAttribute[] = []
   let collectionEditors: { key: KeyedAttribute; editor: AnyComponent }[] = []
 
   let mixins: Mixin<Doc>[] = []
-
-  $: if (object) {
-    parentClass = getParentClass(object._class)
-    getMixins()
-  }
 
   const dispatch = createEventDispatcher()
 
@@ -120,17 +114,14 @@
     return editorMixin.editor
   }
 
-  let mainEditor: AnyComponent
-  $: if (object) getEditorOrDefault(object._class, object._class)
+  let mainEditor: AnyComponent | undefined
+  $: getEditorOrDefault(realObjectClass)
 
-  async function getEditorOrDefault (_class: Ref<Class<Doc>> | undefined, defaultClass: Ref<Class<Doc>>): Promise<void> {
-    let editor = _class !== undefined ? await getEditor(_class) : undefined
-    if (editor === undefined) {
-      editor = await getEditor(defaultClass)
-    }
-    mainEditor = editor
-    updateKeys()
+  async function getEditorOrDefault (_class: Ref<Class<Doc>>): Promise<void> {
+    parentClass = getParentClass(_class)
+    mainEditor = await getEditor(_class)
     getMixins()
+    updateKeys()
   }
 
   async function getCollectionEditor (key: KeyedAttribute): Promise<AnyComponent> {
@@ -140,7 +131,8 @@
     return editorMixin.editor
   }
 
-  function getIcon (_class: Ref<Class<Obj>>): Asset {
+  function getIcon (_class: Ref<Class<Obj>> | undefined): Asset | undefined {
+    if (_class === undefined) return undefined
     let clazz = hierarchy.getClass(_class)
     if (clazz.icon !== undefined) return clazz.icon
     while (clazz.extends !== undefined) {
@@ -152,7 +144,7 @@
     throw new Error(`Icon not found for ${_class}`)
   }
 
-  $: icon = object && getIcon(object._class)
+  $: icon = getIcon(realObjectClass)
 
   function getParentClass (_class: Ref<Class<Doc>>): Ref<Class<Doc>> {
     const baseDomain = hierarchy.getDomain(_class)
@@ -198,9 +190,9 @@
 
   let headerEditor: AnyComponent | undefined = undefined
   let headerLoading = false
-  $: if (object !== undefined) {
+  $: {
     headerLoading = true
-    getHeaderEditor(object._class).then((r) => {
+    getHeaderEditor(realObjectClass).then((r) => {
       headerEditor = r
       headerLoading = false
     })
@@ -250,7 +242,7 @@
         {:else if dir === 'column'}
           <DocAttributeBar {object} {mixins} {ignoreKeys} on:update={updateKeys} />
         {:else}
-          <AttributesBar {object} {keys} />
+          <AttributesBar {object} _class={realObjectClass} {keys} />
         {/if}
       {/if}
     </svelte:fragment>
@@ -262,8 +254,8 @@
         on:open={(ev) => {
           ignoreKeys = ev.detail.ignoreKeys
           ignoreMixins = new Set(ev.detail.ignoreMixins)
-          updateKeys()
           getMixins()
+          updateKeys()
         }}
       />
     {/if}

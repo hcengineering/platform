@@ -18,7 +18,7 @@
   import login from '@anticrm/login'
   import { translate } from '@anticrm/platform'
   import setting from '@anticrm/setting'
-  import { IconAdd, Label, Scroller, SearchEdit, showPopup } from '@anticrm/ui'
+  import { IconAdd, Label, SearchEdit, showPopup } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation from '../plugin'
   import { getClient } from '../utils'
@@ -79,43 +79,41 @@
         <Label label={presentation.string.NoMatchesFound} />
       </div>
     {:else}
-      <Scroller>
-        {#if isSearch}
-          <div class="pr-8 pl-8"><Label label={presentation.string.InThis} params={{ space: spaceClass }} /></div>
-          {#if !current.length}
-            <div class="fs-title pl-8 mb-4 mt-4">
-              <Label label={presentation.string.NoMatchesInThis} params={{ space: spaceClass }} />
-            </div>
-          {/if}
+      {#if isSearch}
+        <div class="pr-8 pl-8"><Label label={presentation.string.InThis} params={{ space: spaceClass }} /></div>
+        {#if !current.length}
+          <div class="fs-title pl-8 mb-4 mt-4">
+            <Label label={presentation.string.NoMatchesInThis} params={{ space: spaceClass }} />
+          </div>
         {/if}
-        {#if !isSearch && withAddButton}
-          <div class="item fs-title">
-            <div class="flex-row-center" on:click={() => dispatch('addMembers')}>
-              <div class="flex-center ml-1 mr-1"><IconAdd size={'large'} /></div>
-              <div class="flex-col ml-2 min-w-0 content-accent-color">
+      {/if}
+      {#if !isSearch && withAddButton}
+        <div class="item fs-title">
+          <div class="flex-row-center" on:click={() => dispatch('addMembers')}>
+            <div class="flex-center ml-1 mr-1"><IconAdd size={'large'} /></div>
+            <div class="flex-col ml-2 min-w-0 content-accent-color">
+              <Label label={presentation.string.Add} />
+            </div>
+          </div>
+        </div>
+      {/if}
+      {#each current as person}
+        <div class="item fs-title"><UserInfo size={'medium'} value={person} /></div>
+      {/each}
+      {#if foreign.length}
+        <div class="mt-4 notIn h-full">
+          <div class="divider w-full mb-4" />
+          <div class="pr-8 pl-8"><Label label={presentation.string.NotInThis} params={{ space: spaceClass }} /></div>
+          {#each foreign as person}
+            <div class="item flex-between">
+              <div class="fs-title"><UserInfo size={'medium'} value={person} /></div>
+              <div class="over-underline" on:click={() => add(person._id)}>
                 <Label label={presentation.string.Add} />
               </div>
             </div>
-          </div>
-        {/if}
-        {#each current as person}
-          <div class="item fs-title"><UserInfo size={'medium'} value={person} /></div>
-        {/each}
-        {#if foreign.length}
-          <div class="mt-4 notIn h-full">
-            <div class="divider w-full mb-4" />
-            <div class="pr-8 pl-8"><Label label={presentation.string.NotInThis} params={{ space: spaceClass }} /></div>
-            {#each foreign as person}
-              <div class="item flex-between">
-                <div class="fs-title"><UserInfo size={'medium'} value={person} /></div>
-                <div class="over-underline" on:click={() => add(person._id)}>
-                  <Label label={presentation.string.Add} />
-                </div>
-              </div>
-            {/each}
-          </div>
-        {/if}
-      </Scroller>
+          {/each}
+        </div>
+      {/if}
     {/if}
   {/await}
   {#if withInviteWorkspaceButton}

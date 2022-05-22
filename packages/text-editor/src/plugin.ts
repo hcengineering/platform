@@ -35,6 +35,14 @@ export default plugin(textEditorId, {
     Emoji: '' as IntlString,
     GIF: '' as IntlString,
     EditorPlaceholder: '' as IntlString,
-    Edit: '' as IntlString
+    Edit: '' as IntlString,
+    Bold: '' as IntlString,
+    Italic: '' as IntlString,
+    Strikethrough: '' as IntlString,
+    OrderedList: '' as IntlString,
+    BulletedList: '' as IntlString,
+    Blockquote: '' as IntlString,
+    Code: '' as IntlString,
+    CodeBlock: '' as IntlString
   }
 })

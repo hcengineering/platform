@@ -3,6 +3,14 @@
     "Suggested": "РЕКОМЕНДУЕМЫЕ",
     "NoItems": "Нет содержимого",
     "EditorPlaceholder": "Начните печатать...",
-    "Edit": "Редактировать"
+    "Edit": "Редактировать",
+    "Bold": "Жирный",
+    "Italic": "Курсив",
+    "Strikethrough": "Зачеркнутый",
+    "OrderedList": "Упорядоченный список",
+    "BulletedList": "Маркированный список",
+    "Blockquote": "Цитата",
+    "Code": "Код",
+    "CodeBlock": "Кодовый блок"
   }
 }

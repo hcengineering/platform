@@ -19,7 +19,18 @@
   import core, { AnyAttribute, Doc, getCurrentAccount, Ref } from '@anticrm/core'
   import { Asset, getResource } from '@anticrm/platform'
   import { getClient } from '@anticrm/presentation'
-  import { Component, Icon, IconEdit, IconMoreH, Label, Menu, ShowMore, showPopup, TimeSince } from '@anticrm/ui'
+  import {
+    Component,
+    Icon,
+    IconEdit,
+    IconMoreH,
+    Label,
+    Menu,
+    ShowMore,
+    showPopup,
+    TimeSince,
+    Button
+  } from '@anticrm/ui'
   import type { AttributeModel } from '@anticrm/view'
   import { getActions } from '@anticrm/view-resources'
   import { ActivityKey, DisplayTx } from '../activity'
@@ -122,7 +133,7 @@
       </div>
     {/if}
 
-    <div class="flex-grow flex-col">
+    <div class="flex-grow flex-col clear-mins">
       <div class="flex-between">
         <div class="flex-grow label">
           <div class="bold">
@@ -133,7 +144,7 @@
             {/if}
           </div>
           {#if viewlet && viewlet?.editable}
-            <div class="edited">
+            <div class="buttons-group small-gap">
               {#if viewlet.label}
                 <Label label={viewlet.label} params={viewlet.labelParams ?? {}} />
               {/if}
@@ -141,9 +152,13 @@
                 <Label label={activity.string.Edited} />
               {/if}
               {#if tx.tx.modifiedBy === getCurrentAccount()._id}
-                <div class="menuOptions" on:click={(ev) => showMenu(ev)}>
-                  <IconMoreH size={'medium'} />
-                </div>
+                <Button
+                  icon={IconMoreH}
+                  kind={'transparent'}
+                  shape={'circle'}
+                  size={'medium'}
+                  on:click={(ev) => showMenu(ev)}
+                />
               {/if}
             </div>
           {:else if viewlet && viewlet.label}
@@ -188,11 +203,11 @@
                     </div>
                   </div>
                 {:else}
-                  <span class="lower" class:flex-grow={hasMessageType}
-                    ><Label label={activity.string.Changed} />
+                  <span class="lower" class:flex-grow={hasMessageType}>
+                    <Label label={activity.string.Changed} />
                     <Label label={m.label} />
-                    <Label label={activity.string.To} /></span
-                  >
+                    <Label label={activity.string.To} />
+                  </span>
                   {#if hasMessageType}
                     <div class="time"><TimeSince value={tx.tx.modifiedOn} /></div>
                   {/if}
@@ -236,7 +251,7 @@
           {:else if viewlet && viewlet.display === 'inline' && viewlet.component}
             {#if tx.collectionAttribute !== undefined && (tx.txDocIds?.size ?? 0) > 1}
               <ShowMore ignore={edit}>
-                <div class="flex-row-center flex-grow flex-wrap">
+                <div class="flex-row-center flex-grow flex-wrap clear-mins">
                   <TxViewTx {tx} {onCancelEdit} {edit} {viewlet} />
                 </div>
               </ShowMore>
@@ -256,7 +271,7 @@
         <div class={viewlet.display}>
           <ShowMore ignore={edit}>
             {#if tx.collectionAttribute !== undefined && (tx.txDocIds?.size ?? 0) > 1}
-              <div class="flex-row-center flex-grow flex-wrap">
+              <div class="flex-row-center flex-grow flex-wrap clear-mins">
                 <TxViewTx {tx} {onCancelEdit} {edit} {viewlet} />
               </div>
             {:else if typeof viewlet.component === 'string'}
@@ -274,6 +289,7 @@
 <style lang="scss">
   .msgactivity-container {
     position: relative;
+    min-width: 0;
   }
 
   .showIcon {
@@ -317,12 +333,6 @@
     border-radius: 50%;
   }
 
-  .edited {
-    display: flex;
-    align-items: center;
-    flex-wrap: nowrap;
-  }
-
   .label {
     display: flex;
     align-items: center;
@@ -353,6 +363,8 @@
   .content {
     flex-shrink: 0;
     margin-top: 0.5rem;
+    min-width: 0;
+    min-height: 0;
   }
 
   .emphasized {

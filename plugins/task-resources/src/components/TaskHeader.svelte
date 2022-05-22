@@ -71,10 +71,10 @@
         titleDeselect={task.string.TaskUnAssign}
       />
       <div class="column">
-        <AttributesBar {object} keys={filtredKeys} />
+        <AttributesBar {object} _class={object._class} keys={filtredKeys} />
       </div>
     </div>
-    <AttributesBar {object} keys={['doneState', 'state']} showHeader={false} />
+    <AttributesBar {object} _class={object._class} keys={['doneState', 'state']} showHeader={false} />
   </div>
 {:else}
   <DocAttributeBar {object} {ignoreKeys} {mixins} on:update />

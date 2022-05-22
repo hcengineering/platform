@@ -16,11 +16,12 @@
   import { Class, Doc, DocumentQuery, getObjectValue, Ref } from '@anticrm/core'
   import { translate } from '@anticrm/platform'
   import presentation, { getClient } from '@anticrm/presentation'
-  import ui, { CheckBox, Label } from '@anticrm/ui'
+  import ui, { Button, CheckBox, Label } from '@anticrm/ui'
   import { Filter } from '@anticrm/view'
   import { onMount } from 'svelte'
   import { getPresenter } from '../../utils'
   import view from '../../plugin'
+  import { createEventDispatcher } from 'svelte'
 
   export let _class: Ref<Class<Doc>>
   export let query: DocumentQuery<Doc>
@@ -31,22 +32,22 @@
     {
       label: view.string.FilterIs,
       isAvailable: (res: any[]) => res.length <= 1,
-      result: (res: any[]) => {
-        return { $in: res }
+      result: async (res: [any, any[]][]) => {
+        return { $in: res.map((p) => p[1]).flat() }
       }
     },
     {
       label: view.string.FilterIsEither,
       isAvailable: (res: any[]) => res.length > 1,
-      result: (res: any[]) => {
-        return { $in: res }
+      result: async (res: [any, any[]][]) => {
+        return { $in: res.map((p) => p[1]).flat() }
       }
     },
     {
       label: view.string.FilterIsNot,
       isAvailable: () => true,
-      result: (res: any[]) => {
-        return { $nin: res }
+      result: async (res: [any, any[]][]) => {
+        return { $nin: res.map((p) => p[1]).flat() }
       }
     }
   ]
@@ -56,7 +57,7 @@
   const promise = getPresenter(client, _class, key, key)
 
   let values = new Map<any, number>()
-  let selectedValues: Set<any> = new Set<any>()
+  let selectedValues: Set<any> = new Set<any>(filter.value.map((p) => p[0]))
   const realValues = new Map<any, Set<any>>()
 
   $: getValues(search)
@@ -71,7 +72,15 @@
             ...query
           }
         : query
-    const res = await client.findAll(_class, resultQuery, { projection: { [filter.key.key]: 1 } })
+    let prefix = ''
+
+    const attr = client.getHierarchy().getAttribute(_class, filter.key.key)
+    if (client.getHierarchy().isMixin(attr.attributeOf)) {
+      prefix = attr.attributeOf + '.'
+      console.log('prefix', prefix)
+    }
+    const res = await client.findAll(_class, resultQuery, { projection: { [prefix + filter.key.key]: 1 } })
+
     for (const object of res) {
       const realValue = getObjectValue(filter.key.key, object)
       const value = typeof realValue === 'string' ? realValue.trim().toUpperCase() : realValue ?? undefined
@@ -98,11 +107,6 @@
       selectedValues.add(value)
     }
     selectedValues = selectedValues
-    filter.value = Array.from(selectedValues.values())
-      .map((p) => Array.from(realValues.get(p) ?? []))
-      .flat()
-    checkMode()
-    onChange(filter)
   }
 
   let search: string = ''
@@ -112,6 +116,8 @@
     phTraslate = res
   })
 
+  const dispatch = createEventDispatcher()
+
   onMount(() => {
     if (searchInput) searchInput.focus()
   })
@@ -119,19 +125,13 @@
 
 <div class="selectPopup">
   <div class="header">
-    <input
-      bind:this={searchInput}
-      type="text"
-      bind:value={search}
-      placeholder={phTraslate}
-      on:input={(ev) => {}}
-      on:change
-    />
+    <input bind:this={searchInput} type="text" bind:value={search} placeholder={phTraslate} />
   </div>
   <div class="scroll">
     <div class="box">
       {#await promise then attribute}
         {#each Array.from(values.keys()) as value}
+          {@const realValue = [...(realValues.get(value) ?? [])][0]}
           <button
             class="menu-item"
             on:click={() => {
@@ -144,12 +144,16 @@
                   <CheckBox checked={isSelected(value, selectedValues)} primary />
                 </div>
                 {#if value}
-                  <svelte:component this={attribute.presenter} {value} {...attribute.props} />
+                  <svelte:component
+                    this={attribute.presenter}
+                    value={typeof value === 'string' ? realValue : value}
+                    {...attribute.props}
+                  />
                 {:else}
                   <Label label={ui.string.NotSelected} />
                 {/if}
               </div>
-              <div class="content-trans-color">
+              <div class="content-trans-color ml-2">
                 {values.get(value)}
               </div>
             </div>
@@ -158,4 +162,16 @@
       {/await}
     </div>
   </div>
+  <Button
+    shape={'round'}
+    label={view.string.Apply}
+    on:click={() => {
+      filter.value = Array.from(selectedValues.values()).map((p) => {
+        return [p, Array.from(realValues.get(p) ?? [])]
+      })
+      checkMode()
+      onChange(filter)
+      dispatch('close')
+    }}
+  />
 </div>

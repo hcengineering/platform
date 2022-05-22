@@ -13,7 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { AnyAttribute, ArrOf, Class, Doc, DocumentQuery, Ref, Type } from '@anticrm/core'
+  import core, {
+    AnyAttribute,
+    ArrOf,
+    AttachedDoc,
+    Class,
+    Collection,
+    Doc,
+    DocumentQuery,
+    Ref,
+    Type
+  } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
   import { Icon, Label, showPopup } from '@anticrm/ui'
   import { Filter, KeyFilter } from '@anticrm/view'
@@ -21,8 +31,9 @@
   import view from '../../plugin'
 
   export let _class: Ref<Class<Doc>>
-  export let makeQuery: (key: string) => DocumentQuery<Doc>
+  export let query: DocumentQuery<Doc>
   export let target: HTMLElement
+  export let index: number
   export let onChange: (e: Filter) => void
 
   const client = getClient()
@@ -48,11 +59,13 @@
   }
 
   function buildFilter (key: string, attribute: AnyAttribute): KeyFilter | undefined {
-    const clazz = hierarchy.getClass(attribute.type._class)
+    const isCollection = hierarchy.isDerived(attribute.type._class, core.class.Collection)
+    const targetClass = isCollection ? (attribute.type as Collection<AttachedDoc>).of : attribute.type._class
+    const clazz = hierarchy.getClass(targetClass)
     const filter = hierarchy.as(clazz, view.mixin.AttributeFilter)
     if (filter.component === undefined) return undefined
     return {
-      key: key,
+      key: isCollection ? '_id' : key,
       label: attribute.label,
       icon: attribute.icon,
       component: filter.component
@@ -108,10 +121,11 @@
       type.component,
       {
         _class,
-        query: makeQuery(type.key),
+        query,
         filter: {
           key: type,
-          value: []
+          value: [],
+          index
         },
         onChange
       },

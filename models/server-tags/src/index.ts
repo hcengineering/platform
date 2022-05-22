@@ -20,6 +20,10 @@ import serverTags from '@anticrm/server-tags'
 import tags from '@anticrm/tags'
 
 export function createModel (builder: Builder): void {
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverTags.trigger.onTagReference
+  })
+
   builder.mixin<Class<Doc>, ObjectDDParticipant>(
     tags.class.TagElement,
     core.class.Class,

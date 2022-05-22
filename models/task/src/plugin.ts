@@ -28,6 +28,7 @@ export default mergeIds(taskId, task, {
     EditStatuses: '' as Ref<Action>,
     ArchiveSpace: '' as Ref<Action>,
     UnarchiveSpace: '' as Ref<Action>,
+    ArchiveState: '' as Ref<Action>,
     Move: '' as Ref<Action>
   },
   actionImpl: {

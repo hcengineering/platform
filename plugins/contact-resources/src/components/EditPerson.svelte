@@ -21,7 +21,7 @@
   import { AttributeEditor, Avatar, createQuery, EditableAvatar, getClient } from '@anticrm/presentation'
   import setting, { IntegrationType } from '@anticrm/setting'
   import { EditBox, createFocusManager, FocusHandler } from '@anticrm/ui'
-  import { afterUpdate, createEventDispatcher, onMount } from 'svelte'
+  import { createEventDispatcher, onMount } from 'svelte'
   import contact from '../plugin'
   import ChannelsEditor from './ChannelsEditor.svelte'
 
@@ -68,7 +68,6 @@
 
   const sendOpen = () => dispatch('open', { ignoreKeys: ['comments', 'name', 'channels', 'city'] })
   onMount(sendOpen)
-  afterUpdate(sendOpen)
 
   async function onAvatarDone (e: any) {
     const uploadFile = await getResource(attachment.helper.UploadFile)

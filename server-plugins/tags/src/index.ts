@@ -16,6 +16,7 @@
 import { Class, Doc, Hierarchy, Ref, FindResult, FindOptions, DocumentQuery } from '@anticrm/core'
 import type { Plugin, Resource } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
+import { TriggerFunc } from '@anticrm/server-core'
 
 /**
  * @public
@@ -26,6 +27,9 @@ export const serverTagsId = 'server-tags' as Plugin
  * @public
  */
 export default plugin(serverTagsId, {
+  trigger: {
+    onTagReference: '' as Resource<TriggerFunc>
+  },
   function: {
     TagElementRemove: '' as Resource<
     (

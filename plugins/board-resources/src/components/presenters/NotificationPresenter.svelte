@@ -13,15 +13,22 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, Mixin } from '@anticrm/core'
-  import ClassAttributeBar from './ClassAttributeBar.svelte'
+  import { Doc } from '@anticrm/core'
+  import notification from '@anticrm/notification'
+  import { NotificationClientImpl } from '@anticrm/notification-resources'
+  import { Icon, IconSize } from '@anticrm/ui'
 
   export let object: Doc
-  export let mixins: Mixin<Doc>[]
-  export let ignoreKeys: string[]
+  export let size: IconSize = 'small'
+
+  const notificationClient = NotificationClientImpl.getClient()
+  const lastViews = notificationClient.getLastViews()
+  $: lastView = $lastViews.get(object._id)
+  $: subscribed = lastView !== undefined && lastView !== -1
 </script>
 
-<ClassAttributeBar _class={object._class} {object} {ignoreKeys} to={undefined} vertical on:update />
-{#each mixins as mixin}
-  <ClassAttributeBar _class={mixin._id} {object} {ignoreKeys} to={object._class} vertical on:update />
-{/each}
+{#if subscribed}
+  <div class="sm-tool-icon ml-1 mr-1 flex-center">
+    <span class="icon"><Icon icon={notification.icon.Notifications} {size} /></span>
+  </div>
+{/if}

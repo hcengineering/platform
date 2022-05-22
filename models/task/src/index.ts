@@ -510,4 +510,30 @@ export function createModel (builder: Builder): void {
     },
     task.action.Move
   )
+
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.UpdateDocument,
+      actionProps: {
+        key: 'isArchived',
+        value: true,
+        ask: true,
+        label: task.string.Archive,
+        message: task.string.ArchiveConfirm
+      },
+      query: {
+        isArchived: { $nin: [true] }
+      },
+      label: task.string.Archive,
+      icon: task.icon.TaskState,
+      input: 'any',
+      category: task.category.Task,
+      target: task.class.State,
+      context: {
+        mode: ['context', 'browser']
+      }
+    },
+    task.action.ArchiveState
+  )
 }

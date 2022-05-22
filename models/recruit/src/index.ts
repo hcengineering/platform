@@ -452,7 +452,7 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(recruit.mixin.Candidate, core.class.Class, view.mixin.ClassFilters, {
-    filters: ['title', 'source', 'city', 'modifiedOn', 'onsite', 'remote']
+    filters: ['title', 'source', 'city', 'skills', 'modifiedOn', 'onsite', 'remote']
   })
 
   builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.ClassFilters, {

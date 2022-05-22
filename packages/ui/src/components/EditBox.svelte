@@ -18,7 +18,7 @@
   import { afterUpdate, createEventDispatcher, onMount } from 'svelte'
   import { registerFocus } from '../focus'
   import plugin from '../plugin'
-  import type { AnySvelteComponent } from '../types'
+  import type { AnySvelteComponent, EditStyle } from '../types'
   import Icon from './Icon.svelte'
   import Label from './Label.svelte'
 
@@ -29,7 +29,7 @@
   export let placeholder: IntlString = plugin.string.EditBoxPlaceholder
   export let placeholderParam: any | undefined = undefined
   export let format: 'text' | 'password' | 'number' = 'text'
-  export let kind: 'editbox' | 'large-style' | 'small-style' | 'search-style' = 'editbox'
+  export let kind: EditStyle = 'editbox'
   export let focus: boolean = false
 
   const dispatch = createEventDispatcher()
@@ -116,6 +116,7 @@
       <input
         bind:this={input}
         type="number"
+        class="number"
         bind:value
         placeholder={phTraslate}
         {style}
@@ -184,6 +185,10 @@
         height: 0;
         width: 0;
         margin: 0;
+      }
+      &.number::-webkit-outer-spin-button,
+      &.number::-webkit-inner-spin-button {
+        -webkit-appearance: none;
       }
     }
   }

@@ -43,6 +43,7 @@
     "FilterIsEither": "один из",
     "FilterStatesCount": "{value, plural, =1 {1 состоянию} other {# состояний}}",
     "Before": "До",
-    "After": "После"
+    "After": "После",
+    "Apply": "Применить"
   }
 }

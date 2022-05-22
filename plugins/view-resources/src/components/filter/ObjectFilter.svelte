@@ -16,11 +16,12 @@
   import { Class, Doc, DocumentQuery, getObjectValue, Ref, RefTo } from '@anticrm/core'
   import { translate } from '@anticrm/platform'
   import presentation, { getClient } from '@anticrm/presentation'
-  import ui, { CheckBox, Label } from '@anticrm/ui'
+  import ui, { Button, CheckBox, Label } from '@anticrm/ui'
   import { Filter } from '@anticrm/view'
   import { onMount } from 'svelte'
   import { buildConfigLookup, getPresenter } from '../../utils'
   import view from '../../plugin'
+  import { createEventDispatcher } from 'svelte'
 
   export let _class: Ref<Class<Doc>>
   export let query: DocumentQuery<Doc>
@@ -37,21 +38,21 @@
     {
       label: view.string.FilterIs,
       isAvailable: (res: any[]) => res.length <= 1,
-      result: (res: any[]) => {
+      result: async (res: any[]) => {
         return { $in: res }
       }
     },
     {
       label: view.string.FilterIsEither,
       isAvailable: (res: any[]) => res.length > 1,
-      result: (res: any[]) => {
+      result: async (res: any[]) => {
         return { $in: res }
       }
     },
     {
       label: view.string.FilterIsNot,
       isAvailable: () => true,
-      result: (res: any[]) => {
+      result: async (res: any[]) => {
         return { $nin: res }
       }
     }
@@ -80,7 +81,7 @@
         : {
             _id: { $in: Array.from(targets.keys()) }
           }
-    values = await client.findAll(targetClass, resultQuery, { projection: { _id: 1 } })
+    values = await client.findAll(targetClass, resultQuery)
     if (targets.has(undefined)) {
       values.unshift(undefined)
     }
@@ -107,7 +108,6 @@
       }
     }
     checkMode()
-    onChange(filter)
   }
 
   let search: string = ''
@@ -120,18 +120,13 @@
   onMount(() => {
     if (searchInput) searchInput.focus()
   })
+
+  const dispatch = createEventDispatcher()
 </script>
 
 <div class="selectPopup">
   <div class="header">
-    <input
-      bind:this={searchInput}
-      type="text"
-      bind:value={search}
-      placeholder={phTraslate}
-      on:input={(ev) => {}}
-      on:change
-    />
+    <input bind:this={searchInput} type="text" bind:value={search} placeholder={phTraslate} />
   </div>
   <div class="scroll">
     <div class="box">
@@ -154,7 +149,7 @@
                   <Label label={ui.string.NotSelected} />
                 {/if}
               </div>
-              <div class="content-trans-color">
+              <div class="content-trans-color ml-2">
                 {targets.get(value?._id)}
               </div>
             </div>
@@ -163,4 +158,12 @@
       {/await}
     </div>
   </div>
+  <Button
+    shape={'round'}
+    label={view.string.Apply}
+    on:click={() => {
+      onChange(filter)
+      dispatch('close')
+    }}
+  />
 </div>
