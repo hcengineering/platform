@@ -81,7 +81,7 @@
         : {
             _id: { $in: Array.from(targets.keys()) }
           }
-    values = await client.findAll(targetClass, resultQuery, { projection: { _id: 1 } })
+    values = await client.findAll(targetClass, resultQuery)
     if (targets.has(undefined)) {
       values.unshift(undefined)
     }

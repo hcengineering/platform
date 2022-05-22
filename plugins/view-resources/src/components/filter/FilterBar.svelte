@@ -120,7 +120,7 @@
 </script>
 
 {#if visible}
-  <div class="flex pl-4 pr-4">
+  <div class="flex-row-center pl-4 pr-4">
     {#each filters as filter, i}
       <FilterSection
         {_class}
