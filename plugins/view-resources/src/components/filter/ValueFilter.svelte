@@ -72,7 +72,15 @@
             ...query
           }
         : query
-    const res = await client.findAll(_class, resultQuery, { projection: { [filter.key.key]: 1 } })
+    let prefix = ''
+
+    const attr = client.getHierarchy().getAttribute(_class, filter.key.key)
+    if (client.getHierarchy().isMixin(attr.attributeOf)) {
+      prefix = attr.attributeOf + '.'
+      console.log('prefix', prefix)
+    }
+    const res = await client.findAll(_class, resultQuery, { projection: { [prefix + filter.key.key]: 1 } })
+
     for (const object of res) {
       const realValue = getObjectValue(filter.key.key, object)
       const value = typeof realValue === 'string' ? realValue.trim().toUpperCase() : realValue ?? undefined
@@ -123,6 +131,7 @@
     <div class="box">
       {#await promise then attribute}
         {#each Array.from(values.keys()) as value}
+          {@const realValue = [...(realValues.get(value) ?? [])][0]}
           <button
             class="menu-item"
             on:click={() => {
@@ -135,7 +144,11 @@
                   <CheckBox checked={isSelected(value, selectedValues)} primary />
                 </div>
                 {#if value}
-                  <svelte:component this={attribute.presenter} {value} {...attribute.props} />
+                  <svelte:component
+                    this={attribute.presenter}
+                    value={typeof value === 'string' ? realValue : value}
+                    {...attribute.props}
+                  />
                 {:else}
                   <Label label={ui.string.NotSelected} />
                 {/if}
