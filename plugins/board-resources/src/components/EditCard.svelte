@@ -54,7 +54,7 @@
     }
   }
 
-  function addChecklist (e) {
+  function addChecklist (e: Event) {
     showPopup(AddChecklist, { value: object }, getPopupAlignment(e))
   }
 
@@ -145,7 +145,7 @@
           </div>
         </div>
         <div class="mt-4">
-          <Attachments objectId={_id} {space} {_class} attachments={object.attachments ?? 0} />
+          <Attachments objectId={_id} {_class} space={object.space} attachments={object.attachments ?? 0} />
         </div>
         <div class="flex-row-center mt-4">
           <span class="text-xl font-medium caption-color mr-3"><Label label={board.string.Checklists} /></span>

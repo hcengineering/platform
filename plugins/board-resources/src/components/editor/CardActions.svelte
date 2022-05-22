@@ -16,7 +16,7 @@
 <script lang="ts">
   import type { Card } from '@anticrm/board'
   import board from '@anticrm/board'
-  import contact, { Employee } from '@anticrm/contact'
+  import { Employee } from '@anticrm/contact'
   import { Ref } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
   import ui, { Button, CheckBox, DateRangePresenter, Label, IconAdd } from '@anticrm/ui'
@@ -68,12 +68,7 @@
       <div class="label w-24">
         <Label label={plugin.string.Members} />
       </div>
-      <UserBoxList
-        _class={contact.class.Employee}
-        value={value.members ?? []}
-        label={plugin.string.Members}
-        on:update={updateMembers}
-      />
+      <UserBoxList value={value.members ?? []} on:update={updateMembers} />
     </div>
     <div class="flex-row-stretch flex-gap-1 items-center">
       <div class="label w-24">

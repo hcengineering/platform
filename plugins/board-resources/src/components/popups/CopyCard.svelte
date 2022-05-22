@@ -52,7 +52,9 @@
       description: '',
       members: [],
       location: '',
-      labels: labels ?? []
+      labels: labels ?? [],
+      startDate: value.startDate,
+      dueDate: value.dueDate
     }
 
     await client.addCollection(

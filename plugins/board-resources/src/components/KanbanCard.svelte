@@ -175,7 +175,7 @@
           <div class="float-left">
             <NotificationPresenter {object} />
           </div>
-          {#if object.date && hasDate(object)}
+          {#if hasDate(object)}
             <div class="float-left">
               <DatePresenter value={object} size="x-small" />
             </div>

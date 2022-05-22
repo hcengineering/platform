@@ -1,10 +1,12 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
-  import { Label, Button, DateRangePresenter, CheckBox, Component } from '@anticrm/ui'
   import { Card } from '@anticrm/board'
   import calendar from '@anticrm/calendar'
-  import board from '../../plugin'
+  import { DocumentUpdate } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
+  import { Label, Button, DateRangePresenter, Component } from '@anticrm/ui'
+  import { createEventDispatcher } from 'svelte'
+
+  import board from '../../plugin'
 
   export let value: Card
 
@@ -12,16 +14,10 @@
   const dispatch = createEventDispatcher()
 
   let startDate = value.startDate
-  let savedStartDate = value.startDate ?? Date.now()
-  let startDateEnabled = startDate !== undefined
-  $: startDate && (savedStartDate = startDate)
   let dueDate = value.dueDate
-  let savedDueDate = value.dueDate ?? Date.now()
-  let dueDateEnabled = dueDate !== undefined
-  $: dueDate && (savedDueDate = dueDate)
 
   function update () {
-    const date = {}
+    const date: DocumentUpdate<Card> = {}
     if (startDate !== undefined) date.startDate = startDate
     if (dueDate !== undefined) date.dueDate = dueDate
     client.update(value, date)
@@ -38,32 +34,16 @@
     <div class="categoryItem flex-center whitespace-nowrap">
       <Label label={board.string.StartDate} />
     </div>
-    <div class="categoryItem p-2 flex-center">
-      <CheckBox
-        bind:checked={startDateEnabled}
-        on:value={() => {
-          startDate = startDateEnabled ? savedStartDate : undefined
-        }}
-      />
-    </div>
     <div class="categoryItem w-full p-2">
-      <DateRangePresenter bind:value={startDate} editable={startDateEnabled} labelNull={board.string.NullDate} />
+      <DateRangePresenter bind:value={startDate} editable={true} labelNull={board.string.NullDate} />
     </div>
   </div>
   <div class="ap-category">
     <div class="categoryItem flex-center whitespace-nowrap">
       <Label label={board.string.DueDate} />
     </div>
-    <div class="categoryItem p-2 flex-center">
-      <CheckBox
-        bind:checked={dueDateEnabled}
-        on:value={() => {
-          dueDate = dueDateEnabled ? savedDueDate : undefined
-        }}
-      />
-    </div>
     <div class="categoryItem w-full p-2">
-      <DateRangePresenter bind:value={dueDate} editable={dueDateEnabled} labelNull={board.string.NullDate} />
+      <DateRangePresenter bind:value={dueDate} editable={true} labelNull={board.string.NullDate} />
     </div>
   </div>
   <div class="ap-footer">
