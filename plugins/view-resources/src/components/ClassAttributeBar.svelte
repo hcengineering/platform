@@ -108,7 +108,6 @@
       transition-property: transform, opacity;
       transition-duration: 0.15s;
       transition-timing-function: var(--timing-main);
-
     }
 
     .tool {
