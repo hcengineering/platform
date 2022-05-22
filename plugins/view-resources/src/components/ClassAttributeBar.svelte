@@ -21,7 +21,7 @@
   import { collectionsFilter, getFiltredKeys } from '../utils'
 
   export let object: Doc
-  export let objectClass: Class<Doc>
+  export let _class: Ref<Class<Doc>>
   export let to: Ref<Class<Doc>> | undefined
   export let ignoreKeys: string[] = []
   export let vertical: boolean
@@ -32,11 +32,13 @@
   let collapsed: boolean = false
 
   function updateKeys (ignoreKeys: string[]): void {
-    const filtredKeys = getFiltredKeys(hierarchy, objectClass._id, ignoreKeys, to)
+    const filtredKeys = getFiltredKeys(hierarchy, _class, ignoreKeys, to)
     keys = collectionsFilter(hierarchy, filtredKeys, false)
   }
 
   $: updateKeys(ignoreKeys)
+
+  $: label = hierarchy.getClass(_class).label
 
   const dispatch = createEventDispatcher()
 </script>
@@ -51,7 +53,7 @@
   >
     <div class="flex-row-center">
       <span class="overflow-label">
-        <Label label={objectClass.label} />
+        <Label {label} />
       </span>
       <div class="icon-arrow">
         <svg fill="var(--dark-color)" viewBox="0 0 6 6" xmlns="http://www.w3.org/2000/svg">
@@ -66,7 +68,7 @@
           kind={'transparent'}
           on:click={(ev) => {
             ev.stopPropagation()
-            showPopup(view.component.CreateAttribute, { _class: objectClass._id }, 'top', () => {
+            showPopup(view.component.CreateAttribute, { _class }, 'top', () => {
               updateKeys(ignoreKeys)
               dispatch('update')
             })
@@ -78,7 +80,7 @@
 {/if}
 {#if keys.length || !vertical}
   <div class="collapsed-container" class:collapsed>
-    <AttributesBar {object} {keys} {vertical} />
+    <AttributesBar {_class} {object} keys={keys.map((p) => p.key)} {vertical} />
   </div>
 {/if}
 

@@ -14,24 +14,25 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Doc } from '@anticrm/core'
+  import type { Class, Doc, Ref } from '@anticrm/core'
   import { KeyedAttribute } from '../attributes'
   import AttributeBarEditor from './AttributeBarEditor.svelte'
 
   export let object: Doc
+  export let _class: Ref<Class<Doc>>
   export let keys: (string | KeyedAttribute)[]
   export let showHeader: boolean = true
   export let vertical: boolean = false
 </script>
 
 <div class="attributes-bar-container {vertical ? 'vertical' : 'horizontal'}">
-  {#each keys as key}
+  {#each keys as key (typeof key === 'string' ? key : key.key)}
     {#if !vertical}
       <div class="flex-center column">
-        <AttributeBarEditor {key} {object} {showHeader} />
+        <AttributeBarEditor {key} {_class} {object} {showHeader} />
       </div>
     {:else}
-      <AttributeBarEditor {key} {object} {showHeader} vertical />
+      <AttributeBarEditor {key} {_class} {object} {showHeader} vertical />
     {/if}
   {/each}
 </div>

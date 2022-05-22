@@ -38,21 +38,13 @@
     class="link-container"
     on:click={(ev) => {
       if (!shown) {
-        showPopup(
-          EditBoxPopup,
-          { value },
-          eventToHTMLElement(ev),
-          (res) => {
-            if (res !== undefined) {
-              value = res
-              onChange(value)
-            }
-            shown = false
-          },
-          (res) => {
-            if (res !== undefined) value = res
+        showPopup(EditBoxPopup, { value }, eventToHTMLElement(ev), (res) => {
+          if (res !== undefined) {
+            value = res
+            onChange(value)
           }
-        )
+          shown = false
+        })
       }
     }}
   >

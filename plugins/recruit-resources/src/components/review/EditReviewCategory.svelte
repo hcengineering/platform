@@ -63,7 +63,7 @@
     <svelte:fragment slot="attributes" let:direction={dir}>
       {#if dir === 'column'}
         <div class="flex-row-center subtitle">
-          <AttributesBar {object} keys={[]} vertical />
+          <AttributesBar {object} _class={object._class} keys={[]} vertical />
         </div>
       {/if}
     </svelte:fragment>

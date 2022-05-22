@@ -17,6 +17,7 @@ export async function updateAttribute (
 ): Promise<void> {
   const doc = object
   const attributeKey = attribute.key
+  if ((doc as any)[attributeKey] === value) return
   const attr = attribute.attr
   if (client.getHierarchy().isMixin(attr.attributeOf)) {
     await client.updateMixin(doc._id, _class, doc.space, attr.attributeOf, { [attributeKey]: value })
