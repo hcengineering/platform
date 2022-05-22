@@ -34,14 +34,6 @@
 
 <div class="selectPopup">
   <div class="header no-border">
-    <EditBox
-      bind:value
-      {placeholder}
-      {format}
-      {kind}
-      {maxWidth}
-      focus
-      on:keypress={_onkeypress}
-    />
+    <EditBox bind:value {placeholder} {format} {kind} {maxWidth} focus on:keypress={_onkeypress} />
   </div>
 </div>
