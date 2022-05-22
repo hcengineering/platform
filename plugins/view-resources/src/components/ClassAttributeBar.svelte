@@ -42,7 +42,12 @@
 </script>
 
 {#if vertical}
-  <div class="attrbar-header" on:click={() => { collapsed = !collapsed }}>
+  <div
+    class="attrbar-header"
+    on:click={() => {
+      collapsed = !collapsed
+    }}
+  >
     <div class="flex-row-center">
       <span class="overflow-label">
         <Label label={objectClass.label} />
@@ -70,7 +75,7 @@
     </div>
   </div>
 {/if}
-{#if (keys.length || !vertical)}
+{#if keys.length || !vertical}
   <div class="collapsed-container" class:collapsed>
     <AttributesBar {object} {keys} {vertical} />
   </div>
@@ -95,9 +100,9 @@
     transition-timing-function: var(--timing-main);
 
     .icon-arrow {
-      margin-left: .5rem;
-      width: .325rem;
-      height: .325rem;
+      margin-left: 0.5rem;
+      width: 0.325rem;
+      height: 0.325rem;
       opacity: 0;
       transform-origin: 35% center;
       transform: rotate(90deg);
@@ -116,7 +121,7 @@
       justify-content: center;
       align-items: center;
       opacity: 0;
-      transition: opacity .15s var(--timing-main);
+      transition: opacity 0.15s var(--timing-main);
     }
     &:hover {
       color: var(--caption-color);
