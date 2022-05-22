@@ -59,5 +59,5 @@
   </div>
 {/if}
 {#if keys.length || !vertical}
-  <AttributesBar {object} {keys} {vertical} />
+  <AttributesBar {object} {_class} keys={keys.map((p) => p.key)} {vertical} />
 {/if}

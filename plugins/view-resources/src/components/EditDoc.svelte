@@ -240,7 +240,7 @@
         {:else if dir === 'column'}
           <DocAttributeBar {object} {mixins} {ignoreKeys} on:update={updateKeys} />
         {:else}
-          <AttributesBar {object} {keys} />
+          <AttributesBar {object} _class={realObjectClass} {keys} />
         {/if}
       {/if}
     </svelte:fragment>
