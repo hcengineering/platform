@@ -44,6 +44,7 @@
 {#if vertical}
   <div
     class="attrbar-header"
+    class:collapsed
     on:click={() => {
       collapsed = !collapsed
     }}
@@ -52,7 +53,7 @@
       <span class="overflow-label">
         <Label label={objectClass.label} />
       </span>
-      <div class="icon-arrow" class:collapsed>
+      <div class="icon-arrow">
         <svg fill="var(--dark-color)" viewBox="0 0 6 6" xmlns="http://www.w3.org/2000/svg">
           <path d="M0,0L6,3L0,6Z" />
         </svg>
@@ -89,9 +90,7 @@
     margin: 0.25rem -0.5rem 0.75rem;
     padding: 0 0 0 0.5rem;
     font-weight: 600;
-    // font-size: 0.75rem;
     color: var(--dark-color);
-    // background-color: var(--divider-color);
     border: 1px solid var(--divider-color);
     border-radius: 0.25rem;
     cursor: pointer;
@@ -110,10 +109,6 @@
       transition-duration: 0.15s;
       transition-timing-function: var(--timing-main);
 
-      &.collapsed {
-        opacity: 1;
-        transform: rotate(0deg);
-      }
     }
 
     .tool {
@@ -122,6 +117,15 @@
       align-items: center;
       opacity: 0;
       transition: opacity 0.15s var(--timing-main);
+    }
+    &.collapsed {
+      background-color: var(--divider-color);
+      border-color: transparent;
+
+      .icon-arrow {
+        opacity: 1;
+        transform: rotate(0deg);
+      }
     }
     &:hover {
       color: var(--caption-color);
