@@ -252,8 +252,8 @@
         on:open={(ev) => {
           ignoreKeys = ev.detail.ignoreKeys
           ignoreMixins = new Set(ev.detail.ignoreMixins)
-          updateKeys()
           getMixins()
+          updateKeys()
         }}
       />
     {/if}
