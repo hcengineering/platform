@@ -16,7 +16,7 @@
 // To help typescript locate view plugin properly
 import type { Board, Card, CardLabel, MenuPage, CommonBoardPreference } from '@anticrm/board'
 import type { Employee } from '@anticrm/contact'
-import { DOMAIN_MODEL, IndexKind, Markup, Ref, Timestamp } from '@anticrm/core'
+import { DOMAIN_MODEL, IndexKind, Markup, Ref } from '@anticrm/core'
 import {
   ArrOf,
   Builder,
@@ -28,7 +28,6 @@ import {
   TypeMarkup,
   TypeRef,
   TypeString,
-  TypeTimestamp,
   UX
 } from '@anticrm/model'
 import attachment from '@anticrm/model-attachment'
@@ -40,7 +39,6 @@ import view, { actionTemplates, createAction } from '@anticrm/model-view'
 import workbench, { Application } from '@anticrm/model-workbench'
 import { IntlString } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'
-import ui from '@anticrm/ui'
 import preference, { TPreference } from '@anticrm/model-preference'
 import board from './plugin'
 
@@ -76,12 +74,6 @@ export class TCard extends TTask implements Card {
 
   @Prop(TypeBoolean(), board.string.IsArchived)
   isArchived?: boolean
-
-  @Prop(TypeTimestamp(), ui.string.StartDate)
-  dueDate!: Timestamp | null
-
-  @Prop(TypeTimestamp(), ui.string.DueDate)
-  startDate!: Timestamp | null
 
   @Prop(TypeMarkup(), board.string.Description)
   @Index(IndexKind.FullText)

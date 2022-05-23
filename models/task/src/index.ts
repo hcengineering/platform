@@ -113,6 +113,12 @@ export class TTask extends TAttachedDoc implements Task {
   // @Prop(TypeRef(contact.class.Employee), task.string.TaskAssignee)
   assignee!: Ref<Employee> | null
 
+  @Prop(TypeDate(), task.string.DueDate)
+  dueDate!: Timestamp | null
+
+  @Prop(TypeDate(), task.string.StartDate)
+  startDate!: Timestamp | null
+
   declare rank: string
 
   @Prop(Collection(task.class.TodoItem), task.string.Todos)

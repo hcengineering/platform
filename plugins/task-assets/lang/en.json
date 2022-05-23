@@ -1,5 +1,7 @@
 {
   "string": {
+    "StartDate": "Start date",
+    "DueDate": "Due date",
     "TaskState": "State",
     "TaskStateTitle": "Title",
     "TaskStateDone": "Done",

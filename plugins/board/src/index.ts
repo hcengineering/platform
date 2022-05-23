@@ -15,7 +15,7 @@
 //
 
 import { Employee } from '@anticrm/contact'
-import type { AttachedDoc, Class, Doc, Markup, Ref, Timestamp } from '@anticrm/core'
+import type { AttachedDoc, Class, Doc, Markup, Ref } from '@anticrm/core'
 import type { Asset, IntlString, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import type { Preference } from '@anticrm/preference'
@@ -63,9 +63,6 @@ export interface CardCover {
  */
 export interface Card extends Task {
   title: string
-
-  dueDate: Timestamp | null
-  startDate: Timestamp | null
   description: Markup
 
   isArchived?: boolean

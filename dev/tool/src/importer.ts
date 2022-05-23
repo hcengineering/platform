@@ -251,7 +251,9 @@ async function createApplicant (
     assignee: null,
     state,
     doneState: null,
-    rank: calcRank(lastOne, undefined)
+    rank: calcRank(lastOne, undefined),
+    startDate: null,
+    dueDate: null
   }
 
   // Update or create candidate

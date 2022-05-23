@@ -144,10 +144,10 @@
             />
           </div>
         </div>
-        <div class="mt-4">
+        <div class="mt-6">
           <Attachments objectId={_id} {_class} space={object.space} attachments={object.attachments ?? 0} />
         </div>
-        <div class="flex-row-center mt-4">
+        <div class="flex-row-center mt-6">
           <span class="text-xl font-medium caption-color mr-3"><Label label={board.string.Checklists} /></span>
           <CircleButton icon={IconAdd} size="small" selected on:click={addChecklist} />
         </div>

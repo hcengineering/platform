@@ -99,8 +99,6 @@ export default mergeIds(boardId, board, {
     List: '' as IntlString,
     Position: '' as IntlString,
     Current: '' as IntlString,
-    StartDate: '' as IntlString,
-    DueDate: '' as IntlString,
     Save: '' as IntlString,
     Remove: '' as IntlString,
     NullDate: '' as IntlString,

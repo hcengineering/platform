@@ -3,6 +3,7 @@
   import calendar from '@anticrm/calendar'
   import { DocumentUpdate } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
+  import task from '@anticrm/task'
   import { Label, Button, DateRangePresenter, Component } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
 
@@ -41,7 +42,7 @@
   <div class="ap-space bottom-divider" />
   <div class="ap-category">
     <div class="categoryItem flex-center whitespace-nowrap w-22">
-      <Label label={board.string.StartDate} />
+      <Label label={task.string.StartDate} />
     </div>
     <div class="categoryItem w-full p-2">
       <DateRangePresenter bind:value={startDate} editable={true} labelNull={board.string.NullDate} />
@@ -49,7 +50,7 @@
   </div>
   <div class="ap-category">
     <div class="categoryItem flex-center whitespace-nowrap w-22">
-      <Label label={board.string.DueDate} />
+      <Label label={task.string.DueDate} />
     </div>
     <div class="categoryItem w-full p-2">
       <DateRangePresenter bind:value={dueDate} editable={true} labelNull={board.string.NullDate} />

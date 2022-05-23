@@ -81,7 +81,8 @@ export interface Task extends AttachedDoc, DocWithRank {
   doneState: Ref<DoneState> | null
   number: number
   assignee: Ref<Employee> | null
-
+  dueDate: Timestamp | null
+  startDate: Timestamp | null
   todoItems?: number
 }
 
@@ -197,6 +198,8 @@ const task = plugin(taskId, {
     DocWithRank: '' as Ref<Interface<DocWithRank>>
   },
   string: {
+    StartDate: '' as IntlString,
+    DueDate: '' as IntlString,
     TaskState: '' as IntlString,
     TaskStateTitle: '' as IntlString,
     TaskStateDone: '' as IntlString,
