@@ -73,7 +73,7 @@
     (result) => {
       objects = result
     },
-    { limit: 200, ...(options ?? {}) }
+    { ...(options ?? {}), limit: 200 }
   )
 
   const checkSelected = (person: Doc, objects: Doc[]): void => {

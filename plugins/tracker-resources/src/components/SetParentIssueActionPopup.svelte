@@ -29,8 +29,7 @@
   const dispatch = createEventDispatcher()
   const options: FindOptions<Issue> = {
     lookup: { status: tracker.class.IssueStatus },
-    sort: { modifiedOn: SortingOrder.Descending },
-    limit: 20
+    sort: { modifiedOn: SortingOrder.Descending }
   }
 
   let team: Team | undefined
