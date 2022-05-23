@@ -19,7 +19,7 @@
   import { Employee } from '@anticrm/contact'
   import { Ref } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
-  import ui, { Button, CheckBox, DateRangePresenter, Label, IconAdd } from '@anticrm/ui'
+  import { Button, CheckBox, Label, IconAdd } from '@anticrm/ui'
   import { invokeAction } from '@anticrm/view-resources'
 
   import plugin from '../../plugin'
@@ -75,31 +75,6 @@
         <Label label={plugin.string.Labels} />
       </div>
       <CardLabels {value} />
-    </div>
-    <div class="flex-row-stretch flex-gap-1 items-center">
-      <div class="label w-24">
-        <Label label={ui.string.StartDate} />
-      </div>
-      <DateRangePresenter
-        value={value.startDate}
-        editable={true}
-        withTime={false}
-        on:change={(e) => {
-          console.log(e)
-          client.update(value, { startDate: e.detail })
-        }}
-      />
-    </div>
-    <div class="flex-row-stretch flex-gap-1 items-center">
-      <div class="label w-24">
-        <Label label={ui.string.DueDate} />
-      </div>
-      <DateRangePresenter
-        value={value.dueDate}
-        editable={true}
-        withTime={false}
-        on:change={(e) => client.update(value, { dueDate: e.detail })}
-      />
     </div>
     <div class="flex-row-stretch flex-gap-1 items-center">
       <div class="label w-24">
