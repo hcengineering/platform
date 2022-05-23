@@ -24,3 +24,16 @@ export interface RefInputActionItem extends Doc {
 
   order?: number
 }
+
+export const FORMAT_MODES = [
+  'bold',
+  'italic',
+  'strike',
+  'orderedList',
+  'bulletList',
+  'blockquote',
+  'code',
+  'codeBlock'
+] as const
+
+export type FormatMode = typeof FORMAT_MODES[number]

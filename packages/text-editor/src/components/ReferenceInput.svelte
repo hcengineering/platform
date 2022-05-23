@@ -20,7 +20,7 @@
   import { createEventDispatcher } from 'svelte'
   import { Completion } from '../Completion'
   import textEditorPlugin from '../plugin'
-  import { RefInputAction, RefInputActionItem, TextEditorHandler } from '../types'
+  import { RefInputAction, RefInputActionItem, TextEditorHandler, FORMAT_MODES, FormatMode } from '../types'
   import Attach from './icons/Attach.svelte'
   import Bold from './icons/Bold.svelte'
   import Italic from './icons/Italic.svelte'
@@ -46,8 +46,7 @@
 
   let textEditor: TextEditor
   let isFormatting = false
-  let isBold = false
-  let isItalic = false
+  let activeModes = new Set<FormatMode>()
 
   export let categories: ObjectSearchCategory[] = []
 
@@ -173,20 +172,15 @@
   }
 
   function updateFormattingState () {
-    isBold = textEditor.checkIsActive('bold')
-    isItalic = textEditor.checkIsActive('italic')
+    activeModes = new Set(FORMAT_MODES.filter(textEditor.checkIsActive))
   }
 
-  function toggleBold () {
-    textEditor.toggleBold()
-    textEditor.focus()
-    isBold = !isBold
-  }
-
-  function toggleItalic () {
-    textEditor.toggleItalic()
-    textEditor.focus()
-    isItalic = !isItalic
+  function getToggler (toggle: () => void) {
+    return () => {
+      toggle()
+      textEditor.focus()
+      updateFormattingState()
+    }
   }
 </script>
 
@@ -194,31 +188,79 @@
   {#if isFormatting}
     <div class="formatPanel buttons-group xsmall-gap" class:withoutTopBorder>
       <Tooltip label={textEditorPlugin.string.Bold}>
-        <Button icon={Bold} kind={'transparent'} size={'small'} selected={isBold} on:click={toggleBold} />
+        <Button
+          icon={Bold}
+          kind={'transparent'}
+          size={'small'}
+          selected={activeModes.has('bold')}
+          on:click={getToggler(textEditor.toggleBold)}
+        />
       </Tooltip>
       <Tooltip label={textEditorPlugin.string.Italic}>
-        <Button icon={Italic} kind={'transparent'} size={'small'} selected={isItalic} on:click={toggleItalic} />
+        <Button
+          icon={Italic}
+          kind={'transparent'}
+          size={'small'}
+          selected={activeModes.has('italic')}
+          on:click={getToggler(textEditor.toggleItalic)}
+        />
       </Tooltip>
       <Tooltip label={textEditorPlugin.string.Strikethrough}>
-        <Button icon={Strikethrough} kind={'transparent'} size={'small'} selected={undefined} on:click={() => {}} />
+        <Button
+          icon={Strikethrough}
+          kind={'transparent'}
+          size={'small'}
+          selected={activeModes.has('strike')}
+          on:click={getToggler(textEditor.toggleStrike)}
+        />
       </Tooltip>
       <div class="buttons-divider" />
       <Tooltip label={textEditorPlugin.string.OrderedList}>
-        <Button icon={ListNumber} kind={'transparent'} size={'small'} selected={undefined} on:click={() => {}} />
+        <Button
+          icon={ListNumber}
+          kind={'transparent'}
+          size={'small'}
+          selected={activeModes.has('orderedList')}
+          on:click={getToggler(textEditor.toggleOrderedList)}
+        />
       </Tooltip>
       <Tooltip label={textEditorPlugin.string.BulletedList}>
-        <Button icon={ListBullet} kind={'transparent'} size={'small'} selected={undefined} on:click={() => {}} />
+        <Button
+          icon={ListBullet}
+          kind={'transparent'}
+          size={'small'}
+          selected={activeModes.has('bulletList')}
+          on:click={getToggler(textEditor.toggleBulletList)}
+        />
       </Tooltip>
       <div class="buttons-divider" />
       <Tooltip label={textEditorPlugin.string.Blockquote}>
-        <Button icon={Quote} kind={'transparent'} size={'small'} selected={undefined} on:click={() => {}} />
+        <Button
+          icon={Quote}
+          kind={'transparent'}
+          size={'small'}
+          selected={activeModes.has('blockquote')}
+          on:click={getToggler(textEditor.toggleBlockquote)}
+        />
       </Tooltip>
       <div class="buttons-divider" />
       <Tooltip label={textEditorPlugin.string.Code}>
-        <Button icon={Code} kind={'transparent'} size={'small'} selected={undefined} on:click={() => {}} />
+        <Button
+          icon={Code}
+          kind={'transparent'}
+          size={'small'}
+          selected={activeModes.has('code')}
+          on:click={getToggler(textEditor.toggleCode)}
+        />
       </Tooltip>
       <Tooltip label={textEditorPlugin.string.CodeBlock}>
-        <Button icon={CodeBlock} kind={'transparent'} size={'small'} selected={undefined} on:click={() => {}} />
+        <Button
+          icon={CodeBlock}
+          kind={'transparent'}
+          size={'small'}
+          selected={activeModes.has('codeBlock')}
+          on:click={getToggler(textEditor.toggleCodeBlock)}
+        />
       </Tooltip>
     </div>
   {/if}
