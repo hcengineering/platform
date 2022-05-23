@@ -32,6 +32,7 @@ import core, {
   ModelDb,
   Ref,
   ServerStorage,
+  StorageIterator,
   Tx,
   TxBulkWrite,
   TxCollectionCUD,
@@ -72,13 +73,13 @@ class TServerStorage implements ServerStorage {
   hierarchy: Hierarchy
 
   constructor (
-    private readonly domains: Record<string, string>,
+    private readonly _domains: Record<string, string>,
     private readonly defaultAdapter: string,
     private readonly adapters: Map<string, DbAdapter>,
     hierarchy: Hierarchy,
     private readonly triggers: Triggers,
     private readonly fulltextAdapter: FullTextAdapter,
-    private readonly storageAdapter: MinioClient | undefined,
+    readonly storageAdapter: MinioClient | undefined,
     readonly modelDb: ModelDb,
     private readonly workspace: string,
     options?: ServerStorageOptions
@@ -95,7 +96,7 @@ class TServerStorage implements ServerStorage {
   }
 
   private getAdapter (domain: Domain): DbAdapter {
-    const name = this.domains[domain] ?? this.defaultAdapter
+    const name = this._domains[domain] ?? this.defaultAdapter
     const adapter = this.adapters.get(name)
     if (adapter === undefined) {
       throw new Error('adapter not provided: ' + name)
@@ -404,6 +405,14 @@ class TServerStorage implements ServerStorage {
       return [result, derived]
     })
   }
+
+  find (domain: Domain): StorageIterator {
+    return this.getAdapter(domain).find(domain)
+  }
+
+  async load (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
+    return await this.getAdapter(domain).load(domain, docs)
+  }
 }
 
 type Effect = () => Promise<void>
@@ -447,10 +456,11 @@ export async function createServerStorage (
   const triggers = new Triggers()
   const adapters = new Map<string, DbAdapter>()
   const modelDb = new ModelDb(hierarchy)
+  const storageAdapter = conf.storageFactory?.()
 
   for (const key in conf.adapters) {
     const adapterConf = conf.adapters[key]
-    adapters.set(key, await adapterConf.factory(hierarchy, adapterConf.url, conf.workspace, modelDb))
+    adapters.set(key, await adapterConf.factory(hierarchy, adapterConf.url, conf.workspace, modelDb, storageAdapter))
   }
 
   const txAdapter = adapters.get(conf.domains[DOMAIN_TX]) as TxAdapter
@@ -482,7 +492,6 @@ export async function createServerStorage (
   }
 
   const fulltextAdapter = await conf.fulltextAdapter.factory(conf.fulltextAdapter.url, conf.workspace)
-  const storageAdapter = conf.storageFactory?.()
 
   return new TServerStorage(
     conf.domains,

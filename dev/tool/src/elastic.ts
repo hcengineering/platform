@@ -19,6 +19,7 @@ import core, {
   Class,
   Doc,
   DocumentQuery,
+  Domain,
   DOMAIN_TX,
   FindOptions,
   FindResult,
@@ -30,6 +31,7 @@ import core, {
   newMetrics,
   Ref,
   ServerStorage,
+  StorageIterator,
   Tx,
   TxCollectionCUD,
   TxCreateDoc,
@@ -397,6 +399,17 @@ class MongoReadOnlyAdapter extends TxProcessor implements DbAdapter {
 
   async close (): Promise<void> {
     await this.adapter.close()
+  }
+
+  find (domain: Domain): StorageIterator {
+    return {
+      next: async () => undefined,
+      close: async () => {}
+    }
+  }
+
+  async load (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
+    return []
   }
 }
 

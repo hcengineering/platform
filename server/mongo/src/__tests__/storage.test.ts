@@ -19,7 +19,9 @@ import core, {
   ClientConnection,
   createClient,
   Doc,
+  DocChunk,
   DocumentQuery,
+  Domain,
   DOMAIN_MODEL,
   DOMAIN_TX,
   FindOptions,
@@ -31,10 +33,11 @@ import core, {
   Ref,
   SortingOrder,
   Space,
+  StorageIterator,
+  toFindResult,
   Tx,
   TxOperations,
-  TxResult,
-  toFindResult
+  TxResult
 } from '@anticrm/core'
 import { createServerStorage, DbAdapter, DbConfiguration, FullTextAdapter, IndexedDoc } from '@anticrm/server-core'
 import { MongoClient } from 'mongodb'
@@ -62,6 +65,17 @@ class NullDbAdapter implements DbAdapter {
   }
 
   async close (): Promise<void> {}
+
+  find (domain: Domain): StorageIterator {
+    return {
+      next: async () => undefined,
+      close: async () => {}
+    }
+  }
+
+  async load (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
+    return []
+  }
 }
 
 async function createNullAdapter (hierarchy: Hierarchy, url: string, db: string, modelDb: ModelDb): Promise<DbAdapter> {
@@ -168,7 +182,10 @@ describe('mongo operations', () => {
       const st: ClientConnection = {
         findAll: async (_class, query, options) => await serverStorage.findAll(ctx, _class, query, options),
         tx: async (tx) => (await serverStorage.tx(ctx, tx))[0],
-        close: async () => {}
+        close: async () => {},
+        loadChunk: async (domain): Promise<DocChunk> => await Promise.reject(new Error('unsupported')),
+        closeChunk: async (idx) => {},
+        loadDocs: async (domain: Domain, docs: Ref<Doc>[]) => []
       }
       return st
     })

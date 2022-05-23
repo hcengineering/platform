@@ -13,11 +13,23 @@
 // limitations under the License.
 //
 
-import type { Class, Client, Doc, DocumentQuery, FindOptions, FindResult, Ref, Tx, TxResult } from '@anticrm/core'
+import type {
+  BackupClient,
+  Class,
+  Client,
+  Doc,
+  DocumentQuery,
+  Domain,
+  FindOptions,
+  FindResult,
+  Ref,
+  Tx,
+  TxResult
+} from '@anticrm/core'
 import core, { DOMAIN_TX, Hierarchy, ModelDb, TxDb } from '@anticrm/core'
 import { genMinModel } from './minmodel'
 
-export async function connect (handler: (tx: Tx) => void): Promise<Client> {
+export async function connect (handler: (tx: Tx) => void): Promise<Client & BackupClient> {
   const txes = genMinModel()
 
   const hierarchy = new Hierarchy()
@@ -54,6 +66,15 @@ export async function connect (handler: (tx: Tx) => void): Promise<Client> {
       // handler(tx)
       return {}
     },
-    close: async () => {}
+    close: async () => {},
+    loadChunk: async (domain: Domain, idx?: number) => ({
+      idx: -1,
+      index: -1,
+      docs: {},
+      finished: true,
+      digest: ''
+    }),
+    closeChunk: async (idx: number) => {},
+    loadDocs: async (domain: Domain, docs: Ref<Doc>[]) => []
   }
 }

@@ -31,10 +31,13 @@ import {
   ModelDb,
   MeasureMetricsContext,
   toFindResult,
-  Hierarchy
+  Hierarchy,
+  ServerStorage,
+  Domain
 } from '@anticrm/core'
 import { SessionContext } from '@anticrm/server-core'
 import { genMinModel } from './minmodel'
+import { ClientSession } from '../client'
 
 describe('server', () => {
   disableLogging()
@@ -63,8 +66,16 @@ describe('server', () => {
         options?: FindOptions<T>
       ): Promise<FindResult<T>> => toFindResult([]),
       tx: async (ctx: SessionContext, tx: Tx): Promise<[TxResult, Tx[], string | undefined]> => [{}, [], undefined],
-      close: async () => {}
+      close: async () => {},
+      storage: {} as unknown as ServerStorage,
+      domains: async () => [],
+      find: (domain: Domain) => ({
+        next: async () => undefined,
+        close: async () => {}
+      }),
+      load: async (domain: Domain, docs: Ref<Doc>[]) => []
     }),
+    (token, pipeline, broadcast) => new ClientSession(broadcast, token, pipeline),
     3333
   )
 

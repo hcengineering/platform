@@ -26,6 +26,7 @@ import { join } from 'path'
 import { rebuildElastic } from './elastic'
 import { generateModelDiff, printDiff } from './mdiff'
 import { listMinioObjects, MinioWorkspaceItem } from './minio'
+
 interface CollectionInfo {
   name: string
   file: string

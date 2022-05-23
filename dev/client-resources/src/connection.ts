@@ -17,18 +17,21 @@ import {
   Class,
   ClientConnection,
   Doc,
+  DocChunk,
   DocumentQuery,
+  Domain,
+  DOMAIN_TX,
   FindOptions,
   FindResult,
+  MeasureMetricsContext,
   Ref,
   ServerStorage,
   Tx,
   TxHander,
-  TxResult,
-  DOMAIN_TX,
-  MeasureMetricsContext
+  TxResult
 } from '@anticrm/core'
 import { createInMemoryTxAdapter } from '@anticrm/dev-storage'
+import devmodel from '@anticrm/devmodel'
 import { protoDeserialize, protoSerialize, setMetadata } from '@anticrm/platform'
 import {
   createInMemoryAdapter,
@@ -37,7 +40,6 @@ import {
   FullTextAdapter,
   IndexedDoc
 } from '@anticrm/server-core'
-import devmodel from '@anticrm/devmodel'
 
 class ServerStorageWrapper implements ClientConnection {
   measureCtx = new MeasureMetricsContext('client', {})
@@ -62,6 +64,16 @@ class ServerStorageWrapper implements ClientConnection {
   }
 
   async close (): Promise<void> {}
+
+  async loadChunk (domain: Domain, idx?: number): Promise<DocChunk> {
+    return { idx: -1, docs: {}, finished: true }
+  }
+
+  async closeChunk (idx: number): Promise<void> {}
+
+  async loadDocs (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
+    return []
+  }
 }
 
 class NullFullTextAdapter implements FullTextAdapter {

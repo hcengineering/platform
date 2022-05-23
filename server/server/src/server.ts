@@ -17,6 +17,8 @@ import {
   Class,
   Doc,
   DocumentQuery,
+  Domain,
+  DOMAIN_BLOB,
   DOMAIN_MODEL,
   DOMAIN_TRANSIENT,
   DOMAIN_TX,
@@ -25,12 +27,13 @@ import {
   Hierarchy,
   ModelDb,
   Ref,
+  StorageIterator,
   toFindResult,
   Tx,
   TxResult
 } from '@anticrm/core'
 import { createElasticAdapter } from '@anticrm/elastic'
-import { PrivateMiddleware, ModifiedMiddleware } from '@anticrm/middleware'
+import { ModifiedMiddleware, PrivateMiddleware } from '@anticrm/middleware'
 import { createMongoAdapter, createMongoTxAdapter } from '@anticrm/mongo'
 import { addLocation } from '@anticrm/platform'
 import { serverAttachmentId } from '@anticrm/server-attachment'
@@ -43,7 +46,8 @@ import {
   createPipeline,
   DbAdapter,
   DbConfiguration,
-  MiddlewareCreator
+  MiddlewareCreator,
+  Pipeline
 } from '@anticrm/server-core'
 import { serverGmailId } from '@anticrm/server-gmail'
 import { serverInventoryId } from '@anticrm/server-inventory'
@@ -54,9 +58,12 @@ import { serverSettingId } from '@anticrm/server-setting'
 import { serverTagsId } from '@anticrm/server-tags'
 import { serverTaskId } from '@anticrm/server-task'
 import { serverTelegramId } from '@anticrm/server-telegram'
-import { start as startJsonRpc } from '@anticrm/server-ws'
+import { Token } from '@anticrm/server-token'
+import { BroadcastCall, ClientSession, start as startJsonRpc } from '@anticrm/server-ws'
 import { Client as MinioClient } from 'minio'
+import { BackupClientSession } from './backup'
 import { metricsContext } from './metrics'
+import { createMinioDataAdapter } from './minio'
 
 class NullDbAdapter implements DbAdapter {
   async init (model: Tx[]): Promise<void> {}
@@ -73,6 +80,17 @@ class NullDbAdapter implements DbAdapter {
   }
 
   async close (): Promise<void> {}
+
+  find (domain: Domain): StorageIterator {
+    return {
+      next: async () => undefined,
+      close: async () => {}
+    }
+  }
+
+  async load (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
+    return []
+  }
 }
 
 async function createNullAdapter (hierarchy: Hierarchy, url: string, db: string, modelDb: ModelDb): Promise<DbAdapter> {
@@ -122,6 +140,7 @@ export function start (
         domains: {
           [DOMAIN_TX]: 'MongoTx',
           [DOMAIN_TRANSIENT]: 'InMemory',
+          [DOMAIN_BLOB]: 'MinioData',
           [DOMAIN_MODEL]: 'Null'
         },
         defaultAdapter: 'Mongo',
@@ -141,6 +160,10 @@ export function start (
           InMemory: {
             factory: createInMemoryAdapter,
             url: ''
+          },
+          MinioData: {
+            factory: createMinioDataAdapter,
+            url: ''
           }
         },
         fulltextAdapter: {
@@ -156,6 +179,12 @@ export function start (
         workspace
       }
       return createPipeline(conf, middlewares)
+    },
+    (token: Token, pipeline: Pipeline, broadcast: BroadcastCall) => {
+      if (token.extra?.mode === 'backup') {
+        return new BackupClientSession(broadcast, token, pipeline)
+      }
+      return new ClientSession(broadcast, token, pipeline)
     },
     port,
     host

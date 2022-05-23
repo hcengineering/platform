@@ -17,14 +17,17 @@ import {
   Class,
   Doc,
   DocumentQuery,
+  Domain,
   FindOptions,
   FindResult,
   Hierarchy,
   ModelDb,
   Ref,
+  StorageIterator,
   Tx,
   TxResult
 } from '@anticrm/core'
+import { Client } from 'minio'
 
 /**
  * @public
@@ -41,6 +44,10 @@ export interface DbAdapter {
     options?: FindOptions<T>
   ) => Promise<FindResult<T>>
   tx: (tx: Tx) => Promise<TxResult>
+
+  find: (domain: Domain) => StorageIterator
+
+  load: (domain: Domain, docs: Ref<Doc>[]) => Promise<Doc[]>
 }
 
 /**
@@ -53,7 +60,13 @@ export interface TxAdapter extends DbAdapter {
 /**
  * @public
  */
-export type DbAdapterFactory = (hierarchy: Hierarchy, url: string, db: string, modelDb: ModelDb) => Promise<DbAdapter>
+export type DbAdapterFactory = (
+  hierarchy: Hierarchy,
+  url: string,
+  db: string,
+  modelDb: ModelDb,
+  storage?: Client
+) => Promise<DbAdapter>
 
 /**
  * @public
@@ -89,6 +102,18 @@ class InMemoryAdapter implements DbAdapter {
   }
 
   async close (): Promise<void> {}
+
+  find (domain: Domain): StorageIterator {
+    // Not required for in memory
+    return {
+      next: async () => undefined,
+      close: async () => {}
+    }
+  }
+
+  async load (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
+    return []
+  }
 }
 
 /**

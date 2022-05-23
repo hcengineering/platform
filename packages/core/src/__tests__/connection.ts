@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Class, Doc, Ref } from '../classes'
+import type { Class, Doc, Domain, Ref } from '../classes'
 import { ClientConnection } from '../client'
 import core from '../component'
 import { Hierarchy } from '../hierarchy'
@@ -52,6 +52,16 @@ export async function connect (handler: (tx: Tx) => void): Promise<ClientConnect
       return result[0]
       // handler(tx) - we have only one client, should not update?
     },
-    close: async () => {}
+    close: async () => {},
+
+    loadChunk: async (domain: Domain, idx?: number) => ({
+      idx: -1,
+      index: -1,
+      docs: {},
+      finished: true,
+      digest: ''
+    }),
+    closeChunk: async (idx: number) => {},
+    loadDocs: async (domain: Domain, docs: Ref<Doc>[]) => []
   }
 }

@@ -15,8 +15,8 @@
         "APM_SERVER_URL2": "http://localhost:8200",
         "METRICS_CONSOLE": "true", // Show metrics in console evert 30 seconds.,
         "MINIO_ENDPOINT": "localhost",
-        "MINIO_ACCESS_KEY":"minioadmin",
-        "MINIO_SECRET_KEY":"minioadmin",
+        "MINIO_ACCESS_KEY": "minioadmin",
+        "MINIO_SECRET_KEY": "minioadmin",
         "SERVER_SECRET": "secret"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
@@ -41,34 +41,34 @@
       "request": "launch",
       "args": ["src/index.ts", "gen-recruit", "ws1", "20"],
       "env": {
-        "TRANSACTOR_URL":"ws:/localhost:3333",
-        "MINIO_ACCESS_KEY":"minioadmin",
-        "MINIO_SECRET_KEY":"minioadmin",
-        "MINIO_ENDPOINT":"localhost"
+        "TRANSACTOR_URL": "ws:/localhost:3333",
+        "MINIO_ACCESS_KEY": "minioadmin",
+        "MINIO_SECRET_KEY": "minioadmin",
+        "MINIO_ENDPOINT": "localhost"
       },
-      "runtimeArgs": ["--nolazy", "-r", "ts-node/register" ],
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,
       "cwd": "${workspaceRoot}/dev/generator",
       "protocol": "inspector"
-    },    
+    },
     {
       "name": "Debug tool",
       "type": "node",
       "request": "launch",
-      "args": ["src/index.ts", "upgrade-workspace", "ws1"],
+      "args": ["src/index.ts", "backup-workspace", "ws1", "../../../dump/test/ws1"],
       "env": {
-        "MINIO_ACCESS_KEY":"minioadmin",
-        "MINIO_SECRET_KEY":"minioadmin",
-        "MINIO_ENDPOINT":"localhost",
-        "MONGO_URL":"mongodb://localhost:27017",
-        "TRANSACTOR_URL":"ws:/localhost:3333",
-        "TELEGRAM_DATABASE":"telegram-service",
-        "ELASTIC_URL":"http://localhost:9200",
+        "MINIO_ACCESS_KEY": "minioadmin",
+        "MINIO_SECRET_KEY": "minioadmin",
+        "MINIO_ENDPOINT": "localhost",
+        "MONGO_URL": "mongodb://localhost:27017",
+        "TRANSACTOR_URL": "ws:/localhost:3333",
+        "TELEGRAM_DATABASE": "telegram-service",
+        "ELASTIC_URL": "http://localhost:9200"
       },
-      "runtimeArgs": ["--nolazy", "-r", "ts-node/register" ],
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,
       "cwd": "${workspaceRoot}/dev/tool",
       "protocol": "inspector"
-    },    
+    }
   ]
 }

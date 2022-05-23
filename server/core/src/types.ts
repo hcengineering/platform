@@ -20,6 +20,7 @@ import type {
   DocumentQuery,
   FindOptions,
   FindResult,
+  LowLevelStorage,
   MeasureContext,
   ModelDb,
   Obj,
@@ -78,8 +79,9 @@ export type FindAllMiddlewareResult<T extends Doc> = [
 /**
  * @public
  */
-export interface Pipeline {
+export interface Pipeline extends LowLevelStorage {
   modelDb: ModelDb
+  storage: ServerStorage
   findAll: <T extends Doc>(
     ctx: SessionContext,
     _class: Ref<Class<T>>,

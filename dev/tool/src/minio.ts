@@ -23,7 +23,7 @@ export async function listMinioObjects (minio: Client, dbName: string): Promise<
   const list = await minio.listObjects(dbName, undefined, true)
   await new Promise((resolve) => {
     list.on('data', (data) => {
-      items.push({ ...data, metaData: {} })
+      items.push({ metaData: {}, ...data })
     })
     list.on('end', () => {
       resolve(null)

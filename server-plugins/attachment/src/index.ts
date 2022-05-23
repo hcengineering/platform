@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import type { Resource, Plugin } from '@anticrm/platform'
+import type { Plugin, Resource } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import type { TriggerFunc } from '@anticrm/server-core'
 

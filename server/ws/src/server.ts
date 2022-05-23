@@ -13,25 +13,13 @@
 // limitations under the License.
 //
 
-import core, {
-  Class,
-  Doc,
-  DocumentQuery,
-  FindOptions,
-  FindResult,
-  MeasureContext,
-  ModelDb,
-  Ref,
-  Space,
-  Tx,
-  TxFactory,
-  TxResult
-} from '@anticrm/core'
+import core, { MeasureContext, Ref, Space, TxFactory } from '@anticrm/core'
 import { readRequest, Response, serialize, unknownError } from '@anticrm/platform'
-import type { Pipeline, SessionContext } from '@anticrm/server-core'
+import type { Pipeline } from '@anticrm/server-core'
 import { decodeToken, Token } from '@anticrm/server-token'
 import { createServer, IncomingMessage } from 'http'
 import WebSocket, { Server } from 'ws'
+import { BroadcastCall, Session } from './types'
 
 let LOGGING_ENABLED = true
 
@@ -39,57 +27,20 @@ export function disableLogging (): void {
   LOGGING_ENABLED = false
 }
 
-class Session {
-  readonly modelDb: ModelDb
-
-  constructor (
-    private readonly manager: SessionManager,
-    private readonly token: Token,
-    private readonly pipeline: Pipeline
-  ) {
-    this.modelDb = pipeline.modelDb
-  }
-
-  getUser (): string {
-    return this.token.email
-  }
-
-  async ping (): Promise<string> {
-    console.log('ping')
-    return 'pong!'
-  }
-
-  async findAll<T extends Doc>(
-    ctx: MeasureContext,
-    _class: Ref<Class<T>>,
-    query: DocumentQuery<T>,
-    options?: FindOptions<T>
-  ): Promise<FindResult<T>> {
-    const context = ctx as SessionContext
-    context.userEmail = this.token.email
-    return await this.pipeline.findAll(context, _class, query, options)
-  }
-
-  async tx (ctx: MeasureContext, tx: Tx): Promise<TxResult> {
-    const context = ctx as SessionContext
-    context.userEmail = this.token.email
-    const [result, derived, target] = await this.pipeline.tx(context, tx)
-
-    this.manager.broadcast(this, this.token.workspace, { result: tx }, target)
-    for (const dtx of derived) {
-      this.manager.broadcast(null, this.token.workspace, { result: dtx }, target)
-    }
-    return result
-  }
-}
-
 interface Workspace {
   pipeline: Pipeline
   sessions: [Session, WebSocket][]
+  upgrade: boolean
 }
 
 class SessionManager {
   private readonly workspaces = new Map<string, Workspace>()
+
+  constructor (readonly sessionFactory: (token: Token, pipeline: Pipeline, broadcast: BroadcastCall) => Session) {}
+
+  createSession (token: Token, pipeline: Pipeline): Session {
+    return this.sessionFactory(token, pipeline, this.broadcast.bind(this))
+  }
 
   async addSession (
     ctx: MeasureContext,
@@ -101,7 +52,7 @@ class SessionManager {
     if (workspace === undefined) {
       return await this.createWorkspace(ctx, pipelineFactory, token, ws)
     } else {
-      if (token.extra?.model === 'reload') {
+      if (token.extra?.model === 'upgrade') {
         console.log('reloading workspace', JSON.stringify(token))
         // If upgrade client is used.
         // Drop all existing clients
@@ -113,7 +64,11 @@ class SessionManager {
         return await this.createWorkspace(ctx, pipelineFactory, token, ws)
       }
 
-      const session = new Session(this, token, workspace.pipeline)
+      if (workspace.upgrade) {
+        throw new Error('Upgrade in progress....')
+      }
+
+      const session = this.createSession(token, workspace.pipeline)
       workspace.sessions.push([session, ws])
       await this.setStatus(ctx, session, true)
       return session
@@ -123,7 +78,7 @@ class SessionManager {
   private async setStatus (ctx: MeasureContext, session: Session, online: boolean): Promise<void> {
     try {
       const user = (
-        await session.modelDb.findAll(
+        await session.pipeline().modelDb.findAll(
           core.class.Account,
           {
             email: session.getUser()
@@ -157,10 +112,11 @@ class SessionManager {
     ws: WebSocket
   ): Promise<Session> {
     const pipeline = await pipelineFactory(token.workspace)
-    const session = new Session(this, token, pipeline)
+    const session = this.createSession(token, pipeline)
     const workspace: Workspace = {
       pipeline,
-      sessions: [[session, ws]]
+      sessions: [[session, ws]],
+      upgrade: token.extra?.model === 'upgrade'
     }
     this.workspaces.set(token.workspace, workspace)
     await this.setStatus(ctx, session, true)
@@ -242,14 +198,32 @@ async function handleRequest<S extends Session> (
 export function start (
   ctx: MeasureContext,
   pipelineFactory: (workspace: string) => Promise<Pipeline>,
+  sessionFactory: (token: Token, pipeline: Pipeline, broadcast: BroadcastCall) => Session,
   port: number,
   host?: string
 ): () => void {
   console.log(`starting server on port ${port} ...`)
 
-  const sessions = new SessionManager()
+  const sessions = new SessionManager(sessionFactory)
 
-  const wss = new Server({ noServer: true })
+  const wss = new Server({
+    noServer: true,
+    perMessageDeflate: {
+      zlibDeflateOptions: {
+        // See zlib defaults.
+        chunkSize: 1024,
+        memLevel: 7,
+        level: 3
+      },
+      zlibInflateOptions: {
+        chunkSize: 10 * 1024
+      },
+      // Below options specified as default values.
+      concurrencyLimit: 10, // Limits zlib concurrency for perf.
+      threshold: 1024 // Size (in bytes) below which messages
+      // should not be compressed if context takeover is disabled.
+    }
+  })
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
   wss.on('connection', async (ws: WebSocket, request: any, token: Token) => {
     const buffer: string[] = []
