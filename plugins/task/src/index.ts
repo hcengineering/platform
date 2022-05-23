@@ -81,7 +81,8 @@ export interface Task extends AttachedDoc, DocWithRank {
   doneState: Ref<DoneState> | null
   number: number
   assignee: Ref<Employee> | null
-
+  dueDate: Timestamp | null
+  startDate: Timestamp | null
   todoItems?: number
 }
 
@@ -196,6 +197,34 @@ const task = plugin(taskId, {
   interface: {
     DocWithRank: '' as Ref<Interface<DocWithRank>>
   },
+  string: {
+    StartDate: '' as IntlString,
+    DueDate: '' as IntlString,
+    TaskState: '' as IntlString,
+    TaskStateTitle: '' as IntlString,
+    TaskStateDone: '' as IntlString,
+    TaskNumber: '' as IntlString,
+    Todo: '' as IntlString,
+    TaskDone: '' as IntlString,
+    TaskDueTo: '' as IntlString,
+    TaskParent: '' as IntlString,
+    IssueName: '' as IntlString,
+    TaskComments: '' as IntlString,
+    TaskLabels: '' as IntlString,
+    StateTemplateTitle: '' as IntlString,
+    StateTemplateColor: '' as IntlString,
+    KanbanTemplateTitle: '' as IntlString,
+    Rank: '' as IntlString,
+    EditStates: '' as IntlString,
+    MarkAsDone: '' as IntlString,
+    MarkAsUndone: '' as IntlString,
+    Kanban: '' as IntlString,
+    ApplicationLabelTask: '' as IntlString,
+    Projects: '' as IntlString,
+    SearchTask: '' as IntlString,
+    ManageProjectStatues: '' as IntlString,
+    TodoItems: '' as IntlString
+  },
   class: {
     Issue: '' as Ref<Class<Issue>>,
     Project: '' as Ref<Class<Project>>,
@@ -239,9 +268,6 @@ const task = plugin(taskId, {
     KanbanTemplateEditor: '' as AnyComponent,
     KanbanTemplateSelector: '' as AnyComponent,
     TodoItemsPopup: '' as AnyComponent
-  },
-  string: {
-    TodoItems: '' as IntlString
   }
 })
 

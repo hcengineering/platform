@@ -16,7 +16,7 @@
 
 import type { Ref, Space } from '@anticrm/core'
 import { ObjectSearchCategory, ObjectSearchFactory } from '@anticrm/model-presentation'
-import type { IntlString, Resource } from '@anticrm/platform'
+import type { Resource } from '@anticrm/platform'
 import { mergeIds } from '@anticrm/platform'
 import { KanbanTemplate, taskId } from '@anticrm/task'
 import task from '@anticrm/task-resources/src/plugin'
@@ -57,31 +57,6 @@ export default mergeIds(taskId, task, {
     TodoItemPresenter: '' as AnyComponent,
     StatusTableView: '' as AnyComponent,
     TaskHeader: '' as AnyComponent
-  },
-  string: {
-    TaskState: '' as IntlString,
-    TaskStateTitle: '' as IntlString,
-    TaskStateDone: '' as IntlString,
-    TaskNumber: '' as IntlString,
-    Todo: '' as IntlString,
-    TaskDone: '' as IntlString,
-    TaskDueTo: '' as IntlString,
-    TaskParent: '' as IntlString,
-    IssueName: '' as IntlString,
-    TaskComments: '' as IntlString,
-    TaskLabels: '' as IntlString,
-    StateTemplateTitle: '' as IntlString,
-    StateTemplateColor: '' as IntlString,
-    KanbanTemplateTitle: '' as IntlString,
-    Rank: '' as IntlString,
-    EditStates: '' as IntlString,
-    MarkAsDone: '' as IntlString,
-    MarkAsUndone: '' as IntlString,
-    Kanban: '' as IntlString,
-    ApplicationLabelTask: '' as IntlString,
-    Projects: '' as IntlString,
-    SearchTask: '' as IntlString,
-    ManageProjectStatues: '' as IntlString
   },
   space: {
     TasksPublic: '' as Ref<Space>

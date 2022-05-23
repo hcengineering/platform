@@ -14,23 +14,24 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Attachments } from '@anticrm/attachment-resources'
   import type { Card } from '@anticrm/board'
-  import { Class, Ref } from '@anticrm/core'
+  import core, { Class, Ref, Space } from '@anticrm/core'
   import { Panel } from '@anticrm/panel'
   import { createQuery, getClient } from '@anticrm/presentation'
   import type { State, TodoItem } from '@anticrm/task'
   import task from '@anticrm/task'
   import { StyledTextBox } from '@anticrm/text-editor'
-  import { Button, EditBox, Icon, Label } from '@anticrm/ui'
-  import { invokeAction, UpDownNavigator } from '@anticrm/view-resources'
+  import { Button, CircleButton, EditBox, IconAdd, IconMoreH, Label, showPopup } from '@anticrm/ui'
+  import { ContextMenu, invokeAction, UpDownNavigator } from '@anticrm/view-resources'
   import { createEventDispatcher, onMount } from 'svelte'
   import board from '../plugin'
   import { getCardActions } from '../utils/CardActionUtils'
   import { updateCard } from '../utils/CardUtils'
+  import { getPopupAlignment } from '../utils/PopupUtils'
   import CardActions from './editor/CardActions.svelte'
-  import CardAttachments from './editor/CardAttachments.svelte'
   import CardChecklist from './editor/CardChecklist.svelte'
-  import CardDetails from './editor/CardDetails.svelte'
+  import AddChecklist from './popups/AddChecklist.svelte'
 
   export let _id: Ref<Card>
   export let _class: Ref<Class<Card>>
@@ -38,10 +39,12 @@
   const client = getClient()
   const cardQuery = createQuery()
   const stateQuery = createQuery()
+  const spaceQuery = createQuery()
   const checklistsQuery = createQuery()
 
   let object: Card | undefined
   let state: State | undefined
+  let space: Space | undefined
   let handleMove: (e: Event) => void
   let checklists: TodoItem[] = []
 
@@ -51,6 +54,10 @@
     }
   }
 
+  function addChecklist (e: Event) {
+    showPopup(AddChecklist, { value: object }, getPopupAlignment(e))
+  }
+
   $: cardQuery.query(_class, { _id }, (result) => {
     object = result[0]
   })
@@ -58,6 +65,11 @@
   $: object?.state &&
     stateQuery.query(task.class.State, { _id: object.state }, (result) => {
       state = result[0]
+    })
+
+  $: object?.space &&
+    spaceQuery.query(core.class.Space, { _id: object.space }, (result) => {
+      space = result[0]
     })
 
   $: object &&
@@ -86,8 +98,9 @@
     icon={board.icon.Card}
     title={object?.title}
     {object}
-    isHeader={false}
+    isHeader
     isAside={true}
+    isSub={false}
     isFullSize
     on:fullsize
     on:close={() => dispatch('close')}
@@ -95,40 +108,33 @@
     <svelte:fragment slot="navigator">
       <UpDownNavigator element={object} />
     </svelte:fragment>
-
-    <!-- TODO cover -->
-    <div class="flex-row-stretch">
-      <div class="w-9">
-        <Icon icon={board.icon.Card} size="large" />
+    <svelte:fragment slot="header">
+      <div class="flex fs-title flex-gap-1">
+        <span class="over-underline" on:click={handleMove}>{space?.name}</span>><span
+          class="over-underline"
+          on:click={handleMove}>{state?.title}</span
+        >
       </div>
-      <div class="fs-title text-lg">
+    </svelte:fragment>
+    <svelte:fragment slot="tools">
+      <Button
+        icon={IconMoreH}
+        kind="transparent"
+        size="medium"
+        on:click={(e) => {
+          showPopup(ContextMenu, { object }, getPopupAlignment(e))
+        }}
+      />
+    </svelte:fragment>
+    <div class="flex-row-stretch">
+      <div class="fs-title text-xl">
         <EditBox bind:value={object.title} maxWidth="39rem" focus on:change={() => change('title', object?.title)} />
-      </div>
-    </div>
-    <div class="flex-row-stretch">
-      <div class="w-9" />
-      <div>
-        <Label label={board.string.InList} />
-        <span class="state-name ml-1" on:click={handleMove}>{state?.title}</span>
       </div>
     </div>
     <div class="flex-row-stretch">
       <div class="flex-grow mr-4">
         <div class="flex-row-stretch">
-          <div class="w-9" />
-          <CardDetails bind:value={object} />
-        </div>
-        <div class="flex-row-stretch mt-4 mb-2">
-          <div class="w-9">
-            <Icon icon={board.icon.Card} size="large" />
-          </div>
-          <div class="fs-title">
-            <Label label={board.string.Description} />
-          </div>
-        </div>
-        <div class="flex-row-stretch">
-          <div class="w-9" />
-          <div class="background-bg-accent border-bg-accent border-radius-3 p-2 w-full">
+          <div class="background-bg-accent border-bg-accent border-radius-3 p-2 mt-2 w-full">
             <StyledTextBox
               alwaysEdit={true}
               showButtons={false}
@@ -138,13 +144,22 @@
             />
           </div>
         </div>
-        <CardAttachments value={object} />
-        {#each checklists as checklist}
-          <CardChecklist value={checklist} />
-        {/each}
+        <div class="mt-6">
+          <Attachments objectId={_id} {_class} space={object.space} attachments={object.attachments ?? 0} />
+        </div>
+        <div class="flex-row-center mt-6">
+          <span class="text-xl font-medium caption-color mr-3"><Label label={board.string.Checklists} /></span>
+          <CircleButton icon={IconAdd} size="small" selected on:click={addChecklist} />
+        </div>
+        <div class="mr-2 ml-2 mb-4">
+          {#each checklists as checklist}
+            <CardChecklist value={checklist} />
+          {/each}
+        </div>
       </div>
     </div>
-
+    <span slot="actions-label"><Label label={board.string.Card} /></span>
+    <span slot="actions" />
     <svelte:fragment slot="custom-attributes" let:direction>
       {#if direction === 'column'}
         <CardActions bind:value={object} />
@@ -154,13 +169,3 @@
     </svelte:fragment>
   </Panel>
 {/if}
-
-<style lang="scss">
-  .state-name {
-    text-decoration: underline;
-
-    &:hover {
-      color: var(--caption-color);
-    }
-  }
-</style>

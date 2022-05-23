@@ -15,11 +15,11 @@
 //
 
 import { Employee } from '@anticrm/contact'
-import type { AttachedDoc, Class, Doc, Markup, Ref, Timestamp, Obj } from '@anticrm/core'
+import type { AttachedDoc, Class, Doc, Markup, Ref } from '@anticrm/core'
 import type { Asset, IntlString, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import type { Preference } from '@anticrm/preference'
-import type { KanbanTemplateSpace, SpaceWithStates, Task } from '@anticrm/task'
+import type { DoneState, KanbanTemplateSpace, SpaceWithStates, Task } from '@anticrm/task'
 import type { AnyComponent } from '@anticrm/ui'
 import { Action, ActionCategory } from '@anticrm/view'
 
@@ -52,15 +52,6 @@ export interface CardLabel extends AttachedDoc {
 /**
  * @public
  */
-export interface CardDate extends Obj {
-  dueDate?: Timestamp
-  isChecked?: boolean
-  startDate?: Timestamp
-}
-
-/**
- * @public
- */
 export interface CardCover {
   color?: number
   image?: string
@@ -72,8 +63,6 @@ export interface CardCover {
  */
 export interface Card extends Task {
   title: string
-
-  date?: CardDate
   description: Markup
 
   isArchived?: boolean
@@ -120,13 +109,15 @@ const boards = plugin(boardId, {
   class: {
     Board: '' as Ref<Class<Board>>,
     Card: '' as Ref<Class<Card>>,
-    CardDate: '' as Ref<Class<CardDate>>,
     CardLabel: '' as Ref<Class<CardLabel>>,
     MenuPage: '' as Ref<Class<MenuPage>>,
     CommonBoardPreference: '' as Ref<Class<CommonBoardPreference>>
   },
   category: {
     Card: '' as Ref<ActionCategory>
+  },
+  state: {
+    Completed: '' as Ref<DoneState>
   },
   action: {
     Cover: '' as Ref<Action>,

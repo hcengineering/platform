@@ -16,7 +16,6 @@
 import { Resources } from '@anticrm/platform'
 import { TodoItem } from '@anticrm/task'
 import { getClient } from '@anticrm/presentation'
-import board from '@anticrm/board'
 
 import BoardPresenter from './components/BoardPresenter.svelte'
 import CardPresenter from './components/CardPresenter.svelte'
@@ -29,7 +28,6 @@ import CardLabelsPopup from './components/popups/CardLabelsPopup.svelte'
 import MoveCard from './components/popups/MoveCard.svelte'
 import CopyCard from './components/popups/CopyCard.svelte'
 import DateRangePicker from './components/popups/DateRangePicker.svelte'
-import CardDatePresenter from './components/presenters/DatePresenter.svelte'
 import CardLabelPresenter from './components/presenters/LabelPresenter.svelte'
 import TemplatesIcon from './components/TemplatesIcon.svelte'
 import BoardHeader from './components/BoardHeader.svelte'
@@ -46,15 +44,12 @@ async function ConvertToCard (object: TodoItem): Promise<void> {
   const client = getClient()
   const todoItemCard = await getCardFromTodoItem(client, object)
   if (todoItemCard === undefined) return
-  const date =
-    object.dueTo === null
-      ? {}
-      : { date: { _class: board.class.CardDate, dueDate: object.dueTo, isChecked: object.done } }
   await createCard(client, todoItemCard.space, todoItemCard.state, {
     title: object.name,
     assignee: object.assignee,
-    ...date
+    dueDate: object.dueTo
   })
+
   await client.remove(object)
 }
 
@@ -65,7 +60,6 @@ export default async (): Promise<Resources> => ({
     EditCard,
     KanbanCard,
     CardPresenter,
-    CardDatePresenter,
     CardLabelPresenter,
     TemplatesIcon,
     KanbanView,

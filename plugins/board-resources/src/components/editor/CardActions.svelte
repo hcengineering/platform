@@ -15,78 +15,101 @@
 -->
 <script lang="ts">
   import type { Card } from '@anticrm/board'
+  import board from '@anticrm/board'
+  import { Employee } from '@anticrm/contact'
+  import { Ref } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
-  import { Button, IconAttachment, Label, showPopup } from '@anticrm/ui'
-  import type { Action } from '@anticrm/view'
-  import { getActions, invokeAction } from '@anticrm/view-resources'
-  import AddChecklist from '../popups/AddChecklist.svelte'
-  import AttachmentPicker from '../popups/AttachmentPicker.svelte'
+  import ui, { Button, CheckBox, DateRangePresenter, Label, IconAdd } from '@anticrm/ui'
+  import { invokeAction } from '@anticrm/view-resources'
+
   import plugin from '../../plugin'
-  import { getPopupAlignment } from '../../utils/PopupUtils'
+  import { getCardActions } from '../../utils/CardActionUtils'
+  import { updateCardMembers } from '../../utils/CardUtils'
+  import ColorPresenter from '../presenters/ColorPresenter.svelte'
+  import UserBoxList from '../UserBoxList.svelte'
+  import CardLabels from './CardLabels.svelte'
 
   export let value: Card
   const client = getClient()
 
-  let topActions: Action[] = []
-  let toolsActions: Action[] = []
-  async function fetch () {
-    const result = await getActions(client, value, value._class)
-    topActions = result.filter((action) => action.context.group === 'top')
-    toolsActions = result.filter((action) => action.context.group !== 'top')
+  let coverHandler: (e: Event) => void
+
+  function updateMembers (e: CustomEvent<Ref<Employee>[]>) {
+    updateCardMembers(value, client, e.detail)
   }
-  fetch()
-  $: value.members && fetch()
-  $: value.isArchived && fetch()
-  $: !value.isArchived && fetch()
+  function updateState (e: CustomEvent<boolean>) {
+    if (e.detail) {
+      client.update(value, { doneState: board.state.Completed })
+    } else {
+      client.update(value, { doneState: null })
+    }
+  }
+
+  getCardActions(client, {
+    _id: { $in: [board.action.Cover] }
+  }).then(async (result) => {
+    for (const action of result) {
+      if (action._id === board.action.Cover) {
+        coverHandler = (e: Event) => invokeAction(value, e, action.action, action.actionProps)
+      }
+    }
+  })
 </script>
 
 {#if value}
-  <div class="flex-col flex-gap-3">
-    <div class="flex-col flex-gap-1">
-      <Label label={plugin.string.AddToCard} />
-      {#each topActions as action}
-        <Button
-          icon={action.icon}
-          label={action.label}
-          kind="no-border"
-          justify="left"
-          on:click={(e) => {
-            invokeAction(value, e, action.action, action.actionProps)
-          }}
-        />
-      {/each}
-      <Button
-        icon={plugin.icon.Card}
-        label={plugin.string.Checklist}
-        kind="no-border"
-        justify="left"
-        on:click={(e) => {
-          showPopup(AddChecklist, { value }, getPopupAlignment(e))
-        }}
-      />
-      <Button
-        icon={IconAttachment}
-        label={plugin.string.Attachments}
-        kind="no-border"
-        justify="left"
-        on:click={(e) => {
-          showPopup(AttachmentPicker, { value }, getPopupAlignment(e))
+  <div class="flex-col flex-gap-3 mt-4">
+    <div class="flex-row-stretch flex-gap-1 items-center">
+      <div class="label w-24">
+        <Label label={plugin.string.Completed} />
+      </div>
+      <CheckBox checked={value.doneState === board.state.Completed} on:value={updateState} />
+    </div>
+    <div class="flex-row-stretch flex-gap-1 items-center">
+      <div class="label w-24">
+        <Label label={plugin.string.Members} />
+      </div>
+      <UserBoxList value={value.members ?? []} on:update={updateMembers} />
+    </div>
+    <div class="flex-row-stretch flex-gap-1 items-center">
+      <div class="label w-24">
+        <Label label={plugin.string.Labels} />
+      </div>
+      <CardLabels {value} />
+    </div>
+    <div class="flex-row-stretch flex-gap-1 items-center">
+      <div class="label w-24">
+        <Label label={ui.string.StartDate} />
+      </div>
+      <DateRangePresenter
+        value={value.startDate}
+        editable={true}
+        withTime={false}
+        on:change={(e) => {
+          console.log(e)
+          client.update(value, { startDate: e.detail })
         }}
       />
     </div>
-    <div class="flex-col flex-gap-1">
-      <Label label={plugin.string.Actions} />
-      {#each toolsActions as action}
-        <Button
-          icon={action.icon}
-          label={action.label}
-          kind="no-border"
-          justify="left"
-          on:click={(e) => {
-            invokeAction(value, e, action.action, action.actionProps)
-          }}
-        />
-      {/each}
+    <div class="flex-row-stretch flex-gap-1 items-center">
+      <div class="label w-24">
+        <Label label={ui.string.DueDate} />
+      </div>
+      <DateRangePresenter
+        value={value.dueDate}
+        editable={true}
+        withTime={false}
+        on:change={(e) => client.update(value, { dueDate: e.detail })}
+      />
+    </div>
+    <div class="flex-row-stretch flex-gap-1 items-center">
+      <div class="label w-24">
+        <Label label={plugin.string.Cover} />
+      </div>
+      {#if !value.cover?.color}
+        <Button icon={IconAdd} kind="no-border" on:click={coverHandler} />
+      {:else}
+        <ColorPresenter value={value.cover.color} on:click={coverHandler} />
+      {/if}
     </div>
   </div>
 {/if}

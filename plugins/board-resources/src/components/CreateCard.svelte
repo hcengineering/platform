@@ -66,7 +66,9 @@
       description: '',
       members: [],
       labels: [],
-      location: ''
+      location: '',
+      startDate: null,
+      dueDate: null
     }
 
     await client.addCollection(board.class.Card, _space, space, board.class.Board, 'cards', value, cardId)

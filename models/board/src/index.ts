@@ -14,9 +14,9 @@
 //
 
 // To help typescript locate view plugin properly
-import type { Board, Card, CardDate, CardLabel, MenuPage, CommonBoardPreference } from '@anticrm/board'
+import type { Board, Card, CardLabel, MenuPage, CommonBoardPreference } from '@anticrm/board'
 import type { Employee } from '@anticrm/contact'
-import { DOMAIN_MODEL, IndexKind, Markup, Ref, Timestamp, Type } from '@anticrm/core'
+import { DOMAIN_MODEL, IndexKind, Markup, Ref } from '@anticrm/core'
 import {
   ArrOf,
   Builder,
@@ -33,7 +33,7 @@ import {
 import attachment from '@anticrm/model-attachment'
 import chunter from '@anticrm/model-chunter'
 import contact from '@anticrm/model-contact'
-import core, { TAttachedDoc, TDoc, TObj } from '@anticrm/model-core'
+import core, { TAttachedDoc, TDoc } from '@anticrm/model-core'
 import task, { TSpaceWithStates, TTask } from '@anticrm/model-task'
 import view, { actionTemplates, createAction } from '@anticrm/model-view'
 import workbench, { Application } from '@anticrm/model-workbench'
@@ -42,26 +42,11 @@ import type { AnyComponent } from '@anticrm/ui'
 import preference, { TPreference } from '@anticrm/model-preference'
 import board from './plugin'
 
-/**
- * @public
- */
-export function TypeCardDate (): Type<CardDate> {
-  return { _class: board.class.CardDate, label: board.string.Dates }
-}
-
 @Model(board.class.Board, task.class.SpaceWithStates)
 @UX(board.string.Board, board.icon.Board)
 export class TBoard extends TSpaceWithStates implements Board {
   color!: number
   background!: string
-}
-
-@Model(board.class.CardDate, core.class.Obj, DOMAIN_MODEL)
-@UX(board.string.Dates)
-export class TCardDate extends TObj implements CardDate {
-  dueDate?: Timestamp
-  isChecked?: boolean
-  startDate?: Timestamp
 }
 
 @Model(board.class.CardLabel, core.class.AttachedDoc, DOMAIN_MODEL)
@@ -89,9 +74,6 @@ export class TCard extends TTask implements Card {
 
   @Prop(TypeBoolean(), board.string.IsArchived)
   isArchived?: boolean
-
-  @Prop(TypeCardDate(), board.string.Dates)
-  date?: CardDate
 
   @Prop(TypeMarkup(), board.string.Description)
   @Index(IndexKind.FullText)
@@ -125,7 +107,7 @@ export class TMenuPage extends TDoc implements MenuPage {
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TBoard, TCard, TCardLabel, TCardDate, TMenuPage, TCommonBoardPreference)
+  builder.createModel(TBoard, TCard, TCardLabel, TMenuPage, TCommonBoardPreference)
 
   builder.createDoc(board.class.MenuPage, core.space.Model, {
     component: board.component.Archive,
@@ -228,10 +210,6 @@ export function createModel (builder: Builder): void {
     presenter: board.component.CardLabelPresenter
   })
 
-  builder.mixin(board.class.CardDate, core.class.Class, view.mixin.AttributePresenter, {
-    presenter: board.component.CardDatePresenter
-  })
-
   builder.mixin(board.class.Board, core.class.Class, view.mixin.AttributePresenter, {
     presenter: board.component.BoardPresenter
   })
@@ -267,6 +245,16 @@ export function createModel (builder: Builder): void {
       component: board.component.TableView
     },
     board.viewlet.Table
+  )
+
+  builder.createDoc(
+    task.class.WonState,
+    core.space.Model,
+    {
+      title: board.string.Completed,
+      rank: '0'
+    },
+    board.state.Completed
   )
 
   // card actions

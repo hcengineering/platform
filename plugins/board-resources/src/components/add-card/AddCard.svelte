@@ -53,7 +53,9 @@
       description: '',
       members: [],
       labels: [],
-      location: ''
+      location: '',
+      startDate: null,
+      dueDate: null
     }
 
     return client.addCollection(board.class.Card, space, space, board.class.Board, 'cards', value, newCardId)

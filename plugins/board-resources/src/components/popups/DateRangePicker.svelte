@@ -1,35 +1,37 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
-  import { Label, Button, DateRangePresenter, CheckBox, Component } from '@anticrm/ui'
-  import { Card, CardDate } from '@anticrm/board'
+  import { Card } from '@anticrm/board'
   import calendar from '@anticrm/calendar'
+  import { DocumentUpdate } from '@anticrm/core'
+  import { createQuery, getClient } from '@anticrm/presentation'
+  import task from '@anticrm/task'
+  import { Label, Button, DateRangePresenter, Component } from '@anticrm/ui'
+  import { createEventDispatcher } from 'svelte'
+
   import board from '../../plugin'
-  import { getClient } from '@anticrm/presentation'
 
   export let value: Card
 
   const client = getClient()
+  const query = createQuery()
   const dispatch = createEventDispatcher()
 
-  let startDate = value.date?.startDate
-  let savedStartDate = value.date?.startDate ?? Date.now()
-  let startDateEnabled = startDate !== undefined
-  $: startDate && (savedStartDate = startDate)
-  let dueDate = value.date?.dueDate
-  let savedDueDate = value.date?.dueDate ?? Date.now()
-  let dueDateEnabled = dueDate !== undefined
-  $: dueDate && (savedDueDate = dueDate)
-
-  function getEmptyDate (): CardDate {
-    return { _class: value.date?._class ?? board.class.CardDate }
-  }
+  let startDate = value.startDate
+  let dueDate = value.dueDate
 
   function update () {
-    const date: CardDate = getEmptyDate()
+    const date: DocumentUpdate<Card> = {}
     if (startDate !== undefined) date.startDate = startDate
     if (dueDate !== undefined) date.dueDate = dueDate
-    client.update(value, { date })
+    client.update(value, date)
   }
+
+  $: value?._id &&
+    query.query(board.class.Card, { _id: value._id }, (result) => {
+      if (result?.[0]) {
+        startDate = result[0].startDate
+        dueDate = result[0].dueDate
+      }
+    })
 </script>
 
 <div class="antiPopup antiPopup-withHeader antiPopup-withTitle antiPopup-withCategory w-85">
@@ -39,35 +41,19 @@
   </div>
   <div class="ap-space bottom-divider" />
   <div class="ap-category">
-    <div class="categoryItem flex-center whitespace-nowrap">
-      <Label label={board.string.StartDate} />
-    </div>
-    <div class="categoryItem p-2 flex-center">
-      <CheckBox
-        bind:checked={startDateEnabled}
-        on:value={() => {
-          startDate = startDateEnabled ? savedStartDate : undefined
-        }}
-      />
+    <div class="categoryItem flex-center whitespace-nowrap w-22">
+      <Label label={task.string.StartDate} />
     </div>
     <div class="categoryItem w-full p-2">
-      <DateRangePresenter bind:value={startDate} editable={startDateEnabled} labelNull={board.string.NullDate} />
+      <DateRangePresenter bind:value={startDate} editable={true} labelNull={board.string.NullDate} />
     </div>
   </div>
   <div class="ap-category">
-    <div class="categoryItem flex-center whitespace-nowrap">
-      <Label label={board.string.DueDate} />
-    </div>
-    <div class="categoryItem p-2 flex-center">
-      <CheckBox
-        bind:checked={dueDateEnabled}
-        on:value={() => {
-          dueDate = dueDateEnabled ? savedDueDate : undefined
-        }}
-      />
+    <div class="categoryItem flex-center whitespace-nowrap w-22">
+      <Label label={task.string.DueDate} />
     </div>
     <div class="categoryItem w-full p-2">
-      <DateRangePresenter bind:value={dueDate} editable={dueDateEnabled} labelNull={board.string.NullDate} />
+      <DateRangePresenter bind:value={dueDate} editable={true} labelNull={board.string.NullDate} />
     </div>
   </div>
   <div class="ap-footer">
@@ -81,9 +67,10 @@
     <Button
       label={board.string.Remove}
       size={'small'}
-      on:click={() => {
-        client.update(value, { date: getEmptyDate() })
-        dispatch('close')
+      on:click={async () => {
+        await client.update(value, { startDate: null, dueDate: null })
+        startDate = null
+        dueDate = null
       }}
     />
     <Button

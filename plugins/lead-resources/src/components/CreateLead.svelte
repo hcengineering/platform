@@ -64,7 +64,9 @@
       number: (incResult as any).object.sequence,
       title: title,
       rank: calcRank(lastOne, undefined),
-      assignee: null
+      assignee: null,
+      startDate: null,
+      dueDate: null
     }
 
     const customerInstance = await client.findOne(contact.class.Contact, { _id: customer! })

@@ -21,7 +21,8 @@
     Button,
     CheckBox,
     TextAreaEditor,
-    Icon,
+    IconAdd,
+    IconDelete,
     IconMoreH,
     Progress,
     showPopup,
@@ -131,9 +132,6 @@
 {#if value !== undefined}
   <div class="flex-col w-full">
     <div class="flex-row-stretch mt-4 mb-2">
-      <div class="w-9">
-        <Icon icon={board.icon.Card} size="large" />
-      </div>
       {#if isEditingName}
         <div class="flex-grow">
           <TextAreaEditor
@@ -154,19 +152,18 @@
           {value.name}
         </div>
         {#if done > 0}
-          <div class="mr-1">
-            <Button
-              label={hideDoneItems ? board.string.ShowDoneChecklistItems : board.string.HideDoneChecklistItems}
-              labelParams={{ done }}
-              kind="no-border"
-              size="small"
-              on:click={() => {
-                hideDoneItems = !hideDoneItems
-              }}
-            />
-          </div>
+          <Button
+            label={hideDoneItems ? board.string.ShowDoneChecklistItems : board.string.HideDoneChecklistItems}
+            labelParams={{ done }}
+            kind="transparent"
+            size="small"
+            on:click={() => {
+              hideDoneItems = !hideDoneItems
+            }}
+          />
         {/if}
-        <Button label={board.string.Delete} kind="no-border" size="small" on:click={deleteChecklist} />
+        <Button icon={IconAdd} kind="transparent" size="small" on:click={startAddingItem} />
+        <Button icon={IconDelete} kind="transparent" size="small" on:click={deleteChecklist} />
       {/if}
     </div>
     <div class="flex-row-stretch mb-2 mt-1">
@@ -254,8 +251,6 @@
             }}
           />
         </div>
-      {:else}
-        <Button label={board.string.AddChecklistItem} kind="no-border" size="small" on:click={startAddingItem} />
       {/if}
     </div>
   </div>

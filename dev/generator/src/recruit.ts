@@ -156,7 +156,9 @@ async function genApplicant (
     assignee: faker.random.arrayElement(emoloyeeIds),
     state: faker.random.arrayElement(states),
     doneState: null,
-    rank: rank as string
+    rank: rank as string,
+    startDate: null,
+    dueDate: null
   }
 
   // Update or create candidate
