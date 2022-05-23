@@ -65,6 +65,7 @@ export { default as DatePickerPopup } from './components/calendar/DatePickerPopu
 export { default as DatePicker } from './components/calendar/DatePicker.svelte'
 export { default as DateRangePicker } from './components/calendar/DateRangePicker.svelte'
 export { default as DatePopup } from './components/calendar/DatePopup.svelte'
+export { default as DateRangePopup } from './components/calendar/DateRangePopup.svelte'
 export { default as TimePopup } from './components/calendar/TimePopup.svelte'
 export { default as DateRangePresenter } from './components/calendar/DateRangePresenter.svelte'
 export { default as DateTimeRangePresenter } from './components/calendar/DateTimeRangePresenter.svelte'

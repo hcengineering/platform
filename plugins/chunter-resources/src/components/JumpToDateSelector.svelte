@@ -1,28 +1,43 @@
 <script lang="ts">
-  import { Timestamp, TypeDate } from '@anticrm/core'
-  import { DateEditor } from '@anticrm/view-resources'
+  import { Timestamp } from '@anticrm/core'
+  import { DateRangePopup, Label, showPopup } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
+  import chunter from '../plugin'
 
-  export let selectedDate: Timestamp
+  export let selectedDate: Timestamp | undefined = undefined
+  export let withBorder: boolean = true
 
-  const type = { withTime: false } as TypeDate
+  let div: HTMLDivElement | undefined
   const dispatch = createEventDispatcher()
 </script>
 
-<div class="flex justify-center">
-  <div class="dateEditor">
-    <DateEditor
-      value={selectedDate}
-      {type}
-      onChange={(v) => {
+<div id={selectedDate?.toString()} class="flex justify-center over-underline" class:border={withBorder}>
+  <div
+    bind:this={div}
+    on:click={() => {
+      showPopup(DateRangePopup, {}, div, (v) => {
         dispatch('jumpToDate', { date: v })
-      }}
-    />
+      })
+    }}
+  >
+    {#if selectedDate}
+      <div>
+        {new Date(selectedDate).toLocaleString('default', {
+          month: 'short',
+          day: 'numeric',
+          weekday: 'short',
+          hour: '2-digit',
+          minute: '2-digit'
+        })}
+      </div>
+    {:else}
+      <Label label={chunter.string.JumpToDate} />
+    {/if}
   </div>
 </div>
 
 <style lang="scss">
-  .dateEditor {
-    width: fit-content;
+  .border {
+    border-top: 1px solid var(--theme-dialog-divider);
   }
 </style>

@@ -16,7 +16,7 @@
   import attachment, { Attachment } from '@anticrm/attachment'
   import type { ChunterMessage, Message } from '@anticrm/chunter'
   import contact, { Employee } from '@anticrm/contact'
-  import core, { Doc, Ref, Space, WithLookup } from '@anticrm/core'
+  import core, { Doc, Ref, Space, Timestamp, WithLookup } from '@anticrm/core'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
   import { createQuery } from '@anticrm/presentation'
   import { afterUpdate, beforeUpdate } from 'svelte'
@@ -118,7 +118,7 @@
 
   const pinnedHeight = 30
   const headerHeight = 70
-  const handleJumpToDate = (e: CustomEvent<any>) => {
+  function handleJumpToDate (e: CustomEvent<any>) {
     const date = e.detail.date
     if (!date) {
       return
@@ -142,16 +142,35 @@
       }
     }
   }
+
+  function isOtherDay (time1: Timestamp, time2: Timestamp) {
+    const date1 = new Date(time1)
+    const date2 = new Date(time2)
+    return (
+      date1.getDay() !== date2.getDay() ||
+      date1.getMonth() !== date2.getMonth() ||
+      date1.getFullYear() !== date2.getFullYear()
+    )
+  }
+
+  let up: boolean | undefined = true
+  function handleScroll () {
+    up = div && div.scrollTop === 0
+  }
 </script>
 
-<JumpToDateSelector selectedDate={Date.now()} on:jumpToDate={handleJumpToDate} />
-<div class="flex-col vScroll" bind:this={div}>
+{#if !up}
+  <JumpToDateSelector withBorder={false} on:jumpToDate={handleJumpToDate} />
+{/if}
+<div class="flex-col vScroll" bind:this={div} on:scroll={handleScroll}>
   {#if messages}
     {#each messages as message, i (message._id)}
       {#if newMessagesPos === i}
         <ChannelSeparator title={chunter.string.New} line reverse isNew />
       {/if}
-      <div id={message.createOn.toString()} />
+      {#if i === 0 || isOtherDay(message.createOn, messages[i - 1].createOn)}
+        <JumpToDateSelector selectedDate={message.createOn} on:jumpToDate={handleJumpToDate} />
+      {/if}
       <MessageComponent
         {message}
         {employees}
