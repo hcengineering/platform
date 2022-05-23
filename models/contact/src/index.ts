@@ -255,6 +255,17 @@ export function createModel (builder: Builder): void {
     contact.channelProvider.Facebook
   )
 
+  builder.createDoc(
+    contact.class.ChannelProvider,
+    core.space.Model,
+    {
+      label: contact.string.Homepage,
+      icon: contact.icon.Homepage,
+      placeholder: contact.string.HomepagePlaceholder
+    },
+    contact.channelProvider.Homepage
+  )
+
   builder.mixin(contact.class.Person, core.class.Class, view.mixin.AttributePresenter, {
     presenter: contact.component.PersonPresenter
   })
