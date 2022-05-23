@@ -279,6 +279,10 @@ export function createModel (builder: Builder): void {
     actions: [view.action.Delete]
   })
 
+  builder.mixin(contact.class.Contact, core.class.Class, view.mixin.ClassFilters, {
+    filters: ['city', 'modifiedOn']
+  })
+
   builder.createDoc(
     presentation.class.ObjectSearchCategory,
     core.space.Model,

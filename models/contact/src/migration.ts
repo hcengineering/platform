@@ -37,6 +37,23 @@ async function createSpace (tx: TxOperations): Promise<void> {
       contact.space.Employee
     )
   }
+  const contacts = await tx.findOne(core.class.Space, {
+    _id: contact.space.Contacts
+  })
+  if (contacts === undefined) {
+    await tx.createDoc(
+      core.class.Space,
+      core.space.Space,
+      {
+        name: 'Contacts',
+        description: 'Contacts',
+        private: false,
+        archived: false,
+        members: []
+      },
+      contact.space.Contacts
+    )
+  }
 }
 
 export const contactOperation: MigrateOperation = {
