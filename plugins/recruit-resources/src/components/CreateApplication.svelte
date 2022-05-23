@@ -56,7 +56,9 @@
     _id: generateId(),
     collection: 'applications',
     modifiedOn: Date.now(),
-    modifiedBy: '' as Ref<Account>
+    modifiedBy: '' as Ref<Account>,
+    startDate: null,
+    dueDate: null
   }
 
   const dispatch = createEventDispatcher()
@@ -109,7 +111,9 @@
         doneState: null,
         number: (incResult as any).object.sequence,
         assignee: doc.assignee,
-        rank: calcRank(lastOne, undefined)
+        rank: calcRank(lastOne, undefined),
+        startDate: null,
+        dueDate: null
       }
     )
 
@@ -128,7 +132,9 @@
         _id: generateId(),
         collection: 'applications',
         modifiedOn: Date.now(),
-        modifiedBy: '' as Ref<Account>
+        modifiedBy: '' as Ref<Account>,
+        startDate: null,
+        dueDate: null
       }
     }
   }
