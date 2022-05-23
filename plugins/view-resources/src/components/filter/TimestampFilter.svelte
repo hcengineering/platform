@@ -13,6 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { closeTooltip } from '@anticrm/ui'
+
   import { Filter } from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
   import view from '../../plugin'
@@ -42,6 +44,7 @@
   filter.mode = filter.mode === undefined ? filter.modes[0] : filter.mode
 
   function click (value: number): void {
+    closeTooltip()
     filter.value = [value]
     onChange(filter)
     dispatch('close')

@@ -18,10 +18,10 @@
 </script>
 
 <script lang="ts">
-  import { Class, Doc, Ref } from '@anticrm/core'
+  import { Class, Doc, FindResult, Ref } from '@anticrm/core'
   import { translate } from '@anticrm/platform'
   import presentation, { createQuery, getClient, LiveQuery } from '@anticrm/presentation'
-  import { Button, CheckBox, getPlatformColor } from '@anticrm/ui'
+  import { Button, CheckBox, getPlatformColor, Loading } from '@anticrm/ui'
   import { Filter } from '@anticrm/view'
   import view from '@anticrm/view-resources/src/plugin'
   import { createEventDispatcher, onMount } from 'svelte'
@@ -105,9 +105,12 @@
     categories = res
   })
 
-  $: getValues(search)
+  let objectsPromise: Promise<FindResult<TagElement>> | undefined
 
   async function getValues (search: string): Promise<void> {
+    if (objectsPromise) {
+      await objectsPromise
+    }
     const resultQuery =
       search !== ''
         ? {
@@ -115,7 +118,9 @@
             targetClass: _class
           }
         : { targetClass: _class }
-    objects = await client.findAll(tags.class.TagElement, resultQuery)
+    objectsPromise = client.findAll(tags.class.TagElement, resultQuery)
+    objects = await objectsPromise
+    objectsPromise = undefined
   }
 
   function checkMode () {
@@ -163,57 +168,70 @@
   }
 
   const dispatch = createEventDispatcher()
+  getValues(search)
 </script>
 
 <div class="selectPopup">
   <div class="header">
-    <input bind:this={searchInput} type="text" bind:value={search} placeholder={phTraslate} />
+    <input
+      bind:this={searchInput}
+      type="text"
+      bind:value={search}
+      on:change={() => {
+        getValues(search)
+      }}
+      placeholder={phTraslate}
+    />
   </div>
   <div class="scroll">
     <div class="box">
-      {#each categories as cat}
-        {#if objects.filter((el) => el.category === cat._id).length > 0}
-          <div class="sticky-wrapper">
-            <button class="menu-group__header" class:show={search !== '' || show} on:click={toggleGroup}>
-              <div class="flex-row-center">
-                <span class="mr-1-5">{cat.label}</span>
-                <div class="icon">
-                  <svg fill="var(--content-color)" viewBox="0 0 6 6" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M0,0L6,3L0,6Z" />
-                  </svg>
-                </div>
-              </div>
-              <div class="flex-row-center text-xs">
-                <span class="content-color mr-1">({objects.filter((el) => el.category === cat._id).length})</span>
-                <span class="counter">{getCount(cat)}</span>
-              </div>
-            </button>
-            <div class="menu-group">
-              {#each objects.filter((el) => el.category === cat._id) as element}
-                <button
-                  class="menu-item"
-                  on:click={() => {
-                    checkSelected(element)
-                  }}
-                >
-                  <div class="flex-between w-full">
-                    <div class="flex">
-                      <div class="check pointer-events-none">
-                        <CheckBox checked={isSelected(element)} primary />
-                      </div>
-                      <div class="tag" style="background-color: {getPlatformColor(element.color)};" />
-                      {element.title}
-                    </div>
-                    <div class="content-trans-color ml-2">
-                      {element.refCount ?? 0}
-                    </div>
+      {#if objectsPromise}
+        <Loading />
+      {:else}
+        {#each categories as cat}
+          {#if objects.filter((el) => el.category === cat._id).length > 0}
+            <div class="sticky-wrapper">
+              <button class="menu-group__header" class:show={search !== '' || show} on:click={toggleGroup}>
+                <div class="flex-row-center">
+                  <span class="mr-1-5">{cat.label}</span>
+                  <div class="icon">
+                    <svg fill="var(--content-color)" viewBox="0 0 6 6" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M0,0L6,3L0,6Z" />
+                    </svg>
                   </div>
-                </button>
-              {/each}
+                </div>
+                <div class="flex-row-center text-xs">
+                  <span class="content-color mr-1">({objects.filter((el) => el.category === cat._id).length})</span>
+                  <span class="counter">{getCount(cat)}</span>
+                </div>
+              </button>
+              <div class="menu-group">
+                {#each objects.filter((el) => el.category === cat._id) as element}
+                  <button
+                    class="menu-item"
+                    on:click={() => {
+                      checkSelected(element)
+                    }}
+                  >
+                    <div class="flex-between w-full">
+                      <div class="flex">
+                        <div class="check pointer-events-none">
+                          <CheckBox checked={isSelected(element)} primary />
+                        </div>
+                        <div class="tag" style="background-color: {getPlatformColor(element.color)};" />
+                        {element.title}
+                      </div>
+                      <div class="content-trans-color ml-2">
+                        {element.refCount ?? 0}
+                      </div>
+                    </div>
+                  </button>
+                {/each}
+              </div>
             </div>
-          </div>
-        {/if}
-      {/each}
+          {/if}
+        {/each}
+      {/if}
     </div>
   </div>
   <Button
