@@ -50,7 +50,6 @@
       FilterTypePopup,
       {
         _class,
-        query,
         target,
         index: ++maxIndex,
         onChange
@@ -124,7 +123,6 @@
     {#each filters as filter, i}
       <FilterSection
         {_class}
-        {query}
         {filter}
         on:change={() => {
           makeQuery(query, filters)

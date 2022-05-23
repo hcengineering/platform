@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, DocumentQuery, FindResult, getObjectValue, Ref, SortingOrder } from '@anticrm/core'
+  import { Class, Doc, FindResult, getObjectValue, Ref, SortingOrder } from '@anticrm/core'
   import { translate } from '@anticrm/platform'
   import presentation, { getClient } from '@anticrm/presentation'
   import ui, { Button, CheckBox, Label, Loading } from '@anticrm/ui'
@@ -24,7 +24,6 @@
   import { createEventDispatcher } from 'svelte'
 
   export let _class: Ref<Class<Doc>>
-  export let query: DocumentQuery<Doc>
   export let filter: Filter
   export let onChange: (e: Filter) => void
 
@@ -71,10 +70,9 @@
     const resultQuery =
       search !== ''
         ? {
-            [filter.key.key]: { $like: '%' + search + '%' },
-            ...query
+            [filter.key.key]: { $like: '%' + search + '%' }
           }
-        : query
+        : {}
     let prefix = ''
 
     const attr = client.getHierarchy().getAttribute(_class, filter.key.key)

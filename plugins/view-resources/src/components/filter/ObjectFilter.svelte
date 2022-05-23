@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, DocumentQuery, FindResult, getObjectValue, Ref, RefTo, SortingOrder } from '@anticrm/core'
+  import { Class, Doc, FindResult, getObjectValue, Ref, RefTo, SortingOrder } from '@anticrm/core'
   import { translate } from '@anticrm/platform'
   import presentation, { getClient } from '@anticrm/presentation'
   import ui, { Button, CheckBox, Label, Loading } from '@anticrm/ui'
@@ -24,7 +24,6 @@
   import { createEventDispatcher } from 'svelte'
 
   export let _class: Ref<Class<Doc>>
-  export let query: DocumentQuery<Doc>
   export let filter: Filter
   export let onChange: (e: Filter) => void
 
@@ -67,7 +66,7 @@
       await objectsPromise
     }
     targets.clear()
-    const baseObjects = await client.findAll(_class, query, { projection: { [filter.key.key]: 1 } })
+    const baseObjects = await client.findAll(_class, {}, { projection: { [filter.key.key]: 1 } })
     for (const object of baseObjects) {
       const value = getObjectValue(filter.key.key, object) ?? undefined
       targets.set(value, (targets.get(value) ?? 0) + 1)
