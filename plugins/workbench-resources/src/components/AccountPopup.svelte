@@ -19,6 +19,7 @@
   import { Avatar, createQuery, getClient } from '@anticrm/presentation'
   import setting, { SettingsCategory } from '@anticrm/setting'
   import {
+    closePanel,
     closePopup,
     getCurrentLocation,
     Icon,
@@ -50,6 +51,7 @@
 
   function selectCategory (sp: SettingsCategory): void {
     closePopup()
+    closePanel()
     const loc = getCurrentLocation()
     loc.path[1] = setting.ids.SettingApp
     loc.path[2] = sp.name
@@ -121,9 +123,10 @@
           <Label label={setting.string.SelectWorkspace} />
         </button>
         <button class="menu-item" on:click={inviteWorkspace}>
-          <div class="ml-6">
-            <Label label={setting.string.InviteWorkspace} />
+          <div class="mr-2">
+            <Icon icon={login.icon.InviteWorkspace} size={'small'} />
           </div>
+          <Label label={setting.string.InviteWorkspace} />
         </button>
         <button class="menu-item" on:click={signOut}>
           <div class="mr-2">

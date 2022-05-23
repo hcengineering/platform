@@ -110,7 +110,7 @@
       class:mr-2={!iconOnly && kind !== 'no-border' && shape !== 'circle'}
       class:resetIconSize
     >
-      <Icon {icon} size={'small'} />
+      <Icon bind:icon size={'small'} />
     </div>
   {/if}
   {#if loading}
@@ -231,6 +231,16 @@
         background-color: var(--button-disabled-color);
         border-color: transparent;
       }
+
+      &.selected {
+        background-color: var(--button-bg-hover);
+        border-color: var(--button-border-hover);
+        color: var(--caption-color);
+
+        .btn-icon {
+          color: var(--accent-color);
+        }
+      }
     }
     &.no-border {
       font-weight: 400;
@@ -275,10 +285,10 @@
     }
     &.link-bordered {
       padding: 0 0.375rem;
-      color: var(--acctent-color);
+      color: var(--accent-color);
       border-color: var(--button-border-color);
       &:hover {
-        color: var(--acctent-color);
+        color: var(--accent-color);
         border-color: var(--button-border-hover);
         .btn-icon {
           color: var(--accent-color);

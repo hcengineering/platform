@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
 import type { IntlString } from '@anticrm/platform'
 import { mergeIds } from '@anticrm/platform'
 import tracker, { trackerId } from '../../tracker/lib'
@@ -36,6 +35,10 @@ export default mergeIds(trackerId, tracker, {
     Board: '' as IntlString,
     Project: '' as IntlString,
     Projects: '' as IntlString,
+    AllProjects: '' as IntlString,
+    BacklogProjects: '' as IntlString,
+    ActiveProjects: '' as IntlString,
+    ClosedProjects: '' as IntlString,
     NewProject: '' as IntlString,
     CreateProject: '' as IntlString,
     ProjectNamePlaceholder: '' as IntlString,
@@ -91,6 +94,7 @@ export default mergeIds(trackerId, tracker, {
     Labels: '' as IntlString,
     Space: '' as IntlString,
     SetDueDate: '' as IntlString,
+    ChangeDueDate: '' as IntlString,
     ModificationDate: '' as IntlString,
     Issue: '' as IntlString,
     Document: '' as IntlString,
@@ -119,6 +123,10 @@ export default mergeIds(trackerId, tracker, {
     AddToProject: '' as IntlString,
     MoveToProject: '' as IntlString,
     NoProject: '' as IntlString,
+    ProjectLeadTitle: '' as IntlString,
+    ProjectMembersTitle: '' as IntlString,
+    ProjectLeadSearchPlaceholder: '' as IntlString,
+    ProjectMembersSearchPlaceholder: '' as IntlString,
 
     IssueTitlePlaceholder: '' as IntlString,
     IssueDescriptionPlaceholder: '' as IntlString,
@@ -127,11 +135,14 @@ export default mergeIds(trackerId, tracker, {
 
     CopyIssueUrl: '' as IntlString,
     CopyIssueId: '' as IntlString,
+    CopyIssueBranch: '' as IntlString,
 
     FilterIs: '' as IntlString,
     FilterIsNot: '' as IntlString,
     FilterIsEither: '' as IntlString,
-    FilterStatesCount: '' as IntlString
+    FilterStatesCount: '' as IntlString,
+
+    EditIssue: '' as IntlString
   },
   component: {
     NopeComponent: '' as AnyComponent,
@@ -144,6 +155,7 @@ export default mergeIds(trackerId, tracker, {
     Board: '' as AnyComponent,
     Projects: '' as AnyComponent,
     IssuePresenter: '' as AnyComponent,
+    ProjectTitlePresenter: '' as AnyComponent,
     ProjectPresenter: '' as AnyComponent,
     TitlePresenter: '' as AnyComponent,
     ModificationDatePresenter: '' as AnyComponent,
@@ -156,6 +168,12 @@ export default mergeIds(trackerId, tracker, {
     DueDatePresenter: '' as AnyComponent,
     EditIssue: '' as AnyComponent,
     CreateTeam: '' as AnyComponent,
-    NewIssueHeader: '' as AnyComponent
+    NewIssueHeader: '' as AnyComponent,
+    IconPresenter: '' as AnyComponent,
+    LeadPresenter: '' as AnyComponent,
+    TargetDatePresenter: '' as AnyComponent,
+    ProjectMembersPresenter: '' as AnyComponent,
+    ProjectStatusPresenter: '' as AnyComponent,
+    SetDueDateActionPopup: '' as AnyComponent
   }
 })

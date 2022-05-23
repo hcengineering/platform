@@ -59,7 +59,7 @@ export class TContact extends TDoc implements Contact {
   @Prop(Collection(contact.class.Channel), contact.string.ContactInfo)
   channels?: number
 
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments)
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, undefined, attachment.string.Files)
   attachments?: number
 
   @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
@@ -103,7 +103,7 @@ export class TStatus extends TAttachedDoc implements Status {
 }
 
 @Model(contact.class.Employee, contact.class.Person)
-@UX(contact.string.Employee, contact.icon.Person)
+@UX(contact.string.Employee, contact.icon.Person, undefined, 'name')
 export class TEmployee extends TPerson implements Employee {
   @Prop(Collection(contact.class.Status), contact.string.Status)
   statuses?: number
@@ -164,12 +164,7 @@ export function createModel (builder: Builder): void {
       '',
       { key: '$lookup._class.label', label: contact.string.TypeLabel },
       'city',
-      {
-        key: '',
-        presenter: attachment.component.AttachmentsPresenter,
-        label: attachment.string.Files,
-        sortingKey: 'attachments'
-      },
+      'attachments',
       'modifiedOn',
       { key: '', presenter: view.component.RolePresenter, label: view.string.Role },
       '$lookup.channels'
@@ -282,6 +277,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(contact.class.Employee, core.class.Class, view.mixin.IgnoreActions, {
     actions: [view.action.Delete]
+  })
+
+  builder.mixin(contact.class.Contact, core.class.Class, view.mixin.ClassFilters, {
+    filters: ['city', 'modifiedOn']
   })
 
   builder.createDoc(

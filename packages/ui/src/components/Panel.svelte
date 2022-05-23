@@ -14,12 +14,13 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { Button, IconClose, IconDetails } from '..'
+  import { Button, IconClose, IconDetails, IconScale, IconScaleFull } from '..'
 
   export let innerWidth: number = 0
   export let panelWidth: number = 0
   export let isHeader: boolean = true
   export let isAside: boolean = true
+  export let isFullSize: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -30,8 +31,14 @@
     asideFloat = false
     asideShown = false
   }
+  let docWidth: number
+  let fullSize: boolean = false
+  let docSize: boolean = false
+  $: if (docWidth <= 900 && !docSize) docSize = true
+  $: if (docWidth > 900 && docSize) docSize = false
 </script>
 
+<svelte:window bind:innerWidth={docWidth} />
 <div class="popupPanel" bind:clientWidth={panelWidth}>
   <div class="popupPanel-title">
     <Button
@@ -45,8 +52,8 @@
     <div class="popupPanel-title__content"><slot name="title" /></div>
     <div class="buttons-group xsmall-gap">
       <slot name="utils" />
+      {#if $$slots.utils}<div class="buttons-divider" />{/if}
       {#if asideFloat && $$slots.aside && isAside}
-        {#if $$slots.utils}<div class="buttons-divider" />{/if}
         <Button
           icon={IconDetails}
           kind={'transparent'}
@@ -54,6 +61,19 @@
           selected={asideShown}
           on:click={() => {
             asideShown = !asideShown
+          }}
+        />
+      {/if}
+      {#if isFullSize}
+        <Button
+          icon={fullSize || docWidth <= 900 ? IconScale : IconScaleFull}
+          kind={'transparent'}
+          size={'medium'}
+          selected={fullSize}
+          disabled={docWidth <= 900}
+          on:click={() => {
+            fullSize = !fullSize
+            dispatch('fullsize')
           }}
         />
       {/if}

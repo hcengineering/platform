@@ -16,11 +16,11 @@
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
   import { EditBox, Label, showPopup, eventToHTMLElement } from '@anticrm/ui'
-  import StringEditorPopup from './StringEditorPopup.svelte'
+  import EditBoxPopup from './EditBoxPopup.svelte'
 
   // export let label: IntlString
   export let placeholder: IntlString
-  export let value: any
+  export let value: string
   export let focus: boolean
   export let maxWidth: string = '10rem'
   export let onChange: (value: string) => void
@@ -38,21 +38,13 @@
     class="link-container"
     on:click={(ev) => {
       if (!shown) {
-        showPopup(
-          StringEditorPopup,
-          { value },
-          eventToHTMLElement(ev),
-          (res) => {
-            if (res !== undefined) {
-              value = res
-              onChange(value)
-            }
-            shown = false
-          },
-          (res) => {
-            if (res !== undefined) value = res
+        showPopup(EditBoxPopup, { value }, eventToHTMLElement(ev), (res) => {
+          if (res !== undefined) {
+            value = res
+            onChange(value)
           }
-        )
+          shown = false
+        })
       }
     }}
   >

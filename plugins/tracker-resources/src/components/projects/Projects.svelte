@@ -13,60 +13,192 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref } from '@anticrm/core'
-  import { Team } from '@anticrm/tracker'
-  import { Button, IconAdd, Label, showPopup } from '@anticrm/ui'
-  import { Table } from '@anticrm/view-resources'
-  import plugin from '../../plugin'
+  import contact from '@anticrm/contact'
+  import { DocumentQuery, FindOptions, Ref, SortingOrder } from '@anticrm/core'
+  import { createQuery } from '@anticrm/presentation'
+  import { Project, Team } from '@anticrm/tracker'
+  import { Button, IconAdd, IconOptions, Label, showPopup } from '@anticrm/ui'
   import NewProject from './NewProject.svelte'
+  import ProjectsListBrowser from './ProjectsListBrowser.svelte'
+  import tracker from '../../plugin'
+  import { getIncludedProjectStatuses, ProjectsViewMode, projectsTitleMap } from '../../utils'
 
-  export let space: Ref<Team>
+  export let currentSpace: Ref<Team>
+  export let query: DocumentQuery<Project> = {}
+  export let search: string = ''
+  export let mode: ProjectsViewMode = 'all'
 
-  async function showCreateDialog () {
-    showPopup(NewProject, { space, targetElement: null }, null)
+  const ENTRIES_LIMIT = 200
+  const resultProjectsQuery = createQuery()
+
+  const projectOptions: FindOptions<Project> = {
+    sort: { modifiedOn: SortingOrder.Descending },
+    limit: ENTRIES_LIMIT,
+    lookup: { lead: contact.class.Employee, members: contact.class.Employee }
+  }
+
+  let resultProjects: Project[] = []
+
+  $: includedProjectStatuses = getIncludedProjectStatuses(mode)
+  $: title = projectsTitleMap[mode]
+  $: includedProjectsQuery = { status: { $in: includedProjectStatuses } }
+
+  $: baseQuery = {
+    space: currentSpace,
+    ...includedProjectsQuery,
+    ...query
+  }
+
+  $: resultQuery = search === '' ? baseQuery : { $search: search, ...baseQuery }
+
+  $: resultProjectsQuery.query<Project>(
+    tracker.class.Project,
+    { ...resultQuery },
+    (result) => {
+      resultProjects = result
+    },
+    projectOptions
+  )
+
+  const showCreateDialog = async () => {
+    showPopup(NewProject, { space: currentSpace, targetElement: null }, null)
+  }
+
+  const handleViewModeChanged = (newMode: ProjectsViewMode) => {
+    if (newMode === undefined || newMode === mode) {
+      return
+    }
+
+    mode = newMode
   }
 </script>
 
 <div>
-  <div class="header">
-    <div class="header-left">
-      <Label label={plugin.string.Projects} />
+  <div class="fs-title flex-between header">
+    <div class="flex-center">
+      <Label label={tracker.string.Projects} />
+      <div class="projectTitle">
+        › <Label label={title} />
+      </div>
     </div>
-    <div class="header-right">
-      <Button icon={IconAdd} label={plugin.string.Project} kind="secondary" on:click={showCreateDialog} />
+    <Button size="small" icon={IconAdd} label={tracker.string.Project} kind="secondary" on:click={showCreateDialog} />
+  </div>
+  <div class="itemsContainer">
+    <div class="flex-center">
+      <div class="flex-center">
+        <div class="buttonWrapper">
+          <Button
+            size="small"
+            shape="rectangle-right"
+            selected={mode === 'all'}
+            label={tracker.string.AllProjects}
+            on:click={() => handleViewModeChanged('all')}
+          />
+        </div>
+        <div class="buttonWrapper">
+          <Button
+            size="small"
+            shape="rectangle"
+            selected={mode === 'backlog'}
+            label={tracker.string.BacklogProjects}
+            on:click={() => handleViewModeChanged('backlog')}
+          />
+        </div>
+        <div class="buttonWrapper">
+          <Button
+            size="small"
+            shape="rectangle"
+            selected={mode === 'active'}
+            label={tracker.string.ActiveProjects}
+            on:click={() => handleViewModeChanged('active')}
+          />
+        </div>
+        <div class="buttonWrapper">
+          <Button
+            size="small"
+            shape="rectangle-left"
+            selected={mode === 'closed'}
+            label={tracker.string.ClosedProjects}
+            on:click={() => handleViewModeChanged('closed')}
+          />
+        </div>
+      </div>
+      <div class="ml-3 filterButton">
+        <Button
+          size="small"
+          icon={IconAdd}
+          kind={'link-bordered'}
+          borderStyle={'dashed'}
+          label={tracker.string.Filter}
+          on:click={() => {}}
+        />
+      </div>
+    </div>
+    <div class="flex-center">
+      <div class="flex-center">
+        <div class="buttonWrapper">
+          <Button selected size="small" shape="rectangle-right" icon={tracker.icon.ProjectsList} />
+        </div>
+        <div class="buttonWrapper">
+          <Button size="small" shape="rectangle-left" icon={tracker.icon.ProjectsTimeline} />
+        </div>
+      </div>
+      <div class="ml-3">
+        <Button size="small" icon={IconOptions} />
+      </div>
     </div>
   </div>
-
-  <Table
-    _class={plugin.class.Project}
-    config={[
+  <ProjectsListBrowser
+    _class={tracker.class.Project}
+    itemsConfig={[
+      { key: '', presenter: tracker.component.IconPresenter },
+      { key: '', presenter: tracker.component.ProjectPresenter },
       {
-        key: '',
-        presenter: plugin.component.ProjectPresenter,
-        label: plugin.string.Project,
-        sortingKey: 'name',
-        props: { space }
-      }
+        key: '$lookup.lead',
+        presenter: tracker.component.LeadPresenter,
+        props: { currentSpace, defaultClass: contact.class.Employee, shouldShowLabel: false }
+      },
+      { key: '', presenter: tracker.component.ProjectMembersPresenter, props: { kind: 'link' } },
+      { key: '', presenter: tracker.component.TargetDatePresenter },
+      { key: '', presenter: tracker.component.ProjectStatusPresenter }
     ]}
-    query={{}}
+    projects={resultProjects}
   />
 </div>
 
-<style>
+<style lang="scss">
   .header {
-    width: 100%;
-    height: 50px;
+    min-height: 3.5rem;
+    padding-left: 2.25rem;
+    padding-right: 1.35rem;
+    border-bottom: 1px solid var(--theme-button-border-hovered);
+  }
+
+  .projectTitle {
     display: flex;
-    border-bottom: 0.5px solid #666666;
+    margin-left: 0.25rem;
+    color: var(--content-color);
+    font-size: 0.8125rem;
+    font-weight: 500;
+  }
+
+  .itemsContainer {
+    display: flex;
     align-items: center;
     justify-content: space-between;
+    padding: 0.65rem 1.35rem 0.65rem 2.25rem;
+    border-bottom: 1px solid var(--theme-button-border-hovered);
   }
 
-  .header-left {
-    margin-left: 10px;
+  .buttonWrapper {
+    margin-right: 1px;
+
+    &:last-child {
+      margin-right: 0;
+    }
   }
 
-  .header-right {
-    margin-right: 10px;
+  .filterButton {
+    color: var(--caption-color);
   }
 </style>

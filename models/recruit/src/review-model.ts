@@ -41,7 +41,7 @@ export class TOpinion extends TAttachedDoc implements Opinion {
   @Prop(TypeRef(recruit.class.Review), recruit.string.Review)
   declare attachedTo: Ref<Review>
 
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments)
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, undefined, attachment.string.Files)
   attachments?: number
 
   @Prop(Collection(chunter.class.Comment), chunter.string.Comments)

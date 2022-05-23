@@ -16,29 +16,24 @@
 <script lang="ts">
   import attachment, { Attachment } from '@anticrm/attachment'
   import type { Card } from '@anticrm/board'
-  import { getResource } from '@anticrm/platform'
   import { getClient } from '@anticrm/presentation'
-  import { Button, Icon, IconAttachment, Label } from '@anticrm/ui'
+  import { Button, Icon, IconAttachment, Label, showPopup } from '@anticrm/ui'
+  import AttachmentPicker from '../popups/AttachmentPicker.svelte'
   import AttachmentPresenter from '../presenters/AttachmentPresenter.svelte'
   import board from '../../plugin'
+  import { getPopupAlignment } from '../../utils/PopupUtils'
 
   export let value: Card
   const client = getClient()
   let attachments: Attachment[] = []
-  let addAttachment: (e: Event) => void
 
   async function fetch () {
     attachments = await client.findAll(attachment.class.Attachment, { space: value.space, attachedTo: value._id })
   }
 
-  client.findOne(board.class.CardAction, { _id: board.cardAction.Attachments }).then(async (action) => {
-    if (action && action.handler) {
-      const handler = await getResource(action.handler)
-      addAttachment = (e) => {
-        handler(value, client, e)
-      }
-    }
-  })
+  function addAttachment (e: Event) {
+    showPopup(AttachmentPicker, { object: value }, getPopupAlignment(e))
+  }
 
   $: value?.attachments && value.attachments > 0 && fetch()
 </script>

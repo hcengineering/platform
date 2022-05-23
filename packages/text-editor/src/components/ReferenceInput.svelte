@@ -15,13 +15,21 @@
 <script lang="ts">
   import { Asset, getResource, IntlString } from '@anticrm/platform'
   import presentation, { getClient, ObjectSearchCategory } from '@anticrm/presentation'
-  import { AnySvelteComponent, Icon } from '@anticrm/ui'
+  import { AnySvelteComponent, Icon, Button, Tooltip } from '@anticrm/ui'
   import { AnyExtension } from '@tiptap/core'
   import { createEventDispatcher } from 'svelte'
   import { Completion } from '../Completion'
   import textEditorPlugin from '../plugin'
   import { RefInputAction, RefInputActionItem, TextEditorHandler } from '../types'
   import Attach from './icons/Attach.svelte'
+  import Bold from './icons/Bold.svelte'
+  import Italic from './icons/Italic.svelte'
+  import Strikethrough from './icons/Strikethrough.svelte'
+  import ListNumber from './icons/ListNumber.svelte'
+  import ListBullet from './icons/ListBullet.svelte'
+  import Quote from './icons/Quote.svelte'
+  import Code from './icons/Code.svelte'
+  import CodeBlock from './icons/CodeBlock.svelte'
   import Emoji from './icons/Emoji.svelte'
   import GIF from './icons/GIF.svelte'
   import Send from './icons/Send.svelte'
@@ -37,6 +45,9 @@
   const client = getClient()
 
   let textEditor: TextEditor
+  let isFormatting = false
+  let isBold = false
+  let isItalic = false
 
   export let categories: ObjectSearchCategory[] = []
 
@@ -61,7 +72,10 @@
     {
       label: textEditorPlugin.string.TextStyle,
       icon: TextStyle,
-      action: () => {},
+      action: () => {
+        isFormatting = !isFormatting
+        textEditor.focus()
+      },
       order: 2000
     },
     {
@@ -157,10 +171,58 @@
     console.log('handle event', a.label)
     a.action(evt?.target as HTMLElement, editorHandler)
   }
+
+  function updateFormattingState () {
+    isBold = textEditor.checkIsActive('bold')
+    isItalic = textEditor.checkIsActive('italic')
+  }
+
+  function toggleBold () {
+    textEditor.toggleBold()
+    textEditor.focus()
+    isBold = !isBold
+  }
+
+  function toggleItalic () {
+    textEditor.toggleItalic()
+    textEditor.focus()
+    isItalic = !isItalic
+  }
 </script>
 
 <div class="ref-container">
-  <div class="textInput" class:withoutTopBorder>
+  {#if isFormatting}
+    <div class="formatPanel buttons-group xsmall-gap" class:withoutTopBorder>
+      <Tooltip label={textEditorPlugin.string.Bold}>
+        <Button icon={Bold} kind={'transparent'} size={'small'} selected={isBold} on:click={toggleBold} />
+      </Tooltip>
+      <Tooltip label={textEditorPlugin.string.Italic}>
+        <Button icon={Italic} kind={'transparent'} size={'small'} selected={isItalic} on:click={toggleItalic} />
+      </Tooltip>
+      <Tooltip label={textEditorPlugin.string.Strikethrough}>
+        <Button icon={Strikethrough} kind={'transparent'} size={'small'} selected={undefined} on:click={() => {}} />
+      </Tooltip>
+      <div class="buttons-divider" />
+      <Tooltip label={textEditorPlugin.string.OrderedList}>
+        <Button icon={ListNumber} kind={'transparent'} size={'small'} selected={undefined} on:click={() => {}} />
+      </Tooltip>
+      <Tooltip label={textEditorPlugin.string.BulletedList}>
+        <Button icon={ListBullet} kind={'transparent'} size={'small'} selected={undefined} on:click={() => {}} />
+      </Tooltip>
+      <div class="buttons-divider" />
+      <Tooltip label={textEditorPlugin.string.Blockquote}>
+        <Button icon={Quote} kind={'transparent'} size={'small'} selected={undefined} on:click={() => {}} />
+      </Tooltip>
+      <div class="buttons-divider" />
+      <Tooltip label={textEditorPlugin.string.Code}>
+        <Button icon={Code} kind={'transparent'} size={'small'} selected={undefined} on:click={() => {}} />
+      </Tooltip>
+      <Tooltip label={textEditorPlugin.string.CodeBlock}>
+        <Button icon={CodeBlock} kind={'transparent'} size={'small'} selected={undefined} on:click={() => {}} />
+      </Tooltip>
+    </div>
+  {/if}
+  <div class="textInput" class:withoutTopBorder={withoutTopBorder || isFormatting}>
     <div class="inputMsg">
       <TextEditor
         bind:content
@@ -171,6 +233,7 @@
           textEditor.clear()
         }}
         extensions={editorExtensions}
+        on:selection-update={updateFormattingState}
       />
     </div>
     {#if showSend}
@@ -192,14 +255,29 @@
     flex-direction: column;
     min-height: 4.5rem;
 
+    .formatPanel {
+      padding: 0.5rem;
+      background-color: var(--body-accent);
+      border: 1px solid var(--divider-color);
+      border-radius: 0.75rem 0.75rem 0 0;
+      border-bottom: 0;
+
+      &.withoutTopBorder {
+        border-radius: 0;
+      }
+      & + .textInput {
+        border-top: none;
+      }
+    }
+
     .textInput {
       display: flex;
       justify-content: space-between;
       align-items: flex-end;
       min-height: 2.75rem;
       padding: 0.75rem 1rem;
-      background-color: var(--theme-bg-accent-color);
-      border: 1px solid var(--theme-bg-accent-color);
+      background-color: var(--accent-bg-color);
+      border: 1px solid var(--divider-color);
       border-radius: 0.75rem;
 
       &.withoutTopBorder {
@@ -283,23 +361,27 @@
     .buttons {
       display: flex;
       margin: 0.625rem 0 0 0.5rem;
+    }
 
-      .tool {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: 1.25rem;
-        height: 1.25rem;
-        color: var(--theme-content-dark-color);
-        cursor: pointer;
+    .tool {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 1.25rem;
+      height: 1.25rem;
+      color: var(--theme-content-dark-color);
+      cursor: pointer;
 
-        &:hover {
-          color: var(--theme-caption-color);
-        }
+      // &.active {
+      //   color: var(--theme-caption-color);
+      // }
+
+      &:hover {
+        color: var(--theme-caption-color);
       }
-      .tool + .tool {
-        margin-left: 1rem;
-      }
+    }
+    .tool + .tool {
+      margin-left: 1rem;
     }
   }
 </style>

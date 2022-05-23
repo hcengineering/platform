@@ -19,13 +19,14 @@
   import ApplicationsPopup from './ApplicationsPopup.svelte'
   import recruit from '../plugin'
 
-  export let value: Candidate
+  export let value: number
+  export let object: Candidate
 </script>
 
-{#if value.applications && value.applications > 0}
-  <Tooltip label={recruit.string.Applications} component={ApplicationsPopup} props={{ value }}>
+{#if value && value > 0}
+  <Tooltip label={recruit.string.Applications} component={ApplicationsPopup} props={{ value: object }}>
     <div class="sm-tool-icon">
-      <span class="icon"><Icon icon={recruit.icon.Application} size={'small'} /></span>&nbsp;{value.applications}
+      <span class="icon"><Icon icon={recruit.icon.Application} size={'small'} /></span>&nbsp;{value}
     </div>
   </Tooltip>
 {/if}

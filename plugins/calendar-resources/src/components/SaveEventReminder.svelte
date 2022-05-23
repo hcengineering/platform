@@ -14,9 +14,9 @@
 -->
 <script lang="ts">
   import { Event } from '@anticrm/calendar'
-  import { Class, Ref, Timestamp } from '@anticrm/core'
+  import { Class, Ref } from '@anticrm/core'
   import presentation, { Card, createQuery, getClient } from '@anticrm/presentation'
-  import { Grid, TimeShiftPicker } from '@anticrm/ui'
+  import { DateOrShift, Grid, TimeShiftPicker } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import calendar from '../plugin'
 
@@ -28,7 +28,7 @@
   query.query(objectClass, { _id: objectId }, (res) => {
     event = res[0]
   })
-  let shift: Timestamp = -30 * 60 * 1000
+  let value: DateOrShift = { shift: -30 * 60 * 1000 }
   let event: Event | undefined
 
   const dispatch = createEventDispatcher()
@@ -38,7 +38,12 @@
   }
 
   async function saveReminder () {
-    if (event === undefined) return
+    if (event === undefined || (value.shift === undefined && value.date === undefined)) return
+    const shift = value.date !== undefined ? value.date - event.date : value.shift
+    if (shift === undefined) {
+      return
+    }
+
     await client.updateMixin(event._id, event._class, event.space, calendar.mixin.Reminder, {
       shift,
       state: 'active'
@@ -57,7 +62,7 @@
 >
   <Grid column={1} rowGap={1.75}>
     <div class="antiComponentBox">
-      <TimeShiftPicker title={calendar.string.RemindMeAt} bind:value={shift} />
+      <TimeShiftPicker title={calendar.string.RemindMeAt} direction="before" bind:value />
     </div>
   </Grid>
 </Card>

@@ -66,6 +66,7 @@ export type TabModel = Tab[]
 export type ButtonKind = 'primary' | 'secondary' | 'no-border' | 'transparent' | 'link' | 'link-bordered' | 'dangerous'
 export type ButtonSize = 'small' | 'medium' | 'large' | 'x-large'
 export type ButtonShape = 'rectangle' | 'rectangle-left' | 'rectangle-right' | 'circle' | 'round' | undefined
+export type EditStyle = 'editbox' | 'large-style' | 'small-style' | 'search-style'
 export interface PopupPositionElement {
   getBoundingClientRect: () => DOMRect
   position?: {
@@ -81,6 +82,11 @@ export type VerticalAlignment = 'top' | 'bottom'
 export type HorizontalAlignment = 'left' | 'right'
 
 export type IconSize = 'inline' | 'tiny' | 'x-small' | 'small' | 'medium' | 'large' | 'x-large' | 'full'
+
+export interface DateOrShift {
+  date?: number
+  shift?: number
+}
 
 export interface LabelAndProps {
   label: IntlString | undefined
@@ -109,4 +115,11 @@ export interface DropdownTextItem {
 export interface DropdownIntlItem {
   id: string
   label: IntlString
+}
+
+export interface PopupOptions {
+  props: Record<string, string | number>
+  showOverlay: boolean
+  direction: string
+  fullSize?: boolean
 }

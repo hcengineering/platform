@@ -28,63 +28,81 @@
   $: type = getType(value.type)
 </script>
 
-<div class="flex-row-center">
-  {#if type === 'image'}
-    <div
-      class="content flex-center buttonContainer cursor-pointer"
-      on:click={() => {
-        closeTooltip()
-        showPopup(PDFViewer, { file: value.file, name: value.name, contentType: value.type }, 'right')
-      }}
-    >
-      <img src={getFileUrl(value.file)} alt={value.name} />
-      <div class="actions">
-        <AttachmentActions attachment={value} {isSaved} />
-      </div>
+{#if type === 'image'}
+  <div
+    class="content flex-center buttonContainer cursor-pointer"
+    on:click={() => {
+      closeTooltip()
+      showPopup(PDFViewer, { file: value.file, name: value.name, contentType: value.type }, 'float')
+    }}
+  >
+    <img src={getFileUrl(value.file)} alt={value.name} />
+    <div class="actions conner">
+      <AttachmentActions attachment={value} {isSaved} />
     </div>
-  {:else if type === 'audio'}
-    <div class="buttonContainer">
-      <AudioPlayer {value} />
-      <div class="actions">
-        <AttachmentActions attachment={value} {isSaved} />
-      </div>
+  </div>
+{:else if type === 'audio'}
+  <div class="buttonContainer">
+    <AudioPlayer {value} />
+    <div class="actions conner" style:padding={'0.125rem 0.25rem'}>
+      <AttachmentActions attachment={value} {isSaved} />
     </div>
-  {:else if type === 'video'}
-    <div class="content buttonContainer flex-center">
-      <video controls>
-        <source src={getFileUrl(value.file)} type={value.type} />
-        <track kind="captions" label={value.name} />
-        <div class="container">
-          <AttachmentPresenter {value} />
-        </div>
-      </video>
-      <div class="actions">
-        <AttachmentActions attachment={value} {isSaved} />
+  </div>
+{:else if type === 'video'}
+  <div class="content buttonContainer flex-center">
+    <video controls>
+      <source src={getFileUrl(value.file)} type={value.type} />
+      <track kind="captions" label={value.name} />
+      <div class="container">
+        <AttachmentPresenter {value} />
       </div>
+    </video>
+    <div class="actions conner">
+      <AttachmentActions attachment={value} {isSaved} />
     </div>
-  {:else}
-    <div class="flex container buttonContainer">
-      <AttachmentPresenter {value} />
-      <div class="actions">
-        <AttachmentActions attachment={value} {isSaved} />
-      </div>
+  </div>
+{:else}
+  <div class="flex container buttonContainer extraWidth">
+    <AttachmentPresenter {value} />
+    <div class="actions conner">
+      <AttachmentActions attachment={value} {isSaved} />
     </div>
-  {/if}
-</div>
+  </div>
+{/if}
 
 <style lang="scss">
   .container {
-    background-color: var(--theme-bg-accent-color);
-    border: 1px solid var(--theme-bg-accent-color);
-    border-radius: 0.75rem;
+    background-color: var(--board-card-bg-color);
+    border: 1px solid var(--button-border-color);
+    border-radius: 0.5rem;
     padding: 0.5rem;
   }
 
   .buttonContainer {
-    align-items: flex-start;
+    position: relative;
+    width: fit-content;
+    height: fit-content;
+
+    &.extraWidth {
+      padding-right: 2.5rem;
+    }
+
     .actions {
-      margin-left: 0.5rem;
       visibility: hidden;
+      position: absolute;
+      top: 0.25rem;
+      right: 0.25rem;
+      padding: 0.25rem;
+      background-color: var(--button-bg-color);
+      border-radius: 0.75rem;
+      box-shadow: var(--board-card-shadow);
+
+      &.conner {
+        top: 0;
+        right: 0;
+        padding: 0.25rem;
+        border-radius: 0 0.4rem 0 0.25rem;
+      }
     }
   }
 

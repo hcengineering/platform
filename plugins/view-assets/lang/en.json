@@ -37,6 +37,15 @@
     "WithTime": "WithTime",
     "CreatingAttribute": "Creating an attribute",
     "CreatingAttributeConfirm": "Warning: It will not be possible for now to change or delete created attribute.",
-    "CustomizeView": "Customize view"
+    "CustomizeView": "Customize view",
+    "Filter": "Filter",
+    "ClearFilters": "Clear filters",
+    "FilterIs": "is",
+    "FilterIsNot": "is not",
+    "FilterIsEither": "is either of",
+    "FilterStatesCount": "{value, plural, =1 {1 state} other {# states}}",
+    "Before": "Before",
+    "After": "After",
+    "Apply": "Apply"
   }
 }

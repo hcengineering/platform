@@ -32,7 +32,6 @@ loadMetadata(tracker.icon, {
   Magnifier: `${icons}#magnifier`,
   Home: `${icons}#home`,
   Labels: `${icons}#priority-nopriority`, // TODO: add icon
-  MoreActions: `${icons}#priority-nopriority`, // TODO: add icon
   DueDate: `${icons}#inbox`, // TODO: add icon
   Parent: `${icons}#myissues`, // TODO: add icon
 
@@ -45,7 +44,18 @@ loadMetadata(tracker.icon, {
   PriorityUrgent: `${icons}#priority-urgent`,
   PriorityHigh: `${icons}#priority-high`,
   PriorityMedium: `${icons}#priority-medium`,
-  PriorityLow: `${icons}#priority-low`
+  PriorityLow: `${icons}#priority-low`,
+
+  ProjectsList: `${icons}#list`,
+  ProjectsTimeline: `${icons}#timeline`,
+  ProjectMembers: `${icons}#projectMembers`,
+
+  ProjectStatusBacklog: `${icons}#project-status-backlog`,
+  ProjectStatusPlanned: `${icons}#project-status-planned`,
+  ProjectStatusInProgress: `${icons}#project-status-in-progress`,
+  ProjectStatusPaused: `${icons}#project-status-paused`,
+  ProjectStatusCompleted: `${icons}#project-status-completed`,
+  ProjectStatusCanceled: `${icons}#project-status-canceled`
 })
 
 addStringsLoader(trackerId, async (lang: string) => await import(`../lang/${lang}.json`))

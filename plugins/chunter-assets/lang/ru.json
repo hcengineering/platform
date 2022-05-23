@@ -58,6 +58,7 @@
     "ChannelBrowser": "Браузер каналов",
     "SavedItems": "Сохраненные объекты",
     "AddMembersHeader": "Добавить пользователей в {channel}:",
-    "JumpToDate": "Перейти к дате"
+    "JumpToDate": "Перейти к дате",
+    "ConvertToPrivate": "Конвертировать в закрытый канал"
   }
 }

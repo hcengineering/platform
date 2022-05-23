@@ -13,8 +13,6 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import attachment from '@anticrm/attachment'
-  import chunter from '@anticrm/chunter'
   import type { Doc, Ref } from '@anticrm/core'
   import { CircleButton, IconAdd, Label, showPopup } from '@anticrm/ui'
   import { BuildModelKey } from '@anticrm/view'
@@ -35,13 +33,8 @@
   const config: (BuildModelKey | string)[] = [
     '',
     '$lookup.space.name',
-    { key: '', presenter: chunter.component.CommentsPresenter, label: chunter.string.Comments, sortingKey: 'comments' },
-    {
-      key: '',
-      presenter: attachment.component.AttachmentsPresenter,
-      label: attachment.string.Files,
-      sortingKey: 'attachments'
-    },
+    'comments',
+    'attachments',
     '$lookup.state',
     '$lookup.doneState'
   ]

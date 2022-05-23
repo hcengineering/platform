@@ -20,7 +20,7 @@ import type { Ref, Space } from '@anticrm/core'
 import { IntlString, mergeIds } from '@anticrm/platform'
 import { KanbanTemplate, Sequence } from '@anticrm/task'
 import type { AnyComponent } from '@anticrm/ui'
-import { ViewletDescriptor } from '@anticrm/view'
+import { Action, ViewAction, ViewletDescriptor } from '@anticrm/view'
 
 export default mergeIds(boardId, board, {
   component: {
@@ -33,7 +33,13 @@ export default mergeIds(boardId, board, {
     BoardPresenter: '' as AnyComponent,
     TemplatesIcon: '' as AnyComponent,
     Cards: '' as AnyComponent,
-    KanbanView: '' as AnyComponent
+    KanbanView: '' as AnyComponent,
+    TableView: '' as AnyComponent,
+    LabelsActionPopup: '' as AnyComponent,
+    DatesActionPopup: '' as AnyComponent,
+    CoverActionPopup: '' as AnyComponent,
+    MoveActionPopup: '' as AnyComponent,
+    CopyActionPopup: '' as AnyComponent
   },
   space: {
     DefaultBoard: '' as Ref<Space>
@@ -45,9 +51,17 @@ export default mergeIds(boardId, board, {
     Sequence: '' as Ref<Sequence>
   },
   viewlet: {
-    Kanban: '' as Ref<ViewletDescriptor>
+    Kanban: '' as Ref<ViewletDescriptor>,
+    Table: '' as Ref<ViewletDescriptor>
   },
   string: {
-    LabelsCompactMode: '' as IntlString
+    CommonBoardPreference: '' as IntlString,
+    ConvertToCard: '' as IntlString
+  },
+  action: {
+    ConvertToCard: '' as Ref<Action>
+  },
+  actionImpl: {
+    ConvertToCard: '' as ViewAction
   }
 })

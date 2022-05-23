@@ -74,7 +74,7 @@
       telegram.class.Message,
       { attachedTo: channelId },
       (res) => {
-        messages = res
+        messages = res.reverse()
         if (channel !== undefined) {
           notificationClient.updateLastView(channel._id, channel._class, undefined, true)
         }
@@ -188,6 +188,8 @@
   <Panel
     isHeader={true}
     isAside={false}
+    isFullSize
+    on:fullsize
     on:close={() => {
       dispatch('close')
     }}

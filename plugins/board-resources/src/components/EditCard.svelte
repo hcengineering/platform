@@ -17,13 +17,12 @@
   import type { Card } from '@anticrm/board'
   import { Class, Ref } from '@anticrm/core'
   import { Panel } from '@anticrm/panel'
-  import { getResource } from '@anticrm/platform'
   import { createQuery, getClient } from '@anticrm/presentation'
   import type { State, TodoItem } from '@anticrm/task'
   import task from '@anticrm/task'
   import { StyledTextBox } from '@anticrm/text-editor'
   import { Button, EditBox, Icon, Label } from '@anticrm/ui'
-  import { UpDownNavigator } from '@anticrm/view-resources'
+  import { invokeAction, UpDownNavigator } from '@anticrm/view-resources'
   import { createEventDispatcher, onMount } from 'svelte'
   import board from '../plugin'
   import { getCardActions } from '../utils/CardActionUtils'
@@ -66,13 +65,13 @@
       checklists = result
     })
 
-  getCardActions(client, { _id: board.cardAction.Move }).then(async (result) => {
-    if (result[0]?.handler) {
-      const handler = await getResource(result[0].handler)
+  getCardActions(client, { _id: board.action.Move }).then(async (result) => {
+    if (result[0]) {
       handleMove = (e) => {
-        if (object) {
-          handler(object, client, e)
+        if (!object) {
+          return
         }
+        invokeAction(object, e, result[0].action, result[0].actionProps)
       }
     }
   })
@@ -89,6 +88,8 @@
     {object}
     isHeader={false}
     isAside={true}
+    isFullSize
+    on:fullsize
     on:close={() => dispatch('close')}
   >
     <svelte:fragment slot="navigator">

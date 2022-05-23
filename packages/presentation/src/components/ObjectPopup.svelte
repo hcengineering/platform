@@ -58,6 +58,8 @@
   let search: string = ''
   let objects: Doc[] = []
 
+  $: selectedElements = new Set(selectedObjects)
+
   const dispatch = createEventDispatcher()
   const query = createQuery()
   $: query.query<Doc>(
@@ -73,14 +75,15 @@
     { ...(options ?? {}), limit: 200 }
   )
 
-  const isSelected = (person: Doc): boolean => {
-    if (selectedObjects.filter((p) => p === person._id).length > 0) return true
-    return false
-  }
   const checkSelected = (person: Doc, objects: Doc[]): void => {
-    selectedObjects = isSelected(person)
-      ? selectedObjects.filter((p) => p !== person._id)
-      : [...selectedObjects, person._id]
+    if (selectedElements.has(person._id)) {
+      selectedElements.delete(person._id)
+    } else {
+      selectedElements.add(person._id)
+    }
+
+    selectedObjects = Array.from(selectedElements)
+
     dispatch('update', selectedObjects)
   }
 
@@ -168,7 +171,7 @@
           >
             {#if multiSelect}
               <div class="check pointer-events-none">
-                <CheckBox checked={isSelected(obj)} primary />
+                <CheckBox checked={selectedElements.has(obj._id)} primary />
               </div>
             {/if}
 

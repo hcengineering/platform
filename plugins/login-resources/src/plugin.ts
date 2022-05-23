@@ -42,6 +42,7 @@ export default mergeIds(loginId, login, {
     SelectWorkspace: '' as IntlString,
     DoNotHaveAnAccount: '' as IntlString,
     Copy: '' as IntlString,
+    Copied: '' as IntlString,
     Close: '' as IntlString,
     InviteDescription: '' as IntlString,
     WantAnotherWorkspace: '' as IntlString,

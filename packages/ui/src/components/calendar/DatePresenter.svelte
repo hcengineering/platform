@@ -31,7 +31,7 @@
   export let showIcon = true
   export let shouldShowLabel: boolean = true
   export let size: 'x-small' | 'small' = 'small'
-  export let kind: 'transparent' | 'primary' = 'primary'
+  export let kind: 'transparent' | 'primary' | 'link' = 'primary'
 
   const dispatch = createEventDispatcher()
 
@@ -55,10 +55,9 @@
 </script>
 
 <button
-  class="datetime-button"
+  class="datetime-button {kind}"
   class:editable
   class:dateTimeButtonNoLabel={!shouldShowLabel}
-  class:primary={kind === 'primary'}
   class:h-6={size === 'small'}
   class:h-3={size === 'x-small'}
   class:text-xs={size === 'x-small'}
@@ -202,6 +201,25 @@
         }
       }
     }
+    &.link {
+      justify-content: flex-start;
+      padding: 0 0.875rem;
+      height: 2rem;
+      border-radius: 0.25rem;
+
+      .btn-icon {
+        margin-right: 0.5rem;
+      }
+      &:hover {
+        color: var(--caption-color);
+        background-color: var(--body-color);
+        border-color: var(--divider-color);
+        .btn-icon {
+          color: var(--content-color);
+        }
+      }
+    }
+
     .time-divider {
       flex-shrink: 0;
       margin: 0 0.25rem;

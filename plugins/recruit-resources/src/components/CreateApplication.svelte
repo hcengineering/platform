@@ -18,7 +18,7 @@
   import { Account, Class, Client, Doc, generateId, Ref, SortingOrder } from '@anticrm/core'
   import { getResource, OK, Resource, Severity, Status } from '@anticrm/platform'
   import { Card, createQuery, getClient, SpaceSelector, UserBox } from '@anticrm/presentation'
-  import type { Applicant, Candidate, Vacancy } from '@anticrm/recruit'
+  import type { Applicant, Candidate } from '@anticrm/recruit'
   import task, { calcRank, SpaceWithStates, State } from '@anticrm/task'
   import ui, {
     Button,
@@ -41,8 +41,9 @@
   export let preserveCandidate = false
 
   let status: Status = OK
+  let createMore: boolean = false
 
-  const doc: Applicant = {
+  let doc: Applicant = {
     state: '' as Ref<State>,
     doneState: null,
     number: 0,
@@ -111,6 +112,25 @@
         rank: calcRank(lastOne, undefined)
       }
     )
+
+    if (createMore) {
+      // Prepare for next
+      doc = {
+        state: selectedState._id,
+        doneState: null,
+        number: 0,
+        assignee: assignee,
+        rank: '',
+        attachedTo: candidate,
+        attachedToClass: recruit.mixin.Candidate,
+        _class: recruit.class.Applicant,
+        space: space,
+        _id: generateId(),
+        collection: 'applications',
+        modifiedOn: Date.now(),
+        modifiedBy: '' as Ref<Account>
+      }
+    }
   }
 
   async function invokeValidate (
@@ -134,20 +154,6 @@
 
   $: validate(doc, doc._class)
 
-  let selectedVacancy: Vacancy
-  let selectedCandidate: Person
-  const vacancyQuery = createQuery()
-  $: if (doc.space !== undefined) {
-    vacancyQuery.query(recruit.class.Vacancy, { _id: doc.space }, (result) => {
-      selectedVacancy = result[0]
-    })
-  }
-  const candidateQuery = createQuery()
-  $: if (doc.attachedTo !== undefined) {
-    candidateQuery.query(contact.class.Person, { _id: doc.attachedTo as Ref<Person> }, (result) => {
-      selectedCandidate = result[0]
-    })
-  }
   let states: Array<{ id: number | string; color: number; label: string }> = []
   let selectedState: State
   const statesQuery = createQuery()
@@ -164,6 +170,8 @@
       },
       { sort: { rank: SortingOrder.Ascending } }
     )
+  } else {
+    states = []
   }
   const manager = createFocusManager()
 
@@ -192,7 +200,7 @@
   label={recruit.string.CreateApplication}
   okAction={createApplication}
   canSave={status.severity === Severity.OK}
-  createMore={false}
+  bind:createMore
   on:close={() => {
     dispatch('close')
   }}
@@ -211,61 +219,63 @@
   </svelte:fragment>
   <StatusControl slot="error" {status} />
   <svelte:fragment slot="pool">
-    {#if !preserveCandidate}
+    {#key doc}
+      {#if !preserveCandidate}
+        <UserBox
+          focusIndex={1}
+          _class={contact.class.Person}
+          options={{ sort: { modifiedOn: -1 } }}
+          excluded={existingApplicants}
+          label={recruit.string.Candidate}
+          placeholder={recruit.string.Candidates}
+          bind:value={doc.attachedTo}
+          kind={'no-border'}
+          size={'small'}
+          create={{ component: recruit.component.CreateCandidate, label: recruit.string.CreateCandidate }}
+        />
+      {/if}
       <UserBox
-        focusIndex={1}
-        _class={contact.class.Person}
-        options={{ sort: { modifiedOn: -1 } }}
-        excluded={existingApplicants}
-        label={recruit.string.Candidate}
-        placeholder={recruit.string.Candidates}
-        bind:value={doc.attachedTo}
+        focusIndex={2}
+        _class={contact.class.Employee}
+        label={recruit.string.AssignRecruiter}
+        placeholder={recruit.string.Recruiters}
+        bind:value={doc.assignee}
+        allowDeselect
+        titleDeselect={recruit.string.UnAssignRecruiter}
         kind={'no-border'}
         size={'small'}
-        create={{ component: recruit.component.CreateCandidate, label: recruit.string.CreateCandidate }}
       />
-    {/if}
-    <UserBox
-      focusIndex={2}
-      _class={contact.class.Employee}
-      label={recruit.string.AssignRecruiter}
-      placeholder={recruit.string.Recruiters}
-      bind:value={doc.assignee}
-      allowDeselect
-      titleDeselect={recruit.string.UnAssignRecruiter}
-      kind={'no-border'}
-      size={'small'}
-    />
-    {#if states && doc.space}
-      <Button
-        focusIndex={3}
-        width="min-content"
-        size="small"
-        kind="no-border"
-        on:click={(ev) => {
-          showPopup(
-            ColorPopup,
-            { value: states, searchable: true, placeholder: ui.string.SearchDots },
-            eventToHTMLElement(ev),
-            (result) => {
-              if (result && result.id) {
-                doc.state = result.id
-                selectedState = result
-                selectedState.title = result.label
+      {#if states && doc.space}
+        <Button
+          focusIndex={3}
+          width="min-content"
+          size="small"
+          kind="no-border"
+          on:click={(ev) => {
+            showPopup(
+              ColorPopup,
+              { value: states, searchable: true, placeholder: ui.string.SearchDots },
+              eventToHTMLElement(ev),
+              (result) => {
+                if (result && result.id) {
+                  doc.state = result.id
+                  selectedState = result
+                  selectedState.title = result.label
+                }
+                manager.setFocusPos(3)
               }
-              manager.setFocusPos(3)
-            }
-          )
-        }}
-      >
-        <div slot="content" class="flex-row-center">
-          {#if selectedState}
-            <div class="color" style="background-color: {getPlatformColor(selectedState.color)}" />
-            <span class="label overflow-label">{selectedState.title}</span>
-          {/if}
-        </div>
-      </Button>
-    {/if}
+            )
+          }}
+        >
+          <div slot="content" class="flex-row-center">
+            {#if selectedState}
+              <div class="color" style="background-color: {getPlatformColor(selectedState.color)}" />
+              <span class="label overflow-label">{selectedState.title}</span>
+            {/if}
+          </div>
+        </Button>
+      {/if}
+    {/key}
   </svelte:fragment>
 </Card>
 

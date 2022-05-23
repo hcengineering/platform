@@ -13,26 +13,35 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Button, Icon, Label, showPopup, SelectPopup, eventToHTMLElement } from '@anticrm/ui'
   import { ProjectStatus } from '@anticrm/tracker'
+  import { Button, showPopup, SelectPopup, eventToHTMLElement } from '@anticrm/ui'
+  import type { ButtonKind, ButtonSize } from '@anticrm/ui'
   import tracker from '../../plugin'
-  import { projectStatuses } from '../../utils'
+  import { defaultProjectStatuses, projectStatusAssets } from '../../utils'
 
-  export let status: ProjectStatus
-  export let kind: 'button' | 'icon' = 'button'
+  export let selectedProjectStatus: ProjectStatus | undefined
   export let shouldShowLabel: boolean = true
-  export let onStatusChange: ((newStatus: ProjectStatus | undefined) => void) | undefined = undefined
+  export let onProjectStatusChange: ((newProjectStatus: ProjectStatus | undefined) => void) | undefined = undefined
   export let isEditable: boolean = true
 
-  const statusesInfo = [
-    ProjectStatus.Planned,
-    ProjectStatus.InProgress,
-    ProjectStatus.Paused,
-    ProjectStatus.Completed,
-    ProjectStatus.Canceled
-  ].map((s) => ({ id: s, ...projectStatuses[s] }))
+  export let kind: ButtonKind = 'no-border'
+  export let size: ButtonSize = 'small'
+  export let justify: 'left' | 'center' = 'center'
+  export let width: string | undefined = 'min-content'
 
-  const handleStatusEditorOpened = (event: MouseEvent) => {
+  $: selectedStatusIcon = selectedProjectStatus
+    ? projectStatusAssets[selectedProjectStatus].icon
+    : tracker.icon.ProjectStatusBacklog
+
+  $: selectedStatusLabel = shouldShowLabel
+    ? selectedProjectStatus
+      ? projectStatusAssets[selectedProjectStatus].label
+      : tracker.string.Backlog
+    : undefined
+
+  $: statusesInfo = defaultProjectStatuses.map((s) => ({ id: s, ...projectStatusAssets[s] }))
+
+  const handleProjectStatusEditorOpened = (event: MouseEvent) => {
     if (!isEditable) {
       return
     }
@@ -40,42 +49,18 @@
       SelectPopup,
       { value: statusesInfo, placeholder: tracker.string.SetStatus, searchable: true },
       eventToHTMLElement(event),
-      onStatusChange
+      onProjectStatusChange
     )
   }
 </script>
 
-{#if kind === 'button'}
-  <Button
-    label={shouldShowLabel ? projectStatuses[status].label : undefined}
-    icon={projectStatuses[status].icon}
-    width="min-content"
-    size="small"
-    kind="no-border"
-    on:click={handleStatusEditorOpened}
-  />
-{:else if kind === 'icon'}
-  <div class={isEditable ? 'flex-presenter' : 'presenter'} on:click={handleStatusEditorOpened}>
-    <div class="statusIcon">
-      <Icon icon={projectStatuses[status].icon} size="small" />
-    </div>
-    {#if shouldShowLabel}
-      <div class="label nowrap ml-2">
-        <Label label={projectStatuses[status].label} />
-      </div>
-    {/if}
-  </div>
-{/if}
-
-<style lang="scss">
-  .presenter {
-    display: flex;
-    align-items: center;
-    flex-wrap: nowrap;
-  }
-
-  .statusIcon {
-    width: 1rem;
-    height: 1rem;
-  }
-</style>
+<Button
+  {kind}
+  {size}
+  {width}
+  {justify}
+  disabled={!isEditable}
+  icon={selectedStatusIcon}
+  label={selectedStatusLabel}
+  on:click={handleProjectStatusEditorOpened}
+/>

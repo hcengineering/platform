@@ -140,7 +140,8 @@ export default plugin(chunterId, {
     ArchiveChannel: '' as IntlString,
     UnarchiveChannel: '' as IntlString,
     ArchiveConfirm: '' as IntlString,
-    UnarchiveConfirm: '' as IntlString
+    UnarchiveConfirm: '' as IntlString,
+    ConvertToPrivate: '' as IntlString
   },
   app: {
     Chunter: '' as Ref<Doc>

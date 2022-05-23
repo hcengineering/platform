@@ -15,13 +15,13 @@
 <script lang="ts">
   import { Class, Doc, Ref } from '@anticrm/core'
   import presentation, { AttributesBar, getClient, KeyedAttribute } from '@anticrm/presentation'
-  import { ActionIcon, IconAdd, Label, showPopup } from '@anticrm/ui'
+  import { Button, IconAdd, Label, showPopup, Tooltip } from '@anticrm/ui'
   import view from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
   import { collectionsFilter, getFiltredKeys } from '../utils'
 
   export let object: Doc
-  export let objectClass: Class<Doc>
+  export let _class: Ref<Class<Doc>>
   export let to: Ref<Class<Doc>> | undefined
   export let ignoreKeys: string[] = []
   export let vertical: boolean
@@ -29,33 +29,127 @@
   const hierarchy = client.getHierarchy()
 
   let keys: KeyedAttribute[] = []
+  let collapsed: boolean = false
 
   function updateKeys (ignoreKeys: string[]): void {
-    const filtredKeys = getFiltredKeys(hierarchy, objectClass._id, ignoreKeys, to)
+    const filtredKeys = getFiltredKeys(hierarchy, _class, ignoreKeys, to)
     keys = collectionsFilter(hierarchy, filtredKeys, false)
   }
 
   $: updateKeys(ignoreKeys)
 
+  $: label = hierarchy.getClass(_class).label
+
   const dispatch = createEventDispatcher()
 </script>
 
 {#if vertical}
-  <div class="flex-between text-sm mb-4">
-    <Label label={objectClass.label} />
-    <ActionIcon
-      label={presentation.string.Create}
-      icon={IconAdd}
-      size="small"
-      action={() => {
-        showPopup(view.component.CreateAttribute, { _class: objectClass._id }, 'top', () => {
-          updateKeys(ignoreKeys)
-          dispatch('update')
-        })
-      }}
-    />
+  <div
+    class="attrbar-header"
+    class:collapsed
+    on:click={() => {
+      collapsed = !collapsed
+    }}
+  >
+    <div class="flex-row-center">
+      <span class="overflow-label">
+        <Label {label} />
+      </span>
+      <div class="icon-arrow">
+        <svg fill="var(--dark-color)" viewBox="0 0 6 6" xmlns="http://www.w3.org/2000/svg">
+          <path d="M0,0L6,3L0,6Z" />
+        </svg>
+      </div>
+    </div>
+    <div class="tool">
+      <Tooltip label={presentation.string.Create}>
+        <Button
+          icon={IconAdd}
+          kind={'transparent'}
+          on:click={(ev) => {
+            ev.stopPropagation()
+            showPopup(view.component.CreateAttribute, { _class }, 'top', () => {
+              updateKeys(ignoreKeys)
+              dispatch('update')
+            })
+          }}
+        />
+      </Tooltip>
+    </div>
   </div>
 {/if}
 {#if keys.length || !vertical}
-  <AttributesBar {object} {keys} {vertical} />
+  <div class="collapsed-container" class:collapsed>
+    <AttributesBar {_class} {object} keys={keys.map((p) => p.key)} {vertical} />
+  </div>
 {/if}
+
+<style lang="scss">
+  .attrbar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0.25rem -0.5rem 0.75rem;
+    padding: 0 0 0 0.5rem;
+    font-weight: 600;
+    color: var(--dark-color);
+    border: 1px solid var(--divider-color);
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition-property: color, background-color, border-color;
+    transition-duration: 0.15s;
+    transition-timing-function: var(--timing-main);
+
+    .icon-arrow {
+      margin-left: 0.5rem;
+      width: 0.325rem;
+      height: 0.325rem;
+      opacity: 0;
+      transform-origin: 35% center;
+      transform: rotate(90deg);
+      transition-property: transform, opacity;
+      transition-duration: 0.15s;
+      transition-timing-function: var(--timing-main);
+    }
+
+    .tool {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      transition: opacity 0.15s var(--timing-main);
+    }
+    &.collapsed {
+      background-color: var(--divider-color);
+      border-color: transparent;
+
+      .icon-arrow {
+        opacity: 1;
+        transform: rotate(0deg);
+      }
+    }
+    &:hover {
+      color: var(--caption-color);
+      background-color: var(--menu-bg-select);
+      border-color: transparent;
+
+      .icon-arrow {
+        opacity: 1;
+      }
+      .tool {
+        opacity: 1;
+      }
+    }
+  }
+  .collapsed-container {
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    max-height: 1000px;
+    transition: max-height 0.2s var(--timing-main);
+
+    &.collapsed {
+      max-height: 0;
+    }
+  }
+</style>

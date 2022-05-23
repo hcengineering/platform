@@ -58,6 +58,8 @@
     isHeader={false}
     isAside={true}
     {object}
+    isFullSize
+    on:fullsize
     on:close={() => {
       dispatch('close')
     }}
@@ -66,7 +68,7 @@
       {#if dir === 'column'}
         <div class="ac-subtitle">
           <div class="ac-subtitle-content">
-            <AttributesBar {object} keys={['dueTo', 'location', 'company']} vertical />
+            <AttributesBar {object} _class={object._class} keys={['dueTo', 'location', 'company']} vertical />
           </div>
         </div>
       {/if}

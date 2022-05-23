@@ -79,7 +79,7 @@ export class TChunterMessage extends TAttachedDoc implements ChunterMessage {
   @Index(IndexKind.FullText)
   content!: string
 
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments)
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, undefined, attachment.string.Files)
   attachments?: number
 
   @Prop(TypeRef(core.class.Account), chunter.string.CreateBy)
@@ -119,7 +119,7 @@ export class TComment extends TAttachedDoc implements Comment {
   @Index(IndexKind.FullText)
   message!: string
 
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments)
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, undefined, attachment.string.Files)
   attachments?: number
 }
 
@@ -278,6 +278,22 @@ export function createModel (builder: Builder): void {
     chunter.action.UnarchiveChannel
   )
 
+  createAction(
+    builder,
+    {
+      action: chunter.actionImpl.ConvertDmToPrivateChannel,
+      label: chunter.string.ConvertToPrivate,
+      icon: chunter.icon.Lock,
+      input: 'focus',
+      category: chunter.category.Chunter,
+      target: chunter.class.DirectMessage,
+      context: {
+        mode: 'context'
+      }
+    },
+    chunter.action.ConvertToPrivate
+  )
+
   builder.createDoc(
     workbench.class.Application,
     core.space.Model,
@@ -355,6 +371,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(chunter.class.Comment, core.class.Class, view.mixin.AttributePresenter, {
     presenter: chunter.component.CommentPresenter
+  })
+
+  builder.mixin(chunter.class.Comment, core.class.Class, view.mixin.CollectionPresenter, {
+    presenter: chunter.component.CommentsPresenter
   })
 
   builder.createDoc(

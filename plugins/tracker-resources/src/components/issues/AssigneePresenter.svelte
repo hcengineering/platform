@@ -67,6 +67,7 @@
     if (!isEditable) {
       return
     }
+
     showPopup(
       UsersPopup,
       {
@@ -90,7 +91,7 @@
     isInteractive={true}
     shouldShowPlaceholder={true}
     shouldShowName={shouldShowLabel}
-    onEdit={handleAssigneeEditorOpened}
+    onEmployeeEdit={handleAssigneeEditorOpened}
     tooltipLabels={{ personLabel: tracker.string.AssignedTo, placeholderLabel: tracker.string.AssignTo }}
   />
 {/if}

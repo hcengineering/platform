@@ -15,10 +15,9 @@
 -->
 <script lang="ts">
   import contact from '@anticrm/contact'
-  import { Doc, DocumentQuery, Ref } from '@anticrm/core'
+  import { Doc, DocumentQuery } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
-  import tags, { selectedTagElements, TagCategory, TagElement } from '@anticrm/tags'
-  import { ActionIcon, showPopup, Component, Icon, Label, Loading, SearchEdit, Button, IconAdd } from '@anticrm/ui'
+  import { ActionIcon, showPopup, Icon, Label, Loading, SearchEdit, Button, IconAdd } from '@anticrm/ui'
   import view, { Viewlet, ViewletPreference } from '@anticrm/view'
   import { ActionContext, TableBrowser, ViewletSetting } from '@anticrm/view-resources'
   import recruit from '../plugin'
@@ -57,29 +56,11 @@
       }
     })
 
-  let category: Ref<TagCategory> | undefined = undefined
-
-  let documentIds: Ref<Doc>[] = []
-  async function updateResultQuery (search: string, documentIds: Ref<Doc>[]): Promise<void> {
+  async function updateResultQuery (search: string): Promise<void> {
     resultQuery = search === '' ? {} : { $search: search }
-    if (documentIds.length > 0) {
-      resultQuery._id = { $in: documentIds }
-    }
   }
 
-  // Find all tags for object classe with matched elements
-  const query = createQuery()
-
-  $: query.query(tags.class.TagReference, { tag: { $in: $selectedTagElements } }, (result) => {
-    documentIds = Array.from(new Set<Ref<Doc>>(result.map((it) => it.attachedTo)).values())
-  })
-
-  $: updateResultQuery(search, documentIds)
-
-  function updateCategory (detail: { category: Ref<TagCategory> | null; elements: TagElement[] }) {
-    category = detail.category ?? undefined
-    selectedTagElements.set(Array.from(detail.elements ?? []).map((it) => it._id))
-  }
+  $: updateResultQuery(search)
 
   function showCreateDialog () {
     showPopup(CreateCandidate, {}, 'top')
@@ -95,7 +76,7 @@
   <SearchEdit
     bind:value={search}
     on:change={() => {
-      updateResultQuery(search, documentIds)
+      updateResultQuery(search)
     }}
   />
   <Button icon={IconAdd} label={recruit.string.CandidateCreateLabel} kind={'primary'} on:click={showCreateDialog} />
@@ -110,12 +91,6 @@
     />
   {/if}
 </div>
-
-<Component
-  is={tags.component.TagsCategoryBar}
-  props={{ targetClass: recruit.mixin.Candidate, category, selected: $selectedTagElements, mode: 'item' }}
-  on:change={(evt) => updateCategory(evt.detail)}
-/>
 
 <ActionContext
   context={{

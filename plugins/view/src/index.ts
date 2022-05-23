@@ -24,8 +24,10 @@ import type {
   Lookup,
   Mixin,
   Obj,
+  ObjQueryType,
   Ref,
   Space,
+  Type,
   UXObject
 } from '@anticrm/core'
 import type { Asset, IntlString, Plugin, Resource, Status } from '@anticrm/platform'
@@ -33,6 +35,51 @@ import { plugin } from '@anticrm/platform'
 import type { AnyComponent, AnySvelteComponent } from '@anticrm/ui'
 import { PopupPosAlignment } from '@anticrm/ui/src/types'
 import type { Preference } from '@anticrm/preference'
+
+/**
+ * @public
+ */
+export interface KeyFilter {
+  key: string
+  component: AnyComponent
+  label: IntlString
+  icon: Asset | undefined
+}
+
+/**
+ * @public
+ */
+export interface FilterMode {
+  label: IntlString
+  isAvailable: (values: any[]) => boolean
+  result: (values: any[], onUpdate: () => void) => Promise<ObjQueryType<any>>
+}
+
+/**
+ * @public
+ */
+export interface Filter {
+  key: KeyFilter
+  mode: FilterMode
+  modes: FilterMode[]
+  value: any[]
+  index: number
+  onRemove?: () => void
+}
+
+/**
+ * @public
+ */
+export interface ClassFilters extends Class<Doc> {
+  filters: (KeyFilter | string)[]
+}
+
+/**
+ * @public
+ */
+export interface AttributeFilter extends Class<Type<any>> {
+  component: AnyComponent
+}
 
 /**
  * @public
@@ -46,6 +93,13 @@ export interface AttributeEditor extends Class<Doc> {
  */
 export interface CollectionEditor extends Class<Doc> {
   editor: AnyComponent
+}
+
+/**
+ * @public
+ */
+export interface CollectionPresenter extends Class<Doc> {
+  presenter: AnyComponent
 }
 
 /**
@@ -303,7 +357,10 @@ export interface ViewletPreference extends Preference {
  */
 const view = plugin(viewId, {
   mixin: {
+    ClassFilters: '' as Ref<Mixin<ClassFilters>>,
+    AttributeFilter: '' as Ref<Mixin<AttributeFilter>>,
     AttributeEditor: '' as Ref<Mixin<AttributeEditor>>,
+    CollectionPresenter: '' as Ref<Mixin<CollectionPresenter>>,
     CollectionEditor: '' as Ref<Mixin<CollectionEditor>>,
     AttributePresenter: '' as Ref<Mixin<AttributePresenter>>,
     ObjectEditor: '' as Ref<Mixin<ObjectEditor>>,

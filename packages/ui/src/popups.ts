@@ -1,4 +1,4 @@
-import type { AnySvelteComponent, AnyComponent, PopupAlignment, PopupPositionElement } from './types'
+import type { AnySvelteComponent, AnyComponent, PopupAlignment, PopupPositionElement, PopupOptions } from './types'
 import { getResource } from '@anticrm/platform'
 import { writable } from 'svelte/store'
 
@@ -117,7 +117,8 @@ export function fitPopupPositionedElement (
   modalHTML: HTMLElement,
   alignment: PopupPositionElement,
   newProps: Record<string, string | number>
-): boolean {
+): PopupOptions {
+  let direction: string = ''
   const rect = alignment.getBoundingClientRect()
   const rectPopup = modalHTML.getBoundingClientRect()
   newProps.left = newProps.right = newProps.top = newProps.bottom = ''
@@ -135,34 +136,40 @@ export function fitPopupPositionedElement (
     } else if (alignment.position.h === 'left') {
       newProps.left = `calc(${rect.left - rectPopup.width}px - .125rem)`
     }
+    direction = alignment.position.v + '|' + alignment.position.h
   } else {
     // Vertical
     if (rect.bottom + rectPopup.height + 28 <= document.body.clientHeight) {
       newProps.top = `${rect.bottom + 1}px`
+      direction = 'bottom'
     } else if (rectPopup.height + 28 < rect.top) {
       newProps.bottom = `${document.body.clientHeight - rect.top + 1}px`
+      direction = 'top'
     } else {
       newProps.top = modalHTML.style.bottom = '1rem'
+      direction = 'top'
     }
 
     // Horizontal
     if (rect.left + rectPopup.width + 16 > document.body.clientWidth) {
       newProps.right = `${document.body.clientWidth - rect.right}px`
+      direction += '|left'
     } else {
       newProps.left = `${rect.left}px`
+      direction += '|right'
     }
   }
-  return false
+  return { props: newProps, showOverlay: false, direction }
 }
 
-function applyStyle (values: Record<string, string | number>, modalHTML: HTMLElement): void {
-  for (const [k, v] of Object.entries(values)) {
-    const old = (modalHTML.style as any)[k]
-    if (old !== v) {
-      ;(modalHTML.style as any)[k] = v
-    }
-  }
-}
+// function applyStyle (values: Record<string, string | number>, modalHTML: HTMLElement): void {
+//   for (const [k, v] of Object.entries(values)) {
+//     const old = (modalHTML.style as any)[k]
+//     if (old !== v) {
+//       ;(modalHTML.style as any)[k] = v
+//     }
+//   }
+// }
 
 /**
  * @public
@@ -171,7 +178,11 @@ function applyStyle (values: Record<string, string | number>, modalHTML: HTMLEle
  *
  * return boolean to show or not modal overlay.
  */
-export function fitPopupElement (modalHTML: HTMLElement, element?: PopupAlignment, contentPanel?: HTMLElement): boolean {
+export function fitPopupElement (
+  modalHTML: HTMLElement,
+  element?: PopupAlignment,
+  contentPanel?: HTMLElement
+): PopupOptions {
   let show = true
   const newProps: Record<string, string | number> = {}
   if (element != null) {
@@ -181,7 +192,7 @@ export function fitPopupElement (modalHTML: HTMLElement, element?: PopupAlignmen
     newProps.maxWidth = newProps.width = newProps.minWidth = ''
     if (typeof element !== 'string') {
       const result = fitPopupPositionedElement(modalHTML, element, newProps)
-      applyStyle(newProps, modalHTML)
+      // applyStyle(newProps, modalHTML)
       return result
     } else if (element === 'right' && contentPanel !== undefined) {
       const rect = contentPanel.getBoundingClientRect()
@@ -198,13 +209,20 @@ export function fitPopupElement (modalHTML: HTMLElement, element?: PopupAlignmen
     } else if (element === 'float') {
       newProps.top = 'calc(var(--status-bar-height) + .25rem)'
       newProps.bottom = '.25rem'
-      newProps.minWidth = '40rem'
-      newProps.width = '40%'
+      newProps.left = '60%'
       newProps.right = '.25rem'
       show = true
     } else if (element === 'account') {
       newProps.bottom = '2.75rem'
       newProps.left = '5rem'
+    } else if (element === 'full' && contentPanel === undefined) {
+      newProps.top = '0'
+      newProps.bottom = '0'
+      newProps.left = '0'
+      newProps.right = '0'
+      // newProps.width = '100vw'
+      newProps.height = '100vh'
+      show = false
     } else if (element === 'full' && contentPanel !== undefined) {
       const rect = contentPanel.getBoundingClientRect()
       newProps.top = `${rect.top + 1}px`
@@ -237,8 +255,8 @@ export function fitPopupElement (modalHTML: HTMLElement, element?: PopupAlignmen
     newProps.transform = 'translate(-50%, -50%)'
     show = true
   }
-  applyStyle(newProps, modalHTML)
-  return show
+  // applyStyle(newProps, modalHTML)
+  return { props: newProps, showOverlay: show, direction: '' }
 }
 
 export function eventToHTMLElement (evt: MouseEvent): HTMLElement {

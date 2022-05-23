@@ -58,11 +58,11 @@
       <div class="flex-center flex-wrap">
         <Component
           is={chunter.component.CommentsPresenter}
-          props={{ value: candidate, size: 'medium', showCounter: true }}
+          props={{ value: candidate.comments, object: candidate, size: 'medium', showCounter: true }}
         />
         <Component
           is={attachment.component.AttachmentsPresenter}
-          props={{ value: candidate, size: 'medium', showCounter: true }}
+          props={{ value: candidate.attachments, object: candidate, size: 'medium', showCounter: true }}
         />
       </div>
       {#if channels[0]}
