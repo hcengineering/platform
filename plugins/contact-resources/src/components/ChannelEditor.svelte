@@ -160,7 +160,7 @@
       }}
       on:click={copyChannel}
     />
-    {#if editable !== undefined}
+    {#if editable && editable === true}
       <Button
         focusIndex={4}
         kind={'transparent'}
