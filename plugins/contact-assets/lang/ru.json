@@ -43,6 +43,8 @@
     "AtPlaceHolder": "@appleseed",
     "FacebookPlaceholder": "https://fb.com/jappleseed",
     "Facebook": "Facebook",
+    "HomepagePlaceholder": "https://jappleseed.com",
+    "Homepage": "Веб страница",
     "SocialLinks": "Контактная информация",
     "ViewActivity": "Посмотреть активность",
     "PersonAlreadyExists": "Контакт уже существует...",

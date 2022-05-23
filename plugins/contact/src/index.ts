@@ -169,7 +169,8 @@ const contactPlugin = plugin(contactId, {
     Twitter: '' as Ref<ChannelProvider>,
     Telegram: '' as Ref<ChannelProvider>,
     GitHub: '' as Ref<ChannelProvider>,
-    Facebook: '' as Ref<ChannelProvider>
+    Facebook: '' as Ref<ChannelProvider>,
+    Homepage: '' as Ref<ChannelProvider>
   },
   icon: {
     Phone: '' as Asset,
@@ -187,7 +188,8 @@ const contactPlugin = plugin(contactId, {
     Edit: '' as Asset,
     Person: '' as Asset,
     Company: '' as Asset,
-    SocialEdit: '' as Asset
+    SocialEdit: '' as Asset,
+    Homepage: '' as Asset
   },
   space: {
     Employee: '' as Ref<Space>,

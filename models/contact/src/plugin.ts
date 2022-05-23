@@ -56,10 +56,12 @@ export default mergeIds(contactId, contact, {
     LinkedInPlaceholder: '' as IntlString,
     AtPlaceHolder: '' as IntlString,
     FacebookPlaceholder: '' as IntlString,
+    HomepagePlaceholder: '' as IntlString,
     Twitter: '' as IntlString,
     GitHub: '' as IntlString,
     Facebook: '' as IntlString,
-    TypeLabel: '' as IntlString
+    TypeLabel: '' as IntlString,
+    Homepage: '' as IntlString
   },
   completion: {
     PersonQuery: '' as Resource<ObjectSearchFactory>,
