@@ -13,21 +13,27 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Timestamp } from '@anticrm/core'
   import { DatePopup } from '@anticrm/ui'
   import { getClient } from '@anticrm/presentation'
   import { Issue } from '@anticrm/tracker'
+  import { createEventDispatcher } from 'svelte'
 
   export let value: Issue
   export let mondayStart = true
   export let withTime = false
+  export let shouldSaveOnChange = true
 
   const client = getClient()
+  const dispatch = createEventDispatcher()
 
-  async function onUpdate ({ detail: newDate }: CustomEvent<Timestamp | undefined>) {
-    if (newDate !== undefined && newDate !== value.dueDate) {
-      await client.update(value, { dueDate: newDate })
+  async function onUpdate ({ detail }: CustomEvent<Date | null | undefined>) {
+    const newDueDate = detail && detail?.getTime()
+
+    if (shouldSaveOnChange && newDueDate !== undefined && newDueDate !== value.dueDate) {
+      await client.update(value, { dueDate: newDueDate })
     }
+
+    dispatch('update', newDueDate)
   }
 
   $: currentDate = value.dueDate !== null ? new Date(value.dueDate) : null

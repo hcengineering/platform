@@ -87,6 +87,9 @@ export default mergeIds(trackerId, tracker, {
     AssignTo: '' as IntlString,
     AssignedTo: '' as IntlString,
     Parent: '' as IntlString,
+    SetParent: '' as IntlString,
+    ChangeParent: '' as IntlString,
+    RemoveParent: '' as IntlString,
     BlockedBy: '' as IntlString,
     RelatedTo: '' as IntlString,
     Comments: '' as IntlString,
@@ -174,6 +177,7 @@ export default mergeIds(trackerId, tracker, {
     TargetDatePresenter: '' as AnyComponent,
     ProjectMembersPresenter: '' as AnyComponent,
     ProjectStatusPresenter: '' as AnyComponent,
-    SetDueDateActionPopup: '' as AnyComponent
+    SetDueDateActionPopup: '' as AnyComponent,
+    SetParentIssueActionPopup: '' as AnyComponent
   }
 })
