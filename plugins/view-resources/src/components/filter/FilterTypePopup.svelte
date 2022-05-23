@@ -13,17 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, {
-    AnyAttribute,
-    ArrOf,
-    AttachedDoc,
-    Class,
-    Collection,
-    Doc,
-    DocumentQuery,
-    Ref,
-    Type
-  } from '@anticrm/core'
+  import core, { AnyAttribute, ArrOf, AttachedDoc, Class, Collection, Doc, Ref, Type } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
   import { Icon, Label, showPopup } from '@anticrm/ui'
   import { Filter, KeyFilter } from '@anticrm/view'
@@ -31,7 +21,6 @@
   import view from '../../plugin'
 
   export let _class: Ref<Class<Doc>>
-  export let query: DocumentQuery<Doc>
   export let target: HTMLElement
   export let index: number
   export let onChange: (e: Filter) => void
@@ -121,7 +110,6 @@
       type.component,
       {
         _class,
-        query,
         filter: {
           key: type,
           value: [],

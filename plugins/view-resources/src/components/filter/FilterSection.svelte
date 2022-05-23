@@ -13,14 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, DocumentQuery, Ref } from '@anticrm/core'
+  import { Class, Doc, Ref } from '@anticrm/core'
   import { Button, eventToHTMLElement, IconClose, showPopup } from '@anticrm/ui'
   import { Filter } from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
   import view from '../../plugin'
 
   export let _class: Ref<Class<Doc>>
-  export let query: DocumentQuery<Doc>
   export let filter: Filter
   let current = 0
 
@@ -56,7 +55,6 @@
           filter.key.component,
           {
             _class,
-            query,
             filter,
             onChange
           },
