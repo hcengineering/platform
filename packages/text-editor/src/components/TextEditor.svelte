@@ -24,6 +24,7 @@
   import StarterKit from '@tiptap/starter-kit'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import textEditorPlugin from '../plugin'
+  import { FormatMode } from '../types'
 
   export let content: string = ''
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
@@ -53,14 +54,32 @@
   export function insertText (text: string): void {
     editor.commands.insertContent(text as HTMLContent)
   }
-  export function checkIsActive (markName: string) {
-    return editor.isActive(markName)
+  export function checkIsActive (formatMode: FormatMode) {
+    return editor.isActive(formatMode)
   }
   export function toggleBold () {
     editor.commands.toggleBold()
   }
   export function toggleItalic () {
     editor.commands.toggleItalic()
+  }
+  export function toggleStrike () {
+    editor.commands.toggleStrike()
+  }
+  export function toggleOrderedList () {
+    editor.commands.toggleOrderedList()
+  }
+  export function toggleBulletList () {
+    editor.commands.toggleBulletList()
+  }
+  export function toggleBlockquote () {
+    editor.commands.toggleBlockquote()
+  }
+  export function toggleCode () {
+    editor.commands.toggleCode()
+  }
+  export function toggleCodeBlock () {
+    editor.commands.toggleCodeBlock()
   }
   let needFocus = false
   export function focus (): void {
