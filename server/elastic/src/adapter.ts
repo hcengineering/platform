@@ -47,7 +47,7 @@ class ElasticAdapter implements FullTextAdapter {
           {
             terms: {
               _class: _classes.map((c) => c.toLowerCase()),
-              boost: 10.0
+              boost: 50.0
             }
           }
         ],

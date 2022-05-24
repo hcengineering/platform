@@ -211,9 +211,11 @@ async function restoreElastic (mongoUrl: string, dbName: string, minio: Client, 
     const isCollectionCreateTx = (tx: Tx): boolean =>
       tx._class === core.class.TxCollectionCUD &&
       (tx as TxCollectionCUD<Doc, AttachedDoc>).tx._class === core.class.TxCreateDoc
+    const isMixinTx = (tx: Tx): boolean => tx._class === core.class.TxMixin || (tx._class === core.class.TxCollectionCUD && (tx as TxCollectionCUD<Doc, AttachedDoc>).tx._class === core.class.TxMixin)
 
     const createTxes = data.filter((tx) => isCreateTx(tx))
     const collectionTxes = data.filter((tx) => isCollectionCreateTx(tx))
+    const mixinTxes = data.filter((tx) => isMixinTx(tx))
     const removedDocument = new Set<Ref<Doc>>()
 
     const startCreate = Date.now()
@@ -286,6 +288,28 @@ async function restoreElastic (mongoUrl: string, dbName: string, minio: Client, 
       })
     )
     console.log('replay elastic collection transactions done', Date.now() - startCollection)
+
+    const startMixin = Date.now()
+    console.log('replay elastic mixin transactions', mixinTxes.length)
+    await Promise.all(
+      mixinTxes.map(async (tx) => {
+        try {
+          let deleted = false
+          if (tx._class === core.class.TxMixin) {
+            deleted = removedDocument.has((tx as TxMixin<Doc, Doc>).objectId)
+          }
+          if (tx._class === core.class.TxCollectionCUD && (tx as TxCollectionCUD<Doc, AttachedDoc>).tx._class === core.class.TxMixin) {
+            deleted = removedDocument.has((tx as TxCollectionCUD<Doc, AttachedDoc>).tx.objectId)
+          }
+          if (!deleted) {
+            await tool.storage.tx(metricsCtx, tx)
+          }
+        } catch (err: any) {
+          console.error('failed to replay tx', tx, err.message)
+        }
+      })
+    )
+    console.log('replay elastic mixin transactions done', Date.now() - startMixin)
 
     let apos = 0
     if (await minio.bucketExists(dbName)) {
