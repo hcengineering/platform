@@ -15,7 +15,7 @@
 
 // To help typescript locate view plugin properly
 import type { Employee } from '@anticrm/contact'
-import { Doc, FindOptions, IndexKind, Ref } from '@anticrm/core'
+import { Class, Doc, FindOptions, IndexKind, Ref } from '@anticrm/core'
 import type { Customer, Funnel, Lead } from '@anticrm/lead'
 import { Builder, Collection, Index, Mixin, Model, Prop, TypeRef, TypeString, UX } from '@anticrm/model'
 import attachment from '@anticrm/model-attachment'
@@ -60,6 +60,9 @@ export class TCustomer extends TContact implements Customer {
   @Prop(TypeString(), core.string.Description)
   @Index(IndexKind.FullText)
   description!: string
+
+  @Prop(TypeRef(core.class.Class), core.string.ClassLabel)
+  declare _class: Ref<Class<this>>
 }
 
 export function createModel (builder: Builder): void {
