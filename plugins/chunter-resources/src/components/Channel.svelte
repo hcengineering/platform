@@ -21,6 +21,7 @@
   import { createQuery } from '@anticrm/presentation'
   import { afterUpdate, beforeUpdate } from 'svelte'
   import chunter from '../plugin'
+  import { getDay } from '../utils'
   import ChannelSeparator from './ChannelSeparator.svelte'
   import JumpToDateSelector from './JumpToDateSelector.svelte'
   import MessageComponent from './Message.svelte'
@@ -116,51 +117,94 @@
 
   let newMessagesPos: number = -1
 
-  const pinnedHeight = 30
-  const headerHeight = 70
+  function isOtherDay (time1: Timestamp, time2: Timestamp) {
+    return getDay(time1) !== getDay(time2)
+  }
+  let messagesDays: Timestamp[] | undefined = []
+  $: {
+    let firstDate
+    if (messages?.[0]) {
+      firstDate = getDay(messages[0].createOn)
+    }
+
+    messagesDays = messages?.reduce(
+      (prev, cur) => {
+        if (isOtherDay(prev[prev.length - 1], cur.createOn)) {
+          prev.push(getDay(cur.createOn))
+        }
+        return prev
+      },
+      firstDate ? [firstDate] : []
+    )
+  }
+
   function handleJumpToDate (e: CustomEvent<any>) {
     const date = e.detail.date
     if (!date) {
       return
     }
 
-    let closestLaterMessage
-    closestLaterMessage = messages?.reduce((prev, cur) => {
-      if (prev.createOn < date) return cur
-      if (cur.createOn < date) return prev
-      if (cur.createOn - date < prev.createOn - date) return cur
+    let closestDate: Timestamp | undefined = messagesDays?.reduceRight((prev, cur) => {
+      if (prev < date) return cur
+      if (cur < date) return prev
+      if (cur - date < prev - date) return cur
       else return prev
     })
-    if (closestLaterMessage && closestLaterMessage?.createOn < date) closestLaterMessage = undefined
+    if (closestDate && closestDate < date) closestDate = undefined
 
-    if (closestLaterMessage) {
-      let offset = document.getElementById(closestLaterMessage.createOn.toString())?.offsetTop
-      if (offset) {
-        offset = offset - headerHeight
-        if (pinnedIds.length > 0) offset = offset - pinnedHeight
-        div?.scrollTo({ left: 0, top: offset })
+    if (closestDate) {
+      scrollToDate(closestDate)
+    }
+  }
+
+  const pinnedHeight = 30
+  const headerHeight = 70
+  function scrollToDate (date: Timestamp) {
+    let offset = date && document.getElementById(date.toString())?.offsetTop
+    if (offset) {
+      offset = offset - headerHeight
+      if (pinnedIds.length > 0) offset = offset - pinnedHeight
+      div?.scrollTo({ left: 0, top: offset })
+    }
+  }
+
+  let up: boolean | undefined = true
+  let showFixed: boolean | undefined = true
+  let selectedDate: Timestamp = messagesDays[messagesDays.length - 1]
+  function handleScroll () {
+    up = div && div.scrollTop === 0
+
+    const upperVisible = getFirstVisible()
+    if (upperVisible) {
+      selectedDate = parseInt(upperVisible.id)
+      showFixed = false
+      if (!selectedDate) {
+        selectedDate = getDay(parseInt(upperVisible.getAttribute('data-date')))
+        showFixed = true
       }
     }
   }
 
-  function isOtherDay (time1: Timestamp, time2: Timestamp) {
-    const date1 = new Date(time1)
-    const date2 = new Date(time2)
-    return (
-      date1.getDay() !== date2.getDay() ||
-      date1.getMonth() !== date2.getMonth() ||
-      date1.getFullYear() !== date2.getFullYear()
-    )
-  }
-
-  let up: boolean | undefined = true
-  function handleScroll () {
-    up = div && div.scrollTop === 0
+  function getFirstVisible (): HTMLElement {
+    const clientRect = div.getBoundingClientRect()
+    for (let i = div?.childElementCount; i >= 0; i--) {
+      const child = div?.children[i]
+      if (child?.nodeType === Node.ELEMENT_NODE) {
+        const rect = child?.getBoundingClientRect()
+        if (rect.top < clientRect.top) {
+          return div?.children[i + 1]
+        } else if (rect.top === clientRect.top) {
+          return div?.children[i]
+        }
+      }
+    }
   }
 </script>
 
-{#if !up}
-  <JumpToDateSelector withBorder={false} on:jumpToDate={handleJumpToDate} />
+{#if !up && showFixed}
+  <div class="pr-2">
+    <JumpToDateSelector {selectedDate} on:jumpToDate={handleJumpToDate} />
+  </div>
 {/if}
 <div class="flex-col vScroll" bind:this={div} on:scroll={handleScroll}>
   {#if messages}

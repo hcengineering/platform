@@ -59,7 +59,6 @@
     "ChannelBrowser": "Channel browser",
     "SavedItems": "Saved items",
     "AddMembersHeader": "Add members to {channel}:",
-    "JumpToDate": "Jump to date",
     "ConvertToPrivate": "Convert to private channel"
   }
 }

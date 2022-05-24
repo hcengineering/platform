@@ -3,41 +3,41 @@
   import { DateRangePopup, Label, showPopup } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import chunter from '../plugin'
+  import { getDay } from '../utils'
 
-  export let selectedDate: Timestamp | undefined = undefined
-  export let withBorder: boolean = true
+  export let selectedDate: Timestamp
 
   let div: HTMLDivElement | undefined
   const dispatch = createEventDispatcher()
+
+  $: time = getDay(selectedDate)
 </script>
 
-<div id={selectedDate?.toString()} class="flex justify-center over-underline" class:border={withBorder}>
+<div id={time?.toString()} class="flex justify-center over-underline border">
   <div
     bind:this={div}
     on:click={() => {
       showPopup(DateRangePopup, {}, div, (v) => {
-        dispatch('jumpToDate', { date: v })
+        if (v) {
+          v.setHours(0)
+          v.setMinutes(0)
+          v.setSeconds(0)
+          v.setMilliseconds(0)
+          dispatch('jumpToDate', { date: v.getTime() })
+        }
       })
     }}
   >
-    {#if selectedDate}
-      <div>
-        {new Date(selectedDate).toLocaleString('default', {
-          month: 'short',
-          day: 'numeric',
-          weekday: 'short',
-          hour: '2-digit',
-          minute: '2-digit'
-        })}
-      </div>
-    {:else}
-      <Label label={chunter.string.JumpToDate} />
-    {/if}
+    <div>
+      {new Date(time).toDateString()}
+    </div>
   </div>
 </div>
 
 <style lang="scss">
   .border {
-    border-top: 1px solid var(--theme-dialog-divider);
+    &:not(:first-child) {
+      border-top: 1px solid var(--theme-dialog-divider);
+    }
   }
 </style>
