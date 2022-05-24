@@ -15,16 +15,21 @@
 -->
 <script type="ts">
   import Spinner from './Spinner.svelte'
+
+  export let shrink: boolean = false
 </script>
 
-<div class="spinner-container"><div class="inner"><Spinner /></div></div>
+<div class="spinner-container" class:fullHeight={!shrink}><div class="inner"><Spinner /></div></div>
 
 <style lang="scss">
   .spinner-container {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100%;
+
+    &.fullHeight {
+      height: 100%;
+    }
   }
 
   @keyframes makeVisible {

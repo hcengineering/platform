@@ -113,7 +113,7 @@
       </div>
     </div>
     <div class="mt-10">
-      <Attachments objectId={object._id} _class={object._class} space={object.space} />
+      <Attachments objectId={object._id} _class={object._class} space={object.space} attachments={object.attachments ?? 0} />
     </div>
     <div class="flex-col mt-10 flex-no-shrink">
       <span class="fs-title text-xl overflow-label mb-2 flex-no-shrink">
