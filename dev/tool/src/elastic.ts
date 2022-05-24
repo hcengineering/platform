@@ -211,7 +211,10 @@ async function restoreElastic (mongoUrl: string, dbName: string, minio: Client, 
     const isCollectionCreateTx = (tx: Tx): boolean =>
       tx._class === core.class.TxCollectionCUD &&
       (tx as TxCollectionCUD<Doc, AttachedDoc>).tx._class === core.class.TxCreateDoc
-    const isMixinTx = (tx: Tx): boolean => tx._class === core.class.TxMixin || (tx._class === core.class.TxCollectionCUD && (tx as TxCollectionCUD<Doc, AttachedDoc>).tx._class === core.class.TxMixin)
+    const isMixinTx = (tx: Tx): boolean =>
+      tx._class === core.class.TxMixin ||
+      (tx._class === core.class.TxCollectionCUD &&
+        (tx as TxCollectionCUD<Doc, AttachedDoc>).tx._class === core.class.TxMixin)
 
     const createTxes = data.filter((tx) => isCreateTx(tx))
     const collectionTxes = data.filter((tx) => isCollectionCreateTx(tx))
@@ -298,7 +301,10 @@ async function restoreElastic (mongoUrl: string, dbName: string, minio: Client, 
           if (tx._class === core.class.TxMixin) {
             deleted = removedDocument.has((tx as TxMixin<Doc, Doc>).objectId)
           }
-          if (tx._class === core.class.TxCollectionCUD && (tx as TxCollectionCUD<Doc, AttachedDoc>).tx._class === core.class.TxMixin) {
+          if (
+            tx._class === core.class.TxCollectionCUD &&
+            (tx as TxCollectionCUD<Doc, AttachedDoc>).tx._class === core.class.TxMixin
+          ) {
             deleted = removedDocument.has((tx as TxCollectionCUD<Doc, AttachedDoc>).tx.objectId)
           }
           if (!deleted) {
