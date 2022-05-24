@@ -97,6 +97,7 @@
 
 <div
   class="popup"
+  class:anim={element === 'float' || element === 'content'}
   bind:this={modalHTML}
   style={`z-index: ${zIndex + 1};`}
   style:top={options.props.top}
@@ -139,10 +140,13 @@
     justify-content: center;
     max-height: calc(100vh - 2rem);
     background-color: transparent;
-    will-change: top, bottom, left, right;
-    transition-property: top, bottom, left, right, width, height;
-    transition-duration: 0.15s;
-    transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+
+    &.anim {
+      will-change: top, bottom, left, right;
+      transition-property: top, bottom, left, right, width, height;
+      transition-duration: 0.15s;
+      transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+    }
   }
   .modal-overlay {
     position: fixed;
