@@ -244,11 +244,21 @@ program
   })
 
 program
-  .command('rebuild-elastic <workspace>')
+  .command('rebuild-elastic [workspace]')
   .description('rebuild elastic index')
   .action(async (workspace, cmd) => {
-    await rebuildElastic(mongodbUri, workspace, minio, elasticUrl)
-    console.log('rebuild end')
+    return await withDatabase(mongodbUri, async (db) => {
+      if (workspace === undefined) {
+        const workspaces = await listWorkspaces(db)
+
+        for (const w of workspaces) {
+          await rebuildElastic(mongodbUri, w.workspace, minio, elasticUrl)
+        }
+      } else {
+        await rebuildElastic(mongodbUri, workspace, minio, elasticUrl)
+        console.log('rebuild end')
+      }
+    })
   })
 
 program
