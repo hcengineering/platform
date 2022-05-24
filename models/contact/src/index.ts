@@ -68,6 +68,9 @@ export class TContact extends TDoc implements Contact {
   @Prop(TypeString(), contact.string.Location)
   @Index(IndexKind.FullText)
   city!: string
+
+  @Prop(TypeRef(core.class.Class), core.string.ClassLabel)
+  declare _class: Ref<Class<this>>
 }
 
 @Model(contact.class.Channel, core.class.AttachedDoc, DOMAIN_CHANNEL)
@@ -162,7 +165,7 @@ export function createModel (builder: Builder): void {
     descriptor: view.viewlet.Table,
     config: [
       '',
-      { key: '$lookup._class.label', label: contact.string.TypeLabel },
+      '$lookup._class',
       'city',
       'attachments',
       'modifiedOn',

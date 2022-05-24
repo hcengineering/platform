@@ -123,7 +123,7 @@ export function createModel (builder: Builder): void {
     descriptor: view.viewlet.Table,
     config: [
       '',
-      { key: '$lookup._class.label', label: contact.string.TypeLabel },
+      '$lookup._class',
       { key: 'leads', presenter: lead.component.LeadsPresenter, label: lead.string.Leads },
       'modifiedOn',
       '$lookup.channels'
