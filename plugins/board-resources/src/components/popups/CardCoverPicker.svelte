@@ -1,13 +1,18 @@
 <script lang="ts">
-  import { CardCover } from '@anticrm/board'
+  import { CardCover, Card } from '@anticrm/board'
+  import { getClient } from '@anticrm/presentation'
   import { Button, hexColorToNumber, Icon, Label, IconCheck, IconClose } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import board from '../../plugin'
   import { getBoardAvailableColors } from '../../utils/BoardUtils'
   import ColorPresenter from '../presenters/ColorPresenter.svelte'
   export let value: CardCover | undefined | null
-  export let onChange: (e: any) => void
+  export let object: Card | undefined
+  export let onChange: (e: any) => void | undefined
 
+  $: cover = object ? object.cover : value
+
+  const client = getClient()
   const dispatch = createEventDispatcher()
 
   const colorGroups = (function chunk (colors: number[]): number[][] {
@@ -15,8 +20,9 @@
   })(getBoardAvailableColors().map(hexColorToNumber))
 
   function updateCover (newCover?: Partial<CardCover>) {
-    value = newCover ? { size: 'small', color: colorGroups[0][0], ...value, ...newCover } : null
-    onChange(value)
+    cover = newCover ? { size: 'small', color: colorGroups[0][0], ...cover, ...newCover } : null
+    if (onChange) onChange(cover)
+    else if (object) client.update(object, { cover })
   }
 </script>
 
@@ -46,7 +52,7 @@
       <Button
         icon={board.icon.Card}
         width="40%"
-        disabled={!value || value.size === 'small'}
+        disabled={!cover || cover.size === 'small'}
         on:click={() => {
           updateCover({ size: 'small' })
         }}
@@ -54,7 +60,7 @@
       <Button
         icon={board.icon.Board}
         width="40%"
-        disabled={!value || value.size === 'large'}
+        disabled={!cover || cover.size === 'large'}
         on:click={() => {
           updateCover({ size: 'large' })
         }}
@@ -86,7 +92,7 @@
                   updateCover({ color })
                 }}
               >
-                {#if value && value.color === color}
+                {#if cover && cover.color === color}
                   <div class="flex-center flex-grow fs-title h-full">
                     <Icon icon={IconCheck} size="small" />
                   </div>
