@@ -65,7 +65,7 @@
     {_class}
     {config}
     {options}
-    query={resultQuery}
+    bind:query={resultQuery}
     {showNotification}
     {baseMenuClass}
     {loadingProps}

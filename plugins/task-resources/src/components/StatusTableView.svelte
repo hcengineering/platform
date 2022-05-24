@@ -173,7 +173,7 @@
   </div>
 </div>
 <div class="statustableview-container">
-  <TableBrowser {_class} {query} config={resConfig} {options} showNotification />
+  <TableBrowser {_class} bind:query config={resConfig} {options} filters={[]} showNotification />
 </div>
 
 <style lang="scss">

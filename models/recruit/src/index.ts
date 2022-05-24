@@ -436,7 +436,7 @@ export function createModel (builder: Builder): void {
     action: view.actionImpl.ShowPanel,
     actionProps: {
       component: recruit.component.EditVacancy,
-      element: 'right'
+      element: 'content'
     },
     input: 'focus',
     category: recruit.category.Recruit,
