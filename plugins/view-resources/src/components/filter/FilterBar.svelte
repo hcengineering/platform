@@ -24,7 +24,7 @@
 
   export let _class: Ref<Class<Doc>>
   export let query: DocumentQuery<Doc>
-  export let filters: Filter[] | undefined
+  export let filters: Filter[] = []
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -35,15 +35,13 @@
 
   function onChange (e: Filter | undefined) {
     if (e === undefined) return
-    if (filters) {
-      const index = filters.findIndex((p) => p.index === e.index)
-      if (index === -1) {
-        filters.push(e)
-        filters = filters
-      } else {
-        filters[index] = e
-        filters = filters
-      }
+    const index = filters.findIndex((p) => p.index === e.index)
+    if (index === -1) {
+      filters.push(e)
+      filters = filters
+    } else {
+      filters[index] = e
+      filters = filters
     }
   }
 
@@ -62,11 +60,9 @@
   }
 
   function remove (i: number) {
-    if (filters) {
-      filters[i]?.onRemove?.()
-      filters.splice(i, 1)
-      filters = filters
-    }
+    filters[i]?.onRemove?.()
+    filters.splice(i, 1)
+    filters = filters
   }
 
   async function makeQuery (query: DocumentQuery<Doc>, filters: Filter[]): Promise<void> {
@@ -117,7 +113,7 @@
     dispatch('change', newQuery)
   }
 
-  $: if (filters) makeQuery(query, filters)
+  $: makeQuery(query, filters)
 
   $: clazz = hierarchy.getClass(_class)
   $: visible = hierarchy.hasMixin(clazz, view.mixin.ClassFilters)
@@ -131,7 +127,7 @@
           {_class}
           {filter}
           on:change={() => {
-            if (filters) makeQuery(query, filters)
+            makeQuery(query, filters)
           }}
           on:remove={() => {
             remove(i)
