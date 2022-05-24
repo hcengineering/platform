@@ -25,7 +25,17 @@
     IssueStatus,
     IssueStatusCategory
   } from '@anticrm/tracker'
-  import { Button, Label, ScrollBox, IconOptions, showPopup, eventToHTMLElement, IconAdd, IconClose, Icon } from '@anticrm/ui'
+  import {
+    Button,
+    Label,
+    ScrollBox,
+    IconOptions,
+    showPopup,
+    eventToHTMLElement,
+    IconAdd,
+    IconClose,
+    Icon
+  } from '@anticrm/ui'
   import { IntlString } from '@anticrm/platform'
   import { createEventDispatcher } from 'svelte'
   import ViewOptionsPopup from './ViewOptionsPopup.svelte'

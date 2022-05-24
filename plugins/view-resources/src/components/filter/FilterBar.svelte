@@ -139,12 +139,7 @@
         />
       {/each}
       <div class="add-filter">
-        <Button
-          size={'small'}
-          icon={IconAdd}
-          kind={'transparent'}
-          on:click={add}
-        />
+        <Button size={'small'} icon={IconAdd} kind={'transparent'} on:click={add} />
       </div>
     </div>
 
@@ -154,7 +149,12 @@
           <span class="overflow-label">
             <Label label={view.string.IncludeItemsThatMatch} />
           </span>
-          <button class="filter-button" on:click={() => { allFilters = !allFilters }}>
+          <button
+            class="filter-button"
+            on:click={() => {
+              allFilters = !allFilters
+            }}
+          >
             <Label label={allFilters ? view.string.AllFilters : view.string.AnyFilter} />
           </button>
         </div>

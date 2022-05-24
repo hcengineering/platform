@@ -48,15 +48,9 @@
         />
       </span>
     </button>
-    <button
-      class="filter-button"
-      on:click={onEditFilter}
-    >
+    <button class="filter-button" on:click={onEditFilter}>
       <span>
-        <Label
-          label={tracker.string.FilterStatesCount}
-          params={{ value: selectedFilters.length }}
-        />
+        <Label label={tracker.string.FilterStatesCount} params={{ value: selectedFilters.length }} />
       </span>
     </button>
     <button class="filter-button right-round" on:click={onDelete}>

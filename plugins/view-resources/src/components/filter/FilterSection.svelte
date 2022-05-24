@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Class, Doc, Ref } from '@anticrm/core'
-  import { Button, eventToHTMLElement, IconClose, showPopup, Icon, Label } from '@anticrm/ui'
+  import { eventToHTMLElement, IconClose, showPopup, Icon, Label } from '@anticrm/ui'
   import { Filter } from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
   import view from '../../plugin'
@@ -68,7 +68,12 @@
       <Label label={view.string.FilterStatesCount} params={{ value: filter.value.length }} />
     </span>
   </button>
-  <button class="filter-button right-round" on:click={() => { dispatch('remove') }}>
+  <button
+    class="filter-button right-round"
+    on:click={() => {
+      dispatch('remove')
+    }}
+  >
     <div class="btn-icon"><Icon icon={IconClose} size={'small'} /></div>
   </button>
 </div>

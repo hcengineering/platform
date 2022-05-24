@@ -116,7 +116,12 @@
           <span class="overflow-label">
             <Label label={tracker.string.IncludeItemsThatMatch} />
           </span>
-          <button class="filter-button" on:click={() => { allFilters = !allFilters }}>
+          <button
+            class="filter-button"
+            on:click={() => {
+              allFilters = !allFilters
+            }}
+          >
             <Label label={allFilters ? tracker.string.AllFilters : tracker.string.AnyFilter} />
           </button>
         </div>

@@ -27,8 +27,7 @@
   const hierarchy = client.getHierarchy()
 
   function onChange (e: Filter | undefined) {
-    if (e === undefined) return
-    else filters[0] = e
+    if (e !== undefined) filters = [e]
   }
 
   function add (e: MouseEvent) {
