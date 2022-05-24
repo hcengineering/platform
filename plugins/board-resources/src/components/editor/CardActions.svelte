@@ -19,13 +19,12 @@
   import { Employee } from '@anticrm/contact'
   import { Ref } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
-  import { Button, CheckBox, Label, IconAdd } from '@anticrm/ui'
+  import { CheckBox, Label } from '@anticrm/ui'
   import { invokeAction } from '@anticrm/view-resources'
 
   import plugin from '../../plugin'
   import { getCardActions } from '../../utils/CardActionUtils'
   import { updateCardMembers } from '../../utils/CardUtils'
-  import ColorPresenter from '../presenters/ColorPresenter.svelte'
   import UserBoxList from '../UserBoxList.svelte'
   import CardLabels from './CardLabels.svelte'
 
@@ -75,16 +74,6 @@
         <Label label={plugin.string.Labels} />
       </div>
       <CardLabels {value} />
-    </div>
-    <div class="flex-row-stretch flex-gap-1 items-center">
-      <div class="label w-24">
-        <Label label={plugin.string.Cover} />
-      </div>
-      {#if !value.cover?.color}
-        <Button icon={IconAdd} kind="no-border" on:click={coverHandler} />
-      {:else}
-        <ColorPresenter value={value.cover.color} on:click={coverHandler} />
-      {/if}
     </div>
   </div>
 {/if}
