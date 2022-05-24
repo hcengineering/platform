@@ -275,6 +275,7 @@ export function createModel (builder: Builder): void {
   classPresenter(builder, core.class.TypeTimestamp, view.component.TimestampPresenter)
   classPresenter(builder, core.class.TypeDate, view.component.DatePresenter, view.component.DateEditor)
   classPresenter(builder, core.class.Space, view.component.ObjectPresenter)
+  classPresenter(builder, core.class.Class, view.component.ClassPresenter)
 
   builder.mixin(core.class.TypeString, core.class.Class, view.mixin.ObjectEditor, {
     editor: view.component.StringTypeEditor

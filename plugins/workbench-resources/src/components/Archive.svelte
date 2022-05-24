@@ -32,7 +32,7 @@
   {#if model}
     <TableBrowser
       _class={core.class.Space}
-      config={['', '$lookup._class.label', 'modifiedOn']}
+      config={['', '$lookup._class', 'modifiedOn']}
       showNotification
       baseMenuClass={core.class.Space}
       query={{
