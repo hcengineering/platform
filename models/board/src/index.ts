@@ -320,7 +320,8 @@ export function createModel (builder: Builder): void {
       action: view.actionImpl.ShowPopup,
       actionProps: {
         component: board.component.CoverActionPopup,
-        element: 'top'
+        element: 'top',
+        value: 'object'
       },
       label: board.string.Cover,
       icon: board.icon.Card,
