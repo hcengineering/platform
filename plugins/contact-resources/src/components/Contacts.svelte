@@ -18,12 +18,14 @@
   import { createQuery, getClient } from '@anticrm/presentation'
   import { ActionIcon, Button, Icon, IconAdd, Label, Loading, SearchEdit, showPopup } from '@anticrm/ui'
   import view, { Viewlet, ViewletPreference } from '@anticrm/view'
-  import { ActionContext, TableBrowser, ViewletSetting } from '@anticrm/view-resources'
+  import type { Filter } from '@anticrm/view'
+  import { ActionContext, TableBrowser, ViewletSetting, FilterButton } from '@anticrm/view-resources'
   import contact from '../plugin'
   import CreateContact from './CreateContact.svelte'
 
   let search = ''
   let resultQuery: DocumentQuery<Doc> = {}
+  let filters: Filter[] = []
 
   function updateResultQuery (search: string): void {
     resultQuery = search === '' ? {} : { $search: search }
@@ -73,6 +75,7 @@
     <div class="ac-header__wrap-title">
       <div class="ac-header__icon"><Icon icon={contact.icon.Person} size={'small'} /></div>
       <span class="ac-header__title"><Label label={contact.string.Contacts} /></span>
+      <div class="ml-4"><FilterButton _class={contact.class.Contact} bind:filters /></div>
     </div>
 
     <SearchEdit
@@ -108,6 +111,7 @@
         config={preference?.config ?? viewlet.config}
         options={viewlet.options}
         query={resultQuery}
+        bind:filters
         showNotification
       />
     {/if}

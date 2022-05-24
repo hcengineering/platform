@@ -19,7 +19,7 @@ test.describe('workbench tests', () => {
       `${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/recruit%3Aapp%3ARecruit/applicants`
     )
     // Click text=Applications Application >> span
-    await expect(page.locator('text=Applications Application')).toBeVisible()
+    await expect(page.locator('text=Applications Filter')).toBeVisible()
     await expect(page.locator('text="APP-1')).toBeDefined()
 
     // Click text=Candidates

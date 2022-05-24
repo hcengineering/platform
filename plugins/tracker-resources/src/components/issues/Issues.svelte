@@ -25,7 +25,17 @@
     IssueStatus,
     IssueStatusCategory
   } from '@anticrm/tracker'
-  import { Button, Label, ScrollBox, IconOptions, showPopup, eventToHTMLElement, IconAdd, IconClose } from '@anticrm/ui'
+  import {
+    Button,
+    Label,
+    ScrollBox,
+    IconOptions,
+    showPopup,
+    eventToHTMLElement,
+    IconAdd,
+    IconClose,
+    Icon
+  } from '@anticrm/ui'
   import { IntlString } from '@anticrm/platform'
   import { createEventDispatcher } from 'svelte'
   import ViewOptionsPopup from './ViewOptionsPopup.svelte'
@@ -432,43 +442,51 @@
 </script>
 
 {#if currentTeam}
-  <ScrollBox vertical stretch>
-    <div class="fs-title flex-between header">
-      <div class="titleContainer">
-        {#if totalIssuesCount === resultIssuesCount}
-          <Label label={title} params={{ value: totalIssuesCount }} />
-        {:else}
-          <div class="labelsContainer">
-            <Label label={title} params={{ value: resultIssuesCount }} />
-            <div class="totalIssuesLabel">/{totalIssuesCount}</div>
-          </div>
-        {/if}
-        <div class="ml-3">
-          <Button
-            size="small"
-            icon={isFiltersEmpty ? IconAdd : IconClose}
-            kind={'link-bordered'}
-            borderStyle={'dashed'}
-            label={isFiltersEmpty ? tracker.string.Filter : tracker.string.ClearFilters}
-            on:click={isFiltersEmpty ? handleFilterMenuOpened : handleAllFiltersDeleted}
-          />
+  <div class="fs-title flex-between header">
+    <div class="titleContainer">
+      {#if totalIssuesCount === resultIssuesCount}
+        <Label label={title} params={{ value: totalIssuesCount }} />
+      {:else}
+        <div class="labelsContainer">
+          <Label label={title} params={{ value: resultIssuesCount }} />
+          <div class="totalIssuesLabel">/{totalIssuesCount}</div>
         </div>
+      {/if}
+      <div class="ml-4">
+        <Button
+          size="small"
+          kind={'link-bordered'}
+          borderStyle={'dashed'}
+          on:click={isFiltersEmpty ? handleFilterMenuOpened : handleAllFiltersDeleted}
+        >
+          <svelte:fragment slot="content">
+            <div class="flex-row-center">
+              {#if isFiltersEmpty}
+                <Icon icon={IconAdd} size={'x-small'} />
+                <span class="ml-1"><Label label={tracker.string.Filter} /></span>
+              {:else}
+                <span class="mr-1"><Label label={tracker.string.ClearFilters} /></span>
+                <Icon icon={IconClose} size={'x-small'} />
+              {/if}
+            </div>
+          </svelte:fragment>
+        </Button>
       </div>
-      <Button icon={IconOptions} kind={'link'} on:click={handleOptionsEditorOpened} />
     </div>
-    {#if filters.length > 0}
-      <div class="filterSummaryWrapper">
-        <FilterSummary
-          {filters}
-          {issues}
-          defaultStatuses={statuses}
-          onAddFilter={handleFilterMenuOpened}
-          onUpdateFilter={handleFiltersModified}
-          onDeleteFilter={handleFilterDeleted}
-          onChangeMode={handleFilterModeChanged}
-        />
-      </div>
-    {/if}
+    <Button icon={IconOptions} kind={'link'} on:click={handleOptionsEditorOpened} />
+  </div>
+  {#if filters.length > 0}
+    <FilterSummary
+      {filters}
+      {issues}
+      defaultStatuses={statuses}
+      onAddFilter={handleFilterMenuOpened}
+      onUpdateFilter={handleFiltersModified}
+      onDeleteFilter={handleFilterDeleted}
+      onChangeMode={handleFilterModeChanged}
+    />
+  {/if}
+  <ScrollBox vertical stretch>
     <IssuesListBrowser
       _class={tracker.class.Issue}
       {currentSpace}
@@ -520,14 +538,5 @@
 
   .totalIssuesLabel {
     color: var(--content-color);
-  }
-
-  .filterSummaryWrapper {
-    display: flex;
-    align-items: center;
-    min-height: 3.5rem;
-    padding-left: 2.25rem;
-    padding-right: 1.35rem;
-    border-top: 1px solid var(--theme-button-border-hovered);
   }
 </style>

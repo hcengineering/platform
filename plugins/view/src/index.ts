@@ -405,7 +405,8 @@ const view = plugin(viewId, {
     Statuses: '' as Asset,
     Setting: '' as Asset,
     Open: '' as Asset,
-    ArrowRight: '' as Asset
+    ArrowRight: '' as Asset,
+    Views: '' as Asset
   },
   category: {
     General: '' as Ref<ActionCategory>,

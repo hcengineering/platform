@@ -128,7 +128,12 @@
     "FilterIsEither": "is either of",
     "FilterStatesCount": "{value, plural, =1 {1 state} other {# states}}",
 
-    "EditIssue": "Edit {title}"
+    "EditIssue": "Edit {title}",
+
+    "Save": "Save",
+    "IncludeItemsThatMatch": "Include items that match",
+    "AnyFilter": "any filter",
+    "AllFilters": "all filters"
   },
   "status": {}
 }

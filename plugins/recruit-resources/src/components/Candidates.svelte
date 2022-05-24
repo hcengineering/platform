@@ -19,12 +19,14 @@
   import { createQuery, getClient } from '@anticrm/presentation'
   import { ActionIcon, showPopup, Icon, Label, Loading, SearchEdit, Button, IconAdd } from '@anticrm/ui'
   import view, { Viewlet, ViewletPreference } from '@anticrm/view'
-  import { ActionContext, TableBrowser, ViewletSetting } from '@anticrm/view-resources'
+  import type { Filter } from '@anticrm/view'
+  import { ActionContext, TableBrowser, ViewletSetting, FilterButton } from '@anticrm/view-resources'
   import recruit from '../plugin'
   import CreateCandidate from './CreateCandidate.svelte'
 
   let search = ''
   let resultQuery: DocumentQuery<Doc> = {}
+  let filters: Filter[] = []
 
   const client = getClient()
 
@@ -71,6 +73,7 @@
   <div class="ac-header__wrap-title">
     <div class="ac-header__icon"><Icon icon={contact.icon.Person} size={'small'} /></div>
     <span class="ac-header__title"><Label label={recruit.string.Candidates} /></span>
+    <div class="ml-4"><FilterButton _class={recruit.mixin.Candidate} bind:filters /></div>
   </div>
 
   <SearchEdit
@@ -106,6 +109,7 @@
       config={preference?.config ?? descr.config}
       options={descr.options}
       query={resultQuery}
+      bind:filters
       showNotification
     />
   {/if}

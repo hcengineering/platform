@@ -89,5 +89,5 @@
   {:else}
     <SpaceHeader spaceId={space._id} {viewlets} {createItemDialog} {createItemLabel} bind:search bind:viewlet />
   {/if}
-  <SpaceContent space={space._id} {_class} {search} {viewlet} />
+  <SpaceContent space={space._id} {_class} bind:search {viewlet} />
 {/if}

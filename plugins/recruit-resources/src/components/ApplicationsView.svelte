@@ -19,7 +19,8 @@
   import task from '@anticrm/task'
   import { ActionIcon, Button, Icon, IconAdd, Label, Loading, SearchEdit, showPopup } from '@anticrm/ui'
   import view, { Viewlet, ViewletPreference } from '@anticrm/view'
-  import { TableBrowser, ViewletSetting } from '@anticrm/view-resources'
+  import type { Filter } from '@anticrm/view'
+  import { TableBrowser, ViewletSetting, FilterButton } from '@anticrm/view-resources'
   import recruit from '../plugin'
   import CreateApplication from './CreateApplication.svelte'
 
@@ -28,6 +29,7 @@
   const baseQuery: DocumentQuery<Applicant> = {
     doneState: null
   }
+  let filters: Filter[] = []
   const client = getClient()
 
   let descr: Viewlet | undefined
@@ -71,6 +73,7 @@
   <div class="ac-header__wrap-title">
     <div class="ac-header__icon"><Icon icon={recruit.icon.Application} size={'small'} /></div>
     <span class="ac-header__title"><Label label={recruit.string.Applications} /></span>
+    <div class="ml-4"><FilterButton _class={recruit.class.Applicant} bind:filters /></div>
   </div>
 
   <SearchEdit
@@ -101,6 +104,7 @@
       config={preference?.config ?? descr.config}
       options={descr.options}
       query={resultQuery}
+      bind:filters
       showNotification
     />
   {/if}
