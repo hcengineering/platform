@@ -44,6 +44,10 @@
     "FilterStatesCount": "{value, plural, =1 {1 состоянию} other {# состояний}}",
     "Before": "До",
     "After": "После",
-    "Apply": "Применить"
+    "Apply": "Применить",
+    "Save": "Сохранить",
+    "IncludeItemsThatMatch": "Включить элементы, которые соответствуют",
+    "AnyFilter": "любому фильтру",
+    "AllFilters": "всем фильтрам"
   }
 }

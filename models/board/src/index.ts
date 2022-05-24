@@ -338,7 +338,8 @@ export function createModel (builder: Builder): void {
       action: view.actionImpl.ShowPopup,
       actionProps: {
         component: board.component.CoverActionPopup,
-        element: view.popup.PositionElementAlignment
+        element: view.popup.PositionElementAlignment,
+        value: 'object'
       },
       label: board.string.Cover,
       icon: board.icon.Card,

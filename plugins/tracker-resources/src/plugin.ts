@@ -145,7 +145,12 @@ export default mergeIds(trackerId, tracker, {
     FilterIsEither: '' as IntlString,
     FilterStatesCount: '' as IntlString,
 
-    EditIssue: '' as IntlString
+    EditIssue: '' as IntlString,
+
+    Save: '' as IntlString,
+    IncludeItemsThatMatch: '' as IntlString,
+    AnyFilter: '' as IntlString,
+    AllFilters: '' as IntlString
   },
   component: {
     NopeComponent: '' as AnyComponent,

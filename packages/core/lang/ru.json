@@ -12,6 +12,7 @@
     "Private": "Личный",
     "Archived": "Архивный",
     "ClassLabel": "Тип",
+    "ClassPropertyLabel": "Название",
     "String": "Строка",
     "Markup": "Разметка",
     "Number": "Число",

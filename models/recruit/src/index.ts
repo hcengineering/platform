@@ -436,7 +436,7 @@ export function createModel (builder: Builder): void {
     action: view.actionImpl.ShowPanel,
     actionProps: {
       component: recruit.component.EditVacancy,
-      element: 'right'
+      element: 'content'
     },
     input: 'focus',
     category: recruit.category.Recruit,
@@ -452,11 +452,11 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(recruit.mixin.Candidate, core.class.Class, view.mixin.ClassFilters, {
-    filters: ['title', 'source', 'city', 'skills', 'modifiedOn', 'onsite', 'remote']
+    filters: ['_class', 'title', 'source', 'city', 'skills', 'modifiedOn', 'onsite', 'remote']
   })
 
   builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.ClassFilters, {
-    filters: ['attachedTo', 'assignee', 'modifiedOn']
+    filters: ['attachedTo', 'assignee', 'state', 'doneState', 'modifiedOn']
   })
 
   createReviewModel(builder)

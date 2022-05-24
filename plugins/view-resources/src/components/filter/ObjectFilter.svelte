@@ -59,7 +59,8 @@
 
   let values: (Doc | undefined | null)[] = []
   let objectsPromise: Promise<FindResult<Doc>> | undefined
-
+  const targetClass = (hierarchy.getAttribute(_class, filter.key.key).type as RefTo<Doc>).to
+  const clazz = hierarchy.getClass(targetClass)
   const targets = new Map<any, number>()
   async function getValues (search: string): Promise<void> {
     if (objectsPromise) {
@@ -71,8 +72,7 @@
       const value = getObjectValue(filter.key.key, object) ?? undefined
       targets.set(value, (targets.get(value) ?? 0) + 1)
     }
-    const targetClass = (hierarchy.getAttribute(_class, filter.key.key).type as RefTo<Doc>).to
-    const clazz = hierarchy.getClass(targetClass)
+
     const resultQuery =
       search !== '' && clazz.sortingKey
         ? {
@@ -130,17 +130,19 @@
 </script>
 
 <div class="selectPopup">
-  <div class="header">
-    <input
-      bind:this={searchInput}
-      type="text"
-      bind:value={search}
-      on:change={() => {
-        getValues(search)
-      }}
-      placeholder={phTraslate}
-    />
-  </div>
+  {#if clazz.sortingKey}
+    <div class="header">
+      <input
+        bind:this={searchInput}
+        type="text"
+        bind:value={search}
+        on:change={() => {
+          getValues(search)
+        }}
+        placeholder={phTraslate}
+      />
+    </div>
+  {/if}
   <div class="scroll">
     <div class="box">
       {#await promise then attribute}
@@ -176,7 +178,7 @@
     </div>
   </div>
   <Button
-    shape={'round'}
+    kind={'no-border'}
     label={view.string.Apply}
     on:click={() => {
       onChange(filter)

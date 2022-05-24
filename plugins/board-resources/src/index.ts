@@ -39,6 +39,7 @@ import UserBoxList from './components/UserBoxList.svelte'
 import CardLabels from './components/editor/CardLabels.svelte'
 import CardCoverEditor from './components/editor/CardCoverEditor.svelte'
 import CardCoverPresenter from './components/presenters/CardCoverPresenter.svelte'
+import CardCoverPicker from './components/popups/CardCoverPicker.svelte'
 import { createCard, getCardFromTodoItem } from './utils/CardUtils'
 
 async function ConvertToCard (object: TodoItem): Promise<void> {
@@ -77,7 +78,7 @@ export default async (): Promise<Resources> => ({
     // action popups
     LabelsActionPopup: CardLabelsPopup,
     DatesActionPopup: DateRangePicker,
-    CoverActionPopup: CardCoverEditor,
+    CoverActionPopup: CardCoverPicker,
     MoveActionPopup: MoveCard,
     CopyActionPopup: CopyCard
   },

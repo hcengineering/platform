@@ -96,7 +96,7 @@
     .status-bar {
       min-height: var(--status-bar-height);
       height: var(--status-bar-height);
-      min-width: 1200px;
+      min-width: 600px;
       font-size: 12px;
       line-height: 150%;
       background-color: var(--divider-color);
@@ -120,7 +120,7 @@
 
     .app {
       height: calc(100vh - var(--status-bar-height));
-      min-width: 1200px;
+      min-width: 600px;
       min-height: 480px;
 
       .error {

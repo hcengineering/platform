@@ -50,6 +50,7 @@ import TableBrowser from './components/TableBrowser.svelte'
 import ValueFilter from './components/filter/ValueFilter.svelte'
 import ObjectFilter from './components/filter/ObjectFilter.svelte'
 import TimestampFilter from './components/filter/TimestampFilter.svelte'
+import ClassPresenter from './components/ClassPresenter.svelte'
 
 function PositionElementAlignment (e?: Event): PopupAlignment | undefined {
   return getEventPopupPositionElement(e)
@@ -61,6 +62,7 @@ export { default as ActionHandler } from './components/ActionHandler.svelte'
 export { default as ContextMenu } from './components/Menu.svelte'
 export { default as TableBrowser } from './components/TableBrowser.svelte'
 export { default as LinkPresenter } from './components/LinkPresenter.svelte'
+export { default as FilterButton } from './components/filter/FilterButton.svelte'
 export * from './context'
 export * from './selection'
 export { buildModel, getCollectionCounter, getObjectPresenter, LoadingProps } from './utils'
@@ -80,6 +82,7 @@ export {
 export default async (): Promise<Resources> => ({
   actionImpl: actionImpl,
   component: {
+    ClassPresenter,
     ObjectFilter,
     ValueFilter,
     TimestampFilter,

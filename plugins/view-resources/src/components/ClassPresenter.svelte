@@ -1,5 +1,5 @@
-//
-// Copyright © 2020 Anticrm Platform Contributors.
+<!--
+// Copyright © 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -11,17 +11,12 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+-->
+<script lang="ts">
+  import type { Class, Doc } from '@anticrm/core'
+  import { Label } from '@anticrm/ui'
 
-import core, { coreId } from '@anticrm/core'
-import { IntlString, mergeIds } from '@anticrm/platform'
+  export let value: Class<Doc>
+</script>
 
-export default mergeIds(coreId, core, {
-  string: {
-    Description: '' as IntlString,
-    Private: '' as IntlString,
-    Archived: '' as IntlString,
-    ClassLabel: '' as IntlString,
-    ClassPropertyLabel: '' as IntlString
-  }
-})
+<Label label={value.label} />
