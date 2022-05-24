@@ -14,6 +14,7 @@
 //
 
 import { Resources } from '@anticrm/platform'
+import { getEventPopupPositionElement, PopupAlignment } from '@anticrm/ui'
 import { actionImpl } from './actionImpl'
 import BooleanEditor from './components/BooleanEditor.svelte'
 import BooleanPresenter from './components/BooleanPresenter.svelte'
@@ -49,6 +50,10 @@ import TableBrowser from './components/TableBrowser.svelte'
 import ValueFilter from './components/filter/ValueFilter.svelte'
 import ObjectFilter from './components/filter/ObjectFilter.svelte'
 import TimestampFilter from './components/filter/TimestampFilter.svelte'
+
+function PositionElementAlignment (e?: Event): PopupAlignment | undefined {
+  return getEventPopupPositionElement(e)
+}
 
 export { getActions, invokeAction } from './actions'
 export { default as ActionContext } from './components/ActionContext.svelte'
@@ -104,5 +109,8 @@ export default async (): Promise<Resources> => ({
     GithubPresenter,
     YoutubePresenter,
     ActionsPopup
+  },
+  popup: {
+    PositionElementAlignment
   }
 })

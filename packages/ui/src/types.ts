@@ -43,6 +43,7 @@ export interface Action {
   label: IntlString
   icon: Asset | AnySvelteComponent
   action: (props: any, ev: Event) => Promise<void>
+  inline?: boolean
 }
 
 export interface IPopupItem {
@@ -74,7 +75,13 @@ export interface PopupPositionElement {
     h: HorizontalAlignment
   }
 }
+
 export type PopupPosAlignment = 'right' | 'top' | 'float' | 'account' | 'full' | 'content' | 'middle'
+
+export function isPopupPosAlignment (x: any): x is PopupPosAlignment {
+  return typeof x === 'string' && (x === 'right' || x === 'top' || x === 'float' || x === 'account' || x === 'full' || x === 'content' || x === 'middle')
+}
+
 export type PopupAlignment = PopupPosAlignment | PopupPositionElement | null
 
 export type TooltipAlignment = 'top' | 'bottom' | 'left' | 'right'

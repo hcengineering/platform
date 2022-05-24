@@ -21,6 +21,7 @@
     Button,
     CheckBox,
     TextAreaEditor,
+    getEventPopupPositionElement,
     IconAdd,
     IconDelete,
     IconMoreH,
@@ -32,7 +33,6 @@
   import contact, { Employee } from '@anticrm/contact'
 
   import board from '../../plugin'
-  import { getPopupAlignment } from '../../utils/PopupUtils'
   import { getDateIcon } from '../../utils/BoardUtils'
 
   export let value: TodoItem
@@ -118,7 +118,7 @@
   }
 
   function showItemMenu (item: TodoItem, e?: Event) {
-    showPopup(ContextMenu, { object: item }, getPopupAlignment(e))
+    showPopup(ContextMenu, { object: item }, getEventPopupPositionElement(e))
   }
 
   $: checklistItemsQuery.query(task.class.TodoItem, { space: value.space, attachedTo: value._id }, (result) => {

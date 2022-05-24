@@ -22,13 +22,22 @@
   import notification from '@anticrm/notification'
   import view from '@anticrm/view'
   import { getClient, UserBoxList } from '@anticrm/presentation'
-  import { Button, Component, EditBox, Icon, IconEdit, Label, numberToHexColor, showPopup } from '@anticrm/ui'
+  import {
+    Button,
+    Component,
+    EditBox,
+    getPopupPositionElement,
+    Icon,
+    IconEdit,
+    Label,
+    numberToHexColor,
+    showPopup
+  } from '@anticrm/ui'
   import { ContextMenu } from '@anticrm/view-resources'
   import board from '../plugin'
   import CardLabels from './editor/CardLabels.svelte'
   import DatePresenter from './presenters/DatePresenter.svelte'
   import { hasDate, openCardPanel, updateCard, updateCardMembers } from '../utils/CardUtils'
-  import { getElementPopupAlignment } from '../utils/PopupUtils'
   import CheckListsPresenter from './presenters/ChecklistsPresenter.svelte'
   import NotificationPresenter from './presenters/NotificationPresenter.svelte'
 
@@ -47,7 +56,7 @@
 
   function enterEditMode (): void {
     isEditMode = true
-    showPopup(ContextMenu, { object }, getElementPopupAlignment(ref, { h: 'right', v: 'top' }), exitEditMode)
+    showPopup(ContextMenu, { object }, getPopupPositionElement(ref, { h: 'right', v: 'top' }), exitEditMode)
   }
 
   function showCard () {

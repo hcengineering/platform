@@ -264,11 +264,12 @@ export function createModel (builder: Builder): void {
       action: view.actionImpl.ShowPopup,
       actionProps: {
         component: board.component.LabelsActionPopup,
-        element: 'top'
+        element: view.popup.PositionElementAlignment
       },
       label: board.string.Labels,
       icon: board.icon.Card,
       input: 'any',
+      inline: true,
       category: board.category.Card,
       target: board.class.Card,
       context: { mode: 'context', application: board.app.Board, group: 'top' }
@@ -281,11 +282,12 @@ export function createModel (builder: Builder): void {
       action: view.actionImpl.ShowPopup,
       actionProps: {
         component: board.component.DatesActionPopup,
-        element: 'top'
+        element: view.popup.PositionElementAlignment
       },
       label: board.string.Dates,
       icon: board.icon.Card,
       input: 'any',
+      inline: true,
       category: board.category.Card,
       target: board.class.Card,
       context: { mode: 'context', application: board.app.Board, group: 'top' }
@@ -298,11 +300,12 @@ export function createModel (builder: Builder): void {
       action: view.actionImpl.ShowPopup,
       actionProps: {
         component: board.component.CoverActionPopup,
-        element: 'top'
+        element: view.popup.PositionElementAlignment
       },
       label: board.string.Cover,
       icon: board.icon.Card,
       input: 'any',
+      inline: true,
       category: board.category.Card,
       target: board.class.Card,
       context: { mode: 'context', application: board.app.Board, group: 'top' }
@@ -316,12 +319,13 @@ export function createModel (builder: Builder): void {
       action: view.actionImpl.ShowPopup,
       actionProps: {
         component: board.component.MoveActionPopup,
-        element: 'top'
+        element: view.popup.PositionElementAlignment
       },
       input: 'any',
+      inline: true,
       category: board.category.Card,
       target: board.class.Card,
-      context: { mode: 'context', application: board.app.Board, group: 'tools' }
+      context: { mode: ['context', 'editor'], application: board.app.Board, group: 'tools' }
     },
     board.action.Move
   )
@@ -331,14 +335,15 @@ export function createModel (builder: Builder): void {
       action: view.actionImpl.ShowPopup,
       actionProps: {
         component: board.component.CopyActionPopup,
-        element: 'top'
+        element: view.popup.PositionElementAlignment
       },
       label: board.string.Copy,
       icon: board.icon.Card,
       input: 'any',
+      inline: true,
       category: board.category.Card,
       target: board.class.Card,
-      context: { mode: 'context', application: board.app.Board, group: 'tools' }
+      context: { mode: ['context', 'editor'], application: board.app.Board, group: 'tools' }
     },
     board.action.Copy
   )
@@ -358,11 +363,11 @@ export function createModel (builder: Builder): void {
         isArchived: { $nin: [true] }
       },
       label: board.string.Archive,
-      icon: board.icon.Card,
+      icon: view.icon.Archive,
       input: 'any',
       category: board.category.Card,
       target: board.class.Card,
-      context: { mode: 'context', application: board.app.Board, group: 'tools' }
+      context: { mode: ['context', 'editor'], application: board.app.Board, group: 'tools' }
     },
     board.action.Archive
   )
@@ -382,7 +387,7 @@ export function createModel (builder: Builder): void {
       input: 'any',
       category: board.category.Card,
       target: board.class.Card,
-      context: { mode: 'context', application: board.app.Board, group: 'tools' }
+      context: { mode: ['context', 'editor'], application: board.app.Board, group: 'tools' }
     },
     board.action.SendToBoard
   )
@@ -400,7 +405,7 @@ export function createModel (builder: Builder): void {
       category: board.category.Card,
       input: 'any',
       target: board.class.Card,
-      context: { mode: 'context', application: board.app.Board, group: 'tools' }
+      context: { mode: ['context', 'editor'], application: board.app.Board, group: 'tools' }
     },
     board.action.Delete
   )

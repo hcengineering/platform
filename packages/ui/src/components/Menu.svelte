@@ -68,7 +68,9 @@
             evt.currentTarget.focus()
           }}
           on:click={(evt) => {
-            dispatch('close')
+            if (!action.inline) {
+              dispatch('close')
+            }
             action.action(ctx, evt)
           }}
         >

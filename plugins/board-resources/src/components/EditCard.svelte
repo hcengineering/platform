@@ -22,13 +22,21 @@
   import type { State, TodoItem } from '@anticrm/task'
   import task from '@anticrm/task'
   import { StyledTextBox } from '@anticrm/text-editor'
-  import { Button, CircleButton, EditBox, IconAdd, IconMoreH, Label, showPopup } from '@anticrm/ui'
+  import {
+    Button,
+    CircleButton,
+    EditBox,
+    getEventPopupPositionElement,
+    IconAdd,
+    IconMoreH,
+    Label,
+    showPopup
+  } from '@anticrm/ui'
   import { ContextMenu, DocAttributeBar, invokeAction, UpDownNavigator } from '@anticrm/view-resources'
   import { createEventDispatcher, onMount } from 'svelte'
   import board from '../plugin'
   import { getCardActions } from '../utils/CardActionUtils'
   import { updateCard } from '../utils/CardUtils'
-  import { getPopupAlignment } from '../utils/PopupUtils'
   import CardActions from './editor/CardActions.svelte'
   import CardChecklist from './editor/CardChecklist.svelte'
   import AddChecklist from './popups/AddChecklist.svelte'
@@ -57,7 +65,7 @@
   }
 
   function addChecklist (e: Event) {
-    showPopup(AddChecklist, { value: object }, getPopupAlignment(e))
+    showPopup(AddChecklist, { value: object }, getEventPopupPositionElement(e))
   }
 
   $: cardQuery.query(_class, { _id }, (result) => {
@@ -124,7 +132,11 @@
         kind="transparent"
         size="medium"
         on:click={(e) => {
-          showPopup(ContextMenu, { object }, getPopupAlignment(e))
+          showPopup(
+            ContextMenu,
+            { object, baseMenuClass: board.class.Card, mode: 'editor' },
+            getEventPopupPositionElement(e)
+          )
         }}
       />
     </svelte:fragment>

@@ -33,7 +33,7 @@ import type {
 import type { Asset, IntlString, Plugin, Resource, Status } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import type { AnyComponent, AnySvelteComponent } from '@anticrm/ui'
-import { PopupPosAlignment } from '@anticrm/ui/src/types'
+import { PopupAlignment, PopupPosAlignment } from '@anticrm/ui/src/types'
 import type { Preference } from '@anticrm/preference'
 
 /**
@@ -212,6 +212,7 @@ export interface Action<T extends Doc = Doc, P = Record<string, any>> extends Do
   // any - one or multiple objects are required
   // any - any input is suitable.
   input: ViewActionInput
+  inline?: boolean
 
   // Focus and/or all selection document should match target class.
   target: Ref<Class<Doc>>
@@ -414,6 +415,9 @@ const view = plugin(viewId, {
     Editor: '' as Ref<ActionCategory>,
     MarkdownFormatting: '' as Ref<ActionCategory>
   },
+  popup: {
+    PositionElementAlignment: '' as Resource<(e?: Event) => PopupAlignment | undefined>
+  },
   actionImpl: {
     UpdateDocument: '' as ViewAction<{
       key: string
@@ -429,7 +433,7 @@ const view = plugin(viewId, {
     }>,
     ShowPopup: '' as ViewAction<{
       component: AnyComponent
-      element?: PopupPosAlignment
+      element?: PopupPosAlignment | Resource<(e?: Event) => PopupAlignment | undefined>
       _id?: string
       _class?: string
       _space?: string

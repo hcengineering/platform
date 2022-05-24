@@ -1,6 +1,15 @@
 import { Doc, Hierarchy } from '@anticrm/core'
+import { getResource, Resource } from '@anticrm/platform'
 import { getClient, MessageBox } from '@anticrm/presentation'
-import { AnyComponent, closeTooltip, PopupPositionElement, showPanel, showPopup } from '@anticrm/ui'
+import {
+  AnyComponent,
+  closeTooltip,
+  isPopupPosAlignment,
+  PopupAlignment,
+  PopupPosAlignment,
+  showPanel,
+  showPopup
+} from '@anticrm/ui'
 import { ViewContext } from '@anticrm/view'
 import MoveView from './components/Move.svelte'
 import { contextStore } from './context'
@@ -119,7 +128,7 @@ function ShowPanel (
   evt: Event,
   props: {
     component?: AnyComponent
-    element: PopupPositionElement
+    element: PopupPosAlignment
     rightSection?: AnyComponent
   }
 ): void {
@@ -146,12 +155,12 @@ function ShowPanel (
  * - values - all docs will be placed into
  * - props - some basic props, will be merged with key, _class, value, values
  */
-function ShowPopup (
+async function ShowPopup (
   doc: Doc | Doc[],
   evt: Event,
   props: {
     component: AnyComponent
-    element: PopupPositionElement
+    element?: PopupPosAlignment | Resource<(e?: Event) => PopupAlignment | undefined>
     _id?: string
     _class?: string
     _space?: string
@@ -159,8 +168,9 @@ function ShowPopup (
     values?: string
     props?: Record<string, any>
   }
-): void {
+): Promise<void> {
   const docs = Array.isArray(doc) ? doc : doc !== undefined ? [doc] : []
+  const element = await getPopupAlignment(props.element, evt)
   evt.preventDefault()
   let cprops = {
     ...(props?.props ?? {})
@@ -178,7 +188,7 @@ function ShowPopup (
     }
   }
 
-  showPopup(props.component, cprops, props.element)
+  showPopup(props.component, cprops, element)
 }
 
 function UpdateDocument (doc: Doc | Doc[], evt: Event, props: Record<string, any>): void {
@@ -209,6 +219,21 @@ function UpdateDocument (doc: Doc | Doc[], evt: Event, props: Record<string, any
     )
   } else {
     void update()
+  }
+}
+
+async function getPopupAlignment (
+  element?: PopupPosAlignment | Resource<(e?: Event) => PopupAlignment | undefined>,
+  evt?: Event
+): Promise<PopupAlignment | undefined> {
+  if (element === undefined || isPopupPosAlignment(element)) {
+    return element
+  }
+  try {
+    const alignmentGetter: (e?: Event) => PopupAlignment | undefined = await getResource(element)
+    return alignmentGetter(evt)
+  } catch (e) {
+    return element as PopupPosAlignment
   }
 }
 
