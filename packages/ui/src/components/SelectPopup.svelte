@@ -16,12 +16,13 @@
   import type { Asset, IntlString } from '@anticrm/platform'
   import { translate } from '@anticrm/platform'
   import { createEventDispatcher } from 'svelte'
-  import { Icon, Label } from '..'
+  import { Icon, Label, IconCheck } from '..'
 
   export let placeholder: IntlString | undefined = undefined
   export let placeholderParam: any | undefined = undefined
   export let searchable: boolean = false
-  export let value: Array<{ id: number | string; icon: Asset; label?: IntlString; text?: string }>
+  export let value: Array<{ id: number | string; icon: Asset; label?: IntlString; text?: string; isSelected?: boolean }>
+  export let width: 'medium' | 'large' = 'medium'
 
   let search: string = ''
 
@@ -33,9 +34,11 @@
   }
 
   const dispatch = createEventDispatcher()
+
+  $: hasSelected = value.some((v) => v.isSelected)
 </script>
 
-<div class="selectPopup">
+<div class="selectPopup" class:max-width-40={width === 'large'}>
   {#if searchable}
     <div class="header">
       <input type="text" bind:value={search} placeholder={phTraslate} on:input={(ev) => {}} on:change />
@@ -50,6 +53,13 @@
             dispatch('close', item.id)
           }}
         >
+          {#if hasSelected}
+            <div class="icon">
+              {#if item.isSelected}
+                <Icon icon={IconCheck} size={'small'} />
+              {/if}
+            </div>
+          {/if}
           <div class="icon"><Icon icon={item.icon} size={'small'} /></div>
           <span class="label">
             {#if item.label}

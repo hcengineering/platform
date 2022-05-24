@@ -68,6 +68,8 @@
     "SetParent": "Set parent issue\u2026",
     "ChangeParent": "Change parent issue\u2026",
     "RemoveParent": "Remove parent issue",
+    "OpenParent": "Open parent issue",
+    "OpenSub": "Open sub-issues",
     "BlockedBy": "",
     "RelatedTo": "",
     "Comments": "",

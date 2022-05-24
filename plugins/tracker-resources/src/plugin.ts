@@ -90,6 +90,8 @@ export default mergeIds(trackerId, tracker, {
     SetParent: '' as IntlString,
     ChangeParent: '' as IntlString,
     RemoveParent: '' as IntlString,
+    OpenParent: '' as IntlString,
+    OpenSub: '' as IntlString,
     BlockedBy: '' as IntlString,
     RelatedTo: '' as IntlString,
     Comments: '' as IntlString,

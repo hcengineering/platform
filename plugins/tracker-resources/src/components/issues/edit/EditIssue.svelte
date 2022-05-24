@@ -28,7 +28,8 @@
     IconUpOutline,
     Label,
     Scroller,
-    showPopup
+    showPopup,
+    Spinner
   } from '@anticrm/ui'
   import { ContextMenu } from '@anticrm/view-resources'
   import { StyledTextArea } from '@anticrm/text-editor'
@@ -36,6 +37,7 @@
   import tracker from '../../../plugin'
   import ControlPanel from './ControlPanel.svelte'
   import CopyToClipboard from './CopyToClipboard.svelte'
+  import SubIssueSelector from './SubIssueSelector.svelte'
 
   export let _id: Ref<Issue>
   export let _class: Ref<Class<Issue>>
@@ -55,11 +57,16 @@
 
   $: _id &&
     _class &&
-    query.query(_class, { _id }, async (result) => {
-      ;[issue] = result
-      title = issue.title
-      description = issue.description
-    })
+    query.query(
+      _class,
+      { _id },
+      async (result) => {
+        ;[issue] = result
+        title = issue.title
+        description = issue.description
+      },
+      { lookup: { parentIssue: _class } }
+    )
 
   $: if (issue) {
     client.findOne(tracker.class.Team, { _id: issue.space }).then((r) => (currentTeam = r))
@@ -177,6 +184,15 @@
     {#if isEditing}
       <Scroller>
         <div class="popupPanel-body__main-content py-10 clear-mins content">
+          {#if issue?.parentIssue}
+            <div class="mb-6">
+              {#if currentTeam && issueStatuses}
+                <SubIssueSelector {issue} {issueStatuses} team={currentTeam} />
+              {:else}
+                <Spinner />
+              {/if}
+            </div>
+          {/if}
           <EditBox
             bind:value={title}
             maxWidth="53.75rem"
@@ -184,11 +200,26 @@
             kind="large-style"
           />
           <div class="mt-6">
-            <StyledTextArea bind:content={description} placeholder={tracker.string.IssueDescriptionPlaceholder} focus />
+            {#key description}
+              <StyledTextArea
+                bind:content={description}
+                placeholder={tracker.string.IssueDescriptionPlaceholder}
+                focus
+              />
+            {/key}
           </div>
         </div>
       </Scroller>
     {:else}
+      {#if issue?.parentIssue}
+        <div class="mb-6">
+          {#if currentTeam && issueStatuses}
+            <SubIssueSelector {issue} {issueStatuses} team={currentTeam} />
+          {:else}
+            <Spinner />
+          {/if}
+        </div>
+      {/if}
       <span class="title">{title}</span>
       <div class="mt-6 description-preview">
         {#if isDescriptionEmpty}
@@ -196,7 +227,7 @@
             <Label label={tracker.string.IssueDescriptionPlaceholder} />
           </div>
         {:else}
-          <MessageViewer message={issue.description} />
+          <MessageViewer message={description} />
         {/if}
       </div>
     {/if}
@@ -229,10 +260,7 @@
   }
 
   .description-preview {
-    line-height: 150%;
     color: var(--theme-content-color);
-    overflow: hidden;
-    word-wrap: break-word;
 
     .placeholder {
       color: var(--theme-content-trans-color);
