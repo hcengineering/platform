@@ -1,4 +1,12 @@
-import type { AnySvelteComponent, AnyComponent, HorizontalAlignment, PopupAlignment, PopupPositionElement, PopupOptions, VerticalAlignment } from './types'
+import type {
+  AnySvelteComponent,
+  AnyComponent,
+  HorizontalAlignment,
+  PopupAlignment,
+  PopupPositionElement,
+  PopupOptions,
+  VerticalAlignment
+} from './types'
 import { getResource } from '@anticrm/platform'
 import { writable } from 'svelte/store'
 

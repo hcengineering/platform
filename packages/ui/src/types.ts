@@ -79,7 +79,16 @@ export interface PopupPositionElement {
 export type PopupPosAlignment = 'right' | 'top' | 'float' | 'account' | 'full' | 'content' | 'middle'
 
 export function isPopupPosAlignment (x: any): x is PopupPosAlignment {
-  return typeof x === 'string' && (x === 'right' || x === 'top' || x === 'float' || x === 'account' || x === 'full' || x === 'content' || x === 'middle')
+  return (
+    typeof x === 'string' &&
+    (x === 'right' ||
+      x === 'top' ||
+      x === 'float' ||
+      x === 'account' ||
+      x === 'full' ||
+      x === 'content' ||
+      x === 'middle')
+  )
 }
 
 export type PopupAlignment = PopupPosAlignment | PopupPositionElement | null
