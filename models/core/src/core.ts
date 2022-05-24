@@ -45,7 +45,7 @@ import core from './component'
 // C O R E
 @Model(core.class.Obj, core.class.Obj)
 export class TObj implements Obj {
-  @Prop(TypeRef(core.class.Class), core.string.Class)
+  @Prop(TypeRef(core.class.Class), core.string.ClassLabel)
   @Index(IndexKind.Indexed)
   _class!: Ref<Class<this>>
 }
@@ -86,7 +86,7 @@ export class TAttachedDoc extends TDoc implements AttachedDoc {
 export class TClass extends TDoc implements Class<Obj> {
   kind!: ClassifierKind
 
-  @Prop(TypeIntlString(), core.string.ClassLabel)
+  @Prop(TypeIntlString(), core.string.ClassPropertyLabel)
   label!: IntlString
 
   extends!: Ref<Class<Obj>>

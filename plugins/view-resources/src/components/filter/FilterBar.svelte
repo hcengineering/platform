@@ -77,7 +77,11 @@
         let merged = false
         for (const key in newValue) {
           if (newQuery[filter.key.key][key] === undefined) {
-            newQuery[filter.key.key][key] = newValue[key]
+            if (key === '$in' && typeof newQuery[filter.key.key] === 'string') {
+              newQuery[filter.key.key] = { $in: newValue[key].filter((p: any) => p === newQuery[filter.key.key]) }
+            } else {
+              newQuery[filter.key.key][key] = newValue[key]
+            }
             merged = true
             continue
           }
