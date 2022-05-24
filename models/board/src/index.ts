@@ -14,9 +14,9 @@
 //
 
 // To help typescript locate view plugin properly
-import type { Board, Card, CardLabel, MenuPage, CommonBoardPreference } from '@anticrm/board'
+import type { Board, Card, CardLabel, MenuPage, CommonBoardPreference, CardCover } from '@anticrm/board'
 import type { Employee } from '@anticrm/contact'
-import { DOMAIN_MODEL, IndexKind, Markup, Ref } from '@anticrm/core'
+import { DOMAIN_MODEL, IndexKind, Markup, Ref, Type } from '@anticrm/core'
 import {
   ArrOf,
   Builder,
@@ -33,7 +33,7 @@ import {
 import attachment from '@anticrm/model-attachment'
 import chunter from '@anticrm/model-chunter'
 import contact from '@anticrm/model-contact'
-import core, { TAttachedDoc, TDoc } from '@anticrm/model-core'
+import core, { TAttachedDoc, TDoc, TType } from '@anticrm/model-core'
 import task, { TSpaceWithStates, TTask } from '@anticrm/model-task'
 import view, { actionTemplates, createAction } from '@anticrm/model-view'
 import workbench, { Application } from '@anticrm/model-workbench'
@@ -55,6 +55,17 @@ export class TCardLabel extends TAttachedDoc implements CardLabel {
   title!: string
   color!: number
   isHidden?: boolean
+}
+
+function TypeCardCover (): Type<CardCover> {
+  return { _class: board.class.CardCover, label: board.string.Cover }
+}
+
+@UX(board.string.Cover)
+@Model(board.class.CardCover, core.class.Type)
+export class TCardCover extends TType implements CardCover {
+  size!: 'large' | 'small'
+  color!: number
 }
 
 @Model(board.class.CommonBoardPreference, preference.class.Preference)
@@ -97,6 +108,9 @@ export class TCard extends TTask implements Card {
 
   @Prop(ArrOf(TypeRef(contact.class.Employee)), board.string.Members)
   members?: Ref<Employee>[]
+
+  @Prop(TypeCardCover(), board.string.Cover)
+  cover?: CardCover
 }
 
 @Model(board.class.MenuPage, core.class.Doc, DOMAIN_MODEL)
@@ -107,7 +121,7 @@ export class TMenuPage extends TDoc implements MenuPage {
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TBoard, TCard, TCardLabel, TMenuPage, TCommonBoardPreference)
+  builder.createModel(TBoard, TCard, TCardLabel, TMenuPage, TCommonBoardPreference, TCardCover)
 
   builder.createDoc(board.class.MenuPage, core.space.Model, {
     component: board.component.Archive,
@@ -212,6 +226,14 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(board.class.Board, core.class.Class, view.mixin.AttributePresenter, {
     presenter: board.component.BoardPresenter
+  })
+
+  builder.mixin(board.class.CardCover, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: board.component.CardCoverPresenter
+  })
+
+  builder.mixin(board.class.CardCover, core.class.Class, view.mixin.AttributeEditor, {
+    editor: board.component.CardCoverEditor
   })
 
   builder.createDoc(

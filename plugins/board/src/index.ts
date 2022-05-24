@@ -15,7 +15,7 @@
 //
 
 import { Employee } from '@anticrm/contact'
-import type { AttachedDoc, Class, Doc, Markup, Ref } from '@anticrm/core'
+import type { AttachedDoc, Class, Doc, Markup, Ref, Type } from '@anticrm/core'
 import type { Asset, IntlString, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import type { Preference } from '@anticrm/preference'
@@ -53,8 +53,7 @@ export interface CardLabel extends AttachedDoc {
  * @public
  */
 export interface CardCover {
-  color?: number
-  image?: string
+  color: number
   size: 'large' | 'small'
 }
 
@@ -111,7 +110,8 @@ const boards = plugin(boardId, {
     Card: '' as Ref<Class<Card>>,
     CardLabel: '' as Ref<Class<CardLabel>>,
     MenuPage: '' as Ref<Class<MenuPage>>,
-    CommonBoardPreference: '' as Ref<Class<CommonBoardPreference>>
+    CommonBoardPreference: '' as Ref<Class<CommonBoardPreference>>,
+    CardCover: '' as Ref<Class<Type<CardCover>>>
   },
   category: {
     Card: '' as Ref<ActionCategory>

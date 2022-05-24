@@ -1,25 +1,22 @@
 <script lang="ts">
-  import { Card, CardCover } from '@anticrm/board'
-  import { getClient } from '@anticrm/presentation'
+  import { CardCover } from '@anticrm/board'
   import { Button, hexColorToNumber, Icon, Label, IconCheck, IconClose } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import board from '../../plugin'
   import { getBoardAvailableColors } from '../../utils/BoardUtils'
   import ColorPresenter from '../presenters/ColorPresenter.svelte'
-  export let value: Card
-
-  let cover = value.cover
+  export let value: CardCover | undefined | null
+  export let onChange: (e: any) => void
 
   const dispatch = createEventDispatcher()
-  const client = getClient()
 
   const colorGroups = (function chunk (colors: number[]): number[][] {
     return colors.length ? [colors.slice(0, 5), ...chunk(colors.slice(5))] : []
   })(getBoardAvailableColors().map(hexColorToNumber))
 
   function updateCover (newCover?: Partial<CardCover>) {
-    cover = newCover ? { size: 'small', ...cover, ...newCover } : null
-    client.update(value, { cover })
+    value = newCover ? { size: 'small', color: colorGroups[0][0], ...value, ...newCover } : null
+    onChange(value)
   }
 </script>
 
@@ -49,7 +46,7 @@
       <Button
         icon={board.icon.Card}
         width="40%"
-        disabled={!cover || cover.size === 'small'}
+        disabled={!value || value.size === 'small'}
         on:click={() => {
           updateCover({ size: 'small' })
         }}
@@ -57,7 +54,7 @@
       <Button
         icon={board.icon.Board}
         width="40%"
-        disabled={!cover || cover.size === 'large'}
+        disabled={!value || value.size === 'large'}
         on:click={() => {
           updateCover({ size: 'large' })
         }}
@@ -89,7 +86,7 @@
                   updateCover({ color })
                 }}
               >
-                {#if cover && cover.color === color}
+                {#if value && value.color === color}
                   <div class="flex-center flex-grow fs-title h-full">
                     <Icon icon={IconCheck} size="small" />
                   </div>
