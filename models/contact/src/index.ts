@@ -291,7 +291,7 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(contact.class.Contact, core.class.Class, view.mixin.ClassFilters, {
-    filters: ['city', 'modifiedOn']
+    filters: ['_class', 'city', 'modifiedOn']
   })
 
   builder.createDoc(
