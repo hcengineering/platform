@@ -226,14 +226,17 @@ async function getPopupAlignment (
   element?: PopupPosAlignment | Resource<(e?: Event) => PopupAlignment | undefined>,
   evt?: Event
 ): Promise<PopupAlignment | undefined> {
-  if (element === undefined || isPopupPosAlignment(element)) {
+  if (element === undefined) {
+    return undefined
+  }
+  if (isPopupPosAlignment(element)) {
     return element
   }
   try {
     const alignmentGetter: (e?: Event) => PopupAlignment | undefined = await getResource(element)
     return alignmentGetter(evt)
   } catch (e) {
-    return element as PopupPosAlignment
+    return element as PopupAlignment
   }
 }
 
