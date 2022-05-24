@@ -13,13 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Button, eventToHTMLElement, IconAdd, showPopup } from '@anticrm/ui'
+  import { Button, eventToHTMLElement, IconAdd, showPopup, Label } from '@anticrm/ui'
   import FilterSummarySection from './FilterSummarySection.svelte'
   import StatusFilterMenuSection from './issues/StatusFilterMenuSection.svelte'
   import PriorityFilterMenuSection from './issues/PriorityFilterMenuSection.svelte'
   import { defaultPriorities, getGroupedIssues, IssueFilter } from '../utils'
   import { WithLookup } from '@anticrm/core'
   import { Issue, IssueStatus } from '@anticrm/tracker'
+  import tracker from '../plugin'
 
   export let filters: IssueFilter[] = []
   export let issues: Issue[] = []
@@ -28,6 +29,8 @@
   export let onAddFilter: ((event: MouseEvent) => void) | undefined = undefined
   export let onDeleteFilter: (filterIndex?: number) => void
   export let onChangeMode: (index: number) => void
+
+  let allFilters: boolean = true
 
   $: defaultStatusIds = defaultStatuses.map((x) => x._id)
   $: groupedByStatus = getGroupedIssues('status', issues, defaultStatusIds)
@@ -86,30 +89,85 @@
   }
 </script>
 
-<div class="root">
-  {#each filters as filter, filterIndex}
-    {@const [key, value] = Object.entries(filter.query)[0]}
-    <FilterSummarySection
-      type={key}
-      mode={filter.mode}
-      selectedFilters={value?.[filter.mode]}
-      onDelete={() => onDeleteFilter(filterIndex)}
-      onChangeMode={() => onChangeMode(filterIndex)}
-      onEditFilter={(event) => handleEditFilterMenuOpened(event, key, filterIndex)}
-    />
-  {/each}
-  {#if onAddFilter}
-    <div class="ml-2">
-      <Button kind={'link'} icon={IconAdd} on:click={onAddFilter} />
+{#if filters}
+  <div class="filterbar-container">
+    <div class="filters">
+      {#each filters as filter, filterIndex}
+        {@const [key, value] = Object.entries(filter.query)[0]}
+        <FilterSummarySection
+          type={key}
+          mode={filter.mode}
+          selectedFilters={value?.[filter.mode]}
+          onDelete={() => onDeleteFilter(filterIndex)}
+          onChangeMode={() => onChangeMode(filterIndex)}
+          onEditFilter={(event) => handleEditFilterMenuOpened(event, key, filterIndex)}
+        />
+      {/each}
+      {#if onAddFilter}
+        <div class="add-filter">
+          <Button kind={'transparent'} size={'small'} icon={IconAdd} on:click={onAddFilter} />
+        </div>
+      {/if}
     </div>
-  {/if}
-</div>
+
+    <div class="buttons-group small-gap">
+      {#if filters.length > 1}
+        <div class="flex-baseline">
+          <span class="overflow-label">
+            <Label label={tracker.string.IncludeItemsThatMatch} />
+          </span>
+          <button class="filter-button" on:click={() => { allFilters = !allFilters }}>
+            <Label label={allFilters ? tracker.string.AllFilters : tracker.string.AnyFilter} />
+          </button>
+        </div>
+        <div class="buttons-divider" />
+      {/if}
+      <Button icon={tracker.icon.Views} label={tracker.string.Save} size={'small'} width={'fit-content'} />
+    </div>
+  </div>
+{/if}
 
 <style lang="scss">
-  .root {
+  .filterbar-container {
     display: flex;
-    flex: 1 1 auto;
-    flex-flow: row wrap;
+    justify-content: space-between;
     align-items: center;
+    padding: 0.75rem 1.5rem 0.75rem 2.5rem;
+    width: 100%;
+    min-width: 0;
+    border: 1px solid var(--divider-color);
+    border-left: none;
+    border-right: none;
+
+    .filters {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: -0.375rem;
+      min-width: 0;
+    }
+    .add-filter {
+      margin-bottom: 0.375rem;
+    }
+
+    .filter-button {
+      display: flex;
+      align-items: baseline;
+      flex-shrink: 0;
+      padding: 0 0.375rem;
+      height: 1.5rem;
+      min-width: 1.5rem;
+      white-space: nowrap;
+      line-height: 150%;
+      color: var(--accent-color);
+      background-color: transparent;
+      border-radius: 0.25rem;
+      transition-duration: background-color 0.15s ease-in-out;
+
+      &:hover {
+        color: var(--caption-color);
+        background-color: var(--noborder-bg-hover);
+      }
+    }
   }
 </style>

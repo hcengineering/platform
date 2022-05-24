@@ -16,6 +16,7 @@
   import type { Class, Doc, DocumentQuery, FindOptions, Ref } from '@anticrm/core'
   import { Scroller } from '@anticrm/ui'
   import { BuildModelKey } from '@anticrm/view'
+  import type { Filter } from '@anticrm/view'
   import { onMount } from 'svelte'
   import { ActionContext } from '..'
   import { focusStore, ListSelectionProvider, SelectDirection, selectionStore } from '../selection'
@@ -32,6 +33,7 @@
 
   // If defined, will show a number of dummy items before real data will appear.
   export let loadingProps: LoadingProps | undefined = undefined
+  export let filters: Filter[] | undefined = undefined
 
   let resultQuery = query
 
@@ -54,7 +56,9 @@
   }}
 />
 
-<FilterBar {_class} {query} on:change={(e) => (resultQuery = e.detail)} />
+{#if filters}
+  <FilterBar {_class} {query} bind:filters on:change={(e) => (resultQuery = e.detail)} />
+{/if}
 <Scroller tableFade>
   <Table
     bind:this={table}

@@ -176,7 +176,7 @@
     </div>
   </div>
   <Button
-    shape={'round'}
+    kind={'no-border'}
     label={view.string.Apply}
     on:click={() => {
       onChange(filter)

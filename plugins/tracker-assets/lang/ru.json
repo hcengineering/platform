@@ -75,7 +75,12 @@
     "GotoProjects": "Перейти к проекту",
     "GotoTrackerApplication": "Перейти к приложению Трекер",
 
-    "EditIssue": "Редактирование {title}"
+    "EditIssue": "Редактирование {title}",
+
+    "Save": "Сохранить",
+    "IncludeItemsThatMatch": "Включить элементы, которые соответствуют",
+    "AnyFilter": "любому фильтру",
+    "AllFilters": "всем фильтрам"
   },
   "status": {}
 }

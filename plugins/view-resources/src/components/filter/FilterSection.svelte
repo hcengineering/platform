@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Class, Doc, Ref } from '@anticrm/core'
-  import { Button, eventToHTMLElement, IconClose, showPopup } from '@anticrm/ui'
+  import { Button, eventToHTMLElement, IconClose, showPopup, Icon, Label } from '@anticrm/ui'
   import { Filter } from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
   import view from '../../plugin'
@@ -38,55 +38,94 @@
   }
 </script>
 
-<div class="root">
-  <div class="buttonWrapper">
-    <Button shape={'rectangle-right'} label={filter.key.label} icon={filter.key.icon} />
-  </div>
-  <div class="buttonWrapper">
-    <Button shape="rectangle" label={filter.mode.label} on:click={toggle} />
-  </div>
-  <div class="buttonWrapper">
-    <Button
-      shape={'rectangle'}
-      label={view.string.FilterStatesCount}
-      labelParams={{ value: filter.value.length }}
-      on:click={(e) => {
-        showPopup(
-          filter.key.component,
-          {
-            _class,
-            filter,
-            onChange
-          },
-          eventToHTMLElement(e)
-        )
-      }}
-    />
-  </div>
-  <div class="buttonWrapper">
-    <Button
-      shape={'rectangle-left'}
-      icon={IconClose}
-      on:click={() => {
-        dispatch('remove')
-      }}
-    />
-  </div>
+<div class="filter-section">
+  <button class="filter-button left-round">
+    {#if filter.key.icon}
+      <div class="btn-icon mr-1-5">
+        <Icon icon={filter.key.icon} size={'x-small'} />
+      </div>
+    {/if}
+    <span><Label label={filter.key.label} /></span>
+  </button>
+  <button class="filter-button" on:click={toggle}>
+    <span><Label label={filter.mode.label} /></span>
+  </button>
+  <button
+    class="filter-button"
+    on:click={(e) => {
+      showPopup(
+        filter.key.component,
+        {
+          _class,
+          filter,
+          onChange
+        },
+        eventToHTMLElement(e)
+      )
+    }}
+  >
+    <span>
+      <Label label={view.string.FilterStatesCount} params={{ value: filter.value.length }} />
+    </span>
+  </button>
+  <button class="filter-button right-round" on:click={() => { dispatch('remove') }}>
+    <div class="btn-icon"><Icon icon={IconClose} size={'small'} /></div>
+  </button>
 </div>
 
 <style lang="scss">
-  .root {
+  .filter-section {
     display: flex;
     align-items: center;
+    margin-bottom: 0.375rem;
 
-    &:not(:first-child) {
-      margin-left: 0.5rem;
+    &:not(:last-child) {
+      margin-right: 0.375rem;
     }
   }
 
-  .buttonWrapper {
+  .filter-button {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
     margin-right: 1px;
+    padding: 0 0.375rem;
+    font-size: 0.75rem;
+    height: 1.5rem;
+    min-width: 1.5rem;
+    white-space: nowrap;
+    color: var(--accent-color);
+    background-color: var(--noborder-bg-color);
+    border: 1px solid transparent;
+    transition-property: border, background-color, color, box-shadow;
+    transition-duration: 0.15s;
 
+    .btn-icon {
+      color: var(--content-color);
+      transition: color 0.15s;
+      pointer-events: none;
+    }
+    span {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 10rem;
+    }
+    &:hover {
+      color: var(--caption-color);
+      background-color: var(--noborder-bg-hover);
+
+      .btn-icon {
+        color: var(--caption-color);
+      }
+    }
+
+    &.left-round {
+      border-radius: 0.25rem 0 0 0.25rem;
+    }
+    &.right-round {
+      border-radius: 0 0.25rem 0.25rem 0;
+    }
     &:last-child {
       margin-right: 0;
     }

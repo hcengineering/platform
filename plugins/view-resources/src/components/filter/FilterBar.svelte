@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Class, Doc, DocumentQuery, Ref } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
-  import { Button, eventToHTMLElement, IconAdd, IconClose, showPopup } from '@anticrm/ui'
+  import { Button, eventToHTMLElement, IconAdd, Label, showPopup } from '@anticrm/ui'
   import { Filter } from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
   import view from '../../plugin'
@@ -24,23 +24,26 @@
 
   export let _class: Ref<Class<Doc>>
   export let query: DocumentQuery<Doc>
+  export let filters: Filter[] | undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const dispatch = createEventDispatcher()
 
-  let filters: Filter[] = []
-  let maxIndex = 0
+  let maxIndex = filters ? filters.length : 0
+  let allFilters: boolean = true
 
   function onChange (e: Filter | undefined) {
     if (e === undefined) return
-    const index = filters.findIndex((p) => p.index === e.index)
-    if (index === -1) {
-      filters.push(e)
-      filters = filters
-    } else {
-      filters[index] = e
-      filters = filters
+    if (filters) {
+      const index = filters.findIndex((p) => p.index === e.index)
+      if (index === -1) {
+        filters.push(e)
+        filters = filters
+      } else {
+        filters[index] = e
+        filters = filters
+      }
     }
   }
 
@@ -59,9 +62,11 @@
   }
 
   function remove (i: number) {
-    filters[i]?.onRemove?.()
-    filters.splice(i, 1)
-    filters = filters
+    if (filters) {
+      filters[i]?.onRemove?.()
+      filters.splice(i, 1)
+      filters = filters
+    }
   }
 
   async function makeQuery (query: DocumentQuery<Doc>, filters: Filter[]): Promise<void> {
@@ -112,49 +117,95 @@
     dispatch('change', newQuery)
   }
 
-  $: makeQuery(query, filters)
+  $: if (filters) makeQuery(query, filters)
 
   $: clazz = hierarchy.getClass(_class)
   $: visible = hierarchy.hasMixin(clazz, view.mixin.ClassFilters)
 </script>
 
-{#if visible}
-  <div class="flex-row-center pl-4 pr-4">
-    {#each filters as filter, i}
-      <FilterSection
-        {_class}
-        {filter}
-        on:change={() => {
-          makeQuery(query, filters)
-        }}
-        on:remove={() => {
-          remove(i)
-        }}
-      />
-    {/each}
-    <div class="ml-2">
-      <Button
-        size="small"
-        icon={IconAdd}
-        kind={'link-bordered'}
-        borderStyle={'dashed'}
-        label={view.string.Filter}
-        on:click={add}
-      />
-    </div>
-    {#if filters.length}
-      <div class="ml-2">
-        <Button
-          size="small"
-          icon={IconClose}
-          kind={'link-bordered'}
-          borderStyle={'dashed'}
-          label={view.string.ClearFilters}
-          on:click={() => {
-            filters = []
+{#if visible && filters && filters.length > 0}
+  <div class="filterbar-container">
+    <div class="filters">
+      {#each filters as filter, i}
+        <FilterSection
+          {_class}
+          {filter}
+          on:change={() => {
+            if (filters) makeQuery(query, filters)
+          }}
+          on:remove={() => {
+            remove(i)
           }}
         />
+      {/each}
+      <div class="add-filter">
+        <Button
+          size={'small'}
+          icon={IconAdd}
+          kind={'transparent'}
+          on:click={add}
+        />
       </div>
-    {/if}
+    </div>
+
+    <div class="buttons-group small-gap ml-4">
+      {#if filters.length > 1}
+        <div class="flex-baseline">
+          <span class="overflow-label">
+            <Label label={view.string.IncludeItemsThatMatch} />
+          </span>
+          <button class="filter-button" on:click={() => { allFilters = !allFilters }}>
+            <Label label={allFilters ? view.string.AllFilters : view.string.AnyFilter} />
+          </button>
+        </div>
+        <div class="buttons-divider" />
+      {/if}
+      <Button icon={view.icon.Views} label={view.string.Save} size={'small'} width={'fit-content'} />
+    </div>
   </div>
 {/if}
+
+<style lang="scss">
+  .filterbar-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1.5rem 0.75rem 2.5rem;
+    width: 100%;
+    min-width: 0;
+    border: 1px solid var(--divider-color);
+    border-left: none;
+    border-right: none;
+
+    .filters {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: -0.375rem;
+      min-width: 0;
+    }
+    .add-filter {
+      margin-bottom: 0.375rem;
+    }
+
+    .filter-button {
+      display: flex;
+      align-items: baseline;
+      flex-shrink: 0;
+      padding: 0 0.375rem;
+      height: 1.5rem;
+      min-width: 1.5rem;
+      white-space: nowrap;
+      line-height: 150%;
+      color: var(--accent-color);
+      background-color: transparent;
+      border-radius: 0.25rem;
+      transition-duration: background-color 0.15s ease-in-out;
+
+      &:hover {
+        color: var(--caption-color);
+        background-color: var(--noborder-bg-hover);
+      }
+    }
+  }
+</style>
