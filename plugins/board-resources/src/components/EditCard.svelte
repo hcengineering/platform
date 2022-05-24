@@ -16,14 +16,14 @@
 <script lang="ts">
   import { Attachments } from '@anticrm/attachment-resources'
   import type { Card } from '@anticrm/board'
-  import core, { Class, Ref, Space } from '@anticrm/core'
+  import core, { Class, Doc, Mixin, Ref, Space } from '@anticrm/core'
   import { Panel } from '@anticrm/panel'
   import { createQuery, getClient } from '@anticrm/presentation'
   import type { State, TodoItem } from '@anticrm/task'
   import task from '@anticrm/task'
   import { StyledTextBox } from '@anticrm/text-editor'
   import { Button, CircleButton, EditBox, IconAdd, IconMoreH, Label, showPopup } from '@anticrm/ui'
-  import { ContextMenu, invokeAction, UpDownNavigator } from '@anticrm/view-resources'
+  import { ContextMenu, DocAttributeBar, invokeAction, UpDownNavigator } from '@anticrm/view-resources'
   import { createEventDispatcher, onMount } from 'svelte'
   import board from '../plugin'
   import { getCardActions } from '../utils/CardActionUtils'
@@ -47,6 +47,8 @@
   let space: Space | undefined
   let handleMove: (e: Event) => void
   let checklists: TodoItem[] = []
+  const mixins: Mixin<Doc>[] = []
+  const ignoreKeys = ['isArchived', 'location', 'title', 'description', 'state', 'members', 'doneState', 'number']
 
   function change (field: string, value: any) {
     if (object) {
@@ -158,10 +160,10 @@
         </div>
       </div>
     </div>
-    <span slot="actions-label"><Label label={board.string.Card} /></span>
-    <span slot="actions" />
     <svelte:fragment slot="custom-attributes" let:direction>
       {#if direction === 'column'}
+        <DocAttributeBar {object} {mixins} {ignoreKeys} />
+        <!-- TODO: adjust rest actions -->
         <CardActions bind:value={object} />
       {:else}
         <Button icon={board.icon.Card} label={board.string.Actions} kind={'no-border'} size={'small'} />
