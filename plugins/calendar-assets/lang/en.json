@@ -33,6 +33,7 @@
     "CreatedReminder": "Created a reminder",
     "Reminders": "Reminders",
     "Shift": "Shift",
-    "State": "State"
+    "State": "State",
+    "NoReminders": "No reminders"
   }
 }

@@ -20,7 +20,7 @@
   import { getCurrentAccount, SortingOrder } from '@anticrm/core'
   import type { Notification } from '@anticrm/notification'
   import { createQuery } from '@anticrm/presentation'
-  import { Grid } from '@anticrm/ui'
+  import { Scroller } from '@anticrm/ui'
   import Label from '@anticrm/ui/src/components/Label.svelte'
   import notification from '../plugin'
   import NotificationView from './NotificationView.svelte'
@@ -49,28 +49,30 @@
   })
 </script>
 
-<div class="antiPopup popup">
-  <div class="ap-space" />
-  <div class="ap-scroll">
-    <div class="ap-box">
-      {#if notifications.length > 0}
-        <Grid column={1} rowGap={1.5}>
-          {#each notifications as n (n._id)}
-            <NotificationView notification={n} {viewlets} />
-          {/each}
-        </Grid>
-      {:else}
-        <Label label={notification.string.NoNotifications} />
-      {/if}
+<div class="selectPopup notification" class:justify-center={notifications.length === 0}>
+  {#if notifications.length > 0}
+    <div class="header fs-title pl-4 pb-2">
+      <Label label={notification.string.Notifications} />
     </div>
-  </div>
-  <div class="ap-space" />
+    <Scroller>
+      <div class="flex-col px-4 clear-mins">
+        {#each notifications as n (n._id)}
+          <NotificationView notification={n} {viewlets} />
+        {/each}
+      </div>
+    </Scroller>
+  {:else}
+    <div class="flex-center h-full">
+      <Label label={notification.string.NoNotifications} />
+    </div>
+  {/if}
 </div>
 
 <style lang="scss">
-  .popup {
-    max-width: 55rem;
-    padding: 0.75rem;
-    max-height: 35rem;
+  .notification {
+    padding: 0.5rem 0;
+    width: fit-content;
+    min-width: 16rem;
+    min-height: 12rem;
   }
 </style>
