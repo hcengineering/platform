@@ -120,6 +120,7 @@ const boards = plugin(boardId, {
     Completed: '' as Ref<DoneState>
   },
   action: {
+    Open: '' as Ref<Action>,
     Cover: '' as Ref<Action>,
     Dates: '' as Ref<Action>,
     Labels: '' as Ref<Action>,

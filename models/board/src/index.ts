@@ -283,6 +283,22 @@ export function createModel (builder: Builder): void {
   createAction(
     builder,
     {
+      action: view.actionImpl.ShowPanel,
+      actionProps: {
+        component: board.component.EditCard
+      },
+      label: view.string.Open,
+      icon: board.icon.Card,
+      input: 'any',
+      category: board.category.Card,
+      target: board.class.Card,
+      context: { mode: 'context', application: board.app.Board, group: 'top' }
+    },
+    board.action.Open
+  )
+  createAction(
+    builder,
+    {
       action: view.actionImpl.ShowPopup,
       actionProps: {
         component: board.component.LabelsActionPopup,
