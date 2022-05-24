@@ -29,6 +29,12 @@ export interface Tx extends Doc {
 }
 
 /**
+ * Event to be send by server during model upgrade procedure.
+ * @public
+ */
+export interface TxModelUpgrade extends Tx {}
+
+/**
  * @public
  */
 export interface TxCUD<T extends Doc> extends Tx {

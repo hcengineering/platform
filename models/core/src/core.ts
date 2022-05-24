@@ -18,13 +18,18 @@ import {
   AnyAttribute,
   ArrOf,
   AttachedDoc,
+  BlobData,
   Class,
   ClassifierKind,
   Collection,
   Doc,
   Domain,
-  DOMAIN_MODEL,
   DOMAIN_BLOB,
+  DOMAIN_FULLTEXT_BLOB,
+  DOMAIN_MODEL,
+  Enum,
+  EnumOf,
+  FullTextData,
   IndexKind,
   Interface,
   Mixin,
@@ -35,10 +40,7 @@ import {
   Space,
   Timestamp,
   Type,
-  Version,
-  BlobData,
-  EnumOf,
-  Enum
+  Version
 } from '@anticrm/core'
 import { Hidden, Index, Model, Prop, TypeIntlString, TypeRef, TypeString, TypeTimestamp, UX } from '@anticrm/model'
 import type { IntlString } from '@anticrm/platform'
@@ -199,4 +201,9 @@ export class TBlobData extends TDoc implements BlobData {
   size!: number
   type!: string
   base64Data!: string
+}
+
+@Model(core.class.FulltextData, core.class.Doc, DOMAIN_FULLTEXT_BLOB)
+export class TFulltextData extends TDoc implements FullTextData {
+  data!: any
 }

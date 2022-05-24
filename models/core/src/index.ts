@@ -23,6 +23,9 @@ import {
   TClass,
   TCollection,
   TDoc,
+  TEnum,
+  TEnumOf,
+  TFulltextData,
   TInterface,
   TMixin,
   TObj,
@@ -36,9 +39,7 @@ import {
   TTypeNumber,
   TTypeString,
   TTypeTimestamp,
-  TEnumOf,
-  TVersion,
-  TEnum
+  TVersion
 } from './core'
 import { TAccount, TSpace } from './security'
 import { TUserStatus } from './transient'
@@ -96,6 +97,7 @@ export function createModel (builder: Builder): void {
     TPluginConfiguration,
     TUserStatus,
     TEnum,
-    TBlobData
+    TBlobData,
+    TFulltextData
   )
 }

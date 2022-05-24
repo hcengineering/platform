@@ -58,6 +58,13 @@ class SessionManager {
         // Drop all existing clients
         if (workspace.sessions.length > 0) {
           for (const s of workspace.sessions) {
+            s[1].send(
+              serialize({
+                result: {
+                  _class: core.class.TxModelUpgrade
+                }
+              })
+            )
             await this.close(ctx, s[1], token.workspace, 0, 'upgrade')
           }
         }
@@ -65,6 +72,7 @@ class SessionManager {
       }
 
       if (workspace.upgrade) {
+        ws.close()
         throw new Error('Upgrade in progress....')
       }
 
@@ -134,6 +142,7 @@ class SessionManager {
     if (index !== -1) {
       const session = workspace.sessions[index]
       workspace.sessions.splice(index, 1)
+      session[1].close()
       const user = session[0].getUser()
       const another = workspace.sessions.findIndex((p) => p[0].getUser() === user)
       if (another === -1) {
@@ -142,7 +151,7 @@ class SessionManager {
       if (workspace.sessions.length === 0) {
         if (LOGGING_ENABLED) console.log('no sessions for workspace', workspaceId)
         this.workspaces.delete(workspaceId)
-        workspace.pipeline.close().catch((err) => console.error(err))
+        await workspace.pipeline.close().catch((err) => console.error(err))
       }
     }
   }
@@ -174,6 +183,10 @@ async function handleRequest<S extends Session> (
   msg: string
 ): Promise<void> {
   const request = readRequest(msg)
+  if (request.id === -1 && request.method === 'hello') {
+    ws.send(serialize({ id: -1, result: 'hello' }))
+    return
+  }
   const f = (service as any)[request.method]
   try {
     const params = [ctx, ...request.params]

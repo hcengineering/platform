@@ -97,7 +97,7 @@ export async function initModel (transactorUrl: string, dbName: string): Promise
     console.log(`${result.insertedCount} model transactions inserted.`)
 
     console.log('creating data...')
-    const connection = await connect(transactorUrl, dbName, true)
+    const connection = await connect(transactorUrl, dbName, undefined, { model: 'upgrade' })
     try {
       for (const op of migrateOperations) {
         await op.upgrade(connection)
@@ -156,7 +156,7 @@ export async function upgradeModel (transactorUrl: string, dbName: string): Prom
 
     console.log('Apply upgrade operations')
 
-    const connection = await connect(transactorUrl, dbName, true)
+    const connection = await connect(transactorUrl, dbName, undefined, { model: 'upgrade' })
 
     // Create update indexes
     await createUpdateIndexes(connection, db)

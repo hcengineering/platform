@@ -83,4 +83,12 @@ class TPipeline implements Pipeline {
   async load (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
     return await this.storage.load(domain, docs)
   }
+
+  async upload (domain: Domain, docs: Doc[]): Promise<void> {
+    await this.storage.upload(domain, docs)
+  }
+
+  async clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {
+    await this.storage.clean(domain, docs)
+  }
 }

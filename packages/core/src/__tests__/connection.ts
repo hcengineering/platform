@@ -62,6 +62,8 @@ export async function connect (handler: (tx: Tx) => void): Promise<ClientConnect
       digest: ''
     }),
     closeChunk: async (idx: number) => {},
-    loadDocs: async (domain: Domain, docs: Ref<Doc>[]) => []
+    loadDocs: async (domain: Domain, docs: Ref<Doc>[]) => [],
+    upload: async (domain: Domain, docs: Doc[]) => {},
+    clean: async (domain: Domain, docs: Ref<Doc>[]) => {}
   }
 }

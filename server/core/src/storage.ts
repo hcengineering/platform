@@ -405,6 +405,14 @@ class TServerStorage implements ServerStorage {
   async load (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
     return await this.getAdapter(domain).load(domain, docs)
   }
+
+  async upload (domain: Domain, docs: Doc[]): Promise<void> {
+    await this.getAdapter(domain).upload(domain, docs)
+  }
+
+  async clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {
+    await this.getAdapter(domain).clean(domain, docs)
+  }
 }
 
 type Effect = () => Promise<void>

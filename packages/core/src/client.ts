@@ -132,6 +132,14 @@ class ClientImpl implements Client, BackupClient {
   async loadDocs (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
     return await this.conn.loadDocs(domain, docs)
   }
+
+  async upload (domain: Domain, docs: Doc[]): Promise<void> {
+    return await this.conn.upload(domain, docs)
+  }
+
+  async clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {
+    return await this.conn.clean(domain, docs)
+  }
 }
 
 /**
@@ -163,6 +171,7 @@ export async function createClient (
     { objectSpace: core.space.Model },
     { sort: { _id: SortingOrder.Ascending } }
   )
+  console.log('find model', atxes.length)
 
   let systemTx: Tx[] = []
   const userTx: Tx[] = []

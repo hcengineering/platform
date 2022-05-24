@@ -19,6 +19,7 @@ import {
   DocumentQuery,
   Domain,
   DOMAIN_BLOB,
+  DOMAIN_FULLTEXT_BLOB,
   DOMAIN_MODEL,
   DOMAIN_TRANSIENT,
   DOMAIN_TX,
@@ -32,7 +33,7 @@ import {
   Tx,
   TxResult
 } from '@anticrm/core'
-import { createElasticAdapter } from '@anticrm/elastic'
+import { createElasticAdapter, createElasticBackupDataAdapter } from '@anticrm/elastic'
 import { ModifiedMiddleware, PrivateMiddleware } from '@anticrm/middleware'
 import { createMongoAdapter, createMongoTxAdapter } from '@anticrm/mongo'
 import { addLocation } from '@anticrm/platform'
@@ -91,6 +92,10 @@ class NullDbAdapter implements DbAdapter {
   async load (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
     return []
   }
+
+  async upload (domain: Domain, docs: Doc[]): Promise<void> {}
+
+  async clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {}
 }
 
 async function createNullAdapter (hierarchy: Hierarchy, url: string, db: string, modelDb: ModelDb): Promise<DbAdapter> {
@@ -141,6 +146,7 @@ export function start (
           [DOMAIN_TX]: 'MongoTx',
           [DOMAIN_TRANSIENT]: 'InMemory',
           [DOMAIN_BLOB]: 'MinioData',
+          [DOMAIN_FULLTEXT_BLOB]: 'FullTextBlob',
           [DOMAIN_MODEL]: 'Null'
         },
         defaultAdapter: 'Mongo',
@@ -164,6 +170,10 @@ export function start (
           MinioData: {
             factory: createMinioDataAdapter,
             url: ''
+          },
+          FullTextBlob: {
+            factory: createElasticBackupDataAdapter,
+            url: fullTextUrl
           }
         },
         fulltextAdapter: {

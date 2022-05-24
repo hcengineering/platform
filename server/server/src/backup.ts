@@ -81,4 +81,12 @@ export class BackupClientSession extends ClientSession implements BackupSession 
   async loadDocs (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
     return await this._pipeline.storage.load(domain, docs)
   }
+
+  async upload (ctx: MeasureContext, domain: Domain, docs: Doc[]): Promise<void> {
+    return await this._pipeline.storage.upload(domain, docs)
+  }
+
+  async clean (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<void> {
+    return await this._pipeline.storage.clean(domain, docs)
+  }
 }

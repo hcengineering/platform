@@ -48,6 +48,8 @@ export interface DbAdapter {
   find: (domain: Domain) => StorageIterator
 
   load: (domain: Domain, docs: Ref<Doc>[]) => Promise<Doc[]>
+  upload: (domain: Domain, docs: Doc[]) => Promise<void>
+  clean: (domain: Domain, docs: Ref<Doc>[]) => Promise<void>
 }
 
 /**
@@ -114,6 +116,10 @@ class InMemoryAdapter implements DbAdapter {
   async load (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
     return []
   }
+
+  async upload (domain: Domain, docs: Doc[]): Promise<void> {}
+
+  async clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {}
 }
 
 /**
