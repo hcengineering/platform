@@ -163,7 +163,8 @@
 
 <style lang="scss">
   .filterbar-container {
-    display: flex;
+    display: grid;
+    grid-template-columns: auto auto;
     justify-content: space-between;
     align-items: center;
     padding: 0.75rem 1.5rem 0.75rem 2.5rem;
@@ -177,7 +178,9 @@
       display: flex;
       align-items: center;
       flex-wrap: wrap;
+      flex-grow: 1;
       margin-bottom: -0.375rem;
+      width: 100%;
       min-width: 0;
     }
     .add-filter {
