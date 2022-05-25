@@ -15,7 +15,7 @@
 <script lang="ts">
   import type { Card, CardLabel } from '@anticrm/board'
   import { getClient } from '@anticrm/presentation'
-  import { Button, IconAdd } from '@anticrm/ui'
+  import { Button, Icon, IconAdd } from '@anticrm/ui'
   import { invokeAction } from '@anticrm/view-resources'
 
   import board from '../../plugin'
@@ -68,26 +68,29 @@
   }
 </script>
 
-{#if labels}
-  <div
-    class="flex-row-center flex-wrap flex-gap-1 mb-1"
-    class:labels-inline-container={isInline}
-    on:click={toggleCompact}
-    on:mouseover={hoverIn}
-    on:focus={hoverIn}
-    on:mouseout={hoverOut}
-    on:blur={hoverOut}
-  >
-    {#each labels as label}
-      <LabelPresenter
-        value={label}
-        size={isInline ? (isCompact ? 'tiny' : 'x-small') : undefined}
-        {isHovered}
-        on:click={labelsHandler}
-      />
-    {/each}
-    {#if !isInline}
-      <Button icon={IconAdd} kind="no-border" size="large" on:click={labelsHandler} />
-    {/if}
-  </div>
-{/if}
+<div
+  class="flex mb-1"
+  class:labels-inline-container={isInline}
+  on:click={toggleCompact}
+  on:mouseover={hoverIn}
+  on:focus={hoverIn}
+  on:mouseout={hoverOut}
+  on:blur={hoverOut}
+>
+  {#if labels && labels.length > 0}
+    <div class="flex-row-center flex-wrap flex-gap-1 ml-4">
+      {#each labels as label}
+        <LabelPresenter
+          value={label}
+          size={isInline ? (isCompact ? 'tiny' : 'x-small') : undefined}
+          {isHovered}
+          on:click={labelsHandler}
+        />
+      {/each}
+    </div>
+  {:else if !isInline}
+    <Button kind="link" size="large" on:click={labelsHandler}>
+      <Icon slot="content" icon={IconAdd} size="small" />
+    </Button>
+  {/if}
+</div>

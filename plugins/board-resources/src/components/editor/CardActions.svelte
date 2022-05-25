@@ -58,9 +58,7 @@
     <div class="label fs-bold">
       <Label label={plugin.string.Labels} />
     </div>
-    <div class="ml-4">
-      <CardLabels {value} />
-    </div>
+    <CardLabels {value} />
   </div>
 {/if}
 
