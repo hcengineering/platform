@@ -16,22 +16,47 @@
   import { EmployeeAccount } from '@anticrm/contact'
   import { getCurrentAccount } from '@anticrm/core'
   import { Table } from '@anticrm/view-resources'
+  import { createQuery } from '@anticrm/presentation'
+  import { Label, Scroller } from '@anticrm/ui'
   import calendar from '../plugin'
 
   const currentUser = getCurrentAccount() as EmployeeAccount
+  let remindersCount: number = 0
+
+  const query = createQuery()
+  $: query.query(calendar.mixin.Reminder, { state: 'active', participants: currentUser.employee }, (res) => {
+    remindersCount = res.length
+  })
 </script>
 
-<div class="antiPopup">
-  <Table
-    _class={calendar.mixin.Reminder}
-    config={['']}
-    options={{}}
-    query={{ state: 'active', participants: currentUser.employee }}
-  />
+<div class="selectPopup reminder" class:justify-center={!remindersCount}>
+  {#if remindersCount}
+    <div class="header fs-title pl-4 pb-2">
+      <Label label={calendar.string.Reminders} />
+    </div>
+    <Scroller>
+      <div class="px-4 clear-mins">
+        <Table
+          _class={calendar.mixin.Reminder}
+          config={['']}
+          options={{}}
+          query={{ state: 'active', participants: currentUser.employee }}
+          hiddenHeader
+        />
+      </div>
+    </Scroller>
+  {:else}
+    <div class="flex-center h-full">
+      <Label label={calendar.string.NoReminders} />
+    </div>
+  {/if}
 </div>
 
 <style lang="scss">
-  .antiPopup {
-    padding: 1rem;
+  .reminder {
+    padding: 0.5rem 0;
+    width: fit-content;
+    min-width: 16rem;
+    min-height: 12rem;
   }
 </style>

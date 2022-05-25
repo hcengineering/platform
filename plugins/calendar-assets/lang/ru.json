@@ -31,6 +31,7 @@
     "EditReminder": "Редактировать напоминание",
     "CreateReminder": "Создать напоминание",
     "CreatedReminder": "Создал напоминание",
-    "Reminders": "Напоминания"
+    "Reminders": "Напоминания",
+    "NoReminders": "Нет напоминаний"
   }
 }

@@ -131,6 +131,7 @@
     <slot name="panel-header" />
     <div
       class="panel-instance"
+      class:anim={props.element === 'float' || props.element === 'content'}
       class:bg={props.element === 'content'}
       bind:this={modalHTML}
       style:top={options.props.top}
@@ -178,11 +179,13 @@
     z-index: 401;
     position: fixed;
     background-color: transparent;
-    will-change: top, bottom, left, right;
-    transition-property: top, bottom, left, right, width, height;
-    transition-duration: 0.15s;
-    transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
 
+    &.anim {
+      will-change: top, bottom, left, right;
+      transition-property: top, bottom, left, right, width, height;
+      transition-duration: 0.15s;
+      transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+    }
     &.bg {
       background-color: var(--body-color);
     }
@@ -196,6 +199,7 @@
       }
     }
   }
+
   .modal-overlay {
     z-index: 400;
     position: fixed;

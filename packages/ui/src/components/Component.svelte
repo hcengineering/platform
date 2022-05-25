@@ -23,13 +23,14 @@
 
   export let is: AnyComponent
   export let props = {}
+  export let shrink: boolean = true
 
   $: component = is != null ? getResource(is) : Promise.reject(new Error('is not defined'))
 </script>
 
 {#if is}
   {#await component}
-    <Loading />
+    <Loading {shrink} />
   {:then Ctor}
     <ErrorBoundary>
       <Ctor {...props} on:change on:close on:open on:click on:delete>

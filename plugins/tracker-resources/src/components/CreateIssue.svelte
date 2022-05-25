@@ -153,7 +153,7 @@
         showPopup(
           SetDueDateActionPopup,
           { value: object, shouldSaveOnChange: false },
-          undefined,
+          'top',
           undefined,
           (newDueDate) => newDueDate !== undefined && (object.dueDate = newDueDate)
         )
@@ -166,7 +166,7 @@
         showPopup(
           SetParentIssueActionPopup,
           { value: { ...object, space }, shouldSaveOnChange: false },
-          undefined,
+          'top',
           (selectedIssue) => {
             if (selectedIssue !== undefined) {
               parentIssue = selectedIssue

@@ -45,7 +45,7 @@
     {/if}
   </div>
 
-  {#if attachments === 0 && !loading}
+  {#if !loading && (attachments === null || attachments === 0)}
     <AttachmentDroppable bind:loading bind:dragover objectClass={_class} {objectId} {space}>
       <div class="flex-col-center mt-5 zone-container" class:solid={dragover}>
         <UploadDuo size={'large'} />

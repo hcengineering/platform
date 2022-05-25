@@ -36,6 +36,7 @@ export default mergeIds(calendarId, calendar, {
     TableView: '' as IntlString,
     DueMinutes: '' as IntlString,
     DueHours: '' as IntlString,
-    DueDays: '' as IntlString
+    DueDays: '' as IntlString,
+    NoReminders: '' as IntlString
   }
 })
