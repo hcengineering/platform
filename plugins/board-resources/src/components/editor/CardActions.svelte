@@ -20,18 +20,14 @@
   import { Ref } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
   import { CheckBox, Label } from '@anticrm/ui'
-  import { invokeAction } from '@anticrm/view-resources'
 
   import plugin from '../../plugin'
-  import { getCardActions } from '../../utils/CardActionUtils'
   import { updateCardMembers } from '../../utils/CardUtils'
   import UserBoxList from '../UserBoxList.svelte'
   import CardLabels from './CardLabels.svelte'
 
   export let value: Card
   const client = getClient()
-
-  let coverHandler: (e: Event) => void
 
   function updateMembers (e: CustomEvent<Ref<Employee>[]>) {
     updateCardMembers(value, client, e.detail)
@@ -43,37 +39,40 @@
       client.update(value, { doneState: null })
     }
   }
-
-  getCardActions(client, {
-    _id: { $in: [board.action.Cover] }
-  }).then(async (result) => {
-    for (const action of result) {
-      if (action._id === board.action.Cover) {
-        coverHandler = (e: Event) => invokeAction(value, e, action.action, action.actionProps)
-      }
-    }
-  })
 </script>
 
 {#if value}
-  <div class="flex-col flex-gap-3 mt-4">
-    <div class="flex-row-stretch flex-gap-1 items-center">
-      <div class="label w-24">
-        <Label label={plugin.string.Completed} />
-      </div>
+  <div class="attributes-bar-container">
+    <div class="label fs-bold">
+      <Label label={plugin.string.Completed} />
+    </div>
+    <div class="ml-4">
       <CheckBox checked={value.doneState === board.state.Completed} on:value={updateState} />
     </div>
-    <div class="flex-row-stretch flex-gap-1 items-center">
-      <div class="label w-24">
-        <Label label={plugin.string.Members} />
-      </div>
+    <div class="label fs-bold">
+      <Label label={plugin.string.Members} />
+    </div>
+    <div class="ml-4">
       <UserBoxList value={value.members ?? []} on:update={updateMembers} />
     </div>
-    <div class="flex-row-stretch flex-gap-1 items-center">
-      <div class="label w-24">
-        <Label label={plugin.string.Labels} />
-      </div>
-      <CardLabels {value} />
+    <div class="label fs-bold">
+      <Label label={plugin.string.Labels} />
     </div>
+    <CardLabels {value} />
   </div>
 {/if}
+
+<style lang="scss">
+  .attributes-bar-container {
+    height: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    grid-auto-flow: row;
+    justify-content: start;
+    align-items: center;
+    gap: 0.5rem;
+    padding-bottom: 0.5rem;
+    width: 100%;
+    height: min-content;
+  }
+</style>

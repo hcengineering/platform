@@ -56,7 +56,17 @@
   let handleMove: (e: Event) => void
   let checklists: TodoItem[] = []
   const mixins: Mixin<Doc>[] = []
-  const ignoreKeys = ['isArchived', 'location', 'title', 'description', 'state', 'members', 'number', 'assignee']
+  const ignoreKeys = [
+    'isArchived',
+    'location',
+    'title',
+    'description',
+    'state',
+    'members',
+    'number',
+    'assignee',
+    'doneState'
+  ]
 
   function change (field: string, value: any) {
     if (object) {
