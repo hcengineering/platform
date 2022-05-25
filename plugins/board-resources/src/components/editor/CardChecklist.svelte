@@ -81,11 +81,13 @@
 
   async function addItem (event: CustomEvent<string>) {
     newItemName = ''
+    const prev = checklistItems && checklistItems.length > 0 ? checklistItems[checklistItems.length - 1] : undefined
     const item = {
       name: event.detail ?? '',
       assignee: null,
       dueTo: null,
-      done: false
+      done: false,
+      rank: calcRank(prev, undefined)
     }
     if (item.name.length <= 0) {
       return
@@ -127,8 +129,8 @@
     if (dragItem === undefined || dragOverItem === undefined || dragItem._id === dragOverItem._id) {
       return
     }
-    const index = checklistItems.findIndex((item) => item._id === dragOverItem._id)
-    const dragIndex = checklistItems.findIndex((item) => item._id === dragItem._id)
+    const index = checklistItems.findIndex((item) => item._id === dragOverItem?._id)
+    const dragIndex = checklistItems.findIndex((item) => item._id === dragItem?._id)
     if (dragIndex > index) {
       const prev = index - 1 >= 0 ? checklistItems[index - 1] : undefined
       dragItem.rank = calcRank(prev, dragOverItem)
