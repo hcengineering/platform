@@ -532,7 +532,7 @@ export function createModel (builder: Builder): void {
         isArchived: { $nin: [true] }
       },
       label: task.string.Archive,
-      icon: task.icon.TaskState,
+      icon: view.icon.Archive,
       input: 'any',
       category: task.category.Task,
       target: task.class.State,

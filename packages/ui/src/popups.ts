@@ -1,4 +1,12 @@
-import type { AnySvelteComponent, AnyComponent, PopupAlignment, PopupPositionElement, PopupOptions } from './types'
+import type {
+  AnySvelteComponent,
+  AnyComponent,
+  HorizontalAlignment,
+  PopupAlignment,
+  PopupPositionElement,
+  PopupOptions,
+  VerticalAlignment
+} from './types'
 import { getResource } from '@anticrm/platform'
 import { writable } from 'svelte/store'
 
@@ -261,4 +269,30 @@ export function fitPopupElement (
 
 export function eventToHTMLElement (evt: MouseEvent): HTMLElement {
   return evt.target as HTMLElement
+}
+
+export function getEventPopupPositionElement (
+  e?: Event,
+  position?: { v: VerticalAlignment, h: HorizontalAlignment }
+): PopupAlignment | undefined {
+  if (e == null || e.target == null) {
+    return undefined
+  }
+  const target = e.target as HTMLElement
+  return getPopupPositionElement(target, position)
+}
+
+export function getPopupPositionElement (
+  el: HTMLElement | undefined,
+  position?: { v: VerticalAlignment, h: HorizontalAlignment }
+): PopupAlignment | undefined {
+  if (el?.getBoundingClientRect != null) {
+    const result = el.getBoundingClientRect()
+    return {
+      getBoundingClientRect: () => result,
+      position
+    }
+  }
+
+  return undefined
 }

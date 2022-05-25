@@ -17,20 +17,23 @@
   import type { Asset } from '@anticrm/platform'
   import { getClient } from '@anticrm/presentation'
   import { Action, Menu } from '@anticrm/ui'
+  import type { ViewContextType } from '@anticrm/view'
   import { getActions, invokeAction } from '../actions'
 
   export let object: Doc | Doc[]
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
   export let actions: Action[] = []
+  export let mode: ViewContextType | undefined = undefined
 
   const client = getClient()
 
   let loaded = 0
 
-  getActions(client, object, baseMenuClass).then((result) => {
+  getActions(client, object, baseMenuClass, mode).then((result) => {
     actions = result.map((a) => ({
       label: a.label,
       icon: a.icon as Asset,
+      inline: a.inline,
       action: async (_: any, evt: Event) => {
         invokeAction(object, evt, a.action, a.actionProps)
       }

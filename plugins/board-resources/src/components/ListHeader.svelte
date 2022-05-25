@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Button, Component, getPlatformColor, IconEdit, showPopup } from '@anticrm/ui'
+  import { Button, Component, getPlatformColor, IconMoreV, showPopup } from '@anticrm/ui'
   import { State } from '@anticrm/task'
   import notification from '@anticrm/notification'
   import { ContextMenu } from '@anticrm/view-resources'
@@ -23,7 +23,7 @@
     <span class="lines-limit-2">{state.title}</span>
     <div class="flex">
       <Component is={notification.component.LastViewEditor} props={{ value: state }} />
-      <Button icon={IconEdit} kind="transparent" on:click={showMenu} />
+      <Button icon={IconMoreV} kind="transparent" on:click={showMenu} />
     </div>
   </div>
 </div>
