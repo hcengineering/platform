@@ -16,12 +16,14 @@
   import attachment, { Attachment } from '@anticrm/attachment'
   import type { ChunterMessage, Message } from '@anticrm/chunter'
   import contact, { Employee } from '@anticrm/contact'
-  import core, { Doc, Ref, Space, WithLookup } from '@anticrm/core'
+  import core, { Doc, Ref, Space, Timestamp, WithLookup } from '@anticrm/core'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
   import { createQuery } from '@anticrm/presentation'
   import { afterUpdate, beforeUpdate } from 'svelte'
   import chunter from '../plugin'
+  import { getDay } from '../utils'
   import ChannelSeparator from './ChannelSeparator.svelte'
+  import JumpToDateSelector from './JumpToDateSelector.svelte'
   import MessageComponent from './Message.svelte'
 
   export let space: Ref<Space> | undefined
@@ -114,13 +116,89 @@
   }
 
   let newMessagesPos: number = -1
+
+  function isOtherDay (time1: Timestamp, time2: Timestamp) {
+    return getDay(time1) !== getDay(time2)
+  }
+
+  function handleJumpToDate (e: CustomEvent<any>) {
+    const date = e.detail.date
+    if (!date) {
+      return
+    }
+
+    const dateSelectors = div?.getElementsByClassName('dateSelector')
+    if (!dateSelectors) return
+
+    let closestDate: Timestamp | undefined = Array.from(dateSelectors).reduceRight((prevDate, cur) => {
+      const curDate = parseInt(cur.id)
+      if (prevDate < date) return curDate
+      if (curDate < date) return prevDate
+      if (curDate - date < prevDate - date) return curDate
+      else return prevDate
+    }, parseInt(dateSelectors[dateSelectors.length - 1].id))
+    if (closestDate && closestDate < date) closestDate = undefined
+
+    if (closestDate) {
+      scrollToDate(closestDate)
+    }
+  }
+
+  const pinnedHeight = 30
+  const headerHeight = 50
+  function scrollToDate (date: Timestamp) {
+    let offset = date && document.getElementById(date.toString())?.offsetTop
+    if (offset) {
+      offset = offset - headerHeight
+      if (pinnedIds.length > 0) offset = offset - pinnedHeight
+      div?.scrollTo({ left: 0, top: offset })
+    }
+  }
+
+  let up: boolean | undefined = true
+  let selectedDate: Timestamp | undefined = messages ? getDay(messages[0].createOn) : undefined
+  function handleScroll () {
+    up = div && div.scrollTop === 0
+
+    const upperVisible = getFirstVisible()
+    if (upperVisible) {
+      selectedDate = parseInt(upperVisible.id)
+    }
+  }
+
+  function getFirstVisible (): Element | undefined {
+    if (!div) return
+
+    const clientRect = div.getBoundingClientRect()
+    const dateSelectors = div.getElementsByClassName('dateSelector')
+    const firstVisible = Array.from(dateSelectors)
+      .reverse()
+      .find((child) => {
+        if (child?.nodeType === Node.ELEMENT_NODE) {
+          const rect = child?.getBoundingClientRect()
+          if (rect.top <= clientRect.top) {
+            return true
+          }
+        }
+        return false
+      })
+    return firstVisible
+  }
 </script>
 
-<div class="flex-col vScroll" bind:this={div}>
+{#if !up}
+  <div class="pr-2">
+    <JumpToDateSelector {selectedDate} fixed on:jumpToDate={handleJumpToDate} />
+  </div>
+{/if}
+<div class="flex-col vScroll" bind:this={div} on:scroll={handleScroll}>
   {#if messages}
     {#each messages as message, i (message._id)}
       {#if newMessagesPos === i}
         <ChannelSeparator title={chunter.string.New} line reverse isNew />
+      {/if}
+      {#if i === 0 || isOtherDay(message.createOn, messages[i - 1].createOn)}
+        <JumpToDateSelector selectedDate={message.createOn} on:jumpToDate={handleJumpToDate} />
       {/if}
       <MessageComponent
         {message}

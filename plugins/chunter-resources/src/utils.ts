@@ -1,5 +1,5 @@
 import contact, { EmployeeAccount, formatName } from '@anticrm/contact'
-import { Account, Class, Client, Obj, Ref, Space, getCurrentAccount } from '@anticrm/core'
+import { Account, Class, Client, Obj, Ref, Space, getCurrentAccount, Timestamp } from '@anticrm/core'
 import { Asset } from '@anticrm/platform'
 import { getCurrentLocation, locationToUrl } from '@anticrm/ui'
 
@@ -62,4 +62,10 @@ export function getSpaceLink (id: Ref<Space>): string {
   loc.fragment = undefined
 
   return locationToUrl(loc)
+}
+
+export function getDay (time: Timestamp): Timestamp {
+  const date: Date = new Date(time)
+  date.setHours(0, 0, 0, 0)
+  return date.getTime()
 }
