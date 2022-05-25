@@ -156,7 +156,7 @@
   }
 
   let up: boolean | undefined = true
-  let selectedDate: Timestamp | undefined = messages ? getDay(messages[0].createOn) : undefined // messagesDays[messagesDays.length - 1]
+  let selectedDate: Timestamp | undefined = messages ? getDay(messages[0].createOn) : undefined
   function handleScroll () {
     up = div && div.scrollTop === 0
 
@@ -166,7 +166,7 @@
     }
   }
 
-  function getFirstVisible (): HTMLElement | undefined {
+  function getFirstVisible (): Element | undefined {
     if (!div) return
 
     const clientRect = div.getBoundingClientRect()

@@ -4,13 +4,13 @@
   import { createEventDispatcher } from 'svelte'
   import { getDay } from '../utils'
 
-  export let selectedDate: Timestamp
+  export let selectedDate: Timestamp | undefined
   export let fixed: boolean = false
 
   let div: HTMLDivElement | undefined
   const dispatch = createEventDispatcher()
 
-  $: time = getDay(selectedDate)
+  $: time = selectedDate ? getDay(selectedDate) : undefined
 </script>
 
 <div id={fixed ? '' : time?.toString()} class="flex justify-center over-underline dateSelector">
@@ -25,9 +25,11 @@
       })
     }}
   >
-    <div>
-      {new Date(time).toDateString()}
-    </div>
+    {#if time}
+      <div>
+        {new Date(time).toDateString()}
+      </div>
+    {/if}
   </div>
 </div>
 

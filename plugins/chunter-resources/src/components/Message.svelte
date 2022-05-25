@@ -176,7 +176,7 @@
   }
 </script>
 
-<div class="container" data-date={message.createOn}>
+<div class="container">
   <div class="avatar"><Avatar size={'medium'} avatar={employee?.avatar} /></div>
   <div class="message">
     <div class="header">
