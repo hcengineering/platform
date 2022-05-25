@@ -37,7 +37,7 @@
     <Spinner size="small" />
   {/if}
   <span class="overflow-label issue-title">{issue.title}</span>
-  <Tooltip label={tracker.string.RemoveParent} direction="bottom" >
+  <Tooltip label={tracker.string.RemoveParent} direction="bottom">
     <div class="button-close" on:click={() => dispatch('close')}>
       <IconClose size="x-small" />
     </div>
