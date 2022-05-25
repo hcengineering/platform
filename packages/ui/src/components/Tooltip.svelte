@@ -14,6 +14,7 @@
 -->
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
+  import { onDestroy } from 'svelte'
   import type { TooltipAlignment, AnySvelteComponent, AnyComponent } from '..'
   import { tooltipstore as tooltip, showTooltip } from '..'
 
@@ -30,6 +31,8 @@
   $: shown = !!($tooltip.label || $tooltip.component)
 
   let toHandler: number = -1
+
+  onDestroy(() => clearTimeout(toHandler))
 </script>
 
 <div
