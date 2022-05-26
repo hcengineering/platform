@@ -142,12 +142,21 @@
     }
   }
 
-  $: checklistItemsQuery.query(task.class.TodoItem, { space: value.space, attachedTo: value._id }, (result) => {
-    checklistItems = result.sort((a, b) => a.rank?.localeCompare(b.rank))
-    done = checklistItems.reduce((result: number, current: TodoItem) => {
-      return current.done ? result + 1 : result
-    }, 0)
-  })
+  $: checklistItemsQuery.query(
+    task.class.TodoItem,
+    { space: value.space, attachedTo: value._id },
+    (result) => {
+      checklistItems = result
+      done = checklistItems.reduce((result: number, current: TodoItem) => {
+        return current.done ? result + 1 : result
+      }, 0)
+    },
+    {
+      sort: {
+        rank: 1
+      }
+    }
+  )
 </script>
 
 {#if value !== undefined}

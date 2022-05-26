@@ -14,9 +14,9 @@
 -->
 <script lang="ts">
   import type { Class, Ref, Space } from '@anticrm/core'
-  import { Card, getClient } from '@anticrm/presentation'
-  import type { Task } from '@anticrm/task'
-  import task from '@anticrm/task'
+  import { Card, createQuery, getClient } from '@anticrm/presentation'
+  import type { Task, TodoItem } from '@anticrm/task'
+  import task, { calcRank } from '@anticrm/task'
   import { DatePicker, EditBox, Grid } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
@@ -28,24 +28,43 @@
   let name: string
   const done = false
   let dueTo: number | null = null
+  let latestItem: TodoItem | undefined = undefined
 
   $: _space = space
 
   const dispatch = createEventDispatcher()
   const client = getClient()
+  const todoItemsQuery = createQuery()
 
   export function canClose (): boolean {
     return objectId === undefined
   }
 
   async function createTodo () {
-    await client.addCollection(task.class.TodoItem, space, objectId, _class, 'todos', {
+    await client.addCollection(task.class.TodoItem, space, objectId, _class, 'todoItems', {
       name,
       assignee: null,
       done,
-      dueTo: dueTo ?? null
+      dueTo: dueTo ?? null,
+      rank: calcRank(latestItem)
     })
   }
+
+  $: todoItemsQuery.query(
+    task.class.TodoItem,
+    { attachedTo: objectId },
+    (result) => {
+      latestItem = undefined
+      if (result && result.length > 0) {
+        latestItem = result[result.length - 1]
+      }
+    },
+    {
+      sort: {
+        rank: 1
+      }
+    }
+  )
 </script>
 
 <Card

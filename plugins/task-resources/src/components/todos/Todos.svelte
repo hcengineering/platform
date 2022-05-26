@@ -53,8 +53,9 @@
         { key: 'done', presenter: plugin.component.TodoStatePresenter, label: plugin.string.TodoState }
       ]}
       options={{
-        // lookup: {
-        // }
+        sort: {
+          rank: 1
+        }
       }}
       query={{ attachedTo: objectId }}
     />
