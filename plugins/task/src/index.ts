@@ -89,7 +89,7 @@ export interface Task extends AttachedDoc, DocWithRank {
 /**
  * @public
  */
-export interface TodoItem extends AttachedDoc {
+export interface TodoItem extends AttachedDoc, DocWithRank {
   name: Markup
   assignee: Ref<Employee> | null
   done: boolean

@@ -125,7 +125,7 @@ export class TTask extends TAttachedDoc implements Task {
   todoItems!: number
 }
 
-@Model(task.class.TodoItem, core.class.AttachedDoc, DOMAIN_TASK)
+@Model(task.class.TodoItem, core.class.AttachedDoc, DOMAIN_TASK, [task.interface.DocWithRank])
 @UX(task.string.Todo)
 export class TTodoItem extends TAttachedDoc implements TodoItem {
   @Prop(TypeMarkup(), task.string.TodoName, task.icon.Task)
@@ -143,6 +143,8 @@ export class TTodoItem extends TAttachedDoc implements TodoItem {
 
   @Prop(Collection(task.class.TodoItem), task.string.Todos)
   items!: number
+
+  declare rank: string
 }
 
 @Model(task.class.SpaceWithStates, core.class.Space)

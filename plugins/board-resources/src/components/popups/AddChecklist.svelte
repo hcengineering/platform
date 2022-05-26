@@ -3,7 +3,7 @@
 
   import { Card } from '@anticrm/board'
   import { WithLookup } from '@anticrm/core'
-  import task, { TodoItem } from '@anticrm/task'
+  import task, { calcRank, TodoItem } from '@anticrm/task'
   import { translate } from '@anticrm/platform'
   import presentation, { createQuery, getClient } from '@anticrm/presentation'
   import { Label, Button, Dropdown, EditBox, IconClose } from '@anticrm/ui'
@@ -18,6 +18,7 @@
     label: ''
   }
 
+  let lastCardList: TodoItem | undefined = undefined
   let name: string | undefined
   let selectedTemplate: ListItem | undefined = undefined
   let templateListItems: ListItem[] = [noneListItem]
@@ -51,7 +52,8 @@
         name,
         done: false,
         dueTo: null,
-        assignee: null
+        assignee: null,
+        rank: calcRank(lastCardList)
       }
     )
     if (items.length > 0) {
@@ -61,7 +63,8 @@
             name: item.name,
             dueTo: item.dueTo,
             done: item.done,
-            assignee: item.assignee
+            assignee: item.assignee,
+            rank: item.rank
           })
         )
       )
@@ -75,13 +78,17 @@
     (result: WithLookup<Card>[]) => {
       templateListItems = [noneListItem]
       templatesMap = new Map()
+      lastCardList = undefined
 
       for (const card of result) {
         const todoItems = card.$lookup?.todoItems as TodoItem[]
         if (!todoItems) {
           continue
         }
-
+        if (card._id === value?._id && todoItems.length > 0) {
+          todoItems.sort((a, b) => a.rank?.localeCompare(b.rank))
+          lastCardList = todoItems[todoItems.length - 1]
+        }
         templateListItems.push({
           _id: card._id,
           label: card.title,
