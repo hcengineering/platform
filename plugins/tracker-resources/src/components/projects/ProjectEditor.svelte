@@ -39,7 +39,15 @@
       return
     }
 
-    await client.update(value, { project: newProjectId })
+    await client.updateCollection(
+      value._class,
+      value.space,
+      value._id,
+      value.attachedTo,
+      value.attachedToClass,
+      value.collection,
+      { project: newProjectId }
+    )
   }
 </script>
 

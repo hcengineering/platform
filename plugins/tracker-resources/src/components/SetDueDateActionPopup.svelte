@@ -30,7 +30,15 @@
     const newDueDate = detail && detail?.getTime()
 
     if (shouldSaveOnChange && newDueDate !== undefined && newDueDate !== value.dueDate) {
-      await client.update(value, { dueDate: newDueDate })
+      await client.updateCollection(
+        value._class,
+        value.space,
+        value._id,
+        value.attachedTo,
+        value.attachedToClass,
+        value.collection,
+        { dueDate: newDueDate }
+      )
     }
 
     dispatch('update', newDueDate)

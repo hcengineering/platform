@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import contact, { Employee } from '@anticrm/contact'
-  import core, { Data, generateId, Ref, SortingOrder, WithLookup } from '@anticrm/core'
+  import core, { AttachedData, Ref, SortingOrder, WithLookup } from '@anticrm/core'
   import presentation, { Card, createQuery, getClient, SpaceSelector, UserBox } from '@anticrm/presentation'
   import { StyledTextBox } from '@anticrm/text-editor'
   import { calcRank, Issue, IssuePriority, IssueStatus, Project, Team } from '@anticrm/tracker'
@@ -48,7 +48,7 @@
   let issueStatuses: WithLookup<IssueStatus>[] | undefined
   let parentIssue: Issue | undefined
 
-  let object: Data<Issue> = {
+  let object: AttachedData<Issue> = {
     title: '',
     description: '',
     assignee: null,
@@ -64,7 +64,6 @@
   const dispatch = createEventDispatcher()
   const client = getClient()
   const statusesQuery = createQuery()
-  const taskId: Ref<Issue> = generateId()
 
   $: _space = space
   $: updateIssueStatusId(space, status)
@@ -95,7 +94,6 @@
 
   function clearParentIssue () {
     parentIssue = undefined
-    object.parentIssue = undefined
   }
 
   function getTitle (value: string) {
@@ -126,7 +124,7 @@
       true
     )
 
-    const value: Data<Issue> = {
+    const value: AttachedData<Issue> = {
       title: getTitle(object.title),
       description: object.description,
       assignee: currentAssignee,
@@ -135,12 +133,18 @@
       status: object.status,
       priority: object.priority,
       rank: calcRank(lastOne, undefined),
-      parentIssue: object.parentIssue,
       comments: 0,
       dueDate: object.dueDate
     }
 
-    await client.createDoc(tracker.class.Issue, _space, value, taskId)
+    await client.addCollection(
+      tracker.class.Issue,
+      _space,
+      parentIssue?._id ?? tracker.ids.NoParent,
+      parentIssue?._class ?? tracker.class.Issue,
+      'subIssues',
+      value
+    )
   }
 
   async function showMoreActions (ev: Event) {
@@ -160,23 +164,18 @@
     }
 
     const setParentIssue = {
-      label: object.parentIssue ? tracker.string.ChangeParent : tracker.string.SetParent,
+      label: parentIssue ? tracker.string.ChangeParent : tracker.string.SetParent,
       icon: tracker.icon.Parent,
       action: async () =>
         showPopup(
           SetParentIssueActionPopup,
-          { value: { ...object, space }, shouldSaveOnChange: false },
+          { value: { ...object, space, attachedTo: parentIssue?._id }, shouldSaveOnChange: false },
           'top',
-          (selectedIssue) => {
-            if (selectedIssue !== undefined) {
-              parentIssue = selectedIssue
-              object.parentIssue = parentIssue?._id
-            }
-          }
+          (selectedIssue) => selectedIssue !== undefined && (parentIssue = selectedIssue)
         )
     }
 
-    const removeParentIssue = object.parentIssue && {
+    const removeParentIssue = parentIssue && {
       label: tracker.string.RemoveParent,
       icon: tracker.icon.Parent,
       action: clearParentIssue

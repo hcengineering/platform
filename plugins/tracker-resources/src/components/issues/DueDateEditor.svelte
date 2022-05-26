@@ -27,7 +27,15 @@
       return
     }
 
-    await client.update(value, { dueDate: newDueDate })
+    await client.updateCollection(
+      value._class,
+      value.space,
+      value._id,
+      value.attachedTo,
+      value.attachedToClass,
+      value.collection,
+      { dueDate: newDueDate }
+    )
   }
 
   $: today = new Date(new Date(Date.now()).setHours(0, 0, 0, 0))

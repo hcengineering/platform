@@ -47,7 +47,7 @@
   const dispatch = createEventDispatcher()
   const client = getClient()
 
-  let issue: Issue | undefined
+  let issue: WithLookup<Issue> | undefined
   let currentTeam: Team | undefined
   let issueStatuses: WithLookup<IssueStatus>[] | undefined
   let title = ''
@@ -65,7 +65,7 @@
         title = issue.title
         description = issue.description
       },
-      { lookup: { parentIssue: _class } }
+      { lookup: { attachedTo: tracker.class.Issue } }
     )
 
   $: if (issue) {
@@ -123,7 +123,15 @@
     }
 
     if (Object.keys(updates).length > 0) {
-      await client.update(issue, updates)
+      await client.updateCollection(
+        issue._class,
+        issue.space,
+        issue._id,
+        issue.attachedTo,
+        issue.attachedToClass,
+        issue.collection,
+        updates
+      )
     }
 
     isEditing = false
@@ -152,6 +160,7 @@
     on:fullsize
     on:close={() => dispatch('close')}
   >
+    {@const { attachedTo: parentIssue } = issue?.$lookup ?? {}}
     <svelte:fragment slot="subtitle">
       <div class="flex-between flex-grow">
         <div class="buttons-group xsmall-gap">
@@ -184,7 +193,7 @@
     {#if isEditing}
       <Scroller>
         <div class="popupPanel-body__main-content py-10 clear-mins content">
-          {#if issue?.parentIssue}
+          {#if parentIssue}
             <div class="mb-6">
               {#if currentTeam && issueStatuses}
                 <SubIssueSelector {issue} {issueStatuses} team={currentTeam} />
@@ -211,7 +220,7 @@
         </div>
       </Scroller>
     {:else}
-      {#if issue?.parentIssue}
+      {#if parentIssue}
         <div class="mb-6">
           {#if currentTeam && issueStatuses}
             <SubIssueSelector {issue} {issueStatuses} team={currentTeam} />
@@ -261,6 +270,7 @@
 
   .description-preview {
     color: var(--theme-content-color);
+    line-height: 150%;
 
     .placeholder {
       color: var(--theme-content-trans-color);

@@ -96,7 +96,7 @@ export enum IssuesDateModificationPeriod {
 /**
  * @public
  */
-export interface Issue extends Doc {
+export interface Issue extends AttachedDoc {
   title: string
   description: Markup
   status: Ref<IssueStatus>
@@ -107,7 +107,7 @@ export interface Issue extends Doc {
   project: Ref<Project> | null
 
   // For subtasks
-  parentIssue?: Ref<Issue>
+  subIssues?: number
   blockedBy?: Ref<Issue>[]
   relatedIssue?: Ref<Issue>[]
 
@@ -187,6 +187,9 @@ export default plugin(trackerId, {
     IssueStatus: '' as Ref<Class<IssueStatus>>,
     IssueStatusCategory: '' as Ref<Class<IssueStatusCategory>>,
     TypeIssuePriority: '' as Ref<Class<Type<IssuePriority>>>
+  },
+  ids: {
+    NoParent: '' as Ref<Issue>
   },
   component: {
     Tracker: '' as AnyComponent,

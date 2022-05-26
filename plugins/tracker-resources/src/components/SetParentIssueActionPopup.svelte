@@ -42,8 +42,14 @@
   }
 
   async function onClose ({ detail: parentIssue }: CustomEvent<Issue | undefined | null>) {
-    if (shouldSaveOnChange && parentIssue !== undefined && parentIssue?._id !== value.parentIssue) {
-      await client.update(value, { parentIssue: parentIssue?._id })
+    if (shouldSaveOnChange && parentIssue !== undefined && parentIssue?._id !== value.attachedTo) {
+      const attachedTo = parentIssue === null ? tracker.ids.NoParent : parentIssue._id
+      const attachedToClass = parentIssue === null ? tracker.class.Issue : parentIssue._class
+      const collection = 'subIssues'
+
+      await client.updateCollection(value._class, value.space, value._id, attachedTo, attachedToClass, collection, {
+        attachedTo
+      })
     }
 
     dispatch('close', parentIssue)
@@ -59,7 +65,7 @@
 <ObjectPopup
   _class={tracker.class.Issue}
   {options}
-  selected={value.parentIssue}
+  selected={value.attachedTo}
   multiSelect={false}
   allowDeselect={true}
   placeholder={tracker.string.SetParent}

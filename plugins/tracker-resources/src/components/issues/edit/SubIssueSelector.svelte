@@ -16,7 +16,17 @@
   import { Ref, SortingOrder, WithLookup } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
   import { Team, Issue, IssueStatus } from '@anticrm/tracker'
-  import { Icon, Tooltip, showPanel, IconForward, IconDetails, showPopup, SelectPopup, closeTooltip } from '@anticrm/ui'
+  import {
+    Icon,
+    Tooltip,
+    showPanel,
+    IconForward,
+    IconDetails,
+    showPopup,
+    SelectPopup,
+    closeTooltip,
+    Spinner
+  } from '@anticrm/ui'
   import tracker from '../../../plugin'
 
   export let issue: WithLookup<Issue>
@@ -43,9 +53,9 @@
   }
 
   function openParentIssue () {
-    if (issue.parentIssue) {
+    if (parentIssue) {
       closeTooltip()
-      openIssue(issue.parentIssue)
+      openIssue(parentIssue._id)
     }
   }
 
@@ -77,21 +87,23 @@
     }
   }
 
-  $: subIssuesQeury.query(
-    tracker.class.Issue,
-    { space: issue.space, parentIssue: issue.parentIssue },
-    (res) => (subIssues = res),
-    { sort: { modifiedOn: SortingOrder.Descending } }
-  )
-  $: parentIssue = issue.$lookup?.parentIssue ?? null
+  $: parentIssue = issue.$lookup?.attachedTo ? (issue.$lookup?.attachedTo as Issue) : null
+  $: parentIssue &&
+    subIssuesQeury.query(
+      tracker.class.Issue,
+      { space: issue.space, attachedTo: parentIssue._id },
+      (res) => (subIssues = res),
+      { sort: { modifiedOn: SortingOrder.Descending } }
+    )
 </script>
 
-<div class="flex root">
-  <div class="clear-mins parent-issue item">
-    {#if parentIssue}
+{#if parentIssue}
+  {@const areSubIssuesLoading = !subIssues}
+  <div class="flex root">
+    <div class="item clear-mins">
       <Tooltip label={tracker.string.OpenParent} direction="bottom" fill>
         {@const icon = getIssueStatusIcon(issue)}
-        <div class="flex-center" on:click={openParentIssue}>
+        <div class="flex-center parent-issue" on:click={openParentIssue}>
           {#if icon}
             <div class="pr-2">
               <Icon {icon} size="small" />
@@ -101,40 +113,65 @@
           <span class="overflow-label issue-title">{parentIssue.title}</span>
         </div>
       </Tooltip>
-    {/if}
-  </div>
-
-  <Tooltip label={tracker.string.OpenSub} direction="bottom">
-    <div bind:this={subIssuesElement} class="flex-center sub-issues item" on:click|preventDefault={showSubIssues}>
-      {#if subIssues?.length !== undefined}
-        <span class="overflow-label">{subIssues.length}</span>
-      {/if}
-      <div class="ml-2">
-        <!-- TODO: fix icon -->
-        <Icon icon={IconDetails} size="small" />
-      </div>
-      <div class="ml-1-5">
-        <Icon icon={IconForward} size="small" />
-      </div>
     </div>
-  </Tooltip>
-</div>
+
+    <div class="item">
+      {#if areSubIssuesLoading}
+        <div class="flex-center spinner">
+          <Spinner size="small" />
+        </div>
+      {:else}
+        <Tooltip label={tracker.string.OpenSub} direction="bottom">
+          <div
+            bind:this={subIssuesElement}
+            class="flex-center sub-issues"
+            on:click|preventDefault={areSubIssuesLoading ? undefined : showSubIssues}
+          >
+            <span class="overflow-label">{subIssues?.length}</span>
+            <div class="ml-2">
+              <!-- TODO: fix icon -->
+              <Icon icon={IconDetails} size="small" />
+            </div>
+            <div class="ml-1-5">
+              <Icon icon={IconForward} size="small" />
+            </div>
+          </div>
+        </Tooltip>
+      {/if}
+    </div>
+  </div>
+{/if}
 
 <style lang="scss">
+  $padding: 0.375rem 0.75rem;
+  $border: 1px solid var(--button-border-color);
+
   .root {
     max-width: fit-content;
     line-height: 150%;
-    border: 1px solid var(--button-border-color);
+    border: $border;
     border-radius: 0.25rem;
     box-shadow: var(--primary-shadow);
 
     .item {
-      padding: 0.375rem 0.75rem;
+      position: relative;
+
+      &:not(:first-child)::before {
+        position: absolute;
+        content: '';
+        border-left: $border;
+        inset: 0.375rem auto;
+      }
     }
   }
 
+  .spinner {
+    padding: $padding;
+    height: 100%;
+  }
+
   .parent-issue {
-    border-right: 1px solid var(--button-border-color);
+    padding: $padding;
 
     .issue-title {
       color: var(--theme-content-accent-color);
@@ -154,6 +191,7 @@
   }
 
   .sub-issues {
+    padding: $padding;
     color: var(--theme-content-color);
     transition: color 0.15s;
 

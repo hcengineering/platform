@@ -26,7 +26,15 @@
   $: dueDateMs = value.dueDate
 
   const handleDueDateChanged = async (newDate: number | null) => {
-    await client.update(value, { dueDate: newDate })
+    await client.updateCollection(
+      value._class,
+      value.space,
+      value._id,
+      value.attachedTo,
+      value.attachedToClass,
+      value.collection,
+      { dueDate: newDate }
+    )
   }
 
   $: shouldRenderPresenter =

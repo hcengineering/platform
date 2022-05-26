@@ -60,7 +60,15 @@
 
     const newAssignee = result === null ? null : result._id
 
-    await client.update(currentIssue, { assignee: newAssignee })
+    await client.updateCollection(
+      currentIssue._class,
+      currentIssue.space,
+      currentIssue._id,
+      currentIssue.attachedTo,
+      currentIssue.attachedToClass,
+      currentIssue.collection,
+      { assignee: newAssignee }
+    )
   }
 
   const handleAssigneeEditorOpened = async (event: MouseEvent) => {
