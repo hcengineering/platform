@@ -130,13 +130,15 @@
     const dateSelectors = div?.getElementsByClassName('dateSelector')
     if (!dateSelectors) return
 
-    let closestDate: Timestamp | undefined = Array.from(dateSelectors).reduceRight((prevDate, cur) => {
-      const curDate = parseInt(cur.id)
-      if (prevDate < date) return curDate
-      if (curDate < date) return prevDate
-      if (curDate - date < prevDate - date) return curDate
-      else return prevDate
-    }, parseInt(dateSelectors[dateSelectors.length - 1].id))
+    let closestDate: Timestamp | undefined = parseInt(dateSelectors[dateSelectors.length - 1].id)
+
+    for (const elem of Array.from(dateSelectors).reverse()) {
+      const curDate = parseInt(elem.id)
+      if (curDate < date) break
+      else if (curDate - date < closestDate - date) {
+        closestDate = curDate
+      }
+    }
     if (closestDate && closestDate < date) closestDate = undefined
 
     if (closestDate) {
