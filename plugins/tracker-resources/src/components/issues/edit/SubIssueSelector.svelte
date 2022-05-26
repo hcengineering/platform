@@ -87,6 +87,7 @@
     }
   }
 
+  $: areSubIssuesLoading = !subIssues
   $: parentIssue = issue.$lookup?.attachedTo ? (issue.$lookup?.attachedTo as Issue) : null
   $: parentIssue &&
     subIssuesQeury.query(
@@ -98,7 +99,6 @@
 </script>
 
 {#if parentIssue}
-  {@const areSubIssuesLoading = !subIssues}
   <div class="flex root">
     <div class="item clear-mins">
       <Tooltip label={tracker.string.OpenParent} direction="bottom" fill>
