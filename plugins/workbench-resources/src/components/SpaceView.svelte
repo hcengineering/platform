@@ -89,7 +89,16 @@
       on:change={setViewlet}
     />
   {:else}
-    <SpaceHeader spaceId={space._id} {_class} {viewlets} {createItemDialog} {createItemLabel} bind:filters bind:search bind:viewlet />
+    <SpaceHeader
+      spaceId={space._id}
+      {_class}
+      {viewlets}
+      {createItemDialog}
+      {createItemLabel}
+      bind:filters
+      bind:search
+      bind:viewlet
+    />
   {/if}
   <SpaceContent space={space._id} {_class} bind:filters bind:search {viewlet} />
 {/if}

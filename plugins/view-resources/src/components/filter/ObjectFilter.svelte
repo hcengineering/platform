@@ -72,14 +72,13 @@
     states = val
     const result: Doc[] = []
     statesCount = []
-    const uniques = [...new Set(val.map(v => v.title))]
-    uniques.map((label, i) => {
+    const unique = [...new Set(val.map((v) => v.title))]
+    unique.forEach((label, i) => {
       let count = 0
-      states.filter(state => {
+      states.forEach((state) => {
         if (state.title === label) {
           if (!count) result[i] = state
           count += targets.get(state._id) ?? 0
-          return state
         }
       })
       statesCount[i] = count
@@ -130,18 +129,18 @@
   function toggle (value: Doc | undefined | null): void {
     if (isSelected(value, filter.value)) {
       if (isState) {
-        const ids = states.filter(state => state.title === (value as State).title).map(s => s._id)
-        filter.value = filter.value.filter(p => !ids.includes(p))
+        const ids = states.filter((state) => state.title === (value as State).title).map((s) => s._id)
+        filter.value = filter.value.filter((p) => !ids.includes(p))
       } else filter.value = filter.value.filter((p) => (value ? p !== value._id : p != null))
     } else {
       if (value) {
         if (isState) {
           filter.value = [
-              ...filter.value,
-              ...states
-                .filter(state => state.title === states.filter(s => s._id === value._id)[0].title)
-                .map(state => state._id)
-            ]
+            ...filter.value,
+            ...states
+              .filter((state) => state.title === states.filter((s) => s._id === value._id)[0].title)
+              .map((state) => state._id)
+          ]
         } else filter.value = [...filter.value, value._id]
       } else {
         filter.value = [...filter.value, undefined]

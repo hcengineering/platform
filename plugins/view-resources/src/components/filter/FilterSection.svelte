@@ -17,7 +17,7 @@
   import { Class, Doc, Ref, RefTo } from '@anticrm/core'
   import { eventToHTMLElement, IconClose, showPopup, Icon, Label } from '@anticrm/ui'
   import { Filter } from '@anticrm/view'
-  import { createEventDispatcher, onMount } from 'svelte'
+  import { createEventDispatcher } from 'svelte'
   import view from '../../plugin'
   import { getClient } from '@anticrm/presentation'
   import task from '@anticrm/task'
@@ -35,12 +35,12 @@
 
   async function getCountStates (ids: Ref<Doc>[]): Promise<number> {
     const selectStates = await client.findAll(targetClass, { _id: { $in: Array.from(ids) } }, {})
-    const unique = new Set(selectStates.map(s => (s as State).title))
+    const unique = new Set(selectStates.map((s) => (s as State).title))
     return unique.size
   }
 
   let countLabel: string = ''
-  async function getLabel(): Promise<void> {
+  async function getLabel (): Promise<void> {
     const count = isState ? await getCountStates(filter.value) : filter.value.length
     countLabel = await translate(view.string.FilterStatesCount, { value: count })
   }
