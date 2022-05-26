@@ -29,11 +29,11 @@
   })
 </script>
 
-<div class="selectPopup reminder" class:justify-center={!remindersCount}>
+<div class="notifyPopup" class:justify-center={!remindersCount}>
+  <div class="header">
+    <span class="fs-title overflow-label"><Label label={calendar.string.Reminders} /></span>
+  </div>
   {#if remindersCount}
-    <div class="header fs-title pl-4 pb-2">
-      <Label label={calendar.string.Reminders} />
-    </div>
     <Scroller>
       <div class="px-4 clear-mins">
         <Table
@@ -46,17 +46,8 @@
       </div>
     </Scroller>
   {:else}
-    <div class="flex-center h-full">
+    <div class="flex-grow flex-center">
       <Label label={calendar.string.NoReminders} />
     </div>
   {/if}
 </div>
-
-<style lang="scss">
-  .reminder {
-    padding: 0.5rem 0;
-    width: fit-content;
-    min-width: 16rem;
-    min-height: 12rem;
-  }
-</style>

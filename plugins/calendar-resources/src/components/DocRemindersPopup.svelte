@@ -15,7 +15,7 @@
 <script lang="ts">
   import { EmployeeAccount } from '@anticrm/contact'
   import { Class, Doc, getCurrentAccount, Ref } from '@anticrm/core'
-  import { Button, showPopup } from '@anticrm/ui'
+  import { Button, showPopup, Label, Scroller, IconAdd } from '@anticrm/ui'
   import { Table } from '@anticrm/view-resources'
   import calendar from '../plugin'
   import CreateReminder from './CreateReminder.svelte'
@@ -31,19 +31,20 @@
   const currentUser = getCurrentAccount() as EmployeeAccount
 </script>
 
-<div class="antiPopup">
-  <Button label={calendar.string.CreateReminder} kind={'primary'} on:click={(e) => click(e)} />
-  <div class="ap-space" />
-  <Table
-    _class={calendar.mixin.Reminder}
-    config={['']}
-    options={{}}
-    query={{ attachedTo, state: 'active', participants: currentUser.employee }}
-  />
+<div class="notifyPopup">
+  <div class="header flex-between">
+    <span class="fs-title overflow-label"><Label label={calendar.string.Reminders} /></span>
+    <Button icon={IconAdd} size={'medium'} kind={'transparent'} on:click={(e) => click(e)} />
+  </div>
+  <Scroller>
+    <div class="px-4 clear-mins">
+      <Table
+        _class={calendar.mixin.Reminder}
+        config={['']}
+        options={{}}
+        query={{ attachedTo, state: 'active', participants: currentUser.employee }}
+        hiddenHeader
+      />
+    </div>
+  </Scroller>
 </div>
-
-<style lang="scss">
-  .antiPopup {
-    padding: 1rem;
-  }
-</style>

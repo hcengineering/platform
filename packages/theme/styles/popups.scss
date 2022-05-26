@@ -332,6 +332,31 @@
   }
 }
 
+.notifyPopup {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  width: max-content;
+  height: max-content;
+  padding-bottom: 0.5rem;
+  min-width: 32rem;
+  max-width: 32rem;
+  min-height: 22rem;
+  max-height: 22rem;
+  background: var(--popup-bg-color);
+  border-radius: 0.5rem;
+  box-shadow: var(--popup-shadow);
+
+  .header {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    padding: 0 1rem;
+    height: 3rem;
+    border-bottom: 1px solid var(--popup-divider);
+  }
+}
+
 // Remove highlights table rows and hide dots in popups
 .popup .tr-body:hover, .popup-tooltip .tr-body:hover { background-color: transparent !important; }
 .popup-tooltip .tr-body .menuRow { visibility: hidden !important; }
