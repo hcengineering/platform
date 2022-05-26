@@ -69,7 +69,7 @@
     }
     &.vertical {
       display: grid;
-      grid-template-columns: 1fr 1.5fr;
+      grid-template-columns: 1fr 2fr;
       grid-auto-flow: row;
       justify-content: start;
       align-items: center;

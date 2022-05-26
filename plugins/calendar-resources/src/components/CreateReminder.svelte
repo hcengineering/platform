@@ -16,7 +16,7 @@
   import contact, { Employee, EmployeeAccount } from '@anticrm/contact'
   import { Class, Doc, getCurrentAccount, Ref } from '@anticrm/core'
   import { Card, getClient, UserBoxList } from '@anticrm/presentation'
-  import { DateOrShift, TimeShiftPicker, Grid, StylishEdit } from '@anticrm/ui'
+  import ui, { DateOrShift, TimeShiftPicker, Grid, StylishEdit, EditBox, DateRangePresenter } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import calendar from '../plugin'
 
@@ -24,7 +24,7 @@
   export let attachedToClass: Ref<Class<Doc>>
   export let title: string = ''
 
-  let value: DateOrShift = { shift: 30 * 60 * 1000 }
+  let value: number | null | undefined = null
   const currentUser = getCurrentAccount() as EmployeeAccount
   let participants: Ref<Employee>[] = [currentUser.employee]
   const space = calendar.space.PersonalEvents
@@ -37,15 +37,14 @@
   }
 
   async function saveReminder () {
-    let date: number | undefined = undefined
-    if (value.date !== undefined) {
-      date = new Date(value.date).getTime()
-    } else if (value.shift !== undefined) {
-      date = new Date().getTime() + value.shift
-    }
-    if (date === undefined) {
-      return
-    }
+    let date: number | undefined
+    if (value != null) date = value
+    // if (value.date !== undefined) {
+    //   date = new Date(value.date).getTime()
+    // } else if (value.shift !== undefined) {
+    //   date = new Date().getTime() + value.shift
+    // }
+    if (date === undefined) return
     const _id = await client.createDoc(calendar.class.Event, space, {
       attachedTo,
       attachedToClass,
@@ -69,16 +68,26 @@
   canSave={title !== undefined &&
     title.trim().length > 0 &&
     participants.length > 0 &&
-    (value.date !== undefined || value.shift !== undefined)}
+    value !== undefined}
   on:close={() => {
     dispatch('close')
   }}
 >
-  <Grid column={1} rowGap={1.75}>
-    <StylishEdit bind:value={title} label={calendar.string.Title} />
-    <div class="antiComponentBox">
-      <TimeShiftPicker title={calendar.string.Date} bind:value direction="after" />
-    </div>
+  <EditBox
+    bind:value={title}
+    placeholder={calendar.string.Title}
+    maxWidth={'37.5rem'}
+    kind={'large-style'}
+    focus
+  />
+  <svelte:fragment slot="pool">
+    <!-- <TimeShiftPicker title={calendar.string.Date} bind:value direction="after" /> -->
+    <DateRangePresenter
+      bind:value
+      withTime={true}
+      editable={true}
+      labelNull={ui.string.SelectDate}
+    />
     <UserBoxList
       _class={contact.class.Employee}
       items={participants}
@@ -96,5 +105,5 @@
         }
       }}
     />
-  </Grid>
+  </svelte:fragment>
 </Card>

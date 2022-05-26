@@ -111,8 +111,8 @@
     edits = edits
   }
   const saveDate = (): void => {
-    currentDate.setHours(edits[3].value > 0 ? edits[3].value : 0)
-    currentDate.setMinutes(edits[4].value > 0 ? edits[4].value : 0)
+    // currentDate.setHours(edits[3].value > 0 ? edits[3].value : 0)
+    // currentDate.setMinutes(edits[4].value > 0 ? edits[4].value : 0)
     currentDate.setSeconds(0, 0)
     value = currentDate.getTime()
     dateToEdits()

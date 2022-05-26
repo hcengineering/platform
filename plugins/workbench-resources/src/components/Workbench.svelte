@@ -371,7 +371,7 @@
           }}
           notify={hasNotification}
         />
-        <div class="flex-center">
+        <div class="flex-center mt-2">
           <div
             id="profile-button"
             class="cursor-pointer"
