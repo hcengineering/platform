@@ -22,6 +22,8 @@
   import { buildConfigLookup, getPresenter } from '../../utils'
   import view from '../../plugin'
   import { createEventDispatcher } from 'svelte'
+  import task from '@anticrm/task'
+  import type { State } from '@anticrm/task'
 
   export let _class: Ref<Class<Doc>>
   export let filter: Filter
@@ -62,6 +64,29 @@
   const targetClass = (hierarchy.getAttribute(_class, filter.key.key).type as RefTo<Doc>).to
   const clazz = hierarchy.getClass(targetClass)
   const targets = new Map<any, number>()
+  $: isState = clazz._id === task.class.State ?? false
+  let statesCount: number[] = []
+  let states: State[]
+
+  const groupValues = (val: State[]): (Doc | undefined | null)[] => {
+    states = val
+    const result: Doc[] = []
+    statesCount = []
+    const uniques = [...new Set(val.map(v => v.title))]
+    uniques.map((label, i) => {
+      let count = 0
+      states.filter(state => {
+        if (state.title === label) {
+          if (!count) result[i] = state
+          count += targets.get(state._id) ?? 0
+          return state
+        }
+      })
+      statesCount[i] = count
+    })
+    return result
+  }
+
   async function getValues (search: string): Promise<void> {
     if (objectsPromise) {
       await objectsPromise
@@ -88,6 +113,7 @@
     if (targets.has(undefined)) {
       values.unshift(undefined)
     }
+    if (isState) values = groupValues(values as State[])
     objectsPromise = undefined
   }
 
@@ -103,10 +129,20 @@
 
   function toggle (value: Doc | undefined | null): void {
     if (isSelected(value, filter.value)) {
-      filter.value = filter.value.filter((p) => (value ? p !== value._id : p != null))
+      if (isState) {
+        const ids = states.filter(state => state.title === (value as State).title).map(s => s._id)
+        filter.value = filter.value.filter(p => !ids.includes(p))
+      } else filter.value = filter.value.filter((p) => (value ? p !== value._id : p != null))
     } else {
       if (value) {
-        filter.value = [...filter.value, value._id]
+        if (isState) {
+          filter.value = [
+              ...filter.value,
+              ...states
+                .filter(state => state.title === states.filter(s => s._id === value._id)[0].title)
+                .map(state => state._id)
+            ]
+        } else filter.value = [...filter.value, value._id]
       } else {
         filter.value = [...filter.value, undefined]
       }
@@ -149,7 +185,7 @@
         {#if objectsPromise}
           <Loading />
         {:else}
-          {#each values as value}
+          {#each values as value, i}
             <button
               class="menu-item"
               on:click={() => {
@@ -168,7 +204,7 @@
                   {/if}
                 </div>
                 <div class="content-trans-color ml-2">
-                  {targets.get(value?._id)}
+                  {#if isState}{statesCount[i]}{:else}{targets.get(value?._id)}{/if}
                 </div>
               </div>
             </button>
@@ -178,7 +214,7 @@
     </div>
   </div>
   <Button
-    kind={'no-border'}
+    shape={'round'}
     label={view.string.Apply}
     on:click={() => {
       onChange(filter)

@@ -33,7 +33,7 @@
 
   // If defined, will show a number of dummy items before real data will appear.
   export let loadingProps: LoadingProps | undefined = undefined
-  export let filters: Filter[] | undefined = undefined
+  export let filters: Filter[] = []
 
   let resultQuery = query
 
@@ -56,7 +56,7 @@
   }}
 />
 
-{#if filters}
+{#if filters !== []}
   <FilterBar {_class} {query} bind:filters on:change={(e) => (resultQuery = e.detail)} />
 {/if}
 <Scroller tableFade>
