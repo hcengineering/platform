@@ -13,49 +13,26 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Button } from '@anticrm/ui'
   import tracker from '../../../plugin'
+  import CopyToClipboardButton from './CopyToClipboardButton.svelte'
 
   export let issueUrl: string | undefined = undefined
   export let issueId: string | undefined = undefined
   export let issueBranch: string | undefined = undefined
-
-  function copy (text?: string): void {
-    if (text) {
-      navigator.clipboard.writeText(text)
-    }
-  }
 </script>
 
 {#if issueUrl}
-  <Button
-    icon={tracker.icon.Issue}
-    title={tracker.string.CopyIssueUrl}
-    width="min-content"
-    size="small"
-    kind="transparent"
-    on:click={() => copy(issueUrl)}
-  />
+  <CopyToClipboardButton icon={tracker.icon.Issue} title={tracker.string.CopyIssueUrl} text={issueUrl} />
 {/if}
 
 {#if issueId}
-  <Button
-    icon={tracker.icon.Views}
-    title={tracker.string.CopyIssueId}
-    width="min-content"
-    size="small"
-    kind="transparent"
-    on:click={() => copy(issueId)}
-  />
+  <CopyToClipboardButton icon={tracker.icon.Views} title={tracker.string.CopyIssueId} text={issueId} />
 {/if}
 
 {#if issueBranch}
-  <Button
+  <CopyToClipboardButton
     icon={tracker.icon.TrackerApplication}
     title={tracker.string.CopyIssueBranch}
-    width="min-content"
-    size="small"
-    kind="transparent"
-    on:click={() => issueBranch}
+    text={issueBranch}
   />
 {/if}
