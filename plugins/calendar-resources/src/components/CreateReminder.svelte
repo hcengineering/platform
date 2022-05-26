@@ -16,7 +16,7 @@
   import contact, { Employee, EmployeeAccount } from '@anticrm/contact'
   import { Class, Doc, getCurrentAccount, Ref } from '@anticrm/core'
   import { Card, getClient, UserBoxList } from '@anticrm/presentation'
-  import ui, { DateOrShift, TimeShiftPicker, Grid, StylishEdit, EditBox, DateRangePresenter } from '@anticrm/ui'
+  import ui, { EditBox, DateRangePresenter } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import calendar from '../plugin'
 
@@ -65,29 +65,15 @@
 <Card
   label={calendar.string.CreateReminder}
   okAction={saveReminder}
-  canSave={title !== undefined &&
-    title.trim().length > 0 &&
-    participants.length > 0 &&
-    value !== undefined}
+  canSave={title !== undefined && title.trim().length > 0 && participants.length > 0 && value !== undefined}
   on:close={() => {
     dispatch('close')
   }}
 >
-  <EditBox
-    bind:value={title}
-    placeholder={calendar.string.Title}
-    maxWidth={'37.5rem'}
-    kind={'large-style'}
-    focus
-  />
+  <EditBox bind:value={title} placeholder={calendar.string.Title} maxWidth={'37.5rem'} kind={'large-style'} focus />
   <svelte:fragment slot="pool">
     <!-- <TimeShiftPicker title={calendar.string.Date} bind:value direction="after" /> -->
-    <DateRangePresenter
-      bind:value
-      withTime={true}
-      editable={true}
-      labelNull={ui.string.SelectDate}
-    />
+    <DateRangePresenter bind:value withTime={true} editable={true} labelNull={ui.string.SelectDate} />
     <UserBoxList
       _class={contact.class.Employee}
       items={participants}

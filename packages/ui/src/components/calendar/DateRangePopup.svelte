@@ -17,7 +17,6 @@
   import { dpstore } from '../..'
   import Month from './Month.svelte'
   import Scroller from '../Scroller.svelte'
-  import Button from '../Button.svelte'
   import TimeShiftPresenter from '../TimeShiftPresenter.svelte'
 
   export let direction: 'before' | 'after' = 'after'
@@ -35,7 +34,13 @@
   const MINUTE = 60 * 1000
   const HOUR = 60 * MINUTE
   const DAY = 24 * HOUR
-  $: values = [...minutes.map((m) => m * MINUTE), 'divider', ...hours.map((m) => m * HOUR), 'divider', ...days.map((m) => m * DAY)]
+  $: values = [
+    ...minutes.map((m) => m * MINUTE),
+    'divider',
+    ...hours.map((m) => m * HOUR),
+    'divider',
+    ...days.map((m) => m * DAY)
+  ]
 </script>
 
 <div class="month-popup-container">
@@ -87,7 +92,7 @@
       width: fit-content;
       width: 12rem;
       min-width: 12rem;
-      background-color: var(--board-bg-color);
+      background: var(--popup-bg-color);
       border: 1px solid var(--divider-color);
       border-radius: 0.5rem;
       box-shadow: var(--popup-shadow);
@@ -98,14 +103,14 @@
         flex-shrink: 0;
         margin-right: 0.75rem;
         padding: 0.25rem 0.5rem;
-        font-weight: 500;
-        color: var(--dark-color);
+        // font-weight: 500;
+        // color: var(--dark-color);
         background-color: transparent;
         border-radius: 0.25rem;
         cursor: pointer;
 
         &:hover {
-          color: var(--accent-color);
+          color: var(--caption-color);
           background-color: var(--button-bg-hover);
         }
       }
