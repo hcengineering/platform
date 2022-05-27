@@ -328,7 +328,9 @@ export class Hierarchy {
           break
         }
       }
-      ancestors = ancestors.filter((c) => this.isDerived(c, to as Ref<Class<Doc>>) && c !== to)
+      ancestors = ancestors.filter(
+        (c) => c !== to && (this.isInterface(this.classifiers.get(c)) || this.isDerived(c, to as Ref<Class<Doc>>))
+      )
     }
 
     for (let index = ancestors.length - 1; index >= 0; index--) {

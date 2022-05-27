@@ -13,11 +13,11 @@
 // limitations under the License.
 //
 
-import { Builder, Model } from '@anticrm/model'
+import { Builder, Mixin, Model } from '@anticrm/model'
 import { Ref, Domain, DOMAIN_MODEL } from '@anticrm/core'
-import core, { TDoc } from '@anticrm/model-core'
+import core, { TClass, TDoc } from '@anticrm/model-core'
 import setting from './plugin'
-import type { Integration, IntegrationType, Handler, SettingsCategory } from '@anticrm/setting'
+import type { Editable, Integration, IntegrationType, Handler, SettingsCategory } from '@anticrm/setting'
 import type { Asset, IntlString } from '@anticrm/platform'
 import task from '@anticrm/task'
 import activity from '@anticrm/activity'
@@ -52,8 +52,11 @@ export class TIntegrationType extends TDoc implements IntegrationType {
   onDisconnect!: Handler
 }
 
+@Mixin(setting.mixin.Editable, core.class.Class)
+export class TEditable extends TClass implements Editable {}
+
 export function createModel (builder: Builder): void {
-  builder.createModel(TIntegration, TIntegrationType, TSettingsCategory)
+  builder.createModel(TIntegration, TIntegrationType, TSettingsCategory, TEditable)
 
   builder.createDoc(
     setting.class.SettingsCategory,

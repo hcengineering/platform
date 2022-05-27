@@ -13,13 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, Ref } from '@anticrm/core'
+  import core, { Class, Doc, Ref } from '@anticrm/core'
+  import { getClient } from '@anticrm/presentation'
   import { getCurrentLocation, Icon, Label, navigate } from '@anticrm/ui'
   import setting from '../plugin'
   import ClassAttributes from './ClassAttributes.svelte'
   import ClassHierarchy from './ClassHierarchy.svelte'
 
   const loc = getCurrentLocation()
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
 
   let _class: Ref<Class<Doc>> | undefined = loc.query?._class as Ref<Class<Doc>> | undefined
 
@@ -29,7 +32,11 @@
     navigate(loc)
   }
 
-  const classes: Ref<Class<Doc>>[] = ['contact:class:Contact' as Ref<Class<Doc>>]
+  const classes = hierarchy
+    .getDescendants(core.class.Doc)
+    .map((p) => hierarchy.getClass(p))
+    .filter((p) => hierarchy.hasMixin(p, setting.mixin.Editable))
+    .map((p) => p._id)
 </script>
 
 <div class="antiComponent">

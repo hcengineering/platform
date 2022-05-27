@@ -39,8 +39,9 @@
   $: attributes = getCustomAttributes(_class)
 
   function getCustomAttributes (_class: Ref<Class<Doc>>): AnyAttribute[] {
-    const attributes = hierarchy.getAllAttributes(_class, core.class.AttachedDoc)
-    return Array.from(attributes.values())
+    const attributes = Array.from(hierarchy.getAllAttributes(_class, core.class.AttachedDoc).values())
+    const filtred = attributes.filter((p) => !p.hidden)
+    return filtred
   }
 
   function update () {
@@ -104,7 +105,7 @@
     <tr class="scroller-thead__tr">
       <th>
         <div class="antiTable-cells">
-          <Label label={setting.string.Attributes} />
+          <Label label={setting.string.Attribute} />
         </div>
       </th>
       <th>

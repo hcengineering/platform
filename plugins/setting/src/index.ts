@@ -16,7 +16,7 @@
 import { Asset, IntlString, plugin, Resource } from '@anticrm/platform'
 import type { Plugin } from '@anticrm/platform'
 import { AnyComponent } from '@anticrm/ui'
-import type { Class, Doc, Ref } from '@anticrm/core'
+import type { Class, Doc, Mixin, Ref } from '@anticrm/core'
 
 /**
  * @public
@@ -43,6 +43,11 @@ export interface Integration extends Doc {
   disabled: boolean
   value: string
 }
+
+/**
+ * @public
+ */
+export interface Editable extends Class<Doc> {}
 
 /**
  * @public
@@ -74,6 +79,9 @@ export default plugin(settingId, {
     Privacy: '' as Ref<Doc>,
     Terms: '' as Ref<Doc>,
     ClassSetting: '' as Ref<Doc>
+  },
+  mixin: {
+    Editable: '' as Ref<Mixin<Editable>>
   },
   class: {
     SettingsCategory: '' as Ref<Class<SettingsCategory>>,

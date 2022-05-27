@@ -22,6 +22,7 @@ import { createAction } from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
 import type {} from '@anticrm/view'
 import view from '@anticrm/view'
+import setting from '@anticrm/setting'
 import inventory from './plugin'
 
 export const DOMAIN_INVENTORY = 'inventory' as Domain
@@ -92,6 +93,8 @@ export function createModel (builder: Builder): void {
   builder.mixin(inventory.class.Product, core.class.Class, view.mixin.ObjectEditor, {
     editor: inventory.component.EditProduct
   })
+
+  builder.mixin(inventory.class.Product, core.class.Class, setting.mixin.Editable, {})
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: inventory.class.Product,

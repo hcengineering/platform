@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, Ref } from '@anticrm/core'
+  import { Class, ClassifierKind, Doc, Ref } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
   import { Label } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
@@ -28,7 +28,13 @@
     const result: Ref<Class<Doc>>[] = []
     const desc = hierarchy.getDescendants(_class)
     for (const clazz of desc) {
-      if (hierarchy.getClass(clazz).extends === _class) {
+      const cls = hierarchy.getClass(clazz)
+      if (
+        cls.extends === _class &&
+        !cls.hidden &&
+        [ClassifierKind.CLASS, ClassifierKind.MIXIN].includes(cls.kind) &&
+        cls.label !== undefined
+      ) {
         result.push(clazz)
       }
     }

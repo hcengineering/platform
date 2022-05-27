@@ -42,6 +42,7 @@ import workbench, { Application, createNavigateAction } from '@anticrm/model-wor
 import { IntlString } from '@anticrm/platform'
 import { Applicant, Candidate, Candidates, Vacancy } from '@anticrm/recruit'
 import { KeyBinding } from '@anticrm/view'
+import setting from '@anticrm/setting'
 import recruit from './plugin'
 import { createReviewModel, reviewTableConfig, reviewTableOptions } from './review'
 import { TOpinion, TReview } from './review-model'
@@ -140,6 +141,10 @@ export function createModel (builder: Builder): void {
   builder.mixin(recruit.mixin.Candidate, core.class.Mixin, view.mixin.ObjectFactory, {
     component: recruit.component.CreateCandidate
   })
+
+  builder.mixin(recruit.class.Applicant, core.class.Class, setting.mixin.Editable, {})
+
+  builder.mixin(recruit.class.Vacancy, core.class.Class, setting.mixin.Editable, {})
 
   const vacanciesId = 'vacancies'
   const candidatesId = 'candidates'
