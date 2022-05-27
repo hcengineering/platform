@@ -1,81 +1,39 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
 
-  import { Board, CardLabel } from '@anticrm/board'
-  import { Ref } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
-  import {
-    Label,
-    Button,
-    EditBox,
-    Icon,
-    IconBack,
-    IconCheck,
-    IconClose,
-    LinkWaterColor,
-    hexColorToNumber
-  } from '@anticrm/ui'
+  import { Label, Button, EditBox, Icon, IconBack, IconCheck, IconClose, hexColorToNumber } from '@anticrm/ui'
 
   import board from '../../plugin'
   import { createCardLabel, getBoardAvailableColors } from '../../utils/BoardUtils'
   import ColorPresenter from '../presenters/ColorPresenter.svelte'
+  import { TagElement } from '@anticrm/tags'
 
-  export let object: CardLabel | undefined
-  export let boardRef: Ref<Board>
+  export let object: TagElement | undefined
   export let onBack: () => void
 
-  let selected: {
-    color?: number
-    isHidden?: boolean
-  } = { color: object?.color }
-
-  let title = object?.title
-  const hiddenColor = hexColorToNumber(LinkWaterColor)
+  let { title, color } = object ?? {}
   const client = getClient()
   const dispatch = createEventDispatcher()
-  const colorGroups: number[][] = getBoardAvailableColors().reduce(
-    (result: number[][], currentValue: string) => {
-      const last = result[result.length - 1]
-      if (last.length >= 5) {
-        result.push([hexColorToNumber(currentValue)])
-      } else {
-        last.push(hexColorToNumber(currentValue))
-      }
-      return result
-    },
-    [[]]
-  )
-
-  function selectColor (color: number, isHidden?: boolean) {
-    selected = { color, isHidden }
-  }
+  const colorGroups = (function chunk (colors: number[]): number[][] {
+    return colors.length ? [colors.slice(0, 5), ...chunk(colors.slice(5))] : []
+  })(getBoardAvailableColors().map(hexColorToNumber))
 
   async function save () {
-    const { color, isHidden } = selected
-    if (!color) {
+    if (!title || !color) {
       return
     }
-
-    if (object?._id) {
-      await client.update(object, {
-        color,
-        title: title ?? '',
-        isHidden: isHidden ?? false
-      })
+    if (object) {
+      await client.update(object, { title, color })
     } else {
-      await createCardLabel(client, boardRef, color, title, isHidden)
+      await createCardLabel(client, { title, color })
     }
-
     onBack()
   }
 
   async function remove () {
-    if (!object?._id) {
-      return
-    }
-
-    await client.removeDoc(object._class, object.space, object._id)
-
+    if (!object) return
+    await client.remove(object)
     onBack()
   }
 </script>
@@ -118,10 +76,16 @@
     <div class="flex-col mt-1 mb-1 flex-gap-2">
       {#each colorGroups as colorGroup}
         <div class="flex-row-stretch flex-gap-2">
-          {#each colorGroup as color}
+          {#each colorGroup as c}
             <div class="w-14">
-              <ColorPresenter value={color} size="large" on:click={() => selectColor(color)}>
-                {#if selected.color === color}
+              <ColorPresenter
+                value={c}
+                size="large"
+                on:click={() => {
+                  color = c
+                }}
+              >
+                {#if c === color}
                   <div class="flex-center flex-grow fs-title h-full">
                     <Icon icon={IconCheck} size="small" />
                   </div>
@@ -131,27 +95,12 @@
           {/each}
         </div>
       {/each}
-      <div class="flex-row-stretch flex-gap-2">
-        <div class="w-14">
-          <ColorPresenter value={hiddenColor} size="large" on:click={() => selectColor(hiddenColor, true)}>
-            {#if selected.isHidden}
-              <div class="flex-center flex-grow fs-title h-full">
-                <Icon icon={IconCheck} size="small" />
-              </div>
-            {/if}
-          </ColorPresenter>
-        </div>
-        <div class="flex-col text-md">
-          <div class="fs-bold"><Label label={board.string.NoColor} /></div>
-          <div><Label label={board.string.NoColorInfo} /></div>
-        </div>
-      </div>
     </div>
   </div>
   <div class="ap-footer">
-    {#if object?._id}
+    {#if object}
       <Button size="small" kind="dangerous" label={board.string.Delete} on:click={remove} />
     {/if}
-    <Button label={board.string.Save} size="small" kind="primary" on:click={save} disabled={!selected.color} />
+    <Button label={board.string.Save} size="small" kind="primary" on:click={save} disabled={!color || !title} />
   </div>
 </div>

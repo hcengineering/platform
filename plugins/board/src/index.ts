@@ -15,13 +15,14 @@
 //
 
 import { Employee } from '@anticrm/contact'
-import type { AttachedDoc, Class, Doc, Markup, Ref, Type } from '@anticrm/core'
+import type { Class, Doc, Markup, Ref, Type } from '@anticrm/core'
 import type { Asset, IntlString, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import type { Preference } from '@anticrm/preference'
 import type { DoneState, KanbanTemplateSpace, SpaceWithStates, Task } from '@anticrm/task'
 import type { AnyComponent } from '@anticrm/ui'
 import { Action, ActionCategory } from '@anticrm/view'
+import { TagCategory } from '@anticrm/tags'
 
 /**
  * @public
@@ -43,15 +44,6 @@ export interface BoardView extends SpaceWithStates {
 /**
  * @public
  */
-export interface CardLabel extends AttachedDoc {
-  title: string
-  color: number
-  isHidden?: boolean
-}
-
-/**
- * @public
- */
 export interface CardCover {
   color: number
   size: 'large' | 'small'
@@ -67,8 +59,6 @@ export interface Card extends Task {
   isArchived?: boolean
 
   members?: Ref<Employee>[]
-
-  labels: Ref<CardLabel>[]
 
   location?: string
 
@@ -108,13 +98,13 @@ const boards = plugin(boardId, {
   class: {
     Board: '' as Ref<Class<Board>>,
     Card: '' as Ref<Class<Card>>,
-    CardLabel: '' as Ref<Class<CardLabel>>,
     MenuPage: '' as Ref<Class<MenuPage>>,
     CommonBoardPreference: '' as Ref<Class<CommonBoardPreference>>,
     CardCover: '' as Ref<Class<Type<CardCover>>>
   },
   category: {
-    Card: '' as Ref<ActionCategory>
+    Card: '' as Ref<ActionCategory>,
+    Other: '' as Ref<TagCategory>
   },
   state: {
     Completed: '' as Ref<DoneState>

@@ -15,12 +15,4 @@
 
 import { Builder } from '@anticrm/model'
 
-import serverCore from '@anticrm/server-core'
-import core from '@anticrm/core'
-import serverBoard from '@anticrm/server-board'
-
-export function createModel (builder: Builder): void {
-  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverBoard.trigger.OnLabelDelete
-  })
-}
+export function createModel (builder: Builder): void {}

@@ -13,48 +13,5 @@
 // limitations under the License.
 //
 
-import type { Tx, TxCreateDoc, TxRemoveDoc } from '@anticrm/core'
-import type { TriggerControl } from '@anticrm/server-core'
-import type { Card, CardLabel } from '@anticrm/board'
-import board from '@anticrm/board'
-import core, { TxProcessor } from '@anticrm/core'
-
-/**
- * @public
- */
-export async function OnLabelDelete (tx: Tx, { findAll, hierarchy, txFactory }: TriggerControl): Promise<Tx[]> {
-  if (tx._class !== core.class.TxRemoveDoc) {
-    return []
-  }
-
-  const rmTx = tx as TxRemoveDoc<CardLabel>
-  if (!hierarchy.isDerived(rmTx.objectClass, board.class.CardLabel)) {
-    return []
-  }
-
-  const createTx = (
-    await findAll(
-      core.class.TxCreateDoc,
-      {
-        objectId: rmTx.objectId
-      },
-      { limit: 1 }
-    )
-  )[0]
-  if (createTx === undefined) {
-    return []
-  }
-
-  const label = TxProcessor.createDoc2Doc(createTx as TxCreateDoc<CardLabel>)
-  const cards = await findAll<Card>(board.class.Card, { space: label.attachedTo as any, labels: label._id })
-  return cards.map((card) =>
-    txFactory.createTxUpdateDoc<Card>(card._class, card.space, card._id, { $pull: { labels: label._id as any } })
-  )
-}
-
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-export default async () => ({
-  trigger: {
-    OnLabelDelete
-  }
-})
+export default async () => ({})

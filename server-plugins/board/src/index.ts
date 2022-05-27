@@ -13,9 +13,8 @@
 // limitations under the License.
 //
 
-import type { Resource, Plugin } from '@anticrm/platform'
+import type { Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
-import type { TriggerFunc } from '@anticrm/server-core'
 
 /**
  * @public
@@ -25,8 +24,4 @@ export const serverBoardId = 'server-board' as Plugin
 /**
  * @public
  */
-export default plugin(serverBoardId, {
-  trigger: {
-    OnLabelDelete: '' as Resource<TriggerFunc>
-  }
-})
+export default plugin(serverBoardId, {})

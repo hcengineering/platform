@@ -14,7 +14,7 @@
 //
 
 // To help typescript locate view plugin properly
-import type { Board, Card, CardLabel, MenuPage, CommonBoardPreference, CardCover } from '@anticrm/board'
+import type { Board, Card, MenuPage, CommonBoardPreference, CardCover } from '@anticrm/board'
 import type { Employee } from '@anticrm/contact'
 import { DOMAIN_MODEL, IndexKind, Markup, Ref, Type } from '@anticrm/core'
 import {
@@ -33,7 +33,7 @@ import {
 import attachment from '@anticrm/model-attachment'
 import chunter from '@anticrm/model-chunter'
 import contact from '@anticrm/model-contact'
-import core, { TAttachedDoc, TDoc, TType } from '@anticrm/model-core'
+import core, { TDoc, TType } from '@anticrm/model-core'
 import task, { TSpaceWithStates, TTask } from '@anticrm/model-task'
 import view, { actionTemplates, createAction } from '@anticrm/model-view'
 import workbench, { Application } from '@anticrm/model-workbench'
@@ -47,14 +47,6 @@ import board from './plugin'
 export class TBoard extends TSpaceWithStates implements Board {
   color!: number
   background!: string
-}
-
-@Model(board.class.CardLabel, core.class.AttachedDoc, DOMAIN_MODEL)
-@UX(board.string.Labels)
-export class TCardLabel extends TAttachedDoc implements CardLabel {
-  title!: string
-  color!: number
-  isHidden?: boolean
 }
 
 function TypeCardCover (): Type<CardCover> {
@@ -90,9 +82,6 @@ export class TCard extends TTask implements Card {
   @Index(IndexKind.FullText)
   description!: Markup
 
-  @Prop(Collection(board.class.CardLabel), board.string.Labels)
-  labels!: Ref<CardLabel>[]
-
   @Prop(TypeString(), board.string.Location)
   @Index(IndexKind.FullText)
   location?: string
@@ -121,7 +110,7 @@ export class TMenuPage extends TDoc implements MenuPage {
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TBoard, TCard, TCardLabel, TMenuPage, TCommonBoardPreference, TCardCover)
+  builder.createModel(TBoard, TCard, TMenuPage, TCommonBoardPreference, TCardCover)
 
   builder.createDoc(board.class.MenuPage, core.space.Model, {
     component: board.component.Archive,
@@ -214,14 +203,6 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(board.class.Card, core.class.Class, view.mixin.AttributePresenter, {
     presenter: board.component.CardPresenter
-  })
-
-  builder.mixin(board.class.CardLabel, core.class.Class, view.mixin.AttributePresenter, {
-    presenter: board.component.CardLabelPresenter
-  })
-
-  builder.mixin(board.class.CardLabel, core.class.Class, view.mixin.CollectionPresenter, {
-    presenter: board.component.CardLabelPresenter
   })
 
   builder.mixin(board.class.Board, core.class.Class, view.mixin.AttributePresenter, {
