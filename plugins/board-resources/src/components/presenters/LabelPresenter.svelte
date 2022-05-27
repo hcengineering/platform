@@ -1,8 +1,8 @@
 <script lang="ts">
-  import type { CardLabel } from '@anticrm/board'
+  import { TagReference } from '@anticrm/tags'
   import ColorPresenter from './ColorPresenter.svelte'
 
-  export let value: CardLabel
+  export let value: TagReference
   export let isHovered: boolean = false
   export let size: 'tiny' | 'x-small' | 'small' | 'medium' | 'large' = 'medium'
 </script>
@@ -10,7 +10,7 @@
 {#if value}
   <ColorPresenter value={value.color} {isHovered} {size} on:click>
     {#if size !== 'tiny'}
-      <div class="flex-center h-full w-full fs-title text-sm pr-1 pl-1">{value.title ?? ''}</div>
+      <div class="flex-center h-full w-full fs-title text-sm pr-1 pl-1">{value.title}</div>
     {/if}
   </ColorPresenter>
 {/if}

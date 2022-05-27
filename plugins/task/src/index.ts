@@ -84,6 +84,7 @@ export interface Task extends AttachedDoc, DocWithRank {
   dueDate: Timestamp | null
   startDate: Timestamp | null
   todoItems?: number
+  labels?: number
 }
 
 /**
@@ -116,7 +117,6 @@ export interface Issue extends Task {
 
   comments?: number
   attachments?: number
-  labels?: string
 }
 
 /**

@@ -52,7 +52,6 @@
       assignee: null,
       description: '',
       members: [],
-      labels: [],
       location: '',
       startDate: null,
       dueDate: null

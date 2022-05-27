@@ -60,6 +60,7 @@ import {
   WonStateTemplate
 } from '@anticrm/task'
 import { AnyComponent } from '@anticrm/ui'
+import tags from '@anticrm/tags'
 import task from './plugin'
 
 export { createKanbanTemplate, createSequence, taskOperation } from './migration'
@@ -123,6 +124,9 @@ export class TTask extends TAttachedDoc implements Task {
 
   @Prop(Collection(task.class.TodoItem), task.string.Todos)
   todoItems!: number
+
+  @Prop(Collection(tags.class.TagReference, task.string.TaskLabels), task.string.TaskLabels)
+  labels!: number
 }
 
 @Model(task.class.TodoItem, core.class.AttachedDoc, DOMAIN_TASK, [task.interface.DocWithRank])
@@ -174,10 +178,6 @@ export class TIssue extends TTask implements Issue {
 
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, undefined, attachment.string.Files)
   attachments!: number
-
-  @Prop(TypeString(), task.string.TaskLabels)
-  @Index(IndexKind.FullText)
-  labels!: string
 
   @Prop(TypeRef(contact.class.Employee), task.string.TaskAssignee)
   declare assignee: Ref<Employee> | null

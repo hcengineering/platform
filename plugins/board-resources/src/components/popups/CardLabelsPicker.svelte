@@ -1,7 +1,8 @@
 <script lang="ts">
-  import { Card, CardLabel } from '@anticrm/board'
+  import { Card } from '@anticrm/board'
   import type { Ref } from '@anticrm/core'
-  import { getClient } from '@anticrm/presentation'
+  import tags, { TagElement, TagReference } from '@anticrm/tags'
+  import { createQuery, getClient } from '@anticrm/presentation'
   import {
     Button,
     EditBox,
@@ -16,64 +17,44 @@
   import { createEventDispatcher } from 'svelte'
 
   import board from '../../plugin'
-  import { getBoardLabels } from '../../utils/BoardUtils'
+  import { addCardLabel } from '../../utils/BoardUtils'
 
   export let object: Card
-  export let search: string | undefined = undefined
-  export let onEdit: (label: CardLabel) => void
+  export let search: string = ''
+  export let onEdit: (label: TagElement) => void
   export let onCreate: () => void
 
   const client = getClient()
 
-  let boardCardLabels: CardLabel[] = []
-  let filteredLabels: CardLabel[] = []
-  let hovered: Ref<CardLabel> | undefined = undefined
+  let hovered: Ref<TagElement> | undefined = undefined
   const dispatch = createEventDispatcher()
 
-  function applySearch () {
-    if (!search || search.trim().length <= 0) {
-      filteredLabels = boardCardLabels
+  let labels: TagElement[] = []
+  const labelsQuery = createQuery()
+  $: labelsQuery.query(
+    tags.class.TagElement,
+    { title: { $like: '%' + search + '%' }, targetClass: board.class.Card },
+    (result) => {
+      labels = result
+    }
+  )
+
+  let cardLabels: TagReference[] = []
+  let cardLabelRefs: Ref<TagElement>[] = []
+  const cardLabelsQuery = createQuery()
+  $: cardLabelsQuery.query(tags.class.TagReference, { attachedTo: object._id }, (result) => {
+    cardLabels = result
+    cardLabelRefs = result.map(({ tag }) => tag)
+  })
+
+  async function toggle (label: TagElement) {
+    const cardLabel = cardLabels.find(({ tag }) => tag === label._id)
+    if (cardLabel) {
+      await client.remove(cardLabel)
       return
     }
-
-    const text = search!.toUpperCase()
-    filteredLabels = boardCardLabels.filter((l) => l.title?.toUpperCase().includes(text) ?? false)
+    addCardLabel(client, object, label)
   }
-
-  async function fetchBoardLabels () {
-    if (object.space) {
-      boardCardLabels = await getBoardLabels(client, object.space)
-      applySearch()
-    }
-  }
-
-  async function fetch () {
-    if (!object) {
-      return
-    }
-
-    object = (await client.findOne(object._class, { _id: object._id })) ?? object
-  }
-
-  async function toggle (label: CardLabel) {
-    if (!object) {
-      return
-    }
-
-    if (object?.labels?.includes(label._id)) {
-      await client.update(object, {
-        $pull: { labels: label._id as any } // TODO: fix as any
-      })
-    } else {
-      await client.update(object, {
-        $push: { labels: label._id }
-      })
-    }
-
-    fetch()
-  }
-
-  $: object.space && fetchBoardLabels()
 </script>
 
 <div class="antiPopup w-85 pb-2">
@@ -95,17 +76,12 @@
   <div class="ap-space bottom-divider" />
   <div class="flex-col ml-4 mt-2 mb-1 mr-2 flex-gap-1">
     <div class="p-2 mt-1 mb-1 border-bg-accent border-radius-1">
-      <EditBox
-        bind:value={search}
-        maxWidth="100%"
-        placeholder={board.string.SearchLabels}
-        on:change={() => applySearch()}
-      />
+      <EditBox bind:value={search} maxWidth="100%" placeholder={board.string.SearchLabels} />
     </div>
     <div class="text-md font-medium">
       <Label label={board.string.Labels} />
     </div>
-    {#each filteredLabels as label}
+    {#each labels as label}
       <div
         class="flex-row-stretch"
         on:mouseover={() => {
@@ -127,8 +103,8 @@
           style:box-shadow={hovered === label._id ? `-0.4rem 0 ${numberToRGB(label.color, 0.6)}` : ''}
           on:click={() => toggle(label)}
         >
-          {label.title ?? ''}
-          {#if object?.labels?.includes(label._id)}
+          {label.title}
+          {#if cardLabelRefs.includes(label._id)}
             <div class="absolute flex-center h-full mr-2" style:top="0" style:right="0">
               <Icon icon={IconCheck} size="small" />
             </div>

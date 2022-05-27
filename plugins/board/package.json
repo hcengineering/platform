@@ -32,6 +32,7 @@
     "@anticrm/view": "~0.6.0",
     "@anticrm/task": "~0.6.0",
     "@anticrm/ui": "~0.6.0",
-    "@anticrm/preference": "~0.6.0"
+    "@anticrm/preference": "~0.6.0",
+    "@anticrm/tags": "~0.6.2"
   }
 }

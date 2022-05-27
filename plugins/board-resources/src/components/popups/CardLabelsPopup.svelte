@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { Card, CardLabel } from '@anticrm/board'
+  import { Card } from '@anticrm/board'
+  import { TagElement } from '@anticrm/tags'
   import CardLabelsEditor from './CardLabelsEditor.svelte'
   import CardLabelsPicker from './CardLabelsPicker.svelte'
 
@@ -7,22 +8,17 @@
 
   let editMode: {
     isEdit?: boolean
-    object?: CardLabel
+    object?: TagElement
   } = {}
   let search: string | undefined = undefined
 
-  function setEditMode (isEdit: boolean, object?: CardLabel) {
+  function setEditMode (isEdit: boolean, object?: TagElement) {
     editMode = { isEdit, object }
   }
 </script>
 
 {#if editMode.isEdit}
-  <CardLabelsEditor
-    on:close
-    boardRef={value.space}
-    object={editMode.object}
-    onBack={() => setEditMode(false, undefined)}
-  />
+  <CardLabelsEditor on:close object={editMode.object} onBack={() => setEditMode(false, undefined)} />
 {:else}
   <CardLabelsPicker
     bind:search
