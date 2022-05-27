@@ -39,8 +39,18 @@
 {#each classes as cl}
   {@const clazz = hierarchy.getClass(cl)}
   {@const desc = getDescendants(cl)}
-  <div class="ac-column__list-item" class:selected={cl === _class} on:click={() => { dispatch('select', cl)}}>
-    <div on:click={() => { dispatch('select', cl)}}>
+  <div
+    class="ac-column__list-item"
+    class:selected={cl === _class}
+    on:click={() => {
+      dispatch('select', cl)
+    }}
+  >
+    <div
+      on:click={() => {
+        dispatch('select', cl)
+      }}
+    >
       <Label label={clazz.label} />
     </div>
   </div>

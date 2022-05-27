@@ -13,9 +13,20 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core,{ AnyAttribute,Class,Doc,Ref } from '@anticrm/core'
-  import presentation,{ getClient,MessageBox } from '@anticrm/presentation'
-  import { Action,CircleButton,eventToHTMLElement,IconAdd,IconDelete,IconEdit,Label,Menu, IconMoreV,showPopup } from '@anticrm/ui'
+  import core, { AnyAttribute, Class, Doc, Ref } from '@anticrm/core'
+  import presentation, { getClient, MessageBox } from '@anticrm/presentation'
+  import {
+    Action,
+    CircleButton,
+    eventToHTMLElement,
+    IconAdd,
+    IconDelete,
+    IconEdit,
+    Label,
+    Menu,
+    IconMoreV,
+    showPopup
+  } from '@anticrm/ui'
   import BooleanPresenter from '@anticrm/view-resources/src/components/BooleanPresenter.svelte'
   import setting from '../plugin'
   import CreateAttribute from './CreateAttribute.svelte'
@@ -62,17 +73,24 @@
   }
 
   async function showMenu (ev: MouseEvent, attribute: AnyAttribute) {
-    const exist = await client.findOne(attribute.attributeOf, { [attribute.name]: { $exist: true } }) !== undefined
+    const exist = (await client.findOne(attribute.attributeOf, { [attribute.name]: { $exist: true } })) !== undefined
 
-    const actions: Action[] = [{
-      label: presentation.string.Edit,
-      icon: IconEdit,
-      action: async () => { editAttribute(attribute, exist) }
-    }, {
-      label: presentation.string.Remove,
-      icon: IconDelete,
-      action: async () => { removeAttribute(attribute, exist) }
-    }]
+    const actions: Action[] = [
+      {
+        label: presentation.string.Edit,
+        icon: IconEdit,
+        action: async () => {
+          editAttribute(attribute, exist)
+        }
+      },
+      {
+        label: presentation.string.Remove,
+        icon: IconDelete,
+        action: async () => {
+          removeAttribute(attribute, exist)
+        }
+      }
+    ]
     showPopup(Menu, { actions }, eventToHTMLElement(ev), () => {})
   }
 </script>
@@ -103,19 +121,12 @@
   </thead>
   <tbody>
     {#each attributes as attr}
-      <tr
-        class="antiTable-body__row"
-        on:contextmenu|preventDefault={(ev) => showMenu(ev, attr)}
-      >
+      <tr class="antiTable-body__row" on:contextmenu|preventDefault={(ev) => showMenu(ev, attr)}>
         <td>
           <div class="antiTable-cells__firstCell">
             <Label label={attr.label} />
             {#if attr.isCustom}
-              <div
-                id="context-menu"
-                class="antiTable-cells__firstCell-menuRow"
-                on:click={(ev) => showMenu(ev, attr)}
-              >
+              <div id="context-menu" class="antiTable-cells__firstCell-menuRow" on:click={(ev) => showMenu(ev, attr)}>
                 <IconMoreV size={'small'} />
               </div>
             {/if}
@@ -125,7 +136,7 @@
           <Label label={attr.type.label} />
         </td>
         <td>
-          <BooleanPresenter value={attr.isCustom ?? false}/>
+          <BooleanPresenter value={attr.isCustom ?? false} />
         </td>
       </tr>
     {/each}

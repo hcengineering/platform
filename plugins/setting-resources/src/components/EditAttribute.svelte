@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core,{ AnyAttribute,Class,DocumentUpdate, IndexKind, PropertyType, Ref, Type } from '@anticrm/core'
-  import { getEmbeddedLabel,translate } from '@anticrm/platform'
-  import presentation, { Card,getClient } from '@anticrm/presentation'
+  import core, { AnyAttribute, Class, DocumentUpdate, IndexKind, PropertyType, Ref, Type } from '@anticrm/core'
+  import { getEmbeddedLabel, translate } from '@anticrm/platform'
+  import presentation, { Card, getClient } from '@anticrm/presentation'
   import setting from '../plugin'
-  import { AnyComponent, Component, DropdownIntlItem, DropdownLabelsIntl, EditBox,Label } from '@anticrm/ui'
+  import { AnyComponent, Component, DropdownIntlItem, DropdownLabelsIntl, EditBox, Label } from '@anticrm/ui'
   import view from '@anticrm/view-resources/src/plugin'
   import { createEventDispatcher } from 'svelte'
 
@@ -32,7 +32,7 @@
   const hierarchy = client.getHierarchy()
   const dispatch = createEventDispatcher()
 
-  translate(attribute.label, {}).then((p) => name = p)
+  translate(attribute.label, {}).then((p) => (name = p))
 
   async function save (): Promise<void> {
     const update: DocumentUpdate<AnyAttribute> = {

@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AnyAttribute, Class, Doc, Ref } from '@anticrm/core'
+  import { Class, Doc, Ref } from '@anticrm/core'
   import { getCurrentLocation, Icon, Label, navigate } from '@anticrm/ui'
   import setting from '../plugin'
   import ClassAttributes from './ClassAttributes.svelte'
@@ -29,8 +29,7 @@
     navigate(loc)
   }
 
-  let classes: Ref<Class<Doc>>[] = ['contact:class:Contact' as Ref<Class<Doc>>]
-
+  const classes: Ref<Class<Doc>>[] = ['contact:class:Contact' as Ref<Class<Doc>>]
 </script>
 
 <div class="antiComponent">
@@ -41,9 +40,13 @@
   <div class="ac-body columns hScroll">
     <div class="ac-column">
       <div class="overflow-y-auto">
-        <ClassHierarchy {classes} {_class} on:select={(e) => {
-          _class = e.detail
-        }} />
+        <ClassHierarchy
+          {classes}
+          {_class}
+          on:select={(e) => {
+            _class = e.detail
+          }}
+        />
       </div>
     </div>
     <div class="ac-column max">
