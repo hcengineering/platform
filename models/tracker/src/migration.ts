@@ -15,7 +15,7 @@
 
 import core, { generateId, Ref, TxOperations } from '@anticrm/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
-import { IssueStatus, IssueStatusCategory, Team, genRanks } from '@anticrm/tracker'
+import { IssueStatus, IssueStatusCategory, Team, genRanks, Issue } from '@anticrm/tracker'
 import { DOMAIN_TRACKER } from '.'
 import tracker from './plugin'
 
@@ -34,6 +34,8 @@ interface CreateTeamIssueStatusesArgs {
   defaultStatusId?: Ref<IssueStatus>
   defaultCategoryId?: Ref<IssueStatusCategory>
 }
+
+type IssueWithParent = Issue & { parentIssue: Ref<Issue> | undefined }
 
 const categoryByDeprecatedIssueStatus = {
   [DeprecatedIssueStatus.Backlog]: tracker.issueStatusCategory.Backlog,
@@ -149,6 +151,40 @@ async function upgradeIssueStatuses (tx: TxOperations): Promise<void> {
   }
 }
 
+async function migrateParentIssues (client: MigrationClient): Promise<void> {
+  const issues = (await client.find(DOMAIN_TRACKER, {
+    _class: tracker.class.Issue,
+    attachedTo: { $exists: false }
+  })) as Issue[]
+  const issueById = new Map(issues.map((issue) => [issue._id, issue]))
+  const subIssuesCountByIssueId = issues.reduce((acc, issue) => {
+    const { parentIssue: parentIssueId } = issue as IssueWithParent
+    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+    const parentIssue = parentIssueId && issueById.get(parentIssueId)
+
+    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+    return parentIssue ? acc.set(parentIssue._id, (acc.get(parentIssue._id) ?? 0) + 1) : acc
+  }, new Map<Ref<Issue>, number>())
+
+  for (const [issueId, issue] of issueById) {
+    const { parentIssue: parentIssueId } = issue as IssueWithParent
+    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+    const parentIssue = parentIssueId && issueById.get(parentIssueId)
+
+    await client.update<Issue>(
+      DOMAIN_TRACKER,
+      { _id: issueId },
+      {
+        parentIssue: undefined,
+        collection: 'subIssues',
+        attachedTo: parentIssue?._id ?? tracker.ids.NoParent,
+        attachedToClass: parentIssue?._class ?? tracker.class.Issue,
+        subIssues: subIssuesCountByIssueId.get(issueId) ?? 0
+      }
+    )
+  }
+}
+
 async function migrateIssueProjects (client: MigrationClient): Promise<void> {
   const issues = await client.find(DOMAIN_TRACKER, { _class: tracker.class.Issue, project: { $exists: false } })
 
@@ -197,7 +233,7 @@ async function upgradeProjects (tx: TxOperations): Promise<void> {
 
 export const trackerOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
-    await Promise.all([migrateIssueProjects(client)])
+    await Promise.all([migrateIssueProjects(client), migrateParentIssues(client)])
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)
