@@ -52,13 +52,7 @@
       dispatch('select', cl)
     }}
   >
-    <div
-      on:click={() => {
-        dispatch('select', cl)
-      }}
-    >
-      <Label label={clazz.label} />
-    </div>
+    <Label label={clazz.label} />
   </div>
   {#if desc.length}
     <div class="ml-2 mt-3 mb-3">
