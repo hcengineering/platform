@@ -335,7 +335,7 @@
   </svg>
   <div class="workbench-container">
     <div class="antiPanel-application">
-      <div class="flex-col mt-1">
+      <div class="flex-col flex-no-shrink mt-1">
         <!-- <ActivityStatus status="active" /> -->
         <AppItem
           icon={TopMenu}

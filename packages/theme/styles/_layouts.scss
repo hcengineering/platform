@@ -670,5 +670,6 @@ a.no-line {
 .border-primary-button { border-color: var(--primary-button-border); }
 .border-button-enabled { border: 1px solid var(--theme-button-border-enabled); }
 
+.top-divider { border-top: 1px solid var(--divider-color); }
 .bottom-divider { border-bottom: 1px solid var(--divider-color); }
 .bottom-highlight-select { border-bottom: 1px solid var(--highlight-select); }

@@ -281,7 +281,7 @@
   }
 </script>
 
-<div class="flex-col kanban-container">
+<div class="flex-col kanban-container top-divider">
   <div class="scrollable">
     <ScrollBox>
       <div class="kanban-content">

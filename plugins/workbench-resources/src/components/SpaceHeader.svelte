@@ -34,6 +34,7 @@
   import plugin from '../plugin'
   import { classIcon } from '../utils'
   import Header from './Header.svelte'
+  import type { Filter } from '@anticrm/view'
 
   export let spaceId: Ref<Space> | undefined
   export let createItemDialog: AnyComponent | undefined
@@ -41,6 +42,8 @@
   export let search: string
   export let viewlet: WithLookup<Viewlet> | undefined
   export let viewlets: WithLookup<Viewlet>[] = []
+  export let _class: Ref<Class<Doc>> | undefined = undefined
+  export let filters: Filter[] = []
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -84,12 +87,14 @@
   }
 </script>
 
-<div class="ac-header divide full">
+<div class="ac-header full">
   {#if space}
     <Header
       icon={classIcon(client, space._class)}
       label={space.name}
       description={space.description}
+      {_class}
+      bind:filters
       on:click={onSpaceEdit}
     />
     {#if viewlets.length > 1}
