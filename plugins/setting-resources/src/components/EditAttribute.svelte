@@ -36,7 +36,18 @@
 
   async function save (): Promise<void> {
     const update: DocumentUpdate<AnyAttribute> = {
-      label: getEmbeddedLabel(name)
+    }
+    const newLabel = getEmbeddedLabel(name)
+    if (newLabel !== attribute.label) {
+      update.label = newLabel
+    }
+    if (!exist) {
+      if (index !== attribute.index) {
+        update.index = index
+      }
+      if (type !== attribute.type) {
+        update.type = type
+      }
     }
     await client.updateDoc(attribute._class, attribute.space, attribute._id, update)
     dispatch('close')
