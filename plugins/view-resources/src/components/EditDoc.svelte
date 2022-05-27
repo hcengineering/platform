@@ -77,18 +77,21 @@
 
   const dispatch = createEventDispatcher()
 
-  function getMixins (): void {
+  function getMixins (parentClass: Ref<Class<Doc>>, object: Doc): void {
+    if (object === undefined || parentClass === undefined) return
     const descendants = hierarchy.getDescendants(parentClass).map((p) => hierarchy.getClass(p))
     mixins = descendants.filter(
       (m) => m.kind === ClassifierKind.MIXIN && hierarchy.hasMixin(object, m._id) && !ignoreMixins.has(m._id)
     )
   }
 
+  $: getMixins(parentClass, object)
+
   let ignoreKeys: string[] = []
   let ignoreMixins: Set<Ref<Mixin<Doc>>> = new Set<Ref<Mixin<Doc>>>()
 
   async function updateKeys (): Promise<void> {
-    const keysMap = new Map(getFiltredKeys(hierarchy, object._class, ignoreKeys).map((p) => [p.attr._id, p]))
+    const keysMap = new Map(getFiltredKeys(hierarchy, realObjectClass, ignoreKeys).map((p) => [p.attr._id, p]))
     for (const m of mixins) {
       const mkeys = getFiltredKeys(hierarchy, m._id, ignoreKeys)
       for (const key of mkeys) {
@@ -120,7 +123,6 @@
   async function getEditorOrDefault (_class: Ref<Class<Doc>>): Promise<void> {
     parentClass = getParentClass(_class)
     mainEditor = await getEditor(_class)
-    getMixins()
     updateKeys()
   }
 
@@ -254,7 +256,7 @@
         on:open={(ev) => {
           ignoreKeys = ev.detail.ignoreKeys
           ignoreMixins = new Set(ev.detail.ignoreMixins)
-          getMixins()
+          getMixins(parentClass, object)
           updateKeys()
         }}
       />
