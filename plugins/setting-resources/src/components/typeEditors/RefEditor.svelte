@@ -18,7 +18,7 @@
   import { getClient } from '@anticrm/presentation'
   import { DOMAIN_STATE } from '@anticrm/task'
   import { DropdownLabelsIntl, Label } from '@anticrm/ui'
-  import view from '../../plugin'
+  import view from '@anticrm/view-resources/src/plugin'
   import { createEventDispatcher } from 'svelte'
 
   const dispatch = createEventDispatcher()

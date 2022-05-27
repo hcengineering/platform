@@ -38,12 +38,6 @@ import UpDownNavigator from './components/UpDownNavigator.svelte'
 import GithubPresenter from './components/linkPresenters/GithubPresenter.svelte'
 import YoutubePresenter from './components/linkPresenters/YoutubePresenter.svelte'
 import ActionsPopup from './components/ActionsPopup.svelte'
-import CreateAttribute from './components/CreateAttribute.svelte'
-import StringTypeEditor from './components/typeEditors/StringTypeEditor.svelte'
-import BooleanTypeEditor from './components/typeEditors/BooleanTypeEditor.svelte'
-import DateTypeEditor from './components/typeEditors/DateTypeEditor.svelte'
-import NumberTypeEditor from './components/typeEditors/NumberTypeEditor.svelte'
-import RefEditor from './components/typeEditors/RefEditor.svelte'
 import DocAttributeBar from './components/DocAttributeBar.svelte'
 import ViewletSetting from './components/ViewletSetting.svelte'
 import TableBrowser from './components/TableBrowser.svelte'
@@ -88,12 +82,6 @@ export default async (): Promise<Resources> => ({
     TimestampFilter,
     TableBrowser,
     ViewletSetting,
-    CreateAttribute,
-    StringTypeEditor,
-    BooleanTypeEditor,
-    NumberTypeEditor,
-    RefEditor,
-    DateTypeEditor,
     SpacePresenter,
     StringEditor,
     StringPresenter,

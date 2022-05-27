@@ -22,6 +22,16 @@ export default mergeIds(settingId, setting, {
     IntegrationDisabled: '' as IntlString,
     IntegrationWith: '' as IntlString,
     DeleteStatus: '' as IntlString,
-    DeleteStatusConfirm: '' as IntlString
+    DeleteStatusConfirm: '' as IntlString,
+    DeleteAttribute: '' as IntlString,
+    DeleteAttributeConfirm: '' as IntlString,
+    DeleteAttributeExistConfirm: '' as IntlString,
+    Attribute: '' as IntlString,
+    Attributes: '' as IntlString,
+    Custom: '' as IntlString,
+    WithTime: '' as IntlString,
+    Type: '' as IntlString,
+    CreatingAttribute: '' as IntlString,
+    EditAttribute: '' as IntlString
   }
 })

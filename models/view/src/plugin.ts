@@ -78,11 +78,6 @@ export default mergeIds(viewId, view, {
     RolePresenter: '' as AnyComponent,
     YoutubePresenter: '' as AnyComponent,
     GithubPresenter: '' as AnyComponent,
-    StringTypeEditor: '' as AnyComponent,
-    BooleanTypeEditor: '' as AnyComponent,
-    NumberTypeEditor: '' as AnyComponent,
-    DateTypeEditor: '' as AnyComponent,
-    RefEditor: '' as AnyComponent,
     ClassPresenter: '' as AnyComponent
   },
   string: {

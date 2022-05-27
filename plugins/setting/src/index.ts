@@ -72,7 +72,8 @@ export default plugin(settingId, {
     ManageStatuses: '' as Ref<Doc>,
     Support: '' as Ref<Doc>,
     Privacy: '' as Ref<Doc>,
-    Terms: '' as Ref<Doc>
+    Terms: '' as Ref<Doc>,
+    ClassSetting: '' as Ref<Doc>
   },
   class: {
     SettingsCategory: '' as Ref<Class<SettingsCategory>>,
@@ -88,7 +89,8 @@ export default plugin(settingId, {
     ManageStatuses: '' as AnyComponent,
     Support: '' as AnyComponent,
     Privacy: '' as AnyComponent,
-    Terms: '' as AnyComponent
+    Terms: '' as AnyComponent,
+    ClassSetting: '' as AnyComponent
   },
   string: {
     Settings: '' as IntlString,
@@ -116,7 +118,8 @@ export default plugin(settingId, {
     Signout: '' as IntlString,
     InviteWorkspace: '' as IntlString,
     SelectWorkspace: '' as IntlString,
-    Reconnect: '' as IntlString
+    Reconnect: '' as IntlString,
+    ClassSetting: '' as IntlString
   },
   icon: {
     EditProfile: '' as Asset,

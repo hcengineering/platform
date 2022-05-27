@@ -389,7 +389,6 @@ const view = plugin(viewId, {
   component: {
     ObjectPresenter: '' as AnyComponent,
     EditDoc: '' as AnyComponent,
-    CreateAttribute: '' as AnyComponent,
     ViewletSetting: '' as AnyComponent,
     SpacePresenter: '' as AnyComponent
   },

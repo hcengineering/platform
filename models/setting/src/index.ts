@@ -21,6 +21,7 @@ import type { Integration, IntegrationType, Handler, SettingsCategory } from '@a
 import type { Asset, IntlString } from '@anticrm/platform'
 import task from '@anticrm/task'
 import activity from '@anticrm/activity'
+import view from '@anticrm/view'
 
 import workbench from '@anticrm/model-workbench'
 import { AnyComponent } from '@anticrm/ui'
@@ -119,6 +120,18 @@ export function createModel (builder: Builder): void {
     setting.class.SettingsCategory,
     core.space.Model,
     {
+      name: 'classes',
+      label: setting.string.ClassSetting,
+      icon: setting.icon.Setting,
+      component: setting.component.ClassSetting,
+      order: 4500
+    },
+    setting.ids.ClassSetting
+  )
+  builder.createDoc(
+    setting.class.SettingsCategory,
+    core.space.Model,
+    {
       name: 'support',
       label: setting.string.Support,
       icon: setting.icon.Support,
@@ -180,6 +193,26 @@ export function createModel (builder: Builder): void {
     },
     setting.ids.TxIntegrationDisable
   )
+
+  builder.mixin(core.class.TypeString, core.class.Class, view.mixin.ObjectEditor, {
+    editor: setting.component.StringTypeEditor
+  })
+
+  builder.mixin(core.class.TypeBoolean, core.class.Class, view.mixin.ObjectEditor, {
+    editor: setting.component.BooleanTypeEditor
+  })
+
+  builder.mixin(core.class.TypeDate, core.class.Class, view.mixin.ObjectEditor, {
+    editor: setting.component.DateTypeEditor
+  })
+
+  builder.mixin(core.class.TypeNumber, core.class.Class, view.mixin.ObjectEditor, {
+    editor: setting.component.NumberTypeEditor
+  })
+
+  builder.mixin(core.class.RefTo, core.class.Class, view.mixin.ObjectEditor, {
+    editor: setting.component.RefEditor
+  })
 }
 
 export { settingOperation } from './migration'

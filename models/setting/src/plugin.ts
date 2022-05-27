@@ -27,5 +27,12 @@ export default mergeIds(settingId, setting, {
   },
   ids: {
     TxIntegrationDisable: '' as Ref<TxViewlet>
+  },
+  component: {
+    StringTypeEditor: '' as AnyComponent,
+    BooleanTypeEditor: '' as AnyComponent,
+    NumberTypeEditor: '' as AnyComponent,
+    DateTypeEditor: '' as AnyComponent,
+    RefEditor: '' as AnyComponent
   }
 })
