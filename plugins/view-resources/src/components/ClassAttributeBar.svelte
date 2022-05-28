@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class,Doc,Ref } from '@anticrm/core'
-  import { AttributesBar,getClient,KeyedAttribute } from '@anticrm/presentation'
+  import { Class, Doc, Ref } from '@anticrm/core'
+  import { AttributesBar, getClient, KeyedAttribute } from '@anticrm/presentation'
   import setting from '@anticrm/setting'
-  import { Button,getCurrentLocation,Label,navigate,Tooltip } from '@anticrm/ui'
-  import { collectionsFilter,getFiltredKeys } from '../utils'
+  import { Button, getCurrentLocation, Label, navigate, Tooltip } from '@anticrm/ui'
+  import { collectionsFilter, getFiltredKeys } from '../utils'
 
   export let object: Doc
   export let _class: Ref<Class<Doc>>

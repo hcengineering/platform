@@ -35,8 +35,7 @@
   translate(attribute.label, {}).then((p) => (name = p))
 
   async function save (): Promise<void> {
-    const update: DocumentUpdate<AnyAttribute> = {
-    }
+    const update: DocumentUpdate<AnyAttribute> = {}
     const newLabel = getEmbeddedLabel(name)
     if (newLabel !== attribute.label) {
       update.label = newLabel
