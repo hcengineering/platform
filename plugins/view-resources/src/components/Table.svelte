@@ -200,9 +200,7 @@
         </tr>
       </thead>
     {/if}
-    {#if loading > 0}
-      <Loading />
-    {:else if objects.length}
+    {#if objects.length}
       <tbody>
         {#each objects as object, row (object._id)}
           <tr
@@ -302,4 +300,5 @@
       </tbody>
     {/if}
   </table>
+  {#if loading > 0}<Loading />{/if}
 {/await}

@@ -397,7 +397,7 @@
         {#if currentApplication}
           <NavHeader label={currentApplication.label} />
           {#if currentApplication.navHeaderComponent}
-            <Component is={currentApplication.navHeaderComponent} props={{ currentSpace }} />
+            <Component is={currentApplication.navHeaderComponent} props={{ currentSpace }} shrink />
           {/if}
         {/if}
         <Navigator
