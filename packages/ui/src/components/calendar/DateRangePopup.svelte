@@ -87,7 +87,7 @@
       flex-direction: column;
       padding: 0.5rem;
       top: 1rem;
-      right: calc(100% - 3.5rem);
+      right: calc(100% - 0.5rem);
       bottom: 1rem;
       width: fit-content;
       width: 12rem;
@@ -97,14 +97,11 @@
       border-radius: 0.5rem;
       box-shadow: var(--popup-shadow);
       z-index: -1;
-      transition: right 0.1s ease-in-out;
 
       .btn {
         flex-shrink: 0;
         margin-right: 0.75rem;
         padding: 0.25rem 0.5rem;
-        // font-weight: 500;
-        // color: var(--dark-color);
         background-color: transparent;
         border-radius: 0.25rem;
         cursor: pointer;
@@ -113,10 +110,6 @@
           color: var(--caption-color);
           background-color: var(--button-bg-hover);
         }
-      }
-
-      &:hover {
-        right: calc(100% - 0.5rem);
       }
 
       .divider {

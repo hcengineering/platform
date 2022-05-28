@@ -23,7 +23,7 @@
 
   export let is: AnyComponent
   export let props = {}
-  export let shrink: boolean = true
+  export let shrink: boolean = false
 
   $: component = is != null ? getResource(is) : Promise.reject(new Error('is not defined'))
 </script>

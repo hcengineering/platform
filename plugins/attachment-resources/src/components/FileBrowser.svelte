@@ -24,7 +24,7 @@
     IconSearch,
     Label,
     navigate,
-    Spinner,
+    Loading,
     Tooltip
   } from '@anticrm/ui'
   import view from '@anticrm/view'
@@ -156,8 +156,8 @@
     <FileBrowserSortMenu bind:selectedSort />
   </div>
   {#if isLoading}
-    <div class="ml-4">
-      <Spinner />
+    <div class="flex-grow">
+      <Loading />
     </div>
   {:else if attachments?.length}
     {#if isListDisplayMode}
@@ -174,8 +174,11 @@
 
 <style lang="scss">
   .group {
-    padding: 1rem 0;
     overflow: auto;
+    display: flex;
+    flex-direction: column;
+    padding: 1rem 0;
+    height: 100%;
   }
 
   .groupHeader {

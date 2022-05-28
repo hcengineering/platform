@@ -129,6 +129,7 @@ export function fitPopupPositionedElement (
   let direction: string = ''
   const rect = alignment.getBoundingClientRect()
   const rectPopup = modalHTML.getBoundingClientRect()
+  const docWidth = document.body.clientWidth
   newProps.left = newProps.right = newProps.top = newProps.bottom = ''
   newProps.maxHeight = newProps.height = ''
   newProps.maxWidth = newProps.width = ''
@@ -159,12 +160,15 @@ export function fitPopupPositionedElement (
     }
 
     // Horizontal
-    if (rect.left + rectPopup.width + 16 > document.body.clientWidth) {
-      newProps.right = `${document.body.clientWidth - rect.right}px`
-      direction += '|left'
-    } else {
+    if (rect.left + rectPopup.width + 16 <= docWidth) {
       newProps.left = `${rect.left}px`
       direction += '|right'
+    } else if (rect.right - rectPopup.width - 16 >= 0) {
+      newProps.right = `${docWidth - rect.right}px`
+      direction += '|left'
+    } else {
+      newProps.left = '1rem'
+      direction += '|center'
     }
   }
   return { props: newProps, showOverlay: false, direction }
