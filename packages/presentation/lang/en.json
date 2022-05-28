@@ -24,6 +24,7 @@
     "NoMatchesInThis": "No matches in this {space}",
     "NoMatchesFound": "No matches found",
     "NotInThis": "Not in this {space}",
-    "Add": "Add"
+    "Add": "Add",
+    "Edit": "Edit"
   }
 }

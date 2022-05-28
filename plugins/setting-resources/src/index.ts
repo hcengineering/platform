@@ -23,8 +23,14 @@ import Support from './components/Support.svelte'
 import Privacy from './components/Privacy.svelte'
 import Terms from './components/Terms.svelte'
 import Settings from './components/Settings.svelte'
+import ClassSetting from './components/ClassSetting.svelte'
 import TxIntegrationDisable from './components/activity/TxIntegrationDisable.svelte'
 import TxIntegrationDisableReconnect from './components/activity/TxIntegrationDisableReconnect.svelte'
+import StringTypeEditor from './components/typeEditors/StringTypeEditor.svelte'
+import BooleanTypeEditor from './components/typeEditors/BooleanTypeEditor.svelte'
+import DateTypeEditor from './components/typeEditors/DateTypeEditor.svelte'
+import NumberTypeEditor from './components/typeEditors/NumberTypeEditor.svelte'
+import RefEditor from './components/typeEditors/RefEditor.svelte'
 
 export default async (): Promise<Resources> => ({
   activity: {
@@ -40,6 +46,12 @@ export default async (): Promise<Resources> => ({
     Support,
     Privacy,
     Terms,
-    ManageStatuses
+    ManageStatuses,
+    ClassSetting,
+    StringTypeEditor,
+    BooleanTypeEditor,
+    NumberTypeEditor,
+    RefEditor,
+    DateTypeEditor
   }
 })

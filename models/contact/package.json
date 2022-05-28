@@ -32,6 +32,7 @@
     "@anticrm/model-view": "~0.6.0",
     "@anticrm/model-presentation": "~0.6.0",
     "@anticrm/model": "~0.6.0",
+    "@anticrm/setting": "~0.6.1",
     "@anticrm/core": "~0.6.16",
     "@anticrm/ui": "~0.6.0",
     "@anticrm/platform": "~0.6.6",

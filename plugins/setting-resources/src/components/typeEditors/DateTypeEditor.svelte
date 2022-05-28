@@ -16,8 +16,8 @@
   import { TypeDate } from '@anticrm/model'
   import { Label } from '@anticrm/ui'
   import { createEventDispatcher, onMount } from 'svelte'
-  import view from '../../plugin'
-  import BooleanEditor from '../BooleanEditor.svelte'
+  import setting from '../../plugin'
+  import BooleanEditor from '@anticrm/view-resources/src/components/BooleanEditor.svelte'
 
   const dispatch = createEventDispatcher()
 
@@ -29,7 +29,7 @@
 </script>
 
 <div class="flex-row-center">
-  <Label label={view.string.WithTime} />
+  <Label label={setting.string.WithTime} />
   <div class="ml-2">
     <BooleanEditor
       withoutUndefined

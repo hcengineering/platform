@@ -13,37 +13,42 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { AnyAttribute, Class, Data, Doc, generateId, IndexKind, PropertyType, Ref, Type } from '@anticrm/core'
-  import { getEmbeddedLabel } from '@anticrm/platform'
-  import { Card, getClient } from '@anticrm/presentation'
-  import { AnyComponent, Component, DropdownLabelsIntl, EditBox, Label } from '@anticrm/ui'
-  import { DropdownIntlItem } from '@anticrm/ui/src/types'
+  import core, { AnyAttribute, Class, DocumentUpdate, IndexKind, PropertyType, Ref, Type } from '@anticrm/core'
+  import { getEmbeddedLabel, translate } from '@anticrm/platform'
+  import presentation, { Card, getClient } from '@anticrm/presentation'
+  import setting from '../plugin'
+  import { AnyComponent, Component, DropdownIntlItem, DropdownLabelsIntl, EditBox, Label } from '@anticrm/ui'
+  import view from '@anticrm/view-resources/src/plugin'
   import { createEventDispatcher } from 'svelte'
-  import view from '../plugin'
 
-  export let _class: Ref<Class<Doc>>
+  export let attribute: AnyAttribute
+  export let exist: boolean
   let name: string
   let type: Type<PropertyType> | undefined
   let index: IndexKind | undefined
   let is: AnyComponent | undefined
+
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const dispatch = createEventDispatcher()
 
-  async function save (): Promise<void> {
-    if (type === undefined) return
+  translate(attribute.label, {}).then((p) => (name = p))
 
-    const data: Data<AnyAttribute> = {
-      attributeOf: _class,
-      name: name + generateId(),
-      label: getEmbeddedLabel(name),
-      isCustom: true,
-      type
+  async function save (): Promise<void> {
+    const update: DocumentUpdate<AnyAttribute> = {}
+    const newLabel = getEmbeddedLabel(name)
+    if (newLabel !== attribute.label) {
+      update.label = newLabel
     }
-    if (index !== undefined) {
-      data.index = index
+    if (!exist) {
+      if (index !== attribute.index) {
+        update.index = index
+      }
+      if (type !== attribute.type) {
+        update.type = type
+      }
     }
-    await client.createDoc(core.class.Attribute, core.space.Model, data)
+    await client.updateDoc(attribute._class, attribute.space, attribute._id, update)
     dispatch('close')
   }
 
@@ -63,7 +68,7 @@
   }
 
   const items = getTypes()
-  let selectedType: Ref<Class<Type<PropertyType>>>
+  let selectedType: Ref<Class<Type<PropertyType>>> = attribute.type._class
 
   $: selectedType && selectType(selectedType)
 
@@ -77,9 +82,10 @@
 </script>
 
 <Card
-  label={view.string.CreatingAttribute}
+  label={setting.string.EditAttribute}
+  okLabel={presentation.string.Save}
   okAction={save}
-  canSave={!(type === undefined || name === undefined || name.trim().length === 0)}
+  canSave={!(name === undefined || name.trim().length === 0)}
   on:close={() => {
     dispatch('close')
   }}
@@ -87,31 +93,35 @@
   <div class="mb-2"><EditBox bind:value={name} placeholder={core.string.Name} maxWidth="13rem" /></div>
   <div class="flex-col mb-2">
     <div class="flex-row-center flex-grow">
-      <Label label={view.string.Type} />
-      <div class="ml-4">
-        <DropdownLabelsIntl
-          label={view.string.Type}
-          {items}
-          width="8rem"
-          bind:selected={selectedType}
-          on:selected={(e) => selectType(e.detail)}
-        />
-      </div>
+      <Label label={setting.string.Type} />
     </div>
-    {#if is}
-      <div class="flex mt-4">
-        <Component
-          {is}
-          on:change={(e) => {
-            type = e.detail?.type
-            index = e.detail?.index
-          }}
-        />
-      </div>
-    {/if}
-    <Label label={view.string.CreatingAttributeConfirm} />
+    <div class="flex-col mb-2">
+      {#if exist}
+        <Label label={attribute.type.label} />
+      {:else}
+        <div class="flex-row-center flex-grow">
+          <div class="ml-4">
+            <DropdownLabelsIntl
+              label={setting.string.Type}
+              {items}
+              width="8rem"
+              bind:selected={selectedType}
+              on:selected={(e) => selectType(e.detail)}
+            />
+          </div>
+        </div>
+        {#if is}
+          <div class="flex mt-4">
+            <Component
+              {is}
+              on:change={(e) => {
+                type = e.detail?.type
+                index = e.detail?.index
+              }}
+            />
+          </div>
+        {/if}
+      {/if}
+    </div>
   </div>
 </Card>
-
-<style lang="scss">
-</style>
