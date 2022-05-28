@@ -138,7 +138,11 @@
       {#each categories as cat}
         {#if objects.filter((el) => el.category === cat._id).length > 0}
           <div class="sticky-wrapper">
-            <button class="menu-group__header" class:show={search !== '' || show} on:click={toggleGroup}>
+            <button
+              class="menu-group__header"
+              class:show={categories.length === 1 || search !== '' || show}
+              on:click={toggleGroup}
+            >
               <div class="flex-row-center">
                 <span class="mr-1-5">{cat.label}</span>
                 <div class="icon">

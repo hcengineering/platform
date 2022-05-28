@@ -68,14 +68,16 @@ export function classPresenter (
   builder: Builder,
   _class: Ref<Class<Doc>>,
   presenter: AnyComponent,
-  editor?: AnyComponent
+  editor?: AnyComponent,
+  popup?: AnyComponent
 ): void {
   builder.mixin(_class, core.class.Class, view.mixin.AttributePresenter, {
     presenter
   })
   if (editor !== undefined) {
     builder.mixin(_class, core.class.Class, view.mixin.AttributeEditor, {
-      editor
+      editor,
+      popup
     })
   }
 }
@@ -267,7 +269,13 @@ export function createModel (builder: Builder): void {
     TLinkPresenter
   )
 
-  classPresenter(builder, core.class.TypeString, view.component.StringPresenter, view.component.StringEditor)
+  classPresenter(
+    builder,
+    core.class.TypeString,
+    view.component.StringPresenter,
+    view.component.StringEditor,
+    view.component.StringEditorPopup
+  )
   classPresenter(builder, core.class.TypeIntlString, view.component.IntlStringPresenter)
   classPresenter(builder, core.class.TypeNumber, view.component.NumberPresenter, view.component.NumberEditor)
   classPresenter(builder, core.class.TypeMarkup, view.component.HTMLPresenter)

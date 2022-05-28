@@ -49,7 +49,7 @@
         targetClass,
         selected: items.map((it) => it.tag),
         keyLabel,
-        hideAdd: true
+        hideAdd: false
       },
       evt.target as HTMLElement,
       () => {},

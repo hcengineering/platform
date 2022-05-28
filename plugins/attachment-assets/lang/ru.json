@@ -44,6 +44,10 @@
     "FileBrowserTypeFilterPDFs": "PDF-файлы",
     "AddAttachmentToSaved": "Добавить вложение в сохраненные",
     "RemoveAttachmentFromSaved": "Удалить вложение из сохраненных",
-    "DeleteFile": "Удалить файл"
+    "DeleteFile": "Удалить файл",
+    "Description": "Описание",
+    "Pinned": "Важное",
+    "PinAttachment": "Пометить как важное",
+    "UnPinAttachment": "Убрать пометку важное"
   }
 }

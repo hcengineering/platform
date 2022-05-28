@@ -45,6 +45,8 @@ import ValueFilter from './components/filter/ValueFilter.svelte'
 import ObjectFilter from './components/filter/ObjectFilter.svelte'
 import TimestampFilter from './components/filter/TimestampFilter.svelte'
 import ClassPresenter from './components/ClassPresenter.svelte'
+import EditBoxPopup from './components/EditBoxPopup.svelte'
+import BooleanTruePresenter from './components/BooleanTruePresenter.svelte'
 
 function PositionElementAlignment (e?: Event): PopupAlignment | undefined {
   return getEventPopupPositionElement(e)
@@ -99,7 +101,9 @@ export default async (): Promise<Resources> => ({
     IntlStringPresenter,
     GithubPresenter,
     YoutubePresenter,
-    ActionsPopup
+    ActionsPopup,
+    StringEditorPopup: EditBoxPopup,
+    BooleanTruePresenter
   },
   popup: {
     PositionElementAlignment
