@@ -13,21 +13,23 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { AnyAttribute, Class, Doc, Ref } from '@anticrm/core'
+  import core, { AnyAttribute, Class, Doc, Ref, RefTo, Type } from '@anticrm/core'
+  import { IntlString } from '@anticrm/platform'
   import presentation, { getClient, MessageBox } from '@anticrm/presentation'
   import {
     Action,
     CircleButton,
+    Component,
     eventToHTMLElement,
     IconAdd,
     IconDelete,
     IconEdit,
+    IconMoreV,
     Label,
     Menu,
-    IconMoreV,
     showPopup
   } from '@anticrm/ui'
-  import BooleanPresenter from '@anticrm/view-resources/src/components/BooleanPresenter.svelte'
+  import view from '@anticrm/view'
   import setting from '../plugin'
   import CreateAttribute from './CreateAttribute.svelte'
   import EditAttribute from './EditAttribute.svelte'
@@ -74,7 +76,7 @@
   }
 
   async function showMenu (ev: MouseEvent, attribute: AnyAttribute) {
-    const exist = (await client.findOne(attribute.attributeOf, { [attribute.name]: { $exist: true } })) !== undefined
+    const exist = (await client.findOne(attribute.attributeOf, { [attribute.name]: { $exists: true } })) !== undefined
 
     const actions: Action[] = [
       {
@@ -93,6 +95,9 @@
       }
     ]
     showPopup(Menu, { actions }, eventToHTMLElement(ev), () => {})
+  }
+  function getRefClassTo (value: Type<Type<any>>): IntlString {
+    return client.getHierarchy().getClass((value as RefTo<Doc>).to).label
   }
 </script>
 
@@ -122,6 +127,7 @@
   </thead>
   <tbody>
     {#each attributes as attr}
+      {@const attrType = attr.type._class === core.class.RefTo ? getRefClassTo(attr.type) : undefined}
       <tr class="antiTable-body__row" on:contextmenu|preventDefault={(ev) => showMenu(ev, attr)}>
         <td>
           <div class="antiTable-cells__firstCell">
@@ -135,9 +141,12 @@
         </td>
         <td>
           <Label label={attr.type.label} />
+          {#if attrType !== undefined}
+            : <Label label={attrType} />
+          {/if}
         </td>
         <td>
-          <BooleanPresenter value={attr.isCustom ?? false} />
+          <Component is={view.component.BooleanTruePresenter} props={{ value: attr.isCustom ?? false }} />
         </td>
       </tr>
     {/each}

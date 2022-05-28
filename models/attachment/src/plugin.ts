@@ -13,13 +13,14 @@
 // limitations under the License.
 //
 
+import type { TxViewlet } from '@anticrm/activity'
 import { attachmentId } from '@anticrm/attachment'
 import attachment from '@anticrm/attachment-resources/src/plugin'
+import type { Ref } from '@anticrm/core'
 import type { IntlString } from '@anticrm/platform'
 import { mergeIds } from '@anticrm/platform'
-import type { Ref } from '@anticrm/core'
 import type { AnyComponent } from '@anticrm/ui'
-import type { TxViewlet } from '@anticrm/activity'
+import type { ActionCategory } from '@anticrm/view'
 
 export default mergeIds(attachmentId, attachment, {
   component: {
@@ -34,12 +35,18 @@ export default mergeIds(attachmentId, attachment, {
     Type: '' as IntlString,
     Photo: '' as IntlString,
     Date: '' as IntlString,
-    SavedAttachments: '' as IntlString
+    SavedAttachments: '' as IntlString,
+    Description: '' as IntlString,
+    PinAttachment: '' as IntlString,
+    UnPinAttachment: '' as IntlString
   },
   ids: {
     TxAttachmentCreate: '' as Ref<TxViewlet>
   },
   activity: {
     TxAttachmentCreate: '' as AnyComponent
+  },
+  category: {
+    Attachments: '' as Ref<ActionCategory>
   }
 })

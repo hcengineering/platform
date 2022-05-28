@@ -16,10 +16,10 @@
 import activity from '@anticrm/activity'
 import type { Attachment, Photo, SavedAttachments } from '@anticrm/attachment'
 import { Domain, IndexKind, Ref } from '@anticrm/core'
-import { Builder, Index, Model, Prop, TypeRef, TypeString, TypeTimestamp, UX } from '@anticrm/model'
+import { Builder, Index, Model, Prop, TypeBoolean, TypeRef, TypeString, TypeTimestamp, UX } from '@anticrm/model'
 import core, { TAttachedDoc } from '@anticrm/model-core'
-import view from '@anticrm/model-view'
 import preference, { TPreference } from '@anticrm/model-preference'
+import view, { createAction } from '@anticrm/model-view'
 import attachment from './plugin'
 
 export { attachmentOperation } from './migration'
@@ -45,6 +45,12 @@ export class TAttachment extends TAttachedDoc implements Attachment {
 
   @Prop(TypeTimestamp(), attachment.string.Date)
   lastModified!: number
+
+  @Prop(TypeString(), attachment.string.Description)
+  description!: string
+
+  @Prop(TypeBoolean(), attachment.string.Pinned)
+  pinned!: boolean
 }
 
 @Model(attachment.class.Photo, attachment.class.Attachment)
@@ -89,6 +95,64 @@ export function createModel (builder: Builder): void {
     },
     attachment.ids.TxAttachmentCreate
   )
+
+  builder.createDoc(
+    view.class.ActionCategory,
+    core.space.Model,
+    { label: attachment.string.Attachments, visible: true },
+    attachment.category.Attachments
+  )
+
+  createAction(builder, {
+    action: view.actionImpl.ShowEditor,
+    actionProps: {
+      attribute: 'description'
+    },
+    label: attachment.string.Description,
+    icon: view.icon.Open,
+    input: 'focus',
+    category: attachment.category.Attachments,
+    target: attachment.class.Attachment,
+    context: {
+      mode: ['context', 'browser']
+    }
+  })
+
+  createAction(builder, {
+    action: view.actionImpl.UpdateDocument,
+    actionProps: {
+      key: 'pinned',
+      value: true
+    },
+    query: {
+      pinned: { $in: [false, undefined, null] }
+    },
+    label: attachment.string.PinAttachment,
+    input: 'focus',
+    category: attachment.category.Attachments,
+    target: attachment.class.Attachment,
+    context: {
+      mode: ['context', 'browser']
+    }
+  })
+
+  createAction(builder, {
+    action: view.actionImpl.UpdateDocument,
+    actionProps: {
+      key: 'pinned',
+      value: false
+    },
+    query: {
+      pinned: true
+    },
+    label: attachment.string.UnPinAttachment,
+    input: 'focus',
+    category: attachment.category.Attachments,
+    target: attachment.class.Attachment,
+    context: {
+      mode: ['context', 'browser']
+    }
+  })
 }
 
 export default attachment

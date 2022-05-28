@@ -112,7 +112,8 @@ export default mergeIds(recruitId, recruit, {
   },
   category: {
     Other: '' as Ref<TagCategory>,
-    Category: '' as Ref<TagCategory>
+    Category: '' as Ref<TagCategory>,
+    OtherLabel: '' as Ref<TagCategory>
   },
   component: {
     VacancyItemPresenter: '' as AnyComponent,
