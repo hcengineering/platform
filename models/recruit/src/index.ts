@@ -134,6 +134,10 @@ export function createModel (builder: Builder): void {
     }
   })
 
+  builder.mixin(core.class.Space, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: recruit.component.VacancyItemPresenter
+  })
+
   builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.CollectionEditor, {
     editor: recruit.component.Applications
   })

@@ -20,7 +20,7 @@
 
   export let value: Vacancy
   export let inline: boolean = false
-  export let action: (item: Ref<Vacancy>) => void
+  export let action: ((item: Ref<Vacancy>) => void) | undefined = undefined
 
   function editVacancy (): void {
     showPanel(recruit.component.EditVacancy, value._id, value._class, 'content')
@@ -28,13 +28,25 @@
 </script>
 
 {#if value}
-  <div class="flex-presenter" class:inline-presenter={inline} on:click={() => action(value._id)}>
+  <div
+    class="flex-presenter"
+    class:inline-presenter={inline}
+    on:click={() => {
+      if (action !== undefined) {
+        action(value._id)
+      } else {
+        editVacancy()
+      }
+    }}
+  >
     <div class="icon">
       <Icon icon={recruit.icon.Vacancy} size={'small'} />
     </div>
     <span class="label">{value.name}</span>
-    <div class="action">
-      <ActionIcon label={recruit.string.Edit} size={'small'} icon={IconEdit} action={editVacancy} />
-    </div>
+    {#if action !== undefined}
+      <div class="action">
+        <ActionIcon label={recruit.string.Edit} size={'small'} icon={IconEdit} action={editVacancy} />
+      </div>
+    {/if}
   </div>
 {/if}
