@@ -128,7 +128,15 @@
   <tbody>
     {#each attributes as attr}
       {@const attrType = attr.type._class === core.class.RefTo ? getRefClassTo(attr.type) : undefined}
-      <tr class="antiTable-body__row" on:contextmenu|preventDefault={(ev) => showMenu(ev, attr)}>
+      <tr
+        class="antiTable-body__row"
+        on:contextmenu={(ev) => {
+          if (attr.isCustom) {
+            ev.preventDefault()
+            showMenu(ev, attr)
+          }
+        }}
+      >
         <td>
           <div class="antiTable-cells__firstCell">
             <Label label={attr.label} />

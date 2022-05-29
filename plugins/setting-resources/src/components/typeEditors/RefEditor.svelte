@@ -13,13 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Class, Doc, Ref } from '@anticrm/core'
+  import core, { Class, Doc, Ref, RefTo } from '@anticrm/core'
   import { TypeRef } from '@anticrm/model'
   import { getClient } from '@anticrm/presentation'
   import { DOMAIN_STATE } from '@anticrm/task'
   import { DropdownLabelsIntl, Label } from '@anticrm/ui'
   import view from '@anticrm/view-resources/src/plugin'
   import { createEventDispatcher } from 'svelte'
+
+  export let type: RefTo<Doc> | undefined
+  export let editable: boolean = true
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -39,14 +42,20 @@
       return { id: p._id, label: p.label }
     })
 
-  let refClass: Ref<Class<Doc>>
+  let refClass: Ref<Class<Doc>> | undefined = type?.to
 
-  $: dispatch('change', { type: TypeRef(refClass) })
+  $: selected = classes.find((p) => p.id === refClass)
+
+  $: refClass && dispatch('change', { type: TypeRef(refClass) })
 </script>
 
 <div class="flex-row-center flex-grow">
   <Label label={core.string.Class} />
   <div class="ml-4">
-    <DropdownLabelsIntl label={core.string.Class} items={classes} width="8rem" bind:selected={refClass} />
+    {#if editable}
+      <DropdownLabelsIntl label={core.string.Class} items={classes} width="8rem" bind:selected={refClass} />
+    {:else if selected}
+      <Label label={selected.label} />
+    {/if}
   </div>
 </div>
