@@ -20,7 +20,6 @@
     Button,
     IconClose,
     closeTooltip,
-    IconBlueCheck,
     registerFocus,
     createFocusManager,
     IconArrowRight,
