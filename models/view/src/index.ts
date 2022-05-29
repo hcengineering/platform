@@ -509,6 +509,8 @@ export function createModel (builder: Builder): void {
   builder.mixin(core.class.TypeTimestamp, core.class.Class, view.mixin.AttributeFilter, {
     component: view.component.TimestampFilter
   })
+
+  classPresenter(builder, core.class.EnumOf, view.component.StringPresenter, view.component.EnumEditor)
 }
 
 export default view

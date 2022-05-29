@@ -79,7 +79,8 @@ export default mergeIds(viewId, view, {
     RolePresenter: '' as AnyComponent,
     YoutubePresenter: '' as AnyComponent,
     GithubPresenter: '' as AnyComponent,
-    ClassPresenter: '' as AnyComponent
+    ClassPresenter: '' as AnyComponent,
+    EnumEditor: '' as AnyComponent
   },
   string: {
     Table: '' as IntlString,

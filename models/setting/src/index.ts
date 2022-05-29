@@ -135,6 +135,18 @@ export function createModel (builder: Builder): void {
     setting.class.SettingsCategory,
     core.space.Model,
     {
+      name: 'enums',
+      label: setting.string.Enums,
+      icon: setting.icon.Setting,
+      component: setting.component.EnumSetting,
+      order: 4600
+    },
+    setting.ids.EnumSetting
+  )
+  builder.createDoc(
+    setting.class.SettingsCategory,
+    core.space.Model,
+    {
       name: 'support',
       label: setting.string.Support,
       icon: setting.icon.Support,
@@ -215,6 +227,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(core.class.RefTo, core.class.Class, view.mixin.ObjectEditor, {
     editor: setting.component.RefEditor
+  })
+
+  builder.mixin(core.class.EnumOf, core.class.Class, view.mixin.ObjectEditor, {
+    editor: setting.component.EnumTypeEditor
   })
 }
 

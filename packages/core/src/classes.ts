@@ -93,6 +93,14 @@ export enum IndexKind {
 /**
  * @public
  */
+export interface Enum extends Doc {
+  name: string
+  enumValues: string[]
+}
+
+/**
+ * @public
+ */
 export interface Attribute<T extends PropertyType> extends Doc, UXObject {
   attributeOf: Ref<Class<Obj>>
   name: string
@@ -222,6 +230,13 @@ export type Arr<T extends PropertyType> = T[]
  */
 export interface ArrOf<T extends PropertyType> extends Type<T[]> {
   of: Type<T>
+}
+
+/**
+ * @public
+ */
+export interface EnumOf extends Type<string> {
+  of: Ref<Enum>
 }
 
 /**
