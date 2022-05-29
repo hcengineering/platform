@@ -23,6 +23,7 @@
   export let minutes: number[] = [5, 15, 30]
   export let hours: number[] = [1, 2, 4, 8, 12]
   export let days: number[] = [1, 3, 7, 30]
+  export let shift: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -53,25 +54,27 @@
       }
     }}
   />
-  <div class="shift-container">
-    <Scroller>
-      {#each values as value}
-        {#if typeof value === 'number'}
-          <div
-            class="btn"
-            on:click={() => {
-              const shiftedDate = new Date(today.getTime() + value * base)
-              dispatch('change', shiftedDate)
-            }}
-          >
-            <TimeShiftPresenter value={value * base} />
-          </div>
-        {:else if value === 'divider'}
-          <div class="divider" />
-        {/if}
-      {/each}
-    </Scroller>
-  </div>
+  {#if shift}
+    <div class="shift-container">
+      <Scroller>
+        {#each values as value}
+          {#if typeof value === 'number'}
+            <div
+              class="btn"
+              on:click={() => {
+                const shiftedDate = new Date(today.getTime() + value * base)
+                dispatch('change', shiftedDate)
+              }}
+            >
+              <TimeShiftPresenter value={value * base} />
+            </div>
+          {:else if value === 'divider'}
+            <div class="divider" />
+          {/if}
+        {/each}
+      </Scroller>
+    </div>
+  {/if}
 </div>
 
 <style lang="scss">

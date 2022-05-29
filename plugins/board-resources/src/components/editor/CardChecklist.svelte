@@ -271,6 +271,7 @@
               bind:value={item.dueTo}
               icon={getDateIcon(item)}
               on:change={(e) => updateDueDate(item, e.detail)}
+              noShift
             />
             <UserBox
               _class={contact.class.Employee}

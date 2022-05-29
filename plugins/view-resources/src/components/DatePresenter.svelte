@@ -18,6 +18,7 @@
   import { DateRangePresenter } from '@anticrm/ui'
 
   export let value: number | null | undefined
+  export let noShift: boolean = false
 </script>
 
-<DateRangePresenter {value} />
+<DateRangePresenter {value} {noShift} />
