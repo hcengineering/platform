@@ -41,7 +41,8 @@
   $: attributes = getCustomAttributes(_class)
 
   function getCustomAttributes (_class: Ref<Class<Doc>>): AnyAttribute[] {
-    const attributes = Array.from(hierarchy.getAllAttributes(_class, core.class.AttachedDoc).values())
+    const cl = hierarchy.getClass(_class)
+    const attributes = Array.from(hierarchy.getAllAttributes(_class, cl.extends).values())
     const filtred = attributes.filter((p) => !p.hidden)
     return filtred
   }
