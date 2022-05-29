@@ -47,6 +47,7 @@ import TimestampFilter from './components/filter/TimestampFilter.svelte'
 import ClassPresenter from './components/ClassPresenter.svelte'
 import EditBoxPopup from './components/EditBoxPopup.svelte'
 import BooleanTruePresenter from './components/BooleanTruePresenter.svelte'
+import EnumEditor from './components/EnumEditor.svelte'
 
 function PositionElementAlignment (e?: Event): PopupAlignment | undefined {
   return getEventPopupPositionElement(e)
@@ -103,7 +104,8 @@ export default async (): Promise<Resources> => ({
     YoutubePresenter,
     ActionsPopup,
     StringEditorPopup: EditBoxPopup,
-    BooleanTruePresenter
+    BooleanTruePresenter,
+    EnumEditor
   },
   popup: {
     PositionElementAlignment

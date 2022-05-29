@@ -40,6 +40,9 @@
     "Type": "Type",
     "WithTime": "WithTime",
     "CreatingAttribute": "Creating an attribute",
-    "EditAttribute": "Edit attribute"
+    "EditAttribute": "Edit attribute",
+    "CreateEnum": "Create enum",
+    "Enums": "Enums",
+    "NewValue": "New value"
   }
 }

@@ -36,7 +36,9 @@ import {
   TTypeNumber,
   TTypeString,
   TTypeTimestamp,
-  TVersion
+  TEnumOf,
+  TVersion,
+  TEnum
 } from './core'
 import { TAccount, TSpace } from './security'
 import { TUserStatus } from './transient'
@@ -79,19 +81,21 @@ export function createModel (builder: Builder): void {
     TAccount,
     TAttribute,
     TType,
-    TTypeString,
+    TEnumOf,
     TTypeMarkup,
-    TTypeBoolean,
-    TTypeTimestamp,
-    TRefTo,
-    TCollection,
-    TTypeDate,
     TArrOf,
-    TVersion,
+    TRefTo,
+    TTypeDate,
+    TTypeTimestamp,
     TTypeNumber,
+    TTypeBoolean,
+    TTypeString,
+    TCollection,
+    TVersion,
     TTypeIntlString,
     TPluginConfiguration,
     TUserStatus,
+    TEnum,
     TBlobData
   )
 }

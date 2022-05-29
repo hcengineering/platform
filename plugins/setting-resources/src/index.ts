@@ -31,6 +31,9 @@ import BooleanTypeEditor from './components/typeEditors/BooleanTypeEditor.svelte
 import DateTypeEditor from './components/typeEditors/DateTypeEditor.svelte'
 import NumberTypeEditor from './components/typeEditors/NumberTypeEditor.svelte'
 import RefEditor from './components/typeEditors/RefEditor.svelte'
+import EnumTypeEditor from './components/typeEditors/EnumTypeEditor.svelte'
+import EditEnum from './components/EditEnum.svelte'
+import EnumSetting from './components/EnumSetting.svelte'
 
 export default async (): Promise<Resources> => ({
   activity: {
@@ -52,6 +55,9 @@ export default async (): Promise<Resources> => ({
     BooleanTypeEditor,
     NumberTypeEditor,
     RefEditor,
-    DateTypeEditor
+    DateTypeEditor,
+    EnumTypeEditor,
+    EditEnum,
+    EnumSetting
   }
 })

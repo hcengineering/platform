@@ -16,8 +16,12 @@
 import type { IntlString } from '@anticrm/platform'
 import { mergeIds } from '@anticrm/platform'
 import setting, { settingId } from '@anticrm/setting'
+import { AnyComponent } from '@anticrm/ui'
 
 export default mergeIds(settingId, setting, {
+  component: {
+    EditEnum: '' as AnyComponent
+  },
   string: {
     IntegrationDisabled: '' as IntlString,
     IntegrationWith: '' as IntlString,
@@ -32,6 +36,9 @@ export default mergeIds(settingId, setting, {
     WithTime: '' as IntlString,
     Type: '' as IntlString,
     CreatingAttribute: '' as IntlString,
-    EditAttribute: '' as IntlString
+    EditAttribute: '' as IntlString,
+    CreateEnum: '' as IntlString,
+    Enums: '' as IntlString,
+    NewValue: '' as IntlString
   }
 })
