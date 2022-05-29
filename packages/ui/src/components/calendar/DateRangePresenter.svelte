@@ -253,7 +253,7 @@
     $dpstore.onChange = _change
     $dpstore.onClose = _close
     $dpstore.component = DateRangePopup
-    $dpstore.shift = !noShift    
+    $dpstore.shift = !noShift
   }
   let popupComp: HTMLElement
   $: if (opened && $dpstore.popup) popupComp = $dpstore.popup
