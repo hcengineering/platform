@@ -92,20 +92,6 @@ async function createDefaults (tx: TxOperations): Promise<void> {
   await createSequence(tx, recruit.class.Opinion)
   await createSequence(tx, recruit.class.Applicant)
   await createDefaultKanbanTemplate(tx)
-
-  await createOrUpdate(
-    tx,
-    tags.class.TagCategory,
-    tags.space.Tags,
-    {
-      icon: tags.icon.Tags,
-      label: 'Text Label',
-      targetClass: recruit.class.Applicant,
-      tags: [],
-      default: true
-    },
-    recruit.category.OtherLabel
-  )
 }
 
 async function createDefaultKanbanTemplate (tx: TxOperations): Promise<Ref<KanbanTemplate>> {
