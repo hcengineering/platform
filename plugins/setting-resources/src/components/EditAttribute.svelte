@@ -24,8 +24,8 @@
   export let attribute: AnyAttribute
   export let exist: boolean
   let name: string
-  let type: Type<PropertyType> | undefined
-  let index: IndexKind | undefined
+  let type: Type<PropertyType> | undefined = attribute.type
+  let index: IndexKind | undefined = attribute.index
   let is: AnyComponent | undefined
 
   const client = getClient()
@@ -94,34 +94,34 @@
   <div class="flex-col mb-2">
     <div class="flex-row-center flex-grow">
       <Label label={setting.string.Type} />
+      <div class="ml-4">
+        {#if exist}
+          <Label label={attribute.type.label} />
+        {:else}
+          <DropdownLabelsIntl
+            label={setting.string.Type}
+            {items}
+            width="8rem"
+            bind:selected={selectedType}
+            on:selected={(e) => selectType(e.detail)}
+          />
+          {/if}
+      </div>
     </div>
-    <div class="flex-col mb-2">
-      {#if exist}
-        <Label label={attribute.type.label} />
-      {:else}
-        <div class="flex-row-center flex-grow">
-          <div class="ml-4">
-            <DropdownLabelsIntl
-              label={setting.string.Type}
-              {items}
-              width="8rem"
-              bind:selected={selectedType}
-              on:selected={(e) => selectType(e.detail)}
-            />
-          </div>
-        </div>
-        {#if is}
-          <div class="flex mt-4">
-            <Component
-              {is}
-              on:change={(e) => {
-                type = e.detail?.type
-                index = e.detail?.index
-              }}
-            />
-          </div>
-        {/if}
-      {/if}
-    </div>
+    {#if is}
+      <div class="flex mt-4">
+        <Component
+          {is}
+          props={{
+            type,
+            editable: !exist
+          }}
+          on:change={(e) => {
+            type = e.detail?.type
+            index = e.detail?.index
+          }}
+        />
+      </div>
+    {/if}
   </div>
 </Card>
