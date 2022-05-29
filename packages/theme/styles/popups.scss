@@ -25,7 +25,6 @@
   background: var(--popup-bg-color);
   border-radius: .5rem;
   box-shadow: var(--popup-shadow);
-  will-change: transform;
   
   &.maxHeight { height: 22rem; }
   &.autoHeight {
