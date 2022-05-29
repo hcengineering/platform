@@ -17,7 +17,8 @@
   import type { Ref, Doc } from '@anticrm/core'
   import { Table } from '@anticrm/view-resources'
 
-  import attachment from '@anticrm/attachment'
+  import attachment from '../plugin'
+  import view from '@anticrm/view'
 
   export let objectId: Ref<Doc>
   export let attachments: number
@@ -25,8 +26,18 @@
 
 <Table
   _class={attachment.class.Attachment}
-  config={['', 'lastModified']}
-  options={{}}
+  config={[
+    '',
+    'description',
+    {
+      key: 'pinned',
+      presenter: view.component.BooleanTruePresenter,
+      label: attachment.string.Pinned,
+      sortingKey: 'pinned'
+    },
+    'lastModified'
+  ]}
+  options={{ sort: { pinned: -1 } }}
   query={{ attachedTo: objectId }}
   loadingProps={{ length: attachments }}
 />

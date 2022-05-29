@@ -129,6 +129,7 @@ export function createModel (builder: Builder): void {
     },
     label: attachment.string.PinAttachment,
     input: 'focus',
+    icon: view.icon.Pin,
     category: attachment.category.Attachments,
     target: attachment.class.Attachment,
     context: {
@@ -147,6 +148,7 @@ export function createModel (builder: Builder): void {
     },
     label: attachment.string.UnPinAttachment,
     input: 'focus',
+    icon: view.icon.Pin,
     category: attachment.category.Attachments,
     target: attachment.class.Attachment,
     context: {
