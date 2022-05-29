@@ -32,6 +32,7 @@
     if (modalHTML) $dpstore.popup = modalHTML
   }
   $: component = $dpstore.component
+  $: shift = $dpstore.shift
 
   function _update (result: any): void {
     fitPopup()
@@ -106,6 +107,7 @@
   {#if $dpstore.component}
     <svelte:component
       this={component}
+      bind:shift
       bind:this={componentInstance}
       on:update={(ev) => _update(ev.detail)}
       on:change={(ev) => _change(ev.detail)}

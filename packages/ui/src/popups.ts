@@ -70,6 +70,7 @@ interface IDatePopup {
   frendlyFocus: HTMLElement[] | undefined
   onClose?: (result: any) => void
   onChange?: (result: any) => void
+  shift?: boolean
 }
 
 export const dpstore = writable<IDatePopup>({
@@ -79,7 +80,8 @@ export const dpstore = writable<IDatePopup>({
   popup: undefined,
   frendlyFocus: undefined,
   onClose: undefined,
-  onChange: undefined
+  onChange: undefined,
+  shift: undefined
 })
 
 export function showDatePopup (
@@ -89,7 +91,8 @@ export function showDatePopup (
   popup?: HTMLElement,
   frendlyFocus?: HTMLElement[] | undefined,
   onClose?: (result: any) => void,
-  onChange?: (result: any) => void
+  onChange?: (result: any) => void,
+  shift?: boolean
 ): void {
   dpstore.set({
     component: component,
@@ -98,7 +101,8 @@ export function showDatePopup (
     popup: popup,
     frendlyFocus: frendlyFocus,
     onClose: onClose,
-    onChange: onChange
+    onChange: onChange,
+    shift: shift
   })
 }
 
@@ -110,7 +114,8 @@ export function closeDatePopup (): void {
     popup: undefined,
     frendlyFocus: undefined,
     onClose: undefined,
-    onChange: undefined
+    onChange: undefined,
+    shift: undefined
   })
 }
 

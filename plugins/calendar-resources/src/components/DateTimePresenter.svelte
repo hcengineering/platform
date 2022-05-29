@@ -19,6 +19,7 @@
   import calendar from '../plugin'
 
   export let value: Event
+  export let noShift: boolean = false
 
   $: date = value ? new Date(value.date) : undefined
   $: dueDate = value ? new Date(value.dueDate ?? value.date) : undefined
@@ -48,6 +49,7 @@
     <DateRangePresenter
       value={date.getTime()}
       withTime={date.getMinutes() !== 0 && date.getHours() !== 0 && interval < DAY}
+      {noShift}
     />
     {#if interval > 0}
       {#await formatDueDate(interval) then t}
