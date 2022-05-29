@@ -121,15 +121,6 @@
         }
       }}
     />
-    <Button
-      focusIndex={3}
-      kind={'transparent'}
-      size={'small'}
-      icon={IconBlueCheck}
-      on:click={() => {
-        dispatch('close', value)
-      }}
-    />
   </div>
 {:else}
   <div class="buttons-group xsmall-gap">
