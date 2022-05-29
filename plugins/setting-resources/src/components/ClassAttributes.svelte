@@ -20,7 +20,6 @@
     Action,
     CircleButton,
     Component,
-    eventToHTMLElement,
     IconAdd,
     IconDelete,
     IconEdit,
@@ -95,7 +94,14 @@
         }
       }
     ]
-    showPopup(Menu, { actions }, eventToHTMLElement(ev), () => {})
+    showPopup(
+      Menu,
+      { actions },
+      {
+        getBoundingClientRect: () => DOMRect.fromRect({ width: 1, height: 1, x: ev.clientX, y: ev.clientY })
+      },
+      () => {}
+    )
   }
   function getRefClassTo (value: Type<Type<any>>): IntlString {
     return client.getHierarchy().getClass((value as RefTo<Doc>).to).label
