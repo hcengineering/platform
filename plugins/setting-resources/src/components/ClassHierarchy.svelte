@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Class, ClassifierKind, Doc, Ref } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
-  import { Label } from '@anticrm/ui'
+  import { Icon, Label } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   export let classes: Ref<Class<Doc>>[] = ['contact:class:Contact' as Ref<Class<Doc>>]
   export let _class: Ref<Class<Doc>> | undefined
@@ -47,12 +47,17 @@
   {@const desc = getDescendants(cl)}
   <div
     class="ac-column__list-item"
-    class:selected={cl === _class}
+    class:ac-column__list-selected={cl === _class}
     on:click={() => {
       dispatch('select', cl)
     }}
   >
-    <Label label={clazz.label} />
+    <div class="flex gap-2">
+      {#if clazz.icon}
+        <Icon icon={clazz.icon} size={'medium'} />
+      {/if}
+      <Label label={clazz.label} />
+    </div>
   </div>
   {#if desc.length}
     <div class="ml-2 mt-3 mb-3">
