@@ -30,7 +30,7 @@
 
   $: query.query(
     tags.class.TagReference,
-    { attachedTo: object._id, attachedToClass: object._class },
+    { attachedTo: object._id, attachedToClass: _class },
     (result) => {
       items = result
     },
@@ -38,7 +38,7 @@
   )
 
   async function addRef (tag: TagElement): Promise<void> {
-    await client.addCollection(tags.class.TagReference, object.space, object._id, object._class, key.key, {
+    await client.addCollection(tags.class.TagReference, object.space, object._id, _class, key.key, {
       title: tag.title,
       tag: tag._id,
       color: tag.color
@@ -46,7 +46,7 @@
   }
 
   async function removeTag (id: Ref<TagReference>): Promise<void> {
-    await client.removeCollection(tags.class.TagReference, object.space, id, object._id, object._class, key.key)
+    await client.removeCollection(tags.class.TagReference, object.space, id, object._id, _class, key.key)
   }
 
   let elements: Map<Ref<TagElement>, TagElement> = new Map()
@@ -60,7 +60,7 @@
   bind:elements
   {key}
   bind:items
-  targetClass={object._class}
+  targetClass={_class}
   on:open={(evt) => addRef(evt.detail)}
   on:delete={(evt) => removeTag(evt.detail)}
 />
