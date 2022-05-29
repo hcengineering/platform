@@ -48,6 +48,7 @@ import ClassPresenter from './components/ClassPresenter.svelte'
 import EditBoxPopup from './components/EditBoxPopup.svelte'
 import BooleanTruePresenter from './components/BooleanTruePresenter.svelte'
 import EnumEditor from './components/EnumEditor.svelte'
+import ClassAttributeBar from './components/ClassAttributeBar.svelte'
 
 function PositionElementAlignment (e?: Event): PopupAlignment | undefined {
   return getEventPopupPositionElement(e)
@@ -73,7 +74,8 @@ export {
   Menu,
   SpacePresenter,
   UpDownNavigator,
-  ViewletSetting
+  ViewletSetting,
+  ClassAttributeBar
 }
 
 export default async (): Promise<Resources> => ({
