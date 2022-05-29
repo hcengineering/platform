@@ -105,7 +105,7 @@
             bind:selected={selectedType}
             on:selected={(e) => selectType(e.detail)}
           />
-          {/if}
+        {/if}
       </div>
     </div>
     {#if is}

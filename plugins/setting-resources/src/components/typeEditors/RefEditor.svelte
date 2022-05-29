@@ -55,7 +55,7 @@
     {#if editable}
       <DropdownLabelsIntl label={core.string.Class} items={classes} width="8rem" bind:selected={refClass} />
     {:else if selected}
-      <Label label={selected.label}/>
+      <Label label={selected.label} />
     {/if}
   </div>
 </div>
