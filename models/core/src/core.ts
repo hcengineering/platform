@@ -84,6 +84,7 @@ export class TAttachedDoc extends TDoc implements AttachedDoc {
   collection!: string
 }
 
+@UX(core.string.ClassLabel)
 @Model(core.class.Class, core.class.Doc, DOMAIN_MODEL)
 export class TClass extends TDoc implements Class<Obj> {
   kind!: ClassifierKind

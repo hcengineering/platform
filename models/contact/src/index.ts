@@ -99,6 +99,7 @@ export class TPerson extends TContact implements Person {}
 export class TOrganization extends TContact implements Organization {}
 
 @Model(contact.class.Status, core.class.AttachedDoc, DOMAIN_CONTACT)
+@UX(contact.string.Status)
 export class TStatus extends TAttachedDoc implements Status {
   attachedTo!: Ref<Employee>
   attachedToClass!: Ref<Class<Employee>>
