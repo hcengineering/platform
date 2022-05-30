@@ -27,7 +27,6 @@
   const client = getClient()
 
   query.query(core.class.Enum, {}, (res) => {
-    console.log(res)
     enums = res
     if (selected !== undefined) {
       selected = enums.find((p) => p._id === selected?._id)
