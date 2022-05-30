@@ -1,9 +1,8 @@
 import { readable } from 'svelte/store'
-import board, { Board, Card, CommonBoardPreference } from '@anticrm/board'
+import board, { Board, CommonBoardPreference } from '@anticrm/board'
 import core, { Ref, TxOperations } from '@anticrm/core'
 import type { KanbanTemplate, TodoItem } from '@anticrm/task'
 import preference from '@anticrm/preference'
-import tags, { TagElement } from '@anticrm/tags'
 import { createKanban } from '@anticrm/task'
 import { createQuery, getClient } from '@anticrm/presentation'
 import {
@@ -53,28 +52,6 @@ export function getBoardAvailableColors (): string[] {
   ]
 }
 
-export async function createCardLabel (
-  client: TxOperations,
-  { title, color }: { title: string, color: number }
-): Promise<void> {
-  await client.createDoc(tags.class.TagElement, tags.space.Tags, {
-    title,
-    color,
-    targetClass: board.class.Card,
-    description: '',
-    category: board.category.Other
-  })
-}
-
-export async function addCardLabel (client: TxOperations, card: Card, label: TagElement): Promise<void> {
-  const { title, color, _id: tag } = label
-  await client.addCollection(tags.class.TagReference, card.space, card._id, card._class, 'labels', {
-    title,
-    color,
-    tag
-  })
-}
-
 export function getDateIcon (item: TodoItem): 'normal' | 'warning' | 'overdue' {
   if (item.dueTo === null) return 'normal'
   const date = new Date()
@@ -86,8 +63,7 @@ export const commonBoardPreference = readable<CommonBoardPreference>(undefined, 
   createQuery().query(board.class.CommonBoardPreference, { attachedTo: board.app.Board }, (result) => {
     if (result.total > 0) return set(result[0])
     void getClient().createDoc(board.class.CommonBoardPreference, preference.space.Preference, {
-      attachedTo: board.app.Board,
-      cardLabelsCompactMode: false
+      attachedTo: board.app.Board
     })
   })
 })

@@ -56,6 +56,7 @@
   let handleMove: (e: Event) => void
   let checklists: TodoItem[] = []
   const mixins: Mixin<Doc>[] = []
+  const allowedCollections = ['labels']
   const ignoreKeys = [
     'isArchived',
     'location',
@@ -184,7 +185,7 @@
     </div>
     <svelte:fragment slot="custom-attributes" let:direction>
       {#if direction === 'column'}
-        <DocAttributeBar {object} {mixins} {ignoreKeys} />
+        <DocAttributeBar {object} {mixins} {ignoreKeys} {allowedCollections} />
         <!-- TODO: adjust rest actions -->
         <CardActions bind:value={object} />
       {:else}

@@ -40,6 +40,7 @@ import workbench, { Application } from '@anticrm/model-workbench'
 import { IntlString } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'
 import preference, { TPreference } from '@anticrm/model-preference'
+import tags from '@anticrm/model-tags'
 import board from './plugin'
 
 @Model(board.class.Board, task.class.SpaceWithStates)
@@ -64,8 +65,6 @@ export class TCardCover extends TType implements CardCover {
 export class TCommonBoardPreference extends TPreference implements CommonBoardPreference {
   @Prop(TypeRef(workbench.class.Application), board.string.CommonBoardPreference)
   attachedTo!: Ref<Application>
-
-  cardLabelsCompactMode!: boolean
 }
 
 @Model(board.class.Card, task.class.Task)
@@ -282,8 +281,9 @@ export function createModel (builder: Builder): void {
     {
       action: view.actionImpl.ShowPopup,
       actionProps: {
-        component: board.component.LabelsActionPopup,
-        element: view.popup.PositionElementAlignment
+        component: tags.component.TagsEditorPopup,
+        element: view.popup.PositionElementAlignment,
+        value: 'object'
       },
       label: board.string.Labels,
       icon: board.icon.Card,

@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+Board:
+
+ - Adjust label editors design
+
 ## 0.6.22
 
 Platform:

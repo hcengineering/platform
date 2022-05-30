@@ -3,6 +3,7 @@
   import { Class, FindOptions, Ref } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
   import task, { SpaceWithStates, State } from '@anticrm/task'
+  import tags from '@anticrm/tags'
   import { TableBrowser } from '@anticrm/view-resources'
   import board from '../plugin'
 
@@ -23,7 +24,12 @@
   config={[
     'title',
     '$lookup.state',
-    { key: '', presenter: board.component.CardLabels, label: board.string.Labels },
+    {
+      key: '',
+      presenter: tags.component.TagsAttributeEditor,
+      props: { isEditable: false },
+      label: board.string.Labels
+    },
     'startDate',
     'dueDate',
     { key: 'members', presenter: board.component.UserBoxList, label: board.string.Members, sortingKey: '' },
