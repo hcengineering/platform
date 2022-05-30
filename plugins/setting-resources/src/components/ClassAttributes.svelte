@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { AnyAttribute, Class, Doc, Ref, RefTo, Type } from '@anticrm/core'
+  import core, { AnyAttribute, ArrOf, AttachedDoc, Class, Collection, Doc, EnumOf, Ref, RefTo, Type } from '@anticrm/core'
   import { IntlString } from '@anticrm/platform'
   import presentation, { getClient, MessageBox } from '@anticrm/presentation'
   import {
@@ -29,6 +29,7 @@
     showPopup
   } from '@anticrm/ui'
   import view from '@anticrm/view'
+import { attr } from 'svelte/internal'
   import setting from '../plugin'
   import CreateAttribute from './CreateAttribute.svelte'
   import EditAttribute from './EditAttribute.svelte'
@@ -103,8 +104,24 @@
       () => {}
     )
   }
-  function getRefClassTo (value: Type<Type<any>>): IntlString {
-    return client.getHierarchy().getClass((value as RefTo<Doc>).to).label
+
+  function getAttrType (type: Type<any>): IntlString | undefined {
+    switch (type._class) {
+      case core.class.RefTo:
+        return client.getHierarchy().getClass((type as RefTo<Doc>).to).label
+      case core.class.Collection:
+        return client.getHierarchy().getClass((type as Collection<AttachedDoc>).of).label
+      case core.class.ArrOf:
+        return (type as ArrOf<Doc>).of.label
+      default:
+        return undefined
+    }
+  }
+
+  async function getEnumName (type: Type<any>): Promise<string | undefined> {
+    const ref = (type as EnumOf).of
+    const res = await client.findOne(core.class.Enum, { _id: ref })
+    return res?.name
   }
 </script>
 
@@ -134,7 +151,7 @@
   </thead>
   <tbody>
     {#each attributes as attr}
-      {@const attrType = attr.type._class === core.class.RefTo ? getRefClassTo(attr.type) : undefined}
+      {@const attrType = getAttrType(attr.type)}
       <tr
         class="antiTable-body__row"
         on:contextmenu={(ev) => {
@@ -158,6 +175,13 @@
           <Label label={attr.type.label} />
           {#if attrType !== undefined}
             : <Label label={attrType} />
+          {/if}
+          {#if attr.type._class === core.class.Enum}
+            {#await getEnumName(attr.type) then name}
+              {#if name}
+              : {name}
+              {/if}
+            {/await}
           {/if}
         </td>
         <td>
