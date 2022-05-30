@@ -14,7 +14,6 @@
 -->
 <script lang="ts">
   import type { Class, Doc, DocumentQuery, FindOptions, Ref } from '@anticrm/core'
-  import { Scroller } from '@anticrm/ui'
   import { BuildModelKey } from '@anticrm/view'
   import type { Filter } from '@anticrm/view'
   import { onMount } from 'svelte'
@@ -59,28 +58,26 @@
 {#if filters !== []}
   <FilterBar {_class} {query} bind:filters on:change={(e) => (resultQuery = e.detail)} />
 {/if}
-<Scroller tableFade>
-  <Table
-    bind:this={table}
-    {_class}
-    {config}
-    {options}
-    bind:query={resultQuery}
-    {showNotification}
-    {baseMenuClass}
-    {loadingProps}
-    highlightRows={true}
-    enableChecking
-    checked={$selectionStore ?? []}
-    selection={listProvider.current($focusStore)}
-    on:row-focus={(evt) => {
-      listProvider.updateFocus(evt.detail)
-    }}
-    on:content={(evt) => {
-      listProvider.update(evt.detail)
-    }}
-    on:check={(evt) => {
-      listProvider.updateSelection(evt.detail.docs, evt.detail.value)
-    }}
-  />
-</Scroller>
+<Table
+  bind:this={table}
+  {_class}
+  {config}
+  {options}
+  bind:query={resultQuery}
+  {showNotification}
+  {baseMenuClass}
+  {loadingProps}
+  highlightRows={true}
+  enableChecking
+  checked={$selectionStore ?? []}
+  selection={listProvider.current($focusStore)}
+  on:row-focus={(evt) => {
+    listProvider.updateFocus(evt.detail)
+  }}
+  on:content={(evt) => {
+    listProvider.update(evt.detail)
+  }}
+  on:check={(evt) => {
+    listProvider.updateSelection(evt.detail.docs, evt.detail.value)
+  }}
+/>

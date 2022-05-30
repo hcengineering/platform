@@ -21,6 +21,8 @@
   import { CheckBox, Component, IconDown, IconUp, Label, Loading, showPopup, Spinner } from '@anticrm/ui'
   import { BuildModelKey } from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
+  import VirtualInfiniteList from 'svelte-virtual-infinite-list'
+  import type { InfiniteEvent } from 'svelte-virtual-infinite-list'
   import { buildConfigLookup, buildModel, LoadingProps } from '../utils'
   import Menu from './Menu.svelte'
 
@@ -45,11 +47,13 @@
 
   $: lookup = buildConfigLookup(hierarchy, _class, config)
 
+  let virtualInfiniteList: VirtualInfiniteList
   let sortKey = 'modifiedOn'
   let sortOrder = SortingOrder.Descending
   let loading = 0
 
   let objects: Doc[] = []
+  let limit = 50
   const refs: HTMLElement[] = []
 
   $: refs.length = objects.length
@@ -81,7 +85,7 @@
         dispatch('content', objects)
         loading = loading === 1 ? 0 : -1
       },
-      { sort: { [sortKey]: sortOrder }, limit: 50, lookup, ...options }
+      { sort: { [sortKey]: sortOrder }, limit, lookup, ...options }
     )
     if (update && ++loading > 0) {
       objects = []
@@ -153,12 +157,21 @@
       r?.scrollIntoView({ behavior: 'auto', block: 'nearest' })
     }
   }
+
+  async function onInfinite ({ detail }: InfiniteEvent) {
+    console.log(`infinit ${detail}`)
+    if (detail.on === 'top') return
+    if (objects.length <= limit) {
+      limit += 50
+    }
+    updateObjects(_class, query, sortKey, sortOrder, lookup, options)
+  }
 </script>
 
 {#await buildModel({ client, _class, keys: config, lookup })}
   <Loading />
 {:then model}
-  <table class="antiTable" class:metaColumn={enableChecking || showNotification} class:highlightRows>
+  <div class="flex-col" class:metaColumn={enableChecking || showNotification} class:highlightRows>
     {#if !hiddenHeader}
       <thead class="scroller-thead">
         <tr class="scroller-thead__tr">
@@ -201,17 +214,31 @@
       </thead>
     {/if}
     {#if objects.length}
-      <tbody>
-        {#each objects as object, row (object._id)}
-          <tr
-            class="antiTable-body__row"
-            class:checking={checkedSet.has(object._id)}
-            class:fixed={row === selection}
-            class:selected={row === selection}
-            on:mouseover={() => onRow(object)}
+      <VirtualInfiniteList
+        items={objects}
+        itemHeight={50}
+        loading={loading > 0}
+        direction="vertical"
+        persists={50}
+        uniqueKey={'_id'}
+        bind:this={virtualInfiniteList}
+        on:infinite={onInfinite}
+        let:item
+      >
+        <div slot="loader">
+          <Loading />
+        </div>
+        <div slot="item" class="flex h-10">
+          {@const index = objects.findIndex((it) => it._id === item._id) ?? -1}
+          <div
+            class="flew-row-stretch antiTable-body__row"
+            class:checking={checkedSet.has(item._id)}
+            class:fixed={index === selection}
+            class:selected={index === selection}
+            on:mouseover={() => onRow(item)}
             on:focus={() => {}}
-            bind:this={refs[row]}
-            on:contextmenu|preventDefault={(ev) => showMenu(ev, object, row)}
+            bind:this={refs[index]}
+            on:contextmenu|preventDefault={(ev) => showMenu(ev, item, index)}
           >
             {#each model as attribute, cell}
               {#if !cell}
@@ -222,24 +249,24 @@
                         {#if enableChecking}
                           <div class="antiTable-cells__checkCell">
                             <CheckBox
-                              checked={checkedSet.has(object._id)}
+                              checked={checkedSet.has(item._id)}
                               on:value={(event) => {
-                                check([object], event.detail)
+                                check([item], event.detail)
                               }}
                             />
                           </div>
                         {/if}
                         <Component
                           is={notification.component.NotificationPresenter}
-                          props={{ value: object, kind: enableChecking ? 'table' : 'block' }}
+                          props={{ value: item, kind: enableChecking ? 'table' : 'block' }}
                         />
                       </div>
                     {:else}
                       <div class="antiTable-cells__checkCell">
                         <CheckBox
-                          checked={checkedSet.has(object._id)}
+                          checked={checkedSet.has(item._id)}
                           on:value={(event) => {
-                            check([object], event.detail)
+                            check([item], event.detail)
                           }}
                         />
                       </div>
@@ -250,8 +277,8 @@
                   <div class="antiTable-cells__firstCell">
                     <svelte:component
                       this={attribute.presenter}
-                      value={getObjectValue(attribute.key, object) ?? ''}
-                      {object}
+                      value={getObjectValue(attribute.key, item) ?? ''}
+                      object={item}
                       {...attribute.props}
                     />
                     <!-- <div
@@ -267,16 +294,16 @@
                 <td>
                   <svelte:component
                     this={attribute.presenter}
-                    value={getObjectValue(attribute.key, object) ?? ''}
-                    {object}
+                    value={getObjectValue(attribute.key, item) ?? ''}
+                    object={item}
                     {...attribute.props}
                   />
                 </td>
               {/if}
             {/each}
-          </tr>
-        {/each}
-      </tbody>
+          </div>
+        </div>
+      </VirtualInfiniteList>
     {:else if loadingProps !== undefined}
       <tbody>
         {#each Array(getLoadingLength(loadingProps, options)) as i, row}
@@ -299,6 +326,6 @@
         {/each}
       </tbody>
     {/if}
-  </table>
+  </div>
   {#if loading > 0}<Loading />{/if}
 {/await}
