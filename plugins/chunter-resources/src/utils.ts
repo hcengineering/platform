@@ -66,9 +66,6 @@ export function getSpaceLink (id: Ref<Space>): string {
 
 export function getDay (time: Timestamp): Timestamp {
   const date: Date = new Date(time)
-  date.setHours(0)
-  date.setMinutes(0)
-  date.setSeconds(0)
-  date.setMilliseconds(0)
+  date.setHours(0, 0, 0, 0)
   return date.getTime()
 }

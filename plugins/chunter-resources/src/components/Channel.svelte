@@ -120,23 +120,6 @@
   function isOtherDay (time1: Timestamp, time2: Timestamp) {
     return getDay(time1) !== getDay(time2)
   }
-  let messagesDays: Timestamp[] | undefined = []
-  $: {
-    let firstDate
-    if (messages?.[0]) {
-      firstDate = getDay(messages[0].createOn)
-    }
-
-    messagesDays = messages?.reduce(
-      (prev, cur) => {
-        if (isOtherDay(prev[prev.length - 1], cur.createOn)) {
-          prev.push(getDay(cur.createOn))
-        }
-        return prev
-      },
-      firstDate ? [firstDate] : []
-    )
-  }
 
   function handleJumpToDate (e: CustomEvent<any>) {
     const date = e.detail.date
@@ -144,12 +127,16 @@
       return
     }
 
-    let closestDate: Timestamp | undefined = messagesDays?.reduceRight((prev, cur) => {
-      if (prev < date) return cur
-      if (cur < date) return prev
-      if (cur - date < prev - date) return cur
-      else return prev
-    })
+    const dateSelectors = div?.getElementsByClassName('dateSelector')
+    if (!dateSelectors) return
+
+    let closestDate: Timestamp | undefined = Array.from(dateSelectors).reduceRight((prevDate, cur) => {
+      const curDate = parseInt(cur.id)
+      if (prevDate < date) return curDate
+      if (curDate < date) return prevDate
+      if (curDate - date < prevDate - date) return curDate
+      else return prevDate
+    }, parseInt(dateSelectors[dateSelectors.length - 1].id))
     if (closestDate && closestDate < date) closestDate = undefined
 
     if (closestDate) {
@@ -158,7 +145,7 @@
   }
 
   const pinnedHeight = 30
-  const headerHeight = 70
+  const headerHeight = 50
   function scrollToDate (date: Timestamp) {
     let offset = date && document.getElementById(date.toString())?.offsetTop
     if (offset) {
@@ -169,41 +156,39 @@
   }
 
   let up: boolean | undefined = true
-  let showFixed: boolean | undefined = true
-  let selectedDate: Timestamp = messagesDays[messagesDays.length - 1]
+  let selectedDate: Timestamp | undefined = messages ? getDay(messages[0].createOn) : undefined // messagesDays[messagesDays.length - 1]
   function handleScroll () {
     up = div && div.scrollTop === 0
 
     const upperVisible = getFirstVisible()
     if (upperVisible) {
       selectedDate = parseInt(upperVisible.id)
-      showFixed = false
-      if (!selectedDate) {
-        selectedDate = getDay(parseInt(upperVisible.getAttribute('data-date')))
-        showFixed = true
-      }
     }
   }
 
-  function getFirstVisible (): HTMLElement {
+  function getFirstVisible (): HTMLElement | undefined {
+    if (!div) return
+
     const clientRect = div.getBoundingClientRect()
-    for (let i = div?.childElementCount; i >= 0; i--) {
-      const child = div?.children[i]
-      if (child?.nodeType === Node.ELEMENT_NODE) {
-        const rect = child?.getBoundingClientRect()
-        if (rect.top < clientRect.top) {
-          return div?.children[i + 1]
-        } else if (rect.top === clientRect.top) {
-          return div?.children[i]
+    const dateSelectors = div.getElementsByClassName('dateSelector')
+    const firstVisible = Array.from(dateSelectors)
+      .reverse()
+      .find((child) => {
+        if (child?.nodeType === Node.ELEMENT_NODE) {
+          const rect = child?.getBoundingClientRect()
+          if (rect.top <= clientRect.top) {
+            return true
+          }
         }
-      }
-    }
+        return false
+      })
+    return firstVisible
   }
 </script>
 
-{#if !up && showFixed}
+{#if !up}
   <div class="pr-2">
-    <JumpToDateSelector {selectedDate} on:jumpToDate={handleJumpToDate} />
+    <JumpToDateSelector {selectedDate} fixed on:jumpToDate={handleJumpToDate} />
   </div>
 {/if}
 <div class="flex-col vScroll" bind:this={div} on:scroll={handleScroll}>

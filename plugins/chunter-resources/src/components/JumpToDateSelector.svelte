@@ -1,11 +1,11 @@
 <script lang="ts">
   import { Timestamp } from '@anticrm/core'
-  import { DateRangePopup, Label, showPopup } from '@anticrm/ui'
+  import { DateRangePopup, showPopup } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
-  import chunter from '../plugin'
   import { getDay } from '../utils'
 
   export let selectedDate: Timestamp
+  export let fixed: boolean = false
 
   let div: HTMLDivElement | undefined
   const dispatch = createEventDispatcher()
@@ -13,16 +13,13 @@
   $: time = getDay(selectedDate)
 </script>
 
-<div id={time?.toString()} class="flex justify-center over-underline border">
+<div id={fixed ? '' : time?.toString()} class="flex justify-center over-underline dateSelector">
   <div
     bind:this={div}
     on:click={() => {
       showPopup(DateRangePopup, {}, div, (v) => {
         if (v) {
-          v.setHours(0)
-          v.setMinutes(0)
-          v.setSeconds(0)
-          v.setMilliseconds(0)
+          v.setHours(0, 0, 0, 0)
           dispatch('jumpToDate', { date: v.getTime() })
         }
       })
@@ -35,7 +32,7 @@
 </div>
 
 <style lang="scss">
-  .border {
+  .dateSelector {
     &:not(:first-child) {
       border-top: 1px solid var(--theme-dialog-divider);
     }
