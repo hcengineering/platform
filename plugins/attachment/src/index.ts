@@ -29,6 +29,8 @@ export interface Attachment extends AttachedDoc {
   size: number
   type: string
   lastModified: number
+  description?: string
+  pinned?: boolean // If defined and true, will be shown in top of attachments collection
 }
 
 /**

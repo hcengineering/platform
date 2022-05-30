@@ -33,6 +33,7 @@
   export let width: string | undefined = undefined
   export let labelDirection: TooltipAlignment | undefined = undefined
   export let focusIndex = -1
+  export let autoSelect: boolean = true
 
   let container: HTMLElement
   let opened: boolean = false
@@ -41,7 +42,7 @@
 
   let selectedItem = items.find((x) => x.id === selected)
   $: selectedItem = items.find((x) => x.id === selected)
-  $: if (selected === undefined && items[0] !== undefined) {
+  $: if (autoSelect && selected === undefined && items[0] !== undefined) {
     selected = items[0].id
   }
 

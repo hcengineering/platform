@@ -13,14 +13,15 @@
 // limitations under the License.
 //
 
-import { Builder, Model } from '@anticrm/model'
+import { Builder, Mixin, Model } from '@anticrm/model'
 import { Ref, Domain, DOMAIN_MODEL } from '@anticrm/core'
-import core, { TDoc } from '@anticrm/model-core'
+import core, { TClass, TDoc } from '@anticrm/model-core'
 import setting from './plugin'
-import type { Integration, IntegrationType, Handler, SettingsCategory } from '@anticrm/setting'
+import type { Editable, Integration, IntegrationType, Handler, SettingsCategory } from '@anticrm/setting'
 import type { Asset, IntlString } from '@anticrm/platform'
 import task from '@anticrm/task'
 import activity from '@anticrm/activity'
+import view from '@anticrm/view'
 
 import workbench from '@anticrm/model-workbench'
 import { AnyComponent } from '@anticrm/ui'
@@ -51,8 +52,11 @@ export class TIntegrationType extends TDoc implements IntegrationType {
   onDisconnect!: Handler
 }
 
+@Mixin(setting.mixin.Editable, core.class.Class)
+export class TEditable extends TClass implements Editable {}
+
 export function createModel (builder: Builder): void {
-  builder.createModel(TIntegration, TIntegrationType, TSettingsCategory)
+  builder.createModel(TIntegration, TIntegrationType, TSettingsCategory, TEditable)
 
   builder.createDoc(
     setting.class.SettingsCategory,
@@ -119,6 +123,30 @@ export function createModel (builder: Builder): void {
     setting.class.SettingsCategory,
     core.space.Model,
     {
+      name: 'classes',
+      label: setting.string.ClassSetting,
+      icon: setting.icon.Setting,
+      component: setting.component.ClassSetting,
+      order: 4500
+    },
+    setting.ids.ClassSetting
+  )
+  builder.createDoc(
+    setting.class.SettingsCategory,
+    core.space.Model,
+    {
+      name: 'enums',
+      label: setting.string.Enums,
+      icon: setting.icon.Setting,
+      component: setting.component.EnumSetting,
+      order: 4600
+    },
+    setting.ids.EnumSetting
+  )
+  builder.createDoc(
+    setting.class.SettingsCategory,
+    core.space.Model,
+    {
       name: 'support',
       label: setting.string.Support,
       icon: setting.icon.Support,
@@ -180,6 +208,30 @@ export function createModel (builder: Builder): void {
     },
     setting.ids.TxIntegrationDisable
   )
+
+  builder.mixin(core.class.TypeString, core.class.Class, view.mixin.ObjectEditor, {
+    editor: setting.component.StringTypeEditor
+  })
+
+  builder.mixin(core.class.TypeBoolean, core.class.Class, view.mixin.ObjectEditor, {
+    editor: setting.component.BooleanTypeEditor
+  })
+
+  builder.mixin(core.class.TypeDate, core.class.Class, view.mixin.ObjectEditor, {
+    editor: setting.component.DateTypeEditor
+  })
+
+  builder.mixin(core.class.TypeNumber, core.class.Class, view.mixin.ObjectEditor, {
+    editor: setting.component.NumberTypeEditor
+  })
+
+  builder.mixin(core.class.RefTo, core.class.Class, view.mixin.ObjectEditor, {
+    editor: setting.component.RefEditor
+  })
+
+  builder.mixin(core.class.EnumOf, core.class.Class, view.mixin.ObjectEditor, {
+    editor: setting.component.EnumTypeEditor
+  })
 }
 
 export { settingOperation } from './migration'

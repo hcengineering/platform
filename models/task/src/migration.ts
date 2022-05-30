@@ -14,11 +14,12 @@
 //
 
 import { Class, Doc, Ref, Space, TxOperations } from '@anticrm/core'
-import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
+import { createOrUpdate, MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
 import core from '@anticrm/model-core'
 import { KanbanTemplate, StateTemplate, DoneStateTemplate, genRanks, createKanban } from '@anticrm/task'
 import { DOMAIN_TASK } from '.'
 import task from './plugin'
+import tags from '@anticrm/model-tags'
 
 /**
  * @public
@@ -196,5 +197,19 @@ export const taskOperation: MigrateOperation = {
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)
     await createDefaults(tx)
+
+    await createOrUpdate(
+      tx,
+      tags.class.TagCategory,
+      tags.space.Tags,
+      {
+        icon: tags.icon.Tags,
+        label: 'Text Label',
+        targetClass: task.class.Task,
+        tags: [],
+        default: true
+      },
+      task.category.TaskTag
+    )
   }
 }

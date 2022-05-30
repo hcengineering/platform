@@ -36,6 +36,7 @@ import view, { actionTemplates, createAction } from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
 import type { Asset, IntlString } from '@anticrm/platform'
 import contact from './plugin'
+import setting from '@anticrm/setting'
 
 export const DOMAIN_CONTACT = 'contact' as Domain
 export const DOMAIN_CHANNEL = 'channel' as Domain
@@ -98,6 +99,7 @@ export class TPerson extends TContact implements Person {}
 export class TOrganization extends TContact implements Organization {}
 
 @Model(contact.class.Status, core.class.AttachedDoc, DOMAIN_CONTACT)
+@UX(contact.string.Status)
 export class TStatus extends TAttachedDoc implements Status {
   attachedTo!: Ref<Employee>
   attachedToClass!: Ref<Class<Employee>>
@@ -296,6 +298,8 @@ export function createModel (builder: Builder): void {
   builder.mixin(contact.class.Contact, core.class.Class, view.mixin.ClassFilters, {
     filters: ['_class', 'city', 'modifiedOn']
   })
+
+  builder.mixin(contact.class.Contact, core.class.Class, setting.mixin.Editable, {})
 
   builder.createDoc(
     presentation.class.ObjectSearchCategory,

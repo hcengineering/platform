@@ -84,12 +84,13 @@ export interface Task extends AttachedDoc, DocWithRank {
   dueDate: Timestamp | null
   startDate: Timestamp | null
   todoItems?: number
+  labels?: number
 }
 
 /**
  * @public
  */
-export interface TodoItem extends AttachedDoc {
+export interface TodoItem extends AttachedDoc, DocWithRank {
   name: Markup
   assignee: Ref<Employee> | null
   done: boolean
@@ -116,7 +117,6 @@ export interface Issue extends Task {
 
   comments?: number
   attachments?: number
-  labels?: string
 }
 
 /**

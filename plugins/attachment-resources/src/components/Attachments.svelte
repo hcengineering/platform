@@ -15,13 +15,12 @@
 -->
 <script lang="ts">
   import { Class, Doc, Ref, Space } from '@anticrm/core'
-
   import { Label, Spinner } from '@anticrm/ui'
+  import view from '@anticrm/view'
   import { Table } from '@anticrm/view-resources'
   import attachment from '../plugin'
   import AddAttachment from './AddAttachment.svelte'
   import AttachmentDroppable from './AttachmentDroppable.svelte'
-
   import UploadDuo from './icons/UploadDuo.svelte'
 
   export let objectId: Ref<Doc>
@@ -62,8 +61,18 @@
   {:else}
     <Table
       _class={attachment.class.Attachment}
-      config={['', 'lastModified']}
-      options={{}}
+      config={[
+        '',
+        'description',
+        {
+          key: 'pinned',
+          presenter: view.component.BooleanTruePresenter,
+          label: attachment.string.Pinned,
+          sortingKey: 'pinned'
+        },
+        'lastModified'
+      ]}
+      options={{ sort: { pinned: -1 } }}
       query={{ attachedTo: objectId }}
       loadingProps={{ length: attachments ?? 0 }}
     />

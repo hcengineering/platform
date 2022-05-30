@@ -18,7 +18,7 @@ import type { AnyAttribute, Class, Classifier, Doc, Domain, Interface, Mixin, Ob
 import { ClassifierKind } from './classes'
 import core from './component'
 import { _createMixinProxy, _mixinClass, _toDoc } from './proxy'
-import type { Tx, TxCreateDoc, TxMixin } from './tx'
+import type { Tx, TxCreateDoc, TxMixin, TxRemoveDoc, TxUpdateDoc } from './tx'
 import { TxProcessor } from './tx'
 
 /**
@@ -27,6 +27,7 @@ import { TxProcessor } from './tx'
 export class Hierarchy {
   private readonly classifiers = new Map<Ref<Classifier>, Classifier>()
   private readonly attributes = new Map<Ref<Classifier>, Map<string, AnyAttribute>>()
+  private readonly attributesById = new Map<Ref<AnyAttribute>, AnyAttribute>()
   private readonly descendants = new Map<Ref<Classifier>, Ref<Classifier>[]>()
   private readonly ancestors = new Map<Ref<Classifier>, Ref<Classifier>[]>()
   private readonly proxies = new Map<Ref<Mixin<Doc>>, ProxyHandler<Doc>>()
@@ -124,6 +125,12 @@ export class Hierarchy {
       case core.class.TxCreateDoc:
         this.txCreateDoc(tx as TxCreateDoc<Doc>)
         return
+      case core.class.TxUpdateDoc:
+        this.txUpdateDoc(tx as TxUpdateDoc<Doc>)
+        return
+      case core.class.TxRemoveDoc:
+        this.txRemoveDoc(tx as TxRemoveDoc<Doc>)
+        return
       case core.class.TxMixin:
         this.txMixin(tx as TxMixin<Doc, Doc>)
     }
@@ -142,6 +149,26 @@ export class Hierarchy {
     } else if (tx.objectClass === core.class.Attribute) {
       const createTx = tx as TxCreateDoc<AnyAttribute>
       this.addAttribute(TxProcessor.createDoc2Doc(createTx))
+    }
+  }
+
+  private txUpdateDoc (tx: TxUpdateDoc<Doc>): void {
+    if (tx.objectClass === core.class.Attribute) {
+      const updateTx = tx as TxUpdateDoc<AnyAttribute>
+      const doc = this.attributesById.get(updateTx.objectId)
+      if (doc === undefined) return
+      this.addAttribute(TxProcessor.updateDoc2Doc(doc, updateTx))
+    }
+  }
+
+  private txRemoveDoc (tx: TxRemoveDoc<Doc>): void {
+    if (tx.objectClass === core.class.Attribute) {
+      const removeTx = tx as TxRemoveDoc<AnyAttribute>
+      const doc = this.attributesById.get(removeTx.objectId)
+      if (doc === undefined) return
+      const map = this.attributes.get(doc.attributeOf)
+      map?.delete(doc.name)
+      this.attributesById.delete(removeTx.objectId)
     }
   }
 
@@ -287,6 +314,7 @@ export class Hierarchy {
       this.attributes.set(_class, attributes)
     }
     attributes.set(attribute.name, attribute)
+    this.attributesById.set(attribute._id, attribute)
   }
 
   getAllAttributes (clazz: Ref<Classifier>, to?: Ref<Classifier>): Map<string, AnyAttribute> {
@@ -300,10 +328,13 @@ export class Hierarchy {
           break
         }
       }
-      ancestors = ancestors.filter((c) => this.isDerived(c, to as Ref<Class<Doc>>) && c !== to)
+      ancestors = ancestors.filter(
+        (c) => c !== to && (this.isInterface(this.classifiers.get(c)) || this.isDerived(c, to as Ref<Class<Doc>>))
+      )
     }
 
-    for (const cls of ancestors) {
+    for (let index = ancestors.length - 1; index >= 0; index--) {
+      const cls = ancestors[index]
       const attributes = this.attributes.get(cls)
       if (attributes !== undefined) {
         for (const [name, attr] of attributes) {

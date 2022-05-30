@@ -122,14 +122,13 @@
   }
 </script>
 
-<div class="antiPopup">
-  <div class="ap-space" />
-  <div class="ap-scroll">
-    <div class="ap-box">
+<div class="selectPopup">
+  <div class="scroll">
+    <div class="box">
       {#each getTypes(_class) as type, i}
         <!-- svelte-ignore a11y-mouse-events-have-key-events -->
         <button
-          class="ap-menuItem flex-row-center withIcon"
+          class="menu-item withIcon"
           on:keydown={(event) => keyDown(event, i)}
           on:mouseover={(event) => {
             event.currentTarget.focus()
@@ -146,7 +145,6 @@
       {/each}
     </div>
   </div>
-  <div class="ap-space" />
 </div>
 
 <style lang="scss">

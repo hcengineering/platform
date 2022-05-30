@@ -22,6 +22,7 @@
   // export let label: IntlString
   export let onChange: (value: any) => void
   export let kind: 'no-border' | 'link' = 'no-border'
+  export let noShift: boolean = false
 
   $: withTime = type?.withTime ?? true
 </script>
@@ -31,6 +32,7 @@
   {withTime}
   editable
   {kind}
+  {noShift}
   on:change={(res) => {
     if (res.detail !== undefined) onChange(res.detail)
   }}

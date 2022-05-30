@@ -12,7 +12,7 @@
 
   const isArchived = { $nin: [true] }
   const query = createQuery()
-  let states: Ref<State>[]
+  let states: Ref<State>[] = []
   $: query.query(task.class.State, { space, isArchived }, (result) => {
     states = result.map(({ _id }) => _id)
   })

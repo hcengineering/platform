@@ -61,7 +61,7 @@
       <svelte:component this={targetPresenter.presenter} value={target} />
     </div>
   {/if}
-  <span class="lower">&nbsp; <Label label={chunter.string.In} /></span>
+  <span class="lower"><Label label={chunter.string.In} /></span>
   <div class="ml-2">
     <svelte:component this={presenter.presenter} value={doc} />
   </div>

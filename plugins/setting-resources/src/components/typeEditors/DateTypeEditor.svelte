@@ -13,30 +13,40 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { TypeDate as DateType } from '@anticrm/core'
   import { TypeDate } from '@anticrm/model'
   import { Label } from '@anticrm/ui'
   import { createEventDispatcher, onMount } from 'svelte'
-  import view from '../../plugin'
-  import BooleanEditor from '../BooleanEditor.svelte'
+  import setting from '../../plugin'
+  import BooleanEditor from '@anticrm/view-resources/src/components/BooleanEditor.svelte'
+  import BooleanPresenter from '@anticrm/view-resources/src/components/BooleanPresenter.svelte'
 
+  export let type: DateType | undefined
+  export let editable: boolean = true
   const dispatch = createEventDispatcher()
 
-  let withTime: boolean = false
+  let withTime: boolean = type?.withTime ?? false
 
   onMount(() => {
-    dispatch('change', { type: TypeDate(withTime) })
+    if (type === undefined) {
+      dispatch('change', { type: TypeDate(withTime) })
+    }
   })
 </script>
 
 <div class="flex-row-center">
-  <Label label={view.string.WithTime} />
+  <Label label={setting.string.WithTime} />
   <div class="ml-2">
-    <BooleanEditor
-      withoutUndefined
-      bind:value={withTime}
-      onChange={(e) => {
-        dispatch('change', { type: TypeDate(e) })
-      }}
-    />
+    {#if editable}
+      <BooleanEditor
+        withoutUndefined
+        bind:value={withTime}
+        onChange={(e) => {
+          dispatch('change', { type: TypeDate(e) })
+        }}
+      />
+    {:else}
+      <BooleanPresenter value={withTime} />
+    {/if}
   </div>
 </div>

@@ -32,6 +32,8 @@
   export let keyLabel: string = ''
   export let hideAdd: boolean = false
 
+  const tagShowLimit = 50
+
   let search: string = ''
   let searchElement: HTMLInputElement
   let show: boolean = false
@@ -54,14 +56,9 @@
   }
 
   // TODO: Add $not: {$in: []} query
-  $: query.query(
-    tags.class.TagElement,
-    { title: { $like: '%' + search + '%' }, targetClass },
-    (result) => {
-      objects = newElements.concat(result)
-    },
-    { limit: 200 }
-  )
+  $: query.query(tags.class.TagElement, { title: { $like: '%' + search + '%' }, targetClass }, (result) => {
+    objects = newElements.concat(result)
+  })
 
   async function createTagElement (): Promise<void> {
     showPopup(CreateTagElement, { targetClass }, 'top')
@@ -136,9 +133,16 @@
   <div class="scroll">
     <div class="box">
       {#each categories as cat}
-        {#if objects.filter((el) => el.category === cat._id).length > 0}
+        {@const catObjects = objects
+          .filter((el) => el.category === cat._id)
+          .sort((a, b) => (b.refCount ?? 0) - (a.refCount ?? 0))}
+        {#if catObjects.length > 0}
           <div class="sticky-wrapper">
-            <button class="menu-group__header" class:show={search !== '' || show} on:click={toggleGroup}>
+            <button
+              class="menu-group__header"
+              class:show={categories.length === 1 || search !== '' || show}
+              on:click={toggleGroup}
+            >
               <div class="flex-row-center">
                 <span class="mr-1-5">{cat.label}</span>
                 <div class="icon">
@@ -148,12 +152,18 @@
                 </div>
               </div>
               <div class="flex-row-center text-xs">
-                <span class="content-color mr-1">({objects.filter((el) => el.category === cat._id).length})</span>
+                <span class="content-color mr-1">
+                  {#if catObjects.length > tagShowLimit}
+                    ({tagShowLimit}, {catObjects.length})
+                  {:else}
+                    ({catObjects.length})
+                  {/if}
+                </span>
                 <span class="counter">{getCount(cat)}</span>
               </div>
             </button>
             <div class="menu-group">
-              {#each objects.filter((el) => el.category === cat._id) as element}
+              {#each catObjects.slice(0, 50) as element}
                 <button
                   class="menu-item"
                   on:click={() => {

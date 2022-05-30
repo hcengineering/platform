@@ -49,30 +49,21 @@
   })
 </script>
 
-<div class="selectPopup notification" class:justify-center={notifications.length === 0}>
+<div class="notifyPopup" class:justify-center={notifications.length === 0}>
+  <div class="header">
+    <span class="fs-title overflow-label"><Label label={notification.string.Notifications} /></span>
+  </div>
   {#if notifications.length > 0}
-    <div class="header fs-title pl-4 pb-2">
-      <Label label={notification.string.Notifications} />
-    </div>
     <Scroller>
-      <div class="flex-col px-4 clear-mins">
+      <div class="px-2 clear-mins">
         {#each notifications as n (n._id)}
           <NotificationView notification={n} {viewlets} />
         {/each}
       </div>
     </Scroller>
   {:else}
-    <div class="flex-center h-full">
+    <div class="flex-grow flex-center">
       <Label label={notification.string.NoNotifications} />
     </div>
   {/if}
 </div>
-
-<style lang="scss">
-  .notification {
-    padding: 0.5rem 0;
-    width: fit-content;
-    min-width: 16rem;
-    min-height: 12rem;
-  }
-</style>

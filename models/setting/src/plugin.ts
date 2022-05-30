@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Ref } from '@anticrm/core'
+import { Doc, Ref } from '@anticrm/core'
 import { mergeIds } from '@anticrm/platform'
 import { settingId } from '@anticrm/setting'
 import setting from '@anticrm/setting-resources/src/plugin'
@@ -26,6 +26,16 @@ export default mergeIds(settingId, setting, {
     TxIntegrationDisableReconnect: '' as AnyComponent
   },
   ids: {
-    TxIntegrationDisable: '' as Ref<TxViewlet>
+    TxIntegrationDisable: '' as Ref<TxViewlet>,
+    EnumSetting: '' as Ref<Doc>
+  },
+  component: {
+    EnumSetting: '' as AnyComponent,
+    StringTypeEditor: '' as AnyComponent,
+    BooleanTypeEditor: '' as AnyComponent,
+    NumberTypeEditor: '' as AnyComponent,
+    DateTypeEditor: '' as AnyComponent,
+    RefEditor: '' as AnyComponent,
+    EnumTypeEditor: '' as AnyComponent
   }
 })

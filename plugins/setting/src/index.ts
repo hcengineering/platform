@@ -16,7 +16,7 @@
 import { Asset, IntlString, plugin, Resource } from '@anticrm/platform'
 import type { Plugin } from '@anticrm/platform'
 import { AnyComponent } from '@anticrm/ui'
-import type { Class, Doc, Ref } from '@anticrm/core'
+import type { Class, Doc, Mixin, Ref } from '@anticrm/core'
 
 /**
  * @public
@@ -47,6 +47,11 @@ export interface Integration extends Doc {
 /**
  * @public
  */
+export interface Editable extends Class<Doc> {}
+
+/**
+ * @public
+ */
 export interface SettingsCategory extends Doc {
   name: string
   label: IntlString
@@ -72,7 +77,11 @@ export default plugin(settingId, {
     ManageStatuses: '' as Ref<Doc>,
     Support: '' as Ref<Doc>,
     Privacy: '' as Ref<Doc>,
-    Terms: '' as Ref<Doc>
+    Terms: '' as Ref<Doc>,
+    ClassSetting: '' as Ref<Doc>
+  },
+  mixin: {
+    Editable: '' as Ref<Mixin<Editable>>
   },
   class: {
     SettingsCategory: '' as Ref<Class<SettingsCategory>>,
@@ -88,7 +97,8 @@ export default plugin(settingId, {
     ManageStatuses: '' as AnyComponent,
     Support: '' as AnyComponent,
     Privacy: '' as AnyComponent,
-    Terms: '' as AnyComponent
+    Terms: '' as AnyComponent,
+    ClassSetting: '' as AnyComponent
   },
   string: {
     Settings: '' as IntlString,
@@ -116,7 +126,8 @@ export default plugin(settingId, {
     Signout: '' as IntlString,
     InviteWorkspace: '' as IntlString,
     SelectWorkspace: '' as IntlString,
-    Reconnect: '' as IntlString
+    Reconnect: '' as IntlString,
+    ClassSetting: '' as IntlString
   },
   icon: {
     EditProfile: '' as Asset,

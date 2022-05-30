@@ -135,7 +135,7 @@
 
     <div class="flex-grow flex-col clear-mins">
       <div class="flex-between">
-        <div class="flex-grow label">
+        <div class="flex-row-center flex-grow label">
           <div class="bold">
             {#if employee}
               {formatName(employee.name)}
@@ -162,7 +162,7 @@
               {/if}
             </div>
           {:else if viewlet && viewlet.label}
-            <div class="flex-center">
+            <div class="flex-row-center">
               <span class="lower">
                 <Label label={viewlet.label} params={viewlet.labelParams ?? {}} />
               </span>

@@ -26,7 +26,7 @@
   $: handlePersonEdit = onEmployeeEdit ?? onEdit
 </script>
 
-<div bind:this={container} class="flex-center container">
+<div bind:this={container} class="flex-row-center clear-mins">
   <div class="over-underline" class:pr-2={shouldShowName}>
     <PersonPresenter {value} onEdit={handlePersonEdit} {shouldShowAvatar} {shouldShowName} />
   </div>
@@ -38,11 +38,6 @@
 </div>
 
 <style lang="scss">
-  .container {
-    width: fit-content;
-    margin-bottom: 0.25rem;
-  }
-
   .status {
     font-weight: 400;
     font-size: 0.875rem;

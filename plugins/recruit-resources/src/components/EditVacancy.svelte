@@ -16,11 +16,13 @@
 <script lang="ts">
   import { Attachments } from '@anticrm/attachment-resources'
   import type { Ref } from '@anticrm/core'
+  import core from '@anticrm/core'
   import { Panel } from '@anticrm/panel'
-  import { AttributesBar, createQuery, getClient, Members } from '@anticrm/presentation'
+  import { createQuery, getClient, Members } from '@anticrm/presentation'
   import { Vacancy } from '@anticrm/recruit'
   import { StyledTextBox } from '@anticrm/text-editor'
-  import { EditBox, Label, Grid } from '@anticrm/ui'
+  import { EditBox, Grid, Label } from '@anticrm/ui'
+  import { ClassAttributeBar } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
 
@@ -42,8 +44,6 @@
   }
 
   $: updateObject(_id)
-
-  // const tabs: IntlString[] = [recruit.string.General, recruit.string.Members, activity.string.Activity]
 
   function onChange (key: string, value: any): void {
     client.updateDoc(object._class, object.space, object._id, { [key]: value })
@@ -68,7 +68,13 @@
       {#if dir === 'column'}
         <div class="ac-subtitle">
           <div class="ac-subtitle-content">
-            <AttributesBar {object} _class={object._class} keys={['dueTo', 'location', 'company']} vertical />
+            <ClassAttributeBar
+              {object}
+              _class={object._class}
+              ignoreKeys={['name', 'description', 'fullDescription']}
+              vertical
+              to={core.class.Space}
+            />
           </div>
         </div>
       {/if}

@@ -143,12 +143,10 @@
       &-content {
         display: flex;
         flex-direction: column;
-        flex-grow: 1;
         flex-shrink: 0;
         margin-left: auto;
         margin-right: auto;
         width: calc(100% - 7.5rem);
-        height: 100%;
         max-width: 860px;
       }
     }

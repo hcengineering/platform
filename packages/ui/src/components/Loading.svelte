@@ -17,9 +17,14 @@
   import Spinner from './Spinner.svelte'
 
   export let shrink: boolean = false
+  export let label: string = ''
 </script>
 
-<div class="spinner-container" class:fullHeight={!shrink}><div class="inner"><Spinner /></div></div>
+<div class="spinner-container" class:fullSize={!shrink}>
+  <div data-label={label} class="inner" class:labeled={label !== ''}>
+    <Spinner />
+  </div>
+</div>
 
 <style lang="scss">
   .spinner-container {
@@ -27,7 +32,8 @@
     justify-content: center;
     align-items: center;
 
-    &.fullHeight {
+    &.fullSize {
+      width: 100%;
       height: 100%;
     }
   }
@@ -47,5 +53,21 @@
     animation-duration: 0.25s;
     animation-delay: 0.1s;
     animation-fill-mode: forwards;
+
+    &.labeled {
+      position: relative;
+
+      &::after {
+        position: absolute;
+        content: attr(data-label);
+        bottom: -0.75rem;
+        left: 50%;
+        text-transform: uppercase;
+        font-weight: 500;
+        font-size: 0.5rem;
+        color: var(--dark-color);
+        transform: translateX(-50%);
+      }
+    }
   }
 </style>

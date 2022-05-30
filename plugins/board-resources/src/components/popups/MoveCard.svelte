@@ -10,7 +10,6 @@
   import SpaceSelect from '../selectors/SpaceSelect.svelte'
   import StateSelect from '../selectors/StateSelect.svelte'
   import RankSelect from '../selectors/RankSelect.svelte'
-  import { createMissingLabels } from '../../utils/BoardUtils'
 
   export let value: Card
 
@@ -28,7 +27,6 @@
     const update: DocumentUpdate<Card> = {}
 
     if (selected.space !== value.space) {
-      update.labels = await createMissingLabels(client, value, selected.space)
       update.space = selected.space
     }
 

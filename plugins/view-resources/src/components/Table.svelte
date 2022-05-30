@@ -300,8 +300,5 @@
       </tbody>
     {/if}
   </table>
+  {#if loading > 0}<Loading />{/if}
 {/await}
-
-{#if loading > 0}
-  <Loading />
-{/if}

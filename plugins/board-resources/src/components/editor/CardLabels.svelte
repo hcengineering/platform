@@ -13,8 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Card, CardLabel } from '@anticrm/board'
-  import { getClient } from '@anticrm/presentation'
+  import type { Card } from '@anticrm/board'
+  import { createQuery, getClient } from '@anticrm/presentation'
+  import tags, { TagReference } from '@anticrm/tags'
   import { Button, Icon, IconAdd } from '@anticrm/ui'
   import { invokeAction } from '@anticrm/view-resources'
 
@@ -28,19 +29,16 @@
 
   const client = getClient()
 
-  let labels: CardLabel[]
   let labelsHandler: (e: Event) => void
   let isHovered: boolean = false
 
-  $: isCompact = $commonBoardPreference?.cardLabelsCompactMode
+  let labels: TagReference[] = []
+  const query = createQuery()
+  $: query.query(tags.class.TagReference, { attachedTo: value._id }, (result) => {
+    labels = result
+  })
 
-  $: if (value.labels && value.labels.length > 0) {
-    client.findAll(board.class.CardLabel, { _id: { $in: value.labels } }).then((result) => {
-      labels = isInline ? result.filter((l) => !l.isHidden) : result
-    })
-  } else {
-    labels = []
-  }
+  $: isCompact = $commonBoardPreference?.cardLabelsCompactMode
 
   if (!isInline) {
     getCardActions(client, {

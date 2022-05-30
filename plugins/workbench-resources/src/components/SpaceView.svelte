@@ -21,6 +21,7 @@
   import type { ViewConfiguration } from '@anticrm/workbench'
   import SpaceContent from './SpaceContent.svelte'
   import SpaceHeader from './SpaceHeader.svelte'
+  import type { Filter } from '@anticrm/view'
 
   export let currentSpace: Ref<Space> | undefined
   export let currentView: ViewConfiguration | undefined
@@ -32,6 +33,7 @@
   let space: Space | undefined
   let _class: Ref<Class<Doc>> | undefined = undefined
   let header: AnyComponent | undefined
+  let filters: Filter[] = []
 
   const client = getClient()
 
@@ -87,7 +89,16 @@
       on:change={setViewlet}
     />
   {:else}
-    <SpaceHeader spaceId={space._id} {viewlets} {createItemDialog} {createItemLabel} bind:search bind:viewlet />
+    <SpaceHeader
+      spaceId={space._id}
+      {_class}
+      {viewlets}
+      {createItemDialog}
+      {createItemLabel}
+      bind:filters
+      bind:search
+      bind:viewlet
+    />
   {/if}
-  <SpaceContent space={space._id} {_class} bind:search {viewlet} />
+  <SpaceContent space={space._id} {_class} bind:filters bind:search {viewlet} />
 {/if}
