@@ -14,8 +14,9 @@
 -->
 <script lang="ts">
   import core, { Enum } from '@anticrm/core'
-  import { createQuery } from '@anticrm/presentation'
-  import { CircleButton, Icon, IconAdd, Label, showPopup } from '@anticrm/ui'
+  import { createQuery, getClient } from '@anticrm/presentation'
+  import { CircleButton, EditBox, Icon, eventToHTMLElement, IconAdd, IconMoreH, Label, showPopup } from '@anticrm/ui'
+  import { ContextMenu } from '@anticrm/view-resources'
   import setting from '../plugin'
   import EnumValues from './EnumValues.svelte'
 
@@ -23,13 +24,24 @@
 
   let enums: Enum[] = []
   let selected: Enum | undefined
+  const client = getClient()
 
   query.query(core.class.Enum, {}, (res) => {
+    console.log(res)
     enums = res
+    if (selected !== undefined) {
+      selected = enums.find((p) => p._id === selected?._id)
+    }
   })
 
   function create () {
     showPopup(setting.component.EditEnum, 'top')
+  }
+
+  async function update (value: Enum): Promise<void> {
+    await client.update(value, {
+      name: value.name
+    })
   }
 </script>
 
@@ -53,12 +65,20 @@
               selected = value
             }}
           >
-            {value.name}
+            <EditBox maxWidth="15rem" bind:value={value.name} on:change={() => update(value)} />
+            <div
+              class="hover-trans"
+              on:click|stopPropagation={(ev) => {
+                showPopup(ContextMenu, { object: value }, eventToHTMLElement(ev), () => {})
+              }}
+            >
+              <IconMoreH size={'medium'} />
+            </div>
           </div>
         {/each}
       </div>
     </div>
-    <div class="ac-column max">
+    <div class="ac-column">
       {#if selected !== undefined}
         <EnumValues value={selected} />
       {/if}
