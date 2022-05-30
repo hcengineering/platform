@@ -34,6 +34,7 @@ import CommentsPresenter from './components/CommentsPresenter.svelte'
 import CreateChannel from './components/CreateChannel.svelte'
 import CreateDirectMessage from './components/CreateDirectMessage.svelte'
 import EditChannel from './components/EditChannel.svelte'
+import MessagesBrowser from './components/MessagesBrowser.svelte'
 import ThreadView from './components/ThreadView.svelte'
 import Threads from './components/Threads.svelte'
 import SavedMessages from './components/SavedMessages.svelte'
@@ -173,6 +174,7 @@ export default async (): Promise<Resources> => ({
     ChannelPresenter,
     DmPresenter,
     EditChannel,
+    MessagesBrowser,
     Threads,
     ThreadView,
     SavedMessages

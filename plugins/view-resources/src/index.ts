@@ -51,6 +51,7 @@ import ValueFilter from './components/filter/ValueFilter.svelte'
 import ObjectFilter from './components/filter/ObjectFilter.svelte'
 import TimestampFilter from './components/filter/TimestampFilter.svelte'
 import ClassPresenter from './components/ClassPresenter.svelte'
+import FilterBar from './components/filter/FilterBar.svelte'
 
 function PositionElementAlignment (e?: Event): PopupAlignment | undefined {
   return getEventPopupPositionElement(e)
@@ -76,7 +77,8 @@ export {
   Menu,
   SpacePresenter,
   UpDownNavigator,
-  ViewletSetting
+  ViewletSetting,
+  FilterBar
 }
 
 export default async (): Promise<Resources> => ({

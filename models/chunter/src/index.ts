@@ -25,6 +25,7 @@ import type {
   SavedMessages,
   ThreadMessage
 } from '@anticrm/chunter'
+import chunterPlugin from '@anticrm/chunter'
 import contact, { Employee } from '@anticrm/contact'
 import type { Account, Class, Doc, Domain, Ref, Space, Timestamp } from '@anticrm/core'
 import { IndexKind } from '@anticrm/core'
@@ -93,6 +94,7 @@ export class TChunterMessage extends TAttachedDoc implements ChunterMessage {
 }
 
 @Model(chunter.class.ThreadMessage, chunter.class.ChunterMessage)
+@UX(chunter.string.ThreadMessage)
 export class TThreadMessage extends TChunterMessage implements ThreadMessage {
   declare attachedTo: Ref<Message>
 
@@ -100,6 +102,7 @@ export class TThreadMessage extends TChunterMessage implements ThreadMessage {
 }
 
 @Model(chunter.class.Message, chunter.class.ChunterMessage)
+@UX(chunter.string.Message)
 export class TMessage extends TChunterMessage implements Message {
   declare attachedTo: Ref<Space>
 
@@ -347,6 +350,11 @@ export function createModel (builder: Builder): void {
             componentProps: {
               requestedSpaceClasses: [chunter.class.Channel, chunter.class.DirectMessage]
             }
+          },
+          {
+            id: 'messagesBrowser',
+            label: chunterPlugin.string.MessagesBrowser,
+            component: chunter.component.MessagesBrowser
           }
         ],
         spaces: [
@@ -437,6 +445,10 @@ export function createModel (builder: Builder): void {
     },
     chunter.ids.TxBacklinkRemove
   )
+
+  builder.mixin(chunter.class.ChunterMessage, core.class.Class, view.mixin.ClassFilters, {
+    filters: ['space', 'modifiedOn', 'createBy', '_class']
+  })
 }
 
 export { chunterOperation } from './migration'
