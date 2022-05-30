@@ -15,7 +15,7 @@
 <script lang="ts">
   import core, { Enum } from '@anticrm/core'
   import presentation, { Card, getClient } from '@anticrm/presentation'
-  import { ActionIcon, EditBox, IconAdd, IconDelete } from '@anticrm/ui'
+  import { ActionIcon, EditBox, IconCheck, IconDelete } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import setting from '../plugin'
 
@@ -65,12 +65,12 @@
 >
   <div class="mb-2"><EditBox bind:value={name} placeholder={core.string.Name} maxWidth="13rem" /></div>
   <div class="flex-between mb-4">
-    <EditBox placeholder={setting.string.NewValue} bind:value={newValue} maxWidth="13rem" /><ActionIcon
-      icon={IconAdd}
-      label={presentation.string.Add}
-      action={add}
-      size={'small'}
-    />
+    <EditBox
+      placeholder={setting.string.NewValue}
+      kind="large-style"
+      bind:value={newValue}
+      maxWidth="13rem"
+    /><ActionIcon icon={IconCheck} label={presentation.string.Add} action={add} size={'small'} />
   </div>
   <div class="flex-row">
     {#each values as value}

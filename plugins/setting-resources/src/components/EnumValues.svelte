@@ -14,48 +14,51 @@
 -->
 <script lang="ts">
   import { Enum } from '@anticrm/core'
-  import { ActionIcon, Button, EditBox, IconAdd, IconDelete } from '@anticrm/ui'
-  import presentation, { getClient } from '@anticrm/presentation'
+  import { ActionIcon, EditBox, IconCheck, IconDelete } from '@anticrm/ui'
+  import { getClient } from '@anticrm/presentation'
   import setting from '../plugin'
 
   export let value: Enum
 
   const client = getClient()
-  $: values = value.enumValues
 
   let newValue = ''
 
-  function add () {
+  async function add () {
     if (newValue.trim().length === 0) return
-    values.push(newValue)
-    values = values
+    await client.update(value, {
+      $push: { enumValues: newValue }
+    })
     newValue = ''
   }
 
-  function remove (value: string) {
-    values = values.filter((p) => p !== value)
-  }
-
-  async function save () {
+  async function remove (target: string) {
     await client.update(value, {
-      enumValues: values
+      $pull: { enumValues: target }
     })
   }
 </script>
 
 <div class="flex-grow">
   <div class="flex-between mb-4">
-    <EditBox placeholder={setting.string.NewValue} bind:value={newValue} maxWidth="20rem" /><ActionIcon
-      label={presentation.string.Add}
-      icon={IconAdd}
-      action={add}
-      size={'small'}
+    <EditBox
+      placeholder={setting.string.NewValue}
+      on:keydown={(evt) => {
+        if (evt.key === 'Enter') {
+          add()
+        }
+      }}
+      kind="large-style"
+      bind:value={newValue}
+      maxWidth="18rem"
     />
+    <ActionIcon icon={IconCheck} label={setting.string.Add} action={add} size={'small'} />
   </div>
   <div class="overflow-y-auto flex-row">
-    {#each values as value}
+    {#each value.enumValues as value}
       <div class="flex-between mb-2">
-        {value}<ActionIcon
+        {value}
+        <ActionIcon
           icon={IconDelete}
           label={setting.string.Delete}
           action={() => {
@@ -66,13 +69,4 @@
       </div>
     {/each}
   </div>
-</div>
-<div class="flex-row-reverse">
-  <Button
-    label={presentation.string.Save}
-    kind={'primary'}
-    on:click={() => {
-      save()
-    }}
-  />
 </div>
