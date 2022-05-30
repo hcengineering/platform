@@ -15,7 +15,6 @@
 
 import contact, { Channel } from '@anticrm/contact'
 import core, {
-  AttachedDoc,
   Class,
   Doc,
   DocumentQuery,
@@ -24,28 +23,11 @@ import core, {
   Hierarchy,
   Ref,
   Tx,
-  TxCollectionCUD,
   TxCreateDoc,
   TxProcessor
 } from '@anticrm/core'
-import { TriggerControl } from '@anticrm/server-core'
+import { extractTx, TriggerControl } from '@anticrm/server-core'
 import telegram, { TelegramMessage } from '@anticrm/telegram'
-
-const extractTx = (tx: Tx): Tx => {
-  if (tx._class === core.class.TxCollectionCUD) {
-    const ctx = tx as TxCollectionCUD<Doc, AttachedDoc>
-    if (ctx.tx._class === core.class.TxCreateDoc) {
-      const create = ctx.tx as TxCreateDoc<AttachedDoc>
-      create.attributes.attachedTo = ctx.objectId
-      create.attributes.attachedToClass = ctx.objectClass
-      create.attributes.collection = ctx.collection
-      return create
-    }
-    return ctx.tx
-  }
-
-  return tx
-}
 
 /**
  * @public
