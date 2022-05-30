@@ -1,5 +1,8 @@
 import core, { AttachedDoc, Doc, Tx, TxCollectionCUD, TxCreateDoc } from '@anticrm/core'
 
+/**
+ * @public
+ */
 export function extractTx (tx: Tx): Tx {
   if (tx._class === core.class.TxCollectionCUD) {
     const ctx = tx as TxCollectionCUD<Doc, AttachedDoc>
