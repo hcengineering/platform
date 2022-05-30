@@ -13,7 +13,18 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { AnyAttribute, ArrOf, AttachedDoc, Class, Collection, Doc, EnumOf, Ref, RefTo, Type } from '@anticrm/core'
+  import core, {
+    AnyAttribute,
+    ArrOf,
+    AttachedDoc,
+    Class,
+    Collection,
+    Doc,
+    EnumOf,
+    Ref,
+    RefTo,
+    Type
+  } from '@anticrm/core'
   import { IntlString } from '@anticrm/platform'
   import presentation, { getClient, MessageBox } from '@anticrm/presentation'
   import {
@@ -29,7 +40,6 @@
     showPopup
   } from '@anticrm/ui'
   import view from '@anticrm/view'
-import { attr } from 'svelte/internal'
   import setting from '../plugin'
   import CreateAttribute from './CreateAttribute.svelte'
   import EditAttribute from './EditAttribute.svelte'
@@ -179,7 +189,7 @@ import { attr } from 'svelte/internal'
           {#if attr.type._class === core.class.Enum}
             {#await getEnumName(attr.type) then name}
               {#if name}
-              : {name}
+                : {name}
               {/if}
             {/await}
           {/if}
