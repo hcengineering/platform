@@ -13,30 +13,14 @@
 // limitations under the License.
 //
 
-import core, { AttachedDoc, Doc, Tx, TxCollectionCUD, TxCreateDoc, TxProcessor, TxUpdateDoc } from '@anticrm/core'
+import core, { Doc, Tx, TxCreateDoc, TxProcessor, TxUpdateDoc } from '@anticrm/core'
 import inventory, { Product } from '@anticrm/inventory'
 import login from '@anticrm/login'
 import { getMetadata } from '@anticrm/platform'
-import { TriggerControl } from '@anticrm/server-core'
+import { extractTx, TriggerControl } from '@anticrm/server-core'
 import { getUpdateLastViewTx } from '@anticrm/server-notification'
 import view from '@anticrm/view'
 import workbench from '@anticrm/workbench'
-
-const extractTx = (tx: Tx): Tx => {
-  if (tx._class === core.class.TxCollectionCUD) {
-    const ctx = tx as TxCollectionCUD<Doc, AttachedDoc>
-    if (ctx.tx._class === core.class.TxCreateDoc) {
-      const create = ctx.tx as TxCreateDoc<AttachedDoc>
-      create.attributes.attachedTo = ctx.objectId
-      create.attributes.attachedToClass = ctx.objectClass
-      create.attributes.collection = ctx.collection
-      return create
-    }
-    return ctx.tx
-  }
-
-  return tx
-}
 
 /**
  * @public

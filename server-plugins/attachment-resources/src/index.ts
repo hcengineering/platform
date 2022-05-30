@@ -16,17 +16,10 @@
 
 import type { Doc, Ref, Tx, TxCollectionCUD, TxCreateDoc, TxRemoveDoc } from '@anticrm/core'
 import type { TriggerControl } from '@anticrm/server-core'
+import { extractTx } from '@anticrm/server-core'
 import type { Attachment } from '@anticrm/attachment'
 import attachment from '@anticrm/attachment'
 import core, { TxProcessor } from '@anticrm/core'
-
-const extractTx = (tx: Tx): Tx => {
-  if (tx._class === core.class.TxCollectionCUD) {
-    return (tx as TxCollectionCUD<Doc, Attachment>).tx
-  }
-
-  return tx
-}
 
 const findCreateTx = async (
   id: Ref<Attachment>,
