@@ -423,8 +423,7 @@ export class Hierarchy {
       const type = {}.toString.call(value).slice(8, -1)
       if (type === 'Array') {
         result[key] = this.clone(value)
-      }
-      if (type === 'Object') {
+      } else if (type === 'Object') {
         const m = Hierarchy.mixinClass(value)
         const valClone = this.clone(value)
         result[key] = m !== undefined ? this.as(valClone, m) : valClone
