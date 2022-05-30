@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import core, { generateId, Ref, TxOperations } from '@anticrm/core'
+import core, { Doc, generateId, Ref, TxOperations } from '@anticrm/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
 import { IssueStatus, IssueStatusCategory, Team, genRanks, Issue } from '@anticrm/tracker'
 import { DOMAIN_TRACKER } from '.'
@@ -34,8 +34,6 @@ interface CreateTeamIssueStatusesArgs {
   defaultStatusId?: Ref<IssueStatus>
   defaultCategoryId?: Ref<IssueStatusCategory>
 }
-
-type IssueWithParent = Issue & { parentIssue: Ref<Issue> | undefined }
 
 const categoryByDeprecatedIssueStatus = {
   [DeprecatedIssueStatus.Backlog]: tracker.issueStatusCategory.Backlog,
@@ -152,36 +150,41 @@ async function upgradeIssueStatuses (tx: TxOperations): Promise<void> {
 }
 
 async function migrateParentIssues (client: MigrationClient): Promise<void> {
-  const issues = (await client.find(DOMAIN_TRACKER, {
-    _class: tracker.class.Issue,
-    attachedTo: { $exists: false }
-  })) as Issue[]
-  const issueById = new Map(issues.map((issue) => [issue._id, issue]))
-  const subIssuesCountByIssueId = issues.reduce((acc, issue) => {
-    const { parentIssue: parentIssueId } = issue as IssueWithParent
-    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-    const parentIssue = parentIssueId && issueById.get(parentIssueId)
+  await client.update(
+    DOMAIN_TRACKER,
+    { _class: tracker.class.Issue, attachedToClass: { $exists: false } },
+    {
+      subIssues: 0,
+      collection: 'subIssues',
+      attachedToClass: tracker.class.Issue
+    }
+  )
+  await client.update(
+    DOMAIN_TRACKER,
+    { _class: tracker.class.Issue, parentIssue: { $exists: true } },
+    { $rename: { parentIssue: 'attachedTo' } }
+  )
+  await client.update(
+    DOMAIN_TRACKER,
+    { _class: tracker.class.Issue, attachedTo: { $in: [null, undefined] } },
+    { attachedTo: tracker.ids.NoParent }
+  )
 
-    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-    return parentIssue ? acc.set(parentIssue._id, (acc.get(parentIssue._id) ?? 0) + 1) : acc
-  }, new Map<Ref<Issue>, number>())
+  const childrenCountById = new Map<Ref<Doc>, number>()
+  const parentIssueIds = (
+    await client.find<Issue>(DOMAIN_TRACKER, {
+      _class: tracker.class.Issue,
+      attachedTo: { $nin: [tracker.ids.NoParent] }
+    })
+  ).map((issue) => issue.attachedTo)
 
-  for (const [issueId, issue] of issueById) {
-    const { parentIssue: parentIssueId } = issue as IssueWithParent
-    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-    const parentIssue = parentIssueId && issueById.get(parentIssueId)
+  for (const issueId of parentIssueIds) {
+    const count = childrenCountById.get(issueId) ?? 0
+    childrenCountById.set(issueId, count + 1)
+  }
 
-    await client.update<Issue>(
-      DOMAIN_TRACKER,
-      { _id: issueId },
-      {
-        parentIssue: undefined,
-        collection: 'subIssues',
-        attachedTo: parentIssue?._id ?? tracker.ids.NoParent,
-        attachedToClass: parentIssue?._class ?? tracker.class.Issue,
-        subIssues: subIssuesCountByIssueId.get(issueId) ?? 0
-      }
-    )
+  for (const [_id, childrenCount] of childrenCountById) {
+    await client.update(DOMAIN_TRACKER, { _id }, { subIssues: childrenCount })
   }
 }
 
