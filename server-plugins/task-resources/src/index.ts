@@ -16,7 +16,7 @@
 import core, { Doc, Tx, TxCreateDoc, TxProcessor, TxUpdateDoc } from '@anticrm/core'
 import login from '@anticrm/login'
 import { getMetadata } from '@anticrm/platform'
-import { TriggerControl } from '@anticrm/server-core'
+import { extractTx, TriggerControl } from '@anticrm/server-core'
 import { getUpdateLastViewTx } from '@anticrm/server-notification'
 import task, { Issue, Task } from '@anticrm/task'
 import view from '@anticrm/view'
@@ -43,11 +43,12 @@ export function issueTextPresenter (doc: Doc): string {
  * @public
  */
 export async function OnTaskCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  if (tx._class !== core.class.TxCreateDoc) {
+  const actualTx = extractTx(tx)
+  if (actualTx._class !== core.class.TxCreateDoc) {
     return []
   }
 
-  const createTx = tx as TxCreateDoc<Task>
+  const createTx = actualTx as TxCreateDoc<Task>
 
   if (!control.hierarchy.isDerived(createTx.objectClass, task.class.Task)) {
     return []
@@ -89,11 +90,12 @@ export async function OnTaskCreate (tx: Tx, control: TriggerControl): Promise<Tx
  * @public
  */
 export async function OnTaskUpdate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  if (tx._class !== core.class.TxUpdateDoc) {
+  const actualTx = extractTx(tx)
+  if (actualTx._class !== core.class.TxUpdateDoc) {
     return []
   }
 
-  const updateTx = tx as TxUpdateDoc<Task>
+  const updateTx = actualTx as TxUpdateDoc<Task>
 
   if (!control.hierarchy.isDerived(updateTx.objectClass, task.class.Task)) {
     return []

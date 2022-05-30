@@ -4,6 +4,7 @@
 
 Platform:
 
+- Fix subscribe to updates on Task create / update
 - Fix popup window layouts
 - Fix table two loading spinners
 - Improve full text search performance
