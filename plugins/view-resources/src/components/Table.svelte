@@ -61,7 +61,7 @@
   $: sortingFunction = (config.find((it) => typeof it !== 'string' && it.sortingKey === sortKey) as BuildModelKey)
     ?.sortingFunction
 
-  async function update (
+  async function updateObjects (
     _class: Ref<Class<Doc>>,
     query: DocumentQuery<Doc>,
     sortKey: string,
@@ -81,13 +81,13 @@
         dispatch('content', objects)
         loading = loading === 1 ? 0 : -1
       },
-      { sort: { [sortKey]: sortOrder }, limit: 200, lookup, ...options }
+      { sort: { [sortKey]: sortOrder }, limit: 50, lookup, ...options }
     )
     if (update && ++loading > 0) {
       objects = []
     }
   }
-  $: update(_class, query, sortKey, sortOrder, lookup, options)
+  $: updateObjects(_class, query, sortKey, sortOrder, lookup, options)
 
   const showMenu = async (ev: MouseEvent, object: Doc, row: number): Promise<void> => {
     selection = row
