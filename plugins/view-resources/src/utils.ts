@@ -48,16 +48,20 @@ export interface LoadingProps {
 export async function getObjectPresenter (
   client: Client,
   _class: Ref<Class<Obj>>,
-  preserveKey: BuildModelKey
+  preserveKey: BuildModelKey,
+  isCollectionAttr: boolean = false
 ): Promise<AttributeModel> {
-  const clazz = client.getHierarchy().getClass(_class)
-  const presenterMixin = client.getHierarchy().as(clazz, view.mixin.AttributePresenter)
+  const hierarchy = client.getHierarchy()
+  const mixin = isCollectionAttr ? view.mixin.CollectionPresenter : view.mixin.AttributePresenter
+  const clazz = hierarchy.getClass(_class)
+  let mixinClazz = hierarchy.getClass(_class)
+  let presenterMixin = hierarchy.as(clazz, mixin)
+  while (presenterMixin.presenter === undefined && mixinClazz.extends !== undefined) {
+    presenterMixin = hierarchy.as(mixinClazz, mixin)
+    mixinClazz = hierarchy.getClass(mixinClazz.extends)
+  }
   if (presenterMixin.presenter === undefined) {
-    if (clazz.extends !== undefined) {
-      return await getObjectPresenter(client, clazz.extends, preserveKey)
-    } else {
-      throw new Error('object presenter not found for ' + JSON.stringify(preserveKey))
-    }
+    throw new Error('object presenter not found for ' + JSON.stringify(preserveKey))
   }
   const presenter = await getResource(presenterMixin.presenter)
   const key = preserveKey.sortingKey ?? preserveKey.key
@@ -132,7 +136,8 @@ export async function getPresenter<T extends Doc> (
   _class: Ref<Class<T>>,
   key: BuildModelKey,
   preserveKey: BuildModelKey,
-  lookup?: Lookup<T>
+  lookup?: Lookup<T>,
+  isCollectionAttr: boolean = false
 ): Promise<AttributeModel> {
   if (key.presenter !== undefined) {
     const { presenter, label, sortingKey } = key
@@ -146,7 +151,7 @@ export async function getPresenter<T extends Doc> (
     }
   }
   if (key.key.length === 0) {
-    return await getObjectPresenter(client, _class, preserveKey)
+    return await getObjectPresenter(client, _class, preserveKey, isCollectionAttr)
   } else {
     if (key.key.startsWith('$lookup')) {
       if (lookup === undefined) {
@@ -262,7 +267,7 @@ async function getLookupPresenter<T extends Doc> (
   const lookupClass = getLookupClass(key.key, lookup, _class)
   const lookupProperty = getLookupProperty(key.key)
   const lookupKey = { ...key, key: lookupProperty[0] }
-  const model = await getPresenter(client, lookupClass[0], lookupKey, preserveKey)
+  const model = await getPresenter(client, lookupClass[0], lookupKey, preserveKey, undefined, lookupClass[2])
   model.label = getLookupLabel(client, lookupClass[1], lookupClass[0], lookupKey, lookupProperty[1])
   return model
 }
@@ -292,7 +297,7 @@ export function getLookupClass<T extends Doc> (
   key: string,
   lookup: Lookup<T>,
   parent: Ref<Class<T>>
-): [Ref<Class<Doc>>, Ref<Class<Doc>>] {
+): [Ref<Class<Doc>>, Ref<Class<Doc>>, boolean] {
   const _class = getLookup(key, lookup, parent)
   if (_class === undefined) {
     throw new Error('lookup class does not provided for ' + key)
@@ -313,7 +318,7 @@ function getLookup (
   key: string,
   lookup: Lookup<any>,
   parent: Ref<Class<Doc>>
-): [Ref<Class<Doc>>, Ref<Class<Doc>>] | undefined {
+): [Ref<Class<Doc>>, Ref<Class<Doc>>, boolean] | undefined {
   const parts = key.split('$lookup.').filter((p) => p.length > 0)
   const currentKey = parts[0].split('.').filter((p) => p.length > 0)[0]
   const current = (lookup as any)[currentKey]
@@ -325,13 +330,17 @@ function getLookup (
     return getLookup(nestedKey, current[1], current[0])
   }
   if (Array.isArray(current)) {
-    return [current[0], parent]
+    return [current[0], parent, false]
   }
   if (current === undefined && lookup._id !== undefined) {
     const reverse = (lookup._id as any)[currentKey]
-    return reverse !== undefined ? [reverse, parent] : undefined
+    return reverse !== undefined
+      ? Array.isArray(reverse)
+        ? [reverse[0], parent, true]
+        : [reverse, parent, true]
+      : undefined
   }
-  return current !== undefined ? [current, parent] : undefined
+  return current !== undefined ? [current, parent, false] : undefined
 }
 
 export function getBooleanLabel (value: boolean | undefined): IntlString {

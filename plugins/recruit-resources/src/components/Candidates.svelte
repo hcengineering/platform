@@ -17,10 +17,10 @@
   import contact from '@anticrm/contact'
   import { Doc, DocumentQuery } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
-  import { Tooltip, showPopup, Icon, Label, Loading, SearchEdit, Button, IconAdd } from '@anticrm/ui'
-  import view, { Viewlet, ViewletPreference } from '@anticrm/view'
+  import { Button, Icon, IconAdd, Label, Loading, SearchEdit, showPopup } from '@anticrm/ui'
   import type { Filter } from '@anticrm/view'
-  import { ActionContext, TableBrowser, ViewletSetting, FilterButton } from '@anticrm/view-resources'
+  import view, { Viewlet, ViewletPreference } from '@anticrm/view'
+  import { ActionContext, FilterButton, TableBrowser, ViewletSettingButton } from '@anticrm/view-resources'
   import recruit from '../plugin'
   import CreateCandidate from './CreateCandidate.svelte'
 
@@ -83,17 +83,7 @@
     }}
   />
   <Button icon={IconAdd} label={recruit.string.CandidateCreateLabel} kind={'primary'} on:click={showCreateDialog} />
-  {#if descr}
-    <Tooltip label={view.string.CustomizeView}>
-      <Button
-        icon={view.icon.Setting}
-        kind={'transparent'}
-        on:click={() => {
-          showPopup(ViewletSetting, { viewlet: descr })
-        }}
-      />
-    </Tooltip>
-  {/if}
+  <ViewletSettingButton viewlet={descr} />
 </div>
 
 <ActionContext

@@ -17,10 +17,10 @@
   import { createQuery, getClient } from '@anticrm/presentation'
   import { Applicant } from '@anticrm/recruit'
   import task from '@anticrm/task'
-  import { Tooltip, Button, Icon, IconAdd, Label, Loading, SearchEdit, showPopup } from '@anticrm/ui'
-  import view, { Viewlet, ViewletPreference } from '@anticrm/view'
+  import { Button, Icon, IconAdd, Label, Loading, SearchEdit, showPopup } from '@anticrm/ui'
   import type { Filter } from '@anticrm/view'
-  import { TableBrowser, ViewletSetting, FilterButton } from '@anticrm/view-resources'
+  import view, { Viewlet, ViewletPreference } from '@anticrm/view'
+  import { FilterButton, TableBrowser, ViewletSettingButton } from '@anticrm/view-resources'
   import recruit from '../plugin'
   import CreateApplication from './CreateApplication.svelte'
 
@@ -83,17 +83,7 @@
     }}
   />
   <Button icon={IconAdd} label={recruit.string.ApplicationCreateLabel} kind={'primary'} on:click={showCreateDialog} />
-  {#if descr}
-    <Tooltip label={view.string.CustomizeView}>
-      <Button
-        icon={view.icon.Setting}
-        kind={'transparent'}
-        on:click={() => {
-          showPopup(ViewletSetting, { viewlet: descr })
-        }}
-      />
-    </Tooltip>
-  {/if}
+  <ViewletSettingButton viewlet={descr} />
 </div>
 
 {#if descr}

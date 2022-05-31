@@ -16,9 +16,9 @@
 <script lang="ts">
   import { Doc, DocumentQuery } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
-  import { Tooltip, Button, Icon, Label, Loading, showPopup, SearchEdit } from '@anticrm/ui'
+  import { Icon, Label, Loading, SearchEdit } from '@anticrm/ui'
   import view, { Viewlet, ViewletPreference } from '@anticrm/view'
-  import { ViewletSetting, TableBrowser } from '@anticrm/view-resources'
+  import { TableBrowser, ViewletSettingButton } from '@anticrm/view-resources'
   import lead from '../plugin'
 
   let search = ''
@@ -70,17 +70,7 @@
       updateResultQuery(search)
     }}
   />
-  {#if descr}
-    <Tooltip label={view.string.CustomizeView}>
-      <Button
-        icon={view.icon.Setting}
-        kind={'transparent'}
-        on:click={() => {
-          showPopup(ViewletSetting, { viewlet: descr })
-        }}
-      />
-    </Tooltip>
-  {/if}
+  <ViewletSettingButton viewlet={descr} />
 </div>
 
 {#if descr}

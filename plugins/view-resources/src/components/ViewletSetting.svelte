@@ -102,27 +102,26 @@
 
     const allAttributes = hierarchy.getAllAttributes(viewlet.attachTo)
     for (const [, attribute] of allAttributes) {
+      if (attribute.hidden === true || attribute.label === undefined) continue
+      if (viewlet.hiddenKeys?.includes(attribute.name)) continue
+      if (hierarchy.isDerived(attribute.type._class, core.class.Collection)) continue
       const value = getValue(attribute.name, attribute.type)
       if (result.findIndex((p) => p.value === value) !== -1) continue
-      if (hierarchy.isDerived(attribute.type._class, core.class.Collection)) continue
-      if (viewlet.hiddenKeys?.includes(value)) continue
-      if (attribute.hidden !== true && attribute.label !== undefined) {
-        const typeClassId = getAttributePresenterClass(attribute)
-        const typeClass = hierarchy.getClass(typeClassId)
-        let presenter = hierarchy.as(typeClass, view.mixin.AttributePresenter).presenter
-        let parent = typeClass.extends
-        while (presenter === undefined && parent !== undefined) {
-          const pclazz = hierarchy.getClass(parent)
-          presenter = hierarchy.as(pclazz, view.mixin.AttributePresenter).presenter
-          parent = pclazz.extends
-        }
-        if (presenter === undefined) continue
-        result.push({
-          value,
-          label: attribute.label,
-          enabled: false
-        })
+      const typeClassId = getAttributePresenterClass(attribute)
+      const typeClass = hierarchy.getClass(typeClassId)
+      let presenter = hierarchy.as(typeClass, view.mixin.AttributePresenter).presenter
+      let parent = typeClass.extends
+      while (presenter === undefined && parent !== undefined) {
+        const pclazz = hierarchy.getClass(parent)
+        presenter = hierarchy.as(pclazz, view.mixin.AttributePresenter).presenter
+        parent = pclazz.extends
       }
+      if (presenter === undefined) continue
+      result.push({
+        value,
+        label: attribute.label,
+        enabled: false
+      })
     }
 
     return preference === undefined ? result : setStatus(result, preference)
