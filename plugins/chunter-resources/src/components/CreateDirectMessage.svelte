@@ -16,7 +16,7 @@
   import { createEventDispatcher } from 'svelte'
   import { deepEqual } from 'fast-equals'
 
-  import contact, { Employee, formatName } from '@anticrm/contact'
+  import contact, { Employee } from '@anticrm/contact'
   import core, { getCurrentAccount, Ref } from '@anticrm/core'
   import { getClient, SpaceCreateCard, UserBoxList } from '@anticrm/presentation'
   import workbench from '@anticrm/workbench'
@@ -47,13 +47,8 @@
       }
     }
 
-    const name = employeeAccounts
-      .filter((ea) => accIds.includes(ea._id))
-      .slice(0, 3)
-      .map((ea) => formatName(ea.name))
-      .join(',')
     const dmId = await client.createDoc(chunter.class.DirectMessage, core.space.Space, {
-      name,
+      name: '',
       description: '',
       private: true,
       archived: false,

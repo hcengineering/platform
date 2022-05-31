@@ -18,9 +18,10 @@
   import { getCurrentAccount } from '@anticrm/core'
   import { createQuery, getClient, CombineAvatars } from '@anticrm/presentation'
   import contact, { EmployeeAccount } from '@anticrm/contact'
-  import { showPanel } from '@anticrm/ui'
+  import { getCurrentLocation, navigate, SearchEdit, showPanel } from '@anticrm/ui'
   import chunter from '../plugin'
   import { getDmName } from '../utils'
+  import { updateUserSearch, userSearch } from '../index'
 
   export let spaceId: Ref<DirectMessage> | undefined
 
@@ -62,6 +63,18 @@
       {/await}
     {/await}
   {/if}
+  <SearchEdit
+    value={userSearch}
+    on:change={(ev) => {
+      updateUserSearch(ev.detail)
+
+      if (ev.detail !== '') {
+        const loc = getCurrentLocation()
+        loc.path[2] = 'messagesBrowser'
+        navigate(loc)
+      }
+    }}
+  />
 </div>
 
 <style lang="scss">

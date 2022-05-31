@@ -1,6 +1,6 @@
 <script lang="ts">
   import attachment, { Attachment } from '@anticrm/attachment'
-  import chunter, { ChunterMessage, Message } from '@anticrm/chunter'
+  import chunter, { ChunterMessage } from '@anticrm/chunter'
   import contact, { Employee } from '@anticrm/contact'
   import core, { DocumentQuery, Ref, SortingOrder } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
@@ -8,24 +8,27 @@
   import type { Filter } from '@anticrm/view'
   import { FilterBar, FilterButton } from '@anticrm/view-resources'
   import MessageComponent from './Message.svelte'
+  import { updateUserSearch, userSearch } from '../index'
+  import plugin from '../plugin'
   import { openMessageFromSpecial } from '../utils'
 
-  let userSearch: string
-  let searchQuery: DocumentQuery<ChunterMessage>
+  let searchQuery: DocumentQuery<ChunterMessage> = { $search: userSearch }
 
   let filters: Filter[] = []
 
   function updateSearchQuery (search: string): void {
-    searchQuery = search === '' ? {} : { $search: search }
+    searchQuery = { $search: search }
   }
+
+  $: updateSearchQuery(userSearch)
 
   const client = getClient()
   const _class = chunter.class.ChunterMessage
   let messages: ChunterMessage[] = []
 
-  let resultQuery: DocumentQuery<Message> = {}
+  let resultQuery: DocumentQuery<ChunterMessage> = { ...searchQuery }
 
-  async function updateMessages (resultQuery: DocumentQuery<Message>) {
+  async function updateMessages (resultQuery: DocumentQuery<ChunterMessage>) {
     messages = await client.findAll(
       _class,
       {
@@ -93,12 +96,13 @@
 
 <div class="ac-header full divide">
   <div class="ac-header__wrap-title">
-    <span class="ac-header__title"><Label label={chunter.string.MessagesBrowser} /></span>
+    <span class="ac-header__title"><Label label={plugin.string.MessagesBrowser} /></span>
   </div>
   <div class="ml-4"><FilterButton {_class} bind:filters /></div>
   <SearchEdit
-    bind:value={userSearch}
-    on:change={() => {
+    value={userSearch}
+    on:change={(ev) => {
+      updateUserSearch(ev.detail)
       updateSearchQuery(userSearch)
       updateMessages(resultQuery)
     }}

@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import core from '@anticrm/core'
+import core, { Space } from '@anticrm/core'
 import chunter, { ChunterSpace, Channel, ChunterMessage, Message, ThreadMessage, DirectMessage } from '@anticrm/chunter'
 import { NotificationClientImpl } from '@anticrm/notification-resources'
 import { Resources } from '@anticrm/platform'
@@ -161,6 +161,16 @@ export async function DeleteMessageFromSaved (message: ChunterMessage): Promise<
   }
 }
 
+export let userSearch: string = ''
+
+export function updateUserSearch (userSearch_: string): void {
+  userSearch = userSearch_
+}
+
+export function messageBrowserVisible (spaces: Space[]): boolean {
+  return false
+}
+
 export default async (): Promise<Resources> => ({
   component: {
     CommentInput,
@@ -180,7 +190,8 @@ export default async (): Promise<Resources> => ({
     SavedMessages
   },
   function: {
-    GetDmName: getDmName
+    GetDmName: getDmName,
+    MessageBrowserVisible: messageBrowserVisible
   },
   activity: {
     TxCommentCreate,

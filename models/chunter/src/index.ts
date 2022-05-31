@@ -25,7 +25,6 @@ import type {
   SavedMessages,
   ThreadMessage
 } from '@anticrm/chunter'
-import chunterPlugin from '@anticrm/chunter'
 import contact, { Employee } from '@anticrm/contact'
 import type { Account, Class, Doc, Domain, Ref, Space, Timestamp } from '@anticrm/core'
 import { IndexKind } from '@anticrm/core'
@@ -353,8 +352,9 @@ export function createModel (builder: Builder): void {
           },
           {
             id: 'messagesBrowser',
-            label: chunterPlugin.string.MessagesBrowser,
-            component: chunter.component.MessagesBrowser
+            label: chunter.string.MessagesBrowser,
+            component: chunter.component.MessagesBrowser,
+            visibleIf: chunter.function.MessageBrowserVisible
           }
         ],
         spaces: [
