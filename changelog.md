@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.23
+
+Platform:
+
+- Fix first filter disappear
+
 ## 0.6.22
 
 Platform:
