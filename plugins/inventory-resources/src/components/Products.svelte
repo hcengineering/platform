@@ -24,7 +24,7 @@
     IconAdd,
     eventToHTMLElement,
     Loading,
-    ActionIcon
+    Tooltip
   } from '@anticrm/ui'
   import CreateProduct from './CreateProduct.svelte'
   import inventory from '../plugin'
@@ -69,7 +69,7 @@
   }
 </script>
 
-<div class="ac-header full">
+<div class="ac-header full withSettings">
   <div class="ac-header__wrap-title">
     <span class="ac-header__icon"><Icon icon={inventory.icon.Products} size={'small'} /></span>
     <span class="ac-header__title"><Label label={inventory.string.Products} /></span>
@@ -90,14 +90,15 @@
     on:click={(ev) => showCreateDialog(ev)}
   />
   {#if descr}
-    <ActionIcon
-      icon={view.icon.Setting}
-      size={'small'}
-      label={view.string.CustomizeView}
-      action={() => {
-        showPopup(ViewletSetting, { viewlet: descr })
-      }}
-    />
+    <Tooltip label={view.string.CustomizeView}>
+      <Button
+        icon={view.icon.Setting}
+        kind={'transparent'}
+        on:click={() => {
+          showPopup(ViewletSetting, { viewlet: descr })
+        }}
+      />
+    </Tooltip>
   {/if}
 </div>
 

@@ -17,17 +17,7 @@
   import core, { WithLookup } from '@anticrm/core'
   import { IntlString } from '@anticrm/platform'
   import presentation, { createQuery, getClient } from '@anticrm/presentation'
-  import {
-    ActionIcon,
-    AnyComponent,
-    showPanel,
-    Button,
-    Icon,
-    SearchEdit,
-    showPopup,
-    Tooltip,
-    IconAdd
-  } from '@anticrm/ui'
+  import { AnyComponent, showPanel, Button, Icon, SearchEdit, showPopup, Tooltip, IconAdd } from '@anticrm/ui'
   import view, { Viewlet } from '@anticrm/view'
   import { ViewletSetting } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
@@ -87,7 +77,7 @@
   }
 </script>
 
-<div class="ac-header full">
+<div class="ac-header full withSettings">
   {#if space}
     <Header
       icon={classIcon(client, space._class)}
@@ -126,14 +116,15 @@
       <Button icon={IconAdd} label={createItemLabel} kind={'primary'} on:click={(ev) => showCreateDialog(ev)} />
     {/if}
     {#if viewlet}
-      <ActionIcon
-        icon={view.icon.Setting}
-        size={'small'}
-        label={view.string.CustomizeView}
-        action={() => {
-          showPopup(ViewletSetting, { viewlet })
-        }}
-      />
+      <Tooltip label={view.string.CustomizeView}>
+        <Button
+          icon={view.icon.Setting}
+          kind={'transparent'}
+          on:click={() => {
+            showPopup(ViewletSetting, { viewlet })
+          }}
+        />
+      </Tooltip>
     {/if}
   {/if}
 </div>
