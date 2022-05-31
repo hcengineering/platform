@@ -28,6 +28,9 @@
     {#each items as value}
       <TagReferencePresenter {value} />
     {/each}
+    <Button kind="link" on:click={tagsHandler}>
+      <Icon icon={IconAdd} slot="content" size="small" />
+    </Button>
   </div>
 {:else if isEditable}
   <Button kind="link" on:click={tagsHandler}>

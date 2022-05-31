@@ -88,6 +88,7 @@
   $: getMixins(parentClass, object)
 
   let ignoreKeys: string[] = []
+  let allowedCollections: string[] = []
   let ignoreMixins: Set<Ref<Mixin<Doc>>> = new Set<Ref<Mixin<Doc>>>()
 
   async function updateKeys (): Promise<void> {
@@ -238,11 +239,11 @@
         {#if headerEditor !== undefined}
           <Component
             is={headerEditor}
-            props={{ object, keys, mixins, ignoreKeys, vertical: dir === 'column' }}
+            props={{ object, keys, mixins, ignoreKeys, vertical: dir === 'column', allowedCollections }}
             on:update={updateKeys}
           />
         {:else if dir === 'column'}
-          <DocAttributeBar {object} {mixins} {ignoreKeys} on:update={updateKeys} />
+          <DocAttributeBar {object} {mixins} {ignoreKeys} {allowedCollections} on:update={updateKeys} />
         {:else}
           <AttributesBar {object} _class={realObjectClass} {keys} />
         {/if}
@@ -256,12 +257,13 @@
         on:open={(ev) => {
           ignoreKeys = ev.detail.ignoreKeys
           ignoreMixins = new Set(ev.detail.ignoreMixins)
+          allowedCollections = ev.detail.allowedCollections ?? []
           getMixins(parentClass, object)
           updateKeys()
         }}
       />
     {/if}
-    {#each collectionEditors as collection}
+    {#each collectionEditors.filter((it) => !allowedCollections.includes(it.key.key)) as collection}
       {#if collection.editor}
         <div class="mt-6">
           <Component
