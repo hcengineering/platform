@@ -43,13 +43,18 @@
 
   async function onClose ({ detail: parentIssue }: CustomEvent<Issue | undefined | null>) {
     if (shouldSaveOnChange && parentIssue !== undefined && parentIssue?._id !== value.attachedTo) {
-      const attachedTo = parentIssue === null ? tracker.ids.NoParent : parentIssue._id
-      const attachedToClass = parentIssue === null ? tracker.class.Issue : parentIssue._class
-      const collection = 'subIssues'
-
-      await client.updateCollection(value._class, value.space, value._id, attachedTo, attachedToClass, collection, {
-        attachedTo
-      })
+      await client.updateCollection(
+        value._class,
+        value.space,
+        value._id,
+        value.attachedTo,
+        value.attachedToClass,
+        'subIssues',
+        {
+          attachedTo: parentIssue === null ? tracker.ids.NoParent : parentIssue._id,
+          attachedToClass: parentIssue === null ? tracker.class.Issue : parentIssue._class
+        }
+      )
     }
 
     dispatch('close', parentIssue)
