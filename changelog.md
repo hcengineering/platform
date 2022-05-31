@@ -1,10 +1,11 @@
 # Changelog
 
-## 0.6.23
+## 0.6.23 (upcoming)
 
 Platform:
 
 - Fix first filter disappear
+- Adjust label editors design
 
 ## 0.6.22
 

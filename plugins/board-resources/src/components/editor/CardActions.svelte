@@ -24,7 +24,6 @@
   import plugin from '../../plugin'
   import { updateCardMembers } from '../../utils/CardUtils'
   import UserBoxList from '../UserBoxList.svelte'
-  import CardLabels from './CardLabels.svelte'
 
   export let value: Card
   const client = getClient()
@@ -55,10 +54,6 @@
     <div class="ml-4">
       <UserBoxList value={value.members ?? []} on:update={updateMembers} />
     </div>
-    <div class="label fs-bold">
-      <Label label={plugin.string.Labels} />
-    </div>
-    <CardLabels {value} />
   </div>
 {/if}
 

@@ -80,9 +80,7 @@ export interface MenuPage extends Doc {
 /**
  * @public
  */
-export interface CommonBoardPreference extends Preference {
-  cardLabelsCompactMode: boolean
-}
+export interface CommonBoardPreference extends Preference {}
 /**
  * @public
  */
