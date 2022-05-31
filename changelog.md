@@ -9,6 +9,10 @@ Platform:
 - Allow to define table columns order
 - Fix skills/labels selection and show real usage counter
 
+HR:
+
+- Allow to configure vacancy table
+
 ## 0.6.22
 
 Platform:
