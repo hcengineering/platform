@@ -1,10 +1,11 @@
 # Changelog
 
-## Unreleased
+## 0.6.23 (upcoming)
 
-Board:
+Platform:
 
- - Adjust label editors design
+- Fix first filter disappear
+- Adjust label editors design
 
 ## 0.6.22
 

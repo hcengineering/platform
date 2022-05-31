@@ -17,7 +17,7 @@
   import contact from '@anticrm/contact'
   import { Doc, DocumentQuery } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
-  import { ActionIcon, showPopup, Icon, Label, Loading, SearchEdit, Button, IconAdd } from '@anticrm/ui'
+  import { Tooltip, showPopup, Icon, Label, Loading, SearchEdit, Button, IconAdd } from '@anticrm/ui'
   import view, { Viewlet, ViewletPreference } from '@anticrm/view'
   import type { Filter } from '@anticrm/view'
   import { ActionContext, TableBrowser, ViewletSetting, FilterButton } from '@anticrm/view-resources'
@@ -69,7 +69,7 @@
   }
 </script>
 
-<div class="ac-header full">
+<div class="ac-header full withSettings">
   <div class="ac-header__wrap-title">
     <div class="ac-header__icon"><Icon icon={contact.icon.Person} size={'small'} /></div>
     <span class="ac-header__title"><Label label={recruit.string.Candidates} /></span>
@@ -84,14 +84,15 @@
   />
   <Button icon={IconAdd} label={recruit.string.CandidateCreateLabel} kind={'primary'} on:click={showCreateDialog} />
   {#if descr}
-    <ActionIcon
-      icon={view.icon.Setting}
-      size={'small'}
-      label={view.string.CustomizeView}
-      action={() => {
-        showPopup(ViewletSetting, { viewlet: descr })
-      }}
-    />
+    <Tooltip label={view.string.CustomizeView}>
+      <Button
+        icon={view.icon.Setting}
+        kind={'transparent'}
+        on:click={() => {
+          showPopup(ViewletSetting, { viewlet: descr })
+        }}
+      />
+    </Tooltip>
   {/if}
 </div>
 

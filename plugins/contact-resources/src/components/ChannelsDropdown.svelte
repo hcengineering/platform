@@ -183,7 +183,8 @@
         {
           value: item.value,
           placeholder: item.placeholder,
-          editable
+          editable,
+          openable: item.presenter ?? false
         },
         el,
         (result) => {
@@ -191,13 +192,14 @@
             if (result === '') {
               displayItems = dropItem(n)
             } else {
-              displayItems[n].value = result
+              if (result !== 'open') displayItems[n].value = result
             }
             saveItems()
             focusManager?.setFocusPos(focusIndex + 1 + n)
           }
           if (result === undefined && item.value === '') displayItems = dropItem(n)
           opened = undefined
+          if (result === 'open') dispatch('open', item)
         },
         (result) => {
           if (result != null) {

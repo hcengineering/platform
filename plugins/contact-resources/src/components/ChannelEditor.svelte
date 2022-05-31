@@ -130,6 +130,18 @@
         dispatch('close', value)
       }}
     />
+    {#if openable}
+      <Button
+        focusIndex={4}
+        kind={'transparent'}
+        size={'small'}
+        icon={IconArrowRight}
+        on:click={() => {
+          dispatch('update', value)
+          dispatch('close', 'open')
+        }}
+      />
+    {/if}
   </div>
 {:else}
   <div class="buttons-group xsmall-gap">

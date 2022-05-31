@@ -30,7 +30,7 @@
   const hierarchy = client.getHierarchy()
   const dispatch = createEventDispatcher()
 
-  let maxIndex = filters ? filters.length : 0
+  let maxIndex = 1
   // const allFilters: boolean = true
 
   function onChange (e: Filter | undefined) {
