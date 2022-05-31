@@ -4,12 +4,12 @@
   import { ChunterMessage } from '@anticrm/chunter'
   import core, { Ref, WithLookup } from '@anticrm/core'
   import contact, { Employee, EmployeeAccount, formatName } from '@anticrm/contact'
-  import { getCurrentLocation, Label, navigate, Scroller } from '@anticrm/ui'
+  import { Label, Scroller } from '@anticrm/ui'
   import AttachmentPreview from '@anticrm/attachment-resources/src/components/AttachmentPreview.svelte'
   import Bookmark from './icons/Bookmark.svelte'
   import Message from './Message.svelte'
   import chunter from '../plugin'
-  import { getTime } from '../utils'
+  import { getTime, openMessageFromSpecial } from '../utils'
 
   const client = getClient()
   let savedMessagesIds: Ref<ChunterMessage>[] = []
@@ -83,29 +83,19 @@
     chunter.class.Channel,
     {},
     (res) => {
-      res.forEach((ch) => pinnedIds.concat(ch?.pinned ?? []))
+      res.forEach((ch) => {
+        if (ch.pinned) {
+          pinnedIds.push(...ch.pinned)
+        }
+      })
     },
-    { limit: 1 }
+    {}
   )
-
-  function openMessage (message: ChunterMessage) {
-    const loc = getCurrentLocation()
-
-    if (message.attachedToClass === chunter.class.ChunterSpace) {
-      loc.path.length = 3
-      loc.path[2] = message.attachedTo
-    } else if (message.attachedToClass === chunter.class.Message) {
-      loc.path.length = 4
-      loc.path[2] = message.space
-      loc.path[3] = message.attachedTo
-    }
-    navigate(loc)
-  }
 
   async function openAttachment (att: Attachment) {
     const messageId: Ref<ChunterMessage> = att.attachedTo as Ref<ChunterMessage>
     await client.findOne(chunter.class.ChunterMessage, { _id: messageId }).then((res) => {
-      if (res !== undefined) openMessage(res)
+      if (res !== undefined) openMessageFromSpecial(res)
     })
   }
 
@@ -125,7 +115,7 @@
 <Scroller>
   {#if savedMessages.length > 0 || savedAttachments.length > 0}
     {#each savedMessages as message}
-      <div on:click={() => openMessage(message)}>
+      <div on:click={() => openMessageFromSpecial(message)}>
         <Message
           {message}
           {employees}

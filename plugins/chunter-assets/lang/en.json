@@ -59,6 +59,9 @@
     "ChannelBrowser": "Channel browser",
     "SavedItems": "Saved items",
     "AddMembersHeader": "Add members to {channel}:",
-    "ConvertToPrivate": "Convert to private channel"
+    "ConvertToPrivate": "Convert to private channel",
+    "MessagesBrowser": "Messages browser",
+    "CreateBy": "Create by",
+    "ThreadMessage": "Thread message"
   }
 }

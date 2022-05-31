@@ -1,7 +1,8 @@
+import { ChunterMessage } from '@anticrm/chunter'
 import contact, { EmployeeAccount, formatName } from '@anticrm/contact'
 import { Account, Class, Client, Obj, Ref, Space, getCurrentAccount, Timestamp } from '@anticrm/core'
 import { Asset } from '@anticrm/platform'
-import { getCurrentLocation, locationToUrl } from '@anticrm/ui'
+import { getCurrentLocation, locationToUrl, navigate } from '@anticrm/ui'
 
 import chunter from './plugin'
 
@@ -68,4 +69,18 @@ export function getDay (time: Timestamp): Timestamp {
   const date: Date = new Date(time)
   date.setHours(0, 0, 0, 0)
   return date.getTime()
+}
+
+export function openMessageFromSpecial (message: ChunterMessage): void {
+  const loc = getCurrentLocation()
+
+  if (message.attachedToClass === chunter.class.ChunterSpace) {
+    loc.path.length = 3
+    loc.path[2] = message.attachedTo
+  } else if (message.attachedToClass === chunter.class.Message) {
+    loc.path.length = 4
+    loc.path[2] = message.space
+    loc.path[3] = message.attachedTo
+  }
+  navigate(loc)
 }
