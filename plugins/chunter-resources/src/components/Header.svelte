@@ -14,11 +14,15 @@
 -->
 <script lang="ts">
   import type { Asset } from '@anticrm/platform'
-  import { AnySvelteComponent, Icon } from '@anticrm/ui'
+  import { AnySvelteComponent, getCurrentLocation, Icon, navigate, SearchEdit } from '@anticrm/ui'
+  import { userSearch } from '../index'
 
   export let icon: Asset | AnySvelteComponent | undefined
   export let label: string
   export let description: string | undefined
+
+  let userSearch_: string
+  userSearch.subscribe((v) => (userSearch_ = v))
 </script>
 
 <div class="ac-header__wrap-description">
@@ -28,6 +32,18 @@
   </div>
   {#if description}<span class="ac-header__description">{description}</span>{/if}
 </div>
+<SearchEdit
+  value={userSearch_}
+  on:change={(ev) => {
+    userSearch.set(ev.detail)
+
+    if (ev.detail !== '') {
+      const loc = getCurrentLocation()
+      loc.path[2] = 'messagesBrowser'
+      navigate(loc)
+    }
+  }}
+/>
 
 <style lang="scss">
   .ac-header__wrap-title:hover {

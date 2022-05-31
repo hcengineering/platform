@@ -45,6 +45,7 @@ import ValueFilter from './components/filter/ValueFilter.svelte'
 import ObjectFilter from './components/filter/ObjectFilter.svelte'
 import TimestampFilter from './components/filter/TimestampFilter.svelte'
 import ClassPresenter from './components/ClassPresenter.svelte'
+import FilterBar from './components/filter/FilterBar.svelte'
 import EditBoxPopup from './components/EditBoxPopup.svelte'
 import BooleanTruePresenter from './components/BooleanTruePresenter.svelte'
 import EnumEditor from './components/EnumEditor.svelte'
@@ -75,6 +76,7 @@ export {
   SpacePresenter,
   UpDownNavigator,
   ViewletSetting,
+  FilterBar,
   ClassAttributeBar
 }
 

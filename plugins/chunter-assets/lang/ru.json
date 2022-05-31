@@ -58,6 +58,9 @@
     "ChannelBrowser": "Браузер каналов",
     "SavedItems": "Сохраненные объекты",
     "AddMembersHeader": "Добавить пользователей в {channel}:",
-    "ConvertToPrivate": "Конвертировать в закрытый канал"
+    "ConvertToPrivate": "Конвертировать в закрытый канал",
+    "MessagesBrowser": "Браузер сообщений",
+    "CreateBy": "Создано пользователем",
+    "ThreadMessage": "Сообщение в обсуждении"
   }
 }
