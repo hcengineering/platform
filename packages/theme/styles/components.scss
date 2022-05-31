@@ -339,8 +339,8 @@
     height: 2.5rem;
     font-weight: 500;
     font-size: .75rem;
-    color: var(--theme-content-dark-color);
-    box-shadow: inset 0 -1px 0 0 var(--theme-bg-focused-color);
+    color: var(--dark-color);
+    box-shadow: inset 0 -1px 0 0 var(--divider-color);
     user-select: none;
     // z-index: 5;
 
@@ -394,7 +394,7 @@
 
   .antiTable-body__row {
     height: 3.25rem;
-    color: var(--theme-caption-color);
+    color: var(--caption-color);
 
     &:not(:last-child) { border-bottom: 1px solid var(--accent-bg-color); }
     &:hover .antiTable-cells__firstCell .antiTable-cells__firstCell-menuRow { visibility: visible; }
@@ -411,7 +411,7 @@
   }
 
   .antiTable-body__border {
-    border: 1px solid var(--theme-button-border-hovered);
+    border: 1px solid var(--divider-color);
   }
 
   &.highlightRows .antiTable-body__row {
