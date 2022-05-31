@@ -16,7 +16,7 @@
 <script lang="ts">
   import { Doc, DocumentQuery } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
-  import { ActionIcon, Icon, Label, Loading, showPopup, SearchEdit } from '@anticrm/ui'
+  import { Tooltip, Button, Icon, Label, Loading, showPopup, SearchEdit } from '@anticrm/ui'
   import view, { Viewlet, ViewletPreference } from '@anticrm/view'
   import { ViewletSetting, TableBrowser } from '@anticrm/view-resources'
   import lead from '../plugin'
@@ -58,7 +58,7 @@
   }
 </script>
 
-<div class="ac-header full">
+<div class="ac-header full withSettings">
   <div class="ac-header__wrap-title">
     <div class="ac-header__icon"><Icon icon={lead.icon.Lead} size={'small'} /></div>
     <span class="ac-header__title"><Label label={lead.string.Customers} /></span>
@@ -71,14 +71,15 @@
     }}
   />
   {#if descr}
-    <ActionIcon
-      icon={view.icon.Setting}
-      size={'small'}
-      label={view.string.CustomizeView}
-      action={() => {
-        showPopup(ViewletSetting, { viewlet: descr })
-      }}
-    />
+    <Tooltip label={view.string.CustomizeView}>
+      <Button
+        icon={view.icon.Setting}
+        kind={'transparent'}
+        on:click={() => {
+          showPopup(ViewletSetting, { viewlet: descr })
+        }}
+      />
+    </Tooltip>
   {/if}
 </div>
 

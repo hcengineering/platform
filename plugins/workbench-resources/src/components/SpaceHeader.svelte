@@ -87,7 +87,7 @@
   }
 </script>
 
-<div class="ac-header full">
+<div class="ac-header full withSettings">
   {#if space}
     <Header
       icon={classIcon(client, space._class)}
@@ -126,14 +126,15 @@
       <Button icon={IconAdd} label={createItemLabel} kind={'primary'} on:click={(ev) => showCreateDialog(ev)} />
     {/if}
     {#if viewlet}
-      <ActionIcon
-        icon={view.icon.Setting}
-        size={'small'}
-        label={view.string.CustomizeView}
-        action={() => {
-          showPopup(ViewletSetting, { viewlet })
-        }}
-      />
+      <Tooltip label={view.string.CustomizeView}>
+        <Button
+          icon={view.icon.Setting}
+          kind={'transparent'}
+          on:click={() => {
+            showPopup(ViewletSetting, { viewlet })
+          }}
+        />
+      </Tooltip>
     {/if}
   {/if}
 </div>
