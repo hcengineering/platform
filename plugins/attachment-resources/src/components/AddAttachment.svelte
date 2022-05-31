@@ -39,7 +39,10 @@
     } finally {
       loading--
     }
-    inputFile.value = ''
+
+    if (inputFile) {
+      inputFile.value = ''
+    }
 
     dispatch('attached')
   }
