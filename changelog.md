@@ -6,6 +6,7 @@ Platform:
 
 - Fix first filter disappear
 - Adjust label editors design
+- Allow to define table columns order
 
 ## 0.6.22
 
