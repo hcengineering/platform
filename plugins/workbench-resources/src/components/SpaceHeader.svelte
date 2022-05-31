@@ -118,4 +118,3 @@
     <ViewletSettingButton {viewlet} />
   {/if}
 </div>
- 
