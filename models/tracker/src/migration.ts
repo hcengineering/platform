@@ -150,7 +150,7 @@ async function upgradeIssueStatuses (tx: TxOperations): Promise<void> {
 }
 
 async function migrateParentIssues (client: MigrationClient): Promise<void> {
-  await client.update(
+  let { updated } = await client.update(
     DOMAIN_TRACKER,
     { _class: tracker.class.Issue, attachedToClass: { $exists: false } },
     {
@@ -159,16 +159,24 @@ async function migrateParentIssues (client: MigrationClient): Promise<void> {
       attachedToClass: tracker.class.Issue
     }
   )
-  await client.update(
-    DOMAIN_TRACKER,
-    { _class: tracker.class.Issue, parentIssue: { $exists: true } },
-    { $rename: { parentIssue: 'attachedTo' } }
-  )
-  await client.update(
-    DOMAIN_TRACKER,
-    { _class: tracker.class.Issue, attachedTo: { $in: [null, undefined] } },
-    { attachedTo: tracker.ids.NoParent }
-  )
+  updated += (
+    await client.update(
+      DOMAIN_TRACKER,
+      { _class: tracker.class.Issue, parentIssue: { $exists: true } },
+      { $rename: { parentIssue: 'attachedTo' } }
+    )
+  ).updated
+  updated += (
+    await client.update(
+      DOMAIN_TRACKER,
+      { _class: tracker.class.Issue, attachedTo: { $in: [null, undefined] } },
+      { attachedTo: tracker.ids.NoParent }
+    )
+  ).updated
+
+  if (updated === 0) {
+    return
+  }
 
   const childrenCountById = new Map<Ref<Doc>, number>()
   const parentIssueIds = (
