@@ -8,11 +8,14 @@
   import type { Filter } from '@anticrm/view'
   import { FilterBar, FilterButton } from '@anticrm/view-resources'
   import MessageComponent from './Message.svelte'
-  import { updateUserSearch, userSearch } from '../index'
+  import { userSearch } from '../index'
   import plugin from '../plugin'
   import { openMessageFromSpecial } from '../utils'
 
-  let searchQuery: DocumentQuery<ChunterMessage> = { $search: userSearch }
+  let userSearch_: string = ''
+  userSearch.subscribe((v) => (userSearch_ = v))
+
+  let searchQuery: DocumentQuery<ChunterMessage> = { $search: userSearch_ }
 
   let filters: Filter[] = []
 
@@ -20,7 +23,7 @@
     searchQuery = { $search: search }
   }
 
-  $: updateSearchQuery(userSearch)
+  $: updateSearchQuery(userSearch_)
 
   const client = getClient()
   const _class = chunter.class.ChunterMessage
@@ -100,10 +103,10 @@
   </div>
   <div class="ml-4"><FilterButton {_class} bind:filters /></div>
   <SearchEdit
-    value={userSearch}
+    value={userSearch_}
     on:change={(ev) => {
-      updateUserSearch(ev.detail)
-      updateSearchQuery(userSearch)
+      userSearch.set(ev.detail)
+      updateSearchQuery(userSearch_)
       updateMessages(resultQuery)
     }}
   />

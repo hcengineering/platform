@@ -15,11 +15,14 @@
 <script lang="ts">
   import type { Asset } from '@anticrm/platform'
   import { AnySvelteComponent, getCurrentLocation, Icon, navigate, SearchEdit } from '@anticrm/ui'
-  import { updateUserSearch, userSearch } from '../index'
+  import { userSearch } from '../index'
 
   export let icon: Asset | AnySvelteComponent | undefined
   export let label: string
   export let description: string | undefined
+
+  let userSearch_: string
+  userSearch.subscribe((v) => (userSearch_ = v))
 </script>
 
 <div class="ac-header__wrap-description">
@@ -30,9 +33,9 @@
   {#if description}<span class="ac-header__description">{description}</span>{/if}
 </div>
 <SearchEdit
-  value={userSearch}
+  value={userSearch_}
   on:change={(ev) => {
-    updateUserSearch(ev.detail)
+    userSearch.set(ev.detail)
 
     if (ev.detail !== '') {
       const loc = getCurrentLocation()

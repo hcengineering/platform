@@ -21,9 +21,12 @@
   import { getCurrentLocation, navigate, SearchEdit, showPanel } from '@anticrm/ui'
   import chunter from '../plugin'
   import { getDmName } from '../utils'
-  import { updateUserSearch, userSearch } from '../index'
+  import { userSearch } from '../index'
 
   export let spaceId: Ref<DirectMessage> | undefined
+
+  let userSearch_: string = ''
+  userSearch.subscribe((v) => (userSearch_ = v))
 
   const client = getClient()
   const query = createQuery()
@@ -64,9 +67,9 @@
     {/await}
   {/if}
   <SearchEdit
-    value={userSearch}
+    value={userSearch_}
     on:change={(ev) => {
-      updateUserSearch(ev.detail)
+      userSearch.set(ev.detail)
 
       if (ev.detail !== '') {
         const loc = getCurrentLocation()

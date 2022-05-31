@@ -41,6 +41,7 @@ import SavedMessages from './components/SavedMessages.svelte'
 import ConvertDmToPrivateChannelModal from './components/ConvertDmToPrivateChannel.svelte'
 
 import { getDmName } from './utils'
+import { writable } from 'svelte/store'
 
 export { default as Header } from './components/Header.svelte'
 export { classIcon } from './utils'
@@ -161,11 +162,7 @@ export async function DeleteMessageFromSaved (message: ChunterMessage): Promise<
   }
 }
 
-export let userSearch: string = ''
-
-export function updateUserSearch (userSearch_: string): void {
-  userSearch = userSearch_
-}
+export const userSearch = writable('')
 
 export function messageBrowserVisible (spaces: Space[]): boolean {
   return false
