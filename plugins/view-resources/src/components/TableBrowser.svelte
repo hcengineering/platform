@@ -56,9 +56,7 @@
   }}
 />
 
-{#if filters !== []}
-  <FilterBar {_class} {query} bind:filters on:change={(e) => (resultQuery = e.detail)} />
-{/if}
+<FilterBar {_class} {query} bind:filters on:change={(e) => (resultQuery = e.detail)} />
 <Scroller tableFade>
   <Table
     bind:this={table}
