@@ -130,7 +130,7 @@ export function createModel (builder: Builder): void {
     config: [
       '',
       '$lookup._class',
-      { key: 'leads', presenter: lead.component.LeadsPresenter, label: lead.string.Leads },
+      'leads',
       'modifiedOn',
       '$lookup.channels'
     ],
@@ -174,6 +174,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(lead.class.Lead, core.class.Class, view.mixin.AttributePresenter, {
     presenter: lead.component.LeadPresenter
+  })
+
+  builder.mixin(lead.class.Lead, core.class.Class, view.mixin.CollectionPresenter, {
+    presenter: lead.component.LeadsPresenter
   })
 
   builder.mixin(lead.class.Lead, core.class.Class, view.mixin.CollectionEditor, {

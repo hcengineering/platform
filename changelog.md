@@ -9,6 +9,10 @@ Platform:
 - Allow to define table columns order
 - Fix skills/labels selection and show real usage counter
 
+Leads:
+
+- Fix customer table leads column
+
 ## 0.6.22
 
 Platform:
