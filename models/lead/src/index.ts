@@ -127,13 +127,7 @@ export function createModel (builder: Builder): void {
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: lead.mixin.Customer,
     descriptor: view.viewlet.Table,
-    config: [
-      '',
-      '$lookup._class',
-      'leads',
-      'modifiedOn',
-      '$lookup.channels'
-    ],
+    config: ['', '$lookup._class', 'leads', 'modifiedOn', '$lookup.channels'],
     hiddenKeys: ['name']
   })
 
