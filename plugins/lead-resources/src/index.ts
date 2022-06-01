@@ -17,7 +17,6 @@
 import { Resources } from '@anticrm/platform'
 import CreateFunnel from './components/CreateFunnel.svelte'
 import CreateLead from './components/CreateLead.svelte'
-import Customers from './components/Customers.svelte'
 import EditLead from './components/EditLead.svelte'
 import KanbanCard from './components/KanbanCard.svelte'
 import LeadPresenter from './components/LeadPresenter.svelte'
@@ -35,7 +34,6 @@ export default async (): Promise<Resources> => ({
     KanbanCard,
     LeadPresenter,
     TemplatesIcon,
-    Customers,
     LeadsPresenter,
     Leads,
     CreateCustomer,

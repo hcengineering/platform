@@ -106,7 +106,12 @@ export function createModel (builder: Builder): void {
             id: 'customers',
             label: lead.string.Customers,
             icon: contact.icon.Person, // <-- Put contact general icon here.
-            component: lead.component.Customers,
+            component: workbench.component.SpecialView,
+            componentProps: {
+              _class: lead.mixin.Customer,
+              icon: lead.icon.Lead,
+              label: lead.string.Customers
+            },
             position: 'top'
           }
         ],

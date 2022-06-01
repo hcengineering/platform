@@ -173,18 +173,34 @@ export function createModel (builder: Builder): void {
           },
           {
             id: applicantsId,
-            component: recruit.component.ApplicationsView,
+            component: workbench.component.SpecialView,
             icon: recruit.icon.Application,
             label: recruit.string.Applications,
-            createItemLabel: recruit.string.ApplicationCreateLabel,
+            componentProps: {
+              _class: recruit.class.Applicant,
+              icon: recruit.icon.Application,
+              label: recruit.string.Applications,
+              createLabel: recruit.string.ApplicationCreateLabel,
+              createComponent: recruit.component.CreateApplication,
+              descriptor: task.viewlet.StatusTable,
+              baseQuery: {
+                doneState: null
+              }
+            },
             position: 'vacancy'
           },
           {
             id: candidatesId,
-            component: recruit.component.Candidates,
+            component: workbench.component.SpecialView,
             icon: contact.icon.Person,
             label: recruit.string.Candidates,
-            createItemLabel: recruit.string.CandidateCreateLabel,
+            componentProps: {
+              _class: recruit.mixin.Candidate,
+              icon: contact.icon.Person,
+              label: recruit.string.Candidates,
+              createLabel: recruit.string.CandidateCreateLabel,
+              createComponent: recruit.component.CreateCandidate
+            },
             position: 'vacancy'
           },
           {

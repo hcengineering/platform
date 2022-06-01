@@ -41,7 +41,6 @@ export default mergeIds(leadId, lead, {
     KanbanCard: '' as AnyComponent,
     LeadPresenter: '' as AnyComponent,
     TemplatesIcon: '' as AnyComponent,
-    Customers: '' as AnyComponent,
     Leads: '' as AnyComponent,
     NewItemsHeader: '' as AnyComponent
   },

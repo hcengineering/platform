@@ -1,29 +1,36 @@
 <!--
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
-// 
+// Copyright © 2022 Hardcore Engineering Inc.
+//
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// 
+//
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, DocumentQuery } from '@anticrm/core'
+  import { Class, Doc, DocumentQuery, Ref } from '@anticrm/core'
+  import { Asset, IntlString } from '@anticrm/platform'
   import { createQuery, getClient } from '@anticrm/presentation'
-  import { Icon, Label, Loading, SearchEdit } from '@anticrm/ui'
-  import view, { Viewlet, ViewletPreference } from '@anticrm/view'
-  import { TableBrowser, ViewletSettingButton } from '@anticrm/view-resources'
-  import lead from '../plugin'
+  import { AnyComponent, Button, Icon, IconAdd, Label, Loading, SearchEdit, showPopup } from '@anticrm/ui'
+  import view, { Filter, Viewlet, ViewletDescriptor, ViewletPreference } from '@anticrm/view'
+  import { FilterButton, TableBrowser, ViewletSettingButton } from '@anticrm/view-resources'
+
+  export let _class: Ref<Class<Doc>>
+  export let icon: Asset
+  export let label: IntlString
+  export let createLabel: IntlString | undefined
+  export let createComponent: AnyComponent | undefined
+  export let descriptor: Ref<ViewletDescriptor> = view.viewlet.Table
+  export let baseQuery: DocumentQuery<Doc> = {}
 
   let search = ''
-  let resultQuery: DocumentQuery<Doc> = {}
-
+  $: resultQuery = search === '' ? {} : { $search: search }
+  let filters: Filter[] = []
   let descr: Viewlet | undefined
   let loading = true
 
@@ -33,8 +40,8 @@
   const client = getClient()
   client
     .findOne<Viewlet>(view.class.Viewlet, {
-      attachTo: lead.mixin.Customer,
-      descriptor: view.viewlet.Table
+      attachTo: _class,
+      descriptor
     })
     .then((res) => {
       descr = res
@@ -53,15 +60,21 @@
       }
     })
 
+  function showCreateDialog (ev: MouseEvent) {
+    if (createComponent === undefined) return
+    showPopup(createComponent, {}, 'top')
+  }
+
   function updateResultQuery (search: string): void {
-    resultQuery = search === '' ? {} : { $search: search }
+    resultQuery = search === '' ? baseQuery : { ...baseQuery, $search: search }
   }
 </script>
 
 <div class="ac-header full withSettings">
   <div class="ac-header__wrap-title">
-    <div class="ac-header__icon"><Icon icon={lead.icon.Lead} size={'small'} /></div>
-    <span class="ac-header__title"><Label label={lead.string.Customers} /></span>
+    <span class="ac-header__icon"><Icon {icon} size={'small'} /></span>
+    <span class="ac-header__title"><Label {label} /></span>
+    <div class="ml-4"><FilterButton {_class} bind:filters /></div>
   </div>
 
   <SearchEdit
@@ -70,6 +83,9 @@
       updateResultQuery(search)
     }}
   />
+  {#if createLabel && createComponent}
+    <Button label={createLabel} icon={IconAdd} kind={'primary'} on:click={(ev) => showCreateDialog(ev)} />
+  {/if}
   <ViewletSettingButton viewlet={descr} />
 </div>
 
@@ -78,10 +94,11 @@
     <Loading />
   {:else}
     <TableBrowser
-      _class={lead.mixin.Customer}
+      {_class}
       config={preference?.config ?? descr.config}
       options={descr.options}
       query={resultQuery}
+      bind:filters
       showNotification
     />
   {/if}

@@ -23,8 +23,6 @@ import ApplicationItem from './components/ApplicationItem.svelte'
 import ApplicationPresenter from './components/ApplicationPresenter.svelte'
 import Applications from './components/Applications.svelte'
 import ApplicationsPresenter from './components/ApplicationsPresenter.svelte'
-import ApplicationsView from './components/ApplicationsView.svelte'
-import Candidates from './components/Candidates.svelte'
 import CreateApplication from './components/CreateApplication.svelte'
 import CreateCandidate from './components/CreateCandidate.svelte'
 import CreateVacancy from './components/CreateVacancy.svelte'
@@ -140,7 +138,6 @@ export default async (): Promise<Resources> => ({
     EditVacancy,
     TemplatesIcon,
     Applications,
-    Candidates,
     CreateCandidate,
     VacancyPresenter,
     SkillsView,
@@ -156,7 +153,6 @@ export default async (): Promise<Resources> => ({
     Opinions,
     OpinionPresenter,
     OpinionsPresenter,
-    ApplicationsView,
 
     NewCandidateHeader
   },
