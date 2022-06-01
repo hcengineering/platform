@@ -58,7 +58,8 @@
     status: '' as Ref<IssueStatus>,
     priority: priority,
     dueDate: null,
-    comments: 0
+    comments: 0,
+    subIssues: 0
   }
 
   const dispatch = createEventDispatcher()
