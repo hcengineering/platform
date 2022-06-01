@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { afterUpdate, onDestroy, onMount } from 'svelte'
+  import { onDestroy, onMount } from 'svelte'
 
   export let padding: boolean = false
   export let autoscroll: boolean = false
@@ -34,15 +34,30 @@
   let scrolling: boolean = autoscroll
   let firstScroll: boolean = autoscroll
 
+  let timer: number
+
+  $: shift = tableFade ? 40 : 0
+
   const checkBar = (): void => {
     if (divBar && divScroll) {
-      const proc = (divScroll.clientHeight / divScroll.scrollHeight) * 100
-      const procScroll = (divScroll.clientHeight - 4) / 100
-      const procTop = divScroll.scrollTop / divScroll.scrollHeight
-      divBar.style.height = procScroll * proc + 'px'
-      divBar.style.top = procTop * (divScroll.clientHeight - 4) + 2 + 'px'
+      const trackH = divScroll.clientHeight - shift - 4
+      const scrollH = divScroll.scrollHeight
+      const proc = scrollH / trackH
+      divBar.style.height = divScroll.clientHeight / proc + 'px'
+      divBar.style.top = divScroll.scrollTop / proc + shift + 2 + 'px'
       if (mask === 'none') divBar.style.visibility = 'hidden'
-      else divBar.style.visibility = 'visible'
+      else {
+        divBar.style.visibility = 'visible'
+        if (divBar) {
+          if (timer) {
+            clearTimeout(timer)
+            divBar.style.opacity = '1'
+          }
+          timer = setTimeout(() => {
+            divBar.style.opacity = '0'
+          }, 2000)
+        }
+      }
       if (divScroll.clientHeight >= divScroll.scrollHeight) divBar.style.visibility = 'hidden'
     }
   }
@@ -52,11 +67,11 @@
     if (isScrolling && divBar && divScroll) {
       const rectScroll = divScroll.getBoundingClientRect()
       let Y = event.clientY - dY
-      if (Y < rectScroll.top + 2) Y = rectScroll.top + 2
+      if (Y < rectScroll.top + shift + 2) Y = rectScroll.top + shift + 2
       if (Y > rectScroll.bottom - divBar.clientHeight - 2) Y = rectScroll.bottom - divBar.clientHeight - 2
       divBar.style.top = Y - rectScroll.y + 'px'
-      const topBar = Y - rectScroll.y - 2
-      const heightScroll = rectScroll.height - 4 - divBar.clientHeight
+      const topBar = Y - rectScroll.y - shift - 2
+      const heightScroll = rectScroll.height - 4 - divBar.clientHeight - shift
       const procBar = topBar / heightScroll
       divScroll.scrollTop = (divScroll.scrollHeight - divScroll.clientHeight) * procBar
     }
@@ -103,8 +118,6 @@
     if (!isScrolling) checkBar()
   }
 
-  const observer = new IntersectionObserver(() => checkFade(), { root: null, threshold: 0.1 })
-
   const scrollDown = (): void => {
     divScroll.scrollTop = divScroll.scrollHeight - divHeight
   }
@@ -112,25 +125,18 @@
   onMount(() => {
     if (divScroll && divBox) {
       divScroll.addEventListener('scroll', checkFade)
+      const observer = new IntersectionObserver(() => checkFade(), { root: null, threshold: 0.1 })
       const tempEl = divBox.querySelector('*') as HTMLElement
       if (tempEl) observer.observe(tempEl)
       if (autoscroll && scrolling) {
         scrollDown()
         firstScroll = false
       }
-      checkFade()
+      checkBar()
     }
   })
   onDestroy(() => {
     if (divScroll) divScroll.removeEventListener('scroll', checkFade)
-  })
-  afterUpdate(() => {
-    if (divScroll && divBox) {
-      const tempEl = divBox.querySelector('*') as HTMLElement
-      if (tempEl) observer.observe(tempEl)
-      if (autoscroll && scrolling) scrollDown()
-      checkFade()
-    }
   })
 
   let divHeight: number
@@ -153,8 +159,14 @@
       <slot />
     </div>
   </div>
-  <div class="bar" class:hovered={isScrolling} bind:this={divBar} on:mousedown={onScrollStart} />
-  <div class="track" class:hovered={isScrolling} bind:this={divTrack} />
+  <div
+    class="bar"
+    class:hovered={isScrolling}
+    bind:this={divBar}
+    on:mousedown={onScrollStart}
+    on:mouseleave={checkFade}
+  />
+  <div class="track" class:hovered={isScrolling} class:tableFade bind:this={divTrack} />
 </div>
 
 <style lang="scss">
@@ -206,6 +218,10 @@
     transition: all 0.1s ease-in-out;
     background-color: var(--scrollbar-track-color);
     border-radius: 0.5rem;
+
+    &.tableFade {
+      top: 42px;
+    }
   }
   .bar {
     visibility: hidden;
@@ -219,17 +235,18 @@
     transform: scaleX(0.5);
     background-color: var(--scrollbar-bar-color);
     border-radius: 0.125rem;
-    opacity: 0.5;
+    opacity: 0;
+    box-shadow: 0 0 1px 1px var(--board-bg-color);
     cursor: pointer;
     z-index: 1;
-    transition: all 0.1s;
+    transition: all 0.15s;
 
     &:hover,
     &.hovered {
       background-color: var(--scrollbar-bar-hover);
       transform: scaleX(1);
       border-radius: 0.25rem;
-      opacity: 1;
+      opacity: 1 !important;
       box-shadow: 0 0 1px black;
 
       & + .track {
