@@ -53,6 +53,7 @@ export const issuesGroupByOptions: Record<IssuesGrouping, IntlString> = {
   [IssuesGrouping.Status]: tracker.string.Status,
   [IssuesGrouping.Assignee]: tracker.string.Assignee,
   [IssuesGrouping.Priority]: tracker.string.Priority,
+  [IssuesGrouping.Project]: tracker.string.Project,
   [IssuesGrouping.NoGrouping]: tracker.string.NoGrouping
 }
 
@@ -69,13 +70,14 @@ export const issuesDateModificationPeriodOptions: Record<IssuesDateModificationP
   [IssuesDateModificationPeriod.PastMonth]: tracker.string.PastMonth
 }
 
-export type IssuesGroupByKeys = keyof Pick<Issue, 'status' | 'priority' | 'assignee'>
+export type IssuesGroupByKeys = keyof Pick<Issue, 'status' | 'priority' | 'assignee' | 'project'>
 export type IssuesOrderByKeys = keyof Pick<Issue, 'status' | 'priority' | 'modifiedOn' | 'dueDate'>
 
 export const issuesGroupKeyMap: Record<IssuesGrouping, IssuesGroupByKeys | undefined> = {
   [IssuesGrouping.Status]: 'status',
   [IssuesGrouping.Priority]: 'priority',
   [IssuesGrouping.Assignee]: 'assignee',
+  [IssuesGrouping.Project]: 'project',
   [IssuesGrouping.NoGrouping]: undefined
 }
 
@@ -93,9 +95,10 @@ export const issuesSortOrderMap: Record<IssuesOrderByKeys, SortingOrder> = {
   dueDate: SortingOrder.Descending
 }
 
-export const issuesGroupEditorMap: Record<'status' | 'priority', AnyComponent | undefined> = {
+export const issuesGroupEditorMap: Record<'status' | 'priority' | 'project', AnyComponent | undefined> = {
   status: tracker.component.StatusEditor,
-  priority: tracker.component.PriorityEditor
+  priority: tracker.component.PriorityEditor,
+  project: tracker.component.ProjectEditor
 }
 
 export const getIssuesModificationDatePeriodTime = (period: IssuesDateModificationPeriod | null): number => {
@@ -204,6 +207,12 @@ export const getIssueFilterAssetsByType = (type: string): { icon: Asset, label: 
       return {
         icon: tracker.icon.PriorityHigh,
         label: tracker.string.Priority
+      }
+    }
+    case 'project': {
+      return {
+        icon: tracker.icon.Project,
+        label: tracker.string.Project
       }
     }
     default: {

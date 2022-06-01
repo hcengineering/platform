@@ -71,6 +71,7 @@ export enum IssuesGrouping {
   Status = 'status',
   Assignee = 'assignee',
   Priority = 'priority',
+  Project = 'project',
   NoGrouping = 'noGrouping'
 }
 

@@ -9,6 +9,7 @@ Platform:
 - Allow to define table columns order
 - Fix skills/labels selection and show real usage counter
 - Fix skills/labels activity
+- Project selector in issue list
 
 HR:
 
