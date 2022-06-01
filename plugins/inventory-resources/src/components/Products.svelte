@@ -14,23 +14,22 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createQuery, getClient } from '@anticrm/presentation'
   import ui, {
     Button,
     EditWithIcon,
+    eventToHTMLElement,
     Icon,
+    IconAdd,
     IconSearch,
     Label,
-    showPopup,
-    IconAdd,
-    eventToHTMLElement,
     Loading,
-    Tooltip
+    showPopup
   } from '@anticrm/ui'
-  import CreateProduct from './CreateProduct.svelte'
-  import inventory from '../plugin'
-  import { TableBrowser, ViewletSetting } from '@anticrm/view-resources'
-  import { createQuery, getClient } from '@anticrm/presentation'
   import view, { Viewlet, ViewletPreference } from '@anticrm/view'
+  import { TableBrowser, ViewletSettingButton } from '@anticrm/view-resources'
+  import inventory from '../plugin'
+  import CreateProduct from './CreateProduct.svelte'
 
   let search = ''
   $: resultQuery = search === '' ? {} : { $search: search }
@@ -89,17 +88,7 @@
     kind={'primary'}
     on:click={(ev) => showCreateDialog(ev)}
   />
-  {#if descr}
-    <Tooltip label={view.string.CustomizeView}>
-      <Button
-        icon={view.icon.Setting}
-        kind={'transparent'}
-        on:click={() => {
-          showPopup(ViewletSetting, { viewlet: descr })
-        }}
-      />
-    </Tooltip>
-  {/if}
+  <ViewletSettingButton viewlet={descr} />
 </div>
 
 {#if descr}

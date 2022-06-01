@@ -201,7 +201,7 @@ export function createModel (builder: Builder): void {
     editor: contact.component.PersonEditor
   })
 
-  builder.mixin(contact.class.Channel, core.class.Class, view.mixin.AttributePresenter, {
+  builder.mixin(contact.class.Channel, core.class.Class, view.mixin.CollectionPresenter, {
     presenter: contact.component.ChannelsPresenter
   })
 

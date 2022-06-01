@@ -14,19 +14,13 @@
 -->
 <script lang="ts">
   import core, { Doc, DocumentQuery, Ref } from '@anticrm/core'
-  import { createQuery } from '@anticrm/presentation'
+  import { createQuery, getClient } from '@anticrm/presentation'
   import { Vacancy } from '@anticrm/recruit'
-  import { Button, getCurrentLocation, Icon, IconAdd, Label, navigate, SearchEdit, showPopup } from '@anticrm/ui'
-  import { TableBrowser } from '@anticrm/view-resources'
+  import { Button, Icon, IconAdd, Label, Loading, SearchEdit, showPopup } from '@anticrm/ui'
+  import view, { BuildModelKey, Filter, Viewlet, ViewletPreference } from '@anticrm/view'
+  import { FilterButton, TableBrowser, ViewletSettingButton } from '@anticrm/view-resources'
   import recruit from '../plugin'
   import CreateVacancy from './CreateVacancy.svelte'
-
-  function action (vacancy: Ref<Vacancy>): void {
-    const loc = getCurrentLocation()
-    loc.path[2] = vacancy
-    loc.path.length = 3
-    navigate(loc)
-  }
 
   let search: string = ''
   let resultQuery: DocumentQuery<Doc> = {}
@@ -69,12 +63,82 @@
   const modifiedSorting = (a: Doc, b: Doc) =>
     (applications?.get(b._id as Ref<Vacancy>)?.modifiedOn ?? 0) -
       (applications?.get(a._id as Ref<Vacancy>)?.modifiedOn ?? 0) ?? 0
+
+  const replacedKeys: Map<string, BuildModelKey> = new Map<string, BuildModelKey>([
+    [
+      '@applications',
+      {
+        key: '@applications',
+        presenter: recruit.component.VacancyCountPresenter,
+        label: recruit.string.Applications,
+        props: { applications },
+        sortingKey: '@applications',
+        sortingFunction: applicationSorting
+      }
+    ],
+    [
+      '@applications.modifiedOn',
+      {
+        key: '',
+        presenter: recruit.component.VacancyModifiedPresenter,
+        label: core.string.Modified,
+        props: { applications },
+        sortingKey: 'modifiedOn',
+        sortingFunction: modifiedSorting
+      }
+    ]
+  ])
+
+  const client = getClient()
+  let filters: Filter[] = []
+
+  let descr: Viewlet | undefined
+  let loading = true
+
+  const preferenceQuery = createQuery()
+  let preference: ViewletPreference | undefined
+
+  client
+    .findOne<Viewlet>(view.class.Viewlet, {
+      attachTo: recruit.class.Vacancy,
+      descriptor: view.viewlet.Table
+    })
+    .then((res) => {
+      descr = res
+      if (res !== undefined) {
+        preferenceQuery.query(
+          view.class.ViewletPreference,
+          {
+            attachedTo: res._id
+          },
+          (res) => {
+            preference = res[0]
+            loading = false
+          },
+          { limit: 1 }
+        )
+      }
+    })
+
+  function createConfig (descr: Viewlet, preference: ViewletPreference | undefined): (string | BuildModelKey)[] {
+    const base = preference?.config ?? descr.config
+    const result: (string | BuildModelKey)[] = []
+    for (const key of base) {
+      if (typeof key === 'string') {
+        result.push(replacedKeys.get(key) ?? key)
+      } else {
+        result.push(replacedKeys.get(key.key) ?? key)
+      }
+    }
+    return result
+  }
 </script>
 
 <div class="ac-header full">
   <div class="ac-header__wrap-title">
     <div class="ac-header__icon"><Icon icon={recruit.icon.Vacancy} size={'small'} /></div>
     <span class="ac-header__title"><Label label={recruit.string.Vacancies} /></span>
+    <div class="ml-4"><FilterButton _class={recruit.mixin.Candidate} bind:filters /></div>
   </div>
   <SearchEdit
     bind:value={search}
@@ -83,40 +147,22 @@
     }}
   />
   <Button icon={IconAdd} label={recruit.string.VacancyCreateLabel} kind={'primary'} on:click={showCreateDialog} />
+  <ViewletSettingButton viewlet={descr} />
 </div>
-<TableBrowser
-  _class={recruit.class.Vacancy}
-  config={[
-    {
-      key: '',
-      presenter: recruit.component.VacancyItemPresenter,
-      label: recruit.string.Vacancy,
-      sortingKey: 'name',
-      props: { action }
-    },
-    {
-      key: '',
-      presenter: recruit.component.VacancyCountPresenter,
-      label: recruit.string.Applications,
-      props: { applications },
-      sortingKey: '@applications',
-      sortingFunction: applicationSorting
-    },
-    '$lookup.company',
-    'location',
-    'description',
-    {
-      key: '',
-      presenter: recruit.component.VacancyModifiedPresenter,
-      label: core.string.Modified,
-      props: { applications },
-      sortingKey: 'modifiedOn',
-      sortingFunction: modifiedSorting
-    }
-  ]}
-  query={{
-    ...resultQuery,
-    archived: false
-  }}
-  showNotification
-/>
+{#if descr}
+  {#if loading}
+    <Loading />
+  {:else}
+    <TableBrowser
+      _class={recruit.class.Vacancy}
+      config={createConfig(descr, preference)}
+      options={descr.options}
+      query={{
+        ...resultQuery,
+        archived: false
+      }}
+      bind:filters
+      showNotification
+    />
+  {/if}
+{/if}

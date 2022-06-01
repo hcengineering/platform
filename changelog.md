@@ -10,6 +10,10 @@ Platform:
 - Fix skills/labels selection and show real usage counter
 - Fix skills/labels activity
 
+HR:
+
+- Allow to configure vacancy table
+
 ## 0.6.22
 
 Platform:

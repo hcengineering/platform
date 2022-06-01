@@ -17,14 +17,14 @@
   import core, { WithLookup } from '@anticrm/core'
   import { IntlString } from '@anticrm/platform'
   import presentation, { createQuery, getClient } from '@anticrm/presentation'
-  import { AnyComponent, showPanel, Button, Icon, SearchEdit, showPopup, Tooltip, IconAdd } from '@anticrm/ui'
+  import { AnyComponent, Button, Icon, IconAdd, SearchEdit, showPanel, showPopup, Tooltip } from '@anticrm/ui'
+  import type { Filter } from '@anticrm/view'
   import view, { Viewlet } from '@anticrm/view'
-  import { ViewletSetting } from '@anticrm/view-resources'
+  import { ViewletSettingButton } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../plugin'
   import { classIcon } from '../utils'
   import Header from './Header.svelte'
-  import type { Filter } from '@anticrm/view'
 
   export let spaceId: Ref<Space> | undefined
   export let createItemDialog: AnyComponent | undefined
@@ -115,16 +115,6 @@
     {#if createItemDialog}
       <Button icon={IconAdd} label={createItemLabel} kind={'primary'} on:click={(ev) => showCreateDialog(ev)} />
     {/if}
-    {#if viewlet}
-      <Tooltip label={view.string.CustomizeView}>
-        <Button
-          icon={view.icon.Setting}
-          kind={'transparent'}
-          on:click={() => {
-            showPopup(ViewletSetting, { viewlet })
-          }}
-        />
-      </Tooltip>
-    {/if}
+    <ViewletSettingButton {viewlet} />
   {/if}
 </div>

@@ -134,10 +134,6 @@ export function createModel (builder: Builder): void {
     }
   })
 
-  builder.mixin(core.class.Space, core.class.Class, view.mixin.AttributePresenter, {
-    presenter: recruit.component.VacancyItemPresenter
-  })
-
   builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.CollectionEditor, {
     editor: recruit.component.Applications
   })
@@ -267,6 +263,26 @@ export function createModel (builder: Builder): void {
       '$lookup.channels'
     ],
     hiddenKeys: ['name']
+  })
+
+  builder.createDoc(view.class.Viewlet, core.space.Model, {
+    attachTo: recruit.class.Vacancy,
+    descriptor: view.viewlet.Table,
+    config: [
+      '',
+      {
+        key: '@applications',
+        label: recruit.string.Applications
+      },
+      '$lookup.company',
+      'location',
+      'description',
+      {
+        key: '@applications.modifiedOn',
+        label: core.string.Modified
+      }
+    ],
+    hiddenKeys: ['name', 'space', 'modifiedOn']
   })
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {

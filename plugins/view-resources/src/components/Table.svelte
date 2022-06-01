@@ -43,7 +43,7 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  $: lookup = buildConfigLookup(hierarchy, _class, config)
+  $: lookup = options?.lookup ?? buildConfigLookup(hierarchy, _class, config)
 
   let sortKey = 'modifiedOn'
   let sortOrder = SortingOrder.Descending

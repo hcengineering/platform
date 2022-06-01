@@ -16,10 +16,10 @@
 <script lang="ts">
   import { Doc, DocumentQuery } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
-  import { Tooltip, Button, Icon, IconAdd, Label, Loading, SearchEdit, showPopup } from '@anticrm/ui'
-  import view, { Viewlet, ViewletPreference } from '@anticrm/view'
+  import { Button, Icon, IconAdd, Label, Loading, SearchEdit, showPopup } from '@anticrm/ui'
   import type { Filter } from '@anticrm/view'
-  import { ActionContext, TableBrowser, ViewletSetting, FilterButton } from '@anticrm/view-resources'
+  import view, { Viewlet, ViewletPreference } from '@anticrm/view'
+  import { ActionContext, FilterButton, TableBrowser, ViewletSettingButton } from '@anticrm/view-resources'
   import contact from '../plugin'
   import CreateContact from './CreateContact.svelte'
 
@@ -90,17 +90,7 @@
       kind={'primary'}
       on:click={(ev) => showCreateDialog(ev)}
     />
-    {#if viewlet}
-      <Tooltip label={view.string.CustomizeView}>
-        <Button
-          icon={view.icon.Setting}
-          kind={'transparent'}
-          on:click={() => {
-            showPopup(ViewletSetting, { viewlet })
-          }}
-        />
-      </Tooltip>
-    {/if}
+    <ViewletSettingButton {viewlet} />
   </div>
 
   {#if viewlet}

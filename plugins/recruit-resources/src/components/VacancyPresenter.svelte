@@ -15,23 +15,54 @@
 -->
 <script lang="ts">
   import type { Vacancy } from '@anticrm/recruit'
-  import { Icon } from '@anticrm/ui'
-  import { getPanelURI } from '@anticrm/ui/src/panelup'
+  import {
+    ActionIcon,
+    getCurrentLocation,
+    Icon,
+    IconEdit,
+    Location,
+    locationToUrl,
+    navigate,
+    showPanel
+  } from '@anticrm/ui'
   import recruit from '../plugin'
 
   export let value: Vacancy
   export let inline: boolean = false
+
+  function editVacancy (): void {
+    showPanel(recruit.component.EditVacancy, value._id, value._class, 'content')
+  }
+
+  function getLoc (): Location {
+    const loc = getCurrentLocation()
+    loc.path[2] = value._id
+    loc.path.length = 3
+    return loc
+  }
+
+  function getLink (): string {
+    const loc = getLoc()
+    return document.location.origin + locationToUrl(loc)
+  }
 </script>
 
 {#if value}
-  <a
-    class="flex-presenter"
-    class:inline-presenter={inline}
-    href="#{getPanelURI(recruit.component.EditVacancy, value._id, value._class, 'content')}"
-  >
+  <div class="flex-presenter" class:inline-presenter={inline}>
     <div class="icon">
       <Icon icon={recruit.icon.Vacancy} size={'small'} />
     </div>
-    <span class="label">{value.name}</span>
-  </a>
+    <a
+      on:click|preventDefault={(e) => {
+        navigate(getLoc())
+        e.preventDefault()
+      }}
+      href={getLink()}
+    >
+      <span class="label">{value.name}</span>
+    </a>
+    <div class="action">
+      <ActionIcon label={recruit.string.Edit} size={'small'} icon={IconEdit} action={editVacancy} />
+    </div>
+  </div>
 {/if}
