@@ -18,6 +18,7 @@
   import { showPopup } from '@anticrm/ui'
   import StatusFilterMenuSection from './StatusFilterMenuSection.svelte'
   import PriorityFilterMenuSection from './PriorityFilterMenuSection.svelte'
+  import ProjectFilterMenuSection from './ProjectFilterMenuSection.svelte'
   import FilterMenu from '../FilterMenu.svelte'
   import {
     defaultPriorities,
@@ -40,6 +41,7 @@
   $: defaultStatusIds = defaultStatuses.map((x) => x._id)
   $: groupedByStatus = getGroupedIssues('status', issues, defaultStatusIds)
   $: groupedByPriority = getGroupedIssues('priority', issues, defaultPriorities)
+  $: groupedByProject = getGroupedIssues('project', issues)
 
   const handleStatusFilterMenuSectionOpened = (event: MouseEvent | KeyboardEvent) => {
     const statusGroups: { [key: string]: number } = {}
@@ -82,6 +84,25 @@
     )
   }
 
+  const handleProjectFilterMenuSectionOpened = (event: MouseEvent | KeyboardEvent) => {
+    const projectGroups: { [key: string]: number } = {}
+
+    for (const [project, value] of Object.entries(groupedByProject)) {
+      projectGroups[project] = value?.length ?? 0
+    }
+    showPopup(
+      ProjectFilterMenuSection,
+      {
+        groups: projectGroups,
+        selectedElements: currentFilterQuery?.project?.[currentFilterMode] ?? [],
+        index,
+        onUpdate,
+        onBack
+      },
+      targetHtml
+    )
+  }
+
   const actions: FilterAction[] = [
     {
       ...getIssueFilterAssetsByType('status'),
@@ -90,6 +111,10 @@
     {
       ...getIssueFilterAssetsByType('priority'),
       onSelect: handlePriorityFilterMenuSectionOpened
+    },
+    {
+      ...getIssueFilterAssetsByType('project'),
+      onSelect: handleProjectFilterMenuSectionOpened
     }
   ]
 </script>
