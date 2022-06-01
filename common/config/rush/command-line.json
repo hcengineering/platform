@@ -183,7 +183,7 @@
       "description": "Lint",
       "enableParallelism": true,
       "incremental": true,
-      "ignoreDependencyOrder": false,
+      "ignoreDependencyOrder": true,
       "ignoreMissingScript": true
     },
     {

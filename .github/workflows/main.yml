@@ -266,6 +266,8 @@ jobs:
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
 
+      - name: Installing...
+        run: node common/scripts/install-run-rush.js install
       - name: Bundle
         run: node common/scripts/install-run-rush.js bundle --verbose
       - name: Docker build
@@ -321,6 +323,8 @@ jobs:
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
 
+      - name: Installing...
+        run: node common/scripts/install-run-rush.js install
       - name: Setting model version from git release...
         run: node common/scripts/install-run-rush.js bump-model-version
       - name: Build, to include new model version
