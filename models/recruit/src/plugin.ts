@@ -66,7 +66,6 @@ export default mergeIds(recruitId, recruit, {
     EditApplication: '' as AnyComponent,
     TemplatesIcon: '' as AnyComponent,
     Applications: '' as AnyComponent,
-    Candidates: '' as AnyComponent,
     SkillsView: '' as AnyComponent,
     Vacancies: '' as AnyComponent,
 
@@ -77,7 +76,6 @@ export default mergeIds(recruitId, recruit, {
     ReviewPresenter: '' as AnyComponent,
     Opinions: '' as AnyComponent,
     OpinionPresenter: '' as AnyComponent,
-    ApplicationsView: '' as AnyComponent,
     NewCandidateHeader: '' as AnyComponent
   },
   template: {

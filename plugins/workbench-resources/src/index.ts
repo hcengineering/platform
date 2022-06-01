@@ -19,6 +19,7 @@ import ApplicationPresenter from './components/ApplicationPresenter.svelte'
 import Archive from './components/Archive.svelte'
 import SpacePanel from './components/navigator/SpacePanel.svelte'
 import SpaceBrowser from './components/SpaceBrowser.svelte'
+import SpecialView from './components/SpecialView.svelte'
 import WorkbenchApp from './components/WorkbenchApp.svelte'
 import { doNavigate } from './utils'
 
@@ -32,6 +33,7 @@ export default async (): Promise<Resources> => ({
     ApplicationPresenter,
     Archive,
     SpacePanel,
+    SpecialView,
     SpaceBrowser
   },
   function: {

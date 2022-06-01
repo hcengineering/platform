@@ -121,7 +121,14 @@ export function createModel (builder: Builder): void {
             id: 'Products',
             label: inventory.string.Products,
             icon: inventory.icon.Products,
-            component: inventory.component.Products
+            component: workbench.component.SpecialView,
+            componentProps: {
+              _class: inventory.class.Product,
+              icon: inventory.icon.Products,
+              label: inventory.string.Products,
+              createLabel: inventory.string.ProductCreateLabel,
+              createComponent: inventory.component.CreateProduct
+            }
           }
         ],
         spaces: []

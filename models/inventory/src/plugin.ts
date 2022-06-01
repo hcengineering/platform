@@ -33,7 +33,6 @@ export default mergeIds(inventoryId, inventory, {
   },
   component: {
     Categories: '' as AnyComponent,
-    Products: '' as AnyComponent,
     CreateProduct: '' as AnyComponent,
     EditProduct: '' as AnyComponent,
     CategoryPresenter: '' as AnyComponent,

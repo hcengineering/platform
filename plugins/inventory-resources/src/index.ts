@@ -22,9 +22,9 @@ import CategoryPresenter from './components/CategoryPresenter.svelte'
 import CreateCategory from './components/CreateCategory.svelte'
 import EditProduct from './components/EditProduct.svelte'
 import ProductPresenter from './components/ProductPresenter.svelte'
-import Products from './components/Products.svelte'
 import VariantPresenter from './components/VariantPresenter.svelte'
 import Variants from './components/Variants.svelte'
+import CreateProduct from './components/CreateProduct.svelte'
 
 async function createSubcategory (object: Doc): Promise<void> {
   showPopup(CreateCategory, { attachedTo: object._id })
@@ -37,10 +37,10 @@ export default async (): Promise<Resources> => ({
   component: {
     Categories,
     CategoryPresenter,
-    Products,
     ProductPresenter,
     EditProduct,
     Variants,
-    VariantPresenter
+    VariantPresenter,
+    CreateProduct
   }
 })
