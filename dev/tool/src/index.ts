@@ -28,12 +28,12 @@ import {
   upgradeWorkspace
 } from '@anticrm/account'
 import { setMetadata } from '@anticrm/platform'
+import { backup, backupList, createFileBackupStorage, createMinioBackupStorage, restore } from '@anticrm/server-backup'
 import { decodeToken, generateToken } from '@anticrm/server-token'
 import toolPlugin, { prepareTools, version } from '@anticrm/server-tool'
 import { program } from 'commander'
 import { Db, MongoClient } from 'mongodb'
 import { exit } from 'process'
-import { backupWorkspace } from './backup'
 import { rebuildElastic } from './elastic'
 import { importXml } from './importer'
 import { updateCandidates } from './recruit'
@@ -186,10 +186,49 @@ program
   })
 
 program
-  .command('backup-workspace <workspace> <dirName>')
+  .command('backup <dirName> <workspace>')
   .description('dump workspace transactions and minio resources')
-  .action(async (workspace, dirName, cmd) => {
-    return await backupWorkspace(transactorUrl, workspace, dirName)
+  .action(async (dirName, workspace, cmd) => {
+    const storage = await createFileBackupStorage(dirName)
+    return await backup(transactorUrl, workspace, storage)
+  })
+
+program
+  .command('backup-restore <dirName> <workspace> [date]')
+  .description('dump workspace transactions and minio resources')
+  .action(async (dirName, workspace, date, cmd) => {
+    const storage = await createFileBackupStorage(dirName)
+    return await restore(transactorUrl, workspace, storage, parseInt(date ?? '-1'))
+  })
+
+program
+  .command('backup-list <dirName>')
+  .description('list snaphost ids for backup')
+  .action(async (dirName, cmd) => {
+    const storage = await createFileBackupStorage(dirName)
+    return await backupList(storage)
+  })
+
+program
+  .command('backup-s3 <bucketName> <dirName> <workspace>')
+  .description('dump workspace transactions and minio resources')
+  .action(async (bucketName, dirName, workspace, cmd) => {
+    const storage = await createMinioBackupStorage(minio, bucketName, dirName)
+    return await backup(transactorUrl, workspace, storage)
+  })
+program
+  .command('backup-s3-restore <bucketName>, <dirName> <workspace> [date]')
+  .description('dump workspace transactions and minio resources')
+  .action(async (bucketName, dirName, workspace, date, cmd) => {
+    const storage = await createMinioBackupStorage(minio, bucketName, dirName)
+    return await restore(transactorUrl, workspace, storage, parseInt(date ?? '-1'))
+  })
+program
+  .command('backup-s3-list <bucketName> <dirName>')
+  .description('list snaphost ids for backup')
+  .action(async (bucketName, dirName, cmd) => {
+    const storage = await createMinioBackupStorage(minio, bucketName, dirName)
+    return await backupList(storage)
   })
 
 program

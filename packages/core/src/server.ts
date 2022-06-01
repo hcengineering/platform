@@ -42,7 +42,16 @@ export interface StorageIterator {
 export interface LowLevelStorage {
   // Low level streaming API to retrieve information
   find: (domain: Domain) => StorageIterator
+
+  // Load passed documents from domain
   load: (domain: Domain, docs: Ref<Doc>[]) => Promise<Doc[]>
+
+  // Upload new versions of documents
+  // docs - new/updated version of documents.
+  upload: (domain: Domain, docs: Doc[]) => Promise<void>
+
+  // Remove a list of documents.
+  clean: (domain: Domain, docs: Ref<Doc>[]) => Promise<void>
 }
 /**
  * @public

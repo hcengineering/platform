@@ -46,9 +46,8 @@ import core, {
 } from '@anticrm/core'
 import type { DbAdapter, TxAdapter } from '@anticrm/server-core'
 import { Collection, Db, Document, Filter, MongoClient, Sort } from 'mongodb'
-import { getMongoClient } from './utils'
-
 import { createHash } from 'node:crypto'
+import { getMongoClient } from './utils'
 
 function translateDoc (doc: Doc): Document {
   return doc as Document
@@ -456,6 +455,20 @@ abstract class MongoAdapterBase extends TxProcessor {
       .collection(domain)
       .find<Doc>({ _id: { $in: docs } })
       .toArray()
+  }
+
+  async upload (domain: Domain, docs: Doc[]): Promise<void> {
+    const coll = this.db.collection(domain)
+
+    const docMap = new Map(docs.map((it) => [it._id, it]))
+
+    // remove old and insert new ones
+    await coll.deleteMany({ _id: { $in: Array.from(docMap.keys()) } })
+    await coll.insertMany(Array.from(docMap.values()) as Document[])
+  }
+
+  async clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {
+    await this.db.collection(domain).deleteMany({ _id: { $in: docs } })
   }
 }
 

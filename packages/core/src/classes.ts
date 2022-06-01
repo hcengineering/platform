@@ -255,6 +255,12 @@ export const DOMAIN_TRANSIENT = 'transient' as Domain
  */
 export const DOMAIN_BLOB = 'blob' as Domain
 
+/**
+ * Special domain to access s3 blob data.
+ * @public
+ */
+export const DOMAIN_FULLTEXT_BLOB = 'fulltext-blob' as Domain
+
 // S P A C E
 
 /**
@@ -300,4 +306,12 @@ export interface BlobData extends Doc {
   size: number
   type: string
   base64Data: string // base64 encoded data
+}
+
+/**
+ * Blob data from s3 storage
+ * @public
+ */
+export interface FullTextData extends Doc {
+  data: any
 }

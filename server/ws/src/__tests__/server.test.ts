@@ -73,7 +73,9 @@ describe('server', () => {
         next: async () => undefined,
         close: async () => {}
       }),
-      load: async (domain: Domain, docs: Ref<Doc>[]) => []
+      load: async (domain: Domain, docs: Ref<Doc>[]) => [],
+      upload: async (domain: Domain, docs: Doc[]) => {},
+      clean: async (domain: Domain, docs: Ref<Doc>[]) => {}
     }),
     (token, pipeline, broadcast) => new ClientSession(broadcast, token, pipeline),
     3333

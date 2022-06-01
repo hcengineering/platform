@@ -131,6 +131,32 @@ class MinioBlobAdapter implements DbAdapter {
     }
     return result
   }
+
+  async upload (domain: Domain, docs: Doc[]): Promise<void> {
+    // Find documents to be updated
+    for (const d of docs) {
+      if (d._class !== core.class.BlobData) {
+        // Skip non blob data documents
+        continue
+      }
+      const blob = d as unknown as BlobData
+      // Remove existing document
+      try {
+        await this.client.removeObject(this.db, blob._id)
+      } catch (ee) {
+        // ignore error
+      }
+      const buffer = Buffer.from(blob.base64Data, 'base64')
+      await this.client.putObject(this.db, blob._id, buffer, buffer.length, {
+        'Content-Type': blob.type,
+        lastModified: new Date(blob.modifiedOn)
+      })
+    }
+  }
+
+  async clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {
+    await this.client.removeObjects(this.db, docs)
+  }
 }
 
 /**

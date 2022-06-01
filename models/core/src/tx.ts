@@ -47,6 +47,9 @@ export class TTx extends TDoc implements Tx {
   objectSpace!: Ref<Space>
 }
 
+@Model(core.class.TxModelUpgrade, core.class.Tx, DOMAIN_TX)
+export class TTxModelUpgrade extends TTx {}
+
 @Model(core.class.TxCUD, core.class.Tx)
 export class TTxCUD<T extends Doc> extends TTx implements TxCUD<T> {
   @Index(IndexKind.Indexed)

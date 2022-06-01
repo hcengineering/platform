@@ -22,7 +22,9 @@ export async function connect (title: string): Promise<Client | undefined> {
   }
 
   const getClient = await getResource(client.function.GetClient)
-  const instance = await getClient(token, endpoint)
+  const instance = await getClient(token, endpoint, () => {
+    location.reload()
+  })
   console.log('logging in as', email)
 
   const me = await instance.findOne(contact.class.EmployeeAccount, { email })

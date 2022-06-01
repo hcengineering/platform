@@ -31,7 +31,7 @@
     "mongodb": "^4.1.1",
     "@anticrm/platform": "~0.6.6",
     "@anticrm/model-all": "~0.6.0",
-    "minio": "~7.0.26",
+    "minio": "^7.0.26",
     "@anticrm/core": "~0.6.16",
     "@anticrm/contact": "~0.6.5",
     "@anticrm/client-resources": "~0.6.4",

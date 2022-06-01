@@ -26,6 +26,7 @@ import type {
   Doc,
   Enum,
   EnumOf,
+  FullTextData,
   Interface,
   Obj,
   PluginConfiguration,
@@ -44,6 +45,7 @@ import type {
   TxCreateDoc,
   TxCUD,
   TxMixin,
+  TxModelUpgrade,
   TxPutBag,
   TxRemoveDoc,
   TxUpdateDoc
@@ -64,6 +66,7 @@ export default plugin(coreId, {
     Interface: '' as Ref<Class<Interface<Doc>>>,
     Attribute: '' as Ref<Class<AnyAttribute>>,
     Tx: '' as Ref<Class<Tx>>,
+    TxModelUpgrade: '' as Ref<Class<TxModelUpgrade>>,
     TxBulkWrite: '' as Ref<Class<TxBulkWrite>>,
     TxCUD: '' as Ref<Class<TxCUD<Doc>>>,
     TxCreateDoc: '' as Ref<Class<TxCreateDoc<Doc>>>,
@@ -91,7 +94,8 @@ export default plugin(coreId, {
     Version: '' as Ref<Class<Version>>,
     PluginConfiguration: '' as Ref<Class<PluginConfiguration>>,
     UserStatus: '' as Ref<Class<UserStatus>>,
-    BlobData: '' as Ref<Class<BlobData>>
+    BlobData: '' as Ref<Class<BlobData>>,
+    FulltextData: '' as Ref<Class<FullTextData>>
   },
   space: {
     Tx: '' as Ref<Space>,

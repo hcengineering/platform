@@ -394,7 +394,7 @@ export async function assignWorkspace (db: Db, email: string, workspace: string)
 }
 
 async function createEmployeeAccount (account: Account, workspace: string): Promise<void> {
-  const connection = await connect(getTransactor(), workspace, false, account.email)
+  const connection = await connect(getTransactor(), workspace, account.email)
   try {
     const ops = new TxOperations(connection, core.account.System)
 
@@ -472,7 +472,7 @@ export async function changeName (db: Db, token: string, first: string, last: st
 }
 
 async function updateEmployeeAccount (account: Account, workspace: string): Promise<void> {
-  const connection = await connect(getTransactor(), workspace, false, account.email)
+  const connection = await connect(getTransactor(), workspace, account.email)
   try {
     const ops = new TxOperations(connection, core.account.System)
 

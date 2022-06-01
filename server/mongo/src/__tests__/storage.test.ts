@@ -76,6 +76,10 @@ class NullDbAdapter implements DbAdapter {
   async load (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
     return []
   }
+
+  async upload (domain: Domain, docs: Doc[]): Promise<void> {}
+
+  async clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {}
 }
 
 async function createNullAdapter (hierarchy: Hierarchy, url: string, db: string, modelDb: ModelDb): Promise<DbAdapter> {
@@ -185,7 +189,9 @@ describe('mongo operations', () => {
         close: async () => {},
         loadChunk: async (domain): Promise<DocChunk> => await Promise.reject(new Error('unsupported')),
         closeChunk: async (idx) => {},
-        loadDocs: async (domain: Domain, docs: Ref<Doc>[]) => []
+        loadDocs: async (domain: Domain, docs: Ref<Doc>[]) => [],
+        upload: async (domain: Domain, docs: Doc[]) => {},
+        clean: async (domain: Domain, docs: Ref<Doc>[]) => {}
       }
       return st
     })

@@ -39,8 +39,7 @@
     "@types/ws": "^8.2.1",
     "@types/xml2js": "~0.4.9",
     "@types/mime-types": "~2.1.1",
-    "@types/request": "~2.48.8",
-    "@types/tar-stream": "~2.2.2"
+    "@types/request": "~2.48.8"    
   },
   "dependencies": {
     "mongodb": "^4.1.1",
@@ -48,7 +47,7 @@
     "@anticrm/account": "~0.6.0",
     "@anticrm/core": "~0.6.16",
     "@anticrm/contact": "~0.6.5",
-    "minio": "~7.0.26",
+    "minio": "^7.0.26",
     "@anticrm/model-all": "~0.6.0",
     "@anticrm/model-telegram": "~0.6.0",
     "@anticrm/telegram": "~0.6.2",
@@ -105,6 +104,6 @@
     "@anticrm/rekoni": "~0.6.0",
     "request": "~2.88.2",
     "@anticrm/tags": "~0.6.2",
-    "tar-stream": "~2.2.0"
+    "@anticrm/server-backup": "~0.6.0"
   }
 }

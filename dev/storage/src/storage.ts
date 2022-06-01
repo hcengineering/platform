@@ -70,6 +70,10 @@ class InMemoryTxAdapter implements TxAdapter {
   async load (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
     return []
   }
+
+  async upload (domain: Domain, docs: Doc[]): Promise<void> {}
+
+  async clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {}
 }
 
 /**
