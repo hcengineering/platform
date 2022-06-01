@@ -4,6 +4,8 @@
 
 ## Checklist
 
+* [ ] - UI test added to added/changed functionality?
+* [ ] - Screenshot is added to PR if applicable ?
 * [ ] - Does the code work? Check whether function and logic are correct.
 * [ ] - Does Changelog.md is updated with changes?
 * [ ] - Does the translations are up to date?
