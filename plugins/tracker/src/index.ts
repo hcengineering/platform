@@ -107,7 +107,7 @@ export interface Issue extends AttachedDoc {
   project: Ref<Project> | null
 
   // For subtasks
-  subIssues?: number
+  subIssues: number
   blockedBy?: Ref<Issue>[]
   relatedIssue?: Ref<Issue>[]
 

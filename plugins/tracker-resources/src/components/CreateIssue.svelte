@@ -134,6 +134,7 @@
       priority: object.priority,
       rank: calcRank(lastOne, undefined),
       comments: 0,
+      subIssues: 0,
       dueDate: object.dueDate
     }
 
