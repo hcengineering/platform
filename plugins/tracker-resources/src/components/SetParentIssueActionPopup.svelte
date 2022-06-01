@@ -50,10 +50,7 @@
         value.attachedTo,
         value.attachedToClass,
         'subIssues',
-        {
-          attachedTo: parentIssue === null ? tracker.ids.NoParent : parentIssue._id,
-          attachedToClass: parentIssue === null ? tracker.class.Issue : parentIssue._class
-        }
+        { attachedTo: parentIssue === null ? tracker.ids.NoParent : parentIssue._id }
       )
     }
 
