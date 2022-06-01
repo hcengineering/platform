@@ -33,7 +33,8 @@ export type {
   PopupPositionElement,
   ButtonKind,
   ButtonSize,
-  IconSize
+  IconSize,
+  TabItem
 } from './types'
 // export { applicationShortcutKey } from './utils'
 export { getCurrentLocation, locationToUrl, navigate, location } from './location'
@@ -93,6 +94,7 @@ export { default as Menu } from './components/Menu.svelte'
 export { default as TimeShiftPicker } from './components/TimeShiftPicker.svelte'
 export { default as ErrorPresenter } from './components/ErrorPresenter.svelte'
 export { default as Scroller } from './components/Scroller.svelte'
+export { default as TabList } from './components/TabList.svelte'
 
 export { default as IconAdd } from './components/icons/Add.svelte'
 export { default as IconBack } from './components/icons/Back.svelte'

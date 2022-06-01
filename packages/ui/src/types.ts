@@ -64,6 +64,14 @@ export interface Tab {
 
 export type TabModel = Tab[]
 
+export interface TabItem {
+  id: string
+  label?: string
+  labelIntl?: IntlString
+  icon?: Asset | AnySvelteComponent
+  color?: string
+}
+
 export type ButtonKind = 'primary' | 'secondary' | 'no-border' | 'transparent' | 'link' | 'link-bordered' | 'dangerous'
 export type ButtonSize = 'small' | 'medium' | 'large' | 'x-large'
 export type ButtonShape = 'rectangle' | 'rectangle-left' | 'rectangle-right' | 'circle' | 'round' | undefined

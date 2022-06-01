@@ -270,10 +270,9 @@
   display: flex;
   align-items: center;
   flex: 1 0;
-  padding: 0.125rem 0;
   min-width: 0;
 
-  &::-webkit-scrollbar:horizontal { height: 0.125rem; }
+  &::-webkit-scrollbar:horizontal { height: 0; }
   &::-webkit-scrollbar-track { margin: 0.25rem; }
   &::-webkit-scrollbar-thumb { background-color: var(--theme-bg-accent-color); }
 
@@ -299,15 +298,19 @@
 
     &__back {
       width: auto;
-      height: 2.25rem;
+      padding: 1px 0.5px;
+      height: calc(1.5rem + 2px);
+      // height: 1.5rem;
     }
     &__element {
-      fill: var(--theme-button-bg-enabled);
-      stroke: var(--theme-bg-accent-color);
+      fill: var(--accent-bg-color);
+      stroke: var(--divider-color);
       stroke-linecap: round;
       stroke-linejoin: round;
+
+      &:hover { fill: var(--button-bg-color); }
     }
-    &__selected { fill: red; }
+    &__selected { fill: var(--button-bg-hover); }
 
     .asb-label__container {
       position: absolute;
@@ -315,11 +318,19 @@
       justify-content: center;
       align-items: center;
       top: 0;
-      left: 1rem;
-      right: 1rem;
+      left: .5rem;
+      right: .5rem;
       min-width: 0;
-      width: calc(100% - 2rem);
+      width: calc(100% - 1rem);
       height: 100%;
+      font-weight: 500;
+      font-size: 0.8125rem;
+      color: var(--dark-color);
+      pointer-events: none;
+
+      &.selected {
+        color: var(--caption-color);
+      }
     }
   }
 }
