@@ -28,7 +28,7 @@
 
   const getSelected = (id: string): boolean => {
     let res: boolean = false
-    if (multiselect && Array.isArray(selected)) res = selected.filter(it => it === id).length > 0 ? true : false
+    if (multiselect && Array.isArray(selected)) res = selected.filter((it) => it === id).length > 0
     else if (selected === id) res = true
     return res
   }
@@ -43,7 +43,7 @@
         on:click={() => {
           if (multiselect) {
             if (Array.isArray(selected)) {
-              if (selected.includes(item.id)) selected = selected.filter(it => it !== item.id)
+              if (selected.includes(item.id)) selected = selected.filter((it) => it !== item.id)
               else selected.push(item.id)
             }
           } else selected = item.id

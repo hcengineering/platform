@@ -17,7 +17,7 @@
   import { Class, DocumentQuery, FindOptions, Ref, SortingOrder } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
   import { DoneState, SpaceWithStates, State, Task } from '@anticrm/task'
-  import { Label, TabList } from '@anticrm/ui'
+  import { TabList } from '@anticrm/ui'
   import type { TabItem } from '@anticrm/ui'
   import { TableBrowser } from '@anticrm/view-resources'
   import task from '../plugin'
@@ -33,7 +33,7 @@
 
   let doneStatusesView: boolean = false
   let state: Ref<State> | undefined = undefined
-  let selectedDoneStates: Set<Ref<DoneState>> = new Set<Ref<DoneState>>()
+  const selectedDoneStates: Set<Ref<DoneState>> = new Set<Ref<DoneState>>()
   $: resConfig = updateConfig(config)
   let query = {}
   let doneStates: DoneState[] = []
@@ -59,7 +59,7 @@
     },
     (res) => {
       doneStates = res
-      itemsDS = doneStates.map(s => {
+      itemsDS = doneStates.map((s) => {
         return {
           id: s._id,
           label: s.title,
@@ -101,7 +101,7 @@
     if (selectedDoneStates.has(id)) selectedDoneStates.delete(id)
     else selectedDoneStates.add(id)
     if (selectedDS.length === 2 && selectedDS.includes('NoDoneState')) {
-      selectedDS = selectedDS.filter(s => s !== 'NoDoneState')
+      selectedDS = selectedDS.filter((s) => s !== 'NoDoneState')
     }
     if (selectedDS.length === 0) {
       selectedDS = ['NoDoneState']
@@ -122,8 +122,10 @@
 
 <div class="header">
   <TabList
-    items={[{ id: 'AllStates', labelIntl: task.string.AllStates },
-            { id: 'DoneStates', labelIntl: task.string.DoneStates }]}
+    items={[
+      { id: 'AllStates', labelIntl: task.string.AllStates },
+      { id: 'DoneStates', labelIntl: task.string.DoneStates }
+    ]}
     multiselect={false}
     on:select={(result) => {
       if (result.type === 'select') {
