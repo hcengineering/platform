@@ -179,7 +179,7 @@ function getKeyLookup<T extends Doc> (
     const index = key.indexOf('$lookup', lastIndex)
     if (index === -1) {
       if ((lookup as any)[attrib] === undefined) {
-        (lookup as any)[attrib] = lookupClass
+        ;(lookup as any)[attrib] = lookupClass
       }
     } else {
       let nested = Array.isArray((lookup as any)[attrib]) ? (lookup as any)[attrib][1] : {}
