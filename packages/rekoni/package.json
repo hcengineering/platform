@@ -26,7 +26,7 @@
     "prettier": "^2.4.1",
     "typescript": "^4.3.5",
     "@types/heft-jest": "^1.0.2",
-    "@rushstack/heft": "^0.44.13"
+    "@rushstack/heft": "^0.45.5"
   },
   "dependencies": {
     "@anticrm/platform": "~0.6.6",
