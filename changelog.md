@@ -14,6 +14,10 @@ HR:
 
 - Allow to configure vacancy table
 
+Leads:
+
+- Fix customer table leads column
+
 ## 0.6.22
 
 Platform:

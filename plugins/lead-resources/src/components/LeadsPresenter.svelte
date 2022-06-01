@@ -19,13 +19,14 @@
   import LeadsPopup from './LeadsPopup.svelte'
   import leads from '../plugin'
 
-  export let value: Customer
+  export let value: number
+  export let object: Customer
 </script>
 
-{#if value.leads && value.leads > 0}
-  <Tooltip label={leads.string.Leads} component={LeadsPopup} props={{ value }}>
+{#if value && value > 0}
+  <Tooltip label={leads.string.Leads} component={LeadsPopup} props={{ value: object }}>
     <div class="sm-tool-icon">
-      <span class="icon"><Icon icon={leads.icon.Lead} size={'small'} /></span>&nbsp;{value.leads}
+      <span class="icon"><Icon icon={leads.icon.Lead} size={'small'} /></span>&nbsp;{value}
     </div>
   </Tooltip>
 {/if}

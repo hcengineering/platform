@@ -127,13 +127,7 @@ export function createModel (builder: Builder): void {
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: lead.mixin.Customer,
     descriptor: view.viewlet.Table,
-    config: [
-      '',
-      '$lookup._class',
-      { key: 'leads', presenter: lead.component.LeadsPresenter, label: lead.string.Leads },
-      'modifiedOn',
-      '$lookup.channels'
-    ],
+    config: ['', '$lookup._class', 'leads', 'modifiedOn', '$lookup.channels'],
     hiddenKeys: ['name']
   })
 
@@ -174,6 +168,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(lead.class.Lead, core.class.Class, view.mixin.AttributePresenter, {
     presenter: lead.component.LeadPresenter
+  })
+
+  builder.mixin(lead.class.Lead, core.class.Class, view.mixin.CollectionPresenter, {
+    presenter: lead.component.LeadsPresenter
   })
 
   builder.mixin(lead.class.Lead, core.class.Class, view.mixin.CollectionEditor, {
