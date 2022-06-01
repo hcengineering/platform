@@ -81,6 +81,7 @@ export default mergeIds(chunterId, chunter, {
     LeaveChannel: '' as IntlString,
     ChannelBrowser: '' as IntlString,
     SavedItems: '' as IntlString,
-    AddMembersHeader: '' as IntlString
+    AddMembersHeader: '' as IntlString,
+    MessagesBrowser: '' as IntlString
   }
 })

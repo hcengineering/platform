@@ -81,6 +81,7 @@
                   space={object.space}
                   {onChange}
                   {focus}
+                  {object}
                 />
               </div>
             </div>
@@ -104,6 +105,7 @@
           space={object.space}
           {onChange}
           {focus}
+          {object}
         />
       {/if}
     {:else if showHeader}
@@ -121,6 +123,7 @@
               space={object.space}
               {onChange}
               {focus}
+              {object}
             />
           </div>
         </div>
@@ -141,6 +144,7 @@
             space={object.space}
             {onChange}
             {focus}
+            {object}
           />
         </div>
       {/if}
@@ -154,6 +158,7 @@
           space={object.space}
           {onChange}
           {focus}
+          {object}
         />
       </div>
     {/if}

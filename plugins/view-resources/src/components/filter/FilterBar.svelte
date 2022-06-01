@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Class, Doc, DocumentQuery, Ref } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
-  import { Button, eventToHTMLElement, IconAdd, Label, showPopup } from '@anticrm/ui'
+  import { Button, eventToHTMLElement, IconAdd, showPopup } from '@anticrm/ui'
   import { Filter } from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
   import view from '../../plugin'
@@ -30,8 +30,8 @@
   const hierarchy = client.getHierarchy()
   const dispatch = createEventDispatcher()
 
-  let maxIndex = filters ? filters.length : 0
-  let allFilters: boolean = true
+  let maxIndex = 1
+  // const allFilters: boolean = true
 
   function onChange (e: Filter | undefined) {
     if (e === undefined) return
@@ -143,7 +143,8 @@
       </div>
     </div>
 
-    <div class="buttons-group small-gap ml-4">
+    <!-- SAVE BUTTON -->
+    <!-- <div class="buttons-group small-gap ml-4">
       {#if filters.length > 1}
         <div class="flex-baseline">
           <span class="overflow-label">
@@ -161,7 +162,7 @@
         <div class="buttons-divider" />
       {/if}
       <Button icon={view.icon.Views} label={view.string.Save} size={'small'} width={'fit-content'} />
-    </div>
+    </div> -->
   </div>
 {/if}
 
@@ -191,24 +192,24 @@
       margin-bottom: 0.375rem;
     }
 
-    .filter-button {
-      display: flex;
-      align-items: baseline;
-      flex-shrink: 0;
-      padding: 0 0.375rem;
-      height: 1.5rem;
-      min-width: 1.5rem;
-      white-space: nowrap;
-      line-height: 150%;
-      color: var(--accent-color);
-      background-color: transparent;
-      border-radius: 0.25rem;
-      transition-duration: background-color 0.15s ease-in-out;
+    // .filter-button {
+    //   display: flex;
+    //   align-items: baseline;
+    //   flex-shrink: 0;
+    //   padding: 0 0.375rem;
+    //   height: 1.5rem;
+    //   min-width: 1.5rem;
+    //   white-space: nowrap;
+    //   line-height: 150%;
+    //   color: var(--accent-color);
+    //   background-color: transparent;
+    //   border-radius: 0.25rem;
+    //   transition-duration: background-color 0.15s ease-in-out;
 
-      &:hover {
-        color: var(--caption-color);
-        background-color: var(--noborder-bg-hover);
-      }
-    }
+    //   &:hover {
+    //     color: var(--caption-color);
+    //     background-color: var(--noborder-bg-hover);
+    //   }
+    // }
   }
 </style>

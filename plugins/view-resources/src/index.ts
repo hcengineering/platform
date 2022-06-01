@@ -38,12 +38,6 @@ import UpDownNavigator from './components/UpDownNavigator.svelte'
 import GithubPresenter from './components/linkPresenters/GithubPresenter.svelte'
 import YoutubePresenter from './components/linkPresenters/YoutubePresenter.svelte'
 import ActionsPopup from './components/ActionsPopup.svelte'
-import CreateAttribute from './components/CreateAttribute.svelte'
-import StringTypeEditor from './components/typeEditors/StringTypeEditor.svelte'
-import BooleanTypeEditor from './components/typeEditors/BooleanTypeEditor.svelte'
-import DateTypeEditor from './components/typeEditors/DateTypeEditor.svelte'
-import NumberTypeEditor from './components/typeEditors/NumberTypeEditor.svelte'
-import RefEditor from './components/typeEditors/RefEditor.svelte'
 import DocAttributeBar from './components/DocAttributeBar.svelte'
 import ViewletSetting from './components/ViewletSetting.svelte'
 import TableBrowser from './components/TableBrowser.svelte'
@@ -51,6 +45,11 @@ import ValueFilter from './components/filter/ValueFilter.svelte'
 import ObjectFilter from './components/filter/ObjectFilter.svelte'
 import TimestampFilter from './components/filter/TimestampFilter.svelte'
 import ClassPresenter from './components/ClassPresenter.svelte'
+import FilterBar from './components/filter/FilterBar.svelte'
+import EditBoxPopup from './components/EditBoxPopup.svelte'
+import BooleanTruePresenter from './components/BooleanTruePresenter.svelte'
+import EnumEditor from './components/EnumEditor.svelte'
+import ClassAttributeBar from './components/ClassAttributeBar.svelte'
 
 function PositionElementAlignment (e?: Event): PopupAlignment | undefined {
   return getEventPopupPositionElement(e)
@@ -76,7 +75,9 @@ export {
   Menu,
   SpacePresenter,
   UpDownNavigator,
-  ViewletSetting
+  ViewletSetting,
+  FilterBar,
+  ClassAttributeBar
 }
 
 export default async (): Promise<Resources> => ({
@@ -88,12 +89,6 @@ export default async (): Promise<Resources> => ({
     TimestampFilter,
     TableBrowser,
     ViewletSetting,
-    CreateAttribute,
-    StringTypeEditor,
-    BooleanTypeEditor,
-    NumberTypeEditor,
-    RefEditor,
-    DateTypeEditor,
     SpacePresenter,
     StringEditor,
     StringPresenter,
@@ -111,7 +106,10 @@ export default async (): Promise<Resources> => ({
     IntlStringPresenter,
     GithubPresenter,
     YoutubePresenter,
-    ActionsPopup
+    ActionsPopup,
+    StringEditorPopup: EditBoxPopup,
+    BooleanTruePresenter,
+    EnumEditor
   },
   popup: {
     PositionElementAlignment

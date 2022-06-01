@@ -14,16 +14,16 @@
 -->
 <script lang="ts">
   import { Class, Doc, Ref } from '@anticrm/core'
-  import presentation, { AttributesBar, getClient, KeyedAttribute } from '@anticrm/presentation'
-  import { Button, IconAdd, Label, showPopup, Tooltip } from '@anticrm/ui'
-  import view from '@anticrm/view'
-  import { createEventDispatcher } from 'svelte'
-  import { collectionsFilter, getFiltredKeys } from '../utils'
+  import { AttributesBar, getClient, KeyedAttribute } from '@anticrm/presentation'
+  import setting from '@anticrm/setting'
+  import { Button, getCurrentLocation, Label, navigate, Tooltip } from '@anticrm/ui'
+  import { getFiltredKeys, isCollectionAttr } from '../utils'
 
   export let object: Doc
   export let _class: Ref<Class<Doc>>
   export let to: Ref<Class<Doc>> | undefined
   export let ignoreKeys: string[] = []
+  export let allowedCollections: string[] = []
   export let vertical: boolean
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -33,14 +33,12 @@
 
   function updateKeys (ignoreKeys: string[]): void {
     const filtredKeys = getFiltredKeys(hierarchy, _class, ignoreKeys, to)
-    keys = collectionsFilter(hierarchy, filtredKeys, false)
+    keys = filtredKeys.filter((key) => !isCollectionAttr(hierarchy, key) || allowedCollections.includes(key.key))
   }
 
   $: updateKeys(ignoreKeys)
 
   $: label = hierarchy.getClass(_class).label
-
-  const dispatch = createEventDispatcher()
 </script>
 
 {#if vertical}
@@ -62,16 +60,19 @@
       </div>
     </div>
     <div class="tool">
-      <Tooltip label={presentation.string.Create}>
+      <Tooltip label={setting.string.ClassSetting}>
         <Button
-          icon={IconAdd}
+          icon={setting.icon.Setting}
           kind={'transparent'}
           on:click={(ev) => {
             ev.stopPropagation()
-            showPopup(view.component.CreateAttribute, { _class }, 'top', () => {
-              updateKeys(ignoreKeys)
-              dispatch('update')
-            })
+            const loc = getCurrentLocation()
+            loc.path[1] = setting.ids.SettingApp
+            loc.path[2] = 'classes'
+            loc.path.length = 3
+            loc.query = { _class }
+            loc.fragment = undefined
+            navigate(loc)
           }}
         />
       </Tooltip>

@@ -25,6 +25,7 @@ import core from '@anticrm/model-core'
 import task, { TSpaceWithStates, TTask } from '@anticrm/model-task'
 import view, { createAction } from '@anticrm/model-view'
 import workbench, { Application } from '@anticrm/model-workbench'
+import setting from '@anticrm/setting'
 import lead from './plugin'
 
 @Model(lead.class.Funnel, task.class.SpaceWithStates)
@@ -75,6 +76,8 @@ export function createModel (builder: Builder): void {
       createItemLabel: lead.string.LeadCreateLabel
     }
   })
+
+  builder.mixin(lead.class.Lead, core.class.Class, setting.mixin.Editable, {})
 
   builder.createDoc(
     workbench.class.Application,

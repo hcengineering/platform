@@ -77,18 +77,22 @@
 
   const dispatch = createEventDispatcher()
 
-  function getMixins (): void {
+  function getMixins (parentClass: Ref<Class<Doc>>, object: Doc): void {
+    if (object === undefined || parentClass === undefined) return
     const descendants = hierarchy.getDescendants(parentClass).map((p) => hierarchy.getClass(p))
     mixins = descendants.filter(
       (m) => m.kind === ClassifierKind.MIXIN && hierarchy.hasMixin(object, m._id) && !ignoreMixins.has(m._id)
     )
   }
 
+  $: getMixins(parentClass, object)
+
   let ignoreKeys: string[] = []
+  let allowedCollections: string[] = []
   let ignoreMixins: Set<Ref<Mixin<Doc>>> = new Set<Ref<Mixin<Doc>>>()
 
   async function updateKeys (): Promise<void> {
-    const keysMap = new Map(getFiltredKeys(hierarchy, object._class, ignoreKeys).map((p) => [p.attr._id, p]))
+    const keysMap = new Map(getFiltredKeys(hierarchy, realObjectClass, ignoreKeys).map((p) => [p.attr._id, p]))
     for (const m of mixins) {
       const mkeys = getFiltredKeys(hierarchy, m._id, ignoreKeys)
       for (const key of mkeys) {
@@ -120,7 +124,6 @@
   async function getEditorOrDefault (_class: Ref<Class<Doc>>): Promise<void> {
     parentClass = getParentClass(_class)
     mainEditor = await getEditor(_class)
-    getMixins()
     updateKeys()
   }
 
@@ -236,11 +239,11 @@
         {#if headerEditor !== undefined}
           <Component
             is={headerEditor}
-            props={{ object, keys, mixins, ignoreKeys, vertical: dir === 'column' }}
+            props={{ object, keys, mixins, ignoreKeys, vertical: dir === 'column', allowedCollections }}
             on:update={updateKeys}
           />
         {:else if dir === 'column'}
-          <DocAttributeBar {object} {mixins} {ignoreKeys} on:update={updateKeys} />
+          <DocAttributeBar {object} {mixins} {ignoreKeys} {allowedCollections} on:update={updateKeys} />
         {:else}
           <AttributesBar {object} _class={realObjectClass} {keys} />
         {/if}
@@ -254,12 +257,13 @@
         on:open={(ev) => {
           ignoreKeys = ev.detail.ignoreKeys
           ignoreMixins = new Set(ev.detail.ignoreMixins)
-          getMixins()
+          allowedCollections = ev.detail.allowedCollections ?? []
+          getMixins(parentClass, object)
           updateKeys()
         }}
       />
     {/if}
-    {#each collectionEditors as collection}
+    {#each collectionEditors.filter((it) => !allowedCollections.includes(it.key.key)) as collection}
       {#if collection.editor}
         <div class="mt-6">
           <Component

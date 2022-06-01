@@ -44,6 +44,10 @@
     "FileBrowserTypeFilterPDFs": "PDFs",
     "AddAttachmentToSaved": "Add attachment to saved",
     "RemoveAttachmentFromSaved": "Remove attachment from saved",
-    "DeleteFile": "Delete file"
+    "DeleteFile": "Delete file",
+    "Description": "Description",
+    "Pinned": "Important",
+    "PinAttachment": "Mark important",
+    "UnPinAttachment": "Mark less important"
   }
 }

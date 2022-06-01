@@ -29,6 +29,7 @@
   export let labelOver: IntlString | undefined = undefined // label instead of date
   export let labelNull: IntlString = ui.string.NoDate
   export let kind: 'no-border' | 'link' = 'no-border'
+  export let noShift: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -111,8 +112,8 @@
     edits = edits
   }
   const saveDate = (): void => {
-    currentDate.setHours(edits[3].value > 0 ? edits[3].value : 0)
-    currentDate.setMinutes(edits[4].value > 0 ? edits[4].value : 0)
+    // currentDate.setHours(edits[3].value > 0 ? edits[3].value : 0)
+    // currentDate.setMinutes(edits[4].value > 0 ? edits[4].value : 0)
     currentDate.setSeconds(0, 0)
     value = currentDate.getTime()
     dateToEdits()
@@ -252,6 +253,7 @@
     $dpstore.onChange = _change
     $dpstore.onClose = _close
     $dpstore.component = DateRangePopup
+    $dpstore.shift = !noShift
   }
   let popupComp: HTMLElement
   $: if (opened && $dpstore.popup) popupComp = $dpstore.popup

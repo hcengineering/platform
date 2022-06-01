@@ -18,6 +18,7 @@ import type { Ref, Space } from '@anticrm/core'
 import { ObjectSearchCategory, ObjectSearchFactory } from '@anticrm/model-presentation'
 import type { Resource } from '@anticrm/platform'
 import { mergeIds } from '@anticrm/platform'
+import { TagCategory } from '@anticrm/tags'
 import { KanbanTemplate, taskId } from '@anticrm/task'
 import task from '@anticrm/task-resources/src/plugin'
 import type { AnyComponent } from '@anticrm/ui'
@@ -39,7 +40,8 @@ export default mergeIds(taskId, task, {
     UnarchiveSpace: '' as ViewAction
   },
   category: {
-    Task: '' as Ref<ActionCategory>
+    Task: '' as Ref<ActionCategory>,
+    TaskTag: '' as Ref<TagCategory>
   },
   component: {
     ProjectView: '' as AnyComponent,

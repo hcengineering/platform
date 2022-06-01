@@ -1,8 +1,9 @@
 import { Doc, Hierarchy } from '@anticrm/core'
 import { getResource, Resource } from '@anticrm/platform'
-import { getClient, MessageBox } from '@anticrm/presentation'
+import { getClient, MessageBox, updateAttribute } from '@anticrm/presentation'
 import {
   AnyComponent,
+  AnySvelteComponent,
   closeTooltip,
   isPopupPosAlignment,
   PopupAlignment,
@@ -191,6 +192,65 @@ async function ShowPopup (
   showPopup(props.component, cprops, element)
 }
 
+/**
+ * Quick action for show popup
+ * Props:
+ * - attribute - to show editor for specific attribute
+ * - props - some basic props, will be merged with key, _class, value, values
+ */
+async function ShowEditor (
+  doc: Doc | Doc[],
+  evt: Event,
+  props: {
+    element?: PopupPosAlignment | Resource<(e?: Event) => PopupAlignment | undefined>
+    attribute: string
+    props?: Record<string, any>
+  }
+): Promise<void> {
+  const docs = Array.isArray(doc) ? doc : doc !== undefined ? [doc] : []
+  evt.preventDefault()
+  let cprops = {
+    ...(props?.props ?? {})
+  }
+  if (docs.length === 1) {
+    const client = getClient()
+    const hierarchy = client.getHierarchy()
+    const doc: Doc = docs[0]
+    const attribute = hierarchy.getAttribute(doc._class, props.attribute)
+
+    const typeClass = hierarchy.getClass(attribute.type._class)
+    const attributeEditorMixin = hierarchy.as(typeClass, view.mixin.AttributeEditor)
+
+    if (attributeEditorMixin === undefined || attributeEditorMixin.popup === undefined) {
+      throw new Error(`failed to find editor popup for ${typeClass._id}`)
+    }
+
+    const editor: AnySvelteComponent = await getResource(attributeEditorMixin.popup)
+
+    cprops = {
+      ...cprops,
+      ...{
+        value: (doc as any)[props.attribute]
+      }
+    }
+    if (editor !== undefined) {
+      console.log('EVT', evt)
+      showPopup(
+        editor,
+        cprops,
+        {
+          getBoundingClientRect: () => new DOMRect((evt as MouseEvent).clientX, (evt as MouseEvent).clientY)
+        },
+        (result) => {
+          if (result != null) {
+            void updateAttribute(client, doc, doc._class, { key: props.attribute, attr: attribute }, result)
+          }
+        }
+      )
+    }
+  }
+}
+
 function UpdateDocument (doc: Doc | Doc[], evt: Event, props: Record<string, any>): void {
   async function update (): Promise<void> {
     if (props?.key !== undefined && props?.value !== undefined) {
@@ -258,5 +318,6 @@ export const actionImpl = {
   Open,
   UpdateDocument,
   ShowPanel,
-  ShowPopup
+  ShowPopup,
+  ShowEditor
 }

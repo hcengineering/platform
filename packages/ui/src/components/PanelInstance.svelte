@@ -181,7 +181,6 @@
     background-color: transparent;
 
     &.anim {
-      will-change: top, bottom, left, right;
       transition-property: top, bottom, left, right, width, height;
       transition-duration: 0.15s;
       transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);

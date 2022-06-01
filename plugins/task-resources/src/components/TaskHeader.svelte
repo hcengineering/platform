@@ -26,6 +26,7 @@
   export let mixins: Mixin<Doc>[]
   export let ignoreKeys: string[]
   export let vertical: boolean = false
+  export let allowedCollections: string[] = []
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -77,7 +78,7 @@
     <AttributesBar {object} _class={object._class} keys={['doneState', 'state']} showHeader={false} />
   </div>
 {:else}
-  <DocAttributeBar {object} {ignoreKeys} {mixins} on:update />
+  <DocAttributeBar {object} {ignoreKeys} {mixins} {allowedCollections} on:update />
 {/if}
 
 <style lang="scss">

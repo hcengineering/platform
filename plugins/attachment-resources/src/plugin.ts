@@ -14,10 +14,9 @@
 // limitations under the License.
 //
 
-import { mergeIds } from '@anticrm/platform'
-import type { IntlString } from '@anticrm/platform'
-
 import attachment, { attachmentId } from '@anticrm/attachment'
+import type { IntlString } from '@anticrm/platform'
+import { mergeIds } from '@anticrm/platform'
 import { ViewAction } from '@anticrm/view'
 
 export default mergeIds(attachmentId, attachment, {
@@ -42,7 +41,8 @@ export default mergeIds(attachmentId, attachment, {
     FileBrowserSortSmallest: '' as IntlString,
     FileBrowserSortBiggest: '' as IntlString,
     AddAttachmentToSaved: '' as IntlString,
-    RemoveAttachmentFromSaved: '' as IntlString
+    RemoveAttachmentFromSaved: '' as IntlString,
+    Pinned: '' as IntlString
   },
   actionImpl: {
     AddAttachmentToSaved: '' as ViewAction,

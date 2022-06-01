@@ -75,6 +75,9 @@ const predicates: Record<string, PredicateFactory> = {
   },
   $lte: (o, propertyKey) => {
     return (docs) => execPredicate(docs, propertyKey, (value) => value <= o)
+  },
+  $exists: (o, propertyKey) => {
+    return (docs) => execPredicate(docs, propertyKey, (value) => (value !== undefined) === o)
   }
 }
 

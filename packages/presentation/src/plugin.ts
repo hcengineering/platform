@@ -53,7 +53,8 @@ export default plugin(presentationId, {
     NoMatchesInThis: '' as IntlString,
     NoMatchesFound: '' as IntlString,
     NotInThis: '' as IntlString,
-    Add: '' as IntlString
+    Add: '' as IntlString,
+    Edit: '' as IntlString
   },
   metadata: {
     RequiredVersion: '' as Metadata<string>

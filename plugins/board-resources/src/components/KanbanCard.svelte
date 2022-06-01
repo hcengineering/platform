@@ -21,6 +21,7 @@
   import type { Ref, WithLookup } from '@anticrm/core'
   import notification from '@anticrm/notification'
   import view from '@anticrm/view'
+  import tags from '@anticrm/tags'
   import { getClient, UserBoxList } from '@anticrm/presentation'
   import {
     Button,
@@ -35,7 +36,6 @@
   } from '@anticrm/ui'
   import { ContextMenu } from '@anticrm/view-resources'
   import board from '../plugin'
-  import CardLabels from './editor/CardLabels.svelte'
   import DatePresenter from './presenters/DatePresenter.svelte'
   import { hasDate, openCardPanel, updateCard, updateCardMembers } from '../utils/CardUtils'
   import CheckListsPresenter from './presenters/ChecklistsPresenter.svelte'
@@ -94,9 +94,6 @@
           class="abs-full-content background-theme-content-accent h-full w-full flex-center fs-title"
         />
       {/if}
-      <div class="ml-1">
-        <CardLabels bind:value={object} isInline={true} />
-      </div>
       {#if !isEditMode}
         <div class="absolute mr-1 mt-1" style:top="0" style:right="0">
           <Button icon={IconEdit} kind="transparent" on:click={enterEditMode} />
@@ -147,9 +144,6 @@
           class="abs-full-content background-theme-content-accent h-full w-full flex-center fs-title"
         />
       {/if}
-      <div class="ml-1">
-        <CardLabels bind:value={object} isInline={true} />
-      </div>
       {#if !isEditMode && !object.cover}
         <div class="absolute mr-1 mt-1" style:top="0" style:right="0">
           <Button icon={IconEdit} kind="transparent" on:click={enterEditMode} />
@@ -209,6 +203,14 @@
           {#if (object.todoItems ?? 0) > 0}
             <div class="float-left">
               <CheckListsPresenter value={object} />
+            </div>
+          {/if}
+          {#if (object.labels ?? 0) > 0}
+            <div class="float-left">
+              <Component
+                is={tags.component.TagsPresenter}
+                props={{ value: object, _class: object._class, key: 'labels' }}
+              />
             </div>
           {/if}
         </div>

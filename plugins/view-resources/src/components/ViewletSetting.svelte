@@ -16,7 +16,7 @@
   import presentation, { Card, createQuery, getAttributePresenterClass, getClient } from '@anticrm/presentation'
   import { BuildModelKey, Viewlet, ViewletPreference } from '@anticrm/view'
   import core, { ArrOf, Class, Doc, Lookup, Ref, Type } from '@anticrm/core'
-  import { Button, Grid, MiniToggle } from '@anticrm/ui'
+  import { Button, ToggleButton } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import { IntlString } from '@anticrm/platform'
   import { buildConfigLookup, getLookupClass, getLookupLabel, getLookupProperty } from '../utils'
@@ -142,7 +142,7 @@
     }
   }
 
-  async function restoreDefault (): Promise<void> {
+  function restoreDefault (): void {
     attributes = getConfig(viewlet, undefined)
   }
 
@@ -162,7 +162,45 @@
     for (const key of result) {
       key.enabled = preference.config.findIndex((p) => deepEqual(p, key.value)) !== -1
     }
+    result.sort((a, b) => {
+      if (a.enabled !== b.enabled) {
+        return a.enabled ? -1 : 1
+      }
+      return (
+        preference.config.findIndex((p) => deepEqual(p, a.value)) -
+        preference.config.findIndex((p) => deepEqual(p, b.value))
+      )
+    })
     return result
+  }
+
+  const elements: HTMLElement[] = []
+  let selected: number | undefined
+
+  function dragswap (ev: MouseEvent, i: number): boolean {
+    const s = selected as number
+    if (i < s) {
+      if (elements[i].offsetTop !== elements[s].offsetTop) {
+        return ev.offsetY < elements[i].offsetHeight / 2
+      } else {
+        return ev.offsetX < elements[i].offsetWidth / 2
+      }
+    } else if (i > s) {
+      if (elements[i].offsetTop !== elements[s].offsetTop) {
+        return ev.offsetY > elements[i].offsetHeight / 2
+      } else {
+        return ev.offsetX > elements[i].offsetWidth / 2
+      }
+    }
+    return false
+  }
+
+  function dragover (ev: MouseEvent, i: number) {
+    const s = selected as number
+    if (dragswap(ev, i)) {
+      ;[attributes[i], attributes[s]] = [attributes[s], attributes[i]]
+      selected = i
+    }
   }
 </script>
 
@@ -175,12 +213,28 @@
     dispatch('close')
   }}
 >
-  <Grid column={3}>
-    {#each attributes as attribute}
-      <MiniToggle label={attribute.label} bind:on={attribute.enabled} />
+  <div class="flex flex-wrap flex-row">
+    {#each attributes as attribute, i}
+      <div
+        class="mr-2 mb-2"
+        bind:this={elements[i]}
+        draggable={true}
+        on:dragover|preventDefault={(ev) => {
+          dragover(ev, i)
+        }}
+        on:drop|preventDefault
+        on:dragstart={() => {
+          selected = i
+        }}
+        on:dragend={() => {
+          selected = undefined
+        }}
+      >
+        <ToggleButton label={attribute.label} bind:value={attribute.enabled} />
+      </div>
     {/each}
-  </Grid>
+  </div>
   <svelte:fragment slot="footer">
-    <Button label={view.string.RestoreDefaults} on:click={() => restoreDefault()} />
+    <Button label={view.string.RestoreDefaults} on:click={restoreDefault} />
   </svelte:fragment>
 </Card>

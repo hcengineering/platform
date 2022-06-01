@@ -32,6 +32,7 @@
     if (modalHTML) $dpstore.popup = modalHTML
   }
   $: component = $dpstore.component
+  $: shift = $dpstore.shift
 
   function _update (result: any): void {
     fitPopup()
@@ -62,10 +63,10 @@
         const rectPopup = modalHTML.getBoundingClientRect()
         // Vertical
         if (rect.bottom + rectPopup.height + 28 <= document.body.clientHeight) {
-          modalHTML.style.top = `calc(${rect.bottom}px + .5rem)`
+          modalHTML.style.top = `calc(${rect.bottom}px + 1px)`
         } else if (rectPopup.height + 28 < rect.top) {
-          modalHTML.style.bottom = `calc(${document.body.clientHeight - rect.y}px + .5rem)`
-        } else modalHTML.style.top = `calc(${rect.bottom}px + .5rem)`
+          modalHTML.style.bottom = `calc(${document.body.clientHeight - rect.y}px + 1px)`
+        } else modalHTML.style.top = `calc(${rect.bottom}px + 1px)`
 
         // Horizontal
         if (rect.left + rectPopup.width + 16 > document.body.clientWidth) {
@@ -106,6 +107,7 @@
   {#if $dpstore.component}
     <svelte:component
       this={component}
+      bind:shift
       bind:this={componentInstance}
       on:update={(ev) => _update(ev.detail)}
       on:change={(ev) => _change(ev.detail)}

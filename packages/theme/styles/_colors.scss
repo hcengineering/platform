@@ -61,14 +61,14 @@
   --accent-bg-color: #27282b;
   --accent-shadow: rgb(0 0 0 / 10%) 0px 2px 4px;
 
-  --highlight-hover: #222325;
+  --highlight-hover: #28292b;
   --highlight-select: #252b3a;
   --highlight-select-border: #2f3544;
-  --highlight-select-hover: #2c3346;
+  --highlight-select-hover: #323a4e;
 
-  --scrollbar-bar-color: #ffffff10;
-  --scrollbar-bar-hover: #ffffff15;
-  --scrollbar-track-color: #ffffff0a;
+  --scrollbar-bar-color: #28292b;  // #ffffff10;
+  --scrollbar-bar-hover: #2d2f36;  // #ffffff15;
+  --scrollbar-track-color: #27282b;  // #ffffff0a;
 
   --dark-color: #62666d;
   --content-color: #8a8f98;
@@ -85,7 +85,7 @@
   --popup-bg-color: linear-gradient(136.61deg, var(--accent-bg-color) 13.72%, #2d2e31 74.3%);
   --popup-bg-hover: #37373c;
   --popup-divider: #313236;
-  --popup-shadow: rgb(0 0 0 / 20%) 0px 4px 24px;
+  --popup-shadow: rgb(0 0 0 / 50%) 0px 4px 24px;
   --popup-panel-shadow: rgb(0 0 0 / 55%) 0px 7px 24px;
   --popup-aside-shadow: rgb(0 0 0 / 25%) 0px 8px 16px;
   --card-shadow: rgb(0 0 0 / 50%) 0px 16px 70px;
@@ -211,13 +211,14 @@
   --accent-bg-color: #f8f9fb;  // HZ
   --accent-shadow: rgb(0 0 0 / 10%) 0px 2px 4px;  // Dark
 
-  --highlight-hover: #fcfcfc;
+  --highlight-hover: #f9f9f9;
   --highlight-select: #f0f4ff;
   --highlight-select-border: #e6eaff;
   --highlight-select-hover: #e4ebff;
-  --scrollbar-bar-color: #00000010;
-  --scrollbar-bar-hover: #00000015;
-  --scrollbar-track-color: #0000000a;
+
+  --scrollbar-bar-color: #eee;  // #00000010;
+  --scrollbar-bar-hover: #f0f3f9;  // #00000015;
+  --scrollbar-track-color: #f8f9fb;  // #0000000a;
 
   --dark-color: #90959d;
   --content-color: #3c4149;

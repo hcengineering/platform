@@ -86,6 +86,8 @@ export interface AttributeFilter extends Class<Type<any>> {
  */
 export interface AttributeEditor extends Class<Doc> {
   editor: AnyComponent
+  // If defined could be used for ShowEditor declarative actions.
+  popup?: AnyComponent
 }
 
 /**
@@ -389,9 +391,9 @@ const view = plugin(viewId, {
   component: {
     ObjectPresenter: '' as AnyComponent,
     EditDoc: '' as AnyComponent,
-    CreateAttribute: '' as AnyComponent,
     ViewletSetting: '' as AnyComponent,
-    SpacePresenter: '' as AnyComponent
+    SpacePresenter: '' as AnyComponent,
+    BooleanTruePresenter: '' as AnyComponent
   },
   string: {
     CustomizeView: '' as IntlString
@@ -407,7 +409,8 @@ const view = plugin(viewId, {
     Setting: '' as Asset,
     Open: '' as Asset,
     ArrowRight: '' as Asset,
-    Views: '' as Asset
+    Views: '' as Asset,
+    Pin: '' as Asset
   },
   category: {
     General: '' as Ref<ActionCategory>,
@@ -440,6 +443,11 @@ const view = plugin(viewId, {
       _space?: string
       value?: string
       values?: string
+      props?: Record<string, any>
+    }>,
+    ShowEditor: '' as ViewAction<{
+      element?: PopupPosAlignment | Resource<(e?: Event) => PopupAlignment | undefined>
+      attribute: string
       props?: Record<string, any>
     }>
   }

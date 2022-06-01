@@ -46,7 +46,7 @@
   const dispatch = createEventDispatcher()
 
   onMount(() => {
-    dispatch('open', { ignoreKeys: ['comments', 'number'] })
+    dispatch('open', { ignoreKeys: ['comments', 'number'], allowedCollections: ['labels'] })
   })
 </script>
 

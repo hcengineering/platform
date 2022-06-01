@@ -16,8 +16,8 @@
 import type { TxViewlet } from '@anticrm/activity'
 import { Channel, chunterId } from '@anticrm/chunter'
 import chunter from '@anticrm/chunter-resources/src/plugin'
-import type { Ref } from '@anticrm/core'
-import type { IntlString } from '@anticrm/platform'
+import type { Ref, Space } from '@anticrm/core'
+import type { IntlString, Resource } from '@anticrm/platform'
 import { mergeIds } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'
 import type { Action, ActionCategory, ViewAction, ViewletDescriptor } from '@anticrm/view'
@@ -29,7 +29,8 @@ export default mergeIds(chunterId, chunter, {
     DmPresenter: '' as AnyComponent,
     Threads: '' as AnyComponent,
     ThreadView: '' as AnyComponent,
-    SavedMessages: '' as AnyComponent
+    SavedMessages: '' as AnyComponent,
+    MessagesBrowser: '' as AnyComponent
   },
   action: {
     MarkCommentUnread: '' as Ref<Action>,
@@ -63,7 +64,8 @@ export default mergeIds(chunterId, chunter, {
     MarkUnread: '' as IntlString,
     LastMessage: '' as IntlString,
     PinnedMessages: '' as IntlString,
-    SavedMessages: '' as IntlString
+    SavedMessages: '' as IntlString,
+    ThreadMessage: '' as IntlString
   },
   viewlet: {
     Chat: '' as Ref<ViewletDescriptor>
@@ -82,5 +84,8 @@ export default mergeIds(chunterId, chunter, {
   space: {
     General: '' as Ref<Channel>,
     Random: '' as Ref<Channel>
+  },
+  function: {
+    MessageBrowserVisible: '' as Resource<(spaces: Space[]) => boolean>
   }
 })

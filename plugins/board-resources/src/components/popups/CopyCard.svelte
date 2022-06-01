@@ -12,7 +12,6 @@
   import RankSelect from '../selectors/RankSelect.svelte'
   import { generateId, AttachedData } from '@anticrm/core'
   import task from '@anticrm/task'
-  import { createMissingLabels } from '../../utils/BoardUtils'
 
   export let value: Card
   const client = getClient()
@@ -39,9 +38,6 @@
 
     const incResult = await client.update(sequence, { $inc: { sequence: 1 } }, true)
 
-    const labels =
-      value.space !== selected.space ? await createMissingLabels(client, value, selected.space) : value.labels
-
     const copy: AttachedData<Card> = {
       state: selected.state,
       doneState: null,
@@ -52,7 +48,7 @@
       description: '',
       members: [],
       location: '',
-      labels: labels ?? [],
+      labels: value.labels,
       startDate: value.startDate,
       dueDate: value.dueDate
     }

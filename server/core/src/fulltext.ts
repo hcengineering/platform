@@ -165,45 +165,7 @@ export class FullTextIndex implements WithFind {
       }
     }
     const resultIds = Array.from(getResultIds(ids, _id))
-    return await this.getResult(ctx, _class, resultIds, mainQuery as DocumentQuery<T>, options)
-  }
-
-  private async getResult<T extends Doc>(
-    ctx: MeasureContext,
-    _class: Ref<Class<T>>,
-    ids: Ref<Doc>[],
-    mainQuery: DocumentQuery<T>,
-    options?: FindOptions<T>
-  ): Promise<FindResult<T>> {
-    const orderMap = new Map<Ref<Doc>, number>()
-    for (let index = 0; index < ids.length; index++) {
-      orderMap.set(ids[index], index)
-    }
-    const { sort, ...otherOptions } = options ?? {}
-    if (options?.lookup !== undefined && options.limit !== undefined) {
-      const resIds = await this.dbStorage.findAll(
-        ctx,
-        _class,
-        { _id: { $in: ids }, ...mainQuery },
-        { projection: { _id: 1 } }
-      )
-      const total = resIds.total
-      resIds.sort((a, b) => (orderMap.get(a._id) ?? 0) - (orderMap.get(b._id) ?? 0))
-      const targetIds = resIds.slice(0, options.limit).map((p) => p._id)
-
-      const result = await this.dbStorage.findAll(ctx, _class, { _id: { $in: targetIds }, ...mainQuery }, otherOptions)
-      result.sort((a, b) => (orderMap.get(a._id) ?? 0) - (orderMap.get(b._id) ?? 0))
-
-      return toFindResult(result, total)
-    } else {
-      const result = await this.dbStorage.findAll(ctx, _class, { _id: { $in: ids }, ...mainQuery }, otherOptions)
-
-      const total = result.total
-
-      result.sort((a, b) => (orderMap.get(a._id) ?? 0) - (orderMap.get(b._id) ?? 0))
-
-      return toFindResult(result, total)
-    }
+    return await this.dbStorage.findAll(ctx, _class, { _id: { $in: resultIds }, ...mainQuery }, options)
   }
 
   private getFullTextAttributes (clazz: Ref<Class<Obj>>, parentDoc?: Doc): AnyAttribute[] {

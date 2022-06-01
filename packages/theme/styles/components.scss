@@ -34,8 +34,10 @@
       grid-template-columns: auto;
       grid-auto-flow: column;
       grid-auto-columns: min-content;
-      gap: 0.75rem;
+      gap: .75rem;
       align-items: center;
+
+      &.withSettings { padding-right: .75rem; }
     }
     &.mirror {
       justify-content: space-between;

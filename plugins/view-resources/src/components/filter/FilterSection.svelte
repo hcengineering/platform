@@ -13,17 +13,38 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, Ref } from '@anticrm/core'
+  import { translate } from '@anticrm/platform'
+  import { Class, Doc, Ref, RefTo } from '@anticrm/core'
   import { eventToHTMLElement, IconClose, showPopup, Icon, Label } from '@anticrm/ui'
   import { Filter } from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
   import view from '../../plugin'
+  import { getClient } from '@anticrm/presentation'
+  import task from '@anticrm/task'
+  import type { State } from '@anticrm/task'
 
   export let _class: Ref<Class<Doc>>
   export let filter: Filter
-  let current = 0
 
+  let current = 0
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+  const targetClass = (hierarchy.getAttribute(_class, filter.key.key).type as RefTo<Doc>).to
+  $: isState = targetClass === task.class.State ?? false
   const dispatch = createEventDispatcher()
+
+  async function getCountStates (ids: Ref<Doc>[]): Promise<number> {
+    const selectStates = await client.findAll(targetClass, { _id: { $in: Array.from(ids) } }, {})
+    const unique = new Set(selectStates.map((s) => (s as State).title))
+    return unique.size
+  }
+
+  let countLabel: string = ''
+  async function getLabel (): Promise<void> {
+    const count = isState ? await getCountStates(filter.value) : filter.value.length
+    countLabel = await translate(view.string.FilterStatesCount, { value: count })
+  }
+  $: if (filter) getLabel()
 
   function toggle () {
     const modes = filter.modes.filter((p) => p.isAvailable(filter.value))
@@ -64,9 +85,7 @@
       )
     }}
   >
-    <span>
-      <Label label={view.string.FilterStatesCount} params={{ value: filter.value.length }} />
-    </span>
+    <span>{countLabel}</span>
   </button>
   <button
     class="filter-button right-round"

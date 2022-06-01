@@ -64,6 +64,7 @@ export default mergeIds(viewId, view, {
     ValueFilter: '' as AnyComponent,
     TimestampFilter: '' as AnyComponent,
     StringEditor: '' as AnyComponent,
+    StringEditorPopup: '' as AnyComponent,
     StringPresenter: '' as AnyComponent,
     IntlStringPresenter: '' as AnyComponent,
     NumberEditor: '' as AnyComponent,
@@ -78,12 +79,8 @@ export default mergeIds(viewId, view, {
     RolePresenter: '' as AnyComponent,
     YoutubePresenter: '' as AnyComponent,
     GithubPresenter: '' as AnyComponent,
-    StringTypeEditor: '' as AnyComponent,
-    BooleanTypeEditor: '' as AnyComponent,
-    NumberTypeEditor: '' as AnyComponent,
-    DateTypeEditor: '' as AnyComponent,
-    RefEditor: '' as AnyComponent,
-    ClassPresenter: '' as AnyComponent
+    ClassPresenter: '' as AnyComponent,
+    EnumEditor: '' as AnyComponent
   },
   string: {
     Table: '' as IntlString,

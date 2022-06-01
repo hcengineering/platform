@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import core from '@anticrm/core'
+import core, { Space } from '@anticrm/core'
 import chunter, { ChunterSpace, Channel, ChunterMessage, Message, ThreadMessage, DirectMessage } from '@anticrm/chunter'
 import { NotificationClientImpl } from '@anticrm/notification-resources'
 import { Resources } from '@anticrm/platform'
@@ -34,12 +34,14 @@ import CommentsPresenter from './components/CommentsPresenter.svelte'
 import CreateChannel from './components/CreateChannel.svelte'
 import CreateDirectMessage from './components/CreateDirectMessage.svelte'
 import EditChannel from './components/EditChannel.svelte'
+import MessagesBrowser from './components/MessagesBrowser.svelte'
 import ThreadView from './components/ThreadView.svelte'
 import Threads from './components/Threads.svelte'
 import SavedMessages from './components/SavedMessages.svelte'
 import ConvertDmToPrivateChannelModal from './components/ConvertDmToPrivateChannel.svelte'
 
 import { getDmName } from './utils'
+import { writable } from 'svelte/store'
 
 export { default as Header } from './components/Header.svelte'
 export { classIcon } from './utils'
@@ -160,6 +162,12 @@ export async function DeleteMessageFromSaved (message: ChunterMessage): Promise<
   }
 }
 
+export const userSearch = writable('')
+
+export function messageBrowserVisible (spaces: Space[]): boolean {
+  return false
+}
+
 export default async (): Promise<Resources> => ({
   component: {
     CommentInput,
@@ -173,12 +181,14 @@ export default async (): Promise<Resources> => ({
     ChannelPresenter,
     DmPresenter,
     EditChannel,
+    MessagesBrowser,
     Threads,
     ThreadView,
     SavedMessages
   },
   function: {
-    GetDmName: getDmName
+    GetDmName: getDmName,
+    MessageBrowserVisible: messageBrowserVisible
   },
   activity: {
     TxCommentCreate,

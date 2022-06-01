@@ -25,6 +25,8 @@ import core, {
   Data,
   Doc,
   Domain,
+  Enum,
+  EnumOf,
   generateId,
   IndexKind,
   Interface,
@@ -390,6 +392,13 @@ export function TypeDate (withTime?: boolean): TypeDateType {
  */
 export function TypeRef (_class: Ref<Class<Doc>>): RefTo<Doc> {
   return { _class: core.class.RefTo, label: core.string.Ref, to: _class }
+}
+
+/**
+ * @public
+ */
+export function TypeEnum (of: Ref<Enum>): EnumOf {
+  return { _class: core.class.EnumOf, label: core.string.Enum, of }
 }
 
 /**

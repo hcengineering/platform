@@ -32,6 +32,8 @@
   export let keyLabel: string = ''
   export let hideAdd: boolean = false
 
+  const tagShowLimit = 50
+
   let search: string = ''
   let searchElement: HTMLInputElement
   let show: boolean = false
@@ -54,33 +56,26 @@
   }
 
   // TODO: Add $not: {$in: []} query
-  $: query.query(
-    tags.class.TagElement,
-    { title: { $like: '%' + search + '%' }, targetClass },
-    (result) => {
-      objects = newElements.concat(result)
-    },
-    { limit: 200 }
-  )
+  $: query.query(tags.class.TagElement, { title: { $like: '%' + search + '%' }, targetClass }, (result) => {
+    objects = newElements.concat(result)
+  })
 
   async function createTagElement (): Promise<void> {
     showPopup(CreateTagElement, { targetClass }, 'top')
   }
 
-  const isSelected = (element: TagElement): boolean => {
+  const isSelected = (selected: Ref<TagElement>[], element: TagElement): boolean => {
     if (selected.filter((p) => p === element._id).length > 0) return true
     return false
   }
-  const checkSelected = (element: TagElement): void => {
-    if (isSelected(element)) {
-      selected = selected.filter((p) => p !== element._id)
+  const checkSelected = (_selected: Ref<TagElement>[], element: TagElement): void => {
+    if (isSelected(_selected, element)) {
+      selected = _selected.filter((p) => p !== element._id)
       dispatch('update', { action: 'remove', tag: element })
     } else {
-      selected = [...selected, element._id]
+      selected = [..._selected, element._id]
       dispatch('update', { action: 'add', tag: element })
     }
-    objects = objects
-    categories = categories
     dispatch('update', { action: 'selected', selected: selected })
   }
   const toggleGroup = (ev: MouseEvent): void => {
@@ -95,6 +90,13 @@
   onMount(() => {
     if (searchElement) searchElement.focus()
   })
+  const tagSort = (a: TagElement, b: TagElement) => {
+    const r = (b.refCount ?? 0) - (a.refCount ?? 0)
+    if (r === 0) {
+      return b.title.localeCompare(a.title)
+    }
+    return r
+  }
 </script>
 
 <div class="selectPopup maxHeight">
@@ -136,9 +138,14 @@
   <div class="scroll">
     <div class="box">
       {#each categories as cat}
-        {#if objects.filter((el) => el.category === cat._id).length > 0}
+        {@const catObjects = objects.filter((el) => el.category === cat._id).sort(tagSort)}
+        {#if catObjects.length > 0}
           <div class="sticky-wrapper">
-            <button class="menu-group__header" class:show={search !== '' || show} on:click={toggleGroup}>
+            <button
+              class="menu-group__header"
+              class:show={categories.length === 1 || search !== '' || show}
+              on:click={toggleGroup}
+            >
               <div class="flex-row-center">
                 <span class="mr-1-5">{cat.label}</span>
                 <div class="icon">
@@ -148,23 +155,32 @@
                 </div>
               </div>
               <div class="flex-row-center text-xs">
-                <span class="content-color mr-1">({objects.filter((el) => el.category === cat._id).length})</span>
+                <span class="content-color mr-1">
+                  {#if catObjects.length > tagShowLimit}
+                    ({tagShowLimit}, {catObjects.length})
+                  {:else}
+                    ({catObjects.length})
+                  {/if}
+                </span>
                 <span class="counter">{getCount(cat)}</span>
               </div>
             </button>
             <div class="menu-group">
-              {#each objects.filter((el) => el.category === cat._id) as element}
+              {#each catObjects.slice(0, 50) as element}
                 <button
                   class="menu-item"
                   on:click={() => {
-                    checkSelected(element)
+                    checkSelected(selected, element)
                   }}
                 >
                   <div class="check pointer-events-none">
-                    <CheckBox checked={isSelected(element)} primary />
+                    <CheckBox checked={isSelected(selected, element)} primary />
                   </div>
                   <div class="tag" style="background-color: {getPlatformColor(element.color)};" />
                   {element.title}
+                  <span class="ml-2 text-xs">
+                    ({element.refCount ?? 0})
+                  </span>
                 </button>
               {/each}
             </div>

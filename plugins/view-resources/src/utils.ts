@@ -374,6 +374,6 @@ export function collectionsFilter (hierarchy: Hierarchy, keys: KeyedAttribute[],
   return result
 }
 
-function isCollectionAttr (hierarchy: Hierarchy, key: KeyedAttribute): boolean {
+export function isCollectionAttr (hierarchy: Hierarchy, key: KeyedAttribute): boolean {
   return hierarchy.isDerived(key.attr.type._class, core.class.Collection)
 }

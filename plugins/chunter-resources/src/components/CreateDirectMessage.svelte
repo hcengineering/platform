@@ -43,7 +43,6 @@
           mode: 'space',
           space: dm._id
         })
-
         return
       }
     }

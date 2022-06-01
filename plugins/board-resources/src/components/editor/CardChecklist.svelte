@@ -16,7 +16,7 @@
   import { Ref } from '@anticrm/core'
   import { createQuery, getClient, UserBox, MessageBox } from '@anticrm/presentation'
   import type { TodoItem } from '@anticrm/task'
-  import task from '@anticrm/task'
+  import task, { calcRank } from '@anticrm/task'
   import {
     Button,
     CheckBox,
@@ -45,7 +45,9 @@
   let hideDoneItems: boolean = false
   let newItemName = ''
   let editingItemId: Ref<TodoItem> | undefined = undefined
-  let hovered: Ref<TodoItem> | undefined
+  let hovered: Ref<TodoItem> | undefined = undefined
+  let dragItem: TodoItem | undefined = undefined
+  let dragOverItem: TodoItem | undefined = undefined
 
   function deleteChecklist () {
     if (!value) {
@@ -79,11 +81,13 @@
 
   async function addItem (event: CustomEvent<string>) {
     newItemName = ''
+    const prev = checklistItems && checklistItems.length > 0 ? checklistItems[checklistItems.length - 1] : undefined
     const item = {
       name: event.detail ?? '',
       assignee: null,
       dueTo: null,
-      done: false
+      done: false,
+      rank: calcRank(prev, undefined)
     }
     if (item.name.length <= 0) {
       return
@@ -121,16 +125,49 @@
     showPopup(ContextMenu, { object: item }, getEventPopupPositionElement(e))
   }
 
-  $: checklistItemsQuery.query(task.class.TodoItem, { space: value.space, attachedTo: value._id }, (result) => {
-    checklistItems = result
-    done = checklistItems.reduce((result: number, current: TodoItem) => {
-      return current.done ? result + 1 : result
-    }, 0)
-  })
+  function itemDrop (): void {
+    if (dragItem === undefined || dragOverItem === undefined || dragItem._id === dragOverItem._id) {
+      return
+    }
+    const index = checklistItems.findIndex((item) => item._id === dragOverItem?._id)
+    const dragIndex = checklistItems.findIndex((item) => item._id === dragItem?._id)
+    if (dragIndex > index) {
+      const prev = index - 1 >= 0 ? checklistItems[index - 1] : undefined
+      dragItem.rank = calcRank(prev, dragOverItem)
+      client.update(dragItem, { rank: dragItem.rank })
+    } else {
+      const next = index + 1 < checklistItems.length ? checklistItems[index + 1] : undefined
+      dragItem.rank = calcRank(dragOverItem, next)
+      client.update(dragItem, { rank: dragItem.rank })
+    }
+  }
+
+  $: checklistItemsQuery.query(
+    task.class.TodoItem,
+    { space: value.space, attachedTo: value._id },
+    (result) => {
+      checklistItems = result
+      done = checklistItems.reduce((result: number, current: TodoItem) => {
+        return current.done ? result + 1 : result
+      }, 0)
+    },
+    {
+      sort: {
+        rank: 1
+      }
+    }
+  )
 </script>
 
 {#if value !== undefined}
-  <div class="flex-col w-full">
+  <div
+    class="flex-col w-full"
+    on:drop|preventDefault={(ev) => {
+      itemDrop()
+    }}
+    on:dragover|preventDefault
+    on:dragleave
+  >
     <div class="flex-row-stretch mt-4 mb-2">
       {#if isEditingName}
         <div class="flex-grow">
@@ -178,6 +215,17 @@
       <div
         class="flex-row-stretch mb-1 mt-1 pl-1 min-h-7 border-radius-1"
         class:background-button-noborder-bg-hover={hovered === item._id && editingItemId !== item._id}
+        draggable={true}
+        on:dragstart={() => {
+          dragItem = item
+        }}
+        on:dragend={() => {
+          dragItem = undefined
+          dragOverItem = undefined
+        }}
+        on:dragover={() => {
+          dragOverItem = item
+        }}
         on:mouseover={() => {
           hovered = item._id
         }}
@@ -223,6 +271,7 @@
               bind:value={item.dueTo}
               icon={getDateIcon(item)}
               on:change={(e) => updateDueDate(item, e.detail)}
+              noShift
             />
             <UserBox
               _class={contact.class.Employee}

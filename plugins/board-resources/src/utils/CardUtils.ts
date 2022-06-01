@@ -37,7 +37,6 @@ export async function createCard (
     rank: calcRank(lastOne, undefined),
     assignee: null,
     description: '',
-    labels: [],
     ...attribues
   }
 

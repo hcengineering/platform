@@ -335,7 +335,7 @@
   </svg>
   <div class="workbench-container">
     <div class="antiPanel-application">
-      <div class="flex-col mt-1">
+      <div class="flex-col flex-no-shrink mt-1">
         <!-- <ActivityStatus status="active" /> -->
         <AppItem
           icon={TopMenu}
@@ -371,7 +371,7 @@
           }}
           notify={hasNotification}
         />
-        <div class="flex-center">
+        <div class="flex-center mt-2">
           <div
             id="profile-button"
             class="cursor-pointer"
@@ -397,7 +397,7 @@
         {#if currentApplication}
           <NavHeader label={currentApplication.label} />
           {#if currentApplication.navHeaderComponent}
-            <Component is={currentApplication.navHeaderComponent} props={{ currentSpace }} />
+            <Component is={currentApplication.navHeaderComponent} props={{ currentSpace }} shrink />
           {/if}
         {/if}
         <Navigator

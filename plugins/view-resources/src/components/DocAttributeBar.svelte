@@ -19,9 +19,26 @@
   export let object: Doc
   export let mixins: Mixin<Doc>[]
   export let ignoreKeys: string[]
+  export let allowedCollections: string[] = []
 </script>
 
-<ClassAttributeBar _class={object._class} {object} {ignoreKeys} to={undefined} vertical on:update />
+<ClassAttributeBar
+  _class={object._class}
+  {object}
+  {ignoreKeys}
+  to={undefined}
+  {allowedCollections}
+  vertical
+  on:update
+/>
 {#each mixins as mixin}
-  <ClassAttributeBar _class={mixin._id} {object} {ignoreKeys} to={object._class} vertical on:update />
+  <ClassAttributeBar
+    _class={mixin._id}
+    {object}
+    {ignoreKeys}
+    to={object._class}
+    {allowedCollections}
+    vertical
+    on:update
+  />
 {/each}

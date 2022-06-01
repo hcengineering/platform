@@ -27,6 +27,8 @@ import TagsPresenter from './components/TagsPresenter.svelte'
 import TagsView from './components/TagsView.svelte'
 import TagElementCountPresenter from './components/TagElementCountPresenter.svelte'
 import TagsFilter from './components/TagsFilter.svelte'
+import TagsAttributeEditor from './components/TagsAttributeEditor.svelte'
+import TagsEditorPopup from './components/TagsEditorPopup.svelte'
 
 export default async (): Promise<Resources> => ({
   component: {
@@ -41,7 +43,9 @@ export default async (): Promise<Resources> => ({
     TagsItemPresenter,
     CategoryPresenter,
     TagsCategoryBar,
-    TagElementCountPresenter
+    TagElementCountPresenter,
+    TagsAttributeEditor,
+    TagsEditorPopup
   },
   actionImpl: {
     Open: (value: TagElement, evt: MouseEvent) => {

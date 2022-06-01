@@ -16,7 +16,7 @@
 <script lang="ts">
   import { Doc, DocumentQuery } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
-  import { ActionIcon, Button, Icon, IconAdd, Label, Loading, SearchEdit, showPopup } from '@anticrm/ui'
+  import { Tooltip, Button, Icon, IconAdd, Label, Loading, SearchEdit, showPopup } from '@anticrm/ui'
   import view, { Viewlet, ViewletPreference } from '@anticrm/view'
   import type { Filter } from '@anticrm/view'
   import { ActionContext, TableBrowser, ViewletSetting, FilterButton } from '@anticrm/view-resources'
@@ -71,7 +71,7 @@
   }}
 />
 <div class="antiPanel-component">
-  <div class="ac-header full">
+  <div class="ac-header full withSettings">
     <div class="ac-header__wrap-title">
       <div class="ac-header__icon"><Icon icon={contact.icon.Person} size={'small'} /></div>
       <span class="ac-header__title"><Label label={contact.string.Contacts} /></span>
@@ -91,14 +91,15 @@
       on:click={(ev) => showCreateDialog(ev)}
     />
     {#if viewlet}
-      <ActionIcon
-        icon={view.icon.Setting}
-        size={'small'}
-        label={view.string.CustomizeView}
-        action={() => {
-          showPopup(ViewletSetting, { viewlet })
-        }}
-      />
+      <Tooltip label={view.string.CustomizeView}>
+        <Button
+          icon={view.icon.Setting}
+          kind={'transparent'}
+          on:click={() => {
+            showPopup(ViewletSetting, { viewlet })
+          }}
+        />
+      </Tooltip>
     {/if}
   </div>
 

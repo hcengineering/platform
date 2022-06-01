@@ -54,6 +54,7 @@ import { FullTextIndex } from './fulltext'
 import serverCore from './plugin'
 import { Triggers } from './triggers'
 import type { FullTextAdapter, FullTextAdapterFactory, ObjectDDParticipant } from './types'
+import { extractTx } from './utils'
 
 /**
  * @public
@@ -296,17 +297,8 @@ class TServerStorage implements ServerStorage {
     return doc
   }
 
-  extractTx (tx: Tx): Tx {
-    if (tx._class === core.class.TxCollectionCUD) {
-      const ctx = tx as TxCollectionCUD<Doc, AttachedDoc>
-      return ctx.tx
-    }
-
-    return tx
-  }
-
   async processRemove (ctx: MeasureContext, tx: Tx): Promise<Tx[]> {
-    const actualTx = this.extractTx(tx)
+    const actualTx = extractTx(tx)
     if (!this.hierarchy.isDerived(actualTx._class, core.class.TxRemoveDoc)) return []
     const rtx = actualTx as TxRemoveDoc<Doc>
     const result: Tx[] = []
@@ -382,7 +374,7 @@ class TServerStorage implements ServerStorage {
   }
 
   async processMove (ctx: MeasureContext, tx: Tx): Promise<Tx[]> {
-    const actualTx = this.extractTx(tx)
+    const actualTx = extractTx(tx)
     if (!this.hierarchy.isDerived(actualTx._class, core.class.TxUpdateDoc)) return []
     const rtx = actualTx as TxUpdateDoc<Doc>
     if (rtx.operations.space === undefined || rtx.operations.space === rtx.objectSpace) return []

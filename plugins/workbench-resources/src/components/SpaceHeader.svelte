@@ -17,23 +17,14 @@
   import core, { WithLookup } from '@anticrm/core'
   import { IntlString } from '@anticrm/platform'
   import presentation, { createQuery, getClient } from '@anticrm/presentation'
-  import {
-    ActionIcon,
-    AnyComponent,
-    showPanel,
-    Button,
-    Icon,
-    SearchEdit,
-    showPopup,
-    Tooltip,
-    IconAdd
-  } from '@anticrm/ui'
+  import { AnyComponent, showPanel, Button, Icon, SearchEdit, showPopup, Tooltip, IconAdd } from '@anticrm/ui'
   import view, { Viewlet } from '@anticrm/view'
   import { ViewletSetting } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../plugin'
   import { classIcon } from '../utils'
   import Header from './Header.svelte'
+  import type { Filter } from '@anticrm/view'
 
   export let spaceId: Ref<Space> | undefined
   export let createItemDialog: AnyComponent | undefined
@@ -41,6 +32,8 @@
   export let search: string
   export let viewlet: WithLookup<Viewlet> | undefined
   export let viewlets: WithLookup<Viewlet>[] = []
+  export let _class: Ref<Class<Doc>> | undefined = undefined
+  export let filters: Filter[] = []
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -84,12 +77,14 @@
   }
 </script>
 
-<div class="ac-header divide full">
+<div class="ac-header full withSettings">
   {#if space}
     <Header
       icon={classIcon(client, space._class)}
       label={space.name}
       description={space.description}
+      {_class}
+      bind:filters
       on:click={onSpaceEdit}
     />
     {#if viewlets.length > 1}
@@ -121,14 +116,15 @@
       <Button icon={IconAdd} label={createItemLabel} kind={'primary'} on:click={(ev) => showCreateDialog(ev)} />
     {/if}
     {#if viewlet}
-      <ActionIcon
-        icon={view.icon.Setting}
-        size={'small'}
-        label={view.string.CustomizeView}
-        action={() => {
-          showPopup(ViewletSetting, { viewlet })
-        }}
-      />
+      <Tooltip label={view.string.CustomizeView}>
+        <Button
+          icon={view.icon.Setting}
+          kind={'transparent'}
+          on:click={() => {
+            showPopup(ViewletSetting, { viewlet })
+          }}
+        />
+      </Tooltip>
     {/if}
   {/if}
 </div>

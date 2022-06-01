@@ -29,6 +29,20 @@
     "DeleteStatusConfirm": "Вы действительно хотите удалить этот статус?",
     "Reconnect": "Переподключить",
     "IntegrationDisabled": " была отключена",
-    "IntegrationWith": "Интеграция с "
+    "IntegrationWith": "Интеграция с ",
+    "ClassSetting": "Настройки класса",
+    "Attributes": "Атрибуты",
+    "DeleteAttribute": "Удалить атрибут",
+    "DeleteAttributeConfirm": "Вы действительно хотите удалить этот атрибут?",
+    "DeleteAttributeExistConfirm": "Вы действительно хотите удалить этот атрибут? Данные будут утеряны",
+    "Attribute": "Атрибут",
+    "Custom": "Пользовательский",
+    "Type": "Тип",
+    "WithTime": "Со временем",
+    "CreatingAttribute": "Создание атрибута",
+    "EditAttribute": "Редактирование атрибута",
+    "CreateEnum": "Создать справочник",
+    "Enums": "Справочники",
+    "NewValue": "Новое значение"
   }
 }

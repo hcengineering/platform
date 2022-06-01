@@ -25,7 +25,6 @@
   background: var(--popup-bg-color);
   border-radius: .5rem;
   box-shadow: var(--popup-shadow);
-  will-change: transform;
   
   &.maxHeight { height: 22rem; }
   &.autoHeight {
@@ -329,6 +328,31 @@
     justify-content: start;
     padding: 1rem 1.75rem 1.75rem 0.5rem;
     overflow: hidden;
+  }
+}
+
+.notifyPopup {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  width: max-content;
+  height: max-content;
+  padding-bottom: 0.5rem;
+  min-width: 32rem;
+  max-width: 32rem;
+  min-height: 22rem;
+  max-height: 22rem;
+  background: var(--popup-bg-color);
+  border-radius: 0.5rem;
+  box-shadow: var(--popup-shadow);
+
+  .header {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    padding: 0 1rem;
+    height: 3rem;
+    border-bottom: 1px solid var(--popup-divider);
   }
 }
 

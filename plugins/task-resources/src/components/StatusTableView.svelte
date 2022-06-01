@@ -23,12 +23,14 @@
   import Lost from './icons/Lost.svelte'
   import Won from './icons/Won.svelte'
   import StatesBar from './state/StatesBar.svelte'
+  import type { Filter } from '@anticrm/view'
 
   export let _class: Ref<Class<Task>>
   export let space: Ref<SpaceWithStates>
   export let options: FindOptions<Task> | undefined
   export let config: string[]
   export let search: string
+  export let filters: Filter[] = []
 
   let doneStatusesView: boolean = false
   let state: Ref<State> | undefined = undefined
@@ -104,7 +106,7 @@
   $: updateQuery(search, selectedDoneStates)
 </script>
 
-<div class="flex-between mb-4 header">
+<div class="flex-between mb-2 header">
   <div class="flex-row-center buttons">
     <div
       class="button flex-center"
@@ -173,7 +175,7 @@
   </div>
 </div>
 <div class="statustableview-container">
-  <TableBrowser {_class} bind:query config={resConfig} {options} filters={[]} showNotification />
+  <TableBrowser {_class} bind:query config={resConfig} {options} bind:filters showNotification />
 </div>
 
 <style lang="scss">

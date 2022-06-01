@@ -68,14 +68,16 @@ export function classPresenter (
   builder: Builder,
   _class: Ref<Class<Doc>>,
   presenter: AnyComponent,
-  editor?: AnyComponent
+  editor?: AnyComponent,
+  popup?: AnyComponent
 ): void {
   builder.mixin(_class, core.class.Class, view.mixin.AttributePresenter, {
     presenter
   })
   if (editor !== undefined) {
     builder.mixin(_class, core.class.Class, view.mixin.AttributeEditor, {
-      editor
+      editor,
+      popup
     })
   }
 }
@@ -267,7 +269,13 @@ export function createModel (builder: Builder): void {
     TLinkPresenter
   )
 
-  classPresenter(builder, core.class.TypeString, view.component.StringPresenter, view.component.StringEditor)
+  classPresenter(
+    builder,
+    core.class.TypeString,
+    view.component.StringPresenter,
+    view.component.StringEditor,
+    view.component.StringEditorPopup
+  )
   classPresenter(builder, core.class.TypeIntlString, view.component.IntlStringPresenter)
   classPresenter(builder, core.class.TypeNumber, view.component.NumberPresenter, view.component.NumberEditor)
   classPresenter(builder, core.class.TypeMarkup, view.component.HTMLPresenter)
@@ -276,26 +284,6 @@ export function createModel (builder: Builder): void {
   classPresenter(builder, core.class.TypeDate, view.component.DatePresenter, view.component.DateEditor)
   classPresenter(builder, core.class.Space, view.component.ObjectPresenter)
   classPresenter(builder, core.class.Class, view.component.ClassPresenter)
-
-  builder.mixin(core.class.TypeString, core.class.Class, view.mixin.ObjectEditor, {
-    editor: view.component.StringTypeEditor
-  })
-
-  builder.mixin(core.class.TypeBoolean, core.class.Class, view.mixin.ObjectEditor, {
-    editor: view.component.BooleanTypeEditor
-  })
-
-  builder.mixin(core.class.TypeDate, core.class.Class, view.mixin.ObjectEditor, {
-    editor: view.component.DateTypeEditor
-  })
-
-  builder.mixin(core.class.TypeNumber, core.class.Class, view.mixin.ObjectEditor, {
-    editor: view.component.NumberTypeEditor
-  })
-
-  builder.mixin(core.class.RefTo, core.class.Class, view.mixin.ObjectEditor, {
-    editor: view.component.RefEditor
-  })
 
   builder.createDoc(
     view.class.ActionCategory,
@@ -521,6 +509,8 @@ export function createModel (builder: Builder): void {
   builder.mixin(core.class.TypeTimestamp, core.class.Class, view.mixin.AttributeFilter, {
     component: view.component.TimestampFilter
   })
+
+  classPresenter(builder, core.class.EnumOf, view.component.StringPresenter, view.component.EnumEditor)
 }
 
 export default view

@@ -36,7 +36,9 @@ import {
   Timestamp,
   Type,
   Version,
-  BlobData
+  BlobData,
+  EnumOf,
+  Enum
 } from '@anticrm/core'
 import { Hidden, Index, Model, Prop, TypeIntlString, TypeRef, TypeString, TypeTimestamp, UX } from '@anticrm/model'
 import type { IntlString } from '@anticrm/platform'
@@ -82,6 +84,7 @@ export class TAttachedDoc extends TDoc implements AttachedDoc {
   collection!: string
 }
 
+@UX(core.string.ClassLabel)
 @Model(core.class.Class, core.class.Doc, DOMAIN_MODEL)
 export class TClass extends TDoc implements Class<Obj> {
   kind!: ClassifierKind
@@ -101,6 +104,13 @@ export class TInterface extends TDoc implements Interface<Doc> {
   kind!: ClassifierKind
   label!: IntlString
   extends?: Ref<Interface<Doc>>[]
+}
+
+@UX(core.string.Enum)
+@Model(core.class.Enum, core.class.Doc, DOMAIN_MODEL)
+export class TEnum extends TDoc implements Enum {
+  name!: string
+  enumValues!: string[]
 }
 
 @Model(core.class.Attribute, core.class.Doc, DOMAIN_MODEL)
@@ -162,6 +172,12 @@ export class TTypeTimestamp extends TType {}
 @UX(core.string.Date)
 @Model(core.class.TypeDate, core.class.Type)
 export class TTypeDate extends TType {}
+
+@UX(core.string.Enum)
+@Model(core.class.EnumOf, core.class.Type)
+export class TEnumOf extends TType implements EnumOf {
+  of!: Ref<Enum>
+}
 
 @Model(core.class.Version, core.class.Doc, DOMAIN_MODEL)
 export class TVersion extends TDoc implements Version {

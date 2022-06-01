@@ -19,7 +19,8 @@
   import { AnyComponent, Component, DropdownLabelsIntl, EditBox, Label } from '@anticrm/ui'
   import { DropdownIntlItem } from '@anticrm/ui/src/types'
   import { createEventDispatcher } from 'svelte'
-  import view from '../plugin'
+  import setting from '../plugin'
+  import view from '@anticrm/view'
 
   export let _class: Ref<Class<Doc>>
   let name: string
@@ -77,7 +78,7 @@
 </script>
 
 <Card
-  label={view.string.CreatingAttribute}
+  label={setting.string.CreatingAttribute}
   okAction={save}
   canSave={!(type === undefined || name === undefined || name.trim().length === 0)}
   on:close={() => {
@@ -87,10 +88,10 @@
   <div class="mb-2"><EditBox bind:value={name} placeholder={core.string.Name} maxWidth="13rem" /></div>
   <div class="flex-col mb-2">
     <div class="flex-row-center flex-grow">
-      <Label label={view.string.Type} />
+      <Label label={setting.string.Type} />
       <div class="ml-4">
         <DropdownLabelsIntl
-          label={view.string.Type}
+          label={setting.string.Type}
           {items}
           width="8rem"
           bind:selected={selectedType}
@@ -109,9 +110,5 @@
         />
       </div>
     {/if}
-    <Label label={view.string.CreatingAttributeConfirm} />
   </div>
 </Card>
-
-<style lang="scss">
-</style>
