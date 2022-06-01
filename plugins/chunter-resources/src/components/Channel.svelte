@@ -130,13 +130,15 @@
     const dateSelectors = div?.getElementsByClassName('dateSelector')
     if (!dateSelectors) return
 
-    let closestDate: Timestamp | undefined = Array.from(dateSelectors).reduceRight((prevDate, cur) => {
-      const curDate = parseInt(cur.id)
-      if (prevDate < date) return curDate
-      if (curDate < date) return prevDate
-      if (curDate - date < prevDate - date) return curDate
-      else return prevDate
-    }, parseInt(dateSelectors[dateSelectors.length - 1].id))
+    let closestDate: Timestamp | undefined = parseInt(dateSelectors[dateSelectors.length - 1].id)
+
+    for (const elem of Array.from(dateSelectors).reverse()) {
+      const curDate = parseInt(elem.id)
+      if (curDate < date) break
+      else if (curDate - date < closestDate - date) {
+        closestDate = curDate
+      }
+    }
     if (closestDate && closestDate < date) closestDate = undefined
 
     if (closestDate) {
@@ -149,23 +151,22 @@
   function scrollToDate (date: Timestamp) {
     let offset = date && document.getElementById(date.toString())?.offsetTop
     if (offset) {
-      offset = offset - headerHeight
+      offset = offset - headerHeight - dateSelectorHeight / 2
       if (pinnedIds.length > 0) offset = offset - pinnedHeight
       div?.scrollTo({ left: 0, top: offset })
     }
   }
 
-  let up: boolean | undefined = true
+  let showFixed: boolean | undefined
   let selectedDate: Timestamp | undefined = messages ? getDay(messages[0].createOn) : undefined
   function handleScroll () {
-    up = div && div.scrollTop === 0
-
     const upperVisible = getFirstVisible()
     if (upperVisible) {
       selectedDate = parseInt(upperVisible.id)
     }
   }
 
+  const dateSelectorHeight = 30
   function getFirstVisible (): Element | undefined {
     if (!div) return
 
@@ -176,22 +177,25 @@
       .find((child) => {
         if (child?.nodeType === Node.ELEMENT_NODE) {
           const rect = child?.getBoundingClientRect()
-          if (rect.top <= clientRect.top) {
+          if (rect.top - dateSelectorHeight / 2 <= clientRect.top + dateSelectorHeight) {
             return true
           }
         }
         return false
       })
+    if (firstVisible) {
+      showFixed = clientRect.top - firstVisible.getBoundingClientRect().top > -dateSelectorHeight / 2
+    }
     return firstVisible
   }
 </script>
 
-{#if !up}
-  <div class="pr-2">
-    <JumpToDateSelector {selectedDate} fixed on:jumpToDate={handleJumpToDate} />
-  </div>
-{/if}
 <div class="flex-col vScroll" bind:this={div} on:scroll={handleScroll}>
+  {#if showFixed}
+    <div class="ml-2 pr-2 fixed">
+      <JumpToDateSelector {selectedDate} fixed on:jumpToDate={handleJumpToDate} />
+    </div>
+  {/if}
   {#if messages}
     {#each messages as message, i (message._id)}
       {#if newMessagesPos === i}
@@ -211,3 +215,11 @@
     {/each}
   {/if}
 </div>
+
+<style lang="scss">
+  .fixed {
+    position: absolute;
+    align-self: center;
+    z-index: 1;
+  }
+</style>

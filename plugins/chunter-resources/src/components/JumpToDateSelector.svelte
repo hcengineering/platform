@@ -13,9 +13,10 @@
   $: time = selectedDate ? getDay(selectedDate) : undefined
 </script>
 
-<div id={fixed ? '' : time?.toString()} class="flex justify-center over-underline dateSelector">
+<div id={fixed ? '' : time?.toString()} class="flex justify-center mt-5 pr-1 dateSelector">
   <div
     bind:this={div}
+    class="mb-1 p-1 border-radius-2 over-underline dateSelectorButton"
     on:click={() => {
       showPopup(DateRangePopup, {}, div, (v) => {
         if (v) {
@@ -38,5 +39,11 @@
     &:not(:first-child) {
       border-top: 1px solid var(--theme-dialog-divider);
     }
+  }
+
+  .dateSelectorButton {
+    margin-top: -1rem;
+    border: 1px solid var(--theme-dialog-divider);
+    background-color: var(--body-color);
   }
 </style>
