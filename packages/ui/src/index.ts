@@ -141,6 +141,7 @@ export { default as WeekCalendar } from './components/calendar/WeekCalendar.svel
 export { default as FocusHandler } from './components/FocusHandler.svelte'
 export { default as ListView } from './components/ListView.svelte'
 export { default as ToggleButton } from './components/ToggleButton.svelte'
+export { default as ExpandCollapse } from './components/ExpandCollapse.svelte'
 
 export * from './types'
 export * from './location'

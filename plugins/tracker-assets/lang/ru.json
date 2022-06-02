@@ -43,6 +43,9 @@
     "Low": "Низкий",
     "Unassigned": "Не назначен",
     "AddIssueTooltip": "Добавить задачу\u2026",
+    "SubIssues": "Подзадачи ({subIssues})",
+    "OpenSubIssues": "Открыть подзадачи",
+    "AddSubIssues": "{subIssues, plural, =1 {Добавить подзадачу} other {+ Добавить подзадачи}}",
 
     "Title": "Заголовок",
     "Description": "",
