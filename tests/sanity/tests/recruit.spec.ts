@@ -39,8 +39,8 @@ test.describe('recruit tests', () => {
     await location.fill(loc)
 
     await page.locator('[id="presentation\\:string\\:AddSocialLinks"]').click()
-    await page.click('div:has-text("Email")')
-    const emailInput = page.locator('[placeholder="john.appleseed@apple.com"]')
+    await page.locator('.antiPopup').locator('text=Email').click()
+    const emailInput = page.locator('[placeholder="john\\.appleseed@apple\\.com"]')
     await emailInput.fill(email)
     await emailInput.press('Enter')
 
