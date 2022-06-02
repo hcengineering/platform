@@ -61,7 +61,9 @@ export async function getObjectPresenter (
     mixinClazz = hierarchy.getClass(mixinClazz.extends)
   }
   if (presenterMixin.presenter === undefined) {
-    throw new Error(`object presenter not found for class=${_class}, mixin=${mixin}, preserve key ${JSON.stringify(preserveKey)}`)
+    throw new Error(
+      `object presenter not found for class=${_class}, mixin=${mixin}, preserve key ${JSON.stringify(preserveKey)}`
+    )
   }
   const presenter = await getResource(presenterMixin.presenter)
   const key = preserveKey.sortingKey ?? preserveKey.key
