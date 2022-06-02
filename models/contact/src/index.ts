@@ -291,6 +291,10 @@ export function createModel (builder: Builder): void {
     presenter: contact.component.EmployeePresenter
   })
 
+  builder.mixin(contact.class.Channel, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: contact.component.ChannelsPresenter
+  })
+
   builder.mixin(contact.class.Employee, core.class.Class, view.mixin.IgnoreActions, {
     actions: [view.action.Delete]
   })
