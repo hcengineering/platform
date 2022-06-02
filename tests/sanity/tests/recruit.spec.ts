@@ -46,7 +46,7 @@ test.describe('recruit tests', () => {
 
     await page.locator('.antiCard').locator('button:has-text("Create")').click()
 
-    await page.click(`text=${first} J.`)
+    await page.click(`text="${first} ${last}"`)
 
     await expect(page.locator(`text=${first}`).first()).toBeVisible()
     await expect(page.locator(`text=${last}`).first()).toBeVisible()
