@@ -19,6 +19,8 @@ test.describe('recruit tests', () => {
 
     const first = 'Elton-' + generateId(4)
     const last = 'John-' + generateId(4)
+    const loc = 'Cupertino'
+    const email = 'ej@test.com'
 
     const firstName = page.locator('[placeholder="John"]')
     await firstName.click()
@@ -34,9 +36,25 @@ test.describe('recruit tests', () => {
 
     const location = page.locator('[placeholder="Location"]')
     await location.click()
-    await location.fill('Cupertino')
+    await location.fill(loc)
+
+    await page.locator('[id="presentation\\:string\\:AddSocialLinks"]').click()
+    await page.locator('.antiPopup').locator('text=Email').click()
+    const emailInput = page.locator('[placeholder="john\\.appleseed@apple\\.com"]')
+    await emailInput.fill(email)
+    await emailInput.press('Enter')
 
     await page.locator('.antiCard').locator('button:has-text("Create")').click()
+
+    await page.click(`text="${first} ${last}"`)
+
+    await expect(page.locator(`text=${first}`).first()).toBeVisible()
+    await expect(page.locator(`text=${last}`).first()).toBeVisible()
+    await expect(page.locator(`text=${loc}`).first()).toBeVisible()
+
+    const activity = page.locator('[id="activity\\:string\\:Activity"]')
+    await activity.locator('[id="gmail\\:string\\:Email"]').hover()
+    await expect(page.locator(`text=${email}`).first()).toBeVisible()
   })
 
   test('create-application', async ({ page }) => {
