@@ -15,12 +15,14 @@
 //
 
 import core, {
+  Account,
   AttachedDoc,
   Class,
   ClassifierKind,
   Collection,
   Doc,
   DocumentQuery,
+  DocumentUpdate,
   Domain,
   DOMAIN_MODEL,
   DOMAIN_TX,
@@ -125,12 +127,82 @@ class TServerStorage implements ServerStorage {
     }
   }
 
+  private async getCollectionUpdateTx<D extends Doc>(
+    _id: Ref<D>,
+    _class: Ref<Class<D>>,
+    modifiedBy: Ref<Account>,
+    modifiedOn: number,
+    attachedTo: D,
+    update: DocumentUpdate<D>
+  ): Promise<Tx> {
+    const txFactory = new TxFactory(modifiedBy)
+    const baseClass = this.hierarchy.getBaseClass(_class)
+    if (baseClass !== _class) {
+      // Mixin operation is required.
+      const tx = txFactory.createTxMixin(_id, attachedTo._class, attachedTo.space, _class, update)
+      tx.modifiedOn = modifiedOn
+
+      return tx
+    } else {
+      const tx = txFactory.createTxUpdateDoc(_class, attachedTo.space, _id, update)
+      tx.modifiedOn = modifiedOn
+
+      return tx
+    }
+  }
+
+  private async updateCollection (ctx: MeasureContext, tx: Tx): Promise<Tx[]> {
+    if (tx._class !== core.class.TxCollectionCUD) {
+      return []
+    }
+
+    const colTx = tx as TxCollectionCUD<Doc, AttachedDoc>
+    const _id = colTx.objectId
+    const _class = colTx.objectClass
+    const { operations } = colTx.tx as TxUpdateDoc<AttachedDoc>
+
+    if (
+      colTx.tx._class !== core.class.TxUpdateDoc ||
+      this.hierarchy.getDomain(_class) === DOMAIN_MODEL // We could not update increments for model classes
+    ) {
+      return []
+    }
+
+    if (operations?.attachedTo === undefined || operations.attachedTo === _id) {
+      return []
+    }
+
+    const oldAttachedTo = (await this.findAll(ctx, _class, { _id }, { limit: 1 }))[0]
+    let oldTx: Tx | null = null
+    if (oldAttachedTo !== undefined) {
+      oldTx = await this.getCollectionUpdateTx(_id, _class, tx.modifiedBy, colTx.modifiedOn, oldAttachedTo, {
+        $inc: { [colTx.collection]: -1 }
+      })
+    }
+
+    const newAttachedToClass = operations.attachedToClass ?? _class
+    const newAttachedToCollection = operations.collection ?? colTx.collection
+    const newAttachedTo = (await this.findAll(ctx, newAttachedToClass, { _id: operations.attachedTo }, { limit: 1 }))[0]
+    let newTx: Tx | null = null
+    if (newAttachedTo !== undefined) {
+      newTx = await this.getCollectionUpdateTx(
+        newAttachedTo._id,
+        newAttachedTo._class,
+        tx.modifiedBy,
+        colTx.modifiedOn,
+        newAttachedTo,
+        { $inc: { [newAttachedToCollection]: 1 } }
+      )
+    }
+
+    return [...(oldTx !== null ? [oldTx] : []), ...(newTx !== null ? [newTx] : [])]
+  }
+
   async processCollection (ctx: MeasureContext, tx: Tx): Promise<Tx[]> {
     if (tx._class === core.class.TxCollectionCUD) {
       const colTx = tx as TxCollectionCUD<Doc, AttachedDoc>
       const _id = colTx.objectId
       const _class = colTx.objectClass
-      let attachedTo: Doc | undefined
 
       // Skip model operations
       if (this.hierarchy.getDomain(_class) === DOMAIN_MODEL) {
@@ -139,26 +211,20 @@ class TServerStorage implements ServerStorage {
       }
 
       const isCreateTx = colTx.tx._class === core.class.TxCreateDoc
-      if (isCreateTx || colTx.tx._class === core.class.TxRemoveDoc) {
-        attachedTo = (await this.findAll(ctx, _class, { _id }, { limit: 1 }))[0]
-        if (attachedTo !== undefined) {
-          const txFactory = new TxFactory(tx.modifiedBy)
-          const baseClass = this.hierarchy.getBaseClass(_class)
-          if (baseClass !== _class) {
-            // Mixin opeeration is required.
-            const tx = txFactory.createTxMixin(_id, attachedTo._class, attachedTo.space, _class, {
-              $inc: { [colTx.collection]: isCreateTx ? 1 : -1 }
-            })
-            tx.modifiedOn = colTx.modifiedOn
+      const isDeleteTx = colTx.tx._class === core.class.TxRemoveDoc
+      const isUpdateTx = colTx.tx._class === core.class.TxUpdateDoc
 
-            return [tx]
-          } else {
-            const tx = txFactory.createTxUpdateDoc(_class, attachedTo.space, _id, {
-              $inc: { [colTx.collection]: isCreateTx ? 1 : -1 }
-            })
-            tx.modifiedOn = colTx.modifiedOn
-
-            return [tx]
+      if (isCreateTx || isDeleteTx || isUpdateTx) {
+        if (isUpdateTx) {
+          return await this.updateCollection(ctx, tx)
+        } else {
+          const attachedTo = (await this.findAll(ctx, _class, { _id }, { limit: 1 }))[0]
+          if (attachedTo !== undefined) {
+            return [
+              await this.getCollectionUpdateTx(_id, _class, tx.modifiedBy, colTx.modifiedOn, attachedTo, {
+                $inc: { [colTx.collection]: isCreateTx ? 1 : -1 }
+              })
+            ]
           }
         }
       }

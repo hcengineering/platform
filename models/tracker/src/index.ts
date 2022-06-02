@@ -125,9 +125,9 @@ export class TTeam extends TSpace implements Team {
 /**
  * @public
  */
-@Model(tracker.class.Issue, core.class.Doc, DOMAIN_TRACKER)
+@Model(tracker.class.Issue, core.class.AttachedDoc, DOMAIN_TRACKER)
 @UX(tracker.string.Issue, tracker.icon.Issue, tracker.string.Issue)
-export class TIssue extends TDoc implements Issue {
+export class TIssue extends TAttachedDoc implements Issue {
   @Prop(TypeString(), tracker.string.Title)
   @Index(IndexKind.FullText)
   title!: string
@@ -151,8 +151,8 @@ export class TIssue extends TDoc implements Issue {
   @Prop(TypeRef(tracker.class.Project), tracker.string.Project)
   project!: Ref<Project> | null
 
-  @Prop(TypeRef(tracker.class.Issue), tracker.string.Parent)
-  parentIssue!: Ref<Issue>
+  @Prop(Collection(tracker.class.Issue), tracker.string.SubIssues)
+  subIssues!: number
 
   @Prop(ArrOf(TypeRef(tracker.class.Issue)), tracker.string.BlockedBy)
   blockedBy!: Ref<Issue>[]

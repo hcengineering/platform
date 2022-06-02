@@ -38,7 +38,15 @@
       return
     }
 
-    await client.update(value, { status: newStatus })
+    await client.updateCollection(
+      value._class,
+      value.space,
+      value._id,
+      value.attachedTo,
+      value.attachedToClass,
+      value.collection,
+      { status: newStatus }
+    )
   }
 </script>
 

@@ -13,9 +13,9 @@
 // limitations under the License.
 //
 
-import core, { generateId, Ref, TxOperations } from '@anticrm/core'
+import core, { Doc, generateId, Ref, TxOperations } from '@anticrm/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
-import { IssueStatus, IssueStatusCategory, Team, genRanks } from '@anticrm/tracker'
+import { IssueStatus, IssueStatusCategory, Team, genRanks, Issue } from '@anticrm/tracker'
 import { DOMAIN_TRACKER } from '.'
 import tracker from './plugin'
 
@@ -149,6 +149,53 @@ async function upgradeIssueStatuses (tx: TxOperations): Promise<void> {
   }
 }
 
+async function migrateParentIssues (client: MigrationClient): Promise<void> {
+  let { updated } = await client.update(
+    DOMAIN_TRACKER,
+    { _class: tracker.class.Issue, attachedToClass: { $exists: false } },
+    {
+      subIssues: 0,
+      collection: 'subIssues',
+      attachedToClass: tracker.class.Issue
+    }
+  )
+  updated += (
+    await client.update(
+      DOMAIN_TRACKER,
+      { _class: tracker.class.Issue, parentIssue: { $exists: true } },
+      { $rename: { parentIssue: 'attachedTo' } }
+    )
+  ).updated
+  updated += (
+    await client.update(
+      DOMAIN_TRACKER,
+      { _class: tracker.class.Issue, attachedTo: { $in: [null, undefined] } },
+      { attachedTo: tracker.ids.NoParent }
+    )
+  ).updated
+
+  if (updated === 0) {
+    return
+  }
+
+  const childrenCountById = new Map<Ref<Doc>, number>()
+  const parentIssueIds = (
+    await client.find<Issue>(DOMAIN_TRACKER, {
+      _class: tracker.class.Issue,
+      attachedTo: { $nin: [tracker.ids.NoParent] }
+    })
+  ).map((issue) => issue.attachedTo)
+
+  for (const issueId of parentIssueIds) {
+    const count = childrenCountById.get(issueId) ?? 0
+    childrenCountById.set(issueId, count + 1)
+  }
+
+  for (const [_id, childrenCount] of childrenCountById) {
+    await client.update(DOMAIN_TRACKER, { _id }, { subIssues: childrenCount })
+  }
+}
+
 async function migrateIssueProjects (client: MigrationClient): Promise<void> {
   const issues = await client.find(DOMAIN_TRACKER, { _class: tracker.class.Issue, project: { $exists: false } })
 
@@ -197,7 +244,7 @@ async function upgradeProjects (tx: TxOperations): Promise<void> {
 
 export const trackerOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
-    await Promise.all([migrateIssueProjects(client)])
+    await Promise.all([migrateIssueProjects(client), migrateParentIssues(client)])
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)
