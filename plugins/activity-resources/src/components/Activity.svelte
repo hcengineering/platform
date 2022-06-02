@@ -71,7 +71,7 @@
   {/if}
   <div class="flex-col flex-grow min-h-0" class:background-accent-bg-color={!transparent}>
     <Scroller>
-      <div class="p-10 select-text">
+      <div class="p-10 select-text" id={activity.string.Activity}>
         {#if txes}
           <Grid column={1} rowGap={1.5}>
             {#each txes as tx}
@@ -101,7 +101,7 @@
       <Component is={chunter.component.CommentInput} props={{ object }} />
     </div>
   {/if}
-  <div class="p-activity select-text">
+  <div class="p-activity select-text" id={activity.string.Activity}>
     {#if txes}
       <Grid column={1} rowGap={1.5}>
         {#each txes as tx}
