@@ -29,12 +29,6 @@
   export let issueStatuses: WithLookup<IssueStatus>[]
 
   const dispatch = createEventDispatcher()
-  const animationConfig = {
-    // We need this short delay to avoid animation flickering when
-    // we receive a server response with updated array during the swap
-    delay: 100,
-    duration: 400
-  }
 
   let draggingIndex: number | null = null
   let hoveringIndex: number | null = null
@@ -56,19 +50,11 @@
     }
   }
 
-  function handleDrop (ev: DragEvent, newIndex: number) {
-    if (ev.dataTransfer && draggingIndex !== null && newIndex !== draggingIndex) {
+  function handleDrop (ev: DragEvent, toIndex: number) {
+    if (ev.dataTransfer && draggingIndex !== null && toIndex !== draggingIndex) {
       ev.dataTransfer.dropEffect = 'move'
 
-      if (draggingIndex < newIndex) {
-        issues.splice(newIndex + 1, 0, issues[draggingIndex])
-        issues.splice(draggingIndex, 1)
-      } else {
-        issues.splice(newIndex, 0, issues[draggingIndex])
-        issues.splice(draggingIndex + 1, 1)
-      }
-
-      dispatch('move', newIndex)
+      dispatch('move', { fromIndex: draggingIndex, toIndex })
     }
 
     resetDrag()
@@ -80,7 +66,7 @@
     class="flex-between row"
     class:is-dragging={index === draggingIndex}
     class:is-dragged-over={index === hoveringIndex}
-    animate:flip={animationConfig}
+    animate:flip={{ duration: 400 }}
     draggable={true}
     on:click|self={() => openIssue(issue)}
     on:dragstart={(ev) => handleDragStart(ev, index)}

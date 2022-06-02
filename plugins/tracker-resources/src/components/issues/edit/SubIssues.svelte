@@ -32,11 +32,15 @@
   let isCollapsed = false
   // let isCreating = false
 
-  async function handleIssueSwap (ev: CustomEvent<number>) {
+  async function handleIssueSwap (ev: CustomEvent<{ fromIndex: number; toIndex: number }>) {
     if (subIssues) {
-      const { detail: newIndex } = ev
-      const [prev, next] = [subIssues[newIndex - 1], subIssues[newIndex + 1]]
-      const issue = subIssues[newIndex]
+      const { fromIndex, toIndex } = ev.detail
+      console.log('index', fromIndex, toIndex)
+      const [prev, next] = [
+        subIssues[fromIndex < toIndex ? toIndex : toIndex - 1],
+        subIssues[fromIndex < toIndex ? toIndex + 1 : toIndex]
+      ]
+      const issue = subIssues[fromIndex]
 
       await client.update(issue, { rank: calcRank(prev, next) })
     }
@@ -81,7 +85,7 @@
     {#if subIssues && issueStatuses}
       <div class="list" class:collapsed={isCollapsed}>
         <ExpandCollapse isExpanded={!isCollapsed} duration={400}>
-          <SubIssueList bind:issues={subIssues} {issueStatuses} on:move={handleIssueSwap} />
+          <SubIssueList issues={subIssues} {issueStatuses} on:move={handleIssueSwap} />
         </ExpandCollapse>
       </div>
     {:else}
