@@ -1307,6 +1307,11 @@
       "packageName": "@anticrm/server-backup",
       "projectFolder": "server/backup",
       "shouldPublish": true
-    }
+    },
+    {
+      "packageName": "@anticrm/pod-backup",
+      "projectFolder": "pods/backup",
+      "shouldPublish": false
+    },
   ]
 }

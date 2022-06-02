@@ -104,6 +104,7 @@ specifiers:
   '@rush-temp/platform': file:./projects/platform.tgz
   '@rush-temp/platform-rig': file:./projects/platform-rig.tgz
   '@rush-temp/pod-account': file:./projects/pod-account.tgz
+  '@rush-temp/pod-backup': file:./projects/pod-backup.tgz
   '@rush-temp/preference': file:./projects/preference.tgz
   '@rush-temp/preference-assets': file:./projects/preference-assets.tgz
   '@rush-temp/presentation': file:./projects/presentation.tgz
@@ -386,6 +387,7 @@ dependencies:
   '@rush-temp/platform': file:projects/platform.tgz
   '@rush-temp/platform-rig': file:projects/platform-rig.tgz_6fa5d152813644f44d2852d983dc9002
   '@rush-temp/pod-account': file:projects/pod-account.tgz
+  '@rush-temp/pod-backup': file:projects/pod-backup.tgz
   '@rush-temp/preference': file:projects/preference.tgz
   '@rush-temp/preference-assets': file:projects/preference-assets.tgz
   '@rush-temp/presentation': file:projects/presentation.tgz_3b42a51b6c974062237d417c554d9dd7
@@ -3162,7 +3164,7 @@ packages:
     dev: false
 
   /assert-plus/1.0.0:
-    resolution: {integrity: sha1-8S4PPF13sLHN2RRpQuTpbB5N1SU=}
+    resolution: {integrity: sha512-NfJ4UzBCcQGLDlQq7nHxH+tv3kyZ0hHQqF5BO6J7tNJeP5do1llPr8dZ8zHonfhAu0PHAdMkSo+8o0wxg9lZWw==}
     engines: {node: '>=0.8'}
     dev: false
 
@@ -3242,7 +3244,7 @@ packages:
     dev: false
 
   /aws-sign2/0.7.0:
-    resolution: {integrity: sha1-tG6JCTSpWR8tL2+G1+ap8bP+dqg=}
+    resolution: {integrity: sha512-08kcGqnYf/YmjoRhfxyu+CLxBjUtHLXLXX/vUfx9l2LYzG3c1m61nrpyFUZI6zeS+Li/wWMMidD9KgrqtGq3mA==}
     dev: false
 
   /aws4/1.11.0:
@@ -3371,7 +3373,7 @@ packages:
     dev: false
 
   /bcrypt-pbkdf/1.0.2:
-    resolution: {integrity: sha1-pDAdOJtqQ/m2f/PKEaP2Y342Dp4=}
+    resolution: {integrity: sha512-qeFIXtP4MSoi6NLqO12WfqARWWuCKi2Rn/9hJLEmtB5yTNr9DqFWkJRCf2qShWzPeAMRnOgCrq0sg/KLv5ES9w==}
     dependencies:
       tweetnacl: 0.14.5
     dev: false
@@ -3699,7 +3701,7 @@ packages:
     dev: false
 
   /caseless/0.12.0:
-    resolution: {integrity: sha1-G2gcIf+EAzyCZUMJBolCDRhxUdw=}
+    resolution: {integrity: sha512-4tYFyifaFfGacoiObjJegolkwSU4xQNGbVgUiNYVUxbQ2x2lUsFvY4hVgVzGiIe6WLOPqycWXA40l+PWsxthUw==}
     dev: false
 
   /chalk/2.4.2:
@@ -4179,7 +4181,7 @@ packages:
     dev: false
 
   /dashdash/1.14.1:
-    resolution: {integrity: sha1-hTz6D3y+L+1d4gMmuN1YEDX24vA=}
+    resolution: {integrity: sha512-jRFi8UDGo6j+odZiEpjazZaWqEal3w/basFjQHQEwVtZJGDpxbH1MeYluwCS8Xq5wmLJooDlMgvVarmWfGM44g==}
     engines: {node: '>=0.10'}
     dependencies:
       assert-plus: 1.0.0
@@ -4496,7 +4498,7 @@ packages:
     dev: false
 
   /ecc-jsbn/0.1.2:
-    resolution: {integrity: sha1-OoOpBOVDUyh4dMVkt1SThoSamMk=}
+    resolution: {integrity: sha512-eh9O+hwRHNbG4BLTjEl3nw044CkGm5X6LoaCf7LPp7UU8Qrt47JYNi6nPX8xjW97TKGKm1ouctg0QSpZe9qrnw==}
     dependencies:
       jsbn: 0.1.1
       safer-buffer: 2.1.2
@@ -5274,7 +5276,7 @@ packages:
     dev: false
 
   /extsprintf/1.3.0:
-    resolution: {integrity: sha1-lpGEQOMEGnpBT4xS48V06zw+HgU=}
+    resolution: {integrity: sha512-11Ndz7Nv+mvAC1j0ktTa7fAb0vLyGGX+rMHNBYQviQDGU0Hw7lhctJANqbPhu9nV9/izT/IntTgZ7Im/9LJs9g==}
     engines: {'0': node >=0.6.0}
     dev: false
 
@@ -5492,7 +5494,7 @@ packages:
     dev: false
 
   /forever-agent/0.6.1:
-    resolution: {integrity: sha1-+8cfDEGt6zf5bFd60e1C2P2sypE=}
+    resolution: {integrity: sha512-j0KLYPhm6zeac4lz3oJ3o65qvgQCcPubiyotZrXqEaG4hNagNYO8qdlUrX5vwqv9ohqeT/Z3j6+yW067yWWdUw==}
     dev: false
 
   /form-data/2.3.3:
@@ -5633,7 +5635,7 @@ packages:
     dev: false
 
   /getpass/0.1.7:
-    resolution: {integrity: sha1-Xv+OPmhNVprkyysSgmBOi6YhSfo=}
+    resolution: {integrity: sha512-0fzj9JxOLfJ+XGLhR8ze3unN0KZCgZwiSSDz168VERjK8Wl8kVSdcu2kspd4s4wtAa1y/qrVRiAA0WclVsu0ng==}
     dependencies:
       assert-plus: 1.0.0
     dev: false
@@ -5733,7 +5735,7 @@ packages:
     dev: false
 
   /har-schema/2.0.0:
-    resolution: {integrity: sha1-qUwiJOvKwEeCoNkDVSHyRzW37JI=}
+    resolution: {integrity: sha512-Oqluz6zhGX8cyRaTQlFMPw80bSJVG2x/cFb8ZPhUILGgHka9SsokCCOQgpveePerqidZOrT14ipqfJb7ILcW5Q==}
     engines: {node: '>=4'}
     dev: false
 
@@ -5983,7 +5985,7 @@ packages:
     dev: false
 
   /http-signature/1.2.0:
-    resolution: {integrity: sha1-muzZJRFHcvPZW2WmCruPfBj7rOE=}
+    resolution: {integrity: sha512-CAbnr6Rz4CYQkLYUtSNXxQPUH2gK8f3iWexVlsnMeD+GjlsQ0Xsy1cOX+mN3dtxYomRy21CiOzU8Uhw6OwncEQ==}
     engines: {node: '>=0.8', npm: '>=1.3.7'}
     dependencies:
       assert-plus: 1.0.0
@@ -6371,7 +6373,7 @@ packages:
     dev: false
 
   /isstream/0.1.2:
-    resolution: {integrity: sha1-R+Y/evVa+m+S4VAOaQ64uFKcCZo=}
+    resolution: {integrity: sha512-Yljz7ffyPbrLpLngrMtZ7NduUgVvi6wG9RJ9IUcyCd59YQ911PBJphODUcbOVbqYfxe1wuYf/LJ8PauMRwsM/g==}
     dev: false
 
   /istanbul-lib-coverage/3.2.0:
@@ -6923,7 +6925,7 @@ packages:
     dev: false
 
   /jsbn/0.1.1:
-    resolution: {integrity: sha1-peZUwuWi3rXyAdls77yoDA7y9RM=}
+    resolution: {integrity: sha512-UVU9dibq2JcFWxQPA6KCqj5O42VOmAY3zQUfEKxU0KpTGXwNoCjkX1e13eHNvw/xPynt6pU0rZ1htjWTNTSXsg==}
     dev: false
 
   /jsdom/16.7.0:
@@ -7007,7 +7009,7 @@ packages:
     dev: false
 
   /json-stringify-safe/5.0.1:
-    resolution: {integrity: sha1-Epai1Y/UXxmg9s4B1lcB4sc1tus=}
+    resolution: {integrity: sha512-ZClg6AaYvamvYEE82d3Iyd3vSSIjQ+odgjaTzRuO3s7toCdFKczob2i0zCh7JE8kWn17yvAWhUVxvqGwUalsRA==}
     dev: false
 
   /json5/0.5.1:
@@ -13042,6 +13044,37 @@ packages:
       - '@swc/wasm'
       - eslint-import-resolver-typescript
       - eslint-import-resolver-webpack
+      - supports-color
+    dev: false
+
+  file:projects/pod-backup.tgz:
+    resolution: {integrity: sha512-DMl1JkvmMx9OJgpA9yGV0OOqpGBDDRCdiyrnk+cBr519KYLSkhakYULl7qvejWgP7eSAKs+ZVTOqBg8rCMKzyg==, tarball: file:projects/pod-backup.tgz}
+    name: '@rush-temp/pod-backup'
+    version: 0.0.0
+    dependencies:
+      '@rushstack/heft': 0.44.13
+      '@types/heft-jest': 1.0.2
+      '@types/minio': 7.0.13
+      '@types/node': 16.11.33
+      '@typescript-eslint/eslint-plugin': 5.22.0_27efc1da00e78084f5aa1809ff6483a1
+      '@typescript-eslint/parser': 5.22.0_eslint@7.32.0+typescript@4.6.4
+      cross-env: 7.0.3
+      dotenv: 16.0.0
+      esbuild: 0.12.29
+      eslint: 7.32.0
+      eslint-config-standard-with-typescript: 21.0.1_d91f81f4c73639e41ff8a6e8953d9ef2
+      eslint-plugin-import: 2.26.0_eslint@7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 5.2.0_eslint@7.32.0
+      got: 11.8.5
+      minio: 7.0.28
+      mongodb: 4.5.0
+      prettier: 2.6.2
+      ts-node: 10.5.0_fd4b5ff48b408bf425abfec4a641da13
+      typescript: 4.6.4
+    transitivePeerDependencies:
+      - '@swc/core'
+      - '@swc/wasm'
       - supports-color
     dev: false
 
