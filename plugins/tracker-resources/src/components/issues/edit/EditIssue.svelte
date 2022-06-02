@@ -153,7 +153,7 @@
   <Panel
     object={issue}
     isHeader
-    isAside={true}
+    isAside
     isSub={false}
     withoutActivity={isEditing}
     bind:innerWidth
