@@ -25,11 +25,6 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
       - name: Cache node modules
         uses: actions/cache@v3
         env:
@@ -39,21 +34,6 @@ jobs:
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-
-      - name: Checking for mis-matching dependencies...
-        run: node common/scripts/install-run-rush.js check
-
-      # - name: Checking for missing change logs...
-      #   run: node common/scripts/install-run-rush.js change -v
-
-      - name: Installing...
-        run: node common/scripts/install-run-rush.js install
-
-      - name: Setting model version from git release...
-        run: node common/scripts/install-run-rush.js bump-model-version
-
-      - name: Building...
-        run: node common/scripts/install-run-rush.js rebuild -p 16 -l --verbose
 
       - name: Cache build results
         uses: actions/cache@v3
@@ -76,8 +56,24 @@ jobs:
             tests
             rush.json
             .prettierrc
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
-          restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.ref }}
+          restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.ref }}
+      # Checkout after restore cache
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Checking for mis-matching dependencies...
+        run: node common/scripts/install-run-rush.js check
+
+      - name: Installing...
+        run: node common/scripts/install-run-rush.js install
+
+      - name: Setting model version from git release...
+        run: node common/scripts/install-run-rush.js bump-model-version
+
+      - name: Building...
+        run: node common/scripts/install-run-rush.js build -p 16 -l     
   svelte-check:
     needs: build
     runs-on: ubuntu-latest
@@ -107,8 +103,8 @@ jobs:
             tests
             rush.json
             .prettierrc
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
-          restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.ref }}
+          restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.ref }}
 
       - name: Checking svelte sources...
         run: node common/scripts/install-run-rush.js svelte-check
@@ -141,8 +137,8 @@ jobs:
             tests
             rush.json
             .prettierrc
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
-          restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.ref }}
+          restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.ref }}
 
       - name: Linting...
         run: node common/scripts/install-run-rush.js lint -p 16
@@ -175,8 +171,8 @@ jobs:
             tests
             rush.json
             .prettierrc
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
-          restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.ref }}
+          restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.ref }}
 
       - name: Formatting...
         run: node common/scripts/install-run-rush.js format -p 16
@@ -217,8 +213,8 @@ jobs:
             tests
             rush.json
             .prettierrc
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
-          restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.ref }}
+          restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.ref }}
 
       - name: Start MongoDB
         uses: supercharge/mongodb-github-action@1.7.0
@@ -263,8 +259,8 @@ jobs:
             tests
             rush.json
             .prettierrc
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
-          restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.ref }}
+          restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.ref }}
 
       - name: Installing...
         run: node common/scripts/install-run-rush.js install
@@ -320,8 +316,8 @@ jobs:
             tests
             rush.json
             .prettierrc
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
-          restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.ref }}
+          restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.ref }}
 
       - name: Installing...
         run: node common/scripts/install-run-rush.js install
