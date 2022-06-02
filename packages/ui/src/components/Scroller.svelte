@@ -54,7 +54,7 @@
             divBar.style.opacity = '1'
           }
           timer = setTimeout(() => {
-            divBar.style.opacity = '0'
+            if (divBar) divBar.style.opacity = '0'
           }, 2000)
         }
       }

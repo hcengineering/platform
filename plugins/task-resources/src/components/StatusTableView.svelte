@@ -17,11 +17,10 @@
   import { Class, DocumentQuery, FindOptions, Ref, SortingOrder } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
   import { DoneState, SpaceWithStates, State, Task } from '@anticrm/task'
-  import Label from '@anticrm/ui/src/components/Label.svelte'
+  import { TabList } from '@anticrm/ui'
+  import type { TabItem } from '@anticrm/ui'
   import { TableBrowser } from '@anticrm/view-resources'
   import task from '../plugin'
-  import Lost from './icons/Lost.svelte'
-  import Won from './icons/Won.svelte'
   import StatesBar from './state/StatesBar.svelte'
   import type { Filter } from '@anticrm/view'
 
@@ -34,10 +33,12 @@
 
   let doneStatusesView: boolean = false
   let state: Ref<State> | undefined = undefined
-  let selectedDoneStates: Set<Ref<DoneState>> = new Set<Ref<DoneState>>()
+  const selectedDoneStates: Set<Ref<DoneState>> = new Set<Ref<DoneState>>()
   $: resConfig = updateConfig(config)
   let query = {}
   let doneStates: DoneState[] = []
+  let itemsDS: TabItem[] = []
+  let selectedDS: string[] = []
   let withoutDone: boolean = false
 
   function updateConfig (config: string[]): string[] {
@@ -56,7 +57,17 @@
     {
       space
     },
-    (res) => (doneStates = res),
+    (res) => {
+      doneStates = res
+      itemsDS = doneStates.map((s) => {
+        return {
+          id: s._id,
+          label: s.title,
+          color: s._class === task.class.WonState ? 'var(--done-color)' : 'var(--error-color)'
+        }
+      })
+      itemsDS.unshift({ id: 'NoDoneState', labelIntl: task.string.NoDoneState })
+    },
     {
       sort: {
         _class: SortingOrder.Descending,
@@ -87,92 +98,69 @@
 
   function doneStateClick (id: Ref<DoneState>): void {
     withoutDone = false
-    if (selectedDoneStates.has(id)) {
-      selectedDoneStates.delete(id)
-    } else {
-      selectedDoneStates.add(id)
+    if (selectedDoneStates.has(id)) selectedDoneStates.delete(id)
+    else selectedDoneStates.add(id)
+    if (selectedDS.length === 2 && selectedDS.includes('NoDoneState')) {
+      selectedDS = selectedDS.filter((s) => s !== 'NoDoneState')
     }
-    selectedDoneStates = selectedDoneStates
+    if (selectedDS.length === 0) {
+      selectedDS = ['NoDoneState']
+      withoutDone = true
+    }
     updateQuery(search, selectedDoneStates)
   }
 
   function noDoneClick (): void {
-    withoutDone = !withoutDone
+    withoutDone = true
+    selectedDS = ['NoDoneState']
     selectedDoneStates.clear()
-    selectedDoneStates = selectedDoneStates
     updateQuery(search, selectedDoneStates)
   }
 
   $: updateQuery(search, selectedDoneStates)
 </script>
 
-<div class="flex-between mb-2 header">
-  <div class="flex-row-center buttons">
-    <div
-      class="button flex-center"
-      class:active={!doneStatusesView}
-      on:click={() => {
-        doneStatusesView = false
-        state = undefined
-        withoutDone = false
-        selectedDoneStates.clear()
-        updateQuery(search, selectedDoneStates)
+<div class="header">
+  <TabList
+    items={[
+      { id: 'AllStates', labelIntl: task.string.AllStates },
+      { id: 'DoneStates', labelIntl: task.string.DoneStates }
+    ]}
+    multiselect={false}
+    on:select={(result) => {
+      if (result.type === 'select') {
+        const res = result.detail
+        if (res.id === 'AllStates') {
+          doneStatusesView = false
+          state = undefined
+          withoutDone = false
+          selectedDoneStates.clear()
+          updateQuery(search, selectedDoneStates)
+        } else if (res.id === 'DoneStates') {
+          doneStatusesView = true
+          state = undefined
+          selectedDoneStates.clear()
+          updateQuery(search, selectedDoneStates)
+        }
+      }
+    }}
+  />
+  {#if doneStatusesView}
+    <TabList
+      items={itemsDS}
+      bind:selected={selectedDS}
+      multiselect
+      on:select={(result) => {
+        if (result.type === 'select') {
+          const res = result.detail
+          if (res.id === 'NoDoneState') noDoneClick()
+          else doneStateClick(res.id)
+        }
       }}
-    >
-      <Label label={task.string.AllStates} />
-    </div>
-    <div
-      class="button flex-center ml-3"
-      class:active={doneStatusesView}
-      on:click={() => {
-        doneStatusesView = true
-        state = undefined
-        selectedDoneStates.clear()
-        updateQuery(search, selectedDoneStates)
-      }}
-    >
-      <Label label={task.string.DoneStates} />
-    </div>
-  </div>
-  <div
-    class="flex-row-center caption-color states"
-    class:antiStatesBar={doneStatusesView}
-    class:justify-end={doneStatusesView}
-  >
-    {#if doneStatusesView}
-      <div
-        class="doneState withoutDone flex-center whitespace-nowrap"
-        class:disable={!withoutDone}
-        on:click={() => {
-          noDoneClick()
-        }}
-      >
-        <Label label={task.string.NoDoneState} />
-      </div>
-      {#each doneStates as state}
-        <div
-          class="doneState flex-center whitespace-nowrap"
-          class:won={state._class === task.class.WonState}
-          class:lost={state._class === task.class.LostState}
-          class:disable={!selectedDoneStates.has(state._id)}
-          on:click={() => {
-            doneStateClick(state._id)
-          }}
-        >
-          {#if state._class === task.class.WonState}
-            <Won size="medium" />
-          {:else}
-            <Lost size="medium" />
-          {/if}
-          <span class="ml-2">
-            {state.title}
-          </span>
-        </div>
-      {/each}
-    {:else}
-      <StatesBar bind:state {space} on:change={() => updateQuery(search, selectedDoneStates)} />
-    {/if}
-  </div>
+    />
+  {:else}
+    <StatesBar bind:state {space} gap={'none'} on:change={() => updateQuery(search, selectedDoneStates)} />
+  {/if}
 </div>
 <div class="statustableview-container">
   <TableBrowser {_class} bind:query config={resConfig} {options} bind:filters showNotification />
@@ -181,61 +169,23 @@
 <style lang="scss">
   .statustableview-container {
     flex-grow: 1;
-    margin-bottom: 0.75rem;
     min-height: 0;
     height: 100%;
   }
 
   .header {
-    margin-left: 2.5rem;
-    margin-right: 1.75rem;
-    .buttons {
-      padding: 0.125rem 0;
-    }
-    .states {
-      max-width: 75%;
-    }
-  }
+    display: grid;
+    grid-template-columns: auto auto;
+    justify-content: space-between;
+    align-items: center;
+    column-gap: 1rem;
+    padding: 0.75rem 0.75rem 0.75rem 2.5rem;
+    width: 100%;
+    min-height: 3.25rem;
+    min-width: 0;
+    background-color: var(--board-bg-color);
 
-  .button {
-    height: 2.5rem;
-    padding: 0.5rem 0.75rem;
-    border: 1px solid transparent;
-    border-radius: 0.5rem;
-    cursor: pointer;
-
-    &:hover {
-      background-color: var(--theme-button-bg-enabled);
-      border-color: var(--theme-button-border-enabled);
-    }
-    &.active {
-      background-color: var(--theme-button-bg-enabled);
-      color: var(--theme-caption-color);
-      border-color: var(--theme-button-border-enabled);
-    }
-  }
-
-  .doneState {
-    padding: 0.5rem 0.75rem;
-    height: 2.5rem;
-    border: 1px solid var(--theme-button-border-enabled);
-    border-radius: 0.5rem;
-    cursor: pointer;
-
-    &.won {
-      background-color: #60b96e;
-    }
-    &.lost {
-      background-color: #f06c63;
-    }
-    &.withoutDone {
-      background-color: var(--theme-bg-focused-color);
-    }
-    &.disable {
-      background-color: var(--theme-button-bg-enabled);
-    }
-  }
-  .doneState + .doneState {
-    margin-left: 0.75rem;
+    border-top: 1px solid var(--divider-color);
+    // border-bottom: 1px solid var(--divider-color);
   }
 </style>

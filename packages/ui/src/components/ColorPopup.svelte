@@ -96,7 +96,7 @@
         <svelte:fragment slot="item" let:item>
           {@const itemValue = objects[item]}
           <button
-            class="menu-item"
+            class="menu-item w-full"
             on:click={() => {
               dispatch('close', itemValue)
             }}
