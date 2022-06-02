@@ -22,6 +22,7 @@
   import { getClient } from '@anticrm/presentation'
   import task from '@anticrm/task'
   import type { State } from '@anticrm/task'
+  import { onDestroy } from 'svelte'
 
   export let _class: Ref<Class<Doc>>
   export let filter: Filter
@@ -57,6 +58,10 @@
     filter = filter
     dispatch('change')
   }
+
+  onDestroy(() => {
+    filter.onRemove?.()
+  })
 </script>
 
 <div class="filter-section">

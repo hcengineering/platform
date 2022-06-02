@@ -59,6 +59,13 @@
     )
   }
 
+  $: clear(_class)
+
+  function clear (_class: Ref<Class<Doc>>) {
+    filters.map((p) => p.onRemove?.())
+    filters = []
+  }
+
   function remove (i: number) {
     filters[i]?.onRemove?.()
     filters.splice(i, 1)
