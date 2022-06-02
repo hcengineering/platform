@@ -72,3 +72,4 @@ bundle.js
 dist
 tsconfig.tsbuildinfo
 ingest-attachment-*.zip
+tsdoc-metadata.json

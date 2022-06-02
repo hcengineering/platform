@@ -20,7 +20,7 @@ test.describe('recruit tests', () => {
     const first = 'Elton-' + generateId(4)
     const last = 'John-' + generateId(4)
     const loc = 'Cupertino'
-    const email = 'ej@test.com'
+    const email = `ej-${generateId(4)}@test.com`
 
     const firstName = page.locator('[placeholder="John"]')
     await firstName.click()
