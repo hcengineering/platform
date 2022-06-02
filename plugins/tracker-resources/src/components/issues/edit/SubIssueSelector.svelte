@@ -121,7 +121,7 @@
           <Spinner size="small" />
         </div>
       {:else}
-        <Tooltip label={tracker.string.OpenSub} direction="bottom">
+        <Tooltip label={tracker.string.OpenSubIssues} direction="bottom">
           <div
             bind:this={subIssuesElement}
             class="flex-center sub-issues"
