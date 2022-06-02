@@ -500,6 +500,10 @@ export function createModel (builder: Builder): void {
     filters: ['attachedTo', 'assignee', 'state', 'doneState', 'modifiedOn']
   })
 
+  builder.mixin(recruit.class.Vacancy, core.class.Class, view.mixin.ClassFilters, {
+    filters: ['company', 'location', 'dueTo']
+  })
+
   createReviewModel(builder)
 
   // createAction(builder, { ...viewTemplates.open, target: recruit.class.Vacancy, context: { mode: ['browser', 'context'] } })
