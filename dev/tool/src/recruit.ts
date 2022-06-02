@@ -25,31 +25,24 @@ import { generateToken } from '@anticrm/server-token'
 import { connect } from '@anticrm/server-tool'
 import tags, { findTagCategory } from '@anticrm/tags'
 import { Client } from 'minio'
-import request from 'request'
+import got from 'got'
 import { ElasticTool } from './elastic'
 import { findOrUpdateAttached } from './utils'
 import { readMinioData } from './workspace'
 
 async function recognize (rekoniUrl: string, data: string, token: string): Promise<ReconiDocument | undefined> {
-  return await new Promise((resolve) => {
-    request.post(
-      {
-        url: rekoniUrl + '/recognize?format=pdf',
-        headers: {
-          Authorization: 'Bearer ' + token,
-          'Content-Type': 'application/json'
-        },
-        json: true,
-        body: { fileUrl: 'document.pdf', dataBlob: data }
-      },
-      function (error, response, body) {
-        if (error != null) {
-          console.error(error)
-        }
-        resolve(body as ReconiDocument)
-      }
-    )
+  const { body }: { body?: ReconiDocument } = await got.post(rekoniUrl + '/recognize?format=pdf', {
+    headers: {
+      Authorization: 'Bearer ' + token,
+      'Content-Type': 'application/json'
+    },
+    json: {
+      fileUrl: 'document.pdf',
+      dataBlob: data
+    },
+    responseType: 'json'
   })
+  return body
 }
 
 function isUndef (value?: string): boolean {

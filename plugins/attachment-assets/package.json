@@ -23,7 +23,7 @@
     "eslint-plugin-promise": "^5.1.1",
     "eslint": "^7.32.0",
     "prettier": "^2.4.1",
-    "@rushstack/heft": "^0.44.13",
+    "@rushstack/heft": "^0.45.5",
     "@types/node": "~16.11.12",
     "@anticrm/platform-rig": "~0.6.0"
   },
