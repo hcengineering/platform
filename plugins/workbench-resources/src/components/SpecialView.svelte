@@ -44,26 +44,26 @@
   function updateDescriptor (_class: Ref<Class<Doc>>, descriptor: Ref<ViewletDescriptor> = view.viewlet.Table) {
     loading = true
     client
-    .findOne<Viewlet>(view.class.Viewlet, {
-      attachTo: _class,
-      descriptor
-    })
-    .then((res) => {
-      descr = res
-      if (res !== undefined) {
-        preferenceQuery.query(
-          view.class.ViewletPreference,
-          {
-            attachedTo: res._id
-          },
-          (res) => {
-            preference = res[0]
-            loading = false
-          },
-          { limit: 1 }
-        )
-      }
-    })
+      .findOne<Viewlet>(view.class.Viewlet, {
+        attachTo: _class,
+        descriptor
+      })
+      .then((res) => {
+        descr = res
+        if (res !== undefined) {
+          preferenceQuery.query(
+            view.class.ViewletPreference,
+            {
+              attachedTo: res._id
+            },
+            (res) => {
+              preference = res[0]
+              loading = false
+            },
+            { limit: 1 }
+          )
+        }
+      })
   }
 
   function showCreateDialog (ev: MouseEvent) {
