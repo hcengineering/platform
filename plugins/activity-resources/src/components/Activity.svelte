@@ -21,7 +21,6 @@
   import { Component, Grid, IconActivity, Label, Scroller } from '@anticrm/ui'
   import { ActivityKey, activityKey, DisplayTx, newActivity } from '../activity'
   import TxView from './TxView.svelte'
-  import { filterCollectionTxes } from './utils'
 
   export let object: Doc
   export let integrate: boolean = false
@@ -49,7 +48,7 @@
   $: activityQuery.update(
     object,
     (result) => {
-      txes = filterCollectionTxes(result)
+      txes = result
     },
     SortingOrder.Descending,
     new Map(

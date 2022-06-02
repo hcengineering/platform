@@ -337,7 +337,7 @@ class ActivityImpl implements Activity {
           // we have same keys,
           // Remember previous transactions
           if (result.txDocIds === undefined) {
-            result.txDocIds = new Set(prevTx.txDocIds)
+            result.txDocIds = new Set()
           }
           if (prevTx.doc?._id !== undefined) {
             result.txDocIds?.add(prevTx.doc._id)
