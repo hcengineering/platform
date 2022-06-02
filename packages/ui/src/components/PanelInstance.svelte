@@ -25,9 +25,6 @@
 
   let modalHTML: HTMLElement
   let componentInstance: any
-  let docWidth: number
-  let docSize: boolean = false
-  let fullSize: boolean = false
 
   let options: PopupOptions = {
     props: {
@@ -77,17 +74,7 @@
 
   const fitPopup = (props: PanelProps, contentPanel: HTMLElement): void => {
     if (modalHTML) {
-      if ((fullSize || docSize) && (props.element === 'float' || props.element === 'content')) {
-        options = fitPopupElement(modalHTML, 'full')
-        options.props.width = '100vw'
-        options.props.maxHeight = '100vh'
-        options.showOverlay = false
-        modalHTML.classList.add('fullsize')
-      } else {
-        options = fitPopupElement(modalHTML, props.element, contentPanel)
-        modalHTML.classList.remove('fullsize')
-      }
-      options.fullSize = fullSize
+      options = fitPopupElement(modalHTML, props.element, contentPanel)
     }
   }
 
@@ -111,12 +98,9 @@
   onMount(() => {
     if (props) fitPopup(props, contentPanel)
   })
-  $: if (docWidth <= 900 && !docSize) docSize = true
-  $: if (docWidth > 900 && docSize) docSize = false
 </script>
 
 <svelte:window
-  bind:innerWidth={docWidth}
   on:resize={() => {
     if (props) fitPopup(props, contentPanel)
   }}
@@ -131,7 +115,6 @@
     <slot name="panel-header" />
     <div
       class="panel-instance"
-      class:anim={props.element === 'float' || props.element === 'content'}
       class:bg={props.element === 'content'}
       bind:this={modalHTML}
       style:top={options.props.top}
@@ -156,9 +139,6 @@
           bind:options
           on:close={_close}
           on:update={_update}
-          on:fullsize={() => {
-            fullSize = !fullSize
-          }}
         />
       </div>
     </div>
@@ -180,11 +160,6 @@
     position: fixed;
     background-color: transparent;
 
-    &.anim {
-      transition-property: top, bottom, left, right, width, height;
-      transition-duration: 0.15s;
-      transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
-    }
     &.bg {
       background-color: var(--body-color);
     }
@@ -210,8 +185,5 @@
     &.show {
       background: rgba(0, 0, 0, 0.5);
     }
-  }
-  :global(.panel-instance.fullsize) {
-    transition-timing-function: cubic-bezier(0.19, 1, 0.22, 1) !important;
   }
 </style>

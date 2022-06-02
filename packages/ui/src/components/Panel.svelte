@@ -52,7 +52,7 @@
     <div class="popupPanel-title__content"><slot name="title" /></div>
     <div class="buttons-group xsmall-gap">
       <slot name="utils" />
-      {#if $$slots.utils}<div class="buttons-divider" />{/if}
+      {#if isFullSize || (asideFloat && $$slots.aside && isAside)}<div class="buttons-divider" />{/if}
       {#if asideFloat && $$slots.aside && isAside}
         <Button
           icon={IconDetails}
