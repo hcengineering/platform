@@ -126,7 +126,7 @@
         <span slot="content" style="overflow: hidden">
           {#if selected}
             {#if size === 'x-large'}
-              <UserInfo value={selected} size={'medium'} />
+              <UserInfo value={selected} size={'medium'} {icon} />
             {:else}
               {getName(selected)}
             {/if}
@@ -139,7 +139,7 @@
   {:else}
     <Button
       {focusIndex}
-      icon={size === 'x-large' && selected ? undefined : IconPerson}
+      icon={(size === 'x-large' || size === 'large') && selected ? undefined : icon}
       width={width ?? 'min-content'}
       {size}
       {kind}
@@ -148,8 +148,8 @@
     >
       <span slot="content" style="overflow: hidden">
         {#if selected}
-          {#if size === 'x-large'}
-            <UserInfo value={selected} size={'medium'} {icon} />
+          {#if size === 'x-large' || size === 'large'}
+            <UserInfo value={selected} size={'x-small'} {icon} />
           {:else}
             {getName(selected)}
           {/if}
