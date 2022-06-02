@@ -125,7 +125,7 @@ async function checkInlineViewlets (
   client: TxOperations,
   model: AttributeModel[]
 ): Promise<{ viewlet: TxDisplayViewlet, model: AttributeModel[] }> {
-  if (dtx.collectionAttribute !== undefined) {
+  if (dtx.collectionAttribute !== undefined && (dtx.txDocIds?.size ?? 0) > 1) {
     // Check if we have a class presenter we could have a pseudo viewlet based on class presenter.
     viewlet = await createPseudoViewlet(client, dtx, activity.string.CollectionUpdated, 'content')
   } else if (dtx.tx._class === core.class.TxCreateDoc) {
@@ -251,30 +251,4 @@ export async function getValue (client: TxOperations, m: AttributeModel, tx: Dis
     ;[value.set] = await getAllRealValues(client, [value.set], m._class)
   }
   return value
-}
-
-export function filterCollectionTxes (txes: DisplayTx[]): DisplayTx[] {
-  return txes.map(filterCollectionTx).filter(Boolean) as DisplayTx[]
-}
-
-function filterCollectionTx (tx: DisplayTx): DisplayTx | undefined {
-  if (tx.collectionAttribute === undefined) return tx
-  const txes = tx.txes.reduceRight(
-    (txes, ctx) => {
-      const filtredTxes = txes.filter(
-        ({ tx: { _class }, doc }) => doc?._id !== ctx.doc?._id || _class === core.class.TxUpdateDoc
-      )
-      return ctx.tx._class === core.class.TxUpdateDoc || filtredTxes.length === txes.length
-        ? [ctx, ...txes]
-        : filtredTxes
-    },
-    [tx]
-  )
-  const txDocIds = txes.map(({ doc }) => doc?._id).filter(Boolean) as Array<Ref<Doc>>
-  const ctx = txes.pop()
-  if (ctx !== undefined) {
-    ctx.txes = txes
-    ctx.txDocIds = new Set(txDocIds)
-  }
-  return ctx
 }
