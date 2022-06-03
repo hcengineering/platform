@@ -35,29 +35,8 @@
   const key = { key: tkey }
   const lookup = buildConfigLookup(hierarchy, _class, [tkey])
   const promise = getPresenter(client, _class, key, key, lookup)
-  filter.modes = [
-    {
-      label: view.string.FilterIs,
-      isAvailable: (res: any[]) => res.length <= 1,
-      result: async (res: any[]) => {
-        return { $in: res }
-      }
-    },
-    {
-      label: view.string.FilterIsEither,
-      isAvailable: (res: any[]) => res.length > 1,
-      result: async (res: any[]) => {
-        return { $in: res }
-      }
-    },
-    {
-      label: view.string.FilterIsNot,
-      isAvailable: () => true,
-      result: async (res: any[]) => {
-        return { $nin: res }
-      }
-    }
-  ]
+  filter.modes = [view.ids.FilterObjectIn, view.ids.FilterObjectNin]
+  filter.mode = filter.mode === undefined ? filter.modes[0] : filter.mode
 
   let values: (Doc | undefined | null)[] = []
   let objectsPromise: Promise<FindResult<Doc>> | undefined
@@ -120,12 +99,6 @@
     return values.includes(value?._id ?? value)
   }
 
-  function checkMode () {
-    if (filter.mode?.isAvailable(filter.value)) return
-    const newMode = filter.modes.find((p) => p.isAvailable(filter.value))
-    filter.mode = newMode !== undefined ? newMode : filter.mode
-  }
-
   function toggle (value: Doc | undefined | null): void {
     if (isSelected(value, filter.value)) {
       if (isState) {
@@ -146,7 +119,6 @@
         filter.value = [...filter.value, undefined]
       }
     }
-    checkMode()
   }
 
   let search: string = ''

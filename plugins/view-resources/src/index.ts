@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { ObjQueryType } from '@anticrm/core'
 import { Resources } from '@anticrm/platform'
 import { getEventPopupPositionElement, PopupAlignment } from '@anticrm/ui'
 import { actionImpl } from './actionImpl'
@@ -80,6 +81,30 @@ export {
   ClassAttributeBar
 }
 
+export async function objectInResult (res: any[]): Promise<ObjQueryType<any>> {
+  return { $in: res }
+}
+
+export async function objectNinResult (res: any[]): Promise<ObjQueryType<any>> {
+  return { $nin: res }
+}
+
+export async function valueInResult (res: any[]): Promise<ObjQueryType<any>> {
+  return { $in: res.map((p) => p[1]).flat() }
+}
+
+export async function valueNinResult (res: any[]): Promise<ObjQueryType<any>> {
+  return { $nin: res.map((p) => p[1]).flat() }
+}
+
+export async function beforeResult (res: any[]): Promise<ObjQueryType<any>> {
+  return { $lt: res[0] }
+}
+
+export async function afterResult (res: any[]): Promise<ObjQueryType<any>> {
+  return { $gt: res[0] }
+}
+
 export default async (): Promise<Resources> => ({
   actionImpl: actionImpl,
   component: {
@@ -112,5 +137,13 @@ export default async (): Promise<Resources> => ({
   },
   popup: {
     PositionElementAlignment
+  },
+  function: {
+    FilterObjectInResult: objectInResult,
+    FilterObjectNinResult: objectNinResult,
+    FilterValueInResult: valueInResult,
+    FilterValueNinResult: valueNinResult,
+    FilterBeforeResult: beforeResult,
+    FilterAfterResult: afterResult
   }
 })
