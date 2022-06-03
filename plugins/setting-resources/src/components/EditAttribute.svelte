@@ -79,6 +79,11 @@
       is = editor.editor
     }
   }
+  const handleSelect = (e: any) => selectType(e.detail)
+  const handleChange = (e: any) => {
+    type = e.detail?.type
+    index = e.detail?.index
+  }
 </script>
 
 <Card
@@ -103,7 +108,7 @@
             {items}
             width="8rem"
             bind:selected={selectedType}
-            on:selected={(e) => selectType(e.detail)}
+            on:selected={handleSelect}
           />
         {/if}
       </div>
@@ -116,10 +121,7 @@
             type,
             editable: !exist
           }}
-          on:change={(e) => {
-            type = e.detail?.type
-            index = e.detail?.index
-          }}
+          on:change={handleChange}
         />
       </div>
     {/if}

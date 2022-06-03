@@ -58,6 +58,14 @@
       )()
     }
   }
+  const handleAdd = (e: any) => {
+    showPopup(integrationType.createComponent, {}, eventToHTMLElement(e), close)
+  }
+  const handleReconnect = (e: any) => {
+    if (integrationType.reconnectComponent) {
+      showPopup(integrationType.reconnectComponent, {}, eventToHTMLElement(e), reconnect)
+    }
+  }
 </script>
 
 <div class="flex-col plugin-container">
@@ -74,26 +82,12 @@
   <div class="footer">
     {#if integration}
       {#if integration.disabled && integrationType.reconnectComponent}
-        <Button
-          label={setting.string.Reconnect}
-          kind={'primary'}
-          on:click={(e) => {
-            if (integrationType.reconnectComponent) {
-              showPopup(integrationType.reconnectComponent, {}, eventToHTMLElement(e), reconnect)
-            }
-          }}
-        />
+        <Button label={setting.string.Reconnect} kind={'primary'} on:click={handleReconnect} />
       {:else}
         <Button label={setting.string.Disconnect} on:click={disconnect} />
       {/if}
     {:else}
-      <Button
-        label={setting.string.Add}
-        kind={'primary'}
-        on:click={(e) => {
-          showPopup(integrationType.createComponent, {}, eventToHTMLElement(e), close)
-        }}
-      />
+      <Button label={setting.string.Add} kind={'primary'} on:click={handleAdd} />
       <Link label={'Learn more'} />
     {/if}
   </div>

@@ -35,7 +35,7 @@
     "@typescript-eslint/parser": "^5.4.0",
     "eslint-config-standard-with-typescript": "^21.0.1",
     "prettier": "^2.4.1",
-    "ts-node": "~10.5.0",
+    "ts-node": "^10.8.0",
     "@rushstack/heft": "^0.45.5",
     "typescript": "^4.3.5"
   },

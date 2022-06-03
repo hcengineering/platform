@@ -89,6 +89,14 @@
     await client.createDoc(tags.class.TagElement, tags.space.Tags, tagElement, tagElementId)
     dispatch('close')
   }
+  const showColorPopup = (evt: MouseEvent) => {
+    showPopup(ColorsPopup, {}, eventToHTMLElement(evt), (col) => {
+      if (col != null) {
+        color = col
+        colorSet = true
+      }
+    })
+  }
 </script>
 
 <Card
@@ -103,18 +111,7 @@
 >
   <div class="flex-row-top clear-mins">
     <div class="mr-3">
-      <Button
-        size={'medium'}
-        kind={'link-bordered'}
-        on:click={(evt) => {
-          showPopup(ColorsPopup, {}, eventToHTMLElement(evt), (col) => {
-            if (col != null) {
-              color = col
-              colorSet = true
-            }
-          })
-        }}
-      >
+      <Button size={'medium'} kind={'link-bordered'} on:click={showColorPopup}>
         <svelte:fragment slot="content">
           <div class="color" style={getTagStyle(getPlatformColor(color))} />
         </svelte:fragment>

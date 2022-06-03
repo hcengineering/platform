@@ -98,7 +98,7 @@
           ...actions.map((a) => ({
             label: a.label,
             icon: a.icon,
-            action: async (ctx: any, evt: Event) => {
+            action: async (_: any, evt: Event) => {
               const impl = await getResource(a.action)
               await impl(tx.doc as Doc, evt)
             }

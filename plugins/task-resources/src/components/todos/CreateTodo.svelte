@@ -30,8 +30,6 @@
   let dueTo: number | null = null
   let latestItem: TodoItem | undefined = undefined
 
-  $: _space = space
-
   const dispatch = createEventDispatcher()
   const client = getClient()
   const todoItemsQuery = createQuery()

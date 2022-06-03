@@ -64,6 +64,9 @@
   export function submit (): void {
     textEditor.submit()
   }
+  const updateTemplate = (evt: any) => {
+    newTemplate = { title: newTemplate?.title ?? '', message: evt.detail }
+  }
 </script>
 
 <div class="antiComponent">
@@ -119,13 +122,7 @@
         </div>
         <div class="separator" />
         {#if mode !== Mode.View}
-          <StyledTextEditor
-            bind:content={newTemplate.message}
-            bind:this={textEditor}
-            on:value={(evt) => {
-              newTemplate = { title: newTemplate?.title ?? '', message: evt.detail }
-            }}
-          >
+          <StyledTextEditor bind:content={newTemplate.message} bind:this={textEditor} on:value={updateTemplate}>
             <div class="flex flex-reverse flex-grow">
               <div class="ml-2">
                 <Button

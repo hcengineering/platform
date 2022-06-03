@@ -5,7 +5,7 @@
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
   "scripts": {
-    "build": "echo 'no build for ui'",
+    "build": "tsc",
     "build:docs": "api-extractor run --local",
     "lint": "svelte-check && eslint",
     "lint:fix": "eslint --fix src",
@@ -20,7 +20,7 @@
     "eslint-plugin-import": "^2.25.3",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^5.1.1",
-    "eslint-plugin-svelte3": "~3.4.1",
+    "eslint-plugin-svelte3": "^4.0.0",
     "prettier": "^2.4.1",
     "prettier-plugin-svelte": "^2.7.0",
     "sass": "^1.37.5",

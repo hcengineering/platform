@@ -27,7 +27,7 @@
     "eslint-plugin-promise": "^5.1.1",
     "eslint-plugin-node": "^11.1.0",
     "eslint": "^7.32.0",
-    "ts-node": "~10.5.0",
+    "ts-node": "^10.8.0",
     "esbuild": "^0.12.26",
     "@types/minio": "~7.0.11",
     "@types/node": "~16.11.12",
@@ -39,7 +39,7 @@
     "@types/ws": "^8.2.1",
     "@types/xml2js": "~0.4.9",
     "@types/mime-types": "~2.1.1",
-    "@types/request": "~2.48.8"    
+    "@types/request": "~2.48.8"
   },
   "dependencies": {
     "mongodb": "^4.1.1",

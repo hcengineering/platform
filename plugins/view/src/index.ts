@@ -31,8 +31,8 @@ import type {
   UXObject
 } from '@anticrm/core'
 import { Asset, IntlString, Plugin, plugin, Resource, Status } from '@anticrm/platform'
-import type { AnyComponent, AnySvelteComponent, PopupAlignment, PopupPosAlignment } from '@anticrm/ui'
 import type { Preference } from '@anticrm/preference'
+import type { AnyComponent, AnySvelteComponent, PopupAlignment, PopupPosAlignment } from '@anticrm/ui'
 
 /**
  * @public
