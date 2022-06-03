@@ -10,6 +10,7 @@ Platform:
 - Fix skills/labels selection and show real usage counter
 - Fix skills/labels activity
 - Project selector in issue list
+- Save last filter for page
 
 HR:
 
