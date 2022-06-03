@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { translate } from '@anticrm/platform'
+  import { IntlString, translate } from '@anticrm/platform'
   import { Class, Doc, Ref, RefTo } from '@anticrm/core'
   import { eventToHTMLElement, IconClose, showPopup, Icon, Label } from '@anticrm/ui'
   import { Filter } from '@anticrm/view'
@@ -27,6 +27,7 @@
   export let _class: Ref<Class<Doc>>
   export let filter: Filter
 
+  let label: IntlString | undefined
   let current = 0
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -47,12 +48,14 @@
   }
   $: if (filter) getLabel()
 
-  function toggle () {
-    const modes = filter.modes.filter((p) => p.isAvailable(filter.value))
+  async function toggle () {
     current++
-    filter.mode = modes[current % modes.length]
+    filter.mode = filter.modes[current % filter.modes.length]
+    label = (await client.findOne(view.class.FilterMode, { _id: filter.mode }))?.label
     dispatch('change')
   }
+
+  client.findOne(view.class.FilterMode, { _id: filter.mode }).then((p) => (label = p?.label))
 
   function onChange (e: Filter | undefined) {
     filter = filter
@@ -74,7 +77,9 @@
     <span><Label label={filter.key.label} /></span>
   </button>
   <button class="filter-button" on:click={toggle}>
-    <span><Label label={filter.mode.label} /></span>
+    {#if label}
+      <span><Label {label} params={{ value: filter.value.length }} /></span>
+    {/if}
   </button>
   <button
     class="filter-button"

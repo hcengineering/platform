@@ -27,29 +27,8 @@
   export let filter: Filter
   export let onChange: (e: Filter) => void
 
-  filter.modes = [
-    {
-      label: view.string.FilterIs,
-      isAvailable: (res: any[]) => res.length <= 1,
-      result: async (res: [any, any[]][]) => {
-        return { $in: res.map((p) => p[1]).flat() }
-      }
-    },
-    {
-      label: view.string.FilterIsEither,
-      isAvailable: (res: any[]) => res.length > 1,
-      result: async (res: [any, any[]][]) => {
-        return { $in: res.map((p) => p[1]).flat() }
-      }
-    },
-    {
-      label: view.string.FilterIsNot,
-      isAvailable: () => true,
-      result: async (res: [any, any[]][]) => {
-        return { $nin: res.map((p) => p[1]).flat() }
-      }
-    }
-  ]
+  filter.modes = [view.ids.FilterValueIn, view.ids.FilterValueNin]
+  filter.mode = filter.mode === undefined ? filter.modes[0] : filter.mode
 
   const client = getClient()
   const key = { key: filter.key.key }
@@ -107,12 +86,6 @@
 
   function isSelected (value: any, values: Set<any>): boolean {
     return values.has(value)
-  }
-
-  function checkMode () {
-    if (filter.mode?.isAvailable(filter.value)) return
-    const newMode = filter.modes.find((p) => p.isAvailable(filter.value))
-    filter.mode = newMode !== undefined ? newMode : filter.mode
   }
 
   function toggle (value: any): void {
@@ -197,7 +170,6 @@
       filter.value = Array.from(selectedValues.values()).map((p) => {
         return [p, Array.from(realValues.get(p) ?? [])]
       })
-      checkMode()
       onChange(filter)
       dispatch('close')
     }}

@@ -14,8 +14,9 @@
 -->
 <script lang="ts">
   import { Class, Doc, DocumentQuery, Ref } from '@anticrm/core'
+  import { getResource } from '@anticrm/platform'
   import { getClient } from '@anticrm/presentation'
-  import { Button, eventToHTMLElement, IconAdd, showPopup } from '@anticrm/ui'
+  import { Button, eventToHTMLElement, getCurrentLocation, IconAdd, locationToUrl, showPopup } from '@anticrm/ui'
   import { Filter } from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
   import view from '../../plugin'
@@ -59,12 +60,7 @@
     )
   }
 
-  $: clear(_class)
-
-  function clear (_class: Ref<Class<Doc>>) {
-    filters.map((p) => p.onRemove?.())
-    filters = []
-  }
+  $: load(_class)
 
   function remove (i: number) {
     filters[i]?.onRemove?.()
@@ -72,13 +68,44 @@
     filters = filters
   }
 
+  $: saveFilters(filters)
+
+  function saveFilters (filters: Filter[]) {
+    const loc = getCurrentLocation()
+    const key = 'filter' + locationToUrl(loc)
+    if (filters.length > 0) {
+      localStorage.setItem(key, JSON.stringify(filters))
+    } else {
+      localStorage.removeItem(key)
+    }
+  }
+
+  function load (_class: Ref<Class<Doc>>) {
+    const loc = getCurrentLocation()
+    const key = 'filter' + locationToUrl(loc)
+    const saved = localStorage.getItem(key)
+    filters.map((p) => p.onRemove?.())
+    if (saved !== null) {
+      filters = JSON.parse(saved)
+    } else {
+      filters = []
+    }
+  }
+
   async function makeQuery (query: DocumentQuery<Doc>, filters: Filter[]): Promise<void> {
     const newQuery = hierarchy.clone(query)
     for (let i = 0; i < filters.length; i++) {
       const filter = filters[i]
-      const newValue = await filter.mode.result(filter.value, () => {
-        makeQuery(query, filters)
-      })
+      const mode = await client.findOne(view.class.FilterMode, { _id: filter.mode })
+      if (mode === undefined) continue
+      const result = await getResource(mode.result)
+      const newValue = await result(
+        filter.value,
+        () => {
+          makeQuery(query, filters)
+        },
+        filter.index
+      )
       if (newQuery[filter.key.key] === undefined) {
         newQuery[filter.key.key] = newValue
       } else {
@@ -139,6 +166,7 @@
           {filter}
           on:change={() => {
             makeQuery(query, filters)
+            saveFilters(filters)
           }}
           on:remove={() => {
             remove(i)

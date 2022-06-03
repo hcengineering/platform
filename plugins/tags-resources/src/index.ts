@@ -29,6 +29,18 @@ import TagElementCountPresenter from './components/TagElementCountPresenter.svel
 import TagsFilter from './components/TagsFilter.svelte'
 import TagsAttributeEditor from './components/TagsAttributeEditor.svelte'
 import TagsEditorPopup from './components/TagsEditorPopup.svelte'
+import { ObjQueryType } from '@anticrm/core'
+import { TagFilterQuery } from './utils'
+
+export async function tagsInResult (res: any[], onUpdate: () => void, index: number): Promise<ObjQueryType<any>> {
+  const result = await TagFilterQuery.getRefs(res, onUpdate, index)
+  return { $in: result }
+}
+
+export async function tagsNinResult (res: any[], onUpdate: () => void, index: number): Promise<ObjQueryType<any>> {
+  const result = await TagFilterQuery.getRefs(res, onUpdate, index)
+  return { $nin: result }
+}
 
 export default async (): Promise<Resources> => ({
   component: {
@@ -51,5 +63,9 @@ export default async (): Promise<Resources> => ({
     Open: (value: TagElement, evt: MouseEvent) => {
       showPopup(EditTagElement, { value, keyTitle: '' }, eventToHTMLElement(evt))
     }
+  },
+  function: {
+    FilterTagsInResult: tagsInResult,
+    FilterTagsNinResult: tagsNinResult
   }
 })
