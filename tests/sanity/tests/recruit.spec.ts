@@ -19,6 +19,8 @@ test.describe('recruit tests', () => {
 
     const first = 'Elton-' + generateId(4)
     const last = 'John-' + generateId(4)
+    const loc = 'Cupertino'
+    const email = `ej-${generateId(4)}@test.com`
 
     const firstName = page.locator('[placeholder="John"]')
     await firstName.click()
@@ -34,9 +36,25 @@ test.describe('recruit tests', () => {
 
     const location = page.locator('[placeholder="Location"]')
     await location.click()
-    await location.fill('Cupertino')
+    await location.fill(loc)
+
+    await page.locator('[id="presentation\\:string\\:AddSocialLinks"]').click()
+    await page.locator('.antiPopup').locator('text=Email').click()
+    const emailInput = page.locator('[placeholder="john\\.appleseed@apple\\.com"]')
+    await emailInput.fill(email)
+    await emailInput.press('Enter')
 
     await page.locator('.antiCard').locator('button:has-text("Create")').click()
+
+    await page.click(`text="${first} ${last}"`)
+
+    await expect(page.locator(`text=${first}`).first()).toBeVisible()
+    await expect(page.locator(`text=${last}`).first()).toBeVisible()
+    await expect(page.locator(`text=${loc}`).first()).toBeVisible()
+
+    const activity = page.locator('[id="activity\\:string\\:Activity"]')
+    await activity.locator('[id="gmail\\:string\\:Email"]').hover()
+    await expect(page.locator(`text=${email}`).first()).toBeVisible()
   })
 
   test('create-application', async ({ page }) => {
@@ -64,6 +82,7 @@ test.describe('recruit tests', () => {
 
     await page.click('button:has-text("Vacancy")')
 
+    await page.fill('[placeholder="Search..."]', vacancyId)
     await page.click(`button:has-text("${vacancyId}")`)
 
     await page.click('button:has-text("Create")')
@@ -151,5 +170,22 @@ test.describe('recruit tests', () => {
     await page.click('button:has-text("Andrey P.")')
     await page.click('text=Create')
     await page.click('td:has-text("RVE-")')
+  })
+
+  test('test-create-skill', async ({ page }) => {
+    await page.click('[id="app-recruit\\:string\\:RecruitApplication"]')
+    await page.click('text=Skills')
+    await page.click('button:has-text("Skill")')
+    await page.click('[placeholder="Please\\ type\\ skill\\ title"]')
+    const skillId = 'custom-skill-' + generateId()
+    await page.fill('[placeholder="Please\\ type\\ skill\\ title"]', skillId)
+    await page.click('button:has-text("Other")')
+    await page.click('button:has-text("Design")')
+    await page.click('button:has-text("Create")')
+    await page.click(`text=${skillId}`)
+    await page.click('[placeholder="Please\\ type\\ description\\ here"]')
+    await page.fill('[placeholder="Please\\ type\\ description\\ here"]', 'description-' + skillId)
+    await page.click('button:has-text("Save")')
+    await page.click(`span:has-text("description-${skillId}")`)
   })
 })

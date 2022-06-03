@@ -116,14 +116,18 @@ export function filterActions (
   actions: Array<WithLookup<Action>>,
   derived: Ref<Class<Doc>> = core.class.Doc
 ): Array<WithLookup<Action>> {
-  const result: Array<WithLookup<Action>> = []
+  let result: Array<WithLookup<Action>> = []
   const hierarchy = client.getHierarchy()
   const clazz = hierarchy.getClass(doc._class)
   const ignoreActions = hierarchy.as(clazz, view.mixin.IgnoreActions)
   const ignore = ignoreActions?.actions ?? []
+  const overrideRemove: Array<Ref<Action>> = []
   for (const action of actions) {
     if (ignore.includes(action._id)) {
       continue
+    }
+    if (action.override !== undefined) {
+      overrideRemove.push(...action.override)
     }
     if (action.query !== undefined) {
       const r = matchQuery([doc], action.query, doc._class, hierarchy)
@@ -137,6 +141,9 @@ export function filterActions (
     ) {
       result.push(action)
     }
+  }
+  if (overrideRemove.length > 0) {
+    result = result.filter((it) => !overrideRemove.includes(it._id))
   }
   return result
 }

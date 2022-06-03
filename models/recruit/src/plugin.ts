@@ -25,7 +25,8 @@ import type { Action, ActionCategory, ViewAction } from '@anticrm/view'
 
 export default mergeIds(recruitId, recruit, {
   action: {
-    CreateOpinion: '' as Ref<Action>
+    CreateOpinion: '' as Ref<Action>,
+    CreateGlobalApplication: '' as Ref<Action>
   },
   actionImpl: {
     CreateOpinion: '' as ViewAction

@@ -27,6 +27,7 @@
     eventToHTMLElement,
     FocusHandler,
     getPlatformColor,
+    Label,
     showPopup,
     Status as StatusControl
   } from '@anticrm/ui'
@@ -222,6 +223,24 @@
       }}
       bind:space={doc.space}
     />
+  </svelte:fragment>
+  <svelte:fragment slot="title">
+    <div class="flex-row-center gap-2">
+      {#if preserveCandidate}
+        <UserBox
+          readonly
+          _class={contact.class.Person}
+          options={{ sort: { modifiedOn: -1 } }}
+          excluded={existingApplicants}
+          label={recruit.string.Candidate}
+          placeholder={recruit.string.Candidates}
+          bind:value={doc.attachedTo}
+          kind={'no-border'}
+          size={'small'}
+        />
+      {/if}
+      <Label label={recruit.string.CreateApplication} />
+    </div>
   </svelte:fragment>
   <StatusControl slot="error" {status} />
   <svelte:fragment slot="pool">

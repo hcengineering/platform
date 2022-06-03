@@ -16,7 +16,7 @@
   import { Ref, WithLookup } from '@anticrm/core'
   import { Issue, IssueStatus } from '@anticrm/tracker'
   import { getClient } from '@anticrm/presentation'
-  import { Tooltip } from '@anticrm/ui'
+  import { Tooltip, TooltipAlignment } from '@anticrm/ui'
   import type { ButtonKind, ButtonSize } from '@anticrm/ui'
   import tracker from '../../plugin'
   import StatusSelector from '../StatusSelector.svelte'
@@ -25,6 +25,7 @@
   export let statuses: WithLookup<IssueStatus>[]
   export let isEditable: boolean = true
   export let shouldShowLabel: boolean = false
+  export let tooltipAlignment: TooltipAlignment | undefined = undefined
 
   export let kind: ButtonKind = 'link'
   export let size: ButtonSize = 'large'
@@ -52,7 +53,7 @@
 
 {#if value}
   {#if isEditable}
-    <Tooltip label={tracker.string.SetStatus} fill>
+    <Tooltip label={tracker.string.SetStatus} direction={tooltipAlignment} fill>
       <StatusSelector
         {kind}
         {size}

@@ -38,6 +38,7 @@
   import ControlPanel from './ControlPanel.svelte'
   import CopyToClipboard from './CopyToClipboard.svelte'
   import SubIssueSelector from './SubIssueSelector.svelte'
+  import SubIssues from './SubIssues.svelte'
 
   export let _id: Ref<Issue>
   export let _class: Ref<Class<Issue>>
@@ -238,6 +239,9 @@
         {:else}
           <MessageViewer message={description} />
         {/if}
+      </div>
+      <div class="mt-6">
+        <SubIssues {issue} {issueStatuses} />
       </div>
     {/if}
     <AttachmentDocList value={issue} />
