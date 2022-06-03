@@ -56,6 +56,7 @@
       }
     )
   }
+  const onDeleteState = (e: any) => deleteState(e.detail)
 </script>
 
 <div class="antiComponent">
@@ -74,11 +75,7 @@
     </div>
     <div class="ac-column max">
       {#if template !== undefined}
-        <Component
-          is={task.component.KanbanTemplateEditor}
-          props={{ kanban: template }}
-          on:delete={(e) => deleteState(e.detail)}
-        />
+        <Component is={task.component.KanbanTemplateEditor} props={{ kanban: template }} on:delete={onDeleteState} />
       {/if}
     </div>
   </div>

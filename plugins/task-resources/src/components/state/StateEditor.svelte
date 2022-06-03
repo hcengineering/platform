@@ -42,14 +42,7 @@
     },
     { limit: 1 }
   )
-</script>
-
-<Button
-  {kind}
-  {size}
-  {width}
-  {justify}
-  on:click={(ev) => {
+  const handleClick = (ev: MouseEvent) => {
     if (!opened) {
       opened = true
       showPopup(StatesPopup, { space }, eventToHTMLElement(ev), (result) => {
@@ -60,8 +53,10 @@
         opened = false
       })
     }
-  }}
->
+  }
+</script>
+
+<Button {kind} {size} {width} {justify} on:click={handleClick}>
   <svelte:fragment slot="content">
     {#if state}
       <StatePresenter value={state} />

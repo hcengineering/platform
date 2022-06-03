@@ -2,7 +2,7 @@
   "name": "@anticrm/ui-package",
   "version": "0.6.0",
   "scripts": {
-    "build": "echo 'no build for ui'",
+    "build": "tsc",
     "lint:fix": "eslint --fix src",
     "lint": "svelte-check && eslint",
     "format": "prettier --write --plugin-search-dir=. src && eslint --fix src"
@@ -18,7 +18,7 @@
     "eslint-plugin-import": "^2.25.3",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^5.1.1",
-    "eslint-plugin-svelte3": "~3.4.1",
+    "eslint-plugin-svelte3": "^4.0.0",
     "prettier-plugin-svelte": "^2.7.0",
     "eslint": "^7.32.0",
     "prettier": "^2.4.1",

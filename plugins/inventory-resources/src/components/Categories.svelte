@@ -45,12 +45,7 @@
       updateResultQuery(search)
     }}
   />
-  <Button
-    label={inventory.string.CategoryCreateLabel}
-    icon={IconAdd}
-    kind={'primary'}
-    on:click={(ev) => showCreateDialog(ev)}
-  />
+  <Button label={inventory.string.CategoryCreateLabel} icon={IconAdd} kind={'primary'} on:click={showCreateDialog} />
 </div>
 
 <Scroller>

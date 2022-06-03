@@ -123,6 +123,9 @@
     if (prov === undefined) return false
     return prov.default
   }
+  const createHandler = (type: Ref<NotificationType>, provider: Ref<NotificationProvider>): ((evt: any) => void) => {
+    return (evt: any) => change(type, provider, evt.detail)
+  }
 </script>
 
 <div class="antiComponent">
@@ -140,7 +143,7 @@
               <ToggleWithLabel
                 label={provider.label}
                 on={getStatus(settings, type._id, provider._id)}
-                on:change={(e) => change(type._id, provider._id, e.detail)}
+                on:change={createHandler(type._id, provider._id)}
               />
             {/each}
           {/each}

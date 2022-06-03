@@ -38,7 +38,7 @@
     "typescript": "^4.3.5",
     "@types/body-parser": "~1.19.2",
     "cross-env": "~7.0.3",
-    "ts-node": "~10.5.0",
+    "ts-node": "^10.8.0",
     "@types/compression": "~1.7.2"
   },
   "dependencies": {

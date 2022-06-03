@@ -67,6 +67,7 @@
     category = detail.category ?? undefined
     selectedTagElements.set(Array.from(detail.elements ?? []).map((it) => it._id))
   }
+  const handleChange = (evt: any) => updateCategory(evt.detail)
 </script>
 
 <div class="ac-header full">
@@ -83,11 +84,7 @@
   />
 </div>
 
-<Component
-  is={tags.component.TagsCategoryBar}
-  props={{ targetClass: _class, category }}
-  on:change={(evt) => updateCategory(evt.detail)}
-/>
+<Component is={tags.component.TagsCategoryBar} props={{ targetClass: _class, category }} on:change={handleChange} />
 
 <TableBrowser
   {_class}
