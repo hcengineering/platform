@@ -97,11 +97,11 @@
 
 <style lang="scss">
   .list {
-    border-bottom: 1px solid var(--divider-color);
+    border-top: 1px solid var(--divider-color);
 
     &.collapsed {
-      margin-top: 1px;
-      border-bottom: none;
+      padding-top: 1px;
+      border-top: none;
     }
   }
 </style>
