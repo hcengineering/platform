@@ -389,9 +389,9 @@ export function createModel (builder: Builder): void {
     input: 'focus',
     category: recruit.category.Recruit,
     target: contact.class.Person,
-    context: { mode: ['context', 'browser'] }
+    context: { mode: ['context', 'browser'] },
+    override: [recruit.action.CreateGlobalApplication]
   })
-
   createAction(builder, {
     action: view.actionImpl.ShowPopup,
     actionProps: {
@@ -428,23 +428,27 @@ export function createModel (builder: Builder): void {
     }
   })
 
-  createAction(builder, {
-    action: view.actionImpl.ShowPopup,
-    actionProps: {
-      component: recruit.component.CreateApplication,
-      element: 'top'
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.ShowPopup,
+      actionProps: {
+        component: recruit.component.CreateApplication,
+        element: 'top'
+      },
+      label: recruit.string.CreateApplication,
+      icon: recruit.icon.Create,
+      keyBinding: [],
+      input: 'none',
+      category: recruit.category.Recruit,
+      target: core.class.Doc,
+      context: {
+        mode: ['workbench', 'browser'],
+        application: recruit.app.Recruit
+      }
     },
-    label: recruit.string.CreateApplication,
-    icon: recruit.icon.Create,
-    keyBinding: [],
-    input: 'none',
-    category: recruit.category.Recruit,
-    target: core.class.Doc,
-    context: {
-      mode: ['workbench', 'browser'],
-      application: recruit.app.Recruit
-    }
-  })
+    recruit.action.CreateGlobalApplication
+  )
 
   builder.createDoc(
     task.class.KanbanTemplateSpace,
