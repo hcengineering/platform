@@ -319,6 +319,10 @@ export function createModel (builder: Builder): void {
   const boardId = 'board'
   const projectsId = 'projects'
 
+  builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: tracker.component.IssuePresenter
+  })
+
   builder.mixin(tracker.class.TypeIssuePriority, core.class.Class, view.mixin.AttributePresenter, {
     presenter: tracker.component.PriorityPresenter
   })
