@@ -333,15 +333,16 @@ class TServerStorage implements ServerStorage {
     const factory = new TxFactory(core.account.System)
     if (this.hierarchy.isDerived(object._class, core.class.AttachedDoc)) {
       const adoc = object as AttachedDoc
-      const nestedTx = factory.createTxRemoveDoc(object._class, object.space, adoc._id) as TxRemoveDoc<AttachedDoc>
+      const nestedTx = factory.createTxRemoveDoc(adoc._class, adoc.space, adoc._id)
       const tx = factory.createTxCollectionCUD(
         adoc.attachedToClass,
         adoc.attachedTo,
-        object.space,
+        adoc.space,
         adoc.collection,
         nestedTx
       )
       result.push(tx)
+      result.push(...(await this.processCollection(ctx, tx)))
     } else {
       result.push(factory.createTxRemoveDoc(object._class, object.space, object._id))
     }
