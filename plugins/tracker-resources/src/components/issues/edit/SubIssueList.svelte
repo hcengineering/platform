@@ -65,7 +65,8 @@
   <div
     class="flex-between row"
     class:is-dragging={index === draggingIndex}
-    class:is-dragged-over={index === hoveringIndex}
+    class:is-dragged-over-up={draggingIndex !== null && index < draggingIndex && index === hoveringIndex}
+    class:is-dragged-over-down={draggingIndex !== null && index > draggingIndex && index === hoveringIndex}
     animate:flip={{ duration: 400 }}
     draggable={true}
     on:click|self={() => openIssue(issue)}
@@ -125,17 +126,24 @@
       }
     }
 
-    &.is-dragging {
-      &::before {
-        position: absolute;
-        content: '';
-        color: var(--theme-bg-color);
-        opacity: 0.4;
-        inset: 0;
-      }
+    &.is-dragging::before {
+      position: absolute;
+      content: '';
+      background-color: var(--theme-bg-color);
+      opacity: 0.4;
+      inset: 0;
     }
 
-    &.is-dragged-over {
+    &.is-dragged-over-up::before {
+      position: absolute;
+      content: '';
+      inset: 0;
+      border-top: 1px solid var(--theme-bg-check);
+    }
+    &.is-dragged-over-down::before {
+      position: absolute;
+      content: '';
+      inset: 0;
       border-bottom: 1px solid var(--theme-bg-check);
     }
   }
