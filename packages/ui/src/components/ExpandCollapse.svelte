@@ -15,25 +15,20 @@
 <script lang="ts">
   import { quintOut } from 'svelte/easing'
   import { tweened } from 'svelte/motion'
-  import { syncHeight } from '../utils'
 
   export let isExpanded = false
   export let duration = 200
   export let easing: (t: number) => number = quintOut
 
-  const tweenedHeight = tweened(0, {
-    duration: duration,
-    easing
-  })
+  const tweenedHeight = tweened(0, { duration: duration, easing })
 
-  let element: HTMLDivElement
+  let height = 0
 
-  $: height = syncHeight(element)
-  $: tweenedHeight.set(isExpanded ? $height : 0, { duration, easing })
+  $: tweenedHeight.set(isExpanded ? height : 0, { duration, easing })
 </script>
 
 <div class="root" style="height: {$tweenedHeight}px">
-  <div bind:this={element}>
+  <div bind:offsetHeight={height}>
     <slot />
   </div>
 </div>

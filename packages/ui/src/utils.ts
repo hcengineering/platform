@@ -16,7 +16,6 @@
 // import type { Metadata } from '@anticrm/platform'
 import type { Metadata } from '@anticrm/platform'
 import { setMetadata } from '@anticrm/platform'
-import { Writable, writable } from 'svelte/store'
 
 export function setMetadataLocalStorage (id: Metadata<string>, value: string | null): void {
   if (value != null) {
@@ -33,15 +32,4 @@ export function fetchMetadataLocalStorage (id: Metadata<string>): string | null 
     setMetadata(id, value)
   }
   return value
-}
-
-export function syncHeight (element: HTMLElement | undefined): Writable<number> {
-  return writable(0, (set) => {
-    if (element != null) {
-      const observer = new ResizeObserver(() => set(element.offsetHeight))
-      observer.observe(element)
-
-      return () => observer.disconnect()
-    }
-  })
 }
