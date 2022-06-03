@@ -2,7 +2,7 @@
   "name": "@anticrm/ui-package",
   "version": "0.6.0",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc --noEmit",
     "lint:fix": "eslint --fix src",
     "lint": "svelte-check && eslint",
     "format": "prettier --write --plugin-search-dir=. src && eslint --fix src"
