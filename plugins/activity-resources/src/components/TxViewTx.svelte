@@ -22,7 +22,7 @@
 </script>
 
 <div class="flex-row-center flex-grow flex-wrap content">
-  {#each filterTx([tx, ...tx.txes], core.class.TxCreateDoc) as ctx, i}
+  {#each filterTx([...tx.txes, tx], core.class.TxCreateDoc) as ctx, i}
     {#if i === 0}
       <div class="mr-2"><IconAdd size={'small'} /></div>
     {/if}
@@ -34,7 +34,7 @@
       {/if}
     </div>
   {/each}
-  {#each filterTx([tx, ...tx.txes], core.class.TxRemoveDoc) as ctx, i}
+  {#each filterTx([...tx.txes, tx], core.class.TxRemoveDoc) as ctx, i}
     {#if i === 0}
       <div class="mr-2"><IconDelete size={'small'} /></div>
     {/if}
