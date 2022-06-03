@@ -35,7 +35,6 @@
   async function handleIssueSwap (ev: CustomEvent<{ fromIndex: number; toIndex: number }>) {
     if (subIssues) {
       const { fromIndex, toIndex } = ev.detail
-      console.log('index', fromIndex, toIndex)
       const [prev, next] = [
         subIssues[fromIndex < toIndex ? toIndex : toIndex - 1],
         subIssues[fromIndex < toIndex ? toIndex + 1 : toIndex]
