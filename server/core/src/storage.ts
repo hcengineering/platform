@@ -342,7 +342,7 @@ class TServerStorage implements ServerStorage {
         nestedTx
       )
       result.push(tx)
-      result.push(...await this.processCollection(ctx, tx))
+      result.push(...(await this.processCollection(ctx, tx)))
     } else {
       result.push(factory.createTxRemoveDoc(object._class, object.space, object._id))
     }
