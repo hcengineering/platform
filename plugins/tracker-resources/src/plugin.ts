@@ -87,6 +87,7 @@ export default mergeIds(trackerId, tracker, {
     AssignTo: '' as IntlString,
     AssignedTo: '' as IntlString,
     SubIssues: '' as IntlString,
+    SubIssuesList: '' as IntlString,
     SetParent: '' as IntlString,
     ChangeParent: '' as IntlString,
     RemoveParent: '' as IntlString,

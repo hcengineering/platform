@@ -58,7 +58,7 @@
       icon={isCollapsed ? Collapsed : Expanded}
       size="small"
       kind="transparent"
-      label={tracker.string.SubIssues}
+      label={tracker.string.SubIssuesList}
       labelParams={{ subIssues: issue.subIssues }}
       on:click={() => (isCollapsed = !isCollapsed)}
     />
