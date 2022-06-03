@@ -32,9 +32,8 @@ import type {
 } from '@anticrm/core'
 import type { Asset, IntlString, Plugin, Resource, Status } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
-import type { AnyComponent, AnySvelteComponent } from '@anticrm/ui'
-import { PopupAlignment, PopupPosAlignment } from '@anticrm/ui/src/types'
 import type { Preference } from '@anticrm/preference'
+import type { AnyComponent, AnySvelteComponent, PopupAlignment, PopupPosAlignment } from '@anticrm/ui'
 
 /**
  * @public
