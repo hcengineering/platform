@@ -13,7 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, WithLookup } from '@anticrm/core'
+  import { createEventDispatcher } from 'svelte'
+  import { AttachedData, Ref, WithLookup } from '@anticrm/core'
   import { Issue, IssueStatus } from '@anticrm/tracker'
   import { getClient } from '@anticrm/presentation'
   import { Tooltip, TooltipAlignment } from '@anticrm/ui'
@@ -21,11 +22,12 @@
   import tracker from '../../plugin'
   import StatusSelector from '../StatusSelector.svelte'
 
-  export let value: Issue
+  export let value: Issue | AttachedData<Issue>
   export let statuses: WithLookup<IssueStatus>[]
   export let isEditable: boolean = true
   export let shouldShowLabel: boolean = false
   export let tooltipAlignment: TooltipAlignment | undefined = undefined
+  export let tooltipFill = true
 
   export let kind: ButtonKind = 'link'
   export let size: ButtonSize = 'large'
@@ -33,27 +35,24 @@
   export let width: string | undefined = '100%'
 
   const client = getClient()
+  const dispatch = createEventDispatcher()
 
   const handleStatusChanged = async (newStatus: Ref<IssueStatus> | undefined) => {
     if (!isEditable || newStatus === undefined || value.status === newStatus) {
       return
     }
 
-    await client.updateCollection(
-      value._class,
-      value.space,
-      value._id,
-      value.attachedTo,
-      value.attachedToClass,
-      value.collection,
-      { status: newStatus }
-    )
+    dispatch('change', newStatus)
+
+    if ('_id' in value) {
+      await client.update(value, { status: newStatus })
+    }
   }
 </script>
 
 {#if value}
   {#if isEditable}
-    <Tooltip label={tracker.string.SetStatus} direction={tooltipAlignment} fill>
+    <Tooltip label={tracker.string.SetStatus} direction={tooltipAlignment} fill={tooltipFill}>
       <StatusSelector
         {kind}
         {size}

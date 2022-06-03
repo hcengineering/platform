@@ -241,7 +241,9 @@
         {/if}
       </div>
       <div class="mt-6">
-        <SubIssues {issue} {issueStatuses} />
+        {#key issue._id}
+          <SubIssues {issue} {issueStatuses} />
+        {/key}
       </div>
     {/if}
     <AttachmentDocList value={issue} />
