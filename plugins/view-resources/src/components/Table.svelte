@@ -153,6 +153,13 @@
       r?.scrollIntoView({ behavior: 'auto', block: 'nearest' })
     }
   }
+
+  const joinProps = (collectionAttr: boolean, object: Doc, props: any) => {
+    if (collectionAttr) {
+      return { object, ...props }
+    }
+    return props
+  }
 </script>
 
 {#await buildModel({ client, _class, keys: config, lookup })}
@@ -251,8 +258,7 @@
                     <svelte:component
                       this={attribute.presenter}
                       value={getObjectValue(attribute.key, object) ?? ''}
-                      {object}
-                      {...attribute.props}
+                      {...joinProps(attribute.collectionAttr, object, attribute.props)}
                     />
                     <!-- <div
                       id="context-menu"
@@ -268,8 +274,7 @@
                   <svelte:component
                     this={attribute.presenter}
                     value={getObjectValue(attribute.key, object) ?? ''}
-                    {object}
-                    {...attribute.props}
+                    {...joinProps(attribute.collectionAttr, object, attribute.props)}
                   />
                 </td>
               {/if}

@@ -15,18 +15,23 @@
 -->
 <script lang="ts">
   import type { Candidate } from '@anticrm/recruit'
-  import { Icon, Tooltip } from '@anticrm/ui'
-  import ApplicationsPopup from './ApplicationsPopup.svelte'
+  import { Icon, tooltip } from '@anticrm/ui'
   import recruit from '../plugin'
+  import ApplicationsPopup from './ApplicationsPopup.svelte'
 
   export let value: number
   export let object: Candidate
 </script>
 
 {#if value && value > 0}
-  <Tooltip label={recruit.string.Applications} component={ApplicationsPopup} props={{ value: object }}>
-    <div class="sm-tool-icon">
-      <span class="icon"><Icon icon={recruit.icon.Application} size={'small'} /></span>&nbsp;{value}
-    </div>
-  </Tooltip>
+  <div
+    use:tooltip={{
+      label: recruit.string.Applications,
+      component: ApplicationsPopup,
+      props: { value: object }
+    }}
+    class="sm-tool-icon"
+  >
+    <span class="icon"><Icon icon={recruit.icon.Application} size={'small'} /></span>&nbsp;{value}
+  </div>
 {/if}

@@ -14,25 +14,22 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Contact, Organization } from '@anticrm/contact'
+  import contact, { Member } from '@anticrm/contact'
+  import { Hierarchy } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
+  import { getPanelURI } from '@anticrm/ui'
+  import view from '@anticrm/view'
+  import { ContactPresenter } from '..'
 
-  import OrganizationPresenter from './OrganizationPresenter.svelte'
-  import PersonPresenter from './PersonPresenter.svelte'
+  export let value: Member
 
-  export let value: Contact
-  export let isInteractive = true
-
-  function isPerson (value: Contact): boolean {
-    const client = getClient()
-    const hierarchy = client.getHierarchy()
-    return hierarchy.isDerived(value._class, contact.class.Person)
-  }
-  const toOrg = (contact: Contact) => contact as Organization
+  const contactRef = getClient().findOne(contact.class.Contact, { _id: value.contact })
 </script>
 
-{#if isPerson(value)}
-  <PersonPresenter {isInteractive} {value} />
-{:else}
-  <OrganizationPresenter value={toOrg(value)} />
-{/if}
+<a href={`#${getPanelURI(view.component.EditDoc, value._id, Hierarchy.mixinOrClass(value), 'content')}`}>
+  {#await contactRef then ct}
+    {#if ct}
+      <ContactPresenter isInteractive={false} value={ct} />
+    {/if}
+  {/await}
+</a>

@@ -17,7 +17,7 @@
   import { Hierarchy } from '@anticrm/core'
   import { IntlString } from '@anticrm/platform'
   import { Avatar } from '@anticrm/presentation'
-  import { getPanelURI, Label } from '@anticrm/ui'
+  import { getPanelURI, Label, LabelAndProps, tooltip } from '@anticrm/ui'
   import view from '@anticrm/view'
 
   export let value: Person | undefined
@@ -29,6 +29,7 @@
   export let defaultName: IntlString | undefined = undefined
   export let avatarSize: 'inline' | 'tiny' | 'x-small' | 'small' | 'medium' | 'large' | 'x-large' = 'x-small'
   export let onEdit: ((event: MouseEvent) => void) | undefined = undefined
+  export let showTooltip: LabelAndProps | undefined = undefined
 
   $: element = getElement(value, onEdit, shouldShowPlaceholder, isInteractive)
 
@@ -56,6 +57,7 @@
 
 <svelte:element
   this={element}
+  use:tooltip={showTooltip}
   class="contentPresenter"
   class:inline-presenter={inline}
   class:mContentPresenterNotInteractive={!isInteractive}

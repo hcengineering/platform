@@ -15,9 +15,10 @@
 -->
 <script lang="ts">
   import type { Channel } from '@anticrm/contact'
+  import { Doc } from '@anticrm/core'
   import type { ButtonKind, ButtonSize } from '@anticrm/ui'
-  import ChannelsDropdown from './ChannelsDropdown.svelte'
   import { showPopup } from '@anticrm/ui'
+  import ChannelsDropdown from './ChannelsDropdown.svelte'
 
   export let value: Channel[] | Channel | null
 
@@ -26,12 +27,13 @@
   export let size: ButtonSize = 'small'
   export let length: 'short' | 'full' = 'short'
   export let shape: 'circle' | undefined = 'circle'
+  export let object: Doc
 
   function _open (ev: any) {
     if (ev.detail.presenter !== undefined && Array.isArray(value)) {
       const channel = value[0]
       if (channel !== undefined) {
-        showPopup(ev.detail.presenter, { _id: channel.attachedTo, _class: channel.attachedToClass }, 'float')
+        showPopup(ev.detail.presenter, { _id: object._id, _class: object._class }, 'float')
       }
     }
   }

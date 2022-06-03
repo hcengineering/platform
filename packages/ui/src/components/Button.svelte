@@ -16,7 +16,8 @@
   import type { Asset, IntlString } from '@anticrm/platform'
   import { onMount } from 'svelte'
   import { registerFocus } from '../focus'
-  import type { AnySvelteComponent, ButtonKind, ButtonShape, ButtonSize } from '../types'
+  import { tooltip } from '../tooltips'
+  import type { AnySvelteComponent, ButtonKind, ButtonShape, ButtonSize, LabelAndProps } from '../types'
   import Icon from './Icon.svelte'
   import Label from './Label.svelte'
   import Spinner from './Spinner.svelte'
@@ -40,6 +41,8 @@
   export let borderStyle: 'solid' | 'dashed' = 'solid'
   export let id: string | undefined = undefined
   export let input: HTMLButtonElement | undefined = undefined
+
+  export let showTooltip: LabelAndProps | undefined = undefined
 
   $: iconOnly = label === undefined && $$slots.content === undefined
 
@@ -80,6 +83,7 @@
 
 <!-- {focusIndex} -->
 <button
+  use:tooltip={showTooltip}
   bind:this={input}
   class="button {kind} {size} jf-{justify}"
   class:only-icon={iconOnly}

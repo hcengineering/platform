@@ -15,9 +15,9 @@
 -->
 <script lang="ts">
   import type { Doc } from '@anticrm/core'
-  import { Tooltip, IconAttachment } from '@anticrm/ui'
-  import AttachmentPopup from './AttachmentPopup.svelte'
+  import { IconAttachment, tooltip } from '@anticrm/ui'
   import attachment from '../plugin'
+  import AttachmentPopup from './AttachmentPopup.svelte'
 
   export let value: number | undefined
   export let object: Doc
@@ -26,16 +26,17 @@
 </script>
 
 {#if value && value > 0}
-  <Tooltip
-    label={attachment.string.Attachments}
-    component={AttachmentPopup}
-    props={{ objectId: object._id, attachments: value }}
+  <div
+    use:tooltip={{
+      label: attachment.string.Attachments,
+      component: AttachmentPopup,
+      props: { objectId: object._id, attachments: value }
+    }}
+    class="sm-tool-icon ml-1 mr-1"
   >
-    <div class="sm-tool-icon ml-1 mr-1">
-      <span class="icon"><IconAttachment {size} /></span>
-      {#if showCounter}
-        &nbsp;{value}
-      {/if}
-    </div>
-  </Tooltip>
+    <span class="icon"><IconAttachment {size} /></span>
+    {#if showCounter}
+      &nbsp;{value}
+    {/if}
+  </div>
 {/if}
