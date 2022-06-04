@@ -68,7 +68,7 @@
 
   const fitPopup = (): void => {
     if (modalHTML) {
-      if ((fullSize || docSize) && (element === 'float' || element === 'content')) {
+      if ((fullSize || docSize) && element === 'float') {
         options = fitPopupElement(modalHTML, 'full')
         options.props.maxHeight = '100vh'
         if (!modalHTML.classList.contains('fullsize')) modalHTML.classList.add('fullsize')
@@ -97,7 +97,7 @@
 
 <div
   class="popup"
-  class:anim={element === 'float' || element === 'content'}
+  class:anim={element === 'float'}
   bind:this={modalHTML}
   style={`z-index: ${zIndex + 1};`}
   style:top={options.props.top}
