@@ -212,7 +212,7 @@ export class TProject extends TDoc implements Project {
   // @Index(IndexKind.FullText)
   label!: string
 
-  @Prop(TypeMarkup(), tracker.string.Project)
+  @Prop(TypeMarkup(), tracker.string.Description)
   description?: Markup
 
   @Prop(TypeString(), tracker.string.AssetLabel)
@@ -236,10 +236,10 @@ export class TProject extends TDoc implements Project {
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, undefined, attachment.string.Files)
   attachments?: number
 
-  @Prop(TypeDate(true), tracker.string.Project)
+  @Prop(TypeDate(true), tracker.string.StartDate)
   startDate!: Timestamp | null
 
-  @Prop(TypeDate(true), tracker.string.Project)
+  @Prop(TypeDate(true), tracker.string.TargetDate)
   targetDate!: Timestamp | null
 
   declare space: Ref<Team>
@@ -364,6 +364,12 @@ export function createModel (builder: Builder): void {
             label: tracker.string.Views,
             icon: tracker.icon.Views,
             component: tracker.component.Views
+          },
+          {
+            id: 'project',
+            label: tracker.string.Project,
+            component: tracker.component.EditProject,
+            visibleIf: tracker.function.ProjectVisible
           }
         ],
         spaces: [

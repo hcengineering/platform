@@ -65,6 +65,7 @@
   export let completedIssuesPeriod: IssuesDateModificationPeriod | null = IssuesDateModificationPeriod.All
   export let shouldShowEmptyGroups: boolean | undefined = false
   export let includedGroups: Partial<Record<IssuesGroupByKeys, Array<any>>> = {}
+  export let label: string | undefined = undefined
 
   const dispatch = createEventDispatcher()
   const ENTRIES_LIMIT = 200
@@ -439,18 +440,16 @@
       filterElement
     )
   }
+  $: value = totalIssuesCount === resultIssuesCount ? totalIssuesCount : `${resultIssuesCount}/${totalIssuesCount}`
 </script>
 
 {#if currentTeam}
   <div class="fs-title flex-between header">
     <div class="titleContainer">
-      {#if totalIssuesCount === resultIssuesCount}
-        <Label label={title} params={{ value: totalIssuesCount }} />
+      {#if label}
+        {label}
       {:else}
-        <div class="labelsContainer">
-          <Label label={title} params={{ value: resultIssuesCount }} />
-          <div class="totalIssuesLabel">/{totalIssuesCount}</div>
-        </div>
+        <Label label={title} params={{ value }} />
       {/if}
       <div class="ml-4">
         <Button
@@ -486,36 +485,46 @@
       onChangeMode={handleFilterModeChanged}
     />
   {/if}
-  <ScrollBox vertical stretch>
-    <IssuesListBrowser
-      _class={tracker.class.Issue}
-      {currentSpace}
-      {groupByKey}
-      orderBy={issuesOrderKeyMap[orderingKey]}
-      {statuses}
-      {employees}
-      categories={displayedCategories}
-      itemsConfig={[
-        { key: '', presenter: tracker.component.PriorityEditor },
-        { key: '', presenter: tracker.component.IssuePresenter, props: { currentTeam } },
-        { key: '', presenter: tracker.component.StatusEditor, props: { statuses } },
-        { key: '', presenter: tracker.component.TitlePresenter, props: { shouldUseMargin: true } },
-        { key: '', presenter: tracker.component.DueDatePresenter },
-        {
-          key: '',
-          presenter: tracker.component.ProjectEditor,
-          props: { kind: 'secondary', size: 'small', shape: 'round', shouldShowPlaceholder: false }
-        },
-        { key: 'modifiedOn', presenter: tracker.component.ModificationDatePresenter },
-        {
-          key: '$lookup.assignee',
-          presenter: tracker.component.AssigneePresenter,
-          props: { currentSpace, defaultClass: contact.class.Employee, shouldShowLabel: false }
-        }
-      ]}
-      {groupedIssues}
-    />
-  </ScrollBox>
+
+  <div class="flex h-full">
+    <div class="antiPanel-component">
+      <ScrollBox vertical stretch>
+        <IssuesListBrowser
+          _class={tracker.class.Issue}
+          {currentSpace}
+          {groupByKey}
+          orderBy={issuesOrderKeyMap[orderingKey]}
+          {statuses}
+          {employees}
+          categories={displayedCategories}
+          itemsConfig={[
+            { key: '', presenter: tracker.component.PriorityEditor },
+            { key: '', presenter: tracker.component.IssuePresenter, props: { currentTeam } },
+            { key: '', presenter: tracker.component.StatusEditor, props: { statuses } },
+            { key: '', presenter: tracker.component.TitlePresenter, props: { shouldUseMargin: true } },
+            { key: '', presenter: tracker.component.DueDatePresenter },
+            {
+              key: '',
+              presenter: tracker.component.ProjectEditor,
+              props: { kind: 'secondary', size: 'small', shape: 'round', shouldShowPlaceholder: false }
+            },
+            { key: 'modifiedOn', presenter: tracker.component.ModificationDatePresenter },
+            {
+              key: '$lookup.assignee',
+              presenter: tracker.component.AssigneePresenter,
+              props: { currentSpace, defaultClass: contact.class.Employee, shouldShowLabel: false }
+            }
+          ]}
+          {groupedIssues}
+        />
+      </ScrollBox>
+    </div>
+    {#if $$slots.aside !== undefined}
+      <div class="antiPanel-component aside border-left pl-2">
+        <slot name="aside" />
+      </div>
+    {/if}
+  </div>
 {/if}
 
 <style lang="scss">
@@ -529,14 +538,5 @@
     display: flex;
     align-items: center;
     justify-content: flex-start;
-  }
-
-  .labelsContainer {
-    display: flex;
-    align-items: center;
-  }
-
-  .totalIssuesLabel {
-    color: var(--content-color);
   }
 </style>

@@ -49,7 +49,7 @@
     "AddSubIssues": "{subIssues, plural, =1 {Добавить подзадачу} other {+ Добавить подзадачи}}",
 
     "Title": "Заголовок",
-    "Description": "",
+    "Description": "Описание",
     "Status": "Статус",
     "Number": "Number",
     "Assignee": "Исполнитель",
