@@ -242,7 +242,7 @@
       </div>
       <div class="mt-6">
         {#key issue._id}
-          <SubIssues {issue} {issueStatuses} />
+          <SubIssues {issue} {issueStatuses} {currentTeam} />
         {/key}
       </div>
     {/if}

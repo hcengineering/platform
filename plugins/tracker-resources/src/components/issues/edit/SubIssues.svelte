@@ -15,7 +15,7 @@
 <script lang="ts">
   import { SortingOrder, WithLookup } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
-  import { calcRank, Issue, IssueStatus } from '@anticrm/tracker'
+  import { calcRank, Issue, IssueStatus, Team } from '@anticrm/tracker'
   import { Button, Spinner, ExpandCollapse, Tooltip, closeTooltip, IconAdd } from '@anticrm/ui'
   import tracker from '../../../plugin'
   import Collapsed from '../../icons/Collapsed.svelte'
@@ -24,6 +24,7 @@
   import SubIssueList from './SubIssueList.svelte'
 
   export let issue: Issue
+  export let currentTeam: Team | undefined
   export let issueStatuses: WithLookup<IssueStatus>[] | undefined
 
   const subIssuesQuery = createQuery()
@@ -85,7 +86,7 @@
   </Tooltip>
 </div>
 <div class="mt-1">
-  {#if subIssues && issueStatuses}
+  {#if subIssues && issueStatuses && currentTeam}
     <ExpandCollapse isExpanded={!isCollapsed} duration={400}>
       {#if hasSubIssues}
         <div class="list" class:collapsed={isCollapsed}>
@@ -96,7 +97,7 @@
     <ExpandCollapse isExpanded={!isCollapsed} duration={400}>
       {#if isCreating}
         <div class="pt-4">
-          <CreateSubIssue teamId={issue.space} {issueStatuses} on:close={() => (isCreating = false)} />
+          <CreateSubIssue parentIssue={issue} {issueStatuses} {currentTeam} on:close={() => (isCreating = false)} />
         </div>
       {/if}
     </ExpandCollapse>

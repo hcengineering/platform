@@ -14,35 +14,46 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { AttachedData, Ref, WithLookup } from '@anticrm/core'
-  import presentation, { SpaceSelector } from '@anticrm/presentation'
+  import core, { AttachedData, Ref, SortingOrder, WithLookup } from '@anticrm/core'
+  import presentation, { getClient } from '@anticrm/presentation'
   import { StyledTextArea } from '@anticrm/text-editor'
-  import { IssueStatus, Team, IssuePriority, Issue } from '@anticrm/tracker'
+  import { IssueStatus, IssuePriority, Issue, Team, calcRank } from '@anticrm/tracker'
   import { Button, EditBox } from '@anticrm/ui'
   import tracker from '../../../plugin'
   import AssigneeEditor from '../AssigneeEditor.svelte'
   import StatusEditor from '../StatusEditor.svelte'
 
-  export let teamId: Ref<Team>
+  export let parentIssue: Issue
   export let issueStatuses: WithLookup<IssueStatus>[]
+  export let currentTeam: Team
 
   const dispatch = createEventDispatcher()
-  const issue: AttachedData<Issue> = {
-    title: '',
-    description: '',
-    assignee: null,
-    project: null,
-    number: 0,
-    rank: '',
-    status: '' as Ref<IssueStatus>,
-    priority: IssuePriority.NoPriority,
-    dueDate: null,
-    comments: 0,
-    subIssues: 0
+  const client = getClient()
+
+  let newIssue: AttachedData<Issue> = getIssueDefaults()
+  let thisRef: HTMLDivElement
+  let focusIssueTitle: () => void
+
+  function getIssueDefaults (): AttachedData<Issue> {
+    return {
+      title: '',
+      description: '',
+      assignee: null,
+      project: null,
+      number: 0,
+      rank: '',
+      status: '' as Ref<IssueStatus>,
+      priority: IssuePriority.NoPriority,
+      dueDate: null,
+      comments: 0,
+      subIssues: 0
+    }
   }
 
-  let content: HTMLDivElement
-  let space = teamId
+  function resetToDefaults () {
+    newIssue = getIssueDefaults()
+    focusIssueTitle?.()
+  }
 
   function getTitle (value: string) {
     return value.trim()
@@ -57,30 +68,57 @@
       return
     }
 
-    console.log('TODO: save')
+    const space = currentTeam._id
+    const lastOne = await client.findOne<Issue>(tracker.class.Issue, {}, { sort: { rank: SortingOrder.Descending } })
+    const incResult = await client.updateDoc(
+      tracker.class.Team,
+      core.space.Space,
+      space,
+      { $inc: { sequence: 1 } },
+      true
+    )
+
+    const value: AttachedData<Issue> = {
+      ...newIssue,
+      title: getTitle(newIssue.title),
+      number: (incResult as any).object.sequence,
+      rank: calcRank(lastOne, undefined)
+    }
+
+    await client.addCollection(tracker.class.Issue, space, parentIssue._id, parentIssue._class, 'subIssues', value)
+    resetToDefaults()
   }
 
-  $: content && content.scrollIntoView({ behavior: 'smooth' })
-  $: canSave = getTitle(issue.title ?? '').length > 0
+  $: thisRef && thisRef.scrollIntoView({ behavior: 'smooth' })
+  $: canSave = getTitle(newIssue.title ?? '').length > 0
+  $: if (!newIssue.status && currentTeam?.defaultIssueStatus) {
+    newIssue.status = currentTeam.defaultIssueStatus
+  }
 </script>
 
-<div class="flex-col root">
+<div bind:this={thisRef} class="flex-col root">
   <div class="flex-row-top">
     <StatusEditor
-      value={issue}
+      value={newIssue}
       statuses={issueStatuses}
       kind="transparent"
       width="min-content"
       size="medium"
       tooltipFill={false}
       tooltipAlignment="bottom"
-      on:change={({ detail }) => (issue.status = detail)}
+      on:change={({ detail }) => (newIssue.status = detail)}
     />
-    <div bind:this={content} class="w-full flex-col content">
-      <EditBox bind:value={issue.title} maxWidth="33rem" placeholder={tracker.string.IssueTitlePlaceholder} />
+    <div class="w-full flex-col content">
+      <EditBox
+        bind:value={newIssue.title}
+        bind:focusInput={focusIssueTitle}
+        maxWidth="33rem"
+        placeholder={tracker.string.IssueTitlePlaceholder}
+        focus
+      />
       <div class="mt-4">
         <StyledTextArea
-          bind:content={issue.description}
+          bind:content={newIssue.description}
           placeholder={tracker.string.IssueDescriptionPlaceholder}
           showButtons={false}
         />
@@ -89,22 +127,17 @@
   </div>
   <div class="mt-4 flex-between">
     <div class="buttons-group xsmall-gap">
-      <SpaceSelector _class={tracker.class.Team} label={tracker.string.Team} bind:space />
+      <!-- <SpaceSelector _class={tracker.class.Team} label={tracker.string.Team} bind:space /> -->
       <AssigneeEditor
-        value={issue}
+        value={newIssue}
         size="small"
         kind="no-border"
         tooltipFill={false}
-        on:change={({ detail }) => (issue.assignee = detail)}
+        on:change={({ detail }) => (newIssue.assignee = detail)}
       />
     </div>
     <div class="buttons-group">
-      <Button
-        label={presentation.string.Cancel}
-        size="small"
-        kind="transparent"
-        on:click={close}
-      />
+      <Button label={presentation.string.Cancel} size="small" kind="transparent" on:click={close} />
       <Button
         disabled={!canSave}
         label={presentation.string.Save}
