@@ -259,3 +259,14 @@
   height: 1px;
   background-color: var(--divider-color);
 }
+
+// Button on selected card in Kanban
+.card-container.checked .button.inline.link-bordered {
+  background-color: var(--highlight-select);
+  border-color: var(--highlight-select-border);
+
+  &:hover {
+    background-color: var(--highlight-select-hover);
+    border-color: var(--highlight-select-border);
+  }
+}

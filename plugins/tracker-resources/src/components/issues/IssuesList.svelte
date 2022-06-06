@@ -233,18 +233,6 @@
                         value={getObjectValue(attributeModel.key, docObject) ?? ''}
                         {...attributeModel.props}
                       />
-                      <div
-                        id="context-menu"
-                        class="eIssuePresenterContextMenu"
-                        on:click={(event) =>
-                          handleMenuOpened(
-                            event,
-                            docObject,
-                            combinedGroupedIssues.findIndex((x) => x === docObject)
-                          )}
-                      >
-                        <IconMoreV size={'small'} />
-                      </div>
                     </div>
                   {:else if attributeModelIndex === 3}
                     <svelte:component
@@ -329,12 +317,6 @@
       }
     }
 
-    &.mListGridFixed {
-      .eIssuePresenterContextMenu {
-        visibility: visible;
-      }
-    }
-
     &.mListGridSelected {
       background-color: var(--menu-bg-select);
     }
@@ -375,23 +357,6 @@
     display: flex;
     align-items: center;
     flex-shrink: 0;
-    width: 5.5rem;
-    margin-left: 0.5rem;
-
-    .eIssuePresenterContextMenu {
-      visibility: hidden;
-      opacity: 0.6;
-      cursor: pointer;
-
-      &:hover {
-        opacity: 1;
-      }
-    }
-
-    &:hover {
-      .eIssuePresenterContextMenu {
-        visibility: visible;
-      }
-    }
+    // width: 5.5rem;
   }
 </style>

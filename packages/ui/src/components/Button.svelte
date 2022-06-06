@@ -106,27 +106,37 @@
   {#if icon && !loading}
     <div
       class="btn-icon pointer-events-none"
-      class:mr-1={!iconOnly && (kind === 'no-border' || shape === 'circle')}
-      class:mr-2={!iconOnly && kind !== 'no-border' && shape !== 'circle'}
+      class:mr-1={!iconOnly && (kind === 'no-border' || kind === 'link-bordered' || shape === 'circle')}
+      class:mr-2={!iconOnly && kind !== 'no-border' && kind !== 'link-bordered' && shape !== 'circle'}
       class:resetIconSize
     >
-      <Icon bind:icon size={'small'} />
+      <Icon bind:icon size={size === 'inline' ? 'inline' : 'small'} />
     </div>
   {/if}
   {#if loading}
     <Spinner />
   {:else}
-    <span class="overflow-label pointer-events-none">
-      {#if label}
+    {#if label}
+      <span class="overflow-label pointer-events-none">
         <Label {label} params={labelParams} />
-      {:else if $$slots.content}
+      </span>
+    {:else if $$slots.content}
+      <span class="overflow-label pointer-events-none">
         <slot name="content" />
-      {/if}
-    </span>
+      </span>
+    {/if}
   {/if}
 </button>
 
 <style lang="scss">
+  .inline {
+    height: 1.375rem;
+    font-size: 0.75rem;
+    line-height: 0.75rem;
+    &.only-icon {
+      width: 1.375rem;
+    }
+  }
   .small {
     height: 1.5rem;
     font-size: 0.75rem;
@@ -160,7 +170,7 @@
     flex-shrink: 0;
     padding: 0 0.5rem;
     font-weight: 500;
-    min-width: 1.5rem;
+    min-width: 1.375rem;
     white-space: nowrap;
     color: var(--accent-color);
     background-color: transparent;
@@ -289,6 +299,7 @@
       border-color: var(--button-border-color);
       &:hover {
         color: var(--accent-color);
+        background-color: var(--button-bg-hover);
         border-color: var(--button-border-hover);
         .btn-icon {
           color: var(--accent-color);

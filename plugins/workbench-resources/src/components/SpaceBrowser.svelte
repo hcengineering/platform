@@ -101,7 +101,7 @@
   {/if}
 </div>
 <div class="ml-8 mr-8 mt-4"><SearchEdit bind:value={search} /></div>
-<Scroller padding>
+<Scroller padding={'2.5rem'}>
   <div class="flex-col">
     {#each spaces as space (space._id)}
       {@const icon = classIcon(client, space._class)}

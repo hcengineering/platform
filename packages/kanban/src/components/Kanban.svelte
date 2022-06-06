@@ -15,7 +15,7 @@
 <script lang="ts">
   import core, { AttachedDoc, Class, Doc, DocumentQuery, DocumentUpdate, FindOptions, Ref, Space } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
-  import { getPlatformColor, ScrollBox } from '@anticrm/ui'
+  import { getPlatformColor, ScrollBox, Scroller } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import { slide } from 'svelte/transition'
   import { DocWithRank, StateType, TypeState } from '../types'
@@ -309,41 +309,39 @@
                 </div>
               </div>
             {/if}
-            <div class="scroll" on:dragover on:drop>
-              <ScrollBox vertical>
-                <slot name="beforeCard" {state} />
-                {#each stateObjects as object}
-                  {@const dragged = isDragging && object.it._id === dragCard?._id}
+            <Scroller padding={'.5rem 0'} on:dragover on:drop>
+              <slot name="beforeCard" {state} />
+              {#each stateObjects as object}
+                {@const dragged = isDragging && object.it._id === dragCard?._id}
+                <div
+                  transition:slideD|local={{ isDragging }}
+                  class="step-tb75"
+                  on:dragover|preventDefault={(evt) => cardDragOver(evt, object)}
+                  on:drop|preventDefault={(evt) => cardDrop(evt, object)}
+                >
                   <div
-                    transition:slideD|local={{ isDragging }}
-                    class="step-tb75"
-                    on:dragover|preventDefault={(evt) => cardDragOver(evt, object)}
-                    on:drop|preventDefault={(evt) => cardDrop(evt, object)}
+                    class="card-container"
+                    class:selection={selection !== undefined ? objects[selection]?._id === object.it._id : false}
+                    class:checked={checkedSet.has(object.it._id)}
+                    on:mouseover={() => dispatch('obj-focus', object.it)}
+                    on:focus={() => {}}
+                    on:contextmenu={(evt) => showMenu(evt, object)}
+                    draggable={true}
+                    class:draggable={true}
+                    on:dragstart
+                    on:dragend
+                    class:dragged
+                    on:dragstart={() => onDragStart(object, state)}
+                    on:dragend={() => {
+                      isDragging = false
+                    }}
                   >
-                    <div
-                      class="card-container"
-                      class:selection={selection !== undefined ? objects[selection]?._id === object.it._id : false}
-                      class:checked={checkedSet.has(object.it._id)}
-                      on:mouseover={() => dispatch('obj-focus', object.it)}
-                      on:focus={() => {}}
-                      on:contextmenu={(evt) => showMenu(evt, object)}
-                      draggable={true}
-                      class:draggable={true}
-                      on:dragstart
-                      on:dragend
-                      class:dragged
-                      on:dragstart={() => onDragStart(object, state)}
-                      on:dragend={() => {
-                        isDragging = false
-                      }}
-                    >
-                      <slot name="card" object={toAny(object.it)} {dragged} />
-                    </div>
+                    <slot name="card" object={toAny(object.it)} {dragged} />
                   </div>
-                {/each}
-                <slot name="afterCard" {space} {state} />
-              </ScrollBox>
-            </div>
+                </div>
+              {/each}
+              <slot name="afterCard" {space} {state} />
+            </Scroller>
           </div>
         {/each}
         <slot name="afterPanel" />
@@ -363,7 +361,7 @@
   }
   .kanban-content {
     display: flex;
-    margin: 0.5rem 2rem;
+    padding: 1.5rem 2rem 0;
     height: 100%;
   }
 
@@ -371,10 +369,13 @@
     height: 100%;
   }
   .card-container {
-    background-color: var(--body-color);
+    background-color: var(--board-card-bg-color);
     border-radius: 0.25rem;
     // transition: box-shadow .15s ease-in-out;
 
+    &:hover {
+      background-color: var(--board-card-bg-hover);
+    }
     &.checked {
       background-color: var(--highlight-select);
       box-shadow: inset 0 0 1px 1px var(--highlight-select-border);
@@ -439,11 +440,6 @@
         font-weight: 500;
         color: var(--theme-caption-color);
       }
-    }
-
-    .scroll {
-      min-height: 0;
-      height: 100%;
     }
   }
 </style>

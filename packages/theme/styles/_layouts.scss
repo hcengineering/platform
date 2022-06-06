@@ -86,7 +86,7 @@ table {
 
 /* Common */
 * {
-  --modal-padding: 1.5rem;
+  --modal-padding: 1rem;
 }
 
 p { user-select: text; }
@@ -347,6 +347,7 @@ input.search {
 .mt-0-5 { margin-top: .125rem; }
 .mt-1 { margin-top: .25rem; }
 .mt-2 { margin-top: .5rem; }
+.mt-10px { margin-top: .625rem; }
 .mt-3 { margin-top: .75rem; }
 .mt-4 { margin-top: 1rem; }
 .mt-5 { margin-top: 1.25rem; }
@@ -473,6 +474,10 @@ input.search {
 .square-36 { width: 2.25rem; height: 2.25rem; }
 
 /* --------- */
+.svg-inline {
+  width: 1em;
+  height: 1em;
+}
 .svg-x-small {
   width: .857em;
   height: .857em;

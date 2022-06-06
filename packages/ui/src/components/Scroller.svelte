@@ -15,13 +15,13 @@
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte'
 
-  export let padding: boolean = false
+  export let padding: string | undefined = undefined
   export let autoscroll: boolean = false
   // export let correctPadding: number = 0
   export let bottomStart: boolean = false
   export let tableFade: boolean = false
 
-  let mask: 'top' | 'bottom' | 'both' | 'none' = 'bottom'
+  let mask: 'top' | 'bottom' | 'both' | 'none' = 'none'
 
   let divScroll: HTMLElement
   let divBox: HTMLElement
@@ -103,9 +103,9 @@
     if (divScroll) {
       beforeContent = divScroll.scrollTop
       belowContent = divScroll.scrollHeight - divScroll.clientHeight - beforeContent
-      if (beforeContent > 1 && belowContent > 1) mask = 'both'
-      else if (beforeContent > 1) mask = 'bottom'
-      else if (belowContent > 1) mask = 'top'
+      if (beforeContent > 2 && belowContent > 2) mask = 'both'
+      else if (beforeContent > 2) mask = 'bottom'
+      else if (belowContent > 2) mask = 'top'
       else mask = 'none'
 
       if (autoscroll) {
@@ -141,6 +141,9 @@
 
   let divHeight: number
   const _resize = (): void => checkFade()
+
+  let boxHeight: number
+  $: if (boxHeight) checkFade()
 </script>
 
 <svelte:window on:resize={_resize} />
@@ -155,7 +158,7 @@
     class:antiNav-bothFade={mask === 'both'}
     class:antiNav-noneFade={mask === 'none'}
   >
-    <div bind:this={divBox} class="box" class:p-10={padding}>
+    <div bind:this={divBox} class="box" style:padding bind:clientHeight={boxHeight} on:dragover on:drop>
       <slot />
     </div>
   </div>
