@@ -136,7 +136,7 @@
         on:change={({ detail }) => (newIssue.assignee = detail)}
       />
     </div>
-    <div class="buttons-group">
+    <div class="buttons-group small-gap">
       <Button label={presentation.string.Cancel} size="small" kind="transparent" on:click={close} />
       <Button
         disabled={!canSave}
