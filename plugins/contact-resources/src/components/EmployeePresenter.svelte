@@ -10,6 +10,7 @@
   export let shouldShowAvatar: boolean = true
   export let shouldShowName: boolean = true
   export let onEmployeeEdit: ((event: MouseEvent) => void) | undefined = undefined
+  export let avatarSize: 'inline' | 'tiny' | 'x-small' | 'small' | 'medium' | 'large' | 'x-large' = 'x-small'
 
   let container: HTMLElement
 
@@ -28,7 +29,7 @@
 
 <div bind:this={container} class="flex-row-center clear-mins">
   <div class="over-underline" class:pr-2={shouldShowName}>
-    <PersonPresenter {value} onEdit={handlePersonEdit} {shouldShowAvatar} {shouldShowName} />
+    <PersonPresenter {value} onEdit={handlePersonEdit} {shouldShowAvatar} {shouldShowName} {avatarSize} />
   </div>
   {#if value.$lookup?.statuses?.length}
     <div class="status content-color">

@@ -170,7 +170,7 @@
                   <div class="check pointer-events-none">
                     <CheckBox checked={isSelected(value, selectedValues)} primary />
                   </div>
-                  {#if value}
+                  {#if value !== undefined}
                     <svelte:component
                       this={attribute.presenter}
                       value={typeof value === 'string' ? realValue : value}

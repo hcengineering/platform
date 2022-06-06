@@ -35,6 +35,7 @@ import CreateChannel from './components/CreateChannel.svelte'
 import CreateDirectMessage from './components/CreateDirectMessage.svelte'
 import EditChannel from './components/EditChannel.svelte'
 import MessagesBrowser from './components/MessagesBrowser.svelte'
+import ChunterBrowser from './components/ChunterBrowser.svelte'
 import ThreadView from './components/ThreadView.svelte'
 import Threads from './components/Threads.svelte'
 import SavedMessages from './components/SavedMessages.svelte'
@@ -168,17 +169,22 @@ export function messageBrowserVisible (spaces: Space[]): boolean {
   return false
 }
 
+export function chunterBrowserVisible (spaces: Space[]): boolean {
+  return false
+}
+
 export default async (): Promise<Resources> => ({
   component: {
     CommentInput,
     CreateChannel,
     CreateDirectMessage,
     ChannelHeader,
-    DmHeader,
     ChannelView,
     CommentPresenter,
     CommentsPresenter,
     ChannelPresenter,
+    ChunterBrowser,
+    DmHeader,
     DmPresenter,
     EditChannel,
     MessagesBrowser,
@@ -188,7 +194,8 @@ export default async (): Promise<Resources> => ({
   },
   function: {
     GetDmName: getDmName,
-    MessageBrowserVisible: messageBrowserVisible
+    MessageBrowserVisible: messageBrowserVisible,
+    ChunterBrowserVisible: chunterBrowserVisible
   },
   activity: {
     TxCommentCreate,

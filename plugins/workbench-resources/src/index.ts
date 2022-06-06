@@ -26,7 +26,7 @@ import { doNavigate } from './utils'
 function hasArchiveSpaces (spaces: Space[]): boolean {
   return spaces.find((sp) => sp.archived) !== undefined
 }
-
+export { default as SpaceBrowser } from './components/SpaceBrowser.svelte'
 export default async (): Promise<Resources> => ({
   component: {
     WorkbenchApp,

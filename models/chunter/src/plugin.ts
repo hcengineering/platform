@@ -30,7 +30,8 @@ export default mergeIds(chunterId, chunter, {
     Threads: '' as AnyComponent,
     ThreadView: '' as AnyComponent,
     SavedMessages: '' as AnyComponent,
-    MessagesBrowser: '' as AnyComponent
+    MessagesBrowser: '' as AnyComponent,
+    ChunterBrowser: '' as AnyComponent
   },
   action: {
     MarkCommentUnread: '' as Ref<Action>,
@@ -86,6 +87,7 @@ export default mergeIds(chunterId, chunter, {
     Random: '' as Ref<Channel>
   },
   function: {
-    MessageBrowserVisible: '' as Resource<(spaces: Space[]) => boolean>
+    MessageBrowserVisible: '' as Resource<(spaces: Space[]) => boolean>,
+    ChunterBrowserVisible: '' as Resource<(spaces: Space[]) => boolean>
   }
 })
