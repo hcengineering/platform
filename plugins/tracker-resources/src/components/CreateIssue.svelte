@@ -82,15 +82,10 @@
       return
     }
 
-    const team = await client.findOne(
-      tracker.class.Team,
-      { _id: teamId },
-      { lookup: { defaultIssueStatus: tracker.class.IssueStatus } }
-    )
-    const teamDefaultIssueStatusId = team?.$lookup?.defaultIssueStatus?._id
+    const team = await client.findOne(tracker.class.Team, { _id: teamId })
 
-    if (teamDefaultIssueStatusId) {
-      object.status = teamDefaultIssueStatusId
+    if (team?.defaultIssueStatus) {
+      object.status = team.defaultIssueStatus
     }
   }
 
