@@ -24,7 +24,6 @@
   import workbench from '@anticrm/workbench'
 
   const location = getCurrentLocation()
-
   let page = 'login'
 
   $: fields =
@@ -83,8 +82,10 @@
     }
   }
 
-  $: bottomCaption = page === 'login' ? login.string.DoNotHaveAnAccount : login.string.DoNotHaveAnAccount
+  $: bottomCaption = page === 'login' ? login.string.DoNotHaveAnAccount : login.string.HaveAccount
   $: bottomActionLabel = page === 'login' ? login.string.SignUp : login.string.LogIn
+  $: secondaryButtonLabel = page === 'login' ? login.string.SignUp : undefined
+  $: secondaryButtonAction = () => { page = 'signUp' }
 </script>
 
 <Form
@@ -93,6 +94,8 @@
   {fields}
   {object}
   {action}
+  {secondaryButtonLabel}
+  {secondaryButtonAction}
   {bottomCaption}
   {bottomActionLabel}
   bottomActionFunc={() => {

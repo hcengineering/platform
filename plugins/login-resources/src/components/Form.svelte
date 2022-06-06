@@ -41,9 +41,11 @@
   export let status: Status
   export let fields: Field[]
   export let action: Action
-  export let bottomCaption: IntlString
-  export let bottomActionLabel: IntlString
-  export let bottomActionFunc: () => void
+  export let secondaryButtonLabel: IntlString | undefined = undefined
+  export let secondaryButtonAction: (() => void) | undefined = undefined
+  export let bottomCaption: IntlString | undefined = undefined
+  export let bottomActionLabel: IntlString | undefined = undefined
+  export let bottomActionFunc: (() => void) | undefined = undefined
   export let object: any
 
   async function validate () {
@@ -125,17 +127,36 @@
         width="100%"
         loading={inAction}
         disabled={status.severity !== Severity.OK && status.severity !== Severity.ERROR}
-        on:click={() => {
+        on:click={(e) => {
+          e.preventDefault()
           performAction(action)
         }}
       />
     </div>
+    {#if secondaryButtonLabel && secondaryButtonAction}
+      <div class="form-row">
+        <Button
+          label={secondaryButtonLabel}
+          width="100%"
+          on:click={(e) => {
+            e.preventDefault()
+            secondaryButtonAction?.()
+          }}
+        />
+      </div>
+    {/if}
   </div>
-  <div class="grow-separator" />
-  <div class="footer">
-    <span><Label label={bottomCaption} /></span>
-    <a href="." on:click|preventDefault={bottomActionFunc}><Label label={bottomActionLabel} /></a>
-  </div>
+  {#if bottomCaption || (bottomActionLabel && bottomActionFunc)}
+    <div class="grow-separator" />
+    <div class="footer">
+      {#if bottomCaption}
+        <span><Label label={bottomCaption} /></span>
+      {/if}
+      {#if bottomActionLabel && bottomActionFunc}
+        <a href="." on:click|preventDefault={bottomActionFunc}><Label label={bottomActionLabel} /></a>
+      {/if}
+    </div>
+  {/if}
 </form>
 
 <style lang="scss">
