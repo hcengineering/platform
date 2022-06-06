@@ -130,12 +130,20 @@
 
   async function syncLoc (loc: Location): Promise<void> {
     const app = loc.path.length > 0 ? (loc.path[1] as Ref<Application>) : undefined
-    const space = loc.path.length > 1 ? (loc.path[2] as Ref<Space>) : undefined
-    const special = loc.path.length > 2 ? loc.path[3] : undefined
+    let space = loc.path.length > 1 ? (loc.path[2] as Ref<Space>) : undefined
+    let special = loc.path.length > 2 ? loc.path[3] : undefined
 
     if (currentApp !== app) {
       clear(1)
       currentApp = app
+      if (space === undefined) {
+        const last = localStorage.getItem(`platform_last_loc_${currentApp}`)
+        if (last !== null) {
+          const newLocation: Location = JSON.parse(last)
+          loc.path[2] = space = newLocation.path[2] as Ref<Space>
+          loc.path[3] = special = newLocation.path[3]
+        }
+      }
       currentApplication = await client.findOne(workbench.class.Application, { _id: currentApp })
       navigatorModel = currentApplication?.navigatorModel
     }
@@ -150,6 +158,9 @@
         await updateSpace(space)
         setSpaceSpecial(special)
       }
+    }
+    if (app !== undefined) {
+      localStorage.setItem(`platform_last_loc_${currentApp}`, JSON.stringify(loc))
     }
   }
 
