@@ -160,12 +160,7 @@
         </div>
         {#if issue.$lookup?.assignee}
           <div class="abs-rt-content">
-            <AssigneePresenter
-              value={issue.$lookup.assignee}
-              issueId={issue._id}
-              {currentSpace}
-              isEditable={true}
-            />
+            <AssigneePresenter value={issue.$lookup.assignee} issueId={issue._id} {currentSpace} isEditable={true} />
           </div>
         {/if}
         <div class="buttons-group xsmall-gap mt-10px">

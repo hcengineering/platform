@@ -115,16 +115,14 @@
   {/if}
   {#if loading}
     <Spinner />
-  {:else}
-    {#if label}
-      <span class="overflow-label pointer-events-none">
-        <Label {label} params={labelParams} />
-      </span>
-    {:else if $$slots.content}
-      <span class="overflow-label pointer-events-none">
-        <slot name="content" />
-      </span>
-    {/if}
+  {:else if label}
+    <span class="overflow-label pointer-events-none">
+      <Label {label} params={labelParams} />
+    </span>
+  {:else if $$slots.content}
+    <span class="overflow-label pointer-events-none">
+      <slot name="content" />
+    </span>
   {/if}
 </button>
 

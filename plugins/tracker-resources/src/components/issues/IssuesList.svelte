@@ -17,17 +17,7 @@
   import { Class, Doc, FindOptions, getObjectValue, Ref, WithLookup } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
   import { Issue, IssueStatus, Team } from '@anticrm/tracker'
-  import {
-    Button,
-    CheckBox,
-    Component,
-    eventToHTMLElement,
-    IconAdd,
-    IconMoreV,
-    showPopup,
-    Spinner,
-    Tooltip
-  } from '@anticrm/ui'
+  import { Button, CheckBox, Component, eventToHTMLElement, IconAdd, showPopup, Spinner, Tooltip } from '@anticrm/ui'
   import { AttributeModel, BuildModelKey } from '@anticrm/view'
   import { buildModel, getObjectPresenter, LoadingProps, Menu } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
