@@ -202,9 +202,6 @@ export class LiveQuery extends TxProcessor implements Client {
   private remove (): void {
     const q = this.queue.shift()
     if (q === undefined) return
-    if (q.callbacks.length > 0) {
-      return this.remove()
-    }
     const queries = this.queries.get(q._class)
     queries?.splice(queries.indexOf(q), 1)
     if (queries?.length === 0) {
@@ -568,7 +565,7 @@ export class LiveQuery extends TxProcessor implements Client {
     }
     const clone = this.clone(q.result)
     const result = toFindResult(clone, q.total)
-    q.callbacks.map((callback) => callback(result))
+    q.callbacks.forEach((callback) => callback(result))
   }
 
   private async handleDocAddLookup (q: Query, doc: Doc): Promise<void> {
