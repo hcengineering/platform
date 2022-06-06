@@ -234,6 +234,7 @@ specifiers:
   eslint-plugin-import: ^2.25.3
   eslint-plugin-node: ^11.1.0
   eslint-plugin-promise: ^5.1.1
+  eslint-plugin-svelte3: ^4.0.0
   express: ^4.17.1
   express-fileupload: ^1.2.1
   faker: ~5.5.3
@@ -517,6 +518,7 @@ dependencies:
   eslint-plugin-import: 2.26.0_c21022bc9feaeb7b200d3d631eeae46c
   eslint-plugin-node: 11.1.0_eslint@7.32.0
   eslint-plugin-promise: 5.2.0_eslint@7.32.0
+  eslint-plugin-svelte3: 4.0.0_eslint@7.32.0+svelte@3.48.0
   express: 4.18.1
   express-fileupload: 1.4.0
   faker: 5.5.3
@@ -12021,7 +12023,7 @@ packages:
     dev: false
 
   file:projects/model-tags.tgz_typescript@4.7.2:
-    resolution: {integrity: sha512-GqDd2wBGXXzJlWiXxn/I2YB6qbwyFLt8o8OR7xdpaDEAF6YNbym+7u+Ptq0O9kW9msT3hLvmS/vk5HUq0HMnsg==, tarball: file:projects/model-tags.tgz}
+    resolution: {integrity: sha512-W7hggW0TyIrPDN1nGGcNUQHbYoy++o9apSGHND0nFmFHSmtRug4w613wGqH9dolQzjEb5vNoPC1g40JiebUBGg==, tarball: file:projects/model-tags.tgz}
     id: file:projects/model-tags.tgz
     name: '@rush-temp/model-tags'
     version: 0.0.0
@@ -12667,7 +12669,7 @@ packages:
     dev: false
 
   file:projects/query.tgz:
-    resolution: {integrity: sha512-sFTZR0opxCdNZTeIIBcJJcwiWDD/fffdFb3W78Ht0SGzOjhCK/tZm/Pwdq5Uxd9Nh+CqYHzQnjVf0CtAY9oZmg==, tarball: file:projects/query.tgz}
+    resolution: {integrity: sha512-1czqFbKUfNjFTLv9E/ZZpKcv8K/OphFY+K0N8s+KJDRAwWu7vQ2TX5pIdb8AfpZIjea3s98bmTEPUhpIo31p1A==, tarball: file:projects/query.tgz}
     name: '@rush-temp/query'
     version: 0.0.0
     dependencies:
@@ -12680,8 +12682,10 @@ packages:
       eslint-plugin-import: 2.26.0_c21022bc9feaeb7b200d3d631eeae46c
       eslint-plugin-node: 11.1.0_eslint@7.32.0
       eslint-plugin-promise: 5.2.0_eslint@7.32.0
+      fast-equals: 2.0.4
       prettier: 2.6.2
       simplytyped: 3.3.0_typescript@4.7.2
+      svelte: 3.48.0
       typescript: 4.7.2
     transitivePeerDependencies:
       - eslint-import-resolver-typescript
@@ -12775,7 +12779,7 @@ packages:
     dev: false
 
   file:projects/rekoni.tgz_svelte@3.48.0:
-    resolution: {integrity: sha512-wurMqQ+zqRTVEuYvmfTh6QDsv1h0UyUeIXsXEmbk5YrQXNUE6z/sCAWvq3DkrvsMol4DArVtrL+TsZNV1vkDCw==, tarball: file:projects/rekoni.tgz}
+    resolution: {integrity: sha512-WX6fbaayz7h8GYFe8hhsTqsv9Un38RR8RRiALVaiicNtAzjZsk9HJuRJWz/fkTdEm6Tqs43/16phEmTVcAmhAQ==, tarball: file:projects/rekoni.tgz}
     id: file:projects/rekoni.tgz
     name: '@rush-temp/rekoni'
     version: 0.0.0
@@ -13763,7 +13767,7 @@ packages:
     dev: false
 
   file:projects/tags.tgz:
-    resolution: {integrity: sha512-EShaylPW6dK736SqcQhPxvEUfnrdUNFcx91jInmgAnx0/IHpGAay9votdRx9+S+fPo5jwo4hh6PQR1b0Z0DIRA==, tarball: file:projects/tags.tgz}
+    resolution: {integrity: sha512-sh+ncMhE1ARIndBYIKL1pCbPOjeRZjyzXH1ps28xr9YEyrItgFov0A+bUtr56AqoAtm2XNK6fTqkor8t1eEdDw==, tarball: file:projects/tags.tgz}
     name: '@rush-temp/tags'
     version: 0.0.0
     dependencies:
