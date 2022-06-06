@@ -11,7 +11,7 @@
   $: resultQuery = { ...searchQuery }
   let employees: Employee[] = []
 
-  async function updateMessages (resultQuery: DocumentQuery<Employee>) {
+  async function updateEmployees (resultQuery: DocumentQuery<Employee>) {
     employees = await client.findAll(
       contact.class.Employee,
       {
@@ -25,7 +25,7 @@
     )
   }
 
-  $: updateMessages(resultQuery)
+  $: updateEmployees(resultQuery)
 </script>
 
 <div class="mt-4 pt-4 container">
