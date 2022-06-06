@@ -85,7 +85,9 @@
   $: bottomCaption = page === 'login' ? login.string.DoNotHaveAnAccount : login.string.HaveAccount
   $: bottomActionLabel = page === 'login' ? login.string.SignUp : login.string.LogIn
   $: secondaryButtonLabel = page === 'login' ? login.string.SignUp : undefined
-  $: secondaryButtonAction = () => { page = 'signUp' }
+  $: secondaryButtonAction = () => {
+    page = 'signUp'
+  }
 </script>
 
 <Form
