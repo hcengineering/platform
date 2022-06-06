@@ -11,6 +11,7 @@ Platform:
 - Fix skills/labels activity
 - Project selector in issue list
 - Save last filter for page
+- Project issue list view
 
 HR:
 
