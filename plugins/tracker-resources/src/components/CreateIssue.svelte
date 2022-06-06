@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Employee } from '@anticrm/contact'
+  import { Employee } from '@anticrm/contact'
   import core, { AttachedData, Ref, SortingOrder, WithLookup } from '@anticrm/core'
-  import presentation, { Card, createQuery, getClient, SpaceSelector, UserBox } from '@anticrm/presentation'
+  import presentation, { Card, createQuery, getClient, SpaceSelector } from '@anticrm/presentation'
   import { StyledTextBox } from '@anticrm/text-editor'
   import { calcRank, Issue, IssuePriority, IssueStatus, Project, Team } from '@anticrm/tracker'
   import {
@@ -36,7 +36,8 @@
   import PrioritySelector from './PrioritySelector.svelte'
   import ProjectSelector from './ProjectSelector.svelte'
   import SetDueDateActionPopup from './SetDueDateActionPopup.svelte'
-  import StatusSelector from './StatusSelector.svelte'
+  import AssigneeEditor from './issues/AssigneeEditor.svelte'
+  import StatusEditor from './issues/StatusEditor.svelte'
 
   export let space: Ref<Team>
   export let status: Ref<IssueStatus> | undefined = undefined
@@ -81,15 +82,10 @@
       return
     }
 
-    const team = await client.findOne(
-      tracker.class.Team,
-      { _id: teamId },
-      { lookup: { defaultIssueStatus: tracker.class.IssueStatus } }
-    )
-    const teamDefaultIssueStatusId = team?.$lookup?.defaultIssueStatus?._id
+    const team = await client.findOne(tracker.class.Team, { _id: teamId })
 
-    if (teamDefaultIssueStatusId) {
-      object.status = teamDefaultIssueStatusId
+    if (team?.defaultIssueStatus) {
+      object.status = team.defaultIssueStatus
     }
   }
 
@@ -200,14 +196,6 @@
     object.priority = newPriority
   }
 
-  const handleStatusChanged = (statusId: Ref<IssueStatus> | undefined) => {
-    if (statusId === undefined) {
-      return
-    }
-
-    object.status = statusId
-  }
-
   const handleProjectIdChanged = (projectId: Ref<Project> | null | undefined) => {
     if (projectId === undefined) {
       return
@@ -258,23 +246,31 @@
   />
   <svelte:fragment slot="pool">
     {#if issueStatuses}
-      <StatusSelector selectedStatusId={object.status} statuses={issueStatuses} onStatusChange={handleStatusChanged} />
-      <PrioritySelector priority={object.priority} onPriorityChange={handlePriorityChanged} />
-      <UserBox
-        _class={contact.class.Employee}
-        label={tracker.string.Assignee}
-        placeholder={tracker.string.AssignTo}
-        bind:value={currentAssignee}
-        allowDeselect
-        titleDeselect={tracker.string.Unassigned}
+      <StatusEditor
+        value={object}
+        statuses={issueStatuses}
+        kind="no-border"
+        width="min-content"
+        size="small"
+        shouldShowLabel={true}
+        tooltipFill={false}
+        on:change={({ detail }) => (object.status = detail)}
       />
-      <Button
+      <PrioritySelector priority={object.priority} onPriorityChange={handlePriorityChanged} />
+      <AssigneeEditor
+        value={object}
+        size="small"
+        kind="no-border"
+        tooltipFill={false}
+        on:change={({ detail }) => (currentAssignee = detail)}
+      />
+      <!-- <Button
         label={tracker.string.Labels}
         icon={tracker.icon.Labels}
         width="min-content"
         size="small"
         kind="no-border"
-      />
+      /> -->
       <ProjectSelector value={object.project} onProjectIdChange={handleProjectIdChanged} />
       {#if object.dueDate !== null}
         <DatePresenter bind:value={object.dueDate} editable />

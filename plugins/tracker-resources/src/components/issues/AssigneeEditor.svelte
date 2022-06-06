@@ -13,37 +13,39 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
   import { Employee } from '@anticrm/contact'
-  import { Ref } from '@anticrm/core'
+  import { AttachedData, Ref } from '@anticrm/core'
   import { getClient, UserBox } from '@anticrm/presentation'
   import { Issue } from '@anticrm/tracker'
-  import { Tooltip } from '@anticrm/ui'
+  import { ButtonKind, ButtonSize, Tooltip, TooltipAlignment } from '@anticrm/ui'
   import contact from '@anticrm/contact'
   import tracker from '../../plugin'
 
-  export let value: Issue
+  export let value: Issue | AttachedData<Issue>
+  export let size: ButtonSize = 'large'
+  export let kind: ButtonKind = 'link'
+  export let tooltipAlignment: TooltipAlignment | undefined = undefined
+  export let tooltipFill = true
 
   const client = getClient()
+  const dispatch = createEventDispatcher()
 
   const handleAssigneeChanged = async (newAssignee: Ref<Employee> | undefined) => {
     if (newAssignee === undefined || value.assignee === newAssignee) {
       return
     }
 
-    await client.updateCollection(
-      value._class,
-      value.space,
-      value._id,
-      value.attachedTo,
-      value.attachedToClass,
-      value.collection,
-      { assignee: newAssignee }
-    )
+    dispatch('change', newAssignee)
+
+    if ('_id' in value) {
+      await client.update(value, { assignee: newAssignee })
+    }
   }
 </script>
 
 {#if value}
-  <Tooltip label={tracker.string.AssignTo} fill>
+  <Tooltip label={tracker.string.AssignTo} direction={tooltipAlignment} fill={tooltipFill}>
     <UserBox
       _class={contact.class.Employee}
       label={tracker.string.Assignee}
@@ -51,8 +53,8 @@
       value={value.assignee}
       allowDeselect
       titleDeselect={tracker.string.Unassigned}
-      size="large"
-      kind="link"
+      {size}
+      {kind}
       width="100%"
       justify="left"
       on:change={({ detail }) => handleAssigneeChanged(detail)}

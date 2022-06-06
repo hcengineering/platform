@@ -15,14 +15,16 @@
 <script lang="ts">
   import { SortingOrder, WithLookup } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
-  import { calcRank, Issue, IssueStatus } from '@anticrm/tracker'
-  import { Button, Spinner, ExpandCollapse } from '@anticrm/ui'
+  import { calcRank, Issue, IssueStatus, Team } from '@anticrm/tracker'
+  import { Button, Spinner, ExpandCollapse, Tooltip, closeTooltip, IconAdd } from '@anticrm/ui'
   import tracker from '../../../plugin'
   import Collapsed from '../../icons/Collapsed.svelte'
   import Expanded from '../../icons/Expanded.svelte'
+  import CreateSubIssue from './CreateSubIssue.svelte'
   import SubIssueList from './SubIssueList.svelte'
 
   export let issue: Issue
+  export let currentTeam: Team | undefined
   export let issueStatuses: WithLookup<IssueStatus>[] | undefined
 
   const subIssuesQuery = createQuery()
@@ -30,7 +32,7 @@
 
   let subIssues: Issue[] | undefined
   let isCollapsed = false
-  // let isCreating = false
+  let isCreating = false
 
   async function handleIssueSwap (ev: CustomEvent<{ fromIndex: number; toIndex: number }>) {
     if (subIssues) {
@@ -60,11 +62,14 @@
       kind="transparent"
       label={tracker.string.SubIssuesList}
       labelParams={{ subIssues: issue.subIssues }}
-      on:click={() => (isCollapsed = !isCollapsed)}
+      on:click={() => {
+        isCollapsed = !isCollapsed
+        isCreating = false
+      }}
     />
   {/if}
 
-  <!-- <Tooltip label={tracker.string.AddSubIssues} props={{ subIssues: 1 }} direction="bottom">
+  <Tooltip label={tracker.string.AddSubIssues} props={{ subIssues: 1 }} direction="bottom">
     <Button
       width="min-content"
       icon={hasSubIssues ? IconAdd : undefined}
@@ -75,25 +80,33 @@
       on:click={() => {
         closeTooltip()
         isCreating = true
+        isCollapsed = false
       }}
     />
-  </Tooltip> -->
+  </Tooltip>
 </div>
-{#if hasSubIssues}
-  <div class="mt-1">
-    {#if subIssues && issueStatuses}
-      <div class="list" class:collapsed={isCollapsed}>
-        <ExpandCollapse isExpanded={!isCollapsed} duration={400}>
+<div class="mt-1">
+  {#if subIssues && issueStatuses && currentTeam}
+    <ExpandCollapse isExpanded={!isCollapsed} duration={400}>
+      {#if hasSubIssues}
+        <div class="list" class:collapsed={isCollapsed}>
           <SubIssueList issues={subIssues} {issueStatuses} on:move={handleIssueSwap} />
-        </ExpandCollapse>
-      </div>
-    {:else}
-      <div class="flex-center pt-3">
-        <Spinner />
-      </div>
-    {/if}
-  </div>
-{/if}
+        </div>
+      {/if}
+    </ExpandCollapse>
+    <ExpandCollapse isExpanded={!isCollapsed} duration={400}>
+      {#if isCreating}
+        <div class="pt-4">
+          <CreateSubIssue parentIssue={issue} {issueStatuses} {currentTeam} on:close={() => (isCreating = false)} />
+        </div>
+      {/if}
+    </ExpandCollapse>
+  {:else}
+    <div class="flex-center pt-3">
+      <Spinner />
+    </div>
+  {/if}
+</div>
 
 <style lang="scss">
   .list {
