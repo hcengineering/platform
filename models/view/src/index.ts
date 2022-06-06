@@ -286,13 +286,7 @@ export function createModel (builder: Builder): void {
   )
   classPresenter(builder, core.class.TypeIntlString, view.component.IntlStringPresenter)
   classPresenter(builder, core.class.TypeNumber, view.component.NumberPresenter, view.component.NumberEditor)
-  classPresenter(
-    builder,
-    core.class.TypeMarkup,
-    view.component.HTMLPresenter,
-    view.component.StringEditor,
-    view.component.StringEditorPopup
-  )
+  classPresenter(builder, core.class.TypeMarkup, view.component.HTMLPresenter)
   classPresenter(builder, core.class.TypeBoolean, view.component.BooleanPresenter, view.component.BooleanEditor)
   classPresenter(builder, core.class.TypeTimestamp, view.component.TimestampPresenter)
   classPresenter(builder, core.class.TypeDate, view.component.DatePresenter, view.component.DateEditor)

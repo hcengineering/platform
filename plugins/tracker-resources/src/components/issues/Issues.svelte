@@ -520,7 +520,7 @@
       </ScrollBox>
     </div>
     {#if $$slots.aside !== undefined}
-      <div class="antiPanel-component aside border-left pl-2">
+      <div class="antiPanel-component aside border-left">
         <slot name="aside" />
       </div>
     {/if}
