@@ -30,11 +30,9 @@ import type {
   Type,
   UXObject
 } from '@anticrm/core'
-import type { Asset, IntlString, Plugin, Resource, Status } from '@anticrm/platform'
-import { plugin } from '@anticrm/platform'
-import type { AnyComponent, AnySvelteComponent } from '@anticrm/ui'
-import { PopupAlignment, PopupPosAlignment } from '@anticrm/ui/src/types'
+import { Asset, IntlString, Plugin, plugin, Resource, Status } from '@anticrm/platform'
 import type { Preference } from '@anticrm/preference'
+import type { AnyComponent, AnySvelteComponent, PopupAlignment, PopupPosAlignment } from '@anticrm/ui'
 
 /**
  * @public
@@ -49,10 +47,9 @@ export interface KeyFilter {
 /**
  * @public
  */
-export interface FilterMode {
+export interface FilterMode extends Doc {
   label: IntlString
-  isAvailable: (values: any[]) => boolean
-  result: (values: any[], onUpdate: () => void) => Promise<ObjQueryType<any>>
+  result: Resource<(values: any[], onUpdate: () => void, index: number) => Promise<ObjQueryType<any>>>
 }
 
 /**
@@ -60,8 +57,8 @@ export interface FilterMode {
  */
 export interface Filter {
   key: KeyFilter
-  mode: FilterMode
-  modes: FilterMode[]
+  mode: Ref<FilterMode>
+  modes: Ref<FilterMode>[]
   value: any[]
   index: number
   onRemove?: () => void
@@ -387,7 +384,8 @@ const view = plugin(viewId, {
     Viewlet: '' as Ref<Class<Viewlet>>,
     Action: '' as Ref<Class<Action>>,
     ActionCategory: '' as Ref<Class<ActionCategory>>,
-    LinkPresenter: '' as Ref<Class<LinkPresenter>>
+    LinkPresenter: '' as Ref<Class<LinkPresenter>>,
+    FilterMode: '' as Ref<Class<FilterMode>>
   },
   viewlet: {
     Table: '' as Ref<ViewletDescriptor>
@@ -421,6 +419,14 @@ const view = plugin(viewId, {
     Navigation: '' as Ref<ActionCategory>,
     Editor: '' as Ref<ActionCategory>,
     MarkdownFormatting: '' as Ref<ActionCategory>
+  },
+  ids: {
+    FilterObjectIn: '' as Ref<FilterMode>,
+    FilterObjectNin: '' as Ref<FilterMode>,
+    FilterValueIn: '' as Ref<FilterMode>,
+    FilterValueNin: '' as Ref<FilterMode>,
+    FilterBefore: '' as Ref<FilterMode>,
+    FilterAfter: '' as Ref<FilterMode>
   },
   popup: {
     PositionElementAlignment: '' as Resource<(e?: Event) => PopupAlignment | undefined>

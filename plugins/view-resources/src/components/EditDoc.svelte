@@ -223,8 +223,6 @@
     isAside={true}
     bind:panelWidth
     bind:innerWidth
-    isFullSize
-    on:fullsize
     on:update={(ev) => _update(ev.detail)}
     on:close={() => {
       dispatch('close')

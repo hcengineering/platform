@@ -12,92 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-<script context="module" lang="ts">
-  const liveQueries: Map<number, LiveQuery> = new Map<number, LiveQuery>()
-  const results: Map<number, Ref<Doc>[]> = new Map<number, Ref<Doc>[]>()
-</script>
-
 <script lang="ts">
   import { Class, Doc, FindResult, Ref } from '@anticrm/core'
   import { translate } from '@anticrm/platform'
-  import presentation, { createQuery, getClient, LiveQuery } from '@anticrm/presentation'
+  import presentation, { getClient } from '@anticrm/presentation'
   import { Button, CheckBox, getPlatformColor, Loading } from '@anticrm/ui'
   import { Filter } from '@anticrm/view'
   import view from '@anticrm/view-resources/src/plugin'
   import { createEventDispatcher, onMount } from 'svelte'
   import tags from '../plugin'
   import { TagCategory, TagElement } from '@anticrm/tags'
+  import { TagFilterQuery } from '../utils'
 
   export let _class: Ref<Class<Doc>>
   export let filter: Filter
   export let onChange: (e: Filter) => void
   filter.onRemove = () => {
-    const lq = liveQueries.get(filter.index)
-    lq?.unsubscribe()
-    liveQueries.delete(filter.index)
-    results.delete(filter.index)
+    TagFilterQuery.remove(filter.index)
   }
-  const lq = getLiveQuery(filter.index)
   const client = getClient()
   let selected: Ref<TagElement>[] = filter.value
 
-  function getLiveQuery (index: number): LiveQuery {
-    let lq = liveQueries.get(index)
-    if (lq === undefined) {
-      lq = createQuery(true)
-      liveQueries.set(index, lq)
-    }
-    return lq
-  }
-
-  async function getRefs (res: Ref<TagElement>[], onUpdate: () => void): Promise<Ref<Doc>[]> {
-    const promise = new Promise<Ref<Doc>[]>((resolve, reject) => {
-      const refresh = lq.query(
-        tags.class.TagReference,
-        {
-          tag: { $in: res }
-        },
-        (refs) => {
-          const result = Array.from(new Set(refs.map((p) => p.attachedTo)))
-          results.set(filter.index, result)
-          resolve(result)
-          onUpdate()
-        }
-      )
-
-      if (!refresh) {
-        resolve(results.get(filter.index) ?? [])
-      }
-    })
-    return promise
-  }
-
-  filter.modes = [
-    {
-      label: view.string.FilterIs,
-      isAvailable: (res: any[]) => res.length <= 1,
-      result: async (res: any[], onUpdate: () => void) => {
-        const result = await getRefs(res, onUpdate)
-        return { $in: result }
-      }
-    },
-    {
-      label: view.string.FilterIsEither,
-      isAvailable: (res: any[]) => res.length > 1,
-      result: async (res: any[], onUpdate: () => void) => {
-        const result = await getRefs(res, onUpdate)
-        return { $in: result }
-      }
-    },
-    {
-      label: view.string.FilterIsNot,
-      isAvailable: () => true,
-      result: async (res: any[], onUpdate: () => void) => {
-        const result = await getRefs(res, onUpdate)
-        return { $nin: result }
-      }
-    }
-  ]
+  filter.modes = [tags.ids.FilterTagsIn, tags.ids.FilterTagsNin]
+  filter.mode = filter.mode === undefined ? filter.modes[0] : filter.mode
 
   let categories: TagCategory[] = []
   let objects: TagElement[] = []
@@ -121,12 +58,6 @@
     objectsPromise = client.findAll(tags.class.TagElement, resultQuery)
     objects = await objectsPromise
     objectsPromise = undefined
-  }
-
-  function checkMode () {
-    if (filter.mode?.isAvailable(filter.value)) return
-    const newMode = filter.modes.find((p: any) => p.isAvailable(filter.value))
-    filter.mode = newMode !== undefined ? newMode : filter.mode
   }
 
   let search: string = ''
@@ -239,7 +170,6 @@
     label={view.string.Apply}
     on:click={async () => {
       filter.value = selected
-      checkMode()
       onChange(filter)
       dispatch('close')
     }}

@@ -11,7 +11,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { IntlString, mergeIds } from '@anticrm/platform'
+import { ObjQueryType } from '@anticrm/core'
+import { IntlString, mergeIds, Resource } from '@anticrm/platform'
 import tags, { tagsId } from '@anticrm/tags'
 import { AnyComponent } from '@anticrm/ui'
 
@@ -45,5 +46,13 @@ export default mergeIds(tagsId, tags, {
     SelectAll: '' as IntlString,
     SelectNone: '' as IntlString,
     ApplyTags: '' as IntlString
+  },
+  function: {
+    FilterTagsInResult: '' as Resource<
+    (values: any[], onUpdate: () => void, index: number) => Promise<ObjQueryType<any>>
+    >,
+    FilterTagsNinResult: '' as Resource<
+    (values: any[], onUpdate: () => void, index: number) => Promise<ObjQueryType<any>>
+    >
   }
 })

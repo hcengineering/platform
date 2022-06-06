@@ -86,8 +86,12 @@
       </span>
     </div>
     <div class="flex-center">
-      <ProjectEditor value={issue} />
-      <DueDateEditor value={issue} />
+      {#if issue.project !== null}
+        <ProjectEditor value={issue} />
+      {/if}
+      {#if issue.dueDate !== null}
+        <DueDateEditor value={issue} />
+      {/if}
       <AssigneeEditor value={issue} />
     </div>
   </div>

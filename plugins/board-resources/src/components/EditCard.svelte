@@ -122,8 +122,6 @@
     isHeader
     isAside={true}
     isSub={false}
-    isFullSize
-    on:fullsize
     on:close={() => dispatch('close')}
   >
     <svelte:fragment slot="navigator">

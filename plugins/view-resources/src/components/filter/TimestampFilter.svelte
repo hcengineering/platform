@@ -25,22 +25,7 @@
 
   const dispatch = createEventDispatcher()
 
-  filter.modes = [
-    {
-      label: view.string.Before,
-      isAvailable: (res: any[]) => true,
-      result: async (res: any[]) => {
-        return { $lt: res[0] }
-      }
-    },
-    {
-      label: view.string.After,
-      isAvailable: () => true,
-      result: async (res: any[]) => {
-        return { $gt: res[0] }
-      }
-    }
-  ]
+  filter.modes = [view.ids.FilterBefore, view.ids.FilterAfter]
   filter.mode = filter.mode === undefined ? filter.modes[0] : filter.mode
 
   function click (value: number): void {

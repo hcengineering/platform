@@ -1,5 +1,4 @@
 {
-  "extends": "./node_modules/@anticrm/platform-rig/profiles/ui/tsconfig.json",
   "compilerOptions": {
     "moduleResolution": "node",
     "target": "esnext",

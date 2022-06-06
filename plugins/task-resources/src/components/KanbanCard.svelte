@@ -48,14 +48,7 @@
       <div class="mr-2">
         <Component is={notification.component.NotificationPresenter} props={{ value: object }} />
       </div>
-      <ActionIcon
-        label={task.string.More}
-        action={(evt) => {
-          showMenu(evt)
-        }}
-        icon={IconMoreH}
-        size={'small'}
-      />
+      <ActionIcon label={task.string.More} action={showMenu} icon={IconMoreH} size={'small'} />
     </div>
   </div>
   <div class="caption-color mb-3 lines-limit-4">{object.name}</div>

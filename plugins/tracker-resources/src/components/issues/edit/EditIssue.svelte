@@ -157,8 +157,6 @@
     isSub={false}
     withoutActivity={isEditing}
     bind:innerWidth
-    isFullSize
-    on:fullsize
     on:close={() => dispatch('close')}
   >
     {@const { attachedTo: parentIssue } = issue?.$lookup ?? {}}

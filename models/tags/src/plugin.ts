@@ -18,6 +18,8 @@ import { TagCategory, tagsId } from '@anticrm/tags'
 import tags from '@anticrm/tags-resources/src/plugin'
 import type { AnyComponent } from '@anticrm/ui'
 import { ViewAction } from '@anticrm/model-view'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import view from '@anticrm/view'
 
 export default mergeIds(tagsId, tags, {
   // Without it, CLI version is failed with some svelte dependency exception.

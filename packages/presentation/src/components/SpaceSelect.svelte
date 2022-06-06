@@ -55,36 +55,31 @@
   }
 
   $: updateSelected(value)
+
+  const showSpacesPopup = (ev: MouseEvent) => {
+    showPopup(
+      SpacesPopup,
+      {
+        _class,
+        label,
+        options: { sort: { modifiedOn: -1 } },
+        selected,
+        spaceQuery,
+        create
+      },
+      eventToHTMLElement(ev),
+      (result) => {
+        if (result) {
+          value = result._id
+          mgr?.setFocusPos(focusIndex)
+        }
+      }
+    )
+  }
 </script>
 
 <Tooltip {label} fill={false} direction={labelDirection}>
-  <Button
-    {focus}
-    {focusIndex}
-    icon={IconFolder}
-    size={'small'}
-    kind={'no-border'}
-    on:click={(ev) => {
-      showPopup(
-        SpacesPopup,
-        {
-          _class,
-          label,
-          options: { sort: { modifiedOn: -1 } },
-          selected,
-          spaceQuery,
-          create
-        },
-        eventToHTMLElement(ev),
-        (result) => {
-          if (result) {
-            value = result._id
-            mgr?.setFocusPos(focusIndex)
-          }
-        }
-      )
-    }}
-  >
+  <Button {focus} {focusIndex} icon={IconFolder} size={'small'} kind={'no-border'} on:click={showSpacesPopup}>
     <span slot="content" class="text-sm">
       {#if selected}{selected.name}{:else}<Label {label} />{/if}
     </span>

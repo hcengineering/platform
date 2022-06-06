@@ -46,7 +46,7 @@
     </div>
     <div class="buttons-group small-gap">
       <Button
-        id={'card-close'}
+        id="card-close"
         focusIndex={10002}
         icon={IconClose}
         kind={'transparent'}
