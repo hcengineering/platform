@@ -26,7 +26,7 @@
 
   export let kind: ButtonKind = 'link-bordered'
   export let size: ButtonSize = 'inline'
-  export let justify: 'left' | 'center' = 'center'
+  export let justify: 'left' | 'center' = 'left'
   export let width: string | undefined = 'min-contet'
 
   const subIssuesQuery = createQuery()
@@ -89,7 +89,7 @@
 </script>
 
 {#if hasSubIssues}
-  <div class="clear-mins" bind:this={btn}>
+  <div class="flex-center clear-mins" bind:this={btn}>
     <Button
       {width}
       {kind}

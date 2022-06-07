@@ -298,7 +298,7 @@
     &.link-bordered {
       padding: 0 0.375rem;
       color: var(--accent-color);
-      border-color: var(--button-border-color);
+      border-color: var(--divider-color);
       &:hover {
         color: var(--accent-color);
         background-color: var(--button-bg-hover);

@@ -176,8 +176,8 @@
             isEditable={true}
           />
         </div>
-        <div class="buttons-group xsmall-gap mt-10px">
-          {#if issueStatuses && issue.subIssues > 0}
+        <div class="buttons-group xxsmall-gap mt-10px">
+          {#if issue && issueStatuses && issue.subIssues > 0}
             <SubIssuesSelector {issue} {currentTeam} {issueStatuses} />
           {/if}
           <PriorityEditor
