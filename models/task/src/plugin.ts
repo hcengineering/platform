@@ -22,7 +22,7 @@ import { TagCategory } from '@anticrm/tags'
 import { KanbanTemplate, taskId } from '@anticrm/task'
 import task from '@anticrm/task-resources/src/plugin'
 import type { AnyComponent } from '@anticrm/ui'
-import type { Action, ActionCategory, ViewAction } from '@anticrm/view'
+import type { Action, ActionCategory, ViewAction, Viewlet } from '@anticrm/view'
 
 export default mergeIds(taskId, task, {
   action: {
@@ -69,5 +69,8 @@ export default mergeIds(taskId, task, {
   completion: {
     IssueQuery: '' as Resource<ObjectSearchFactory>,
     IssueCategory: '' as Ref<ObjectSearchCategory>
+  },
+  viewlet: {
+    TableIssue: '' as Ref<Viewlet>
   }
 })
