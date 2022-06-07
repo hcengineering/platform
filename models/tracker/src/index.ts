@@ -38,6 +38,7 @@ import { createAction } from '@anticrm/model-view'
 import workbench, { createNavigateAction } from '@anticrm/model-workbench'
 import { Asset, IntlString } from '@anticrm/platform'
 import view, { KeyBinding } from '@anticrm/view'
+import setting from '@anticrm/setting'
 import {
   Document,
   Issue,
@@ -334,6 +335,8 @@ export function createModel (builder: Builder): void {
   builder.mixin(tracker.class.Project, core.class.Class, view.mixin.AttributePresenter, {
     presenter: tracker.component.ProjectTitlePresenter
   })
+
+  builder.mixin(tracker.class.Issue, core.class.Class, setting.mixin.Editable, {})
 
   builder.createDoc(
     workbench.class.Application,
