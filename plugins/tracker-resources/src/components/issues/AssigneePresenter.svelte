@@ -23,7 +23,7 @@
   import { IntlString } from '@anticrm/platform'
   import tracker from '../../plugin'
 
-  export let value: Employee | null
+  export let value: Employee | null | undefined
   export let issueId: Ref<Issue>
   export let defaultClass: Ref<Class<Doc>> | undefined = undefined
   export let currentSpace: Ref<Team> | undefined = undefined
