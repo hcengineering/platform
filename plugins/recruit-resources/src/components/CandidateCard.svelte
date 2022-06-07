@@ -40,7 +40,7 @@
 </script>
 
 <div class="flex-col h-full card-container">
-  <div class="label uppercase"><Label label={recruit.string.Candidate} /></div>
+  <div class="label uppercase"><Label label={recruit.string.Talent} /></div>
   <Avatar avatar={candidate.avatar} size={'large'} />
   {#if candidate}
     <div

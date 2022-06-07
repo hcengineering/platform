@@ -56,7 +56,7 @@
     <div class="flex-col-center mt-5 createapp-container">
       <FileDuo size={'large'} />
       <div class="text-sm content-dark-color mt-2">
-        <Label label={recruit.string.NoApplicationsForCandidate} />
+        <Label label={recruit.string.NoApplicationsForTalent} />
       </div>
       <div class="text-sm">
         <div class="over-underline" on:click={createApp}><Label label={recruit.string.CreateAnApplication} /></div>

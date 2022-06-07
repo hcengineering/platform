@@ -167,8 +167,8 @@
       <UserBox
         _class={contact.class.Person}
         bind:value={doc.attachedTo}
-        label={recruit.string.Candidate}
-        placeholder={recruit.string.Candidates}
+        label={recruit.string.Talent}
+        placeholder={recruit.string.Talents}
         kind={'no-border'}
         size={'small'}
       />

@@ -65,8 +65,8 @@
       <UserBox
         readonly
         _class={contact.class.Person}
-        label={recruit.string.Candidate}
-        placeholder={recruit.string.Candidates}
+        label={recruit.string.Talent}
+        placeholder={recruit.string.Talents}
         value={object.attachedTo}
         kind={'link'}
         size={'x-large'}

@@ -26,7 +26,7 @@
   <div class="flex-grow text-md">
     <Button
       icon={recruit.icon.CreateCandidate}
-      label={recruit.string.CreateCandidate}
+      label={recruit.string.CreateTalent}
       justify={'left'}
       width={'100%'}
       on:click={newIssue}
