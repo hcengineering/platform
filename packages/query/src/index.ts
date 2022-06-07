@@ -563,9 +563,10 @@ export class LiveQuery extends TxProcessor implements Client {
     if (q.result instanceof Promise) {
       q.result = await q.result
     }
-    const clone = this.clone(q.result)
-    const result = toFindResult(clone, q.total)
-    q.callbacks.forEach((callback) => callback(result))
+    const result = q.result
+    q.callbacks.forEach((callback) => {
+      callback(toFindResult(this.clone(result), q.total))
+    })
   }
 
   private async handleDocAddLookup (q: Query, doc: Doc): Promise<void> {
