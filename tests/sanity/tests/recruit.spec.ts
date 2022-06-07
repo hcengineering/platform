@@ -166,7 +166,7 @@ test.describe('recruit tests', () => {
     await page.click('[placeholder="Location"]')
 
     await page.fill('[placeholder="Location"]', 'NSK')
-    await page.click('form button:has-text("Candidate")')
+    await page.click('form button:has-text("Talent")')
     await page.click('button:has-text("Andrey P.")')
     await page.click('text=Create')
     await page.click('td:has-text("RVE-")')

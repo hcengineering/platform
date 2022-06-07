@@ -24,9 +24,7 @@ test.describe('workbench tests', () => {
 
     // Click text=Talents
     await page.click('text=Talents')
-    await expect(page).toHaveURL(
-      `${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/recruit%3Aapp%3ARecruit/talents`
-    )
+    await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/recruit%3Aapp%3ARecruit/talents`)
 
     await expect(page.locator('text=Andrey P.')).toBeVisible()
 

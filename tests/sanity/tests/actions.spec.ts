@@ -14,9 +14,7 @@ test.describe('actions tests', () => {
     await page.click('[id="app-recruit\\:string\\:RecruitApplication"]')
 
     await page.click('text=Talents')
-    await expect(page).toHaveURL(
-      `${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/recruit%3Aapp%3ARecruit/talents`
-    )
+    await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/recruit%3Aapp%3ARecruit/talents`)
 
     await page.click('td:has-text("Frontend Engineer")')
 
@@ -31,9 +29,7 @@ test.describe('actions tests', () => {
     await page.click('[id="app-recruit\\:string\\:RecruitApplication"]')
 
     await page.click('text=Talents')
-    await expect(page).toHaveURL(
-      `${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/recruit%3Aapp%3ARecruit/talents`
-    )
+    await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/recruit%3Aapp%3ARecruit/talents`)
 
     await page.press('body', 'Meta+k')
     await page.fill('[placeholder="type\\ to\\ filter\\.\\.\\."]', 'go to')
@@ -48,9 +44,7 @@ test.describe('actions tests', () => {
     await page.click('[id="app-recruit\\:string\\:RecruitApplication"]')
 
     await page.click('text=Talents')
-    await expect(page).toHaveURL(
-      `${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/recruit%3Aapp%3ARecruit/talents`
-    )
+    await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/recruit%3Aapp%3ARecruit/talents`)
 
     await page.press('body', 'Meta+k')
     await page.fill('[placeholder="type\\ to\\ filter\\.\\.\\."]', 'go to')
