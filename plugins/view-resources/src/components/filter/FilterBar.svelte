@@ -72,6 +72,8 @@
 
   function saveFilters (filters: Filter[]) {
     const loc = getCurrentLocation()
+    loc.fragment = undefined
+    loc.query = undefined
     const key = 'filter' + locationToUrl(loc)
     if (filters.length > 0) {
       localStorage.setItem(key, JSON.stringify(filters))
@@ -82,6 +84,8 @@
 
   function load (_class: Ref<Class<Doc>>) {
     const loc = getCurrentLocation()
+    loc.fragment = undefined
+    loc.query = undefined
     const key = 'filter' + locationToUrl(loc)
     const saved = localStorage.getItem(key)
     filters.map((p) => p.onRemove?.())
