@@ -178,11 +178,7 @@
         </div>
         <div class="buttons-group xsmall-gap mt-10px">
           {#if issueStatuses && issue.subIssues > 0}
-            <SubIssuesSelector
-              {issue}
-              {currentTeam}
-              {issueStatuses}
-            />
+            <SubIssuesSelector {issue} {currentTeam} {issueStatuses} />
           {/if}
           <PriorityEditor
             value={issue}

@@ -32,21 +32,31 @@
 </script>
 
 <svg class="svg-{size}" fill="none" viewBox="0 0 16 16">
-  <circle cx={8} cy={8} r={7} stroke-width={2} style:stroke-linecap={'round'}
+  <circle
+    cx={8}
+    cy={8}
+    r={7}
+    stroke-width={2}
+    style:stroke-linecap={'round'}
     style:transition={'stroke-dashoffset 0.6s ease 0s, stroke-dasharray 0.6s ease 0s, transform 0.6s ease 0s'}
     style:stroke={'var(--divider-color)'}
     style:opacity={'.5'}
     style:transform-origin={'center'}
-    style:transform={`rotate(${-78 + (dashOffset + 1) * 360 / (lenghtC + 1)}deg)`}
+    style:transform={`rotate(${-78 + ((dashOffset + 1) * 360) / (lenghtC + 1)}deg)`}
     style:stroke-dasharray={lenghtC}
     style:stroke-dashoffset={dashOffset === 0 ? 0 : dashOffset + 3}
   />
-  <circle cx={8} cy={8} r={7} stroke-width={2} style:stroke-linecap={'round'}
+  <circle
+    cx={8}
+    cy={8}
+    r={7}
+    stroke-width={2}
+    style:stroke-linecap={'round'}
     style:transition={'stroke-dashoffset 0.6s ease 0s, stroke-dasharray 0.6s ease 0s, opacity 0.6s ease 0s'}
     style:stroke={primary ? 'var(--primary-bg-color)' : getPlatformColor(color)}
     style:opacity={dashOffset === 0 ? 0 : 1}
     style:transform-origin={'center'}
-    style:transform={`rotate(-82deg)`}
+    style:transform={'rotate(-82deg)'}
     style:stroke-dasharray={lenghtC}
     style:stroke-dashoffset={dashOffset === 0 ? lenghtC : lenghtC - dashOffset + 1}
   />

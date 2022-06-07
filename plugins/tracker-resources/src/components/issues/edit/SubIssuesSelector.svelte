@@ -42,7 +42,7 @@
   })
   $: if (issueStatuses && subIssues) {
     doneStatus = issueStatuses.find((s) => s.category === tracker.issueStatusCategory.Completed)?._id ?? undefined
-    if (doneStatus) countComplate = subIssues.filter(si =>  si.status === doneStatus).length
+    if (doneStatus) countComplate = subIssues.filter((si) => si.status === doneStatus).length
   }
 
   function getIssueStatusIcon (issue: Issue) {
