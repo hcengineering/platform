@@ -223,43 +223,42 @@
   class:short={displayItems.length > 4 && length === 'short'}
 >
   {#each displayItems as item, i}
-    <Tooltip
-      component={opened !== i ? ChannelEditor : undefined}
-      props={{
-        value: item.value,
-        placeholder: item.placeholder,
-        editable: editable !== undefined ? false : undefined,
-        openable: item.presenter ?? false
-      }}
-      onUpdate={(result) => {
-        if (result.detail === 'open') {
+    <Button
+      focusIndex={focusIndex === -1 ? focusIndex : focusIndex + 1 + i}
+      id={item.label}
+      bind:input={btns[i]}
+      icon={item.icon}
+      kind={highlighted.includes(item.provider) ? 'dangerous' : kind}
+      {size}
+      {shape}
+      highlight={item.integration || item.notification}
+      on:click={(ev) => {
+        if (editable) {
           closeTooltip()
+          editChannel(eventToHTMLElement(ev), i, item)
+        } else {
           dispatch('open', item)
-        } else if (result.detail === 'edit') {
-          closeTooltip()
-          editChannel(btns[i], i, item)
         }
       }}
-    >
-      <Button
-        focusIndex={focusIndex === -1 ? focusIndex : focusIndex + 1 + i}
-        id={item.label}
-        bind:input={btns[i]}
-        icon={item.icon}
-        kind={highlighted.includes(item.provider) ? 'dangerous' : kind}
-        {size}
-        {shape}
-        highlight={item.integration || item.notification}
-        on:click={(ev) => {
-          if (editable) {
+      showTooltip={{
+        component: opened !== i ? ChannelEditor : undefined,
+        props: {
+          value: item.value,
+          placeholder: item.placeholder,
+          editable: editable !== undefined ? false : undefined,
+          openable: item.presenter ?? false
+        },
+        onUpdate: (result) => {
+          if (result.detail === 'open') {
             closeTooltip()
-            editChannel(eventToHTMLElement(ev), i, item)
-          } else {
             dispatch('open', item)
+          } else if (result.detail === 'edit') {
+            closeTooltip()
+            editChannel(btns[i], i, item)
           }
-        }}
-      />
-    </Tooltip>
+        }
+      }}
+    />
   {/each}
   {#if actions.length > 0 && editable}
     {#if displayItems.length === 0}

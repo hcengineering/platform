@@ -54,7 +54,7 @@ import preference, { TPreference } from '@anticrm/model-preference'
 import view from './plugin'
 
 export { viewOperation } from './migration'
-export { ViewAction }
+export { ViewAction, Viewlet }
 
 export function createAction<T extends Doc = Doc, P = Record<string, any>> (
   builder: Builder,

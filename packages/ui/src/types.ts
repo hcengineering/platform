@@ -113,12 +113,12 @@ export interface DateOrShift {
 }
 
 export interface LabelAndProps {
-  label: IntlString | undefined
-  element: HTMLElement | undefined
+  label?: IntlString
+  element?: HTMLElement
   direction?: TooltipAlignment
   component?: AnySvelteComponent | AnyComponent
   props?: any
-  anchor: HTMLElement | undefined
+  anchor?: HTMLElement
   onUpdate?: (result: any) => void
 }
 

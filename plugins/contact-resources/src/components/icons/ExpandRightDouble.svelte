@@ -14,29 +14,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import chunter from '@anticrm/chunter'
-  import type { Doc } from '@anticrm/core'
-  import { IconThread, tooltip } from '@anticrm/ui'
-  import CommentPopup from './CommentPopup.svelte'
-
-  export let value: number | undefined
-  export let object: Doc
-  export let size: 'small' | 'medium' | 'large' = 'small'
-  export let showCounter = true
+  const fill: string = 'var(--theme-content-dark-color)'
 </script>
 
-{#if value && value > 0}
-  <div
-    use:tooltip={{
-      label: chunter.string.Comments,
-      component: CommentPopup,
-      props: { objectId: object._id }
-    }}
-    class="sm-tool-icon ml-1 mr-1"
-  >
-    <span class="icon"><IconThread {size} /></span>
-    {#if showCounter}
-      &nbsp;{value}
-    {/if}
-  </div>
-{/if}
+<svg class="svg-expand" {fill} viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <polygon points="32.2,15.6 31.4,16.4 46.9,32 31.4,47.6 32.2,48.4 48.6,32 " />
+  <polygon points="32.6,32 16.2,15.6 15.4,16.4 30.9,32 15.4,47.6 16.2,48.4 " />
+</svg>
+
+<style lang="scss">
+  .svg-expand {
+    width: 4rem;
+    height: 4rem;
+  }
+</style>

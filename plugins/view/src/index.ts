@@ -325,6 +325,7 @@ export interface AttributeModel {
   icon?: Asset
 
   attribute?: AnyAttribute
+  collectionAttr: boolean
 }
 
 /**

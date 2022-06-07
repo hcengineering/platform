@@ -59,6 +59,10 @@
     "StatusDueDateTooltip": "До {date}",
     "CopyToClipboard": "Скопировать в буфер обмена",
     "Copied": "Скопировано",
-    "ViewFullProfile": "Посмотреть профиль"
+    "ViewFullProfile": "Посмотреть профиль",
+    "Member": "Сотрудник",
+    "Members": "Сотрудники",
+    "NoMembers": "Нет добавленных сотрудников",
+    "AddMember": "Добавить сотрудника"
   }
 }

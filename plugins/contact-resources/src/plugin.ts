@@ -52,6 +52,10 @@ export default mergeIds(contactId, contact, {
     StatusDueDateTooltip: '' as IntlString,
     CopyToClipboard: '' as IntlString,
     Copied: '' as IntlString,
-    ViewFullProfile: '' as IntlString
+    ViewFullProfile: '' as IntlString,
+    Member: '' as IntlString,
+    Members: '' as IntlString,
+    NoMembers: '' as IntlString,
+    AddMember: '' as IntlString
   }
 })
