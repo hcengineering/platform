@@ -28,6 +28,7 @@
   import AssigneePresenter from './AssigneePresenter.svelte'
   import IssuePresenter from './IssuePresenter.svelte'
   import PriorityEditor from './PriorityEditor.svelte'
+  import ProjectEditor from '../projects/ProjectEditor.svelte'
 
   export let currentSpace: Ref<Team>
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
@@ -165,6 +166,14 @@
         {/if}
         <div class="buttons-group xsmall-gap mt-10px">
           <PriorityEditor
+            value={issue}
+            isEditable={true}
+            kind={'link-bordered'}
+            size={'inline'}
+            justify={'center'}
+            width={''}
+          />
+          <ProjectEditor
             value={issue}
             isEditable={true}
             kind={'link-bordered'}
