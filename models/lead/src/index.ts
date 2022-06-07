@@ -129,27 +129,37 @@ export function createModel (builder: Builder): void {
     lead.app.Lead
   )
 
-  builder.createDoc(view.class.Viewlet, core.space.Model, {
-    attachTo: lead.mixin.Customer,
-    descriptor: view.viewlet.Table,
-    config: ['', '$lookup._class', 'leads', 'modifiedOn', '$lookup.channels'],
-    hiddenKeys: ['name']
-  })
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: lead.mixin.Customer,
+      descriptor: view.viewlet.Table,
+      config: ['', '$lookup._class', 'leads', 'modifiedOn', '$lookup.channels'],
+      hiddenKeys: ['name']
+    },
+    lead.viewlet.TableCustomer
+  )
 
-  builder.createDoc(view.class.Viewlet, core.space.Model, {
-    attachTo: lead.class.Lead,
-    descriptor: task.viewlet.StatusTable,
-    config: [
-      '',
-      '$lookup.attachedTo',
-      '$lookup.state',
-      '$lookup.doneState',
-      'attachments',
-      'comments',
-      'modifiedOn',
-      '$lookup.attachedTo.$lookup.channels'
-    ]
-  })
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: lead.class.Lead,
+      descriptor: task.viewlet.StatusTable,
+      config: [
+        '',
+        '$lookup.attachedTo',
+        '$lookup.state',
+        '$lookup.doneState',
+        'attachments',
+        'comments',
+        'modifiedOn',
+        '$lookup.attachedTo.$lookup.channels'
+      ]
+    },
+    lead.viewlet.TableLead
+  )
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: lead.class.Lead,

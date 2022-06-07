@@ -19,7 +19,7 @@ import { inventoryId } from '@anticrm/inventory'
 import inventory from '@anticrm/inventory-resources/src/plugin'
 import { mergeIds } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'
-import { Action, ActionCategory, ViewAction } from '@anticrm/view'
+import { Action, ActionCategory, ViewAction, Viewlet } from '@anticrm/view'
 
 export default mergeIds(inventoryId, inventory, {
   action: {
@@ -39,5 +39,8 @@ export default mergeIds(inventoryId, inventory, {
     Variants: '' as AnyComponent,
     ProductPresenter: '' as AnyComponent,
     VariantPresenter: '' as AnyComponent
+  },
+  viewlet: {
+    TableProduct: '' as Ref<Viewlet>
   }
 })

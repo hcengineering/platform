@@ -17,13 +17,14 @@
   import { flip } from 'svelte/animate'
   import { WithLookup } from '@anticrm/core'
   import { Issue, IssueStatus } from '@anticrm/tracker'
-  import { showPanel } from '@anticrm/ui'
+  import { showPanel, showPopup } from '@anticrm/ui'
   import tracker from '../../../plugin'
   import ProjectEditor from '../../projects/ProjectEditor.svelte'
   import AssigneeEditor from '../AssigneeEditor.svelte'
   import DueDateEditor from '../DueDateEditor.svelte'
   import StatusEditor from '../StatusEditor.svelte'
   import Circles from '../../icons/Circles.svelte'
+  import { ContextMenu } from '@anticrm/view-resources'
 
   export let issues: Issue[]
   export let issueStatuses: WithLookup<IssueStatus>[]
@@ -59,6 +60,14 @@
 
     resetDrag()
   }
+
+  function showContextMenu (ev: MouseEvent, object: Issue) {
+    showPopup(
+      ContextMenu,
+      { object },
+      { getBoundingClientRect: () => DOMRect.fromRect({ width: 1, height: 1, x: ev.clientX, y: ev.clientY }) }
+    )
+  }
 </script>
 
 {#each issues as issue, index (issue._id)}
@@ -70,6 +79,7 @@
     animate:flip={{ duration: 400 }}
     draggable={true}
     on:click|self={() => openIssue(issue)}
+    on:contextmenu|preventDefault={(ev) => showContextMenu(ev, issue)}
     on:dragstart={(ev) => handleDragStart(ev, index)}
     on:dragover|preventDefault={() => false}
     on:dragenter={() => (hoveringIndex = index)}

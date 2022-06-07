@@ -96,11 +96,16 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(inventory.class.Product, core.class.Class, setting.mixin.Editable, {})
 
-  builder.createDoc(view.class.Viewlet, core.space.Model, {
-    attachTo: inventory.class.Product,
-    descriptor: view.viewlet.Table,
-    config: ['', '$lookup.attachedTo', 'modifiedOn']
-  })
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: inventory.class.Product,
+      descriptor: view.viewlet.Table,
+      config: ['', '$lookup.attachedTo', 'modifiedOn']
+    },
+    inventory.viewlet.TableProduct
+  )
 
   builder.createDoc(
     workbench.class.Application,
