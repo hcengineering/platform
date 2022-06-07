@@ -20,7 +20,7 @@
   import { getPanelURI, Label, LabelAndProps, tooltip } from '@anticrm/ui'
   import view from '@anticrm/view'
 
-  export let value: Person | undefined
+  export let value: Person | undefined | null
   export let inline: boolean = false
   export let isInteractive = true
   export let shouldShowAvatar: boolean = true
@@ -34,7 +34,7 @@
   $: element = getElement(value, onEdit, shouldShowPlaceholder, isInteractive)
 
   const getElement = (
-    person: Person | undefined,
+    person: Person | undefined | null,
     onEdit: Function | undefined,
     shouldShowEmpty: boolean,
     isInteractive: boolean

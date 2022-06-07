@@ -17,7 +17,7 @@
   import { IntlString } from '@anticrm/platform'
   import PersonContent from './PersonContent.svelte'
 
-  export let value: Person
+  export let value: Person | null | undefined
   export let inline = false
   export let isInteractive = true
   export let shouldShowAvatar = true
@@ -34,7 +34,7 @@
     showTooltip={tooltipLabels
       ? {
           label: value ? tooltipLabels.personLabel : tooltipLabels.placeholderLabel,
-          props: { value: formatName(value?.name) }
+          props: value ? { value: formatName(value.name) } : {}
         }
       : undefined}
     {value}

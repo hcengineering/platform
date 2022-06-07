@@ -159,11 +159,15 @@
             {object.title}
           </span>
         </div>
-        {#if issue.$lookup?.assignee}
-          <div class="abs-rt-content">
-            <AssigneePresenter value={issue.$lookup.assignee} issueId={issue._id} {currentSpace} isEditable={true} />
-          </div>
-        {/if}
+        <div class="abs-rt-content">
+          <AssigneePresenter
+            value={issue.$lookup?.assignee}
+            defaultClass={contact.class.Employee}
+            issueId={issue._id}
+            {currentSpace}
+            isEditable={true}
+          />
+        </div>
         <div class="buttons-group xsmall-gap mt-10px">
           <PriorityEditor
             value={issue}
