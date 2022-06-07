@@ -16,10 +16,10 @@ test.describe('recruit tests', () => {
     // Click [id="app-recruit\:string\:RecruitApplication"]
     await page.click('[id="app-recruit\\:string\\:RecruitApplication"]')
     await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/recruit%3Aapp%3ARecruit`)
-    // Click text=Candidates
-    await page.click('text=Candidates')
+    // Click text=Talents
+    await page.click('text=Talents')
     await expect(page).toHaveURL(
-      `${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/recruit%3Aapp%3ARecruit/candidates`
+      `${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/recruit%3Aapp%3ARecruit/talents`
     )
     // Click button:has-text("Candidate")
     await page.click('button:has-text("Candidate")')
@@ -76,10 +76,10 @@ test.describe('recruit tests', () => {
     await page.fill('[placeholder="Please\\ type\\ skill\\ title"]', 'C++')
     // Click button:has-text("Create")
     await page.click('button:has-text("Create")')
-    // Click text=Candidates
-    await page.click('text=Candidates')
+    // Click text=Talents
+    await page.click('text=Talents')
     await expect(page).toHaveURL(
-      `${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/recruit%3Aapp%3ARecruit/candidates`
+      `${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/recruit%3Aapp%3ARecruit/talents`
     )
     // Click button:has-text("Candidate")
     await page.click('button:has-text("Candidate")')

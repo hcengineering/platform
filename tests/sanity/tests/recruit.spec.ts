@@ -13,9 +13,9 @@ test.describe('recruit tests', () => {
   test('create-candidate', async ({ page, context }) => {
     await page.locator('[id="app-recruit\\:string\\:RecruitApplication"]').click()
 
-    await page.click('text=Candidates')
+    await page.click('text=Talents')
 
-    await page.click('button:has-text("New Candidate")')
+    await page.click('button:has-text("New Talent")')
 
     const first = 'Elton-' + generateId(4)
     const last = 'John-' + generateId(4)
@@ -71,9 +71,9 @@ test.describe('recruit tests', () => {
     await page.click('button:has-text("Create")')
     await page.locator(`text=${vacancyId}`).click()
 
-    await page.click('text=Candidates')
+    await page.click('text=Talents')
 
-    await page.click('text=Candidates')
+    await page.click('text=Talents')
     await page.click('text=Andrey P.')
     // await page.locator('.mixin-selector').locator('text="Candidate"').click()
 
@@ -106,7 +106,7 @@ test.describe('recruit tests', () => {
 
     // Create Applicatio n1
     await page.click('button:has-text("Application")')
-    await page.click('form[id="recruit:string:CreateApplication"] button:has-text("Candidate")')
+    await page.click('form[id="recruit:string:CreateApplication"] button:has-text("Talent")')
     await page.click('button:has-text("Alex P.")')
     await page.click('form[id="recruit:string:CreateApplication"] button:has-text("Create")')
 
