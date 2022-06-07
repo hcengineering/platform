@@ -5,8 +5,10 @@
   import { showPopup } from '@anticrm/ui'
   import EmployeePreviewPopup from './EmployeePreviewPopup.svelte'
   import { WithLookup } from '@anticrm/core'
+  import { IntlString } from '@anticrm/platform'
 
   export let value: WithLookup<Employee> | null | undefined
+  export let tooltipLabels: { personLabel: IntlString; placeholderLabel?: IntlString } | undefined = undefined
   export let shouldShowAvatar: boolean = true
   export let shouldShowName: boolean = true
   export let onEmployeeEdit: ((event: MouseEvent) => void) | undefined = undefined
@@ -32,6 +34,7 @@
   <div class="over-underline" class:pr-2={shouldShowName}>
     <PersonPresenter
       {value}
+      {tooltipLabels}
       onEdit={handlePersonEdit}
       {shouldShowAvatar}
       {shouldShowName}
