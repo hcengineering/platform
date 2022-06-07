@@ -26,7 +26,7 @@ import type {
   Persons,
   Status
 } from '@anticrm/contact'
-import type { Class, Domain, FindOptions, Lookup, Ref, Timestamp } from '@anticrm/core'
+import type { Class, Domain, Ref, Timestamp } from '@anticrm/core'
 import { DOMAIN_MODEL, IndexKind } from '@anticrm/core'
 import { Builder, Collection, Index, Model, Prop, TypeRef, TypeString, TypeTimestamp, UX } from '@anticrm/model'
 import attachment from '@anticrm/model-attachment'
@@ -174,16 +174,6 @@ export function createModel (builder: Builder): void {
     contact.app.Contacts
   )
 
-  const contactLookup: Lookup<Contact> = {
-    _id: {
-      channels: contact.class.Channel
-    }
-  }
-  const memberOptions: FindOptions<Member> = {
-    lookup: {
-      contact: [contact.class.Contact, contactLookup]
-    }
-  }
   builder.createDoc(
     view.class.Viewlet,
     core.space.Model,
@@ -191,8 +181,7 @@ export function createModel (builder: Builder): void {
       attachTo: contact.class.Member,
       descriptor: view.viewlet.Table,
       config: ['', '$lookup.contact.$lookup.channels', 'modifiedOn'],
-      options: memberOptions,
-      hiddenKeys: ['name']
+      hiddenKeys: ['name', 'contact']
     },
     contact.viewlet.TableMember
   )
