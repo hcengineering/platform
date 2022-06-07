@@ -100,6 +100,6 @@
     shouldShowPlaceholder={true}
     shouldShowName={shouldShowLabel}
     onEmployeeEdit={handleAssigneeEditorOpened}
-    tooltipLabels={{ personLabel: tracker.string.AssignedTo, placeholderLabel: tracker.string.AssignTo }}
+    tooltipLabels={{ personLabel: tracker.string.AssignedTo, placeholderLabel: tracker.string.Unassigned }}
   />
 {/if}
