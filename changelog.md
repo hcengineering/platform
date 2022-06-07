@@ -2,6 +2,9 @@
 
 ## 0.6.25 (upcoming)
 
+HR:
+- Rename Candidate to Talent
+
 ## 0.6.24
 
 Platform:

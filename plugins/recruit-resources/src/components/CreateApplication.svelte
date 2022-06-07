@@ -232,8 +232,8 @@
           _class={contact.class.Person}
           options={{ sort: { modifiedOn: -1 } }}
           excluded={existingApplicants}
-          label={recruit.string.Candidate}
-          placeholder={recruit.string.Candidates}
+          label={recruit.string.Talent}
+          placeholder={recruit.string.Talents}
           bind:value={doc.attachedTo}
           kind={'no-border'}
           size={'small'}
@@ -251,12 +251,12 @@
           _class={contact.class.Person}
           options={{ sort: { modifiedOn: -1 } }}
           excluded={existingApplicants}
-          label={recruit.string.Candidate}
-          placeholder={recruit.string.Candidates}
+          label={recruit.string.Talent}
+          placeholder={recruit.string.Talents}
           bind:value={doc.attachedTo}
           kind={'no-border'}
           size={'small'}
-          create={{ component: recruit.component.CreateCandidate, label: recruit.string.CreateCandidate }}
+          create={{ component: recruit.component.CreateCandidate, label: recruit.string.CreateTalent }}
         />
       {/if}
       <UserBox

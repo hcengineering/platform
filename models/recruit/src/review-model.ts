@@ -14,7 +14,7 @@ import recruit from './plugin'
 @UX(recruit.string.Review, recruit.icon.Review, recruit.string.ReviewShortLabel, 'number')
 export class TReview extends TEvent implements Review {
   // We need to declare, to provide property with label
-  @Prop(TypeRef(recruit.mixin.Candidate), recruit.string.Candidate)
+  @Prop(TypeRef(recruit.mixin.Candidate), recruit.string.Talent)
   declare attachedTo: Ref<Candidate>
 
   @Prop(TypeString(), recruit.string.Review)

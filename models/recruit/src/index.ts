@@ -72,11 +72,11 @@ export class TVacancy extends TSpaceWithStates implements Vacancy {
 }
 
 @Model(recruit.class.Candidates, core.class.Space)
-@UX(recruit.string.CandidatePools, recruit.icon.RecruitApplication)
+@UX(recruit.string.TalentPools, recruit.icon.RecruitApplication)
 export class TCandidates extends TSpace implements Candidates {}
 
 @Mixin(recruit.mixin.Candidate, contact.class.Person)
-@UX(recruit.string.Candidate, recruit.icon.RecruitApplication, undefined, 'name')
+@UX(recruit.string.Talent, recruit.icon.RecruitApplication, undefined, 'name')
 export class TCandidate extends TPerson implements Candidate {
   @Prop(TypeString(), recruit.string.Title)
   @Index(IndexKind.FullText)
@@ -106,7 +106,7 @@ export class TCandidate extends TPerson implements Candidate {
 @UX(recruit.string.Application, recruit.icon.Application, recruit.string.ApplicationShort, 'number')
 export class TApplicant extends TTask implements Applicant {
   // We need to declare, to provide property with label
-  @Prop(TypeRef(recruit.mixin.Candidate), recruit.string.Candidate)
+  @Prop(TypeRef(recruit.mixin.Candidate), recruit.string.Talent)
   declare attachedTo: Ref<Candidate>
 
   // We need to declare, to provide property with label
@@ -147,9 +147,9 @@ export function createModel (builder: Builder): void {
   builder.mixin(recruit.class.Vacancy, core.class.Class, setting.mixin.Editable, {})
 
   const vacanciesId = 'vacancies'
-  const candidatesId = 'candidates'
+  const talentsId = 'talents'
   const skillsId = 'skills'
-  const applicantsId = 'applicants'
+  const candidatesId = 'candidates'
   const archiveId = 'archive'
   const assignedId = 'assigned'
 
@@ -172,7 +172,7 @@ export function createModel (builder: Builder): void {
             position: 'vacancy'
           },
           {
-            id: applicantsId,
+            id: candidatesId,
             component: workbench.component.SpecialView,
             icon: recruit.icon.Application,
             label: recruit.string.Applications,
@@ -190,15 +190,15 @@ export function createModel (builder: Builder): void {
             position: 'vacancy'
           },
           {
-            id: candidatesId,
+            id: talentsId,
             component: workbench.component.SpecialView,
             icon: contact.icon.Person,
-            label: recruit.string.Candidates,
+            label: recruit.string.Talents,
             componentProps: {
               _class: recruit.mixin.Candidate,
               icon: contact.icon.Person,
-              label: recruit.string.Candidates,
-              createLabel: recruit.string.CandidateCreateLabel,
+              label: recruit.string.Talents,
+              createLabel: recruit.string.TalentCreateLabel,
               createComponent: recruit.component.CreateCandidate
             },
             position: 'vacancy'
@@ -270,7 +270,7 @@ export function createModel (builder: Builder): void {
         {
           // key: '$lookup.skills', // Required, since presenter require list of tag references or '' and TagsPopupPresenter
           key: '',
-          presenter: tags.component.TagsPresenter, // tags.component.TagsPresenter,
+          presenter: tags.component.TagsPresenter,
           label: recruit.string.SkillsLabel,
           sortingKey: 'skills',
           props: {
@@ -413,7 +413,7 @@ export function createModel (builder: Builder): void {
       component: recruit.component.CreateCandidate,
       element: 'top'
     },
-    label: recruit.string.CreateCandidate,
+    label: recruit.string.CreateTalent,
     icon: recruit.icon.Create,
     keyBinding: ['c'],
     input: 'none',
@@ -551,18 +551,18 @@ export function createModel (builder: Builder): void {
     })
   }
 
-  createGotoSpecialAction(builder, candidatesId, 'g->e', recruit.string.GotoCandidates)
+  createGotoSpecialAction(builder, talentsId, 'g->e', recruit.string.GotoTalents)
   createGotoSpecialAction(builder, vacanciesId, 'g->v', recruit.string.GotoVacancies)
   createGotoSpecialAction(builder, skillsId, 'g->s', recruit.string.GotoSkills)
   createGotoSpecialAction(builder, assignedId, 'g->h', recruit.string.GotoAssigned)
-  createGotoSpecialAction(builder, applicantsId, 'g->a', recruit.string.GotoApplicants)
+  createGotoSpecialAction(builder, candidatesId, 'g->a', recruit.string.GotoApplicants)
 
   createAction(builder, {
     action: workbench.actionImpl.Navigate,
     actionProps: {
       mode: 'app',
       application: recruit.app.Recruit as Ref<Application>,
-      special: candidatesId
+      special: talentsId
     },
     label: recruit.string.GotoRecruitApplication,
     icon: view.icon.ArrowRight,

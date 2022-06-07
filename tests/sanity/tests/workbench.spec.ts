@@ -16,17 +16,15 @@ test.describe('workbench tests', () => {
     // Click text=Applications
     await page.click('text=Applications')
     await expect(page).toHaveURL(
-      `${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/recruit%3Aapp%3ARecruit/applicants`
+      `${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/recruit%3Aapp%3ARecruit/candidates`
     )
     // Click text=Applications Application >> span
     await expect(page.locator('text=Applications Filter')).toBeVisible()
     await expect(page.locator('text="APP-1')).toBeDefined()
 
-    // Click text=Candidates
-    await page.click('text=Candidates')
-    await expect(page).toHaveURL(
-      `${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/recruit%3Aapp%3ARecruit/candidates`
-    )
+    // Click text=Talents
+    await page.click('text=Talents')
+    await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/recruit%3Aapp%3ARecruit/talents`)
 
     await expect(page.locator('text=Andrey P.')).toBeVisible()
 
