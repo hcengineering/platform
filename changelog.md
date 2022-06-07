@@ -1,6 +1,23 @@
 # Changelog
 
-## 0.6.23 (upcoming)
+## 0.6.25 (upcoming)
+
+## 0.6.24
+
+Platform:
+
+- Firefox Login
+- Save last filter for page
+- Project issue list view
+- Performance optimizations
+- Organization support Members
+
+Tracker:
+
+- Subissues improvements
+- Tracker layout and colors update
+
+## 0.6.23
 
 Platform:
 
