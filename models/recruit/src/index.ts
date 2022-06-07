@@ -254,68 +254,83 @@ export function createModel (builder: Builder): void {
     recruit.app.Recruit
   )
 
-  builder.createDoc(view.class.Viewlet, core.space.Model, {
-    attachTo: recruit.mixin.Candidate,
-    descriptor: view.viewlet.Table,
-    config: [
-      '',
-      'title',
-      'city',
-      'applications',
-      'attachments',
-      'comments',
-      {
-        // key: '$lookup.skills', // Required, since presenter require list of tag references or '' and TagsPopupPresenter
-        key: '',
-        presenter: tags.component.TagsPresenter, // tags.component.TagsPresenter,
-        label: recruit.string.SkillsLabel,
-        sortingKey: 'skills',
-        props: {
-          _class: recruit.mixin.Candidate,
-          key: 'skills'
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: recruit.mixin.Candidate,
+      descriptor: view.viewlet.Table,
+      config: [
+        '',
+        'title',
+        'city',
+        'applications',
+        'attachments',
+        'comments',
+        {
+          // key: '$lookup.skills', // Required, since presenter require list of tag references or '' and TagsPopupPresenter
+          key: '',
+          presenter: tags.component.TagsPresenter, // tags.component.TagsPresenter,
+          label: recruit.string.SkillsLabel,
+          sortingKey: 'skills',
+          props: {
+            _class: recruit.mixin.Candidate,
+            key: 'skills'
+          }
+        },
+        'modifiedOn',
+        '$lookup.channels'
+      ],
+      hiddenKeys: ['name']
+    },
+    recruit.viewlet.TableCandidate
+  )
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: recruit.class.Vacancy,
+      descriptor: view.viewlet.Table,
+      config: [
+        '',
+        {
+          key: '@applications',
+          label: recruit.string.Applications
+        },
+        '$lookup.company',
+        'location',
+        'description',
+        {
+          key: '@applications.modifiedOn',
+          label: core.string.Modified
         }
-      },
-      'modifiedOn',
-      '$lookup.channels'
-    ],
-    hiddenKeys: ['name']
-  })
+      ],
+      hiddenKeys: ['name', 'space', 'modifiedOn']
+    },
+    recruit.viewlet.TableVacancy
+  )
 
-  builder.createDoc(view.class.Viewlet, core.space.Model, {
-    attachTo: recruit.class.Vacancy,
-    descriptor: view.viewlet.Table,
-    config: [
-      '',
-      {
-        key: '@applications',
-        label: recruit.string.Applications
-      },
-      '$lookup.company',
-      'location',
-      'description',
-      {
-        key: '@applications.modifiedOn',
-        label: core.string.Modified
-      }
-    ],
-    hiddenKeys: ['name', 'space', 'modifiedOn']
-  })
-
-  builder.createDoc(view.class.Viewlet, core.space.Model, {
-    attachTo: recruit.class.Applicant,
-    descriptor: task.viewlet.StatusTable,
-    config: [
-      '',
-      '$lookup.attachedTo',
-      '$lookup.assignee',
-      '$lookup.state',
-      '$lookup.doneState',
-      'attachments',
-      'comments',
-      'modifiedOn',
-      '$lookup.attachedTo.$lookup.channels'
-    ]
-  })
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: recruit.class.Applicant,
+      descriptor: task.viewlet.StatusTable,
+      config: [
+        '',
+        '$lookup.attachedTo',
+        '$lookup.assignee',
+        '$lookup.state',
+        '$lookup.doneState',
+        'attachments',
+        'comments',
+        'modifiedOn',
+        '$lookup.attachedTo.$lookup.channels'
+      ]
+    },
+    recruit.viewlet.TableApplicant
+  )
 
   const applicantKanbanLookup: Lookup<Applicant> = {
     attachedTo: recruit.mixin.Candidate,

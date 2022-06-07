@@ -215,7 +215,8 @@ const contactPlugin = plugin(contactId, {
     CreateOrganization: '' as IntlString
   },
   viewlet: {
-    TableMember: '' as Ref<Viewlet>
+    TableMember: '' as Ref<Viewlet>,
+    TableContact: '' as Ref<Viewlet>
   }
 })
 

@@ -201,20 +201,25 @@ export function createModel (builder: Builder): void {
     editor: contact.component.EditMember
   })
 
-  builder.createDoc(view.class.Viewlet, core.space.Model, {
-    attachTo: contact.class.Contact,
-    descriptor: view.viewlet.Table,
-    config: [
-      '',
-      '$lookup._class',
-      'city',
-      'attachments',
-      'modifiedOn',
-      { key: '', presenter: view.component.RolePresenter, label: view.string.Role },
-      '$lookup.channels'
-    ],
-    hiddenKeys: ['name']
-  })
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: contact.class.Contact,
+      descriptor: view.viewlet.Table,
+      config: [
+        '',
+        '$lookup._class',
+        'city',
+        'attachments',
+        'modifiedOn',
+        { key: '', presenter: view.component.RolePresenter, label: view.string.Role },
+        '$lookup.channels'
+      ],
+      hiddenKeys: ['name']
+    },
+    contact.viewlet.TableContact
+  )
 
   builder.mixin(contact.class.Person, core.class.Class, view.mixin.ObjectEditor, {
     editor: contact.component.EditPerson

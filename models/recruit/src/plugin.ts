@@ -21,7 +21,7 @@ import { recruitId } from '@anticrm/recruit'
 import recruit from '@anticrm/recruit-resources/src/plugin'
 import { KanbanTemplate } from '@anticrm/task'
 import type { AnyComponent } from '@anticrm/ui'
-import type { Action, ActionCategory, ViewAction } from '@anticrm/view'
+import type { Action, ActionCategory, ViewAction, Viewlet } from '@anticrm/view'
 
 export default mergeIds(recruitId, recruit, {
   action: {
@@ -86,5 +86,10 @@ export default mergeIds(recruitId, recruit, {
   completion: {
     ApplicationQuery: '' as Resource<ObjectSearchFactory>,
     ApplicationCategory: '' as Ref<ObjectSearchCategory>
+  },
+  viewlet: {
+    TableCandidate: '' as Ref<Viewlet>,
+    TableVacancy: '' as Ref<Viewlet>,
+    TableApplicant: '' as Ref<Viewlet>
   }
 })

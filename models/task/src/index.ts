@@ -340,20 +340,25 @@ export function createModel (builder: Builder): void {
     task.viewlet.StatusTable
   )
 
-  builder.createDoc(view.class.Viewlet, core.space.Model, {
-    attachTo: task.class.Issue,
-    descriptor: task.viewlet.StatusTable,
-    config: [
-      '',
-      'name',
-      '$lookup.assignee',
-      '$lookup.state',
-      '$lookup.doneState',
-      'attachments',
-      'comments',
-      'modifiedOn'
-    ]
-  })
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: task.class.Issue,
+      descriptor: task.viewlet.StatusTable,
+      config: [
+        '',
+        'name',
+        '$lookup.assignee',
+        '$lookup.state',
+        '$lookup.doneState',
+        'attachments',
+        'comments',
+        'modifiedOn'
+      ]
+    },
+    task.viewlet.TableIssue
+  )
 
   builder.mixin(task.class.Task, core.class.Class, view.mixin.AttributePresenter, {
     presenter: view.component.ObjectPresenter
