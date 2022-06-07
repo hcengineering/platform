@@ -221,7 +221,7 @@ input.search {
     min-width: 0;
     font-weight: 500;
     text-align: left;
-    color: var(--theme-content-accent-color);
+    color: var(--accent-color);
 
     overflow: hidden;
     visibility: visible;
@@ -258,6 +258,16 @@ input.search {
   display: inline-flex;
   align-items: baseline;
   .icon { transform: translateY(.2rem); }
+}
+// Presenters on the card
+.card-container .flex-presenter,
+.card-container .inline-presenter {
+  .icon { display: none; }
+  .label {
+    font-size: .75rem;
+    color: var(--dark-color);
+  }
+  &:hover .label { color: var(--content-color); }
 }
 
 .buttons-group {
