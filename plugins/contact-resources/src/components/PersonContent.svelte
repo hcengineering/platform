@@ -65,7 +65,7 @@
     : `#${getPanelURI(view.component.EditDoc, value._id, Hierarchy.mixinOrClass(value), 'content')}`}
 >
   {#if shouldShowAvatar}
-    <div class="eContentPresenterIcon">
+    <div class="eContentPresenterIcon" class:mr-1={shouldShowName}>
       <Avatar size={avatarSize} avatar={value?.avatar} />
     </div>
   {/if}
@@ -100,7 +100,6 @@
       }
     }
     .eContentPresenterIcon {
-      margin-right: 0.25rem;
       color: var(--theme-content-dark-color);
     }
     .eContentPresenterLabel {
