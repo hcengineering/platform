@@ -24,7 +24,6 @@
   export let to: Ref<Class<Doc>> | undefined
   export let ignoreKeys: string[] = []
   export let allowedCollections: string[] = []
-  export let vertical: boolean
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
@@ -41,47 +40,45 @@
   $: label = hierarchy.getClass(_class).label
 </script>
 
-{#if vertical}
-  <div
-    class="attrbar-header"
-    class:collapsed
-    on:click={() => {
-      collapsed = !collapsed
-    }}
-  >
-    <div class="flex-row-center">
-      <span class="overflow-label">
-        <Label {label} />
-      </span>
-      <div class="icon-arrow">
-        <svg fill="var(--dark-color)" viewBox="0 0 6 6" xmlns="http://www.w3.org/2000/svg">
-          <path d="M0,0L6,3L0,6Z" />
-        </svg>
-      </div>
-    </div>
-    <div class="tool">
-      <Tooltip label={setting.string.ClassSetting}>
-        <Button
-          icon={setting.icon.Setting}
-          kind={'transparent'}
-          on:click={(ev) => {
-            ev.stopPropagation()
-            const loc = getCurrentLocation()
-            loc.path[1] = setting.ids.SettingApp
-            loc.path[2] = 'classes'
-            loc.path.length = 3
-            loc.query = { _class }
-            loc.fragment = undefined
-            navigate(loc)
-          }}
-        />
-      </Tooltip>
+<div
+  class="attrbar-header"
+  class:collapsed
+  on:click={() => {
+    collapsed = !collapsed
+  }}
+>
+  <div class="flex-row-center">
+    <span class="overflow-label">
+      <Label {label} />
+    </span>
+    <div class="icon-arrow">
+      <svg fill="var(--dark-color)" viewBox="0 0 6 6" xmlns="http://www.w3.org/2000/svg">
+        <path d="M0,0L6,3L0,6Z" />
+      </svg>
     </div>
   </div>
-{/if}
-{#if keys.length || !vertical}
+  <div class="tool">
+    <Tooltip label={setting.string.ClassSetting}>
+      <Button
+        icon={setting.icon.Setting}
+        kind={'transparent'}
+        on:click={(ev) => {
+          ev.stopPropagation()
+          const loc = getCurrentLocation()
+          loc.path[1] = setting.ids.SettingApp
+          loc.path[2] = 'classes'
+          loc.path.length = 3
+          loc.query = { _class }
+          loc.fragment = undefined
+          navigate(loc)
+        }}
+      />
+    </Tooltip>
+  </div>
+</div>
+{#if keys.length}
   <div class="collapsed-container" class:collapsed>
-    <AttributesBar {_class} {object} keys={keys.map((p) => p.key)} {vertical} />
+    <AttributesBar {_class} {object} keys={keys.map((p) => p.key)} />
   </div>
 {/if}
 

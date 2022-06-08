@@ -16,40 +16,47 @@
 <script lang="ts">
   import type { AnyAttribute, Class, Doc, Ref } from '@anticrm/core'
   import { getResource } from '@anticrm/platform'
-  import type { AnySvelteComponent } from '@anticrm/ui'
-  import { CircleButton, Label } from '@anticrm/ui'
+  import { AnySvelteComponent, Label, tooltip } from '@anticrm/ui'
   import view from '@anticrm/view'
   import { getAttribute, KeyedAttribute, updateAttribute } from '../attributes'
-  import { getAttributePresenterClass, getClient } from '../utils'
+  import { AttributeCategory, getAttributePresenterClass, getClient } from '../utils'
 
   export let key: KeyedAttribute | string
   export let object: Doc
   export let _class: Ref<Class<Doc>>
   export let maxWidth: string | undefined = undefined
   export let focus: boolean = false
-  export let minimize: boolean = false
   export let showHeader: boolean = true
-  export let vertical: boolean = false
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
   $: attribute = typeof key === 'string' ? hierarchy.getAttribute(_class, key) : key.attr
   $: attributeKey = typeof key === 'string' ? key : key.key
-  $: typeClassId = attribute !== undefined ? getAttributePresenterClass(attribute) : undefined
+  $: presenterClass = attribute !== undefined ? getAttributePresenterClass(hierarchy, attribute) : undefined
 
   let editor: Promise<void | AnySvelteComponent> | undefined
 
-  function update (attribute: AnyAttribute, typeClassId?: Ref<Class<Doc>>): void {
-    if (typeClassId !== undefined) {
-      const typeClass = hierarchy.getClass(typeClassId)
+  function update (
+    attribute: AnyAttribute,
+    presenterClass?: { attrClass: Ref<Class<Doc>>; category: AttributeCategory }
+  ): void {
+    if (presenterClass?.attrClass !== undefined && presenterClass?.category === 'attribute') {
+      const typeClass = hierarchy.getClass(presenterClass.attrClass)
       const editorMixin = hierarchy.as(typeClass, view.mixin.AttributeEditor)
       editor = getResource(editorMixin.editor).catch((cause) => {
-        console.error(`failed to find editor for ${_class} ${attribute} ${typeClassId} cause: ${cause}`)
+        console.error(`failed to find editor for ${_class} ${attribute} ${presenterClass.attrClass} cause: ${cause}`)
+      })
+    }
+    if (presenterClass?.attrClass !== undefined && presenterClass?.category === 'array') {
+      const typeClass = hierarchy.getClass(presenterClass.attrClass)
+      const editorMixin = hierarchy.as(typeClass, view.mixin.ArrayEditor)
+      editor = getResource(editorMixin.editor).catch((cause) => {
+        console.error(`failed to find editor for ${_class} ${attribute} ${presenterClass.attrClass} cause: ${cause}`)
       })
     }
   }
-  $: update(attribute, typeClassId)
+  $: update(attribute, presenterClass)
 
   function onChange (value: any) {
     const doc = object as Doc
@@ -58,48 +65,25 @@
 </script>
 
 {#if editor}
-  {#await editor}
-    ...
-  {:then instance}
-    {#if attribute.icon}
-      {#if !vertical}
-        <div class="flex-row-center">
-          <CircleButton icon={attribute.icon} size={'large'} />
-          {#if !minimize}
-            <div class="flex-col with-icon ml-2">
-              {#if showHeader}
-                <Label label={attribute.label} />
-              {/if}
-              <div class="value">
-                <svelte:component
-                  this={instance}
-                  label={attribute?.label}
-                  placeholder={attribute?.label}
-                  type={attribute?.type}
-                  {maxWidth}
-                  value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
-                  space={object.space}
-                  {onChange}
-                  {focus}
-                  {object}
-                />
-              </div>
-            </div>
-          {/if}
-        </div>
-      {:else}
-        {#if showHeader}
-          <span class="fs-bold overflow-label"><Label label={attribute.label} /></span>
-        {/if}
+  {#await editor then instance}
+    {#if showHeader}
+      <span
+        class="fs-bold overflow-label"
+        use:tooltip={{
+          component: Label,
+          props: { label: attribute.label }
+        }}><Label label={attribute.label} /></span
+      >
+      <div class="flex flex-grow min-w-0">
         <svelte:component
           this={instance}
           label={attribute?.label}
           placeholder={attribute?.label}
-          type={attribute?.type}
           kind={'link'}
           size={'large'}
           width={'100%'}
           justify={'left'}
+          type={attribute?.type}
           {maxWidth}
           value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
           space={object.space}
@@ -107,47 +91,7 @@
           {focus}
           {object}
         />
-      {/if}
-    {:else if showHeader}
-      {#if !vertical}
-        <div class="flex-col">
-          <span class="fs-bold"><Label label={attribute.label} /></span>
-          <div class="value">
-            <svelte:component
-              this={instance}
-              label={attribute?.label}
-              placeholder={attribute?.label}
-              type={attribute?.type}
-              {maxWidth}
-              value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
-              space={object.space}
-              {onChange}
-              {focus}
-              {object}
-            />
-          </div>
-        </div>
-      {:else}
-        <span class="fs-bold"><Label label={attribute.label} /></span>
-        <div class="flex flex-grow min-w-0">
-          <svelte:component
-            this={instance}
-            label={attribute?.label}
-            placeholder={attribute?.label}
-            kind={'link'}
-            size={'large'}
-            width={'100%'}
-            justify={'left'}
-            type={attribute?.type}
-            {maxWidth}
-            value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
-            space={object.space}
-            {onChange}
-            {focus}
-            {object}
-          />
-        </div>
-      {/if}
+      </div>
     {:else}
       <div style="grid-column: 1/3;">
         <svelte:component

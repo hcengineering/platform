@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Calendar, Event } from '@anticrm/calendar'
+import { Event } from '@anticrm/calendar'
 import type { Organization, Person } from '@anticrm/contact'
 import type { AttachedDoc, Class, Doc, Mixin, Ref, Space, Timestamp } from '@anticrm/core'
 import type { Asset, Plugin } from '@anticrm/platform'
@@ -30,15 +30,6 @@ export interface Vacancy extends SpaceWithStates {
   dueTo?: Timestamp
   location?: string
   company?: Ref<Organization>
-}
-
-/**
- * @public
- */
-export interface ReviewCategory extends Calendar {
-  fullDescription?: string
-  attachments?: number
-  comments?: number
 }
 
 /**
@@ -110,7 +101,6 @@ const recruit = plugin(recruitId, {
     Applicant: '' as Ref<Class<Applicant>>,
     Candidates: '' as Ref<Class<Candidates>>,
     Vacancy: '' as Ref<Class<Vacancy>>,
-    ReviewCategory: '' as Ref<Class<ReviewCategory>>,
     Review: '' as Ref<Class<Review>>,
     Opinion: '' as Ref<Class<Opinion>>
   },

@@ -20,6 +20,7 @@
   import { Asset, getResource } from '@anticrm/platform'
   import { getClient } from '@anticrm/presentation'
   import {
+    Button,
     Component,
     Icon,
     IconEdit,
@@ -28,8 +29,7 @@
     Menu,
     ShowMore,
     showPopup,
-    TimeSince,
-    Button
+    TimeSince
   } from '@anticrm/ui'
   import type { AttributeModel } from '@anticrm/view'
   import { getActions } from '@anticrm/view-resources'
@@ -116,7 +116,22 @@
     return attr?.type._class === core.class.TypeMarkup
   }
 
-  $: hasMessageType = model.find((m) => isMessageType(m.attribute))
+  async function updateMessageType (model: AttributeModel[], tx: DisplayTx): Promise<boolean> {
+    for (const m of model) {
+      if (isMessageType(m.attribute)) {
+        return true
+      }
+      const val = await getValue(client, m, tx)
+      if (val.added.length > 1 || val.removed.length > 1) {
+        return true
+      }
+    }
+    return false
+  }
+  let hasMessageType = false
+  $: updateMessageType(model, tx).then((res) => {
+    hasMessageType = res
+  })
 </script>
 
 {#if (viewlet !== undefined && !((viewlet?.hideOnRemove ?? false) && tx.removed)) || model.length > 0}
@@ -182,8 +197,11 @@
                     <Label label={activity.string.To} />
                     <Label label={m.label} />
                   </span>
+                  {#if hasMessageType}
+                    <div class="time"><TimeSince value={tx.tx.modifiedOn} /></div>
+                  {/if}
                   <div class="strong">
-                    <div class="flex">
+                    <div class="flex flex-wrap gap-2" class:emphasized={value.added.length > 1}>
                       {#each value.added as value}
                         <svelte:component this={m.presenter} {value} />
                       {/each}
@@ -195,8 +213,11 @@
                     <Label label={activity.string.From} />
                     <Label label={m.label} />
                   </span>
+                  {#if hasMessageType}
+                    <div class="time"><TimeSince value={tx.tx.modifiedOn} /></div>
+                  {/if}
                   <div class="strong">
-                    <div class="flex">
+                    <div class="flex flex-wrap gap-2 flex-grow" class:emphasized={value.removed.length > 1}>
                       {#each value.removed as value}
                         <svelte:component this={m.presenter} {value} />
                       {/each}

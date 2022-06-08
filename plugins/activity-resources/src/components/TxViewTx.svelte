@@ -50,7 +50,7 @@
 
 <style lang="scss">
   .content {
-    padding: 1rem;
+    padding: 0.5rem;
     min-width: 0;
     color: var(--accent-color);
     background: var(--theme-bg-accent-color);

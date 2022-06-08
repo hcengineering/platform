@@ -58,15 +58,8 @@
     "EditVacancy": "Редактировать",
     "FullDescription": "Детальное описание",
     
-    "CreateReviewCategory": "Создать категорию ревью",
-    "ReviewCategoryName": "Имя категории*",
-    "ReviewCategoryPlaceholder": "Интервью",
-    "ReviewCategory": "Ревью",
-    "ReviewCategoryDescription": "Описание",
-    "ThisReviewCategoryIsPrivate": "Эта категория личная",
     "CreateReview": "Запланировать Ревью",
     "CreateReviewParams": "Запланировать {label}",
-    "SelectReviewCategory": "выбрать категорию",
     "Reviews": "Ревью",
     "Review": "Ревью",
     "ReviewCreateLabel": "Ревью",
@@ -77,7 +70,6 @@
     "ReviewShortLabel": "RVE",
     "StartDate": "Дата начала",
     "DueDate": "Дата окончания",
-    "ReviewCategoryTitle":"Категория",
     "Verdict": "Вердикт",
     "OpinionSave": "Сохранить",
     "TalentReviews": "Ревью таланта",
@@ -101,7 +93,6 @@
   },
   "status": {
     "TalentRequired": "Пожалуйста выберите таланта",
-    "VacancyRequired": "Пожалуйста выберите вакансию",
-    "ReviewCategoryRequired": "Пожалуйста выберети категорию"
+    "VacancyRequired": "Пожалуйста выберите вакансию"
   }
 }

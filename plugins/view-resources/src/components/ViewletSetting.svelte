@@ -107,7 +107,7 @@
       if (hierarchy.isDerived(attribute.type._class, core.class.Collection)) continue
       const value = getValue(attribute.name, attribute.type)
       if (result.findIndex((p) => p.value === value) !== -1) continue
-      const typeClassId = getAttributePresenterClass(attribute)
+      const typeClassId = getAttributePresenterClass(hierarchy, attribute).attrClass
       const typeClass = hierarchy.getClass(typeClassId)
       let presenter = hierarchy.as(typeClass, view.mixin.AttributePresenter).presenter
       let parent = typeClass.extends

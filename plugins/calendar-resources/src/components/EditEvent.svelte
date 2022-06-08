@@ -14,10 +14,9 @@
 -->
 <script lang="ts">
   import { Event } from '@anticrm/calendar'
-  import contact from '@anticrm/contact'
-  import { getClient, UserBoxList } from '@anticrm/presentation'
+  import { getClient } from '@anticrm/presentation'
   import { StyledTextBox } from '@anticrm/text-editor'
-  import { Label, StylishEdit } from '@anticrm/ui'
+  import { StylishEdit } from '@anticrm/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import calendar from '../plugin'
 
@@ -52,25 +51,6 @@
         }}
         label={calendar.string.Description}
         placeholder={calendar.string.Description}
-      />
-    </div>
-    <div class="flex-row">
-      <div class="mt-4 mb-2">
-        <Label label={calendar.string.Participants} />
-      </div>
-      <UserBoxList
-        _class={contact.class.Employee}
-        items={object.participants}
-        label={calendar.string.Participants}
-        on:open={(evt) => {
-          client.update(object, { $push: { participants: evt.detail._id } })
-        }}
-        on:delete={(evt) => {
-          client.update(object, { $pull: { participants: evt.detail._id } })
-        }}
-        on:update={(evt) => {
-          client.update(object, { participants: evt.detail })
-        }}
       />
     </div>
   </div>

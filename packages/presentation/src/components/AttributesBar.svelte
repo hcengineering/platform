@@ -22,18 +22,11 @@
   export let _class: Ref<Class<Doc>>
   export let keys: (string | KeyedAttribute)[]
   export let showHeader: boolean = true
-  export let vertical: boolean = false
 </script>
 
-<div class="attributes-bar-container {vertical ? 'vertical' : 'horizontal'}">
+<div class="attributes-bar-container vertical">
   {#each keys as key (typeof key === 'string' ? key : key.key)}
-    {#if !vertical}
-      <div class="flex-center column">
-        <AttributeBarEditor {key} {_class} {object} {showHeader} />
-      </div>
-    {:else}
-      <AttributeBarEditor {key} {_class} {object} {showHeader} vertical />
-    {/if}
+    <AttributeBarEditor {key} {_class} {object} {showHeader} />
   {/each}
 </div>
 
