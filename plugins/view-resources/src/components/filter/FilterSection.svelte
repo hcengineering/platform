@@ -31,11 +31,22 @@
   let current = 0
   const client = getClient()
   const hierarchy = client.getHierarchy()
-  const targetClass = (hierarchy.getAttribute(_class, filter.key.key).type as RefTo<Doc>).to
+
+  function getTargetClass (): Ref<Class<Doc>> | undefined {
+    try {
+      return (hierarchy.getAttribute(_class, filter.key.key).type as RefTo<Doc>).to
+    } catch (err: any) {
+      console.error(err)
+    }
+  }
+  const targetClass = getTargetClass()
   $: isState = targetClass === task.class.State ?? false
   const dispatch = createEventDispatcher()
 
   async function getCountStates (ids: Ref<Doc>[]): Promise<number> {
+    if (targetClass === undefined) {
+      return 0
+    }
     const selectStates = await client.findAll(targetClass, { _id: { $in: Array.from(ids) } }, {})
     const unique = new Set(selectStates.map((s) => (s as State).title))
     return unique.size
