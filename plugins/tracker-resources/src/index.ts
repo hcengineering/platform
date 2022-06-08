@@ -49,6 +49,8 @@ import EditProject from './components/projects/EditProject.svelte'
 import ModificationDatePresenter from './components/issues/ModificationDatePresenter.svelte'
 import EditIssue from './components/issues/edit/EditIssue.svelte'
 import NewIssueHeader from './components/NewIssueHeader.svelte'
+import ListView from './components/issues/ListView.svelte'
+import IssuesView from './components/issues/IssuesView.svelte'
 
 export default async (): Promise<Resources> => ({
   component: {
@@ -83,7 +85,9 @@ export default async (): Promise<Resources> => ({
     ProjectStatusPresenter,
     SetDueDateActionPopup,
     SetParentIssueActionPopup,
-    EditProject
+    EditProject,
+    IssuesView,
+    ListView
   },
   function: {
     ProjectVisible: () => false

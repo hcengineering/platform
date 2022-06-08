@@ -5,7 +5,7 @@
   import { Project } from '@anticrm/tracker'
   import { EditBox, getCurrentLocation } from '@anticrm/ui'
   import { DocAttributeBar } from '@anticrm/view-resources'
-  import Issues from '../issues/Issues.svelte'
+  import IssuesView from '../issues/IssuesView.svelte'
 
   import tracker from '../../plugin'
 
@@ -26,7 +26,7 @@
 </script>
 
 {#if object}
-  <Issues currentSpace={object.space} query={{ project }} label={object.label}>
+  <IssuesView currentSpace={object.space} query={{ project }} label={object.label}>
     <svelte:fragment slot="aside">
       <div class="flex-row p-4">
         <div class="fs-title text-xl">
@@ -44,5 +44,5 @@
         <DocAttributeBar {object} mixins={[]} ignoreKeys={['icon', 'label', 'description']} />
       </div>
     </svelte:fragment>
-  </Issues>
+  </IssuesView>
 {/if}
