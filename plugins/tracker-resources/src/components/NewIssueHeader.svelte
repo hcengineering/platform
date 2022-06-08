@@ -27,7 +27,7 @@
   $: updateSpace(currentSpace)
 
   async function updateSpace (spaceId: Ref<Space> | undefined): Promise<void> {
-    if (space) {
+    if (spaceId !== undefined) {
       space = spaceId
       return
     }

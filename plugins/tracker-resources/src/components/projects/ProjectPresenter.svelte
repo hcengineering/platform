@@ -20,9 +20,8 @@
   export let value: WithLookup<Project>
   function navigateToProject () {
     const loc = getCurrentLocation()
-    loc.path[2] = 'project'
-    loc.path[3] = value._id
-    loc.path.length = 4
+    loc.path[4] = value._id
+    loc.path.length = 5
     navigate(loc)
   }
 </script>

@@ -56,4 +56,5 @@
     </div>
   {/if}
   <Button icon={IconOptions} kind={'link'} on:click={handleOptionsEditorOpened} />
+  <slot name="extra" />
 </div>

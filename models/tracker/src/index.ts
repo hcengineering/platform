@@ -401,12 +401,6 @@ export function createModel (builder: Builder): void {
             label: tracker.string.Views,
             icon: tracker.icon.Views,
             component: tracker.component.Views
-          },
-          {
-            id: 'project',
-            label: tracker.string.Project,
-            component: tracker.component.EditProject,
-            visibleIf: tracker.function.ProjectVisible
           }
         ],
         spaces: [
