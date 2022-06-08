@@ -43,7 +43,7 @@
     tracker.class.IssueStatus,
     { attachedTo: currentSpace },
     (result) => {
-      statuses = result
+      statuses = [...result]
     },
     {
       lookup: { category: tracker.class.IssueStatusCategory },

@@ -48,15 +48,17 @@
       await client.update(value, { status: newStatus })
     }
   }
-  $: query = '_id' in value ? { atachedTo: value.space } : {}
-  client
-    .findAll(tracker.class.IssueStatus, query, {
-      lookup: { category: tracker.class.IssueStatusCategory },
-      sort: { order: SortingOrder.Ascending }
-    })
-    .then((result) => {
-      if (!statuses) statuses = result
-    })
+  $: if (!statuses) {
+    const query = '_id' in value ? { attachedTo: value.space } : {}
+    client
+      .findAll(tracker.class.IssueStatus, query, {
+        lookup: { category: tracker.class.IssueStatusCategory },
+        sort: { rank: SortingOrder.Ascending }
+      })
+      .then((result) => {
+        statuses = result
+      })
+  }
 </script>
 
 {#if value && statuses}
