@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import core, { Doc, generateId, Ref, TxOperations } from '@anticrm/core'
+import core, { Doc, generateId, Ref, SortingOrder, TxOperations, TxResult } from '@anticrm/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
 import { IssueStatus, IssueStatusCategory, Team, genRanks, Issue } from '@anticrm/tracker'
 import { DOMAIN_TRACKER } from '.'
@@ -80,7 +80,11 @@ async function createDefaultTeam (tx: TxOperations): Promise<void> {
   // Create new if not deleted by customers.
   if (current === undefined && currentDeleted === undefined) {
     const defaultStatusId: Ref<IssueStatus> = generateId()
-    const categories = await tx.findAll(tracker.class.IssueStatusCategory, {})
+    const categories = await tx.findAll(
+      tracker.class.IssueStatusCategory,
+      {},
+      { sort: { order: SortingOrder.Ascending } }
+    )
 
     await tx.createDoc<Team>(
       tracker.class.Team,
@@ -102,11 +106,35 @@ async function createDefaultTeam (tx: TxOperations): Promise<void> {
   }
 }
 
+async function fixTeamIssueStatusesOrder (tx: TxOperations, team: Team): Promise<TxResult> {
+  const statuses = await tx.findAll(
+    tracker.class.IssueStatus,
+    { attachedTo: team._id },
+    { lookup: { category: tracker.class.IssueStatusCategory } }
+  )
+  statuses.sort((a, b) => (a.$lookup?.category?.order ?? 0) - (b.$lookup?.category?.order ?? 0))
+  const issueStatusRanks = genRanks(statuses.length)
+  return statuses.map((status) => {
+    const rank = issueStatusRanks.next().value
+    if (rank === undefined || status.rank === rank) return undefined
+    return tx.update(status, { rank })
+  })
+}
+
+async function fixTeamsIssueStatusesOrder (tx: TxOperations): Promise<void> {
+  const teams = await tx.findAll(tracker.class.Team, {})
+  await Promise.all(teams.map((team) => fixTeamIssueStatusesOrder(tx, team)))
+}
+
 async function upgradeTeamIssueStatuses (tx: TxOperations): Promise<void> {
   const teams = await tx.findAll(tracker.class.Team, { issueStatuses: undefined })
 
   if (teams.length > 0) {
-    const categories = await tx.findAll(tracker.class.IssueStatusCategory, {})
+    const categories = await tx.findAll(
+      tracker.class.IssueStatusCategory,
+      {},
+      { sort: { order: SortingOrder.Ascending } }
+    )
 
     for (const team of teams) {
       const defaultStatusId: Ref<IssueStatus> = generateId()
@@ -232,6 +260,7 @@ async function createDefaults (tx: TxOperations): Promise<void> {
 
 async function upgradeTeams (tx: TxOperations): Promise<void> {
   await upgradeTeamIssueStatuses(tx)
+  await fixTeamsIssueStatusesOrder(tx)
 }
 
 async function upgradeIssues (tx: TxOperations): Promise<void> {
