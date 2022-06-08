@@ -72,7 +72,7 @@
       <div class="optionContainer">
         <MiniToggle bind:on={shouldShowSubIssues} />
       </div>
-    </div>    
+    </div>
     {#if groupBy === IssuesGrouping.Status || groupBy === IssuesGrouping.Priority}
       <div class="viewOption">
         <div class="label">
