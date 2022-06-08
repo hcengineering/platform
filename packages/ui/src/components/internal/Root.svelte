@@ -27,11 +27,16 @@
       }
 
       if (application === undefined) {
-        application = getMetadata(uiPlugin.metadata.DefaultApplication)
-        if (application !== undefined) {
-          const loc = getCurrentLocation()
-          loc.path = [application]
-          navigate(loc)
+        const last = localStorage.getItem('platform_last_loc')
+        if (last !== null) {
+          navigate(JSON.parse(last))
+        } else {
+          application = getMetadata(uiPlugin.metadata.DefaultApplication)
+          if (application !== undefined) {
+            const loc = getCurrentLocation()
+            loc.path = [application]
+            navigate(loc)
+          }
         }
       }
     })

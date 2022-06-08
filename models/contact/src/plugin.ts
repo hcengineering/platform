@@ -13,20 +13,19 @@
 // limitations under the License.
 //
 
-import { IntlString, mergeIds, Resource } from '@anticrm/platform'
-import type { Ref } from '@anticrm/core'
 import { contactId } from '@anticrm/contact'
 import contact from '@anticrm/contact-resources/src/plugin'
-import type { AnyComponent } from '@anticrm/ui'
+import type { Ref } from '@anticrm/core'
 import {} from '@anticrm/core'
 import { ObjectSearchCategory, ObjectSearchFactory } from '@anticrm/model-presentation'
+import { IntlString, mergeIds, Resource } from '@anticrm/platform'
+import type { AnyComponent } from '@anticrm/ui'
 
 export default mergeIds(contactId, contact, {
   component: {
     PersonPresenter: '' as AnyComponent,
     ContactPresenter: '' as AnyComponent,
     ChannelsPresenter: '' as AnyComponent,
-    CreatePerson: '' as AnyComponent,
     EditPerson: '' as AnyComponent,
     EditOrganization: '' as AnyComponent,
     CreatePersons: '' as AnyComponent,
@@ -36,7 +35,10 @@ export default mergeIds(contactId, contact, {
     EmployeeAccountPresenter: '' as AnyComponent,
     OrganizationEditor: '' as AnyComponent,
     EmployeePresenter: '' as AnyComponent,
-    PersonEditor: '' as AnyComponent
+    PersonEditor: '' as AnyComponent,
+    Members: '' as AnyComponent,
+    MemberPresenter: '' as AnyComponent,
+    EditMember: '' as AnyComponent
   },
   string: {
     Persons: '' as IntlString,

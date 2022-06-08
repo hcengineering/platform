@@ -25,48 +25,54 @@
   export let label: IntlString
   export let createLabel: IntlString | undefined
   export let createComponent: AnyComponent | undefined
-  export let descriptor: Ref<ViewletDescriptor> = view.viewlet.Table
+  export let descriptor: Ref<ViewletDescriptor> | undefined
   export let baseQuery: DocumentQuery<Doc> = {}
 
   let search = ''
-  $: resultQuery = search === '' ? {} : { $search: search }
   let filters: Filter[] = []
   let descr: Viewlet | undefined
-  let loading = true
+
+  $: resultQuery = updateResultQuery(search, baseQuery)
 
   const preferenceQuery = createQuery()
   let preference: ViewletPreference | undefined
 
   const client = getClient()
-  client
-    .findOne<Viewlet>(view.class.Viewlet, {
-      attachTo: _class,
-      descriptor
-    })
-    .then((res) => {
-      descr = res
-      if (res !== undefined) {
-        preferenceQuery.query(
-          view.class.ViewletPreference,
-          {
-            attachedTo: res._id
-          },
-          (res) => {
-            preference = res[0]
-            loading = false
-          },
-          { limit: 1 }
-        )
-      }
-    })
+  let loading = true
+  $: updateDescriptor(_class, descriptor)
+
+  function updateDescriptor (_class: Ref<Class<Doc>>, descriptor: Ref<ViewletDescriptor> = view.viewlet.Table) {
+    loading = true
+    client
+      .findOne<Viewlet>(view.class.Viewlet, {
+        attachTo: _class,
+        descriptor
+      })
+      .then((res) => {
+        descr = res
+        if (res !== undefined) {
+          preferenceQuery.query(
+            view.class.ViewletPreference,
+            {
+              attachedTo: res._id
+            },
+            (res) => {
+              preference = res[0]
+              loading = false
+            },
+            { limit: 1 }
+          )
+        }
+      })
+  }
 
   function showCreateDialog (ev: MouseEvent) {
     if (createComponent === undefined) return
     showPopup(createComponent, {}, 'top')
   }
 
-  function updateResultQuery (search: string): void {
-    resultQuery = search === '' ? baseQuery : { ...baseQuery, $search: search }
+  function updateResultQuery (search: string, baseQuery: DocumentQuery<Doc> = {}): DocumentQuery<Doc> {
+    return search === '' ? baseQuery : { ...baseQuery, $search: search }
   }
 </script>
 
@@ -77,12 +83,7 @@
     <div class="ml-4"><FilterButton {_class} bind:filters /></div>
   </div>
 
-  <SearchEdit
-    bind:value={search}
-    on:change={() => {
-      updateResultQuery(search)
-    }}
-  />
+  <SearchEdit bind:value={search} />
   {#if createLabel && createComponent}
     <Button label={createLabel} icon={IconAdd} kind={'primary'} on:click={(ev) => showCreateDialog(ev)} />
   {/if}

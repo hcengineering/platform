@@ -38,6 +38,7 @@
   import ControlPanel from './ControlPanel.svelte'
   import CopyToClipboard from './CopyToClipboard.svelte'
   import SubIssueSelector from './SubIssueSelector.svelte'
+  import SubIssues from './SubIssues.svelte'
 
   export let _id: Ref<Issue>
   export let _class: Ref<Class<Issue>>
@@ -156,8 +157,6 @@
     isSub={false}
     withoutActivity={isEditing}
     bind:innerWidth
-    isFullSize
-    on:fullsize
     on:close={() => dispatch('close')}
   >
     {@const { attachedTo: parentIssue } = issue?.$lookup ?? {}}
@@ -238,6 +237,11 @@
         {:else}
           <MessageViewer message={description} />
         {/if}
+      </div>
+      <div class="mt-6">
+        {#key issue._id}
+          <SubIssues {issue} {issueStatuses} {currentTeam} />
+        {/key}
       </div>
     {/if}
     <AttachmentDocList value={issue} />

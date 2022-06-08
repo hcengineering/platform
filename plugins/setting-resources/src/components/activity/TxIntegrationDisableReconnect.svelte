@@ -42,16 +42,13 @@
       })
     }
   }
+  const handleReconnect = (e: MouseEvent) => {
+    if (type?.reconnectComponent) {
+      showPopup(type.reconnectComponent, {}, eventToHTMLElement(e), reconnect)
+    }
+  }
 </script>
 
 <div class="flex-center">
-  <Button
-    label={setting.string.Reconnect}
-    kind={'primary'}
-    on:click={(e) => {
-      if (type?.reconnectComponent) {
-        showPopup(type.reconnectComponent, {}, eventToHTMLElement(e), reconnect)
-      }
-    }}
-  />
+  <Button label={setting.string.Reconnect} kind={'primary'} on:click={handleReconnect} />
 </div>

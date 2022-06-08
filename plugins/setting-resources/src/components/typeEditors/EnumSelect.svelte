@@ -45,36 +45,31 @@
   const query: DocumentQuery<Enum> = {}
 
   const mgr = getFocusManager()
+
+  const handleClick = (ev: any) => {
+    showPopup(
+      EnumPopup,
+      {
+        _class,
+        label,
+        options: { sort: { modifiedOn: -1 } },
+        selected: value?._id,
+        spaceQuery: query,
+        create
+      },
+      eventToHTMLElement(ev),
+      (result) => {
+        if (result) {
+          value = result
+          mgr?.setFocusPos(focusIndex)
+        }
+      }
+    )
+  }
 </script>
 
 <Tooltip {label} fill={false} direction={labelDirection}>
-  <Button
-    {focus}
-    {focusIndex}
-    icon={IconFolder}
-    size={'small'}
-    kind={'no-border'}
-    on:click={(ev) => {
-      showPopup(
-        EnumPopup,
-        {
-          _class,
-          label,
-          options: { sort: { modifiedOn: -1 } },
-          selected: value?._id,
-          spaceQuery: query,
-          create
-        },
-        eventToHTMLElement(ev),
-        (result) => {
-          if (result) {
-            value = result
-            mgr?.setFocusPos(focusIndex)
-          }
-        }
-      )
-    }}
-  >
+  <Button {focus} {focusIndex} icon={IconFolder} size={'small'} kind={'no-border'} on:click={handleClick}>
     <span slot="content" class="text-sm">
       {#if value}{value.name}{:else}<Label {label} />{/if}
     </span>

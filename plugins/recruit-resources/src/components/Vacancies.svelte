@@ -28,23 +28,21 @@
   $: resultQuery = search === '' ? {} : { $search: search }
 
   type ApplicationInfo = { count: number; modifiedOn: number }
-  let applications: Map<Ref<Vacancy>, ApplicationInfo> | undefined
+  let applications: Map<Ref<Vacancy>, ApplicationInfo> = new Map<Ref<Vacancy>, ApplicationInfo>()
 
   const applicantQuery = createQuery()
   $: applicantQuery.query(
     recruit.class.Applicant,
     {},
     (res) => {
-      const result = new Map<Ref<Vacancy>, ApplicationInfo>()
-
       for (const d of res) {
-        const v = result.get(d.space) ?? { count: 0, modifiedOn: 0 }
+        const v = applications.get(d.space) ?? { count: 0, modifiedOn: 0 }
         v.count++
         v.modifiedOn = Math.max(v.modifiedOn, d.modifiedOn)
-        result.set(d.space, v)
+        applications.set(d.space, v)
       }
 
-      applications = result
+      applications = applications
     },
     {
       projection: {
@@ -68,7 +66,7 @@
     [
       '@applications',
       {
-        key: '@applications',
+        key: '',
         presenter: recruit.component.VacancyCountPresenter,
         label: recruit.string.Applications,
         props: { applications },
@@ -138,7 +136,7 @@
   <div class="ac-header__wrap-title">
     <div class="ac-header__icon"><Icon icon={recruit.icon.Vacancy} size={'small'} /></div>
     <span class="ac-header__title"><Label label={recruit.string.Vacancies} /></span>
-    <div class="ml-4"><FilterButton _class={recruit.mixin.Candidate} bind:filters /></div>
+    <div class="ml-4"><FilterButton _class={recruit.class.Vacancy} bind:filters /></div>
   </div>
   <SearchEdit
     bind:value={search}

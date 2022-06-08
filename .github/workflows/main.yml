@@ -2,13 +2,17 @@
 
 name: CI
 
-# Controls when the action will run. 
+concurrency: 
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Controls when the action will run.
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
   create:
     tags:
       - v*
@@ -25,11 +29,9 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-
       - name: Cache node modules
         uses: actions/cache@v3
         env:
@@ -39,12 +41,16 @@ jobs:
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+      - name: Cache PR common
+        uses: actions/cache@v3
+        with:
+          path: ./common/temp
+          key: ${{ runner.os }}-build-ref-${{ github.ref }}
+          restore-keys: |
+            ${{ runner.os }}-build-ref-${{ github.ref }}
 
       - name: Checking for mis-matching dependencies...
         run: node common/scripts/install-run-rush.js check
-
-      # - name: Checking for missing change logs...
-      #   run: node common/scripts/install-run-rush.js change -v
 
       - name: Installing...
         run: node common/scripts/install-run-rush.js install
@@ -53,9 +59,9 @@ jobs:
         run: node common/scripts/install-run-rush.js bump-model-version
 
       - name: Building...
-        run: node common/scripts/install-run-rush.js rebuild -p 16 -l --verbose
+        run: node common/scripts/install-run-rush.js build
 
-      - name: Cache build results
+      - name: Cache build results for next jobs
         uses: actions/cache@v3
         env:
           cache-name: cache-build-results
@@ -112,40 +118,6 @@ jobs:
 
       - name: Checking svelte sources...
         run: node common/scripts/install-run-rush.js svelte-check
-  linting:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: Cache build results
-        uses: actions/cache@v3
-        env:
-          cache-name: cache-build-results
-        with:
-          path: |
-            cloud
-            common
-            deploy
-            dev
-            models
-            packages
-            plugins
-            pods
-            products
-            server
-            server-plugins
-            templates
-            tests
-            rush.json
-            .prettierrc
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
-          restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
-
-      - name: Linting...
-        run: node common/scripts/install-run-rush.js lint -p 16
   formatting:
     needs: build
     runs-on: ubuntu-latest
@@ -153,7 +125,6 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-
       - name: Cache build results
         uses: actions/cache@v3
         env:
@@ -178,8 +149,10 @@ jobs:
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
 
+      - name: Install...
+        run: node common/scripts/install-run-rush.js install
       - name: Formatting...
-        run: node common/scripts/install-run-rush.js format -p 16
+        run: node common/scripts/install-run-rush.js format
       - name: Check files formatting
         run: |
           echo '================================================================'
@@ -187,7 +160,7 @@ jobs:
           echo '================================================================'
           git diff '*.ts' '*.svelte' | cat
           [ -z "$(git diff --name-only '*.ts' '*.svelte' | cat)" ]
-          echo '================================================================'        
+          echo '================================================================'
   test:
     needs: build
     runs-on: ubuntu-latest
@@ -292,7 +265,7 @@ jobs:
           path: ./tests/sanity/playwright-report/
   docker-build:
     if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') }}
-    needs: [ build, uitest, test, linting, svelte-check ]
+    needs: [build, uitest, test, svelte-check]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -328,7 +301,7 @@ jobs:
       - name: Setting model version from git release...
         run: node common/scripts/install-run-rush.js bump-model-version
       - name: Build, to include new model version
-        run: node common/scripts/install-run-rush.js build -p 16
+        run: node common/scripts/install-run-rush.js build
       - name: Bundle
         run: node common/scripts/install-run-rush.js bundle
       - name: Docker build

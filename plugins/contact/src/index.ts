@@ -30,6 +30,7 @@ import {
 import type { Asset, Plugin } from '@anticrm/platform'
 import { IntlString, plugin } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'
+import { Viewlet } from '@anticrm/view'
 
 /**
  * @public
@@ -80,7 +81,15 @@ export interface Person extends Contact {}
 /**
  * @public
  */
-export interface Organization extends Contact {}
+export interface Member extends AttachedDoc {
+  contact: Ref<Contact>
+}
+/**
+ * @public
+ */
+export interface Organization extends Contact {
+  members: number
+}
 
 /**
  * @public
@@ -152,6 +161,7 @@ const contactPlugin = plugin(contactId, {
     Contact: '' as Ref<Class<Contact>>,
     Person: '' as Ref<Class<Person>>,
     Persons: '' as Ref<Class<Persons>>,
+    Member: '' as Ref<Class<Member>>,
     Organization: '' as Ref<Class<Organization>>,
     Organizations: '' as Ref<Class<Organizations>>,
     Employee: '' as Ref<Class<Employee>>,
@@ -160,7 +170,8 @@ const contactPlugin = plugin(contactId, {
   },
   component: {
     SocialEditor: '' as AnyComponent,
-    CreateOrganization: '' as AnyComponent
+    CreateOrganization: '' as AnyComponent,
+    CreatePerson: '' as AnyComponent
   },
   channelProvider: {
     Email: '' as Ref<ChannelProvider>,
@@ -202,6 +213,10 @@ const contactPlugin = plugin(contactId, {
     PersonAlreadyExists: '' as IntlString,
     Person: '' as IntlString,
     CreateOrganization: '' as IntlString
+  },
+  viewlet: {
+    TableMember: '' as Ref<Viewlet>,
+    TableContact: '' as Ref<Viewlet>
   }
 })
 

@@ -113,6 +113,7 @@ export function navigate (location: PlatformLocation): void {
   const url = locationToUrl(location)
   if (locationToUrl(getCurrentLocation()) !== url) {
     history.pushState(null, '', url)
+    localStorage.setItem('platform_last_loc', JSON.stringify(location))
     locationWritable.set(location)
   }
 }

@@ -32,18 +32,9 @@
   export let isSub: boolean = true
   export let isAside: boolean = true
   export let isCustomAttr: boolean = true
-  export let isFullSize: boolean = false
 </script>
 
-<Panel
-  bind:isAside
-  bind:isFullSize
-  isHeader={$$slots.header || isHeader}
-  bind:panelWidth
-  bind:innerWidth
-  on:close
-  on:fullsize
->
+<Panel bind:isAside isHeader={$$slots.header || isHeader} bind:panelWidth bind:innerWidth on:close>
   <svelte:fragment slot="title">
     <div class="popupPanel-title__content-container antiTitle">
       {#if $$slots.navigator}

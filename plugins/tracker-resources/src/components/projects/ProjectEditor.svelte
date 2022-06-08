@@ -16,7 +16,7 @@
   import { Ref } from '@anticrm/core'
   import { Issue, Project } from '@anticrm/tracker'
   import { getClient } from '@anticrm/presentation'
-  import { ButtonKind, ButtonShape, ButtonSize, Tooltip } from '@anticrm/ui'
+  import { ButtonKind, ButtonShape, ButtonSize, tooltip } from '@anticrm/ui'
   import { IntlString } from '@anticrm/platform'
   import tracker from '../../plugin'
   import ProjectSelector from '../ProjectSelector.svelte'
@@ -52,7 +52,10 @@
 </script>
 
 {#if value.project || shouldShowPlaceholder}
-  <Tooltip label={value.project ? tracker.string.MoveToProject : tracker.string.AddToProject} fill>
+  <div
+    class="clear-mins"
+    use:tooltip={{ label: value.project ? tracker.string.MoveToProject : tracker.string.AddToProject }}
+  >
     <ProjectSelector
       {kind}
       {size}
@@ -65,5 +68,5 @@
       value={value.project}
       onProjectIdChange={handleProjectIdChanged}
     />
-  </Tooltip>
+  </div>
 {/if}

@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { Ref } from '@anticrm/core'
-import { IntlString, mergeIds } from '@anticrm/platform'
+import { ObjQueryType, Ref } from '@anticrm/core'
+import { IntlString, mergeIds, Resource } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'
 import { Action, ViewAction, viewId } from '@anticrm/view'
 import view from '@anticrm/view-resources/src/plugin'
@@ -104,5 +104,25 @@ export default mergeIds(viewId, view, {
     Navigation: '' as IntlString,
     Editor: '' as IntlString,
     MarkdownFormatting: '' as IntlString
+  },
+  function: {
+    FilterObjectInResult: '' as Resource<
+    (values: any[], onUpdate: () => void, index: number) => Promise<ObjQueryType<any>>
+    >,
+    FilterObjectNinResult: '' as Resource<
+    (values: any[], onUpdate: () => void, index: number) => Promise<ObjQueryType<any>>
+    >,
+    FilterValueInResult: '' as Resource<
+    (values: any[], onUpdate: () => void, index: number) => Promise<ObjQueryType<any>>
+    >,
+    FilterValueNinResult: '' as Resource<
+    (values: any[], onUpdate: () => void, index: number) => Promise<ObjQueryType<any>>
+    >,
+    FilterBeforeResult: '' as Resource<
+    (values: any[], onUpdate: () => void, index: number) => Promise<ObjQueryType<any>>
+    >,
+    FilterAfterResult: '' as Resource<
+    (values: any[], onUpdate: () => void, index: number) => Promise<ObjQueryType<any>>
+    >
   }
 })

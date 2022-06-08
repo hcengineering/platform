@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Issue, IssuePriority } from '@anticrm/tracker'
   import { getClient } from '@anticrm/presentation'
-  import { Tooltip } from '@anticrm/ui'
+  import { tooltip } from '@anticrm/ui'
   import type { ButtonKind, ButtonSize } from '@anticrm/ui'
   import tracker from '../../plugin'
   import PrioritySelector from '../PrioritySelector.svelte'
@@ -50,7 +50,7 @@
 
 {#if value}
   {#if isEditable}
-    <Tooltip label={tracker.string.SetPriority} fill>
+    <div class="clear-mins" use:tooltip={{ label: tracker.string.SetPriority }}>
       <PrioritySelector
         {kind}
         {size}
@@ -61,7 +61,7 @@
         priority={value.priority}
         onPriorityChange={handlePriorityChanged}
       />
-    </Tooltip>
+    </div>
   {:else}
     <PrioritySelector {kind} {size} {width} {justify} {isEditable} {shouldShowLabel} priority={value.priority} />
   {/if}

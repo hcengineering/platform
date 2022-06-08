@@ -33,6 +33,8 @@ test.describe('contact tests', () => {
     if ((await page.locator('[id="gmail:string:Email"]').count()) === 0) {
       await page.click('[id="presentation:string:AddSocialLinks"]')
       await page.click('.popup button:has-text("Email")')
+    } else {
+      await page.click('id=gmail:string:Email')
     }
     // await page.hover('[id="gmail:string:Email"]')
     await page.fill('[placeholder="john\\.appleseed\\@apple\\.com"]', 'wer@qwe.com')

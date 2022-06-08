@@ -14,10 +14,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Doc } from '@anticrm/core'
-  import { Tooltip, IconThread } from '@anticrm/ui'
-  import CommentPopup from './CommentPopup.svelte'
   import chunter from '@anticrm/chunter'
+  import type { Doc } from '@anticrm/core'
+  import { IconThread, tooltip } from '@anticrm/ui'
+  import CommentPopup from './CommentPopup.svelte'
 
   export let value: number | undefined
   export let object: Doc
@@ -26,12 +26,17 @@
 </script>
 
 {#if value && value > 0}
-  <Tooltip label={chunter.string.Comments} component={CommentPopup} props={{ objectId: object._id }}>
-    <div class="sm-tool-icon ml-1 mr-1">
-      <span class="icon"><IconThread {size} /></span>
-      {#if showCounter}
-        &nbsp;{value}
-      {/if}
-    </div>
-  </Tooltip>
+  <div
+    use:tooltip={{
+      label: chunter.string.Comments,
+      component: CommentPopup,
+      props: { objectId: object._id }
+    }}
+    class="sm-tool-icon ml-1 mr-1"
+  >
+    <span class="icon"><IconThread {size} /></span>
+    {#if showCounter}
+      &nbsp;{value}
+    {/if}
+  </div>
 {/if}

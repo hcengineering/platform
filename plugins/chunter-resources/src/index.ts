@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import core, { Space } from '@anticrm/core'
+import core, { Ref, Space } from '@anticrm/core'
 import chunter, { ChunterSpace, Channel, ChunterMessage, Message, ThreadMessage, DirectMessage } from '@anticrm/chunter'
 import { NotificationClientImpl } from '@anticrm/notification-resources'
 import { Resources } from '@anticrm/platform'
@@ -78,20 +78,32 @@ async function UnsubscribeMessage (object: Message): Promise<void> {
   }
 }
 
+type PinnedChunterSpace = ChunterSpace
+
 async function PinMessage (message: ChunterMessage): Promise<void> {
   const client = getClient()
 
-  await client.updateDoc<ChunterSpace>(chunter.class.ChunterSpace, core.space.Space, message.space, {
-    $push: { pinned: message._id }
-  })
+  await client.updateDoc<PinnedChunterSpace>(
+    chunter.class.ChunterSpace,
+    core.space.Space,
+    message.space as Ref<PinnedChunterSpace>,
+    {
+      $push: { pinned: message._id }
+    }
+  )
 }
 
 export async function UnpinMessage (message: ChunterMessage): Promise<void> {
   const client = getClient()
 
-  await client.updateDoc<ChunterSpace>(chunter.class.ChunterSpace, core.space.Space, message.space, {
-    $pull: { pinned: message._id }
-  })
+  await client.updateDoc<PinnedChunterSpace>(
+    chunter.class.ChunterSpace,
+    core.space.Space,
+    message.space as Ref<PinnedChunterSpace>,
+    {
+      $pull: { pinned: message._id }
+    }
+  )
 }
 
 export async function ArchiveChannel (channel: Channel, afterArchive?: () => void): Promise<void> {

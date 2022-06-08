@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { translate } from '@anticrm/platform'
+  import { IntlString, translate } from '@anticrm/platform'
   import { Class, Doc, Ref, RefTo } from '@anticrm/core'
   import { eventToHTMLElement, IconClose, showPopup, Icon, Label } from '@anticrm/ui'
   import { Filter } from '@anticrm/view'
@@ -22,18 +22,31 @@
   import { getClient } from '@anticrm/presentation'
   import task from '@anticrm/task'
   import type { State } from '@anticrm/task'
+  import { onDestroy } from 'svelte'
 
   export let _class: Ref<Class<Doc>>
   export let filter: Filter
 
+  let label: IntlString | undefined
   let current = 0
   const client = getClient()
   const hierarchy = client.getHierarchy()
-  const targetClass = (hierarchy.getAttribute(_class, filter.key.key).type as RefTo<Doc>).to
+
+  function getTargetClass (): Ref<Class<Doc>> | undefined {
+    try {
+      return (hierarchy.getAttribute(_class, filter.key.key).type as RefTo<Doc>).to
+    } catch (err: any) {
+      console.error(err)
+    }
+  }
+  const targetClass = getTargetClass()
   $: isState = targetClass === task.class.State ?? false
   const dispatch = createEventDispatcher()
 
   async function getCountStates (ids: Ref<Doc>[]): Promise<number> {
+    if (targetClass === undefined) {
+      return 0
+    }
     const selectStates = await client.findAll(targetClass, { _id: { $in: Array.from(ids) } }, {})
     const unique = new Set(selectStates.map((s) => (s as State).title))
     return unique.size
@@ -46,17 +59,23 @@
   }
   $: if (filter) getLabel()
 
-  function toggle () {
-    const modes = filter.modes.filter((p) => p.isAvailable(filter.value))
+  async function toggle () {
     current++
-    filter.mode = modes[current % modes.length]
+    filter.mode = filter.modes[current % filter.modes.length]
+    label = (await client.findOne(view.class.FilterMode, { _id: filter.mode }))?.label
     dispatch('change')
   }
+
+  client.findOne(view.class.FilterMode, { _id: filter.mode }).then((p) => (label = p?.label))
 
   function onChange (e: Filter | undefined) {
     filter = filter
     dispatch('change')
   }
+
+  onDestroy(() => {
+    filter.onRemove?.()
+  })
 </script>
 
 <div class="filter-section">
@@ -69,7 +88,9 @@
     <span><Label label={filter.key.label} /></span>
   </button>
   <button class="filter-button" on:click={toggle}>
-    <span><Label label={filter.mode.label} /></span>
+    {#if label}
+      <span><Label {label} params={{ value: filter.value.length }} /></span>
+    {/if}
   </button>
   <button
     class="filter-button"

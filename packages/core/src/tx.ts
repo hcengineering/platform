@@ -159,9 +159,9 @@ export type OmitNever<T extends object> = Omit<T, KeysByType<T, never>>
  * @public
  */
 export interface PushOptions<T extends object> {
-  $push?: Partial<OmitNever<ArrayAsElementPosition<T>>>
-  $pull?: Partial<OmitNever<ArrayAsElement<T>>>
-  $move?: Partial<OmitNever<ArrayMoveDescriptor<T>>>
+  $push?: Partial<OmitNever<ArrayAsElementPosition<Required<T>>>>
+  $pull?: Partial<OmitNever<ArrayAsElement<Required<T>>>>
+  $move?: Partial<OmitNever<ArrayMoveDescriptor<Required<T>>>>
 }
 
 /**

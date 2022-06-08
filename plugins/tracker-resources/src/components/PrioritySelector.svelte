@@ -32,6 +32,7 @@
   const prioritiesInfo = defaultPriorities.map((p) => ({ id: p, ...issuePriorities[p] }))
 
   const handlePriorityEditorOpened = (event: MouseEvent) => {
+    event.stopPropagation()
     if (!isEditable) {
       return
     }

@@ -118,6 +118,30 @@
   }
 
   $: updateQuery(search, selectedDoneStates)
+  const handleSelect = (result: any) => {
+    if (result.type === 'select') {
+      const res = result.detail
+      if (res.id === 'AllStates') {
+        doneStatusesView = false
+        state = undefined
+        withoutDone = false
+        selectedDoneStates.clear()
+        updateQuery(search, selectedDoneStates)
+      } else if (res.id === 'DoneStates') {
+        doneStatusesView = true
+        state = undefined
+        selectedDoneStates.clear()
+        updateQuery(search, selectedDoneStates)
+      }
+    }
+  }
+  const handleDoneSelect = (result: any) => {
+    if (result.type === 'select') {
+      const res = result.detail
+      if (res.id === 'NoDoneState') noDoneClick()
+      else doneStateClick(res.id)
+    }
+  }
 </script>
 
 <div class="header">
@@ -127,37 +151,10 @@
       { id: 'DoneStates', labelIntl: task.string.DoneStates }
     ]}
     multiselect={false}
-    on:select={(result) => {
-      if (result.type === 'select') {
-        const res = result.detail
-        if (res.id === 'AllStates') {
-          doneStatusesView = false
-          state = undefined
-          withoutDone = false
-          selectedDoneStates.clear()
-          updateQuery(search, selectedDoneStates)
-        } else if (res.id === 'DoneStates') {
-          doneStatusesView = true
-          state = undefined
-          selectedDoneStates.clear()
-          updateQuery(search, selectedDoneStates)
-        }
-      }
-    }}
+    on:select={handleSelect}
   />
   {#if doneStatusesView}
-    <TabList
-      items={itemsDS}
-      bind:selected={selectedDS}
-      multiselect
-      on:select={(result) => {
-        if (result.type === 'select') {
-          const res = result.detail
-          if (res.id === 'NoDoneState') noDoneClick()
-          else doneStateClick(res.id)
-        }
-      }}
-    />
+    <TabList items={itemsDS} bind:selected={selectedDS} multiselect on:select={handleDoneSelect} />
   {:else}
     <StatesBar bind:state {space} gap={'none'} on:change={() => updateQuery(search, selectedDoneStates)} />
   {/if}

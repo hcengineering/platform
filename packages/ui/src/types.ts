@@ -73,7 +73,7 @@ export interface TabItem {
 }
 
 export type ButtonKind = 'primary' | 'secondary' | 'no-border' | 'transparent' | 'link' | 'link-bordered' | 'dangerous'
-export type ButtonSize = 'small' | 'medium' | 'large' | 'x-large'
+export type ButtonSize = 'inline' | 'small' | 'medium' | 'large' | 'x-large'
 export type ButtonShape = 'rectangle' | 'rectangle-left' | 'rectangle-right' | 'circle' | 'round' | undefined
 export type EditStyle = 'editbox' | 'large-style' | 'small-style' | 'search-style'
 export interface PopupPositionElement {
@@ -113,12 +113,12 @@ export interface DateOrShift {
 }
 
 export interface LabelAndProps {
-  label: IntlString | undefined
-  element: HTMLElement | undefined
+  label?: IntlString
+  element?: HTMLElement
   direction?: TooltipAlignment
   component?: AnySvelteComponent | AnyComponent
   props?: any
-  anchor: HTMLElement | undefined
+  anchor?: HTMLElement
   onUpdate?: (result: any) => void
 }
 

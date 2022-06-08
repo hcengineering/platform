@@ -15,11 +15,10 @@
 <script lang="ts">
   import { getResource } from '@anticrm/platform'
   import type { AnyComponent } from '../types'
-
   // import Icon from './Icon.svelte'
-  import Loading from './Loading.svelte'
-  import ErrorBoundary from './internal/ErrorBoundary'
   import ErrorPresenter from './ErrorPresenter.svelte'
+  import ErrorBoundary from './internal/ErrorBoundary'
+  import Loading from './Loading.svelte'
 
   export let is: AnyComponent
   export let props = {}

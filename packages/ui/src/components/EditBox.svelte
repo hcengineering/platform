@@ -68,11 +68,15 @@
     computeSize(input)
   })
 
+  export function focusInput () {
+    input?.focus()
+  }
+
   // Focusable control with index
   export let focusIndex = -1
   const { idx, focusManager } = registerFocus(focusIndex, {
     focus: () => {
-      input?.focus()
+      focusInput()
       return input != null
     },
     isFocus: () => document.activeElement === input

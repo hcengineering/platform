@@ -58,8 +58,6 @@
     isHeader={false}
     isAside={true}
     {object}
-    isFullSize
-    on:fullsize
     on:close={() => {
       dispatch('close')
     }}

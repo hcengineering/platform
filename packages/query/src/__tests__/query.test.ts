@@ -469,14 +469,13 @@ describe('query', () => {
         (result) => {
           const comment = result[0]
           if (comment !== undefined) {
-            if (attempt > 0) {
+            if (attempt++ > 0) {
               expect((comment.$lookup?.attachedTo as WithLookup<AttachedComment>)?.$lookup?.space?._id).toEqual(
                 futureSpace._id
               )
               resolve(null)
             } else {
               expect((comment.$lookup?.attachedTo as WithLookup<AttachedComment>)?.$lookup?.space).toBeUndefined()
-              attempt++
             }
           }
         },
@@ -616,12 +615,13 @@ describe('query', () => {
         message: 'child'
       }
     )
-    let attempt = 0
+    let attempt = -1
     const pp = new Promise((resolve) => {
       liveQuery.query<AttachedComment>(
         test.class.TestComment,
         { _id: childComment },
         (result) => {
+          attempt++
           const comment = result[0]
           if (comment !== undefined) {
             if (attempt > 0) {
@@ -631,7 +631,6 @@ describe('query', () => {
               expect(
                 ((comment.$lookup?.attachedTo as WithLookup<AttachedComment>)?.$lookup?.space as Doc)?._id
               ).toEqual(futureSpace)
-              attempt++
             }
           }
         },
@@ -659,7 +658,7 @@ describe('query', () => {
         message: 'test'
       }
     )
-    let attempt = 0
+    let attempt = -1
     const childLength = 3
     const childs: Ref<AttachedComment>[] = []
     for (let index = 0; index < childLength; index++) {
@@ -681,10 +680,10 @@ describe('query', () => {
         test.class.TestComment,
         { _id: parentComment },
         (result) => {
+          attempt++
           const comment = result[0]
           if (comment !== undefined) {
             expect((comment.$lookup as any)?.comments).toHaveLength(childLength - attempt)
-            attempt++
           }
           if (attempt === childLength) {
             resolve(null)
@@ -755,7 +754,7 @@ describe('query', () => {
 
   it('lookup nested query update doc', async () => {
     const { liveQuery, factory } = await getClient()
-    let attempt = 0
+    let attempt = -1
     const futureSpace = await factory.createDoc(core.class.Space, core.space.Model, {
       name: '0',
       description: '',
@@ -788,6 +787,7 @@ describe('query', () => {
         test.class.TestComment,
         { _id: childComment },
         (result) => {
+          attempt++
           const comment = result[0]
           if (comment !== undefined) {
             expect(
@@ -796,8 +796,6 @@ describe('query', () => {
           }
           if (attempt > 0) {
             resolve(null)
-          } else {
-            attempt++
           }
         },
         { lookup: { attachedTo: [test.class.TestComment, { space: core.class.Space }] } }
@@ -823,7 +821,7 @@ describe('query', () => {
         message: 'test'
       }
     )
-    let attempt = 0
+    let attempt = -1
     const childComment = await factory.addCollection(
       test.class.TestComment,
       spaces[0]._id,
@@ -839,14 +837,13 @@ describe('query', () => {
         test.class.TestComment,
         { _id: parentComment },
         (result) => {
+          attempt++
           const comment = result[0]
           if (comment !== undefined) {
             expect(((comment.$lookup as any)?.comments[0] as AttachedComment).message).toEqual(attempt.toString())
           }
           if (attempt > 0) {
             resolve(null)
-          } else {
-            attempt++
           }
         },
         { lookup: { _id: { comments: test.class.TestComment } } }

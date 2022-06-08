@@ -17,8 +17,8 @@
   import { Class, Doc, FindOptions, Ref, SortingOrder, WithLookup } from '@anticrm/core'
   import { Kanban, TypeState } from '@anticrm/kanban'
   import { createQuery } from '@anticrm/presentation'
-  import { Issue, Team } from '@anticrm/tracker'
-  import { Button, eventToHTMLElement, Icon, IconAdd, showPopup, Tooltip } from '@anticrm/ui'
+  import type { Issue, IssueStatus, Team } from '@anticrm/tracker'
+  import { Button, Icon, IconAdd, showPopup, Tooltip, showPanel } from '@anticrm/ui'
   import { focusStore, ListSelectionProvider, SelectDirection, selectionStore } from '@anticrm/view-resources'
   import ActionContext from '@anticrm/view-resources/src/components/ActionContext.svelte'
   import Menu from '@anticrm/view-resources/src/components/Menu.svelte'
@@ -28,6 +28,8 @@
   import AssigneePresenter from './AssigneePresenter.svelte'
   import IssuePresenter from './IssuePresenter.svelte'
   import PriorityEditor from './PriorityEditor.svelte'
+  import ProjectEditor from '../projects/ProjectEditor.svelte'
+  import SubIssuesSelector from './edit/SubIssuesSelector.svelte'
 
   export let currentSpace: Ref<Team>
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
@@ -42,16 +44,19 @@
     currentTeam = res.shift()
   })
 
+  let issueStatuses: WithLookup<IssueStatus>[] | undefined
   let states: TypeState[] | undefined
   $: statusesQuery.query(
     tracker.class.IssueStatus,
     { attachedTo: currentSpace },
-    (issueStatuses) => {
-      states = issueStatuses.map((status) => ({
+    (is) => {
+      states = is.map((status) => ({
         _id: status._id,
         title: status.name,
-        color: status.color ?? status.$lookup?.category?.color ?? 0
+        color: status.color ?? status.$lookup?.category?.color ?? 0,
+        icon: status.$lookup?.category?.icon ?? undefined
       }))
+      issueStatuses = is
     },
     {
       lookup: { category: tracker.class.IssueStatusCategory },
@@ -128,7 +133,7 @@
   >
     <svelte:fragment slot="header" let:state let:count>
       <div class="header flex-col">
-        <div class="flex-between label font-medium w-full h-full mb-4">
+        <div class="flex-between label font-medium w-full h-full">
           <div class="flex-row-center gap-2">
             <Icon icon={state.icon} size={'small'} />
             <span class="lines-limit-2 ml-2">{state.title}</span>
@@ -139,8 +144,8 @@
               <Button
                 icon={IconAdd}
                 kind={'transparent'}
-                on:click={(evt) => {
-                  showPopup(CreateIssue, { space: currentSpace, status: state._id }, eventToHTMLElement(evt))
+                on:click={() => {
+                  showPopup(CreateIssue, { space: currentSpace, status: state._id }, 'top')
                 }}
               />
             </Tooltip>
@@ -150,18 +155,47 @@
     </svelte:fragment>
     <svelte:fragment slot="card" let:object>
       {@const issue = toIssue(object)}
-      <div class="flex-row pt-2 pb-2 pr-4 pl-4">
-        <div class="flex-between mb-2">
+      <div
+        class="tracker-card"
+        on:click={() => {
+          showPanel(tracker.component.EditIssue, object._id, object._class, 'content')
+        }}
+      >
+        <div class="flex-col mr-6">
           <IssuePresenter value={object} {currentTeam} />
-          {#if issue.$lookup?.assignee}
-            <AssigneePresenter value={issue.$lookup.assignee} issueId={issue._id} {currentSpace} isEditable={true} />
-          {/if}
+          <span class="fs-bold caption-color mt-1 lines-limit-2">
+            {object.title}
+          </span>
         </div>
-        <span class="fs-bold title">
-          {object.title}
-        </span>
-        <div class="flex gap-2 mt-2 mb-2">
-          <PriorityEditor value={issue} isEditable={true} />
+        <div class="abs-rt-content">
+          <AssigneePresenter
+            value={issue.$lookup?.assignee}
+            defaultClass={contact.class.Employee}
+            issueId={issue._id}
+            {currentSpace}
+            isEditable={true}
+          />
+        </div>
+        <div class="buttons-group xxsmall-gap mt-10px">
+          {#if issue && issueStatuses && issue.subIssues > 0}
+            <SubIssuesSelector {issue} {currentTeam} {issueStatuses} />
+          {/if}
+          <PriorityEditor
+            value={issue}
+            isEditable={true}
+            kind={'link-bordered'}
+            size={'inline'}
+            justify={'center'}
+            width={''}
+          />
+          <ProjectEditor
+            value={issue}
+            isEditable={true}
+            kind={'link-bordered'}
+            size={'inline'}
+            justify={'center'}
+            width={''}
+          />
         </div>
       </div>
     </svelte:fragment>
@@ -170,19 +204,22 @@
 
 <style lang="scss">
   .header {
-    height: 6rem;
-    min-height: 6rem;
-    user-select: none;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--divider-color);
 
     .label {
-      color: var(--theme-caption-color);
-      border-bottom: 1px solid var(--divider-color);
+      color: var(--caption-color);
       .counter {
-        color: rgba(var(--theme-caption-color), 0.8);
+        color: rgba(var(--caption-color), 0.8);
       }
     }
   }
-  .title {
-    color: var(--theme-caption-color);
+  .tracker-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    min-height: 6.5rem;
   }
 </style>

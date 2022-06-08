@@ -44,6 +44,11 @@ import core, {
   WithLookup,
   toFindResult
 } from '@anticrm/core'
+import { deepEqual } from 'fast-equals'
+
+const CACHE_SIZE = 20
+
+type Callback = (result: FindResult<Doc>) => void
 
 interface Query {
   _class: Ref<Class<Doc>>
@@ -51,7 +56,7 @@ interface Query {
   result: Doc[] | Promise<Doc[]>
   options?: FindOptions<Doc>
   total: number
-  callback: (result: FindResult<Doc>) => void
+  callbacks: Callback[]
 }
 
 /**
@@ -59,7 +64,8 @@ interface Query {
  */
 export class LiveQuery extends TxProcessor implements Client {
   private readonly client: Client
-  private readonly queries: Query[] = []
+  private readonly queries: Map<Ref<Class<Doc>>, Query[]> = new Map<Ref<Class<Doc>>, Query[]>()
+  private readonly queue: Query[] = []
 
   constructor (client: Client) {
     super()
@@ -114,12 +120,59 @@ export class LiveQuery extends TxProcessor implements Client {
     return await this.client.findOne(_class, query, options)
   }
 
-  query<T extends Doc>(
+  private findQuery<T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ): Query | undefined {
+    const queries = this.queries.get(_class)
+    if (queries === undefined) return
+    for (const q of queries) {
+      if (!deepEqual(query, q.query) || !deepEqual(options, q.options)) continue
+      return q
+    }
+  }
+
+  private removeFromQueue (q: Query): void {
+    if (q.callbacks.length === 0) {
+      const queueIndex = this.queue.indexOf(q)
+      if (queueIndex !== -1) {
+        this.queue.splice(queueIndex, 1)
+      }
+    }
+  }
+
+  private pushCallback (q: Query, callback: (result: Doc[]) => void): void {
+    q.callbacks.push(callback)
+    setTimeout(async () => {
+      if (q !== undefined) {
+        await this.callback(q)
+      }
+    }, 0)
+  }
+
+  private getQuery<T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    callback: (result: Doc[]) => void,
+    options?: FindOptions<T>
+  ): Query | undefined {
+    const current = this.findQuery(_class, query, options)
+    if (current !== undefined) {
+      this.removeFromQueue(current)
+      this.pushCallback(current, callback)
+
+      return current
+    }
+  }
+
+  private createQuery<T extends Doc>(
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     callback: (result: FindResult<T>) => void,
     options?: FindOptions<T>
-  ): () => void {
+  ): Query {
+    const queries = this.queries.get(_class) ?? []
     const result = this.client.findAll(_class, query, options)
     const q: Query = {
       _class,
@@ -127,60 +180,97 @@ export class LiveQuery extends TxProcessor implements Client {
       result,
       total: 0,
       options: options as FindOptions<Doc>,
-      callback: callback as (result: Doc[]) => void
+      callbacks: [callback as (result: Doc[]) => void]
     }
-    this.queries.push(q)
+    queries.push(q)
     result
-      .then((result) => {
+      .then(async (result) => {
         q.total = result.total
-        q.callback(result)
+        await this.callback(q)
       })
       .catch((err) => {
         console.log('failed to update Live Query: ', err)
       })
 
+    this.queries.set(_class, queries)
+    if (this.queue.length > CACHE_SIZE) {
+      this.remove()
+    }
+    return q
+  }
+
+  private remove (): void {
+    const q = this.queue.shift()
+    if (q === undefined) return
+    const queries = this.queries.get(q._class)
+    queries?.splice(queries.indexOf(q), 1)
+    if (queries?.length === 0) {
+      this.queries.delete(q._class)
+    }
+  }
+
+  query<T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    callback: (result: FindResult<T>) => void,
+    options?: FindOptions<T>
+  ): () => void {
+    const q =
+      this.getQuery(_class, query, callback as (result: Doc[]) => void, options) ??
+      this.createQuery(_class, query, callback, options)
+
     return () => {
-      q.callback = () => {}
-      this.queries.splice(this.queries.indexOf(q), 1)
+      const index = q.callbacks.indexOf(callback as (result: Doc[]) => void)
+      if (index !== -1) {
+        q.callbacks.splice(index, 1)
+      }
+      if (q.callbacks.length === 0) {
+        this.queue.push(q)
+      }
     }
   }
 
   protected override async txPutBag (tx: TxPutBag<any>): Promise<TxResult> {
-    for (const q of this.queries) {
-      if (q.result instanceof Promise) {
-        q.result = await q.result
-      }
-      const updatedDoc = q.result.find((p) => p._id === tx.objectId)
-      if (updatedDoc !== undefined) {
-        const doc = updatedDoc as any
-        let bag = doc[tx.bag]
-        if (bag === undefined) {
-          doc[tx.bag] = bag = {}
+    for (const queries of this.queries.values()) {
+      for (const q of queries) {
+        if (q.result instanceof Promise) {
+          q.result = await q.result
         }
-        bag[tx.key] = tx.value
-        await this.updatedDocCallback(updatedDoc, q)
+        const updatedDoc = q.result.find((p) => p._id === tx.objectId)
+        if (updatedDoc !== undefined) {
+          const doc = updatedDoc as any
+          let bag = doc[tx.bag]
+          if (bag === undefined) {
+            doc[tx.bag] = bag = {}
+          }
+          bag[tx.key] = tx.value
+          await this.updatedDocCallback(updatedDoc, q)
+        }
       }
     }
     return {}
   }
 
   protected override async txMixin (tx: TxMixin<Doc, Doc>): Promise<TxResult> {
-    for (const q of this.queries) {
-      if (this.client.getHierarchy().isDerived(q._class, core.class.Tx)) {
-        // handle add since Txes are immutable
-        await this.handleDocAdd(q, tx)
-        continue
-      }
-      if (q.result instanceof Promise) {
-        q.result = await q.result
-      }
-      let updatedDoc = q.result.find((p) => p._id === tx.objectId)
-      if (updatedDoc !== undefined) {
-        // Create or apply mixin value
-        updatedDoc = TxProcessor.updateMixin4Doc(updatedDoc, tx.mixin, tx.attributes)
-        await this.updatedDocCallback(updatedDoc, q)
-      } else {
-        if (this.getHierarchy().isDerived(tx.mixin, q._class)) {
+    const hierarchy = this.client.getHierarchy()
+    for (const queries of this.queries) {
+      const isTx = hierarchy.isDerived(queries[0], core.class.Tx)
+      const isMixin = hierarchy.isDerived(tx.mixin, queries[0])
+      for (const q of queries[1]) {
+        if (isTx) {
+          // handle add since Txes are immutable
+          await this.handleDocAdd(q, tx)
+          continue
+        }
+        if (q.result instanceof Promise) {
+          q.result = await q.result
+        }
+        let updatedDoc = q.result.find((p) => p._id === tx.objectId)
+        if (updatedDoc !== undefined) {
+          // Create or apply mixin value
+          updatedDoc = TxProcessor.updateMixin4Doc(updatedDoc, tx.mixin, tx.attributes)
+          await this.updatedDocCallback(updatedDoc, q)
+        } else if (isMixin) {
           // Mixin potentially added to object we doesn't have in out results
           const doc = await this.findOne(q._class, { _id: tx.objectId }, q.options)
           if (doc !== undefined) {
@@ -193,42 +283,48 @@ export class LiveQuery extends TxProcessor implements Client {
   }
 
   protected async txCollectionCUD (tx: TxCollectionCUD<Doc, AttachedDoc>): Promise<TxResult> {
-    for (const q of this.queries) {
-      if (this.client.getHierarchy().isDerived(q._class, core.class.Tx)) {
-        // handle add since Txes are immutable
-        await this.handleDocAdd(q, tx)
-        continue
-      }
-
-      if (tx.tx._class === core.class.TxCreateDoc) {
-        const createTx = tx.tx as TxCreateDoc<AttachedDoc>
-        const d: TxCreateDoc<AttachedDoc> = {
-          ...createTx,
-          attributes: {
-            ...createTx.attributes,
-            attachedTo: tx.objectId,
-            attachedToClass: tx.objectClass,
-            collection: tx.collection
-          }
+    for (const queries of this.queries) {
+      const isTx = this.client.getHierarchy().isDerived(queries[0], core.class.Tx)
+      for (const q of queries[1]) {
+        if (isTx) {
+          // handle add since Txes are immutable
+          await this.handleDocAdd(q, tx)
+          continue
         }
-        await this.handleDocAdd(q, TxProcessor.createDoc2Doc(d))
-      } else if (tx.tx._class === core.class.TxUpdateDoc) {
-        await this.handleDocUpdate(q, tx.tx as unknown as TxUpdateDoc<Doc>)
-      } else if (tx.tx._class === core.class.TxRemoveDoc) {
-        await this.handleDocRemove(q, tx.tx as unknown as TxRemoveDoc<Doc>)
+
+        if (tx.tx._class === core.class.TxCreateDoc) {
+          const createTx = tx.tx as TxCreateDoc<AttachedDoc>
+          const d: TxCreateDoc<AttachedDoc> = {
+            ...createTx,
+            attributes: {
+              ...createTx.attributes,
+              attachedTo: tx.objectId,
+              attachedToClass: tx.objectClass,
+              collection: tx.collection
+            }
+          }
+          await this.handleDocAdd(q, TxProcessor.createDoc2Doc(d))
+        } else if (tx.tx._class === core.class.TxUpdateDoc) {
+          await this.handleDocUpdate(q, tx.tx as unknown as TxUpdateDoc<Doc>)
+        } else if (tx.tx._class === core.class.TxRemoveDoc) {
+          await this.handleDocRemove(q, tx.tx as unknown as TxRemoveDoc<Doc>)
+        }
       }
     }
     return {}
   }
 
   protected async txUpdateDoc (tx: TxUpdateDoc<Doc>): Promise<TxResult> {
-    for (const q of this.queries) {
-      if (this.client.getHierarchy().isDerived(q._class, core.class.Tx)) {
-        // handle add since Txes are immutable
-        await this.handleDocAdd(q, tx)
-        continue
+    for (const queries of this.queries) {
+      const isTx = this.client.getHierarchy().isDerived(queries[0], core.class.Tx)
+      for (const q of queries[1]) {
+        if (isTx) {
+          // handle add since Txes are immutable
+          await this.handleDocAdd(q, tx)
+          continue
+        }
+        await this.handleDocUpdate(q, tx)
       }
-      await this.handleDocUpdate(q, tx)
     }
     return {}
   }
@@ -414,9 +510,11 @@ export class LiveQuery extends TxProcessor implements Client {
 
   protected async txCreateDoc (tx: TxCreateDoc<Doc>): Promise<TxResult> {
     const docTx = TxProcessor.createDoc2Doc(tx)
-    for (const q of this.queries) {
-      const doc = this.client.getHierarchy().isDerived(q._class, core.class.Tx) ? tx : docTx
-      await this.handleDocAdd(q, doc)
+    for (const queries of this.queries) {
+      const doc = this.client.getHierarchy().isDerived(queries[0], core.class.Tx) ? tx : docTx
+      for (const q of queries[1]) {
+        await this.handleDocAdd(q, doc)
+      }
     }
     return {}
   }
@@ -465,8 +563,10 @@ export class LiveQuery extends TxProcessor implements Client {
     if (q.result instanceof Promise) {
       q.result = await q.result
     }
-    const clone = this.clone(q.result)
-    q.callback(toFindResult(clone, q.total))
+    const result = q.result
+    q.callbacks.forEach((callback) => {
+      callback(toFindResult(this.clone(result), q.total))
+    })
   }
 
   private async handleDocAddLookup (q: Query, doc: Doc): Promise<void> {
@@ -514,13 +614,16 @@ export class LiveQuery extends TxProcessor implements Client {
   }
 
   protected async txRemoveDoc (tx: TxRemoveDoc<Doc>): Promise<TxResult> {
-    for (const q of this.queries) {
-      if (this.client.getHierarchy().isDerived(q._class, core.class.Tx)) {
-        // handle add since Txes are immutable
-        await this.handleDocAdd(q, tx)
-        continue
+    for (const queries of this.queries) {
+      const isTx = this.client.getHierarchy().isDerived(queries[0], core.class.Tx)
+      for (const q of queries[1]) {
+        if (isTx) {
+          // handle add since Txes are immutable
+          await this.handleDocAdd(q, tx)
+          continue
+        }
+        await this.handleDocRemove(q, tx)
       }
-      await this.handleDocRemove(q, tx)
     }
     return {}
   }

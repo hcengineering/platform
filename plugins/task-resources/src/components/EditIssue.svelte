@@ -42,6 +42,7 @@
   onMount(() => {
     dispatch('open', { ignoreKeys: ['comments', 'name', 'description', 'number'] })
   })
+  const onChangeDescription = (evt: CustomEvent<any>) => change('description', evt.detail)
 </script>
 
 {#if object !== undefined}
@@ -60,7 +61,7 @@
       <StyledTextBox
         bind:content={object.description}
         placeholder={plugin.string.TaskDescriptionPlaceholder}
-        on:value={(evt) => change('description', evt.detail)}
+        on:value={onChangeDescription}
       />
     </div>
   </Grid>

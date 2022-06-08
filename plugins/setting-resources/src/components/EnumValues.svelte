@@ -37,17 +37,18 @@
       $pull: { enumValues: target }
     })
   }
+  const handleKeydown = (evt: KeyboardEvent) => {
+    if (evt.key === 'Enter') {
+      add()
+    }
+  }
 </script>
 
 <div class="flex-grow">
   <div class="flex-between mb-4">
     <EditBox
       placeholder={setting.string.NewValue}
-      on:keydown={(evt) => {
-        if (evt.key === 'Enter') {
-          add()
-        }
-      }}
+      on:keydown={handleKeydown}
       kind="large-style"
       bind:value={newValue}
       maxWidth="18rem"

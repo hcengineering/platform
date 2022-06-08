@@ -38,6 +38,7 @@ import { createAction } from '@anticrm/model-view'
 import workbench, { createNavigateAction } from '@anticrm/model-workbench'
 import { Asset, IntlString } from '@anticrm/platform'
 import view, { KeyBinding } from '@anticrm/view'
+import setting from '@anticrm/setting'
 import {
   Document,
   Issue,
@@ -212,7 +213,7 @@ export class TProject extends TDoc implements Project {
   // @Index(IndexKind.FullText)
   label!: string
 
-  @Prop(TypeMarkup(), tracker.string.Project)
+  @Prop(TypeMarkup(), tracker.string.Description)
   description?: Markup
 
   @Prop(TypeString(), tracker.string.AssetLabel)
@@ -236,10 +237,10 @@ export class TProject extends TDoc implements Project {
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, undefined, attachment.string.Files)
   attachments?: number
 
-  @Prop(TypeDate(true), tracker.string.Project)
+  @Prop(TypeDate(true), tracker.string.StartDate)
   startDate!: Timestamp | null
 
-  @Prop(TypeDate(true), tracker.string.Project)
+  @Prop(TypeDate(true), tracker.string.TargetDate)
   targetDate!: Timestamp | null
 
   declare space: Ref<Team>
@@ -319,6 +320,10 @@ export function createModel (builder: Builder): void {
   const boardId = 'board'
   const projectsId = 'projects'
 
+  builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: tracker.component.IssuePresenter
+  })
+
   builder.mixin(tracker.class.TypeIssuePriority, core.class.Class, view.mixin.AttributePresenter, {
     presenter: tracker.component.PriorityPresenter
   })
@@ -330,6 +335,8 @@ export function createModel (builder: Builder): void {
   builder.mixin(tracker.class.Project, core.class.Class, view.mixin.AttributePresenter, {
     presenter: tracker.component.ProjectTitlePresenter
   })
+
+  builder.mixin(tracker.class.Issue, core.class.Class, setting.mixin.Editable, {})
 
   builder.createDoc(
     workbench.class.Application,
@@ -360,6 +367,12 @@ export function createModel (builder: Builder): void {
             label: tracker.string.Views,
             icon: tracker.icon.Views,
             component: tracker.component.Views
+          },
+          {
+            id: 'project',
+            label: tracker.string.Project,
+            component: tracker.component.EditProject,
+            visibleIf: tracker.function.ProjectVisible
           }
         ],
         spaces: [

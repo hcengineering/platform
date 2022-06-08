@@ -21,11 +21,12 @@ import { recruitId } from '@anticrm/recruit'
 import recruit from '@anticrm/recruit-resources/src/plugin'
 import { KanbanTemplate } from '@anticrm/task'
 import type { AnyComponent } from '@anticrm/ui'
-import type { Action, ActionCategory, ViewAction } from '@anticrm/view'
+import type { Action, ActionCategory, ViewAction, Viewlet } from '@anticrm/view'
 
 export default mergeIds(recruitId, recruit, {
   action: {
-    CreateOpinion: '' as Ref<Action>
+    CreateOpinion: '' as Ref<Action>,
+    CreateGlobalApplication: '' as Ref<Action>
   },
   actionImpl: {
     CreateOpinion: '' as ViewAction
@@ -37,7 +38,7 @@ export default mergeIds(recruitId, recruit, {
     ApplicationShort: '' as IntlString,
     ApplicationsShort: '' as IntlString,
     RecruitApplication: '' as IntlString,
-    CandidatePools: '' as IntlString,
+    TalentPools: '' as IntlString,
     SearchApplication: '' as IntlString,
     Application: '' as IntlString,
     AssignedRecruiter: '' as IntlString,
@@ -46,7 +47,7 @@ export default mergeIds(recruitId, recruit, {
     Source: '' as IntlString,
     ManageVacancyStatuses: '' as IntlString,
     EditVacancy: '' as IntlString,
-    GotoCandidates: '' as IntlString,
+    GotoTalents: '' as IntlString,
     GotoVacancies: '' as IntlString,
     GotoSkills: '' as IntlString,
     GotoAssigned: '' as IntlString,
@@ -85,5 +86,10 @@ export default mergeIds(recruitId, recruit, {
   completion: {
     ApplicationQuery: '' as Resource<ObjectSearchFactory>,
     ApplicationCategory: '' as Ref<ObjectSearchCategory>
+  },
+  viewlet: {
+    TableCandidate: '' as Ref<Viewlet>,
+    TableVacancy: '' as Ref<Viewlet>,
+    TableApplicant: '' as Ref<Viewlet>
   }
 })

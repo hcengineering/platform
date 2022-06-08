@@ -419,7 +419,7 @@
 <FocusHandler {manager} />
 
 <Card
-  label={recruit.string.CreateCandidate}
+  label={recruit.string.CreateTalent}
   okAction={createCandidate}
   canSave={firstName.length > 0 && lastName.length > 0 && matches.length === 0}
   on:close={() => {

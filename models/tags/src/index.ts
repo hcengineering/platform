@@ -104,4 +104,24 @@ export function createModel (builder: Builder): void {
   builder.mixin(tags.class.TagReference, core.class.Class, view.mixin.AttributeFilter, {
     component: tags.component.TagsFilter
   })
+
+  builder.createDoc(
+    view.class.FilterMode,
+    core.space.Model,
+    {
+      label: view.string.FilterIsEither,
+      result: tags.function.FilterTagsInResult
+    },
+    tags.ids.FilterTagsIn
+  )
+
+  builder.createDoc(
+    view.class.FilterMode,
+    core.space.Model,
+    {
+      label: view.string.FilterIsNot,
+      result: tags.function.FilterTagsNinResult
+    },
+    tags.ids.FilterTagsNin
+  )
 }

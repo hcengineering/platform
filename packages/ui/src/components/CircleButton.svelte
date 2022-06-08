@@ -22,9 +22,11 @@
   export let transparent: boolean = false
   export let selected: boolean = false
   export let primary: boolean = false
+  export let id: string | undefined = undefined
 </script>
 
 <div
+  {id}
   class="flex-center icon-button icon-{size}"
   class:selected
   class:transparent

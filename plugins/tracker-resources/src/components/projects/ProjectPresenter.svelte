@@ -15,12 +15,20 @@
 <script lang="ts">
   import { WithLookup } from '@anticrm/core'
   import { Project } from '@anticrm/tracker'
+  import { getCurrentLocation, navigate } from '@anticrm/ui'
 
   export let value: WithLookup<Project>
+  function navigateToProject () {
+    const loc = getCurrentLocation()
+    loc.path[2] = 'project'
+    loc.path[3] = value._id
+    loc.path.length = 4
+    navigate(loc)
+  }
 </script>
 
 {#if value}
-  <div class="flex-presenter projectPresenterRoot">
+  <div class="flex-presenter projectPresenterRoot" on:click={navigateToProject}>
     <span title={value.label} class="projectLabel">{value.label}</span>
   </div>
 {/if}

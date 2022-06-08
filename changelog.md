@@ -1,6 +1,26 @@
 # Changelog
 
-## 0.6.23 (upcoming)
+## 0.6.25 (upcoming)
+
+HR:
+- Rename Candidate to Talent
+
+## 0.6.24
+
+Platform:
+
+- Firefox Login
+- Save last filter for page
+- Project issue list view
+- Performance optimizations
+- Organization support Members
+
+Tracker:
+
+- Subissues improvements
+- Tracker layout and colors update
+
+## 0.6.23
 
 Platform:
 
@@ -10,6 +30,8 @@ Platform:
 - Fix skills/labels selection and show real usage counter
 - Fix skills/labels activity
 - Project selector in issue list
+- Save last filter for page
+- Project issue list view
 
 HR:
 

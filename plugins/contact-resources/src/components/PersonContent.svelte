@@ -17,10 +17,10 @@
   import { Hierarchy } from '@anticrm/core'
   import { IntlString } from '@anticrm/platform'
   import { Avatar } from '@anticrm/presentation'
-  import { getPanelURI, Label } from '@anticrm/ui'
+  import { getPanelURI, Label, LabelAndProps, tooltip } from '@anticrm/ui'
   import view from '@anticrm/view'
 
-  export let value: Person | undefined
+  export let value: Person | undefined | null
   export let inline: boolean = false
   export let isInteractive = true
   export let shouldShowAvatar: boolean = true
@@ -29,11 +29,12 @@
   export let defaultName: IntlString | undefined = undefined
   export let avatarSize: 'inline' | 'tiny' | 'x-small' | 'small' | 'medium' | 'large' | 'x-large' = 'x-small'
   export let onEdit: ((event: MouseEvent) => void) | undefined = undefined
+  export let showTooltip: LabelAndProps | undefined = undefined
 
   $: element = getElement(value, onEdit, shouldShowPlaceholder, isInteractive)
 
   const getElement = (
-    person: Person | undefined,
+    person: Person | undefined | null,
     onEdit: Function | undefined,
     shouldShowEmpty: boolean,
     isInteractive: boolean
@@ -56,6 +57,7 @@
 
 <svelte:element
   this={element}
+  use:tooltip={showTooltip}
   class="contentPresenter"
   class:inline-presenter={inline}
   class:mContentPresenterNotInteractive={!isInteractive}
@@ -65,7 +67,7 @@
     : `#${getPanelURI(view.component.EditDoc, value._id, Hierarchy.mixinOrClass(value), 'content')}`}
 >
   {#if shouldShowAvatar}
-    <div class="eContentPresenterIcon">
+    <div class="eContentPresenterIcon" class:mr-1={shouldShowName}>
       <Avatar size={avatarSize} avatar={value?.avatar} />
     </div>
   {/if}
@@ -100,7 +102,6 @@
       }
     }
     .eContentPresenterIcon {
-      margin-right: 0.25rem;
       color: var(--theme-content-dark-color);
     }
     .eContentPresenterLabel {

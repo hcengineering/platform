@@ -61,7 +61,9 @@ export async function getObjectPresenter (
     mixinClazz = hierarchy.getClass(mixinClazz.extends)
   }
   if (presenterMixin.presenter === undefined) {
-    throw new Error('object presenter not found for ' + JSON.stringify(preserveKey))
+    throw new Error(
+      `object presenter not found for class=${_class}, mixin=${mixin}, preserve key ${JSON.stringify(preserveKey)}`
+    )
   }
   const presenter = await getResource(presenterMixin.presenter)
   const key = preserveKey.sortingKey ?? preserveKey.key
@@ -73,7 +75,8 @@ export async function getObjectPresenter (
     label: preserveKey.label ?? clazz.label,
     presenter,
     props: preserveKey.props,
-    sortingKey
+    sortingKey,
+    collectionAttr: isCollectionAttr
   }
 }
 
@@ -100,9 +103,8 @@ async function getAttributePresenter (
   const hierarchy = client.getHierarchy()
   const attribute = hierarchy.getAttribute(_class, key)
   let attrClass = getAttributePresenterClass(attribute)
-  const mixin = hierarchy.isDerived(attribute.type._class, core.class.Collection)
-    ? view.mixin.CollectionPresenter
-    : view.mixin.AttributePresenter
+  const isCollectionAttr = hierarchy.isDerived(attribute.type._class, core.class.Collection)
+  const mixin = isCollectionAttr ? view.mixin.CollectionPresenter : view.mixin.AttributePresenter
   const clazz = hierarchy.getClass(attrClass)
   let presenterMixin = hierarchy.as(clazz, mixin)
   let parent = clazz.extends
@@ -127,7 +129,8 @@ async function getAttributePresenter (
     presenter,
     props: {},
     icon: presenterMixin.icon,
-    attribute
+    attribute,
+    collectionAttr: isCollectionAttr
   }
 }
 
@@ -147,7 +150,8 @@ export async function getPresenter<T extends Doc> (
       _class,
       label: label as IntlString,
       presenter: await getResource(presenter),
-      props: key.props
+      props: key.props,
+      collectionAttr: isCollectionAttr
     }
   }
   if (key.key.length === 0) {
@@ -231,12 +235,13 @@ export async function buildModel (options: BuildModelOptions): Promise<Attribute
           presenter: ErrorPresenter,
           label: stringKey as IntlString,
           _class: core.class.TypeString,
-          props: { error: err }
+          props: { error: err },
+          collectionAttr: false
         }
         return errorPresenter
       }
     })
-  return (await Promise.all(model)).filter((a) => a !== undefined) as AttributeModel[]
+  return (await (await Promise.all(model)).filter((a) => a !== undefined)) as AttributeModel[]
 }
 
 export async function deleteObject (client: TxOperations, object: Doc): Promise<void> {

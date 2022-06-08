@@ -15,10 +15,9 @@
 <script lang="ts">
   import { formatName, Person } from '@anticrm/contact'
   import { IntlString } from '@anticrm/platform'
-  import { Tooltip } from '@anticrm/ui'
   import PersonContent from './PersonContent.svelte'
 
-  export let value: Person
+  export let value: Person | null | undefined
   export let inline = false
   export let isInteractive = true
   export let shouldShowAvatar = true
@@ -31,34 +30,21 @@
 </script>
 
 {#if value || shouldShowPlaceholder}
-  {#if tooltipLabels}
-    <Tooltip
-      label={value ? tooltipLabels.personLabel : tooltipLabels.placeholderLabel}
-      props={{ value: formatName(value?.name) }}
-    >
-      <PersonContent
-        {value}
-        {inline}
-        {onEdit}
-        {avatarSize}
-        {defaultName}
-        {isInteractive}
-        {shouldShowAvatar}
-        {shouldShowName}
-        {shouldShowPlaceholder}
-      />
-    </Tooltip>
-  {:else}
-    <PersonContent
-      {value}
-      {inline}
-      {onEdit}
-      {avatarSize}
-      {defaultName}
-      {isInteractive}
-      {shouldShowAvatar}
-      {shouldShowName}
-      {shouldShowPlaceholder}
-    />
-  {/if}
+  <PersonContent
+    showTooltip={tooltipLabels
+      ? {
+          label: value ? tooltipLabels.personLabel : tooltipLabels.placeholderLabel,
+          props: value ? { value: formatName(value.name) } : {}
+        }
+      : undefined}
+    {value}
+    {inline}
+    {onEdit}
+    {avatarSize}
+    {defaultName}
+    {isInteractive}
+    {shouldShowAvatar}
+    {shouldShowName}
+    {shouldShowPlaceholder}
+  />
 {/if}

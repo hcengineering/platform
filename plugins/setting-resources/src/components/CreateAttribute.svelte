@@ -75,6 +75,11 @@
       is = editor.editor
     }
   }
+  const handleSelection = (e: { detail: Ref<Class<Type<any>>> }) => selectType(e.detail)
+  const handleChange = (e: any) => {
+    type = e.detail?.type
+    index = e.detail?.index
+  }
 </script>
 
 <Card
@@ -95,19 +100,13 @@
           {items}
           width="8rem"
           bind:selected={selectedType}
-          on:selected={(e) => selectType(e.detail)}
+          on:selected={handleSelection}
         />
       </div>
     </div>
     {#if is}
       <div class="flex mt-4">
-        <Component
-          {is}
-          on:change={(e) => {
-            type = e.detail?.type
-            index = e.detail?.index
-          }}
-        />
+        <Component {is} on:change={handleChange} />
       </div>
     {/if}
   </div>

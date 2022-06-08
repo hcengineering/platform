@@ -53,7 +53,7 @@ async function createOpinion (object: Doc): Promise<void> {
 
 export async function applicantValidator (applicant: Applicant, client: Client): Promise<Status> {
   if (applicant.attachedTo === undefined) {
-    return new Status(Severity.INFO, recruit.status.CandidateRequired, {})
+    return new Status(Severity.INFO, recruit.status.TalentRequired, {})
   }
   if (applicant.space === undefined) {
     return new Status(Severity.INFO, recruit.status.VacancyRequired, {})
@@ -70,7 +70,7 @@ export async function applicantValidator (applicant: Applicant, client: Client):
 
 export async function reviewValidator (review: Review, client: Client): Promise<Status> {
   if (review.attachedTo === undefined) {
-    return new Status(Severity.INFO, recruit.status.CandidateRequired, {})
+    return new Status(Severity.INFO, recruit.status.TalentRequired, {})
   }
   if (review.space === undefined) {
     return new Status(Severity.INFO, recruit.status.ReviewCategoryRequired, {})

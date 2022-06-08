@@ -138,8 +138,9 @@
     <FilterButton {_class} bind:filters />
   </div>
 {/if}
+{filters.length}
 <FilterBar {_class} query={searchQuery} bind:filters on:change={(e) => (resultQuery = e.detail)} />
-<Scroller padding>
+<Scroller padding={'2.5rem'}>
   <div class="flex-col">
     {#each spaces as space (space._id)}
       {@const icon = classIcon(client, space._class)}

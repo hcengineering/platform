@@ -29,6 +29,7 @@ import type {
   ClassFilters,
   CollectionEditor,
   CollectionPresenter,
+  FilterMode,
   HTMLPresenter,
   IgnoreActions,
   KeyBinding,
@@ -53,7 +54,7 @@ import preference, { TPreference } from '@anticrm/model-preference'
 import view from './plugin'
 
 export { viewOperation } from './migration'
-export { ViewAction }
+export { ViewAction, Viewlet }
 
 export function createAction<T extends Doc = Doc, P = Record<string, any>> (
   builder: Builder,
@@ -80,6 +81,12 @@ export function classPresenter (
       popup
     })
   }
+}
+
+@Model(view.class.FilterMode, core.class.Doc, DOMAIN_MODEL)
+export class TFilterMode extends TDoc implements FilterMode {
+  label!: IntlString
+  result!: Resource<(values: any[], onUpdate: () => void) => Promise<any>>
 }
 
 @Mixin(view.mixin.ClassFilters, core.class.Class)
@@ -245,6 +252,7 @@ export const actionTemplates = template({
 
 export function createModel (builder: Builder): void {
   builder.createModel(
+    TFilterMode,
     TClassFilters,
     TAttributeFilter,
     TAttributeEditor,
@@ -509,6 +517,66 @@ export function createModel (builder: Builder): void {
   builder.mixin(core.class.TypeTimestamp, core.class.Class, view.mixin.AttributeFilter, {
     component: view.component.TimestampFilter
   })
+
+  builder.createDoc(
+    view.class.FilterMode,
+    core.space.Model,
+    {
+      label: view.string.FilterIsEither,
+      result: view.function.FilterValueInResult
+    },
+    view.ids.FilterValueIn
+  )
+
+  builder.createDoc(
+    view.class.FilterMode,
+    core.space.Model,
+    {
+      label: view.string.FilterIsNot,
+      result: view.function.FilterValueNinResult
+    },
+    view.ids.FilterValueNin
+  )
+
+  builder.createDoc(
+    view.class.FilterMode,
+    core.space.Model,
+    {
+      label: view.string.FilterIsEither,
+      result: view.function.FilterObjectInResult
+    },
+    view.ids.FilterObjectIn
+  )
+
+  builder.createDoc(
+    view.class.FilterMode,
+    core.space.Model,
+    {
+      label: view.string.FilterIsNot,
+      result: view.function.FilterObjectNinResult
+    },
+    view.ids.FilterObjectNin
+  )
+
+  builder.createDoc(
+    view.class.FilterMode,
+    core.space.Model,
+    {
+      label: view.string.Before,
+      result: view.function.FilterBeforeResult
+    },
+    view.ids.FilterBefore
+  )
+
+  builder.createDoc(
+    view.class.FilterMode,
+    core.space.Model,
+    {
+      label: view.string.After,
+      result: view.function.FilterAfterResult
+    },
+    view.ids.FilterAfter
+  )
 
   classPresenter(builder, core.class.EnumOf, view.component.StringPresenter, view.component.EnumEditor)
 }

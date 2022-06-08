@@ -10,7 +10,7 @@
    *
    * See https://rushjs.io/pages/maintainer/build_cache/ for details about this experimental feature.
    */
-  "buildCacheEnabled": false,
+  "buildCacheEnabled": true,
 
   /**
    * (Required) Choose where project build outputs will be cached.
@@ -23,7 +23,7 @@
    * Setting this property overrides the cache entry ID.  If this property is set, it must contain
    * a [hash] token. It may also contain a [projectName] or a [projectName:normalize] token.
    */
-  // "cacheEntryNamePattern": "[projectName:normalize]-[hash]"
+  "cacheEntryNamePattern": "[projectName:normalize]-[hash]",
 
   /**
    * Use this configuration with "cacheProvider"="azure-blob-storage"

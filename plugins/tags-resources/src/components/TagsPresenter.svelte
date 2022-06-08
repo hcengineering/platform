@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Class, Doc, Ref } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
-  import { Icon, Tooltip } from '@anticrm/ui'
+  import { Icon, tooltip } from '@anticrm/ui'
   import { getCollectionCounter } from '@anticrm/view-resources'
   import tagsId from '../plugin'
   import TagsPresentationPopup from './TagsPresentationPopup.svelte'
@@ -31,9 +31,14 @@
 </script>
 
 {#if tags > 0}
-  <Tooltip label={attr.label} component={TagsPresentationPopup} props={{ object: value, _class, key: { key, attr } }}>
-    <div class="sm-tool-icon">
-      <span class="icon"><Icon icon={tagsId.icon.Tags} size={'small'} /></span>&nbsp;{tags}
-    </div>
-  </Tooltip>
+  <div
+    use:tooltip={{
+      label: attr.label,
+      component: TagsPresentationPopup,
+      props: { object: value, _class, key: { key, attr } }
+    }}
+    class="sm-tool-icon"
+  >
+    <span class="icon"><Icon icon={tagsId.icon.Tags} size={'small'} /></span>&nbsp;{tags}
+  </div>
 {/if}

@@ -14,23 +14,25 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Contact } from '@anticrm/contact'
+  import contact, { Contact, Organization } from '@anticrm/contact'
   import { getClient } from '@anticrm/presentation'
 
   import OrganizationPresenter from './OrganizationPresenter.svelte'
   import PersonPresenter from './PersonPresenter.svelte'
 
   export let value: Contact
+  export let isInteractive = true
 
   function isPerson (value: Contact): boolean {
     const client = getClient()
     const hierarchy = client.getHierarchy()
     return hierarchy.isDerived(value._class, contact.class.Person)
   }
+  const toOrg = (contact: Contact) => contact as Organization
 </script>
 
 {#if isPerson(value)}
-  <PersonPresenter {value} />
+  <PersonPresenter {isInteractive} {value} />
 {:else}
-  <OrganizationPresenter {value} />
+  <OrganizationPresenter value={toOrg(value)} />
 {/if}

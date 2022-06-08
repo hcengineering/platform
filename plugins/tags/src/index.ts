@@ -18,6 +18,7 @@ import type { Asset, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import { AnyComponent } from '@anticrm/ui'
 import { writable } from 'svelte/store'
+import { FilterMode } from '@anticrm/view'
 
 /**
  * @public
@@ -87,6 +88,10 @@ const tagsPlugin = plugin(tagsId, {
   },
   category: {
     NoCategory: '' as Ref<TagCategory>
+  },
+  ids: {
+    FilterTagsIn: '' as Ref<FilterMode>,
+    FilterTagsNin: '' as Ref<FilterMode>
   }
 })
 

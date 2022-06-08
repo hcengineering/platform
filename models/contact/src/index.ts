@@ -19,6 +19,7 @@ import type {
   Contact,
   Employee,
   EmployeeAccount,
+  Member,
   Organization,
   Organizations,
   Person,
@@ -35,8 +36,8 @@ import presentation from '@anticrm/model-presentation'
 import view, { actionTemplates, createAction } from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
 import type { Asset, IntlString } from '@anticrm/platform'
-import contact from './plugin'
 import setting from '@anticrm/setting'
+import contact from './plugin'
 
 export const DOMAIN_CONTACT = 'contact' as Domain
 export const DOMAIN_CHANNEL = 'channel' as Domain
@@ -94,9 +95,19 @@ export class TChannel extends TAttachedDoc implements Channel {
 @UX(contact.string.Person, contact.icon.Person, undefined, 'name')
 export class TPerson extends TContact implements Person {}
 
+@Model(contact.class.Member, core.class.AttachedDoc, DOMAIN_CONTACT)
+@UX(contact.string.Member, contact.icon.Person, undefined, 'name')
+export class TMember extends TAttachedDoc implements Member {
+  @Prop(TypeRef(contact.class.Contact), contact.string.Contact)
+  contact!: Ref<Contact>
+}
+
 @Model(contact.class.Organization, contact.class.Contact)
 @UX(contact.string.Organization, contact.icon.Company, undefined, 'name')
-export class TOrganization extends TContact implements Organization {}
+export class TOrganization extends TContact implements Organization {
+  @Prop(Collection(contact.class.Member), contact.string.Members)
+  members!: number
+}
 
 @Model(contact.class.Status, core.class.AttachedDoc, DOMAIN_CONTACT)
 @UX(contact.string.Status)
@@ -139,7 +150,8 @@ export function createModel (builder: Builder): void {
     TEmployee,
     TEmployeeAccount,
     TChannel,
-    TStatus
+    TStatus,
+    TMember
   )
 
   builder.mixin(contact.class.Person, core.class.Class, view.mixin.ObjectFactory, {
@@ -162,20 +174,41 @@ export function createModel (builder: Builder): void {
     contact.app.Contacts
   )
 
-  builder.createDoc(view.class.Viewlet, core.space.Model, {
-    attachTo: contact.class.Contact,
-    descriptor: view.viewlet.Table,
-    config: [
-      '',
-      '$lookup._class',
-      'city',
-      'attachments',
-      'modifiedOn',
-      { key: '', presenter: view.component.RolePresenter, label: view.string.Role },
-      '$lookup.channels'
-    ],
-    hiddenKeys: ['name']
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: contact.class.Member,
+      descriptor: view.viewlet.Table,
+      config: ['', '$lookup.contact.$lookup.channels', 'modifiedOn'],
+      hiddenKeys: ['name', 'contact']
+    },
+    contact.viewlet.TableMember
+  )
+
+  builder.mixin(contact.class.Member, core.class.Class, view.mixin.ObjectEditor, {
+    editor: contact.component.EditMember
   })
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: contact.class.Contact,
+      descriptor: view.viewlet.Table,
+      config: [
+        '',
+        '$lookup._class',
+        'city',
+        'attachments',
+        'modifiedOn',
+        { key: '', presenter: view.component.RolePresenter, label: view.string.Role },
+        '$lookup.channels'
+      ],
+      hiddenKeys: ['name']
+    },
+    contact.viewlet.TableContact
+  )
 
   builder.mixin(contact.class.Person, core.class.Class, view.mixin.ObjectEditor, {
     editor: contact.component.EditPerson
@@ -193,12 +226,23 @@ export function createModel (builder: Builder): void {
     editor: contact.component.OrganizationEditor
   })
 
+  builder.mixin(contact.class.Member, core.class.Class, view.mixin.CollectionEditor, {
+    editor: contact.component.Members
+  })
+  builder.mixin(contact.class.Member, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: contact.component.MemberPresenter
+  })
+
   builder.mixin(contact.class.Person, core.class.Class, view.mixin.AttributeEditor, {
     editor: contact.component.PersonEditor
   })
 
   builder.mixin(contact.class.Employee, core.class.Class, view.mixin.AttributeEditor, {
     editor: contact.component.PersonEditor
+  })
+
+  builder.mixin(contact.class.Channel, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: contact.component.ChannelsPresenter
   })
 
   builder.mixin(contact.class.Channel, core.class.Class, view.mixin.CollectionPresenter, {
@@ -300,6 +344,8 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(contact.class.Contact, core.class.Class, setting.mixin.Editable, {})
+
+  builder.mixin(contact.class.Member, core.class.Class, setting.mixin.Editable, {})
 
   builder.createDoc(
     presentation.class.ObjectSearchCategory,

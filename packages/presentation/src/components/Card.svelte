@@ -36,10 +36,17 @@
         <slot name="header" />
         <span class="antiCard-header__divider">›</span>
       {/if}
-      <span class="antiCard-header__title"><Label {label} params={labelProps ?? {}} /></span>
+      <span class="antiCard-header__title">
+        {#if $$slots.title}
+          <slot name="title" />
+        {:else}
+          <Label {label} params={labelProps ?? {}} />
+        {/if}
+      </span>
     </div>
     <div class="buttons-group small-gap">
       <Button
+        id="card-close"
         focusIndex={10002}
         icon={IconClose}
         kind={'transparent'}

@@ -14,8 +14,9 @@
 -->
 <script lang="ts">
   import { Class, Doc, DocumentQuery, Ref } from '@anticrm/core'
+  import { getResource } from '@anticrm/platform'
   import { getClient } from '@anticrm/presentation'
-  import { Button, eventToHTMLElement, IconAdd, showPopup } from '@anticrm/ui'
+  import { Button, eventToHTMLElement, getCurrentLocation, IconAdd, locationToUrl, showPopup } from '@anticrm/ui'
   import { Filter } from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
   import view from '../../plugin'
@@ -59,19 +60,61 @@
     )
   }
 
+  $: load(_class)
+
   function remove (i: number) {
     filters[i]?.onRemove?.()
     filters.splice(i, 1)
     filters = filters
   }
 
+  $: saveFilters(filters)
+
+  function saveFilters (filters: Filter[]) {
+    const loc = getCurrentLocation()
+    loc.fragment = undefined
+    loc.query = undefined
+    const key = 'filter' + locationToUrl(loc)
+    if (filters.length > 0) {
+      localStorage.setItem(key, JSON.stringify(filters))
+    } else {
+      localStorage.removeItem(key)
+    }
+  }
+
+  let loading = false
+
+  function load (_class: Ref<Class<Doc>>) {
+    loading = true
+    const oldFilters = filters
+    const loc = getCurrentLocation()
+    loc.fragment = undefined
+    loc.query = undefined
+    const key = 'filter' + locationToUrl(loc)
+    const saved = localStorage.getItem(key)
+    if (saved !== null) {
+      filters = JSON.parse(saved)
+    } else {
+      filters = []
+    }
+    loading = false
+    oldFilters.forEach((p) => p.onRemove?.())
+  }
+
   async function makeQuery (query: DocumentQuery<Doc>, filters: Filter[]): Promise<void> {
     const newQuery = hierarchy.clone(query)
     for (let i = 0; i < filters.length; i++) {
       const filter = filters[i]
-      const newValue = await filter.mode.result(filter.value, () => {
-        makeQuery(query, filters)
-      })
+      const mode = await client.findOne(view.class.FilterMode, { _id: filter.mode })
+      if (mode === undefined) continue
+      const result = await getResource(mode.result)
+      const newValue = await result(
+        filter.value,
+        () => {
+          makeQuery(query, filters)
+        },
+        filter.index
+      )
       if (newQuery[filter.key.key] === undefined) {
         newQuery[filter.key.key] = newValue
       } else {
@@ -126,18 +169,21 @@
 {#if visible && filters && filters.length > 0}
   <div class="filterbar-container">
     <div class="filters">
-      {#each filters as filter, i}
-        <FilterSection
-          {_class}
-          {filter}
-          on:change={() => {
-            makeQuery(query, filters)
-          }}
-          on:remove={() => {
-            remove(i)
-          }}
-        />
-      {/each}
+      {#if !loading}
+        {#each filters as filter, i}
+          <FilterSection
+            {_class}
+            {filter}
+            on:change={() => {
+              makeQuery(query, filters)
+              saveFilters(filters)
+            }}
+            on:remove={() => {
+              remove(i)
+            }}
+          />
+        {/each}
+      {/if}
       <div class="add-filter">
         <Button size={'small'} icon={IconAdd} kind={'transparent'} on:click={add} />
       </div>

@@ -98,7 +98,7 @@
           ...actions.map((a) => ({
             label: a.label,
             icon: a.icon,
-            action: async (ctx: any, evt: Event) => {
+            action: async (_: any, evt: Event) => {
               const impl = await getResource(a.action)
               await impl(tx.doc as Doc, evt)
             }
@@ -249,7 +249,7 @@
               {/await}
             {/each}
           {:else if viewlet && viewlet.display === 'inline' && viewlet.component}
-            {#if tx.collectionAttribute !== undefined}
+            {#if tx.collectionAttribute !== undefined && (tx.txDocIds?.size ?? 0) > 1}
               <ShowMore ignore={edit}>
                 <div class="flex-row-center flex-grow flex-wrap clear-mins">
                   <TxViewTx {tx} {onCancelEdit} {edit} {viewlet} />
@@ -270,7 +270,7 @@
       {#if viewlet && viewlet.component && viewlet.display !== 'inline'}
         <div class={viewlet.display}>
           <ShowMore ignore={edit}>
-            {#if tx.collectionAttribute !== undefined}
+            {#if tx.collectionAttribute !== undefined && (tx.txDocIds?.size ?? 0) > 1}
               <div class="flex-row-center flex-grow flex-wrap clear-mins">
                 <TxViewTx {tx} {onCancelEdit} {edit} {viewlet} />
               </div>

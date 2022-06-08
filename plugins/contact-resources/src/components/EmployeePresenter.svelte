@@ -5,8 +5,10 @@
   import { showPopup } from '@anticrm/ui'
   import EmployeePreviewPopup from './EmployeePreviewPopup.svelte'
   import { WithLookup } from '@anticrm/core'
+  import { IntlString } from '@anticrm/platform'
 
-  export let value: WithLookup<Employee>
+  export let value: WithLookup<Employee> | null | undefined
+  export let tooltipLabels: { personLabel: IntlString; placeholderLabel?: IntlString } | undefined = undefined
   export let shouldShowAvatar: boolean = true
   export let shouldShowName: boolean = true
   export let onEmployeeEdit: ((event: MouseEvent) => void) | undefined = undefined
@@ -15,13 +17,15 @@
   let container: HTMLElement
 
   const onEdit = () => {
-    showPopup(
-      EmployeePreviewPopup,
-      {
-        employeeId: value._id
-      },
-      container
-    )
+    if (value) {
+      showPopup(
+        EmployeePreviewPopup,
+        {
+          employeeId: value._id
+        },
+        container
+      )
+    }
   }
 
   $: handlePersonEdit = onEmployeeEdit ?? onEdit
@@ -29,9 +33,17 @@
 
 <div bind:this={container} class="flex-row-center clear-mins">
   <div class="over-underline" class:pr-2={shouldShowName}>
-    <PersonPresenter {value} onEdit={handlePersonEdit} {shouldShowAvatar} {shouldShowName} {avatarSize} />
+    <PersonPresenter
+      {value}
+      {tooltipLabels}
+      onEdit={handlePersonEdit}
+      {shouldShowAvatar}
+      {shouldShowName}
+      shouldShowPlaceholder={true}
+      {avatarSize}
+    />
   </div>
-  {#if value.$lookup?.statuses?.length}
+  {#if value?.$lookup?.statuses?.length}
     <div class="status content-color">
       <EmployeeStatusPresenter employee={value} />
     </div>

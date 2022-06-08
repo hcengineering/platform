@@ -57,7 +57,7 @@
     <div class="card"><VacancyCard {vacancy} /></div>
   </div>
   <div class="mt-6">
-    <Reviews objectId={candidate._id} reviews={candidate.reviews ?? 0} label={recruit.string.CandidateReviews} />
+    <Reviews objectId={candidate._id} reviews={candidate.reviews ?? 0} label={recruit.string.TalentReviews} />
   </div>
 {/if}
 

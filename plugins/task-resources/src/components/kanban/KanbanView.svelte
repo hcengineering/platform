@@ -92,6 +92,16 @@
       }
     )
   }
+  const onContent = (evt: any) => {
+    listProvider.update(evt.detail)
+  }
+  const onObjFocus = (evt: any) => {
+    listProvider.updateFocus(evt.detail)
+  }
+  const handleCheck = (evt: any) => {
+    listProvider.updateSelection(evt.detail.docs, evt.detail.value)
+  }
+  const onContextMenu = (evt: any) => showMenu(evt.detail.evt, evt.detail.objects)
 </script>
 
 {#await cardPresenter then presenter}
@@ -111,17 +121,11 @@
     {states}
     fieldName={'state'}
     rankFieldName={'rank'}
-    on:content={(evt) => {
-      listProvider.update(evt.detail)
-    }}
-    on:obj-focus={(evt) => {
-      listProvider.updateFocus(evt.detail)
-    }}
+    on:content={onContent}
+    on:obj-focus={onObjFocus}
     checked={$selectionStore ?? []}
-    on:check={(evt) => {
-      listProvider.updateSelection(evt.detail.docs, evt.detail.value)
-    }}
-    on:contextmenu={(evt) => showMenu(evt.detail.evt, evt.detail.objects)}
+    on:check={handleCheck}
+    on:contextmenu={onContextMenu}
     selection={listProvider.current($focusStore)}
   >
     <svelte:fragment slot="card" let:object let:dragged>

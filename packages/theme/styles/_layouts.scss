@@ -86,7 +86,7 @@ table {
 
 /* Common */
 * {
-  --modal-padding: 1.5rem;
+  --modal-padding: 1rem;
 }
 
 p { user-select: text; }
@@ -221,7 +221,7 @@ input.search {
     min-width: 0;
     font-weight: 500;
     text-align: left;
-    color: var(--theme-content-accent-color);
+    color: var(--accent-color);
 
     overflow: hidden;
     visibility: visible;
@@ -258,6 +258,16 @@ input.search {
   display: inline-flex;
   align-items: baseline;
   .icon { transform: translateY(.2rem); }
+}
+// Presenters on the card
+.card-container .flex-presenter,
+.card-container .inline-presenter {
+  .icon { display: none; }
+  .label {
+    font-size: .75rem;
+    color: var(--dark-color);
+  }
+  &:hover .label { color: var(--content-color); }
 }
 
 .buttons-group {
@@ -348,6 +358,7 @@ input.search {
 .mt-0-5 { margin-top: .125rem; }
 .mt-1 { margin-top: .25rem; }
 .mt-2 { margin-top: .5rem; }
+.mt-10px { margin-top: .625rem; }
 .mt-3 { margin-top: .75rem; }
 .mt-4 { margin-top: 1rem; }
 .mt-5 { margin-top: 1.25rem; }
@@ -475,6 +486,10 @@ input.search {
 .square-36 { width: 2.25rem; height: 2.25rem; }
 
 /* --------- */
+.svg-inline {
+  width: 1em;
+  height: 1em;
+}
 .svg-x-small {
   width: .857em;
   height: .857em;
