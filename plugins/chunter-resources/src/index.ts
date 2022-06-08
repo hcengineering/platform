@@ -165,10 +165,6 @@ export async function DeleteMessageFromSaved (message: ChunterMessage): Promise<
 
 export const userSearch = writable('')
 
-export function messageBrowserVisible (spaces: Space[]): boolean {
-  return false
-}
-
 export function chunterBrowserVisible (spaces: Space[]): boolean {
   return false
 }
@@ -194,7 +190,6 @@ export default async (): Promise<Resources> => ({
   },
   function: {
     GetDmName: getDmName,
-    MessageBrowserVisible: messageBrowserVisible,
     ChunterBrowserVisible: chunterBrowserVisible
   },
   activity: {

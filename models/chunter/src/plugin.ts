@@ -87,7 +87,6 @@ export default mergeIds(chunterId, chunter, {
     Random: '' as Ref<Channel>
   },
   function: {
-    MessageBrowserVisible: '' as Resource<(spaces: Space[]) => boolean>,
     ChunterBrowserVisible: '' as Resource<(spaces: Space[]) => boolean>
   }
 })

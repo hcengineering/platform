@@ -28,13 +28,15 @@
   $: updateEmployees(resultQuery)
 </script>
 
-<div class="mt-4 pt-4 container">
+<div class="container">
   <Scroller>
-    {#each employees as employee}
-      <div class="fs-title item">
-        <EmployeePresenter value={employee} avatarSize="medium" />
-      </div>
-    {/each}
+    <div>
+      {#each employees as employee}
+        <div class="fs-title item">
+          <EmployeePresenter value={employee} avatarSize="medium" />
+        </div>
+      {/each}
+    </div>
   </Scroller>
 </div>
 
@@ -44,7 +46,6 @@
   }
   .item {
     color: var(--caption-color);
-    cursor: pointer;
     padding: 0.5rem 2rem;
 
     &:hover,

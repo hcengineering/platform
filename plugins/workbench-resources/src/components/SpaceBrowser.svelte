@@ -46,6 +46,7 @@
   export let createItemDialog: AnyComponent | undefined
   export let createItemLabel: IntlString = presentation.string.Create
   export let withHeader: boolean = true
+  export let withFilterButton: boolean = true
 
   const me = getCurrentAccount()._id
   const client = getClient()
@@ -54,7 +55,7 @@
   const sort: SortingQuery<Space> = {
     name: SortingOrder.Ascending
   }
-  let filters: Filter[] = []
+  export let filters: Filter[] = []
   let searchQuery: DocumentQuery<Space>
   let resultQuery: DocumentQuery<Space>
 
@@ -132,9 +133,11 @@
     />
   </div>
 {/if}
-<div class="ml-10 mt-4 mb-4">
-  <FilterButton {_class} bind:filters />
-</div>
+{#if withFilterButton}
+  <div class="ml-10 mt-4 mb-4">
+    <FilterButton {_class} bind:filters />
+  </div>
+{/if}
 <FilterBar {_class} query={searchQuery} bind:filters on:change={(e) => (resultQuery = e.detail)} />
 <Scroller padding>
   <div class="flex-col">
@@ -172,9 +175,11 @@
         </div>
       </div>
     {/each}
-    <div class="flex-center mt-10">
-      <Button size={'x-large'} kind={'primary'} label={createItemLabel} on:click={(ev) => showCreateDialog(ev)} />
-    </div>
+    {#if createItemDialog}
+      <div class="flex-center mt-10">
+        <Button size={'x-large'} kind={'primary'} label={createItemLabel} on:click={(ev) => showCreateDialog(ev)} />
+      </div>
+    {/if}
   </div>
 </Scroller>
 

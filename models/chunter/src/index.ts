@@ -351,12 +351,6 @@ export function createModel (builder: Builder): void {
             }
           },
           {
-            id: 'messagesBrowser',
-            label: chunter.string.MessagesBrowser,
-            component: chunter.component.MessagesBrowser,
-            visibleIf: chunter.function.MessageBrowserVisible
-          },
-          {
             id: 'chunterBrowser',
             label: chunter.string.ChunterBrowser,
             icon: workbench.icon.Search,

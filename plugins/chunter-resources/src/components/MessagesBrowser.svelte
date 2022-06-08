@@ -6,7 +6,7 @@
   import { createQuery, getClient } from '@anticrm/presentation'
   import { Label, Scroller, SearchEdit } from '@anticrm/ui'
   import type { Filter } from '@anticrm/view'
-  import { FilterBar, FilterButton } from '@anticrm/view-resources'
+  import { FilterBar } from '@anticrm/view-resources'
   import MessageComponent from './Message.svelte'
   import plugin from '../plugin'
   import { openMessageFromSpecial } from '../utils'
@@ -17,7 +17,7 @@
 
   let searchQuery: DocumentQuery<ChunterMessage> = { $search: search }
 
-  let filters: Filter[] = []
+  export let filters: Filter[] = []
 
   function updateSearchQuery (search: string): void {
     searchQuery = { $search: search }
@@ -111,7 +111,6 @@
     />
   </div>
 {/if}
-<div class="ml-10 mt-4 mb-4"><FilterButton {_class} bind:filters /></div>
 <FilterBar {_class} query={searchQuery} bind:filters on:change={(e) => (resultQuery = e.detail)} />
 {#if messages.length > 0}
   <Scroller>
@@ -129,7 +128,7 @@
     {/each}
   </Scroller>
 {:else}
-  <div class="flex-between ml-10 mt-4">
+  <div class="flex-center h-full text-lg">
     <Label label={plugin.string.NoResults} />
   </div>
 {/if}
