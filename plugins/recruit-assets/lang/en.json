@@ -57,15 +57,8 @@
     "ManageVacancyStatuses": "Manage vacancy statuses",
     "EditVacancy": "Edit",
     "FullDescription": "Full description",
-    "CreateReviewCategory": "Create Review category",
-    "ReviewCategoryName": "Review category title*",
-    "ReviewCategoryPlaceholder": "Interview",
-    "ReviewCategory": "Reviews",
-    "ReviewCategoryDescription": "Description",
-    "ThisReviewCategoryIsPrivate": "This category is private",
     "CreateReview": "Schedule an Review",
     "CreateReviewParams": "Schedule {label}",
-    "SelectReviewCategory": "select category",
     "Reviews": "Reviews",
     "Review": "Review",
     "ReviewCreateLabel": "Review",
@@ -76,7 +69,6 @@
     "ReviewShortLabel": "RVE",
     "StartDate": "Start date",
     "DueDate": "Due date",
-    "ReviewCategoryTitle":"Category",
     "Verdict": "Verdict",
     "OpinionSave": "Save",
     "TalentReviews": "All Talent Reviews",
@@ -99,7 +91,6 @@
   },
   "status": {
     "TalentRequired": "Please select talent",
-    "VacancyRequired": "Please select vacancy",
-    "ReviewCategoryRequired": "Please select review category"
+    "VacancyRequired": "Please select vacancy"
   }
 }

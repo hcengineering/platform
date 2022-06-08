@@ -16,10 +16,10 @@
 <script lang="ts">
   import calendar from '@anticrm/calendar'
   import contact, { Contact } from '@anticrm/contact'
-  import { getClient, UserBox, UserBoxList } from '@anticrm/presentation'
+  import { getClient, UserBox } from '@anticrm/presentation'
   import type { Review } from '@anticrm/recruit'
   import { StyledTextBox } from '@anticrm/text-editor'
-  import { Grid, Label, showPanel, StylishEdit, EditBox } from '@anticrm/ui'
+  import { EditBox, Grid, showPanel, StylishEdit } from '@anticrm/ui'
   import view from '@anticrm/view'
   import { createEventDispatcher, onMount } from 'svelte'
   import recruit from '../../plugin'
@@ -82,22 +82,6 @@
       content={object.description}
       on:value={(evt) => {
         client.update(object, { description: evt.detail })
-      }}
-    />
-  </div>
-  <div class="flex-row mb-2">
-    <Label label={calendar.string.Participants} />
-  </div>
-  <div class="mb-4">
-    <UserBoxList
-      _class={contact.class.Employee}
-      items={object.participants}
-      label={calendar.string.Participants}
-      on:open={(evt) => {
-        client.update(object, { $push: { participants: evt.detail._id } })
-      }}
-      on:delete={(evt) => {
-        client.update(object, { $pull: { participants: evt.detail._id } })
       }}
     />
   </div>

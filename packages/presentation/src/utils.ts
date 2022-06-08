@@ -26,6 +26,7 @@ import core, {
   FindOptions,
   FindResult,
   getCurrentAccount,
+  Hierarchy,
   Ref,
   RefTo,
   Tx,
@@ -143,20 +144,28 @@ export async function getBlobURL (blob: Blob): Promise<string> {
   })
 }
 
+export type AttributeCategory = 'attribute' | 'collection' | 'array'
 /**
  * @public
  */
-export function getAttributePresenterClass (attribute: AnyAttribute): Ref<Class<Doc>> {
+export function getAttributePresenterClass (
+  hierarchy: Hierarchy,
+  attribute: AnyAttribute
+): { attrClass: Ref<Class<Doc>>, category: AttributeCategory } {
   let attrClass = attribute.type._class
-  if (attrClass === core.class.RefTo) {
+  let category: AttributeCategory = 'attribute'
+  if (hierarchy.isDerived(attrClass, core.class.RefTo)) {
     attrClass = (attribute.type as RefTo<Doc>).to
+    category = 'attribute'
   }
-  if (attrClass === core.class.Collection) {
+  if (hierarchy.isDerived(attrClass, core.class.Collection)) {
     attrClass = (attribute.type as Collection<AttachedDoc>).of
+    category = 'collection'
   }
-  if (attrClass === core.class.ArrOf) {
+  if (hierarchy.isDerived(attrClass, core.class.ArrOf)) {
     const of = (attribute.type as ArrOf<AttachedDoc>).of
     attrClass = of._class === core.class.RefTo ? (of as RefTo<Doc>).to : of._class
+    category = 'array'
   }
-  return attrClass
+  return { attrClass, category }
 }

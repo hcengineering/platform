@@ -71,14 +71,6 @@
     return (preserveCandidate || candidate === undefined) && title.length === 0
   }
 
-  let spaceLabel: string = ''
-
-  $: client.findOne(recruit.class.ReviewCategory, { _id: doc.space }).then((res) => {
-    if (res !== undefined) {
-      spaceLabel = res.name
-    }
-  })
-
   async function createReview () {
     const sequence = await client.findOne(task.class.Sequence, { attachedTo: recruit.class.Review })
     if (sequence === undefined) {
@@ -144,9 +136,9 @@
 
 <Card
   label={recruit.string.CreateReviewParams}
-  labelProps={{ label: spaceLabel }}
+  labelProps={{ label: '' }}
   okAction={createReview}
-  canSave={status.severity === Severity.OK && title.trim().length > 0}
+  canSave={status.severity === Severity.OK && title.trim().length > 0 && doc.attachedTo !== undefined}
   on:close={() => {
     dispatch('close')
   }}
@@ -171,6 +163,7 @@
         placeholder={recruit.string.Talents}
         kind={'no-border'}
         size={'small'}
+        create={{ component: recruit.component.CreateCandidate, label: recruit.string.CreateTalent }}
       />
     {/if}
     <OrganizationSelector bind:value={company} label={recruit.string.Company} kind={'no-border'} size={'small'} />
@@ -182,13 +175,6 @@
       on:change={updateStart}
     />
     <DateRangePresenter bind:value={dueDate} labelNull={recruit.string.DueDate} withTime editable />
-    <UserBoxList
-      _class={contact.class.Employee}
-      items={doc.participants}
-      label={calendar.string.Participants}
-      on:update={(evt) => {
-        doc.participants = evt.detail
-      }}
-    />
+    <UserBoxList _class={contact.class.Employee} bind:items={doc.participants} label={calendar.string.Participants} />
   </svelte:fragment>
 </Card>

@@ -42,7 +42,6 @@
       _class={recruit.class.Review}
       config={[
         '',
-        { key: '$lookup.space.name', label: recruit.string.ReviewCategoryTitle },
         'verdict',
         {
           key: '',

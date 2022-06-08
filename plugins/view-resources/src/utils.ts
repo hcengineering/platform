@@ -102,15 +102,15 @@ async function getAttributePresenter (
 ): Promise<AttributeModel> {
   const hierarchy = client.getHierarchy()
   const attribute = hierarchy.getAttribute(_class, key)
-  let attrClass = getAttributePresenterClass(attribute)
-  const isCollectionAttr = hierarchy.isDerived(attribute.type._class, core.class.Collection)
+  const presenterClass = getAttributePresenterClass(hierarchy, attribute)
+  const isCollectionAttr = presenterClass.category === 'collection'
   const mixin = isCollectionAttr ? view.mixin.CollectionPresenter : view.mixin.AttributePresenter
-  const clazz = hierarchy.getClass(attrClass)
+  const clazz = hierarchy.getClass(presenterClass.attrClass)
   let presenterMixin = hierarchy.as(clazz, mixin)
   let parent = clazz.extends
   while (presenterMixin.presenter === undefined && parent !== undefined) {
     const pclazz = hierarchy.getClass(parent)
-    attrClass = parent
+    presenterClass.attrClass = parent
     presenterMixin = hierarchy.as(pclazz, mixin)
     parent = pclazz.extends
   }
@@ -124,7 +124,7 @@ async function getAttributePresenter (
   return {
     key: preserveKey.key,
     sortingKey,
-    _class: attrClass,
+    _class: presenterClass.attrClass,
     label: preserveKey.label ?? attribute.shortLabel ?? attribute.label,
     presenter,
     props: {},

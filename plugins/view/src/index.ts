@@ -97,6 +97,13 @@ export interface CollectionEditor extends Class<Doc> {
 /**
  * @public
  */
+export interface ArrayEditor extends Class<Doc> {
+  editor: AnyComponent
+}
+
+/**
+ * @public
+ */
 export interface CollectionPresenter extends Class<Doc> {
   presenter: AnyComponent
 }
@@ -367,6 +374,7 @@ const view = plugin(viewId, {
     AttributeEditor: '' as Ref<Mixin<AttributeEditor>>,
     CollectionPresenter: '' as Ref<Mixin<CollectionPresenter>>,
     CollectionEditor: '' as Ref<Mixin<CollectionEditor>>,
+    ArrayEditor: '' as Ref<Mixin<ArrayEditor>>,
     AttributePresenter: '' as Ref<Mixin<AttributePresenter>>,
     ObjectEditor: '' as Ref<Mixin<ObjectEditor>>,
     ObjectEditorHeader: '' as Ref<Mixin<ObjectEditorHeader>>,

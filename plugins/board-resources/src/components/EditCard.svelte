@@ -57,17 +57,7 @@
   let checklists: TodoItem[] = []
   const mixins: Mixin<Doc>[] = []
   const allowedCollections = ['labels']
-  const ignoreKeys = [
-    'isArchived',
-    'location',
-    'title',
-    'description',
-    'state',
-    'members',
-    'number',
-    'assignee',
-    'doneState'
-  ]
+  const ignoreKeys = ['isArchived', 'location', 'title', 'description', 'state', 'number', 'assignee', 'doneState']
 
   function change (field: string, value: any) {
     if (object) {

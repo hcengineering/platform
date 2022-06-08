@@ -24,8 +24,7 @@ export default mergeIds(recruitId, recruit, {
   status: {
     ApplicationExists: '' as StatusCode,
     TalentRequired: '' as StatusCode,
-    VacancyRequired: '' as StatusCode,
-    ReviewCategoryRequired: '' as StatusCode
+    VacancyRequired: '' as StatusCode
   },
   string: {
     CreateVacancy: '' as IntlString,
@@ -79,16 +78,8 @@ export default mergeIds(recruitId, recruit, {
 
     Review: '' as IntlString,
     ReviewCreateLabel: '' as IntlString,
-    ReviewCategory: '' as IntlString,
-    CreateReviewCategory: '' as IntlString,
-    ReviewCategoryName: '' as IntlString,
-    ReviewCategoryTitle: '' as IntlString,
-    ReviewCategoryPlaceholder: '' as IntlString,
-    ReviewCategoryDescription: '' as IntlString,
-    ThisReviewCategoryIsPrivate: '' as IntlString,
     CreateReview: '' as IntlString,
     CreateReviewParams: '' as IntlString,
-    SelectReviewCategory: '' as IntlString,
     Reviews: '' as IntlString,
     NoReviewForCandidate: '' as IntlString,
     CreateAnReview: '' as IntlString,
@@ -105,7 +96,8 @@ export default mergeIds(recruitId, recruit, {
     TalentReviews: '' as IntlString,
     AddDescription: '' as IntlString,
     NumberSkills: '' as IntlString,
-    AddDropHere: '' as IntlString
+    AddDropHere: '' as IntlString,
+    TalentSelect: '' as IntlString
   },
   space: {
     CandidatesPublic: '' as Ref<Space>
@@ -119,7 +111,6 @@ export default mergeIds(recruitId, recruit, {
     VacancyCountPresenter: '' as AnyComponent,
     OpinionsPresenter: '' as AnyComponent,
     VacancyModifiedPresenter: '' as AnyComponent,
-    EditReviewCategory: '' as AnyComponent,
     CreateVacancy: '' as AnyComponent,
     CreateCandidate: '' as AnyComponent
   }
