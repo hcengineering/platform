@@ -25,13 +25,14 @@
   export let groupBy: IssuesGrouping | undefined = undefined
   export let orderBy: IssuesOrdering | undefined = undefined
   export let completedIssuesPeriod: IssuesDateModificationPeriod | null = null
+  export let shouldShowSubIssues: boolean | undefined = false
   export let shouldShowEmptyGroups: boolean | undefined = false
 
   const groupByItems = issuesGroupByOptions
   const orderByItems = issuesOrderByOptions
   const dateModificationPeriodItems = issuesDateModificationPeriodOptions
 
-  $: dispatch('update', { groupBy, orderBy, completedIssuesPeriod, shouldShowEmptyGroups })
+  $: dispatch('update', { groupBy, orderBy, completedIssuesPeriod, shouldShowSubIssues, shouldShowEmptyGroups })
 </script>
 
 <div class="root">
@@ -64,6 +65,14 @@
         </div>
       </div>
     {/if}
+    <div class="viewOption">
+      <div class="label">
+        <Label label={tracker.string.SubIssues} />
+      </div>
+      <div class="optionContainer">
+        <MiniToggle bind:on={shouldShowSubIssues} />
+      </div>
+    </div>    
     {#if groupBy === IssuesGrouping.Status || groupBy === IssuesGrouping.Priority}
       <div class="viewOption">
         <div class="label">
