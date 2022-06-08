@@ -189,7 +189,9 @@ export default mergeIds(trackerId, tracker, {
     ProjectStatusPresenter: '' as AnyComponent,
     SetDueDateActionPopup: '' as AnyComponent,
     SetParentIssueActionPopup: '' as AnyComponent,
-    EditProject: '' as AnyComponent
+    EditProject: '' as AnyComponent,
+    IssuesView: '' as AnyComponent,
+    ListView: '' as AnyComponent
   },
   function: {
     ProjectVisible: '' as '' as Resource<(spaces: Space[]) => boolean>

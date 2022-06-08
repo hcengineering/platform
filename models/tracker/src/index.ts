@@ -34,10 +34,10 @@ import {
 import attachment from '@anticrm/model-attachment'
 import chunter from '@anticrm/model-chunter'
 import core, { DOMAIN_SPACE, TAttachedDoc, TDoc, TSpace, TType } from '@anticrm/model-core'
-import { createAction } from '@anticrm/model-view'
+import view, { createAction } from '@anticrm/model-view'
+import { KeyBinding } from '@anticrm/view'
 import workbench, { createNavigateAction } from '@anticrm/model-workbench'
 import { Asset, IntlString } from '@anticrm/platform'
-import view, { KeyBinding } from '@anticrm/view'
 import setting from '@anticrm/setting'
 import {
   Document,
@@ -249,6 +249,40 @@ export class TProject extends TDoc implements Project {
 export function createModel (builder: Builder): void {
   builder.createModel(TTeam, TProject, TIssue, TIssueStatus, TIssueStatusCategory, TTypeIssuePriority)
 
+  builder.createDoc(view.class.Viewlet, core.space.Model, {
+    attachTo: tracker.class.Issue,
+    descriptor: tracker.viewlet.List,
+    config: [
+      { key: '', presenter: tracker.component.PriorityEditor },
+      { key: '', presenter: tracker.component.IssuePresenter },
+      { key: '', presenter: tracker.component.StatusEditor },
+      { key: '', presenter: tracker.component.TitlePresenter, props: { shouldUseMargin: true } },
+      { key: '', presenter: tracker.component.DueDatePresenter },
+      {
+        key: '',
+        presenter: tracker.component.ProjectEditor,
+        props: { kind: 'secondary', size: 'small', shape: 'round', shouldShowPlaceholder: false }
+      },
+      { key: 'modifiedOn', presenter: tracker.component.ModificationDatePresenter },
+      {
+        key: '$lookup.assignee',
+        presenter: tracker.component.AssigneePresenter,
+        props: { defaultClass: contact.class.Employee, shouldShowLabel: false }
+      }
+    ]
+  })
+
+  builder.createDoc(
+    view.class.ViewletDescriptor,
+    core.space.Model,
+    {
+      label: view.string.Table,
+      icon: view.icon.Table,
+      component: tracker.component.ListView
+    },
+    tracker.viewlet.List
+  )
+
   builder.createDoc(
     tracker.class.IssueStatusCategory,
     core.space.Model,
@@ -387,7 +421,10 @@ export function createModel (builder: Builder): void {
                 id: issuesId,
                 label: tracker.string.Issues,
                 icon: tracker.icon.Issues,
-                component: tracker.component.Issues
+                component: tracker.component.IssuesView,
+                componentProps: {
+                  title: tracker.string.Issues
+                }
               },
               {
                 id: activeId,
@@ -504,4 +541,8 @@ export function createModel (builder: Builder): void {
     },
     tracker.action.SetParent
   )
+
+  builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.ClassFilters, {
+    filters: ['status', 'priority', 'project']
+  })
 }
