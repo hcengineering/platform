@@ -63,6 +63,7 @@
   export let groupingKey: IssuesGrouping = IssuesGrouping.Status
   export let orderingKey: IssuesOrdering = IssuesOrdering.LastUpdated
   export let completedIssuesPeriod: IssuesDateModificationPeriod | null = IssuesDateModificationPeriod.All
+  export let shouldShowSubIssues: boolean | undefined = true
   export let shouldShowEmptyGroups: boolean | undefined = false
   export let includedGroups: Partial<Record<IssuesGroupByKeys, Array<any>>> = {}
   export let label: string | undefined = undefined
@@ -122,13 +123,14 @@
 
     return includedGroups[groupByKey]?.includes(x)
   })
-  $: includedIssuesQuery = getIncludedIssuesQuery(includedGroups, statuses)
+  $: includedIssuesQuery = getIncludedIssuesQuery(includedGroups, statuses, shouldShowSubIssues)
   $: modifiedOnIssuesQuery = getModifiedOnIssuesFilterQuery(issues, completedIssuesPeriod)
   $: statuses = [...statusesById.values()]
 
   const getIncludedIssuesQuery = (
     groups: Partial<Record<IssuesGroupByKeys, Array<any>>>,
-    issueStatuses: IssueStatus[]
+    issueStatuses: IssueStatus[],
+    withSubIssues?: boolean
   ) => {
     const resultMap: { [p: string]: { $in: any[] } } = {}
 
@@ -137,7 +139,7 @@
       resultMap[key] = { $in: includedCategories }
     }
 
-    return resultMap
+    return { ...resultMap, ...(withSubIssues ? {} : { attachedTo: tracker.ids.NoParent }) }
   }
 
   const getModifiedOnIssuesFilterQuery = (
@@ -289,6 +291,7 @@
           orderBy: IssuesOrdering
           groupBy: IssuesGrouping
           completedIssuesPeriod: IssuesDateModificationPeriod
+          shouldShowSubIssues: boolean
           shouldShowEmptyGroups: boolean
         }
       | undefined
@@ -304,6 +307,7 @@
     groupingKey = result.groupBy
     orderingKey = result.orderBy
     completedIssuesPeriod = result.completedIssuesPeriod
+    shouldShowSubIssues = result.shouldShowSubIssues
     shouldShowEmptyGroups = result.shouldShowEmptyGroups
 
     if (result.groupBy === IssuesGrouping.Assignee || result.groupBy === IssuesGrouping.NoGrouping) {
@@ -318,7 +322,7 @@
 
     showPopup(
       ViewOptionsPopup,
-      { groupBy: groupingKey, orderBy: orderingKey, completedIssuesPeriod, shouldShowEmptyGroups },
+      { groupBy: groupingKey, orderBy: orderingKey, completedIssuesPeriod, shouldShowSubIssues, shouldShowEmptyGroups },
       eventToHTMLElement(event),
       undefined,
       handleOptionsUpdated
