@@ -82,18 +82,23 @@
     }
   }
 
+  let loading = false
+
   function load (_class: Ref<Class<Doc>>) {
+    loading = true
+    const oldFilters = filters
     const loc = getCurrentLocation()
     loc.fragment = undefined
     loc.query = undefined
     const key = 'filter' + locationToUrl(loc)
     const saved = localStorage.getItem(key)
-    filters.map((p) => p.onRemove?.())
     if (saved !== null) {
       filters = JSON.parse(saved)
     } else {
       filters = []
     }
+    loading = false
+    oldFilters.forEach((p) => p.onRemove?.())
   }
 
   async function makeQuery (query: DocumentQuery<Doc>, filters: Filter[]): Promise<void> {
@@ -164,19 +169,21 @@
 {#if visible && filters && filters.length > 0}
   <div class="filterbar-container">
     <div class="filters">
-      {#each filters as filter, i}
-        <FilterSection
-          {_class}
-          {filter}
-          on:change={() => {
-            makeQuery(query, filters)
-            saveFilters(filters)
-          }}
-          on:remove={() => {
-            remove(i)
-          }}
-        />
-      {/each}
+      {#if !loading}
+        {#each filters as filter, i}
+          <FilterSection
+            {_class}
+            {filter}
+            on:change={() => {
+              makeQuery(query, filters)
+              saveFilters(filters)
+            }}
+            on:remove={() => {
+              remove(i)
+            }}
+          />
+        {/each}
+      {/if}
       <div class="add-filter">
         <Button size={'small'} icon={IconAdd} kind={'transparent'} on:click={add} />
       </div>
