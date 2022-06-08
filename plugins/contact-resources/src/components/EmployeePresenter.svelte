@@ -11,6 +11,7 @@
   export let tooltipLabels: { personLabel: IntlString; placeholderLabel?: IntlString } | undefined = undefined
   export let shouldShowAvatar: boolean = true
   export let shouldShowName: boolean = true
+  export let shouldShowPlaceholder = false
   export let onEmployeeEdit: ((event: MouseEvent) => void) | undefined = undefined
   export let avatarSize: 'inline' | 'tiny' | 'x-small' | 'small' | 'medium' | 'large' | 'x-large' = 'x-small'
 
@@ -39,8 +40,8 @@
       onEdit={handlePersonEdit}
       {shouldShowAvatar}
       {shouldShowName}
-      shouldShowPlaceholder={true}
       {avatarSize}
+      {shouldShowPlaceholder}
     />
   </div>
   {#if value?.$lookup?.statuses?.length}
