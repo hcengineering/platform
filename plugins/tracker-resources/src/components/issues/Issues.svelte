@@ -130,7 +130,7 @@
   const getIncludedIssuesQuery = (
     groups: Partial<Record<IssuesGroupByKeys, Array<any>>>,
     issueStatuses: IssueStatus[],
-    withSubIssues: boolean
+    withSubIssues?: boolean
   ) => {
     const resultMap: { [p: string]: { $in: any[] } } = {}
 
