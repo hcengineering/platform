@@ -17,8 +17,8 @@
   import { Class, Doc, FindOptions, Ref, SortingOrder, WithLookup } from '@anticrm/core'
   import { Kanban, TypeState } from '@anticrm/kanban'
   import { createQuery } from '@anticrm/presentation'
-  import { Issue, Team } from '@anticrm/tracker'
-  import { Button, Icon, IconAdd, showPopup, Tooltip } from '@anticrm/ui'
+  import type { Issue, IssueStatus, Team } from '@anticrm/tracker'
+  import { Button, Icon, IconAdd, showPopup, Tooltip, showPanel } from '@anticrm/ui'
   import { focusStore, ListSelectionProvider, SelectDirection, selectionStore } from '@anticrm/view-resources'
   import ActionContext from '@anticrm/view-resources/src/components/ActionContext.svelte'
   import Menu from '@anticrm/view-resources/src/components/Menu.svelte'
@@ -29,6 +29,7 @@
   import IssuePresenter from './IssuePresenter.svelte'
   import PriorityEditor from './PriorityEditor.svelte'
   import ProjectEditor from '../projects/ProjectEditor.svelte'
+  import SubIssuesSelector from './edit/SubIssuesSelector.svelte'
 
   export let currentSpace: Ref<Team>
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
@@ -43,17 +44,19 @@
     currentTeam = res.shift()
   })
 
+  let issueStatuses: WithLookup<IssueStatus>[] | undefined
   let states: TypeState[] | undefined
   $: statusesQuery.query(
     tracker.class.IssueStatus,
     { attachedTo: currentSpace },
-    (issueStatuses) => {
-      states = issueStatuses.map((status) => ({
+    (is) => {
+      states = is.map((status) => ({
         _id: status._id,
         title: status.name,
         color: status.color ?? status.$lookup?.category?.color ?? 0,
         icon: status.$lookup?.category?.icon ?? undefined
       }))
+      issueStatuses = is
     },
     {
       lookup: { category: tracker.class.IssueStatusCategory },
@@ -152,7 +155,12 @@
     </svelte:fragment>
     <svelte:fragment slot="card" let:object>
       {@const issue = toIssue(object)}
-      <div class="tracker-card">
+      <div
+        class="tracker-card"
+        on:click={() => {
+          showPanel(tracker.component.EditIssue, object._id, object._class, 'content')
+        }}
+      >
         <div class="flex-col mr-6">
           <IssuePresenter value={object} {currentTeam} />
           <span class="fs-bold caption-color mt-1 lines-limit-2">
@@ -168,7 +176,10 @@
             isEditable={true}
           />
         </div>
-        <div class="buttons-group xsmall-gap mt-10px">
+        <div class="buttons-group xxsmall-gap mt-10px">
+          {#if issue && issueStatuses && issue.subIssues > 0}
+            <SubIssuesSelector {issue} {currentTeam} {issueStatuses} />
+          {/if}
           <PriorityEditor
             value={issue}
             isEditable={true}

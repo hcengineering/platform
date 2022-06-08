@@ -281,73 +281,71 @@
   }
 </script>
 
-<div class="flex-col kanban-container top-divider">
-  <div class="scrollable">
-    <ScrollBox>
-      <div class="kanban-content">
-        {#each states as state, si}
-          {@const stateObjects = getStateObjects(objects, state, dragCard)}
+<div class="kanban-container top-divider">
+  <ScrollBox>
+    <div class="kanban-content">
+      {#each states as state, si}
+        {@const stateObjects = getStateObjects(objects, state, dragCard)}
 
-          <div
-            class="panel-container step-lr75"
-            bind:this={stateRefs[si]}
-            on:dragover={(event) => panelDragOver(event, state)}
-            on:drop={() => {
-              move(state._id)
-              isDragging = false
-            }}
-          >
-            {#if $$slots.header !== undefined}
-              <slot name="header" state={toAny(state)} count={stateObjects.length} />
-            {:else}
-              <div class="header">
-                <div class="bar" style="background-color: {getPlatformColor(state.color)}" />
-                <div class="flex-between label">
-                  <div>
-                    <span class="lines-limit-2">{state.title}</span>
-                  </div>
+        <div
+          class="panel-container step-lr75"
+          bind:this={stateRefs[si]}
+          on:dragover={(event) => panelDragOver(event, state)}
+          on:drop={() => {
+            move(state._id)
+            isDragging = false
+          }}
+        >
+          {#if $$slots.header !== undefined}
+            <slot name="header" state={toAny(state)} count={stateObjects.length} />
+          {:else}
+            <div class="header">
+              <div class="bar" style="background-color: {getPlatformColor(state.color)}" />
+              <div class="flex-between label">
+                <div>
+                  <span class="lines-limit-2">{state.title}</span>
                 </div>
               </div>
-            {/if}
-            <Scroller padding={'.5rem 0'} on:dragover on:drop>
-              <slot name="beforeCard" {state} />
-              {#each stateObjects as object}
-                {@const dragged = isDragging && object.it._id === dragCard?._id}
+            </div>
+          {/if}
+          <Scroller padding={'.5rem 0'} on:dragover on:drop>
+            <slot name="beforeCard" {state} />
+            {#each stateObjects as object}
+              {@const dragged = isDragging && object.it._id === dragCard?._id}
+              <div
+                transition:slideD|local={{ isDragging }}
+                class="step-tb75"
+                on:dragover|preventDefault={(evt) => cardDragOver(evt, object)}
+                on:drop|preventDefault={(evt) => cardDrop(evt, object)}
+              >
                 <div
-                  transition:slideD|local={{ isDragging }}
-                  class="step-tb75"
-                  on:dragover|preventDefault={(evt) => cardDragOver(evt, object)}
-                  on:drop|preventDefault={(evt) => cardDrop(evt, object)}
+                  class="card-container"
+                  class:selection={selection !== undefined ? objects[selection]?._id === object.it._id : false}
+                  class:checked={checkedSet.has(object.it._id)}
+                  on:mouseover={() => dispatch('obj-focus', object.it)}
+                  on:focus={() => {}}
+                  on:contextmenu={(evt) => showMenu(evt, object)}
+                  draggable={true}
+                  class:draggable={true}
+                  on:dragstart
+                  on:dragend
+                  class:dragged
+                  on:dragstart={() => onDragStart(object, state)}
+                  on:dragend={() => {
+                    isDragging = false
+                  }}
                 >
-                  <div
-                    class="card-container"
-                    class:selection={selection !== undefined ? objects[selection]?._id === object.it._id : false}
-                    class:checked={checkedSet.has(object.it._id)}
-                    on:mouseover={() => dispatch('obj-focus', object.it)}
-                    on:focus={() => {}}
-                    on:contextmenu={(evt) => showMenu(evt, object)}
-                    draggable={true}
-                    class:draggable={true}
-                    on:dragstart
-                    on:dragend
-                    class:dragged
-                    on:dragstart={() => onDragStart(object, state)}
-                    on:dragend={() => {
-                      isDragging = false
-                    }}
-                  >
-                    <slot name="card" object={toAny(object.it)} {dragged} />
-                  </div>
+                  <slot name="card" object={toAny(object.it)} {dragged} />
                 </div>
-              {/each}
-              <slot name="afterCard" {space} {state} />
-            </Scroller>
-          </div>
-        {/each}
-        <slot name="afterPanel" />
-      </div>
-    </ScrollBox>
-  </div>
+              </div>
+            {/each}
+            <slot name="afterCard" {space} {state} />
+          </Scroller>
+        </div>
+      {/each}
+      <slot name="afterPanel" />
+    </div>
+  </ScrollBox>
   {#if isDragging}
     <slot name="doneBar" onDone={updateDone} />
   {/if}
@@ -362,7 +360,6 @@
   .kanban-content {
     display: flex;
     padding: 1.5rem 2rem 0;
-    height: 100%;
   }
 
   .scrollable {
@@ -416,9 +413,7 @@
   .panel-container {
     display: flex;
     flex-direction: column;
-    align-items: stretch;
     width: 20rem;
-    height: 100%;
     background-color: transparent;
     border: 1px solid transparent;
     border-radius: 0.25rem;
@@ -428,7 +423,6 @@
       flex-direction: column;
       height: 4rem;
       min-height: 4rem;
-      user-select: none;
 
       .bar {
         height: 0.375rem;

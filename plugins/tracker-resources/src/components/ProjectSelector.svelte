@@ -78,6 +78,7 @@
   }
 
   const handleProjectEditorOpened = (event: MouseEvent) => {
+    event.stopPropagation()
     if (!isEditable) {
       return
     }
