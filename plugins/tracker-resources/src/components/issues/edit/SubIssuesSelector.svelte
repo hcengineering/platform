@@ -19,6 +19,7 @@
   import { Button, ProgressCircle, showPopup, SelectPopup, closeTooltip, showPanel } from '@anticrm/ui'
   import type { ButtonKind, ButtonSize } from '@anticrm/ui'
   import tracker from '../../../plugin'
+  import { getIssueId } from '../../../utils'
 
   export let issue: Issue
   export let currentTeam: Team | undefined
@@ -49,10 +50,6 @@
     return issueStatuses?.find((s) => issue.status === s._id)?.$lookup?.category?.icon ?? null
   }
 
-  function getIssueId (issue: Issue) {
-    return `${currentTeam?.identifier}-${issue.number}`
-  }
-
   function openIssue (target: Ref<Issue>) {
     if (target !== issue._id) {
       showPanel(tracker.component.EditIssue, target, issue._class, 'content')
@@ -65,12 +62,11 @@
       showPopup(
         SelectPopup,
         {
-          value: subIssues.map((iss) => ({
-            id: iss._id,
-            icon: getIssueStatusIcon(iss),
-            text: `${getIssueId(iss)} ${iss.title}`,
-            isSelected: iss._id === issue._id
-          })),
+          value: subIssues.map((iss) => {
+            const text = currentTeam ? `${getIssueId(currentTeam, iss)} ${iss.title}` : iss.title
+
+            return { id: iss._id, icon: getIssueStatusIcon(iss), text, isSelected: iss._id === issue._id }
+          }),
           width: 'large'
         },
         {

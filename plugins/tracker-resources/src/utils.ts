@@ -294,3 +294,7 @@ export const projectsTitleMap: Record<ProjectsViewMode, IntlString> = Object.fre
   active: tracker.string.ActiveProjects,
   closed: tracker.string.ClosedProjects
 })
+
+export function getIssueId (team: Team, issue: Issue): string {
+  return `${team.identifier}-${issue.number}`
+}

@@ -18,6 +18,7 @@
   import { Spinner, IconClose, Tooltip } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
+  import { getIssueId } from '../../utils'
 
   export let issue: Issue
 
@@ -27,7 +28,7 @@
   let team: Team | undefined
 
   $: spaceQuery.query(tracker.class.Team, { _id: issue.space }, (res) => ([team] = res))
-  $: issueId = team && `${team.identifier}-${issue.number}`
+  $: issueId = team && getIssueId(team, issue)
 </script>
 
 <div class="flex-center root">

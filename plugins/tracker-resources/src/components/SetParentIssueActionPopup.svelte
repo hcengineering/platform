@@ -20,6 +20,7 @@
   import ObjectPopup from '@anticrm/presentation/src/components/ObjectPopup.svelte'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../plugin'
+  import { getIssueId } from '../utils'
 
   export let value: Issue
   export let shouldSaveOnChange = true
@@ -81,7 +82,7 @@
 >
   <svelte:fragment slot="item" let:item={issue}>
     {@const { icon } = statusCategoryById?.get(issue.$lookup?.status.category) ?? {}}
-    {@const issueId = team && `${team.identifier}-${issue.number}`}
+    {@const issueId = team && getIssueId(team, issue)}
     {#if issueId && icon}
       <div class="flex-center clear-mins w-full h-9">
         <div class="icon mr-4 h-8">
