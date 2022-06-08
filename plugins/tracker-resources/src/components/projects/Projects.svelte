@@ -13,192 +13,45 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact from '@anticrm/contact'
-  import { DocumentQuery, FindOptions, Ref, SortingOrder } from '@anticrm/core'
+  import { DocumentQuery, Ref } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
   import { Project, Team } from '@anticrm/tracker'
-  import { Button, IconAdd, IconOptions, Label, showPopup } from '@anticrm/ui'
-  import NewProject from './NewProject.svelte'
-  import ProjectsListBrowser from './ProjectsListBrowser.svelte'
+  import { closePopup, closeTooltip, location } from '@anticrm/ui'
+  import { onDestroy } from 'svelte'
   import tracker from '../../plugin'
-  import { getIncludedProjectStatuses, ProjectsViewMode, projectsTitleMap } from '../../utils'
+  import { ProjectsViewMode } from '../../utils'
+  import EditProject from './EditProject.svelte'
+  import ProjectBrowser from './ProjectBrowser.svelte'
 
   export let currentSpace: Ref<Team>
   export let query: DocumentQuery<Project> = {}
   export let search: string = ''
   export let mode: ProjectsViewMode = 'all'
 
-  const ENTRIES_LIMIT = 200
-  const resultProjectsQuery = createQuery()
+  let projectId: Ref<Project> | undefined
+  let project: Project | undefined
 
-  const projectOptions: FindOptions<Project> = {
-    sort: { modifiedOn: SortingOrder.Descending },
-    limit: ENTRIES_LIMIT,
-    lookup: { lead: contact.class.Employee, members: contact.class.Employee }
-  }
+  onDestroy(
+    location.subscribe(async (loc) => {
+      closeTooltip()
+      closePopup()
 
-  let resultProjects: Project[] = []
-
-  $: includedProjectStatuses = getIncludedProjectStatuses(mode)
-  $: title = projectsTitleMap[mode]
-  $: includedProjectsQuery = { status: { $in: includedProjectStatuses } }
-
-  $: baseQuery = {
-    space: currentSpace,
-    ...includedProjectsQuery,
-    ...query
-  }
-
-  $: resultQuery = search === '' ? baseQuery : { $search: search, ...baseQuery }
-
-  $: resultProjectsQuery.query<Project>(
-    tracker.class.Project,
-    { ...resultQuery },
-    (result) => {
-      resultProjects = result
-    },
-    projectOptions
+      projectId = loc.path[4] as Ref<Project>
+    })
   )
 
-  const showCreateDialog = async () => {
-    showPopup(NewProject, { space: currentSpace, targetElement: null }, null)
-  }
-
-  const handleViewModeChanged = (newMode: ProjectsViewMode) => {
-    if (newMode === undefined || newMode === mode) {
-      return
-    }
-
-    mode = newMode
+  const projectQuery = createQuery()
+  $: if (projectId !== undefined) {
+    projectQuery.query(tracker.class.Project, { _id: projectId }, (result) => {
+      ;[project] = result
+    })
+  } else {
+    project = undefined
   }
 </script>
 
-<div>
-  <div class="fs-title flex-between header">
-    <div class="flex-center">
-      <Label label={tracker.string.Projects} />
-      <div class="projectTitle">
-        › <Label label={title} />
-      </div>
-    </div>
-    <Button size="small" icon={IconAdd} label={tracker.string.Project} kind="secondary" on:click={showCreateDialog} />
-  </div>
-  <div class="itemsContainer">
-    <div class="flex-center">
-      <div class="flex-center">
-        <div class="buttonWrapper">
-          <Button
-            size="small"
-            shape="rectangle-right"
-            selected={mode === 'all'}
-            label={tracker.string.AllProjects}
-            on:click={() => handleViewModeChanged('all')}
-          />
-        </div>
-        <div class="buttonWrapper">
-          <Button
-            size="small"
-            shape="rectangle"
-            selected={mode === 'backlog'}
-            label={tracker.string.BacklogProjects}
-            on:click={() => handleViewModeChanged('backlog')}
-          />
-        </div>
-        <div class="buttonWrapper">
-          <Button
-            size="small"
-            shape="rectangle"
-            selected={mode === 'active'}
-            label={tracker.string.ActiveProjects}
-            on:click={() => handleViewModeChanged('active')}
-          />
-        </div>
-        <div class="buttonWrapper">
-          <Button
-            size="small"
-            shape="rectangle-left"
-            selected={mode === 'closed'}
-            label={tracker.string.ClosedProjects}
-            on:click={() => handleViewModeChanged('closed')}
-          />
-        </div>
-      </div>
-      <div class="ml-3 filterButton">
-        <Button
-          size="small"
-          icon={IconAdd}
-          kind={'link-bordered'}
-          borderStyle={'dashed'}
-          label={tracker.string.Filter}
-          on:click={() => {}}
-        />
-      </div>
-    </div>
-    <div class="flex-center">
-      <div class="flex-center">
-        <div class="buttonWrapper">
-          <Button selected size="small" shape="rectangle-right" icon={tracker.icon.ProjectsList} />
-        </div>
-        <div class="buttonWrapper">
-          <Button size="small" shape="rectangle-left" icon={tracker.icon.ProjectsTimeline} />
-        </div>
-      </div>
-      <div class="ml-3">
-        <Button size="small" icon={IconOptions} />
-      </div>
-    </div>
-  </div>
-  <ProjectsListBrowser
-    _class={tracker.class.Project}
-    itemsConfig={[
-      { key: '', presenter: tracker.component.IconPresenter },
-      { key: '', presenter: tracker.component.ProjectPresenter },
-      {
-        key: '$lookup.lead',
-        presenter: tracker.component.LeadPresenter,
-        props: { currentSpace, defaultClass: contact.class.Employee, shouldShowLabel: false }
-      },
-      { key: '', presenter: tracker.component.ProjectMembersPresenter, props: { kind: 'link' } },
-      { key: '', presenter: tracker.component.TargetDatePresenter },
-      { key: '', presenter: tracker.component.ProjectStatusPresenter }
-    ]}
-    projects={resultProjects}
-  />
-</div>
-
-<style lang="scss">
-  .header {
-    min-height: 3.5rem;
-    padding-left: 2.25rem;
-    padding-right: 1.35rem;
-    border-bottom: 1px solid var(--theme-button-border-hovered);
-  }
-
-  .projectTitle {
-    display: flex;
-    margin-left: 0.25rem;
-    color: var(--content-color);
-    font-size: 0.8125rem;
-    font-weight: 500;
-  }
-
-  .itemsContainer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.65rem 1.35rem 0.65rem 2.25rem;
-    border-bottom: 1px solid var(--theme-button-border-hovered);
-  }
-
-  .buttonWrapper {
-    margin-right: 1px;
-
-    &:last-child {
-      margin-right: 0;
-    }
-  }
-
-  .filterButton {
-    color: var(--caption-color);
-  }
-</style>
+{#if project}
+  <EditProject {project} />
+{:else}
+  <ProjectBrowser {currentSpace} {query} {search} {mode} />
+{/if}

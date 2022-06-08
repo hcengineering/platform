@@ -1,48 +1,37 @@
 <script lang="ts">
-  import { Ref } from '@anticrm/core'
-  import { createQuery, getClient } from '@anticrm/presentation'
+  import { getClient } from '@anticrm/presentation'
   import { StyledTextBox } from '@anticrm/text-editor'
   import { Project } from '@anticrm/tracker'
-  import { EditBox, getCurrentLocation } from '@anticrm/ui'
+  import { EditBox } from '@anticrm/ui'
   import { DocAttributeBar } from '@anticrm/view-resources'
+  import tracker from '../../plugin'
   import IssuesView from '../issues/IssuesView.svelte'
 
-  import tracker from '../../plugin'
-
-  let object: Project | undefined
-  $: project = getCurrentLocation().path[3] as Ref<Project>
+  export let project: Project
 
   const client = getClient()
-  const projectQuery = createQuery()
-  $: projectQuery.query(tracker.class.Project, { _id: project }, (result) => {
-    ;[object] = result
-  })
 
   async function change (field: string, value: any) {
-    if (object) {
-      await client.update(object, { [field]: value })
-    }
+    await client.update(project, { [field]: value })
   }
 </script>
 
-{#if object}
-  <IssuesView currentSpace={object.space} query={{ project }} label={object.label}>
-    <svelte:fragment slot="aside">
-      <div class="flex-row p-4">
-        <div class="fs-title text-xl">
-          <EditBox bind:value={object.label} maxWidth="39rem" on:change={() => change('label', object?.label)} />
-        </div>
-        <div class="mt-2">
-          <StyledTextBox
-            alwaysEdit={true}
-            showButtons={false}
-            placeholder={tracker.string.Description}
-            content={object.description ?? ''}
-            on:value={(evt) => change('description', evt.detail)}
-          />
-        </div>
-        <DocAttributeBar {object} mixins={[]} ignoreKeys={['icon', 'label', 'description']} />
+<IssuesView currentSpace={project.space} query={{ project: project._id }} label={project.label}>
+  <svelte:fragment slot="aside">
+    <div class="flex-row p-4">
+      <div class="fs-title text-xl">
+        <EditBox bind:value={project.label} maxWidth="39rem" on:change={() => change('label', project.label)} />
       </div>
-    </svelte:fragment>
-  </IssuesView>
-{/if}
+      <div class="mt-2">
+        <StyledTextBox
+          alwaysEdit={true}
+          showButtons={false}
+          placeholder={tracker.string.Description}
+          content={project.description ?? ''}
+          on:value={(evt) => change('description', evt.detail)}
+        />
+      </div>
+      <DocAttributeBar object={project} mixins={[]} ignoreKeys={['icon', 'label', 'description']} />
+    </div>
+  </svelte:fragment>
+</IssuesView>
