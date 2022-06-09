@@ -46,23 +46,20 @@
       return
     }
     const category = presenterClass.category
+    let mixinRef = undefined
     if (category === 'attribute') {
-      const typeClass = hierarchy.getClass(presenterClass.attrClass)
-      const editorMixin = hierarchy.as(typeClass, view.mixin.AttributeEditor)
-      editor = getResource(editorMixin.editor).catch((cause) => {
-        console.error(`failed to find editor for ${_class} ${attribute} ${presenterClass.attrClass} cause: ${cause}`)
-      })
+      mixinRef = view.mixin.AttributeEditor
     }
     if (category === 'collection' && allowedCollections.includes(attribute?.name)) {
-      const typeClass = hierarchy.getClass(presenterClass.attrClass)
-      const editorMixin = hierarchy.as(typeClass, view.mixin.CollectionEditor)
-      editor = getResource(editorMixin.editor).catch((cause) => {
-        console.error(`failed to find editor for ${_class} ${attribute} ${presenterClass.attrClass} cause: ${cause}`)
-      })
+      mixinRef = view.mixin.CollectionEditor
     }
     if (category === 'array') {
+      mixinRef = view.mixin.ArrayEditor
+    }
+
+    if (mixinRef !== undefined) {
       const typeClass = hierarchy.getClass(presenterClass.attrClass)
-      const editorMixin = hierarchy.as(typeClass, view.mixin.ArrayEditor)
+      const editorMixin = hierarchy.as(typeClass, mixinRef)
       editor = getResource(editorMixin.editor).catch((cause) => {
         console.error(`failed to find editor for ${_class} ${attribute} ${presenterClass.attrClass} cause: ${cause}`)
       })
