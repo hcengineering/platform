@@ -101,6 +101,19 @@ export class TTypeIssuePriority extends TType {}
 /**
  * @public
  */
+export function TypeProjectStatus (): Type<ProjectStatus> {
+  return { _class: tracker.class.TypeProjectStatus, label: 'TypeProjectStatus' as IntlString }
+}
+
+/**
+ * @public
+ */
+@Model(tracker.class.TypeProjectStatus, core.class.Type, DOMAIN_MODEL)
+export class TTypeProjectStatus extends TType {}
+
+/**
+ * @public
+ */
 @Model(tracker.class.Team, core.class.Space, DOMAIN_SPACE)
 @UX(tracker.string.Team, tracker.icon.Team, tracker.string.Team)
 export class TTeam extends TSpace implements Team {
@@ -219,7 +232,7 @@ export class TProject extends TDoc implements Project {
   @Prop(TypeString(), tracker.string.AssetLabel)
   icon!: Asset
 
-  @Prop(TypeNumber(), tracker.string.Status)
+  @Prop(TypeProjectStatus(), tracker.string.Status)
   status!: ProjectStatus
 
   @Prop(TypeRef(contact.class.Employee), tracker.string.ProjectLead)
@@ -247,7 +260,15 @@ export class TProject extends TDoc implements Project {
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TTeam, TProject, TIssue, TIssueStatus, TIssueStatusCategory, TTypeIssuePriority)
+  builder.createModel(
+    TTeam,
+    TProject,
+    TIssue,
+    TIssueStatus,
+    TIssueStatusCategory,
+    TTypeIssuePriority,
+    TTypeProjectStatus
+  )
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: tracker.class.Issue,
@@ -375,6 +396,10 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(tracker.class.Issue, core.class.Class, setting.mixin.Editable, {})
+
+  builder.mixin(tracker.class.TypeProjectStatus, core.class.Class, view.mixin.AttributeEditor, {
+    editor: tracker.component.ProjectStatusEditor
+  })
 
   builder.createDoc(
     workbench.class.Application,

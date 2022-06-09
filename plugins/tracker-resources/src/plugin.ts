@@ -188,6 +188,7 @@ export default mergeIds(trackerId, tracker, {
     TargetDatePresenter: '' as AnyComponent,
     ProjectMembersPresenter: '' as AnyComponent,
     ProjectStatusPresenter: '' as AnyComponent,
+    ProjectStatusEditor: '' as AnyComponent,
     SetDueDateActionPopup: '' as AnyComponent,
     SetParentIssueActionPopup: '' as AnyComponent,
     EditProject: '' as AnyComponent,
