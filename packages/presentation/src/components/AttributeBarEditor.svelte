@@ -52,7 +52,10 @@
         console.error(`failed to find editor for ${_class} ${attribute} ${presenterClass.attrClass} cause: ${cause}`)
       })
     }
-    if (presenterClass.category === 'collection' && allowedCollections.findIndex(attr => attr === attribute?.name) >= 0) {
+    if (
+      presenterClass.category === 'collection' &&
+      allowedCollections.findIndex((attr) => attr === attribute?.name) >= 0
+    ) {
       const typeClass = hierarchy.getClass(presenterClass.attrClass)
       const editorMixin = hierarchy.as(typeClass, view.mixin.CollectionEditor)
       editor = getResource(editorMixin.editor).catch((cause) => {
