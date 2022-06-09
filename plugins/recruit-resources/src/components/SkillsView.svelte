@@ -17,6 +17,7 @@
   props={{
     targetClass: recruit.mixin.Candidate,
     title: recruit.string.SkillsLabel,
+    icon: recruit.icon.Skills,
     item: recruit.string.SkillLabel,
     key: 'skills',
     сreateItemLabel: recruit.string.SkillCreateLabel,

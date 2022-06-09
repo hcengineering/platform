@@ -14,16 +14,17 @@
 -->
 <script lang="ts">
   import { Class, Doc, DocumentQuery, FindOptions, Ref } from '@anticrm/core'
-  import { IntlString, translate } from '@anticrm/platform'
+  import { Asset, IntlString, translate } from '@anticrm/platform'
   import { createQuery } from '@anticrm/presentation'
   import { TagCategory, TagElement } from '@anticrm/tags'
-  import { Button, Icon, IconAdd, Label, SearchEdit, showPopup } from '@anticrm/ui'
+  import { AnySvelteComponent, Button, Icon, IconAdd, Label, SearchEdit, showPopup } from '@anticrm/ui'
   import { TableBrowser } from '@anticrm/view-resources'
   import tags from '../plugin'
   import CategoryBar from './CategoryBar.svelte'
   import CreateTagElement from './CreateTagElement.svelte'
 
   export let title: IntlString = tags.string.Tags
+  export let icon: Asset | AnySvelteComponent = tags.icon.Tags
   export let item: IntlString = tags.string.Tag
   export let сreateItemLabel: IntlString = tags.string.TagCreateLabel
   export let targetClass: Ref<Class<Doc>>
@@ -87,7 +88,7 @@
 
 <div class="ac-header full">
   <div class="ac-header__wrap-title">
-    <div class="ac-header__icon"><Icon icon={tags.icon.Tags} size={'small'} /></div>
+    <div class="ac-header__icon"><Icon {icon} size={'small'} /></div>
     <span class="ac-header__title"><Label label={title} /></span>
   </div>
 
@@ -132,7 +133,7 @@
       key: '',
       presenter: tags.component.TagElementCountPresenter,
       label: item,
-      props: { tagElements, label: item, onTag },
+      props: { tagElements, label: item, icon, onTag },
       sortingKey: '@tagCount',
       sortingFunction: countSorting
     },

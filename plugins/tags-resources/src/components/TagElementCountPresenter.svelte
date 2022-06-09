@@ -14,18 +14,20 @@
 -->
 <script lang="ts">
   import { Ref } from '@anticrm/core'
+  import { Asset } from '@anticrm/platform'
   import { TagElement } from '@anticrm/tags'
-  import { Icon } from '@anticrm/ui'
+  import { AnySvelteComponent, Icon } from '@anticrm/ui'
   import tags from '../plugin'
 
   export let value: TagElement
   export let tagElements: Map<Ref<TagElement>, { count: number; modifiedOn: number }> | undefined
+  export let icon: Asset | AnySvelteComponent = tags.icon.Tags
   export let onTag: ((tag: TagElement) => void) | undefined = undefined
 </script>
 
 {#if (tagElements?.get(value._id)?.count ?? 0) > 0}
   <div class="sm-tool-icon" on:click={() => onTag?.(value)}>
-    <span class="icon"><Icon icon={tags.icon.Tags} size={'small'} /> </span>
+    <span class="icon"><Icon {icon} size={'small'} /> </span>
     &nbsp;{tagElements?.get(value._id)?.count ?? 0}
   </div>
 {/if}

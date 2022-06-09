@@ -26,7 +26,8 @@ loadMetadata(recruit.icon, {
   Application: `${icons}#application`,
   Review: `${icons}#application`,
   Opinion: `${icons}#application`,
-  CreateCandidate: `${icons}#new-candidate`
+  CreateCandidate: `${icons}#new-candidate`,
+  Skills: `${icons}#skills`
 })
 
 addStringsLoader(recruitId, async (lang: string) => await import(`../lang/${lang}.json`))

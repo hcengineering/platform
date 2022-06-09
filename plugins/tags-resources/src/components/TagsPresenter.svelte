@@ -14,8 +14,9 @@
 -->
 <script lang="ts">
   import { Class, Doc, Ref } from '@anticrm/core'
+  import { Asset } from '@anticrm/platform'
   import { getClient } from '@anticrm/presentation'
-  import { Icon, tooltip } from '@anticrm/ui'
+  import { AnySvelteComponent, Icon, tooltip } from '@anticrm/ui'
   import { getCollectionCounter } from '@anticrm/view-resources'
   import tagsId from '../plugin'
   import TagsPresentationPopup from './TagsPresentationPopup.svelte'
@@ -23,6 +24,7 @@
   export let value: Doc
   export let _class: Ref<Class<Doc>>
   export let key: string
+  export let icon: Asset | AnySvelteComponent = tagsId.icon.Tags
 
   const client = getClient()
 
@@ -39,6 +41,6 @@
     }}
     class="sm-tool-icon"
   >
-    <span class="icon"><Icon icon={tagsId.icon.Tags} size={'small'} /></span>&nbsp;{tags}
+    <span class="icon"><Icon {icon} size="small" /></span>&nbsp;{tags}
   </div>
 {/if}

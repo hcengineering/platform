@@ -75,7 +75,7 @@
 
 <Tooltip label={key.attr.label} direction={labelDirection}>
   <Button
-    icon={tags.icon.Tags}
+    icon={key.attr.icon ?? tags.icon.Tags}
     label={items.length > 0 ? undefined : key.attr.label}
     width={width ?? 'min-content'}
     {kind}
