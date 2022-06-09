@@ -45,24 +45,22 @@
     if (presenterClass?.attrClass === undefined) {
       return
     }
-    if (presenterClass.category === 'attribute') {
+    const category = presenterClass.category
+    if (category === 'attribute') {
       const typeClass = hierarchy.getClass(presenterClass.attrClass)
       const editorMixin = hierarchy.as(typeClass, view.mixin.AttributeEditor)
       editor = getResource(editorMixin.editor).catch((cause) => {
         console.error(`failed to find editor for ${_class} ${attribute} ${presenterClass.attrClass} cause: ${cause}`)
       })
     }
-    if (
-      presenterClass.category === 'collection' &&
-      allowedCollections.findIndex((attr) => attr === attribute?.name) >= 0
-    ) {
+    if (category === 'collection' && allowedCollections.includes(attribute?.name)) {
       const typeClass = hierarchy.getClass(presenterClass.attrClass)
       const editorMixin = hierarchy.as(typeClass, view.mixin.CollectionEditor)
       editor = getResource(editorMixin.editor).catch((cause) => {
         console.error(`failed to find editor for ${_class} ${attribute} ${presenterClass.attrClass} cause: ${cause}`)
       })
     }
-    if (presenterClass.category === 'array') {
+    if (category === 'array') {
       const typeClass = hierarchy.getClass(presenterClass.attrClass)
       const editorMixin = hierarchy.as(typeClass, view.mixin.ArrayEditor)
       editor = getResource(editorMixin.editor).catch((cause) => {
