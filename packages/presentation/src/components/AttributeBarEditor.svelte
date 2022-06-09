@@ -41,16 +41,24 @@
     attribute: AnyAttribute,
     presenterClass?: { attrClass: Ref<Class<Doc>>; category: AttributeCategory }
   ): void {
-    if (presenterClass?.attrClass !== undefined && presenterClass?.category === 'attribute') {
-      const typeClass = hierarchy.getClass(presenterClass.attrClass)
-      const editorMixin = hierarchy.as(typeClass, view.mixin.AttributeEditor)
-      editor = getResource(editorMixin.editor).catch((cause) => {
-        console.error(`failed to find editor for ${_class} ${attribute} ${presenterClass.attrClass} cause: ${cause}`)
-      })
+    if (presenterClass?.attrClass === undefined) {
+      return
     }
-    if (presenterClass?.attrClass !== undefined && presenterClass?.category === 'array') {
+    const category = presenterClass.category
+    let mixinRef = undefined
+    if (category === 'attribute') {
+      mixinRef = view.mixin.AttributeEditor
+    }
+    if (category === 'collection') {
+      mixinRef = view.mixin.CollectionEditor
+    }
+    if (category === 'array') {
+      mixinRef = view.mixin.ArrayEditor
+    }
+
+    if (mixinRef !== undefined) {
       const typeClass = hierarchy.getClass(presenterClass.attrClass)
-      const editorMixin = hierarchy.as(typeClass, view.mixin.ArrayEditor)
+      const editorMixin = hierarchy.as(typeClass, mixinRef)
       editor = getResource(editorMixin.editor).catch((cause) => {
         console.error(`failed to find editor for ${_class} ${attribute} ${presenterClass.attrClass} cause: ${cause}`)
       })
