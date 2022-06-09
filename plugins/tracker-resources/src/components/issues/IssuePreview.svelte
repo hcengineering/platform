@@ -13,14 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, SortingOrder } from "@anticrm/core"
-  import { createQuery,getClient,MessageViewer } from "@anticrm/presentation"
-  import { Issue,IssueStatus,Team } from "@anticrm/tracker"
+  import { Ref, SortingOrder } from '@anticrm/core'
+  import { createQuery, getClient, MessageViewer } from '@anticrm/presentation'
+  import { Issue, IssueStatus, Team } from '@anticrm/tracker'
   import tracker from '../../plugin'
-  import { Label } from "@anticrm/ui"
-  import AssigneeEditor from "./AssigneeEditor.svelte"
-  import PriorityEditor from "./PriorityEditor.svelte"
-  import StatusEditor from "./StatusEditor.svelte"
+  import { Label } from '@anticrm/ui'
+  import AssigneeEditor from './AssigneeEditor.svelte'
+  import PriorityEditor from './PriorityEditor.svelte'
+  import StatusEditor from './StatusEditor.svelte'
 
   export let object: Issue
   let issue: Issue | undefined
@@ -31,9 +31,14 @@
   const spaceQuery = createQuery()
   const statusesQuery = createQuery()
 
-  issueQuery.query(object._class, { _id: object._id }, (res) => {
-    issue = res[0]
-  }, { limit: 1 })
+  issueQuery.query(
+    object._class,
+    { _id: object._id },
+    (res) => {
+      issue = res[0]
+    },
+    { limit: 1 }
+  )
   let statuses: IssueStatus[] = []
 
   $: statusesQuery.query(
@@ -52,7 +57,7 @@
   $: spaceQuery.query(tracker.class.Team, { _id: space }, (res) => ([currentTeam] = res))
   $: issueName = currentTeam && issue && `${currentTeam.identifier}-${issue.number}`
 
-  let limit: number = 350
+  const limit: number = 350
 
   let cHeight: number
 
@@ -79,7 +84,7 @@
       <StatusEditor value={issue} {statuses} shouldShowLabel kind={'transparent'} />
       <PriorityEditor value={issue} shouldShowLabel />
       {#if issue.assignee}
-        <AssigneeEditor value={issue} tooltipFill={false}/>
+        <AssigneeEditor value={issue} tooltipFill={false} />
       {/if}
     </div>
     {#if issue.description}

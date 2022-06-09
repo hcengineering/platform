@@ -61,7 +61,10 @@
 </script>
 
 {#if value && statuses}
-  <div class="clear-mins" use:tooltip={ isEditable ? { label: tracker.string.SetStatus, direction: tooltipAlignment } : undefined }>
+  <div
+    class="clear-mins"
+    use:tooltip={isEditable ? { label: tracker.string.SetStatus, direction: tooltipAlignment } : undefined}
+  >
     <StatusSelector
       {kind}
       {size}
