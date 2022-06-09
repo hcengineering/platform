@@ -291,7 +291,7 @@ export function createModel (builder: Builder): void {
       icon: tracker.icon.CategoryBacklog,
       color: 0,
       defaultStatusName: 'Backlog',
-      order: 2
+      order: 0
     },
     tracker.issueStatusCategory.Backlog
   )
@@ -317,7 +317,7 @@ export function createModel (builder: Builder): void {
       icon: tracker.icon.CategoryStarted,
       color: 2,
       defaultStatusName: 'In Progress',
-      order: 0
+      order: 2
     },
     tracker.issueStatusCategory.Started
   )
