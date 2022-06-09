@@ -48,6 +48,13 @@
         console.error(`failed to find editor for ${_class} ${attribute} ${presenterClass.attrClass} cause: ${cause}`)
       })
     }
+    if (presenterClass?.attrClass !== undefined && presenterClass?.category === 'collection') {
+      const typeClass = hierarchy.getClass(presenterClass.attrClass)
+      const editorMixin = hierarchy.as(typeClass, view.mixin.CollectionEditor)
+      editor = getResource(editorMixin.editor).catch((cause) => {
+        console.error(`failed to find editor for ${_class} ${attribute} ${presenterClass.attrClass} cause: ${cause}`)
+      })
+    }
     if (presenterClass?.attrClass !== undefined && presenterClass?.category === 'array') {
       const typeClass = hierarchy.getClass(presenterClass.attrClass)
       const editorMixin = hierarchy.as(typeClass, view.mixin.ArrayEditor)
