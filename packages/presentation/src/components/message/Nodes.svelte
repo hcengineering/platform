@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Component } from '@anticrm/ui'
+  import { CheckBox, Component } from '@anticrm/ui'
   import view from '@anticrm/view'
 
   export let nodes: NodeListOf<any>
@@ -59,9 +59,17 @@
     {:else if node.nodeName === 'OL'}
       <ol><svelte:self nodes={node.childNodes} /></ol>
     {:else if node.nodeName === 'LI'}
-      <li><svelte:self nodes={node.childNodes} /></li>
+      <li class={'flex-row-center flex-grow  gap-1 checkbox_style'}><svelte:self nodes={node.childNodes} /></li>
+    {:else if node.nodeName === 'DIV'}
+      <div><svelte:self nodes={node.childNodes} /></div>
     {:else if node.nodeName === 'A'}
       <a href={node.getAttribute('href')}><svelte:self nodes={node.childNodes} /></a>
+    {:else if node.nodeName === 'LABEL'}
+      <svelte:self nodes={node.childNodes} />
+    {:else if node.nodeName === 'INPUT'}
+      {#if node.type?.toLowerCase() === 'checkbox'}
+        <CheckBox readonly checked={node.checked} />
+      {/if}
     {:else if node.nodeName === 'SPAN'}
       <Component
         is={view.component.ObjectPresenter}

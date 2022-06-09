@@ -181,14 +181,16 @@ specifiers:
   '@rush-temp/workbench-resources': file:./projects/workbench-resources.tgz
   '@rushstack/heft': ^0.45.5
   '@rushstack/heft-jest-plugin': ^0.3.5
-  '@tiptap/core': ~2.0.0-beta.93
-  '@tiptap/extension-highlight': ~2.0.0-beta.15
-  '@tiptap/extension-link': ~2.0.0-beta.33
-  '@tiptap/extension-mention': ~2.0.0-beta.63
-  '@tiptap/extension-placeholder': ~2.0.0-beta.26
-  '@tiptap/extension-typography': ~2.0.0-beta.13
-  '@tiptap/starter-kit': ~2.0.0-beta.89
-  '@tiptap/suggestion': ~2.0.0-beta.85
+  '@tiptap/core': ~2.0.0-beta.176
+  '@tiptap/extension-highlight': ~2.0.0-beta.33
+  '@tiptap/extension-link': ~2.0.0-beta.38
+  '@tiptap/extension-mention': ~2.0.0-beta.97
+  '@tiptap/extension-placeholder': ~2.0.0-beta.48
+  '@tiptap/extension-task-item': ~2.0.0-beta.32
+  '@tiptap/extension-task-list': ~2.0.0-beta.26
+  '@tiptap/extension-typography': ~2.0.0-beta.20
+  '@tiptap/starter-kit': ~2.0.0-beta.185
+  '@tiptap/suggestion': ~2.0.0-beta.92
   '@types/body-parser': ~1.19.2
   '@types/compression': ~1.7.2
   '@types/cors': ^2.8.12
@@ -260,7 +262,7 @@ specifiers:
   postcss-loader: ^6.1.0
   prettier: ^2.4.1
   prettier-plugin-svelte: ^2.7.0
-  prosemirror-model: ~1.16.1
+  prosemirror-model: ~1.17.0
   sass: ^1.37.5
   sass-loader: ^12.1.0
   simplytyped: ^3.3.0
@@ -470,6 +472,8 @@ dependencies:
   '@tiptap/extension-link': 2.0.0-beta.38_@tiptap+core@2.0.0-beta.176
   '@tiptap/extension-mention': 2.0.0-beta.97_@tiptap+core@2.0.0-beta.176
   '@tiptap/extension-placeholder': 2.0.0-beta.48_@tiptap+core@2.0.0-beta.176
+  '@tiptap/extension-task-item': 2.0.0-beta.32_@tiptap+core@2.0.0-beta.176
+  '@tiptap/extension-task-list': 2.0.0-beta.26_@tiptap+core@2.0.0-beta.176
   '@tiptap/extension-typography': 2.0.0-beta.20_@tiptap+core@2.0.0-beta.176
   '@tiptap/starter-kit': 2.0.0-beta.185
   '@tiptap/suggestion': 2.0.0-beta.92_@tiptap+core@2.0.0-beta.176
@@ -544,7 +548,7 @@ dependencies:
   postcss-loader: 6.2.1_postcss@8.4.14+webpack@5.73.0
   prettier: 2.6.2
   prettier-plugin-svelte: 2.7.0_prettier@2.6.2+svelte@3.48.0
-  prosemirror-model: 1.16.1
+  prosemirror-model: 1.17.0
   sass: 1.52.2
   sass-loader: 12.6.0_sass@1.52.2+webpack@5.73.0
   simplytyped: 3.3.0_typescript@4.7.2
@@ -1801,7 +1805,7 @@ packages:
       '@types/prosemirror-view': 1.23.3
       prosemirror-commands: 1.3.0
       prosemirror-keymap: 1.2.0
-      prosemirror-model: 1.16.1
+      prosemirror-model: 1.17.0
       prosemirror-schema-list: 1.2.0
       prosemirror-state: 1.4.0
       prosemirror-transform: 1.6.0
@@ -1935,7 +1939,7 @@ packages:
     dependencies:
       '@tiptap/core': 2.0.0-beta.176
       linkifyjs: 3.0.5
-      prosemirror-model: 1.16.1
+      prosemirror-model: 1.17.0
       prosemirror-state: 1.4.0
     dev: false
 
@@ -1954,7 +1958,7 @@ packages:
     dependencies:
       '@tiptap/core': 2.0.0-beta.176
       '@tiptap/suggestion': 2.0.0-beta.92_@tiptap+core@2.0.0-beta.176
-      prosemirror-model: 1.16.1
+      prosemirror-model: 1.17.0
       prosemirror-state: 1.4.0
     dev: false
 
@@ -1980,13 +1984,29 @@ packages:
       '@tiptap/core': ^2.0.0-beta.1
     dependencies:
       '@tiptap/core': 2.0.0-beta.176
-      prosemirror-model: 1.16.1
+      prosemirror-model: 1.17.0
       prosemirror-state: 1.4.0
       prosemirror-view: 1.25.0
     dev: false
 
   /@tiptap/extension-strike/2.0.0-beta.27_@tiptap+core@2.0.0-beta.176:
     resolution: {integrity: sha512-2dmCgtesuDdivM/54Q+Y6Tc3JbGz1SkHP6c62piuqBiYLWg3xa16zChZOhfN8szbbQlBgLT6XRTDt3c2Ux+Dug==}
+    peerDependencies:
+      '@tiptap/core': ^2.0.0-beta.1
+    dependencies:
+      '@tiptap/core': 2.0.0-beta.176
+    dev: false
+
+  /@tiptap/extension-task-item/2.0.0-beta.32_@tiptap+core@2.0.0-beta.176:
+    resolution: {integrity: sha512-ogeZHDUBNZtlcV6on+I6zenlvsXHzjFcgQIVedK+o4h8icnURFf5m4D3m1hMuM8UGj1pIu4atFDDvAAVi7RLew==}
+    peerDependencies:
+      '@tiptap/core': ^2.0.0-beta.1
+    dependencies:
+      '@tiptap/core': 2.0.0-beta.176
+    dev: false
+
+  /@tiptap/extension-task-list/2.0.0-beta.26_@tiptap+core@2.0.0-beta.176:
+    resolution: {integrity: sha512-7zPpz9eOUCnFyWNDFYPCUJ39gjID+mCI5BuXyXrjJjDfm8wxg/xTgg9+KC6xakczos7DypnhzlRKSs4EFczeUg==}
     peerDependencies:
       '@tiptap/core': ^2.0.0-beta.1
     dependencies:
@@ -2039,7 +2059,7 @@ packages:
       '@tiptap/core': ^2.0.0-beta.1
     dependencies:
       '@tiptap/core': 2.0.0-beta.176
-      prosemirror-model: 1.16.1
+      prosemirror-model: 1.17.0
       prosemirror-state: 1.4.0
       prosemirror-view: 1.25.0
     dev: false
@@ -7886,7 +7906,7 @@ packages:
   /prosemirror-commands/1.3.0:
     resolution: {integrity: sha512-BwBbZ5OAScPcm0x7H8SPbqjuEJnCU2RJT9LDyOiiIl/3NbL1nJZI4SFNHwU2e/tRr2Xe7JsptpzseqvZvToLBQ==}
     dependencies:
-      prosemirror-model: 1.16.1
+      prosemirror-model: 1.17.0
       prosemirror-state: 1.4.0
       prosemirror-transform: 1.6.0
     dev: false
@@ -7903,7 +7923,7 @@ packages:
     resolution: {integrity: sha512-9Tdx83xB2W4Oqchm12FtCkSizbqvi64cjs1I9TRPblqdA5TUWoVZ4ZI+t71Jh6HSEh4cDMPzx3UwfryJtKlb/w==}
     dependencies:
       prosemirror-keymap: 1.2.0
-      prosemirror-model: 1.16.1
+      prosemirror-model: 1.17.0
       prosemirror-state: 1.4.0
       prosemirror-view: 1.25.0
     dev: false
@@ -7923,8 +7943,8 @@ packages:
       w3c-keyname: 2.2.4
     dev: false
 
-  /prosemirror-model/1.16.1:
-    resolution: {integrity: sha512-r1/w0HDU40TtkXp0DyKBnFPYwd8FSlUSJmGCGFv4DeynfeSlyQF2FD0RQbVEMOe6P3PpUSXM6LZBV7W/YNZ4mA==}
+  /prosemirror-model/1.17.0:
+    resolution: {integrity: sha512-RJBDgZs/W26yyx1itrk5b3H9FxIro3K7Xjc2QWJI99Gu1nxYAnIggqI3fIOD8Jd/6QZfM+t6elZFJPycVexMTA==}
     dependencies:
       orderedmap: 1.1.8
     dev: false
@@ -7932,7 +7952,7 @@ packages:
   /prosemirror-schema-list/1.2.0:
     resolution: {integrity: sha512-8PT/9xOx1HHdC7fDNNfhQ50Z8Mzu7nKyA1KCDltSpcZVZIbB0k7KtsHrnXyuIhbLlScoymBiLZ00c5MH6wdFsA==}
     dependencies:
-      prosemirror-model: 1.16.1
+      prosemirror-model: 1.17.0
       prosemirror-state: 1.4.0
       prosemirror-transform: 1.6.0
     dev: false
@@ -7940,20 +7960,20 @@ packages:
   /prosemirror-state/1.4.0:
     resolution: {integrity: sha512-mVDZdjNX/YT5FvypiwbphJe9psA5h+j9apsSszVRFc6oKFoIInvzdujh8QW9f9lwHtSYajLxNiM1hPhd0Sl1XA==}
     dependencies:
-      prosemirror-model: 1.16.1
+      prosemirror-model: 1.17.0
       prosemirror-transform: 1.6.0
     dev: false
 
   /prosemirror-transform/1.6.0:
     resolution: {integrity: sha512-MAp7AjsjEGEqQY0sSMufNIUuEyB1ZR9Fqlm8dTwwWwpEJRv/plsKjWXBbx52q3Ml8MtaMcd7ic14zAHVB3WaMw==}
     dependencies:
-      prosemirror-model: 1.16.1
+      prosemirror-model: 1.17.0
     dev: false
 
   /prosemirror-view/1.25.0:
     resolution: {integrity: sha512-9eJ7VYOqUl/l2P3Q126PoUhfrWAGF0GU4zHXZssbVnhqLZBKpHTcTYx1W9DMg1PCuS69sHLMJdm3UFHmD5SGdw==}
     dependencies:
-      prosemirror-model: 1.16.1
+      prosemirror-model: 1.17.0
       prosemirror-state: 1.4.0
       prosemirror-transform: 1.6.0
     dev: false
@@ -12669,7 +12689,7 @@ packages:
     dev: false
 
   file:projects/query.tgz:
-    resolution: {integrity: sha512-1czqFbKUfNjFTLv9E/ZZpKcv8K/OphFY+K0N8s+KJDRAwWu7vQ2TX5pIdb8AfpZIjea3s98bmTEPUhpIo31p1A==, tarball: file:projects/query.tgz}
+    resolution: {integrity: sha512-Cqm7lHEq3Bk9v0CR8wwGpQh/Ht3WhFDqJQLtLFTew7EptDvGRarMwwuqt012QdZ3GYC0SgxEv0pGydMWNZYD6A==, tarball: file:projects/query.tgz}
     name: '@rush-temp/query'
     version: 0.0.0
     dependencies:
@@ -14065,7 +14085,7 @@ packages:
     dev: false
 
   file:projects/text-editor.tgz_1e3963ebf0ceeb25b2fa6a1cc87e253c:
-    resolution: {integrity: sha512-eyxq4liZ8eOwIrC0sYALoh+pfJrwEmIbkpK2AZ5E09Oe9U1U7r9F7YdZ6oXcblIRT17Zbi2KsRAPIhnsHbaLyg==, tarball: file:projects/text-editor.tgz}
+    resolution: {integrity: sha512-baB/9mrVbC1HBM4EqGCpqQ+C6aUzGbYCUeP8x3O1xp6YUkJrl4XcH6o7aZNtNDgJRvSDPdDAUg5oP/++gud68w==, tarball: file:projects/text-editor.tgz}
     id: file:projects/text-editor.tgz
     name: '@rush-temp/text-editor'
     version: 0.0.0
@@ -14075,6 +14095,8 @@ packages:
       '@tiptap/extension-link': 2.0.0-beta.38_@tiptap+core@2.0.0-beta.176
       '@tiptap/extension-mention': 2.0.0-beta.97_@tiptap+core@2.0.0-beta.176
       '@tiptap/extension-placeholder': 2.0.0-beta.48_@tiptap+core@2.0.0-beta.176
+      '@tiptap/extension-task-item': 2.0.0-beta.32_@tiptap+core@2.0.0-beta.176
+      '@tiptap/extension-task-list': 2.0.0-beta.26_@tiptap+core@2.0.0-beta.176
       '@tiptap/extension-typography': 2.0.0-beta.20_@tiptap+core@2.0.0-beta.176
       '@tiptap/starter-kit': 2.0.0-beta.185
       '@tiptap/suggestion': 2.0.0-beta.92_@tiptap+core@2.0.0-beta.176
@@ -14089,7 +14111,7 @@ packages:
       eslint-plugin-svelte3: 4.0.0_eslint@7.32.0+svelte@3.48.0
       prettier: 2.6.2
       prettier-plugin-svelte: 2.7.0_prettier@2.6.2+svelte@3.48.0
-      prosemirror-model: 1.16.1
+      prosemirror-model: 1.17.0
       sass: 1.52.2
       svelte: 3.48.0
       svelte-check: 2.7.2_c1788f0bf13b393830d6c30602bd01af

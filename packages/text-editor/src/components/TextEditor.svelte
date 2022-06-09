@@ -22,6 +22,8 @@
   // import Typography from '@tiptap/extension-typography'
   import Placeholder from '@tiptap/extension-placeholder'
   import StarterKit from '@tiptap/starter-kit'
+  import TaskList from '@tiptap/extension-task-list'
+  import TaskItem from '@tiptap/extension-task-item'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import textEditorPlugin from '../plugin'
   import { FormatMode } from '../types'
@@ -126,6 +128,13 @@
           ...(supportSubmit ? [Handle] : []), // order important
           // Typography, // we need to disable 1/2 -> ½ rule (https://github.com/hcengineering/anticrm/issues/345)
           Placeholder.configure({ placeholder: placeHolderStr }),
+          TaskList,
+          TaskItem.configure({
+            nested: true,
+            HTMLAttributes: {
+              class: 'flex flex-grow gap-1 checkbox_style'
+            }
+          }),
           ...extensions
         ],
         onTransaction: () => {

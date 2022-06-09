@@ -19,10 +19,14 @@
   export let symbol: 'check' | 'minus' = 'check'
   export let circle: boolean = false
   export let primary: boolean = false
+  export let readonly = false
 
   const dispatch = createEventDispatcher()
 
   const handleValueChanged = (event: Event) => {
+    if (readonly) {
+      return
+    }
     const eventTarget = event.target as HTMLInputElement
     const isChecked = eventTarget.checked
 
@@ -31,7 +35,7 @@
 </script>
 
 <label class="checkbox" class:circle class:primary class:checked>
-  <input class="chBox" type="checkbox" bind:checked on:change={handleValueChanged} />
+  <input class="chBox" disabled={readonly} type="checkbox" bind:checked on:change={handleValueChanged} />
   <svg class="checkSVG" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
     {#if checked}
       {#if symbol === 'minus'}

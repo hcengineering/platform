@@ -37,14 +37,16 @@
     "@anticrm/platform": "~0.6.6",
     "@anticrm/core": "~0.6.16",
     "@anticrm/ui": "~0.6.0",
-    "@tiptap/core": "~2.0.0-beta.93",
-    "@tiptap/starter-kit": "~2.0.0-beta.89",
-    "@tiptap/extension-highlight": "~2.0.0-beta.15",
-    "@tiptap/extension-placeholder": "~2.0.0-beta.26",
-    "@tiptap/extension-mention": "~2.0.0-beta.63",
-    "@tiptap/extension-typography": "~2.0.0-beta.13",
-    "@tiptap/extension-link": "~2.0.0-beta.33",
-    "@tiptap/suggestion": "~2.0.0-beta.85",
-    "prosemirror-model": "~1.16.1"
+    "@tiptap/core": "~2.0.0-beta.176",
+    "@tiptap/starter-kit": "~2.0.0-beta.185",
+    "@tiptap/extension-highlight": "~2.0.0-beta.33",
+    "@tiptap/extension-placeholder": "~2.0.0-beta.48",
+    "@tiptap/extension-mention": "~2.0.0-beta.97",
+    "@tiptap/extension-typography": "~2.0.0-beta.20",
+    "@tiptap/extension-link": "~2.0.0-beta.38",
+    "@tiptap/suggestion": "~2.0.0-beta.92",
+    "prosemirror-model": "~1.17.0",
+    "@tiptap/extension-task-list": "~2.0.0-beta.26",
+    "@tiptap/extension-task-item": "~2.0.0-beta.32"
   }
 }

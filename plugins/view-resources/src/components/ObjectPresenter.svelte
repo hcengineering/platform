@@ -29,7 +29,7 @@
   const docQuery = createQuery()
   let doc: Doc | undefined
 
-  $: if (value === undefined) {
+  $: if (value === undefined && _class != null) {
     docQuery.query(_class, { _id: objectId }, (r) => {
       doc = r.shift()
     })
@@ -37,7 +37,7 @@
     doc = value
   }
 
-  $: if (doc !== undefined) {
+  $: if (doc !== undefined && _class != null) {
     getObjectPresenter(client, doc._class, { key: '' }).then((p) => {
       presenter = p
     })
