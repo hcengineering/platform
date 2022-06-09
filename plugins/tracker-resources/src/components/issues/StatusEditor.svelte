@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { AttachedData, Ref, WithLookup } from '@anticrm/core'
+  import { AttachedData, Ref, SortingOrder, WithLookup } from '@anticrm/core'
   import { Issue, IssueStatus } from '@anticrm/tracker'
   import { getClient } from '@anticrm/presentation'
   import { Tooltip, TooltipAlignment } from '@anticrm/ui'
@@ -48,9 +48,20 @@
       await client.update(value, { status: newStatus })
     }
   }
+  $: if (!statuses) {
+    const query = '_id' in value ? { attachedTo: value.space } : {}
+    client
+      .findAll(tracker.class.IssueStatus, query, {
+        lookup: { category: tracker.class.IssueStatusCategory },
+        sort: { rank: SortingOrder.Ascending }
+      })
+      .then((result) => {
+        statuses = result
+      })
+  }
 </script>
 
-{#if value}
+{#if value && statuses}
   {#if isEditable}
     <Tooltip label={tracker.string.SetStatus} direction={tooltipAlignment} fill={tooltipFill}>
       <StatusSelector

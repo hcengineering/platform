@@ -1,4 +1,4 @@
-import { AnyAttribute, Class, Client, Doc, Ref, TxOperations } from '@anticrm/core'
+import core, { AnyAttribute, Class, Client, Doc, Ref, TxOperations } from '@anticrm/core'
 
 /**
  * @public
@@ -22,7 +22,21 @@ export async function updateAttribute (
   if (client.getHierarchy().isMixin(attr.attributeOf)) {
     await client.updateMixin(doc._id, _class, doc.space, attr.attributeOf, { [attributeKey]: value })
   } else {
-    await client.update(object, { [attributeKey]: value })
+    if (client.getHierarchy().isDerived(attribute.attr.type._class, core.class.ArrOf)) {
+      const oldvalue: any[] = (object as any)[attributeKey] ?? []
+      const val: any[] = value
+      const toPull = oldvalue.filter((it: any) => !val.includes(it))
+
+      const toPush = val.filter((it) => !oldvalue.includes(it))
+      if (toPull.length > 0) {
+        await client.update(object, { $pull: { [attributeKey]: { $in: toPull } } })
+      }
+      if (toPush.length > 0) {
+        await client.update(object, { $push: { [attributeKey]: { $each: toPush, $position: 0 } } })
+      }
+    } else {
+      await client.update(object, { [attributeKey]: value })
+    }
   }
 }
 

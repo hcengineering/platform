@@ -22,6 +22,7 @@ import type { AnyComponent } from '@anticrm/ui'
 import type {
   Action,
   ActionCategory,
+  ArrayEditor,
   AttributeEditor,
   AttributeFilter,
   AttributePresenter,
@@ -111,6 +112,11 @@ export class TCollectionPresenter extends TClass implements CollectionPresenter 
 
 @Mixin(view.mixin.CollectionEditor, core.class.Class)
 export class TCollectionEditor extends TClass implements CollectionEditor {
+  editor!: AnyComponent
+}
+
+@Mixin(view.mixin.ArrayEditor, core.class.Class)
+export class TArrayEditor extends TClass implements ArrayEditor {
   editor!: AnyComponent
 }
 
@@ -274,7 +280,8 @@ export function createModel (builder: Builder): void {
     TTextPresenter,
     TIgnoreActions,
     TPreviewPresenter,
-    TLinkPresenter
+    TLinkPresenter,
+    TArrayEditor
   )
 
   classPresenter(

@@ -74,22 +74,6 @@
   <svelte:fragment slot="pool">
     <!-- <TimeShiftPicker title={calendar.string.Date} bind:value direction="after" /> -->
     <DateRangePresenter bind:value withTime={true} editable={true} labelNull={ui.string.SelectDate} />
-    <UserBoxList
-      _class={contact.class.Employee}
-      items={participants}
-      label={calendar.string.Participants}
-      on:open={(evt) => {
-        participants.push(evt.detail._id)
-        participants = participants
-      }}
-      on:delete={(evt) => {
-        const _id = evt.detail._id
-        const index = participants.findIndex((p) => p === _id)
-        if (index !== -1) {
-          participants.splice(index, 1)
-          participants = participants
-        }
-      }}
-    />
+    <UserBoxList _class={contact.class.Employee} bind:items={participants} label={calendar.string.Participants} />
   </svelte:fragment>
 </Card>

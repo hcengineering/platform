@@ -16,21 +16,13 @@
 <script lang="ts">
   import type { Card } from '@anticrm/board'
   import board from '@anticrm/board'
-  import { Employee } from '@anticrm/contact'
-  import { Ref } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
   import { CheckBox, Label } from '@anticrm/ui'
-
   import plugin from '../../plugin'
-  import { updateCardMembers } from '../../utils/CardUtils'
-  import UserBoxList from '../UserBoxList.svelte'
 
   export let value: Card
   const client = getClient()
 
-  function updateMembers (e: CustomEvent<Ref<Employee>[]>) {
-    updateCardMembers(value, client, e.detail)
-  }
   function updateState (e: CustomEvent<boolean>) {
     if (e.detail) {
       client.update(value, { doneState: board.state.Completed })
@@ -47,12 +39,6 @@
     </div>
     <div class="ml-4">
       <CheckBox checked={value.doneState === board.state.Completed} on:value={updateState} />
-    </div>
-    <div class="label fs-bold">
-      <Label label={plugin.string.Members} />
-    </div>
-    <div class="ml-4">
-      <UserBoxList value={value.members ?? []} on:update={updateMembers} />
     </div>
   </div>
 {/if}

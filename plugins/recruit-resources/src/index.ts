@@ -16,7 +16,7 @@
 import type { Client, Doc } from '@anticrm/core'
 import { IntlString, OK, Resources, Severity, Status, translate } from '@anticrm/platform'
 import { ObjectSearchResult } from '@anticrm/presentation'
-import { Applicant, Review } from '@anticrm/recruit'
+import { Applicant } from '@anticrm/recruit'
 import task from '@anticrm/task'
 import { showPopup } from '@anticrm/ui'
 import ApplicationItem from './components/ApplicationItem.svelte'
@@ -29,6 +29,7 @@ import CreateVacancy from './components/CreateVacancy.svelte'
 import EditApplication from './components/EditApplication.svelte'
 import EditVacancy from './components/EditVacancy.svelte'
 import KanbanCard from './components/KanbanCard.svelte'
+import NewCandidateHeader from './components/NewCandidateHeader.svelte'
 import CreateOpinion from './components/review/CreateOpinion.svelte'
 import CreateReview from './components/review/CreateReview.svelte'
 import EditReview from './components/review/EditReview.svelte'
@@ -44,7 +45,6 @@ import VacancyCountPresenter from './components/VacancyCountPresenter.svelte'
 import VacancyItemPresenter from './components/VacancyItemPresenter.svelte'
 import VacancyModifiedPresenter from './components/VacancyModifiedPresenter.svelte'
 import VacancyPresenter from './components/VacancyPresenter.svelte'
-import NewCandidateHeader from './components/NewCandidateHeader.svelte'
 import recruit from './plugin'
 
 async function createOpinion (object: Doc): Promise<void> {
@@ -64,16 +64,6 @@ export async function applicantValidator (applicant: Applicant, client: Client):
   })
   if (applicants.filter((p) => p._id !== applicant._id).length > 0) {
     return new Status(Severity.ERROR, recruit.status.ApplicationExists, {})
-  }
-  return OK
-}
-
-export async function reviewValidator (review: Review, client: Client): Promise<Status> {
-  if (review.attachedTo === undefined) {
-    return new Status(Severity.INFO, recruit.status.TalentRequired, {})
-  }
-  if (review.space === undefined) {
-    return new Status(Severity.INFO, recruit.status.ReviewCategoryRequired, {})
   }
   return OK
 }
@@ -125,8 +115,7 @@ export default async (): Promise<Resources> => ({
     CreateOpinion: createOpinion
   },
   validator: {
-    ApplicantValidator: applicantValidator,
-    ReviewValidator: reviewValidator
+    ApplicantValidator: applicantValidator
   },
   component: {
     CreateVacancy,

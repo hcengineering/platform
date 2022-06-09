@@ -13,10 +13,9 @@
 // limitations under the License.
 //
 
-import core, { Class, Doc, DOMAIN_TX, Ref, Space, TxOperations } from '@anticrm/core'
+import core, { Doc, Ref, Space, TxOperations } from '@anticrm/core'
 import { createOrUpdate, MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
 import { DOMAIN_CALENDAR } from '@anticrm/model-calendar'
-import { DOMAIN_SPACE } from '@anticrm/model-core'
 import tags, { TagCategory } from '@anticrm/model-tags'
 import { createKanbanTemplate, createSequence } from '@anticrm/model-task'
 import { getCategories } from '@anticrm/skillset'
@@ -35,19 +34,6 @@ export const recruitOperation: MigrateOperation = {
         space: recruit.space.Reviews
       }
     )
-    const categories = await client.find(DOMAIN_SPACE, {
-      _class: 'recruit:class:ReviewCategory' as Ref<Class<Doc>>
-    })
-    for (const cat of categories) {
-      await client.delete(DOMAIN_SPACE, cat._id)
-    }
-
-    const catTx = await client.find(DOMAIN_TX, {
-      objectClass: 'recruit:class:ReviewCategory' as Ref<Class<Doc>>
-    })
-    for (const cat of catTx) {
-      await client.delete(DOMAIN_TX, cat._id)
-    }
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)

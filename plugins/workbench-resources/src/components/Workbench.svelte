@@ -211,8 +211,6 @@
   }
 
   function selectSpace (spaceId?: Ref<Space>, spaceSpecial?: string): void {
-    if (currentSpace === spaceId && (spaceSpecial === currentSpecial || spaceSpecial === asideId)) return
-
     doNavigate([], undefined, {
       mode: 'space',
       space: spaceId,

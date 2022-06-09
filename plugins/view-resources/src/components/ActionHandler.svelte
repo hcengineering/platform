@@ -103,6 +103,19 @@
 
   async function handleKeys (evt: KeyboardEvent): Promise<void> {
     const targetTagName = (evt.target as any)?.tagName?.toLowerCase()
+
+    let elm = evt.target as HTMLElement
+    while (true) {
+      if (elm.contentEditable === 'true') {
+        return
+      }
+      const prt = elm.parentElement
+      if (prt === null) {
+        break
+      }
+      elm = prt
+    }
+
     let currentActions = actions
 
     // For none we ignore all actions.

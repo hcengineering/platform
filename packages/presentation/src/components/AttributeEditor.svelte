@@ -35,12 +35,12 @@
 
   $: attribute = typeof key === 'string' ? hierarchy.getAttribute(_class, key) : key.attr
   $: attributeKey = typeof key === 'string' ? key : key.key
-  $: typeClassId = attribute !== undefined ? getAttributePresenterClass(attribute) : undefined
+  $: presenterClass = attribute !== undefined ? getAttributePresenterClass(hierarchy, attribute) : undefined
 
   let editor: Promise<AnySvelteComponent> | undefined
 
-  $: if (typeClassId !== undefined) {
-    const typeClass = hierarchy.getClass(typeClassId)
+  $: if (presenterClass !== undefined) {
+    const typeClass = hierarchy.getClass(presenterClass.attrClass)
     const editorMixin = hierarchy.as(typeClass, view.mixin.AttributeEditor)
     editor = getResource(editorMixin.editor)
   }

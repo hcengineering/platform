@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { Employee, formatName } from '@anticrm/contact'
 import { DocumentQuery, Ref, SortingOrder } from '@anticrm/core'
 import type { Asset, IntlString } from '@anticrm/platform'
 import {
@@ -22,7 +23,8 @@ import {
   IssuesOrdering,
   Issue,
   IssuesDateModificationPeriod,
-  ProjectStatus
+  ProjectStatus,
+  IssueStatus
 } from '@anticrm/tracker'
 import { AnyComponent, AnySvelteComponent, getMillisecondsInMonth, MILLISECONDS_IN_WEEK } from '@anticrm/ui'
 import tracker from './plugin'
@@ -294,6 +296,88 @@ export const projectsTitleMap: Record<ProjectsViewMode, IntlString> = Object.fre
   active: tracker.string.ActiveProjects,
   closed: tracker.string.ClosedProjects
 })
+
+export function getCategories (
+  key: IssuesGroupByKeys | undefined,
+  elements: Issue[],
+  shouldShowAll: boolean,
+  statuses: IssueStatus[],
+  employees: Employee[]
+): any[] {
+  if (key === undefined) {
+    return [undefined] // No grouping
+  }
+
+  const defaultStatuses = Object.values(statuses).map((x) => x._id)
+
+  const existingCategories = Array.from(
+    new Set(
+      elements.map((x) => {
+        return x[key]
+      })
+    )
+  )
+
+  if (shouldShowAll) {
+    if (key === 'status') {
+      return defaultStatuses
+    }
+
+    if (key === 'priority') {
+      return defaultPriorities
+    }
+  }
+
+  if (key === 'status') {
+    existingCategories.sort((s1, s2) => {
+      const i1 = defaultStatuses.findIndex((x) => x === s1)
+      const i2 = defaultStatuses.findIndex((x) => x === s2)
+
+      return i1 - i2
+    })
+  }
+
+  if (key === 'priority') {
+    existingCategories.sort((p1, p2) => {
+      const i1 = defaultPriorities.findIndex((x) => x === p1)
+      const i2 = defaultPriorities.findIndex((x) => x === p2)
+
+      return i1 - i2
+    })
+  }
+
+  if (key === 'assignee') {
+    existingCategories.sort((a1, a2) => {
+      const employeeId1 = a1 as Ref<Employee> | null
+      const employeeId2 = a2 as Ref<Employee> | null
+
+      if (employeeId1 === null && employeeId2 !== null) {
+        return 1
+      }
+
+      if (employeeId1 !== null && employeeId2 === null) {
+        return -1
+      }
+
+      if (employeeId1 !== null && employeeId2 !== null) {
+        const name1 = formatName(employees.find((x) => x?._id === employeeId1)?.name ?? '')
+        const name2 = formatName(employees.find((x) => x?._id === employeeId2)?.name ?? '')
+
+        if (name1 > name2) {
+          return 1
+        } else if (name2 > name1) {
+          return -1
+        }
+
+        return 0
+      }
+
+      return 0
+    })
+  }
+
+  return existingCategories
+}
 
 export function getIssueId (team: Team, issue: Issue): string {
   return `${team.identifier}-${issue.number}`

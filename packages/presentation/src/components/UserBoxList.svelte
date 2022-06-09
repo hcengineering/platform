@@ -55,9 +55,9 @@
         selectedUsers: items
       },
       evt.target as HTMLElement,
-      () => {},
+      undefined,
       (result) => {
-        if (result !== undefined) {
+        if (result != null) {
           items = result
           dispatch('update', items)
         }

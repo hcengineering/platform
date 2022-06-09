@@ -19,6 +19,7 @@ import { IntlString, mergeIds } from '@anticrm/platform'
 import { Team, trackerId } from '@anticrm/tracker'
 import tracker from '@anticrm/tracker-resources/src/plugin'
 import type { AnyComponent } from '@anticrm/ui'
+import { ViewletDescriptor } from '@anticrm/view'
 import { Application } from '@anticrm/workbench'
 
 export default mergeIds(trackerId, tracker, {
@@ -41,5 +42,8 @@ export default mergeIds(trackerId, tracker, {
   },
   app: {
     Tracker: '' as Ref<Application>
+  },
+  viewlet: {
+    List: '' as Ref<ViewletDescriptor>
   }
 })
