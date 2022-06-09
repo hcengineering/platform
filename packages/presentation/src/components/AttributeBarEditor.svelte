@@ -27,6 +27,7 @@
   export let maxWidth: string | undefined = undefined
   export let focus: boolean = false
   export let showHeader: boolean = true
+  export let allowedCollections: string[] = []
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -41,21 +42,24 @@
     attribute: AnyAttribute,
     presenterClass?: { attrClass: Ref<Class<Doc>>; category: AttributeCategory }
   ): void {
-    if (presenterClass?.attrClass !== undefined && presenterClass?.category === 'attribute') {
+    if (presenterClass?.attrClass === undefined) {
+      return
+    }
+    if (presenterClass.category === 'attribute') {
       const typeClass = hierarchy.getClass(presenterClass.attrClass)
       const editorMixin = hierarchy.as(typeClass, view.mixin.AttributeEditor)
       editor = getResource(editorMixin.editor).catch((cause) => {
         console.error(`failed to find editor for ${_class} ${attribute} ${presenterClass.attrClass} cause: ${cause}`)
       })
     }
-    if (presenterClass?.attrClass !== undefined && presenterClass?.category === 'collection') {
+    if (presenterClass.category === 'collection' && allowedCollections.findIndex(attr => attr === attribute?.name) >= 0) {
       const typeClass = hierarchy.getClass(presenterClass.attrClass)
       const editorMixin = hierarchy.as(typeClass, view.mixin.CollectionEditor)
       editor = getResource(editorMixin.editor).catch((cause) => {
         console.error(`failed to find editor for ${_class} ${attribute} ${presenterClass.attrClass} cause: ${cause}`)
       })
     }
-    if (presenterClass?.attrClass !== undefined && presenterClass?.category === 'array') {
+    if (presenterClass.category === 'array') {
       const typeClass = hierarchy.getClass(presenterClass.attrClass)
       const editorMixin = hierarchy.as(typeClass, view.mixin.ArrayEditor)
       editor = getResource(editorMixin.editor).catch((cause) => {
