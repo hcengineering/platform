@@ -51,6 +51,7 @@ import EditIssue from './components/issues/edit/EditIssue.svelte'
 import NewIssueHeader from './components/NewIssueHeader.svelte'
 import ListView from './components/issues/ListView.svelte'
 import IssuesView from './components/issues/IssuesView.svelte'
+import IssuePreview from './components/issues/IssuePreview.svelte'
 
 export default async (): Promise<Resources> => ({
   component: {
@@ -87,7 +88,8 @@ export default async (): Promise<Resources> => ({
     SetParentIssueActionPopup,
     EditProject,
     IssuesView,
-    ListView
+    ListView,
+    IssuePreview
   },
   function: {
     ProjectVisible: () => false

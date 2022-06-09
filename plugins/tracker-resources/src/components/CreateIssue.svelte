@@ -253,7 +253,6 @@
         width="min-content"
         size="small"
         shouldShowLabel={true}
-        tooltipFill={false}
         on:change={({ detail }) => (object.status = detail)}
       />
       <PrioritySelector priority={object.priority} onPriorityChange={handlePriorityChanged} />

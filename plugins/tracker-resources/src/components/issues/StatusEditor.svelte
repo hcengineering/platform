@@ -17,7 +17,7 @@
   import { AttachedData, Ref, SortingOrder, WithLookup } from '@anticrm/core'
   import { Issue, IssueStatus } from '@anticrm/tracker'
   import { getClient } from '@anticrm/presentation'
-  import { Tooltip, TooltipAlignment } from '@anticrm/ui'
+  import { tooltip, TooltipAlignment } from '@anticrm/ui'
   import type { ButtonKind, ButtonSize } from '@anticrm/ui'
   import tracker from '../../plugin'
   import StatusSelector from '../StatusSelector.svelte'
@@ -27,7 +27,6 @@
   export let isEditable: boolean = true
   export let shouldShowLabel: boolean = false
   export let tooltipAlignment: TooltipAlignment | undefined = undefined
-  export let tooltipFill = true
 
   export let kind: ButtonKind = 'link'
   export let size: ButtonSize = 'large'
@@ -62,21 +61,7 @@
 </script>
 
 {#if value && statuses}
-  {#if isEditable}
-    <Tooltip label={tracker.string.SetStatus} direction={tooltipAlignment} fill={tooltipFill}>
-      <StatusSelector
-        {kind}
-        {size}
-        {width}
-        {justify}
-        {isEditable}
-        {shouldShowLabel}
-        {statuses}
-        selectedStatusId={value.status}
-        onStatusChange={handleStatusChanged}
-      />
-    </Tooltip>
-  {:else}
+  <div class="clear-mins" use:tooltip={ isEditable ? { label: tracker.string.SetStatus, direction: tooltipAlignment } : undefined }>
     <StatusSelector
       {kind}
       {size}
@@ -85,8 +70,8 @@
       {isEditable}
       {shouldShowLabel}
       {statuses}
-      selectedStatusId={value.status}
+      bind:selectedStatusId={value.status}
       onStatusChange={handleStatusChanged}
     />
-  {/if}
+  </div>
 {/if}

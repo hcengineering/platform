@@ -17,7 +17,6 @@
   import { ViewContext } from '@anticrm/view'
   import { onDestroy } from 'svelte'
   import { contextStore } from '../context'
-  import { previewDocument } from '../selection'
 
   export let context: ViewContext
 
@@ -39,7 +38,6 @@
         mode: context.mode,
         application: context.application ?? cur[(pos !== -1 ? pos : cur.length) - 1]?.application
       }
-      previewDocument.set(undefined)
       if (pos === -1) {
         len = cur.length
         return [...cur, newCur]

@@ -358,6 +358,10 @@ export function createModel (builder: Builder): void {
     presenter: tracker.component.IssuePresenter
   })
 
+  builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.PreviewPresenter, {
+    presenter: tracker.component.IssuePreview
+  })
+
   builder.mixin(tracker.class.TypeIssuePriority, core.class.Class, view.mixin.AttributePresenter, {
     presenter: tracker.component.PriorityPresenter
   })
