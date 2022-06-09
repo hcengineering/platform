@@ -115,21 +115,15 @@
     dispatch('close')
   }}
 >
-  <div class="flex-col ml-4 mt-4 mr-4 flex-gap-1">
-    <div class="text-md font-medium">
-      <Label label={board.string.Title} />
-    </div>
-
+  <div class="flex-col flex-gap-1">
+    <Label label={board.string.Title} />
     <div class="p-2 mt-1 mb-1 border-bg-accent border-radius-1">
       <EditBox bind:value={name} maxWidth="100%" focus={true} />
     </div>
   </div>
 
-  <div class="flex-col ml-4 mt-4 mr-4 flex-gap-1">
-    <div class="text-md font-medium">
-      <Label label={board.string.CopyChecklistFrom} />
-    </div>
-
+  <div class="flex-col flex-gap-1">
+    <Label label={board.string.CopyChecklistFrom} />
     <div class="mt-1 mb-1 w-full">
       <Dropdown
         bind:selected={selectedTemplate}
