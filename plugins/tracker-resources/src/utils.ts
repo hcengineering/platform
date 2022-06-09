@@ -378,3 +378,7 @@ export function getCategories (
 
   return existingCategories
 }
+
+export function getIssueId (team: Team, issue: Issue): string {
+  return `${team.identifier}-${issue.number}`
+}

@@ -16,18 +16,20 @@
   import { createEventDispatcher } from 'svelte'
   import { flip } from 'svelte/animate'
   import { WithLookup } from '@anticrm/core'
-  import { Issue, IssueStatus } from '@anticrm/tracker'
+  import { Issue, IssueStatus, Team } from '@anticrm/tracker'
+  import { ContextMenu } from '@anticrm/view-resources'
   import { showPanel, showPopup } from '@anticrm/ui'
   import tracker from '../../../plugin'
+  import { getIssueId } from '../../../utils'
+  import Circles from '../../icons/Circles.svelte'
   import ProjectEditor from '../../projects/ProjectEditor.svelte'
   import AssigneeEditor from '../AssigneeEditor.svelte'
   import DueDateEditor from '../DueDateEditor.svelte'
   import StatusEditor from '../StatusEditor.svelte'
-  import Circles from '../../icons/Circles.svelte'
-  import { ContextMenu } from '@anticrm/view-resources'
 
   export let issues: Issue[]
   export let issueStatuses: WithLookup<IssueStatus>[]
+  export let currentTeam: Team
 
   const dispatch = createEventDispatcher()
 
@@ -89,20 +91,29 @@
     <div class="draggable-container">
       <div class="draggable-mark"><Circles /></div>
     </div>
-    <div class="flex-center ml-6">
-      <StatusEditor value={issue} statuses={issueStatuses} kind="transparent" tooltipAlignment="bottom" />
-      <span class="flex-no-shrink name" on:click={() => openIssue(issue)}>
+    <div class="flex-center ml-6 clear-mins">
+      <span class="flex-no-shrink text" on:click={() => openIssue(issue)}>
+        {getIssueId(currentTeam, issue)}
+      </span>
+      <StatusEditor
+        value={issue}
+        statuses={issueStatuses}
+        kind="transparent"
+        tooltipFill={false}
+        tooltipAlignment="bottom"
+      />
+      <span class="text name" title={issue.title} on:click={() => openIssue(issue)}>
         {issue.title}
       </span>
     </div>
-    <div class="flex-center">
+    <div class="flex-center flex-no-shrink">
       {#if issue.project !== null}
         <ProjectEditor value={issue} />
       {/if}
       {#if issue.dueDate !== null}
         <DueDateEditor value={issue} />
       {/if}
-      <AssigneeEditor value={issue} />
+      <AssigneeEditor value={issue} tooltipFill={false} />
     </div>
   </div>
 {/each}
@@ -112,9 +123,15 @@
     position: relative;
     border-bottom: 1px solid var(--divider-color);
 
-    .name {
+    .text {
       font-weight: 500;
       color: var(--theme-caption-color);
+    }
+
+    .name {
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
     }
 
     .draggable-container {

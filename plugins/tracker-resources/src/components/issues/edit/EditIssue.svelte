@@ -35,6 +35,7 @@
   import { StyledTextArea } from '@anticrm/text-editor'
   import { createEventDispatcher, onMount } from 'svelte'
   import tracker from '../../../plugin'
+  import { getIssueId } from '../../../utils'
   import ControlPanel from './ControlPanel.svelte'
   import CopyToClipboard from './CopyToClipboard.svelte'
   import SubIssueSelector from './SubIssueSelector.svelte'
@@ -84,7 +85,7 @@
       }
     )
 
-  $: issueId = currentTeam && issue && `${currentTeam.identifier}-${issue.number}`
+  $: issueId = currentTeam && issue && getIssueId(currentTeam, issue)
   $: canSave = title.trim().length > 0
   $: isDescriptionEmpty = !new DOMParser().parseFromString(description, 'text/html').documentElement.innerText?.trim()
 

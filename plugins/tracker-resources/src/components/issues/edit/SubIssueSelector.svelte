@@ -28,6 +28,7 @@
     Spinner
   } from '@anticrm/ui'
   import tracker from '../../../plugin'
+  import { getIssueId } from '../../../utils'
 
   export let issue: WithLookup<Issue>
   export let team: Team
@@ -40,10 +41,6 @@
 
   function getIssueStatusIcon (issue: Issue) {
     return issueStatuses.find((s) => issue.status === s._id)?.$lookup?.category?.icon ?? null
-  }
-
-  function getIssueId (issue: Issue) {
-    return `${team.identifier}-${issue.number}`
   }
 
   function openIssue (target: Ref<Issue>) {
@@ -68,7 +65,7 @@
           value: subIssues.map((iss) => ({
             id: iss._id,
             icon: getIssueStatusIcon(iss),
-            text: `${getIssueId(iss)} ${iss.title}`,
+            text: `${getIssueId(team, iss)} ${iss.title}`,
             isSelected: iss._id === issue._id
           })),
           width: 'large'
@@ -109,7 +106,7 @@
               <Icon {icon} size="small" />
             </div>
           {/if}
-          <span class="overflow-label flex-no-shrink mr-2">{getIssueId(parentIssue)}</span>
+          <span class="overflow-label flex-no-shrink mr-2">{getIssueId(team, parentIssue)}</span>
           <span class="overflow-label issue-title">{parentIssue.title}</span>
         </div>
       </Tooltip>

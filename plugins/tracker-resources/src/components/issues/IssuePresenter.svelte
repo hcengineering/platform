@@ -17,6 +17,7 @@
   import type { Issue, Team } from '@anticrm/tracker'
   import { Icon, showPanel } from '@anticrm/ui'
   import tracker from '../../plugin'
+  import { getIssueId } from '../../utils'
 
   export let value: Issue
   export let currentTeam: Team | undefined
@@ -33,7 +34,7 @@
   $: if (!currentTeam) {
     spaceQuery.query(tracker.class.Team, { _id: value.space }, (res) => ([currentTeam] = res))
   }
-  $: issueName = currentTeam && `${currentTeam.identifier}-${value.number}`
+  $: issueName = currentTeam && getIssueId(currentTeam, value)
 </script>
 
 {#if value && shortLabel}
