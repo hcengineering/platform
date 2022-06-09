@@ -45,6 +45,7 @@ import TargetDatePresenter from './components/projects/TargetDatePresenter.svelt
 import ProjectMembersPresenter from './components/projects/ProjectMembersPresenter.svelte'
 import ProjectStatusPresenter from './components/projects/ProjectStatusPresenter.svelte'
 import EditProject from './components/projects/EditProject.svelte'
+import ProjectStatusEditor from './components/projects/ProjectStatusEditor.svelte'
 
 import ModificationDatePresenter from './components/issues/ModificationDatePresenter.svelte'
 import EditIssue from './components/issues/edit/EditIssue.svelte'
@@ -83,6 +84,7 @@ export default async (): Promise<Resources> => ({
     TargetDatePresenter,
     ProjectMembersPresenter,
     ProjectStatusPresenter,
+    ProjectStatusEditor,
     SetDueDateActionPopup,
     SetParentIssueActionPopup,
     EditProject,

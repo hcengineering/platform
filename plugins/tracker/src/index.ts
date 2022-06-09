@@ -187,7 +187,8 @@ export default plugin(trackerId, {
     Project: '' as Ref<Class<Project>>,
     IssueStatus: '' as Ref<Class<IssueStatus>>,
     IssueStatusCategory: '' as Ref<Class<IssueStatusCategory>>,
-    TypeIssuePriority: '' as Ref<Class<Type<IssuePriority>>>
+    TypeIssuePriority: '' as Ref<Class<Type<IssuePriority>>>,
+    TypeProjectStatus: '' as Ref<Class<Type<ProjectStatus>>>
   },
   ids: {
     NoParent: '' as Ref<Issue>
