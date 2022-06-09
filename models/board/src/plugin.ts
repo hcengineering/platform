@@ -25,6 +25,7 @@ import { Action, ViewAction, ViewletDescriptor } from '@anticrm/view'
 export default mergeIds(boardId, board, {
   component: {
     CreateBoard: '' as AnyComponent,
+    LabelsView: '' as AnyComponent,
     CreateCard: '' as AnyComponent,
     KanbanCard: '' as AnyComponent,
     CardPresenter: '' as AnyComponent,

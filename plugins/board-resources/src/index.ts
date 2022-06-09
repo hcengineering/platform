@@ -24,6 +24,7 @@ import CreateCard from './components/CreateCard.svelte'
 import EditCard from './components/EditCard.svelte'
 import KanbanCard from './components/KanbanCard.svelte'
 import KanbanView from './components/KanbanView.svelte'
+import LabelsView from './components/LabelsView.svelte'
 import MoveCard from './components/popups/MoveCard.svelte'
 import CopyCard from './components/popups/CopyCard.svelte'
 import DateRangePicker from './components/popups/DateRangePicker.svelte'
@@ -56,6 +57,7 @@ export default async (): Promise<Resources> => ({
   component: {
     CreateBoard,
     CreateCard,
+    LabelsView,
     EditCard,
     KanbanCard,
     CardPresenter,
