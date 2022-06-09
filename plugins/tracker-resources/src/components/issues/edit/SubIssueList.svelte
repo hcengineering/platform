@@ -113,7 +113,7 @@
       {#if issue.dueDate !== null}
         <DueDateEditor value={issue} />
       {/if}
-      <AssigneeEditor value={issue} />
+      <AssigneeEditor value={issue} tooltipFill={false} />
     </div>
   </div>
 {/each}
