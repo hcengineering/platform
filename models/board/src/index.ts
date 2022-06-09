@@ -286,7 +286,7 @@ export function createModel (builder: Builder): void {
         value: 'object'
       },
       label: board.string.Labels,
-      icon: board.icon.Card,
+      icon: tags.icon.Tags,
       input: 'any',
       inline: true,
       category: board.category.Card,

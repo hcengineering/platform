@@ -49,7 +49,7 @@ async function createDefaults (tx: TxOperations): Promise<void> {
     tags.class.TagCategory,
     tags.space.Tags,
     {
-      icon: tags.icon.Tags,
+      icon: recruit.icon.Skills,
       label: 'Other',
       targetClass: recruit.mixin.Candidate,
       tags: [],
@@ -64,7 +64,7 @@ async function createDefaults (tx: TxOperations): Promise<void> {
       tags.class.TagCategory,
       tags.space.Tags,
       {
-        icon: tags.icon.Tags,
+        icon: recruit.icon.Skills,
         label: c.label,
         targetClass: recruit.mixin.Candidate,
         tags: c.skills,

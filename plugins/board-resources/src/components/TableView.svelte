@@ -25,14 +25,18 @@
     'title',
     '$lookup.state',
     {
-      key: '',
-      presenter: tags.component.TagsAttributeEditor,
-      props: { isEditable: false },
-      label: board.string.Labels
-    },
+          key: '',
+          presenter: tags.component.TagsPresenter,
+          label: board.string.Labels,
+          sortingKey: 'labels',
+          props: {
+            _class: board.class.Card,
+            key: 'labels'
+          }
+        },
     'startDate',
     'dueDate',
-    { key: 'members', presenter: board.component.UserBoxList, label: board.string.Members, sortingKey: '' },
+    { key: 'members', presenter: board.component.UserBoxList, label: board.string.Members, sortingKey: 'members' },
     'modifiedOn'
   ]}
   {options}

@@ -95,7 +95,7 @@ export class TCandidate extends TPerson implements Candidate {
   @Index(IndexKind.FullText)
   source?: string
 
-  @Prop(Collection(tags.class.TagReference, recruit.string.SkillLabel), recruit.string.SkillsLabel)
+  @Prop(Collection(tags.class.TagReference, recruit.string.SkillLabel), recruit.string.SkillsLabel, recruit.icon.Skills)
   skills?: number
 
   @Prop(Collection(recruit.class.Review, recruit.string.Review), recruit.string.Reviews)
@@ -215,7 +215,7 @@ export function createModel (builder: Builder): void {
           {
             id: skillsId,
             component: recruit.component.SkillsView,
-            icon: tags.icon.Tags,
+            icon: recruit.icon.Skills,
             label: recruit.string.SkillsLabel,
             createItemLabel: recruit.string.SkillCreateLabel,
             position: 'bottom'
@@ -275,7 +275,8 @@ export function createModel (builder: Builder): void {
           sortingKey: 'skills',
           props: {
             _class: recruit.mixin.Candidate,
-            key: 'skills'
+            key: 'skills',
+            icon: recruit.icon.Skills
           }
         },
         'modifiedOn',
