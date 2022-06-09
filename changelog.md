@@ -1,9 +1,20 @@
 # Changelog
 
-## 0.6.25 (upcoming)
+## 0.6.26 (upcoming)
+
+## 0.6.25
+
+Tracker:
+
+- Sub issue improvements
+- Issue list fixes
+- Project fixes
 
 HR:
+
 - Rename Candidate to Talent
+- Review Participants support
+
 
 ## 0.6.24
 
