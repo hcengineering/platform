@@ -149,6 +149,16 @@ export function createModel (builder: Builder): void {
             createComponent: board.component.CreateBoard
           }
         ],
+        specials: [
+          {
+            id: 'labels',
+            component: board.component.LabelsView,
+            icon: tags.icon.Tags,
+            label: board.string.Labels,
+            createItemLabel: board.string.Labels,
+            position: 'bottom'
+          }
+        ],
         aside: board.component.BoardMenu
       }
     },
