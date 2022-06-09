@@ -78,7 +78,7 @@
 </div>
 {#if keys.length}
   <div class="collapsed-container" class:collapsed>
-    <AttributesBar {_class} {object} {allowedCollections} keys={keys.map((p) => p.key)} />
+    <AttributesBar {_class} {object} keys={keys.map((p) => p.key)} />
   </div>
 {/if}
 

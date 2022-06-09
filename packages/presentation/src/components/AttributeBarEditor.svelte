@@ -27,7 +27,6 @@
   export let maxWidth: string | undefined = undefined
   export let focus: boolean = false
   export let showHeader: boolean = true
-  export let allowedCollections: string[] = []
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -50,7 +49,7 @@
     if (category === 'attribute') {
       mixinRef = view.mixin.AttributeEditor
     }
-    if (category === 'collection' && allowedCollections.includes(attribute?.name)) {
+    if (category === 'collection') {
       mixinRef = view.mixin.CollectionEditor
     }
     if (category === 'array') {

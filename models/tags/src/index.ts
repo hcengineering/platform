@@ -90,9 +90,6 @@ export function createModel (builder: Builder): void {
   builder.mixin(tags.class.TagReference, core.class.Class, view.mixin.CollectionEditor, {
     editor: tags.component.TagsAttributeEditor
   })
-  builder.mixin(tags.class.TagReference, core.class.Class, view.mixin.AttributeEditor, {
-    editor: tags.component.TagsAttributeEditor
-  })
 
   builder.mixin(tags.class.TagReference, core.class.Class, view.mixin.AttributePresenter, {
     presenter: tags.component.TagReferencePresenter
