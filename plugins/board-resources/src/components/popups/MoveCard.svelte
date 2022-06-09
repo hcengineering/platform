@@ -1,7 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { Label, Button, Status as StatusControl } from '@anticrm/ui'
-  import { getClient } from '@anticrm/presentation'
+  import { Label, Status as StatusControl } from '@anticrm/ui'
+  import { Card as Popup, getClient } from '@anticrm/presentation'
   import { Class, Client, Doc, DocumentUpdate, Ref } from '@anticrm/core'
   import { getResource, OK, Resource, Status } from '@anticrm/platform'
   import { Card } from '@anticrm/board'
@@ -58,47 +58,39 @@
   $: validate({ ...value, ...selected }, value._class)
 </script>
 
-<div class="antiPopup antiPopup-withHeader antiPopup-withTitle antiPopup-withCategory w-85">
-  <div class="ap-space" />
-  <div class="fs-title ap-header flex-row-center">
-    <Label label={board.string.MoveCard} />
-  </div>
-  <div class="ap-space bottom-divider" />
+<Popup
+  label={board.string.MoveCard}
+  canSave={status === OK && (value.state !== selected.state || value.rank !== selected.rank)}
+  okAction={move}
+  okLabel={board.string.Move}
+  on:close={() => {
+    dispatch('close')
+  }}
+>
   <StatusControl {status} />
   <div class="ap-title">
     <Label label={board.string.SelectDestination} />
   </div>
-  <div class="ap-category">
-    <div class="categoryItem w-full border-radius-2 p-2 background-button-bg-enabled">
-      <SpaceSelect label={board.string.Board} object={value} bind:selected={selected.space} />
+  <div class="w-full flex ml-2">
+    <div style:flex-basis="10%" class="text-md">
+      <Label label={board.string.Board} />
     </div>
+    <SpaceSelect label={board.string.Board} object={value} bind:selected={selected.space} />
   </div>
-  <div class="ap-category flex-gap-3">
-    <div class="categoryItem w-full border-radius-2 p-2 background-button-bg-enabled">
-      {#key selected.space}
-        <StateSelect label={board.string.List} object={value} space={selected.space} bind:selected={selected.state} />
-      {/key}
+  <div class="w-full flex ml-2">
+    <div style:flex-basis="10%" class="text-md">
+      <Label label={board.string.List} />
     </div>
-    <div class="categoryItem w-full border-radius-2 p-2 background-button-bg-enabled">
-      {#key selected.state}
-        <RankSelect label={board.string.Position} object={value} state={selected.state} bind:selected={selected.rank} />
-      {/key}
+    {#key selected.space}
+      <StateSelect label={board.string.List} object={value} space={selected.space} bind:selected={selected.state} />
+    {/key}
+  </div>
+  <div class="w-full flex ml-2">
+    <div style:flex-basis="10%" class="text-md">
+      <Label label={board.string.Position} />
     </div>
+    {#key selected.state}
+      <RankSelect label={board.string.Position} object={value} state={selected.state} bind:selected={selected.rank} />
+    {/key}
   </div>
-  <div class="ap-footer">
-    <Button
-      size={'small'}
-      label={board.string.Cancel}
-      on:click={() => {
-        dispatch('close')
-      }}
-    />
-    <Button
-      label={board.string.Move}
-      size={'small'}
-      disabled={status !== OK || (value.state === selected.state && value.rank === selected.rank)}
-      kind={'primary'}
-      on:click={move}
-    />
-  </div>
-</div>
+</Popup>

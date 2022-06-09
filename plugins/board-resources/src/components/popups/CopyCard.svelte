@@ -1,9 +1,9 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte'
-  import { Label, Button, Status as StatusControl, TextArea } from '@anticrm/ui'
+  import { Label, Status as StatusControl, TextArea } from '@anticrm/ui'
   import { Class, Client, Doc, Ref } from '@anticrm/core'
   import { getResource, OK, Resource, Status } from '@anticrm/platform'
-  import { getClient } from '@anticrm/presentation'
+  import { Card as Popup, getClient } from '@anticrm/presentation'
   import { Card } from '@anticrm/board'
   import view from '@anticrm/view'
   import board from '../../plugin'
@@ -89,59 +89,51 @@
   onMount(() => inputRef.focus())
 </script>
 
-<div class="antiPopup antiPopup-withHeader antiPopup-withTitle antiPopup-withCategory w-85">
-  <div class="ap-space" />
-  <div class="fs-title ap-header flex-row-center">
-    <Label label={board.string.CopyCard} />
-  </div>
-  <div class="ap-space bottom-divider" />
+<Popup
+  label={board.string.CopyCard}
+  canSave={status === OK}
+  okAction={copyCard}
+  okLabel={board.string.CreateCard}
+  on:close={() => {
+    dispatch('close')
+  }}
+>
   <StatusControl {status} />
   <div class="ap-title">
     <Label label={board.string.Title} />
   </div>
-  <div class="mr-4 ml-4 mt-2">
+  <div class="mt-2">
     <TextArea bind:this={inputRef} bind:value={title} />
   </div>
   <div class="ap-title">
     <Label label={board.string.CopyTo} />
   </div>
-  <div class="ap-category">
-    <div class="categoryItem w-full border-radius-2 p-2 background-button-bg-enabled">
-      <SpaceSelect label={board.string.Board} object={value} bind:selected={selected.space} />
+  <div class="w-full flex ml-2">
+    <div style:flex-basis="10%" class="text-md">
+      <Label label={board.string.Board} />
     </div>
+    <SpaceSelect label={board.string.Board} object={value} bind:selected={selected.space} />
   </div>
-  <div class="ap-category flex-gap-3">
-    <div class="categoryItem w-full border-radius-2 p-2 background-button-bg-enabled">
-      {#key selected.space}
-        <StateSelect label={board.string.List} object={value} space={selected.space} bind:selected={selected.state} />
-      {/key}
+  <div class="w-full flex ml-2">
+    <div style:flex-basis="10%" class="text-md">
+      <Label label={board.string.List} />
     </div>
-    <div class="categoryItem w-full border-radius-2 p-2 background-button-bg-enabled">
-      {#key selected.state}
-        <RankSelect
-          label={board.string.Position}
-          object={value}
-          state={selected.state}
-          bind:selected={selected.rank}
-          isCopying={true}
-        />
-      {/key}
+    {#key selected.space}
+      <StateSelect label={board.string.List} object={value} space={selected.space} bind:selected={selected.state} />
+    {/key}
+  </div>
+  <div class="w-full flex ml-2">
+    <div style:flex-basis="10%" class="text-md">
+      <Label label={board.string.Position} />
     </div>
+    {#key selected.state}
+      <RankSelect
+        label={board.string.Position}
+        object={value}
+        state={selected.state}
+        bind:selected={selected.rank}
+        isCopying={true}
+      />
+    {/key}
   </div>
-  <div class="ap-footer">
-    <Button
-      size={'small'}
-      label={board.string.Cancel}
-      on:click={() => {
-        dispatch('close')
-      }}
-    />
-    <Button
-      label={board.string.CreateCard}
-      size={'small'}
-      disabled={status !== OK}
-      kind={'primary'}
-      on:click={copyCard}
-    />
-  </div>
-</div>
+</Popup>
