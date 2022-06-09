@@ -155,7 +155,8 @@ export default mergeIds(trackerId, tracker, {
     Save: '' as IntlString,
     IncludeItemsThatMatch: '' as IntlString,
     AnyFilter: '' as IntlString,
-    AllFilters: '' as IntlString
+    AllFilters: '' as IntlString,
+    NoDescription: '' as IntlString
   },
   component: {
     NopeComponent: '' as AnyComponent,
@@ -191,7 +192,8 @@ export default mergeIds(trackerId, tracker, {
     SetParentIssueActionPopup: '' as AnyComponent,
     EditProject: '' as AnyComponent,
     IssuesView: '' as AnyComponent,
-    ListView: '' as AnyComponent
+    ListView: '' as AnyComponent,
+    IssuePreview: '' as AnyComponent
   },
   function: {
     ProjectVisible: '' as '' as Resource<(spaces: Space[]) => boolean>

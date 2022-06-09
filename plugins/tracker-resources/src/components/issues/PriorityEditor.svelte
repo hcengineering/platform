@@ -49,20 +49,16 @@
 </script>
 
 {#if value}
-  {#if isEditable}
-    <div class="clear-mins" use:tooltip={{ label: tracker.string.SetPriority }}>
-      <PrioritySelector
-        {kind}
-        {size}
-        {width}
-        {justify}
-        {isEditable}
-        {shouldShowLabel}
-        priority={value.priority}
-        onPriorityChange={handlePriorityChanged}
-      />
-    </div>
-  {:else}
-    <PrioritySelector {kind} {size} {width} {justify} {isEditable} {shouldShowLabel} priority={value.priority} />
-  {/if}
+  <div class="clear-mins" use:tooltip={isEditable ? { label: tracker.string.SetPriority } : undefined}>
+    <PrioritySelector
+      {kind}
+      {size}
+      {width}
+      {justify}
+      {isEditable}
+      {shouldShowLabel}
+      bind:priority={value.priority}
+      onPriorityChange={handlePriorityChanged}
+    />
+  </div>
 {/if}
