@@ -297,6 +297,14 @@ export const projectsTitleMap: Record<ProjectsViewMode, IntlString> = Object.fre
   closed: tracker.string.ClosedProjects
 })
 
+const listIssueStatusOrder = [
+  tracker.issueStatusCategory.Started,
+  tracker.issueStatusCategory.Unstarted,
+  tracker.issueStatusCategory.Backlog,
+  tracker.issueStatusCategory.Completed,
+  tracker.issueStatusCategory.Canceled
+] as const
+
 export function getCategories (
   key: IssuesGroupByKeys | undefined,
   elements: Issue[],
@@ -308,7 +316,9 @@ export function getCategories (
     return [undefined] // No grouping
   }
 
-  const defaultStatuses = Object.values(statuses).map((x) => x._id)
+  const defaultStatuses = listIssueStatusOrder.map(
+    (category) => statuses.find((status) => status.category === category)?._id
+  )
 
   const existingCategories = Array.from(
     new Set(
