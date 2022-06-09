@@ -64,6 +64,9 @@
   {/if}
   <div class="antiCard-footer reverse">
     <div class="buttons-group text-sm flex-no-shrink">
+      {#if $$slots.buttons}
+        <slot name="buttons" />
+      {/if}
       {#if createMore !== undefined}
         <MiniToggle label={presentation.string.CreateMore} bind:on={createMore} />
       {/if}

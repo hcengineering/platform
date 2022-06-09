@@ -5,8 +5,8 @@
   import { WithLookup } from '@anticrm/core'
   import task, { calcRank, TodoItem } from '@anticrm/task'
   import { translate } from '@anticrm/platform'
-  import presentation, { createQuery, getClient } from '@anticrm/presentation'
-  import { Label, Button, Dropdown, EditBox, IconClose } from '@anticrm/ui'
+  import presentation, { Card as Popup, createQuery, getClient } from '@anticrm/presentation'
+  import { Label, Dropdown, EditBox } from '@anticrm/ui'
   import type { ListItem } from '@anticrm/ui'
 
   import board from '../../plugin'
@@ -30,10 +30,6 @@
   translate(board.string.ChecklistDropdownNone, {}).then((result) => {
     noneListItem.label = result
   })
-
-  function close () {
-    dispatch('close')
-  }
 
   async function addChecklist () {
     if (!name || name.trim().length <= 0) {
@@ -110,17 +106,15 @@
   )
 </script>
 
-<div class="antiPopup w-85">
-  <div class="relative flex-row-center w-full ">
-    <div class="flex-center flex-grow fs-title mt-1 mb-1">
-      <Label label={board.string.Checklists} />
-    </div>
-
-    <div class="absolute mr-1 mt-1 mb-1" style:top="0" style:right="0">
-      <Button icon={IconClose} kind="transparent" size="small" on:click={close} />
-    </div>
-  </div>
-  <div class="ap-space bottom-divider" />
+<Popup
+  label={board.string.Checklists}
+  okAction={addChecklist}
+  okLabel={presentation.string.Add}
+  canSave={(name?.length ?? 0) > 0}
+  on:close={() => {
+    dispatch('close')
+  }}
+>
   <div class="flex-col ml-4 mt-4 mr-4 flex-gap-1">
     <div class="text-md font-medium">
       <Label label={board.string.Title} />
@@ -146,14 +140,4 @@
       />
     </div>
   </div>
-
-  <div class="ap-footer">
-    <Button
-      label={presentation.string.Add}
-      size="small"
-      kind="primary"
-      disabled={(name?.length ?? 0) <= 0}
-      on:click={addChecklist}
-    />
-  </div>
-</div>
+</Popup>
