@@ -98,7 +98,7 @@
     >
       <svelte:fragment slot="content">
         {#if subIssues}
-          <div class="flex-row-center content-color text-sm">
+          <div class="flex-row-center content-color text-sm pointer-events-none">
             <div class="mr-1">
               <ProgressCircle bind:value={countComplate} bind:max={subIssues.length} size={'inline'} primary />
             </div>

@@ -589,6 +589,8 @@ a.no-line {
   text-overflow: ellipsis;
   overflow: hidden;
   min-width: 0;
+
+  &.disabled { pointer-events: none; }
 }
 
 .lines-limit-2, .lines-limit-4 {

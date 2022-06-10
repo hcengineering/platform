@@ -104,6 +104,33 @@
     border-radius: 0 0 .5rem .5rem;
   }
 
+  .antiCard-group {
+    padding: .5rem 1rem;
+
+    &:not(:last-child) { border-bottom: 1px solid var(--popup-divider); }
+    &.grid {
+      display: grid;
+      grid-template-columns: 5rem auto;
+      grid-auto-rows: minmax(2rem, auto);
+      column-gap: .5rem;
+      
+      .label {
+        display: flex;
+        align-items: center;
+        text-align: left;
+        font-weight: 500;
+        font-size: .75rem;
+        line-height: .75rem;
+        color: var(--content-color);
+      }    
+      .value {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+      }    
+    }
+  }
+
   &.dialog {
     width: 40rem;
     height: max-content;

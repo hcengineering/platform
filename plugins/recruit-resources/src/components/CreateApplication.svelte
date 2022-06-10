@@ -292,7 +292,7 @@
             )
           }}
         >
-          <div slot="content" class="flex-row-center">
+          <div slot="content" class="flex-row-center pointer-events-none">
             {#if selectedState}
               <div class="color" style="background-color: {getPlatformColor(selectedState.color)}" />
               <span class="label overflow-label">{selectedState.title}</span>

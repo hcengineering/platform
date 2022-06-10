@@ -362,9 +362,6 @@
     padding: 1.5rem 2rem 0;
   }
 
-  .scrollable {
-    height: 100%;
-  }
   .card-container {
     background-color: var(--board-card-bg-color);
     border-radius: 0.25rem;

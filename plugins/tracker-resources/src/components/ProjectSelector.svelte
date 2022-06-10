@@ -104,7 +104,7 @@
 >
   <svelte:fragment slot="content">
     {#if projectText}
-      <span class="nowrap">{projectText}</span>
+      <span class="overflow-label disabled">{projectText}</span>
     {/if}
   </svelte:fragment>
 </Button>

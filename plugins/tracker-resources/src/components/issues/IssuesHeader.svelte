@@ -30,7 +30,7 @@
   }
 </script>
 
-<div class="ac-header full">
+<div class="ac-header full divide">
   <div class="ac-header__wrap-title">
     <div class="ac-header__icon"><Icon icon={tracker.icon.Issues} size={'small'} /></div>
     <span class="ac-header__title">{label}</span>

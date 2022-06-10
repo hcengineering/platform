@@ -70,7 +70,7 @@
 
 <Tooltip {label} fill={false} direction={labelDirection}>
   <Button {focus} {focusIndex} icon={IconFolder} size={'small'} kind={'no-border'} on:click={handleClick}>
-    <span slot="content" class="text-sm">
+    <span slot="content" class="text-sm overflow-label disabled">
       {#if value}{value.name}{:else}<Label {label} />{/if}
     </span>
   </Button>

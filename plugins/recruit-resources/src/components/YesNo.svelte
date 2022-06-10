@@ -46,7 +46,7 @@
     }}
   >
     <svelte:fragment slot="content">
-      <div class="flex-row-center flex-no-wrap">
+      <div class="flex-row-center flex-no-wrap pointer-events-none">
         <span class="overflow-label">
           <Label {label} />
         </span>
