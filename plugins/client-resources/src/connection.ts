@@ -140,7 +140,6 @@ class Connection implements ClientConnection {
 
   private async sendRequest (method: string, ...params: any[]): Promise<any> {
     if (this.websocket === null) {
-      console.log('open connection from', method, params)
       this.websocket = await this.waitOpenConnection()
     }
     const id = this.lastId++

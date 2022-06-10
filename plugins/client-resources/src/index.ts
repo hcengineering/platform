@@ -47,7 +47,6 @@ export default async () => {
             },
             filterModel ? getPlugins() : undefined
           )
-          console.log('client connection created')
           _token = token
 
           // Check if we had dev hook for client.
