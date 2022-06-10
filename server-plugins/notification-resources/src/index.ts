@@ -159,14 +159,7 @@ export async function UpdateLastView (tx: Tx, control: TriggerControl): Promise<
       const tx = actualTx as TxCUD<Doc>
       const doc = (await control.findAll(tx.objectClass, { _id: tx.objectId }, { limit: 1 }))[0]
       if (doc !== undefined) {
-        return await getUpdateLastViewTxes(
-          doc,
-          doc._id,
-          doc._class,
-          tx.modifiedOn,
-          tx.modifiedBy,
-          control
-        )
+        return await getUpdateLastViewTxes(doc, doc._id, doc._class, tx.modifiedOn, tx.modifiedBy, control)
       }
       break
     }
