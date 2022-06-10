@@ -27,12 +27,24 @@
   export let shouldShowSubIssues: boolean | undefined = false
   export let shouldShowEmptyGroups: boolean | undefined = false
 
+  $: _groupBy = groupBy
+  $: _orderBy = orderBy
+  $: _completedIssuesPeriod = completedIssuesPeriod
+  $: _shouldShowSubIssues = shouldShowSubIssues
+  $: _shouldShowEmptyGroups = shouldShowEmptyGroups
+
   const groupByItems = issuesGroupByOptions
   const orderByItems = issuesOrderByOptions
   const dateModificationPeriodItems = issuesDateModificationPeriodOptions
 
   const updateOptions = (): void => {
-    dispatch('update', { groupBy, orderBy, completedIssuesPeriod, shouldShowSubIssues, shouldShowEmptyGroups })
+    dispatch('update', {
+      groupBy: _groupBy,
+      orderBy: _orderBy,
+      completedIssuesPeriod: _completedIssuesPeriod,
+      shouldShowSubIssues: _shouldShowSubIssues,
+      shouldShowEmptyGroups: _shouldShowEmptyGroups
+    })
   }
 </script>
 
@@ -42,10 +54,10 @@
     <div class="value">
       <DropdownRecord
         items={groupByItems}
-        selected={groupBy}
+        selected={_groupBy}
         on:select={(result) => {
           if (result === undefined) return
-          groupBy = result.detail
+          _groupBy = result.detail
           updateOptions()
         }}
       />
@@ -54,25 +66,25 @@
     <div class="value">
       <DropdownRecord
         items={orderByItems}
-        selected={orderBy}
+        selected={_orderBy}
         on:select={(result) => {
           if (result === undefined) return
-          orderBy = result.detail
+          _orderBy = result.detail
           updateOptions()
         }}
       />
     </div>
   </div>
   <div class="antiCard-group grid">
-    {#if completedIssuesPeriod}
+    {#if _completedIssuesPeriod}
       <span class="label"><Label label={tracker.string.CompletedIssues} /></span>
       <div class="value">
         <DropdownRecord
           items={dateModificationPeriodItems}
-          selected={completedIssuesPeriod}
+          selected={_completedIssuesPeriod}
           on:select={(result) => {
             if (result === undefined) return
-            completedIssuesPeriod = result.detail
+            _completedIssuesPeriod = result.detail
             updateOptions()
           }}
         />
@@ -82,10 +94,10 @@
     <div class="value">
       <MiniToggle bind:on={shouldShowSubIssues} on:change={updateOptions} />
     </div>
-    {#if groupBy === IssuesGrouping.Status || groupBy === IssuesGrouping.Priority}
+    {#if _groupBy === IssuesGrouping.Status || _groupBy === IssuesGrouping.Priority}
       <span class="label"><Label label={tracker.string.ShowEmptyGroups} /></span>
       <div class="value">
-        <MiniToggle bind:on={shouldShowEmptyGroups} on:change={updateOptions} />
+        <MiniToggle bind:on={_shouldShowEmptyGroups} on:change={updateOptions} />
       </div>
     {/if}
   </div>

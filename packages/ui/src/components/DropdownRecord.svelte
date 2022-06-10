@@ -28,8 +28,7 @@
       if (!opened) {
         opened = true
         showPopup(DropdownRecordPopup, { items, selected }, tool, (result) => {
-          if (result !== undefined) {
-            selected = result
+          if (result != null) {
             dispatch('select', result)
           }
           opened = false
