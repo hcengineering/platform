@@ -14,33 +14,21 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { formatName, Person } from '@anticrm/contact'
-  import { Ref } from '@anticrm/core'
-  import { getClient } from '@anticrm/presentation'
-  import type { Applicant } from '@anticrm/recruit'
-  import { Icon, Label } from '@anticrm/ui'
-  import recruit from '../plugin'
+  import { WithLookup } from '@anticrm/core'
+  import type { Issue, Team } from '@anticrm/tracker'
+  import { Icon } from '@anticrm/ui'
+  import tracker from '../../plugin'
+  import { getIssueId } from '../../utils'
 
-  export let value: Applicant
-
-  const client = getClient()
-  const shortLabel = client.getHierarchy().getClass(value._class).shortLabel
-
-  let person: Person | undefined
-
-  $: client.findOne(contact.class.Person, { _id: value.attachedTo as Ref<Person> }).then((p) => {
-    person = p
-  })
+  export let value: WithLookup<Issue>
+  $: title = getIssueId(value.$lookup?.space as Team, value)
 </script>
 
 <div class="flex item">
-  <Icon icon={recruit.icon.Application} size={'medium'} />
+  <Icon icon={tracker.icon.TrackerApplication} size={'medium'} />
   <div class="ml-2">
-    {#if shortLabel}<Label label={shortLabel} />-{/if}{value.number}
+    {title} - {value.title}
   </div>
-  {#if person}
-    <div class="ml-1">{formatName(person.name)}</div>
-  {/if}
 </div>
 
 <style lang="scss">

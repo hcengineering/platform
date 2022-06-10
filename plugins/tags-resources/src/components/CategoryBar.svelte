@@ -54,6 +54,8 @@
         }
       }
     )
+  } else {
+    elementsQuery.unsubscribe()
   }
 
   type TagElementInfo = { count: number; modifiedOn: number }

@@ -29,7 +29,7 @@
   let preference: ViewletPreference | undefined
   const preferenceQuery = createQuery()
 
-  $: viewlet &&
+  $: if (viewlet) {
     preferenceQuery.query(
       view.class.ViewletPreference,
       {
@@ -41,6 +41,9 @@
       },
       { limit: 1 }
     )
+  } else {
+    preferenceQuery.unsubscribe()
+  }
 
   const client = getClient()
   const hierarchy = client.getHierarchy()

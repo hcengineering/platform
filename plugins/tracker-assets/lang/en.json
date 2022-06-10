@@ -139,7 +139,8 @@
     "IncludeItemsThatMatch": "Include items that match",
     "AnyFilter": "any filter",
       "AllFilters": "all filters",
-    "NoDescription": "No description"
+    "NoDescription": "No description",
+    "SearchIssue": "Search for task..."
   },
   "status": {}
 }

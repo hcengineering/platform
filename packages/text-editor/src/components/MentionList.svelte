@@ -170,7 +170,9 @@
             selected = i
           }}
         >
-          <svelte:component this={item.component} value={item.doc} {...item.componentProps ?? {}} />
+          <div class="ml-2 mt-1 mb-1">
+            <svelte:component this={item.component} value={item.doc} {...item.componentProps ?? {}} />
+          </div>
         </div>
       {/each}
       {#if !items.length}

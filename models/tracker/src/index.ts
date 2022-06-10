@@ -51,6 +51,8 @@ import {
 } from '@anticrm/tracker'
 import tracker from './plugin'
 
+import presentation from '@anticrm/model-presentation'
+
 export { trackerOperation } from './migration'
 export { default } from './plugin'
 
@@ -568,4 +570,15 @@ export function createModel (builder: Builder): void {
   builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.ClassFilters, {
     filters: ['status', 'priority', 'project']
   })
+
+  builder.createDoc(
+    presentation.class.ObjectSearchCategory,
+    core.space.Model,
+    {
+      icon: tracker.icon.TrackerApplication,
+      label: tracker.string.SearchIssue,
+      query: tracker.completion.IssueQuery
+    },
+    tracker.completion.IssueCategory
+  )
 }

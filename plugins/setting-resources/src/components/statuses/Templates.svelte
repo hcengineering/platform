@@ -31,6 +31,8 @@
     templatesQ.query(task.class.KanbanTemplate, { space: folder._id as Ref<Doc> as Ref<Space> }, (result) => {
       templates = result
     })
+  } else {
+    templatesQ.unsubscribe()
   }
 
   let selectedId: Ref<KanbanTemplate> | undefined

@@ -15,8 +15,6 @@
 //
 
 import type { Ref, Space } from '@anticrm/core'
-import { ObjectSearchCategory, ObjectSearchFactory } from '@anticrm/model-presentation'
-import type { Resource } from '@anticrm/platform'
 import { mergeIds } from '@anticrm/platform'
 import { TagCategory } from '@anticrm/tags'
 import { KanbanTemplate, taskId } from '@anticrm/task'
@@ -65,10 +63,6 @@ export default mergeIds(taskId, task, {
   },
   template: {
     DefaultProject: '' as Ref<KanbanTemplate>
-  },
-  completion: {
-    IssueQuery: '' as Resource<ObjectSearchFactory>,
-    IssueCategory: '' as Ref<ObjectSearchCategory>
   },
   viewlet: {
     TableIssue: '' as Ref<Viewlet>

@@ -221,7 +221,6 @@ const task = plugin(taskId, {
     Kanban: '' as IntlString,
     ApplicationLabelTask: '' as IntlString,
     Projects: '' as IntlString,
-    SearchTask: '' as IntlString,
     ManageProjectStatues: '' as IntlString,
     TodoItems: '' as IntlString
   },
