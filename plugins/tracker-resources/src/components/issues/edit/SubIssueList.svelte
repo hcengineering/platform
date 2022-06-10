@@ -95,13 +95,7 @@
       <span class="flex-no-shrink text" on:click={() => openIssue(issue)}>
         {getIssueId(currentTeam, issue)}
       </span>
-      <StatusEditor
-        value={issue}
-        statuses={issueStatuses}
-        kind="transparent"
-        tooltipFill={false}
-        tooltipAlignment="bottom"
-      />
+      <StatusEditor value={issue} statuses={issueStatuses} kind="transparent" tooltipAlignment="bottom" />
       <span class="text name" title={issue.title} on:click={() => openIssue(issue)}>
         {issue.title}
       </span>

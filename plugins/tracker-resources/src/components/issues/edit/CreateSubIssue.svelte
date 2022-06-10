@@ -98,16 +98,17 @@
 
 <div bind:this={thisRef} class="flex-col root">
   <div class="flex-row-top">
-    <StatusEditor
-      value={newIssue}
-      statuses={issueStatuses}
-      kind="transparent"
-      width="min-content"
-      size="medium"
-      tooltipFill={false}
-      tooltipAlignment="bottom"
-      on:change={({ detail }) => (newIssue.status = detail)}
-    />
+    <div id="status-editor">
+      <StatusEditor
+        value={newIssue}
+        statuses={issueStatuses}
+        kind="transparent"
+        width="min-content"
+        size="medium"
+        tooltipAlignment="bottom"
+        on:change={({ detail }) => (newIssue.status = detail)}
+      />
+    </div>
     <div class="w-full flex-col content">
       <EditBox
         bind:value={newIssue.title}
