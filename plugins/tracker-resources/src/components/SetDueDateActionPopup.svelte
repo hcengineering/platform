@@ -13,15 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { AttachedData } from '@anticrm/core'
   import { DatePopup } from '@anticrm/ui'
   import { getClient } from '@anticrm/presentation'
   import { Issue } from '@anticrm/tracker'
   import { createEventDispatcher } from 'svelte'
 
-  export let value: Issue
+  export let value: Issue | AttachedData<Issue>
   export let mondayStart = true
   export let withTime = false
-  export let shouldSaveOnChange = true
 
   const client = getClient()
   const dispatch = createEventDispatcher()
@@ -29,16 +29,8 @@
   async function onUpdate ({ detail }: CustomEvent<Date | null | undefined>) {
     const newDueDate = detail && detail?.getTime()
 
-    if (shouldSaveOnChange && newDueDate !== undefined && newDueDate !== value.dueDate) {
-      await client.updateCollection(
-        value._class,
-        value.space,
-        value._id,
-        value.attachedTo,
-        value.attachedToClass,
-        value.collection,
-        { dueDate: newDueDate }
-      )
+    if ('_id' in value && newDueDate !== undefined && newDueDate !== value.dueDate) {
+      await client.update(value, { dueDate: newDueDate })
     }
 
     dispatch('update', newDueDate)
