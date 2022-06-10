@@ -17,44 +17,67 @@
   import { createEventDispatcher } from 'svelte'
   import CheckBox from './CheckBox.svelte'
   import { Label } from '..'
+  import ListView from './ListView.svelte'
 
   export let items: Record<any, IntlString>
   export let selected: any | undefined = undefined
 
   const dispatch = createEventDispatcher()
-  const btns: HTMLButtonElement[] = []
 
-  const keyDown = (ev: KeyboardEvent, n: number): void => {
-    if (ev.key === 'ArrowDown') {
-      if (n === btns.length - 1) btns[0].focus()
-      else btns[n + 1].focus()
-    } else if (ev.key === 'ArrowUp') {
-      if (n === 0) btns[btns.length - 1].focus()
-      else btns[n - 1].focus()
+  let selection = 0
+  let list: ListView
+  $: objects = Object.entries(items)
+
+  async function handleSelection (evt: Event | undefined, selection: number): Promise<void> {
+    const item = items[selection]
+
+    dispatch('close', item)
+  }
+
+  function onKeydown (key: KeyboardEvent): void {
+    if (key.code === 'ArrowUp') {
+      key.stopPropagation()
+      key.preventDefault()
+      list.select(selection - 1)
+    }
+    if (key.code === 'ArrowDown') {
+      key.stopPropagation()
+      key.preventDefault()
+      list.select(selection + 1)
+    }
+    if (key.code === 'Enter') {
+      key.preventDefault()
+      key.stopPropagation()
+      handleSelection(key, selection)
+    }
+    if (key.code === 'Escape') {
+      key.preventDefault()
+      key.stopPropagation()
+      dispatch('close')
     }
   }
-  $: dropdownItems = Object.entries(items)
 </script>
 
-<div class="selectPopup">
+<div class="selectPopup" on:keydown={onKeydown}>
   <div class="scroll">
     <div class="box">
-      {#each dropdownItems as [key, value], i}
-        <!-- svelte-ignore a11y-mouse-events-have-key-events -->
-        <button
-          class="menu-item flex-between"
-          on:mouseover={(ev) => ev.currentTarget.focus()}
-          on:keydown={(ev) => keyDown(ev, i)}
-          on:click={() => {
-            dispatch('close', key)
-          }}
-        >
-          <div class="flex-grow caption-color overflow-label"><Label label={value} /></div>
-          {#if key === selected}
-            <div class="check-right"><CheckBox checked primary /></div>
-          {/if}
-        </button>
-      {/each}
+      <ListView bind:this={list} count={objects.length} bind:selection>
+        <svelte:fragment slot="item" let:item={idx}>
+          {@const item = objects[idx]}
+
+          <button
+            class="menu-item flex-between w-full"
+            on:click={() => {
+              dispatch('close', item[0])
+            }}
+          >
+            <div class="flex-grow caption-color lines-limit-2"><Label label={item[1]} /></div>
+            {#if item[0] === selected}
+              <div class="check-right"><CheckBox checked primary /></div>
+            {/if}
+          </button>
+        </svelte:fragment>
+      </ListView>
     </div>
   </div>
 </div>
