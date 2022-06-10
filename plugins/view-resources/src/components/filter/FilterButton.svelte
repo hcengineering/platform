@@ -20,7 +20,7 @@
   import view from '../../plugin'
   import FilterTypePopup from './FilterTypePopup.svelte'
 
-  export let _class: Ref<Class<Doc>>
+  export let _class: Ref<Class<Doc>> | undefined
   export let filters: Filter[]
 
   const client = getClient()
@@ -44,8 +44,13 @@
     )
   }
 
-  $: clazz = hierarchy.getClass(_class)
-  $: visible = hierarchy.hasMixin(clazz, view.mixin.ClassFilters)
+  let visible: boolean
+  $: {
+    if (_class) {
+      const clazz = hierarchy.getClass(_class)
+      visible = hierarchy.hasMixin(clazz, view.mixin.ClassFilters)
+    } else visible = false
+  }
 </script>
 
 {#if visible}

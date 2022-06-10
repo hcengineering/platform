@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Ref, WithLookup } from '@anticrm/core'
-  import { IssuesDateModificationPeriod, IssuesGrouping, IssuesOrdering, Team } from '@anticrm/tracker'
+  import { Team, ViewOptions } from '@anticrm/tracker'
   import { Button, Icon, Tooltip, IconOptions, showPopup, eventToHTMLElement } from '@anticrm/ui'
   import { Filter, Viewlet } from '@anticrm/view'
   import { FilterButton } from '@anticrm/view-resources'
@@ -12,12 +12,7 @@
   export let viewlets: WithLookup<Viewlet>[] = []
   export let label: string
   export let filters: Filter[] = []
-  export let viewOptions: {
-    groupBy: IssuesGrouping
-    orderBy: IssuesOrdering
-    completedIssuesPeriod: IssuesDateModificationPeriod
-    shouldShowEmptyGroups: boolean
-  }
+  export let viewOptions: ViewOptions
 
   const handleOptionsEditorOpened = (event: MouseEvent) => {
     if (!currentSpace) {

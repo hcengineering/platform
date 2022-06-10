@@ -13,7 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, FindOptions, getCurrentAccount, Ref, SortingOrder, SortingQuery, Space } from '@anticrm/core'
+  import {
+    Class,
+    DocumentQuery,
+    FindOptions,
+    getCurrentAccount,
+    Ref,
+    SortingOrder,
+    SortingQuery,
+    Space
+  } from '@anticrm/core'
   import {
     AnyComponent,
     Button,
@@ -27,40 +36,53 @@
   } from '@anticrm/ui'
   import presentation, { createQuery, getClient } from '@anticrm/presentation'
   import plugin from '../plugin'
-  import { SpacePresenter } from '@anticrm/view-resources'
+  import { FilterBar, FilterButton, SpacePresenter } from '@anticrm/view-resources'
   import { IntlString } from '@anticrm/platform'
   import { classIcon } from '../utils'
+  import { Filter } from '@anticrm/view'
 
   export let _class: Ref<Class<Space>>
   export let label: IntlString
   export let createItemDialog: AnyComponent | undefined
   export let createItemLabel: IntlString = presentation.string.Create
+  export let withHeader: boolean = true
+  export let withFilterButton: boolean = true
 
   const me = getCurrentAccount()._id
   const client = getClient()
   const spaceQuery = createQuery()
-  let search: string = ''
+  export let search: string = ''
   const sort: SortingQuery<Space> = {
     name: SortingOrder.Ascending
   }
+  export let filters: Filter[] = []
+  let searchQuery: DocumentQuery<Space>
+  let resultQuery: DocumentQuery<Space>
 
   let spaces: Space[] = []
 
-  $: update(search, sort)
+  $: updateSearchQuery(search)
+  $: update(sort, resultQuery)
 
-  async function update (search: string, sort: SortingQuery<Space>): Promise<void> {
-    const query = search.trim().length > 0 ? { name: { $like: '%' + search + '%' } } : {}
+  async function update (sort: SortingQuery<Space>, resultQuery: DocumentQuery<Space>): Promise<void> {
     const options: FindOptions<Space> = {
       sort
     }
+
     spaceQuery.query(
       _class,
-      query,
+      {
+        ...resultQuery
+      },
       (res) => {
         spaces = res.filter((p) => !p.private || p.members.includes(me))
       },
       options
     )
+  }
+
+  function updateSearchQuery (search: string): void {
+    searchQuery = search.length ? { $search: search } : {}
   }
 
   function showCreateDialog (ev: Event) {
@@ -92,15 +114,31 @@
   }
 </script>
 
-<div class="ac-header full divide">
-  <div class="ac-header__wrap-title">
-    <span class="ac-header__title"><Label {label} /></span>
+{#if withHeader}
+  <div class="ac-header full divide">
+    <div class="ac-header__wrap-title">
+      <span class="ac-header__title"><Label {label} /></span>
+    </div>
+    {#if createItemDialog}
+      <Button label={createItemLabel} on:click={(ev) => showCreateDialog(ev)} />
+    {/if}
   </div>
-  {#if createItemDialog}
-    <Button label={createItemLabel} on:click={(ev) => showCreateDialog(ev)} />
-  {/if}
-</div>
-<div class="ml-8 mr-8 mt-4"><SearchEdit bind:value={search} /></div>
+  <div class="ml-8 mr-8 mt-4 mb-4">
+    <SearchEdit
+      bind:value={search}
+      on:change={(ev) => {
+        updateSearchQuery(search)
+        update(sort, resultQuery)
+      }}
+    />
+  </div>
+{/if}
+{#if withFilterButton}
+  <div class="ml-10 mt-4 mb-4">
+    <FilterButton {_class} bind:filters />
+  </div>
+{/if}
+<FilterBar {_class} query={searchQuery} bind:filters on:change={(e) => (resultQuery = e.detail)} />
 <Scroller padding={'2.5rem'}>
   <div class="flex-col">
     {#each spaces as space (space._id)}
@@ -137,9 +175,11 @@
         </div>
       </div>
     {/each}
-    <div class="flex-center mt-10">
-      <Button size={'x-large'} kind={'primary'} label={createItemLabel} on:click={(ev) => showCreateDialog(ev)} />
-    </div>
+    {#if createItemDialog}
+      <div class="flex-center mt-10">
+        <Button size={'x-large'} kind={'primary'} label={createItemLabel} on:click={(ev) => showCreateDialog(ev)} />
+      </div>
+    {/if}
   </div>
 </Scroller>
 

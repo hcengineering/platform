@@ -29,6 +29,8 @@
     personQuery.query(contact.class.Contact, { _id: object.contact }, (result) => {
       refContact = result[0]
     })
+  } else {
+    personQuery.unsubscribe()
   }
 
   let organization: Organization
@@ -37,6 +39,8 @@
     orgQuery.query(contact.class.Organization, { _id: object.attachedTo as Ref<Organization> }, (result) => {
       organization = result[0]
     })
+  } else {
+    orgQuery.unsubscribe()
   }
 
   const dispatch = createEventDispatcher()

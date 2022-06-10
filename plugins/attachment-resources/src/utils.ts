@@ -85,7 +85,6 @@ export async function createAttachments (
       const file = list.item(index)
       if (file !== null) {
         const uuid = await uploadFile(file, { space, attachedTo: objectId })
-        console.log('uploaded file uuid', uuid)
         await client.addCollection(attachment.class.Attachment, space, objectId, objectClass, 'attachments', {
           name: file.name,
           file: uuid,

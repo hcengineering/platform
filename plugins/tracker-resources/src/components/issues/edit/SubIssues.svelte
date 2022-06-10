@@ -71,6 +71,7 @@
 
   <Tooltip label={tracker.string.AddSubIssues} props={{ subIssues: 1 }} direction="bottom">
     <Button
+      id="add-sub-issue"
       width="min-content"
       icon={hasSubIssues ? IconAdd : undefined}
       label={hasSubIssues ? undefined : tracker.string.AddSubIssues}

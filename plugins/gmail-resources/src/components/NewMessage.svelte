@@ -91,7 +91,6 @@
     try {
       const uploadFile = await getResource(attachmentP.helper.UploadFile)
       const uuid = await uploadFile(file, { space: plugin.space.Gmail, attachedTo: objectId })
-      console.log('uploaded file uuid', uuid)
       await client.addCollection(
         attachmentP.class.Attachment,
         plugin.space.Gmail,

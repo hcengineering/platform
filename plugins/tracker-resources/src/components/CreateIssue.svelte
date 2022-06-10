@@ -154,7 +154,7 @@
       action: async () =>
         showPopup(
           SetDueDateActionPopup,
-          { value: object, shouldSaveOnChange: false },
+          { value: object },
           'top',
           undefined,
           (newDueDate) => newDueDate !== undefined && (object.dueDate = newDueDate)
@@ -167,7 +167,7 @@
       action: async () =>
         showPopup(
           SetParentIssueActionPopup,
-          { value: { ...object, space, attachedTo: parentIssue?._id }, shouldSaveOnChange: false },
+          { value: { ...object, space, attachedTo: parentIssue?._id } },
           'top',
           (selectedIssue) => selectedIssue !== undefined && (parentIssue = selectedIssue)
         )

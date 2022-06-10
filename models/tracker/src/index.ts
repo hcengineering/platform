@@ -35,8 +35,8 @@ import attachment from '@anticrm/model-attachment'
 import chunter from '@anticrm/model-chunter'
 import core, { DOMAIN_SPACE, TAttachedDoc, TDoc, TSpace, TType } from '@anticrm/model-core'
 import view, { createAction } from '@anticrm/model-view'
-import { KeyBinding } from '@anticrm/view'
 import workbench, { createNavigateAction } from '@anticrm/model-workbench'
+import notification from '@anticrm/notification'
 import { Asset, IntlString } from '@anticrm/platform'
 import setting from '@anticrm/setting'
 import {
@@ -49,7 +49,10 @@ import {
   ProjectStatus,
   Team
 } from '@anticrm/tracker'
+import { KeyBinding } from '@anticrm/view'
 import tracker from './plugin'
+
+import presentation from '@anticrm/model-presentation'
 
 export { trackerOperation } from './migration'
 export { default } from './plugin'
@@ -401,6 +404,11 @@ export function createModel (builder: Builder): void {
     editor: tracker.component.ProjectStatusEditor
   })
 
+  builder.mixin(tracker.class.Issue, core.class.Class, notification.mixin.LastViewAttached, {})
+  builder.mixin(tracker.class.Issue, core.class.Class, notification.mixin.AnotherUserNotifications, {
+    fields: ['assignee']
+  })
+
   builder.createDoc(
     workbench.class.Application,
     core.space.Model,
@@ -568,4 +576,15 @@ export function createModel (builder: Builder): void {
   builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.ClassFilters, {
     filters: ['status', 'priority', 'project']
   })
+
+  builder.createDoc(
+    presentation.class.ObjectSearchCategory,
+    core.space.Model,
+    {
+      icon: tracker.icon.TrackerApplication,
+      label: tracker.string.SearchIssue,
+      query: tracker.completion.IssueQuery
+    },
+    tracker.completion.IssueCategory
+  )
 }

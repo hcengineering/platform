@@ -45,7 +45,6 @@ export async function connect (title: string): Promise<Client | undefined> {
   }
 
   try {
-    console.log('checking model version')
     const version = await instance.findOne<Version>(core.class.Version, {})
     console.log('Model version', version)
 

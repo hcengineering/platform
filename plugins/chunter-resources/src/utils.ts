@@ -84,3 +84,16 @@ export function openMessageFromSpecial (message: ChunterMessage): void {
   }
   navigate(loc)
 }
+
+export function navigateToSpecial (specialId: string): void {
+  const loc = getCurrentLocation()
+  loc.path[2] = specialId
+  navigate(loc)
+}
+
+export enum SearchType {
+  Messages,
+  Channels,
+  Files,
+  Contacts
+}

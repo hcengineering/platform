@@ -62,6 +62,9 @@
     "ConvertToPrivate": "Convert to private channel",
     "MessagesBrowser": "Messages browser",
     "CreateBy": "Create by",
-    "ThreadMessage": "Thread message"
+    "ThreadMessage": "Thread message",
+    "ChunterBrowser": "Search",
+    "Messages": "Messages",
+    "NoResults": "No results"
   }
 }

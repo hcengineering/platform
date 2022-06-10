@@ -17,6 +17,7 @@
 import chunter, { Backlink } from '@anticrm/chunter'
 import contact, { Employee, EmployeeAccount, formatName } from '@anticrm/contact'
 import core, {
+  Account,
   AttachedDoc,
   Class,
   Data,
@@ -26,6 +27,7 @@ import core, {
   Obj,
   Ref,
   Space,
+  Timestamp,
   Tx,
   TxCollectionCUD,
   TxCreateDoc,
@@ -36,7 +38,7 @@ import notification, { EmailNotification, Notification, NotificationStatus } fro
 import { getResource } from '@anticrm/platform'
 import type { TriggerControl } from '@anticrm/server-core'
 import { extractTx } from '@anticrm/server-core'
-import { getUpdateLastViewTx } from '@anticrm/server-notification'
+import { createLastViewTx, getUpdateLastViewTx } from '@anticrm/server-notification'
 import view, { HTMLPresenter, TextPresenter } from '@anticrm/view'
 
 /**
@@ -73,6 +75,42 @@ export async function OnBacklinkCreate (tx: Tx, control: TriggerControl): Promis
   return result
 }
 
+async function getUpdateLastViewTxes (
+  doc: Doc,
+  _id: Ref<Doc>,
+  _class: Ref<Class<Doc>>,
+  modifiedOn: Timestamp,
+  user: Ref<Account>,
+  control: TriggerControl
+): Promise<Tx[]> {
+  const updatedUsers: Set<Ref<Account>> = new Set<Ref<Account>>()
+  const result: Tx[] = []
+  const tx = await getUpdateLastViewTx(control.findAll, _id, _class, modifiedOn, user)
+  if (tx !== undefined) {
+    updatedUsers.add(user)
+    result.push(tx)
+  }
+  const docClass = control.hierarchy.getClass(doc._class)
+  const anotherUserNotifications = control.hierarchy.as(docClass, notification.mixin.AnotherUserNotifications)
+  for (const field of anotherUserNotifications?.fields ?? []) {
+    const value = (doc as any)[field]
+    if (value != null) {
+      for (const employeeId of Array.isArray(value) ? value : [value]) {
+        const account = (await control.modelDb.findAll(core.class.Account, { employee: employeeId }, { limit: 1 }))[0]
+        if (account !== undefined) {
+          if (updatedUsers.has(account._id)) continue
+          const assigneeTx = await createLastViewTx(control.findAll, _id, _class, account._id)
+          if (assigneeTx !== undefined) {
+            updatedUsers.add(account._id)
+            result.push(assigneeTx)
+          }
+        }
+      }
+    }
+  }
+  return result
+}
+
 /**
  * @public
  */
@@ -92,40 +130,36 @@ export async function UpdateLastView (tx: Tx, control: TriggerControl): Promise<
       }
       if (control.hierarchy.isDerived(createTx.objectClass, core.class.AttachedDoc)) {
         const doc = TxProcessor.createDoc2Doc(createTx as TxCreateDoc<AttachedDoc>)
-        const attachedTx = await getUpdateLastViewTx(
-          control.findAll,
+        const attachedTxes = await getUpdateLastViewTxes(
+          doc,
           doc.attachedTo,
           doc.attachedToClass,
           createTx.modifiedOn,
-          createTx.modifiedBy
+          createTx.modifiedBy,
+          control
         )
-        if (attachedTx !== undefined) {
-          result.push(attachedTx)
-        }
-      } else {
-        const doc = TxProcessor.createDoc2Doc(createTx)
-        const tx = await getUpdateLastViewTx(
-          control.findAll,
+        const docClass = control.hierarchy.getClass(doc._class)
+        if (!control.hierarchy.hasMixin(docClass, notification.mixin.LastViewAttached)) return attachedTxes
+        const parentTxes = await getUpdateLastViewTxes(
+          doc,
           doc._id,
           doc._class,
           createTx.modifiedOn,
-          createTx.modifiedBy
+          createTx.modifiedBy,
+          control
         )
-        if (tx !== undefined) {
-          result.push(tx)
-        }
+        return [...attachedTxes, ...parentTxes]
+      } else {
+        const doc = TxProcessor.createDoc2Doc(createTx)
+        return await getUpdateLastViewTxes(doc, doc._id, doc._class, createTx.modifiedOn, createTx.modifiedBy, control)
       }
-      break
     }
     case core.class.TxUpdateDoc:
     case core.class.TxMixin: {
       const tx = actualTx as TxCUD<Doc>
       const doc = (await control.findAll(tx.objectClass, { _id: tx.objectId }, { limit: 1 }))[0]
       if (doc !== undefined) {
-        const resTx = await getUpdateLastViewTx(control.findAll, doc._id, doc._class, tx.modifiedOn, tx.modifiedBy)
-        if (resTx !== undefined) {
-          result.push(resTx)
-        }
+        return await getUpdateLastViewTxes(doc, doc._id, doc._class, tx.modifiedOn, tx.modifiedBy, control)
       }
       break
     }

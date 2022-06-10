@@ -35,6 +35,8 @@
   import FileBrowserFilters from './FileBrowserFilters.svelte'
   import FileBrowserSortMenu from './FileBrowserSortMenu.svelte'
 
+  export let withHeader: boolean = true
+
   const client = getClient()
   const loc = getCurrentLocation()
   const spaceId: Ref<Space> | undefined = loc.query?.spaceId as Ref<Space> | undefined
@@ -48,7 +50,7 @@
   const currentUser = getCurrentAccount() as EmployeeAccount
   let selectedParticipants: Ref<Employee>[] = [currentUser.employee]
   let selectedSpaces: Ref<Space>[] = []
-  let searchQuery: string = ''
+  export let search: string = ''
   let isLoading = false
 
   let attachments: Attachment[] = []
@@ -58,7 +60,7 @@
   let selectedFileTypeId = 'typeAny'
   let isListDisplayMode = true
 
-  $: fetch(searchQuery, selectedSort, selectedFileTypeId, selectedDateId, selectedParticipants, selectedSpaces)
+  $: fetch(search, selectedSort, selectedFileTypeId, selectedDateId, selectedParticipants, selectedSpaces)
 
   async function fetch (
     searchQuery_: string,
@@ -108,12 +110,14 @@
   }
 </script>
 
-<div class="ac-header full divide">
-  <div class="ac-header__wrap-title">
-    <span class="ac-header__title"><Label label={attachment.string.FileBrowser} /></span>
+{#if withHeader}
+  <div class="ac-header full divide">
+    <div class="ac-header__wrap-title">
+      <span class="ac-header__title"><Label label={attachment.string.FileBrowser} /></span>
+    </div>
+    <EditWithIcon icon={IconSearch} bind:value={search} placeholder={ui.string.SearchDots} />
   </div>
-  <EditWithIcon icon={IconSearch} bind:value={searchQuery} placeholder={ui.string.SearchDots} />
-</div>
+{/if}
 <div class="ac-header full">
   <FileBrowserFilters
     {requestedSpaceClasses}

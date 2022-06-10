@@ -20,9 +20,10 @@ import attachment from '@anticrm/model-attachment'
 import core, { TAttachedDoc } from '@anticrm/model-core'
 import { createAction } from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
+import notification from '@anticrm/notification'
+import setting from '@anticrm/setting'
 import type {} from '@anticrm/view'
 import view from '@anticrm/view'
-import setting from '@anticrm/setting'
 import inventory from './plugin'
 
 export const DOMAIN_INVENTORY = 'inventory' as Domain
@@ -148,6 +149,8 @@ export function createModel (builder: Builder): void {
     { label: inventory.string.Inventory, visible: true },
     inventory.category.Inventory
   )
+
+  builder.mixin(inventory.class.Product, core.class.Class, notification.mixin.LastViewAttached, {})
 
   createAction(builder, {
     label: inventory.string.CreateSubcategory,

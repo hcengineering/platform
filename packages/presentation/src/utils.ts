@@ -82,7 +82,6 @@ export class LiveQuery {
   constructor (dontDestroy: boolean = false) {
     if (!dontDestroy) {
       onDestroy(() => {
-        console.log('onDestroy query')
         this.unsubscribe()
       })
     }
@@ -94,7 +93,9 @@ export class LiveQuery {
     callback: (result: FindResult<T>) => void,
     options?: FindOptions<T>
   ): boolean {
+    console.log(_class, query, callback, options)
     if (!this.needUpdate(_class, query, callback, options)) {
+      console.log('matched')
       return false
     }
     this.oldCallback = callback
@@ -105,6 +106,10 @@ export class LiveQuery {
     const unsub = liveQuery.query(_class, query, callback, options)
     this.unsubscribe = () => {
       unsub()
+      this.oldCallback = undefined
+      this.oldClass = undefined
+      this.oldOptions = undefined
+      this.oldQuery = undefined
       this.unsubscribe = () => {}
     }
     return true

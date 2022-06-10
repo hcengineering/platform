@@ -63,12 +63,14 @@
   })
 
   const query = createQuery()
-  $: _id &&
-    _class &&
+  $: if (_id && _class) {
     query.query(_class, { _id }, (result) => {
       object = result[0]
       realObjectClass = object._class
     })
+  } else {
+    query.unsubscribe()
+  }
 
   let keys: KeyedAttribute[] = []
   let collectionEditors: { key: KeyedAttribute; editor: AnyComponent }[] = []
