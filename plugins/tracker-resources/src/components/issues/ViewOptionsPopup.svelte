@@ -43,7 +43,7 @@
       <DropdownRecord
         items={groupByItems}
         selected={groupBy}
-        on:select={result => {
+        on:select={(result) => {
           if (result === undefined) return
           groupBy = result.detail
           updateOptions()
@@ -55,7 +55,7 @@
       <DropdownRecord
         items={orderByItems}
         selected={orderBy}
-        on:select={result => {
+        on:select={(result) => {
           if (result === undefined) return
           orderBy = result.detail
           updateOptions()
@@ -70,7 +70,7 @@
         <DropdownRecord
           items={dateModificationPeriodItems}
           selected={completedIssuesPeriod}
-          on:select={result => {
+          on:select={(result) => {
             if (result === undefined) return
             completedIssuesPeriod = result.detail
             updateOptions()
@@ -80,18 +80,12 @@
     {/if}
     <span class="label"><Label label={tracker.string.SubIssues} /></span>
     <div class="value">
-      <MiniToggle
-        bind:on={shouldShowSubIssues}
-        on:change={updateOptions}
-      />
+      <MiniToggle bind:on={shouldShowSubIssues} on:change={updateOptions} />
     </div>
     {#if groupBy === IssuesGrouping.Status || groupBy === IssuesGrouping.Priority}
       <span class="label"><Label label={tracker.string.ShowEmptyGroups} /></span>
       <div class="value">
-        <MiniToggle
-          bind:on={shouldShowEmptyGroups}
-          on:change={updateOptions}
-        />
+        <MiniToggle bind:on={shouldShowEmptyGroups} on:change={updateOptions} />
       </div>
     {/if}
   </div>

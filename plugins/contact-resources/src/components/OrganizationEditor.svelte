@@ -65,7 +65,7 @@
   let tool: HTMLElement
 </script>
 
-<div class="clear-mins" bind:this={tool}></div>
+<div class="clear-mins" bind:this={tool} />
 <Button
   {justify}
   {width}

@@ -21,22 +21,19 @@
 
 <div class="clear-mins" bind:this={tool}>
   <Button
-    {kind} {size} {width}
+    {kind}
+    {size}
+    {width}
     on:click={() => {
       if (!opened) {
         opened = true
-        showPopup(
-          DropdownRecordPopup,
-          { items, selected },
-          tool,
-          result => {
-            if (result !== undefined) {
-              selected = result
-              dispatch('select', result)
-            }
-            opened = false
+        showPopup(DropdownRecordPopup, { items, selected }, tool, (result) => {
+          if (result !== undefined) {
+            selected = result
+            dispatch('select', result)
           }
-        )
+          opened = false
+        })
       }
     }}
   >
