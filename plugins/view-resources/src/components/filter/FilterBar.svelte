@@ -95,7 +95,7 @@
     oldFilters.forEach((p) => p.onRemove?.())
   }
 
-  function makeKey(_class: Ref<Class<Doc>>): string {
+  function makeKey (_class: Ref<Class<Doc>>): string {
     const loc = getCurrentLocation()
     loc.fragment = undefined
     loc.query = undefined
