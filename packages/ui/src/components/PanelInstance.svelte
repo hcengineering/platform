@@ -65,7 +65,6 @@
 
     if (componentInstance && componentInstance.canClose) {
       if (!componentInstance.canClose()) {
-        console.log('CANT CLOSE')
         return
       }
     }

@@ -125,7 +125,6 @@ export const Completion = Node.create<CompletionOptions>({
   },
 
   renderHTML ({ node, HTMLAttributes }) {
-    console.log('render HTML', node, HTMLAttributes)
     return [
       'span',
       mergeAttributes({ 'data-type': this.name }, this.options.HTMLAttributes, HTMLAttributes),
@@ -137,7 +136,6 @@ export const Completion = Node.create<CompletionOptions>({
   },
 
   renderText ({ node }) {
-    console.log('render TEXT', node)
     return this.options.renderLabel({
       options: this.options,
       node

@@ -82,7 +82,6 @@ export class LiveQuery {
   constructor (dontDestroy: boolean = false) {
     if (!dontDestroy) {
       onDestroy(() => {
-        console.log('onDestroy query')
         this.unsubscribe()
       })
     }

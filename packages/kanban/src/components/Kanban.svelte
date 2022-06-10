@@ -198,7 +198,6 @@
         const stateObjs = getStateObjects(objects, st)
         if (stateObjs.length > 0) {
           pos = objects.findIndex((it) => it._id === stateObjs[0].it._id)
-          console.log('SELECT', '#1', pos)
           break
         }
       }

@@ -167,7 +167,6 @@
     }
   }
   function handleAction (a: RefAction, evt?: Event): void {
-    console.log('handle event', a.label)
     a.action(evt?.target as HTMLElement, editorHandler)
   }
 

@@ -132,8 +132,6 @@
       candidateData
     )
 
-    console.log('resume name', resume.name)
-
     if (resume.uuid !== undefined) {
       client.addCollection(
         attachment.class.Attachment,
@@ -229,7 +227,6 @@
 
     try {
       const doc = await recognizeDocument(token, fileUrl)
-      console.log('recognize:', doc)
 
       if (isUndef(object.title) && doc.title !== undefined) {
         object.title = doc.title
@@ -333,8 +330,6 @@
       if (file.type.includes('application/pdf')) {
         await recognize()
       }
-
-      console.log('uploaded file uuid', resume.uuid)
     } catch (err: any) {
       setPlatformStatus(unknownError(err))
     } finally {

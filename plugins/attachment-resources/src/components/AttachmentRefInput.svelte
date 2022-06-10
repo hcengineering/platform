@@ -59,7 +59,6 @@
   async function createAttachment (file: File) {
     try {
       const uuid = await uploadFile(file, { space, attachedTo: objectId })
-      console.log('uploaded file uuid', uuid)
       const _id: Ref<Attachment> = generateId()
       attachments.set(_id, {
         _id,
