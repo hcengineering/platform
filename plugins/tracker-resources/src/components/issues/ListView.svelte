@@ -2,14 +2,7 @@
   import { ScrollBox } from '@anticrm/ui'
   import IssuesListBrowser from './IssuesListBrowser.svelte'
   import tracker from '../../plugin'
-  import {
-    Issue,
-    IssuesDateModificationPeriod,
-    IssuesGrouping,
-    IssuesOrdering,
-    IssueStatus,
-    Team
-  } from '@anticrm/tracker'
+  import { Issue, IssueStatus, Team, ViewOptions } from '@anticrm/tracker'
   import { Class, Doc, Ref, SortingOrder, WithLookup } from '@anticrm/core'
   import {
     getCategories,
@@ -26,16 +19,12 @@
   export let currentSpace: Ref<Team>
   export let config: (string | BuildModelKey)[]
   export let query = {}
-  export let viewOptions: {
-    groupBy: IssuesGrouping
-    orderBy: IssuesOrdering
-    completedIssuesPeriod: IssuesDateModificationPeriod
-    shouldShowEmptyGroups: boolean
-  }
+  export let viewOptions: ViewOptions
 
-  $: ({ groupBy, orderBy, shouldShowEmptyGroups } = viewOptions)
+  $: ({ groupBy, orderBy, shouldShowEmptyGroups, shouldShowSubIssues } = viewOptions)
   $: groupByKey = issuesGroupKeyMap[groupBy]
   $: orderByKey = issuesOrderKeyMap[orderBy]
+  $: subIssuesQuery = shouldShowSubIssues ? {} : { attachedTo: tracker.ids.NoParent }
 
   const statusesQuery = createQuery()
   let statuses: IssueStatus[] = []
@@ -58,7 +47,7 @@
   let issues: WithLookup<Issue>[] = []
   $: issuesQuery.query(
     tracker.class.Issue,
-    query,
+    { ...subIssuesQuery, ...query },
     (result) => {
       issues = result
     },

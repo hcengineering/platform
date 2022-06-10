@@ -115,7 +115,7 @@
     search=""
     {states}
     {options}
-    query={{}}
+    query={{ attachedTo: tracker.ids.NoParent }}
     fieldName={'status'}
     rankFieldName={'rank'}
     on:content={(evt) => {
