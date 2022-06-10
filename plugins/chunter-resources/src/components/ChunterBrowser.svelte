@@ -58,7 +58,6 @@
         kind="transparent"
         on:click={() => {
           searchType = SearchType.Messages
-          filters = []
         }}
       />
     </div>
@@ -69,7 +68,6 @@
         selected={searchType === SearchType.Channels}
         on:click={() => {
           searchType = SearchType.Channels
-          filters = []
         }}
       />
     </div>
@@ -80,7 +78,6 @@
         selected={searchType === SearchType.Files}
         on:click={() => {
           searchType = SearchType.Files
-          filters = []
         }}
       />
     </div>
@@ -91,7 +88,6 @@
         selected={searchType === SearchType.Contacts}
         on:click={() => {
           searchType = SearchType.Contacts
-          filters = []
         }}
       />
     </div>
@@ -102,7 +98,7 @@
     this={components[searchType].component}
     withHeader={false}
     bind:search={userSearch_}
-    {filters}
+    bind:filters
     {...components[searchType].props}
   />
 {/if}

@@ -138,7 +138,6 @@
     <FilterButton {_class} bind:filters />
   </div>
 {/if}
-{filters.length}
 <FilterBar {_class} query={searchQuery} bind:filters on:change={(e) => (resultQuery = e.detail)} />
 <Scroller padding={'2.5rem'}>
   <div class="flex-col">
