@@ -123,7 +123,7 @@
         {justify}
         on:click={_click}
       >
-        <span slot="content" style="overflow: hidden">
+        <span slot="content" class="overflow-label disabled">
           {#if selected}
             {#if size === 'x-large'}
               <UserInfo value={selected} size={'medium'} {icon} />
@@ -146,7 +146,7 @@
       {justify}
       on:click={_click}
     >
-      <span slot="content" style="overflow: hidden">
+      <span slot="content" class="overflow-label disabled">
         {#if selected}
           {#if size === 'x-large' || size === 'large'}
             <UserInfo value={selected} size={'x-small'} {icon} />

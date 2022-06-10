@@ -58,7 +58,7 @@
         }
       }}
     >
-      <span slot="content" style="overflow: hidden">
+      <span slot="content" class="overflow-label disabled">
         {#if selected}{selected.label}{:else}<Label label={placeholder} />{/if}
       </span>
     </Button>

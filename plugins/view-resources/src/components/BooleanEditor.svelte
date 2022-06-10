@@ -51,6 +51,6 @@
   }}
 >
   <svelte:fragment slot="content">
-    <BooleanPresenter bind:value />
+    <div class="pointer-events-none"><BooleanPresenter bind:value /></div>
   </svelte:fragment>
 </Button>

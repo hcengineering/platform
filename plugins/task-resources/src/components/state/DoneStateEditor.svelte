@@ -75,11 +75,11 @@
 >
   <svelte:fragment slot="content">
     {#if state}
-      <DoneStatePresenter value={state} showTitle />
+      <div class="pointer-events-none"><DoneStatePresenter value={state} showTitle /></div>
     {:else}
-      <div class="flex-center clear-mins">
+      <div class="flex-row-center pointer-events-none">
         <div class="color background-card-divider" />
-        <Label label={task.string.NoDoneState} />
+        <span class="overflow-label"><Label label={task.string.NoDoneState} /></span>
       </div>
     {/if}
   </svelte:fragment>

@@ -59,7 +59,7 @@
 >
   <svelte:fragment slot="content">
     {#if selectedStatusLabel}
-      <span class="nowrap">{selectedStatusLabel}</span>
+      <span class="overflow-label disabled">{selectedStatusLabel}</span>
     {/if}
   </svelte:fragment>
 </Button>
