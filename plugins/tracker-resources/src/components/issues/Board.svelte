@@ -18,12 +18,13 @@
   import { Kanban, TypeState } from '@anticrm/kanban'
   import { createQuery } from '@anticrm/presentation'
   import type { Issue, IssueStatus, Team } from '@anticrm/tracker'
-  import { Button, Icon, IconAdd, showPopup, Tooltip, showPanel } from '@anticrm/ui'
+  import { Button, Icon, IconAdd, showPopup, Tooltip, showPanel, Component } from '@anticrm/ui'
   import { focusStore, ListSelectionProvider, SelectDirection, selectionStore } from '@anticrm/view-resources'
   import ActionContext from '@anticrm/view-resources/src/components/ActionContext.svelte'
   import Menu from '@anticrm/view-resources/src/components/Menu.svelte'
   import { onMount } from 'svelte'
   import tracker from '../../plugin'
+  import notification from '@anticrm/notification'
   import CreateIssue from '../CreateIssue.svelte'
   import AssigneePresenter from './AssigneePresenter.svelte'
   import IssuePresenter from './IssuePresenter.svelte'
@@ -33,8 +34,6 @@
 
   export let currentSpace: Ref<Team>
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
-
-  /* eslint-disable no-undef */
 
   const spaceQuery = createQuery()
   const statusesQuery = createQuery()
@@ -63,10 +62,6 @@
       sort: { rank: SortingOrder.Ascending }
     }
   )
-
-  /* eslint-disable prefer-const */
-  /* eslint-disable no-unused-vars */
-  let issue: Issue
 
   function toIssue (object: any): WithLookup<Issue> {
     return object as WithLookup<Issue>
@@ -175,6 +170,9 @@
             {currentSpace}
             isEditable={true}
           />
+          <div class="flex-center mt-2">
+            <Component is={notification.component.NotificationPresenter} props={{ value: object }} />
+          </div>
         </div>
         <div class="buttons-group xxsmall-gap mt-10px">
           {#if issue && issueStatuses && issue.subIssues > 0}

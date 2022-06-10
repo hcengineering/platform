@@ -462,6 +462,38 @@
   }
 }
 
+/* List */
+
+.antiList-cells {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+
+  &__checkCell, &__notifyCell {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  &__checkCell { visibility: hidden; }
+}
+
+.antiList__row {
+  .antiList-cells__notifyCell {
+    z-index: 1;
+  }
+
+  &:hover, &.checking {
+    .antiList-cells__checkCell { visibility: visible; }
+    .antiList-cells__notifyCell .notify-table-kind {
+      width: 1.15rem;
+      height: 1.15rem;
+      background-color: var(--highlight-hover);
+      border: 1px solid currentColor;
+      border-radius: .375rem;
+    }
+  }
+}
+
 /* Select */
 .antiSelect {
   display: flex;

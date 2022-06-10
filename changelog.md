@@ -5,6 +5,7 @@
 Tracker: 
 
 - Issue preview
+- Enabled issue notifications
 
 ## 0.6.25
 

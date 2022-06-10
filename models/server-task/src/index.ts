@@ -16,10 +16,9 @@
 import { Builder } from '@anticrm/model'
 
 import core from '@anticrm/core'
+import serverTask from '@anticrm/server-task'
 import task from '@anticrm/task'
 import view from '@anticrm/view'
-import serverTask from '@anticrm/server-task'
-import serverCore from '@anticrm/server-core'
 
 export function createModel (builder: Builder): void {
   builder.mixin(task.class.Issue, core.class.Class, view.mixin.HTMLPresenter, {
@@ -28,13 +27,5 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(task.class.Issue, core.class.Class, view.mixin.TextPresenter, {
     presenter: serverTask.function.IssueTextPresenter
-  })
-
-  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverTask.trigger.OnTaskCreate
-  })
-
-  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverTask.trigger.OnTaskUpdate
   })
 }
