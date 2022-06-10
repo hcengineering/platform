@@ -175,6 +175,17 @@ export interface Project extends Doc {
 /**
  * @public
  */
+export interface ViewOptions {
+  groupBy: IssuesGrouping
+  orderBy: IssuesOrdering
+  completedIssuesPeriod: IssuesDateModificationPeriod
+  shouldShowEmptyGroups: boolean
+  shouldShowSubIssues: boolean
+}
+
+/**
+ * @public
+ */
 export const trackerId = 'tracker' as Plugin
 
 export * from './utils'

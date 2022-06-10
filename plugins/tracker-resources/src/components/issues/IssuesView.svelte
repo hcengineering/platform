@@ -2,7 +2,7 @@
   import core, { Ref, Space, WithLookup } from '@anticrm/core'
   import { IntlString, translate } from '@anticrm/platform'
   import { getClient } from '@anticrm/presentation'
-  import { IssuesDateModificationPeriod, IssuesGrouping, IssuesOrdering, Team } from '@anticrm/tracker'
+  import { IssuesDateModificationPeriod, IssuesGrouping, IssuesOrdering, Team, ViewOptions } from '@anticrm/tracker'
   import { Button, IconDetails } from '@anticrm/ui'
   import view, { Filter, Viewlet } from '@anticrm/view'
   import { FilterBar } from '@anticrm/view-resources'
@@ -19,11 +19,12 @@
 
   let viewlet: WithLookup<Viewlet> | undefined = undefined
   let filters: Filter[]
-  let viewOptions = {
+  let viewOptions: ViewOptions = {
     groupBy: IssuesGrouping.Status,
     orderBy: IssuesOrdering.Status,
     completedIssuesPeriod: IssuesDateModificationPeriod.All,
-    shouldShowEmptyGroups: false
+    shouldShowEmptyGroups: false,
+    shouldShowSubIssues: false
   }
   let resultQuery = {}
 
