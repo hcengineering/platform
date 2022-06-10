@@ -98,7 +98,11 @@
 
   $: if (model) update(model, spaces, preferences)
 
-  async function updateSpecials (specials: SpecialNavModel[], spaces: Space[], requestIndex: number): Promise<[Map<string, SpecialNavModel[]>, number]> {
+  async function updateSpecials (
+    specials: SpecialNavModel[],
+    spaces: Space[],
+    requestIndex: number
+  ): Promise<[Map<string, SpecialNavModel[]>, number]> {
     const result = new Map<string, SpecialNavModel[]>()
     const promises = specials.map(async (sp) => {
       const pos = sp.position ?? 'top'

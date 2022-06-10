@@ -28,7 +28,9 @@ export function classIcon (client: Client, _class: Ref<Class<Obj>>): Asset | und
 }
 export function getSpecialSpaceClass (model: NavigatorModel): Array<Ref<Class<Space>>> {
   const spaceResult = model.spaces.map((x) => x.spaceClass)
-  const result = (model.specials ?? []).map((it) => it.spaceClass).filter((it) => it !== undefined && !spaceResult.includes(it))
+  const result = (model.specials ?? [])
+    .map((it) => it.spaceClass)
+    .filter((it) => it !== undefined && !spaceResult.includes(it))
   return spaceResult.concat(result as Array<Ref<Class<Space>>>)
 }
 
