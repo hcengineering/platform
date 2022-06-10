@@ -13,68 +13,12 @@
 // limitations under the License.
 //
 
-import core, { Doc, Tx, TxCreateDoc, TxProcessor, TxUpdateDoc } from '@anticrm/core'
+import { Doc } from '@anticrm/core'
 import inventory, { Product } from '@anticrm/inventory'
 import login from '@anticrm/login'
 import { getMetadata } from '@anticrm/platform'
-import { extractTx, TriggerControl } from '@anticrm/server-core'
-import { getUpdateLastViewTx } from '@anticrm/server-notification'
 import view from '@anticrm/view'
 import workbench from '@anticrm/workbench'
-
-/**
- * @public
- */
-export async function OnProductCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const actualTx = extractTx(tx)
-  if (actualTx._class !== core.class.TxCreateDoc) {
-    return []
-  }
-
-  const createTx = actualTx as TxCreateDoc<Product>
-
-  if (!control.hierarchy.isDerived(createTx.objectClass, inventory.class.Product)) {
-    return []
-  }
-
-  const doc = TxProcessor.createDoc2Doc(createTx)
-
-  const lastViewTx = await getUpdateLastViewTx(
-    control.findAll,
-    doc._id,
-    doc._class,
-    createTx.modifiedOn,
-    createTx.modifiedBy
-  )
-
-  return lastViewTx !== undefined ? [lastViewTx] : []
-}
-
-/**
- * @public
- */
-export async function OnProductUpdate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const actualTx = extractTx(tx)
-  if (actualTx._class !== core.class.TxUpdateDoc) {
-    return []
-  }
-
-  const updateTx = actualTx as TxUpdateDoc<Product>
-
-  if (!control.hierarchy.isDerived(updateTx.objectClass, inventory.class.Product)) {
-    return []
-  }
-
-  const lastViewTx = await getUpdateLastViewTx(
-    control.findAll,
-    updateTx.objectId,
-    updateTx.objectClass,
-    updateTx.modifiedOn,
-    updateTx.modifiedBy
-  )
-
-  return lastViewTx !== undefined ? [lastViewTx] : []
-}
 
 /**
  * @public
@@ -95,10 +39,6 @@ export function productTextPresenter (doc: Doc): string {
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
-  trigger: {
-    OnProductCreate,
-    OnProductUpdate
-  },
   function: {
     ProductHTMLPresenter: productHTMLPresenter,
     ProductTextPresenter: productTextPresenter

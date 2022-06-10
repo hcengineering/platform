@@ -89,6 +89,18 @@ export interface SpaceLastEdit extends Class<Doc> {
 /**
  * @public
  */
+export interface LastViewAttached extends Class<AttachedDoc> {}
+
+/**
+ * @public
+ */
+export interface AnotherUserNotifications extends Class<Doc> {
+  fields: string[]
+}
+
+/**
+ * @public
+ */
 export const notificationId = 'notification' as Plugin
 
 /**
@@ -109,7 +121,9 @@ export type NotificationClientFactoy = () => NotificationClient
  */
 const notification = plugin(notificationId, {
   mixin: {
-    SpaceLastEdit: '' as Ref<Mixin<SpaceLastEdit>>
+    SpaceLastEdit: '' as Ref<Mixin<SpaceLastEdit>>,
+    AnotherUserNotifications: '' as Ref<Mixin<AnotherUserNotifications>>,
+    LastViewAttached: '' as Ref<Mixin<LastViewAttached>>
   },
   class: {
     LastView: '' as Ref<Class<LastView>>,

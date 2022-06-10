@@ -18,18 +18,20 @@ import { Account, Doc, Domain, DOMAIN_MODEL, Ref, Timestamp, TxCUD } from '@anti
 import { ArrOf, Builder, Mixin, Model, Prop, TypeRef, TypeString, TypeTimestamp } from '@anticrm/model'
 import core, { TAttachedDoc, TClass, TDoc } from '@anticrm/model-core'
 import type {
+  AnotherUserNotifications,
   EmailNotification,
   LastView,
-  NotificationType,
+  LastViewAttached,
+  Notification,
   NotificationProvider,
   NotificationSetting,
-  Notification,
   NotificationStatus,
+  NotificationType,
   SpaceLastEdit
 } from '@anticrm/notification'
 import type { IntlString } from '@anticrm/platform'
-import notification from './plugin'
 import setting from '@anticrm/setting'
+import notification from './plugin'
 
 export const DOMAIN_NOTIFICATION = 'notification' as Domain
 
@@ -95,6 +97,14 @@ export class TSpaceLastEdit extends TClass implements SpaceLastEdit {
   lastEditField!: string
 }
 
+@Mixin(notification.mixin.AnotherUserNotifications, core.class.Class)
+export class TAnotherUserNotifications extends TClass implements AnotherUserNotifications {
+  fields!: string[]
+}
+
+@Mixin(notification.mixin.LastViewAttached, core.class.Class)
+export class TLastViewAttached extends TClass implements LastViewAttached {}
+
 export function createModel (builder: Builder): void {
   builder.createModel(
     TLastView,
@@ -103,7 +113,9 @@ export function createModel (builder: Builder): void {
     TNotificationType,
     TNotificationProvider,
     TNotificationSetting,
-    TSpaceLastEdit
+    TSpaceLastEdit,
+    TAnotherUserNotifications,
+    TLastViewAttached
   )
 
   builder.createDoc(

@@ -37,8 +37,9 @@ import chunter from '@anticrm/model-chunter'
 import core, { TAttachedDoc, TClass, TDoc, TSpace } from '@anticrm/model-core'
 import presentation from '@anticrm/model-presentation'
 import view, { actionTemplates as viewTemplates, createAction, template } from '@anticrm/model-view'
+import notification from '@anticrm/notification'
 import { IntlString } from '@anticrm/platform'
-import { ViewAction } from '@anticrm/view'
+import tags from '@anticrm/tags'
 import {
   DOMAIN_STATE,
   DoneState,
@@ -60,7 +61,7 @@ import {
   WonStateTemplate
 } from '@anticrm/task'
 import { AnyComponent } from '@anticrm/ui'
-import tags from '@anticrm/tags'
+import { ViewAction } from '@anticrm/view'
 import task from './plugin'
 
 export { createKanbanTemplate, createSequence, taskOperation } from './migration'
@@ -374,6 +375,11 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(task.class.Task, core.class.Class, view.mixin.ObjectEditorHeader, {
     editor: task.component.TaskHeader
+  })
+
+  builder.mixin(task.class.Task, core.class.Class, notification.mixin.LastViewAttached, {})
+  builder.mixin(task.class.Task, core.class.Class, notification.mixin.AnotherUserNotifications, {
+    fields: ['assignee']
   })
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {

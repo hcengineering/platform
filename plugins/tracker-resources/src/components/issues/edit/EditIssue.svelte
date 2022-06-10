@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Data, Ref, SortingOrder, WithLookup } from '@anticrm/core'
+  import { Class, Data, Doc, Ref, SortingOrder, WithLookup } from '@anticrm/core'
   import { AttachmentDocList } from '@anticrm/attachment-resources'
   import { Panel } from '@anticrm/panel'
   import presentation, { createQuery, getClient, MessageViewer } from '@anticrm/presentation'
@@ -33,17 +33,21 @@
   } from '@anticrm/ui'
   import { ContextMenu } from '@anticrm/view-resources'
   import { StyledTextArea } from '@anticrm/text-editor'
-  import { createEventDispatcher, onMount } from 'svelte'
+  import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import tracker from '../../../plugin'
   import { getIssueId } from '../../../utils'
   import ControlPanel from './ControlPanel.svelte'
   import CopyToClipboard from './CopyToClipboard.svelte'
   import SubIssueSelector from './SubIssueSelector.svelte'
   import SubIssues from './SubIssues.svelte'
+  import { getResource } from '@anticrm/platform'
+  import notification from '@anticrm/notification'
 
   export let _id: Ref<Issue>
   export let _class: Ref<Class<Issue>>
 
+  let lastId: Ref<Doc> = _id
+  let lastClass: Ref<Class<Doc>> = _class
   const query = createQuery()
   const statusesQuery = createQuery()
   const dispatch = createEventDispatcher()
@@ -56,6 +60,23 @@
   let description = ''
   let innerWidth: number
   let isEditing = false
+
+  const notificationClient = getResource(notification.function.GetNotificationClient).then((res) => res())
+
+  $: read(_id)
+  function read (_id: Ref<Doc>) {
+    if (lastId !== _id) {
+      const prev = lastId
+      const prevClass = lastClass
+      lastId = _id
+      lastClass = _class
+      notificationClient.then((client) => client.updateLastView(prev, prevClass))
+    }
+  }
+
+  onDestroy(async () => {
+    notificationClient.then((client) => client.updateLastView(_id, _class))
+  })
 
   $: _id &&
     _class &&
