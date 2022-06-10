@@ -136,16 +136,17 @@
     if (currentApp !== app) {
       clear(1)
       currentApp = app
-      if (space === undefined) {
-        const last = localStorage.getItem(`platform_last_loc_${currentApp}`)
-        if (last !== null) {
-          const newLocation: Location = JSON.parse(last)
-          loc.path[2] = space = newLocation.path[2] as Ref<Space>
-          loc.path[3] = special = newLocation.path[3]
-        }
-      }
       currentApplication = await client.findOne(workbench.class.Application, { _id: currentApp })
       navigatorModel = currentApplication?.navigatorModel
+    }
+
+    if (space === undefined) {
+      const last = localStorage.getItem(`platform_last_loc_${currentApp}`)
+      if (last !== null) {
+        const newLocation: Location = JSON.parse(last)
+        loc.path[2] = space = newLocation.path[2] as Ref<Space>
+        loc.path[3] = special = newLocation.path[3]
+      }
     }
 
     if (currentSpecial === undefined || currentSpecial !== space) {
