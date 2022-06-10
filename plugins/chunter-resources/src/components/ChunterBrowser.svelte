@@ -44,68 +44,91 @@
   let filters: Filter[] = []
 </script>
 
-<div class="ac-header divide full">
-  <Header icon={workbench.icon.Search} intlLabel={plugin.string.ChunterBrowser} />
-</div>
-
-<div class="p-3 bar">
-  <div class="w-32 flex-center"><FilterButton _class={components[searchType].filterClass} bind:filters /></div>
-  <div class="flex-center w-full mr-32 buttons">
-    <div class="ml-1 p-1 btn">
-      <Button
-        label={plugin.string.Messages}
-        selected={searchType === SearchType.Messages}
-        kind="transparent"
-        on:click={() => {
-          searchType = SearchType.Messages
-        }}
-      />
+<div class="flex-col h-full">
+  <div class="ac-header divide full">
+    <Header icon={workbench.icon.Search} intlLabel={plugin.string.ChunterBrowser} />
+  </div>
+  <div class="h-full browser">
+    <div class="pb-16 component">
+      <div class="h-full">
+        {#if components[searchType].component}
+          <svelte:component
+            this={components[searchType].component}
+            withHeader={false}
+            bind:search={userSearch_}
+            bind:filters
+            {...components[searchType].props}
+          />
+        {/if}
+      </div>
     </div>
-    <div class="ml-1 p-1 btn">
-      <Button
-        label={plugin.string.Channels}
-        kind="transparent"
-        selected={searchType === SearchType.Channels}
-        on:click={() => {
-          searchType = SearchType.Channels
-        }}
-      />
-    </div>
-    <div class="ml-1 p-1 btn">
-      <Button
-        label={attachment.string.Files}
-        kind="transparent"
-        selected={searchType === SearchType.Files}
-        on:click={() => {
-          searchType = SearchType.Files
-        }}
-      />
-    </div>
-    <div class="ml-1 p-1 btn">
-      <Button
-        kind="transparent"
-        label={contact.string.Contacts}
-        selected={searchType === SearchType.Contacts}
-        on:click={() => {
-          searchType = SearchType.Contacts
-        }}
-      />
+    <div class="p-3 bar">
+      <div class="w-32 flex-center"><FilterButton _class={components[searchType].filterClass} bind:filters /></div>
+      <div class="flex-center w-full mr-32 buttons">
+        <div class="ml-1 p-1 btn">
+          <Button
+            label={plugin.string.Messages}
+            selected={searchType === SearchType.Messages}
+            kind="transparent"
+            on:click={() => {
+              searchType = SearchType.Messages
+            }}
+          />
+        </div>
+        <div class="ml-1 p-1 btn">
+          <Button
+            label={plugin.string.Channels}
+            kind="transparent"
+            selected={searchType === SearchType.Channels}
+            on:click={() => {
+              searchType = SearchType.Channels
+            }}
+          />
+        </div>
+        <div class="ml-1 p-1 btn">
+          <Button
+            label={attachment.string.Files}
+            kind="transparent"
+            selected={searchType === SearchType.Files}
+            on:click={() => {
+              searchType = SearchType.Files
+              filters = []
+            }}
+          />
+        </div>
+        <div class="ml-1 p-1 btn">
+          <Button
+            kind="transparent"
+            label={contact.string.Contacts}
+            selected={searchType === SearchType.Contacts}
+            on:click={() => {
+              searchType = SearchType.Contacts
+              filters = []
+            }}
+          />
+        </div>
+      </div>
     </div>
   </div>
 </div>
-{#if components[searchType].component}
-  <svelte:component
-    this={components[searchType].component}
-    withHeader={false}
-    bind:search={userSearch_}
-    bind:filters
-    {...components[searchType].props}
-  />
-{/if}
 
 <style lang="scss">
-  .bar {
+  .browser {
+    flex-grow: 2;
     display: flex;
     justify-content: start;
+    flex-direction: column-reverse;
+  }
+
+  .bar {
+    flex-grow: 1;
+    display: flex;
+    justify-content: start;
+    max-height: 4rem;
+  }
+
+  .component {
+    flex-grow: 2;
+    height: 0;
   }
 </style>

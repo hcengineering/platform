@@ -26,14 +26,14 @@
   $: updateSearchQuery(search)
 
   const client = getClient()
-  const _class = chunter.class.ChunterMessage
+  export let filterClass = chunter.class.ChunterMessage
   let messages: ChunterMessage[] = []
 
   let resultQuery: DocumentQuery<ChunterMessage> = { ...searchQuery }
 
   async function updateMessages (resultQuery: DocumentQuery<ChunterMessage>) {
     messages = await client.findAll(
-      _class,
+      filterClass,
       {
         ...resultQuery
       },
@@ -111,7 +111,7 @@
     />
   </div>
 {/if}
-<FilterBar {_class} query={searchQuery} bind:filters on:change={(e) => (resultQuery = e.detail)} />
+<FilterBar _class={filterClass} query={searchQuery} bind:filters on:change={(e) => (resultQuery = e.detail)} />
 {#if messages.length > 0}
   <Scroller>
     {#each messages as message}

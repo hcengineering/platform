@@ -30,7 +30,6 @@ export default mergeIds(chunterId, chunter, {
     Threads: '' as AnyComponent,
     ThreadView: '' as AnyComponent,
     SavedMessages: '' as AnyComponent,
-    MessagesBrowser: '' as AnyComponent,
     ChunterBrowser: '' as AnyComponent
   },
   action: {
