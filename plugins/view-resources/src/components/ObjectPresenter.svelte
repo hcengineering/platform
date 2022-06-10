@@ -34,6 +34,7 @@
       doc = r.shift()
     })
   } else {
+    docQuery.unsubscribe()
     doc = value
   }
 

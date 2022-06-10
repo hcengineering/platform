@@ -45,6 +45,8 @@
       },
       { limit: 1 }
     )
+  } else {
+    query.unsubscribe()
   }
 </script>
 

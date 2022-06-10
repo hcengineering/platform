@@ -33,6 +33,8 @@
 
   $: if (!currentTeam) {
     spaceQuery.query(tracker.class.Team, { _id: value.space }, (res) => ([currentTeam] = res))
+  } else {
+    spaceQuery.unsubscribe()
   }
   $: issueName = currentTeam && getIssueId(currentTeam, value)
 </script>

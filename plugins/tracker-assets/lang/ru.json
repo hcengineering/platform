@@ -89,7 +89,8 @@
     "IncludeItemsThatMatch": "Включить элементы, которые соответствуют",
     "AnyFilter": "любому фильтру",
     "AllFilters": "всем фильтрам",
-    "NoDescription": "Нет описания"
+    "NoDescription": "Нет описания",
+    "SearchIssue": "Поиск задачи..."
   },
   "status": {}
 }
