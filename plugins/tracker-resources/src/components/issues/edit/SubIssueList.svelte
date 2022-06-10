@@ -26,6 +26,7 @@
   import AssigneeEditor from '../AssigneeEditor.svelte'
   import DueDateEditor from '../DueDateEditor.svelte'
   import StatusEditor from '../StatusEditor.svelte'
+  import PriorityEditor from '../PriorityEditor.svelte'
 
   export let issues: Issue[]
   export let issueStatuses: WithLookup<IssueStatus>[]
@@ -92,16 +93,13 @@
       <div class="draggable-mark"><Circles /></div>
     </div>
     <div class="flex-center ml-6 clear-mins">
+      <div class="mr-2">
+        <PriorityEditor value={issue} isEditable kind="transparent" justify="center" width="" />
+      </div>
       <span class="flex-no-shrink text" on:click={() => openIssue(issue)}>
         {getIssueId(currentTeam, issue)}
       </span>
-      <StatusEditor
-        value={issue}
-        statuses={issueStatuses}
-        kind="transparent"
-        tooltipFill={false}
-        tooltipAlignment="bottom"
-      />
+      <StatusEditor value={issue} statuses={issueStatuses} kind="transparent" tooltipAlignment="bottom" />
       <span class="text name" title={issue.title} on:click={() => openIssue(issue)}>
         {issue.title}
       </span>

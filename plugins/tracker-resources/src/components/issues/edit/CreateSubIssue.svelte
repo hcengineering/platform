@@ -22,6 +22,7 @@
   import tracker from '../../../plugin'
   import AssigneeEditor from '../AssigneeEditor.svelte'
   import StatusEditor from '../StatusEditor.svelte'
+  import PriorityEditor from '../PriorityEditor.svelte'
 
   export let parentIssue: Issue
   export let issueStatuses: WithLookup<IssueStatus>[]
@@ -104,7 +105,6 @@
       kind="transparent"
       width="min-content"
       size="medium"
-      tooltipFill={false}
       tooltipAlignment="bottom"
       on:change={({ detail }) => (newIssue.status = detail)}
     />
@@ -134,6 +134,16 @@
         kind="no-border"
         tooltipFill={false}
         on:change={({ detail }) => (newIssue.assignee = detail)}
+      />
+      <PriorityEditor
+        value={newIssue}
+        shouldShowLabel
+        isEditable
+        kind="no-border"
+        size="small"
+        justify="center"
+        width=""
+        on:change={({ detail }) => (newIssue.priority = detail)}
       />
     </div>
     <div class="buttons-group small-gap">
