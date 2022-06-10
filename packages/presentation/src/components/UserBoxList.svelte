@@ -78,10 +78,10 @@
   >
     <svelte:fragment slot="content">
       {#if persons.length > 0}
-        <div class="flex-row-center flex-nowrap">
+        <div class="flex-row-center flex-nowrap pointer-events-none">
           <CombineAvatars {_class} bind:items size={'inline'} />
           {#await translate(presentation.string.NumberMembers, { count: persons.length }) then text}
-            <span class="ml-1-5">{text}</span>
+            <span class="overflow-label ml-1-5">{text}</span>
           {/await}
         </div>
       {/if}

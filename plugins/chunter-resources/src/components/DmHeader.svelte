@@ -18,9 +18,9 @@
   import { getCurrentAccount } from '@anticrm/core'
   import { createQuery, getClient, CombineAvatars } from '@anticrm/presentation'
   import contact, { EmployeeAccount } from '@anticrm/contact'
-  import { getCurrentLocation, navigate, SearchEdit, showPanel } from '@anticrm/ui'
+  import { SearchEdit, showPanel } from '@anticrm/ui'
   import chunter from '../plugin'
-  import { getDmName } from '../utils'
+  import { getDmName, navigateToSpecial } from '../utils'
   import { userSearch } from '../index'
 
   export let spaceId: Ref<DirectMessage> | undefined
@@ -72,9 +72,7 @@
       userSearch.set(ev.detail)
 
       if (ev.detail !== '') {
-        const loc = getCurrentLocation()
-        loc.path[2] = 'messagesBrowser'
-        navigate(loc)
+        navigateToSpecial('chunterBrowser')
       }
     }}
   />

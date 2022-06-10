@@ -85,7 +85,7 @@
   >
     <svelte:fragment slot="content">
       {#if items.length > 0}
-        <div class="flex-row-center flex-nowrap">
+        <div class="flex-row-center flex-nowrap overflow-label disabled">
           {#await translate(countLabel, { count: items.length }) then text}
             {text}
           {/await}

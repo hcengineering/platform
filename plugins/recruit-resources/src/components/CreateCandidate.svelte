@@ -537,7 +537,7 @@
           }}
         >
           <svelte:fragment slot="content">
-            {resume.name}
+            <span class="overflow-label disabled">{resume.name}</span>
           </svelte:fragment>
         </Button>
       {:else}

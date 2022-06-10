@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Doc } from '@anticrm/core'
-  import { Button, Tooltip } from '@anticrm/ui'
+  import { Button, tooltip } from '@anticrm/ui'
   import notification from '../plugin'
   import { NotificationClientImpl } from '../utils'
 
@@ -26,14 +26,14 @@
   $: subscribed = lastView !== undefined && lastView !== -1
 </script>
 
-<Tooltip label={subscribed ? notification.string.DontTrack : notification.string.Track}>
+<div use:tooltip={{ label: subscribed ? notification.string.DontTrack : notification.string.Track }}>
   <Button
     size={'medium'}
     kind={'transparent'}
-    icon={subscribed ? notification.icon.DontTrack : notification.icon.Track}
+    icon={subscribed ? notification.icon.Track : notification.icon.DontTrack}
     on:click={() => {
       if (subscribed) notificationClient.unsubscribe(value._id)
       else notificationClient.updateLastView(value._id, value._class, undefined, true)
     }}
   />
-</Tooltip>
+</div>

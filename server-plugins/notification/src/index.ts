@@ -72,6 +72,40 @@ export async function getUpdateLastViewTx (
 /**
  * @public
  */
+export async function createLastViewTx (
+  findAll: TriggerControl['findAll'],
+  attachedTo: Ref<Doc>,
+  attachedToClass: Ref<Class<Doc>>,
+  user: Ref<Account>
+): Promise<TxCreateDoc<LastView> | undefined> {
+  const current = (
+    await findAll(
+      notification.class.LastView,
+      {
+        attachedTo,
+        attachedToClass,
+        user
+      },
+      { limit: 1 }
+    )
+  )[0]
+  if (current === undefined) {
+    const factory = new TxFactory(user)
+    const u = factory.createTxCreateDoc(notification.class.LastView, notification.space.Notifications, {
+      user,
+      lastView: 1,
+      attachedTo,
+      attachedToClass,
+      collection: 'lastViews'
+    })
+    u.space = core.space.DerivedTx
+    return u
+  }
+}
+
+/**
+ * @public
+ */
 export default plugin(serverNotificationId, {
   trigger: {
     OnBacklinkCreate: '' as Resource<TriggerFunc>,

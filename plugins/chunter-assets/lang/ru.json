@@ -61,6 +61,9 @@
     "ConvertToPrivate": "Конвертировать в закрытый канал",
     "MessagesBrowser": "Браузер сообщений",
     "CreateBy": "Создано пользователем",
-    "ThreadMessage": "Сообщение в обсуждении"
+    "ThreadMessage": "Сообщение в обсуждении",
+    "ChunterBrowser": "Поиск",
+    "Messages": "Сообщения",
+    "NoResults": "Нет результатов"
   }
 }

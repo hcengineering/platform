@@ -70,7 +70,11 @@
     }
 
     const space = currentTeam._id
-    const lastOne = await client.findOne<Issue>(tracker.class.Issue, {}, { sort: { rank: SortingOrder.Descending } })
+    const lastOne = await client.findOne<Issue>(
+      tracker.class.Issue,
+      { space },
+      { sort: { rank: SortingOrder.Descending } }
+    )
     const incResult = await client.updateDoc(
       tracker.class.Team,
       core.space.Space,
@@ -99,15 +103,17 @@
 
 <div bind:this={thisRef} class="flex-col root">
   <div class="flex-row-top">
-    <StatusEditor
-      value={newIssue}
-      statuses={issueStatuses}
-      kind="transparent"
-      width="min-content"
-      size="medium"
-      tooltipAlignment="bottom"
-      on:change={({ detail }) => (newIssue.status = detail)}
-    />
+    <div id="status-editor">
+      <StatusEditor
+        value={newIssue}
+        statuses={issueStatuses}
+        kind="transparent"
+        width="min-content"
+        size="medium"
+        tooltipAlignment="bottom"
+        on:change={({ detail }) => (newIssue.status = detail)}
+      />
+    </div>
     <div class="w-full flex-col content">
       <EditBox
         bind:value={newIssue.title}

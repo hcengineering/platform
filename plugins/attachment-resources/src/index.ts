@@ -43,7 +43,8 @@ export {
   AttachmentRefInput,
   AttachmentList,
   AttachmentDocList,
-  FileDownload
+  FileDownload,
+  FileBrowser
 }
 
 export enum FileBrowserSortMode {

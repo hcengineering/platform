@@ -354,6 +354,7 @@ input.search {
 .mr-6 { margin-right: 1.5rem; }
 .mr-8 { margin-right: 2rem; }
 .mr-10 { margin-right: 2.5rem; }
+.mr-32 { margin-right: 8rem }
 .mt-0-5 { margin-top: .125rem; }
 .mt-1 { margin-top: .25rem; }
 .mt-2 { margin-top: .5rem; }
@@ -396,6 +397,7 @@ input.search {
 .pb-3 { padding-bottom: .75rem; }
 .pb-4 { padding-bottom: 1rem; }
 .pb-6 { padding-bottom: 1.5rem; }
+.pb-16 { padding-bottom: 4rem; }
 .px-2 { padding: 0 .5rem; }
 .px-3 { padding: 0 .75rem; }
 .px-4 { padding: 0 1rem; }
@@ -464,6 +466,7 @@ input.search {
 .w-16 { width: 4rem; }
 .w-22 { width: 5.5rem; }
 .w-24 { width: 6rem; }
+.w-32 { width: 8rem; }
 .w-60 { width: 15rem; }
 .w-85 { width: 21.25rem; }
 .w-165 { width: 41.25rem; }
@@ -589,6 +592,8 @@ a.no-line {
   text-overflow: ellipsis;
   overflow: hidden;
   min-width: 0;
+
+  &.disabled { pointer-events: none; }
 }
 
 .lines-limit-2, .lines-limit-4 {

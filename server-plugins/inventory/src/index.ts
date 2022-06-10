@@ -13,10 +13,9 @@
 // limitations under the License.
 //
 
-import type { Resource, Plugin } from '@anticrm/platform'
-import { plugin } from '@anticrm/platform'
 import { Doc } from '@anticrm/core'
-import { TriggerFunc } from '@anticrm/server-core'
+import type { Plugin, Resource } from '@anticrm/platform'
+import { plugin } from '@anticrm/platform'
 
 /**
  * @public
@@ -27,10 +26,6 @@ export const serverInventoryId = 'server-inventory' as Plugin
  * @public
  */
 export default plugin(serverInventoryId, {
-  trigger: {
-    OnProductCreate: '' as Resource<TriggerFunc>,
-    OnProductUpdate: '' as Resource<TriggerFunc>
-  },
   function: {
     ProductHTMLPresenter: '' as Resource<(doc: Doc) => string>,
     ProductTextPresenter: '' as Resource<(doc: Doc) => string>

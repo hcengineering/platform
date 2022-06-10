@@ -20,7 +20,7 @@
   import view from '../../plugin'
   import FilterTypePopup from './FilterTypePopup.svelte'
 
-  export let _class: Ref<Class<Doc>>
+  export let _class: Ref<Class<Doc>> | undefined
   export let filters: Filter[]
 
   const client = getClient()
@@ -44,8 +44,13 @@
     )
   }
 
-  $: clazz = hierarchy.getClass(_class)
-  $: visible = hierarchy.hasMixin(clazz, view.mixin.ClassFilters)
+  let visible: boolean
+  $: {
+    if (_class) {
+      const clazz = hierarchy.getClass(_class)
+      visible = hierarchy.hasMixin(clazz, view.mixin.ClassFilters)
+    } else visible = false
+  }
 </script>
 
 {#if visible}
@@ -59,12 +64,12 @@
     }}
   >
     <svelte:fragment slot="content">
-      <div class="flex-row-center">
+      <div class="flex-row-center pointer-events-none">
         {#if filters.length === 0}
           <Icon icon={IconAdd} size={'x-small'} />
-          <span class="ml-1"><Label label={view.string.Filter} /></span>
+          <span class="overflow-label ml-1"><Label label={view.string.Filter} /></span>
         {:else}
-          <span class="mr-1"><Label label={view.string.ClearFilters} /></span>
+          <span class="overflow-label mr-1"><Label label={view.string.ClearFilters} /></span>
           <Icon icon={IconClose} size={'x-small'} />
         {/if}
       </div>

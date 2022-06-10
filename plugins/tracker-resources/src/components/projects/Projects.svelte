@@ -37,19 +37,25 @@
       closePopup()
 
       projectId = loc.path[4] as Ref<Project>
+      console.log('PROJECT SELECTED', projectId)
     })
   )
 
   const projectQuery = createQuery()
   $: if (projectId !== undefined) {
+    console.log('call query for', projectId)
     projectQuery.query(tracker.class.Project, { _id: projectId }, (result) => {
-      ;[project] = result
+      project = result.shift()
+      console.log('recieve result for', projectId, project)
     })
   } else {
+    projectQuery.unsubscribe()
     project = undefined
   }
 </script>
 
+{projectId}
+{JSON.stringify(project)}
 {#if project}
   <EditProject {project} />
 {:else}

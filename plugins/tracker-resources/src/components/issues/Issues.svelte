@@ -448,13 +448,15 @@
 </script>
 
 {#if currentTeam}
-  <div class="fs-title flex-between header">
-    <div class="titleContainer">
-      {#if label}
-        {label}
-      {:else}
-        <Label label={title} params={{ value }} />
-      {/if}
+  <div class="ac-header full divide">
+    <div class="ac-header__wrap-title">
+      <div class="ac-header__title">
+        {#if label}
+          {label}
+        {:else}
+          <Label label={title} params={{ value }} />
+        {/if}
+      </div>
       <div class="ml-4">
         <Button
           size="small"
@@ -463,12 +465,12 @@
           on:click={isFiltersEmpty ? handleFilterMenuOpened : handleAllFiltersDeleted}
         >
           <svelte:fragment slot="content">
-            <div class="flex-row-center">
+            <div class="flex-row-center pointer-events-none">
               {#if isFiltersEmpty}
                 <Icon icon={IconAdd} size={'x-small'} />
-                <span class="ml-1"><Label label={tracker.string.Filter} /></span>
+                <span class="overflow-label ml-1"><Label label={tracker.string.Filter} /></span>
               {:else}
-                <span class="mr-1"><Label label={tracker.string.ClearFilters} /></span>
+                <span class="overflow-label mr-1"><Label label={tracker.string.ClearFilters} /></span>
                 <Icon icon={IconClose} size={'x-small'} />
               {/if}
             </div>
@@ -530,17 +532,3 @@
     {/if}
   </div>
 {/if}
-
-<style lang="scss">
-  .header {
-    min-height: 3.5rem;
-    padding-left: 2.25rem;
-    padding-right: 1.35rem;
-  }
-
-  .titleContainer {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-  }
-</style>

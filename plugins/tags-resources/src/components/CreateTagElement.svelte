@@ -113,7 +113,7 @@
     <div class="mr-3">
       <Button size={'medium'} kind={'link-bordered'} on:click={showColorPopup}>
         <svelte:fragment slot="content">
-          <div class="color" style={getTagStyle(getPlatformColor(color))} />
+          <div class="color pointer-events-none" style={getTagStyle(getPlatformColor(color))} />
         </svelte:fragment>
       </Button>
     </div>

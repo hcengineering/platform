@@ -66,7 +66,7 @@
       {#if selectedItems.length > 0}
         <div class="flex-row-center flex-nowrap">
           {#await translate(presentation.string.NumberSpaces, { count: selectedItems.length }) then text}
-            <span class="ml-1-5">{text}</span>
+            <span class="overflow-label disabled ml-1-5">{text}</span>
           {/await}
         </div>
       {/if}

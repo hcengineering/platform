@@ -15,10 +15,11 @@
 -->
 <script lang="ts">
   import { MessageViewer } from '@anticrm/presentation'
+  import { ShowMore } from '@anticrm/ui'
 
   export let value: string
 </script>
 
-<span class="lines-limit-2">
+<ShowMore>
   <MessageViewer message={value} />
-</span>
+</ShowMore>

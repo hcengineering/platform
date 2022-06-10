@@ -308,7 +308,7 @@ export function createModel (builder: Builder): void {
           {
             id: 'spaceBrowser',
             component: workbench.component.SpaceBrowser,
-            icon: workbench.icon.Search,
+            icon: chunter.icon.Hashtag,
             label: chunter.string.ChannelBrowser,
             position: 'top',
             spaceClass: chunter.class.Channel,
@@ -351,10 +351,11 @@ export function createModel (builder: Builder): void {
             }
           },
           {
-            id: 'messagesBrowser',
-            label: chunter.string.MessagesBrowser,
-            component: chunter.component.MessagesBrowser,
-            visibleIf: chunter.function.MessageBrowserVisible
+            id: 'chunterBrowser',
+            label: chunter.string.ChunterBrowser,
+            icon: workbench.icon.Search,
+            component: chunter.component.ChunterBrowser,
+            visibleIf: chunter.function.ChunterBrowserVisible
           }
         ],
         spaces: [
@@ -448,6 +449,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(chunter.class.ChunterMessage, core.class.Class, view.mixin.ClassFilters, {
     filters: ['space', 'modifiedOn', 'createBy', '_class']
+  })
+
+  builder.mixin(chunter.class.Channel, core.class.Class, view.mixin.ClassFilters, {
+    filters: ['private', 'archived']
   })
 }
 

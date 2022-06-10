@@ -36,6 +36,7 @@ import PersonPresenter from './components/PersonPresenter.svelte'
 import SocialEditor from './components/SocialEditor.svelte'
 import contact from './plugin'
 import EmployeePresenter from './components/EmployeePresenter.svelte'
+import EmployeeBrowser from './components/EmployeeBrowser.svelte'
 import EmployeeAccountPresenter from './components/EmployeeAccountPresenter.svelte'
 import OrganizationEditor from './components/OrganizationEditor.svelte'
 import PersonEditor from './components/PersonEditor.svelte'
@@ -53,6 +54,7 @@ export {
   OrganizationSelector,
   ChannelsDropdown,
   EmployeePresenter,
+  EmployeeBrowser,
   MemberPresenter
 }
 

@@ -86,13 +86,16 @@
 
   $: areSubIssuesLoading = !subIssues
   $: parentIssue = issue.$lookup?.attachedTo ? (issue.$lookup?.attachedTo as Issue) : null
-  $: parentIssue &&
+  $: if (parentIssue) {
     subIssuesQeury.query(
       tracker.class.Issue,
       { space: issue.space, attachedTo: parentIssue._id },
       (res) => (subIssues = res),
       { sort: { modifiedOn: SortingOrder.Descending } }
     )
+  } else {
+    subIssuesQeury.unsubscribe()
+  }
 </script>
 
 {#if parentIssue}

@@ -69,24 +69,22 @@
 </script>
 
 {#if currentSpace}
-  <div class="header">
-    <IssuesHeader {currentSpace} {viewlets} {label} bind:viewlet bind:viewOptions bind:filters>
-      <svelte:fragment slot="extra">
-        {#if asideFloat && $$slots.aside}
-          <Button
-            icon={IconDetails}
-            kind={'transparent'}
-            size={'medium'}
-            selected={asideShown}
-            on:click={() => {
-              asideShown = !asideShown
-            }}
-          />
-        {/if}
-      </svelte:fragment>
-    </IssuesHeader>
-    <FilterBar _class={tracker.class.Issue} {query} bind:filters on:change={(e) => (resultQuery = e.detail)} />
-  </div>
+  <IssuesHeader {currentSpace} {viewlets} {label} bind:viewlet bind:viewOptions bind:filters>
+    <svelte:fragment slot="extra">
+      {#if asideFloat && $$slots.aside}
+        <Button
+          icon={IconDetails}
+          kind={'transparent'}
+          size={'medium'}
+          selected={asideShown}
+          on:click={() => {
+            asideShown = !asideShown
+          }}
+        />
+      {/if}
+    </svelte:fragment>
+  </IssuesHeader>
+  <FilterBar _class={tracker.class.Issue} {query} bind:filters on:change={(e) => (resultQuery = e.detail)} />
   <div class="flex h-full">
     <div class="antiPanel-component">
       <IssuesContent {currentSpace} {viewlet} query={resultQuery} {viewOptions} />
@@ -98,9 +96,3 @@
     {/if}
   </div>
 {/if}
-
-<style lang="scss">
-  .header {
-    border-bottom: 1px solid var(--divider-color);
-  }
-</style>

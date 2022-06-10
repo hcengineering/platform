@@ -17,13 +17,24 @@
   import { Class, Doc, FindOptions, getObjectValue, Ref, WithLookup } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
   import { Issue, IssueStatus, Team } from '@anticrm/tracker'
-  import { Button, CheckBox, Component, eventToHTMLElement, IconAdd, showPopup, Spinner, Tooltip } from '@anticrm/ui'
+  import {
+    Button,
+    CheckBox,
+    Component,
+    eventToHTMLElement,
+    IconAdd,
+    showPopup,
+    Spinner,
+    tooltip,
+    Tooltip
+  } from '@anticrm/ui'
   import { AttributeModel, BuildModelKey } from '@anticrm/view'
   import { buildModel, getObjectPresenter, LoadingProps, Menu } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
   import { IssuesGroupByKeys, issuesGroupEditorMap, IssuesOrderByKeys, issuesSortOrderMap } from '../../utils'
   import CreateIssue from '../CreateIssue.svelte'
+  import notification from '@anticrm/notification'
 
   export let _class: Ref<Class<Doc>>
   export let currentSpace: Ref<Team> | undefined = undefined
@@ -181,8 +192,8 @@
           {#each groupedIssues[category] as docObject (docObject._id)}
             <div
               bind:this={objectRefs[combinedGroupedIssues.findIndex((x) => x === docObject)]}
-              class="listGrid"
-              class:mListGridChecked={selectedObjectIdsSet.has(docObject._id)}
+              class="listGrid antiList__row"
+              class:checking={selectedObjectIdsSet.has(docObject._id)}
               class:mListGridFixed={selectedRowIndex === combinedGroupedIssues.findIndex((x) => x === docObject)}
               class:mListGridSelected={selectedRowIndex === combinedGroupedIssues.findIndex((x) => x === docObject)}
               on:contextmenu|preventDefault={(event) =>
@@ -195,26 +206,33 @@
               on:mouseover={() => handleRowFocused(docObject)}
             >
               <div class="contentWrapper">
+                <div
+                  class="flex-center relative"
+                  use:tooltip={{ label: tracker.string.SelectIssue, direction: 'bottom' }}
+                >
+                  <div class="antiList-cells__notifyCell">
+                    <div class="antiList-cells__checkCell">
+                      <CheckBox
+                        checked={selectedObjectIdsSet.has(docObject._id)}
+                        on:value={(event) => {
+                          onObjectChecked([docObject], event.detail)
+                        }}
+                      />
+                    </div>
+                    <Component
+                      is={notification.component.NotificationPresenter}
+                      props={{ value: docObject, kind: 'table' }}
+                    />
+                  </div>
+                </div>
                 {#each itemModels as attributeModel, attributeModelIndex}
                   {#if attributeModelIndex === 0}
-                    <div class="gridElement">
-                      <Tooltip direction={'bottom'} label={tracker.string.SelectIssue}>
-                        <div class="eListGridCheckBox">
-                          <CheckBox
-                            checked={selectedObjectIdsSet.has(docObject._id)}
-                            on:value={(event) => {
-                              onObjectChecked([docObject], event.detail)
-                            }}
-                          />
-                        </div>
-                      </Tooltip>
-                      <div class="priorityPresenter">
-                        <svelte:component
-                          this={attributeModel.presenter}
-                          value={getObjectValue(attributeModel.key, docObject) ?? ''}
-                          {...attributeModel.props}
-                        />
-                      </div>
+                    <div class="priorityPresenter">
+                      <svelte:component
+                        this={attributeModel.presenter}
+                        value={getObjectValue(attributeModel.key, docObject) ?? ''}
+                        {...attributeModel.props}
+                      />
                     </div>
                   {:else if attributeModelIndex === 1}
                     <div class="issuePresenter">
@@ -299,27 +317,12 @@
     color: var(--theme-caption-color);
     border-bottom: 1px solid var(--theme-button-border-hovered);
 
-    &.mListGridChecked {
+    &.checking {
       background-color: var(--theme-table-bg-hover);
-
-      .eListGridCheckBox {
-        opacity: 1;
-      }
     }
 
     &.mListGridSelected {
       background-color: var(--menu-bg-select);
-    }
-
-    .eListGridCheckBox {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-
-      &:hover {
-        opacity: 1;
-      }
     }
   }
 

@@ -14,10 +14,9 @@
 -->
 <script lang="ts">
   import { IssuesGrouping, IssuesOrdering, IssuesDateModificationPeriod } from '@anticrm/tracker'
-  import { Label, MiniToggle } from '@anticrm/ui'
+  import { Label, MiniToggle, DropdownRecord } from '@anticrm/ui'
   import tracker from '../../plugin'
   import { issuesGroupByOptions, issuesOrderByOptions, issuesDateModificationPeriodOptions } from '../../utils'
-  import DropdownNative from '../DropdownNative.svelte'
   import { createEventDispatcher } from 'svelte'
 
   const dispatch = createEventDispatcher()
@@ -28,93 +27,78 @@
   export let shouldShowSubIssues: boolean | undefined = false
   export let shouldShowEmptyGroups: boolean | undefined = false
 
+  $: _groupBy = groupBy
+  $: _orderBy = orderBy
+  $: _completedIssuesPeriod = completedIssuesPeriod
+  $: _shouldShowSubIssues = shouldShowSubIssues
+  $: _shouldShowEmptyGroups = shouldShowEmptyGroups
+
   const groupByItems = issuesGroupByOptions
   const orderByItems = issuesOrderByOptions
   const dateModificationPeriodItems = issuesDateModificationPeriodOptions
 
-  $: dispatch('update', { groupBy, orderBy, completedIssuesPeriod, shouldShowSubIssues, shouldShowEmptyGroups })
+  const updateOptions = (): void => {
+    dispatch('update', {
+      groupBy: _groupBy,
+      orderBy: _orderBy,
+      completedIssuesPeriod: _completedIssuesPeriod,
+      shouldShowSubIssues: _shouldShowSubIssues,
+      shouldShowEmptyGroups: _shouldShowEmptyGroups
+    })
+  }
 </script>
 
-<div class="root">
-  <div class="groupContainer">
-    <div class="viewOption">
-      <div class="label">
-        <Label label={tracker.string.Grouping} />
-      </div>
-      <div class="optionContainer">
-        <DropdownNative items={groupByItems} bind:selected={groupBy} />
-      </div>
+<div class="antiCard">
+  <div class="antiCard-group grid">
+    <span class="label"><Label label={tracker.string.Grouping} /></span>
+    <div class="value">
+      <DropdownRecord
+        items={groupByItems}
+        selected={_groupBy}
+        on:select={(result) => {
+          if (result === undefined) return
+          _groupBy = result.detail
+          updateOptions()
+        }}
+      />
     </div>
-    <div class="viewOption">
-      <div class="label">
-        <Label label={tracker.string.Ordering} />
-      </div>
-      <div class="optionContainer">
-        <DropdownNative items={orderByItems} bind:selected={orderBy} />
-      </div>
+    <span class="label"><Label label={tracker.string.Ordering} /></span>
+    <div class="value">
+      <DropdownRecord
+        items={orderByItems}
+        selected={_orderBy}
+        on:select={(result) => {
+          if (result === undefined) return
+          _orderBy = result.detail
+          updateOptions()
+        }}
+      />
     </div>
   </div>
-  <div class="groupContainer">
-    {#if completedIssuesPeriod}
-      <div class="viewOption">
-        <div class="label">
-          <Label label={tracker.string.CompletedIssues} />
-        </div>
-        <div class="optionContainer">
-          <DropdownNative items={dateModificationPeriodItems} bind:selected={completedIssuesPeriod} />
-        </div>
+  <div class="antiCard-group grid">
+    {#if _completedIssuesPeriod}
+      <span class="label"><Label label={tracker.string.CompletedIssues} /></span>
+      <div class="value">
+        <DropdownRecord
+          items={dateModificationPeriodItems}
+          selected={_completedIssuesPeriod}
+          on:select={(result) => {
+            if (result === undefined) return
+            _completedIssuesPeriod = result.detail
+            updateOptions()
+          }}
+        />
       </div>
     {/if}
-    <div class="viewOption">
-      <div class="label">
-        <Label label={tracker.string.SubIssues} />
-      </div>
-      <div class="optionContainer">
-        <MiniToggle bind:on={shouldShowSubIssues} />
-      </div>
+    <span class="label"><Label label={tracker.string.SubIssues} /></span>
+    <div class="value">
+      <MiniToggle bind:on={shouldShowSubIssues} on:change={updateOptions} />
     </div>
-    {#if groupBy === IssuesGrouping.Status || groupBy === IssuesGrouping.Priority}
-      <div class="viewOption">
-        <div class="label">
-          <Label label={tracker.string.ShowEmptyGroups} />
-        </div>
-        <div class="optionContainer">
-          <MiniToggle bind:on={shouldShowEmptyGroups} />
-        </div>
+    {#if _groupBy === IssuesGrouping.Status || _groupBy === IssuesGrouping.Priority}
+      <span class="label"><Label label={tracker.string.ShowEmptyGroups} /></span>
+      <div class="value">
+        <MiniToggle bind:on={_shouldShowEmptyGroups} on:change={updateOptions} />
       </div>
     {/if}
   </div>
 </div>
-
-<style lang="scss">
-  .root {
-    display: flex;
-    flex-direction: column;
-    width: 17rem;
-    background-color: var(--board-card-bg-color);
-  }
-
-  .groupContainer {
-    padding: 0.5rem 1rem;
-    border-bottom: 1px solid var(--popup-divider);
-  }
-
-  .viewOption {
-    display: flex;
-    min-height: 2rem;
-  }
-
-  .label {
-    display: flex;
-    align-items: center;
-    min-width: 5rem;
-    color: var(--theme-content-dark-color);
-  }
-
-  .optionContainer {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    flex-grow: 1;
-  }
-</style>

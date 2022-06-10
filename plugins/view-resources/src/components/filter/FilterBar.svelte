@@ -71,10 +71,7 @@
   $: saveFilters(filters)
 
   function saveFilters (filters: Filter[]) {
-    const loc = getCurrentLocation()
-    loc.fragment = undefined
-    loc.query = undefined
-    const key = 'filter' + locationToUrl(loc)
+    const key = makeKey(_class)
     if (filters.length > 0) {
       localStorage.setItem(key, JSON.stringify(filters))
     } else {
@@ -87,10 +84,7 @@
   function load (_class: Ref<Class<Doc>>) {
     loading = true
     const oldFilters = filters
-    const loc = getCurrentLocation()
-    loc.fragment = undefined
-    loc.query = undefined
-    const key = 'filter' + locationToUrl(loc)
+    const key = makeKey(_class)
     const saved = localStorage.getItem(key)
     if (saved !== null) {
       filters = JSON.parse(saved)
@@ -99,6 +93,13 @@
     }
     loading = false
     oldFilters.forEach((p) => p.onRemove?.())
+  }
+
+  function makeKey (_class: Ref<Class<Doc>>): string {
+    const loc = getCurrentLocation()
+    loc.fragment = undefined
+    loc.query = undefined
+    return 'filter' + locationToUrl(loc) + _class
   }
 
   async function makeQuery (query: DocumentQuery<Doc>, filters: Filter[]): Promise<void> {

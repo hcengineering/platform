@@ -17,7 +17,8 @@
   import { Ref } from '@anticrm/core'
   import { IntlString } from '@anticrm/platform'
   import { createQuery } from '@anticrm/presentation'
-  import { DropdownPopup, Label, showPopup } from '@anticrm/ui'
+  import { DropdownPopup, Label, showPopup, Button } from '@anticrm/ui'
+  import type { ButtonKind, ButtonSize } from '@anticrm/ui'
   import { ListItem } from '@anticrm/ui/src/types'
   import contact from '../plugin'
   import Company from './icons/Company.svelte'
@@ -25,7 +26,11 @@
   export let value: Ref<Organization> | undefined
   export let label: IntlString = contact.string.Organization
   export let onChange: (value: any) => void
-  export let kind: 'no-border' | 'link' = 'no-border'
+
+  export let kind: ButtonKind = 'no-border'
+  export let size: ButtonSize = 'small'
+  export let justify: 'left' | 'center' = 'center'
+  export let width: string | undefined = 'min-content'
 
   const query = createQuery()
 
@@ -57,64 +62,47 @@
 
   let opened: boolean = false
   const icon = Company
-  let container: HTMLElement
+  let tool: HTMLElement
 </script>
 
-<div
-  class="org-container {kind}"
-  bind:this={container}
-  class:empty={selected === undefined}
-  on:click|preventDefault={() => {
+<div class="clear-mins" bind:this={tool} />
+<Button
+  {justify}
+  {width}
+  {size}
+  {kind}
+  on:click={() => {
     if (!opened) {
       opened = true
-      showPopup(DropdownPopup, { title: label, items, icon }, container, (result) => {
+      showPopup(DropdownPopup, { title: label, items, icon }, tool, (result) => {
         if (result) setValue(result)
         opened = false
       })
     }
   }}
 >
-  {#if selected}
-    <div class="flex-row-center">
-      <div class="icon"><Company size={'small'} /></div>
-      {selected.label}
-    </div>
-  {:else}
-    <Label {label} />
-  {/if}
-</div>
+  <svelte:fragment slot="content">
+    {#if selected}
+      <div class="flex-row-center pointer-events-none">
+        <div class="icon"><Company size={'small'} /></div>
+        <span class="overflow-label">{selected.label}</span>
+      </div>
+    {:else}
+      <span class="overflow-label disabled"><Label {label} /></span>
+    {/if}
+  </svelte:fragment>
+</Button>
 
 <style lang="scss">
-  .org-container {
-    display: flex;
-    align-items: center;
-    color: var(--caption-color);
-    border: 1px solid transparent;
-    border-radius: 0.25rem;
-    transition-property: border, background-color, color, box-shadow;
-    transition-duration: 0.15s;
-    cursor: pointer;
+  .icon {
+    margin-right: 0.5rem;
+    padding: 0.25rem;
+    color: var(--accent-color);
+    background-color: var(--avatar-bg-color);
+    border-radius: 50%;
 
-    .icon {
-      margin-right: 0.5rem;
-      padding: 0.25rem;
+    &:hover {
       color: var(--caption-color);
-      background-color: var(--avatar-bg-color);
-      border-radius: 50%;
-    }
-
-    &.empty {
-      color: var(--theme-content-trans-color);
-    }
-
-    &.link {
-      padding: 0 0.875rem;
-      height: 2rem;
-      &:hover {
-        color: var(--caption-color);
-        background-color: var(--body-color);
-        border-color: var(--divider-color);
-      }
     }
   }
 </style>

@@ -30,6 +30,8 @@
       wonStates = result.filter((x) => x._class === task.class.WonState)
       lostStates = result.filter((x) => x._class === task.class.LostState)
     })
+  } else {
+    doneStatesQ.unsubscribe()
   }
 
   let hoveredDoneState: Ref<DoneState> | undefined

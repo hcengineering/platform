@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { FindOptions, SortingOrder } from '@anticrm/core'
-  import { Issue, IssueStatusCategory, Team } from '@anticrm/tracker'
+  import { AttachedData, FindOptions, SortingOrder } from '@anticrm/core'
+  import { Issue, IssueStatusCategory, Team, calcRank } from '@anticrm/tracker'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { Icon } from '@anticrm/ui'
   import ObjectPopup from '@anticrm/presentation/src/components/ObjectPopup.svelte'
@@ -22,8 +22,7 @@
   import tracker from '../plugin'
   import { getIssueId } from '../utils'
 
-  export let value: Issue
-  export let shouldSaveOnChange = true
+  export let value: Issue | AttachedData<Issue>
 
   const client = getClient()
   const spaceQuery = createQuery()
@@ -43,32 +42,38 @@
   }
 
   async function onClose ({ detail: parentIssue }: CustomEvent<Issue | undefined | null>) {
-    if (shouldSaveOnChange && parentIssue !== undefined && parentIssue?._id !== value.attachedTo) {
-      await client.updateCollection(
-        value._class,
-        value.space,
-        value._id,
-        value.attachedTo,
-        value.attachedToClass,
-        'subIssues',
-        { attachedTo: parentIssue === null ? tracker.ids.NoParent : parentIssue._id }
-      )
+    if ('_id' in value && parentIssue !== undefined && parentIssue?._id !== value.attachedTo) {
+      let rank: string | null = null
+
+      if (parentIssue) {
+        const lastAttachedIssue = await client.findOne<Issue>(
+          tracker.class.Issue,
+          { attachedTo: parentIssue._id },
+          { sort: { rank: SortingOrder.Descending } }
+        )
+
+        rank = calcRank(lastAttachedIssue, undefined)
+      }
+
+      await client.update(value, {
+        attachedTo: parentIssue === null ? tracker.ids.NoParent : parentIssue._id,
+        ...(rank ? { rank } : {})
+      })
     }
 
     dispatch('close', parentIssue)
   }
 
-  $: ignoreObjects = value._id ? [value._id] : []
+  $: selected = 'attachedTo' in value ? value.attachedTo : undefined
+  $: ignoreObjects = '_id' in value ? [value._id] : []
   $: updateIssueStatusCategories()
-  $: if (value.space) {
-    spaceQuery.query(tracker.class.Team, { _id: value.space }, (res) => ([team] = res))
-  }
+  $: 'space' in value && spaceQuery.query(tracker.class.Team, { _id: value.space }, (res) => ([team] = res))
 </script>
 
 <ObjectPopup
   _class={tracker.class.Issue}
   {options}
-  selected={value.attachedTo}
+  {selected}
   multiSelect={false}
   allowDeselect={true}
   placeholder={tracker.string.SetParent}

@@ -80,7 +80,7 @@
 
 <Tooltip {label} fill={false} direction={labelDirection}>
   <Button {focus} {focusIndex} icon={IconFolder} size={'small'} kind={'no-border'} on:click={showSpacesPopup}>
-    <span slot="content" class="text-sm">
+    <span slot="content" class="overflow-label disabled text-sm">
       {#if selected}{selected.name}{:else}<Label {label} />{/if}
     </span>
   </Button>
