@@ -11,6 +11,8 @@
   const dispatch = createEventDispatcher()
 
   $: time = selectedDate ? getDay(selectedDate) : undefined
+
+  $: isCurrentYear = time ? new Date(time).getFullYear() === new Date().getFullYear() : undefined
 </script>
 
 <div id={fixed ? '' : time?.toString()} class="flex justify-center mt-5 pr-1 dateSelector">
@@ -28,7 +30,12 @@
   >
     {#if time}
       <div>
-        {new Date(time).toDateString()}
+        {new Date(time).toLocaleDateString('default', {
+          weekday: 'short',
+          month: 'long',
+          day: 'numeric',
+          year: isCurrentYear ? undefined : 'numeric'
+        })}
       </div>
     {/if}
   </div>
