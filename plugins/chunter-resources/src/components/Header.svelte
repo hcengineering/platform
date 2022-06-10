@@ -13,13 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Asset } from '@anticrm/platform'
-  import { AnySvelteComponent, getCurrentLocation, Icon, navigate, SearchEdit } from '@anticrm/ui'
+  import type { Asset, IntlString } from '@anticrm/platform'
+  import { AnySvelteComponent, Icon, Label, SearchEdit } from '@anticrm/ui'
   import { userSearch } from '../index'
+  import { navigateToSpecial } from '../utils'
 
-  export let icon: Asset | AnySvelteComponent | undefined
-  export let label: string
-  export let description: string | undefined
+  export let icon: Asset | AnySvelteComponent | undefined = undefined
+  export let label: string | undefined = undefined
+  export let intlLabel: IntlString | undefined = undefined
+  export let description: string | undefined = undefined
 
   let userSearch_: string
   userSearch.subscribe((v) => (userSearch_ = v))
@@ -28,7 +30,13 @@
 <div class="ac-header__wrap-description">
   <div class="ac-header__wrap-title" on:click>
     {#if icon}<div class="ac-header__icon"><Icon {icon} size={'small'} /></div>{/if}
-    <span class="ac-header__title">{label}</span>
+    {#if label}
+      <span class="ac-header__title">{label}</span>
+    {:else if intlLabel}
+      <div class="ac-header__title">
+        <Label label={intlLabel} />
+      </div>
+    {/if}
   </div>
   {#if description}<span class="ac-header__description">{description}</span>{/if}
 </div>
@@ -38,9 +46,7 @@
     userSearch.set(ev.detail)
 
     if (ev.detail !== '') {
-      const loc = getCurrentLocation()
-      loc.path[2] = 'messagesBrowser'
-      navigate(loc)
+      navigateToSpecial('chunterBrowser')
     }
   }}
 />

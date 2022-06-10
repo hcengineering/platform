@@ -6,34 +6,34 @@
   import { createQuery, getClient } from '@anticrm/presentation'
   import { Label, Scroller, SearchEdit } from '@anticrm/ui'
   import type { Filter } from '@anticrm/view'
-  import { FilterBar, FilterButton } from '@anticrm/view-resources'
+  import { FilterBar } from '@anticrm/view-resources'
   import MessageComponent from './Message.svelte'
-  import { userSearch } from '../index'
   import plugin from '../plugin'
   import { openMessageFromSpecial } from '../utils'
 
-  let userSearch_: string = ''
-  userSearch.subscribe((v) => (userSearch_ = v))
+  export let withHeader: boolean = true
 
-  let searchQuery: DocumentQuery<ChunterMessage> = { $search: userSearch_ }
+  export let search: string = ''
 
-  let filters: Filter[] = []
+  let searchQuery: DocumentQuery<ChunterMessage> = { $search: search }
+
+  export let filters: Filter[] = []
 
   function updateSearchQuery (search: string): void {
     searchQuery = { $search: search }
   }
 
-  $: updateSearchQuery(userSearch_)
+  $: updateSearchQuery(search)
 
   const client = getClient()
-  const _class = chunter.class.ChunterMessage
+  export let filterClass = chunter.class.ChunterMessage
   let messages: ChunterMessage[] = []
 
   let resultQuery: DocumentQuery<ChunterMessage> = { ...searchQuery }
 
   async function updateMessages (resultQuery: DocumentQuery<ChunterMessage>) {
     messages = await client.findAll(
-      _class,
+      filterClass,
       {
         ...resultQuery
       },
@@ -97,32 +97,38 @@
   })
 </script>
 
-<div class="ac-header full divide">
-  <div class="ac-header__wrap-title">
-    <span class="ac-header__title"><Label label={plugin.string.MessagesBrowser} /></span>
-  </div>
-  <div class="ml-4"><FilterButton {_class} bind:filters /></div>
-  <SearchEdit
-    value={userSearch_}
-    on:change={(ev) => {
-      userSearch.set(ev.detail)
-      updateSearchQuery(userSearch_)
-      updateMessages(resultQuery)
-    }}
-  />
-</div>
-<FilterBar {_class} query={searchQuery} bind:filters on:change={(e) => (resultQuery = e.detail)} />
-<Scroller>
-  {#each messages as message}
-    <div on:click={() => openMessageFromSpecial(message)}>
-      <MessageComponent
-        {message}
-        {employees}
-        on:openThread
-        isPinned={pinnedIds.includes(message._id)}
-        isSaved={savedMessagesIds.includes(message._id)}
-        {savedAttachmentsIds}
-      />
+{#if withHeader}
+  <div class="ac-header full divide">
+    <div class="ac-header__wrap-title">
+      <span class="ac-header__title"><Label label={plugin.string.MessagesBrowser} /></span>
     </div>
-  {/each}
-</Scroller>
+    <SearchEdit
+      value={search}
+      on:change={() => {
+        updateSearchQuery(search)
+        updateMessages(resultQuery)
+      }}
+    />
+  </div>
+{/if}
+<FilterBar _class={filterClass} query={searchQuery} bind:filters on:change={(e) => (resultQuery = e.detail)} />
+{#if messages.length > 0}
+  <Scroller>
+    {#each messages as message}
+      <div on:click={() => openMessageFromSpecial(message)}>
+        <MessageComponent
+          {message}
+          {employees}
+          on:openThread
+          isPinned={pinnedIds.includes(message._id)}
+          isSaved={savedMessagesIds.includes(message._id)}
+          {savedAttachmentsIds}
+        />
+      </div>
+    {/each}
+  </Scroller>
+{:else}
+  <div class="flex-center h-full text-lg">
+    <Label label={plugin.string.NoResults} />
+  </div>
+{/if}

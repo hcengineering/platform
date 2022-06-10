@@ -13,6 +13,7 @@
   export let shouldShowName: boolean = true
   export let shouldShowPlaceholder = false
   export let onEmployeeEdit: ((event: MouseEvent) => void) | undefined = undefined
+  export let avatarSize: 'inline' | 'tiny' | 'x-small' | 'small' | 'medium' | 'large' | 'x-large' = 'x-small'
 
   let container: HTMLElement
 
@@ -39,6 +40,7 @@
       onEdit={handlePersonEdit}
       {shouldShowAvatar}
       {shouldShowName}
+      {avatarSize}
       {shouldShowPlaceholder}
     />
   </div>
