@@ -105,7 +105,7 @@ export async function UnpinMessage (message: ChunterMessage): Promise<void> {
   )
 }
 
-export async function ArchiveChannel (channel: Channel, afterArchive?: () => void): Promise<void> {
+export async function ArchiveChannel (channel: Channel, evt: any, afterArchive?: () => void): Promise<void> {
   showPopup(
     MessageBox,
     {

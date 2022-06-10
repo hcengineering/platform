@@ -15,8 +15,8 @@
     label={chunter.string.ArchiveChannel}
     justify={'left'}
     size={'x-large'}
-    on:click={() => {
-      ArchiveChannel(channel, () => dispatch('close'))
+    on:click={(evt) => {
+      ArchiveChannel(channel, evt, () => dispatch('close'))
     }}
   />
 {/if}
