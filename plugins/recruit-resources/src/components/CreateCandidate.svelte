@@ -330,7 +330,6 @@
       if (file.type.includes('application/pdf')) {
         await recognize()
       }
-
     } catch (err: any) {
       setPlatformStatus(unknownError(err))
     } finally {
