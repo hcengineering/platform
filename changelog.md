@@ -1,11 +1,29 @@
 # Changelog
 
-## 0.6.26 (upcoming)
+## 0.6.27 (upcoming)
 
-Tracker: 
+## 0.6.26
+
+Platform:
+
+- Support checkboxes in markdown
+- Fixes remembering of active application/page
+
+Tracker:
 
 - Issue preview
 - Enabled issue notifications
+- Show issue ID for sub-issues
+- Fix board status order
+- Fix project status
+- Allow to filter sub issues
+- Issue reference from chat
+- Notifications support
+
+Board:
+
+- Fix tag/labels layout
+- Update popups
 
 ## 0.6.25
 
@@ -19,7 +37,6 @@ HR:
 
 - Rename Candidate to Talent
 - Review Participants support
-
 
 ## 0.6.24
 
