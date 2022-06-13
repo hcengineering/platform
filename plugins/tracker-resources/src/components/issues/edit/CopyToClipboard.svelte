@@ -30,9 +30,5 @@
 {/if}
 
 {#if issueBranch}
-  <CopyToClipboardButton
-    icon={tracker.icon.CopyBranch}
-    title={tracker.string.CopyIssueBranch}
-    text={issueBranch}
-  />
+  <CopyToClipboardButton icon={tracker.icon.CopyBranch} title={tracker.string.CopyIssueBranch} text={issueBranch} />
 {/if}
