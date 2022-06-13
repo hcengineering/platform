@@ -55,7 +55,11 @@ loadMetadata(tracker.icon, {
   ProjectStatusInProgress: `${icons}#project-status-in-progress`,
   ProjectStatusPaused: `${icons}#project-status-paused`,
   ProjectStatusCompleted: `${icons}#project-status-completed`,
-  ProjectStatusCanceled: `${icons}#project-status-canceled`
+  ProjectStatusCanceled: `${icons}#project-status-canceled`,
+
+  CopyID: `${icons}#copyID`,
+  CopyURL: `${icons}#copyURL`,
+  CopyBranch: `${icons}#copyBranch`
 })
 
 addStringsLoader(trackerId, async (lang: string) => await import(`../lang/${lang}.json`))

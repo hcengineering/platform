@@ -254,7 +254,11 @@ export default plugin(trackerId, {
     ProjectStatusInProgress: '' as Asset,
     ProjectStatusPaused: '' as Asset,
     ProjectStatusCompleted: '' as Asset,
-    ProjectStatusCanceled: '' as Asset
+    ProjectStatusCanceled: '' as Asset,
+
+    CopyID: '' as Asset,
+    CopyURL: '' as Asset,
+    CopyBranch: '' as Asset
   },
   category: {
     Tracker: '' as Ref<ActionCategory>

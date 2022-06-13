@@ -414,7 +414,7 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       label: tracker.string.TrackerApplication,
-      icon: tracker.icon.Issue,
+      icon: tracker.icon.TrackerApplication,
       hidden: false,
       navigatorModel: {
         specials: [

@@ -75,6 +75,9 @@
     "Rank": "",
     "IssueTitlePlaceholder": "Имя задачи",
     "IssueDescriptionPlaceholder": "Описание задачи",
+    "CopyIssueUrl": "Копировать URL-адрес задачи в буфер обмена",
+    "CopyIssueId": "Копировать ID задачи в буфер обмена",
+    "CopyIssueBranch": "Копировать имя ветки Git в буфер обмена",
 
     "GotoIssues": "Перейти к задачам",
     "GotoActive": "Перейти к активным задачам",

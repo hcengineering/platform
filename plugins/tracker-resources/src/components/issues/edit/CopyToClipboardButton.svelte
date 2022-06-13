@@ -24,8 +24,6 @@
 <Tooltip label={title} direction="bottom" fill>
   <Button
     {icon}
-    width="min-content"
-    size="small"
     kind="transparent"
     on:click={() => navigator.clipboard.writeText(text)}
   />

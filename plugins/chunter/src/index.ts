@@ -112,7 +112,8 @@ export default plugin(chunterId, {
     Hashtag: '' as Asset,
     Thread: '' as Asset,
     Lock: '' as Asset,
-    Bookmark: '' as Asset
+    Bookmark: '' as Asset,
+    ChannelBrowser: '' as Asset
   },
   component: {
     CommentInput: '' as AnyComponent,
