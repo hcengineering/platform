@@ -29,6 +29,7 @@ export const FORMAT_MODES = [
   'bold',
   'italic',
   'strike',
+  'link',
   'orderedList',
   'bulletList',
   'blockquote',
