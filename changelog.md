@@ -2,6 +2,14 @@
 
 ## 0.6.27 (upcoming)
 
+Platform:
+
+- Allow to attach from clipboard
+
+Tracker:
+
+- Attachments support
+
 ## 0.6.26
 
 Platform:
