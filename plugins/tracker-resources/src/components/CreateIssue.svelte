@@ -13,31 +13,31 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { AttachmentStyledBox } from '@anticrm/attachment-resources'
   import { Employee } from '@anticrm/contact'
-  import core, { AttachedData, Ref, SortingOrder, WithLookup } from '@anticrm/core'
+  import core, { AttachedData, generateId, Ref, SortingOrder, WithLookup } from '@anticrm/core'
   import presentation, { Card, createQuery, getClient, SpaceSelector } from '@anticrm/presentation'
-  import { StyledTextBox } from '@anticrm/text-editor'
   import { calcRank, Issue, IssuePriority, IssueStatus, Project, Team } from '@anticrm/tracker'
   import {
+    ActionIcon,
     Button,
     DatePresenter,
     EditBox,
     IconAttachment,
-    showPopup,
-    Spinner,
     IconMoreH,
-    ActionIcon,
-    Menu
+    Menu,
+    showPopup,
+    Spinner
   } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../plugin'
+  import AssigneeEditor from './issues/AssigneeEditor.svelte'
   import ParentIssue from './issues/ParentIssue.svelte'
-  import SetParentIssueActionPopup from './SetParentIssueActionPopup.svelte'
+  import StatusEditor from './issues/StatusEditor.svelte'
   import PrioritySelector from './PrioritySelector.svelte'
   import ProjectSelector from './ProjectSelector.svelte'
   import SetDueDateActionPopup from './SetDueDateActionPopup.svelte'
-  import AssigneeEditor from './issues/AssigneeEditor.svelte'
-  import StatusEditor from './issues/StatusEditor.svelte'
+  import SetParentIssueActionPopup from './SetParentIssueActionPopup.svelte'
 
   export let space: Ref<Team>
   export let status: Ref<IssueStatus> | undefined = undefined
@@ -49,6 +49,7 @@
   let issueStatuses: WithLookup<IssueStatus>[] | undefined
   let parentIssue: Issue | undefined
 
+  let objectId: Ref<Issue> = generateId()
   let object: AttachedData<Issue> = {
     title: '',
     description: '',
@@ -66,6 +67,8 @@
   const dispatch = createEventDispatcher()
   const client = getClient()
   const statusesQuery = createQuery()
+
+  let descriptionBox: AttachmentStyledBox
 
   $: _space = space
   $: updateIssueStatusId(space, status)
@@ -141,8 +144,11 @@
       parentIssue?._id ?? tracker.ids.NoParent,
       parentIssue?._class ?? tracker.class.Issue,
       'subIssues',
-      value
+      value,
+      objectId
     )
+    await descriptionBox.createAttachments()
+    objectId = generateId()
   }
 
   async function showMoreActions (ev: Event) {
@@ -238,7 +244,11 @@
     kind={'large-style'}
     focus
   />
-  <StyledTextBox
+  <AttachmentStyledBox
+    bind:this={descriptionBox}
+    {objectId}
+    _class={tracker.class.Issue}
+    space={_space}
     alwaysEdit
     showButtons={false}
     bind:content={object.description}
@@ -280,6 +290,12 @@
     {/if}
   </svelte:fragment>
   <svelte:fragment slot="footer">
-    <Button icon={IconAttachment} kind={'transparent'} on:click={() => {}} />
+    <Button
+      icon={IconAttachment}
+      kind={'transparent'}
+      on:click={() => {
+        descriptionBox.attach()
+      }}
+    />
   </svelte:fragment>
 </Card>

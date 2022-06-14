@@ -18,6 +18,7 @@ import contact, { contactId } from '@anticrm/contact'
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(contact.icon, {
+  ContactApplication: `${icons}#contactapplication`,
   Phone: `${icons}#phone`,
   Email: `${icons}#email`,
   Discord: `${icons}#discord`,

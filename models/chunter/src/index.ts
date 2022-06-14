@@ -308,7 +308,7 @@ export function createModel (builder: Builder): void {
           {
             id: 'spaceBrowser',
             component: workbench.component.SpaceBrowser,
-            icon: chunter.icon.Hashtag,
+            icon: chunter.icon.ChannelBrowser,
             label: chunter.string.ChannelBrowser,
             position: 'top',
             spaceClass: chunter.class.Channel,

@@ -223,7 +223,7 @@ export function createModel (builder: Builder): void {
           {
             id: assignedId,
             label: task.string.Assigned,
-            icon: task.icon.Task,
+            icon: recruit.icon.AssignedToMe,
             component: task.component.AssignedTasks,
             position: 'event',
             componentProps: {
@@ -243,7 +243,7 @@ export function createModel (builder: Builder): void {
               createLabel: recruit.string.ReviewCreateLabel,
               createComponent: recruit.component.CreateReview
             },
-            icon: calendar.icon.Calendar,
+            icon: recruit.icon.Reviews,
             label: recruit.string.Reviews,
             position: 'event'
           }

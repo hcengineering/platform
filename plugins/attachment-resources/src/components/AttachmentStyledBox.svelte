@@ -13,29 +13,35 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import { ReferenceInput } from '@anticrm/text-editor'
-  import { deleteFile, uploadFile } from '../utils'
-  import attachment from '../plugin'
-  import { setPlatformStatus, unknownError } from '@anticrm/platform'
-  import { createEventDispatcher, onDestroy } from 'svelte'
-  import { Account, Class, Doc, generateId, Ref, Space } from '@anticrm/core'
   import { Attachment } from '@anticrm/attachment'
+  import { Account, Class, Doc, generateId, Ref, Space } from '@anticrm/core'
+  import { IntlString, setPlatformStatus, unknownError } from '@anticrm/platform'
+  import { createQuery, getClient } from '@anticrm/presentation'
+  import { StyledTextBox } from '@anticrm/text-editor'
+  import { onDestroy } from 'svelte'
+  import attachment from '../plugin'
+  import { deleteFile, uploadFile } from '../utils'
   import AttachmentPresenter from './AttachmentPresenter.svelte'
 
   export let objectId: Ref<Doc>
   export let space: Ref<Space>
   export let _class: Ref<Class<Doc>>
   export let content: string = ''
-  export let showSend = true
+  export let placeholder: IntlString | undefined = undefined
+  export let alwaysEdit = false
+  export let showButtons = false
+
+  export function attach (): void {
+    inputFile.click()
+  }
+
   export function submit (): void {
     refInput.submit()
   }
-  let refInput: ReferenceInput
+  let refInput: StyledTextBox
 
   let inputFile: HTMLInputElement
   let saved = false
-  const dispatch = createEventDispatcher()
 
   const client = getClient()
   const query = createQuery()
@@ -137,7 +143,7 @@
     }
   })
 
-  async function onMessage (event: CustomEvent) {
+  export function createAttachments (): Promise<void> {
     saved = true
     const promises: Promise<any>[] = []
     newAttachments.forEach((p) => {
@@ -149,8 +155,7 @@
     removedAttachments.forEach((p) => {
       promises.push(deleteAttachment(p))
     })
-    await Promise.all(promises)
-    dispatch('message', { message: event.detail, attachments: attachments.size })
+    return Promise.all(promises).then()
   }
 
   function pasteAction (evt: ClipboardEvent): void {
@@ -178,12 +183,14 @@
   style="display: none"
   on:change={fileSelected}
 />
+
 <div
   class="container"
   on:dragover|preventDefault={() => {}}
   on:dragleave={() => {}}
   on:drop|preventDefault|stopPropagation={fileDrop}
 >
+  <StyledTextBox bind:this={refInput} bind:content {placeholder} {alwaysEdit} {showButtons} />
   {#if attachments.size}
     <div class="flex-row-center list scroll-divider-color">
       {#each Array.from(attachments.values()) as attachment}
@@ -199,16 +206,6 @@
       {/each}
     </div>
   {/if}
-  <ReferenceInput
-    bind:this={refInput}
-    {content}
-    {showSend}
-    on:message={onMessage}
-    withoutTopBorder={attachments.size > 0}
-    on:attach={() => {
-      inputFile.click()
-    }}
-  />
 </div>
 
 <style lang="scss">

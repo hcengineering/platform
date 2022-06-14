@@ -91,7 +91,7 @@ export function createModel (builder: Builder): void {
           {
             id: 'spaceBrowser',
             component: workbench.component.SpaceBrowser,
-            icon: workbench.icon.Search,
+            icon: lead.icon.FunnelBrowser,
             label: lead.string.FunnelBrowser,
             position: 'top',
             spaceClass: lead.class.Funnel,

@@ -184,6 +184,7 @@ const contactPlugin = plugin(contactId, {
     Homepage: '' as Ref<ChannelProvider>
   },
   icon: {
+    ContactApplication: '' as Asset,
     Phone: '' as Asset,
     Email: '' as Asset,
     Discord: '' as Asset,

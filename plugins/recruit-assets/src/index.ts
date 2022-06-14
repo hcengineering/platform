@@ -24,9 +24,11 @@ loadMetadata(recruit.icon, {
   Calendar: `${icons}#calendar`,
   Create: `${icons}#create`,
   Application: `${icons}#application`,
-  Review: `${icons}#application`,
-  Opinion: `${icons}#application`,
+  Review: `${icons}#review`,
+  Opinion: `${icons}#opinion`,
   CreateCandidate: `${icons}#new-candidate`,
+  AssignedToMe: `${icons}#assignedToMe`,
+  Reviews: `${icons}#reviews`,
   Skills: `${icons}#skills`
 })
 

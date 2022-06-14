@@ -43,7 +43,7 @@
     href="#{getPanelURI(view.component.EditDoc, value._id, value._class, 'content')}"
   >
     <div class="icon">
-      <Icon icon={recruit.icon.Application} size={'small'} />
+      <Icon icon={recruit.icon.Review} size={'small'} />
     </div>
     <span class="label nowrap">{shortLabel}-{value.number}</span>
   </a>

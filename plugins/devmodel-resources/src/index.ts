@@ -154,7 +154,7 @@ export async function Hook (client: Client): Promise<Client> {
     core.space.Model,
     {
       label: 'DevModel' as IntlString,
-      icon: view.icon.Table,
+      icon: view.icon.Model,
       hidden: false,
       navigatorModel: {
         spaces: [],

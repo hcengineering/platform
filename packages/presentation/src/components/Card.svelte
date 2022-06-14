@@ -21,7 +21,7 @@
 
   export let label: IntlString
   export let labelProps: any | undefined = undefined
-  export let okAction: () => void
+  export let okAction: () => Promise<void> | void
   export let canSave: boolean = false
   export let createMore: boolean | undefined = undefined
   export let okLabel: IntlString = presentation.string.Create
@@ -76,8 +76,12 @@
         label={okLabel}
         kind={'primary'}
         on:click={() => {
-          okAction()
-          if (!createMore) {
+          const r = okAction()
+          if (r instanceof Promise && !createMore) {
+            r.then(() => {
+              dispatch('close')
+            })
+          } else if (!createMore) {
             dispatch('close')
           }
         }}
