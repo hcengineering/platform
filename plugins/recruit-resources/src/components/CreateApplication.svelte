@@ -15,7 +15,7 @@
 <script lang="ts">
   import type { Contact, Employee, Person } from '@anticrm/contact'
   import contact from '@anticrm/contact'
-  import { Account, Class, Client, Doc, generateId, Ref, SortingOrder } from '@anticrm/core'
+  import { Account, Class, Client, Doc, generateId, Ref, SortingOrder, Space } from '@anticrm/core'
   import { getResource, OK, Resource, Severity, Status } from '@anticrm/platform'
   import { Card, createQuery, getClient, SpaceSelector, UserBox } from '@anticrm/presentation'
   import type { Applicant, Candidate } from '@anticrm/recruit'
@@ -44,6 +44,8 @@
   let status: Status = OK
   let createMore: boolean = false
 
+  let _space = space
+
   let doc: Applicant = {
     state: '' as Ref<State>,
     doneState: null,
@@ -71,9 +73,12 @@
   }
 
   async function createApplication () {
-    const state = await client.findOne(task.class.State, { space: doc.space, _id: doc.state })
+    if (selectedState === undefined) {
+      throw new Error(`Please select initial state:${_space}`)
+    }
+    const state = await client.findOne(task.class.State, { space: _space, _id: selectedState?._id })
     if (state === undefined) {
-      throw new Error(`create application: state not found space:${doc.space}`)
+      throw new Error(`create application: state not found space:${_space}`)
     }
     const sequence = await client.findOne(task.class.Sequence, { attachedTo: recruit.class.Applicant })
     if (sequence === undefined) {
@@ -103,7 +108,7 @@
 
     await client.addCollection(
       recruit.class.Applicant,
-      doc.space,
+      _space,
       candidateInstance._id,
       recruit.mixin.Candidate,
       'applications',
@@ -121,7 +126,7 @@
     if (createMore) {
       // Prepare for next
       doc = {
-        state: selectedState._id,
+        state: selectedState?._id as Ref<State>,
         doneState: null,
         number: 0,
         assignee: assignee,
@@ -129,7 +134,7 @@
         attachedTo: candidate,
         attachedToClass: recruit.mixin.Candidate,
         _class: recruit.class.Applicant,
-        space: space,
+        space: _space,
         _id: generateId(),
         collection: 'applications',
         modifiedOn: Date.now(),
@@ -144,42 +149,47 @@
     action: Resource<<T extends Doc>(doc: T, client: Client) => Promise<Status>>
   ): Promise<Status> {
     const impl = await getResource(action)
-    return await impl(doc, client)
+    return await impl({ ...doc, space: _space }, client)
   }
 
-  async function validate (doc: Applicant, _class: Ref<Class<Doc>>): Promise<void> {
+  async function validate (doc: Applicant, space: Ref<Space>, _class: Ref<Class<Doc>>): Promise<void> {
     const clazz = hierarchy.getClass(_class)
     const validatorMixin = hierarchy.as(clazz, view.mixin.ObjectValidator)
     if (validatorMixin?.validator != null) {
       status = await invokeValidate(validatorMixin.validator)
     } else if (clazz.extends != null) {
-      await validate(doc, clazz.extends)
+      await validate(doc, space, clazz.extends)
     } else {
       status = OK
     }
   }
 
-  $: validate(doc, doc._class)
+  $: validate(doc, _space, doc._class)
 
   let states: Array<{ id: number | string; color: number; label: string }> = []
-  let selectedState: State
+  let selectedState: State | undefined
+  let rawStates: State[] = []
   const statesQuery = createQuery()
-  $: if (doc.space) {
+
+  $: if (_space) {
     statesQuery.query(
       task.class.State,
-      { space: doc.space },
+      { space: _space },
       (res) => {
-        states = res.map((s) => {
-          return { id: s._id, label: s.title, color: s.color }
-        })
-        selectedState = res.filter((s) => s._id === doc.state)[0] ?? res[0]
-        doc.state = selectedState._id
+        rawStates = res
       },
       { sort: { rank: SortingOrder.Ascending } }
     )
-  } else {
-    states = []
   }
+
+  $: if (rawStates.findIndex((it) => it._id === selectedState?._id) === -1) {
+    selectedState = rawStates[0]
+  }
+
+  $: states = rawStates.map((s) => {
+    return { id: s._id, label: s.title, color: s.color }
+  })
+
   const manager = createFocusManager()
 
   const existingApplicationsQuery = createQuery()
@@ -187,7 +197,7 @@
   $: existingApplicationsQuery.query(
     recruit.class.Applicant,
     {
-      space: doc.space
+      space: _space
     },
     (result) => {
       existingApplicants = result.map((it) => it.attachedTo)
@@ -221,7 +231,7 @@
         component: recruit.component.CreateVacancy,
         label: recruit.string.CreateVacancy
       }}
-      bind:space={doc.space}
+      bind:space={_space}
     />
   </svelte:fragment>
   <svelte:fragment slot="title">
@@ -270,7 +280,7 @@
         kind={'no-border'}
         size={'small'}
       />
-      {#if states && doc.space}
+      {#if states.length > 0}
         <Button
           focusIndex={3}
           width="min-content"
@@ -283,9 +293,7 @@
               eventToHTMLElement(ev),
               (result) => {
                 if (result && result.id) {
-                  doc.state = result.id
-                  selectedState = result
-                  selectedState.title = result.label
+                  selectedState = { ...result, _id: result.id, title: result.label }
                 }
                 manager.setFocusPos(3)
               }
