@@ -134,13 +134,6 @@
   <div class="mt-4 flex-between">
     <div class="buttons-group xsmall-gap">
       <!-- <SpaceSelector _class={tracker.class.Team} label={tracker.string.Team} bind:space /> -->
-      <AssigneeEditor
-        value={newIssue}
-        size="small"
-        kind="no-border"
-        tooltipFill={false}
-        on:change={({ detail }) => (newIssue.assignee = detail)}
-      />
       <PriorityEditor
         value={newIssue}
         shouldShowLabel
@@ -150,6 +143,13 @@
         justify="center"
         width=""
         on:change={({ detail }) => (newIssue.priority = detail)}
+      />
+      <AssigneeEditor
+        value={newIssue}
+        size="small"
+        kind="no-border"
+        tooltipFill={false}
+        on:change={({ detail }) => (newIssue.assignee = detail)}
       />
     </div>
     <div class="buttons-group small-gap">
