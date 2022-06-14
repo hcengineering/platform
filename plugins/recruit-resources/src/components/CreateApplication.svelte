@@ -244,7 +244,7 @@
   </svelte:fragment>
   <StatusControl slot="error" {status} />
   <svelte:fragment slot="pool">
-    {#key doc}
+    {#key doc._id}
       {#if !preserveCandidate}
         <UserBox
           focusIndex={1}
