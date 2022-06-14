@@ -76,7 +76,7 @@
         >
           {e.title}
           <div>
-            {addZero(new Date(e.date).getHours())}:{new Date(e.date).getMinutes()}
+            {addZero(new Date(e.date).getHours())}:{addZero(new Date(e.date).getMinutes())}
           </div>
         </div>
       {/each}

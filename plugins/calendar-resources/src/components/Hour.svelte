@@ -19,12 +19,10 @@
   import { areDatesEqual } from '@anticrm/ui/src/components/calendar/internal/DateUtils'
   import { BuildModelKey } from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
-  import calendar from '../plugin'
-  import EventsPopup from './EventsPopup.svelte'
+  import { getEmbeddedLabel } from '@anticrm/platform'
 
   export let events: Event[]
   export let date: Date
-
   export let _class: Ref<Class<Doc>>
   export let query: DocumentQuery<Event> = {}
   export let options: FindOptions<Event> | undefined = undefined
@@ -35,7 +33,7 @@
 
   function startCell (eDate: number, date: Date): boolean {
     const event = new Date(eDate)
-    return event.getHours() === date.getHours() && areDatesEqual(event, date)
+    return areDatesEqual(event, date) ? event.getHours() === date.getHours() : date.getHours() === 0
   }
 
   function getTop (e: Event): string {
@@ -44,14 +42,12 @@
 
   function getHeight (e: Event): string {
     if (e.dueDate !== undefined) {
-      const a = e.dueDate - e.date
-      const b = a / 10 / 60 / 60
-      return `${b}%`
+      const duration = areDatesEqual(new Date(e.dueDate), new Date(e.date)) ? e.dueDate - e.date : new Date(e.date).setHours(23, 59) - e.date
+      const hourPercent = duration / 10 / 60 / 60
+      return `${hourPercent}%`
     }
     return '1rem'
   }
-
-  let selected: number | undefined
 </script>
 
 <div
@@ -63,25 +59,21 @@
   {#if events.length > 0}
     <div
       class="flex flex-col h-full flex-grow relative"
-      use:tooltip={{
-        label: calendar.string.Events,
-        component: EventsPopup,
-        props: { value: events, _class, query, options, baseMenuClass, config }
-      }}
     >
       {#each events as e, i}
         {#if startCell(e.date, date)}
           <div
+            use:tooltip={{
+              label: getEmbeddedLabel(e.title)
+            }}
             class="overflow-label event"
-            class:selected={selected === i}
             style="background-color: {getPlatformColorForText(e._class)}; top: {getTop(e)}; height: {getHeight(
               e
-            )}; left: {i === 0 ? 0 : i * 100 / (events.length + 2)}%; width: {100 / (events.length + 1)}%"
+            )}; left: {i * 2.25}rem;"
             on:click|stopPropagation={() => {
-              selected = i
+              // selected = e._id
             }}
           >
-            {e.title}
           </div>
         {/if}
       {/each}
@@ -95,9 +87,6 @@
     border-radius: 0.25rem;
     padding: 0 0.5rem;
     border: 1px solid #00000033;
-    color: var(--accent-color);
-    &.selected {
-      z-index: 1;
-    }
+    width: 2rem;
   }
 </style>

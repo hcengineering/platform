@@ -22,7 +22,6 @@
     Button,
     IconBack,
     IconForward,
-    Label,
     MonthCalendar,
     showPopup,
     WeekCalendar,
@@ -168,6 +167,8 @@
     }
     showPopup(createComponent, { date, withTime }, 'top')
   }
+
+  const indexes = new Map<Ref<Event>, number>()
 </script>
 
 <div class="fs-title ml-10 mb-2 flex-row-center">

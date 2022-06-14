@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Event } from '@anticrm/calendar'
-  import { Class, DocumentQuery, FindOptions, Ref, Space, WithLookup } from '@anticrm/core'
+  import { Class, DocumentQuery, Ref, Space, WithLookup } from '@anticrm/core'
   import { Asset, IntlString } from '@anticrm/platform'
   import { createQuery } from '@anticrm/presentation'
   import {
@@ -36,7 +36,6 @@
   export let _class: Ref<Class<Event>> = calendar.class.Event
   export let space: Ref<Space> | undefined = undefined
   export let query: DocumentQuery<Event> = {}
-  export let options: FindOptions<Event> | undefined = undefined
 
   export let viewIcon: Asset = calendar.icon.Calendar
   export let viewLabel: IntlString = calendar.string.Events
