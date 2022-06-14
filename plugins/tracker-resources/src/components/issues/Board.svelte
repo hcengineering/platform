@@ -69,7 +69,11 @@
 
   const options: FindOptions<Issue> = {
     lookup: {
-      assignee: contact.class.Employee
+      assignee: contact.class.Employee,
+      space: tracker.class.Team,
+      _id: {
+        subIssues: tracker.class.Issue
+      }
     }
   }
 
@@ -157,7 +161,7 @@
         }}
       >
         <div class="flex-col mr-6">
-          <IssuePresenter value={object} {currentTeam} />
+          <IssuePresenter value={object} />
           <span class="fs-bold caption-color mt-1 lines-limit-2">
             {object.title}
           </span>

@@ -13,40 +13,29 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createQuery, getClient } from '@anticrm/presentation'
+  import { WithLookup } from '@anticrm/core'
   import type { Issue, Team } from '@anticrm/tracker'
   import { Icon, showPanel } from '@anticrm/ui'
   import tracker from '../../plugin'
-  import { getIssueId } from '../../utils'
 
-  export let value: Issue
-  export let currentTeam: Team | undefined
+  export let value: WithLookup<Issue>
   export let inline: boolean = false
-
-  const client = getClient()
-  const spaceQuery = createQuery()
-  const shortLabel = client.getHierarchy().getClass(value._class).shortLabel
 
   function handleIssueEditorOpened () {
     showPanel(tracker.component.EditIssue, value._id, value._class, 'content')
   }
 
-  $: if (!currentTeam) {
-    spaceQuery.query(tracker.class.Team, { _id: value.space }, (res) => ([currentTeam] = res))
-  } else {
-    spaceQuery.unsubscribe()
-  }
-  $: issueName = currentTeam && getIssueId(currentTeam, value)
+  $: title = `${(value?.$lookup?.space as Team)?.identifier}-${value.number}`
 </script>
 
-{#if value && shortLabel}
+{#if value}
   <div class="flex-presenter issuePresenterRoot" class:inline-presenter={inline} on:click={handleIssueEditorOpened}>
     <div class="icon">
       <Icon icon={tracker.icon.Issue} size={'small'} />
     </div>
-    {#if issueName !== undefined}
-      <span title={issueName} class="label nowrap issueLabel">{issueName}</span>
-    {/if}
+    <span title="title" class="label nowrap issueLabel">
+      {title}
+    </span>
   </div>
 {/if}
 

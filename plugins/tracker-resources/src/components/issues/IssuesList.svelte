@@ -57,7 +57,8 @@
   const baseOptions: FindOptions<Issue> = {
     lookup: {
       assignee: contact.class.Employee,
-      status: tracker.class.IssueStatus
+      status: tracker.class.IssueStatus,
+      space: tracker.class.Team
     }
   }
 

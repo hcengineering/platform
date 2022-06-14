@@ -91,7 +91,11 @@
   const options: FindOptions<Issue> = {
     sort: { [issuesOrderKeyMap[orderingKey]]: issuesSortOrderMap[issuesOrderKeyMap[orderingKey]] },
     limit: ENTRIES_LIMIT,
-    lookup: { assignee: contact.class.Employee, status: tracker.class.IssueStatus }
+    lookup: {
+      assignee: contact.class.Employee,
+      status: tracker.class.IssueStatus,
+      space: tracker.class.Team
+    }
   }
 
   $: baseQuery = {
