@@ -120,6 +120,8 @@ const recruit = plugin(recruitId, {
     Review: '' as Asset,
     Opinion: '' as Asset,
     CreateCandidate: '' as Asset,
+    AssignedToMe: '' as Asset,
+    Reviews: '' as Asset,
     Skills: '' as Asset
   },
   space: {

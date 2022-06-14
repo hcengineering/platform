@@ -69,9 +69,15 @@
     )
   })
 
+  let requestIndex = 0
   async function update (model: NavigatorModel, spaces: Space[], preferences: Map<Ref<Doc>, SpacePreference>) {
+    shownSpaces = spaces.filter(
+      (sp) => !sp.archived && !preferences.has(sp._id) && (!sp.private || sp.members.includes(myAccId))
+    )
+    starred = spaces.filter((sp) => preferences.has(sp._id))
     if (model.specials !== undefined) {
-      const sp = await updateSpecials(model.specials, spaces)
+      const [sp, resIndex] = await updateSpecials(model.specials, spaces, ++requestIndex)
+      if (resIndex !== requestIndex) return
       const topSpecials = sp.get('top') ?? []
       const bottomSpecials = sp.get('bottom') ?? []
       sp.delete('top')
@@ -88,17 +94,17 @@
     } else {
       specials = []
     }
-    shownSpaces = spaces.filter(
-      (sp) => !sp.archived && !preferences.has(sp._id) && (!sp.members.length || sp.members.includes(myAccId))
-    )
-    starred = spaces.filter((sp) => preferences.has(sp._id))
   }
 
   $: if (model) update(model, spaces, preferences)
 
-  async function updateSpecials (specials: SpecialNavModel[], spaces: Space[]): Promise<Map<string, SpecialNavModel[]>> {
+  async function updateSpecials (
+    specials: SpecialNavModel[],
+    spaces: Space[],
+    requestIndex: number
+  ): Promise<[Map<string, SpecialNavModel[]>, number]> {
     const result = new Map<string, SpecialNavModel[]>()
-    for (const sp of specials) {
+    const promises = specials.map(async (sp) => {
       const pos = sp.position ?? 'top'
       let visible = true
       if (sp.visibleIf !== undefined) {
@@ -110,8 +116,9 @@
         list.push(sp)
         result.set(pos, list)
       }
-    }
-    return result
+    })
+    await Promise.all(promises)
+    return [result, requestIndex]
   }
   const dispatch = createEventDispatcher()
 </script>

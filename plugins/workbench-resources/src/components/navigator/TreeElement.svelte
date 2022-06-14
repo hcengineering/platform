@@ -65,7 +65,9 @@
           <Icon {icon} size={'small'} />
         </div>
       {/if}
-      {#if label}<Label {label} />{:else}{title}{/if}
+      <span class="overflow-label">
+        {#if label}<Label {label} />{:else}{title}{/if}
+      </span>
 
       {#if node}
         <div class="an-element__icon-arrow {parent ? 'small' : 'medium'}" class:collapsed>

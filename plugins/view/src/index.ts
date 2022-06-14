@@ -420,7 +420,8 @@ const view = plugin(viewId, {
     Open: '' as Asset,
     ArrowRight: '' as Asset,
     Views: '' as Asset,
-    Pin: '' as Asset
+    Pin: '' as Asset,
+    Model: '' as Asset
   },
   category: {
     General: '' as Ref<ActionCategory>,

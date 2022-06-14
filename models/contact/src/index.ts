@@ -167,7 +167,7 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       label: contact.string.Contacts,
-      icon: contact.icon.Person,
+      icon: contact.icon.ContactApplication,
       hidden: false,
       component: contact.component.Contacts
     },
