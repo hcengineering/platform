@@ -11,6 +11,8 @@
     "Issues": "Задачи",
     "Views": "Отображения",
     "Active": "Активные",
+    "ActiveIssues": "Активные задачи {value}",
+    "BacklogIssues": "Пул задач {value}",
     "Backlog": "Пул задач",
     "Board": "Канбан",
     "Projects": "Проекты",
@@ -66,7 +68,7 @@
     "Labels": "Метки",
     "Project": "Проект",
     "Space": "",
-    "DueDate": "Указать срок выполнения\u2026",
+    "SetDueDate": "Указать срок выполнения\u2026",
     "Team": "",
     "Issue": "Задача",
     "Document": "",
@@ -85,6 +87,13 @@
     "GotoBoard": "Перейти к канбану",
     "GotoProjects": "Перейти к проекту",
     "GotoTrackerApplication": "Перейти к приложению Трекер",
+
+    "Filter": "Фильтр",
+    "ClearFilters": "Очистить фильтр",
+    "FilterIs": "is",
+    "FilterIsNot": "is not",
+    "FilterIsEither": "is either of",
+    "FilterStatesCount": "{value, plural, =1 {1 state} other {# states}}",
 
     "EditIssue": "Редактирование {title}",
 
