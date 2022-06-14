@@ -146,17 +146,19 @@
       <StarredNav label={preference.string.Starred} spaces={starred} on:space {currentSpace} />
     {/if}
 
-    {#each model.spaces as m (m.label)}
-      <SpacesNav
-        spaces={shownSpaces.filter((it) => hierarchy.isDerived(it._class, m.spaceClass))}
-        {currentSpace}
-        hasSpaceBrowser={model.specials?.find((p) => p.id === 'spaceBrowser') !== undefined}
-        model={m}
-        on:space
-        on:open
-        {currentSpecial}
-      />
-    {/each}
+    {#key shownSpaces}
+      {#each model.spaces as m}
+        <SpacesNav
+          spaces={shownSpaces.filter((it) => hierarchy.isDerived(it._class, m.spaceClass))}
+          {currentSpace}
+          hasSpaceBrowser={model.specials?.find((p) => p.id === 'spaceBrowser') !== undefined}
+          model={m}
+          on:space
+          on:open
+          {currentSpecial}
+        />
+      {/each}
+    {/key}
     <div class="antiNav-space" />
   </Scroller>
 {/if}
