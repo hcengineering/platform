@@ -44,7 +44,7 @@
 {#if value}
   <div class="sm-tool-icon" on:click={show} bind:this={element}>
     <span class="icon">
-      <Icon icon={recruit.icon.Review} size={'small'} />
+      <Icon icon={recruit.icon.Opinion} size={'small'} />
     </span>&nbsp;
     {#if value && shortLabel}
       {shortLabel}-{value.number}

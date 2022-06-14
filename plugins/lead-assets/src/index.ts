@@ -22,6 +22,7 @@ loadMetadata(lead.icon, {
   Funnel: `${icons}#funnel`,
   Lead: `${icons}#lead`,
   LeadApplication: `${icons}#leadapplication`,
+  FunnelBrowser: `${icons}#funnelBrowser`,
   CreateCustomer: `${icons}#new-customer`
 })
 
