@@ -31,6 +31,7 @@ import AttachmentsPresenter from './components/AttachmentsPresenter.svelte'
 import FileBrowser from './components/FileBrowser.svelte'
 import FileDownload from './components/icons/FileDownload.svelte'
 import Photos from './components/Photos.svelte'
+import AttachmentStyledBox from './components/AttachmentStyledBox.svelte'
 import { deleteFile, uploadFile } from './utils'
 
 export {
@@ -44,7 +45,8 @@ export {
   AttachmentList,
   AttachmentDocList,
   FileDownload,
-  FileBrowser
+  FileBrowser,
+  AttachmentStyledBox
 }
 
 export enum FileBrowserSortMode {
