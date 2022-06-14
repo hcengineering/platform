@@ -25,6 +25,7 @@
   import Bold from './icons/Bold.svelte'
   import Italic from './icons/Italic.svelte'
   import Strikethrough from './icons/Strikethrough.svelte'
+  import Link from './icons/Link.svelte'
   import ListNumber from './icons/ListNumber.svelte'
   import ListBullet from './icons/ListBullet.svelte'
   import Quote from './icons/Quote.svelte'
@@ -230,6 +231,7 @@
       </Tooltip>
       <Tooltip label={textEditorPlugin.string.Link}>
         <Button
+          icon={Link}
           kind={'transparent'}
           size={'small'}
           selected={activeModes.has('link')}
