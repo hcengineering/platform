@@ -54,6 +54,7 @@ import TargetDatePresenter from './components/projects/TargetDatePresenter.svelt
 import SetDueDateActionPopup from './components/SetDueDateActionPopup.svelte'
 import SetParentIssueActionPopup from './components/SetParentIssueActionPopup.svelte'
 import Views from './components/views/Views.svelte'
+import KanbanView from './components/issues/KanbanView.svelte'
 import tracker from './plugin'
 import { getIssueId } from './utils'
 
@@ -76,7 +77,6 @@ export async function queryIssue<D extends Issue> (
       )
     ).map((e) => [e._id, e])
   )
-
   for (const currentTeam of teams) {
     const nids: number[] = []
     for (let n = 0; n < currentTeam.sequence; n++) {
@@ -143,6 +143,7 @@ export default async (): Promise<Resources> => ({
     EditProject,
     IssuesView,
     ListView,
+    KanbanView,
     IssuePreview
   },
   function: {

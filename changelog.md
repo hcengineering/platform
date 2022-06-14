@@ -9,6 +9,7 @@ Platform:
 Tracker:
 
 - Attachments support
+- Board view
 
 ## 0.6.26
 

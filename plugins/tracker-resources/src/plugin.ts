@@ -194,6 +194,7 @@ export default mergeIds(trackerId, tracker, {
     EditProject: '' as AnyComponent,
     IssuesView: '' as AnyComponent,
     ListView: '' as AnyComponent,
+    KanbanView: '' as AnyComponent,
     IssuePreview: '' as AnyComponent
   },
   function: {
