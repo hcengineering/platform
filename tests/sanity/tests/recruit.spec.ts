@@ -100,9 +100,9 @@ test.describe('recruit tests', () => {
     await page.locator('text=Vacancies').click()
 
     await page.click('button:has-text("Vacancy")')
-    await page.fill('[placeholder="Software\\ Engineer"]', vacancyId)
-    await page.click('button:has-text("Create")')
-    await page.locator(`text=${vacancyId}`).click()
+    await page.fill('form  [placeholder="Software\\ Engineer"]', vacancyId)
+    await page.click('form button:has-text("Create")')
+    await page.click(`text=${vacancyId}`)
 
     // Create Applicatio n1
     await page.click('button:has-text("Application")')
