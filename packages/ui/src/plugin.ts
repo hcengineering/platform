@@ -62,7 +62,8 @@ export default plugin(uiId, {
     HoursAfter: '' as IntlString,
     DaysAfter: '' as IntlString,
     NoActionsDefined: '' as IntlString,
-    Incoming: '' as IntlString
+    Incoming: '' as IntlString,
+    HoursLabel: '' as IntlString
   },
   metadata: {
     DefaultApplication: '' as Metadata<AnyComponent>

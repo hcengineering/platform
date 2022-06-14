@@ -15,8 +15,10 @@
 <script lang="ts">
   import { Event } from '@anticrm/calendar'
   import { Class, Doc, DocumentQuery, FindOptions, Ref } from '@anticrm/core'
-  import { Tooltip } from '@anticrm/ui'
-  import { addZero } from '@anticrm/ui/src/components/calendar/internal/DateUtils'
+  import { getPlatformColorForText, tooltip } from '@anticrm/ui'
+  import { areDatesEqual } from '@anticrm/ui/src/components/calendar/internal/DateUtils'
+  import { BuildModelKey } from '@anticrm/view'
+  import { createEventDispatcher } from 'svelte'
   import calendar from '../plugin'
   import EventsPopup from './EventsPopup.svelte'
 
@@ -27,54 +29,75 @@
   export let query: DocumentQuery<Event> = {}
   export let options: FindOptions<Event> | undefined = undefined
   export let baseMenuClass: Ref<Class<Event>> | undefined = undefined
-  export let config: string[]
+  export let config: (string | BuildModelKey)[]
 
-  $: sorted = Array.from(events).sort((a, b) => a.date - b.date)
+  const dispatch = createEventDispatcher()
 
-  function from (eDate: number, date: Date): string {
-    const dd = new Date(Math.max(eDate, date.getTime()))
-    return `${addZero(date.getHours())}:${addZero(dd.getMinutes())}`
+  function startCell (eDate: number, date: Date): boolean {
+    const event = new Date(eDate)
+    return event.getHours() === date.getHours() && areDatesEqual(event, date)
   }
 
-  function to (dueDate: number, date: Date): string {
-    return `${addZero(date.getHours())}:${addZero(Math.min(59, Math.floor((dueDate - date.getTime()) / 60000)))}`
+  function getTop (e: Event): string {
+    return `${(new Date(e.date).getMinutes() / 60) * 100}%`
   }
+
+  function getHeight (e: Event): string {
+    if (e.dueDate !== undefined) {
+      const a = e.dueDate - e.date
+      const b = a / 10 / 60 / 60
+      return `${b}%`
+    }
+    return '1rem'
+  }
+
+  let selected: number | undefined
 </script>
 
-{#if events.length > 0}
-  <Tooltip
-    fill={true}
-    label={calendar.string.Events}
-    component={EventsPopup}
-    props={{ value: events, _class, query, options, baseMenuClass, config }}
-  >
-    <div class="cell">
-      <div class="flex flex-col flex-grow">
-        {#each sorted.slice(0, 4) as e, ei}
-          <div class="overflow-label flex flex-between">
+<div
+  class="cursor-pointer w-full h-full"
+  on:click={() => {
+    dispatch('create', date)
+  }}
+>
+  {#if events.length > 0}
+    <div
+      class="flex flex-col h-full flex-grow relative"
+      use:tooltip={{
+        label: calendar.string.Events,
+        component: EventsPopup,
+        props: { value: events, _class, query, options, baseMenuClass, config }
+      }}
+    >
+      {#each events as e, i}
+        {#if startCell(e.date, date)}
+          <div
+            class="overflow-label event"
+            class:selected={selected === i}
+            style="background-color: {getPlatformColorForText(e._class)}; top: {getTop(e)}; height: {getHeight(
+              e
+            )}; left: {i === 0 ? 0 : i * 100 / (events.length + 2)}%; width: {100 / (events.length + 1)}%"
+            on:click|stopPropagation={() => {
+              selected = i
+            }}
+          >
             {e.title}
-            <div>
-              {from(e.date, date)}
-              -
-              {to(e.dueDate ?? e.date, date)}
-            </div>
           </div>
-        {/each}
-        {#if events.length > 4}
-          And {events.length - 4} more
         {/if}
-      </div>
+      {/each}
     </div>
-  </Tooltip>
-{/if}
+  {/if}
+</div>
 
 <style lang="scss">
-  .cell {
-    padding: 0.5rem;
-    display: flex;
-    width: 100%;
-    height: 100%;
-    justify-content: center;
-    background-color: var(--theme-dialog-accent);
+  .event {
+    position: absolute;
+    border-radius: 0.25rem;
+    padding: 0 0.5rem;
+    border: 1px solid #00000033;
+    color: var(--accent-color);
+    &.selected {
+      z-index: 1;
+    }
   }
 </style>

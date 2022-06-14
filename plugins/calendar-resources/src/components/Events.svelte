@@ -14,38 +14,53 @@
 -->
 <script lang="ts">
   import { Event } from '@anticrm/calendar'
-  import { Class, DocumentQuery, FindOptions, Ref } from '@anticrm/core'
+  import { Class, DocumentQuery, FindOptions, Ref, Space, WithLookup } from '@anticrm/core'
   import { Asset, IntlString } from '@anticrm/platform'
+  import { createQuery } from '@anticrm/presentation'
   import {
     AnyComponent,
-    AnySvelteComponent,
     Button,
+    Component,
     Icon,
     IconAdd,
     Label,
+    Loading,
     SearchEdit,
     showPopup,
     Tooltip
   } from '@anticrm/ui'
-  import view from '@anticrm/view'
-  import { TableBrowser } from '@anticrm/view-resources'
+  import view, { Filter, Viewlet, ViewletPreference } from '@anticrm/view'
+  import { FilterButton, ViewletSettingButton } from '@anticrm/view-resources'
   import calendar from '../plugin'
-  import CalendarView from './CalendarView.svelte'
 
-  export let _class: Ref<Class<Event>>
+  export let _class: Ref<Class<Event>> = calendar.class.Event
+  export let space: Ref<Space> | undefined = undefined
   export let query: DocumentQuery<Event> = {}
   export let options: FindOptions<Event> | undefined = undefined
-  export let baseMenuClass: Ref<Class<Event>> | undefined = undefined
-  export let config: string[]
 
   export let viewIcon: Asset = calendar.icon.Calendar
   export let viewLabel: IntlString = calendar.string.Events
 
-  export let createComponent: AnyComponent | undefined
-  export let createLabel: IntlString | undefined
+  export let createComponent: AnyComponent | undefined = calendar.component.CreateEvent
+  export let createLabel: IntlString | undefined = calendar.string.CreateEvent
 
+  let filters: Filter[] = []
+  const viewletQuery = createQuery()
   let search = ''
   let resultQuery: DocumentQuery<Event> = {}
+
+  let viewlets: WithLookup<Viewlet>[] = []
+  viewletQuery.query(
+    view.class.Viewlet,
+    { attachTo: _class },
+    (res) => {
+      viewlets = res
+      if (selectedViewlet === undefined || res.findIndex((p) => p._id === selectedViewlet?._id) === -1) {
+        selectedViewlet = res[0]
+      }
+    },
+    { lookup: { descriptor: view.class.ViewletDescriptor } }
+  )
 
   function updateResultQuery (search: string): void {
     resultQuery = search === '' ? { ...query } : { ...query, $search: search }
@@ -53,70 +68,54 @@
 
   $: updateResultQuery(search)
 
-  interface CalendarViewlet {
-    component: AnySvelteComponent
-    props: Record<string, any>
-    label: IntlString
-    icon: Asset
-  }
-
-  $: viewlets = [
-    {
-      component: TableBrowser,
-      icon: view.icon.Table,
-      label: calendar.string.TableView,
-      props: {
-        _class,
-        query: resultQuery,
-        options,
-        baseMenuClass,
-        config,
-        search
-      }
-    },
-    {
-      component: CalendarView,
-      icon: calendar.icon.Calendar,
-      label: calendar.string.Calendar,
-      props: {
-        _class,
-        space: undefined,
-        query: resultQuery,
-        options,
-        baseMenuClass,
-        config,
-        search
-      }
-    }
-  ] as CalendarViewlet[]
-  let selectedViewlet = 0
-
   function showCreateDialog () {
     if (createComponent === undefined) {
       return
     }
     showPopup(createComponent, {}, 'top')
   }
+
+  let selectedViewlet: WithLookup<Viewlet> | undefined
+
+  const preferenceQuery = createQuery()
+  let preference: ViewletPreference | undefined
+  let loading = true
+
+  $: selectedViewlet &&
+    preferenceQuery.query(
+      view.class.ViewletPreference,
+      {
+        attachedTo: selectedViewlet._id
+      },
+      (res) => {
+        preference = res[0]
+        loading = false
+      },
+      { limit: 1 }
+    )
 </script>
 
-<div class="ac-header full">
+<div class="ac-header full withSettings">
   <div class="ac-header__wrap-title">
     <div class="ac-header__icon"><Icon icon={viewIcon} size={'small'} /></div>
     <span class="ac-header__title"><Label label={viewLabel} /></span>
+    <div class="ml-4"><FilterButton {_class} bind:filters /></div>
   </div>
 
   {#if viewlets.length > 1}
     <div class="flex">
       {#each viewlets as viewlet, i}
-        <Tooltip label={viewlet.label} direction={'top'}>
+        <Tooltip label={viewlet.$lookup?.descriptor?.label} direction={'top'}>
           <button
             class="ac-header__icon-button"
-            class:selected={selectedViewlet === i}
+            class:selected={selectedViewlet === viewlet}
             on:click={() => {
-              selectedViewlet = i
+              selectedViewlet = viewlet
             }}
           >
-            <Icon icon={viewlet.icon} size={'small'} />
+            {#if viewlet.$lookup?.descriptor?.icon}
+              <Icon icon={viewlet.$lookup.descriptor.icon} size={'small'} />
+            {/if}
           </button>
         </Tooltip>
       {/each}
@@ -130,8 +129,26 @@
     }}
   />
   <Button icon={IconAdd} label={createLabel} kind={'primary'} on:click={showCreateDialog} />
+  <ViewletSettingButton viewlet={selectedViewlet} />
 </div>
 
-{#if viewlets[selectedViewlet]}
-  <svelte:component this={viewlets[selectedViewlet].component} {...viewlets[selectedViewlet].props} />
+{#if selectedViewlet?.$lookup?.descriptor?.component}
+  {#if loading}
+    <Loading />
+  {:else}
+    <Component
+      is={selectedViewlet.$lookup?.descriptor?.component}
+      props={{
+        _class,
+        space,
+        options: selectedViewlet.options,
+        config: preference?.config ?? selectedViewlet.config,
+        viewlet: selectedViewlet,
+        query: resultQuery,
+        filters,
+        search,
+        createComponent
+      }}
+    />
+  {/if}
 {/if}
