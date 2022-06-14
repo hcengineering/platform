@@ -6,6 +6,10 @@ Platform:
 
 - Allow to attach from clipboard
 
+HR:
+
+- Fix create application
+
 Tracker:
 
 - Attachments support
