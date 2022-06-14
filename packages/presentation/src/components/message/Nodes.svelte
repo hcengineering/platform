@@ -63,7 +63,9 @@
     {:else if node.nodeName === 'DIV'}
       <div><svelte:self nodes={node.childNodes} /></div>
     {:else if node.nodeName === 'A'}
-      <a href={node.getAttribute('href')}><svelte:self nodes={node.childNodes} /></a>
+      <a href={node.getAttribute('href')} target={node.getAttribute('target')}
+        ><svelte:self nodes={node.childNodes} /></a
+      >
     {:else if node.nodeName === 'LABEL'}
       <svelte:self nodes={node.childNodes} />
     {:else if node.nodeName === 'INPUT'}
