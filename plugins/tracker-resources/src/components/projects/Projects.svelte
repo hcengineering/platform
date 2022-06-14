@@ -54,8 +54,6 @@
   }
 </script>
 
-{projectId}
-{JSON.stringify(project)}
 {#if project}
   <EditProject {project} />
 {:else}
