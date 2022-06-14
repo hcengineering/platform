@@ -69,13 +69,12 @@ test.describe('recruit tests', () => {
     await page.click('button:has-text("Vacancy")')
     await page.fill('[placeholder="Software\\ Engineer"]', vacancyId)
     await page.click('button:has-text("Create")')
-    await page.locator(`text=${vacancyId}`).click()
+    await page.click(`tr > :has-text("${vacancyId}")`)
 
     await page.click('text=Talents')
 
     await page.click('text=Talents')
     await page.click('text=Andrey P.')
-    // await page.locator('.mixin-selector').locator('text="Candidate"').click()
 
     // Click on Add button
     await page.click('.applications-container .flex-row-center .flex-center')
@@ -87,7 +86,7 @@ test.describe('recruit tests', () => {
 
     await page.click('button:has-text("Create")')
 
-    await page.locator(`tr:has-text("${vacancyId}") >> text=APP-`).click()
+    await page.click(`tr:has-text("${vacancyId}") >> text=APP-`)
     await page.click('button:has-text("Assigned recruiter")')
     await page.click('button:has-text("Rosamund Chen")')
   })
@@ -102,7 +101,7 @@ test.describe('recruit tests', () => {
     await page.click('button:has-text("Vacancy")')
     await page.fill('form  [placeholder="Software\\ Engineer"]', vacancyId)
     await page.click('form button:has-text("Create")')
-    await page.click(`text=${vacancyId}`)
+    await page.click(`tr > :has-text("${vacancyId}")`)
 
     // Create Applicatio n1
     await page.click('button:has-text("Application")')
