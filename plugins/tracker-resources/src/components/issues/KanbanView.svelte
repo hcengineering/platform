@@ -50,7 +50,8 @@
 
   const options: FindOptions<Issue> = {
     lookup: {
-      assignee: contact.class.Employee
+      assignee: contact.class.Employee,
+      space: tracker.class.Team
     }
   }
 
@@ -139,11 +140,15 @@
             {object.title}
           </span>
         </div>
-        {#if issue.$lookup?.assignee}
-          <div class="abs-rt-content">
-            <AssigneePresenter value={issue.$lookup.assignee} issueId={issue._id} {currentSpace} isEditable={true} />
-          </div>
-        {/if}
+        <div class="abs-rt-content">
+          <AssigneePresenter
+            value={issue?.$lookup?.assignee}
+            issueId={issue._id}
+            {currentSpace}
+            isEditable={true}
+            defaultClass={contact.class.Employee}
+          />
+        </div>
         <div class="buttons-group xsmall-gap mt-10px">
           <PriorityEditor
             value={issue}
