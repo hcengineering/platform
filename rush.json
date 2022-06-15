@@ -1316,7 +1316,7 @@
     {
       "packageName": "@anticrm/automation",
       "projectFolder": "packages/automation",
-      "shouldPublish": false
+      "shouldPublish": true
     },
     {
       "packageName": "@anticrm/model-automation",

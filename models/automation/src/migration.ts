@@ -15,9 +15,7 @@
 
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
 
-export const boardOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-  },
-  async upgrade (client: MigrationUpgradeClient): Promise<void> {
-  }
+export const automationOperation: MigrateOperation = {
+  async migrate (client: MigrationClient): Promise<void> {},
+  async upgrade (client: MigrationUpgradeClient): Promise<void> {}
 }

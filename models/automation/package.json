@@ -26,9 +26,10 @@
   },
   "dependencies": {
     "@anticrm/core": "~0.6.16",
+    "@anticrm/automation": "~0.6.0",
     "@anticrm/model": "~0.6.0",
-    "@anticrm/platform": "~0.6.6",
     "@anticrm/model-core": "~0.6.0",
-    "@anticrm/automation": "~0.6.0"
+    "@anticrm/view": "~0.6.0"
   }
 }
+

@@ -14,20 +14,21 @@
 //
 
 // To help typescript locate view plugin properly
-import {
-  Builder,
-  Model,
-  UX
-} from '@anticrm/model'
+import automation, { Automation, Command } from '@anticrm/automation'
+import { Class, Doc, Ref } from '@anticrm/core'
+import { Builder, Model, UX } from '@anticrm/model'
 import core, { TAttachedDoc } from '@anticrm/model-core'
-
-import automation, { Automation } from '@anticrm/automation'
+import { Action } from '@anticrm/view'
 
 @Model(automation.class.Automation, core.class.AttachedDoc)
 @UX(automation.string.Automation)
 export class TAutomation extends TAttachedDoc implements Automation {
-  color!: number
-  background!: string
+  targetClass!: Ref<Class<Doc>>
+  trigger!: {
+    action?: Ref<Action>
+  }
+
+  commands: Command[]
 }
 
 export function createModel (builder: Builder): void {
