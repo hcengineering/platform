@@ -33,11 +33,11 @@
   import tracker from '../plugin'
   import AssigneeEditor from './issues/AssigneeEditor.svelte'
   import ParentIssue from './issues/ParentIssue.svelte'
-  import StatusEditor from './issues/StatusEditor.svelte'
-  import PrioritySelector from './PrioritySelector.svelte'
+  import SetParentIssueActionPopup from './SetParentIssueActionPopup.svelte'
   import ProjectSelector from './ProjectSelector.svelte'
   import SetDueDateActionPopup from './SetDueDateActionPopup.svelte'
-  import SetParentIssueActionPopup from './SetParentIssueActionPopup.svelte'
+  import StatusEditor from './issues/StatusEditor.svelte'
+  import PriorityEditor from './issues/PriorityEditor.svelte'
 
   export let space: Ref<Team>
   export let status: Ref<IssueStatus> | undefined = undefined
@@ -194,14 +194,6 @@
     )
   }
 
-  const handlePriorityChanged = (newPriority: IssuePriority | undefined) => {
-    if (newPriority === undefined) {
-      return
-    }
-
-    object.priority = newPriority
-  }
-
   const handleProjectIdChanged = (projectId: Ref<Project> | null | undefined) => {
     if (projectId === undefined) {
       return
@@ -265,7 +257,16 @@
         shouldShowLabel={true}
         on:change={({ detail }) => (object.status = detail)}
       />
-      <PrioritySelector priority={object.priority} onPriorityChange={handlePriorityChanged} />
+      <PriorityEditor
+        value={object}
+        shouldShowLabel
+        isEditable
+        kind="no-border"
+        size="small"
+        justify="center"
+        width=""
+        on:change={({ detail }) => (object.priority = detail)}
+      />
       <AssigneeEditor
         value={object}
         size="small"

@@ -13,6 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
+  import { AttachedData } from '@anticrm/core'
   import { Issue, IssuePriority } from '@anticrm/tracker'
   import { getClient } from '@anticrm/presentation'
   import { tooltip } from '@anticrm/ui'
@@ -20,7 +22,7 @@
   import tracker from '../../plugin'
   import PrioritySelector from '../PrioritySelector.svelte'
 
-  export let value: Issue
+  export let value: Issue | AttachedData<Issue>
   export let isEditable: boolean = true
   export let shouldShowLabel: boolean = false
 
@@ -30,21 +32,18 @@
   export let width: string | undefined = '100%'
 
   const client = getClient()
+  const dispatch = createEventDispatcher()
 
   const handlePriorityChanged = async (newPriority: IssuePriority | undefined) => {
     if (!isEditable || newPriority === undefined || value.priority === newPriority) {
       return
     }
 
-    await client.updateCollection(
-      value._class,
-      value.space,
-      value._id,
-      value.attachedTo,
-      value.attachedToClass,
-      value.collection,
-      { priority: newPriority }
-    )
+    dispatch('change', newPriority)
+
+    if ('_id' in value) {
+      await client.update(value, { priority: newPriority })
+    }
   }
 </script>
 

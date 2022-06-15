@@ -22,6 +22,7 @@
   import tracker from '../../../plugin'
   import AssigneeEditor from '../AssigneeEditor.svelte'
   import StatusEditor from '../StatusEditor.svelte'
+  import PriorityEditor from '../PriorityEditor.svelte'
 
   export let parentIssue: Issue
   export let issueStatuses: WithLookup<IssueStatus>[]
@@ -133,6 +134,16 @@
   <div class="mt-4 flex-between">
     <div class="buttons-group xsmall-gap">
       <!-- <SpaceSelector _class={tracker.class.Team} label={tracker.string.Team} bind:space /> -->
+      <PriorityEditor
+        value={newIssue}
+        shouldShowLabel
+        isEditable
+        kind="no-border"
+        size="small"
+        justify="center"
+        width=""
+        on:change={({ detail }) => (newIssue.priority = detail)}
+      />
       <AssigneeEditor
         value={newIssue}
         size="small"
