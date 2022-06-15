@@ -193,6 +193,14 @@ export function createModel (builder: Builder): void {
     editor: lead.component.Leads
   })
 
+  builder.mixin(lead.class.Lead, core.class.Class, view.mixin.ClassFilters, {
+    filters: ['attachedTo', 'title', 'assignee', 'state', 'doneState', 'modifiedOn']
+  })
+
+  builder.mixin(lead.mixin.Customer, core.class.Class, view.mixin.ClassFilters, {
+    filters: ['_class', 'description', 'city', 'modifiedOn']
+  })
+
   builder.createDoc(
     task.class.KanbanTemplateSpace,
     core.space.Model,
