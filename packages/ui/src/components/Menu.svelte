@@ -67,7 +67,7 @@
               class="ap-menuItem flex-row-center withIcon w-full"
               on:keydown={(evt) => keyDown(evt, i)}
               on:mouseover={(evt) => evt.currentTarget.focus()}
-              on:click={(evt) => {
+              on:click|preventDefault|stopPropagation={(evt) => {
                 if (!action.inline) dispatch('close')
                 action.action(ctx, evt)
               }}
