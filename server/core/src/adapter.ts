@@ -99,7 +99,11 @@ class InMemoryAdapter implements DbAdapter {
 
   async init (model: Tx[]): Promise<void> {
     for (const tx of model) {
-      await this.modeldb.tx(tx)
+      try {
+        await this.modeldb.tx(tx)
+      } catch (err: any) {
+        console.error('skip broken TX', err)
+      }
     }
   }
 

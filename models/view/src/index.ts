@@ -518,6 +518,10 @@ export function createModel (builder: Builder): void {
     component: view.component.ValueFilter
   })
 
+  builder.mixin(core.class.EnumOf, core.class.Class, view.mixin.AttributeFilter, {
+    component: view.component.ValueFilter
+  })
+
   builder.mixin(core.class.RefTo, core.class.Class, view.mixin.AttributeFilter, {
     component: view.component.ObjectFilter
   })
