@@ -168,7 +168,7 @@
     showPopup(createComponent, { date, withTime }, 'top')
   }
 
-  const indexes = new Map<Ref<Event>, number>()
+  let indexes = new Map<Ref<Event>, number>()
 </script>
 
 <div class="fs-title ml-10 mb-2 flex-row-center">
@@ -308,10 +308,7 @@
           <Hour
             events={findEvents(objects, date, true)}
             {date}
-            {_class}
-            {baseMenuClass}
-            {options}
-            {config}
+            bind:indexes
             query={resultQuery}
             on:create={(e) => {
               showCreateDialog(e.detail, true)
@@ -334,10 +331,8 @@
           <Hour
             events={findEvents(objects, date, true)}
             {date}
-            {_class}
-            {baseMenuClass}
-            {options}
-            {config}
+            bind:indexes
+            wide
             query={resultQuery}
             on:create={(e) => {
               showCreateDialog(e.detail, true)

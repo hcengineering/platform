@@ -14,39 +14,71 @@
 -->
 <script lang="ts">
   import { Event } from '@anticrm/calendar'
-  import { Class, Doc, DocumentQuery, FindOptions, Ref } from '@anticrm/core'
-  import { getPlatformColorForText, tooltip } from '@anticrm/ui'
+  import { Ref } from '@anticrm/core'
+  import { getPlatformColorForText, showPanel, tooltip } from '@anticrm/ui'
   import { areDatesEqual } from '@anticrm/ui/src/components/calendar/internal/DateUtils'
-  import { BuildModelKey } from '@anticrm/view'
+  import view from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
-  import { getEmbeddedLabel } from '@anticrm/platform'
+  import EventPresenter from './EventPresenter.svelte'
 
   export let events: Event[]
   export let date: Date
-  export let _class: Ref<Class<Doc>>
-  export let query: DocumentQuery<Event> = {}
-  export let options: FindOptions<Event> | undefined = undefined
-  export let baseMenuClass: Ref<Class<Event>> | undefined = undefined
-  export let config: (string | BuildModelKey)[]
+  export let indexes: Map<Ref<Event>, number>
+  export let wide: boolean = false
 
   const dispatch = createEventDispatcher()
+  const padding = 0.25
+  const width = wide ? 5 : 1
 
-  function startCell (eDate: number, date: Date): boolean {
+  function edgeCell (eDate: number, date: Date): boolean {
     const event = new Date(eDate)
-    return areDatesEqual(event, date) ? event.getHours() === date.getHours() : date.getHours() === 0
+    return areDatesEqual(event, date) && event.getHours() === date.getHours()
   }
 
-  function getTop (e: Event): string {
-    return `${(new Date(e.date).getMinutes() / 60) * 100}%`
+  function getTop (e: Event, date: Date): string {
+    return edgeCell(e.date, date) ? `${(new Date(e.date).getMinutes() / 60) * 100}%` : '0px'
   }
 
-  function getHeight (e: Event): string {
+  function getHeight (e: Event, date: Date): string {
     if (e.dueDate !== undefined) {
-      const duration = areDatesEqual(new Date(e.dueDate), new Date(e.date)) ? e.dueDate - e.date : new Date(e.date).setHours(23, 59) - e.date
-      const hourPercent = duration / 10 / 60 / 60
-      return `${hourPercent}%`
+      return `${(new Date(e.dueDate).getMinutes() / 60) * 100}%`
     }
-    return '1rem'
+    return '100%'
+  }
+
+  function getIndex (events: Event[], i: number): number {
+    let targetIndex = indexes.get(events[i]._id) ?? 0
+    for (let j = 0; j < i; j++) {
+      const prev = indexes.get(events[j]._id)
+      if (targetIndex === prev) {
+        targetIndex++
+      }
+    }
+    indexes.set(events[i]._id, targetIndex)
+    indexes = indexes
+    return targetIndex
+  }
+
+  function getShift (events: Event[], i: number): number {
+    const index = getIndex(events, i)
+    let total = 0
+    for (let j = 0; j < index; j++) {
+      total += width + padding
+    }
+    return total
+  }
+
+  function getStyle (events: Event[], i: number, date: Date): string {
+    const e = events[i]
+    let res = `background-color: ${getPlatformColorForText(e._class)};`
+    res += `left: ${getShift(events, i)}rem;`
+    if (edgeCell(e.date, date)) {
+      res += ` top: ${getTop(e, date)};`
+    }
+    if (edgeCell(e.dueDate ?? e.date, date)) {
+      res += ` height: ${getHeight(e, date)};`
+    }
+    return res
   }
 </script>
 
@@ -57,25 +89,28 @@
   }}
 >
   {#if events.length > 0}
-    <div
-      class="flex flex-col h-full flex-grow relative"
-    >
+    <div class="flex flex-col h-full flex-grow relative">
       {#each events as e, i}
-        {#if startCell(e.date, date)}
-          <div
-            use:tooltip={{
-              label: getEmbeddedLabel(e.title)
-            }}
-            class="overflow-label event"
-            style="background-color: {getPlatformColorForText(e._class)}; top: {getTop(e)}; height: {getHeight(
-              e
-            )}; left: {i * 2.25}rem;"
-            on:click|stopPropagation={() => {
-              // selected = e._id
-            }}
-          >
+        <div
+          use:tooltip={{
+            component: EventPresenter,
+            props: {
+              value: e
+            }
+          }}
+          class="overflow-label event"
+          class:isStart={edgeCell(e.date, date)}
+          class:isEnd={edgeCell(e.dueDate ?? e.date, date)}
+          class:wide
+          style={getStyle(events, i, date)}
+          on:click|stopPropagation={() => {
+            showPanel(view.component.EditDoc, e._id, e._class, 'content')
+          }}
+        >
+          <div class="title">
+            {e.title}
           </div>
-        {/if}
+        </div>
       {/each}
     </div>
   {/if}
@@ -84,9 +119,30 @@
 <style lang="scss">
   .event {
     position: absolute;
-    border-radius: 0.25rem;
     padding: 0 0.5rem;
+    height: 100%;
     border: 1px solid #00000033;
-    width: 2rem;
+    width: 1rem;
+    &.wide {
+      width: 5rem;
+      &.isStart {
+        .title {
+          visibility: visible;
+        }
+      }
+    }
+
+    .title {
+      visibility: hidden;
+    }
+
+    &.isStart {
+      border-top-left-radius: 0.5rem;
+      border-top-right-radius: 0.5rem;
+    }
+    &.isEnd {
+      border-bottom-left-radius: 0.5rem;
+      border-bottom-right-radius: 0.5rem;
+    }
   }
 </style>

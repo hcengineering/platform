@@ -131,7 +131,7 @@
   const fixEdits = (): void => {
     const tempValues: number[] = []
     edits.forEach((edit, i) => {
-      tempValues[i] = (edit.value > 0 || i > 2) ? edit.value : getValue(currentDate, edit.id)
+      tempValues[i] = edit.value > 0 || i > 2 ? edit.value : getValue(currentDate, edit.id)
     })
     currentDate = new Date(tempValues[2], tempValues[1] - 1, tempValues[0], tempValues[3], tempValues[4])
   }
@@ -154,7 +154,6 @@
   }
 
   const keyDown = (ev: KeyboardEvent, ed: TEdits): void => {
-    debugger
     const index = getIndex(ed)
 
     if (ev.key >= '0' && ev.key <= '9') {
@@ -168,7 +167,7 @@
         edits[index].value = edits[index].value * 10 + num
       }
 
-      if (!isNull() && edits[2].value > 999 && !startTyping) {
+      if (!isNull() && edits[2].value > 999) {
         fixEdits()
         currentDate = setValue(edits[index].value, currentDate, ed)
         $dpstore.currentDate = currentDate
@@ -179,7 +178,7 @@
       if (selected === 'day' && edits[0].value > getMaxValue(currentDate, 'day') / 10) selected = 'month'
       else if (selected === 'month' && edits[1].value > 1) selected = 'year'
       else if (selected === 'year' && withTime && edits[2].value > 999) selected = 'hour'
-      else if (selected === 'hour' && !startTyping) selected = 'min'
+      else if (selected === 'hour' && (edits[3].value > 2 || !startTyping)) selected = 'min'
       startTyping = false
     }
     if (ev.code === 'Enter') closeDP()

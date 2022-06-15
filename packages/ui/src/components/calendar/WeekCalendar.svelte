@@ -95,6 +95,7 @@
     margin: 0;
   }
   .cell {
+    overflow: hidden;
     width: calc(calc(100% - 50px) / 7);
   }
   .cell:hover:not(.wrongMonth) {
