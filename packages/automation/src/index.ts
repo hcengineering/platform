@@ -1,8 +1,7 @@
-import { AttachedDoc, Class, Doc, DocumentQuery, DocumentUpdate, Ref } from '@anticrm/core'
+import { AttachedDoc, Class, Doc, DocumentQuery, DocumentUpdate, Mixin, Ref } from '@anticrm/core'
 import type { IntlString, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import type { Action } from '@anticrm/view'
-import type { KeysByType } from 'simplytyped'
 
 /**
  * @public
@@ -19,13 +18,18 @@ export enum CommandType {
 /**
  * @public
  */
-export interface AutomationSupport<T extends Doc> {
+export interface AutomationSupport<T extends Doc> extends Class<Doc> {
   attributes: {
-    name: KeysByType<T, never>
+    name: keyof T
     sort?: {
       groupBy?: DocumentQuery<Doc>
     }
   }[]
+  trigger: {
+    action: {
+      mode: ('editor' | 'context')[]
+    }
+  }
   sort?: {
     groupBy?: DocumentQuery<T>
   }
@@ -60,6 +64,9 @@ export interface Automation<T extends Doc> extends AttachedDoc {
 export default plugin(automationId, {
   class: {
     Automation: '' as Ref<Class<Automation<Doc>>>
+  },
+  mixin: {
+    AutomationSupport: '' as Ref<Mixin<AutomationSupport<Doc>>>
   },
   string: {
     Automation: '' as IntlString

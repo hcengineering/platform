@@ -14,10 +14,10 @@
 //
 
 // To help typescript locate view plugin properly
-import automation, { Automation, Command } from '@anticrm/automation'
-import { Class, Doc, Ref } from '@anticrm/core'
-import { Builder, Model, UX } from '@anticrm/model'
-import core, { TAttachedDoc } from '@anticrm/model-core'
+import automation, { Automation, AutomationSupport, Command } from '@anticrm/automation'
+import { Class, Doc, DocumentQuery, Ref } from '@anticrm/core'
+import { Builder, Mixin, Model, UX } from '@anticrm/model'
+import core, { TAttachedDoc, TClass } from '@anticrm/model-core'
 import { Action } from '@anticrm/view'
 
 @Model(automation.class.Automation, core.class.AttachedDoc)
@@ -31,8 +31,26 @@ export class TAutomation extends TAttachedDoc implements Automation {
   commands: Command[]
 }
 
+@Mixin(automation.mixin.AutomationSupport, core.class.Class)
+export class TAutomationSupport extends TClass implements AutomationSupport {
+  attributes: {
+    name: string
+    sort?: {
+      groupBy?: DocumentQuery<Doc>
+    }
+  }[]
+  trigger: {
+    action: {
+      mode: ('editor' | 'context') []
+    }
+  }
+  sort?: {
+    groupBy?: DocumentQuery<Doc>
+  }
+}
+
 export function createModel (builder: Builder): void {
-  builder.createModel(TAutomation)
+  builder.createModel(TAutomation, TAutomationSupport)
 }
 
 export { automationOperation } from './migration'

@@ -14,9 +14,10 @@
 //
 
 // To help typescript locate view plugin properly
+import automation, { AutomationSupport } from '@anticrm/automation'
 import type { Board, Card, MenuPage, CommonBoardPreference, CardCover } from '@anticrm/board'
 import type { Employee } from '@anticrm/contact'
-import { DOMAIN_MODEL, IndexKind, Markup, Ref, Type } from '@anticrm/core'
+import { Class, DOMAIN_MODEL, IndexKind, Markup, Ref, Type } from '@anticrm/core'
 import {
   ArrOf,
   Builder,
@@ -442,6 +443,21 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(board.class.Card, core.class.Class, view.mixin.IgnoreActions, {
     actions: [view.action.Delete, task.action.Move]
+  })
+
+  builder.mixin<Class<Card>, AutomationSupport<Card>>(board.class.Card, core.class.Class, automation.mixin.AutomationSupport, {
+    attributes: [{
+      name: 'isArchived'
+    }, {
+      name: 'title'
+    }, {
+      name: 'description'
+    }],
+    trigger: {
+      action: {
+        mode: ['context', 'editor']
+      }
+    }
   })
 
   // TODO: update query when nested query is available
