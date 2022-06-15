@@ -82,7 +82,7 @@ export interface AttributeFilter extends Class<Type<any>> {
  * @public
  */
 export interface AttributeEditor extends Class<Doc> {
-  editor: AnyComponent
+  inlineEditor: AnyComponent
   // If defined could be used for ShowEditor declarative actions.
   popup?: AnyComponent
 }
@@ -92,13 +92,14 @@ export interface AttributeEditor extends Class<Doc> {
  */
 export interface CollectionEditor extends Class<Doc> {
   editor: AnyComponent
+  inlineEditor?: AnyComponent
 }
 
 /**
  * @public
  */
 export interface ArrayEditor extends Class<Doc> {
-  editor: AnyComponent
+  inlineEditor: AnyComponent
 }
 
 /**

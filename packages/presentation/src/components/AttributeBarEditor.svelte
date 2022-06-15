@@ -46,17 +46,18 @@
     }
     const category = presenterClass.category
     let mixinRef = view.mixin.AttributeEditor
+    if (category === 'collection') {
+      mixinRef = view.mixin.CollectionEditor
+    }
     if (category === 'array') {
       mixinRef = view.mixin.ArrayEditor
     }
 
-    if (mixinRef !== undefined) {
-      const typeClass = hierarchy.getClass(presenterClass.attrClass)
-      const editorMixin = hierarchy.as(typeClass, mixinRef)
-      editor = getResource(editorMixin.editor).catch((cause) => {
-        console.error(`failed to find editor for ${_class} ${attribute} ${presenterClass.attrClass} cause: ${cause}`)
-      })
-    }
+    const typeClass = hierarchy.getClass(presenterClass.attrClass)
+    const editorMixin = hierarchy.as(typeClass, mixinRef)
+    editor = getResource(editorMixin.inlineEditor).catch((cause) => {
+      console.error(`failed to find editor for ${_class} ${attribute} ${presenterClass.attrClass} cause: ${cause}`)
+    })
   }
   $: update(attribute, presenterClass)
 
