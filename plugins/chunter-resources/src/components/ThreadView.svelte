@@ -42,17 +42,23 @@
   let autoscroll: boolean = false
   let isScrollForced = false
   let messageIdForScroll = ''
+  let isMessageHighlighted = false
 
   beforeUpdate(() => {
     autoscroll = div !== undefined && div.offsetHeight + div.scrollTop > div.scrollHeight - 20
   })
 
   afterUpdate(() => {
-    if (messageIdForScroll) {
+    if (messageIdForScroll && !isMessageHighlighted) {
       const messageElement = document.getElementById(messageIdForScroll)
 
       messageElement?.scrollIntoView()
-      messageIdForScroll = ''
+      isMessageHighlighted = true
+
+      setTimeout(() => {
+        messageIdForScroll = ''
+        isMessageHighlighted = false
+      }, 2000)
 
       return
     }
@@ -230,6 +236,7 @@
         <ChannelSeparator title={chunter.string.New} line reverse isNew />
       {/if}
       <MsgView
+        isHighlighted={messageIdForScroll === comment._id && isMessageHighlighted}
         message={comment}
         {employees}
         thread

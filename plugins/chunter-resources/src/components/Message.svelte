@@ -52,6 +52,7 @@
   export let thread: boolean = false
   export let isPinned: boolean = false
   export let isSaved: boolean = false
+  export let isHighlighted = false
 
   let refInput: AttachmentRefInput
 
@@ -205,7 +206,7 @@
   }
 </script>
 
-<div class="container" id={message._id}>
+<div class="container" class:highlighted={isHighlighted} id={message._id}>
   <div class="avatar"><Avatar size={'medium'} avatar={employee?.avatar} /></div>
   <div class="message">
     <div class="header">
@@ -282,10 +283,19 @@
 </div>
 
 <style lang="scss">
+  @keyframes highlight {
+    50% {
+      background-color: var(--warning-color);
+    }
+  }
   .container {
     position: relative;
     display: flex;
     padding: 0.5rem 2rem;
+
+    &.highlighted {
+      animation: highlight 2000ms ease-in-out;
+    }
 
     .avatar {
       min-width: 2.25rem;
