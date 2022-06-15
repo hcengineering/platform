@@ -27,6 +27,7 @@ import { serverInventoryId } from '@anticrm/server-inventory'
 import { serverLeadId } from '@anticrm/server-lead'
 import { serverRecruitId } from '@anticrm/server-recruit'
 import { serverTaskId } from '@anticrm/server-task'
+import { serverTrackerId } from '@anticrm/server-tracker'
 import { serverTagsId } from '@anticrm/server-tags'
 import { serverCalendarId } from '@anticrm/server-calendar'
 import { serverGmailId } from '@anticrm/server-gmail'
@@ -54,6 +55,7 @@ export function configurePlatformDev() {
     addLocation(serverLeadId, () => import(/* webpackChunkName: "server-lead" */ '@anticrm/server-lead-resources'))
     addLocation(serverRecruitId, () => import(/* webpackChunkName: "server-recruit" */ '@anticrm/server-recruit-resources'))
     addLocation(serverTaskId, () => import/* webpackChunkName: "server-task" */ ('@anticrm/server-task-resources'))
+    addLocation(serverTrackerId, () => import/* webpackChunkName: "server-tracker" */ ('@anticrm/server-tracker-resources'))
     addLocation(serverTagsId, () => import/* webpackChunkName: "server-tags" */ ('@anticrm/server-tags-resources'))
     addLocation(serverCalendarId, () => import/* webpackChunkName: "server-calendar" */ ('@anticrm/server-calendar-resources'))
     addLocation(serverGmailId, () => import/* webpackChunkName: "server-gmail" */ ('@anticrm/server-gmail-resources'))

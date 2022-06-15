@@ -35,6 +35,7 @@ import { createModel as serverChunterModel } from '@anticrm/model-server-chunter
 import { createModel as serverInventoryModel } from '@anticrm/model-server-inventory'
 import { createModel as serverLeadModel } from '@anticrm/model-server-lead'
 import { createModel as serverTaskModel } from '@anticrm/model-server-task'
+import { createModel as serverTrackerModel } from '@anticrm/model-server-tracker'
 import { createModel as serverTagsModel } from '@anticrm/model-server-tags'
 import { createModel as serveSettingModel } from '@anticrm/model-server-setting'
 import { createModel as serverRecruitModel } from '@anticrm/model-server-recruit'
@@ -94,6 +95,7 @@ const builders: [(b: Builder) => void, string][] = [
   [serverLeadModel, 'server-lead'],
   [serverTagsModel, 'server-tags'],
   [serverTaskModel, 'server-task'],
+  [serverTrackerModel, 'server-tracker'],
   [serverRecruitModel, 'server-recruit'],
   [serverCalendarModel, 'server-calendar'],
   [serverGmailModel, 'server-gmail'],
