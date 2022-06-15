@@ -26,9 +26,18 @@ import ReminderPresenter from './components/ReminderPresenter.svelte'
 import ReminderViewlet from './components/activity/ReminderViewlet.svelte'
 import EditEvent from './components/EditEvent.svelte'
 import RemindersPopup from './components/RemindersPopup.svelte'
+import EventPresenter from './components/EventPresenter.svelte'
+import CreateEvent from './components/CreateEvent.svelte'
 
 async function saveEventReminder (object: Doc): Promise<void> {
   showPopup(SaveEventReminder, { objectId: object._id, objectClass: object._class })
+}
+
+export enum CalendarMode {
+  Day,
+  Week,
+  Month,
+  Year
 }
 
 export default async (): Promise<Resources> => ({
@@ -40,7 +49,9 @@ export default async (): Promise<Resources> => ({
     Events,
     DateTimePresenter,
     DocReminder,
-    RemindersPopup
+    RemindersPopup,
+    EventPresenter,
+    CreateEvent
   },
   activity: {
     ReminderViewlet

@@ -19,14 +19,13 @@
    * If passed, calendars will use monday as first day
    */
   export let mondayStart = true
-  export let value: Date = new Date()
-  export let currentDate: Date = new Date()
+  export let selectedDate: Date = new Date()
+  export let currentDate: Date = selectedDate
   export let cellHeight: string | undefined = undefined
   export let minWidth = '18rem'
 
   function getMonthName (date: Date): string {
-    const locale = new Intl.NumberFormat().resolvedOptions().locale
-    return new Intl.DateTimeFormat(locale, { month: 'long' }).format(date)
+    return new Intl.DateTimeFormat('default', { month: 'long' }).format(date)
   }
   function month (date: Date, m: number): Date {
     date = new Date(date)
@@ -34,23 +33,22 @@
     date.setMonth(m)
     return date
   }
-  /* eslint-disable no-undef */
 </script>
 
 <div class="year-erp-calendar">
   {#each [...Array(12).keys()] as m}
-    <div class="antiComponentBox mt-2 mb-2 ml-2 mr-2 flex-grow" style={`min-width: ${minWidth};`}>
-      {getMonthName(month(value, m))}
+    <div class="antiComponentBox flex-grow flex-wrap" style={`min-width: ${minWidth};`}>
+      {getMonthName(month(currentDate, m))}
       <MonthCalendar
         {cellHeight}
         weekFormat="narrow"
-        bind:value
+        bind:selectedDate
         currentDate={month(currentDate, m)}
         {mondayStart}
         on:change
       >
-        <svelte:fragment slot="cell" let:date>
-          <slot name="cell" {date} />
+        <svelte:fragment slot="cell" let:date let:today let:selected let:wrongMonth>
+          <slot name="cell" {date} {today} {selected} {wrongMonth} />
         </svelte:fragment>
       </MonthCalendar>
     </div>
@@ -60,7 +58,9 @@
 <style lang="scss">
   .year-erp-calendar {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(auto-fill, minmax(max(20rem, calc(100% / 5)), 1fr));
+    row-gap: 1rem;
+    column-gap: 1rem;
     border-collapse: collapse;
   }
 </style>

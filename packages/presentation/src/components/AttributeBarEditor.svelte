@@ -45,13 +45,7 @@
       return
     }
     const category = presenterClass.category
-    let mixinRef = undefined
-    if (category === 'attribute') {
-      mixinRef = view.mixin.AttributeEditor
-    }
-    if (category === 'collection') {
-      mixinRef = view.mixin.CollectionEditor
-    }
+    let mixinRef = view.mixin.AttributeEditor
     if (category === 'array') {
       mixinRef = view.mixin.ArrayEditor
     }

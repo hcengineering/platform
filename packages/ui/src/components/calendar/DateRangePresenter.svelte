@@ -131,14 +131,14 @@
   const fixEdits = (): void => {
     const tempValues: number[] = []
     edits.forEach((edit, i) => {
-      tempValues[i] = edit.value > 0 ? edit.value : getValue(currentDate, edit.id)
+      tempValues[i] = edit.value > 0 || i > 2 ? edit.value : getValue(currentDate, edit.id)
     })
     currentDate = new Date(tempValues[2], tempValues[1] - 1, tempValues[0], tempValues[3], tempValues[4])
   }
   const isNull = (full: boolean = false): boolean => {
     let result: boolean = false
     edits.forEach((edit, i) => {
-      if (edit.value < 1 && full) result = true
+      if ((edit.value < 1 || i > 2) && full) result = true
       if (i < 3 && !full && edit.value < 1) result = true
     })
     return result
@@ -160,18 +160,14 @@
       const num: number = parseInt(ev.key, 10)
 
       if (startTyping) {
-        if (num === 0) edits[index].value = 0
-        else {
-          edits[index].value = num
-          startTyping = false
-        }
+        edits[index].value = num
       } else if (edits[index].value * 10 + num > getMaxValue(currentDate, ed)) {
         edits[index].value = getMaxValue(currentDate, ed)
       } else {
         edits[index].value = edits[index].value * 10 + num
       }
 
-      if (!isNull(false) && edits[2].value > 999 && !startTyping) {
+      if (!isNull() && edits[2].value > 999) {
         fixEdits()
         currentDate = setValue(edits[index].value, currentDate, ed)
         $dpstore.currentDate = currentDate
@@ -182,7 +178,8 @@
       if (selected === 'day' && edits[0].value > getMaxValue(currentDate, 'day') / 10) selected = 'month'
       else if (selected === 'month' && edits[1].value > 1) selected = 'year'
       else if (selected === 'year' && withTime && edits[2].value > 999) selected = 'hour'
-      else if (selected === 'hour' && edits[3].value > 2) selected = 'min'
+      else if (selected === 'hour' && (edits[3].value > 2 || !startTyping)) selected = 'min'
+      startTyping = false
     }
     if (ev.code === 'Enter') closeDP()
     if (ev.code === 'Backspace') {

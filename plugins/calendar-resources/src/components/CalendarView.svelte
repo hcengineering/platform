@@ -16,8 +16,20 @@
   import { Event } from '@anticrm/calendar'
   import { Class, Doc, DocumentQuery, FindOptions, Ref, SortingOrder, Space } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
-  import { Button, IconBack, IconForward, MonthCalendar, ScrollBox, WeekCalendar, YearCalendar } from '@anticrm/ui'
+  import {
+    AnyComponent,
+    areDatesEqual,
+    Button,
+    IconBack,
+    IconForward,
+    MonthCalendar,
+    showPopup,
+    WeekCalendar,
+    YearCalendar
+  } from '@anticrm/ui'
   import Scroller from '@anticrm/ui/src/components/Scroller.svelte'
+  import { BuildModelKey } from '@anticrm/view'
+  import { CalendarMode } from '../index'
   import calendar from '../plugin'
   import Day from './Day.svelte'
   import Hour from './Hour.svelte'
@@ -27,16 +39,15 @@
   export let query: DocumentQuery<Event> = {}
   export let options: FindOptions<Event> | undefined = undefined
   export let baseMenuClass: Ref<Class<Event>> | undefined = undefined
-  export let config: string[]
+  export let config: (string | BuildModelKey)[]
   export let search: string = ''
+  export let createComponent: AnyComponent | undefined = undefined
 
   const mondayStart = true
 
   // Current selected day
-  let value: Date = new Date()
-
-  const sortKey = 'modifiedOn'
-  const sortOrder = SortingOrder.Descending
+  let currentDate: Date = new Date()
+  let selectedDate: Date = new Date()
 
   let resultQuery: DocumentQuery<Event>
   $: spaceOpt = space ? { space } : {}
@@ -46,37 +57,23 @@
 
   const q = createQuery()
 
-  async function update (
-    _class: Ref<Class<Event>>,
-    query: DocumentQuery<Event>,
-    sortKey: string,
-    sortOrder: SortingOrder,
-    options?: FindOptions<Event>
-  ) {
+  async function update (_class: Ref<Class<Event>>, query: DocumentQuery<Event>, options?: FindOptions<Event>) {
     q.query<Event>(
       _class,
       query,
       (result) => {
         objects = result
       },
-      { sort: { [sortKey]: sortOrder }, ...options }
+      { sort: { date: SortingOrder.Ascending }, ...options }
     )
   }
-  $: update(_class, resultQuery, sortKey, sortOrder, options)
+  $: update(_class, resultQuery, options)
 
   function areDatesLess (firstDate: Date, secondDate: Date): boolean {
     return (
       firstDate.getFullYear() <= secondDate.getFullYear() &&
       firstDate.getMonth() <= secondDate.getMonth() &&
       firstDate.getDate() <= secondDate.getDate()
-    )
-  }
-
-  function isSameDay (firstDate: Date, secondDate: Date): boolean {
-    return (
-      firstDate.getFullYear() === secondDate.getFullYear() &&
-      firstDate.getMonth() === secondDate.getMonth() &&
-      firstDate.getDate() === secondDate.getDate()
     )
   }
 
@@ -87,17 +84,17 @@
       const inDays = areDatesLess(d1, date) && areDatesLess(date, d2)
 
       if (minutes) {
-        if (isSameDay(d1, date)) {
+        if (areDatesEqual(d1, date)) {
           return (
-            (date.getTime() < d1.getTime() && d1.getTime() < date.getTime() + 3600 * 1000) ||
-            (d1.getTime() < date.getTime() && date.getTime() <= d2.getTime())
+            (date.getTime() <= d1.getTime() && d1.getTime() < date.getTime() + 60 * 60 * 1000) ||
+            (d1.getTime() <= date.getTime() && date.getTime() < d2.getTime())
           )
         }
 
-        if (isSameDay(d2, date)) {
+        if (areDatesEqual(d2, date)) {
           return (
-            (date.getTime() < d2.getTime() && d2.getTime() < date.getTime() + 3600000) ||
-            (date.getTime() < d2.getTime() && d1.getTime() < date.getTime())
+            (date.getTime() < d2.getTime() && d2.getTime() < date.getTime() + 60 * 60 * 1000) ||
+            (d1.getTime() <= date.getTime() && date.getTime() < d2.getTime())
           )
         }
 
@@ -108,52 +105,33 @@
     })
   }
 
-  interface ShiftType {
-    yearShift: number
-    monthShift: number
-    dayShift: number
-    weekShift: number
-  }
-
-  let shifts: ShiftType = {
-    yearShift: 0,
-    monthShift: 0,
-    dayShift: 0,
-    weekShift: 0
-  }
-  let date = new Date()
   function inc (val: number): void {
     if (val === 0) {
-      shifts = {
-        yearShift: 0,
-        monthShift: 0,
-        dayShift: 0,
-        weekShift: 0
-      }
+      currentDate = new Date()
       return
     }
     switch (mode) {
       case CalendarMode.Day: {
-        shifts = { ...shifts, dayShift: val === 0 ? 0 : shifts.dayShift + val }
+        currentDate.setDate(currentDate.getDate() + val)
         break
       }
       case CalendarMode.Week: {
-        shifts = { ...shifts, weekShift: val === 0 ? 0 : shifts.weekShift + val }
+        currentDate.setDate(currentDate.getDate() + val * 7)
         break
       }
       case CalendarMode.Month: {
-        shifts = { ...shifts, monthShift: val === 0 ? 0 : shifts.monthShift + val }
+        currentDate.setMonth(currentDate.getMonth() + val)
         break
       }
       case CalendarMode.Year: {
-        shifts = { ...shifts, yearShift: val === 0 ? 0 : shifts.yearShift + val }
+        currentDate.setFullYear(currentDate.getFullYear() + val)
         break
       }
     }
+    currentDate = currentDate
   }
   function getMonthName (date: Date): string {
-    const locale = new Intl.NumberFormat().resolvedOptions().locale
-    return new Intl.DateTimeFormat(locale, {
+    return new Intl.DateTimeFormat('default', {
       month: 'long'
     }).format(date)
   }
@@ -162,22 +140,6 @@
     const week = Math.ceil(((date.getTime() - onejan.getTime()) / 86400000 + onejan.getDay() + 1) / 7)
 
     return `W${week}`
-  }
-
-  function currentDate (date: Date, shifts: ShiftType): Date {
-    const res = new Date(date)
-    res.setMonth(date.getMonth() + shifts.monthShift)
-    res.setFullYear(date.getFullYear() + shifts.yearShift)
-    res.setDate(date.getDate() + shifts.dayShift + shifts.weekShift * 7)
-    return res
-  }
-
-  /* eslint-disable no-unused-vars */
-  enum CalendarMode {
-    Day,
-    Week,
-    Month,
-    Year
   }
 
   let mode: CalendarMode = CalendarMode.Year
@@ -198,20 +160,29 @@
       }
     }
   }
+
+  function showCreateDialog (date: Date, withTime: boolean) {
+    if (createComponent === undefined) {
+      return
+    }
+    showPopup(createComponent, { date, withTime }, 'top')
+  }
+
+  let indexes = new Map<Ref<Event>, number>()
 </script>
 
 <div class="fs-title ml-10 mb-2 flex-row-center">
-  {label(currentDate(date, shifts), mode)}
+  {label(currentDate, mode)}
 </div>
 
 <div class="flex gap-2 mb-4 ml-10">
-  <!-- <Button
+  <Button
     size={'small'}
     label={calendar.string.ModeDay}
     on:click={() => {
       mode = CalendarMode.Day
     }}
-  /> -->
+  />
   <Button
     size={'small'}
     label={calendar.string.ModeWeek}
@@ -223,13 +194,6 @@
     size={'small'}
     label={calendar.string.ModeMonth}
     on:click={() => {
-      date = value
-      shifts = {
-        dayShift: 0,
-        monthShift: 0,
-        weekShift: 0,
-        yearShift: 0
-      }
       mode = CalendarMode.Month
     }}
   />
@@ -237,13 +201,6 @@
     size={'small'}
     label={calendar.string.ModeYear}
     on:click={() => {
-      date = value
-      shifts = {
-        dayShift: 0,
-        monthShift: 0,
-        weekShift: 0,
-        yearShift: 0
-      }
       mode = CalendarMode.Year
     }}
   />
@@ -272,86 +229,115 @@
   </div>
 </div>
 
-{#if mode === CalendarMode.Year}
-  <ScrollBox bothScroll>
-    <YearCalendar
-      {mondayStart}
-      cellHeight={'2.5rem'}
-      bind:value
-      currentDate={currentDate(date, shifts)}
-      on:change={(evt) => {
-        date = evt.detail
-      }}
-    >
-      <svelte:fragment slot="cell" let:date>
-        <Day
-          events={findEvents(objects, date)}
-          {date}
-          {_class}
-          {baseMenuClass}
-          {options}
-          {config}
-          query={resultQuery}
-        />
-      </svelte:fragment>
-    </YearCalendar>
-  </ScrollBox>
-{:else if mode === CalendarMode.Month}
-  <div class="flex flex-grow">
-    <MonthCalendar
-      {mondayStart}
-      cellHeight={'8.5rem'}
-      bind:value
-      currentDate={currentDate(date, shifts)}
-      on:change={(evt) => {
-        date = evt.detail
-      }}
-    >
-      <svelte:fragment slot="cell" let:date>
-        <Day
-          events={findEvents(objects, date)}
-          {date}
-          size={'huge'}
-          {_class}
-          {baseMenuClass}
-          {options}
-          {config}
-          query={resultQuery}
-        />
-      </svelte:fragment>
-    </MonthCalendar>
-  </div>
-{:else if mode === CalendarMode.Week}
-  <Scroller>
-    <WeekCalendar
-      {mondayStart}
-      cellHeight={'4.5rem'}
-      bind:value
-      currentDate={currentDate(date, shifts)}
-      on:change={(evt) => {
-        date = evt.detail
-      }}
-    >
-      <svelte:fragment slot="cell" let:date>
-        <Hour
-          events={findEvents(objects, date, true)}
-          {date}
-          {_class}
-          {baseMenuClass}
-          {options}
-          {config}
-          query={resultQuery}
-        />
-      </svelte:fragment>
-
-      <svelte:fragment slot="header" let:date let:days>
-        <tr class="antiTable-body__row">
-          <td class="whitespace-nowrap">All day</td>
-          {#each [...Array(days).keys()] as day}
-            <td class="antiTable-body__border" />
-          {/each}
-        </tr>
-      </svelte:fragment>
-    </WeekCalendar>
-  </Scroller>
-{/if}
+<div class="ml-10 mr-6 h-full clear-mins">
+  {#if mode === CalendarMode.Year}
+    <Scroller>
+      <YearCalendar
+        {mondayStart}
+        cellHeight={'2.5rem'}
+        bind:selectedDate
+        bind:currentDate
+        on:change={(e) => {
+          currentDate = e.detail
+          if (areDatesEqual(selectedDate, currentDate)) {
+            mode = CalendarMode.Month
+          }
+          selectedDate = e.detail
+        }}
+      >
+        <svelte:fragment slot="cell" let:date let:today let:selected let:wrongMonth>
+          <Day
+            events={findEvents(objects, date)}
+            {date}
+            {_class}
+            {baseMenuClass}
+            {options}
+            {config}
+            {today}
+            {selected}
+            {wrongMonth}
+            query={resultQuery}
+          />
+        </svelte:fragment>
+      </YearCalendar>
+    </Scroller>
+  {:else if mode === CalendarMode.Month}
+    <div class="flex flex-grow">
+      <MonthCalendar {mondayStart} cellHeight={'8.5rem'} bind:selectedDate bind:currentDate>
+        <svelte:fragment slot="cell" let:date let:today let:selected let:wrongMonth>
+          <Day
+            events={findEvents(objects, date)}
+            {date}
+            size={'huge'}
+            {_class}
+            {baseMenuClass}
+            {options}
+            {config}
+            {today}
+            {selected}
+            {wrongMonth}
+            query={resultQuery}
+            on:select={(e) => {
+              currentDate = e.detail
+              if (areDatesEqual(selectedDate, currentDate)) {
+                mode = CalendarMode.Day
+              }
+              selectedDate = e.detail
+            }}
+            on:create={(e) => {
+              showCreateDialog(e.detail, false)
+            }}
+          />
+        </svelte:fragment>
+      </MonthCalendar>
+    </div>
+  {:else if mode === CalendarMode.Week}
+    <Scroller>
+      <WeekCalendar
+        {mondayStart}
+        cellHeight={'4.5rem'}
+        bind:selectedDate
+        bind:currentDate
+        on:select={(e) => {
+          currentDate = e.detail
+          selectedDate = e.detail
+          mode = CalendarMode.Day
+        }}
+      >
+        <svelte:fragment slot="cell" let:date>
+          <Hour
+            events={findEvents(objects, date, true)}
+            {date}
+            bind:indexes
+            on:create={(e) => {
+              showCreateDialog(e.detail, true)
+            }}
+          />
+        </svelte:fragment>
+      </WeekCalendar>
+    </Scroller>
+  {:else if mode === CalendarMode.Day}
+    <Scroller>
+      <WeekCalendar
+        {mondayStart}
+        displayedDaysCount={1}
+        startFromWeekStart={false}
+        cellHeight={'4.5rem'}
+        bind:selectedDate
+        bind:currentDate
+      >
+        <svelte:fragment slot="cell" let:date>
+          <Hour
+            events={findEvents(objects, date, true)}
+            {date}
+            bind:indexes
+            wide
+            on:create={(e) => {
+              showCreateDialog(e.detail, true)
+            }}
+          />
+        </svelte:fragment>
+      </WeekCalendar>
+    </Scroller>
+  {/if}
+</div>

@@ -14,35 +14,44 @@
 -->
 <script type="ts">
   import { createEventDispatcher } from 'svelte'
-  import { addZero, day, getMonday, getWeekDayName } from './internal/DateUtils'
+  import { Label } from '../..'
+  import ui from '../../plugin'
+  import { addZero, areDatesEqual, day as getDay, getMonday, getWeekDayName } from './internal/DateUtils'
 
   export let mondayStart = true
   export let cellHeight: string | undefined = undefined
-  export let value: Date = new Date()
-  export let currentDate: Date = new Date()
+  export let selectedDate: Date = new Date()
+  export let currentDate: Date = selectedDate
   export let displayedDaysCount = 7
   export let displayedHours = 24
+  export let startFromWeekStart = true
   // export let startHour = 0
 
   const dispatch = createEventDispatcher()
 
-  $: weekMonday = getMonday(currentDate, mondayStart)
+  const todayDate = new Date()
 
-  function onSelect (date: Date) {
-    value = date
-    dispatch('change', value)
-  }
+  $: weekMonday = startFromWeekStart
+    ? getMonday(currentDate, mondayStart)
+    : new Date(new Date(currentDate).setHours(0, 0, 0, 0))
 </script>
 
 <table class="antiTable">
   <thead class="scroller-thead">
     <tr class="scroller-thead__tr">
-      <th>Hours</th>
+      <th><Label label={ui.string.HoursLabel} /></th>
       {#each [...Array(displayedDaysCount).keys()] as dayOfWeek}
+        {@const day = getDay(weekMonday, dayOfWeek)}
         <th>
-          <div class="antiTable-cells">
-            {getWeekDayName(day(weekMonday, dayOfWeek), 'short')}
-            {day(weekMonday, dayOfWeek).getDate()}
+          <div
+            class="antiTable-cells cursor-pointer uppercase flex-col-center"
+            class:today={areDatesEqual(todayDate, day)}
+            on:click={() => {
+              dispatch('select', day)
+            }}
+          >
+            <div class="flex-center">{getWeekDayName(day, 'short')}</div>
+            <div class="flex-center">{day.getDate()}</div>
           </div>
         </th>
       {/each}
@@ -50,7 +59,7 @@
   </thead>
   <tbody>
     {#if $$slots.cell}
-      <slot name="header" date={day(weekMonday, 0)} days={displayedDaysCount} />
+      <slot name="header" date={getDay(weekMonday, 0)} days={displayedDaysCount} />
     {/if}
     {#each [...Array(displayedHours).keys()] as hourOfDay}
       <tr class="antiTable-body__row">
@@ -60,15 +69,9 @@
           </div>
         </td>
         {#each [...Array(displayedDaysCount).keys()] as dayIndex}
-          <td
-            class="antiTable-body__border calendar-td cell"
-            style={`height: ${cellHeight};`}
-            on:click={() => {
-              onSelect(day(weekMonday, dayIndex))
-            }}
-          >
+          <td class="antiTable-body__border calendar-td cell" style={`height: ${cellHeight};`}>
             {#if $$slots.cell}
-              <slot name="cell" date={day(weekMonday, dayIndex, hourOfDay * 60)} />
+              <slot name="cell" date={getDay(weekMonday, dayIndex, hourOfDay * 60)} />
             {/if}
           </td>
         {/each}
@@ -78,17 +81,25 @@
 </table>
 
 <style lang="scss">
+  table {
+    table-layout: fixed;
+  }
+  table tr th:nth-child(1) {
+    width: 5rem;
+  }
+  .today {
+    color: var(--caption-color);
+  }
   .calendar-td {
     padding: 0;
     margin: 0;
   }
   .cell {
-    width: 8rem;
     overflow: hidden;
+    width: calc(calc(100% - 50px) / 7);
   }
   .cell:hover:not(.wrongMonth) {
-    // border: 1px solid var(--primary-button-focused-border);
-    background-color: var(--primary-button-enabled);
+    background-color: var(--toggle-bg-hover);
     color: var(--primary-button-color);
   }
 </style>
