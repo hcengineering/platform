@@ -9,6 +9,7 @@ Platform:
 Leads:
 
 - Add filters
+- Added "done state" to leads popup table and customer display
 
 Tracker:
 

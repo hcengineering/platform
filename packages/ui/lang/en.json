@@ -37,6 +37,7 @@
     "HoursAfter": "{hours, plural, =1 {in an hour} other {in # hours}}",
     "DaysAfter": "{days, plural, =1 {in a day} other {in # days}}",
     "NoActionsDefined": "No actions applicable",
-    "Incoming": "Incoming"
+    "Incoming": "Incoming",
+    "HoursLabel": "Hours"
   }
 }

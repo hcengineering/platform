@@ -18,7 +18,7 @@ export const MILLISECONDS_IN_DAY = 86400000
 export const MILLISECONDS_IN_WEEK = DAYS_IN_WEEK * MILLISECONDS_IN_DAY
 
 export function firstDay (date: Date, mondayStart: boolean): Date {
-  const firstDayOfMonth = new Date(date)
+  const firstDayOfMonth = new Date(new Date(date).setHours(0, 0, 0, 0))
   firstDayOfMonth.setDate(1) // First day of month
   const result = new Date(firstDayOfMonth)
   result.setDate(result.getDate() - result.getDay() + (mondayStart ? 1 : 0))
@@ -26,10 +26,6 @@ export function firstDay (date: Date, mondayStart: boolean): Date {
   if (result.getTime() > firstDayOfMonth.getTime()) {
     result.setDate(result.getDate() - DAYS_IN_WEEK)
   }
-  result.setHours(0)
-  result.setMinutes(0)
-  result.setSeconds(0)
-  result.setMilliseconds(0)
   return result
 }
 
@@ -89,7 +85,7 @@ export interface ICell {
 }
 
 export function getMonday (d: Date, mondayStart: boolean): Date {
-  d = new Date(d)
+  d = new Date(new Date(d).setHours(0, 0, 0, 0))
   const day = d.getDay()
   const diff = d.getDate() - day + (day === 0 ? -6 : 1) // adjust when day is sunday
   return new Date(d.setDate(diff))

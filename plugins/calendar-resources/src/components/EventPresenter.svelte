@@ -1,11 +1,10 @@
 <!--
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
-// 
+// Copyright © 2022 Hardcore Engineering Inc.
+//
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,15 +13,22 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Customer } from '@anticrm/lead'
-  import { Table } from '@anticrm/view-resources'
-  import leads from '../plugin'
+  import { Event } from '@anticrm/calendar'
+  import { DateTimeRangePresenter, showPanel } from '@anticrm/ui'
+  import view from '@anticrm/view'
 
-  export let value: Customer
+  export let value: Event
+
+  function click (): void {
+    showPanel(view.component.EditDoc, value._id, value._class, 'content')
+  }
 </script>
 
-<Table
-  _class={leads.class.Lead}
-  config={['', '$lookup.state', '$lookup.doneState']}
-  query={{ attachedTo: value._id }}
-/>
+<div class="antiSelect w-full cursor-pointer flex-between" on:click={click}>
+  {#if value}
+    <div class="mr-4">
+      {value.title}
+    </div>
+    <DateTimeRangePresenter value={value.date} />
+  {/if}
+</div>
