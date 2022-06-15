@@ -19,9 +19,10 @@
   import core, { Doc, Ref, Space, Timestamp, WithLookup } from '@anticrm/core'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
   import { createQuery } from '@anticrm/presentation'
+  import { getCurrentLocation, navigate } from '@anticrm/ui'
   import { afterUpdate, beforeUpdate } from 'svelte'
   import chunter from '../plugin'
-  import { getDay } from '../utils'
+  import { getDay, MESSAGE_ID_PARAM_NAME } from '../utils'
   import ChannelSeparator from './ChannelSeparator.svelte'
   import JumpToDateSelector from './JumpToDateSelector.svelte'
   import MessageComponent from './Message.svelte'
@@ -34,12 +35,21 @@
 
   let div: HTMLDivElement | undefined
   let autoscroll: boolean = false
+  let messageIdForScroll = ''
 
   beforeUpdate(() => {
     autoscroll = div !== undefined && div.offsetHeight + div.scrollTop > div.scrollHeight - 20
   })
 
   afterUpdate(() => {
+    if (messageIdForScroll) {
+      const messageElement = document.getElementById(messageIdForScroll)
+
+      messageElement?.scrollIntoView()
+      messageIdForScroll = ''
+
+      return
+    }
     if (div && (autoscroll || isScrollForced)) {
       div.scrollTo(0, div.scrollHeight)
       isScrollForced = false
@@ -85,6 +95,15 @@
         messages = res
         newMessagesPos = newMessagesStart(messages)
         notificationClient.updateLastView(space, chunter.class.ChunterSpace)
+
+        const location = getCurrentLocation()
+        const messageId = location.query?.[MESSAGE_ID_PARAM_NAME]
+
+        if (messageId && location.path.length === 3) {
+          messageIdForScroll = messageId
+          location.query = undefined
+          navigate(location)
+        }
       },
       {
         lookup: {

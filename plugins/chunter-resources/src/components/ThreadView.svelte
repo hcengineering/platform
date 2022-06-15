@@ -23,6 +23,7 @@
   import { IconClose, Label, getCurrentLocation, navigate } from '@anticrm/ui'
   import { afterUpdate, beforeUpdate, createEventDispatcher } from 'svelte'
   import { createBacklinks } from '../backlinks'
+  import { MESSAGE_ID_PARAM_NAME } from '../utils'
   import chunter from '../plugin'
   import ChannelSeparator from './ChannelSeparator.svelte'
   import MsgView from './Message.svelte'
@@ -40,12 +41,21 @@
   let div: HTMLDivElement | undefined
   let autoscroll: boolean = false
   let isScrollForced = false
+  let messageIdForScroll = ''
 
   beforeUpdate(() => {
     autoscroll = div !== undefined && div.offsetHeight + div.scrollTop > div.scrollHeight - 20
   })
 
   afterUpdate(() => {
+    if (messageIdForScroll) {
+      const messageElement = document.getElementById(messageIdForScroll)
+
+      messageElement?.scrollIntoView()
+      messageIdForScroll = ''
+
+      return
+    }
     if (div && (autoscroll || isScrollForced)) {
       div.scrollTo(0, div.scrollHeight)
       isScrollForced = false
@@ -97,6 +107,15 @@
         comments = res
         newMessagesPos = newMessagesStart(comments, $lastViews)
         notificationClient.updateLastView(id, chunter.class.Message)
+
+        const location = getCurrentLocation()
+        const messageId = location.query?.[MESSAGE_ID_PARAM_NAME]
+
+        if (messageId && location.path.length === 4) {
+          messageIdForScroll = messageId
+          location.query = undefined
+          navigate(location)
+        }
       },
       {
         lookup

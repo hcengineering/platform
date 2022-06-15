@@ -22,13 +22,23 @@
   import { NotificationClientImpl } from '@anticrm/notification-resources'
   import { getResource } from '@anticrm/platform'
   import { Avatar, getClient, MessageViewer } from '@anticrm/presentation'
-  import ui, { ActionIcon, IconMoreH, Menu, showPopup, Label, Tooltip, Button } from '@anticrm/ui'
+  import ui, {
+    ActionIcon,
+    IconMoreH,
+    Menu,
+    showPopup,
+    Label,
+    Tooltip,
+    Button,
+    getCurrentLocation,
+    locationToUrl
+  } from '@anticrm/ui'
   import { Action } from '@anticrm/view'
   import { getActions, LinkPresenter } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
   import { AddMessageToSaved, DeleteMessageFromSaved, UnpinMessage } from '../index'
   import chunter from '../plugin'
-  import { getTime } from '../utils'
+  import { getTime, MESSAGE_ID_PARAM_NAME } from '../utils'
   // import Share from './icons/Share.svelte'
   import Bookmark from './icons/Bookmark.svelte'
   import Emoji from './icons/Emoji.svelte'
@@ -95,6 +105,24 @@
     }
   }
 
+  const copyLinkAction = {
+    label: chunter.string.CopyLink,
+    action: async () => {
+      const location = getCurrentLocation()
+
+      location.query = { ...location.query, [MESSAGE_ID_PARAM_NAME]: message._id }
+      location.path[2] = message.space
+
+      if (message.attachedToClass === chunter.class.Message) {
+        location.path.length = 4
+        location.path[3] = message.attachedTo
+      } else {
+        location.path.length = 3
+      }
+      await navigator.clipboard.writeText(`${window.location.origin}${locationToUrl(location)}`)
+    }
+  }
+
   let menuShowed = false
 
   const showMenu = async (ev: Event): Promise<void> => {
@@ -115,6 +143,7 @@
               await impl(message, evt)
             }
           })),
+          copyLinkAction,
           ...(getCurrentAccount()._id === message.createBy ? [editAction, deleteAction] : [])
         ]
       },
@@ -176,7 +205,7 @@
   }
 </script>
 
-<div class="container">
+<div class="container" id={message._id}>
   <div class="avatar"><Avatar size={'medium'} avatar={employee?.avatar} /></div>
   <div class="message">
     <div class="header">
