@@ -6,6 +6,10 @@ Platform:
 
 - Allow to attach from clipboard
 
+Leads: 
+
+- Add filters
+
 Tracker:
 
 - Attachments support
