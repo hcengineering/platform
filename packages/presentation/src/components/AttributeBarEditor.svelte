@@ -46,15 +46,11 @@
     }
     const category = presenterClass.category
     let mixinRef = undefined
-    if (category === 'attribute') {
-      mixinRef = view.mixin.AttributeEditor
-    }
-    if (category === 'collection') {
-      mixinRef = view.mixin.CollectionEditor
-    }
     if (category === 'array') {
       mixinRef = view.mixin.ArrayEditor
-    }
+    } else {
+      mixinRef = view.mixin.AttributeEditor
+    }    
 
     if (mixinRef !== undefined) {
       const typeClass = hierarchy.getClass(presenterClass.attrClass)
