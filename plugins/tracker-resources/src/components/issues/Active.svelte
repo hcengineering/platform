@@ -13,19 +13,23 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref } from '@anticrm/core'
-  import { Team, IssuesDateModificationPeriod } from '@anticrm/tracker'
+  import { DocumentQuery, Ref } from '@anticrm/core'
+  import { createQuery } from '@anticrm/presentation'
+  import { Issue, Team } from '@anticrm/tracker'
   import tracker from '../../plugin'
-  import Issues from './Issues.svelte'
+  import IssuesView from './IssuesView.svelte'
 
   export let currentSpace: Ref<Team>
 
-  const completedIssuesPeriod: IssuesDateModificationPeriod | null = null
+  const statusQuery = createQuery()
+  let query: DocumentQuery<Issue>
+  $: statusQuery.query(
+    tracker.class.IssueStatus,
+    { category: { $in: [tracker.issueStatusCategory.Unstarted, tracker.issueStatusCategory.Started] } },
+    (result) => {
+      query = { status: { $in: result.map(({ _id }) => _id) } }
+    }
+  )
 </script>
 
-<Issues
-  {currentSpace}
-  {completedIssuesPeriod}
-  includedGroups={{ status: [tracker.issueStatusCategory.Unstarted, tracker.issueStatusCategory.Started] }}
-  title={tracker.string.ActiveIssues}
-/>
+<IssuesView {currentSpace} {query} title={tracker.string.ActiveIssues} />
