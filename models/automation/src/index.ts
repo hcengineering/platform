@@ -35,4 +35,4 @@ export function createModel (builder: Builder): void {
   builder.createModel(TAutomation)
 }
 
-export { boardOperation } from './migration'
+export { automationOperation } from './migration'
