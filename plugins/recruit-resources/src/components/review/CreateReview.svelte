@@ -30,8 +30,13 @@
 
   // export let space: Ref<SpaceWithStates>
   export let candidate: Ref<Person>
-
+  export let date: Date | undefined = undefined
   export let preserveCandidate = false
+  export let withTime = false
+
+  const now = new Date()
+  const initDate =
+    date === undefined ? now : withTime ? date : new Date(date.setHours(now.getHours(), now.getMinutes()))
 
   const currentUser = getCurrentAccount() as EmployeeAccount
 
@@ -39,8 +44,8 @@
 
   let title: string = ''
   let description: string = ''
-  let startDate: number = Date.now()
-  let dueDate: number = Date.now() + 30 * 60 * 1000
+  let startDate: number = initDate.getTime()
+  let dueDate: number = initDate.getTime() + 30 * 60 * 1000
   let location: string = ''
   let company: Ref<Organization> | undefined = undefined
 

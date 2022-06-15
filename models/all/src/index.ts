@@ -65,7 +65,6 @@ const builders: [(b: Builder) => void, string][] = [
   [activityModel, 'activity'],
   [attachmentModel, 'attachment'],
   [tagsModel, 'tags'],
-  [calendarModel, 'calendar'],
   [viewModel, 'view'],
   [workbenchModel, 'workbench'],
   [contactModel, 'contact'],
@@ -99,7 +98,8 @@ const builders: [(b: Builder) => void, string][] = [
   [serverGmailModel, 'server-gmail'],
   [serverTelegramModel, 'server-telegram'],
   [trackerModel, 'tracker'],
-  [boardModel, 'board']
+  [boardModel, 'board'],
+  [calendarModel, 'calendar']
 ]
 
 for (const [b, id] of builders) {

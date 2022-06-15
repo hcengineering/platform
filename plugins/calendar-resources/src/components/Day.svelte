@@ -15,7 +15,9 @@
 <script lang="ts">
   import { Event } from '@anticrm/calendar'
   import { Class, Doc, DocumentQuery, FindOptions, Ref } from '@anticrm/core'
-  import { Tooltip } from '@anticrm/ui'
+  import { addZero, Label, tooltip, getPlatformColorForText } from '@anticrm/ui'
+  import { BuildModelKey } from '@anticrm/view'
+  import { createEventDispatcher } from 'svelte'
   import calendar from '../plugin'
   import EventsPopup from './EventsPopup.svelte'
 
@@ -27,76 +29,106 @@
   export let query: DocumentQuery<Event> = {}
   export let options: FindOptions<Event> | undefined = undefined
   export let baseMenuClass: Ref<Class<Event>> | undefined = undefined
-  export let config: string[]
+  export let config: (string | BuildModelKey)[]
+
+  export let today: boolean = false
+  export let selected: boolean = false
+  export let wrongMonth: boolean = false
+
+  const dispatch = createEventDispatcher()
+  const eventCount = 3
+
+  $: tip =
+    events.length > 0
+      ? {
+          label: calendar.string.Events,
+          component: EventsPopup,
+          props: { value: events, _class, query, options, baseMenuClass, config }
+        }
+      : undefined
 </script>
 
-{#if events.length > 0}
-  <Tooltip
-    fill={size === 'huge'}
-    label={calendar.string.Events}
-    component={EventsPopup}
-    props={{ value: events, _class, query, options, baseMenuClass, config }}
-  >
-    {#if size === 'huge'}
-      <div class="cell" class:huge={size === 'huge'}>
-        <div class="flex flex-reverse fs-title flex-grow">
-          {date.getDate()}
-        </div>
-      </div>
-      <div class="cell" class:huge={size === 'huge'}>
-        <div class="flex-col flex-grow">
-          {#each events.slice(0, 4) as e, ei}
-            <div class="overflow-label flex flex-between">
-              {e.title}
-              <div>
-                {new Date(e.date).getHours()}:{new Date(e.date).getMinutes()}
-              </div>
-            </div>
-          {/each}
-          {#if events.length > 4}
-            And {events.length - 4} more
-          {/if}
-        </div>
-      </div>
-    {:else}
-      <div class="cell">
+{#if size === 'huge'}
+  <div class="flex-grow h-full w-full p-1 flex-col" use:tooltip={tip}>
+    <div class="flex flex-reverse fs-title">
+      <div
+        class="date flex-center"
+        class:today
+        class:selected
+        class:wrongMonth
+        on:click={() => {
+          dispatch('select', date)
+        }}
+      >
         {date.getDate()}
-        <div class="marker" />
       </div>
-    {/if}
-  </Tooltip>
-{:else if size === 'huge'}
-  <!-- <div class="cell" class:huge={size === 'huge'}> -->
-  <div class="flex flex-reverse fs-title flex-grow title">
-    {date.getDate()}
+    </div>
+    <div
+      class="flex-col flex-grow mt-1"
+      on:click={() => {
+        dispatch('create', date)
+      }}
+    >
+      {#each events.slice(0, eventCount) as e}
+        <div
+          class="overflow-label mt-1 py-1 flex flex-between event"
+          style="background-color: {getPlatformColorForText(e._class)};"
+        >
+          {e.title}
+          <div>
+            {addZero(new Date(e.date).getHours())}:{addZero(new Date(e.date).getMinutes())}
+          </div>
+        </div>
+      {/each}
+      {#if events.length > eventCount}
+        <div class="mt-1">
+          <Label label={calendar.string.AndMore} params={{ count: events.length - eventCount }} />
+        </div>
+      {/if}
+    </div>
   </div>
-  <!-- </div> -->
 {:else}
-  <div class="cell">
+  <div class="w-full h-full relative flex-center cell" class:today class:selected class:wrongMonth use:tooltip={tip}>
     {date.getDate()}
+    {#if events.length > 0}
+      <div class="marker" />
+    {/if}
   </div>
 {/if}
 
 <style lang="scss">
-  .cell {
-    display: flex;
-    justify-content: center;
-
-    .marker {
-      position: relative;
-      top: -0.25rem;
-      width: 0.25rem;
-      height: 0.25rem;
-      border-radius: 50%;
-      background-color: var(--highlight-red);
-    }
-    &.huge {
-      padding: 0.25rem;
-    }
+  .event {
+    border-radius: 0.5rem;
+    padding: 0rem 0.5rem;
+    color: var(--accent-color);
   }
-  .title {
-    margin-top: 0.25rem;
-    margin-right: 0.25rem;
-    align-self: flex-start;
+  .date {
+    border-radius: 50%;
+    width: 1.5rem;
+    height: 1.5rem;
+    padding: 0.25rem;
+  }
+  .cell {
+    border-radius: 0.5rem;
+    border: 1px solid transparent;
+  }
+  .today {
+    color: var(--caption-color);
+    background-color: var(--primary-button-enabled);
+    border-color: var(--primary-button-focused-border);
+  }
+  .selected:not(.today, .wrongMonth) {
+    color: var(--caption-color);
+    background-color: var(--primary-button-disabled);
+    border-color: var(--primary-button-focused-border);
+  }
+  .marker {
+    position: absolute;
+    top: 0.25rem;
+    right: 0.25rem;
+    width: 0.25rem;
+    height: 0.25rem;
+    border-radius: 50%;
+    background-color: var(--highlight-red);
   }
 </style>

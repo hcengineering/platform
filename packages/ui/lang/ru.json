@@ -37,6 +37,7 @@
     "HoursAfter": "{hours, plural, =1 {через час} other {через # часа}}",
     "DaysAfter": "{days, plural, =1 {через день} other {через # дней}}",
     "NoActionsDefined": "Нет доступных действий",
-    "Incoming": "Входящие"
+    "Incoming": "Входящие",
+    "HoursLabel": "Часы"
   }
 }

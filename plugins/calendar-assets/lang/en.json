@@ -33,6 +33,9 @@
     "Reminders": "Reminders",
     "Shift": "Shift",
     "State": "State",
-    "NoReminders": "No reminders"
+    "NoReminders": "No reminders",
+    "AllDay": "All day",
+    "AndMore": "And {count} more",
+    "CreateEvent": "Create event"
   }
 }

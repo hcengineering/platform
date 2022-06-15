@@ -19,8 +19,8 @@
   export let mondayStart = true
   export let weekFormat: 'narrow' | 'short' | 'long' | undefined = 'short'
   export let cellHeight: string | undefined = undefined
-  export let value: Date = new Date()
-  export let currentDate: Date = new Date()
+  export let selectedDate: Date = new Date()
+  export let currentDate: Date = selectedDate
   export let displayedWeeksCount = 6
 
   const dispatch = createEventDispatcher()
@@ -28,8 +28,7 @@
   $: firstDayOfCurrentMonth = firstDay(currentDate, mondayStart)
 
   function onSelect (date: Date) {
-    value = date
-    dispatch('change', value)
+    dispatch('change', date)
   }
 
   const todayDate = new Date()
@@ -44,22 +43,25 @@
   <div class="days-of-month">
     {#each [...Array(displayedWeeksCount).keys()] as weekIndex}
       {#each [...Array(7).keys()] as dayOfWeek}
+        {@const date = weekday(firstDayOfCurrentMonth, weekIndex, dayOfWeek)}
         <div style={`grid-column-start: ${dayOfWeek + 1}; grid-row-start: ${weekIndex + 1}`}>
           <div style={`display: flex; width: 100%; height: ${cellHeight ? `${cellHeight};` : '100%;'}`}>
             <div
               class="cell flex-center"
-              class:weekend={isWeekend(weekday(firstDayOfCurrentMonth, weekIndex, dayOfWeek))}
-              class:today={areDatesEqual(todayDate, weekday(firstDayOfCurrentMonth, weekIndex, dayOfWeek))}
-              class:selected={weekday(firstDayOfCurrentMonth, weekIndex, dayOfWeek).getMonth() ===
-                currentDate.getMonth() && areDatesEqual(value, weekday(firstDayOfCurrentMonth, weekIndex, dayOfWeek))}
-              class:wrongMonth={weekday(firstDayOfCurrentMonth, weekIndex, dayOfWeek).getMonth() !==
-                currentDate.getMonth()}
-              on:click={() => onSelect(weekday(firstDayOfCurrentMonth, weekIndex, dayOfWeek))}
+              class:weekend={isWeekend(date)}
+              class:wrongMonth={date.getMonth() !== currentDate.getMonth()}
+              on:click={() => onSelect(date)}
             >
               {#if !$$slots.cell}
-                {weekday(firstDayOfCurrentMonth, weekIndex, dayOfWeek).getDate()}
+                {date.getDate()}
               {:else}
-                <slot name="cell" date={weekday(firstDayOfCurrentMonth, weekIndex, dayOfWeek)} />
+                <slot
+                  name="cell"
+                  {date}
+                  today={areDatesEqual(todayDate, date)}
+                  selected={areDatesEqual(selectedDate, date)}
+                  wrongMonth={date.getMonth() !== currentDate.getMonth()}
+                />
               {/if}
             </div>
           </div>
@@ -81,31 +83,22 @@
   .days-of-week-header,
   .days-of-month {
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
+    grid-auto-columns: max-content;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
   }
   .weekend {
     background-color: var(--theme-bg-accent-color);
-  }
-  .today {
-    color: #a66600;
-  }
-  .selected {
-    border-radius: 3px;
-    background-color: var(--primary-button-enabled);
-    border-color: var(--primary-button-focused-border);
-    color: var(--primary-button-color);
   }
   .cell {
     height: calc(100% - 5px);
     width: calc(100% - 5px);
     border-radius: 0.5rem;
     border: 1px solid transparent;
-  }
-  .cell:hover:not(.wrongMonth) {
-    border: 1px solid var(--primary-button-focused-border);
-    background-color: var(--primary-button-enabled);
-    color: var(--primary-button-color);
     cursor: pointer;
+  }
+  .cell:hover {
+    background-color: var(--toggle-bg-hover);
+    color: var(--primary-button-color);
   }
   .wrongMonth {
     color: var(--grayscale-grey-03);
