@@ -441,6 +441,10 @@ export function createModel (builder: Builder): void {
     presenter: task.component.StatePresenter
   })
 
+  builder.mixin(task.class.State, core.class.Class, view.mixin.IgnoreActions, {
+    actions: [view.action.Delete]
+  })
+
   builder.mixin(task.class.DoneState, core.class.Class, view.mixin.AttributeEditor, {
     editor: task.component.DoneStateEditor
   })
