@@ -94,7 +94,7 @@
     <div class="value">
       <MiniToggle bind:on={shouldShowSubIssues} on:change={updateOptions} />
     </div>
-    {#if _groupBy === IssuesGrouping.Status || _groupBy === IssuesGrouping.Priority}
+    {#if _groupBy === IssuesGrouping.Status}
       <span class="label"><Label label={tracker.string.ShowEmptyGroups} /></span>
       <div class="value">
         <MiniToggle bind:on={_shouldShowEmptyGroups} on:change={updateOptions} />

@@ -42,6 +42,7 @@
     "@anticrm/workbench": "~0.6.1",
     "@anticrm/view": "~0.6.0",
     "@anticrm/model-presentation": "~0.6.0",
-    "@anticrm/setting": "~0.6.1"
+    "@anticrm/setting": "~0.6.1",
+    "@anticrm/task": "~0.6.0"
   }
 }

@@ -39,6 +39,7 @@ import workbench, { createNavigateAction } from '@anticrm/model-workbench'
 import notification from '@anticrm/notification'
 import { Asset, IntlString } from '@anticrm/platform'
 import setting from '@anticrm/setting'
+import task from '@anticrm/task'
 import {
   Document,
   Issue,
@@ -307,6 +308,23 @@ export function createModel (builder: Builder): void {
     tracker.viewlet.List
   )
 
+  builder.createDoc(view.class.Viewlet, core.space.Model, {
+    attachTo: tracker.class.Issue,
+    descriptor: tracker.viewlet.Kanban,
+    config: []
+  })
+
+  builder.createDoc(
+    view.class.ViewletDescriptor,
+    core.space.Model,
+    {
+      label: tracker.string.Board,
+      icon: task.icon.Kanban,
+      component: tracker.component.KanbanView
+    },
+    tracker.viewlet.Kanban
+  )
+
   builder.createDoc(
     tracker.class.IssueStatusCategory,
     core.space.Model,
@@ -468,12 +486,6 @@ export function createModel (builder: Builder): void {
                 label: tracker.string.Backlog,
                 // icon: tracker.icon.TrackerApplication,
                 component: tracker.component.Backlog
-              },
-              {
-                id: boardId,
-                label: tracker.string.Board,
-                // icon: tracker.icon.TrackerApplication,
-                component: tracker.component.Board
               },
               {
                 id: projectsId,
