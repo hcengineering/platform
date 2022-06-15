@@ -88,7 +88,7 @@ export function createModel (builder: Builder): void {
   builder.createModel(TTagElement, TTagReference, TTagCategory)
 
   builder.mixin(tags.class.TagReference, core.class.Class, view.mixin.CollectionEditor, {
-    editor: tags.component.TagsAttributeEditor
+    editor: tags.component.TagsCollectionEditor
   })
 
   builder.mixin(tags.class.TagReference, core.class.Class, view.mixin.AttributePresenter, {

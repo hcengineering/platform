@@ -19,6 +19,7 @@
   import { AnySvelteComponent, Label, tooltip } from '@anticrm/ui'
   import view from '@anticrm/view'
   import { getAttribute, KeyedAttribute, updateAttribute } from '../attributes'
+  import { EditorViewMode } from '../types'
   import { AttributeCategory, getAttributePresenterClass, getClient } from '../utils'
 
   export let key: KeyedAttribute | string
@@ -92,6 +93,7 @@
           width={'100%'}
           justify={'left'}
           type={attribute?.type}
+          mode={EditorViewMode.Attribute}
           {maxWidth}
           value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
           space={object.space}
@@ -105,6 +107,7 @@
         <svelte:component
           this={instance}
           type={attribute?.type}
+          mode={EditorViewMode.Attribute}
           {maxWidth}
           value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
           space={object.space}

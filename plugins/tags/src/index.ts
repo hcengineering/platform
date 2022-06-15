@@ -83,7 +83,7 @@ const tagsPlugin = plugin(tagsId, {
     TagsEditor: '' as AnyComponent,
     TagsDropdownEditor: '' as AnyComponent,
     TagsCategoryBar: '' as AnyComponent,
-    TagsAttributeEditor: '' as AnyComponent,
+    TagsCollectionEditor: '' as AnyComponent,
     TagsPresenter: '' as AnyComponent
   },
   category: {

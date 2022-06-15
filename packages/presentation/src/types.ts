@@ -5,6 +5,13 @@ import { AnySvelteComponent } from '@anticrm/ui'
 /**
  * @public
  */
+export enum EditorViewMode {
+  Attribute = 'ATTRIBUTE'
+}
+
+/**
+ * @public
+ */
 export interface ObjectSearchResult {
   doc: Doc
   component?: AnySvelteComponent
