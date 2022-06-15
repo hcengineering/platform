@@ -59,41 +59,43 @@
         </div>
       {/if}
       {#each actions as action, i}
-        <!-- svelte-ignore a11y-mouse-events-have-key-events -->
-        <button
-          bind:this={btns[i]}
-          class="ap-menuItem flex-row-center withIcon"
-          on:keydown={(evt) => keyDown(evt, i)}
-          on:mouseover={(evt) => {
-            evt.currentTarget.focus()
-          }}
-          on:click={(evt) => {
-            if (!action.inline) {
-              dispatch('close')
-            }
-            action.action(ctx, evt)
-          }}
-        >
-          {#if action.icon}
-            <div class="icon"><Icon icon={action.icon} size={'small'} /></div>
-          {/if}
-          <div class="ml-3 pr-1"><Label label={action.label} /></div>
-        </button>
+        {#if action.link}
+          <a class="stealth" href={action.link}>
+            <!-- svelte-ignore a11y-mouse-events-have-key-events -->
+            <button
+              bind:this={btns[i]}
+              class="ap-menuItem flex-row-center withIcon w-full"
+              on:keydown={(evt) => keyDown(evt, i)}
+              on:mouseover={(evt) => evt.currentTarget.focus()}
+              on:click={(evt) => {
+                if (!action.inline) dispatch('close')
+                action.action(ctx, evt)
+              }}
+            >
+              {#if action.icon}<div class="icon mr-3"><Icon icon={action.icon} size={'small'} /></div>{/if}
+              <span class="overflow-label pr-1"><Label label={action.label} /></span>
+            </button>
+          </a>
+        {:else}
+          <!-- svelte-ignore a11y-mouse-events-have-key-events -->
+          <button
+            bind:this={btns[i]}
+            class="ap-menuItem flex-row-center withIcon"
+            on:keydown={(evt) => keyDown(evt, i)}
+            on:mouseover={(evt) => evt.currentTarget.focus()}
+            on:click={(evt) => {
+              if (!action.inline) dispatch('close')
+              action.action(ctx, evt)
+            }}
+          >
+            {#if action.icon}
+              <div class="icon mr-3"><Icon icon={action.icon} size={'small'} /></div>
+            {/if}
+            <span class="overflow-label pr-1"><Label label={action.label} /></span>
+          </button>
+        {/if}
       {/each}
     </div>
   </div>
   <div class="ap-space" />
 </div>
-
-<style lang="scss">
-  .withIcon {
-    margin: 0;
-
-    .icon {
-      color: var(--content-color);
-    }
-    &:focus .icon {
-      color: var(--accent-color);
-    }
-  }
-</style>

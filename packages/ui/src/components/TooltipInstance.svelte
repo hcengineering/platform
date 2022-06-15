@@ -26,31 +26,37 @@
   let tooltipSW: boolean // tooltipSW = true - Label; false - Component
   let nubDirection: 'top' | 'bottom' | 'left' | 'right' | undefined = undefined
   let clWidth: number
+  let docWidth: number
+  let docHeight: number
 
-  $: tooltipSW = !$tooltip.component
+  $: tooltipSW = !$tooltip.component && $tooltip.kind !== 'submenu'
   $: onUpdate = $tooltip.onUpdate
+  $: kind = $tooltip.kind
+
+  const clearStyles = (): void => {
+    tooltipHTML.style.top =
+      tooltipHTML.style.bottom =
+      tooltipHTML.style.left =
+      tooltipHTML.style.right =
+      tooltipHTML.style.height =
+        ''
+  }
 
   const fitTooltip = (): void => {
     if (($tooltip.label || $tooltip.component) && tooltipHTML) {
       if ($tooltip.element) {
-        const doc = document.body.getBoundingClientRect()
         rect = $tooltip.element.getBoundingClientRect()
         rectAnchor = $tooltip.anchor
           ? $tooltip.anchor.getBoundingClientRect()
           : $tooltip.element.getBoundingClientRect()
 
         if ($tooltip.component) {
-          tooltipHTML.style.top =
-            tooltipHTML.style.bottom =
-            tooltipHTML.style.left =
-            tooltipHTML.style.right =
-            tooltipHTML.style.height =
-              ''
-          if (rect.bottom + tooltipHTML.clientHeight + 28 < doc.height) {
+          clearStyles()
+          if (rect.bottom + tooltipHTML.clientHeight + 28 < docHeight) {
             tooltipHTML.style.top = `calc(${rect.bottom}px + 5px + .25rem)`
             dir = 'bottom'
-          } else if (rect.top > doc.height - rect.bottom) {
-            tooltipHTML.style.bottom = `calc(${doc.height - rect.y}px + 5px + .25rem)`
+          } else if (rect.top > docHeight - rect.bottom) {
+            tooltipHTML.style.bottom = `calc(${docHeight - rect.y}px + 5px + .25rem)`
             if (tooltipHTML.clientHeight > rect.top - 28) {
               tooltipHTML.style.top = '1rem'
               tooltipHTML.style.height = `calc(${rect.top}px - 5px - 1.25rem)`
@@ -58,15 +64,15 @@
             dir = 'top'
           } else {
             tooltipHTML.style.top = `calc(${rect.bottom}px + 5px + .25rem)`
-            if (tooltipHTML.clientHeight > doc.height - rect.bottom - 28) {
+            if (tooltipHTML.clientHeight > docHeight - rect.bottom - 28) {
               tooltipHTML.style.bottom = '1rem'
-              tooltipHTML.style.height = `calc(${doc.height - rect.bottom}px - 5px - 1.25rem)`
+              tooltipHTML.style.height = `calc(${docHeight - rect.bottom}px - 5px - 1.25rem)`
             }
             dir = 'bottom'
           }
 
           const tempLeft = rect.width / 2 + rect.left - clWidth / 2
-          if (tempLeft + clWidth > doc.width - 8) tooltipHTML.style.right = '.5rem'
+          if (tempLeft + clWidth > docWidth - 8) tooltipHTML.style.right = '.5rem'
           else if (tempLeft < 8) tooltipHTML.style.left = '.5rem'
           else tooltipHTML.style.left = `${tempLeft}px`
 
@@ -79,8 +85,8 @@
           }
         } else {
           if (!$tooltip.direction) {
-            if (rectAnchor.right < doc.width / 5) dir = 'right'
-            else if (rectAnchor.left > doc.width - doc.width / 5) dir = 'left'
+            if (rectAnchor.right < docWidth / 5) dir = 'right'
+            else if (rectAnchor.left > docWidth - docWidth / 5) dir = 'left'
             else if (rectAnchor.top < tooltipHTML.clientHeight) dir = 'bottom'
             else dir = 'top'
           } else dir = $tooltip.direction
@@ -91,14 +97,14 @@
             tooltipHTML.style.transform = 'translateY(-50%)'
           } else if (dir === 'left') {
             tooltipHTML.style.top = rectAnchor.y + rectAnchor.height / 2 + 'px'
-            tooltipHTML.style.right = `calc(${doc.width - rectAnchor.x}px + .75rem)`
+            tooltipHTML.style.right = `calc(${docWidth - rectAnchor.x}px + .75rem)`
             tooltipHTML.style.transform = 'translateY(-50%)'
           } else if (dir === 'bottom') {
             tooltipHTML.style.top = `calc(${rectAnchor.bottom}px + .5rem)`
             tooltipHTML.style.left = rectAnchor.x + rectAnchor.width / 2 + 'px'
             tooltipHTML.style.transform = 'translateX(-50%)'
           } else if (dir === 'top') {
-            tooltipHTML.style.bottom = `calc(${doc.height - rectAnchor.y}px + .75rem)`
+            tooltipHTML.style.bottom = `calc(${docHeight - rectAnchor.y}px + .75rem)`
             tooltipHTML.style.left = rectAnchor.x + rectAnchor.width / 2 + 'px'
             tooltipHTML.style.transform = 'translateX(-50%)'
           }
@@ -116,6 +122,29 @@
     } else if (tooltipHTML) tooltipHTML.style.visibility = 'hidden'
   }
 
+  const fitSubmenu = (): void => {
+    if (($tooltip.label || $tooltip.component) && tooltipHTML) {
+      clearStyles()
+      if ($tooltip.element) {
+        rect = $tooltip.element.getBoundingClientRect()
+        const rectP = tooltipHTML.getBoundingClientRect()
+        const dirH =
+          docWidth - rect.right - rectP.width - 16 > 0 ? 'right' : rect.left > docWidth - rect.right ? 'left' : 'right'
+        const dirV =
+          docHeight - rect.top - rectP.height - 16 > 0
+            ? 'bottom'
+            : rect.bottom > docHeight - rect.top
+              ? 'top'
+              : 'bottom'
+        if (dirH === 'right') tooltipHTML.style.left = rect.right - 4 + 'px'
+        else tooltipHTML.style.right = docWidth - rect.left - 4 + 'px'
+        if (dirV === 'bottom') tooltipHTML.style.top = rect.top - 4 + 'px'
+        else tooltipHTML.style.bottom = docHeight - rect.bottom - 4 + 'px'
+        tooltipHTML.style.visibility = 'visible'
+      }
+    } else if (tooltipHTML) tooltipHTML.style.visibility = 'hidden'
+  }
+
   const hideTooltip = (): void => {
     if (tooltipHTML) tooltipHTML.style.visibility = 'hidden'
     closeTooltip()
@@ -124,29 +153,23 @@
   const whileShow = (ev: MouseEvent): void => {
     if ($tooltip.element && tooltipHTML) {
       const rectP = tooltipHTML.getBoundingClientRect()
-      const dT: number = dir === 'bottom' ? 12 : 0
-      const dB: number = dir === 'top' ? 12 : 0
+      const dT: number = dir === 'bottom' && $tooltip.kind !== 'submenu' ? 12 : 0
+      const dB: number = dir === 'top' && $tooltip.kind !== 'submenu' ? 12 : 0
       const inTrigger: boolean = ev.x >= rect.left && ev.x <= rect.right && ev.y >= rect.top && ev.y <= rect.bottom
       const inPopup: boolean =
         ev.x >= rectP.left && ev.x <= rectP.right && ev.y >= rectP.top - dT && ev.y <= rectP.bottom + dB
 
-      if (tooltipSW) {
-        if (!inTrigger) {
-          hideTooltip()
-        }
-      } else {
-        if (!(inTrigger || inPopup)) {
-          hideTooltip()
-        }
-      }
+      if ((tooltipSW && !inTrigger) || !(inTrigger || inPopup)) hideTooltip()
     }
   }
 
-  afterUpdate(() => fitTooltip())
+  afterUpdate(() => (kind === 'submenu' ? fitSubmenu() : fitTooltip()))
   onDestroy(() => hideTooltip())
 </script>
 
 <svelte:window
+  bind:innerWidth={docWidth}
+  bind:innerHeight={docHeight}
   on:resize={hideTooltip}
   on:mousemove={(ev) => {
     whileShow(ev)
@@ -159,7 +182,7 @@
     }
   }}
 />
-{#if $tooltip.component}
+{#if $tooltip.component && $tooltip.kind !== 'submenu'}
   <div class="popup-tooltip" class:doublePadding={$tooltip.label} bind:clientWidth={clWidth} bind:this={tooltipHTML}>
     {#if $tooltip.label}<div class="fs-title mb-4">
         <Label label={$tooltip.label} params={$tooltip.props ?? {}} />
@@ -179,13 +202,36 @@
     {/if}
   </div>
   <div bind:this={nubHTML} class="nub {nubDirection ?? ''}" />
-{:else if $tooltip.label}
+{:else if $tooltip.label && $tooltip.kind !== 'submenu'}
   <div class="tooltip {dir ?? ''}" bind:this={tooltipHTML}>
     <Label label={$tooltip.label} params={$tooltip.props ?? {}} />
+  </div>
+{:else if $tooltip.kind === 'submenu'}
+  <div class="submenu-container {dir ?? ''}" bind:clientWidth={clWidth} bind:this={tooltipHTML}>
+    {#if typeof $tooltip.component === 'string'}
+      <Component
+        is={$tooltip.component}
+        props={$tooltip.props}
+        on:update={onUpdate !== undefined ? onUpdate : async () => {}}
+      />
+    {:else}
+      <svelte:component
+        this={$tooltip.component}
+        {...$tooltip.props}
+        on:update={onUpdate !== undefined ? onUpdate : async () => {}}
+      />
+    {/if}
   </div>
 {/if}
 
 <style lang="scss">
+  .submenu-container {
+    position: fixed;
+    width: auto;
+    height: auto;
+    border-radius: 0.5rem;
+    z-index: 10000;
+  }
   .popup-tooltip {
     overflow: hidden;
     position: fixed;
