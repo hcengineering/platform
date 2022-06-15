@@ -30,16 +30,21 @@
   const padding = 0.25
   const width = wide ? 5 : 1
 
-  function edgeCell (eDate: number, date: Date): boolean {
+  function startCell (eDate: number, date: Date): boolean {
     const event = new Date(eDate)
     return areDatesEqual(event, date) && event.getHours() === date.getHours()
   }
 
-  function getTop (e: Event, date: Date): string {
-    return edgeCell(e.date, date) ? `${(new Date(e.date).getMinutes() / 60) * 100}%` : '0px'
+  function endCell (eDate: number, date: Date): boolean {
+    const event = new Date(eDate)
+    return areDatesEqual(event, date) && (event.getHours() === date.getHours() || (event.getHours() === date.getHours() + 1 && event.getMinutes() === 0))
   }
 
-  function getHeight (e: Event, date: Date): string {
+  function getTop (e: Event): string {
+    return `${(new Date(e.date).getMinutes() / 60) * 100}%`
+  }
+
+  function getHeight (e: Event): string {
     if (e.dueDate !== undefined) {
       return `${(new Date(e.dueDate).getMinutes() / 60) * 100}%`
     }
@@ -72,11 +77,11 @@
     const e = events[i]
     let res = `background-color: ${getPlatformColorForText(e._class)};`
     res += `left: ${getShift(events, i)}rem;`
-    if (edgeCell(e.date, date)) {
-      res += ` top: ${getTop(e, date)};`
+    if (startCell(e.date, date)) {
+      res += ` top: ${getTop(e)};`
     }
-    if (edgeCell(e.dueDate ?? e.date, date)) {
-      res += ` height: ${getHeight(e, date)};`
+    if (endCell(e.dueDate ?? e.date, date)) {
+      res += ` height: ${getHeight(e)};`
     }
     return res
   }
@@ -99,8 +104,8 @@
             }
           }}
           class="overflow-label event"
-          class:isStart={edgeCell(e.date, date)}
-          class:isEnd={edgeCell(e.dueDate ?? e.date, date)}
+          class:isStart={startCell(e.date, date)}
+          class:isEnd={endCell(e.dueDate ?? e.date, date)}
           class:wide
           style={getStyle(events, i, date)}
           on:click|stopPropagation={() => {

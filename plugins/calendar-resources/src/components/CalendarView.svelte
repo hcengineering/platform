@@ -309,7 +309,6 @@
             events={findEvents(objects, date, true)}
             {date}
             bind:indexes
-            query={resultQuery}
             on:create={(e) => {
               showCreateDialog(e.detail, true)
             }}
@@ -333,7 +332,6 @@
             {date}
             bind:indexes
             wide
-            query={resultQuery}
             on:create={(e) => {
               showCreateDialog(e.detail, true)
             }}
