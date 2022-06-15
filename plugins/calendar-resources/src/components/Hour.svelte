@@ -37,7 +37,10 @@
 
   function endCell (eDate: number, date: Date): boolean {
     const event = new Date(eDate)
-    return areDatesEqual(event, date) && (event.getHours() === date.getHours() || (event.getHours() === date.getHours() + 1 && event.getMinutes() === 0))
+    return (
+      areDatesEqual(event, date) &&
+      (event.getHours() === date.getHours() || (event.getHours() === date.getHours() + 1 && event.getMinutes() === 0))
+    )
   }
 
   function getTop (e: Event): string {
