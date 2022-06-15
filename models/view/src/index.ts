@@ -78,7 +78,7 @@ export function classPresenter (
   })
   if (editor !== undefined) {
     builder.mixin(_class, core.class.Class, view.mixin.AttributeEditor, {
-      editor,
+      inlineEditor: editor,
       popup
     })
   }
@@ -102,7 +102,7 @@ export class TAttributeFilter extends TClass implements AttributeFilter {
 
 @Mixin(view.mixin.AttributeEditor, core.class.Class)
 export class TAttributeEditor extends TClass implements AttributeEditor {
-  editor!: AnyComponent
+  inlineEditor!: AnyComponent
 }
 
 @Mixin(view.mixin.CollectionPresenter, core.class.Class)
@@ -113,11 +113,12 @@ export class TCollectionPresenter extends TClass implements CollectionPresenter 
 @Mixin(view.mixin.CollectionEditor, core.class.Class)
 export class TCollectionEditor extends TClass implements CollectionEditor {
   editor!: AnyComponent
+  inlineEditor?: AnyComponent
 }
 
 @Mixin(view.mixin.ArrayEditor, core.class.Class)
 export class TArrayEditor extends TClass implements ArrayEditor {
-  editor!: AnyComponent
+  inlineEditor!: AnyComponent
 }
 
 @Mixin(view.mixin.AttributePresenter, core.class.Class)
