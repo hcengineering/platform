@@ -35,7 +35,12 @@
     <CircleButton icon={IconAdd} size={'small'} selected on:click={createLead} />
   </div>
   {#if leads !== undefined && leads > 0}
-    <Table _class={lead.class.Lead} config={['', '$lookup.state', '$lookup.doneState']} query={{ attachedTo: objectId }} {loadingProps} />
+    <Table
+      _class={lead.class.Lead}
+      config={['', '$lookup.state', '$lookup.doneState']}
+      query={{ attachedTo: objectId }}
+      {loadingProps}
+    />
   {:else}
     <div class="flex-col-center mt-5 createapp-container">
       <div class="text-sm content-dark-color mt-2">

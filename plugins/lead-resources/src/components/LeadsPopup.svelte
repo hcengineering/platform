@@ -21,4 +21,8 @@
   export let value: Customer
 </script>
 
-<Table _class={leads.class.Lead} config={['', '$lookup.state', '$lookup.doneState']} query={{ attachedTo: value._id }} />
+<Table
+  _class={leads.class.Lead}
+  config={['', '$lookup.state', '$lookup.doneState']}
+  query={{ attachedTo: value._id }}
+/>
