@@ -6,7 +6,7 @@ Platform:
 
 - Allow to attach from clipboard
 
-Leads: 
+Leads:
 
 - Add filters
 
