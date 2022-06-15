@@ -1313,5 +1313,15 @@
       "projectFolder": "pods/backup",
       "shouldPublish": false
     },
+    {
+      "packageName": "@anticrm/automation",
+      "projectFolder": "packages/automation",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@anticrm/model-automation",
+      "projectFolder": "models/automation",
+      "shouldPublish": true
+    }
   ]
 }
