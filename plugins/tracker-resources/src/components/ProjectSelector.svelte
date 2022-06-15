@@ -14,11 +14,11 @@
 -->
 <script lang="ts">
   import { Ref, SortingOrder } from '@anticrm/core'
-  import { Project } from '@anticrm/tracker'
   import { IntlString, translate } from '@anticrm/platform'
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import { Button, showPopup, SelectPopup, eventToHTMLElement, ButtonShape } from '@anticrm/ui'
+  import { getClient } from '@anticrm/presentation'
+  import { Project } from '@anticrm/tracker'
   import type { ButtonKind, ButtonSize } from '@anticrm/ui'
+  import { Button, ButtonShape, eventToHTMLElement, SelectPopup, showPopup } from '@anticrm/ui'
   import tracker from '../plugin'
 
   export let value: Ref<Project> | null | undefined
@@ -33,22 +33,9 @@
   export let width: string | undefined = 'min-content'
 
   const client = getClient()
-  const projectsQuery = createQuery()
 
-  let projects: Project[] = []
   let selectedProject: Project | undefined
   let defaultProjectLabel = ''
-
-  $: projectsQuery.query(
-    tracker.class.Project,
-    {},
-    (currentProjects) => {
-      projects = currentProjects
-    },
-    {
-      sort: { modifiedOn: SortingOrder.Ascending }
-    }
-  )
 
   $: if (value !== undefined) {
     handleSelectedProjectIdUpdated(value)
@@ -57,15 +44,6 @@
   $: translate(tracker.string.Project, {}).then((result) => (defaultProjectLabel = result))
   $: projectIcon = selectedProject?.icon ?? tracker.icon.Projects
   $: projectText = shouldShowLabel ? selectedProject?.label ?? defaultProjectLabel : undefined
-
-  $: projectsInfo = [
-    { id: null, icon: tracker.icon.Projects, label: tracker.string.NoProject },
-    ...projects.map((p) => ({
-      id: p._id,
-      icon: p.icon,
-      text: p.label
-    }))
-  ]
 
   const handleSelectedProjectIdUpdated = async (newProjectId: Ref<Project> | null) => {
     if (newProjectId === null) {
@@ -77,11 +55,27 @@
     selectedProject = await client.findOne(tracker.class.Project, { _id: newProjectId })
   }
 
-  const handleProjectEditorOpened = (event: MouseEvent) => {
+  const handleProjectEditorOpened = async (event: MouseEvent): Promise<void> => {
     event.stopPropagation()
     if (!isEditable) {
       return
     }
+
+    const projects = await client.findAll(
+      tracker.class.Project,
+      {},
+      {
+        sort: { modifiedOn: SortingOrder.Ascending }
+      }
+    )
+    const projectsInfo = [
+      { id: null, icon: tracker.icon.Projects, label: tracker.string.NoProject },
+      ...projects.map((p) => ({
+        id: p._id,
+        icon: p.icon,
+        text: p.label
+      }))
+    ]
 
     showPopup(
       SelectPopup,

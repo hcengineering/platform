@@ -13,15 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { SortingOrder, WithLookup, Ref, Doc } from '@anticrm/core'
-  import { createQuery } from '@anticrm/presentation'
+  import { Doc, Ref, WithLookup } from '@anticrm/core'
   import { Issue, IssueStatus, Team } from '@anticrm/tracker'
-  import { Button, ProgressCircle, showPopup, SelectPopup, closeTooltip, showPanel } from '@anticrm/ui'
   import type { ButtonKind, ButtonSize } from '@anticrm/ui'
+  import { Button, closeTooltip, ProgressCircle, SelectPopup, showPanel, showPopup } from '@anticrm/ui'
   import tracker from '../../../plugin'
   import { getIssueId } from '../../../utils'
 
-  export let issue: Issue
+  export let issue: WithLookup<Issue>
   export let currentTeam: Team | undefined
   export let issueStatuses: WithLookup<IssueStatus>[] | undefined
 
@@ -30,7 +29,6 @@
   export let justify: 'left' | 'center' = 'left'
   export let width: string | undefined = 'min-contet'
 
-  const subIssuesQuery = createQuery()
   let btn: HTMLElement
 
   let subIssues: Issue[] | undefined
@@ -38,9 +36,10 @@
   let countComplate: number = 0
 
   $: hasSubIssues = issue.subIssues > 0
-  $: subIssuesQuery.query(tracker.class.Issue, { attachedTo: issue._id }, async (result) => (subIssues = result), {
-    sort: { rank: SortingOrder.Ascending }
-  })
+  $: if (issue.$lookup?.subIssues !== undefined) {
+    subIssues = issue.$lookup.subIssues as Issue[]
+    subIssues.sort((a, b) => a.rank.localeCompare(b.rank))
+  }
   $: if (issueStatuses && subIssues) {
     doneStatus = issueStatuses.find((s) => s.category === tracker.issueStatusCategory.Completed)?._id ?? undefined
     if (doneStatus) countComplate = subIssues.filter((si) => si.status === doneStatus).length

@@ -19,3 +19,20 @@ export interface TypeState {
   color: number
   icon?: Asset
 }
+/**
+ * @public
+ */
+export type Item = DocWithRank & { state: StateType, doneState: StateType | null }
+/**
+ * @public
+ */
+export interface ExtItem {
+  prev?: Item
+  it: Item
+  next?: Item
+  pos: number
+}
+/**
+ * @public
+ */
+export type CardDragEvent = DragEvent & { currentTarget: EventTarget & HTMLDivElement }
