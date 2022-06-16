@@ -22,7 +22,7 @@ import { Action } from '@anticrm/view'
 
 @Model(automation.class.Automation, core.class.AttachedDoc)
 @UX(automation.string.Automation)
-export class TAutomation extends TAttachedDoc implements Automation {
+export class TAutomation extends TAttachedDoc implements Automation<Doc> {
   targetClass!: Ref<Class<Doc>>
   trigger!: {
     action?: Ref<Action>
@@ -32,18 +32,20 @@ export class TAutomation extends TAttachedDoc implements Automation {
 }
 
 @Mixin(automation.mixin.AutomationSupport, core.class.Class)
-export class TAutomationSupport extends TClass implements AutomationSupport {
+export class TAutomationSupport extends TClass implements AutomationSupport<Doc> {
   attributes: {
-    name: string
+    name: any
     sort?: {
       groupBy?: DocumentQuery<Doc>
     }
   }[]
+
   trigger: {
     action: {
-      mode: ('editor' | 'context') []
+      mode: ('editor' | 'context')[]
     }
   }
+
   sort?: {
     groupBy?: DocumentQuery<Doc>
   }
