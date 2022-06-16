@@ -15,9 +15,8 @@
 <script lang="ts">
   import { AttachedData, FindOptions, SortingOrder } from '@anticrm/core'
   import { Issue, IssueStatusCategory, Team, calcRank } from '@anticrm/tracker'
-  import { createQuery, getClient } from '@anticrm/presentation'
+  import { createQuery, getClient, ObjectPopup } from '@anticrm/presentation'
   import { Icon } from '@anticrm/ui'
-  import ObjectPopup from '@anticrm/presentation/src/components/ObjectPopup.svelte'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../plugin'
   import { getIssueId } from '../utils'
