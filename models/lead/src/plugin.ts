@@ -21,7 +21,7 @@ import type { IntlString } from '@anticrm/platform'
 import { mergeIds } from '@anticrm/platform'
 import { KanbanTemplate } from '@anticrm/task'
 import type { AnyComponent } from '@anticrm/ui'
-import { Viewlet } from '@anticrm/view'
+import { Action, ActionCategory, Viewlet } from '@anticrm/view'
 
 export default mergeIds(leadId, lead, {
   string: {
@@ -53,5 +53,11 @@ export default mergeIds(leadId, lead, {
   viewlet: {
     TableCustomer: '' as Ref<Viewlet>,
     TableLead: '' as Ref<Viewlet>
+  },
+  category: {
+    Lead: '' as Ref<ActionCategory>
+  },
+  action: {
+    CreateGlobalLead: '' as Ref<Action>
   }
 })
