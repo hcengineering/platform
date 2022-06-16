@@ -63,10 +63,6 @@ export function createReviewModel (builder: Builder): void {
     presenter: recruit.component.ReviewPresenter
   })
 
-  builder.mixin(recruit.class.Review, core.class.Class, view.mixin.ObjectValidator, {
-    validator: recruit.validator.ReviewValidator
-  })
-
   builder.mixin(recruit.class.Opinion, core.class.Class, view.mixin.AttributePresenter, {
     presenter: recruit.component.OpinionPresenter
   })
@@ -96,29 +92,36 @@ export function createReviewModel (builder: Builder): void {
     }
   })
 
-  const reviewOptions: FindOptions<Review> = {
-    lookup: {
-      attachedTo: recruit.mixin.Candidate,
-      participants: contact.class.Employee,
-      company: contact.class.Organization
-    }
-  }
-
-  builder.createDoc(view.class.Viewlet, core.space.Model, {
-    attachTo: recruit.class.Review,
-    descriptor: calendar.viewlet.Calendar,
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    options: reviewOptions,
-    config: reviewTableConfig
-  })
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: recruit.class.Review,
+      descriptor: calendar.viewlet.Calendar,
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      config: [
+        '',
+        'title',
+        '$lookup.attachedTo',
+        '$lookup.company',
+        { key: '', presenter: calendar.component.DateTimePresenter, label: calendar.string.Date, sortingKey: 'date' }
+      ]
+    },
+    recruit.viewlet.CalendarReview
+  )
 }
 
 function createTableViewlet (builder: Builder): void {
-  builder.createDoc(view.class.Viewlet, core.space.Model, {
-    attachTo: recruit.class.Review,
-    descriptor: view.viewlet.Table,
-    config: reviewTableConfig
-  })
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: recruit.class.Review,
+      descriptor: view.viewlet.Table,
+      config: reviewTableConfig
+    },
+    recruit.viewlet.TableReview
+  )
 
   builder.mixin(recruit.class.Opinion, core.class.Class, view.mixin.CollectionEditor, {
     editor: recruit.component.Opinions

@@ -93,9 +93,7 @@ export class LiveQuery {
     callback: (result: FindResult<T>) => void,
     options?: FindOptions<T>
   ): boolean {
-    console.log(_class, query, callback, options)
     if (!this.needUpdate(_class, query, callback, options)) {
-      console.log('matched')
       return false
     }
     this.oldCallback = callback

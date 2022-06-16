@@ -1,6 +1,8 @@
 # Changelog
 
-## 0.6.27 (upcoming)
+## 0.6.28 (upcoming)
+
+## 0.6.27
 
 Platform:
 
@@ -9,6 +11,7 @@ Platform:
 Leads:
 
 - Add filters
+- Added "done state" to leads popup table and customer display
 
 Tracker:
 

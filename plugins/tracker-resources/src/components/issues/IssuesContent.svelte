@@ -1,13 +1,13 @@
 <script lang="ts">
-  import type { Ref, WithLookup } from '@anticrm/core'
+  import type { DocumentQuery, Ref, WithLookup } from '@anticrm/core'
   import { Component } from '@anticrm/ui'
   import { BuildModelKey, Viewlet } from '@anticrm/view'
-  import { Team, ViewOptions } from '@anticrm/tracker'
+  import { Issue, Team, ViewOptions } from '@anticrm/tracker'
 
   export let currentSpace: Ref<Team>
   export let viewlet: WithLookup<Viewlet> | undefined
   export let config: (string | BuildModelKey)[] | undefined = undefined
-  export let query = {}
+  export let query: DocumentQuery<Issue> = {}
   export let viewOptions: ViewOptions
 </script>
 

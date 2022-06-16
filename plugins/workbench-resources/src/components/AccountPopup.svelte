@@ -26,8 +26,12 @@
     Label,
     navigate,
     setMetadataLocalStorage,
-    showPopup
+    showPopup,
+    Submenu,
+    locationToUrl
   } from '@anticrm/ui'
+  import type { Action } from '@anticrm/ui'
+  import view from '@anticrm/view'
 
   const client = getClient()
   async function getItems (): Promise<SettingsCategory[]> {
@@ -84,6 +88,27 @@
     if (profile === undefined) return
     selectCategory(profile)
   }
+
+  function getURLCategory (sp: SettingsCategory): string {
+    const loc = getCurrentLocation()
+    loc.path[1] = setting.ids.SettingApp
+    loc.path[2] = sp.name
+    loc.path.length = 3
+    return locationToUrl(loc)
+  }
+
+  const getSubmenu = (items: SettingsCategory[]): Action[] => {
+    const actions: Action[] = filterItems(items).map((i) => {
+      return {
+        icon: i.icon,
+        label: i.label,
+        action: async () => selectCategory(i),
+        link: getURLCategory(i),
+        inline: true
+      }
+    })
+    return actions
+  }
 </script>
 
 <div class="selectPopup autoHeight">
@@ -107,29 +132,27 @@
           </div>
         </div>
         {#if items}
-          {#each filterItems(items) as item}
-            <button class="menu-item" on:click={() => selectCategory(item)}>
-              <div class="mr-2">
-                <Icon icon={item.icon} size={'small'} />
-              </div>
-              <Label label={item.label} />
-            </button>
-          {/each}
+          <Submenu
+            icon={view.icon.Setting}
+            label={setting.string.Settings}
+            props={{ actions: getSubmenu(items) }}
+            withHover
+          />
         {/if}
         <button class="menu-item" on:click={selectWorkspace}>
-          <div class="mr-2">
+          <div class="icon mr-3">
             <Icon icon={setting.icon.SelectWorkspace} size={'small'} />
           </div>
           <Label label={setting.string.SelectWorkspace} />
         </button>
         <button class="menu-item" on:click={inviteWorkspace}>
-          <div class="mr-2">
+          <div class="icon mr-3">
             <Icon icon={login.icon.InviteWorkspace} size={'small'} />
           </div>
           <Label label={setting.string.InviteWorkspace} />
         </button>
         <button class="menu-item" on:click={signOut}>
-          <div class="mr-2">
+          <div class="icon mr-3">
             <Icon icon={setting.icon.Signout} size={'small'} />
           </div>
           <Label label={setting.string.Signout} />

@@ -400,6 +400,9 @@ export async function getKanbanStatuses (
   issueQuery: DocumentQuery<Issue>,
   shouldShowEmptyGroups: boolean
 ): Promise<TypeState[]> {
+  if (groupBy === IssuesGrouping.NoGrouping) {
+    return [{ _id: undefined, color: 0, title: await translate(tracker.string.NoGrouping, {}) }]
+  }
   if (groupBy === IssuesGrouping.Status && shouldShowEmptyGroups) {
     return (
       await client.findAll(
@@ -417,7 +420,6 @@ export async function getKanbanStatuses (
       icon: status.$lookup?.category?.icon ?? undefined
     }))
   }
-  if (groupBy === IssuesGrouping.NoGrouping) return []
   if (groupBy === IssuesGrouping.Priority) {
     const issues = await client.findAll(tracker.class.Issue, issueQuery, {
       sort: { priority: SortingOrder.Ascending }

@@ -55,8 +55,7 @@ export default mergeIds(recruitId, recruit, {
     GotoRecruitApplication: '' as IntlString
   },
   validator: {
-    ApplicantValidator: '' as Resource<<T extends Doc>(doc: T, client: Client) => Promise<Status>>,
-    ReviewValidator: '' as Resource<<T extends Doc>(doc: T, client: Client) => Promise<Status>>
+    ApplicantValidator: '' as Resource<<T extends Doc>(doc: T, client: Client) => Promise<Status>>
   },
   component: {
     CreateApplication: '' as AnyComponent,
@@ -90,6 +89,8 @@ export default mergeIds(recruitId, recruit, {
   viewlet: {
     TableCandidate: '' as Ref<Viewlet>,
     TableVacancy: '' as Ref<Viewlet>,
-    TableApplicant: '' as Ref<Viewlet>
+    TableApplicant: '' as Ref<Viewlet>,
+    CalendarReview: '' as Ref<Viewlet>,
+    TableReview: '' as Ref<Viewlet>
   }
 })

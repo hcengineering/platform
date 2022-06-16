@@ -29,6 +29,14 @@ a {
     text-decoration: underline;
   }
   &:visited { color: var(--theme-caption-color); }
+
+  &.stealth {
+    display: inline-flex;
+    align-items: center;
+    width: 100%;
+
+    &:hover, &:active { text-decoration: none; }
+  }
 }
 button {
   display: flex;
@@ -196,6 +204,7 @@ input.search {
 .justify-start { justify-content: flex-start; }
 .justify-end { justify-content: flex-end; }
 .justify-center { justify-content: center; }
+.justify-stretch { justify-content: stretch; }
 .items-baseline { align-items: baseline; }
 .items-center { align-items: center; }
 
@@ -401,6 +410,7 @@ input.search {
 .px-2 { padding: 0 .5rem; }
 .px-3 { padding: 0 .75rem; }
 .px-4 { padding: 0 1rem; }
+.py-1 { padding: 0.25rem 0; }
 .py-4 { padding: 1rem 0; }
 .py-10 { padding: 2.5rem 0; }
 
