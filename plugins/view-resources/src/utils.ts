@@ -30,8 +30,8 @@ import core, {
 import type { IntlString } from '@anticrm/platform'
 import { getResource } from '@anticrm/platform'
 import { getAttributePresenterClass, KeyedAttribute } from '@anticrm/presentation'
-import { AnyComponent, ErrorPresenter, getPlatformColorForText } from '@anticrm/ui'
-import type { BuildModelOptions } from '@anticrm/view'
+import { AnyComponent, ErrorPresenter, getCurrentLocation, getPlatformColorForText, locationToUrl } from '@anticrm/ui'
+import type { BuildModelOptions, Viewlet } from '@anticrm/view'
 import view, { AttributeModel, BuildModelKey } from '@anticrm/view'
 import plugin from './plugin'
 
@@ -391,4 +391,25 @@ export function collectionsFilter (hierarchy: Hierarchy, keys: KeyedAttribute[],
 
 export function isCollectionAttr (hierarchy: Hierarchy, key: KeyedAttribute): boolean {
   return hierarchy.isDerived(key.attr.type._class, core.class.Collection)
+}
+
+function makeViewletKey (): string {
+  const loc = getCurrentLocation()
+  loc.fragment = undefined
+  loc.query = undefined
+  return 'viewlet' + locationToUrl(loc)
+}
+
+export function setActiveViewletId (viewletId: Ref<Viewlet> | null): void {
+  const key = makeViewletKey()
+  if (viewletId !== null) {
+    localStorage.setItem(key, viewletId)
+  } else {
+    localStorage.removeItem(key)
+  }
+}
+
+export function getActiveViewletId (): Ref<Viewlet> | null {
+  const key = makeViewletKey()
+  return localStorage.getItem(key) as Ref<Viewlet> | null
 }

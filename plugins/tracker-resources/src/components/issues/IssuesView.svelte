@@ -13,6 +13,7 @@
   import { Button, IconDetails } from '@anticrm/ui'
   import view, { Filter, Viewlet } from '@anticrm/view'
   import { FilterBar } from '@anticrm/view-resources'
+  import { getActiveViewletId } from '@anticrm/view-resources/src/utils'
   import tracker from '../../plugin'
   import IssuesContent from './IssuesContent.svelte'
   import IssuesHeader from './IssuesHeader.svelte'
@@ -53,7 +54,8 @@
           }
         }
       )
-      ;[viewlet] = viewlets
+      const _id = getActiveViewletId()
+      viewlet = viewlets.find((viewlet) => viewlet._id === _id) || viewlets[0]
     }
   }
   $: if (!label && title) {
