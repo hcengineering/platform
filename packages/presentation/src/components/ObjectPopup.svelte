@@ -48,6 +48,8 @@
 
   export let searchField: string = 'name'
 
+  export let groupBy = '_class'
+
   export let create:
     | {
         component: AnyComponent
@@ -71,10 +73,18 @@
       _id: { $nin: ignoreObjects }
     },
     (result) => {
+      result.sort((a, b) => {
+        const aval: string = `${(a as any)[groupBy]}`
+        const bval: string = `${(b as any)[groupBy]}`
+        return aval.localeCompare(bval)
+      })
       objects = result
     },
     { ...(options ?? {}), limit: 200 }
   )
+
+  $: showCategories =
+    objects.map((it) => (it as any)[groupBy]).filter((it, index, arr) => arr.indexOf(it) === index).length > 1
 
   const checkSelected = (person: Doc, objects: Doc[]): void => {
     if (selectedElements.has(person._id)) {
@@ -143,6 +153,9 @@
       }
     })
   }
+  function toAny (obj: any): any {
+    return obj
+  }
 </script>
 
 <FocusHandler {manager} />
@@ -162,6 +175,17 @@
   <div class="scroll">
     <div class="box">
       <ListView bind:this={list} count={objects.length} bind:selection>
+        <svelte:fragment slot="category" let:item>
+          {#if showCategories}
+            {@const obj = toAny(objects[item])}
+            {#if item === 0 || (item > 0 && toAny(objects[item - 1])[groupBy] !== obj[groupBy])}
+              <!--Category for first item-->
+              <div class="category-box">
+                <slot name="category" item={obj} />
+              </div>
+            {/if}
+          {/if}
+        </svelte:fragment>
         <svelte:fragment slot="item" let:item>
           {@const obj = objects[item]}
           <button

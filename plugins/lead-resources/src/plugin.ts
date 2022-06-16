@@ -40,6 +40,7 @@ export default mergeIds(leadId, lead, {
   },
   component: {
     CreateCustomer: '' as AnyComponent,
-    LeadsPresenter: '' as AnyComponent
+    LeadsPresenter: '' as AnyComponent,
+    CreateFunnel: '' as AnyComponent
   }
 })
