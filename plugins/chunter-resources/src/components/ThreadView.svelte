@@ -23,7 +23,6 @@
   import { IconClose, Label, getCurrentLocation, navigate } from '@anticrm/ui'
   import { afterUpdate, beforeUpdate, createEventDispatcher } from 'svelte'
   import { createBacklinks } from '../backlinks'
-  import { MESSAGE_ID_PARAM_NAME } from '../utils'
   import chunter from '../plugin'
   import ChannelSeparator from './ChannelSeparator.svelte'
   import MsgView from './Message.svelte'
@@ -115,11 +114,11 @@
         notificationClient.updateLastView(id, chunter.class.Message)
 
         const location = getCurrentLocation()
-        const messageId = location.query?.[MESSAGE_ID_PARAM_NAME]
+        const messageId = location.fragment
 
         if (messageId && location.path.length === 4) {
           messageIdForScroll = messageId
-          location.query = undefined
+          location.fragment = undefined
           navigate(location)
         }
       },

@@ -97,5 +97,3 @@ export enum SearchType {
   Files,
   Contacts
 }
-
-export const MESSAGE_ID_PARAM_NAME = 'messageId'

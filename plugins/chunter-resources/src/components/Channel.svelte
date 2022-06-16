@@ -22,7 +22,7 @@
   import { getCurrentLocation, navigate } from '@anticrm/ui'
   import { afterUpdate, beforeUpdate } from 'svelte'
   import chunter from '../plugin'
-  import { getDay, MESSAGE_ID_PARAM_NAME } from '../utils'
+  import { getDay } from '../utils'
   import ChannelSeparator from './ChannelSeparator.svelte'
   import JumpToDateSelector from './JumpToDateSelector.svelte'
   import MessageComponent from './Message.svelte'
@@ -103,11 +103,11 @@
         notificationClient.updateLastView(space, chunter.class.ChunterSpace)
 
         const location = getCurrentLocation()
-        const messageId = location.query?.[MESSAGE_ID_PARAM_NAME]
+        const messageId = location.fragment
 
         if (messageId && location.path.length === 3) {
           messageIdForScroll = messageId
-          location.query = undefined
+          location.fragment = undefined
           navigate(location)
         }
       },

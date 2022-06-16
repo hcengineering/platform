@@ -38,7 +38,7 @@
   import { createEventDispatcher } from 'svelte'
   import { AddMessageToSaved, DeleteMessageFromSaved, UnpinMessage } from '../index'
   import chunter from '../plugin'
-  import { getTime, MESSAGE_ID_PARAM_NAME } from '../utils'
+  import { getTime } from '../utils'
   // import Share from './icons/Share.svelte'
   import Bookmark from './icons/Bookmark.svelte'
   import Emoji from './icons/Emoji.svelte'
@@ -111,7 +111,7 @@
     action: async () => {
       const location = getCurrentLocation()
 
-      location.query = { ...location.query, [MESSAGE_ID_PARAM_NAME]: message._id }
+      location.fragment = message._id
       location.path[2] = message.space
 
       if (message.attachedToClass === chunter.class.Message) {
