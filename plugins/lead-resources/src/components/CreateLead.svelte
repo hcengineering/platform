@@ -97,7 +97,15 @@
   }}
 >
   <svelte:fragment slot="header">
-    <SpaceSelector _class={lead.class.Funnel} label={lead.string.FunnelName} bind:space={_space} />
+    <SpaceSelector
+      _class={lead.class.Funnel}
+      label={lead.string.FunnelName}
+      bind:space={_space}
+      create={{
+        component: lead.component.CreateFunnel,
+        label: lead.string.CreateFunnel
+      }}
+    />
   </svelte:fragment>
   <StatusControl slot="error" {status} />
   <EditBox
@@ -116,6 +124,7 @@
       bind:value={customer}
       kind={'no-border'}
       size={'small'}
+      create={{ component: lead.component.CreateCustomer, label: lead.string.CreateCustomer }}
     />
   </svelte:fragment>
 </Card>

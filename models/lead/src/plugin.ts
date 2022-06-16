@@ -36,7 +36,6 @@ export default mergeIds(leadId, lead, {
     GotoLeadApplication: '' as IntlString
   },
   component: {
-    CreateFunnel: '' as AnyComponent,
     CreateLead: '' as AnyComponent,
     EditLead: '' as AnyComponent,
     KanbanCard: '' as AnyComponent,
