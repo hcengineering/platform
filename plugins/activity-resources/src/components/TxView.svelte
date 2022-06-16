@@ -76,9 +76,14 @@
     }
   })
 
-  $: query.query(contact.class.EmployeeAccount, { _id: tx.tx.modifiedBy as Ref<EmployeeAccount> }, (account) => {
-    [employee] = account
-  }, { limit: 1 })
+  $: query.query(
+    contact.class.EmployeeAccount,
+    { _id: tx.tx.modifiedBy as Ref<EmployeeAccount> },
+    (account) => {
+      ;[employee] = account
+    },
+    { limit: 1 }
+  )
 
   const showMenu = async (ev: MouseEvent): Promise<void> => {
     const actions = await getActions(client, tx.doc as Doc)
