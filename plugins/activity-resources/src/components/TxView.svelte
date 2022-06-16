@@ -18,7 +18,7 @@
   import contact, { EmployeeAccount, formatName } from '@anticrm/contact'
   import core, { AnyAttribute, Doc, getCurrentAccount, Ref } from '@anticrm/core'
   import { Asset, getResource } from '@anticrm/platform'
-  import { getClient } from '@anticrm/presentation'
+  import { createQuery, getClient } from '@anticrm/presentation'
   import {
     Button,
     Component,
@@ -61,6 +61,7 @@
   }
 
   const client = getClient()
+  const query = createQuery()
 
   function getProps (props: any, edit: boolean): any {
     return { ...props, edit }
@@ -75,11 +76,9 @@
     }
   })
 
-  $: client
-    .findOne(contact.class.EmployeeAccount, { _id: tx.tx.modifiedBy as Ref<EmployeeAccount> })
-    .then((account) => {
-      employee = account
-    })
+  $: query.query(contact.class.EmployeeAccount, { _id: tx.tx.modifiedBy as Ref<EmployeeAccount> }, (account) => {
+    [employee] = account
+  }, { limit: 1 })
 
   const showMenu = async (ev: MouseEvent): Promise<void> => {
     const actions = await getActions(client, tx.doc as Doc)
