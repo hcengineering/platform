@@ -13,9 +13,32 @@
 // limitations under the License.
 //
 
-import core, { Tx, TxUpdateDoc } from '@anticrm/core'
+import core, { AttachedData, Tx, TxUpdateDoc } from '@anticrm/core'
 import { extractTx, TriggerControl } from '@anticrm/server-core'
 import tracker, { Issue } from '@anticrm/tracker'
+
+async function updateSubIssues (
+  control: TriggerControl,
+  node: Issue,
+  update: Partial<AttachedData<Issue>>,
+  shouldSkip = false
+): Promise<TxUpdateDoc<Issue>[]> {
+  let txes: TxUpdateDoc<Issue>[] = []
+
+  if (!shouldSkip && Object.entries(update).some(([key, value]) => value !== node[key as keyof Issue])) {
+    txes.push(control.txFactory.createTxUpdateDoc(node._class, node.space, node._id, update))
+  }
+
+  if (node.subIssues > 0) {
+    const subIssues = await control.findAll(tracker.class.Issue, { attachedTo: node._id })
+
+    for (const subIssue of subIssues) {
+      txes = txes.concat(await updateSubIssues(control, subIssue, update))
+    }
+  }
+
+  return txes
+}
 
 /**
  * @public
@@ -31,7 +54,17 @@ export async function OnIssueProjectUpdate (tx: Tx, control: TriggerControl): Pr
     return []
   }
 
-  return []
+  if (!Object.prototype.hasOwnProperty.call(updateTx.operations, 'project')) {
+    return []
+  }
+
+  const update: Partial<AttachedData<Issue>> = { project: updateTx.operations.project ?? null }
+  const [node] = await control.findAll(
+    updateTx.objectClass,
+    { _id: updateTx.objectId, subIssues: { $gt: 0 } },
+    { limit: 1 }
+  )
+  return node !== undefined ? await updateSubIssues(control, node, update, true) : []
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
