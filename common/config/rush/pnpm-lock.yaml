@@ -229,6 +229,7 @@ specifiers:
   cropperjs: ~1.5.12
   cross-env: ~7.0.3
   css-loader: ^5.2.1
+  csv-parse: ~5.1.0
   deep-equal: ^2.0.5
   dotenv: ~16.0.0
   dotenv-webpack: ^7.0.2
@@ -518,6 +519,7 @@ dependencies:
   cropperjs: 1.5.12
   cross-env: 7.0.3
   css-loader: 5.2.7_webpack@5.73.0
+  csv-parse: 5.1.0
   deep-equal: 2.0.5
   dotenv: 16.0.1
   dotenv-webpack: 7.1.0_webpack@5.73.0
@@ -4068,6 +4070,10 @@ packages:
     engines: {node: '>=8'}
     dependencies:
       cssom: 0.3.8
+    dev: false
+
+  /csv-parse/5.1.0:
+    resolution: {integrity: sha512-JL+Q6YEikT2uoe57InjFFa6VejhSv0tDwOxeQ1bVQKeUC/NCnLAAZ8n3PzowPQQLuZ37fysDYZipB2UJkH9C6A==}
     dev: false
 
   /data-urls/2.0.0:
@@ -12626,7 +12632,7 @@ packages:
     dev: false
 
   file:projects/prod-tracker.tgz_d1c3762ecb2c185353d3f02936f6ec22:
-    resolution: {integrity: sha512-0eyrMP8f/hVYH+hCzocX+7NQV1qV63Y01jOMV8HkimM51dtCFCz3Qo2Tki5jEw4gjX1Dv3XhvhMAoLDSvDI1Ig==, tarball: file:projects/prod-tracker.tgz}
+    resolution: {integrity: sha512-zGqmuGtTWtIqvDsoxMoZD3MrD+r0vMKQM/FIxf7HLxosTleGiflEbi85a+ZySK7kSw0cN7J1zP3HoSv7E5/dlg==, tarball: file:projects/prod-tracker.tgz}
     id: file:projects/prod-tracker.tgz
     name: '@rush-temp/prod-tracker'
     version: 0.0.0
@@ -13614,7 +13620,7 @@ packages:
     dev: false
 
   file:projects/server-tracker-resources.tgz:
-    resolution: {integrity: sha512-6x3B3So0oUuhHsacUMij18L6kIHKCitekIsc8jC6KJMZiidfUnQN2Spa4npg6CnwUr3cupIq2Jyn2M+BxCddwQ==, tarball: file:projects/server-tracker-resources.tgz}
+    resolution: {integrity: sha512-gJqowCis9yMaD5guzyEHwsD2rPrQVWg8OMz+HA3yavagTbOn+s/kStjDHCuWr/UCvaMG2C8KKGEh+kof5Tw81A==, tarball: file:projects/server-tracker-resources.tgz}
     name: '@rush-temp/server-tracker-resources'
     version: 0.0.0
     dependencies:
@@ -14245,7 +14251,7 @@ packages:
     dev: false
 
   file:projects/tool.tgz:
-    resolution: {integrity: sha512-DjXKod82QKmRLFxiKxIxpZ2dZX1hY66/acG3srfyNyTS5xsA9+SD2oPxFUw6lF+aTxXgwaI5wPgVmEWl8otmXQ==, tarball: file:projects/tool.tgz}
+    resolution: {integrity: sha512-cLyyAtdkGqG4pxA7QhbNhoNwhIoxpUktmo6OA8kJzcjisF23dXsuuDv097gM6Y0IOdIRGWET8XRaM1sIE/4ogQ==, tarball: file:projects/tool.tgz}
     name: '@rush-temp/tool'
     version: 0.0.0
     dependencies:
@@ -14262,6 +14268,7 @@ packages:
       '@typescript-eslint/parser': 5.27.0_eslint@7.32.0+typescript@4.7.2
       commander: 8.3.0
       cross-env: 7.0.3
+      csv-parse: 5.1.0
       esbuild: 0.12.29
       eslint: 7.32.0
       eslint-config-standard-with-typescript: 21.0.1_99a5fe2f2ae1dc64d6b59974c931eb2a
