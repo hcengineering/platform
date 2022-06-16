@@ -223,7 +223,7 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(contact.class.Organization, core.class.Class, view.mixin.AttributeEditor, {
-    editor: contact.component.OrganizationEditor
+    inlineEditor: contact.component.OrganizationEditor
   })
 
   builder.mixin(contact.class.Member, core.class.Class, view.mixin.CollectionEditor, {
@@ -231,7 +231,7 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(contact.class.Employee, core.class.Class, view.mixin.ArrayEditor, {
-    editor: contact.component.EmployeeArrayEditor
+    inlineEditor: contact.component.EmployeeArrayEditor
   })
 
   builder.mixin(contact.class.Member, core.class.Class, view.mixin.AttributePresenter, {
@@ -239,11 +239,11 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(contact.class.Person, core.class.Class, view.mixin.AttributeEditor, {
-    editor: contact.component.PersonEditor
+    inlineEditor: contact.component.PersonEditor
   })
 
   builder.mixin(contact.class.Employee, core.class.Class, view.mixin.AttributeEditor, {
-    editor: contact.component.PersonEditor
+    inlineEditor: contact.component.PersonEditor
   })
 
   builder.mixin(contact.class.Channel, core.class.Class, view.mixin.AttributePresenter, {

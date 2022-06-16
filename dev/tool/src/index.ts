@@ -36,6 +36,7 @@ import { Db, MongoClient } from 'mongodb'
 import { exit } from 'process'
 import { rebuildElastic } from './elastic'
 import { importXml } from './importer'
+import { importLead } from './lead-importer'
 import { updateCandidates } from './recruit'
 import { clearTelegramHistory } from './telegram'
 import { diffWorkspace, dumpWorkspace, restoreWorkspace } from './workspace'
@@ -302,9 +303,16 @@ program
 
 program
   .command('import-xml <workspace> <fileName>')
-  .description('dump workspace transactions and minio resources')
+  .description('Import Talants.')
   .action(async (workspace, fileName, cmd) => {
     return await importXml(transactorUrl, workspace, minio, fileName, mongodbUri, elasticUrl)
+  })
+
+program
+  .command('import-lead-csv <workspace> <fileName>')
+  .description('Import LEAD csv customer organizations')
+  .action(async (workspace, fileName, cmd) => {
+    return await importLead(transactorUrl, workspace, fileName)
   })
 
 program

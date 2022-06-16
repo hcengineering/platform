@@ -166,7 +166,6 @@ export default mergeIds(trackerId, tracker, {
     Views: '' as AnyComponent,
     Active: '' as AnyComponent,
     Backlog: '' as AnyComponent,
-    Board: '' as AnyComponent,
     Projects: '' as AnyComponent,
     IssuePresenter: '' as AnyComponent,
     ProjectTitlePresenter: '' as AnyComponent,

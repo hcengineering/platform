@@ -55,7 +55,7 @@
       "name": "Debug tool",
       "type": "node",
       "request": "launch",
-      "args": ["src/index.ts", "backup-workspace", "ws1", "../../../dump/test/ws1"],
+      "args": ["src/index.ts", "import-lead-csv", "ws1", "../../../suho/COMPANIES_Agency_of_AlexeyS.csv"],
       "env": {
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
@@ -67,8 +67,7 @@
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,
-      "cwd": "${workspaceRoot}/dev/tool",
-      "protocol": "inspector"
+      "cwd": "${workspaceRoot}/dev/tool"
     }
   ]
 }

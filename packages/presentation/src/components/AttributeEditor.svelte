@@ -42,7 +42,7 @@
   $: if (presenterClass !== undefined) {
     const typeClass = hierarchy.getClass(presenterClass.attrClass)
     const editorMixin = hierarchy.as(typeClass, view.mixin.AttributeEditor)
-    editor = getResource(editorMixin.editor)
+    editor = getResource(editorMixin.inlineEditor)
   }
 
   function onChange (value: any) {

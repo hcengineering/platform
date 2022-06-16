@@ -419,7 +419,7 @@ export function createModel (builder: Builder): void {
   builder.mixin(tracker.class.Issue, core.class.Class, setting.mixin.Editable, {})
 
   builder.mixin(tracker.class.TypeProjectStatus, core.class.Class, view.mixin.AttributeEditor, {
-    editor: tracker.component.ProjectStatusEditor
+    inlineEditor: tracker.component.ProjectStatusEditor
   })
 
   builder.mixin(tracker.class.Issue, core.class.Class, notification.mixin.LastViewAttached, {})
@@ -586,7 +586,7 @@ export function createModel (builder: Builder): void {
   )
 
   builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.ClassFilters, {
-    filters: ['status', 'priority', 'project']
+    filters: ['status', 'priority', 'assignee', 'project', 'dueDate', 'modifiedOn']
   })
 
   builder.createDoc(

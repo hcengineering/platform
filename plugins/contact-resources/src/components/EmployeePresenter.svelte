@@ -17,7 +17,9 @@
 
   let container: HTMLElement
 
-  const onEdit = () => {
+  const onEdit = (evt: MouseEvent) => {
+    evt?.preventDefault()
+    evt?.stopPropagation()
     if (value) {
       showPopup(
         EmployeePreviewPopup,

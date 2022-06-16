@@ -14,8 +14,9 @@ test.describe('contact tests', () => {
     await page.goto(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp`)
     // Click #profile-button
     await page.click('#profile-button')
-    // Click text=Setting
-    await page.click('text=Setting')
+    await page.click('.antiPopup-submenu >> text=Settings')
+    // Click button:has-text("Setting")
+    await page.click('button:has-text("Setting")')
     await expect(page).toHaveURL(
       `${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/setting%3Aids%3ASettingApp/setting`
     )
@@ -46,8 +47,9 @@ test.describe('contact tests', () => {
     await page.goto(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp`)
     // Click #profile-button
     await page.click('#profile-button')
-    // Click text=Templates
-    await page.click('text=Templates')
+    await page.click('.antiPopup-submenu >> text=Settings')
+    // Click button:has-text("Templates")
+    await page.click('button:has-text("Templates")')
     await expect(page).toHaveURL(
       `${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/setting%3Aids%3ASettingApp/message-templates`
     )
@@ -80,8 +82,9 @@ test.describe('contact tests', () => {
     await page.goto(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp`)
     // Click #profile-button
     await page.click('#profile-button')
-    // Click text=Manage Statuses
-    await page.click('text=Manage Statuses')
+    await page.click('.antiPopup-submenu >> text=Settings')
+    // Click button:has-text("Manage Statuses")
+    await page.click('button:has-text("Manage Statuses")')
     await expect(page).toHaveURL(
       `${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/setting%3Aids%3ASettingApp/statuses`
     )

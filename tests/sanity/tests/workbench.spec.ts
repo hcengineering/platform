@@ -53,4 +53,16 @@ test.describe('workbench tests', () => {
     // Click text=John Appleseed
     await expect(page.locator('text=John Appleseed')).toBeVisible()
   })
+  test('submenu', async ({ page }) => {
+    // await page.goto('http://localhost:8080/workbench%3Acomponent%3AWorkbenchApp');
+    // Click #profile-button
+    await page.click('#profile-button')
+    // Click text=Settings
+    await page.click('.antiPopup-submenu >> text=Settings')
+    // Click button:has-text("Terms")
+    await page.click('button:has-text("Terms")')
+    await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/setting%3Aids%3ASettingApp/terms`)
+    // Click .ac-header
+    await expect(page.locator('.ac-header >> text=Terms')).toBeVisible()
+  })
 })

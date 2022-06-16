@@ -31,6 +31,9 @@
     "CreateReminder": "Создать напоминание",
     "CreatedReminder": "Создал напоминание",
     "Reminders": "Напоминания",
-    "NoReminders": "Нет напоминаний"
+    "NoReminders": "Нет напоминаний",
+    "AllDay": "Весь день",
+    "AndMore": "И еще {count}",
+    "CreateEvent": "Создать событие"
   }
 }

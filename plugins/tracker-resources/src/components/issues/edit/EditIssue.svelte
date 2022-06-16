@@ -19,7 +19,6 @@
   import presentation, { createQuery, getClient, MessageViewer } from '@anticrm/presentation'
   import type { Issue, IssueStatus, Team } from '@anticrm/tracker'
   import {
-    ActionIcon,
     Button,
     EditBox,
     IconDownOutline,
@@ -203,11 +202,11 @@
     </svelte:fragment>
     <svelte:fragment slot="tools">
       {#if isEditing}
-        <Button kind="transparent" label={presentation.string.Cancel} on:click={cancelEditing} />
+        <Button kind={'transparent'} label={presentation.string.Cancel} on:click={cancelEditing} />
         <Button disabled={!canSave} label={presentation.string.Save} on:click={save} />
       {:else}
-        <Button icon={IconEdit} kind="transparent" size="medium" on:click={edit} />
-        <ActionIcon icon={IconMoreH} size={'medium'} action={showMenu} />
+        <Button icon={IconEdit} kind={'transparent'} size={'medium'} on:click={edit} />
+        <Button icon={IconMoreH} kind={'transparent'} size={'medium'} on:click={showMenu} />
       {/if}
     </svelte:fragment>
 

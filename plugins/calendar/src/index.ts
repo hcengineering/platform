@@ -103,7 +103,8 @@ const calendarPlugin = plugin(calendarId, {
     Reminders: '' as IntlString
   },
   ids: {
-    ReminderNotification: '' as Ref<NotificationType>
+    ReminderNotification: '' as Ref<NotificationType>,
+    NoAttached: '' as Ref<Event>
   }
 })
 
