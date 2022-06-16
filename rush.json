@@ -1327,6 +1327,26 @@
       "packageName": "@anticrm/pod-backup",
       "projectFolder": "pods/backup",
       "shouldPublish": false
-    }
+    },
+    {
+      "packageName": "@anticrm/hr",
+      "projectFolder": "plugins/hr",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/hr-assets",
+      "projectFolder": "plugins/hr-assets",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/hr-resources",
+      "projectFolder": "plugins/hr-resources",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/model-hr",
+      "projectFolder": "models/hr",
+      "shouldPublish": true
+    },
   ]
 }
