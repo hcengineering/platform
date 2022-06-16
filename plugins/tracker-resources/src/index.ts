@@ -21,7 +21,6 @@ import Inbox from './components/inbox/Inbox.svelte'
 import Active from './components/issues/Active.svelte'
 import AssigneePresenter from './components/issues/AssigneePresenter.svelte'
 import Backlog from './components/issues/Backlog.svelte'
-import Board from './components/issues/Board.svelte'
 import DueDatePresenter from './components/issues/DueDatePresenter.svelte'
 import EditIssue from './components/issues/edit/EditIssue.svelte'
 import IssueItem from './components/issues/IssueItem.svelte'
@@ -111,7 +110,6 @@ export default async (): Promise<Resources> => ({
     NopeComponent,
     Active,
     Backlog,
-    Board,
     Inbox,
     Issues,
     MyIssues,
