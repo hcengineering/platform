@@ -82,7 +82,7 @@ test.describe('issues-status-display', () => {
     test(`${panel}-panel`, async ({ page }) => {
       const locator = page.locator('.antiPanel-component >> .antiPanel-component')
       await page.locator(`text="${panel}"`).click()
-      await page.click('[name="tooltip-view:string:Table"]')
+      await page.click('[name="tooltip-tracker:string:List"]')
       await expect(locator).toContainText(statuses)
       if (excluded.length > 0) await expect(locator).not.toContainText(excluded)
       await page.click('[name="tooltip-tracker:string:Board"]')
@@ -91,5 +91,21 @@ test.describe('issues-status-display', () => {
         await expect(page.locator(`.panel-container:has-text("${status}")`)).toContainText(getIssueName(status))
       }
     })
+  }
+})
+
+test('save-active-viewlet', async ({ page }) => {
+  const panels = ['Issues', 'Active', 'Backlog']
+  const viewletTooltips = ['Board', 'List']
+  await navigate(page)
+  for (const viewletTooltip of viewletTooltips) {
+    for (const panel of panels) {
+      await page.click(`text="${panel}"`)
+      await page.click(`[name="tooltip-tracker:string:${viewletTooltip}"]`)
+    }
+    for (const panel of panels) {
+      await page.click(`text="${panel}"`)
+      await expect(page.locator(`[name="tooltip-tracker:string:${viewletTooltip}"] >> button`)).toHaveClass(/selected/)
+    }
   }
 })

@@ -3,7 +3,7 @@
   import { Team, ViewOptions } from '@anticrm/tracker'
   import { Button, Icon, Tooltip, IconOptions, showPopup, eventToHTMLElement } from '@anticrm/ui'
   import { Filter, Viewlet } from '@anticrm/view'
-  import { FilterButton } from '@anticrm/view-resources'
+  import { FilterButton, setActiveViewletId } from '@anticrm/view-resources'
   import tracker from '../../plugin'
   import ViewOptionsPopup from './ViewOptionsPopup.svelte'
 
@@ -39,6 +39,7 @@
             class="ac-header__icon-button"
             class:selected={viewlet?._id === v._id}
             on:click={() => {
+              setActiveViewletId(v._id)
               viewlet = v
             }}
           >

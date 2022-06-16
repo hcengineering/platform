@@ -301,7 +301,7 @@ export function createModel (builder: Builder): void {
     view.class.ViewletDescriptor,
     core.space.Model,
     {
-      label: view.string.Table,
+      label: tracker.string.List,
       icon: view.icon.Table,
       component: tracker.component.ListView
     },

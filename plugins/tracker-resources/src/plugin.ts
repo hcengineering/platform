@@ -135,6 +135,7 @@ export default mergeIds(trackerId, tracker, {
     ProjectMembersTitle: '' as IntlString,
     ProjectLeadSearchPlaceholder: '' as IntlString,
     ProjectMembersSearchPlaceholder: '' as IntlString,
+    List: '' as IntlString,
 
     IssueTitlePlaceholder: '' as IntlString,
     IssueDescriptionPlaceholder: '' as IntlString,
