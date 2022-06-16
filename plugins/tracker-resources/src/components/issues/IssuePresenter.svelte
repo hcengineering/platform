@@ -14,6 +14,7 @@
 -->
 <script lang="ts">
   import { WithLookup } from '@anticrm/core'
+  import { createQuery } from '@anticrm/presentation'
   import type { Issue, Team } from '@anticrm/tracker'
   import { Icon, showPanel } from '@anticrm/ui'
   import tracker from '../../plugin'
@@ -25,7 +26,16 @@
     showPanel(tracker.component.EditIssue, value._id, value._class, 'content')
   }
 
-  $: title = `${(value?.$lookup?.space as Team)?.identifier}-${value.number}`
+  const spaceQuery = createQuery()
+  let currentTeam: Team | undefined = value?.$lookup?.space
+
+  $: if (value?.$lookup?.space === undefined) {
+    spaceQuery.query(tracker.class.Team, { _id: value.space }, (res) => ([currentTeam] = res))
+  } else {
+    spaceQuery.unsubscribe()
+  }
+
+  $: title = currentTeam ? `${currentTeam.identifier}-${value.number}` : `${value.number}`
 </script>
 
 {#if value}
