@@ -104,6 +104,8 @@
     "@anticrm/rekoni": "~0.6.0",
     "got": "^11.8.3",
     "@anticrm/tags": "~0.6.2",
-    "@anticrm/server-backup": "~0.6.0"
+    "@anticrm/server-backup": "~0.6.0",
+    "csv-parse": "~5.1.0",
+    "@anticrm/lead": "~0.6.0"
   }
 }
