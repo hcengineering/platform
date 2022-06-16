@@ -16,7 +16,7 @@
   import { createEventDispatcher } from 'svelte'
   import { AttachedData, Ref, SortingOrder, WithLookup } from '@anticrm/core'
   import { Issue, IssueStatus } from '@anticrm/tracker'
-  import { getClient } from '@anticrm/presentation'
+  import { createQuery, getClient } from '@anticrm/presentation'
   import { tooltip, TooltipAlignment } from '@anticrm/ui'
   import type { ButtonKind, ButtonSize } from '@anticrm/ui'
   import tracker from '../../plugin'
@@ -34,6 +34,7 @@
   export let width: string | undefined = '100%'
 
   const client = getClient()
+  const statusesQuery = createQuery()
   const dispatch = createEventDispatcher()
 
   const handleStatusChanged = async (newStatus: Ref<IssueStatus> | undefined) => {
@@ -49,14 +50,17 @@
   }
   $: if (!statuses) {
     const query = '_id' in value ? { attachedTo: value.space } : {}
-    client
-      .findAll(tracker.class.IssueStatus, query, {
+    statusesQuery.query(
+      tracker.class.IssueStatus,
+      query,
+      (result) => {
+        statuses = result
+      },
+      {
         lookup: { category: tracker.class.IssueStatusCategory },
         sort: { rank: SortingOrder.Ascending }
-      })
-      .then((result) => {
-        statuses = result
-      })
+      }
+    )
   }
 </script>
 
