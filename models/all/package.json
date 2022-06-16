@@ -31,6 +31,7 @@
   },
   "dependencies": {
     "@anticrm/model": "~0.6.0",
+    "@anticrm/model-automation": "~0.6.0",
     "@anticrm/model-core": "~0.6.0",
     "@anticrm/model-view": "~0.6.0",
     "@anticrm/model-workbench": "~0.6.1",

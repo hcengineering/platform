@@ -19,6 +19,7 @@ import jsonVersion from './version.json'
 import { Builder } from '@anticrm/model'
 import { createModel as activityModel } from '@anticrm/model-activity'
 import { createModel as attachmentModel } from '@anticrm/model-attachment'
+import { createModel as automationModel } from '@anticrm/model-automation'
 import { createModel as chunterModel } from '@anticrm/model-chunter'
 import { createModel as contactModel } from '@anticrm/model-contact'
 import { createModel as coreModel } from '@anticrm/model-core'
@@ -99,7 +100,8 @@ const builders: [(b: Builder) => void, string][] = [
   [serverTelegramModel, 'server-telegram'],
   [trackerModel, 'tracker'],
   [boardModel, 'board'],
-  [calendarModel, 'calendar']
+  [calendarModel, 'calendar'],
+  [automationModel, 'automation']
 ]
 
 for (const [b, id] of builders) {
