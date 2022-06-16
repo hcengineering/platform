@@ -100,7 +100,7 @@
   style={width ? 'width: ' + width : ''}
   {title}
   type={kind === 'primary' ? 'submit' : 'button'}
-  on:click
+  on:click|stopPropagation|preventDefault
   on:focus
   on:blur
   on:mousemove

@@ -1,6 +1,8 @@
 # Changelog
 
-## 0.6.27 (upcoming)
+## 0.6.28 (upcoming)
+
+## 0.6.27
 
 Platform:
 

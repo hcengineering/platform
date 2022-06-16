@@ -4068,6 +4068,28 @@ packages:
       cssom: 0.3.8
     dev: false
 
+  /csv-generate/4.1.0:
+    resolution: {integrity: sha512-Z17wI0xmDfpwzB7lShyK7INBt0YMyh5kV7svWTwsBSOa30T6Lq1fHHasmSCtf2rRTI7GnTk52HQRYBk0ToAXQQ==}
+    dev: false
+
+  /csv-parse/5.1.0:
+    resolution: {integrity: sha512-JL+Q6YEikT2uoe57InjFFa6VejhSv0tDwOxeQ1bVQKeUC/NCnLAAZ8n3PzowPQQLuZ37fysDYZipB2UJkH9C6A==}
+    dev: false
+
+  /csv-stringify/6.1.0:
+    resolution: {integrity: sha512-rdBqiy77TczvhGlpLHyoph2adMs6WMnmQY4PBRqeIWykI1FLnVCppnRdso8faGj2+eN7izk9YlbFyZkOrL9rAQ==}
+    dev: false
+
+  /csv/6.1.0:
+    resolution: {integrity: sha512-kvd8YWk7emi/0fXhuv+IKaanNFhPi5Up1wT4ZGVUu39bd9lRWpxQu1F7eaRfxTEc9mGxeMWIzEilKKrL0MoEnQ==}
+    engines: {node: '>= 0.1.90'}
+    dependencies:
+      csv-generate: 4.1.0
+      csv-parse: 5.1.0
+      csv-stringify: 6.1.0
+      stream-transform: 3.1.0
+    dev: false
+
   /data-urls/2.0.0:
     resolution: {integrity: sha512-X5eWTSXO/BJmpdIKCRuKUgSCgAN0OwliVK3yPKbwIWU1Tdw5BRajxlzMidvh+gwko9AfQ9zIj52pzF91Q3YAvQ==}
     engines: {node: '>=10'}
@@ -8786,6 +8808,10 @@ packages:
       readable-stream: 3.6.0
     dev: false
 
+  /stream-transform/3.1.0:
+    resolution: {integrity: sha512-ncT/rST/M2N2zGLacJmeB7TNq/XS8Ck0xqvhYX6bgLwSPTSZLVFCSvNnwTU+RYhk9fAfwzCkYH9I5kdgcDMvfw==}
+    dev: false
+
   /streamsearch/1.1.0:
     resolution: {integrity: sha512-Mcc5wHehp9aXz1ax6bZUyY5afg9u2rv5cqQI3mRrYkGC8rW2hM02jWuwjtL++LS5qinSyhj2QfLyNsuc+VsExg==}
     engines: {node: '>=10.0.0'}
@@ -12208,7 +12234,7 @@ packages:
     dev: false
 
   file:projects/model-tracker.tgz_typescript@4.7.2:
-    resolution: {integrity: sha512-3giT5Ql8N6I6UaeU038P16HSmmhnQdy2eIYaKok1cF+AX0Z/0dXcR/bSvgQ88WJxMrtAsusZkOkF+PyvUUJOYg==, tarball: file:projects/model-tracker.tgz}
+    resolution: {integrity: sha512-uRgEbWiEJ7vGg8Rwf72rMT+6dqDEiAR7Vn5UiH9j7geeOvz43eusMLcNJ/CAa9/b2301dHO3VKT5h/YnibM5GA==, tarball: file:projects/model-tracker.tgz}
     id: file:projects/model-tracker.tgz
     name: '@rush-temp/model-tracker'
     version: 0.0.0
@@ -14221,7 +14247,7 @@ packages:
     dev: false
 
   file:projects/tool.tgz:
-    resolution: {integrity: sha512-5wm5S9YigxgUWQofHRnls3wij0i4pohO/j/teRYNlR+VbEw1P82GIpZoSmOU1wL1VS+Kd2y29N8Gg8KwGsOA6w==, tarball: file:projects/tool.tgz}
+    resolution: {integrity: sha512-YguV0HWnBdoHtfM//K6D5IJDro71EfyC7EbAsk7jPk1BR4NEq8fcPqUNO2ySQNOmCeRT8FlYIX5D8iiib+SQug==, tarball: file:projects/tool.tgz}
     name: '@rush-temp/tool'
     version: 0.0.0
     dependencies:
@@ -14238,6 +14264,8 @@ packages:
       '@typescript-eslint/parser': 5.27.0_eslint@7.32.0+typescript@4.7.2
       commander: 8.3.0
       cross-env: 7.0.3
+      csv: 6.1.0
+      csv-parse: 5.1.0
       esbuild: 0.12.29
       eslint: 7.32.0
       eslint-config-standard-with-typescript: 21.0.1_99a5fe2f2ae1dc64d6b59974c931eb2a

@@ -224,7 +224,7 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(board.class.CardCover, core.class.Class, view.mixin.AttributeEditor, {
-    editor: board.component.CardCoverEditor
+    inlineEditor: board.component.CardCoverEditor
   })
 
   builder.createDoc(

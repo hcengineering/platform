@@ -75,6 +75,8 @@
     if (!isEditable) {
       return
     }
+    event?.preventDefault()
+    event?.stopPropagation()
 
     showPopup(
       UsersPopup,

@@ -1,8 +1,15 @@
 <script lang="ts">
-  import core, { Ref, Space, WithLookup } from '@anticrm/core'
+  import core, { DocumentQuery, Ref, Space, WithLookup } from '@anticrm/core'
   import { IntlString, translate } from '@anticrm/platform'
   import { getClient } from '@anticrm/presentation'
-  import { IssuesDateModificationPeriod, IssuesGrouping, IssuesOrdering, Team, ViewOptions } from '@anticrm/tracker'
+  import {
+    Issue,
+    IssuesDateModificationPeriod,
+    IssuesGrouping,
+    IssuesOrdering,
+    Team,
+    ViewOptions
+  } from '@anticrm/tracker'
   import { Button, IconDetails } from '@anticrm/ui'
   import view, { Filter, Viewlet } from '@anticrm/view'
   import { FilterBar } from '@anticrm/view-resources'
@@ -11,7 +18,7 @@
   import IssuesHeader from './IssuesHeader.svelte'
 
   export let currentSpace: Ref<Team> | undefined
-  export let query = {}
+  export let query: DocumentQuery<Issue> = {}
   export let title: IntlString | undefined = undefined
   export let label: string = ''
 
@@ -26,7 +33,7 @@
     shouldShowEmptyGroups: false,
     shouldShowSubIssues: false
   }
-  let resultQuery = {}
+  let resultQuery: DocumentQuery<Issue> = {}
 
   const client = getClient()
 

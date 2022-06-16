@@ -9,7 +9,8 @@ const emptyTooltip: LabelAndProps = {
   component: undefined,
   props: undefined,
   anchor: undefined,
-  onUpdate: undefined
+  onUpdate: undefined,
+  kind: 'tooltip'
 }
 let storedValue: LabelAndProps = emptyTooltip
 export const tooltipstore = writable<LabelAndProps>(emptyTooltip)
@@ -23,10 +24,14 @@ export function tooltip (node: HTMLElement, options?: LabelAndProps): any {
   const show = (): void => {
     const shown = !!(storedValue.label !== undefined || storedValue.component !== undefined)
     if (!shown) {
-      clearTimeout(toHandler)
-      toHandler = setTimeout(() => {
-        showTooltip(opt.label, node, opt.direction, opt.component, opt.props, opt.anchor, opt.onUpdate)
-      }, 250)
+      if (opt.kind !== 'submenu') {
+        clearTimeout(toHandler)
+        toHandler = setTimeout(() => {
+          showTooltip(opt.label, node, opt.direction, opt.component, opt.props, opt.anchor, opt.onUpdate, opt.kind)
+        }, 250)
+      } else {
+        showTooltip(opt.label, node, opt.direction, opt.component, opt.props, opt.anchor, opt.onUpdate, opt.kind)
+      }
     }
   }
   const hide = (): void => {
@@ -53,7 +58,8 @@ export function showTooltip (
   component?: AnySvelteComponent | AnyComponent,
   props?: any,
   anchor?: HTMLElement,
-  onUpdate?: (result: any) => void
+  onUpdate?: (result: any) => void,
+  kind?: 'tooltip' | 'submenu'
 ): void {
   storedValue = {
     label: label,
@@ -62,7 +68,8 @@ export function showTooltip (
     component: component,
     props: props,
     anchor: anchor,
-    onUpdate: onUpdate
+    onUpdate: onUpdate,
+    kind: kind ?? 'tooltip'
   }
   tooltipstore.set(storedValue)
 }
