@@ -141,7 +141,6 @@
         kind="no-border"
         size="small"
         justify="center"
-        width=""
         on:change={({ detail }) => (newIssue.priority = detail)}
       />
       <AssigneeEditor

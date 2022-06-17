@@ -188,7 +188,6 @@
             kind={'link-bordered'}
             size={'inline'}
             justify={'center'}
-            width={''}
           />
           <ProjectEditor
             value={issue}

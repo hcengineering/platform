@@ -232,6 +232,7 @@
                       <svelte:component
                         this={attributeModel.presenter}
                         value={getObjectValue(attributeModel.key, docObject) ?? ''}
+                        width="100%"
                         {...attributeModel.props}
                       />
                     </div>
