@@ -1,7 +1,7 @@
 {
   "string": {
-    "CreateFunnel": "Create funnel",
-    "CreateLead": "Create lead",
+    "CreateFunnel": "New Funnel",
+    "CreateLead": "New Lead",
     "Funnel": "Funnel",
     "FunnelName": "Funnel name",
     "Funnels": "Funnels",

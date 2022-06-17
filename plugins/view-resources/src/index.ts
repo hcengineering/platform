@@ -65,7 +65,14 @@ export { default as ContextMenu } from './components/Menu.svelte'
 export { default as TableBrowser } from './components/TableBrowser.svelte'
 export * from './context'
 export * from './selection'
-export { buildModel, getCollectionCounter, getObjectPresenter, LoadingProps } from './utils'
+export {
+  buildModel,
+  getCollectionCounter,
+  getObjectPresenter,
+  LoadingProps,
+  setActiveViewletId,
+  getActiveViewletId
+} from './utils'
 export {
   HTMLPresenter,
   Table,

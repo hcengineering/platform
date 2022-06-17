@@ -16,7 +16,7 @@
   import { AttachmentStyledBox } from '@anticrm/attachment-resources'
   import { Employee } from '@anticrm/contact'
   import core, { AttachedData, generateId, Ref, SortingOrder, WithLookup } from '@anticrm/core'
-  import presentation, { Card, createQuery, getClient, SpaceSelector } from '@anticrm/presentation'
+  import { Card, createQuery, getClient, SpaceSelector } from '@anticrm/presentation'
   import { calcRank, Issue, IssuePriority, IssueStatus, Project, Team } from '@anticrm/tracker'
   import {
     ActionIcon,
@@ -33,11 +33,11 @@
   import tracker from '../plugin'
   import AssigneeEditor from './issues/AssigneeEditor.svelte'
   import ParentIssue from './issues/ParentIssue.svelte'
-  import SetParentIssueActionPopup from './SetParentIssueActionPopup.svelte'
+  import PriorityEditor from './issues/PriorityEditor.svelte'
+  import StatusEditor from './issues/StatusEditor.svelte'
   import ProjectSelector from './ProjectSelector.svelte'
   import SetDueDateActionPopup from './SetDueDateActionPopup.svelte'
-  import StatusEditor from './issues/StatusEditor.svelte'
-  import PriorityEditor from './issues/PriorityEditor.svelte'
+  import SetParentIssueActionPopup from './SetParentIssueActionPopup.svelte'
 
   export let space: Ref<Team>
   export let status: Ref<IssueStatus> | undefined = undefined
@@ -215,16 +215,14 @@
 >
   <svelte:fragment slot="header">
     <SpaceSelector _class={tracker.class.Team} label={tracker.string.Team} bind:space={_space} />
-  </svelte:fragment>
-  <svelte:fragment slot="space">
-    <Button
+    <!-- <Button
       icon={tracker.icon.Home}
       label={presentation.string.Save}
       size={'small'}
       kind={'no-border'}
       disabled
       on:click={() => {}}
-    />
+    /> -->
   </svelte:fragment>
   {#if parentIssue}
     <ParentIssue issue={parentIssue} on:close={clearParentIssue} />

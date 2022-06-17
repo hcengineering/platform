@@ -422,7 +422,7 @@
   }}
   bind:createMore
 >
-  <svelte:fragment slot="space">
+  <svelte:fragment slot="header">
     <Button
       icon={contact.icon.Person}
       label={contact.string.Person}

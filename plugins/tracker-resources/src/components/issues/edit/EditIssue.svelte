@@ -86,13 +86,10 @@
         ;[issue] = result
         title = issue.title
         description = issue.description
+        currentTeam = issue.$lookup?.space
       },
-      { lookup: { attachedTo: tracker.class.Issue } }
+      { lookup: { attachedTo: tracker.class.Issue, space: tracker.class.Team } }
     )
-
-  $: if (issue) {
-    client.findOne(tracker.class.Team, { _id: issue.space }).then((r) => (currentTeam = r))
-  }
 
   $: currentTeam &&
     statusesQuery.query(
