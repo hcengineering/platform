@@ -1,5 +1,13 @@
 {
   "string": {
-    "Automation": "Automation"
+    "Automation": "Automation",
+    "Actions": "Actions",
+    "Chat": "Chat",
+    "Content": "Content",
+    "Dates": "Dates",
+    "Tracker": "Tracker",
+    "Trigger": "Trigger",
+    "Set": "Set",
+    "To": "to"
   }
 }

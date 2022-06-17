@@ -69,7 +69,15 @@ export default plugin(automationId, {
     AutomationSupport: '' as Ref<Mixin<AutomationSupport<Doc>>>
   },
   string: {
-    Automation: '' as IntlString
+    Automation: '' as IntlString,
+    Actions: '' as IntlString,
+    Chat: '' as IntlString,
+    Content: '' as IntlString,
+    Dates: '' as IntlString,
+    Tracker: '' as IntlString,
+    Trigger: '' as IntlString,
+    Set: '' as IntlString,
+    To: '' as IntlString
   },
   icon: {
     Automation: '' as Asset
