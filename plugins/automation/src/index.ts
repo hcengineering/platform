@@ -18,35 +18,58 @@ export enum CommandType {
 /**
  * @public
  */
-export interface AutomationSupport<T extends Doc> extends Class<Doc> {
-  attributes: {
-    name: keyof T
-    sort?: {
-      groupBy?: DocumentQuery<Doc>
-    }
-  }[]
-  trigger: {
-    action: {
-      mode: ('editor' | 'context')[]
-    }
-  }
+export interface AttributeAutomationSupport<T extends Doc> {
+  name: keyof T
   sort?: {
-    groupBy?: DocumentQuery<T>
+    groupBy?: DocumentQuery<Doc>
   }
 }
 
 /**
  * @public
  */
-export interface Command {
+export interface AttributeAutomationTriggerSupport<T extends Doc> extends Class<Doc> {
+  name: keyof T
+}
+
+/**
+ * @public
+ */
+export interface AutomationTriggerSupport<T extends Doc> extends Class<Doc> {
+  action?: {
+    mode: ('editor' | 'context')[]
+  }
+  attributes?: AttributeAutomationTriggerSupport<T>[]
+}
+/**
+ * @public
+ */
+export interface AutomationSortSupport<T extends Doc> extends Class<Doc> {
+  groupBy?: DocumentQuery<T>
+}
+/**
+ * @public
+ */
+export interface AutomationSupport<T extends Doc> extends Class<Doc> {
+  attributes: AttributeAutomationSupport<T>[]
+  trigger: AutomationTriggerSupport<T>
+  sort?: AutomationSortSupport<T>
+}
+
+/**
+ * @public
+ */
+export interface Command<T extends Doc> {
+  fetch?: DocumentQuery<T>
   type: CommandType
 }
 
 /**
  * @public
  */
-export interface UpdateDocCommand<T extends Doc> extends Command {
+export interface UpdateDocCommand<T extends Doc> extends Command<T> {
   type: CommandType.UpdateDoc
+  targetClass: Ref<Class<T>>
   query: DocumentUpdate<T>
 }
 
@@ -54,11 +77,13 @@ export interface UpdateDocCommand<T extends Doc> extends Command {
  * @public
  */
 export interface Automation<T extends Doc> extends AttachedDoc {
+  name: string
+  description?: string
   targetClass: Ref<Class<T>>
   trigger: {
     action?: Ref<Action>
   }
-  commands: Command[]
+  commands: Command<T>[]
 }
 
 export default plugin(automationId, {
@@ -77,7 +102,11 @@ export default plugin(automationId, {
     Tracker: '' as IntlString,
     Trigger: '' as IntlString,
     Set: '' as IntlString,
-    To: '' as IntlString
+    To: '' as IntlString,
+    AddTrigger: '' as IntlString,
+    AddMenu: '' as IntlString,
+    MenuName: '' as IntlString,
+    MenuMode: '' as IntlString
   },
   icon: {
     Automation: '' as Asset

@@ -1,4 +1,4 @@
-import { Asset } from '@anticrm/platform'
+import { Action } from '@anticrm/view'
 
 export enum ActionTab {
   Add = 'Add',
@@ -11,9 +11,5 @@ export enum ActionTab {
 }
 
 export interface Trigger {
-  action: {
-    label: string
-    icon: Asset
-    mode: Array<'context' | 'editor'>
-  }
+  action: Action
 }

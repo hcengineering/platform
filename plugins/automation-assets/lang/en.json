@@ -8,6 +8,10 @@
     "Tracker": "Tracker",
     "Trigger": "Trigger",
     "Set": "Set",
-    "To": "to"
+    "To": "to",
+    "AddTrigger": "Add trigger",
+    "MenuName": "Action Name",
+    "MenuMode": "Action mode",
+    "AddMenu": "Add menu"
   }
 }
