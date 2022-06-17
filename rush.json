@@ -1348,5 +1348,20 @@
       "projectFolder": "models/hr",
       "shouldPublish": true
     },
+    {
+      "packageName": "@anticrm/server-hr",
+      "projectFolder": "server-plugins/hr",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/model-server-hr",
+      "projectFolder": "models/server-hr",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/server-hr-resources",
+      "projectFolder": "server-plugins/hr-resources",
+      "shouldPublish": true
+    }
   ]
 }

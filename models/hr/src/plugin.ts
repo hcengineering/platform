@@ -13,16 +13,31 @@
 // limitations under the License.
 //
 
+import { Ref } from '@anticrm/core'
 import { hrId } from '@anticrm/hr'
 import hr from '@anticrm/hr-resources/src/plugin'
 import { IntlString, mergeIds } from '@anticrm/platform'
 import { AnyComponent } from '@anticrm/ui'
+import { Action, ActionCategory } from '@anticrm/view'
 
 export default mergeIds(hrId, hr, {
   string: {
-    HRApplication: '' as IntlString
+    HRApplication: '' as IntlString,
+    Departments: '' as IntlString,
+    ShowEmployees: '' as IntlString
   },
   component: {
-    Structure: '' as AnyComponent
+    Structure: '' as AnyComponent,
+    EditDepartment: '' as AnyComponent,
+    DepartmentStaff: '' as AnyComponent,
+    DepartmentEditor: '' as AnyComponent
+  },
+  category: {
+    HR: '' as Ref<ActionCategory>
+  },
+  action: {
+    EditDepartment: '' as Ref<Action>,
+    ShowEmployees: '' as Ref<Action>,
+    DeleteDepartment: '' as Ref<Action>
   }
 })

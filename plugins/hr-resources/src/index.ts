@@ -14,8 +14,16 @@
 //
 
 import { Resources } from '@anticrm/platform'
+import Structure from './components/Structure.svelte'
+import DepartmentStaff from './components/DepartmentStaff.svelte'
+import EditDepartment from './components/EditDepartment.svelte'
+import DepartmentEditor from './components/DepartmentEditor.svelte'
 
 export default async (): Promise<Resources> => ({
   component: {
+    Structure,
+    EditDepartment,
+    DepartmentStaff,
+    DepartmentEditor
   }
 })

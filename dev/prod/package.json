@@ -144,6 +144,11 @@
     "@anticrm/text-editor": "~0.6.0",
     "@anticrm/board": "~0.6.0",
     "@anticrm/board-assets": "~0.6.0",
-    "@anticrm/board-resources": "~0.6.0"
+    "@anticrm/board-resources": "~0.6.0",
+    "@anticrm/hr": "~0.6.0",
+    "@anticrm/hr-assets": "~0.6.0",
+    "@anticrm/hr-resources": "~0.6.0",
+    "@anticrm/server-hr": "~0.6.0",
+    "@anticrm/server-hr-resources": "~0.6.0"
   }
 }

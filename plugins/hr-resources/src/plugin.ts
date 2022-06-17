@@ -19,6 +19,18 @@ import { IntlString, mergeIds } from '@anticrm/platform'
 export default mergeIds(hrId, hr, {
   string: {
     Department: '' as IntlString,
-    Structure: '' as IntlString
+    ParentDepartmentLabel: '' as IntlString,
+    Structure: '' as IntlString,
+    CreateDepartment: '' as IntlString,
+    CreateDepartmentLabel: '' as IntlString,
+    DepartmentPlaceholder: '' as IntlString,
+    TeamLead: '' as IntlString,
+    UnAssignLead: '' as IntlString,
+    MemberCount: '' as IntlString,
+    AssignLead: '' as IntlString,
+    TeamLeadTooltip: '' as IntlString,
+    MoveStaff: '' as IntlString,
+    MoveStaffDescr: '' as IntlString,
+    AddEmployee: '' as IntlString
   }
 })

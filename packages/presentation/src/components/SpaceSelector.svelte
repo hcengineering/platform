@@ -15,13 +15,17 @@
 <script lang="ts">
   import type { Class, DocumentQuery, Ref, Space } from '@anticrm/core'
   import type { IntlString } from '@anticrm/platform'
-  import { AnyComponent } from '@anticrm/ui'
+  import { AnyComponent, ButtonKind, ButtonSize } from '@anticrm/ui'
   import SpaceSelect from './SpaceSelect.svelte'
 
   export let space: Ref<Space> | undefined = undefined
   export let _class: Ref<Class<Space>>
   export let query: DocumentQuery<Space> = { archived: false }
   export let label: IntlString
+  export let kind: ButtonKind = 'no-border'
+  export let size: ButtonSize = 'small'
+  export let justify: 'left' | 'center' = 'center'
+  export let width: string | undefined = undefined
 
   export let create:
     | {
@@ -31,4 +35,17 @@
     | undefined = undefined
 </script>
 
-<SpaceSelect {create} focus focusIndex={-10} {_class} spaceQuery={query} {label} bind:value={space} />
+<SpaceSelect
+  {create}
+  focus
+  focusIndex={-10}
+  {_class}
+  spaceQuery={query}
+  {label}
+  {size}
+  {kind}
+  {justify}
+  {width}
+  bind:value={space}
+  on:change
+/>

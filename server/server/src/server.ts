@@ -60,6 +60,7 @@ import { serverTagsId } from '@anticrm/server-tags'
 import { serverTaskId } from '@anticrm/server-task'
 import { serverTrackerId } from '@anticrm/server-tracker'
 import { serverTelegramId } from '@anticrm/server-telegram'
+import { serverHrId } from '@anticrm/server-hr'
 import { Token } from '@anticrm/server-token'
 import { BroadcastCall, ClientSession, start as startJsonRpc } from '@anticrm/server-ws'
 import { Client as MinioClient } from 'minio'
@@ -137,6 +138,7 @@ export function start (
   addLocation(serverCalendarId, () => import('@anticrm/server-calendar-resources'))
   addLocation(serverGmailId, () => import('@anticrm/server-gmail-resources'))
   addLocation(serverTelegramId, () => import('@anticrm/server-telegram-resources'))
+  addLocation(serverHrId, () => import('@anticrm/server-hr-resources'))
 
   const middlewares: MiddlewareCreator[] = [ModifiedMiddleware.create, PrivateMiddleware.create]
 

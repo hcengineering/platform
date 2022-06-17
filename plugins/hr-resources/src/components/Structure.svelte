@@ -13,9 +13,73 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  
+  import { DocumentQuery, Ref } from '@anticrm/core'
+  import { Button, Icon, Label, Scroller, SearchEdit, showPopup, IconAdd, eventToHTMLElement } from '@anticrm/ui'
+  import type { Department } from '@anticrm/hr'
+  import hr from '../plugin'
+  import CreateDepartment from './CreateDepartment.svelte'
+  import DepartmentCard from './DepartmentCard.svelte'
+  import { createQuery } from '@anticrm/presentation'
+  import contact from '@anticrm/contact'
+
+  let search = ''
+  let resultQuery: DocumentQuery<Department> = {}
+
+  function updateResultQuery (search: string): void {
+    resultQuery = search === '' ? {} : { $search: search }
+  }
+
+  function showCreateDialog (ev: MouseEvent) {
+    showPopup(CreateDepartment, {}, eventToHTMLElement(ev))
+  }
+
+  const query = createQuery()
+
+  let descendants: Map<Ref<Department>, Department[]> = new Map<Ref<Department>, Department[]>()
+  let head: Department | undefined
+
+  query.query(
+    hr.class.Department,
+    resultQuery,
+    (res) => {
+      head = res.find((p) => p._id === hr.ids.Head)
+      descendants.clear()
+      for (const doc of res) {
+        const current = descendants.get(doc.space)
+        if (!current) {
+          descendants.set(doc.space, [doc])
+        } else {
+          current.push(doc)
+          descendants.set(doc.space, current)
+        }
+      }
+      descendants = descendants
+    },
+    {
+      lookup: {
+        teamLead: contact.class.Employee
+      }
+    }
+  )
 </script>
 
-<style lang="scss">
-  
-</style>
+<div class="ac-header full divide">
+  <div class="ac-header__wrap-title">
+    <div class="ac-header__icon"><Icon icon={hr.icon.Structure} size={'small'} /></div>
+    <span class="ac-header__title"><Label label={hr.string.Structure} /></span>
+  </div>
+
+  <SearchEdit
+    bind:value={search}
+    on:change={() => {
+      updateResultQuery(search)
+    }}
+  />
+  <Button label={hr.string.CreateDepartmentLabel} icon={IconAdd} kind={'primary'} on:click={showCreateDialog} />
+</div>
+
+<Scroller>
+  {#if head}
+    <DepartmentCard value={head} {descendants} />
+  {/if}
+</Scroller>

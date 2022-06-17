@@ -13,22 +13,25 @@
 // limitations under the License.
 //
 
-import type { Employee, Organization } from '@anticrm/contact'
-import type { Class, AttachedDoc, Doc, Ref, Space } from '@anticrm/core'
+import type { Employee } from '@anticrm/contact'
+import type { Class, Doc, Mixin, Ref, Space } from '@anticrm/core'
 import type { Asset, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 
 /**
  * @public
  */
-export interface Department extends AttachedDoc {
-  attachedTo: Ref<Department | Organization>
-  attachedToClass: Ref<Class<Department | Organization>>
-  members: number
-  name: string
+export interface Department extends Space {
+  space: Ref<Department>
   avatar?: string | null
-  departments?: number
-  head: Ref<Employee> | null
+  teamLead: Ref<Employee> | null
+}
+
+/**
+ * @public
+ */
+export interface Staff extends Employee {
+  department: Ref<Department>
 }
 
 /**
@@ -46,16 +49,16 @@ const hr = plugin(hrId, {
   class: {
     Department: '' as Ref<Class<Department>>
   },
+  mixin: {
+    Staff: '' as Ref<Mixin<Staff>>
+  },
   icon: {
     HR: '' as Asset,
     Department: '' as Asset,
     Structure: '' as Asset
   },
   ids: {
-    HeadOrganization: '' as Ref<Organization>
-  },
-  space: {
-    HR: '' as Ref<Space>
+    Head: '' as Ref<Department>
   }
 })
 

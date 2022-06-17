@@ -18,9 +18,9 @@ import hr, { hrId } from '@anticrm/hr'
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(hr.icon, {
-  HR: `${icons}#funnel`,
-  Department: `${icons}#lead`,
-  Structure: `${icons}#lead`
+  HR: `${icons}#hr`,
+  Department: `${icons}#department`,
+  Structure: `${icons}#structure`
 })
 
 addStringsLoader(hrId, async (lang: string) => await import(`../lang/${lang}.json`))

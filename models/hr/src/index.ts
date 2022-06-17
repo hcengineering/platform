@@ -13,28 +13,41 @@
 // limitations under the License.
 //
 
-import type { Employee, Organization } from '@anticrm/contact'
-import { Class, Ref } from '@anticrm/core'
-import { Builder, Model, UX } from '@anticrm/model'
-import core, { TAttachedDoc } from '@anticrm/model-core'
+import { Employee } from '@anticrm/contact'
+import contact, { TEmployee } from '@anticrm/model-contact'
+import { IndexKind, Ref } from '@anticrm/core'
+import type { Department, Staff } from '@anticrm/hr'
+import { Builder, Index, Mixin, Model, Prop, TypeRef, TypeString, UX } from '@anticrm/model'
+import core, { TSpace } from '@anticrm/model-core'
 import workbench from '@anticrm/model-workbench'
-import type { Department } from '@anticrm/hr'
 import hr from './plugin'
+import view, { createAction } from '@anticrm/model-view'
 
-@Model(hr.class.Department, core.class.AttachedDoc)
+@Model(hr.class.Department, core.class.Space)
 @UX(hr.string.Department, hr.icon.Department)
-export class TDepartment extends TAttachedDoc implements Department {
-  attachedTo!: Ref<Department | Organization>
-  attachedToClass!: Ref<Class<Department | Organization>>
-  members!: number
+export class TDepartment extends TSpace implements Department {
+  @Prop(TypeRef(hr.class.Department), hr.string.ParentDepartmentLabel)
+  declare space: Ref<Department>
+
+  @Prop(TypeString(), core.string.Name)
+  @Index(IndexKind.FullText)
   name!: string
+
   avatar?: string | null
-  departments?: number
-  head!: Ref<Employee> | null
+
+  @Prop(TypeRef(contact.class.Employee), hr.string.TeamLead)
+  teamLead!: Ref<Employee> | null
+}
+
+@Mixin(hr.mixin.Staff, contact.class.Employee)
+@UX(contact.string.Employee, hr.icon.HR)
+export class TStaff extends TEmployee implements Staff {
+  @Prop(TypeRef(hr.class.Department), hr.string.Department)
+  department!: Ref<Department>
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TDepartment)
+  builder.createModel(TDepartment, TStaff)
 
   builder.createDoc(
     workbench.class.Application,
@@ -50,14 +63,75 @@ export function createModel (builder: Builder): void {
             component: hr.component.Structure,
             icon: hr.icon.Structure,
             label: hr.string.Structure,
-            position: 'top',
-          },
+            position: 'top'
+          }
         ],
         spaces: []
-      },
+      }
     },
     hr.app.HR
   )
+
+  builder.mixin(hr.class.Department, core.class.Class, view.mixin.AttributeEditor, {
+    inlineEditor: hr.component.DepartmentEditor
+  })
+
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.ShowPanel,
+      actionProps: {
+        component: hr.component.EditDepartment
+      },
+      label: view.string.Open,
+      icon: view.icon.Open,
+      keyBinding: ['e'],
+      input: 'any',
+      category: hr.category.HR,
+      target: hr.class.Department,
+      context: { mode: 'context', application: hr.app.HR, group: 'top' }
+    },
+    hr.action.EditDepartment
+  )
+
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.ShowPopup,
+      actionProps: {
+        component: hr.component.DepartmentStaff,
+        element: 'float'
+      },
+      label: hr.string.ShowEmployees,
+      icon: contact.icon.Person,
+      keyBinding: ['m'],
+      input: 'any',
+      category: hr.category.HR,
+      target: hr.class.Department,
+      context: { mode: 'context', application: hr.app.HR, group: 'top' }
+    },
+    hr.action.ShowEmployees
+  )
+
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.Delete,
+      label: view.string.Delete,
+      icon: view.icon.Delete,
+      input: 'any',
+      category: hr.category.HR,
+      keyBinding: ['Meta + Backspace', 'Ctrl + Backspace'],
+      query: {
+        'members.length': 0,
+        _id: { $nin: [hr.ids.Head] }
+      },
+      target: hr.class.Department,
+      context: { mode: 'context', application: hr.app.HR, group: 'top' }
+    },
+    hr.action.DeleteDepartment
+  )
 }
 
+export { hrOperation } from './migration'
 export { default } from './plugin'

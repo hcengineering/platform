@@ -34,12 +34,8 @@
     "@anticrm/model-view": "~0.6.0",
     "@anticrm/model-workbench": "~0.6.1",
     "@anticrm/model-contact": "~0.6.1",
-    "@anticrm/model-chunter": "~0.6.0",
-    "@anticrm/model-attachment": "~0.6.0",
     "@anticrm/hr": "~0.6.0",
     "@anticrm/hr-resources": "~0.6.0",
-    "@anticrm/setting": "~0.6.1",
-    "@anticrm/view": "~0.6.0",
-    "@anticrm/workbench": "~0.6.1"
+    "@anticrm/view": "~0.6.0"
   }
 }
