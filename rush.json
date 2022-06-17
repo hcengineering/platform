@@ -1117,6 +1117,21 @@
       "shouldPublish": true
     },
     {
+      "packageName": "@anticrm/server-tracker",
+      "projectFolder": "server-plugins/tracker",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/model-server-tracker",
+      "projectFolder": "models/server-tracker",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/server-tracker-resources",
+      "projectFolder": "server-plugins/tracker-resources",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@anticrm/server-task-resources",
       "projectFolder": "server-plugins/task-resources",
       "shouldPublish": true
@@ -1312,6 +1327,6 @@
       "packageName": "@anticrm/pod-backup",
       "projectFolder": "pods/backup",
       "shouldPublish": false
-    },
+    }
   ]
 }
