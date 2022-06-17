@@ -256,6 +256,7 @@
                         this={attributeModel.presenter}
                         value={getObjectValue(attributeModel.key, docObject) ?? ''}
                         issueId={docObject._id}
+                        width="100%"
                         {...attributeModel.props}
                       />
                     </div>

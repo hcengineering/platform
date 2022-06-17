@@ -103,13 +103,13 @@
 
 <div bind:this={thisRef} class="flex-col root">
   <div class="flex-row-top">
-    <div id="status-editor">
+    <div id="status-editor" class="mr-1">
       <StatusEditor
         value={newIssue}
         statuses={issueStatuses}
         kind="transparent"
-        width="min-content"
         size="medium"
+        justify="center"
         tooltipAlignment="bottom"
         on:change={({ detail }) => (newIssue.status = detail)}
       />

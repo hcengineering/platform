@@ -250,7 +250,6 @@
         value={object}
         statuses={issueStatuses}
         kind="no-border"
-        width="min-content"
         size="small"
         shouldShowLabel={true}
         on:change={({ detail }) => (object.status = detail)}
