@@ -68,6 +68,7 @@ import { serverRecruitId } from '@anticrm/server-recruit'
 import { serverSettingId } from '@anticrm/server-setting'
 import { serverTagsId } from '@anticrm/server-tags'
 import { serverTaskId } from '@anticrm/server-task'
+import { serverTrackerId } from '@anticrm/server-tracker'
 import { serverTelegramId } from '@anticrm/server-telegram'
 import { Client as ElasticClient } from '@elastic/elasticsearch'
 import { Client } from 'minio'
@@ -133,6 +134,7 @@ export class ElasticTool {
     addLocation(serverRecruitId, () => import('@anticrm/server-recruit-resources'))
     addLocation(serverSettingId, () => import('@anticrm/server-setting-resources'))
     addLocation(serverTaskId, () => import('@anticrm/server-task-resources'))
+    addLocation(serverTrackerId, () => import('@anticrm/server-tracker-resources'))
     addLocation(serverTagsId, () => import('@anticrm/server-tags-resources'))
     addLocation(serverCalendarId, () => import('@anticrm/server-calendar-resources'))
     addLocation(serverGmailId, () => import('@anticrm/server-gmail-resources'))

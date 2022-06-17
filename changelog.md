@@ -7,6 +7,7 @@
 Platform:
 
 - Allow to attach from clipboard
+- Updating subtask project according to parent project
 
 Leads:
 
