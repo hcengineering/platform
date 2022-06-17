@@ -52,6 +52,8 @@
           on:click={() => {
             dispatch('close', item.id)
           }}
+          on:focus={() => dispatch('update', item)}
+          on:mouseover={() => dispatch('update', item)}
         >
           {#if hasSelected}
             <div class="icon">

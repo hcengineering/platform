@@ -32,6 +32,6 @@
     <div class="icon">
       <Icon icon={lead.icon.Lead} size={'small'} />
     </div>
-    <span class="label">{value.title}</span>
+    <span class="label nowrap">LEAD-{value.number}</span>
   </a>
 {/if}

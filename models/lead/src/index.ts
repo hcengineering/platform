@@ -149,6 +149,7 @@ export function createModel (builder: Builder): void {
       descriptor: task.viewlet.StatusTable,
       config: [
         '',
+        'title',
         '$lookup.attachedTo',
         '$lookup.state',
         '$lookup.doneState',
@@ -253,7 +254,7 @@ export function createModel (builder: Builder): void {
     icon: lead.icon.Lead,
     input: 'focus',
     category: lead.category.Lead,
-    target: contact.class.Person,
+    target: contact.class.Contact,
     context: { mode: ['context', 'browser'] },
     override: [lead.action.CreateGlobalLead]
   })

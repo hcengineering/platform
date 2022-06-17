@@ -2,6 +2,17 @@
 
 ## 0.6.28 (upcoming)
 
+Tracker:
+
+- Issue state history.
+- Subissue issue popup.
+
+Lead:
+
+- Lead presentation changed to number.
+- Title column for leads.
+- Fix New Lead action for Organization.
+
 ## 0.6.27
 
 Platform:

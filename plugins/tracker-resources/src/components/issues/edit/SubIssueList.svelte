@@ -15,9 +15,9 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import { flip } from 'svelte/animate'
-  import { WithLookup } from '@anticrm/core'
+  import { Doc, WithLookup } from '@anticrm/core'
   import { Issue, IssueStatus, Team } from '@anticrm/tracker'
-  import { ContextMenu } from '@anticrm/view-resources'
+  import { ActionContext, ContextMenu, ListSelectionProvider, SelectDirection } from '@anticrm/view-resources'
   import { showPanel, showPopup } from '@anticrm/ui'
   import tracker from '../../../plugin'
   import { getIssueId } from '../../../utils'
@@ -71,7 +71,20 @@
       { getBoundingClientRect: () => DOMRect.fromRect({ width: 1, height: 1, x: ev.clientX, y: ev.clientY }) }
     )
   }
+
+  const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
+    // if (dir === 'vertical') {
+    //   // Select next
+    //   table.select(offset, of)
+    // }
+  })
 </script>
+
+<ActionContext
+  context={{
+    mode: 'browser'
+  }}
+/>
 
 {#each issues as issue, index (issue._id)}
   <div
@@ -88,6 +101,12 @@
     on:dragenter={() => (hoveringIndex = index)}
     on:drop|preventDefault={(ev) => handleDrop(ev, index)}
     on:dragend={resetDrag}
+    on:mouseover={() => {
+      listProvider.updateFocus(issue)
+    }}
+    on:focus={() => {
+      listProvider.updateFocus(issue)
+    }}
   >
     <div class="draggable-container">
       <div class="draggable-mark"><Circles /></div>
