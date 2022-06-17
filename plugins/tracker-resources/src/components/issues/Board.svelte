@@ -182,13 +182,7 @@
           {#if issue && issueStatuses && issue.subIssues > 0}
             <SubIssuesSelector {issue} {currentTeam} {issueStatuses} />
           {/if}
-          <PriorityEditor
-            value={issue}
-            isEditable={true}
-            kind={'link-bordered'}
-            size={'inline'}
-            justify={'center'}
-          />
+          <PriorityEditor value={issue} isEditable={true} kind={'link-bordered'} size={'inline'} justify={'center'} />
           <ProjectEditor
             value={issue}
             isEditable={true}
