@@ -1324,6 +1324,11 @@
       "shouldPublish": true
     },
     {
+      "packageName": "@anticrm/automation-assets",
+      "projectFolder": "plugins/automation-assets",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@anticrm/model-automation",
       "projectFolder": "models/automation",
       "shouldPublish": true

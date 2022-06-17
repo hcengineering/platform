@@ -1,6 +1,6 @@
 import { AttachedDoc, Class, Doc, DocumentQuery, DocumentUpdate, Mixin, Ref } from '@anticrm/core'
-import type { IntlString, Plugin } from '@anticrm/platform'
-import { addStringsLoader, plugin } from '@anticrm/platform'
+import type { Asset, IntlString, Plugin } from '@anticrm/platform'
+import { plugin } from '@anticrm/platform'
 import type { Action } from '@anticrm/view'
 
 /**
@@ -70,9 +70,8 @@ export default plugin(automationId, {
   },
   string: {
     Automation: '' as IntlString
+  },
+  icon: {
+    Automation: '' as Asset
   }
-})
-
-addStringsLoader(automationId, async (lang: string) => {
-  return await import(`../lang/${lang}.json`)
 })

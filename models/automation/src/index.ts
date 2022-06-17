@@ -62,7 +62,7 @@ export function createModel (builder: Builder): void {
     {
       name: 'automation',
       label: automation.string.Automation,
-      icon: setting.icon.Setting, // TODO: update icon
+      icon: automation.icon.Automation, // TODO: update icon
       component: plugin.component.AutomationSettingsElement,
       order: 3600
     },

@@ -14,6 +14,7 @@ specifiers:
   '@rush-temp/attachment-assets': file:./projects/attachment-assets.tgz
   '@rush-temp/attachment-resources': file:./projects/attachment-resources.tgz
   '@rush-temp/automation': file:./projects/automation.tgz
+  '@rush-temp/automation-assets': file:./projects/automation-assets.tgz
   '@rush-temp/automation-resources': file:./projects/automation-resources.tgz
   '@rush-temp/board': file:./projects/board.tgz
   '@rush-temp/board-assets': file:./projects/board-assets.tgz
@@ -304,6 +305,7 @@ dependencies:
   '@rush-temp/attachment-assets': file:projects/attachment-assets.tgz_typescript@4.7.2
   '@rush-temp/attachment-resources': file:projects/attachment-resources.tgz_1e3963ebf0ceeb25b2fa6a1cc87e253c
   '@rush-temp/automation': file:projects/automation.tgz
+  '@rush-temp/automation-assets': file:projects/automation-assets.tgz_typescript@4.7.2
   '@rush-temp/automation-resources': file:projects/automation-resources.tgz_1e3963ebf0ceeb25b2fa6a1cc87e253c
   '@rush-temp/board': file:projects/board.tgz
   '@rush-temp/board-assets': file:projects/board-assets.tgz_typescript@4.7.2
@@ -10161,6 +10163,30 @@ packages:
       - supports-color
     dev: false
 
+  file:projects/automation-assets.tgz_typescript@4.7.2:
+    resolution: {integrity: sha512-IwQs0Nc95dL+Xacvp+ETxvlN9rlWdGXk24FqpHjQi/wRvH2/VucZZAhqCpB1o9H5THFNpOiPHXSQ4RspNVzwBA==, tarball: file:projects/automation-assets.tgz}
+    id: file:projects/automation-assets.tgz
+    name: '@rush-temp/automation-assets'
+    version: 0.0.0
+    dependencies:
+      '@rushstack/heft': 0.45.5
+      '@types/heft-jest': 1.0.2
+      '@types/node': 16.11.38
+      '@typescript-eslint/eslint-plugin': 5.27.0_738fa17fa57f8a69ace69c90e5cfa1d5
+      '@typescript-eslint/parser': 5.27.0_eslint@7.32.0+typescript@4.7.2
+      eslint: 7.32.0
+      eslint-config-standard-with-typescript: 21.0.1_99a5fe2f2ae1dc64d6b59974c931eb2a
+      eslint-plugin-import: 2.26.0_c21022bc9feaeb7b200d3d631eeae46c
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 5.2.0_eslint@7.32.0
+      prettier: 2.6.2
+    transitivePeerDependencies:
+      - eslint-import-resolver-typescript
+      - eslint-import-resolver-webpack
+      - supports-color
+      - typescript
+    dev: false
+
   file:projects/automation-resources.tgz_1e3963ebf0ceeb25b2fa6a1cc87e253c:
     resolution: {integrity: sha512-e+PE8/gHNv1lkqZwPjH1eBLKwSLOWtJ79gP5cvVMib31yrLZRe8u+0mMGPSlCi/F+1Ok4atJXfyTowgEFGZRTQ==, tarball: file:projects/automation-resources.tgz}
     id: file:projects/automation-resources.tgz
@@ -11400,7 +11426,7 @@ packages:
     dev: false
 
   file:projects/model-all.tgz_typescript@4.7.2:
-    resolution: {integrity: sha512-Ard+150yL0Y2NaemClMs5TuSMqKu2oFyYI7oy2WfnHtMzow+H4WEk68FHB/zC2D6KNWi51H6RZ1dIc2+9gcGUg==, tarball: file:projects/model-all.tgz}
+    resolution: {integrity: sha512-HwWisKkL960mLPWfVgI7kN5pJ4xJSVAJXru0Mxx6+ao67HiDJcDkS19tcpJGAflmZpW5MHzHjFKks3hhBAD1DA==, tarball: file:projects/model-all.tgz}
     id: file:projects/model-all.tgz
     name: '@rush-temp/model-all'
     version: 0.0.0
@@ -11450,7 +11476,7 @@ packages:
     dev: false
 
   file:projects/model-automation.tgz_typescript@4.7.2:
-    resolution: {integrity: sha512-BWYdwtfNy/isD6k+pD+rYI+5qsZwBiGW0PfoigrIpQ8hLQ1Jppq+JD8sHYowT6NIv8qlTx0BacWDYAP3ZZpdqw==, tarball: file:projects/model-automation.tgz}
+    resolution: {integrity: sha512-Q1/l8i7CIGg29mcOLCTsX7f19HkyF7/kBGo+9uR/1PRfQ4eGrj6ZI6UyRtw17j/DoBA7Tw2EZwiyHBmcQNzaaQ==, tarball: file:projects/model-automation.tgz}
     id: file:projects/model-automation.tgz
     name: '@rush-temp/model-automation'
     version: 0.0.0
@@ -12760,7 +12786,7 @@ packages:
     dev: false
 
   file:projects/prod.tgz_d1c3762ecb2c185353d3f02936f6ec22:
-    resolution: {integrity: sha512-QATm8tinHt8huisQGumkIxn/Ew4j8Bez88PjoKLuXhybtp5uhZh67ooqqvbN9V+RPaR/827nktjzSzS1vZ6ZQQ==, tarball: file:projects/prod.tgz}
+    resolution: {integrity: sha512-mbbpHHdfsCTlrpIynTZIjKouGSVFY89o4QGj6KyfRA7kDAIGuIbCPZlYOmGtKWwENVfgPzgL8EiX4nIwdNphrQ==, tarball: file:projects/prod.tgz}
     id: file:projects/prod.tgz
     name: '@rush-temp/prod'
     version: 0.0.0
