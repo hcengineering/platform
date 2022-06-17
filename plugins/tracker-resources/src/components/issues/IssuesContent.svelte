@@ -36,7 +36,7 @@
 
   const replacedKeys: Map<string, BuildModelKey> = new Map<string, BuildModelKey>([
     ['@currentTeam', { key: '', presenter: tracker.component.IssuePresenter, props: { currentTeam } }],
-    ['@statuses', { key: '', presenter: tracker.component.StatusEditor, props: { statuses } }]
+    ['@statuses', { key: '', presenter: tracker.component.StatusEditor, props: { statuses, justify: 'center' } }]
   ])
 
   function createConfig (descr: Viewlet, preference: ViewletPreference | undefined): (string | BuildModelKey)[] {

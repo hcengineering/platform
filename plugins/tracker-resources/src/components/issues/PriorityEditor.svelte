@@ -17,10 +17,10 @@
   import { AttachedData } from '@anticrm/core'
   import { Issue, IssuePriority } from '@anticrm/tracker'
   import { getClient } from '@anticrm/presentation'
-  import { tooltip } from '@anticrm/ui'
-  import type { ButtonKind, ButtonSize } from '@anticrm/ui'
+  import { Button, eventToHTMLElement } from '@anticrm/ui'
+  import { ButtonKind, ButtonSize, showPopup, SelectPopup } from '@anticrm/ui'
   import tracker from '../../plugin'
-  import PrioritySelector from '../PrioritySelector.svelte'
+  import { defaultPriorities, issuePriorities } from '../../utils'
 
   export let value: Issue | AttachedData<Issue>
   export let isEditable: boolean = true
@@ -29,12 +29,28 @@
   export let kind: ButtonKind = 'link'
   export let size: ButtonSize = 'large'
   export let justify: 'left' | 'center' = 'left'
-  export let width: string | undefined = '100%'
+  export let width: string | undefined = undefined
 
   const client = getClient()
   const dispatch = createEventDispatcher()
+  const prioritiesInfo = defaultPriorities.map((p) => ({ id: p, ...issuePriorities[p] }))
 
-  const handlePriorityChanged = async (newPriority: IssuePriority | undefined) => {
+  const handlePriorityEditorOpened = (event: MouseEvent) => {
+    event.stopPropagation()
+
+    if (!isEditable) {
+      return
+    }
+
+    showPopup(
+      SelectPopup,
+      { value: prioritiesInfo, placeholder: tracker.string.SetPriority, searchable: true },
+      eventToHTMLElement(event),
+      changePriority
+    )
+  }
+
+  const changePriority = async (newPriority: IssuePriority | undefined) => {
     if (!isEditable || newPriority === undefined || value.priority === newPriority) {
       return
     }
@@ -48,16 +64,15 @@
 </script>
 
 {#if value}
-  <div class="clear-mins" use:tooltip={isEditable ? { label: tracker.string.SetPriority } : undefined}>
-    <PrioritySelector
-      {kind}
-      {size}
-      {width}
-      {justify}
-      {isEditable}
-      {shouldShowLabel}
-      bind:priority={value.priority}
-      onPriorityChange={handlePriorityChanged}
-    />
-  </div>
+  <Button
+    showTooltip={isEditable ? { label: tracker.string.SetPriority } : undefined}
+    label={shouldShowLabel ? issuePriorities[value.priority].label : undefined}
+    icon={issuePriorities[value.priority].icon}
+    {justify}
+    {width}
+    {size}
+    {kind}
+    disabled={!isEditable}
+    on:click={handlePriorityEditorOpened}
+  />
 {/if}

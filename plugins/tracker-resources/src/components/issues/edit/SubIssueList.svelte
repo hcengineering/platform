@@ -93,13 +93,21 @@
       <div class="draggable-mark"><Circles /></div>
     </div>
     <div class="flex-center ml-6 clear-mins">
-      <div class="mr-2">
-        <PriorityEditor value={issue} isEditable kind="transparent" justify="center" width="" />
+      <div class="mr-1">
+        <PriorityEditor value={issue} isEditable kind="transparent" justify="center" />
       </div>
       <span class="flex-no-shrink text" on:click={() => openIssue(issue)}>
         {getIssueId(currentTeam, issue)}
       </span>
-      <StatusEditor value={issue} statuses={issueStatuses} kind="transparent" tooltipAlignment="bottom" />
+      <div class="mx-1">
+        <StatusEditor
+          value={issue}
+          statuses={issueStatuses}
+          justify="center"
+          kind="transparent"
+          tooltipAlignment="bottom"
+        />
+      </div>
       <span class="text name" title={issue.title} on:click={() => openIssue(issue)}>
         {issue.title}
       </span>
