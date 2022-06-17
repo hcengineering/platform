@@ -1,9 +1,8 @@
 <script lang="ts">
   import core, { Ref, Space, WithLookup } from '@anticrm/core'
   import { Button, getCurrentLocation, navigate, location, Tooltip, Icon } from '@anticrm/ui'
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import { Header, classIcon } from '@anticrm/chunter-resources'
-  import border from '../plugin'
+  import { createQuery } from '@anticrm/presentation'
+  import board from '../plugin'
   import { Viewlet } from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
 
@@ -19,8 +18,6 @@
     space = result[0]
   })
 
-  const client = getClient()
-
   function showMenu () {
     const loc = getCurrentLocation()
     loc.path[3] = space._id
@@ -31,7 +28,13 @@
 
 <div class="ac-header divide full">
   {#if space}
-    <Header icon={classIcon(client, space._class)} label={space.name} description={space.description} />
+    <div class="ac-header__wrap-description">
+      <div class="ac-header__wrap-title" on:click>
+        <div class="ac-header__icon"><Icon icon={board.icon.Board} size={'small'} /></div>
+        <span class="ac-header__title">{space.name}</span>
+      </div>
+      <span class="ac-header__description">{space.description}</span>
+    </div>
     {#if viewlets.length > 1}
       <div class="flex">
         {#each viewlets as v, i}
@@ -52,7 +55,7 @@
       </div>
     {/if}
     {#if showMenuButton}
-      <Button label={border.string.ShowMenu} on:click={showMenu} />
+      <Button label={board.string.ShowMenu} on:click={showMenu} />
     {/if}
   {/if}
 </div>
