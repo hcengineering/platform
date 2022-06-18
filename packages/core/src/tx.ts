@@ -274,10 +274,7 @@ export abstract class TxProcessor implements WithTx {
     return rawDoc
   }
 
-  static updateMixin4Doc<D extends Doc, M extends D>(
-    rawDoc: D,
-    tx: TxMixin<D, M>
-  ): D {
+  static updateMixin4Doc<D extends Doc, M extends D>(rawDoc: D, tx: TxMixin<D, M>): D {
     const ops = tx.attributes as any
     const doc = _toDoc(rawDoc)
     const mixin = (doc as any)[tx.mixin] ?? {}
