@@ -369,7 +369,7 @@ export class LiveQuery extends TxProcessor implements Client {
       }
       this.sort(q, tx)
       await this.updatedDocCallback(q.result[pos], q)
-    } else if (this.matchQuery(q, tx)) {
+    } else if (await this.matchQuery(q, tx)) {
       this.sort(q, tx)
       await this.updatedDocCallback(q.result[pos], q)
     }
@@ -463,7 +463,7 @@ export class LiveQuery extends TxProcessor implements Client {
     }
 
     if (matched) {
-      const realDoc = await this.client.findOne(q._class, { _id: doc._id}, q.options)
+      const realDoc = await this.client.findOne(q._class, { _id: doc._id }, q.options)
       if (realDoc === undefined) return false
       const res = matchQuery([realDoc], q.query, q._class, this.client.getHierarchy())
       if (res.length === 1) {
