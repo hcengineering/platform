@@ -51,6 +51,7 @@
     "Unassigned": "Не назначен",
     "Back": "Назад",
     "List": "Список",
+    "NumberLabels": "{count, plural, =0 {нет меток} =1 {1 метка} =2 {2 метки} =3 {3 метки} =4 {4 метки} other {# меток}}",
 
     "CategoryBacklog": "Пул",
     "CategoryUnstarted": "Не запущенные",
