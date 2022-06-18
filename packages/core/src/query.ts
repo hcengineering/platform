@@ -100,7 +100,10 @@ export function matchQuery<T extends Doc> (
   return result
 }
 
-function checkMixinKey<T extends Doc> (key: string, clazz: Ref<Class<T>>, hierarchy: Hierarchy): string {
+/**
+ * @public
+ */
+export function checkMixinKey<T extends Doc> (key: string, clazz: Ref<Class<T>>, hierarchy: Hierarchy): string {
   if (!key.includes('.')) {
     try {
       const attr = hierarchy.getAttribute(clazz, key)
