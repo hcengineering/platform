@@ -268,7 +268,7 @@ export class LiveQuery extends TxProcessor implements Client {
         let updatedDoc = q.result.find((p) => p._id === tx.objectId)
         if (updatedDoc !== undefined) {
           // Create or apply mixin value
-          updatedDoc = TxProcessor.updateMixin4Doc(updatedDoc, tx.mixin, tx.attributes)
+          updatedDoc = TxProcessor.updateMixin4Doc(updatedDoc, tx)
           await this.updatedDocCallback(updatedDoc, q)
         } else if (isMixin) {
           // Mixin potentially added to object we doesn't have in out results

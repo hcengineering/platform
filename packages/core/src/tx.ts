@@ -276,12 +276,11 @@ export abstract class TxProcessor implements WithTx {
 
   static updateMixin4Doc<D extends Doc, M extends D>(
     rawDoc: D,
-    mixinClass: Ref<Class<M>>,
-    operations: MixinUpdate<D, M>
+    tx: TxMixin<D, M>
   ): D {
-    const ops = operations as any
+    const ops = tx.attributes as any
     const doc = _toDoc(rawDoc)
-    const mixin = (doc as any)[mixinClass] ?? {}
+    const mixin = (doc as any)[tx.mixin] ?? {}
     for (const key in ops) {
       if (key.startsWith('$')) {
         const operator = _getOperator(key)
@@ -290,7 +289,9 @@ export abstract class TxProcessor implements WithTx {
         mixin[key] = ops[key]
       }
     }
-    ;(doc as any)[mixinClass] = mixin
+    rawDoc.modifiedBy = tx.modifiedBy
+    rawDoc.modifiedOn = tx.modifiedOn
+    ;(doc as any)[tx.mixin] = mixin
     return rawDoc
   }
 
