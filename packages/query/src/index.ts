@@ -42,7 +42,9 @@ import core, {
   TxResult,
   TxUpdateDoc,
   WithLookup,
-  toFindResult
+  toFindResult,
+  checkMixinKey,
+  matchQuery
 } from '@anticrm/core'
 import { deepEqual } from 'fast-equals'
 
@@ -368,7 +370,8 @@ export class LiveQuery extends TxProcessor implements Client {
       this.sort(q, tx)
       await this.updatedDocCallback(q.result[pos], q)
     } else if (this.matchQuery(q, tx)) {
-      return await this.refresh(q)
+      this.sort(q, tx)
+      await this.updatedDocCallback(q.result[pos], q)
     }
     await this.handleDocUpdateLookup(q, tx)
   }
@@ -431,7 +434,7 @@ export class LiveQuery extends TxProcessor implements Client {
   }
 
   // Check if query is partially matched.
-  private matchQuery (q: Query, tx: TxUpdateDoc<Doc>): boolean {
+  private async matchQuery (q: Query, tx: TxUpdateDoc<Doc>): Promise<boolean> {
     if (!this.client.getHierarchy().isDerived(tx.objectClass, q._class)) {
       return false
     }
@@ -446,10 +449,28 @@ export class LiveQuery extends TxProcessor implements Client {
 
     TxProcessor.updateDoc2Doc(doc, tx)
 
+    let matched = false
     for (const key in q.query) {
       const value = (q.query as any)[key]
-      const res = findProperty([doc], key, value)
+      const tkey = checkMixinKey(key, q._class, this.client.getHierarchy())
+      if ((doc as any)[tkey] === undefined) continue
+      const res = findProperty([doc], tkey, value)
+      if (res.length === 0) {
+        return false
+      } else {
+        matched = true
+      }
+    }
+
+    if (matched) {
+      const realDoc = await this.client.findOne(q._class, { _id: doc._id}, q.options)
+      if (realDoc === undefined) return false
+      const res = matchQuery([realDoc], q.query, q._class, this.client.getHierarchy())
       if (res.length === 1) {
+        if (q.result instanceof Promise) {
+          q.result = await q.result
+        }
+        q.result.push(res[0])
         return true
       }
     }
