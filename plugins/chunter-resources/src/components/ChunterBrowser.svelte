@@ -88,7 +88,6 @@
             selected={searchType === SearchType.Files}
             on:click={() => {
               searchType = SearchType.Files
-              filters = []
             }}
           />
         </div>
@@ -99,7 +98,6 @@
             selected={searchType === SearchType.Contacts}
             on:click={() => {
               searchType = SearchType.Contacts
-              filters = []
             }}
           />
         </div>
