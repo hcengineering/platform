@@ -77,7 +77,7 @@
 </script>
 
 {#if currentSpace}
-  <IssuesHeader {currentSpace} {viewlets} {label} bind:viewlet bind:viewOptions >
+  <IssuesHeader {currentSpace} {viewlets} {label} bind:viewlet bind:viewOptions>
     <svelte:fragment slot="extra">
       {#if asideFloat && $$slots.aside}
         <Button

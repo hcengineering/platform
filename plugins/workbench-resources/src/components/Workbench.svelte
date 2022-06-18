@@ -130,8 +130,8 @@
 
   async function syncLoc (loc: Location): Promise<void> {
     const app = loc.path.length > 1 ? (loc.path[1] as Ref<Application>) : undefined
-    let space = loc.path.length > 2 ? (loc.path[2] as Ref<Space>) : undefined
-    let special = loc.path.length > 3 ? loc.path[3] : undefined
+    const space = loc.path.length > 2 ? (loc.path[2] as Ref<Space>) : undefined
+    const special = loc.path.length > 3 ? loc.path[3] : undefined
 
     if (currentApp !== app) {
       clear(1)
