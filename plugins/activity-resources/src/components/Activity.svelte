@@ -76,7 +76,7 @@
     if (lastView === undefined || lastView === -1) return -1
     for (let index = 0; index < txes.length; index++) {
       const tx = txes[index]
-      if (tx.tx.modifiedOn < lastView) return index - 1
+      if (tx.tx.modifiedOn <= lastView) return index - 1
     }
     return -1
   }
