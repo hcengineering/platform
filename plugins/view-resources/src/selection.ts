@@ -1,4 +1,5 @@
 import { Doc } from '@anticrm/core'
+import { panelstore } from '@anticrm/ui'
 import { onDestroy } from 'svelte'
 import { writable } from 'svelte/store'
 
@@ -53,13 +54,16 @@ export const selectionStore = writable<Doc[]>([])
 
 export const previewDocument = writable<Doc | undefined>()
 
+panelstore.subscribe((val) => {
+  previewDocument.set(undefined)
+})
 /**
  * @public
  */
 export function updateFocus (selection?: FocusSelection): void {
   focusStore.update((cur) => {
     const now = Date.now()
-    if (selection === undefined || now - ((cur as any).now ?? 0) >= 25) {
+    if (selection === undefined || now - ((cur as any).now ?? 0) >= 50) {
       cur.focus = selection?.focus
       cur.provider = selection?.provider
       ;(cur as any).now = now

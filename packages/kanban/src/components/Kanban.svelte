@@ -313,6 +313,7 @@
             <slot name="beforeCard" {state} />
             <KanbanRow
               bind:this={stateRows[si]}
+              on:obj-focus
               {stateObjects}
               {isDragging}
               {dragCard}

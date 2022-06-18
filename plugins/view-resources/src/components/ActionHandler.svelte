@@ -66,12 +66,10 @@
   }
 
   $: ctx = $contextStore[$contextStore.length - 1]
+  $: mode = $contextStore[$contextStore.length - 1]?.mode
+  $: application = $contextStore[$contextStore.length - 1]?.application
   $: if (ctx !== undefined) {
-    updateActions(
-      { mode: ctx.mode as ViewContextType, application: ctx.application },
-      $focusStore.focus,
-      $selectionStore
-    )
+    updateActions({ mode: mode as ViewContextType, application: application }, $focusStore.focus, $selectionStore)
   }
   function keyPrefix (key: KeyboardEvent): string {
     return (
