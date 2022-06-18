@@ -10,7 +10,7 @@
     Team,
     ViewOptions
   } from '@anticrm/tracker'
-  import { Button, IconDetails } from '@anticrm/ui'
+  import { Button, IconDetails, Loading } from '@anticrm/ui'
   import view, { Filter, Viewlet } from '@anticrm/view'
   import { FilterBar } from '@anticrm/view-resources'
   import { getActiveViewletId } from '@anticrm/view-resources/src/utils'
@@ -35,6 +35,7 @@
     shouldShowSubIssues: false
   }
   let resultQuery: DocumentQuery<Issue> = {}
+  let loading = true
 
   const client = getClient()
 
@@ -56,6 +57,7 @@
       )
       const _id = getActiveViewletId()
       viewlet = viewlets.find((viewlet) => viewlet._id === _id) || viewlets[0]
+      loading = false
     }
   }
   $: if (!label && title) {
@@ -93,15 +95,21 @@
       {/if}
     </svelte:fragment>
   </IssuesHeader>
-  <FilterBar _class={tracker.class.Issue} {query} bind:filters on:change={(e) => (resultQuery = e.detail)} />
-  <div class="flex h-full">
-    <div class="antiPanel-component">
-      <IssuesContent {currentSpace} {viewlet} query={resultQuery} {viewOptions} />
-    </div>
-    {#if $$slots.aside !== undefined && asideShown}
-      <div class="popupPanel-body__aside" class:float={asideFloat} class:shown={asideShown}>
-        <slot name="aside" />
+  {#if viewlet}
+    {#if loading}
+      <Loading />
+    {:else}
+      <FilterBar _class={tracker.class.Issue} {query} bind:filters on:change={(e) => (resultQuery = e.detail)} />
+      <div class="flex h-full">
+        <div class="antiPanel-component">
+          <IssuesContent {currentSpace} {viewlet} query={resultQuery} {viewOptions} />
+        </div>
       </div>
+      {#if $$slots.aside !== undefined && asideShown}
+        <div class="popupPanel-body__aside" class:float={asideFloat} class:shown={asideShown}>
+          <slot name="aside" />
+        </div>
+      {/if}
     {/if}
-  </div>
+  {/if}
 {/if}
