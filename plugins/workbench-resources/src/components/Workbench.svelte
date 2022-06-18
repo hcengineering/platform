@@ -144,8 +144,17 @@
       const last = localStorage.getItem(`platform_last_loc_${app}`)
       if (last !== null) {
         const newLocation: Location = JSON.parse(last)
-        loc.path[2] = space = newLocation.path[2] as Ref<Space>
-        loc.path[3] = special = newLocation.path[3]
+        if (newLocation.path[2] != null) {
+          loc.path[2] = newLocation.path[2] as Ref<Space>
+          loc.path[3] = newLocation.path[3]
+          if (loc.path[3] == null) {
+            loc.path.length = 3
+          } else {
+            loc.path.length = 4
+          }
+          navigate(loc)
+          return
+        }
       }
     }
 

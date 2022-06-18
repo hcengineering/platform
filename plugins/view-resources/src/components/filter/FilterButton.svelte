@@ -17,17 +17,17 @@
   import { getClient } from '@anticrm/presentation'
   import { Button, eventToHTMLElement, IconAdd, IconClose, Icon, showPopup, Label } from '@anticrm/ui'
   import { Filter } from '@anticrm/view'
+  import { filterStore } from '../../filter'
   import view from '../../plugin'
   import FilterTypePopup from './FilterTypePopup.svelte'
 
   export let _class: Ref<Class<Doc>> | undefined
-  export let filters: Filter[]
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
   function onChange (e: Filter | undefined) {
-    if (e !== undefined) filters = [e]
+    if (e !== undefined) $filterStore = [e]
   }
 
   function add (e: MouseEvent) {
@@ -59,13 +59,13 @@
     kind={'link-bordered'}
     borderStyle={'dashed'}
     on:click={(ev) => {
-      if (filters.length === 0) add(ev)
-      else filters = []
+      if ($filterStore.length === 0) add(ev)
+      else $filterStore = []
     }}
   >
     <svelte:fragment slot="content">
       <div class="flex-row-center pointer-events-none">
-        {#if filters.length === 0}
+        {#if $filterStore.length === 0}
           <Icon icon={IconAdd} size={'x-small'} />
           <span class="overflow-label ml-1"><Label label={view.string.Filter} /></span>
         {:else}

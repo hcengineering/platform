@@ -12,7 +12,6 @@
   import { SearchType } from '../utils'
   import MessagesBrowser from './MessagesBrowser.svelte'
   import { FilterButton } from '@anticrm/view-resources'
-  import { Filter } from '@anticrm/view'
 
   let userSearch_: string = ''
   userSearch.subscribe((v) => (userSearch_ = v))
@@ -40,8 +39,6 @@
     },
     { searchType: SearchType.Contacts, component: EmployeeBrowser, filterClass: contact.class.Employee }
   ]
-
-  let filters: Filter[] = []
 </script>
 
 <div class="flex-col h-full">
@@ -56,14 +53,13 @@
             this={components[searchType].component}
             withHeader={false}
             bind:search={userSearch_}
-            bind:filters
             {...components[searchType].props}
           />
         {/if}
       </div>
     </div>
     <div class="p-3 bar">
-      <div class="w-32 flex-center"><FilterButton _class={components[searchType].filterClass} bind:filters /></div>
+      <div class="w-32 flex-center"><FilterButton _class={components[searchType].filterClass} /></div>
       <div class="flex-center w-full mr-32 buttons">
         <div class="ml-1 p-1 btn">
           <Button

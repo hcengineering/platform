@@ -2,7 +2,7 @@
   import { Ref, WithLookup } from '@anticrm/core'
   import { Team, ViewOptions } from '@anticrm/tracker'
   import { Button, Icon, Tooltip, IconOptions, showPopup, eventToHTMLElement } from '@anticrm/ui'
-  import { Filter, Viewlet } from '@anticrm/view'
+  import { Viewlet } from '@anticrm/view'
   import { FilterButton, setActiveViewletId } from '@anticrm/view-resources'
   import tracker from '../../plugin'
   import ViewOptionsPopup from './ViewOptionsPopup.svelte'
@@ -11,7 +11,6 @@
   export let viewlet: WithLookup<Viewlet> | undefined
   export let viewlets: WithLookup<Viewlet>[] = []
   export let label: string
-  export let filters: Filter[] = []
   export let viewOptions: ViewOptions
 
   const handleOptionsEditorOpened = (event: MouseEvent) => {
@@ -29,7 +28,7 @@
   <div class="ac-header__wrap-title">
     <div class="ac-header__icon"><Icon icon={tracker.icon.Issues} size={'small'} /></div>
     <span class="ac-header__title">{label}</span>
-    <div class="ml-4"><FilterButton _class={tracker.class.Issue} bind:filters /></div>
+    <div class="ml-4"><FilterButton _class={tracker.class.Issue} /></div>
   </div>
   {#if viewlets.length > 1}
     <div class="flex">
