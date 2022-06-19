@@ -1,27 +1,29 @@
 <!--
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
-// 
+// Copyright © 2022 Hardcore Engineering Inc.
+//
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// 
+//
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
 <script lang="ts">
   import activity, { TxViewlet } from '@anticrm/activity'
   import chunter from '@anticrm/chunter'
-  import core, { Doc, SortingOrder } from '@anticrm/core'
+  import core, { Doc, Ref, SortingOrder } from '@anticrm/core'
+  import { getResource } from '@anticrm/platform'
   import { createQuery, getClient } from '@anticrm/presentation'
+  import notification from '@anticrm/notification'
   import { Component, Grid, IconActivity, Label, Scroller } from '@anticrm/ui'
   import { ActivityKey, activityKey, DisplayTx, newActivity } from '../activity'
   import TxView from './TxView.svelte'
   import { filterCollectionTxes } from './utils'
+  import { Writable } from 'svelte/store'
 
   export let object: Doc
   export let integrate: boolean = false
@@ -34,6 +36,10 @@
   const attrs = client.getHierarchy().getAllAttributes(object._class)
 
   const activityQuery = newActivity(client, attrs)
+  getResource(notification.function.GetNotificationClient).then((res) => {
+    lastViews = res().getLastViews()
+  })
+  let lastViews: Writable<Map<Ref<Doc>, number>> | undefined
 
   let viewlets: Map<ActivityKey, TxViewlet>
 
@@ -46,18 +52,34 @@
 
   $: viewlets = new Map(allViewlets.map((r) => [activityKey(r.objectClass, r.txClass), r]))
 
-  $: activityQuery.update(
-    object,
-    (result) => {
-      txes = filterCollectionTxes(result)
-    },
-    SortingOrder.Descending,
-    new Map(
-      allViewlets
-        .filter((tx) => tx.txClass === core.class.TxCreateDoc)
-        .map((it) => [it.objectClass, it.editable ?? false])
+  function updateTxes (object: Doc): void {
+    activityQuery.update(
+      object,
+      (result) => {
+        txes = filterCollectionTxes(result)
+      },
+      SortingOrder.Descending,
+      new Map(
+        allViewlets
+          .filter((tx) => tx.txClass === core.class.TxCreateDoc)
+          .map((it) => [it.objectClass, it.editable ?? false])
+      )
     )
-  )
+  }
+
+  $: updateTxes(object)
+
+  $: newTxPos = newTx(txes, $lastViews)
+
+  function newTx (txes: DisplayTx[], lastViews: Map<Ref<Doc>, number> | undefined): number {
+    const lastView = lastViews?.get(object._id)
+    if (lastView === undefined || lastView === -1) return -1
+    for (let index = 0; index < txes.length; index++) {
+      const tx = txes[index]
+      if (tx.tx.modifiedOn <= lastView) return index - 1
+    }
+    return -1
+  }
 </script>
 
 {#if !integrate || transparent}
@@ -74,8 +96,8 @@
       <div class="p-10 select-text" id={activity.string.Activity}>
         {#if txes}
           <Grid column={1} rowGap={1.5}>
-            {#each txes as tx}
-              <TxView {tx} {viewlets} />
+            {#each txes as tx, i}
+              <TxView {tx} {viewlets} isNew={newTxPos === i} />
             {/each}
           </Grid>
         {/if}
@@ -104,8 +126,8 @@
   <div class="p-activity select-text" id={activity.string.Activity}>
     {#if txes}
       <Grid column={1} rowGap={1.5}>
-        {#each txes as tx}
-          <TxView {tx} {viewlets} />
+        {#each txes as tx, i}
+          <TxView {tx} {viewlets} isNew={newTxPos === i} />
         {/each}
       </Grid>
     {/if}

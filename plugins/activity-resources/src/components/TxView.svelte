@@ -41,6 +41,7 @@
   export let tx: DisplayTx
   export let viewlets: Map<ActivityKey, TxViewlet>
   export let showIcon: boolean = true
+  export let isNew: boolean = false
 
   let ptx: DisplayTx | undefined
 
@@ -152,7 +153,7 @@
       </div>
     {/if}
 
-    <div class="flex-grow flex-col clear-mins">
+    <div class="flex-grow flex-col clear-mins" class:isNew>
       <div class="flex-between">
         <div class="flex-row-center flex-grow label">
           <div class="bold">
@@ -315,6 +316,11 @@
   .msgactivity-container {
     position: relative;
     min-width: 0;
+  }
+
+  .isNew {
+    padding-bottom: 0.25rem;
+    border-bottom: 1px solid var(--highlight-red);
   }
 
   .showIcon {

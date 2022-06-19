@@ -1,6 +1,5 @@
 //
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021, 2022 Hardcore Engineering Inc.
+// Copyright © 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -18,6 +17,7 @@ import type { Account, AttachedDoc, Class, Doc, Mixin, Ref, Space, Timestamp, Tx
 import type { Asset, IntlString, Plugin, Resource } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import { AnyComponent } from '@anticrm/ui'
+import { Writable } from 'svelte/store'
 
 /**
  * @public
@@ -107,6 +107,7 @@ export const notificationId = 'notification' as Plugin
  * @public
  */
 export interface NotificationClient {
+  getLastViews: () => Writable<Map<Ref<Doc>, Timestamp>>
   updateLastView: (_id: Ref<Doc>, _class: Ref<Class<Doc>>, time?: Timestamp, force?: boolean) => Promise<void>
   unsubscribe: (_id: Ref<Doc>) => Promise<void>
 }
