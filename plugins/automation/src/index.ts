@@ -1,7 +1,7 @@
-import { AttachedDoc, Class, Doc, DocumentQuery, DocumentUpdate, Mixin, Ref } from '@anticrm/core'
+import { AttachedDoc, Class, Doc, DocumentQuery, DocumentUpdate, Mixin, Ref, Space } from '@anticrm/core'
 import type { Asset, IntlString, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
-import type { Action } from '@anticrm/view'
+import type { ActionCategory, ViewAction } from '@anticrm/view'
 
 /**
  * @public
@@ -18,6 +18,14 @@ export enum CommandType {
 /**
  * @public
  */
+export enum TriggerType {
+  Action = 'ACTION',
+  Trigger = 'TRIGGER'
+}
+
+/**
+ * @public
+ */
 export interface AttributeAutomationSupport<T extends Doc> {
   name: keyof T
   sort?: {
@@ -28,14 +36,14 @@ export interface AttributeAutomationSupport<T extends Doc> {
 /**
  * @public
  */
-export interface AttributeAutomationTriggerSupport<T extends Doc> extends Class<Doc> {
+export interface AttributeAutomationTriggerSupport<T extends Doc> {
   name: keyof T
 }
 
 /**
  * @public
  */
-export interface AutomationTriggerSupport<T extends Doc> extends Class<Doc> {
+export interface AutomationTriggerSupport<T extends Doc> {
   action?: {
     mode: ('editor' | 'context')[]
   }
@@ -44,7 +52,7 @@ export interface AutomationTriggerSupport<T extends Doc> extends Class<Doc> {
 /**
  * @public
  */
-export interface AutomationSortSupport<T extends Doc> extends Class<Doc> {
+export interface AutomationSortSupport<T extends Doc> {
   groupBy?: DocumentQuery<T>
 }
 /**
@@ -70,7 +78,14 @@ export interface Command<T extends Doc> {
 export interface UpdateDocCommand<T extends Doc> extends Command<T> {
   type: CommandType.UpdateDoc
   targetClass: Ref<Class<T>>
-  query: DocumentUpdate<T>
+  update: DocumentUpdate<T>
+}
+
+/**
+ * @public
+ */
+export function isUpdateDocCommand (command: Command<Doc>): command is UpdateDocCommand<Doc> {
+  return command.type === CommandType.UpdateDoc
 }
 
 /**
@@ -78,20 +93,34 @@ export interface UpdateDocCommand<T extends Doc> extends Command<T> {
  */
 export interface Automation<T extends Doc> extends AttachedDoc {
   name: string
-  description?: string
-  targetClass: Ref<Class<T>>
+  description: string | null
+  targetClass: Ref<Class<T>> | null
   trigger: {
-    action?: Ref<Action>
+    type: TriggerType
   }
   commands: Command<T>[]
+}
+
+/**
+ * @public
+ */
+export interface PerformAutomationProps {
+  automationId: Ref<Automation<Doc>>
+  automationClass: Ref<Class<Automation<Doc>>>
 }
 
 export default plugin(automationId, {
   class: {
     Automation: '' as Ref<Class<Automation<Doc>>>
   },
+  action: {
+    PerformAutomation: '' as ViewAction<PerformAutomationProps>
+  },
   mixin: {
     AutomationSupport: '' as Ref<Mixin<AutomationSupport<Doc>>>
+  },
+  category: {
+    Automation: '' as Ref<ActionCategory>
   },
   string: {
     Automation: '' as IntlString,
@@ -110,5 +139,8 @@ export default plugin(automationId, {
   },
   icon: {
     Automation: '' as Asset
+  },
+  space: {
+    Automation: '' as Ref<Space>
   }
 })

@@ -14,48 +14,51 @@
 //
 
 // To help typescript locate view plugin properly
-import automation, { Automation, AutomationSupport, Command } from '@anticrm/automation'
-import { Class, Doc, DocumentQuery, Ref } from '@anticrm/core'
+import automation, {
+  Automation,
+  AutomationSupport,
+  AttributeAutomationSupport,
+  AutomationSortSupport,
+  AutomationTriggerSupport,
+  Command,
+  TriggerType
+} from '@anticrm/automation'
+import { Class, Doc, Ref } from '@anticrm/core'
 import { Builder, Mixin, Model, UX } from '@anticrm/model'
 import core, { TAttachedDoc, TClass } from '@anticrm/model-core'
 import setting from '@anticrm/setting'
-import { Action } from '@anticrm/view'
 
 import plugin from './plugin'
 
 @Model(automation.class.Automation, core.class.AttachedDoc)
 @UX(automation.string.Automation)
 export class TAutomation extends TAttachedDoc implements Automation<Doc> {
-  targetClass!: Ref<Class<Doc>>
-  trigger!: {
-    action?: Ref<Action>
+  name!: string
+  description!: string | null
+  targetClass!: Ref<Class<Doc>> | null
+  declare trigger: {
+    type: TriggerType
   }
 
-  commands: Command[]
+  declare commands: Command<Doc>[]
 }
 
 @Mixin(automation.mixin.AutomationSupport, core.class.Class)
 export class TAutomationSupport extends TClass implements AutomationSupport<Doc> {
-  attributes: {
-    name: any
-    sort?: {
-      groupBy?: DocumentQuery<Doc>
-    }
-  }[]
-
-  trigger: {
-    action: {
-      mode: ('editor' | 'context')[]
-    }
-  }
-
-  sort?: {
-    groupBy?: DocumentQuery<Doc>
-  }
+  declare attributes: AttributeAutomationSupport<Doc>[]
+  declare trigger: AutomationTriggerSupport<Doc>
+  sort?: AutomationSortSupport<Doc>
 }
 
 export function createModel (builder: Builder): void {
   builder.createModel(TAutomation, TAutomationSupport)
+  builder.createDoc(core.class.Space, core.space.Model, {
+    archived: false,
+    description: 'Automation space',
+    members: [],
+    name: 'Automation space',
+    private: true
+  }, automation.space.Automation)
   builder.createDoc(
     setting.class.SettingsCategory,
     core.space.Model,

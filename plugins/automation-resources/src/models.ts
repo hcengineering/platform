@@ -1,4 +1,4 @@
-import { Action } from '@anticrm/view'
+import { Class, Doc, Ref } from '@anticrm/core'
 
 export enum ActionTab {
   Add = 'Add',
@@ -11,5 +11,9 @@ export enum ActionTab {
 }
 
 export interface Trigger {
-  action: Action
+  action?: {
+    context: 'context' | 'editor'
+    target: Ref<Class<Doc>>
+    label: string
+  }
 }

@@ -10,7 +10,7 @@
 
   export let automationSupport: AutomationSupport<Doc>
   export let _class: Ref<Class<Doc>>
-  export let command: Command[] = []
+  export let commands: Command[] = []
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const attributeSupportMap = new Map()
@@ -46,6 +46,10 @@
       }
     }
   })
+  function addCommand (e: CustomEvent<Command>) {
+    commands.push(e.detail)
+    commands = commands
+  }
 </script>
 
 <div class="flex-col">
@@ -86,7 +90,12 @@
   <div class="mt-4">
     {#if currentTab === ActionTab.Content}
       {#each contentAttributes as attr}
-        <ContentActionCreate attribute={attributes.get(attr)} automationSupport={attributeSupportMap.get(attr)} />
+        <ContentActionCreate
+          attribute={attributes.get(attr)}
+          automationSupport={attributeSupportMap.get(attr)}
+          {_class}
+          on:add={addCommand}
+        />
       {/each}
     {:else if currentTab === ActionTab.Dates}{:else if currentTab === ActionTab.Chat}{:else if currentTab === ActionTab.Tracker}{/if}
   </div>
