@@ -51,6 +51,7 @@ import {
   Team
 } from '@anticrm/tracker'
 import { KeyBinding } from '@anticrm/view'
+import tags from '@anticrm/tags'
 import tracker from './plugin'
 
 import presentation from '@anticrm/model-presentation'
@@ -184,8 +185,8 @@ export class TIssue extends TAttachedDoc implements Issue {
   @Prop(Collection(attachment.class.Attachment), tracker.string.Attachments)
   attachments!: number
 
-  // @Prop(Collection(core.class.TypeString), tracker.string.Labels)
-  labels?: string[]
+  @Prop(Collection(tags.class.TagReference), tracker.string.Labels)
+  labels?: number
 
   declare space: Ref<Team>
 

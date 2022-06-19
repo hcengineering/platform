@@ -6,6 +6,7 @@ Tracker:
 
 - Issue state history.
 - Subissue issue popup.
+- Label support
 
 Lead:
 
