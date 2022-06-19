@@ -17,7 +17,7 @@
   import { createQuery, getClient } from '@anticrm/presentation'
   import { Vacancy } from '@anticrm/recruit'
   import { Button, Icon, IconAdd, Label, Loading, SearchEdit, showPopup } from '@anticrm/ui'
-  import view, { BuildModelKey, Filter, Viewlet, ViewletPreference } from '@anticrm/view'
+  import view, { BuildModelKey, Viewlet, ViewletPreference } from '@anticrm/view'
   import { FilterButton, TableBrowser, ViewletSettingButton } from '@anticrm/view-resources'
   import recruit from '../plugin'
   import CreateVacancy from './CreateVacancy.svelte'
@@ -88,7 +88,6 @@
   ])
 
   const client = getClient()
-  let filters: Filter[] = []
 
   let descr: Viewlet | undefined
   let loading = true
@@ -136,7 +135,7 @@
   <div class="ac-header__wrap-title">
     <div class="ac-header__icon"><Icon icon={recruit.icon.Vacancy} size={'small'} /></div>
     <span class="ac-header__title"><Label label={recruit.string.Vacancies} /></span>
-    <div class="ml-4"><FilterButton _class={recruit.class.Vacancy} bind:filters /></div>
+    <div class="ml-4"><FilterButton _class={recruit.class.Vacancy} /></div>
   </div>
   <SearchEdit
     bind:value={search}
@@ -159,7 +158,6 @@
         ...resultQuery,
         archived: false
       }}
-      bind:filters
       showNotification
     />
   {/if}

@@ -14,8 +14,9 @@
 //
 
 import core, { Doc, generateId, Ref, SortingOrder, TxOperations, TxResult } from '@anticrm/core'
-import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
+import { createOrUpdate, MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
 import { IssueStatus, IssueStatusCategory, Team, genRanks, Issue } from '@anticrm/tracker'
+import tags from '@anticrm/tags'
 import { DOMAIN_TRACKER } from '.'
 import tracker from './plugin'
 
@@ -256,6 +257,19 @@ async function upgradeProjectIcons (tx: TxOperations): Promise<void> {
 
 async function createDefaults (tx: TxOperations): Promise<void> {
   await createDefaultTeam(tx)
+  await createOrUpdate(
+    tx,
+    tags.class.TagCategory,
+    tags.space.Tags,
+    {
+      icon: tags.icon.Tags,
+      label: 'Other',
+      targetClass: tracker.class.Issue,
+      tags: [],
+      default: true
+    },
+    tracker.category.Other
+  )
 }
 
 async function upgradeTeams (tx: TxOperations): Promise<void> {

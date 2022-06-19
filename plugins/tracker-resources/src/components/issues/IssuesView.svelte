@@ -11,7 +11,7 @@
     ViewOptions
   } from '@anticrm/tracker'
   import { Button, IconDetails, Loading } from '@anticrm/ui'
-  import view, { Filter, Viewlet } from '@anticrm/view'
+  import view, { Viewlet } from '@anticrm/view'
   import { FilterBar } from '@anticrm/view-resources'
   import { getActiveViewletId } from '@anticrm/view-resources/src/utils'
   import tracker from '../../plugin'
@@ -26,7 +26,6 @@
   export let panelWidth: number = 0
 
   let viewlet: WithLookup<Viewlet> | undefined = undefined
-  let filters: Filter[]
   let viewOptions: ViewOptions = {
     groupBy: IssuesGrouping.Status,
     orderBy: IssuesOrdering.Status,
@@ -80,7 +79,7 @@
 </script>
 
 {#if currentSpace}
-  <IssuesHeader {currentSpace} {viewlets} {label} bind:viewlet bind:viewOptions bind:filters>
+  <IssuesHeader {currentSpace} {viewlets} {label} bind:viewlet bind:viewOptions>
     <svelte:fragment slot="extra">
       {#if asideFloat && $$slots.aside}
         <Button
@@ -99,7 +98,7 @@
     {#if loading}
       <Loading />
     {:else}
-      <FilterBar _class={tracker.class.Issue} {query} bind:filters on:change={(e) => (resultQuery = e.detail)} />
+      <FilterBar _class={tracker.class.Issue} {query} on:change={(e) => (resultQuery = e.detail)} />
       <div class="flex h-full">
         <div class="antiPanel-component">
           <IssuesContent {currentSpace} {viewlet} query={resultQuery} {viewOptions} />

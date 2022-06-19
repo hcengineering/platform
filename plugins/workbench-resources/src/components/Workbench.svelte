@@ -130,8 +130,8 @@
 
   async function syncLoc (loc: Location): Promise<void> {
     const app = loc.path.length > 1 ? (loc.path[1] as Ref<Application>) : undefined
-    let space = loc.path.length > 2 ? (loc.path[2] as Ref<Space>) : undefined
-    let special = loc.path.length > 3 ? loc.path[3] : undefined
+    const space = loc.path.length > 2 ? (loc.path[2] as Ref<Space>) : undefined
+    const special = loc.path.length > 3 ? loc.path[3] : undefined
 
     if (currentApp !== app) {
       clear(1)
@@ -144,8 +144,17 @@
       const last = localStorage.getItem(`platform_last_loc_${app}`)
       if (last !== null) {
         const newLocation: Location = JSON.parse(last)
-        loc.path[2] = space = newLocation.path[2] as Ref<Space>
-        loc.path[3] = special = newLocation.path[3]
+        if (newLocation.path[2] != null) {
+          loc.path[2] = newLocation.path[2] as Ref<Space>
+          loc.path[3] = newLocation.path[3]
+          if (loc.path[3] == null) {
+            loc.path.length = 3
+          } else {
+            loc.path.length = 4
+          }
+          navigate(loc)
+          return
+        }
       }
     }
 

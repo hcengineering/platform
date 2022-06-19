@@ -9997,7 +9997,7 @@ packages:
     dev: false
 
   file:projects/activity-resources.tgz_1e3963ebf0ceeb25b2fa6a1cc87e253c:
-    resolution: {integrity: sha512-3qOFOo1wgN0U2L66jIpfdizhweVg+Bt+CblBFjdpQD8anPqMX5Bpm4LbCqQfACtY+XSl92anmiCEYfvQbTL0rw==, tarball: file:projects/activity-resources.tgz}
+    resolution: {integrity: sha512-GdQlfWQ1T4zhtHShJ/qNtQS6pLovUO9tX3Vn67eqX5qNYDFp0Taf47+DTbYBSd6ZrmtMWhusl8T4LsRQgj5tuw==, tarball: file:projects/activity-resources.tgz}
     id: file:projects/activity-resources.tgz
     name: '@rush-temp/activity-resources'
     version: 0.0.0
@@ -12371,7 +12371,7 @@ packages:
     dev: false
 
   file:projects/notification.tgz:
-    resolution: {integrity: sha512-T0MHErZvhtTwdclos98GglKOGizrwTcrfU6u0s0Oio37PzD3jzOSvaJkgzePqt0sFee5XY8qXlLm7xLvVW9zPw==, tarball: file:projects/notification.tgz}
+    resolution: {integrity: sha512-6BJ+zX3Wj70Wk6KKBPvfV6oBMh5/9fijekSDAzhnLKRhJPwuIBD5tCRJcqz4FJn8ZwqhjBMzB1op0rxJa2wYvg==, tarball: file:projects/notification.tgz}
     name: '@rush-temp/notification'
     version: 0.0.0
     dependencies:
@@ -12385,6 +12385,7 @@ packages:
       eslint-plugin-node: 11.1.0_eslint@7.32.0
       eslint-plugin-promise: 5.2.0_eslint@7.32.0
       prettier: 2.6.2
+      svelte: 3.48.0
       typescript: 4.7.2
     transitivePeerDependencies:
       - eslint-import-resolver-typescript

@@ -2,10 +2,15 @@
 
 ## 0.6.28 (upcoming)
 
+Core:
+
+- Show activity line last view
+
 Tracker:
 
 - Issue state history.
 - Subissue issue popup.
+- Label support
 
 Lead:
 

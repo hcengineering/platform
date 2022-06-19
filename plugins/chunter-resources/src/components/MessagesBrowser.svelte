@@ -5,7 +5,6 @@
   import core, { DocumentQuery, Ref, SortingOrder } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { Label, Scroller, SearchEdit } from '@anticrm/ui'
-  import type { Filter } from '@anticrm/view'
   import { FilterBar } from '@anticrm/view-resources'
   import MessageComponent from './Message.svelte'
   import plugin from '../plugin'
@@ -16,8 +15,6 @@
   export let search: string = ''
 
   let searchQuery: DocumentQuery<ChunterMessage> = { $search: search }
-
-  export let filters: Filter[] = []
 
   function updateSearchQuery (search: string): void {
     searchQuery = { $search: search }
@@ -111,7 +108,7 @@
     />
   </div>
 {/if}
-<FilterBar _class={filterClass} query={searchQuery} bind:filters on:change={(e) => (resultQuery = e.detail)} />
+<FilterBar _class={filterClass} query={searchQuery} on:change={(e) => (resultQuery = e.detail)} />
 {#if messages.length > 0}
   <Scroller>
     {#each messages as message}

@@ -252,7 +252,7 @@ export class ModelDb extends MemDb implements Storage {
   // TODO: process ancessor mixins
   protected async txMixin (tx: TxMixin<Doc, Doc>): Promise<TxResult> {
     const obj = this.getObject(tx.objectId) as any
-    TxProcessor.updateMixin4Doc(obj, tx.mixin, tx.attributes)
+    TxProcessor.updateMixin4Doc(obj, tx)
     return {}
   }
 }

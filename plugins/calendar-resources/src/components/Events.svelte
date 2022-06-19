@@ -29,7 +29,7 @@
     showPopup,
     Tooltip
   } from '@anticrm/ui'
-  import view, { Filter, Viewlet, ViewletPreference } from '@anticrm/view'
+  import view, { Viewlet, ViewletPreference } from '@anticrm/view'
   import { FilterButton, ViewletSettingButton } from '@anticrm/view-resources'
   import calendar from '../plugin'
 
@@ -43,7 +43,6 @@
   export let createComponent: AnyComponent | undefined = calendar.component.CreateEvent
   export let createLabel: IntlString | undefined = calendar.string.CreateEvent
 
-  let filters: Filter[] = []
   const viewletQuery = createQuery()
   let search = ''
   let resultQuery: DocumentQuery<Event> = {}
@@ -98,7 +97,7 @@
   <div class="ac-header__wrap-title">
     <div class="ac-header__icon"><Icon icon={viewIcon} size={'small'} /></div>
     <span class="ac-header__title"><Label label={viewLabel} /></span>
-    <div class="ml-4"><FilterButton {_class} bind:filters /></div>
+    <div class="ml-4"><FilterButton {_class} /></div>
   </div>
 
   {#if viewlets.length > 1}
@@ -144,7 +143,6 @@
         config: preference?.config ?? selectedViewlet.config,
         viewlet: selectedViewlet,
         query: resultQuery,
-        filters,
         search,
         createComponent
       }}
