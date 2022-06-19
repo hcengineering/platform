@@ -18,13 +18,11 @@
   import { createQuery } from '@anticrm/presentation'
   import { Component, Loading } from '@anticrm/ui'
   import view, { Viewlet, ViewletPreference } from '@anticrm/view'
-  import type { Filter } from '@anticrm/view'
 
   export let _class: Ref<Class<Doc>>
   export let space: Ref<Space>
   export let search: string
   export let viewlet: WithLookup<Viewlet> | undefined
-  export let filters: Filter[] = []
 
   const preferenceQuery = createQuery()
   let preference: ViewletPreference | undefined
@@ -58,7 +56,6 @@
             options: viewlet.options,
             config: preference?.config ?? viewlet.config,
             viewlet,
-            filters,
             search
           }}
         />

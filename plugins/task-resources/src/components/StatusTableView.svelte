@@ -22,14 +22,12 @@
   import { TableBrowser } from '@anticrm/view-resources'
   import task from '../plugin'
   import StatesBar from './state/StatesBar.svelte'
-  import type { Filter } from '@anticrm/view'
 
   export let _class: Ref<Class<Task>>
   export let space: Ref<SpaceWithStates>
   export let options: FindOptions<Task> | undefined
   export let config: string[]
   export let search: string
-  export let filters: Filter[] = []
 
   let doneStatusesView: boolean = false
   let state: Ref<State> | undefined = undefined
@@ -160,7 +158,7 @@
   {/if}
 </div>
 <div class="statustableview-container">
-  <TableBrowser {_class} bind:query config={resConfig} {options} bind:filters showNotification />
+  <TableBrowser {_class} bind:query config={resConfig} {options} showNotification />
 </div>
 
 <style lang="scss">

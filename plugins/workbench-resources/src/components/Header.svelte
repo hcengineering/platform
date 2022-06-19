@@ -17,13 +17,11 @@
   import type { Asset } from '@anticrm/platform'
   import { Icon } from '@anticrm/ui'
   import { FilterButton } from '@anticrm/view-resources'
-  import type { Filter } from '@anticrm/view'
 
   export let icon: Asset | undefined
   export let label: string
   export let description: string | undefined
   export let _class: Ref<Class<Doc>> | undefined = undefined
-  export let filters: Filter[] = []
 </script>
 
 <div class="ac-header__wrap-description">
@@ -32,7 +30,7 @@
       {#if icon}<div class="ac-header__icon"><Icon {icon} size={'small'} /></div>{/if}
       <span class="ac-header__title">{label}</span>
     </div>
-    {#if _class}<div class="ml-4"><FilterButton {_class} bind:filters /></div>{/if}
+    {#if _class}<div class="ml-4"><FilterButton {_class} /></div>{/if}
   </div>
   {#if description}<span class="ac-header__description">{description}</span>{/if}
 </div>
