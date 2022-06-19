@@ -1,6 +1,13 @@
-import automation, { Automation, Command, PerformAutomationProps, TriggerType } from '@anticrm/automation'
+import automation, {
+  Automation,
+  Command,
+  isUpdateDocCommand,
+  PerformAutomationProps,
+  TriggerType
+} from '@anticrm/automation'
 import core, { Class, Doc, Ref, Space, TxOperations } from '@anticrm/core'
 import { IntlString } from '@anticrm/platform'
+import { getClient } from '@anticrm/presentation'
 import type { Action } from '@anticrm/view'
 import view from '@anticrm/view'
 import { Trigger } from './models'
@@ -38,15 +45,17 @@ export async function createAutomation (
     }
   )
   await createTrigger(client, trigger, space, automationId)
+  const test = await client.findOne(automation.class.Automation, { _id: automationId })
+  console.log(test)
   return automationId
 }
 
 export function getTriggerType (trigger: Trigger): TriggerType {
   if (trigger.action !== undefined) {
     return TriggerType.Action
+  } else {
+    throw new Error('Unknown automation action')
   }
-
-  throw new Error('Unknown automation action')
 }
 
 export async function createTrigger (
@@ -54,9 +63,9 @@ export async function createTrigger (
   trigger: Trigger,
   space: Ref<Space>,
   automationId: Ref<Automation<Doc>>
-): Promise<void> {
+): Promise<Doc | undefined> {
   if (trigger.action !== undefined) {
-    await client.createDoc<Action<Doc, PerformAutomationProps>>(view.class.Action, space, {
+    const triggerId = await client.createDoc<Action<Doc, PerformAutomationProps>>(view.class.Action, space, {
       action: automation.action.PerformAutomation,
       actionProps: {
         automationId,
@@ -68,7 +77,46 @@ export async function createTrigger (
       label: trigger.action.label as IntlString,
       target: trigger.action.target
     })
+    return await client.findOne<Action<Doc, PerformAutomationProps>>(view.class.Action, { _id: triggerId })
+  } else {
+    throw new Error('Unknown automation action')
+  }
+}
+
+export async function performAutomation (
+  doc: Doc | Doc[] | undefined,
+  evt: Event,
+  props: PerformAutomationProps | undefined
+): Promise<void> {
+  if (doc === undefined || props?.automationId === undefined) {
+    throw new Error('Unknown automation action')
+  }
+  const client = getClient()
+  const automationObj = await client.findOne(props.automationClass ?? automation.class.Automation, {
+    _id: props.automationId
+  })
+  if (automationObj === undefined) {
+    return
   }
 
-  throw new Error('Unknown automation action')
+  let objects = []
+  if (Array.isArray(doc)) {
+    objects = doc
+  } else {
+    objects = [doc]
+  }
+
+  await doPerformAutomation(client, objects, automationObj)
+}
+
+async function doPerformAutomation (client: TxOperations, docs: Doc[], automationObj: Automation<Doc>): Promise<void> {
+  // TODO: move to automation server
+  const hierarchy = client.getHierarchy()
+  for (const doc of docs) {
+    for (const command of automationObj.commands) {
+      if (isUpdateDocCommand(command) && hierarchy.isDerived(doc._class, command.targetClass)) {
+        await client.update(doc, command.update)
+      }
+    }
+  }
 }

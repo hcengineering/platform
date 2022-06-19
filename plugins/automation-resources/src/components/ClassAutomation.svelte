@@ -5,6 +5,7 @@
   import { Button, Label } from '@anticrm/ui'
   import { Trigger } from '../models'
   import automation from '../plugin'
+  import { createAutomation } from '../utils'
   import AutomationActions from './AutomationActions.svelte'
   import AutomationTrigger from './AutomationTrigger.svelte'
 
@@ -18,8 +19,10 @@
   const mixin = hierarchy.as(classObject, automation.mixin.AutomationSupport)
 
   function save () {
-    console.log(commands)
-    console.log(trigger)
+    if (!trigger || !commands.length) {
+      return
+    }
+    createAutomation(client, 'name', trigger, commands, { targetClass: _class })
   }
 </script>
 

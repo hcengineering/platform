@@ -15,9 +15,13 @@
 //
 import { Resources } from '@anticrm/platform'
 import AutomationSettingsElement from './components/AutomationSettingsElement.svelte'
+import { performAutomation } from './utils'
 
 export default async (): Promise<Resources> => ({
   component: {
     AutomationSettingsElement
+  },
+  action: {
+    PerformAutomation: performAutomation
   }
 })

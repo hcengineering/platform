@@ -23,14 +23,16 @@ import automation, {
   Command,
   TriggerType
 } from '@anticrm/automation'
-import { Class, Doc, Ref } from '@anticrm/core'
+import { Class, Doc, Domain, Ref } from '@anticrm/core'
 import { Builder, Mixin, Model, UX } from '@anticrm/model'
 import core, { TAttachedDoc, TClass } from '@anticrm/model-core'
 import setting from '@anticrm/setting'
 
 import plugin from './plugin'
 
-@Model(automation.class.Automation, core.class.AttachedDoc)
+export const DOMAIN_AUTOMATION = 'automation' as Domain
+
+@Model(automation.class.Automation, core.class.AttachedDoc, DOMAIN_AUTOMATION)
 @UX(automation.string.Automation)
 export class TAutomation extends TAttachedDoc implements Automation<Doc> {
   name!: string
