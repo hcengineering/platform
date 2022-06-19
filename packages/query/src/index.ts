@@ -27,11 +27,13 @@ import core, {
   Hierarchy,
   Lookup,
   LookupData,
+  matchQuery,
   ModelDb,
   Ref,
   resultSort,
   ReverseLookups,
   SortingQuery,
+  toFindResult,
   Tx,
   TxBulkWrite,
   TxCollectionCUD,
@@ -42,10 +44,7 @@ import core, {
   TxRemoveDoc,
   TxResult,
   TxUpdateDoc,
-  WithLookup,
-  toFindResult,
-  checkMixinKey,
-  matchQuery
+  WithLookup
 } from '@anticrm/core'
 import { deepEqual } from 'fast-equals'
 
