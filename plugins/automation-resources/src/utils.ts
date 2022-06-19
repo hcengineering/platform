@@ -45,8 +45,6 @@ export async function createAutomation (
     }
   )
   await createTrigger(client, trigger, space, automationId)
-  const test = await client.findOne(automation.class.Automation, { _id: automationId })
-  console.log(test)
   return automationId
 }
 
