@@ -310,7 +310,7 @@ class ActivityImpl implements Activity {
   checkMixinState (result: DisplayTx, firstTx: DisplayTx): boolean {
     if (this.client.getHierarchy().isDerived(result.tx._class, core.class.TxMixin) && result.doc !== undefined) {
       const mix = result.tx as TxMixin<Doc, Doc>
-      firstTx.doc = TxProcessor.updateMixin4Doc(result.doc, mix.mixin, mix.attributes)
+      firstTx.doc = TxProcessor.updateMixin4Doc(result.doc, mix)
       firstTx.mixin = true
       result.mixin = true
       return true
