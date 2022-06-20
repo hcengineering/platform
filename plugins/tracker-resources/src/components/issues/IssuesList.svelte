@@ -305,8 +305,8 @@
     flex-direction: column;
     width: 100%;
     height: 100%;
-    min-width: 0;
-    min-height: 0;
+    // min-width: 0;
+    // min-height: 0;
   }
   .categoryHeader {
     padding: 0 1.5rem 0 2.25rem;

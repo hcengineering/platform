@@ -25,7 +25,7 @@
     IssueStatus,
     IssueStatusCategory
   } from '@anticrm/tracker'
-  import { Button, Label, ScrollBox, showPopup, eventToHTMLElement, IconAdd, IconClose, Icon } from '@anticrm/ui'
+  import { Button, Label, Scroller, showPopup, eventToHTMLElement, IconAdd, IconClose, Icon } from '@anticrm/ui'
   import { IntlString } from '@anticrm/platform'
   import { createEventDispatcher } from 'svelte'
   import ViewOptionsPopup from './ViewOptionsPopup.svelte'
@@ -489,7 +489,7 @@
 
   <div class="flex h-full clear-mins">
     <div class="antiPanel-component">
-      <ScrollBox vertical stretch>
+      <Scroller>
         <IssuesListBrowser
           _class={tracker.class.Issue}
           {currentSpace}
@@ -518,7 +518,7 @@
           ]}
           {groupedIssues}
         />
-      </ScrollBox>
+      </Scroller>
     </div>
     {#if $$slots.aside !== undefined}
       <div class="antiPanel-component aside border-left">

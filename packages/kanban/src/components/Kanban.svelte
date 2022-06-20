@@ -367,6 +367,7 @@
     display: flex;
     flex-direction: column;
     width: 20rem;
+    min-width: 20rem;
     background-color: transparent;
     border: 1px solid transparent;
     border-radius: 0.25rem;

@@ -10,7 +10,7 @@
     Team,
     ViewOptions
   } from '@anticrm/tracker'
-  import { Button, IconDetails } from '@anticrm/ui'
+  import { Button, IconDetails, Scroller, ScrollBox } from '@anticrm/ui'
   import view, { Viewlet } from '@anticrm/view'
   import { FilterBar } from '@anticrm/view-resources'
   import { getActiveViewletId } from '@anticrm/view-resources/src/utils'
@@ -93,9 +93,11 @@
     </svelte:fragment>
   </IssuesHeader>
   <FilterBar _class={tracker.class.Issue} {query} on:change={(e) => (resultQuery = e.detail)} />
-  <div class="flex h-full clear-mins">
+  <div class="flex w-full h-full clear-mins">
     <div class="antiPanel-component clear-mins">
-      <IssuesContent {currentSpace} {viewlet} query={resultQuery} {viewOptions} />
+      <ScrollBox vertical stretch>
+        <IssuesContent {currentSpace} {viewlet} query={resultQuery} {viewOptions} />
+      </ScrollBox>
     </div>
     {#if $$slots.aside !== undefined && asideShown}
       <div class="popupPanel-body__aside" class:float={asideFloat} class:shown={asideShown}>
