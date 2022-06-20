@@ -13,9 +13,9 @@
 // limitations under the License.
 //
 
-import { Employee, formatName } from '@anticrm/contact'
-import { DocumentQuery, Ref, SortingOrder } from '@anticrm/core'
-import type { Asset, IntlString } from '@anticrm/platform'
+import contact, { Employee, formatName } from '@anticrm/contact'
+import { DocumentQuery, Ref, SortingOrder, TxOperations } from '@anticrm/core'
+import { Asset, IntlString, translate } from '@anticrm/platform'
 import {
   IssuePriority,
   Team,
@@ -27,6 +27,7 @@ import {
   IssueStatus
 } from '@anticrm/tracker'
 import { AnyComponent, AnySvelteComponent, getMillisecondsInMonth, MILLISECONDS_IN_WEEK } from '@anticrm/ui'
+import { TypeState } from '@anticrm/kanban'
 import tracker from './plugin'
 
 export interface NavigationItem {
@@ -391,4 +392,115 @@ export function getCategories (
 
 export function getIssueId (team: Team, issue: Issue): string {
   return `${team.identifier}-${issue.number}`
+}
+
+export async function getKanbanStatuses (
+  client: TxOperations,
+  groupBy: IssuesGrouping,
+  issueQuery: DocumentQuery<Issue>,
+  shouldShowEmptyGroups: boolean
+): Promise<TypeState[]> {
+  if (groupBy === IssuesGrouping.NoGrouping) {
+    return [{ _id: undefined, color: 0, title: await translate(tracker.string.NoGrouping, {}) }]
+  }
+  if (groupBy === IssuesGrouping.Status && shouldShowEmptyGroups) {
+    return (
+      await client.findAll(
+        tracker.class.IssueStatus,
+        { attachedTo: issueQuery.space },
+        {
+          lookup: { category: tracker.class.IssueStatusCategory },
+          sort: { rank: SortingOrder.Ascending }
+        }
+      )
+    ).map((status) => ({
+      _id: status._id,
+      title: status.name,
+      color: status.color ?? status.$lookup?.category?.color ?? 0,
+      icon: status.$lookup?.category?.icon ?? undefined
+    }))
+  }
+  if (groupBy === IssuesGrouping.Priority) {
+    const issues = await client.findAll(tracker.class.Issue, issueQuery, {
+      sort: { priority: SortingOrder.Ascending }
+    })
+    const states = issues.reduce<TypeState[]>((result, issue) => {
+      const { priority } = issue
+      if (result.find(({ _id }) => _id === priority) !== undefined) return result
+      return [
+        ...result,
+        {
+          _id: priority,
+          title: issuePriorities[priority].label,
+          color: 0,
+          icon: issuePriorities[priority].icon
+        }
+      ]
+    }, [])
+    await Promise.all(
+      states.map(async (state) => {
+        state.title = await translate(state.title as IntlString, {})
+      })
+    )
+    return states
+  }
+  if (groupBy === IssuesGrouping.Status) {
+    const issues = await client.findAll(tracker.class.Issue, issueQuery, {
+      lookup: { status: [tracker.class.IssueStatus, { category: tracker.class.IssueStatusCategory }] },
+      sort: { '$lookup.status.rank': SortingOrder.Ascending }
+    })
+    return issues.reduce<TypeState[]>((result, issue) => {
+      const status = issue.$lookup?.status
+      if (status === undefined || result.find(({ _id }) => _id === status._id) !== undefined) return result
+      const icon = '$lookup' in status ? status.$lookup?.category?.icon : undefined
+      return [
+        ...result,
+        {
+          _id: status._id,
+          title: status.name,
+          color: status.color ?? 0,
+          icon
+        }
+      ]
+    }, [])
+  }
+  if (groupBy === IssuesGrouping.Assignee) {
+    const issues = await client.findAll(tracker.class.Issue, issueQuery, {
+      lookup: { assignee: contact.class.Employee },
+      sort: { '$lookup.assignee.name': SortingOrder.Ascending }
+    })
+    const noAssignee = await translate(tracker.string.NoAssignee, {})
+    return issues.reduce<TypeState[]>((result, issue) => {
+      if (result.find(({ _id }) => _id === issue.assignee) !== undefined) return result
+      return [
+        ...result,
+        {
+          _id: issue.assignee,
+          title: issue.$lookup?.assignee?.name ?? noAssignee,
+          color: 0,
+          icon: undefined
+        }
+      ]
+    }, [])
+  }
+  if (groupBy === IssuesGrouping.Project) {
+    const issues = await client.findAll(tracker.class.Issue, issueQuery, {
+      lookup: { project: tracker.class.Project },
+      sort: { '$lookup.project.label': SortingOrder.Ascending }
+    })
+    const noProject = await translate(tracker.string.NoProject, {})
+    return issues.reduce<TypeState[]>((result, issue) => {
+      if (result.find(({ _id }) => _id === issue.project) !== undefined) return result
+      return [
+        ...result,
+        {
+          _id: issue.project,
+          title: issue.$lookup?.project?.label ?? noProject,
+          color: 0,
+          icon: undefined
+        }
+      ]
+    }, [])
+  }
+  return []
 }

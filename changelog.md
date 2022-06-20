@@ -1,14 +1,39 @@
 # Changelog
 
-## 0.6.27 (upcoming)
+## 0.6.28 (upcoming)
+
+Core:
+
+- Show activity line last view
+
+Tracker:
+
+- Issue state history.
+- Subissue issue popup.
+- Label support
+
+Lead:
+
+- Lead presentation changed to number.
+- Title column for leads.
+- Fix New Lead action for Organization.
+
+## 0.6.27
 
 Platform:
 
 - Allow to attach from clipboard
+- Updating subtask project according to parent project
+
+Leads:
+
+- Add filters
+- Added "done state" to leads popup table and customer display
 
 Tracker:
 
 - Attachments support
+- Board view
 
 ## 0.6.26
 

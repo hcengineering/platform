@@ -15,12 +15,14 @@
 <script lang="ts">
   import { AttachmentStyledBox } from '@anticrm/attachment-resources'
   import { Employee } from '@anticrm/contact'
-  import core, { AttachedData, generateId, Ref, SortingOrder, WithLookup } from '@anticrm/core'
-  import presentation, { Card, createQuery, getClient, SpaceSelector } from '@anticrm/presentation'
+  import core, { Account, AttachedData, Doc, generateId, Ref, SortingOrder, WithLookup } from '@anticrm/core'
+  import { Card, createQuery, getClient, KeyedAttribute, SpaceSelector } from '@anticrm/presentation'
   import { calcRank, Issue, IssuePriority, IssueStatus, Project, Team } from '@anticrm/tracker'
+  import tags, { TagElement, TagReference } from '@anticrm/tags'
   import {
     ActionIcon,
     Button,
+    Component,
     DatePresenter,
     EditBox,
     IconAttachment,
@@ -33,8 +35,8 @@
   import tracker from '../plugin'
   import AssigneeEditor from './issues/AssigneeEditor.svelte'
   import ParentIssue from './issues/ParentIssue.svelte'
+  import PriorityEditor from './issues/PriorityEditor.svelte'
   import StatusEditor from './issues/StatusEditor.svelte'
-  import PrioritySelector from './PrioritySelector.svelte'
   import ProjectSelector from './ProjectSelector.svelte'
   import SetDueDateActionPopup from './SetDueDateActionPopup.svelte'
   import SetParentIssueActionPopup from './SetParentIssueActionPopup.svelte'
@@ -48,6 +50,7 @@
   let currentAssignee: Ref<Employee> | null = assignee
   let issueStatuses: WithLookup<IssueStatus>[] | undefined
   let parentIssue: Issue | undefined
+  let labels: TagReference[] = []
 
   let objectId: Ref<Issue> = generateId()
   let object: AttachedData<Issue> = {
@@ -69,6 +72,11 @@
   const statusesQuery = createQuery()
 
   let descriptionBox: AttachmentStyledBox
+
+  const key: KeyedAttribute = {
+    key: 'labels',
+    attr: client.getHierarchy().getAttribute(tracker.class.Issue, 'labels')
+  }
 
   $: _space = space
   $: updateIssueStatusId(space, status)
@@ -147,6 +155,13 @@
       value,
       objectId
     )
+    for (const label of labels) {
+      await client.addCollection(label._class, label.space, objectId, tracker.class.Issue, 'labels', {
+        title: label.title,
+        color: label.color,
+        tag: label.tag
+      })
+    }
     await descriptionBox.createAttachments()
     objectId = generateId()
   }
@@ -194,20 +209,31 @@
     )
   }
 
-  const handlePriorityChanged = (newPriority: IssuePriority | undefined) => {
-    if (newPriority === undefined) {
-      return
-    }
-
-    object.priority = newPriority
-  }
-
   const handleProjectIdChanged = (projectId: Ref<Project> | null | undefined) => {
     if (projectId === undefined) {
       return
     }
 
     object = { ...object, project: projectId }
+  }
+
+  function addTagRef (tag: TagElement): void {
+    labels = [
+      ...labels,
+      {
+        _class: tags.class.TagReference,
+        _id: generateId() as Ref<TagReference>,
+        attachedTo: '' as Ref<Doc>,
+        attachedToClass: tracker.class.Issue,
+        collection: 'labels',
+        space: tags.space.Tags,
+        modifiedOn: 0,
+        modifiedBy: '' as Ref<Account>,
+        title: tag.title,
+        tag: tag._id,
+        color: tag.color
+      }
+    ]
   }
 </script>
 
@@ -223,16 +249,14 @@
 >
   <svelte:fragment slot="header">
     <SpaceSelector _class={tracker.class.Team} label={tracker.string.Team} bind:space={_space} />
-  </svelte:fragment>
-  <svelte:fragment slot="space">
-    <Button
+    <!-- <Button
       icon={tracker.icon.Home}
       label={presentation.string.Save}
       size={'small'}
       kind={'no-border'}
       disabled
       on:click={() => {}}
-    />
+    /> -->
   </svelte:fragment>
   {#if parentIssue}
     <ParentIssue issue={parentIssue} on:close={clearParentIssue} />
@@ -256,16 +280,25 @@
   />
   <svelte:fragment slot="pool">
     {#if issueStatuses}
-      <StatusEditor
+      <div id="status-editor">
+        <StatusEditor
+          value={object}
+          statuses={issueStatuses}
+          kind="no-border"
+          size="small"
+          shouldShowLabel={true}
+          on:change={({ detail }) => (object.status = detail)}
+        />
+      </div>
+      <PriorityEditor
         value={object}
-        statuses={issueStatuses}
+        shouldShowLabel
+        isEditable
         kind="no-border"
-        width="min-content"
         size="small"
-        shouldShowLabel={true}
-        on:change={({ detail }) => (object.status = detail)}
+        justify="center"
+        on:change={({ detail }) => (object.priority = detail)}
       />
-      <PrioritySelector priority={object.priority} onPriorityChange={handlePriorityChanged} />
       <AssigneeEditor
         value={object}
         size="small"
@@ -273,13 +306,21 @@
         tooltipFill={false}
         on:change={({ detail }) => (currentAssignee = detail)}
       />
-      <!-- <Button
-        label={tracker.string.Labels}
-        icon={tracker.icon.Labels}
-        width="min-content"
-        size="small"
-        kind="no-border"
-      /> -->
+      <Component
+        is={tags.component.TagsDropdownEditor}
+        props={{
+          items: labels,
+          key,
+          targetClass: tracker.class.Issue,
+          countLabel: tracker.string.NumberLabels
+        }}
+        on:open={(evt) => {
+          addTagRef(evt.detail)
+        }}
+        on:delete={(evt) => {
+          labels = labels.filter((it) => it._id !== evt.detail)
+        }}
+      />
       <ProjectSelector value={object.project} onProjectIdChange={handleProjectIdChanged} />
       {#if object.dueDate !== null}
         <DatePresenter bind:value={object.dueDate} editable />

@@ -45,7 +45,6 @@
       <Avatar size={'x-small'} avatar={employee.avatar} />
       <div class="overflow-label user">{formatName(employee.name)}</div>
     {:else}
-      {JSON.stringify(value)}
       <div class="overflow-label user">{value.email}</div>
     {/if}
   </div>

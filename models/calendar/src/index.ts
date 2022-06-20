@@ -104,19 +104,23 @@ export function createModel (builder: Builder): void {
     {
       label: calendar.string.ApplicationLabelCalendar,
       icon: calendar.icon.Calendar,
-      hidden: true,
-      navigatorModel: {
-        spaces: [
-          {
-            label: calendar.string.Calendars,
-            spaceClass: calendar.class.Calendar,
-            addSpaceLabel: calendar.string.CreateCalendar,
-            createComponent: calendar.component.CreateCalendar
-          }
-        ]
-      }
+      hidden: false,
+      component: calendar.component.Events
     },
     calendar.app.Calendar
+  )
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: calendar.class.Event,
+      descriptor: calendar.viewlet.Calendar,
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      config: [''],
+      hiddenKeys: ['title', 'date']
+    },
+    calendar.viewlet.CalendarEvent
   )
 
   builder.createDoc(
@@ -186,9 +190,8 @@ export function createModel (builder: Builder): void {
     editor: calendar.component.EditEvent
   })
 
-  // Use generic child presenter
   builder.mixin(calendar.class.Event, core.class.Class, view.mixin.AttributePresenter, {
-    presenter: view.component.ObjectPresenter
+    presenter: calendar.component.EventPresenter
   })
 }
 

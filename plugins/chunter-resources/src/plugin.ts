@@ -85,6 +85,7 @@ export default mergeIds(chunterId, chunter, {
     MessagesBrowser: '' as IntlString,
     ChunterBrowser: '' as IntlString,
     Messages: '' as IntlString,
-    NoResults: '' as IntlString
+    NoResults: '' as IntlString,
+    CopyLink: '' as IntlString
   }
 })

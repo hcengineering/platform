@@ -78,7 +78,7 @@ export function classPresenter (
   })
   if (editor !== undefined) {
     builder.mixin(_class, core.class.Class, view.mixin.AttributeEditor, {
-      editor,
+      inlineEditor: editor,
       popup
     })
   }
@@ -102,7 +102,7 @@ export class TAttributeFilter extends TClass implements AttributeFilter {
 
 @Mixin(view.mixin.AttributeEditor, core.class.Class)
 export class TAttributeEditor extends TClass implements AttributeEditor {
-  editor!: AnyComponent
+  inlineEditor!: AnyComponent
 }
 
 @Mixin(view.mixin.CollectionPresenter, core.class.Class)
@@ -113,11 +113,12 @@ export class TCollectionPresenter extends TClass implements CollectionPresenter 
 @Mixin(view.mixin.CollectionEditor, core.class.Class)
 export class TCollectionEditor extends TClass implements CollectionEditor {
   editor!: AnyComponent
+  inlineEditor?: AnyComponent
 }
 
 @Mixin(view.mixin.ArrayEditor, core.class.Class)
 export class TArrayEditor extends TClass implements ArrayEditor {
-  editor!: AnyComponent
+  inlineEditor!: AnyComponent
 }
 
 @Mixin(view.mixin.AttributePresenter, core.class.Class)
@@ -293,7 +294,13 @@ export function createModel (builder: Builder): void {
   )
   classPresenter(builder, core.class.TypeIntlString, view.component.IntlStringPresenter)
   classPresenter(builder, core.class.TypeNumber, view.component.NumberPresenter, view.component.NumberEditor)
-  classPresenter(builder, core.class.TypeMarkup, view.component.HTMLPresenter)
+  classPresenter(
+    builder,
+    core.class.TypeMarkup,
+    view.component.HTMLPresenter,
+    view.component.StringEditor,
+    view.component.StringEditorPopup
+  )
   classPresenter(builder, core.class.TypeBoolean, view.component.BooleanPresenter, view.component.BooleanEditor)
   classPresenter(builder, core.class.TypeTimestamp, view.component.TimestampPresenter)
   classPresenter(builder, core.class.TypeDate, view.component.DatePresenter, view.component.DateEditor)
@@ -514,6 +521,10 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(core.class.TypeDate, core.class.Class, view.mixin.AttributeFilter, {
+    component: view.component.ValueFilter
+  })
+
+  builder.mixin(core.class.EnumOf, core.class.Class, view.mixin.AttributeFilter, {
     component: view.component.ValueFilter
   })
 

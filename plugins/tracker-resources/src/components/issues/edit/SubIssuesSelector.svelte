@@ -13,15 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { SortingOrder, WithLookup, Ref, Doc } from '@anticrm/core'
-  import { createQuery } from '@anticrm/presentation'
+  import { Doc, Ref, WithLookup } from '@anticrm/core'
   import { Issue, IssueStatus, Team } from '@anticrm/tracker'
-  import { Button, ProgressCircle, showPopup, SelectPopup, closeTooltip, showPanel } from '@anticrm/ui'
   import type { ButtonKind, ButtonSize } from '@anticrm/ui'
+  import { Button, closeTooltip, ProgressCircle, SelectPopup, showPanel, showPopup } from '@anticrm/ui'
+  import { updateFocus } from '@anticrm/view-resources'
   import tracker from '../../../plugin'
   import { getIssueId } from '../../../utils'
 
-  export let issue: Issue
+  export let issue: WithLookup<Issue>
   export let currentTeam: Team | undefined
   export let issueStatuses: WithLookup<IssueStatus>[] | undefined
 
@@ -30,7 +30,6 @@
   export let justify: 'left' | 'center' = 'left'
   export let width: string | undefined = 'min-contet'
 
-  const subIssuesQuery = createQuery()
   let btn: HTMLElement
 
   let subIssues: Issue[] | undefined
@@ -38,9 +37,10 @@
   let countComplate: number = 0
 
   $: hasSubIssues = issue.subIssues > 0
-  $: subIssuesQuery.query(tracker.class.Issue, { attachedTo: issue._id }, async (result) => (subIssues = result), {
-    sort: { rank: SortingOrder.Ascending }
-  })
+  $: if (issue.$lookup?.subIssues !== undefined) {
+    subIssues = issue.$lookup.subIssues as Issue[]
+    subIssues.sort((a, b) => a.rank.localeCompare(b.rank))
+  }
   $: if (issueStatuses && subIssues) {
     doneStatus = issueStatuses.find((s) => s.category === tracker.issueStatusCategory.Completed)?._id ?? undefined
     if (doneStatus) countComplate = subIssues.filter((si) => si.status === doneStatus).length
@@ -55,7 +55,6 @@
       showPanel(tracker.component.EditIssue, target, issue._class, 'content')
     }
   }
-
   function showSubIssues () {
     if (subIssues) {
       closeTooltip()
@@ -78,7 +77,16 @@
             return DOMRect.fromRect({ width: 1, height: 1, x: rect.left + offsetX, y: rect.bottom + offsetY })
           }
         },
-        (selectedIssue) => selectedIssue !== undefined && openIssue(selectedIssue)
+        (selectedIssue) => {
+          selectedIssue !== undefined && openIssue(selectedIssue)
+        },
+        (selectedIssue) => {
+          const focus = subIssues?.find((it) => it._id === selectedIssue.id)
+          if (focus !== undefined) {
+            console.log('ISE', selectedIssue, focus)
+            updateFocus({ focus })
+          }
+        }
       )
     }
   }

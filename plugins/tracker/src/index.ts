@@ -19,6 +19,7 @@ import { Action, ActionCategory } from '@anticrm/view'
 import type { Asset, IntlString, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import { AnyComponent } from '@anticrm/ui'
+import type { TagCategory } from '@anticrm/tags'
 
 /**
  * @public
@@ -114,7 +115,7 @@ export interface Issue extends AttachedDoc {
 
   comments: number
   attachments?: number
-  labels?: string[]
+  labels?: number
 
   space: Ref<Team>
 
@@ -261,6 +262,7 @@ export default plugin(trackerId, {
     CopyBranch: '' as Asset
   },
   category: {
+    Other: '' as Ref<TagCategory>,
     Tracker: '' as Ref<ActionCategory>
   },
   action: {

@@ -57,7 +57,8 @@
   const baseOptions: FindOptions<Issue> = {
     lookup: {
       assignee: contact.class.Employee,
-      status: tracker.class.IssueStatus
+      status: tracker.class.IssueStatus,
+      space: tracker.class.Team
     }
   }
 
@@ -231,6 +232,7 @@
                       <svelte:component
                         this={attributeModel.presenter}
                         value={getObjectValue(attributeModel.key, docObject) ?? ''}
+                        width="100%"
                         {...attributeModel.props}
                       />
                     </div>
@@ -255,6 +257,7 @@
                         this={attributeModel.presenter}
                         value={getObjectValue(attributeModel.key, docObject) ?? ''}
                         issueId={docObject._id}
+                        width="100%"
                         {...attributeModel.props}
                       />
                     </div>

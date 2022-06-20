@@ -35,6 +35,7 @@ import { createModel as serverChunterModel } from '@anticrm/model-server-chunter
 import { createModel as serverInventoryModel } from '@anticrm/model-server-inventory'
 import { createModel as serverLeadModel } from '@anticrm/model-server-lead'
 import { createModel as serverTaskModel } from '@anticrm/model-server-task'
+import { createModel as serverTrackerModel } from '@anticrm/model-server-tracker'
 import { createModel as serverTagsModel } from '@anticrm/model-server-tags'
 import { createModel as serveSettingModel } from '@anticrm/model-server-setting'
 import { createModel as serverRecruitModel } from '@anticrm/model-server-recruit'
@@ -55,6 +56,8 @@ import { createModel as serverTelegramModel } from '@anticrm/model-server-telegr
 import { createModel as trackerModel } from '@anticrm/model-tracker'
 import { createModel as boardModel } from '@anticrm/model-board'
 import { createModel as preferenceModel } from '@anticrm/model-preference'
+import { createModel as hrModel } from '@anticrm/model-hr'
+import { createModel as serverHrModel } from '@anticrm/model-server-hr'
 
 export const version: Data<Version> = jsonVersion as Data<Version>
 
@@ -65,7 +68,6 @@ const builders: [(b: Builder) => void, string][] = [
   [activityModel, 'activity'],
   [attachmentModel, 'attachment'],
   [tagsModel, 'tags'],
-  [calendarModel, 'calendar'],
   [viewModel, 'view'],
   [workbenchModel, 'workbench'],
   [contactModel, 'contact'],
@@ -82,6 +84,7 @@ const builders: [(b: Builder) => void, string][] = [
   [textEditorModel, 'text-editor'],
   [notificationModel, 'notification'],
   [preferenceModel, 'preference'],
+  [hrModel, 'hr'],
 
   [serverCoreModel, 'server-core'],
   [serverAttachmentModel, 'server-attachment'],
@@ -94,12 +97,15 @@ const builders: [(b: Builder) => void, string][] = [
   [serverLeadModel, 'server-lead'],
   [serverTagsModel, 'server-tags'],
   [serverTaskModel, 'server-task'],
+  [serverTrackerModel, 'server-tracker'],
   [serverRecruitModel, 'server-recruit'],
   [serverCalendarModel, 'server-calendar'],
   [serverGmailModel, 'server-gmail'],
   [serverTelegramModel, 'server-telegram'],
+  [serverHrModel, 'server-hr'],
   [trackerModel, 'tracker'],
-  [boardModel, 'board']
+  [boardModel, 'board'],
+  [calendarModel, 'calendar']
 ]
 
 for (const [b, id] of builders) {

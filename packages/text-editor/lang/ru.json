@@ -7,6 +7,8 @@
     "Bold": "Жирный",
     "Italic": "Курсив",
     "Strikethrough": "Зачеркнутый",
+    "Link": "Ссылка",
+    "Save": "Сохранить",
     "OrderedList": "Упорядоченный список",
     "BulletedList": "Маркированный список",
     "Blockquote": "Цитата",

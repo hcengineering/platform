@@ -15,7 +15,8 @@
 <script lang="ts">
   import { WithLookup } from '@anticrm/core'
   import type { Issue, IssueStatus } from '@anticrm/tracker'
-  import { Button, Label } from '@anticrm/ui'
+  import { Component, Label } from '@anticrm/ui'
+  import tags from '@anticrm/tags'
   import tracker from '../../../plugin'
   import PriorityEditor from '../PriorityEditor.svelte'
   import StatusEditor from '../StatusEditor.svelte'
@@ -46,14 +47,7 @@
   <span class="label">
     <Label label={tracker.string.Labels} />
   </span>
-  <Button
-    label={tracker.string.Labels}
-    icon={tracker.icon.Labels}
-    size={'large'}
-    kind={'link'}
-    width={'100%'}
-    justify={'left'}
-  />
+  <Component is={tags.component.TagsAttributeEditor} props={{ object: issue }} />
 
   <div class="divider" />
 

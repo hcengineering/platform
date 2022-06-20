@@ -50,6 +50,7 @@
     "@anticrm/model-server-setting": "~0.6.0",
     "@anticrm/model-server-chunter": "~0.6.0",
     "@anticrm/model-server-task": "~0.6.0",
+    "@anticrm/model-server-tracker": "~0.6.0",
     "@anticrm/model-server-tags": "~0.6.0",
     "@anticrm/model-server-recruit": "~0.6.0",
     "@anticrm/model-server-lead": "~0.6.0",
@@ -70,6 +71,8 @@
     "@anticrm/model-server-telegram": "~0.6.0",
     "@anticrm/model-tracker": "~0.6.0",
     "@anticrm/model-board": "~0.6.0",
-    "@anticrm/model-preference": "~0.6.0"
+    "@anticrm/model-preference": "~0.6.0",
+    "@anticrm/model-hr": "~0.6.0",
+    "@anticrm/model-server-hr": "~0.6.0"
   }
 }

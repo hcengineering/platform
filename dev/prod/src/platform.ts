@@ -39,6 +39,7 @@ import { tagsId } from '@anticrm/tags'
 import { calendarId } from '@anticrm/calendar'
 import { trackerId } from '@anticrm/tracker'
 import { boardId } from '@anticrm/board'
+import { hrId } from '@anticrm/hr'
 import rekoni from '@anticrm/rekoni'
 
 import '@anticrm/login-assets'
@@ -62,6 +63,7 @@ import '@anticrm/calendar-assets'
 import '@anticrm/tracker-assets'
 import '@anticrm/board-assets'
 import '@anticrm/preference-assets'
+import '@anticrm/hr-assets'
 import presentation, { presentationId } from '@anticrm/presentation'
 import { coreId } from '@anticrm/core'
 import { textEditorId } from '@anticrm/text-editor'
@@ -115,6 +117,7 @@ export async function configurePlatform() {
 
   addLocation(trackerId, () => import(/* webpackChunkName: "tracker" */ '@anticrm/tracker-resources'))
   addLocation(boardId, () => import(/* webpackChunkName: "board" */ '@anticrm/board-resources'))
+  addLocation(hrId, () => import(/* webpackChunkName: "hr" */ '@anticrm/hr-resources'))
 
   setMetadata(workbench.metadata.PlatformTitle, 'Platform')
 }

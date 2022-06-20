@@ -17,13 +17,9 @@
   import { createQuery, getClient } from '@anticrm/presentation'
   import { getPlatformColor, ScrollBox, Scroller } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
-  import { slide } from 'svelte/transition'
-  import { DocWithRank, StateType, TypeState } from '../types'
+  import { CardDragEvent, ExtItem, Item, StateType, TypeState } from '../types'
   import { calcRank } from '../utils'
-
-  type Item = DocWithRank & { state: StateType; doneState: StateType | null }
-  type ExtItem = { prev?: Item; it: Item; next?: Item; pos: number }
-  type CardDragEvent = DragEvent & { currentTarget: EventTarget & HTMLDivElement }
+  import KanbanRow from './KanbanRow.svelte'
 
   export let _class: Ref<Class<Item>>
   export let space: Ref<Space>
@@ -144,7 +140,6 @@
       return calcRank(object.it, object.next)
     }
   }
-  const slideD = (node: any, args: any) => (args.isDragging ? slide(node, args) : {})
 
   function panelDragOver (event: Event, state: TypeState): void {
     event.preventDefault()
@@ -184,11 +179,14 @@
   let stateObjects: ExtItem[]
 
   const stateRefs: HTMLElement[] = []
+  const stateRows: KanbanRow[] = []
 
   $: stateRefs.length = states.length
+  $: stateRows.length = states.length
 
-  function scrollInto (statePos: number): void {
+  function scrollInto (statePos: number, obj: Item): void {
     stateRefs[statePos]?.scrollIntoView({ behavior: 'auto', block: 'nearest' })
+    stateRows[statePos]?.scroll(obj)
   }
 
   export function select (offset: 1 | -1 | 0, of?: Doc, dir?: 'vertical' | 'horizontal'): void {
@@ -227,16 +225,18 @@
 
     if (offset === -1) {
       if (dir === undefined || dir === 'vertical') {
-        scrollInto(objState)
-        dispatch('obj-focus', (stateObjs[statePos - 1] ?? stateObjs[0]).it)
+        const obj = (stateObjs[statePos - 1] ?? stateObjs[0]).it
+        scrollInto(objState, obj)
+        dispatch('obj-focus', obj)
         return
       } else {
         while (objState > 0) {
           objState--
           const nstateObjs = getStateObjects(objects, states[objState])
           if (nstateObjs.length > 0) {
-            scrollInto(objState)
-            dispatch('obj-focus', (nstateObjs[statePos] ?? nstateObjs[nstateObjs.length - 1]).it)
+            const obj = (nstateObjs[statePos] ?? nstateObjs[nstateObjs.length - 1]).it
+            scrollInto(objState, obj)
+            dispatch('obj-focus', obj)
             break
           }
         }
@@ -244,23 +244,25 @@
     }
     if (offset === 1) {
       if (dir === undefined || dir === 'vertical') {
-        scrollInto(objState)
-        dispatch('obj-focus', (stateObjs[statePos + 1] ?? stateObjs[stateObjs.length - 1]).it)
+        const obj = (stateObjs[statePos + 1] ?? stateObjs[stateObjs.length - 1]).it
+        scrollInto(objState, obj)
+        dispatch('obj-focus', obj)
         return
       } else {
         while (objState < states.length - 1) {
           objState++
           const nstateObjs = getStateObjects(objects, states[objState])
           if (nstateObjs.length > 0) {
-            scrollInto(objState)
-            dispatch('obj-focus', (nstateObjs[statePos] ?? nstateObjs[nstateObjs.length - 1]).it)
+            const obj = (nstateObjs[statePos] ?? nstateObjs[nstateObjs.length - 1]).it
+            scrollInto(objState, obj)
+            dispatch('obj-focus', obj)
             break
           }
         }
       }
     }
     if (offset === 0) {
-      scrollInto(objState)
+      scrollInto(objState, obj)
       dispatch('obj-focus', obj)
     }
   }
@@ -309,35 +311,26 @@
           {/if}
           <Scroller padding={'.5rem 0'} on:dragover on:drop>
             <slot name="beforeCard" {state} />
-            {#each stateObjects as object}
-              {@const dragged = isDragging && object.it._id === dragCard?._id}
-              <div
-                transition:slideD|local={{ isDragging }}
-                class="step-tb75"
-                on:dragover|preventDefault={(evt) => cardDragOver(evt, object)}
-                on:drop|preventDefault={(evt) => cardDrop(evt, object)}
-              >
-                <div
-                  class="card-container"
-                  class:selection={selection !== undefined ? objects[selection]?._id === object.it._id : false}
-                  class:checked={checkedSet.has(object.it._id)}
-                  on:mouseover={() => dispatch('obj-focus', object.it)}
-                  on:focus={() => {}}
-                  on:contextmenu={(evt) => showMenu(evt, object)}
-                  draggable={true}
-                  class:draggable={true}
-                  on:dragstart
-                  on:dragend
-                  class:dragged
-                  on:dragstart={() => onDragStart(object, state)}
-                  on:dragend={() => {
-                    isDragging = false
-                  }}
-                >
-                  <slot name="card" object={toAny(object.it)} {dragged} />
-                </div>
-              </div>
-            {/each}
+            <KanbanRow
+              bind:this={stateRows[si]}
+              on:obj-focus
+              {stateObjects}
+              {isDragging}
+              {dragCard}
+              {objects}
+              {selection}
+              {checkedSet}
+              {state}
+              {cardDragOver}
+              {cardDrop}
+              {onDragStart}
+              {showMenu}
+            >
+              <svelte:fragment slot="card" let:object let:dragged>
+                <slot name="card" {object} {dragged} />
+              </svelte:fragment>
+            </KanbanRow>
+
             <slot name="afterCard" {space} {state} />
           </Scroller>
         </div>
@@ -361,42 +354,6 @@
     padding: 1.5rem 2rem 0;
   }
 
-  .card-container {
-    background-color: var(--board-card-bg-color);
-    border-radius: 0.25rem;
-    // transition: box-shadow .15s ease-in-out;
-
-    &:hover {
-      background-color: var(--board-card-bg-hover);
-    }
-    &.checked {
-      background-color: var(--highlight-select);
-      box-shadow: inset 0 0 1px 1px var(--highlight-select-border);
-
-      &:hover {
-        background-color: var(--highlight-select-hover);
-      }
-    }
-    &.selection,
-    &.checked.selection {
-      box-shadow: inset 0 0 1px 1px var(--primary-bg-color);
-      animation: anim-border 1s ease-in-out;
-
-      &:hover {
-        background-color: var(--highlight-hover);
-      }
-    }
-    &.checked.selection:hover {
-      background-color: var(--highlight-select-hover);
-    }
-
-    &.draggable {
-      cursor: grab;
-    }
-    &.dragged {
-      background-color: var(--board-bg-color);
-    }
-  }
   @keyframes anim-border {
     from {
       box-shadow: inset 0 0 1px 1px var(--primary-edit-border-color);

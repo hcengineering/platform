@@ -32,6 +32,7 @@ import { viewOperation } from '@anticrm/model-view'
 import { trackerOperation } from '@anticrm/model-tracker'
 import { boardOperation } from '@anticrm/model-board'
 import { demoOperation } from '@anticrm/model-demo'
+import { hrOperation } from '@anticrm/model-hr'
 
 export const migrateOperations: MigrateOperation[] = [
   coreOperation,
@@ -50,5 +51,6 @@ export const migrateOperations: MigrateOperation[] = [
   notificationOperation,
   settingOperation,
   trackerOperation,
-  boardOperation
+  boardOperation,
+  hrOperation
 ]

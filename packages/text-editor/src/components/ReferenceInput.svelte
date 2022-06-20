@@ -25,6 +25,7 @@
   import Bold from './icons/Bold.svelte'
   import Italic from './icons/Italic.svelte'
   import Strikethrough from './icons/Strikethrough.svelte'
+  import Link from './icons/Link.svelte'
   import ListNumber from './icons/ListNumber.svelte'
   import ListBullet from './icons/ListBullet.svelte'
   import Quote from './icons/Quote.svelte'
@@ -38,6 +39,7 @@
   import { SvelteRenderer } from './SvelteRenderer'
   import TextEditor from './TextEditor.svelte'
   import EmojiPopup from './EmojiPopup.svelte'
+  import LinkPopup from './LinkPopup.svelte'
 
   const dispatch = createEventDispatcher()
   export let content: string = ''
@@ -48,6 +50,7 @@
   let textEditor: TextEditor
   let isFormatting = false
   let activeModes = new Set<FormatMode>()
+  let isSelectionEmpty = true
 
   export let categories: ObjectSearchCategory[] = []
 
@@ -184,6 +187,7 @@
 
   function updateFormattingState () {
     activeModes = new Set(FORMAT_MODES.filter(textEditor.checkIsActive))
+    isSelectionEmpty = textEditor.checkIsSelectionEmpty()
   }
 
   function getToggler (toggle: () => void) {
@@ -192,6 +196,18 @@
       textEditor.focus()
       updateFormattingState()
     }
+  }
+
+  async function formatLink (): Promise<void> {
+    const link = textEditor.getLink()
+
+    showPopup(LinkPopup, { link }, undefined, undefined, (newLink) => {
+      if (newLink === '') {
+        textEditor.unsetLink()
+      } else {
+        textEditor.setLink(newLink)
+      }
+    })
   }
 </script>
 
@@ -223,6 +239,16 @@
           size={'small'}
           selected={activeModes.has('strike')}
           on:click={getToggler(textEditor.toggleStrike)}
+        />
+      </Tooltip>
+      <Tooltip label={textEditorPlugin.string.Link}>
+        <Button
+          icon={Link}
+          kind={'transparent'}
+          size={'small'}
+          selected={activeModes.has('link')}
+          disabled={isSelectionEmpty && !activeModes.has('link')}
+          on:click={formatLink}
         />
       </Tooltip>
       <div class="buttons-divider" />

@@ -174,7 +174,7 @@
   }}
   bind:createMore
 >
-  <svelte:fragment slot="space">
+  <svelte:fragment slot="header">
     <Button
       icon={targetClass.icon}
       label={targetClass.label}

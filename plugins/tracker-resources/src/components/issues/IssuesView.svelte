@@ -1,24 +1,31 @@
 <script lang="ts">
-  import core, { Ref, Space, WithLookup } from '@anticrm/core'
+  import core, { DocumentQuery, Ref, Space, WithLookup } from '@anticrm/core'
   import { IntlString, translate } from '@anticrm/platform'
   import { getClient } from '@anticrm/presentation'
-  import { IssuesDateModificationPeriod, IssuesGrouping, IssuesOrdering, Team, ViewOptions } from '@anticrm/tracker'
+  import {
+    Issue,
+    IssuesDateModificationPeriod,
+    IssuesGrouping,
+    IssuesOrdering,
+    Team,
+    ViewOptions
+  } from '@anticrm/tracker'
   import { Button, IconDetails } from '@anticrm/ui'
-  import view, { Filter, Viewlet } from '@anticrm/view'
+  import view, { Viewlet } from '@anticrm/view'
   import { FilterBar } from '@anticrm/view-resources'
+  import { getActiveViewletId } from '@anticrm/view-resources/src/utils'
   import tracker from '../../plugin'
   import IssuesContent from './IssuesContent.svelte'
   import IssuesHeader from './IssuesHeader.svelte'
 
   export let currentSpace: Ref<Team> | undefined
-  export let query = {}
+  export let query: DocumentQuery<Issue> = {}
   export let title: IntlString | undefined = undefined
   export let label: string = ''
 
   export let panelWidth: number = 0
 
   let viewlet: WithLookup<Viewlet> | undefined = undefined
-  let filters: Filter[]
   let viewOptions: ViewOptions = {
     groupBy: IssuesGrouping.Status,
     orderBy: IssuesOrdering.Status,
@@ -26,7 +33,7 @@
     shouldShowEmptyGroups: false,
     shouldShowSubIssues: false
   }
-  let resultQuery = {}
+  let resultQuery: DocumentQuery<Issue> = {}
 
   const client = getClient()
 
@@ -46,7 +53,8 @@
           }
         }
       )
-      ;[viewlet] = viewlets
+      const _id = getActiveViewletId()
+      viewlet = viewlets.find((viewlet) => viewlet._id === _id) || viewlets[0]
     }
   }
   $: if (!label && title) {
@@ -69,7 +77,7 @@
 </script>
 
 {#if currentSpace}
-  <IssuesHeader {currentSpace} {viewlets} {label} bind:viewlet bind:viewOptions bind:filters>
+  <IssuesHeader {currentSpace} {viewlets} {label} bind:viewlet bind:viewOptions>
     <svelte:fragment slot="extra">
       {#if asideFloat && $$slots.aside}
         <Button
@@ -84,7 +92,7 @@
       {/if}
     </svelte:fragment>
   </IssuesHeader>
-  <FilterBar _class={tracker.class.Issue} {query} bind:filters on:change={(e) => (resultQuery = e.detail)} />
+  <FilterBar _class={tracker.class.Issue} {query} on:change={(e) => (resultQuery = e.detail)} />
   <div class="flex h-full">
     <div class="antiPanel-component">
       <IssuesContent {currentSpace} {viewlet} query={resultQuery} {viewOptions} />

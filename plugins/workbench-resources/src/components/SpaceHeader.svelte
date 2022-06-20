@@ -18,7 +18,6 @@
   import { IntlString } from '@anticrm/platform'
   import presentation, { createQuery, getClient } from '@anticrm/presentation'
   import { AnyComponent, Button, Icon, IconAdd, SearchEdit, showPanel, showPopup, Tooltip } from '@anticrm/ui'
-  import type { Filter } from '@anticrm/view'
   import view, { Viewlet } from '@anticrm/view'
   import { ViewletSettingButton } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
@@ -33,7 +32,6 @@
   export let viewlet: WithLookup<Viewlet> | undefined
   export let viewlets: WithLookup<Viewlet>[] = []
   export let _class: Ref<Class<Doc>> | undefined = undefined
-  export let filters: Filter[] = []
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -84,7 +82,6 @@
       label={space.name}
       description={space.description}
       {_class}
-      bind:filters
       on:click={onSpaceEdit}
     />
     {#if viewlets.length > 1}

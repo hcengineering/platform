@@ -22,7 +22,17 @@
   import { NotificationClientImpl } from '@anticrm/notification-resources'
   import { getResource } from '@anticrm/platform'
   import { Avatar, getClient, MessageViewer } from '@anticrm/presentation'
-  import ui, { ActionIcon, IconMoreH, Menu, showPopup, Label, Tooltip, Button } from '@anticrm/ui'
+  import ui, {
+    ActionIcon,
+    IconMoreH,
+    Menu,
+    showPopup,
+    Label,
+    Tooltip,
+    Button,
+    getCurrentLocation,
+    locationToUrl
+  } from '@anticrm/ui'
   import { Action } from '@anticrm/view'
   import { getActions, LinkPresenter } from '@anticrm/view-resources'
   import { EmojiPopup } from '@anticrm/text-editor'
@@ -43,6 +53,7 @@
   export let thread: boolean = false
   export let isPinned: boolean = false
   export let isSaved: boolean = false
+  export let isHighlighted = false
 
   let refInput: AttachmentRefInput
 
@@ -96,6 +107,24 @@
     }
   }
 
+  const copyLinkAction = {
+    label: chunter.string.CopyLink,
+    action: async () => {
+      const location = getCurrentLocation()
+
+      location.fragment = message._id
+      location.path[2] = message.space
+
+      if (message.attachedToClass === chunter.class.Message) {
+        location.path.length = 4
+        location.path[3] = message.attachedTo
+      } else {
+        location.path.length = 3
+      }
+      await navigator.clipboard.writeText(`${window.location.origin}${locationToUrl(location)}`)
+    }
+  }
+
   let menuShowed = false
 
   const showMenu = async (ev: Event): Promise<void> => {
@@ -116,6 +145,7 @@
               await impl(message, evt)
             }
           })),
+          copyLinkAction,
           ...(getCurrentAccount()._id === message.createBy ? [editAction, deleteAction] : [])
         ]
       },
@@ -216,7 +246,7 @@
   }
 </script>
 
-<div class="container">
+<div class="container" class:highlighted={isHighlighted} id={message._id}>
   <div class="avatar"><Avatar size={'medium'} avatar={employee?.avatar} /></div>
   <div class="message">
     <div class="header">
@@ -293,10 +323,19 @@
 </div>
 
 <style lang="scss">
+  @keyframes highlight {
+    50% {
+      background-color: var(--warning-color);
+    }
+  }
   .container {
     position: relative;
     display: flex;
     padding: 0.5rem 2rem;
+
+    &.highlighted {
+      animation: highlight 2000ms ease-in-out;
+    }
 
     .avatar {
       min-width: 2.25rem;

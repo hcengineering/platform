@@ -44,6 +44,7 @@ export interface Action {
   icon: Asset | AnySvelteComponent
   action: (props: any, ev: Event) => Promise<void>
   inline?: boolean
+  link?: string
 }
 
 export interface IPopupItem {
@@ -120,6 +121,7 @@ export interface LabelAndProps {
   props?: any
   anchor?: HTMLElement
   onUpdate?: (result: any) => void
+  kind?: 'tooltip' | 'submenu'
 }
 
 export interface ListItem {

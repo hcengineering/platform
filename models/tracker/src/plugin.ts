@@ -46,7 +46,8 @@ export default mergeIds(trackerId, tracker, {
     Tracker: '' as Ref<Application>
   },
   viewlet: {
-    List: '' as Ref<ViewletDescriptor>
+    List: '' as Ref<ViewletDescriptor>,
+    Kanban: '' as Ref<ViewletDescriptor>
   },
   completion: {
     IssueQuery: '' as Resource<ObjectSearchFactory>,

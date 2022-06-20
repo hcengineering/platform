@@ -68,6 +68,18 @@
   export function toggleStrike () {
     editor.commands.toggleStrike()
   }
+  export function getLink () {
+    return editor.getAttributes('link').href
+  }
+  export function unsetLink () {
+    editor.chain().focus().extendMarkRange('link').unsetLink().run()
+  }
+  export function setLink (link: string) {
+    editor.chain().focus().extendMarkRange('link').setLink({ href: link }).run()
+  }
+  export function checkIsSelectionEmpty () {
+    return editor.view.state.selection.empty
+  }
   export function toggleOrderedList () {
     editor.commands.toggleOrderedList()
   }
@@ -111,6 +123,12 @@
         Enter: () => {
           submit()
           return true
+        },
+        Space: () => {
+          if (editor.isActive('link')) {
+            this.editor.commands.toggleMark('link')
+          }
+          return false
         }
       }
     }
@@ -124,7 +142,7 @@
         extensions: [
           StarterKit,
           Highlight,
-          Link,
+          Link.configure({ openOnClick: false }),
           ...(supportSubmit ? [Handle] : []), // order important
           // Typography, // we need to disable 1/2 -> ½ rule (https://github.com/hcengineering/anticrm/issues/345)
           Placeholder.configure({ placeholder: placeHolderStr }),

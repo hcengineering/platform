@@ -15,7 +15,7 @@ rush docker:build
 To purge content of sanity workspace following command could be used.
 
 ```bash
-./restore-workdspace.sh
+./restore-workspace.sh
 ```
 
 ## Prepare local dev enviornment
@@ -55,7 +55,7 @@ rushx dev-debug -g test-name # for local setup
 
 ```bash
 rushx codegen # for docker setup
-ruwhx dev-codegen # for local setup
+rushx dev-codegen # for local setup
 ```
 
 ## Test authoring.

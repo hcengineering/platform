@@ -15,6 +15,7 @@
 
 import core, {
   AttachedDoc,
+  checkMixinKey,
   Class,
   Client,
   Doc,
@@ -26,11 +27,13 @@ import core, {
   Hierarchy,
   Lookup,
   LookupData,
+  matchQuery,
   ModelDb,
   Ref,
   resultSort,
   ReverseLookups,
   SortingQuery,
+  toFindResult,
   Tx,
   TxBulkWrite,
   TxCollectionCUD,
@@ -41,8 +44,7 @@ import core, {
   TxRemoveDoc,
   TxResult,
   TxUpdateDoc,
-  WithLookup,
-  toFindResult
+  WithLookup
 } from '@anticrm/core'
 import { deepEqual } from 'fast-equals'
 
@@ -193,7 +195,7 @@ export class LiveQuery extends TxProcessor implements Client {
       })
 
     this.queries.set(_class, queries)
-    if (this.queue.length > CACHE_SIZE) {
+    while (this.queue.length > CACHE_SIZE) {
       this.remove()
     }
     return q
@@ -268,7 +270,8 @@ export class LiveQuery extends TxProcessor implements Client {
         let updatedDoc = q.result.find((p) => p._id === tx.objectId)
         if (updatedDoc !== undefined) {
           // Create or apply mixin value
-          updatedDoc = TxProcessor.updateMixin4Doc(updatedDoc, tx.mixin, tx.attributes)
+          updatedDoc = TxProcessor.updateMixin4Doc(updatedDoc, tx)
+          await this.__updateLookup(q, updatedDoc, tx.attributes)
           await this.updatedDocCallback(updatedDoc, q)
         } else if (isMixin) {
           // Mixin potentially added to object we doesn't have in out results
@@ -367,8 +370,9 @@ export class LiveQuery extends TxProcessor implements Client {
       }
       this.sort(q, tx)
       await this.updatedDocCallback(q.result[pos], q)
-    } else if (this.matchQuery(q, tx)) {
-      return await this.refresh(q)
+    } else if (await this.matchQuery(q, tx)) {
+      this.sort(q, tx)
+      await this.updatedDocCallback(q.result[pos], q)
     }
     await this.handleDocUpdateLookup(q, tx)
   }
@@ -431,7 +435,7 @@ export class LiveQuery extends TxProcessor implements Client {
   }
 
   // Check if query is partially matched.
-  private matchQuery (q: Query, tx: TxUpdateDoc<Doc>): boolean {
+  private async matchQuery (q: Query, tx: TxUpdateDoc<Doc>): Promise<boolean> {
     if (!this.client.getHierarchy().isDerived(tx.objectClass, q._class)) {
       return false
     }
@@ -446,35 +450,59 @@ export class LiveQuery extends TxProcessor implements Client {
 
     TxProcessor.updateDoc2Doc(doc, tx)
 
+    let matched = false
     for (const key in q.query) {
       const value = (q.query as any)[key]
-      const res = findProperty([doc], key, value)
+      const tkey = checkMixinKey(key, q._class, this.client.getHierarchy())
+      if ((doc as any)[tkey] === undefined) continue
+      const res = findProperty([doc], tkey, value)
+      if (res.length === 0) {
+        return false
+      } else {
+        matched = true
+      }
+    }
+
+    if (matched) {
+      const realDoc = await this.client.findOne(q._class, { _id: doc._id }, q.options)
+      if (realDoc === undefined) return false
+      const res = matchQuery([realDoc], q.query, q._class, this.client.getHierarchy())
       if (res.length === 1) {
+        if (q.result instanceof Promise) {
+          q.result = await q.result
+        }
+        q.result.push(res[0])
         return true
       }
     }
     return false
   }
 
-  private async getLookupValue<T extends Doc>(doc: T, lookup: Lookup<T>, result: LookupData<T>): Promise<void> {
+  private async getLookupValue<T extends Doc>(
+    _class: Ref<Class<T>>,
+    doc: T,
+    lookup: Lookup<T>,
+    result: LookupData<T>
+  ): Promise<void> {
     for (const key in lookup) {
       if (key === '_id') {
         await this.getReverseLookupValue(doc, lookup, result)
         continue
       }
       const value = (lookup as any)[key]
+      const tkey = checkMixinKey(key, _class, this.client.getHierarchy())
       if (Array.isArray(value)) {
         const [_class, nested] = value
-        const objects = await this.findAll(_class, { _id: (doc as any)[key] })
+        const objects = await this.findAll(_class, { _id: getObjectValue(tkey, doc) })
         ;(result as any)[key] = objects[0]
         const nestedResult = {}
         const parent = (result as any)[key]
-        await this.getLookupValue(parent, nested, nestedResult)
+        await this.getLookupValue(_class, parent, nested, nestedResult)
         Object.assign(parent, {
           $lookup: nestedResult
         })
       } else {
-        const objects = await this.findAll(value, { _id: (doc as any)[key] })
+        const objects = await this.findAll(value, { _id: getObjectValue(tkey, doc) })
         ;(result as any)[key] = objects[0]
       }
     }
@@ -502,9 +530,9 @@ export class LiveQuery extends TxProcessor implements Client {
     }
   }
 
-  private async lookup<T extends Doc>(doc: T, lookup: Lookup<T>): Promise<void> {
+  private async lookup<T extends Doc>(_class: Ref<Class<T>>, doc: T, lookup: Lookup<T>): Promise<void> {
     const result: LookupData<Doc> = {}
-    await this.getLookupValue(doc, lookup, result)
+    await this.getLookupValue(_class, doc, lookup, result)
     ;(doc as WithLookup<Doc>).$lookup = result
   }
 
@@ -526,7 +554,7 @@ export class LiveQuery extends TxProcessor implements Client {
       }
 
       if (q.options?.lookup !== undefined) {
-        await this.lookup(doc, q.options.lookup)
+        await this.lookup(q._class, doc, q.options.lookup)
       }
       // We could already have document inside results, if query is created during processing of document create transaction and not yet handled on client.
       const pos = q.result.findIndex((p) => p._id === doc._id)
@@ -730,14 +758,7 @@ export class LiveQuery extends TxProcessor implements Client {
     return await super.tx(tx)
   }
 
-  private async __updateDoc (q: Query, updatedDoc: WithLookup<Doc>, tx: TxUpdateDoc<Doc>): Promise<void> {
-    TxProcessor.updateDoc2Doc(updatedDoc, tx)
-
-    const ops = {
-      ...tx.operations,
-      modifiedBy: tx.modifiedBy,
-      modifiedOn: tx.modifiedOn
-    } as any
+  private async __updateLookup (q: Query, updatedDoc: WithLookup<Doc>, ops: any): Promise<void> {
     for (const key in ops) {
       if (!key.startsWith('$')) {
         if (q.options !== undefined) {
@@ -762,7 +783,7 @@ export class LiveQuery extends TxProcessor implements Client {
         }
       } else {
         if (key === '$push') {
-          const pops = tx.operations[key] ?? {}
+          const pops = ops[key] ?? {}
           for (const pkey of Object.keys(pops)) {
             if (q.options !== undefined) {
               const lookup = (q.options.lookup as any)?.[pkey]
@@ -773,28 +794,26 @@ export class LiveQuery extends TxProcessor implements Client {
                 if (pp[pkey] === undefined) {
                   pp[pkey] = []
                 }
-                if (Array.isArray((pops as any)[pkey])) {
+                if (Array.isArray(pops[pkey])) {
                   const pushData = await this.client.findAll(
                     lookupClass,
-                    { _id: { $in: (pops as any)[pkey] } },
+                    { _id: { $in: pops[pkey] } },
                     { lookup: nestedLookup }
                   )
                   pp[pkey].push(...pushData)
                 } else {
-                  pp[pkey].push(
-                    await this.client.findOne(lookupClass, { _id: (pops as any)[pkey] }, { lookup: nestedLookup })
-                  )
+                  pp[pkey].push(await this.client.findOne(lookupClass, { _id: pops[pkey] }, { lookup: nestedLookup }))
                 }
               }
             }
           }
         } else if (key === '$pull') {
-          const pops = tx.operations[key] ?? {}
+          const pops = ops[key] ?? {}
           for (const pkey of Object.keys(pops)) {
             if (q.options !== undefined) {
               const lookup = (q.options.lookup as any)?.[pkey]
               if (lookup !== undefined) {
-                const pid = (pops as any)[pkey]
+                const pid = pops[pkey]
                 const pp = updatedDoc.$lookup as any
                 if (pp[pkey] === undefined) {
                   pp[pkey] = []
@@ -810,6 +829,17 @@ export class LiveQuery extends TxProcessor implements Client {
         }
       }
     }
+  }
+
+  private async __updateDoc (q: Query, updatedDoc: WithLookup<Doc>, tx: TxUpdateDoc<Doc>): Promise<void> {
+    TxProcessor.updateDoc2Doc(updatedDoc, tx)
+
+    const ops = {
+      ...tx.operations,
+      modifiedBy: tx.modifiedBy,
+      modifiedOn: tx.modifiedOn
+    }
+    await this.__updateLookup(q, updatedDoc, ops)
   }
 
   private sort (q: Query, tx: TxUpdateDoc<Doc>): void {

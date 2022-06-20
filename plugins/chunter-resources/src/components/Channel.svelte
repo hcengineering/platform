@@ -19,6 +19,7 @@
   import core, { Doc, Ref, Space, Timestamp, WithLookup } from '@anticrm/core'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
   import { createQuery } from '@anticrm/presentation'
+  import { getCurrentLocation, navigate } from '@anticrm/ui'
   import { afterUpdate, beforeUpdate } from 'svelte'
   import chunter from '../plugin'
   import { getDay } from '../utils'
@@ -34,12 +35,27 @@
 
   let div: HTMLDivElement | undefined
   let autoscroll: boolean = false
+  let messageIdForScroll = ''
+  let isMessageHighlighted = false
 
   beforeUpdate(() => {
     autoscroll = div !== undefined && div.offsetHeight + div.scrollTop > div.scrollHeight - 20
   })
 
   afterUpdate(() => {
+    if (messageIdForScroll && !isMessageHighlighted) {
+      const messageElement = document.getElementById(messageIdForScroll)
+
+      messageElement?.scrollIntoView()
+      isMessageHighlighted = true
+
+      setTimeout(() => {
+        messageIdForScroll = ''
+        isMessageHighlighted = false
+      }, 2000)
+
+      return
+    }
     if (div && (autoscroll || isScrollForced)) {
       div.scrollTo(0, div.scrollHeight)
       isScrollForced = false
@@ -85,6 +101,15 @@
         messages = res
         newMessagesPos = newMessagesStart(messages)
         notificationClient.updateLastView(space, chunter.class.ChunterSpace)
+
+        const location = getCurrentLocation()
+        const messageId = location.fragment
+
+        if (messageId && location.path.length === 3) {
+          messageIdForScroll = messageId
+          location.fragment = undefined
+          navigate(location)
+        }
       },
       {
         lookup: {
@@ -205,6 +230,7 @@
         <JumpToDateSelector selectedDate={message.createOn} on:jumpToDate={handleJumpToDate} />
       {/if}
       <MessageComponent
+        isHighlighted={messageIdForScroll === message._id && isMessageHighlighted}
         {message}
         {employees}
         on:openThread

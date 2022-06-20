@@ -39,6 +39,7 @@ import workbench, { createNavigateAction } from '@anticrm/model-workbench'
 import notification from '@anticrm/notification'
 import { Asset, IntlString } from '@anticrm/platform'
 import setting from '@anticrm/setting'
+import task from '@anticrm/task'
 import {
   Document,
   Issue,
@@ -50,6 +51,7 @@ import {
   Team
 } from '@anticrm/tracker'
 import { KeyBinding } from '@anticrm/view'
+import tags from '@anticrm/tags'
 import tracker from './plugin'
 
 import presentation from '@anticrm/model-presentation'
@@ -183,8 +185,8 @@ export class TIssue extends TAttachedDoc implements Issue {
   @Prop(Collection(attachment.class.Attachment), tracker.string.Attachments)
   attachments!: number
 
-  // @Prop(Collection(core.class.TypeString), tracker.string.Labels)
-  labels?: string[]
+  @Prop(Collection(tags.class.TagReference), tracker.string.Labels)
+  labels?: number
 
   declare space: Ref<Team>
 
@@ -278,8 +280,8 @@ export function createModel (builder: Builder): void {
     descriptor: tracker.viewlet.List,
     config: [
       { key: '', presenter: tracker.component.PriorityEditor },
-      { key: '', presenter: tracker.component.IssuePresenter },
-      { key: '', presenter: tracker.component.StatusEditor },
+      '@currentTeam',
+      '@statuses',
       { key: '', presenter: tracker.component.TitlePresenter, props: { shouldUseMargin: true } },
       { key: '', presenter: tracker.component.DueDatePresenter },
       {
@@ -300,11 +302,28 @@ export function createModel (builder: Builder): void {
     view.class.ViewletDescriptor,
     core.space.Model,
     {
-      label: view.string.Table,
+      label: tracker.string.List,
       icon: view.icon.Table,
       component: tracker.component.ListView
     },
     tracker.viewlet.List
+  )
+
+  builder.createDoc(view.class.Viewlet, core.space.Model, {
+    attachTo: tracker.class.Issue,
+    descriptor: tracker.viewlet.Kanban,
+    config: []
+  })
+
+  builder.createDoc(
+    view.class.ViewletDescriptor,
+    core.space.Model,
+    {
+      label: tracker.string.Board,
+      icon: task.icon.Kanban,
+      component: tracker.component.KanbanView
+    },
+    tracker.viewlet.Kanban
   )
 
   builder.createDoc(
@@ -401,7 +420,7 @@ export function createModel (builder: Builder): void {
   builder.mixin(tracker.class.Issue, core.class.Class, setting.mixin.Editable, {})
 
   builder.mixin(tracker.class.TypeProjectStatus, core.class.Class, view.mixin.AttributeEditor, {
-    editor: tracker.component.ProjectStatusEditor
+    inlineEditor: tracker.component.ProjectStatusEditor
   })
 
   builder.mixin(tracker.class.Issue, core.class.Class, notification.mixin.LastViewAttached, {})
@@ -468,12 +487,6 @@ export function createModel (builder: Builder): void {
                 label: tracker.string.Backlog,
                 // icon: tracker.icon.TrackerApplication,
                 component: tracker.component.Backlog
-              },
-              {
-                id: boardId,
-                label: tracker.string.Board,
-                // icon: tracker.icon.TrackerApplication,
-                component: tracker.component.Board
               },
               {
                 id: projectsId,
@@ -574,7 +587,7 @@ export function createModel (builder: Builder): void {
   )
 
   builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.ClassFilters, {
-    filters: ['status', 'priority', 'project']
+    filters: ['status', 'priority', 'assignee', 'project', 'dueDate', 'modifiedOn']
   })
 
   builder.createDoc(

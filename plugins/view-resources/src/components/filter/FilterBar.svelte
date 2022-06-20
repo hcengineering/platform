@@ -19,13 +19,13 @@
   import { Button, eventToHTMLElement, getCurrentLocation, IconAdd, locationToUrl, showPopup } from '@anticrm/ui'
   import { Filter } from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
+  import { filterStore } from '../../filter'
   import view from '../../plugin'
   import FilterSection from './FilterSection.svelte'
   import FilterTypePopup from './FilterTypePopup.svelte'
 
   export let _class: Ref<Class<Doc>>
   export let query: DocumentQuery<Doc>
-  export let filters: Filter[] = []
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -36,14 +36,13 @@
 
   function onChange (e: Filter | undefined) {
     if (e === undefined) return
-    const index = filters.findIndex((p) => p.index === e.index)
+    const index = $filterStore.findIndex((p) => p.index === e.index)
     if (index === -1) {
-      filters.push(e)
-      filters = filters
+      $filterStore.push(e)
     } else {
-      filters[index] = e
-      filters = filters
+      $filterStore[index] = e
     }
+    $filterStore = $filterStore
   }
 
   function add (e: MouseEvent) {
@@ -63,12 +62,12 @@
   $: load(_class)
 
   function remove (i: number) {
-    filters[i]?.onRemove?.()
-    filters.splice(i, 1)
-    filters = filters
+    $filterStore[i]?.onRemove?.()
+    $filterStore.splice(i, 1)
+    $filterStore = $filterStore
   }
 
-  $: saveFilters(filters)
+  $: saveFilters($filterStore)
 
   function saveFilters (filters: Filter[]) {
     const key = makeKey(_class)
@@ -83,13 +82,13 @@
 
   function load (_class: Ref<Class<Doc>>) {
     loading = true
-    const oldFilters = filters
+    const oldFilters = $filterStore
     const key = makeKey(_class)
     const saved = localStorage.getItem(key)
     if (saved !== null) {
-      filters = JSON.parse(saved)
+      $filterStore = JSON.parse(saved)
     } else {
-      filters = []
+      $filterStore = []
     }
     loading = false
     oldFilters.forEach((p) => p.onRemove?.())
@@ -161,23 +160,23 @@
     dispatch('change', newQuery)
   }
 
-  $: makeQuery(query, filters)
+  $: makeQuery(query, $filterStore)
 
   $: clazz = hierarchy.getClass(_class)
   $: visible = hierarchy.hasMixin(clazz, view.mixin.ClassFilters)
 </script>
 
-{#if visible && filters && filters.length > 0}
+{#if visible && $filterStore && $filterStore.length > 0}
   <div class="filterbar-container">
     <div class="filters">
       {#if !loading}
-        {#each filters as filter, i}
+        {#each $filterStore as filter, i}
           <FilterSection
             {_class}
             {filter}
             on:change={() => {
-              makeQuery(query, filters)
-              saveFilters(filters)
+              makeQuery(query, $filterStore)
+              saveFilters($filterStore)
             }}
             on:remove={() => {
               remove(i)

@@ -90,17 +90,17 @@ test.describe('recruit tests', () => {
     // Click [placeholder="John"]
     await page.click('[placeholder="John"]')
     // Fill [placeholder="John"]
-    const first = 'first-' + generateId().slice(0, 4)
+    const first = 'first-' + generateId(4)
     await page.fill('[placeholder="John"]', first)
     // Click [placeholder="Appleseed"]
     await page.click('[placeholder="Appleseed"]')
     // Fill [placeholder="Appleseed"]
-    const last = 'last-' + generateId().slice(0, 4)
+    const last = 'last-' + generateId(4)
     await page.fill('[placeholder="Appleseed"]', last)
     // Click button:has-text("Create")
     await page.click('button:has-text("Create")')
     // Click text=q w
-    await page.click(`text=${first} ${last}`)
+    await page.click(`tr > :has-text("${first} ${last}")`)
     // Click text=java
     await expect(page.locator('text=java').first()).toBeVisible()
   })
