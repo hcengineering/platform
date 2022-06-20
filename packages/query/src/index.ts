@@ -277,7 +277,7 @@ export class LiveQuery extends TxProcessor implements Client {
           // Mixin potentially added to object we doesn't have in out results
           const doc = await this.findOne(q._class, { _id: tx.objectId }, q.options)
           if (doc !== undefined) {
-            await this.handleDocAdd(q, doc)
+            await this.handleDocAdd(q, doc, false)
           }
         }
       }
@@ -547,13 +547,13 @@ export class LiveQuery extends TxProcessor implements Client {
     return {}
   }
 
-  private async handleDocAdd (q: Query, doc: Doc): Promise<void> {
+  private async handleDocAdd (q: Query, doc: Doc, handleLookup = true): Promise<void> {
     if (this.match(q, doc)) {
       if (q.result instanceof Promise) {
         q.result = await q.result
       }
 
-      if (q.options?.lookup !== undefined) {
+      if (q.options?.lookup !== undefined && handleLookup) {
         await this.lookup(q._class, doc, q.options.lookup)
       }
       // We could already have document inside results, if query is created during processing of document create transaction and not yet handled on client.
