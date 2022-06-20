@@ -52,7 +52,7 @@ export function getTriggerType (trigger: Trigger): TriggerType {
   if (trigger.action !== undefined) {
     return TriggerType.Action
   } else {
-    throw new Error('Unknown automation action')
+    throw new Error('Unknown automation trigger')
   }
 }
 
@@ -63,7 +63,7 @@ export async function createTrigger (
   automationId: Ref<Automation<Doc>>
 ): Promise<Doc | undefined> {
   if (trigger.action !== undefined) {
-    const triggerId = await client.createDoc<Action<Doc, PerformAutomationProps>>(view.class.Action, space, {
+    const triggerId = await client.createDoc<Action<Doc, PerformAutomationProps>>(view.class.Action, core.space.Model, {
       action: automation.action.PerformAutomation,
       actionProps: {
         automationId,
@@ -77,7 +77,7 @@ export async function createTrigger (
     })
     return await client.findOne<Action<Doc, PerformAutomationProps>>(view.class.Action, { _id: triggerId })
   } else {
-    throw new Error('Unknown automation action')
+    throw new Error('Unknown automation trigger')
   }
 }
 
