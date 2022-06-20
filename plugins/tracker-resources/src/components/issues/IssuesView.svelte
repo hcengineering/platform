@@ -94,7 +94,9 @@
   </IssuesHeader>
   <FilterBar _class={tracker.class.Issue} {query} on:change={(e) => (resultQuery = e.detail)} />
   <div class="flex w-full h-full clear-mins">
-    <IssuesContent {currentSpace} {viewlet} query={resultQuery} {viewOptions} />
+    {#if viewlet}
+      <IssuesContent {currentSpace} {viewlet} query={resultQuery} {viewOptions} />
+    {/if}
     {#if $$slots.aside !== undefined && asideShown}
       <div class="popupPanel-body__aside" class:float={asideFloat} class:shown={asideShown}>
         <slot name="aside" />

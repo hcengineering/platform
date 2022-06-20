@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { ScrollBox, Scroller } from '@anticrm/ui'
+  import { Scroller } from '@anticrm/ui'
   import IssuesListBrowser from './IssuesListBrowser.svelte'
   import tracker from '../../plugin'
   import { Issue, IssueStatus, Team, ViewOptions } from '@anticrm/tracker'
@@ -64,7 +64,7 @@
 </script>
 
 <div class="w-full h-full clear-mins">
-  <Scroller tableFade={categories.length > 1}>
+  <Scroller tableFade={categories[0] !== undefined}>
     <IssuesListBrowser
       {_class}
       {currentSpace}

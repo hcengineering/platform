@@ -488,38 +488,36 @@
   {/if}
 
   <div class="flex h-full clear-mins">
-    <div class="antiPanel-component">
-      <Scroller>
-        <IssuesListBrowser
-          _class={tracker.class.Issue}
-          {currentSpace}
-          {groupByKey}
-          orderBy={issuesOrderKeyMap[orderingKey]}
-          {statuses}
-          {employees}
-          categories={displayedCategories}
-          itemsConfig={[
-            { key: '', presenter: tracker.component.PriorityEditor, props: { kind: 'list', size: 'small' } },
-            { key: '', presenter: tracker.component.IssuePresenter, props: { currentTeam } },
-            { key: '', presenter: tracker.component.StatusEditor, props: { statuses, kind: 'list', size: 'small' } },
-            { key: '', presenter: tracker.component.TitlePresenter, props: { shouldUseMargin: true, fixed: 'left' } },
-            { key: '', presenter: tracker.component.DueDatePresenter, props: { kind: 'list' } },
-            {
-              key: '',
-              presenter: tracker.component.ProjectEditor,
-              props: { kind: 'list', size: 'small', shape: 'round', shouldShowPlaceholder: false }
-            },
-            { key: 'modifiedOn', presenter: tracker.component.ModificationDatePresenter, props: { fixed: 'right' } },
-            {
-              key: '$lookup.assignee',
-              presenter: tracker.component.AssigneePresenter,
-              props: { currentSpace, defaultClass: contact.class.Employee, shouldShowLabel: false }
-            }
-          ]}
-          {groupedIssues}
-        />
-      </Scroller>
-    </div>
+    <Scroller tableFade={displayedCategories.length > 1}>
+      <IssuesListBrowser
+        _class={tracker.class.Issue}
+        {currentSpace}
+        {groupByKey}
+        orderBy={issuesOrderKeyMap[orderingKey]}
+        {statuses}
+        {employees}
+        categories={displayedCategories}
+        itemsConfig={[
+          { key: '', presenter: tracker.component.PriorityEditor, props: { kind: 'list', size: 'small' } },
+          { key: '', presenter: tracker.component.IssuePresenter, props: { currentTeam } },
+          { key: '', presenter: tracker.component.StatusEditor, props: { statuses, kind: 'list', size: 'small' } },
+          { key: '', presenter: tracker.component.TitlePresenter, props: { shouldUseMargin: true, fixed: 'left' } },
+          { key: '', presenter: tracker.component.DueDatePresenter, props: { kind: 'list' } },
+          {
+            key: '',
+            presenter: tracker.component.ProjectEditor,
+            props: { kind: 'list', size: 'small', shape: 'round', shouldShowPlaceholder: false }
+          },
+          { key: 'modifiedOn', presenter: tracker.component.ModificationDatePresenter, props: { fixed: 'right' } },
+          {
+            key: '$lookup.assignee',
+            presenter: tracker.component.AssigneePresenter,
+            props: { currentSpace, defaultClass: contact.class.Employee, shouldShowLabel: false }
+          }
+        ]}
+        {groupedIssues}
+      />
+    </Scroller>
     {#if $$slots.aside !== undefined}
       <div class="antiPanel-component aside border-left">
         <slot name="aside" />
