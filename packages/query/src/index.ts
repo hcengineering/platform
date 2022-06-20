@@ -20,6 +20,7 @@ import core, {
   Client,
   Doc,
   DocumentQuery,
+  DocumentUpdate,
   FindOptions,
   findProperty,
   FindResult,
@@ -384,7 +385,7 @@ export class LiveQuery extends TxProcessor implements Client {
       q.result = await q.result
     }
     let needCallback = false
-    needCallback = this.proccesLookupUpdateDoc(q.result, lookup, tx)
+    needCallback = await this.proccesLookupUpdateDoc(q.result, lookup, tx)
 
     if (needCallback) {
       if (q.options?.sort !== undefined) {
@@ -394,7 +395,7 @@ export class LiveQuery extends TxProcessor implements Client {
     }
   }
 
-  private proccesLookupUpdateDoc (docs: Doc[], lookup: Lookup<Doc>, tx: TxUpdateDoc<Doc>): boolean {
+  private async proccesLookupUpdateDoc (docs: Doc[], lookup: Lookup<Doc>, tx: TxUpdateDoc<Doc>): Promise<boolean> {
     let needCallback = false
     const lookupWays = this.getLookupWays(lookup, tx.objectClass)
     for (const lookupWay of lookupWays) {
@@ -404,7 +405,22 @@ export class LiveQuery extends TxProcessor implements Client {
         if (obj === undefined) continue
         const value = getObjectValue('$lookup.' + key, obj)
         if (Array.isArray(value)) {
-          const index = value.findIndex((p) => p._id === tx.objectId)
+          let index = value.findIndex((p) => p._id === tx.objectId)
+          if (this.client.getHierarchy().isDerived(tx.objectClass, core.class.AttachedDoc)) {
+            const { attachedTo } = tx.operations as DocumentUpdate<AttachedDoc>
+            if (attachedTo !== undefined) {
+              if (index !== -1 && attachedTo !== obj._id) {
+                value.splice(index, 1)
+                index = -1
+                needCallback = true
+              } else if (index === -1 && attachedTo === obj._id) {
+                const doc = await this.client.findOne(tx.objectClass, { _id: tx.objectId })
+                value.push(doc)
+                index = value.length - 1
+                needCallback = true
+              }
+            }
+          }
           if (index !== -1) {
             TxProcessor.updateDoc2Doc(value[index], tx)
             needCallback = true
