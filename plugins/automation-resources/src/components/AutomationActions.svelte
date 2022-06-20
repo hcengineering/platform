@@ -2,11 +2,12 @@
   import { Command } from '@anticrm/automation'
   import core, { AnyAttribute, Class, Doc, Ref } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
-  import { Button, Label } from '@anticrm/ui'
+  import { Button, IconDelete, Label } from '@anticrm/ui'
   import { ActionTab } from '../models'
   import automation from '../plugin'
 
   import ContentActionCreate from './actions/ContentActionCreate.svelte'
+  import CommandPresenter from './presenters/CommandPresenter.svelte'
 
   export let targetClass: Ref<Class<Doc>> | undefined = undefined
   export let commands: Command<Doc>[] = []
@@ -25,6 +26,10 @@
   function addCommand (e: CustomEvent<Command<Doc>>) {
     commands.push(e.detail)
     commands = commands
+  }
+
+  function removeCommand (command: Command<Doc>) {
+    commands = commands.filter((c) => c !== command)
   }
 
   if (targetClass !== undefined) {
@@ -58,9 +63,21 @@
 </script>
 
 <div class="flex-col">
-  <div class="ac-header short">
+  <div class="fs-title mb-4">
     <Label label={automation.string.Actions} />
   </div>
+  {#each commands as command}
+    <div class="flex-between mb-2">
+      <CommandPresenter value={command} />
+      <Button
+        icon={IconDelete}
+        kind="transparent"
+        on:click={() => {
+          removeCommand(command)
+        }}
+      />
+    </div>
+  {/each}
   <div class="flex flex-gap-2">
     {#if contentAttributes.length > 0}
       <Button
@@ -80,6 +97,7 @@
         }}
       />
     {/if}
+    <!--
     <Button
       label={automation.string.Chat}
       kind="no-border"
@@ -94,6 +112,7 @@
         currentTab = ActionTab.Tracker
       }}
     />
+    -->
   </div>
   <div class="mt-4">
     {#if currentTab === ActionTab.Content}
@@ -105,6 +124,7 @@
           on:add={addCommand}
         />
       {/each}
-    {:else if currentTab === ActionTab.Dates}{:else if currentTab === ActionTab.Chat}{:else if currentTab === ActionTab.Tracker}{/if}
+      <!-- {:else if currentTab === ActionTab.Dates}{:else if currentTab === ActionTab.Chat}{:else if currentTab === ActionTab.Tracker} -->
+    {/if}
   </div>
 </div>

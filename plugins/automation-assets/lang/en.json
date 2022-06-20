@@ -9,9 +9,12 @@
     "Trigger": "Trigger",
     "Set": "Set",
     "To": "to",
-    "AddTrigger": "Add trigger",
-    "MenuName": "Action Name",
-    "MenuMode": "Action mode",
-    "AddMenu": "Add menu"
+    "Mode": "Mode",
+    "AddMenu": "Add menu",
+    "Menu": "Menu",
+    "Icon": "Icon",
+    "SelectClass": "Select class",
+    "In": "in",
+    "Update": "Update"
   }
 }

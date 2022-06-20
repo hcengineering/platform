@@ -16,11 +16,11 @@
 </script>
 
 <div class="flex-col">
-  <div class="ac-header">
+  <div class="fs-title mb-4">
     <Label label={automation.string.Trigger} />
   </div>
   {#if trigger}
-    <div class="flex-row-stretch">
+    <div class="flex-between">
       <TriggerPresenter value={trigger} />
       <Button icon={IconDelete} kind="transparent" on:click={clearTrigger} />
     </div>

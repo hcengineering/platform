@@ -1,14 +1,29 @@
 <script lang="ts">
-  import { Label } from '@anticrm/ui'
+  import { getClient } from '@anticrm/presentation'
+  import { Icon, Label } from '@anticrm/ui'
+  import { ClassPresenter } from '@anticrm/view-resources'
   import { Trigger } from '../../models'
   import automation from '../../plugin'
 
   export let value: Trigger
+
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
 </script>
 
 {#if value.action}
-  <div class="flex flex-gap-1">
-    <Label label={automation.string.Menu} />
-    <span>{value.action.label}</span>
+  {@const targetClass = hierarchy.getClass(value.action.targetClass)}
+  <div class="flex flex-gap-1 items-center">
+    <span class="mr-4">
+      <Label label={automation.string.Menu} />
+    </span>
+    {#if value.action.icon}
+      <Icon icon={value.action.icon} size="small" />
+    {/if}
+    <span class="mr-2">{value.action.label}</span>
+    <Label label={automation.string.In} />
+    <span class="font-semi-bold">
+      <ClassPresenter value={targetClass} />
+    </span>
   </div>
 {/if}

@@ -1,8 +1,8 @@
 <script lang="ts">
   import { CommandType, UpdateDocCommand } from '@anticrm/automation'
   import core, { AnyAttribute, Class, Doc, Ref } from '@anticrm/core'
-  import { Button, Dropdown, EditBox, IconAdd, Label, ListItem } from '@anticrm/ui'
-  import view from '@anticrm/view'
+  import { Button, EditBox, IconAdd, Label } from '@anticrm/ui'
+  import { BooleanEditor, NumberEditor } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
 
   import automation from '../../plugin'
@@ -13,32 +13,14 @@
 
   const dispatch = createEventDispatcher()
   const typeClass = attribute?.type._class
-  const booleanListItems: ListItem[] = [
-    {
-      _id: 'true',
-      label: 'true',
-      isSelectable: true
-    },
-    {
-      _id: 'false',
-      label: 'false',
-      isSelectable: true
-    }
-  ]
-  const selectedBooleanValue: ListItem | undefined = undefined
-  let numValue: number | undefined = undefined
-  let stringValue: string | undefined = undefined
+
+  let value: string | undefined = undefined
+
+  function onChange (v: any) {
+    value = v
+  }
 
   function add () {
-    let value = undefined
-    if (selectedBooleanValue) {
-      value = selectedBooleanValue._id === 'true'
-    } else if (stringValue) {
-      value = stringValue
-    } else if (numValue !== undefined) {
-      value = Number(numValue)
-    }
-
     if (attribute && value !== undefined) {
       const command: UpdateDocCommand<any> = {
         type: CommandType.UpdateDoc,
@@ -54,7 +36,7 @@
 
 {#if attribute && automationSupport}
   <div class="flex-between">
-    <div class="flex flex-gap-1 mr-3">
+    <div class="flex flex-gap-1 mr-3 items-center">
       <Label label={automation.string.Set} />
       <span class="font-semi-bold">
         <Label label={attribute.label} />
@@ -62,11 +44,11 @@
       <Label label={automation.string.To} />
       <div>
         {#if typeClass === core.class.TypeString || typeClass === core.class.TypeMarkup}
-          <EditBox bind:value={stringValue} on:change />
+          <EditBox bind:value />
         {:else if typeClass === core.class.TypeNumber}
-          <EditBox bind:value={numValue} format="number" on:change />
+          <NumberEditor {value} {onChange} />
         {:else if typeClass === core.class.TypeBoolean}
-          <Dropdown items={booleanListItems} selected={selectedBooleanValue} placeholder={view.string.LabelNA} />
+          <BooleanEditor {value} {onChange} />
         {/if}
       </div>
     </div>

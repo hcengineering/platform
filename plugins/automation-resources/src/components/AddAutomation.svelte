@@ -26,26 +26,30 @@
   }
 </script>
 
-<div class="flex-col p-4">
-  <div class="flex flex-gap-2">
+<div class="flex-col p-4 w-full">
+  <div class="flex flex-gap-2 mb-2">
     <Label label={core.string.Name} />
     <EditBox bind:value={name} />
   </div>
-  <div class="flex flex-gap-2">
+  <div class="flex flex-gap-2 mb-4">
     <Label label={core.string.Description} />
     <EditBox bind:value={description} />
   </div>
-  <AutomationTrigger
-    {trigger}
-    on:trigger={(e) => {
-      trigger = e.detail
-    }}
-    on:targetClass={(e) => {
-      targetClass = e.detail
-    }}
-  />
+  <div class="p-2 mb-2">
+    <AutomationTrigger
+      {trigger}
+      on:trigger={(e) => {
+        trigger = e.detail
+      }}
+      on:targetClass={(e) => {
+        targetClass = e.detail
+      }}
+    />
+  </div>
   {#if trigger}
-    <AutomationActions {targetClass} bind:commands />
+    <div class="p-2 mb-2">
+      <AutomationActions {targetClass} bind:commands />
+    </div>
   {/if}
 
   <Button

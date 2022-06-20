@@ -134,9 +134,11 @@ export default plugin(automationId, {
     To: '' as IntlString,
     AddMenu: '' as IntlString,
     Menu: '' as IntlString,
-    MenuMode: '' as IntlString,
+    Mode: '' as IntlString,
     Icon: '' as IntlString,
-    SelectClass: '' as IntlString
+    SelectClass: '' as IntlString,
+    In: '' as IntlString,
+    Update: '' as IntlString
   },
   icon: {
     Automation: '' as Asset

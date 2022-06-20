@@ -78,7 +78,12 @@ export {
   UpDownNavigator,
   ViewletSettingButton,
   FilterBar,
-  ClassAttributeBar
+  ClassAttributeBar,
+  ClassPresenter,
+  BooleanEditor,
+  BooleanPresenter,
+  NumberEditor,
+  NumberPresenter
 }
 
 export async function objectInResult (res: any[]): Promise<ObjQueryType<any>> {
