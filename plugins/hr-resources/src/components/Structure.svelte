@@ -75,7 +75,7 @@
       updateResultQuery(search)
     }}
   />
-  <Button label={hr.string.CreateDepartmentLabel} icon={IconAdd} kind={'primary'} on:click={showCreateDialog} />
+  <Button label={hr.string.CreateDepartmentLabel} icon={IconAdd} kind={'primary'} size={'small'} on:click={showCreateDialog} />
 </div>
 
 <Scroller>

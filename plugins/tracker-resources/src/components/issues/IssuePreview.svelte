@@ -85,7 +85,7 @@
       <StatusEditor value={issue} {statuses} shouldShowLabel kind={'transparent'} />
       <PriorityEditor value={issue} shouldShowLabel />
       {#if issue.assignee}
-        <AssigneeEditor value={issue} tooltipFill={false} />
+        <AssigneeEditor value={issue} />
       {/if}
     </div>
     <IssueStatusActivity {issue} />

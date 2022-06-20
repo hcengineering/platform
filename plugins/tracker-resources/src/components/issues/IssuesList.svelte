@@ -168,7 +168,7 @@
               defaultName={tracker.string.NoAssignee}
               shouldShowPlaceholder={true}
               isInteractive={false}
-              avatarSize={'tiny'}
+              avatarSize={'x-small'}
             />
           {:else if headerComponent}
             <Component

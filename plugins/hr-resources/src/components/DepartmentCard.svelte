@@ -113,7 +113,7 @@
             onEmployeeEdit={openLeadEditor}
           />
         </div>
-        <ActionIcon icon={IconMoreV} size={'medium'} action={showMenu} />
+        <Button icon={IconMoreV} kind={'transparent'} on:click={showMenu} />
       </div>
     </div>
   </div>
@@ -129,11 +129,5 @@
     border-radius: 0.5rem;
     border: 1px solid var(--theme-zone-border);
     background-color: var(--board-card-bg-color);
-  }
-
-  .verticalDivider {
-    width: 1px;
-    margin-left: 0.125rem;
-    background-color: var(--theme-zone-border);
   }
 </style>

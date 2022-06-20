@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher, afterUpdate } from 'svelte'
   import type { Class, Doc, Ref } from '@anticrm/core'
   import type { Asset } from '@anticrm/platform'
   import { getClient } from '@anticrm/presentation'
@@ -26,6 +27,7 @@
   export let mode: ViewContextType | undefined = undefined
 
   const client = getClient()
+  const dispatch = createEventDispatcher()
 
   let loaded = 0
 
@@ -40,6 +42,8 @@
     }))
     loaded = 1
   })
+
+  afterUpdate(() => dispatch('changeContent'))
 </script>
 
 {#if loaded}

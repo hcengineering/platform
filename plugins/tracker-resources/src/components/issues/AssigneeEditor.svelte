@@ -26,7 +26,6 @@
   export let size: ButtonSize = 'large'
   export let kind: ButtonKind = 'link'
   export let tooltipAlignment: TooltipAlignment | undefined = undefined
-  export let tooltipFill = true
 
   const client = getClient()
   const dispatch = createEventDispatcher()
@@ -45,19 +44,18 @@
 </script>
 
 {#if value}
-  <Tooltip label={tracker.string.AssignTo} direction={tooltipAlignment} fill={tooltipFill}>
-    <UserBox
-      _class={contact.class.Employee}
-      label={tracker.string.Assignee}
-      placeholder={tracker.string.Assignee}
-      value={value.assignee}
-      allowDeselect
-      titleDeselect={tracker.string.Unassigned}
-      {size}
-      {kind}
-      width="100%"
-      justify="left"
-      on:change={({ detail }) => handleAssigneeChanged(detail)}
-    />
-  </Tooltip>
+  <UserBox
+    _class={contact.class.Employee}
+    label={tracker.string.Assignee}
+    placeholder={tracker.string.Assignee}
+    value={value.assignee}
+    allowDeselect
+    titleDeselect={tracker.string.Unassigned}
+    {size}
+    {kind}
+    width={'100%'}
+    justify={'left'}
+    showTooltip={{ label: tracker.string.AssignTo, direction: tooltipAlignment }}
+    on:change={({ detail }) => handleAssigneeChanged(detail)}
+  />
 {/if}
