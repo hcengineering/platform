@@ -61,7 +61,7 @@
       display: grid;
       grid-auto-flow: column;
       direction: rtl;
-      justify-content: start;
+      justify-content: flex-start;
       align-items: center;
       column-gap: 0.5rem;
       // mask-image: linear-gradient(90deg, rgba(0, 0, 0, 0) 1.25rem, rgba(0, 0, 0, 1) 2.5rem);

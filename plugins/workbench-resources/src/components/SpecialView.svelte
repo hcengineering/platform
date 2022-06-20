@@ -84,7 +84,7 @@
 
   <SearchEdit bind:value={search} />
   {#if createLabel && createComponent}
-    <Button label={createLabel} icon={IconAdd} kind={'primary'} on:click={(ev) => showCreateDialog(ev)} />
+    <Button label={createLabel} icon={IconAdd} kind={'primary'} size={'small'} on:click={(ev) => showCreateDialog(ev)} />
   {/if}
   <ViewletSettingButton viewlet={descr} />
 </div>

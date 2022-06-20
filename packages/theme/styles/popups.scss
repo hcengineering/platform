@@ -91,7 +91,7 @@
 
   .menu-item {
     flex-shrink: 0;
-    justify-content: start;
+    justify-content: flex-start;
     padding: .25rem .75rem;
     min-height: 2rem;
     text-align: left;
@@ -216,7 +216,7 @@
     height: 100%;
   }
   .ap-menuItem {
-    justify-content: start;
+    justify-content: flex-start;
     padding: 0 .5rem;
     height: 2rem;
     color: var(--caption-color);
@@ -331,7 +331,7 @@
     grid-auto-flow: column;
     direction: rtl;
     grid-gap: 0.5rem;
-    justify-content: start;
+    justify-content: flex-start;
     padding: 1rem 1.75rem 1.75rem 0.5rem;
     overflow: hidden;
   }
@@ -342,7 +342,7 @@
   display: flex;
   align-items: center;
   flex-shrink: 0;
-  justify-content: start;
+  justify-content: flex-start;
   padding: .25rem .75rem;
   min-width: 0;
   min-height: 2rem;

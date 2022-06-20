@@ -71,9 +71,10 @@ export interface TabItem {
   labelIntl?: IntlString
   icon?: Asset | AnySvelteComponent
   color?: string
+  tooltip?: IntlString
 }
 
-export type ButtonKind = 'primary' | 'secondary' | 'no-border' | 'transparent' | 'link' | 'link-bordered' | 'dangerous'
+export type ButtonKind = 'primary' | 'secondary' | 'no-border' | 'transparent' | 'link' | 'link-bordered' | 'dangerous' | 'list'
 export type ButtonSize = 'inline' | 'small' | 'medium' | 'large' | 'x-large'
 export type ButtonShape = 'rectangle' | 'rectangle-left' | 'rectangle-right' | 'circle' | 'round' | undefined
 export type EditStyle = 'editbox' | 'large-style' | 'small-style' | 'search-style'

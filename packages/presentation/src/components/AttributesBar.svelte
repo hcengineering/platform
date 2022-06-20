@@ -31,55 +31,15 @@
 </div>
 
 <style lang="scss">
-  .column + .column {
-    position: relative;
-    &::before {
-      content: '';
-      position: absolute;
-      background-color: var(--board-card-bg-hover);
-    }
-  }
-
   .attributes-bar-container {
-    height: 100%;
-
-    &.horizontal {
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      min-width: 0;
-      font-size: 0.75rem;
-
-      .column + .column {
-        margin-left: 3rem;
-        &::before {
-          top: 0;
-          bottom: 0;
-          left: -1.5rem;
-          width: 1px;
-        }
-      }
-    }
-    &.vertical {
-      display: grid;
-      grid-template-columns: 1fr 2fr;
-      grid-auto-flow: row;
-      justify-content: start;
-      align-items: center;
-      gap: 0.5rem;
-      padding-bottom: 0.5rem;
-      width: 100%;
-      height: min-content;
-
-      .column + .column {
-        margin-top: 1rem;
-        &::before {
-          top: -0.5rem;
-          left: 0;
-          right: 0;
-          height: 1px;
-        }
-      }
-    }
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    grid-auto-flow: row;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 0.5rem;
+    padding-bottom: 0.5rem;
+    width: 100%;
+    height: min-content;
   }
 </style>

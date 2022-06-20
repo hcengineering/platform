@@ -478,7 +478,9 @@
 }
 
 .antiList__row {
-  .antiList-cells__notifyCell {
+  .antiList-cells__notifyCell,
+  .antiList-cells__checkCell {
+    flex-shrink: 0;
     z-index: 1;
   }
 
