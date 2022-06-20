@@ -19,6 +19,8 @@
   import view from '../plugin'
 
   export let viewlet: Viewlet | undefined
+
+  let btn: HTMLButtonElement
 </script>
 
 {#if viewlet}
@@ -27,8 +29,9 @@
     kind={'secondary'}
     size={'small'}
     showTooltip={{ label: view.string.CustomizeView }}
+    bind:input={btn}
     on:click={() => {
-      showPopup(ViewletSetting, { viewlet })
+      showPopup(ViewletSetting, { viewlet }, btn)
     }}
   >
     <svelte:fragment slot="content">

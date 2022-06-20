@@ -17,16 +17,7 @@
   import { Class, Doc, FindOptions, getObjectValue, Ref, WithLookup } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
   import { Issue, IssueStatus, Team } from '@anticrm/tracker'
-  import {
-    Button,
-    CheckBox,
-    Component,
-    eventToHTMLElement,
-    IconAdd,
-    showPopup,
-    Spinner,
-    tooltip
-  } from '@anticrm/ui'
+  import { Button, CheckBox, Component, eventToHTMLElement, IconAdd, showPopup, Spinner, tooltip } from '@anticrm/ui'
   import { AttributeModel, BuildModelKey } from '@anticrm/view'
   import { buildModel, getObjectPresenter, LoadingProps, Menu } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
@@ -152,15 +143,15 @@
   }
 
   let varsStyle: string = ''
-  let propsWidth: Record<string, number> = { issue: 0 }
+  const propsWidth: Record<string, number> = { issue: 0 }
   let itemModels: AttributeModel[]
-  $: buildModel({ client, _class, keys: itemsConfig, lookup: options.lookup }).then(res => itemModels = res)
+  $: buildModel({ client, _class, keys: itemsConfig, lookup: options.lookup }).then((res) => (itemModels = res))
   $: if (propsWidth) {
     varsStyle = ''
     for (const key in propsWidth) varsStyle += `--fixed-${key}: ${propsWidth[key]}px;`
   }
   const checkWidth = (key: string, result: CustomEvent): void => {
-    if (result != undefined) propsWidth[key] = result.detail
+    if (result !== undefined) propsWidth[key] = result.detail
   }
 </script>
 
@@ -208,7 +199,6 @@
             class:checking={selectedObjectIdsSet.has(docObject._id)}
             class:mListGridFixed={selectedRowIndex === combinedGroupedIssues.findIndex((x) => x === docObject)}
             class:mListGridSelected={selectedRowIndex === combinedGroupedIssues.findIndex((x) => x === docObject)}
-
             on:contextmenu|preventDefault={(event) =>
               handleMenuOpened(
                 event,
@@ -218,10 +208,7 @@
             on:focus={() => {}}
             on:mouseover={() => handleRowFocused(docObject)}
           >
-            <div
-              class="flex-center relative"
-              use:tooltip={{ label: tracker.string.SelectIssue, direction: 'bottom' }}
-            >
+            <div class="flex-center relative" use:tooltip={{ label: tracker.string.SelectIssue, direction: 'bottom' }}>
               <div class="antiList-cells__notifyCell">
                 <div class="antiList-cells__checkCell">
                   <CheckBox
@@ -251,7 +238,7 @@
                   width={propsWidth.issue}
                   key={'issue'}
                   justify={'left'}
-                  on:update={result => checkWidth('issue', result)}
+                  on:update={(result) => checkWidth('issue', result)}
                 >
                   <svelte:component
                     this={attributeModel.presenter}
@@ -271,7 +258,7 @@
                   width={propsWidth[attributeModel.key]}
                   key={attributeModel.key}
                   justify={attributeModel.props.fixed}
-                  on:update={result => checkWidth(attributeModel.key, result)}
+                  on:update={(result) => checkWidth(attributeModel.key, result)}
                 >
                   <svelte:component
                     this={attributeModel.presenter}
@@ -326,7 +313,9 @@
     background-color: var(--body-accent);
   }
 
-  .row:not(:last-child) { border-bottom: 1px solid var(--accent-bg-color); }
+  .row:not(:last-child) {
+    border-bottom: 1px solid var(--accent-bg-color);
+  }
 
   .listGrid {
     display: flex;
@@ -335,7 +324,7 @@
     width: 100%;
     height: 2.75rem;
     color: var(--theme-caption-color);
-    
+
     &.checking {
       background-color: var(--highlight-select);
       border-bottom-color: var(--highlight-select);

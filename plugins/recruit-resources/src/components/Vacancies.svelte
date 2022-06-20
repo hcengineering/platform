@@ -143,7 +143,13 @@
       search = e.detail
     }}
   />
-  <Button icon={IconAdd} label={recruit.string.VacancyCreateLabel} size={'small'} kind={'primary'} on:click={showCreateDialog} />
+  <Button
+    icon={IconAdd}
+    label={recruit.string.VacancyCreateLabel}
+    size={'small'}
+    kind={'primary'}
+    on:click={showCreateDialog}
+  />
   <ViewletSettingButton viewlet={descr} />
 </div>
 {#if descr}

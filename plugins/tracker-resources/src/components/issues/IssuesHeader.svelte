@@ -24,7 +24,7 @@
     })
   }
 
-  $: viewslist = viewlets.map(views => {
+  $: viewslist = viewlets.map((views) => {
     return {
       id: views._id,
       icon: views.$lookup?.descriptor?.icon,
@@ -46,8 +46,8 @@
       selected={viewlet?._id}
       kind={'secondary'}
       size={'small'}
-      on:select={result => {
-        if (result.detail != undefined) viewlet = viewlets.find(vl => vl._id === result.detail.id)
+      on:select={(result) => {
+        if (result.detail !== undefined) viewlet = viewlets.find((vl) => vl._id === result.detail.id)
       }}
     />
   {/if}

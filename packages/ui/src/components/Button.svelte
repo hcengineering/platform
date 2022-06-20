@@ -110,8 +110,13 @@
   {#if icon && !loading}
     <div
       class="btn-icon pointer-events-none"
-      class:mr-1={!iconOnly && (kind === 'no-border' || kind === 'link-bordered' || kind === 'list' || shape === 'circle')}
-      class:mr-2={!iconOnly && kind !== 'no-border' && kind !== 'link-bordered' && kind !== 'list' && shape !== 'circle'}
+      class:mr-1={!iconOnly &&
+        (kind === 'no-border' || kind === 'link-bordered' || kind === 'list' || shape === 'circle')}
+      class:mr-2={!iconOnly &&
+        kind !== 'no-border' &&
+        kind !== 'link-bordered' &&
+        kind !== 'list' &&
+        shape !== 'circle'}
       class:resetIconSize
     >
       <Icon bind:icon size={size === 'inline' ? 'inline' : 'small'} />

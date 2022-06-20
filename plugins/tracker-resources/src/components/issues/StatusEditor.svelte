@@ -93,31 +93,29 @@
         </span>
       {/if}
     </div>
+  {:else if selectedStatusLabel}
+    <Button
+      showTooltip={isEditable ? { label: tracker.string.SetStatus, direction: tooltipAlignment } : undefined}
+      icon={selectedStatusIcon}
+      disabled={!isEditable}
+      {justify}
+      {size}
+      {kind}
+      {width}
+      on:click={handleStatusEditorOpened}
+    >
+      <span slot="content" class="overflow-label disabled">{selectedStatusLabel}</span>
+    </Button>
   {:else}
-    {#if selectedStatusLabel}
-      <Button
-        showTooltip={isEditable ? { label: tracker.string.SetStatus, direction: tooltipAlignment } : undefined}
-        icon={selectedStatusIcon}
-        disabled={!isEditable}
-        {justify}
-        {size}
-        {kind}
-        {width}
-        on:click={handleStatusEditorOpened}
-      >
-        <span slot="content" class="overflow-label disabled">{selectedStatusLabel}</span>
-      </Button>
-    {:else}
-      <Button
-        showTooltip={isEditable ? { label: tracker.string.SetStatus, direction: tooltipAlignment } : undefined}
-        icon={selectedStatusIcon}
-        disabled={!isEditable}
-        {justify}
-        {size}
-        {kind}
-        {width}
-        on:click={handleStatusEditorOpened}
-      />
-    {/if}
+    <Button
+      showTooltip={isEditable ? { label: tracker.string.SetStatus, direction: tooltipAlignment } : undefined}
+      icon={selectedStatusIcon}
+      disabled={!isEditable}
+      {justify}
+      {size}
+      {kind}
+      {width}
+      on:click={handleStatusEditorOpened}
+    />
   {/if}
 {/if}

@@ -73,7 +73,7 @@
     const index = viewlets.findIndex((p) => p.descriptor === viewlet?.descriptor)
     viewlet = index === -1 ? viewlets[0] : viewlets[index]
   }
-  $: viewslist = viewlets.map(views => {
+  $: viewslist = viewlets.map((views) => {
     return {
       id: views._id,
       icon: views.$lookup?.descriptor?.icon,
@@ -98,7 +98,13 @@
       }}
     />
     {#if createItemDialog}
-      <Button icon={IconAdd} label={createItemLabel} kind={'primary'} size={'small'} on:click={(ev) => showCreateDialog(ev)} />
+      <Button
+        icon={IconAdd}
+        label={createItemLabel}
+        kind={'primary'}
+        size={'small'}
+        on:click={(ev) => showCreateDialog(ev)}
+      />
     {/if}
     {#if viewlets.length > 1}
       <TabList
@@ -107,8 +113,8 @@
         selected={viewlet?._id}
         kind={'secondary'}
         size={'small'}
-        on:select={result => {
-          if (result.detail != undefined) viewlet = viewlets.find(vl => vl._id === result.detail.id)
+        on:select={(result) => {
+          if (result.detail !== undefined) viewlet = viewlets.find((vl) => vl._id === result.detail.id)
         }}
       />
     {/if}

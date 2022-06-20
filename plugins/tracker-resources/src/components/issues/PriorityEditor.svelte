@@ -114,7 +114,9 @@
       color: var(--accent-color);
     }
     &:hover {
-      .icon { color: var(--caption-color) !important; }
+      .icon {
+        color: var(--caption-color) !important;
+      }
     }
   }
 </style>

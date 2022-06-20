@@ -17,15 +17,7 @@
   import contact, { Employee, EmployeeAccount } from '@anticrm/contact'
   import core, { Class, getCurrentAccount, Ref, Space } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
-  import ui, {
-    EditWithIcon,
-    getCurrentLocation,
-    IconSearch,
-    Label,
-    navigate,
-    Loading,
-    TabList
-  } from '@anticrm/ui'
+  import ui, { EditWithIcon, getCurrentLocation, IconSearch, Label, navigate, Loading, TabList } from '@anticrm/ui'
   import view from '@anticrm/view'
   import { dateFileBrowserFilters, FileBrowserSortMode, fileTypeFileBrowserFilters, sortModeToOptionObject } from '..'
   import attachment from '../plugin'
@@ -134,9 +126,8 @@
     kind={'secondary'}
     size={'small'}
     selected={isListDisplayMode ? 'table' : 'card'}
-    on:select={result => {
-      if (result.detail != undefined)
-        isListDisplayMode = (result.detail === 'table') ?? false
+    on:select={(result) => {
+      if (result.detail !== undefined) isListDisplayMode = result.detail === 'table' ?? false
     }}
   />
 </div>
