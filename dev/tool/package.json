@@ -103,6 +103,8 @@
     "@anticrm/server-gmail-resources": "~0.6.0",
     "@anticrm/server-telegram": "~0.6.0",
     "@anticrm/server-telegram-resources": "~0.6.0",
+    "@anticrm/server-hr": "~0.6.0",
+    "@anticrm/server-hr-resources": "~0.6.0",
     "@anticrm/rekoni": "~0.6.0",
     "got": "^11.8.3",
     "@anticrm/tags": "~0.6.2",

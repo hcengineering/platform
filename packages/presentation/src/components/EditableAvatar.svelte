@@ -14,15 +14,17 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { IconSize, showPopup } from '@anticrm/ui'
+  import { AnySvelteComponent, IconSize, showPopup } from '@anticrm/ui'
 
   import Avatar from './Avatar.svelte'
   import EditAvatarPopup from './EditAvatarPopup.svelte'
   import { getFileUrl } from '../utils'
+  import { Asset } from '@anticrm/platform'
 
   export let avatar: string | null | undefined = undefined
   export let size: IconSize
   export let direct: Blob | undefined = undefined
+  export let icon: Asset | AnySvelteComponent | undefined = undefined
 
   const dispatch = createEventDispatcher()
 
@@ -75,6 +77,6 @@
 </script>
 
 <div class="cursor-pointer" on:click={onClick}>
-  <Avatar {avatar} {direct} {size} />
+  <Avatar {avatar} {direct} {size} {icon} />
   <input style="display: none;" type="file" bind:this={inputRef} on:change={onSelect} accept={targetMimes.join(',')} />
 </div>

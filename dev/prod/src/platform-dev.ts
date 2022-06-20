@@ -32,7 +32,7 @@ import { serverTagsId } from '@anticrm/server-tags'
 import { serverCalendarId } from '@anticrm/server-calendar'
 import { serverGmailId } from '@anticrm/server-gmail'
 import { serverTelegramId } from '@anticrm/server-telegram'
-
+import { serverHrId } from '@anticrm/server-hr'
 
 import { setMetadata } from '@anticrm/platform'
 
@@ -60,6 +60,7 @@ export function configurePlatformDev() {
     addLocation(serverCalendarId, () => import/* webpackChunkName: "server-calendar" */ ('@anticrm/server-calendar-resources'))
     addLocation(serverGmailId, () => import/* webpackChunkName: "server-gmail" */ ('@anticrm/server-gmail-resources'))
     addLocation(serverTelegramId, () => import/* webpackChunkName: "server-telegram" */ ('@anticrm/server-telegram-resources'))
+    addLocation(serverHrId, () => import(/* webpackChunkName: "server-attachment" */ '@anticrm/server-hr-resources'))
     // Set devmodel to hook client to be able to present all activity
     enableDevModel()
 }

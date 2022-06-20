@@ -1,0 +1,21 @@
+{
+  "string": {
+    "Department": "Department",
+    "ParentDepartmentLabel": "Parent department",
+    "Structure":"Structure",
+    "CreateDepartment": "Create department",
+    "CreateDepartmentLabel": "Create department",
+    "DepartmentPlaceholder": "Department",
+    "TeamLead": "Team lead",
+    "UnAssignLead": "Unassign team lead",
+    "MemberCount": "{count, plural, =0 {no employees} =1 {1 employee} other {# employees}}",
+    "AssignLead": "Assign team lead",
+    "TeamLeadTooltip": "{value}",
+    "HRApplication": "Human resources",
+    "MoveStaff": "Employee transfer",
+    "MoveStaffDescr": "Do you want to transfer employee from {current} to {department}",
+    "Departments": "Departments",
+    "ShowEmployees": "Show employees",
+    "AddEmployee": "Add employee"
+  }
+}

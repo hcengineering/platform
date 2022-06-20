@@ -25,11 +25,14 @@
     getFocusManager,
     AnyComponent,
     Tooltip,
-    TooltipAlignment
+    TooltipAlignment,
+    ButtonKind,
+    ButtonSize
   } from '@anticrm/ui'
   import SpacesPopup from './SpacesPopup.svelte'
 
   import type { Ref, Class, Space, DocumentQuery } from '@anticrm/core'
+  import { createEventDispatcher } from 'svelte'
 
   export let _class: Ref<Class<Space>>
   export let spaceQuery: DocumentQuery<Space> | undefined = { archived: false }
@@ -44,10 +47,15 @@
       }
     | undefined = undefined
   export let labelDirection: TooltipAlignment | undefined = undefined
+  export let kind: ButtonKind = 'no-border'
+  export let size: ButtonSize = 'small'
+  export let justify: 'left' | 'center' = 'center'
+  export let width: string | undefined = undefined
 
   let selected: Space | undefined
 
   const client = getClient()
+  const dispatch = createEventDispatcher()
 
   const mgr = getFocusManager()
   async function updateSelected (value: Ref<Space> | undefined) {
@@ -71,6 +79,7 @@
       (result) => {
         if (result) {
           value = result._id
+          dispatch('change', value)
           mgr?.setFocusPos(focusIndex)
         }
       }
@@ -79,7 +88,7 @@
 </script>
 
 <Tooltip {label} fill={false} direction={labelDirection}>
-  <Button {focus} {focusIndex} icon={IconFolder} size={'small'} kind={'no-border'} on:click={showSpacesPopup}>
+  <Button {focus} {focusIndex} icon={IconFolder} {size} {kind} {justify} {width} on:click={showSpacesPopup}>
     <span slot="content" class="overflow-label disabled text-sm">
       {#if selected}{selected.name}{:else}<Label {label} />{/if}
     </span>
