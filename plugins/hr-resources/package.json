@@ -38,6 +38,7 @@
     "@anticrm/core": "~0.6.16",
     "@anticrm/panel": "~0.6.0",
     "@anticrm/contact": "~0.6.5",
+    "@anticrm/view": "~0.6.0",
     "@anticrm/view-resources": "~0.6.0",
     "@anticrm/contact-resources": "~0.6.0",
     "@anticrm/setting": "~0.6.1",

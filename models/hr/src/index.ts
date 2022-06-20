@@ -14,14 +14,16 @@
 //
 
 import { Employee } from '@anticrm/contact'
-import contact, { TEmployee } from '@anticrm/model-contact'
-import { IndexKind, Ref } from '@anticrm/core'
-import type { Department, Staff } from '@anticrm/hr'
-import { Builder, Index, Mixin, Model, Prop, TypeRef, TypeString, UX } from '@anticrm/model'
+import contact, { TEmployee, TEmployeeAccount } from '@anticrm/model-contact'
+import { Arr, IndexKind, Ref } from '@anticrm/core'
+import type { Department, DepartmentMember, Staff } from '@anticrm/hr'
+import { Builder, Index, Mixin, Model, Prop, TypeRef, Collection, TypeString, UX, ArrOf } from '@anticrm/model'
 import core, { TSpace } from '@anticrm/model-core'
 import workbench from '@anticrm/model-workbench'
 import hr from './plugin'
 import view, { createAction } from '@anticrm/model-view'
+import attachment from '@anticrm/model-attachment'
+import chunter from '@anticrm/model-chunter'
 
 @Model(hr.class.Department, core.class.Space)
 @UX(hr.string.Department, hr.icon.Department)
@@ -33,11 +35,27 @@ export class TDepartment extends TSpace implements Department {
   @Index(IndexKind.FullText)
   name!: string
 
+  @Prop(Collection(contact.class.Channel), contact.string.ContactInfo)
+  channels?: number
+
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, undefined, attachment.string.Files)
+  attachments?: number
+
+  @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
+  comments?: number
+
   avatar?: string | null
 
   @Prop(TypeRef(contact.class.Employee), hr.string.TeamLead)
   teamLead!: Ref<Employee> | null
+
+  @Prop(ArrOf(TypeRef(hr.class.DepartmentMember)), contact.string.Members)
+  declare members: Arr<Ref<DepartmentMember>>
 }
+
+@Model(hr.class.DepartmentMember, contact.class.EmployeeAccount)
+@UX(contact.string.Employee, hr.icon.HR)
+export class TDepartmentMember extends TEmployeeAccount implements DepartmentMember {}
 
 @Mixin(hr.mixin.Staff, contact.class.Employee)
 @UX(contact.string.Employee, hr.icon.HR)
@@ -47,7 +65,7 @@ export class TStaff extends TEmployee implements Staff {
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TDepartment, TStaff)
+  builder.createModel(TDepartment, TDepartmentMember, TStaff)
 
   builder.createDoc(
     workbench.class.Application,
@@ -74,6 +92,14 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(hr.class.Department, core.class.Class, view.mixin.AttributeEditor, {
     inlineEditor: hr.component.DepartmentEditor
+  })
+
+  builder.mixin(hr.class.Department, core.class.Class, view.mixin.ObjectEditor, {
+    editor: hr.component.EditDepartment
+  })
+
+  builder.mixin(hr.class.DepartmentMember, core.class.Class, view.mixin.ArrayEditor, {
+    editor: hr.component.DepartmentStaff
   })
 
   createAction(

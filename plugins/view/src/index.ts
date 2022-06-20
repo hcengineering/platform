@@ -99,7 +99,8 @@ export interface CollectionEditor extends Class<Doc> {
  * @public
  */
 export interface ArrayEditor extends Class<Doc> {
-  inlineEditor: AnyComponent
+  editor?: AnyComponent
+  inlineEditor?: AnyComponent
 }
 
 /**

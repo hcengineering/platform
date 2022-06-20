@@ -14,11 +14,9 @@
 -->
 <script lang="ts">
   import { createQuery, EditableAvatar, getClient } from '@anticrm/presentation'
-  import { Panel } from '@anticrm/panel'
   import { createFocusManager, EditBox, FocusHandler } from '@anticrm/ui'
 
-  import { ActionContext } from '@anticrm/view-resources'
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, onMount } from 'svelte'
   import { Department } from '@anticrm/hr'
   import core, { getCurrentAccount, Ref, Space } from '@anticrm/core'
   import hr from '../plugin'
@@ -27,20 +25,10 @@
   import { ChannelsEditor } from '@anticrm/contact-resources'
   import setting, { IntegrationType } from '@anticrm/setting'
 
-  export let _id: Ref<Department>
-  let object: Department | undefined
+  export let object: Department
 
   const dispatch = createEventDispatcher()
   const client = getClient()
-  const query = createQuery()
-  query.query(
-    hr.class.Department,
-    { _id },
-    (res) => {
-      object = res[0]
-    },
-    { limit: 1 }
-  )
 
   async function onAvatarDone (e: any) {
     if (object === undefined) return
@@ -77,10 +65,6 @@
 
   const manager = createFocusManager()
 
-  const _update = (result: any): void => {
-    dispatch('update', result)
-  }
-
   let integrations: Set<Ref<IntegrationType>> = new Set<Ref<IntegrationType>>()
   const accountId = getCurrentAccount()._id
   const settingsQuery = createQuery()
@@ -91,63 +75,46 @@
       integrations = new Set(res.map((p) => p.type))
     }
   )
-</script>
 
-<ActionContext
-  context={{
-    mode: 'editor'
-  }}
-/>
+  onMount(() => {
+    dispatch('open', {
+      ignoreKeys: ['comments', 'name', 'channels', 'private', 'archived'],
+      collectionArrays: ['members']
+    })
+  })
+</script>
 
 <FocusHandler {manager} />
 
 {#if object !== undefined}
-  <Panel
-    icon={hr.icon.Department}
-    title={object.name}
-    {object}
-    isHeader={false}
-    isAside={true}
-    on:update={(ev) => _update(ev.detail)}
-    on:close={() => {
-      dispatch('close')
-    }}
-  >
-    <div class="flex-row-stretch flex-grow">
-      <div class="mr-8">
-        {#key object}
-          <EditableAvatar
-            avatar={object.avatar}
-            size={'x-large'}
-            icon={hr.icon.Department}
-            on:done={onAvatarDone}
-            on:remove={removeAvatar}
-          />
-        {/key}
+  <div class="flex-row-stretch flex-grow">
+    <div class="mr-8">
+      {#key object}
+        <EditableAvatar
+          avatar={object.avatar}
+          size={'x-large'}
+          icon={hr.icon.Department}
+          on:done={onAvatarDone}
+          on:remove={removeAvatar}
+        />
+      {/key}
+    </div>
+    <div class="flex-grow flex-col">
+      <div class="name">
+        <EditBox
+          placeholder={core.string.Name}
+          maxWidth="20rem"
+          bind:value={object.name}
+          on:change={nameChange}
+          focusIndex={1}
+        />
       </div>
-      <div class="flex-grow flex-col">
-        <div class="name">
-          <EditBox
-            placeholder={core.string.Name}
-            maxWidth="20rem"
-            bind:value={object.name}
-            on:change={nameChange}
-            focusIndex={1}
-          />
-        </div>
-        <div class="separator" />
-        <div class="flex-row-center">
-          <ChannelsEditor
-            attachedTo={object._id}
-            attachedClass={object._class}
-            {integrations}
-            focusIndex={10}
-            on:click
-          />
-        </div>
+      <div class="separator" />
+      <div class="flex-row-center">
+        <ChannelsEditor attachedTo={object._id} attachedClass={object._class} {integrations} focusIndex={10} on:click />
       </div>
     </div>
-  </Panel>
+  </div>
 {/if}
 
 <style lang="scss">

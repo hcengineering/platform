@@ -22,23 +22,7 @@
   export let allowedCollections: string[] = []
 </script>
 
-<ClassAttributeBar
-  _class={object._class}
-  {object}
-  {ignoreKeys}
-  to={undefined}
-  {allowedCollections}
-  vertical
-  on:update
-/>
+<ClassAttributeBar _class={object._class} {object} {ignoreKeys} to={undefined} {allowedCollections} on:update />
 {#each mixins as mixin}
-  <ClassAttributeBar
-    _class={mixin._id}
-    {object}
-    {ignoreKeys}
-    to={object._class}
-    {allowedCollections}
-    vertical
-    on:update
-  />
+  <ClassAttributeBar _class={mixin._id} {object} {ignoreKeys} to={object._class} {allowedCollections} on:update />
 {/each}
