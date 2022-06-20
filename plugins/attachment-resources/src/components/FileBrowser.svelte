@@ -17,16 +17,7 @@
   import contact, { Employee, EmployeeAccount } from '@anticrm/contact'
   import core, { Class, getCurrentAccount, Ref, Space } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
-  import ui, {
-    EditWithIcon,
-    getCurrentLocation,
-    Icon,
-    IconSearch,
-    Label,
-    navigate,
-    Loading,
-    Tooltip
-  } from '@anticrm/ui'
+  import ui, { EditWithIcon, getCurrentLocation, IconSearch, Label, navigate, Loading, TabList } from '@anticrm/ui'
   import view from '@anticrm/view'
   import { dateFileBrowserFilters, FileBrowserSortMode, fileTypeFileBrowserFilters, sortModeToOptionObject } from '..'
   import attachment from '../plugin'
@@ -115,7 +106,7 @@
     <div class="ac-header__wrap-title">
       <span class="ac-header__title"><Label label={attachment.string.FileBrowser} /></span>
     </div>
-    <EditWithIcon icon={IconSearch} bind:value={search} placeholder={ui.string.SearchDots} />
+    <EditWithIcon icon={IconSearch} size={'small'} bind:value={search} placeholder={ui.string.SearchDots} />
   </div>
 {/if}
 <div class="ac-header full">
@@ -127,30 +118,18 @@
     bind:selectedDateId
     bind:selectedFileTypeId
   />
-  <div class="flex">
-    <Tooltip label={attachment.string.FileBrowserListView} direction={'bottom'}>
-      <button
-        class="ac-header__icon-button"
-        class:selected={isListDisplayMode}
-        on:click={() => {
-          isListDisplayMode = true
-        }}
-      >
-        <Icon icon={view.icon.Table} size={'small'} />
-      </button>
-    </Tooltip>
-    <Tooltip label={attachment.string.FileBrowserGridView} direction={'bottom'}>
-      <button
-        class="ac-header__icon-button"
-        class:selected={!isListDisplayMode}
-        on:click={() => {
-          isListDisplayMode = false
-        }}
-      >
-        <Icon icon={view.icon.Card} size={'small'} />
-      </button>
-    </Tooltip>
-  </div>
+  <TabList
+    items={[
+      { id: 'table', icon: view.icon.Table, tooltip: attachment.string.FileBrowserListView },
+      { id: 'card', icon: view.icon.Card, tooltip: attachment.string.FileBrowserGridView }
+    ]}
+    kind={'secondary'}
+    size={'small'}
+    selected={isListDisplayMode ? 'table' : 'card'}
+    on:select={(result) => {
+      if (result.detail !== undefined) isListDisplayMode = result.detail === 'table' ?? false
+    }}
+  />
 </div>
 <div class="group">
   <div class="groupHeader">

@@ -422,7 +422,8 @@ const view = plugin(viewId, {
     ArrowRight: '' as Asset,
     Views: '' as Asset,
     Pin: '' as Asset,
-    Model: '' as Asset
+    Model: '' as Asset,
+    ViewButton: '' as Asset
   },
   category: {
     General: '' as Ref<ActionCategory>,

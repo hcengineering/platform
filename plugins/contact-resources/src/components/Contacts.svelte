@@ -86,6 +86,7 @@
       icon={IconAdd}
       label={contact.string.ContactCreateLabel}
       kind={'primary'}
+      size={'small'}
       on:click={(ev) => showCreateDialog(ev)}
     />
     <ViewletSettingButton {viewlet} />

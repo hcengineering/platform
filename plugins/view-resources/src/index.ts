@@ -63,6 +63,7 @@ export { default as FilterButton } from './components/filter/FilterButton.svelte
 export { default as LinkPresenter } from './components/LinkPresenter.svelte'
 export { default as ContextMenu } from './components/Menu.svelte'
 export { default as TableBrowser } from './components/TableBrowser.svelte'
+export { default as FixedColumn } from './components/FixedColumn.svelte'
 export * from './context'
 export * from './selection'
 export {

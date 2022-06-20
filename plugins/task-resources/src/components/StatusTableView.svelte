@@ -149,10 +149,11 @@
       { id: 'DoneStates', labelIntl: task.string.DoneStates }
     ]}
     multiselect={false}
+    size={'small'}
     on:select={handleSelect}
   />
   {#if doneStatusesView}
-    <TabList items={itemsDS} bind:selected={selectedDS} multiselect on:select={handleDoneSelect} />
+    <TabList items={itemsDS} bind:selected={selectedDS} multiselect on:select={handleDoneSelect} size={'small'} />
   {:else}
     <StatesBar bind:state {space} gap={'none'} on:change={() => updateQuery(search, selectedDoneStates)} />
   {/if}

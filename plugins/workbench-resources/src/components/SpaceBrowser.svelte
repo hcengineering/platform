@@ -118,7 +118,7 @@
       <span class="ac-header__title"><Label {label} /></span>
     </div>
     {#if createItemDialog}
-      <Button label={createItemLabel} on:click={(ev) => showCreateDialog(ev)} />
+      <Button label={createItemLabel} size={'small'} on:click={(ev) => showCreateDialog(ev)} />
     {/if}
   </div>
   <div class="ml-8 mr-8 mt-4 mb-4">

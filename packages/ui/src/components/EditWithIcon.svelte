@@ -26,6 +26,7 @@
   export let value: string | undefined = undefined
   export let placeholder: IntlString = plugin.string.EditBoxPlaceholder
   export let focus: boolean = false
+  export let size: 'small' | 'medium' = 'medium'
 
   const dispatch = createEventDispatcher()
   let textHTML: HTMLInputElement
@@ -42,7 +43,7 @@
   }
 </script>
 
-<div class="flex-between editbox" style={width ? 'width: ' + width : ''} on:click={() => textHTML.focus()}>
+<div class="flex-between editbox {size}" style={width ? 'width: ' + width : ''} on:click={() => textHTML.focus()}>
   <div class="mr-2 icon"><Icon {icon} size={'small'} /></div>
   <input bind:this={textHTML} type="text" bind:value placeholder={phTraslate} on:change on:input on:keydown />
   <slot name="extra" />
@@ -62,13 +63,18 @@
 <style lang="scss">
   .editbox {
     padding: 0 0.5rem 0 0.5rem;
-    min-width: 16.75rem;
-    height: 2rem;
+    min-width: 10rem;
     color: var(--caption-color);
     background-color: var(--body-color);
     border: 1px solid var(--button-border-color);
     border-radius: 0.25rem;
 
+    &.small {
+      height: 1.5rem;
+    }
+    &.medium {
+      height: 2rem;
+    }
     &:focus-within {
       border-color: var(--primary-edit-border-color);
       .icon {
