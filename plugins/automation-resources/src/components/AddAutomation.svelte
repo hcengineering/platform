@@ -1,0 +1,57 @@
+<script lang="ts">
+  import { Command } from '@anticrm/automation'
+  import core, { Class, Doc, Ref } from '@anticrm/core'
+  import presentation, { getClient } from '@anticrm/presentation'
+  import { Button, EditBox, Label } from '@anticrm/ui'
+
+  import { Trigger } from '../models'
+
+  import { createAutomation } from '../utils'
+  import AutomationActions from './AutomationActions.svelte'
+  import AutomationTrigger from './AutomationTrigger.svelte'
+
+  export let trigger: Trigger | undefined = undefined
+  export let commands: Command<Doc>[] = []
+  const client = getClient()
+
+  let targetClass: Ref<Class<Doc>> | undefined = undefined
+  let name: string | undefined = undefined
+  let description: string | undefined = undefined
+
+  function save () {
+    if (!name || !trigger || !commands.length) {
+      return
+    }
+    createAutomation(client, name, trigger, commands, { description, targetClass })
+  }
+</script>
+
+<div class="flex-col p-4">
+  <div class="flex flex-gap-2">
+    <Label label={core.string.Name} />
+    <EditBox bind:value={name} />
+  </div>
+  <div class="flex flex-gap-2">
+    <Label label={core.string.Description} />
+    <EditBox bind:value={description} />
+  </div>
+  <AutomationTrigger
+    {trigger}
+    on:trigger={(e) => {
+      trigger = e.detail
+    }}
+    on:targetClass={(e) => {
+      targetClass = e.detail
+    }}
+  />
+  {#if trigger}
+    <AutomationActions {targetClass} bind:commands />
+  {/if}
+
+  <Button
+    label={presentation.string.Save}
+    disabled={!name || !trigger || !commands.length}
+    kind="primary"
+    on:click={save}
+  />
+</div>

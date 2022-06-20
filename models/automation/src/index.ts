@@ -24,9 +24,10 @@ import automation, {
   TriggerType
 } from '@anticrm/automation'
 import { Class, Doc, Domain, Ref } from '@anticrm/core'
-import { Builder, Mixin, Model, UX } from '@anticrm/model'
+import { Builder, Mixin, Model, Prop, TypeString, UX } from '@anticrm/model'
 import core, { TAttachedDoc, TClass } from '@anticrm/model-core'
 import setting from '@anticrm/setting'
+import view from '@anticrm/model-view'
 
 import plugin from './plugin'
 
@@ -35,8 +36,12 @@ export const DOMAIN_AUTOMATION = 'automation' as Domain
 @Model(automation.class.Automation, core.class.AttachedDoc, DOMAIN_AUTOMATION)
 @UX(automation.string.Automation)
 export class TAutomation extends TAttachedDoc implements Automation<Doc> {
+  @Prop(TypeString(), core.string.Name)
   name!: string
+
+  @Prop(TypeString(), core.string.Description)
   description!: string | null
+
   targetClass!: Ref<Class<Doc>> | null
   declare trigger: {
     type: TriggerType
@@ -73,6 +78,11 @@ export function createModel (builder: Builder): void {
     },
     plugin.ids.Automation
   )
+
+  // TODO: Enable when server triggers are added
+  builder.mixin(automation.class.Automation, core.class.Class, view.mixin.IgnoreActions, {
+    actions: [view.action.Delete]
+  })
 }
 
 export { automationOperation } from './migration'

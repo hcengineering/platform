@@ -132,10 +132,11 @@ export default plugin(automationId, {
     Trigger: '' as IntlString,
     Set: '' as IntlString,
     To: '' as IntlString,
-    AddTrigger: '' as IntlString,
     AddMenu: '' as IntlString,
-    MenuName: '' as IntlString,
-    MenuMode: '' as IntlString
+    Menu: '' as IntlString,
+    MenuMode: '' as IntlString,
+    Icon: '' as IntlString,
+    SelectClass: '' as IntlString
   },
   icon: {
     Automation: '' as Asset

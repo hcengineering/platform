@@ -17,7 +17,7 @@ export async function createAutomation (
   name: string,
   trigger: Trigger,
   commands: Array<Command<Doc>>,
-  props: { targetClass?: Ref<Class<Doc>>, attachedTo?: Doc } = {}
+  props: { targetClass?: Ref<Class<Doc>>, attachedTo?: Doc, description?: string } = {}
 ): Promise<Ref<Automation<Doc>>> {
   let space: Ref<Space> = automation.space.Automation
   let attachedTo: Ref<Doc> = automation.space.Automation
@@ -71,6 +71,7 @@ export async function createTrigger (
       },
       category: automation.category.Automation,
       context: { mode: trigger.action.context },
+      icon: trigger.action.icon,
       input: 'any',
       label: trigger.action.label as IntlString,
       target: trigger.action.target

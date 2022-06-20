@@ -1,4 +1,5 @@
 import { Class, Doc, Ref } from '@anticrm/core'
+import { Asset } from '@anticrm/platform'
 
 export enum ActionTab {
   Add = 'Add',
@@ -15,5 +16,6 @@ export interface Trigger {
     context: 'context' | 'editor'
     target: Ref<Class<Doc>>
     label: string
+    icon?: Asset
   }
 }

@@ -1,21 +1,20 @@
 <script lang="ts">
-  import { AutomationSupport, Command } from '@anticrm/automation'
-  import core, { Class, Doc, Ref } from '@anticrm/core'
+  import { Command } from '@anticrm/automation'
+  import core, { AnyAttribute, Class, Doc, Ref } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
-  import { Button } from '@anticrm/ui'
+  import { Button, Label } from '@anticrm/ui'
   import { ActionTab } from '../models'
   import automation from '../plugin'
 
   import ContentActionCreate from './actions/ContentActionCreate.svelte'
 
-  export let automationSupport: AutomationSupport<Doc>
-  export let _class: Ref<Class<Doc>>
-  export let commands: Command[] = []
+  export let targetClass: Ref<Class<Doc>> | undefined = undefined
+  export let commands: Command<Doc>[] = []
+  let attributes: Map<string, AnyAttribute> = new Map()
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const attributeSupportMap = new Map()
 
-  const attributes = hierarchy.getAllAttributes(_class)
   const contentAttributes: string[] = []
   const dateAttributes: string[] = []
   const collectionAttributes: string[] = []
@@ -23,36 +22,45 @@
   const refAttributes: string[] = []
   let currentTab: ActionTab | undefined = undefined
 
-  automationSupport?.attributes?.forEach((attr) => {
-    attributeSupportMap.set(attr.name, attr)
-    const classifier = attributes.get(attr.name)
-    if (classifier) {
-      const typeClass = classifier.type._class
-      if (
-        typeClass === core.class.TypeBoolean ||
-        typeClass === core.class.TypeNumber ||
-        typeClass === core.class.TypeString ||
-        typeClass === core.class.TypeMarkup
-      ) {
-        contentAttributes.push(attr.name)
-      } else if (typeClass === core.class.TypeTimestamp || typeClass === core.class.TypeDate) {
-        dateAttributes.push(attr.name)
-      } else if (typeClass === core.class.Collection) {
-        collectionAttributes.push(attr.name) // TODO
-      } else if (typeClass === core.class.ArrOf) {
-        arrayAttributes.push(attr.name) // TODO
-      } else if (typeClass === core.class.RefTo) {
-        refAttributes.push(attr.name) // TODO
-      }
-    }
-  })
-  function addCommand (e: CustomEvent<Command>) {
+  function addCommand (e: CustomEvent<Command<Doc>>) {
     commands.push(e.detail)
     commands = commands
+  }
+
+  if (targetClass !== undefined) {
+    const classObj = hierarchy.getClass(targetClass)
+    const automationSupport = hierarchy.as(classObj, automation.mixin.AutomationSupport)
+    automationSupport?.attributes?.forEach((attr) => {
+      attributeSupportMap.set(attr.name, attr)
+      attributes = hierarchy.getAllAttributes(targetClass)
+      const classifier = attributes.get(attr.name)
+      if (classifier) {
+        const typeClass = classifier.type._class
+        if (
+          typeClass === core.class.TypeBoolean ||
+          typeClass === core.class.TypeNumber ||
+          typeClass === core.class.TypeString ||
+          typeClass === core.class.TypeMarkup
+        ) {
+          contentAttributes.push(attr.name)
+        } else if (typeClass === core.class.TypeTimestamp || typeClass === core.class.TypeDate) {
+          dateAttributes.push(attr.name)
+        } else if (typeClass === core.class.Collection) {
+          collectionAttributes.push(attr.name) // TODO
+        } else if (typeClass === core.class.ArrOf) {
+          arrayAttributes.push(attr.name) // TODO
+        } else if (typeClass === core.class.RefTo) {
+          refAttributes.push(attr.name) // TODO
+        }
+      }
+    })
   }
 </script>
 
 <div class="flex-col">
+  <div class="ac-header short">
+    <Label label={automation.string.Actions} />
+  </div>
   <div class="flex flex-gap-2">
     {#if contentAttributes.length > 0}
       <Button
@@ -93,7 +101,7 @@
         <ContentActionCreate
           attribute={attributes.get(attr)}
           automationSupport={attributeSupportMap.get(attr)}
-          {_class}
+          {targetClass}
           on:add={addCommand}
         />
       {/each}

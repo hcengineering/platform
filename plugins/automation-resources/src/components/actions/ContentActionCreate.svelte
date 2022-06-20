@@ -9,7 +9,7 @@
 
   export let automationSupport: { name: string }
   export let attribute: AnyAttribute | undefined = undefined
-  export let _class: Ref<Class<Doc>>
+  export let targetClass: Ref<Class<Doc>>
 
   const dispatch = createEventDispatcher()
   const typeClass = attribute?.type._class
@@ -42,7 +42,7 @@
     if (attribute && value !== undefined) {
       const command: UpdateDocCommand<any> = {
         type: CommandType.UpdateDoc,
-        targetClass: _class,
+        targetClass,
         update: {
           [attribute.name]: value
         }
