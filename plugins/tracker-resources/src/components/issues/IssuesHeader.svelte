@@ -3,7 +3,7 @@
   import { Team, ViewOptions } from '@anticrm/tracker'
   import { Icon, TabList, showPopup, eventToHTMLElement } from '@anticrm/ui'
   import { Viewlet } from '@anticrm/view'
-  import { FilterButton } from '@anticrm/view-resources'
+  import { FilterButton, setActiveViewletId } from '@anticrm/view-resources'
   import tracker from '../../plugin'
   import ViewOptionsPopup from './ViewOptionsPopup.svelte'
   import ViewOptionsButton from './ViewOptionsButton.svelte'
@@ -47,7 +47,10 @@
       kind={'secondary'}
       size={'small'}
       on:select={(result) => {
-        if (result.detail !== undefined) viewlet = viewlets.find((vl) => vl._id === result.detail.id)
+        if (result.detail !== undefined) {
+          viewlet = viewlets.find((vl) => vl._id === result.detail.id)
+          if (viewlet) setActiveViewletId(viewlet._id)
+        }
       }}
     />
   {/if}

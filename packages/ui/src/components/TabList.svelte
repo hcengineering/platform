@@ -46,6 +46,7 @@
         class="button"
         class:short
         class:selected={getSelected(item.id)}
+        data-view={item.tooltip}
         use:tooltip={{ label: item.tooltip ?? undefined, element: tabs[i] ?? undefined }}
         on:click={() => {
           if (multiselect) {

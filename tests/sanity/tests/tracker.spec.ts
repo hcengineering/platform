@@ -103,13 +103,17 @@ async function checkIssue (
 const defaultStatuses = ['Backlog', 'Todo', 'In Progress', 'Done', 'Canceled']
 const defaultPriorities = ['No priority', 'Urgent', 'High', 'Medium', 'Low']
 const defaultUser = 'John Appleseed'
+enum viewletSelectors {
+  Table = '.tablist-container >> div.button:nth-child(1)',
+  Board = '.tablist-container >> div.button:nth-child(2)'
+}
 
 test.describe('create-issue-and-sub-issue', () => {
   const labels = ['label', 'another-label']
   async function testIssue (page: Page, props: IssueProps): Promise<void> {
     await createIssue(page, props)
     await page.click('text="Issues"')
-    await page.click(`.antiList__row :has-text("${props.name}") .issuePresenter`)
+    await page.click(`.listGrid.antiList__row:has-text("${props.name}") .issuePresenter`)
     await checkIssue(page, props)
     props.name = `sub${props.name}`
     await createSubissue(page, props)
@@ -166,7 +170,8 @@ test('use-kanban', async ({ page }) => {
   await createIssue(page, { name, status })
 
   await page.locator('text="Issues"').click()
-  await page.click('[name="tooltip-tracker:string:Board"]')
+  // await page.click('[name="tooltip-tracker:string:Board"]')
+  await page.click('.tablist-container div:nth-child(2)')
   await expect(page.locator(`.panel-container:has-text("${status}")`)).toContainText(name)
 })
 
@@ -187,10 +192,12 @@ test.describe('issues-status-display', () => {
     test(`${panel}-panel`, async ({ page }) => {
       const locator = page.locator('.antiPanel-component >> .antiPanel-component')
       await page.locator(`text="${panel}"`).click()
-      await page.click('[name="tooltip-tracker:string:List"]')
+      // await page.click('[name="tooltip-tracker:string:List"]')
+      await page.click('.tablist-container div:nth-child(1)')
       await expect(locator).toContainText(statuses)
       if (excluded.length > 0) await expect(locator).not.toContainText(excluded)
-      await page.click('[name="tooltip-tracker:string:Board"]')
+      // await page.click('[name="tooltip-tracker:string:Board"]')
+      await page.click('.tablist-container div:nth-child(2)')
       if (excluded.length > 0) await expect(locator).not.toContainText(excluded)
       for (const status of statuses) {
         await expect(page.locator(`.panel-container:has-text("${status}")`)).toContainText(getIssueName(status))
@@ -201,16 +208,15 @@ test.describe('issues-status-display', () => {
 
 test('save-active-viewlet', async ({ page }) => {
   const panels = ['Issues', 'Active', 'Backlog']
-  const viewletTooltips = ['Board', 'List']
   await navigate(page)
-  for (const viewletTooltip of viewletTooltips) {
+  for (const viewletSelector of [viewletSelectors.Board, viewletSelectors.Table]) {
     for (const panel of panels) {
       await page.click(`text="${panel}"`)
-      await page.click(`[name="tooltip-tracker:string:${viewletTooltip}"]`)
+      await page.click(viewletSelector)
     }
     for (const panel of panels) {
       await page.click(`text="${panel}"`)
-      await expect(page.locator(`[name="tooltip-tracker:string:${viewletTooltip}"] >> button`)).toHaveClass(/selected/)
+      await expect(page.locator(viewletSelector)).toHaveClass(/selected/)
     }
   }
 })

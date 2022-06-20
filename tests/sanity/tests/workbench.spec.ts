@@ -37,7 +37,8 @@ test.describe('workbench tests', () => {
     await page.click('text=Software Engineer')
     await expect(page.locator('text=Software Engineer')).toBeVisible()
     await expect(page.locator('text="APP-1"')).toBeDefined()
-    await page.click('[name="tooltip-task:string:Kanban"]')
+    // await page.click('[name="tooltip-task:string:Kanban"]')
+    await page.click('.tablist-container div:nth-child(2)')
 
     // Click [id="app-chunter\:string\:ApplicationLabelChunter"]
     await page.click('[id="app-chunter\\:string\\:ApplicationLabelChunter"]')

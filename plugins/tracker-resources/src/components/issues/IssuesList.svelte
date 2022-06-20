@@ -234,18 +234,20 @@
                   />
                 </div>
               {:else if attributeModelIndex === 1}
-                <FixedColumn
-                  width={propsWidth.issue}
-                  key={'issue'}
-                  justify={'left'}
-                  on:update={(result) => checkWidth('issue', result)}
-                >
-                  <svelte:component
-                    this={attributeModel.presenter}
-                    value={getObjectValue(attributeModel.key, docObject) ?? ''}
-                    {...attributeModel.props}
-                  />
-                </FixedColumn>
+                <div class="issuePresenter">
+                  <FixedColumn
+                    width={propsWidth.issue}
+                    key={'issue'}
+                    justify={'left'}
+                    on:update={(result) => checkWidth('issue', result)}
+                  >
+                    <svelte:component
+                      this={attributeModel.presenter}
+                      value={getObjectValue(attributeModel.key, docObject) ?? ''}
+                      {...attributeModel.props}
+                    />
+                  </FixedColumn>
+                </div>
               {:else if attributeModelIndex === 3}
                 <svelte:component
                   this={attributeModel.presenter}
@@ -323,6 +325,7 @@
     padding: 0 1.5rem 0 0.875rem;
     width: 100%;
     height: 2.75rem;
+    min-height: 2.75rem;
     color: var(--theme-caption-color);
 
     &.checking {
@@ -338,5 +341,11 @@
     &.mListGridSelected {
       background-color: var(--highlight-hover);
     }
+  }
+
+  .priorityPresenter,
+  .issuePresenter {
+    min-width: 0;
+    min-height: 0;
   }
 </style>
