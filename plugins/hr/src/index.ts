@@ -34,7 +34,7 @@ export interface Department extends Space {
 /**
  * @public
  */
-export interface DepartmentMember extends EmployeeAccount { }
+export interface DepartmentMember extends EmployeeAccount {}
 
 /**
  * @public
