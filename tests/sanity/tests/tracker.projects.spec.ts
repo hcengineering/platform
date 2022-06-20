@@ -28,7 +28,7 @@ test.describe('project tests', () => {
     await page.click(`text=${prjId}`)
     await page.click('button:has-text("New issue")')
     await page.fill('[placeholder="Issue\\ title"]', 'issue')
-    await page.click('button:has-text("Project")')
+    await page.click('form button:has-text("Project")')
     await page.click(`button:has-text("${prjId}")`)
     await page.click('button:has-text("Save issue")')
     await page.click(`button:has-text("${prjId}")`)

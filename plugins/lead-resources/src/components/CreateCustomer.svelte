@@ -14,24 +14,24 @@
 -->
 <script lang="ts">
   import attachment from '@anticrm/attachment'
-  import { Channel, combineName, Contact, findPerson } from '@anticrm/contact'
+  import { Channel, combineName, Contact, findContacts } from '@anticrm/contact'
   import { ChannelsDropdown } from '@anticrm/contact-resources'
   import PersonPresenter from '@anticrm/contact-resources/src/components/PersonPresenter.svelte'
   import contact from '@anticrm/contact-resources/src/plugin'
-  import { AttachedData, Class, Data, Doc, generateId, MixinData, Ref } from '@anticrm/core'
+  import { AttachedData, Class, Data, Doc, generateId, MixinData, Ref, WithLookup } from '@anticrm/core'
   import type { Customer } from '@anticrm/lead'
   import { getResource } from '@anticrm/platform'
   import { Card, EditableAvatar, getClient } from '@anticrm/presentation'
   import {
     Button,
+    createFocusManager,
     EditBox,
     eventToHTMLElement,
+    FocusHandler,
     IconInfo,
     Label,
     SelectPopup,
-    showPopup,
-    createFocusManager,
-    FocusHandler
+    showPopup
   } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import lead from '../plugin'
@@ -56,7 +56,7 @@
   let avatar: File | undefined
 
   function formatName (targetClass: Ref<Class<Doc>>, firstName: string, lastName: string, objectName: string): string {
-    return targetClass === contact.class.Person ? combineName(firstName, lastName) : objectName
+    return targetClass === contact.class.Person ? combineName(firstName.trim(), lastName.trim()) : objectName
   }
 
   async function createCustomer () {
@@ -114,15 +114,6 @@
     avatar = file
   }
 
-  let matches: Contact[] = []
-  $: findPerson(
-    client,
-    { ...object, name: formatName(targetClass._id, firstName, lastName, object.name) },
-    channels
-  ).then((p) => {
-    matches = p
-  })
-
   function removeAvatar (): void {
     avatar = undefined
   }
@@ -161,6 +152,20 @@
   $: canSave = formatName(targetClass._id, firstName, lastName, object.name).length > 0
 
   const manager = createFocusManager()
+
+  let matches: WithLookup<Contact>[] = []
+  let matchedChannels: AttachedData<Channel>[] = []
+  $: if (targetClass !== undefined) {
+    findContacts(
+      client,
+      targetClass._id,
+      { ...object, name: formatName(targetClass._id, firstName, lastName, object.name) },
+      channels
+    ).then((p) => {
+      matches = p.contacts
+      matchedChannels = p.channels
+    })
+  }
 </script>
 
 <FocusHandler {manager} />
@@ -245,7 +250,12 @@
     </div>
   {/if}
   <svelte:fragment slot="pool">
-    <ChannelsDropdown bind:value={channels} focusIndex={10} editable />
+    <ChannelsDropdown
+      bind:value={channels}
+      focusIndex={10}
+      editable
+      highlighted={matchedChannels.map((it) => it.provider)}
+    />
   </svelte:fragment>
   <svelte:fragment slot="footer">
     {#if matches.length > 0}
