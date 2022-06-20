@@ -48,6 +48,8 @@ export default mergeIds(viewId, view, {
     Save: '' as IntlString,
     IncludeItemsThatMatch: '' as IntlString,
     AnyFilter: '' as IntlString,
-    AllFilters: '' as IntlString
+    AllFilters: '' as IntlString,
+    MatchCriteria: '' as IntlString,
+    DontMatchCriteria: '' as IntlString
   }
 })

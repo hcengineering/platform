@@ -30,15 +30,16 @@ import TagsFilter from './components/TagsFilter.svelte'
 import TagsAttributeEditor from './components/TagsAttributeEditor.svelte'
 import TagsEditorPopup from './components/TagsEditorPopup.svelte'
 import { ObjQueryType } from '@anticrm/core'
-import { TagFilterQuery } from './utils'
+import { getRefs } from './utils'
+import { Filter } from '@anticrm/view'
 
-export async function tagsInResult (res: any[], onUpdate: () => void, index: number): Promise<ObjQueryType<any>> {
-  const result = await TagFilterQuery.getRefs(res, onUpdate, index)
+export async function tagsInResult (filter: Filter, onUpdate: () => void): Promise<ObjQueryType<any>> {
+  const result = await getRefs(filter.value, onUpdate, filter.index)
   return { $in: result }
 }
 
-export async function tagsNinResult (res: any[], onUpdate: () => void, index: number): Promise<ObjQueryType<any>> {
-  const result = await TagFilterQuery.getRefs(res, onUpdate, index)
+export async function tagsNinResult (filter: Filter, onUpdate: () => void): Promise<ObjQueryType<any>> {
+  const result = await getRefs(filter.value, onUpdate, filter.index)
   return { $nin: result }
 }
 

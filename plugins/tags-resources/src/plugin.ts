@@ -15,6 +15,7 @@ import { ObjQueryType } from '@anticrm/core'
 import { IntlString, mergeIds, Resource } from '@anticrm/platform'
 import tags, { tagsId } from '@anticrm/tags'
 import { AnyComponent } from '@anticrm/ui'
+import { Filter } from '@anticrm/view'
 
 export default mergeIds(tagsId, tags, {
   component: {
@@ -48,11 +49,7 @@ export default mergeIds(tagsId, tags, {
     ApplyTags: '' as IntlString
   },
   function: {
-    FilterTagsInResult: '' as Resource<
-    (values: any[], onUpdate: () => void, index: number) => Promise<ObjQueryType<any>>
-    >,
-    FilterTagsNinResult: '' as Resource<
-    (values: any[], onUpdate: () => void, index: number) => Promise<ObjQueryType<any>>
-    >
+    FilterTagsInResult: '' as Resource<(filter: Filter, onUpdate: () => void) => Promise<ObjQueryType<any>>>,
+    FilterTagsNinResult: '' as Resource<(filter: Filter, onUpdate: () => void) => Promise<ObjQueryType<any>>>
   }
 })

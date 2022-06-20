@@ -27,7 +27,7 @@
   export let filter: Filter
   export let onChange: (e: Filter) => void
 
-  filter.modes = [view.ids.FilterValueIn, view.ids.FilterValueNin]
+  filter.modes = [view.filter.FilterValueIn, view.filter.FilterValueNin]
   filter.mode = filter.mode === undefined ? filter.modes[0] : filter.mode
 
   const client = getClient()
