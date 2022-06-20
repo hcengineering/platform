@@ -25,7 +25,7 @@
 
 <style lang="scss">
   .titleLabel {
-    flex-shrink: 1;
+    flex-shrink: 10;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;

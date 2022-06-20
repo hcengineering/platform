@@ -17,7 +17,7 @@
   import { Class, Doc, FindOptions, getObjectValue, Ref, WithLookup } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
   import { Issue, IssueStatus, Team } from '@anticrm/tracker'
-  import { Button, CheckBox, Component, eventToHTMLElement, IconAdd, showPopup, Spinner, tooltip } from '@anticrm/ui'
+  import { Button, CheckBox, Component, eventToHTMLElement, IconAdd, showPopup, Spinner, tooltip, Scroller } from '@anticrm/ui'
   import { AttributeModel, BuildModelKey } from '@anticrm/view'
   import { buildModel, getObjectPresenter, LoadingProps, Menu } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
@@ -254,7 +254,7 @@
                   value={getObjectValue(attributeModel.key, docObject) ?? ''}
                   {...attributeModel.props}
                 />
-                <div class="flex-grow clear-mins" />
+                <div class="grow-cell" />
               {:else if attributeModel.props?.fixed}
                 <FixedColumn
                   width={propsWidth[attributeModel.key]}
@@ -301,18 +301,23 @@
 
 <style lang="scss">
   .issueslist-container {
+    position: relative;
     display: flex;
     flex-direction: column;
     width: 100%;
-    height: 100%;
-    // min-width: 0;
-    // min-height: 0;
+    height: max-content;
+    min-width: auto;
+    min-height: auto;
   }
   .categoryHeader {
+    position: sticky;
+    top: 0;
     padding: 0 1.5rem 0 2.25rem;
-    height: 2.25rem;
+    height: 2.5rem;
+    min-height: 2.5rem;
     min-width: 0;
     background-color: var(--body-accent);
+    z-index: 5;
   }
 
   .row:not(:last-child) {
@@ -347,5 +352,10 @@
   .issuePresenter {
     min-width: 0;
     min-height: 0;
+  }
+  .grow-cell {
+    flex-grow: 1;
+    flex-shrink: 0;
+    min-width: 0;
   }
 </style>

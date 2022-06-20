@@ -10,7 +10,7 @@
     Team,
     ViewOptions
   } from '@anticrm/tracker'
-  import { Button, IconDetails, Scroller, ScrollBox } from '@anticrm/ui'
+  import { Button, IconDetails } from '@anticrm/ui'
   import view, { Viewlet } from '@anticrm/view'
   import { FilterBar } from '@anticrm/view-resources'
   import { getActiveViewletId } from '@anticrm/view-resources/src/utils'
@@ -94,11 +94,7 @@
   </IssuesHeader>
   <FilterBar _class={tracker.class.Issue} {query} on:change={(e) => (resultQuery = e.detail)} />
   <div class="flex w-full h-full clear-mins">
-    <div class="antiPanel-component clear-mins">
-      <ScrollBox vertical stretch>
-        <IssuesContent {currentSpace} {viewlet} query={resultQuery} {viewOptions} />
-      </ScrollBox>
-    </div>
+    <IssuesContent {currentSpace} {viewlet} query={resultQuery} {viewOptions} />
     {#if $$slots.aside !== undefined && asideShown}
       <div class="popupPanel-body__aside" class:float={asideFloat} class:shown={asideShown}>
         <slot name="aside" />
