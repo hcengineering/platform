@@ -21,7 +21,7 @@
   import hr from '../plugin'
 
   export let value: Ref<Department> | undefined
-  export let label: IntlString = hr.string.Department
+  export let label: IntlString = hr.string.ParentDepartmentLabel
   export let onChange: (value: any) => void
   export let kind: ButtonKind = 'no-border'
   export let size: ButtonSize = 'small'
@@ -31,7 +31,7 @@
 
 <SpaceSelector
   _class={hr.class.Department}
-  label={hr.string.ParentDepartmentLabel}
+  {label}
   {size}
   {kind}
   {justify}

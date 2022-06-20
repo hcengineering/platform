@@ -91,6 +91,7 @@
 
   let ignoreKeys: string[] = []
   let allowedCollections: string[] = []
+  let collectionArrays: string[] = []
   let ignoreMixins: Set<Ref<Mixin<Doc>>> = new Set<Ref<Mixin<Doc>>>()
 
   async function updateKeys (): Promise<void> {
@@ -102,12 +103,14 @@
       }
     }
     const filtredKeys = Array.from(keysMap.values())
-    keys = collectionsFilter(hierarchy, filtredKeys, false)
+    keys = collectionsFilter(hierarchy, filtredKeys, false, allowedCollections)
 
-    const collectionKeys = collectionsFilter(hierarchy, filtredKeys, true)
+    const collectionKeys = collectionsFilter(hierarchy, filtredKeys, true, collectionArrays)
     const editors: { key: KeyedAttribute; editor: AnyComponent }[] = []
     for (const k of collectionKeys) {
+      if (allowedCollections.includes(k.key)) continue
       const editor = await getCollectionEditor(k)
+      if (editor === undefined) continue
       editors.push({ key: k, editor })
     }
     collectionEditors = editors
@@ -129,10 +132,11 @@
     updateKeys()
   }
 
-  async function getCollectionEditor (key: KeyedAttribute): Promise<AnyComponent> {
+  async function getCollectionEditor (key: KeyedAttribute): Promise<AnyComponent | undefined> {
     const attrClass = getAttributePresenterClass(hierarchy, key.attr)
     const clazz = hierarchy.getClass(attrClass.attrClass)
-    const editorMixin = hierarchy.as(clazz, view.mixin.CollectionEditor)
+    const mixinRef = attrClass.category === 'array' ? view.mixin.ArrayEditor : view.mixin.CollectionEditor
+    const editorMixin = hierarchy.as(clazz, mixinRef)
     return editorMixin.editor
   }
 
@@ -243,7 +247,13 @@
             on:update={updateKeys}
           />
         {:else if dir === 'column'}
-          <DocAttributeBar {object} {mixins} {ignoreKeys} {allowedCollections} on:update={updateKeys} />
+          <DocAttributeBar
+            {object}
+            {mixins}
+            ignoreKeys={[...ignoreKeys, ...collectionArrays]}
+            {allowedCollections}
+            on:update={updateKeys}
+          />
         {:else}
           <AttributesBar {object} _class={realObjectClass} {keys} />
         {/if}
@@ -258,12 +268,13 @@
           ignoreKeys = ev.detail.ignoreKeys
           ignoreMixins = new Set(ev.detail.ignoreMixins)
           allowedCollections = ev.detail.allowedCollections ?? []
+          collectionArrays = ev.detail.collectionArrays ?? []
           getMixins(parentClass, object)
           updateKeys()
         }}
       />
     {/if}
-    {#each collectionEditors.filter((it) => !allowedCollections.includes(it.key.key)) as collection}
+    {#each collectionEditors as collection}
       {#if collection.editor}
         <div class="mt-6">
           <Component

@@ -14,8 +14,8 @@
 //
 
 import contact, { Employee } from '@anticrm/contact'
-import core, { Account, Ref, SortingOrder, Tx, TxFactory, TxMixin } from '@anticrm/core'
-import hr, { Department, Staff } from '@anticrm/hr'
+import core, { Ref, SortingOrder, Tx, TxFactory, TxMixin } from '@anticrm/core'
+import hr, { Department, DepartmentMember, Staff } from '@anticrm/hr'
 import { extractTx, TriggerControl } from '@anticrm/server-core'
 
 async function getOldDepartment (
@@ -67,7 +67,7 @@ function exlude (first: Ref<Department>[], second: Ref<Department>[]): Ref<Depar
 
 function getTxes (
   factory: TxFactory,
-  account: Ref<Account>,
+  account: Ref<DepartmentMember>,
   added: Ref<Department>[],
   removed?: Ref<Department>[]
 ): Tx[] {
