@@ -1,6 +1,5 @@
 //
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -15,41 +14,16 @@
 //
 
 import contact, { Contact, EmployeeAccount, Organization } from '@anticrm/contact'
-import core, {
-  AnyAttribute,
-  Class,
-  Data,
-  Doc,
-  DocumentUpdate,
-  Enum,
-  EnumOf,
-  MixinUpdate,
-  PropertyType,
-  Ref,
-  SortingOrder,
-  TxOperations,
-  Type
-} from '@anticrm/core'
+import core, { Class, DocumentUpdate, MixinUpdate, Ref, SortingOrder, TxOperations } from '@anticrm/core'
 import lead, { Customer, Funnel, Lead } from '@anticrm/lead'
-import { getEmbeddedLabel } from '@anticrm/platform'
 import { connect } from '@anticrm/server-tool'
 import task, { calcRank, DoneState, genRanks, State } from '@anticrm/task'
-import { parse } from 'csv-parse'
 import { readFile } from 'fs/promises'
+import { updateClasses } from './classes'
+import { CustomCustomer, FieldType } from './types'
+import { filled } from './utils'
 
-function filled (obj: any, uniqKeys: string[]): any {
-  const result: Record<string, any> = {}
-  for (const [k, v] of Object.entries(obj)) {
-    if (typeof v === 'string' && v.trim().length === 0) {
-      continue
-    }
-    if (!uniqKeys.includes(k)) {
-      uniqKeys.push(k)
-    }
-    result[k] = v
-  }
-  return result
-}
+import { parse } from 'csv-parse'
 
 const names = {
   orgName: 'Название компании',
@@ -74,19 +48,7 @@ const names = {
   responsible: 'Ответственный'
 }
 
-interface CustomCustomer extends Customer {
-  annualTurnover?: string
-  currency?: string
-  comment?: string
-  source_ka: string
-  employees_count?: number
-  activity_area: string
-  company_type: string
-  processing_status: string
-  responsible: string
-}
-
-const fieldMapping = {
+const fieldMapping: Record<string, FieldType> = {
   'Название компании': { name: 'name', type: core.class.TypeString, label: core.string.String },
   'Годовой оборот': { name: 'annual.turnover', type: core.class.TypeNumber, label: core.string.Number },
   Валюта: {
@@ -99,7 +61,7 @@ const fieldMapping = {
   'Кем создана': { name: 'created_by', type: undefined, label: core.string.String },
   'Кем изменена': { name: 'modified_by', type: undefined, label: core.string.String },
   'Источник (где связь) для КА': { name: 'source_ka', type: core.class.TypeString, label: core.string.String },
-  'Корпоративный сайт': { name: 'corporate_site', type: contact.channelProvider.Homepage, label: undefined },
+  'Корпоративный сайт': { name: 'corporate_site', type: undefined, label: undefined },
   'Кол-во сотрудников': {
     name: 'employees_count',
     type: core.class.EnumOf,
@@ -126,7 +88,6 @@ const fieldMapping = {
   },
   'Корпоративный e-mail': {
     name: 'corporate_email',
-    type: contact.channelProvider.Email,
     label: core.string.String
   },
   Ответственный: {
@@ -136,67 +97,7 @@ const fieldMapping = {
     label: core.string.Enum
   }
 }
-async function uodateClasses (client: TxOperations, records: any[]): Promise<void> {
-  const allAttrs = client.getHierarchy().getAllAttributes(lead.mixin.Customer)
-  for (const [k, v] of Object.entries(fieldMapping)) {
-    let attr = allAttrs.get(v.name)
-    if (attr === undefined) {
-      try {
-        if (!client.getHierarchy().isDerived(v.type as Ref<Class<Doc>>, core.class.Type)) {
-          // Skip channels mapping
-          continue
-        }
-      } catch (any) {
-        continue
-      }
-      // Create attr
-      const data: Data<AnyAttribute> = {
-        attributeOf: lead.mixin.Customer,
-        name: v.name,
-        label: getEmbeddedLabel(k),
-        isCustom: true,
-        type: {
-          _class: v.type as Ref<Class<Type<PropertyType>>>,
-          label: v.label ?? core.string.String
-        }
-      }
-      if (client.getHierarchy().isDerived(v.type as Ref<Class<Doc>>, core.class.EnumOf)) {
-        ;(data.type as EnumOf).of = `lead:class:${(v as any).enumName as string}` as Ref<Enum>
-      }
-      const attrId = (lead.mixin.Customer + '.' + v.name) as Ref<AnyAttribute>
-      await client.createDoc(core.class.Attribute, core.space.Model, data, attrId)
-      attr = await client.findOne(core.class.Attribute, { _id: attrId })
-    }
-    // Check update Enum/Values
-    if (client.getHierarchy().isDerived(v.type as Ref<Class<Doc>>, core.class.EnumOf)) {
-      const enumName = (v as any).enumName as string
-      const enumId = `lead:class:${enumName}` as Ref<Enum>
-      let enumClass = await client.findOne(core.class.Enum, { _id: enumId })
-      if (enumClass === undefined) {
-        await client.createDoc(
-          core.class.Enum,
-          core.space.Model,
-          {
-            name: enumName,
-            enumValues: []
-          },
-          enumId
-        )
-        enumClass = client.getModel().getObject(enumId)
-      }
-      // Check values
-      const values = records.map((it) => it[k]).filter((it, idx, arr) => arr.indexOf(it) === idx)
-      for (const v of values) {
-        const vv = (v ?? '').trim().length === 0 ? 'не задано' : v
-        if (!enumClass.enumValues.includes(vv)) {
-          await client.update(enumClass, {
-            $push: { enumValues: vv }
-          })
-        }
-      }
-    }
-  }
-}
+
 async function updateStates<T extends State | DoneState> (
   client: TxOperations,
   states: string[],
@@ -224,6 +125,31 @@ async function updateStates<T extends State | DoneState> (
   }
 }
 
+export async function parseCSV (csvData: string): Promise<any[]> {
+  return await new Promise((resolve, reject) => {
+    parse(
+      csvData,
+      {
+        delimiter: ';',
+        columns: true,
+        quote: '"',
+        bom: true,
+        cast: true,
+        autoParse: true,
+        castDate: false,
+        skipEmptyLines: true,
+        skipRecordsWithEmptyValues: true
+      },
+      (err, records) => {
+        if (err !== undefined) {
+          console.error(err)
+          reject(err)
+        }
+        resolve(records)
+      }
+    )
+  })
+}
 export async function importLead (transactorUrl: string, dbName: string, csvFile: string): Promise<void> {
   const connection = await connect(transactorUrl, dbName)
 
@@ -238,7 +164,7 @@ export async function importLead (transactorUrl: string, dbName: string, csvFile
 
     const client = new TxOperations(connection, 'core:account:lead-importer' as Ref<EmployeeAccount>)
 
-    await uodateClasses(client, records)
+    await updateClasses(client, records, fieldMapping)
     await createCustomers(client, filledFields)
 
     const importedFunnelId = await createFunnel(records, client)
@@ -463,30 +389,4 @@ async function createCustomers (client: TxOperations, filledFields: any[]): Prom
       }
     }
   }
-}
-
-async function parseCSV (csvData: string): Promise<any[]> {
-  return await new Promise((resolve, reject) => {
-    parse(
-      csvData,
-      {
-        delimiter: ';',
-        columns: true,
-        quote: '"',
-        bom: true,
-        cast: true,
-        autoParse: true,
-        castDate: false,
-        skipEmptyLines: true,
-        skipRecordsWithEmptyValues: true
-      },
-      (err, records) => {
-        if (err !== undefined) {
-          console.error(err)
-          reject(err)
-        }
-        resolve(records)
-      }
-    )
-  })
 }
