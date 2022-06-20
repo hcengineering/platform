@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Asset, getResource, IntlString } from '@anticrm/platform'
   import presentation, { getClient, ObjectSearchCategory } from '@anticrm/presentation'
-  import { AnySvelteComponent, Icon, Button, Tooltip } from '@anticrm/ui'
+  import { AnySvelteComponent, Icon, Button, Tooltip, showPopup } from '@anticrm/ui'
   import { AnyExtension } from '@tiptap/core'
   import { createEventDispatcher } from 'svelte'
   import { Completion } from '../Completion'
@@ -37,6 +37,7 @@
   import MentionList from './MentionList.svelte'
   import { SvelteRenderer } from './SvelteRenderer'
   import TextEditor from './TextEditor.svelte'
+  import EmojiPopup from './EmojiPopup.svelte'
 
   const dispatch = createEventDispatcher()
   export let content: string = ''
@@ -80,7 +81,18 @@
     {
       label: textEditorPlugin.string.Emoji,
       icon: Emoji,
-      action: () => {},
+      action: (element) => {
+        showPopup(
+          EmojiPopup,
+          {},
+          element,
+          (emoji) => {
+            if (!emoji) return
+            textEditor.insertText(emoji)
+          },
+          () => {}
+        )
+      },
       order: 3000
     },
     {

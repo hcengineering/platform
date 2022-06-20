@@ -43,6 +43,12 @@ export default plugin(textEditorId, {
     BulletedList: '' as IntlString,
     Blockquote: '' as IntlString,
     Code: '' as IntlString,
-    CodeBlock: '' as IntlString
+    CodeBlock: '' as IntlString,
+    GettingWorkDone: '' as IntlString,
+    Smileys: '' as IntlString,
+    Nature: '' as IntlString,
+    Symbols: '' as IntlString,
+    TravelAndPlaces: '' as IntlString,
+    Objects: '' as IntlString
   }
 })

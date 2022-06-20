@@ -230,6 +230,8 @@ specifiers:
   dotenv: ~16.0.0
   dotenv-webpack: ^7.0.2
   elastic-apm-node: ~3.26.0
+  emoji-name-map: ^1.2.9
+  emoji-regex: ^10.1.0
   esbuild: ^0.12.26
   eslint: ^7.32.0
   eslint-config-standard-with-typescript: ^21.0.1
@@ -516,6 +518,8 @@ dependencies:
   dotenv: 16.0.1
   dotenv-webpack: 7.1.0_webpack@5.73.0
   elastic-apm-node: 3.26.0
+  emoji-name-map: 1.2.9
+  emoji-regex: 10.1.0
   esbuild: 0.12.29
   eslint: 7.32.0
   eslint-config-standard-with-typescript: 21.0.1_99a5fe2f2ae1dc64d6b59974c931eb2a
@@ -4442,8 +4446,24 @@ packages:
     engines: {node: '>=10'}
     dev: false
 
+  /emoji-name-map/1.2.9:
+    resolution: {integrity: sha512-MSM8y6koSqh/2uEMI2VoKA+Ac0qL5RkgFGP/pzL6n5FOrOJ7FOZFxgs7+uNpqA+AT+WmdbMPXkd3HnFXXdz4AA==}
+    dependencies:
+      emojilib: 2.4.0
+      iterate-object: 1.3.4
+      map-o: 2.0.10
+    dev: false
+
+  /emoji-regex/10.1.0:
+    resolution: {integrity: sha512-xAEnNCT3w2Tg6MA7ly6QqYJvEoY1tm9iIjJ3yMKK9JPlWuRHAMoe5iETwQnx3M9TVbFMfsrBgWKR+IsmswwNjg==}
+    dev: false
+
   /emoji-regex/8.0.0:
     resolution: {integrity: sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A==}
+    dev: false
+
+  /emojilib/2.4.0:
+    resolution: {integrity: sha512-5U0rVMU5Y2n2+ykNLQqMoqklN9ICBT/KsvC1Gz6vqHbz2AXXGkG+Pm5rMWk/8Vjrr/mY9985Hi8DYzn1F09Nyw==}
     dev: false
 
   /emojis-list/3.0.0:
@@ -6132,6 +6152,10 @@ packages:
       istanbul-lib-report: 3.0.0
     dev: false
 
+  /iterate-object/1.3.4:
+    resolution: {integrity: sha512-4dG1D1x/7g8PwHS9aK6QV5V94+ZvyP4+d19qDv43EzImmrndysIl4prmJ1hWWIGCqrZHyaHBm6BSEWHOLnpoNw==}
+    dev: false
+
   /jest-changed-files/27.5.1:
     resolution: {integrity: sha512-buBLMiByfWGCoMsLLzGUUSpAmIAGnbR2KJoMN10ziLhOLvP4e0SlypHnAel8iqQXTrcbmfEY9sSqae5sgUsTvw==}
     engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
@@ -6992,6 +7016,12 @@ packages:
     resolution: {integrity: sha512-JmqCvUhmt43madlpFzG4BQzG2Z3m6tvQDNKdClZnO3VbIudJYmxsT0FNJMeiB2+JTSlTQTSbU8QdesVmwJcmLg==}
     dependencies:
       tmpl: 1.0.5
+    dev: false
+
+  /map-o/2.0.10:
+    resolution: {integrity: sha512-BxazE81fVByHWasyXhqKeo2m7bFKYu+ZbEfiuexMOnklXW+tzDvnlTi/JaklEeuuwqcqJzPaf9q+TWptSGXeLg==}
+    dependencies:
+      iterate-object: 1.3.4
     dev: false
 
   /mapcap/1.0.0:
@@ -10318,13 +10348,15 @@ packages:
     dev: false
 
   file:projects/chunter-resources.tgz_1e3963ebf0ceeb25b2fa6a1cc87e253c:
-    resolution: {integrity: sha512-hGY42Nm8WN8xitrfk9Z56o/r8a09cytzluQ8o4ifrZ63vDHfU4Jy6EP2fGUrdwMRr8jx1R9PFpAsjp8H5IUWzw==, tarball: file:projects/chunter-resources.tgz}
+    resolution: {integrity: sha512-FJpFm8VsdeaSW1Y1bRuwulXv3PVLIM/4nvTbIwPMoYUHQDt47UL27zIPbUAEUK0+3ar5arsiUO02jZJxlKA+xg==, tarball: file:projects/chunter-resources.tgz}
     id: file:projects/chunter-resources.tgz
     name: '@rush-temp/chunter-resources'
     version: 0.0.0
     dependencies:
       '@typescript-eslint/eslint-plugin': 5.27.0_738fa17fa57f8a69ace69c90e5cfa1d5
       '@typescript-eslint/parser': 5.27.0_eslint@7.32.0+typescript@4.7.2
+      emoji-regex: 10.1.0
+      emojis-list: 3.0.0
       eslint: 7.32.0
       eslint-config-standard-with-typescript: 21.0.1_99a5fe2f2ae1dc64d6b59974c931eb2a
       eslint-plugin-import: 2.26.0_c21022bc9feaeb7b200d3d631eeae46c
@@ -10496,7 +10528,7 @@ packages:
     dev: false
 
   file:projects/contact.tgz:
-    resolution: {integrity: sha512-2B/7NhxU+dIDhbVwlaOzJq+OwDzsf53p2DVvI+AbZa9Zj6gP5ajfKfkWqVT7pItU6Kt5he3t/5pg7KWvCyN6lw==, tarball: file:projects/contact.tgz}
+    resolution: {integrity: sha512-BngWK0q+CMT4P/1R02H53uqYvfhnSkx52G5hZ49BpcvdJAnrn+F8G7NiVSoUO2Ag2Cccundu89oVlUsnYXH4dw==, tarball: file:projects/contact.tgz}
     name: '@rush-temp/contact'
     version: 0.0.0
     dependencies:
@@ -11517,7 +11549,7 @@ packages:
     dev: false
 
   file:projects/model-inventory.tgz_typescript@4.7.2:
-    resolution: {integrity: sha512-PCAUuH2imVPnkolq5MCYxYnjoWvba3ctRhi6kDepGqgywCnyixHL5h7dYKf79X1fFoyTS3f0PZve5JSBPvIrYw==, tarball: file:projects/model-inventory.tgz}
+    resolution: {integrity: sha512-ZrDM3hzsPJZPI1EGZpP4sEkEnJmmfzW77c2g7JejOCROBy6gd7237XN/SPjPk85CcSg7iHyueJiG9QGgoRB5SQ==, tarball: file:projects/model-inventory.tgz}
     id: file:projects/model-inventory.tgz
     name: '@rush-temp/model-inventory'
     version: 0.0.0
@@ -12066,7 +12098,7 @@ packages:
     dev: false
 
   file:projects/model-task.tgz_typescript@4.7.2:
-    resolution: {integrity: sha512-fGY5a9pnS61IS1HaBJsxOnVBc/K+6A8S2YVvFp1zkU0Tqji7SoR34sLKFKz0IDQ4uYzaadkAs9cZmqs7NvfnDQ==, tarball: file:projects/model-task.tgz}
+    resolution: {integrity: sha512-rKwvH48V41O/F7EAUZoGCFkI1y2QpgBplsoZBNiZ+72Fy+zSrMtUWkTYNF1PCm+t+Bk4OkTOdQ84lLS6pllwtw==, tarball: file:projects/model-task.tgz}
     id: file:projects/model-task.tgz
     name: '@rush-temp/model-task'
     version: 0.0.0
@@ -12158,7 +12190,7 @@ packages:
     dev: false
 
   file:projects/model-tracker.tgz_typescript@4.7.2:
-    resolution: {integrity: sha512-MrEr3RwNVjkxXv3qaVSJu80bxkfUo7h+Q3BryQngr+CmPQeqnunU2qPOykoZvAVbmXKRO3w9qYz4DNsZmMBy2A==, tarball: file:projects/model-tracker.tgz}
+    resolution: {integrity: sha512-uRgEbWiEJ7vGg8Rwf72rMT+6dqDEiAR7Vn5UiH9j7geeOvz43eusMLcNJ/CAa9/b2301dHO3VKT5h/YnibM5GA==, tarball: file:projects/model-tracker.tgz}
     id: file:projects/model-tracker.tgz
     name: '@rush-temp/model-tracker'
     version: 0.0.0
@@ -14085,7 +14117,7 @@ packages:
     dev: false
 
   file:projects/text-editor.tgz_1e3963ebf0ceeb25b2fa6a1cc87e253c:
-    resolution: {integrity: sha512-baB/9mrVbC1HBM4EqGCpqQ+C6aUzGbYCUeP8x3O1xp6YUkJrl4XcH6o7aZNtNDgJRvSDPdDAUg5oP/++gud68w==, tarball: file:projects/text-editor.tgz}
+    resolution: {integrity: sha512-2cipSqOINLbArVOFEe5g2wnQfcE4OLY8BvCdS/q4z7XS1cSc76BS2noqhEh3SsjuL1CBFLeR/xlpQs4xyGZpvw==, tarball: file:projects/text-editor.tgz}
     id: file:projects/text-editor.tgz
     name: '@rush-temp/text-editor'
     version: 0.0.0
@@ -14103,6 +14135,8 @@ packages:
       '@types/prosemirror-model': 1.16.2
       '@typescript-eslint/eslint-plugin': 5.27.0_738fa17fa57f8a69ace69c90e5cfa1d5
       '@typescript-eslint/parser': 5.27.0_eslint@7.32.0+typescript@4.7.2
+      emoji-name-map: 1.2.9
+      emoji-regex: 10.1.0
       eslint: 7.32.0
       eslint-config-standard-with-typescript: 21.0.1_99a5fe2f2ae1dc64d6b59974c931eb2a
       eslint-plugin-import: 2.26.0_c21022bc9feaeb7b200d3d631eeae46c
@@ -14368,6 +14402,8 @@ packages:
     dependencies:
       '@typescript-eslint/eslint-plugin': 5.27.0_738fa17fa57f8a69ace69c90e5cfa1d5
       '@typescript-eslint/parser': 5.27.0_eslint@7.32.0+typescript@4.7.2
+      emoji-regex: 10.1.0
+      emojis-list: 3.0.0
       eslint: 7.32.0
       eslint-config-standard-with-typescript: 21.0.1_99a5fe2f2ae1dc64d6b59974c931eb2a
       eslint-plugin-import: 2.26.0_c21022bc9feaeb7b200d3d631eeae46c
