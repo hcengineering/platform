@@ -18,7 +18,7 @@
   import { AttachedData, Ref } from '@anticrm/core'
   import { getClient, UserBox } from '@anticrm/presentation'
   import { Issue } from '@anticrm/tracker'
-  import { ButtonKind, ButtonSize, Tooltip, TooltipAlignment } from '@anticrm/ui'
+  import { ButtonKind, ButtonSize, TooltipAlignment } from '@anticrm/ui'
   import contact from '@anticrm/contact'
   import tracker from '../../plugin'
 

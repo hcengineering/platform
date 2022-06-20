@@ -19,7 +19,7 @@
   import CreateDepartment from './CreateDepartment.svelte'
   import DepartmentCard from './DepartmentCard.svelte'
   import hr from '../plugin'
-  import { IconAdd, IconMoreV, Button, eventToHTMLElement, Label, showPopup, ActionIcon, showPanel } from '@anticrm/ui'
+  import { IconAdd, IconMoreV, Button, eventToHTMLElement, Label, showPopup, showPanel } from '@anticrm/ui'
   import contact, { Employee } from '@anticrm/contact'
   import { EmployeePresenter } from '@anticrm/contact-resources'
   import { Menu } from '@anticrm/view-resources'

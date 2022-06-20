@@ -14,7 +14,6 @@
 -->
 <script lang="ts">
   import type { Class, Doc, DocumentQuery, FindOptions, Ref } from '@anticrm/core'
-  import { translate } from '@anticrm/platform'
   import type { IntlString } from '@anticrm/platform'
   import {
     AnyComponent,
