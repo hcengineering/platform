@@ -38,6 +38,7 @@
   import MentionList from './MentionList.svelte'
   import { SvelteRenderer } from './SvelteRenderer'
   import TextEditor from './TextEditor.svelte'
+  import EmojiPopup from './EmojiPopup.svelte'
   import LinkPopup from './LinkPopup.svelte'
 
   const dispatch = createEventDispatcher()
@@ -83,7 +84,18 @@
     {
       label: textEditorPlugin.string.Emoji,
       icon: Emoji,
-      action: () => {},
+      action: (element) => {
+        showPopup(
+          EmojiPopup,
+          {},
+          element,
+          (emoji) => {
+            if (!emoji) return
+            textEditor.insertText(emoji)
+          },
+          () => {}
+        )
+      },
       order: 3000
     },
     {

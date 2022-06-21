@@ -23,6 +23,7 @@ export { default as StyledTextBox } from './components/StyledTextBox.svelte'
 export { default as StyledTextArea } from './components/StyledTextArea.svelte'
 export { default as StyledTextEditor } from './components/StyledTextEditor.svelte'
 export { default as TextEditor } from './components/TextEditor.svelte'
+export { default as EmojiPopup } from './components/EmojiPopup.svelte'
 export { default } from './plugin'
 export * from './types'
 
