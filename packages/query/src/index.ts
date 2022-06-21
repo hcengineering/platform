@@ -399,7 +399,7 @@ export class LiveQuery extends TxProcessor implements Client {
     let needCallback = false
     const lookupWays = this.getLookupWays(lookup, tx.objectClass)
     for (const lookupWay of lookupWays) {
-      const [objWay, key] = lookupWay
+      const [objWay, key, reverseLookupKey] = lookupWay
       for (const resDoc of docs) {
         const obj = getObjectValue(objWay, resDoc)
         if (obj === undefined) continue
@@ -408,7 +408,7 @@ export class LiveQuery extends TxProcessor implements Client {
           let index = value.findIndex((p) => p._id === tx.objectId)
           if (this.client.getHierarchy().isDerived(tx.objectClass, core.class.AttachedDoc)) {
             const { attachedTo } = tx.operations as DocumentUpdate<AttachedDoc>
-            if (attachedTo !== undefined) {
+            if (attachedTo !== undefined && (reverseLookupKey === undefined || reverseLookupKey === 'attachedTo')) {
               if (index !== -1 && attachedTo !== obj._id) {
                 value.splice(index, 1)
                 index = -1
@@ -634,14 +634,17 @@ export class LiveQuery extends TxProcessor implements Client {
     let needCallback = false
     const lookupWays = this.getLookupWays(lookup, doc._class)
     for (const lookupWay of lookupWays) {
-      const [objWay, key] = lookupWay
+      const [objWay, key, reverseLookupKey] = lookupWay
       for (const resDoc of docs) {
         const obj = getObjectValue(objWay, resDoc)
         if (obj === undefined) continue
         const value = getObjectValue('$lookup.' + key, obj)
         if (Array.isArray(value)) {
           if (this.client.getHierarchy().isDerived(doc._class, core.class.AttachedDoc)) {
-            if ((doc as AttachedDoc).attachedTo === obj._id) {
+            if (
+              (doc as AttachedDoc).attachedTo === obj._id &&
+              (reverseLookupKey === undefined || reverseLookupKey === 'attachedTo')
+            ) {
               value.push(doc)
               needCallback = true
             }
@@ -730,15 +733,20 @@ export class LiveQuery extends TxProcessor implements Client {
     }
   }
 
-  private getLookupWays (lookup: Lookup<Doc>, _class: Ref<Class<Doc>>, parent: string = ''): [string, string][] {
-    const result: [string, string][] = []
+  private getLookupWays (
+    lookup: Lookup<Doc>,
+    _class: Ref<Class<Doc>>,
+    parent: string = ''
+  ): [string, string, string?][] {
+    const result: [string, string, string?][] = []
     const hierarchy = this.client.getHierarchy()
     if (lookup._id !== undefined) {
       for (const key in lookup._id) {
         const value = (lookup._id as any)[key]
-        const clazz = hierarchy.isMixin(value) ? hierarchy.getBaseClass(value) : value
+        const [valueClass, reverseLookupKey] = Array.isArray(value) ? value : [value]
+        const clazz = hierarchy.isMixin(valueClass) ? hierarchy.getBaseClass(valueClass) : valueClass
         if (hierarchy.isDerived(_class, clazz)) {
-          result.push([parent, key])
+          result.push([parent, key, reverseLookupKey])
         }
       }
     }
