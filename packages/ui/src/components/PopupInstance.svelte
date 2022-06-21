@@ -123,6 +123,7 @@
     on:fullsize={() => {
       fullSize = !fullSize
     }}
+    on:changeContent={fitPopup}
   />
 </div>
 <div

@@ -303,7 +303,6 @@
         value={object}
         size="small"
         kind="no-border"
-        tooltipFill={false}
         on:change={({ detail }) => (currentAssignee = detail)}
       />
       <Component
