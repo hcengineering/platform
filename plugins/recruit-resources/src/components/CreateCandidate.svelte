@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import attachment from '@anticrm/attachment'
-  import contact, { Channel, ChannelProvider, combineName, findPerson, Person } from '@anticrm/contact'
+  import contact, { Channel, ChannelProvider, combineName, findContacts, Person } from '@anticrm/contact'
   import { ChannelsDropdown } from '@anticrm/contact-resources'
   import PersonPresenter from '@anticrm/contact-resources/src/components/PersonPresenter.svelte'
   import { Account, AttachedData, Data, Doc, generateId, MixinData, Ref, TxProcessor, WithLookup } from '@anticrm/core'
@@ -79,7 +79,9 @@
 
   let avatar: File | undefined
   let channels: AttachedData<Channel>[] = []
-  let matchedChannels: Channel[] = []
+
+  let matches: WithLookup<Person>[] = []
+  let matchedChannels: AttachedData<Channel>[] = []
 
   let skills: TagReference[] = []
   const key: KeyedAttribute = {
@@ -379,30 +381,15 @@
     ]
   }
 
-  let matches: WithLookup<Person>[] = []
-  $: findPerson(client, { ...object, name: combineName(firstName, lastName) }, channels).then((p) => {
-    matches = p
+  $: findContacts(
+    client,
+    contact.class.Person,
+    { ...object, name: combineName(firstName.trim(), lastName.trim()) },
+    channels
+  ).then((p) => {
+    matches = p.contacts
+    matchedChannels = p.channels
   })
-
-  $: if (matches.length > 0) {
-    const res: Channel[] = []
-    for (const ci in channels) {
-      let matched = false
-      for (const m of matches) {
-        for (const c of (m.$lookup?.channels as Channel[]) ?? []) {
-          if (c.provider === channels[ci].provider && c.value === channels[ci].value) {
-            res.push(c)
-            matched = true
-            break
-          }
-        }
-        if (matched) {
-          break
-        }
-      }
-    }
-    matchedChannels = res
-  }
 
   function removeAvatar (): void {
     avatar = undefined
@@ -416,7 +403,7 @@
 <Card
   label={recruit.string.CreateTalent}
   okAction={createCandidate}
-  canSave={firstName.length > 0 && lastName.length > 0 && matches.length === 0}
+  canSave={firstName.length > 0 && lastName.length > 0}
   on:close={() => {
     dispatch('close')
   }}

@@ -205,6 +205,7 @@ specifiers:
   '@types/compression': ~1.7.2
   '@types/cors': ^2.8.12
   '@types/deep-equal': ^1.0.1
+  '@types/email-addresses': ^3.0.0
   '@types/express': ^4.17.13
   '@types/express-fileupload': ^1.1.7
   '@types/faker': ~5.5.9
@@ -241,6 +242,7 @@ specifiers:
   dotenv: ~16.0.0
   dotenv-webpack: ^7.0.2
   elastic-apm-node: ~3.26.0
+  email-addresses: ^5.0.0
   emoji-regex: ^10.1.0
   esbuild: ^0.12.26
   eslint: ^7.32.0
@@ -264,6 +266,7 @@ specifiers:
   koa-bodyparser: ^4.3.0
   koa-router: ^10.1.1
   lexorank: ~1.0.4
+  libphonenumber-js: ^1.9.46
   mime-types: ~2.1.34
   mini-css-extract-plugin: ^2.2.0
   minio: ^7.0.26
@@ -503,6 +506,7 @@ dependencies:
   '@types/compression': 1.7.2
   '@types/cors': 2.8.12
   '@types/deep-equal': 1.0.1
+  '@types/email-addresses': 3.0.0
   '@types/express': 4.17.13
   '@types/express-fileupload': 1.2.2
   '@types/faker': 5.5.9
@@ -539,6 +543,7 @@ dependencies:
   dotenv: 16.0.1
   dotenv-webpack: 7.1.0_webpack@5.73.0
   elastic-apm-node: 3.26.0
+  email-addresses: 5.0.0
   emoji-regex: 10.1.0
   esbuild: 0.12.29
   eslint: 7.32.0
@@ -562,6 +567,7 @@ dependencies:
   koa-bodyparser: 4.3.0
   koa-router: 10.1.1
   lexorank: 1.0.4
+  libphonenumber-js: 1.10.7
   mime-types: 2.1.35
   mini-css-extract-plugin: 2.6.0_webpack@5.73.0
   minio: 7.0.28
@@ -2223,6 +2229,13 @@ packages:
 
   /@types/deep-equal/1.0.1:
     resolution: {integrity: sha512-mMUu4nWHLBlHtxXY17Fg6+ucS/MnndyOWyOe7MmwkoMYxvfQU2ajtRaEvqSUv+aVkMqH/C0NCI8UoVfRNQ10yg==}
+    dev: false
+
+  /@types/email-addresses/3.0.0:
+    resolution: {integrity: sha512-jGUOSgpOEWhTH4tMCj56NZenkzER259nJ5NGRvxXld3X7Lai/lxC3QNfDM0rVGMkj+WhANMpvIf195tgwnE7wQ==}
+    deprecated: This is a stub types definition for email-addresses (https://github.com/jackbowman/email-addresses). email-addresses provides its own type definitions, so you don't need @types/email-addresses installed!
+    dependencies:
+      email-addresses: 5.0.0
     dev: false
 
   /@types/eslint-scope/3.7.3:
@@ -4463,6 +4476,10 @@ packages:
       inherits: 2.0.4
       minimalistic-assert: 1.0.1
       minimalistic-crypto-utils: 1.0.1
+    dev: false
+
+  /email-addresses/5.0.0:
+    resolution: {integrity: sha512-4OIPYlA6JXqtVn8zpHpGiI7vE6EQOAg16aGnDMIAlZVinnoZ8208tW1hAbjWydgN/4PLTT9q+O1K6AH/vALJGw==}
     dev: false
 
   /emittery/0.8.1:
@@ -6899,6 +6916,10 @@ packages:
 
   /lexorank/1.0.4:
     resolution: {integrity: sha512-CMgA8AMJIX/QfoYHKyjg0hv9W1SGL2xRkt0uLyhT9xKKRj73fHi+IhsrB3W36wwk4I0iz8YlKHfdW14QDwerMA==}
+    dev: false
+
+  /libphonenumber-js/1.10.7:
+    resolution: {integrity: sha512-jZXLCCWMe1b/HXkjiLeYt2JsytZMcqH26jLFIdzFDFF0xvSUWrYKyvPlyPG+XJzEyKUFbcZxLdWGMwQsWaHDxQ==}
     dev: false
 
   /lilconfig/2.0.5:
@@ -10994,7 +11015,7 @@ packages:
     dev: false
 
   file:projects/hr-resources.tgz_1e3963ebf0ceeb25b2fa6a1cc87e253c:
-    resolution: {integrity: sha512-sYnkYAs2h/gH6VD8c6+QBHMemRZfIMVthpYzi1+TXliv/EmebzxdFyPCPjLbxgQxpq4mUwuMLlAusMIrmpVNrg==, tarball: file:projects/hr-resources.tgz}
+    resolution: {integrity: sha512-XEARExHSGYAtE9S/t40BikzGTpOvffiQ07PdMv7XooZao5H2Rq9INzFCfe78vORfpmR0qaR8EhxBHyyJQbJ5ng==, tarball: file:projects/hr-resources.tgz}
     id: file:projects/hr-resources.tgz
     name: '@rush-temp/hr-resources'
     version: 0.0.0
@@ -11656,7 +11677,7 @@ packages:
     dev: false
 
   file:projects/model-hr.tgz_typescript@4.7.2:
-    resolution: {integrity: sha512-HtAgUigvoyvjSpGUHwcRfTqM+RpMKyvDrieHpRBIvFans/2Kg3FPlacTHa9vhBilcze0pNBDrlSXyGuKMBLl8g==, tarball: file:projects/model-hr.tgz}
+    resolution: {integrity: sha512-N+3GtMbOYJZCiiIrw5lwGQ9tkHgePYpxLRtnZdCN15CkFY1hbFx55NeTDhp5rMq09FeWjxuBSSuXJyWu96rIMg==, tarball: file:projects/model-hr.tgz}
     id: file:projects/model-hr.tgz
     name: '@rush-temp/model-hr'
     version: 0.0.0
@@ -14472,12 +14493,13 @@ packages:
     dev: false
 
   file:projects/tool.tgz:
-    resolution: {integrity: sha512-gvdRnHRhzst5gkHEFg9GVc3D04b+BAks8qPdrVxHQSWvWiiUmh3kG+uNWQKklSa9rtRzlSHUrf6NvUvgEg2c5w==, tarball: file:projects/tool.tgz}
+    resolution: {integrity: sha512-JO6pn5WreSM6pO8MAbVM0lDk6nYKwfX7fLjfpcBv8AQ2C0ZHuGxbFGOA75Y1ccsq3fB4n35KMgBCUKnecCBZKQ==, tarball: file:projects/tool.tgz}
     name: '@rush-temp/tool'
     version: 0.0.0
     dependencies:
       '@elastic/elasticsearch': 7.17.0
       '@rushstack/heft': 0.45.5
+      '@types/email-addresses': 3.0.0
       '@types/heft-jest': 1.0.2
       '@types/mime-types': 2.1.1
       '@types/minio': 7.0.13
@@ -14490,6 +14512,7 @@ packages:
       commander: 8.3.0
       cross-env: 7.0.3
       csv-parse: 5.1.0
+      email-addresses: 5.0.0
       esbuild: 0.12.29
       eslint: 7.32.0
       eslint-config-standard-with-typescript: 21.0.1_99a5fe2f2ae1dc64d6b59974c931eb2a
@@ -14498,6 +14521,7 @@ packages:
       eslint-plugin-promise: 5.2.0_eslint@7.32.0
       fast-equals: 2.0.4
       got: 11.8.5
+      libphonenumber-js: 1.10.7
       mime-types: 2.1.35
       minio: 7.0.28
       mongodb: 4.6.0

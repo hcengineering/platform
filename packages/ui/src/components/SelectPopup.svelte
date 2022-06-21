@@ -49,9 +49,7 @@
       {#each value.filter((el) => (el.label ?? el.text ?? '').toLowerCase().includes(search.toLowerCase())) as item}
         <button
           class="menu-item"
-          on:click={() => {
-            dispatch('close', item.id)
-          }}
+          on:click={() => dispatch('close', item.id)}
           on:focus={() => dispatch('update', item)}
           on:mouseover={() => dispatch('update', item)}
         >

@@ -22,7 +22,6 @@
   import tracker from '../../../plugin'
   import { getIssueId } from '../../../utils'
   import Circles from '../../icons/Circles.svelte'
-  import ProjectEditor from '../../projects/ProjectEditor.svelte'
   import AssigneeEditor from '../AssigneeEditor.svelte'
   import DueDateEditor from '../DueDateEditor.svelte'
   import StatusEditor from '../StatusEditor.svelte'
@@ -132,13 +131,10 @@
       </span>
     </div>
     <div class="flex-center flex-no-shrink">
-      {#if issue.project !== null}
-        <ProjectEditor value={issue} />
-      {/if}
       {#if issue.dueDate !== null}
         <DueDateEditor value={issue} />
       {/if}
-      <AssigneeEditor value={issue} tooltipFill={false} />
+      <AssigneeEditor value={issue} />
     </div>
   </div>
 {/each}

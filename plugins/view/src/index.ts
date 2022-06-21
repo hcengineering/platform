@@ -38,6 +38,7 @@ import type { AnyComponent, AnySvelteComponent, PopupAlignment, PopupPosAlignmen
  * @public
  */
 export interface KeyFilter {
+  _class: Ref<Class<Doc>>
   key: string
   component: AnyComponent
   label: IntlString
@@ -49,7 +50,7 @@ export interface KeyFilter {
  */
 export interface FilterMode extends Doc {
   label: IntlString
-  result: Resource<(values: any[], onUpdate: () => void, index: number) => Promise<ObjQueryType<any>>>
+  result: Resource<(filter: Filter, onUpdate: () => void) => Promise<ObjQueryType<any>>>
 }
 
 /**
@@ -57,6 +58,7 @@ export interface FilterMode extends Doc {
  */
 export interface Filter {
   key: KeyFilter
+  nested?: Filter
   mode: Ref<FilterMode>
   modes: Ref<FilterMode>[]
   value: any[]
@@ -99,7 +101,8 @@ export interface CollectionEditor extends Class<Doc> {
  * @public
  */
 export interface ArrayEditor extends Class<Doc> {
-  inlineEditor: AnyComponent
+  editor?: AnyComponent
+  inlineEditor?: AnyComponent
 }
 
 /**
@@ -422,7 +425,8 @@ const view = plugin(viewId, {
     ArrowRight: '' as Asset,
     Views: '' as Asset,
     Pin: '' as Asset,
-    Model: '' as Asset
+    Model: '' as Asset,
+    ViewButton: '' as Asset
   },
   category: {
     General: '' as Ref<ActionCategory>,
@@ -431,13 +435,15 @@ const view = plugin(viewId, {
     Editor: '' as Ref<ActionCategory>,
     MarkdownFormatting: '' as Ref<ActionCategory>
   },
-  ids: {
+  filter: {
     FilterObjectIn: '' as Ref<FilterMode>,
     FilterObjectNin: '' as Ref<FilterMode>,
     FilterValueIn: '' as Ref<FilterMode>,
     FilterValueNin: '' as Ref<FilterMode>,
     FilterBefore: '' as Ref<FilterMode>,
-    FilterAfter: '' as Ref<FilterMode>
+    FilterAfter: '' as Ref<FilterMode>,
+    FilterNestedMatch: '' as Ref<FilterMode>,
+    FilterNestedDontMatch: '' as Ref<FilterMode>
   },
   popup: {
     PositionElementAlignment: '' as Resource<(e?: Event) => PopupAlignment | undefined>

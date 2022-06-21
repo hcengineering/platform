@@ -39,7 +39,8 @@
     "@types/ws": "^8.2.1",
     "@types/xml2js": "~0.4.9",
     "@types/mime-types": "~2.1.1",
-    "@types/request": "~2.48.8"
+    "@types/request": "~2.48.8",
+    "@types/email-addresses": "^3.0.0"
   },
   "dependencies": {
     "mongodb": "^4.1.1",
@@ -110,6 +111,8 @@
     "@anticrm/tags": "~0.6.2",
     "@anticrm/server-backup": "~0.6.0",
     "csv-parse": "~5.1.0",
-    "@anticrm/lead": "~0.6.0"
+    "@anticrm/lead": "~0.6.0",    
+    "email-addresses": "^5.0.0",
+    "libphonenumber-js": "^1.9.46"
   }
 }

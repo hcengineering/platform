@@ -13,33 +13,31 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Employee, EmployeeAccount } from '@anticrm/contact'
+  import { Employee } from '@anticrm/contact'
+  import { EmployeePresenter } from '@anticrm/contact-resources'
+  import contact from '@anticrm/contact-resources/src/plugin'
   import { Ref, SortingOrder, WithLookup } from '@anticrm/core'
-  import { Department, Staff } from '@anticrm/hr'
-  import { Avatar, createQuery, MessageBox, getClient, UsersPopup } from '@anticrm/presentation'
-  import { Scroller, Panel, Button, showPopup, eventToHTMLElement } from '@anticrm/ui'
-  import { createEventDispatcher } from 'svelte'
-  import StaffPresenter from './StaffPresenter.svelte'
+  import { Department, DepartmentMember, Staff } from '@anticrm/hr'
+  import { createQuery, getClient, MessageBox, UsersPopup } from '@anticrm/presentation'
+  import { CircleButton, eventToHTMLElement, IconAdd, Label, Scroller, showPopup } from '@anticrm/ui'
   import hr from '../plugin'
 
-  export let _id: Ref<Department> | undefined
+  export let objectId: Ref<Department> | undefined
   let value: Department | undefined
   let employees: WithLookup<Staff>[] = []
-  let accounts: EmployeeAccount[] = []
-
-  const dispatch = createEventDispatcher()
+  let accounts: DepartmentMember[] = []
 
   const departmentQuery = createQuery()
   const query = createQuery()
   const accountsQuery = createQuery()
   const client = getClient()
 
-  $: _id &&
+  $: objectId &&
     value === undefined &&
     departmentQuery.query(
       hr.class.Department,
       {
-        _id
+        _id: objectId
       },
       (res) => ([value] = res)
     )
@@ -48,7 +46,7 @@
     accountsQuery.query(
       contact.class.EmployeeAccount,
       {
-        _id: { $in: value.members as Ref<EmployeeAccount>[] }
+        _id: { $in: value.members }
       },
       (res) => {
         accounts = res
@@ -79,7 +77,7 @@
       UsersPopup,
       {
         _class: contact.class.Employee,
-        ignoreUsers: employees.filter((p) => p.department === _id).map((p) => p._id)
+        ignoreUsers: employees.filter((p) => p.department === objectId).map((p) => p._id)
       },
       eventToHTMLElement(e),
       addMember
@@ -87,7 +85,7 @@
   }
 
   async function addMember (employee: Employee | undefined): Promise<void> {
-    if (employee === undefined || value === undefined) {
+    if (employee === null || employee === undefined || value === undefined) {
       return
     }
 
@@ -131,32 +129,64 @@
   }
 </script>
 
-<Panel
-  isHeader={true}
-  isAside={false}
-  isFullSize
-  on:fullsize
-  on:close={() => {
-    dispatch('close')
-  }}
->
-  <svelte:fragment slot="title">
-    <div class="antiTitle icon-wrapper">
-      {#if value}
-        <div class="wrapped-icon"><Avatar size={'medium'} avatar={value.avatar} icon={hr.icon.Department} /></div>
-        <div class="title-wrapper">
-          <span class="wrapped-title">{value.name}</span>
-        </div>
-      {/if}
+<div class="container">
+  <div class="flex flex-between">
+    <div class="title"><Label label={contact.string.Members} /></div>
+    <CircleButton id={hr.string.AddEmployee} icon={IconAdd} size={'small'} selected on:click={add} />
+  </div>
+  {#if employees.length > 0}
+    <Scroller>
+      <table class="antiTable">
+        <thead class="scroller-thead">
+          <tr class="scroller-thead__tr">
+            <th><Label label={contact.string.Member} /></th>
+            <th><Label label={hr.string.Department} /></th>
+          </tr>
+        </thead>
+        <tbody>
+          {#each employees as value}
+            <tr class="antiTable-body__row">
+              <td><EmployeePresenter {value} /></td>
+              <td>
+                {#if value.$lookup?.department}
+                  {value.$lookup.department.name}
+                {/if}
+              </td>
+            </tr>
+          {/each}
+        </tbody>
+      </table>
+    </Scroller>
+  {:else}
+    <div class="flex-col-center mt-5 create-container">
+      <div class="text-sm content-dark-color mt-2">
+        <Label label={contact.string.NoMembers} />
+      </div>
+      <div class="text-sm">
+        <div class="over-underline" on:click={add}><Label label={contact.string.AddMember} /></div>
+      </div>
     </div>
-  </svelte:fragment>
-  <svelte:fragment slot="utils">
-    <Button label={hr.string.AddEmployee} kind={'primary'} on:click={add} />
-  </svelte:fragment>
+  {/if}
+</div>
 
-  <Scroller>
-    {#each employees as value}
-      <StaffPresenter {value} />
-    {/each}
-  </Scroller>
-</Panel>
+<style lang="scss">
+  .container {
+    display: flex;
+    flex-direction: column;
+
+    .title {
+      margin-right: 0.75rem;
+      font-weight: 500;
+      font-size: 1.25rem;
+      color: var(--theme-caption-color);
+    }
+  }
+
+  .create-container {
+    padding: 1rem;
+    color: var(--theme-caption-color);
+    background: var(--theme-bg-accent-color);
+    border: 1px solid var(--theme-bg-accent-color);
+    border-radius: 0.75rem;
+  }
+</style>

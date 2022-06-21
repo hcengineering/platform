@@ -13,22 +13,41 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Button, showPopup, Tooltip } from '@anticrm/ui'
+  import { Button, showPopup, IconDownOutline } from '@anticrm/ui'
   import { Viewlet } from '@anticrm/view'
   import ViewletSetting from './ViewletSetting.svelte'
   import view from '../plugin'
 
   export let viewlet: Viewlet | undefined
+
+  let btn: HTMLButtonElement
 </script>
 
 {#if viewlet}
-  <Tooltip label={view.string.CustomizeView}>
-    <Button
-      icon={view.icon.Setting}
-      kind={'transparent'}
-      on:click={() => {
-        showPopup(ViewletSetting, { viewlet })
-      }}
-    />
-  </Tooltip>
+  <Button
+    icon={view.icon.ViewButton}
+    kind={'secondary'}
+    size={'small'}
+    showTooltip={{ label: view.string.CustomizeView }}
+    bind:input={btn}
+    on:click={() => {
+      showPopup(ViewletSetting, { viewlet }, btn)
+    }}
+  >
+    <svelte:fragment slot="content">
+      <div class="flex-row-center clear-mins pointer-events-none">
+        <span class="text-sm font-medium">View</span>
+        <div class="icon"><IconDownOutline size={'full'} /></div>
+      </div>
+    </svelte:fragment>
+  </Button>
 {/if}
+
+<style lang="scss">
+  .icon {
+    margin-left: 0.25rem;
+    width: 0.875rem;
+    height: 0.875rem;
+    color: var(--content-color);
+  }
+</style>

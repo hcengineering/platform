@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { ScrollBox } from '@anticrm/ui'
+  import { Scroller } from '@anticrm/ui'
   import IssuesListBrowser from './IssuesListBrowser.svelte'
   import tracker from '../../plugin'
   import { Issue, IssueStatus, Team, ViewOptions } from '@anticrm/tracker'
@@ -63,16 +63,18 @@
   )
 </script>
 
-<ScrollBox vertical stretch>
-  <IssuesListBrowser
-    {_class}
-    {currentSpace}
-    {groupByKey}
-    orderBy={orderByKey}
-    {statuses}
-    {employees}
-    {categories}
-    itemsConfig={config}
-    {groupedIssues}
-  />
-</ScrollBox>
+<div class="w-full h-full clear-mins">
+  <Scroller tableFade={categories[0] !== undefined}>
+    <IssuesListBrowser
+      {_class}
+      {currentSpace}
+      {groupByKey}
+      orderBy={orderByKey}
+      {statuses}
+      {employees}
+      {categories}
+      itemsConfig={config}
+      {groupedIssues}
+    />
+  </Scroller>
+</div>

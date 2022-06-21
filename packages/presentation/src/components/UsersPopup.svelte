@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher, afterUpdate } from 'svelte'
   import { Contact, getFirstName, Person } from '@anticrm/contact'
   import type { Class, Doc, FindOptions, Ref } from '@anticrm/core'
   import type { Asset, IntlString } from '@anticrm/platform'
@@ -53,6 +54,10 @@
           }
         }
       : undefined
+
+  const dispatch = createEventDispatcher()
+
+  afterUpdate(() => dispatch('changeContent'))
 </script>
 
 <ObjectPopup
@@ -70,6 +75,7 @@
   create={_create}
   on:update
   on:close
+  on:changeContent={() => dispatch('changeContent')}
 >
   <svelte:fragment slot="item" let:item={person}>
     <div class="flex flex-grow overflow-label">

@@ -187,7 +187,6 @@
         value={newIssue}
         size="small"
         kind="no-border"
-        tooltipFill={false}
         on:change={({ detail }) => (newIssue.assignee = detail)}
       />
       <Component

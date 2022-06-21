@@ -20,6 +20,7 @@
   import tracker from '../../plugin'
 
   export let value: WithLookup<Issue>
+  export let kind: 'transparent' | 'primary' | 'link' | 'list' = 'primary'
 
   const client = getClient()
 
@@ -47,4 +48,5 @@
   dateMs={dueDateMs}
   shouldRender={shouldRenderPresenter}
   onDateChange={handleDueDateChanged}
+  {kind}
 />

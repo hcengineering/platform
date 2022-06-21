@@ -26,8 +26,7 @@
     getFocusManager,
     Label,
     showPopup,
-    Tooltip,
-    TooltipAlignment
+    LabelAndProps
   } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation from '..'
@@ -50,8 +49,8 @@
   export let size: ButtonSize = 'small'
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = undefined
-  export let labelDirection: TooltipAlignment | undefined = undefined
   export let focusIndex = -1
+  export let showTooltip: LabelAndProps | undefined = undefined
 
   export let create:
     | {
@@ -113,29 +112,28 @@
 
 <div bind:this={container} class="min-w-0" class:w-full={width === '100%'}>
   {#if kind !== 'link'}
-    <Tooltip {label} fill={width === '100%'} direction={labelDirection}>
-      <Button
-        {focusIndex}
-        icon={size === 'x-large' && selected ? undefined : icon}
-        width={width ?? 'min-content'}
-        {size}
-        {kind}
-        {justify}
-        on:click={_click}
-      >
-        <span slot="content" class="overflow-label disabled">
-          {#if selected}
-            {#if size === 'x-large'}
-              <UserInfo value={selected} size={'medium'} {icon} />
-            {:else}
-              {getName(selected)}
-            {/if}
+    <Button
+      {focusIndex}
+      icon={size === 'x-large' && selected ? undefined : icon}
+      width={width ?? 'min-content'}
+      {size}
+      {kind}
+      {justify}
+      {showTooltip}
+      on:click={_click}
+    >
+      <span slot="content" class="overflow-label disabled">
+        {#if selected}
+          {#if size === 'x-large'}
+            <UserInfo value={selected} size={'medium'} {icon} />
           {:else}
-            <Label {label} />
+            {getName(selected)}
           {/if}
-        </span>
-      </Button>
-    </Tooltip>
+        {:else}
+          <Label {label} />
+        {/if}
+      </span>
+    </Button>
   {:else}
     <Button
       {focusIndex}
@@ -144,6 +142,7 @@
       {size}
       {kind}
       {justify}
+      {showTooltip}
       on:click={_click}
     >
       <span slot="content" class="overflow-label disabled">

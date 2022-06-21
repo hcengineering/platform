@@ -13,7 +13,6 @@
 // limitations under the License.
 //
 
-import { ObjQueryType } from '@anticrm/core'
 import { Resources } from '@anticrm/platform'
 import { getEventPopupPositionElement, PopupAlignment } from '@anticrm/ui'
 import { actionImpl } from './actionImpl'
@@ -51,6 +50,16 @@ import TableBrowser from './components/TableBrowser.svelte'
 import TimestampPresenter from './components/TimestampPresenter.svelte'
 import UpDownNavigator from './components/UpDownNavigator.svelte'
 import ViewletSettingButton from './components/ViewletSettingButton.svelte'
+import {
+  afterResult,
+  beforeResult,
+  objectInResult,
+  objectNinResult,
+  valueInResult,
+  valueNinResult,
+  nestedMatchResult,
+  nestedDontMatchResult
+} from './filter'
 
 function PositionElementAlignment (e?: Event): PopupAlignment | undefined {
   return getEventPopupPositionElement(e)
@@ -63,7 +72,9 @@ export { default as FilterButton } from './components/filter/FilterButton.svelte
 export { default as LinkPresenter } from './components/LinkPresenter.svelte'
 export { default as ContextMenu } from './components/Menu.svelte'
 export { default as TableBrowser } from './components/TableBrowser.svelte'
+export { default as FixedColumn } from './components/FixedColumn.svelte'
 export * from './context'
+export * from './filter'
 export * from './selection'
 export {
   buildModel,
@@ -86,30 +97,6 @@ export {
   ViewletSettingButton,
   FilterBar,
   ClassAttributeBar
-}
-
-export async function objectInResult (res: any[]): Promise<ObjQueryType<any>> {
-  return { $in: res }
-}
-
-export async function objectNinResult (res: any[]): Promise<ObjQueryType<any>> {
-  return { $nin: res }
-}
-
-export async function valueInResult (res: any[]): Promise<ObjQueryType<any>> {
-  return { $in: res.map((p) => p[1]).flat() }
-}
-
-export async function valueNinResult (res: any[]): Promise<ObjQueryType<any>> {
-  return { $nin: res.map((p) => p[1]).flat() }
-}
-
-export async function beforeResult (res: any[]): Promise<ObjQueryType<any>> {
-  return { $lt: res[0] }
-}
-
-export async function afterResult (res: any[]): Promise<ObjQueryType<any>> {
-  return { $gt: res[0] }
 }
 
 export default async (): Promise<Resources> => ({
@@ -151,6 +138,8 @@ export default async (): Promise<Resources> => ({
     FilterValueInResult: valueInResult,
     FilterValueNinResult: valueNinResult,
     FilterBeforeResult: beforeResult,
-    FilterAfterResult: afterResult
+    FilterAfterResult: afterResult,
+    FilterNestedMatchResult: nestedMatchResult,
+    FilterNestedDontMatchResult: nestedDontMatchResult
   }
 })

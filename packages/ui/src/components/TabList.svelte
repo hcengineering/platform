@@ -15,11 +15,14 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import type { TabItem } from '../types'
-  import { Label, Icon } from '..'
+  import { Label, Icon, tooltip } from '..'
 
   export let selected: string | string[] = ''
   export let multiselect: boolean = false
   export let items: TabItem[]
+  export let kind: 'normal' | 'secondary' = 'normal'
+  export let short: boolean = false
+  export let size: 'small' | 'medium' = 'medium'
 
   const dispatch = createEventDispatcher()
 
@@ -32,14 +35,19 @@
     else if (selected === id) res = true
     return res
   }
+  const tabs: HTMLElement[] = []
 </script>
 
 {#if items.length > 0}
-  <div class="tablist-container">
-    {#each items as item}
+  <div class="tablist-container {kind} {size}">
+    {#each items as item, i}
       <div
+        bind:this={tabs[i]}
         class="button"
+        class:short
         class:selected={getSelected(item.id)}
+        data-view={item.tooltip}
+        use:tooltip={{ label: item.tooltip ?? undefined, element: tabs[i] ?? undefined }}
         on:click={() => {
           if (multiselect) {
             if (Array.isArray(selected)) {
@@ -52,17 +60,19 @@
         }}
       >
         {#if item.icon}
-          <div class="icon"><Icon icon={item.icon} size={'small'} /></div>
+          <div class="icon"><Icon icon={item.icon} size={size === 'small' ? 'x-small' : 'small'} /></div>
         {:else if item.color}
           <div class="color" style:background-color={item.color} />
         {/if}
-        <span class="overflow-label">
-          {#if item.label}
-            {item.label}
-          {:else if item.labelIntl}
-            <Label label={item.labelIntl} />
-          {/if}
-        </span>
+        {#if item.label || item.labelIntl}
+          <span class="overflow-label" class:ml-1-5={item.icon || item.color}>
+            {#if item.label}
+              {item.label}
+            {:else if item.labelIntl}
+              <Label label={item.labelIntl} />
+            {/if}
+          </span>
+        {/if}
       </div>
     {/each}
   </div>
@@ -73,39 +83,25 @@
     display: flex;
     align-items: center;
     width: fit-content;
-    background-color: var(--accent-bg-color);
-    border-radius: 0.5rem;
 
     .button {
       position: relative;
       display: inline-flex;
       justify-content: center;
       align-items: center;
-      padding: 0.25rem 0.75rem;
       width: fit-content;
-      height: 1.5rem;
-      min-height: 1.5rem;
+      min-height: 1.375rem;
       max-width: 12.5rem;
       font-weight: 500;
       font-size: 0.8125rem;
-      background-color: var(--accent-bg-color);
-      border: 1px solid transparent;
-      border-radius: calc(0.5rem - 1px);
       cursor: pointer;
       transition-property: background-color, color;
       transition-duration: 0.15s;
 
-      .icon {
-        margin-right: 0.375rem;
-      }
       .color {
-        margin-right: 0.375rem;
         width: 0.5rem;
         height: 0.5rem;
         border-radius: 0.25rem;
-      }
-      &:hover {
-        background-color: var(--button-bg-color);
       }
       &::before {
         position: absolute;
@@ -114,15 +110,70 @@
         height: 0.8rem;
         border-left: 1px solid var(--button-border-color);
       }
-      &.selected {
-        color: var(--caption-color);
-        background-color: var(--button-bg-color);
-        border-color: var(--button-border-color);
-        box-shadow: var(--accent-shadow);
-      }
     }
     .button:not(.selected) + .button:not(.selected)::before {
       content: '';
+    }
+
+    &.small {
+      .button {
+        padding: 0 0.5rem;
+      }
+      &.normal .button {
+        height: 1.5rem;
+      }
+      &.secondary .button {
+        height: 1.375rem;
+      }
+    }
+    &.medium .button {
+      height: 1.75rem;
+      padding: 0.25rem 0.75rem;
+      &.short {
+        padding: 0.5rem;
+      }
+    }
+    &.normal {
+      background-color: var(--accent-bg-color);
+      border-radius: 0.5rem;
+
+      .button {
+        background-color: var(--accent-bg-color);
+        border: 1px solid transparent;
+        border-radius: calc(0.5rem - 1px);
+
+        &:hover {
+          background-color: var(--button-bg-hover);
+        }
+        &.selected {
+          color: var(--caption-color);
+          background-color: var(--button-bg-color);
+          border-color: var(--button-border-color);
+          box-shadow: var(--accent-shadow);
+        }
+      }
+    }
+    &.secondary {
+      background-color: var(--button-bg-color);
+      border: 1px solid var(--button-border-color);
+      border-radius: 0.25rem;
+      box-shadow: var(--button-shadow);
+
+      .button {
+        background-color: transparent;
+        border-radius: calc(0.25rem - 1px);
+
+        &:hover {
+          color: var(--caption-color);
+        }
+        &.selected {
+          color: var(--caption-color);
+          background-color: var(--button-bg-hover);
+        }
+        &:not(:first-child) {
+          margin-left: 0.125rem;
+        }
+      }
     }
   }
 </style>

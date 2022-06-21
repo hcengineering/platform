@@ -27,7 +27,7 @@
     showPopup,
     Tooltip
   } from '@anticrm/ui'
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, afterUpdate } from 'svelte'
   import presentation from '..'
   import { createQuery, getClient } from '../utils'
 
@@ -156,20 +156,23 @@
   function toAny (obj: any): any {
     return obj
   }
+
+  afterUpdate(() => dispatch('changeContent'))
 </script>
 
 <FocusHandler {manager} />
 
 <div class="selectPopup" class:plainContainer={!shadows} class:width-40={width === 'large'} on:keydown={onKeydown}>
-  <div class="header flex-row-center flex-bletween p-1">
-    <div class="flex-grow">
-      <EditBox kind={'search-style'} focusIndex={1} focus bind:value={search} {placeholder} />
-    </div>
-
+  <div class="header flex-bletween">
+    <EditBox kind={'search-style'} focusIndex={1} focus bind:value={search} {placeholder} />
     {#if create !== undefined}
-      <Tooltip label={create.label}>
-        <Button focusIndex={2} kind={'transparent'} icon={IconAdd} on:click={onCreate} />
-      </Tooltip>
+      <Button
+        focusIndex={2}
+        kind={'transparent'}
+        icon={IconAdd}
+        showTooltip={{ label: create.label }}
+        on:click={onCreate}
+      />
     {/if}
   </div>
   <div class="scroll">

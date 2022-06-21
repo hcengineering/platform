@@ -55,6 +55,9 @@
 
     const typeClass = hierarchy.getClass(presenterClass.attrClass)
     const editorMixin = hierarchy.as(typeClass, mixinRef)
+    if (category === 'array' && editorMixin.inlineEditor === undefined) {
+      return
+    }
     editor = getResource(editorMixin.inlineEditor).catch((cause) => {
       console.error(`failed to find editor for ${_class} ${attribute} ${presenterClass.attrClass} cause: ${cause}`)
     })

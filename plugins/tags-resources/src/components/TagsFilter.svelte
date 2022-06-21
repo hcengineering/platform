@@ -22,18 +22,18 @@
   import { createEventDispatcher, onMount } from 'svelte'
   import tags from '../plugin'
   import { TagCategory, TagElement } from '@anticrm/tags'
-  import { TagFilterQuery } from '../utils'
+  import { FilterQuery } from '@anticrm/view-resources'
 
   export let _class: Ref<Class<Doc>>
   export let filter: Filter
   export let onChange: (e: Filter) => void
   filter.onRemove = () => {
-    TagFilterQuery.remove(filter.index)
+    FilterQuery.remove(filter.index)
   }
   const client = getClient()
   let selected: Ref<TagElement>[] = filter.value
 
-  filter.modes = [tags.ids.FilterTagsIn, tags.ids.FilterTagsNin]
+  filter.modes = [tags.filter.FilterTagsIn, tags.filter.FilterTagsNin]
   filter.mode = filter.mode === undefined ? filter.modes[0] : filter.mode
 
   let categories: TagCategory[] = []

@@ -17,17 +17,7 @@
   import { Class, Doc, FindOptions, getObjectValue, Ref, WithLookup } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
   import { Issue, IssueStatus, Team } from '@anticrm/tracker'
-  import {
-    Button,
-    CheckBox,
-    Component,
-    eventToHTMLElement,
-    IconAdd,
-    showPopup,
-    Spinner,
-    tooltip,
-    Tooltip
-  } from '@anticrm/ui'
+  import { Button, CheckBox, Component, eventToHTMLElement, IconAdd, showPopup, Spinner, tooltip } from '@anticrm/ui'
   import { AttributeModel, BuildModelKey } from '@anticrm/view'
   import { buildModel, getObjectPresenter, LoadingProps, Menu } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
@@ -35,6 +25,7 @@
   import { IssuesGroupByKeys, issuesGroupEditorMap, IssuesOrderByKeys, issuesSortOrderMap } from '../../utils'
   import CreateIssue from '../CreateIssue.svelte'
   import notification from '@anticrm/notification'
+  import { FixedColumn } from '@anticrm/view-resources'
 
   export let _class: Ref<Class<Doc>>
   export let currentSpace: Ref<Team> | undefined = undefined
@@ -150,13 +141,25 @@
 
     return props.length
   }
+
+  let varsStyle: string = ''
+  const propsWidth: Record<string, number> = { issue: 0 }
+  let itemModels: AttributeModel[]
+  $: buildModel({ client, _class, keys: itemsConfig, lookup: options.lookup }).then((res) => (itemModels = res))
+  $: if (propsWidth) {
+    varsStyle = ''
+    for (const key in propsWidth) varsStyle += `--fixed-${key}: ${propsWidth[key]}px;`
+  }
+  const checkWidth = (key: string, result: CustomEvent): void => {
+    if (result !== undefined) propsWidth[key] = result.detail
+  }
 </script>
 
-<div>
+<div class="issueslist-container" style={varsStyle}>
   {#each categories as category}
     {#if headerComponent || groupByKey === 'assignee'}
-      <div class="header categoryHeader flex-between label">
-        <div class="flex-row-center gap-2">
+      <div class="flex-between categoryHeader row">
+        <div class="flex-row-center gap-2 clear-mins">
           {#if groupByKey === 'assignee' && personPresenter}
             <svelte:component
               this={personPresenter.presenter}
@@ -165,7 +168,7 @@
               defaultName={tracker.string.NoAssignee}
               shouldShowPlaceholder={true}
               isInteractive={false}
-              avatarSize={'tiny'}
+              avatarSize={'x-small'}
             />
           {:else if headerComponent}
             <Component
@@ -174,185 +177,185 @@
                 isEditable: false,
                 shouldShowLabel: true,
                 value: groupByKey ? { [groupByKey]: category } : {},
-                statuses: groupByKey === 'status' ? statuses : undefined
+                statuses: groupByKey === 'status' ? statuses : undefined,
+                size: 'inline',
+                kind: 'list'
               }}
             />
           {/if}
-          <span class="eLabelCounter ml-2">{(groupedIssues[category] ?? []).length}</span>
+          <span class="text-md content-dark-color ml-2">{(groupedIssues[category] ?? []).length}</span>
         </div>
-        <div class="flex">
-          <Tooltip label={tracker.string.AddIssueTooltip} direction={'left'}>
-            <Button icon={IconAdd} kind={'transparent'} on:click={(event) => handleNewIssueAdded(event, category)} />
-          </Tooltip>
+        <div class="clear-mins" use:tooltip={{ label: tracker.string.AddIssueTooltip }}>
+          <Button icon={IconAdd} kind={'transparent'} on:click={(event) => handleNewIssueAdded(event, category)} />
         </div>
       </div>
     {/if}
-    {#await buildModel({ client, _class, keys: itemsConfig, lookup: options.lookup }) then itemModels}
-      <div class="listRoot">
-        {#if groupedIssues[category]}
-          {#each groupedIssues[category] as docObject (docObject._id)}
-            <div
-              bind:this={objectRefs[combinedGroupedIssues.findIndex((x) => x === docObject)]}
-              class="listGrid antiList__row"
-              class:checking={selectedObjectIdsSet.has(docObject._id)}
-              class:mListGridFixed={selectedRowIndex === combinedGroupedIssues.findIndex((x) => x === docObject)}
-              class:mListGridSelected={selectedRowIndex === combinedGroupedIssues.findIndex((x) => x === docObject)}
-              on:contextmenu|preventDefault={(event) =>
-                handleMenuOpened(
-                  event,
-                  docObject,
-                  combinedGroupedIssues.findIndex((x) => x === docObject)
-                )}
-              on:focus={() => {}}
-              on:mouseover={() => handleRowFocused(docObject)}
-            >
-              <div class="contentWrapper">
-                <div
-                  class="flex-center relative"
-                  use:tooltip={{ label: tracker.string.SelectIssue, direction: 'bottom' }}
-                >
-                  <div class="antiList-cells__notifyCell">
-                    <div class="antiList-cells__checkCell">
-                      <CheckBox
-                        checked={selectedObjectIdsSet.has(docObject._id)}
-                        on:value={(event) => {
-                          onObjectChecked([docObject], event.detail)
-                        }}
-                      />
-                    </div>
-                    <Component
-                      is={notification.component.NotificationPresenter}
-                      props={{ value: docObject, kind: 'table' }}
-                    />
-                  </div>
+    {#if itemModels}
+      {#if groupedIssues[category]}
+        {#each groupedIssues[category] as docObject (docObject._id)}
+          <div
+            bind:this={objectRefs[combinedGroupedIssues.findIndex((x) => x === docObject)]}
+            class="listGrid antiList__row row gap-2"
+            class:checking={selectedObjectIdsSet.has(docObject._id)}
+            class:mListGridFixed={selectedRowIndex === combinedGroupedIssues.findIndex((x) => x === docObject)}
+            class:mListGridSelected={selectedRowIndex === combinedGroupedIssues.findIndex((x) => x === docObject)}
+            on:contextmenu|preventDefault={(event) =>
+              handleMenuOpened(
+                event,
+                docObject,
+                combinedGroupedIssues.findIndex((x) => x === docObject)
+              )}
+            on:focus={() => {}}
+            on:mouseover={() => handleRowFocused(docObject)}
+          >
+            <div class="flex-center relative" use:tooltip={{ label: tracker.string.SelectIssue, direction: 'bottom' }}>
+              <div class="antiList-cells__notifyCell">
+                <div class="antiList-cells__checkCell">
+                  <CheckBox
+                    checked={selectedObjectIdsSet.has(docObject._id)}
+                    on:value={(event) => {
+                      onObjectChecked([docObject], event.detail)
+                    }}
+                  />
                 </div>
-                {#each itemModels as attributeModel, attributeModelIndex}
-                  {#if attributeModelIndex === 0}
-                    <div class="priorityPresenter">
-                      <svelte:component
-                        this={attributeModel.presenter}
-                        value={getObjectValue(attributeModel.key, docObject) ?? ''}
-                        width="100%"
-                        {...attributeModel.props}
-                      />
-                    </div>
-                  {:else if attributeModelIndex === 1}
-                    <div class="issuePresenter">
-                      <svelte:component
-                        this={attributeModel.presenter}
-                        value={getObjectValue(attributeModel.key, docObject) ?? ''}
-                        {...attributeModel.props}
-                      />
-                    </div>
-                  {:else if attributeModelIndex === 3}
+                <Component
+                  is={notification.component.NotificationPresenter}
+                  props={{ value: docObject, kind: 'table' }}
+                />
+              </div>
+            </div>
+            {#each itemModels as attributeModel, attributeModelIndex}
+              {#if attributeModelIndex === 0}
+                <div class="priorityPresenter">
+                  <svelte:component
+                    this={attributeModel.presenter}
+                    value={getObjectValue(attributeModel.key, docObject) ?? ''}
+                    {...attributeModel.props}
+                  />
+                </div>
+              {:else if attributeModelIndex === 1}
+                <div class="issuePresenter">
+                  <FixedColumn
+                    width={propsWidth.issue}
+                    key={'issue'}
+                    justify={'left'}
+                    on:update={(result) => checkWidth('issue', result)}
+                  >
                     <svelte:component
                       this={attributeModel.presenter}
                       value={getObjectValue(attributeModel.key, docObject) ?? ''}
                       {...attributeModel.props}
                     />
-                    <div class="filler" />
-                  {:else}
-                    <div class="gridElement">
-                      <svelte:component
-                        this={attributeModel.presenter}
-                        value={getObjectValue(attributeModel.key, docObject) ?? ''}
-                        issueId={docObject._id}
-                        width="100%"
-                        {...attributeModel.props}
-                      />
-                    </div>
-                  {/if}
-                {/each}
-              </div>
-            </div>
-          {/each}
-        {:else if loadingProps !== undefined}
-          {#each Array(getLoadingElementsLength(loadingProps, options)) as _, rowIndex}
-            <div class="listGrid" class:fixed={rowIndex === selectedRowIndex}>
-              <div class="contentWrapper">
+                  </FixedColumn>
+                </div>
+              {:else if attributeModelIndex === 3}
+                <svelte:component
+                  this={attributeModel.presenter}
+                  value={getObjectValue(attributeModel.key, docObject) ?? ''}
+                  {...attributeModel.props}
+                />
+                <div class="grow-cell" />
+              {:else if attributeModel.props?.fixed}
+                <FixedColumn
+                  width={propsWidth[attributeModel.key]}
+                  key={attributeModel.key}
+                  justify={attributeModel.props.fixed}
+                  on:update={(result) => checkWidth(attributeModel.key, result)}
+                >
+                  <svelte:component
+                    this={attributeModel.presenter}
+                    value={getObjectValue(attributeModel.key, docObject) ?? ''}
+                    {...attributeModel.props}
+                  />
+                </FixedColumn>
+              {:else}
                 <div class="gridElement">
-                  <CheckBox checked={false} />
-                  <div class="ml-4">
-                    <Spinner size="small" />
-                  </div>
+                  <svelte:component
+                    this={attributeModel.presenter}
+                    value={getObjectValue(attributeModel.key, docObject) ?? ''}
+                    issueId={docObject._id}
+                    {...attributeModel.props}
+                  />
+                </div>
+              {/if}
+            {/each}
+          </div>
+        {/each}
+      {:else if loadingProps !== undefined}
+        {#each Array(getLoadingElementsLength(loadingProps, options)) as _, rowIndex}
+          <div class="listGrid row" class:fixed={rowIndex === selectedRowIndex}>
+            <div class="flex-center clear-mins h-full">
+              <div class="gridElement">
+                <CheckBox checked={false} />
+                <div class="ml-4">
+                  <Spinner size="small" />
                 </div>
               </div>
             </div>
-          {/each}
-        {/if}
-      </div>
-    {/await}
+          </div>
+        {/each}
+      {/if}
+    {/if}
   {/each}
 </div>
 
 <style lang="scss">
-  .categoryHeader {
-    height: 2.5rem;
-    background-color: var(--theme-table-bg-hover);
-    padding-left: 2.25rem;
-    padding-right: 1.35rem;
-  }
-
-  .label {
-    font-weight: 500;
-    color: var(--theme-caption-color);
-    .eLabelCounter {
-      opacity: 0.8;
-      font-weight: initial;
-    }
-  }
-
-  .listRoot {
-    width: 100%;
-  }
-
-  .contentWrapper {
+  .issueslist-container {
+    position: relative;
     display: flex;
-    align-items: center;
-    height: 100%;
-    padding-left: 0.75rem;
-    padding-right: 1.15rem;
+    flex-direction: column;
+    width: 100%;
+    height: max-content;
+    min-width: auto;
+    min-height: auto;
+  }
+  .categoryHeader {
+    position: sticky;
+    top: 0;
+    padding: 0 1.5rem 0 2.25rem;
+    height: 2.5rem;
+    min-height: 2.5rem;
+    min-width: 0;
+    background-color: var(--body-accent);
+    z-index: 5;
+  }
+
+  .row:not(:last-child) {
+    border-bottom: 1px solid var(--accent-bg-color);
   }
 
   .listGrid {
+    display: flex;
+    align-items: center;
+    padding: 0 1.5rem 0 0.875rem;
     width: 100%;
-    height: 3.25rem;
+    height: 2.75rem;
+    min-height: 2.75rem;
     color: var(--theme-caption-color);
-    border-bottom: 1px solid var(--theme-button-border-hovered);
 
     &.checking {
-      background-color: var(--theme-table-bg-hover);
+      background-color: var(--highlight-select);
+      border-bottom-color: var(--highlight-select);
+
+      &:hover {
+        background-color: var(--highlight-select-hover);
+        border-bottom-color: var(--highlight-select-hover);
+      }
     }
 
     &.mListGridSelected {
-      background-color: var(--menu-bg-select);
+      background-color: var(--highlight-hover);
     }
   }
 
-  .filler {
-    display: flex;
-    flex-grow: 1;
-  }
-
-  .gridElement {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    margin-left: 0.5rem;
-
-    &:first-child {
-      margin-left: 0;
-    }
-  }
-
-  .priorityPresenter {
-    padding-left: 0.65rem;
-  }
-
+  .priorityPresenter,
   .issuePresenter {
-    display: flex;
-    align-items: center;
+    min-width: 0;
+    min-height: 0;
+  }
+  .grow-cell {
+    flex-grow: 1;
     flex-shrink: 0;
-    // width: 5.5rem;
+    min-width: 0;
   }
 </style>

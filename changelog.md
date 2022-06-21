@@ -1,6 +1,8 @@
 # Changelog
 
-## 0.6.28 (upcoming)
+## 0.6.29 (upcoming)
+
+## 0.6.28
 
 Core:
 
@@ -11,12 +13,14 @@ Tracker:
 - Issue state history.
 - Subissue issue popup.
 - Label support
+- Priority filter
 
 Lead:
 
 - Lead presentation changed to number.
 - Title column for leads.
 - Fix New Lead action for Organization.
+- Duplicate Organization detection
 
 ## 0.6.27
 
