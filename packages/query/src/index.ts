@@ -20,7 +20,6 @@ import core, {
   Client,
   Doc,
   DocumentQuery,
-  DocumentUpdate,
   FindOptions,
   findProperty,
   FindResult,
@@ -407,13 +406,13 @@ export class LiveQuery extends TxProcessor implements Client {
         if (Array.isArray(value)) {
           let index = value.findIndex((p) => p._id === tx.objectId)
           if (this.client.getHierarchy().isDerived(tx.objectClass, core.class.AttachedDoc)) {
-            const { attachedTo } = tx.operations as DocumentUpdate<AttachedDoc>
-            if (attachedTo !== undefined && (reverseLookupKey === undefined || reverseLookupKey === 'attachedTo')) {
-              if (index !== -1 && attachedTo !== obj._id) {
+            if (reverseLookupKey !== undefined) {
+              const reverseLookupValue = (tx.operations as any)[reverseLookupKey]
+              if (index !== -1 && reverseLookupValue !== obj._id) {
                 value.splice(index, 1)
                 index = -1
                 needCallback = true
-              } else if (index === -1 && attachedTo === obj._id) {
+              } else if (index === -1 && reverseLookupValue === obj._id) {
                 const doc = await this.client.findOne(tx.objectClass, { _id: tx.objectId })
                 value.push(doc)
                 index = value.length - 1
@@ -641,10 +640,7 @@ export class LiveQuery extends TxProcessor implements Client {
         const value = getObjectValue('$lookup.' + key, obj)
         if (Array.isArray(value)) {
           if (this.client.getHierarchy().isDerived(doc._class, core.class.AttachedDoc)) {
-            if (
-              (doc as AttachedDoc).attachedTo === obj._id &&
-              (reverseLookupKey === undefined || reverseLookupKey === 'attachedTo')
-            ) {
+            if ((reverseLookupKey !== undefined) && (doc as any)[reverseLookupKey] === obj._id) {
               value.push(doc)
               needCallback = true
             }
@@ -743,7 +739,7 @@ export class LiveQuery extends TxProcessor implements Client {
     if (lookup._id !== undefined) {
       for (const key in lookup._id) {
         const value = (lookup._id as any)[key]
-        const [valueClass, reverseLookupKey] = Array.isArray(value) ? value : [value]
+        const [valueClass, reverseLookupKey] = Array.isArray(value) ? value : [value, 'attachedTo']
         const clazz = hierarchy.isMixin(valueClass) ? hierarchy.getBaseClass(valueClass) : valueClass
         if (hierarchy.isDerived(_class, clazz)) {
           result.push([parent, key, reverseLookupKey])
