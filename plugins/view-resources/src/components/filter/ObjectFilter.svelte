@@ -13,16 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class,Doc,FindResult,getObjectValue,Ref,RefTo,SortingOrder } from '@anticrm/core'
+  import { Class, Doc, FindResult, getObjectValue, Ref, RefTo, SortingOrder } from '@anticrm/core'
   import { translate } from '@anticrm/platform'
-  import presentation,{ getClient } from '@anticrm/presentation'
+  import presentation, { getClient } from '@anticrm/presentation'
   import type { State } from '@anticrm/task'
   import task from '@anticrm/task'
-  import ui,{ Button,CheckBox,Label,Loading } from '@anticrm/ui'
+  import ui, { Button, CheckBox, Label, Loading } from '@anticrm/ui'
   import { Filter } from '@anticrm/view'
-  import { createEventDispatcher,onMount } from 'svelte'
+  import { createEventDispatcher, onMount } from 'svelte'
   import view from '../../plugin'
-  import { buildConfigLookup,getPresenter } from '../../utils'
+  import { buildConfigLookup, getPresenter } from '../../utils'
 
   export let _class: Ref<Class<Doc>>
   export let filter: Filter

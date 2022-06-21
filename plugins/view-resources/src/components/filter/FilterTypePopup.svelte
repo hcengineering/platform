@@ -155,7 +155,9 @@
       _class: targetClass,
       index: index,
       target,
-      onChange: (e: Filter | undefined) => { setNestedFilter(type, e) }
+      onChange: (e: Filter | undefined) => {
+        setNestedFilter(type, e)
+      }
     }
   }
 </script>
