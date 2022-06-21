@@ -10207,7 +10207,7 @@ packages:
     dev: false
 
   file:projects/automation-resources.tgz_1e3963ebf0ceeb25b2fa6a1cc87e253c:
-    resolution: {integrity: sha512-e+PE8/gHNv1lkqZwPjH1eBLKwSLOWtJ79gP5cvVMib31yrLZRe8u+0mMGPSlCi/F+1Ok4atJXfyTowgEFGZRTQ==, tarball: file:projects/automation-resources.tgz}
+    resolution: {integrity: sha512-Ee3vgtig0qsuUIGOvSOXAinzXLSHF0MUTGqbMCqkDt6H5CZhwrqZHfPpgaBozXHOIV3HVnZ1gxQam4cMo2dTNw==, tarball: file:projects/automation-resources.tgz}
     id: file:projects/automation-resources.tgz
     name: '@rush-temp/automation-resources'
     version: 0.0.0
@@ -11528,7 +11528,7 @@ packages:
     dev: false
 
   file:projects/model-all.tgz_typescript@4.7.2:
-    resolution: {integrity: sha512-VrR3QpQKo2qizq7xi/uS9Jj+OyrB/mPDLnAc8/pvwEx8jF5PwySSsP63uSNGcO3fwv7ZjZvAiuvEnaIHUZ5Ivg==, tarball: file:projects/model-all.tgz}
+    resolution: {integrity: sha512-cqTW87WKHFYNzT4PSJJesrbiXrMIUP7byOo6OubKKnXsRltLG/aUWj+v24tg4gOX0vLk+/HsZ/pLS0fqXJ5RuQ==, tarball: file:projects/model-all.tgz}
     id: file:projects/model-all.tgz
     name: '@rush-temp/model-all'
     version: 0.0.0
@@ -11578,7 +11578,7 @@ packages:
     dev: false
 
   file:projects/model-automation.tgz_typescript@4.7.2:
-    resolution: {integrity: sha512-Q1/l8i7CIGg29mcOLCTsX7f19HkyF7/kBGo+9uR/1PRfQ4eGrj6ZI6UyRtw17j/DoBA7Tw2EZwiyHBmcQNzaaQ==, tarball: file:projects/model-automation.tgz}
+    resolution: {integrity: sha512-V/knMbpqayHquNsaGCVgZDR6RVCglOkJFlko9UswT+4t8LeDTN5aBFjupz+XDenoXt3BVNrqyIoPE95u87fYWw==, tarball: file:projects/model-automation.tgz}
     id: file:projects/model-automation.tgz
     name: '@rush-temp/model-automation'
     version: 0.0.0
@@ -11601,7 +11601,7 @@ packages:
     dev: false
 
   file:projects/model-board.tgz_typescript@4.7.2:
-    resolution: {integrity: sha512-BDGUx3OP3/eowFfmRWMZnFcAj9Oa6orfKBNrYh6F2lqKhBeDwBGvdSYurtm2n4/ISaK0bZaSgM0reRKn63oDsA==, tarball: file:projects/model-board.tgz}
+    resolution: {integrity: sha512-SChn62gAEcqTy7E0oX/2zY2kMaLuE+GzeUHahQMC+Ev1Z2uj5SdkjL3P1wBnKk9+RnN/v54UuFhmw1feVBwRCw==, tarball: file:projects/model-board.tgz}
     id: file:projects/model-board.tgz
     name: '@rush-temp/model-board'
     version: 0.0.0
@@ -12958,7 +12958,7 @@ packages:
     dev: false
 
   file:projects/prod.tgz_d1c3762ecb2c185353d3f02936f6ec22:
-    resolution: {integrity: sha512-Ruj8noHdrzO1bGVEYxLSgza5VdloFea3VbtIutq8UnZThqIzyBmJRsEo1lLmN5WAKBW50oEBKsKDZxuXB/ZuYQ==, tarball: file:projects/prod.tgz}
+    resolution: {integrity: sha512-lLcDC0hOQAwp7ZoxN75OI6FScb/VuSQTMzGyBTxk1VP46pQnGe3U6vjcNK18oc7Sesuk6kcb7Uot65tWgB01eg==, tarball: file:projects/prod.tgz}
     id: file:projects/prod.tgz
     name: '@rush-temp/prod'
     version: 0.0.0
