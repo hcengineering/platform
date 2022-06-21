@@ -381,10 +381,19 @@ export function getFiltredKeys (
   return filterKeys(hierarchy, keys, ignoreKeys)
 }
 
-export function collectionsFilter (hierarchy: Hierarchy, keys: KeyedAttribute[], get: boolean): KeyedAttribute[] {
+export function collectionsFilter (
+  hierarchy: Hierarchy,
+  keys: KeyedAttribute[],
+  get: boolean,
+  include: string[]
+): KeyedAttribute[] {
   const result: KeyedAttribute[] = []
   for (const key of keys) {
-    if (isCollectionAttr(hierarchy, key) === get) result.push(key)
+    if (include.includes(key.key)) {
+      result.push(key)
+    } else if (isCollectionAttr(hierarchy, key) === get) {
+      result.push(key)
+    }
   }
   return result
 }

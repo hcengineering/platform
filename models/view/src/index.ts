@@ -118,7 +118,8 @@ export class TCollectionEditor extends TClass implements CollectionEditor {
 
 @Mixin(view.mixin.ArrayEditor, core.class.Class)
 export class TArrayEditor extends TClass implements ArrayEditor {
-  inlineEditor!: AnyComponent
+  inlineEditor?: AnyComponent
+  editor?: AnyComponent
 }
 
 @Mixin(view.mixin.AttributePresenter, core.class.Class)

@@ -19,24 +19,18 @@
   import CreateDepartment from './CreateDepartment.svelte'
   import DepartmentCard from './DepartmentCard.svelte'
   import hr from '../plugin'
-  import { IconAdd, IconMoreV, Button, eventToHTMLElement, Label, showPopup, ActionIcon } from '@anticrm/ui'
+  import { IconAdd, IconMoreV, Button, eventToHTMLElement, Label, showPopup, showPanel } from '@anticrm/ui'
   import contact, { Employee } from '@anticrm/contact'
   import { EmployeePresenter } from '@anticrm/contact-resources'
-  import DepartmentStaff from './DepartmentStaff.svelte'
   import { Menu } from '@anticrm/view-resources'
+  import view from '@anticrm/view'
 
   export let value: WithLookup<Department>
   export let descendants: Map<Ref<Department>, WithLookup<Department>[]>
 
   $: currentDescendants = descendants.get(value._id) ?? []
-  let expand = false
 
   const client = getClient()
-
-  function toggle () {
-    if (currentDescendants.length === 0) return
-    expand = !expand
-  }
 
   async function changeLead (result: Employee | null | undefined): Promise<void> {
     if (result === undefined) {
@@ -50,6 +44,8 @@
   }
 
   function openLeadEditor (event: MouseEvent) {
+    event?.preventDefault()
+    event?.stopPropagation()
     showPopup(
       UsersPopup,
       {
@@ -64,13 +60,7 @@
   }
 
   function createChild (e: MouseEvent) {
-    showPopup(CreateDepartment, { space: value._id }, eventToHTMLElement(e), (res) => {
-      if (res && !expand) expand = true
-    })
-  }
-
-  function editMembers (e: MouseEvent) {
-    showPopup(DepartmentStaff, { _id: value._id }, 'float')
+    showPopup(CreateDepartment, { space: value._id }, eventToHTMLElement(e))
   }
 
   function showMenu (e: MouseEvent) {
@@ -82,29 +72,30 @@
       }
     )
   }
+
+  function edit (e: MouseEvent): void {
+    showPanel(view.component.EditDoc, value._id, value._class, 'content')
+  }
 </script>
 
 <div class="flex-center w-full px-4">
   <div
     class="w-full mt-2 mb-2 container flex"
     class:cursor-pointer={currentDescendants.length}
-    on:click|stopPropagation={toggle}
+    on:click|stopPropagation={edit}
     on:contextmenu|preventDefault={showMenu}
   >
-    {#if currentDescendants.length}
-      <div class="verticalDivider" />
-      <div class="verticalDivider" />
-    {/if}
     <div class="flex-between pt-4 pb-4 pr-4 pl-2 w-full">
       <div class="flex-center">
+        <div class="mr-2">
+          <Button icon={IconAdd} on:click={createChild} />
+        </div>
         <Avatar size={'medium'} avatar={value.avatar} icon={hr.icon.Department} />
         <div class="flex-row ml-2">
           <div class="fs-title">
             {value.name}
           </div>
-          <div class="cursor-pointer" on:click|stopPropagation={editMembers}>
-            <Label label={hr.string.MemberCount} params={{ count: value.members.length }} />
-          </div>
+          <Label label={hr.string.MemberCount} params={{ count: value.members.length }} />
         </div>
       </div>
       <div class="flex-center mr-2">
@@ -122,30 +113,21 @@
             onEmployeeEdit={openLeadEditor}
           />
         </div>
-        <Button icon={IconAdd} on:click={createChild} />
-        <ActionIcon icon={IconMoreV} size={'medium'} action={showMenu} />
+        <Button icon={IconMoreV} kind={'transparent'} on:click={showMenu} />
       </div>
     </div>
   </div>
 </div>
-{#if expand && currentDescendants.length}
-  <div class="ml-8">
-    {#each descendants.get(value._id) ?? [] as nested}
-      <DepartmentCard value={nested} {descendants} />
-    {/each}
-  </div>
-{/if}
+<div class="ml-8">
+  {#each currentDescendants as nested}
+    <DepartmentCard value={nested} {descendants} />
+  {/each}
+</div>
 
 <style lang="scss">
   .container {
     border-radius: 0.5rem;
     border: 1px solid var(--theme-zone-border);
     background-color: var(--board-card-bg-color);
-  }
-
-  .verticalDivider {
-    width: 1px;
-    margin-left: 0.125rem;
-    background-color: var(--theme-zone-border);
   }
 </style>
