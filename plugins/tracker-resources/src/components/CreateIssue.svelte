@@ -303,6 +303,7 @@
         value={object}
         size="small"
         kind="no-border"
+        width={'min-content'}
         on:change={({ detail }) => (currentAssignee = detail)}
       />
       <Component

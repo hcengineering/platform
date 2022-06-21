@@ -163,7 +163,7 @@
 <FocusHandler {manager} />
 
 <div class="selectPopup" class:plainContainer={!shadows} class:width-40={width === 'large'} on:keydown={onKeydown}>
-  <div class="header flex-bletween">
+  <div class="header flex-between">
     <EditBox kind={'search-style'} focusIndex={1} focus bind:value={search} {placeholder} />
     {#if create !== undefined}
       <Button
