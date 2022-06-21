@@ -34,12 +34,12 @@ import { getRefs } from './utils'
 import { Filter } from '@anticrm/view'
 
 export async function tagsInResult (filter: Filter, onUpdate: () => void): Promise<ObjQueryType<any>> {
-  const result = await getRefs(filter.value, onUpdate, filter.index)
+  const result = await getRefs(filter, onUpdate)
   return { $in: result }
 }
 
 export async function tagsNinResult (filter: Filter, onUpdate: () => void): Promise<ObjQueryType<any>> {
-  const result = await getRefs(filter.value, onUpdate, filter.index)
+  const result = await getRefs(filter, onUpdate)
   return { $nin: result }
 }
 
