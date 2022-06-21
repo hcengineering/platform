@@ -1347,7 +1347,7 @@
       "packageName": "@anticrm/model-automation",
       "projectFolder": "models/automation",
       "shouldPublish": true
-    }
+    },
     {
       "packageName": "@anticrm/hr",
       "projectFolder": "plugins/hr",
