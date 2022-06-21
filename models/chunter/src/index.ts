@@ -22,6 +22,7 @@ import type {
   Comment,
   DirectMessage,
   Message,
+  Reaction,
   SavedMessages,
   ThreadMessage
 } from '@anticrm/chunter'
@@ -90,6 +91,9 @@ export class TChunterMessage extends TAttachedDoc implements ChunterMessage {
 
   @Prop(TypeTimestamp(), chunter.string.Edit)
   editedOn?: Timestamp
+
+  @Prop(Collection(chunter.class.Reaction), chunter.string.Reactions)
+  reactions?: number
 }
 
 @Model(chunter.class.ThreadMessage, chunter.class.ChunterMessage)
@@ -112,6 +116,18 @@ export class TMessage extends TChunterMessage implements Message {
 
   @Prop(TypeTimestamp(), chunter.string.LastReply)
   lastReply?: Timestamp
+}
+
+@Model(chunter.class.Reaction, core.class.AttachedDoc, DOMAIN_CHUNTER)
+export class TReaction extends TAttachedDoc implements Reaction {
+  @Prop(TypeString(), chunter.string.Emoji)
+  emoji!: string
+
+  @Prop(TypeRef(core.class.Account), chunter.string.CreateBy)
+  createBy!: Ref<Account>
+
+  declare attachedTo: Ref<ChunterMessage>
+  declare attachedToClass: Ref<Class<ChunterMessage>>
 }
 
 @Model(chunter.class.Comment, core.class.AttachedDoc, DOMAIN_COMMENT)
@@ -148,7 +164,8 @@ export function createModel (builder: Builder): void {
     TComment,
     TBacklink,
     TDirectMessage,
-    TSavedMessages
+    TSavedMessages,
+    TReaction
   )
   const spaceClasses = [chunter.class.Channel, chunter.class.DirectMessage]
 

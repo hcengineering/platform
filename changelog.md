@@ -5,6 +5,11 @@
 Tracker:
 
 - Remember view options 
+- 
+Chunter:
+
+- Reactions on messages
+
 ## 0.6.28
 
 Core:

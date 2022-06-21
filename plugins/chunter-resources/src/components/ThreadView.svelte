@@ -71,7 +71,7 @@
   const lastViews = notificationClient.getLastViews()
 
   const lookup = {
-    _id: { attachments: attachment.class.Attachment },
+    _id: { attachments: attachment.class.Attachment, reactions: chunter.class.Reaction },
     createBy: core.class.Account
   }
 
@@ -97,7 +97,7 @@
       },
       {
         lookup: {
-          _id: { attachments: attachment.class.Attachment },
+          _id: { attachments: attachment.class.Attachment, reactions: chunter.class.Reaction },
           createBy: core.class.Account
         }
       }
