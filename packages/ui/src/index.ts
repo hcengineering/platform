@@ -13,7 +13,6 @@
 // limitations under the License.
 //
 
-
 import { addLocation, addStringsLoader } from '@anticrm/platform'
 import { SvelteComponent } from 'svelte'
 import { readable } from 'svelte/store'
