@@ -13,10 +13,7 @@ export function getTagStyle (color: string, selected = false): string {
   `
 }
 
-export async function getRefs (
-  filter: Filter,
-  onUpdate: () => void
-): Promise<Array<Ref<Doc>>> {
+export async function getRefs (filter: Filter, onUpdate: () => void): Promise<Array<Ref<Doc>>> {
   const lq = FilterQuery.getLiveQuery(filter.index)
   const promise = new Promise<Array<Ref<Doc>>>((resolve, reject) => {
     const refresh = lq.query(
