@@ -2,6 +2,10 @@
 
 ## 0.6.29 (upcoming)
 
+Chunter:
+
+- Reactions on messages
+
 ## 0.6.28
 
 Core:

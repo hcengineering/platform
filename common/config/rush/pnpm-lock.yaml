@@ -243,6 +243,7 @@ specifiers:
   dotenv-webpack: ^7.0.2
   elastic-apm-node: ~3.26.0
   email-addresses: ^5.0.0
+  emoji-regex: ^10.1.0
   esbuild: ^0.12.26
   eslint: ^7.32.0
   eslint-config-standard-with-typescript: ^21.0.1
@@ -543,6 +544,7 @@ dependencies:
   dotenv-webpack: 7.1.0_webpack@5.73.0
   elastic-apm-node: 3.26.0
   email-addresses: 5.0.0
+  emoji-regex: 10.1.0
   esbuild: 0.12.29
   eslint: 7.32.0
   eslint-config-standard-with-typescript: 21.0.1_99a5fe2f2ae1dc64d6b59974c931eb2a
@@ -565,7 +567,7 @@ dependencies:
   koa-bodyparser: 4.3.0
   koa-router: 10.1.1
   lexorank: 1.0.4
-  libphonenumber-js: 1.10.6
+  libphonenumber-js: 1.10.7
   mime-types: 2.1.35
   mini-css-extract-plugin: 2.6.0_webpack@5.73.0
   minio: 7.0.28
@@ -4485,8 +4487,24 @@ packages:
     engines: {node: '>=10'}
     dev: false
 
+  /emoji-name-map/1.2.9:
+    resolution: {integrity: sha512-MSM8y6koSqh/2uEMI2VoKA+Ac0qL5RkgFGP/pzL6n5FOrOJ7FOZFxgs7+uNpqA+AT+WmdbMPXkd3HnFXXdz4AA==}
+    dependencies:
+      emojilib: 2.4.0
+      iterate-object: 1.3.4
+      map-o: 2.0.10
+    dev: false
+
+  /emoji-regex/10.1.0:
+    resolution: {integrity: sha512-xAEnNCT3w2Tg6MA7ly6QqYJvEoY1tm9iIjJ3yMKK9JPlWuRHAMoe5iETwQnx3M9TVbFMfsrBgWKR+IsmswwNjg==}
+    dev: false
+
   /emoji-regex/8.0.0:
     resolution: {integrity: sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A==}
+    dev: false
+
+  /emojilib/2.4.0:
+    resolution: {integrity: sha512-5U0rVMU5Y2n2+ykNLQqMoqklN9ICBT/KsvC1Gz6vqHbz2AXXGkG+Pm5rMWk/8Vjrr/mY9985Hi8DYzn1F09Nyw==}
     dev: false
 
   /emojis-list/3.0.0:
@@ -6175,6 +6193,10 @@ packages:
       istanbul-lib-report: 3.0.0
     dev: false
 
+  /iterate-object/1.3.4:
+    resolution: {integrity: sha512-4dG1D1x/7g8PwHS9aK6QV5V94+ZvyP4+d19qDv43EzImmrndysIl4prmJ1hWWIGCqrZHyaHBm6BSEWHOLnpoNw==}
+    dev: false
+
   /jest-changed-files/27.5.1:
     resolution: {integrity: sha512-buBLMiByfWGCoMsLLzGUUSpAmIAGnbR2KJoMN10ziLhOLvP4e0SlypHnAel8iqQXTrcbmfEY9sSqae5sgUsTvw==}
     engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
@@ -6896,8 +6918,8 @@ packages:
     resolution: {integrity: sha512-CMgA8AMJIX/QfoYHKyjg0hv9W1SGL2xRkt0uLyhT9xKKRj73fHi+IhsrB3W36wwk4I0iz8YlKHfdW14QDwerMA==}
     dev: false
 
-  /libphonenumber-js/1.10.6:
-    resolution: {integrity: sha512-CIjT100/SmntsUjsLVs2t3ufeN4KdNXUxhD07tH153pdbaCWuAjv0jK/gPuywR3IImB/U/MQM+x9RfhMs5XZiA==}
+  /libphonenumber-js/1.10.7:
+    resolution: {integrity: sha512-jZXLCCWMe1b/HXkjiLeYt2JsytZMcqH26jLFIdzFDFF0xvSUWrYKyvPlyPG+XJzEyKUFbcZxLdWGMwQsWaHDxQ==}
     dev: false
 
   /lilconfig/2.0.5:
@@ -7039,6 +7061,12 @@ packages:
     resolution: {integrity: sha512-JmqCvUhmt43madlpFzG4BQzG2Z3m6tvQDNKdClZnO3VbIudJYmxsT0FNJMeiB2+JTSlTQTSbU8QdesVmwJcmLg==}
     dependencies:
       tmpl: 1.0.5
+    dev: false
+
+  /map-o/2.0.10:
+    resolution: {integrity: sha512-BxazE81fVByHWasyXhqKeo2m7bFKYu+ZbEfiuexMOnklXW+tzDvnlTi/JaklEeuuwqcqJzPaf9q+TWptSGXeLg==}
+    dependencies:
+      iterate-object: 1.3.4
     dev: false
 
   /mapcap/1.0.0:
@@ -10372,6 +10400,8 @@ packages:
     dependencies:
       '@typescript-eslint/eslint-plugin': 5.27.0_738fa17fa57f8a69ace69c90e5cfa1d5
       '@typescript-eslint/parser': 5.27.0_eslint@7.32.0+typescript@4.7.2
+      emoji-regex: 10.1.0
+      emojis-list: 3.0.0
       eslint: 7.32.0
       eslint-config-standard-with-typescript: 21.0.1_99a5fe2f2ae1dc64d6b59974c931eb2a
       eslint-plugin-import: 2.26.0_c21022bc9feaeb7b200d3d631eeae46c
@@ -14375,7 +14405,7 @@ packages:
     dev: false
 
   file:projects/text-editor.tgz_1e3963ebf0ceeb25b2fa6a1cc87e253c:
-    resolution: {integrity: sha512-baB/9mrVbC1HBM4EqGCpqQ+C6aUzGbYCUeP8x3O1xp6YUkJrl4XcH6o7aZNtNDgJRvSDPdDAUg5oP/++gud68w==, tarball: file:projects/text-editor.tgz}
+    resolution: {integrity: sha512-AglZab4XONA+NpPrSdMKnpddn+3d+bxZZecMlXLhsg5g+KuD15T9KRL9B/SdTWFWvhJKsPVr5uCPj6CbsE8Y6g==, tarball: file:projects/text-editor.tgz}
     id: file:projects/text-editor.tgz
     name: '@rush-temp/text-editor'
     version: 0.0.0
@@ -14393,6 +14423,8 @@ packages:
       '@types/prosemirror-model': 1.16.2
       '@typescript-eslint/eslint-plugin': 5.27.0_738fa17fa57f8a69ace69c90e5cfa1d5
       '@typescript-eslint/parser': 5.27.0_eslint@7.32.0+typescript@4.7.2
+      emoji-name-map: 1.2.9
+      emoji-regex: 10.1.0
       eslint: 7.32.0
       eslint-config-standard-with-typescript: 21.0.1_99a5fe2f2ae1dc64d6b59974c931eb2a
       eslint-plugin-import: 2.26.0_c21022bc9feaeb7b200d3d631eeae46c
@@ -14489,7 +14521,7 @@ packages:
       eslint-plugin-promise: 5.2.0_eslint@7.32.0
       fast-equals: 2.0.4
       got: 11.8.5
-      libphonenumber-js: 1.10.6
+      libphonenumber-js: 1.10.7
       mime-types: 2.1.35
       minio: 7.0.28
       mongodb: 4.6.0
@@ -14662,6 +14694,8 @@ packages:
     dependencies:
       '@typescript-eslint/eslint-plugin': 5.27.0_738fa17fa57f8a69ace69c90e5cfa1d5
       '@typescript-eslint/parser': 5.27.0_eslint@7.32.0+typescript@4.7.2
+      emoji-regex: 10.1.0
+      emojis-list: 3.0.0
       eslint: 7.32.0
       eslint-config-standard-with-typescript: 21.0.1_99a5fe2f2ae1dc64d6b59974c931eb2a
       eslint-plugin-import: 2.26.0_c21022bc9feaeb7b200d3d631eeae46c

@@ -65,7 +65,9 @@ export default mergeIds(chunterId, chunter, {
     LastMessage: '' as IntlString,
     PinnedMessages: '' as IntlString,
     SavedMessages: '' as IntlString,
-    ThreadMessage: '' as IntlString
+    ThreadMessage: '' as IntlString,
+    Reactions: '' as IntlString,
+    Emoji: '' as IntlString
   },
   viewlet: {
     Chat: '' as Ref<ViewletDescriptor>
