@@ -13,10 +13,11 @@
 // limitations under the License.
 //
 
-import { SvelteComponent } from 'svelte'
+
 import { addLocation, addStringsLoader } from '@anticrm/platform'
-import { uiId } from './plugin'
+import { SvelteComponent } from 'svelte'
 import { readable } from 'svelte/store'
+import { uiId, uis } from './plugin'
 
 import Root from './components/internal/Root.svelte'
 
@@ -172,4 +173,4 @@ addStringsLoader(uiId, async (lang: string) => {
 
 addLocation(uiId, async () => ({ default: async () => ({}) }))
 
-export { default } from './plugin'
+export default uis
