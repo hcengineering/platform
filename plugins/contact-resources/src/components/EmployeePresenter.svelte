@@ -34,8 +34,8 @@
   $: handlePersonEdit = onEmployeeEdit ?? onEdit
 </script>
 
-<div bind:this={container} class="flex-row-center clear-mins">
-  <div class="over-underline" class:pr-2={shouldShowName}>
+<div bind:this={container} class="inline-flex clear-mins">
+  <div class="over-underline">
     <PersonPresenter
       {value}
       {tooltipLabels}
@@ -47,7 +47,7 @@
     />
   </div>
   {#if value?.$lookup?.statuses?.length}
-    <div class="status content-color">
+    <div class="pl-2 status content-color">
       <EmployeeStatusPresenter employee={value} />
     </div>
   {/if}

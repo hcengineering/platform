@@ -78,7 +78,10 @@
         props={{
           objectId: node.getAttribute('data-id'),
           title: node.getAttribute('data-label'),
-          _class: node.getAttribute('data-objectclass')
+          _class: node.getAttribute('data-objectclass'),
+          props: {
+            shouldShowAvatar: false
+          }
         }}
       />
     {:else}
