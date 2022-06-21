@@ -35,11 +35,12 @@
   }
 
   let search: string = ''
-  let searchQuery: DocumentQuery<Issue> = {}
+  let searchQuery: DocumentQuery<Issue> = { ...query }
   function updateSearchQuery (search: string): void {
     searchQuery = search === '' ? { ...query } : { ...query, $search: search }
   }
   $: updateSearchQuery(search)
+  $: if (query) updateSearchQuery(search)
   let resultQuery: DocumentQuery<Issue> = { ...searchQuery }
 
   const client = getClient()
