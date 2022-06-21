@@ -4,7 +4,7 @@
     "ParentDepartmentLabel": "Parent department",
     "Structure":"Structure",
     "CreateDepartment": "Create department",
-    "CreateDepartmentLabel": "Create department",
+    "CreateDepartmentLabel": "Department",
     "DepartmentPlaceholder": "Department",
     "TeamLead": "Team lead",
     "UnAssignLead": "Unassign team lead",
@@ -15,7 +15,6 @@
     "MoveStaff": "Employee transfer",
     "MoveStaffDescr": "Do you want to transfer employee from {current} to {department}",
     "Departments": "Departments",
-    "ShowEmployees": "Show employees",
     "AddEmployee": "Add employee"
   }
 }

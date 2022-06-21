@@ -123,25 +123,6 @@ export function createModel (builder: Builder): void {
   createAction(
     builder,
     {
-      action: view.actionImpl.ShowPopup,
-      actionProps: {
-        component: hr.component.DepartmentStaff,
-        element: 'float'
-      },
-      label: hr.string.ShowEmployees,
-      icon: contact.icon.Person,
-      keyBinding: ['m'],
-      input: 'any',
-      category: hr.category.HR,
-      target: hr.class.Department,
-      context: { mode: 'context', application: hr.app.HR, group: 'top' }
-    },
-    hr.action.ShowEmployees
-  )
-
-  createAction(
-    builder,
-    {
       action: view.actionImpl.Delete,
       label: view.string.Delete,
       icon: view.icon.Delete,

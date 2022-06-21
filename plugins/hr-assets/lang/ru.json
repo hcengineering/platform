@@ -4,7 +4,7 @@
     "ParentDepartmentLabel": "Родительский департамент",
     "Structure":"Структура",
     "CreateDepartment": "Создать департамент",
-    "CreateDepartmentLabel": "Создать департамент",
+    "CreateDepartmentLabel": "Департамент",
     "DepartmentPlaceholder": "Департамент",
     "TeamLead": "Менеджер",
     "UnAssignLead": "Отменить назначение менеджера",
@@ -15,7 +15,6 @@
     "MoveStaff": "Перевод сотрудника",
     "MoveStaffDescr": "Вы действительно хотите перевести сотрудника из {current} в {department}",
     "Departments": "Департаменты",
-    "ShowEmployees": "Просмотреть сотрудников",
     "AddEmployee": "Добавить сотрудника"
   }
 }

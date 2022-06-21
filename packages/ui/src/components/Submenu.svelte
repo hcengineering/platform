@@ -28,13 +28,13 @@
   export let label: IntlString | undefined = undefined
   export let labelProps: Record<string, any> = {}
   export let withHover: boolean = false
+  export let element: HTMLElement | undefined = undefined
 
-  let element: HTMLElement
   let optionsMod: LabelAndProps
   $: optionsMod = { component: options.component ?? Menu, props, element, kind: 'submenu' }
 </script>
 
-<div bind:this={element} use:tooltip={optionsMod} class="antiPopup-submenu" class:withHover tabindex={focusIndex}>
+<div bind:this={element} on:keydown on:click use:tooltip={optionsMod} class="antiPopup-submenu" class:withHover tabindex={focusIndex}>
   {#if component}
     {#if typeof component === 'string'}
       <Component is={component} {props} />

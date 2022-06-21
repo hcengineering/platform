@@ -60,9 +60,6 @@ export default mergeIds(viewId, view, {
     Open: '' as ViewAction
   },
   component: {
-    ObjectFilter: '' as AnyComponent,
-    ValueFilter: '' as AnyComponent,
-    TimestampFilter: '' as AnyComponent,
     StringEditor: '' as AnyComponent,
     StringEditorPopup: '' as AnyComponent,
     StringPresenter: '' as AnyComponent,
