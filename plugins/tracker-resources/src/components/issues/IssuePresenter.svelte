@@ -55,5 +55,13 @@
     font-size: 0.8125rem;
     color: var(--content-color);
     cursor: pointer;
+
+    &:hover {
+      color: var(--caption-color);
+      text-decoration: underline;
+    }
+    &:active {
+      color: var(--accent-color);
+    }
   }
 </style>

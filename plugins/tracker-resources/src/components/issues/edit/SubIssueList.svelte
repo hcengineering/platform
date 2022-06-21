@@ -17,7 +17,13 @@
   import { flip } from 'svelte/animate'
   import { Doc, WithLookup } from '@anticrm/core'
   import { Issue, IssueStatus, Team } from '@anticrm/tracker'
-  import { ActionContext, ContextMenu, ListSelectionProvider, SelectDirection } from '@anticrm/view-resources'
+  import {
+    ActionContext,
+    ContextMenu,
+    ListSelectionProvider,
+    SelectDirection,
+    FixedColumn
+  } from '@anticrm/view-resources'
   import { showPanel, showPopup } from '@anticrm/ui'
   import tracker from '../../../plugin'
   import { getIssueId } from '../../../utils'
@@ -77,6 +83,16 @@
     //   table.select(offset, of)
     // }
   })
+
+  let varsStyle: string = ''
+  const propsWidth: Record<string, number> = { issue: 0 }
+  $: if (propsWidth) {
+    varsStyle = ''
+    for (const key in propsWidth) varsStyle += `--fixed-${key}: ${propsWidth[key]}px;`
+  }
+  const checkWidth = (key: string, result: CustomEvent): void => {
+    if (result !== undefined) propsWidth[key] = result.detail
+  }
 </script>
 
 <ActionContext
@@ -91,6 +107,7 @@
     class:is-dragging={index === draggingIndex}
     class:is-dragged-over-up={draggingIndex !== null && index < draggingIndex && index === hoveringIndex}
     class:is-dragged-over-down={draggingIndex !== null && index > draggingIndex && index === hoveringIndex}
+    style={varsStyle}
     animate:flip={{ duration: 400 }}
     draggable={true}
     on:click|self={() => openIssue(issue)}
@@ -110,22 +127,26 @@
     <div class="draggable-container">
       <div class="draggable-mark"><Circles /></div>
     </div>
-    <div class="flex-center ml-6 clear-mins">
-      <div class="mr-1">
-        <PriorityEditor value={issue} isEditable kind="transparent" justify="center" />
-      </div>
-      <span class="flex-no-shrink text" on:click={() => openIssue(issue)}>
-        {getIssueId(currentTeam, issue)}
+    <div class="flex-row-center ml-6 clear-mins gap-2">
+      <PriorityEditor value={issue} isEditable kind={'list'} size={'small'} justify={'center'} />
+      <span class="issuePresenter" on:click={() => openIssue(issue)}>
+        <FixedColumn
+          width={propsWidth.issue}
+          key={'issue'}
+          justify={'left'}
+          on:update={(result) => checkWidth('issue', result)}
+        >
+          {getIssueId(currentTeam, issue)}
+        </FixedColumn>
       </span>
-      <div class="mx-1">
-        <StatusEditor
-          value={issue}
-          statuses={issueStatuses}
-          justify="center"
-          kind="transparent"
-          tooltipAlignment="bottom"
-        />
-      </div>
+      <StatusEditor
+        value={issue}
+        statuses={issueStatuses}
+        justify="center"
+        kind={'list'}
+        size={'small'}
+        tooltipAlignment="bottom"
+      />
       <span class="text name" title={issue.title} on:click={() => openIssue(issue)}>
         {issue.title}
       </span>
@@ -146,7 +167,24 @@
 
     .text {
       font-weight: 500;
-      color: var(--theme-caption-color);
+      color: var(--caption-color);
+    }
+
+    .issuePresenter {
+      flex-shrink: 0;
+      min-width: 0;
+      min-height: 0;
+      font-weight: 500;
+      color: var(--content-color);
+      cursor: pointer;
+
+      &:hover {
+        color: var(--caption-color);
+        text-decoration: underline;
+      }
+      &:active {
+        color: var(--accent-color);
+      }
     }
 
     .name {
