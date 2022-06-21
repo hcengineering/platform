@@ -17,7 +17,13 @@
   import { flip } from 'svelte/animate'
   import { Doc, WithLookup } from '@anticrm/core'
   import { Issue, IssueStatus, Team } from '@anticrm/tracker'
-  import { ActionContext, ContextMenu, ListSelectionProvider, SelectDirection, FixedColumn } from '@anticrm/view-resources'
+  import {
+    ActionContext,
+    ContextMenu,
+    ListSelectionProvider,
+    SelectDirection,
+    FixedColumn
+  } from '@anticrm/view-resources'
   import { showPanel, showPopup } from '@anticrm/ui'
   import tracker from '../../../plugin'
   import { getIssueId } from '../../../utils'

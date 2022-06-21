@@ -166,13 +166,16 @@
   <div class="header flex-between">
     <EditBox kind={'search-style'} focusIndex={1} focus bind:value={search} {placeholder} />
     {#if create !== undefined}
-      <Button
-        focusIndex={2}
-        kind={'transparent'}
-        icon={IconAdd}
-        showTooltip={{ label: create.label }}
-        on:click={onCreate}
-      />
+      <div class="mx-2">
+        <Button
+          focusIndex={2}
+          kind={'transparent'}
+          size={'small'}
+          icon={IconAdd}
+          showTooltip={{ label: create.label }}
+          on:click={onCreate}
+        />
+      </div>
     {/if}
   </div>
   <div class="scroll">
