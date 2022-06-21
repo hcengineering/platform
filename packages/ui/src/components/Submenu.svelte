@@ -34,7 +34,15 @@
   $: optionsMod = { component: options.component ?? Menu, props, element, kind: 'submenu' }
 </script>
 
-<div bind:this={element} on:keydown on:click use:tooltip={optionsMod} class="antiPopup-submenu" class:withHover tabindex={focusIndex}>
+<div
+  bind:this={element}
+  on:keydown
+  on:click
+  use:tooltip={optionsMod}
+  class="antiPopup-submenu"
+  class:withHover
+  tabindex={focusIndex}
+>
   {#if component}
     {#if typeof component === 'string'}
       <Component is={component} {props} />
