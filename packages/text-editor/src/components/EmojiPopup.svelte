@@ -5,9 +5,10 @@
   import { AnySvelteComponent, Label } from '@anticrm/ui'
   import Tooltip from '@anticrm/ui/src/components/Tooltip.svelte'
   import Emoji from './icons/Emoji.svelte'
+  import Food from './icons/Food.svelte'
+  import Nature from './icons/Nature.svelte'
   import Objects from './icons/Objects.svelte'
   import Places from './icons/Places.svelte'
-  import Nature from './icons/Nature.svelte'
   import Symbols from './icons/Symbols.svelte'
   import Work from './icons/Work.svelte'
   import plugin from '../plugin'
@@ -70,6 +71,24 @@
       icon: Nature
     },
     {
+      id: 'travels',
+      label: plugin.string.TravelAndPlaces,
+      emojis: [...getEmojis(0x1f5fb, 0x1f5ff), ...getEmojis(0x1f3e0, 0x1f3f0), ...getEmojis(0x1f680, 0x1f6a3)],
+      icon: Places
+    },
+    {
+      id: 'food',
+      label: plugin.string.Food,
+      emojis: [...getEmojis(0x1f345, 0x1f37f), ...getEmojis(0x1f32d, 0x1f32f)],
+      icon: Food
+    },
+    {
+      id: 'objects',
+      label: plugin.string.Objects,
+      emojis: [...getEmojis(0x1f4b6, 0x1f4fc)],
+      icon: Objects
+    },
+    {
       id: 'symbols',
       label: plugin.string.Symbols,
       emojis: [
@@ -79,23 +98,11 @@
         ...getEmojis(0x1f532, 0x1f53d)
       ],
       icon: Symbols
-    },
-    {
-      id: 'travels',
-      label: plugin.string.TravelAndPlaces,
-      emojis: [...getEmojis(0x1f5fb, 0x1f5ff), ...getEmojis(0x1f3e0, 0x1f3f0), ...getEmojis(0x1f680, 0x1f6a3)],
-      icon: Places
-    },
-    {
-      id: 'objects',
-      label: plugin.string.Objects,
-      emojis: [...getEmojis(0x1f4b6, 0x1f4fc)],
-      icon: Objects
     }
   ]
   const dispatch = createEventDispatcher()
 
-  const headerHeight = 36
+  const headerHeight = 55
   function handleScrollToCategory (categoryId: string) {
     const offset = document.getElementById(categoryId)?.offsetTop
     if (offset) div.scrollTo(0, offset - headerHeight)
@@ -127,25 +134,27 @@
   }
 </script>
 
-<div class="antiPopup pb-3 popup">
-  <div class="flex-between ml-4 mt-1 mr-4 header">
+<div class="antiPopup antiPopup-withHeader pb-3 popup">
+  <div class="flex-between ml-4 pt-2 pb-2 mr-4 header">
     {#each categories as category}
       <Tooltip label={category.label}>
         <div
-          class="flex-grow pt-2 pb-2 pl-1 pr-1 element"
+          class="flex-grow pt-2 pb-2 pl-2 pr-2 element"
           class:selected={currentCategory === category}
           on:click={() => handleScrollToCategory(category.id)}
         >
-          <svelte:component this={category.icon} size={'large'} />
+          <svelte:component this={category.icon} size={'large'} opacity={currentCategory === category ? '1' : '0.3'} />
         </div>
       </Tooltip>
     {/each}
   </div>
-  <div class="flex-col vScroll p-4" bind:this={div} on:scroll={handleScroll}>
-    <div class="w-60 flex-col">
+  <div class="flex-col vScroll" bind:this={div} on:scroll={handleScroll}>
+    <div class="w-85 flex-col">
       {#each categories as category}
-        <div id={category.id} class="categoryName"><Label label={category.label} /></div>
-        <div class="palette">
+        <div class="ap-header">
+          <div id={category.id} class="ap-caption categoryName"><Label label={category.label} /></div>
+        </div>
+        <div class="palette ml-4">
           {#each category.emojis as emoji}
             {#if emoji !== undefined}
               <div class="p-1 element" on:click={() => dispatch('close', emoji)}>{emoji}</div>
@@ -159,12 +168,12 @@
 
 <style lang="scss">
   .popup {
-    height: 14rem;
+    height: 25rem;
   }
   .palette {
     display: grid;
     grid-template-columns: repeat(8, 1fr);
-    font-size: large;
+    font-size: x-large;
   }
 
   .element {
