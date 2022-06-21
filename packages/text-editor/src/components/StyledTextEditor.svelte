@@ -15,11 +15,12 @@
 <script lang="ts">
   import { IntlString } from '@anticrm/platform'
 
-  import { ScrollBox } from '@anticrm/ui'
+  import { ScrollBox, showPopup } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import Emoji from './icons/Emoji.svelte'
   import GIF from './icons/GIF.svelte'
   import TextStyle from './icons/TextStyle.svelte'
+  import EmojiPopup from './EmojiPopup.svelte'
   import TextEditor from './TextEditor.svelte'
   import textEditorPlugin from '../plugin'
 
@@ -37,6 +38,13 @@
   }
   export function focus (): void {
     textEditor.focus()
+  }
+
+  function openEmojiPopup (ev: MouseEvent & { currentTarget: EventTarget & HTMLDivElement }) {
+    showPopup(EmojiPopup, {}, ev.target as HTMLElement, (emoji) => {
+      if (!emoji) return
+      textEditor.insertText(emoji)
+    })
   }
 </script>
 
@@ -81,7 +89,7 @@
   {#if showButtons}
     <div class="buttons">
       <div class="tool"><TextStyle size={'large'} /></div>
-      <div class="tool"><Emoji size={'large'} /></div>
+      <div class="tool" on:click={openEmojiPopup}><Emoji size={'large'} /></div>
       <div class="tool"><GIF size={'large'} /></div>
       <div class="flex-grow">
         <slot />

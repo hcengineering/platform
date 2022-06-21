@@ -49,6 +49,7 @@ export interface ChunterMessage extends AttachedDoc {
   createBy: Ref<Account>
   createOn: Timestamp
   editedOn?: Timestamp
+  reactions?: number
 }
 
 /**
@@ -67,6 +68,16 @@ export interface Message extends ChunterMessage {
   attachedToClass: Ref<Class<Space>>
   replies?: Ref<Employee>[]
   lastReply?: Timestamp
+}
+
+/**
+ * @public
+ */
+export interface Reaction extends AttachedDoc {
+  emoji: string
+  createBy: Ref<Account>
+  attachedTo: Ref<ChunterMessage>
+  attachedToClass: Ref<Class<ChunterMessage>>
 }
 
 /**
@@ -128,7 +139,8 @@ export default plugin(chunterId, {
     ChunterSpace: '' as Ref<Class<ChunterSpace>>,
     Channel: '' as Ref<Class<Channel>>,
     SavedMessages: '' as Ref<Class<SavedMessages>>,
-    DirectMessage: '' as Ref<Class<DirectMessage>>
+    DirectMessage: '' as Ref<Class<DirectMessage>>,
+    Reaction: '' as Ref<Class<Reaction>>
   },
   space: {
     Backlinks: '' as Ref<Space>

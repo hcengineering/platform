@@ -135,6 +135,7 @@
     width: 40rem;
     height: max-content;
     max-width: 40rem;
+    max-height: calc(100vh - 2rem);
 
     .antiCard-header {
       padding: .75rem .75rem .375rem;

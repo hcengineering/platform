@@ -13,15 +13,24 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Asset, IntlString } from '@anticrm/platform'
   import { IssuePriority } from '@anticrm/tracker'
-  import { Label } from '@anticrm/ui'
+  import { Icon, Label } from '@anticrm/ui'
   import { issuePriorities } from '../../utils'
 
   export let value: IssuePriority | undefined
+
+  let label: IntlString, icon: Asset
+  $: if (value !== undefined) ({ label, icon } = issuePriorities[value])
 </script>
 
 {#if value !== undefined}
-  <span class="overflow-label">
-    <Label label={issuePriorities[value].label} />
-  </span>
+  <div class="flex-presenter">
+    <div class="icon">
+      <Icon {icon} size={'small'} />
+    </div>
+    <span class="overflow-label">
+      <Label {label} />
+    </span>
+  </div>
 {/if}

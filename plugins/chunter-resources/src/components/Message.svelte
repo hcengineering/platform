@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Attachment } from '@anticrm/attachment'
   import { AttachmentList, AttachmentRefInput } from '@anticrm/attachment-resources'
-  import type { ChunterMessage, Message } from '@anticrm/chunter'
+  import type { ChunterMessage, Message, Reaction } from '@anticrm/chunter'
   import { Employee, EmployeeAccount } from '@anticrm/contact'
   import { EmployeePresenter } from '@anticrm/contact-resources'
   import { Ref, WithLookup, getCurrentAccount } from '@anticrm/core'
@@ -35,6 +35,7 @@
   } from '@anticrm/ui'
   import { Action } from '@anticrm/view'
   import { getActions, LinkPresenter } from '@anticrm/view-resources'
+  import { EmojiPopup } from '@anticrm/text-editor'
   import { createEventDispatcher } from 'svelte'
   import { AddMessageToSaved, DeleteMessageFromSaved, UnpinMessage } from '../index'
   import chunter from '../plugin'
@@ -62,7 +63,7 @@
   const client = getClient()
   const dispatch = createEventDispatcher()
 
-  const reactions: boolean = false
+  $: reactions = message.$lookup?.reactions as Reaction[] | undefined
 
   const notificationClient = NotificationClientImpl.getClient()
   const lastViews = notificationClient.getLastViews()
@@ -181,6 +182,45 @@
     else AddMessageToSaved(message)
   }
 
+  function openEmojiPalette (ev: Event) {
+    showPopup(
+      EmojiPopup,
+      {},
+      ev.target as HTMLElement,
+      async (emoji) => {
+        if (!emoji) return
+        const me = getCurrentAccount()._id
+
+        const reaction = reactions?.find((r) => r.emoji === emoji && r.createBy === me)
+        if (!reaction) {
+          await client.createDoc(chunter.class.Reaction, message.space, {
+            attachedTo: message._id,
+            attachedToClass: chunter.class.ChunterMessage,
+            emoji,
+            createBy: me,
+            collection: 'reactions'
+          })
+        } else {
+          await client.removeDoc(chunter.class.Reaction, message.space, reaction._id)
+        }
+      },
+      () => {}
+    )
+  }
+
+  async function removeReaction (ev: CustomEvent) {
+    if (!ev.detail) return
+    const me = getCurrentAccount()._id
+    const reaction = await client.findOne(chunter.class.Reaction, {
+      attachedTo: message._id,
+      emoji: ev.detail,
+      createBy: me
+    })
+    if (reaction?._id) {
+      client.removeDoc(chunter.class.Reaction, reaction.space, reaction._id)
+    }
+  }
+
   $: parentMessage = message as Message
   $: hasReplies = (parentMessage?.replies?.length ?? 0) > 0
 
@@ -247,9 +287,9 @@
         <LinkPresenter {link} />
       {/each}
     {/if}
-    {#if reactions || (!thread && hasReplies)}
+    {#if reactions?.length || (!thread && hasReplies)}
       <div class="footer flex-col">
-        {#if reactions}<Reactions />{/if}
+        {#if reactions?.length}<Reactions {reactions} on:remove={removeReaction} />{/if}
         {#if !thread && hasReplies}
           <Replies message={parentMessage} on:click={openThread} />
         {/if}
@@ -278,7 +318,7 @@
       />
     </div>
     <!-- <div class="tool"><ActionIcon icon={Share} size={'medium'}/></div> -->
-    <div class="tool"><ActionIcon icon={Emoji} size={'medium'} /></div>
+    <div class="tool"><ActionIcon icon={Emoji} size={'medium'} action={openEmojiPalette} /></div>
   </div>
 </div>
 

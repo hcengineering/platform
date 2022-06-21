@@ -13,26 +13,42 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { AnySvelteComponent } from '@anticrm/ui'
-  import Check from './icons/Check.svelte'
-  import Heart from './icons/Heart.svelte'
+  import { Reaction } from '@anticrm/chunter'
+  import { Account, Ref } from '@anticrm/core'
+  import { Tooltip } from '@anticrm/ui'
+  import { createEventDispatcher } from 'svelte'
+  import ReactionsTooltip from './ReactionsTooltip.svelte'
 
-  interface Reaction {
-    icon: AnySvelteComponent
-    count: number
+  export let reactions: Reaction[] = []
+
+  const dispatch = createEventDispatcher()
+
+  let reactionsAccounts: Map<string, Ref<Account>[]> = new Map()
+  $: {
+    reactionsAccounts.clear()
+    reactions.forEach((r) => {
+      let accounts = reactionsAccounts.get(r.emoji)
+      accounts = accounts ? [...accounts, r.createBy] : [r.createBy]
+      reactionsAccounts.set(r.emoji, accounts)
+    })
+    reactionsAccounts = reactionsAccounts
   }
-
-  export let reactions: Reaction[] = [
-    { icon: Check, count: 3 },
-    { icon: Heart, count: 10 }
-  ]
 </script>
 
 <div class="container">
-  {#each reactions as reaction}
-    <div class="flex-row-center reaction">
-      <svelte:component this={reaction.icon} size={'medium'} />
-      <div class="caption-color counter">{reaction.count}</div>
+  {#each [...reactionsAccounts] as [emoji, accounts]}
+    <div class="reaction over-underline">
+      <Tooltip component={ReactionsTooltip} props={{ reactionAccounts: accounts }}>
+        <div
+          class="flex-row-center"
+          on:click={() => {
+            dispatch('remove', emoji)
+          }}
+        >
+          <div>{emoji}</div>
+          <div class="caption-color counter">{accounts.length}</div>
+        </div>
+      </Tooltip>
     </div>
   {/each}
 </div>

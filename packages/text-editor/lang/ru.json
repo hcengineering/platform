@@ -13,6 +13,13 @@
     "BulletedList": "Маркированный список",
     "Blockquote": "Цитата",
     "Code": "Код",
-    "CodeBlock": "Кодовый блок"
+    "CodeBlock": "Кодовый блок",
+    "GettingWorkDone": "Для работы",
+    "Smileys": "Смайлики",
+    "Nature": "Природа",
+    "Symbols": "Символы",
+    "TravelAndPlaces": "Путешествия & Места",
+    "Objects": "Объекты",
+    "Food": "Еда"
   }
 }

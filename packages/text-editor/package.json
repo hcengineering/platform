@@ -47,6 +47,7 @@
     "@tiptap/suggestion": "~2.0.0-beta.92",
     "prosemirror-model": "~1.17.0",
     "@tiptap/extension-task-list": "~2.0.0-beta.26",
-    "@tiptap/extension-task-item": "~2.0.0-beta.32"
+    "@tiptap/extension-task-item": "~2.0.0-beta.32",
+    "emoji-regex": "^10.1.0"
   }
 }

@@ -16,7 +16,7 @@
   import { IntlString, translate } from '@anticrm/platform'
   import { Class, Doc, Ref, RefTo } from '@anticrm/core'
   import { eventToHTMLElement, IconClose, showPopup, Icon, Label } from '@anticrm/ui'
-  import { Filter } from '@anticrm/view'
+  import { Filter, FilterMode } from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
   import view from '../../plugin'
   import { getClient } from '@anticrm/presentation'
@@ -27,8 +27,8 @@
   export let _class: Ref<Class<Doc>>
   export let filter: Filter
 
-  let label: IntlString | undefined
-  let current = 0
+  $: currentFilter = filter.nested ? filter.nested : filter
+
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
@@ -59,21 +59,32 @@
   }
   $: if (filter) getLabel()
 
-  async function toggle () {
-    current++
-    filter.mode = filter.modes[current % filter.modes.length]
-    label = (await client.findOne(view.class.FilterMode, { _id: filter.mode }))?.label
+  async function toggle (nested: boolean = false) {
+    if (nested && filter.nested !== undefined) {
+      const index = filter.nested.modes.findIndex((p) => p === filter.nested?.mode)
+      filter.nested.mode = filter.nested.modes[(index + 1) % filter.nested.modes.length]
+    } else {
+      const index = filter.modes.findIndex((p) => p === filter.mode)
+      filter.mode = filter.modes[(index + 1) % filter.modes.length]
+    }
     dispatch('change')
   }
 
-  client.findOne(view.class.FilterMode, { _id: filter.mode }).then((p) => (label = p?.label))
+  async function getModeLabel (mode: Ref<FilterMode>): Promise<IntlString | undefined> {
+    return (await client.findOne(view.class.FilterMode, { _id: mode }))?.label
+  }
 
   function onChange (e: Filter | undefined) {
-    filter = filter
+    if (filter.nested !== undefined) {
+      filter.nested = filter
+    } else {
+      filter = filter
+    }
     dispatch('change')
   }
 
   onDestroy(() => {
+    filter.nested?.onRemove?.()
     filter.onRemove?.()
   })
 </script>
@@ -87,19 +98,48 @@
     {/if}
     <span><Label label={filter.key.label} /></span>
   </button>
-  <button class="filter-button" on:click={toggle}>
-    {#if label}
-      <span><Label {label} params={{ value: filter.value.length }} /></span>
-    {/if}
+  <button
+    class="filter-button"
+    on:click={() => {
+      toggle()
+    }}
+  >
+    {#await getModeLabel(filter.mode) then label}
+      {#if label}
+        <span><Label {label} params={{ value: filter.value.length }} /></span>
+      {/if}
+    {/await}
   </button>
+  {#if filter.nested}
+    <button class="filter-button">
+      {#if filter.nested.key.icon}
+        <div class="btn-icon mr-1-5">
+          <Icon icon={filter.nested.key.icon} size={'x-small'} />
+        </div>
+      {/if}
+      <span><Label label={filter.nested.key.label} /></span>
+    </button>
+    <button
+      class="filter-button"
+      on:click={() => {
+        toggle(true)
+      }}
+    >
+      {#await getModeLabel(filter.nested.mode) then label}
+        {#if label}
+          <span><Label {label} params={{ value: filter.value.length }} /></span>
+        {/if}
+      {/await}
+    </button>
+  {/if}
   <button
     class="filter-button"
     on:click={(e) => {
       showPopup(
-        filter.key.component,
+        currentFilter.key.component,
         {
-          _class,
-          filter,
+          _class: currentFilter.key._class,
+          filter: currentFilter,
           onChange
         },
         eventToHTMLElement(e)

@@ -110,7 +110,7 @@ export function createModel (builder: Builder): void {
       label: view.string.FilterIsEither,
       result: tags.function.FilterTagsInResult
     },
-    tags.ids.FilterTagsIn
+    tags.filter.FilterTagsIn
   )
 
   builder.createDoc(
@@ -120,6 +120,6 @@ export function createModel (builder: Builder): void {
       label: view.string.FilterIsNot,
       result: tags.function.FilterTagsNinResult
     },
-    tags.ids.FilterTagsNin
+    tags.filter.FilterTagsNin
   )
 }

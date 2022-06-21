@@ -26,6 +26,7 @@
   export let size: ButtonSize = 'large'
   export let kind: ButtonKind = 'link'
   export let tooltipAlignment: TooltipAlignment | undefined = undefined
+  export let width: string = '100%'
 
   const client = getClient()
   const dispatch = createEventDispatcher()
@@ -53,7 +54,7 @@
     titleDeselect={tracker.string.Unassigned}
     {size}
     {kind}
-    width={'100%'}
+    {width}
     justify={'left'}
     showTooltip={{ label: tracker.string.AssignTo, direction: tooltipAlignment }}
     on:change={({ detail }) => handleAssigneeChanged(detail)}

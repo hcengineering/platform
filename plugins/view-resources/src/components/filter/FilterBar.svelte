@@ -108,13 +108,9 @@
       const mode = await client.findOne(view.class.FilterMode, { _id: filter.mode })
       if (mode === undefined) continue
       const result = await getResource(mode.result)
-      const newValue = await result(
-        filter.value,
-        () => {
-          makeQuery(query, filters)
-        },
-        filter.index
-      )
+      const newValue = await result(filter, () => {
+        makeQuery(query, filters)
+      })
       if (newQuery[filter.key.key] === undefined) {
         newQuery[filter.key.key] = newValue
       } else {
