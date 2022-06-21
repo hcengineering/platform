@@ -43,7 +43,7 @@ export function locationToUrl (location: PlatformLocation): string {
   return result
 }
 
-function parseLocation (location: Location): PlatformLocation {
+export function parseLocation (location: Location | URL): PlatformLocation {
   return {
     path: parsePath(location.pathname),
     query: parseQuery(location.search),

@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { CheckBox, Component } from '@anticrm/ui'
+  import { CheckBox, Component, navigate, parseLocation } from '@anticrm/ui'
   import view from '@anticrm/view'
 
   export let nodes: NodeListOf<any>
@@ -63,8 +63,19 @@
     {:else if node.nodeName === 'DIV'}
       <div><svelte:self nodes={node.childNodes} /></div>
     {:else if node.nodeName === 'A'}
-      <a href={node.getAttribute('href')} target={node.getAttribute('target')}
-        ><svelte:self nodes={node.childNodes} /></a
+      <a
+        href={node.getAttribute('href')}
+        target={node.getAttribute('target')}
+        on:click={(e) => {
+          try {
+            const url = new URL(node.getAttribute('href'))
+
+            if (url.origin === window.location.origin) {
+              e.preventDefault()
+              navigate(parseLocation(url))
+            }
+          } catch {}
+        }}><svelte:self nodes={node.childNodes} /></a
       >
     {:else if node.nodeName === 'LABEL'}
       <svelte:self nodes={node.childNodes} />
