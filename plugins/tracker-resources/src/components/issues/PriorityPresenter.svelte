@@ -25,10 +25,12 @@
 </script>
 
 {#if value !== undefined}
-  <div class="icon">
-    <Icon {icon} size={'small'} />
+  <div class="flex-presenter">
+    <div class="icon">
+      <Icon {icon} size={'small'} />
+    </div>
+    <span class="overflow-label">
+      <Label {label} />
+    </span>
   </div>
-  <span class="overflow-label">
-    <Label {label} />
-  </span>
 {/if}
