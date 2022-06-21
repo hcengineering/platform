@@ -407,7 +407,8 @@ const view = plugin(viewId, {
     BooleanTruePresenter: '' as AnyComponent
   },
   string: {
-    CustomizeView: '' as IntlString
+    CustomizeView: '' as IntlString,
+    LabelNA: '' as IntlString
   },
   icon: {
     Table: '' as Asset,

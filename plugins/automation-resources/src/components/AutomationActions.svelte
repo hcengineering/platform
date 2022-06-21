@@ -32,12 +32,12 @@
     commands = commands.filter((c) => c !== command)
   }
 
-  if (targetClass !== undefined) {
+  if (targetClass) {
     const classObj = hierarchy.getClass(targetClass)
     const automationSupport = hierarchy.as(classObj, automation.mixin.AutomationSupport)
     automationSupport?.attributes?.forEach((attr) => {
       attributeSupportMap.set(attr.name, attr)
-      attributes = hierarchy.getAllAttributes(targetClass)
+      attributes = hierarchy.getAllAttributes(targetClass!)
       const classifier = attributes.get(attr.name)
       if (classifier) {
         const typeClass = classifier.type._class
@@ -115,7 +115,7 @@
     -->
   </div>
   <div class="mt-4">
-    {#if currentTab === ActionTab.Content}
+    {#if currentTab === ActionTab.Content && targetClass}
       {#each contentAttributes as attr}
         <ContentActionCreate
           attribute={attributes.get(attr)}

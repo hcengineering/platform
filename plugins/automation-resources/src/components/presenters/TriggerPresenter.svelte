@@ -12,7 +12,7 @@
 </script>
 
 {#if value.action}
-  {@const targetClass = hierarchy.getClass(value.action.targetClass)}
+  {@const targetClass = hierarchy.getClass(value.action.target)}
   <div class="flex flex-gap-1 items-center">
     <span class="mr-4">
       <Label label={automation.string.Menu} />

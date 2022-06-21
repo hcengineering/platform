@@ -28,8 +28,8 @@
     }
     trigger = {
       action: {
-        context: selectedActionMode?._id,
-        targetClass,
+        context: selectedActionMode?._id as 'editor' | 'context',
+        target: targetClass,
         label: name!,
         icon
       }

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { CommandType, UpdateDocCommand } from '@anticrm/automation'
   import core, { AnyAttribute, Class, Doc, Ref } from '@anticrm/core'
-  import { Button, EditBox, IconAdd, Label } from '@anticrm/ui'
+  import ui, { Button, EditBox, IconAdd, Label } from '@anticrm/ui'
   import { BooleanEditor, NumberEditor } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
 
@@ -46,7 +46,7 @@
         {#if typeClass === core.class.TypeString || typeClass === core.class.TypeMarkup}
           <EditBox bind:value />
         {:else if typeClass === core.class.TypeNumber}
-          <NumberEditor {value} {onChange} />
+          <NumberEditor value={Number(value)} {onChange} focus={true} placeholder={ui.string.EditBoxPlaceholder} />
         {:else if typeClass === core.class.TypeBoolean}
           <BooleanEditor {value} {onChange} />
         {/if}
