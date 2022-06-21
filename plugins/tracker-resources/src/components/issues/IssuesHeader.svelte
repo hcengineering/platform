@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Ref, WithLookup } from '@anticrm/core'
   import { Team, ViewOptions } from '@anticrm/tracker'
-  import { Icon, TabList, showPopup, eventToHTMLElement } from '@anticrm/ui'
+  import { Icon, TabList, showPopup, eventToHTMLElement, SearchEdit } from '@anticrm/ui'
   import { Viewlet } from '@anticrm/view'
   import { FilterButton, setActiveViewletId } from '@anticrm/view-resources'
   import tracker from '../../plugin'
@@ -13,6 +13,7 @@
   export let viewlets: WithLookup<Viewlet>[] = []
   export let label: string
   export let viewOptions: ViewOptions
+  export let search: string
 
   const handleOptionsEditorOpened = (event: MouseEvent) => {
     if (!currentSpace) {
@@ -39,6 +40,7 @@
     <span class="ac-header__title">{label}</span>
     <div class="ml-4"><FilterButton _class={tracker.class.Issue} /></div>
   </div>
+  <SearchEdit bind:value={search} on:change={() => {}} />
   {#if viewlets.length > 1}
     <TabList
       items={viewslist}

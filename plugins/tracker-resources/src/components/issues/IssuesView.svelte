@@ -33,7 +33,14 @@
     shouldShowEmptyGroups: false,
     shouldShowSubIssues: false
   }
-  let resultQuery: DocumentQuery<Issue> = {}
+
+  let search: string = ''
+  let searchQuery: DocumentQuery<Issue> = {}
+  function updateSearchQuery (search: string): void {
+    searchQuery = search === '' ? { ...query } : { ...query, $search: search }
+  }
+  $: updateSearchQuery(search)
+  let resultQuery: DocumentQuery<Issue> = { ...searchQuery }
 
   const client = getClient()
 
@@ -77,7 +84,7 @@
 </script>
 
 {#if currentSpace}
-  <IssuesHeader {currentSpace} {viewlets} {label} bind:viewlet bind:viewOptions>
+  <IssuesHeader {currentSpace} {viewlets} {label} bind:viewlet bind:viewOptions bind:search>
     <svelte:fragment slot="extra">
       {#if asideFloat && $$slots.aside}
         <Button
@@ -92,7 +99,7 @@
       {/if}
     </svelte:fragment>
   </IssuesHeader>
-  <FilterBar _class={tracker.class.Issue} {query} on:change={(e) => (resultQuery = e.detail)} />
+  <FilterBar _class={tracker.class.Issue} query={searchQuery} on:change={(e) => (resultQuery = e.detail)} />
   <div class="flex w-full h-full clear-mins">
     {#if viewlet}
       <IssuesContent {currentSpace} {viewlet} query={resultQuery} {viewOptions} />
