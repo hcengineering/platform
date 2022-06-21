@@ -59,13 +59,18 @@ export class TAutomationSupport extends TClass implements AutomationSupport<Doc>
 
 export function createModel (builder: Builder): void {
   builder.createModel(TAutomation, TAutomationSupport)
-  builder.createDoc(core.class.Space, core.space.Model, {
-    archived: false,
-    description: 'Automation space',
-    members: [],
-    name: 'Automation space',
-    private: true
-  }, automation.space.Automation)
+  builder.createDoc(
+    core.class.Space,
+    core.space.Model,
+    {
+      archived: false,
+      description: 'Automation space',
+      members: [],
+      name: 'Automation space',
+      private: true
+    },
+    automation.space.Automation
+  )
   builder.createDoc(
     setting.class.SettingsCategory,
     core.space.Model,
