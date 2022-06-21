@@ -8,8 +8,7 @@ import automation, {
 import core, { Class, Doc, Ref, Space, TxOperations } from '@anticrm/core'
 import { IntlString } from '@anticrm/platform'
 import { getClient } from '@anticrm/presentation'
-import type { Action } from '@anticrm/view'
-import view from '@anticrm/view'
+import view, { Action } from '@anticrm/view'
 import { Trigger } from './models'
 
 export async function createAutomation (
