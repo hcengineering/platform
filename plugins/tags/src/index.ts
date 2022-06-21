@@ -89,7 +89,7 @@ const tagsPlugin = plugin(tagsId, {
   category: {
     NoCategory: '' as Ref<TagCategory>
   },
-  ids: {
+  filter: {
     FilterTagsIn: '' as Ref<FilterMode>,
     FilterTagsNin: '' as Ref<FilterMode>
   }

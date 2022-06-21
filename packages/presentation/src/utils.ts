@@ -96,11 +96,11 @@ export class LiveQuery {
     if (!this.needUpdate(_class, query, callback, options)) {
       return false
     }
+    this.unsubscribe()
     this.oldCallback = callback
     this.oldClass = _class
     this.oldOptions = options
     this.oldQuery = query
-    this.unsubscribe()
     const unsub = liveQuery.query(_class, query, callback, options)
     this.unsubscribe = () => {
       unsub()

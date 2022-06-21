@@ -30,6 +30,7 @@ import type {
   ClassFilters,
   CollectionEditor,
   CollectionPresenter,
+  Filter,
   FilterMode,
   HTMLPresenter,
   IgnoreActions,
@@ -87,7 +88,7 @@ export function classPresenter (
 @Model(view.class.FilterMode, core.class.Doc, DOMAIN_MODEL)
 export class TFilterMode extends TDoc implements FilterMode {
   label!: IntlString
-  result!: Resource<(values: any[], onUpdate: () => void) => Promise<any>>
+  result!: Resource<(filter: Filter, onUpdate: () => void) => Promise<any>>
 }
 
 @Mixin(view.mixin.ClassFilters, core.class.Class)
@@ -544,7 +545,7 @@ export function createModel (builder: Builder): void {
       label: view.string.FilterIsEither,
       result: view.function.FilterValueInResult
     },
-    view.ids.FilterValueIn
+    view.filter.FilterValueIn
   )
 
   builder.createDoc(
@@ -554,7 +555,7 @@ export function createModel (builder: Builder): void {
       label: view.string.FilterIsNot,
       result: view.function.FilterValueNinResult
     },
-    view.ids.FilterValueNin
+    view.filter.FilterValueNin
   )
 
   builder.createDoc(
@@ -564,7 +565,7 @@ export function createModel (builder: Builder): void {
       label: view.string.FilterIsEither,
       result: view.function.FilterObjectInResult
     },
-    view.ids.FilterObjectIn
+    view.filter.FilterObjectIn
   )
 
   builder.createDoc(
@@ -574,7 +575,7 @@ export function createModel (builder: Builder): void {
       label: view.string.FilterIsNot,
       result: view.function.FilterObjectNinResult
     },
-    view.ids.FilterObjectNin
+    view.filter.FilterObjectNin
   )
 
   builder.createDoc(
@@ -584,7 +585,7 @@ export function createModel (builder: Builder): void {
       label: view.string.Before,
       result: view.function.FilterBeforeResult
     },
-    view.ids.FilterBefore
+    view.filter.FilterBefore
   )
 
   builder.createDoc(
@@ -594,7 +595,27 @@ export function createModel (builder: Builder): void {
       label: view.string.After,
       result: view.function.FilterAfterResult
     },
-    view.ids.FilterAfter
+    view.filter.FilterAfter
+  )
+
+  builder.createDoc(
+    view.class.FilterMode,
+    core.space.Model,
+    {
+      label: view.string.MatchCriteria,
+      result: view.function.FilterNestedMatchResult
+    },
+    view.filter.FilterNestedMatch
+  )
+
+  builder.createDoc(
+    view.class.FilterMode,
+    core.space.Model,
+    {
+      label: view.string.DontMatchCriteria,
+      result: view.function.FilterNestedDontMatchResult
+    },
+    view.filter.FilterNestedDontMatch
   )
 
   classPresenter(builder, core.class.EnumOf, view.component.StringPresenter, view.component.EnumEditor)

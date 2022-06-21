@@ -43,6 +43,8 @@
     "Save": "Сохранить",
     "IncludeItemsThatMatch": "Включить элементы, которые соответствуют",
     "AnyFilter": "любому фильтру",
-    "AllFilters": "всем фильтрам"
+    "AllFilters": "всем фильтрам",
+    "MatchCriteria": "Соответсвует условию",
+    "DontMatchCriteria": "Не соответвует условию"
   }
 }

@@ -22,6 +22,7 @@
 
   export let _class: Ref<Class<Doc>>
   export let target: HTMLElement
+  export let filter: Filter | undefined
   export let index: number
   export let onChange: (e: Filter) => void
 
@@ -54,6 +55,7 @@
     const filter = hierarchy.as(clazz, view.mixin.AttributeFilter)
     if (filter.component === undefined) return undefined
     return {
+      _class,
       key: isCollection ? '_id' : key,
       label: attribute.label,
       icon: attribute.icon,
@@ -110,7 +112,7 @@
       type.component,
       {
         _class,
-        filter: {
+        filter: filter || {
           key: type,
           value: [],
           index
