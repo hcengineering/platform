@@ -35,7 +35,7 @@
     <Label label={core.string.Description} />
     <EditBox bind:value={description} />
   </div>
-  <div class="p-2 mb-2">
+  <div class="mb-2">
     <AutomationTrigger
       {trigger}
       on:trigger={(e) => {
@@ -47,7 +47,7 @@
     />
   </div>
   {#if trigger}
-    <div class="p-2 mb-2">
+    <div class="mb-2">
       <AutomationActions {targetClass} bind:commands />
     </div>
   {/if}
