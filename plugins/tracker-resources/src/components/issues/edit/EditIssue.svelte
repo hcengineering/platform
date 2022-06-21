@@ -13,10 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Data, Doc, Ref, SortingOrder, WithLookup } from '@anticrm/core'
   import { AttachmentDocList } from '@anticrm/attachment-resources'
+  import { Class, Data, Doc, Ref, SortingOrder, WithLookup } from '@anticrm/core'
+  import notification from '@anticrm/notification'
   import { Panel } from '@anticrm/panel'
+  import { getResource } from '@anticrm/platform'
   import presentation, { createQuery, getClient, MessageViewer } from '@anticrm/presentation'
+  import { StyledTextArea } from '@anticrm/text-editor'
   import type { Issue, IssueStatus, Team } from '@anticrm/tracker'
   import {
     Button,
@@ -31,16 +34,14 @@
     Spinner
   } from '@anticrm/ui'
   import { ContextMenu } from '@anticrm/view-resources'
-  import { StyledTextArea } from '@anticrm/text-editor'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import tracker from '../../../plugin'
   import { getIssueId } from '../../../utils'
+  import IssueStatusActivity from '../IssueStatusActivity.svelte'
   import ControlPanel from './ControlPanel.svelte'
   import CopyToClipboard from './CopyToClipboard.svelte'
-  import SubIssueSelector from './SubIssueSelector.svelte'
   import SubIssues from './SubIssues.svelte'
-  import { getResource } from '@anticrm/platform'
-  import notification from '@anticrm/notification'
+  import SubIssueSelector from './SubIssueSelector.svelte'
 
   export let _id: Ref<Issue>
   export let _class: Ref<Class<Issue>>
@@ -86,13 +87,10 @@
         ;[issue] = result
         title = issue.title
         description = issue.description
+        currentTeam = issue.$lookup?.space
       },
-      { lookup: { attachedTo: tracker.class.Issue } }
+      { lookup: { attachedTo: tracker.class.Issue, space: tracker.class.Team } }
     )
-
-  $: if (issue) {
-    client.findOne(tracker.class.Team, { _id: issue.space }).then((r) => (currentTeam = r))
-  }
 
   $: currentTeam &&
     statusesQuery.query(
@@ -278,6 +276,9 @@
       {#if issue && currentTeam && issueStatuses}
         <ControlPanel {issue} {issueStatuses} />
       {/if}
+
+      <div class="divider" />
+      <IssueStatusActivity {issue} />
     </svelte:fragment>
   </Panel>
 {/if}
@@ -300,5 +301,12 @@
     .placeholder {
       color: var(--theme-content-trans-color);
     }
+  }
+  .divider {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    grid-column: 1 / 3;
+    height: 1px;
+    background-color: var(--divider-color);
   }
 </style>

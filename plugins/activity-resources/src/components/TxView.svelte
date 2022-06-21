@@ -18,7 +18,7 @@
   import contact, { EmployeeAccount, formatName } from '@anticrm/contact'
   import core, { AnyAttribute, Doc, getCurrentAccount, Ref } from '@anticrm/core'
   import { Asset, getResource } from '@anticrm/platform'
-  import { getClient } from '@anticrm/presentation'
+  import { createQuery, getClient } from '@anticrm/presentation'
   import {
     Button,
     Component,
@@ -41,6 +41,7 @@
   export let tx: DisplayTx
   export let viewlets: Map<ActivityKey, TxViewlet>
   export let showIcon: boolean = true
+  export let isNew: boolean = false
 
   let ptx: DisplayTx | undefined
 
@@ -61,6 +62,7 @@
   }
 
   const client = getClient()
+  const query = createQuery()
 
   function getProps (props: any, edit: boolean): any {
     return { ...props, edit }
@@ -75,11 +77,14 @@
     }
   })
 
-  $: client
-    .findOne(contact.class.EmployeeAccount, { _id: tx.tx.modifiedBy as Ref<EmployeeAccount> })
-    .then((account) => {
-      employee = account
-    })
+  $: query.query(
+    contact.class.EmployeeAccount,
+    { _id: tx.tx.modifiedBy as Ref<EmployeeAccount> },
+    (account) => {
+      ;[employee] = account
+    },
+    { limit: 1 }
+  )
 
   const showMenu = async (ev: MouseEvent): Promise<void> => {
     const actions = await getActions(client, tx.doc as Doc)
@@ -148,7 +153,7 @@
       </div>
     {/if}
 
-    <div class="flex-grow flex-col clear-mins">
+    <div class="flex-grow flex-col clear-mins" class:isNew>
       <div class="flex-between">
         <div class="flex-row-center flex-grow label">
           <div class="bold">
@@ -311,6 +316,11 @@
   .msgactivity-container {
     position: relative;
     min-width: 0;
+  }
+
+  .isNew {
+    padding-bottom: 0.25rem;
+    border-bottom: 1px solid var(--highlight-red);
   }
 
   .showIcon {

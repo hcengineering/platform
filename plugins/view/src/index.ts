@@ -99,7 +99,8 @@ export interface CollectionEditor extends Class<Doc> {
  * @public
  */
 export interface ArrayEditor extends Class<Doc> {
-  inlineEditor: AnyComponent
+  editor?: AnyComponent
+  inlineEditor?: AnyComponent
 }
 
 /**
@@ -423,7 +424,8 @@ const view = plugin(viewId, {
     ArrowRight: '' as Asset,
     Views: '' as Asset,
     Pin: '' as Asset,
-    Model: '' as Asset
+    Model: '' as Asset,
+    ViewButton: '' as Asset
   },
   category: {
     General: '' as Ref<ActionCategory>,

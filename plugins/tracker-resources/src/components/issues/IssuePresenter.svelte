@@ -16,11 +16,11 @@
   import { WithLookup } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
   import type { Issue, Team } from '@anticrm/tracker'
-  import { Icon, showPanel } from '@anticrm/ui'
+  import { showPanel } from '@anticrm/ui'
   import tracker from '../../plugin'
 
   export let value: WithLookup<Issue>
-  export let inline: boolean = false
+  // export let inline: boolean = false
 
   function handleIssueEditorOpened () {
     showPanel(tracker.component.EditIssue, value._id, value._class, 'content')
@@ -39,25 +39,21 @@
 </script>
 
 {#if value}
-  <div class="flex-presenter issuePresenterRoot" class:inline-presenter={inline} on:click={handleIssueEditorOpened}>
-    <div class="icon">
-      <Icon icon={tracker.icon.Issue} size={'small'} />
-    </div>
-    <span title="title" class="label nowrap issueLabel">
-      {title}
-    </span>
-  </div>
+  <span class="issuePresenterRoot" title="title" on:click={handleIssueEditorOpened}>
+    {title}
+  </span>
 {/if}
 
 <style lang="scss">
   .issuePresenterRoot {
-    max-width: 5rem;
-  }
-
-  .issueLabel {
-    display: block;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+
+    flex-shrink: 0;
+    max-width: 5rem;
+    font-size: 0.8125rem;
+    color: var(--content-color);
+    cursor: pointer;
   }
 </style>

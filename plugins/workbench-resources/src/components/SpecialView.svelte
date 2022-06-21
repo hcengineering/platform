@@ -17,7 +17,7 @@
   import { Asset, IntlString } from '@anticrm/platform'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { AnyComponent, Button, Icon, IconAdd, Label, Loading, SearchEdit, showPopup } from '@anticrm/ui'
-  import view, { Filter, Viewlet, ViewletDescriptor, ViewletPreference } from '@anticrm/view'
+  import view, { Viewlet, ViewletDescriptor, ViewletPreference } from '@anticrm/view'
   import { FilterButton, TableBrowser, ViewletSettingButton } from '@anticrm/view-resources'
 
   export let _class: Ref<Class<Doc>>
@@ -29,7 +29,6 @@
   export let baseQuery: DocumentQuery<Doc> = {}
 
   let search = ''
-  let filters: Filter[] = []
   let descr: Viewlet | undefined
 
   $: resultQuery = updateResultQuery(search, baseQuery)
@@ -80,12 +79,18 @@
   <div class="ac-header__wrap-title">
     <span class="ac-header__icon"><Icon {icon} size={'small'} /></span>
     <span class="ac-header__title"><Label {label} /></span>
-    <div class="ml-4"><FilterButton {_class} bind:filters /></div>
+    <div class="ml-4"><FilterButton {_class} /></div>
   </div>
 
   <SearchEdit bind:value={search} />
   {#if createLabel && createComponent}
-    <Button label={createLabel} icon={IconAdd} kind={'primary'} on:click={(ev) => showCreateDialog(ev)} />
+    <Button
+      label={createLabel}
+      icon={IconAdd}
+      kind={'primary'}
+      size={'small'}
+      on:click={(ev) => showCreateDialog(ev)}
+    />
   {/if}
   <ViewletSettingButton viewlet={descr} />
 </div>
@@ -99,7 +104,6 @@
       config={preference?.config ?? descr.config}
       options={descr.options}
       query={resultQuery}
-      bind:filters
       showNotification
     />
   {/if}

@@ -17,8 +17,7 @@
   import core, { WithLookup } from '@anticrm/core'
   import { IntlString } from '@anticrm/platform'
   import presentation, { createQuery, getClient } from '@anticrm/presentation'
-  import { AnyComponent, Button, Icon, IconAdd, SearchEdit, showPanel, showPopup, Tooltip } from '@anticrm/ui'
-  import type { Filter } from '@anticrm/view'
+  import { AnyComponent, Button, IconAdd, SearchEdit, showPanel, showPopup, TabList } from '@anticrm/ui'
   import view, { Viewlet } from '@anticrm/view'
   import { ViewletSettingButton } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
@@ -33,7 +32,6 @@
   export let viewlet: WithLookup<Viewlet> | undefined
   export let viewlets: WithLookup<Viewlet>[] = []
   export let _class: Ref<Class<Doc>> | undefined = undefined
-  export let filters: Filter[] = []
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -75,6 +73,13 @@
     const index = viewlets.findIndex((p) => p.descriptor === viewlet?.descriptor)
     viewlet = index === -1 ? viewlets[0] : viewlets[index]
   }
+  $: viewslist = viewlets.map((views) => {
+    return {
+      id: views._id,
+      icon: views.$lookup?.descriptor?.icon,
+      tooltip: views.$lookup?.descriptor?.label
+    }
+  })
 </script>
 
 <div class="ac-header full withSettings">
@@ -84,28 +89,8 @@
       label={space.name}
       description={space.description}
       {_class}
-      bind:filters
       on:click={onSpaceEdit}
     />
-    {#if viewlets.length > 1}
-      <div class="flex">
-        {#each viewlets as v, i}
-          <Tooltip label={v.$lookup?.descriptor?.label} direction={'top'}>
-            <button
-              class="ac-header__icon-button"
-              class:selected={viewlet?._id === v._id}
-              on:click={() => {
-                viewlet = v
-              }}
-            >
-              {#if v.$lookup?.descriptor?.icon}
-                <Icon icon={v.$lookup?.descriptor?.icon} size={'small'} />
-              {/if}
-            </button>
-          </Tooltip>
-        {/each}
-      </div>
-    {/if}
     <SearchEdit
       bind:value={search}
       on:change={() => {
@@ -113,7 +98,25 @@
       }}
     />
     {#if createItemDialog}
-      <Button icon={IconAdd} label={createItemLabel} kind={'primary'} on:click={(ev) => showCreateDialog(ev)} />
+      <Button
+        icon={IconAdd}
+        label={createItemLabel}
+        kind={'primary'}
+        size={'small'}
+        on:click={(ev) => showCreateDialog(ev)}
+      />
+    {/if}
+    {#if viewlets.length > 1}
+      <TabList
+        items={viewslist}
+        multiselect={false}
+        selected={viewlet?._id}
+        kind={'secondary'}
+        size={'small'}
+        on:select={(result) => {
+          if (result.detail !== undefined) viewlet = viewlets.find((vl) => vl._id === result.detail.id)
+        }}
+      />
     {/if}
     <ViewletSettingButton {viewlet} />
   {/if}

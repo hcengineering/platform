@@ -1,17 +1,17 @@
 <script lang="ts">
   import { Ref, WithLookup } from '@anticrm/core'
   import { Team, ViewOptions } from '@anticrm/tracker'
-  import { Button, Icon, Tooltip, IconOptions, showPopup, eventToHTMLElement } from '@anticrm/ui'
-  import { Filter, Viewlet } from '@anticrm/view'
-  import { FilterButton } from '@anticrm/view-resources'
+  import { Icon, TabList, showPopup, eventToHTMLElement } from '@anticrm/ui'
+  import { Viewlet } from '@anticrm/view'
+  import { FilterButton, setActiveViewletId } from '@anticrm/view-resources'
   import tracker from '../../plugin'
   import ViewOptionsPopup from './ViewOptionsPopup.svelte'
+  import ViewOptionsButton from './ViewOptionsButton.svelte'
 
   export let currentSpace: Ref<Team>
   export let viewlet: WithLookup<Viewlet> | undefined
   export let viewlets: WithLookup<Viewlet>[] = []
   export let label: string
-  export let filters: Filter[] = []
   export let viewOptions: ViewOptions
 
   const handleOptionsEditorOpened = (event: MouseEvent) => {
@@ -23,33 +23,37 @@
       if (result) viewOptions = { ...result }
     })
   }
+
+  $: viewslist = viewlets.map((views) => {
+    return {
+      id: views._id,
+      icon: views.$lookup?.descriptor?.icon,
+      tooltip: views.$lookup?.descriptor?.label
+    }
+  })
 </script>
 
-<div class="ac-header full divide">
+<div class="ac-header full">
   <div class="ac-header__wrap-title">
     <div class="ac-header__icon"><Icon icon={tracker.icon.Issues} size={'small'} /></div>
     <span class="ac-header__title">{label}</span>
-    <div class="ml-4"><FilterButton _class={tracker.class.Issue} bind:filters /></div>
+    <div class="ml-4"><FilterButton _class={tracker.class.Issue} /></div>
   </div>
   {#if viewlets.length > 1}
-    <div class="flex">
-      {#each viewlets as v}
-        <Tooltip label={v.$lookup?.descriptor?.label} direction={'top'}>
-          <button
-            class="ac-header__icon-button"
-            class:selected={viewlet?._id === v._id}
-            on:click={() => {
-              viewlet = v
-            }}
-          >
-            {#if v.$lookup?.descriptor?.icon}
-              <Icon icon={v.$lookup?.descriptor?.icon} size={'small'} />
-            {/if}
-          </button>
-        </Tooltip>
-      {/each}
-    </div>
+    <TabList
+      items={viewslist}
+      multiselect={false}
+      selected={viewlet?._id}
+      kind={'secondary'}
+      size={'small'}
+      on:select={(result) => {
+        if (result.detail !== undefined) {
+          viewlet = viewlets.find((vl) => vl._id === result.detail.id)
+          if (viewlet) setActiveViewletId(viewlet._id)
+        }
+      }}
+    />
   {/if}
-  <Button icon={IconOptions} kind={'link'} on:click={handleOptionsEditorOpened} />
+  <ViewOptionsButton on:click={handleOptionsEditorOpened} />
   <slot name="extra" />
 </div>

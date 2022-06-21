@@ -27,9 +27,9 @@
     Loading,
     SearchEdit,
     showPopup,
-    Tooltip
+    TabList
   } from '@anticrm/ui'
-  import view, { Filter, Viewlet, ViewletPreference } from '@anticrm/view'
+  import view, { Viewlet, ViewletPreference } from '@anticrm/view'
   import { FilterButton, ViewletSettingButton } from '@anticrm/view-resources'
   import calendar from '../plugin'
 
@@ -43,7 +43,6 @@
   export let createComponent: AnyComponent | undefined = calendar.component.CreateEvent
   export let createLabel: IntlString | undefined = calendar.string.CreateEvent
 
-  let filters: Filter[] = []
   const viewletQuery = createQuery()
   let search = ''
   let resultQuery: DocumentQuery<Event> = {}
@@ -92,34 +91,21 @@
       },
       { limit: 1 }
     )
+  $: viewslist = viewlets.map((views) => {
+    return {
+      id: views._id,
+      icon: views.$lookup?.descriptor?.icon,
+      tooltip: views.$lookup?.descriptor?.label
+    }
+  })
 </script>
 
 <div class="ac-header full withSettings">
   <div class="ac-header__wrap-title">
     <div class="ac-header__icon"><Icon icon={viewIcon} size={'small'} /></div>
     <span class="ac-header__title"><Label label={viewLabel} /></span>
-    <div class="ml-4"><FilterButton {_class} bind:filters /></div>
+    <div class="ml-4"><FilterButton {_class} /></div>
   </div>
-
-  {#if viewlets.length > 1}
-    <div class="flex">
-      {#each viewlets as viewlet, i}
-        <Tooltip label={viewlet.$lookup?.descriptor?.label} direction={'top'}>
-          <button
-            class="ac-header__icon-button"
-            class:selected={selectedViewlet === viewlet}
-            on:click={() => {
-              selectedViewlet = viewlet
-            }}
-          >
-            {#if viewlet.$lookup?.descriptor?.icon}
-              <Icon icon={viewlet.$lookup.descriptor.icon} size={'small'} />
-            {/if}
-          </button>
-        </Tooltip>
-      {/each}
-    </div>
-  {/if}
 
   <SearchEdit
     bind:value={search}
@@ -127,7 +113,20 @@
       updateResultQuery(search)
     }}
   />
-  <Button icon={IconAdd} label={createLabel} kind={'primary'} on:click={showCreateDialog} />
+  <Button icon={IconAdd} label={createLabel} kind={'primary'} size={'small'} on:click={showCreateDialog} />
+
+  {#if viewlets.length > 1}
+    <TabList
+      items={viewslist}
+      multiselect={false}
+      selected={selectedViewlet?._id}
+      kind={'secondary'}
+      size={'small'}
+      on:select={(result) => {
+        if (result.detail !== undefined) selectedViewlet = viewlets.find((vl) => vl._id === result.detail.id)
+      }}
+    />
+  {/if}
   <ViewletSettingButton viewlet={selectedViewlet} />
 </div>
 
@@ -144,7 +143,6 @@
         config: preference?.config ?? selectedViewlet.config,
         viewlet: selectedViewlet,
         query: resultQuery,
-        filters,
         search,
         createComponent
       }}

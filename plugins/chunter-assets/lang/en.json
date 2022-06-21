@@ -65,6 +65,7 @@
     "ThreadMessage": "Thread message",
     "ChunterBrowser": "Search",
     "Messages": "Messages",
-    "NoResults": "No results"
+    "NoResults": "No results",
+    "CopyLink": "Copy link"
   }
 }

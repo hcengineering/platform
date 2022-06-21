@@ -39,7 +39,6 @@
   import { FilterBar, FilterButton, SpacePresenter } from '@anticrm/view-resources'
   import { IntlString } from '@anticrm/platform'
   import { classIcon } from '../utils'
-  import { Filter } from '@anticrm/view'
 
   export let _class: Ref<Class<Space>>
   export let label: IntlString
@@ -55,7 +54,6 @@
   const sort: SortingQuery<Space> = {
     name: SortingOrder.Ascending
   }
-  export let filters: Filter[] = []
   let searchQuery: DocumentQuery<Space>
   let resultQuery: DocumentQuery<Space>
 
@@ -120,7 +118,7 @@
       <span class="ac-header__title"><Label {label} /></span>
     </div>
     {#if createItemDialog}
-      <Button label={createItemLabel} on:click={(ev) => showCreateDialog(ev)} />
+      <Button label={createItemLabel} size={'small'} on:click={(ev) => showCreateDialog(ev)} />
     {/if}
   </div>
   <div class="ml-8 mr-8 mt-4 mb-4">
@@ -135,10 +133,10 @@
 {/if}
 {#if withFilterButton}
   <div class="ml-10 mt-4 mb-4">
-    <FilterButton {_class} bind:filters />
+    <FilterButton {_class} />
   </div>
 {/if}
-<FilterBar {_class} query={searchQuery} bind:filters on:change={(e) => (resultQuery = e.detail)} />
+<FilterBar {_class} query={searchQuery} on:change={(e) => (resultQuery = e.detail)} />
 <Scroller padding={'2.5rem'}>
   <div class="flex-col">
     {#each spaces as space (space._id)}

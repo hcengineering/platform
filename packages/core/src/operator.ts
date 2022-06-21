@@ -42,6 +42,9 @@ function $push (document: Doc, keyval: Record<string, PropertyType>): void {
 function $pull (document: Doc, keyval: Record<string, PropertyType>): void {
   const doc = document as any
   for (const key in keyval) {
+    if (doc[key] === undefined) {
+      doc[key] = []
+    }
     const arr = doc[key] as Array<any>
     if (typeof keyval[key] === 'object') {
       const { $in } = keyval[key] as PullArray<PropertyType>
@@ -55,6 +58,9 @@ function $pull (document: Doc, keyval: Record<string, PropertyType>): void {
 function $move (document: Doc, keyval: Record<string, PropertyType>): void {
   const doc = document as any
   for (const key in keyval) {
+    if (doc[key] === undefined) {
+      doc[key] = []
+    }
     const arr = doc[key] as Array<any>
     const desc = keyval[key]
     doc[key] = arr.filter((val) => val !== desc.$value)

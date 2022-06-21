@@ -1,9 +1,8 @@
 <script lang="ts">
   import core, { Ref, Space, WithLookup } from '@anticrm/core'
-  import { Button, getCurrentLocation, navigate, location, Tooltip, Icon } from '@anticrm/ui'
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import { Header, classIcon } from '@anticrm/chunter-resources'
-  import border from '../plugin'
+  import { Button, getCurrentLocation, navigate, location, TabList, Icon } from '@anticrm/ui'
+  import { createQuery } from '@anticrm/presentation'
+  import board from '../plugin'
   import { Viewlet } from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
 
@@ -19,40 +18,48 @@
     space = result[0]
   })
 
-  const client = getClient()
-
   function showMenu () {
     const loc = getCurrentLocation()
     loc.path[3] = space._id
     navigate(loc)
   }
   $: showMenuButton = $location.path[3] === undefined
+
+  $: viewslist = viewlets.map((views) => {
+    return {
+      id: views._id,
+      icon: views.$lookup?.descriptor?.icon,
+      tooltip: views.$lookup?.descriptor?.label
+    }
+  })
 </script>
 
 <div class="ac-header divide full">
   {#if space}
-    <Header icon={classIcon(client, space._class)} label={space.name} description={space.description} />
-    {#if viewlets.length > 1}
-      <div class="flex">
-        {#each viewlets as v, i}
-          <Tooltip label={v.$lookup?.descriptor?.label} direction={'top'}>
-            <button
-              class="ac-header__icon-button"
-              class:selected={viewlet?._id === v._id}
-              on:click={() => {
-                dispatch('change', v)
-              }}
-            >
-              {#if v.$lookup?.descriptor?.icon}
-                <Icon icon={v.$lookup?.descriptor?.icon} size={'small'} />
-              {/if}
-            </button>
-          </Tooltip>
-        {/each}
+    <div class="ac-header__wrap-description">
+      <div class="ac-header__wrap-title" on:click>
+        <div class="ac-header__icon"><Icon icon={board.icon.Board} size={'small'} /></div>
+        <span class="ac-header__title">{space.name}</span>
       </div>
+      <span class="ac-header__description">{space.description}</span>
+    </div>
+    {#if viewlets.length > 1}
+      <TabList
+        items={viewslist}
+        multiselect={false}
+        selected={viewlet?._id}
+        kind={'secondary'}
+        size={'small'}
+        on:select={(result) => {
+          if (result.detail !== undefined) {
+            const viewlet = viewlets.find((vl) => vl._id === result.detail.id)
+            dispatch('change', viewlet)
+          }
+        }}
+      />
     {/if}
     {#if showMenuButton}
-      <Button label={border.string.ShowMenu} on:click={showMenu} />
+      <Button label={board.string.ShowMenu} size={'small'} on:click={showMenu} />
     {/if}
   {/if}
 </div>

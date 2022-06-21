@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Tooltip } from '@anticrm/ui'
+  import { tooltip } from '@anticrm/ui'
   import tracker from '../../plugin'
 
   export let value: number
@@ -28,14 +28,22 @@
   })
 </script>
 
-<Tooltip label={tracker.string.ModificationDate} props={{ value: fullModificationDate }}>
-  <span class="modificationDateLabel">{shortModificationDate}</span>
-</Tooltip>
+<div
+  class="modificationDateLabel"
+  use:tooltip={{
+    label: tracker.string.ModificationDate,
+    props: { value: fullModificationDate }
+  }}
+>
+  {shortModificationDate}
+</div>
 
 <style lang="scss">
   .modificationDateLabel {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+    font-size: 0.75rem;
+    color: var(--content-color);
   }
 </style>

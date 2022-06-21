@@ -39,7 +39,8 @@
     "@types/ws": "^8.2.1",
     "@types/xml2js": "~0.4.9",
     "@types/mime-types": "~2.1.1",
-    "@types/request": "~2.48.8"
+    "@types/request": "~2.48.8",
+    "@types/email-addresses": "^3.0.0"
   },
   "dependencies": {
     "mongodb": "^4.1.1",
@@ -93,6 +94,8 @@
     "@anticrm/server-recruit-resources": "~0.6.0",
     "@anticrm/server-task": "~0.6.0",
     "@anticrm/server-task-resources": "~0.6.0",
+    "@anticrm/server-tracker": "~0.6.0",
+    "@anticrm/server-tracker-resources": "~0.6.0",
     "@anticrm/server-tags": "~0.6.0",
     "@anticrm/server-tags-resources": "~0.6.0",
     "@anticrm/server-calendar": "~0.6.0",
@@ -101,11 +104,15 @@
     "@anticrm/server-gmail-resources": "~0.6.0",
     "@anticrm/server-telegram": "~0.6.0",
     "@anticrm/server-telegram-resources": "~0.6.0",
+    "@anticrm/server-hr": "~0.6.0",
+    "@anticrm/server-hr-resources": "~0.6.0",
     "@anticrm/rekoni": "~0.6.0",
     "got": "^11.8.3",
     "@anticrm/tags": "~0.6.2",
     "@anticrm/server-backup": "~0.6.0",
     "csv-parse": "~5.1.0",
-    "@anticrm/lead": "~0.6.0"
+    "@anticrm/lead": "~0.6.0",    
+    "email-addresses": "^5.0.0",
+    "libphonenumber-js": "^1.9.46"
   }
 }

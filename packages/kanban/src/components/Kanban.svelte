@@ -313,6 +313,7 @@
             <slot name="beforeCard" {state} />
             <KanbanRow
               bind:this={stateRows[si]}
+              on:obj-focus
               {stateObjects}
               {isDragging}
               {dragCard}
@@ -345,6 +346,7 @@
 <style lang="scss">
   .kanban-container {
     position: relative;
+    width: 100%;
     height: 100%;
     background: var(--board-bg-color);
   }
@@ -366,6 +368,7 @@
     display: flex;
     flex-direction: column;
     width: 20rem;
+    min-width: 20rem;
     background-color: transparent;
     border: 1px solid transparent;
     border-radius: 0.25rem;

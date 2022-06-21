@@ -13,14 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Channel, Organization } from '@anticrm/contact'
-  import { AttachedData, generateId } from '@anticrm/core'
+  import { Channel, findContacts, Organization } from '@anticrm/contact'
+  import { AttachedData, generateId, WithLookup } from '@anticrm/core'
   import { Card, getClient } from '@anticrm/presentation'
-  import { Button, EditBox, createFocusManager, FocusHandler } from '@anticrm/ui'
+  import { Button, createFocusManager, EditBox, FocusHandler, IconInfo, Label } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import contact from '../plugin'
   import ChannelsDropdown from './ChannelsDropdown.svelte'
   import Company from './icons/Company.svelte'
+  import OrganizationPresenter from './OrganizationPresenter.svelte'
 
   export function canClose (): boolean {
     return object.name === ''
@@ -57,6 +58,13 @@
   let channels: AttachedData<Channel>[] = []
 
   const manager = createFocusManager()
+
+  let matches: WithLookup<Organization>[] = []
+  let matchedChannels: AttachedData<Channel>[] = []
+  $: findContacts(client, contact.class.Organization, { ...object, name: object.name }, channels).then((p) => {
+    matches = p.contacts as Organization[]
+    matchedChannels = p.channels
+  })
 </script>
 
 <FocusHandler {manager} />
@@ -83,6 +91,22 @@
     />
   </div>
   <svelte:fragment slot="pool">
-    <ChannelsDropdown bind:value={channels} focusIndex={10} editable />
+    <ChannelsDropdown
+      bind:value={channels}
+      focusIndex={10}
+      editable
+      highlighted={matchedChannels.map((it) => it.provider)}
+    />
+  </svelte:fragment>
+  <svelte:fragment slot="footer">
+    {#if matches.length > 0}
+      <div class="flex-row-center error-color">
+        <IconInfo size={'small'} />
+        <span class="text-sm overflow-label ml-2">
+          <Label label={contact.string.PersonAlreadyExists} />
+        </span>
+        <div class="ml-4"><OrganizationPresenter value={matches[0]} /></div>
+      </div>
+    {/if}
   </svelte:fragment>
 </Card>

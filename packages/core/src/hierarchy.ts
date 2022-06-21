@@ -175,7 +175,7 @@ export class Hierarchy {
   private txMixin (tx: TxMixin<Doc, Doc>): void {
     if (this.isDerived(tx.objectClass, core.class.Class)) {
       const obj = this.getClass(tx.objectId as Ref<Class<Obj>>) as any
-      TxProcessor.updateMixin4Doc(obj, tx.mixin, tx.attributes)
+      TxProcessor.updateMixin4Doc(obj, tx)
     }
   }
 

@@ -13,11 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher, afterUpdate } from 'svelte'
   import { Contact, getFirstName, Person } from '@anticrm/contact'
   import type { Class, Doc, FindOptions, Ref } from '@anticrm/core'
   import type { Asset, IntlString } from '@anticrm/platform'
-  import { AnyComponent, AnySvelteComponent } from '@anticrm/ui'
+  import { AnyComponent, AnySvelteComponent, Icon, Label } from '@anticrm/ui'
   import presentation from '..'
+  import { getClient } from '../utils'
   import ObjectPopup from './ObjectPopup.svelte'
   import UserInfo from './UserInfo.svelte'
 
@@ -34,6 +36,7 @@
   export let shadows: boolean = true
   export let icon: Asset | AnySvelteComponent | undefined = undefined
 
+  const hierarchy = getClient().getHierarchy()
   export let create:
     | {
         component: AnyComponent
@@ -51,6 +54,10 @@
           }
         }
       : undefined
+
+  const dispatch = createEventDispatcher()
+
+  afterUpdate(() => dispatch('changeContent'))
 </script>
 
 <ObjectPopup
@@ -61,16 +68,30 @@
   {allowDeselect}
   {titleDeselect}
   {placeholder}
+  groupBy={'_class'}
   bind:selectedObjects={selectedUsers}
   bind:ignoreObjects={ignoreUsers}
   {shadows}
   create={_create}
   on:update
   on:close
+  on:changeContent={() => dispatch('changeContent')}
 >
   <svelte:fragment slot="item" let:item={person}>
     <div class="flex flex-grow overflow-label">
       <UserInfo size={'x-small'} value={person} {icon} />
+    </div>
+  </svelte:fragment>
+
+  <svelte:fragment slot="category" let:item={person}>
+    {@const cl = hierarchy.getClass(person._class)}
+    <div class="flex flex-grow overflow-label">
+      <span class="fs-medium flex-center gap-2 mt-2 mb-2 ml-2">
+        {#if cl.icon}
+          <Icon icon={cl.icon} size={'small'} />
+        {/if}
+        <Label label={cl.label} />
+      </span>
     </div>
   </svelte:fragment>
 </ObjectPopup>

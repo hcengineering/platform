@@ -135,6 +135,8 @@ export default mergeIds(trackerId, tracker, {
     ProjectMembersTitle: '' as IntlString,
     ProjectLeadSearchPlaceholder: '' as IntlString,
     ProjectMembersSearchPlaceholder: '' as IntlString,
+    List: '' as IntlString,
+    NumberLabels: '' as IntlString,
 
     IssueTitlePlaceholder: '' as IntlString,
     IssueDescriptionPlaceholder: '' as IntlString,
@@ -156,7 +158,14 @@ export default mergeIds(trackerId, tracker, {
     IncludeItemsThatMatch: '' as IntlString,
     AnyFilter: '' as IntlString,
     AllFilters: '' as IntlString,
-    NoDescription: '' as IntlString
+    NoDescription: '' as IntlString,
+
+    DurMinutes: '' as IntlString,
+    DurHours: '' as IntlString,
+    DurDays: '' as IntlString,
+    DurMonths: '' as IntlString,
+    DurYears: '' as IntlString,
+    StatusHistory: '' as IntlString
   },
   component: {
     NopeComponent: '' as AnyComponent,

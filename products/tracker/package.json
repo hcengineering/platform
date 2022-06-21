@@ -112,6 +112,8 @@
     "@anticrm/server-chunter-resources": "~0.6.0",
     "@anticrm/server-task": "~0.6.0",
     "@anticrm/server-task-resources": "~0.6.0",
+    "@anticrm/server-tracker": "~0.6.0",
+    "@anticrm/server-tracker-resources": "~0.6.0",
     "@anticrm/server-calendar": "~0.6.0",
     "@anticrm/server-calendar-resources": "~0.6.0",
     "@anticrm/server-gmail": "~0.6.0",

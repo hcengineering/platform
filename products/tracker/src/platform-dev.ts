@@ -24,6 +24,7 @@ import { serverNotificationId } from '@anticrm/server-notification'
 import { serverSettingId } from '@anticrm/server-setting'
 import { serverChunterId } from '@anticrm/server-chunter'
 import { serverTaskId } from '@anticrm/server-task'
+import { serverTrackerId } from '@anticrm/server-tracker'
 import { serverCalendarId } from '@anticrm/server-calendar'
 import { serverGmailId } from '@anticrm/server-gmail'
 import { serverTelegramId } from '@anticrm/server-telegram'
@@ -47,6 +48,7 @@ export function configurePlatformDev() {
     addLocation(serverSettingId, () => import(/* webpackChunkName: "server-setting" */ '@anticrm/server-setting-resources'))
     addLocation(serverChunterId, () => import(/* webpackChunkName: "server-chunter" */ '@anticrm/server-chunter-resources'))
     addLocation(serverTaskId, () => import/* webpackChunkName: "server-task" */ ('@anticrm/server-task-resources'))
+    addLocation(serverTrackerId, () => import/* webpackChunkName: "server-tracker" */ ('@anticrm/server-tracker-resources'))
     addLocation(serverCalendarId, () => import/* webpackChunkName: "server-calendar" */ ('@anticrm/server-calendar-resources'))
     addLocation(serverGmailId, () => import/* webpackChunkName: "server-gmail" */ ('@anticrm/server-gmail-resources'))
     addLocation(serverTelegramId, () => import/* webpackChunkName: "server-telegram" */ ('@anticrm/server-telegram-resources'))

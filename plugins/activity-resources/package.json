@@ -39,6 +39,7 @@
     "@anticrm/chunter": "~0.6.1",
     "@anticrm/text-editor": "~0.6.0",
     "@anticrm/contact": "~0.6.5",
+    "@anticrm/notification": "~0.6.0",
     "@anticrm/view": "~0.6.0",
     "@anticrm/view-resources": "~0.6.0"
   }

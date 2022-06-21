@@ -290,7 +290,7 @@ class TServerStorage implements ServerStorage {
         doc = TxProcessor.updateDoc2Doc(doc, tx as TxUpdateDoc<Doc>)
       } else if (tx._class === core.class.TxMixin) {
         const mixinTx = tx as TxMixin<Doc, Doc>
-        doc = TxProcessor.updateMixin4Doc(doc, mixinTx.mixin, mixinTx.attributes)
+        doc = TxProcessor.updateMixin4Doc(doc, mixinTx)
       }
     }
 

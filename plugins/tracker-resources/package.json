@@ -41,6 +41,7 @@
     "@anticrm/login": "~0.6.1",
     "@anticrm/setting": "~0.6.1",
     "@anticrm/calendar": "~0.6.0",
+    "@anticrm/tags": "~0.6.2",
     "@anticrm/task": "~0.6.0",
     "@anticrm/chunter": "~0.6.1",
     "@anticrm/notification": "~0.6.0",

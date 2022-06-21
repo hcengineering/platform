@@ -1117,6 +1117,21 @@
       "shouldPublish": true
     },
     {
+      "packageName": "@anticrm/server-tracker",
+      "projectFolder": "server-plugins/tracker",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/model-server-tracker",
+      "projectFolder": "models/server-tracker",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/server-tracker-resources",
+      "projectFolder": "server-plugins/tracker-resources",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@anticrm/server-task-resources",
       "projectFolder": "server-plugins/task-resources",
       "shouldPublish": true
@@ -1331,6 +1346,41 @@
     {
       "packageName": "@anticrm/model-automation",
       "projectFolder": "models/automation",
+      "shouldPublish": true
+    }
+    {
+      "packageName": "@anticrm/hr",
+      "projectFolder": "plugins/hr",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/hr-assets",
+      "projectFolder": "plugins/hr-assets",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/hr-resources",
+      "projectFolder": "plugins/hr-resources",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/model-hr",
+      "projectFolder": "models/hr",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/server-hr",
+      "projectFolder": "server-plugins/hr",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/model-server-hr",
+      "projectFolder": "models/server-hr",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@anticrm/server-hr-resources",
+      "projectFolder": "server-plugins/hr-resources",
       "shouldPublish": true
     }
   ]

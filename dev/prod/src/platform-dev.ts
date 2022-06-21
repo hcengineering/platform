@@ -27,11 +27,12 @@ import { serverInventoryId } from '@anticrm/server-inventory'
 import { serverLeadId } from '@anticrm/server-lead'
 import { serverRecruitId } from '@anticrm/server-recruit'
 import { serverTaskId } from '@anticrm/server-task'
+import { serverTrackerId } from '@anticrm/server-tracker'
 import { serverTagsId } from '@anticrm/server-tags'
 import { serverCalendarId } from '@anticrm/server-calendar'
 import { serverGmailId } from '@anticrm/server-gmail'
 import { serverTelegramId } from '@anticrm/server-telegram'
-
+import { serverHrId } from '@anticrm/server-hr'
 
 import { setMetadata } from '@anticrm/platform'
 
@@ -54,10 +55,12 @@ export function configurePlatformDev() {
     addLocation(serverLeadId, () => import(/* webpackChunkName: "server-lead" */ '@anticrm/server-lead-resources'))
     addLocation(serverRecruitId, () => import(/* webpackChunkName: "server-recruit" */ '@anticrm/server-recruit-resources'))
     addLocation(serverTaskId, () => import/* webpackChunkName: "server-task" */ ('@anticrm/server-task-resources'))
+    addLocation(serverTrackerId, () => import/* webpackChunkName: "server-tracker" */ ('@anticrm/server-tracker-resources'))
     addLocation(serverTagsId, () => import/* webpackChunkName: "server-tags" */ ('@anticrm/server-tags-resources'))
     addLocation(serverCalendarId, () => import/* webpackChunkName: "server-calendar" */ ('@anticrm/server-calendar-resources'))
     addLocation(serverGmailId, () => import/* webpackChunkName: "server-gmail" */ ('@anticrm/server-gmail-resources'))
     addLocation(serverTelegramId, () => import/* webpackChunkName: "server-telegram" */ ('@anticrm/server-telegram-resources'))
+    addLocation(serverHrId, () => import(/* webpackChunkName: "server-attachment" */ '@anticrm/server-hr-resources'))
     // Set devmodel to hook client to be able to present all activity
     enableDevModel()
 }

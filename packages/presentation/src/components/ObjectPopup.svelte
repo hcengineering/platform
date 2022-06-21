@@ -27,7 +27,7 @@
     showPopup,
     Tooltip
   } from '@anticrm/ui'
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, afterUpdate } from 'svelte'
   import presentation from '..'
   import { createQuery, getClient } from '../utils'
 
@@ -47,6 +47,8 @@
   export let width: 'medium' | 'large' = 'medium'
 
   export let searchField: string = 'name'
+
+  export let groupBy = '_class'
 
   export let create:
     | {
@@ -71,10 +73,18 @@
       _id: { $nin: ignoreObjects }
     },
     (result) => {
+      result.sort((a, b) => {
+        const aval: string = `${(a as any)[groupBy]}`
+        const bval: string = `${(b as any)[groupBy]}`
+        return aval.localeCompare(bval)
+      })
       objects = result
     },
     { ...(options ?? {}), limit: 200 }
   )
+
+  $: showCategories =
+    objects.map((it) => (it as any)[groupBy]).filter((it, index, arr) => arr.indexOf(it) === index).length > 1
 
   const checkSelected = (person: Doc, objects: Doc[]): void => {
     if (selectedElements.has(person._id)) {
@@ -143,25 +153,42 @@
       }
     })
   }
+  function toAny (obj: any): any {
+    return obj
+  }
+
+  afterUpdate(() => dispatch('changeContent'))
 </script>
 
 <FocusHandler {manager} />
 
 <div class="selectPopup" class:plainContainer={!shadows} class:width-40={width === 'large'} on:keydown={onKeydown}>
-  <div class="header flex-row-center flex-bletween p-1">
-    <div class="flex-grow">
-      <EditBox kind={'search-style'} focusIndex={1} focus bind:value={search} {placeholder} />
-    </div>
-
+  <div class="header flex-bletween">
+    <EditBox kind={'search-style'} focusIndex={1} focus bind:value={search} {placeholder} />
     {#if create !== undefined}
-      <Tooltip label={create.label}>
-        <Button focusIndex={2} kind={'transparent'} icon={IconAdd} on:click={onCreate} />
-      </Tooltip>
+      <Button
+        focusIndex={2}
+        kind={'transparent'}
+        icon={IconAdd}
+        showTooltip={{ label: create.label }}
+        on:click={onCreate}
+      />
     {/if}
   </div>
   <div class="scroll">
     <div class="box">
       <ListView bind:this={list} count={objects.length} bind:selection>
+        <svelte:fragment slot="category" let:item>
+          {#if showCategories}
+            {@const obj = toAny(objects[item])}
+            {#if item === 0 || (item > 0 && toAny(objects[item - 1])[groupBy] !== obj[groupBy])}
+              <!--Category for first item-->
+              <div class="category-box">
+                <slot name="category" item={obj} />
+              </div>
+            {/if}
+          {/if}
+        </svelte:fragment>
         <svelte:fragment slot="item" let:item>
           {@const obj = objects[item]}
           <button

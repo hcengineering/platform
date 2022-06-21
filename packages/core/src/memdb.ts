@@ -14,11 +14,11 @@
 //
 
 import { PlatformError, Severity, Status } from '@anticrm/platform'
-import { Lookup, ReverseLookups } from '.'
+import { getObjectValue, Lookup, ReverseLookups } from '.'
 import type { Class, Doc, Ref } from './classes'
 import core from './component'
 import { Hierarchy } from './hierarchy'
-import { matchQuery, resultSort } from './query'
+import { matchQuery, resultSort, checkMixinKey } from './query'
 import type { DocumentQuery, FindOptions, FindResult, LookupData, Storage, TxResult, WithLookup } from './storage'
 import type { Tx, TxCreateDoc, TxMixin, TxPutBag, TxRemoveDoc, TxUpdateDoc } from './tx'
 import { TxProcessor } from './tx'
@@ -77,25 +77,31 @@ export abstract class MemDb extends TxProcessor {
     return doc as T
   }
 
-  private async getLookupValue<T extends Doc>(doc: T, lookup: Lookup<T>, result: LookupData<T>): Promise<void> {
+  private async getLookupValue<T extends Doc>(
+    _class: Ref<Class<T>>,
+    doc: T,
+    lookup: Lookup<T>,
+    result: LookupData<T>
+  ): Promise<void> {
     for (const key in lookup) {
       if (key === '_id') {
         await this.getReverseLookupValue(doc, lookup, result)
         continue
       }
       const value = (lookup as any)[key]
+      const tkey = checkMixinKey(key, _class, this.hierarchy)
       if (Array.isArray(value)) {
         const [_class, nested] = value
-        const objects = await this.findAll(_class, { _id: (doc as any)[key] })
+        const objects = await this.findAll(_class, { _id: getObjectValue(tkey, doc) })
         ;(result as any)[key] = objects[0]
         const nestedResult = {}
         const parent = (result as any)[key]
-        await this.getLookupValue(parent, nested, nestedResult)
+        await this.getLookupValue(_class, parent, nested, nestedResult)
         Object.assign(parent, {
           $lookup: nestedResult
         })
       } else {
-        const objects = await this.findAll(value, { _id: (doc as any)[key] })
+        const objects = await this.findAll(value, { _id: getObjectValue(tkey, doc) })
         ;(result as any)[key] = objects[0]
       }
     }
@@ -118,11 +124,11 @@ export abstract class MemDb extends TxProcessor {
     }
   }
 
-  private async lookup<T extends Doc>(docs: T[], lookup: Lookup<T>): Promise<WithLookup<T>[]> {
+  private async lookup<T extends Doc>(_class: Ref<Class<T>>, docs: T[], lookup: Lookup<T>): Promise<WithLookup<T>[]> {
     const withLookup: WithLookup<T>[] = []
     for (const doc of docs) {
       const result: LookupData<T> = {}
-      await this.getLookupValue(doc, lookup, result)
+      await this.getLookupValue(_class, doc, lookup, result)
       withLookup.push(Object.assign({}, doc, { $lookup: result }))
     }
     return withLookup
@@ -152,7 +158,7 @@ export abstract class MemDb extends TxProcessor {
     }
 
     if (options?.lookup !== undefined) {
-      result = await this.lookup(result as T[], options.lookup)
+      result = await this.lookup(_class, result as T[], options.lookup)
       result = matchQuery(result, query, _class, this.hierarchy)
     }
 
@@ -252,7 +258,7 @@ export class ModelDb extends MemDb implements Storage {
   // TODO: process ancessor mixins
   protected async txMixin (tx: TxMixin<Doc, Doc>): Promise<TxResult> {
     const obj = this.getObject(tx.objectId) as any
-    TxProcessor.updateMixin4Doc(obj, tx.mixin, tx.attributes)
+    TxProcessor.updateMixin4Doc(obj, tx)
     return {}
   }
 }

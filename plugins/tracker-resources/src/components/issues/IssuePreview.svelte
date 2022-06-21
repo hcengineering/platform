@@ -21,6 +21,7 @@
   import AssigneeEditor from './AssigneeEditor.svelte'
   import PriorityEditor from './PriorityEditor.svelte'
   import StatusEditor from './StatusEditor.svelte'
+  import IssueStatusActivity from './IssueStatusActivity.svelte'
 
   export let object: Issue
   let issue: Issue | undefined
@@ -31,7 +32,7 @@
   const spaceQuery = createQuery()
   const statusesQuery = createQuery()
 
-  issueQuery.query(
+  $: issueQuery.query(
     object._class,
     { _id: object._id },
     (res) => {
@@ -84,8 +85,13 @@
       <StatusEditor value={issue} {statuses} shouldShowLabel kind={'transparent'} />
       <PriorityEditor value={issue} shouldShowLabel />
       {#if issue.assignee}
-        <AssigneeEditor value={issue} tooltipFill={false} />
+        <AssigneeEditor value={issue} />
       {/if}
+    </div>
+    <IssueStatusActivity {issue} />
+
+    <div class="mb-2">
+      <Label label={tracker.string.Description} />:
     </div>
     {#if issue.description}
       <div class="descr ml-2" class:mask={cHeight >= limit} bind:clientHeight={cHeight}>

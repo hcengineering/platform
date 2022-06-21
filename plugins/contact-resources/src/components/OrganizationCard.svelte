@@ -87,9 +87,5 @@
       font-size: 1rem;
       color: var(--theme-caption-color);
     }
-    .description {
-      font-size: 0.75rem;
-      color: var(--theme-content-dark-color);
-    }
   }
 </style>

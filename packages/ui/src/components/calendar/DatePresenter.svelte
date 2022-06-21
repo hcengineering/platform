@@ -31,7 +31,7 @@
   export let showIcon = true
   export let shouldShowLabel: boolean = true
   export let size: 'x-small' | 'small' = 'small'
-  export let kind: 'transparent' | 'primary' | 'link' = 'primary'
+  export let kind: 'transparent' | 'primary' | 'link' | 'list' = 'primary'
 
   const dispatch = createEventDispatcher()
 
@@ -217,6 +217,22 @@
         .btn-icon {
           color: var(--content-color);
         }
+      }
+    }
+    &.list {
+      padding: 0 0.625em 0 0.5rem;
+      min-height: 1.75rem;
+      color: var(--content-color);
+      background-color: var(--body-color);
+      border: 1px solid var(--divider-color);
+      border-radius: 3rem;
+      transition-property: border, color, background-color;
+      transition-duration: 0.15s;
+
+      &:hover {
+        color: var(--caption-color);
+        background-color: var(--board-card-bg-color);
+        border-color: var(--button-border-color);
       }
     }
 

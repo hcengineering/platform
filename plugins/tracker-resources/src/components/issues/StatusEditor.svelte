@@ -17,13 +17,12 @@
   import { AttachedData, Ref, SortingOrder, WithLookup } from '@anticrm/core'
   import { Issue, IssueStatus } from '@anticrm/tracker'
   import { createQuery, getClient } from '@anticrm/presentation'
-  import { tooltip, TooltipAlignment } from '@anticrm/ui'
+  import { Button, showPopup, SelectPopup, TooltipAlignment, eventToHTMLElement, Icon } from '@anticrm/ui'
   import type { ButtonKind, ButtonSize } from '@anticrm/ui'
   import tracker from '../../plugin'
-  import StatusSelector from '../StatusSelector.svelte'
 
   export let value: Issue | AttachedData<Issue>
-  export let statuses: WithLookup<IssueStatus>[]
+  export let statuses: WithLookup<IssueStatus>[] | undefined = undefined
   export let isEditable: boolean = true
   export let shouldShowLabel: boolean = false
   export let tooltipAlignment: TooltipAlignment | undefined = undefined
@@ -31,13 +30,13 @@
   export let kind: ButtonKind = 'link'
   export let size: ButtonSize = 'large'
   export let justify: 'left' | 'center' = 'left'
-  export let width: string | undefined = '100%'
+  export let width: string | undefined = undefined
 
   const client = getClient()
   const statusesQuery = createQuery()
   const dispatch = createEventDispatcher()
 
-  const handleStatusChanged = async (newStatus: Ref<IssueStatus> | undefined) => {
+  const changeStatus = async (newStatus: Ref<IssueStatus> | undefined) => {
     if (!isEditable || newStatus === undefined || value.status === newStatus) {
       return
     }
@@ -48,6 +47,24 @@
       await client.update(value, { status: newStatus })
     }
   }
+
+  const handleStatusEditorOpened = (event: MouseEvent) => {
+    if (!isEditable) {
+      return
+    }
+
+    showPopup(
+      SelectPopup,
+      { value: statusesInfo, placeholder: tracker.string.SetStatus, searchable: true },
+      eventToHTMLElement(event),
+      changeStatus
+    )
+  }
+
+  $: selectedStatus = statuses?.find((status) => status._id === value.status) ?? statuses?.[0]
+  $: selectedStatusIcon = selectedStatus?.$lookup?.category?.icon
+  $: selectedStatusLabel = shouldShowLabel ? selectedStatus?.name : undefined
+  $: statusesInfo = statuses?.map((s) => ({ id: s._id, text: s.name, color: s.color, icon: s.$lookup?.category?.icon }))
   $: if (!statuses) {
     const query = '_id' in value ? { attachedTo: value.space } : {}
     statusesQuery.query(
@@ -65,20 +82,40 @@
 </script>
 
 {#if value && statuses}
-  <div
-    class="clear-mins"
-    use:tooltip={isEditable ? { label: tracker.string.SetStatus, direction: tooltipAlignment } : undefined}
-  >
-    <StatusSelector
-      {kind}
-      {size}
-      {width}
+  {#if kind === 'list'}
+    <div class="flex-row-center flex-no-shrink" class:cursor-pointer={isEditable} on:click={handleStatusEditorOpened}>
+      <div class="flex-center flex-no-shrink square-4">
+        {#if selectedStatusIcon}<Icon icon={selectedStatusIcon} size={'inline'} />{/if}
+      </div>
+      {#if selectedStatusLabel}
+        <span class="ml-2 overflow-label disabled text-md fs-bold content-accent-color">
+          {selectedStatusLabel}
+        </span>
+      {/if}
+    </div>
+  {:else if selectedStatusLabel}
+    <Button
+      showTooltip={isEditable ? { label: tracker.string.SetStatus, direction: tooltipAlignment } : undefined}
+      icon={selectedStatusIcon}
+      disabled={!isEditable}
       {justify}
-      {isEditable}
-      {shouldShowLabel}
-      {statuses}
-      bind:selectedStatusId={value.status}
-      onStatusChange={handleStatusChanged}
+      {size}
+      {kind}
+      {width}
+      on:click={handleStatusEditorOpened}
+    >
+      <span slot="content" class="overflow-label disabled">{selectedStatusLabel}</span>
+    </Button>
+  {:else}
+    <Button
+      showTooltip={isEditable ? { label: tracker.string.SetStatus, direction: tooltipAlignment } : undefined}
+      icon={selectedStatusIcon}
+      disabled={!isEditable}
+      {justify}
+      {size}
+      {kind}
+      {width}
+      on:click={handleStatusEditorOpened}
     />
-  </div>
+  {/if}
 {/if}

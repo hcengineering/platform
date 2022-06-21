@@ -44,6 +44,9 @@ specifiers:
   '@rush-temp/gmail': file:./projects/gmail.tgz
   '@rush-temp/gmail-assets': file:./projects/gmail-assets.tgz
   '@rush-temp/gmail-resources': file:./projects/gmail-resources.tgz
+  '@rush-temp/hr': file:./projects/hr.tgz
+  '@rush-temp/hr-assets': file:./projects/hr-assets.tgz
+  '@rush-temp/hr-resources': file:./projects/hr-resources.tgz
   '@rush-temp/image-cropper': file:./projects/image-cropper.tgz
   '@rush-temp/image-cropper-resources': file:./projects/image-cropper-resources.tgz
   '@rush-temp/inventory': file:./projects/inventory.tgz
@@ -69,6 +72,7 @@ specifiers:
   '@rush-temp/model-core': file:./projects/model-core.tgz
   '@rush-temp/model-demo': file:./projects/model-demo.tgz
   '@rush-temp/model-gmail': file:./projects/model-gmail.tgz
+  '@rush-temp/model-hr': file:./projects/model-hr.tgz
   '@rush-temp/model-inventory': file:./projects/model-inventory.tgz
   '@rush-temp/model-lead': file:./projects/model-lead.tgz
   '@rush-temp/model-notification': file:./projects/model-notification.tgz
@@ -83,6 +87,7 @@ specifiers:
   '@rush-temp/model-server-contact': file:./projects/model-server-contact.tgz
   '@rush-temp/model-server-core': file:./projects/model-server-core.tgz
   '@rush-temp/model-server-gmail': file:./projects/model-server-gmail.tgz
+  '@rush-temp/model-server-hr': file:./projects/model-server-hr.tgz
   '@rush-temp/model-server-inventory': file:./projects/model-server-inventory.tgz
   '@rush-temp/model-server-lead': file:./projects/model-server-lead.tgz
   '@rush-temp/model-server-notification': file:./projects/model-server-notification.tgz
@@ -91,6 +96,7 @@ specifiers:
   '@rush-temp/model-server-tags': file:./projects/model-server-tags.tgz
   '@rush-temp/model-server-task': file:./projects/model-server-task.tgz
   '@rush-temp/model-server-telegram': file:./projects/model-server-telegram.tgz
+  '@rush-temp/model-server-tracker': file:./projects/model-server-tracker.tgz
   '@rush-temp/model-setting': file:./projects/model-setting.tgz
   '@rush-temp/model-tags': file:./projects/model-tags.tgz
   '@rush-temp/model-task': file:./projects/model-task.tgz
@@ -134,6 +140,8 @@ specifiers:
   '@rush-temp/server-core': file:./projects/server-core.tgz
   '@rush-temp/server-gmail': file:./projects/server-gmail.tgz
   '@rush-temp/server-gmail-resources': file:./projects/server-gmail-resources.tgz
+  '@rush-temp/server-hr': file:./projects/server-hr.tgz
+  '@rush-temp/server-hr-resources': file:./projects/server-hr-resources.tgz
   '@rush-temp/server-inventory': file:./projects/server-inventory.tgz
   '@rush-temp/server-inventory-resources': file:./projects/server-inventory-resources.tgz
   '@rush-temp/server-lead': file:./projects/server-lead.tgz
@@ -153,6 +161,8 @@ specifiers:
   '@rush-temp/server-telegram-resources': file:./projects/server-telegram-resources.tgz
   '@rush-temp/server-token': file:./projects/server-token.tgz
   '@rush-temp/server-tool': file:./projects/server-tool.tgz
+  '@rush-temp/server-tracker': file:./projects/server-tracker.tgz
+  '@rush-temp/server-tracker-resources': file:./projects/server-tracker-resources.tgz
   '@rush-temp/server-ws': file:./projects/server-ws.tgz
   '@rush-temp/setting': file:./projects/setting.tgz
   '@rush-temp/setting-assets': file:./projects/setting-assets.tgz
@@ -199,6 +209,7 @@ specifiers:
   '@types/compression': ~1.7.2
   '@types/cors': ^2.8.12
   '@types/deep-equal': ^1.0.1
+  '@types/email-addresses': ^3.0.0
   '@types/express': ^4.17.13
   '@types/express-fileupload': ^1.1.7
   '@types/faker': ~5.5.9
@@ -235,6 +246,7 @@ specifiers:
   dotenv: ~16.0.0
   dotenv-webpack: ^7.0.2
   elastic-apm-node: ~3.26.0
+  email-addresses: ^5.0.0
   esbuild: ^0.12.26
   eslint: ^7.32.0
   eslint-config-standard-with-typescript: ^21.0.1
@@ -257,6 +269,7 @@ specifiers:
   koa-bodyparser: ^4.3.0
   koa-router: ^10.1.1
   lexorank: ~1.0.4
+  libphonenumber-js: ^1.9.46
   mime-types: ~2.1.34
   mini-css-extract-plugin: ^2.2.0
   minio: ^7.0.26
@@ -335,6 +348,9 @@ dependencies:
   '@rush-temp/gmail': file:projects/gmail.tgz
   '@rush-temp/gmail-assets': file:projects/gmail-assets.tgz
   '@rush-temp/gmail-resources': file:projects/gmail-resources.tgz_1e3963ebf0ceeb25b2fa6a1cc87e253c
+  '@rush-temp/hr': file:projects/hr.tgz
+  '@rush-temp/hr-assets': file:projects/hr-assets.tgz_typescript@4.7.2
+  '@rush-temp/hr-resources': file:projects/hr-resources.tgz_1e3963ebf0ceeb25b2fa6a1cc87e253c
   '@rush-temp/image-cropper': file:projects/image-cropper.tgz
   '@rush-temp/image-cropper-resources': file:projects/image-cropper-resources.tgz_1e3963ebf0ceeb25b2fa6a1cc87e253c
   '@rush-temp/inventory': file:projects/inventory.tgz
@@ -360,6 +376,7 @@ dependencies:
   '@rush-temp/model-core': file:projects/model-core.tgz_typescript@4.7.2
   '@rush-temp/model-demo': file:projects/model-demo.tgz_typescript@4.7.2
   '@rush-temp/model-gmail': file:projects/model-gmail.tgz_typescript@4.7.2
+  '@rush-temp/model-hr': file:projects/model-hr.tgz_typescript@4.7.2
   '@rush-temp/model-inventory': file:projects/model-inventory.tgz_typescript@4.7.2
   '@rush-temp/model-lead': file:projects/model-lead.tgz_typescript@4.7.2
   '@rush-temp/model-notification': file:projects/model-notification.tgz_typescript@4.7.2
@@ -374,6 +391,7 @@ dependencies:
   '@rush-temp/model-server-contact': file:projects/model-server-contact.tgz_typescript@4.7.2
   '@rush-temp/model-server-core': file:projects/model-server-core.tgz_typescript@4.7.2
   '@rush-temp/model-server-gmail': file:projects/model-server-gmail.tgz_typescript@4.7.2
+  '@rush-temp/model-server-hr': file:projects/model-server-hr.tgz_typescript@4.7.2
   '@rush-temp/model-server-inventory': file:projects/model-server-inventory.tgz_typescript@4.7.2
   '@rush-temp/model-server-lead': file:projects/model-server-lead.tgz_typescript@4.7.2
   '@rush-temp/model-server-notification': file:projects/model-server-notification.tgz_typescript@4.7.2
@@ -382,6 +400,7 @@ dependencies:
   '@rush-temp/model-server-tags': file:projects/model-server-tags.tgz_typescript@4.7.2
   '@rush-temp/model-server-task': file:projects/model-server-task.tgz_typescript@4.7.2
   '@rush-temp/model-server-telegram': file:projects/model-server-telegram.tgz_typescript@4.7.2
+  '@rush-temp/model-server-tracker': file:projects/model-server-tracker.tgz_typescript@4.7.2
   '@rush-temp/model-setting': file:projects/model-setting.tgz_typescript@4.7.2
   '@rush-temp/model-tags': file:projects/model-tags.tgz_typescript@4.7.2
   '@rush-temp/model-task': file:projects/model-task.tgz_typescript@4.7.2
@@ -425,6 +444,8 @@ dependencies:
   '@rush-temp/server-core': file:projects/server-core.tgz
   '@rush-temp/server-gmail': file:projects/server-gmail.tgz
   '@rush-temp/server-gmail-resources': file:projects/server-gmail-resources.tgz
+  '@rush-temp/server-hr': file:projects/server-hr.tgz
+  '@rush-temp/server-hr-resources': file:projects/server-hr-resources.tgz
   '@rush-temp/server-inventory': file:projects/server-inventory.tgz
   '@rush-temp/server-inventory-resources': file:projects/server-inventory-resources.tgz
   '@rush-temp/server-lead': file:projects/server-lead.tgz
@@ -444,6 +465,8 @@ dependencies:
   '@rush-temp/server-telegram-resources': file:projects/server-telegram-resources.tgz
   '@rush-temp/server-token': file:projects/server-token.tgz
   '@rush-temp/server-tool': file:projects/server-tool.tgz
+  '@rush-temp/server-tracker': file:projects/server-tracker.tgz
+  '@rush-temp/server-tracker-resources': file:projects/server-tracker-resources.tgz
   '@rush-temp/server-ws': file:projects/server-ws.tgz
   '@rush-temp/setting': file:projects/setting.tgz
   '@rush-temp/setting-assets': file:projects/setting-assets.tgz_typescript@4.7.2
@@ -490,6 +513,7 @@ dependencies:
   '@types/compression': 1.7.2
   '@types/cors': 2.8.12
   '@types/deep-equal': 1.0.1
+  '@types/email-addresses': 3.0.0
   '@types/express': 4.17.13
   '@types/express-fileupload': 1.2.2
   '@types/faker': 5.5.9
@@ -526,6 +550,7 @@ dependencies:
   dotenv: 16.0.1
   dotenv-webpack: 7.1.0_webpack@5.73.0
   elastic-apm-node: 3.26.0
+  email-addresses: 5.0.0
   esbuild: 0.12.29
   eslint: 7.32.0
   eslint-config-standard-with-typescript: 21.0.1_99a5fe2f2ae1dc64d6b59974c931eb2a
@@ -548,6 +573,7 @@ dependencies:
   koa-bodyparser: 4.3.0
   koa-router: 10.1.1
   lexorank: 1.0.4
+  libphonenumber-js: 1.10.6
   mime-types: 2.1.35
   mini-css-extract-plugin: 2.6.0_webpack@5.73.0
   minio: 7.0.28
@@ -2209,6 +2235,13 @@ packages:
 
   /@types/deep-equal/1.0.1:
     resolution: {integrity: sha512-mMUu4nWHLBlHtxXY17Fg6+ucS/MnndyOWyOe7MmwkoMYxvfQU2ajtRaEvqSUv+aVkMqH/C0NCI8UoVfRNQ10yg==}
+    dev: false
+
+  /@types/email-addresses/3.0.0:
+    resolution: {integrity: sha512-jGUOSgpOEWhTH4tMCj56NZenkzER259nJ5NGRvxXld3X7Lai/lxC3QNfDM0rVGMkj+WhANMpvIf195tgwnE7wQ==}
+    deprecated: This is a stub types definition for email-addresses (https://github.com/jackbowman/email-addresses). email-addresses provides its own type definitions, so you don't need @types/email-addresses installed!
+    dependencies:
+      email-addresses: 5.0.0
     dev: false
 
   /@types/eslint-scope/3.7.3:
@@ -4074,26 +4107,8 @@ packages:
       cssom: 0.3.8
     dev: false
 
-  /csv-generate/4.1.0:
-    resolution: {integrity: sha512-Z17wI0xmDfpwzB7lShyK7INBt0YMyh5kV7svWTwsBSOa30T6Lq1fHHasmSCtf2rRTI7GnTk52HQRYBk0ToAXQQ==}
-    dev: false
-
   /csv-parse/5.1.0:
     resolution: {integrity: sha512-JL+Q6YEikT2uoe57InjFFa6VejhSv0tDwOxeQ1bVQKeUC/NCnLAAZ8n3PzowPQQLuZ37fysDYZipB2UJkH9C6A==}
-    dev: false
-
-  /csv-stringify/6.1.0:
-    resolution: {integrity: sha512-rdBqiy77TczvhGlpLHyoph2adMs6WMnmQY4PBRqeIWykI1FLnVCppnRdso8faGj2+eN7izk9YlbFyZkOrL9rAQ==}
-    dev: false
-
-  /csv/6.1.0:
-    resolution: {integrity: sha512-kvd8YWk7emi/0fXhuv+IKaanNFhPi5Up1wT4ZGVUu39bd9lRWpxQu1F7eaRfxTEc9mGxeMWIzEilKKrL0MoEnQ==}
-    engines: {node: '>= 0.1.90'}
-    dependencies:
-      csv-generate: 4.1.0
-      csv-parse: 5.1.0
-      csv-stringify: 6.1.0
-      stream-transform: 3.1.0
     dev: false
 
   /data-urls/2.0.0:
@@ -4467,6 +4482,10 @@ packages:
       inherits: 2.0.4
       minimalistic-assert: 1.0.1
       minimalistic-crypto-utils: 1.0.1
+    dev: false
+
+  /email-addresses/5.0.0:
+    resolution: {integrity: sha512-4OIPYlA6JXqtVn8zpHpGiI7vE6EQOAg16aGnDMIAlZVinnoZ8208tW1hAbjWydgN/4PLTT9q+O1K6AH/vALJGw==}
     dev: false
 
   /emittery/0.8.1:
@@ -6885,6 +6904,10 @@ packages:
     resolution: {integrity: sha512-CMgA8AMJIX/QfoYHKyjg0hv9W1SGL2xRkt0uLyhT9xKKRj73fHi+IhsrB3W36wwk4I0iz8YlKHfdW14QDwerMA==}
     dev: false
 
+  /libphonenumber-js/1.10.6:
+    resolution: {integrity: sha512-CIjT100/SmntsUjsLVs2t3ufeN4KdNXUxhD07tH153pdbaCWuAjv0jK/gPuywR3IImB/U/MQM+x9RfhMs5XZiA==}
+    dev: false
+
   /lilconfig/2.0.5:
     resolution: {integrity: sha512-xaYmXZtTHPAw5m+xLN8ab9C+3a8YmV3asNSPOATITbtwrfbwaLJj8h66H1WMIpALCkqsIzK3h7oQ+PdX+LQ9Eg==}
     engines: {node: '>=10'}
@@ -8814,10 +8837,6 @@ packages:
       readable-stream: 3.6.0
     dev: false
 
-  /stream-transform/3.1.0:
-    resolution: {integrity: sha512-ncT/rST/M2N2zGLacJmeB7TNq/XS8Ck0xqvhYX6bgLwSPTSZLVFCSvNnwTU+RYhk9fAfwzCkYH9I5kdgcDMvfw==}
-    dev: false
-
   /streamsearch/1.1.0:
     resolution: {integrity: sha512-Mcc5wHehp9aXz1ax6bZUyY5afg9u2rv5cqQI3mRrYkGC8rW2hM02jWuwjtL++LS5qinSyhj2QfLyNsuc+VsExg==}
     engines: {node: '>=10.0.0'}
@@ -10021,7 +10040,7 @@ packages:
     dev: false
 
   file:projects/activity-resources.tgz_1e3963ebf0ceeb25b2fa6a1cc87e253c:
-    resolution: {integrity: sha512-3qOFOo1wgN0U2L66jIpfdizhweVg+Bt+CblBFjdpQD8anPqMX5Bpm4LbCqQfACtY+XSl92anmiCEYfvQbTL0rw==, tarball: file:projects/activity-resources.tgz}
+    resolution: {integrity: sha512-GdQlfWQ1T4zhtHShJ/qNtQS6pLovUO9tX3Vn67eqX5qNYDFp0Taf47+DTbYBSd6ZrmtMWhusl8T4LsRQgj5tuw==, tarball: file:projects/activity-resources.tgz}
     id: file:projects/activity-resources.tgz
     name: '@rush-temp/activity-resources'
     version: 0.0.0
@@ -11033,6 +11052,89 @@ packages:
       - supports-color
     dev: false
 
+  file:projects/hr-assets.tgz_typescript@4.7.2:
+    resolution: {integrity: sha512-Or7JUoPjJeVKIbJt6RExTLlWhvCJxWe1dZBA0332S7HIUgWDnev8Qx0EzBxV1FKXne/XV1w8ZEusJXPReGz3mw==, tarball: file:projects/hr-assets.tgz}
+    id: file:projects/hr-assets.tgz
+    name: '@rush-temp/hr-assets'
+    version: 0.0.0
+    dependencies:
+      '@rushstack/heft': 0.45.5
+      '@types/heft-jest': 1.0.2
+      '@types/node': 16.11.38
+      '@typescript-eslint/eslint-plugin': 5.27.0_738fa17fa57f8a69ace69c90e5cfa1d5
+      '@typescript-eslint/parser': 5.27.0_eslint@7.32.0+typescript@4.7.2
+      eslint: 7.32.0
+      eslint-config-standard-with-typescript: 21.0.1_99a5fe2f2ae1dc64d6b59974c931eb2a
+      eslint-plugin-import: 2.26.0_c21022bc9feaeb7b200d3d631eeae46c
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 5.2.0_eslint@7.32.0
+      prettier: 2.6.2
+    transitivePeerDependencies:
+      - eslint-import-resolver-typescript
+      - eslint-import-resolver-webpack
+      - supports-color
+      - typescript
+    dev: false
+
+  file:projects/hr-resources.tgz_1e3963ebf0ceeb25b2fa6a1cc87e253c:
+    resolution: {integrity: sha512-XEARExHSGYAtE9S/t40BikzGTpOvffiQ07PdMv7XooZao5H2Rq9INzFCfe78vORfpmR0qaR8EhxBHyyJQbJ5ng==, tarball: file:projects/hr-resources.tgz}
+    id: file:projects/hr-resources.tgz
+    name: '@rush-temp/hr-resources'
+    version: 0.0.0
+    dependencies:
+      '@typescript-eslint/eslint-plugin': 5.27.0_738fa17fa57f8a69ace69c90e5cfa1d5
+      '@typescript-eslint/parser': 5.27.0_eslint@7.32.0+typescript@4.7.2
+      eslint: 7.32.0
+      eslint-config-standard-with-typescript: 21.0.1_99a5fe2f2ae1dc64d6b59974c931eb2a
+      eslint-plugin-import: 2.26.0_c21022bc9feaeb7b200d3d631eeae46c
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 5.2.0_eslint@7.32.0
+      eslint-plugin-svelte3: 4.0.0_eslint@7.32.0+svelte@3.48.0
+      prettier: 2.6.2
+      prettier-plugin-svelte: 2.7.0_prettier@2.6.2+svelte@3.48.0
+      sass: 1.52.2
+      svelte: 3.48.0
+      svelte-check: 2.7.2_c1788f0bf13b393830d6c30602bd01af
+      svelte-loader: 3.1.3_svelte@3.48.0
+      svelte-preprocess: 4.10.6_0757fe126296bf9639251bcd13609b29
+      typescript: 4.7.2
+    transitivePeerDependencies:
+      - '@babel/core'
+      - coffeescript
+      - eslint-import-resolver-typescript
+      - eslint-import-resolver-webpack
+      - less
+      - node-sass
+      - postcss
+      - postcss-load-config
+      - pug
+      - stylus
+      - sugarss
+      - supports-color
+    dev: false
+
+  file:projects/hr.tgz:
+    resolution: {integrity: sha512-8jSKJNCIhxfPjP8hislK8NLocwO4VwDJ/jjYzq6tlRwgiI3pMAuftX/NsZEKARgHcHebssy63acqJNImdp2ALQ==, tarball: file:projects/hr.tgz}
+    name: '@rush-temp/hr'
+    version: 0.0.0
+    dependencies:
+      '@rushstack/heft': 0.45.5
+      '@types/heft-jest': 1.0.2
+      '@typescript-eslint/eslint-plugin': 5.27.0_738fa17fa57f8a69ace69c90e5cfa1d5
+      '@typescript-eslint/parser': 5.27.0_eslint@7.32.0+typescript@4.7.2
+      eslint: 7.32.0
+      eslint-config-standard-with-typescript: 21.0.1_99a5fe2f2ae1dc64d6b59974c931eb2a
+      eslint-plugin-import: 2.26.0_c21022bc9feaeb7b200d3d631eeae46c
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 5.2.0_eslint@7.32.0
+      prettier: 2.6.2
+      typescript: 4.7.2
+    transitivePeerDependencies:
+      - eslint-import-resolver-typescript
+      - eslint-import-resolver-webpack
+      - supports-color
+    dev: false
+
   file:projects/image-cropper-resources.tgz_1e3963ebf0ceeb25b2fa6a1cc87e253c:
     resolution: {integrity: sha512-8whE1ZAsPDruwYl6MT6HEWi5zFPGLg3fsYmvdDL2cx1KmDH421bm+M5kkq+Ok5HUV8jYoQRK00zvX8Awz4e+lQ==, tarball: file:projects/image-cropper-resources.tgz}
     id: file:projects/image-cropper-resources.tgz
@@ -11426,7 +11528,7 @@ packages:
     dev: false
 
   file:projects/model-all.tgz_typescript@4.7.2:
-    resolution: {integrity: sha512-HwWisKkL960mLPWfVgI7kN5pJ4xJSVAJXru0Mxx6+ao67HiDJcDkS19tcpJGAflmZpW5MHzHjFKks3hhBAD1DA==, tarball: file:projects/model-all.tgz}
+    resolution: {integrity: sha512-VrR3QpQKo2qizq7xi/uS9Jj+OyrB/mPDLnAc8/pvwEx8jF5PwySSsP63uSNGcO3fwv7ZjZvAiuvEnaIHUZ5Ivg==, tarball: file:projects/model-all.tgz}
     id: file:projects/model-all.tgz
     name: '@rush-temp/model-all'
     version: 0.0.0
@@ -11640,6 +11742,29 @@ packages:
     resolution: {integrity: sha512-0oYfCXBalMBmoSc4vcy3gwv4wpHmuUP3n14d4Lil9pHF4Z34xMogbi41pz7CIIfntR0/NwIuiJwXxiqeNJL5Tw==, tarball: file:projects/model-gmail.tgz}
     id: file:projects/model-gmail.tgz
     name: '@rush-temp/model-gmail'
+    version: 0.0.0
+    dependencies:
+      '@rushstack/heft': 0.45.5
+      '@types/heft-jest': 1.0.2
+      '@typescript-eslint/eslint-plugin': 5.27.0_738fa17fa57f8a69ace69c90e5cfa1d5
+      '@typescript-eslint/parser': 5.27.0_eslint@7.32.0+typescript@4.7.2
+      eslint: 7.32.0
+      eslint-config-standard-with-typescript: 21.0.1_99a5fe2f2ae1dc64d6b59974c931eb2a
+      eslint-plugin-import: 2.26.0_c21022bc9feaeb7b200d3d631eeae46c
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 5.2.0_eslint@7.32.0
+      prettier: 2.6.2
+    transitivePeerDependencies:
+      - eslint-import-resolver-typescript
+      - eslint-import-resolver-webpack
+      - supports-color
+      - typescript
+    dev: false
+
+  file:projects/model-hr.tgz_typescript@4.7.2:
+    resolution: {integrity: sha512-N+3GtMbOYJZCiiIrw5lwGQ9tkHgePYpxLRtnZdCN15CkFY1hbFx55NeTDhp5rMq09FeWjxuBSSuXJyWu96rIMg==, tarball: file:projects/model-hr.tgz}
+    id: file:projects/model-hr.tgz
+    name: '@rush-temp/model-hr'
     version: 0.0.0
     dependencies:
       '@rushstack/heft': 0.45.5
@@ -11978,6 +12103,29 @@ packages:
       - typescript
     dev: false
 
+  file:projects/model-server-hr.tgz_typescript@4.7.2:
+    resolution: {integrity: sha512-jSk/2YD9iHX6gPWUlc+RstSQVCpJGeoEsRNyaI3MMPtwytRCNa6Bdp1FjwFr3WId2wFQ+eHdpg9EtGr5ooGhUg==, tarball: file:projects/model-server-hr.tgz}
+    id: file:projects/model-server-hr.tgz
+    name: '@rush-temp/model-server-hr'
+    version: 0.0.0
+    dependencies:
+      '@rushstack/heft': 0.45.5
+      '@types/heft-jest': 1.0.2
+      '@typescript-eslint/eslint-plugin': 5.27.0_738fa17fa57f8a69ace69c90e5cfa1d5
+      '@typescript-eslint/parser': 5.27.0_eslint@7.32.0+typescript@4.7.2
+      eslint: 7.32.0
+      eslint-config-standard-with-typescript: 21.0.1_99a5fe2f2ae1dc64d6b59974c931eb2a
+      eslint-plugin-import: 2.26.0_c21022bc9feaeb7b200d3d631eeae46c
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 5.2.0_eslint@7.32.0
+      prettier: 2.6.2
+    transitivePeerDependencies:
+      - eslint-import-resolver-typescript
+      - eslint-import-resolver-webpack
+      - supports-color
+      - typescript
+    dev: false
+
   file:projects/model-server-inventory.tgz_typescript@4.7.2:
     resolution: {integrity: sha512-fEZjpHFjw7k95RXySO8e9RpoaicF9jI2fVN9SSDEFUSmBsUKz3yR1wa1JrALrsH0YjcKzL1dWQK6AIJj4PuMCA==, tarball: file:projects/model-server-inventory.tgz}
     id: file:projects/model-server-inventory.tgz
@@ -12162,6 +12310,29 @@ packages:
       - typescript
     dev: false
 
+  file:projects/model-server-tracker.tgz_typescript@4.7.2:
+    resolution: {integrity: sha512-3HUhXzYc+nHrN4DYIYeelA1sHD5hbsxAHFd0CVmmTQ+9cCEWDJUroNEiGCCr7hVs9Kt0UXXG9PLdvDcyyKWMPA==, tarball: file:projects/model-server-tracker.tgz}
+    id: file:projects/model-server-tracker.tgz
+    name: '@rush-temp/model-server-tracker'
+    version: 0.0.0
+    dependencies:
+      '@rushstack/heft': 0.45.5
+      '@types/heft-jest': 1.0.2
+      '@typescript-eslint/eslint-plugin': 5.27.0_738fa17fa57f8a69ace69c90e5cfa1d5
+      '@typescript-eslint/parser': 5.27.0_eslint@7.32.0+typescript@4.7.2
+      eslint: 7.32.0
+      eslint-config-standard-with-typescript: 21.0.1_99a5fe2f2ae1dc64d6b59974c931eb2a
+      eslint-plugin-import: 2.26.0_c21022bc9feaeb7b200d3d631eeae46c
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 5.2.0_eslint@7.32.0
+      prettier: 2.6.2
+    transitivePeerDependencies:
+      - eslint-import-resolver-typescript
+      - eslint-import-resolver-webpack
+      - supports-color
+      - typescript
+    dev: false
+
   file:projects/model-setting.tgz_typescript@4.7.2:
     resolution: {integrity: sha512-BcxU6vVAXEmrjraS3jewut5+oeAEQuzU/k4aSNrdWi4oaOWJm5p5v1O2gzVZXbjI39eThGIbTtzDLBCEX95n1Q==, tarball: file:projects/model-setting.tgz}
     id: file:projects/model-setting.tgz
@@ -12301,7 +12472,7 @@ packages:
     dev: false
 
   file:projects/model-tracker.tgz_typescript@4.7.2:
-    resolution: {integrity: sha512-3giT5Ql8N6I6UaeU038P16HSmmhnQdy2eIYaKok1cF+AX0Z/0dXcR/bSvgQ88WJxMrtAsusZkOkF+PyvUUJOYg==, tarball: file:projects/model-tracker.tgz}
+    resolution: {integrity: sha512-3NvQ5qG0MQi1q/7nydGTluAJYjDlwLDG+AZXSG3I0tMEG5YpQguM399GXlGlWZzhFAc++KUK1nDR7JWtaPmXcA==, tarball: file:projects/model-tracker.tgz}
     id: file:projects/model-tracker.tgz
     name: '@rush-temp/model-tracker'
     version: 0.0.0
@@ -12479,7 +12650,7 @@ packages:
     dev: false
 
   file:projects/notification.tgz:
-    resolution: {integrity: sha512-T0MHErZvhtTwdclos98GglKOGizrwTcrfU6u0s0Oio37PzD3jzOSvaJkgzePqt0sFee5XY8qXlLm7xLvVW9zPw==, tarball: file:projects/notification.tgz}
+    resolution: {integrity: sha512-6BJ+zX3Wj70Wk6KKBPvfV6oBMh5/9fijekSDAzhnLKRhJPwuIBD5tCRJcqz4FJn8ZwqhjBMzB1op0rxJa2wYvg==, tarball: file:projects/notification.tgz}
     name: '@rush-temp/notification'
     version: 0.0.0
     dependencies:
@@ -12493,6 +12664,7 @@ packages:
       eslint-plugin-node: 11.1.0_eslint@7.32.0
       eslint-plugin-promise: 5.2.0_eslint@7.32.0
       prettier: 2.6.2
+      svelte: 3.48.0
       typescript: 4.7.2
     transitivePeerDependencies:
       - eslint-import-resolver-typescript
@@ -12740,7 +12912,7 @@ packages:
     dev: false
 
   file:projects/prod-tracker.tgz_d1c3762ecb2c185353d3f02936f6ec22:
-    resolution: {integrity: sha512-0eyrMP8f/hVYH+hCzocX+7NQV1qV63Y01jOMV8HkimM51dtCFCz3Qo2Tki5jEw4gjX1Dv3XhvhMAoLDSvDI1Ig==, tarball: file:projects/prod-tracker.tgz}
+    resolution: {integrity: sha512-zGqmuGtTWtIqvDsoxMoZD3MrD+r0vMKQM/FIxf7HLxosTleGiflEbi85a+ZySK7kSw0cN7J1zP3HoSv7E5/dlg==, tarball: file:projects/prod-tracker.tgz}
     id: file:projects/prod-tracker.tgz
     name: '@rush-temp/prod-tracker'
     version: 0.0.0
@@ -12786,7 +12958,7 @@ packages:
     dev: false
 
   file:projects/prod.tgz_d1c3762ecb2c185353d3f02936f6ec22:
-    resolution: {integrity: sha512-mbbpHHdfsCTlrpIynTZIjKouGSVFY89o4QGj6KyfRA7kDAIGuIbCPZlYOmGtKWwENVfgPzgL8EiX4nIwdNphrQ==, tarball: file:projects/prod.tgz}
+    resolution: {integrity: sha512-Ruj8noHdrzO1bGVEYxLSgza5VdloFea3VbtIutq8UnZThqIzyBmJRsEo1lLmN5WAKBW50oEBKsKDZxuXB/ZuYQ==, tarball: file:projects/prod.tgz}
     id: file:projects/prod.tgz
     name: '@rush-temp/prod'
     version: 0.0.0
@@ -13289,6 +13461,51 @@ packages:
       - supports-color
     dev: false
 
+  file:projects/server-hr-resources.tgz:
+    resolution: {integrity: sha512-D073FS8B1EjB1D7fFgFm1Tdq6u69DaNcLVx65szIypERkUyFKyNr5KXqSyHSeDbwPWwz7nyOw2ecN8rlCPHnJg==, tarball: file:projects/server-hr-resources.tgz}
+    name: '@rush-temp/server-hr-resources'
+    version: 0.0.0
+    dependencies:
+      '@rushstack/heft': 0.45.5
+      '@types/heft-jest': 1.0.2
+      '@typescript-eslint/eslint-plugin': 5.27.0_738fa17fa57f8a69ace69c90e5cfa1d5
+      '@typescript-eslint/parser': 5.27.0_eslint@7.32.0+typescript@4.7.2
+      eslint: 7.32.0
+      eslint-config-standard-with-typescript: 21.0.1_99a5fe2f2ae1dc64d6b59974c931eb2a
+      eslint-plugin-import: 2.26.0_c21022bc9feaeb7b200d3d631eeae46c
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 5.2.0_eslint@7.32.0
+      prettier: 2.6.2
+      typescript: 4.7.2
+    transitivePeerDependencies:
+      - eslint-import-resolver-typescript
+      - eslint-import-resolver-webpack
+      - supports-color
+    dev: false
+
+  file:projects/server-hr.tgz:
+    resolution: {integrity: sha512-VPn9I/49Q/15y/R3yinhsKHb5CwTxzHZFemEfj0b/sALUamdf3S3sJpdMorZkNI44hFOns6LzHRRKUf/ka9zOA==, tarball: file:projects/server-hr.tgz}
+    name: '@rush-temp/server-hr'
+    version: 0.0.0
+    dependencies:
+      '@rushstack/heft': 0.45.5
+      '@types/heft-jest': 1.0.2
+      '@types/node': 16.11.38
+      '@typescript-eslint/eslint-plugin': 5.27.0_738fa17fa57f8a69ace69c90e5cfa1d5
+      '@typescript-eslint/parser': 5.27.0_eslint@7.32.0+typescript@4.7.2
+      eslint: 7.32.0
+      eslint-config-standard-with-typescript: 21.0.1_99a5fe2f2ae1dc64d6b59974c931eb2a
+      eslint-plugin-import: 2.26.0_c21022bc9feaeb7b200d3d631eeae46c
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 5.2.0_eslint@7.32.0
+      prettier: 2.6.2
+      typescript: 4.7.2
+    transitivePeerDependencies:
+      - eslint-import-resolver-typescript
+      - eslint-import-resolver-webpack
+      - supports-color
+    dev: false
+
   file:projects/server-inventory-resources.tgz:
     resolution: {integrity: sha512-QXv09ktLX1fL3VlWS5ofrZxuL21p9T0IWM0X+hLCpoqmxPA/Bhpi52CtRM/89DsgohhEPPpWNG9byQci8A5vOw==, tarball: file:projects/server-inventory-resources.tgz}
     name: '@rush-temp/server-inventory-resources'
@@ -13727,6 +13944,51 @@ packages:
       - utf-8-validate
     dev: false
 
+  file:projects/server-tracker-resources.tgz:
+    resolution: {integrity: sha512-gJqowCis9yMaD5guzyEHwsD2rPrQVWg8OMz+HA3yavagTbOn+s/kStjDHCuWr/UCvaMG2C8KKGEh+kof5Tw81A==, tarball: file:projects/server-tracker-resources.tgz}
+    name: '@rush-temp/server-tracker-resources'
+    version: 0.0.0
+    dependencies:
+      '@rushstack/heft': 0.45.5
+      '@types/heft-jest': 1.0.2
+      '@typescript-eslint/eslint-plugin': 5.27.0_738fa17fa57f8a69ace69c90e5cfa1d5
+      '@typescript-eslint/parser': 5.27.0_eslint@7.32.0+typescript@4.7.2
+      eslint: 7.32.0
+      eslint-config-standard-with-typescript: 21.0.1_99a5fe2f2ae1dc64d6b59974c931eb2a
+      eslint-plugin-import: 2.26.0_c21022bc9feaeb7b200d3d631eeae46c
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 5.2.0_eslint@7.32.0
+      prettier: 2.6.2
+      typescript: 4.7.2
+    transitivePeerDependencies:
+      - eslint-import-resolver-typescript
+      - eslint-import-resolver-webpack
+      - supports-color
+    dev: false
+
+  file:projects/server-tracker.tgz:
+    resolution: {integrity: sha512-MX6s76LYP1+V2O0cX17+ZMRMshwLYFOVZ1H7p1P+dSjLYQvAGd/YLSm4+EBQDezhifALLdUYnRAJ63+6g3xwxA==, tarball: file:projects/server-tracker.tgz}
+    name: '@rush-temp/server-tracker'
+    version: 0.0.0
+    dependencies:
+      '@rushstack/heft': 0.45.5
+      '@types/heft-jest': 1.0.2
+      '@types/node': 16.11.38
+      '@typescript-eslint/eslint-plugin': 5.27.0_738fa17fa57f8a69ace69c90e5cfa1d5
+      '@typescript-eslint/parser': 5.27.0_eslint@7.32.0+typescript@4.7.2
+      eslint: 7.32.0
+      eslint-config-standard-with-typescript: 21.0.1_99a5fe2f2ae1dc64d6b59974c931eb2a
+      eslint-plugin-import: 2.26.0_c21022bc9feaeb7b200d3d631eeae46c
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-promise: 5.2.0_eslint@7.32.0
+      prettier: 2.6.2
+      typescript: 4.7.2
+    transitivePeerDependencies:
+      - eslint-import-resolver-typescript
+      - eslint-import-resolver-webpack
+      - supports-color
+    dev: false
+
   file:projects/server-ws.tgz:
     resolution: {integrity: sha512-3OcollkknCogTVUoodFYtWQY7HEqvk/IwIJcttmAOoiFMZ5bLxVJp4owsikDyltPo6xWLnjEwxYuyzInBaHg0A==, tarball: file:projects/server-ws.tgz}
     name: '@rush-temp/server-ws'
@@ -13755,7 +14017,7 @@ packages:
     dev: false
 
   file:projects/server.tgz:
-    resolution: {integrity: sha512-DixjIA8WXXltcm2FxRmE1hQMwF3p/5eqoHsMCtEEj1g5Pr8a1XGGfwGcsulDCM3rsekYZ9i+6Rf9baMg47eL8A==, tarball: file:projects/server.tgz}
+    resolution: {integrity: sha512-xJg2GMws1k8PADTrUVUbp6eEynFM+iEVYmsaU5lWpPk2nz4MrDTnirbDITNKPbmKlTdODDWJSaT6zIjhi+GRMg==, tarball: file:projects/server.tgz}
     name: '@rush-temp/server'
     version: 0.0.0
     dependencies:
@@ -14314,12 +14576,13 @@ packages:
     dev: false
 
   file:projects/tool.tgz:
-    resolution: {integrity: sha512-C8dM8FUbxB2Qba50AcAeEfwhjxLFE8AZMN6ExlvdghT2FELk1jXLdHnVEP6CXgUlYo/MrTDjH+H5/XMgagEYTQ==, tarball: file:projects/tool.tgz}
+    resolution: {integrity: sha512-JO6pn5WreSM6pO8MAbVM0lDk6nYKwfX7fLjfpcBv8AQ2C0ZHuGxbFGOA75Y1ccsq3fB4n35KMgBCUKnecCBZKQ==, tarball: file:projects/tool.tgz}
     name: '@rush-temp/tool'
     version: 0.0.0
     dependencies:
       '@elastic/elasticsearch': 7.17.0
       '@rushstack/heft': 0.45.5
+      '@types/email-addresses': 3.0.0
       '@types/heft-jest': 1.0.2
       '@types/mime-types': 2.1.1
       '@types/minio': 7.0.13
@@ -14331,8 +14594,8 @@ packages:
       '@typescript-eslint/parser': 5.27.0_eslint@7.32.0+typescript@4.7.2
       commander: 8.3.0
       cross-env: 7.0.3
-      csv: 6.1.0
       csv-parse: 5.1.0
+      email-addresses: 5.0.0
       esbuild: 0.12.29
       eslint: 7.32.0
       eslint-config-standard-with-typescript: 21.0.1_99a5fe2f2ae1dc64d6b59974c931eb2a
@@ -14341,6 +14604,7 @@ packages:
       eslint-plugin-promise: 5.2.0_eslint@7.32.0
       fast-equals: 2.0.4
       got: 11.8.5
+      libphonenumber-js: 1.10.6
       mime-types: 2.1.35
       minio: 7.0.28
       mongodb: 4.6.0
@@ -14384,7 +14648,7 @@ packages:
     dev: false
 
   file:projects/tracker-resources.tgz_1e3963ebf0ceeb25b2fa6a1cc87e253c:
-    resolution: {integrity: sha512-z3TfQ4BzAQK48+svzVwLJMfJP8kF7Skk6XgUYiW6NGYmWTsauxTAO43pbnH0+zrx112vGahLduOnBsYNURRLXQ==, tarball: file:projects/tracker-resources.tgz}
+    resolution: {integrity: sha512-bNqQvwzdPa61s2z+M0xrwW5bSvv46yBY8BXt6cqKEHwp1Zv78P5NHU/ScAgVRuJSvwknhrykBK1mK7zghMr3Hg==, tarball: file:projects/tracker-resources.tgz}
     id: file:projects/tracker-resources.tgz
     name: '@rush-temp/tracker-resources'
     version: 0.0.0
@@ -14421,7 +14685,7 @@ packages:
     dev: false
 
   file:projects/tracker.tgz:
-    resolution: {integrity: sha512-fj497PawVB5mdi7yIw96vQs81XXIcJ3SzrQe0UHyb4IqTbFCoN4/HHGnZ6JXrUY/wdPLHfJzUVMlZKZVKcjD6A==, tarball: file:projects/tracker.tgz}
+    resolution: {integrity: sha512-wGhZrDr9Vkg1fm9mUcBfkmQXKQlFpiUUOVIa3WEzoIlCzuAzSs4RiAk5XtVeryvQziu6G0dAzbOka9lV9Fxa+A==, tarball: file:projects/tracker.tgz}
     name: '@rush-temp/tracker'
     version: 0.0.0
     dependencies:

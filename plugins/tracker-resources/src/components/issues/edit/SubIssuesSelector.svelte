@@ -17,6 +17,7 @@
   import { Issue, IssueStatus, Team } from '@anticrm/tracker'
   import type { ButtonKind, ButtonSize } from '@anticrm/ui'
   import { Button, closeTooltip, ProgressCircle, SelectPopup, showPanel, showPopup } from '@anticrm/ui'
+  import { updateFocus } from '@anticrm/view-resources'
   import tracker from '../../../plugin'
   import { getIssueId } from '../../../utils'
 
@@ -54,7 +55,6 @@
       showPanel(tracker.component.EditIssue, target, issue._class, 'content')
     }
   }
-
   function showSubIssues () {
     if (subIssues) {
       closeTooltip()
@@ -77,7 +77,16 @@
             return DOMRect.fromRect({ width: 1, height: 1, x: rect.left + offsetX, y: rect.bottom + offsetY })
           }
         },
-        (selectedIssue) => selectedIssue !== undefined && openIssue(selectedIssue)
+        (selectedIssue) => {
+          selectedIssue !== undefined && openIssue(selectedIssue)
+        },
+        (selectedIssue) => {
+          const focus = subIssues?.find((it) => it._id === selectedIssue.id)
+          if (focus !== undefined) {
+            console.log('ISE', selectedIssue, focus)
+            updateFocus({ focus })
+          }
+        }
       )
     }
   }

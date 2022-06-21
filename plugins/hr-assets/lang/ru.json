@@ -1,0 +1,21 @@
+{
+  "string": {
+    "Department": "Департамент",
+    "ParentDepartmentLabel": "Родительский департамент",
+    "Structure":"Структура",
+    "CreateDepartment": "Создать департамент",
+    "CreateDepartmentLabel": "Создать департамент",
+    "DepartmentPlaceholder": "Департамент",
+    "TeamLead": "Менеджер",
+    "UnAssignLead": "Отменить назначение менеджера",
+    "MemberCount": "{count, plural, =0 {нет сотрудников} =1 {1 сотрудник} =2 {2 сотрудника} =3 {3 сотрудника} =4 {4 сотрудника} other {# сотрудников}}",
+    "AssignLead": "Назначить менеджера",
+    "TeamLeadTooltip": "{value}",
+    "HRApplication": "Human resources",
+    "MoveStaff": "Перевод сотрудника",
+    "MoveStaffDescr": "Вы действительно хотите перевести сотрудника из {current} в {department}",
+    "Departments": "Департаменты",
+    "ShowEmployees": "Просмотреть сотрудников",
+    "AddEmployee": "Добавить сотрудника"
+  }
+}

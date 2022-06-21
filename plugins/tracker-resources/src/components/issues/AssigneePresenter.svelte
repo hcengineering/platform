@@ -97,7 +97,7 @@
     this={presenter.presenter}
     {value}
     {defaultName}
-    avatarSize={'tiny'}
+    avatarSize={'x-small'}
     isInteractive={true}
     shouldShowPlaceholder={true}
     shouldShowName={shouldShowLabel}

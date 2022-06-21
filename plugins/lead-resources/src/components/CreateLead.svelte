@@ -20,16 +20,16 @@
   import { OK, Status } from '@anticrm/platform'
   import { Card, getClient, SpaceSelector, UserBox } from '@anticrm/presentation'
   import task, { calcRank } from '@anticrm/task'
-  import { EditBox, Status as StatusControl } from '@anticrm/ui'
+  import { createFocusManager, EditBox, FocusHandler, Label, Status as StatusControl } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import lead from '../plugin'
 
   export let space: Ref<Space>
+  export let customer: Ref<Contact> | null = null
+  export let preserveCustomer = false
 
   let _space = space
   const status: Status = OK
-
-  let customer: Ref<Contact> | null = null
 
   let title: string = ''
 
@@ -38,8 +38,14 @@
   const leadId = generateId() as Ref<Lead>
 
   export function canClose (): boolean {
-    return title !== ''
+    return (preserveCustomer || customer === undefined) && title === ''
   }
+
+  $: client.findAll(lead.class.Funnel, {}).then((r) => {
+    if (r.find((it) => it._id === _space) === undefined) {
+      _space = r.shift()?._id as Ref<Space>
+    }
+  })
 
   async function createLead () {
     const state = await client.findOne(task.class.State, { space: _space })
@@ -86,7 +92,11 @@
     await client.addCollection(lead.class.Lead, _space, customer!, lead.mixin.Customer, 'leads', value, leadId)
     dispatch('close')
   }
+
+  const manager = createFocusManager()
 </script>
+
+<FocusHandler {manager} />
 
 <Card
   label={lead.string.CreateLead}
@@ -97,10 +107,37 @@
   }}
 >
   <svelte:fragment slot="header">
-    <SpaceSelector _class={lead.class.Funnel} label={lead.string.FunnelName} bind:space={_space} />
+    <SpaceSelector
+      _class={lead.class.Funnel}
+      label={lead.string.FunnelName}
+      bind:space={_space}
+      create={{
+        component: lead.component.CreateFunnel,
+        label: lead.string.CreateFunnel
+      }}
+    />
+  </svelte:fragment>
+  <svelte:fragment slot="title">
+    <div class="flex-row-center gap-2">
+      {#if preserveCustomer}
+        <UserBox
+          readonly
+          _class={contact.class.Contact}
+          options={{ sort: { modifiedOn: -1 } }}
+          excluded={[]}
+          label={lead.string.Leads}
+          placeholder={lead.string.Leads}
+          bind:value={customer}
+          kind={'no-border'}
+          size={'small'}
+        />
+      {/if}
+      <Label label={lead.string.CreateLead} />
+    </div>
   </svelte:fragment>
   <StatusControl slot="error" {status} />
   <EditBox
+    focusIndex={1}
     label={lead.string.LeadName}
     bind:value={title}
     icon={lead.icon.Lead}
@@ -109,13 +146,17 @@
     focus
   />
   <svelte:fragment slot="pool">
-    <UserBox
-      _class={contact.class.Contact}
-      label={lead.string.Customer}
-      placeholder={lead.string.SelectCustomer}
-      bind:value={customer}
-      kind={'no-border'}
-      size={'small'}
-    />
+    {#if !preserveCustomer}
+      <UserBox
+        focusIndex={2}
+        _class={contact.class.Contact}
+        label={lead.string.Customer}
+        placeholder={lead.string.SelectCustomer}
+        bind:value={customer}
+        kind={'no-border'}
+        size={'small'}
+        create={{ component: lead.component.CreateCustomer, label: lead.string.CreateCustomer }}
+      />
+    {/if}
   </svelte:fragment>
 </Card>

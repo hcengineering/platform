@@ -149,6 +149,7 @@ export function createModel (builder: Builder): void {
       descriptor: task.viewlet.StatusTable,
       config: [
         '',
+        'title',
         '$lookup.attachedTo',
         '$lookup.state',
         '$lookup.doneState',
@@ -231,6 +232,54 @@ export function createModel (builder: Builder): void {
   builder.mixin(lead.mixin.Customer, core.class.Mixin, view.mixin.ObjectFactory, {
     component: lead.component.CreateCustomer
   })
+
+  builder.createDoc(
+    view.class.ActionCategory,
+    core.space.Model,
+    { label: lead.string.LeadApplication, visible: true },
+    lead.category.Lead
+  )
+
+  createAction(builder, {
+    action: view.actionImpl.ShowPopup,
+    actionProps: {
+      component: lead.component.CreateLead,
+      _id: 'customer',
+      element: 'top',
+      props: {
+        preserveCustomer: true
+      }
+    },
+    label: lead.string.CreateLead,
+    icon: lead.icon.Lead,
+    input: 'focus',
+    category: lead.category.Lead,
+    target: contact.class.Contact,
+    context: { mode: ['context', 'browser'] },
+    override: [lead.action.CreateGlobalLead]
+  })
+
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.ShowPopup,
+      actionProps: {
+        component: lead.component.CreateLead,
+        element: 'top'
+      },
+      label: lead.string.CreateLead,
+      icon: lead.icon.Lead,
+      keyBinding: [],
+      input: 'none',
+      category: lead.category.Lead,
+      target: core.class.Doc,
+      context: {
+        mode: ['workbench', 'browser'],
+        application: lead.app.Lead
+      }
+    },
+    lead.action.CreateGlobalLead
+  )
 }
 
 export { leadOperation } from './migration'

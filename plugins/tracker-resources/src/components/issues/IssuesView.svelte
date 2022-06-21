@@ -11,8 +11,9 @@
     ViewOptions
   } from '@anticrm/tracker'
   import { Button, IconDetails } from '@anticrm/ui'
-  import view, { Filter, Viewlet } from '@anticrm/view'
+  import view, { Viewlet } from '@anticrm/view'
   import { FilterBar } from '@anticrm/view-resources'
+  import { getActiveViewletId } from '@anticrm/view-resources/src/utils'
   import tracker from '../../plugin'
   import IssuesContent from './IssuesContent.svelte'
   import IssuesHeader from './IssuesHeader.svelte'
@@ -25,7 +26,6 @@
   export let panelWidth: number = 0
 
   let viewlet: WithLookup<Viewlet> | undefined = undefined
-  let filters: Filter[]
   let viewOptions: ViewOptions = {
     groupBy: IssuesGrouping.Status,
     orderBy: IssuesOrdering.Status,
@@ -53,7 +53,8 @@
           }
         }
       )
-      ;[viewlet] = viewlets
+      const _id = getActiveViewletId()
+      viewlet = viewlets.find((viewlet) => viewlet._id === _id) || viewlets[0]
     }
   }
   $: if (!label && title) {
@@ -76,7 +77,7 @@
 </script>
 
 {#if currentSpace}
-  <IssuesHeader {currentSpace} {viewlets} {label} bind:viewlet bind:viewOptions bind:filters>
+  <IssuesHeader {currentSpace} {viewlets} {label} bind:viewlet bind:viewOptions>
     <svelte:fragment slot="extra">
       {#if asideFloat && $$slots.aside}
         <Button
@@ -91,11 +92,11 @@
       {/if}
     </svelte:fragment>
   </IssuesHeader>
-  <FilterBar _class={tracker.class.Issue} {query} bind:filters on:change={(e) => (resultQuery = e.detail)} />
-  <div class="flex h-full">
-    <div class="antiPanel-component">
+  <FilterBar _class={tracker.class.Issue} {query} on:change={(e) => (resultQuery = e.detail)} />
+  <div class="flex w-full h-full clear-mins">
+    {#if viewlet}
       <IssuesContent {currentSpace} {viewlet} query={resultQuery} {viewOptions} />
-    </div>
+    {/if}
     {#if $$slots.aside !== undefined && asideShown}
       <div class="popupPanel-body__aside" class:float={asideFloat} class:shown={asideShown}>
         <slot name="aside" />

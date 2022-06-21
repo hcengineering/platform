@@ -139,12 +139,19 @@
     "@anticrm/server-telegram": "~0.6.0",
     "@anticrm/server-telegram-resources": "~0.6.0",
     "@anticrm/presentation": "~0.6.2",
+    "@anticrm/server-tracker": "~0.6.0",
+    "@anticrm/server-tracker-resources": "~0.6.0",
     "@anticrm/tracker": "~0.6.0",
     "@anticrm/tracker-assets": "~0.6.0",
     "@anticrm/tracker-resources": "~0.6.0",
     "@anticrm/text-editor": "~0.6.0",
     "@anticrm/board": "~0.6.0",
     "@anticrm/board-assets": "~0.6.0",
-    "@anticrm/board-resources": "~0.6.0"
+    "@anticrm/board-resources": "~0.6.0",
+    "@anticrm/hr": "~0.6.0",
+    "@anticrm/hr-assets": "~0.6.0",
+    "@anticrm/hr-resources": "~0.6.0",
+    "@anticrm/server-hr": "~0.6.0",
+    "@anticrm/server-hr-resources": "~0.6.0"
   }
 }

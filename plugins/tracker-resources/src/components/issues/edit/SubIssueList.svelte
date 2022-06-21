@@ -15,14 +15,13 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import { flip } from 'svelte/animate'
-  import { WithLookup } from '@anticrm/core'
+  import { Doc, WithLookup } from '@anticrm/core'
   import { Issue, IssueStatus, Team } from '@anticrm/tracker'
-  import { ContextMenu } from '@anticrm/view-resources'
+  import { ActionContext, ContextMenu, ListSelectionProvider, SelectDirection } from '@anticrm/view-resources'
   import { showPanel, showPopup } from '@anticrm/ui'
   import tracker from '../../../plugin'
   import { getIssueId } from '../../../utils'
   import Circles from '../../icons/Circles.svelte'
-  import ProjectEditor from '../../projects/ProjectEditor.svelte'
   import AssigneeEditor from '../AssigneeEditor.svelte'
   import DueDateEditor from '../DueDateEditor.svelte'
   import StatusEditor from '../StatusEditor.svelte'
@@ -71,7 +70,20 @@
       { getBoundingClientRect: () => DOMRect.fromRect({ width: 1, height: 1, x: ev.clientX, y: ev.clientY }) }
     )
   }
+
+  const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
+    // if (dir === 'vertical') {
+    //   // Select next
+    //   table.select(offset, of)
+    // }
+  })
 </script>
+
+<ActionContext
+  context={{
+    mode: 'browser'
+  }}
+/>
 
 {#each issues as issue, index (issue._id)}
   <div
@@ -88,30 +100,41 @@
     on:dragenter={() => (hoveringIndex = index)}
     on:drop|preventDefault={(ev) => handleDrop(ev, index)}
     on:dragend={resetDrag}
+    on:mouseover={() => {
+      listProvider.updateFocus(issue)
+    }}
+    on:focus={() => {
+      listProvider.updateFocus(issue)
+    }}
   >
     <div class="draggable-container">
       <div class="draggable-mark"><Circles /></div>
     </div>
     <div class="flex-center ml-6 clear-mins">
-      <div class="mr-2">
-        <PriorityEditor value={issue} isEditable kind="transparent" justify="center" width="" />
+      <div class="mr-1">
+        <PriorityEditor value={issue} isEditable kind="transparent" justify="center" />
       </div>
       <span class="flex-no-shrink text" on:click={() => openIssue(issue)}>
         {getIssueId(currentTeam, issue)}
       </span>
-      <StatusEditor value={issue} statuses={issueStatuses} kind="transparent" tooltipAlignment="bottom" />
+      <div class="mx-1">
+        <StatusEditor
+          value={issue}
+          statuses={issueStatuses}
+          justify="center"
+          kind="transparent"
+          tooltipAlignment="bottom"
+        />
+      </div>
       <span class="text name" title={issue.title} on:click={() => openIssue(issue)}>
         {issue.title}
       </span>
     </div>
     <div class="flex-center flex-no-shrink">
-      {#if issue.project !== null}
-        <ProjectEditor value={issue} />
-      {/if}
       {#if issue.dueDate !== null}
         <DueDateEditor value={issue} />
       {/if}
-      <AssigneeEditor value={issue} tooltipFill={false} />
+      <AssigneeEditor value={issue} />
     </div>
   </div>
 {/each}
