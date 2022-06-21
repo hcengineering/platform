@@ -17,7 +17,7 @@
   import { AttachedData, Ref, SortingOrder, WithLookup } from '@anticrm/core'
   import { Issue, IssueStatus } from '@anticrm/tracker'
   import { createQuery, getClient } from '@anticrm/presentation'
-  import { Button, showPopup, SelectPopup, TooltipAlignment, eventToHTMLElement } from '@anticrm/ui'
+  import { Button, showPopup, SelectPopup, TooltipAlignment, eventToHTMLElement, Icon } from '@anticrm/ui'
   import type { ButtonKind, ButtonSize } from '@anticrm/ui'
   import tracker from '../../plugin'
 
@@ -82,7 +82,18 @@
 </script>
 
 {#if value && statuses}
-  {#if selectedStatusLabel}
+  {#if kind === 'list'}
+    <div class="flex-row-center flex-no-shrink" class:cursor-pointer={isEditable} on:click={handleStatusEditorOpened}>
+      <div class="flex-center flex-no-shrink square-4">
+        {#if selectedStatusIcon}<Icon icon={selectedStatusIcon} size={'inline'} />{/if}
+      </div>
+      {#if selectedStatusLabel}
+        <span class="ml-2 overflow-label disabled text-md fs-bold content-accent-color">
+          {selectedStatusLabel}
+        </span>
+      {/if}
+    </div>
+  {:else if selectedStatusLabel}
     <Button
       showTooltip={isEditable ? { label: tracker.string.SetStatus, direction: tooltipAlignment } : undefined}
       icon={selectedStatusIcon}

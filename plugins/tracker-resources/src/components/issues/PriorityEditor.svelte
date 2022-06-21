@@ -18,7 +18,7 @@
   import { Issue, IssuePriority } from '@anticrm/tracker'
   import { getClient } from '@anticrm/presentation'
   import { Button, eventToHTMLElement } from '@anticrm/ui'
-  import { ButtonKind, ButtonSize, showPopup, SelectPopup } from '@anticrm/ui'
+  import { ButtonKind, ButtonSize, showPopup, SelectPopup, Icon, Label } from '@anticrm/ui'
   import tracker from '../../plugin'
   import { defaultPriorities, issuePriorities } from '../../utils'
 
@@ -64,15 +64,59 @@
 </script>
 
 {#if value}
-  <Button
-    showTooltip={isEditable ? { label: tracker.string.SetPriority } : undefined}
-    label={shouldShowLabel ? issuePriorities[value.priority].label : undefined}
-    icon={issuePriorities[value.priority].icon}
-    {justify}
-    {width}
-    {size}
-    {kind}
-    disabled={!isEditable}
-    on:click={handlePriorityEditorOpened}
-  />
+  {#if kind === 'list'}
+    <div class="priority-container" on:click={handlePriorityEditorOpened}>
+      <div class="icon">
+        {#if issuePriorities[value.priority].icon}<Icon icon={issuePriorities[value.priority].icon} {size} />{/if}
+      </div>
+      {#if shouldShowLabel}
+        <span class="overflow-label label">
+          <Label label={issuePriorities[value.priority].label} />
+        </span>
+      {/if}
+    </div>
+  {:else}
+    <Button
+      showTooltip={isEditable ? { label: tracker.string.SetPriority } : undefined}
+      label={shouldShowLabel ? issuePriorities[value.priority].label : undefined}
+      icon={issuePriorities[value.priority].icon}
+      {justify}
+      {width}
+      {size}
+      {kind}
+      disabled={!isEditable}
+      on:click={handlePriorityEditorOpened}
+    />
+  {/if}
 {/if}
+
+<style lang="scss">
+  .priority-container {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    min-width: 0;
+    cursor: pointer;
+
+    .icon {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-shrink: 0;
+      width: 1rem;
+      height: 1rem;
+      color: var(--content-color);
+    }
+    .label {
+      margin-left: 0.5rem;
+      font-weight: 500;
+      font-size: 0.8125rem;
+      color: var(--accent-color);
+    }
+    &:hover {
+      .icon {
+        color: var(--caption-color) !important;
+      }
+    }
+  }
+</style>

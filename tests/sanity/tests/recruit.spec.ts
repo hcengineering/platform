@@ -118,7 +118,8 @@ test.describe('recruit tests', () => {
     await page.locator('text=Vacancies').click()
     await page.click('text=Software Engineer')
 
-    await page.click('[name="tooltip-task:string:Kanban"]')
+    // await page.click('[name="tooltip-task:string:Kanban"]')
+    await page.click('.tablist-container div:nth-child(2)')
 
     await expect(page.locator('text=Marina M.').first()).toBeVisible()
     await expect(page.locator('text=John Multiseed').first()).toBeVisible()

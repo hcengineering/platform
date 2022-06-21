@@ -30,7 +30,8 @@ loadMetadata(view.icon, {
   ArrowRight: `${icons}#arrow-right`,
   Views: `${icons}#views`,
   Pin: `${icons}#pin`,
-  Model: `${icons}#model`
+  Model: `${icons}#model`,
+  ViewButton: `${icons}#viewButton`
 })
 
 addStringsLoader(viewId, async (lang: string) => await import(`../lang/${lang}.json`))

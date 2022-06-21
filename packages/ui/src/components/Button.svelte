@@ -110,8 +110,13 @@
   {#if icon && !loading}
     <div
       class="btn-icon pointer-events-none"
-      class:mr-1={!iconOnly && (kind === 'no-border' || kind === 'link-bordered' || shape === 'circle')}
-      class:mr-2={!iconOnly && kind !== 'no-border' && kind !== 'link-bordered' && shape !== 'circle'}
+      class:mr-1={!iconOnly &&
+        (kind === 'no-border' || kind === 'link-bordered' || kind === 'list' || shape === 'circle')}
+      class:mr-2={!iconOnly &&
+        kind !== 'no-border' &&
+        kind !== 'link-bordered' &&
+        kind !== 'list' &&
+        shape !== 'circle'}
       class:resetIconSize
     >
       <Icon bind:icon size={size === 'inline' ? 'inline' : 'small'} />
@@ -304,6 +309,22 @@
         .btn-icon {
           color: var(--accent-color);
         }
+      }
+    }
+    &.list {
+      padding: 0 0.625em 0 0.5rem;
+      min-height: 1.75rem;
+      color: var(--content-color);
+      background-color: var(--body-color);
+      border: 1px solid var(--divider-color);
+      border-radius: 3rem;
+      transition-property: border, color, background-color;
+      transition-duration: 0.15s;
+
+      &:hover {
+        color: var(--caption-color);
+        background-color: var(--board-card-bg-color);
+        border-color: var(--button-border-color);
       }
     }
     &.primary {

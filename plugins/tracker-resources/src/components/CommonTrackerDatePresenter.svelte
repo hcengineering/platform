@@ -21,6 +21,7 @@
   export let dateMs: number | null = null
   export let shouldRender: boolean = true
   export let onDateChange: (newDate: number | null) => void
+  export let kind: 'transparent' | 'primary' | 'link' | 'list' = 'primary'
 
   $: today = new Date(new Date(Date.now()).setHours(0, 0, 0, 0))
   $: isOverdue = dateMs !== null && dateMs < today.getTime()
@@ -57,6 +58,7 @@
         editable={true}
         shouldShowLabel={false}
         icon={iconModifier}
+        {kind}
         on:change={handleDueDateChanged}
       />
     </Tooltip>
@@ -66,6 +68,7 @@
       editable={true}
       shouldShowLabel={false}
       icon={iconModifier}
+      {kind}
       on:change={handleDueDateChanged}
     />
   {/if}

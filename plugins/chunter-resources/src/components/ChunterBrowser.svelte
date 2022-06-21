@@ -110,14 +110,14 @@
   .browser {
     flex-grow: 2;
     display: flex;
-    justify-content: start;
+    justify-content: flex-start;
     flex-direction: column-reverse;
   }
 
   .bar {
     flex-grow: 1;
     display: flex;
-    justify-content: start;
+    justify-content: flex-start;
     max-height: 4rem;
   }
 

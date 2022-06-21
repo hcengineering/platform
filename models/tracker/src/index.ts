@@ -279,17 +279,17 @@ export function createModel (builder: Builder): void {
     attachTo: tracker.class.Issue,
     descriptor: tracker.viewlet.List,
     config: [
-      { key: '', presenter: tracker.component.PriorityEditor },
+      { key: '', presenter: tracker.component.PriorityEditor, props: { kind: 'list', size: 'small' } },
       '@currentTeam',
       '@statuses',
-      { key: '', presenter: tracker.component.TitlePresenter, props: { shouldUseMargin: true } },
-      { key: '', presenter: tracker.component.DueDatePresenter },
+      { key: '', presenter: tracker.component.TitlePresenter, props: { shouldUseMargin: true, fixed: 'left' } },
+      { key: '', presenter: tracker.component.DueDatePresenter, props: { kind: 'list' } },
       {
         key: '',
         presenter: tracker.component.ProjectEditor,
-        props: { kind: 'secondary', size: 'small', shape: 'round', shouldShowPlaceholder: false }
+        props: { kind: 'list', size: 'small', shape: 'round', shouldShowPlaceholder: false }
       },
-      { key: 'modifiedOn', presenter: tracker.component.ModificationDatePresenter },
+      { key: 'modifiedOn', presenter: tracker.component.ModificationDatePresenter, props: { fixed: 'right' } },
       {
         key: '$lookup.assignee',
         presenter: tracker.component.AssigneePresenter,

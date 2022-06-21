@@ -25,17 +25,7 @@
     IssueStatus,
     IssueStatusCategory
   } from '@anticrm/tracker'
-  import {
-    Button,
-    Label,
-    ScrollBox,
-    IconOptions,
-    showPopup,
-    eventToHTMLElement,
-    IconAdd,
-    IconClose,
-    Icon
-  } from '@anticrm/ui'
+  import { Button, Label, Scroller, showPopup, eventToHTMLElement, IconAdd, IconClose, Icon } from '@anticrm/ui'
   import { IntlString } from '@anticrm/platform'
   import { createEventDispatcher } from 'svelte'
   import ViewOptionsPopup from './ViewOptionsPopup.svelte'
@@ -55,6 +45,7 @@
     IssueFilter,
     getArraysUnion
   } from '../../utils'
+  import ViewOptionsButton from './ViewOptionsButton.svelte'
 
   export let currentSpace: Ref<Team>
   export let title: IntlString = tracker.string.AllIssues
@@ -482,7 +473,7 @@
         </Button>
       </div>
     </div>
-    <Button icon={IconOptions} kind={'link'} on:click={handleOptionsEditorOpened} />
+    <ViewOptionsButton on:click={handleOptionsEditorOpened} />
   </div>
   {#if filters.length > 0}
     <FilterSummary
@@ -496,39 +487,37 @@
     />
   {/if}
 
-  <div class="flex h-full">
-    <div class="antiPanel-component">
-      <ScrollBox vertical stretch>
-        <IssuesListBrowser
-          _class={tracker.class.Issue}
-          {currentSpace}
-          {groupByKey}
-          orderBy={issuesOrderKeyMap[orderingKey]}
-          {statuses}
-          {employees}
-          categories={displayedCategories}
-          itemsConfig={[
-            { key: '', presenter: tracker.component.PriorityEditor },
-            { key: '', presenter: tracker.component.IssuePresenter, props: { currentTeam } },
-            { key: '', presenter: tracker.component.StatusEditor, props: { statuses } },
-            { key: '', presenter: tracker.component.TitlePresenter, props: { shouldUseMargin: true } },
-            { key: '', presenter: tracker.component.DueDatePresenter },
-            {
-              key: '',
-              presenter: tracker.component.ProjectEditor,
-              props: { kind: 'secondary', size: 'small', shape: 'round', shouldShowPlaceholder: false }
-            },
-            { key: 'modifiedOn', presenter: tracker.component.ModificationDatePresenter },
-            {
-              key: '$lookup.assignee',
-              presenter: tracker.component.AssigneePresenter,
-              props: { currentSpace, defaultClass: contact.class.Employee, shouldShowLabel: false }
-            }
-          ]}
-          {groupedIssues}
-        />
-      </ScrollBox>
-    </div>
+  <div class="flex h-full clear-mins">
+    <Scroller tableFade={displayedCategories.length > 1}>
+      <IssuesListBrowser
+        _class={tracker.class.Issue}
+        {currentSpace}
+        {groupByKey}
+        orderBy={issuesOrderKeyMap[orderingKey]}
+        {statuses}
+        {employees}
+        categories={displayedCategories}
+        itemsConfig={[
+          { key: '', presenter: tracker.component.PriorityEditor, props: { kind: 'list', size: 'small' } },
+          { key: '', presenter: tracker.component.IssuePresenter, props: { currentTeam } },
+          { key: '', presenter: tracker.component.StatusEditor, props: { statuses, kind: 'list', size: 'small' } },
+          { key: '', presenter: tracker.component.TitlePresenter, props: { shouldUseMargin: true, fixed: 'left' } },
+          { key: '', presenter: tracker.component.DueDatePresenter, props: { kind: 'list' } },
+          {
+            key: '',
+            presenter: tracker.component.ProjectEditor,
+            props: { kind: 'list', size: 'small', shape: 'round', shouldShowPlaceholder: false }
+          },
+          { key: 'modifiedOn', presenter: tracker.component.ModificationDatePresenter, props: { fixed: 'right' } },
+          {
+            key: '$lookup.assignee',
+            presenter: tracker.component.AssigneePresenter,
+            props: { currentSpace, defaultClass: contact.class.Employee, shouldShowLabel: false }
+          }
+        ]}
+        {groupedIssues}
+      />
+    </Scroller>
     {#if $$slots.aside !== undefined}
       <div class="antiPanel-component aside border-left">
         <slot name="aside" />

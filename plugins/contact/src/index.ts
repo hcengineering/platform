@@ -226,13 +226,14 @@ export default contactPlugin
 /**
  * @public
  */
-export async function findPerson (
+export async function findContacts (
   client: Client,
-  person: Data<Person>,
+  _class: Ref<Class<Doc>>,
+  person: Data<Contact>,
   channels: AttachedData<Channel>[]
-): Promise<Person[]> {
-  if (channels.length === 0 || person.name.length === 0) {
-    return []
+): Promise<{ contacts: Contact[], channels: AttachedData<Channel>[] }> {
+  if (channels.length === 0 && person.name.length === 0) {
+    return { contacts: [], channels: [] }
   }
   // Take only first part of first name for match.
   const values = channels.map((it) => it.value)
@@ -240,23 +241,33 @@ export async function findPerson (
   // Same name persons
 
   const potentialChannels = await client.findAll(contactPlugin.class.Channel, { value: { $in: values } })
-  let potentialPersonIds = Array.from(new Set(potentialChannels.map((it) => it.attachedTo as Ref<Person>)).values())
+  let potentialContactIds = Array.from(new Set(potentialChannels.map((it) => it.attachedTo as Ref<Contact>)).values())
 
-  if (potentialPersonIds.length === 0) {
-    const firstName = getFirstName(person.name).split(' ').shift() ?? ''
-    const lastName = getLastName(person.name)
-    // try match using just first/last name
-    potentialPersonIds = (
-      await client.findAll(contactPlugin.class.Person, { name: { $like: `${lastName}%${firstName}%` } })
-    ).map((it) => it._id)
-    if (potentialPersonIds.length === 0) {
-      return []
+  if (potentialContactIds.length === 0) {
+    if (client.getHierarchy().isDerived(_class, contactPlugin.class.Person)) {
+      const firstName = getFirstName(person.name).split(' ').shift() ?? ''
+      const lastName = getLastName(person.name)
+      // try match using just first/last name
+      potentialContactIds = (
+        await client.findAll(contactPlugin.class.Contact, { name: { $like: `${lastName}%${firstName}%` } })
+      ).map((it) => it._id)
+      if (potentialContactIds.length === 0) {
+        return { contacts: [], channels: [] }
+      }
+    } else if (client.getHierarchy().isDerived(_class, contactPlugin.class.Organization)) {
+      // try match using just first/last name
+      potentialContactIds = (
+        await client.findAll(contactPlugin.class.Contact, { name: { $like: `${person.name}` } })
+      ).map((it) => it._id)
+      if (potentialContactIds.length === 0) {
+        return { contacts: [], channels: [] }
+      }
     }
   }
 
-  const potentialPersons: FindResult<Person> = await client.findAll(
-    contactPlugin.class.Person,
-    { _id: { $in: potentialPersonIds } },
+  const potentialPersons: FindResult<Contact> = await client.findAll(
+    contactPlugin.class.Contact,
+    { _id: { $in: potentialContactIds } },
     {
       lookup: {
         _id: {
@@ -266,29 +277,40 @@ export async function findPerson (
     }
   )
 
-  const result: Person[] = []
-
+  const result: Contact[] = []
+  const resChannels: AttachedData<Channel>[] = []
   for (const c of potentialPersons) {
     let matches = 0
     if (c.name === person.name) {
-      matches++
-    }
-    if (c.city === person.city) {
       matches++
     }
     for (const ch of (c.$lookup?.channels as Channel[]) ?? []) {
       for (const chc of channels) {
         if (chc.provider === ch.provider && chc.value === ch.value.trim()) {
           // We have matched value
+          resChannels.push(chc)
           matches += 2
           break
         }
       }
     }
 
-    if (matches >= 2) {
+    if (matches > 0) {
       result.push(c)
     }
   }
-  return result
+  return { contacts: result, channels: resChannels }
+}
+
+/**
+ * @public
+
+ */
+export async function findPerson (
+  client: Client,
+  person: Data<Person>,
+  channels: AttachedData<Channel>[]
+): Promise<Person[]> {
+  const result = await findContacts(client, contactPlugin.class.Person, person, channels)
+  return result.contacts as Person[]
 }
