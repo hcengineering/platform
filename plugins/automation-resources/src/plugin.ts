@@ -15,7 +15,7 @@
 
 import automation, { automationId } from '@anticrm/automation'
 import { mergeIds } from '@anticrm/platform'
-import type { AnyComponent } from '@anticrm/ui'
+import { AnyComponent } from '@anticrm/ui'
 
 export default mergeIds(automationId, automation, {
   component: {

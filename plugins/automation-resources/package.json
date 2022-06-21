@@ -34,9 +34,9 @@
     "@anticrm/core": "~0.6.16",
     "@anticrm/platform": "~0.6.6",
     "@anticrm/presentation": "~0.6.2",
+    "svelte": "^3.47",
     "@anticrm/ui": "~0.6.0",
     "@anticrm/view": "~0.6.0",
-    "@anticrm/view-resources": "~0.6.0",
-    "svelte": "^3.47"
+    "@anticrm/view-resources": "~0.6.0"
   }
 }

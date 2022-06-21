@@ -27,13 +27,13 @@
   "dependencies": {
     "@anticrm/core": "~0.6.16",
     "@anticrm/automation": "~0.6.0",
-    "@anticrm/automation-resources": "~0.6.0",
     "@anticrm/model": "~0.6.0",
     "@anticrm/model-core": "~0.6.0",
     "@anticrm/model-view": "~0.6.0",
     "@anticrm/view": "~0.6.0",
     "@anticrm/setting": "~0.6.1",
-    "@anticrm/platform": "~0.6.6"
+    "@anticrm/platform": "~0.6.6",
+    "@anticrm/automation-resources": "~0.6.0"
   }
 }
 

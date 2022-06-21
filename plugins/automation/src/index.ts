@@ -1,7 +1,6 @@
 import { AttachedDoc, Class, Doc, DocumentQuery, DocumentUpdate, Mixin, Ref, Space } from '@anticrm/core'
-import type { Asset, IntlString, Plugin } from '@anticrm/platform'
-import { plugin } from '@anticrm/platform'
-import type { ActionCategory, ViewAction } from '@anticrm/view'
+import { Asset, IntlString, Plugin, plugin } from '@anticrm/platform'
+import { ActionCategory, ViewAction } from '@anticrm/view'
 
 /**
  * @public
