@@ -27,7 +27,7 @@ import { Class, Doc, Domain, Ref } from '@anticrm/core'
 import { Builder, Mixin, Model, Prop, TypeString, UX } from '@anticrm/model'
 import core, { TAttachedDoc, TClass } from '@anticrm/model-core'
 import setting from '@anticrm/setting'
-import view from '@anticrm/model-view'
+import view from '@anticrm/view'
 
 import plugin from './plugin'
 
