@@ -408,7 +408,7 @@ export class LiveQuery extends TxProcessor implements Client {
           if (this.client.getHierarchy().isDerived(tx.objectClass, core.class.AttachedDoc)) {
             if (reverseLookupKey !== undefined) {
               const reverseLookupValue = (tx.operations as any)[reverseLookupKey]
-              if (index !== -1 && reverseLookupValue !== obj._id) {
+              if (index !== -1 && reverseLookupValue !== undefined && reverseLookupValue !== obj._id) {
                 value.splice(index, 1)
                 index = -1
                 needCallback = true
