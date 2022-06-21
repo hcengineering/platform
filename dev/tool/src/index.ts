@@ -36,7 +36,9 @@ import { Db, MongoClient } from 'mongodb'
 import { exit } from 'process'
 import { rebuildElastic } from './elastic'
 import { importXml } from './importer'
-import { importLead } from './lead-importer'
+import { removeDuplicates } from './leads/duplicates'
+import { importLead } from './leads/lead-importer'
+import { importLead2 } from './leads/lead-importer2'
 import { updateCandidates } from './recruit'
 import { clearTelegramHistory } from './telegram'
 import { diffWorkspace, dumpWorkspace, restoreWorkspace } from './workspace'
@@ -313,6 +315,20 @@ program
   .description('Import LEAD csv customer organizations')
   .action(async (workspace, fileName, cmd) => {
     return await importLead(transactorUrl, workspace, fileName)
+  })
+
+program
+  .command('import-lead-csv2 <workspace> <fileName>')
+  .description('Import LEAD csv customer organizations')
+  .action(async (workspace, fileName, cmd) => {
+    return await importLead2(transactorUrl, workspace, fileName)
+  })
+
+program
+  .command('lead-duplicates <workspace>')
+  .description('Find and remove duplicate organizations.')
+  .action(async (workspace, cmd) => {
+    return await removeDuplicates(transactorUrl, workspace)
   })
 
 program
