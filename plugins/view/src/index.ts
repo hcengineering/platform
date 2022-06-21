@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import type {
+import {
   AnyAttribute,
   Class,
   Client,
@@ -31,8 +31,8 @@ import type {
   UXObject
 } from '@anticrm/core'
 import { Asset, IntlString, Plugin, plugin, Resource, Status } from '@anticrm/platform'
-import type { Preference } from '@anticrm/preference'
-import type { AnyComponent, AnySvelteComponent, PopupAlignment, PopupPosAlignment } from '@anticrm/ui'
+import { Preference } from '@anticrm/preference'
+import { AnyComponent, AnySvelteComponent, PopupAlignment, PopupPosAlignment } from '@anticrm/ui'
 
 /**
  * @public
