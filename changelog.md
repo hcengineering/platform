@@ -13,6 +13,7 @@ Tracker:
 - Issue state history.
 - Subissue issue popup.
 - Label support
+- Priority filter
 
 Lead:
 

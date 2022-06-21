@@ -25,7 +25,7 @@
 
   const dispatch = createEventDispatcher()
 
-  filter.modes = [view.ids.FilterBefore, view.ids.FilterAfter]
+  filter.modes = [view.filter.FilterBefore, view.filter.FilterAfter]
   filter.mode = filter.mode === undefined ? filter.modes[0] : filter.mode
 
   function click (value: number): void {

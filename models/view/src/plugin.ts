@@ -16,7 +16,7 @@
 import { ObjQueryType, Ref } from '@anticrm/core'
 import { IntlString, mergeIds, Resource } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'
-import { Action, ViewAction, viewId } from '@anticrm/view'
+import { Action, Filter, ViewAction, viewId } from '@anticrm/view'
 import view from '@anticrm/view-resources/src/plugin'
 
 export default mergeIds(viewId, view, {
@@ -106,23 +106,13 @@ export default mergeIds(viewId, view, {
     MarkdownFormatting: '' as IntlString
   },
   function: {
-    FilterObjectInResult: '' as Resource<
-    (values: any[], onUpdate: () => void, index: number) => Promise<ObjQueryType<any>>
-    >,
-    FilterObjectNinResult: '' as Resource<
-    (values: any[], onUpdate: () => void, index: number) => Promise<ObjQueryType<any>>
-    >,
-    FilterValueInResult: '' as Resource<
-    (values: any[], onUpdate: () => void, index: number) => Promise<ObjQueryType<any>>
-    >,
-    FilterValueNinResult: '' as Resource<
-    (values: any[], onUpdate: () => void, index: number) => Promise<ObjQueryType<any>>
-    >,
-    FilterBeforeResult: '' as Resource<
-    (values: any[], onUpdate: () => void, index: number) => Promise<ObjQueryType<any>>
-    >,
-    FilterAfterResult: '' as Resource<
-    (values: any[], onUpdate: () => void, index: number) => Promise<ObjQueryType<any>>
-    >
+    FilterObjectInResult: '' as Resource<(filter: Filter, onUpdate: () => void) => Promise<ObjQueryType<any>>>,
+    FilterObjectNinResult: '' as Resource<(filter: Filter, onUpdate: () => void) => Promise<ObjQueryType<any>>>,
+    FilterValueInResult: '' as Resource<(filter: Filter, onUpdate: () => void) => Promise<ObjQueryType<any>>>,
+    FilterValueNinResult: '' as Resource<(filter: Filter, onUpdate: () => void) => Promise<ObjQueryType<any>>>,
+    FilterBeforeResult: '' as Resource<(filter: Filter, onUpdate: () => void) => Promise<ObjQueryType<any>>>,
+    FilterAfterResult: '' as Resource<(filter: Filter, onUpdate: () => void) => Promise<ObjQueryType<any>>>,
+    FilterNestedMatchResult: '' as Resource<(filter: Filter, onUpdate: () => void) => Promise<ObjQueryType<any>>>,
+    FilterNestedDontMatchResult: '' as Resource<(filter: Filter, onUpdate: () => void) => Promise<ObjQueryType<any>>>
   }
 })
