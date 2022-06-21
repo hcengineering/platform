@@ -640,7 +640,7 @@ export class LiveQuery extends TxProcessor implements Client {
         const value = getObjectValue('$lookup.' + key, obj)
         if (Array.isArray(value)) {
           if (this.client.getHierarchy().isDerived(doc._class, core.class.AttachedDoc)) {
-            if ((reverseLookupKey !== undefined) && (doc as any)[reverseLookupKey] === obj._id) {
+            if (reverseLookupKey !== undefined && (doc as any)[reverseLookupKey] === obj._id) {
               value.push(doc)
               needCallback = true
             }
