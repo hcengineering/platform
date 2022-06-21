@@ -18,7 +18,7 @@ import { automationId } from '@anticrm/automation'
 import automation from '@anticrm/automation-resources/src/plugin'
 import { mergeIds } from '@anticrm/platform'
 import { SettingsCategory } from '@anticrm/setting'
-import view from 'anticrn/view' // eslint-disable-line @typescript-eslint/no-unused-vars
+import view from '@anticrm/view' // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export default mergeIds(automationId, automation, {
   ids: {
