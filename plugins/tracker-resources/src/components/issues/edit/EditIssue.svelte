@@ -247,8 +247,8 @@
           {/if}
         </div>
       {/if}
-      <span class="title">{title}</span>
-      <div class="mt-6 description-preview">
+      <span class="title select-text">{title}</span>
+      <div class="mt-6 description-preview select-text">
         {#if isDescriptionEmpty}
           <div class="placeholder" on:click={edit}>
             <Label label={tracker.string.IssueDescriptionPlaceholder} />

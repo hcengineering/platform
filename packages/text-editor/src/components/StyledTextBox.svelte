@@ -13,6 +13,7 @@
   export let emphasized = false
   export let alwaysEdit = false
   export let showButtons = true
+  export let maxHeight: 'max' | 'card' | string = 'max'
 
   let rawValue: string
   let oldContent = ''
@@ -61,6 +62,7 @@
     <StyledTextEditor
       {placeholder}
       {showButtons}
+      {maxHeight}
       bind:content={rawValue}
       bind:this={textEditor}
       on:focus={() => {
