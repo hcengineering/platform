@@ -82,7 +82,9 @@ export {
   getObjectPresenter,
   LoadingProps,
   setActiveViewletId,
-  getActiveViewletId
+  getActiveViewletId,
+  setViewOptions,
+  getViewOptions
 } from './utils'
 export {
   HTMLPresenter,

@@ -26,7 +26,6 @@ import EditIssue from './components/issues/edit/EditIssue.svelte'
 import IssueItem from './components/issues/IssueItem.svelte'
 import IssuePresenter from './components/issues/IssuePresenter.svelte'
 import IssuePreview from './components/issues/IssuePreview.svelte'
-import Issues from './components/issues/Issues.svelte'
 import IssuesView from './components/issues/IssuesView.svelte'
 import ListView from './components/issues/ListView.svelte'
 import ModificationDatePresenter from './components/issues/ModificationDatePresenter.svelte'
@@ -111,7 +110,6 @@ export default async (): Promise<Resources> => ({
     Active,
     Backlog,
     Inbox,
-    Issues,
     MyIssues,
     Projects,
     Views,

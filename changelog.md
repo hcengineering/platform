@@ -2,6 +2,9 @@
 
 ## 0.6.29 (upcoming)
 
+Tracker:
+
+- Remember view options 
 ## 0.6.28
 
 Core:
