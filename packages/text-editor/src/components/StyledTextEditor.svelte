@@ -15,7 +15,7 @@
 <script lang="ts">
   import { IntlString } from '@anticrm/platform'
 
-  import { ScrollBox, showPopup } from '@anticrm/ui'
+  import { Scroller, showPopup } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import Emoji from './icons/Emoji.svelte'
   import GIF from './icons/GIF.svelte'
@@ -30,6 +30,7 @@
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
   export let showButtons = true
   export let isScrollable = true
+  export let maxHeight: 'max' | 'card' | string = 'max'
 
   let textEditor: TextEditor
 
@@ -46,13 +47,14 @@
       textEditor.insertText(emoji)
     })
   }
+  $: varsStyle = maxHeight === 'card' ? 'calc(70vh - 12.5rem)' : maxHeight === 'max' ? 'max-content' : maxHeight
 </script>
 
 <div class="ref-container">
   <div class="textInput">
-    <div class="inputMsg">
+    <div class="inputMsg" class:scrollable={isScrollable} style="--texteditor-maxheight: {varsStyle};">
       {#if isScrollable}
-        <ScrollBox bothScroll stretch>
+        <Scroller>
           <TextEditor
             bind:content
             {placeholder}
@@ -67,7 +69,7 @@
             on:focus
             supportSubmit={false}
           />
-        </ScrollBox>
+        </Scroller>
       {:else}
         <TextEditor
           bind:content
@@ -116,13 +118,18 @@
       .inputMsg {
         align-self: stretch;
         width: 100%;
-        color: var(--theme-content-color);
+        color: var(--content-color);
         background-color: transparent;
 
         :global(.ProseMirror) {
           min-height: 0;
           max-height: 100%;
           height: 100%;
+        }
+
+        &.scrollable {
+          overflow: auto;
+          max-height: var(--texteditor-maxheight);
         }
       }
     }

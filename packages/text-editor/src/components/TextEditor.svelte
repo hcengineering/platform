@@ -181,7 +181,7 @@
   })
 </script>
 
-<div style="width: 100%;" bind:this={element} />
+<div class="select-text" style="width: 100%;" bind:this={element} />
 
 <style lang="scss" global>
   .ProseMirror {

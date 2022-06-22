@@ -275,6 +275,7 @@
     space={_space}
     alwaysEdit
     showButtons={false}
+    maxHeight={'card'}
     bind:content={object.description}
     placeholder={tracker.string.IssueDescriptionPlaceholder}
   />

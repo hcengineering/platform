@@ -30,6 +30,7 @@
   export let placeholder: IntlString | undefined = undefined
   export let alwaysEdit = false
   export let showButtons = false
+  export let maxHeight: 'max' | 'card' | string = 'max'
 
   export function attach (): void {
     inputFile.click()
@@ -185,12 +186,12 @@
 />
 
 <div
-  class="container"
+  class="flex-col"
   on:dragover|preventDefault={() => {}}
   on:dragleave={() => {}}
   on:drop|preventDefault|stopPropagation={fileDrop}
 >
-  <StyledTextBox bind:this={refInput} bind:content {placeholder} {alwaysEdit} {showButtons} />
+  <StyledTextBox bind:this={refInput} bind:content {placeholder} {alwaysEdit} {showButtons} {maxHeight} />
   {#if attachments.size}
     <div class="flex-row-center list scroll-divider-color">
       {#each Array.from(attachments.values()) as attachment}
