@@ -16,10 +16,10 @@
   import type { IntlString } from '@anticrm/platform'
   import { translate } from '@anticrm/platform'
   import { createEventDispatcher, onMount } from 'svelte'
-  import CheckBox from './CheckBox.svelte'
-  import type { DropdownIntlItem } from '../types'
   import plugin from '../plugin'
-  import { Label } from '..'
+  import type { DropdownIntlItem } from '../types'
+  import CheckBox from './CheckBox.svelte'
+  import Label from './Label.svelte'
 
   export let placeholder: IntlString = plugin.string.SearchDots
   export let items: DropdownIntlItem[]

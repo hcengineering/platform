@@ -16,9 +16,8 @@
 import { addLocation, addStringsLoader } from '@anticrm/platform'
 import { SvelteComponent } from 'svelte'
 import { readable } from 'svelte/store'
-import { uiId, uis } from './plugin'
-
 import Root from './components/internal/Root.svelte'
+import { uiId, uis } from './plugin'
 
 export type {
   AnyComponent,

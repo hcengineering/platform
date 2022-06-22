@@ -14,8 +14,10 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
+  import { tooltip } from '../tooltips'
   import type { TabItem } from '../types'
-  import { Label, Icon, tooltip } from '..'
+  import Icon from './Icon.svelte'
+  import Label from './Label.svelte'
 
   export let selected: string | string[] = ''
   export let multiselect: boolean = false

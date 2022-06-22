@@ -16,7 +16,8 @@
   import type { IntlString } from '@anticrm/platform'
   import { translate } from '@anticrm/platform'
   import { createEventDispatcher, onMount } from 'svelte'
-  import { getPlatformColor, ListView } from '..'
+  import { getPlatformColor } from '../colors'
+  import ListView from './ListView.svelte'
 
   export let placeholder: IntlString | undefined = undefined
   export let placeholderParam: any | undefined = undefined

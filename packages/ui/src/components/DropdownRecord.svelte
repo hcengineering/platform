@@ -1,9 +1,13 @@
 <script lang="ts">
   import { IntlString } from '@anticrm/platform'
   import { createEventDispatcher } from 'svelte'
-  import ui, { Label, Button, IconDownOutline, showPopup } from '..'
+  import ui from '../plugin'
+  import { showPopup } from '../popups'
   import type { ButtonKind, ButtonSize } from '../types'
+  import IconDownOutline from './icons/DownOutline.svelte'
+  import Button from './Button.svelte'
   import DropdownRecordPopup from './DropdownRecordPopup.svelte'
+  import Label from './Label.svelte'
 
   export let items: Record<any, IntlString>
   export let selected: any | undefined = undefined

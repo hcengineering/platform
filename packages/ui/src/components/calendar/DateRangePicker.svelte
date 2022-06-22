@@ -15,7 +15,8 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import type { IntlString } from '@anticrm/platform'
-  import ui, { Label } from '../..'
+  import ui from '../../plugin'
+  import Label from '../Label.svelte'
   import DateRangePresenter from './DateRangePresenter.svelte'
 
   export let title: IntlString
