@@ -384,7 +384,7 @@ export class LiveQuery extends TxProcessor implements Client {
       q.result = await q.result
     }
     let needCallback = false
-    needCallback = this.proccesLookupUpdateDoc(q.result, lookup, tx)
+    needCallback = await this.proccesLookupUpdateDoc(q.result, lookup, tx)
 
     if (needCallback) {
       if (q.options?.sort !== undefined) {
@@ -394,17 +394,32 @@ export class LiveQuery extends TxProcessor implements Client {
     }
   }
 
-  private proccesLookupUpdateDoc (docs: Doc[], lookup: Lookup<Doc>, tx: TxUpdateDoc<Doc>): boolean {
+  private async proccesLookupUpdateDoc (docs: Doc[], lookup: Lookup<Doc>, tx: TxUpdateDoc<Doc>): Promise<boolean> {
     let needCallback = false
     const lookupWays = this.getLookupWays(lookup, tx.objectClass)
     for (const lookupWay of lookupWays) {
-      const [objWay, key] = lookupWay
+      const [objWay, key, reverseLookupKey] = lookupWay
       for (const resDoc of docs) {
         const obj = getObjectValue(objWay, resDoc)
         if (obj === undefined) continue
         const value = getObjectValue('$lookup.' + key, obj)
         if (Array.isArray(value)) {
-          const index = value.findIndex((p) => p._id === tx.objectId)
+          let index = value.findIndex((p) => p._id === tx.objectId)
+          if (this.client.getHierarchy().isDerived(tx.objectClass, core.class.AttachedDoc)) {
+            if (reverseLookupKey !== undefined) {
+              const reverseLookupValue = (tx.operations as any)[reverseLookupKey]
+              if (index !== -1 && reverseLookupValue !== undefined && reverseLookupValue !== obj._id) {
+                value.splice(index, 1)
+                index = -1
+                needCallback = true
+              } else if (index === -1 && reverseLookupValue === obj._id) {
+                const doc = await this.client.findOne(tx.objectClass, { _id: tx.objectId })
+                value.push(doc)
+                index = value.length - 1
+                needCallback = true
+              }
+            }
+          }
           if (index !== -1) {
             TxProcessor.updateDoc2Doc(value[index], tx)
             needCallback = true
@@ -618,14 +633,14 @@ export class LiveQuery extends TxProcessor implements Client {
     let needCallback = false
     const lookupWays = this.getLookupWays(lookup, doc._class)
     for (const lookupWay of lookupWays) {
-      const [objWay, key] = lookupWay
+      const [objWay, key, reverseLookupKey] = lookupWay
       for (const resDoc of docs) {
         const obj = getObjectValue(objWay, resDoc)
         if (obj === undefined) continue
         const value = getObjectValue('$lookup.' + key, obj)
         if (Array.isArray(value)) {
           if (this.client.getHierarchy().isDerived(doc._class, core.class.AttachedDoc)) {
-            if ((doc as AttachedDoc).attachedTo === obj._id) {
+            if (reverseLookupKey !== undefined && (doc as any)[reverseLookupKey] === obj._id) {
               value.push(doc)
               needCallback = true
             }
@@ -714,15 +729,20 @@ export class LiveQuery extends TxProcessor implements Client {
     }
   }
 
-  private getLookupWays (lookup: Lookup<Doc>, _class: Ref<Class<Doc>>, parent: string = ''): [string, string][] {
-    const result: [string, string][] = []
+  private getLookupWays (
+    lookup: Lookup<Doc>,
+    _class: Ref<Class<Doc>>,
+    parent: string = ''
+  ): [string, string, string?][] {
+    const result: [string, string, string?][] = []
     const hierarchy = this.client.getHierarchy()
     if (lookup._id !== undefined) {
       for (const key in lookup._id) {
         const value = (lookup._id as any)[key]
-        const clazz = hierarchy.isMixin(value) ? hierarchy.getBaseClass(value) : value
+        const [valueClass, reverseLookupKey] = Array.isArray(value) ? value : [value, 'attachedTo']
+        const clazz = hierarchy.isMixin(valueClass) ? hierarchy.getBaseClass(valueClass) : valueClass
         if (hierarchy.isDerived(_class, clazz)) {
-          result.push([parent, key])
+          result.push([parent, key, reverseLookupKey])
         }
       }
     }

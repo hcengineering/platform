@@ -36,7 +36,6 @@
   let doneStatus: Ref<Doc> | undefined
   let countComplate: number = 0
 
-  $: hasSubIssues = issue.subIssues > 0
   $: if (issue.$lookup?.subIssues !== undefined) {
     subIssues = issue.$lookup.subIssues as Issue[]
     subIssues.sort((a, b) => a.rank.localeCompare(b.rank))
@@ -45,6 +44,7 @@
     doneStatus = issueStatuses.find((s) => s.category === tracker.issueStatusCategory.Completed)?._id ?? undefined
     if (doneStatus) countComplate = subIssues.filter((si) => si.status === doneStatus).length
   }
+  $: hasSubIssues = (subIssues?.length ?? 0) > 0
 
   function getIssueStatusIcon (issue: Issue) {
     return issueStatuses?.find((s) => issue.status === s._id)?.$lookup?.category?.icon ?? null
