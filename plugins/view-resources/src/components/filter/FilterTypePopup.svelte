@@ -13,11 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { AnyAttribute, ArrOf, AttachedDoc, Class, Collection, Doc, Ref, Type } from '@anticrm/core'
+  import core, { AnyAttribute, ArrOf, AttachedDoc, Class, Collection, Doc, Ref, RefTo, Type } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
-  import { Icon, Label, showPopup } from '@anticrm/ui'
+  import { closePopup, closeTooltip, Icon, Label, showPopup, Submenu } from '@anticrm/ui'
   import { Filter, KeyFilter } from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
+  import { FilterQuery } from '../../filter'
   import view from '../../plugin'
 
   export let _class: Ref<Class<Doc>>
@@ -106,7 +107,8 @@
   const dispatch = createEventDispatcher()
 
   function click (type: KeyFilter): void {
-    dispatch('close')
+    closePopup()
+    closeTooltip()
 
     showPopup(
       type.component,
@@ -122,28 +124,78 @@
       target
     )
   }
+
+  function hasNested (type: KeyFilter): boolean {
+    const targetClass = (hierarchy.getAttribute(_class, type.key).type as RefTo<Doc>).to
+    const clazz = hierarchy.getClass(targetClass)
+    return hierarchy.hasMixin(clazz, view.mixin.ClassFilters)
+  }
+
+  function setNestedFilter (type: KeyFilter, e: Filter | undefined) {
+    const filter: Filter = {
+      value: [],
+      key: type,
+      index,
+      mode: view.filter.FilterNestedMatch,
+      modes: [view.filter.FilterNestedMatch, view.filter.FilterNestedDontMatch],
+      onRemove: () => {
+        FilterQuery.remove(index)
+      }
+    }
+    if (e === undefined || filter === undefined) return
+    filter.nested = e
+    filter.value = e.value
+    onChange(filter)
+    dispatch('close')
+  }
+
+  function getNestedProps (type: KeyFilter): any {
+    const targetClass = (hierarchy.getAttribute(_class, type.key).type as RefTo<Doc>).to
+    return {
+      _class: targetClass,
+      index: index,
+      target,
+      onChange: (e: Filter | undefined) => {
+        setNestedFilter(type, e)
+      }
+    }
+  }
 </script>
 
 <div class="selectPopup">
   <div class="scroll">
     <div class="box">
       {#each getTypes(_class) as type, i}
-        <!-- svelte-ignore a11y-mouse-events-have-key-events -->
-        <button
-          class="menu-item withIcon"
-          on:keydown={(event) => keyDown(event, i)}
-          on:mouseover={(event) => {
-            event.currentTarget.focus()
-          }}
-          on:click={(event) => {
-            click(type)
-          }}
-        >
-          {#if type.icon}
-            <div class="icon"><Icon icon={type.icon} size={'small'} /></div>
-          {/if}
-          <div class="ml-3 pr-1"><Label label={type.label} /></div>
-        </button>
+        {#if filter === undefined && type.component === view.component.ObjectFilter && hasNested(type)}
+          <Submenu
+            on:keydown={(event) => keyDown(event, i)}
+            on:click={(event) => {
+              click(type)
+            }}
+            icon={type.icon}
+            label={type.label}
+            props={getNestedProps(type)}
+            options={{ component: view.component.FilterTypePopup }}
+            withHover
+          />
+        {:else}
+          <!-- svelte-ignore a11y-mouse-events-have-key-events -->
+          <button
+            class="menu-item withIcon"
+            on:keydown={(event) => keyDown(event, i)}
+            on:mouseover={(event) => {
+              event.currentTarget.focus()
+            }}
+            on:click={(event) => {
+              click(type)
+            }}
+          >
+            {#if type.icon}
+              <div class="icon mr-3"><Icon icon={type.icon} size={'small'} /></div>
+            {/if}
+            <div class="pr-1"><Label label={type.label} /></div>
+          </button>
+        {/if}
       {/each}
     </div>
   </div>
