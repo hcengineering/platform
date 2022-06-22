@@ -225,6 +225,33 @@ async function migrateParentIssues (client: MigrationClient): Promise<void> {
   }
 }
 
+async function updateIssueParentNames (client: MigrationClient, parentIssue: Issue | null): Promise<void> {
+  const attachedTo = parentIssue?._id ?? tracker.ids.NoParent
+  const parentNames = parentIssue === null ? [] : [parentIssue.title, ...parentIssue.parentNames]
+  const query = { _class: tracker.class.Issue, attachedTo, parentNames: { $exists: false } }
+
+  const subIssues = (
+    await client.find<Issue>(DOMAIN_TRACKER, {
+      ...query,
+      subIssues: { $gt: 0 }
+    })
+  ).map((issue) => ({ ...issue, parentNames }))
+  await client.update<Issue>(DOMAIN_TRACKER, query, { parentNames })
+
+  for (const issue of subIssues) {
+    await updateIssueParentNames(client, issue)
+  }
+}
+
+async function migrateIssueParentNames (client: MigrationClient): Promise<void> {
+  await updateIssueParentNames(client, null)
+  await client.update<Issue>(
+    DOMAIN_TRACKER,
+    { _class: tracker.class.Issue, parentNames: { $exists: false } },
+    { parentNames: [] }
+  )
+}
+
 async function migrateIssueProjects (client: MigrationClient): Promise<void> {
   const issues = await client.find(DOMAIN_TRACKER, { _class: tracker.class.Issue, project: { $exists: false } })
 
@@ -288,6 +315,7 @@ async function upgradeProjects (tx: TxOperations): Promise<void> {
 export const trackerOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await Promise.all([migrateIssueProjects(client), migrateParentIssues(client)])
+    await migrateIssueParentNames(client)
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)

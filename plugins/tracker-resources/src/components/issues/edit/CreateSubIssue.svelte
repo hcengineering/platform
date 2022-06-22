@@ -54,7 +54,8 @@
       priority: IssuePriority.NoPriority,
       dueDate: null,
       comments: 0,
-      subIssues: 0
+      subIssues: 0,
+      parentNames: []
     }
   }
 
@@ -94,7 +95,8 @@
       ...newIssue,
       title: getTitle(newIssue.title),
       number: (incResult as any).object.sequence,
-      rank: calcRank(lastOne, undefined)
+      rank: calcRank(lastOne, undefined),
+      parentNames: [parentIssue.title, ...parentIssue.parentNames]
     }
 
     const objectId = await client.addCollection(

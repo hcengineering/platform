@@ -31,6 +31,7 @@
   import AssigneePresenter from './AssigneePresenter.svelte'
   import SubIssuesSelector from './edit/SubIssuesSelector.svelte'
   import IssuePresenter from './IssuePresenter.svelte'
+  import ParentNamesPresenter from './ParentNamesPresenter.svelte'
   import PriorityEditor from './PriorityEditor.svelte'
 
   export let currentSpace: Ref<Team>
@@ -172,8 +173,11 @@
           showPanel(tracker.component.EditIssue, object._id, object._class, 'content')
         }}
       >
-        <div class="flex-col mr-6">
-          <IssuePresenter value={issue} />
+        <div class="flex-col mr-8">
+          <div class="flex clear-mins names">
+            <IssuePresenter value={issue} />
+            <ParentNamesPresenter value={issue} />
+          </div>
           <span class="fs-bold caption-color mt-1 lines-limit-2">
             {object.title}
           </span>
@@ -210,6 +214,10 @@
 {/await}
 
 <style lang="scss">
+  .names {
+    font-size: 0.8125rem;
+  }
+
   .header {
     padding-bottom: 0.75rem;
     border-bottom: 1px solid var(--divider-color);

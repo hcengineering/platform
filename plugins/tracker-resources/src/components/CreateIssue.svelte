@@ -64,7 +64,8 @@
     priority: priority,
     dueDate: null,
     comments: 0,
-    subIssues: 0
+    subIssues: 0,
+    parentNames: []
   }
 
   const dispatch = createEventDispatcher()
@@ -143,7 +144,8 @@
       rank: calcRank(lastOne, undefined),
       comments: 0,
       subIssues: 0,
-      dueDate: object.dueDate
+      dueDate: object.dueDate,
+      parentNames: parentIssue ? [parentIssue.title, ...parentIssue.parentNames] : []
     }
 
     await client.addCollection(

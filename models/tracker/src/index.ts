@@ -179,6 +179,9 @@ export class TIssue extends TAttachedDoc implements Issue {
   @Prop(ArrOf(TypeRef(tracker.class.Issue)), tracker.string.RelatedTo)
   relatedIssue!: Ref<Issue>[]
 
+  @Prop(ArrOf(TypeString()), tracker.string.ParentNames)
+  parentNames!: string[]
+
   @Prop(Collection(chunter.class.Comment), tracker.string.Comments)
   comments!: number
 

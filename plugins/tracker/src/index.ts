@@ -112,6 +112,7 @@ export interface Issue extends AttachedDoc {
   subIssues: number
   blockedBy?: Ref<Issue>[]
   relatedIssue?: Ref<Issue>[]
+  parentNames: string[]
 
   comments: number
   attachments?: number
