@@ -27,9 +27,9 @@
     tracker.class.IssueStatus,
     { category: { $in: [tracker.issueStatusCategory.Unstarted, tracker.issueStatusCategory.Started] } },
     (result) => {
-      query = { status: { $in: result.map(({ _id }) => _id) } }
+      query = { status: { $in: result.map(({ _id }) => _id) }, space: currentSpace }
     }
   )
 </script>
 
-<IssuesView {currentSpace} {query} title={tracker.string.ActiveIssues} />
+<IssuesView {query} title={tracker.string.ActiveIssues} />

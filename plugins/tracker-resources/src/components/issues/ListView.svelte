@@ -2,8 +2,8 @@
   import { Scroller } from '@anticrm/ui'
   import IssuesListBrowser from './IssuesListBrowser.svelte'
   import tracker from '../../plugin'
-  import { Issue, IssueStatus, Team, ViewOptions } from '@anticrm/tracker'
-  import { Class, Doc, Ref, SortingOrder, WithLookup } from '@anticrm/core'
+  import { Issue, IssueStatus, ViewOptions } from '@anticrm/tracker'
+  import { Class, Doc, DocumentQuery, Ref, SortingOrder, WithLookup } from '@anticrm/core'
   import {
     getCategories,
     groupBy as groupByFunc,
@@ -16,11 +16,11 @@
   import { BuildModelKey } from '@anticrm/view'
 
   export let _class: Ref<Class<Doc>>
-  export let currentSpace: Ref<Team>
   export let config: (string | BuildModelKey)[]
-  export let query = {}
+  export let query: DocumentQuery<Issue> = {}
   export let viewOptions: ViewOptions
 
+  $: currentSpace = typeof query.space === 'string' ? query.space : tracker.team.DefaultTeam
   $: ({ groupBy, orderBy, shouldShowEmptyGroups, shouldShowSubIssues } = viewOptions)
   $: groupByKey = issuesGroupKeyMap[groupBy]
   $: orderByKey = issuesOrderKeyMap[orderBy]

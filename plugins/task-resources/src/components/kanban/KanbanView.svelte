@@ -114,10 +114,9 @@
   <KanbanUI
     bind:this={kanbanUI}
     {_class}
-    {space}
     {search}
     {options}
-    query={{ doneState: null }}
+    query={{ doneState: null, space }}
     {states}
     fieldName={'state'}
     rankFieldName={'rank'}

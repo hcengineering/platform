@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import contact from '@anticrm/contact'
-  import { Class, Doc, FindOptions, Ref, SortingOrder, WithLookup } from '@anticrm/core'
+  import { Class, Doc, DocumentQuery, FindOptions, Ref, SortingOrder, WithLookup } from '@anticrm/core'
   import { Kanban, TypeState } from '@anticrm/kanban'
   import notification from '@anticrm/notification'
   import { createQuery, getClient } from '@anticrm/presentation'
@@ -33,17 +33,18 @@
   import IssuePresenter from './IssuePresenter.svelte'
   import PriorityEditor from './PriorityEditor.svelte'
 
-  export let currentSpace: Ref<Team>
+  export let currentSpace: Ref<Team> = tracker.team.DefaultTeam
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
   export let viewOptions: ViewOptions
-  export let query = {}
+  export let query: DocumentQuery<Issue> = {}
 
+  $: currentSpace = typeof query.space === 'string' ? query.space : tracker.team.DefaultTeam
   $: ({ groupBy, shouldShowEmptyGroups, shouldShowSubIssues } = viewOptions)
   $: resultQuery = {
     ...(shouldShowSubIssues ? {} : { attachedTo: tracker.ids.NoParent }),
     space: currentSpace,
     ...query
-  }
+  } as any
 
   const spaceQuery = createQuery()
   const statusesQuery = createQuery()
@@ -120,7 +121,6 @@
   <Kanban
     bind:this={kanbanUI}
     _class={tracker.class.Issue}
-    space={currentSpace}
     search=""
     {states}
     {options}

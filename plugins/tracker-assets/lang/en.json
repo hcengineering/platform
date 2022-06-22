@@ -134,6 +134,9 @@
     "FilterIsNot": "is not",
     "FilterIsEither": "is either of",
     "FilterStatesCount": "{value, plural, =1 {1 state} other {# states}}",
+    "Assigned": "Assigned",
+    "Created": "Created",
+    "Subscribed": "Subscribed",
 
     "EditIssue": "Edit {title}",
 
