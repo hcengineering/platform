@@ -15,11 +15,12 @@
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
   import { createEventDispatcher, onMount } from 'svelte'
-  import { Label, showPopup } from '..'
+  import { showPopup } from '../popups'
   import { DateOrShift } from '../types'
   import DateRangePresenter from './calendar/DateRangePresenter.svelte'
   import Calendar from './icons/Calendar.svelte'
   import Close from './icons/Close.svelte'
+  import Label from './Label.svelte'
   import TimeShiftPopup from './TimeShiftPopup.svelte'
   import TimeShiftPresenter from './TimeShiftPresenter.svelte'
 

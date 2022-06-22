@@ -16,7 +16,9 @@
   import type { Asset, IntlString } from '@anticrm/platform'
   import { translate } from '@anticrm/platform'
   import { createEventDispatcher } from 'svelte'
-  import { Icon, Label, IconCheck } from '..'
+  import IconCheck from './icons/Check.svelte'
+  import Icon from './Icon.svelte'
+  import Label from './Label.svelte'
 
   export let placeholder: IntlString | undefined = undefined
   export let placeholderParam: any | undefined = undefined

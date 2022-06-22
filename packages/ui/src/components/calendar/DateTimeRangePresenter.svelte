@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
-  import ui from '../..'
+  import ui from '../../plugin'
   import DateRangePresenter from './DateRangePresenter.svelte'
 
   export let value: number | null | undefined

@@ -15,7 +15,7 @@
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
   import { onDestroy } from 'svelte'
-  import type { TooltipAlignment, AnySvelteComponent, AnyComponent } from '..'
+  import type { TooltipAlignment, AnySvelteComponent, AnyComponent } from '../types'
   import { tooltipstore as tooltip, showTooltip } from '..'
 
   export let label: IntlString | undefined = undefined

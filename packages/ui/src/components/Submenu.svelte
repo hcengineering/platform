@@ -14,9 +14,12 @@
 -->
 <script lang="ts">
   import { Asset, IntlString } from '@anticrm/platform'
-  import type { LabelAndProps, AnySvelteComponent, AnyComponent } from '../types'
-  import { Icon, Label, Component, Menu } from '..'
   import { tooltip } from '../tooltips'
+  import type { LabelAndProps, AnySvelteComponent, AnyComponent } from '../types'
+  import Component from './Component.svelte'
+  import Icon from './Icon.svelte'
+  import Label from './Label.svelte'
+  import Menu from './Menu.svelte'
 
   export let component: AnySvelteComponent | AnyComponent | undefined = undefined
   export let props: any = {}

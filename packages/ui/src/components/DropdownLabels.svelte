@@ -14,12 +14,15 @@
 -->
 <script lang="ts">
   import { IntlString, Asset } from '@anticrm/platform'
-  import DropdownLabelsPopup from './DropdownLabelsPopup.svelte'
   import type { AnySvelteComponent, DropdownTextItem, TooltipAlignment, ButtonKind, ButtonSize } from '../types'
-  import { showPopup, Tooltip, Button, Label } from '..'
   import { createEventDispatcher } from 'svelte'
   import ui from '../plugin'
+  import { showPopup } from '../popups'
   import { getFocusManager } from '../focus'
+  import Button from './Button.svelte'
+  import DropdownLabelsPopup from './DropdownLabelsPopup.svelte'
+  import Label from './Label.svelte'
+  import Tooltip from './Tooltip.svelte'
 
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let label: IntlString

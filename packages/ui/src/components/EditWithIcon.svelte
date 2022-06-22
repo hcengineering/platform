@@ -16,10 +16,10 @@
   import type { Asset, IntlString } from '@anticrm/platform'
   import { translate } from '@anticrm/platform'
   import { createEventDispatcher } from 'svelte'
+  import plugin from '../plugin'
   import type { AnySvelteComponent } from '../types'
   import Icon from './Icon.svelte'
   import IconClose from './icons/Close.svelte'
-  import plugin from '../plugin'
 
   export let icon: Asset | AnySvelteComponent
   export let width: string | undefined = undefined

@@ -15,10 +15,14 @@
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
   import { createEventDispatcher } from 'svelte'
-  import { getMonthName } from './internal/DateUtils'
-  import ui, { Label, Icon, showPopup } from '../..'
+
+  import ui from '../../plugin'
+  import { showPopup } from '../../popups'
+  import Icon from '../Icon.svelte'
+  import Label from '../Label.svelte'
   import DPCalendar from './icons/DPCalendar.svelte'
   import DPCalendarOver from './icons/DPCalendarOver.svelte'
+  import { getMonthName } from './internal/DateUtils'
   import DatePopup from './DatePopup.svelte'
 
   export let value: number | null | undefined

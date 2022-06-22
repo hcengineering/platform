@@ -15,7 +15,12 @@
 <script lang="ts">
   import { createEventDispatcher, afterUpdate } from 'svelte'
   import { IntlString } from '@anticrm/platform'
-  import ui, { Button, ActionIcon, IconClose, Icon, Label } from '../..'
+  import ui from '../../plugin'
+  import IconClose from '../icons/Close.svelte'
+  import ActionIcon from '../ActionIcon.svelte'
+  import Button from '../Button.svelte'
+  import Icon from '../Icon.svelte'
+  import Label from '../Label.svelte'
   import { daysInMonth } from './internal/DateUtils'
   import MonthSquare from './MonthSquare.svelte'
 
