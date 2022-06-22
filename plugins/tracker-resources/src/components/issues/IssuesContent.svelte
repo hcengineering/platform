@@ -2,14 +2,14 @@
   import { DocumentQuery, Ref, SortingOrder, WithLookup } from '@anticrm/core'
   import { Component } from '@anticrm/ui'
   import { BuildModelKey, Viewlet, ViewletPreference } from '@anticrm/view'
-  import { Issue, IssueStatus, Team, ViewOptions } from '@anticrm/tracker'
-  import tracker from '../../plugin'
+  import { Issue, IssueStatus, Team } from '@anticrm/tracker'
   import { createQuery } from '@anticrm/presentation'
+  import { viewOptionsStore } from '../../viewOptions'
+  import tracker from '../../plugin'
 
   export let currentSpace: Ref<Team>
   export let viewlet: WithLookup<Viewlet>
   export let query: DocumentQuery<Issue> = {}
-  export let viewOptions: ViewOptions
 
   const statusesQuery = createQuery()
   const spaceQuery = createQuery()
@@ -62,14 +62,14 @@
 
 {#if viewlet?.$lookup?.descriptor?.component}
   <Component
-    is={viewlet.$lookup?.descriptor?.component}
+    is={viewlet.$lookup.descriptor.component}
     props={{
       currentSpace,
       config: createConfig(viewlet, undefined),
       options: viewlet.options,
       viewlet,
       query,
-      viewOptions
+      viewOptions: $viewOptionsStore
     }}
   />
 {/if}

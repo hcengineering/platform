@@ -23,8 +23,7 @@ import { Action, ActionCategory } from '@anticrm/view'
 export default mergeIds(hrId, hr, {
   string: {
     HRApplication: '' as IntlString,
-    Departments: '' as IntlString,
-    ShowEmployees: '' as IntlString
+    Departments: '' as IntlString
   },
   component: {
     Structure: '' as AnyComponent,
@@ -37,7 +36,6 @@ export default mergeIds(hrId, hr, {
   },
   action: {
     EditDepartment: '' as Ref<Action>,
-    ShowEmployees: '' as Ref<Action>,
     DeleteDepartment: '' as Ref<Action>
   }
 })

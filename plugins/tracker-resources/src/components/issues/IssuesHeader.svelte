@@ -1,28 +1,14 @@
 <script lang="ts">
-  import { Ref, WithLookup } from '@anticrm/core'
-  import { Team, ViewOptions } from '@anticrm/tracker'
-  import { Icon, TabList, showPopup, eventToHTMLElement } from '@anticrm/ui'
+  import { Icon, TabList } from '@anticrm/ui'
   import { Viewlet } from '@anticrm/view'
   import { FilterButton, setActiveViewletId } from '@anticrm/view-resources'
   import tracker from '../../plugin'
-  import ViewOptionsPopup from './ViewOptionsPopup.svelte'
-  import ViewOptionsButton from './ViewOptionsButton.svelte'
+  import { WithLookup } from '@anticrm/core'
+  import ViewOptions from './ViewOptions.svelte'
 
-  export let currentSpace: Ref<Team>
   export let viewlet: WithLookup<Viewlet> | undefined
   export let viewlets: WithLookup<Viewlet>[] = []
   export let label: string
-  export let viewOptions: ViewOptions
-
-  const handleOptionsEditorOpened = (event: MouseEvent) => {
-    if (!currentSpace) {
-      return
-    }
-
-    showPopup(ViewOptionsPopup, viewOptions, eventToHTMLElement(event), undefined, (result) => {
-      if (result) viewOptions = { ...result }
-    })
-  }
 
   $: viewslist = viewlets.map((views) => {
     return {
@@ -54,6 +40,6 @@
       }}
     />
   {/if}
-  <ViewOptionsButton on:click={handleOptionsEditorOpened} />
+  <ViewOptions {viewlet} />
   <slot name="extra" />
 </div>

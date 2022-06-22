@@ -2,6 +2,10 @@
 
 ## 0.6.29 (upcoming)
 
+Tracker:
+
+- Remember view options 
+- 
 Chunter:
 
 - Reactions on messages

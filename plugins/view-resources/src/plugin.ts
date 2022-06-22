@@ -20,6 +20,10 @@ import view, { viewId } from '@anticrm/view'
 
 export default mergeIds(viewId, view, {
   component: {
+    ObjectFilter: '' as AnyComponent,
+    ValueFilter: '' as AnyComponent,
+    TimestampFilter: '' as AnyComponent,
+    FilterTypePopup: '' as AnyComponent,
     ActionsPopup: '' as AnyComponent
   },
   string: {

@@ -33,6 +33,7 @@ import FilterBar from './components/filter/FilterBar.svelte'
 import ObjectFilter from './components/filter/ObjectFilter.svelte'
 import TimestampFilter from './components/filter/TimestampFilter.svelte'
 import ValueFilter from './components/filter/ValueFilter.svelte'
+import FilterTypePopup from './components/filter/FilterTypePopup.svelte'
 import HTMLPresenter from './components/HTMLPresenter.svelte'
 import IntlStringPresenter from './components/IntlStringPresenter.svelte'
 import GithubPresenter from './components/linkPresenters/GithubPresenter.svelte'
@@ -82,7 +83,9 @@ export {
   getObjectPresenter,
   LoadingProps,
   setActiveViewletId,
-  getActiveViewletId
+  getActiveViewletId,
+  setViewOptions,
+  getViewOptions
 } from './utils'
 export {
   HTMLPresenter,
@@ -132,7 +135,8 @@ export default async (): Promise<Resources> => ({
     ActionsPopup,
     StringEditorPopup: EditBoxPopup,
     BooleanTruePresenter,
-    EnumEditor
+    EnumEditor,
+    FilterTypePopup
   },
   popup: {
     PositionElementAlignment

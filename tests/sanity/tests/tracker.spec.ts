@@ -157,17 +157,24 @@ test('issues-status-display', async ({ page }) => {
   }
 })
 
-test('save-active-viewlet', async ({ page }) => {
+test('save-view-options', async ({ page }) => {
   const panels = ['Issues', 'Active', 'Backlog']
   await navigate(page)
   for (const viewletSelector of [viewletSelectors.Board, viewletSelectors.Table]) {
     for (const panel of panels) {
       await page.click(`text="${panel}"`)
       await page.click(viewletSelector)
+      await page.click('button:has-text("View")')
+      await page.click('.antiCard >> button >> nth=0')
+      await page.click('.menu-item:has-text("Assignee")')
+      await page.keyboard.press('Escape')
     }
     for (const panel of panels) {
       await page.click(`text="${panel}"`)
       await expect(page.locator(viewletSelector)).toHaveClass(/selected/)
+      await page.click('button:has-text("View")')
+      await expect(page.locator('.antiCard >> button >> nth=0')).toContainText('Assignee')
+      await page.keyboard.press('Escape')
     }
   }
 })

@@ -171,7 +171,6 @@ export default mergeIds(trackerId, tracker, {
     NopeComponent: '' as AnyComponent,
     Inbox: '' as AnyComponent,
     MyIssues: '' as AnyComponent,
-    Issues: '' as AnyComponent,
     Views: '' as AnyComponent,
     Active: '' as AnyComponent,
     Backlog: '' as AnyComponent,
