@@ -15,12 +15,15 @@
 
 import { Ref } from '@anticrm/core'
 import { automationId } from '@anticrm/automation'
-import automation from '@anticrm/automation-resources/src/plugin'
+import automation, { PluginType } from '@anticrm/automation-resources/src/plugin'
 import { mergeIds } from '@anticrm/platform'
 import { SettingsCategory } from '@anticrm/setting'
 
-export default mergeIds(automationId, automation as any, {
+const pluginData = {
   ids: {
     Automation: '' as Ref<SettingsCategory>
   }
-})
+}
+const automations: PluginType & typeof pluginData = mergeIds(automationId, automation, pluginData)
+
+export default automations
