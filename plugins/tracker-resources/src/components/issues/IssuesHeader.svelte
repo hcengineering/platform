@@ -5,13 +5,13 @@
   import { Viewlet } from '@anticrm/view'
   import { FilterButton, setActiveViewletId } from '@anticrm/view-resources'
   import tracker from '../../plugin'
-  import ViewOptionsPopup from './ViewOptionsPopup.svelte'
-  import ViewOptionsButton from './ViewOptionsButton.svelte'
+  import { WithLookup } from '@anticrm/core'
+  import ViewOptions from './ViewOptions.svelte'
 
-  export let currentSpace: Ref<Team>
   export let viewlet: WithLookup<Viewlet> | undefined
   export let viewlets: WithLookup<Viewlet>[] = []
   export let label: string
+
   export let viewOptions: ViewOptions
   export let search: string
 
@@ -56,6 +56,6 @@
       }}
     />
   {/if}
-  <ViewOptionsButton on:click={handleOptionsEditorOpened} />
+  <ViewOptions {viewlet} />
   <slot name="extra" />
 </div>

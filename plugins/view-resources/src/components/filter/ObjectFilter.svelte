@@ -16,16 +16,13 @@
   import { Class, Doc, FindResult, getObjectValue, Ref, RefTo, SortingOrder } from '@anticrm/core'
   import { translate } from '@anticrm/platform'
   import presentation, { getClient } from '@anticrm/presentation'
-  import ui, { Button, CheckBox, eventToHTMLElement, Label, Loading, showPopup } from '@anticrm/ui'
-  import { Filter } from '@anticrm/view'
-  import { onMount } from 'svelte'
-  import { buildConfigLookup, getPresenter } from '../../utils'
-  import view from '../../plugin'
-  import { createEventDispatcher } from 'svelte'
-  import task from '@anticrm/task'
   import type { State } from '@anticrm/task'
-  import FilterTypePopup from './FilterTypePopup.svelte'
-  import { FilterQuery } from '../../filter'
+  import task from '@anticrm/task'
+  import ui, { Button, CheckBox, Label, Loading } from '@anticrm/ui'
+  import { Filter } from '@anticrm/view'
+  import { createEventDispatcher, onMount } from 'svelte'
+  import view from '../../plugin'
+  import { buildConfigLookup, getPresenter } from '../../utils'
 
   export let _class: Ref<Class<Doc>>
   export let filter: Filter
@@ -136,42 +133,9 @@
 
   const dispatch = createEventDispatcher()
   getValues(search)
-
-  $: byCriteria = hierarchy.hasMixin(clazz, view.mixin.ClassFilters)
-
-  function setNestedFilter (e: Filter | undefined) {
-    if (e === undefined) return
-    filter.nested = e
-    filter.mode = view.filter.FilterNestedMatch
-    filter.modes = [view.filter.FilterNestedMatch, view.filter.FilterNestedDontMatch]
-    filter.value = e.value
-    filter.onRemove = () => {
-      FilterQuery.remove(filter.index)
-    }
-    onChange(filter)
-    dispatch('close')
-  }
-
-  function nestedFilter (e: MouseEvent) {
-    const target = eventToHTMLElement(e)
-    showPopup(
-      FilterTypePopup,
-      {
-        _class: targetClass,
-        target,
-        index: filter.index,
-        filter: filter.nested,
-        onChange: setNestedFilter
-      },
-      target
-    )
-  }
 </script>
 
 <div class="selectPopup">
-  {#if byCriteria}
-    <Button shape={'round'} label={view.string.MatchCriteria} on:click={nestedFilter} />
-  {/if}
   {#if clazz.sortingKey}
     <div class="header">
       <input

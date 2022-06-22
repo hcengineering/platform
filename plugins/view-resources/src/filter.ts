@@ -56,7 +56,6 @@ export const FilterQuery = {
   getLiveQuery (index: number): LiveQuery {
     const current = FilterQuery.queries.get(index)
     if (current !== undefined) return current
-    console.error('create new query')
     const query = createQuery(true)
     this.queries.set(index, query)
     return query
@@ -89,7 +88,6 @@ export async function getRefs (filter: Filter, onUpdate: () => void): Promise<Ar
         onUpdate()
       }
     )
-    console.error(refresh)
     if (!refresh) {
       resolve(FilterQuery.results.get(filter.index) ?? [])
     }
