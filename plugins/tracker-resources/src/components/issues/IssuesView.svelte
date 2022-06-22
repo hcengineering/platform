@@ -19,7 +19,14 @@
   export let panelWidth: number = 0
 
   let viewlet: WithLookup<Viewlet> | undefined = undefined
-  let resultQuery: DocumentQuery<Issue> = {}
+  let search = ''
+  let searchQuery: DocumentQuery<Issue> = { ...query }
+  function updateSearchQuery (search: string): void {
+    searchQuery = search === '' ? { ...query } : { ...query, $search: search }
+  }
+  $: updateSearchQuery(search)
+  $: if (query) updateSearchQuery(search)
+  let resultQuery: DocumentQuery<Issue> = { ...searchQuery }
 
   const client = getClient()
 
@@ -63,7 +70,7 @@
 </script>
 
 {#if currentSpace}
-  <IssuesHeader {viewlets} {label} bind:viewlet>
+  <IssuesHeader {viewlets} {label} bind:viewlet bind:search>
     <svelte:fragment slot="extra">
       {#if asideFloat && $$slots.aside}
         <Button
@@ -78,7 +85,7 @@
       {/if}
     </svelte:fragment>
   </IssuesHeader>
-  <FilterBar _class={tracker.class.Issue} {query} on:change={(e) => (resultQuery = e.detail)} />
+  <FilterBar _class={tracker.class.Issue} query={searchQuery} on:change={(e) => (resultQuery = e.detail)} />
   <div class="flex w-full h-full clear-mins">
     {#if viewlet}
       <IssuesContent {currentSpace} {viewlet} query={resultQuery} />
