@@ -2,14 +2,7 @@
   import core, { DocumentQuery, Ref, Space, WithLookup } from '@anticrm/core'
   import { IntlString, translate } from '@anticrm/platform'
   import { getClient } from '@anticrm/presentation'
-  import {
-    Issue,
-    IssuesDateModificationPeriod,
-    IssuesGrouping,
-    IssuesOrdering,
-    Team,
-    ViewOptions
-  } from '@anticrm/tracker'
+  import { Issue, Team } from '@anticrm/tracker'
   import { Button, IconDetails } from '@anticrm/ui'
   import view, { Viewlet } from '@anticrm/view'
   import { FilterBar } from '@anticrm/view-resources'
@@ -26,13 +19,6 @@
   export let panelWidth: number = 0
 
   let viewlet: WithLookup<Viewlet> | undefined = undefined
-  let viewOptions: ViewOptions = {
-    groupBy: IssuesGrouping.Status,
-    orderBy: IssuesOrdering.Status,
-    completedIssuesPeriod: IssuesDateModificationPeriod.All,
-    shouldShowEmptyGroups: false,
-    shouldShowSubIssues: false
-  }
   let resultQuery: DocumentQuery<Issue> = {}
 
   const client = getClient()
@@ -77,7 +63,7 @@
 </script>
 
 {#if currentSpace}
-  <IssuesHeader {currentSpace} {viewlets} {label} bind:viewlet bind:viewOptions>
+  <IssuesHeader {viewlets} {label} bind:viewlet>
     <svelte:fragment slot="extra">
       {#if asideFloat && $$slots.aside}
         <Button
@@ -95,7 +81,7 @@
   <FilterBar _class={tracker.class.Issue} {query} on:change={(e) => (resultQuery = e.detail)} />
   <div class="flex w-full h-full clear-mins">
     {#if viewlet}
-      <IssuesContent {currentSpace} {viewlet} query={resultQuery} {viewOptions} />
+      <IssuesContent {currentSpace} {viewlet} query={resultQuery} />
     {/if}
     {#if $$slots.aside !== undefined && asideShown}
       <div class="popupPanel-body__aside" class:float={asideFloat} class:shown={asideShown}>
