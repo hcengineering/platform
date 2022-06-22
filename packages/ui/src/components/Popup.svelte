@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { popupstore as modal } from '..'
+  import { popupstore as modal } from '../popups'
   import PopupInstance from './PopupInstance.svelte'
 </script>
 

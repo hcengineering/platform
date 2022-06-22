@@ -14,10 +14,13 @@
 -->
 <script lang="ts">
   import type { Asset, IntlString } from '@anticrm/platform'
-  import { Button, DropdownPopup, showPopup, Tooltip } from '..'
   import { getFocusManager } from '../focus'
+  import { showPopup } from '../popups'
   import type { AnySvelteComponent, ButtonKind, ButtonSize, ListItem, TooltipAlignment } from '../types'
+  import Button from './Button.svelte'
+  import DropdownPopup from './DropdownPopup.svelte'
   import Label from './Label.svelte'
+  import Tooltip from './Tooltip.svelte'
 
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let label: IntlString | undefined = undefined

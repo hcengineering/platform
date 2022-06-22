@@ -14,7 +14,9 @@
 -->
 <script lang="ts">
   import { afterUpdate, createEventDispatcher } from 'svelte'
-  import { IconNavPrev, IconNavNext, Icon } from '../..'
+  import IconNavPrev from '../icons/NavPrev.svelte'
+  import IconNavNext from '../icons/NavNext.svelte'
+  import Icon from '../Icon.svelte'
   import { firstDay, day, getWeekDayName, areDatesEqual, getMonthName, weekday, isWeekend } from './internal/DateUtils'
 
   export let currentDate: Date | null

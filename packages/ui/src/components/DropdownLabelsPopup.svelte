@@ -16,9 +16,9 @@
   import type { IntlString } from '@anticrm/platform'
   import { translate } from '@anticrm/platform'
   import { createEventDispatcher, onMount } from 'svelte'
-  import CheckBox from './CheckBox.svelte'
   import type { DropdownTextItem } from '../types'
   import plugin from '../plugin'
+  import CheckBox from './CheckBox.svelte'
   import ListView from './ListView.svelte'
 
   export let placeholder: IntlString = plugin.string.SearchDots

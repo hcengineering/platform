@@ -13,7 +13,6 @@
 // limitations under the License.
 //
 
-// import type { Metadata } from '@anticrm/platform'
 import type { Metadata } from '@anticrm/platform'
 import { setMetadata } from '@anticrm/platform'
 

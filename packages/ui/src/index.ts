@@ -13,12 +13,11 @@
 // limitations under the License.
 //
 
-import { SvelteComponent } from 'svelte'
 import { addLocation, addStringsLoader } from '@anticrm/platform'
-import { uiId } from './plugin'
+import { SvelteComponent } from 'svelte'
 import { readable } from 'svelte/store'
-
 import Root from './components/internal/Root.svelte'
+import { uiId } from './plugin'
 
 export type {
   AnyComponent,

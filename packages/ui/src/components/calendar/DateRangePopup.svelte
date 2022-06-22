@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { dpstore } from '../..'
+  import { dpstore } from '../../popups'
   import Month from './Month.svelte'
   import Scroller from '../Scroller.svelte'
   import TimeShiftPresenter from '../TimeShiftPresenter.svelte'

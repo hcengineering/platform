@@ -14,8 +14,9 @@
 -->
 <script lang="ts">
   import { afterUpdate, onDestroy } from 'svelte'
-  import type { TooltipAlignment } from '..'
-  import { closeTooltip, Component, tooltipstore as tooltip } from '..'
+  import { closeTooltip, tooltipstore as tooltip } from '../tooltips'
+  import type { TooltipAlignment } from '../types'
+  import Component from './Component.svelte'
   import Label from './Label.svelte'
 
   let tooltipHTML: HTMLElement

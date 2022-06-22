@@ -14,10 +14,10 @@
 -->
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
-  import Label from './Label.svelte'
+  import { translate } from '@anticrm/platform'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../plugin'
-  import { translate } from '@anticrm/platform'
+  import Label from './Label.svelte'
 
   export let label: IntlString | undefined = undefined
   export let width: string | undefined = undefined
