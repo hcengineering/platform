@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Icon, TabList } from '@anticrm/ui'
+  import { Icon, TabList, SearchEdit } from '@anticrm/ui'
   import { Viewlet } from '@anticrm/view'
   import { FilterButton, setActiveViewletId } from '@anticrm/view-resources'
   import tracker from '../../plugin'
@@ -9,6 +9,7 @@
   export let viewlet: WithLookup<Viewlet> | undefined
   export let viewlets: WithLookup<Viewlet>[] = []
   export let label: string
+  export let search: string
 
   $: viewslist = viewlets.map((views) => {
     return {
@@ -25,6 +26,7 @@
     <span class="ac-header__title">{label}</span>
     <div class="ml-4"><FilterButton _class={tracker.class.Issue} /></div>
   </div>
+  <SearchEdit bind:value={search} on:change={() => {}} />
   {#if viewlets.length > 1}
     <TabList
       items={viewslist}
