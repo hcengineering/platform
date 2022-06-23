@@ -12,10 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import type { IntlString } from '@anticrm/platform'
+import type { IntlString, Resource } from '@anticrm/platform'
 import { mergeIds } from '@anticrm/platform'
 import tracker, { trackerId } from '../../tracker/lib'
 import { AnyComponent } from '@anticrm/ui'
+import { Client, Doc, Ref } from '@anticrm/core'
 
 export default mergeIds(trackerId, tracker, {
   string: {
@@ -206,5 +207,8 @@ export default mergeIds(trackerId, tracker, {
     ListView: '' as AnyComponent,
     KanbanView: '' as AnyComponent,
     IssuePreview: '' as AnyComponent
+  },
+  function: {
+    getIssueTitle: '' as Resource<(client: Client, ref: Ref<Doc>) => Promise<string>>
   }
 })
