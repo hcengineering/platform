@@ -95,6 +95,7 @@ async function changeIssueParent (updateTx: TxUpdateDoc<Issue>, control: Trigger
   const { length: oldParentNamesLength } = node.parentNames
   const newParentIssue = node.$lookup?.attachedTo as Issue | undefined
   const newParentNames = newParentIssue !== undefined ? [newParentIssue.title, ...newParentIssue?.parentNames] : []
+  const projectUpdate = newParentIssue !== undefined ? { project: newParentIssue.project } : {}
 
   function update (node: Issue): Partial<AttachedData<Issue>> {
     const updatedNames = [...node.parentNames]
@@ -102,7 +103,7 @@ async function changeIssueParent (updateTx: TxUpdateDoc<Issue>, control: Trigger
 
     updatedNames.splice(startIndex, oldParentNamesLength, ...newParentNames)
 
-    return { parentNames: updatedNames }
+    return { parentNames: updatedNames, ...projectUpdate }
   }
 
   return await updateSubIssuesData(control, node, update)

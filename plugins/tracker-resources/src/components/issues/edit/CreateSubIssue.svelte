@@ -96,7 +96,8 @@
       title: getTitle(newIssue.title),
       number: (incResult as any).object.sequence,
       rank: calcRank(lastOne, undefined),
-      parentNames: [parentIssue.title, ...parentIssue.parentNames]
+      parentNames: [parentIssue.title, ...parentIssue.parentNames],
+      project: parentIssue.project
     }
 
     const objectId = await client.addCollection(
