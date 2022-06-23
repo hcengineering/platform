@@ -26,7 +26,8 @@
     showPopup,
     eventToHTMLElement,
     Scroller,
-    tooltip
+    tooltip,
+LabelAndProps
   } from '@anticrm/ui'
   import { EmployeePresenter } from '@anticrm/contact-resources'
   import contact from '@anticrm/contact-resources/src/plugin'
@@ -133,6 +134,15 @@
     return lead === currentEmployee
   }
 
+  function getTooltip (employee: Staff, date: Date): LabelAndProps | undefined {
+    const requests = getRequests(employee._id, date)
+    if (requests.length === 0) return
+    return {
+      component: RequestsPopup,
+      props: { date, employee: employee._id }
+    }
+  }
+
   $: departmentStaff = staff.filter((p) => departments.includes(p.department) || employeeRequests.has(p._id))
 </script>
 
@@ -169,12 +179,7 @@
                 class:today={areDatesEqual(todayDate, date)}
                 class:weekend={isWeekend(date)}
                 class:cursor-pointer={editable}
-                use:tooltip={requests.length > 0
-                  ? {
-                      component: RequestsPopup,
-                      props: { date, employee: employee._id }
-                    }
-                  : undefined}
+                use:tooltip={getTooltip(employee, date)}
                 on:click={(e) => createRequest(e, date, employee)}
               >
                 {#if requests.length}
