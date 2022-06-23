@@ -5,6 +5,7 @@
 Tracker:
 
 - Remember view options 
+- Names of parent issues
 - 
 Chunter:
 
