@@ -400,6 +400,26 @@ const view = plugin(viewId, {
     LinkPresenter: '' as Ref<Class<LinkPresenter>>,
     FilterMode: '' as Ref<Class<FilterMode>>
   },
+  action: {
+    Delete: '' as Ref<Action>,
+    Move: '' as Ref<Action>,
+    MoveLeft: '' as Ref<Action>,
+    MoveRight: '' as Ref<Action>,
+    MoveUp: '' as Ref<Action>,
+    MoveDown: '' as Ref<Action>,
+
+    SelectItem: '' as Ref<Action>,
+    SelectItemAll: '' as Ref<Action>,
+    SelectItemNone: '' as Ref<Action>,
+    SelectUp: '' as Ref<Action>,
+    SelectDown: '' as Ref<Action>,
+
+    ShowPreview: '' as Ref<Action>,
+    ShowActions: '' as Ref<Action>,
+
+    // Edit document
+    Open: '' as Ref<Action>
+  },
   viewlet: {
     Table: '' as Ref<ViewletDescriptor>
   },
@@ -410,7 +430,8 @@ const view = plugin(viewId, {
     BooleanTruePresenter: '' as AnyComponent
   },
   string: {
-    CustomizeView: '' as IntlString
+    CustomizeView: '' as IntlString,
+    LabelNA: '' as IntlString
   },
   icon: {
     Table: '' as Asset,

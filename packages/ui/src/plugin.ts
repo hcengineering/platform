@@ -23,7 +23,7 @@ import { AnyComponent } from './types'
  */
 export const uiId = 'ui' as Plugin
 
-export default plugin(uiId, {
+export const uis = plugin(uiId, {
   string: {
     EditBoxPlaceholder: '' as IntlString,
     Ok: '' as IntlString,
@@ -69,3 +69,5 @@ export default plugin(uiId, {
     DefaultApplication: '' as Metadata<AnyComponent>
   }
 })
+
+export default uis
