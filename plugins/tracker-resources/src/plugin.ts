@@ -136,6 +136,7 @@ export default mergeIds(trackerId, tracker, {
     ProjectMembersSearchPlaceholder: '' as IntlString,
     List: '' as IntlString,
     NumberLabels: '' as IntlString,
+    Roadmap: '' as IntlString,
 
     IssueTitlePlaceholder: '' as IntlString,
     IssueDescriptionPlaceholder: '' as IntlString,
@@ -205,6 +206,8 @@ export default mergeIds(trackerId, tracker, {
     IssuesView: '' as AnyComponent,
     ListView: '' as AnyComponent,
     KanbanView: '' as AnyComponent,
+    Roadmap: '' as AnyComponent,
+    TeamProjects: '' as AnyComponent,
     IssuePreview: '' as AnyComponent
   }
 })

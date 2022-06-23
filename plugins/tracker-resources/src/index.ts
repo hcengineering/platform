@@ -44,6 +44,8 @@ import LeadPresenter from './components/projects/LeadPresenter.svelte'
 import ProjectEditor from './components/projects/ProjectEditor.svelte'
 import ProjectMembersPresenter from './components/projects/ProjectMembersPresenter.svelte'
 import ProjectPresenter from './components/projects/ProjectPresenter.svelte'
+import Roadmap from './components/projects/Roadmap.svelte'
+import TeamProjects from './components/projects/TeamProjects.svelte'
 import Projects from './components/projects/Projects.svelte'
 import ProjectStatusEditor from './components/projects/ProjectStatusEditor.svelte'
 import ProjectStatusPresenter from './components/projects/ProjectStatusPresenter.svelte'
@@ -140,6 +142,8 @@ export default async (): Promise<Resources> => ({
     IssuesView,
     ListView,
     KanbanView,
+    TeamProjects,
+    Roadmap,
     IssuePreview
   },
   completion: {

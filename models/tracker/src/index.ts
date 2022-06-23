@@ -465,6 +465,13 @@ export function createModel (builder: Builder): void {
             label: tracker.string.Views,
             icon: tracker.icon.Views,
             component: tracker.component.Views
+          },
+          {
+            id: 'roadmap',
+            position: 'top',
+            label: tracker.string.Roadmap,
+            icon: tracker.icon.Projects,
+            component: tracker.component.Roadmap
           }
         ],
         spaces: [
@@ -500,7 +507,7 @@ export function createModel (builder: Builder): void {
                 id: projectsId,
                 label: tracker.string.Projects,
                 icon: tracker.icon.Projects,
-                component: tracker.component.Projects
+                component: tracker.component.TeamProjects
               }
             ]
           }
