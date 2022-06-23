@@ -99,7 +99,12 @@ export {
   UpDownNavigator,
   ViewletSettingButton,
   FilterBar,
-  ClassAttributeBar
+  ClassAttributeBar,
+  ClassPresenter,
+  BooleanEditor,
+  BooleanPresenter,
+  NumberEditor,
+  NumberPresenter
 }
 
 export default async (): Promise<Resources> => ({

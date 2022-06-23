@@ -5,7 +5,8 @@
 Tracker:
 
 - Remember view options 
-- 
+- My issues
+
 Chunter:
 
 - Reactions on messages

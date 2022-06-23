@@ -280,8 +280,12 @@ export function createModel (builder: Builder): void {
     descriptor: tracker.viewlet.List,
     config: [
       { key: '', presenter: tracker.component.PriorityEditor, props: { kind: 'list', size: 'small' } },
-      '@currentTeam',
-      '@statuses',
+      { key: '', presenter: tracker.component.IssuePresenter },
+      {
+        key: '',
+        presenter: tracker.component.StatusEditor,
+        props: { kind: 'list', size: 'small', justify: 'center' }
+      },
       { key: '', presenter: tracker.component.TitlePresenter, props: { shouldUseMargin: true, fixed: 'left' } },
       { key: '', presenter: tracker.component.DueDatePresenter, props: { kind: 'list' } },
       {

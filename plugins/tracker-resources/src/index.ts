@@ -142,9 +142,6 @@ export default async (): Promise<Resources> => ({
     KanbanView,
     IssuePreview
   },
-  function: {
-    ProjectVisible: () => false
-  },
   completion: {
     IssueQuery: async (client: Client, query: string) => await queryIssue(tracker.class.Issue, client, query)
   }

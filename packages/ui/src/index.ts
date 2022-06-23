@@ -17,7 +17,7 @@ import { addLocation, addStringsLoader } from '@anticrm/platform'
 import { SvelteComponent } from 'svelte'
 import { readable } from 'svelte/store'
 import Root from './components/internal/Root.svelte'
-import { uiId } from './plugin'
+import { uiId, uis } from './plugin'
 
 export type {
   AnyComponent,
@@ -171,4 +171,4 @@ addStringsLoader(uiId, async (lang: string) => {
 
 addLocation(uiId, async () => ({ default: async () => ({}) }))
 
-export { default } from './plugin'
+export default uis
