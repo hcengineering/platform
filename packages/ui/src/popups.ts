@@ -1,14 +1,14 @@
-import type {
-  AnySvelteComponent,
-  AnyComponent,
-  HorizontalAlignment,
-  PopupAlignment,
-  PopupPositionElement,
-  PopupOptions,
-  VerticalAlignment
-} from './types'
 import { getResource } from '@anticrm/platform'
 import { writable } from 'svelte/store'
+import type {
+  AnyComponent,
+  AnySvelteComponent,
+  HorizontalAlignment,
+  PopupAlignment,
+  PopupOptions,
+  PopupPositionElement,
+  VerticalAlignment
+} from './types'
 
 interface CompAndProps {
   id: string
@@ -18,9 +18,14 @@ interface CompAndProps {
   onClose?: (result: any) => void
   onUpdate?: (result: any) => void
   close: () => void
+  options: {
+    category: string
+    overlay: boolean
+  }
 }
 
 export const popupstore = writable<CompAndProps[]>([])
+
 function addPopup (props: CompAndProps): void {
   popupstore.update((popups) => {
     popups.push(props)
@@ -33,7 +38,11 @@ export function showPopup (
   props: any,
   element?: PopupAlignment,
   onClose?: (result: any) => void,
-  onUpdate?: (result: any) => void
+  onUpdate?: (result: any) => void,
+  options: {
+    category: string
+    overlay: boolean
+  } = { category: 'popup', overlay: true }
 ): () => void {
   const id = `${popupId++}`
   const closePopupOp = (): void => {
@@ -47,17 +56,23 @@ export function showPopup (
   }
   if (typeof component === 'string') {
     getResource(component)
-      .then((resolved) => addPopup({ id, is: resolved, props, element, onClose, onUpdate, close: closePopupOp }))
+      .then((resolved) =>
+        addPopup({ id, is: resolved, props, element, onClose, onUpdate, close: closePopupOp, options })
+      )
       .catch((err) => console.log(err))
   } else {
-    addPopup({ id, is: component, props, element, onClose, onUpdate, close: closePopupOp })
+    addPopup({ id, is: component, props, element, onClose, onUpdate, close: closePopupOp, options })
   }
   return closePopupOp
 }
 
-export function closePopup (): void {
+export function closePopup (category?: string): void {
   popupstore.update((popups) => {
-    popups.pop()
+    if (category !== undefined) {
+      popups = popups.filter((p) => p.options.category !== category)
+    } else {
+      popups.pop()
+    }
     return popups
   })
 }
@@ -178,15 +193,6 @@ export function fitPopupPositionedElement (
   }
   return { props: newProps, showOverlay: false, direction }
 }
-
-// function applyStyle (values: Record<string, string | number>, modalHTML: HTMLElement): void {
-//   for (const [k, v] of Object.entries(values)) {
-//     const old = (modalHTML.style as any)[k]
-//     if (old !== v) {
-//       ;(modalHTML.style as any)[k] = v
-//     }
-//   }
-// }
 
 /**
  * @public

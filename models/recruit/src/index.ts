@@ -394,10 +394,12 @@ export function createModel (builder: Builder): void {
     action: view.actionImpl.ShowPopup,
     actionProps: {
       component: recruit.component.CreateApplication,
-      _id: 'candidate',
       element: 'top',
       props: {
         preserveCandidate: true
+      },
+      fillProps: {
+        _id: 'candidate'
       }
     },
     label: recruit.string.CreateAnApplication,
@@ -405,7 +407,10 @@ export function createModel (builder: Builder): void {
     input: 'focus',
     category: recruit.category.Recruit,
     target: contact.class.Person,
-    context: { mode: ['context', 'browser'] },
+    context: {
+      mode: ['context', 'browser'],
+      group: 'associate'
+    },
     override: [recruit.action.CreateGlobalApplication]
   })
   createAction(builder, {
@@ -422,7 +427,8 @@ export function createModel (builder: Builder): void {
     target: core.class.Doc,
     context: {
       mode: ['workbench', 'browser'],
-      application: recruit.app.Recruit
+      application: recruit.app.Recruit,
+      group: 'create'
     }
   })
 
@@ -440,7 +446,8 @@ export function createModel (builder: Builder): void {
     target: core.class.Doc,
     context: {
       mode: ['workbench', 'browser'],
-      application: recruit.app.Recruit
+      application: recruit.app.Recruit,
+      group: 'create'
     }
   })
 
@@ -460,7 +467,8 @@ export function createModel (builder: Builder): void {
       target: core.class.Doc,
       context: {
         mode: ['workbench', 'browser'],
-        application: recruit.app.Recruit
+        application: recruit.app.Recruit,
+        group: 'create'
       }
     },
     recruit.action.CreateGlobalApplication
@@ -504,7 +512,8 @@ export function createModel (builder: Builder): void {
     keyBinding: ['e'],
     target: recruit.class.Vacancy,
     context: {
-      mode: ['context', 'browser']
+      mode: ['context', 'browser'],
+      group: 'create'
     }
   })
 
@@ -526,12 +535,13 @@ export function createModel (builder: Builder): void {
 
   createReviewModel(builder)
 
-  // createAction(builder, { ...viewTemplates.open, target: recruit.class.Vacancy, context: { mode: ['browser', 'context'] } })
-
   createAction(builder, {
     ...viewTemplates.open,
     target: recruit.class.Vacancy,
-    context: { mode: ['browser', 'context'] },
+    context: {
+      mode: ['browser', 'context'],
+      group: 'create'
+    },
     action: workbench.actionImpl.Navigate,
     actionProps: {
       mode: 'space'
@@ -541,7 +551,10 @@ export function createModel (builder: Builder): void {
   createAction(builder, {
     ...viewTemplates.open,
     target: recruit.class.Applicant,
-    context: { mode: ['browser', 'context'] }
+    context: {
+      mode: ['browser', 'context'],
+      group: 'create'
+    }
   })
 
   function createGotoSpecialAction (builder: Builder, id: string, key: KeyBinding, label: IntlString): void {
@@ -572,6 +585,55 @@ export function createModel (builder: Builder): void {
     target: core.class.Doc,
     context: {
       mode: ['workbench', 'browser', 'editor', 'panel', 'popup']
+    }
+  })
+
+  createAction(builder, {
+    action: view.actionImpl.ValueSelector,
+    actionPopup: view.component.ValueSelector,
+    actionProps: {
+      attribute: 'assignee',
+      _class: contact.class.Employee,
+      query: {},
+      placeholder: recruit.string.AssignRecruiter
+    },
+    label: recruit.string.AssignRecruiter,
+    icon: contact.icon.Person,
+    keyBinding: [],
+    input: 'none',
+    category: recruit.category.Recruit,
+    target: recruit.class.Applicant,
+    context: {
+      mode: ['context'],
+      application: recruit.app.Recruit,
+      group: 'edit'
+    }
+  })
+
+  createAction(builder, {
+    action: view.actionImpl.ValueSelector,
+    actionPopup: view.component.ValueSelector,
+    actionProps: {
+      attribute: 'state',
+      _class: task.class.State,
+      query: {},
+      searchField: 'title',
+      // should match space
+      fillQuery: { space: 'space' },
+      // Only apply for same vacancy
+      docMatches: ['space'],
+      placeholder: task.string.TaskState
+    },
+    label: task.string.TaskState,
+    icon: task.icon.TaskState,
+    keyBinding: [],
+    input: 'none',
+    category: recruit.category.Recruit,
+    target: recruit.class.Applicant,
+    context: {
+      mode: ['context'],
+      application: recruit.app.Recruit,
+      group: 'edit'
     }
   })
 }

@@ -49,7 +49,7 @@
 
   let currentAssignee: Ref<Employee> | null = assignee
   let issueStatuses: WithLookup<IssueStatus>[] | undefined
-  let parentIssue: Issue | undefined
+  export let parentIssue: Issue | undefined
   let labels: TagReference[] = []
 
   let objectId: Ref<Issue> = generateId()

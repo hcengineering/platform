@@ -281,7 +281,8 @@ export const actionTemplates = template({
       archived: false
     },
     context: {
-      mode: ['context', 'browser']
+      mode: ['context', 'browser'],
+      group: 'tools'
     }
   },
   unarchiveSpace: {
@@ -301,7 +302,8 @@ export const actionTemplates = template({
       archived: true
     },
     context: {
-      mode: ['context', 'browser']
+      mode: ['context', 'browser'],
+      group: 'tools'
     }
   }
 })
@@ -427,7 +429,8 @@ export function createModel (builder: Builder): void {
         archived: false
       },
       context: {
-        mode: ['context', 'browser']
+        mode: ['context', 'browser'],
+        group: 'edit'
       }
     },
     task.action.EditStatuses
@@ -487,7 +490,8 @@ export function createModel (builder: Builder): void {
     },
     target: task.class.TodoItem,
     context: {
-      mode: ['context', 'browser']
+      mode: ['context', 'browser'],
+      group: 'edit'
     }
   })
 
@@ -505,7 +509,8 @@ export function createModel (builder: Builder): void {
       done: true
     },
     context: {
-      mode: ['context', 'browser']
+      mode: ['context', 'browser'],
+      group: 'edit'
     },
     target: task.class.TodoItem
   })
@@ -516,7 +521,8 @@ export function createModel (builder: Builder): void {
       ...viewTemplates.move,
       target: task.class.Task,
       context: {
-        mode: ['context', 'browser']
+        mode: ['context', 'browser'],
+        group: 'tools'
       }
     },
     task.action.Move
@@ -542,7 +548,8 @@ export function createModel (builder: Builder): void {
       category: task.category.Task,
       target: task.class.State,
       context: {
-        mode: ['context', 'browser']
+        mode: ['context', 'browser'],
+        group: 'tools'
       }
     },
     task.action.ArchiveState

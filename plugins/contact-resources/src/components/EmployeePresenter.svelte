@@ -14,6 +14,8 @@
   export let shouldShowPlaceholder = false
   export let onEmployeeEdit: ((event: MouseEvent) => void) | undefined = undefined
   export let avatarSize: 'inline' | 'tiny' | 'x-small' | 'small' | 'medium' | 'large' | 'x-large' = 'x-small'
+  export let isInteractive = true
+  export let inline = false
 
   let container: HTMLElement
 
@@ -35,15 +37,17 @@
 </script>
 
 <div bind:this={container} class="inline-flex clear-mins">
-  <div class="over-underline">
+  <div class:over-underline={!inline}>
     <PersonPresenter
       {value}
       {tooltipLabels}
-      onEdit={handlePersonEdit}
+      onEdit={isInteractive ? handlePersonEdit : () => {}}
       {shouldShowAvatar}
       {shouldShowName}
       {avatarSize}
       {shouldShowPlaceholder}
+      {isInteractive}
+      {inline}
     />
   </div>
   {#if value?.$lookup?.statuses?.length}

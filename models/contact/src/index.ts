@@ -388,7 +388,10 @@ export function createModel (builder: Builder): void {
   createAction(builder, {
     ...actionTemplates.open,
     target: contact.class.Contact,
-    context: { mode: ['browser', 'context'] }
+    context: {
+      mode: ['browser', 'context'],
+      group: 'create'
+    }
   })
 }
 

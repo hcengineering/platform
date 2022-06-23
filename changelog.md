@@ -2,15 +2,23 @@
 
 ## 0.6.29 (upcoming)
 
+Platform:
+
+- Object selector actions
+
 Tracker:
 
-- Remember view options 
+- Remember view options
 - My issues
 - Roadmap
+- Remember view options
+- Context menus (Priority/Status/Assignee)
 
 Chunter:
 
 - Reactions on messages
+- Priority filter
+- Context menu selector for state/assignee
 
 HR:
 
@@ -27,7 +35,6 @@ Tracker:
 - Issue state history.
 - Subissue issue popup.
 - Label support
-- Priority filter
 
 Lead:
 

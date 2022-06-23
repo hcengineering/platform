@@ -57,6 +57,7 @@ export default mergeIds(trackerId, tracker, {
     CreateTeam: '' as IntlString,
     AddIssue: '' as IntlString,
     NewIssue: '' as IntlString,
+    NewSubIssue: '' as IntlString,
     Team: '' as IntlString,
     SelectIssue: '' as IntlString,
     SelectTeam: '' as IntlString,
@@ -209,7 +210,8 @@ export default mergeIds(trackerId, tracker, {
     KanbanView: '' as AnyComponent,
     Roadmap: '' as AnyComponent,
     TeamProjects: '' as AnyComponent,
-    IssuePreview: '' as AnyComponent
+    IssuePreview: '' as AnyComponent,
+    CreateIssue: '' as AnyComponent
   },
   function: {
     getIssueTitle: '' as Resource<(client: Client, ref: Ref<Doc>) => Promise<string>>
