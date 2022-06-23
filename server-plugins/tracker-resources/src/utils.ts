@@ -13,20 +13,14 @@
 // limitations under the License.
 //
 
-import type { Plugin, Resource } from '@anticrm/platform'
-import { plugin } from '@anticrm/platform'
-import { TriggerFunc } from '@anticrm/server-core'
-
-/**
- * @public
- */
-export const serverTrackerId = 'server-tracker' as Plugin
-
-/**
- * @public
- */
-export default plugin(serverTrackerId, {
-  trigger: {
-    OnIssueUpdate: '' as Resource<TriggerFunc>
+export function arrayEquals<T> (first: Array<T>, second: Array<T>): boolean {
+  if (first === second) {
+    return true
   }
-})
+
+  if (first.length !== second.length) {
+    return false
+  }
+
+  return first.every((val, index) => val === second[index])
+}

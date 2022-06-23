@@ -20,6 +20,6 @@ import serverTracker from '@anticrm/server-tracker'
 
 export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverTracker.trigger.OnIssueProjectUpdate
+    trigger: serverTracker.trigger.OnIssueUpdate
   })
 }
