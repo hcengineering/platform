@@ -6,6 +6,7 @@ Tracker:
 
 - Remember view options 
 - My issues
+- Roadmap
 
 Chunter:
 
