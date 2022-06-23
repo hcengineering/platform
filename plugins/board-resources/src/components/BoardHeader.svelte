@@ -34,7 +34,7 @@
   })
 </script>
 
-<div class="ac-header divide full">
+<div class="ac-header full">
   {#if space}
     <div class="ac-header__wrap-description">
       <div class="ac-header__wrap-title" on:click>
