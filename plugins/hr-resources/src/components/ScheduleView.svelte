@@ -27,7 +27,7 @@
     eventToHTMLElement,
     Scroller,
     tooltip,
-LabelAndProps
+    LabelAndProps
   } from '@anticrm/ui'
   import { EmployeePresenter } from '@anticrm/contact-resources'
   import contact from '@anticrm/contact-resources/src/plugin'
