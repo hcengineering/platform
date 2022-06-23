@@ -20,6 +20,8 @@
     "Symbols": "Символы",
     "TravelAndPlaces": "Путешествия & Места",
     "Objects": "Объекты",
-    "Food": "Еда"
+    "Food": "Еда",
+    "FullDescription": "Детальное описание",
+    "NoFullDescription": "Нет детального описания"
   }
 }

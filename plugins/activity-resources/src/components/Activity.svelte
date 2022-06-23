@@ -153,7 +153,7 @@
   }
   .ref-input {
     flex-shrink: 0;
-    padding: 1.5rem 0;
+    padding: 0.75rem 0;
   }
   .p-activity {
     padding: 1.5rem 0;

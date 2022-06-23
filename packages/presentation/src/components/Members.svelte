@@ -69,8 +69,8 @@
   }
 </script>
 
-<div class="flex-col h-full">
-  <div class="ml-8 mr-8 mb-6 mt-4"><SearchEdit bind:value={search} /></div>
+<div class="antiSection-body">
+  <div class="flex-row-reverse mb-4 mt-4"><SearchEdit bind:value={search} /></div>
   {#await getUsers(space.members, search) then users}
     {@const current = users.filter((p) => members.has(p._id))}
     {@const foreign = users.filter((p) => !members.has(p._id))}
@@ -138,7 +138,8 @@
   .item {
     color: var(--caption-color);
     cursor: pointer;
-    padding: 0.5rem 2rem;
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
 
     &:hover,
     &:focus {

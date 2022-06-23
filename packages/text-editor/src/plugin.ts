@@ -52,6 +52,8 @@ export default plugin(textEditorId, {
     Symbols: '' as IntlString,
     TravelAndPlaces: '' as IntlString,
     Food: '' as IntlString,
-    Objects: '' as IntlString
+    Objects: '' as IntlString,
+    FullDescription: '' as IntlString,
+    NoFullDescription: '' as IntlString
   }
 })

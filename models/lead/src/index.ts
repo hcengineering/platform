@@ -17,7 +17,7 @@
 import type { Employee } from '@anticrm/contact'
 import { Class, Doc, FindOptions, IndexKind, Ref } from '@anticrm/core'
 import type { Customer, Funnel, Lead } from '@anticrm/lead'
-import { Builder, Collection, Index, Mixin, Model, Prop, TypeRef, TypeString, UX } from '@anticrm/model'
+import { Builder, Collection, Index, Mixin, Model, Prop, TypeRef, TypeString, TypeMarkup, UX } from '@anticrm/model'
 import attachment from '@anticrm/model-attachment'
 import chunter from '@anticrm/model-chunter'
 import contact, { TContact } from '@anticrm/model-contact'
@@ -30,7 +30,17 @@ import lead from './plugin'
 
 @Model(lead.class.Funnel, task.class.SpaceWithStates)
 @UX(lead.string.Funnel, lead.icon.Funnel)
-export class TFunnel extends TSpaceWithStates implements Funnel {}
+export class TFunnel extends TSpaceWithStates implements Funnel {
+  @Prop(TypeMarkup(), lead.string.FullDescription)
+  @Index(IndexKind.FullText)
+  fullDescription?: string
+
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, undefined, attachment.string.Files)
+  attachments?: number
+
+  @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
+  comments?: number
+}
 
 @Model(lead.class.Lead, task.class.Task)
 @UX(lead.string.Lead, lead.icon.Lead, undefined, 'title')
@@ -77,6 +87,10 @@ export function createModel (builder: Builder): void {
       createItemDialog: lead.component.CreateLead,
       createItemLabel: lead.string.LeadCreateLabel
     }
+  })
+
+  builder.mixin(lead.class.Funnel, core.class.Class, view.mixin.ObjectEditor, {
+    editor: lead.component.EditFunnel
   })
 
   builder.mixin(lead.class.Lead, core.class.Class, setting.mixin.Editable, {})

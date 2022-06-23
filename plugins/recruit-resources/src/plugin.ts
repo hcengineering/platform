@@ -97,7 +97,8 @@ export default mergeIds(recruitId, recruit, {
     AddDescription: '' as IntlString,
     NumberSkills: '' as IntlString,
     AddDropHere: '' as IntlString,
-    TalentSelect: '' as IntlString
+    TalentSelect: '' as IntlString,
+    FullDescription: '' as IntlString
   },
   space: {
     CandidatesPublic: '' as Ref<Space>

@@ -15,11 +15,12 @@
 -->
 <script lang="ts">
   import { Class, Doc, Ref, Space } from '@anticrm/core'
-  import { Label, Spinner } from '@anticrm/ui'
+  import { Label, Spinner, Icon } from '@anticrm/ui'
   import view from '@anticrm/view'
   import { Table } from '@anticrm/view-resources'
   import attachment from '../plugin'
   import AddAttachment from './AddAttachment.svelte'
+  import IconAttachment from './icons/Attachment.svelte'
   import AttachmentDroppable from './AttachmentDroppable.svelte'
   import UploadDuo from './icons/UploadDuo.svelte'
 
@@ -34,72 +35,58 @@
   let dragover = false
 </script>
 
-<div class="attachments-container">
-  <div class="flex-row-center">
-    <span class="title"><Label label={attachment.string.Attachments} /></span>
-    {#if loading}
-      <Spinner />
-    {:else}
-      <AddAttachment bind:loading bind:inputFile objectClass={_class} {objectId} {space} />
-    {/if}
+<div class="antiSection">
+  <div class="antiSection-header">
+    <div class="antiSection-header__icon">
+      <Icon icon={IconAttachment} size={'small'} />
+    </div>
+    <span class="antiSection-header__title"><Label label={attachment.string.Attachments} /></span>
+    <div class="buttons-group small-gap">
+      {#if loading}
+        <Spinner />
+      {:else}
+        <AddAttachment bind:loading bind:inputFile objectClass={_class} {objectId} {space} />
+      {/if}
+    </div>
   </div>
 
   {#if !loading && (attachments === null || attachments === 0)}
     <AttachmentDroppable bind:loading bind:dragover objectClass={_class} {objectId} {space}>
-      <div class="flex-col-center mt-5 zone-container" class:solid={dragover}>
-        <UploadDuo size={'large'} />
-        <div class="text-sm content-dark-color mt-2" style:pointer-events="none">
+      <div class="antiSection-empty flex-col mt-2" class:solid={dragover}>
+        <div class="flex-center content-accent-color">
+          <UploadDuo size={'large'} />
+        </div>
+        <div class="text-sm dark-color mt-2" style:pointer-events="none">
           <Label label={attachment.string.NoAttachments} />
         </div>
-        <div class="text-sm" style:pointer-events={dragover ? 'none' : 'all'}>
-          <div class="over-underline" on:click={() => inputFile.click()}>
-            <Label label={attachment.string.UploadDropFilesHere} />
-          </div>
+        <div
+          class="over-underline text-sm content-accent-color"
+          style:pointer-events={dragover ? 'none' : 'all'}
+          on:click={() => inputFile.click()}
+        >
+          <Label label={attachment.string.UploadDropFilesHere} />
         </div>
       </div>
     </AttachmentDroppable>
   {:else}
-    <Table
-      _class={attachment.class.Attachment}
-      config={[
-        '',
-        'description',
-        {
-          key: 'pinned',
-          presenter: view.component.BooleanTruePresenter,
-          label: attachment.string.Pinned,
-          sortingKey: 'pinned'
-        },
-        'lastModified'
-      ]}
-      options={{ sort: { pinned: -1 } }}
-      query={{ attachedTo: objectId }}
-      loadingProps={{ length: attachments ?? 0 }}
-    />
+    <div class="antiSection-body">
+      <Table
+        _class={attachment.class.Attachment}
+        config={[
+          '',
+          'description',
+          {
+            key: 'pinned',
+            presenter: view.component.BooleanTruePresenter,
+            label: attachment.string.Pinned,
+            sortingKey: 'pinned'
+          },
+          'lastModified'
+        ]}
+        options={{ sort: { pinned: -1 } }}
+        query={{ attachedTo: objectId }}
+        loadingProps={{ length: attachments ?? 0 }}
+      />
+    </div>
   {/if}
 </div>
-
-<style lang="scss">
-  .attachments-container {
-    display: flex;
-    flex-direction: column;
-
-    .title {
-      margin-right: 0.75rem;
-      font-weight: 500;
-      font-size: 1.25rem;
-      color: var(--theme-caption-color);
-    }
-  }
-
-  .zone-container {
-    padding: 1rem;
-    color: var(--theme-caption-color);
-    background: var(--theme-bg-accent-color);
-    border: 1px dashed var(--theme-zone-border-lite);
-    border-radius: 0.75rem;
-    &.solid {
-      border-style: solid;
-    }
-  }
-</style>

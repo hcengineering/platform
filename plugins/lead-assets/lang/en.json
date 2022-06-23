@@ -26,6 +26,10 @@
     "IssueDescriptionPlaceholder": "Add description...",
     "CreateCustomer": "Create Customer",
     "CreateCustomerLabel": "New Customer",
-    "NoLeadsForDocument": "No leads for document"
+    "NoLeadsForDocument": "No leads for document",
+    "Description": "Description",
+    "FullDescription": "Full description",
+    "FunnelPlaceholder": "The simple funnel",
+    "Members": "Members"
   }
 }

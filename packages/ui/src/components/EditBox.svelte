@@ -97,7 +97,7 @@
 >
   <!-- {focusIndex} -->
   <div class="hidden-text {kind}" bind:this={text} />
-  {#if label}<div class="label"><Label {label} /></div>{/if}
+  {#if label}<div class="mb-1 text-sm font-medium content-accent-color select-text"><Label {label} /></div>{/if}
   <div class="{kind} flex-row-center clear-mins">
     {#if icon}
       <div class="content-trans-color mr-1">
@@ -150,15 +150,6 @@
     display: inline-flex;
     flex-direction: column;
     align-items: flex-start;
-
-    .label {
-      margin-bottom: 0.25rem;
-      font-size: 0.75rem;
-      font-weight: 500;
-      color: var(--theme-content-accent-color);
-      pointer-events: none;
-      user-select: none;
-    }
 
     .large-style {
       font-weight: 500;

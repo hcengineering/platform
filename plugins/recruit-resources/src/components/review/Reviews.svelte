@@ -81,15 +81,15 @@
       margin-right: 0.75rem;
       font-weight: 500;
       font-size: 1.25rem;
-      color: var(--theme-caption-color);
+      color: var(--caption-color);
     }
   }
 
   .createapp-container {
     padding: 1rem;
-    color: var(--theme-caption-color);
-    background: var(--theme-bg-accent-color);
-    border: 1px solid var(--theme-bg-accent-color);
+    color: var(--caption-color);
+    background: var(--accent-bg-color);
+    border: 1px solid var(--divider-color);
     border-radius: 0.75rem;
   }
 </style>

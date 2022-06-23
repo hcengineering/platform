@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Class, Doc, Ref, Space } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
-  import { CircleButton, IconAdd } from '@anticrm/ui'
+  import { Button, IconAdd } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import { createAttachments } from '../utils'
 
@@ -56,7 +56,7 @@
   {#if $$slots.control}
     <slot name="control" click={openFile} />
   {:else}
-    <CircleButton icon={IconAdd} size="small" selected on:click={openFile} />
+    <Button icon={IconAdd} kind={'transparent'} shape={'circle'} on:click={openFile} />
   {/if}
   <input
     bind:this={inputFile}
