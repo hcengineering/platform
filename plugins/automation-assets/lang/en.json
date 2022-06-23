@@ -1,0 +1,20 @@
+{
+  "string": {
+    "Automation": "Automation",
+    "Actions": "Actions",
+    "Chat": "Chat",
+    "Content": "Content",
+    "Dates": "Dates",
+    "Tracker": "Tracker",
+    "Trigger": "Trigger",
+    "Set": "Set",
+    "To": "to",
+    "Mode": "Mode",
+    "AddMenu": "Add menu",
+    "Menu": "Menu",
+    "Icon": "Icon",
+    "SelectClass": "Select class",
+    "In": "in",
+    "Update": "Update"
+  }
+}

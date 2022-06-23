@@ -13,33 +13,13 @@
 // limitations under the License.
 //
 
-import { ObjQueryType, Ref } from '@anticrm/core'
+import { ObjQueryType } from '@anticrm/core'
 import { IntlString, mergeIds, Resource } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'
-import { Action, Filter, ViewAction, viewId } from '@anticrm/view'
+import { Filter, ViewAction, viewId } from '@anticrm/view'
 import view from '@anticrm/view-resources/src/plugin'
 
 export default mergeIds(viewId, view, {
-  action: {
-    Delete: '' as Ref<Action>,
-    Move: '' as Ref<Action>,
-    MoveLeft: '' as Ref<Action>,
-    MoveRight: '' as Ref<Action>,
-    MoveUp: '' as Ref<Action>,
-    MoveDown: '' as Ref<Action>,
-
-    SelectItem: '' as Ref<Action>,
-    SelectItemAll: '' as Ref<Action>,
-    SelectItemNone: '' as Ref<Action>,
-    SelectUp: '' as Ref<Action>,
-    SelectDown: '' as Ref<Action>,
-
-    ShowPreview: '' as Ref<Action>,
-    ShowActions: '' as Ref<Action>,
-
-    // Edit document
-    Open: '' as Ref<Action>
-  },
   actionImpl: {
     Delete: '' as ViewAction,
     Move: '' as ViewAction,
