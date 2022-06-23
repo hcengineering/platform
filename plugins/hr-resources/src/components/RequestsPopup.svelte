@@ -1,4 +1,4 @@
-//
+<!--
 // Copyright © 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -11,23 +11,25 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+-->
+<script lang="ts">
+  import { Ref, SortingOrder } from '@anticrm/core'
+  import hr, { Staff } from '@anticrm/hr'
+  import { Table } from '@anticrm/view-resources'
 
-import { Resources } from '@anticrm/platform'
-import DepartmentEditor from './components/DepartmentEditor.svelte'
-import DepartmentStaff from './components/DepartmentStaff.svelte'
-import EditDepartment from './components/EditDepartment.svelte'
-import EditRequest from './components/EditRequest.svelte'
-import Schedule from './components/Schedule.svelte'
-import Structure from './components/Structure.svelte'
+  export let date: Date
+  export let employee: Ref<Staff>
 
-export default async (): Promise<Resources> => ({
-  component: {
-    Structure,
-    EditDepartment,
-    DepartmentStaff,
-    DepartmentEditor,
-    Schedule,
-    EditRequest
-  }
-})
+  $: endDate = new Date(date).setDate(date.getDate() + 1)
+</script>
+
+<Table
+  _class={hr.class.Request}
+  query={{
+    attachedTo: employee,
+    dueDate: { $gte: date.getTime() },
+    date: { $lt: endDate }
+  }}
+  config={['$lookup._class', 'date', 'dueDate']}
+  options={{ sort: { date: SortingOrder.Ascending } }}
+/>
