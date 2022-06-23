@@ -579,6 +579,11 @@ export function createModel (builder: Builder): void {
         component: tracker.component.SetParentIssueActionPopup,
         element: 'top'
       },
+      query: {
+        // Hide this action if the issue has subtasks to avoid circular
+        // dependencies and assigning the issue to its own subtask.
+        subIssues: 0
+      },
       label: tracker.string.SetParent,
       icon: tracker.icon.Parent,
       keyBinding: [],
