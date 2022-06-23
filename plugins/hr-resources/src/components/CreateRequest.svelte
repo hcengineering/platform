@@ -15,10 +15,10 @@
 <script lang="ts">
   import { AttachmentStyledBox } from '@anticrm/attachment-resources'
   import calendar from '@anticrm/calendar'
-  import core, { Class, generateId, Ref } from '@anticrm/core'
-  import { Request, Staff } from '@anticrm/hr'
+  import core, { generateId, Ref } from '@anticrm/core'
+  import { Request, RequestType, Staff } from '@anticrm/hr'
   import { translate } from '@anticrm/platform'
-  import { Card, getClient } from '@anticrm/presentation'
+  import { Card, createQuery, getClient } from '@anticrm/presentation'
   import ui, { Button, DateRangePresenter, DropdownLabelsIntl, IconAttachment } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import hr from '../plugin'
@@ -32,22 +32,22 @@
 
   const dispatch = createEventDispatcher()
   const client = getClient()
-  const hierarchy = client.getHierarchy()
+  const typesQuery = createQuery()
 
-  const types: Class<Request>[] = hierarchy
-    .getDescendants(hr.class.Request)
-    .filter((p) => p !== hr.class.Request)
-    .map((p) => hierarchy.getClass(p))
-    .filter((p) => p.label !== undefined)
-  let type: Ref<Class<Request>> = types[0]._id
+  let types: RequestType[] = []
+  let type: RequestType | undefined = undefined
   let typeLabel = ''
-  $: translate(hierarchy.getClass(type).label, {}).then((p) => (typeLabel = p))
+  $: type && translate(type.label, {}).then((p) => (typeLabel = p))
 
-  $: half = [hr.class.Overtime2, hr.class.PTO2].includes(type)
+  typesQuery.query(hr.class.RequestType, {}, (res) => {
+    types = res
+    if (type === undefined) {
+      type = types[0]
+    }
+  })
+
   $: value = new Date(date).getTime()
-  $: dueDate = half
-    ? new Date(value).setHours(new Date(value).getHours() + 12)
-    : new Date(value).setDate(new Date(value).getDate() + 1)
+  $: dueDate = new Date(value).setDate(new Date(value).getDate() + 1)
 
   export function canClose (): boolean {
     return description.length === 0
@@ -57,15 +57,21 @@
     let date: number | undefined
     if (value != null) date = value
     if (date === undefined) return
-    await client.createDoc(type, staff.department, {
+    if (type === undefined) return
+    await client.createDoc(hr.class.Request, staff.department, {
       attachedTo: staff._id,
       attachedToClass: staff._class,
-      date: date,
-      dueDate: half ? new Date(dueDate).setHours(12, 0, 0, 0) : dueDate,
+      type: type._id,
+      date,
+      dueDate,
       description,
       collection: 'requests'
     })
     await descriptionBox.createAttachments()
+  }
+
+  function typeSelected (_id: Ref<RequestType>): void {
+    type = types.find((p) => p._id === _id)
   }
 </script>
 
@@ -84,7 +90,7 @@
     })}
     placeholder={hr.string.RequestType}
     label={hr.string.RequestType}
-    bind:selected={type}
+    on:selected={(e) => typeSelected(e.detail)}
   />
   <AttachmentStyledBox
     bind:this={descriptionBox}

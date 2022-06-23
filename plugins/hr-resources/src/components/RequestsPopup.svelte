@@ -30,6 +30,6 @@
     dueDate: { $gte: date.getTime() },
     date: { $lt: endDate }
   }}
-  config={['$lookup._class', 'date', 'dueDate']}
+  config={['$lookup.type.label', 'date', 'dueDate']}
   options={{ sort: { date: SortingOrder.Ascending } }}
 />

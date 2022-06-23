@@ -29,6 +29,7 @@
     "Overtime": "Overtime",
     "PTO2": "PTO/2",
     "Overtime2": "Overtime/2",
-    "EditRequest": "Edit {type}"
+    "EditRequest": "Edit {type}",
+    "Request": "Request"
   }
 }

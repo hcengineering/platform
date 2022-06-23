@@ -13,10 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Request } from '@anticrm/hr'
-  import { Asset } from '@anticrm/platform'
+  import hr, { Request, RequestType } from '@anticrm/hr'
   import { getClient } from '@anticrm/presentation'
-  import { areDatesEqual, getPlatformColorForText, Icon, showPopup } from '@anticrm/ui'
+  import { areDatesEqual, getPlatformColor, Icon, showPopup } from '@anticrm/ui'
   import { ContextMenu } from '@anticrm/view-resources'
 
   export let requests: Request[]
@@ -24,30 +23,19 @@
   export let editable: boolean = false
 
   const client = getClient()
-  const hierarchy = client.getHierarchy()
 
-  function getPercent (date: Date): number {
-    const minutes = date.getHours() * 60 + date.getMinutes()
-    const total = 24 * 60
-    return (minutes / total) * 100
+  async function getType (request: Request): Promise<RequestType | undefined> {
+    return await client.findOne(hr.class.RequestType, {
+      _id: request.type
+    })
   }
 
-  function getStyle (request: Request, date: Date): string {
-    let res = `background-color: ${getPlatformColorForText(request._class)};`
-    let top = 0
-    if (areDatesEqual(new Date(request.date), date)) {
-      top = getPercent(new Date(request.date))
-      res += ` top: ${top}%;`
-    }
-    if (areDatesEqual(new Date(request.dueDate), date)) {
-      const percent = getPercent(new Date(request.dueDate))
-      res += ` height: ${percent - top}%;`
+  function getStyle (type: RequestType): string {
+    let res = `background-color: ${getPlatformColor(type.color)};`
+    if (Math.abs(type.value % 1) === 0.5) {
+      res += ' height: 50%;'
     }
     return res
-  }
-
-  function getIcon (request: Request): Asset | undefined {
-    return hierarchy.getClass(request._class).icon
   }
 
   function click (e: MouseEvent, request: Request) {
@@ -60,21 +48,22 @@
 
 <div class="w-full h-full relative">
   {#each requests as request}
-    <div
-      class="request"
-      class:cursor-pointer={editable}
-      style={getStyle(request, date)}
-      on:click={(e) => {
-        click(e, request)
-      }}
-    >
-      {#if areDatesEqual(new Date(request.date), date) || date.getDate() === 1}
-        {@const icon = getIcon(request)}
-        {#if icon}
-          <Icon {icon} size="large" />
-        {/if}
+    {#await getType(request) then type}
+      {#if type}
+        <div
+          class="request"
+          class:cursor-pointer={editable}
+          style={getStyle(type)}
+          on:click={(e) => {
+            click(e, request)
+          }}
+        >
+          {#if areDatesEqual(new Date(request.date), date) || date.getDate() === 1}
+            <Icon icon={type.icon} size="large" />
+          {/if}
+        </div>
       {/if}
-    </div>
+    {/await}
   {/each}
 </div>
 

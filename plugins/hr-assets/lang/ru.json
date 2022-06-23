@@ -29,6 +29,7 @@
     "Overtime": "Переработка",
     "PTO2": "PTO/2",
     "Overtime2": "Переработка/2",
-    "EditRequest": "Редактировать {type}"
+    "EditRequest": "Редактировать {type}",
+    "Request": "Запрос"
   }
 }

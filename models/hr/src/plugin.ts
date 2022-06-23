@@ -24,6 +24,7 @@ export default mergeIds(hrId, hr, {
   string: {
     HRApplication: '' as IntlString,
     Departments: '' as IntlString,
+    Request: '' as IntlString,
     Vacation: '' as IntlString,
     Sick: '' as IntlString,
     PTO: '' as IntlString,

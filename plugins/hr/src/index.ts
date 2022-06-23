@@ -15,7 +15,7 @@
 
 import type { Employee, EmployeeAccount } from '@anticrm/contact'
 import type { Arr, AttachedDoc, Class, Doc, Markup, Mixin, Ref, Space, Timestamp } from '@anticrm/core'
-import type { Asset, Plugin } from '@anticrm/platform'
+import type { Asset, IntlString, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 
 /**
@@ -43,6 +43,17 @@ export interface Staff extends Employee {
   department: Ref<Department>
 }
 
+
+/**
+ * @public
+ */
+export interface RequestType extends Doc {
+  label: IntlString
+  icon: Asset
+  value: number
+  color: number
+}
+
 /**
  * @public
  */
@@ -52,6 +63,8 @@ export interface Request extends AttachedDoc {
   attachedToClass: Ref<Class<Staff>>
 
   space: Ref<Department>
+
+  type: Ref<RequestType>
 
   description: Markup
   comments?: number
@@ -78,14 +91,7 @@ const hr = plugin(hrId, {
     Department: '' as Ref<Class<Department>>,
     DepartmentMember: '' as Ref<Class<DepartmentMember>>,
     Request: '' as Ref<Class<Request>>,
-    Vacation: '' as Ref<Class<Request>>,
-    Leave: '' as Ref<Class<Request>>,
-    Sick: '' as Ref<Class<Request>>,
-    PTO: '' as Ref<Class<Request>>,
-    PTO2: '' as Ref<Class<Request>>,
-    Remote: '' as Ref<Class<Request>>,
-    Overtime: '' as Ref<Class<Request>>,
-    Overtime2: '' as Ref<Class<Request>>
+    RequestType: '' as Ref<Class<RequestType>>
   },
   mixin: {
     Staff: '' as Ref<Mixin<Staff>>
@@ -101,7 +107,15 @@ const hr = plugin(hrId, {
     Overtime: '' as Asset
   },
   ids: {
-    Head: '' as Ref<Department>
+    Head: '' as Ref<Department>,
+    Vacation: '' as Ref<RequestType>,
+    Leave: '' as Ref<RequestType>,
+    Sick: '' as Ref<RequestType>,
+    PTO: '' as Ref<RequestType>,
+    PTO2: '' as Ref<RequestType>,
+    Remote: '' as Ref<RequestType>,
+    Overtime: '' as Ref<RequestType>,
+    Overtime2: '' as Ref<RequestType>
   }
 })
 

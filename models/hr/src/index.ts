@@ -14,17 +14,19 @@
 //
 
 import { Employee } from '@anticrm/contact'
-import { Arr, Class, Domain, IndexKind, Markup, Ref, Timestamp } from '@anticrm/core'
-import type { Department, DepartmentMember, Request, Staff } from '@anticrm/hr'
+import { Arr, Class, Domain, DOMAIN_MODEL, IndexKind, Markup, Ref, Timestamp } from '@anticrm/core'
+import type { Department, DepartmentMember, Request, RequestType, Staff } from '@anticrm/hr'
 import {
   ArrOf,
   Builder,
   Collection,
+  Hidden,
   Index,
   Mixin,
   Model,
   Prop,
   TypeDate,
+  TypeIntlString,
   TypeMarkup,
   TypeRef,
   TypeString,
@@ -34,9 +36,10 @@ import attachment from '@anticrm/model-attachment'
 import calendar from '@anticrm/model-calendar'
 import chunter from '@anticrm/model-chunter'
 import contact, { TEmployee, TEmployeeAccount } from '@anticrm/model-contact'
-import core, { TAttachedDoc, TSpace } from '@anticrm/model-core'
+import core, { TAttachedDoc, TDoc, TSpace } from '@anticrm/model-core'
 import view, { createAction } from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
+import { Asset, IntlString } from '@anticrm/platform'
 import hr from './plugin'
 
 export const DOMAIN_HR = 'hr' as Domain
@@ -80,7 +83,19 @@ export class TStaff extends TEmployee implements Staff {
   department!: Ref<Department>
 }
 
+@Model(hr.class.RequestType, core.class.Doc, DOMAIN_MODEL)
+@UX(hr.string.RequestType)
+export class TRequestType extends TDoc implements RequestType {
+  @Prop(TypeIntlString(), core.string.Name)
+  label!: IntlString
+
+  icon!: Asset
+  value!: number
+  color!: number
+}
+
 @Model(hr.class.Request, core.class.AttachedDoc, DOMAIN_HR)
+@UX(hr.string.Request, hr.icon.PTO)
 export class TRequest extends TAttachedDoc implements Request {
   @Prop(TypeRef(hr.mixin.Staff), contact.string.Employee)
   declare attachedTo: Ref<Staff>
@@ -89,6 +104,10 @@ export class TRequest extends TAttachedDoc implements Request {
 
   @Prop(TypeRef(hr.class.Department), hr.string.Department)
   declare space: Ref<Department>
+
+  @Prop(TypeRef(hr.class.RequestType), hr.string.RequestType)
+  @Hidden()
+  type!: Ref<RequestType>
 
   @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
   comments?: number
@@ -107,52 +126,8 @@ export class TRequest extends TAttachedDoc implements Request {
   dueDate!: Timestamp
 }
 
-@Model(hr.class.Leave, hr.class.Request)
-export class TLeave extends TRequest {}
-
-@Model(hr.class.Vacation, hr.class.Leave)
-@UX(hr.string.Vacation, hr.icon.Vacation)
-export class TVacation extends TLeave {}
-
-@Model(hr.class.Sick, hr.class.Leave)
-@UX(hr.string.Sick, hr.icon.Sick)
-export class TSick extends TLeave {}
-
-@Model(hr.class.PTO, hr.class.Leave)
-@UX(hr.string.PTO, hr.icon.PTO)
-export class TPTO extends TLeave {}
-
-@Model(hr.class.PTO2, hr.class.PTO)
-@UX(hr.string.PTO2, hr.icon.PTO)
-export class TPTO2 extends TPTO {}
-
-@Model(hr.class.Remote, hr.class.Request)
-@UX(hr.string.Remote, hr.icon.Remote)
-export class TRemote extends TRequest {}
-
-@Model(hr.class.Overtime, hr.class.Request)
-@UX(hr.string.Overtime, hr.icon.Overtime)
-export class TOvertime extends TRequest {}
-
-@Model(hr.class.Overtime2, hr.class.Overtime)
-@UX(hr.string.Overtime2, hr.icon.Overtime)
-export class TOvertime2 extends TRequest {}
-
 export function createModel (builder: Builder): void {
-  builder.createModel(
-    TDepartment,
-    TDepartmentMember,
-    TRequest,
-    TLeave,
-    TVacation,
-    TSick,
-    TPTO,
-    TPTO2,
-    TRemote,
-    TOvertime,
-    TOvertime2,
-    TStaff
-  )
+  builder.createModel(TDepartment, TDepartmentMember, TRequest, TRequestType, TStaff)
 
   builder.createDoc(
     workbench.class.Application,
@@ -199,6 +174,90 @@ export function createModel (builder: Builder): void {
   builder.mixin(hr.class.DepartmentMember, core.class.Class, view.mixin.ArrayEditor, {
     editor: hr.component.DepartmentStaff
   })
+
+  builder.createDoc(
+    hr.class.RequestType,
+    core.space.Model,
+    {
+      label: hr.string.Vacation,
+      icon: hr.icon.Vacation,
+      color: 2,
+      value: 0
+    },
+    hr.ids.Vacation
+  )
+
+  builder.createDoc(
+    hr.class.RequestType,
+    core.space.Model,
+    {
+      label: hr.string.Sick,
+      icon: hr.icon.Sick,
+      color: 11,
+      value: -1
+    },
+    hr.ids.Sick
+  )
+
+  builder.createDoc(
+    hr.class.RequestType,
+    core.space.Model,
+    {
+      label: hr.string.PTO,
+      icon: hr.icon.PTO,
+      color: 9,
+      value: -1
+    },
+    hr.ids.PTO
+  )
+
+  builder.createDoc(
+    hr.class.RequestType,
+    core.space.Model,
+    {
+      label: hr.string.PTO2,
+      icon: hr.icon.PTO,
+      color: 9,
+      value: -0.5
+    },
+    hr.ids.PTO2
+  )
+
+  builder.createDoc(
+    hr.class.RequestType,
+    core.space.Model,
+    {
+      label: hr.string.Overtime,
+      icon: hr.icon.Overtime,
+      color: 5,
+      value: 1
+    },
+    hr.ids.Overtime
+  )
+
+  builder.createDoc(
+    hr.class.RequestType,
+    core.space.Model,
+    {
+      label: hr.string.Overtime2,
+      icon: hr.icon.Overtime,
+      color: 5,
+      value: 0.5
+    },
+    hr.ids.Overtime2
+  )
+
+  builder.createDoc(
+    hr.class.RequestType,
+    core.space.Model,
+    {
+      label: hr.string.Remote,
+      icon: hr.icon.Remote,
+      color: 4,
+      value: 0
+    },
+    hr.ids.Remote
+  )
 
   createAction(
     builder,
