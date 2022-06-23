@@ -12,11 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import type { IntlString, Resource } from '@anticrm/platform'
+import type { IntlString } from '@anticrm/platform'
 import { mergeIds } from '@anticrm/platform'
 import tracker, { trackerId } from '../../tracker/lib'
 import { AnyComponent } from '@anticrm/ui'
-import { Space } from '@anticrm/core'
 
 export default mergeIds(trackerId, tracker, {
   string: {
@@ -160,6 +159,10 @@ export default mergeIds(trackerId, tracker, {
     AllFilters: '' as IntlString,
     NoDescription: '' as IntlString,
 
+    Assigned: '' as IntlString,
+    Created: '' as IntlString,
+    Subscribed: '' as IntlString,
+
     DurMinutes: '' as IntlString,
     DurHours: '' as IntlString,
     DurDays: '' as IntlString,
@@ -203,8 +206,5 @@ export default mergeIds(trackerId, tracker, {
     ListView: '' as AnyComponent,
     KanbanView: '' as AnyComponent,
     IssuePreview: '' as AnyComponent
-  },
-  function: {
-    ProjectVisible: '' as '' as Resource<(spaces: Space[]) => boolean>
   }
 })

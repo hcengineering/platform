@@ -24,8 +24,8 @@
   const statusQuery = createQuery()
   let query: DocumentQuery<Issue> = {}
   $: statusQuery.query(tracker.class.IssueStatus, { category: tracker.issueStatusCategory.Backlog }, (result) => {
-    query = { status: { $in: result.map(({ _id }) => _id) } }
+    query = { status: { $in: result.map(({ _id }) => _id) }, space: currentSpace }
   })
 </script>
 
-<IssuesView {currentSpace} {query} title={tracker.string.BacklogIssues} />
+<IssuesView {query} title={tracker.string.BacklogIssues} />
