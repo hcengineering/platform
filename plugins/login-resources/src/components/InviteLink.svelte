@@ -59,7 +59,7 @@
     <InviteWorkspace size="large" />
   </div>
   <div class="mt-2">
-      <Label label={login.string.InviteNote} />
+    <Label label={login.string.InviteNote} />
   </div>
   {#await getLink() then link}
     <div class="over-underline link" on:click={() => copy(link)}>{link}</div>
