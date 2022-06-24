@@ -6,10 +6,17 @@ Tracker:
 
 - Remember view options 
 - Names of parent issues
+- My issues
+- Roadmap
 - 
+
 Chunter:
 
 - Reactions on messages
+
+HR:
+
+- Leaves schedule
 
 ## 0.6.28
 

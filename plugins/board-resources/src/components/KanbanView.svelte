@@ -111,10 +111,9 @@
 <KanbanUI
   bind:this={kanbanUI}
   {_class}
-  {space}
   {search}
   {options}
-  query={{ doneState: null, isArchived: { $nin: [true] } }}
+  query={{ doneState: null, isArchived: { $nin: [true] }, space }}
   {states}
   fieldName={'state'}
   rankFieldName={'rank'}
@@ -147,7 +146,7 @@
     <ListHeader {state} />
   </svelte:fragment>
 
-  <svelte:fragment slot="afterCard" let:space={targetSpace} let:state={targetState}>
-    <AddCard space={targetSpace} state={targetState} />
+  <svelte:fragment slot="afterCard" let:state={targetState}>
+    <AddCard {space} state={targetState} />
   </svelte:fragment>
 </KanbanUI>

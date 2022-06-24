@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { AttachedDoc, Class, Doc, DocumentQuery, DocumentUpdate, FindOptions, Ref, Space } from '@anticrm/core'
+  import core, { AttachedDoc, Class, Doc, DocumentQuery, DocumentUpdate, FindOptions, Ref } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { getPlatformColor, ScrollBox, Scroller } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
@@ -22,7 +22,6 @@
   import KanbanRow from './KanbanRow.svelte'
 
   export let _class: Ref<Class<Item>>
-  export let space: Ref<Space>
   export let search: string
   export let options: FindOptions<Item> | undefined = undefined
   export let states: TypeState[] = []
@@ -40,7 +39,6 @@
   $: objsQ.query(
     _class,
     {
-      space,
       ...query,
       ...(search !== '' ? { $search: search } : {})
     },
@@ -74,7 +72,7 @@
       const adoc: AttachedDoc = item as Doc as AttachedDoc
       await client.updateCollection(
         _class,
-        space,
+        adoc.space,
         adoc._id as Ref<Doc> as Ref<AttachedDoc>,
         adoc.attachedTo,
         adoc.attachedToClass,
@@ -331,7 +329,7 @@
               </svelte:fragment>
             </KanbanRow>
 
-            <slot name="afterCard" {space} {state} />
+            <slot name="afterCard" {state} />
           </Scroller>
         </div>
       {/each}

@@ -157,6 +157,13 @@ export interface ObjectValidator extends Class<Doc> {
 /**
  * @public
  */
+export interface ObjectTitle extends Class<Doc> {
+  titleProvider: Resource<<T extends Doc>(client: Client, ref: Ref<T>) => Promise<string>>
+}
+
+/**
+ * @public
+ */
 export interface ViewletDescriptor extends Doc, UXObject {
   component: AnyComponent
 }
@@ -384,6 +391,7 @@ const view = plugin(viewId, {
     ObjectEditorHeader: '' as Ref<Mixin<ObjectEditorHeader>>,
     ObjectValidator: '' as Ref<Mixin<ObjectValidator>>,
     ObjectFactory: '' as Ref<Mixin<ObjectFactory>>,
+    ObjectTitle: '' as Ref<Mixin<ObjectTitle>>,
     SpaceHeader: '' as Ref<Mixin<SpaceHeader>>,
     SpaceName: '' as Ref<Mixin<SpaceName>>,
     IgnoreActions: '' as Ref<Mixin<IgnoreActions>>,

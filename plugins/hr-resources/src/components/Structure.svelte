@@ -13,14 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import contact from '@anticrm/contact'
   import { DocumentQuery, Ref } from '@anticrm/core'
-  import { Button, Icon, Label, Scroller, SearchEdit, showPopup, IconAdd, eventToHTMLElement } from '@anticrm/ui'
   import type { Department } from '@anticrm/hr'
+  import { createQuery } from '@anticrm/presentation'
+  import { Button, eventToHTMLElement, Icon, IconAdd, Label, Scroller, SearchEdit, showPopup } from '@anticrm/ui'
   import hr from '../plugin'
   import CreateDepartment from './CreateDepartment.svelte'
   import DepartmentCard from './DepartmentCard.svelte'
-  import { createQuery } from '@anticrm/presentation'
-  import contact from '@anticrm/contact'
 
   let search = ''
   let resultQuery: DocumentQuery<Department> = {}
@@ -45,13 +45,9 @@
       head = res.find((p) => p._id === hr.ids.Head)
       descendants.clear()
       for (const doc of res) {
-        const current = descendants.get(doc.space)
-        if (!current) {
-          descendants.set(doc.space, [doc])
-        } else {
-          current.push(doc)
-          descendants.set(doc.space, current)
-        }
+        const current = descendants.get(doc.space) ?? []
+        current.push(doc)
+        descendants.set(doc.space, current)
       }
       descendants = descendants
     },

@@ -21,8 +21,8 @@
 {#if value}
   <div class="root">
     <span class="names">
-      {#each value.parentNames as name}
-        <span class="name">{name}</span>
+      {#each value.parents as parentInfo}
+        <span class="name">{parentInfo.parentTitle}</span>
       {/each}
     </span>
   </div>

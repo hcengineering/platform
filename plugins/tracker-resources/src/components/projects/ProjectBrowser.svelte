@@ -14,16 +14,17 @@
 -->
 <script lang="ts">
   import contact from '@anticrm/contact'
-  import { DocumentQuery, FindOptions, Ref, SortingOrder } from '@anticrm/core'
+  import { DocumentQuery, FindOptions, SortingOrder } from '@anticrm/core'
+  import { IntlString } from '@anticrm/platform'
   import { createQuery } from '@anticrm/presentation'
-  import { Project, Team } from '@anticrm/tracker'
+  import { Project } from '@anticrm/tracker'
   import { Button, IconAdd, IconOptions, Label, showPopup } from '@anticrm/ui'
   import tracker from '../../plugin'
   import { getIncludedProjectStatuses, projectsTitleMap, ProjectsViewMode } from '../../utils'
   import NewProject from './NewProject.svelte'
   import ProjectsListBrowser from './ProjectsListBrowser.svelte'
 
-  export let currentSpace: Ref<Team>
+  export let label: IntlString
   export let query: DocumentQuery<Project> = {}
   export let search: string = ''
   export let mode: ProjectsViewMode = 'all'
@@ -44,7 +45,6 @@
   $: includedProjectsQuery = { status: { $in: includedProjectStatuses } }
 
   $: baseQuery = {
-    space: currentSpace,
     ...includedProjectsQuery,
     ...query
   }
@@ -60,8 +60,9 @@
     projectOptions
   )
 
+  const space = typeof query.space === 'string' ? query.space : tracker.team.DefaultTeam
   const showCreateDialog = async () => {
-    showPopup(NewProject, { space: currentSpace, targetElement: null }, null)
+    showPopup(NewProject, { space, targetElement: null }, null)
   }
 
   const handleViewModeChanged = (newMode: ProjectsViewMode) => {
@@ -76,7 +77,7 @@
 <div>
   <div class="fs-title flex-between header">
     <div class="flex-center">
-      <Label label={tracker.string.Projects} />
+      <Label {label} />
       <div class="projectTitle">
         › <Label label={title} />
       </div>
@@ -156,7 +157,7 @@
       {
         key: '$lookup.lead',
         presenter: tracker.component.LeadPresenter,
-        props: { currentSpace, defaultClass: contact.class.Employee, shouldShowLabel: false }
+        props: { defaultClass: contact.class.Employee, shouldShowLabel: false }
       },
       { key: '', presenter: tracker.component.ProjectMembersPresenter, props: { kind: 'link' } },
       { key: '', presenter: tracker.component.TargetDatePresenter },

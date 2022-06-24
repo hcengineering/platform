@@ -15,6 +15,21 @@
     "MoveStaff": "Employee transfer",
     "MoveStaffDescr": "Do you want to transfer employee from {current} to {department}",
     "Departments": "Departments",
-    "AddEmployee": "Add employee"
+    "ShowEmployees": "Show employees",
+    "AddEmployee": "Add employee",
+    "Schedule": "Schedule",
+    "RequestType": "Type",
+    "CreateRequest": "Create {type}",
+    "Today": "Today",
+    "NoEmployeesInDepartment": "There are no employees in the selected department",
+    "Vacation": "Vacation",
+    "Sick": "Sick",
+    "PTO": "PTO",
+    "Remote": "Remote",
+    "Overtime": "Overtime",
+    "PTO2": "PTO/2",
+    "Overtime2": "Overtime/2",
+    "EditRequest": "Edit {type}",
+    "Request": "Request"
   }
 }

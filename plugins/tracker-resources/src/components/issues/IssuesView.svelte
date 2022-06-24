@@ -1,8 +1,8 @@
 <script lang="ts">
-  import core, { DocumentQuery, Ref, Space, WithLookup } from '@anticrm/core'
+  import { DocumentQuery, WithLookup } from '@anticrm/core'
   import { IntlString, translate } from '@anticrm/platform'
   import { getClient } from '@anticrm/presentation'
-  import { Issue, Team } from '@anticrm/tracker'
+  import { Issue } from '@anticrm/tracker'
   import { Button, IconDetails } from '@anticrm/ui'
   import view, { Viewlet } from '@anticrm/view'
   import { FilterBar } from '@anticrm/view-resources'
@@ -11,7 +11,6 @@
   import IssuesContent from './IssuesContent.svelte'
   import IssuesHeader from './IssuesHeader.svelte'
 
-  export let currentSpace: Ref<Team> | undefined
   export let query: DocumentQuery<Issue> = {}
   export let title: IntlString | undefined = undefined
   export let label: string = ''
@@ -32,23 +31,20 @@
 
   let viewlets: WithLookup<Viewlet>[] = []
 
-  $: update(currentSpace)
+  $: update()
 
-  async function update (currentSpace?: Ref<Space>): Promise<void> {
-    const space = await client.findOne(core.class.Space, { _id: currentSpace })
-    if (space) {
-      viewlets = await client.findAll(
-        view.class.Viewlet,
-        { attachTo: tracker.class.Issue },
-        {
-          lookup: {
-            descriptor: view.class.ViewletDescriptor
-          }
+  async function update (): Promise<void> {
+    viewlets = await client.findAll(
+      view.class.Viewlet,
+      { attachTo: tracker.class.Issue },
+      {
+        lookup: {
+          descriptor: view.class.ViewletDescriptor
         }
-      )
-      const _id = getActiveViewletId()
-      viewlet = viewlets.find((viewlet) => viewlet._id === _id) || viewlets[0]
-    }
+      }
+    )
+    const _id = getActiveViewletId()
+    viewlet = viewlets.find((viewlet) => viewlet._id === _id) || viewlets[0]
   }
   $: if (!label && title) {
     translate(title, {}).then((res) => {
@@ -69,31 +65,30 @@
   $: if (docWidth > 900 && docSize) docSize = false
 </script>
 
-{#if currentSpace}
-  <IssuesHeader {viewlets} {label} bind:viewlet bind:search>
-    <svelte:fragment slot="extra">
-      {#if asideFloat && $$slots.aside}
-        <Button
-          icon={IconDetails}
-          kind={'transparent'}
-          size={'medium'}
-          selected={asideShown}
-          on:click={() => {
-            asideShown = !asideShown
-          }}
-        />
-      {/if}
-    </svelte:fragment>
-  </IssuesHeader>
-  <FilterBar _class={tracker.class.Issue} query={searchQuery} on:change={(e) => (resultQuery = e.detail)} />
-  <div class="flex w-full h-full clear-mins">
-    {#if viewlet}
-      <IssuesContent {currentSpace} {viewlet} query={resultQuery} />
+<IssuesHeader {viewlets} {label} bind:viewlet bind:search>
+  <svelte:fragment slot="extra">
+    {#if asideFloat && $$slots.aside}
+      <Button
+        icon={IconDetails}
+        kind={'transparent'}
+        size={'medium'}
+        selected={asideShown}
+        on:click={() => {
+          asideShown = !asideShown
+        }}
+      />
     {/if}
-    {#if $$slots.aside !== undefined && asideShown}
-      <div class="popupPanel-body__aside" class:float={asideFloat} class:shown={asideShown}>
-        <slot name="aside" />
-      </div>
-    {/if}
-  </div>
-{/if}
+  </svelte:fragment>
+</IssuesHeader>
+<slot name="afterHeader" />
+<FilterBar _class={tracker.class.Issue} query={searchQuery} on:change={(e) => (resultQuery = e.detail)} />
+<div class="flex w-full h-full clear-mins">
+  {#if viewlet}
+    <IssuesContent {viewlet} query={resultQuery} />
+  {/if}
+  {#if $$slots.aside !== undefined && asideShown}
+    <div class="popupPanel-body__aside" class:float={asideFloat} class:shown={asideShown}>
+      <slot name="aside" />
+    </div>
+  {/if}
+</div>

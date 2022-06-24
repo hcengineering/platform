@@ -112,7 +112,7 @@ export interface Issue extends AttachedDoc {
   subIssues: number
   blockedBy?: Ref<Issue>[]
   relatedIssue?: Ref<Issue>[]
-  parentNames: string[]
+  parents: IssueParentInfo[]
 
   comments: number
   attachments?: number
@@ -123,6 +123,14 @@ export interface Issue extends AttachedDoc {
   dueDate: Timestamp | null
 
   rank: string
+}
+
+/**
+ * @public
+ */
+export interface IssueParentInfo {
+  parentId: Ref<Issue>
+  parentTitle: string
 }
 
 /**
@@ -269,5 +277,8 @@ export default plugin(trackerId, {
   action: {
     SetDueDate: '' as Ref<Action>,
     SetParent: '' as Ref<Action>
+  },
+  team: {
+    DefaultTeam: '' as Ref<Team>
   }
 })

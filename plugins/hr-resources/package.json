@@ -32,6 +32,7 @@
   "dependencies": {
     "@anticrm/platform": "~0.6.6",
     "svelte": "^3.47",
+    "@anticrm/calendar": "~0.6.0",
     "@anticrm/hr": "~0.6.0",
     "@anticrm/ui": "~0.6.0",
     "@anticrm/presentation": "~0.6.2",
@@ -41,6 +42,8 @@
     "@anticrm/view": "~0.6.0",
     "@anticrm/view-resources": "~0.6.0",
     "@anticrm/contact-resources": "~0.6.0",
+    "@anticrm/attachment-resources": "~0.6.0",
+    "@anticrm/text-editor": "~0.6.0",
     "@anticrm/setting": "~0.6.1",
     "@anticrm/attachment": "~0.6.1"
   }

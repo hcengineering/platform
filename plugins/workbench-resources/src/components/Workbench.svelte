@@ -15,10 +15,10 @@
 <script lang="ts">
   import calendar from '@anticrm/calendar'
   import contact, { Employee, EmployeeAccount } from '@anticrm/contact'
-  import core, { Client, getCurrentAccount, Ref, Space } from '@anticrm/core'
+  import core, { Class, Client, Doc, getCurrentAccount, Ref, Space } from '@anticrm/core'
   import notification, { NotificationStatus } from '@anticrm/notification'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
-  import { getMetadata, IntlString } from '@anticrm/platform'
+  import { getMetadata, getResource, IntlString } from '@anticrm/platform'
   import { Avatar, createQuery, setClient } from '@anticrm/presentation'
   import {
     AnyComponent,
@@ -26,6 +26,7 @@
     closeTooltip,
     Component,
     DatePickerPopup,
+    fetchMetadataLocalStorage,
     getCurrentLocation,
     location,
     Location,
@@ -35,6 +36,8 @@
     showPopup,
     TooltipInstance
   } from '@anticrm/ui'
+  import login from '@anticrm/login'
+  import view from '@anticrm/view'
   import { ActionContext, ActionHandler } from '@anticrm/view-resources'
   import type { Application, NavigatorModel, SpecialNavModel, ViewConfiguration } from '@anticrm/workbench'
   import { onDestroy, tick } from 'svelte'
@@ -125,8 +128,32 @@
       closePopup()
 
       await syncLoc(loc)
+      await updateWindowTitle(loc)
     })
   )
+
+  async function updateWindowTitle (loc: Location) {
+    const title = (await getWindowTitle(loc)) ?? getMetadata(workbench.metadata.PlatformTitle) ?? 'Platform'
+    const ws = fetchMetadataLocalStorage(login.metadata.CurrentWorkspace)
+    document.title = ws == null ? title : `${ws} - ${title}`
+  }
+  async function getWindowTitle (loc: Location) {
+    if (loc.fragment == null) return
+    const hierarchy = client.getHierarchy()
+    const [, _id, _class] = decodeURIComponent(loc.fragment).split('|')
+    if (_class == null) return
+
+    const clazz = hierarchy.getClass(_class as Ref<Class<Doc>>)
+    if (!hierarchy.hasMixin(clazz, view.mixin.ObjectTitle)) return
+
+    const mixin = hierarchy.as(clazz, view.mixin.ObjectTitle)
+    const titleProvider = await getResource(mixin.titleProvider)
+    try {
+      return await titleProvider(client, _id as Ref<Doc>)
+    } catch (err: any) {
+      console.error(err)
+    }
+  }
 
   async function syncLoc (loc: Location): Promise<void> {
     const app = loc.path.length > 1 ? (loc.path[1] as Ref<Application>) : undefined

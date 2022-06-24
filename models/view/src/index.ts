@@ -40,6 +40,7 @@ import type {
   ObjectEditor,
   ObjectEditorHeader,
   ObjectFactory,
+  ObjectTitle,
   ObjectValidator,
   PreviewPresenter,
   SpaceHeader,
@@ -156,6 +157,11 @@ export class TObjectValidator extends TClass implements ObjectValidator {
 @Mixin(view.mixin.ObjectFactory, core.class.Class)
 export class TObjectFactory extends TClass implements ObjectFactory {
   component!: AnyComponent
+}
+
+@Mixin(view.mixin.ObjectTitle, core.class.Class)
+export class TObjectTitle extends TClass implements ObjectTitle {
+  titleProvider!: Resource<<T extends Doc>(client: Client, ref: Ref<T>) => Promise<string>>
 }
 
 @Model(view.class.ViewletPreference, preference.class.Preference)
@@ -276,6 +282,7 @@ export function createModel (builder: Builder): void {
     TActionCategory,
     TObjectValidator,
     TObjectFactory,
+    TObjectTitle,
     TObjectEditorHeader,
     THTMLPresenter,
     TSpaceHeader,

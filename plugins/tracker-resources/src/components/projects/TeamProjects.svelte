@@ -13,19 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { DocumentQuery, Ref } from '@anticrm/core'
-  import { createQuery } from '@anticrm/presentation'
-  import { Issue, Team } from '@anticrm/tracker'
-  import tracker from '../../plugin'
-  import IssuesView from './IssuesView.svelte'
+  import { Ref } from '@anticrm/core'
+  import { Team } from '@anticrm/tracker'
+  import Projects from './Projects.svelte'
 
   export let currentSpace: Ref<Team>
-
-  const statusQuery = createQuery()
-  let query: DocumentQuery<Issue> = {}
-  $: statusQuery.query(tracker.class.IssueStatus, { category: tracker.issueStatusCategory.Backlog }, (result) => {
-    query = { status: { $in: result.map(({ _id }) => _id) }, space: currentSpace }
-  })
 </script>
 
-<IssuesView {query} title={tracker.string.BacklogIssues} />
+<Projects query={{ space: currentSpace }} />
