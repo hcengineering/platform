@@ -150,6 +150,6 @@ export default async (): Promise<Resources> => ({
     IssueQuery: async (client: Client, query: string) => await queryIssue(tracker.class.Issue, client, query)
   },
   function: {
-    getIssueTitle
+    IssueTitleProvider: getIssueTitle
   }
 })

@@ -194,6 +194,10 @@ export function createModel (builder: Builder): void {
     editor: lead.component.Leads
   })
 
+  builder.mixin(lead.class.Lead, core.class.Class, view.mixin.ObjectTitle, {
+    titleProvider: lead.function.LeadTitleProvider
+  })
+
   builder.mixin(lead.class.Lead, core.class.Class, view.mixin.ClassFilters, {
     filters: ['attachedTo', 'title', 'assignee', 'state', 'doneState', 'modifiedOn']
   })

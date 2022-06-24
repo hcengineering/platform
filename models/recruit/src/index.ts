@@ -383,6 +383,10 @@ export function createModel (builder: Builder): void {
     validator: recruit.validator.ApplicantValidator
   })
 
+  builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.ObjectTitle, {
+    titleProvider: recruit.function.ApplicationTitleProvider
+  })
+
   builder.createDoc(
     view.class.ActionCategory,
     core.space.Model,
