@@ -13,13 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import calendar from '@anticrm/calendar'
+  import calendar from '@anticrm/calendar-resources/src/plugin'
+  import { CalendarMode } from '@anticrm/calendar-resources'
   import { Ref } from '@anticrm/core'
   import { Department } from '@anticrm/hr'
   import { createQuery, SpaceSelector } from '@anticrm/presentation'
   import { Button, Icon, IconBack, IconForward, Label } from '@anticrm/ui'
   import hr from '../plugin'
-  import ScheduleView from './ScheduleView.svelte'
+  import ScheduleMonthView from './ScheduleView.svelte'
 
   let department = hr.ids.Head
   let currentDate: Date = new Date()
@@ -28,6 +29,8 @@
 
   let descendants: Map<Ref<Department>, Department[]> = new Map<Ref<Department>, Department[]>()
   let departments: Map<Ref<Department>, Department> = new Map<Ref<Department>, Department>()
+
+  let mode: CalendarMode = CalendarMode.Month
 
   query.query(hr.class.Department, {}, (res) => {
     departments.clear()
@@ -43,7 +46,16 @@
   })
 
   function inc (val: number): void {
-    currentDate.setMonth(currentDate.getMonth() + val)
+    switch (mode) {
+      case CalendarMode.Month: {
+        currentDate.setMonth(currentDate.getMonth() + val)
+        break
+      }
+      case CalendarMode.Year: {
+        currentDate.setFullYear(currentDate.getFullYear() + val)
+        break
+      }
+    }
     currentDate = currentDate
   }
 
@@ -58,31 +70,49 @@
   <div class="ac-header__wrap-title">
     <div class="ac-header__icon"><Icon icon={calendar.icon.Calendar} size={'small'} /></div>
     <span class="ac-header__title"><Label label={hr.string.Schedule} /></span>
-    <div class="flex ml-4 gap-2">
+    <div class="flex gap-2 ml-6">
       <Button
-        icon={IconBack}
         size={'small'}
+        label={calendar.string.ModeMonth}
         on:click={() => {
-          inc(-1)
+          mode = CalendarMode.Month
         }}
       />
       <Button
         size={'small'}
-        label={hr.string.Today}
+        label={calendar.string.ModeYear}
         on:click={() => {
-          currentDate = new Date()
+          mode = CalendarMode.Year
         }}
       />
-      <Button
-        icon={IconForward}
-        size={'small'}
-        on:click={() => {
-          inc(1)
-        }}
-      />
+      <div class="flex ml-4 gap-2">
+        <Button
+          icon={IconBack}
+          size={'small'}
+          on:click={() => {
+            inc(-1)
+          }}
+        />
+        <Button
+          size={'small'}
+          label={calendar.string.Today}
+          on:click={() => {
+            currentDate = new Date()
+          }}
+        />
+        <Button
+          icon={IconForward}
+          size={'small'}
+          on:click={() => {
+            inc(1)
+          }}
+        />
+      </div>
     </div>
     <div class="fs-title ml-4 flex-row-center">
-      {getMonthName(currentDate)}
+      {#if mode === CalendarMode.Month}
+        {getMonthName(currentDate)}
+      {/if}
       {currentDate.getFullYear()}
     </div>
   </div>
@@ -90,5 +120,5 @@
 </div>
 
 <div class="mr-6 h-full">
-  <ScheduleView {department} {descendants} departmentById={departments} {currentDate} />
+  <ScheduleMonthView {department} {descendants} departmentById={departments} {currentDate} {mode} />
 </div>
