@@ -58,9 +58,10 @@ export async function OnIssueUpdate (tx: Tx, control: TriggerControl): Promise<T
 
     function update (issue: Issue): DocumentUpdate<Issue> {
       const parentInfoIndex = issue.parents.findIndex(({ parentId }) => parentId === updateTx.objectId)
-      const parentsUpdate = parentInfoIndex === -1
-        ? {}
-        : { parents: [...issue.parents].slice(0, parentInfoIndex + 1).concat(updatedParents) }
+      const parentsUpdate =
+        parentInfoIndex === -1
+          ? {}
+          : { parents: [...issue.parents].slice(0, parentInfoIndex + 1).concat(updatedParents) }
 
       return { ...parentsUpdate, project: updatedProject }
     }
