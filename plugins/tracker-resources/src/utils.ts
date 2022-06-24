@@ -14,7 +14,7 @@
 //
 
 import contact, { Employee, formatName } from '@anticrm/contact'
-import { DocumentQuery, Ref, SortingOrder, TxOperations } from '@anticrm/core'
+import { Doc, DocumentQuery, Ref, SortingOrder, TxOperations } from '@anticrm/core'
 import { Asset, IntlString, translate } from '@anticrm/platform'
 import {
   IssuePriority,
@@ -503,4 +503,14 @@ export async function getKanbanStatuses (
     }, [])
   }
   return []
+}
+
+export async function getIssueTitle (client: TxOperations, ref: Ref<Doc>): Promise<string> {
+  const issue = await client.findOne(
+    tracker.class.Issue,
+    { _id: ref as Ref<Issue> },
+    { lookup: { space: tracker.class.Team } }
+  )
+  if (issue?.$lookup?.space === undefined) throw new Error(`Issue Team not found, _id: ${ref}`)
+  return getIssueId(issue.$lookup.space, issue)
 }

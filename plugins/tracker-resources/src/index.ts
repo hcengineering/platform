@@ -56,7 +56,7 @@ import SetParentIssueActionPopup from './components/SetParentIssueActionPopup.sv
 import Views from './components/views/Views.svelte'
 import KanbanView from './components/issues/KanbanView.svelte'
 import tracker from './plugin'
-import { getIssueId } from './utils'
+import { getIssueId, getIssueTitle } from './utils'
 
 export async function queryIssue<D extends Issue> (
   _class: Ref<Class<D>>,
@@ -148,5 +148,8 @@ export default async (): Promise<Resources> => ({
   },
   completion: {
     IssueQuery: async (client: Client, query: string) => await queryIssue(tracker.class.Issue, client, query)
+  },
+  function: {
+    getIssueTitle
   }
 })
