@@ -51,7 +51,6 @@ export default mergeIds(contactId, contact, {
     Location: '' as IntlString,
     Channel: '' as IntlString,
     ChannelProvider: '' as IntlString,
-    Employee: '' as IntlString,
     Value: '' as IntlString,
     Phone: '' as IntlString,
     PhonePlaceholder: '' as IntlString,

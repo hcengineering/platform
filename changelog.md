@@ -11,6 +11,10 @@ Chunter:
 
 - Reactions on messages
 
+HR:
+
+- Leaves schedule
+
 ## 0.6.28
 
 Core:

@@ -23,19 +23,31 @@ import { Action, ActionCategory } from '@anticrm/view'
 export default mergeIds(hrId, hr, {
   string: {
     HRApplication: '' as IntlString,
-    Departments: '' as IntlString
+    Departments: '' as IntlString,
+    Request: '' as IntlString,
+    Vacation: '' as IntlString,
+    Sick: '' as IntlString,
+    PTO: '' as IntlString,
+    PTO2: '' as IntlString,
+    Remote: '' as IntlString,
+    Overtime: '' as IntlString,
+    Overtime2: '' as IntlString
   },
   component: {
     Structure: '' as AnyComponent,
     EditDepartment: '' as AnyComponent,
     DepartmentStaff: '' as AnyComponent,
-    DepartmentEditor: '' as AnyComponent
+    DepartmentEditor: '' as AnyComponent,
+    Schedule: '' as AnyComponent,
+    EditRequest: '' as AnyComponent
   },
   category: {
     HR: '' as Ref<ActionCategory>
   },
   action: {
     EditDepartment: '' as Ref<Action>,
-    DeleteDepartment: '' as Ref<Action>
+    DeleteDepartment: '' as Ref<Action>,
+    EditRequest: '' as Ref<Action>,
+    DeleteRequest: '' as Ref<Action>
   }
 })

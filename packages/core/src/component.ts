@@ -133,7 +133,7 @@ export default plugin(coreId, {
     Array: '' as IntlString,
     Bag: '' as IntlString,
     Name: '' as IntlString,
-    Description: '' as IntlString,
-    Enum: '' as IntlString
+    Enum: '' as IntlString,
+    Description: '' as IntlString
   }
 })

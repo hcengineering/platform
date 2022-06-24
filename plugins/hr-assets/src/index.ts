@@ -20,7 +20,12 @@ const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(hr.icon, {
   HR: `${icons}#hr`,
   Department: `${icons}#department`,
-  Structure: `${icons}#structure`
+  Structure: `${icons}#structure`,
+  Vacation: `${icons}#vacation`,
+  Sick: `${icons}#sick`,
+  PTO: `${icons}#pto`,
+  Overtime: `${icons}#overtime`,
+  Remote: `${icons}#remote`
 })
 
 addStringsLoader(hrId, async (lang: string) => await import(`../lang/${lang}.json`))
