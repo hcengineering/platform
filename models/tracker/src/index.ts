@@ -43,6 +43,7 @@ import task from '@anticrm/task'
 import {
   Document,
   Issue,
+  IssueParentInfo,
   IssuePriority,
   IssueStatus,
   IssueStatusCategory,
@@ -179,8 +180,7 @@ export class TIssue extends TAttachedDoc implements Issue {
   @Prop(ArrOf(TypeRef(tracker.class.Issue)), tracker.string.RelatedTo)
   relatedIssue!: Ref<Issue>[]
 
-  @Prop(ArrOf(TypeString()), tracker.string.ParentNames)
-  parentNames!: string[]
+  parents!: IssueParentInfo[]
 
   @Prop(Collection(chunter.class.Comment), tracker.string.Comments)
   comments!: number
@@ -578,11 +578,6 @@ export function createModel (builder: Builder): void {
       actionProps: {
         component: tracker.component.SetParentIssueActionPopup,
         element: 'top'
-      },
-      query: {
-        // Hide this action if the issue has subtasks to avoid circular
-        // dependencies and assigning the issue to its own subtask.
-        subIssues: 0
       },
       label: tracker.string.SetParent,
       icon: tracker.icon.Parent,

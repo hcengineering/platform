@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AttachedData, FindOptions, SortingOrder } from '@anticrm/core'
+  import { AttachedData, DocumentQuery, FindOptions, SortingOrder } from '@anticrm/core'
   import { Issue, IssueStatusCategory, Team, calcRank } from '@anticrm/tracker'
   import { createQuery, getClient, ObjectPopup } from '@anticrm/presentation'
   import { Icon } from '@anticrm/ui'
@@ -26,6 +26,7 @@
   const client = getClient()
   const spaceQuery = createQuery()
   const dispatch = createEventDispatcher()
+  const docQuery: DocumentQuery<Issue> = '_id' in value ? { 'parents.parentId': { $nin: [value._id] } } : {}
   const options: FindOptions<Issue> = {
     lookup: { status: tracker.class.IssueStatus },
     sort: { modifiedOn: SortingOrder.Descending }
@@ -72,6 +73,7 @@
 <ObjectPopup
   _class={tracker.class.Issue}
   {options}
+  {docQuery}
   {selected}
   multiSelect={false}
   allowDeselect={true}

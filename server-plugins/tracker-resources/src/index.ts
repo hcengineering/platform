@@ -13,99 +13,21 @@
 // limitations under the License.
 //
 
-import core, { AttachedData, Tx, TxUpdateDoc } from '@anticrm/core'
+import core, { DocumentUpdate, Ref, Tx, TxUpdateDoc } from '@anticrm/core'
 import { extractTx, TriggerControl } from '@anticrm/server-core'
 import tracker, { Issue } from '@anticrm/tracker'
-import { arrayEquals } from './utils'
 
-async function updateSubIssuesData (
+async function updateSubIssues (
+  updateTx: TxUpdateDoc<Issue>,
   control: TriggerControl,
-  node: Issue,
-  update: Partial<AttachedData<Issue>> | ((node: Issue) => Partial<AttachedData<Issue>>),
-  shouldSkip = false
+  update: DocumentUpdate<Issue> | ((node: Issue) => DocumentUpdate<Issue>)
 ): Promise<TxUpdateDoc<Issue>[]> {
-  let txes: TxUpdateDoc<Issue>[] = []
+  const subIssues = await control.findAll(tracker.class.Issue, { 'parents.parentId': updateTx.objectId })
 
-  if (!shouldSkip) {
-    const docUpdate = typeof update === 'function' ? update(node) : update
-    const shouldUpdate = Object.entries(docUpdate).some(([key, value]) => {
-      return Array.isArray(value)
-        ? !arrayEquals(value, node[key as keyof Issue] as typeof value)
-        : value !== node[key as keyof Issue]
-    })
-
-    if (shouldUpdate) {
-      txes.push(control.txFactory.createTxUpdateDoc(node._class, node.space, node._id, docUpdate))
-    }
-  }
-
-  if (node.subIssues > 0) {
-    const subIssues = await control.findAll(tracker.class.Issue, { attachedTo: node._id })
-
-    for (const subIssue of subIssues) {
-      txes = txes.concat(await updateSubIssuesData(control, subIssue, update))
-    }
-  }
-
-  return txes
-}
-
-async function updateSubIssues (updateTx: TxUpdateDoc<Issue>, control: TriggerControl): Promise<TxUpdateDoc<Issue>[]> {
-  const [node] = await control.findAll(
-    updateTx.objectClass,
-    { _id: updateTx.objectId, subIssues: { $gt: 0 } },
-    { limit: 1 }
-  )
-
-  if (node === undefined) {
-    return []
-  }
-
-  const projectUpdate = updateTx.operations.project !== undefined ? { project: updateTx.operations.project } : {}
-  let update: Partial<AttachedData<Issue>> | ((node: Issue) => Partial<AttachedData<Issue>>)
-
-  if (updateTx.operations.title !== undefined) {
-    update = ({ parentNames }: Issue): Partial<AttachedData<Issue>> => {
-      const NODE_OWN_NAME = 1
-      const targetIndex = parentNames.length - (node.parentNames.length + NODE_OWN_NAME)
-      const updatedNames = [...parentNames]
-
-      updatedNames[targetIndex] = updateTx.operations.title as string
-
-      return { ...projectUpdate, parentNames: updatedNames }
-    }
-  } else {
-    update = projectUpdate
-  }
-
-  return await updateSubIssuesData(control, node, update, true)
-}
-
-async function changeIssueParent (updateTx: TxUpdateDoc<Issue>, control: TriggerControl): Promise<TxUpdateDoc<Issue>[]> {
-  const [node] = await control.findAll(
-    updateTx.objectClass,
-    { _id: updateTx.objectId },
-    { limit: 1, lookup: { attachedTo: tracker.class.Issue } }
-  )
-
-  if (node === undefined) {
-    return []
-  }
-
-  const { length: oldParentNamesLength } = node.parentNames
-  const newParentIssue = node.$lookup?.attachedTo as Issue | undefined
-  const newParentNames = newParentIssue !== undefined ? [newParentIssue.title, ...newParentIssue?.parentNames] : []
-
-  function update (node: Issue): Partial<AttachedData<Issue>> {
-    const updatedNames = [...node.parentNames]
-    const startIndex = oldParentNamesLength === 0 ? node.parentNames.length : -oldParentNamesLength
-
-    updatedNames.splice(startIndex, oldParentNamesLength, ...newParentNames)
-
-    return { parentNames: updatedNames }
-  }
-
-  return await updateSubIssuesData(control, node, update)
+  return subIssues.map((issue) => {
+    const docUpdate = typeof update === 'function' ? update(issue) : update
+    return control.txFactory.createTxUpdateDoc(issue._class, issue.space, issue._id, docUpdate)
+  })
 }
 
 /**
@@ -125,14 +47,45 @@ export async function OnIssueUpdate (tx: Tx, control: TriggerControl): Promise<T
   const res: Tx[] = []
 
   if (Object.prototype.hasOwnProperty.call(updateTx.operations, 'attachedTo')) {
-    res.push(...(await changeIssueParent(updateTx, control)))
+    const [newParent] = await control.findAll(
+      tracker.class.Issue,
+      { _id: updateTx.operations.attachedTo as Ref<Issue> },
+      { limit: 1 }
+    )
+    const updatedParents =
+      newParent !== undefined ? [{ parentId: newParent._id, parentTitle: newParent.title }, ...newParent.parents] : []
+
+    function update (issue: Issue): DocumentUpdate<Issue> {
+      const parentInfoIndex = issue.parents.findIndex(({ parentId }) => parentId === updateTx.objectId)
+      return parentInfoIndex === -1
+        ? {}
+        : { parents: [...issue.parents].slice(0, parentInfoIndex + 1).concat(updatedParents) }
+    }
+
+    res.push(
+      control.txFactory.createTxUpdateDoc(updateTx.objectClass, updateTx.objectSpace, updateTx.objectId, {
+        parents: updatedParents
+      }),
+      ...(await updateSubIssues(updateTx, control, update))
+    )
   }
 
-  if (
-    Object.prototype.hasOwnProperty.call(updateTx.operations, 'project') ||
-    Object.prototype.hasOwnProperty.call(updateTx.operations, 'title')
-  ) {
-    res.push(...(await updateSubIssues(updateTx, control)))
+  if (Object.prototype.hasOwnProperty.call(updateTx.operations, 'project')) {
+    res.push(...(await updateSubIssues(updateTx, control, { project: updateTx.operations.project })))
+  }
+
+  if (Object.prototype.hasOwnProperty.call(updateTx.operations, 'title')) {
+    function update (issue: Issue): DocumentUpdate<Issue> {
+      const parentInfoIndex = issue.parents.findIndex(({ parentId }) => parentId === updateTx.objectId)
+      const updatedParentInfo = { ...issue.parents[parentInfoIndex], parentTitle: updateTx.operations.title as string }
+      const updatedParents = [...issue.parents]
+
+      updatedParents[parentInfoIndex] = updatedParentInfo
+
+      return { parents: updatedParents }
+    }
+
+    res.push(...(await updateSubIssues(updateTx, control, update)))
   }
 
   return res
