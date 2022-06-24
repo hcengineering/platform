@@ -43,7 +43,6 @@ export interface Staff extends Employee {
   department: Ref<Department>
 }
 
-
 /**
  * @public
  */
