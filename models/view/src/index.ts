@@ -161,7 +161,7 @@ export class TObjectFactory extends TClass implements ObjectFactory {
 
 @Mixin(view.mixin.ObjectTitle, core.class.Class)
 export class TObjectTitle extends TClass implements ObjectTitle {
-  getTitle!: Resource<<T extends Doc>(client: Client, ref: Ref<T>) => Promise<string>>
+  titleProvider!: Resource<<T extends Doc>(client: Client, ref: Ref<T>) => Promise<string>>
 }
 
 @Model(view.class.ViewletPreference, preference.class.Preference)

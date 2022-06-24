@@ -158,7 +158,7 @@ export interface ObjectValidator extends Class<Doc> {
  * @public
  */
 export interface ObjectTitle extends Class<Doc> {
-  getTitle: Resource<<T extends Doc>(client: Client, ref: Ref<T>) => Promise<string>>
+  titleProvider: Resource<<T extends Doc>(client: Client, ref: Ref<T>) => Promise<string>>
 }
 
 /**

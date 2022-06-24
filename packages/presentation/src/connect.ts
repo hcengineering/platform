@@ -1,16 +1,9 @@
 import client from '@anticrm/client'
 import contact from '@anticrm/contact'
-import view from '@anticrm/view'
-import core, { Class, Client, Doc, Ref, setCurrentAccount, Version } from '@anticrm/core'
+import core, { Client, setCurrentAccount, Version } from '@anticrm/core'
 import login from '@anticrm/login'
 import { getMetadata, getResource } from '@anticrm/platform'
-import {
-  fetchMetadataLocalStorage,
-  getCurrentLocation,
-  navigate,
-  setMetadataLocalStorage,
-  location as loc
-} from '@anticrm/ui'
+import { fetchMetadataLocalStorage, getCurrentLocation, navigate, setMetadataLocalStorage } from '@anticrm/ui'
 import presentation from './plugin'
 
 export let versionError: string | undefined = ''
@@ -76,22 +69,7 @@ export async function connect (title: string): Promise<Client | undefined> {
   }
 
   // Update window title
-  function setDocumentTitle (title?: string): void {
-    document.title =
-      title ?? [fetchMetadataLocalStorage(login.metadata.CurrentWorkspace), title].filter((it) => it).join(' - ')
-  }
-  loc.subscribe((location) => {
-    if (location.fragment == null || location.fragment.length === 0) return setDocumentTitle()
-    const hierarchy = instance.getHierarchy()
-    const [, _id, _class] = decodeURIComponent(location.fragment).split('|')
-    if (_class == null) return setDocumentTitle()
-    const clazz = hierarchy.getClass(_class as Ref<Class<Doc>>)
-    const mixin = hierarchy.as(clazz, view.mixin.ObjectTitle)
-    if (mixin == null) return setDocumentTitle()
-    void getResource(mixin.getTitle)
-      .then(async (getTitle) => await getTitle(instance, _id as Ref<Doc>))
-      .then(setDocumentTitle, () => setDocumentTitle())
-  })
+  document.title = [fetchMetadataLocalStorage(login.metadata.CurrentWorkspace), title].filter((it) => it).join(' - ')
 
   return instance
 }

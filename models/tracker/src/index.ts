@@ -410,7 +410,7 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.ObjectTitle, {
-    getTitle: tracker.function.getIssueTitle
+    titleProvider: tracker.function.getIssueTitle
   })
 
   builder.mixin(tracker.class.TypeIssuePriority, core.class.Class, view.mixin.AttributePresenter, {
