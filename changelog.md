@@ -16,6 +16,10 @@ HR:
 
 - Leaves schedule
 
+Core:
+
+- Invite link expire from 1 hour
+
 ## 0.6.28
 
 Core:
