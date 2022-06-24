@@ -20,7 +20,9 @@
 </script>
 
 {#if value}
-  <span class="titleLabel" class:mTitleLabelWithMargin={shouldUseMargin} title={value.title}>{value.title}</span>
+  <span class="titleLabel flex-grow" class:mTitleLabelWithMargin={shouldUseMargin} title={value.title}
+    >{value.title}</span
+  >
 {/if}
 
 <style lang="scss">

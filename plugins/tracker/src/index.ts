@@ -267,7 +267,11 @@ export default plugin(trackerId, {
   },
   action: {
     SetDueDate: '' as Ref<Action>,
-    SetParent: '' as Ref<Action>
+    SetParent: '' as Ref<Action>,
+    SetStatus: '' as Ref<Action>,
+    SetPriority: '' as Ref<Action>,
+    SetAssignee: '' as Ref<Action>,
+    SetProject: '' as Ref<Action>
   },
   team: {
     DefaultTeam: '' as Ref<Team>

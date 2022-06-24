@@ -44,13 +44,12 @@
     },
     (result) => {
       objects = result
+      dispatch('content', objects)
     },
     {
       ...options
     }
   )
-
-  $: dispatch('content', objects)
 
   function getStateObjects (
     objects: Item[],

@@ -49,7 +49,8 @@ export function createReviewModel (builder: Builder): void {
       category: recruit.category.Recruit,
       target: recruit.class.Review,
       context: {
-        mode: ['context', 'browser']
+        mode: ['context', 'browser'],
+        group: 'create'
       }
     },
     recruit.action.CreateOpinion
@@ -75,11 +76,13 @@ export function createReviewModel (builder: Builder): void {
     action: view.actionImpl.ShowPopup,
     actionProps: {
       component: recruit.component.CreateReview,
-      _id: 'candidate',
-      _space: 'space',
       element: 'top',
       props: {
         preserveCandidate: true
+      },
+      fillProps: {
+        space: '_space',
+        _id: 'candidate'
       }
     },
     label: recruit.string.CreateReview,
@@ -88,7 +91,8 @@ export function createReviewModel (builder: Builder): void {
     category: recruit.category.Recruit,
     target: recruit.mixin.Candidate,
     context: {
-      mode: ['context', 'browser']
+      mode: ['context', 'browser'],
+      group: 'associate'
     }
   })
 

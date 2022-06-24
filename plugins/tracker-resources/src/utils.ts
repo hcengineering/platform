@@ -15,20 +15,22 @@
 
 import contact, { Employee, formatName } from '@anticrm/contact'
 import { Doc, DocumentQuery, Ref, SortingOrder, TxOperations } from '@anticrm/core'
+import { TypeState } from '@anticrm/kanban'
 import { Asset, IntlString, translate } from '@anticrm/platform'
 import {
-  IssuePriority,
-  Team,
-  IssuesGrouping,
-  IssuesOrdering,
   Issue,
   IssuesDateModificationPeriod,
+  IssuesGrouping,
+  IssuesOrdering,
+  IssueStatus,
   ProjectStatus,
-  IssueStatus
+  Team
 } from '@anticrm/tracker'
 import { AnyComponent, AnySvelteComponent, getMillisecondsInMonth, MILLISECONDS_IN_WEEK } from '@anticrm/ui'
-import { TypeState } from '@anticrm/kanban'
 import tracker from './plugin'
+import { defaultPriorities, defaultProjectStatuses, issuePriorities } from './types'
+
+export * from './types'
 
 export interface NavigationItem {
   id: string
@@ -42,35 +44,6 @@ export interface NavigationItem {
 export interface Selection {
   currentTeam?: Ref<Team>
   currentSpecial?: string
-}
-
-export const issuePriorities: Record<IssuePriority, { icon: Asset, label: IntlString }> = {
-  [IssuePriority.NoPriority]: { icon: tracker.icon.PriorityNoPriority, label: tracker.string.NoPriority },
-  [IssuePriority.Urgent]: { icon: tracker.icon.PriorityUrgent, label: tracker.string.Urgent },
-  [IssuePriority.High]: { icon: tracker.icon.PriorityHigh, label: tracker.string.High },
-  [IssuePriority.Medium]: { icon: tracker.icon.PriorityMedium, label: tracker.string.Medium },
-  [IssuePriority.Low]: { icon: tracker.icon.PriorityLow, label: tracker.string.Low }
-}
-
-export const issuesGroupByOptions: Record<IssuesGrouping, IntlString> = {
-  [IssuesGrouping.Status]: tracker.string.Status,
-  [IssuesGrouping.Assignee]: tracker.string.Assignee,
-  [IssuesGrouping.Priority]: tracker.string.Priority,
-  [IssuesGrouping.Project]: tracker.string.Project,
-  [IssuesGrouping.NoGrouping]: tracker.string.NoGrouping
-}
-
-export const issuesOrderByOptions: Record<IssuesOrdering, IntlString> = {
-  [IssuesOrdering.Status]: tracker.string.Status,
-  [IssuesOrdering.Priority]: tracker.string.Priority,
-  [IssuesOrdering.LastUpdated]: tracker.string.LastUpdated,
-  [IssuesOrdering.DueDate]: tracker.string.DueDate
-}
-
-export const issuesDateModificationPeriodOptions: Record<IssuesDateModificationPeriod, IntlString> = {
-  [IssuesDateModificationPeriod.All]: tracker.string.All,
-  [IssuesDateModificationPeriod.PastWeek]: tracker.string.PastWeek,
-  [IssuesDateModificationPeriod.PastMonth]: tracker.string.PastMonth
 }
 
 export type IssuesGroupByKeys = keyof Pick<Issue, 'status' | 'priority' | 'assignee' | 'project'>
@@ -118,24 +91,6 @@ export const getIssuesModificationDatePeriodTime = (period: IssuesDateModificati
       return 0
     }
   }
-}
-
-export const defaultProjectStatuses = [
-  ProjectStatus.Backlog,
-  ProjectStatus.Planned,
-  ProjectStatus.InProgress,
-  ProjectStatus.Paused,
-  ProjectStatus.Completed,
-  ProjectStatus.Canceled
-]
-
-export const projectStatusAssets: Record<ProjectStatus, { icon: Asset, label: IntlString }> = {
-  [ProjectStatus.Backlog]: { icon: tracker.icon.ProjectStatusBacklog, label: tracker.string.Backlog },
-  [ProjectStatus.Planned]: { icon: tracker.icon.ProjectStatusPlanned, label: tracker.string.Planned },
-  [ProjectStatus.InProgress]: { icon: tracker.icon.ProjectStatusInProgress, label: tracker.string.InProgress },
-  [ProjectStatus.Paused]: { icon: tracker.icon.ProjectStatusPaused, label: tracker.string.Paused },
-  [ProjectStatus.Completed]: { icon: tracker.icon.ProjectStatusCompleted, label: tracker.string.Completed },
-  [ProjectStatus.Canceled]: { icon: tracker.icon.ProjectStatusCanceled, label: tracker.string.Canceled }
 }
 
 export const groupBy = (data: any, key: any): { [key: string]: any[] } => {
@@ -223,14 +178,6 @@ export const getIssueFilterAssetsByType = (type: string): { icon: Asset, label: 
     }
   }
 }
-
-export const defaultPriorities = [
-  IssuePriority.NoPriority,
-  IssuePriority.Urgent,
-  IssuePriority.High,
-  IssuePriority.Medium,
-  IssuePriority.Low
-]
 
 export const getArraysIntersection = (a: any[], b: any[]): any[] => {
   const setB = new Set(b)

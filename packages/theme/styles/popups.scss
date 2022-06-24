@@ -25,6 +25,15 @@
   background: var(--popup-bg-color);
   border-radius: .5rem;
   box-shadow: var(--popup-shadow);
+
+  &.full-width {
+    flex-grow: 1;
+    background: none;
+    border-radius: 0px;
+    box-shadow: none;
+    width: 100%;
+    max-width: 100%;
+  }
   
   &.maxHeight { height: 22rem; }
   &.autoHeight {
@@ -242,11 +251,11 @@
       margin: 0;
   
       .icon { color: var(--content-color); }
-      &:focus .icon { color: var(--accent-color); }
+      &.hover .icon { color: var(--accent-color); }
     }  
 
     // &:hover { background-color: var(--popup-bg-hover); }
-    &:focus {
+    &.hover {
       background-color: var(--popup-bg-hover);
       outline: none;
       // box-shadow: inset 0 0 1px 1px var(--primary-edit-border-color);
@@ -257,6 +266,12 @@
       &:hover { color: var(--highlight-red-hover); }
       &:active { color: var(--highlight-red-press); }
       &:focus { color: var(--highlight-red-press); }
+    }
+
+    &.separator {
+      margin: 0.25rem 0;
+      height: 1px;
+      background-color: var(--theme-card-divider);
     }
   }
   .ap-check {
@@ -360,7 +375,9 @@
 .selectPopup .menu-item.arrow,
 .antiPopup-submenu {
   position: relative;
-
+  span {
+    padding-right: 1rem;
+  }
   &::after {
     content: '▶';
     position: absolute;

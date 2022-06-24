@@ -110,6 +110,11 @@ export class ListSelectionProvider implements SelectionFocusProvider {
   update (docs: Doc[]): void {
     this._docs = docs
 
+    selectionStore.update((docs) => {
+      const ids = new Set(docs.map((it) => it._id))
+      return this._docs.filter((it) => ids.has(it._id))
+    })
+
     if (this._docs.length > 0) {
       if (this._current?.focus === undefined) {
         this.delegate(0, undefined, 'vertical')

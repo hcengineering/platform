@@ -270,7 +270,7 @@ export function createModel (builder: Builder): void {
       input: 'any',
       category: hr.category.HR,
       target: hr.class.Department,
-      context: { mode: 'context', application: hr.app.HR, group: 'top' }
+      context: { mode: 'context', application: hr.app.HR, group: 'create' }
     },
     hr.action.EditDepartment
   )
@@ -289,7 +289,7 @@ export function createModel (builder: Builder): void {
         _id: { $nin: [hr.ids.Head] }
       },
       target: hr.class.Department,
-      context: { mode: 'context', application: hr.app.HR, group: 'top' }
+      context: { mode: 'context', application: hr.app.HR, group: 'create' }
     },
     hr.action.DeleteDepartment
   )
@@ -305,7 +305,7 @@ export function createModel (builder: Builder): void {
       input: 'any',
       category: hr.category.HR,
       target: hr.class.Request,
-      context: { mode: 'context', application: hr.app.HR, group: 'top' }
+      context: { mode: 'context', application: hr.app.HR, group: 'create' }
     },
     hr.action.EditRequest
   )
