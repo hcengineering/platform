@@ -44,6 +44,8 @@ import LeadPresenter from './components/projects/LeadPresenter.svelte'
 import ProjectEditor from './components/projects/ProjectEditor.svelte'
 import ProjectMembersPresenter from './components/projects/ProjectMembersPresenter.svelte'
 import ProjectPresenter from './components/projects/ProjectPresenter.svelte'
+import Roadmap from './components/projects/Roadmap.svelte'
+import TeamProjects from './components/projects/TeamProjects.svelte'
 import Projects from './components/projects/Projects.svelte'
 import ProjectStatusEditor from './components/projects/ProjectStatusEditor.svelte'
 import ProjectStatusPresenter from './components/projects/ProjectStatusPresenter.svelte'
@@ -54,7 +56,7 @@ import SetParentIssueActionPopup from './components/SetParentIssueActionPopup.sv
 import Views from './components/views/Views.svelte'
 import KanbanView from './components/issues/KanbanView.svelte'
 import tracker from './plugin'
-import { getIssueId } from './utils'
+import { getIssueId, getIssueTitle } from './utils'
 
 export async function queryIssue<D extends Issue> (
   _class: Ref<Class<D>>,
@@ -140,12 +142,14 @@ export default async (): Promise<Resources> => ({
     IssuesView,
     ListView,
     KanbanView,
+    TeamProjects,
+    Roadmap,
     IssuePreview
-  },
-  function: {
-    ProjectVisible: () => false
   },
   completion: {
     IssueQuery: async (client: Client, query: string) => await queryIssue(tracker.class.Issue, client, query)
+  },
+  function: {
+    getIssueTitle
   }
 })

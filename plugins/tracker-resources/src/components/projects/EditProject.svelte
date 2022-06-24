@@ -16,7 +16,7 @@
   }
 </script>
 
-<IssuesView currentSpace={project.space} query={{ project: project._id }} label={project.label}>
+<IssuesView query={{ project: project._id, space: project.space }} label={project.label}>
   <svelte:fragment slot="aside">
     <div class="flex-row p-4">
       <div class="fs-title text-xl">

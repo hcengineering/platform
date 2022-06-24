@@ -15,6 +15,21 @@
     "MoveStaff": "Перевод сотрудника",
     "MoveStaffDescr": "Вы действительно хотите перевести сотрудника из {current} в {department}",
     "Departments": "Департаменты",
-    "AddEmployee": "Добавить сотрудника"
+    "ShowEmployees": "Просмотреть сотрудников",
+    "AddEmployee": "Добавить сотрудника",
+    "Schedule": "График",
+    "RequestType": "Тип",
+    "CreateRequest": "Создать {type}",
+    "Today": "Сегодня",
+    "NoEmployeesInDepartment": "Нет сотрудников в выбранном департаменте",
+    "Vacation": "Отпуск",
+    "Sick": "Больничный",
+    "PTO": "PTO",
+    "Remote": "Удаленно",
+    "Overtime": "Переработка",
+    "PTO2": "PTO/2",
+    "Overtime2": "Переработка/2",
+    "EditRequest": "Редактировать {type}",
+    "Request": "Запрос"
   }
 }

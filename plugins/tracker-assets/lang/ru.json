@@ -120,6 +120,7 @@
     "ProjectMembersTitle": "Участники проекта",
     "ProjectLeadSearchPlaceholder": "Назначьте руководителя проекта\u2026",
     "ProjectMembersSearchPlaceholder": "Измененить участников проекта\u2026",
+    "Roadmap": "Планирование",
 
     "GotoIssues": "Перейти к задачам",
     "GotoActive": "Перейти к активным задачам",
@@ -134,6 +135,9 @@
     "FilterIsNot": "не является",
     "FilterIsEither": "является ли любой из",
     "FilterStatesCount": "{value, plural, =1 {1 state} other {# states}}",
+    "Assigned": "Назначенные",
+    "Created": "Созданные",
+    "Subscribed": "Отслеживаемые",
 
     "EditIssue": "Редактирование {title}",
 

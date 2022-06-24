@@ -342,8 +342,12 @@ export class LiveQuery extends TxProcessor implements Client {
       if (q.query.$search != null && q.query.$search.length > 0) {
         const match = await this.findOne(q._class, { $search: q.query.$search, _id: tx.objectId }, q.options)
         if (match === undefined) {
-          q.result.splice(pos, 1)
-          q.total--
+          if (q.options?.limit === q.result.length) {
+            return await this.refresh(q)
+          } else {
+            q.result.splice(pos, 1)
+            q.total--
+          }
         } else {
           q.result[pos] = match
         }
@@ -355,14 +359,22 @@ export class LiveQuery extends TxProcessor implements Client {
           if (current !== undefined) {
             q.result[pos] = current
           } else {
-            q.result.splice(pos, 1)
-            q.total--
+            if (q.options?.limit === q.result.length) {
+              return await this.refresh(q)
+            } else {
+              q.result.splice(pos, 1)
+              q.total--
+            }
           }
         } else {
           await this.__updateDoc(q, updatedDoc, tx)
           if (!this.match(q, updatedDoc)) {
-            q.result.splice(pos, 1)
-            q.total--
+            if (q.options?.limit === q.result.length) {
+              return await this.refresh(q)
+            } else {
+              q.result.splice(pos, 1)
+              q.total--
+            }
           } else {
             q.result[pos] = updatedDoc
           }

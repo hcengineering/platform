@@ -100,6 +100,10 @@ async function checkIssue (
   }
 }
 
+async function openIssue (page: Page, name: string): Promise<void> {
+  await page.click(`.antiList__row:has-text("${name}") .issuePresenterRoot`)
+}
+
 const defaultStatuses = ['Backlog', 'Todo', 'In Progress', 'Done', 'Canceled']
 const defaultUser = 'John Appleseed'
 enum viewletSelectors {
@@ -122,7 +126,7 @@ test('create-issue-and-sub-issue', async ({ page }) => {
   }
   await createIssue(page, props)
   await page.click('text="Issues"')
-  await page.click(`.antiList__row:has-text("${props.name}") .issuePresenterRoot`)
+  await openIssue(page, props.name)
   await checkIssue(page, props)
   props.name = `sub${props.name}`
   await createSubissue(page, props)
@@ -177,4 +181,22 @@ test('save-view-options', async ({ page }) => {
       await page.keyboard.press('Escape')
     }
   }
+})
+
+test('my-issues', async ({ page }) => {
+  const name = getIssueName()
+  await navigate(page)
+  await createIssue(page, { name })
+  await page.click('text="My issues"')
+  await page.click('button:has-text("Assigned")')
+  await expect(page.locator('.antiPanel-component')).not.toContainText(name)
+  await page.click('button:has-text("Created")')
+  await expect(page.locator('.antiPanel-component')).toContainText(name)
+  await page.click('button:has-text("Subscribed")')
+  await expect(page.locator('.antiPanel-component')).toContainText(name)
+  await openIssue(page, name)
+  // click "Don't track"
+  await page.click('.popupPanel-title :nth-child(3) >> button >> nth=1')
+  await page.keyboard.press('Escape')
+  await expect(page.locator('.antiPanel-component')).not.toContainText(name)
 })

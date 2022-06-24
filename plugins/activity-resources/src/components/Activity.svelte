@@ -15,7 +15,7 @@
 <script lang="ts">
   import activity, { TxViewlet } from '@anticrm/activity'
   import chunter from '@anticrm/chunter'
-  import core, { Doc, Ref, SortingOrder } from '@anticrm/core'
+  import core, { Class, Doc, Ref, SortingOrder } from '@anticrm/core'
   import { getResource } from '@anticrm/platform'
   import { createQuery, getClient } from '@anticrm/presentation'
   import notification from '@anticrm/notification'
@@ -44,10 +44,16 @@
   let viewlets: Map<ActivityKey, TxViewlet>
 
   let allViewlets: TxViewlet[] = []
+  let editableMap: Map<Ref<Class<Doc>>, boolean> | undefined = undefined
 
   const descriptors = createQuery()
   $: descriptors.query(activity.class.TxViewlet, {}, (result) => {
     allViewlets = result
+    editableMap = new Map(
+      allViewlets
+        .filter((tx) => tx.txClass === core.class.TxCreateDoc)
+        .map((it) => [it.objectClass, it.editable ?? false])
+    )
   })
 
   $: viewlets = new Map(allViewlets.map((r) => [activityKey(r.objectClass, r.txClass), r]))
@@ -59,15 +65,11 @@
         txes = filterCollectionTxes(result)
       },
       SortingOrder.Descending,
-      new Map(
-        allViewlets
-          .filter((tx) => tx.txClass === core.class.TxCreateDoc)
-          .map((it) => [it.objectClass, it.editable ?? false])
-      )
+      editableMap ?? new Map()
     )
   }
 
-  $: updateTxes(object)
+  $: if (editableMap) updateTxes(object)
 
   $: newTxPos = newTx(txes, $lastViews)
 

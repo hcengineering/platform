@@ -277,5 +277,8 @@ export default plugin(trackerId, {
   action: {
     SetDueDate: '' as Ref<Action>,
     SetParent: '' as Ref<Action>
+  },
+  team: {
+    DefaultTeam: '' as Ref<Team>
   }
 })
