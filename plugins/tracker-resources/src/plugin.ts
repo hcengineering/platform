@@ -214,6 +214,6 @@ export default mergeIds(trackerId, tracker, {
     CreateIssue: '' as AnyComponent
   },
   function: {
-    getIssueTitle: '' as Resource<(client: Client, ref: Ref<Doc>) => Promise<string>>
+    IssueTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>) => Promise<string>>
   }
 })

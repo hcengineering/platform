@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { Ref, Space } from '@anticrm/core'
-import type { IntlString, StatusCode } from '@anticrm/platform'
+import { Client, Doc, Ref, Space } from '@anticrm/core'
+import type { IntlString, Resource, StatusCode } from '@anticrm/platform'
 import { mergeIds } from '@anticrm/platform'
 import recruit, { recruitId } from '@anticrm/recruit'
 import { TagCategory } from '@anticrm/tags'
@@ -113,5 +113,8 @@ export default mergeIds(recruitId, recruit, {
     VacancyModifiedPresenter: '' as AnyComponent,
     CreateVacancy: '' as AnyComponent,
     CreateCandidate: '' as AnyComponent
+  },
+  function: {
+    ApplicationTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>) => Promise<string>>
   }
 })

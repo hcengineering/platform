@@ -453,11 +453,11 @@ export async function getKanbanStatuses (
 }
 
 export async function getIssueTitle (client: TxOperations, ref: Ref<Doc>): Promise<string> {
-  const issue = await client.findOne(
+  const object = await client.findOne(
     tracker.class.Issue,
     { _id: ref as Ref<Issue> },
     { lookup: { space: tracker.class.Team } }
   )
-  if (issue?.$lookup?.space === undefined) throw new Error(`Issue Team not found, _id: ${ref}`)
-  return getIssueId(issue.$lookup.space, issue)
+  if (object?.$lookup?.space === undefined) throw new Error(`Issue Team not found, _id: ${ref}`)
+  return getIssueId(object.$lookup.space, object)
 }
