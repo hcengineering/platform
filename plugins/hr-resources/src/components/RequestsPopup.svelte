@@ -18,16 +18,15 @@
   import { Table } from '@anticrm/view-resources'
 
   export let date: Date
+  export let endDate: number
   export let employee: Ref<Staff>
-
-  $: endDate = new Date(date).setDate(date.getDate() + 1)
 </script>
 
 <Table
   _class={hr.class.Request}
   query={{
     attachedTo: employee,
-    dueDate: { $gte: date.getTime() },
+    dueDate: { $gt: date.getTime() },
     date: { $lt: endDate }
   }}
   config={['$lookup.type.label', 'date', 'dueDate']}

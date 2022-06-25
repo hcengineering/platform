@@ -46,7 +46,7 @@
     }
   })
 
-  $: value = new Date(date).getTime()
+  let value = new Date(date).getTime()
   $: dueDate = new Date(value).setDate(new Date(value).getDate() + 1)
 
   export function canClose (): boolean {
@@ -72,6 +72,10 @@
 
   function typeSelected (_id: Ref<RequestType>): void {
     type = types.find((p) => p._id === _id)
+    dueDate =
+      Math.abs(type?.value ?? 0 % 1) === 0.5
+        ? new Date(value).setHours(12)
+        : new Date(value).setDate(new Date(value).getDate() + 1)
   }
 </script>
 
