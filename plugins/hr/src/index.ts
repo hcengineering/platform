@@ -14,8 +14,8 @@
 //
 
 import type { Employee, EmployeeAccount } from '@anticrm/contact'
-import type { Arr, Class, Doc, Mixin, Ref, Space } from '@anticrm/core'
-import type { Asset, Plugin } from '@anticrm/platform'
+import type { Arr, AttachedDoc, Class, Doc, Markup, Mixin, Ref, Space, Timestamp } from '@anticrm/core'
+import type { Asset, IntlString, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 
 /**
@@ -46,6 +46,37 @@ export interface Staff extends Employee {
 /**
  * @public
  */
+export interface RequestType extends Doc {
+  label: IntlString
+  icon: Asset
+  value: number
+  color: number
+}
+
+/**
+ * @public
+ */
+export interface Request extends AttachedDoc {
+  attachedTo: Ref<Staff>
+
+  attachedToClass: Ref<Class<Staff>>
+
+  space: Ref<Department>
+
+  type: Ref<RequestType>
+
+  description: Markup
+  comments?: number
+  attachments?: number
+
+  date: Timestamp
+
+  dueDate: Timestamp
+}
+
+/**
+ * @public
+ */
 export const hrId = 'hr' as Plugin
 
 /**
@@ -57,7 +88,9 @@ const hr = plugin(hrId, {
   },
   class: {
     Department: '' as Ref<Class<Department>>,
-    DepartmentMember: '' as Ref<Class<DepartmentMember>>
+    DepartmentMember: '' as Ref<Class<DepartmentMember>>,
+    Request: '' as Ref<Class<Request>>,
+    RequestType: '' as Ref<Class<RequestType>>
   },
   mixin: {
     Staff: '' as Ref<Mixin<Staff>>
@@ -65,10 +98,23 @@ const hr = plugin(hrId, {
   icon: {
     HR: '' as Asset,
     Department: '' as Asset,
-    Structure: '' as Asset
+    Structure: '' as Asset,
+    Vacation: '' as Asset,
+    Sick: '' as Asset,
+    PTO: '' as Asset,
+    Remote: '' as Asset,
+    Overtime: '' as Asset
   },
   ids: {
-    Head: '' as Ref<Department>
+    Head: '' as Ref<Department>,
+    Vacation: '' as Ref<RequestType>,
+    Leave: '' as Ref<RequestType>,
+    Sick: '' as Ref<RequestType>,
+    PTO: '' as Ref<RequestType>,
+    PTO2: '' as Ref<RequestType>,
+    Remote: '' as Ref<RequestType>,
+    Overtime: '' as Ref<RequestType>,
+    Overtime2: '' as Ref<RequestType>
   }
 })
 

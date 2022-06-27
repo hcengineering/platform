@@ -42,7 +42,7 @@
   export let editable: boolean | undefined = undefined
   export let kind: ButtonKind = 'no-border'
   export let size: ButtonSize = 'small'
-  export let length: 'short' | 'full' = 'full'
+  export let length: 'tiny' | 'short' | 'full' = 'full'
   export let shape: 'circle' | undefined = undefined
   export let integrations: Set<Ref<Doc>> = new Set<Ref<Doc>>()
   export let focusIndex = -1
@@ -221,6 +221,7 @@
     ? 'xsmall-gap'
     : 'xxsmall-gap'}"
   class:short={displayItems.length > 4 && length === 'short'}
+  class:tiny={displayItems.length > 2 && length === 'tiny'}
 >
   {#each displayItems as item, i}
     <Button

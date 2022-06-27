@@ -31,6 +31,12 @@ export default mergeIds(hrId, hr, {
     TeamLeadTooltip: '' as IntlString,
     MoveStaff: '' as IntlString,
     MoveStaffDescr: '' as IntlString,
-    AddEmployee: '' as IntlString
+    AddEmployee: '' as IntlString,
+    RequestType: '' as IntlString,
+    Schedule: '' as IntlString,
+    EditRequest: '' as IntlString,
+    CreateRequest: '' as IntlString,
+    Today: '' as IntlString,
+    NoEmployeesInDepartment: '' as IntlString
   }
 })

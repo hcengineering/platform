@@ -23,6 +23,7 @@
   export let element: PopupAlignment | undefined
   export let onClose: ((result: any) => void) | undefined
   export let onUpdate: ((result: any) => void) | undefined
+  export let overlay: boolean
   export let zIndex: number
   export let top: boolean
   export let close: () => void
@@ -126,12 +127,16 @@
     on:changeContent={fitPopup}
   />
 </div>
-<div
-  class="modal-overlay"
-  class:antiOverlay={options.showOverlay}
-  style={`z-index: ${zIndex};`}
-  on:click={() => escapeClose()}
-/>
+
+{#if overlay}
+  <div
+    class="modal-overlay"
+    class:antiOverlay={options.showOverlay}
+    style={`z-index: ${zIndex};`}
+    on:click={() => escapeClose()}
+    on:keydown|stopPropagation|preventDefault={() => {}}
+  />
+{/if}
 
 <style lang="scss">
   .popup {

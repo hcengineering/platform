@@ -14,8 +14,9 @@
 -->
 <script lang="ts">
   import { DocumentQuery, Ref } from '@anticrm/core'
+  import { IntlString } from '@anticrm/platform'
   import { createQuery } from '@anticrm/presentation'
-  import { Project, Team } from '@anticrm/tracker'
+  import { Project } from '@anticrm/tracker'
   import { closePopup, closeTooltip, location } from '@anticrm/ui'
   import { onDestroy } from 'svelte'
   import tracker from '../../plugin'
@@ -23,7 +24,7 @@
   import EditProject from './EditProject.svelte'
   import ProjectBrowser from './ProjectBrowser.svelte'
 
-  export let currentSpace: Ref<Team>
+  export let label: IntlString = tracker.string.Projects
   export let query: DocumentQuery<Project> = {}
   export let search: string = ''
   export let mode: ProjectsViewMode = 'all'
@@ -57,5 +58,5 @@
 {#if project}
   <EditProject {project} />
 {:else}
-  <ProjectBrowser {currentSpace} {query} {search} {mode} />
+  <ProjectBrowser {label} {query} {search} {mode} />
 {/if}

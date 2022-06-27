@@ -114,7 +114,8 @@ export function createModel (builder: Builder): void {
     category: attachment.category.Attachments,
     target: attachment.class.Attachment,
     context: {
-      mode: ['context', 'browser']
+      mode: ['context', 'browser'],
+      group: 'edit'
     }
   })
 
@@ -133,7 +134,8 @@ export function createModel (builder: Builder): void {
     category: attachment.category.Attachments,
     target: attachment.class.Attachment,
     context: {
-      mode: ['context', 'browser']
+      mode: ['context', 'browser'],
+      group: 'edit'
     }
   })
 
@@ -152,7 +154,8 @@ export function createModel (builder: Builder): void {
     category: attachment.category.Attachments,
     target: attachment.class.Attachment,
     context: {
-      mode: ['context', 'browser']
+      mode: ['context', 'browser'],
+      group: 'edit'
     }
   })
 }

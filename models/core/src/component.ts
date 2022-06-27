@@ -18,7 +18,6 @@ import { IntlString, mergeIds } from '@anticrm/platform'
 
 export default mergeIds(coreId, core, {
   string: {
-    Description: '' as IntlString,
     Private: '' as IntlString,
     Archived: '' as IntlString,
     ClassLabel: '' as IntlString,

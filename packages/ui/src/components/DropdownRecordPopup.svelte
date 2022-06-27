@@ -16,7 +16,7 @@
   import { IntlString } from '@anticrm/platform'
   import { createEventDispatcher } from 'svelte'
   import CheckBox from './CheckBox.svelte'
-  import { Label } from '..'
+  import Label from './Label.svelte'
   import ListView from './ListView.svelte'
 
   export let items: Record<any, IntlString>

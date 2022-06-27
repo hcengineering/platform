@@ -157,6 +157,13 @@ export interface ObjectValidator extends Class<Doc> {
 /**
  * @public
  */
+export interface ObjectTitle extends Class<Doc> {
+  titleProvider: Resource<<T extends Doc>(client: Client, ref: Ref<T>) => Promise<string>>
+}
+
+/**
+ * @public
+ */
 export interface ViewletDescriptor extends Doc, UXObject {
   component: AnyComponent
 }
@@ -211,11 +218,19 @@ export interface ActionCategory extends Doc, UXObject {
 /**
  * @public
  */
+export type ActionGroup = 'create' | 'edit' | 'associate' | 'copy' | 'tools' | 'other'
+
+/**
+ * @public
+ */
 export interface Action<T extends Doc = Doc, P = Record<string, any>> extends Doc, UXObject {
   // Action implementation details
   action: ViewAction<P>
   // Action implementation parameters
   actionProps?: P
+
+  // If specified, will show sub menu based on actionPopup/actionProps
+  actionPopup?: AnyComponent
 
   // If specified, action could be used only with one item selected.
   // single - one object is required
@@ -268,8 +283,9 @@ export interface ViewContext {
   mode: ViewContextType | ViewContextType[]
   // Active application
   application?: Ref<Doc>
+
   // Optional groupping
-  group?: string
+  group?: ActionGroup
 }
 
 /**
@@ -384,6 +400,7 @@ const view = plugin(viewId, {
     ObjectEditorHeader: '' as Ref<Mixin<ObjectEditorHeader>>,
     ObjectValidator: '' as Ref<Mixin<ObjectValidator>>,
     ObjectFactory: '' as Ref<Mixin<ObjectFactory>>,
+    ObjectTitle: '' as Ref<Mixin<ObjectTitle>>,
     SpaceHeader: '' as Ref<Mixin<SpaceHeader>>,
     SpaceName: '' as Ref<Mixin<SpaceName>>,
     IgnoreActions: '' as Ref<Mixin<IgnoreActions>>,
@@ -400,6 +417,26 @@ const view = plugin(viewId, {
     LinkPresenter: '' as Ref<Class<LinkPresenter>>,
     FilterMode: '' as Ref<Class<FilterMode>>
   },
+  action: {
+    Delete: '' as Ref<Action>,
+    Move: '' as Ref<Action>,
+    MoveLeft: '' as Ref<Action>,
+    MoveRight: '' as Ref<Action>,
+    MoveUp: '' as Ref<Action>,
+    MoveDown: '' as Ref<Action>,
+
+    SelectItem: '' as Ref<Action>,
+    SelectItemAll: '' as Ref<Action>,
+    SelectItemNone: '' as Ref<Action>,
+    SelectUp: '' as Ref<Action>,
+    SelectDown: '' as Ref<Action>,
+
+    ShowPreview: '' as Ref<Action>,
+    ShowActions: '' as Ref<Action>,
+
+    // Edit document
+    Open: '' as Ref<Action>
+  },
   viewlet: {
     Table: '' as Ref<ViewletDescriptor>
   },
@@ -407,10 +444,12 @@ const view = plugin(viewId, {
     ObjectPresenter: '' as AnyComponent,
     EditDoc: '' as AnyComponent,
     SpacePresenter: '' as AnyComponent,
-    BooleanTruePresenter: '' as AnyComponent
+    BooleanTruePresenter: '' as AnyComponent,
+    ValueSelector: '' as AnyComponent
   },
   string: {
-    CustomizeView: '' as IntlString
+    CustomizeView: '' as IntlString,
+    LabelNA: '' as IntlString
   },
   icon: {
     Table: '' as Asset,
@@ -470,11 +509,33 @@ const view = plugin(viewId, {
       value?: string
       values?: string
       props?: Record<string, any>
+      // Will copy values from selection document to props
+      fillProps?: Record<string, string>
     }>,
     ShowEditor: '' as ViewAction<{
       element?: PopupPosAlignment | Resource<(e?: Event) => PopupAlignment | undefined>
       attribute: string
       props?: Record<string, any>
+    }>,
+    ValueSelector: '' as ViewAction<{
+      attribute: string
+
+      // Class object finder
+      _class?: Ref<Class<Doc>>
+      query?: DocumentQuery<Doc>
+      queryOptions?: FindOptions<Doc>
+      // Will copy values from selection document to query
+      // If set of docs passed, will do $in for values.
+      fillQuery?: Record<string, string>
+
+      // A list of fields with matched values to perform action.
+      docMatches?: string[]
+      searchField?: string
+
+      // Or list of values to select from
+      values?: { icon?: Asset, label: IntlString, id: number | string }[]
+
+      placeholder?: IntlString
     }>
   }
 })

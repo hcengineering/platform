@@ -27,6 +27,6 @@ export const serverTrackerId = 'server-tracker' as Plugin
  */
 export default plugin(serverTrackerId, {
   trigger: {
-    OnIssueProjectUpdate: '' as Resource<TriggerFunc>
+    OnIssueUpdate: '' as Resource<TriggerFunc>
   }
 })

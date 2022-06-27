@@ -45,6 +45,12 @@ export interface Action {
   action: (props: any, ev: Event) => Promise<void>
   inline?: boolean
   link?: string
+
+  // Submenu component
+  component?: AnyComponent
+  props?: Record<string, any>
+
+  group?: string
 }
 
 export interface IPopupItem {

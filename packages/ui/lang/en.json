@@ -38,6 +38,7 @@
     "DaysAfter": "{days, plural, =1 {in a day} other {in # days}}",
     "NoActionsDefined": "No actions applicable",
     "Incoming": "Incoming",
-    "HoursLabel": "Hours"
+    "HoursLabel": "Hours",
+    "Back": "Back"
   }
 }

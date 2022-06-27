@@ -1,5 +1,5 @@
 //
-// Copyright © 2020 Anticrm Platform Contributors.
+// Copyright © 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,11 +13,14 @@
 // limitations under the License.
 //
 
-import { Status, OK, unknownError, getMetadata, serialize, unknownStatus } from '@anticrm/platform'
 import type { Request, Response } from '@anticrm/platform'
-
+import { getMetadata, OK, serialize, Status, unknownError, unknownStatus } from '@anticrm/platform'
 import login from '@anticrm/login'
 import { fetchMetadataLocalStorage, getCurrentLocation, navigate } from '@anticrm/ui'
+
+export interface WorkspaceLoginInfo extends LoginInfo {
+  workspace: string
+}
 
 export interface LoginInfo {
   token: string
@@ -28,6 +31,8 @@ export interface LoginInfo {
 export interface Workspace {
   workspace: string
 }
+
+const DEV_WORKSPACE = 'DEV WORKSPACE'
 
 /**
  * Perform a login operation to required workspace with user credentials.
@@ -168,7 +173,7 @@ export async function getWorkspaces (): Promise<Workspace[]> {
     if (endpoint !== undefined) {
       return [
         {
-          workspace: 'DEV WORKSPACE'
+          workspace: DEV_WORKSPACE
         }
       ]
     }
@@ -205,7 +210,7 @@ export async function getWorkspaces (): Promise<Workspace[]> {
   }
 }
 
-export async function selectWorkspace (workspace: string): Promise<[Status, LoginInfo | undefined]> {
+export async function selectWorkspace (workspace: string): Promise<[Status, WorkspaceLoginInfo | undefined]> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
   if (accountsUrl === undefined) {
@@ -217,7 +222,7 @@ export async function selectWorkspace (workspace: string): Promise<[Status, Logi
   if (overrideToken !== undefined) {
     const endpoint = getMetadata(login.metadata.OverrideEndpoint)
     if (endpoint !== undefined) {
-      return [OK, { token: overrideToken, endpoint, email }]
+      return [OK, { token: overrideToken, endpoint, email, workspace }]
     }
   }
 
@@ -251,8 +256,12 @@ export async function selectWorkspace (workspace: string): Promise<[Status, Logi
   }
 }
 
-export async function getWorkspaceHash (): Promise<string> {
+export async function getInviteLink (): Promise<string> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+
+  const exp = 1000 * 60 * 60
+  const emailMask = ''
+  const limit = -1
 
   if (accountsUrl === undefined) {
     throw new Error('accounts url not specified')
@@ -267,9 +276,9 @@ export async function getWorkspaceHash (): Promise<string> {
     return ''
   }
 
-  const request: Request<[]> = {
-    method: 'getWorkspaceHash',
-    params: []
+  const request: Request<[number, string, number]> = {
+    method: 'getInviteLink',
+    params: [exp, emailMask, limit]
   }
 
   const response = await fetch(accountsUrl, {
@@ -287,8 +296,8 @@ export async function getWorkspaceHash (): Promise<string> {
 export async function join (
   email: string,
   password: string,
-  workspaceHash: string
-): Promise<[Status, LoginInfo | undefined]> {
+  inviteId: string
+): Promise<[Status, WorkspaceLoginInfo | undefined]> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
   if (accountsUrl === undefined) {
@@ -299,13 +308,13 @@ export async function join (
   if (token !== undefined) {
     const endpoint = getMetadata(login.metadata.OverrideEndpoint)
     if (endpoint !== undefined) {
-      return [OK, { token, endpoint, email }]
+      return [OK, { token, endpoint, email, workspace: DEV_WORKSPACE }]
     }
   }
 
   const request: Request<[string, string, string]> = {
     method: 'join',
-    params: [email, password, workspaceHash]
+    params: [email, password, inviteId]
   }
 
   try {
@@ -328,8 +337,8 @@ export async function signUpJoin (
   password: string,
   first: string,
   last: string,
-  workspaceHash: string
-): Promise<[Status, LoginInfo | undefined]> {
+  inviteId: string
+): Promise<[Status, WorkspaceLoginInfo | undefined]> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
   if (accountsUrl === undefined) {
@@ -340,13 +349,13 @@ export async function signUpJoin (
   if (token !== undefined) {
     const endpoint = getMetadata(login.metadata.OverrideEndpoint)
     if (endpoint !== undefined) {
-      return [OK, { token, endpoint, email }]
+      return [OK, { token, endpoint, email, workspace: DEV_WORKSPACE }]
     }
   }
 
   const request: Request<[string, string, string, string, string]> = {
     method: 'signUpJoin',
-    params: [email, password, first, last, workspaceHash]
+    params: [email, password, first, last, inviteId]
   }
 
   try {

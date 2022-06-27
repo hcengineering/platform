@@ -24,6 +24,7 @@ import { contactId } from '@anticrm/contact'
 import { chunterId } from '@anticrm/chunter'
 import { recruitId } from '@anticrm/recruit'
 import { activityId } from '@anticrm/activity'
+import { automationId } from '@anticrm/automation'
 import { settingId } from '@anticrm/setting'
 import { telegramId } from '@anticrm/telegram'
 import { attachmentId } from '@anticrm/attachment'
@@ -50,6 +51,7 @@ import '@anticrm/attachment-assets'
 import '@anticrm/contact-assets'
 import '@anticrm/recruit-assets'
 import '@anticrm/activity-assets'
+import '@anticrm/automation-assets'
 import '@anticrm/setting-assets'
 import '@anticrm/telegram-assets'
 import '@anticrm/lead-assets'
@@ -117,6 +119,7 @@ export async function configurePlatform() {
 
   addLocation(trackerId, () => import(/* webpackChunkName: "tracker" */ '@anticrm/tracker-resources'))
   addLocation(boardId, () => import(/* webpackChunkName: "board" */ '@anticrm/board-resources'))
+  addLocation(automationId, () => import(/* webpackChunkName: "automation" */ '@anticrm/automation-resources'))
   addLocation(hrId, () => import(/* webpackChunkName: "hr" */ '@anticrm/hr-resources'))
 
   setMetadata(workbench.metadata.PlatformTitle, 'Platform')

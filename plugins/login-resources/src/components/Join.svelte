@@ -1,6 +1,5 @@
 <!--
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021, 2022 Hardcore Engineering Inc.
+// Copyright © 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -62,13 +61,13 @@
 
       const [loginStatus, result] =
         page === 'login'
-          ? await join(object.username, object.password, location.query?.workspace ?? '')
+          ? await join(object.username, object.password, location.query?.inviteId ?? '')
           : await signUpJoin(
             object.username,
             object.password,
             object.first,
             object.last,
-            location.query?.workspace ?? ''
+            location.query?.inviteId ?? ''
           )
       status = loginStatus
 
@@ -76,7 +75,7 @@
         setMetadataLocalStorage(login.metadata.LoginToken, result.token)
         setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)
         setMetadataLocalStorage(login.metadata.LoginEmail, result.email)
-        setMetadataLocalStorage(login.metadata.CurrentWorkspace, location.query?.workspace ?? '')
+        setMetadataLocalStorage(login.metadata.CurrentWorkspace, result.workspace)
         navigate({ path: [workbench.component.WorkbenchApp] })
       }
     }

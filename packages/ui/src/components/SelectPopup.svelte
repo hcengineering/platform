@@ -14,62 +14,124 @@
 -->
 <script lang="ts">
   import type { Asset, IntlString } from '@anticrm/platform'
-  import { translate } from '@anticrm/platform'
   import { createEventDispatcher } from 'svelte'
-  import { Icon, Label, IconCheck } from '..'
+  import { createFocusManager } from '../focus'
+  import EditBox from './EditBox.svelte'
+  import FocusHandler from './FocusHandler.svelte'
+  import Icon from './Icon.svelte'
+  import IconCheck from './icons/Check.svelte'
+  import Label from './Label.svelte'
+  import ListView from './ListView.svelte'
+
+  interface ValueType {
+    id: number | string
+    icon?: Asset
+    label?: IntlString
+    text?: string
+    isSelected?: boolean
+  }
 
   export let placeholder: IntlString | undefined = undefined
   export let placeholderParam: any | undefined = undefined
   export let searchable: boolean = false
-  export let value: Array<{ id: number | string; icon: Asset; label?: IntlString; text?: string; isSelected?: boolean }>
-  export let width: 'medium' | 'large' = 'medium'
+  export let value: Array<ValueType>
+  export let width: 'medium' | 'large' | 'full' = 'medium'
+  export let size: 'small' | 'medium' | 'large' = 'small'
 
   let search: string = ''
-
-  let phTraslate: string = ''
-  $: if (placeholder) {
-    translate(placeholder, placeholderParam ?? {}).then((res) => {
-      phTraslate = res
-    })
-  }
 
   const dispatch = createEventDispatcher()
 
   $: hasSelected = value.some((v) => v.isSelected)
+
+  let selection = 0
+  let list: ListView
+
+  function onKeydown (key: KeyboardEvent): void {
+    if (key.code === 'ArrowUp') {
+      key.stopPropagation()
+      key.preventDefault()
+      list.select(selection - 1)
+    }
+    if (key.code === 'ArrowDown') {
+      key.stopPropagation()
+      key.preventDefault()
+      list.select(selection + 1)
+    }
+    if (key.code === 'Enter') {
+      key.preventDefault()
+      key.stopPropagation()
+      dispatch('close', value[selection].id)
+    }
+    if (key.code === 'Escape') {
+      key.preventDefault()
+      key.stopPropagation()
+      dispatch('close')
+    }
+  }
+  const manager = createFocusManager()
+
+  $: filteredObjects = value.filter((el) => (el.label ?? el.text ?? '').toLowerCase().includes(search.toLowerCase()))
+
+  $: huge = size === 'medium' || size === 'large'
 </script>
 
-<div class="selectPopup" class:max-width-40={width === 'large'}>
+<FocusHandler {manager} />
+
+<div
+  class="selectPopup"
+  class:full-width={width === 'full'}
+  class:max-width-40={width === 'large'}
+  on:keydown={onKeydown}
+>
   {#if searchable}
     <div class="header">
-      <input type="text" bind:value={search} placeholder={phTraslate} on:input={(ev) => {}} on:change />
+      <EditBox
+        kind={'search-style'}
+        focusIndex={1}
+        focus
+        bind:value={search}
+        {placeholder}
+        {placeholderParam}
+        on:change
+      />
     </div>
   {/if}
   <div class="scroll">
     <div class="box">
-      {#each value.filter((el) => (el.label ?? el.text ?? '').toLowerCase().includes(search.toLowerCase())) as item}
-        <button
-          class="menu-item"
-          on:click={() => dispatch('close', item.id)}
-          on:focus={() => dispatch('update', item)}
-          on:mouseover={() => dispatch('update', item)}
-        >
-          {#if hasSelected}
-            <div class="icon">
-              {#if item.isSelected}
-                <Icon icon={IconCheck} size={'small'} />
+      <ListView bind:this={list} count={filteredObjects.length} bind:selection>
+        <svelte:fragment slot="item" let:item={itemId}>
+          {@const item = filteredObjects[itemId]}
+          <button
+            class="menu-item  w-full"
+            on:click={() => dispatch('close', item.id)}
+            on:focus={() => dispatch('update', item)}
+            on:mouseover={() => dispatch('update', item)}
+          >
+            <div class="flex-row-center" class:mt-2={huge} class:mb-2={huge}>
+              {#if hasSelected}
+                <div class="icon">
+                  {#if item.isSelected}
+                    <Icon icon={IconCheck} {size} />
+                  {/if}
+                </div>
               {/if}
+              {#if item.icon}
+                <div class="mr-2">
+                  <Icon icon={item.icon} {size} />
+                </div>
+              {/if}
+              <span class="label" class:text-base={huge}>
+                {#if item.label}
+                  <Label label={item.label} />
+                {:else if item.text}
+                  <span>{item.text}</span>
+                {/if}
+              </span>
             </div>
-          {/if}
-          <div class="icon"><Icon icon={item.icon} size={'small'} /></div>
-          <span class="label">
-            {#if item.label}
-              <Label label={item.label} />
-            {:else if item.text}
-              <span>{item.text}</span>
-            {/if}
-          </span>
-        </button>
-      {/each}
+          </button>
+        </svelte:fragment>
+      </ListView>
     </div>
   </div>
 </div>

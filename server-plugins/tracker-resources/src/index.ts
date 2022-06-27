@@ -13,37 +13,27 @@
 // limitations under the License.
 //
 
-import core, { AttachedData, Tx, TxUpdateDoc } from '@anticrm/core'
+import core, { DocumentUpdate, Ref, Tx, TxUpdateDoc } from '@anticrm/core'
 import { extractTx, TriggerControl } from '@anticrm/server-core'
 import tracker, { Issue } from '@anticrm/tracker'
 
 async function updateSubIssues (
+  updateTx: TxUpdateDoc<Issue>,
   control: TriggerControl,
-  node: Issue,
-  update: Partial<AttachedData<Issue>>,
-  shouldSkip = false
+  update: DocumentUpdate<Issue> | ((node: Issue) => DocumentUpdate<Issue>)
 ): Promise<TxUpdateDoc<Issue>[]> {
-  let txes: TxUpdateDoc<Issue>[] = []
+  const subIssues = await control.findAll(tracker.class.Issue, { 'parents.parentId': updateTx.objectId })
 
-  if (!shouldSkip && Object.entries(update).some(([key, value]) => value !== node[key as keyof Issue])) {
-    txes.push(control.txFactory.createTxUpdateDoc(node._class, node.space, node._id, update))
-  }
-
-  if (node.subIssues > 0) {
-    const subIssues = await control.findAll(tracker.class.Issue, { attachedTo: node._id })
-
-    for (const subIssue of subIssues) {
-      txes = txes.concat(await updateSubIssues(control, subIssue, update))
-    }
-  }
-
-  return txes
+  return subIssues.map((issue) => {
+    const docUpdate = typeof update === 'function' ? update(issue) : update
+    return control.txFactory.createTxUpdateDoc(issue._class, issue.space, issue._id, docUpdate)
+  })
 }
 
 /**
  * @public
  */
-export async function OnIssueProjectUpdate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+export async function OnIssueUpdate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const actualTx = extractTx(tx)
   if (actualTx._class !== core.class.TxUpdateDoc) {
     return []
@@ -54,22 +44,61 @@ export async function OnIssueProjectUpdate (tx: Tx, control: TriggerControl): Pr
     return []
   }
 
-  if (!Object.prototype.hasOwnProperty.call(updateTx.operations, 'project')) {
-    return []
+  const res: Tx[] = []
+
+  if (Object.prototype.hasOwnProperty.call(updateTx.operations, 'attachedTo')) {
+    const [newParent] = await control.findAll(
+      tracker.class.Issue,
+      { _id: updateTx.operations.attachedTo as Ref<Issue> },
+      { limit: 1 }
+    )
+    const updatedProject = newParent !== undefined ? newParent.project : null
+    const updatedParents =
+      newParent !== undefined ? [{ parentId: newParent._id, parentTitle: newParent.title }, ...newParent.parents] : []
+
+    function update (issue: Issue): DocumentUpdate<Issue> {
+      const parentInfoIndex = issue.parents.findIndex(({ parentId }) => parentId === updateTx.objectId)
+      const parentsUpdate =
+        parentInfoIndex === -1
+          ? {}
+          : { parents: [...issue.parents].slice(0, parentInfoIndex + 1).concat(updatedParents) }
+
+      return { ...parentsUpdate, project: updatedProject }
+    }
+
+    res.push(
+      control.txFactory.createTxUpdateDoc(updateTx.objectClass, updateTx.objectSpace, updateTx.objectId, {
+        parents: updatedParents,
+        project: updatedProject
+      }),
+      ...(await updateSubIssues(updateTx, control, update))
+    )
   }
 
-  const update: Partial<AttachedData<Issue>> = { project: updateTx.operations.project ?? null }
-  const [node] = await control.findAll(
-    updateTx.objectClass,
-    { _id: updateTx.objectId, subIssues: { $gt: 0 } },
-    { limit: 1 }
-  )
-  return node !== undefined ? await updateSubIssues(control, node, update, true) : []
+  if (Object.prototype.hasOwnProperty.call(updateTx.operations, 'project')) {
+    res.push(...(await updateSubIssues(updateTx, control, { project: updateTx.operations.project })))
+  }
+
+  if (Object.prototype.hasOwnProperty.call(updateTx.operations, 'title')) {
+    function update (issue: Issue): DocumentUpdate<Issue> {
+      const parentInfoIndex = issue.parents.findIndex(({ parentId }) => parentId === updateTx.objectId)
+      const updatedParentInfo = { ...issue.parents[parentInfoIndex], parentTitle: updateTx.operations.title as string }
+      const updatedParents = [...issue.parents]
+
+      updatedParents[parentInfoIndex] = updatedParentInfo
+
+      return { parents: updatedParents }
+    }
+
+    res.push(...(await updateSubIssues(updateTx, control, update)))
+  }
+
+  return res
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
-    OnIssueProjectUpdate
+    OnIssueUpdate
   }
 })

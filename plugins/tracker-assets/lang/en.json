@@ -120,6 +120,7 @@
     "ProjectMembersTitle": "Project members",
     "ProjectLeadSearchPlaceholder": "Set project lead\u2026",
     "ProjectMembersSearchPlaceholder": "Change project members\u2026",
+    "Roadmap": "Roadmap",
 
     "GotoIssues": "Go to issues",
     "GotoActive": "Go to active issues",
@@ -134,6 +135,9 @@
     "FilterIsNot": "is not",
     "FilterIsEither": "is either of",
     "FilterStatesCount": "{value, plural, =1 {1 state} other {# states}}",
+    "Assigned": "Assigned",
+    "Created": "Created",
+    "Subscribed": "Subscribed",
 
     "EditIssue": "Edit {title}",
 
@@ -149,7 +153,8 @@
     "DurDays": "{days, plural, =0 {today} =1 {1 day} other {# days }}",
     "DurMonths": "{months, plural, =0 {this month} =1 {1 month} other {# months}}",
     "DurYears": "{years, plural, =0 {this year} =1 {a year} other {# years}}",
-    "StatusHistory": "State History"
+    "StatusHistory": "State History",
+    "NewSubIssue": "Add sub-issue..."
   },
   "status": {}
 }

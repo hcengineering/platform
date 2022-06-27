@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import contact from '@anticrm/contact'
-  import { Class, Doc, FindOptions, Ref, SortingOrder, WithLookup } from '@anticrm/core'
+  import { Class, Doc, DocumentQuery, FindOptions, Ref, SortingOrder, WithLookup } from '@anticrm/core'
   import { Kanban, TypeState } from '@anticrm/kanban'
   import notification from '@anticrm/notification'
   import { createQuery, getClient } from '@anticrm/presentation'
@@ -31,19 +31,21 @@
   import AssigneePresenter from './AssigneePresenter.svelte'
   import SubIssuesSelector from './edit/SubIssuesSelector.svelte'
   import IssuePresenter from './IssuePresenter.svelte'
+  import ParentNamesPresenter from './ParentNamesPresenter.svelte'
   import PriorityEditor from './PriorityEditor.svelte'
 
-  export let currentSpace: Ref<Team>
+  export let currentSpace: Ref<Team> = tracker.team.DefaultTeam
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
   export let viewOptions: ViewOptions
-  export let query = {}
+  export let query: DocumentQuery<Issue> = {}
 
+  $: currentSpace = typeof query.space === 'string' ? query.space : tracker.team.DefaultTeam
   $: ({ groupBy, shouldShowEmptyGroups, shouldShowSubIssues } = viewOptions)
   $: resultQuery = {
     ...(shouldShowSubIssues ? {} : { attachedTo: tracker.ids.NoParent }),
     space: currentSpace,
     ...query
-  }
+  } as any
 
   const spaceQuery = createQuery()
   const statusesQuery = createQuery()
@@ -120,7 +122,6 @@
   <Kanban
     bind:this={kanbanUI}
     _class={tracker.class.Issue}
-    space={currentSpace}
     search=""
     {states}
     {options}
@@ -172,8 +173,11 @@
           showPanel(tracker.component.EditIssue, object._id, object._class, 'content')
         }}
       >
-        <div class="flex-col mr-6">
-          <IssuePresenter value={issue} />
+        <div class="flex-col mr-8">
+          <div class="flex clear-mins names">
+            <IssuePresenter value={issue} />
+            <ParentNamesPresenter value={issue} />
+          </div>
           <span class="fs-bold caption-color mt-1 lines-limit-2">
             {object.title}
           </span>
@@ -210,6 +214,10 @@
 {/await}
 
 <style lang="scss">
+  .names {
+    font-size: 0.8125rem;
+  }
+
   .header {
     padding-bottom: 0.75rem;
     border-bottom: 1px solid var(--divider-color);

@@ -16,7 +16,7 @@ import type { IntlString, Resource } from '@anticrm/platform'
 import { mergeIds } from '@anticrm/platform'
 import tracker, { trackerId } from '../../tracker/lib'
 import { AnyComponent } from '@anticrm/ui'
-import { Space } from '@anticrm/core'
+import { Client, Doc, Ref } from '@anticrm/core'
 
 export default mergeIds(trackerId, tracker, {
   string: {
@@ -57,6 +57,7 @@ export default mergeIds(trackerId, tracker, {
     CreateTeam: '' as IntlString,
     AddIssue: '' as IntlString,
     NewIssue: '' as IntlString,
+    NewSubIssue: '' as IntlString,
     Team: '' as IntlString,
     SelectIssue: '' as IntlString,
     SelectTeam: '' as IntlString,
@@ -137,6 +138,7 @@ export default mergeIds(trackerId, tracker, {
     ProjectMembersSearchPlaceholder: '' as IntlString,
     List: '' as IntlString,
     NumberLabels: '' as IntlString,
+    Roadmap: '' as IntlString,
 
     IssueTitlePlaceholder: '' as IntlString,
     IssueDescriptionPlaceholder: '' as IntlString,
@@ -159,6 +161,10 @@ export default mergeIds(trackerId, tracker, {
     AnyFilter: '' as IntlString,
     AllFilters: '' as IntlString,
     NoDescription: '' as IntlString,
+
+    Assigned: '' as IntlString,
+    Created: '' as IntlString,
+    Subscribed: '' as IntlString,
 
     DurMinutes: '' as IntlString,
     DurHours: '' as IntlString,
@@ -202,9 +208,12 @@ export default mergeIds(trackerId, tracker, {
     IssuesView: '' as AnyComponent,
     ListView: '' as AnyComponent,
     KanbanView: '' as AnyComponent,
-    IssuePreview: '' as AnyComponent
+    Roadmap: '' as AnyComponent,
+    TeamProjects: '' as AnyComponent,
+    IssuePreview: '' as AnyComponent,
+    CreateIssue: '' as AnyComponent
   },
   function: {
-    ProjectVisible: '' as '' as Resource<(spaces: Space[]) => boolean>
+    IssueTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>) => Promise<string>>
   }
 })

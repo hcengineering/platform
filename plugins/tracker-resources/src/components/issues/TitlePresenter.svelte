@@ -14,23 +14,29 @@
 -->
 <script lang="ts">
   import type { Issue } from '@anticrm/tracker'
+  import ParentNamesPresenter from './ParentNamesPresenter.svelte'
 
   export let value: Issue
   export let shouldUseMargin: boolean = false
 </script>
 
 {#if value}
-  <span class="titleLabel" class:mTitleLabelWithMargin={shouldUseMargin} title={value.title}>{value.title}</span>
+  <span class="root" class:with-margin={shouldUseMargin} title={value.title}>
+    <span class="name">{value.title}</span>
+    <ParentNamesPresenter {value} />
+  </span>
 {/if}
 
 <style lang="scss">
-  .titleLabel {
-    flex-shrink: 10;
-    overflow: hidden;
+  .root {
+    display: flex;
+    flex-grow: 1;
+    min-width: 0;
     white-space: nowrap;
-    text-overflow: ellipsis;
+    overflow: hidden;
+    flex-shrink: 10;
 
-    &.mTitleLabelWithMargin {
+    &.with-margin {
       margin-left: 0.5rem;
     }
   }

@@ -16,10 +16,11 @@
 <script lang="ts">
   import { getResource } from '@anticrm/platform'
   import { afterUpdate, onMount } from 'svelte'
-  import { Spinner } from '..'
-  import type { AnySvelteComponent, PopupOptions } from '..'
+
   import { closePanel, PanelProps, panelstore } from '../panelup'
   import { fitPopupElement, popupstore } from '../popups'
+  import type { AnySvelteComponent, PopupOptions } from '../types'
+  import Spinner from './Spinner.svelte'
 
   export let contentPanel: HTMLElement
 

@@ -171,7 +171,8 @@ const contactPlugin = plugin(contactId, {
   component: {
     SocialEditor: '' as AnyComponent,
     CreateOrganization: '' as AnyComponent,
-    CreatePerson: '' as AnyComponent
+    CreatePerson: '' as AnyComponent,
+    ChannelsPresenter: '' as AnyComponent
   },
   channelProvider: {
     Email: '' as Ref<ChannelProvider>,
@@ -213,6 +214,7 @@ const contactPlugin = plugin(contactId, {
   string: {
     PersonAlreadyExists: '' as IntlString,
     Person: '' as IntlString,
+    Employee: '' as IntlString,
     CreateOrganization: '' as IntlString
   },
   viewlet: {

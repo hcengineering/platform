@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { popupstore as modal } from '..'
+  import { popupstore as modal } from '../popups'
   import PopupInstance from './PopupInstance.svelte'
 </script>
 
@@ -30,5 +30,6 @@
     zIndex={(i + 1) * 500}
     top={$modal.length - 1 === i}
     close={popup.close}
+    overlay={popup.options.overlay}
   />
 {/each}

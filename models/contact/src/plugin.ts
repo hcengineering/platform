@@ -25,7 +25,6 @@ export default mergeIds(contactId, contact, {
   component: {
     PersonPresenter: '' as AnyComponent,
     ContactPresenter: '' as AnyComponent,
-    ChannelsPresenter: '' as AnyComponent,
     EditPerson: '' as AnyComponent,
     EditOrganization: '' as AnyComponent,
     CreatePersons: '' as AnyComponent,
@@ -51,7 +50,6 @@ export default mergeIds(contactId, contact, {
     Location: '' as IntlString,
     Channel: '' as IntlString,
     ChannelProvider: '' as IntlString,
-    Employee: '' as IntlString,
     Value: '' as IntlString,
     Phone: '' as IntlString,
     PhonePlaceholder: '' as IntlString,

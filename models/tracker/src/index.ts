@@ -15,7 +15,7 @@
 
 import type { Employee } from '@anticrm/contact'
 import contact from '@anticrm/contact'
-import { Domain, DOMAIN_MODEL, IndexKind, Markup, Ref, Timestamp, Type } from '@anticrm/core'
+import { Domain, DOMAIN_MODEL, FindOptions, IndexKind, Markup, Ref, SortingOrder, Timestamp, Type } from '@anticrm/core'
 import {
   ArrOf,
   Builder,
@@ -43,6 +43,7 @@ import task from '@anticrm/task'
 import {
   Document,
   Issue,
+  IssueParentInfo,
   IssuePriority,
   IssueStatus,
   IssueStatusCategory,
@@ -55,6 +56,7 @@ import tags from '@anticrm/tags'
 import tracker from './plugin'
 
 import presentation from '@anticrm/model-presentation'
+import { defaultPriorities, issuePriorities } from '@anticrm/tracker-resources/src/types'
 
 export { trackerOperation } from './migration'
 export { default } from './plugin'
@@ -179,6 +181,8 @@ export class TIssue extends TAttachedDoc implements Issue {
   @Prop(ArrOf(TypeRef(tracker.class.Issue)), tracker.string.RelatedTo)
   relatedIssue!: Ref<Issue>[]
 
+  parents!: IssueParentInfo[]
+
   @Prop(Collection(chunter.class.Comment), tracker.string.Comments)
   comments!: number
 
@@ -280,8 +284,12 @@ export function createModel (builder: Builder): void {
     descriptor: tracker.viewlet.List,
     config: [
       { key: '', presenter: tracker.component.PriorityEditor, props: { kind: 'list', size: 'small' } },
-      '@currentTeam',
-      '@statuses',
+      { key: '', presenter: tracker.component.IssuePresenter },
+      {
+        key: '',
+        presenter: tracker.component.StatusEditor,
+        props: { kind: 'list', size: 'small', justify: 'center' }
+      },
       { key: '', presenter: tracker.component.TitlePresenter, props: { shouldUseMargin: true, fixed: 'left' } },
       { key: '', presenter: tracker.component.DueDatePresenter, props: { kind: 'list' } },
       {
@@ -405,6 +413,10 @@ export function createModel (builder: Builder): void {
     presenter: tracker.component.IssuePreview
   })
 
+  builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.ObjectTitle, {
+    titleProvider: tracker.function.IssueTitleProvider
+  })
+
   builder.mixin(tracker.class.TypeIssuePriority, core.class.Class, view.mixin.AttributePresenter, {
     presenter: tracker.component.PriorityPresenter
   })
@@ -461,6 +473,13 @@ export function createModel (builder: Builder): void {
             label: tracker.string.Views,
             icon: tracker.icon.Views,
             component: tracker.component.Views
+          },
+          {
+            id: 'roadmap',
+            position: 'top',
+            label: tracker.string.Roadmap,
+            icon: tracker.icon.Projects,
+            component: tracker.component.Roadmap
           }
         ],
         spaces: [
@@ -496,7 +515,7 @@ export function createModel (builder: Builder): void {
                 id: projectsId,
                 label: tracker.string.Projects,
                 icon: tracker.icon.Projects,
-                component: tracker.component.Projects
+                component: tracker.component.TeamProjects
               }
             ]
           }
@@ -550,22 +569,25 @@ export function createModel (builder: Builder): void {
     {
       action: view.actionImpl.ShowPopup,
       actionProps: {
-        component: tracker.component.SetDueDateActionPopup,
-        props: { mondayStart: true, withTime: false },
-        element: 'top'
+        component: tracker.component.CreateIssue,
+        element: 'top',
+        fillProps: {
+          _object: 'parentIssue'
+        }
       },
-      label: tracker.string.SetDueDate,
-      icon: tracker.icon.DueDate,
+      label: tracker.string.NewSubIssue,
+      icon: tracker.icon.Issue,
       keyBinding: [],
-      input: 'none',
+      input: 'focus',
       category: tracker.category.Tracker,
       target: tracker.class.Issue,
       context: {
         mode: ['context', 'browser'],
-        application: tracker.app.Tracker
+        application: tracker.app.Tracker,
+        group: 'associate'
       }
     },
-    tracker.action.SetDueDate
+    tracker.action.SetParent
   )
 
   createAction(
@@ -583,12 +605,34 @@ export function createModel (builder: Builder): void {
       category: tracker.category.Tracker,
       target: tracker.class.Issue,
       context: {
-        mode: ['context', 'browser'],
-        application: tracker.app.Tracker
+        mode: ['context'],
+        application: tracker.app.Tracker,
+        group: 'associate'
       }
     },
     tracker.action.SetParent
   )
+
+  createAction(builder, {
+    action: view.actionImpl.ShowPopup,
+    actionPopup: tracker.component.SetParentIssueActionPopup,
+    actionProps: {
+      component: tracker.component.SetParentIssueActionPopup,
+      element: 'top'
+    },
+    label: tracker.string.SetParent,
+    icon: tracker.icon.Parent,
+    keyBinding: [],
+    input: 'none',
+    category: tracker.category.Tracker,
+    target: tracker.class.Issue,
+    override: [tracker.action.SetParent],
+    context: {
+      mode: ['browser'],
+      application: tracker.app.Tracker,
+      group: 'associate'
+    }
+  })
 
   builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.ClassFilters, {
     filters: ['status', 'priority', 'assignee', 'project', 'dueDate', 'modifiedOn']
@@ -603,5 +647,140 @@ export function createModel (builder: Builder): void {
       query: tracker.completion.IssueQuery
     },
     tracker.completion.IssueCategory
+  )
+
+  const statusOptions: FindOptions<IssueStatus> = {
+    lookup: {
+      category: tracker.class.IssueStatusCategory
+    },
+    sort: { rank: SortingOrder.Ascending }
+  }
+
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.ValueSelector,
+      actionPopup: view.component.ValueSelector,
+      actionProps: {
+        attribute: 'status',
+        _class: tracker.class.IssueStatus,
+        placeholder: tracker.string.SetStatus,
+        fillQuery: {
+          space: 'space'
+        },
+        queryOptions: statusOptions
+      },
+      label: tracker.string.Status,
+      icon: tracker.icon.CategoryBacklog,
+      keyBinding: [],
+      input: 'none',
+      category: tracker.category.Tracker,
+      target: tracker.class.Issue,
+      context: {
+        mode: ['context'],
+        application: tracker.app.Tracker,
+        group: 'edit'
+      }
+    },
+    tracker.action.SetStatus
+  )
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.ValueSelector,
+      actionPopup: view.component.ValueSelector,
+      actionProps: {
+        attribute: 'priority',
+        values: defaultPriorities.map((p) => ({ id: p, ...issuePriorities[p] })),
+        placeholder: tracker.string.SetPriority
+      },
+      label: tracker.string.Priority,
+      icon: tracker.icon.PriorityHigh,
+      keyBinding: [],
+      input: 'none',
+      category: tracker.category.Tracker,
+      target: tracker.class.Issue,
+      context: {
+        mode: ['context'],
+        application: tracker.app.Tracker,
+        group: 'edit'
+      }
+    },
+    tracker.action.SetPriority
+  )
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.ValueSelector,
+      actionPopup: view.component.ValueSelector,
+      actionProps: {
+        attribute: 'assignee',
+        _class: contact.class.Employee,
+        query: {},
+        placeholder: tracker.string.AssignTo
+      },
+      label: tracker.string.Assignee,
+      icon: contact.icon.Person,
+      keyBinding: [],
+      input: 'none',
+      category: tracker.category.Tracker,
+      target: tracker.class.Issue,
+      context: {
+        mode: ['context'],
+        application: tracker.app.Tracker,
+        group: 'edit'
+      }
+    },
+    tracker.action.SetAssignee
+  )
+
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.ValueSelector,
+      actionPopup: view.component.ValueSelector,
+      actionProps: {
+        attribute: 'project',
+        _class: tracker.class.Project,
+        query: {},
+        searchField: 'label',
+        placeholder: tracker.string.Project
+      },
+      label: tracker.string.Project,
+      icon: tracker.icon.Project,
+      keyBinding: [],
+      input: 'none',
+      category: tracker.category.Tracker,
+      target: tracker.class.Issue,
+      context: {
+        mode: ['context'],
+        application: tracker.app.Tracker,
+        group: 'edit'
+      }
+    },
+    tracker.action.SetProject
+  )
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.ShowPopup,
+      actionProps: {
+        component: tracker.component.SetDueDateActionPopup,
+        props: { mondayStart: true, withTime: false },
+        element: 'top'
+      },
+      label: tracker.string.SetDueDate,
+      icon: tracker.icon.DueDate,
+      keyBinding: [],
+      input: 'none',
+      category: tracker.category.Tracker,
+      target: tracker.class.Issue,
+      context: {
+        mode: ['context', 'browser'],
+        application: tracker.app.Tracker,
+        group: 'edit'
+      }
+    },
+    tracker.action.SetDueDate
   )
 }

@@ -238,7 +238,8 @@ export function createModel (builder: Builder): void {
       category: chunter.category.Chunter,
       target: chunter.class.Message,
       context: {
-        mode: 'context'
+        mode: 'context',
+        group: 'edit'
       }
     },
     chunter.action.MarkUnread
@@ -253,7 +254,8 @@ export function createModel (builder: Builder): void {
       category: chunter.category.Chunter,
       target: chunter.class.ThreadMessage,
       context: {
-        mode: 'context'
+        mode: 'context',
+        group: 'edit'
       }
     },
     chunter.action.MarkCommentUnread
@@ -272,7 +274,8 @@ export function createModel (builder: Builder): void {
         archived: false
       },
       context: {
-        mode: 'context'
+        mode: 'context',
+        group: 'tools'
       }
     },
     chunter.action.ArchiveChannel
@@ -291,7 +294,8 @@ export function createModel (builder: Builder): void {
         archived: true
       },
       context: {
-        mode: 'context'
+        mode: 'context',
+        group: 'tools'
       }
     },
     chunter.action.UnarchiveChannel
@@ -307,7 +311,8 @@ export function createModel (builder: Builder): void {
       category: chunter.category.Chunter,
       target: chunter.class.DirectMessage,
       context: {
-        mode: 'context'
+        mode: 'context',
+        group: 'edit'
       }
     },
     chunter.action.ConvertToPrivate

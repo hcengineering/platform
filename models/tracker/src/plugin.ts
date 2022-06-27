@@ -17,9 +17,9 @@
 import { Ref } from '@anticrm/core'
 import { ObjectSearchCategory, ObjectSearchFactory } from '@anticrm/model-presentation'
 import { IntlString, mergeIds, Resource } from '@anticrm/platform'
-import { Team, trackerId } from '@anticrm/tracker'
+import { trackerId } from '@anticrm/tracker'
 import tracker from '@anticrm/tracker-resources/src/plugin'
-import type { AnyComponent } from '@anticrm/ui'
+import type { AnyComponent } from '@anticrm/ui/src/types'
 import { ViewletDescriptor } from '@anticrm/view'
 import { Application } from '@anticrm/workbench'
 
@@ -34,9 +34,6 @@ export default mergeIds(trackerId, tracker, {
     GotoProjects: '' as IntlString,
     GotoTrackerApplication: '' as IntlString,
     SearchIssue: '' as IntlString
-  },
-  team: {
-    DefaultTeam: '' as Ref<Team>
   },
   component: {
     // Required to pass build without errorsF

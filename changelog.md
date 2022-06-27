@@ -1,14 +1,39 @@
 # Changelog
 
-## 0.6.29 (upcoming)
+## 0.6.30 (upcoming)
+
+HR:
+
+- Allow to change assignee in Kanban
+
+## 0.6.29
+
+Platform:
+
+- Object selector actions
 
 Tracker:
 
-- Remember view options 
+- Remember view options
+- My issues
+- Names of parent issues
+- Roadmap
+- Context menus (Priority/Status/Assignee)
 - 
+
 Chunter:
 
 - Reactions on messages
+- Priority filter
+- Context menu selector for state/assignee
+
+HR:
+
+- Leaves schedule
+
+Core:
+
+- Invite link expire from 1 hour
 
 ## 0.6.28
 
@@ -21,7 +46,6 @@ Tracker:
 - Issue state history.
 - Subissue issue popup.
 - Label support
-- Priority filter
 
 Lead:
 

@@ -1,6 +1,5 @@
 //
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -27,13 +26,14 @@ import platform, {
   Status,
   StatusCode
 } from '@anticrm/platform'
-import toolPlugin, { connect, initModel, upgradeModel, version } from '@anticrm/server-tool'
 import { decodeToken, generateToken } from '@anticrm/server-token'
+import toolPlugin, { connect, initModel, upgradeModel, version } from '@anticrm/server-tool'
 import { pbkdf2Sync, randomBytes } from 'crypto'
 import { Binary, Db, ObjectId } from 'mongodb'
 
 const WORKSPACE_COLLECTION = 'workspace'
 const ACCOUNT_COLLECTION = 'account'
+const INVITE_COLLECTION = 'invite'
 
 /**
  * @public
@@ -109,6 +109,24 @@ export interface LoginInfo {
 /**
  * @public
  */
+export interface WorkspaceLoginInfo extends LoginInfo {
+  workspace: string
+}
+
+/**
+ * @public
+ */
+export interface Invite {
+  _id: ObjectId
+  workspace: string
+  exp: number
+  emailMask: string
+  limit: number
+}
+
+/**
+ * @public
+ */
 export type AccountInfo = Omit<Account, 'hash' | 'salt'>
 
 function hashWithSalt (password: string, salt: Buffer): Buffer {
@@ -176,7 +194,7 @@ export async function login (db: Db, email: string, password: string): Promise<L
 /**
  * @public
  */
-export async function selectWorkspace (db: Db, token: string, workspace: string): Promise<LoginInfo> {
+export async function selectWorkspace (db: Db, token: string, workspace: string): Promise<WorkspaceLoginInfo> {
   const { email } = decodeToken(token)
   const accountInfo = await getAccount(db, email)
   if (accountInfo === null) {
@@ -192,7 +210,8 @@ export async function selectWorkspace (db: Db, token: string, workspace: string)
         const result = {
           endpoint: getEndpoint(),
           email,
-          token: generateToken(email, workspace)
+          token: generateToken(email, workspace),
+          workspace
         }
         return result
       }
@@ -205,12 +224,46 @@ export async function selectWorkspace (db: Db, token: string, workspace: string)
 /**
  * @public
  */
-export async function join (db: Db, email: string, password: string, workspaceHash: string): Promise<LoginInfo> {
-  const { workspace } = decodeToken(workspaceHash)
-  const token = (await login(db, email, password)).token
+export async function getInvite (db: Db, inviteId: ObjectId): Promise<Invite | null> {
+  return await db.collection(INVITE_COLLECTION).findOne<Invite>({ _id: new ObjectId(inviteId) })
+}
+
+/**
+ * @public
+ */
+export async function checkInvite (invite: Invite | null, email: string): Promise<string> {
+  if (invite === null || invite.limit === 0) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+  if (invite.exp < new Date().getTime()) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+  if (!new RegExp(invite.emailMask).test(email)) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
+  return invite.workspace
+}
+
+/**
+ * @public
+ */
+export async function useInvite (db: Db, inviteId: ObjectId): Promise<void> {
+  await db.collection(INVITE_COLLECTION).updateOne({ _id: inviteId }, { $inc: { limit: -1 } })
+}
+
+/**
+ * @public
+ */
+export async function join (db: Db, email: string, password: string, inviteId: ObjectId): Promise<WorkspaceLoginInfo> {
+  const invite = await getInvite(db, inviteId)
+  const workspace = await checkInvite(invite, email)
   await assignWorkspace(db, email, workspace)
 
-  return await selectWorkspace(db, token, workspace)
+  const token = (await login(db, email, password)).token
+  const result = await selectWorkspace(db, token, workspace)
+  await useInvite(db, inviteId)
+  return result
 }
 
 /**
@@ -222,14 +275,17 @@ export async function signUpJoin (
   password: string,
   first: string,
   last: string,
-  workspaceHash: string
-): Promise<LoginInfo> {
+  inviteId: ObjectId
+): Promise<WorkspaceLoginInfo> {
+  const invite = await getInvite(db, inviteId)
+  const workspace = await checkInvite(invite, email)
   await createAccount(db, email, password, first, last)
-  const { workspace } = decodeToken(workspaceHash)
   await assignWorkspace(db, email, workspace)
 
   const token = (await login(db, email, password)).token
-  return await selectWorkspace(db, token, workspace)
+  const result = await selectWorkspace(db, token, workspace)
+  await useInvite(db, inviteId)
+  return result
 }
 
 /**
@@ -335,13 +391,25 @@ export async function createUserWorkspace (db: Db, token: string, workspace: str
 /**
  * @public
  */
-export async function getWorkspaceHash (db: Db, token: string): Promise<string> {
+export async function getInviteLink (
+  db: Db,
+  token: string,
+  exp: number,
+  emailMask: string,
+  limit: number
+): Promise<ObjectId> {
   const { workspace } = decodeToken(token)
   const wsPromise = await getWorkspace(db, workspace)
   if (wsPromise === null) {
     throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.WorkspaceNotFound, { workspace }))
   }
-  return generateToken('', workspace)
+  const result = await db.collection(INVITE_COLLECTION).insertOne({
+    workspace,
+    exp: new Date().getTime() + exp,
+    emailMask,
+    limit
+  })
+  return result.insertedId
 }
 
 /**
@@ -560,7 +628,7 @@ export const methods = {
   signUpJoin: wrap(signUpJoin),
   selectWorkspace: wrap(selectWorkspace),
   getUserWorkspaces: wrap(getUserWorkspaces),
-  getWorkspaceHash: wrap(getWorkspaceHash),
+  getInviteLink: wrap(getInviteLink),
   getAccountInfo: wrap(getAccountInfo),
   createAccount: wrap(createAccount),
   createWorkspace: wrap(createUserWorkspace),

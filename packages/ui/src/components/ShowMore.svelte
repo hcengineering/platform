@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import Label from './Label.svelte'
-  import ui from '..'
+  import ui from '../plugin'
 
   export let limit: number = 240
   export let ignore: boolean = false

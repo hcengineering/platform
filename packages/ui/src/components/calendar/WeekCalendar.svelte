@@ -14,8 +14,8 @@
 -->
 <script type="ts">
   import { createEventDispatcher } from 'svelte'
-  import { Label } from '../..'
   import ui from '../../plugin'
+  import Label from '../Label.svelte'
   import { addZero, areDatesEqual, day as getDay, getMonday, getWeekDayName } from './internal/DateUtils'
 
   export let mondayStart = true

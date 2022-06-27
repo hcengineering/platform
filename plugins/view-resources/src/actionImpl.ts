@@ -1,5 +1,5 @@
-import { Doc, Hierarchy } from '@anticrm/core'
-import { getResource, Resource } from '@anticrm/platform'
+import { Class, Doc, DocumentQuery, Hierarchy, Ref } from '@anticrm/core'
+import { Asset, getResource, IntlString, Resource } from '@anticrm/platform'
 import { getClient, MessageBox, updateAttribute } from '@anticrm/presentation'
 import {
   AnyComponent,
@@ -11,7 +11,7 @@ import {
   showPanel,
   showPopup
 } from '@anticrm/ui'
-import { ViewContext } from '@anticrm/view'
+import { Action, ViewContext } from '@anticrm/view'
 import MoveView from './components/Move.svelte'
 import { contextStore } from './context'
 import view from './plugin'
@@ -168,24 +168,24 @@ async function ShowPopup (
     value?: string
     values?: string
     props?: Record<string, any>
+    fillProps?: Record<string, string>
   }
 ): Promise<void> {
   const docs = Array.isArray(doc) ? doc : doc !== undefined ? [doc] : []
   const element = await getPopupAlignment(props.element, evt)
   evt.preventDefault()
-  let cprops = {
+  const cprops = {
     ...(props?.props ?? {})
   }
-  if (docs.length > 0) {
-    cprops = {
-      ...cprops,
-      ...{
-        [props._id ?? '_id']: docs[0]._id,
-        [props._class ?? '_class']: docs[0]._class,
-        [props._space ?? 'space']: docs[0].space,
-        [props.value ?? 'value']: docs[0],
-        [props.values ?? 'values']: docs
+  for (const [docKey, propKey] of Object.entries(props.fillProps ?? {})) {
+    for (const dv of docs) {
+      const dvv = (dv as any)[docKey]
+      if (dvv !== undefined) {
+        ;(cprops as any)[propKey] = dvv
       }
+    }
+    if (docKey === '_object') {
+      ;(cprops as any)[propKey] = docs[0]
     }
   }
 
@@ -282,6 +282,36 @@ function UpdateDocument (doc: Doc | Doc[], evt: Event, props: Record<string, any
   }
 }
 
+function ValueSelector (
+  doc: Doc | Doc[],
+  evt: Event,
+  props: {
+    action: Action
+
+    attribute: string
+
+    // Class object finder
+    _class?: Ref<Class<Doc>>
+    query?: DocumentQuery<Doc>
+    // Will copy values from selection document to query
+    // If set of docs passed, will do $in for values.
+    fillQuery?: Record<string, string>
+
+    // A list of fields with matched values to perform action.
+    docMatches?: string[]
+    searchField?: string
+
+    // Or list of values to select from
+    values?: Array<{ icon?: Asset, label: IntlString, id: number | string }>
+
+    placeholder?: IntlString
+  }
+): void {
+  if (props.action.actionPopup !== undefined) {
+    showPopup(props.action.actionPopup, { ...props, ...props.action.actionProps, value: doc, width: 'large' }, 'top')
+  }
+}
+
 async function getPopupAlignment (
   element?: PopupPosAlignment | Resource<(e?: Event) => PopupAlignment | undefined>,
   evt?: Event
@@ -319,5 +349,6 @@ export const actionImpl = {
   UpdateDocument,
   ShowPanel,
   ShowPopup,
-  ShowEditor
+  ShowEditor,
+  ValueSelector
 }

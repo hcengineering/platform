@@ -49,7 +49,7 @@
 
   let currentAssignee: Ref<Employee> | null = assignee
   let issueStatuses: WithLookup<IssueStatus>[] | undefined
-  let parentIssue: Issue | undefined
+  export let parentIssue: Issue | undefined
   let labels: TagReference[] = []
 
   let objectId: Ref<Issue> = generateId()
@@ -64,7 +64,8 @@
     priority: priority,
     dueDate: null,
     comments: 0,
-    subIssues: 0
+    subIssues: 0,
+    parents: []
   }
 
   const dispatch = createEventDispatcher()
@@ -143,7 +144,10 @@
       rank: calcRank(lastOne, undefined),
       comments: 0,
       subIssues: 0,
-      dueDate: object.dueDate
+      dueDate: object.dueDate,
+      parents: parentIssue
+        ? [{ parentId: parentIssue._id, parentTitle: parentIssue.title }, ...parentIssue.parents]
+        : []
     }
 
     await client.addCollection(
