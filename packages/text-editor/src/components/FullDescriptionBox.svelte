@@ -26,70 +26,75 @@
   export let icon: Asset | AnySvelteComponent = IconDescription
   export let content: string = ''
   export let emptyMessage: IntlString = textEditorPlugin.string.NoFullDescription
+  export let editMode: boolean = false
+  export let alwaysEdit: boolean = false
+  export let hideButtons: boolean = false
+  export let maxHeight: string = '40vh'
 
   const dispatch = createEventDispatcher()
 
   let fullDescription: StyledTextBox
-  let editMode: boolean = false
 </script>
 
 <div class="antiSection">
-  <div class="antiSection-header mb-2">
+  <div class="antiSection-header mb-3">
     <div class="antiSection-header__icon">
       <Icon {icon} size={'small'} />
     </div>
     <span class="antiSection-header__title">
       <Label {label} />
     </span>
-    <div class="buttons-group xsmall-gap">
-      {#if editMode}
-        <Button
-          icon={IconClose}
-          kind={'transparent'}
-          shape={'circle'}
-          on:click={() => {
-            fullDescription.cancelEdit()
-            editMode = false
-          }}
-        />
-        <Button
-          icon={IconCheck}
-          kind={'transparent'}
-          shape={'circle'}
-          on:click={() => {
-            fullDescription.saveEdit()
-            editMode = false
-          }}
-        />
-      {:else}
-        <Button
-          icon={IconEdit}
-          kind={'transparent'}
-          shape={'circle'}
-          on:click={() => {
-            fullDescription.startEdit()
-            editMode = true
-          }}
-        />
-      {/if}
-    </div>
+    {#if !hideButtons && !alwaysEdit}
+      <div class="buttons-group xsmall-gap">
+        {#if editMode}
+          <Button
+            icon={IconClose}
+            kind={'transparent'}
+            shape={'circle'}
+            on:click={() => {
+              fullDescription.cancelEdit()
+              editMode = false
+            }}
+          />
+          <Button
+            icon={IconCheck}
+            kind={'transparent'}
+            shape={'circle'}
+            on:click={() => {
+              fullDescription.saveEdit()
+              editMode = false
+            }}
+          />
+        {:else}
+          <Button
+            icon={IconEdit}
+            kind={'transparent'}
+            shape={'circle'}
+            on:click={() => {
+              editMode = true
+              fullDescription.startEdit()
+            }}
+          />
+        {/if}
+      </div>
+    {/if}
   </div>
-  {#if !editMode && (content === '' || content === '<p></p>')}
+  {#if !editMode && (content === '' || content === '<p></p>' || content === undefined) && !alwaysEdit}
     <div class="antiSection-empty solid">
       <Label label={emptyMessage} />
     </div>
   {:else}
-    <div class="antiSection-body">
-      <StyledTextBox
-        bind:this={fullDescription}
-        {content}
-        mode={editMode ? 2 : 1}
-        hideExtraButtons
-        maxHeight={'50vh'}
-        on:value={(evt) => {
-          dispatch('change', evt.detail)
-        }}
-      />
-    </div>
+    <StyledTextBox
+      bind:this={fullDescription}
+      {content}
+      {alwaysEdit}
+      focusable
+      mode={editMode ? 2 : 1}
+      hideExtraButtons
+      {maxHeight}
+      on:value={(evt) => {
+        dispatch('change', evt.detail)
+      }}
+    />
   {/if}
 </div>

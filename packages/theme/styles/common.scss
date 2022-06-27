@@ -269,12 +269,9 @@
   &-header {
     display: flex;
     align-items: center;
-    padding: 0 .75rem;
     height: 2.5rem;
     min-height: 2.5rem;
-    background-color: var(--accent-bg-color);
-    border: 1px solid var(--divider-color);
-    border-radius: 0.125rem;
+    border-bottom: 1px solid var(--divider-color);
 
     &__icon {
       display: flex;
@@ -292,21 +289,26 @@
       color: var(--caption-color);  
     }
   }
-  &-body {
-    margin-left: 1rem;
-    margin-right: 1rem;
-  }
   &-empty {
     display: flex;
     justify-content: center;
     align-items: center;
     padding: 1rem;
     font-size: .75rem;
-    color: var(--content-color);
+    color: var(--dark-color);
     border: 1px dashed var(--divider-color);
     border-radius: 0.75rem;
 
     &.solid { border-style: solid; }
+    &.items {
+      justify-content: start;
+      padding: .75rem;
+    }
+    &.solid.attachments {
+      background-color: var(--accent-bg-color);
+
+      .item { border-style: solid; }
+    }
   }
 }
 

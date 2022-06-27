@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import type { Doc, Ref } from '@anticrm/core'
-  import { CircleButton, eventToHTMLElement, Icon, IconAdd, Label, showPopup } from '@anticrm/ui'
+  import { Button, eventToHTMLElement, Icon, IconAdd, Label, showPopup } from '@anticrm/ui'
   import { Table } from '@anticrm/view-resources'
   import inventory from '../plugin'
   import CreateVariant from './CreateVariant.svelte'
@@ -28,10 +28,12 @@
   }
 </script>
 
-<div class="variants-container">
-  <div class="flex-row-center">
-    <div class="title"><Label label={inventory.string.Variants} /></div>
-    <CircleButton icon={IconAdd} size={'small'} selected on:click={create} />
+<div class="antiSection">
+  <div class="antiSection-header">
+    <span class="antiSection-header__title">
+      <Label label={inventory.string.Variants} />
+    </span>
+    <Button icon={IconAdd} kind={'transparent'} shape={'circle'} on:click={create} />
   </div>
   {#if variants > 0}
     <Table
@@ -42,36 +44,16 @@
       loadingProps={{ length: variants }}
     />
   {:else}
-    <div class="flex-col-center mt-5 create-container">
-      <Icon size={'large'} icon={inventory.icon.Variant} />
-      <div class="text-sm content-dark-color mt-2">
+    <div class="antiSection-empty solid flex-col-center mt-3">
+      <div class="content-accent-color">
+        <Icon size={'large'} icon={inventory.icon.Variant} />
+      </div>
+      <span class="text-sm dark-color mt-2">
         <Label label={inventory.string.NoVariantsForProduct} />
-      </div>
-      <div class="text-sm">
-        <div class="over-underline" on:click={create}><Label label={inventory.string.CreateVariant} /></div>
-      </div>
+      </span>
+      <span class="text-sm content-accent-color over-underline" on:click={create}>
+        <Label label={inventory.string.CreateVariant} />
+      </span>
     </div>
   {/if}
 </div>
-
-<style lang="scss">
-  .variants-container {
-    display: flex;
-    flex-direction: column;
-
-    .title {
-      margin-right: 0.75rem;
-      font-weight: 500;
-      font-size: 1.25rem;
-      color: var(--theme-caption-color);
-    }
-  }
-
-  .create-container {
-    padding: 1rem;
-    color: var(--theme-caption-color);
-    background: var(--theme-bg-accent-color);
-    border: 1px solid var(--theme-bg-accent-color);
-    border-radius: 0.75rem;
-  }
-</style>

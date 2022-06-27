@@ -19,7 +19,7 @@
   import { Ref, SortingOrder, WithLookup } from '@anticrm/core'
   import { Department, DepartmentMember, Staff } from '@anticrm/hr'
   import { createQuery, getClient, MessageBox, UsersPopup } from '@anticrm/presentation'
-  import { CircleButton, eventToHTMLElement, IconAdd, Label, Scroller, showPopup } from '@anticrm/ui'
+  import { Button, eventToHTMLElement, IconAdd, Label, Scroller, showPopup } from '@anticrm/ui'
   import hr from '../plugin'
 
   export let objectId: Ref<Department> | undefined
@@ -129,10 +129,12 @@
   }
 </script>
 
-<div class="container">
-  <div class="flex flex-between">
-    <div class="title"><Label label={contact.string.Members} /></div>
-    <CircleButton id={hr.string.AddEmployee} icon={IconAdd} size={'small'} selected on:click={add} />
+<div class="antiSection">
+  <div class="antiSection-header">
+    <span class="antiSection-header__title">
+      <Label label={contact.string.Members} />
+    </span>
+    <Button id={hr.string.AddEmployee} icon={IconAdd} kind={'transparent'} shape={'circle'} on:click={add} />
   </div>
   {#if employees.length > 0}
     <Scroller>
@@ -158,35 +160,13 @@
       </table>
     </Scroller>
   {:else}
-    <div class="flex-col-center mt-5 create-container">
-      <div class="text-sm content-dark-color mt-2">
+    <div class="antiSection-empty solid flex-col-center mt-3">
+      <span class="text-sm dark-color">
         <Label label={contact.string.NoMembers} />
-      </div>
-      <div class="text-sm">
-        <div class="over-underline" on:click={add}><Label label={contact.string.AddMember} /></div>
-      </div>
+      </span>
+      <span class="text-sm content-accent-color over-underline" on:click={add}>
+        <Label label={contact.string.AddMember} />
+      </span>
     </div>
   {/if}
 </div>
-
-<style lang="scss">
-  .container {
-    display: flex;
-    flex-direction: column;
-
-    .title {
-      margin-right: 0.75rem;
-      font-weight: 500;
-      font-size: 1.25rem;
-      color: var(--theme-caption-color);
-    }
-  }
-
-  .create-container {
-    padding: 1rem;
-    color: var(--theme-caption-color);
-    background: var(--theme-bg-accent-color);
-    border: 1px solid var(--theme-bg-accent-color);
-    border-radius: 0.75rem;
-  }
-</style>

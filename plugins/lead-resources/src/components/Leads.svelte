@@ -15,7 +15,7 @@
 <script lang="ts">
   import type { Ref } from '@anticrm/core'
   import type { Customer } from '@anticrm/lead'
-  import { CircleButton, IconAdd, Label, showPopup } from '@anticrm/ui'
+  import { Button, IconAdd, Label, showPopup } from '@anticrm/ui'
   import { Table } from '@anticrm/view-resources'
   import lead from '../plugin'
   import CreateLead from './CreateLead.svelte'
@@ -29,10 +29,12 @@
   }
 </script>
 
-<div class="applications-container">
-  <div class="flex-row-center">
-    <div class="title"><Label label={lead.string.Leads} /></div>
-    <CircleButton icon={IconAdd} size={'small'} selected on:click={createLead} />
+<div class="antiSection">
+  <div class="antiSection-header">
+    <span class="antiSection-header__title">
+      <Label label={lead.string.Leads} />
+    </span>
+    <Button icon={IconAdd} kind={'transparent'} shape={'circle'} on:click={createLead} />
   </div>
   {#if leads !== undefined && leads > 0}
     <Table
@@ -42,35 +44,13 @@
       {loadingProps}
     />
   {:else}
-    <div class="flex-col-center mt-5 createapp-container">
-      <div class="text-sm content-dark-color mt-2">
+    <div class="antiSection-empty solid flex-col-center mt-3">
+      <span class="text-sm dark-color">
         <Label label={lead.string.NoLeadsForDocument} />
-      </div>
-      <div class="text-sm">
-        <div class="over-underline" on:click={createLead}><Label label={lead.string.CreateLead} /></div>
-      </div>
+      </span>
+      <span class="text-sm content-accent-color over-underline" on:click={createLead}>
+        <Label label={lead.string.CreateLead} />
+      </span>
     </div>
   {/if}
 </div>
-
-<style lang="scss">
-  .applications-container {
-    display: flex;
-    flex-direction: column;
-
-    .title {
-      margin-right: 0.75rem;
-      font-weight: 500;
-      font-size: 1.25rem;
-      color: var(--theme-caption-color);
-    }
-  }
-
-  .createapp-container {
-    padding: 1rem;
-    color: var(--theme-caption-color);
-    background: var(--theme-bg-accent-color);
-    border: 1px solid var(--theme-bg-accent-color);
-    border-radius: 0.75rem;
-  }
-</style>

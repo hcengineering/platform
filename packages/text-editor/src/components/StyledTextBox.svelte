@@ -10,13 +10,14 @@
   export let content: string
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
 
-  export let emphasized = false
-  export let alwaysEdit = false
-  export let showButtons = true
-  export let hideExtraButtons = false
+  export let emphasized: boolean = false
+  export let alwaysEdit: boolean = false
+  export let showButtons: boolean = true
+  export let hideExtraButtons: boolean = false
   export let maxHeight: 'max' | 'card' | string = 'max'
   export let previewLimit: number = 240
   export let previewUnlimit: boolean = false
+  export let focusable: boolean = false
 
   const Mode = {
     View: 1,
@@ -80,6 +81,7 @@
       {placeholder}
       {showButtons}
       {maxHeight}
+      {focusable}
       bind:content={rawValue}
       bind:this={textEditor}
       on:focus={() => {

@@ -52,9 +52,9 @@
 
 {#if object}
   <Panel
+    icon={clazz.icon}
     title={object.name}
     subtitle={object.description}
-    icon={clazz.icon}
     isHeader={false}
     isAside={true}
     {object}
@@ -79,11 +79,12 @@
 
     <Grid column={1} rowGap={1.5}>
       <EditBox
-        label={recruit.string.VacancyName}
         bind:value={object.name}
         placeholder={recruit.string.VacancyPlaceholder}
-        maxWidth="39rem"
+        maxWidth={'39rem'}
+        kind={'large-style'}
         focus
+        focusable
         on:change={() => {
           if (object.name.trim().length > 0) {
             onChange('name', object.name)
@@ -94,20 +95,17 @@
         }}
       />
       <EditBox
-        label={recruit.string.Description}
         bind:value={object.description}
         placeholder={recruit.string.VacancyDescription}
-        maxWidth="39rem"
-        focus
+        maxWidth={'39rem'}
+        focusable
         on:change={() => {
           onChange('description', object.description)
         }}
       />
-    </Grid>
-    <div class="antiDivider" style:margin={'2.5rem -1.5rem 1rem'} />
-    <Grid column={1} rowGap={1.5}>
       <FullDescriptionBox
         content={object.fullDescription}
+        alwaysEdit
         on:change={(result) => {
           if (result.detail !== undefined) onChange('fullDescription', result.detail)
         }}
@@ -122,13 +120,3 @@
     </Grid>
   </Panel>
 {/if}
-
-<style lang="scss">
-  // .description-container {
-  //   display: flex;
-  //   padding: 0.75rem 1rem;
-  //   background-color: var(--accent-bg-color);
-  //   border: 1px solid var(--divider-color);
-  //   border-radius: 0.75rem;
-  // }
-</style>

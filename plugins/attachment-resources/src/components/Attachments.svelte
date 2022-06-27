@@ -52,11 +52,11 @@
 
   {#if !loading && (attachments === null || attachments === 0)}
     <AttachmentDroppable bind:loading bind:dragover objectClass={_class} {objectId} {space}>
-      <div class="antiSection-empty flex-col mt-2" class:solid={dragover}>
+      <div class="antiSection-empty attachments flex-col mt-3" class:solid={dragover}>
         <div class="flex-center content-accent-color">
           <UploadDuo size={'large'} />
         </div>
-        <div class="text-sm dark-color mt-2" style:pointer-events="none">
+        <div class="text-sm dark-color" style:pointer-events="none">
           <Label label={attachment.string.NoAttachments} />
         </div>
         <div
@@ -69,24 +69,22 @@
       </div>
     </AttachmentDroppable>
   {:else}
-    <div class="antiSection-body">
-      <Table
-        _class={attachment.class.Attachment}
-        config={[
-          '',
-          'description',
-          {
-            key: 'pinned',
-            presenter: view.component.BooleanTruePresenter,
-            label: attachment.string.Pinned,
-            sortingKey: 'pinned'
-          },
-          'lastModified'
-        ]}
-        options={{ sort: { pinned: -1 } }}
-        query={{ attachedTo: objectId }}
-        loadingProps={{ length: attachments ?? 0 }}
-      />
-    </div>
+    <Table
+      _class={attachment.class.Attachment}
+      config={[
+        '',
+        'description',
+        {
+          key: 'pinned',
+          presenter: view.component.BooleanTruePresenter,
+          label: attachment.string.Pinned,
+          sortingKey: 'pinned'
+        },
+        'lastModified'
+      ]}
+      options={{ sort: { pinned: -1 } }}
+      query={{ attachedTo: objectId }}
+      loadingProps={{ length: attachments ?? 0 }}
+    />
   {/if}
 </div>

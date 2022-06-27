@@ -17,7 +17,7 @@
   import core from '@anticrm/core'
   import { IntlString } from '@anticrm/platform'
   import calendar from '@anticrm/calendar'
-  import { CircleButton, IconAdd, Label, showPopup } from '@anticrm/ui'
+  import { Button, IconAdd, Label, showPopup } from '@anticrm/ui'
   import { Table } from '@anticrm/view-resources'
   import recruit from '../../plugin'
   import FileDuo from '../icons/FileDuo.svelte'
@@ -32,10 +32,12 @@
   }
 </script>
 
-<div class="applications-container">
-  <div class="flex-row-center">
-    <div class="title"><Label {label} /></div>
-    <CircleButton icon={IconAdd} size={'small'} selected on:click={createApp} />
+<div class="antiSection">
+  <div class="antiSection-header">
+    <span class="antiSection-header__title">
+      <Label {label} />
+    </span>
+    <Button icon={IconAdd} kind={'transparent'} shape={'circle'} on:click={createApp} />
   </div>
   {#if reviews > 0}
     <Table
@@ -60,36 +62,16 @@
       loadingProps={{ length: reviews }}
     />
   {:else}
-    <div class="flex-col-center mt-5 createapp-container">
-      <FileDuo size={'large'} />
-      <div class="small-text content-dark-color mt-2">
+    <div class="antiSection-empty solid flex-col-center mt-3">
+      <div class="caption-color">
+        <FileDuo size={'large'} />
+      </div>
+      <span class="dark-color mt-2">
         <Label label={recruit.string.NoReviewForCandidate} />
-      </div>
-      <div class="text-sm">
-        <div class="over-underline" on:click={createApp}><Label label={recruit.string.CreateAnReview} /></div>
-      </div>
+      </span>
+      <span class="over-underline content-accent-color" on:click={createApp}>
+        <Label label={recruit.string.CreateAnReview} />
+      </span>
     </div>
   {/if}
 </div>
-
-<style lang="scss">
-  .applications-container {
-    display: flex;
-    flex-direction: column;
-
-    .title {
-      margin-right: 0.75rem;
-      font-weight: 500;
-      font-size: 1.25rem;
-      color: var(--caption-color);
-    }
-  }
-
-  .createapp-container {
-    padding: 1rem;
-    color: var(--caption-color);
-    background: var(--accent-bg-color);
-    border: 1px solid var(--divider-color);
-    border-radius: 0.75rem;
-  }
-</style>

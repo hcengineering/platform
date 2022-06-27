@@ -18,7 +18,7 @@
   import { Class, Doc, Ref, Space } from '@anticrm/core'
   import { setPlatformStatus, unknownError } from '@anticrm/platform'
   import { createQuery, getClient, getFileUrl, PDFViewer } from '@anticrm/presentation'
-  import { CircleButton, IconAdd, Label, showPopup, Spinner } from '@anticrm/ui'
+  import { Button, IconAdd, Label, showPopup, Spinner } from '@anticrm/ui'
   import attachment from '../plugin'
   import { uploadFile } from '../utils'
   import UploadDuo from './icons/UploadDuo.svelte'
@@ -94,16 +94,18 @@
   }
 </script>
 
-<div class="attachments-container">
-  <div class="flex-row-center">
-    <span class="title"><Label label={attachment.string.Photos} /></span>
+<div class="antiSection">
+  <div class="antiSection-header">
+    <span class="antiSection-header__title">
+      <Label label={attachment.string.Photos} />
+    </span>
     {#if loading}
       <Spinner />
     {:else}
-      <CircleButton
+      <Button
         icon={IconAdd}
-        size={'small'}
-        selected
+        kind={'transparent'}
+        shape={'circle'}
         on:click={() => {
           inputFile.click()
         }}
@@ -122,7 +124,7 @@
   </div>
 
   <div
-    class="flex-row-center mt-5 zone-container"
+    class="antiSection-empty attachments items mt-3"
     class:solid={dragover}
     on:dragover|preventDefault={() => {
       dragover = true
@@ -149,47 +151,26 @@
 </div>
 
 <style lang="scss">
-  .attachments-container {
-    display: flex;
-    flex-direction: column;
+  .item {
+    width: 5rem;
+    min-width: 5rem;
+    height: 5rem;
+    color: var(--accent-color);
+    border-radius: 0.5rem;
+    overflow: hidden;
+    cursor: pointer;
 
-    .title {
-      margin-right: 0.75rem;
-      font-weight: 500;
-      font-size: 1.25rem;
-      color: var(--theme-caption-color);
+    img {
+      min-width: 5rem;
+      min-height: 5rem;
+    }
+    &:not(:last-child) {
+      margin-right: 0.625rem;
     }
   }
 
-  .zone-container {
-    padding: 1rem;
-    color: var(--theme-caption-color);
+  .new-item {
     background: var(--theme-bg-accent-color);
-    border: 1px solid var(--theme-bg-focused-color);
-    border-radius: 0.75rem;
-    overflow-x: auto;
-
-    .item {
-      width: 5rem;
-      min-width: 5rem;
-      height: 5rem;
-      border-radius: 0.5rem;
-      overflow: hidden;
-      cursor: pointer;
-
-      img {
-        min-width: 5rem;
-        min-height: 5rem;
-      }
-    }
-
-    .item + .item {
-      margin-left: 0.625rem;
-    }
-
-    .new-item {
-      background: var(--theme-bg-accent-color);
-      border: 1px dashed var(--theme-zone-border-lite);
-    }
+    border: 1px dashed var(--theme-zone-border-lite);
   }
 </style>

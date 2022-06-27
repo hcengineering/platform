@@ -28,8 +28,9 @@
 
   export let content: string = ''
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
-  export let showButtons = true
-  export let isScrollable = true
+  export let showButtons: boolean = true
+  export let isScrollable: boolean = true
+  export let focusable: boolean = false
   export let maxHeight: 'max' | 'card' | string = 'max'
 
   let textEditor: TextEditor
@@ -51,7 +52,7 @@
 </script>
 
 <div class="ref-container">
-  <div class="textInput">
+  <div class="textInput" class:focusable>
     <div class="inputMsg" class:scrollable={isScrollable} style="--texteditor-maxheight: {varsStyle};">
       {#if isScrollable}
         <Scroller>
@@ -130,6 +131,17 @@
         &.scrollable {
           overflow: auto;
           max-height: var(--texteditor-maxheight);
+        }
+      }
+
+      &.focusable {
+        margin: -0.25rem -0.5rem;
+        padding: 0.25rem 0.5rem;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+
+        &:focus-within {
+          border-color: var(--primary-edit-border-color);
         }
       }
     }

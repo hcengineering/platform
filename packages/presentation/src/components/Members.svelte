@@ -69,61 +69,59 @@
   }
 </script>
 
-<div class="antiSection-body">
-  <div class="flex-row-reverse mb-4 mt-4"><SearchEdit bind:value={search} /></div>
-  {#await getUsers(space.members, search) then users}
-    {@const current = users.filter((p) => members.has(p._id))}
-    {@const foreign = users.filter((p) => !members.has(p._id))}
-    {#if isSearch && !foreign.length && !current.length}
-      <div class="fs-title flex-center mt-10">
-        <Label label={presentation.string.NoMatchesFound} />
-      </div>
-    {:else}
-      {#if isSearch}
-        <div class="pr-8 pl-8"><Label label={presentation.string.InThis} params={{ space: spaceClass }} /></div>
-        {#if !current.length}
-          <div class="fs-title pl-8 mb-4 mt-4">
-            <Label label={presentation.string.NoMatchesInThis} params={{ space: spaceClass }} />
-          </div>
-        {/if}
-      {/if}
-      {#if !isSearch && withAddButton}
-        <div class="item fs-title">
-          <div class="flex-row-center" on:click={() => dispatch('addMembers')}>
-            <div class="flex-center ml-1 mr-1"><IconAdd size={'large'} /></div>
-            <div class="flex-col ml-2 min-w-0 content-accent-color">
-              <Label label={presentation.string.Add} />
-            </div>
-          </div>
-        </div>
-      {/if}
-      {#each current as person}
-        <div class="item fs-title"><UserInfo size={'medium'} value={person} /></div>
-      {/each}
-      {#if foreign.length}
-        <div class="mt-4 notIn h-full">
-          <div class="divider w-full mb-4" />
-          <div class="pr-8 pl-8"><Label label={presentation.string.NotInThis} params={{ space: spaceClass }} /></div>
-          {#each foreign as person}
-            <div class="item flex-between">
-              <div class="fs-title"><UserInfo size={'medium'} value={person} /></div>
-              <div class="over-underline" on:click={() => add(person._id)}>
-                <Label label={presentation.string.Add} />
-              </div>
-            </div>
-          {/each}
+<div class="flex-row-reverse mb-3 mt-3"><SearchEdit bind:value={search} /></div>
+{#await getUsers(space.members, search) then users}
+  {@const current = users.filter((p) => members.has(p._id))}
+  {@const foreign = users.filter((p) => !members.has(p._id))}
+  {#if isSearch && !foreign.length && !current.length}
+    <div class="fs-title flex-center mt-10">
+      <Label label={presentation.string.NoMatchesFound} />
+    </div>
+  {:else}
+    {#if isSearch}
+      <div class="pr-8 pl-8"><Label label={presentation.string.InThis} params={{ space: spaceClass }} /></div>
+      {#if !current.length}
+        <div class="fs-title pl-8 mb-4 mt-4">
+          <Label label={presentation.string.NoMatchesInThis} params={{ space: spaceClass }} />
         </div>
       {/if}
     {/if}
-  {/await}
-  {#if withInviteWorkspaceButton}
-    <div class="item fs-title mb-4 mt-2">
-      <div class="flex-row-center p-1" on:click={inviteWorkspace}>
-        <Label label={setting.string.InviteWorkspace} />
+    {#if !isSearch && withAddButton}
+      <div class="item fs-title">
+        <div class="flex-row-center" on:click={() => dispatch('addMembers')}>
+          <div class="flex-center ml-1 mr-1"><IconAdd size={'large'} /></div>
+          <div class="flex-col ml-2 min-w-0 content-accent-color">
+            <Label label={presentation.string.Add} />
+          </div>
+        </div>
       </div>
-    </div>
+    {/if}
+    {#each current as person}
+      <div class="item fs-title"><UserInfo size={'medium'} value={person} /></div>
+    {/each}
+    {#if foreign.length}
+      <div class="mt-4 notIn h-full">
+        <div class="divider w-full mb-4" />
+        <div class="pr-8 pl-8"><Label label={presentation.string.NotInThis} params={{ space: spaceClass }} /></div>
+        {#each foreign as person}
+          <div class="item flex-between">
+            <div class="fs-title"><UserInfo size={'medium'} value={person} /></div>
+            <div class="over-underline" on:click={() => add(person._id)}>
+              <Label label={presentation.string.Add} />
+            </div>
+          </div>
+        {/each}
+      </div>
+    {/if}
   {/if}
-</div>
+{/await}
+{#if withInviteWorkspaceButton}
+  <div class="item fs-title mb-4 mt-2">
+    <div class="flex-row-center p-1" on:click={inviteWorkspace}>
+      <Label label={setting.string.InviteWorkspace} />
+    </div>
+  </div>
+{/if}
 
 <style lang="scss">
   .notIn {
