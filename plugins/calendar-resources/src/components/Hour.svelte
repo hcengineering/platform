@@ -47,8 +47,8 @@
     return `${(new Date(e.date).getMinutes() / 60) * 100}%`
   }
 
-  function getHeight (e: Event): string {
-    if (e.dueDate !== undefined) {
+  function getHeight (e: Event, date: Date): string {
+    if (e.dueDate !== undefined && new Date(e.dueDate).getHours() === date.getHours()) {
       return `${(new Date(e.dueDate).getMinutes() / 60) * 100}%`
     }
     return '100%'
@@ -84,7 +84,7 @@
       res += ` top: ${getTop(e)};`
     }
     if (endCell(e.dueDate ?? e.date, date)) {
-      res += ` height: ${getHeight(e)};`
+      res += ` height: ${getHeight(e, date)};`
     }
     return res
   }
