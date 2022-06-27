@@ -52,16 +52,14 @@
     }
   )
 
-  $: if (value !== undefined) {
-    handleSelectedProjectIdUpdated(value)
-  }
+  $: handleSelectedProjectIdUpdated(value, projects)
 
   $: translate(tracker.string.Project, {}).then((result) => (defaultProjectLabel = result))
   $: projectIcon = selectedProject?.icon ?? tracker.icon.Projects
   $: projectText = shouldShowLabel ? selectedProject?.label ?? defaultProjectLabel : undefined
 
-  const handleSelectedProjectIdUpdated = async (newProjectId: Ref<Project> | null) => {
-    if (newProjectId === null) {
+  const handleSelectedProjectIdUpdated = async (newProjectId: Ref<Project> | null | undefined, projects: Map<Ref<Project>, Project>) => {
+    if (newProjectId === null || newProjectId === undefined) {
       selectedProject = undefined
 
       return
