@@ -14,25 +14,25 @@
 -->
 <script lang="ts">
   import { AttachedData, DocumentQuery, FindOptions, SortingOrder } from '@anticrm/core'
-  import { Issue, IssueStatusCategory, Team, calcRank } from '@anticrm/tracker'
-  import { createQuery, getClient, ObjectPopup } from '@anticrm/presentation'
+  import { getClient, ObjectPopup } from '@anticrm/presentation'
+  import { calcRank, Issue, IssueStatusCategory } from '@anticrm/tracker'
   import { Icon } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../plugin'
   import { getIssueId } from '../utils'
 
-  export let value: Issue | AttachedData<Issue>
+  export let value: Issue | AttachedData<Issue> | Issue[]
+  export let width: 'medium' | 'large' | 'full' = 'large'
 
   const client = getClient()
-  const spaceQuery = createQuery()
+
   const dispatch = createEventDispatcher()
   const docQuery: DocumentQuery<Issue> = '_id' in value ? { 'parents.parentId': { $nin: [value._id] } } : {}
   const options: FindOptions<Issue> = {
-    lookup: { status: tracker.class.IssueStatus },
+    lookup: { status: tracker.class.IssueStatus, space: tracker.class.Team },
     sort: { modifiedOn: SortingOrder.Descending }
   }
 
-  let team: Team | undefined
   let statusCategoryById: Map<string, IssueStatusCategory> | undefined
 
   async function updateIssueStatusCategories () {
@@ -42,32 +42,34 @@
   }
 
   async function onClose ({ detail: parentIssue }: CustomEvent<Issue | undefined | null>) {
-    if ('_id' in value && parentIssue !== undefined && parentIssue?._id !== value.attachedTo) {
-      let rank: string | null = null
+    const vv = Array.isArray(value) ? value : [value]
+    for (const docValue of vv) {
+      if ('_id' in docValue && parentIssue !== undefined && parentIssue?._id !== docValue.attachedTo) {
+        let rank: string | null = null
 
-      if (parentIssue) {
-        const lastAttachedIssue = await client.findOne<Issue>(
-          tracker.class.Issue,
-          { attachedTo: parentIssue._id },
-          { sort: { rank: SortingOrder.Descending } }
-        )
+        if (parentIssue) {
+          const lastAttachedIssue = await client.findOne<Issue>(
+            tracker.class.Issue,
+            { attachedTo: parentIssue._id },
+            { sort: { rank: SortingOrder.Descending } }
+          )
 
-        rank = calcRank(lastAttachedIssue, undefined)
+          rank = calcRank(lastAttachedIssue, undefined)
+        }
+
+        await client.update(docValue, {
+          attachedTo: parentIssue === null ? tracker.ids.NoParent : parentIssue._id,
+          ...(rank ? { rank } : {})
+        })
       }
-
-      await client.update(value, {
-        attachedTo: parentIssue === null ? tracker.ids.NoParent : parentIssue._id,
-        ...(rank ? { rank } : {})
-      })
     }
 
     dispatch('close', parentIssue)
   }
 
-  $: selected = 'attachedTo' in value ? value.attachedTo : undefined
-  $: ignoreObjects = '_id' in value ? [value._id] : []
+  $: selected = !Array.isArray(value) ? ('attachedTo' in value ? value.attachedTo : undefined) : undefined
+  $: ignoreObjects = !Array.isArray(value) ? ('_id' in value ? [value._id] : []) : undefined
   $: updateIssueStatusCategories()
-  $: 'space' in value && spaceQuery.query(tracker.class.Team, { _id: value.space }, (res) => ([team] = res))
 </script>
 
 <ObjectPopup
@@ -81,14 +83,14 @@
   create={undefined}
   {ignoreObjects}
   shadows={true}
-  width="large"
+  {width}
   searchField="title"
   on:update
   on:close={onClose}
 >
   <svelte:fragment slot="item" let:item={issue}>
     {@const { icon } = statusCategoryById?.get(issue.$lookup?.status.category) ?? {}}
-    {@const issueId = team && getIssueId(team, issue)}
+    {@const issueId = getIssueId(issue.$lookup.space, issue)}
     {#if issueId && icon}
       <div class="flex-center clear-mins w-full h-9">
         <div class="icon mr-4 h-8">

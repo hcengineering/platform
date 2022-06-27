@@ -67,19 +67,19 @@
   {#if kind === 'list'}
     <div class="priority-container" on:click={handlePriorityEditorOpened}>
       <div class="icon">
-        {#if issuePriorities[value.priority].icon}<Icon icon={issuePriorities[value.priority].icon} {size} />{/if}
+        {#if issuePriorities[value.priority]?.icon}<Icon icon={issuePriorities[value.priority]?.icon} {size} />{/if}
       </div>
       {#if shouldShowLabel}
         <span class="overflow-label label">
-          <Label label={issuePriorities[value.priority].label} />
+          <Label label={issuePriorities[value.priority]?.label} />
         </span>
       {/if}
     </div>
   {:else}
     <Button
       showTooltip={isEditable ? { label: tracker.string.SetPriority } : undefined}
-      label={shouldShowLabel ? issuePriorities[value.priority].label : undefined}
-      icon={issuePriorities[value.priority].icon}
+      label={shouldShowLabel ? issuePriorities[value.priority]?.label : undefined}
+      icon={issuePriorities[value.priority]?.icon}
       {justify}
       {width}
       {size}

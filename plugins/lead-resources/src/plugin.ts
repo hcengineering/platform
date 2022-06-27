@@ -14,7 +14,8 @@
 //
 
 import lead, { leadId } from '@anticrm/lead'
-import { IntlString, mergeIds } from '@anticrm/platform'
+import { IntlString, mergeIds, Resource } from '@anticrm/platform'
+import { Client, Doc, Ref } from '@anticrm/core'
 import { AnyComponent } from '@anticrm/ui'
 
 export default mergeIds(leadId, lead, {
@@ -42,5 +43,8 @@ export default mergeIds(leadId, lead, {
     CreateCustomer: '' as AnyComponent,
     LeadsPresenter: '' as AnyComponent,
     CreateFunnel: '' as AnyComponent
+  },
+  function: {
+    LeadTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>) => Promise<string>>
   }
 })

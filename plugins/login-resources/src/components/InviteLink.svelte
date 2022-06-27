@@ -1,6 +1,5 @@
 <!--
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021, 2022 Hardcore Engineering Inc.
+// Copyright © 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the 'License');
 // you may not use this file except in compliance with the License. You may
@@ -16,7 +15,7 @@
 <script lang="ts">
   import { Timestamp } from '@anticrm/core'
   import { Button, getCurrentLocation, Label, locationToUrl, ticker } from '@anticrm/ui'
-  import { getWorkspaceHash } from '../utils'
+  import { getInviteLink } from '../utils'
   import { createEventDispatcher } from 'svelte'
   import login from '../plugin'
   import InviteWorkspace from './icons/InviteWorkspace.svelte'
@@ -24,13 +23,13 @@
   const dispatch = createEventDispatcher()
 
   async function getLink (): Promise<string> {
-    const hash = await getWorkspaceHash()
+    const inviteId = await getInviteLink()
     const loc = getCurrentLocation()
     loc.path[0] = login.component.LoginApp
     loc.path[1] = 'join'
     loc.path.length = 2
     loc.query = {
-      workspace: hash
+      inviteId
     }
     loc.fragment = undefined
 
@@ -58,6 +57,9 @@
   <div class="flex-between fs-title">
     <Label label={login.string.InviteDescription} />
     <InviteWorkspace size="large" />
+  </div>
+  <div class="mt-2">
+    <Label label={login.string.InviteNote} />
   </div>
   {#await getLink() then link}
     <div class="over-underline link" on:click={() => copy(link)}>{link}</div>

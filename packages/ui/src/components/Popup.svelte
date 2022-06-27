@@ -30,5 +30,6 @@
     zIndex={(i + 1) * 500}
     top={$modal.length - 1 === i}
     close={popup.close}
+    overlay={popup.options.overlay}
   />
 {/each}

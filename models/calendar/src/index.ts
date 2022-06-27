@@ -176,7 +176,8 @@ export function createModel (builder: Builder): void {
       category: calendar.category.Calendar,
       target: calendar.class.Event,
       context: {
-        mode: 'context'
+        mode: 'context',
+        group: 'create'
       }
     },
     calendar.action.SaveEventReminder

@@ -33,6 +33,7 @@
     "@anticrm/platform": "~0.6.6",
     "svelte": "^3.47",
     "@anticrm/calendar": "~0.6.0",
+    "@anticrm/calendar-resources": "~0.6.0",
     "@anticrm/hr": "~0.6.0",
     "@anticrm/ui": "~0.6.0",
     "@anticrm/presentation": "~0.6.2",

@@ -22,8 +22,8 @@ import attachment from '@anticrm/model-attachment'
 import chunter from '@anticrm/model-chunter'
 import contact, { TContact } from '@anticrm/model-contact'
 import core from '@anticrm/model-core'
-import task, { TSpaceWithStates, TTask } from '@anticrm/model-task'
-import view, { createAction } from '@anticrm/model-view'
+import task, { actionTemplates, TSpaceWithStates, TTask } from '@anticrm/model-task'
+import view, { createAction, actionTemplates as viewTemplates } from '@anticrm/model-view'
 import workbench, { Application } from '@anticrm/model-workbench'
 import setting from '@anticrm/setting'
 import lead from './plugin'
@@ -67,6 +67,8 @@ export class TCustomer extends TContact implements Customer {
 }
 
 export function createModel (builder: Builder): void {
+  const archiveId = 'archive'
+
   builder.createModel(TFunnel, TLead, TCustomer)
 
   builder.mixin(lead.class.Funnel, core.class.Class, workbench.mixin.SpaceView, {
@@ -113,6 +115,15 @@ export function createModel (builder: Builder): void {
               label: lead.string.Customers
             },
             position: 'top'
+          },
+          {
+            id: archiveId,
+            component: workbench.component.Archive,
+            icon: view.icon.Archive,
+            label: workbench.string.Archive,
+            position: 'bottom',
+            visibleIf: workbench.function.HasArchiveSpaces,
+            spaceClass: lead.class.Funnel
           }
         ],
         spaces: [
@@ -128,6 +139,22 @@ export function createModel (builder: Builder): void {
     },
     lead.app.Lead
   )
+
+  createAction(builder, { ...actionTemplates.archiveSpace, target: lead.class.Funnel })
+  createAction(builder, { ...actionTemplates.unarchiveSpace, target: lead.class.Funnel })
+
+  createAction(builder, {
+    ...viewTemplates.open,
+    target: lead.class.Funnel,
+    context: {
+      mode: ['browser', 'context'],
+      group: 'create'
+    },
+    action: workbench.actionImpl.Navigate,
+    actionProps: {
+      mode: 'space'
+    }
+  })
 
   builder.createDoc(
     view.class.Viewlet,
@@ -194,6 +221,10 @@ export function createModel (builder: Builder): void {
     editor: lead.component.Leads
   })
 
+  builder.mixin(lead.class.Lead, core.class.Class, view.mixin.ObjectTitle, {
+    titleProvider: lead.function.LeadTitleProvider
+  })
+
   builder.mixin(lead.class.Lead, core.class.Class, view.mixin.ClassFilters, {
     filters: ['attachedTo', 'title', 'assignee', 'state', 'doneState', 'modifiedOn']
   })
@@ -248,6 +279,9 @@ export function createModel (builder: Builder): void {
       element: 'top',
       props: {
         preserveCustomer: true
+      },
+      fillProps: {
+        _id: 'customer'
       }
     },
     label: lead.string.CreateLead,
@@ -255,7 +289,10 @@ export function createModel (builder: Builder): void {
     input: 'focus',
     category: lead.category.Lead,
     target: contact.class.Contact,
-    context: { mode: ['context', 'browser'] },
+    context: {
+      mode: ['context', 'browser'],
+      group: 'associate'
+    },
     override: [lead.action.CreateGlobalLead]
   })
 
@@ -275,7 +312,8 @@ export function createModel (builder: Builder): void {
       target: core.class.Doc,
       context: {
         mode: ['workbench', 'browser'],
-        application: lead.app.Lead
+        application: lead.app.Lead,
+        group: 'create'
       }
     },
     lead.action.CreateGlobalLead

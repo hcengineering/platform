@@ -22,7 +22,9 @@
     createFocusManager,
     EditBox,
     FocusHandler,
+    Icon,
     IconAdd,
+    IconCheck,
     ListView,
     showPopup,
     Tooltip
@@ -44,7 +46,8 @@
   export let selectedObjects: Ref<Doc>[] = []
   export let ignoreObjects: Ref<Doc>[] = []
   export let shadows: boolean = true
-  export let width: 'medium' | 'large' = 'medium'
+  export let width: 'medium' | 'large' | 'full' = 'medium'
+  export let size: 'small' | 'medium' | 'large' = 'small'
 
   export let searchField: string = 'name'
 
@@ -56,7 +59,7 @@
         label: IntlString
         update: (doc: Doc) => string
       }
-    | undefined
+    | undefined = undefined
 
   let search: string = ''
   let objects: Doc[] = []
@@ -162,7 +165,13 @@
 
 <FocusHandler {manager} />
 
-<div class="selectPopup" class:plainContainer={!shadows} class:width-40={width === 'large'} on:keydown={onKeydown}>
+<div
+  class="selectPopup"
+  class:full-width={width === 'full'}
+  class:plainContainer={!shadows}
+  class:width-40={width === 'large'}
+  on:keydown={onKeydown}
+>
   <div class="header flex-between">
     <EditBox kind={'search-style'} focusIndex={1} focus bind:value={search} {placeholder} />
     {#if create !== undefined}
@@ -170,7 +179,7 @@
         <Button
           focusIndex={2}
           kind={'transparent'}
-          size={'small'}
+          {size}
           icon={IconAdd}
           showTooltip={{ label: create.label }}
           on:click={onCreate}
@@ -200,23 +209,27 @@
               handleSelection(undefined, objects, item)
             }}
           >
-            {#if multiSelect}
-              <div class="check pointer-events-none">
-                <CheckBox checked={selectedElements.has(obj._id)} primary />
+            {#if allowDeselect && selected}
+              <div class="icon">
+                {#if obj._id === selected}
+                  {#if titleDeselect}
+                    <Tooltip label={titleDeselect ?? presentation.string.Deselect}>
+                      <Icon icon={IconCheck} {size} />
+                    </Tooltip>
+                  {:else}
+                    <Icon icon={IconCheck} {size} />
+                    <!-- <CheckBox checked circle primary /> -->
+                  {/if}
+                {/if}
               </div>
             {/if}
 
-            <slot name="item" item={obj} />
-
-            {#if allowDeselect && obj._id === selected}
-              <div class="check-right pointer-events-none">
-                {#if titleDeselect}
-                  <Tooltip label={titleDeselect ?? presentation.string.Deselect}>
-                    <CheckBox checked circle primary />
-                  </Tooltip>
-                {:else}
-                  <CheckBox checked circle primary />
-                {/if}
+            <span class="label">
+              <slot name="item" item={obj} />
+            </span>
+            {#if multiSelect}
+              <div class="check pointer-events-none">
+                <CheckBox checked={selectedElements.has(obj._id)} primary />
               </div>
             {/if}
           </button>
