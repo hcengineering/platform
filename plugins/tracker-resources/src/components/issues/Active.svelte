@@ -25,7 +25,10 @@
   let query: DocumentQuery<Issue>
   $: statusQuery.query(
     tracker.class.IssueStatus,
-    { category: { $in: [tracker.issueStatusCategory.Unstarted, tracker.issueStatusCategory.Started] } },
+    {
+      category: { $in: [tracker.issueStatusCategory.Unstarted, tracker.issueStatusCategory.Started] },
+      space: currentSpace
+    },
     (result) => {
       query = { status: { $in: result.map(({ _id }) => _id) }, space: currentSpace }
     }

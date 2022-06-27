@@ -82,8 +82,9 @@ export enum IssuesGrouping {
 export enum IssuesOrdering {
   Status = 'status',
   Priority = 'priority',
-  LastUpdated = 'lastUpdated',
-  DueDate = 'dueDate'
+  LastUpdated = 'modifiedOn',
+  DueDate = 'dueDate',
+  Manual = 'rank'
 }
 
 /**

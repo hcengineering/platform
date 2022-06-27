@@ -6,6 +6,9 @@ HR:
 
 - Allow to change assignee in Kanban
 
+Tracker:
+- Manual issues ordering
+
 ## 0.6.29
 
 Platform:

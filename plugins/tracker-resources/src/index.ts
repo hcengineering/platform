@@ -18,6 +18,7 @@ import { Resources } from '@anticrm/platform'
 import { ObjectSearchResult } from '@anticrm/presentation'
 import { Issue, Team } from '@anticrm/tracker'
 import Inbox from './components/inbox/Inbox.svelte'
+import Issues from './components/issues/Issues.svelte'
 import Active from './components/issues/Active.svelte'
 import AssigneePresenter from './components/issues/AssigneePresenter.svelte'
 import Backlog from './components/issues/Backlog.svelte'
@@ -110,6 +111,7 @@ export async function queryIssue<D extends Issue> (
 export default async (): Promise<Resources> => ({
   component: {
     NopeComponent,
+    Issues,
     Active,
     Backlog,
     Inbox,
