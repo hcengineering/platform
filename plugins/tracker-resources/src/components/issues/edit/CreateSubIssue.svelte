@@ -96,6 +96,7 @@
       title: getTitle(newIssue.title),
       number: (incResult as any).object.sequence,
       rank: calcRank(lastOne, undefined),
+      project: parentIssue.project,
       parents: [{ parentId: parentIssue._id, parentTitle: parentIssue.title }, ...parentIssue.parents]
     }
 

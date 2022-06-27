@@ -52,19 +52,24 @@ export async function OnIssueUpdate (tx: Tx, control: TriggerControl): Promise<T
       { _id: updateTx.operations.attachedTo as Ref<Issue> },
       { limit: 1 }
     )
+    const updatedProject = newParent !== undefined ? newParent.project : null
     const updatedParents =
       newParent !== undefined ? [{ parentId: newParent._id, parentTitle: newParent.title }, ...newParent.parents] : []
 
     function update (issue: Issue): DocumentUpdate<Issue> {
       const parentInfoIndex = issue.parents.findIndex(({ parentId }) => parentId === updateTx.objectId)
-      return parentInfoIndex === -1
-        ? {}
-        : { parents: [...issue.parents].slice(0, parentInfoIndex + 1).concat(updatedParents) }
+      const parentsUpdate =
+        parentInfoIndex === -1
+          ? {}
+          : { parents: [...issue.parents].slice(0, parentInfoIndex + 1).concat(updatedParents) }
+
+      return { ...parentsUpdate, project: updatedProject }
     }
 
     res.push(
       control.txFactory.createTxUpdateDoc(updateTx.objectClass, updateTx.objectSpace, updateTx.objectId, {
-        parents: updatedParents
+        parents: updatedParents,
+        project: updatedProject
       }),
       ...(await updateSubIssues(updateTx, control, update))
     )
