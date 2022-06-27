@@ -148,6 +148,7 @@ export default mergeIds(trackerId, tracker, {
     CopyIssueUrl: '' as IntlString,
     CopyIssueId: '' as IntlString,
     CopyIssueBranch: '' as IntlString,
+    CopyIssueTitle: '' as IntlString,
 
     FilterIs: '' as IntlString,
     FilterIsNot: '' as IntlString,
