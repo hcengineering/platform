@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Ref, SortingOrder } from '@anticrm/core'
   import { IntlString, translate } from '@anticrm/platform'
-  import { getClient } from '@anticrm/presentation'
+  import { createQuery } from '@anticrm/presentation'
   import { Project } from '@anticrm/tracker'
   import type { ButtonKind, ButtonSize } from '@anticrm/ui'
   import { Button, ButtonShape, eventToHTMLElement, SelectPopup, showPopup } from '@anticrm/ui'
@@ -32,27 +32,43 @@
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = 'min-content'
 
-  const client = getClient()
-
   let selectedProject: Project | undefined
   let defaultProjectLabel = ''
 
-  $: if (value !== undefined) {
-    handleSelectedProjectIdUpdated(value)
-  }
+  const query = createQuery()
+  let projects: Map<Ref<Project>, Project> = new Map<Ref<Project>, Project>()
+  query.query(
+    tracker.class.Project,
+    {},
+    (res) => {
+      projects = new Map(
+        res.map((p) => {
+          return [p._id, p]
+        })
+      )
+    },
+    {
+      sort: { modifiedOn: SortingOrder.Ascending }
+    }
+  )
+
+  $: handleSelectedProjectIdUpdated(value, projects)
 
   $: translate(tracker.string.Project, {}).then((result) => (defaultProjectLabel = result))
   $: projectIcon = selectedProject?.icon ?? tracker.icon.Projects
   $: projectText = shouldShowLabel ? selectedProject?.label ?? defaultProjectLabel : undefined
 
-  const handleSelectedProjectIdUpdated = async (newProjectId: Ref<Project> | null) => {
-    if (newProjectId === null) {
+  const handleSelectedProjectIdUpdated = async (
+    newProjectId: Ref<Project> | null | undefined,
+    projects: Map<Ref<Project>, Project>
+  ) => {
+    if (newProjectId === null || newProjectId === undefined) {
       selectedProject = undefined
 
       return
     }
 
-    selectedProject = await client.findOne(tracker.class.Project, { _id: newProjectId })
+    selectedProject = projects.get(newProjectId)
   }
 
   const handleProjectEditorOpened = async (event: MouseEvent): Promise<void> => {
@@ -61,16 +77,9 @@
       return
     }
 
-    const projects = await client.findAll(
-      tracker.class.Project,
-      {},
-      {
-        sort: { modifiedOn: SortingOrder.Ascending }
-      }
-    )
     const projectsInfo = [
       { id: null, icon: tracker.icon.Projects, label: tracker.string.NoProject },
-      ...projects.map((p) => ({
+      ...Array.from(projects.values()).map((p) => ({
         id: p._id,
         icon: p.icon,
         text: p.label
