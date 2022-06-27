@@ -250,7 +250,7 @@ abstract class MongoAdapterBase extends TxProcessor {
     if (lookup === undefined) return
     for (const key in lookup) {
       if (key === '_id') {
-        await this.fillReverseLookup(lookup, object, parent, parentObject)
+        await this.fillReverseLookup(clazz, lookup, object, parent, parentObject)
         continue
       }
       const value = (lookup as any)[key]
@@ -260,14 +260,15 @@ abstract class MongoAdapterBase extends TxProcessor {
       if (Array.isArray(value)) {
         const [_class, nested] = value
         await this.fillLookup(_class, object, key, fullKey, targetObject)
-        await this.fillLookupValue(nested, object, fullKey, targetObject.$lookup[key])
+        await this.fillLookupValue(_class, nested, object, fullKey, targetObject.$lookup[key])
       } else {
         await this.fillLookup(value, object, key, fullKey, targetObject)
       }
     }
   }
 
-  private async fillReverseLookup (
+  private async fillReverseLookup<T extends Doc> (
+    clazz: Ref<Class<T>>,
     lookup: ReverseLookups,
     object: any,
     parent?: string,
@@ -289,7 +290,8 @@ abstract class MongoAdapterBase extends TxProcessor {
         _class = value
       }
       const domain = this.hierarchy.getDomain(_class)
-      const fullKey = parent !== undefined ? parent + key + '_lookup' : key + '_lookup'
+      const tkey = this.checkMixinKey(key, clazz).split('.').join('')
+      const fullKey = parent !== undefined ? parent + tkey + '_lookup' : tkey + '_lookup'
       if (domain !== DOMAIN_MODEL) {
         const arr = object[fullKey]
         targetObject.$lookup[key] = arr
