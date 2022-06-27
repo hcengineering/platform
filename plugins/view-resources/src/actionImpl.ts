@@ -174,32 +174,18 @@ async function ShowPopup (
   const docs = Array.isArray(doc) ? doc : doc !== undefined ? [doc] : []
   const element = await getPopupAlignment(props.element, evt)
   evt.preventDefault()
-  let cprops = {
+  const cprops = {
     ...(props?.props ?? {})
   }
-
   for (const [docKey, propKey] of Object.entries(props.fillProps ?? {})) {
     for (const dv of docs) {
       const dvv = (dv as any)[docKey]
       if (dvv !== undefined) {
-        ;(cprops as any)[propKey] = { dvv }
+        ;(cprops as any)[propKey] = dvv
       }
     }
     if (docKey === '_object') {
       ;(cprops as any)[propKey] = docs[0]
-    }
-  }
-
-  if (docs.length > 0) {
-    cprops = {
-      ...cprops,
-      ...{
-        [props._id ?? '_id']: docs[0]._id,
-        [props._class ?? '_class']: docs[0]._class,
-        [props._space ?? 'space']: docs[0].space,
-        [props.value ?? 'value']: docs[0],
-        [props.values ?? 'values']: docs
-      }
     }
   }
 

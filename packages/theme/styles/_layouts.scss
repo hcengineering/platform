@@ -294,6 +294,10 @@ input.search {
     grid-template-columns: repeat(4, min-content);
     grid-auto-flow: row;
   }
+  &.tiny {
+    grid-template-columns: repeat(2, min-content);
+    grid-auto-flow: row;
+  }
 }
 .buttons-divider {
   min-width: 1px;

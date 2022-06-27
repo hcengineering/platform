@@ -15,12 +15,13 @@
 <script lang="ts">
   import { AttachmentsPresenter } from '@anticrm/attachment-resources'
   import { CommentsPresenter } from '@anticrm/chunter-resources'
-  import { formatName } from '@anticrm/contact'
+  import contact, { formatName } from '@anticrm/contact'
   import type { WithLookup } from '@anticrm/core'
   import notification from '@anticrm/notification'
   import { Avatar } from '@anticrm/presentation'
-  import type { Applicant } from '@anticrm/recruit'
+  import type { Applicant, Candidate } from '@anticrm/recruit'
   import task, { TodoItem } from '@anticrm/task'
+  import { AssigneePresenter } from '@anticrm/task-resources'
   import { Component, showPanel, Tooltip } from '@anticrm/ui'
   import view from '@anticrm/view'
   import ApplicationPresenter from './ApplicationPresenter.svelte'
@@ -29,19 +30,21 @@
   export let dragged: boolean
 
   function showCandidate () {
-    showPanel(view.component.EditDoc, object.attachedTo, object.attachedToClass, 'content')
+    showPanel(view.component.EditDoc, object._id, object._class, 'content')
   }
 
   $: todoItems = (object.$lookup?.todoItems as TodoItem[]) ?? []
   $: doneTasks = todoItems.filter((it) => it.done)
+
+  $: channels = (object.$lookup?.attachedTo as WithLookup<Candidate>)?.$lookup?.channels
 </script>
 
-<div class="flex-col pt-2 pb-2 pr-4 pl-4">
+<div class="flex-col pt-2 pb-2 pr-4 pl-4 cursor-pointer" on:click={showCandidate}>
   <div class="flex-between mb-3">
     <div class="flex-row-center">
       <Avatar avatar={object.$lookup?.attachedTo?.avatar} size={'medium'} />
       <div class="flex-grow flex-col min-w-0 ml-2">
-        <div class="fs-title over-underline lines-limit-2" on:click={showCandidate}>
+        <div class="fs-title over-underline lines-limit-2">
           {formatName(object.$lookup?.attachedTo?.name ?? '')}
         </div>
         <div class="text-sm lines-limit-2">{object.$lookup?.attachedTo?.title ?? ''}</div>
@@ -54,6 +57,16 @@
         </div>
       {/if}
     </div>
+    {#if channels && channels.length > 0}
+      <div class="tool mr-1 flex-row-center">
+        <div class="step-lr75">
+          <Component
+            is={contact.component.ChannelsPresenter}
+            props={{ value: channels, object: object.$lookup?.attachedTo, length: 'tiny' }}
+          />
+        </div>
+      </div>
+    {/if}
   </div>
   <div class="flex-between">
     <div class="flex-row-center">
@@ -76,6 +89,11 @@
         </div>
       {/if}
     </div>
-    <Avatar avatar={object.$lookup?.assignee?.avatar} size={'x-small'} />
+    <AssigneePresenter
+      value={object.$lookup?.assignee}
+      issueId={object._id}
+      defaultClass={contact.class.Employee}
+      currentSpace={object.space}
+    />
   </div>
 </div>

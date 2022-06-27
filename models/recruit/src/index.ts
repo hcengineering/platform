@@ -334,7 +334,14 @@ export function createModel (builder: Builder): void {
   )
 
   const applicantKanbanLookup: Lookup<Applicant> = {
-    attachedTo: recruit.mixin.Candidate,
+    attachedTo: [
+      recruit.mixin.Candidate,
+      {
+        _id: {
+          channels: contact.class.Channel
+        }
+      }
+    ],
     assignee: contact.class.Employee,
     _id: {
       todoItems: task.class.TodoItem
