@@ -59,7 +59,7 @@
     {:else if node.nodeName === 'OL'}
       <ol><svelte:self nodes={node.childNodes} /></ol>
     {:else if node.nodeName === 'LI'}
-      <li class={'flex-row-center flex-grow  gap-1 checkbox_style'}><svelte:self nodes={node.childNodes} /></li>
+      <li class={'flex flex-grow gap-1 checkbox_style'}><svelte:self nodes={node.childNodes} /></li>
     {:else if node.nodeName === 'DIV'}
       <div><svelte:self nodes={node.childNodes} /></div>
     {:else if node.nodeName === 'A'}
@@ -70,7 +70,9 @@
       <svelte:self nodes={node.childNodes} />
     {:else if node.nodeName === 'INPUT'}
       {#if node.type?.toLowerCase() === 'checkbox'}
-        <CheckBox readonly checked={node.checked} />
+        <div class="checkboxContainer">
+          <CheckBox readonly checked={node.checked} />
+        </div>
       {/if}
     {:else if node.nodeName === 'SPAN'}
       <Component
@@ -97,5 +99,9 @@
       height: 100%;
       width: 100%;
     }
+  }
+
+  .checkboxContainer {
+    padding-top: 0.125rem;
   }
 </style>

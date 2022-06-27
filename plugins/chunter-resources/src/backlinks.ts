@@ -49,7 +49,11 @@ function extractBacklinks (
       break
     }
     nds.forEach((kid) => {
-      if (kid.nodeType === Node.ELEMENT_NODE && (kid as HTMLElement).localName === 'span') {
+      if (
+        kid.nodeType === Node.ELEMENT_NODE &&
+        (kid as HTMLElement).localName === 'span' &&
+        (kid as HTMLElement).getAttribute('data-type') === 'reference'
+      ) {
         const el = kid as HTMLElement
         const ato = el.getAttribute('data-id') as Ref<Doc>
         const atoClass = el.getAttribute('data-objectclass') as Ref<Class<Doc>>

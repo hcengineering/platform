@@ -713,6 +713,21 @@ a.no-line {
 
 .checkbox_style {
   input {
-    // TODO: Add a proper style here
+    appearance: none;
+    flex-shrink: 0;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 0.875rem;
+    height: 0.875rem;
+    border: 1px solid var(--dark-color);
+    border-radius: 0.25rem;
+  }
+
+  
+  input:checked {
+    background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><polygon fill="white" points="7.3,11.5 4,8.3 5,7.4 7.3,9.7 11.8,5.1 12.7,6.1 " /></svg>');
+    background-color: var(--primary-bg-color);
+    border-color: transparent;
   }
 }
