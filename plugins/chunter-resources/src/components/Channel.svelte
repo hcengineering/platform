@@ -19,10 +19,10 @@
   import core, { Doc, Ref, Space, Timestamp, WithLookup } from '@anticrm/core'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
   import { createQuery } from '@anticrm/presentation'
-  import { getCurrentLocation, navigate } from '@anticrm/ui'
-  import { afterUpdate, beforeUpdate } from 'svelte'
+  import { location as locationStore } from '@anticrm/ui'
+  import { afterUpdate, beforeUpdate, onDestroy } from 'svelte'
   import chunter from '../plugin'
-  import { getDay } from '../utils'
+  import { getDay, messageIdForScroll, shouldScrollToMessage, isMessageHighlighted, scrollAndHighLight } from '../utils'
   import ChannelSeparator from './ChannelSeparator.svelte'
   import JumpToDateSelector from './JumpToDateSelector.svelte'
   import MessageComponent from './Message.svelte'
@@ -35,24 +35,31 @@
 
   let div: HTMLDivElement | undefined
   let autoscroll: boolean = false
-  let messageIdForScroll = ''
-  let isMessageHighlighted = false
+
+  const unsubscribe = locationStore.subscribe((newLocation) => {
+    const messageId = newLocation.fragment
+
+    if (!messageId) {
+      messageIdForScroll.set('')
+
+      return
+    }
+    if (messageId === $messageIdForScroll) {
+      return
+    }
+    messageIdForScroll.set(messageId)
+    shouldScrollToMessage.set(true)
+    scrollAndHighLight()
+  })
+  onDestroy(unsubscribe)
 
   beforeUpdate(() => {
     autoscroll = div !== undefined && div.offsetHeight + div.scrollTop > div.scrollHeight - 20
   })
 
   afterUpdate(() => {
-    if (messageIdForScroll && !isMessageHighlighted) {
-      const messageElement = document.getElementById(messageIdForScroll)
-
-      messageElement?.scrollIntoView()
-      isMessageHighlighted = true
-
-      setTimeout(() => {
-        messageIdForScroll = ''
-        isMessageHighlighted = false
-      }, 2000)
+    if ($shouldScrollToMessage && !$isMessageHighlighted) {
+      scrollAndHighLight()
 
       return
     }
@@ -101,15 +108,6 @@
         messages = res
         newMessagesPos = newMessagesStart(messages)
         notificationClient.updateLastView(space, chunter.class.ChunterSpace)
-
-        const location = getCurrentLocation()
-        const messageId = location.fragment
-
-        if (messageId && location.path.length === 3) {
-          messageIdForScroll = messageId
-          location.fragment = undefined
-          navigate(location)
-        }
       },
       {
         lookup: {
@@ -230,7 +228,7 @@
         <JumpToDateSelector selectedDate={message.createOn} on:jumpToDate={handleJumpToDate} />
       {/if}
       <MessageComponent
-        isHighlighted={messageIdForScroll === message._id && isMessageHighlighted}
+        isHighlighted={$messageIdForScroll === message._id && $isMessageHighlighted}
         {message}
         {employees}
         on:openThread

@@ -24,6 +24,7 @@
   import { afterUpdate, beforeUpdate, createEventDispatcher } from 'svelte'
   import { createBacklinks } from '../backlinks'
   import chunter from '../plugin'
+  import { messageIdForScroll, shouldScrollToMessage, isMessageHighlighted, scrollAndHighLight } from '../utils'
   import ChannelSeparator from './ChannelSeparator.svelte'
   import MsgView from './Message.svelte'
 
@@ -40,24 +41,14 @@
   let div: HTMLDivElement | undefined
   let autoscroll: boolean = false
   let isScrollForced = false
-  let messageIdForScroll = ''
-  let isMessageHighlighted = false
 
   beforeUpdate(() => {
     autoscroll = div !== undefined && div.offsetHeight + div.scrollTop > div.scrollHeight - 20
   })
 
   afterUpdate(() => {
-    if (messageIdForScroll && !isMessageHighlighted) {
-      const messageElement = document.getElementById(messageIdForScroll)
-
-      messageElement?.scrollIntoView()
-      isMessageHighlighted = true
-
-      setTimeout(() => {
-        messageIdForScroll = ''
-        isMessageHighlighted = false
-      }, 2000)
+    if ($shouldScrollToMessage && !$isMessageHighlighted) {
+      scrollAndHighLight()
 
       return
     }
@@ -112,15 +103,6 @@
         comments = res
         newMessagesPos = newMessagesStart(comments, $lastViews)
         notificationClient.updateLastView(id, chunter.class.Message)
-
-        const location = getCurrentLocation()
-        const messageId = location.fragment
-
-        if (messageId && location.path.length === 4) {
-          messageIdForScroll = messageId
-          location.fragment = undefined
-          navigate(location)
-        }
       },
       {
         lookup
@@ -235,7 +217,7 @@
         <ChannelSeparator title={chunter.string.New} line reverse isNew />
       {/if}
       <MsgView
-        isHighlighted={messageIdForScroll === comment._id && isMessageHighlighted}
+        isHighlighted={$messageIdForScroll === comment._id && $isMessageHighlighted}
         message={comment}
         {employees}
         thread

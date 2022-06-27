@@ -3,6 +3,7 @@ import contact, { EmployeeAccount, formatName } from '@anticrm/contact'
 import { Account, Class, Client, Obj, Ref, Space, getCurrentAccount, Timestamp } from '@anticrm/core'
 import { Asset } from '@anticrm/platform'
 import { getCurrentLocation, locationToUrl, navigate } from '@anticrm/ui'
+import { writable, get } from 'svelte/store'
 
 import chunter from './plugin'
 
@@ -96,4 +97,27 @@ export enum SearchType {
   Channels,
   Files,
   Contacts
+}
+
+export const messageIdForScroll = writable('')
+export const shouldScrollToMessage = writable(false)
+export const isMessageHighlighted = writable(false)
+
+let highlightFinishTaskId: number
+
+export function scrollAndHighLight (): void {
+  const messageElement = document.getElementById(get(messageIdForScroll))
+
+  if (messageElement == null) {
+    return
+  }
+  messageElement.scrollIntoView()
+  shouldScrollToMessage.set(false)
+
+  clearTimeout(highlightFinishTaskId)
+  isMessageHighlighted.set(true)
+
+  highlightFinishTaskId = window.setTimeout(() => {
+    isMessageHighlighted.set(false)
+  }, 2000)
 }
