@@ -267,7 +267,7 @@ abstract class MongoAdapterBase extends TxProcessor {
     }
   }
 
-  private async fillReverseLookup<T extends Doc> (
+  private async fillReverseLookup<T extends Doc>(
     clazz: Ref<Class<T>>,
     lookup: ReverseLookups,
     object: any,
