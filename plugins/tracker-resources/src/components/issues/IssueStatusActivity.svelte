@@ -2,7 +2,7 @@
   import core, { Ref, Timestamp, Tx, TxCollectionCUD, TxCreateDoc, TxUpdateDoc, WithLookup } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
   import { Issue, IssueStatus } from '@anticrm/tracker'
-  import { Icon, Label, ticker } from '@anticrm/ui'
+  import { Label, ticker } from '@anticrm/ui'
   import tracker from '../../plugin'
   import Duration from './Duration.svelte'
   import StatusPresenter from './StatusPresenter.svelte'
@@ -108,11 +108,6 @@
     {#each displaySt as st}
       <tr>
         <td class="flex-row-center mt-2 mb-2">
-          {#if st?.status?.$lookup?.category?.icon !== undefined}
-            <div class="mr-2">
-              <Icon icon={st.status.$lookup?.category.icon} size={'small'} />
-            </div>
-          {/if}
           <StatusPresenter value={st.status} />
         </td>
         <td>

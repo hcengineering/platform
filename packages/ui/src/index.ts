@@ -154,6 +154,7 @@ export * from './panelup'
 export * from './components/calendar/internal/DateUtils'
 export * from './colors'
 export * from './focus'
+export * from './resize'
 
 export function createApp (target: HTMLElement): SvelteComponent {
   return new Root({ target })
