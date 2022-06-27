@@ -76,6 +76,9 @@ export default mergeIds(recruitId, recruit, {
     Title: '' as IntlString,
     Vacancies: '' as IntlString,
 
+    CopyLink: '' as IntlString,
+    CopyId: '' as IntlString,
+
     Review: '' as IntlString,
     ReviewCreateLabel: '' as IntlString,
     CreateReview: '' as IntlString,

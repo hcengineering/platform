@@ -45,7 +45,7 @@ import VacancyCountPresenter from './components/VacancyCountPresenter.svelte'
 import VacancyItemPresenter from './components/VacancyItemPresenter.svelte'
 import VacancyModifiedPresenter from './components/VacancyModifiedPresenter.svelte'
 import VacancyPresenter from './components/VacancyPresenter.svelte'
-import { getApplicationTitle } from './utils'
+import { getApplicationTitle, copyToClipboard } from './utils'
 import recruit from './plugin'
 
 async function createOpinion (object: Doc): Promise<void> {
@@ -113,7 +113,8 @@ export async function queryApplication (client: Client, search: string): Promise
 
 export default async (): Promise<Resources> => ({
   actionImpl: {
-    CreateOpinion: createOpinion
+    CreateOpinion: createOpinion,
+    CopyToClipboard: copyToClipboard
   },
   validator: {
     ApplicantValidator: applicantValidator
