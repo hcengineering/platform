@@ -58,7 +58,10 @@
   $: projectIcon = selectedProject?.icon ?? tracker.icon.Projects
   $: projectText = shouldShowLabel ? selectedProject?.label ?? defaultProjectLabel : undefined
 
-  const handleSelectedProjectIdUpdated = async (newProjectId: Ref<Project> | null | undefined, projects: Map<Ref<Project>, Project>) => {
+  const handleSelectedProjectIdUpdated = async (
+    newProjectId: Ref<Project> | null | undefined,
+    projects: Map<Ref<Project>, Project>
+  ) => {
     if (newProjectId === null || newProjectId === undefined) {
       selectedProject = undefined
 
