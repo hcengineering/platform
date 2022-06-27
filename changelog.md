@@ -10,9 +10,10 @@ Tracker:
 
 - Remember view options
 - My issues
+- Names of parent issues
 - Roadmap
-- Remember view options
 - Context menus (Priority/Status/Assignee)
+- 
 
 Chunter:
 

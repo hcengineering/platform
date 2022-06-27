@@ -43,6 +43,7 @@ import task from '@anticrm/task'
 import {
   Document,
   Issue,
+  IssueParentInfo,
   IssuePriority,
   IssueStatus,
   IssueStatusCategory,
@@ -179,6 +180,8 @@ export class TIssue extends TAttachedDoc implements Issue {
 
   @Prop(ArrOf(TypeRef(tracker.class.Issue)), tracker.string.RelatedTo)
   relatedIssue!: Ref<Issue>[]
+
+  parents!: IssueParentInfo[]
 
   @Prop(Collection(chunter.class.Comment), tracker.string.Comments)
   comments!: number
