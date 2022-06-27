@@ -283,7 +283,7 @@ export function createModel (builder: Builder): void {
       input: 'any',
       category: board.category.Card,
       target: board.class.Card,
-      context: { mode: 'context', application: board.app.Board, group: 'top' }
+      context: { mode: 'context', application: board.app.Board, group: 'create' }
     },
     board.action.Open
   )
@@ -294,7 +294,9 @@ export function createModel (builder: Builder): void {
       actionProps: {
         component: tags.component.TagsEditorPopup,
         element: view.popup.PositionElementAlignment,
-        value: 'object'
+        fillProps: {
+          _object: 'value'
+        }
       },
       label: board.string.Labels,
       icon: tags.icon.Tags,
@@ -302,7 +304,7 @@ export function createModel (builder: Builder): void {
       inline: true,
       category: board.category.Card,
       target: board.class.Card,
-      context: { mode: 'context', application: board.app.Board, group: 'top' }
+      context: { mode: 'context', application: board.app.Board, group: 'create' }
     },
     board.action.Labels
   )
@@ -320,7 +322,7 @@ export function createModel (builder: Builder): void {
       inline: true,
       category: board.category.Card,
       target: board.class.Card,
-      context: { mode: 'context', application: board.app.Board, group: 'top' }
+      context: { mode: 'context', application: board.app.Board, group: 'create' }
     },
     board.action.Dates
   )
@@ -331,7 +333,9 @@ export function createModel (builder: Builder): void {
       actionProps: {
         component: board.component.CoverActionPopup,
         element: view.popup.PositionElementAlignment,
-        value: 'object'
+        fillProps: {
+          _object: 'value'
+        }
       },
       label: board.string.Cover,
       icon: board.icon.Card,
@@ -339,7 +343,7 @@ export function createModel (builder: Builder): void {
       inline: true,
       category: board.category.Card,
       target: board.class.Card,
-      context: { mode: 'context', application: board.app.Board, group: 'top' }
+      context: { mode: 'context', application: board.app.Board, group: 'create' }
     },
     board.action.Cover
   )

@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { getCurrentAccount, Ref, Timestamp } from '@anticrm/core'
-  import type { Department, Request, Staff } from '@anticrm/hr'
+  import type { Department, Request, RequestType, Staff } from '@anticrm/hr'
   import { createQuery } from '@anticrm/presentation'
   import {
     Label,
@@ -30,6 +30,7 @@
     LabelAndProps
   } from '@anticrm/ui'
   import { EmployeePresenter } from '@anticrm/contact-resources'
+  import { CalendarMode } from '@anticrm/calendar-resources'
   import contact from '@anticrm/contact-resources/src/plugin'
   import hr from '../plugin'
   import { Employee, EmployeeAccount } from '@anticrm/contact'
@@ -41,14 +42,30 @@
   export let descendants: Map<Ref<Department>, Department[]>
   export let departmentById: Map<Ref<Department>, Department>
   export let currentDate: Date = new Date()
+  export let mode: CalendarMode
 
-  $: startDate = new Date(new Date(currentDate).setDate(1)).setHours(0, 0, 0, 0)
-  $: endDate = new Date(startDate).setMonth(new Date(startDate).getMonth() + 1)
+  $: startDate = new Date(
+    new Date(mode === CalendarMode.Year ? new Date(currentDate).setMonth(1) : currentDate).setDate(1)
+  ).setHours(0, 0, 0, 0)
+  $: endDate =
+    mode === CalendarMode.Year
+      ? new Date(startDate).setFullYear(new Date(startDate).getFullYear() + 1)
+      : new Date(startDate).setMonth(new Date(startDate).getMonth() + 1)
   $: departments = [department, ...getDescendants(department, descendants)]
 
   const lq = createQuery()
+  const typeQuery = createQuery()
   const staffQuery = createQuery()
   let staff: Staff[] = []
+  let types: Map<Ref<RequestType>, RequestType> = new Map<Ref<RequestType>, RequestType>()
+
+  typeQuery.query(hr.class.RequestType, {}, (res) => {
+    types = new Map(
+      res.map((type) => {
+        return [type._id, type]
+      })
+    )
+  })
 
   staffQuery.query(hr.mixin.Staff, {}, (res) => {
     staff = res
@@ -96,7 +113,7 @@
     if (requests === undefined) return []
     const res: Request[] = []
     const time = date.getTime()
-    const endTime = new Date(date).setDate(date.getDate() + 1)
+    const endTime = getEndDate(date)
     for (const request of requests) {
       if (request.date < endTime && request.dueDate > time) {
         res.push(request)
@@ -134,16 +151,45 @@
     return lead === currentEmployee
   }
 
+  function getEndDate (date: Date): number {
+    return mode === CalendarMode.Year
+      ? new Date(date).setMonth(date.getMonth() + 1)
+      : new Date(date).setDate(date.getDate() + 1)
+  }
+
   function getTooltip (employee: Staff, date: Date): LabelAndProps | undefined {
     const requests = getRequests(employee._id, date)
     if (requests.length === 0) return
+    const endDate = getEndDate(date)
     return {
       component: RequestsPopup,
-      props: { date, employee: employee._id }
+      props: { date, endDate, employee: employee._id }
     }
   }
 
   $: departmentStaff = staff.filter((p) => departments.includes(p.department) || employeeRequests.has(p._id))
+
+  $: values = [...Array(mode === CalendarMode.Year ? 12 : daysInMonth(currentDate)).keys()]
+
+  function getMonthName (date: Date): string {
+    return new Intl.DateTimeFormat('default', { month: 'long' }).format(date)
+  }
+  function getMonth (date: Date, m: number): Date {
+    date = new Date(date)
+    date.setDate(1)
+    date.setMonth(m)
+    return date
+  }
+
+  function getTotal (requests: Request[]): number {
+    let total = 0
+    for (const request of requests) {
+      const type = types.get(request.type)
+      const days = (request.dueDate - request.date) / 1000 / 60 / 60 / 24
+      total += Math.ceil(days) * (type?.value ?? 0)
+    }
+    return total
+  }
 </script>
 
 {#if departmentStaff.length}
@@ -154,14 +200,27 @@
           <th>
             <Label label={contact.string.Employee} />
           </th>
-          {#each [...Array(daysInMonth(currentDate)).keys()] as dayOfMonth}
-            {@const day = getDay(new Date(startDate), dayOfMonth)}
-            <th class:today={areDatesEqual(todayDate, day)} class:weekend={isWeekend(day)}>
-              <div class="cursor-pointer uppercase flex-col-center">
-                <div class="flex-center">{getWeekDayName(day, 'short')}</div>
-                <div class="flex-center">{day.getDate()}</div>
-              </div>
-            </th>
+          {#each values as value}
+            {#if mode === CalendarMode.Year}
+              {@const month = getMonth(currentDate, value)}
+              <th
+                class="fixed"
+                class:today={month.getFullYear() === todayDate.getFullYear() &&
+                  month.getMonth() === todayDate.getMonth()}
+              >
+                <div class="cursor-pointer uppercase flex-col-center">
+                  <div class="flex-center">{getMonthName(month)}</div>
+                </div>
+              </th>
+            {:else}
+              {@const day = getDay(new Date(startDate), value)}
+              <th class:today={areDatesEqual(todayDate, day)} class:weekend={isWeekend(day)}>
+                <div class="cursor-pointer uppercase flex-col-center">
+                  <div class="flex-center">{getWeekDayName(day, 'short')}</div>
+                  <div class="flex-center">{day.getDate()}</div>
+                </div>
+              </th>
+            {/if}
           {/each}
         </tr>
       </thead>
@@ -171,21 +230,36 @@
             <td>
               <EmployeePresenter value={employee} />
             </td>
-            {#each [...Array(daysInMonth(currentDate)).keys()] as dayOfMonth}
-              {@const date = getDay(new Date(startDate), dayOfMonth)}
-              {@const requests = getRequests(employee._id, date)}
-              {@const editable = isEditable(employee)}
-              <td
-                class:today={areDatesEqual(todayDate, date)}
-                class:weekend={isWeekend(date)}
-                class:cursor-pointer={editable}
-                use:tooltip={getTooltip(employee, date)}
-                on:click={(e) => createRequest(e, date, employee)}
-              >
-                {#if requests.length}
-                  <ScheduleRequests {requests} {date} {editable} />
-                {/if}
-              </td>
+            {#each values as value}
+              {#if mode === CalendarMode.Year}
+                {@const month = getMonth(currentDate, value)}
+                {@const requests = getRequests(employee._id, month)}
+                <td
+                  class:today={month.getFullYear() === todayDate.getFullYear() &&
+                    month.getMonth() === todayDate.getMonth()}
+                  class="fixed"
+                  use:tooltip={getTooltip(employee, month)}
+                >
+                  <div class="flex-center">
+                    {getTotal(requests)}
+                  </div>
+                </td>
+              {:else}
+                {@const date = getDay(new Date(startDate), value)}
+                {@const requests = getRequests(employee._id, date)}
+                {@const editable = isEditable(employee)}
+                <td
+                  class:today={areDatesEqual(todayDate, date)}
+                  class:weekend={isWeekend(date)}
+                  class:cursor-pointer={editable}
+                  use:tooltip={getTooltip(employee, date)}
+                  on:click={(e) => createRequest(e, date, employee)}
+                >
+                  {#if requests.length}
+                    <ScheduleRequests {requests} {date} {editable} />
+                  {/if}
+                </td>
+              {/if}
             {/each}
           </tr>
         {/each}
@@ -209,6 +283,9 @@
     th {
       width: auto;
       min-width: 1rem;
+      &.fixed {
+        width: 5rem;
+      }
       &:first-child {
         width: 15rem;
         padding: 0.5rem;

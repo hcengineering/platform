@@ -16,7 +16,7 @@
   import { WithLookup } from '@anticrm/core'
   import { getResource, translate } from '@anticrm/platform'
   import { createQuery, getClient } from '@anticrm/presentation'
-  import { closePopup, Icon, IconArrowLeft, Label } from '@anticrm/ui'
+  import ui, { Button, closePopup, Component, Icon, IconArrowLeft, Label } from '@anticrm/ui'
   import { Action, ViewContext } from '@anticrm/view'
   import { onMount } from 'svelte'
   import { filterActions, getSelection } from '../actions'
@@ -25,18 +25,22 @@
   import ActionContext from './ActionContext.svelte'
   import { ListView } from '@anticrm/ui'
   import ObjectPresenter from './ObjectPresenter.svelte'
+  import { tick } from 'svelte'
 
   export let viewContext: ViewContext
 
   let search: string = ''
   let actions: WithLookup<Action>[] = []
-  let input: HTMLInputElement
+  let input: HTMLInputElement | undefined
 
   const query = createQuery()
 
   query.query(
     view.class.Action,
-    {},
+    {
+      // Disable popup actions for now
+      // actionPopup: { $exists: false }
+    },
     (res) => {
       actions = res
     },
@@ -46,12 +50,6 @@
       }
     }
   )
-
-  const targetQuery = createQuery()
-
-  targetQuery.query(view.class.Action, {}, (res) => {
-    actions = res
-  })
 
   let supportedActions: WithLookup<Action>[] = []
   let filteredActions: WithLookup<Action>[] = []
@@ -107,21 +105,27 @@
   let list: ListView
   /* eslint-disable no-undef */
 
+  let activeAction: Action | undefined
+
   async function handleSelection (evt: Event, selection: number): Promise<void> {
     const action = filteredActions[selection]
+    if (action.actionPopup !== undefined) {
+      activeAction = action
+      return
+    }
     const docs = getSelection($focusStore, $selectionStore)
     if (action.input === 'focus') {
       const impl = await getResource(action.action)
       if (impl !== undefined) {
         closePopup()
-        impl(docs[0], evt, action.actionProps)
+        impl(docs[0], evt, { ...action.actionProps, action })
       }
     }
     if (action.input === 'selection' || action.input === 'any' || action.input === 'none') {
       const impl = await getResource(action.action)
       if (impl !== undefined) {
         closePopup()
-        impl(docs, evt, action.actionProps)
+        impl(docs, evt, { ...action.actionProps, action })
       }
     }
   }
@@ -176,7 +180,7 @@
 />
 
 <div class="selectPopup width-40" style:width="15rem" on:keydown={onKeydown}>
-  <div class="mt-2 ml-2">
+  <div class="mt-2 ml-2 flex-between">
     {#if $selectionStore.length > 0}
       <div class="item-box">
         {$selectionStore.length} items
@@ -191,64 +195,93 @@
         />
       </div>
     {/if}
+    {#if activeAction && activeAction?.actionPopup !== undefined}
+      <div class="mt-2 mb-2 mr-2">
+        <Button
+          icon={IconArrowLeft}
+          label={ui.string.Back}
+          on:click={() => {
+            activeAction = undefined
+          }}
+          width={'fit-content'}
+        />
+      </div>
+    {/if}
   </div>
-  <div class="header">
-    <input bind:this={input} type="text" bind:value={search} placeholder={phTraslate} />
-  </div>
-  <div class="scroll">
-    <div class="box">
-      <ListView
-        bind:this={list}
-        count={filteredActions.length}
-        bind:selection
-        on:click={(evt) => handleSelection(evt, evt.detail)}
-      >
-        <svelte:fragment slot="category" let:item>
-          {@const action = filteredActions[item]}
-          {#if item === 0 || (item > 0 && filteredActions[item - 1].$lookup?.category?.label !== action.$lookup?.category?.label)}
-            <!--Category for first item-->
-            {#if action.$lookup?.category}
-              <div class="category-box">
-                <Label label={action.$lookup.category.label} />
-              </div>
-            {/if}
-          {/if}
-        </svelte:fragment>
-        <svelte:fragment slot="item" let:item>
-          {@const action = filteredActions[item]}
-          <div class="flex-row-center flex-between flex-grow ml-2 p-3 text-base">
-            <div class="mr-4">
-              <Icon icon={action.icon ?? IconArrowLeft} size={'small'} />
-            </div>
-            <div class="flex-grow">
-              <Label label={action.label} />
-            </div>
-            <div class="mr-2 text-md flex-row-center">
-              {#if action.keyBinding}
-                {#each action.keyBinding as key, i}
-                  {#if i !== 0}
-                    <div class="ml-2 mr-2">or</div>
-                  {/if}
-                  <div class="flex-row-center">
-                    {#each formatKey(key) as k, jj}
-                      {#if jj !== 0}
-                        <div class="ml-1 mr-1">then</div>
-                      {/if}
-                      {#each k as kk, j}
-                        <div class="flex-center text-sm key-box">
-                          {kk}
-                        </div>
-                      {/each}
-                    {/each}
-                  </div>
-                {/each}
-              {/if}
-            </div>
-          </div>
-        </svelte:fragment>
-      </ListView>
+  {#if activeAction && activeAction?.actionPopup !== undefined}
+    <Component
+      is={activeAction?.actionPopup}
+      props={{
+        ...activeAction.actionProps,
+        value: getSelection($focusStore, $selectionStore),
+        width: 'full',
+        size: 'medium'
+      }}
+      on:close={async () => {
+        activeAction = undefined
+        await tick()
+        input?.focus()
+      }}
+    />
+  {:else}
+    <div class="header">
+      <input bind:this={input} type="text" bind:value={search} placeholder={phTraslate} />
     </div>
-  </div>
+    <div class="scroll">
+      <div class="box">
+        <ListView
+          bind:this={list}
+          count={filteredActions.length}
+          bind:selection
+          on:click={(evt) => handleSelection(evt, evt.detail)}
+        >
+          <svelte:fragment slot="category" let:item>
+            {@const action = filteredActions[item]}
+            {#if item === 0 || (item > 0 && filteredActions[item - 1].$lookup?.category?.label !== action.$lookup?.category?.label)}
+              <!--Category for first item-->
+              {#if action.$lookup?.category}
+                <div class="category-box">
+                  <Label label={action.$lookup.category.label} />
+                </div>
+              {/if}
+            {/if}
+          </svelte:fragment>
+          <svelte:fragment slot="item" let:item>
+            {@const action = filteredActions[item]}
+            <div class="flex-row-center flex-between flex-grow ml-2 p-3 text-base">
+              <div class="mr-4">
+                <Icon icon={action.icon ?? IconArrowLeft} size={'small'} />
+              </div>
+              <div class="flex-grow">
+                <Label label={action.label} />
+              </div>
+              <div class="mr-2 text-md flex-row-center">
+                {#if action.keyBinding}
+                  {#each action.keyBinding as key, i}
+                    {#if i !== 0}
+                      <div class="ml-2 mr-2">or</div>
+                    {/if}
+                    <div class="flex-row-center">
+                      {#each formatKey(key) as k, jj}
+                        {#if jj !== 0}
+                          <div class="ml-1 mr-1">then</div>
+                        {/if}
+                        {#each k as kk, j}
+                          <div class="flex-center text-sm key-box">
+                            {kk}
+                          </div>
+                        {/each}
+                      {/each}
+                    </div>
+                  {/each}
+                {/if}
+              </div>
+            </div>
+          </svelte:fragment>
+        </ListView>
+      </div>
+    </div>
+  {/if}
 </div>
 
 <style lang="scss">

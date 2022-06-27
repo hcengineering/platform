@@ -160,7 +160,8 @@ export function createModel (builder: Builder): void {
     category: inventory.category.Inventory,
     target: inventory.class.Category,
     context: {
-      mode: ['context', 'browser']
+      mode: ['context', 'browser'],
+      group: 'associate'
     }
   })
 }

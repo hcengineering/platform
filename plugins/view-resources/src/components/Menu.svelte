@@ -18,7 +18,7 @@
   import type { Asset } from '@anticrm/platform'
   import { getClient } from '@anticrm/presentation'
   import { Action, Menu } from '@anticrm/ui'
-  import type { ViewContextType } from '@anticrm/view'
+  import type { ActionGroup, ViewContextType } from '@anticrm/view'
   import { getActions, invokeAction } from '../actions'
 
   export let object: Doc | Doc[]
@@ -31,15 +31,29 @@
 
   let loaded = 0
 
+  const order: Record<ActionGroup, number> = {
+    create: 1,
+    edit: 2,
+    copy: 3,
+    associate: 4,
+    tools: 5,
+    other: 6
+  }
+
   getActions(client, object, baseMenuClass, mode).then((result) => {
-    actions = result.map((a) => ({
-      label: a.label,
-      icon: a.icon as Asset,
-      inline: a.inline,
-      action: async (_: any, evt: Event) => {
-        invokeAction(object, evt, a.action, a.actionProps)
-      }
-    }))
+    actions = result
+      .sort((a, b) => order[a.context.group ?? 'other'] - order[b.context.group ?? 'other'])
+      .map((a) => ({
+        label: a.label,
+        icon: a.icon as Asset,
+        inline: a.inline,
+        group: a.context.group ?? 'other',
+        action: async (_: any, evt: Event) => {
+          invokeAction(object, evt, a.action, a.actionProps)
+        },
+        component: a.actionPopup,
+        props: { ...a.actionProps, value: object }
+      }))
     loaded = 1
   })
 

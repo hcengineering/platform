@@ -38,6 +38,7 @@
     "DaysAfter": "{days, plural, =1 {через день} other {через # дней}}",
     "NoActionsDefined": "Нет доступных действий",
     "Incoming": "Входящие",
-    "HoursLabel": "Часы"
+    "HoursLabel": "Часы",
+    "Back": "Назад"
   }
 }

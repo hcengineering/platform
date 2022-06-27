@@ -63,7 +63,8 @@ export const uis = plugin(uiId, {
     DaysAfter: '' as IntlString,
     NoActionsDefined: '' as IntlString,
     Incoming: '' as IntlString,
-    HoursLabel: '' as IntlString
+    HoursLabel: '' as IntlString,
+    Back: '' as IntlString
   },
   metadata: {
     DefaultApplication: '' as Metadata<AnyComponent>

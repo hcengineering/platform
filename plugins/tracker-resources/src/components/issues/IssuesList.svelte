@@ -195,7 +195,7 @@
         {#each groupedIssues[category] as docObject (docObject._id)}
           <div
             bind:this={objectRefs[combinedGroupedIssues.findIndex((x) => x === docObject)]}
-            class="listGrid antiList__row row gap-2"
+            class="listGrid antiList__row row gap-2 flex-grow"
             class:checking={selectedObjectIdsSet.has(docObject._id)}
             class:mListGridFixed={selectedRowIndex === combinedGroupedIssues.findIndex((x) => x === docObject)}
             class:mListGridSelected={selectedRowIndex === combinedGroupedIssues.findIndex((x) => x === docObject)}
@@ -254,7 +254,6 @@
                   value={getObjectValue(attributeModel.key, docObject) ?? ''}
                   {...attributeModel.props}
                 />
-                <div class="grow-cell" />
               {:else if attributeModel.props?.fixed}
                 <FixedColumn
                   width={propsWidth[attributeModel.key]}
