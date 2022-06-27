@@ -44,6 +44,8 @@
   const newAttachments: Set<Ref<Attachment>> = new Set<Ref<Attachment>>()
   const removedAttachments: Set<Attachment> = new Set<Attachment>()
 
+  let refContainer: HTMLElement
+
   $: objectId &&
     query.query(
       attachment.class.Attachment,
@@ -154,6 +156,18 @@
   }
 
   function pasteAction (evt: ClipboardEvent): void {
+    let t: HTMLElement | null = evt.target as HTMLElement
+    let allowed = false
+    while (t != null) {
+      t = t.parentElement
+      if (t === refContainer) {
+        allowed = true
+      }
+    }
+    if (!allowed) {
+      return
+    }
+
     const items = evt.clipboardData?.items ?? []
     for (const index in items) {
       const item = items[index]
@@ -169,46 +183,48 @@
 
 <svelte:window on:paste={pasteAction} />
 
-<input
-  bind:this={inputFile}
-  multiple
-  type="file"
-  name="file"
-  id="file"
-  style="display: none"
-  on:change={fileSelected}
-/>
-<div
-  class="container"
-  on:dragover|preventDefault={() => {}}
-  on:dragleave={() => {}}
-  on:drop|preventDefault|stopPropagation={fileDrop}
->
-  {#if attachments.size}
-    <div class="flex-row-center list scroll-divider-color">
-      {#each Array.from(attachments.values()) as attachment}
-        <div class="item flex">
-          <AttachmentPresenter
-            value={attachment}
-            removable
-            on:remove={(result) => {
-              if (result !== undefined) removeAttachment(attachment)
-            }}
-          />
-        </div>
-      {/each}
-    </div>
-  {/if}
-  <ReferenceInput
-    bind:this={refInput}
-    {content}
-    {showSend}
-    on:message={onMessage}
-    withoutTopBorder={attachments.size > 0}
-    on:attach={() => {
-      inputFile.click()
-    }}
+<div bind:this={refContainer}>
+  <input
+    bind:this={inputFile}
+    multiple
+    type="file"
+    name="file"
+    id="file"
+    style="display: none"
+    on:change={fileSelected}
   />
+  <div
+    class="container"
+    on:dragover|preventDefault={() => {}}
+    on:dragleave={() => {}}
+    on:drop|preventDefault|stopPropagation={fileDrop}
+  >
+    {#if attachments.size}
+      <div class="flex-row-center list scroll-divider-color">
+        {#each Array.from(attachments.values()) as attachment}
+          <div class="item flex">
+            <AttachmentPresenter
+              value={attachment}
+              removable
+              on:remove={(result) => {
+                if (result !== undefined) removeAttachment(attachment)
+              }}
+            />
+          </div>
+        {/each}
+      </div>
+    {/if}
+    <ReferenceInput
+      bind:this={refInput}
+      {content}
+      {showSend}
+      on:message={onMessage}
+      withoutTopBorder={attachments.size > 0}
+      on:attach={() => {
+        inputFile.click()
+      }}
+    />
+  </div>
 </div>
 
 <style lang="scss">
