@@ -33,6 +33,7 @@
     navigate,
     PanelInstance,
     Popup,
+    resizeObserver,
     showPopup,
     TooltipInstance
   } from '@anticrm/ui'
@@ -462,7 +463,9 @@
     <div
       class="antiPanel-component antiComponent border-left"
       bind:this={contentPanel}
-      bind:clientWidth={componentWidth}
+      use:resizeObserver={(element) => {
+        componentWidth = element.clientWidth
+      }}
     >
       {#if currentApplication && currentApplication.component}
         <Component is={currentApplication.component} props={{ currentSpace }} />
@@ -479,7 +482,13 @@
     </div>
     {#if asideId && navigatorModel?.aside !== undefined}
       <div class="splitter" class:hovered={isResizing} on:mousedown={startResize} />
-      <div class="antiPanel-component antiComponent aside" bind:clientWidth={asideWidth} bind:this={aside}>
+      <div
+        class="antiPanel-component antiComponent aside"
+        use:resizeObserver={(element) => {
+          asideWidth = element.clientWidth
+        }}
+        bind:this={aside}
+      >
         <Component is={navigatorModel.aside} props={{ currentSpace, _id: asideId }} on:close={closeAside} />
       </div>
     {/if}

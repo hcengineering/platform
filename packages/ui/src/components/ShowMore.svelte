@@ -16,6 +16,7 @@
 <script lang="ts">
   import Label from './Label.svelte'
   import ui from '../plugin'
+  import { resizeObserver } from '../resize'
 
   export let limit: number = 240
   export let ignore: boolean = false
@@ -35,7 +36,9 @@
 
 <div class="relative clear-mins">
   <div
-    bind:clientHeight={cHeight}
+    use:resizeObserver={(element) => {
+      cHeight = element.clientHeight
+    }}
     class="showMore-content"
     class:crop={!ignore && crop}
     class:full={bigger && !ignore && !crop}

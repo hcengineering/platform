@@ -17,7 +17,7 @@
   import { createQuery, getClient, MessageViewer } from '@anticrm/presentation'
   import { Issue, IssueStatus, Team } from '@anticrm/tracker'
   import tracker from '../../plugin'
-  import { Label } from '@anticrm/ui'
+  import { Label, resizeObserver } from '@anticrm/ui'
   import AssigneeEditor from './AssigneeEditor.svelte'
   import PriorityEditor from './PriorityEditor.svelte'
   import StatusEditor from './StatusEditor.svelte'
@@ -94,7 +94,13 @@
       <Label label={tracker.string.Description} />:
     </div>
     {#if issue.description}
-      <div class="descr ml-2" class:mask={cHeight >= limit} bind:clientHeight={cHeight}>
+      <div
+        class="descr ml-2"
+        class:mask={cHeight >= limit}
+        use:resizeObserver={(element) => {
+          cHeight = element.clientHeight
+        }}
+      >
         <MessageViewer message={issue.description} />
       </div>
     {:else}

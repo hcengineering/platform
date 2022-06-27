@@ -14,6 +14,7 @@
 -->
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte'
+  import { resizeObserver } from '../resize'
 
   export let padding: string | undefined = undefined
   export let autoscroll: boolean = false
@@ -150,7 +151,9 @@
 <div class="scroller-container" class:bottomStart>
   <div
     bind:this={divScroll}
-    bind:clientHeight={divHeight}
+    use:resizeObserver={(element) => {
+      divHeight = element.clientHeight
+    }}
     class="scroll relative"
     class:tableFade
     class:antiNav-topFade={mask === 'top'}
@@ -158,7 +161,16 @@
     class:antiNav-bothFade={mask === 'both'}
     class:antiNav-noneFade={mask === 'none'}
   >
-    <div bind:this={divBox} class="box" style:padding bind:clientHeight={boxHeight} on:dragover on:drop>
+    <div
+      bind:this={divBox}
+      class="box"
+      style:padding
+      use:resizeObserver={(element) => {
+        boxHeight = element.clientHeight
+      }}
+      on:dragover
+      on:drop
+    >
       <slot />
     </div>
   </div>

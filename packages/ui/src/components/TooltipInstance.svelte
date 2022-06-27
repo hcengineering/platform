@@ -14,6 +14,7 @@
 -->
 <script lang="ts">
   import { afterUpdate, onDestroy } from 'svelte'
+  import { resizeObserver } from '../resize'
   import { closeTooltip, tooltipstore as tooltip } from '../tooltips'
   import type { TooltipAlignment } from '../types'
   import Component from './Component.svelte'
@@ -184,7 +185,14 @@
   }}
 />
 {#if $tooltip.component && $tooltip.kind !== 'submenu'}
-  <div class="popup-tooltip" class:doublePadding={$tooltip.label} bind:clientWidth={clWidth} bind:this={tooltipHTML}>
+  <div
+    class="popup-tooltip"
+    class:doublePadding={$tooltip.label}
+    use:resizeObserver={(element) => {
+      clWidth = element.clientWidth
+    }}
+    bind:this={tooltipHTML}
+  >
     {#if $tooltip.label}<div class="fs-title mb-4">
         <Label label={$tooltip.label} params={$tooltip.props ?? {}} />
       </div>{/if}
@@ -208,7 +216,13 @@
     <Label label={$tooltip.label} params={$tooltip.props ?? {}} />
   </div>
 {:else if $tooltip.kind === 'submenu'}
-  <div class="submenu-container {dir ?? ''}" bind:clientWidth={clWidth} bind:this={tooltipHTML}>
+  <div
+    class="submenu-container {dir ?? ''}"
+    use:resizeObserver={(element) => {
+      clWidth = element.clientWidth
+    }}
+    bind:this={tooltipHTML}
+  >
     {#if typeof $tooltip.component === 'string'}
       <Component
         is={$tooltip.component}

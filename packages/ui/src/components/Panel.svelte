@@ -14,11 +14,12 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
+  import { resizeObserver } from '../resize'
+  import Button from './Button.svelte'
   import IconClose from './icons/Close.svelte'
   import IconDetails from './icons/Details.svelte'
   import IconScale from './icons/Scale.svelte'
   import IconScaleFull from './icons/ScaleFull.svelte'
-  import Button from './Button.svelte'
 
   export let innerWidth: number = 0
   export let panelWidth: number = 0
@@ -43,7 +44,12 @@
 </script>
 
 <svelte:window bind:innerWidth={docWidth} />
-<div class="popupPanel" bind:clientWidth={panelWidth}>
+<div
+  class="popupPanel"
+  use:resizeObserver={(element) => {
+    panelWidth = element.clientWidth
+  }}
+>
   <div class="popupPanel-title">
     <Button
       icon={IconClose}
@@ -84,7 +90,12 @@
     </div>
   </div>
   <div class="popupPanel-body" class:asideShown>
-    <div class="popupPanel-body__main" bind:clientWidth={innerWidth}>
+    <div
+      class="popupPanel-body__main"
+      use:resizeObserver={(element) => {
+        innerWidth = element.clientWidth
+      }}
+    >
       {#if $$slots.header && isHeader}
         <div class="popupPanel-body__main-header bottom-divider">
           <slot name="header" />

@@ -14,6 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { resizeObserver } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
 
   export let width: number = 0
@@ -32,7 +33,9 @@
 <div
   class="flex-no-shrink"
   style="{justify !== '' ? `text-align: ${justify}; ` : ''}min-width: var(--fixed-{key});"
-  bind:clientWidth={cWidth}
+  use:resizeObserver={(element) => {
+    cWidth = element.clientWidth
+  }}
 >
   <slot />
 </div>
