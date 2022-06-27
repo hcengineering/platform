@@ -112,6 +112,7 @@
     "CopyIssueUrl": "Копировать URL-адрес задачи в буфер обмена",
     "CopyIssueId": "Копировать ID задачи в буфер обмена",
     "CopyIssueBranch": "Копировать имя ветки Git в буфер обмена",
+    "CopyIssueTitle": "Копировать имя задачи в буфер обмена",
     "AssetLabel": "Asset",
     "AddToProject": "Добавить в проект\u2026",
     "MoveToProject": "Переместить в проект\u2026",

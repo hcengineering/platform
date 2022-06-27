@@ -112,6 +112,7 @@
     "CopyIssueUrl": "Copy Issue URL to clipboard",
     "CopyIssueId": "Copy Issue ID to clipboard",
     "CopyIssueBranch": "Copy Git branch name to clipboard",
+    "CopyIssueTitle": "Copy Issue title to clipboard",
     "AssetLabel": "Asset",
     "AddToProject": "Add to project\u2026",
     "MoveToProject": "Move to project\u2026",

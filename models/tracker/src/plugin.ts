@@ -20,7 +20,7 @@ import { IntlString, mergeIds, Resource } from '@anticrm/platform'
 import { trackerId } from '@anticrm/tracker'
 import tracker from '@anticrm/tracker-resources/src/plugin'
 import type { AnyComponent } from '@anticrm/ui/src/types'
-import { ViewletDescriptor } from '@anticrm/view'
+import { ViewAction, ViewletDescriptor } from '@anticrm/view'
 import { Application } from '@anticrm/workbench'
 
 export default mergeIds(trackerId, tracker, {
@@ -49,5 +49,8 @@ export default mergeIds(trackerId, tracker, {
   completion: {
     IssueQuery: '' as Resource<ObjectSearchFactory>,
     IssueCategory: '' as Ref<ObjectSearchCategory>
+  },
+  actionImpl: {
+    CopyToClipboard: '' as ViewAction
   }
 })

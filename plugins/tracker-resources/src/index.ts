@@ -56,7 +56,7 @@ import SetParentIssueActionPopup from './components/SetParentIssueActionPopup.sv
 import Views from './components/views/Views.svelte'
 import KanbanView from './components/issues/KanbanView.svelte'
 import tracker from './plugin'
-import { getIssueId, getIssueTitle } from './utils'
+import { copyToClipboard, getIssueId, getIssueTitle } from './utils'
 import CreateIssue from './components/CreateIssue.svelte'
 
 export async function queryIssue<D extends Issue> (
@@ -107,6 +107,7 @@ export async function queryIssue<D extends Issue> (
     component: IssueItem
   }))
 }
+
 export default async (): Promise<Resources> => ({
   component: {
     NopeComponent,
@@ -153,5 +154,8 @@ export default async (): Promise<Resources> => ({
   },
   function: {
     IssueTitleProvider: getIssueTitle
+  },
+  actionImpl: {
+    CopyToClipboard: copyToClipboard
   }
 })

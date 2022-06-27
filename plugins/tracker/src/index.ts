@@ -280,7 +280,10 @@ export default plugin(trackerId, {
     SetStatus: '' as Ref<Action>,
     SetPriority: '' as Ref<Action>,
     SetAssignee: '' as Ref<Action>,
-    SetProject: '' as Ref<Action>
+    SetProject: '' as Ref<Action>,
+    CopyIssueId: '' as Ref<Action>,
+    CopyIssueTitle: '' as Ref<Action>,
+    CopyIssueLink: '' as Ref<Action>
   },
   team: {
     DefaultTeam: '' as Ref<Team>

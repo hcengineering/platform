@@ -783,4 +783,67 @@ export function createModel (builder: Builder): void {
     },
     tracker.action.SetDueDate
   )
+  createAction(
+    builder,
+    {
+      action: tracker.actionImpl.CopyToClipboard,
+      actionProps: {
+        type: 'id'
+      },
+      label: tracker.string.CopyIssueId,
+      icon: tracker.icon.CopyID,
+      keyBinding: [],
+      input: 'none',
+      category: tracker.category.Tracker,
+      target: tracker.class.Issue,
+      context: {
+        mode: ['context', 'browser'],
+        application: tracker.app.Tracker,
+        group: 'copy'
+      }
+    },
+    tracker.action.CopyIssueId
+  )
+  createAction(
+    builder,
+    {
+      action: tracker.actionImpl.CopyToClipboard,
+      actionProps: {
+        type: 'title'
+      },
+      label: tracker.string.CopyIssueTitle,
+      icon: tracker.icon.CopyBranch,
+      keyBinding: [],
+      input: 'none',
+      category: tracker.category.Tracker,
+      target: tracker.class.Issue,
+      context: {
+        mode: ['context', 'browser'],
+        application: tracker.app.Tracker,
+        group: 'copy'
+      }
+    },
+    tracker.action.CopyIssueTitle
+  )
+  createAction(
+    builder,
+    {
+      action: tracker.actionImpl.CopyToClipboard,
+      actionProps: {
+        type: 'link'
+      },
+      label: tracker.string.CopyIssueUrl,
+      icon: tracker.icon.CopyURL,
+      keyBinding: [],
+      input: 'none',
+      category: tracker.category.Tracker,
+      target: tracker.class.Issue,
+      context: {
+        mode: ['context', 'browser'],
+        application: tracker.app.Tracker,
+        group: 'copy'
+      }
+    },
+    tracker.action.CopyIssueLink
+  )
 }
