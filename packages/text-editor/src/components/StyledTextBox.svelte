@@ -163,9 +163,4 @@
       border-color: var(--theme-bg-focused-border);
     }
   }
-  // .text {
-  //   overflow: auto;
-  //   flex-grow: 1;
-  //   line-height: 150%;
-  // }
 </style>

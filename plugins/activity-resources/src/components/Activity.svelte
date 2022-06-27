@@ -135,20 +135,6 @@
 {/if}
 
 <style lang="scss">
-  // .header {
-  //   display: flex;
-  //   align-items: center;
-  //   min-height: 2.5rem;
-  //   height: 2.5rem;
-  //   background-color: var(--accent-bg-color);
-  //   border: 1px solid var(--divider-color);
-  //   border-radius: 0.125rem;
-  // }
-  // .fixHeader {
-  //   margin-top: .5rem;
-  //   background-color: var(--accent-bg-color);
-  //   border-color: transparent;
-  // }
   .icon {
     margin-left: 1rem;
     height: 2rem;
