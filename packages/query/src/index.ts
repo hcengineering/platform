@@ -438,8 +438,10 @@ export class LiveQuery extends TxProcessor implements Client {
           }
         } else {
           if (obj[key] === tx.objectId) {
-            TxProcessor.updateDoc2Doc(obj.$lookup[key], tx)
-            needCallback = true
+            if (obj.$lookup[key] !== undefined) {
+              TxProcessor.updateDoc2Doc(obj.$lookup[key], tx)
+              needCallback = true
+            }
           }
         }
       }
