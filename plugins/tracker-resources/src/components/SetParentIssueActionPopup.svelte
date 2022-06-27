@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AttachedData, DocumentQuery, FindOptions, SortingOrder } from '@anticrm/core'
+  import { AttachedData, FindOptions, Ref, SortingOrder } from '@anticrm/core'
   import { getClient, ObjectPopup } from '@anticrm/presentation'
   import { calcRank, Issue, IssueStatusCategory } from '@anticrm/tracker'
   import { Icon } from '@anticrm/ui'
@@ -25,9 +25,7 @@
   export let width: 'medium' | 'large' | 'full' = 'large'
 
   const client = getClient()
-
   const dispatch = createEventDispatcher()
-  const docQuery: DocumentQuery<Issue> = '_id' in value ? { 'parents.parentId': { $nin: [value._id] } } : {}
   const options: FindOptions<Issue> = {
     lookup: { status: tracker.class.IssueStatus, space: tracker.class.Team },
     sort: { modifiedOn: SortingOrder.Descending }
@@ -44,7 +42,12 @@
   async function onClose ({ detail: parentIssue }: CustomEvent<Issue | undefined | null>) {
     const vv = Array.isArray(value) ? value : [value]
     for (const docValue of vv) {
-      if ('_id' in docValue && parentIssue !== undefined && parentIssue?._id !== docValue.attachedTo) {
+      if (
+        '_id' in docValue &&
+        parentIssue !== undefined &&
+        parentIssue?._id !== docValue.attachedTo &&
+        parentIssue?._id !== docValue._id
+      ) {
         let rank: string | null = null
 
         if (parentIssue) {
@@ -69,6 +72,17 @@
 
   $: selected = !Array.isArray(value) ? ('attachedTo' in value ? value.attachedTo : undefined) : undefined
   $: ignoreObjects = !Array.isArray(value) ? ('_id' in value ? [value._id] : []) : undefined
+  $: docQuery = {
+    'parents.parentId': {
+      $nin: [
+        ...new Set(
+          (Array.isArray(value) ? value : [value])
+            .map((issue) => ('_id' in issue ? issue._id : null))
+            .filter((x): x is Ref<Issue> => x !== null)
+        )
+      ]
+    }
+  }
   $: updateIssueStatusCategories()
 </script>
 
