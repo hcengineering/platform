@@ -25,7 +25,7 @@
   export let editable: boolean | undefined = undefined
   export let kind: ButtonKind = 'link-bordered'
   export let size: ButtonSize = 'small'
-  export let length: 'short' | 'full' = 'short'
+  export let length: 'tiny' | 'short' | 'full' = 'short'
   export let shape: 'circle' | undefined = 'circle'
   export let object: Doc
 

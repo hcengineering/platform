@@ -38,6 +38,8 @@ import TodoItemsPopup from './components/todos/TodoItemsPopup.svelte'
 import Todos from './components/todos/Todos.svelte'
 import TodoStatePresenter from './components/todos/TodoStatePresenter.svelte'
 
+export { default as AssigneePresenter } from './components/AssigneePresenter.svelte'
+
 async function editStatuses (object: SpaceWithStates): Promise<void> {
   showPopup(EditStatuses, { _id: object._id, spaceClass: object._class }, 'float')
 }

@@ -1,6 +1,12 @@
 # Changelog
 
-## 0.6.29 (upcoming)
+## 0.6.30 (upcoming)
+
+HR:
+
+- Allow to change assignee in Kanban
+
+## 0.6.29
 
 Platform:
 
