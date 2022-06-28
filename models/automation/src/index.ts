@@ -26,10 +26,7 @@ import automation, {
 import { Class, Doc, Domain, Ref } from '@anticrm/core'
 import { Builder, Mixin, Model, Prop, TypeString, UX } from '@anticrm/model'
 import core, { TAttachedDoc, TClass } from '@anticrm/model-core'
-import setting from '@anticrm/setting'
 import view from '@anticrm/view'
-
-import plugin from './plugin'
 
 export const DOMAIN_AUTOMATION = 'automation' as Domain
 
@@ -71,6 +68,8 @@ export function createModel (builder: Builder): void {
     },
     automation.space.Automation
   )
+
+  /** Disable Automation UI
   builder.createDoc(
     setting.class.SettingsCategory,
     core.space.Model,
@@ -83,6 +82,7 @@ export function createModel (builder: Builder): void {
     },
     plugin.ids.Automation
   )
+   */
 
   // TODO: Enable when server triggers are added
   builder.mixin(automation.class.Automation, core.class.Class, view.mixin.IgnoreActions, {
