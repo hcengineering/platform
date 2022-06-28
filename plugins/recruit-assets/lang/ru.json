@@ -89,7 +89,9 @@
     "GotoAssigned": "Перейти к моим назначениям",
     "GotoApplicants": "Перейти к кандидатам",
     "GotoRecruitApplication": "Перейти к Приложению Рекрутинг",
-    "AddDropHere": "Добавить или перетянуть резюме"
+    "AddDropHere": "Добавить или перетянуть резюме",
+    "CopyId": "Копировать ID",
+    "CopyLink": "Копировать ссылку"
   },
   "status": {
     "TalentRequired": "Пожалуйста выберите таланта",

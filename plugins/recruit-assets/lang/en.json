@@ -87,7 +87,9 @@
     "GotoAssigned": "Go to my Assigned",
     "GotoApplicants": "Go to Applications",
     "GotoRecruitApplication": "Switch to Recruit Application",
-    "AddDropHere": "Add or drop resume"
+    "AddDropHere": "Add or drop resume",
+    "CopyId": "Copy ID",
+    "CopyLink": "Copy link"
   },
   "status": {
     "TalentRequired": "Please select talent",

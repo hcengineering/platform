@@ -647,6 +647,70 @@ export function createModel (builder: Builder): void {
       group: 'edit'
     }
   })
+  // TODO: fix icons
+  createAction(
+    builder,
+    {
+      action: recruit.actionImpl.CopyToClipboard,
+      actionProps: {
+        type: 'id'
+      },
+      label: recruit.string.CopyId,
+      icon: recruit.icon.Application,
+      keyBinding: [],
+      input: 'none',
+      category: recruit.category.Recruit,
+      target: recruit.class.Applicant,
+      context: {
+        mode: ['context', 'browser'],
+        application: recruit.app.Recruit,
+        group: 'copy'
+      }
+    },
+    recruit.action.CopyApplicationId
+  )
+  createAction(
+    builder,
+    {
+      action: recruit.actionImpl.CopyToClipboard,
+      actionProps: {
+        type: 'link'
+      },
+      label: recruit.string.CopyLink,
+      icon: recruit.icon.Application,
+      keyBinding: [],
+      input: 'none',
+      category: recruit.category.Recruit,
+      target: recruit.class.Applicant,
+      context: {
+        mode: ['context', 'browser'],
+        application: recruit.app.Recruit,
+        group: 'copy'
+      }
+    },
+    recruit.action.CopyApplicationLink
+  )
+  createAction(
+    builder,
+    {
+      action: recruit.actionImpl.CopyToClipboard,
+      actionProps: {
+        type: 'link'
+      },
+      label: recruit.string.CopyLink,
+      icon: recruit.icon.Application,
+      keyBinding: [],
+      input: 'none',
+      category: recruit.category.Recruit,
+      target: contact.class.Person,
+      context: {
+        mode: ['context', 'browser'],
+        application: recruit.app.Recruit,
+        group: 'copy'
+      }
+    },
+    recruit.action.CopyCandidateLink
+  )
 }
 
 export { recruitOperation } from './migration'
