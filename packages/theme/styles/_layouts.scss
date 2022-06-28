@@ -92,6 +92,11 @@ table {
   border-spacing: 0;
 }
 
+li {
+  color: var(--dark-color);
+  p { color: var(--content-color); }
+}
+
 /* Common */
 * {
   --modal-padding: 1rem;
