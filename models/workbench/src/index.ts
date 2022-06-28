@@ -30,6 +30,7 @@ export { Application }
 export class TApplication extends TDoc implements Application {
   label!: IntlString
   icon!: Asset
+  alias!: string
   hidden!: boolean
 }
 
@@ -53,7 +54,7 @@ export function createNavigateAction (
   label: IntlString,
   config: {
     mode: 'app' | 'special' | 'space'
-    application: Ref<Application>
+    application: string
     special?: string
     space?: Ref<Space>
     spaceClass?: Ref<Class<Space>>

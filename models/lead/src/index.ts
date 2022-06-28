@@ -16,7 +16,7 @@
 // To help typescript locate view plugin properly
 import type { Employee } from '@anticrm/contact'
 import { Class, Doc, FindOptions, IndexKind, Ref } from '@anticrm/core'
-import type { Customer, Funnel, Lead } from '@anticrm/lead'
+import { Customer, Funnel, Lead, leadId } from '@anticrm/lead'
 import { Builder, Collection, Index, Mixin, Model, Prop, TypeRef, TypeString, TypeMarkup, UX } from '@anticrm/model'
 import attachment from '@anticrm/model-attachment'
 import chunter from '@anticrm/model-chunter'
@@ -101,6 +101,7 @@ export function createModel (builder: Builder): void {
     {
       label: lead.string.LeadApplication,
       icon: lead.icon.LeadApplication,
+      alias: leadId,
       hidden: false,
       navigatorModel: {
         specials: [
@@ -262,7 +263,7 @@ export function createModel (builder: Builder): void {
     action: workbench.actionImpl.Navigate,
     actionProps: {
       mode: 'app',
-      application: lead.app.Lead as Ref<Application>
+      application: leadId
     },
     label: lead.string.GotoLeadApplication,
     icon: view.icon.ArrowRight,

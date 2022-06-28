@@ -40,7 +40,7 @@ import task, { TSpaceWithStates, TTask, actionTemplates } from '@anticrm/model-t
 import view, { createAction, actionTemplates as viewTemplates } from '@anticrm/model-view'
 import workbench, { Application, createNavigateAction } from '@anticrm/model-workbench'
 import { IntlString } from '@anticrm/platform'
-import { Applicant, Candidate, Candidates, Vacancy } from '@anticrm/recruit'
+import { Applicant, Candidate, Candidates, recruitId, Vacancy } from '@anticrm/recruit'
 import { KeyBinding } from '@anticrm/view'
 import setting from '@anticrm/setting'
 import recruit from './plugin'
@@ -159,6 +159,7 @@ export function createModel (builder: Builder): void {
     {
       label: recruit.string.RecruitApplication,
       icon: recruit.icon.RecruitApplication,
+      alias: recruitId,
       hidden: false,
       navigatorModel: {
         spaces: [],
@@ -586,7 +587,7 @@ export function createModel (builder: Builder): void {
     action: workbench.actionImpl.Navigate,
     actionProps: {
       mode: 'app',
-      application: recruit.app.Recruit as Ref<Application>,
+      application: recruitId,
       special: talentsId
     },
     label: recruit.string.GotoRecruitApplication,

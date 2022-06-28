@@ -28,6 +28,7 @@ import core, {
   TxResult,
   WithLookup
 } from '@anticrm/core'
+import { devModelId } from '@anticrm/devmodel'
 import { Builder } from '@anticrm/model'
 import { getMetadata, IntlString, Resources } from '@anticrm/platform'
 import view from '@anticrm/view'
@@ -155,6 +156,7 @@ export async function Hook (client: Client): Promise<Client> {
     {
       label: 'DevModel' as IntlString,
       icon: view.icon.Model,
+      alias: devModelId,
       hidden: false,
       navigatorModel: {
         spaces: [],

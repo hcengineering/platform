@@ -58,7 +58,7 @@
   setClient(client)
   NotificationClientImpl.getClient()
 
-  let currentApp: Ref<Application> | undefined
+  let currentAppAlias: string | undefined
   let currentSpace: Ref<Space> | undefined
   let currentSpecial: string | undefined
   let specialComponent: SpecialNavModel | undefined
@@ -157,14 +157,14 @@
   }
 
   async function syncLoc (loc: Location): Promise<void> {
-    const app = loc.path.length > 1 ? (loc.path[1] as Ref<Application>) : undefined
+    const app = loc.path.length > 1 ? loc.path[1] : undefined
     const space = loc.path.length > 2 ? (loc.path[2] as Ref<Space>) : undefined
     const special = loc.path.length > 3 ? loc.path[3] : undefined
 
-    if (currentApp !== app) {
+    if (currentAppAlias !== app) {
       clear(1)
-      currentApp = app
-      currentApplication = await client.findOne(workbench.class.Application, { _id: currentApp })
+      currentAppAlias = app
+      currentApplication = await client.findOne(workbench.class.Application, { alias: app })
       navigatorModel = currentApplication?.navigatorModel
     }
 
@@ -205,7 +205,7 @@
   function clear (level: number): void {
     switch (level) {
       case 1:
-        currentApp = undefined
+        currentAppAlias = undefined
         currentApplication = undefined
         navigatorModel = undefined
       // eslint-disable-next-line no-fallthrough
@@ -226,7 +226,7 @@
   }
 
   function navigateApp (app: Application): void {
-    if (currentApp === app._id) {
+    if (currentAppAlias === app.alias) {
       // Nothing to do.
       return
     }
@@ -234,7 +234,7 @@
 
     doNavigate([], undefined, {
       mode: 'app',
-      application: app._id
+      application: app.alias
     })
   }
 
@@ -394,7 +394,7 @@
       </div>
       <Applications
         {apps}
-        active={currentApp}
+        active={currentApplication?._id}
         on:active={(evt) => {
           navigateApp(evt.detail)
         }}

@@ -17,7 +17,7 @@
   import { getCurrentAccount } from '@anticrm/core'
   import login from '@anticrm/login'
   import { Avatar, createQuery, getClient } from '@anticrm/presentation'
-  import setting, { SettingsCategory } from '@anticrm/setting'
+  import setting, { SettingsCategory, settingId } from '@anticrm/setting'
   import {
     closePanel,
     closePopup,
@@ -57,7 +57,7 @@
     closePopup()
     closePanel()
     const loc = getCurrentLocation()
-    loc.path[1] = setting.ids.SettingApp
+    loc.path[1] = settingId
     loc.path[2] = sp.name
     loc.path.length = 3
     navigate(loc)
@@ -91,7 +91,7 @@
 
   function getURLCategory (sp: SettingsCategory): string {
     const loc = getCurrentLocation()
-    loc.path[1] = setting.ids.SettingApp
+    loc.path[1] = settingId
     loc.path[2] = sp.name
     loc.path.length = 3
     return locationToUrl(loc)

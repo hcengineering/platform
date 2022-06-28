@@ -14,7 +14,7 @@
 //
 
 import activity from '@anticrm/activity'
-import { Calendar, Event, Reminder } from '@anticrm/calendar'
+import { calendarId, Calendar, Event, Reminder } from '@anticrm/calendar'
 import { Employee } from '@anticrm/contact'
 import type { Domain, Markup, Ref, Timestamp } from '@anticrm/core'
 import { IndexKind } from '@anticrm/core'
@@ -104,6 +104,7 @@ export function createModel (builder: Builder): void {
     {
       label: calendar.string.ApplicationLabelCalendar,
       icon: calendar.icon.Calendar,
+      alias: calendarId,
       hidden: false,
       component: calendar.component.Events
     },

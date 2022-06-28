@@ -13,10 +13,11 @@
 // limitations under the License.
 //
 
-import type {
+import {
   Channel,
   ChannelProvider,
   Contact,
+  contactId,
   Employee,
   EmployeeAccount,
   Member,
@@ -168,6 +169,7 @@ export function createModel (builder: Builder): void {
     {
       label: contact.string.Contacts,
       icon: contact.icon.ContactApplication,
+      alias: contactId,
       hidden: false,
       component: contact.component.Contacts
     },

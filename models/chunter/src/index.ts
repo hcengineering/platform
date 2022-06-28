@@ -14,9 +14,10 @@
 //
 
 import activity from '@anticrm/activity'
-import type {
+import {
   Backlink,
   Channel,
+  chunterId,
   ChunterMessage,
   ChunterSpace,
   Comment,
@@ -324,6 +325,7 @@ export function createModel (builder: Builder): void {
     {
       label: chunter.string.ApplicationLabelChunter,
       icon: chunter.icon.Chunter,
+      alias: chunterId,
       hidden: false,
       navigatorModel: {
         specials: [

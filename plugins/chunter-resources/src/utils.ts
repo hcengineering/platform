@@ -1,4 +1,4 @@
-import { ChunterMessage } from '@anticrm/chunter'
+import { chunterId, ChunterMessage } from '@anticrm/chunter'
 import contact, { EmployeeAccount, formatName } from '@anticrm/contact'
 import { Account, Class, Client, Obj, Ref, Space, getCurrentAccount, Timestamp } from '@anticrm/core'
 import { Asset } from '@anticrm/platform'
@@ -58,7 +58,7 @@ export async function getDmName (client: Client, dm: Space): Promise<string> {
 export function getSpaceLink (id: Ref<Space>): string {
   const loc = getCurrentLocation()
 
-  loc.path[1] = chunter.app.Chunter
+  loc.path[1] = chunterId
   loc.path[2] = id
   loc.path.length = 3
   loc.fragment = undefined

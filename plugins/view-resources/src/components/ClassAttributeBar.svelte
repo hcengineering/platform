@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Class, Doc, Ref } from '@anticrm/core'
   import { AttributesBar, getClient, KeyedAttribute } from '@anticrm/presentation'
-  import setting from '@anticrm/setting'
+  import setting, { settingId } from '@anticrm/setting'
   import { Button, getCurrentLocation, Label, navigate, Tooltip } from '@anticrm/ui'
   import { getFiltredKeys, isCollectionAttr } from '../utils'
 
@@ -65,7 +65,7 @@
         on:click={(ev) => {
           ev.stopPropagation()
           const loc = getCurrentLocation()
-          loc.path[1] = setting.ids.SettingApp
+          loc.path[1] = settingId
           loc.path[2] = 'classes'
           loc.path.length = 3
           loc.query = { _class }

@@ -17,7 +17,7 @@ import { Builder, Mixin, Model } from '@anticrm/model'
 import { Ref, Domain, DOMAIN_MODEL } from '@anticrm/core'
 import core, { TClass, TDoc } from '@anticrm/model-core'
 import setting from './plugin'
-import type { Editable, Integration, IntegrationType, Handler, SettingsCategory } from '@anticrm/setting'
+import { Editable, Integration, IntegrationType, Handler, SettingsCategory, settingId } from '@anticrm/setting'
 import type { Asset, IntlString } from '@anticrm/platform'
 import task from '@anticrm/task'
 import activity from '@anticrm/activity'
@@ -186,6 +186,7 @@ export function createModel (builder: Builder): void {
     {
       label: setting.string.Setting,
       icon: setting.icon.Setting,
+      alias: settingId,
       hidden: true,
       component: setting.component.Settings
     },

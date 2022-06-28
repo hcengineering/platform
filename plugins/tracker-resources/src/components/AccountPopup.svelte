@@ -17,7 +17,7 @@
   import { getCurrentAccount } from '@anticrm/core'
   import login from '@anticrm/login'
   import { Avatar, createQuery } from '@anticrm/presentation'
-  import setting, { SettingsCategory } from '@anticrm/setting'
+  import setting, { SettingsCategory, settingId } from '@anticrm/setting'
   import { closePopup, getCurrentLocation, Icon, Label, navigate, setMetadataLocalStorage } from '@anticrm/ui'
 
   // const client = getClient()
@@ -43,7 +43,7 @@
   function selectCategory (sp: SettingsCategory): void {
     closePopup()
     const loc = getCurrentLocation()
-    loc.path[1] = setting.ids.SettingApp
+    loc.path[1] = settingId
     loc.path[2] = sp.name
     loc.path.length = 3
     navigate(loc)
