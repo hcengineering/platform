@@ -88,8 +88,6 @@
     "@anticrm/image-cropper-resources": "~0.6.0",
     "@anticrm/server-attachment": "~0.6.1",
     "@anticrm/server-attachment-resources": "~0.6.0",
-    "@anticrm/server-board": "~0.6.0",
-    "@anticrm/server-board-resources": "~0.6.0",
     "@anticrm/server-contact": "~0.6.1",
     "@anticrm/server-contact-resources": "~0.6.0",
     "@anticrm/server-notification": "~0.6.0",

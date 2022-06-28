@@ -18,7 +18,6 @@ import { addLocation } from '@anticrm/platform'
 import login from '@anticrm/login'
 import { clientId } from '@anticrm/client'
 import { serverAttachmentId } from '@anticrm/server-attachment'
-import { serverBoardId } from '@anticrm/server-board'
 import { serverContactId } from '@anticrm/server-contact'
 import { serverNotificationId } from '@anticrm/server-notification'
 import { serverSettingId } from '@anticrm/server-setting'
@@ -42,7 +41,6 @@ export function configurePlatformDev() {
     addLocation(clientId, () => import(/* webpackChunkName: "client-dev" */ '@anticrm/dev-client-resources'))
 
     addLocation(serverAttachmentId, () => import(/* webpackChunkName: "server-attachment" */ '@anticrm/server-attachment-resources'))
-    addLocation(serverBoardId, () => import(/* webpackChunkName: "server-attachment" */ '@anticrm/server-board-resources'))
     addLocation(serverContactId, () => import(/* webpackChunkName: "server-contact" */ '@anticrm/server-contact-resources'))
     addLocation(serverNotificationId, () => import(/* webpackChunkName: "server-notification" */ '@anticrm/server-notification-resources'))
     addLocation(serverSettingId, () => import(/* webpackChunkName: "server-setting" */ '@anticrm/server-setting-resources'))

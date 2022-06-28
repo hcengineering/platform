@@ -45,7 +45,6 @@
     "@anticrm/model-demo": "~0.6.0",
     "@anticrm/model-server-core": "~0.6.0",
     "@anticrm/model-server-attachment": "~0.6.0",
-    "@anticrm/model-server-board": "~0.6.0",
     "@anticrm/model-server-contact": "~0.6.0",
     "@anticrm/model-server-notification": "~0.6.0",
     "@anticrm/model-server-setting": "~0.6.0",
