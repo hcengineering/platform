@@ -59,7 +59,7 @@
     {:else if node.nodeName === 'OL'}
       <ol><svelte:self nodes={node.childNodes} /></ol>
     {:else if node.nodeName === 'LI'}
-      <li class={'flex flex-grow gap-1 checkbox_style'}><svelte:self nodes={node.childNodes} /></li>
+      <li><svelte:self nodes={node.childNodes} /></li>
     {:else if node.nodeName === 'DIV'}
       <div><svelte:self nodes={node.childNodes} /></div>
     {:else if node.nodeName === 'A'}
