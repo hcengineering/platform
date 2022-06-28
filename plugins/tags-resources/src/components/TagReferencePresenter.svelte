@@ -62,8 +62,8 @@
     }
     .btn-close {
       flex-shrink: 0;
-      margin-left: 0.25rem;
-      padding: 0 0.125rem;
+      margin-left: 0.125rem;
+      padding: 0 0.25rem 0 0.125rem;
       height: 1.75rem;
       color: var(--content-color);
       border-left: 1px solid transparent;

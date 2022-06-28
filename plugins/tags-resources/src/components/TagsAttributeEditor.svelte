@@ -54,7 +54,7 @@
 
 <style lang="scss">
   .step-container {
-    margin: 0.385rem 0.385rem 0 0;
+    margin: 0.125rem 0.125rem 0 0;
   }
   .tag-button {
     overflow: hidden;
