@@ -17,7 +17,7 @@
   import { translate } from '@anticrm/platform'
   import { KeyedAttribute } from '@anticrm/presentation'
   import { TagElement, TagReference } from '@anticrm/tags'
-  import { CircleButton, IconAdd, IconClose, Label, ShowMore, showPopup, Tooltip } from '@anticrm/ui'
+  import { Button, IconAdd, IconClose, Label, ShowMore, showPopup } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import tags from '../plugin'
   import TagItem from './TagItem.svelte'
@@ -67,25 +67,30 @@
   }
 </script>
 
-<div class="flex-row">
+<div class="antiSection">
   {#if showTitle}
-    <div class="flex-row-center">
-      <div class="title">
+    <div class="antiSection-header">
+      <span class="antiSection-header__title">
         <Label label={key.attr.label} />
-      </div>
-      <div id="add-tag">
-        <Tooltip label={tags.string.AddTagTooltip} props={{ word: keyLabel }}>
-          <CircleButton icon={IconAdd} size={'small'} selected on:click={addTag} />
-        </Tooltip>
+      </span>
+      <div class="buttons-group x-small">
+        <Button
+          icon={IconAdd}
+          kind={'transparent'}
+          shape={'circle'}
+          showTooltip={{ label: tags.string.AddTagTooltip, props: { word: keyLabel } }}
+          id={'add-tag'}
+          on:click={addTag}
+        />
       </div>
     </div>
   {/if}
   <ShowMore ignore={!showTitle}>
-    <div class:tags-container={showTitle} class:mt-4={showTitle}>
+    <div class:tags-container={showTitle} class:mt-3={showTitle} class:empty={items.length === 0}>
       <div class="tag-items" class:tag-items-scroll={!showTitle}>
         {#if items.length === 0}
           {#if keyLabel}
-            <div class="flex flex-grow title-center">
+            <div class="text-sm dark-color w-full flex-center">
               <Label label={tags.string.NoItems} params={{ word: keyLabel }} />
             </div>
           {/if}
@@ -106,18 +111,16 @@
 </div>
 
 <style lang="scss">
-  .title {
-    margin-right: 0.75rem;
-    font-weight: 500;
-    font-size: 1.25rem;
-    color: var(--theme-caption-color);
-  }
   .tags-container {
-    padding: 1rem;
-    color: var(--theme-caption-color);
-    background: var(--theme-bg-accent-color);
-    border: 1px solid var(--theme-bg-accent-color);
+    padding: 0.5rem;
+    color: var(--accent-color);
+    background-color: var(--board-bg-color);
+    border: 1px solid var(--divider-color);
     border-radius: 0.75rem;
+
+    &.empty {
+      background-color: transparent;
+    }
   }
   .tag-items {
     flex-grow: 1;
@@ -127,8 +130,5 @@
   .tag-items-scroll {
     overflow-y: scroll;
     max-height: 10rem;
-  }
-  .title-center {
-    align-items: center;
   }
 </style>

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { IntlString } from '@anticrm/platform'
   import presentation, { MessageViewer } from '@anticrm/presentation'
-  import { ActionIcon, IconCheck, IconClose, IconEdit, Label } from '@anticrm/ui'
+  import { ActionIcon, IconCheck, IconClose, IconEdit, Label, ShowMore } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import textEditorPlugin from '../plugin'
   import StyledTextEditor from './StyledTextEditor.svelte'
@@ -10,10 +10,34 @@
   export let content: string
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
 
-  export let emphasized = false
-  export let alwaysEdit = false
-  export let showButtons = true
+  export let emphasized: boolean = false
+  export let alwaysEdit: boolean = false
+  export let showButtons: boolean = true
+  export let hideExtraButtons: boolean = false
   export let maxHeight: 'max' | 'card' | string = 'max'
+  export let previewLimit: number = 240
+  export let previewUnlimit: boolean = false
+  export let focusable: boolean = false
+
+  const Mode = {
+    View: 1,
+    Edit: 2
+  }
+  export let mode = Mode.View
+
+  export function startEdit (): void {
+    rawValue = content ?? ''
+    needFocus = true
+    mode = Mode.Edit
+  }
+  export function saveEdit (): void {
+    dispatch('value', rawValue)
+    content = rawValue
+    mode = Mode.View
+  }
+  export function cancelEdit (): void {
+    mode = Mode.View
+  }
 
   let rawValue: string
   let oldContent = ''
@@ -22,12 +46,6 @@
     oldContent = content
     rawValue = content
   }
-
-  const Mode = {
-    View: 1,
-    Edit: 2
-  }
-  let mode = Mode.View
 
   let textEditor: StyledTextEditor
 
@@ -63,6 +81,7 @@
       {placeholder}
       {showButtons}
       {maxHeight}
+      {focusable}
       bind:content={rawValue}
       bind:this={textEditor}
       on:focus={() => {
@@ -79,52 +98,41 @@
         rawValue = evt.detail
       }}
     >
-      {#if !alwaysEdit}
-        <div class="flex flex-reverse flex-grow">
-          <div class="ml-2">
-            <!-- disabled={rawValue.trim().length === 0} -->
-            <ActionIcon
-              icon={IconCheck}
-              size={'medium'}
-              direction={'bottom'}
-              label={presentation.string.Save}
-              action={() => {
-                dispatch('value', rawValue)
-                content = rawValue
-                mode = Mode.View
-              }}
-            />
-          </div>
+      {#if !alwaysEdit && !hideExtraButtons}
+        <div class="flex flex-reverse flex-grow gap-2 reverse">
+          <ActionIcon
+            icon={IconCheck}
+            size={'medium'}
+            direction={'bottom'}
+            label={presentation.string.Save}
+            action={saveEdit}
+          />
           <ActionIcon
             size={'medium'}
             icon={IconClose}
             direction={'top'}
             label={presentation.string.Cancel}
-            action={() => {
-              mode = Mode.View
-            }}
+            action={cancelEdit}
           />
         </div>
       {/if}
     </StyledTextEditor>
   {:else}
-    <div class="text">
+    <div class="flex-col">
       {#if content}
-        <MessageViewer message={content} />
+        <ShowMore limit={previewLimit} ignore={previewUnlimit}>
+          <MessageViewer message={content} />
+        </ShowMore>
       {/if}
     </div>
-    {#if !alwaysEdit}
+    {#if !alwaysEdit && !hideExtraButtons}
       <div class="flex flex-reverse">
         <ActionIcon
           size={'medium'}
           icon={IconEdit}
           direction={'top'}
           label={textEditorPlugin.string.Edit}
-          action={() => {
-            rawValue = content ?? ''
-            needFocus = true
-            mode = Mode.Edit
-          }}
+          action={startEdit}
         />
       </div>
     {/if}
@@ -154,10 +162,5 @@
       background-color: var(--theme-bg-focused-color);
       border-color: var(--theme-bg-focused-border);
     }
-  }
-  .text {
-    overflow: auto;
-    flex-grow: 1;
-    line-height: 150%;
   }
 </style>

@@ -18,8 +18,8 @@
   import contact, { Contact } from '@anticrm/contact'
   import { getClient, UserBox } from '@anticrm/presentation'
   import type { Review } from '@anticrm/recruit'
-  import { StyledTextBox } from '@anticrm/text-editor'
-  import { EditBox, Grid, showPanel, StylishEdit } from '@anticrm/ui'
+  import { FullDescriptionBox } from '@anticrm/text-editor'
+  import { EditBox, Grid, showPanel } from '@anticrm/ui'
   import view from '@anticrm/view'
   import { createEventDispatcher, onMount } from 'svelte'
   import recruit from '../../plugin'
@@ -46,48 +46,51 @@
 </script>
 
 {#if object !== undefined}
-  <Grid column={2}>
-    <EditBox
-      icon={recruit.icon.Review}
-      label={calendar.string.Title}
-      maxWidth={'20rem'}
-      bind:value={object.title}
-      on:change={() => client.update(object, { title: object.title })}
-    />
-    <div
-      class="clear-mins"
-      on:click={() => {
-        if (candidate !== undefined) {
-          showPanel(view.component.EditDoc, candidate._id, candidate._class, 'content')
-        }
-      }}
-    >
-      <UserBox
-        readonly
-        _class={contact.class.Person}
-        label={recruit.string.Talent}
-        placeholder={recruit.string.Talents}
-        value={object.attachedTo}
-        kind={'link'}
-        size={'x-large'}
-        justify={'left'}
-        width={'100%'}
+  <Grid column={1} rowGap={1.5}>
+    <Grid column={2} columnGap={1}>
+      <EditBox
+        bind:value={object.title}
+        kind={'large-style'}
+        maxWidth={'20rem'}
+        focusable
+        on:change={() => client.update(object, { title: object.title })}
       />
-    </div>
-  </Grid>
-  <div class="mt-4 mb-4">
-    <StyledTextBox
+      <div
+        class="clear-mins"
+        on:click={() => {
+          if (candidate !== undefined) {
+            showPanel(view.component.EditDoc, candidate._id, candidate._class, 'content')
+          }
+        }}
+      >
+        <UserBox
+          readonly
+          _class={contact.class.Person}
+          label={recruit.string.Talent}
+          placeholder={recruit.string.Talents}
+          value={object.attachedTo}
+          kind={'link'}
+          size={'x-large'}
+          justify={'left'}
+          width={'100%'}
+        />
+      </div>
+    </Grid>
+    <FullDescriptionBox
       label={recruit.string.Description}
-      emphasized
       content={object.description}
+      alwaysEdit
       on:value={(evt) => {
         client.update(object, { description: evt.detail })
       }}
     />
-  </div>
-  <StylishEdit
-    label={recruit.string.Verdict}
-    bind:value={object.verdict}
-    on:change={() => client.update(object, { verdict: object.verdict })}
-  />
+    <EditBox
+      bind:value={object.verdict}
+      placeholder={recruit.string.Verdict}
+      kind={'large-style'}
+      maxWidth={'39rem'}
+      focusable
+      on:change={() => client.update(object, { verdict: object.verdict })}
+    />
+  </Grid>
 {/if}

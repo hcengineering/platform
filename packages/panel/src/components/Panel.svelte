@@ -102,7 +102,7 @@
     <slot />
   {:else}
     <Scroller>
-      <div class="popupPanel-body__main-content py-10 clear-mins">
+      <div class="popupPanel-body__main-content py-8 clear-mins">
         <Component is={activity.component.Activity} props={{ object, integrate: true }}>
           <slot />
         </Component>

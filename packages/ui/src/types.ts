@@ -91,7 +91,7 @@ export type ButtonKind =
   | 'list'
 export type ButtonSize = 'inline' | 'small' | 'medium' | 'large' | 'x-large'
 export type ButtonShape = 'rectangle' | 'rectangle-left' | 'rectangle-right' | 'circle' | 'round' | undefined
-export type EditStyle = 'editbox' | 'large-style' | 'small-style' | 'search-style'
+export type EditStyle = 'editbox' | 'large-style' | 'small-style' | 'search-style' | 'underline'
 export interface PopupPositionElement {
   getBoundingClientRect: () => DOMRect
   position?: {

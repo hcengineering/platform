@@ -38,12 +38,11 @@
 {#if object !== undefined}
   <Grid column={2} rowGap={1}>
     <EditBox
-      label={lead.string.LeadName}
       bind:value={object.title}
-      icon={lead.icon.Lead}
       placeholder={lead.string.LeadPlaceholder}
-      maxWidth="39rem"
-      focus
+      kind={'large-style'}
+      maxWidth={'20rem'}
+      focusable
       on:change={() => change('title', object.title)}
     />
     <UserBox

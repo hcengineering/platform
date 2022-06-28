@@ -113,12 +113,10 @@
   </div>
 {:else}
   <slot />
-  <div class="antiDivider" style:margin={'1rem -1.5rem'} />
-  <div class="header antiTitle">
-    <div class="icon-wrapper">
-      <div class="wrapped-icon icon flex-center"><IconActivity size={'small'} /></div>
-      <span class="wrapped-title"><Label label={activity.string.Activity} /></span>
-    </div>
+  <!-- <div class="antiDivider" style:margin={'1rem -1.5rem'} /> -->
+  <div class="antiSection-header mt-6">
+    <div class="antiSection-header__icon"><IconActivity size={'small'} /></div>
+    <span class="antiSection-header__title"><Label label={activity.string.Activity} /></span>
   </div>
   {#if showCommenInput}
     <div class="ref-input">
@@ -137,15 +135,6 @@
 {/if}
 
 <style lang="scss">
-  .header {
-    display: flex;
-    align-items: center;
-    min-height: 2.5rem;
-    height: 2.5rem;
-    background-color: var(--accent-bg-color);
-    border: 1px solid var(--divider-color);
-    border-radius: 0.125rem;
-  }
   .icon {
     margin-left: 1rem;
     height: 2rem;
@@ -153,7 +142,7 @@
   }
   .ref-input {
     flex-shrink: 0;
-    padding: 1.5rem 0;
+    padding: 0.75rem 0;
   }
   .p-activity {
     padding: 1.5rem 0;

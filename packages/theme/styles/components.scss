@@ -70,13 +70,13 @@
 
   .ac-header__icon {
     margin-right: 0.5rem;
-    color: var(--theme-content-color);
+    color: var(--content-color);
   }
   .ac-header__title {
     min-width: 0;
     font-weight: 500;
     font-size: 1rem;
-    color: var(--theme-caption-color);
+    color: var(--caption-color);
 
     overflow: hidden;
     text-overflow: ellipsis;
@@ -86,7 +86,7 @@
   .ac-header__description {
     min-width: 0;
     font-size: 0.75rem;
-    color: var(--theme-content-dark-color);
+    color: var(--dark-color);
 
     overflow: hidden;
     visibility: visible;

@@ -24,7 +24,10 @@ import type { KanbanTemplateSpace, SpaceWithStates, Task } from '@anticrm/task'
 /**
  * @public
  */
-export interface Funnel extends SpaceWithStates {}
+export interface Funnel extends SpaceWithStates {
+  fullDescription?: string
+  attachments?: number
+}
 
 /**
  * @public

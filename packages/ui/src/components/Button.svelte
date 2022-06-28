@@ -328,7 +328,7 @@
       }
     }
     &.primary {
-      padding: 0 1rem;
+      padding: 0 0.75rem;
       color: var(--white-color);
       background-color: var(--primary-bg-color);
       border-color: var(--primary-bg-color);

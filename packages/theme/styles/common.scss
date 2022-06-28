@@ -260,6 +260,58 @@
   background-color: var(--divider-color);
 }
 
+.antiSection {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  min-height: 0;
+
+  &-header {
+    display: flex;
+    align-items: center;
+    height: 2.5rem;
+    min-height: 2.5rem;
+    border-bottom: 1px solid var(--divider-color);
+
+    &__icon {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-right: .5rem;
+      height: 2rem;
+      color: var(--caption-color);
+    }
+    &__title {
+      flex-grow: 1;
+      min-width: 0;
+      font-weight: 500;
+      font-size: 1rem;
+      color: var(--caption-color);  
+    }
+  }
+  &-empty {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+    font-size: .75rem;
+    color: var(--dark-color);
+    border: 1px dashed var(--divider-color);
+    border-radius: 0.75rem;
+
+    &.solid { border-style: solid; }
+    &.items {
+      justify-content: start;
+      padding: .75rem;
+    }
+    &.solid.attachments {
+      background-color: var(--accent-bg-color);
+
+      .item { border-style: solid; }
+    }
+  }
+}
+
 // Button on selected card in Kanban
 .card-container.checked .button.inline.link-bordered {
   background-color: var(--highlight-select);

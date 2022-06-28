@@ -19,27 +19,27 @@
   import core from '@anticrm/core'
   import { Panel } from '@anticrm/panel'
   import { createQuery, getClient, MembersBox } from '@anticrm/presentation'
-  import { Vacancy } from '@anticrm/recruit'
+  import type { Funnel } from '@anticrm/lead'
   import { FullDescriptionBox } from '@anticrm/text-editor'
   import { EditBox, Grid } from '@anticrm/ui'
   import { ClassAttributeBar } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
-  import recruit from '../plugin'
+  import lead from '../plugin'
 
-  export let _id: Ref<Vacancy>
+  export let _id: Ref<Funnel>
 
-  let object: Required<Vacancy>
+  let object: Required<Funnel>
 
   const dispatch = createEventDispatcher()
 
   const client = getClient()
 
   const query = createQuery()
-  const clazz = client.getHierarchy().getClass(recruit.class.Vacancy)
+  const clazz = client.getHierarchy().getClass(lead.class.Funnel)
 
-  function updateObject (_id: Ref<Vacancy>): void {
-    query.query(recruit.class.Vacancy, { _id }, (result) => {
-      object = result[0] as Required<Vacancy>
+  function updateObject (_id: Ref<Funnel>): void {
+    query.query(lead.class.Funnel, { _id }, (result) => {
+      object = result[0] as Required<Funnel>
     })
   }
 
@@ -52,9 +52,9 @@
 
 {#if object}
   <Panel
-    icon={clazz.icon}
     title={object.name}
     subtitle={object.description}
+    icon={clazz.icon}
     isHeader={false}
     isAside={true}
     {object}
@@ -80,7 +80,7 @@
     <Grid column={1} rowGap={1.5}>
       <EditBox
         bind:value={object.name}
-        placeholder={recruit.string.VacancyPlaceholder}
+        placeholder={lead.string.FunnelPlaceholder}
         maxWidth={'39rem'}
         kind={'large-style'}
         focus
@@ -96,7 +96,7 @@
       />
       <EditBox
         bind:value={object.description}
-        placeholder={recruit.string.VacancyDescription}
+        placeholder={lead.string.Description}
         maxWidth={'39rem'}
         focusable
         on:change={() => {
@@ -116,7 +116,7 @@
         space={object.space}
         attachments={object.attachments ?? 0}
       />
-      <MembersBox label={recruit.string.Members} space={object} />
+      <MembersBox label={lead.string.Members} space={object} />
     </Grid>
   </Panel>
 {/if}

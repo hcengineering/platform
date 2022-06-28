@@ -31,6 +31,7 @@
   export let format: 'text' | 'password' | 'number' = 'text'
   export let kind: EditStyle = 'editbox'
   export let focus: boolean = false
+  export let focusable: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -50,6 +51,8 @@
     text.innerHTML = (value === '' ? phTraslate : value).replaceAll(' ', '&nbsp;')
     if (format === 'number') {
       target.style.width = maxWidth ?? '5rem'
+    } else if (kind === 'underline') {
+      target.style.width = `calc(${text.clientWidth}px + 1.125rem)`
     } else {
       target.style.width = text.clientWidth + 'px'
     }
@@ -87,18 +90,27 @@
   $: if (input) {
     input.addEventListener('focus', updateFocus, { once: true })
   }
+
+  export function focused (): void {
+    input.focus()
+  }
 </script>
 
 <div
   class="editbox-container"
+  class:w-full={focusable}
   on:click={() => {
     input.focus()
   }}
 >
   <!-- {focusIndex} -->
   <div class="hidden-text {kind}" bind:this={text} />
-  {#if label}<div class="label"><Label {label} /></div>{/if}
-  <div class="{kind} flex-row-center clear-mins">
+  {#if label}
+    <div class="mb-1 text-sm font-medium content-accent-color select-text">
+      <Label {label} />
+    </div>
+  {/if}
+  <div class="{kind} flex-row-center clear-mins" class:focusable>
     {#if icon}
       <div class="content-trans-color mr-1">
         <Icon {icon} size={'small'} />
@@ -151,15 +163,6 @@
     flex-direction: column;
     align-items: flex-start;
 
-    .label {
-      margin-bottom: 0.25rem;
-      font-size: 0.75rem;
-      font-weight: 500;
-      color: var(--theme-content-accent-color);
-      pointer-events: none;
-      user-select: none;
-    }
-
     .large-style {
       font-weight: 500;
       font-size: 1.125rem;
@@ -171,6 +174,32 @@
     .search-style {
       font-weight: 400;
       padding: 0.625rem 0.75rem;
+    }
+    .underline {
+      font-weight: 500;
+
+      input {
+        padding: 0.25rem 0.5rem;
+        background-color: var(--accent-bg-color);
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+
+        &:focus {
+          border: 1px solid var(--primary-edit-border-color);
+        }
+      }
+    }
+    .focusable {
+      margin: 0 -0.75rem;
+      padding: 0.625rem 0.75rem;
+      width: calc(100% + 1.5rem);
+      border: 1px solid transparent;
+      border-radius: 0.25rem;
+      transition: border-color 0.15s ease-in-out;
+
+      &:focus-within {
+        border-color: var(--primary-edit-border-color);
+      }
     }
 
     input {

@@ -20,6 +20,8 @@
     "Symbols": "Symbols",
     "TravelAndPlaces": "Travel & Places",
     "Objects": "Objects",
-    "Food": "Food"
+    "Food": "Food",
+    "FullDescription": "Full description",
+    "NoFullDescription": "There are no detailed description"
   }
 }

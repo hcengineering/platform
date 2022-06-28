@@ -15,8 +15,8 @@
 <script lang="ts">
   import { Member } from '@anticrm/contact'
   import type { Class, Doc, Ref, Space } from '@anticrm/core'
-  import { createQuery, getClient, UsersPopup } from '@anticrm/presentation'
-  import { CircleButton, IconAdd, Label, showPopup } from '@anticrm/ui'
+  import { createQuery, getClient, UsersPopup, IconMembersOutline } from '@anticrm/presentation'
+  import { Button, IconAdd, Label, showPopup, Icon } from '@anticrm/ui'
   import view, { Viewlet, ViewletPreference } from '@anticrm/view'
   import { Table, ViewletSettingButton } from '@anticrm/view-resources'
   import contact from '../plugin'
@@ -92,12 +92,17 @@
   }
 </script>
 
-<div class="applications-container">
-  <div class="flex flex-between">
-    <div class="title"><Label label={contact.string.Members} /></div>
-    <CircleButton id={contact.string.AddMember} icon={IconAdd} size={'small'} selected on:click={createApp} />
-    <div class="flex flex-grow flex-reverse">
+<div class="antiSection">
+  <div class="antiSection-header">
+    <div class="antiSection-header__icon">
+      <Icon icon={IconMembersOutline} size={'small'} />
+    </div>
+    <span class="antiSection-header__title">
+      <Label label={contact.string.Members} />
+    </span>
+    <div class="buttons-group xsmall-gap">
       <ViewletSettingButton viewlet={descr} />
+      <Button id={contact.string.AddMember} icon={IconAdd} kind={'transparent'} shape={'circle'} on:click={createApp} />
     </div>
   </div>
   {#if members > 0 && descr}
@@ -109,35 +114,13 @@
       loadingProps={{ length: members }}
     />
   {:else}
-    <div class="flex-col-center mt-5 createapp-container">
-      <div class="text-sm content-dark-color mt-2">
+    <div class="antiSection-empty solid flex-col mt-3">
+      <span class="dark-color">
         <Label label={contact.string.NoMembers} />
-      </div>
-      <div class="text-sm">
-        <div class="over-underline" on:click={createApp}><Label label={contact.string.AddMember} /></div>
-      </div>
+      </span>
+      <span class="over-underline content-accent-color" on:click={createApp}>
+        <Label label={contact.string.AddMember} />
+      </span>
     </div>
   {/if}
 </div>
-
-<style lang="scss">
-  .applications-container {
-    display: flex;
-    flex-direction: column;
-
-    .title {
-      margin-right: 0.75rem;
-      font-weight: 500;
-      font-size: 1.25rem;
-      color: var(--theme-caption-color);
-    }
-  }
-
-  .createapp-container {
-    padding: 1rem;
-    color: var(--theme-caption-color);
-    background: var(--theme-bg-accent-color);
-    border: 1px solid var(--theme-bg-accent-color);
-    border-radius: 0.75rem;
-  }
-</style>

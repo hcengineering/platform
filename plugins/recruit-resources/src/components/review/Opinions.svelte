@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import type { Doc, Ref } from '@anticrm/core'
-  import { CircleButton, IconAdd, Label, showPopup } from '@anticrm/ui'
+  import { Button, IconAdd, Label, showPopup } from '@anticrm/ui'
   import { Table } from '@anticrm/view-resources'
   import recruit from '../../plugin'
   import FileDuo from '../icons/FileDuo.svelte'
@@ -29,10 +29,12 @@
   }
 </script>
 
-<div class="applications-container">
-  <div class="flex-row-center">
-    <div class="title"><Label label={recruit.string.Opinions} /></div>
-    <CircleButton icon={IconAdd} size={'small'} selected on:click={createApp} />
+<div class="antiSection">
+  <div class="antiSection-header">
+    <span class="antiSection-header__title">
+      <Label label={recruit.string.Opinions} />
+    </span>
+    <Button icon={IconAdd} kind={'transparent'} shape={'circle'} on:click={createApp} />
   </div>
   {#if opinions > 0}
     <Table
@@ -42,38 +44,16 @@
       loadingProps={{ length: opinions }}
     />
   {:else}
-    <div class="flex-col-center mt-5 createapp-container">
-      <FileDuo size={'large'} />
-      <div class="small-text content-dark-color mt-2">
+    <div class="antiSection-empty solid flex-col-center mt-3">
+      <div class="content-accent-color">
+        <FileDuo size={'large'} />
+      </div>
+      <div class="text-sm dark-color mt-2">
         <Label label={recruit.string.NoReviewForCandidate} />
       </div>
-      <div class="text-sm">
-        <div class="over-underline" on:click={createApp}>
-          <Label label={recruit.string.CreateAnReview} />
-        </div>
-      </div>
+      <span class="text-sm content-accent-color over-underline" on:click={createApp}>
+        <Label label={recruit.string.CreateAnReview} />
+      </span>
     </div>
   {/if}
 </div>
-
-<style lang="scss">
-  .applications-container {
-    display: flex;
-    flex-direction: column;
-
-    .title {
-      margin-right: 0.75rem;
-      font-weight: 500;
-      font-size: 1.25rem;
-      color: var(--theme-caption-color);
-    }
-  }
-
-  .createapp-container {
-    padding: 1rem;
-    color: var(--theme-caption-color);
-    background: var(--theme-bg-accent-color);
-    border: 1px solid var(--theme-bg-accent-color);
-    border-radius: 0.75rem;
-  }
-</style>

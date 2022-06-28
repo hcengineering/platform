@@ -16,7 +16,7 @@
   import type { Ref, Space, Doc, Class } from '@anticrm/core'
   import type { TodoItem } from '@anticrm/task'
   import { createQuery } from '@anticrm/presentation'
-  import { CircleButton, IconAdd, showPopup, Label } from '@anticrm/ui'
+  import { Button, IconAdd, showPopup, Label } from '@anticrm/ui'
   import CreateTodo from './CreateTodo.svelte'
   import { Table } from '@anticrm/view-resources'
 
@@ -39,10 +39,12 @@
   }
 </script>
 
-<div class="applications-container">
-  <div class="flex-row-center">
-    <div class="title"><Label label={plugin.string.Todos} /></div>
-    <CircleButton icon={IconAdd} size={'small'} selected on:click={createApp} />
+<div class="antiSection">
+  <div class="antiSection-header">
+    <span class="antiSection-header__title">
+      <Label label={plugin.string.Todos} />
+    </span>
+    <Button icon={IconAdd} kind={'transparent'} shape={'circle'} on:click={createApp} />
   </div>
   {#if todos.length > 0}
     <Table
@@ -60,32 +62,10 @@
       query={{ attachedTo: objectId }}
     />
   {:else}
-    <div class="flex-col-center mt-5 createapp-container">
-      <div class="text-sm">
-        <div class="over-underline" on:click={createApp}><Label label={plugin.string.NoTodoItems} /></div>
-      </div>
+    <div class="antiSection-empty solid flex-col-center mt-3">
+      <span class="text-sm over-underline" on:click={createApp}>
+        <Label label={plugin.string.NoTodoItems} />
+      </span>
     </div>
   {/if}
 </div>
-
-<style lang="scss">
-  .applications-container {
-    display: flex;
-    flex-direction: column;
-
-    .title {
-      margin-right: 0.75rem;
-      font-weight: 500;
-      font-size: 1.25rem;
-      color: var(--theme-caption-color);
-    }
-  }
-
-  .createapp-container {
-    padding: 1rem;
-    color: var(--theme-caption-color);
-    background: var(--theme-bg-accent-color);
-    border: 1px solid var(--theme-bg-accent-color);
-    border-radius: 0.75rem;
-  }
-</style>

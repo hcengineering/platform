@@ -37,12 +37,17 @@ export default mergeIds(leadId, lead, {
     LeadPlaceholder: '' as IntlString,
     CreateCustomer: '' as IntlString,
     IssueDescriptionPlaceholder: '' as IntlString,
-    CreateCustomerLabel: '' as IntlString
+    CreateCustomerLabel: '' as IntlString,
+    Description: '' as IntlString,
+    FullDescription: '' as IntlString,
+    FunnelPlaceholder: '' as IntlString,
+    Members: '' as IntlString
   },
   component: {
     CreateCustomer: '' as AnyComponent,
     LeadsPresenter: '' as AnyComponent,
-    CreateFunnel: '' as AnyComponent
+    CreateFunnel: '' as AnyComponent,
+    EditFunnel: '' as AnyComponent
   },
   function: {
     LeadTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>) => Promise<string>>
