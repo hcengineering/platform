@@ -38,7 +38,7 @@ import presentation from '@anticrm/model-presentation'
 import tags from '@anticrm/model-tags'
 import task, { TSpaceWithStates, TTask, actionTemplates } from '@anticrm/model-task'
 import view, { createAction, actionTemplates as viewTemplates } from '@anticrm/model-view'
-import workbench, { Application, createNavigateAction } from '@anticrm/model-workbench'
+import workbench, { createNavigateAction } from '@anticrm/model-workbench'
 import { IntlString } from '@anticrm/platform'
 import { Applicant, Candidate, Candidates, recruitId, Vacancy } from '@anticrm/recruit'
 import { KeyBinding } from '@anticrm/view'
@@ -571,7 +571,7 @@ export function createModel (builder: Builder): void {
 
   function createGotoSpecialAction (builder: Builder, id: string, key: KeyBinding, label: IntlString): void {
     createNavigateAction(builder, key, label, {
-      application: recruit.app.Recruit as Ref<Application>,
+      application: recruitId,
       mode: 'special',
       special: id
     })
