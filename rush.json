@@ -1273,21 +1273,6 @@
       "projectFolder": "models/board",
       "shouldPublish": true
     },
-    {    
-      "packageName": "@anticrm/server-board",
-      "projectFolder": "server-plugins/board",
-      "shouldPublish": true
-    },
-    {
-      "packageName": "@anticrm/model-server-board",
-      "projectFolder": "models/server-board",
-      "shouldPublish": true
-    },
-    {
-      "packageName": "@anticrm/server-board-resources",
-      "projectFolder": "server-plugins/board-resources",
-      "shouldPublish": true
-    },
     {
       "packageName": "@anticrm/kanban",
       "projectFolder": "packages/kanban",

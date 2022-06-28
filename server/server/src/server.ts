@@ -38,7 +38,6 @@ import { ModifiedMiddleware, PrivateMiddleware } from '@anticrm/middleware'
 import { createMongoAdapter, createMongoTxAdapter } from '@anticrm/mongo'
 import { addLocation } from '@anticrm/platform'
 import { serverAttachmentId } from '@anticrm/server-attachment'
-import { serverBoardId } from '@anticrm/server-board'
 import { serverCalendarId } from '@anticrm/server-calendar'
 import { serverChunterId } from '@anticrm/server-chunter'
 import { serverContactId } from '@anticrm/server-contact'
@@ -124,7 +123,6 @@ export function start (
   host?: string
 ): () => void {
   addLocation(serverAttachmentId, () => import('@anticrm/server-attachment-resources'))
-  addLocation(serverBoardId, () => import('@anticrm/server-board-resources'))
   addLocation(serverContactId, () => import('@anticrm/server-contact-resources'))
   addLocation(serverNotificationId, () => import('@anticrm/server-notification-resources'))
   addLocation(serverSettingId, () => import('@anticrm/server-setting-resources'))

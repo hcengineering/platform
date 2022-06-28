@@ -47,7 +47,6 @@ import { DOMAIN_ATTACHMENT } from '@anticrm/model-attachment'
 import { createMongoAdapter, createMongoTxAdapter } from '@anticrm/mongo'
 import { addLocation } from '@anticrm/platform'
 import { serverAttachmentId } from '@anticrm/server-attachment'
-import { serverBoardId } from '@anticrm/server-board'
 import { serverCalendarId } from '@anticrm/server-calendar'
 import { serverChunterId } from '@anticrm/server-chunter'
 import { serverContactId } from '@anticrm/server-contact'
@@ -126,7 +125,6 @@ export class ElasticTool {
 
   constructor (readonly mongoUrl: string, readonly dbName: string, readonly minio: Client, readonly elasticUrl: string) {
     addLocation(serverAttachmentId, () => import('@anticrm/server-attachment-resources'))
-    addLocation(serverBoardId, () => import('@anticrm/server-board-resources'))
     addLocation(serverContactId, () => import('@anticrm/server-contact-resources'))
     addLocation(serverNotificationId, () => import('@anticrm/server-notification-resources'))
     addLocation(serverChunterId, () => import('@anticrm/server-chunter-resources'))
