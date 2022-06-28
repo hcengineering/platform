@@ -56,4 +56,5 @@
   {width}
   {focusIndex}
   {showTooltip}
+  on:change
 />

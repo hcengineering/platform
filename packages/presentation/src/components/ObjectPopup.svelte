@@ -145,7 +145,7 @@
         // We expect reference to new object.
         const newPerson = await client.findOne(_class, { _id: res })
         if (newPerson !== undefined) {
-          search = c.update(newPerson)
+          search = c.update?.(newPerson) ?? ''
         }
       }
     })
