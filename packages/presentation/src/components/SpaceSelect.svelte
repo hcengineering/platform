@@ -23,7 +23,6 @@
     Button,
     eventToHTMLElement,
     getFocusManager,
-    AnyComponent,
     Tooltip,
     TooltipAlignment,
     ButtonKind,
@@ -33,6 +32,7 @@
 
   import type { Ref, Class, Space, DocumentQuery } from '@anticrm/core'
   import { createEventDispatcher } from 'svelte'
+  import { ObjectCreate } from '../types'
 
   export let _class: Ref<Class<Space>>
   export let spaceQuery: DocumentQuery<Space> | undefined = { archived: false }
@@ -40,17 +40,13 @@
   export let value: Ref<Space> | undefined
   export let focusIndex = -1
   export let focus = false
-  export let create:
-    | {
-        component: AnyComponent
-        label: IntlString
-      }
-    | undefined = undefined
+  export let create: ObjectCreate | undefined = undefined
   export let labelDirection: TooltipAlignment | undefined = undefined
   export let kind: ButtonKind = 'no-border'
   export let size: ButtonSize = 'small'
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = undefined
+  export let allowDeselect = false
 
   let selected: Space | undefined
 
@@ -70,6 +66,7 @@
       {
         _class,
         label,
+        allowDeselect,
         options: { sort: { modifiedOn: -1 } },
         selected,
         spaceQuery,

@@ -15,15 +15,16 @@
 <script lang="ts">
   import { AttributeEditor, createQuery, EditableAvatar, getClient } from '@anticrm/presentation'
 
-  import setting from '@anticrm/setting'
-  import { EditBox, Icon, Label, createFocusManager, FocusHandler } from '@anticrm/ui'
+  import setting from '../plugin'
+  import { EditBox, Icon, Label, createFocusManager, FocusHandler, Button, showPopup } from '@anticrm/ui'
   import contact, { Employee, EmployeeAccount, getFirstName, getLastName } from '@anticrm/contact'
   import contactRes from '@anticrm/contact-resources/src/plugin'
   import { getCurrentAccount } from '@anticrm/core'
   import { getResource } from '@anticrm/platform'
   import attachment from '@anticrm/attachment'
-  import { changeName } from '@anticrm/login-resources'
+  import { changeName, leaveWorkspace } from '@anticrm/login-resources'
   import { ChannelsEditor } from '@anticrm/contact-resources'
+  import MessageBox from '@anticrm/presentation/src/components/MessageBox.svelte'
   const client = getClient()
 
   let employee: Employee | undefined
@@ -71,6 +72,22 @@
   }
 
   const manager = createFocusManager()
+
+  async function leave (): Promise<void> {
+    showPopup(
+      MessageBox,
+      {
+        label: setting.string.Leave,
+        message: setting.string.LeaveDescr
+      },
+      undefined,
+      async (res?: boolean) => {
+        if (res === true) {
+          await leaveWorkspace(getCurrentAccount().email)
+        }
+      }
+    )
+  }
 </script>
 
 <FocusHandler {manager} />
@@ -80,51 +97,62 @@
     <div class="ac-header__icon"><Icon icon={setting.icon.EditProfile} size={'medium'} /></div>
     <div class="ac-header__title"><Label label={setting.string.EditProfile} /></div>
   </div>
-  {#if employee}
-    <div class="ac-body columns p-10">
-      <div class="mr-8">
-        <EditableAvatar avatar={employee.avatar} size={'x-large'} on:done={onAvatarDone} on:remove={removeAvatar} />
-      </div>
-      <div class="flex-grow flex-col">
-        <div class="flex-col">
-          <div class="name">
-            <EditBox
-              placeholder={contactRes.string.PersonFirstNamePlaceholder}
-              maxWidth="20rem"
-              bind:value={firstName}
-              focus
-              focusIndex={1}
-              on:change={() => {
-                changeName(firstName, lastName)
-              }}
-            />
-          </div>
-          <div class="name">
-            <EditBox
-              placeholder={contactRes.string.PersonLastNamePlaceholder}
-              maxWidth="20rem"
-              bind:value={lastName}
-              focusIndex={2}
-              on:change={() => {
-                changeName(firstName, lastName)
-              }}
-            />
-          </div>
-          <div class="location">
-            <AttributeEditor
-              maxWidth="20rem"
-              _class={contact.class.Person}
-              object={employee}
-              focusIndex={3}
-              key="city"
-            />
-          </div>
+  <div class="ac-body p-10">
+    {#if employee}
+      <div class="flex flex-grow">
+        <div class="mr-8">
+          <EditableAvatar avatar={employee.avatar} size={'x-large'} on:done={onAvatarDone} on:remove={removeAvatar} />
         </div>
-        <div class="separator" />
-        <ChannelsEditor attachedTo={employee._id} attachedClass={employee._class} focusIndex={10} allowOpen={false} />
+        <div class="flex-grow flex-col">
+          <div class="flex-col">
+            <div class="name">
+              <EditBox
+                placeholder={contactRes.string.PersonFirstNamePlaceholder}
+                maxWidth="20rem"
+                bind:value={firstName}
+                focus
+                focusIndex={1}
+                on:change={() => {
+                  changeName(firstName, lastName)
+                }}
+              />
+            </div>
+            <div class="name">
+              <EditBox
+                placeholder={contactRes.string.PersonLastNamePlaceholder}
+                maxWidth="20rem"
+                bind:value={lastName}
+                focusIndex={2}
+                on:change={() => {
+                  changeName(firstName, lastName)
+                }}
+              />
+            </div>
+            <div class="location">
+              <AttributeEditor
+                maxWidth="20rem"
+                _class={contact.class.Person}
+                object={employee}
+                focusIndex={3}
+                key="city"
+              />
+            </div>
+          </div>
+          <div class="separator" />
+          <ChannelsEditor attachedTo={employee._id} attachedClass={employee._class} focusIndex={10} allowOpen={false} />
+        </div>
       </div>
+    {/if}
+    <div class="footer">
+      <Button
+        icon={setting.icon.Signout}
+        label={setting.string.Leave}
+        on:click={() => {
+          leave()
+        }}
+      />
     </div>
-  {/if}
+  </div>
 </div>
 
 <style lang="scss">
@@ -143,5 +171,9 @@
     margin: 1rem 0;
     height: 1px;
     background-color: var(--theme-card-divider);
+  }
+
+  .footer {
+    align-self: flex-end;
   }
 </style>

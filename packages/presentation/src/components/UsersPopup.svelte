@@ -15,17 +15,19 @@
 <script lang="ts">
   import { createEventDispatcher, afterUpdate } from 'svelte'
   import { Contact, getFirstName, Person } from '@anticrm/contact'
-  import type { Class, Doc, FindOptions, Ref } from '@anticrm/core'
+  import type { Class, Doc, DocumentQuery, FindOptions, Ref } from '@anticrm/core'
   import type { Asset, IntlString } from '@anticrm/platform'
-  import { AnyComponent, AnySvelteComponent, Icon, Label } from '@anticrm/ui'
+  import { AnySvelteComponent, Icon, Label } from '@anticrm/ui'
   import presentation from '..'
   import { getClient } from '../utils'
   import ObjectPopup from './ObjectPopup.svelte'
   import UserInfo from './UserInfo.svelte'
+  import { ObjectCreate } from '../types'
 
   export let _class: Ref<Class<Contact>>
   export let options: FindOptions<Contact> | undefined = undefined
   export let selected: Ref<Person> | undefined
+  export let docQuery: DocumentQuery<Contact> | undefined = undefined
 
   export let multiSelect: boolean = false
   export let allowDeselect: boolean = false
@@ -35,14 +37,9 @@
   export let ignoreUsers: Ref<Person>[] = []
   export let shadows: boolean = true
   export let icon: Asset | AnySvelteComponent | undefined = undefined
+  export let create: ObjectCreate | undefined = undefined
 
   const hierarchy = getClient().getHierarchy()
-  export let create:
-    | {
-        component: AnyComponent
-        label: IntlString
-      }
-    | undefined = undefined
 
   $: _create =
     create !== undefined
@@ -68,6 +65,7 @@
   {allowDeselect}
   {titleDeselect}
   {placeholder}
+  {docQuery}
   groupBy={'_class'}
   bind:selectedObjects={selectedUsers}
   bind:ignoreObjects={ignoreUsers}

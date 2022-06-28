@@ -16,7 +16,6 @@
   import type { Class, Doc, DocumentQuery, FindOptions, Ref } from '@anticrm/core'
   import type { IntlString } from '@anticrm/platform'
   import {
-    AnyComponent,
     Button,
     CheckBox,
     createFocusManager,
@@ -32,6 +31,7 @@
   import { createEventDispatcher, afterUpdate } from 'svelte'
   import presentation from '..'
   import { createQuery, getClient } from '../utils'
+  import { ObjectCreate } from '../types'
 
   export let _class: Ref<Class<Doc>>
   export let options: FindOptions<Doc> | undefined = undefined
@@ -53,13 +53,7 @@
 
   export let groupBy = '_class'
 
-  export let create:
-    | {
-        component: AnyComponent
-        label: IntlString
-        update: (doc: Doc) => string
-      }
-    | undefined = undefined
+  export let create: ObjectCreate | undefined = undefined
 
   let search: string = ''
   let objects: Doc[] = []

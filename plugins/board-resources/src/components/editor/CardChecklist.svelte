@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Ref } from '@anticrm/core'
-  import { createQuery, getClient, UserBox, MessageBox } from '@anticrm/presentation'
+  import { createQuery, getClient, EmployeeBox, MessageBox } from '@anticrm/presentation'
   import type { TodoItem } from '@anticrm/task'
   import task, { calcRank } from '@anticrm/task'
   import {
@@ -30,7 +30,7 @@
     DateRangePresenter
   } from '@anticrm/ui'
   import { ContextMenu, HTMLPresenter } from '@anticrm/view-resources'
-  import contact, { Employee } from '@anticrm/contact'
+  import { Employee } from '@anticrm/contact'
 
   import board from '../../plugin'
   import { getDateIcon } from '../../utils/BoardUtils'
@@ -273,8 +273,7 @@
               on:change={(e) => updateDueDate(item, e.detail)}
               noShift
             />
-            <UserBox
-              _class={contact.class.Employee}
+            <EmployeeBox
               label={board.string.Assignee}
               bind:value={item.assignee}
               allowDeselect={true}

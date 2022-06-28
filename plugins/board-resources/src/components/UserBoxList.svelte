@@ -1,5 +1,5 @@
 <script lang="ts">
-  import contact, { Employee } from '@anticrm/contact'
+  import { Employee } from '@anticrm/contact'
   import { Ref } from '@anticrm/core'
 
   import { UserBoxList } from '@anticrm/presentation'
@@ -8,4 +8,4 @@
   export let value: Ref<Employee>[]
 </script>
 
-<UserBoxList items={value} _class={contact.class.Employee} label={board.string.Members} on:update />
+<UserBoxList items={value} label={board.string.Members} on:update />

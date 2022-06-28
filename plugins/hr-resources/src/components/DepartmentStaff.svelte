@@ -77,6 +77,9 @@
       UsersPopup,
       {
         _class: contact.class.Employee,
+        docQuery: {
+          active: true
+        },
         ignoreUsers: employees.filter((p) => p.department === objectId).map((p) => p._id)
       },
       eventToHTMLElement(e),

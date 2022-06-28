@@ -14,12 +14,12 @@
 //
 
 import contact, { Employee } from '@anticrm/contact'
-import core, { Ref, SortingOrder, Tx, TxFactory, TxMixin } from '@anticrm/core'
+import core, { Ref, SortingOrder, Tx, TxFactory, TxMixin, TxUpdateDoc } from '@anticrm/core'
 import hr, { Department, DepartmentMember, Staff } from '@anticrm/hr'
 import { extractTx, TriggerControl } from '@anticrm/server-core'
 
 async function getOldDepartment (
-  currentTx: TxMixin<Employee, Staff>,
+  currentTx: TxMixin<Employee, Staff> | TxUpdateDoc<Employee>,
   control: TriggerControl
 ): Promise<Ref<Department> | undefined> {
   const txes = await control.findAll<TxMixin<Employee, Staff>>(
@@ -109,6 +109,12 @@ export async function OnDepartmentStaff (tx: Tx, control: TriggerControl): Promi
     const lastDepartment = await getOldDepartment(ctx, control)
 
     const departmentId = ctx.attributes.department
+    if (departmentId === null) {
+      if (lastDepartment !== undefined) {
+        const removed = await buildHierarchy(lastDepartment, control)
+        return getTxes(control.txFactory, targetAccount._id, [], removed)
+      }
+    }
     const push = await buildHierarchy(departmentId, control)
 
     if (lastDepartment === undefined) {
@@ -124,9 +130,36 @@ export async function OnDepartmentStaff (tx: Tx, control: TriggerControl): Promi
   return []
 }
 
+/**
+ * @public
+ */
+export async function OnEmployeeDeactivate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+  const actualTx = extractTx(tx)
+  if (core.class.TxUpdateDoc !== actualTx._class) {
+    return []
+  }
+  const ctx = actualTx as TxUpdateDoc<Employee>
+  if (ctx.objectClass !== contact.class.Employee || ctx.operations.active !== false) {
+    return []
+  }
+
+  const targetAccount = (
+    await control.modelDb.findAll(contact.class.EmployeeAccount, {
+      employee: ctx.objectId
+    })
+  )[0]
+  if (targetAccount === undefined) return []
+  const lastDepartment = await getOldDepartment(ctx, control)
+  if (lastDepartment === undefined) return []
+
+  const removed = await buildHierarchy(lastDepartment, control)
+  return getTxes(control.txFactory, targetAccount._id, [], removed)
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
-    OnDepartmentStaff
+    OnDepartmentStaff,
+    OnEmployeeDeactivate
   }
 })

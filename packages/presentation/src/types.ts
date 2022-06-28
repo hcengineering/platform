@@ -1,6 +1,6 @@
 import { Client, Doc } from '@anticrm/core'
 import { Asset, IntlString, Resource } from '@anticrm/platform'
-import { AnySvelteComponent } from '@anticrm/ui'
+import { AnyComponent, AnySvelteComponent } from '@anticrm/ui'
 
 /**
  * @public
@@ -12,6 +12,15 @@ export interface ObjectSearchResult {
   title: string
   icon?: Asset | AnySvelteComponent
   iconProps?: any
+}
+
+/**
+ * @public
+ */
+export interface ObjectCreate {
+  component: AnyComponent
+  label: IntlString
+  update?: (doc: Doc) => string
 }
 
 /**

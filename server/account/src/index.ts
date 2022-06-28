@@ -13,8 +13,8 @@
 // limitations under the f.
 //
 
-import contact, { combineName } from '@anticrm/contact'
-import core, { TxOperations } from '@anticrm/core'
+import contact, { combineName, Employee } from '@anticrm/contact'
+import core, { Ref, TxOperations } from '@anticrm/core'
 import platform, {
   getMetadata,
   PlatformError,
@@ -461,6 +461,14 @@ export async function assignWorkspace (db: Db, email: string, workspace: string)
   if (account !== null) await createEmployeeAccount(account, workspace)
 }
 
+async function createEmployee (ops: TxOperations, name: string): Promise<Ref<Employee>> {
+  return await ops.createDoc(contact.class.Employee, contact.space.Employee, {
+    name,
+    city: '',
+    active: true
+  })
+}
+
 async function createEmployeeAccount (account: Account, workspace: string): Promise<void> {
   const connection = await connect(getTransactor(), workspace, account.email)
   try {
@@ -472,10 +480,7 @@ async function createEmployeeAccount (account: Account, workspace: string): Prom
     const existingAccount = await ops.findOne(contact.class.EmployeeAccount, { email: account.email })
 
     if (existingAccount === undefined) {
-      const employee = await ops.createDoc(contact.class.Employee, contact.space.Employee, {
-        name,
-        city: ''
-      })
+      const employee = await createEmployee(ops, name)
 
       await ops.createDoc(contact.class.EmployeeAccount, core.space.Model, {
         email: account.email,
@@ -486,12 +491,14 @@ async function createEmployeeAccount (account: Account, workspace: string): Prom
       const employee = await ops.findOne(contact.class.Employee, { _id: existingAccount.employee })
       if (employee === undefined) {
         // Employee was deleted, let's restore it.
-        const employeeId = await ops.createDoc(contact.class.Employee, contact.space.Employee, {
-          name,
-          city: ''
-        })
+        const employeeId = await createEmployee(ops, name)
+
         await ops.updateDoc(contact.class.EmployeeAccount, existingAccount.space, existingAccount._id, {
           employee: employeeId
+        })
+      } else if (!employee.active) {
+        await ops.update(employee, {
+          active: true
         })
       }
     }
@@ -599,10 +606,79 @@ export async function dropAccount (db: Db, email: string): Promise<void> {
   if (account === null) {
     throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.AccountNotFound, { account: email }))
   }
+
+  const workspaces = await db
+    .collection<Workspace>(WORKSPACE_COLLECTION)
+    .find({ _id: { $in: account.workspaces } })
+    .toArray()
+
+  await Promise.all(
+    workspaces.map(async (ws) => {
+      return await deactivateEmployeeAccount(account, ws.workspace)
+    })
+  )
+
   await db.collection(ACCOUNT_COLLECTION).deleteOne({ _id: account._id })
   await db
     .collection<Workspace>(WORKSPACE_COLLECTION)
     .updateMany({ _id: { $in: account.workspaces } }, { $pull: { accounts: account._id } })
+}
+
+/**
+ * @public
+ */
+export async function leaveWorkspace (db: Db, token: string, email: string): Promise<void> {
+  const tokenData = decodeToken(token)
+
+  const account = await getAccount(db, email)
+  if (account === null) {
+    throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.AccountNotFound, { account: email }))
+  }
+
+  if (tokenData.email !== email) {
+    const currentAccount = await getAccount(db, tokenData.email)
+    if (currentAccount === null) {
+      throw new PlatformError(
+        new Status(Severity.ERROR, accountPlugin.status.AccountNotFound, { account: tokenData.email })
+      )
+    }
+  }
+
+  const workspace = await getWorkspace(db, tokenData.workspace)
+  if (workspace === null) {
+    throw new PlatformError(
+      new Status(Severity.ERROR, accountPlugin.status.WorkspaceNotFound, { workspace: tokenData.workspace })
+    )
+  }
+
+  await deactivateEmployeeAccount(account, workspace.workspace)
+
+  await db
+    .collection<Workspace>(WORKSPACE_COLLECTION)
+    .updateOne({ _id: workspace._id }, { $pull: { accounts: account._id } })
+  await db
+    .collection<Account>(ACCOUNT_COLLECTION)
+    .updateOne({ _id: account._id }, { $pull: { workspaces: workspace._id } })
+}
+
+async function deactivateEmployeeAccount (account: Account, workspace: string): Promise<void> {
+  const connection = await connect(getTransactor(), workspace, account.email)
+  try {
+    const ops = new TxOperations(connection, core.account.System)
+
+    const existingAccount = await ops.findOne(contact.class.EmployeeAccount, { email: account.email })
+
+    if (existingAccount !== undefined) {
+      const employee = await ops.findOne(contact.class.Employee, { _id: existingAccount.employee })
+      if (employee !== undefined) {
+        await ops.update(employee, {
+          active: false
+        })
+      }
+    }
+  } finally {
+    await connection.close()
+  }
 }
 
 function wrap (f: (db: Db, ...args: any[]) => Promise<any>) {
@@ -634,6 +710,7 @@ export const methods = {
   createWorkspace: wrap(createUserWorkspace),
   assignWorkspace: wrap(assignWorkspace),
   removeWorkspace: wrap(removeWorkspace),
+  leaveWorkspace: wrap(leaveWorkspace),
   listWorkspaces: wrap(listWorkspaces),
   changeName: wrap(changeName),
   changePassword: wrap(changePassword)

@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Employee, EmployeeAccount } from '@anticrm/contact'
+  import { Employee, EmployeeAccount } from '@anticrm/contact'
   import { Class, Doc, getCurrentAccount, Ref } from '@anticrm/core'
   import { Card, getClient, UserBoxList } from '@anticrm/presentation'
   import ui, { EditBox, DateRangePresenter } from '@anticrm/ui'
@@ -71,6 +71,6 @@
   <svelte:fragment slot="pool">
     <DateRangePresenter bind:value withTime editable labelNull={ui.string.SelectDate} />
     <DateRangePresenter bind:value={dueDate} labelNull={calendar.string.DueTo} withTime editable />
-    <UserBoxList _class={contact.class.Employee} bind:items={participants} label={calendar.string.Participants} />
+    <UserBoxList bind:items={participants} label={calendar.string.Participants} />
   </svelte:fragment>
 </Card>

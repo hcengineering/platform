@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Employee } from '@anticrm/contact'
+  import { Employee } from '@anticrm/contact'
   import { Class, Ref, Space } from '@anticrm/core'
   import { SpaceMultiBoxList, UserBoxList } from '@anticrm/presentation'
   import { DropdownLabelsIntl } from '@anticrm/ui'
@@ -31,7 +31,6 @@
 <div class="filterBlockContainer">
   <div class="simpleFilterButton">
     <UserBoxList
-      _class={contact.class.Employee}
       items={selectedParticipants}
       label={attachment.string.FileBrowserFilterFrom}
       on:update={(evt) => {

@@ -14,20 +14,15 @@
 -->
 <script lang="ts">
   import type { Class, Doc, DocumentQuery, Ref, Space } from '@anticrm/core'
-  import { IntlString } from '@anticrm/platform'
-  import { AnyComponent } from '@anticrm/ui'
+  import { ObjectCreate } from '../types'
   import ObjectPopup from './ObjectPopup.svelte'
   import SpaceInfo from './SpaceInfo.svelte'
 
   export let _class: Ref<Class<Space>>
   export let selected: Ref<Space> | undefined
   export let spaceQuery: DocumentQuery<Space> | undefined
-  export let create:
-    | {
-        component: AnyComponent
-        label: IntlString
-      }
-    | undefined = undefined
+  export let create: ObjectCreate | undefined = undefined
+  export let allowDeselect = false
 
   $: _create =
     create !== undefined
@@ -43,7 +38,7 @@
   {selected}
   bind:docQuery={spaceQuery}
   multiSelect={false}
-  allowDeselect={false}
+  {allowDeselect}
   shadows={true}
   create={_create}
   on:update

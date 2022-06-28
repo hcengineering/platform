@@ -434,3 +434,34 @@ export async function changePassword (oldPassword: string, password: string): Pr
     body: serialize(request)
   })
 }
+
+export async function leaveWorkspace (email: string): Promise<void> {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+
+  if (accountsUrl === undefined) {
+    throw new Error('accounts url not specified')
+  }
+
+  const overrideToken = getMetadata(login.metadata.OverrideLoginToken)
+  if (overrideToken !== undefined) {
+    const endpoint = getMetadata(login.metadata.OverrideEndpoint)
+    if (endpoint !== undefined) {
+      return
+    }
+  }
+  const token = fetchMetadataLocalStorage(login.metadata.LoginToken) as string
+
+  const request: Request<[string]> = {
+    method: 'leaveWorkspace',
+    params: [email]
+  }
+
+  await fetch(accountsUrl, {
+    method: 'POST',
+    headers: {
+      Authorization: 'Bearer ' + token,
+      'Content-Type': 'application/json'
+    },
+    body: serialize(request)
+  })
+}

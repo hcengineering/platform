@@ -28,6 +28,7 @@
     DatePickerPopup,
     fetchMetadataLocalStorage,
     getCurrentLocation,
+    Label,
     location,
     Location,
     navigate,
@@ -358,7 +359,7 @@
 </script>
 
 <svelte:window on:resize={windowResize} />
-{#if client}
+{#if employee?.active === true}
   <ActionHandler />
   <svg class="svg-mask">
     <clipPath id="notify-normal">
@@ -426,9 +427,7 @@
               showPopup(AccountPopup, {}, 'account')
             }}
           >
-            {#if employee}
-              <Avatar avatar={employee.avatar} size={'medium'} />
-            {/if}
+            <Avatar avatar={employee.avatar} size={'medium'} />
           </div>
         </div>
       </div>
@@ -507,7 +506,10 @@
   </Popup>
   <DatePickerPopup />
 {:else}
-  No client
+  <div class="flex-col-center justify-center h-full flex-grow">
+    <h1><Label label={workbench.string.AccountDisabled} /></h1>
+    <Label label={workbench.string.AccountDisabledDescr} />
+  </div>
 {/if}
 
 <style lang="scss">

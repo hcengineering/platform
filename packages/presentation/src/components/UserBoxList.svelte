@@ -13,20 +13,22 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Person } from '@anticrm/contact'
-  import type { Class, Doc, Ref } from '@anticrm/core'
+  import contact, { Employee } from '@anticrm/contact'
+  import type { Class, DocumentQuery, Ref } from '@anticrm/core'
   import type { IntlString } from '@anticrm/platform'
-  import { translate } from '@anticrm/platform'
-  import type { ButtonKind, ButtonSize, TooltipAlignment } from '@anticrm/ui'
+  import { ButtonKind, ButtonSize, Label, TooltipAlignment } from '@anticrm/ui'
   import { Tooltip, showPopup, Button } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation, { CombineAvatars, UsersPopup } from '..'
   import { createQuery } from '../utils'
   import Members from './icons/Members.svelte'
 
-  export let items: Ref<Person>[] = []
-  export let _class: Ref<Class<Doc>>
+  export let items: Ref<Employee>[] = []
+  export let _class: Ref<Class<Employee>> = contact.class.Employee
   export let label: IntlString
+  export let docQuery: DocumentQuery<Employee> | undefined = {
+    active: true
+  }
 
   export let kind: ButtonKind = 'no-border'
   export let size: ButtonSize = 'small'
@@ -34,11 +36,11 @@
   export let width: string | undefined = undefined
   export let labelDirection: TooltipAlignment | undefined = undefined
 
-  let persons: Person[] = []
+  let persons: Employee[] = []
 
   const query = createQuery()
 
-  $: query.query<Person>(_class, { _id: { $in: items } }, (result) => {
+  $: query.query<Employee>(_class, { _id: { $in: items } }, (result) => {
     persons = result
   })
 
@@ -50,6 +52,7 @@
       {
         _class,
         label,
+        docQuery,
         multiSelect: true,
         allowDeselect: false,
         selectedUsers: items
@@ -80,9 +83,9 @@
       {#if persons.length > 0}
         <div class="flex-row-center flex-nowrap pointer-events-none">
           <CombineAvatars {_class} bind:items size={'inline'} />
-          {#await translate(presentation.string.NumberMembers, { count: persons.length }) then text}
-            <span class="overflow-label ml-1-5">{text}</span>
-          {/await}
+          <span class="overflow-label ml-1-5">
+            <Label label={presentation.string.NumberMembers} params={{ count: persons.length }} />
+          </span>
         </div>
       {/if}
     </svelte:fragment>

@@ -14,19 +14,12 @@
 -->
 <script lang="ts">
   import type { Class, Doc, DocumentQuery, Enum, Ref } from '@anticrm/core'
-  import { IntlString } from '@anticrm/platform'
-  import { ObjectPopup } from '@anticrm/presentation'
-  import { AnyComponent } from '@anticrm/ui'
+  import { ObjectCreate, ObjectPopup } from '@anticrm/presentation'
 
   export let _class: Ref<Class<Enum>>
   export let selected: Ref<Enum> | undefined
   export let query: DocumentQuery<Enum> | undefined
-  export let create:
-    | {
-        component: AnyComponent
-        label: IntlString
-      }
-    | undefined = undefined
+  export let create: ObjectCreate | undefined = undefined
 
   $: _create =
     create !== undefined

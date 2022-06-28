@@ -15,10 +15,9 @@
 -->
 <script lang="ts">
   import contact, { Contact, formatName } from '@anticrm/contact'
-  import type { Class, FindOptions, Ref } from '@anticrm/core'
+  import type { Class, DocumentQuery, FindOptions, Ref } from '@anticrm/core'
   import type { Asset, IntlString } from '@anticrm/platform'
   import {
-    AnyComponent,
     AnySvelteComponent,
     Button,
     ButtonKind,
@@ -30,6 +29,7 @@
   } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation from '..'
+  import { ObjectCreate } from '../types'
   import { getClient } from '../utils'
   import IconPerson from './icons/Person.svelte'
   import UserInfo from './UserInfo.svelte'
@@ -38,6 +38,7 @@
   export let _class: Ref<Class<Contact>>
   export let excluded: Ref<Contact>[] | undefined = undefined
   export let options: FindOptions<Contact> | undefined = undefined
+  export let docQuery: DocumentQuery<Contact> | undefined = undefined
   export let label: IntlString
   export let icon: Asset | AnySvelteComponent | undefined = IconPerson
   export let placeholder: IntlString = presentation.string.Search
@@ -52,12 +53,7 @@
   export let focusIndex = -1
   export let showTooltip: LabelAndProps | undefined = undefined
 
-  export let create:
-    | {
-        component: AnyComponent
-        label: IntlString
-      }
-    | undefined = undefined
+  export let create: ObjectCreate | undefined = undefined
 
   const dispatch = createEventDispatcher()
 
@@ -85,6 +81,7 @@
         {
           _class,
           options,
+          docQuery,
           ignoreUsers: excluded ?? [],
           icon,
           allowDeselect,
@@ -108,54 +105,31 @@
       )
     }
   }
+
+  $: hideIcon = size === 'x-large' || (size === 'large' && kind !== 'link')
 </script>
 
 <div bind:this={container} class="min-w-0" class:w-full={width === '100%'}>
-  {#if kind !== 'link'}
-    <Button
-      {focusIndex}
-      icon={size === 'x-large' && selected ? undefined : icon}
-      width={width ?? 'min-content'}
-      {size}
-      {kind}
-      {justify}
-      {showTooltip}
-      on:click={_click}
-    >
-      <span slot="content" class="overflow-label disabled">
-        {#if selected}
-          {#if size === 'x-large'}
-            <UserInfo value={selected} size={'medium'} {icon} />
-          {:else}
-            {getName(selected)}
-          {/if}
+  <Button
+    {focusIndex}
+    icon={hideIcon && selected ? undefined : icon}
+    width={width ?? 'min-content'}
+    {size}
+    {kind}
+    {justify}
+    {showTooltip}
+    on:click={_click}
+  >
+    <span slot="content" class="overflow-label disabled">
+      {#if selected}
+        {#if hideIcon}
+          <UserInfo value={selected} size={kind === 'link' ? 'x-small' : 'medium'} {icon} />
         {:else}
-          <Label {label} />
+          {getName(selected)}
         {/if}
-      </span>
-    </Button>
-  {:else}
-    <Button
-      {focusIndex}
-      icon={(size === 'x-large' || size === 'large') && selected ? undefined : icon}
-      width={width ?? 'min-content'}
-      {size}
-      {kind}
-      {justify}
-      {showTooltip}
-      on:click={_click}
-    >
-      <span slot="content" class="overflow-label disabled">
-        {#if selected}
-          {#if size === 'x-large' || size === 'large'}
-            <UserInfo value={selected} size={'x-small'} {icon} />
-          {:else}
-            {getName(selected)}
-          {/if}
-        {:else}
-          <Label {label} />
-        {/if}
-      </span>
-    </Button>
-  {/if}
+      {:else}
+        <Label {label} />
+      {/if}
+    </span>
+  </Button>
 </div>

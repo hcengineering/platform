@@ -61,6 +61,9 @@
         selectedUsers: value.members,
         allowDeselect: true,
         multiSelect: true,
+        docQuery: {
+          active: true
+        },
         placeholder: tracker.string.ProjectMembersSearchPlaceholder
       },
       eventToHTMLElement(event),
