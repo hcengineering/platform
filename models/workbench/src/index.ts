@@ -54,7 +54,7 @@ export function createNavigateAction (
   label: IntlString,
   config: {
     mode: 'app' | 'special' | 'space'
-    application: string
+    application?: string
     special?: string
     space?: Ref<Space>
     spaceClass?: Ref<Class<Space>>

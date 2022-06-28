@@ -57,7 +57,7 @@ export async function doNavigate (
   evt: Event | undefined,
   props: {
     mode: 'app' | 'special' | 'space'
-    application?: Ref<Application>
+    application?: string
     special?: string
     spaceSpecial?: string
     space?: Ref<Space>
