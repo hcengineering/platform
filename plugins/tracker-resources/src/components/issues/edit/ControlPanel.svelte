@@ -44,10 +44,10 @@
   </span>
   <AssigneeEditor value={issue} />
 
-  <span class="label">
+  <span class="labelTop">
     <Label label={tracker.string.Labels} />
   </span>
-  <Component is={tags.component.TagsAttributeEditor} props={{ object: issue }} />
+  <Component is={tags.component.TagsAttributeEditor} props={{ object: issue, label: tracker.string.AddLabel }} />
 
   <div class="divider" />
 
@@ -83,5 +83,9 @@
     grid-column: 1 / 3;
     height: 1px;
     background-color: var(--divider-color);
+  }
+  .labelTop {
+    align-self: start;
+    margin-top: 0.385rem;
   }
 </style>
