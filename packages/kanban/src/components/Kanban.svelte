@@ -27,7 +27,7 @@
   export let states: TypeState[] = []
   export let query: DocumentQuery<Item> = {}
   export let fieldName: string
-  export let rankFieldName: string
+  export let rankFieldName: string | undefined
   export let selection: number | undefined = undefined
   export let checked: Doc[] = []
 
@@ -57,7 +57,10 @@
     dragItem?: Item // required for svelte to properly recalculate state.
   ): ExtItem[] {
     const stateCards = objects.filter((it) => (it as any)[fieldName] === state._id)
-    stateCards.sort((a, b) => (a as any)[rankFieldName]?.localeCompare((b as any)[rankFieldName]))
+    if (rankFieldName !== undefined) {
+      const sortField = rankFieldName
+      stateCards.sort((a, b) => (a as any)[sortField]?.localeCompare((b as any)[sortField]))
+    }
     return stateCards.map((it, idx, arr) => ({
       it,
       prev: arr[idx - 1],
@@ -96,14 +99,13 @@
       }
     }
 
-    const dragCardRank = (dragCard as any)[rankFieldName]
-    if (dragCardInitialRank !== (dragCard as any)[rankFieldName]) {
+    if (rankFieldName !== undefined && dragCardInitialRank !== (dragCard as any)[rankFieldName]) {
+      const dragCardRank = (dragCard as any)[rankFieldName]
       updates = {
         ...updates,
         [rankFieldName]: dragCardRank
       }
     }
-
     if (Object.keys(updates).length > 0) {
       await updateItem(dragCard, updates)
     }
@@ -113,7 +115,7 @@
   const client = getClient()
 
   let dragCard: Item | undefined
-  let dragCardInitialRank: string
+  let dragCardInitialRank: string | undefined
   let dragCardInitialState: StateType
 
   let isDragging = false
@@ -144,23 +146,26 @@
     if (card !== undefined && card[fieldName] !== state._id) {
       card[fieldName] = state._id
       const objs = getStateObjects(objects, state)
-      card[rankFieldName] = calcRank(objs[objs.length - 1]?.it, undefined)
+      if (rankFieldName !== undefined) card[rankFieldName] = calcRank(objs[objs.length - 1]?.it, undefined)
     }
   }
   function cardDragOver (evt: CardDragEvent, object: ExtItem): void {
     if (dragCard !== undefined) {
-      ;(dragCard as any)[rankFieldName] = doCalcRank(object, evt)
+      ;(dragCard as any)[fieldName] = (dragCard as any)[fieldName]
+      if (rankFieldName !== undefined) {
+        ;(dragCard as any)[rankFieldName] = doCalcRank(object, evt)
+      }
     }
   }
   function cardDrop (evt: CardDragEvent, object: ExtItem): void {
-    if (dragCard !== undefined) {
+    if (dragCard !== undefined && rankFieldName !== undefined) {
       ;(dragCard as any)[rankFieldName] = doCalcRank(object, evt)
     }
     isDragging = false
   }
   function onDragStart (object: ExtItem, state: TypeState): void {
     dragCardInitialState = state._id
-    dragCardInitialRank = (object.it as any)[rankFieldName]
+    dragCardInitialRank = rankFieldName === undefined ? undefined : (object.it as any)[rankFieldName]
     dragCard = object.it
     isDragging = true
     dispatch('obj-focus', object.it)

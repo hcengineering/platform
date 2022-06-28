@@ -43,7 +43,8 @@ export const issuesOrderByOptions: Record<IssuesOrdering, IntlString> = {
   [IssuesOrdering.Status]: tracker.string.Status,
   [IssuesOrdering.Priority]: tracker.string.Priority,
   [IssuesOrdering.LastUpdated]: tracker.string.LastUpdated,
-  [IssuesOrdering.DueDate]: tracker.string.DueDate
+  [IssuesOrdering.DueDate]: tracker.string.DueDate,
+  [IssuesOrdering.Manual]: tracker.string.Manual
 }
 
 export const issuesDateModificationPeriodOptions: Record<IssuesDateModificationPeriod, IntlString> = {

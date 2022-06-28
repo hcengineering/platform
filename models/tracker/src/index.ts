@@ -494,7 +494,7 @@ export function createModel (builder: Builder): void {
                 id: issuesId,
                 label: tracker.string.Issues,
                 icon: tracker.icon.Issues,
-                component: tracker.component.IssuesView,
+                component: tracker.component.Issues,
                 componentProps: {
                   title: tracker.string.Issues
                 }

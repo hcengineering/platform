@@ -14,18 +14,18 @@
 -->
 <script lang="ts">
   import contact from '@anticrm/contact'
-  import { Class, Doc, DocumentQuery, FindOptions, Ref, SortingOrder, WithLookup } from '@anticrm/core'
-  import { Kanban, TypeState } from '@anticrm/kanban'
+  import { Class, Doc, DocumentQuery, Lookup, Ref, SortingOrder, WithLookup } from '@anticrm/core'
+  import { Kanban } from '@anticrm/kanban'
   import notification from '@anticrm/notification'
   import { createQuery, getClient } from '@anticrm/presentation'
-  import { Issue, IssuesGrouping, IssueStatus, Team, ViewOptions } from '@anticrm/tracker'
+  import { Issue, IssuesGrouping, IssuesOrdering, IssueStatus, Team, ViewOptions } from '@anticrm/tracker'
   import { Button, Component, Icon, IconAdd, showPanel, showPopup, Tooltip } from '@anticrm/ui'
   import { focusStore, ListSelectionProvider, SelectDirection, selectionStore } from '@anticrm/view-resources'
   import ActionContext from '@anticrm/view-resources/src/components/ActionContext.svelte'
   import Menu from '@anticrm/view-resources/src/components/Menu.svelte'
   import { onMount } from 'svelte'
   import tracker from '../../plugin'
-  import { getKanbanStatuses } from '../../utils'
+  import { getKanbanStatuses, issuesSortOrderMap } from '../../utils'
   import CreateIssue from '../CreateIssue.svelte'
   import ProjectEditor from '../projects/ProjectEditor.svelte'
   import AssigneePresenter from './AssigneePresenter.svelte'
@@ -40,7 +40,9 @@
   export let query: DocumentQuery<Issue> = {}
 
   $: currentSpace = typeof query.space === 'string' ? query.space : tracker.team.DefaultTeam
-  $: ({ groupBy, shouldShowEmptyGroups, shouldShowSubIssues } = viewOptions)
+  $: ({ groupBy, orderBy, shouldShowEmptyGroups, shouldShowSubIssues } = viewOptions)
+  $: sort = { [orderBy]: issuesSortOrderMap[orderBy] }
+  $: rankFieldName = orderBy === IssuesOrdering.Manual ? orderBy : undefined
   $: resultQuery = {
     ...(shouldShowSubIssues ? {} : { attachedTo: tracker.ids.NoParent }),
     space: currentSpace,
@@ -57,17 +59,10 @@
   })
 
   let issueStatuses: WithLookup<IssueStatus>[] | undefined
-  let states: TypeState[] | undefined
   $: statusesQuery.query(
     tracker.class.IssueStatus,
     { attachedTo: currentSpace },
     (is) => {
-      states = is.map((status) => ({
-        _id: status._id,
-        title: status.name,
-        color: status.color ?? status.$lookup?.category?.color ?? 0,
-        icon: status.$lookup?.category?.icon ?? undefined
-      }))
       issueStatuses = is
     },
     {
@@ -80,13 +75,11 @@
     return object as WithLookup<Issue>
   }
 
-  const options: FindOptions<Issue> = {
-    lookup: {
-      assignee: contact.class.Employee,
-      space: tracker.class.Team,
-      _id: {
-        subIssues: tracker.class.Issue
-      }
+  const lookup: Lookup<Issue> = {
+    assignee: contact.class.Employee,
+    space: tracker.class.Team,
+    _id: {
+      subIssues: tracker.class.Issue
     }
   }
 
@@ -124,10 +117,10 @@
     _class={tracker.class.Issue}
     search=""
     {states}
-    {options}
+    options={{ sort, lookup }}
     query={resultQuery}
     fieldName={groupBy}
-    rankFieldName={'rank'}
+    {rankFieldName}
     on:content={(evt) => {
       listProvider.update(evt.detail)
     }}

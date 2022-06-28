@@ -54,7 +54,7 @@ export interface Selection {
 }
 
 export type IssuesGroupByKeys = keyof Pick<Issue, 'status' | 'priority' | 'assignee' | 'project'>
-export type IssuesOrderByKeys = keyof Pick<Issue, 'status' | 'priority' | 'modifiedOn' | 'dueDate'>
+export type IssuesOrderByKeys = keyof Pick<Issue, 'status' | 'priority' | 'modifiedOn' | 'dueDate' | 'rank'>
 
 export const issuesGroupKeyMap: Record<IssuesGrouping, IssuesGroupByKeys | undefined> = {
   [IssuesGrouping.Status]: 'status',
@@ -68,14 +68,16 @@ export const issuesOrderKeyMap: Record<IssuesOrdering, IssuesOrderByKeys> = {
   [IssuesOrdering.Status]: 'status',
   [IssuesOrdering.Priority]: 'priority',
   [IssuesOrdering.LastUpdated]: 'modifiedOn',
-  [IssuesOrdering.DueDate]: 'dueDate'
+  [IssuesOrdering.DueDate]: 'dueDate',
+  [IssuesOrdering.Manual]: 'rank'
 }
 
 export const issuesSortOrderMap: Record<IssuesOrderByKeys, SortingOrder> = {
   status: SortingOrder.Ascending,
   priority: SortingOrder.Ascending,
   modifiedOn: SortingOrder.Descending,
-  dueDate: SortingOrder.Descending
+  dueDate: SortingOrder.Descending,
+  rank: SortingOrder.Ascending
 }
 
 export const issuesGroupEditorMap: Record<'status' | 'priority' | 'project', AnyComponent | undefined> = {
