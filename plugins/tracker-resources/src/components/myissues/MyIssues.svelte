@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { getCurrentAccount, Ref, TxCollectionCUD } from '@anticrm/core'
+  import core, { DocumentQuery, getCurrentAccount, Ref, TxCollectionCUD } from '@anticrm/core'
   import type { Issue } from '@anticrm/tracker'
   import type { EmployeeAccount } from '@anticrm/contact'
   import type { IntlString } from '@anticrm/platform'
@@ -31,8 +31,8 @@
   ]
   const currentUser = getCurrentAccount() as EmployeeAccount
   const assigned = { assignee: currentUser.employee }
-  let created: Ref<Issue>[] = []
-  let subscribed: Ref<Issue>[] = []
+  const created = { _id: { $in: [] as Ref<Issue>[] } }
+  const subscribed = { _id: { $in: [] as Ref<Issue>[] } }
 
   const createdQuery = createQuery()
   $: createdQuery.query<TxCollectionCUD<Issue, Issue>>(
@@ -44,7 +44,7 @@
       'tx._class': core.class.TxCreateDoc
     },
     (result) => {
-      created = result.map(({ tx: { objectId } }) => objectId)
+      created._id.$in = result.map(({ tx: { objectId } }) => objectId)
     },
     { sort: { _id: 1 } }
   )
@@ -54,9 +54,11 @@
     notification.class.LastView,
     { user: getCurrentAccount()._id, attachedToClass: tracker.class.Issue, lastView: { $gte: 0 } },
     (result) => {
-      const issuesIds = result.map(({ attachedTo }) => attachedTo as Ref<Issue>)
-      if (issuesIds.length === subscribed.length && subscribed.every((id, i) => issuesIds[i] === id)) return
-      subscribed = issuesIds
+      const newSub = result.map(({ attachedTo }) => attachedTo as Ref<Issue>)
+      const curSub = subscribed._id.$in
+      if (curSub.length !== newSub.length || curSub.some((id, i) => newSub[i] !== id)) {
+        subscribed._id.$in = newSub
+      }
     },
     { sort: { _id: 1 } }
   )
@@ -66,12 +68,11 @@
     if (newMode === mode) return
     mode = newMode
   }
-  $: query =
-    mode === 'assigned'
-      ? assigned
-      : {
-          _id: { $in: mode === 'created' ? created : subscribed }
-        }
+
+  function getQuery (mode: string, queries: { [key: string]: DocumentQuery<Issue> }) {
+    return queries[mode]
+  }
+  $: query = getQuery(mode, { assigned, created, subscribed })
 </script>
 
 <IssuesView {query} title={tracker.string.MyIssues}>
