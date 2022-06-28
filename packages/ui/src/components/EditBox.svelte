@@ -127,6 +127,7 @@
         on:change
         on:keydown
         on:keypress
+        on:blur
       />
     {:else if format === 'number'}
       <input
@@ -140,6 +141,7 @@
         on:change
         on:keydown
         on:keypress
+        on:blur
       />
     {:else}
       <input
@@ -152,6 +154,7 @@
         on:change
         on:keydown
         on:keypress
+        on:blur
       />
     {/if}
   </div>

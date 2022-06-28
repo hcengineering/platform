@@ -26,6 +26,13 @@
   const dispatch = createEventDispatcher()
   const client = getClient()
 
+  let oldTitle: string = ''
+  let rawTitle: string = ''
+  $: if (oldTitle !== object.title) {
+    oldTitle = object.title
+    rawTitle = object.title
+  }
+
   function change (field: string, value: any) {
     client.updateDoc(object._class, object.space, object._id, { [field]: value })
   }
@@ -38,12 +45,14 @@
 {#if object !== undefined}
   <Grid column={2} rowGap={1}>
     <EditBox
-      bind:value={object.title}
+      bind:value={rawTitle}
       placeholder={lead.string.LeadPlaceholder}
       kind={'large-style'}
       maxWidth={'20rem'}
       focusable
-      on:change={() => change('title', object.title)}
+      on:blur={() => {
+        if (rawTitle !== object.title) change('title', rawTitle)
+      }}
     />
     <UserBox
       _class={contact.class.Contact}

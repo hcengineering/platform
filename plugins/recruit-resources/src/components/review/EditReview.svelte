@@ -29,6 +29,13 @@
   const dispatch = createEventDispatcher()
   const client = getClient()
 
+  let oldTitle: string = ''
+  let rawTitle: string = ''
+  $: if (oldTitle !== object.title) {
+    oldTitle = object.title
+    rawTitle = object.title
+  }
+
   onMount(() => {
     dispatch('open', {
       ignoreKeys: ['number', 'comments', 'title', 'description', 'verdict'],
@@ -49,11 +56,13 @@
   <Grid column={1} rowGap={1.5}>
     <Grid column={2} columnGap={1}>
       <EditBox
-        bind:value={object.title}
+        bind:value={rawTitle}
         kind={'large-style'}
         maxWidth={'20rem'}
         focusable
-        on:change={() => client.update(object, { title: object.title })}
+        on:blur={() => {
+          if (rawTitle !== object.title) client.update(object, { title: rawTitle })
+        }}
       />
       <div
         class="clear-mins"
@@ -79,9 +88,8 @@
     <FullDescriptionBox
       label={recruit.string.Description}
       content={object.description}
-      alwaysEdit
-      on:value={(evt) => {
-        client.update(object, { description: evt.detail })
+      on:save={(res) => {
+        client.update(object, { description: res.detail })
       }}
     />
     <EditBox
