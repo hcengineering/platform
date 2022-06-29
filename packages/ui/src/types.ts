@@ -98,6 +98,7 @@ export interface PopupPositionElement {
     v: VerticalAlignment
     h: HorizontalAlignment
   }
+  kind?: 'submenu'
 }
 
 export type PopupPosAlignment = 'right' | 'top' | 'float' | 'account' | 'full' | 'content' | 'middle'
