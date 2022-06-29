@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Employee, EmployeeAccount } from '@anticrm/contact'
+  import { Employee, EmployeeAccount } from '@anticrm/contact'
   import { Class, Doc, getCurrentAccount, Ref } from '@anticrm/core'
   import { Card, getClient, UserBoxList } from '@anticrm/presentation'
   import ui, { EditBox, DateRangePresenter } from '@anticrm/ui'
@@ -74,6 +74,6 @@
   <svelte:fragment slot="pool">
     <!-- <TimeShiftPicker title={calendar.string.Date} bind:value direction="after" /> -->
     <DateRangePresenter bind:value withTime={true} editable={true} labelNull={ui.string.SelectDate} />
-    <UserBoxList _class={contact.class.Employee} bind:items={participants} label={calendar.string.Participants} />
+    <UserBoxList bind:items={participants} label={calendar.string.Participants} />
   </svelte:fragment>
 </Card>

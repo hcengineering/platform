@@ -54,7 +54,8 @@ export const demoOperation: MigrateOperation = {
     if (current === undefined) {
       const employee = await tx.createDoc(contact.class.Employee, contact.space.Employee, {
         name: 'Chen,Rosamund',
-        city: 'Mountain View'
+        city: 'Mountain View',
+        active: true
       })
 
       await tx.createDoc<EmployeeAccount>(contact.class.EmployeeAccount, core.space.Model, {

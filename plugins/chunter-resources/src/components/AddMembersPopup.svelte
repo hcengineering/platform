@@ -73,6 +73,9 @@
     <UsersPopup
       selected={undefined}
       _class={contact.class.Employee}
+      docQuery={{
+        active: true
+      }}
       multiSelect={true}
       allowDeselect={true}
       selectedUsers={selectedEmployees}

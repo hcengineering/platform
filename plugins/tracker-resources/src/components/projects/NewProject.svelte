@@ -13,10 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact from '@anticrm/contact'
   import { Data, Ref } from '@anticrm/core'
   import { IntlString } from '@anticrm/platform'
-  import { Card, getClient, SpaceSelector, UserBox, UserBoxList } from '@anticrm/presentation'
+  import { Card, getClient, SpaceSelector, EmployeeBox, UserBoxList } from '@anticrm/presentation'
   import { Project, ProjectStatus, Team } from '@anticrm/tracker'
   import { DatePresenter, EditBox } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
@@ -83,19 +82,14 @@
   </div>
   <div slot="pool" class="flex-row-center text-sm gap-1-5">
     <ProjectStatusSelector selectedProjectStatus={object.status} onProjectStatusChange={handleProjectStatusChanged} />
-    <UserBox
-      _class={contact.class.Employee}
+    <EmployeeBox
       label={tracker.string.ProjectLead}
       placeholder={tracker.string.AssignTo}
       bind:value={object.lead}
       allowDeselect
       titleDeselect={tracker.string.Unassigned}
     />
-    <UserBoxList
-      _class={contact.class.Employee}
-      bind:items={object.members}
-      label={tracker.string.ProjectStatusPlaceholder}
-    />
+    <UserBoxList bind:items={object.members} label={tracker.string.ProjectStatusPlaceholder} />
     <!-- TODO: add labels after customize IssueNeedsToBeCompletedByThisDate -->
     <DatePresenter bind:value={object.startDate} labelNull={tracker.string.StartDate} editable />
     <DatePresenter bind:value={object.targetDate} labelNull={tracker.string.TargetDate} editable />

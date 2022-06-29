@@ -83,6 +83,9 @@
       {
         _class: contact.class.Employee,
         selected: value?._id,
+        docQuery: {
+          active: true
+        },
         allowDeselect: true,
         placeholder: tracker.string.AssignTo
       },

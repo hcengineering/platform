@@ -37,6 +37,7 @@ export { default as SpacesMultiPopup } from './components/SpacesMultiPopup.svelt
 export { default as UserBox } from './components/UserBox.svelte'
 export { default as UserBoxList } from './components/UserBoxList.svelte'
 export { default as UserInfo } from './components/UserInfo.svelte'
+export { default as EmployeeBox } from './components/EmployeeBox.svelte'
 export { default as UsersPopup } from './components/UsersPopup.svelte'
 export { default as MembersBox } from './components/MembersBox.svelte'
 export { default as IconMembers } from './components/icons/Members.svelte'

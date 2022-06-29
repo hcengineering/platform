@@ -16,10 +16,9 @@
   import { createEventDispatcher } from 'svelte'
   import { Employee } from '@anticrm/contact'
   import { AttachedData, Ref } from '@anticrm/core'
-  import { getClient, UserBox } from '@anticrm/presentation'
+  import { getClient, EmployeeBox } from '@anticrm/presentation'
   import { Issue } from '@anticrm/tracker'
   import { ButtonKind, ButtonSize, TooltipAlignment } from '@anticrm/ui'
-  import contact from '@anticrm/contact'
   import tracker from '../../plugin'
 
   export let value: Issue | AttachedData<Issue>
@@ -45,8 +44,7 @@
 </script>
 
 {#if value}
-  <UserBox
-    _class={contact.class.Employee}
+  <EmployeeBox
     label={tracker.string.Assignee}
     placeholder={tracker.string.Assignee}
     value={value.assignee}

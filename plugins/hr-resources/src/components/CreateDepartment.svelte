@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Employee } from '@anticrm/contact'
+  import { Employee } from '@anticrm/contact'
   import { Ref } from '@anticrm/core'
-  import { Card, getClient, SpaceSelector, UserBox } from '@anticrm/presentation'
+  import { Card, getClient, SpaceSelector, EmployeeBox } from '@anticrm/presentation'
   import { Button, createFocusManager, EditBox, FocusHandler } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import hr from '../plugin'
@@ -74,16 +74,13 @@
     <SpaceSelector _class={hr.class.Department} label={hr.string.ParentDepartmentLabel} bind:space />
   </svelte:fragment>
   <svelte:fragment slot="pool">
-    <UserBox
+    <EmployeeBox
       focusIndex={3}
-      _class={contact.class.Employee}
       label={hr.string.TeamLead}
       placeholder={hr.string.TeamLead}
       bind:value={lead}
       allowDeselect
       titleDeselect={hr.string.UnAssignLead}
-      kind={'no-border'}
-      size={'small'}
     />
   </svelte:fragment>
 </Card>

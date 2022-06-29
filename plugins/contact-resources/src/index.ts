@@ -14,10 +14,11 @@
 // limitations under the License.
 //
 
-import { Contact, formatName } from '@anticrm/contact'
+import { Contact, Employee, formatName } from '@anticrm/contact'
 import { Class, Client, Ref } from '@anticrm/core'
 import { Resources } from '@anticrm/platform'
-import { Avatar, ObjectSearchResult, UserInfo } from '@anticrm/presentation'
+import { Avatar, getClient, MessageBox, ObjectSearchResult, UserInfo } from '@anticrm/presentation'
+import { showPopup } from '@anticrm/ui'
 import Channels from './components/Channels.svelte'
 import ChannelsEditor from './components/ChannelsEditor.svelte'
 import ChannelsPresenter from './components/ChannelsPresenter.svelte'
@@ -45,6 +46,8 @@ import Members from './components/Members.svelte'
 import MemberPresenter from './components/MemberPresenter.svelte'
 import EditMember from './components/EditMember.svelte'
 import EmployeeArrayEditor from './components/EmployeeArrayEditor.svelte'
+import EmployeeEditor from './components/EmployeeEditor.svelte'
+import { leaveWorkspace } from '@anticrm/login-resources'
 
 export {
   Channels,
@@ -55,7 +58,8 @@ export {
   ChannelsDropdown,
   EmployeePresenter,
   EmployeeBrowser,
-  MemberPresenter
+  MemberPresenter,
+  EmployeeEditor
 }
 
 async function queryContact (
@@ -73,7 +77,30 @@ async function queryContact (
   }))
 }
 
+async function kickEmployee (doc: Employee): Promise<void> {
+  const client = getClient()
+  const email = await client.findOne(contact.class.EmployeeAccount, { employee: doc._id })
+  if (email === undefined) return
+  showPopup(
+    MessageBox,
+    {
+      label: contact.string.KickEmployee,
+      message: contact.string.KickEmployeeDescr
+    },
+    undefined,
+    (res?: boolean) => {
+      if (res === true) {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        leaveWorkspace(email.email)
+      }
+    }
+  )
+}
+
 export default async (): Promise<Resources> => ({
+  actionImpl: {
+    KickEmployee: kickEmployee
+  },
   component: {
     PersonEditor,
     OrganizationEditor,
@@ -94,7 +121,8 @@ export default async (): Promise<Resources> => ({
     Members,
     MemberPresenter,
     EditMember,
-    EmployeeArrayEditor
+    EmployeeArrayEditor,
+    EmployeeEditor
   },
   completion: {
     EmployeeQuery: async (client: Client, query: string) => await queryContact(contact.class.Employee, client, query),

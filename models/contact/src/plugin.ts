@@ -20,6 +20,7 @@ import {} from '@anticrm/core'
 import { ObjectSearchCategory, ObjectSearchFactory } from '@anticrm/model-presentation'
 import { IntlString, mergeIds, Resource } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'
+import { Action, ActionCategory, ViewAction } from '@anticrm/view'
 
 export default mergeIds(contactId, contact, {
   component: {
@@ -38,7 +39,8 @@ export default mergeIds(contactId, contact, {
     Members: '' as AnyComponent,
     MemberPresenter: '' as AnyComponent,
     EditMember: '' as AnyComponent,
-    EmployeeArrayEditor: '' as AnyComponent
+    EmployeeArrayEditor: '' as AnyComponent,
+    EmployeeEditor: '' as AnyComponent
   },
   string: {
     Persons: '' as IntlString,
@@ -71,5 +73,14 @@ export default mergeIds(contactId, contact, {
     EmployeeCategory: '' as Ref<ObjectSearchCategory>,
     PersonCategory: '' as Ref<ObjectSearchCategory>,
     OrganizationCategory: '' as Ref<ObjectSearchCategory>
+  },
+  category: {
+    Contact: '' as Ref<ActionCategory>
+  },
+  action: {
+    KickEmployee: '' as Ref<Action>
+  },
+  actionImpl: {
+    KickEmployee: '' as ViewAction
   }
 })

@@ -2,6 +2,11 @@
 
 ## 0.6.30 (upcoming)
 
+Core:
+
+- Allow to leave workspace
+- Allow to kick employee
+
 HR:
 
 - Allow to change assignee in Kanban

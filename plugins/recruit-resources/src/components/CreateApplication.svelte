@@ -17,7 +17,7 @@
   import contact from '@anticrm/contact'
   import { Account, Class, Client, Doc, generateId, Ref, SortingOrder, Space } from '@anticrm/core'
   import { getResource, OK, Resource, Severity, Status } from '@anticrm/platform'
-  import { Card, createQuery, getClient, SpaceSelector, UserBox } from '@anticrm/presentation'
+  import { Card, createQuery, EmployeeBox, getClient, SpaceSelector, UserBox } from '@anticrm/presentation'
   import type { Applicant, Candidate } from '@anticrm/recruit'
   import task, { calcRank, SpaceWithStates, State } from '@anticrm/task'
   import ui, {
@@ -269,16 +269,13 @@
           create={{ component: recruit.component.CreateCandidate, label: recruit.string.CreateTalent }}
         />
       {/if}
-      <UserBox
+      <EmployeeBox
         focusIndex={2}
-        _class={contact.class.Employee}
         label={recruit.string.AssignRecruiter}
         placeholder={recruit.string.Recruiters}
         bind:value={doc.assignee}
         allowDeselect
         titleDeselect={recruit.string.UnAssignRecruiter}
-        kind={'no-border'}
-        size={'small'}
       />
       {#if states.length > 0}
         <Button

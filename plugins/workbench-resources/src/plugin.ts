@@ -34,7 +34,9 @@ export default mergeIds(workbenchId, workbench, {
     Leave: '' as IntlString,
     Joined: '' as IntlString,
     Join: '' as IntlString,
-    BrowseSpaces: '' as IntlString
+    BrowseSpaces: '' as IntlString,
+    AccountDisabled: '' as IntlString,
+    AccountDisabledDescr: '' as IntlString
   },
   component: {
     SpacePanel: '' as AnyComponent

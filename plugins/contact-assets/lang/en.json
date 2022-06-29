@@ -63,6 +63,8 @@
     "Member": "Member",
     "Members": "Members",
     "NoMembers": "No members added",
-    "AddMember": "Add member"
+    "AddMember": "Add member",
+    "KickEmployee": "Kick an employee",
+    "KickEmployeeDescr": "Are you sure you want to kick the employee out of the workspace? This action cannot be undone"
   }
 }

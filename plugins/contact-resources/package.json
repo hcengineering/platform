@@ -43,6 +43,7 @@
     "@anticrm/notification-resources": "~0.6.0",
     "@anticrm/panel": "~0.6.0",
     "@anticrm/view-resources": "~0.6.0",
-    "@anticrm/attachment": "~0.6.1"
+    "@anticrm/attachment": "~0.6.1",
+    "@anticrm/login-resources": "~0.6.2"
   }
 }

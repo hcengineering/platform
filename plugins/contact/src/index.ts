@@ -105,6 +105,7 @@ export interface Status extends AttachedDoc {
  * @public
  */
 export interface Employee extends Person {
+  active: boolean
   statuses?: number
 }
 

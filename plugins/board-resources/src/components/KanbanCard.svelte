@@ -17,7 +17,7 @@
   import { AttachmentDroppable, AttachmentsPresenter } from '@anticrm/attachment-resources'
   import type { Card } from '@anticrm/board'
   import { CommentsPresenter } from '@anticrm/chunter-resources'
-  import contact, { Employee } from '@anticrm/contact'
+  import { Employee } from '@anticrm/contact'
   import type { Ref, WithLookup } from '@anticrm/core'
   import notification from '@anticrm/notification'
   import view from '@anticrm/view'
@@ -217,12 +217,7 @@
       </div>
       {#if (object.members?.length ?? 0) > 0}
         <div class="flex justify-end mt-1 mb-2" style:pointer-events={dragoverAttachment ? 'none' : 'all'}>
-          <UserBoxList
-            _class={contact.class.Employee}
-            items={object.members}
-            label={board.string.Members}
-            on:update={updateMembers}
-          />
+          <UserBoxList items={object.members} label={board.string.Members} on:update={updateMembers} />
         </div>
       {/if}
     </div>

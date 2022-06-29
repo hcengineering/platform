@@ -35,6 +35,7 @@
   {size}
   {kind}
   {justify}
+  allowDeselect
   {width}
   bind:space={value}
   on:change={(e) => onChange(e.detail)}

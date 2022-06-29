@@ -17,7 +17,7 @@
 import { TxOperations } from '@anticrm/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
 import core from '@anticrm/model-core'
-import contact from './index'
+import contact, { DOMAIN_CONTACT } from './index'
 
 async function createSpace (tx: TxOperations): Promise<void> {
   const current = await tx.findOne(core.class.Space, {
@@ -56,8 +56,22 @@ async function createSpace (tx: TxOperations): Promise<void> {
   }
 }
 
+async function setActiveEmployee (client: MigrationClient): Promise<void> {
+  await client.update(
+    DOMAIN_CONTACT,
+    {
+      _class: contact.class.Employee
+    },
+    {
+      active: true
+    }
+  )
+}
+
 export const contactOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {},
+  async migrate (client: MigrationClient): Promise<void> {
+    await setActiveEmployee(client)
+  },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)
     await createSpace(tx)

@@ -52,7 +52,10 @@
         _class: contact.class.Employee,
         selected: value.$lookup?.teamLead,
         allowDeselect: true,
-        placeholder: hr.string.TeamLead
+        placeholder: hr.string.TeamLead,
+        docQuery: {
+          active: true
+        }
       },
       eventToHTMLElement(event),
       changeLead

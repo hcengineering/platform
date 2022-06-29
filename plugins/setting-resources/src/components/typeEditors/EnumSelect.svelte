@@ -21,24 +21,19 @@
     Button,
     eventToHTMLElement,
     getFocusManager,
-    AnyComponent,
     Tooltip,
     TooltipAlignment
   } from '@anticrm/ui'
   import EnumPopup from './EnumPopup.svelte'
 
   import core, { Ref, Class, DocumentQuery, Enum } from '@anticrm/core'
+  import { ObjectCreate } from '@anticrm/presentation'
 
   export let label: IntlString
   export let value: Enum | undefined
   export let focusIndex = -1
   export let focus = false
-  export let create:
-    | {
-        component: AnyComponent
-        label: IntlString
-      }
-    | undefined = undefined
+  export let create: ObjectCreate | undefined = undefined
   export let labelDirection: TooltipAlignment | undefined = undefined
 
   const _class: Ref<Class<Enum>> = core.class.Enum

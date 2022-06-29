@@ -121,6 +121,8 @@ export class TStatus extends TAttachedDoc implements Status {
 @Model(contact.class.Employee, contact.class.Person)
 @UX(contact.string.Employee, contact.icon.Person, undefined, 'name')
 export class TEmployee extends TPerson implements Employee {
+  active!: boolean
+
   @Prop(Collection(contact.class.Status), contact.string.Status)
   statuses?: number
 }
@@ -243,7 +245,7 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(contact.class.Employee, core.class.Class, view.mixin.AttributeEditor, {
-    inlineEditor: contact.component.PersonEditor
+    inlineEditor: contact.component.EmployeeEditor
   })
 
   builder.mixin(contact.class.Channel, core.class.Class, view.mixin.AttributePresenter, {
@@ -393,6 +395,22 @@ export function createModel (builder: Builder): void {
       group: 'create'
     }
   })
+
+  createAction(
+    builder,
+    {
+      action: contact.actionImpl.KickEmployee,
+      label: contact.string.KickEmployee,
+      category: contact.category.Contact,
+      target: contact.class.Employee,
+      input: 'focus',
+      context: {
+        mode: ['context'],
+        group: 'other'
+      }
+    },
+    contact.action.KickEmployee
+  )
 }
 
 export { contactOperation } from './migration'

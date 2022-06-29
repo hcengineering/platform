@@ -180,6 +180,6 @@
       on:change={updateStart}
     />
     <DateRangePresenter bind:value={dueDate} labelNull={recruit.string.DueDate} withTime editable />
-    <UserBoxList _class={contact.class.Employee} bind:items={doc.participants} label={calendar.string.Participants} />
+    <UserBoxList bind:items={doc.participants} label={calendar.string.Participants} />
   </svelte:fragment>
 </Card>

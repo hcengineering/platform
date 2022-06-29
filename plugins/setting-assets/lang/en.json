@@ -43,6 +43,8 @@
     "EditAttribute": "Edit attribute",
     "CreateEnum": "Create enum",
     "Enums": "Enums",
-    "NewValue": "New value"
+    "NewValue": "New value",
+    "Leave": "Leave workspace",
+    "LeaveDescr": "Are you sure you want to leave the workspace? This action cannot be undone."
   }
 }

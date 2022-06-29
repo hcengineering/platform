@@ -70,9 +70,5 @@
     dispatch('close')
   }}
 >
-  <UserBoxList
-    _class={contact.class.Employee}
-    label={chunter.string.Members}
-    on:update={(evt) => (employeeIds = evt.detail)}
-  />
+  <UserBoxList label={chunter.string.Members} on:update={(evt) => (employeeIds = evt.detail)} />
 </SpaceCreateCard>
