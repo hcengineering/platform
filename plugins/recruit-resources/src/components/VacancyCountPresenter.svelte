@@ -22,9 +22,11 @@
   export let value: Vacancy
   export let applications: Map<Ref<Vacancy>, { count: number; modifiedOn: number }> | undefined
   export let resultQuery: DocumentQuery<Doc>
+
+  $: count = applications?.get(value._id)?.count ?? 0
 </script>
 
-{#if (applications?.get(value._id)?.count ?? 0) > 0}
+{#if value && count > 0}
   <div
     class="sm-tool-icon"
     use:tooltip={{
@@ -33,7 +35,9 @@
       props: { value: value._id, resultQuery }
     }}
   >
-    <span class="icon"><Icon icon={recruit.icon.Application} size={'small'} /></span>&nbsp;{applications?.get(value._id)
-      ?.count ?? 0}
+    <div class="icon">
+      <Icon icon={recruit.icon.Application} size={'small'} />
+    </div>&nbsp;
+    {applications?.get(value._id)?.count ?? 0}
   </div>
 {/if}

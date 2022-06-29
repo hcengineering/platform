@@ -42,7 +42,8 @@ export function tooltip (node: HTMLElement, options?: LabelAndProps): any {
   return {
     update (options: LabelAndProps) {
       opt = options
-      showTooltip(opt.label, node, opt.direction, opt.component, opt.props, opt.anchor, opt.onUpdate, opt.kind)
+      const shown = !!(storedValue.label !== undefined || storedValue.component !== undefined)
+      if (shown) showTooltip(opt.label, node, opt.direction, opt.component, opt.props, opt.anchor, opt.onUpdate, opt.kind)
     },
 
     destroy () {
