@@ -141,6 +141,15 @@
     "Created": "Created",
     "Subscribed": "Subscribed",
 
+    "Relations": "Relations",
+    "RemoveRelation": "Remove relation...",
+    "AddBlockedBy": "Mark as blocked by...",
+    "AddIsBlocking": "Mark as bloking...",
+    "AddRelatedIssue": "Reference another issue...",
+    "RelatedIssue": "Related issue {id} - {title}",
+    "BlockedIssue": "Blocked issue {id} - {title}",
+    "BlockingIssue": "Blocking issue {id} - {title}",
+
     "EditIssue": "Edit {title}",
 
     "Save": "Save",

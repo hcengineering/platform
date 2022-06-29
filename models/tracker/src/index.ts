@@ -864,6 +864,29 @@ export function createModel (builder: Builder): void {
         group: 'edit'
       }
     },
-    tracker.action.CopyIssueLink
+    tracker.action.MoveToTeam
+  )
+  // TODO: fix icon
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.ValueSelector,
+      actionPopup: tracker.component.RelationsPopup,
+      actionProps: {
+        attribute: ''
+      },
+      label: tracker.string.Relations,
+      icon: tracker.icon.Document,
+      keyBinding: [],
+      input: 'focus',
+      category: tracker.category.Tracker,
+      target: tracker.class.Issue,
+      context: {
+        mode: ['context', 'browser'],
+        application: tracker.app.Tracker,
+        group: 'other'
+      }
+    },
+    tracker.action.Relations
   )
 }
