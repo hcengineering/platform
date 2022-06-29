@@ -846,4 +846,22 @@ export function createModel (builder: Builder): void {
     },
     tracker.action.CopyIssueLink
   )
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.Move,
+      label: view.string.Move,
+      icon: view.icon.Move,
+      keyBinding: [],
+      input: 'none',
+      category: tracker.category.Tracker,
+      target: tracker.class.Issue,
+      context: {
+        mode: ['context', 'browser'],
+        application: tracker.app.Tracker,
+        group: 'edit'
+      }
+    },
+    tracker.action.CopyIssueLink
+  )
 }
