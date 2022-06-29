@@ -47,6 +47,7 @@
     "AnyFilter": "any filter",
     "AllFilters": "all filters",
     "MatchCriteria": "Match criteria",
-    "DontMatchCriteria": "Don't match criteria"
+    "DontMatchCriteria": "Don't match criteria",
+    "View": "View"
   }
 }

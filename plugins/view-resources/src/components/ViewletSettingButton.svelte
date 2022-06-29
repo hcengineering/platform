@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Button, showPopup, IconDownOutline } from '@anticrm/ui'
+  import { Button, showPopup, IconDownOutline, Label } from '@anticrm/ui'
   import { Viewlet } from '@anticrm/view'
   import ViewletSetting from './ViewletSetting.svelte'
   import view from '../plugin'
@@ -36,7 +36,7 @@
   >
     <svelte:fragment slot="content">
       <div class="flex-row-center clear-mins pointer-events-none">
-        <span class="text-sm font-medium">View</span>
+        <span class="text-sm font-medium"><Label label={view.string.View} /></span>
         <div class="icon"><IconDownOutline size={'full'} /></div>
       </div>
     </svelte:fragment>
