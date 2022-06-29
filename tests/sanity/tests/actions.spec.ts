@@ -14,7 +14,7 @@ test.describe('actions tests', () => {
     await page.click('[id="app-recruit\\:string\\:RecruitApplication"]')
 
     await page.click('text=Talents')
-    await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/recruit%3Aapp%3ARecruit/talents`)
+    await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/recruit/talents`)
 
     await page.click('td:has-text("Frontend Engineer")')
 
@@ -29,7 +29,7 @@ test.describe('actions tests', () => {
     await page.click('[id="app-recruit\\:string\\:RecruitApplication"]')
 
     await page.click('text=Talents')
-    await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/recruit%3Aapp%3ARecruit/talents`)
+    await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/recruit/talents`)
 
     await page.press('body', 'Meta+k')
     await page.fill('[placeholder="type\\ to\\ filter\\.\\.\\."]', 'go to')
@@ -37,14 +37,14 @@ test.describe('actions tests', () => {
     await page.click('div.selectPopup :text("Go To Vacancies")')
 
     await expect(page).toHaveURL(
-      `${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/recruit%3Aapp%3ARecruit/vacancies`
+      `${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/recruit/vacancies`
     )
   })
   test('action-switch-applications', async ({ page }) => {
     await page.click('[id="app-recruit\\:string\\:RecruitApplication"]')
 
     await page.click('text=Talents')
-    await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/recruit%3Aapp%3ARecruit/talents`)
+    await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/recruit/talents`)
 
     await page.press('body', 'Meta+k')
     await page.fill('[placeholder="type\\ to\\ filter\\.\\.\\."]', 'go to')
@@ -52,7 +52,7 @@ test.describe('actions tests', () => {
     await page.click('div.selectPopup :text("Go To Applications")')
 
     await expect(page).toHaveURL(
-      `${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/recruit%3Aapp%3ARecruit/candidates`
+      `${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/recruit/candidates`
     )
   })
 })

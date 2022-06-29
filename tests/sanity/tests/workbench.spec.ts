@@ -12,11 +12,11 @@ test.describe('workbench tests', () => {
   test('navigator', async ({ page }) => {
     // Click [id="app-recruit\:string\:RecruitApplication"]
     await page.click('[id="app-recruit\\:string\\:RecruitApplication"]')
-    await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/recruit%3Aapp%3ARecruit`)
+    await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/recruit`)
     // Click text=Applications
     await page.click('text=Applications')
     await expect(page).toHaveURL(
-      `${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/recruit%3Aapp%3ARecruit/candidates`
+      `${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/recruit/candidates`
     )
     // Click text=Applications Application >> span
     await expect(page.locator('text=Applications Filter')).toBeVisible()
@@ -24,14 +24,14 @@ test.describe('workbench tests', () => {
 
     // Click text=Talents
     await page.click('text=Talents')
-    await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/recruit%3Aapp%3ARecruit/talents`)
+    await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/recruit/talents`)
 
     await expect(page.locator('text=Andrey P.')).toBeVisible()
 
     // Click text=Vacancies
     await page.click('text=Vacancies')
     await expect(page).toHaveURL(
-      `${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/recruit%3Aapp%3ARecruit/vacancies`
+      `${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/recruit/vacancies`
     )
     // Click text=Software Engineer
     await page.click('text=Software Engineer')
@@ -42,7 +42,7 @@ test.describe('workbench tests', () => {
 
     // Click [id="app-chunter\:string\:ApplicationLabelChunter"]
     await page.click('[id="app-chunter\\:string\\:ApplicationLabelChunter"]')
-    await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/chunter%3Aapp%3AChunter`)
+    await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/chunter`)
 
     await page.click('text=general')
 
@@ -50,7 +50,7 @@ test.describe('workbench tests', () => {
     await expect(page.locator('.textInput')).toBeVisible()
 
     await page.click('[id="app-contact\\:string\\:Contacts"]')
-    await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/contact%3Aapp%3AContacts`)
+    await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/contact`)
     // Click text=John Appleseed
     await expect(page.locator('text=John Appleseed')).toBeVisible()
   })
@@ -62,7 +62,7 @@ test.describe('workbench tests', () => {
     await page.click('.antiPopup-submenu >> text=Settings')
     // Click button:has-text("Terms")
     await page.click('button:has-text("Terms")')
-    await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/setting%3Aids%3ASettingApp/terms`)
+    await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/setting/terms`)
     // Click .ac-header
     await expect(page.locator('.ac-header >> text=Terms')).toBeVisible()
   })
