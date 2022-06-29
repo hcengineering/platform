@@ -26,7 +26,7 @@
     IconCheck,
     ListView,
     showPopup,
-    Tooltip
+    tooltip
   } from '@anticrm/ui'
   import { createEventDispatcher, afterUpdate } from 'svelte'
   import presentation from '..'
@@ -207,12 +207,11 @@
               <div class="icon">
                 {#if obj._id === selected}
                   {#if titleDeselect}
-                    <Tooltip label={titleDeselect ?? presentation.string.Deselect}>
+                    <div class="clear-mins" use:tooltip={{ label: titleDeselect ?? presentation.string.Deselect }}>
                       <Icon icon={IconCheck} {size} />
-                    </Tooltip>
+                    </div>
                   {:else}
                     <Icon icon={IconCheck} {size} />
-                    <!-- <CheckBox checked circle primary /> -->
                   {/if}
                 {/if}
               </div>
@@ -222,7 +221,7 @@
               <slot name="item" item={obj} />
             </span>
             {#if multiSelect}
-              <div class="check pointer-events-none">
+              <div class="check-right pointer-events-none">
                 <CheckBox checked={selectedElements.has(obj._id)} primary />
               </div>
             {/if}

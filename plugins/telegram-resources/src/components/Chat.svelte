@@ -23,7 +23,7 @@
   import { createQuery, getClient } from '@anticrm/presentation'
   import setting, { Integration } from '@anticrm/setting'
   import type { NewTelegramMessage, SharedTelegramMessage, TelegramMessage } from '@anticrm/telegram'
-  import { Button, eventToHTMLElement, IconShare, Tooltip, Scroller, showPopup, Panel, Icon, Label } from '@anticrm/ui'
+  import { Button, eventToHTMLElement, IconShare, Scroller, showPopup, Panel, Icon, Label } from '@anticrm/ui'
   import telegram from '../plugin'
   import Connect from './Connect.svelte'
   import TelegramIcon from './icons/Telegram.svelte'
@@ -225,16 +225,15 @@
           }}
         />
       {:else}
-        <Tooltip label={telegram.string.Share}>
-          <Button
-            icon={IconShare}
-            kind={'transparent'}
-            size={'medium'}
-            on:click={async () => {
-              selectable = !selectable
-            }}
-          />
-        </Tooltip>
+        <Button
+          icon={IconShare}
+          kind={'transparent'}
+          size={'medium'}
+          showTooltip={{ label: telegram.string.Share }}
+          on:click={async () => {
+            selectable = !selectable
+          }}
+        />
       {/if}
     </svelte:fragment>
 

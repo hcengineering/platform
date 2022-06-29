@@ -17,7 +17,7 @@
   import { Class, Doc, FindOptions, getObjectValue, Ref } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
   import { Issue, Project } from '@anticrm/tracker'
-  import { CheckBox, Spinner, Tooltip } from '@anticrm/ui'
+  import { CheckBox, Spinner, tooltip } from '@anticrm/ui'
   import { AttributeModel, BuildModelKey } from '@anticrm/view'
   import { buildModel, getObjectPresenter, LoadingProps } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
@@ -115,16 +115,17 @@
             {#each itemModels as attributeModel, attributeModelIndex}
               {#if attributeModelIndex === 0}
                 <div class="gridElement">
-                  <Tooltip direction={'bottom'} label={tracker.string.SelectIssue}>
-                    <div class="eListGridCheckBox">
-                      <CheckBox
-                        checked={selectedObjectIdsSet.has(docObject._id)}
-                        on:value={(event) => {
-                          onObjectChecked([docObject], event.detail)
-                        }}
-                      />
-                    </div>
-                  </Tooltip>
+                  <div
+                    class="eListGridCheckBox"
+                    use:tooltip={{ direction: 'bottom', label: tracker.string.SelectIssue }}
+                  >
+                    <CheckBox
+                      checked={selectedObjectIdsSet.has(docObject._id)}
+                      on:value={(event) => {
+                        onObjectChecked([docObject], event.detail)
+                      }}
+                    />
+                  </div>
                   <div class="iconPresenter">
                     <svelte:component
                       this={attributeModel.presenter}

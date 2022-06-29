@@ -16,7 +16,7 @@
 <script lang="ts">
   import core, { Doc, TxCUD } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
-  import { ScrollBox, Tooltip } from '@anticrm/ui'
+  import { ScrollBox, tooltip } from '@anticrm/ui'
   import { toIntl } from '..'
   import ContentPopup from './ContentPopup.svelte'
 
@@ -49,7 +49,9 @@
             <td>{tx.objectId}</td>
             <td>{tx.objectClass}</td>
             <td>
-              <Tooltip label={toIntl('Content')} component={ContentPopup} props={{ content: tx }}>Content</Tooltip>
+              <span use:tooltip={{ label: toIntl('Content'), component: ContentPopup, props: { content: tx } }}>
+                Content
+              </span>
             </td>
           </tr>
         {/each}

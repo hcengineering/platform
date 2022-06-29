@@ -16,6 +16,7 @@
   import { formatName, Person } from '@anticrm/contact'
   import { IntlString } from '@anticrm/platform'
   import PersonContent from './PersonContent.svelte'
+  import type { AnyComponent, AnySvelteComponent } from '@anticrm/ui'
 
   export let value: Person | null | undefined
   export let inline = false
@@ -24,7 +25,14 @@
   export let shouldShowName = true
   export let shouldShowPlaceholder = false
   export let defaultName: IntlString | undefined = undefined
-  export let tooltipLabels: { personLabel: IntlString; placeholderLabel?: IntlString } | undefined = undefined
+  export let tooltipLabels:
+    | {
+        personLabel?: IntlString
+        placeholderLabel?: IntlString
+        component?: AnySvelteComponent | AnyComponent
+        props?: any
+      }
+    | undefined = undefined
   export let avatarSize: 'inline' | 'tiny' | 'x-small' | 'small' | 'medium' | 'large' | 'x-large' = 'x-small'
   export let onEdit: ((event: MouseEvent) => void) | undefined = undefined
 </script>
@@ -33,8 +41,9 @@
   <PersonContent
     showTooltip={tooltipLabels
       ? {
-          label: value ? tooltipLabels.personLabel : tooltipLabels.placeholderLabel,
-          props: value ? { value: formatName(value.name) } : {}
+          label: value ? tooltipLabels.personLabel : undefined,
+          component: value ? tooltipLabels.component : undefined,
+          props: value && tooltipLabels.personLabel ? { value: formatName(value.name) } : tooltipLabels.props
         }
       : undefined}
     {value}

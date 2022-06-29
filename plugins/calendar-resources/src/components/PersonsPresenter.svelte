@@ -18,7 +18,7 @@
   import { Hierarchy } from '@anticrm/core'
   import { Avatar } from '@anticrm/presentation'
   import calendar from '../plugin'
-  import { showPanel, Tooltip } from '@anticrm/ui'
+  import { showPanel, tooltip } from '@anticrm/ui'
   import view from '@anticrm/view'
 
   export let value: Person | Person[]
@@ -35,13 +35,16 @@
 {#if value}
   <div class="flex persons">
     {#each persons as p}
-      <Tooltip label={calendar.string.PersonsLabel} props={{ name: formatName(p.name) }}>
-        <div class="flex-presenter" class:inline-presenter={inline} on:click={() => onClick(p)}>
-          <div class="icon">
-            <Avatar size={'x-small'} avatar={p.avatar} />
-          </div>
+      <div
+        class="flex-presenter"
+        class:inline-presenter={inline}
+        use:tooltip={{ label: calendar.string.PersonsLabel, props: { name: formatName(p.name) } }}
+        on:click={() => onClick(p)}
+      >
+        <div class="icon">
+          <Avatar size={'x-small'} avatar={p.avatar} />
         </div>
-      </Tooltip>
+      </div>
     {/each}
   </div>
 {/if}

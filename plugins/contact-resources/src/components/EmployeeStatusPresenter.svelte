@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Employee, Status } from '@anticrm/contact'
   import { WithLookup } from '@anticrm/core'
-  import { Label, Tooltip } from '@anticrm/ui'
+  import { Label, tooltip } from '@anticrm/ui'
   import contact from '../plugin'
   import { formatDate } from '../utils'
   import { IntlString } from '@anticrm/platform'
@@ -15,12 +15,15 @@
 
 {#if status}
   {#if withTooltip}
-    <Tooltip
-      label={status.dueDate ? contact.string.StatusDueDateTooltip : contact.string.NoExpire}
-      props={{ date: formattedDate }}
+    <div
+      class="overflow-label statusName"
+      use:tooltip={{
+        label: status.dueDate ? contact.string.StatusDueDateTooltip : contact.string.NoExpire,
+        props: { date: formattedDate }
+      }}
     >
-      <div class="overflow-label statusName">{status.name}</div>
-    </Tooltip>
+      {status.name}
+    </div>
   {:else}
     <div class="flex">
       <div class="pr-4">{status.name}</div>

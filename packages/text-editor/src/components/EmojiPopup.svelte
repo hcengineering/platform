@@ -2,8 +2,7 @@
   import emojiRegex from 'emoji-regex'
   import { createEventDispatcher } from 'svelte'
   import { IntlString } from '@anticrm/platform'
-  import { AnySvelteComponent, Label } from '@anticrm/ui'
-  import Tooltip from '@anticrm/ui/src/components/Tooltip.svelte'
+  import { AnySvelteComponent, Label, tooltip } from '@anticrm/ui'
   import Emoji from './icons/Emoji.svelte'
   import Food from './icons/Food.svelte'
   import Nature from './icons/Nature.svelte'
@@ -137,15 +136,14 @@
 <div class="antiPopup antiPopup-withHeader pb-3 popup">
   <div class="flex-between ml-4 pt-2 pb-2 mr-4 header">
     {#each categories as category}
-      <Tooltip label={category.label}>
-        <div
-          class="flex-grow pt-2 pb-2 pl-2 pr-2 element"
-          class:selected={currentCategory === category}
-          on:click={() => handleScrollToCategory(category.id)}
-        >
-          <svelte:component this={category.icon} size={'large'} opacity={currentCategory === category ? '1' : '0.3'} />
-        </div>
-      </Tooltip>
+      <div
+        use:tooltip={{ label: category.label }}
+        class="flex-grow pt-2 pb-2 pl-2 pr-2 element"
+        class:selected={currentCategory === category}
+        on:click={() => handleScrollToCategory(category.id)}
+      >
+        <svelte:component this={category.icon} size={'large'} opacity={currentCategory === category ? '1' : '0.3'} />
+      </div>
     {/each}
   </div>
   <div class="flex-col vScroll" bind:this={div} on:scroll={handleScroll}>

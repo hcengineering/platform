@@ -17,7 +17,7 @@
   import type { AnySvelteComponent, TooltipAlignment } from '../types'
 
   import Icon from './Icon.svelte'
-  import Tooltip from './Tooltip.svelte'
+  import { tooltip } from '../tooltips'
 
   export let label: IntlString = '' as IntlString
   export let labelProps: any = undefined
@@ -28,13 +28,16 @@
   export let invisible: boolean = false
 </script>
 
-<Tooltip {label} {direction} props={labelProps}>
-  <button class="button {size}" on:click|stopPropagation={action}>
-    <div class="icon {size}" class:invisible>
-      <Icon {icon} {size} />
-    </div>
-  </button>
-</Tooltip>
+<button
+  class="button {size}"
+  use:tooltip={{ label, direction, props: labelProps }}
+  tabindex="0"
+  on:click|stopPropagation={action}
+>
+  <div class="icon {size}" class:invisible>
+    <Icon {icon} {size} />
+  </div>
+</button>
 
 <style lang="scss">
   .button {

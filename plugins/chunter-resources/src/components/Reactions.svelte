@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Reaction } from '@anticrm/chunter'
   import { Account, Ref } from '@anticrm/core'
-  import { Tooltip } from '@anticrm/ui'
+  import { tooltip } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import ReactionsTooltip from './ReactionsTooltip.svelte'
 
@@ -38,17 +38,16 @@
 <div class="container">
   {#each [...reactionsAccounts] as [emoji, accounts]}
     <div class="reaction over-underline">
-      <Tooltip component={ReactionsTooltip} props={{ reactionAccounts: accounts }}>
-        <div
-          class="flex-row-center"
-          on:click={() => {
-            dispatch('remove', emoji)
-          }}
-        >
-          <div>{emoji}</div>
-          <div class="caption-color counter">{accounts.length}</div>
-        </div>
-      </Tooltip>
+      <div
+        class="flex-row-center"
+        use:tooltip={{ component: ReactionsTooltip, props: { reactionAccounts: accounts } }}
+        on:click={() => {
+          dispatch('remove', emoji)
+        }}
+      >
+        <div>{emoji}</div>
+        <div class="caption-color counter">{accounts.length}</div>
+      </div>
     </div>
   {/each}
 </div>

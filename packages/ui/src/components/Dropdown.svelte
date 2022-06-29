@@ -20,7 +20,6 @@
   import Button from './Button.svelte'
   import DropdownPopup from './DropdownPopup.svelte'
   import Label from './Label.svelte'
-  import Tooltip from './Tooltip.svelte'
 
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let label: IntlString | undefined = undefined
@@ -42,28 +41,27 @@
 </script>
 
 <div bind:this={container} class="min-w-0">
-  <Tooltip {label} fill={width === '100%'} direction={labelDirection}>
-    <Button
-      {focusIndex}
-      {icon}
-      width={width ?? 'min-content'}
-      {size}
-      {kind}
-      {justify}
-      on:click={() => {
-        if (!opened) {
-          opened = true
-          showPopup(DropdownPopup, { title: label, items, icon }, container, (result) => {
-            if (result) selected = result
-            opened = false
-            mgr?.setFocusPos(focusIndex)
-          })
-        }
-      }}
-    >
-      <span slot="content" class="overflow-label disabled">
-        {#if selected}{selected.label}{:else}<Label label={placeholder} />{/if}
-      </span>
-    </Button>
-  </Tooltip>
+  <Button
+    {focusIndex}
+    {icon}
+    width={width ?? 'min-content'}
+    {size}
+    {kind}
+    {justify}
+    showTooltip={{ label, direction: labelDirection }}
+    on:click={() => {
+      if (!opened) {
+        opened = true
+        showPopup(DropdownPopup, { title: label, items, icon }, container, (result) => {
+          if (result) selected = result
+          opened = false
+          mgr?.setFocusPos(focusIndex)
+        })
+      }
+    }}
+  >
+    <span slot="content" class="overflow-label disabled">
+      {#if selected}{selected.label}{:else}<Label label={placeholder} />{/if}
+    </span>
+  </Button>
 </div>

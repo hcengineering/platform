@@ -15,7 +15,6 @@
 <script lang="ts">
   import { Project, ProjectStatus } from '@anticrm/tracker'
   import { getClient } from '@anticrm/presentation'
-  import { Tooltip } from '@anticrm/ui'
   import type { ButtonKind, ButtonSize } from '@anticrm/ui'
   import tracker from '../../plugin'
 
@@ -42,18 +41,17 @@
 
 {#if value}
   {#if isEditable}
-    <Tooltip label={tracker.string.SetStatus} fill>
-      <ProjectStatusSelector
-        {kind}
-        {size}
-        {width}
-        {justify}
-        {isEditable}
-        {shouldShowLabel}
-        selectedProjectStatus={value.status}
-        onProjectStatusChange={handleProjectStatusChanged}
-      />
-    </Tooltip>
+    <ProjectStatusSelector
+      {kind}
+      {size}
+      {width}
+      {justify}
+      {isEditable}
+      {shouldShowLabel}
+      showTooltip={{ label: tracker.string.SetStatus }}
+      selectedProjectStatus={value.status}
+      onProjectStatusChange={handleProjectStatusChanged}
+    />
   {:else}
     <ProjectStatusSelector
       {kind}

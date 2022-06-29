@@ -22,7 +22,7 @@
   import type { Applicant, Candidate } from '@anticrm/recruit'
   import task, { TodoItem } from '@anticrm/task'
   import { AssigneePresenter } from '@anticrm/task-resources'
-  import { Component, showPanel, Tooltip } from '@anticrm/ui'
+  import { Component, showPanel, tooltip } from '@anticrm/ui'
   import view from '@anticrm/view'
   import ApplicationPresenter from './ApplicationPresenter.svelte'
 
@@ -73,9 +73,16 @@
       <div class="sm-tool-icon step-lr75">
         <ApplicationPresenter value={object} />
         {#if todoItems.length > 0}
-          <Tooltip label={task.string.TodoItems} component={task.component.TodoItemsPopup} props={{ value: object }}>
-            <div class="ml-2">( {doneTasks?.length}/ {todoItems.length} )</div>
-          </Tooltip>
+          <div
+            class="ml-2"
+            use:tooltip={{
+              label: task.string.TodoItems,
+              component: task.component.TodoItemsPopup,
+              props: { value: object }
+            }}
+          >
+            ({doneTasks?.length}/{todoItems.length})
+          </div>
         {/if}
       </div>
       {#if (object.attachments ?? 0) > 0}

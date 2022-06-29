@@ -19,7 +19,7 @@
   import notification from '@anticrm/notification'
   import { Avatar } from '@anticrm/presentation'
   import type { Issue, TodoItem } from '@anticrm/task'
-  import { ActionIcon, Component, IconMoreH, showPopup, Tooltip } from '@anticrm/ui'
+  import { ActionIcon, Component, IconMoreH, showPopup, tooltip } from '@anticrm/ui'
   import { ContextMenu } from '@anticrm/view-resources'
   import task from '../plugin'
   import TaskPresenter from './TaskPresenter.svelte'
@@ -39,9 +39,16 @@
     <div class="flex">
       <TaskPresenter value={object} />
       {#if todoItems.length > 0}
-        <Tooltip label={task.string.TodoItems} component={task.component.TodoItemsPopup} props={{ value: object }}>
-          <div class="ml-2">( {doneTasks?.length}/ {todoItems.length} )</div>
-        </Tooltip>
+        <span
+          class="ml-2"
+          use:tooltip={{
+            label: task.string.TodoItems,
+            component: task.component.TodoItemsPopup,
+            props: { value: object }
+          }}
+        >
+          ({doneTasks?.length}/{todoItems.length})
+        </span>
       {/if}
     </div>
     <div class="flex-row-center">
