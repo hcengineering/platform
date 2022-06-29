@@ -69,7 +69,12 @@
     lookup: Lookup<Doc>,
     options?: FindOptions<Doc>
   ) {
-    const sort = Array.isArray(sortKey) ? sortKey.reduce((acc: Record<string, SortingOrder>, val) => { acc[val] = sortOrder; return acc }, {}): { [sortKey]: sortOrder }
+    const sort = Array.isArray(sortKey)
+      ? sortKey.reduce((acc: Record<string, SortingOrder>, val) => {
+        acc[val] = sortOrder
+        return acc
+      }, {})
+      : { [sortKey]: sortOrder }
     const update = q.query(
       _class,
       query,
