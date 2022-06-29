@@ -174,7 +174,8 @@
     if (currentApplication?.locationResolver) {
       const resolver = await getResource(currentApplication.locationResolver)
       const resolvedLocation = await resolver?.(loc)
-      if (resolvedLocation && !areLocationsEqual(loc, resolvedLocation)) { // make sure not to go into infinite loop here
+      if (resolvedLocation && !areLocationsEqual(loc, resolvedLocation)) {
+        // make sure not to go into infinite loop here
         navigate(resolvedLocation)
         return
       }
