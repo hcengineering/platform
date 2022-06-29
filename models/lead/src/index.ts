@@ -24,7 +24,7 @@ import contact, { TContact } from '@anticrm/model-contact'
 import core from '@anticrm/model-core'
 import task, { actionTemplates, TSpaceWithStates, TTask } from '@anticrm/model-task'
 import view, { createAction, actionTemplates as viewTemplates } from '@anticrm/model-view'
-import workbench, { Application } from '@anticrm/model-workbench'
+import workbench from '@anticrm/model-workbench'
 import setting from '@anticrm/setting'
 import lead from './plugin'
 

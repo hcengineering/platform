@@ -529,7 +529,7 @@ export function createModel (builder: Builder): void {
   )
 
   function createGotoSpecialAction (builder: Builder, id: string, key: KeyBinding, label: IntlString): void {
-    createNavigateAction(builder, key, label, {
+    createNavigateAction(builder, key, label, tracker.app.Tracker, {
       application: trackerId,
       mode: 'space',
       spaceSpecial: id,

@@ -52,7 +52,8 @@ export function createNavigateAction (
   builder: Builder,
   key: KeyBinding,
   label: IntlString,
-  config: {
+  application: Ref<Application>,
+  props: {
     mode: 'app' | 'special' | 'space'
     application?: string
     special?: string
@@ -63,7 +64,7 @@ export function createNavigateAction (
 ): void {
   createAction(builder, {
     action: workbench.actionImpl.Navigate,
-    actionProps: config,
+    actionProps: props,
     label,
     icon: view.icon.ArrowRight,
     keyBinding: [key],
@@ -72,7 +73,7 @@ export function createNavigateAction (
     target: core.class.Doc,
     context: {
       mode: ['workbench', 'browser', 'editor', 'panel', 'popup'],
-      application: config.application
+      application
     }
   })
 }
