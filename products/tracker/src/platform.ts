@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { addLocation } from '@anticrm/platform'
+import { addAlias, addLocation } from '@anticrm/platform'
 
 import login, { loginId } from '@anticrm/login'
 import workbench, { workbenchId } from '@anticrm/workbench'
@@ -74,6 +74,8 @@ export async function configurePlatform() {
   
   setMetadata(uiPlugin.metadata.DefaultApplication, workbench.component.WorkbenchApp )
   setMetadata(workbench.metadata.ExcludedApplications, [contact.app.Contacts] )
+
+  addAlias(workbenchId, workbench.component.WorkbenchApp)
 
   addLocation(coreId, async () => ({ default: async () => ({}) }))
   addLocation(presentationId, async () => ({ default: async () => ({}) }))

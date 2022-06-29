@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import chunter, { ChunterSpace, Comment, Message, ThreadMessage } from '@anticrm/chunter'
+import chunter, { chunterId, ChunterSpace, Comment, Message, ThreadMessage } from '@anticrm/chunter'
 import { EmployeeAccount } from '@anticrm/contact'
 import core, {
   Class,
@@ -33,7 +33,7 @@ import core, {
 import login from '@anticrm/login'
 import { getMetadata } from '@anticrm/platform'
 import { TriggerControl } from '@anticrm/server-core'
-import workbench from '@anticrm/workbench'
+import { workbenchId } from '@anticrm/workbench'
 
 /**
  * @public
@@ -41,7 +41,7 @@ import workbench from '@anticrm/workbench'
 export function channelHTMLPresenter (doc: Doc): string {
   const channel = doc as ChunterSpace
   const front = getMetadata(login.metadata.FrontUrl) ?? ''
-  return `<a href="${front}/${workbench.component.WorkbenchApp}/${chunter.app.Chunter}/${channel._id}">${channel.name}</a>`
+  return `<a href="${front}/${workbenchId}/${chunterId}/${channel._id}">${channel.name}</a>`
 }
 
 /**

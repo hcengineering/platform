@@ -14,11 +14,11 @@
 //
 
 import { Doc } from '@anticrm/core'
-import inventory, { Product } from '@anticrm/inventory'
+import { inventoryId, Product } from '@anticrm/inventory'
 import login from '@anticrm/login'
 import { getMetadata } from '@anticrm/platform'
 import view from '@anticrm/view'
-import workbench from '@anticrm/workbench'
+import { workbenchId } from '@anticrm/workbench'
 
 /**
  * @public
@@ -26,7 +26,7 @@ import workbench from '@anticrm/workbench'
 export function productHTMLPresenter (doc: Doc): string {
   const product = doc as Product
   const front = getMetadata(login.metadata.FrontUrl) ?? ''
-  return `<a href="${front}/${workbench.component.WorkbenchApp}/${inventory.app.Inventory}/Products/#${view.component.EditDoc}|${product._id}|${product._class}">${product.name}</a>`
+  return `<a href="${front}/${workbenchId}/${inventoryId}/Products/#${view.component.EditDoc}|${product._id}|${product._class}">${product.name}</a>`
 }
 
 /**

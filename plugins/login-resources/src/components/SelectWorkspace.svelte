@@ -16,7 +16,7 @@
 <script lang="ts">
   import { OK, Severity, Status } from '@anticrm/platform'
   import { Button, getCurrentLocation, Label, navigate, setMetadataLocalStorage } from '@anticrm/ui'
-  import workbench from '@anticrm/workbench'
+  import { workbenchId } from '@anticrm/workbench'
   import login from '../plugin'
   import { getWorkspaces, selectWorkspace } from '../utils'
   import StatusControl from './StatusControl.svelte'
@@ -39,7 +39,7 @@
       if (navigateUrl !== undefined) {
         navigate(JSON.parse(decodeURIComponent(navigateUrl)))
       } else {
-        navigate({ path: [workbench.component.WorkbenchApp] })
+        navigate({ path: [workbenchId] })
       }
     }
   }

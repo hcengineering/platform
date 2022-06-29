@@ -25,6 +25,7 @@ import platform from './platform'
  * @public
  */
 export type Resources = Record<string, Record<string, any>>
+const aliases = new Map<string, Resource<any>>()
 
 /**
  * @public
@@ -47,6 +48,15 @@ const locations = new Map<Plugin, PluginLoader<Resources>>()
  */
 export function addLocation<R extends Resources> (plugin: Plugin, module: PluginLoader<R>): void {
   locations.set(plugin, module)
+}
+
+/**
+ * @public
+ * @param plugin -
+ * @param module -
+ */
+export function addAlias<T> (alias: string, resource: Resource<T>): void {
+  aliases.set(alias, resource)
 }
 
 /**
@@ -88,10 +98,11 @@ const cachedResource = new Map<string, any>()
 
 /**
  * @public
- * @param resource -
+ * @param resourceId -
  * @returns
  */
-export async function getResource<T> (resource: Resource<T>): Promise<T> {
+export async function getResource<T> (resourceId: Resource<T>): Promise<T> {
+  const resource = aliases.get(resourceId) ?? resourceId
   const cached = cachedResource.get(resource)
   if (cached !== undefined) {
     return cached
