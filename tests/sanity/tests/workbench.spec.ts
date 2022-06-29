@@ -15,9 +15,7 @@ test.describe('workbench tests', () => {
     await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/recruit`)
     // Click text=Applications
     await page.click('text=Applications')
-    await expect(page).toHaveURL(
-      `${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/recruit/candidates`
-    )
+    await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/recruit/candidates`)
     // Click text=Applications Application >> span
     await expect(page.locator('text=Applications Filter')).toBeVisible()
     await expect(page.locator('text="APP-1')).toBeDefined()
@@ -30,9 +28,7 @@ test.describe('workbench tests', () => {
 
     // Click text=Vacancies
     await page.click('text=Vacancies')
-    await expect(page).toHaveURL(
-      `${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/recruit/vacancies`
-    )
+    await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/recruit/vacancies`)
     // Click text=Software Engineer
     await page.click('text=Software Engineer')
     await expect(page.locator('text=Software Engineer')).toBeVisible()

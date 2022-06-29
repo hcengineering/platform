@@ -18,12 +18,12 @@ test.describe('contact tests', () => {
     // Click button:has-text("Setting")
     await page.click('button:has-text("Setting")')
     await expect(page).toHaveURL(
-      `${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/setting%3Aids%3ASettingApp/setting`
+      `${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/setting/setting`
     )
     // Click text=Edit profile
     await page.click('text=Edit profile')
     await expect(page).toHaveURL(
-      `${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/setting%3Aids%3ASettingApp/profile`
+      `${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/setting/profile`
     )
     // Click [placeholder="Location"]
     await page.click('[placeholder="Location"]')
@@ -51,10 +51,10 @@ test.describe('contact tests', () => {
     // Click button:has-text("Templates")
     await page.click('button:has-text("Templates")')
     await expect(page).toHaveURL(
-      `${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/setting%3Aids%3ASettingApp/message-templates`
+      `${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/setting/message-templates`
     )
-    // Go to http://localhost:8083/workbench%3Acomponent%3AWorkbenchApp/setting%3Aids%3ASettingApp/message-templates
-    await page.goto(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/setting%3Aids%3ASettingApp/message-templates`)
+    // Go to http://localhost:8083/workbench%3Acomponent%3AWorkbenchApp/setting/message-templates
+    await page.goto(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/setting/message-templates`)
     // Click .flex-center.icon-button
     await page.click('#create-template >> .flex-center.icon-button')
     // Click [placeholder="New\ template"]
@@ -86,7 +86,7 @@ test.describe('contact tests', () => {
     // Click button:has-text("Manage Statuses")
     await page.click('button:has-text("Manage Statuses")')
     await expect(page).toHaveURL(
-      `${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/setting%3Aids%3ASettingApp/statuses`
+      `${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/setting/statuses`
     )
     // Click text=Vacancies
     await page.click('text=Vacancies')

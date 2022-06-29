@@ -36,9 +36,7 @@ test.describe('actions tests', () => {
     expect(await page.locator('div.selectPopup :text("Go To Vacancies")').count()).toBe(1)
     await page.click('div.selectPopup :text("Go To Vacancies")')
 
-    await expect(page).toHaveURL(
-      `${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/recruit/vacancies`
-    )
+    await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/recruit/vacancies`)
   })
   test('action-switch-applications', async ({ page }) => {
     await page.click('[id="app-recruit\\:string\\:RecruitApplication"]')
@@ -51,8 +49,6 @@ test.describe('actions tests', () => {
     expect(await page.locator('div.selectPopup :text("Go To Applications")').count()).toBe(1)
     await page.click('div.selectPopup :text("Go To Applications")')
 
-    await expect(page).toHaveURL(
-      `${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/recruit/candidates`
-    )
+    await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/recruit/candidates`)
   })
 })
