@@ -36,16 +36,21 @@
     mode = Mode.View
   }
   export function cancelEdit (): void {
+    rawValue = content
     mode = Mode.View
   }
 
   let rawValue: string
   let oldContent = ''
+  let modified: boolean = false
 
   $: if (oldContent !== content) {
     oldContent = content
     rawValue = content
+    modified = false
   }
+  $: if (!modified && rawValue !== content) modified = true
+  $: dispatch('change', modified)
 
   let textEditor: StyledTextEditor
 

@@ -29,6 +29,8 @@
   export let _id: Ref<Vacancy>
 
   let object: Required<Vacancy>
+  let rawName: string = ''
+  let rawDesc: string = ''
 
   const dispatch = createEventDispatcher()
 
@@ -40,6 +42,8 @@
   function updateObject (_id: Ref<Vacancy>): void {
     query.query(recruit.class.Vacancy, { _id }, (result) => {
       object = result[0] as Required<Vacancy>
+      rawName = object.name
+      rawDesc = object.description
     })
   }
 
@@ -85,13 +89,8 @@
         kind={'large-style'}
         focus
         focusable
-        on:change={() => {
-          if (object.name.trim().length > 0) {
-            onChange('name', object.name)
-          } else {
-            // Revert previos object.name
-            updateObject(_id)
-          }
+        on:blur={() => {
+          if (rawName !== object.name) onChange('name', object.name)
         }}
       />
       <EditBox
@@ -99,15 +98,14 @@
         placeholder={recruit.string.VacancyDescription}
         maxWidth={'39rem'}
         focusable
-        on:change={() => {
-          onChange('description', object.description)
+        on:blur={() => {
+          if (rawDesc !== object.description) onChange('description', object.description)
         }}
       />
       <FullDescriptionBox
         content={object.fullDescription}
-        alwaysEdit
-        on:change={(result) => {
-          if (result.detail !== undefined) onChange('fullDescription', result.detail)
+        on:save={(res) => {
+          onChange('fullDescription', res.detail)
         }}
       />
       <Attachments

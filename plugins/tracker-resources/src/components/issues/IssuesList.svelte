@@ -352,9 +352,9 @@
     min-width: 0;
     min-height: 0;
   }
-  .grow-cell {
-    flex-grow: 1;
-    flex-shrink: 0;
-    min-width: 0;
-  }
+  // .grow-cell {
+  //   flex-grow: 1;
+  //   flex-shrink: 0;
+  //   min-width: 0;
+  // }
 </style>
