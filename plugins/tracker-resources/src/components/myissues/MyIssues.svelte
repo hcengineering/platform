@@ -30,15 +30,23 @@
     ['subscribed', tracker.string.Subscribed]
   ]
   const currentUser = getCurrentAccount() as EmployeeAccount
-  const queries: { [n: string]: DocumentQuery<Issue> | undefined } = { assigned: { assignee: currentUser.employee } }
+  const assigned = { assignee: currentUser.employee }
+  const created = { _id: { $in: [] as Ref<Issue>[] } }
+  const subscribed = { _id: { $in: [] as Ref<Issue>[] } }
 
   const createdQuery = createQuery()
   $: createdQuery.query<TxCollectionCUD<Issue, Issue>>(
     core.class.TxCollectionCUD,
-    { modifiedBy: currentUser._id, objectClass: tracker.class.Issue, collection: 'subIssues' },
+    {
+      modifiedBy: currentUser._id,
+      objectClass: tracker.class.Issue,
+      collection: 'subIssues',
+      'tx._class': core.class.TxCreateDoc
+    },
     (result) => {
-      queries.created = { _id: { $in: result.map(({ tx: { objectId } }) => objectId) } }
-    }
+      created._id.$in = result.map(({ tx: { objectId } }) => objectId)
+    },
+    { sort: { _id: 1 } }
   )
 
   const subscribedQuery = createQuery()
@@ -46,8 +54,13 @@
     notification.class.LastView,
     { user: getCurrentAccount()._id, attachedToClass: tracker.class.Issue, lastView: { $gte: 0 } },
     (result) => {
-      queries.subscribed = { _id: { $in: result.map(({ attachedTo }) => attachedTo as Ref<Issue>) } }
-    }
+      const newSub = result.map(({ attachedTo }) => attachedTo as Ref<Issue>)
+      const curSub = subscribed._id.$in
+      if (curSub.length !== newSub.length || curSub.some((id, i) => newSub[i] !== id)) {
+        subscribed._id.$in = newSub
+      }
+    },
+    { sort: { _id: 1 } }
   )
 
   let [[mode]] = config
@@ -55,9 +68,14 @@
     if (newMode === mode) return
     mode = newMode
   }
+
+  function getQuery (mode: string, queries: { [key: string]: DocumentQuery<Issue> }) {
+    return queries[mode]
+  }
+  $: query = getQuery(mode, { assigned, created, subscribed })
 </script>
 
-<IssuesView query={queries[mode]} title={tracker.string.MyIssues}>
+<IssuesView {query} title={tracker.string.MyIssues}>
   <svelte:fragment slot="afterHeader">
     <ModeSelector {config} {mode} onChange={handleChangeMode} />
   </svelte:fragment>
