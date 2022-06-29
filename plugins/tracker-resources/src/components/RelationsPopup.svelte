@@ -62,13 +62,14 @@
     )
   }
 
-  const removeRelationAction =
-    [{
+  const removeRelationAction = [
+    {
       action: removeRelation,
       icon: tracker.icon.Issue,
       label: tracker.string.RemoveRelation,
       group: '2'
-    }]
+    }
+  ]
   $: actions = [
     {
       action: addBlockedBy,

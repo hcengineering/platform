@@ -141,6 +141,15 @@
     "Created": "Созданные",
     "Subscribed": "Отслеживаемые",
 
+    "Relations": "Зависимости",
+    "RemoveRelation": "Удалить зависимость...",
+    "AddBlockedBy": "Отметить как блокируемую...",
+    "AddIsBlocking": "Отметить как блокирующую...",
+    "AddRelatedIssue": "Связать с задачей...",
+    "RelatedIssue": "Связанная задача {id} - {title}",
+    "BlockedIssue": "Блокируемая задача {id} - {title}",
+    "BlockingIssue": "Блокирующая {id} - {title}",
+
     "EditIssue": "Редактирование {title}",
 
     "Save": "Сохранить",
