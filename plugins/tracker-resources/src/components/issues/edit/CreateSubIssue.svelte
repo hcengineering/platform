@@ -186,12 +186,14 @@
         justify="center"
         on:change={({ detail }) => (newIssue.priority = detail)}
       />
-      <AssigneeEditor
-        value={newIssue}
-        size="small"
-        kind="no-border"
-        on:change={({ detail }) => (newIssue.assignee = detail)}
-      />
+      {#key newIssue.assignee}
+        <AssigneeEditor
+          value={newIssue}
+          size="small"
+          kind="no-border"
+          on:change={({ detail }) => (newIssue.assignee = detail)}
+        />
+      {/key}
       <Component
         is={tags.component.TagsDropdownEditor}
         props={{
