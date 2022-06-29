@@ -177,7 +177,13 @@ export function createModel (builder: Builder): void {
     {
       attachTo: lead.mixin.Customer,
       descriptor: view.viewlet.Table,
-      config: ['', '$lookup._class', 'leads', 'modifiedOn', '$lookup.channels'],
+      config: [
+        '',
+        '$lookup._class',
+        'leads',
+        'modifiedOn',
+        { key: '$lookup.channels', sortingKey: ['$lookup.channels.lastMessage', 'channels'] }
+      ],
       hiddenKeys: ['name']
     },
     lead.viewlet.TableCustomer
@@ -198,7 +204,10 @@ export function createModel (builder: Builder): void {
         'attachments',
         'comments',
         'modifiedOn',
-        '$lookup.attachedTo.$lookup.channels'
+        {
+          key: '$lookup.attachedTo.$lookup.channels',
+          sortingKey: ['$lookup.attachedTo.$lookup.channels.lastMessage', '$lookup.attachedTo.channels']
+        }
       ]
     },
     lead.viewlet.TableLead

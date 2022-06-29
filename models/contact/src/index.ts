@@ -77,7 +77,7 @@ export class TContact extends TDoc implements Contact {
 }
 
 @Model(contact.class.Channel, core.class.AttachedDoc, DOMAIN_CHANNEL)
-@UX(contact.string.Channel, contact.icon.Person, undefined, 'lastMessage')
+@UX(contact.string.Channel, contact.icon.Person)
 export class TChannel extends TAttachedDoc implements Channel {
   @Prop(TypeRef(contact.class.ChannelProvider), contact.string.ChannelProvider)
   provider!: Ref<ChannelProvider>
@@ -184,7 +184,14 @@ export function createModel (builder: Builder): void {
     {
       attachTo: contact.class.Member,
       descriptor: view.viewlet.Table,
-      config: ['', '$lookup.contact.$lookup.channels', 'modifiedOn'],
+      config: [
+        '',
+        {
+          key: '$lookup.contact.$lookup.channels',
+          sortingKey: ['$lookup.contact.$lookup.channels.lastMessage', '$lookup.contact.channels']
+        },
+        'modifiedOn'
+      ],
       hiddenKeys: ['name', 'contact']
     },
     contact.viewlet.TableMember
@@ -207,7 +214,7 @@ export function createModel (builder: Builder): void {
         'attachments',
         'modifiedOn',
         { key: '', presenter: view.component.RolePresenter, label: view.string.Role },
-        '$lookup.channels'
+        { key: '$lookup.channels', sortingKey: ['$lookup.channels.lastMessage', 'channels'] }
       ],
       hiddenKeys: ['name']
     },

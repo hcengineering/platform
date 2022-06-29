@@ -64,11 +64,17 @@
   async function update (
     _class: Ref<Class<Doc>>,
     query: DocumentQuery<Doc>,
-    sortKey: string,
+    sortKey: string | string[],
     sortOrder: SortingOrder,
     lookup: Lookup<Doc>,
     options?: FindOptions<Doc>
   ) {
+    const sort = Array.isArray(sortKey)
+      ? sortKey.reduce((acc: Record<string, SortingOrder>, val) => {
+        acc[val] = sortOrder
+        return acc
+      }, {})
+      : { [sortKey]: sortOrder }
     const update = q.query(
       _class,
       query,
@@ -81,7 +87,7 @@
         dispatch('content', objects)
         loading = loading === 1 ? 0 : -1
       },
-      { sort: { [sortKey]: sortOrder }, limit: 200, lookup, ...options }
+      { sort, limit: 200, lookup, ...options }
     )
     if (update && ++loading > 0) {
       objects = []
