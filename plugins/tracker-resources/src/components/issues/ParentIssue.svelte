@@ -18,7 +18,7 @@
   import { Spinner, IconClose, Tooltip } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
-  import { getIssueId } from '../../utils'
+  import { getIssueId } from '../../issues'
 
   export let issue: Issue
 

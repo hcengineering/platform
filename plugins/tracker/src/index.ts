@@ -16,9 +16,9 @@
 import { Employee } from '@anticrm/contact'
 import type { AttachedDoc, Class, Doc, Markup, Ref, Space, Timestamp, Type } from '@anticrm/core'
 import { Action, ActionCategory } from '@anticrm/view'
-import type { Asset, IntlString, Plugin } from '@anticrm/platform'
+import type { Asset, IntlString, Plugin, Resource } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
-import { AnyComponent } from '@anticrm/ui'
+import { AnyComponent, Location } from '@anticrm/ui'
 import type { TagCategory } from '@anticrm/tags'
 
 /**
@@ -288,5 +288,8 @@ export default plugin(trackerId, {
   },
   team: {
     DefaultTeam: '' as Ref<Team>
+  },
+  resolver: {
+    Location: '' as Resource<(loc: Location) => Promise<Location | undefined>>
   }
 })

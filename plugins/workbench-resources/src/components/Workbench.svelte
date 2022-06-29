@@ -31,6 +31,7 @@
     Label,
     location,
     Location,
+    areLocationsEqual,
     navigate,
     PanelInstance,
     Popup,
@@ -167,6 +168,16 @@
       currentAppAlias = app
       currentApplication = await client.findOne(workbench.class.Application, { alias: app })
       navigatorModel = currentApplication?.navigatorModel
+    }
+
+    // resolve short links
+    if (currentApplication?.locationResolver) {
+      const resolver = await getResource(currentApplication.locationResolver)
+      const resolvedLocation = await resolver?.(loc)
+      if (resolvedLocation && !areLocationsEqual(loc, resolvedLocation)) { // make sure not to go into infinite loop here
+        navigate(resolvedLocation)
+        return
+      }
     }
 
     if (space === undefined) {
