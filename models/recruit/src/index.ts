@@ -330,7 +330,10 @@ export function createModel (builder: Builder): void {
         'attachments',
         'comments',
         'modifiedOn',
-        { key: '$lookup.attachedTo.$lookup.channels', sortingKey: ['$lookup.attachedTo.$lookup.channels.lastMessage', '$lookup.attachedTo.channels'] }
+        {
+          key: '$lookup.attachedTo.$lookup.channels',
+          sortingKey: ['$lookup.attachedTo.$lookup.channels.lastMessage', '$lookup.attachedTo.channels']
+        }
       ]
     },
     recruit.viewlet.TableApplicant

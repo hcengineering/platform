@@ -186,7 +186,10 @@ export function createModel (builder: Builder): void {
       descriptor: view.viewlet.Table,
       config: [
         '',
-        { key: '$lookup.contact.$lookup.channels', sortingKey: ['$lookup.contact.$lookup.channels.lastMessage', '$lookup.contact.channels'] },
+        {
+          key: '$lookup.contact.$lookup.channels',
+          sortingKey: ['$lookup.contact.$lookup.channels.lastMessage', '$lookup.contact.channels']
+        },
         'modifiedOn'
       ],
       hiddenKeys: ['name', 'contact']
