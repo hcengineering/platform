@@ -13,12 +13,65 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { TagReference } from '@anticrm/tags'
+  import type { TagReference } from '@anticrm/tags'
+  import { getPlatformColor, IconClose, Icon } from '@anticrm/ui'
   import TagItem from './TagItem.svelte'
+  import { createEventDispatcher } from 'svelte'
 
   export let value: TagReference
+  export let isEditable: boolean = false
+  export let kind: 'labels' | 'skills' = 'skills'
+
+  const dispatch = createEventDispatcher()
 </script>
 
 {#if value}
-  <TagItem tag={value} />
+  {#if kind === 'skills'}
+    <TagItem tag={value} />
+  {:else if kind === 'labels'}
+    <div class="tag-container" style:padding-right={isEditable ? '0' : '0.5rem'}>
+      <div class="color" style:background-color={getPlatformColor(value.color ?? 0)} />
+      <span class="overflow-label ml-1-5 caption-color">{value.title}</span>
+      {#if isEditable}
+        <button class="btn-close" on:click|stopPropagation={() => dispatch('remove', value.tag)}>
+          <Icon icon={IconClose} size={'x-small'} />
+        </button>
+      {/if}
+    </div>
+  {/if}
 {/if}
+
+<style lang="scss">
+  .tag-container {
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    padding-left: 0.5rem;
+    height: 1.5rem;
+    min-width: 0;
+    min-height: 0;
+    border: 1px solid var(--divider-color);
+    border-radius: 0.75rem;
+
+    .color {
+      flex-shrink: 0;
+      width: 0.5rem;
+      height: 0.5rem;
+      border-radius: 50%;
+    }
+    .btn-close {
+      flex-shrink: 0;
+      margin-left: 0.125rem;
+      padding: 0 0.25rem 0 0.125rem;
+      height: 1.75rem;
+      color: var(--content-color);
+      border-left: 1px solid transparent;
+
+      &:hover {
+        color: var(--caption-color);
+        border-left-color: var(--divider-color);
+      }
+    }
+  }
+</style>

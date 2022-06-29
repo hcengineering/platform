@@ -97,7 +97,8 @@
   class:highlight
   class:selected
   disabled={disabled || loading}
-  style={width ? 'width: ' + width : ''}
+  style:width
+  style:padding={shape === 'circle' && kind === 'link' ? '0 .5rem 0 .25rem' : '0 .5rem'}
   {title}
   type={kind === 'primary' ? 'submit' : 'button'}
   on:click|stopPropagation|preventDefault

@@ -156,7 +156,8 @@
     "DurMonths": "{months, plural, =0 {this month} =1 {1 month} other {# months}}",
     "DurYears": "{years, plural, =0 {this year} =1 {a year} other {# years}}",
     "StatusHistory": "State History",
-    "NewSubIssue": "Add sub-issue..."
+    "NewSubIssue": "Add sub-issue...",
+    "AddLabel": "Add label"
   },
   "status": {}
 }
