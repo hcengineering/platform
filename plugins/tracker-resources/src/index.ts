@@ -16,6 +16,7 @@
 import { Class, Client, Ref } from '@anticrm/core'
 import { Resources } from '@anticrm/platform'
 import { ObjectSearchResult } from '@anticrm/presentation'
+import { showPopup } from '@anticrm/ui'
 import { Issue, Team } from '@anticrm/tracker'
 import Inbox from './components/inbox/Inbox.svelte'
 import Issues from './components/issues/Issues.svelte'
@@ -54,6 +55,7 @@ import ProjectTitlePresenter from './components/projects/ProjectTitlePresenter.s
 import TargetDatePresenter from './components/projects/TargetDatePresenter.svelte'
 import SetDueDateActionPopup from './components/SetDueDateActionPopup.svelte'
 import SetParentIssueActionPopup from './components/SetParentIssueActionPopup.svelte'
+import Statuses from './components/workflow/Statuses.svelte'
 import Views from './components/views/Views.svelte'
 import KanbanView from './components/issues/KanbanView.svelte'
 import tracker from './plugin'
@@ -109,6 +111,12 @@ export async function queryIssue<D extends Issue> (
   }))
 }
 
+async function editWorkflowStatuses (team: Team | undefined): Promise<void> {
+  if (team !== undefined) {
+    showPopup(Statuses, { teamId: team._id, teamClass: team._class }, 'float')
+  }
+}
+
 export default async (): Promise<Resources> => ({
   component: {
     NopeComponent,
@@ -158,6 +166,7 @@ export default async (): Promise<Resources> => ({
     IssueTitleProvider: getIssueTitle
   },
   actionImpl: {
-    CopyToClipboard: copyToClipboard
+    CopyToClipboard: copyToClipboard,
+    EditWorkflowStatuses: editWorkflowStatuses
   }
 })

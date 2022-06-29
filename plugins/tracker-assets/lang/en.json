@@ -3,6 +3,8 @@
     "TrackerApplication": "Tracker",
     "Teams": "Your teams",
     "More": "More",
+    "Default": "Default",
+    "MakeDefault": "Make default",
     "Delete": "Delete",
     "Open": "Open",
     "Members": "Members",
@@ -60,6 +62,7 @@
     "CategoryCanceled": "Canceled",
 
     "Title": "Title",
+    "Name": "Name",
     "Description": "Description",
     "Status": "Status",
     "Number": "Number",
@@ -142,6 +145,11 @@
     "Subscribed": "Subscribed",
 
     "EditIssue": "Edit {title}",
+    "EditWorkflowStatuses": "Edit workflow statuses",
+    "ManageWorkflowStatuses": "Manage workflow statuses within team",
+    "AddWorkflowStatus": "Add workflow status",
+    "EditWorkflowStatus": "Edit workflow status",
+    "DeleteWorkflowStatus": "Delete workflow status",
 
     "Save": "Save",
     "IncludeItemsThatMatch": "Include items that match",

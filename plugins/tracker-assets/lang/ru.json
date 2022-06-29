@@ -3,6 +3,8 @@
     "TrackerApplication": "Трекер",
     "Teams": "Команды",
     "More": "Больше",
+    "Default": "По умолчанию",
+    "MakeDefault": "Установить по умолчанию",
     "Delete": "Удалить",
     "Open": "Открыть",
     "Members": "Участиники",
@@ -60,6 +62,7 @@
     "CategoryCanceled": "Отменённые",
 
     "Title": "Заголовок",
+    "Name": "Имя",
     "Description": "Описание",
     "Status": "Статус",
     "Number": "Номер",
@@ -142,6 +145,11 @@
     "Subscribed": "Отслеживаемые",
 
     "EditIssue": "Редактирование {title}",
+    "EditWorkflowStatuses": "Редактировать статусы рабочего процесса",
+    "ManageWorkflowStatuses": "Управлять статусами рабочего процесса для команды",
+    "AddWorkflowStatus": "Добавить статус рабочего процесса",
+    "EditWorkflowStatus": "Редактировать статус рабочего процесса",
+    "DeleteWorkflowStatus": "Удалить статус рабочего процесса",
 
     "Save": "Сохранить",
     "IncludeItemsThatMatch": "Включить элементы, которые соответствуют",

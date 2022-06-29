@@ -51,6 +51,7 @@ export default mergeIds(trackerId, tracker, {
     IssueCategory: '' as Ref<ObjectSearchCategory>
   },
   actionImpl: {
-    CopyToClipboard: '' as ViewAction
+    CopyToClipboard: '' as ViewAction,
+    EditWorkflowStatuses: '' as ViewAction
   }
 })
