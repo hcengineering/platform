@@ -15,7 +15,7 @@
 
 // To help typescript locate view plugin properly
 import automation, { AutomationSupport } from '@anticrm/automation'
-import type { Board, Card, MenuPage, CommonBoardPreference, CardCover } from '@anticrm/board'
+import { Board, Card, MenuPage, CommonBoardPreference, CardCover, boardId } from '@anticrm/board'
 import type { Employee } from '@anticrm/contact'
 import { Class, DOMAIN_MODEL, IndexKind, Markup, Ref, Type } from '@anticrm/core'
 import {
@@ -140,6 +140,7 @@ export function createModel (builder: Builder): void {
     {
       label: board.string.BoardApplication,
       icon: board.icon.Board,
+      alias: boardId,
       hidden: false,
       navigatorModel: {
         spaces: [

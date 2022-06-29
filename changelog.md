@@ -14,6 +14,9 @@ HR:
 Tracker:
 - Manual issues ordering
 
+Workbench
+- Use application aliases in URL
+
 ## 0.6.29
 
 Platform:

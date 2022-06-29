@@ -49,7 +49,8 @@ import {
   IssueStatusCategory,
   Project,
   ProjectStatus,
-  Team
+  Team,
+  trackerId
 } from '@anticrm/tracker'
 import { KeyBinding } from '@anticrm/view'
 import tags from '@anticrm/tags'
@@ -450,6 +451,7 @@ export function createModel (builder: Builder): void {
     {
       label: tracker.string.TrackerApplication,
       icon: tracker.icon.TrackerApplication,
+      alias: trackerId,
       hidden: false,
       navigatorModel: {
         specials: [
@@ -527,8 +529,8 @@ export function createModel (builder: Builder): void {
   )
 
   function createGotoSpecialAction (builder: Builder, id: string, key: KeyBinding, label: IntlString): void {
-    createNavigateAction(builder, key, label, {
-      application: tracker.app.Tracker,
+    createNavigateAction(builder, key, label, tracker.app.Tracker, {
+      application: trackerId,
       mode: 'space',
       spaceSpecial: id,
       spaceClass: tracker.class.Team
@@ -545,7 +547,7 @@ export function createModel (builder: Builder): void {
     action: workbench.actionImpl.Navigate,
     actionProps: {
       mode: 'app',
-      application: tracker.app.Tracker
+      application: trackerId
     },
     label: tracker.string.GotoTrackerApplication,
     icon: view.icon.ArrowRight,

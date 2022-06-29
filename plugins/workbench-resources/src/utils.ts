@@ -18,7 +18,7 @@ import type { Class, Client, Doc, Obj, Ref, Space } from '@anticrm/core'
 import core from '@anticrm/core'
 import type { Asset } from '@anticrm/platform'
 import { getResource } from '@anticrm/platform'
-import { Application, NavigatorModel } from '@anticrm/workbench'
+import { NavigatorModel } from '@anticrm/workbench'
 import view from '@anticrm/view'
 import { closePanel, getCurrentLocation, navigate } from '@anticrm/ui'
 import { getClient } from '@anticrm/presentation'
@@ -57,7 +57,7 @@ export async function doNavigate (
   evt: Event | undefined,
   props: {
     mode: 'app' | 'special' | 'space'
-    application?: Ref<Application>
+    application?: string
     special?: string
     spaceSpecial?: string
     space?: Ref<Space>

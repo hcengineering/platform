@@ -16,7 +16,7 @@ test.describe('project tests', () => {
     // Click text=Projects
     await page.click('text=Projects')
     await expect(page).toHaveURL(
-      `${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/tracker%3Aapp%3ATracker/tracker%3Ateam%3ADefaultTeam/projects`
+      `${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/tracker/tracker%3Ateam%3ADefaultTeam/projects`
     )
     await page.click('button:has-text("Project")')
     await page.click('[placeholder="Project\\ name"]')
@@ -39,7 +39,7 @@ test.describe('project tests', () => {
     await page.click('[id="app-tracker\\:string\\:TrackerApplication"]')
     await page.click('text=Projects')
     await expect(page).toHaveURL(
-      `${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/tracker%3Aapp%3ATracker/tracker%3Ateam%3ADefaultTeam/projects`
+      `${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/tracker/tracker%3Ateam%3ADefaultTeam/projects`
     )
     await page.click('button:has-text("Project")')
     const prjId = 'project-' + generateId()

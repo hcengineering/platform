@@ -14,7 +14,7 @@
 //
 
 import { Domain, IndexKind, Ref } from '@anticrm/core'
-import type { Category, Product, Variant } from '@anticrm/inventory'
+import { Category, inventoryId, Product, Variant } from '@anticrm/inventory'
 import { Builder, Collection, Index, Model, Prop, TypeRef, TypeString, UX } from '@anticrm/model'
 import attachment from '@anticrm/model-attachment'
 import core, { TAttachedDoc } from '@anticrm/model-core'
@@ -114,6 +114,7 @@ export function createModel (builder: Builder): void {
     {
       label: inventory.string.Inventory,
       icon: inventory.icon.InventoryApplication,
+      alias: inventoryId,
       hidden: false,
       navigatorModel: {
         specials: [

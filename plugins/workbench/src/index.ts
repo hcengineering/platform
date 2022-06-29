@@ -24,6 +24,7 @@ import { ViewAction } from '@anticrm/view'
  */
 export interface Application extends Doc {
   label: IntlString
+  alias: string
   icon: Asset
   hidden: boolean
   navigatorModel?: NavigatorModel
@@ -119,7 +120,7 @@ export default plugin(workbenchId, {
   actionImpl: {
     Navigate: '' as ViewAction<{
       mode: 'app' | 'special' | 'space'
-      application?: Ref<Application>
+      application?: string
       special?: string
       space?: Ref<Space>
       // If no space is selected, select first space from list

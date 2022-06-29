@@ -30,6 +30,7 @@ export { Application }
 export class TApplication extends TDoc implements Application {
   label!: IntlString
   icon!: Asset
+  alias!: string
   hidden!: boolean
 }
 
@@ -51,9 +52,10 @@ export function createNavigateAction (
   builder: Builder,
   key: KeyBinding,
   label: IntlString,
-  config: {
+  application: Ref<Application>,
+  props: {
     mode: 'app' | 'special' | 'space'
-    application: Ref<Application>
+    application?: string
     special?: string
     space?: Ref<Space>
     spaceClass?: Ref<Class<Space>>
@@ -62,7 +64,7 @@ export function createNavigateAction (
 ): void {
   createAction(builder, {
     action: workbench.actionImpl.Navigate,
-    actionProps: config,
+    actionProps: props,
     label,
     icon: view.icon.ArrowRight,
     keyBinding: [key],
@@ -71,7 +73,7 @@ export function createNavigateAction (
     target: core.class.Doc,
     context: {
       mode: ['workbench', 'browser', 'editor', 'panel', 'popup'],
-      application: config.application
+      application
     }
   })
 }

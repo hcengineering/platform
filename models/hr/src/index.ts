@@ -15,7 +15,7 @@
 
 import { Employee } from '@anticrm/contact'
 import { Arr, Class, Domain, DOMAIN_MODEL, IndexKind, Markup, Ref, Timestamp } from '@anticrm/core'
-import type { Department, DepartmentMember, Request, RequestType, Staff } from '@anticrm/hr'
+import { Department, DepartmentMember, hrId, Request, RequestType, Staff } from '@anticrm/hr'
 import {
   ArrOf,
   Builder,
@@ -139,6 +139,7 @@ export function createModel (builder: Builder): void {
     {
       label: hr.string.HRApplication,
       icon: hr.icon.HR,
+      alias: hrId,
       hidden: false,
       navigatorModel: {
         specials: [
