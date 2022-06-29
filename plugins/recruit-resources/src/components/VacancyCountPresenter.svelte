@@ -37,7 +37,8 @@
   >
     <div class="icon">
       <Icon icon={recruit.icon.Application} size={'small'} />
-    </div>&nbsp;
+    </div>
+    &nbsp;
     {applications?.get(value._id)?.count ?? 0}
   </div>
 {/if}
