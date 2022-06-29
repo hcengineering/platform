@@ -331,7 +331,7 @@ export interface BuildModelKey {
   props?: Record<string, any>
 
   label?: IntlString
-  sortingKey?: string
+  sortingKey?: string | string[]
 
   // On client sorting function
   sortingFunction?: (a: Doc, b: Doc) => number
@@ -347,7 +347,7 @@ export interface AttributeModel {
   presenter: AnySvelteComponent
   // Extra properties for component
   props?: Record<string, any>
-  sortingKey: string
+  sortingKey: string | string[]
   // Extra icon if applicable
   icon?: Asset
 

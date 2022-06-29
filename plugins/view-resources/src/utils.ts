@@ -68,7 +68,7 @@ export async function getObjectPresenter (
   const presenter = await getResource(presenterMixin.presenter)
   const key = preserveKey.sortingKey ?? preserveKey.key
   const sortingKey =
-    clazz.sortingKey !== undefined ? (key.length > 0 ? key + '.' + clazz.sortingKey : clazz.sortingKey) : key
+    clazz.sortingKey !== undefined ? (key.length > 0 ? Array.isArray(clazz.sortingKey) ? [key + '.' + clazz.sortingKey[0], ...clazz.sortingKey.slice(1)] :  key + '.' + clazz.sortingKey : clazz.sortingKey) : key
   return {
     key: preserveKey.key,
     _class,
@@ -240,7 +240,7 @@ export async function buildModel (options: BuildModelOptions): Promise<Attribute
         return errorPresenter
       }
     })
-  return (await (await Promise.all(model)).filter((a) => a !== undefined)) as AttributeModel[]
+  return (await Promise.all(model)).filter((a) => a !== undefined) as AttributeModel[]
 }
 
 export async function deleteObject (client: TxOperations, object: Doc): Promise<void> {

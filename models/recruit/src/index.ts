@@ -283,7 +283,7 @@ export function createModel (builder: Builder): void {
           }
         },
         'modifiedOn',
-        '$lookup.channels'
+        { key: '$lookup.channels', sortingKey: ['$lookup.channels.lastMessage', 'channels'] }
       ],
       hiddenKeys: ['name']
     },
@@ -330,7 +330,7 @@ export function createModel (builder: Builder): void {
         'attachments',
         'comments',
         'modifiedOn',
-        '$lookup.attachedTo.$lookup.channels'
+        { key: '$lookup.attachedTo.$lookup.channels', sortingKey: ['$lookup.attachedTo.$lookup.channels.lastMessage', '$lookup.attachedTo.channels'] }
       ]
     },
     recruit.viewlet.TableApplicant
