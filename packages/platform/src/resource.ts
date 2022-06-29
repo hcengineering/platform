@@ -98,11 +98,11 @@ const cachedResource = new Map<string, any>()
 
 /**
  * @public
- * @param resourceId -
+ * @param identifier -
  * @returns
  */
-export async function getResource<T> (resourceId: Resource<T>): Promise<T> {
-  const resource = aliases.get(resourceId) ?? resourceId
+export async function getResource<T> (identifier: Resource<T>): Promise<T> {
+  const resource = aliases.get(identifier) ?? identifier
   const cached = cachedResource.get(resource)
   if (cached !== undefined) {
     return cached

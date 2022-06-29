@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onDestroy } from 'svelte'
-  import { getMetadata, getResource, OK } from '@anticrm/platform'
+  import { getMetadata, OK } from '@anticrm/platform'
   import { PlatformEvent, addEventListener } from '@anticrm/platform'
   import type { AnyComponent } from '../../types'
   // import { applicationShortcutKey } from '../../utils'
