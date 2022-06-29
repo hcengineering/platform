@@ -107,10 +107,12 @@ export class TCandidate extends TPerson implements Candidate {
 export class TApplicant extends TTask implements Applicant {
   // We need to declare, to provide property with label
   @Prop(TypeRef(recruit.mixin.Candidate), recruit.string.Talent)
+  @Index(IndexKind.Indexed)
   declare attachedTo: Ref<Candidate>
 
   // We need to declare, to provide property with label
   @Prop(TypeRef(recruit.class.Vacancy), recruit.string.Vacancy)
+  @Index(IndexKind.Indexed)
   declare space: Ref<Vacancy>
 
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, undefined, attachment.string.Files)
