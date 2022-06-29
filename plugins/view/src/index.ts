@@ -449,7 +449,8 @@ const view = plugin(viewId, {
   },
   string: {
     CustomizeView: '' as IntlString,
-    LabelNA: '' as IntlString
+    LabelNA: '' as IntlString,
+    View: '' as IntlString
   },
   icon: {
     Table: '' as Asset,

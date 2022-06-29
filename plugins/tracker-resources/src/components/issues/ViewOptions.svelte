@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { IssuesDateModificationPeriod, IssuesGrouping, IssuesOrdering, ViewOptions } from '@anticrm/tracker'
-  import { Button, eventToHTMLElement, IconDownOutline, showPopup } from '@anticrm/ui'
+  import { Button, eventToHTMLElement, IconDownOutline, showPopup, Label } from '@anticrm/ui'
   import { getViewOptions, setViewOptions } from '@anticrm/view-resources'
   import view, { Viewlet } from '@anticrm/view'
 
@@ -56,7 +56,7 @@
 >
   <svelte:fragment slot="content">
     <div class="flex-row-center clear-mins pointer-events-none">
-      <span class="text-sm font-medium">View</span>
+      <span class="text-sm font-medium"><Label label={view.string.View} /></span>
       <div class="icon"><IconDownOutline size={'full'} /></div>
     </div>
   </svelte:fragment>
