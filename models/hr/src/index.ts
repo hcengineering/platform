@@ -48,6 +48,7 @@ export const DOMAIN_HR = 'hr' as Domain
 @UX(hr.string.Department, hr.icon.Department)
 export class TDepartment extends TSpace implements Department {
   @Prop(TypeRef(hr.class.Department), hr.string.ParentDepartmentLabel)
+  @Index(IndexKind.Indexed)
   declare space: Ref<Department>
 
   @Prop(TypeString(), core.string.Name)
@@ -98,11 +99,14 @@ export class TRequestType extends TDoc implements RequestType {
 @UX(hr.string.Request, hr.icon.PTO)
 export class TRequest extends TAttachedDoc implements Request {
   @Prop(TypeRef(hr.mixin.Staff), contact.string.Employee)
+  @Index(IndexKind.Indexed)
   declare attachedTo: Ref<Staff>
 
+  @Index(IndexKind.Indexed)
   declare attachedToClass: Ref<Class<Staff>>
 
   @Prop(TypeRef(hr.class.Department), hr.string.Department)
+  @Index(IndexKind.Indexed)
   declare space: Ref<Department>
 
   @Prop(TypeRef(hr.class.RequestType), hr.string.RequestType)
