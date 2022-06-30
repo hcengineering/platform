@@ -40,7 +40,8 @@ export default mergeIds(contactId, contact, {
     MemberPresenter: '' as AnyComponent,
     EditMember: '' as AnyComponent,
     EmployeeArrayEditor: '' as AnyComponent,
-    EmployeeEditor: '' as AnyComponent
+    EmployeeEditor: '' as AnyComponent,
+    CreateEmployee: '' as AnyComponent
   },
   string: {
     Persons: '' as IntlString,

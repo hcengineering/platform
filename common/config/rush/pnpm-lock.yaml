@@ -10622,13 +10622,15 @@ packages:
     dev: false
 
   file:projects/contact-resources.tgz_1e3963ebf0ceeb25b2fa6a1cc87e253c:
-    resolution: {integrity: sha512-emAawKeZ3rkJfH0KM59uoKyBBjXhxQkDlOuZhAHgpyCwK/6aJysXuVNTtg5IpqKo6ug3GQWhp1QUWWyIpr7SPQ==, tarball: file:projects/contact-resources.tgz}
+    resolution: {integrity: sha512-b2YgdY2vY4E+zM1fRAgN8qc+ofFdYr8dY1RE6n4Iz5aXvzhoc/2EQyHgYyquA330Pl8/iZTb7kRB9XbcIPwaIA==, tarball: file:projects/contact-resources.tgz}
     id: file:projects/contact-resources.tgz
     name: '@rush-temp/contact-resources'
     version: 0.0.0
     dependencies:
+      '@types/email-addresses': 3.0.0
       '@typescript-eslint/eslint-plugin': 5.27.0_738fa17fa57f8a69ace69c90e5cfa1d5
       '@typescript-eslint/parser': 5.27.0_eslint@7.32.0+typescript@4.7.2
+      email-addresses: 5.0.0
       eslint: 7.32.0
       eslint-config-standard-with-typescript: 21.0.1_99a5fe2f2ae1dc64d6b59974c931eb2a
       eslint-plugin-import: 2.26.0_c21022bc9feaeb7b200d3d631eeae46c
@@ -11448,13 +11450,15 @@ packages:
     dev: false
 
   file:projects/login-resources.tgz_1e3963ebf0ceeb25b2fa6a1cc87e253c:
-    resolution: {integrity: sha512-z/UZS/JzqzigMk6IlK5Bqj/85K9Rto2HujvHzvID+jYKQ23YnuWjNbHm+8s8R4DXh42vpjeSTwi6RxtS+VWzZQ==, tarball: file:projects/login-resources.tgz}
+    resolution: {integrity: sha512-THKHVmV1AWGGi/FemAYNCxemKXLSu8Bg0/0x5nmNVeh0YG0V0YRSteBPHL3EZTAOYBGS0VKZPZ5hOChnkHXb0Q==, tarball: file:projects/login-resources.tgz}
     id: file:projects/login-resources.tgz
     name: '@rush-temp/login-resources'
     version: 0.0.0
     dependencies:
+      '@types/email-addresses': 3.0.0
       '@typescript-eslint/eslint-plugin': 5.27.0_738fa17fa57f8a69ace69c90e5cfa1d5
       '@typescript-eslint/parser': 5.27.0_eslint@7.32.0+typescript@4.7.2
+      email-addresses: 5.0.0
       eslint: 7.32.0
       eslint-config-standard-with-typescript: 21.0.1_99a5fe2f2ae1dc64d6b59974c931eb2a
       eslint-plugin-import: 2.26.0_c21022bc9feaeb7b200d3d631eeae46c
@@ -11694,7 +11698,7 @@ packages:
     dev: false
 
   file:projects/model-contact.tgz_typescript@4.7.2:
-    resolution: {integrity: sha512-YcuQBjpqHjvTwBbcYHoBgM+b1VwMPsd3Wei4GLhHL2uOF6TKUG1bbz3z/p3kv/SwMrDVszOxUD1LkNHb+x5oNA==, tarball: file:projects/model-contact.tgz}
+    resolution: {integrity: sha512-we/DHl9Mt7a5yNpFYCF7RI5OKFtpAejWzOqp7quGzgNLDsloZSJFrzlR6T7Txez2dKA8L5p3IIWRv2oYtgxwaA==, tarball: file:projects/model-contact.tgz}
     id: file:projects/model-contact.tgz
     name: '@rush-temp/model-contact'
     version: 0.0.0
@@ -14606,7 +14610,7 @@ packages:
     dev: false
 
   file:projects/tracker-resources.tgz_1e3963ebf0ceeb25b2fa6a1cc87e253c:
-    resolution: {integrity: sha512-bNqQvwzdPa61s2z+M0xrwW5bSvv46yBY8BXt6cqKEHwp1Zv78P5NHU/ScAgVRuJSvwknhrykBK1mK7zghMr3Hg==, tarball: file:projects/tracker-resources.tgz}
+    resolution: {integrity: sha512-ShvJGnS3CzpTi2IxUX5oAe18j2CwHXnDl5PDYeQg4uSLw9CpOTx02zcBr/xmstZNwRaj5QBl6+ua7rE0eYRFbQ==, tarball: file:projects/tracker-resources.tgz}
     id: file:projects/tracker-resources.tgz
     name: '@rush-temp/tracker-resources'
     version: 0.0.0
