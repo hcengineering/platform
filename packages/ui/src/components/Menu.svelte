@@ -14,6 +14,7 @@
 -->
 <script lang="ts">
   import { afterUpdate, createEventDispatcher, onDestroy, onMount } from 'svelte'
+  import { generateId } from '@anticrm/core'
   import ui from '../plugin'
   import { closePopup, showPopup } from '../popups'
   import { Action } from '../types'
@@ -27,7 +28,7 @@
   const dispatch = createEventDispatcher()
   const btns: HTMLElement[] = []
   let activeElement: HTMLElement
-  const category = `${Date.now()}`
+  const category = generateId()
 
   const keyDown = (ev: KeyboardEvent): void => {
     if (ev.key === 'Tab') {
