@@ -37,9 +37,11 @@ test.describe('recruit tests', () => {
     await page.click('form[id="tags:string:AddTag"]  button:has-text("Create")')
     await page.click('button:has-text("Other")')
     // Click text=s1
-    await page.click('text=s1')
+    // await page.click('text=s1')
+    await page.click('button:has-text("s1") .check')
     // Click :nth-match(:text("Cancel"), 2)
     // await page.click('button:has-text("Cancel")')
+    await page.keyboard.press('Escape')
     await page.keyboard.press('Escape')
     // Click button:has-text("Create")
     await page.click('button:has-text("Create")')

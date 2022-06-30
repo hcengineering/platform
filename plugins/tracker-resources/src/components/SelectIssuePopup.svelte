@@ -4,7 +4,7 @@
   import { ObjectPopup } from '@anticrm/presentation'
   import { Issue } from '@anticrm/tracker'
   import { Icon } from '@anticrm/ui'
-  import { getIssueId } from '../utils'
+  import { getIssueId } from '../issues'
   import tracker from '../plugin'
 
   export let docQuery: DocumentQuery<Issue> | undefined = undefined

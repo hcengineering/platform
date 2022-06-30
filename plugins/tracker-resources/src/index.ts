@@ -57,7 +57,7 @@ import SetParentIssueActionPopup from './components/SetParentIssueActionPopup.sv
 import Views from './components/views/Views.svelte'
 import KanbanView from './components/issues/KanbanView.svelte'
 import tracker from './plugin'
-import { copyToClipboard, getIssueId, getIssueTitle } from './utils'
+import { copyToClipboard, getIssueId, getIssueTitle, resolveLocation } from './issues'
 import CreateIssue from './components/CreateIssue.svelte'
 import RelationsPopup from './components/RelationsPopup.svelte'
 
@@ -161,5 +161,8 @@ export default async (): Promise<Resources> => ({
   },
   actionImpl: {
     CopyToClipboard: copyToClipboard
+  },
+  resolver: {
+    Location: resolveLocation
   }
 })

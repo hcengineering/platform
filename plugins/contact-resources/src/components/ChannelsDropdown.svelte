@@ -30,8 +30,7 @@
     eventToHTMLElement,
     getFocusManager,
     Menu,
-    showPopup,
-    Tooltip
+    showPopup
   } from '@anticrm/ui'
   import { createEventDispatcher, tick } from 'svelte'
   import { getChannelProviders } from '../utils'
@@ -275,18 +274,17 @@
         on:click={showMenu}
       />
     {:else}
-      <Tooltip label={presentation.string.AddSocialLinks}>
-        <Button
-          focusIndex={focusIndex === -1 ? focusIndex : focusIndex + 2 + displayItems.length}
-          id={presentation.string.AddSocialLinks}
-          bind:input={addBtn}
-          icon={contact.icon.SocialEdit}
-          {kind}
-          {size}
-          {shape}
-          on:click={showMenu}
-        />
-      </Tooltip>
+      <Button
+        focusIndex={focusIndex === -1 ? focusIndex : focusIndex + 2 + displayItems.length}
+        id={presentation.string.AddSocialLinks}
+        bind:input={addBtn}
+        icon={contact.icon.SocialEdit}
+        {kind}
+        {size}
+        {shape}
+        showTooltip={{ label: presentation.string.AddSocialLinks }}
+        on:click={showMenu}
+      />
     {/if}
   {/if}
 </div>

@@ -2,7 +2,7 @@
   import { Ref } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { Issue } from '@anticrm/tracker'
-  import { Menu, showPopup } from '@anticrm/ui'
+  import { Action, Menu, showPopup } from '@anticrm/ui'
   import SelectIssuePopup from './SelectIssuePopup.svelte'
   import SelectRelationPopup from './SelectRelationPopup.svelte'
   import tracker from '../plugin'
@@ -62,32 +62,29 @@
     )
   }
 
-  const removeRelationAction = [
+  const removeRelationAction: Action[] = [
     {
       action: removeRelation,
       icon: tracker.icon.Issue,
       label: tracker.string.RemoveRelation,
-      group: '2'
+      group: '1'
     }
   ]
   $: actions = [
     {
       action: addBlockedBy,
       icon: tracker.icon.Issue,
-      label: tracker.string.AddBlockedBy,
-      group: '1'
+      label: tracker.string.AddBlockedBy
     },
     {
       action: addIsBlocking,
       icon: tracker.icon.Issue,
-      label: tracker.string.AddIsBlocking,
-      group: '1'
+      label: tracker.string.AddIsBlocking
     },
     {
       action: addRelatedIssue,
       icon: tracker.icon.Issue,
-      label: tracker.string.AddRelatedIssue,
-      group: '1'
+      label: tracker.string.AddRelatedIssue
     },
     ...(hasRelation ? removeRelationAction : [])
   ]

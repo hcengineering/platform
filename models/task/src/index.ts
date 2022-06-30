@@ -275,7 +275,7 @@ export const actionTemplates = template({
       label: task.string.Archive,
       message: task.string.ArchiveConfirm
     },
-    input: 'focus',
+    input: 'any',
     category: task.category.Task,
     query: {
       archived: false
@@ -296,7 +296,7 @@ export const actionTemplates = template({
       label: task.string.Unarchive,
       message: task.string.UnarchiveConfirm
     },
-    input: 'focus',
+    input: 'any',
     category: task.category.Task,
     query: {
       archived: true

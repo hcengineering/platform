@@ -453,6 +453,7 @@ export function createModel (builder: Builder): void {
       icon: tracker.icon.TrackerApplication,
       alias: trackerId,
       hidden: false,
+      locationResolver: tracker.resolver.Location,
       navigatorModel: {
         specials: [
           {

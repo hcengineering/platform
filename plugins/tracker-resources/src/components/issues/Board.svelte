@@ -18,7 +18,7 @@
   import { Kanban, TypeState } from '@anticrm/kanban'
   import { createQuery } from '@anticrm/presentation'
   import type { Issue, IssueStatus, Team } from '@anticrm/tracker'
-  import { Button, Icon, IconAdd, showPopup, Tooltip, showPanel, Component } from '@anticrm/ui'
+  import { Button, Icon, IconAdd, showPopup, showPanel, Component } from '@anticrm/ui'
   import { focusStore, ListSelectionProvider, SelectDirection, selectionStore } from '@anticrm/view-resources'
   import ActionContext from '@anticrm/view-resources/src/components/ActionContext.svelte'
   import Menu from '@anticrm/view-resources/src/components/Menu.svelte'
@@ -139,15 +139,14 @@
             <span class="counter ml-2 text-md">{count}</span>
           </div>
           <div class="flex gap-1">
-            <Tooltip label={tracker.string.AddIssueTooltip} direction={'left'}>
-              <Button
-                icon={IconAdd}
-                kind={'transparent'}
-                on:click={() => {
-                  showPopup(CreateIssue, { space: currentSpace, status: state._id }, 'top')
-                }}
-              />
-            </Tooltip>
+            <Button
+              icon={IconAdd}
+              kind={'transparent'}
+              showTooltip={{ label: tracker.string.AddIssueTooltip, direction: 'left' }}
+              on:click={() => {
+                showPopup(CreateIssue, { space: currentSpace, status: state._id }, 'top')
+              }}
+            />
           </div>
         </div>
       </div>

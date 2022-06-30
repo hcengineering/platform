@@ -5,7 +5,7 @@
   import { Issue } from '@anticrm/tracker'
   import { SelectPopup } from '@anticrm/ui'
   import { translate } from '@anticrm/platform'
-  import { getIssueId } from '../utils'
+  import { getIssueId } from '../issues'
   import tracker from '../plugin'
 
   export let blockedBy: Ref<Issue>[] = []

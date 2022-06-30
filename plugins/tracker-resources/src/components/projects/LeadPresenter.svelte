@@ -18,7 +18,7 @@
   import { Project } from '@anticrm/tracker'
   import { UsersPopup, getClient } from '@anticrm/presentation'
   import { AttributeModel } from '@anticrm/view'
-  import { eventToHTMLElement, showPopup, Tooltip } from '@anticrm/ui'
+  import { eventToHTMLElement, showPopup } from '@anticrm/ui'
   import { getObjectPresenter } from '@anticrm/view-resources'
   import { IntlString } from '@anticrm/platform'
   import tracker from '../../plugin'
@@ -85,19 +85,17 @@
 </script>
 
 {#if value && presenter}
-  <Tooltip component={LeadPopup} props={{ lead: value }}>
-    <svelte:component
-      this={presenter.presenter}
-      {value}
-      {defaultName}
-      avatarSize={'tiny'}
-      isInteractive={true}
-      shouldShowPlaceholder={true}
-      shouldShowName={shouldShowLabel}
-      onEmployeeEdit={handleLeadEditorOpened}
-      tooltipLabels={{ personLabel: tracker.string.AssignedTo, placeholderLabel: tracker.string.AssignTo }}
-    />
-  </Tooltip>
+  <svelte:component
+    this={presenter.presenter}
+    {value}
+    {defaultName}
+    avatarSize={'tiny'}
+    isInteractive={true}
+    shouldShowPlaceholder={true}
+    shouldShowName={shouldShowLabel}
+    onEmployeeEdit={handleLeadEditorOpened}
+    tooltipLabels={{ component: LeadPopup, props: { lead: value } }}
+  />
 {:else if presenter}
   <svelte:component
     this={presenter.presenter}

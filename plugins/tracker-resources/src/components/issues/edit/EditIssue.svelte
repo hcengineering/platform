@@ -36,7 +36,7 @@
   import { ContextMenu } from '@anticrm/view-resources'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import tracker from '../../../plugin'
-  import { getIssueId } from '../../../utils'
+  import { generateIssueShortLink, getIssueId } from '../../../issues'
   import IssueStatusActivity from '../IssueStatusActivity.svelte'
   import ControlPanel from './ControlPanel.svelte'
   import CopyToClipboard from './CopyToClipboard.svelte'
@@ -269,7 +269,7 @@
       {#if issueId}{issueId}{/if}
     </span>
     <svelte:fragment slot="actions">
-      <CopyToClipboard issueUrl={window.location.href} {issueId} />
+      <CopyToClipboard issueUrl={generateIssueShortLink(issueId)} {issueId} />
     </svelte:fragment>
 
     <svelte:fragment slot="custom-attributes">

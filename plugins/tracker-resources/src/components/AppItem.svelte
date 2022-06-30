@@ -15,7 +15,7 @@
 <script lang="ts">
   import type { IntlString, Asset } from '@anticrm/platform'
   import type { AnySvelteComponent } from '@anticrm/ui'
-  import { Icon, Tooltip } from '@anticrm/ui'
+  import { Icon, tooltip } from '@anticrm/ui'
 
   export let label: IntlString
   export let icon: Asset | AnySvelteComponent
@@ -24,14 +24,12 @@
   export let notify: boolean
 </script>
 
-<Tooltip {label}>
-  <button class="app" id={'app-' + label} class:selected on:click|stopPropagation={action}>
-    <div class="flex-center icon-container" class:noty={notify}>
-      <Icon {icon} size={'large'} />
-    </div>
-    {#if notify}<div class="marker" />{/if}
-  </button>
-</Tooltip>
+<button class="app" class:selected id={'app-' + label} use:tooltip={{ label }} on:click|stopPropagation={action}>
+  <div class="flex-center icon-container" class:noty={notify}>
+    <Icon {icon} size={'large'} />
+  </div>
+  {#if notify}<div class="marker" />{/if}
+</button>
 
 <style lang="scss">
   .app {

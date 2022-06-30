@@ -17,7 +17,7 @@
   import type { Class, DocumentQuery, Ref } from '@anticrm/core'
   import type { IntlString } from '@anticrm/platform'
   import { ButtonKind, ButtonSize, Label, TooltipAlignment } from '@anticrm/ui'
-  import { Tooltip, showPopup, Button } from '@anticrm/ui'
+  import { showPopup, Button } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation, { CombineAvatars, UsersPopup } from '..'
   import { createQuery } from '../utils'
@@ -69,25 +69,24 @@
   }
 </script>
 
-<Tooltip {label} fill={width === '100%'} direction={labelDirection}>
-  <Button
-    icon={persons.length === 0 ? Members : undefined}
-    label={persons.length === 0 ? presentation.string.Members : undefined}
-    width={width ?? 'min-content'}
-    {kind}
-    {size}
-    {justify}
-    on:click={addPerson}
-  >
-    <svelte:fragment slot="content">
-      {#if persons.length > 0}
-        <div class="flex-row-center flex-nowrap pointer-events-none">
-          <CombineAvatars {_class} bind:items size={'inline'} />
-          <span class="overflow-label ml-1-5">
-            <Label label={presentation.string.NumberMembers} params={{ count: persons.length }} />
-          </span>
-        </div>
-      {/if}
-    </svelte:fragment>
-  </Button>
-</Tooltip>
+<Button
+  icon={persons.length === 0 ? Members : undefined}
+  label={persons.length === 0 ? presentation.string.Members : undefined}
+  width={width ?? 'min-content'}
+  {kind}
+  {size}
+  {justify}
+  showTooltip={{ label, direction: labelDirection }}
+  on:click={addPerson}
+>
+  <svelte:fragment slot="content">
+    {#if persons.length > 0}
+      <div class="flex-row-center flex-nowrap pointer-events-none">
+        <CombineAvatars {_class} bind:items size={'inline'} />
+        <span class="overflow-label ml-1-5">
+          <Label label={presentation.string.NumberMembers} params={{ count: persons.length }} />
+        </span>
+      </div>
+    {/if}
+  </svelte:fragment>
+</Button>

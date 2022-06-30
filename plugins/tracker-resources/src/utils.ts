@@ -14,10 +14,9 @@
 //
 
 import contact, { Employee, formatName } from '@anticrm/contact'
-import { Doc, DocumentQuery, Ref, SortingOrder, TxOperations } from '@anticrm/core'
+import { DocumentQuery, Ref, SortingOrder, TxOperations } from '@anticrm/core'
 import { TypeState } from '@anticrm/kanban'
 import { Asset, IntlString, translate } from '@anticrm/platform'
-import { getClient } from '@anticrm/presentation'
 import {
   Issue,
   IssuesDateModificationPeriod,
@@ -27,13 +26,7 @@ import {
   ProjectStatus,
   Team
 } from '@anticrm/tracker'
-import {
-  AnyComponent,
-  AnySvelteComponent,
-  getMillisecondsInMonth,
-  getPanelURI,
-  MILLISECONDS_IN_WEEK
-} from '@anticrm/ui'
+import { AnyComponent, AnySvelteComponent, getMillisecondsInMonth, MILLISECONDS_IN_WEEK } from '@anticrm/ui'
 import tracker from './plugin'
 import { defaultPriorities, defaultProjectStatuses, issuePriorities } from './types'
 
@@ -346,10 +339,6 @@ export function getCategories (
   return existingCategories
 }
 
-export function getIssueId (team: Team, issue: Issue): string {
-  return `${team.identifier}-${issue.number}`
-}
-
 export async function getKanbanStatuses (
   client: TxOperations,
   groupBy: IssuesGrouping,
@@ -459,34 +448,4 @@ export async function getKanbanStatuses (
     }, [])
   }
   return []
-}
-
-export async function getIssueTitle (client: TxOperations, ref: Ref<Doc>): Promise<string> {
-  const object = await client.findOne(
-    tracker.class.Issue,
-    { _id: ref as Ref<Issue> },
-    { lookup: { space: tracker.class.Team } }
-  )
-  if (object?.$lookup?.space === undefined) throw new Error(`Issue Team not found, _id: ${ref}`)
-  return getIssueId(object.$lookup.space, object)
-}
-
-export async function copyToClipboard (object: Issue, ev: Event, { type }: { type: string }): Promise<void> {
-  const client = getClient()
-  let text: string
-  switch (type) {
-    case 'id':
-      text = await getIssueTitle(client, object._id)
-      break
-    case 'title':
-      text = object.title
-      break
-    case 'link':
-      // TODO: fix when short link is available
-      text = `${window.location.href}#${getPanelURI(tracker.component.EditIssue, object._id, object._class, 'content')}`
-      break
-    default:
-      return
-  }
-  await navigator.clipboard.writeText(text)
 }
