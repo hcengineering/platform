@@ -67,7 +67,8 @@ export const uis = plugin(uiId, {
     Back: '' as IntlString
   },
   metadata: {
-    DefaultApplication: '' as Metadata<AnyComponent>
+    DefaultApplication: '' as Metadata<AnyComponent>,
+    Routes: '' as Metadata<Map<string, AnyComponent>>
   }
 })
 

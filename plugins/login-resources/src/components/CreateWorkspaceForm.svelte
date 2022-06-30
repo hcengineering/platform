@@ -20,7 +20,7 @@
   import { createWorkspace } from '../utils'
   import { getCurrentLocation, navigate, setMetadataLocalStorage, showPopup } from '@anticrm/ui'
   import login from '../plugin'
-  import workbench from '@anticrm/workbench'
+  import { workbenchId } from '@anticrm/workbench'
   import InviteLink from './InviteLink.svelte'
 
   const fields = [{ name: 'workspace', i18n: login.string.Workspace, rule: /^[0-9a-z#%&^\-@!)(]{3,63}$/ }]
@@ -45,7 +45,7 @@
         setMetadataLocalStorage(login.metadata.LoginEmail, result.email)
         setMetadataLocalStorage(login.metadata.CurrentWorkspace, object.workspace)
         showPopup(InviteLink, {}, undefined, () => {
-          navigate({ path: [workbench.component.WorkbenchApp] })
+          navigate({ path: [workbenchId] })
         })
       }
     }
