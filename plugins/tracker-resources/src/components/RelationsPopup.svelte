@@ -2,62 +2,58 @@
   import { Ref } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { Issue } from '@anticrm/tracker'
-  import { Action, Menu, showPopup } from '@anticrm/ui'
+  import { Action, closePopup, Menu, showPopup } from '@anticrm/ui'
   import SelectIssuePopup from './SelectIssuePopup.svelte'
   import SelectRelationPopup from './SelectRelationPopup.svelte'
   import tracker from '../plugin'
+  import { updateIssueRelation } from '../issues'
 
   export let value: Issue
 
   const client = getClient()
   const query = createQuery()
+  $: relations = {
+    blockedBy: value.blockedBy ?? [],
+    relatedIssue: value.relatedIssue ?? [],
+    isBlocking: isBlocking ?? []
+  }
   let isBlocking: Ref<Issue>[] = []
   $: query.query(tracker.class.Issue, { blockedBy: value._id }, (result) => {
     isBlocking = result.map(({ _id }) => _id)
   })
-  $: hasRelation = (value.blockedBy?.length || value.relatedIssue?.length || isBlocking.length) > 0
+  $: hasRelation = Object.values(relations).some(({ length }) => length)
 
-  async function pushOrUpdate (issue: Issue, prop: 'blockedBy' | 'relatedIssue', _id: Ref<Issue>) {
-    const update = Array.isArray(value[prop]) ? { $push: { [prop]: _id } } : { [prop]: [_id] }
-    await client.update(issue, update)
+  async function updateRelation (issue: Issue, type: keyof typeof relations, operation: '$push' | '$pull') {
+    const prop = type === 'isBlocking' ? 'blockedBy' : type
+    if (type !== 'isBlocking') {
+      await updateIssueRelation(client, value, issue._id, prop, operation)
+    }
+    if (type !== 'blockedBy') {
+      await updateIssueRelation(client, issue, value._id, prop, operation)
+    }
   }
 
-  function makeProps (ignoreObjects: Ref<Issue>[] | undefined) {
-    return { ignoreObjects: ignoreObjects === undefined ? [value._id] : [...ignoreObjects, value._id] }
-  }
-  async function addBlockedBy () {
-    showPopup(SelectIssuePopup, makeProps(value.blockedBy), undefined, async (issue: Issue | undefined) => {
-      if (!issue) return
-      await pushOrUpdate(value, 'blockedBy', issue._id)
-    })
-  }
-  async function addIsBlocking () {
-    showPopup(SelectIssuePopup, makeProps(isBlocking), undefined, async (issue: Issue | undefined) => {
-      if (!issue) return
-      await pushOrUpdate(issue, 'blockedBy', value._id)
-    })
-  }
-  async function addRelatedIssue () {
-    showPopup(SelectIssuePopup, makeProps(value.relatedIssue), undefined, async (issue: Issue | undefined) => {
-      if (!issue) return
-      await pushOrUpdate(issue, 'relatedIssue', value._id)
-      await pushOrUpdate(value, 'relatedIssue', issue._id)
-    })
+  const makeAddAction = (type: keyof typeof relations) => async () => {
+    closePopup('popup')
+    showPopup(
+      SelectIssuePopup,
+      { ignoreObjects: [value._id, ...relations[type]] },
+      undefined,
+      async (issue: Issue | undefined) => {
+        if (!issue) return
+        await updateRelation(issue, type, '$push')
+      }
+    )
   }
   async function removeRelation () {
+    closePopup('popup')
     showPopup(
       SelectRelationPopup,
-      { blockedBy: value.blockedBy, relatedIssue: value.relatedIssue, isBlocking },
+      relations,
       undefined,
-      async (e: { type: string; issue: Issue } | undefined) => {
-        if (!e) return
-        const { type, issue } = e
-        if (type === 'blockedBy') await client.update(value, { $pull: { blockedBy: issue._id } })
-        else if (type === 'isBlocking') await client.update(issue, { $pull: { blockedBy: value._id } })
-        else if (type === 'relatedIssue') {
-          await client.update(issue, { $pull: { relatedIssue: value._id } })
-          await client.update(value, { $pull: { relatedIssue: issue._id } })
-        }
+      async (result: { type: keyof typeof relations; issue: Issue } | undefined) => {
+        if (!result) return
+        await updateRelation(result.issue, result.type, '$pull')
       }
     )
   }
@@ -72,17 +68,17 @@
   ]
   $: actions = [
     {
-      action: addBlockedBy,
+      action: makeAddAction('blockedBy'),
       icon: tracker.icon.Issue,
       label: tracker.string.AddBlockedBy
     },
     {
-      action: addIsBlocking,
+      action: makeAddAction('isBlocking'),
       icon: tracker.icon.Issue,
       label: tracker.string.AddIsBlocking
     },
     {
-      action: addRelatedIssue,
+      action: makeAddAction('relatedIssue'),
       icon: tracker.icon.Issue,
       label: tracker.string.AddRelatedIssue
     },

@@ -27,6 +27,7 @@
   const dispatch = createEventDispatcher()
   const btns: HTMLElement[] = []
   let activeElement: HTMLElement
+  const category = `${Date.now()}`
 
   const keyDown = (ev: KeyboardEvent): void => {
     if (ev.key === 'Tab') {
@@ -51,7 +52,7 @@
     }
     if (ev.key === 'ArrowLeft') {
       dispatch('update', 'left')
-      closePopup('submenu')
+      closePopup(category)
       ev.preventDefault()
       ev.stopPropagation()
     }
@@ -72,11 +73,11 @@
     }
   })
   onDestroy(() => {
-    closePopup('submenu')
+    closePopup(category)
   })
 
   function showActionPopup (action: Action, target: HTMLElement): void {
-    closePopup('submenu')
+    closePopup(category)
     if (action.component !== undefined) {
       console.log(action.props)
       showPopup(
@@ -87,7 +88,7 @@
           dispatch('close')
         },
         undefined,
-        { category: 'submenu', overlay: false }
+        { category, overlay: false }
       )
     }
   }

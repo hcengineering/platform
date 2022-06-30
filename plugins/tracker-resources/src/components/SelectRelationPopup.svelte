@@ -3,7 +3,7 @@
   import { Ref } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
   import { Issue } from '@anticrm/tracker'
-  import { SelectPopup } from '@anticrm/ui'
+  import { SelectPopup, Loading } from '@anticrm/ui'
   import { translate } from '@anticrm/platform'
   import { getIssueId } from '../issues'
   import tracker from '../plugin'
@@ -11,6 +11,7 @@
   export let blockedBy: Ref<Issue>[] = []
   export let isBlocking: Ref<Issue>[] = []
   export let relatedIssue: Ref<Issue>[] = []
+
   // TODO: fix icons
   const config = {
     blockedBy: {
@@ -53,7 +54,9 @@
   }
 </script>
 
-{#await getValue() then value}
+{#await getValue()}
+  <Loading />
+{:then value}
   <SelectPopup
     {value}
     width="large"

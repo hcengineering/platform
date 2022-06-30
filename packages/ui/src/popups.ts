@@ -67,7 +67,6 @@ export function showPopup (
 }
 
 export function closePopup (category?: string): void {
-  console.debug(category)
   popupstore.update((popups) => {
     if (category !== undefined) {
       popups = popups.filter((p) => p.options.category !== category)
