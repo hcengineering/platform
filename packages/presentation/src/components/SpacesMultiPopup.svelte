@@ -18,7 +18,7 @@
   import { createEventDispatcher, onMount } from 'svelte'
 
   import core, { Class, getCurrentAccount, Ref, Space } from '@anticrm/core'
-  import { Tooltip, CheckBox } from '@anticrm/ui'
+  import { tooltip, CheckBox } from '@anticrm/ui'
 
   import { createQuery } from '../utils'
   import presentation from '..'
@@ -111,9 +111,9 @@
           {#if allowDeselect && space._id === selected}
             <div class="check-right pointer-events-none">
               {#if titleDeselect}
-                <Tooltip label={titleDeselect ?? presentation.string.Deselect}>
+                <div class="clear-mins" use:tooltip={{ label: titleDeselect ?? presentation.string.Deselect }}>
                   <CheckBox checked circle primary />
-                </Tooltip>
+                </div>
               {:else}
                 <CheckBox checked circle primary />
               {/if}

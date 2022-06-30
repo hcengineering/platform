@@ -15,7 +15,7 @@
 <script lang="ts">
   import { ProjectStatus } from '@anticrm/tracker'
   import { Button, showPopup, SelectPopup, eventToHTMLElement } from '@anticrm/ui'
-  import type { ButtonKind, ButtonSize } from '@anticrm/ui'
+  import type { ButtonKind, ButtonSize, LabelAndProps } from '@anticrm/ui'
   import tracker from '../../plugin'
   import { defaultProjectStatuses, projectStatusAssets } from '../../utils'
 
@@ -28,6 +28,7 @@
   export let size: ButtonSize = 'small'
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = 'min-content'
+  export let showTooltip: LabelAndProps | undefined = undefined
 
   $: selectedStatusIcon = selectedProjectStatus
     ? projectStatusAssets[selectedProjectStatus].icon
@@ -62,5 +63,6 @@
   disabled={!isEditable}
   icon={selectedStatusIcon}
   label={selectedStatusLabel}
+  {showTooltip}
   on:click={handleProjectStatusEditorOpened}
 />

@@ -150,10 +150,24 @@ export function fitPopupPositionedElement (
   const rect = alignment.getBoundingClientRect()
   const rectPopup = modalHTML.getBoundingClientRect()
   const docWidth = document.body.clientWidth
+  const docHeight = document.body.clientHeight
   newProps.left = newProps.right = newProps.top = newProps.bottom = ''
   newProps.maxHeight = newProps.height = ''
   newProps.maxWidth = newProps.width = ''
-  if (alignment.position !== undefined) {
+  if (alignment?.kind === 'submenu') {
+    const dirH =
+      docWidth - rect.right - rectPopup.width - 16 > 0 ? 'right' : rect.left > docWidth - rect.right ? 'left' : 'right'
+    const dirV =
+      docHeight - rect.top - rectPopup.height - 16 > 0
+        ? 'bottom'
+        : rect.bottom > docHeight - rect.top
+          ? 'top'
+          : 'bottom'
+    if (dirH === 'right') newProps.left = `${rect.right - 4}px`
+    else newProps.right = `${docWidth - rect.left - 4}px`
+    if (dirV === 'bottom') newProps.top = `${rect.top - 4}px`
+    else newProps.bottom = `${docHeight - rect.bottom - 4}px`
+  } else if (alignment.position !== undefined) {
     if (alignment.position.v === 'top') {
       newProps.top = `${rect.top}px`
     } else if (alignment.position.v === 'bottom') {

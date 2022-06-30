@@ -16,7 +16,7 @@
   import { SortingOrder, WithLookup } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { calcRank, Issue, IssueStatus, Team } from '@anticrm/tracker'
-  import { Button, Spinner, ExpandCollapse, Tooltip, closeTooltip, IconAdd } from '@anticrm/ui'
+  import { Button, Spinner, ExpandCollapse, closeTooltip, IconAdd } from '@anticrm/ui'
   import tracker from '../../../plugin'
   import Collapsed from '../../icons/Collapsed.svelte'
   import Expanded from '../../icons/Expanded.svelte'
@@ -69,22 +69,21 @@
     />
   {/if}
 
-  <Tooltip label={tracker.string.AddSubIssues} props={{ subIssues: 1 }} direction="bottom">
-    <Button
-      id="add-sub-issue"
-      width="min-content"
-      icon={hasSubIssues ? IconAdd : undefined}
-      label={hasSubIssues ? undefined : tracker.string.AddSubIssues}
-      labelParams={{ subIssues: 0 }}
-      size="small"
-      kind="transparent"
-      on:click={() => {
-        closeTooltip()
-        isCreating = true
-        isCollapsed = false
-      }}
-    />
-  </Tooltip>
+  <Button
+    id="add-sub-issue"
+    width="min-content"
+    icon={hasSubIssues ? IconAdd : undefined}
+    label={hasSubIssues ? undefined : tracker.string.AddSubIssues}
+    labelParams={{ subIssues: 0 }}
+    kind={'transparent'}
+    size={'small'}
+    showTooltip={{ label: tracker.string.AddSubIssues, props: { subIssues: 1 }, direction: 'bottom' }}
+    on:click={() => {
+      closeTooltip()
+      isCreating = true
+      isCollapsed = false
+    }}
+  />
 </div>
 <div class="mt-1">
   {#if subIssues && issueStatuses && currentTeam}

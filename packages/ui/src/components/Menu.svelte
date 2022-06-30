@@ -82,7 +82,7 @@
       showPopup(
         action.component,
         action.props,
-        { getBoundingClientRect: () => target.getBoundingClientRect(), position: { v: 'top', h: 'right' } },
+        { getBoundingClientRect: () => target.getBoundingClientRect(), kind: 'submenu' },
         (evt) => {
           dispatch('close')
         },

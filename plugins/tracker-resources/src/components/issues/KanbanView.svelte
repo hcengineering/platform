@@ -19,7 +19,7 @@
   import notification from '@anticrm/notification'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { Issue, IssuesGrouping, IssuesOrdering, IssueStatus, Team, ViewOptions } from '@anticrm/tracker'
-  import { Button, Component, Icon, IconAdd, showPanel, showPopup, Tooltip } from '@anticrm/ui'
+  import { Button, Component, Icon, IconAdd, showPanel, showPopup } from '@anticrm/ui'
   import { focusStore, ListSelectionProvider, SelectDirection, selectionStore } from '@anticrm/view-resources'
   import ActionContext from '@anticrm/view-resources/src/components/ActionContext.svelte'
   import Menu from '@anticrm/view-resources/src/components/Menu.svelte'
@@ -144,15 +144,14 @@
           </div>
           {#if groupBy === IssuesGrouping.Status}
             <div class="flex gap-1">
-              <Tooltip label={tracker.string.AddIssueTooltip} direction={'left'}>
-                <Button
-                  icon={IconAdd}
-                  kind={'transparent'}
-                  on:click={() => {
-                    showPopup(CreateIssue, { space: currentSpace, status: state._id }, 'top')
-                  }}
-                />
-              </Tooltip>
+              <Button
+                icon={IconAdd}
+                kind={'transparent'}
+                showTooltip={{ label: tracker.string.AddIssueTooltip, direction: 'left' }}
+                on:click={() => {
+                  showPopup(CreateIssue, { space: currentSpace, status: state._id }, 'top')
+                }}
+              />
             </div>
           {/if}
         </div>

@@ -18,7 +18,7 @@
   import { KeyedAttribute } from '@anticrm/presentation'
   import { TagElement, TagReference } from '@anticrm/tags'
   import type { ButtonKind, ButtonSize, TooltipAlignment } from '@anticrm/ui'
-  import { Button, showPopup, Tooltip } from '@anticrm/ui'
+  import { Button, showPopup } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import tags from '../plugin'
   import TagsPopup from './TagsPopup.svelte'
@@ -73,24 +73,23 @@
   }
 </script>
 
-<Tooltip label={key.attr.label} direction={labelDirection}>
-  <Button
-    icon={key.attr.icon ?? tags.icon.Tags}
-    label={items.length > 0 ? undefined : key.attr.label}
-    width={width ?? 'min-content'}
-    {kind}
-    {size}
-    {justify}
-    on:click={addTag}
-  >
-    <svelte:fragment slot="content">
-      {#if items.length > 0}
-        <div class="flex-row-center flex-nowrap overflow-label disabled">
-          {#await translate(countLabel, { count: items.length }) then text}
-            {text}
-          {/await}
-        </div>
-      {/if}
-    </svelte:fragment>
-  </Button>
-</Tooltip>
+<Button
+  icon={key.attr.icon ?? tags.icon.Tags}
+  label={items.length > 0 ? undefined : key.attr.label}
+  width={width ?? 'min-content'}
+  {kind}
+  {size}
+  {justify}
+  showTooltip={{ label: key.attr.label, direction: labelDirection }}
+  on:click={addTag}
+>
+  <svelte:fragment slot="content">
+    {#if items.length > 0}
+      <div class="flex-row-center flex-nowrap overflow-label disabled">
+        {#await translate(countLabel, { count: items.length }) then text}
+          {text}
+        {/await}
+      </div>
+    {/if}
+  </svelte:fragment>
+</Button>

@@ -27,6 +27,8 @@
   export let okLabel: IntlString = presentation.string.Create
 
   const dispatch = createEventDispatcher()
+
+  let okProcessing = false
 </script>
 
 <form id={label} class="antiCard dialog" on:submit|preventDefault={() => {}}>
@@ -71,17 +73,24 @@
         <MiniToggle label={presentation.string.CreateMore} bind:on={createMore} />
       {/if}
       <Button
+        loading={okProcessing}
         focusIndex={10001}
         disabled={!canSave}
         label={okLabel}
         kind={'primary'}
         on:click={() => {
+          if (okProcessing) {
+            return
+          }
+          okProcessing = true
           const r = okAction()
           if (r instanceof Promise && !createMore) {
             r.then(() => {
+              okProcessing = false
               dispatch('close')
             })
           } else if (!createMore) {
+            okProcessing = false
             dispatch('close')
           }
         }}

@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Button, Tooltip, Panel } from '@anticrm/ui'
+  import { Button, Panel } from '@anticrm/ui'
   import type { PopupOptions } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation from '..'
@@ -90,9 +90,12 @@
       <div class="buttons-divider" />
     {/if}
     <a class="no-line" href={getFileUrl(file)} download={name}>
-      <Tooltip label={presentation.string.Download}>
-        <Button icon={Download} kind={'transparent'} shape={'circle'} />
-      </Tooltip>
+      <Button
+        icon={Download}
+        kind={'transparent'}
+        shape={'circle'}
+        showTooltip={{ label: presentation.string.Download }}
+      />
     </a>
   </svelte:fragment>
 
