@@ -13,9 +13,9 @@
 // limitations under the License.
 //
 
-import core, { Ref, TxOperations } from '@anticrm/core'
+import core, { DOMAIN_TX, Ref, TxCreateDoc, TxOperations } from '@anticrm/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
-import notification, { NotificationType } from '@anticrm/notification'
+import notification, { Notification, NotificationType } from '@anticrm/notification'
 import { DOMAIN_NOTIFICATION } from '.'
 
 async function fillNotificationText (client: MigrationClient): Promise<void> {
@@ -24,6 +24,17 @@ async function fillNotificationText (client: MigrationClient): Promise<void> {
     { _class: notification.class.Notification, text: { $exists: false } },
     {
       text: ''
+    }
+  )
+  await client.update(
+    DOMAIN_TX,
+    {
+      _class: core.class.TxCreateDoc,
+      objectClass: notification.class.Notification,
+      'attributes.text': { $exists: false }
+    },
+    {
+      'attributes.text': ''
     }
   )
 }
@@ -38,7 +49,11 @@ async function fillNotificationType (client: MigrationUpgradeClient): Promise<vo
       tx._class === core.class.TxMixin
         ? ('calendar:ids:ReminderNotification' as Ref<NotificationType>)
         : notification.ids.MentionNotification
-    return await txOp.update(doc, { type })
+    const objectTx = txOp.update(doc, { type })
+    const ctx = await client.findOne<TxCreateDoc<Notification>>(core.class.TxCreateDoc, { objectId: doc._id })
+    if (ctx === undefined) return await objectTx
+    const updateTx = txOp.update(ctx, { 'attributes.type': type } as any)
+    return await Promise.all([objectTx, updateTx])
   })
   await Promise.all(promises)
 }
