@@ -18,7 +18,7 @@
   import type { Issue, Team } from '@anticrm/tracker'
   import { Icon } from '@anticrm/ui'
   import tracker from '../../plugin'
-  import { getIssueId } from '../../utils'
+  import { getIssueId } from '../../issues'
 
   export let value: WithLookup<Issue>
   $: title = getIssueId(value.$lookup?.space as Team, value)

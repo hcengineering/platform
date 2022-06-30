@@ -26,7 +26,7 @@
   } from '@anticrm/view-resources'
   import { showPanel, showPopup } from '@anticrm/ui'
   import tracker from '../../../plugin'
-  import { getIssueId } from '../../../utils'
+  import { getIssueId } from '../../../issues'
   import Circles from '../../icons/Circles.svelte'
   import AssigneeEditor from '../AssigneeEditor.svelte'
   import DueDateEditor from '../DueDateEditor.svelte'

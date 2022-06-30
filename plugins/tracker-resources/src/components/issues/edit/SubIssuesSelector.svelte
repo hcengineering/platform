@@ -19,7 +19,7 @@
   import { Button, closeTooltip, ProgressCircle, SelectPopup, showPanel, showPopup } from '@anticrm/ui'
   import { updateFocus } from '@anticrm/view-resources'
   import tracker from '../../../plugin'
-  import { getIssueId } from '../../../utils'
+  import { getIssueId } from '../../../issues'
 
   export let issue: WithLookup<Issue>
   export let currentTeam: Team | undefined

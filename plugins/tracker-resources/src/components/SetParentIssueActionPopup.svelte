@@ -19,7 +19,7 @@
   import { Icon } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../plugin'
-  import { getIssueId } from '../utils'
+  import { getIssueId } from '../issues'
 
   export let value: Issue | AttachedData<Issue> | Issue[]
   export let width: 'medium' | 'large' | 'full' = 'large'

@@ -28,7 +28,7 @@
     Spinner
   } from '@anticrm/ui'
   import tracker from '../../../plugin'
-  import { getIssueId } from '../../../utils'
+  import { getIssueId } from '../../../issues'
 
   export let issue: WithLookup<Issue>
   export let team: Team
