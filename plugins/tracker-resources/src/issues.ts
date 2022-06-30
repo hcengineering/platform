@@ -9,19 +9,6 @@ export function getIssueId (team: Team, issue: Issue): string {
   return `${team.identifier}-${issue.number}`
 }
 
-export async function fetchIssueId (issue: Issue): Promise<string | undefined> {
-  const team = await fetchIssueTeam(issue)
-  if (team === undefined || team === null) {
-    return undefined
-  }
-  return getIssueId(team, issue)
-}
-
-export async function fetchIssueTeam (issue: Issue): Promise<Team | undefined> {
-  const client = getClient()
-  return await client.findOne(tracker.class.Team, { _id: issue.space })
-}
-
 export function isIssueId (shortLink: string): boolean {
   return /^\w+-\d+$/.test(shortLink)
 }
@@ -51,7 +38,7 @@ export async function copyToClipboard (object: Issue, ev: Event, { type }: { typ
       text = object.title
       break
     case 'link':
-      text = generateIssueShortLink((await fetchIssueId(object)) ?? '')
+      text = generateIssueShortLink(await getIssueTitle(client, object._id))
       break
     default:
       return
