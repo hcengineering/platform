@@ -41,6 +41,8 @@ export default mergeIds(settingId, setting, {
     Enums: '' as IntlString,
     NewValue: '' as IntlString,
     Leave: '' as IntlString,
-    LeaveDescr: '' as IntlString
+    LeaveDescr: '' as IntlString,
+    Select: '' as IntlString,
+    AddOwner: '' as IntlString
   }
 })

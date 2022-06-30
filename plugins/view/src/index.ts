@@ -262,6 +262,9 @@ export interface Action<T extends Doc = Doc, P = Record<string, any>> extends Do
   // A list of actions replaced by this one.
   // For example it could be global action and action for focus class, second one fill override first one.
   override?: Ref<Action>[]
+
+  // Avaible only for workspace owners
+  secured?: boolean
 }
 
 /**

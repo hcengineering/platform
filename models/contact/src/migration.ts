@@ -75,7 +75,7 @@ async function setActiveEmployeeTx (client: MigrationClient): Promise<void> {
     {
       _class: core.class.TxCreateDoc,
       objectClass: contact.class.Employee,
-      'attributes.active': { $exists: false}
+      'attributes.active': { $exists: false }
     },
     {
       'attributes.active': true
@@ -83,16 +83,18 @@ async function setActiveEmployeeTx (client: MigrationClient): Promise<void> {
   )
 }
 
-
 async function setOwner (client: MigrationClient): Promise<void> {
-  await client.update<TxCreateDoc<EmployeeAccount>>(DOMAIN_TX, {
-    _class: core.class.TxCreateDoc,
-    objectClass: contact.class.Employee,
-  }, {
-    'attributes.owner': false
-  })
+  await client.update<TxCreateDoc<EmployeeAccount>>(
+    DOMAIN_TX,
+    {
+      _class: core.class.TxCreateDoc,
+      objectClass: contact.class.Employee
+    },
+    {
+      'attributes.owner': false
+    }
+  )
 }
-
 
 export const contactOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {

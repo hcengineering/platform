@@ -14,8 +14,7 @@
 // limitations under the License.
 //
 
-import type { Doc, WithLookup } from '@anticrm/core'
-import core, { Class, Client, matchQuery, Ref } from '@anticrm/core'
+import core, { Doc, getCurrentAccount, WithLookup, Class, Client, matchQuery, Ref } from '@anticrm/core'
 import { getResource } from '@anticrm/platform'
 import type { Action, ViewAction, ViewActionInput, ViewContextType } from '@anticrm/view'
 import view from './plugin'
@@ -118,12 +117,16 @@ export function filterActions (
 ): Array<WithLookup<Action>> {
   let result: Array<WithLookup<Action>> = []
   const hierarchy = client.getHierarchy()
+  const isOwner = getCurrentAccount().owner
   const clazz = hierarchy.getClass(doc._class)
   const ignoreActions = hierarchy.as(clazz, view.mixin.IgnoreActions)
   const ignore = ignoreActions?.actions ?? []
   const overrideRemove: Array<Ref<Action>> = []
   for (const action of actions) {
     if (ignore.includes(action._id)) {
+      continue
+    }
+    if (!isOwner && action.secured === true) {
       continue
     }
     if (action.override !== undefined) {

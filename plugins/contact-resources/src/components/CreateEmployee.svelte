@@ -69,7 +69,8 @@
     await client.createDoc(contact.class.EmployeeAccount, core.space.Model, {
       email: email.trim(),
       name,
-      employee: id
+      employee: id,
+      owner: false
     })
 
     for (const channel of channels) {

@@ -22,7 +22,7 @@
   export let value: any
   export let withoutUndefined: boolean = false
   export let onChange: (value: any) => void
-
+  export let disabled: boolean = false
   export let kind: ButtonKind = 'no-border'
   export let size: ButtonSize = 'small'
   export let justify: 'left' | 'center' = 'center'
@@ -36,8 +36,9 @@
   {size}
   {justify}
   {width}
+  {disabled}
   on:click={(ev) => {
-    if (!shown) {
+    if (!shown && !disabled) {
       showPopup(BooleanEditorPopup, { value, withoutUndefined }, eventToHTMLElement(ev), (res) => {
         if (res !== undefined) {
           if (res === 1) value = true

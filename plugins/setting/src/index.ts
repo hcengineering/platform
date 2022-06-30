@@ -60,6 +60,7 @@ export interface SettingsCategory extends Doc {
 
   // If defined, will sort using order.
   order?: number
+  secured: boolean
 }
 
 /**
@@ -78,7 +79,8 @@ export default plugin(settingId, {
     Support: '' as Ref<Doc>,
     Privacy: '' as Ref<Doc>,
     Terms: '' as Ref<Doc>,
-    ClassSetting: '' as Ref<Doc>
+    ClassSetting: '' as Ref<Doc>,
+    Owners: '' as Ref<Doc>
   },
   mixin: {
     Editable: '' as Ref<Mixin<Editable>>
@@ -104,6 +106,7 @@ export default plugin(settingId, {
   string: {
     Settings: '' as IntlString,
     Setting: '' as IntlString,
+    WorkspaceSetting: '' as IntlString,
     Integrations: '' as IntlString,
     ManageStatuses: '' as IntlString,
     Support: '' as IntlString,
@@ -128,7 +131,8 @@ export default plugin(settingId, {
     InviteWorkspace: '' as IntlString,
     SelectWorkspace: '' as IntlString,
     Reconnect: '' as IntlString,
-    ClassSetting: '' as IntlString
+    ClassSetting: '' as IntlString,
+    Owners: '' as IntlString
   },
   icon: {
     EditProfile: '' as Asset,

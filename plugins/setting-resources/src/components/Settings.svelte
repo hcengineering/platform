@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getClient } from '@anticrm/presentation'
+  import { createQuery } from '@anticrm/presentation'
   import setting, { SettingsCategory } from '@anticrm/setting'
   import {
     Component,
@@ -27,17 +27,25 @@
   import { onDestroy } from 'svelte'
   import CategoryElement from './CategoryElement.svelte'
   import login from '@anticrm/login'
-
-  const client = getClient()
+  import { getCurrentAccount } from '@anticrm/core'
+  import { EmployeeAccount } from '@anticrm/contact'
 
   let category: SettingsCategory | undefined
   let categoryId: string = ''
 
   let categories: SettingsCategory[] = []
-  client.findAll(setting.class.SettingsCategory, {}, { sort: { order: 1 } }).then((s) => {
-    categories = s
-    category = findCategory(categoryId)
-  })
+  const account = getCurrentAccount() as EmployeeAccount
+
+  const settingsQuery = createQuery()
+  settingsQuery.query(
+    setting.class.SettingsCategory,
+    {},
+    (res) => {
+      categories = account.owner ? res : res.filter((p) => p.secured === false)
+      category = findCategory(categoryId)
+    },
+    { sort: { order: 1 } }
+  )
 
   onDestroy(
     location.subscribe(async (loc) => {

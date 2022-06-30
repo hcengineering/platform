@@ -78,7 +78,8 @@ export function createModel (builder: Builder): void {
       label: automation.string.Automation,
       icon: automation.icon.Automation, // TODO: update icon
       component: plugin.component.AutomationSettingsElement,
-      order: 3600
+      order: 3600,
+      secured: false
     },
     plugin.ids.Automation
   )

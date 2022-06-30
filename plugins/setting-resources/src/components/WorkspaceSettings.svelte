@@ -13,23 +13,29 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getClient } from '@anticrm/presentation'
-  import setting,{ SettingsCategory } from '@anticrm/setting'
-  import {
-  Component,Label
-  } from '@anticrm/ui'
+  import { EmployeeAccount } from '@anticrm/contact'
+  import { getCurrentAccount } from '@anticrm/core'
+  import { createQuery } from '@anticrm/presentation'
+  import setting, { SettingsCategory } from '@anticrm/setting'
+  import { Component, Label } from '@anticrm/ui'
   import CategoryElement from './CategoryElement.svelte'
-
-  const client = getClient()
 
   let category: SettingsCategory | undefined
   let categoryId: string = ''
 
   let categories: SettingsCategory[] = []
-  client.findAll(setting.class.WorkspaceSettingCategory, {}, { sort: { order: 1 } }).then((s) => {
-    categories = s
-    category = findCategory(categoryId)
-  })
+  const account = getCurrentAccount() as EmployeeAccount
+
+  const settingsQuery = createQuery()
+  settingsQuery.query(
+    setting.class.WorkspaceSettingCategory,
+    {},
+    (res) => {
+      categories = account.owner ? res : res.filter((p) => p.secured === false)
+      category = findCategory(categoryId)
+    },
+    { sort: { order: 1 } }
+  )
 
   function findCategory (name: string): SettingsCategory | undefined {
     return categories.find((x) => x.name === name)
@@ -45,7 +51,7 @@
   <div class="antiPanel-navigator filled indent">
     <div class="antiNav-header">
       <span class="fs-title overflow-label">
-        <Label label={setting.string.Settings} />
+        <Label label={setting.string.WorkspaceSetting} />
       </span>
     </div>
     {#each categories as category}

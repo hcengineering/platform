@@ -34,6 +34,7 @@ import RefEditor from './components/typeEditors/RefEditor.svelte'
 import EnumTypeEditor from './components/typeEditors/EnumTypeEditor.svelte'
 import EditEnum from './components/EditEnum.svelte'
 import EnumSetting from './components/EnumSetting.svelte'
+import Owners from './components/Owners.svelte'
 
 export default async (): Promise<Resources> => ({
   activity: {
@@ -58,6 +59,7 @@ export default async (): Promise<Resources> => ({
     DateTypeEditor,
     EnumTypeEditor,
     EditEnum,
-    EnumSetting
+    EnumSetting,
+    Owners
   }
 })
