@@ -13,9 +13,11 @@ HR:
 - Allow to change assignee in Kanban
 
 Tracker:
+
 - Manual issues ordering
 
 Workbench
+
 - Use application aliases in URL
 
 ## 0.6.29
@@ -31,7 +33,7 @@ Tracker:
 - Names of parent issues
 - Roadmap
 - Context menus (Priority/Status/Assignee)
-- 
+
 
 Chunter:
 
