@@ -28,7 +28,7 @@
     Menu,
     showPopup,
     Label,
-    Tooltip,
+    tooltip,
     Button,
     getCurrentLocation,
     locationToUrl
@@ -255,10 +255,8 @@
       {/if}
       <span>{getTime(message.createOn)}</span>
       {#if message.editedOn}
-        <span>
-          <Tooltip label={ui.string.TimeTooltip} props={{ value: getTime(message.editedOn) }}>
-            <Label label={chunter.string.Edited} />
-          </Tooltip>
+        <span use:tooltip={{ label: ui.string.TimeTooltip, props: { value: getTime(message.editedOn) } }}>
+          <Label label={chunter.string.Edited} />
         </span>
       {/if}
     </div>

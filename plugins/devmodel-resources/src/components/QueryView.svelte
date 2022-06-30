@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { ScrollBox, Tooltip } from '@anticrm/ui'
+  import { ScrollBox, tooltip } from '@anticrm/ui'
   import ActionIcon from '@anticrm/ui/src/components/ActionIcon.svelte'
   import view from '@anticrm/view'
   import { queries, toIntl } from '..'
@@ -44,9 +44,9 @@
             <td>{JSON.stringify(q.options ?? {})}</td>
             <td>{q.result.length}</td>
             <td>
-              <Tooltip label={toIntl('Content')} component={ContentPopup} props={{ content: q.result }}>
+              <span use:tooltip={{ label: toIntl('Content'), component: ContentPopup, props: { content: q.result } }}>
                 Results
-              </Tooltip>
+              </span>
             </td>
             <td>
               <ActionIcon

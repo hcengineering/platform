@@ -19,7 +19,7 @@
   import gmail from '../plugin'
   import { Channel, Contact, EmployeeAccount, formatName } from '@anticrm/contact'
   import contact from '@anticrm/contact'
-  import plugin, { IconShare, Button, Tooltip, Icon, Label, Scroller } from '@anticrm/ui'
+  import plugin, { IconShare, Button, Icon, Label, Scroller } from '@anticrm/ui'
   import { getCurrentAccount, Ref, SortingOrder, Space } from '@anticrm/core'
   import setting from '@anticrm/setting'
   import Messages from './Messages.svelte'
@@ -144,15 +144,14 @@
             newMessage = true
           }}
         />
-        <Tooltip label={gmail.string.ShareMessages}>
-          <Button
-            icon={IconShare}
-            kind={'transparent'}
-            on:click={async () => {
-              selectable = !selectable
-            }}
-          />
-        </Tooltip>
+        <Button
+          icon={IconShare}
+          kind={'transparent'}
+          showTooltip={{ label: gmail.string.ShareMessages }}
+          on:click={async () => {
+            selectable = !selectable
+          }}
+        />
       </div>
     {/if}
   </div>

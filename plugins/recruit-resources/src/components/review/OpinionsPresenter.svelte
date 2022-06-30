@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import type { Review } from '@anticrm/recruit'
-  import { Icon, Tooltip } from '@anticrm/ui'
+  import { Icon, tooltip } from '@anticrm/ui'
   import OpinionsPopup from './OpinionsPopup.svelte'
   import recruit from '../../plugin'
 
@@ -23,9 +23,10 @@
 </script>
 
 {#if value.opinions && value.opinions > 0}
-  <Tooltip label={recruit.string.Opinions} component={OpinionsPopup} props={{ value }}>
-    <div class="sm-tool-icon">
-      <span class="icon"><Icon icon={recruit.icon.Opinion} size={'small'} /></span>&nbsp;{value.opinions}
-    </div>
-  </Tooltip>
+  <div
+    class="sm-tool-icon"
+    use:tooltip={{ label: recruit.string.Opinions, component: OpinionsPopup, props: { value } }}
+  >
+    <span class="icon"><Icon icon={recruit.icon.Opinion} size={'small'} /></span>&nbsp;{value.opinions}
+  </div>
 {/if}

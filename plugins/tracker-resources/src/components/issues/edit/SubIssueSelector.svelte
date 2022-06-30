@@ -18,7 +18,7 @@
   import { Team, Issue, IssueStatus } from '@anticrm/tracker'
   import {
     Icon,
-    Tooltip,
+    tooltip,
     showPanel,
     IconForward,
     IconDetails,
@@ -99,20 +99,22 @@
 </script>
 
 {#if parentIssue}
+  {@const icon = getIssueStatusIcon(issue)}
   <div class="flex root">
     <div class="item clear-mins">
-      <Tooltip label={tracker.string.OpenParent} direction="bottom" fill>
-        {@const icon = getIssueStatusIcon(issue)}
-        <div class="flex-center parent-issue" on:click={openParentIssue}>
-          {#if icon}
-            <div class="pr-2">
-              <Icon {icon} size="small" />
-            </div>
-          {/if}
-          <span class="overflow-label flex-no-shrink mr-2">{getIssueId(team, parentIssue)}</span>
-          <span class="overflow-label issue-title">{parentIssue.title}</span>
-        </div>
-      </Tooltip>
+      <div
+        class="flex-center parent-issue cursor-pointer"
+        use:tooltip={{ label: tracker.string.OpenParent, direction: 'bottom' }}
+        on:click={openParentIssue}
+      >
+        {#if icon}
+          <div class="pr-2">
+            <Icon {icon} size="small" />
+          </div>
+        {/if}
+        <span class="overflow-label flex-no-shrink mr-2">{getIssueId(team, parentIssue)}</span>
+        <span class="overflow-label issue-title">{parentIssue.title}</span>
+      </div>
     </div>
 
     <div class="item">
@@ -121,22 +123,21 @@
           <Spinner size="small" />
         </div>
       {:else}
-        <Tooltip label={tracker.string.OpenSubIssues} direction="bottom">
-          <div
-            bind:this={subIssuesElement}
-            class="flex-center sub-issues"
-            on:click|preventDefault={areSubIssuesLoading ? undefined : showSubIssues}
-          >
-            <span class="overflow-label">{subIssues?.length}</span>
-            <div class="ml-2">
-              <!-- TODO: fix icon -->
-              <Icon icon={IconDetails} size="small" />
-            </div>
-            <div class="ml-1-5">
-              <Icon icon={IconForward} size="small" />
-            </div>
+        <div
+          bind:this={subIssuesElement}
+          class="flex-center sub-issues cursor-pointer"
+          use:tooltip={{ label: tracker.string.OpenSubIssues, direction: 'bottom' }}
+          on:click|preventDefault={areSubIssuesLoading ? undefined : showSubIssues}
+        >
+          <span class="overflow-label">{subIssues?.length}</span>
+          <div class="ml-2">
+            <!-- TODO: fix icon -->
+            <Icon icon={IconDetails} size="small" />
           </div>
-        </Tooltip>
+          <div class="ml-1-5">
+            <Icon icon={IconForward} size="small" />
+          </div>
+        </div>
       {/if}
     </div>
   </div>

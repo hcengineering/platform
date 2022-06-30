@@ -17,7 +17,7 @@
   import type { IntlString } from '@anticrm/platform'
   import { translate } from '@anticrm/platform'
   import type { ButtonKind, ButtonSize, TooltipAlignment } from '@anticrm/ui'
-  import { Tooltip, showPopup, Button } from '@anticrm/ui'
+  import { showPopup, Button } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation, { SpacesMultiPopup } from '..'
 
@@ -53,23 +53,22 @@
   }
 </script>
 
-<Tooltip {label} fill={width === '100%'} direction={labelDirection}>
-  <Button
-    label={selectedItems.length === 0 ? presentation.string.Spaces : undefined}
-    width={width ?? 'min-content'}
-    {kind}
-    {size}
-    {justify}
-    on:click={addSpace}
-  >
-    <svelte:fragment slot="content">
-      {#if selectedItems.length > 0}
-        <div class="flex-row-center flex-nowrap">
-          {#await translate(presentation.string.NumberSpaces, { count: selectedItems.length }) then text}
-            <span class="overflow-label disabled ml-1-5">{text}</span>
-          {/await}
-        </div>
-      {/if}
-    </svelte:fragment>
-  </Button>
-</Tooltip>
+<Button
+  label={selectedItems.length === 0 ? presentation.string.Spaces : undefined}
+  width={width ?? 'min-content'}
+  {kind}
+  {size}
+  {justify}
+  on:click={addSpace}
+  showTooltip={{ label: label, direction: labelDirection }}
+>
+  <svelte:fragment slot="content">
+    {#if selectedItems.length > 0}
+      <div class="flex-row-center flex-nowrap">
+        {#await translate(presentation.string.NumberSpaces, { count: selectedItems.length }) then text}
+          <span class="overflow-label disabled ml-1-5">{text}</span>
+        {/await}
+      </div>
+    {/if}
+  </svelte:fragment>
+</Button>

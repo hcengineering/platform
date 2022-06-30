@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Timestamp } from '@anticrm/core'
-  import { DatePresenter, Tooltip, getDaysDifference } from '@anticrm/ui'
+  import { DatePresenter, tooltip, getDaysDifference } from '@anticrm/ui'
   import DueDatePopup from './DueDatePopup.svelte'
   import { getDueDateIconModifier } from '../utils'
 
@@ -43,14 +43,17 @@
 
 {#if shouldRender}
   {#if formattedDate}
-    <Tooltip
-      direction={'top'}
-      component={DueDatePopup}
-      props={{
-        formattedDate: formattedDate,
-        daysDifference: daysDifference,
-        isOverdue: isOverdue,
-        iconModifier: iconModifier
+    <div
+      class="clear-mins"
+      use:tooltip={{
+        direction: 'top',
+        component: DueDatePopup,
+        props: {
+          formattedDate: formattedDate,
+          daysDifference: daysDifference,
+          isOverdue: isOverdue,
+          iconModifier: iconModifier
+        }
       }}
     >
       <DatePresenter
@@ -61,7 +64,7 @@
         {kind}
         on:change={handleDueDateChanged}
       />
-    </Tooltip>
+    </div>
   {:else}
     <DatePresenter
       value={dateMs}

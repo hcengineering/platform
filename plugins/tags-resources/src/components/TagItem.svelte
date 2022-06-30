@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Asset } from '@anticrm/platform'
   import { TagElement, TagReference } from '@anticrm/tags'
-  import { ActionIcon, AnySvelteComponent, getPlatformColor, Tooltip } from '@anticrm/ui'
+  import { ActionIcon, AnySvelteComponent, getPlatformColor, tooltip } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import tags from '../plugin'
   import { getTagStyle } from '../utils'
@@ -30,29 +30,28 @@
   $: name = element?.title ?? tag?.title ?? 'New item'
 </script>
 
-<Tooltip
-  label={element?.description ? tags.string.TagTooltip : undefined}
-  props={{ text: element?.description }}
-  direction="right"
+<div
+  class="text-sm flex flex-between tag-item"
+  style={`${getTagStyle(getPlatformColor(tag?.color ?? element?.color ?? 0), selected)}`}
+  use:tooltip={{
+    label: element?.description ? tags.string.TagTooltip : undefined,
+    props: { text: element?.description },
+    direction: 'right'
+  }}
 >
-  <div
-    class="text-sm flex flex-between tag-item"
-    style={`${getTagStyle(getPlatformColor(tag?.color ?? element?.color ?? 0), selected)}`}
-  >
-    {name}
-    {#if action}
-      <div class="ml-1">
-        <ActionIcon
-          icon={action}
-          size={'small'}
-          action={() => {
-            dispatch('action')
-          }}
-        />
-      </div>
-    {/if}
-  </div>
-</Tooltip>
+  {name}
+  {#if action}
+    <div class="ml-1">
+      <ActionIcon
+        icon={action}
+        size={'small'}
+        action={() => {
+          dispatch('action')
+        }}
+      />
+    </div>
+  {/if}
+</div>
 
 <style lang="scss">
   .tag-item {

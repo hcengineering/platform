@@ -36,7 +36,7 @@ test.describe('contact tests', () => {
     // await page.hover('[id="gmail:string:Email"]')
     await page.fill('[placeholder="john\\.appleseed\\@apple\\.com"]', 'wer@qwe.com')
     // Click text=Apply
-    await page.click('button:nth-child(3)')
+    await page.click('.editor-container button:nth-child(3)')
   })
   test('create-template', async ({ page }) => {
     // Go to http://localhost:8083/workbench%3Acomponent%3AWorkbenchApp
