@@ -17,6 +17,7 @@ import type { Employee, EmployeeAccount } from '@anticrm/contact'
 import type { Arr, AttachedDoc, Class, Doc, Markup, Mixin, Ref, Space, Timestamp } from '@anticrm/core'
 import type { Asset, IntlString, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
+import { Viewlet } from '@anticrm/view'
 
 /**
  * @public
@@ -115,6 +116,9 @@ const hr = plugin(hrId, {
     Remote: '' as Ref<RequestType>,
     Overtime: '' as Ref<RequestType>,
     Overtime2: '' as Ref<RequestType>
+  },
+  viewlet: {
+    TableMember: '' as Ref<Viewlet>
   }
 })
 
