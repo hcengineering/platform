@@ -14,7 +14,8 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { AttachedData, Class, FindResult, Ref, SortingOrder } from '@anticrm/core'
+  import { flip } from 'svelte/animate'
+  import { AttachedData, Class, Ref, SortingOrder } from '@anticrm/core'
   import { Button, Icon, Label, Panel, Scroller, IconAdd, Loading, closeTooltip } from '@anticrm/ui'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { calcRank, IssueStatus, IssueStatusCategory, Team } from '@anticrm/tracker'
@@ -35,17 +36,13 @@
 
   let team: Team | undefined
   let statusCategories: IssueStatusCategory[] | undefined
-  let statusesByCategoryId: Map<Ref<IssueStatusCategory>, IssueStatus[]> | undefined
-  let editingStatus: IssueStatus | Partial<AttachedData<IssueStatus>> | null = null
-  let isSaving = false
+  let workflowStatuses: IssueStatus[] | undefined
 
-  function updateStatusesByCategoryId (queryResult: FindResult<IssueStatus>) {
-    statusesByCategoryId = queryResult.reduce(
-      (acc, status) => acc.set(status.category, [...(acc.get(status.category) ?? []), status]),
-      new Map<Ref<IssueStatusCategory>, IssueStatus[]>()
-    )
-    cancelEditing()
-  }
+  let editingStatus: IssueStatus | Partial<AttachedData<IssueStatus>> | null = null
+  let draggingStatus: IssueStatus | null = null
+  let hoveringStatus: IssueStatus | null = null
+
+  let isSaving = false
 
   async function updateStatusCategories () {
     statusCategories = await client.findAll(
@@ -55,18 +52,17 @@
     )
   }
 
-  async function updateDefaultStatus ({ detail: statusId }: CustomEvent<Ref<IssueStatus>>) {
+  async function updateTeamDefaultStatus ({ detail: statusId }: CustomEvent<Ref<IssueStatus>>) {
     if (team) {
       await client.update(team, { defaultIssueStatus: statusId })
     }
   }
 
   async function addStatus () {
-    if (editingStatus?.name && editingStatus?.category && statusesByCategoryId) {
-      const categoryStatuses = statusesByCategoryId.get(editingStatus.category) ?? []
-      const sortedStatuses = [...statusesByCategoryId.values()].flat().sort((a, b) => a.rank.localeCompare(b.rank))
+    if (editingStatus?.name && editingStatus?.category && workflowStatuses) {
+      const categoryStatuses = workflowStatuses.filter((s) => s.category === editingStatus!.category)
       const prevStatus = categoryStatuses[categoryStatuses.length - 1]
-      const nextStatus = sortedStatuses[sortedStatuses.findIndex(({ _id }) => _id === prevStatus._id) + 1]
+      const nextStatus = workflowStatuses[workflowStatuses.findIndex(({ _id }) => _id === prevStatus._id) + 1]
 
       isSaving = true
       await client.addCollection(tracker.class.IssueStatus, teamId, teamId, tracker.class.Team, 'issueStatuses', {
@@ -78,12 +74,14 @@
       })
       isSaving = false
     }
+
+    cancelEditing()
   }
 
   async function editStatus () {
-    if (editingStatus?.name && editingStatus?.category && statusesByCategoryId && '_id' in editingStatus) {
+    if (editingStatus?.name && editingStatus?.category && workflowStatuses && '_id' in editingStatus) {
       const statusId = '_id' in editingStatus ? editingStatus._id : undefined
-      const status = statusId && statusesByCategoryId.get(editingStatus.category)?.find(({ _id }) => _id === statusId)
+      const status = statusId && workflowStatuses.find(({ _id }) => _id === statusId)
 
       if (!status) {
         return
@@ -104,9 +102,9 @@
         isSaving = true
         await client.update(status, updates)
         isSaving = false
-      } else {
-        cancelEditing()
       }
+
+      cancelEditing()
     }
   }
 
@@ -125,8 +123,50 @@
     editingStatus = null
   }
 
+  function handleDragStart (ev: DragEvent, status: IssueStatus) {
+    if (ev.dataTransfer && ev.target) {
+      ev.dataTransfer.effectAllowed = 'move'
+      ev.dataTransfer.dropEffect = 'move'
+      draggingStatus = status
+    }
+  }
+
+  function handleDragOver (ev: DragEvent, status: IssueStatus) {
+    if (draggingStatus?.category === status.category) {
+      hoveringStatus = status
+      ev.preventDefault()
+    } else {
+      hoveringStatus = null
+    }
+  }
+
+  async function handleDrop (toItem: IssueStatus) {
+    if (workflowStatuses && draggingStatus?._id !== toItem._id && draggingStatus?.category === toItem.category) {
+      const fromIndex = getStatusIndex(draggingStatus)
+      const toIndex = getStatusIndex(toItem)
+      const status = workflowStatuses[fromIndex]
+      const [prev, next] = [
+        workflowStatuses[fromIndex < toIndex ? toIndex : toIndex - 1],
+        workflowStatuses[fromIndex < toIndex ? toIndex + 1 : toIndex]
+      ]
+
+      await client.update(status, { rank: calcRank(prev, next) })
+    }
+
+    resetDrag()
+  }
+
+  function getStatusIndex (status: IssueStatus) {
+    return workflowStatuses?.findIndex(({ _id }) => _id === status._id) ?? -1
+  }
+
+  function resetDrag () {
+    draggingStatus = null
+    hoveringStatus = null
+  }
+
   $: teamQuery.query(teamClass, { _id: teamId }, (result) => ([team] = result), { limit: 1 })
-  $: statusesQuery.query(tracker.class.IssueStatus, { attachedTo: teamId }, updateStatusesByCategoryId, {
+  $: statusesQuery.query(tracker.class.IssueStatus, { attachedTo: teamId }, (res) => (workflowStatuses = res), {
     sort: { rank: SortingOrder.Ascending }
   })
   $: updateStatusCategories()
@@ -149,13 +189,14 @@
     </div>
   </svelte:fragment>
 
-  {#if team === undefined || statusCategories === undefined || statusesByCategoryId === undefined}
+  {#if team === undefined || statusCategories === undefined || workflowStatuses === undefined}
     <Loading />
   {:else}
     <Scroller>
       <div class="popupPanel-body__main-content py-10 clear-mins">
         {#each statusCategories as category}
-          {@const statuses = statusesByCategoryId?.get(category._id) ?? []}
+          {@const statuses = workflowStatuses?.filter((s) => s.category === category._id) ?? []}
+          {@const isSingle = statuses.length === 1}
           <div class="flex-between category-name">
             <Label label={category.label} />
             <Button
@@ -171,17 +212,37 @@
             />
           </div>
           <div class="flex-col">
-            {#each statuses as status}
-              <div class="row">
+            {#each statuses as status, _ (status._id)}
+              <div
+                class="row"
+                class:is-dragged-over-up={draggingStatus &&
+                  status._id === hoveringStatus?._id &&
+                  status.rank < draggingStatus.rank}
+                class:is-dragged-over-down={draggingStatus &&
+                  status._id === hoveringStatus?._id &&
+                  status.rank > draggingStatus.rank}
+                draggable={!isSingle}
+                animate:flip={{ duration: 200 }}
+                on:dragstart={(ev) => handleDragStart(ev, status)}
+                on:dragover={(ev) => handleDragOver(ev, status)}
+                on:drop={() => handleDrop(status)}
+                on:dragend={resetDrag}
+              >
                 {#if editingStatus && '_id' in editingStatus && editingStatus._id === status._id}
-                  <StatusEditor value={editingStatus} on:cancel={cancelEditing} on:save={editStatus} />
+                  <StatusEditor
+                    value={editingStatus}
+                    on:cancel={cancelEditing}
+                    on:save={editStatus}
+                    {isSingle}
+                    {isSaving}
+                  />
                 {:else}
                   <StatusPresenter
                     value={status}
                     icon={category.icon}
                     isDefault={status._id === team.defaultIssueStatus}
-                    canDelete={statuses.length > 1}
-                    on:default-update={updateDefaultStatus}
+                    {isSingle}
+                    on:default-update={updateTeamDefaultStatus}
                     on:edit={({ detail }) => {
                       closeTooltip()
                       editingStatus = { ...detail }
@@ -191,9 +252,9 @@
                 {/if}
               </div>
             {/each}
-            <ExpandCollapse duration={400} isExpanded>
+            <ExpandCollapse duration={200} isExpanded>
               {#if editingStatus && !('_id' in editingStatus) && editingStatus.category === category._id}
-                <StatusEditor value={editingStatus} on:cancel={cancelEditing} on:save={addStatus} {isSaving} />
+                <StatusEditor value={editingStatus} on:cancel={cancelEditing} on:save={addStatus} {isSaving} isSingle />
               {/if}
             </ExpandCollapse>
           </div>
@@ -205,7 +266,22 @@
 
 <style lang="scss">
   .row {
+    position: relative;
     margin-bottom: 0.25rem;
+
+    &.is-dragged-over-up::before {
+      position: absolute;
+      content: '';
+      inset: 0;
+      border-top: 1px solid var(--theme-bg-check);
+    }
+
+    &.is-dragged-over-down::before {
+      position: absolute;
+      content: '';
+      inset: 0;
+      border-bottom: 1px solid var(--theme-bg-check);
+    }
   }
 
   .category-name {

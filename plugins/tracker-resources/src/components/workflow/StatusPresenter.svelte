@@ -18,11 +18,12 @@
   import { IssueStatus } from '@anticrm/tracker'
   import { Icon, Label, IconEdit, IconClose, tooltip } from '@anticrm/ui'
   import tracker from '../../plugin'
+  import Circles from '../icons/Circles.svelte'
 
   export let value: IssueStatus
   export let icon: Asset
   export let isDefault = false
-  export let canDelete = false
+  export let isSingle = true
 
   const dispatch = createEventDispatcher()
 
@@ -33,7 +34,12 @@
 
 <div class="flex-between background-button-bg-color border-radius-1 p-2 root" on:dblclick|preventDefault={edit}>
   <div class="flex flex-grow items-center">
-    <Icon {icon} size="small" fill="red" />
+    <div class="flex-no-shrink draggable-mark" class:draggable={!isSingle}>
+      <Circles />
+    </div>
+    <div class="flex-no-shrink ml-2">
+      <Icon {icon} size="small" fill="red" />
+    </div>
     <span class="content-accent-color ml-2">{value.name}</span>
     {#if value.description}
       <span>&nbsp;·&nbsp;{value.description}</span>
@@ -54,7 +60,7 @@
     >
       <Icon icon={IconEdit} size="small" />
     </div>
-    {#if canDelete}
+    {#if !isSingle}
       <div
         class="btn"
         use:tooltip={{ label: tracker.string.DeleteWorkflowStatus, direction: 'bottom' }}
@@ -70,17 +76,23 @@
   .root {
     &:hover {
       .btn {
-        visibility: visible;
+        opacity: 1;
+      }
+
+      .draggable-mark.draggable {
+        cursor: grab;
+        opacity: 0.4;
       }
     }
   }
 
   .btn {
     position: relative;
-    visibility: hidden;
+    opacity: 0;
     cursor: pointer;
     color: var(--content-color);
     transition: color 0.15s;
+    transition: opacity 0.15s;
 
     &:hover {
       color: var(--caption-color);
@@ -91,5 +103,24 @@
       content: '';
       inset: -0.5rem;
     }
+  }
+
+  .draggable-mark {
+    opacity: 0;
+    position: relative;
+    width: 0.375rem;
+    height: 1rem;
+    margin-left: 0.25rem;
+    
+    &.draggable {
+      transition: opacity 0.15s;
+
+      &::before {
+        position: absolute;
+        content: '';
+        inset: -0.5rem;
+      }
+    }
+
   }
 </style>
