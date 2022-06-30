@@ -41,8 +41,8 @@ export function generateIssuePanelUri (issue: Issue): string {
 }
 
 export async function copyToClipboard (object: Issue, ev: Event, { type }: { type: string }): Promise<void> {
-  let text: string | undefined
   const client = getClient()
+  let text: string
   switch (type) {
     case 'id':
       text = await getIssueTitle(client, object._id)
