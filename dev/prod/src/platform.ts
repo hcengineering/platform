@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { addAlias, addLocation } from '@anticrm/platform'
+import { addLocation } from '@anticrm/platform'
 
 import login, { loginId } from '@anticrm/login'
 import workbench, { workbenchId } from '@anticrm/workbench'
@@ -72,14 +72,13 @@ import { textEditorId } from '@anticrm/text-editor'
 
 import { setMetadata } from '@anticrm/platform'
 
-
-export async function configurePlatform() {  
+export async function configurePlatform() {
   const config = await (await fetch('/config.json')).json()
   console.log('loading configuration', config)
   setMetadata(login.metadata.AccountsUrl, config.ACCOUNTS_URL)
-  setMetadata(login.metadata.UploadUrl,  config.UPLOAD_URL)       
-  
-  if( config.MODEL_VERSION != null) {
+  setMetadata(login.metadata.UploadUrl, config.UPLOAD_URL)
+
+  if (config.MODEL_VERSION != null) {
     console.log('Minimal Model version requirement', config.MODEL_VERSION)
     setMetadata(presentation.metadata.RequiredVersion, config.MODEL_VERSION)
   }
@@ -87,12 +86,18 @@ export async function configurePlatform() {
   setMetadata(login.metadata.GmailUrl, process.env.GMAIL_URL ?? 'http://localhost:8087')
   setMetadata(login.metadata.OverrideEndpoint, process.env.LOGIN_ENDPOINT)
   setMetadata(login.metadata.FrontUrl, process.env.FRONT_URL)
-  
+
   setMetadata(rekoni.metadata.RekoniUrl, process.env.REKONI_URL)
 
-  setMetadata(uiPlugin.metadata.DefaultApplication, workbench.component.WorkbenchApp )
+  setMetadata(uiPlugin.metadata.DefaultApplication, workbench.component.WorkbenchApp)
 
-  addAlias(workbenchId, workbench.component.WorkbenchApp)
+  setMetadata(
+    uiPlugin.metadata.Routes,
+    new Map([
+      [workbenchId, workbench.component.WorkbenchApp],
+      [loginId, login.component.LoginApp]
+    ])
+  )
 
   addLocation(coreId, async () => ({ default: async () => ({}) }))
   addLocation(presentationId, async () => ({ default: async () => ({}) }))
