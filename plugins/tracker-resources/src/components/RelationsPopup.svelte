@@ -7,6 +7,7 @@
   import SelectRelationPopup from './SelectRelationPopup.svelte'
   import tracker from '../plugin'
   import { updateIssueRelation } from '../issues'
+  import { IntlString } from '@anticrm/platform'
 
   export let value: Issue
 
@@ -33,11 +34,11 @@
     }
   }
 
-  const makeAddAction = (type: keyof typeof relations) => async () => {
+  const makeAddAction = (type: keyof typeof relations, placeholder: IntlString) => async () => {
     closePopup('popup')
     showPopup(
       SelectIssuePopup,
-      { ignoreObjects: [value._id, ...relations[type]] },
+      { ignoreObjects: [value._id, ...relations[type]], placeholder },
       undefined,
       async (issue: Issue | undefined) => {
         if (!issue) return
@@ -68,17 +69,17 @@
   ]
   $: actions = [
     {
-      action: makeAddAction('blockedBy'),
+      action: makeAddAction('blockedBy', tracker.string.BlockedBySearchPlaceholder),
       icon: tracker.icon.Issue,
       label: tracker.string.AddBlockedBy
     },
     {
-      action: makeAddAction('isBlocking'),
+      action: makeAddAction('isBlocking', tracker.string.IsBlockingSearchPlaceholder),
       icon: tracker.icon.Issue,
       label: tracker.string.AddIsBlocking
     },
     {
-      action: makeAddAction('relatedIssue'),
+      action: makeAddAction('relatedIssue', tracker.string.RelatedIssueSearchPlaceholder),
       icon: tracker.icon.Issue,
       label: tracker.string.AddRelatedIssue
     },

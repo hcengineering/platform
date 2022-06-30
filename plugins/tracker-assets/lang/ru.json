@@ -149,6 +149,9 @@
     "RelatedIssue": "Связанная задача {id} - {title}",
     "BlockedIssue": "Блокируемая задача {id} - {title}",
     "BlockingIssue": "Блокирующая {id} - {title}",
+    "BlockedBySearchPlaceholder": "Поиск блокирующей задачи...",
+    "IsBlockingSearchPlaceholder": "Поиск блокируемой задачи...",
+    "RelatedIssueSearchPlaceholder": "Поиск связанной задачи...",
 
     "EditIssue": "Редактирование {title}",
 

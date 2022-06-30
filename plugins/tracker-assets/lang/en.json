@@ -149,6 +149,9 @@
     "RelatedIssue": "Related issue {id} - {title}",
     "BlockedIssue": "Blocked issue {id} - {title}",
     "BlockingIssue": "Blocking issue {id} - {title}",
+    "BlockedBySearchPlaceholder": "Search for issue to mark blocked by...",
+    "IsBlockingSearchPlaceholder": "Search for issue to mark as blocking...",
+    "RelatedIssueSearchPlaceholder": "Search for issue to reference...",
 
     "EditIssue": "Edit {title}",
 
