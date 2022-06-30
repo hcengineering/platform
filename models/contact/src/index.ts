@@ -157,6 +157,10 @@ export function createModel (builder: Builder): void {
     TMember
   )
 
+  builder.mixin(contact.class.Employee, core.class.Class, view.mixin.ObjectFactory, {
+    component: contact.component.CreateEmployee
+  })
+
   builder.mixin(contact.class.Person, core.class.Class, view.mixin.ObjectFactory, {
     component: contact.component.CreatePerson
   })

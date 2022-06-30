@@ -18,9 +18,9 @@ import login from '@anticrm/login'
 import { getMetadata } from '@anticrm/platform'
 import { extractTx, TriggerControl } from '@anticrm/server-core'
 import { getUpdateLastViewTx } from '@anticrm/server-notification'
-import task, { Issue, Task } from '@anticrm/task'
+import task, { Issue, Task, taskId } from '@anticrm/task'
 import view from '@anticrm/view'
-import workbench from '@anticrm/workbench'
+import { workbenchId } from '@anticrm/workbench'
 
 /**
  * @public
@@ -28,7 +28,7 @@ import workbench from '@anticrm/workbench'
 export function issueHTMLPresenter (doc: Doc): string {
   const issue = doc as Issue
   const front = getMetadata(login.metadata.FrontUrl) ?? ''
-  return `<a href="${front}/${workbench.component.WorkbenchApp}/${task.app.Tasks}/${issue.space}/#${view.component.EditDoc}|${issue._id}|${issue._class}">Task-${issue.number}</a>`
+  return `<a href="${front}/${workbenchId}/${taskId}/${issue.space}/#${view.component.EditDoc}|${issue._id}|${issue._class}">Task-${issue.number}</a>`
 }
 
 /**

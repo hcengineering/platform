@@ -2,7 +2,7 @@ import { Doc, Ref, TxOperations } from '@anticrm/core'
 import { getClient } from '@anticrm/presentation'
 import { Issue, Team, trackerId } from '@anticrm/tracker'
 import { getPanelURI, Location } from '@anticrm/ui'
-import workbench from '@anticrm/workbench'
+import { workbenchId } from '@anticrm/workbench'
 import tracker from './plugin'
 
 export function getIssueId (team: Team, issue: Issue): string {
@@ -60,7 +60,7 @@ export async function copyToClipboard (object: Issue, ev: Event, { type }: { typ
 }
 
 export function generateIssueShortLink (issueId: string): string {
-  return `${window.location.host}/${workbench.component.WorkbenchApp}/${trackerId}/${issueId}`
+  return `${window.location.host}/${workbenchId}/${trackerId}/${issueId}`
 }
 
 export async function generateIssueLocation (loc: Location, issueId: string): Promise<Location | undefined> {

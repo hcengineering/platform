@@ -13,11 +13,11 @@
 // limitations under the License.
 //
 
-import recruit, { Applicant, Vacancy } from '@anticrm/recruit'
+import recruit, { Applicant, recruitId, Vacancy } from '@anticrm/recruit'
 import { Doc } from '@anticrm/core'
 import login from '@anticrm/login'
 import { getMetadata } from '@anticrm/platform'
-import workbench from '@anticrm/workbench'
+import { workbenchId } from '@anticrm/workbench'
 import view from '@anticrm/view'
 
 /**
@@ -26,7 +26,7 @@ import view from '@anticrm/view'
 export function vacancyHTMLPresenter (doc: Doc): string {
   const vacancy = doc as Vacancy
   const front = getMetadata(login.metadata.FrontUrl) ?? ''
-  return `<a href="${front}/${workbench.component.WorkbenchApp}/${recruit.app.Recruit}/${vacancy._id}/#${recruit.component.EditVacancy}|${vacancy._id}|${vacancy._class}">${vacancy.name}</a>`
+  return `<a href="${front}/${workbenchId}/${recruitId}/${vacancy._id}/#${recruit.component.EditVacancy}|${vacancy._id}|${vacancy._class}">${vacancy.name}</a>`
 }
 
 /**
@@ -43,7 +43,7 @@ export function vacancyTextPresenter (doc: Doc): string {
 export function applicationHTMLPresenter (doc: Doc): string {
   const applicant = doc as Applicant
   const front = getMetadata(login.metadata.FrontUrl) ?? ''
-  return `<a href="${front}/${workbench.component.WorkbenchApp}/${recruit.app.Recruit}/${applicant.space}/#${view.component.EditDoc}|${applicant._id}|${applicant._class}">APP-${applicant.number}</a>`
+  return `<a href="${front}/${workbenchId}/${recruitId}/${applicant.space}/#${view.component.EditDoc}|${applicant._id}|${applicant._class}">APP-${applicant.number}</a>`
 }
 
 /**
