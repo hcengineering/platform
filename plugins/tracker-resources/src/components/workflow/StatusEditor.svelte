@@ -28,9 +28,7 @@
   const dispatch = createEventDispatcher()
 
   function pickColor (evt: MouseEvent) {
-    showPopup(ColorsPopup, {}, eventToHTMLElement(evt), (newColor) => {
-      value.color = newColor
-    })
+    showPopup(ColorsPopup, {}, eventToHTMLElement(evt), (newColor) => (value.color = newColor))
   }
 
   $: canSave = !isSaving && (value.name ?? '').length > 0
@@ -48,7 +46,7 @@
       <StatusInput bind:value={value.description} placeholder={tracker.string.Description} fill />
     </div>
   </div>
-  <div class="buttons-group flex-no-shrink ml-2 mr-1">
+  <div class="buttons-group small-gap flex-no-shrink ml-2 mr-1">
     <Button label={presentation.string.Cancel} kind="secondary" on:click={() => dispatch('cancel')} />
     <Button label={presentation.string.Save} kind="primary" disabled={!canSave} on:click={() => dispatch('save')} />
   </div>

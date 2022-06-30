@@ -25,9 +25,13 @@
   export let canDelete = false
 
   const dispatch = createEventDispatcher()
+
+  function edit () {
+    dispatch('edit', value)
+  }
 </script>
 
-<div class="flex-between background-button-bg-color border-radius-1 p-2 root">
+<div class="flex-between background-button-bg-color border-radius-1 p-2 root" on:dblclick|preventDefault={edit}>
   <div class="flex flex-grow items-center">
     <Icon {icon} size="small" fill="red" />
     <span class="content-accent-color ml-2">{value.name}</span>
@@ -46,7 +50,7 @@
     <div
       class="btn"
       use:tooltip={{ label: tracker.string.EditWorkflowStatus, direction: 'bottom' }}
-      on:click|preventDefault={() => dispatch('edit', value)}
+      on:click|preventDefault={edit}
     >
       <Icon icon={IconEdit} size="small" />
     </div>
