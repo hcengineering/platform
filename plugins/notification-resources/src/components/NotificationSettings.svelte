@@ -26,6 +26,8 @@
   const client = getClient()
   const space = accountId as string as Ref<Space>
 
+  let disabled = true
+
   let types: NotificationType[] = []
   let providers: NotificationProvider[] = []
   let settings: Map<Ref<NotificationType>, Map<Ref<NotificationProvider>, NotificationSetting>> = new Map<
@@ -67,6 +69,7 @@
     } else {
       current.enabled = value
     }
+    disabled = false
   }
 
   function getSetting (
@@ -92,6 +95,7 @@
   }
 
   async function save (): Promise<void> {
+    disabled = true
     const promises: Promise<any>[] = []
     for (const type of settings.values()) {
       for (const setting of type.values()) {
@@ -107,7 +111,11 @@
         }
       }
     }
-    await Promise.all(promises)
+    try {
+      await Promise.all(promises)
+    } catch (e) {
+      console.log(e)
+    }
   }
 
   $: column = providers.length + 1
@@ -152,6 +160,7 @@
       <div class="flex-row-reverse">
         <Button
           label={presentation.string.Save}
+          {disabled}
           kind={'primary'}
           on:click={() => {
             save()

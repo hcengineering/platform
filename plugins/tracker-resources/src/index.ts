@@ -59,7 +59,7 @@ import Statuses from './components/workflow/Statuses.svelte'
 import Views from './components/views/Views.svelte'
 import KanbanView from './components/issues/KanbanView.svelte'
 import tracker from './plugin'
-import { copyToClipboard, getIssueId, getIssueTitle } from './utils'
+import { copyToClipboard, getIssueId, getIssueTitle, resolveLocation } from './issues'
 import CreateIssue from './components/CreateIssue.svelte'
 
 export async function queryIssue<D extends Issue> (
@@ -168,5 +168,8 @@ export default async (): Promise<Resources> => ({
   actionImpl: {
     CopyToClipboard: copyToClipboard,
     EditWorkflowStatuses: editWorkflowStatuses
+  },
+  resolver: {
+    Location: resolveLocation
   }
 })

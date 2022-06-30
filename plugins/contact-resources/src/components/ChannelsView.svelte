@@ -18,7 +18,7 @@
   import type { AttachedData, Doc, Ref, Timestamp } from '@anticrm/core'
   import type { Asset, IntlString } from '@anticrm/platform'
   import type { AnyComponent } from '@anticrm/ui'
-  import { CircleButton, Tooltip } from '@anticrm/ui'
+  import { Button } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import { getChannelProviders } from '../utils'
   import ChannelsPopup from './ChannelsPopup.svelte'
@@ -109,16 +109,16 @@
 >
   {#each displayItems as item}
     <div class="channel-item">
-      <Tooltip component={ChannelsPopup} props={{ value: item }} label={undefined} anchor={divHTML}>
-        <CircleButton
-          icon={item.icon}
-          {size}
-          primary={item.integration || item.notification}
-          on:click={() => {
-            dispatch('click', item)
-          }}
-        />
-      </Tooltip>
+      <Button
+        icon={item.icon}
+        kind={'link-bordered'}
+        {size}
+        highlight={item.integration || item.notification}
+        showTooltip={{ component: ChannelsPopup, props: { value: item }, label: undefined, anchor: divHTML }}
+        on:click={() => {
+          dispatch('click', item)
+        }}
+      />
     </div>
   {/each}
 </div>

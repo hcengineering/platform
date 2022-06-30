@@ -8,6 +8,7 @@
     "EmailNotification": "by email",
     "PlatformNotification": "in platform",
     "Track": "Track",
-    "DontTrack": "Don't track"
+    "DontTrack": "Don't track",
+    "BrowserNotification": "in browser"
   }
 }

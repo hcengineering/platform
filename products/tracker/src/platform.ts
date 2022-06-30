@@ -33,7 +33,6 @@ import { templatesId } from '@anticrm/templates'
 import { notificationId } from '@anticrm/notification'
 import { calendarId } from '@anticrm/calendar'
 import { trackerId } from '@anticrm/tracker'
-import { preferenceId } from '@anticrm/preference'
 
 import '@anticrm/login-assets'
 import '@anticrm/task-assets'
@@ -56,14 +55,13 @@ import { textEditorId } from '@anticrm/text-editor'
 
 import { setMetadata } from '@anticrm/platform'
 
-export async function configurePlatform() {  
+export async function configurePlatform() {
   const config = await (await fetch('/config.json')).json()
   console.log('loading configuration', config)
   setMetadata(login.metadata.AccountsUrl, config.ACCOUNTS_URL)
-  setMetadata(login.metadata.UploadUrl,  config.UPLOAD_URL)       
+  setMetadata(login.metadata.UploadUrl, config.UPLOAD_URL)
 
-  
-  if( config.MODEL_VERSION != null) {
+  if (config.MODEL_VERSION != null) {
     console.log('Minimal Model version requirement', config.MODEL_VERSION)
     setMetadata(presentation.metadata.RequiredVersion, config.MODEL_VERSION)
   }
@@ -71,9 +69,17 @@ export async function configurePlatform() {
   setMetadata(login.metadata.GmailUrl, process.env.GMAIL_URL ?? 'http://localhost:8087')
   setMetadata(login.metadata.OverrideEndpoint, process.env.LOGIN_ENDPOINT)
   setMetadata(login.metadata.FrontUrl, process.env.FRONT_URL)
-  
-  setMetadata(uiPlugin.metadata.DefaultApplication, workbench.component.WorkbenchApp )
-  setMetadata(workbench.metadata.ExcludedApplications, [contact.app.Contacts] )
+
+  setMetadata(uiPlugin.metadata.DefaultApplication, workbench.component.WorkbenchApp)
+  setMetadata(workbench.metadata.ExcludedApplications, [contact.app.Contacts])
+
+  setMetadata(
+    uiPlugin.metadata.Routes,
+    new Map([
+      [workbenchId, workbench.component.WorkbenchApp],
+      [loginId, login.component.LoginApp]
+    ])
+  )
 
   addLocation(coreId, async () => ({ default: async () => ({}) }))
   addLocation(presentationId, async () => ({ default: async () => ({}) }))

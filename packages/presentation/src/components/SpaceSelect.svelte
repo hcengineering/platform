@@ -23,7 +23,6 @@
     Button,
     eventToHTMLElement,
     getFocusManager,
-    Tooltip,
     TooltipAlignment,
     ButtonKind,
     ButtonSize
@@ -84,10 +83,18 @@
   }
 </script>
 
-<Tooltip {label} fill={false} direction={labelDirection}>
-  <Button {focus} {focusIndex} icon={IconFolder} {size} {kind} {justify} {width} on:click={showSpacesPopup}>
-    <span slot="content" class="overflow-label disabled text-sm">
-      {#if selected}{selected.name}{:else}<Label {label} />{/if}
-    </span>
-  </Button>
-</Tooltip>
+<Button
+  {focus}
+  {focusIndex}
+  icon={IconFolder}
+  {size}
+  {kind}
+  {justify}
+  {width}
+  showTooltip={{ label, direction: labelDirection }}
+  on:click={showSpacesPopup}
+>
+  <span slot="content" class="overflow-label disabled text-sm">
+    {#if selected}{selected.name}{:else}<Label {label} />{/if}
+  </span>
+</Button>

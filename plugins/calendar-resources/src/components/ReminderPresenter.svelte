@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Reminder } from '@anticrm/calendar'
   import { getResource } from '@anticrm/platform'
-  import { DateTimeRangePresenter, showPanel, Tooltip } from '@anticrm/ui'
+  import { DateTimeRangePresenter, showPanel, tooltip } from '@anticrm/ui'
   import view from '@anticrm/view'
 
   export let value: Reminder
@@ -29,13 +29,14 @@
 
 <div class="antiSelect w-full cursor-pointer flex-between" on:click={click}>
   {#if value}
-    <div class="mr-4">
-      {#await objectPresenter then component}
-        <Tooltip {component} props={{ objectId: value.attachedTo, _class: value.attachedToClass }}>
-          {value.title}
-        </Tooltip>
-      {/await}
-    </div>
+    {#await objectPresenter then component}
+      <div
+        class="mr-4"
+        use:tooltip={{ component, props: { objectId: value.attachedTo, _class: value.attachedToClass } }}
+      >
+        {value.title}
+      </div>
+    {/await}
     <DateTimeRangePresenter value={value.date + value.shift} />
   {/if}
 </div>

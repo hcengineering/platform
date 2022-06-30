@@ -48,7 +48,10 @@
   function computeSize (t: HTMLInputElement | EventTarget | null) {
     const target = t as HTMLInputElement
     const value = target.value
-    text.innerHTML = (value === '' ? phTraslate : value).replaceAll(' ', '&nbsp;')
+    text.innerHTML = (value === '' ? phTraslate : value)
+      .replaceAll(' ', '&nbsp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
     if (format === 'number') {
       target.style.width = maxWidth ?? '5rem'
     } else if (kind === 'underline') {

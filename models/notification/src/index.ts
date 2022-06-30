@@ -51,6 +51,10 @@ export class TNotification extends TAttachedDoc implements Notification {
 
   @Prop(TypeString(), 'Status' as IntlString)
   status!: NotificationStatus
+
+  text!: string
+
+  type!: Ref<NotificationType>
 }
 
 @Model(notification.class.EmailNotification, core.class.Doc, DOMAIN_NOTIFICATION)
@@ -135,6 +139,16 @@ export function createModel (builder: Builder): void {
       default: true
     },
     notification.ids.PlatformNotification
+  )
+
+  builder.createDoc(
+    notification.class.NotificationProvider,
+    core.space.Model,
+    {
+      label: notification.string.BrowserNotification,
+      default: false
+    },
+    notification.ids.BrowserNotification
   )
 
   builder.createDoc(

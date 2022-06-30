@@ -17,7 +17,7 @@
   import contact, { Employee, EmployeeAccount } from '@anticrm/contact'
   import core, { Class, Client, Doc, getCurrentAccount, Ref, Space } from '@anticrm/core'
   import notification, { NotificationStatus } from '@anticrm/notification'
-  import { NotificationClientImpl } from '@anticrm/notification-resources'
+  import { NotificationClientImpl, BrowserNotificatator } from '@anticrm/notification-resources'
   import { getMetadata, getResource, IntlString } from '@anticrm/platform'
   import { Avatar, createQuery, setClient } from '@anticrm/presentation'
   import {
@@ -31,6 +31,7 @@
     Label,
     location,
     Location,
+    areLocationsEqual,
     navigate,
     PanelInstance,
     Popup,
@@ -118,9 +119,6 @@
     },
     (res) => {
       hasNotification = res.length > 0
-    },
-    {
-      limit: 1
     }
   )
 
@@ -167,6 +165,17 @@
       currentAppAlias = app
       currentApplication = await client.findOne(workbench.class.Application, { alias: app })
       navigatorModel = currentApplication?.navigatorModel
+    }
+
+    // resolve short links
+    if (currentApplication?.locationResolver) {
+      const resolver = await getResource(currentApplication.locationResolver)
+      const resolvedLocation = await resolver?.(loc)
+      if (resolvedLocation && !areLocationsEqual(loc, resolvedLocation)) {
+        // make sure not to go into infinite loop here
+        navigate(resolvedLocation)
+        return
+      }
     }
 
     if (space === undefined) {
@@ -505,6 +514,7 @@
     </svelte:fragment>
   </Popup>
   <DatePickerPopup />
+  <BrowserNotificatator />
 {:else}
   <div class="flex-col-center justify-center h-full flex-grow">
     <h1><Label label={workbench.string.AccountDisabled} /></h1>

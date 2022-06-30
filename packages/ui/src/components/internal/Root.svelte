@@ -22,8 +22,13 @@
 
   onDestroy(
     location.subscribe((loc) => {
-      if (loc.path[0]) {
-        application = loc.path[0] as AnyComponent
+      const routes = getMetadata(uiPlugin.metadata.Routes) ?? new Map()
+      const component = loc.path[0]
+
+      application = routes.get(component)
+      if (application === undefined && Array.from(routes.values()).includes(component as AnyComponent)) {
+        // if component id is used
+        application = component as AnyComponent
       }
 
       if (application === undefined) {

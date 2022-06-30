@@ -16,10 +16,10 @@
 
 import core, { Doc, Tx, TxCreateDoc, TxRemoveDoc, TxUpdateDoc } from '@anticrm/core'
 import type { TriggerControl } from '@anticrm/server-core'
-import contact, { Contact, formatName, Organization, Person } from '@anticrm/contact'
+import contact, { Contact, contactId, formatName, Organization, Person } from '@anticrm/contact'
 import { getMetadata } from '@anticrm/platform'
 import login from '@anticrm/login'
-import workbench from '@anticrm/workbench'
+import { workbenchId } from '@anticrm/workbench'
 import view from '@anticrm/view'
 
 /**
@@ -63,9 +63,9 @@ export async function OnContactDelete (tx: Tx, { findAll, hierarchy, storageFx }
 export function personHTMLPresenter (doc: Doc): string {
   const person = doc as Person
   const front = getMetadata(login.metadata.FrontUrl) ?? ''
-  return `<a href="${front}/${workbench.component.WorkbenchApp}/${contact.app.Contacts}#${view.component.EditDoc}|${
-    person._id
-  }|${person._class}">${formatName(person.name)}</a>`
+  return `<a href="${front}/${workbenchId}/${contactId}#${view.component.EditDoc}|${person._id}|${
+    person._class
+  }">${formatName(person.name)}</a>`
 }
 
 /**
@@ -82,7 +82,7 @@ export function personTextPresenter (doc: Doc): string {
 export function organizationHTMLPresenter (doc: Doc): string {
   const organization = doc as Organization
   const front = getMetadata(login.metadata.FrontUrl) ?? ''
-  return `<a href="${front}/${workbench.component.WorkbenchApp}/${contact.app.Contacts}#${view.component.EditDoc}|${organization._id}|${organization._class}">${organization.name}</a>`
+  return `<a href="${front}/${workbenchId}/${contactId}#${view.component.EditDoc}|${organization._id}|${organization._class}">${organization.name}</a>`
 }
 
 /**

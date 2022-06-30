@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Timestamp, TypeDate } from '@anticrm/core'
-  import { ticker, Tooltip } from '@anticrm/ui'
+  import { ticker, tooltip } from '@anticrm/ui'
   import { DateEditor } from '@anticrm/view-resources'
   import EmployeeStatusDueDatePopup from './EmployeeStatusDueDatePopup.svelte'
   import { formatDate } from '../utils'
@@ -15,13 +15,9 @@
   const type = { withTime: true } as TypeDate
 </script>
 
-<Tooltip
-  direction={'top'}
-  component={EmployeeStatusDueDatePopup}
-  props={{
-    formattedDate,
-    isOverdue
-  }}
+<div
+  class="clear-mins"
+  use:tooltip={{ direction: 'top', component: EmployeeStatusDueDatePopup, props: { formattedDate, isOverdue } }}
 >
   <DateEditor
     value={statusDueDate}
@@ -31,4 +27,4 @@
       dispatch('change', v)
     }}
   />
-</Tooltip>
+</div>

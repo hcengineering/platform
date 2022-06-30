@@ -16,7 +16,7 @@
   import { Class, Doc, Ref } from '@anticrm/core'
   import { AttributesBar, getClient, KeyedAttribute } from '@anticrm/presentation'
   import setting, { settingId } from '@anticrm/setting'
-  import { Button, getCurrentLocation, Label, navigate, Tooltip } from '@anticrm/ui'
+  import { Button, getCurrentLocation, Label, navigate } from '@anticrm/ui'
   import { getFiltredKeys, isCollectionAttr } from '../utils'
 
   export let object: Doc
@@ -58,22 +58,21 @@
     </div>
   </div>
   <div class="tool">
-    <Tooltip label={setting.string.ClassSetting}>
-      <Button
-        icon={setting.icon.Setting}
-        kind={'transparent'}
-        on:click={(ev) => {
-          ev.stopPropagation()
-          const loc = getCurrentLocation()
-          loc.path[1] = settingId
-          loc.path[2] = 'classes'
-          loc.path.length = 3
-          loc.query = { _class }
-          loc.fragment = undefined
-          navigate(loc)
-        }}
-      />
-    </Tooltip>
+    <Button
+      icon={setting.icon.Setting}
+      kind={'transparent'}
+      showTooltip={{ label: setting.string.ClassSetting }}
+      on:click={(ev) => {
+        ev.stopPropagation()
+        const loc = getCurrentLocation()
+        loc.path[1] = settingId
+        loc.path[2] = 'classes'
+        loc.path.length = 3
+        loc.query = { _class }
+        loc.fragment = undefined
+        navigate(loc)
+      }}
+    />
   </div>
 </div>
 {#if keys.length}

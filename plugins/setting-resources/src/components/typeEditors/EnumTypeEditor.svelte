@@ -16,7 +16,7 @@
   import core, { Enum, EnumOf, Ref } from '@anticrm/core'
   import { TypeEnum } from '@anticrm/model'
   import presentation, { getClient } from '@anticrm/presentation'
-  import { Button, Tooltip, Label, showPopup } from '@anticrm/ui'
+  import { Button, Label, showPopup } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import setting from '../../plugin'
   import EnumSelect from './EnumSelect.svelte'
@@ -60,9 +60,13 @@
   </div>
   {#if value}
     <div class="ml-2">
-      <Tooltip label={presentation.string.Edit}>
-        <Button icon={setting.icon.Setting} kind={'no-border'} on:click={edit} size={'small'} />
-      </Tooltip>
+      <Button
+        icon={setting.icon.Setting}
+        kind={'no-border'}
+        size={'small'}
+        showTooltip={{ label: presentation.string.Edit }}
+        on:click={edit}
+      />
     </div>
   {/if}
 </div>

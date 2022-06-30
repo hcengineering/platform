@@ -15,10 +15,10 @@
 <script lang="ts">
   import { createQuery } from '@anticrm/presentation'
   import { Team, Issue } from '@anticrm/tracker'
-  import { Spinner, IconClose, Tooltip } from '@anticrm/ui'
+  import { Spinner, IconClose, tooltip } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
-  import { getIssueId } from '../../utils'
+  import { getIssueId } from '../../issues'
 
   export let issue: Issue
 
@@ -38,11 +38,13 @@
     <Spinner size="small" />
   {/if}
   <span class="overflow-label issue-title">{issue.title}</span>
-  <Tooltip label={tracker.string.RemoveParent} direction="bottom">
-    <div class="button-close" on:click={() => dispatch('close')}>
-      <IconClose size="x-small" />
-    </div>
-  </Tooltip>
+  <div
+    class="button-close"
+    use:tooltip={{ label: tracker.string.RemoveParent, direction: 'bottom' }}
+    on:click={() => dispatch('close')}
+  >
+    <IconClose size="x-small" />
+  </div>
 </div>
 
 <style lang="scss">

@@ -6,6 +6,8 @@ Core:
 
 - Allow to leave workspace
 - Allow to kick employee
+- Browser notifications
+- Allow to create employee
 
 HR:
 

@@ -16,7 +16,7 @@
 import type { Class, Doc, Mixin, Obj, Ref, Space } from '@anticrm/core'
 import type { Asset, IntlString, Metadata, Plugin, Resource } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
-import { AnyComponent } from '@anticrm/ui'
+import { AnyComponent, Location } from '@anticrm/ui'
 import { ViewAction } from '@anticrm/view'
 
 /**
@@ -28,6 +28,7 @@ export interface Application extends Doc {
   icon: Asset
   hidden: boolean
   navigatorModel?: NavigatorModel
+  locationResolver?: Resource<(loc: Location) => Promise<Location | undefined>>
 
   // Component will be displayed in case navigator model is not defined, or nothing is selected in navigator model
   component?: AnyComponent

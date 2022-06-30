@@ -6,9 +6,17 @@
   import EmployeePreviewPopup from './EmployeePreviewPopup.svelte'
   import { WithLookup } from '@anticrm/core'
   import { IntlString } from '@anticrm/platform'
+  import type { AnyComponent, AnySvelteComponent } from '@anticrm/ui'
 
   export let value: WithLookup<Employee> | null | undefined
-  export let tooltipLabels: { personLabel: IntlString; placeholderLabel?: IntlString } | undefined = undefined
+  export let tooltipLabels:
+    | {
+        personLabel?: IntlString
+        placeholderLabel?: IntlString
+        component?: AnySvelteComponent | AnyComponent
+        props?: any
+      }
+    | undefined = undefined
   export let shouldShowAvatar: boolean = true
   export let shouldShowName: boolean = true
   export let shouldShowPlaceholder = false

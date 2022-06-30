@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import type { Customer } from '@anticrm/lead'
-  import { Icon, Tooltip } from '@anticrm/ui'
+  import { Icon, tooltip } from '@anticrm/ui'
   import LeadsPopup from './LeadsPopup.svelte'
   import leads from '../plugin'
 
@@ -24,9 +24,10 @@
 </script>
 
 {#if value && value > 0}
-  <Tooltip label={leads.string.Leads} component={LeadsPopup} props={{ value: object }}>
-    <div class="sm-tool-icon">
-      <span class="icon"><Icon icon={leads.icon.Lead} size={'small'} /></span>&nbsp;{value}
-    </div>
-  </Tooltip>
+  <div
+    class="sm-tool-icon"
+    use:tooltip={{ label: leads.string.Leads, component: LeadsPopup, props: { value: object } }}
+  >
+    <span class="icon"><Icon icon={leads.icon.Lead} size={'small'} /></span>&nbsp;{value}
+  </div>
 {/if}

@@ -14,13 +14,16 @@
 -->
 <script lang="ts">
   import { Asset, IntlString } from '@anticrm/platform'
-  import { Button, Tooltip } from '@anticrm/ui'
+  import { Button } from '@anticrm/ui'
 
   export let icon: Asset
   export let title: IntlString
   export let text: string
 </script>
 
-<Tooltip label={title} direction="bottom" fill>
-  <Button {icon} kind="transparent" on:click={() => navigator.clipboard.writeText(text)} />
-</Tooltip>
+<Button
+  {icon}
+  kind={'transparent'}
+  showTooltip={{ label: title, direction: 'bottom' }}
+  on:click={() => navigator.clipboard.writeText(text)}
+/>
