@@ -9,6 +9,19 @@ export function getIssueId (team: Team, issue: Issue): string {
   return `${team.identifier}-${issue.number}`
 }
 
+export async function fetchIssueId (issue: Issue): Promise<string | undefined> {
+  const team = await fetchIssueTeam(issue)
+  if (team === undefined || team === null) {
+    return undefined
+  }
+  return getIssueId(team, issue)
+}
+
+export async function fetchIssueTeam (issue: Issue): Promise<Team | undefined> {
+  const client = getClient()
+  return await client.findOne(tracker.class.Team, { _id: issue.space })
+}
+
 export function isIssueId (shortLink: string): boolean {
   return /^\w+-\d+$/.test(shortLink)
 }
@@ -28,8 +41,8 @@ export function generateIssuePanelUri (issue: Issue): string {
 }
 
 export async function copyToClipboard (object: Issue, ev: Event, { type }: { type: string }): Promise<void> {
+  let text: string | undefined
   const client = getClient()
-  let text: string
   switch (type) {
     case 'id':
       text = await getIssueTitle(client, object._id)
@@ -38,8 +51,7 @@ export async function copyToClipboard (object: Issue, ev: Event, { type }: { typ
       text = object.title
       break
     case 'link':
-      // TODO: fix when short link is available
-      text = `${window.location.href}#${generateIssuePanelUri(object)}`
+      text = generateIssueShortLink((await fetchIssueId(object)) ?? '')
       break
     default:
       return
