@@ -140,6 +140,7 @@ export default mergeIds(trackerId, tracker, {
     List: '' as IntlString,
     NumberLabels: '' as IntlString,
     Roadmap: '' as IntlString,
+    MoveToTeam: '' as IntlString,
 
     IssueTitlePlaceholder: '' as IntlString,
     IssueDescriptionPlaceholder: '' as IntlString,
@@ -179,6 +180,8 @@ export default mergeIds(trackerId, tracker, {
     BlockedBySearchPlaceholder: '' as IntlString,
     IsBlockingSearchPlaceholder: '' as IntlString,
     RelatedIssueSearchPlaceholder: '' as IntlString,
+    Blocks: '' as IntlString,
+    Related: '' as IntlString,
 
     DurMinutes: '' as IntlString,
     DurHours: '' as IntlString,

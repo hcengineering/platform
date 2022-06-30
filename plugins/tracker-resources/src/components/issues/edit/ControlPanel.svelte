@@ -15,6 +15,7 @@
 <script lang="ts">
   import { WithLookup } from '@anticrm/core'
   import type { Issue, IssueStatus } from '@anticrm/tracker'
+  import { createQuery } from '@anticrm/presentation'
   import { Component, Label } from '@anticrm/ui'
   import tags from '@anticrm/tags'
   import tracker from '../../../plugin'
@@ -23,9 +24,16 @@
   import ProjectEditor from '../../projects/ProjectEditor.svelte'
   import AssigneeEditor from '../AssigneeEditor.svelte'
   import DueDateEditor from '../DueDateEditor.svelte'
+  import RelationEditor from '../RelationEditor.svelte'
 
   export let issue: Issue
   export let issueStatuses: WithLookup<IssueStatus>[]
+
+  const query = createQuery()
+  let showIsBlocking = false
+  query.query(tracker.class.Issue, { blockedBy: issue._id }, (result) => {
+    showIsBlocking = result.length > 0
+  })
 </script>
 
 <div class="content">
@@ -33,6 +41,25 @@
     <Label label={tracker.string.Status} />
   </span>
   <StatusEditor value={issue} statuses={issueStatuses} shouldShowLabel />
+
+  {#if issue.blockedBy?.length}
+    <span class="labelTop">
+      <Label label={tracker.string.BlockedBy} />
+    </span>
+    <RelationEditor value={issue} type="blockedBy" />
+  {/if}
+  {#if showIsBlocking}
+    <span class="labelTop">
+      <Label label={tracker.string.Blocks} />
+    </span>
+    <RelationEditor value={issue} type="isBlocking" />
+  {/if}
+  {#if issue.relatedIssue?.length}
+    <span class="labelTop">
+      <Label label={tracker.string.Related} />
+    </span>
+    <RelationEditor value={issue} type="relatedIssue" />
+  {/if}
 
   <span class="label">
     <Label label={tracker.string.Priority} />

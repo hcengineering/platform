@@ -123,6 +123,7 @@
     "ProjectLeadSearchPlaceholder": "Назначьте руководителя проекта\u2026",
     "ProjectMembersSearchPlaceholder": "Измененить участников проекта\u2026",
     "Roadmap": "Планирование",
+    "MoveToTeam": "Изменить команду",
 
     "GotoIssues": "Перейти к задачам",
     "GotoActive": "Перейти к активным задачам",
@@ -152,6 +153,8 @@
     "BlockedBySearchPlaceholder": "Поиск блокирующей задачи...",
     "IsBlockingSearchPlaceholder": "Поиск блокируемой задачи...",
     "RelatedIssueSearchPlaceholder": "Поиск связанной задачи...",
+    "Blocks": "Блокирует",
+    "Related": "Связан",
 
     "EditIssue": "Редактирование {title}",
 
