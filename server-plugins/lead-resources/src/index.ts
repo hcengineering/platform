@@ -14,11 +14,11 @@
 //
 
 import { Doc } from '@anticrm/core'
-import leadP, { Lead } from '@anticrm/lead'
+import { leadId, Lead } from '@anticrm/lead'
 import login from '@anticrm/login'
 import { getMetadata } from '@anticrm/platform'
 import view from '@anticrm/view'
-import workbench from '@anticrm/workbench'
+import { workbenchId } from '@anticrm/workbench'
 
 /**
  * @public
@@ -26,7 +26,7 @@ import workbench from '@anticrm/workbench'
 export function leadHTMLPresenter (doc: Doc): string {
   const lead = doc as Lead
   const front = getMetadata(login.metadata.FrontUrl) ?? ''
-  return `<a href="${front}/${workbench.component.WorkbenchApp}/${leadP.app.Lead}/${lead.space}/#${view.component.EditDoc}|${lead._id}|${lead._class}">${lead.title}</a>`
+  return `<a href="${front}/${workbenchId}/${leadId}/${lead.space}/#${view.component.EditDoc}|${lead._id}|${lead._class}">${lead.title}</a>`
 }
 
 /**

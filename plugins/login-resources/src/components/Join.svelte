@@ -20,7 +20,7 @@
   import { join, signUpJoin } from '../utils'
 
   import login from '../plugin'
-  import workbench from '@anticrm/workbench'
+  import { workbenchId } from '@anticrm/workbench'
 
   const location = getCurrentLocation()
   let page = 'login'
@@ -76,7 +76,7 @@
         setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)
         setMetadataLocalStorage(login.metadata.LoginEmail, result.email)
         setMetadataLocalStorage(login.metadata.CurrentWorkspace, result.workspace)
-        navigate({ path: [workbench.component.WorkbenchApp] })
+        navigate({ path: [workbenchId] })
       }
     }
   }

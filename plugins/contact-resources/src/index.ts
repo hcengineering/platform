@@ -47,6 +47,7 @@ import MemberPresenter from './components/MemberPresenter.svelte'
 import EditMember from './components/EditMember.svelte'
 import EmployeeArrayEditor from './components/EmployeeArrayEditor.svelte'
 import EmployeeEditor from './components/EmployeeEditor.svelte'
+import CreateEmployee from './components/CreateEmployee.svelte'
 import { leaveWorkspace } from '@anticrm/login-resources'
 
 export {
@@ -122,7 +123,8 @@ export default async (): Promise<Resources> => ({
     MemberPresenter,
     EditMember,
     EmployeeArrayEditor,
-    EmployeeEditor
+    EmployeeEditor,
+    CreateEmployee
   },
   completion: {
     EmployeeQuery: async (client: Client, query: string) => await queryContact(contact.class.Employee, client, query),
