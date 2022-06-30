@@ -16,15 +16,13 @@
   import { createEventDispatcher } from 'svelte'
   import { flip } from 'svelte/animate'
   import { AttachedData, Class, Ref, SortingOrder } from '@anticrm/core'
-  import { Button, Icon, Label, Panel, Scroller, IconAdd, Loading, closeTooltip } from '@anticrm/ui'
-  import { createQuery, getClient } from '@anticrm/presentation'
+  import { Button, Icon, Label, Panel, Scroller, IconAdd, Loading, closeTooltip, showPopup } from '@anticrm/ui'
+  import { createQuery, getClient, MessageBox } from '@anticrm/presentation'
   import { calcRank, IssueStatus, IssueStatusCategory, Team } from '@anticrm/tracker'
-  import view from '@anticrm/view'
   import tracker from '../../plugin'
   import StatusEditor from './StatusEditor.svelte'
   import StatusPresenter from './StatusPresenter.svelte'
   import ExpandCollapse from '@anticrm/ui/src/components/ExpandCollapse.svelte'
-  import { getResource } from '@anticrm/platform'
 
   export let teamId: Ref<Team>
   export let teamClass: Ref<Class<Team>>
@@ -52,7 +50,7 @@
     )
   }
 
-  async function updateTeamDefaultStatus ({ detail: statusId }: CustomEvent<Ref<IssueStatus>>) {
+  async function updateTeamDefaultStatus (statusId: Ref<IssueStatus>) {
     if (team) {
       await client.update(team, { defaultIssueStatus: statusId })
     }
@@ -111,11 +109,46 @@
   async function deleteStatus (event: CustomEvent<IssueStatus>) {
     closeTooltip()
 
-    const deleteAction = await client.findOne(view.class.Action, { _id: view.action.Delete })
-    if (deleteAction) {
-      const { detail: status } = event
-      const impl = await getResource(deleteAction.action)
-      impl(status, event, { ...deleteAction.actionProps, action: deleteAction })
+    const { detail: status } = event
+    const issuesWithDeletingStatus = await client.findAll(
+      tracker.class.Issue,
+      { status: status._id },
+      { projection: { _id: 1 } }
+    )
+
+    if (issuesWithDeletingStatus.length > 0) {
+      showPopup(MessageBox, {
+        label: tracker.string.DeleteWorkflowStatusError,
+        message: tracker.string.DeleteWorkflowStatusErrorDescription,
+        params: { status: status.name, count: issuesWithDeletingStatus.length },
+        canSubmit: false
+      })
+    } else {
+      showPopup(
+        MessageBox,
+        {
+          label: tracker.string.DeleteWorkflowStatus,
+          message: tracker.string.DeleteWorkflowStatusConfirm,
+          params: { status: status.name }
+        },
+        undefined,
+        async (result) => {
+          if (result && team && workflowStatuses) {
+            isSaving = true
+            await client.removeDoc(status._class, status.space, status._id)
+
+            if (team.defaultIssueStatus === status._id) {
+              const newDefaultStatus = workflowStatuses.find(
+                (s) => s._id !== status._id && s.category === status.category
+              )
+              if (newDefaultStatus?._id) {
+                await updateTeamDefaultStatus(newDefaultStatus._id)
+              }
+            }
+            isSaving = false
+          }
+        }
+      )
     }
   }
 
@@ -150,7 +183,9 @@
         workflowStatuses[fromIndex < toIndex ? toIndex + 1 : toIndex]
       ]
 
+      isSaving = true
       await client.update(status, { rank: calcRank(prev, next) })
+      isSaving = false
     }
 
     resetDrag()
@@ -242,7 +277,7 @@
                     icon={category.icon}
                     isDefault={status._id === team.defaultIssueStatus}
                     {isSingle}
-                    on:default-update={updateTeamDefaultStatus}
+                    on:default-update={({ detail }) => updateTeamDefaultStatus(detail)}
                     on:edit={({ detail }) => {
                       closeTooltip()
                       editingStatus = { ...detail }

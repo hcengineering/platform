@@ -21,6 +21,7 @@
   export let label: IntlString
   export let message: IntlString
   export let params: Record<string, any> = {}
+  export let canSubmit = true
 
   const dispatch = createEventDispatcher()
 </script>
@@ -36,7 +37,9 @@
       kind={'primary'}
       on:click={() => dispatch('close', true)}
     />
-    <Button label={presentation.string.Cancel} size={'small'} on:click={() => dispatch('close', false)} />
+    {#if canSubmit}
+      <Button label={presentation.string.Cancel} size={'small'} on:click={() => dispatch('close', false)} />
+    {/if}
   </div>
 </div>
 
