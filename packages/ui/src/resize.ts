@@ -20,12 +20,14 @@ export function resizeObserver (element: Element, onResize: (element: Element) =
   if (observer === undefined) {
     callbacks = new WeakMap()
     observer = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const onResize = callbacks.get(entry.target)
-        if (onResize != null) {
-          onResize(entry.target)
+      window.requestAnimationFrame(() => {
+        for (const entry of entries) {
+          const onResize = callbacks.get(entry.target)
+          if (onResize != null) {
+            onResize(entry.target)
+          }
         }
-      }
+      })
     })
   }
 
