@@ -13,9 +13,56 @@
 // limitations under the License.
 //
 
+import core, { DOMAIN_TX, Ref, TxCreateDoc, TxOperations } from '@anticrm/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
+import notification, { Notification, NotificationType } from '@anticrm/notification'
+import { DOMAIN_NOTIFICATION } from '.'
+
+async function fillNotificationText (client: MigrationClient): Promise<void> {
+  await client.update(
+    DOMAIN_NOTIFICATION,
+    { _class: notification.class.Notification, text: { $exists: false } },
+    {
+      text: ''
+    }
+  )
+  await client.update(
+    DOMAIN_TX,
+    {
+      _class: core.class.TxCreateDoc,
+      objectClass: notification.class.Notification,
+      'attributes.text': { $exists: false }
+    },
+    {
+      'attributes.text': ''
+    }
+  )
+}
+
+async function fillNotificationType (client: MigrationUpgradeClient): Promise<void> {
+  const notifications = await client.findAll(notification.class.Notification, { type: { $exists: false } })
+  const txOp = new TxOperations(client, core.account.System)
+  const promises = notifications.map(async (doc) => {
+    const tx = await client.findOne(core.class.TxCUD, { _id: doc.tx })
+    if (tx === undefined) return
+    const type =
+      tx._class === core.class.TxMixin
+        ? ('calendar:ids:ReminderNotification' as Ref<NotificationType>)
+        : notification.ids.MentionNotification
+    const objectTx = txOp.update(doc, { type })
+    const ctx = await client.findOne<TxCreateDoc<Notification>>(core.class.TxCreateDoc, { objectId: doc._id })
+    if (ctx === undefined) return await objectTx
+    const updateTx = txOp.update(ctx, { 'attributes.type': type } as any)
+    return await Promise.all([objectTx, updateTx])
+  })
+  await Promise.all(promises)
+}
 
 export const notificationOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {},
-  async upgrade (client: MigrationUpgradeClient): Promise<void> {}
+  async migrate (client: MigrationClient): Promise<void> {
+    await fillNotificationText(client)
+  },
+  async upgrade (client: MigrationUpgradeClient): Promise<void> {
+    await fillNotificationType(client)
+  }
 }

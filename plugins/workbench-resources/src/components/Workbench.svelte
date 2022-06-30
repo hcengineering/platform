@@ -17,7 +17,7 @@
   import contact, { Employee, EmployeeAccount } from '@anticrm/contact'
   import core, { Class, Client, Doc, getCurrentAccount, Ref, setCurrentAccount, Space } from '@anticrm/core'
   import notification, { NotificationStatus } from '@anticrm/notification'
-  import { NotificationClientImpl } from '@anticrm/notification-resources'
+  import { NotificationClientImpl, BrowserNotificatator } from '@anticrm/notification-resources'
   import { getMetadata, getResource, IntlString } from '@anticrm/platform'
   import { Avatar, createQuery, setClient } from '@anticrm/presentation'
   import {
@@ -132,9 +132,6 @@
     },
     (res) => {
       hasNotification = res.length > 0
-    },
-    {
-      limit: 1
     }
   )
 
@@ -530,6 +527,7 @@
     </svelte:fragment>
   </Popup>
   <DatePickerPopup />
+  <BrowserNotificatator />
 {:else}
   <div class="flex-col-center justify-center h-full flex-grow">
     <h1><Label label={workbench.string.AccountDisabled} /></h1>

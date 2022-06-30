@@ -34,7 +34,12 @@ import core, {
   TxCUD,
   TxProcessor
 } from '@anticrm/core'
-import notification, { EmailNotification, Notification, NotificationStatus } from '@anticrm/notification'
+import notification, {
+  EmailNotification,
+  Notification,
+  NotificationProvider,
+  NotificationStatus
+} from '@anticrm/notification'
 import { getResource } from '@anticrm/platform'
 import type { TriggerControl } from '@anticrm/server-core'
 import { extractTx } from '@anticrm/server-core'
@@ -46,33 +51,52 @@ import view, { HTMLPresenter, TextPresenter } from '@anticrm/view'
  */
 export async function OnBacklinkCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const hierarchy = control.hierarchy
-  if (tx._class !== core.class.TxCollectionCUD) {
-    return []
+  const ptx = tx as TxCollectionCUD<Doc, Backlink>
+
+  if (!checkTx(ptx, hierarchy)) return []
+
+  const result: Tx[] = []
+
+  const receiver = await getReceiver(ptx, control)
+  if (receiver === undefined) return []
+  const sender = await getSender(ptx, control)
+  const backlink = getBacklink(ptx)
+  const doc = await getBacklinkDoc(backlink, control)
+  const textPart = doc !== undefined ? await getTextPart(doc, hierarchy) : undefined
+  const htmlPart = doc !== undefined ? await getHtmlPart(doc, hierarchy) : undefined
+
+  const createNotificationTx = await getPlatformNotificationTx(ptx, backlink, textPart, sender)
+
+  if (createNotificationTx !== undefined) {
+    result.push(createNotificationTx)
   }
 
-  const ptx = tx as TxCollectionCUD<Doc, Backlink>
+  if (
+    sender !== undefined &&
+    textPart !== undefined &&
+    (await isAllowed(control, receiver, notification.ids.EmailNotification))
+  ) {
+    const emailTx = await getEmailTx(ptx, backlink, sender, textPart, htmlPart, receiver)
+    if (emailTx !== undefined) {
+      result.push(emailTx)
+    }
+  }
+  return result
+}
+
+function checkTx (ptx: TxCollectionCUD<Doc, Backlink>, hierarchy: Hierarchy): boolean {
+  if (ptx._class !== core.class.TxCollectionCUD) {
+    return false
+  }
 
   if (
     ptx.tx._class !== core.class.TxCreateDoc ||
     !hierarchy.isDerived(ptx.tx.objectClass, chunter.class.Backlink) ||
     !hierarchy.isDerived(ptx.objectClass, contact.class.Employee)
   ) {
-    return []
+    return false
   }
-
-  const result: Tx[] = []
-
-  const createNotificationTx = await getPlatformNotificationTx(ptx, control)
-
-  if (createNotificationTx !== undefined) {
-    result.push(createNotificationTx)
-  }
-
-  const emailTx = await getEmailTx(ptx, control)
-  if (emailTx !== undefined) {
-    result.push(emailTx)
-  }
-  return result
+  return true
 }
 
 async function getUpdateLastViewTxes (
@@ -170,11 +194,11 @@ export async function UpdateLastView (tx: Tx, control: TriggerControl): Promise<
   return result
 }
 
-async function getPlatformNotificationTx (
+async function getReceiver (
   ptx: TxCollectionCUD<Doc, Backlink>,
   control: TriggerControl
-): Promise<TxCollectionCUD<Doc, Notification> | undefined> {
-  const attached = (
+): Promise<EmployeeAccount | undefined> {
+  return (
     await control.modelDb.findAll(
       contact.class.EmployeeAccount,
       {
@@ -183,29 +207,42 @@ async function getPlatformNotificationTx (
       { limit: 1 }
     )
   )[0]
-  if (attached === undefined) return
+}
 
+async function isAllowed (
+  control: TriggerControl,
+  receiver: EmployeeAccount,
+  providerId: Ref<NotificationProvider>
+): Promise<boolean> {
   const setting = (
     await control.findAll(
       notification.class.NotificationSetting,
       {
-        provider: notification.ids.PlatformNotification,
+        provider: providerId,
         type: notification.ids.MentionNotification,
-        space: attached._id as unknown as Ref<Space>
+        space: receiver._id as unknown as Ref<Space>
       },
       { limit: 1 }
     )
   )[0]
-  if (setting === undefined) {
-    const provider = (
-      await control.modelDb.findAll(notification.class.NotificationProvider, {
-        _id: notification.ids.PlatformNotification
-      })
-    )[0]
-    if (provider === undefined) return
-    if (!provider.default) return
+  if (setting !== undefined) {
+    return setting.enabled
   }
+  const provider = (
+    await control.modelDb.findAll(notification.class.NotificationProvider, {
+      _id: providerId
+    })
+  )[0]
+  if (provider === undefined) return false
+  return provider.default
+}
 
+async function getPlatformNotificationTx (
+  ptx: TxCollectionCUD<Doc, Backlink>,
+  backlink: Backlink,
+  textPart: string | undefined,
+  sender: string | undefined
+): Promise<TxCollectionCUD<Doc, Notification> | undefined> {
   const createTx: TxCreateDoc<Notification> = {
     objectClass: notification.class.Notification,
     objectSpace: notification.space.Notifications,
@@ -217,8 +254,14 @@ async function getPlatformNotificationTx (
     _class: core.class.TxCreateDoc,
     attributes: {
       tx: ptx._id,
-      status: NotificationStatus.New
+      status: NotificationStatus.New,
+      type: notification.ids.MentionNotification
     } as unknown as Data<Notification>
+  }
+
+  if (sender !== undefined && textPart !== undefined) {
+    const text = `${sender} mentioned you in ${textPart} ${backlink.message}`
+    createTx.attributes.text = text
   }
 
   const createNotificationTx: TxCollectionCUD<Doc, Notification> = {
@@ -231,12 +274,35 @@ async function getPlatformNotificationTx (
   return createNotificationTx
 }
 
-async function getEmailTx (
-  ptx: TxCollectionCUD<Doc, Backlink>,
-  control: TriggerControl
-): Promise<TxCreateDoc<EmailNotification> | undefined> {
-  const hierarchy = control.hierarchy
-  const backlink = TxProcessor.createDoc2Doc(ptx.tx as TxCreateDoc<Backlink>)
+function getBacklink (ptx: TxCollectionCUD<Doc, Backlink>): Backlink {
+  return TxProcessor.createDoc2Doc(ptx.tx as TxCreateDoc<Backlink>)
+}
+
+async function getBacklinkDoc (backlink: Backlink, control: TriggerControl): Promise<Doc | undefined> {
+  return (
+    await control.findAll(
+      backlink.backlinkClass,
+      {
+        _id: backlink.backlinkId
+      },
+      { limit: 1 }
+    )
+  )[0]
+}
+
+async function getTextPart (doc: Doc, hierarchy: Hierarchy): Promise<string | undefined> {
+  const TextPresenter = getTextPresenter(doc._class, hierarchy)
+  if (TextPresenter === undefined) return
+  return (await getResource(TextPresenter.presenter))(doc)
+}
+
+async function getHtmlPart (doc: Doc, hierarchy: Hierarchy): Promise<string | undefined> {
+  const HTMLPresenter = getHTMLPresenter(doc._class, hierarchy)
+  const htmlPart = HTMLPresenter !== undefined ? (await getResource(HTMLPresenter.presenter))(doc) : undefined
+  return htmlPart
+}
+
+async function getSender (ptx: TxCollectionCUD<Doc, Backlink>, control: TriggerControl): Promise<string | undefined> {
   const account = (
     await control.modelDb.findAll(
       contact.class.EmployeeAccount,
@@ -248,57 +314,17 @@ async function getEmailTx (
   )[0]
   if (account === undefined) return undefined
 
-  const sender = formatName(account.name)
-  const attached = (
-    await control.modelDb.findAll(
-      contact.class.EmployeeAccount,
-      {
-        employee: ptx.objectId as Ref<Employee>
-      },
-      { limit: 1 }
-    )
-  )[0]
-  if (attached === undefined) return undefined
+  return formatName(account.name)
+}
 
-  const setting = (
-    await control.findAll(
-      notification.class.NotificationSetting,
-      {
-        provider: notification.ids.EmailNotification,
-        type: notification.ids.MentionNotification,
-        space: attached._id as unknown as Ref<Space>
-      },
-      { limit: 1 }
-    )
-  )[0]
-  if (setting === undefined) {
-    const provider = (
-      await control.modelDb.findAll(notification.class.NotificationProvider, {
-        _id: notification.ids.PlatformNotification
-      })
-    )[0]
-    if (provider === undefined) return
-    if (!provider.default) return
-  }
-
-  const receiver = attached.email
-  const doc = (
-    await control.findAll(
-      backlink.backlinkClass,
-      {
-        _id: backlink.backlinkId
-      },
-      { limit: 1 }
-    )
-  )[0]
-  if (doc === undefined) return undefined
-
-  const TextPresenter = getTextPresenter(doc._class, hierarchy)
-  if (TextPresenter === undefined) return
-
-  const HTMLPresenter = getHTMLPresenter(doc._class, hierarchy)
-  const htmlPart = HTMLPresenter !== undefined ? (await getResource(HTMLPresenter.presenter))(doc) : undefined
-  const textPart = (await getResource(TextPresenter.presenter))(doc)
+async function getEmailTx (
+  ptx: TxCollectionCUD<Doc, Backlink>,
+  backlink: Backlink,
+  sender: string,
+  textPart: string,
+  htmlPart: string | undefined,
+  receiver: EmployeeAccount
+): Promise<TxCreateDoc<EmailNotification> | undefined> {
   const html = `<p><b>${sender}</b> mentioned you in ${htmlPart !== undefined ? htmlPart : textPart}</p> ${
     backlink.message
   }`
@@ -315,7 +341,7 @@ async function getEmailTx (
     attributes: {
       status: 'new',
       sender,
-      receivers: [receiver],
+      receivers: [receiver.email],
       subject: `You was mentioned in ${textPart}`,
       text,
       html

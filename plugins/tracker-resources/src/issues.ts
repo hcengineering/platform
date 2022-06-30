@@ -38,8 +38,7 @@ export async function copyToClipboard (object: Issue, ev: Event, { type }: { typ
       text = object.title
       break
     case 'link':
-      // TODO: fix when short link is available
-      text = `${window.location.href}#${generateIssuePanelUri(object)}`
+      text = generateIssueShortLink(await getIssueTitle(client, object._id))
       break
     default:
       return

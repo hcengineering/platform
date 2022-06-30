@@ -8,6 +8,7 @@
     "EmailNotification": "по email",
     "PlatformNotification": "в системе",
     "Track": "Отслеживать",
-    "DontTrack": "Не отслеживать"
+    "DontTrack": "Не отслеживать",
+    "BrowserNotification": "в браузере"
   }
 }

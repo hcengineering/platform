@@ -23,6 +23,7 @@ export default mergeIds(notificationId, notification, {
     LastView: '' as IntlString,
     MentionNotification: '' as IntlString,
     PlatformNotification: '' as IntlString,
+    BrowserNotification: '' as IntlString,
     EmailNotification: '' as IntlString
   },
   component: {
