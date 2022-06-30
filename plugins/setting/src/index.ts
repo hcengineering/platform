@@ -85,6 +85,7 @@ export default plugin(settingId, {
   },
   class: {
     SettingsCategory: '' as Ref<Class<SettingsCategory>>,
+    WorkspaceSettingCategory: '' as Ref<Class<SettingsCategory>>,
     Integration: '' as Ref<Class<Integration>>,
     IntegrationType: '' as Ref<Class<IntegrationType>>
   },
@@ -92,7 +93,7 @@ export default plugin(settingId, {
     Settings: '' as AnyComponent,
     Profile: '' as AnyComponent,
     Password: '' as AnyComponent,
-    Setting: '' as AnyComponent,
+    WorkspaceSettings: '' as AnyComponent,
     Integrations: '' as AnyComponent,
     ManageStatuses: '' as AnyComponent,
     Support: '' as AnyComponent,

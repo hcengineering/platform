@@ -100,7 +100,8 @@ describe('query', () => {
     })
 
     await factory.createDoc(core.class.Account, core.space.Model, {
-      email: 'user1@site.com'
+      email: 'user1@site.com',
+      owner: false
     })
     await factory.createDoc<Channel>(core.class.Space, core.space.Model, {
       private: true,

@@ -279,6 +279,7 @@ export interface Space extends Doc {
  */
 export interface Account extends Doc {
   email: string
+  owner: boolean
 }
 
 /**

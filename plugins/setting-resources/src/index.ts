@@ -16,7 +16,7 @@
 import { Resources } from '@anticrm/platform'
 import Profile from './components/Profile.svelte'
 import Password from './components/Password.svelte'
-import Setting from './components/Setting.svelte'
+import WorkspaceSettings from './components/WorkspaceSettings.svelte'
 import Integrations from './components/Integrations.svelte'
 import ManageStatuses from './components/statuses/ManageStatuses.svelte'
 import Support from './components/Support.svelte'
@@ -44,7 +44,7 @@ export default async (): Promise<Resources> => ({
     Settings,
     Profile,
     Password,
-    Setting,
+    WorkspaceSettings,
     Integrations,
     Support,
     Privacy,

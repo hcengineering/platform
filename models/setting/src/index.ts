@@ -42,6 +42,14 @@ export class TSettingsCategory extends TDoc implements SettingsCategory {
   component!: AnyComponent
 }
 
+@Model(setting.class.WorkspaceSettingCategory, core.class.Doc, DOMAIN_MODEL)
+export class TWorkspaceSettingCategory extends TDoc implements SettingsCategory {
+  name!: string
+  label!: IntlString
+  icon!: Asset
+  component!: AnyComponent
+}
+
 @Model(setting.class.IntegrationType, core.class.Doc, DOMAIN_MODEL)
 export class TIntegrationType extends TDoc implements IntegrationType {
   label!: IntlString
@@ -56,7 +64,7 @@ export class TIntegrationType extends TDoc implements IntegrationType {
 export class TEditable extends TClass implements Editable {}
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TIntegration, TIntegrationType, TSettingsCategory, TEditable)
+  builder.createModel(TIntegration, TIntegrationType, TSettingsCategory, TWorkspaceSettingCategory, TEditable)
 
   builder.createDoc(
     setting.class.SettingsCategory,
@@ -90,7 +98,7 @@ export function createModel (builder: Builder): void {
       name: 'setting',
       label: setting.string.Setting,
       icon: setting.icon.Setting,
-      component: setting.component.Setting,
+      component: setting.component.WorkspaceSettings,
       order: 2000
     },
     setting.ids.Setting
@@ -108,7 +116,7 @@ export function createModel (builder: Builder): void {
     setting.ids.Integrations
   )
   builder.createDoc(
-    setting.class.SettingsCategory,
+    setting.class.WorkspaceSettingCategory,
     core.space.Model,
     {
       name: 'statuses',
@@ -120,7 +128,7 @@ export function createModel (builder: Builder): void {
     setting.ids.ManageStatuses
   )
   builder.createDoc(
-    setting.class.SettingsCategory,
+    setting.class.WorkspaceSettingCategory,
     core.space.Model,
     {
       name: 'classes',
@@ -132,7 +140,7 @@ export function createModel (builder: Builder): void {
     setting.ids.ClassSetting
   )
   builder.createDoc(
-    setting.class.SettingsCategory,
+    setting.class.WorkspaceSettingCategory,
     core.space.Model,
     {
       name: 'enums',

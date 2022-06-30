@@ -61,7 +61,8 @@ export const demoOperation: MigrateOperation = {
       await tx.createDoc<EmployeeAccount>(contact.class.EmployeeAccount, core.space.Model, {
         email: 'rosamund@hc.engineering',
         employee,
-        name: 'Chen,Rosamund'
+        name: 'Chen,Rosamund',
+        owner: true
       })
     }
 

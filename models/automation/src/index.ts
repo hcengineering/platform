@@ -71,7 +71,7 @@ export function createModel (builder: Builder): void {
 
   /** Disable Automation UI
   builder.createDoc(
-    setting.class.SettingsCategory,
+    setting.class.WorkspaceSettingCategory,
     core.space.Model,
     {
       name: 'automation',

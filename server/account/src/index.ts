@@ -380,6 +380,7 @@ export async function createUserWorkspace (db: Db, token: string, workspace: str
   const { email } = decodeToken(token)
   await createWorkspace(db, workspace, '')
   await assignWorkspace(db, email, workspace)
+  await setOwner(email, workspace)
   const result = {
     endpoint: getEndpoint(),
     email,
@@ -448,6 +449,26 @@ async function getWorkspaceAndAccount (
 /**
  * @public
  */
+export async function setOwner (email: string, workspace: string): Promise<void> {
+  const connection = await connect(getTransactor(), workspace, email)
+  try {
+    const ops = new TxOperations(connection, core.account.System)
+
+    const existingAccount = await ops.findOne(contact.class.EmployeeAccount, { email })
+
+    if (existingAccount !== undefined) {
+      await ops.update(existingAccount, {
+        owner: true
+      })
+    }
+  } finally {
+    await connection.close()
+  }
+}
+
+/**
+ * @public
+ */
 export async function assignWorkspace (db: Db, email: string, workspace: string): Promise<void> {
   const { workspaceId, accountId } = await getWorkspaceAndAccount(db, email, workspace)
   // Add account into workspace.
@@ -485,7 +506,8 @@ async function createEmployeeAccount (account: Account, workspace: string): Prom
       await ops.createDoc(contact.class.EmployeeAccount, core.space.Model, {
         email: account.email,
         employee,
-        name
+        name,
+        owner: false
       })
     } else {
       const employee = await ops.findOne(contact.class.Employee, { _id: existingAccount.employee })

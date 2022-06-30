@@ -39,7 +39,7 @@ export function createModel (builder: Builder): void {
   builder.createModel(TMessageTemplate)
 
   builder.createDoc(
-    setting.class.SettingsCategory,
+    setting.class.WorkspaceSettingCategory,
     core.space.Model,
     {
       name: 'message-templates',

@@ -1,6 +1,5 @@
 //
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,7 +13,8 @@
 // limitations under the License.
 //
 
-import { TxOperations } from '@anticrm/core'
+import { Employee, EmployeeAccount } from '@anticrm/contact'
+import { DOMAIN_TX, TxCreateDoc, TxOperations } from '@anticrm/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
 import core from '@anticrm/model-core'
 import contact, { DOMAIN_CONTACT } from './index'
@@ -66,11 +66,38 @@ async function setActiveEmployee (client: MigrationClient): Promise<void> {
       active: true
     }
   )
+  await setActiveEmployeeTx(client)
 }
+
+async function setActiveEmployeeTx (client: MigrationClient): Promise<void> {
+  await client.update<TxCreateDoc<Employee>>(
+    DOMAIN_TX,
+    {
+      _class: core.class.TxCreateDoc,
+      objectClass: contact.class.Employee,
+      'attributes.active': { $exists: false}
+    },
+    {
+      'attributes.active': true
+    }
+  )
+}
+
+
+async function setOwner (client: MigrationClient): Promise<void> {
+  await client.update<TxCreateDoc<EmployeeAccount>>(DOMAIN_TX, {
+    _class: core.class.TxCreateDoc,
+    objectClass: contact.class.Employee,
+  }, {
+    'attributes.owner': false
+  })
+}
+
 
 export const contactOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await setActiveEmployee(client)
+    await setOwner(client)
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)

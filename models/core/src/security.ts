@@ -45,4 +45,5 @@ export class TSpace extends TDoc implements Space {
 @Model(core.class.Account, core.class.Doc, DOMAIN_MODEL)
 export class TAccount extends TDoc implements Account {
   email!: string
+  owner!: boolean
 }

@@ -23,6 +23,7 @@ import {
   dropWorkspace,
   getAccount,
   getWorkspace,
+  setOwner,
   listAccounts,
   listWorkspaces,
   upgradeWorkspace
@@ -112,6 +113,14 @@ program
     return await withDatabase(mongodbUri, async (db) => {
       await createWorkspace(db, workspace, cmd.organization)
     })
+  })
+
+program
+  .command('set-workspace-owner <email> <workspace>')
+  .description('set workspace ownner')
+  .action(async (email: string, workspace: string, cmd) => {
+    console.log(`set user ${email} as ${workspace} owner...`)
+    await setOwner(email, workspace)
   })
 
 program
