@@ -23,6 +23,8 @@ import { NotificationClientImpl } from './utils'
 
 export * from './utils'
 
+export { default as BrowserNotificatator } from './components/BrowserNotificatator.svelte'
+
 export default async (): Promise<Resources> => ({
   component: {
     NotificationsPopup,
