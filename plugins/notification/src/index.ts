@@ -33,6 +33,8 @@ export interface LastView extends AttachedDoc {
 export interface Notification extends AttachedDoc {
   tx: Ref<TxCUD<Doc>>
   status: NotificationStatus
+  text: string
+  type: Ref<NotificationType>
 }
 
 /**
@@ -137,6 +139,7 @@ const notification = plugin(notificationId, {
   ids: {
     MentionNotification: '' as Ref<NotificationType>,
     PlatformNotification: '' as Ref<NotificationProvider>,
+    BrowserNotification: '' as Ref<NotificationProvider>,
     EmailNotification: '' as Ref<NotificationProvider>,
     NotificationSettings: '' as Ref<Doc>
   },
