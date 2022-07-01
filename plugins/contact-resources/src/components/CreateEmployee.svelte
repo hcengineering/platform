@@ -15,7 +15,7 @@
 <script lang="ts">
   import attachment from '@anticrm/attachment'
   import { Channel, combineName, Employee, findPerson, Person } from '@anticrm/contact'
-  import core, { AttachedData, Data, generateId, Ref } from '@anticrm/core'
+  import core, { AccountRole, AttachedData, Data, generateId, Ref } from '@anticrm/core'
   import { getResource } from '@anticrm/platform'
   import { Card, EditableAvatar, getClient } from '@anticrm/presentation'
   import { EditBox, IconInfo, Label, createFocusManager, FocusHandler } from '@anticrm/ui'
@@ -69,7 +69,8 @@
     await client.createDoc(contact.class.EmployeeAccount, core.space.Model, {
       email: email.trim(),
       name,
-      employee: id
+      employee: id,
+      role: AccountRole.User
     })
 
     for (const channel of channels) {

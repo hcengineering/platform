@@ -5,9 +5,10 @@
 Core:
 
 - Allow to leave workspace
-- Allow to kick employee
+- Allow to kick employee (Only for owner)
 - Browser notifications
 - Allow to create employee
+- Owner role for employee
 
 HR:
 

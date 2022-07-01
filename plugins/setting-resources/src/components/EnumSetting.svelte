@@ -77,7 +77,7 @@
         {/each}
       </div>
     </div>
-    <div class="ac-column">
+    <div class="ac-column max">
       {#if selected !== undefined}
         <EnumValues value={selected} />
       {/if}

@@ -279,6 +279,16 @@ export interface Space extends Doc {
  */
 export interface Account extends Doc {
   email: string
+  role: AccountRole
+}
+
+/**
+ * @public
+ */
+export enum AccountRole {
+  User,
+  Maintainer,
+  Owner
 }
 
 /**

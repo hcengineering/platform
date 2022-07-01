@@ -420,7 +420,8 @@ export function createModel (builder: Builder): void {
       context: {
         mode: ['context'],
         group: 'other'
-      }
+      },
+      secured: true
     },
     contact.action.KickEmployee
   )

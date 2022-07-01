@@ -16,7 +16,6 @@
   import { IntlString, Asset } from '@anticrm/platform'
   import { createEventDispatcher } from 'svelte'
   import type { AnySvelteComponent, TooltipAlignment, ButtonKind, ButtonSize, DropdownIntlItem } from '../types'
-  import ui from '../plugin'
   import { showPopup } from '../popups'
   import Button from './Button.svelte'
   import DropdownLabelsPopupIntl from './DropdownLabelsPopupIntl.svelte'
@@ -24,10 +23,9 @@
 
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let label: IntlString
-  export let placeholder: IntlString | undefined = ui.string.SearchDots
   export let items: DropdownIntlItem[]
   export let selected: DropdownIntlItem['id'] | undefined = undefined
-
+  export let disabled: boolean = false
   export let kind: ButtonKind = 'no-border'
   export let size: ButtonSize = 'small'
   export let justify: 'left' | 'center' = 'center'
@@ -52,12 +50,13 @@
     width={width ?? 'min-content'}
     {size}
     {kind}
+    {disabled}
     {justify}
     showTooltip={{ label, direction: labelDirection }}
     on:click={() => {
       if (!opened) {
         opened = true
-        showPopup(DropdownLabelsPopupIntl, { placeholder, items, selected }, container, (result) => {
+        showPopup(DropdownLabelsPopupIntl, { items, selected }, container, (result) => {
           if (result) {
             selected = result
             dispatch('selected', result)
@@ -68,11 +67,7 @@
     }}
   >
     <span slot="content" class="overflow-label disabled">
-      {#if selectedItem}
-        <Label label={selectedItem.label} />
-      {:else}
-        <Label label={label ?? ui.string.NotSelected} />
-      {/if}
+      <Label label={selectedItem ? selectedItem.label : label} />
     </span>
   </Button>
 </div>

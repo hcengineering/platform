@@ -20,6 +20,7 @@
   export let icon: Asset | undefined = undefined
   export let label: IntlString | undefined = undefined
   export let selected: boolean = false
+  export let expandable = false
 
   const dispatch = createEventDispatcher()
 </script>
@@ -28,6 +29,7 @@
 <div
   class="antiNav-element"
   class:selected
+  class:expandable
   on:click|stopPropagation={() => {
     dispatch('click')
   }}
@@ -38,6 +40,21 @@
     {/if}
   </div>
   <span class="an-element__label title">
-    {#if label}<Label {label} />{:else}{label}{/if}
+    {#if label}<Label {label} />{/if}
   </span>
 </div>
+
+<style lang="scss">
+  .expandable {
+    position: relative;
+    &::after {
+      content: '▶';
+      position: absolute;
+      top: 50%;
+      right: 0.5rem;
+      font-size: 0.375rem;
+      color: var(--dark-color);
+      transform: translateY(-50%);
+    }
+  }
+</style>
