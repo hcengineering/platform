@@ -16,7 +16,6 @@
   import { IntlString, Asset } from '@anticrm/platform'
   import { createEventDispatcher } from 'svelte'
   import type { AnySvelteComponent, TooltipAlignment, ButtonKind, ButtonSize, DropdownIntlItem } from '../types'
-  import ui from '../plugin'
   import { showPopup } from '../popups'
   import Button from './Button.svelte'
   import DropdownLabelsPopupIntl from './DropdownLabelsPopupIntl.svelte'

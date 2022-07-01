@@ -51,7 +51,6 @@
   <div class="simpleFilterButton">
     <DropdownLabelsIntl
       items={dateFileBrowserFilters}
-      placeholder={attachment.string.FileBrowserFilterDate}
       label={attachment.string.FileBrowserFilterDate}
       bind:selected={selectedDateId}
     />
@@ -59,7 +58,6 @@
   <div class="simpleFilterButton">
     <DropdownLabelsIntl
       items={fileTypeFileBrowserFilters}
-      placeholder={attachment.string.FileBrowserFilterFileType}
       label={attachment.string.FileBrowserFilterFileType}
       bind:selected={selectedFileTypeId}
     />
