@@ -123,6 +123,7 @@
     "ProjectLeadSearchPlaceholder": "Назначьте руководителя проекта\u2026",
     "ProjectMembersSearchPlaceholder": "Измененить участников проекта\u2026",
     "Roadmap": "Планирование",
+    "MoveToTeam": "Изменить команду",
 
     "GotoIssues": "Перейти к задачам",
     "GotoActive": "Перейти к активным задачам",
@@ -140,6 +141,20 @@
     "Assigned": "Назначенные",
     "Created": "Созданные",
     "Subscribed": "Отслеживаемые",
+
+    "Relations": "Зависимости",
+    "RemoveRelation": "Удалить зависимость...",
+    "AddBlockedBy": "Отметить как блокируемую...",
+    "AddIsBlocking": "Отметить как блокирующую...",
+    "AddRelatedIssue": "Связать с задачей...",
+    "RelatedIssue": "Связанная задача {id} - {title}",
+    "BlockedIssue": "Блокируемая задача {id} - {title}",
+    "BlockingIssue": "Блокирующая {id} - {title}",
+    "BlockedBySearchPlaceholder": "Поиск блокирующей задачи...",
+    "IsBlockingSearchPlaceholder": "Поиск блокируемой задачи...",
+    "RelatedIssueSearchPlaceholder": "Поиск связанной задачи...",
+    "Blocks": "Блокирует",
+    "Related": "Связан",
 
     "EditIssue": "Редактирование {title}",
 
