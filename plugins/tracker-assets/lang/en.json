@@ -126,6 +126,7 @@
     "ProjectLeadSearchPlaceholder": "Set project lead\u2026",
     "ProjectMembersSearchPlaceholder": "Change project members\u2026",
     "Roadmap": "Roadmap",
+    "MoveToTeam": "Move to team",
 
     "GotoIssues": "Go to issues",
     "GotoActive": "Go to active issues",
@@ -143,6 +144,20 @@
     "Assigned": "Assigned",
     "Created": "Created",
     "Subscribed": "Subscribed",
+
+    "Relations": "Relations",
+    "RemoveRelation": "Remove relation...",
+    "AddBlockedBy": "Mark as blocked by...",
+    "AddIsBlocking": "Mark as bloking...",
+    "AddRelatedIssue": "Reference another issue...",
+    "RelatedIssue": "Related issue {id} - {title}",
+    "BlockedIssue": "Blocked issue {id} - {title}",
+    "BlockingIssue": "Blocking issue {id} - {title}",
+    "BlockedBySearchPlaceholder": "Search for issue to mark blocked by...",
+    "IsBlockingSearchPlaceholder": "Search for issue to mark as blocking...",
+    "RelatedIssueSearchPlaceholder": "Search for issue to reference...",
+    "Blocks": "Blocks",
+    "Related": "Related",
 
     "EditIssue": "Edit {title}",
     "EditWorkflowStatuses": "Edit issue statuses",

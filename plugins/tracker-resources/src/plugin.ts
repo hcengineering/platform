@@ -151,6 +151,7 @@ export default mergeIds(trackerId, tracker, {
     List: '' as IntlString,
     NumberLabels: '' as IntlString,
     Roadmap: '' as IntlString,
+    MoveToTeam: '' as IntlString,
 
     IssueTitlePlaceholder: '' as IntlString,
     IssueDescriptionPlaceholder: '' as IntlString,
@@ -178,6 +179,20 @@ export default mergeIds(trackerId, tracker, {
     Assigned: '' as IntlString,
     Created: '' as IntlString,
     Subscribed: '' as IntlString,
+
+    Relations: '' as IntlString,
+    RemoveRelation: '' as IntlString,
+    AddBlockedBy: '' as IntlString,
+    AddIsBlocking: '' as IntlString,
+    AddRelatedIssue: '' as IntlString,
+    RelatedIssue: '' as IntlString,
+    BlockedIssue: '' as IntlString,
+    BlockingIssue: '' as IntlString,
+    BlockedBySearchPlaceholder: '' as IntlString,
+    IsBlockingSearchPlaceholder: '' as IntlString,
+    RelatedIssueSearchPlaceholder: '' as IntlString,
+    Blocks: '' as IntlString,
+    Related: '' as IntlString,
 
     DurMinutes: '' as IntlString,
     DurHours: '' as IntlString,
@@ -226,6 +241,7 @@ export default mergeIds(trackerId, tracker, {
     Roadmap: '' as AnyComponent,
     TeamProjects: '' as AnyComponent,
     IssuePreview: '' as AnyComponent,
+    RelationsPopup: '' as AnyComponent,
     CreateIssue: '' as AnyComponent
   },
   function: {

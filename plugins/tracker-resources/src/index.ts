@@ -61,6 +61,7 @@ import KanbanView from './components/issues/KanbanView.svelte'
 import tracker from './plugin'
 import { copyToClipboard, getIssueId, getIssueTitle, resolveLocation } from './issues'
 import CreateIssue from './components/CreateIssue.svelte'
+import RelationsPopup from './components/RelationsPopup.svelte'
 
 export async function queryIssue<D extends Issue> (
   _class: Ref<Class<D>>,
@@ -157,6 +158,7 @@ export default async (): Promise<Resources> => ({
     TeamProjects,
     Roadmap,
     IssuePreview,
+    RelationsPopup,
     CreateIssue
   },
   completion: {

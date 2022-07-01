@@ -873,7 +873,7 @@ export function createModel (builder: Builder): void {
     builder,
     {
       action: view.actionImpl.Move,
-      label: view.string.Move,
+      label: tracker.string.MoveToTeam,
       icon: view.icon.Move,
       keyBinding: [],
       input: 'none',
@@ -882,9 +882,32 @@ export function createModel (builder: Builder): void {
       context: {
         mode: ['context', 'browser'],
         application: tracker.app.Tracker,
-        group: 'edit'
+        group: 'associate'
       }
     },
-    tracker.action.CopyIssueLink
+    tracker.action.MoveToTeam
+  )
+  // TODO: fix icon
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.ValueSelector,
+      actionPopup: tracker.component.RelationsPopup,
+      actionProps: {
+        attribute: ''
+      },
+      label: tracker.string.Relations,
+      icon: tracker.icon.Document,
+      keyBinding: [],
+      input: 'focus',
+      category: tracker.category.Tracker,
+      target: tracker.class.Issue,
+      context: {
+        mode: ['context', 'browser'],
+        application: tracker.app.Tracker,
+        group: 'associate'
+      }
+    },
+    tracker.action.Relations
   )
 }

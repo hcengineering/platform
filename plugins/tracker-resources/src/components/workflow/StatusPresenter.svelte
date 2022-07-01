@@ -111,7 +111,7 @@
     width: 0.375rem;
     height: 1rem;
     margin-left: 0.25rem;
-    
+
     &.draggable {
       transition: opacity 0.15s;
 
@@ -121,6 +121,5 @@
         inset: -0.5rem;
       }
     }
-
   }
 </style>

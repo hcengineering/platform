@@ -13,20 +13,22 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, WithLookup } from '@anticrm/core'
-  import { Department } from '@anticrm/hr'
-  import { Avatar, getClient, UsersPopup } from '@anticrm/presentation'
-  import CreateDepartment from './CreateDepartment.svelte'
-  import DepartmentCard from './DepartmentCard.svelte'
-  import hr from '../plugin'
-  import { IconAdd, IconMoreV, Button, eventToHTMLElement, Label, showPopup, showPanel } from '@anticrm/ui'
   import contact, { Employee } from '@anticrm/contact'
   import { EmployeePresenter } from '@anticrm/contact-resources'
-  import { Menu } from '@anticrm/view-resources'
+  import { Ref, WithLookup } from '@anticrm/core'
+  import { Department, Staff } from '@anticrm/hr'
+  import { Avatar, getClient, UsersPopup } from '@anticrm/presentation'
+  import { Button, eventToHTMLElement, IconAdd, Label, showPanel, showPopup } from '@anticrm/ui'
   import view from '@anticrm/view'
+  import { Menu } from '@anticrm/view-resources'
+  import hr from '../plugin'
+  import CreateDepartment from './CreateDepartment.svelte'
+  import DepartmentCard from './DepartmentCard.svelte'
+  import PersonsPresenter from './PersonsPresenter.svelte'
 
   export let value: WithLookup<Department>
   export let descendants: Map<Ref<Department>, WithLookup<Department>[]>
+  export let allEmployees: WithLookup<Staff>[] = []
 
   $: currentDescendants = descendants.get(value._id) ?? []
 
@@ -79,6 +81,8 @@
   function edit (e: MouseEvent): void {
     showPanel(view.component.EditDoc, value._id, value._class, 'content')
   }
+
+  $: values = allEmployees.filter((it) => it.department === value._id)
 </script>
 
 <div class="flex-center w-full px-4">
@@ -91,7 +95,7 @@
     <div class="flex-between pt-4 pb-4 pr-4 pl-2 w-full">
       <div class="flex-center">
         <div class="mr-2">
-          <Button icon={IconAdd} on:click={createChild} />
+          <Button icon={IconAdd} kind={'link-bordered'} on:click={createChild} />
         </div>
         <Avatar size={'medium'} avatar={value.avatar} icon={hr.icon.Department} />
         <div class="flex-row ml-2">
@@ -100,6 +104,7 @@
           </div>
           <Label label={hr.string.MemberCount} params={{ count: value.members.length }} />
         </div>
+        <PersonsPresenter value={values} />
       </div>
       <div class="flex-center mr-2">
         <div class="mr-2">
@@ -116,21 +121,23 @@
             onEmployeeEdit={openLeadEditor}
           />
         </div>
-        <Button icon={IconMoreV} kind={'transparent'} on:click={showMenu} />
       </div>
     </div>
   </div>
 </div>
 <div class="ml-8">
   {#each currentDescendants as nested}
-    <DepartmentCard value={nested} {descendants} />
+    <DepartmentCard value={nested} {descendants} {allEmployees} />
   {/each}
 </div>
 
 <style lang="scss">
   .container {
-    border-radius: 0.5rem;
-    border: 1px solid var(--theme-zone-border);
     background-color: var(--board-card-bg-color);
+
+    &:hover {
+      background-color: var(--board-card-bg-hover);
+      cursor: pointer;
+    }
   }
 </style>

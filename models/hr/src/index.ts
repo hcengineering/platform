@@ -78,7 +78,7 @@ export class TDepartment extends TSpace implements Department {
 export class TDepartmentMember extends TEmployeeAccount implements DepartmentMember {}
 
 @Mixin(hr.mixin.Staff, contact.class.Employee)
-@UX(contact.string.Employee, hr.icon.HR)
+@UX(hr.string.Staff, hr.icon.HR)
 export class TStaff extends TEmployee implements Staff {
   @Prop(TypeRef(hr.class.Department), hr.string.Department)
   department!: Ref<Department>
@@ -313,6 +313,25 @@ export function createModel (builder: Builder): void {
       context: { mode: 'context', application: hr.app.HR, group: 'create' }
     },
     hr.action.EditRequest
+  )
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: hr.mixin.Staff,
+      descriptor: view.viewlet.Table,
+      config: [
+        '',
+        {
+          key: '$lookup.channels',
+          sortingKey: ['$lookup.channels.lastMessage', 'channels']
+        },
+        'modifiedOn'
+      ],
+      hiddenKeys: []
+    },
+    hr.viewlet.TableMember
   )
 }
 
