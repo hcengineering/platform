@@ -14,7 +14,7 @@
 //
 
 import contact, { combineName, Employee } from '@anticrm/contact'
-import core, { Ref, TxOperations } from '@anticrm/core'
+import core, { AccountRole, Ref, TxOperations } from '@anticrm/core'
 import platform, {
   getMetadata,
   PlatformError,
@@ -380,7 +380,7 @@ export async function createUserWorkspace (db: Db, token: string, workspace: str
   const { email } = decodeToken(token)
   await createWorkspace(db, workspace, '')
   await assignWorkspace(db, email, workspace)
-  await setOwner(email, workspace)
+  await setRole(email, workspace, AccountRole.Owner)
   const result = {
     endpoint: getEndpoint(),
     email,
@@ -449,7 +449,7 @@ async function getWorkspaceAndAccount (
 /**
  * @public
  */
-export async function setOwner (email: string, workspace: string): Promise<void> {
+export async function setRole (email: string, workspace: string, role: AccountRole): Promise<void> {
   const connection = await connect(getTransactor(), workspace, email)
   try {
     const ops = new TxOperations(connection, core.account.System)
@@ -458,7 +458,7 @@ export async function setOwner (email: string, workspace: string): Promise<void>
 
     if (existingAccount !== undefined) {
       await ops.update(existingAccount, {
-        owner: true
+        role
       })
     }
   } finally {
@@ -507,7 +507,7 @@ async function createEmployeeAccount (account: Account, workspace: string): Prom
         email: account.email,
         employee,
         name,
-        owner: false
+        role: 0
       })
     } else {
       const employee = await ops.findOne(contact.class.Employee, { _id: existingAccount.employee })

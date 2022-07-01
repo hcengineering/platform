@@ -49,6 +49,10 @@
     "Owners": "Owners",
     "WorkspaceSetting": "Workspace",
     "Select": "Select",
-    "AddOwner": "Add owner"
+    "AddOwner": "Add owner",
+    "User": "User",
+    "Maintainer": "Maintainer",
+    "Owner": "Owner",
+    "Role": "Role"
   }
 }

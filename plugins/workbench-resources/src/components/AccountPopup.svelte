@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import contact, { Employee, EmployeeAccount, formatName } from '@anticrm/contact'
-  import { getCurrentAccount } from '@anticrm/core'
+  import { AccountRole, getCurrentAccount } from '@anticrm/core'
   import login from '@anticrm/login'
   import { Avatar, createQuery } from '@anticrm/presentation'
   import setting, { settingId, SettingsCategory } from '@anticrm/setting'
@@ -36,7 +36,7 @@
     setting.class.SettingsCategory,
     {},
     (res) => {
-      items = account.owner ? res : res.filter((p) => p.secured === false)
+      items = account.role > AccountRole.User ? res : res.filter((p) => p.secured === false)
     },
     { sort: { order: 1 } }
   )

@@ -15,10 +15,9 @@
 <script lang="ts">
   import contact, { Employee, EmployeeAccount } from '@anticrm/contact'
   import { PersonPresenter } from '@anticrm/contact-resources'
-  import { Ref, SortingOrder } from '@anticrm/core'
+  import { AccountRole, getCurrentAccount, Ref, SortingOrder } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
-  import { Icon, Label } from '@anticrm/ui'
-  import { BooleanEditor } from '@anticrm/view-resources'
+  import { DropdownIntlItem, DropdownLabelsIntl, Icon, Label } from '@anticrm/ui'
   import setting from '../plugin'
 
   const client = getClient()
@@ -26,8 +25,16 @@
   const query = createQuery()
   const employeeQuery = createQuery()
 
+  const currentRole = getCurrentAccount().role
+
+  const items: DropdownIntlItem[] = [
+    { id: AccountRole.User.toString(), label: setting.string.User },
+    { id: AccountRole.Maintainer.toString(), label: setting.string.Maintainer },
+    { id: AccountRole.Owner.toString(), label: setting.string.Owner }
+  ]
+
   let accounts: EmployeeAccount[] = []
-  $: owners = accounts.filter((p) => p.owner)
+  $: owners = accounts.filter((p) => p.role === AccountRole.Owner)
   let employees: Map<Ref<Employee>, Employee> = new Map<Ref<Employee>, Employee>()
 
   query.query(
@@ -49,9 +56,9 @@
     )
   })
 
-  async function change (account: EmployeeAccount, value: boolean): Promise<void> {
+  async function change (account: EmployeeAccount, value: AccountRole): Promise<void> {
     await client.update(account, {
-      owner: value
+      role: value
     })
   }
 </script>
@@ -66,14 +73,15 @@
       {#each accounts as account (account._id)}
         <div class="flex-between">
           <PersonPresenter value={employees.get(account.employee)} isInteractive={false} />
-          <BooleanEditor
+          <DropdownLabelsIntl
+            label={setting.string.Role}
+            disabled={account.role > currentRole || (account.role === AccountRole.Owner && owners.length === 1)}
             kind={'transparent'}
             size={'medium'}
-            disabled={account.owner && owners.length === 1}
-            withoutUndefined
-            value={account.owner}
-            onChange={(value) => {
-              change(account, value)
+            {items}
+            selected={account.role.toString()}
+            on:selected={(e) => {
+              change(account, Number(e.detail))
             }}
           />
         </div>

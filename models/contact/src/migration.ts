@@ -14,7 +14,7 @@
 //
 
 import { Employee, EmployeeAccount } from '@anticrm/contact'
-import { DOMAIN_TX, TxCreateDoc, TxOperations } from '@anticrm/core'
+import { AccountRole, DOMAIN_TX, TxCreateDoc, TxOperations } from '@anticrm/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
 import core from '@anticrm/model-core'
 import contact, { DOMAIN_CONTACT } from './index'
@@ -83,7 +83,7 @@ async function setActiveEmployeeTx (client: MigrationClient): Promise<void> {
   )
 }
 
-async function setOwner (client: MigrationClient): Promise<void> {
+async function setRole (client: MigrationClient): Promise<void> {
   await client.update<TxCreateDoc<EmployeeAccount>>(
     DOMAIN_TX,
     {
@@ -91,7 +91,7 @@ async function setOwner (client: MigrationClient): Promise<void> {
       objectClass: contact.class.Employee
     },
     {
-      'attributes.owner': false
+      'attributes.role': AccountRole.User
     }
   )
 }
@@ -99,7 +99,7 @@ async function setOwner (client: MigrationClient): Promise<void> {
 export const contactOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await setActiveEmployee(client)
-    await setOwner(client)
+    await setRole(client)
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)

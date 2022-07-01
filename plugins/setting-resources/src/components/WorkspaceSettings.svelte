@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { EmployeeAccount } from '@anticrm/contact'
-  import { getCurrentAccount } from '@anticrm/core'
+  import { AccountRole, getCurrentAccount } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
   import setting, { SettingsCategory } from '@anticrm/setting'
   import { Component, Label } from '@anticrm/ui'
@@ -31,7 +31,7 @@
     setting.class.WorkspaceSettingCategory,
     {},
     (res) => {
-      categories = account.owner ? res : res.filter((p) => p.secured === false)
+      categories = account.role > AccountRole.User ? res : res.filter((p) => p.secured === false)
       category = findCategory(categoryId)
     },
     { sort: { order: 1 } }

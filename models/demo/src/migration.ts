@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import core, { TxOperations } from '@anticrm/core'
+import core, { AccountRole, TxOperations } from '@anticrm/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
 import contact, { EmployeeAccount } from '@anticrm/contact'
 import recruit from '@anticrm/model-recruit'
@@ -62,7 +62,7 @@ export const demoOperation: MigrateOperation = {
         email: 'rosamund@hc.engineering',
         employee,
         name: 'Chen,Rosamund',
-        owner: true
+        role: AccountRole.Owner
       })
     }
 

@@ -49,6 +49,10 @@
     "Owners": "Владельцы",
     "WorkspaceSetting": "Рабочее пространство",
     "Select": "Выбрать",
-    "AddOwner": "Добавить владельца"
+    "AddOwner": "Добавить владельца",
+    "User": "Пользователь",
+    "Maintainer": "Maintainer",
+    "Owner": "Владелец",
+    "Role": "Роль"
   }
 }

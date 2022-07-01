@@ -43,6 +43,10 @@ export default mergeIds(settingId, setting, {
     Leave: '' as IntlString,
     LeaveDescr: '' as IntlString,
     Select: '' as IntlString,
-    AddOwner: '' as IntlString
+    AddOwner: '' as IntlString,
+    User: '' as IntlString,
+    Maintainer: '' as IntlString,
+    Owner: '' as IntlString,
+    Role: '' as IntlString
   }
 })

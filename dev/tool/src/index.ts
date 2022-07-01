@@ -23,7 +23,7 @@ import {
   dropWorkspace,
   getAccount,
   getWorkspace,
-  setOwner,
+  setRole,
   listAccounts,
   listWorkspaces,
   upgradeWorkspace
@@ -116,11 +116,11 @@ program
   })
 
 program
-  .command('set-workspace-owner <email> <workspace>')
-  .description('set workspace ownner')
-  .action(async (email: string, workspace: string, cmd) => {
-    console.log(`set user ${email} as ${workspace} owner...`)
-    await setOwner(email, workspace)
+  .command('set-user-role <email> <workspace> <role>')
+  .description('set user role')
+  .action(async (email: string, workspace: string, role: number, cmd) => {
+    console.log(`set user ${email} role for ${workspace}...`)
+    await setRole(email, workspace, role)
   })
 
 program

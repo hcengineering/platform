@@ -27,7 +27,7 @@
   import { onDestroy } from 'svelte'
   import CategoryElement from './CategoryElement.svelte'
   import login from '@anticrm/login'
-  import { getCurrentAccount } from '@anticrm/core'
+  import { AccountRole, getCurrentAccount } from '@anticrm/core'
   import { EmployeeAccount } from '@anticrm/contact'
 
   let category: SettingsCategory | undefined
@@ -41,7 +41,7 @@
     setting.class.SettingsCategory,
     {},
     (res) => {
-      categories = account.owner ? res : res.filter((p) => p.secured === false)
+      categories = account.role > AccountRole.User ? res : res.filter((p) => p.secured === false)
       category = findCategory(categoryId)
     },
     { sort: { order: 1 } }
@@ -90,6 +90,7 @@
         icon={category.icon}
         label={category.label}
         selected={category.name === categoryId}
+        expandable={category._id === setting.ids.Setting}
         on:click={() => {
           selectCategory(category.name)
         }}
