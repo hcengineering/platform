@@ -38,7 +38,7 @@
       <Circles />
     </div>
     <div class="flex-no-shrink ml-2">
-      <Icon {icon} size="small" fill="red" />
+      <Icon {icon} size="small" />
     </div>
     <span class="content-accent-color ml-2">{value.name}</span>
     {#if value.description}

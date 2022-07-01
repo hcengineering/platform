@@ -77,7 +77,13 @@
   }
 
   async function editStatus () {
-    if (editingStatus?.name && editingStatus?.category && workflowStatuses && '_id' in editingStatus) {
+    if (
+      workflowStatuses &&
+      statusCategories &&
+      editingStatus?.name &&
+      editingStatus?.category &&
+      '_id' in editingStatus
+    ) {
       const statusId = '_id' in editingStatus ? editingStatus._id : undefined
       const status = statusId && workflowStatuses.find(({ _id }) => _id === statusId)
 
@@ -93,7 +99,15 @@
         updates.description = editingStatus.description
       }
       if (status.color !== editingStatus.color) {
-        updates.color = editingStatus.color
+        if (status.color === undefined) {
+          const category = statusCategories.find(c => c._id === editingStatus?.category)
+
+          if (category && editingStatus.color !== category.color) {
+            updates.color = editingStatus.color
+          }
+        } else {
+          updates.color = editingStatus.color
+        }
       }
 
       if (Object.keys(updates).length > 0) {
@@ -177,14 +191,13 @@
     if (workflowStatuses && draggingStatus?._id !== toItem._id && draggingStatus?.category === toItem.category) {
       const fromIndex = getStatusIndex(draggingStatus)
       const toIndex = getStatusIndex(toItem)
-      const status = workflowStatuses[fromIndex]
       const [prev, next] = [
         workflowStatuses[fromIndex < toIndex ? toIndex : toIndex - 1],
         workflowStatuses[fromIndex < toIndex ? toIndex + 1 : toIndex]
       ]
 
       isSaving = true
-      await client.update(status, { rank: calcRank(prev, next) })
+      await client.update(draggingStatus, { rank: calcRank(prev, next) })
       isSaving = false
     }
 
