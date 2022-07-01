@@ -17,6 +17,7 @@ HR:
 Tracker:
 - Manual issues ordering
 - Issue relations
+- Issue status management
 
 Workbench
 - Use application aliases in URL
