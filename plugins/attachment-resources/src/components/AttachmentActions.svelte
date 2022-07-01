@@ -47,6 +47,13 @@
               const impl = await getResource(saveAttachmentAction.action)
               await impl(attachment, evt)
             }
+          },
+          {
+            label: attachmentPlugin.string.DeleteFile,
+            action: async (evt: MouseEvent) => {
+              const impl = await getResource(attachmentPlugin.actionImpl.DeleteAttachment)
+              await impl(attachment, evt)
+            }
           }
         ]
       },
