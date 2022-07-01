@@ -45,6 +45,14 @@
     "Enums": "Enums",
     "NewValue": "New value",
     "Leave": "Leave workspace",
-    "LeaveDescr": "Are you sure you want to leave the workspace? This action cannot be undone."
+    "LeaveDescr": "Are you sure you want to leave the workspace? This action cannot be undone.",
+    "Owners": "Owners",
+    "WorkspaceSetting": "Workspace",
+    "Select": "Select",
+    "AddOwner": "Add owner",
+    "User": "User",
+    "Maintainer": "Maintainer",
+    "Owner": "Owner",
+    "Role": "Role"
   }
 }

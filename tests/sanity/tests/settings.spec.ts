@@ -14,9 +14,7 @@ test.describe('contact tests', () => {
     await page.goto(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp`)
     // Click #profile-button
     await page.click('#profile-button')
-    await page.click('.antiPopup-submenu >> text=Settings')
-    // Click button:has-text("Setting")
-    await page.click('button:has-text("Setting")')
+    await page.click('text=Workspace')
     await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/setting/setting`)
     // Click text=Edit profile
     await page.click('text=Edit profile')
@@ -43,12 +41,8 @@ test.describe('contact tests', () => {
     await page.goto(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp`)
     // Click #profile-button
     await page.click('#profile-button')
-    await page.click('.antiPopup-submenu >> text=Settings')
-    // Click button:has-text("Templates")
-    await page.click('button:has-text("Templates")')
-    await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/setting/message-templates`)
-    // Go to http://localhost:8083/workbench%3Acomponent%3AWorkbenchApp/setting/message-templates
-    await page.goto(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/setting/message-templates`)
+    await page.click('text=Workspace')
+    await page.click('text=Templates')
     // Click .flex-center.icon-button
     await page.click('#create-template >> .flex-center.icon-button')
     // Click [placeholder="New\ template"]
@@ -76,10 +70,9 @@ test.describe('contact tests', () => {
     await page.goto(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp`)
     // Click #profile-button
     await page.click('#profile-button')
-    await page.click('.antiPopup-submenu >> text=Settings')
+    await page.click('text=Workspace')
     // Click button:has-text("Manage Statuses")
-    await page.click('button:has-text("Manage Statuses")')
-    await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/setting/statuses`)
+    await page.click('text="Manage Statuses"')
     // Click text=Vacancies
     await page.click('text=Vacancies')
     // Click #create-template div

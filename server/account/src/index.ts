@@ -14,7 +14,7 @@
 //
 
 import contact, { combineName, Employee } from '@anticrm/contact'
-import core, { Ref, TxOperations } from '@anticrm/core'
+import core, { AccountRole, Ref, TxOperations } from '@anticrm/core'
 import platform, {
   getMetadata,
   PlatformError,
@@ -380,6 +380,7 @@ export async function createUserWorkspace (db: Db, token: string, workspace: str
   const { email } = decodeToken(token)
   await createWorkspace(db, workspace, '')
   await assignWorkspace(db, email, workspace)
+  await setRole(email, workspace, AccountRole.Owner)
   const result = {
     endpoint: getEndpoint(),
     email,
@@ -448,6 +449,26 @@ async function getWorkspaceAndAccount (
 /**
  * @public
  */
+export async function setRole (email: string, workspace: string, role: AccountRole): Promise<void> {
+  const connection = await connect(getTransactor(), workspace, email)
+  try {
+    const ops = new TxOperations(connection, core.account.System)
+
+    const existingAccount = await ops.findOne(contact.class.EmployeeAccount, { email })
+
+    if (existingAccount !== undefined) {
+      await ops.update(existingAccount, {
+        role
+      })
+    }
+  } finally {
+    await connection.close()
+  }
+}
+
+/**
+ * @public
+ */
 export async function assignWorkspace (db: Db, email: string, workspace: string): Promise<void> {
   const { workspaceId, accountId } = await getWorkspaceAndAccount(db, email, workspace)
   // Add account into workspace.
@@ -485,7 +506,8 @@ async function createEmployeeAccount (account: Account, workspace: string): Prom
       await ops.createDoc(contact.class.EmployeeAccount, core.space.Model, {
         email: account.email,
         employee,
-        name
+        name,
+        role: 0
       })
     } else {
       const employee = await ops.findOne(contact.class.Employee, { _id: existingAccount.employee })

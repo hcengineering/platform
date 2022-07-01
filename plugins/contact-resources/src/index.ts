@@ -58,6 +58,7 @@ export {
   OrganizationSelector,
   ChannelsDropdown,
   EmployeePresenter,
+  PersonPresenter,
   EmployeeBrowser,
   MemberPresenter,
   EmployeeEditor

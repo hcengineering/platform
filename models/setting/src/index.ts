@@ -40,6 +40,16 @@ export class TSettingsCategory extends TDoc implements SettingsCategory {
   label!: IntlString
   icon!: Asset
   component!: AnyComponent
+  secured!: boolean
+}
+
+@Model(setting.class.WorkspaceSettingCategory, core.class.Doc, DOMAIN_MODEL)
+export class TWorkspaceSettingCategory extends TDoc implements SettingsCategory {
+  name!: string
+  label!: IntlString
+  icon!: Asset
+  component!: AnyComponent
+  secured!: boolean
 }
 
 @Model(setting.class.IntegrationType, core.class.Doc, DOMAIN_MODEL)
@@ -56,7 +66,7 @@ export class TIntegrationType extends TDoc implements IntegrationType {
 export class TEditable extends TClass implements Editable {}
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TIntegration, TIntegrationType, TSettingsCategory, TEditable)
+  builder.createModel(TIntegration, TIntegrationType, TSettingsCategory, TWorkspaceSettingCategory, TEditable)
 
   builder.createDoc(
     setting.class.SettingsCategory,
@@ -66,7 +76,8 @@ export function createModel (builder: Builder): void {
       label: setting.string.EditProfile,
       icon: setting.icon.EditProfile,
       component: setting.component.Profile,
-      order: 0
+      order: 0,
+      secured: false
     },
     setting.ids.Profile
   )
@@ -79,7 +90,8 @@ export function createModel (builder: Builder): void {
       label: setting.string.ChangePassword,
       icon: setting.icon.Password,
       component: setting.component.Password,
-      order: 1000
+      order: 1000,
+      secured: false
     },
     setting.ids.Password
   )
@@ -88,10 +100,11 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       name: 'setting',
-      label: setting.string.Setting,
+      label: setting.string.WorkspaceSetting,
       icon: setting.icon.Setting,
-      component: setting.component.Setting,
-      order: 2000
+      component: setting.component.WorkspaceSettings,
+      order: 2000,
+      secured: false
     },
     setting.ids.Setting
   )
@@ -103,43 +116,60 @@ export function createModel (builder: Builder): void {
       label: setting.string.Integrations,
       icon: setting.icon.Integrations,
       component: setting.component.Integrations,
-      order: 3000
+      order: 3000,
+      secured: false
     },
     setting.ids.Integrations
   )
   builder.createDoc(
-    setting.class.SettingsCategory,
+    setting.class.WorkspaceSettingCategory,
+    core.space.Model,
+    {
+      name: 'owners',
+      label: setting.string.Owners,
+      icon: setting.icon.Password,
+      component: setting.component.Owners,
+      order: 1000,
+      secured: true
+    },
+    setting.ids.Owners
+  )
+  builder.createDoc(
+    setting.class.WorkspaceSettingCategory,
     core.space.Model,
     {
       name: 'statuses',
       label: setting.string.ManageStatuses,
       icon: task.icon.ManageStatuses,
       component: setting.component.ManageStatuses,
-      order: 4000
+      order: 4000,
+      secured: false
     },
     setting.ids.ManageStatuses
   )
   builder.createDoc(
-    setting.class.SettingsCategory,
+    setting.class.WorkspaceSettingCategory,
     core.space.Model,
     {
       name: 'classes',
       label: setting.string.ClassSetting,
       icon: setting.icon.Setting,
       component: setting.component.ClassSetting,
-      order: 4500
+      order: 4500,
+      secured: false
     },
     setting.ids.ClassSetting
   )
   builder.createDoc(
-    setting.class.SettingsCategory,
+    setting.class.WorkspaceSettingCategory,
     core.space.Model,
     {
       name: 'enums',
       label: setting.string.Enums,
       icon: setting.icon.Setting,
       component: setting.component.EnumSetting,
-      order: 4600
+      order: 4600,
+      secured: false
     },
     setting.ids.EnumSetting
   )
@@ -151,7 +181,8 @@ export function createModel (builder: Builder): void {
       label: setting.string.Support,
       icon: setting.icon.Support,
       component: setting.component.Support,
-      order: 5000
+      order: 5000,
+      secured: false
     },
     setting.ids.Support
   )
@@ -163,7 +194,8 @@ export function createModel (builder: Builder): void {
       label: setting.string.Privacy,
       icon: setting.icon.Privacy,
       component: setting.component.Privacy,
-      order: 6000
+      order: 6000,
+      secured: false
     },
     setting.ids.Privacy
   )
@@ -175,7 +207,8 @@ export function createModel (builder: Builder): void {
       label: setting.string.Terms,
       icon: setting.icon.Terms,
       component: setting.component.Terms,
-      order: 10000
+      order: 10000,
+      secured: false
     },
     setting.ids.Terms
   )

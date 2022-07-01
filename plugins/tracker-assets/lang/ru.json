@@ -3,6 +3,8 @@
     "TrackerApplication": "Трекер",
     "Teams": "Команды",
     "More": "Больше",
+    "Default": "По умолчанию",
+    "MakeDefault": "Установить по умолчанию",
     "Delete": "Удалить",
     "Open": "Открыть",
     "Members": "Участиники",
@@ -60,6 +62,7 @@
     "CategoryCanceled": "Отменённые",
 
     "Title": "Заголовок",
+    "Name": "Имя",
     "Description": "Описание",
     "Status": "Статус",
     "Number": "Номер",
@@ -157,6 +160,14 @@
     "Related": "Связан",
 
     "EditIssue": "Редактирование {title}",
+    "EditWorkflowStatuses": "Редактировать статусы задач",
+    "ManageWorkflowStatuses": "Управлять статусами задач для команды",
+    "AddWorkflowStatus": "Добавить статус задачи",
+    "EditWorkflowStatus": "Редактировать статус задачи",
+    "DeleteWorkflowStatus": "Удалить статус задачи",
+    "DeleteWorkflowStatusConfirm": "Вы действительно хотите удалить \"{status}\" статус?",
+    "DeleteWorkflowStatusError": "Невозможно удалить статус задачи",
+    "DeleteWorkflowStatusErrorDescription": "Статус \"{status}\" {count, plural, =1 {имеет 1 задача} other {имеют # задачи}}. Пожалуйста, архивируйте или переместите {count, plural, =1 {ее} other {их}} перед удалением этого статуса.",
 
     "Save": "Сохранить",
     "IncludeItemsThatMatch": "Включить элементы, которые соответствуют",
