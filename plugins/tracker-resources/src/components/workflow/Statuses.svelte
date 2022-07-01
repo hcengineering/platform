@@ -100,7 +100,7 @@
       }
       if (status.color !== editingStatus.color) {
         if (status.color === undefined) {
-          const category = statusCategories.find(c => c._id === editingStatus?.category)
+          const category = statusCategories.find((c) => c._id === editingStatus?.category)
 
           if (category && editingStatus.color !== category.color) {
             updates.color = editingStatus.color
