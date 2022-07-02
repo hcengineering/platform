@@ -149,6 +149,7 @@
             class="ap-menuItem antiPopup-submenu withIconHover"
             class:hover={btns[i] === activeElement}
             on:mouseover={() => focusTarget(action, btns[i])}
+            on:click={() => focusTarget(action, btns[i])}
           >
             {#if action.icon}
               <div class="icon mr-3"><Icon icon={action.icon} size={'small'} /></div>

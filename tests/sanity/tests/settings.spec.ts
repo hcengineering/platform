@@ -41,7 +41,10 @@ test.describe('contact tests', () => {
     await page.goto(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp`)
     // Click #profile-button
     await page.click('#profile-button')
+    // Click button:has-text("Settings")
+    await page.hover('button:has-text("Settings")')
     await page.click('button:has-text("Settings")')
+    // Click text=Workspace Integrations >> button
     await page.click('text=Workspace Integrations >> button')
     await page.click('text=Templates')
     // Click .flex-center.icon-button
@@ -72,6 +75,7 @@ test.describe('contact tests', () => {
     // Click #profile-button
     await page.click('#profile-button')
     // await page.click('text=Workspace')
+    await page.hover('button:has-text("Settings")')
     await page.click('button:has-text("Settings")')
     await page.click('text=Workspace Integrations >> button')
     // Click button:has-text("Manage Statuses")
