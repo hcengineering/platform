@@ -158,7 +158,6 @@
   }
 
   function getTooltip (requests: Request[], employee: Staff, date: Date): LabelAndProps | undefined {
-    debugger
     if (requests.length === 0) return
     const endDate = getEndDate(date)
     return {
