@@ -69,7 +69,10 @@ export const demoOperation: MigrateOperation = {
       objectClass: contact.class.EmployeeAccount,
       'attributes.email': 'rosamund@hc.engineering'
     })
-    if (tx === undefined) {
+    const current = await ops.findOne(contact.class.EmployeeAccount, {
+      email: 'rosamund@hc.engineering'
+    })
+    if (tx === undefined && current === undefined) {
       const employee = await ops.createDoc(contact.class.Employee, contact.space.Employee, {
         name: 'Chen,Rosamund',
         city: 'Mountain View',
