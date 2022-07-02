@@ -1,12 +1,12 @@
 <script lang="ts">
   import { Employee } from '@anticrm/contact'
-  import EmployeeStatusPresenter from './EmployeeStatusPresenter.svelte'
-  import PersonPresenter from '../components/PersonPresenter.svelte'
-  import { showPopup } from '@anticrm/ui'
-  import EmployeePreviewPopup from './EmployeePreviewPopup.svelte'
   import { WithLookup } from '@anticrm/core'
   import { IntlString } from '@anticrm/platform'
   import type { AnyComponent, AnySvelteComponent } from '@anticrm/ui'
+  import { showPopup } from '@anticrm/ui'
+  import PersonPresenter from '../components/PersonPresenter.svelte'
+  import EmployeePreviewPopup from './EmployeePreviewPopup.svelte'
+  import EmployeeStatusPresenter from './EmployeeStatusPresenter.svelte'
 
   export let value: WithLookup<Employee> | null | undefined
   export let tooltipLabels:

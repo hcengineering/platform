@@ -50,7 +50,7 @@ test.describe('contact tests', () => {
     // Click .flex-center.icon-button
     await page.click('#create-template >> .flex-center.icon-button')
     // Click [placeholder="New\ template"]
-    await page.click('[placeholder="New\\ template"]')
+    // await page.click('[placeholder="New\\ template"]')
     // Fill [placeholder="New\ template"]
     await page.fill('[placeholder="New\\ template"]', 't1')
 

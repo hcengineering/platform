@@ -49,7 +49,7 @@
     <span class="antiSection-header__title">
       <Label label={recruit.string.Applications} />
     </span>
-    <Button icon={IconAdd} kind={'transparent'} shape={'circle'} on:click={createApp} />
+    <Button id="appls.add" icon={IconAdd} kind={'transparent'} shape={'circle'} on:click={createApp} />
   </div>
   {#if applications > 0}
     <Table

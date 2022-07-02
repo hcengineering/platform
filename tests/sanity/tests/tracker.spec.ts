@@ -49,6 +49,7 @@ async function fillIssueForm (
 }
 
 async function createIssue (page: Page, props: IssueProps): Promise<void> {
+  await page.waitForSelector('span:has-text("Default")')
   await page.click('button:has-text("New issue")')
   await fillIssueForm(page, props)
   await page.click('button:has-text("Save issue")')

@@ -52,13 +52,10 @@ export const demoOperation: MigrateOperation = {
       objectClass: contact.class.EmployeeAccount,
       'attributes.email': 'rosamund@hc.engineering'
     })
-    const currentEmployees = new Set(
-      ...(
-        await client.find(DOMAIN_CONTACT, {
-          _id: { $in: rosamunds.map((p) => p.attributes.employee) }
-        })
-      ).map((p) => p._id)
-    )
+    const docs = await client.find(DOMAIN_CONTACT, {
+      _id: { $in: rosamunds.map((p) => p.attributes.employee) }
+    })
+    const currentEmployees = new Set(docs.map((p) => p._id))
     for (const rosamund of rosamunds) {
       if (!currentEmployees.has(rosamund.attributes.employee)) await client.delete(DOMAIN_TX, rosamund._id)
     }
