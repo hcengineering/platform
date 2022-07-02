@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { Class, Doc, DocumentQuery, FindOptions, Ref } from '@anticrm/core'
+  import { Class, Doc, DocumentQuery, FindOptions, Hierarchy, Ref } from '@anticrm/core'
   import { Asset, IntlString } from '@anticrm/platform'
-  import { getClient, ObjectPopup } from '@anticrm/presentation'
+  import { getClient, ObjectPopup, updateAttribute } from '@anticrm/presentation'
   import { Label, SelectPopup } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import view from '../plugin'
@@ -41,7 +41,17 @@
     const c = getClient()
 
     const changed = (d: Doc) => (d as any)[attribute] !== newStatus
-    await Promise.all(docs.filter(changed).map((it) => c.update(it, { [attribute]: newStatus })))
+    await Promise.all(
+      docs.filter(changed).map((it) => {
+        // c.update(it, { [attribute]: newStatus } )
+        const cl = Hierarchy.mixinOrClass(it)
+        const attr = c.getHierarchy().getAttribute(cl, attribute)
+        if (attr === undefined) {
+          throw new Error('attribute not found')
+        }
+        return updateAttribute(c, it, cl, { key: attribute, attr }, newStatus)
+      })
+    )
 
     dispatch('close', newStatus)
   }

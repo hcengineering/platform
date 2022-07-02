@@ -13,15 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Employee } from '@anticrm/contact'
   import contact from '@anticrm/contact'
   import { Ref, WithLookup } from '@anticrm/core'
   import { Department, Staff } from '@anticrm/hr'
-  import { createQuery, getClient, MessageBox, UsersPopup } from '@anticrm/presentation'
+  import { createQuery, getClient, UsersPopup } from '@anticrm/presentation'
   import { Button, eventToHTMLElement, IconAdd, Label, Scroller, showPopup } from '@anticrm/ui'
   import view, { Viewlet, ViewletPreference } from '@anticrm/view'
   import { Table, ViewletSettingButton } from '@anticrm/view-resources'
   import hr from '../plugin'
+  import { addMember } from '../utils'
 
   export let objectId: Ref<Department> | undefined
   let value: Department | undefined
@@ -50,7 +50,7 @@
         ignoreUsers: memberItems.map((it) => it._id)
       },
       eventToHTMLElement(e),
-      addMember
+      (res) => addMember(client, res, value)
     )
   }
 
@@ -60,50 +60,6 @@
   $: membersQuery.query(hr.mixin.Staff, { department: objectId }, (result) => {
     memberItems = result
   })
-
-  async function addMember (employee: Employee | undefined): Promise<void> {
-    if (employee === null || employee === undefined || value === undefined) {
-      return
-    }
-
-    const hierarchy = client.getHierarchy()
-    if (!hierarchy.hasMixin(employee, hr.mixin.Staff)) {
-      await client.createMixin(employee._id, employee._class, employee.space, hr.mixin.Staff, {
-        department: value._id
-      })
-    } else {
-      const staff = hierarchy.as(employee, hr.mixin.Staff)
-      if (staff.department === value._id) return
-      const current = await client.findOne(hr.class.Department, {
-        _id: staff.department
-      })
-      if (current !== undefined) {
-        showPopup(
-          MessageBox,
-          {
-            label: hr.string.MoveStaff,
-            message: hr.string.MoveStaffDescr,
-            params: {
-              current: current.name,
-              department: value.name
-            }
-          },
-          undefined,
-          async (res?: boolean) => {
-            if (res === true && value !== undefined) {
-              await client.updateMixin(employee._id, employee._class, employee.space, hr.mixin.Staff, {
-                department: value._id
-              })
-            }
-          }
-        )
-      } else {
-        await client.updateMixin(employee._id, employee._class, employee.space, hr.mixin.Staff, {
-          department: value._id
-        })
-      }
-    }
-  }
 
   const preferenceQuery = createQuery()
   let preference: ViewletPreference | undefined
