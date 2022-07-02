@@ -70,7 +70,7 @@ export interface Action {
   link?: string
 
   // Submenu component
-  component?: AnyComponent | AnySvelteComponent | SvelteComponent
+  component?: AnyComponent | AnySvelteComponent
   props?: Record<string, any>
 
   group?: string

@@ -14,10 +14,10 @@ test.describe('contact tests', () => {
     await page.goto(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp`)
     // Click #profile-button
     await page.click('#profile-button')
-    await page.click('text=Workspace')
-    await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/setting/setting`)
+    await page.click('text=John Appleseed')
+    // await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/setting/setting`)
     // Click text=Edit profile
-    await page.click('text=Edit profile')
+    // await page.click('text=Edit profile')
     await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/setting/profile`)
     // Click [placeholder="Location"]
     await page.click('[placeholder="Location"]')
@@ -41,7 +41,8 @@ test.describe('contact tests', () => {
     await page.goto(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp`)
     // Click #profile-button
     await page.click('#profile-button')
-    await page.click('text=Workspace')
+    await page.click('button:has-text("Settings")')
+    await page.click('text=Workspace Integrations >> button')
     await page.click('text=Templates')
     // Click .flex-center.icon-button
     await page.click('#create-template >> .flex-center.icon-button')
@@ -70,7 +71,9 @@ test.describe('contact tests', () => {
     await page.goto(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp`)
     // Click #profile-button
     await page.click('#profile-button')
-    await page.click('text=Workspace')
+    // await page.click('text=Workspace')
+    await page.click('button:has-text("Settings")')
+    await page.click('text=Workspace Integrations >> button')
     // Click button:has-text("Manage Statuses")
     await page.click('text="Manage Statuses"')
     // Click text=Vacancies
