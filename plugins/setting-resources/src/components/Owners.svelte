@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Employee, EmployeeAccount } from '@anticrm/contact'
+  import contact, { Employee, EmployeeAccount, formatName } from '@anticrm/contact'
   import { PersonPresenter } from '@anticrm/contact-resources'
   import { AccountRole, getCurrentAccount, Ref, SortingOrder } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
@@ -71,8 +71,13 @@
   <div class="ac-body columns">
     <div class="ac-column max">
       {#each accounts as account (account._id)}
+        {@const employee = employees.get(account.employee)}
         <div class="flex-between">
-          <PersonPresenter value={employees.get(account.employee)} isInteractive={false} />
+          {#if employee}
+            <PersonPresenter value={employee} isInteractive={false} />
+          {:else}
+            {formatName(account.name)}
+          {/if}
           <DropdownLabelsIntl
             label={setting.string.Role}
             disabled={account.role > currentRole || (account.role === AccountRole.Owner && owners.length === 1)}
