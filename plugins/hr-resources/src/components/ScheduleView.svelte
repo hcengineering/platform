@@ -157,8 +157,7 @@
       : new Date(date).setDate(date.getDate() + 1)
   }
 
-  function getTooltip (employee: Staff, date: Date): LabelAndProps | undefined {
-    const requests = getRequests(employee._id, date)
+  function getTooltip (requests: Request[], employee: Staff, date: Date): LabelAndProps | undefined {
     if (requests.length === 0) return
     const endDate = getEndDate(date)
     return {
@@ -234,31 +233,37 @@
               {#if mode === CalendarMode.Year}
                 {@const month = getMonth(currentDate, value)}
                 {@const requests = getRequests(employee._id, month)}
-                <td
-                  class:today={month.getFullYear() === todayDate.getFullYear() &&
-                    month.getMonth() === todayDate.getMonth()}
-                  class="fixed"
-                  use:tooltip={getTooltip(employee, month)}
-                >
-                  <div class="flex-center">
-                    {getTotal(requests)}
-                  </div>
-                </td>
+                {@const tooltipValue = getTooltip(requests, employee, month)}
+                {#key tooltipValue}
+                  <td
+                    class:today={month.getFullYear() === todayDate.getFullYear() &&
+                      month.getMonth() === todayDate.getMonth()}
+                    class="fixed"
+                    use:tooltip={tooltipValue}
+                  >
+                    <div class="flex-center">
+                      {getTotal(requests)}
+                    </div>
+                  </td>
+                {/key}
               {:else}
                 {@const date = getDay(new Date(startDate), value)}
                 {@const requests = getRequests(employee._id, date)}
                 {@const editable = isEditable(employee)}
-                <td
-                  class:today={areDatesEqual(todayDate, date)}
-                  class:weekend={isWeekend(date)}
-                  class:cursor-pointer={editable}
-                  use:tooltip={getTooltip(employee, date)}
-                  on:click={(e) => createRequest(e, date, employee)}
-                >
-                  {#if requests.length}
-                    <ScheduleRequests {requests} {date} {editable} />
-                  {/if}
-                </td>
+                {@const tooltipValue = getTooltip(requests, employee, date)}
+                {#key [tooltipValue, editable]}
+                  <td
+                    class:today={areDatesEqual(todayDate, date)}
+                    class:weekend={isWeekend(date)}
+                    class:cursor-pointer={editable}
+                    use:tooltip={tooltipValue}
+                    on:click={(e) => createRequest(e, date, employee)}
+                  >
+                    {#if requests.length}
+                      <ScheduleRequests {requests} {date} {editable} />
+                    {/if}
+                  </td>
+                {/key}
               {/if}
             {/each}
           </tr>
