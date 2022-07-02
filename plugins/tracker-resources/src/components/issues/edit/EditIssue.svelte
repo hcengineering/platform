@@ -20,7 +20,17 @@
   import { getResource } from '@anticrm/platform'
   import presentation, { createQuery, getClient, MessageViewer } from '@anticrm/presentation'
   import type { Issue, IssueStatus, Team } from '@anticrm/tracker'
-  import { Button, EditBox, IconEdit, IconMoreH, Label, Scroller, showPopup, Spinner } from '@anticrm/ui'
+  import {
+    Button,
+    EditBox,
+    IconAttachment,
+    IconEdit,
+    IconMoreH,
+    Label,
+    Scroller,
+    showPopup,
+    Spinner
+  } from '@anticrm/ui'
   import { ContextMenu, UpDownNavigator } from '@anticrm/view-resources'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import tracker from '../../../plugin'
