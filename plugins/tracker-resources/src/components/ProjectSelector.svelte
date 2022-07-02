@@ -36,39 +36,32 @@
   let defaultProjectLabel = ''
 
   const query = createQuery()
-  let projects: Map<Ref<Project>, Project> = new Map<Ref<Project>, Project>()
+  let rawProjects: Project[] = []
   query.query(
     tracker.class.Project,
     {},
     (res) => {
-      projects = new Map(
-        res.map((p) => {
-          return [p._id, p]
-        })
-      )
+      rawProjects = res
     },
     {
       sort: { modifiedOn: SortingOrder.Ascending }
     }
   )
 
-  $: handleSelectedProjectIdUpdated(value, projects)
+  $: handleSelectedProjectIdUpdated(value, rawProjects)
 
   $: translate(tracker.string.Project, {}).then((result) => (defaultProjectLabel = result))
   $: projectIcon = selectedProject?.icon ?? tracker.icon.Projects
   $: projectText = shouldShowLabel ? selectedProject?.label ?? defaultProjectLabel : undefined
 
-  const handleSelectedProjectIdUpdated = async (
-    newProjectId: Ref<Project> | null | undefined,
-    projects: Map<Ref<Project>, Project>
-  ) => {
+  const handleSelectedProjectIdUpdated = async (newProjectId: Ref<Project> | null | undefined, projects: Project[]) => {
     if (newProjectId === null || newProjectId === undefined) {
       selectedProject = undefined
 
       return
     }
 
-    selectedProject = projects.get(newProjectId)
+    selectedProject = projects.find((it) => it._id === newProjectId)
   }
 
   const handleProjectEditorOpened = async (event: MouseEvent): Promise<void> => {
@@ -79,7 +72,7 @@
 
     const projectsInfo = [
       { id: null, icon: tracker.icon.Projects, label: tracker.string.NoProject },
-      ...Array.from(projects.values()).map((p) => ({
+      ...rawProjects.map((p) => ({
         id: p._id,
         icon: p.icon,
         text: p.label

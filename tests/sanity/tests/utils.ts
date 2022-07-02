@@ -12,7 +12,7 @@ function toHex (value: number, chars: number): string {
   return result
 }
 
-let counter = (Math.random() * (1 << 24)) | 0
+let counter = 0
 const random = toHex((Math.random() * (1 << 24)) | 0, 6) + toHex((Math.random() * (1 << 16)) | 0, 4)
 
 function timestamp (): string {
