@@ -78,7 +78,7 @@ test.describe('recruit tests', () => {
 
     // Click on Add button
     // await page.click('.applications-container .flex-row-center .flex-center')
-    await page.click('text=Applications There are no applications for this talent. New Application >> button')
+    await page.click('button[id="appls.add"]')
 
     await page.click('button:has-text("Vacancy")')
 

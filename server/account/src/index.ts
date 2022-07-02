@@ -457,8 +457,9 @@ export async function setRole (email: string, workspace: string, role: AccountRo
     const existingAccount = await ops.findOne(contact.class.EmployeeAccount, { email })
 
     if (existingAccount !== undefined) {
+      const value = isNaN(Number(role)) ? 0 : Number(role)
       await ops.update(existingAccount, {
-        role
+        role: value
       })
     }
   } finally {

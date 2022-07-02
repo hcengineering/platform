@@ -14,8 +14,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Contact, Organization } from '@anticrm/contact'
+  import { Contact, Employee, Organization } from '@anticrm/contact'
   import { getClient } from '@anticrm/presentation'
+  import { Label } from '@anticrm/ui'
+  import contact from '../plugin'
 
   import OrganizationPresenter from './OrganizationPresenter.svelte'
   import PersonPresenter from './PersonPresenter.svelte'
@@ -28,11 +30,22 @@
     const hierarchy = client.getHierarchy()
     return hierarchy.isDerived(value._class, contact.class.Person)
   }
+  function isEmployee (value: Contact): boolean {
+    const client = getClient()
+    const hierarchy = client.getHierarchy()
+    return hierarchy.isDerived(value._class, contact.class.Employee)
+  }
   const toOrg = (contact: Contact) => contact as Organization
+  const toEmployee = (contact: Contact) => contact as Employee
 </script>
 
 {#if isPerson(value)}
   <PersonPresenter {isInteractive} {value} />
+  {#if isEmployee(value) && toEmployee(value)?.active === false}
+    <div class="ml-1">
+      (<Label label={contact.string.Inactive} />)
+    </div>
+  {/if}
 {:else}
   <OrganizationPresenter value={toOrg(value)} />
 {/if}

@@ -84,7 +84,7 @@
           }
           okProcessing = true
           const r = okAction()
-          if (r instanceof Promise && !createMore) {
+          if (r instanceof Promise && createMore) {
             r.then(() => {
               okProcessing = false
               dispatch('close')

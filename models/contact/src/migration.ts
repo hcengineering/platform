@@ -88,7 +88,8 @@ async function setRole (client: MigrationClient): Promise<void> {
     DOMAIN_TX,
     {
       _class: core.class.TxCreateDoc,
-      objectClass: contact.class.Employee
+      objectClass: contact.class.EmployeeAccount,
+      'attributes.role': { $exists: false }
     },
     {
       'attributes.role': AccountRole.User

@@ -37,9 +37,11 @@
   }
 
   async function newIssue (): Promise<void> {
-    if (space) {
-      showPopup(CreateIssue, { space }, 'top')
+    if (!space) {
+      const team = await client.findOne(tracker.class.Team, {})
+      space = team?._id
     }
+    showPopup(CreateIssue, { space }, 'top')
   }
 </script>
 

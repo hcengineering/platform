@@ -13,10 +13,11 @@
 // limitations under the License.
 //
 
-import core, { AccountRole, TxOperations } from '@anticrm/core'
+import core, { AccountRole, DOMAIN_TX, TxCreateDoc, TxOperations } from '@anticrm/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
 import contact, { EmployeeAccount } from '@anticrm/contact'
 import recruit from '@anticrm/model-recruit'
+import { DOMAIN_CONTACT } from '@anticrm/model-contact'
 
 async function createCandidate (
   tx: TxOperations,
@@ -45,20 +46,37 @@ async function createCandidate (
 }
 
 export const demoOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {},
+  async migrate (client: MigrationClient): Promise<void> {
+    const rosamunds = await client.find<TxCreateDoc<EmployeeAccount>>(DOMAIN_TX, {
+      _class: core.class.TxCreateDoc,
+      objectClass: contact.class.EmployeeAccount,
+      'attributes.email': 'rosamund@hc.engineering'
+    })
+    const docs = await client.find(DOMAIN_CONTACT, {
+      _id: { $in: rosamunds.map((p) => p.attributes.employee) }
+    })
+    const currentEmployees = new Set(docs.map((p) => p._id))
+    for (const rosamund of rosamunds) {
+      if (!currentEmployees.has(rosamund.attributes.employee)) await client.delete(DOMAIN_TX, rosamund._id)
+    }
+  },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    const tx = new TxOperations(client, core.account.System)
-    const current = await tx.findOne(contact.class.EmployeeAccount, {
+    const ops = new TxOperations(client, core.account.System)
+    const tx = await ops.findOne(core.class.TxCreateDoc, {
+      objectClass: contact.class.EmployeeAccount,
+      'attributes.email': 'rosamund@hc.engineering'
+    })
+    const current = await ops.findOne(contact.class.EmployeeAccount, {
       email: 'rosamund@hc.engineering'
     })
-    if (current === undefined) {
-      const employee = await tx.createDoc(contact.class.Employee, contact.space.Employee, {
+    if (tx === undefined && current === undefined) {
+      const employee = await ops.createDoc(contact.class.Employee, contact.space.Employee, {
         name: 'Chen,Rosamund',
         city: 'Mountain View',
         active: true
       })
 
-      await tx.createDoc<EmployeeAccount>(contact.class.EmployeeAccount, core.space.Model, {
+      await ops.createDoc<EmployeeAccount>(contact.class.EmployeeAccount, core.space.Model, {
         email: 'rosamund@hc.engineering',
         employee,
         name: 'Chen,Rosamund',
@@ -66,8 +84,8 @@ export const demoOperation: MigrateOperation = {
       })
     }
 
-    await createCandidate(tx, 'P.,Andrey', 'Monte Carlo', 'andrey@hc.engineering', 'Chief Architect')
-    await createCandidate(tx, 'M.,Marina', 'Los Angeles', 'marina@hc.engineering', 'Chief Designer')
-    await createCandidate(tx, 'P.,Alex', 'Krasnodar, Russia', 'alex@hc.engineering', 'Frontend Engineer')
+    await createCandidate(ops, 'P.,Andrey', 'Monte Carlo', 'andrey@hc.engineering', 'Chief Architect')
+    await createCandidate(ops, 'M.,Marina', 'Los Angeles', 'marina@hc.engineering', 'Chief Designer')
+    await createCandidate(ops, 'P.,Alex', 'Krasnodar, Russia', 'alex@hc.engineering', 'Frontend Engineer')
   }
 }

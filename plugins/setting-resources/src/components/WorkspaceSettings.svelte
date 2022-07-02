@@ -17,7 +17,8 @@
   import { AccountRole, getCurrentAccount } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
   import setting, { SettingsCategory } from '@anticrm/setting'
-  import { Component, Label } from '@anticrm/ui'
+  import { Component, getCurrentLocation, Label, location, navigate } from '@anticrm/ui'
+  import { onDestroy } from 'svelte'
   import CategoryElement from './CategoryElement.svelte'
 
   let category: SettingsCategory | undefined
@@ -41,9 +42,18 @@
     return categories.find((x) => x.name === name)
   }
 
-  function selectCategory (value: SettingsCategory) {
-    categoryId = value.name
-    category = value
+  onDestroy(
+    location.subscribe(async (loc) => {
+      categoryId = loc.path[3]
+      category = findCategory(categoryId)
+    })
+  )
+
+  function selectCategory (id: string): void {
+    const loc = getCurrentLocation()
+    loc.path[3] = id
+    loc.path.length = 4
+    navigate(loc)
   }
 </script>
 
@@ -60,7 +70,7 @@
         label={category.label}
         selected={category.name === categoryId}
         on:click={() => {
-          selectCategory(category)
+          selectCategory(category.name)
         }}
       />
     {/each}
