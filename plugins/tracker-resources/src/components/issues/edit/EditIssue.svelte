@@ -21,18 +21,7 @@
   import presentation, { createQuery, getClient, MessageViewer } from '@anticrm/presentation'
   import { StyledTextArea } from '@anticrm/text-editor'
   import type { Issue, IssueStatus, Team } from '@anticrm/tracker'
-  import {
-    Button,
-    EditBox,
-    IconDownOutline,
-    IconEdit,
-    IconMoreH,
-    IconUpOutline,
-    Label,
-    Scroller,
-    showPopup,
-    Spinner
-  } from '@anticrm/ui'
+  import { Button, EditBox, IconEdit, IconMoreH, Label, Scroller, showPopup, Spinner } from '@anticrm/ui'
   import { ContextMenu, UpDownNavigator } from '@anticrm/view-resources'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import tracker from '../../../plugin'
