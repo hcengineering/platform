@@ -92,7 +92,6 @@
     items={types.map((p) => {
       return { id: p._id, label: p.label }
     })}
-    placeholder={hr.string.RequestType}
     label={hr.string.RequestType}
     on:selected={(e) => typeSelected(e.detail)}
   />
