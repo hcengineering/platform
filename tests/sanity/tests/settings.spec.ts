@@ -44,8 +44,8 @@ test.describe('contact tests', () => {
     // Click button:has-text("Settings")
     await page.hover('button:has-text("Settings")')
     await page.click('button:has-text("Settings")')
-    // Click text=Workspace Integrations >> button
-    await page.click('text=Workspace Integrations >> button')
+    // Click text=Workspace
+    await page.click('text=Workspace')
     await page.click('text=Templates')
     // Click .flex-center.icon-button
     await page.click('#create-template >> .flex-center.icon-button')
@@ -77,7 +77,7 @@ test.describe('contact tests', () => {
     // await page.click('text=Workspace')
     await page.hover('button:has-text("Settings")')
     await page.click('button:has-text("Settings")')
-    await page.click('text=Workspace Integrations >> button')
+    await page.click('text=Workspace')
     // Click button:has-text("Manage Statuses")
     await page.click('text="Manage Statuses"')
     // Click text=Vacancies
