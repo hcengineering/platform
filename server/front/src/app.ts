@@ -466,7 +466,8 @@ async function getResizeID (size: string, uuid: string, config: { minio: Client 
         .resize({
           width
         })
-        .jpeg().toBuffer()
+        .jpeg()
+        .toBuffer()
       await config.minio.putObject(payload.workspace, sizeId, dataBuff, {
         'Content-Type': 'image/jpeg'
       })
@@ -476,7 +477,11 @@ async function getResizeID (size: string, uuid: string, config: { minio: Client 
   return uuid
 }
 
-async function listMinioObjects (client: Client, db: string, prefix: string): Promise<Map<string, BucketItem & { metaData: ItemBucketMetadata }>> {
+async function listMinioObjects (
+  client: Client,
+  db: string,
+  prefix: string
+): Promise<Map<string, BucketItem & { metaData: ItemBucketMetadata }>> {
   const items = new Map<string, BucketItem & { metaData: ItemBucketMetadata }>()
   const list = await client.listObjects(db, prefix, true)
   await new Promise((resolve) => {
