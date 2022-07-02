@@ -28,6 +28,7 @@ import https from 'https'
 import { Client, ItemBucketMetadata } from 'minio'
 import { join, resolve } from 'path'
 import { v4 as uuid } from 'uuid'
+import sharp from 'sharp'
 
 async function minioUpload (minio: Client, workspace: string, file: UploadedFile): Promise<string> {
   const id = uuid()
@@ -39,6 +40,26 @@ async function minioUpload (minio: Client, workspace: string, file: UploadedFile
 
   console.log(resp)
   return id
+}
+
+async function readMinioData (client: Client, db: string, name: string): Promise<Buffer[]> {
+  const data = await client.getObject(db, name)
+  const chunks: Buffer[] = []
+
+  await new Promise((resolve) => {
+    data.on('readable', () => {
+      let chunk
+      while ((chunk = data.read()) !== null) {
+        const b = chunk as Buffer
+        chunks.push(b)
+      }
+    })
+
+    data.on('end', () => {
+      resolve(null)
+    })
+  })
+  return chunks
 }
 
 /**
@@ -96,9 +117,49 @@ export function start (
     try {
       const token = req.query.token as string
       const payload = decodeToken(token)
-      const uuid = req.query.file as string
+      let uuid = req.query.file as string
+      const size = req.query.size as 'inline' | 'tiny' | 'x-small' | 'small' | 'medium' | 'large' | 'x-large' | 'full'
 
       const stat = await config.minio.statObject(payload.workspace, uuid)
+
+      if (size !== undefined && size !== 'full') {
+        let hasSmall = false
+        try {
+          const d = await config.minio.statObject(payload.workspace, uuid + '%size%' + size)
+          hasSmall = d !== undefined && d.size > 0
+        } catch (err) {}
+        if (hasSmall) {
+          // We have cached small document, let's proceed with it.
+          uuid = uuid + '%size%' + size
+        } else {
+          // Let's get data and resize it
+          const data = Buffer.concat(await readMinioData(config.minio, payload.workspace, uuid))
+
+          let width = 64
+          switch (size) {
+            case 'inline':
+            case 'tiny':
+            case 'x-small':
+            case 'small':
+            case 'medium':
+              width = 64
+              break
+            case 'large':
+              width = 256
+              break
+            case 'x-large':
+              width = 512
+              break
+          }
+          uuid = uuid + '%size%' + size
+          const dataBuff = await sharp(data)
+            .resize({
+              width
+            })
+            .toBuffer()
+          await config.minio.putObject(payload.workspace, uuid, dataBuff, {})
+        }
+      }
       config.minio.getObject(payload.workspace, uuid, function (err, dataStream) {
         if (err !== null) {
           return console.log(err)

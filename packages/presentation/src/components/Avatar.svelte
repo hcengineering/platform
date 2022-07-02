@@ -29,7 +29,7 @@
       url = blobURL
     })
   } else if (avatar !== undefined && avatar !== null) {
-    url = getFileUrl(avatar)
+    url = getFileUrl(avatar, size)
   } else {
     url = undefined
   }
