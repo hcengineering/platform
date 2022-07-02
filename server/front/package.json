@@ -8,7 +8,7 @@
     "build": "heft build",
     "build:watch": "tsc",
     "lint:fix": "eslint --fix src",
-    "bundle": "esbuild src/__start.ts --define:process.env.MODEL_VERSION=$(node ../../models/all/lib/__showversion.js) --bundle --minify --platform=node > bundle.js & rm -rf ./dist && cp -r ../../dev/prod/dist . && cp -r ../../dev/prod/public/* ./dist/ && rm ./dist/config.json",
+    "bundle": "esbuild src/__start.ts --define:process.env.MODEL_VERSION=$(node ../../models/all/lib/__showversion.js) --bundle --minify --platform=node --external:sharp > bundle.js & rm -rf ./dist && cp -r ../../dev/prod/dist . && cp -r ../../dev/prod/public/* ./dist/ && rm ./dist/config.json",
     "docker:build": "docker build -t hardcoreeng/front .",
     "docker:staging": "../../common/scripts/docker_tag.sh hardcoreeng/front staging",
     "docker:push": "../../common/scripts/docker_tag.sh hardcoreeng/front",
@@ -39,7 +39,8 @@
     "@types/body-parser": "~1.19.2",
     "cross-env": "~7.0.3",
     "ts-node": "^10.8.0",
-    "@types/compression": "~1.7.2"
+    "@types/compression": "~1.7.2",
+    "@types/sharp": "~0.30.4"
   },
   "dependencies": {
     "@anticrm/core": "~0.6.16",
@@ -55,6 +56,7 @@
     "@anticrm/contrib": "~0.6.0",
     "minio": "^7.0.26",
     "body-parser": "~1.19.1",
-    "compression": "~1.7.4"
+    "compression": "~1.7.4",
+    "sharp": "~0.30.7"
   }
 }

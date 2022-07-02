@@ -35,7 +35,7 @@
     if (direct !== undefined) {
       file = direct
     } else if (avatar != null) {
-      const url = getFileUrl(avatar)
+      const url = getFileUrl(avatar, 'full')
       file = await (await fetch(url)).blob()
     } else {
       return inputRef.click()
