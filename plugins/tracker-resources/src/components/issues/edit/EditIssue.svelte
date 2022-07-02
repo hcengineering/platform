@@ -24,16 +24,14 @@
     Button,
     EditBox,
     IconAttachment,
-    IconDownOutline,
     IconEdit,
     IconMoreH,
-    IconUpOutline,
     Label,
     Scroller,
     showPopup,
     Spinner
   } from '@anticrm/ui'
-  import { ContextMenu } from '@anticrm/view-resources'
+  import { ContextMenu, UpDownNavigator } from '@anticrm/view-resources'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import tracker from '../../../plugin'
   import { generateIssueShortLink, getIssueId } from '../../../issues'
@@ -191,8 +189,7 @@
       </div>
     </svelte:fragment>
     <svelte:fragment slot="navigator">
-      <Button icon={IconDownOutline} kind="secondary" size="medium" />
-      <Button icon={IconUpOutline} kind="secondary" size="medium" />
+      <UpDownNavigator element={issue} />
     </svelte:fragment>
     <svelte:fragment slot="header">
       <span class="fs-title">
