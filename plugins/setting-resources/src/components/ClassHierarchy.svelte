@@ -17,6 +17,7 @@
   import { getClient } from '@anticrm/presentation'
   import { Icon, Label } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
+
   export let classes: Ref<Class<Doc>>[] = ['contact:class:Contact' as Ref<Class<Doc>>]
   export let _class: Ref<Class<Doc>> | undefined
 
@@ -54,13 +55,15 @@
   >
     <div class="flex gap-2">
       {#if clazz.icon}
-        <Icon icon={clazz.icon} size={'medium'} />
+        <div class="mr-2">
+          <Icon icon={clazz.icon} size={'medium'} />
+        </div>
       {/if}
-      <Label label={clazz.label} />
+      <span class="overflow-label content-accent-color"><Label label={clazz.label} /></span>
     </div>
   </div>
   {#if desc.length}
-    <div class="ml-2 mt-3 mb-3">
+    <div class="ml-8 mt-3 mb-3">
       <svelte:self classes={desc} {_class} on:select />
     </div>
   {/if}

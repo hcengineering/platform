@@ -36,6 +36,7 @@ export default mergeIds(settingId, setting, {
     NumberTypeEditor: '' as AnyComponent,
     DateTypeEditor: '' as AnyComponent,
     RefEditor: '' as AnyComponent,
-    EnumTypeEditor: '' as AnyComponent
+    EnumTypeEditor: '' as AnyComponent,
+    Owners: '' as AnyComponent
   }
 })

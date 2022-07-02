@@ -15,7 +15,7 @@
 <script lang="ts">
   import calendar from '@anticrm/calendar'
   import contact, { Employee, EmployeeAccount } from '@anticrm/contact'
-  import core, { Class, Client, Doc, getCurrentAccount, Ref, Space } from '@anticrm/core'
+  import core, { Class, Client, Doc, getCurrentAccount, Ref, setCurrentAccount, Space } from '@anticrm/core'
   import notification, { NotificationStatus } from '@anticrm/notification'
   import { NotificationClientImpl, BrowserNotificatator } from '@anticrm/notification-resources'
   import { getMetadata, getResource, IntlString } from '@anticrm/platform'
@@ -93,7 +93,20 @@
     }
   }
 
-  const account = getCurrentAccount() as EmployeeAccount
+  let account = getCurrentAccount() as EmployeeAccount
+  const accountQ = createQuery()
+  accountQ.query(
+    contact.class.EmployeeAccount,
+    {
+      _id: account._id
+    },
+    (res) => {
+      account = res[0]
+      setCurrentAccount(account)
+    },
+    { limit: 1 }
+  )
+
   let employee: Employee | undefined
   const employeeQ = createQuery()
 

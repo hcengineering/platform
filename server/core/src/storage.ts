@@ -446,6 +446,8 @@ class TServerStorage implements ServerStorage {
         ))
       ]
 
+      derived.sort((a, b) => a.modifiedOn - b.modifiedOn)
+
       for (const tx of derived) {
         await ctx.with('derived-route-tx', { _class: txClass(tx) }, (ctx) => this.routeTx(ctx, tx))
       }

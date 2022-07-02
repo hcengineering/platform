@@ -193,7 +193,7 @@
 >
   <StyledTextBox bind:this={refInput} bind:content {placeholder} {alwaysEdit} {showButtons} {maxHeight} />
   {#if attachments.size}
-    <div class="flex-row-center list scroll-divider-color">
+    <div class="flex-row-center list scroll-divider-color mt-1">
       {#each Array.from(attachments.values()) as attachment}
         <div class="item flex">
           <AttachmentPresenter

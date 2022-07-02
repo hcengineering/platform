@@ -1,11 +1,9 @@
 import { Node, mergeAttributes } from '@tiptap/core'
-import { Node as ProseMirrorNode } from 'prosemirror-model'
-// import { PluginKey } from 'prosemirror-state'
 import Suggestion, { SuggestionOptions } from '@tiptap/suggestion'
 
 export interface CompletionOptions {
   HTMLAttributes: Record<string, any>
-  renderLabel: (props: { options: CompletionOptions, node: ProseMirrorNode }) => string
+  renderLabel: (props: { options: CompletionOptions, node: any }) => string
   suggestion: Omit<SuggestionOptions, 'editor'>
 }
 

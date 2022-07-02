@@ -57,9 +57,11 @@ export interface SettingsCategory extends Doc {
   label: IntlString
   icon: Asset
   component: AnyComponent
+  group?: string
 
   // If defined, will sort using order.
   order?: number
+  secured: boolean
 }
 
 /**
@@ -78,13 +80,15 @@ export default plugin(settingId, {
     Support: '' as Ref<Doc>,
     Privacy: '' as Ref<Doc>,
     Terms: '' as Ref<Doc>,
-    ClassSetting: '' as Ref<Doc>
+    ClassSetting: '' as Ref<Doc>,
+    Owners: '' as Ref<Doc>
   },
   mixin: {
     Editable: '' as Ref<Mixin<Editable>>
   },
   class: {
     SettingsCategory: '' as Ref<Class<SettingsCategory>>,
+    WorkspaceSettingCategory: '' as Ref<Class<SettingsCategory>>,
     Integration: '' as Ref<Class<Integration>>,
     IntegrationType: '' as Ref<Class<IntegrationType>>
   },
@@ -92,7 +96,7 @@ export default plugin(settingId, {
     Settings: '' as AnyComponent,
     Profile: '' as AnyComponent,
     Password: '' as AnyComponent,
-    Setting: '' as AnyComponent,
+    WorkspaceSettings: '' as AnyComponent,
     Integrations: '' as AnyComponent,
     ManageStatuses: '' as AnyComponent,
     Support: '' as AnyComponent,
@@ -103,6 +107,7 @@ export default plugin(settingId, {
   string: {
     Settings: '' as IntlString,
     Setting: '' as IntlString,
+    WorkspaceSetting: '' as IntlString,
     Integrations: '' as IntlString,
     ManageStatuses: '' as IntlString,
     Support: '' as IntlString,
@@ -127,7 +132,8 @@ export default plugin(settingId, {
     InviteWorkspace: '' as IntlString,
     SelectWorkspace: '' as IntlString,
     Reconnect: '' as IntlString,
-    ClassSetting: '' as IntlString
+    ClassSetting: '' as IntlString,
+    Owners: '' as IntlString
   },
   icon: {
     EditProfile: '' as Asset,
@@ -138,6 +144,8 @@ export default plugin(settingId, {
     Privacy: '' as Asset,
     Terms: '' as Asset,
     Signout: '' as Asset,
-    SelectWorkspace: '' as Asset
+    SelectWorkspace: '' as Asset,
+    Clazz: '' as Asset,
+    Enums: '' as Asset
   }
 })

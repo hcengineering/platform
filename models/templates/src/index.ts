@@ -39,13 +39,15 @@ export function createModel (builder: Builder): void {
   builder.createModel(TMessageTemplate)
 
   builder.createDoc(
-    setting.class.SettingsCategory,
+    setting.class.WorkspaceSettingCategory,
     core.space.Model,
     {
       name: 'message-templates',
       label: templates.string.Templates,
       icon: templates.icon.Templates,
       component: templates.component.Templates,
+      group: 'settings-editor',
+      secured: false,
       order: 3500
     },
     templates.ids.Templates

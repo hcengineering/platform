@@ -560,6 +560,26 @@ export function createModel (builder: Builder): void {
     }
   })
 
+  createAction(
+    builder,
+    {
+      action: tracker.actionImpl.EditWorkflowStatuses,
+      label: tracker.string.EditWorkflowStatuses,
+      icon: view.icon.Statuses,
+      input: 'focus',
+      category: tracker.category.Tracker,
+      target: tracker.class.Team,
+      query: {
+        archived: false
+      },
+      context: {
+        mode: ['context', 'browser'],
+        group: 'edit'
+      }
+    },
+    tracker.action.EditWorkflowStatuses
+  )
+
   builder.createDoc(
     view.class.ActionCategory,
     core.space.Model,

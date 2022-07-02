@@ -13,26 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { IntlString } from '@anticrm/platform'
-  import { translate } from '@anticrm/platform'
-  import { createEventDispatcher, onMount } from 'svelte'
-  import plugin from '../plugin'
+  import { createEventDispatcher } from 'svelte'
   import type { DropdownIntlItem } from '../types'
   import CheckBox from './CheckBox.svelte'
   import Label from './Label.svelte'
 
-  export let placeholder: IntlString = plugin.string.SearchDots
   export let items: DropdownIntlItem[]
   export let selected: DropdownIntlItem['id'] | undefined = undefined
 
-  let search: string = ''
-  let phTraslate: string = ''
-  $: translate(placeholder, {}).then((res) => {
-    phTraslate = res
-  })
   const dispatch = createEventDispatcher()
   const btns: HTMLButtonElement[] = []
-  let searchInput: HTMLInputElement
 
   const keyDown = (ev: KeyboardEvent, n: number): void => {
     if (ev.key === 'ArrowDown') {
@@ -41,28 +31,14 @@
     } else if (ev.key === 'ArrowUp') {
       if (n === 0) btns[btns.length - 1].focus()
       else btns[n - 1].focus()
-    } else searchInput.focus()
+    }
   }
-
-  onMount(() => {
-    if (searchInput) searchInput.focus()
-  })
 </script>
 
 <div class="selectPopup">
-  <div class="header">
-    <input
-      bind:this={searchInput}
-      type="text"
-      bind:value={search}
-      placeholder={phTraslate}
-      on:input={(ev) => {}}
-      on:change
-    />
-  </div>
   <div class="scroll">
     <div class="box">
-      {#each items.filter((x) => x.label.toLowerCase().includes(search.toLowerCase())) as item, i}
+      {#each items as item, i}
         <!-- svelte-ignore a11y-mouse-events-have-key-events -->
         <button
           class="menu-item flex-between"

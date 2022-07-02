@@ -3,6 +3,8 @@
     "TrackerApplication": "Tracker",
     "Teams": "Your teams",
     "More": "More",
+    "Default": "Default",
+    "MakeDefault": "Make default",
     "Delete": "Delete",
     "Open": "Open",
     "Members": "Members",
@@ -60,6 +62,7 @@
     "CategoryCanceled": "Canceled",
 
     "Title": "Title",
+    "Name": "Name",
     "Description": "Description",
     "Status": "Status",
     "Number": "Number",
@@ -157,6 +160,14 @@
     "Related": "Related",
 
     "EditIssue": "Edit {title}",
+    "EditWorkflowStatuses": "Edit issue statuses",
+    "ManageWorkflowStatuses": "Manage issue statuses within team",
+    "AddWorkflowStatus": "Add issue status",
+    "EditWorkflowStatus": "Edit issue status",
+    "DeleteWorkflowStatus": "Delete issue status",
+    "DeleteWorkflowStatusConfirm": "Do you want to delete the \"{status}\" status?",
+    "DeleteWorkflowStatusError": "Can't delete the issue status",
+    "DeleteWorkflowStatusErrorDescription": "The \"{status}\" status has {count, plural, =1 {1 issue} other {# issues}} assigned. Please archive or move {count, plural, =1 {it} other {them}} before deleting this status.",
 
     "Save": "Save",
     "IncludeItemsThatMatch": "Include items that match",

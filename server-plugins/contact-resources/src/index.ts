@@ -15,7 +15,7 @@
 //
 
 import core, { Doc, Tx, TxCreateDoc, TxRemoveDoc, TxUpdateDoc } from '@anticrm/core'
-import type { TriggerControl } from '@anticrm/server-core'
+import type { TriggerControl, MinioClient, BucketItem } from '@anticrm/server-core'
 import contact, { Contact, contactId, formatName, Organization, Person } from '@anticrm/contact'
 import { getMetadata } from '@anticrm/platform'
 import login from '@anticrm/login'
@@ -52,6 +52,13 @@ export async function OnContactDelete (tx: Tx, { findAll, hierarchy, storageFx }
 
   storageFx(async (adapter, bucket) => {
     await adapter.removeObject(bucket, avatar)
+
+    const extra = await listMinioObjects(adapter, bucket, avatar)
+    if (extra.size > 0) {
+      for (const e of extra.entries()) {
+        await adapter.removeObject(bucket, e[1].name)
+      }
+    }
   })
 
   return []
@@ -105,3 +112,17 @@ export default async () => ({
     OrganizationTextPresenter: organizationTextPresenter
   }
 })
+
+async function listMinioObjects (client: MinioClient, db: string, prefix: string): Promise<Map<string, BucketItem>> {
+  const items = new Map<string, BucketItem>()
+  const list = await client.listObjects(db, prefix, true)
+  await new Promise((resolve) => {
+    list.on('data', (data) => {
+      items.set(data.name, { ...data })
+    })
+    list.on('end', () => {
+      resolve(null)
+    })
+  })
+  return items
+}

@@ -38,6 +38,7 @@ import { getMetadata } from '@anticrm/platform'
 import { LiveQuery as LQ } from '@anticrm/query'
 import { onDestroy } from 'svelte'
 import { deepEqual } from 'fast-equals'
+import { IconSize } from '@anticrm/ui'
 
 let liveQuery: LQ
 let client: TxOperations
@@ -131,10 +132,10 @@ export function createQuery (dontDestroy?: boolean): LiveQuery {
   return new LiveQuery(dontDestroy)
 }
 
-export function getFileUrl (file: string): string {
+export function getFileUrl (file: string, size: IconSize = 'full'): string {
   const uploadUrl = getMetadata(login.metadata.UploadUrl)
   const token = getMetadata(login.metadata.LoginToken)
-  const url = `${uploadUrl as string}?file=${file}&token=${token as string}`
+  const url = `${uploadUrl as string}?file=${file}&token=${token as string}&size=${size as string}`
   return url
 }
 

@@ -41,7 +41,7 @@
 
 <div class="antiComponent">
   <div class="ac-header short divide">
-    <div class="ac-header__icon"><Icon icon={setting.icon.Setting} size={'medium'} /></div>
+    <div class="ac-header__icon"><Icon icon={setting.icon.Clazz} size={'medium'} /></div>
     <div class="ac-header__title"><Label label={setting.string.ClassSetting} /></div>
   </div>
   <div class="ac-body columns hScroll">

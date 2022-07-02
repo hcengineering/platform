@@ -16,7 +16,7 @@
 import { Resources } from '@anticrm/platform'
 import Profile from './components/Profile.svelte'
 import Password from './components/Password.svelte'
-import Setting from './components/Setting.svelte'
+import WorkspaceSettings from './components/WorkspaceSettings.svelte'
 import Integrations from './components/Integrations.svelte'
 import ManageStatuses from './components/statuses/ManageStatuses.svelte'
 import Support from './components/Support.svelte'
@@ -34,6 +34,7 @@ import RefEditor from './components/typeEditors/RefEditor.svelte'
 import EnumTypeEditor from './components/typeEditors/EnumTypeEditor.svelte'
 import EditEnum from './components/EditEnum.svelte'
 import EnumSetting from './components/EnumSetting.svelte'
+import Owners from './components/Owners.svelte'
 
 export default async (): Promise<Resources> => ({
   activity: {
@@ -44,7 +45,7 @@ export default async (): Promise<Resources> => ({
     Settings,
     Profile,
     Password,
-    Setting,
+    WorkspaceSettings,
     Integrations,
     Support,
     Privacy,
@@ -58,6 +59,7 @@ export default async (): Promise<Resources> => ({
     DateTypeEditor,
     EnumTypeEditor,
     EditEnum,
-    EnumSetting
+    EnumSetting,
+    Owners
   }
 })
