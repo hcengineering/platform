@@ -123,7 +123,7 @@
     <span slot="content" class="overflow-label disabled">
       {#if selected}
         {#if hideIcon || selected}
-          <UserInfo value={selected} size={kind === 'link' ? 'x-small' : 'medium'} {icon} />
+          <UserInfo value={selected} size={kind === 'link' ? 'x-small' : 'tiny'} {icon} />
         {:else}
           {getName(selected)}
         {/if}
