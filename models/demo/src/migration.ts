@@ -47,12 +47,13 @@ async function createCandidate (
 
 export const demoOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
+    debugger
     const rosamunds = await client.find<TxCreateDoc<EmployeeAccount>>(DOMAIN_TX, {
       _class: core.class.TxCreateDoc,
       objectClass: contact.class.EmployeeAccount,
       'attributes.email': 'rosamund@hc.engineering'
     })
-    const currentEmployees = new Set(
+    const currentEmployees = new Set(...
       (
         await client.find(DOMAIN_CONTACT, {
           _id: { $in: rosamunds.map((p) => p.attributes.employee) }
@@ -64,8 +65,9 @@ export const demoOperation: MigrateOperation = {
     }
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
+    debugger
     const ops = new TxOperations(client, core.account.System)
-    const tx = ops.findOne(core.class.TxCreateDoc, {
+    const tx = await ops.findOne(core.class.TxCreateDoc, {
       objectClass: contact.class.EmployeeAccount,
       'attributes.email': 'rosamund@hc.engineering'
     })
