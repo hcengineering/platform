@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import core, { DocumentQuery, getCurrentAccount, Ref, TxCollectionCUD } from '@anticrm/core'
-  import type { Issue } from '@anticrm/tracker'
+  import type { Issue, IssueStatus } from '@anticrm/tracker'
   import type { EmployeeAccount } from '@anticrm/contact'
   import type { IntlString } from '@anticrm/platform'
   import { createQuery } from '@anticrm/presentation'
@@ -30,10 +30,18 @@
     ['subscribed', tracker.string.Subscribed]
   ]
   const currentUser = getCurrentAccount() as EmployeeAccount
-  const assigned = { assignee: currentUser.employee }
-  const created = { _id: { $in: [] as Ref<Issue>[] } }
-  const subscribed = { _id: { $in: [] as Ref<Issue>[] } }
+  let assigned = { assignee: currentUser.employee, status: { $in: [] as Ref<IssueStatus>[] } }
+  let created = { _id: { $in: [] as Ref<Issue>[] } }
+  let subscribed = { _id: { $in: [] as Ref<Issue>[] } }
 
+  const statusQuery = createQuery()
+  $: statusQuery.query(
+    tracker.class.IssueStatus,
+    { category: { $in: [tracker.issueStatusCategory.Started, tracker.issueStatusCategory.Unstarted] } },
+    (result) => {
+      assigned = { ...assigned, status: { $in: result.map(({ _id }) => _id) } }
+    }
+  )
   const createdQuery = createQuery()
   $: createdQuery.query<TxCollectionCUD<Issue, Issue>>(
     core.class.TxCollectionCUD,
@@ -44,7 +52,7 @@
       'tx._class': core.class.TxCreateDoc
     },
     (result) => {
-      created._id.$in = result.map(({ tx: { objectId } }) => objectId)
+      created = { ...created, _id: { $in: result.map(({ tx: { objectId } }) => objectId) } }
     },
     { sort: { _id: 1 } }
   )
@@ -57,7 +65,7 @@
       const newSub = result.map(({ attachedTo }) => attachedTo as Ref<Issue>)
       const curSub = subscribed._id.$in
       if (curSub.length !== newSub.length || curSub.some((id, i) => newSub[i] !== id)) {
-        subscribed._id.$in = newSub
+        subscribed = { ...subscribed, _id: { $in: newSub } }
       }
     },
     { sort: { _id: 1 } }
