@@ -18,10 +18,11 @@
   import { Ref, WithLookup } from '@anticrm/core'
   import { Department, Staff } from '@anticrm/hr'
   import { Avatar, getClient, UsersPopup } from '@anticrm/presentation'
-  import { Button, eventToHTMLElement, IconAdd, Label, showPanel, showPopup } from '@anticrm/ui'
+  import { Button, closeTooltip, eventToHTMLElement, IconAdd, Label, showPanel, showPopup } from '@anticrm/ui'
   import view from '@anticrm/view'
   import { Menu } from '@anticrm/view-resources'
   import hr from '../plugin'
+  import { addMember } from '../utils'
   import CreateDepartment from './CreateDepartment.svelte'
   import DepartmentCard from './DepartmentCard.svelte'
   import PersonsPresenter from './PersonsPresenter.svelte'
@@ -82,7 +83,14 @@
     showPanel(view.component.EditDoc, value._id, value._class, 'content')
   }
 
-  $: values = allEmployees.filter((it) => it.department === value._id)
+  export let dragPerson: WithLookup<Staff> | undefined
+  export let dragOver: Department | undefined
+
+  $: dragPersonId = dragPerson?._id
+
+  $: values = allEmployees.filter((it) => it.department === value._id && it._id !== dragPersonId)
+
+  $: dragging = value._id === dragOver?._id && dragPersonId !== undefined
 </script>
 
 <div class="flex-center w-full px-4">
@@ -91,8 +99,25 @@
     class:cursor-pointer={currentDescendants.length}
     on:click|stopPropagation={edit}
     on:contextmenu|preventDefault={showMenu}
+    class:dragging
   >
-    <div class="flex-between pt-4 pb-4 pr-4 pl-2 w-full">
+    <div
+      class="flex-between pt-4 pb-4 pr-4 pl-2 w-full"
+      on:dragover|preventDefault|stopPropagation={(evt) => {
+        dragOver = value
+      }}
+      on:dragend|preventDefault|stopPropagation={() => {
+        dragPerson = undefined
+        closeTooltip()
+      }}
+      on:drop|preventDefault={(itm) => {
+        closeTooltip()
+        addMember(client, dragPerson, value).then(() => {
+          dragPerson = undefined
+          dragOver = undefined
+        })
+      }}
+    >
       <div class="flex-center">
         <div class="mr-2">
           <Button icon={IconAdd} kind={'link-bordered'} on:click={createChild} />
@@ -104,7 +129,7 @@
           </div>
           <Label label={hr.string.MemberCount} params={{ count: value.members.length }} />
         </div>
-        <PersonsPresenter value={values} />
+        <PersonsPresenter value={values} bind:dragPerson showDragPerson={dragging} />
       </div>
       <div class="flex-center mr-2">
         <div class="mr-2">
@@ -127,17 +152,21 @@
 </div>
 <div class="ml-8">
   {#each currentDescendants as nested}
-    <DepartmentCard value={nested} {descendants} {allEmployees} />
+    <DepartmentCard value={nested} {descendants} {allEmployees} bind:dragPerson bind:dragOver />
   {/each}
 </div>
 
 <style lang="scss">
   .container {
     background-color: var(--board-card-bg-color);
+    border: 1px solid transparent;
 
     &:hover {
       background-color: var(--board-card-bg-hover);
       cursor: pointer;
+    }
+    &.dragging {
+      border: 1px solid var(--theme-bg-focused-color);
     }
   }
 </style>

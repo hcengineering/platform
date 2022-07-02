@@ -19,6 +19,7 @@
   import presentation from '..'
 
   export let label: IntlString
+  export let labelProps: IntlString
   export let message: IntlString
   export let params: Record<string, any> = {}
   export let canSubmit = true
@@ -27,7 +28,7 @@
 </script>
 
 <div class="msgbox-container">
-  <div class="overflow-label fs-title mb-4"><Label {label} /></div>
+  <div class="overflow-label fs-title mb-4"><Label {label} params={labelProps ?? {}} /></div>
   <div class="message"><Label label={message} {params} /></div>
   <div class="footer">
     <Button

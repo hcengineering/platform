@@ -333,6 +333,29 @@ export function createModel (builder: Builder): void {
     },
     hr.viewlet.TableMember
   )
+
+  createAction(builder, {
+    action: view.actionImpl.ValueSelector,
+    actionPopup: view.component.ValueSelector,
+    actionProps: {
+      attribute: 'department',
+      _class: hr.class.Department,
+      query: {},
+      searchField: 'name',
+      placeholder: hr.string.Department
+    },
+    label: hr.string.Department,
+    icon: hr.icon.Department,
+    keyBinding: [],
+    input: 'none',
+    category: hr.category.HR,
+    target: hr.mixin.Staff,
+    context: {
+      mode: ['context'],
+      application: hr.app.HR,
+      group: 'associate'
+    }
+  })
 }
 
 export { hrOperation } from './migration'

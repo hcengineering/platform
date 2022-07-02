@@ -18,21 +18,49 @@
   import { EmployeePresenter } from '@anticrm/contact-resources'
   import { WithLookup } from '@anticrm/core'
   import { Staff } from '@anticrm/hr'
+  import { closeTooltip, showPopup } from '@anticrm/ui'
+  import { ContextMenu } from '@anticrm/view-resources'
   import hr from '../plugin'
+
+  import { flip } from 'svelte/animate'
 
   export let value: WithLookup<Staff> | WithLookup<Staff>[]
   export let inline: boolean = false
+  export let dragPerson: WithLookup<Staff> | undefined
+  export let showDragPerson: boolean = false
 
   let persons: WithLookup<Employee>[] = []
   $: persons = Array.isArray(value) ? value : [value]
+  function ondrag (p: Employee): void {
+    dragPerson = p as WithLookup<Staff>
+  }
+
+  function showContextMenu (ev: MouseEvent, object: Employee) {
+    showPopup(
+      ContextMenu,
+      { object },
+      { getBoundingClientRect: () => DOMRect.fromRect({ width: 1, height: 1, x: ev.clientX, y: ev.clientY }) }
+    )
+  }
 </script>
 
 {#if value}
   <div class="flex persons">
-    {#each persons as p}
-      <div class="ml-2 hover-trans">
+    {#each persons as p (p._id)}
+      <div
+        class="ml-2 hover-trans icon"
+        draggable={true}
+        animate:flip={{ duration: 200 }}
+        on:drag={() => ondrag(p)}
+        on:dragend|preventDefault|stopPropagation={() => {
+          dragPerson = undefined
+          closeTooltip()
+        }}
+        on:contextmenu|stopPropagation|preventDefault={(evt) => showContextMenu(evt, p)}
+      >
         <EmployeePresenter
           value={p}
+          avatarSize={'large'}
           shouldShowName={false}
           {inline}
           tooltipLabels={{
@@ -42,15 +70,28 @@
         />
       </div>
     {/each}
+    {#if showDragPerson && dragPerson !== undefined && persons.find((it) => it._id === dragPerson?._id) === undefined}
+      <EmployeePresenter
+        value={dragPerson}
+        avatarSize={'large'}
+        shouldShowName={false}
+        {inline}
+        tooltipLabels={{
+          personLabel: hr.string.TeamLeadTooltip,
+          placeholderLabel: hr.string.AssignLead
+        }}
+      />
+    {/if}
   </div>
 {/if}
 
 <style lang="scss">
   .persons {
-    display: grid;
-    grid-template-columns: repeat(4, min-content);
+    display: flex;
+    flex-wrap: wrap;
     .icon {
-      margin: 0.25rem;
+      margin: 0.15rem;
+      border-radius: 50%;
     }
   }
 </style>
