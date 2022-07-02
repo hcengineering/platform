@@ -57,6 +57,7 @@ export interface SettingsCategory extends Doc {
   label: IntlString
   icon: Asset
   component: AnyComponent
+  group?: string
 
   // If defined, will sort using order.
   order?: number
@@ -143,6 +144,8 @@ export default plugin(settingId, {
     Privacy: '' as Asset,
     Terms: '' as Asset,
     Signout: '' as Asset,
-    SelectWorkspace: '' as Asset
+    SelectWorkspace: '' as Asset,
+    Clazz: '' as Asset,
+    Enums: '' as Asset
   }
 })

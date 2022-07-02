@@ -85,7 +85,10 @@
         <Label label={setting.string.Settings} />
       </span>
     </div>
-    {#each categories as category}
+    {#each categories as category, i}
+      {#if i > 0 && categories[i - 1].group !== category.group}
+        <div class="antiNav-divider short line" />
+      {/if}
       <CategoryElement
         icon={category.icon}
         label={category.label}

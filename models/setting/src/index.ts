@@ -76,8 +76,9 @@ export function createModel (builder: Builder): void {
       label: setting.string.EditProfile,
       icon: setting.icon.EditProfile,
       component: setting.component.Profile,
-      order: 0,
-      secured: false
+      group: 'settings-account',
+      secured: false,
+      order: 0
     },
     setting.ids.Profile
   )
@@ -90,8 +91,9 @@ export function createModel (builder: Builder): void {
       label: setting.string.ChangePassword,
       icon: setting.icon.Password,
       component: setting.component.Password,
-      order: 1000,
-      secured: false
+      group: 'settings-account',
+      secured: false,
+      order: 1000
     },
     setting.ids.Password
   )
@@ -103,8 +105,9 @@ export function createModel (builder: Builder): void {
       label: setting.string.WorkspaceSetting,
       icon: setting.icon.Setting,
       component: setting.component.WorkspaceSettings,
-      order: 2000,
-      secured: false
+      group: 'settings',
+      secured: false,
+      order: 2000
     },
     setting.ids.Setting
   )
@@ -116,8 +119,9 @@ export function createModel (builder: Builder): void {
       label: setting.string.Integrations,
       icon: setting.icon.Integrations,
       component: setting.component.Integrations,
-      order: 3000,
-      secured: false
+      group: 'settings',
+      secured: false,
+      order: 3000
     },
     setting.ids.Integrations
   )
@@ -142,8 +146,9 @@ export function createModel (builder: Builder): void {
       label: setting.string.ManageStatuses,
       icon: task.icon.ManageStatuses,
       component: setting.component.ManageStatuses,
-      order: 4000,
-      secured: false
+      group: 'settings-editor',
+      secured: false,
+      order: 4000
     },
     setting.ids.ManageStatuses
   )
@@ -153,10 +158,11 @@ export function createModel (builder: Builder): void {
     {
       name: 'classes',
       label: setting.string.ClassSetting,
-      icon: setting.icon.Setting,
+      icon: setting.icon.Clazz,
       component: setting.component.ClassSetting,
-      order: 4500,
-      secured: false
+      group: 'settings-editor',
+      secured: false,
+      order: 4500
     },
     setting.ids.ClassSetting
   )
@@ -166,10 +172,11 @@ export function createModel (builder: Builder): void {
     {
       name: 'enums',
       label: setting.string.Enums,
-      icon: setting.icon.Setting,
+      icon: setting.icon.Enums,
       component: setting.component.EnumSetting,
-      order: 4600,
-      secured: false
+      group: 'settings-editor',
+      secured: false,
+      order: 4600
     },
     setting.ids.EnumSetting
   )
@@ -181,8 +188,9 @@ export function createModel (builder: Builder): void {
       label: setting.string.Support,
       icon: setting.icon.Support,
       component: setting.component.Support,
-      order: 5000,
-      secured: false
+      group: 'main',
+      secured: false,
+      order: 5000
     },
     setting.ids.Support
   )
@@ -194,8 +202,9 @@ export function createModel (builder: Builder): void {
       label: setting.string.Privacy,
       icon: setting.icon.Privacy,
       component: setting.component.Privacy,
-      order: 6000,
-      secured: false
+      group: 'main',
+      secured: false,
+      order: 6000
     },
     setting.ids.Privacy
   )
@@ -207,8 +216,9 @@ export function createModel (builder: Builder): void {
       label: setting.string.Terms,
       icon: setting.icon.Terms,
       component: setting.component.Terms,
-      order: 10000,
-      secured: false
+      group: 'main',
+      secured: false,
+      order: 10000
     },
     setting.ids.Terms
   )

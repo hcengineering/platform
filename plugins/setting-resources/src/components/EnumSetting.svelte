@@ -46,7 +46,7 @@
 
 <div class="antiComponent">
   <div class="ac-header short divide">
-    <div class="ac-header__icon"><Icon icon={setting.icon.Setting} size={'medium'} /></div>
+    <div class="ac-header__icon"><Icon icon={setting.icon.Enums} size={'medium'} /></div>
     <div class="ac-header__title"><Label label={setting.string.Enums} /></div>
   </div>
   <div class="ac-body columns hScroll">
