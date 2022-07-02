@@ -99,6 +99,10 @@
       showActionPopup(action, target)
     }
   }
+  export function clearFocus (): void {
+    closePopup(category)
+    activeElement = popup
+  }
 
   let focusSpeed: boolean = false
   let popup: HTMLElement
@@ -109,6 +113,7 @@
 <div class="antiPopup" on:keydown={keyDown}>
   <MouseSpeedTracker bind:focusSpeed />
   <div class="ap-space" />
+  <slot name="header" />
   <div class="ap-scroll">
     <div class="ap-box" bind:this={popup}>
       {#if actions.length === 0}
@@ -141,9 +146,10 @@
           <!-- svelte-ignore a11y-mouse-events-have-key-events -->
           <button
             bind:this={btns[i]}
-            class="ap-menuItem antiPopup-submenu"
+            class="ap-menuItem antiPopup-submenu withIconHover"
             class:hover={btns[i] === activeElement}
             on:mouseover={() => focusTarget(action, btns[i])}
+            on:click={() => focusTarget(action, btns[i])}
           >
             {#if action.icon}
               <div class="icon mr-3"><Icon icon={action.icon} size={'small'} /></div>

@@ -46,8 +46,9 @@ export function createModel (builder: Builder): void {
       label: templates.string.Templates,
       icon: templates.icon.Templates,
       component: templates.component.Templates,
-      order: 3500,
-      secured: false
+      group: 'settings-editor',
+      secured: false,
+      order: 3500
     },
     templates.ids.Templates
   )
