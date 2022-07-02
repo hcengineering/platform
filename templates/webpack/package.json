@@ -6,8 +6,9 @@
   "peerDependencies": {
     "webpack": "*"
   },
-  "devDependencies": {    
+  "devDependencies": {
+    "svelte-loader": "^3.1.3"
   },
-  "dependencies": {
+  "dependencies": {    
   }
 }
