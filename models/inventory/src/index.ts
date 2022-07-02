@@ -165,6 +165,10 @@ export function createModel (builder: Builder): void {
       group: 'associate'
     }
   })
+
+  builder.mixin(inventory.class.Product, core.class.Class, view.mixin.ClassFilters, {
+    filters: ['attachedTo', 'name', 'modifiedOn']
+  })
 }
 
 export { default } from './plugin'
