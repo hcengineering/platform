@@ -112,7 +112,7 @@
 <div bind:this={container} class="min-w-0" class:w-full={width === '100%'}>
   <Button
     {focusIndex}
-    icon={hideIcon && selected ? undefined : icon}
+    icon={hideIcon || selected ? undefined : icon}
     width={width ?? 'min-content'}
     {size}
     {kind}
@@ -122,7 +122,7 @@
   >
     <span slot="content" class="overflow-label disabled">
       {#if selected}
-        {#if hideIcon}
+        {#if hideIcon || selected}
           <UserInfo value={selected} size={kind === 'link' ? 'x-small' : 'medium'} {icon} />
         {:else}
           {getName(selected)}
