@@ -36,6 +36,7 @@
       size={'small'}
       on:select={(result) => {
         if (result.detail !== undefined) {
+          if (viewlet?._id === result.detail.id) return
           viewlet = viewlets.find((vl) => vl._id === result.detail.id)
           if (viewlet) setActiveViewletId(viewlet._id)
         }
