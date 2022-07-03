@@ -528,7 +528,7 @@
   </Popup>
   <DatePickerPopup />
   <BrowserNotificatator />
-{:else}
+{:else if employee}
   <div class="flex-col-center justify-center h-full flex-grow">
     <h1><Label label={workbench.string.AccountDisabled} /></h1>
     <Label label={workbench.string.AccountDisabledDescr} />
