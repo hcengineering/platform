@@ -15,17 +15,17 @@
 <script lang="ts">
   import contact from '@anticrm/contact'
   import { Class, Doc, DocumentQuery, Lookup, Ref, SortingOrder, WithLookup } from '@anticrm/core'
-  import { Kanban } from '@anticrm/kanban'
+  import { Kanban, TypeState } from '@anticrm/kanban'
   import notification from '@anticrm/notification'
-  import { createQuery, getClient } from '@anticrm/presentation'
+  import { createQuery } from '@anticrm/presentation'
   import { Issue, IssuesGrouping, IssuesOrdering, IssueStatus, Team, ViewOptions } from '@anticrm/tracker'
-  import { Button, Component, Icon, IconAdd, showPanel, showPopup } from '@anticrm/ui'
+  import { Button, Component, Icon, IconAdd, showPanel, showPopup, Loading } from '@anticrm/ui'
   import { focusStore, ListSelectionProvider, SelectDirection, selectionStore } from '@anticrm/view-resources'
   import ActionContext from '@anticrm/view-resources/src/components/ActionContext.svelte'
   import Menu from '@anticrm/view-resources/src/components/Menu.svelte'
   import { onMount } from 'svelte'
   import tracker from '../../plugin'
-  import { getKanbanStatuses, issuesSortOrderMap } from '../../utils'
+  import { getAllIssueStates, getIssuesSortingQuery, getKanbanStatuses, issuesSortOrderMap } from '../../utils'
   import CreateIssue from '../CreateIssue.svelte'
   import ProjectEditor from '../projects/ProjectEditor.svelte'
   import AssigneePresenter from './AssigneePresenter.svelte'
@@ -52,7 +52,6 @@
   const spaceQuery = createQuery()
   const statusesQuery = createQuery()
 
-  const client = getClient()
   let currentTeam: Team | undefined
   $: spaceQuery.query(tracker.class.Team, { _id: currentSpace }, (res) => {
     currentTeam = res.shift()
@@ -104,9 +103,36 @@
       }
     )
   }
+  const issuesQuery = createQuery()
+  let issueStates: TypeState[] = []
+  $: issuesQuery.query(
+    tracker.class.Issue,
+    resultQuery,
+    async (result) => {
+      issueStates = await getKanbanStatuses(groupBy, result)
+    },
+    {
+      lookup: {
+        status: [tracker.class.IssueStatus, { category: tracker.class.IssueStatusCategory }],
+        project: tracker.class.Project,
+        assignee: contact.class.Employee
+      },
+      sort: getIssuesSortingQuery(groupBy)
+    }
+  )
+
+  let allIssueStates: TypeState[] = []
+  async function updateAllIssuesStates (groupBy: IssuesGrouping, is: WithLookup<IssueStatus>[] | undefined) {
+    allIssueStates = await getAllIssueStates(groupBy, is)
+  }
+  $: updateAllIssuesStates(groupBy, issueStatuses)
+
+  $: states = shouldShowEmptyGroups ? allIssueStates : issueStates
 </script>
 
-{#await getKanbanStatuses(client, groupBy, resultQuery, shouldShowEmptyGroups) then states}
+{#if !states?.length}
+  <Loading />
+{:else}
   <ActionContext
     context={{
       mode: 'browser'
@@ -203,7 +229,7 @@
       </div>
     </svelte:fragment>
   </Kanban>
-{/await}
+{/if}
 
 <style lang="scss">
   .names {
