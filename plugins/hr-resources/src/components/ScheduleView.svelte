@@ -189,47 +189,60 @@
     }
     return total
   }
+
+  let hoveredIndex: number = -1
 </script>
 
 {#if departmentStaff.length}
-  <Scroller>
+  <Scroller tableFade>
     <table>
       <thead class="scroller-thead">
         <tr class="scroller-thead__tr">
           <th>
             <Label label={contact.string.Employee} />
           </th>
-          {#each values as value}
+          {#each values as value, i}
             {#if mode === CalendarMode.Year}
               {@const month = getMonth(currentDate, value)}
               <th
                 class="fixed"
                 class:today={month.getFullYear() === todayDate.getFullYear() &&
                   month.getMonth() === todayDate.getMonth()}
+                on:mousemove={() => {
+                  hoveredIndex = i
+                }}
+                on:mouseleave={() => {
+                  hoveredIndex = -1
+                }}
               >
-                <div class="cursor-pointer uppercase flex-col-center">
-                  <div class="flex-center">{getMonthName(month)}</div>
-                </div>
+                {getMonthName(month)}
               </th>
             {:else}
               {@const day = getDay(new Date(startDate), value)}
-              <th class:today={areDatesEqual(todayDate, day)} class:weekend={isWeekend(day)}>
-                <div class="cursor-pointer uppercase flex-col-center">
-                  <div class="flex-center">{getWeekDayName(day, 'short')}</div>
-                  <div class="flex-center">{day.getDate()}</div>
-                </div>
+              <th
+                class:today={areDatesEqual(todayDate, day)}
+                class:weekend={isWeekend(day)}
+                on:mousemove={() => {
+                  hoveredIndex = i
+                }}
+                on:mouseleave={() => {
+                  hoveredIndex = -1
+                }}
+              >
+                {getWeekDayName(day, 'short')}
+                <span>{day.getDate()}</span>
               </th>
             {/if}
           {/each}
         </tr>
       </thead>
       <tbody>
-        {#each departmentStaff as employee}
+        {#each departmentStaff as employee, row}
           <tr>
             <td>
               <EmployeePresenter value={employee} />
             </td>
-            {#each values as value}
+            {#each values as value, i}
               {#if mode === CalendarMode.Year}
                 {@const month = getMonth(currentDate, value)}
                 {@const requests = getRequests(employee._id, month)}
@@ -256,6 +269,9 @@
                     class:today={areDatesEqual(todayDate, date)}
                     class:weekend={isWeekend(date)}
                     class:cursor-pointer={editable}
+                    class:hovered={i === hoveredIndex}
+                    class:firstLine={row === 0}
+                    class:lastLine={row === departmentStaff.length - 1}
                     use:tooltip={tooltipValue}
                     on:click={(e) => createRequest(e, date, employee)}
                   >
@@ -272,24 +288,26 @@
     </table>
   </Scroller>
 {:else}
-  <div class="flex-center h-full flex-grow fs-title">
+  <div class="flex-center h-full w-full flex-grow fs-title">
     <Label label={hr.string.NoEmployeesInDepartment} />
   </div>
 {/if}
 
 <style lang="scss">
   table {
-    border-collapse: collapse;
-    table-layout: fixed;
-    width: auto;
     position: relative;
+    width: 100%;
 
     td,
     th {
       width: auto;
-      min-width: 1rem;
+      width: 2rem;
+      min-width: 1.5rem;
+      border: none;
       &.fixed {
         width: 5rem;
+        padding: 0 0.125rem;
+        hyphens: auto;
       }
       &:first-child {
         width: 15rem;
@@ -297,13 +315,25 @@
       }
     }
     th {
-      padding: 0.5rem;
+      flex-shrink: 0;
+      padding: 0;
       height: 2.5rem;
+      min-height: 2.5rem;
+      max-height: 2.5rem;
+      text-transform: uppercase;
       font-weight: 500;
       font-size: 0.75rem;
+      line-height: 105%;
       color: var(--dark-color);
       box-shadow: inset 0 -1px 0 0 var(--divider-color);
       user-select: none;
+      cursor: pointer;
+
+      span {
+        display: block;
+        font-weight: 600;
+        font-size: 1rem;
+      }
       &.today {
         color: var(--caption-color);
       }
@@ -313,13 +343,37 @@
     }
     td {
       height: 3.5rem;
-      border: 1px solid var(--divider-color);
+      border: none;
       color: var(--caption-color);
       &.today {
         background-color: var(--theme-bg-accent-hover);
       }
       &.weekend:not(.today) {
         background-color: var(--theme-bg-accent-color);
+      }
+    }
+    td:not(:last-child) {
+      border-right: 1px solid var(--divider-color);
+    }
+    tr:not(.scroller-thead__tr) {
+      border-bottom: 1px solid var(--divider-color);
+    }
+    tr.scroller-thead__tr:not(:last-child) {
+      border-right: 1px solid var(--divider-color);
+    }
+
+    .hovered {
+      position: relative;
+
+      &::after {
+        position: absolute;
+        content: '';
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: var(--caption-color);
+        opacity: 0.15;
       }
     }
   }

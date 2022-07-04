@@ -119,6 +119,4 @@
   <SpaceSelector _class={hr.class.Department} label={hr.string.Department} bind:space={department} />
 </div>
 
-<div class="mr-6 h-full">
-  <ScheduleMonthView {department} {descendants} departmentById={departments} {currentDate} {mode} />
-</div>
+<ScheduleMonthView {department} {descendants} departmentById={departments} {currentDate} {mode} />
