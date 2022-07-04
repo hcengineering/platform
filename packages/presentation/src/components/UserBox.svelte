@@ -66,7 +66,11 @@
     selected = await client.findOne(_class, { _id: value })
   }
 
-  $: if (value != null) updateSelected(value)
+  $: if (value != null) {
+    updateSelected(value)
+  } else {
+    selected = undefined
+  }
 
   function getName (obj: Contact): string {
     const isPerson = client.getHierarchy().isDerived(obj._class, contact.class.Person)
