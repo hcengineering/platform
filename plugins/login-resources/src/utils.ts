@@ -13,8 +13,17 @@
 // limitations under the License.
 //
 
-import type { Request, Response } from '@anticrm/platform'
-import { getMetadata, OK, serialize, Status, unknownError, unknownStatus } from '@anticrm/platform'
+import {
+  PlatformError,
+  Request,
+  Response,
+  getMetadata,
+  OK,
+  serialize,
+  Status,
+  unknownError,
+  unknownStatus
+} from '@anticrm/platform'
 import login from '@anticrm/login'
 import { fetchMetadataLocalStorage, getCurrentLocation, navigate } from '@anticrm/ui'
 
@@ -204,6 +213,9 @@ export async function getWorkspaces (): Promise<Workspace[]> {
     })
     const result: Response<any> = await response.json()
     console.log(result)
+    if (result.error != null) {
+      throw new PlatformError(result.error)
+    }
     return result.result
   } catch (err) {
     return []

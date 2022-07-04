@@ -1,8 +1,9 @@
 res=''
-echo "Warning Elastic to up and running with attachment processor..."
+port=$1
+echo "Warning Elastic to up and running with attachment processor... ${port}"
 while true
 do
-  res=$(curl -s -XPUT "localhost:9201/_ingest/pipeline/attachment?pretty" -H 'Content-Type: application/json' -d'
+  res=$(curl -s -XPUT "localhost:${port}/_ingest/pipeline/attachment?pretty" -H 'Content-Type: application/json' -d'
   {
     "description" : "Field for processing file attachments",
     "processors" : [

@@ -32,7 +32,12 @@ export default async () => {
 
   return {
     function: {
-      GetClient: async (token: string, endpoint: string, onUpgrade?: () => void): Promise<Client> => {
+      GetClient: async (
+        token: string,
+        endpoint: string,
+        onUpgrade?: () => void,
+        onUnauthorized?: () => void
+      ): Promise<Client> => {
         if (token !== _token && client !== undefined) {
           await client.close()
           client = undefined
@@ -43,7 +48,7 @@ export default async () => {
             (handler: TxHander) => {
               const url = new URL(`/${token}`, endpoint)
               console.log('connecting to', url.href)
-              return connect(url.href, handler, onUpgrade)
+              return connect(url.href, handler, onUpgrade, onUnauthorized)
             },
             filterModel ? getPlugins() : undefined
           )

@@ -52,7 +52,12 @@ export interface ClientSocket {
 /**
  * @public
  */
-export type ClientFactory = (token: string, endpoint: string, onUpgrade?: () => void) => Promise<Client>
+export type ClientFactory = (
+  token: string,
+  endpoint: string,
+  onUpgrade?: () => void,
+  onUnauthorized?: () => void
+) => Promise<Client>
 
 export default plugin(clientId, {
   metadata: {

@@ -30,7 +30,7 @@ import type {
   TxResult
 } from '@anticrm/core'
 import core from '@anticrm/core'
-import { getMetadata, PlatformError, readResponse, ReqId, serialize } from '@anticrm/platform'
+import { getMetadata, PlatformError, readResponse, ReqId, serialize, UNAUTHORIZED } from '@anticrm/platform'
 
 class DeferredPromise {
   readonly promise: Promise<any>
@@ -53,7 +53,8 @@ class Connection implements ClientConnection {
   constructor (
     private readonly url: string,
     private readonly handler: TxHander,
-    private readonly onUpgrade?: () => void
+    private readonly onUpgrade?: () => void,
+    private readonly onUnauthorized?: () => void
   ) {
     console.log('connection created')
     this.interval = setInterval(() => {
@@ -72,7 +73,11 @@ class Connection implements ClientConnection {
       try {
         return await this.openConnection()
       } catch (err: any) {
-        console.log('failed to connect')
+        console.log('failed to connect', err)
+        if (err.code === UNAUTHORIZED.code) {
+          this.onUnauthorized?.()
+          throw err
+        }
 
         await new Promise((resolve) => {
           setTimeout(() => {
@@ -93,6 +98,10 @@ class Connection implements ClientConnection {
       websocket.onmessage = (event: MessageEvent) => {
         const resp = readResponse(event.data)
         if (resp.id === -1 && resp.result === 'hello') {
+          if (resp.error !== undefined) {
+            reject(resp.error)
+            return
+          }
           resolve(websocket)
           return
         }
@@ -191,6 +200,11 @@ class Connection implements ClientConnection {
 /**
  * @public
  */
-export async function connect (url: string, handler: TxHander, onUpgrade?: () => void): Promise<ClientConnection> {
-  return new Connection(url, handler, onUpgrade)
+export async function connect (
+  url: string,
+  handler: TxHander,
+  onUpgrade?: () => void,
+  onUnauthorized?: () => void
+): Promise<ClientConnection> {
+  return new Connection(url, handler, onUpgrade, onUnauthorized)
 }
