@@ -418,10 +418,10 @@ export async function getKanbanStatuses (
 
 export function getIssuesSortingQuery (groupBy: IssuesGrouping): SortingQuery<Issue> {
   switch (groupBy) {
-    case IssuesGrouping.Status:
-      return { rank: SortingOrder.Ascending }
     case IssuesGrouping.Priority:
       return { priority: SortingOrder.Ascending }
+    case IssuesGrouping.Status:
+      return { '$lookup.status.rank': SortingOrder.Ascending }
     case IssuesGrouping.Assignee:
       return { '$lookup.assignee.name': SortingOrder.Ascending }
     case IssuesGrouping.Project:
