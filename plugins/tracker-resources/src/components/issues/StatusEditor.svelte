@@ -88,8 +88,6 @@
       }
     )
   }
-
-  $: console.log('selectedStatusLabel', statuses, value.status, selectedStatusLabel)
 </script>
 
 {#if value && statuses}
