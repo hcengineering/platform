@@ -31,6 +31,7 @@
   export let shape: ButtonShape = undefined
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = 'min-content'
+  export let onlyIcon: boolean = false
 
   let selectedProject: Project | undefined
   let defaultProjectLabel = ''
@@ -88,19 +89,32 @@
   }
 </script>
 
-<Button
-  {kind}
-  {size}
-  {shape}
-  {width}
-  {justify}
-  icon={projectIcon}
-  disabled={!isEditable}
-  on:click={handleProjectEditorOpened}
->
-  <svelte:fragment slot="content">
-    {#if projectText}
-      <span class="overflow-label disabled">{projectText}</span>
-    {/if}
-  </svelte:fragment>
-</Button>
+{#if onlyIcon}
+  <Button
+    {kind}
+    {size}
+    {shape}
+    {width}
+    {justify}
+    icon={projectIcon}
+    disabled={!isEditable}
+    on:click={handleProjectEditorOpened}
+  />
+{:else}
+  <Button
+    {kind}
+    {size}
+    {shape}
+    {width}
+    {justify}
+    icon={projectIcon}
+    disabled={!isEditable}
+    on:click={handleProjectEditorOpened}
+  >
+    <svelte:fragment slot="content">
+      {#if projectText}
+        <span class="overflow-label disabled">{projectText}</span>
+      {/if}
+    </svelte:fragment>
+  </Button>
+{/if}

@@ -41,6 +41,7 @@
   export let borderStyle: 'solid' | 'dashed' = 'solid'
   export let id: string | undefined = undefined
   export let input: HTMLButtonElement | undefined = undefined
+  export let realWidth: number | undefined = undefined
 
   export let showTooltip: LabelAndProps | undefined = undefined
 
@@ -85,6 +86,7 @@
 <button
   use:tooltip={showTooltip}
   bind:this={input}
+  bind:clientWidth={realWidth}
   class="button {kind} {size} jf-{justify}"
   class:only-icon={iconOnly}
   class:border-radius-1={shape === undefined}
@@ -140,8 +142,12 @@
     height: 1.375rem;
     font-size: 0.75rem;
     line-height: 0.75rem;
+    padding: 0 0.25rem !important;
     &.only-icon {
       width: 1.375rem;
+    }
+    &.link-bordered {
+      background-color: var(--board-card-bg-color);
     }
   }
   .small {

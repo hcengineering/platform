@@ -31,6 +31,7 @@
   export let shape: ButtonShape = undefined
   export let justify: 'left' | 'center' = 'left'
   export let width: string | undefined = '100%'
+  export let onlyIcon: boolean = false
 
   const client = getClient()
 
@@ -67,6 +68,7 @@
       {popupPlaceholder}
       value={value.project}
       onProjectIdChange={handleProjectIdChanged}
+      {onlyIcon}
     />
   </div>
 {/if}
