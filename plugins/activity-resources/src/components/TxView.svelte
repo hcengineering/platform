@@ -153,7 +153,7 @@
       </div>
     {/if}
 
-    <div class="flex-grow flex-col clear-mins" class:isNew>
+    <div class="flex-grow flex-col clear-mins" class:isNew class:comment={viewlet && viewlet?.editable}>
       <div class="flex-between">
         <div class="flex-row-center flex-grow label">
           <div class="bold">
@@ -313,6 +313,23 @@
 {/if}
 
 <style lang="scss">
+  .comment {
+    position: relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: -0.25rem;
+      bottom: -0.5rem;
+      left: -0.625rem;
+      right: -0.625rem;
+      background-color: var(--accent-bg-color);
+      border: 1px solid var(--divider-color);
+      border-radius: 0.25rem;
+      z-index: -1;
+    }
+  }
+
   .msgactivity-container {
     position: relative;
     min-width: 0;

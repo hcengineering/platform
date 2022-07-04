@@ -111,6 +111,8 @@ p:last-child { margin-block-end: 0; }
   word-wrap: break-word;
   hyphens: auto;
   line-height: 150%;
+  color: var(--accent-color);
+  
   a {
     word-break: break-all;
     word-break: break-word;
