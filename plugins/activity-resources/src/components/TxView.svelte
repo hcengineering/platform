@@ -325,8 +325,7 @@
     &::after {
       content: '';
       position: absolute;
-      // top: -0.625rem;
-      // bottom: -0.5rem;
+      bottom: -0.5rem;
       left: -0.625rem;
       right: -0.625rem;
       background-color: var(--accent-bg-color);
@@ -337,11 +336,9 @@
   }
   .comment::after {
     top: -0.25rem;
-    bottom: -0.5rem;
   }
   .mention::after {
     top: -0.625rem;
-    bottom: -0.5rem;
   }
 
   .msgactivity-container {
