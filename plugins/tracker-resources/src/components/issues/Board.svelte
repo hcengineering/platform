@@ -18,7 +18,7 @@
   import { Kanban, TypeState } from '@anticrm/kanban'
   import { createQuery } from '@anticrm/presentation'
   import type { Issue, IssueStatus, Team } from '@anticrm/tracker'
-  import { Button, Icon, IconAdd, showPopup, showPanel, Component } from '@anticrm/ui'
+  import { Button, Icon, IconAdd, showPopup, showPanel, Component, getPlatformColor } from '@anticrm/ui'
   import { focusStore, ListSelectionProvider, SelectDirection, selectionStore } from '@anticrm/view-resources'
   import ActionContext from '@anticrm/view-resources/src/components/ActionContext.svelte'
   import Menu from '@anticrm/view-resources/src/components/Menu.svelte'
@@ -110,7 +110,6 @@
   <Kanban
     bind:this={kanbanUI}
     _class={tracker.class.Issue}
-    space={currentSpace}
     search=""
     {states}
     {options}
@@ -134,7 +133,7 @@
       <div class="header flex-col">
         <div class="flex-between label font-medium w-full h-full">
           <div class="flex-row-center gap-2">
-            <Icon icon={state.icon} size={'small'} />
+            <Icon icon={state.icon} fill={getPlatformColor(state.color)} size={'small'} />
             <span class="lines-limit-2 ml-2">{state.title}</span>
             <span class="counter ml-2 text-md">{count}</span>
           </div>

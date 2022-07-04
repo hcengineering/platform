@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Ref, SortingOrder, WithLookup } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
-  import { Team, Issue, IssueStatus } from '@anticrm/tracker'
+  import { Issue, IssueStatus } from '@anticrm/tracker'
   import {
     Icon,
     tooltip,
@@ -25,23 +25,19 @@
     showPopup,
     SelectPopup,
     closeTooltip,
-    Spinner
+    Spinner,
+    getPlatformColor
   } from '@anticrm/ui'
   import tracker from '../../../plugin'
   import { getIssueId } from '../../../issues'
+  import IssueStatusIcon from '../IssueStatusIcon.svelte'
 
   export let issue: WithLookup<Issue>
-  export let team: Team
-  export let issueStatuses: WithLookup<IssueStatus>[]
 
   const subIssuesQeury = createQuery()
 
-  let subIssues: Issue[] | undefined
+  let subIssues: WithLookup<Issue>[] | undefined
   let subIssuesElement: Element
-
-  function getIssueStatusIcon (issue: Issue) {
-    return issueStatuses.find((s) => issue.status === s._id)?.$lookup?.category?.icon ?? null
-  }
 
   function openIssue (target: Ref<Issue>) {
     if (target !== issue._id) {
@@ -62,12 +58,20 @@
       showPopup(
         SelectPopup,
         {
-          value: subIssues.map((iss) => ({
-            id: iss._id,
-            icon: getIssueStatusIcon(iss),
-            text: `${getIssueId(team, iss)} ${iss.title}`,
-            isSelected: iss._id === issue._id
-          })),
+          value: subIssues.map((iss) => {
+            const team = iss.$lookup?.space
+            const status = iss.$lookup?.status as WithLookup<IssueStatus>
+            const icon = status.$lookup?.category?.icon
+            const color = status.color ?? status.$lookup?.category?.color
+
+            return {
+              id: iss._id,
+              icon,
+              isSelected: iss._id === issue._id,
+              ...(team !== undefined ? { text: `${getIssueId(team, iss)} ${iss.title}` } : undefined),
+              ...(color !== undefined ? { iconColor: getPlatformColor(color) } : undefined)
+            }
+          }),
           width: 'large'
         },
         {
@@ -91,7 +95,13 @@
       tracker.class.Issue,
       { space: issue.space, attachedTo: parentIssue._id },
       (res) => (subIssues = res),
-      { sort: { modifiedOn: SortingOrder.Descending } }
+      {
+        sort: { modifiedOn: SortingOrder.Descending },
+        lookup: {
+          space: tracker.class.Team,
+          status: [tracker.class.IssueStatus, { category: tracker.class.IssueStatusCategory }]
+        }
+      }
     )
   } else {
     subIssuesQeury.unsubscribe()
@@ -99,7 +109,6 @@
 </script>
 
 {#if parentIssue}
-  {@const icon = getIssueStatusIcon(issue)}
   <div class="flex root">
     <div class="item clear-mins">
       <div
@@ -107,12 +116,14 @@
         use:tooltip={{ label: tracker.string.OpenParent, direction: 'bottom' }}
         on:click={openParentIssue}
       >
-        {#if icon}
+        {#if issue?.$lookup?.status}
           <div class="pr-2">
-            <Icon {icon} size="small" />
+            <IssueStatusIcon value={issue.$lookup.status} size="small" />
           </div>
         {/if}
-        <span class="overflow-label flex-no-shrink mr-2">{getIssueId(team, parentIssue)}</span>
+        {#if issue.$lookup?.space}
+          <span class="overflow-label flex-no-shrink mr-2">{getIssueId(issue.$lookup.space, parentIssue)}</span>
+        {/if}
         <span class="overflow-label issue-title">{parentIssue.title}</span>
       </div>
     </div>

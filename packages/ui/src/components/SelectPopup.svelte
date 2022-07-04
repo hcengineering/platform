@@ -26,6 +26,7 @@
   interface ValueType {
     id: number | string
     icon?: Asset
+    iconColor?: string,
     label?: IntlString
     text?: string
     isSelected?: boolean
@@ -118,7 +119,7 @@
               {/if}
               {#if item.icon}
                 <div class="mr-2">
-                  <Icon icon={item.icon} {size} />
+                  <Icon icon={item.icon} fill={item.iconColor} {size} />
                 </div>
               {/if}
               <span class="label" class:text-base={huge}>
