@@ -26,7 +26,7 @@
   interface ValueType {
     id: number | string
     icon?: Asset
-    iconColor?: string,
+    iconColor?: string
     label?: IntlString
     text?: string
     isSelected?: boolean
