@@ -434,13 +434,13 @@
       &:hover { background-color: var(--highlight-select-hover); }
     }
   }
+}
 
-  .scroller-thead {
-    position: sticky;
-    top: 0;
-    z-index: 2;
-    background-color: var(--body-color);
-  }
+.scroller-thead {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background-color: var(--body-color);
 }
 
 // THead background-color in Tooltip and Popups
