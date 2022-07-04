@@ -287,6 +287,7 @@ export default plugin(trackerId, {
     CopyIssueLink: '' as Ref<Action>,
     MoveToTeam: '' as Ref<Action>,
     Relations: '' as Ref<Action>,
+    NewSubIssue: '' as Ref<Action>,
     EditWorkflowStatuses: '' as Ref<Action>
   },
   team: {
