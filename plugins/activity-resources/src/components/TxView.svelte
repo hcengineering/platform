@@ -325,6 +325,7 @@
     &::after {
       content: '';
       position: absolute;
+      top: -0.25rem;
       bottom: -0.5rem;
       left: -0.625rem;
       right: -0.625rem;
