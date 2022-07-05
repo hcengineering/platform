@@ -364,6 +364,13 @@ export function createModel (builder: Builder): void {
     config: []
   })
 
+  builder.createDoc(view.class.Viewlet, core.space.Model, {
+    attachTo: recruit.class.Applicant,
+    descriptor: task.viewlet.Dashboard,
+    options: {},
+    config: []
+  })
+
   builder.mixin(recruit.class.Applicant, core.class.Class, task.mixin.KanbanCard, {
     card: recruit.component.KanbanCard
   })

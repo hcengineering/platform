@@ -467,6 +467,17 @@ export function createModel (builder: Builder): void {
     task.viewlet.Kanban
   )
 
+  builder.createDoc(
+    view.class.ViewletDescriptor,
+    core.space.Model,
+    {
+      label: task.string.Dashboard,
+      icon: task.icon.Dashboard,
+      component: task.component.Dashboard
+    },
+    task.viewlet.Dashboard
+  )
+
   builder.mixin(task.class.TodoItem, core.class.Class, view.mixin.CollectionEditor, {
     editor: task.component.Todos
   })

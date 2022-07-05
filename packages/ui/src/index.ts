@@ -143,6 +143,7 @@ export { default as FocusHandler } from './components/FocusHandler.svelte'
 export { default as ListView } from './components/ListView.svelte'
 export { default as ToggleButton } from './components/ToggleButton.svelte'
 export { default as ExpandCollapse } from './components/ExpandCollapse.svelte'
+export { default as BarDashboard } from './components/BarDashboard.svelte'
 
 export * from './types'
 export * from './location'

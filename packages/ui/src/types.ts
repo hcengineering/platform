@@ -188,3 +188,14 @@ export interface PopupOptions {
   direction: string
   fullSize?: boolean
 }
+
+export interface DashboardItem {
+  label: string
+  values: DashboardGroup[]
+  tooltip?: LabelAndProps
+}
+
+export interface DashboardGroup {
+  value: number
+  color: number
+}
