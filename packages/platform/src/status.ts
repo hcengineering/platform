@@ -74,6 +74,12 @@ export const OK = new Status(Severity.OK, platform.status.OK, {})
 export const ERROR = new Status(Severity.ERROR, platform.status.BadError, {})
 
 /**
+ * Error Status for Unauthorized
+ * @public
+ */
+export const UNAUTHORIZED = new Status(Severity.ERROR, platform.status.Unauthorized, {})
+
+/**
  * @public
  * @param message -
  * @returns

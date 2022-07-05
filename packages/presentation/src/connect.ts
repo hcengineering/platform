@@ -22,9 +22,20 @@ export async function connect (title: string): Promise<Client | undefined> {
   }
 
   const getClient = await getResource(client.function.GetClient)
-  const instance = await getClient(token, endpoint, () => {
-    location.reload()
-  })
+  const instance = await getClient(
+    token,
+    endpoint,
+    () => {
+      location.reload()
+    },
+    () => {
+      clearMetadata()
+      navigate({
+        path: [login.component.LoginApp],
+        query: {}
+      })
+    }
+  )
   console.log('logging in as', email)
 
   const me = await instance.findOne(contact.class.EmployeeAccount, { email })
@@ -33,10 +44,7 @@ export async function connect (title: string): Promise<Client | undefined> {
     setCurrentAccount(me)
   } else {
     console.error('WARNING: no employee account found.')
-    setMetadataLocalStorage(login.metadata.LoginToken, null)
-    setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
-    setMetadataLocalStorage(login.metadata.LoginEmail, null)
-    setMetadataLocalStorage(login.metadata.CurrentWorkspace, null)
+    clearMetadata()
     navigate({
       path: [login.component.LoginApp],
       query: { navigateUrl: encodeURIComponent(JSON.stringify(getCurrentLocation())) }
@@ -72,4 +80,10 @@ export async function connect (title: string): Promise<Client | undefined> {
   document.title = [fetchMetadataLocalStorage(login.metadata.CurrentWorkspace), title].filter((it) => it).join(' - ')
 
   return instance
+}
+function clearMetadata (): void {
+  setMetadataLocalStorage(login.metadata.LoginToken, null)
+  setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
+  setMetadataLocalStorage(login.metadata.LoginEmail, null)
+  setMetadataLocalStorage(login.metadata.CurrentWorkspace, null)
 }

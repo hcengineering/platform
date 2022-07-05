@@ -14,30 +14,30 @@
 // limitations under the License.
 //
 
-import { readResponse, serialize } from '@anticrm/platform'
-import { start, disableLogging } from '../server'
+import { readResponse, serialize, UNAUTHORIZED } from '@anticrm/platform'
 import { generateToken } from '@anticrm/server-token'
 import WebSocket from 'ws'
+import { disableLogging, start } from '../server'
 
 import {
-  Doc,
-  Ref,
   Class,
+  Doc,
   DocumentQuery,
+  Domain,
   FindOptions,
   FindResult,
-  Tx,
-  TxResult,
-  ModelDb,
-  MeasureMetricsContext,
-  toFindResult,
   Hierarchy,
+  MeasureMetricsContext,
+  ModelDb,
+  Ref,
   ServerStorage,
-  Domain
+  toFindResult,
+  Tx,
+  TxResult
 } from '@anticrm/core'
 import { SessionContext } from '@anticrm/server-core'
-import { genMinModel } from './minmodel'
 import { ClientSession } from '../client'
+import { genMinModel } from './minmodel'
 
 describe('server', () => {
   disableLogging()
@@ -99,6 +99,12 @@ describe('server', () => {
   it('should not connect to server without token', (done) => {
     const conn = new WebSocket('ws://localhost:3333/xyz')
     conn.on('error', () => {
+      conn.close()
+    })
+    conn.on('message', (msg: string) => {
+      const resp = readResponse(msg)
+      expect(resp.result === 'hello')
+      expect(resp.error?.code).toBe(UNAUTHORIZED.code)
       conn.close()
     })
     conn.on('close', () => {

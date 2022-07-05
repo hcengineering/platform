@@ -30,7 +30,7 @@ import {
 } from '@anticrm/account'
 import { setMetadata } from '@anticrm/platform'
 import { backup, backupList, createFileBackupStorage, createMinioBackupStorage, restore } from '@anticrm/server-backup'
-import { decodeToken, generateToken } from '@anticrm/server-token'
+import serverToken, { decodeToken, generateToken } from '@anticrm/server-token'
 import toolPlugin, { prepareTools, version } from '@anticrm/server-tool'
 import { program } from 'commander'
 import { Db, MongoClient } from 'mongodb'
@@ -46,6 +46,12 @@ import { diffWorkspace, dumpWorkspace, restoreWorkspace } from './workspace'
 
 const { mongodbUri, minio } = prepareTools()
 
+const serverSecret = process.env.SERVER_SECRET
+if (serverSecret === undefined) {
+  console.error('please provide server secret')
+  process.exit(1)
+}
+
 const transactorUrl = process.env.TRANSACTOR_URL
 if (transactorUrl === undefined) {
   console.error('please provide transactor url.')
@@ -60,6 +66,7 @@ if (elasticUrl === undefined) {
 
 setMetadata(toolPlugin.metadata.Endpoint, transactorUrl)
 setMetadata(toolPlugin.metadata.Transactor, transactorUrl)
+setMetadata(serverToken.metadata.Secret, serverSecret)
 
 async function withDatabase (uri: string, f: (db: Db, client: MongoClient) => Promise<any>): Promise<void> {
   console.log(`connecting to database '${uri}'...`)
