@@ -52,8 +52,8 @@
     const color = status?.color ?? category?.color
 
     return {
-      ...category?.icon !== undefined ? { icon: category.icon } : {},
-      ...color !== undefined ? { iconColor: getPlatformColor(color) } : {}
+      ...(category?.icon !== undefined ? { icon: category.icon } : {}),
+      ...(color !== undefined ? { iconColor: getPlatformColor(color) } : {})
     }
   }
 
