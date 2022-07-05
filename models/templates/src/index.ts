@@ -58,7 +58,7 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       label: templates.string.Templates,
-      icon: templates.icon.Templates,
+      icon: templates.icon.Template,
       action: templates.action.ShowTemplates,
       order: 1500
     },

@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Asset, getResource, IntlString } from '@anticrm/platform'
   import presentation, { getClient, ObjectSearchCategory } from '@anticrm/presentation'
-  import { AnySvelteComponent, ActionIcon, Button, showPopup } from '@anticrm/ui'
+  import { AnySvelteComponent, Icon, Button, showPopup } from '@anticrm/ui'
   import { AnyExtension } from '@tiptap/core'
   import { createEventDispatcher } from 'svelte'
   import { Completion } from '../Completion'
@@ -310,14 +310,29 @@
       <button class="sendButton" on:click={submit}><div class="icon"><Send size={'medium'} /></div></button>
     {/if}
   </div>
-  <div class="buttons-group medium-gap ml-3 mt-2">
+  <div class="buttons-group large-gap ml-4 mt-2">
     {#each actions as a}
-      <ActionIcon icon={a.icon} size={'medium'} on:click={(evt) => handleAction(a, evt)} />
+      <div class="icon-button" on:click={(evt) => handleAction(a, evt)}>
+        <Icon icon={a.icon} size={'medium'} />
+      </div>
     {/each}
   </div>
 </div>
 
 <style lang="scss">
+  .icon-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 1rem;
+    height: 1rem;
+    color: var(--dark-color);
+    cursor: pointer;
+
+    &:hover {
+      color: var(--accent-color);
+    }
+  }
   .ref-container {
     display: flex;
     flex-direction: column;

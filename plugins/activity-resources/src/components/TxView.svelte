@@ -299,7 +299,7 @@
       </div>
 
       {#if viewlet && viewlet.component && viewlet.display !== 'inline'}
-        <div class={viewlet.display}>
+        <div class="activity-content {viewlet.display}">
           <ShowMore ignore={edit}>
             {#if tx.collectionAttribute !== undefined && (tx.txDocIds?.size ?? 0) > 1}
               <div class="flex-row-center flex-grow flex-wrap clear-mins">
