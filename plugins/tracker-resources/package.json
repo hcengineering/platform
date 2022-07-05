@@ -52,6 +52,8 @@
     "@anticrm/panel": "~0.6.0",
     "@anticrm/kanban": "~0.6.0",
     "@anticrm/attachment-resources": "~0.6.0",
-    "@anticrm/workbench": "~0.6.1"
+    "@anticrm/workbench": "~0.6.1",
+    "@anticrm/attachment": "~0.6.1",
+    "@anticrm/chunter-resources": "~0.6.0"
   }
 }
