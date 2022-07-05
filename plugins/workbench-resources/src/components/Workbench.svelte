@@ -147,7 +147,7 @@
 
   async function updateWindowTitle (loc: Location) {
     const title = (await getWindowTitle(loc)) ?? getMetadata(workbench.metadata.PlatformTitle) ?? 'Platform'
-    const ws = fetchMetadataLocalStorage(login.metadata.CurrentWorkspace)
+    const ws = loc.path[1]
     document.title = ws == null ? title : `${ws} - ${title}`
   }
   async function getWindowTitle (loc: Location) {
@@ -169,9 +169,9 @@
   }
 
   async function syncLoc (loc: Location): Promise<void> {
-    const app = loc.path.length > 1 ? loc.path[1] : undefined
-    const space = loc.path.length > 2 ? (loc.path[2] as Ref<Space>) : undefined
-    const special = loc.path.length > 3 ? loc.path[3] : undefined
+    const app = loc.path.length > 2 ? loc.path[2] : undefined
+    const space = loc.path.length > 3 ? (loc.path[3] as Ref<Space>) : undefined
+    const special = loc.path.length > 4 ? loc.path[4] : undefined
 
     if (currentAppAlias !== app) {
       clear(1)
@@ -195,13 +195,13 @@
       const last = localStorage.getItem(`platform_last_loc_${app}`)
       if (last !== null) {
         const newLocation: Location = JSON.parse(last)
-        if (newLocation.path[2] != null) {
-          loc.path[2] = newLocation.path[2] as Ref<Space>
-          loc.path[3] = newLocation.path[3]
-          if (loc.path[3] == null) {
-            loc.path.length = 3
-          } else {
+        if (newLocation.path[3] != null) {
+          loc.path[3] = newLocation.path[3] as Ref<Space>
+          loc.path[4] = newLocation.path[4]
+          if (loc.path[4] == null) {
             loc.path.length = 4
+          } else {
+            loc.path.length = 5
           }
           navigate(loc)
           return
@@ -282,7 +282,7 @@
 
   function closeAside (): void {
     const loc = getCurrentLocation()
-    loc.path.length = 3
+    loc.path.length = 4
     checkOnHide()
     navigate(loc)
   }

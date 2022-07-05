@@ -82,7 +82,7 @@
 
         if (!message) {
           const loc = getCurrentLocation()
-          loc.path.length = 3
+          loc.path.length = 4
           navigate(loc)
         }
       },

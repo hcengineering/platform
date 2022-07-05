@@ -63,7 +63,7 @@
     icon: IconSearch,
     action: async (_id: Ref<Doc>): Promise<void> => {
       const loc = getCurrentLocation()
-      loc.path[2] = 'spaceBrowser'
+      loc.path[3] = 'spaceBrowser'
       dispatch('open')
       navigate(loc)
     }

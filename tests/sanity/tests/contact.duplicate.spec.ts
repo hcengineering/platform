@@ -8,7 +8,7 @@ test.use({
 test.describe('duplicate-org-test', () => {
   test.beforeEach(async ({ page }) => {
     // Create user and workspace
-    await page.goto(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp`)
+    await page.goto(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/sanity-ws`)
   })
   test('test', async ({ page }) => {
     await page.click('[id="app-lead\\:string\\:LeadApplication"]')

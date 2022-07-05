@@ -2,21 +2,25 @@ import client from '@anticrm/client'
 import contact from '@anticrm/contact'
 import core, { Client, setCurrentAccount, Version } from '@anticrm/core'
 import login from '@anticrm/login'
-import { getMetadata, getResource } from '@anticrm/platform'
+import { getMetadata, getResource, setMetadata } from '@anticrm/platform'
 import { fetchMetadataLocalStorage, getCurrentLocation, navigate, setMetadataLocalStorage } from '@anticrm/ui'
 import presentation from './plugin'
 
 export let versionError: string | undefined = ''
 
 export async function connect (title: string): Promise<Client | undefined> {
-  const token = fetchMetadataLocalStorage(login.metadata.LoginToken)
+  const loc = getCurrentLocation()
+  const ws = loc.path[1]
+  const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
+  const token = tokens[ws]
+  setMetadata(login.metadata.LoginToken, token)
   const endpoint = fetchMetadataLocalStorage(login.metadata.LoginEndpoint)
   const email = fetchMetadataLocalStorage(login.metadata.LoginEmail)
 
-  if (token === null || endpoint === null || email === null) {
+  if (token === undefined || endpoint === null || email === null) {
     navigate({
       path: [login.component.LoginApp],
-      query: { navigateUrl: encodeURIComponent(JSON.stringify(getCurrentLocation())) }
+      query: { navigateUrl: encodeURIComponent(JSON.stringify(loc)) }
     })
     return
   }
@@ -29,7 +33,7 @@ export async function connect (title: string): Promise<Client | undefined> {
       location.reload()
     },
     () => {
-      clearMetadata()
+      clearMetadata(ws)
       navigate({
         path: [login.component.LoginApp],
         query: {}
@@ -44,7 +48,7 @@ export async function connect (title: string): Promise<Client | undefined> {
     setCurrentAccount(me)
   } else {
     console.error('WARNING: no employee account found.')
-    clearMetadata()
+    clearMetadata(ws)
     navigate({
       path: [login.component.LoginApp],
       query: { navigateUrl: encodeURIComponent(JSON.stringify(getCurrentLocation())) }
@@ -77,13 +81,18 @@ export async function connect (title: string): Promise<Client | undefined> {
   }
 
   // Update window title
-  document.title = [fetchMetadataLocalStorage(login.metadata.CurrentWorkspace), title].filter((it) => it).join(' - ')
+  document.title = [ws, title].filter((it) => it).join(' - ')
 
   return instance
 }
-function clearMetadata (): void {
-  setMetadataLocalStorage(login.metadata.LoginToken, null)
+function clearMetadata (ws: string): void {
+  const tokens = fetchMetadataLocalStorage(login.metadata.LoginTokens)
+  if (tokens !== null) {
+    const loc = getCurrentLocation()
+    delete tokens[loc.path[1]]
+    setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
+  }
+  setMetadata(login.metadata.LoginToken, null)
   setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
   setMetadataLocalStorage(login.metadata.LoginEmail, null)
-  setMetadataLocalStorage(login.metadata.CurrentWorkspace, null)
 }

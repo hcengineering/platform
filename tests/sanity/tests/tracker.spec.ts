@@ -5,9 +5,9 @@ test.use({
 })
 
 async function navigate (page: Page): Promise<void> {
-  await page.goto(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp`)
+  await page.goto(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/sanity-ws`)
   await page.click('[id="app-tracker\\:string\\:TrackerApplication"]')
-  await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/tracker`)
+  await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/sanity-ws/tracker`)
 }
 
 interface IssueProps {

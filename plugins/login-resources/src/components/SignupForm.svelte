@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Status, Severity, OK } from '@anticrm/platform'
+  import { Status, Severity, OK, setMetadata } from '@anticrm/platform'
 
   import Form from './Form.svelte'
   import { signUp } from '../utils'
@@ -49,7 +49,7 @@
       status = loginStatus
 
       if (result !== undefined) {
-        setMetadataLocalStorage(login.metadata.LoginToken, result.token)
+        setMetadata(login.metadata.LoginToken, result.token)
         setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)
         setMetadataLocalStorage(login.metadata.LoginEmail, result.email)
         const loc = getCurrentLocation()

@@ -113,13 +113,13 @@
       const location = getCurrentLocation()
 
       location.fragment = message._id
-      location.path[2] = message.space
+      location.path[3] = message.space
 
       if (message.attachedToClass === chunter.class.Message) {
-        location.path.length = 4
-        location.path[3] = message.attachedTo
+        location.path.length = 5
+        location.path[4] = message.attachedTo
       } else {
-        location.path.length = 3
+        location.path.length = 4
       }
       await navigator.clipboard.writeText(`${window.location.origin}${locationToUrl(location)}`)
     }

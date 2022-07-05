@@ -36,8 +36,8 @@
 
   function getLoc (): Location {
     const loc = getCurrentLocation()
-    loc.path[2] = value._id
-    loc.path.length = 3
+    loc.path[3] = value._id
+    loc.path.length = 4
     return loc
   }
 

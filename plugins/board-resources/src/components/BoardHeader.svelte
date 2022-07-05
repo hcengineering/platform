@@ -20,10 +20,10 @@
 
   function showMenu () {
     const loc = getCurrentLocation()
-    loc.path[3] = space._id
+    loc.path[4] = space._id
     navigate(loc)
   }
-  $: showMenuButton = $location.path[3] === undefined
+  $: showMenuButton = $location.path[4] === undefined
 
   $: viewslist = viewlets.map((views) => {
     return {

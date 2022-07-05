@@ -96,7 +96,7 @@
           class="showMoreAttachmentsButton"
           on:click={() => {
             const loc = getCurrentLocation()
-            loc.path[2] = 'fileBrowser'
+            loc.path[3] = 'fileBrowser'
             loc.query = channel ? { spaceId: channel._id } : {}
             navigate(loc)
           }}

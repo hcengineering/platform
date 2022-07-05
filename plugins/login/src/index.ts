@@ -30,9 +30,9 @@ export default plugin(loginId, {
     TelegramUrl: '' as Asset,
     GmailUrl: '' as Asset,
     LoginToken: '' as Metadata<string>,
+    LoginTokens: '' as Metadata<Record<string, string>>,
     LoginEndpoint: '' as Metadata<string>,
     LoginEmail: '' as Metadata<string>,
-    CurrentWorkspace: '' as Metadata<string>,
     OverrideLoginToken: '' as Metadata<string>, // debug purposes
     OverrideEndpoint: '' as Metadata<string>
   },

@@ -37,8 +37,8 @@
           closePopup()
           closePanel()
           const loc = getCurrentLocation()
-          loc.path[2] = organization._id
-          loc.path.length = 3
+          loc.path[3] = organization._id
+          loc.path.length = 4
           navigate(loc)
         }
       }}

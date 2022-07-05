@@ -14,11 +14,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Status, Severity, OK } from '@anticrm/platform'
+  import { Status, Severity, OK, setMetadata } from '@anticrm/platform'
 
   import Form from './Form.svelte'
   import { createWorkspace } from '../utils'
-  import { getCurrentLocation, navigate, setMetadataLocalStorage, showPopup } from '@anticrm/ui'
+  import { fetchMetadataLocalStorage, getCurrentLocation, navigate, setMetadataLocalStorage, showPopup } from '@anticrm/ui'
   import login from '../plugin'
   import { workbenchId } from '@anticrm/workbench'
   import InviteLink from './InviteLink.svelte'
@@ -40,12 +40,14 @@
       status = loginStatus
 
       if (result !== undefined) {
-        setMetadataLocalStorage(login.metadata.LoginToken, result.token)
+        setMetadata(login.metadata.LoginToken, result.token)
+        const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
+        tokens[object.workspace] = result.token
+        setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
         setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)
         setMetadataLocalStorage(login.metadata.LoginEmail, result.email)
-        setMetadataLocalStorage(login.metadata.CurrentWorkspace, object.workspace)
         showPopup(InviteLink, {}, undefined, () => {
-          navigate({ path: [workbenchId] })
+          navigate({ path: [workbenchId, object.workspace] })
         })
       }
     }
