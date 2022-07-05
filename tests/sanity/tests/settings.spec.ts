@@ -14,12 +14,10 @@ test.describe('contact tests', () => {
     await page.goto(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp`)
     // Click #profile-button
     await page.click('#profile-button')
-    await page.click('.antiPopup-submenu >> text=Settings')
-    // Click button:has-text("Setting")
-    await page.click('button:has-text("Setting")')
-    await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/setting/setting`)
+    await page.click('text=John Appleseed')
+    // await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/setting/setting`)
     // Click text=Edit profile
-    await page.click('text=Edit profile')
+    // await page.click('text=Edit profile')
     await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/setting/profile`)
     // Click [placeholder="Location"]
     await page.click('[placeholder="Location"]')
@@ -43,16 +41,16 @@ test.describe('contact tests', () => {
     await page.goto(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp`)
     // Click #profile-button
     await page.click('#profile-button')
-    await page.click('.antiPopup-submenu >> text=Settings')
-    // Click button:has-text("Templates")
-    await page.click('button:has-text("Templates")')
-    await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/setting/message-templates`)
-    // Go to http://localhost:8083/workbench%3Acomponent%3AWorkbenchApp/setting/message-templates
-    await page.goto(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/setting/message-templates`)
+    // Click button:has-text("Settings")
+    await page.hover('button:has-text("Settings")')
+    await page.click('button:has-text("Settings")')
+    // Click text=Workspace Notifications >> button
+    await page.click('text=Workspace Notifications >> button')
+    await page.click('text=Templates')
     // Click .flex-center.icon-button
     await page.click('#create-template >> .flex-center.icon-button')
     // Click [placeholder="New\ template"]
-    await page.click('[placeholder="New\\ template"]')
+    // await page.click('[placeholder="New\\ template"]')
     // Fill [placeholder="New\ template"]
     await page.fill('[placeholder="New\\ template"]', 't1')
 
@@ -76,10 +74,13 @@ test.describe('contact tests', () => {
     await page.goto(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp`)
     // Click #profile-button
     await page.click('#profile-button')
-    await page.click('.antiPopup-submenu >> text=Settings')
+    // await page.click('text=Workspace')
+    await page.hover('button:has-text("Settings")')
+    await page.click('button:has-text("Settings")')
+    // Click text=Workspace Notifications >> button
+    await page.click('text=Workspace Notifications >> button')
     // Click button:has-text("Manage Statuses")
-    await page.click('button:has-text("Manage Statuses")')
-    await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/setting/statuses`)
+    await page.click('text="Manage Statuses"')
     // Click text=Vacancies
     await page.click('text=Vacancies')
     // Click #create-template div

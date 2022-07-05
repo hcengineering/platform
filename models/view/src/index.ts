@@ -202,6 +202,7 @@ export class TAction extends TDoc implements Action {
   description!: IntlString
   category!: Ref<ActionCategory>
   context!: ViewContext
+  secured?: boolean
 }
 
 @Model(view.class.ActionCategory, core.class.Doc, DOMAIN_MODEL)

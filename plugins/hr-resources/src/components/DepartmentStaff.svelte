@@ -13,23 +13,20 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Employee } from '@anticrm/contact'
-  import { EmployeePresenter } from '@anticrm/contact-resources'
-  import contact from '@anticrm/contact-resources/src/plugin'
-  import { Ref, SortingOrder, WithLookup } from '@anticrm/core'
-  import { Department, DepartmentMember, Staff } from '@anticrm/hr'
-  import { createQuery, getClient, MessageBox, UsersPopup } from '@anticrm/presentation'
+  import contact from '@anticrm/contact'
+  import { Ref, WithLookup } from '@anticrm/core'
+  import { Department, Staff } from '@anticrm/hr'
+  import { createQuery, getClient, UsersPopup } from '@anticrm/presentation'
   import { Button, eventToHTMLElement, IconAdd, Label, Scroller, showPopup } from '@anticrm/ui'
+  import view, { Viewlet, ViewletPreference } from '@anticrm/view'
+  import { Table, ViewletSettingButton } from '@anticrm/view-resources'
   import hr from '../plugin'
+  import { addMember } from '../utils'
 
   export let objectId: Ref<Department> | undefined
   let value: Department | undefined
-  let employees: WithLookup<Staff>[] = []
-  let accounts: DepartmentMember[] = []
 
   const departmentQuery = createQuery()
-  const query = createQuery()
-  const accountsQuery = createQuery()
   const client = getClient()
 
   $: objectId &&
@@ -42,36 +39,6 @@
       (res) => ([value] = res)
     )
 
-  $: value &&
-    accountsQuery.query(
-      contact.class.EmployeeAccount,
-      {
-        _id: { $in: value.members }
-      },
-      (res) => {
-        accounts = res
-      }
-    )
-
-  $: accounts.length &&
-    query.query(
-      hr.mixin.Staff,
-      {
-        _id: { $in: accounts.map((p) => p.employee) as Ref<Staff>[] }
-      },
-      (res) => {
-        employees = res
-      },
-      {
-        sort: {
-          name: SortingOrder.Descending
-        },
-        lookup: {
-          department: hr.class.Department
-        }
-      }
-    )
-
   function add (e: MouseEvent) {
     showPopup(
       UsersPopup,
@@ -80,95 +47,79 @@
         docQuery: {
           active: true
         },
-        ignoreUsers: employees.filter((p) => p.department === objectId).map((p) => p._id)
+        ignoreUsers: memberItems.map((it) => it._id)
       },
       eventToHTMLElement(e),
-      addMember
+      (res) => addMember(client, res, value)
     )
   }
 
-  async function addMember (employee: Employee | undefined): Promise<void> {
-    if (employee === null || employee === undefined || value === undefined) {
-      return
-    }
+  let memberItems: Staff[] = []
 
-    const hierarchy = client.getHierarchy()
-    if (!hierarchy.hasMixin(employee, hr.mixin.Staff)) {
-      await client.createMixin(employee._id, employee._class, employee.space, hr.mixin.Staff, {
-        department: value._id
+  const membersQuery = createQuery()
+  $: membersQuery.query(hr.mixin.Staff, { department: objectId }, (result) => {
+    memberItems = result
+  })
+
+  const preferenceQuery = createQuery()
+  let preference: ViewletPreference | undefined
+  let loading = false
+  let descr: WithLookup<Viewlet> | undefined
+
+  $: updateDescriptor(hr.viewlet.TableMember)
+
+  function updateDescriptor (id: Ref<Viewlet>) {
+    loading = true
+    client
+      .findOne<Viewlet>(view.class.Viewlet, {
+        _id: id
       })
-    } else {
-      const staff = hierarchy.as(employee, hr.mixin.Staff)
-      if (staff.department === value._id) return
-      const current = await client.findOne(hr.class.Department, {
-        _id: staff.department
+      .then((res) => {
+        descr = res
+        if (res !== undefined) {
+          preferenceQuery.query(
+            view.class.ViewletPreference,
+            {
+              attachedTo: res._id
+            },
+            (res) => {
+              preference = res[0]
+              loading = false
+            },
+            { limit: 1 }
+          )
+        }
       })
-      if (current !== undefined) {
-        showPopup(
-          MessageBox,
-          {
-            label: hr.string.MoveStaff,
-            message: hr.string.MoveStaffDescr,
-            params: {
-              current: current.name,
-              department: value.name
-            }
-          },
-          undefined,
-          async (res?: boolean) => {
-            if (res === true && value !== undefined) {
-              await client.updateMixin(employee._id, employee._class, employee.space, hr.mixin.Staff, {
-                department: value._id
-              })
-            }
-          }
-        )
-      } else {
-        await client.updateMixin(employee._id, employee._class, employee.space, hr.mixin.Staff, {
-          department: value._id
-        })
-      }
-    }
   }
 </script>
 
 <div class="antiSection">
   <div class="antiSection-header">
     <span class="antiSection-header__title">
-      <Label label={contact.string.Members} />
+      <Label label={hr.string.Members} />
     </span>
-    <Button id={hr.string.AddEmployee} icon={IconAdd} kind={'transparent'} shape={'circle'} on:click={add} />
+    <div class="buttons-group xsmall-gap">
+      <ViewletSettingButton viewlet={descr} />
+      <Button id={hr.string.AddEmployee} icon={IconAdd} kind={'transparent'} shape={'circle'} on:click={add} />
+    </div>
   </div>
-  {#if employees.length > 0}
+  {#if (value?.members.length ?? 0) > 0}
     <Scroller>
-      <table class="antiTable">
-        <thead class="scroller-thead">
-          <tr class="scroller-thead__tr">
-            <th><Label label={contact.string.Member} /></th>
-            <th><Label label={hr.string.Department} /></th>
-          </tr>
-        </thead>
-        <tbody>
-          {#each employees as value}
-            <tr class="antiTable-body__row">
-              <td><EmployeePresenter {value} /></td>
-              <td>
-                {#if value.$lookup?.department}
-                  {value.$lookup.department.name}
-                {/if}
-              </td>
-            </tr>
-          {/each}
-        </tbody>
-      </table>
+      <Table
+        _class={hr.mixin.Staff}
+        config={preference?.config ?? descr?.config ?? []}
+        options={descr?.options}
+        query={{ department: objectId }}
+        loadingProps={{ length: value?.members.length ?? 0 }}
+      />
     </Scroller>
   {:else}
     <div class="antiSection-empty solid flex-col-center mt-3">
       <span class="text-sm dark-color">
-        <Label label={contact.string.NoMembers} />
+        <Label label={hr.string.NoMembers} />
       </span>
       <span class="text-sm content-accent-color over-underline" on:click={add}>
-        <Label label={contact.string.AddMember} />
+        <Label label={hr.string.AddMember} />
       </span>
     </div>
   {/if}

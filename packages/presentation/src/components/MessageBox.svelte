@@ -19,14 +19,16 @@
   import presentation from '..'
 
   export let label: IntlString
+  export let labelProps: IntlString
   export let message: IntlString
   export let params: Record<string, any> = {}
+  export let canSubmit = true
 
   const dispatch = createEventDispatcher()
 </script>
 
 <div class="msgbox-container">
-  <div class="overflow-label fs-title mb-4"><Label {label} /></div>
+  <div class="overflow-label fs-title mb-4"><Label {label} params={labelProps ?? {}} /></div>
   <div class="message"><Label label={message} {params} /></div>
   <div class="footer">
     <Button
@@ -36,7 +38,9 @@
       kind={'primary'}
       on:click={() => dispatch('close', true)}
     />
-    <Button label={presentation.string.Cancel} size={'small'} on:click={() => dispatch('close', false)} />
+    {#if canSubmit}
+      <Button label={presentation.string.Cancel} size={'small'} on:click={() => dispatch('close', false)} />
+    {/if}
   </div>
 </div>
 

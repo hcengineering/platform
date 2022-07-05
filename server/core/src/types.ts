@@ -34,7 +34,9 @@ import type {
 } from '@anticrm/core'
 import { Hierarchy, TxFactory } from '@anticrm/core'
 import type { Resource } from '@anticrm/platform'
-import type { Client as MinioClient } from 'minio'
+import type { Client as MinioClient, BucketItem } from 'minio'
+
+export { MinioClient, BucketItem }
 
 /**
  * @public

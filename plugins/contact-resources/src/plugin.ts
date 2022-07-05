@@ -60,6 +60,7 @@ export default mergeIds(contactId, contact, {
     KickEmployee: '' as IntlString,
     KickEmployeeDescr: '' as IntlString,
     Email: '' as IntlString,
-    CreateEmployee: '' as IntlString
+    CreateEmployee: '' as IntlString,
+    Inactive: '' as IntlString
   }
 })

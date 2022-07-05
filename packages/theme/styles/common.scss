@@ -172,7 +172,9 @@
   flex-shrink: 0;
   margin: .25rem 0;
   height: 1px;
-  // background-color: var(--divider-color);
+
+  &.line { background-color: var(--divider-color); }
+  &.short { margin: .25rem 1rem; }
 }
 .antiNav-scroll {
   flex-grow: 1;

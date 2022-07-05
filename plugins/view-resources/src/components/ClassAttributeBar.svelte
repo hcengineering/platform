@@ -66,8 +66,9 @@
         ev.stopPropagation()
         const loc = getCurrentLocation()
         loc.path[1] = settingId
-        loc.path[2] = 'classes'
-        loc.path.length = 3
+        loc.path[2] = 'setting'
+        loc.path[3] = 'classes'
+        loc.path.length = 4
         loc.query = { _class }
         loc.fragment = undefined
         navigate(loc)

@@ -1,5 +1,19 @@
+<!--
+// Copyright © 2022 Hardcore Engineering Inc.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+-->
 <script lang="ts">
-  import { getClient } from '@anticrm/presentation'
+  import { createQuery } from '@anticrm/presentation'
   import setting, { SettingsCategory } from '@anticrm/setting'
   import {
     Component,
@@ -13,17 +27,25 @@
   import { onDestroy } from 'svelte'
   import CategoryElement from './CategoryElement.svelte'
   import login from '@anticrm/login'
-
-  const client = getClient()
+  import { AccountRole, getCurrentAccount } from '@anticrm/core'
+  import { EmployeeAccount } from '@anticrm/contact'
 
   let category: SettingsCategory | undefined
   let categoryId: string = ''
 
   let categories: SettingsCategory[] = []
-  client.findAll(setting.class.SettingsCategory, {}, { sort: { order: 1 } }).then((s) => {
-    categories = s
-    category = findCategory(categoryId)
-  })
+  const account = getCurrentAccount() as EmployeeAccount
+
+  const settingsQuery = createQuery()
+  settingsQuery.query(
+    setting.class.SettingsCategory,
+    {},
+    (res) => {
+      categories = account.role > AccountRole.User ? res : res.filter((p) => p.secured === false)
+      category = findCategory(categoryId)
+    },
+    { sort: { order: 1 } }
+  )
 
   onDestroy(
     location.subscribe(async (loc) => {
@@ -63,11 +85,15 @@
         <Label label={setting.string.Settings} />
       </span>
     </div>
-    {#each categories as category}
+    {#each categories as category, i}
+      {#if i > 0 && categories[i - 1].group !== category.group}
+        <div class="antiNav-divider short line" />
+      {/if}
       <CategoryElement
         icon={category.icon}
         label={category.label}
         selected={category.name === categoryId}
+        expandable={category._id === setting.ids.Setting}
         on:click={() => {
           selectCategory(category.name)
         }}

@@ -95,3 +95,16 @@ export async function resolveLocation (loc: Location): Promise<Location | undefi
 
   return undefined
 }
+
+export async function updateIssueRelation (
+  client: TxOperations,
+  value: Issue,
+  id: Ref<Issue>,
+  prop: 'blockedBy' | 'relatedIssue',
+  operation: '$push' | '$pull'
+): Promise<void> {
+  const update = Array.isArray(value[prop])
+    ? { [operation]: { [prop]: id } }
+    : { [prop]: operation === '$push' ? [id] : [] }
+  await client.update(value, update)
+}

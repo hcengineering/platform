@@ -78,7 +78,7 @@ export class TDepartment extends TSpace implements Department {
 export class TDepartmentMember extends TEmployeeAccount implements DepartmentMember {}
 
 @Mixin(hr.mixin.Staff, contact.class.Employee)
-@UX(contact.string.Employee, hr.icon.HR)
+@UX(hr.string.Staff, hr.icon.HR)
 export class TStaff extends TEmployee implements Staff {
   @Prop(TypeRef(hr.class.Department), hr.string.Department)
   department!: Ref<Department>
@@ -314,6 +314,48 @@ export function createModel (builder: Builder): void {
     },
     hr.action.EditRequest
   )
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: hr.mixin.Staff,
+      descriptor: view.viewlet.Table,
+      config: [
+        '',
+        {
+          key: '$lookup.channels',
+          sortingKey: ['$lookup.channels.lastMessage', 'channels']
+        },
+        'modifiedOn'
+      ],
+      hiddenKeys: []
+    },
+    hr.viewlet.TableMember
+  )
+
+  createAction(builder, {
+    action: view.actionImpl.ValueSelector,
+    actionPopup: view.component.ValueSelector,
+    actionProps: {
+      attribute: 'department',
+      _class: hr.class.Department,
+      query: {},
+      searchField: 'name',
+      placeholder: hr.string.Department
+    },
+    label: hr.string.Department,
+    icon: hr.icon.Department,
+    keyBinding: [],
+    input: 'none',
+    category: hr.category.HR,
+    target: hr.mixin.Staff,
+    context: {
+      mode: ['context'],
+      application: hr.app.HR,
+      group: 'associate'
+    }
+  })
 }
 
 export { hrOperation } from './migration'

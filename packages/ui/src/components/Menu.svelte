@@ -14,6 +14,7 @@
 -->
 <script lang="ts">
   import { afterUpdate, createEventDispatcher, onDestroy, onMount } from 'svelte'
+  import { generateId } from '@anticrm/core'
   import ui from '../plugin'
   import { closePopup, showPopup } from '../popups'
   import { Action } from '../types'
@@ -27,6 +28,7 @@
   const dispatch = createEventDispatcher()
   const btns: HTMLElement[] = []
   let activeElement: HTMLElement
+  const category = generateId()
 
   const keyDown = (ev: KeyboardEvent): void => {
     if (ev.key === 'Tab') {
@@ -51,7 +53,7 @@
     }
     if (ev.key === 'ArrowLeft') {
       dispatch('update', 'left')
-      closePopup('submenu')
+      closePopup(category)
       ev.preventDefault()
       ev.stopPropagation()
     }
@@ -72,11 +74,11 @@
     }
   })
   onDestroy(() => {
-    closePopup('submenu')
+    closePopup(category)
   })
 
   function showActionPopup (action: Action, target: HTMLElement): void {
-    closePopup('submenu')
+    closePopup(category)
     if (action.component !== undefined) {
       console.log(action.props)
       showPopup(
@@ -87,7 +89,7 @@
           dispatch('close')
         },
         undefined,
-        { category: 'submenu', overlay: false }
+        { category, overlay: false }
       )
     }
   }
@@ -96,6 +98,10 @@
       activeElement = target
       showActionPopup(action, target)
     }
+  }
+  export function clearFocus (): void {
+    closePopup(category)
+    activeElement = popup
   }
 
   let focusSpeed: boolean = false
@@ -107,6 +113,7 @@
 <div class="antiPopup" on:keydown={keyDown}>
   <MouseSpeedTracker bind:focusSpeed />
   <div class="ap-space" />
+  <slot name="header" />
   <div class="ap-scroll">
     <div class="ap-box" bind:this={popup}>
       {#if actions.length === 0}
@@ -139,9 +146,10 @@
           <!-- svelte-ignore a11y-mouse-events-have-key-events -->
           <button
             bind:this={btns[i]}
-            class="ap-menuItem antiPopup-submenu"
+            class="ap-menuItem antiPopup-submenu withIconHover"
             class:hover={btns[i] === activeElement}
             on:mouseover={() => focusTarget(action, btns[i])}
+            on:click={() => focusTarget(action, btns[i])}
           >
             {#if action.icon}
               <div class="icon mr-3"><Icon icon={action.icon} size={'small'} /></div>

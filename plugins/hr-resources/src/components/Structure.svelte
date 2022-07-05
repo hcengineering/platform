@@ -14,8 +14,8 @@
 -->
 <script lang="ts">
   import contact from '@anticrm/contact'
-  import { DocumentQuery, Ref } from '@anticrm/core'
-  import type { Department } from '@anticrm/hr'
+  import { DocumentQuery, Ref, WithLookup } from '@anticrm/core'
+  import type { Department, Staff } from '@anticrm/hr'
   import { createQuery } from '@anticrm/presentation'
   import { Button, eventToHTMLElement, Icon, IconAdd, Label, Scroller, SearchEdit, showPopup } from '@anticrm/ui'
   import hr from '../plugin'
@@ -34,8 +34,10 @@
   }
 
   const query = createQuery()
+  const spaceMembers = createQuery()
 
   let descendants: Map<Ref<Department>, Department[]> = new Map<Ref<Department>, Department[]>()
+  let allEmployees: WithLookup<Staff>[] = []
   let head: Department | undefined
 
   query.query(
@@ -57,6 +59,10 @@
       }
     }
   )
+
+  spaceMembers.query(hr.mixin.Staff, {}, (res) => {
+    allEmployees = res
+  })
 </script>
 
 <div class="ac-header full divide">
@@ -82,6 +88,6 @@
 
 <Scroller>
   {#if head}
-    <DepartmentCard value={head} {descendants} />
+    <DepartmentCard value={head} {descendants} {allEmployees} />
   {/if}
 </Scroller>

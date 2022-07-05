@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Account, Arr, Domain, DOMAIN_MODEL, IndexKind, Ref, Space } from '@anticrm/core'
+import { Account, AccountRole, Arr, Domain, DOMAIN_MODEL, IndexKind, Ref, Space } from '@anticrm/core'
 import { Index, Model, Prop, TypeBoolean, TypeString, UX } from '@anticrm/model'
 import core from './component'
 import { TDoc } from './core'
@@ -45,4 +45,5 @@ export class TSpace extends TDoc implements Space {
 @Model(core.class.Account, core.class.Doc, DOMAIN_MODEL)
 export class TAccount extends TDoc implements Account {
   email!: string
+  role!: AccountRole
 }

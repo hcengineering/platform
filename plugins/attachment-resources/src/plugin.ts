@@ -46,6 +46,7 @@ export default mergeIds(attachmentId, attachment, {
   },
   actionImpl: {
     AddAttachmentToSaved: '' as ViewAction,
-    DeleteAttachmentFromSaved: '' as ViewAction
+    DeleteAttachmentFromSaved: '' as ViewAction,
+    DeleteAttachment: '' as ViewAction
   }
 })

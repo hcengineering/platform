@@ -5,18 +5,23 @@
 Core:
 
 - Allow to leave workspace
-- Allow to kick employee
+- Allow to kick employee (Only for owner)
 - Browser notifications
 - Allow to create employee
+- Owner role for employee
 
 HR:
 
 - Allow to change assignee in Kanban
 
 Tracker:
+
 - Manual issues ordering
+- Issue relations
+- Issue status management
 
 Workbench
+
 - Use application aliases in URL
 
 ## 0.6.29
@@ -32,7 +37,7 @@ Tracker:
 - Names of parent issues
 - Roadmap
 - Context menus (Priority/Status/Assignee)
-- 
+
 
 Chunter:
 

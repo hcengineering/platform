@@ -353,20 +353,7 @@ export class LiveQuery extends TxProcessor implements Client {
         }
       } else {
         const updatedDoc = q.result[pos]
-        if (updatedDoc.modifiedOn > tx.modifiedOn) return
-        if (updatedDoc.modifiedOn === tx.modifiedOn) {
-          const current = await this.findOne(q._class, { _id: updatedDoc._id }, q.options)
-          if (current !== undefined && this.match(q, current)) {
-            q.result[pos] = current
-          } else {
-            if (q.options?.limit === q.result.length) {
-              return await this.refresh(q)
-            } else {
-              q.result.splice(pos, 1)
-              q.total--
-            }
-          }
-        } else {
+        if (updatedDoc.modifiedOn < tx.modifiedOn) {
           await this.__updateDoc(q, updatedDoc, tx)
           if (!this.match(q, updatedDoc)) {
             if (q.options?.limit === q.result.length) {
@@ -377,6 +364,18 @@ export class LiveQuery extends TxProcessor implements Client {
             }
           } else {
             q.result[pos] = updatedDoc
+          }
+        } else {
+          const current = await this.findOne(q._class, { _id: updatedDoc._id }, q.options)
+          if (current !== undefined && this.match(q, current)) {
+            q.result[pos] = current
+          } else {
+            if (q.options?.limit === q.result.length) {
+              return await this.refresh(q)
+            } else {
+              q.result.splice(pos, 1)
+              q.total--
+            }
           }
         }
       }

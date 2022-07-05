@@ -1,9 +1,13 @@
-FROM node:16
+FROM node:16-alpine
 
-WORKDIR /usr/src/app
+RUN apk add dumb-init
+ENV NODE_ENV production
+
+WORKDIR /app
+RUN npm install --ignore-scripts=false --verbose sharp --unsafe-perm
 
 COPY bundle.js ./
 COPY dist/ ./dist/
 
 EXPOSE 8080
-CMD [ "node", "bundle.js" ]
+CMD [ "dumb-init", "node", "./bundle.js" ]

@@ -30,6 +30,10 @@
     "PTO2": "PTO/2",
     "Overtime2": "Overtime/2",
     "EditRequest": "Edit {type}",
-    "Request": "Request"
+    "Request": "Request",
+    "Staff": "Worker",
+    "Members": "Members",
+    "NoMembers": "No members added",
+    "AddMember": "Add member"
   }
 }

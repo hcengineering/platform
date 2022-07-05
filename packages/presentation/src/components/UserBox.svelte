@@ -62,11 +62,11 @@
 
   const client = getClient()
 
-  async function updateSelected (value: Ref<Contact>) {
-    selected = await client.findOne(_class, { _id: value })
+  async function updateSelected (value: Ref<Contact> | null | undefined) {
+    selected = value ? await client.findOne(_class, { _id: value }) : undefined
   }
 
-  $: if (value != null) updateSelected(value)
+  $: updateSelected(value)
 
   function getName (obj: Contact): string {
     const isPerson = client.getHierarchy().isDerived(obj._class, contact.class.Person)
@@ -112,7 +112,7 @@
 <div bind:this={container} class="min-w-0" class:w-full={width === '100%'}>
   <Button
     {focusIndex}
-    icon={hideIcon && selected ? undefined : icon}
+    icon={hideIcon || selected ? undefined : icon}
     width={width ?? 'min-content'}
     {size}
     {kind}
@@ -122,8 +122,8 @@
   >
     <span slot="content" class="overflow-label disabled">
       {#if selected}
-        {#if hideIcon}
-          <UserInfo value={selected} size={kind === 'link' ? 'x-small' : 'medium'} {icon} />
+        {#if hideIcon || selected}
+          <UserInfo value={selected} size={kind === 'link' ? 'x-small' : 'tiny'} {icon} />
         {:else}
           {getName(selected)}
         {/if}

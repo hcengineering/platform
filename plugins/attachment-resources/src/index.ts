@@ -208,6 +208,19 @@ export async function DeleteAttachmentFromSaved (attach: Attachment): Promise<vo
   }
 }
 
+export async function DeleteAttachment (attach: Attachment): Promise<void> {
+  const client = getClient()
+
+  await client.removeCollection(
+    attach._class,
+    attach.space,
+    attach._id,
+    attach.attachedTo,
+    attach.attachedToClass,
+    'attachments'
+  )
+}
+
 export default async (): Promise<Resources> => ({
   component: {
     AttachmentsPresenter,
@@ -226,6 +239,7 @@ export default async (): Promise<Resources> => ({
   },
   actionImpl: {
     AddAttachmentToSaved,
-    DeleteAttachmentFromSaved
+    DeleteAttachmentFromSaved,
+    DeleteAttachment
   }
 })

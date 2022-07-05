@@ -14,29 +14,34 @@
 -->
 <script lang="ts">
   import contact, { Employee, EmployeeAccount, formatName } from '@anticrm/contact'
-  import { getCurrentAccount } from '@anticrm/core'
+  import { AccountRole, getCurrentAccount } from '@anticrm/core'
   import login from '@anticrm/login'
-  import { Avatar, createQuery, getClient } from '@anticrm/presentation'
-  import setting, { SettingsCategory, settingId } from '@anticrm/setting'
+  import { Avatar, createQuery } from '@anticrm/presentation'
+  import setting, { settingId, SettingsCategory } from '@anticrm/setting'
+  import type { Action } from '@anticrm/ui'
   import {
     closePanel,
     closePopup,
     getCurrentLocation,
-    Icon,
-    Label,
     navigate,
     setMetadataLocalStorage,
     showPopup,
-    Submenu,
+    Menu,
     locationToUrl
   } from '@anticrm/ui'
-  import type { Action } from '@anticrm/ui'
   import view from '@anticrm/view'
 
-  const client = getClient()
-  async function getItems (): Promise<SettingsCategory[]> {
-    return await client.findAll(setting.class.SettingsCategory, {}, { sort: { order: 1 } })
-  }
+  let items: SettingsCategory[] = []
+
+  const settingsQuery = createQuery()
+  settingsQuery.query(
+    setting.class.SettingsCategory,
+    {},
+    (res) => {
+      items = account.role > AccountRole.User ? res : res.filter((p) => p.secured === false)
+    },
+    { sort: { order: 1 } }
+  )
 
   const account = getCurrentAccount() as EmployeeAccount
   let employee: Employee | undefined
@@ -79,12 +84,14 @@
     showPopup(login.component.InviteLink, {})
   }
 
-  function filterItems (items: SettingsCategory[]): SettingsCategory[] {
-    return items?.filter((p) => p.name !== 'profile' && p.name !== 'password')
+  function filterItems (items: SettingsCategory[], keys: string[]): SettingsCategory[] {
+    return items.filter(
+      (p) => p._id !== setting.ids.Profile && p._id !== setting.ids.Password && keys.includes(p.group ?? '')
+    )
   }
 
-  function editProfile (items: SettingsCategory[] | undefined): void {
-    const profile = items?.find((p) => p.name === 'profile')
+  function editProfile (items: SettingsCategory[]): void {
+    const profile = items.find((p) => p._id === setting.ids.Profile)
     if (profile === undefined) return
     selectCategory(profile)
   }
@@ -97,67 +104,76 @@
     return locationToUrl(loc)
   }
 
-  const getSubmenu = (items: SettingsCategory[]): Action[] => {
-    const actions: Action[] = filterItems(items).map((i) => {
+  const getMenu = (items: SettingsCategory[], keys: string[]): Action[] => {
+    const actions: Action[] = filterItems(items, keys).map((i) => {
       return {
         icon: i.icon,
         label: i.label,
         action: async () => selectCategory(i),
         link: getURLCategory(i),
-        inline: true
+        inline: true,
+        group: i.group
       }
     })
     return actions
   }
+
+  let actions: Action[] = []
+  $: if (items) {
+    actions = []
+    const subActions: Action[] = getMenu(items, ['settings', 'settings-editor'])
+    actions.push({
+      icon: view.icon.Setting,
+      label: setting.string.Settings,
+      action: async () => {},
+      component: Menu,
+      props: { actions: subActions }
+    })
+    actions.push(
+      ...getMenu(items, ['main']),
+      {
+        icon: setting.icon.SelectWorkspace,
+        label: setting.string.SelectWorkspace,
+        action: async () => selectWorkspace(),
+        group: 'end'
+      },
+      {
+        icon: login.icon.InviteWorkspace,
+        label: setting.string.InviteWorkspace,
+        action: async () => inviteWorkspace(),
+        group: 'end'
+      },
+      {
+        icon: setting.icon.Signout,
+        label: setting.string.Signout,
+        action: async () => signOut(),
+        group: 'end'
+      }
+    )
+  }
+  let menu: Menu
 </script>
 
-<div class="selectPopup autoHeight">
-  <div class="scroll">
-    <div class="box">
-      {#await getItems() then items}
-        <div
-          class="menu-item high flex-row-center"
-          on:click={() => {
-            editProfile(items)
-          }}
-        >
-          {#if employee}
-            <Avatar avatar={employee.avatar} size={'medium'} />
-          {/if}
-          <div class="ml-2 flex-col">
-            {#if account}
-              <div class="overflow-label fs-bold caption-color">{formatName(account.name)}</div>
-              <div class="overflow-label text-sm content-dark-color">{account.email}</div>
-            {/if}
-          </div>
-        </div>
-        {#if items}
-          <Submenu
-            icon={view.icon.Setting}
-            label={setting.string.Settings}
-            props={{ actions: getSubmenu(items) }}
-            withHover
-          />
+<svelte:component this={Menu} bind:this={menu} {actions} on:close>
+  <svelte:fragment slot="header">
+    <div
+      class="ap-menuHeader"
+      on:mousemove={() => {
+        menu.clearFocus()
+      }}
+      on:click={() => {
+        editProfile(items)
+      }}
+    >
+      {#if employee}
+        <Avatar avatar={employee.avatar} size={'medium'} />
+      {/if}
+      <div class="ml-2 flex-col">
+        {#if account}
+          <div class="overflow-label fs-bold caption-color">{formatName(account.name)}</div>
+          <div class="overflow-label text-sm content-dark-color">{account.email}</div>
         {/if}
-        <button class="menu-item" on:click={selectWorkspace}>
-          <div class="icon mr-3">
-            <Icon icon={setting.icon.SelectWorkspace} size={'small'} />
-          </div>
-          <Label label={setting.string.SelectWorkspace} />
-        </button>
-        <button class="menu-item" on:click={inviteWorkspace}>
-          <div class="icon mr-3">
-            <Icon icon={login.icon.InviteWorkspace} size={'small'} />
-          </div>
-          <Label label={setting.string.InviteWorkspace} />
-        </button>
-        <button class="menu-item" on:click={signOut}>
-          <div class="icon mr-3">
-            <Icon icon={setting.icon.Signout} size={'small'} />
-          </div>
-          <Label label={setting.string.Signout} />
-        </button>
-      {/await}
+      </div>
     </div>
-  </div>
-</div>
+  </svelte:fragment>
+</svelte:component>

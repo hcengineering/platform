@@ -23,6 +23,7 @@ import {
   dropWorkspace,
   getAccount,
   getWorkspace,
+  setRole,
   listAccounts,
   listWorkspaces,
   upgradeWorkspace
@@ -112,6 +113,14 @@ program
     return await withDatabase(mongodbUri, async (db) => {
       await createWorkspace(db, workspace, cmd.organization)
     })
+  })
+
+program
+  .command('set-user-role <email> <workspace> <role>')
+  .description('set user role')
+  .action(async (email: string, workspace: string, role: number, cmd) => {
+    console.log(`set user ${email} role for ${workspace}...`)
+    await setRole(email, workspace, role)
   })
 
 program

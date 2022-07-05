@@ -13,20 +13,23 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, WithLookup } from '@anticrm/core'
-  import { Department } from '@anticrm/hr'
-  import { Avatar, getClient, UsersPopup } from '@anticrm/presentation'
-  import CreateDepartment from './CreateDepartment.svelte'
-  import DepartmentCard from './DepartmentCard.svelte'
-  import hr from '../plugin'
-  import { IconAdd, IconMoreV, Button, eventToHTMLElement, Label, showPopup, showPanel } from '@anticrm/ui'
   import contact, { Employee } from '@anticrm/contact'
   import { EmployeePresenter } from '@anticrm/contact-resources'
-  import { Menu } from '@anticrm/view-resources'
+  import { Ref, WithLookup } from '@anticrm/core'
+  import { Department, Staff } from '@anticrm/hr'
+  import { Avatar, getClient, UsersPopup } from '@anticrm/presentation'
+  import { Button, closeTooltip, eventToHTMLElement, IconAdd, Label, showPanel, showPopup } from '@anticrm/ui'
   import view from '@anticrm/view'
+  import { Menu } from '@anticrm/view-resources'
+  import hr from '../plugin'
+  import { addMember } from '../utils'
+  import CreateDepartment from './CreateDepartment.svelte'
+  import DepartmentCard from './DepartmentCard.svelte'
+  import PersonsPresenter from './PersonsPresenter.svelte'
 
   export let value: WithLookup<Department>
   export let descendants: Map<Ref<Department>, WithLookup<Department>[]>
+  export let allEmployees: WithLookup<Staff>[] = []
 
   $: currentDescendants = descendants.get(value._id) ?? []
 
@@ -79,6 +82,15 @@
   function edit (e: MouseEvent): void {
     showPanel(view.component.EditDoc, value._id, value._class, 'content')
   }
+
+  export let dragPerson: WithLookup<Staff> | undefined
+  export let dragOver: Department | undefined
+
+  $: dragPersonId = dragPerson?._id
+
+  $: values = allEmployees.filter((it) => it.department === value._id && it._id !== dragPersonId)
+
+  $: dragging = value._id === dragOver?._id && dragPersonId !== undefined
 </script>
 
 <div class="flex-center w-full px-4">
@@ -87,11 +99,28 @@
     class:cursor-pointer={currentDescendants.length}
     on:click|stopPropagation={edit}
     on:contextmenu|preventDefault={showMenu}
+    class:dragging
   >
-    <div class="flex-between pt-4 pb-4 pr-4 pl-2 w-full">
+    <div
+      class="flex-between pt-4 pb-4 pr-4 pl-2 w-full"
+      on:dragover|preventDefault|stopPropagation={(evt) => {
+        dragOver = value
+      }}
+      on:dragend|preventDefault|stopPropagation={() => {
+        dragPerson = undefined
+        closeTooltip()
+      }}
+      on:drop|preventDefault={(itm) => {
+        closeTooltip()
+        addMember(client, dragPerson, value).then(() => {
+          dragPerson = undefined
+          dragOver = undefined
+        })
+      }}
+    >
       <div class="flex-center">
         <div class="mr-2">
-          <Button icon={IconAdd} on:click={createChild} />
+          <Button icon={IconAdd} kind={'link-bordered'} on:click={createChild} />
         </div>
         <Avatar size={'medium'} avatar={value.avatar} icon={hr.icon.Department} />
         <div class="flex-row ml-2">
@@ -100,6 +129,7 @@
           </div>
           <Label label={hr.string.MemberCount} params={{ count: value.members.length }} />
         </div>
+        <PersonsPresenter value={values} bind:dragPerson showDragPerson={dragging} />
       </div>
       <div class="flex-center mr-2">
         <div class="mr-2">
@@ -116,21 +146,27 @@
             onEmployeeEdit={openLeadEditor}
           />
         </div>
-        <Button icon={IconMoreV} kind={'transparent'} on:click={showMenu} />
       </div>
     </div>
   </div>
 </div>
 <div class="ml-8">
   {#each currentDescendants as nested}
-    <DepartmentCard value={nested} {descendants} />
+    <DepartmentCard value={nested} {descendants} {allEmployees} bind:dragPerson bind:dragOver />
   {/each}
 </div>
 
 <style lang="scss">
   .container {
-    border-radius: 0.5rem;
-    border: 1px solid var(--theme-zone-border);
     background-color: var(--board-card-bg-color);
+    border: 1px solid transparent;
+
+    &:hover {
+      background-color: var(--board-card-bg-hover);
+      cursor: pointer;
+    }
+    &.dragging {
+      border: 1px solid var(--theme-bg-focused-color);
+    }
   }
 </style>

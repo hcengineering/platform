@@ -15,12 +15,21 @@
 -->
 <script lang="ts">
   import { Category } from '@anticrm/inventory'
+  import { getPanelURI } from '@anticrm/ui'
+  import view from '@anticrm/view'
 
   export let value: Category
+  export let inline: boolean = false
 </script>
 
 {#if value}
-  <div class="overflow-label sm-tool-icon">
-    {value.name}
-  </div>
+  <a
+    class="flex-presenter"
+    class:inline-presenter={inline}
+    href="#{getPanelURI(view.component.EditDoc, value._id, value._class, 'content')}"
+  >
+    <div class="overflow-label sm-tool-icon">
+      {value.name}
+    </div>
+  </a>
 {/if}

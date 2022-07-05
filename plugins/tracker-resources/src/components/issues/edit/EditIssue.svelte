@@ -13,27 +13,25 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AttachmentDocList } from '@anticrm/attachment-resources'
+  import { AttachmentDocList, AttachmentStyledBox } from '@anticrm/attachment-resources'
   import { Class, Data, Doc, Ref, SortingOrder, WithLookup } from '@anticrm/core'
   import notification from '@anticrm/notification'
   import { Panel } from '@anticrm/panel'
   import { getResource } from '@anticrm/platform'
   import presentation, { createQuery, getClient, MessageViewer } from '@anticrm/presentation'
-  import { StyledTextArea } from '@anticrm/text-editor'
   import type { Issue, IssueStatus, Team } from '@anticrm/tracker'
   import {
     Button,
     EditBox,
-    IconDownOutline,
+    IconAttachment,
     IconEdit,
     IconMoreH,
-    IconUpOutline,
     Label,
     Scroller,
     showPopup,
     Spinner
   } from '@anticrm/ui'
-  import { ContextMenu } from '@anticrm/view-resources'
+  import { ContextMenu, UpDownNavigator } from '@anticrm/view-resources'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import tracker from '../../../plugin'
   import { generateIssueShortLink, getIssueId } from '../../../issues'
@@ -60,6 +58,7 @@
   let description = ''
   let innerWidth: number
   let isEditing = false
+  let descriptionBox: AttachmentStyledBox
 
   const notificationClient = getResource(notification.function.GetNotificationClient).then((res) => res())
 
@@ -153,7 +152,7 @@
         updates
       )
     }
-
+    await descriptionBox.createAttachments()
     isEditing = false
   }
 
@@ -190,8 +189,7 @@
       </div>
     </svelte:fragment>
     <svelte:fragment slot="navigator">
-      <Button icon={IconDownOutline} kind="secondary" size="medium" />
-      <Button icon={IconUpOutline} kind="secondary" size="medium" />
+      <UpDownNavigator element={issue} />
     </svelte:fragment>
     <svelte:fragment slot="header">
       <span class="fs-title">
@@ -226,14 +224,30 @@
             placeholder={tracker.string.IssueTitlePlaceholder}
             kind="large-style"
           />
-          <div class="mt-6">
+          <div class="flex-between mt-6">
             {#key description}
-              <StyledTextArea
-                bind:content={description}
-                placeholder={tracker.string.IssueDescriptionPlaceholder}
-                focus
-              />
+              <div class="flex-grow">
+                <AttachmentStyledBox
+                  bind:this={descriptionBox}
+                  objectId={_id}
+                  _class={tracker.class.Issue}
+                  space={issue.space}
+                  alwaysEdit
+                  showButtons
+                  maxHeight={'card'}
+                  bind:content={description}
+                  placeholder={tracker.string.IssueDescriptionPlaceholder}
+                />
+              </div>
             {/key}
+            <div
+              class="tool"
+              on:click={() => {
+                descriptionBox.attach()
+              }}
+            >
+              <IconAttachment size={'large'} />
+            </div>
           </div>
         </div>
       </Scroller>
@@ -262,8 +276,8 @@
           <SubIssues {issue} {issueStatuses} {currentTeam} />
         {/key}
       </div>
+      <AttachmentDocList value={issue} />
     {/if}
-    <AttachmentDocList value={issue} />
 
     <span slot="actions-label">
       {#if issueId}{issueId}{/if}
@@ -308,5 +322,16 @@
     grid-column: 1 / 3;
     height: 1px;
     background-color: var(--divider-color);
+  }
+
+  .tool {
+    align-self: start;
+    width: 20px;
+    height: 20px;
+    opacity: 0.3;
+    cursor: pointer;
+    &:hover {
+      opacity: 1;
+    }
   }
 </style>

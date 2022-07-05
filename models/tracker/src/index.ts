@@ -497,10 +497,7 @@ export function createModel (builder: Builder): void {
                 id: issuesId,
                 label: tracker.string.Issues,
                 icon: tracker.icon.Issues,
-                component: tracker.component.Issues,
-                componentProps: {
-                  title: tracker.string.Issues
-                }
+                component: tracker.component.Issues
               },
               {
                 id: activeId,
@@ -560,6 +557,26 @@ export function createModel (builder: Builder): void {
     }
   })
 
+  createAction(
+    builder,
+    {
+      action: tracker.actionImpl.EditWorkflowStatuses,
+      label: tracker.string.EditWorkflowStatuses,
+      icon: view.icon.Statuses,
+      input: 'focus',
+      category: tracker.category.Tracker,
+      target: tracker.class.Team,
+      query: {
+        archived: false
+      },
+      context: {
+        mode: ['context', 'browser'],
+        group: 'edit'
+      }
+    },
+    tracker.action.EditWorkflowStatuses
+  )
+
   builder.createDoc(
     view.class.ActionCategory,
     core.space.Model,
@@ -575,7 +592,8 @@ export function createModel (builder: Builder): void {
         component: tracker.component.CreateIssue,
         element: 'top',
         fillProps: {
-          _object: 'parentIssue'
+          _object: 'parentIssue',
+          space: 'space'
         }
       },
       label: tracker.string.NewSubIssue,
@@ -590,7 +608,7 @@ export function createModel (builder: Builder): void {
         group: 'associate'
       }
     },
-    tracker.action.SetParent
+    tracker.action.NewSubIssue
   )
 
   createAction(
@@ -599,7 +617,10 @@ export function createModel (builder: Builder): void {
       action: view.actionImpl.ShowPopup,
       actionProps: {
         component: tracker.component.SetParentIssueActionPopup,
-        element: 'top'
+        element: 'top',
+        fillProps: {
+          _object: 'value'
+        }
       },
       label: tracker.string.SetParent,
       icon: tracker.icon.Parent,
@@ -621,7 +642,10 @@ export function createModel (builder: Builder): void {
     actionPopup: tracker.component.SetParentIssueActionPopup,
     actionProps: {
       component: tracker.component.SetParentIssueActionPopup,
-      element: 'top'
+      element: 'top',
+      fillProps: {
+        _object: 'value'
+      }
     },
     label: tracker.string.SetParent,
     icon: tracker.icon.Parent,
@@ -770,7 +794,10 @@ export function createModel (builder: Builder): void {
       actionProps: {
         component: tracker.component.SetDueDateActionPopup,
         props: { mondayStart: true, withTime: false },
-        element: 'top'
+        element: 'top',
+        fillProps: {
+          _object: 'value'
+        }
       },
       label: tracker.string.SetDueDate,
       icon: tracker.icon.DueDate,
@@ -853,7 +880,7 @@ export function createModel (builder: Builder): void {
     builder,
     {
       action: view.actionImpl.Move,
-      label: view.string.Move,
+      label: tracker.string.MoveToTeam,
       icon: view.icon.Move,
       keyBinding: [],
       input: 'none',
@@ -862,9 +889,32 @@ export function createModel (builder: Builder): void {
       context: {
         mode: ['context', 'browser'],
         application: tracker.app.Tracker,
-        group: 'edit'
+        group: 'associate'
       }
     },
-    tracker.action.CopyIssueLink
+    tracker.action.MoveToTeam
+  )
+  // TODO: fix icon
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.ValueSelector,
+      actionPopup: tracker.component.RelationsPopup,
+      actionProps: {
+        attribute: ''
+      },
+      label: tracker.string.Relations,
+      icon: tracker.icon.Document,
+      keyBinding: [],
+      input: 'focus',
+      category: tracker.category.Tracker,
+      target: tracker.class.Issue,
+      context: {
+        mode: ['context', 'browser'],
+        application: tracker.app.Tracker,
+        group: 'associate'
+      }
+    },
+    tracker.action.Relations
   )
 }
