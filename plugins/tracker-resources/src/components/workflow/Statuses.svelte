@@ -287,7 +287,6 @@
                 {:else}
                   <StatusPresenter
                     value={status}
-                    icon={category.icon}
                     isDefault={status._id === team.defaultIssueStatus}
                     {isSingle}
                     on:default-update={({ detail }) => updateTeamDefaultStatus(detail)}

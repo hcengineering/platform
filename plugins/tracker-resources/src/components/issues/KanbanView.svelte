@@ -19,7 +19,7 @@
   import notification from '@anticrm/notification'
   import { createQuery } from '@anticrm/presentation'
   import { Issue, IssuesGrouping, IssuesOrdering, IssueStatus, Team, ViewOptions } from '@anticrm/tracker'
-  import { Button, Component, Icon, IconAdd, showPanel, showPopup, Loading } from '@anticrm/ui'
+  import { Button, Component, Icon, IconAdd, showPanel, showPopup, getPlatformColor, Loading } from '@anticrm/ui'
   import { focusStore, ListSelectionProvider, SelectDirection, selectionStore } from '@anticrm/view-resources'
   import ActionContext from '@anticrm/view-resources/src/components/ActionContext.svelte'
   import Menu from '@anticrm/view-resources/src/components/Menu.svelte'
@@ -33,6 +33,7 @@
   import IssuePresenter from './IssuePresenter.svelte'
   import ParentNamesPresenter from './ParentNamesPresenter.svelte'
   import PriorityEditor from './PriorityEditor.svelte'
+  import StatusEditor from './StatusEditor.svelte'
 
   export let currentSpace: Ref<Team> = tracker.team.DefaultTeam
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
@@ -164,7 +165,7 @@
       <div class="header flex-col">
         <div class="flex-between label font-medium w-full h-full">
           <div class="flex-row-center gap-2">
-            <Icon icon={state.icon} size={'small'} />
+            <Icon icon={state.icon} fill={getPlatformColor(state.color)} size={'small'} />
             <span class="lines-limit-2 ml-2">{state.title}</span>
             <span class="counter ml-2 text-md">{count}</span>
           </div>
@@ -196,9 +197,14 @@
             <IssuePresenter value={issue} />
             <ParentNamesPresenter value={issue} />
           </div>
-          <span class="fs-bold caption-color mt-1 lines-limit-2">
-            {object.title}
-          </span>
+          <div class="flex-row-center gap-1">
+            {#if groupBy !== 'status'}
+              <StatusEditor value={issue} kind="list" />
+            {/if}
+            <span class="fs-bold caption-color mt-1 lines-limit-2">
+              {object.title}
+            </span>
+          </div>
         </div>
         <div class="abs-rt-content">
           <AssigneePresenter

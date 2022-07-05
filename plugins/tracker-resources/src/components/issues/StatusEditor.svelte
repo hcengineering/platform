@@ -17,9 +17,10 @@
   import { AttachedData, Ref, SortingOrder, WithLookup } from '@anticrm/core'
   import { Issue, IssueStatus } from '@anticrm/tracker'
   import { createQuery, getClient } from '@anticrm/presentation'
-  import { Button, showPopup, SelectPopup, TooltipAlignment, eventToHTMLElement, Icon } from '@anticrm/ui'
+  import { Button, showPopup, SelectPopup, TooltipAlignment, eventToHTMLElement, getPlatformColor } from '@anticrm/ui'
   import type { ButtonKind, ButtonSize } from '@anticrm/ui'
   import tracker from '../../plugin'
+  import IssueStatusIcon from './IssueStatusIcon.svelte'
 
   export let value: Issue | AttachedData<Issue>
   export let statuses: WithLookup<IssueStatus>[] | undefined = undefined
@@ -62,9 +63,17 @@
   }
 
   $: selectedStatus = statuses?.find((status) => status._id === value.status) ?? statuses?.[0]
-  $: selectedStatusIcon = selectedStatus?.$lookup?.category?.icon
   $: selectedStatusLabel = shouldShowLabel ? selectedStatus?.name : undefined
-  $: statusesInfo = statuses?.map((s) => ({ id: s._id, text: s.name, color: s.color, icon: s.$lookup?.category?.icon }))
+  $: statusesInfo = statuses?.map((s) => {
+    const color = s.color ?? s.$lookup?.category?.color
+
+    return {
+      id: s._id,
+      text: s.name,
+      icon: s.$lookup?.category?.icon,
+      ...(color !== undefined ? { iconColor: getPlatformColor(color) } : undefined)
+    }
+  })
   $: if (!statuses) {
     const query = '_id' in value ? { attachedTo: value.space } : {}
     statusesQuery.query(
@@ -85,7 +94,7 @@
   {#if kind === 'list'}
     <div class="flex-row-center flex-no-shrink" class:cursor-pointer={isEditable} on:click={handleStatusEditorOpened}>
       <div class="flex-center flex-no-shrink square-4">
-        {#if selectedStatusIcon}<Icon icon={selectedStatusIcon} size={'inline'} />{/if}
+        {#if selectedStatus}<IssueStatusIcon value={selectedStatus} size="inline" />{/if}
       </div>
       {#if selectedStatusLabel}
         <span class="ml-2 overflow-label disabled text-md fs-bold content-accent-color">
@@ -93,10 +102,9 @@
         </span>
       {/if}
     </div>
-  {:else if selectedStatusLabel}
+  {:else}
     <Button
       showTooltip={isEditable ? { label: tracker.string.SetStatus, direction: tooltipAlignment } : undefined}
-      icon={selectedStatusIcon}
       disabled={!isEditable}
       {justify}
       {size}
@@ -104,18 +112,14 @@
       {width}
       on:click={handleStatusEditorOpened}
     >
-      <span slot="content" class="overflow-label disabled">{selectedStatusLabel}</span>
+      <span slot="content" class="inline-flex">
+        {#if selectedStatus}
+          <IssueStatusIcon value={selectedStatus} size="inline" />
+        {/if}
+        {#if selectedStatusLabel}
+          <span class="overflow-label disabled" class:ml-1={selectedStatus}>{selectedStatusLabel}</span>
+        {/if}
+      </span>
     </Button>
-  {:else}
-    <Button
-      showTooltip={isEditable ? { label: tracker.string.SetStatus, direction: tooltipAlignment } : undefined}
-      icon={selectedStatusIcon}
-      disabled={!isEditable}
-      {justify}
-      {size}
-      {kind}
-      {width}
-      on:click={handleStatusEditorOpened}
-    />
   {/if}
 {/if}

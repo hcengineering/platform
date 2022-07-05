@@ -497,10 +497,7 @@ export function createModel (builder: Builder): void {
                 id: issuesId,
                 label: tracker.string.Issues,
                 icon: tracker.icon.Issues,
-                component: tracker.component.Issues,
-                componentProps: {
-                  title: tracker.string.Issues
-                }
+                component: tracker.component.Issues
               },
               {
                 id: activeId,
@@ -595,7 +592,8 @@ export function createModel (builder: Builder): void {
         component: tracker.component.CreateIssue,
         element: 'top',
         fillProps: {
-          _object: 'parentIssue'
+          _object: 'parentIssue',
+          space: 'space'
         }
       },
       label: tracker.string.NewSubIssue,
@@ -610,7 +608,7 @@ export function createModel (builder: Builder): void {
         group: 'associate'
       }
     },
-    tracker.action.SetParent
+    tracker.action.NewSubIssue
   )
 
   createAction(
@@ -619,7 +617,10 @@ export function createModel (builder: Builder): void {
       action: view.actionImpl.ShowPopup,
       actionProps: {
         component: tracker.component.SetParentIssueActionPopup,
-        element: 'top'
+        element: 'top',
+        fillProps: {
+          _object: 'value'
+        }
       },
       label: tracker.string.SetParent,
       icon: tracker.icon.Parent,
@@ -641,7 +642,10 @@ export function createModel (builder: Builder): void {
     actionPopup: tracker.component.SetParentIssueActionPopup,
     actionProps: {
       component: tracker.component.SetParentIssueActionPopup,
-      element: 'top'
+      element: 'top',
+      fillProps: {
+        _object: 'value'
+      }
     },
     label: tracker.string.SetParent,
     icon: tracker.icon.Parent,
@@ -790,7 +794,10 @@ export function createModel (builder: Builder): void {
       actionProps: {
         component: tracker.component.SetDueDateActionPopup,
         props: { mondayStart: true, withTime: false },
-        element: 'top'
+        element: 'top',
+        fillProps: {
+          _object: 'value'
+        }
       },
       label: tracker.string.SetDueDate,
       icon: tracker.icon.DueDate,

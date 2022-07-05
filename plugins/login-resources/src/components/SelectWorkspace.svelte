@@ -18,7 +18,7 @@
   import { Button, getCurrentLocation, Label, navigate, setMetadataLocalStorage } from '@anticrm/ui'
   import { workbenchId } from '@anticrm/workbench'
   import login from '../plugin'
-  import { getWorkspaces, selectWorkspace } from '../utils'
+  import { getWorkspaces, selectWorkspace, Workspace } from '../utils'
   import StatusControl from './StatusControl.svelte'
 
   export let navigateUrl: string | undefined = undefined
@@ -44,6 +44,19 @@
     }
   }
 
+  async function _getWorkspaces (): Promise<Workspace[]> {
+    try {
+      return getWorkspaces()
+    } catch (err: any) {
+      setMetadataLocalStorage(login.metadata.LoginToken, null)
+      setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
+      setMetadataLocalStorage(login.metadata.LoginEmail, null)
+      setMetadataLocalStorage(login.metadata.CurrentWorkspace, null)
+      changeAccount()
+      throw err
+    }
+  }
+
   function createWorkspace (): void {
     const loc = getCurrentLocation()
     loc.path[1] = 'createWorkspace'
@@ -65,7 +78,7 @@
   <div class="status">
     <StatusControl {status} />
   </div>
-  {#await getWorkspaces() then workspaces}
+  {#await _getWorkspaces() then workspaces}
     <div class="form">
       {#each workspaces as workspace}
         <div

@@ -28,4 +28,10 @@
     <path d="M13.3,8.3c-0.1,2.8-2.5,5.1-5.4,5.1C5,13.4,2.6,11,2.6,8c0-2.9,2.3-5.2,5.1-5.4c0.1-0.4,0.2-0.7,0.4-1c0,0-0.1,0-0.1,0 C4.4,1.7,1.6,4.5,1.6,8c0,3.5,2.9,6.4,6.4,6.4s6.4-2.9,6.4-6.4c0,0,0-0.1,0-0.1C14,8.1,13.7,8.2,13.3,8.3z"/>
     <ellipse cx="12.1" cy="3.9" rx="2.5" ry="2.5"/>
   </symbol>
+  <symbol id="dashboard" viewBox="0 0 256 256">
+    <g style="stroke:none;stroke-width:0;stroke-dasharray:none;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;">
+      <path d="M27.429 72.429a4 4 0 0 1-4-4v-11.8a4 4 0 0 1 8 0v11.8a4 4 0 0 1-4 4zm17.571 0a4 4 0 0 1-4-4V45a4 4 0 0 1 8 0v23.429a4 4 0 0 1-4 4zm17.571 0a4 4 0 0 1-4-4V21.571a4 4 0 0 1 8 0v46.857a4 4 0 0 1-4 4.001z" style="stroke:none;stroke-width:1;stroke-dasharray:none;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;" transform="matrix(2.8 0 0 2.8 1.964 1.964)"/>
+      <path d="M77.403 90H12.597C5.651 90 0 84.35 0 77.403V12.597C0 5.651 5.651 0 12.597 0h64.807C84.35 0 90 5.651 90 12.597v64.807C90 84.35 84.35 90 77.403 90zM12.597 8A4.602 4.602 0 0 0 8 12.597v64.807A4.602 4.602 0 0 0 12.597 82h64.807A4.602 4.602 0 0 0 82 77.403V12.597A4.602 4.602 0 0 0 77.403 8H12.597z" style="stroke:none;stroke-width:1;stroke-dasharray:none;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;" transform="matrix(2.8 0 0 2.8 1.964 1.964)"/>
+    </g>
+  </symbol>
 </svg>

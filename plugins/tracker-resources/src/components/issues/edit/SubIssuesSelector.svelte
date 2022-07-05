@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Doc, Ref, WithLookup } from '@anticrm/core'
   import { Issue, IssueStatus, Team } from '@anticrm/tracker'
-  import type { ButtonKind, ButtonSize } from '@anticrm/ui'
+  import { ButtonKind, ButtonSize, getPlatformColor } from '@anticrm/ui'
   import { Button, closeTooltip, ProgressCircle, SelectPopup, showPanel, showPopup } from '@anticrm/ui'
   import { updateFocus } from '@anticrm/view-resources'
   import tracker from '../../../plugin'
@@ -47,7 +47,14 @@
   $: hasSubIssues = (subIssues?.length ?? 0) > 0
 
   function getIssueStatusIcon (issue: Issue) {
-    return issueStatuses?.find((s) => issue.status === s._id)?.$lookup?.category?.icon ?? null
+    const status = issueStatuses?.find((s) => issue.status === s._id)
+    const category = status?.$lookup?.category
+    const color = status?.color ?? category?.color
+
+    return {
+      ...(category?.icon !== undefined ? { icon: category.icon } : {}),
+      ...(color !== undefined ? { iconColor: getPlatformColor(color) } : {})
+    }
   }
 
   function openIssue (target: Ref<Issue>) {
@@ -64,7 +71,7 @@
           value: subIssues.map((iss) => {
             const text = currentTeam ? `${getIssueId(currentTeam, iss)} ${iss.title}` : iss.title
 
-            return { id: iss._id, icon: getIssueStatusIcon(iss), text, isSelected: iss._id === issue._id }
+            return { id: iss._id, text, isSelected: iss._id === issue._id, ...getIssueStatusIcon(iss) }
           }),
           width: 'large'
         },
@@ -83,7 +90,6 @@
         (selectedIssue) => {
           const focus = subIssues?.find((it) => it._id === selectedIssue.id)
           if (focus !== undefined) {
-            console.log('ISE', selectedIssue, focus)
             updateFocus({ focus })
           }
         }

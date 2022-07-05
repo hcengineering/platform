@@ -15,11 +15,11 @@
 <script lang="ts">
   import { AttachedData, FindOptions, Ref, SortingOrder } from '@anticrm/core'
   import { getClient, ObjectPopup } from '@anticrm/presentation'
-  import { calcRank, Issue, IssueStatusCategory } from '@anticrm/tracker'
-  import { Icon } from '@anticrm/ui'
+  import { calcRank, Issue } from '@anticrm/tracker'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../plugin'
   import { getIssueId } from '../issues'
+  import IssueStatusIcon from './issues/IssueStatusIcon.svelte'
 
   export let value: Issue | AttachedData<Issue> | Issue[]
   export let width: 'medium' | 'large' | 'full' = 'large'
@@ -27,16 +27,11 @@
   const client = getClient()
   const dispatch = createEventDispatcher()
   const options: FindOptions<Issue> = {
-    lookup: { status: tracker.class.IssueStatus, space: tracker.class.Team },
+    lookup: {
+      space: tracker.class.Team,
+      status: [tracker.class.IssueStatus, { category: tracker.class.IssueStatusCategory }]
+    },
     sort: { modifiedOn: SortingOrder.Descending }
-  }
-
-  let statusCategoryById: Map<string, IssueStatusCategory> | undefined
-
-  async function updateIssueStatusCategories () {
-    const categories = await client.findAll(tracker.class.IssueStatusCategory, {})
-
-    statusCategoryById = new Map(categories.map((c) => [c._id, c]))
   }
 
   async function onClose ({ detail: parentIssue }: CustomEvent<Issue | undefined | null>) {
@@ -83,7 +78,6 @@
       ]
     }
   }
-  $: updateIssueStatusCategories()
 </script>
 
 <ObjectPopup
@@ -103,13 +97,14 @@
   on:close={onClose}
 >
   <svelte:fragment slot="item" let:item={issue}>
-    {@const { icon } = statusCategoryById?.get(issue.$lookup?.status.category) ?? {}}
     {@const issueId = getIssueId(issue.$lookup.space, issue)}
-    {#if issueId && icon}
+    {#if issueId}
       <div class="flex-center clear-mins w-full h-9">
-        <div class="icon mr-4 h-8">
-          <Icon {icon} size="small" />
-        </div>
+        {#if issue?.$lookup?.status}
+          <div class="icon mr-4 h-8">
+            <IssueStatusIcon value={issue.$lookup.status} size="small" />
+          </div>
+        {/if}
         <span class="overflow-label flex-no-shrink mr-3">{issueId}</span>
         <span class="overflow-label w-full issue-title">{issue.title}</span>
       </div>

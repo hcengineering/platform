@@ -14,7 +14,7 @@
 //
 
 import core, { MeasureContext, Ref, Space, TxFactory } from '@anticrm/core'
-import { readRequest, Response, serialize, unknownError } from '@anticrm/platform'
+import { readRequest, Response, serialize, UNAUTHORIZED, unknownError } from '@anticrm/platform'
 import type { Pipeline } from '@anticrm/server-core'
 import { decodeToken, Token } from '@anticrm/server-token'
 import { createServer, IncomingMessage } from 'http'
@@ -263,9 +263,20 @@ export function start (
       console.log('client connected with payload', payload)
       wss.handleUpgrade(request, socket, head, (ws) => wss.emit('connection', ws, request, payload))
     } catch (err) {
-      console.log('unauthorized client')
-      socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n')
-      socket.destroy()
+      wss.handleUpgrade(request, socket, head, (ws) => {
+        const resp: Response<any> = {
+          id: -1,
+          error: UNAUTHORIZED,
+          result: 'hello'
+        }
+        ws.send(serialize(resp))
+        ws.onmessage = (msg) => {
+          const resp: Response<any> = {
+            error: UNAUTHORIZED
+          }
+          ws.send(serialize(resp))
+        }
+      })
     }
   })
 

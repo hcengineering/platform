@@ -13,11 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import attachment from '@anticrm/attachment'
+  import { AttachmentDocList } from '@anticrm/attachment-resources'
+  import chunter from '@anticrm/chunter'
+  import { CommentPopup } from '@anticrm/chunter-resources'
   import { Ref, SortingOrder } from '@anticrm/core'
   import { createQuery, getClient, MessageViewer } from '@anticrm/presentation'
   import { Issue, IssueStatus, Team } from '@anticrm/tracker'
+  import { Label, resizeObserver, Scroller } from '@anticrm/ui'
   import tracker from '../../plugin'
-  import { Label, resizeObserver } from '@anticrm/ui'
   import AssigneeEditor from './AssigneeEditor.svelte'
   import PriorityEditor from './PriorityEditor.svelte'
   import StatusEditor from './StatusEditor.svelte'
@@ -75,40 +79,60 @@
   $: getParent(issue?.attachedTo as Ref<Issue>)
 </script>
 
-<div class="w-165">
-  {#if parent}
-    <div class="mb-4 ml-2">{parent.title}</div>
-  {/if}
-  {#if issue}
-    <div class="fs-title text-xl ml-2">{issueName} {issue.title}</div>
-    <div class="flex mt-4 mb-4">
-      <StatusEditor value={issue} {statuses} shouldShowLabel kind={'transparent'} />
-      <PriorityEditor value={issue} shouldShowLabel />
-      {#if issue.assignee}
-        <AssigneeEditor value={issue} width={'min-content'} />
+<div class="flex">
+  <Scroller>
+    <div class="w-165 scrollerContent">
+      {#if parent}
+        <div class="mb-4 ml-2">{parent.title}</div>
+      {/if}
+      {#if issue}
+        <div class="fs-title text-xl ml-2">{issueName} {issue.title}</div>
+        <div class="flex mt-2">
+          <StatusEditor value={issue} {statuses} shouldShowLabel kind={'transparent'} />
+          <PriorityEditor value={issue} shouldShowLabel />
+          {#if issue.assignee}
+            <AssigneeEditor value={issue} width={'min-content'} />
+          {/if}
+        </div>
+        <IssueStatusActivity {issue} />
+
+        <div class="mb-2">
+          <Label label={tracker.string.Description} />:
+        </div>
+        {#if issue.description}
+          <div
+            class="descr ml-2"
+            class:mask={cHeight >= limit}
+            use:resizeObserver={(element) => {
+              cHeight = element.clientHeight
+            }}
+          >
+            <MessageViewer message={issue.description} />
+          </div>
+        {:else}
+          <div class="ml-2 content-trans-color">
+            <Label label={tracker.string.NoDescription} />
+          </div>
+        {/if}
+        {#if issue.attachments}
+          <div class="mt-2 mb-2">
+            <Label label={attachment.string.Attachments} />:
+          </div>
+          <div>
+            <AttachmentDocList value={issue} />
+          </div>
+        {/if}
+        {#if issue.comments}
+          <div class="mt-2 mb-2">
+            <Label label={chunter.string.Comments} />:
+          </div>
+          <div class="ml-2">
+            <CommentPopup objectId={issue._id} />
+          </div>
+        {/if}
       {/if}
     </div>
-    <IssueStatusActivity {issue} />
-
-    <div class="mb-2">
-      <Label label={tracker.string.Description} />:
-    </div>
-    {#if issue.description}
-      <div
-        class="descr ml-2"
-        class:mask={cHeight >= limit}
-        use:resizeObserver={(element) => {
-          cHeight = element.clientHeight
-        }}
-      >
-        <MessageViewer message={issue.description} />
-      </div>
-    {:else}
-      <div class="ml-2 content-trans-color">
-        <Label label={tracker.string.NoDescription} />
-      </div>
-    {/if}
-  {/if}
+  </Scroller>
 </div>
 
 <style lang="scss">
@@ -119,5 +143,10 @@
     &.mask {
       mask: linear-gradient(to top, rgba(0, 0, 0, 0) 0, black 5rem);
     }
+  }
+
+  .scrollerContent {
+    height: fit-content;
+    max-height: 32rem;
   }
 </style>

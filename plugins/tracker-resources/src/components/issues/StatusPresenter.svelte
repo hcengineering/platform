@@ -15,7 +15,7 @@
 <script lang="ts">
   import { WithLookup } from '@anticrm/core'
   import { IssueStatus } from '@anticrm/tracker'
-  import { Icon } from '@anticrm/ui'
+  import IssueStatusIcon from './IssueStatusIcon.svelte'
 
   export let value: WithLookup<IssueStatus> | undefined
 </script>
@@ -23,7 +23,7 @@
 {#if value}
   <div class="flex-presenter">
     {#if value.$lookup?.category?.icon}
-      <Icon icon={value.$lookup?.category?.icon} size={'medium'} />
+      <IssueStatusIcon {value} size="medium" />
     {/if}
     <span class="overflow-label" class:ml-2={value.$lookup?.category?.icon !== undefined}>
       {value.name}
