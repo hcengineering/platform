@@ -287,7 +287,7 @@
 <div class="kanban-container top-divider">
   <ScrollBox>
     <div class="kanban-content">
-      {#each states as state, si}
+      {#each states as state, si (state._id)}
         {@const stateObjects = getStateObjects(objects, state, dragCard)}
 
         <div
