@@ -94,7 +94,7 @@ table {
 
 li {
   color: var(--dark-color);
-  p { color: var(--content-color); }
+  p { color: var(--accent-color); }
 }
 
 /* Common */
@@ -294,6 +294,8 @@ input.search {
   gap: .75rem;
 
   &.reverse { direction: rtl; }
+  &.large-gap { gap: 1rem; }
+  &.medium-gap { gap: .75rem; }
   &.small-gap { gap: .5rem; }
   &.xsmall-gap { gap: .375rem; }
   &.xxsmall-gap { gap: .25rem; }

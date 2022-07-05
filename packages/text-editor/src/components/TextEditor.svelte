@@ -189,6 +189,8 @@
     max-height: 40vh;
     outline: none;
     line-height: 150%;
+    color: var(--accent-color);
+
     p:not(:last-child) {
       margin-block-end: 1em;
     }
@@ -201,7 +203,7 @@
     p.is-editor-empty:first-child::before {
       content: attr(data-placeholder);
       float: left;
-      color: var(--theme-content-trans-color);
+      color: var(--dark-color);
       pointer-events: none;
       height: 0;
     }

@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Asset, getResource, IntlString } from '@anticrm/platform'
   import presentation, { getClient, ObjectSearchCategory } from '@anticrm/presentation'
-  import { AnySvelteComponent, Icon, Button, showPopup } from '@anticrm/ui'
+  import { AnySvelteComponent, ActionIcon, Button, showPopup } from '@anticrm/ui'
   import { AnyExtension } from '@tiptap/core'
   import { createEventDispatcher } from 'svelte'
   import { Completion } from '../Completion'
@@ -310,11 +310,9 @@
       <button class="sendButton" on:click={submit}><div class="icon"><Send size={'medium'} /></div></button>
     {/if}
   </div>
-  <div class="buttons">
+  <div class="buttons-group medium-gap ml-3 mt-2">
     {#each actions as a}
-      <div class="tool" on:click={(evt) => handleAction(a, evt)}>
-        <Icon icon={a.icon} size={'large'} />
-      </div>
+      <ActionIcon icon={a.icon} size={'medium'} on:click={(evt) => handleAction(a, evt)} />
     {/each}
   </div>
 </div>
@@ -329,7 +327,7 @@
       padding: 0.5rem;
       background-color: var(--body-accent);
       border: 1px solid var(--divider-color);
-      border-radius: 0.75rem 0.75rem 0 0;
+      border-radius: 0.5rem 0.5rem 0 0;
       border-bottom: 0;
 
       &.withoutTopBorder {
@@ -348,7 +346,7 @@
       padding: 0.75rem 1rem;
       background-color: var(--accent-bg-color);
       border: 1px solid var(--divider-color);
-      border-radius: 0.75rem;
+      border-radius: 0.5rem;
 
       &.withoutTopBorder {
         border-top-left-radius: 0;
@@ -427,31 +425,6 @@
           }
         }
       }
-    }
-    .buttons {
-      display: flex;
-      margin: 0.625rem 0 0 0.5rem;
-    }
-
-    .tool {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      width: 1.25rem;
-      height: 1.25rem;
-      color: var(--theme-content-dark-color);
-      cursor: pointer;
-
-      // &.active {
-      //   color: var(--theme-caption-color);
-      // }
-
-      &:hover {
-        color: var(--theme-caption-color);
-      }
-    }
-    .tool + .tool {
-      margin-left: 1rem;
     }
   }
 </style>

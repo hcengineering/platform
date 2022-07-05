@@ -93,22 +93,22 @@
 
       &:hover {
         .eContentPresenterIcon {
-          color: var(--theme-content-dark-color);
+          color: var(--dark-color);
         }
         .eContentPresenterLabel {
           text-decoration: none;
-          color: var(--theme-content-accent-color);
+          color: var(--accent-color);
         }
       }
     }
     .eContentPresenterIcon {
-      color: var(--theme-content-dark-color);
+      color: var(--dark-color);
     }
     .eContentPresenterLabel {
       min-width: 0;
       font-weight: 500;
       text-align: left;
-      color: var(--theme-content-accent-color);
+      color: var(--accent-color);
 
       overflow: hidden;
       visibility: visible;
@@ -121,11 +121,11 @@
     }
     &:hover {
       .eContentPresenterIcon {
-        color: var(--theme-caption-color);
+        color: var(--caption-color);
       }
       .eContentPresenterLabel {
         text-decoration: underline;
-        color: var(--theme-caption-color);
+        color: var(--caption-color);
       }
     }
   }
