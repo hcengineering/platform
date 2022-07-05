@@ -29,6 +29,7 @@ import ChannelView from './components/ChannelView.svelte'
 import ChannelHeader from './components/ChannelHeader.svelte'
 import DmHeader from './components/DmHeader.svelte'
 import CommentInput from './components/CommentInput.svelte'
+import CommentPopup from './components/CommentPopup.svelte'
 import CommentPresenter from './components/CommentPresenter.svelte'
 import CommentsPresenter from './components/CommentsPresenter.svelte'
 import CreateChannel from './components/CreateChannel.svelte'
@@ -45,7 +46,7 @@ import { writable } from 'svelte/store'
 
 export { default as Header } from './components/Header.svelte'
 export { classIcon } from './utils'
-export { CommentsPresenter }
+export { CommentPopup, CommentsPresenter }
 
 async function MarkUnread (object: Message): Promise<void> {
   const client = NotificationClientImpl.getClient()
