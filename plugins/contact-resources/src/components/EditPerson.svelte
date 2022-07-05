@@ -15,8 +15,8 @@
 -->
 <script lang="ts">
   import attachment from '@anticrm/attachment'
-  import { combineName, getFirstName, getLastName, Person } from '@anticrm/contact'
-  import { getCurrentAccount, Ref, Space } from '@anticrm/core'
+  import { combineName, EmployeeAccount, getFirstName, getLastName, Person } from '@anticrm/contact'
+  import { AccountRole, getCurrentAccount, Ref, Space } from '@anticrm/core'
   import { getResource } from '@anticrm/platform'
   import { AttributeEditor, Avatar, createQuery, EditableAvatar, getClient } from '@anticrm/presentation'
   import setting, { IntegrationType } from '@anticrm/setting'
@@ -29,8 +29,12 @@
   const client = getClient()
 
   const hierarchy = client.getHierarchy()
+  const account = getCurrentAccount() as EmployeeAccount
 
-  $: editable = !hierarchy.isDerived(object._class, contact.class.Employee)
+  $: editable =
+    !hierarchy.isDerived(object._class, contact.class.Employee) ||
+    account.role === AccountRole.Owner ||
+    object._id === account.employee
   let firstName = getFirstName(object.name)
   let lastName = getLastName(object.name)
 
@@ -55,12 +59,11 @@
     })
   }
 
-  const accountId = getCurrentAccount()._id
   let integrations: Set<Ref<IntegrationType>> = new Set<Ref<IntegrationType>>()
   const settingsQuery = createQuery()
   $: settingsQuery.query(
     setting.class.Integration,
-    { space: accountId as string as Ref<Space>, disabled: false },
+    { space: account._id as string as Ref<Space>, disabled: false },
     (res) => {
       integrations = new Set(res.map((p) => p.type))
     }
