@@ -14,7 +14,7 @@
 //
 
 import { Employee, formatName } from '@anticrm/contact'
-import { DocumentQuery, Ref, SortingOrder, SortingQuery, WithLookup } from '@anticrm/core'
+import { DocumentQuery, Ref, SortingOrder, WithLookup } from '@anticrm/core'
 import { TypeState } from '@anticrm/kanban'
 import { Asset, IntlString, translate } from '@anticrm/platform'
 import {
@@ -416,42 +416,22 @@ export async function getKanbanStatuses (
   return []
 }
 
-export function getIssuesSortingQuery (groupBy: IssuesGrouping): SortingQuery<Issue> {
-  switch (groupBy) {
-    case IssuesGrouping.Priority:
-      return { priority: SortingOrder.Ascending }
-    case IssuesGrouping.Status:
-      return { '$lookup.status.rank': SortingOrder.Ascending }
-    case IssuesGrouping.Assignee:
-      return { '$lookup.assignee.name': SortingOrder.Ascending }
-    case IssuesGrouping.Project:
-      return { '$lookup.project.label': SortingOrder.Ascending }
-    default:
-      return {}
-  }
+export function getIssueStatusStates (issueStatuses: Array<WithLookup<IssueStatus>> = []): TypeState[] {
+  return issueStatuses.map((status) => ({
+    _id: status._id,
+    title: status.name,
+    color: status.color ?? status.$lookup?.category?.color ?? 0,
+    icon: status.$lookup?.category?.icon ?? undefined
+  }))
 }
 
-export async function getAllIssueStates (
-  groupBy: IssuesGrouping,
-  issueStatuses: Array<WithLookup<IssueStatus>> = []
-): Promise<TypeState[]> {
-  if (groupBy === IssuesGrouping.Status) {
-    return issueStatuses.map((status) => ({
-      _id: status._id,
-      title: status.name,
-      color: status.color ?? status.$lookup?.category?.color ?? 0,
-      icon: status.$lookup?.category?.icon ?? undefined
+export async function getPriorityStates (): Promise<TypeState[]> {
+  return await Promise.all(
+    defaultPriorities.map(async (priority) => ({
+      _id: priority,
+      title: await translate(issuePriorities[priority].label, {}),
+      color: 0,
+      icon: issuePriorities[priority].icon
     }))
-  }
-  if (groupBy === IssuesGrouping.Priority) {
-    return await Promise.all(
-      defaultPriorities.map(async (priority) => ({
-        _id: priority,
-        title: await translate(issuePriorities[priority].label, {}),
-        color: 0,
-        icon: issuePriorities[priority].icon
-      }))
-    )
-  }
-  return []
+  )
 }

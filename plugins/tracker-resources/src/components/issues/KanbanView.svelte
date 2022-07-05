@@ -25,7 +25,13 @@
   import Menu from '@anticrm/view-resources/src/components/Menu.svelte'
   import { onMount } from 'svelte'
   import tracker from '../../plugin'
-  import { getAllIssueStates, getIssuesSortingQuery, getKanbanStatuses, issuesSortOrderMap } from '../../utils'
+  import {
+    getIssueStatusStates,
+    getKanbanStatuses,
+    getPriorityStates,
+    issuesGroupBySorting,
+    issuesSortOrderMap
+  } from '../../utils'
   import CreateIssue from '../CreateIssue.svelte'
   import ProjectEditor from '../projects/ProjectEditor.svelte'
   import AssigneePresenter from './AssigneePresenter.svelte'
@@ -59,6 +65,7 @@
   })
 
   let issueStatuses: WithLookup<IssueStatus>[] | undefined
+  $: issueStatusStates = getIssueStatusStates(issueStatuses)
   $: statusesQuery.query(
     tracker.class.IssueStatus,
     { attachedTo: currentSpace },
@@ -118,17 +125,27 @@
         project: tracker.class.Project,
         assignee: contact.class.Employee
       },
-      sort: getIssuesSortingQuery(groupBy)
+      sort: issuesGroupBySorting[groupBy]
     }
   )
 
-  let allIssueStates: TypeState[] = []
-  async function updateAllIssuesStates (groupBy: IssuesGrouping, is: WithLookup<IssueStatus>[] | undefined) {
-    allIssueStates = await getAllIssueStates(groupBy, is)
+  let priorityStates: TypeState[] = []
+  getPriorityStates().then((states) => {
+    priorityStates = states
+  })
+  function getIssueStates (
+    groupBy: IssuesGrouping,
+    showEmptyGroups: boolean,
+    states: TypeState[],
+    statusStates: TypeState[],
+    priorityStates: TypeState[]
+  ) {
+    if (!showEmptyGroups) return states
+    if (groupBy === IssuesGrouping.Status) return statusStates
+    if (groupBy === IssuesGrouping.Priority) return priorityStates
+    return []
   }
-  $: updateAllIssuesStates(groupBy, issueStatuses)
-
-  $: states = shouldShowEmptyGroups ? allIssueStates : issueStates
+  $: states = getIssueStates(groupBy, shouldShowEmptyGroups, issueStates, issueStatusStates, priorityStates)
 </script>
 
 {#if !states?.length}
