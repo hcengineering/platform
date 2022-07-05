@@ -33,6 +33,7 @@
   import IssuePresenter from './IssuePresenter.svelte'
   import ParentNamesPresenter from './ParentNamesPresenter.svelte'
   import PriorityEditor from './PriorityEditor.svelte'
+  import StatusEditor from './StatusEditor.svelte'
 
   export let currentSpace: Ref<Team> = tracker.team.DefaultTeam
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
@@ -170,9 +171,14 @@
             <IssuePresenter value={issue} />
             <ParentNamesPresenter value={issue} />
           </div>
-          <span class="fs-bold caption-color mt-1 lines-limit-2">
-            {object.title}
-          </span>
+          <div class="flex-row-center gap-1">
+            {#if groupBy !== 'status'}
+              <StatusEditor value={issue} kind="list" />
+            {/if}
+            <span class="fs-bold caption-color mt-1 lines-limit-2">
+              {object.title}
+            </span>
+          </div>
         </div>
         <div class="abs-rt-content">
           <AssigneePresenter
