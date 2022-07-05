@@ -296,7 +296,7 @@ export function createModel (builder: Builder): void {
         component: tags.component.TagsEditorPopup,
         element: view.popup.PositionElementAlignment,
         fillProps: {
-          _object: 'value'
+          _object: 'object'
         }
       },
       label: board.string.Labels,
@@ -315,7 +315,10 @@ export function createModel (builder: Builder): void {
       action: view.actionImpl.ShowPopup,
       actionProps: {
         component: board.component.DatesActionPopup,
-        element: view.popup.PositionElementAlignment
+        element: view.popup.PositionElementAlignment,
+        fillProps: {
+          _object: 'value'
+        }
       },
       label: board.string.Dates,
       icon: board.icon.Card,
@@ -355,7 +358,10 @@ export function createModel (builder: Builder): void {
       action: view.actionImpl.ShowPopup,
       actionProps: {
         component: board.component.MoveActionPopup,
-        element: view.popup.PositionElementAlignment
+        element: view.popup.PositionElementAlignment,
+        fillProps: {
+          _object: 'value'
+        }
       },
       input: 'any',
       inline: true,
@@ -371,7 +377,10 @@ export function createModel (builder: Builder): void {
       action: view.actionImpl.ShowPopup,
       actionProps: {
         component: board.component.CopyActionPopup,
-        element: view.popup.PositionElementAlignment
+        element: view.popup.PositionElementAlignment,
+        fillProps: {
+          _object: 'value'
+        }
       },
       label: board.string.Copy,
       icon: board.icon.Card,
