@@ -171,11 +171,11 @@
             <IssuePresenter value={issue} />
             <ParentNamesPresenter value={issue} />
           </div>
-          <div class="flex-row-center gap-1">
+          <div class="flex-row-center gap-1 mt-1">
             {#if groupBy !== 'status'}
-              <StatusEditor value={issue} kind="list" />
+              <StatusEditor value={issue} kind="list" isEditable={false} />
             {/if}
-            <span class="fs-bold caption-color mt-1 lines-limit-2">
+            <span class="fs-bold caption-color lines-limit-2">
               {object.title}
             </span>
           </div>
