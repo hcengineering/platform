@@ -212,7 +212,7 @@
           {#if parentIssue}
             <div class="mb-6">
               {#if currentTeam && issueStatuses}
-                <SubIssueSelector {issue} {issueStatuses} team={currentTeam} />
+                <SubIssueSelector {issue} />
               {:else}
                 <Spinner />
               {/if}
@@ -255,7 +255,7 @@
       {#if parentIssue}
         <div class="mb-6">
           {#if currentTeam && issueStatuses}
-            <SubIssueSelector {issue} {issueStatuses} team={currentTeam} />
+            <SubIssueSelector {issue} />
           {:else}
             <Spinner />
           {/if}

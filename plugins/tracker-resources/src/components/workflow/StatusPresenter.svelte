@@ -14,14 +14,13 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { Asset } from '@anticrm/platform'
   import { IssueStatus } from '@anticrm/tracker'
   import { Icon, Label, IconEdit, IconClose, tooltip } from '@anticrm/ui'
   import tracker from '../../plugin'
   import Circles from '../icons/Circles.svelte'
+  import IssueStatusIcon from '../issues/IssueStatusIcon.svelte'
 
   export let value: IssueStatus
-  export let icon: Asset
   export let isDefault = false
   export let isSingle = true
 
@@ -38,7 +37,7 @@
       <Circles />
     </div>
     <div class="flex-no-shrink ml-2">
-      <Icon {icon} size="small" />
+      <IssueStatusIcon {value} size="small" />
     </div>
     <span class="content-accent-color ml-2">{value.name}</span>
     {#if value.description}

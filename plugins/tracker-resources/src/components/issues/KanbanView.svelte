@@ -19,7 +19,7 @@
   import notification from '@anticrm/notification'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { Issue, IssuesGrouping, IssuesOrdering, IssueStatus, Team, ViewOptions } from '@anticrm/tracker'
-  import { Button, Component, Icon, IconAdd, showPanel, showPopup } from '@anticrm/ui'
+  import { Button, Component, Icon, IconAdd, showPanel, showPopup, getPlatformColor } from '@anticrm/ui'
   import { focusStore, ListSelectionProvider, SelectDirection, selectionStore } from '@anticrm/view-resources'
   import ActionContext from '@anticrm/view-resources/src/components/ActionContext.svelte'
   import Menu from '@anticrm/view-resources/src/components/Menu.svelte'
@@ -139,7 +139,7 @@
       <div class="header flex-col">
         <div class="flex-between label font-medium w-full h-full">
           <div class="flex-row-center gap-2">
-            <Icon icon={state.icon} size={'small'} />
+            <Icon icon={state.icon} fill={getPlatformColor(state.color)} size={'small'} />
             <span class="lines-limit-2 ml-2">{state.title}</span>
             <span class="counter ml-2 text-md">{count}</span>
           </div>
