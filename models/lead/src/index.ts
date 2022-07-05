@@ -155,6 +155,13 @@ export function createModel (builder: Builder): void {
     lead.app.Lead
   )
 
+  builder.createDoc(view.class.Viewlet, core.space.Model, {
+    attachTo: lead.class.Lead,
+    descriptor: task.viewlet.Dashboard,
+    options: {},
+    config: []
+  })
+
   createAction(builder, { ...actionTemplates.archiveSpace, target: lead.class.Funnel })
   createAction(builder, { ...actionTemplates.unarchiveSpace, target: lead.class.Funnel })
 

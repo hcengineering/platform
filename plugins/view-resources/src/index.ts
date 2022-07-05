@@ -105,7 +105,8 @@ export {
   BooleanEditor,
   BooleanPresenter,
   NumberEditor,
-  NumberPresenter
+  NumberPresenter,
+  TimestampPresenter
 }
 
 export default async (): Promise<Resources> => ({

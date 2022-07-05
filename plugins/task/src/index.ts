@@ -222,7 +222,8 @@ const task = plugin(taskId, {
     ApplicationLabelTask: '' as IntlString,
     Projects: '' as IntlString,
     ManageProjectStatues: '' as IntlString,
-    TodoItems: '' as IntlString
+    TodoItems: '' as IntlString,
+    Dashboard: '' as IntlString
   },
   class: {
     Issue: '' as Ref<Class<Issue>>,
@@ -245,6 +246,7 @@ const task = plugin(taskId, {
   },
   viewlet: {
     Kanban: '' as Ref<ViewletDescriptor>,
+    Dashboard: '' as Ref<ViewletDescriptor>,
     StatusTable: '' as Ref<ViewletDescriptor>
   },
   icon: {
@@ -253,7 +255,8 @@ const task = plugin(taskId, {
     TodoCheck: '' as Asset,
     TodoUnCheck: '' as Asset,
     ManageStatuses: '' as Asset,
-    TaskState: '' as Asset
+    TaskState: '' as Asset,
+    Dashboard: '' as Asset
   },
   global: {
     // Global task root, if not attached to some other object.

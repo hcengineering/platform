@@ -62,7 +62,7 @@
     "DoneStatesLost": "Done status / Lost",
     "AllStates": "All states",
     "DoneStates": "Done states",
-    "States": "States",        
+    "States": "States",
     "NoDoneState": "Not done",
     "ManageStatusesWithin": "Manage application statuses within",
     "ManageProjectStatues": "Manage project statues",
@@ -74,6 +74,8 @@
     "CantStatusDeleteError": "There are objects in the given state. Move or delete them first.",
     "Tasks": "Tasks",
     "Assigned": "Assigned to me",
-    "TodoItems": "Todos"
+    "TodoItems": "Todos",
+    "Dashboard": "Dashboard",
+    "AllTime": "All time"
   }
 }
