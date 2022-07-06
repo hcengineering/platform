@@ -30,7 +30,7 @@
 </script>
 
 {#if items.length}
-  <div class="flex-row-center flex-wrap" on:click={tagsHandler}>
+  <div class="flex-row-center flex-wrap">
     {#each items as value}
       <div class="step-container">
         <TagReferencePresenter {value} {isEditable} kind={'labels'} on:remove={(res) => removeTag(res.detail)} />
@@ -38,7 +38,7 @@
     {/each}
     {#if isEditable}
       <div class="step-container">
-        <button class="tag-button" on:click={tagsHandler}>
+        <button class="tag-button" on:click|stopPropagation={tagsHandler}>
           <div class="icon"><Icon icon={IconAdd} size={'full'} /></div>
           <span class="overflow-label label"><Label {label} /></span>
         </button>
@@ -46,7 +46,7 @@
     {/if}
   </div>
 {:else if isEditable}
-  <button class="tag-button" style="width: min-content" on:click={tagsHandler}>
+  <button class="tag-button" style="width: min-content" on:click|stopPropagation={tagsHandler}>
     <div class="icon"><Icon icon={IconAdd} size={'full'} /></div>
     <span class="overflow-label label"><Label {label} /></span>
   </button>

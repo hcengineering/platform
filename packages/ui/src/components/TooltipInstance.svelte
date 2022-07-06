@@ -253,6 +253,7 @@
     display: flex;
     flex-direction: column;
     padding: 0.5rem;
+    max-width: 50vw;
     color: var(--caption-color);
     background-color: var(--accent-bg-color);
     border: 1px solid var(--divider-color);
