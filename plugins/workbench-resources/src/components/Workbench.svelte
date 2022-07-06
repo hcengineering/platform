@@ -26,7 +26,6 @@
     closeTooltip,
     Component,
     DatePickerPopup,
-    fetchMetadataLocalStorage,
     getCurrentLocation,
     Label,
     location,
@@ -39,7 +38,6 @@
     showPopup,
     TooltipInstance
   } from '@anticrm/ui'
-  import login from '@anticrm/login'
   import view from '@anticrm/view'
   import { ActionContext, ActionHandler } from '@anticrm/view-resources'
   import type { Application, NavigatorModel, SpecialNavModel, ViewConfiguration } from '@anticrm/workbench'

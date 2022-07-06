@@ -18,7 +18,7 @@ import { setMetadata } from '@anticrm/platform'
 
 export function setMetadataLocalStorage<T>(id: Metadata<T>, value: T | null): void {
   if (value != null) {
-    localStorage.setItem(id, JSON.stringify(value))
+    localStorage.setItem(id, typeof value === 'string' ? value : JSON.stringify(value))
   } else {
     localStorage.removeItem(id)
   }
@@ -30,7 +30,12 @@ export function fetchMetadataLocalStorage<T>(id: Metadata<T>): T | null {
   if (data === null) {
     return null
   }
-  const value = JSON.parse(data)
-  setMetadata(id, value)
-  return value
+  try {
+    const value = JSON.parse(data)
+    setMetadata(id, value)
+    return value
+  } catch {
+    setMetadata(id, data as unknown as T)
+    return data as unknown as T
+  }
 }

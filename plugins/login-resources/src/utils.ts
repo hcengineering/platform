@@ -140,7 +140,7 @@ export async function createWorkspace (workspace: string): Promise<[Status, Logi
   }
 
   const token = getMetadata(login.metadata.LoginToken)
-  if (token === null) {
+  if (token === undefined) {
     const loc = getCurrentLocation()
     loc.path[1] = 'login'
     loc.path.length = 2
@@ -189,7 +189,7 @@ export async function getWorkspaces (): Promise<Workspace[]> {
   }
 
   const token = getMetadata(login.metadata.LoginToken)
-  if (token === null) {
+  if (token === undefined) {
     const loc = getCurrentLocation()
     loc.path[1] = 'login'
     loc.path.length = 2
@@ -214,7 +214,7 @@ export async function getWorkspaces (): Promise<Workspace[]> {
     const result: Response<any> = await response.json()
     console.log(result)
     if (result.error != null) {
-      throw new PlatformError(result.error)
+      throw new PlatformError(result.error) 
     }
     return result.result
   } catch (err) {
@@ -239,7 +239,7 @@ export async function selectWorkspace (workspace: string): Promise<[Status, Work
   }
 
   const token = getMetadata(login.metadata.LoginToken)
-  if (token === null) {
+  if (token === undefined) {
     const loc = getCurrentLocation()
     loc.path[1] = 'login'
     loc.path.length = 2
@@ -280,7 +280,7 @@ export async function getInviteLink (): Promise<string> {
   }
 
   const token = getMetadata(login.metadata.LoginToken)
-  if (token === null) {
+  if (token === undefined) {
     const loc = getCurrentLocation()
     loc.path[1] = 'login'
     loc.path.length = 2

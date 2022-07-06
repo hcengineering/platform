@@ -89,6 +89,7 @@ function clearMetadata (ws: string): void {
   const tokens = fetchMetadataLocalStorage(login.metadata.LoginTokens)
   if (tokens !== null) {
     const loc = getCurrentLocation()
+    // eslint-disable-next-line
     delete tokens[loc.path[1]]
     setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
   }
