@@ -41,7 +41,9 @@
       asideShown = false
     }
   }
-  afterUpdate(() => { checkPanel() })
+  afterUpdate(() => {
+    checkPanel()
+  })
 </script>
 
 <div
