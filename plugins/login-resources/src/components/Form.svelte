@@ -72,7 +72,10 @@
       }
       if (f.rule !== undefined) {
         if (!f.rule.test(v)) {
-          status = new Status(Severity.INFO, login.status.IncorrectValue, { field: await translate(field.i18n, {}), descr: field.ruleDescr ? await translate(field.ruleDescr, {}) : '' })
+          status = new Status(Severity.INFO, login.status.IncorrectValue, {
+            field: await translate(field.i18n, {}),
+            descr: field.ruleDescr ? await translate(field.ruleDescr, {}) : ''
+          })
           return
         }
       }
