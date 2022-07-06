@@ -13,8 +13,10 @@
 // limitations under the License.
 //
 
+import { SortingOrder, SortingQuery } from '@anticrm/core'
 import { Asset, IntlString } from '@anticrm/platform'
 import {
+  Issue,
   IssuePriority,
   IssuesDateModificationPeriod,
   IssuesGrouping,
@@ -76,3 +78,11 @@ export const defaultPriorities = [
   IssuePriority.Medium,
   IssuePriority.Low
 ]
+
+export const issuesGroupBySorting: Record<IssuesGrouping, SortingQuery<Issue>> = {
+  [IssuesGrouping.Status]: { '$lookup.status.rank': SortingOrder.Ascending },
+  [IssuesGrouping.Assignee]: { '$lookup.assignee.name': SortingOrder.Ascending },
+  [IssuesGrouping.Priority]: { priority: SortingOrder.Ascending },
+  [IssuesGrouping.Project]: { '$lookup.project.label': SortingOrder.Ascending },
+  [IssuesGrouping.NoGrouping]: {}
+}
