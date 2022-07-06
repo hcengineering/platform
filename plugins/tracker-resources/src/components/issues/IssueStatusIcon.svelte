@@ -31,8 +31,9 @@
     if (status.$lookup?.category) {
       category = status.$lookup.category
     }
-
-    category = await client.findOne(tracker.class.IssueStatusCategory, { _id: value.category })
+    if (category === undefined) {
+      category = await client.findOne(tracker.class.IssueStatusCategory, { _id: value.category })
+    }
   }
 
   $: updateCategory(value)
