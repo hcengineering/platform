@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
+  import { afterUpdate, createEventDispatcher } from 'svelte'
   import { resizeObserver } from '../resize'
   import Button from './Button.svelte'
   import IconClose from './icons/Close.svelte'
@@ -31,23 +31,24 @@
 
   let asideFloat: boolean = false
   let asideShown: boolean = false
-  $: if (panelWidth < 900 && !asideFloat) asideFloat = true
-  $: if (panelWidth >= 900 && asideFloat) {
-    asideFloat = false
-    asideShown = false
-  }
   let docWidth: number
   let fullSize: boolean = false
-  let docSize: boolean = false
-  $: if (docWidth <= 900 && !docSize) docSize = true
-  $: if (docWidth > 900 && docSize) docSize = false
+
+  const checkPanel = (): void => {
+    if (panelWidth <= 900 && !asideFloat) asideFloat = true
+    else if (panelWidth > 900 && asideFloat) {
+      asideFloat = false
+      asideShown = false
+    }
+  }
+  afterUpdate(() => { checkPanel() })
 </script>
 
-<svelte:window bind:innerWidth={docWidth} />
 <div
   class="popupPanel"
   use:resizeObserver={(element) => {
     panelWidth = element.clientWidth
+    checkPanel()
   }}
 >
   <div class="popupPanel-title">
