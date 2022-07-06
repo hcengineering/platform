@@ -52,8 +52,8 @@
           closePopup()
           closePanel()
           const loc = getCurrentLocation()
-          loc.path[2] = vacancy._id
-          loc.path.length = 3
+          loc.path[3] = vacancy._id
+          loc.path.length = 4
           navigate(loc)
         }
       }}

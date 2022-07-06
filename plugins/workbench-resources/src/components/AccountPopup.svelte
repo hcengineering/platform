@@ -16,9 +16,10 @@
   import contact, { Employee, EmployeeAccount, formatName } from '@anticrm/contact'
   import { AccountRole, getCurrentAccount } from '@anticrm/core'
   import login from '@anticrm/login'
+  import { setMetadata } from '@anticrm/platform'
   import { Avatar, createQuery } from '@anticrm/presentation'
   import setting, { settingId, SettingsCategory } from '@anticrm/setting'
-  import type { Action } from '@anticrm/ui'
+  import { Action, fetchMetadataLocalStorage } from '@anticrm/ui'
   import {
     closePanel,
     closePopup,
@@ -62,17 +63,22 @@
     closePopup()
     closePanel()
     const loc = getCurrentLocation()
-    loc.path[1] = settingId
-    loc.path[2] = sp.name
-    loc.path.length = 3
+    loc.path[2] = settingId
+    loc.path[3] = sp.name
+    loc.path.length = 4
     navigate(loc)
   }
 
   function signOut (): void {
-    setMetadataLocalStorage(login.metadata.LoginToken, null)
+    const tokens = fetchMetadataLocalStorage(login.metadata.LoginTokens)
+    if (tokens !== null) {
+      const loc = getCurrentLocation()
+      delete tokens[loc.path[1]]
+      setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
+    }
+    setMetadata(login.metadata.LoginToken, null)
     setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
     setMetadataLocalStorage(login.metadata.LoginEmail, null)
-    setMetadataLocalStorage(login.metadata.CurrentWorkspace, null)
     navigate({ path: [login.component.LoginApp] })
   }
 
@@ -98,9 +104,9 @@
 
   function getURLCategory (sp: SettingsCategory): string {
     const loc = getCurrentLocation()
-    loc.path[1] = settingId
-    loc.path[2] = sp.name
-    loc.path.length = 3
+    loc.path[2] = settingId
+    loc.path[3] = sp.name
+    loc.path.length = 4
     return locationToUrl(loc)
   }
 

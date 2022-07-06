@@ -37,8 +37,7 @@
       closeTooltip()
       closePopup()
 
-      projectId = loc.path[4] as Ref<Project>
-      console.log('PROJECT SELECTED', projectId)
+      projectId = loc.path[5] as Ref<Project>
     })
   )
 

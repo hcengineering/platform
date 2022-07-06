@@ -16,9 +16,18 @@
   import contact, { Employee, EmployeeAccount, formatName } from '@anticrm/contact'
   import { getCurrentAccount } from '@anticrm/core'
   import login from '@anticrm/login'
+  import { setMetadata } from '@anticrm/platform'
   import { Avatar, createQuery } from '@anticrm/presentation'
   import setting, { SettingsCategory, settingId } from '@anticrm/setting'
-  import { closePopup, getCurrentLocation, Icon, Label, navigate, setMetadataLocalStorage } from '@anticrm/ui'
+  import {
+    closePopup,
+    fetchMetadataLocalStorage,
+    getCurrentLocation,
+    Icon,
+    Label,
+    navigate,
+    setMetadataLocalStorage
+  } from '@anticrm/ui'
 
   // const client = getClient()
   async function getItems (): Promise<SettingsCategory[]> {
@@ -43,17 +52,22 @@
   function selectCategory (sp: SettingsCategory): void {
     closePopup()
     const loc = getCurrentLocation()
-    loc.path[1] = settingId
-    loc.path[2] = sp.name
-    loc.path.length = 3
+    loc.path[2] = settingId
+    loc.path[3] = sp.name
+    loc.path.length = 4
     navigate(loc)
   }
 
   function signOut (): void {
-    setMetadataLocalStorage(login.metadata.LoginToken, null)
+    const tokens = fetchMetadataLocalStorage(login.metadata.LoginTokens)
+    if (tokens !== null) {
+      const loc = getCurrentLocation()
+      delete tokens[loc.path[1]]
+      setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
+    }
+    setMetadata(login.metadata.LoginToken, null)
     setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
     setMetadataLocalStorage(login.metadata.LoginEmail, null)
-    setMetadataLocalStorage(login.metadata.CurrentWorkspace, null)
     navigate({ path: [login.component.LoginApp] })
   }
 

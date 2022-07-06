@@ -1,7 +1,7 @@
 import { Doc, Ref, TxOperations } from '@anticrm/core'
 import { getClient } from '@anticrm/presentation'
 import { Issue, Team, trackerId } from '@anticrm/tracker'
-import { getPanelURI, Location } from '@anticrm/ui'
+import { getCurrentLocation, getPanelURI, Location } from '@anticrm/ui'
 import { workbenchId } from '@anticrm/workbench'
 import tracker from './plugin'
 
@@ -47,7 +47,8 @@ export async function copyToClipboard (object: Issue, ev: Event, { type }: { typ
 }
 
 export function generateIssueShortLink (issueId: string): string {
-  return `${window.location.host}/${workbenchId}/${trackerId}/${issueId}`
+  const location = getCurrentLocation()
+  return `${window.location.host}/${workbenchId}/${location.path[1]}/${trackerId}/${issueId}`
 }
 
 export async function generateIssueLocation (loc: Location, issueId: string): Promise<Location | undefined> {
@@ -71,19 +72,20 @@ export async function generateIssueLocation (loc: Location, issueId: string): Pr
     return undefined
   }
   const appComponent = loc.path[0] ?? ''
+  const workspace = loc.path[1] ?? ''
   return {
-    path: [appComponent, trackerId, team._id, 'issues'],
+    path: [appComponent, workspace, trackerId, team._id, 'issues'],
     fragment: generateIssuePanelUri(issue)
   }
 }
 
 export async function resolveLocation (loc: Location): Promise<Location | undefined> {
-  const app = loc.path.length > 1 ? loc.path[1] : undefined
+  const app = loc.path.length > 2 ? loc.path[2] : undefined
   if (app !== trackerId) {
     return undefined
   }
 
-  const shortLink = loc.path.length > 2 ? loc.path[2] : undefined
+  const shortLink = loc.path.length > 3 ? loc.path[3] : undefined
   if (shortLink === undefined || shortLink === null) {
     return undefined
   }

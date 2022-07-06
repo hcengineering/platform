@@ -14,18 +14,19 @@
 -->
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
-  import { fetchMetadataLocalStorage, Label } from '@anticrm/ui'
-  import login from '@anticrm/login'
+  import { getCurrentLocation, Label } from '@anticrm/ui'
 
   export let label: IntlString
   // export let action: () => Promise<void> | void
+
+  const loc = getCurrentLocation()
 </script>
 
 <div class="antiNav-header">
   <div class="flex-row">
     <span class="fs-title overflow-label"><Label {label} /></span>
     <div>
-      {fetchMetadataLocalStorage(login.metadata.CurrentWorkspace)}
+      {loc.path[1]}
     </div>
   </div>
   <!-- <ActionIcon label={workbench.string.More} icon={IconMoreH} size={'small'} {action}/> -->

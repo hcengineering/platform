@@ -107,7 +107,7 @@
 
   async function view (space: Space): Promise<void> {
     const loc = getCurrentLocation()
-    loc.path[2] = space._id
+    loc.path[3] = space._id
     navigate(loc)
   }
 </script>

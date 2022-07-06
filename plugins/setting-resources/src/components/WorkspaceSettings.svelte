@@ -44,15 +44,15 @@
 
   onDestroy(
     location.subscribe(async (loc) => {
-      categoryId = loc.path[3]
+      categoryId = loc.path[4]
       category = findCategory(categoryId)
     })
   )
 
   function selectCategory (id: string): void {
     const loc = getCurrentLocation()
-    loc.path[3] = id
-    loc.path.length = 4
+    loc.path[4] = id
+    loc.path.length = 5
     navigate(loc)
   }
 </script>

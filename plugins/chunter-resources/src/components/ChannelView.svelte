@@ -79,7 +79,7 @@
 
   function openThread (_id: Ref<Message>) {
     const loc = getCurrentLocation()
-    loc.path[3] = _id
+    loc.path[4] = _id
     navigate(loc)
   }
 

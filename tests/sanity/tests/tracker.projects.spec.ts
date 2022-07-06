@@ -8,7 +8,7 @@ test.use({
 test.describe('project tests', () => {
   test.beforeEach(async ({ page }) => {
     // Create user and workspace
-    await page.goto(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp`)
+    await page.goto(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/sanity-ws`)
   })
   test('create-project-issue', async ({ page }) => {
     await page.click('[id="app-tracker\\:string\\:TrackerApplication"]')
@@ -16,7 +16,7 @@ test.describe('project tests', () => {
     // Click text=Projects
     await page.click('text=Projects')
     await expect(page).toHaveURL(
-      `${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/tracker/tracker%3Ateam%3ADefaultTeam/projects`
+      `${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/sanity-ws/tracker/tracker%3Ateam%3ADefaultTeam/projects`
     )
     await page.click('button:has-text("Project")')
     await page.click('[placeholder="Project\\ name"]')
@@ -39,7 +39,7 @@ test.describe('project tests', () => {
     await page.click('[id="app-tracker\\:string\\:TrackerApplication"]')
     await page.click('text=Projects')
     await expect(page).toHaveURL(
-      `${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/tracker/tracker%3Ateam%3ADefaultTeam/projects`
+      `${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/sanity-ws/tracker/tracker%3Ateam%3ADefaultTeam/projects`
     )
     await page.click('button:has-text("Project")')
     const prjId = 'project-' + generateId()

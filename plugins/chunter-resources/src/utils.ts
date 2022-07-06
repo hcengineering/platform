@@ -58,9 +58,9 @@ export async function getDmName (client: Client, dm: Space): Promise<string> {
 export function getSpaceLink (id: Ref<Space>): string {
   const loc = getCurrentLocation()
 
-  loc.path[1] = chunterId
-  loc.path[2] = id
-  loc.path.length = 3
+  loc.path[2] = chunterId
+  loc.path[3] = id
+  loc.path.length = 4
   loc.fragment = undefined
 
   return locationToUrl(loc)
@@ -76,19 +76,19 @@ export function openMessageFromSpecial (message: ChunterMessage): void {
   const loc = getCurrentLocation()
 
   if (message.attachedToClass === chunter.class.ChunterSpace) {
-    loc.path.length = 3
-    loc.path[2] = message.attachedTo
-  } else if (message.attachedToClass === chunter.class.Message) {
     loc.path.length = 4
-    loc.path[2] = message.space
     loc.path[3] = message.attachedTo
+  } else if (message.attachedToClass === chunter.class.Message) {
+    loc.path.length = 5
+    loc.path[3] = message.space
+    loc.path[4] = message.attachedTo
   }
   navigate(loc)
 }
 
 export function navigateToSpecial (specialId: string): void {
   const loc = getCurrentLocation()
-  loc.path[2] = specialId
+  loc.path[3] = specialId
   navigate(loc)
 }
 

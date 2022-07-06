@@ -72,44 +72,44 @@ export async function doNavigate (
   const client = getClient()
   switch (props.mode) {
     case 'app':
-      loc.path[1] = props.application ?? ''
+      loc.path[2] = props.application ?? ''
       if (props.special !== undefined) {
-        loc.path[2] = props.special
-        loc.path.length = 3
+        loc.path[3] = props.special
+        loc.path.length = 4
       } else {
-        loc.path.length = 2
+        loc.path.length = 3
       }
       navigate(loc)
       break
     case 'special':
-      if (props.application !== undefined && loc.path[1] !== props.application) {
-        loc.path[1] = props.application
+      if (props.application !== undefined && loc.path[2] !== props.application) {
+        loc.path[2] = props.application
       }
-      loc.path[2] = props.special ?? ''
-      loc.path.length = 3
+      loc.path[3] = props.special ?? ''
+      loc.path.length = 4
       navigate(loc)
       break
     case 'space': {
       if (props.space !== undefined) {
-        loc.path[2] = props.space
+        loc.path[3] = props.space
       } else {
         if (doc !== undefined && !Array.isArray(doc) && client.getHierarchy().isDerived(doc._class, core.class.Space)) {
-          loc.path[2] = doc._id
+          loc.path[3] = doc._id
         }
       }
       if (props.spaceSpecial !== undefined) {
-        loc.path[3] = props.spaceSpecial
+        loc.path[4] = props.spaceSpecial
       }
       if (props.spaceClass !== undefined) {
-        const ex = await client.findOne(props.spaceClass, { _id: loc.path[2] as Ref<Space> })
+        const ex = await client.findOne(props.spaceClass, { _id: loc.path[3] as Ref<Space> })
         if (ex === undefined) {
           const r = await client.findOne(props.spaceClass, {})
           if (r !== undefined) {
-            loc.path[2] = r._id
+            loc.path[3] = r._id
           }
         }
       }
-      loc.path.length = 4
+      loc.path.length = 5
       navigate(loc)
 
       break

@@ -17,6 +17,7 @@
   import setting, { SettingsCategory } from '@anticrm/setting'
   import {
     Component,
+    fetchMetadataLocalStorage,
     getCurrentLocation,
     Label,
     location,
@@ -29,6 +30,7 @@
   import login from '@anticrm/login'
   import { AccountRole, getCurrentAccount } from '@anticrm/core'
   import { EmployeeAccount } from '@anticrm/contact'
+  import { setMetadata } from '@anticrm/platform'
 
   let category: SettingsCategory | undefined
   let categoryId: string = ''
@@ -49,7 +51,7 @@
 
   onDestroy(
     location.subscribe(async (loc) => {
-      categoryId = loc.path[2]
+      categoryId = loc.path[3]
       category = findCategory(categoryId)
     })
   )
@@ -59,15 +61,20 @@
   }
   function selectCategory (id: string): void {
     const loc = getCurrentLocation()
-    loc.path[2] = id
-    loc.path.length = 3
+    loc.path[3] = id
+    loc.path.length = 4
     navigate(loc)
   }
   function signOut (): void {
-    setMetadataLocalStorage(login.metadata.LoginToken, null)
+    const tokens = fetchMetadataLocalStorage(login.metadata.LoginTokens)
+    if (tokens !== null) {
+      const loc = getCurrentLocation()
+      delete tokens[loc.path[1]]
+      setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
+    }
+    setMetadata(login.metadata.LoginToken, null)
     setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
     setMetadataLocalStorage(login.metadata.LoginEmail, null)
-    setMetadataLocalStorage(login.metadata.CurrentWorkspace, null)
     navigate({ path: [login.component.LoginApp] })
   }
   function selectWorkspace (): void {

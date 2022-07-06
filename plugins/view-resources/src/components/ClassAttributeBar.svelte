@@ -65,10 +65,10 @@
       on:click={(ev) => {
         ev.stopPropagation()
         const loc = getCurrentLocation()
-        loc.path[1] = settingId
-        loc.path[2] = 'setting'
-        loc.path[3] = 'classes'
-        loc.path.length = 4
+        loc.path[2] = settingId
+        loc.path[3] = 'setting'
+        loc.path[4] = 'classes'
+        loc.path.length = 5
         loc.query = { _class }
         loc.fragment = undefined
         navigate(loc)

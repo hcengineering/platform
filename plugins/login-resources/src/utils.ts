@@ -139,8 +139,8 @@ export async function createWorkspace (workspace: string): Promise<[Status, Logi
     }
   }
 
-  const token = fetchMetadataLocalStorage(login.metadata.LoginToken)
-  if (token === null) {
+  const token = getMetadata(login.metadata.LoginToken)
+  if (token === undefined) {
     const loc = getCurrentLocation()
     loc.path[1] = 'login'
     loc.path.length = 2
@@ -188,8 +188,8 @@ export async function getWorkspaces (): Promise<Workspace[]> {
     }
   }
 
-  const token = fetchMetadataLocalStorage(login.metadata.LoginToken)
-  if (token === null) {
+  const token = getMetadata(login.metadata.LoginToken)
+  if (token === undefined) {
     const loc = getCurrentLocation()
     loc.path[1] = 'login'
     loc.path.length = 2
@@ -238,8 +238,8 @@ export async function selectWorkspace (workspace: string): Promise<[Status, Work
     }
   }
 
-  const token = fetchMetadataLocalStorage(login.metadata.LoginToken)
-  if (token === null) {
+  const token = getMetadata(login.metadata.LoginToken)
+  if (token === undefined) {
     const loc = getCurrentLocation()
     loc.path[1] = 'login'
     loc.path.length = 2
@@ -279,8 +279,8 @@ export async function getInviteLink (): Promise<string> {
     throw new Error('accounts url not specified')
   }
 
-  const token = fetchMetadataLocalStorage(login.metadata.LoginToken)
-  if (token === null) {
+  const token = getMetadata(login.metadata.LoginToken)
+  if (token === undefined) {
     const loc = getCurrentLocation()
     loc.path[1] = 'login'
     loc.path.length = 2
@@ -399,7 +399,7 @@ export async function changeName (first: string, last: string): Promise<void> {
       return
     }
   }
-  const token = fetchMetadataLocalStorage(login.metadata.LoginToken) as string
+  const token = getMetadata(login.metadata.LoginToken) as string
 
   const request: Request<[string, string]> = {
     method: 'changeName',
@@ -430,7 +430,7 @@ export async function changePassword (oldPassword: string, password: string): Pr
       return
     }
   }
-  const token = fetchMetadataLocalStorage(login.metadata.LoginToken) as string
+  const token = getMetadata(login.metadata.LoginToken) as string
 
   const request: Request<[string, string]> = {
     method: 'changePassword',
@@ -461,7 +461,7 @@ export async function leaveWorkspace (email: string): Promise<void> {
       return
     }
   }
-  const token = fetchMetadataLocalStorage(login.metadata.LoginToken) as string
+  const token = getMetadata(login.metadata.LoginToken) as string
 
   const request: Request<[string]> = {
     method: 'leaveWorkspace',

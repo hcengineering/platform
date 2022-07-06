@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { fetchMetadataLocalStorage, location, Popup, ticker } from '@anticrm/ui'
+  import { location, Popup, ticker } from '@anticrm/ui'
 
   import LoginForm from './LoginForm.svelte'
   import SignupForm from './SignupForm.svelte'
@@ -23,13 +23,14 @@
   import Join from './Join.svelte'
   import { onDestroy } from 'svelte'
   import login from '../plugin'
+  import { getMetadata } from '@anticrm/platform'
 
   export let page: string = 'login'
 
   let navigateUrl: string | undefined
 
-  function getToken (timer: number): string | null {
-    return fetchMetadataLocalStorage(login.metadata.LoginToken)
+  function getToken (timer: number): string | undefined {
+    return getMetadata(login.metadata.LoginToken)
   }
   $: token = getToken($ticker)
 

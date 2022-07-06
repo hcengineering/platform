@@ -14,8 +14,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { OK, Severity, Status } from '@anticrm/platform'
-  import { Button, getCurrentLocation, Label, navigate, setMetadataLocalStorage } from '@anticrm/ui'
+  import { OK, setMetadata, Severity, Status } from '@anticrm/platform'
+  import {
+    Button,
+    fetchMetadataLocalStorage,
+    getCurrentLocation,
+    Label,
+    Location,
+    navigate,
+    setMetadataLocalStorage
+  } from '@anticrm/ui'
   import { workbenchId } from '@anticrm/workbench'
   import login from '../plugin'
   import { getWorkspaces, selectWorkspace, Workspace } from '../utils'
@@ -32,15 +40,20 @@
     status = loginStatus
 
     if (result !== undefined) {
-      setMetadataLocalStorage(login.metadata.LoginToken, result.token)
+      setMetadata(login.metadata.LoginToken, result.token)
+      const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
+      tokens[result.workspace] = result.token
+      setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
       setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)
       setMetadataLocalStorage(login.metadata.LoginEmail, result.email)
-      setMetadataLocalStorage(login.metadata.CurrentWorkspace, workspace)
       if (navigateUrl !== undefined) {
-        navigate(JSON.parse(decodeURIComponent(navigateUrl)))
-      } else {
-        navigate({ path: [workbenchId] })
+        const url = JSON.parse(decodeURIComponent(navigateUrl)) as Location
+        if (url.path[1] === workspace) {
+          navigate(url)
+          return
+        }
       }
+      navigate({ path: [workbenchId, workspace] })
     }
   }
 
@@ -51,7 +64,6 @@
       setMetadataLocalStorage(login.metadata.LoginToken, null)
       setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
       setMetadataLocalStorage(login.metadata.LoginEmail, null)
-      setMetadataLocalStorage(login.metadata.CurrentWorkspace, null)
       changeAccount()
       throw err
     }
