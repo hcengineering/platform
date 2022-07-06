@@ -30,6 +30,7 @@
     optional?: boolean
     short?: boolean
     rule?: RegExp
+    ruleDescr?: IntlString
   }
 
   interface Action {
@@ -71,7 +72,7 @@
       }
       if (f.rule !== undefined) {
         if (!f.rule.test(v)) {
-          status = new Status(Severity.INFO, login.status.IncorrectValue, { field: await translate(field.i18n, {}) })
+          status = new Status(Severity.INFO, login.status.IncorrectValue, { field: await translate(field.i18n, {}), descr: field.ruleDescr ? await translate(field.ruleDescr, {}) : '' })
           return
         }
       }

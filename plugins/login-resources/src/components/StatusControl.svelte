@@ -23,7 +23,7 @@
 
 {#if status.severity !== Severity.OK}
   <div class="flex-row-center container" class:error={status.severity === Severity.ERROR}>
-    <StatusControl {status} />
+    <StatusControl {status} overflow={false} />
   </div>
 {/if}
 

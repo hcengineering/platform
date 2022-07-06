@@ -6,12 +6,13 @@
   import Label from './Label.svelte'
 
   export let status: Status
+  export let overflow: boolean = true
 </script>
 
-<div class="flex-center overflow-label container {status.severity}">
+<div class="flex-center container {status.severity}" class:overflow-label={overflow}>
   {#if status.severity !== Severity.OK}
     <Info size={'small'} />
-    <div class="text-sm ml-2 overflow-label"><Label label={status.code} params={status.params} /></div>
+    <div class="text-sm ml-2" class:overflow-label={overflow}><Label label={status.code} params={status.params} /></div>
   {/if}
 </div>
 

@@ -24,7 +24,7 @@ export default mergeIds(loginId, login, {
     RequiredField: '' as StatusCode<{ field: string }>,
     FieldsDoNotMatch: '' as StatusCode<{ field: string, field2: string }>,
     ConnectingToServer: '' as StatusCode,
-    IncorrectValue: '' as StatusCode<{ field: string }>
+    IncorrectValue: '' as StatusCode<{ field: string, descr: string }>
   },
   string: {
     CreateWorkspace: '' as IntlString,
@@ -48,6 +48,7 @@ export default mergeIds(loginId, login, {
     WantAnotherWorkspace: '' as IntlString,
     NotSeeingWorkspace: '' as IntlString,
     ChangeAccount: '' as IntlString,
-    InviteNote: '' as IntlString
+    InviteNote: '' as IntlString,
+    WorksaceNameRule: '' as IntlString
   }
 })
