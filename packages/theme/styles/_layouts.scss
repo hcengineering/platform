@@ -94,7 +94,7 @@ table {
 
 li {
   color: var(--dark-color);
-  p { color: var(--content-color); }
+  p { color: var(--accent-color); }
 }
 
 /* Common */
@@ -111,6 +111,8 @@ p:last-child { margin-block-end: 0; }
   word-wrap: break-word;
   hyphens: auto;
   line-height: 150%;
+  color: var(--accent-color);
+  
   a {
     word-break: break-all;
     word-break: break-word;
@@ -292,6 +294,8 @@ input.search {
   gap: .75rem;
 
   &.reverse { direction: rtl; }
+  &.large-gap { gap: 1rem; }
+  &.medium-gap { gap: .75rem; }
   &.small-gap { gap: .5rem; }
   &.xsmall-gap { gap: .375rem; }
   &.xxsmall-gap { gap: .25rem; }

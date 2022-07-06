@@ -44,26 +44,24 @@
   $: handlePersonEdit = onEmployeeEdit ?? onEdit
 </script>
 
-<div bind:this={container} class="inline-flex clear-mins">
-  <div class:over-underline={!inline}>
-    <PersonPresenter
-      {value}
-      {tooltipLabels}
-      onEdit={isInteractive ? handlePersonEdit : () => {}}
-      {shouldShowAvatar}
-      {shouldShowName}
-      {avatarSize}
-      {shouldShowPlaceholder}
-      {isInteractive}
-      {inline}
-    />
-  </div>
-  {#if value?.$lookup?.statuses?.length}
-    <div class="pl-2 status content-color">
-      <EmployeeStatusPresenter employee={value} />
-    </div>
-  {/if}
+<div bind:this={container} class:over-underline={!inline}>
+  <PersonPresenter
+    {value}
+    {tooltipLabels}
+    onEdit={isInteractive ? handlePersonEdit : () => {}}
+    {shouldShowAvatar}
+    {shouldShowName}
+    {avatarSize}
+    {shouldShowPlaceholder}
+    {isInteractive}
+    {inline}
+  />
 </div>
+{#if value?.$lookup?.statuses?.length}
+  <div class="pl-2 status content-color">
+    <EmployeeStatusPresenter employee={value} />
+  </div>
+{/if}
 
 <style lang="scss">
   .status {

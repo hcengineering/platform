@@ -57,7 +57,7 @@
 
 {#if presenter}
   {#if targetPresenter}
-    <div class="ml-2">
+    <div class="mx-2">
       <svelte:component this={targetPresenter.presenter} value={target} />
     </div>
   {/if}

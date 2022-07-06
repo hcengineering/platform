@@ -38,6 +38,7 @@ export default plugin(templatesId, {
     Templates: '' as Ref<Space>
   },
   icon: {
-    Templates: '' as Asset
+    Templates: '' as Asset,
+    Template: '' as Asset
   }
 })

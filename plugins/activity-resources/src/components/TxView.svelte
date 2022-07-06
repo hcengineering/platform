@@ -153,7 +153,12 @@
       </div>
     {/if}
 
-    <div class="flex-grow flex-col clear-mins" class:isNew>
+    <div
+      class="flex-grow flex-col clear-mins"
+      class:isNew
+      class:comment={viewlet && viewlet?.editable}
+      class:mention={viewlet?.display === 'emphasized' || isMessageType(model[0]?.attribute)}
+    >
       <div class="flex-between">
         <div class="flex-row-center flex-grow label">
           <div class="bold">
@@ -294,7 +299,7 @@
       </div>
 
       {#if viewlet && viewlet.component && viewlet.display !== 'inline'}
-        <div class={viewlet.display}>
+        <div class="activity-content {viewlet.display}">
           <ShowMore ignore={edit}>
             {#if tx.collectionAttribute !== undefined && (tx.txDocIds?.size ?? 0) > 1}
               <div class="flex-row-center flex-grow flex-wrap clear-mins">
@@ -313,6 +318,29 @@
 {/if}
 
 <style lang="scss">
+  .comment,
+  .mention {
+    position: relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -0.5rem;
+      left: -0.625rem;
+      right: -0.625rem;
+      background-color: var(--accent-bg-color);
+      border: 1px solid var(--divider-color);
+      border-radius: 0.5rem;
+      z-index: -1;
+    }
+  }
+  .comment::after {
+    top: -0.25rem;
+  }
+  .mention::after {
+    top: -0.625rem;
+  }
+
   .msgactivity-container {
     position: relative;
     min-width: 0;
@@ -329,7 +357,7 @@
       position: absolute;
       left: 1.125rem;
       width: 1px;
-      background-color: var(--theme-card-divider);
+      background-color: var(--popup-divider);
     }
     &::before {
       top: -1.5rem;
@@ -359,8 +387,8 @@
     margin-right: 1rem;
     width: 2.25rem;
     height: 2.25rem;
-    color: var(--theme-caption-color);
-    border: 1px solid var(--theme-card-divider);
+    color: var(--caption-color);
+    border: 1px solid var(--popup-divider);
     border-radius: 50%;
   }
 
@@ -377,18 +405,18 @@
     }
     .bold {
       font-weight: 500;
-      color: var(--theme-caption-color);
+      color: var(--caption-color);
     }
     .strong {
       font-weight: 500;
-      color: var(--theme-content-accent-color);
+      color: var(--accent-color);
     }
   }
 
   .time {
     align-self: baseline;
     margin-left: 1rem;
-    color: var(--theme-content-trans-color);
+    color: var(--dark-color);
   }
 
   .content {
@@ -400,10 +428,10 @@
 
   .emphasized {
     margin-top: 0.5rem;
-    background-color: var(--theme-bg-accent-color);
-    border: 1px solid var(--theme-bg-accent-color);
-    border-radius: 0.75rem;
-    padding: 1rem 1.25rem;
+    background-color: var(--body-color);
+    border: 1px solid var(--divider-color);
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
   }
 
   .message {

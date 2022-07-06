@@ -19,7 +19,8 @@ import templates, { templatesId } from '@anticrm/templates'
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(templates.icon, {
-  Templates: `${icons}#templates`
+  Templates: `${icons}#templates`,
+  Template: `${icons}#template`
 })
 
 addStringsLoader(templatesId, async (lang: string) => await import(`../lang/${lang}.json`))

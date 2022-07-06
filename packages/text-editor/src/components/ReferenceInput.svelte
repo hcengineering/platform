@@ -310,16 +310,29 @@
       <button class="sendButton" on:click={submit}><div class="icon"><Send size={'medium'} /></div></button>
     {/if}
   </div>
-  <div class="buttons">
+  <div class="buttons-group large-gap ml-4 mt-2">
     {#each actions as a}
-      <div class="tool" on:click={(evt) => handleAction(a, evt)}>
-        <Icon icon={a.icon} size={'large'} />
+      <div class="icon-button" on:click={(evt) => handleAction(a, evt)}>
+        <Icon icon={a.icon} size={'medium'} />
       </div>
     {/each}
   </div>
 </div>
 
 <style lang="scss">
+  .icon-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 1rem;
+    height: 1rem;
+    color: var(--dark-color);
+    cursor: pointer;
+
+    &:hover {
+      color: var(--accent-color);
+    }
+  }
   .ref-container {
     display: flex;
     flex-direction: column;
@@ -329,7 +342,7 @@
       padding: 0.5rem;
       background-color: var(--body-accent);
       border: 1px solid var(--divider-color);
-      border-radius: 0.75rem 0.75rem 0 0;
+      border-radius: 0.5rem 0.5rem 0 0;
       border-bottom: 0;
 
       &.withoutTopBorder {
@@ -348,7 +361,7 @@
       padding: 0.75rem 1rem;
       background-color: var(--accent-bg-color);
       border: 1px solid var(--divider-color);
-      border-radius: 0.75rem;
+      border-radius: 0.5rem;
 
       &.withoutTopBorder {
         border-top-left-radius: 0;
@@ -427,31 +440,6 @@
           }
         }
       }
-    }
-    .buttons {
-      display: flex;
-      margin: 0.625rem 0 0 0.5rem;
-    }
-
-    .tool {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      width: 1.25rem;
-      height: 1.25rem;
-      color: var(--theme-content-dark-color);
-      cursor: pointer;
-
-      // &.active {
-      //   color: var(--theme-caption-color);
-      // }
-
-      &:hover {
-        color: var(--theme-caption-color);
-      }
-    }
-    .tool + .tool {
-      margin-left: 1rem;
     }
   }
 </style>
