@@ -283,7 +283,9 @@
       {#if issueId}{issueId}{/if}
     </span>
     <svelte:fragment slot="actions">
-      <CopyToClipboard issueUrl={generateIssueShortLink(issueId)} {issueId} />
+      {#if issueId}
+        <CopyToClipboard issueUrl={generateIssueShortLink(issueId)} {issueId} />
+      {/if}
     </svelte:fragment>
 
     <svelte:fragment slot="custom-attributes">

@@ -10,7 +10,7 @@ test.describe('duplicate-org-test', () => {
     // Create user and workspace
     await page.goto(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/sanity-ws`)
   })
-  test('test', async ({ page }) => {
+  test('check-contact-exists', async ({ page }) => {
     await page.click('[id="app-lead\\:string\\:LeadApplication"]')
 
     // Click text=Customers
@@ -34,6 +34,8 @@ test.describe('duplicate-org-test', () => {
 
     // Click button:has-text("Create")
     await page.click('button:has-text("Create")')
+
+    await page.waitForSelector('form.antiCard', { state: 'detached' })
 
     // Click button:has-text("New Customer")
     await page.click('button:has-text("New Customer")')

@@ -30,6 +30,7 @@ test.describe('contact tests', () => {
     await lastName.fill(last)
 
     await page.locator('.antiCard').locator('button:has-text("Create")').click()
+    await page.waitForSelector('form.antiCard', { state: 'detached' })
   })
   test('create-organization', async ({ page }) => {
     await page.locator('[id="app-contact\\:string\\:Contacts"]').click()
@@ -45,7 +46,7 @@ test.describe('contact tests', () => {
     await firstName.fill(orgName)
 
     await page.locator('.antiCard').locator('button:has-text("Create")').click()
-    await page.isHidden('button:has-text("Create")')
+    await page.waitForSelector('form.antiCard', { state: 'detached' })
     await expect(page.locator(`text=${orgName}`)).toBeVisible()
   })
   test('contact-search', async ({ page }) => {
@@ -86,7 +87,8 @@ test.describe('contact tests', () => {
     await lastName.click()
     await lastName.fill(last)
 
-    await page.locator('.antiCard').locator('button:has-text("Create")').click()
+    await page.locator('.antiCard button:has-text("Create")').click()
+    await page.waitForSelector('form.antiCard', { state: 'detached' })
 
     // Click #context-menu svg
     await page.hover(`td:has-text("${first} ${last}")`)

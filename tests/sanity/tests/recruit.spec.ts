@@ -44,7 +44,8 @@ test.describe('recruit tests', () => {
     await emailInput.fill(email)
     await emailInput.press('Enter')
 
-    await page.locator('.antiCard').locator('button:has-text("Create")').click()
+    await page.locator('.antiCard button:has-text("Create")').click()
+    await page.waitForSelector('form.antiCard', { state: 'detached' })
 
     await page.click(`text="${first} ${last}"`)
 
@@ -86,6 +87,7 @@ test.describe('recruit tests', () => {
     await page.click(`button:has-text("${vacancyId}")`)
 
     await page.click('button:has-text("Create")')
+    await page.waitForSelector('form.antiCard', { state: 'detached' })
 
     await page.click(`tr:has-text("${vacancyId}") >> text=APP-`)
     await page.click('button:has-text("Assigned recruiter")')
@@ -102,6 +104,8 @@ test.describe('recruit tests', () => {
     await page.click('button:has-text("Vacancy")')
     await page.fill('form  [placeholder="Software\\ Engineer"]', vacancyId)
     await page.click('form button:has-text("Create")')
+    await page.waitForSelector('form.antiCard', { state: 'detached' })
+
     await page.click(`tr > :has-text("${vacancyId}")`)
 
     // Create Applicatio n1
@@ -109,6 +113,7 @@ test.describe('recruit tests', () => {
     await page.click('form[id="recruit:string:CreateApplication"] button:has-text("Talent")')
     await page.click('button:has-text("Alex P.")')
     await page.click('form[id="recruit:string:CreateApplication"] button:has-text("Create")')
+    await page.waitForSelector('form.antiCard', { state: 'detached' })
 
     await expect(page.locator('text=APP-').first()).toBeVisible()
     await expect(page.locator('text=Alex P.').first()).toBeVisible()
@@ -170,6 +175,7 @@ test.describe('recruit tests', () => {
     await page.click('form button:has-text("Talent")')
     await page.click('button:has-text("Andrey P.")')
     await page.click('text=Create')
+    await page.waitForSelector('form.antiCard', { state: 'detached' })
     await page.click('td:has-text("RVE-")')
   })
 

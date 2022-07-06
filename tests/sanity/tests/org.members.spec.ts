@@ -19,6 +19,7 @@ test.describe('recruit tests', () => {
     const orgId = 'Organiation-' + generateId()
     await page.fill('[placeholder="Apple"]', orgId)
     await page.click('button:has-text("Create")')
+    await page.waitForSelector('form.antiCard', { state: 'detached' })
     await page.click(`text=${orgId}`)
 
     await page.click('[id="contact:string:AddMember"]')
