@@ -96,7 +96,7 @@ abstract class MongoAdapterBase extends TxProcessor {
     for (const key in query) {
       const value = (query as any)[key]
 
-      const tkey = this.checkMixinKey(key, clazz)
+      const tkey = this.translateKey(key, clazz)
       if (value !== null && typeof value === 'object') {
         const keys = Object.keys(value)
         if (keys[0] === '$like') {
@@ -321,25 +321,7 @@ abstract class MongoAdapterBase extends TxProcessor {
     if (options.sort !== undefined) {
       const sort = {} as any
       for (const _key in options.sort) {
-        let key: string = _key
-        const arr = key.split('.').filter((p) => p)
-        key = ''
-        for (let i = 0; i < arr.length; i++) {
-          const element = arr[i]
-          if (element === '$lookup') {
-            key += arr[++i] + '_lookup'
-          } else {
-            if (!key.endsWith('.') && i > 0) {
-              key += '.'
-            }
-            key += arr[i]
-            if (i !== arr.length - 1) {
-              key += '.'
-            }
-          }
-          // Check if key is belong to mixin class, we need to add prefix.
-          key = this.checkMixinKey<T>(key, clazz)
-        }
+        const key: string = this.translateKey(_key, clazz)
         sort[key] = options.sort[_key] === SortingOrder.Ascending ? 1 : -1
       }
       pipeline.push({ $sort: sort })
@@ -376,6 +358,30 @@ abstract class MongoAdapterBase extends TxProcessor {
       this.clearExtraLookups(row)
     }
     return toFindResult(result, total)
+  }
+
+  private translateKey<T extends Doc>(key: string, clazz: Ref<Class<T>>): string {
+    const arr = key.split('.').filter((p) => p)
+    let tKey = ''
+
+    for (let i = 0; i < arr.length; i++) {
+      const element = arr[i]
+      if (element === '$lookup') {
+        tKey += arr[++i] + '_lookup'
+      } else {
+        if (!tKey.endsWith('.') && i > 0) {
+          tKey += '.'
+        }
+        tKey += arr[i]
+        if (i !== arr.length - 1) {
+          tKey += '.'
+        }
+      }
+      // Check if key is belong to mixin class, we need to add prefix.
+      tKey = this.checkMixinKey<T>(tKey, clazz)
+    }
+
+    return tKey
   }
 
   private clearExtraLookups (row: any): void {
