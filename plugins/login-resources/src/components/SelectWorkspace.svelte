@@ -15,7 +15,15 @@
 -->
 <script lang="ts">
   import { OK, setMetadata, Severity, Status } from '@anticrm/platform'
-  import { Button, fetchMetadataLocalStorage, getCurrentLocation, Label, Location, navigate, setMetadataLocalStorage } from '@anticrm/ui'
+  import {
+    Button,
+    fetchMetadataLocalStorage,
+    getCurrentLocation,
+    Label,
+    Location,
+    navigate,
+    setMetadataLocalStorage
+  } from '@anticrm/ui'
   import { workbenchId } from '@anticrm/workbench'
   import login from '../plugin'
   import { getWorkspaces, selectWorkspace, Workspace } from '../utils'

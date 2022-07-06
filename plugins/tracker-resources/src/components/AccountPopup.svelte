@@ -16,10 +16,18 @@
   import contact, { Employee, EmployeeAccount, formatName } from '@anticrm/contact'
   import { getCurrentAccount } from '@anticrm/core'
   import login from '@anticrm/login'
-import { setMetadata } from '@anticrm/platform';
+  import { setMetadata } from '@anticrm/platform'
   import { Avatar, createQuery } from '@anticrm/presentation'
   import setting, { SettingsCategory, settingId } from '@anticrm/setting'
-  import { closePopup, fetchMetadataLocalStorage, getCurrentLocation, Icon, Label, navigate, setMetadataLocalStorage } from '@anticrm/ui'
+  import {
+    closePopup,
+    fetchMetadataLocalStorage,
+    getCurrentLocation,
+    Icon,
+    Label,
+    navigate,
+    setMetadataLocalStorage
+  } from '@anticrm/ui'
 
   // const client = getClient()
   async function getItems (): Promise<SettingsCategory[]> {

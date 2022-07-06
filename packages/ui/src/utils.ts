@@ -16,7 +16,7 @@
 import type { Metadata } from '@anticrm/platform'
 import { setMetadata } from '@anticrm/platform'
 
-export function setMetadataLocalStorage<T>(id: Metadata<T>, value: T | null): void {
+export function setMetadataLocalStorage<T> (id: Metadata<T>, value: T | null): void {
   if (value != null) {
     localStorage.setItem(id, typeof value === 'string' ? value : JSON.stringify(value))
   } else {
@@ -25,7 +25,7 @@ export function setMetadataLocalStorage<T>(id: Metadata<T>, value: T | null): vo
   setMetadata(id, value)
 }
 
-export function fetchMetadataLocalStorage<T>(id: Metadata<T>): T | null {
+export function fetchMetadataLocalStorage<T> (id: Metadata<T>): T | null {
   const data = localStorage.getItem(id)
   if (data === null) {
     return null

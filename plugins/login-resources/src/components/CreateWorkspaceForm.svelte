@@ -18,7 +18,13 @@
 
   import Form from './Form.svelte'
   import { createWorkspace } from '../utils'
-  import { fetchMetadataLocalStorage, getCurrentLocation, navigate, setMetadataLocalStorage, showPopup } from '@anticrm/ui'
+  import {
+    fetchMetadataLocalStorage,
+    getCurrentLocation,
+    navigate,
+    setMetadataLocalStorage,
+    showPopup
+  } from '@anticrm/ui'
   import login from '../plugin'
   import { workbenchId } from '@anticrm/workbench'
   import InviteLink from './InviteLink.svelte'

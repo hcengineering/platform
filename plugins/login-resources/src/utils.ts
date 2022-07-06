@@ -214,7 +214,7 @@ export async function getWorkspaces (): Promise<Workspace[]> {
     const result: Response<any> = await response.json()
     console.log(result)
     if (result.error != null) {
-      throw new PlatformError(result.error) 
+      throw new PlatformError(result.error)
     }
     return result.result
   } catch (err) {
