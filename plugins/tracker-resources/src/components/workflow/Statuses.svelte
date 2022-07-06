@@ -292,7 +292,7 @@
                     on:default-update={({ detail }) => updateTeamDefaultStatus(detail)}
                     on:edit={({ detail }) => {
                       closeTooltip()
-                      editingStatus = { ...detail }
+                      editingStatus = { ...detail, color: detail.color ?? category.color }
                     }}
                     on:delete={deleteStatus}
                   />

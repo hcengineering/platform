@@ -341,7 +341,7 @@ export function createModel (builder: Builder): void {
     {
       label: tracker.string.CategoryBacklog,
       icon: tracker.icon.CategoryBacklog,
-      color: 0,
+      color: 12,
       defaultStatusName: 'Backlog',
       order: 0
     },
@@ -354,7 +354,7 @@ export function createModel (builder: Builder): void {
     {
       label: tracker.string.CategoryUnstarted,
       icon: tracker.icon.CategoryUnstarted,
-      color: 1,
+      color: 13,
       defaultStatusName: 'Todo',
       order: 1
     },
@@ -367,7 +367,7 @@ export function createModel (builder: Builder): void {
     {
       label: tracker.string.CategoryStarted,
       icon: tracker.icon.CategoryStarted,
-      color: 2,
+      color: 14,
       defaultStatusName: 'In Progress',
       order: 2
     },
@@ -380,7 +380,7 @@ export function createModel (builder: Builder): void {
     {
       label: tracker.string.CategoryCompleted,
       icon: tracker.icon.CategoryCompleted,
-      color: 3,
+      color: 15,
       defaultStatusName: 'Done',
       order: 3
     },
@@ -393,7 +393,7 @@ export function createModel (builder: Builder): void {
     {
       label: tracker.string.CategoryCanceled,
       icon: tracker.icon.CategoryCanceled,
-      color: 4,
+      color: 16,
       defaultStatusName: 'Canceled',
       order: 4
     },

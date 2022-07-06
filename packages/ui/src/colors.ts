@@ -14,6 +14,12 @@ export const SeaBuckthornColor = '#F2994A' // orange (warning)
 export const FlamingoColor = '#EB5757' // red (error)
 export const LinkWaterColor = '#C9CBCD'
 
+export const SilverSandColor = '#BEC2C8'
+export const PlatinumColor = '#E2E2E2'
+export const CrayolaColor = '#F2C94C'
+export const SlateBlueColor = '#5E6AD2'
+export const CadetGreyColor = '#95A2B3'
+
 const blackColors = Object.freeze([
   FeijoaColor,
   DeYorkColor,
@@ -26,7 +32,12 @@ const blackColors = Object.freeze([
   EastSideColor,
   MoodyBlueColor,
   ChetwodeBlueColor,
-  SalmonColor
+  SalmonColor,
+  SilverSandColor,
+  PlatinumColor,
+  CrayolaColor,
+  SlateBlueColor,
+  CadetGreyColor
 ])
 
 /**

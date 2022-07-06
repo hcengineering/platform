@@ -104,7 +104,6 @@
     .dot {
       position: absolute;
       content: '';
-      background: red;
       border-radius: 50%;
       inset: 30%;
     }
