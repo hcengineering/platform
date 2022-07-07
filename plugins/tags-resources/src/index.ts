@@ -29,6 +29,7 @@ import TagElementCountPresenter from './components/TagElementCountPresenter.svel
 import TagsFilter from './components/TagsFilter.svelte'
 import TagsAttributeEditor from './components/TagsAttributeEditor.svelte'
 import TagsEditorPopup from './components/TagsEditorPopup.svelte'
+import LabelsPresenter from './components/LabelsPresenter.svelte'
 import { ObjQueryType } from '@anticrm/core'
 import { getRefs } from './utils'
 import { Filter } from '@anticrm/view'
@@ -58,7 +59,8 @@ export default async (): Promise<Resources> => ({
     TagsCategoryBar,
     TagElementCountPresenter,
     TagsAttributeEditor,
-    TagsEditorPopup
+    TagsEditorPopup,
+    LabelsPresenter
   },
   actionImpl: {
     Open: (value: TagElement, evt: MouseEvent) => {

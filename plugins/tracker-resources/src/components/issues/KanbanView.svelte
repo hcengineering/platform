@@ -19,7 +19,17 @@
   import notification from '@anticrm/notification'
   import { createQuery } from '@anticrm/presentation'
   import { Issue, IssuesGrouping, IssuesOrdering, IssueStatus, Team, ViewOptions } from '@anticrm/tracker'
-  import { Button, Component, Icon, IconAdd, showPanel, showPopup, getPlatformColor, Loading } from '@anticrm/ui'
+  import {
+    Button,
+    Component,
+    Icon,
+    IconAdd,
+    showPanel,
+    showPopup,
+    getPlatformColor,
+    Loading,
+    tooltip
+  } from '@anticrm/ui'
   import { focusStore, ListSelectionProvider, SelectDirection, selectionStore } from '@anticrm/view-resources'
   import ActionContext from '@anticrm/view-resources/src/components/ActionContext.svelte'
   import Menu from '@anticrm/view-resources/src/components/Menu.svelte'
@@ -40,6 +50,7 @@
   import ParentNamesPresenter from './ParentNamesPresenter.svelte'
   import PriorityEditor from './PriorityEditor.svelte'
   import StatusEditor from './StatusEditor.svelte'
+  import tags from '@anticrm/tags'
 
   export let currentSpace: Ref<Team> = tracker.team.DefaultTeam
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
@@ -146,6 +157,8 @@
     return []
   }
   $: states = getIssueStates(groupBy, shouldShowEmptyGroups, issueStates, issueStatusStates, priorityStates)
+
+  const fullFilled: { [key: string]: boolean } = {}
 </script>
 
 {#if !states?.length}
@@ -203,13 +216,14 @@
     </svelte:fragment>
     <svelte:fragment slot="card" let:object>
       {@const issue = toIssue(object)}
+      {@const issueId = object._id}
       <div
         class="tracker-card"
         on:click={() => {
           showPanel(tracker.component.EditIssue, object._id, object._class, 'content')
         }}
       >
-        <div class="flex-col mr-8">
+        <div class="flex-col ml-4 mr-8">
           <div class="flex clear-mins names">
             <IssuePresenter value={issue} />
             <ParentNamesPresenter value={issue} />
@@ -235,7 +249,7 @@
             <Component is={notification.component.NotificationPresenter} props={{ value: object }} />
           </div>
         </div>
-        <div class="buttons-group xsmall-gap mt-10px">
+        <div class="buttons-group xsmall-gap states-bar">
           {#if issue && issueStatuses && issue.subIssues > 0}
             <SubIssuesSelector {issue} {currentTeam} {issueStatuses} />
           {/if}
@@ -247,7 +261,23 @@
             size={'inline'}
             justify={'center'}
             width={''}
+            bind:onlyIcon={fullFilled[issueId]}
           />
+          <div
+            class="clear-mins"
+            use:tooltip={{
+              component: fullFilled[issueId] ? tags.component.LabelsPresenter : undefined,
+              props: { object: issue, kind: 'full' }
+            }}
+          >
+            <Component
+              is={tags.component.LabelsPresenter}
+              props={{ object: issue, ckeckFilled: fullFilled[issueId] }}
+              on:change={(res) => {
+                if (res.detail.full) fullFilled[issueId] = true
+              }}
+            />
+          </div>
         </div>
       </div>
     </svelte:fragment>
@@ -275,7 +305,12 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 0.5rem 1rem;
+    // padding: 0.5rem 1rem;
     min-height: 6.5rem;
+  }
+  .states-bar {
+    flex-shrink: 10;
+    width: fit-content;
+    margin: 0.625rem 1rem 0;
   }
 </style>

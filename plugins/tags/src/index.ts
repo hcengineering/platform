@@ -84,7 +84,8 @@ const tagsPlugin = plugin(tagsId, {
     TagsDropdownEditor: '' as AnyComponent,
     TagsCategoryBar: '' as AnyComponent,
     TagsAttributeEditor: '' as AnyComponent,
-    TagsPresenter: '' as AnyComponent
+    TagsPresenter: '' as AnyComponent,
+    LabelsPresenter: '' as AnyComponent
   },
   category: {
     NoCategory: '' as Ref<TagCategory>

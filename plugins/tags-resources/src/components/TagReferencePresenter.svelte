@@ -14,13 +14,14 @@
 -->
 <script lang="ts">
   import type { TagReference } from '@anticrm/tags'
-  import { getPlatformColor, IconClose, Icon } from '@anticrm/ui'
+  import { getPlatformColor, IconClose, Icon, resizeObserver } from '@anticrm/ui'
   import TagItem from './TagItem.svelte'
   import { createEventDispatcher } from 'svelte'
 
   export let value: TagReference
   export let isEditable: boolean = false
-  export let kind: 'labels' | 'skills' = 'skills'
+  export let kind: 'labels' | 'kanban-labels' | 'skills' = 'skills'
+  export let realWidth: number | undefined = undefined
 
   const dispatch = createEventDispatcher()
 </script>
@@ -28,8 +29,24 @@
 {#if value}
   {#if kind === 'skills'}
     <TagItem tag={value} />
+  {:else if kind === 'kanban-labels'}
+    <button
+      class="label-container"
+      use:resizeObserver={(element) => {
+        realWidth = element.clientWidth
+      }}
+    >
+      <div class="color" style:background-color={getPlatformColor(value.color ?? 0)} />
+      <span class="overflow-label ml-1 text-sm caption-color">{value.title}</span>
+    </button>
   {:else if kind === 'labels'}
-    <div class="tag-container" style:padding-right={isEditable ? '0' : '0.5rem'}>
+    <div
+      class="tag-container"
+      style:padding-right={isEditable ? '0' : '0.5rem'}
+      use:resizeObserver={(element) => {
+        realWidth = element.clientWidth
+      }}
+    >
       <div class="color" style:background-color={getPlatformColor(value.color ?? 0)} />
       <span class="overflow-label ml-1-5 caption-color">{value.title}</span>
       {#if isEditable}
@@ -54,12 +71,6 @@
     border: 1px solid var(--divider-color);
     border-radius: 0.75rem;
 
-    .color {
-      flex-shrink: 0;
-      width: 0.5rem;
-      height: 0.5rem;
-      border-radius: 50%;
-    }
     .btn-close {
       flex-shrink: 0;
       margin-left: 0.125rem;
@@ -73,5 +84,46 @@
         border-left-color: var(--divider-color);
       }
     }
+  }
+
+  .label-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+    padding: 0 0.375rem;
+    height: 1.375rem;
+    min-width: 1.375rem;
+    font-weight: 500;
+    font-size: 0.75rem;
+    line-height: 0.75rem;
+    white-space: nowrap;
+    color: var(--accent-color);
+    background-color: var(--board-card-bg-color);
+    border: 1px solid var(--divider-color);
+    border-radius: 0.25rem;
+    transition-property: border, background-color, color, box-shadow;
+    transition-duration: 0.15s;
+
+    &:hover {
+      color: var(--accent-color);
+      background-color: var(--button-bg-hover);
+      border-color: var(--button-border-hover);
+      transition-duration: 0;
+    }
+    &:focus {
+      border-color: var(--primary-edit-border-color) !important;
+    }
+    &:disabled {
+      color: rgb(var(--caption-color) / 40%);
+      cursor: not-allowed;
+    }
+  }
+
+  .color {
+    flex-shrink: 0;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
   }
 </style>
