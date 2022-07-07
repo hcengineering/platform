@@ -20,6 +20,9 @@
   import { getPlatformColor, Label } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import task from '../../plugin'
+  import Won from '../icons/Won.svelte'
+  import Lost from '../icons/Lost.svelte'
+  import Unknown from '../icons/Unknown.svelte'
 
   export let space: Ref<SpaceWithStates>
   let states: DoneState[] = []
@@ -53,7 +56,9 @@
             dispatch('close', state)
           }}
         >
-          <div class="color" style="background-color: {getColor(state._class)}" />
+          <div class="mr-2" style="color: {getColor(state._class)}">
+            <svelte:component this={state._class === task.class.WonState ? Won : Lost} size={'small'} />
+          </div>
           <span class="label">{state.title}</span>
         </button>
       {/each}
@@ -63,19 +68,9 @@
           dispatch('close', null)
         }}
       >
-        <div class="color background-card-divider" />
-        <Label label={task.string.NoDoneState} />
+        <div class="dark-color mr-2"><Unknown size={'small'} /></div>
+        <span class="overflow-label"><Label label={task.string.NoDoneState} /></span>
       </button>
     </div>
   </div>
 </div>
-
-<style lang="scss">
-  .color {
-    flex-shrink: 0;
-    margin-right: 0.75rem;
-    width: 0.5rem;
-    height: 0.5rem;
-    border-radius: 0.5rem;
-  }
-</style>

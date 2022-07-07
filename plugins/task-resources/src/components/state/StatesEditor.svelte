@@ -23,6 +23,8 @@
   import Circles from './Circles.svelte'
   import StatusesPopup from './StatusesPopup.svelte'
   import task from '../../plugin'
+  import Won from '../icons/Won.svelte'
+  import Lost from '../icons/Lost.svelte'
 
   export let states: State[] = []
   export let wonStates: DoneState[] = []
@@ -152,7 +154,9 @@
       {#if state}
         <div class="states flex-row-center">
           <div class="bar" />
-          <div class="color" style="background-color: #a5d179" />
+          <div class="mr-2">
+            <Won size={'medium'} />
+          </div>
           <div class="flex-grow caption-color">
             <AttributeEditor maxWidth={'13rem'} _class={state._class} object={state} key="title" />
           </div>
@@ -192,7 +196,9 @@
       {#if state}
         <div class="states flex-row-center">
           <div class="bar" />
-          <div class="color" style="background-color: #f28469" />
+          <div class="mr-2">
+            <Lost size={'medium'} />
+          </div>
           <div class="flex-grow caption-color">
             <AttributeEditor maxWidth={'13rem'} _class={state._class} object={state} key="title" />
           </div>

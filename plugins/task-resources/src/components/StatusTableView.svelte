@@ -22,6 +22,8 @@
   import { TableBrowser } from '@anticrm/view-resources'
   import task from '../plugin'
   import StatesBar from './state/StatesBar.svelte'
+  import Won from './icons/Won.svelte'
+  import Lost from './icons/Lost.svelte'
 
   export let _class: Ref<Class<Task>>
   export let space: Ref<SpaceWithStates>
@@ -61,7 +63,8 @@
         return {
           id: s._id,
           label: s.title,
-          color: s._class === task.class.WonState ? 'var(--done-color)' : 'var(--error-color)'
+          icon: s._class === task.class.WonState ? Won : Lost,
+          color: s._class === task.class.WonState ? 'var(--won-color)' : 'var(--lost-color)'
         }
       })
       itemsDS.unshift({ id: 'NoDoneState', labelIntl: task.string.NoDoneState })
