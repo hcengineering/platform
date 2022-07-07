@@ -362,20 +362,21 @@
     }
   }
 
+  let docWidth: number
   let navFloat: boolean = !(window.innerWidth < 1024)
   const windowResize = (): void => {
-    if (window.innerWidth < 1024 && !navFloat) {
+    if (window.innerWidth <= 1024 && !navFloat) {
       visibileNav = false
       navFloat = true
-    } else if (window.innerWidth >= 1024 && navFloat) {
+    } else if (window.innerWidth > 1024 && navFloat) {
       navFloat = false
       visibileNav = true
     }
   }
-  const checkOnHide = (): void => {
-    if (visibileNav && navFloat) visibileNav = false
-  }
   windowResize()
+  const checkOnHide = (): void => {
+    if (visibileNav && docWidth <= 1024) visibileNav = false
+  }
 </script>
 
 <svelte:window on:resize={windowResize} />
@@ -459,7 +460,7 @@
       }}
     />
     {#if currentApplication && navigatorModel && navigator && visibileNav}
-      <div class="antiPanel-navigator" class:float={navFloat} style="box-shadow: -1px 0px 2px rgba(0, 0, 0, .1)">
+      <div class="antiPanel-navigator" style="box-shadow: -1px 0px 2px rgba(0, 0, 0, .1)">
         {#if currentApplication}
           <NavHeader label={currentApplication.label} />
           {#if currentApplication.navHeaderComponent}

@@ -41,11 +41,13 @@
   &.border-right { border-right: 1px solid var(--divider-color); }
 }
 .antiPanel-navigator {
+  position: relative;
   min-width: 18rem;
   max-width: 18rem;
   width: 18rem;
-
-  &.float {
+}
+@media (max-width: 1024px) {
+  .antiPanel-navigator {
     position: fixed;
     top: var(--status-bar-height);
     left: var(--app-panel-width);
