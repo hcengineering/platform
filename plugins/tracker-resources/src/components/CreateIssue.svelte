@@ -47,7 +47,6 @@
   export let assignee: Ref<Employee> | null = null
   export let project: Ref<Project> | null = null
 
-  let currentAssignee: Ref<Employee> | null = assignee
   let issueStatuses: WithLookup<IssueStatus>[] | undefined
   export let parentIssue: Issue | undefined
   let labels: TagReference[] = []
@@ -56,7 +55,7 @@
   let object: AttachedData<Issue> = {
     title: '',
     description: '',
-    assignee: null,
+    assignee: assignee,
     project: project,
     number: 0,
     rank: '',
@@ -136,7 +135,7 @@
     const value: AttachedData<Issue> = {
       title: getTitle(object.title),
       description: object.description,
-      assignee: currentAssignee,
+      assignee: object.assignee,
       project: object.project,
       number: (incResult as any).object.sequence,
       status: object.status,
@@ -309,7 +308,7 @@
         size="small"
         kind="no-border"
         width={'min-content'}
-        on:change={({ detail }) => (currentAssignee = detail)}
+        on:change={({ detail }) => (object.assignee = detail)}
       />
       <Component
         is={tags.component.TagsDropdownEditor}
