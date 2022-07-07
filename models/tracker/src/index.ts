@@ -456,13 +456,13 @@ export function createModel (builder: Builder): void {
       locationResolver: tracker.resolver.Location,
       navigatorModel: {
         specials: [
-          {
-            id: 'inbox',
-            position: 'top',
-            label: tracker.string.Inbox,
-            icon: tracker.icon.Inbox,
-            component: tracker.component.Inbox
-          },
+          // {
+          //   id: 'inbox',
+          //   position: 'top',
+          //   label: tracker.string.Inbox,
+          //   icon: tracker.icon.Inbox,
+          //   component: tracker.component.Inbox
+          // },
           {
             id: 'my-issues',
             position: 'top',
@@ -470,13 +470,13 @@ export function createModel (builder: Builder): void {
             icon: tracker.icon.MyIssues,
             component: tracker.component.MyIssues
           },
-          {
-            id: 'views',
-            position: 'top',
-            label: tracker.string.Views,
-            icon: tracker.icon.Views,
-            component: tracker.component.Views
-          },
+          // {
+          //   id: 'views',
+          //   position: 'top',
+          //   label: tracker.string.Views,
+          //   icon: tracker.icon.Views,
+          //   component: tracker.component.Views
+          // },
           {
             id: 'roadmap',
             position: 'top',
