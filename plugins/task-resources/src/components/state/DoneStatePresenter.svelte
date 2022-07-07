@@ -17,6 +17,8 @@
   import type { DoneState } from '@anticrm/task'
   import task from '@anticrm/task'
   import { getPlatformColor } from '@anticrm/ui'
+  import Won from '../icons/Won.svelte'
+  import Lost from '../icons/Lost.svelte'
 
   export let value: DoneState
   export let showTitle: boolean = false
@@ -26,20 +28,11 @@
 
 {#if value}
   <div class="flex-center">
-    <div class="state-container" class:state-container-title={showTitle} style="background-color: {color};" />
+    <div class:mr-2={showTitle} style="color: {color};">
+      <svelte:component this={value._class === task.class.WonState ? Won : Lost} size={'small'} />
+    </div>
     {#if showTitle}
       {value.title}
     {/if}
   </div>
 {/if}
-
-<style lang="scss">
-  .state-container {
-    width: 0.5rem;
-    height: 0.5rem;
-    border-radius: 0.5rem;
-  }
-  .state-container-title {
-    margin-right: 0.75rem;
-  }
-</style>

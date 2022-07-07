@@ -62,7 +62,9 @@
         }}
       >
         {#if item.icon}
-          <div class="icon"><Icon icon={item.icon} size={size === 'small' ? 'x-small' : 'small'} /></div>
+          <div class="icon">
+            <Icon icon={item.icon} size={size === 'small' ? 'x-small' : 'small'} fill={item.color ?? 'currentColor'} />
+          </div>
         {:else if item.color}
           <div class="color" style:background-color={item.color} />
         {/if}

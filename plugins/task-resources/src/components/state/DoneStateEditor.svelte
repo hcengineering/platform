@@ -22,6 +22,7 @@
   import DoneStatePresenter from './DoneStatePresenter.svelte'
   import DoneStatesPopup from './DoneStatesPopup.svelte'
   import task from '../../plugin'
+  import Unknown from '../icons/Unknown.svelte'
 
   export let value: Ref<DoneState> | null | undefined
   export let onChange: (value: any) => void
@@ -47,6 +48,7 @@
     )
   } else {
     query.unsubscribe()
+    state = undefined
   }
 </script>
 
@@ -78,19 +80,9 @@
       <div class="pointer-events-none"><DoneStatePresenter value={state} showTitle /></div>
     {:else}
       <div class="flex-row-center pointer-events-none">
-        <div class="color background-card-divider" />
+        <div class="dark-color mr-2"><Unknown size={'small'} /></div>
         <span class="overflow-label"><Label label={task.string.NoDoneState} /></span>
       </div>
     {/if}
   </svelte:fragment>
 </Button>
-
-<style lang="scss">
-  .color {
-    margin-right: 0.75rem;
-    min-width: 0.5rem;
-    width: 0.5rem;
-    height: 0.5rem;
-    border-radius: 0.5rem;
-  }
-</style>

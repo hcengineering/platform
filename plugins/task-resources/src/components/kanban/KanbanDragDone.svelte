@@ -18,6 +18,8 @@
   import type { Kanban } from '@anticrm/task'
   import task, { DoneState, LostState, WonState } from '@anticrm/task'
   import { createEventDispatcher } from 'svelte'
+  import Won from '../icons/Won.svelte'
+  import Lost from '../icons/Lost.svelte'
 
   export let kanban: Kanban
   let wonStates: WonState[] = []
@@ -58,7 +60,7 @@
       on:dragover|preventDefault={() => {}}
       on:drop={onDone(wonState)}
     >
-      <div class="done-icon won mr-2" />
+      <div class="mr-2"><Won size={'small'} /></div>
       {wonState.title}
     </div>
   {/each}
@@ -77,7 +79,7 @@
       on:dragover|preventDefault={() => {}}
       on:drop={onDone(lostState)}
     >
-      <div class="done-icon lost mr-2" />
+      <div class="mr-2"><Lost size={'small'} /></div>
       {lostState.title}
     </div>
   {/each}
@@ -109,19 +111,6 @@
     &.hovered {
       background-color: var(--theme-button-bg-enabled);
       border-color: var(--theme-dialog-divider);
-    }
-  }
-
-  .done-icon {
-    width: 0.5rem;
-    height: 0.5rem;
-    border-radius: 50%;
-
-    &.won {
-      background-color: #27b166;
-    }
-    &.lost {
-      background-color: #f96e50;
     }
   }
 </style>
