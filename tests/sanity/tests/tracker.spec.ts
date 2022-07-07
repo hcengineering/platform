@@ -199,6 +199,7 @@ test('my-issues', async ({ page }) => {
   await openIssue(page, name)
   // click "Don't track"
   await page.click('.popupPanel-title :nth-child(3) >> button >> nth=1')
+  await page.waitForTimeout(100)
   await page.keyboard.press('Escape')
   await expect(page.locator('.antiPanel-component')).not.toContainText(name)
 })
