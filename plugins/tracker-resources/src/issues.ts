@@ -48,7 +48,7 @@ export async function copyToClipboard (object: Issue, ev: Event, { type }: { typ
 
 export function generateIssueShortLink (issueId: string): string {
   const location = getCurrentLocation()
-  return `${window.location.host}/${workbenchId}/${location.path[1]}/${trackerId}/${issueId}`
+  return `${window.location.protocol}//${window.location.host}/${workbenchId}/${location.path[1]}/${trackerId}/${issueId}`
 }
 
 export async function generateIssueLocation (loc: Location, issueId: string): Promise<Location | undefined> {

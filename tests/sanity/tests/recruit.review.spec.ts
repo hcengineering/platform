@@ -29,6 +29,7 @@ test.describe('recruit review tests', () => {
     await page.click('button:has-text("Rosamund Chen")')
 
     await page.click('button:has-text("Create")')
+    await page.waitForSelector('form.antiCard', { state: 'detached' })
 
     await page.click(`tr:has-text('${reviewId}') td a`)
     await page.click('button:has-text("2 members")')

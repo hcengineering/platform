@@ -35,6 +35,7 @@ test.describe('recruit tests', () => {
     await page.fill('[placeholder="Please\\ type\\ \\ title"]', 's1')
     // Click text=Create Skill s1 Please type description here Category Other Create Cancel >> button
     await page.click('form[id="tags:string:AddTag"]  button:has-text("Create")')
+    await page.waitForSelector('form[id="tags:string:AddTag"]', { state: 'detached' })
     await page.click('button:has-text("Other")')
     // Click text=s1
     // await page.click('text=s1')
@@ -45,6 +46,7 @@ test.describe('recruit tests', () => {
     await page.keyboard.press('Escape')
     // Click button:has-text("Create")
     await page.click('button:has-text("Create")')
+    await page.waitForSelector('form.antiCard', { state: 'detached' })
   })
 
   test('create-tag-candidate', async ({ page }) => {
@@ -76,6 +78,7 @@ test.describe('recruit tests', () => {
     await page.fill('[placeholder="Please\\ type\\ skill\\ title"]', 'C++')
     // Click button:has-text("Create")
     await page.click('button:has-text("Create")')
+    await page.waitForSelector('form.antiCard', { state: 'detached' })
     // Click text=Talents
     await page.click('text=Talents')
     await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/sanity-ws/recruit/talents`)
@@ -101,6 +104,7 @@ test.describe('recruit tests', () => {
     await page.fill('[placeholder="Appleseed"]', last)
     // Click button:has-text("Create")
     await page.click('button:has-text("Create")')
+    await page.waitForSelector('form.antiCard', { state: 'detached' })
     // Click text=q w
     await page.click(`tr > :has-text("${first} ${last}")`)
     // Click text=java
