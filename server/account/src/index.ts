@@ -653,18 +653,11 @@ export async function dropAccount (db: Db, email: string): Promise<void> {
 export async function leaveWorkspace (db: Db, token: string, email: string): Promise<void> {
   const tokenData = decodeToken(token)
 
-  const account = await getAccount(db, email)
-  if (account === null) {
-    throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.AccountNotFound, { account: email }))
-  }
-
-  if (tokenData.email !== email) {
-    const currentAccount = await getAccount(db, tokenData.email)
-    if (currentAccount === null) {
-      throw new PlatformError(
-        new Status(Severity.ERROR, accountPlugin.status.AccountNotFound, { account: tokenData.email })
-      )
-    }
+  const currentAccount = await getAccount(db, tokenData.email)
+  if (currentAccount === null) {
+    throw new PlatformError(
+      new Status(Severity.ERROR, accountPlugin.status.AccountNotFound, { account: tokenData.email })
+    )
   }
 
   const workspace = await getWorkspace(db, tokenData.workspace)
@@ -674,22 +667,25 @@ export async function leaveWorkspace (db: Db, token: string, email: string): Pro
     )
   }
 
-  await deactivateEmployeeAccount(account, workspace.workspace)
+  await deactivateEmployeeAccount(email, workspace.workspace)
 
-  await db
-    .collection<Workspace>(WORKSPACE_COLLECTION)
-    .updateOne({ _id: workspace._id }, { $pull: { accounts: account._id } })
-  await db
-    .collection<Account>(ACCOUNT_COLLECTION)
-    .updateOne({ _id: account._id }, { $pull: { workspaces: workspace._id } })
+  const account = tokenData.email !== email ? await getAccount(db, email) : currentAccount
+  if (account !== null) {
+    await db
+      .collection<Workspace>(WORKSPACE_COLLECTION)
+      .updateOne({ _id: workspace._id }, { $pull: { accounts: account._id } })
+    await db
+      .collection<Account>(ACCOUNT_COLLECTION)
+      .updateOne({ _id: account._id }, { $pull: { workspaces: workspace._id } })
+  }
 }
 
-async function deactivateEmployeeAccount (account: Account, workspace: string): Promise<void> {
-  const connection = await connect(getTransactor(), workspace, account.email)
+async function deactivateEmployeeAccount (email: string, workspace: string): Promise<void> {
+  const connection = await connect(getTransactor(), workspace, email)
   try {
     const ops = new TxOperations(connection, core.account.System)
 
-    const existingAccount = await ops.findOne(contact.class.EmployeeAccount, { email: account.email })
+    const existingAccount = await ops.findOne(contact.class.EmployeeAccount, { email })
 
     if (existingAccount !== undefined) {
       const employee = await ops.findOne(contact.class.Employee, { _id: existingAccount.employee })
