@@ -15,7 +15,7 @@
 <script lang="ts">
   import contact, { Employee } from '@anticrm/contact'
   import { Class, Doc, Ref } from '@anticrm/core'
-  import { Issue, Team } from '@anticrm/tracker'
+  import { Issue } from '@anticrm/tracker'
   import { UsersPopup, getClient } from '@anticrm/presentation'
   import { AttributeModel } from '@anticrm/view'
   import { eventToHTMLElement, showPopup } from '@anticrm/ui'
@@ -26,7 +26,6 @@
   export let value: Employee | null | undefined
   export let issueId: Ref<Issue>
   export let defaultClass: Ref<Class<Doc>> | undefined = undefined
-  export let currentSpace: Ref<Team> | undefined = undefined
   export let isEditable: boolean = true
   export let shouldShowLabel: boolean = false
   export let defaultName: IntlString | undefined = undefined
@@ -52,7 +51,7 @@
       return
     }
 
-    const currentIssue = await client.findOne(tracker.class.Issue, { space: currentSpace, _id: issueId })
+    const currentIssue = await client.findOne(tracker.class.Issue, { _id: issueId })
 
     if (currentIssue === undefined) {
       return

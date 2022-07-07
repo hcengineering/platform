@@ -148,7 +148,7 @@
                   <svelte:component
                     this={attributeModel.presenter}
                     value={getObjectValue(attributeModel.key, docObject) ?? ''}
-                    issueId={docObject._id}
+                    projectId={docObject._id}
                     {...attributeModel.props}
                   />
                 </div>

@@ -242,7 +242,6 @@
             value={issue.$lookup?.assignee}
             defaultClass={contact.class.Employee}
             issueId={issue._id}
-            {currentSpace}
             isEditable={true}
           />
           <div class="flex-center mt-2">
