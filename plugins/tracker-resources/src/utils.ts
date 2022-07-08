@@ -26,11 +26,13 @@ import {
   ProjectStatus,
   Team
 } from '@anticrm/tracker'
-import { AnyComponent, AnySvelteComponent, getMillisecondsInMonth, getPlatformColor, MILLISECONDS_IN_WEEK } from '@anticrm/ui'
+import { AnyComponent, AnySvelteComponent, getMillisecondsInMonth, MILLISECONDS_IN_WEEK } from '@anticrm/ui'
 import tracker from './plugin'
 import { defaultPriorities, defaultProjectStatuses, issuePriorities } from './types'
 
 export * from './types'
+
+export const UNSET_COLOR = -1
 
 export interface NavigationItem {
   id: string
@@ -344,7 +346,7 @@ export async function getKanbanStatuses (
   issues: Array<WithLookup<Issue>>
 ): Promise<TypeState[]> {
   if (groupBy === IssuesGrouping.NoGrouping) {
-    return [{ _id: undefined, title: await translate(tracker.string.NoGrouping, {}) }]
+    return [{ _id: undefined, color: UNSET_COLOR, title: await translate(tracker.string.NoGrouping, {}) }]
   }
   if (groupBy === IssuesGrouping.Priority) {
     const states = issues.reduce<TypeState[]>((result, issue) => {
@@ -355,6 +357,7 @@ export async function getKanbanStatuses (
         {
           _id: priority,
           title: issuePriorities[priority].label,
+          color: UNSET_COLOR,
           icon: issuePriorities[priority].icon
         }
       ]
@@ -371,14 +374,13 @@ export async function getKanbanStatuses (
       const status = issue.$lookup?.status
       if (status === undefined || result.find(({ _id }) => _id === status._id) !== undefined) return result
       const category = '$lookup' in status ? status.$lookup?.category : undefined
-      const color = status.color ?? category?.color
       return [
         ...result,
         {
           _id: status._id,
           title: status.name,
           icon: category?.icon,
-          ...color !== undefined ? { color: getPlatformColor(color) } : {}
+          color: status.color ?? category?.color ?? UNSET_COLOR
         }
       ]
     }, [])
@@ -392,6 +394,7 @@ export async function getKanbanStatuses (
         {
           _id: issue.assignee,
           title: issue.$lookup?.assignee?.name ?? noAssignee,
+          color: UNSET_COLOR,
           icon: undefined
         }
       ]
@@ -406,6 +409,7 @@ export async function getKanbanStatuses (
         {
           _id: issue.project,
           title: issue.$lookup?.project?.label ?? noProject,
+          color: UNSET_COLOR,
           icon: undefined
         }
       ]
@@ -415,15 +419,12 @@ export async function getKanbanStatuses (
 }
 
 export function getIssueStatusStates (issueStatuses: Array<WithLookup<IssueStatus>> = []): TypeState[] {
-  return issueStatuses.map((status) => {
-    const color = status.color ?? status.$lookup?.category?.color
-    return {
-      _id: status._id,
-      title: status.name,
-      icon: status.$lookup?.category?.icon ?? undefined,
-      ...color !== undefined ? { color: getPlatformColor(color) } : {}
-    }
-  })
+  return issueStatuses.map((status) => ({
+    _id: status._id,
+    title: status.name,
+    color: status.color ?? status.$lookup?.category?.color ?? UNSET_COLOR,
+    icon: status.$lookup?.category?.icon ?? undefined
+  }))
 }
 
 export async function getPriorityStates (): Promise<TypeState[]> {
@@ -431,6 +432,7 @@ export async function getPriorityStates (): Promise<TypeState[]> {
     defaultPriorities.map(async (priority) => ({
       _id: priority,
       title: await translate(issuePriorities[priority].label, {}),
+      color: UNSET_COLOR,
       icon: issuePriorities[priority].icon
     }))
   )

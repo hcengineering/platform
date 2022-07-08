@@ -27,7 +27,8 @@
     showPanel,
     showPopup,
     Loading,
-    tooltip
+    tooltip,
+    getPlatformColor
   } from '@anticrm/ui'
   import { focusStore, ListSelectionProvider, SelectDirection, selectionStore } from '@anticrm/view-resources'
   import ActionContext from '@anticrm/view-resources/src/components/ActionContext.svelte'
@@ -39,7 +40,8 @@
     getKanbanStatuses,
     getPriorityStates,
     issuesGroupBySorting,
-    issuesSortOrderMap
+    issuesSortOrderMap,
+    UNSET_COLOR
   } from '../../utils'
   import CreateIssue from '../CreateIssue.svelte'
   import ProjectEditor from '../projects/ProjectEditor.svelte'
@@ -195,7 +197,11 @@
         <div class="flex-between label font-medium w-full h-full">
           <div class="flex-row-center gap-2">
             {#if state.icon}
-              <Icon icon={state.icon} fill={state.color ?? 'currentColor'} size={'small'} />
+              <Icon
+                icon={state.icon}
+                fill={state.color === UNSET_COLOR ? 'currentColor' : getPlatformColor(state.color)}
+                size="small"
+              />
             {/if}
             <span class="lines-limit-2 ml-2">{state.title}</span>
             <span class="counter ml-2 text-md">{count}</span>
