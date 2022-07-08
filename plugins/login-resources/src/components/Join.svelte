@@ -15,15 +15,41 @@
 <script lang="ts">
   import { OK, Status, Severity, setMetadata } from '@anticrm/platform'
   import { fetchMetadataLocalStorage, getCurrentLocation, navigate, setMetadataLocalStorage } from '@anticrm/ui'
+  import { workbenchId } from '@anticrm/workbench'
+  import { onMount } from 'svelte'
 
   import Form from './Form.svelte'
-  import { join, signUpJoin } from '../utils'
+  import { checkJoined, join, selectWorkspace, signUpJoin } from '../utils'
 
   import login from '../plugin'
-  import { workbenchId } from '@anticrm/workbench'
 
   const location = getCurrentLocation()
   let page = 'login'
+
+  onMount(() => {
+    check()
+  })
+
+  async function check () {
+    const [, workspace] = await checkJoined(
+      fetchMetadataLocalStorage(login.metadata.LoginEmail) ?? '',
+      location.query?.inviteId ?? ''
+    )
+    if (workspace) {
+      const [, result] = await selectWorkspace(workspace)
+
+      if (result !== undefined) {
+        setMetadata(login.metadata.LoginToken, result.token)
+        const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
+        tokens[result.workspace] = result.token
+        setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
+        setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)
+        setMetadataLocalStorage(login.metadata.LoginEmail, result.email)
+
+        navigate({ path: [workbenchId, workspace] })
+      }
+    }
+  }
 
   $: fields =
     page === 'login'

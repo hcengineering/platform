@@ -291,6 +291,19 @@ export async function signUpJoin (
 /**
  * @public
  */
+export async function checkEmail (
+  db: Db,
+  email: string,
+  inviteId: ObjectId
+): Promise<string> {
+  const invite = await getInvite(db, inviteId)
+  const workspace = await checkInvite(invite, email)
+  return workspace
+}
+
+/**
+ * @public
+ */
 export async function createAccount (
   db: Db,
   email: string,
@@ -725,6 +738,7 @@ export const methods = {
   login: wrap(login),
   join: wrap(join),
   signUpJoin: wrap(signUpJoin),
+  checkEmail: wrap(checkEmail),
   selectWorkspace: wrap(selectWorkspace),
   getUserWorkspaces: wrap(getUserWorkspaces),
   getInviteLink: wrap(getInviteLink),

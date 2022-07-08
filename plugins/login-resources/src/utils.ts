@@ -26,6 +26,7 @@ import {
 } from '@anticrm/platform'
 import login from '@anticrm/login'
 import { fetchMetadataLocalStorage, getCurrentLocation, navigate } from '@anticrm/ui'
+import plugin from './plugin'
 
 export interface WorkspaceLoginInfo extends LoginInfo {
   workspace: string
@@ -383,6 +384,55 @@ export async function signUpJoin (
   } catch (err) {
     return [unknownError(err), undefined]
   }
+}
+
+export async function checkEmail (email: string, inviteId: string): Promise<[Status, string | undefined]> {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+
+  if (accountsUrl === undefined) {
+    throw new Error('accounts url not specified')
+  }
+
+  const token = getMetadata(login.metadata.OverrideLoginToken)
+  if (token !== undefined) {
+    const endpoint = getMetadata(login.metadata.OverrideEndpoint)
+    if (endpoint !== undefined) {
+      return [OK, DEV_WORKSPACE]
+    }
+  }
+
+  const request: Request<[string, string]> = {
+    method: 'checkEmail',
+    params: [email, inviteId]
+  }
+
+  try {
+    const response = await fetch(accountsUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: serialize(request)
+    })
+    const result: Response<any> = await response.json()
+    return [result.error ?? OK, result.result]
+  } catch (err) {
+    return [unknownError(err), undefined]
+  }
+}
+
+export async function checkJoined (email: string, inviteId: string): Promise<[Status, string | undefined]> {
+  const [status, workspaceName] = await checkEmail(email, inviteId)
+  if (workspaceName === undefined) return [status, undefined]
+
+  const token = fetchMetadataLocalStorage(plugin.metadata.LoginToken)
+  if (token === null) return [unknownStatus('Please login'), undefined]
+
+  const tokens: Record<string, string> = fetchMetadataLocalStorage(plugin.metadata.LoginTokens) ?? {}
+
+  if (tokens[workspaceName] === token) return [OK, workspaceName]
+
+  return [OK, undefined]
 }
 
 export async function changeName (first: string, last: string): Promise<void> {
