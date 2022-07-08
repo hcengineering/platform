@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
+  import { afterUpdate, createEventDispatcher } from 'svelte'
 
   export let selection: number = 0
   export let count: number
@@ -53,6 +53,8 @@
       r?.scrollIntoView({ behavior: 'auto', block: 'nearest' })
     }
   }
+
+  afterUpdate(() => dispatch('changeContent', true))
 </script>
 
 {#if count}

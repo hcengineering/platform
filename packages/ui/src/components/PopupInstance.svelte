@@ -124,7 +124,9 @@
     on:fullsize={() => {
       fullSize = !fullSize
     }}
-    on:changeContent={fitPopup}
+    on:changeContent={() => {
+      fitPopup()
+    }}
   />
 </div>
 

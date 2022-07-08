@@ -23,6 +23,7 @@
   import Label from './Label.svelte'
   import ListView from './ListView.svelte'
   import type { AnySvelteComponent } from '../types'
+  import { resizeObserver } from '../resize'
 
   interface ValueType {
     id: number | string
@@ -89,6 +90,9 @@
   class="selectPopup"
   class:full-width={width === 'full'}
   class:max-width-40={width === 'large'}
+  use:resizeObserver={() => {
+    dispatch('changeContent', true)
+  }}
   on:keydown={onKeydown}
 >
   {#if searchable}
@@ -106,7 +110,12 @@
   {/if}
   <div class="scroll">
     <div class="box">
-      <ListView bind:this={list} count={filteredObjects.length} bind:selection>
+      <ListView
+        bind:this={list}
+        count={filteredObjects.length}
+        bind:selection
+        on:changeContent={() => dispatch('changeContent', true)}
+      >
         <svelte:fragment slot="item" let:item={itemId}>
           {@const item = filteredObjects[itemId]}
           <button
