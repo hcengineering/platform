@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import type { Asset, IntlString } from '@anticrm/platform'
-  import { createEventDispatcher } from 'svelte'
+  import { afterUpdate, createEventDispatcher } from 'svelte'
   import { createFocusManager } from '../focus'
   import EditBox from './EditBox.svelte'
   import FocusHandler from './FocusHandler.svelte'
@@ -22,6 +22,7 @@
   import IconCheck from './icons/Check.svelte'
   import Label from './Label.svelte'
   import ListView from './ListView.svelte'
+  import type { AnySvelteComponent } from '../types'
 
   interface ValueType {
     id: number | string
@@ -30,6 +31,9 @@
     label?: IntlString
     text?: string
     isSelected?: boolean
+
+    component?: AnySvelteComponent
+    props?: Record<string, any>
   }
 
   export let placeholder: IntlString | undefined = undefined
@@ -75,6 +79,8 @@
   $: filteredObjects = value.filter((el) => (el.label ?? el.text ?? '').toLowerCase().includes(search.toLowerCase()))
 
   $: huge = size === 'medium' || size === 'large'
+
+  afterUpdate(() => dispatch('changeContent', true))
 </script>
 
 <FocusHandler {manager} />
@@ -117,18 +123,22 @@
                   {/if}
                 </div>
               {/if}
-              {#if item.icon}
-                <div class="mr-2">
-                  <Icon icon={item.icon} fill={item.iconColor} {size} />
-                </div>
-              {/if}
-              <span class="label" class:text-base={huge}>
-                {#if item.label}
-                  <Label label={item.label} />
-                {:else if item.text}
-                  <span>{item.text}</span>
+              {#if item.component}
+                <svelte:component this={item.component} {...item.props} />
+              {:else}
+                {#if item.icon}
+                  <div class="mr-2">
+                    <Icon icon={item.icon} fill={item.iconColor} {size} />
+                  </div>
                 {/if}
-              </span>
+                <span class="label" class:text-base={huge}>
+                  {#if item.label}
+                    <Label label={item.label} />
+                  {:else if item.text}
+                    <span>{item.text}</span>
+                  {/if}
+                </span>
+              {/if}
             </div>
           </button>
         </svelte:fragment>
