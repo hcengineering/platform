@@ -16,7 +16,7 @@ export type StateType = any
 export interface TypeState {
   _id: StateType
   title: string
-  color: number
+  color?: string
   icon?: Asset
 }
 /**

@@ -41,9 +41,10 @@
   $: color =
     fill ??
     (value.color !== undefined ? getPlatformColor(value.color) : undefined) ??
-    (category !== undefined ? getPlatformColor(category.color) : undefined)
+    (category !== undefined ? getPlatformColor(category.color) : undefined) ??
+    'currentColor'
 </script>
 
-{#if icon !== undefined && color !== undefined}
+{#if icon !== undefined}
   <Icon {icon} fill={color} {size} />
 {/if}

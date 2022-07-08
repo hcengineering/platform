@@ -26,7 +26,6 @@
     IconAdd,
     showPanel,
     showPopup,
-    getPlatformColor,
     Loading,
     tooltip
   } from '@anticrm/ui'
@@ -195,7 +194,9 @@
       <div class="header flex-col">
         <div class="flex-between label font-medium w-full h-full">
           <div class="flex-row-center gap-2">
-            <Icon icon={state.icon} fill={getPlatformColor(state.color)} size={'small'} />
+            {#if state.icon}
+              <Icon icon={state.icon} fill={state.color ?? 'currentColor'} size={'small'} />
+            {/if}
             <span class="lines-limit-2 ml-2">{state.title}</span>
             <span class="counter ml-2 text-md">{count}</span>
           </div>
