@@ -5,15 +5,16 @@
   import { Issue } from '@anticrm/tracker'
   import { Button, IconDetails } from '@anticrm/ui'
   import view, { Viewlet } from '@anticrm/view'
-  import { FilterBar } from '@anticrm/view-resources'
-  import { getActiveViewletId } from '@anticrm/view-resources/src/utils'
-  import tracker from '../../plugin'
+  import { FilterBar, ViewOptionModel, ViewOptionsButton, getActiveViewletId } from '@anticrm/view-resources'
   import IssuesContent from './IssuesContent.svelte'
   import IssuesHeader from './IssuesHeader.svelte'
+  import { getDefaultViewOptionsConfig } from '../../utils'
+  import tracker from '../../plugin'
 
   export let query: DocumentQuery<Issue> = {}
   export let title: IntlString | undefined = undefined
   export let label: string = ''
+  export let viewOptionsConfig: ViewOptionModel[] = getDefaultViewOptionsConfig()
 
   export let panelWidth: number = 0
 
@@ -67,6 +68,9 @@
 
 <IssuesHeader {viewlets} {label} bind:viewlet bind:search>
   <svelte:fragment slot="extra">
+    {#if viewlet}
+      <ViewOptionsButton viewOptionsKey={viewlet._id} config={viewOptionsConfig} />
+    {/if}
     {#if asideFloat && $$slots.aside}
       <Button
         icon={IconDetails}

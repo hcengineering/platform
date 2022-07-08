@@ -26,6 +26,7 @@ import {
   ProjectStatus,
   Team
 } from '@anticrm/tracker'
+import { ViewOptionModel } from '@anticrm/view-resources'
 import { AnyComponent, AnySvelteComponent, getMillisecondsInMonth, MILLISECONDS_IN_WEEK } from '@anticrm/ui'
 import tracker from './plugin'
 import { defaultPriorities, defaultProjectStatuses, issuePriorities } from './types'
@@ -434,4 +435,48 @@ export async function getPriorityStates (): Promise<TypeState[]> {
       icon: issuePriorities[priority].icon
     }))
   )
+}
+
+export function getDefaultViewOptionsConfig (): ViewOptionModel[] {
+  return [
+    {
+      key: 'groupBy',
+      label: tracker.string.Grouping,
+      defaultValue: 'status',
+      values: [
+        { id: 'status', label: tracker.string.Status },
+        { id: 'assignee', label: tracker.string.Assignee },
+        { id: 'priority', label: tracker.string.Priority },
+        { id: 'project', label: tracker.string.Project },
+        { id: 'noGrouping', label: tracker.string.NoGrouping }
+      ],
+      type: 'dropdown'
+    },
+    {
+      key: 'orderBy',
+      label: tracker.string.Ordering,
+      defaultValue: 'status',
+      values: [
+        { id: 'status', label: tracker.string.Status },
+        { id: 'modifiedOn', label: tracker.string.LastUpdated },
+        { id: 'priority', label: tracker.string.Priority },
+        { id: 'dueDate', label: tracker.string.DueDate },
+        { id: 'rank', label: tracker.string.Manual }
+      ],
+      type: 'dropdown'
+    },
+    {
+      key: 'shouldShowSubIssues',
+      label: tracker.string.SubIssues,
+      defaultValue: false,
+      type: 'toggle'
+    },
+    {
+      key: 'shouldShowEmptyGroups',
+      label: tracker.string.ShowEmptyGroups,
+      defaultValue: false,
+      type: 'toggle',
+      hidden: ({ groupBy }) => !['status', 'priority'].includes(groupBy)
+    }
+  ]
 }

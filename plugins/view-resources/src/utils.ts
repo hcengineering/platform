@@ -431,24 +431,3 @@ export function getActiveViewletId (): Ref<Viewlet> | null {
   const key = makeViewletKey()
   return localStorage.getItem(key) as Ref<Viewlet> | null
 }
-
-function makeViewOptionsKey (viewletId: Ref<Viewlet>): string {
-  const loc = getCurrentLocation()
-  loc.fragment = undefined
-  loc.query = undefined
-  return `viewOptions:${viewletId}:${locationToUrl(loc)}`
-}
-
-export function setViewOptions (viewletId: Ref<Viewlet>, options: string | null): void {
-  const key = makeViewOptionsKey(viewletId)
-  if (options !== null) {
-    localStorage.setItem(key, options)
-  } else {
-    localStorage.removeItem(key)
-  }
-}
-
-export function getViewOptions (viewletId: Ref<Viewlet>): string | null {
-  const key = makeViewOptionsKey(viewletId)
-  return localStorage.getItem(key)
-}

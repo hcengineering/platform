@@ -4,7 +4,6 @@
   import { FilterButton, setActiveViewletId } from '@anticrm/view-resources'
   import tracker from '../../plugin'
   import { WithLookup } from '@anticrm/core'
-  import ViewOptions from './ViewOptions.svelte'
 
   export let viewlet: WithLookup<Viewlet> | undefined
   export let viewlets: WithLookup<Viewlet>[] = []
@@ -43,6 +42,5 @@
       }}
     />
   {/if}
-  <ViewOptions {viewlet} />
   <slot name="extra" />
 </div>

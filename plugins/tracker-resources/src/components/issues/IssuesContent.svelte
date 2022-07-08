@@ -3,7 +3,7 @@
   import { Component } from '@anticrm/ui'
   import { Viewlet } from '@anticrm/view'
   import { Issue } from '@anticrm/tracker'
-  import { viewOptionsStore } from '../../viewOptions'
+  import { viewOptionsStore } from '@anticrm/view-resources'
 
   export let viewlet: WithLookup<Viewlet>
   export let query: DocumentQuery<Issue> = {}

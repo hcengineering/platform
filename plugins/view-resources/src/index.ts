@@ -75,18 +75,18 @@ export { default as LinkPresenter } from './components/LinkPresenter.svelte'
 export { default as ContextMenu } from './components/Menu.svelte'
 export { default as TableBrowser } from './components/TableBrowser.svelte'
 export { default as FixedColumn } from './components/FixedColumn.svelte'
+export { default as ViewOptionsButton } from './components/ViewOptionsButton.svelte'
 export * from './context'
 export * from './filter'
 export * from './selection'
+export * from './viewOptions'
 export {
   buildModel,
   getCollectionCounter,
   getObjectPresenter,
   LoadingProps,
   setActiveViewletId,
-  getActiveViewletId,
-  setViewOptions,
-  getViewOptions
+  getActiveViewletId
 } from './utils'
 export {
   HTMLPresenter,
