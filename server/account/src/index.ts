@@ -291,11 +291,7 @@ export async function signUpJoin (
 /**
  * @public
  */
-export async function checkEmail (
-  db: Db,
-  email: string,
-  inviteId: ObjectId
-): Promise<string> {
+export async function checkEmail (db: Db, email: string, inviteId: ObjectId): Promise<string> {
   const invite = await getInvite(db, inviteId)
   const workspace = await checkInvite(invite, email)
   return workspace
