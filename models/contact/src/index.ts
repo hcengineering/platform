@@ -414,6 +414,9 @@ export function createModel (builder: Builder): void {
     {
       action: contact.actionImpl.KickEmployee,
       label: contact.string.KickEmployee,
+      query: {
+        active: true
+      },
       category: contact.category.Contact,
       target: contact.class.Employee,
       input: 'focus',
