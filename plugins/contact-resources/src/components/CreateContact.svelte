@@ -1,11 +1,12 @@
 <script lang="ts">
   import { Asset } from '@anticrm/platform'
-
+  import { afterUpdate, createEventDispatcher } from 'svelte'
   import { getClient } from '@anticrm/presentation'
   import { Menu, Action, showPopup, closePopup } from '@anticrm/ui'
   import view from '@anticrm/view'
   import contact from '../plugin'
 
+  const dispatch = createEventDispatcher()
   const client = getClient()
 
   const actions: Action[] = []
@@ -28,6 +29,10 @@
         })
       }
     })
+
+  afterUpdate(() => {
+    dispatch('changeContent', true)
+  })
 </script>
 
-<Menu {actions} />
+<Menu {actions} on:changeContent={() => dispatch('changeContent', true)} />

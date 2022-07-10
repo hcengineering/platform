@@ -13,33 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { onMount } from 'svelte'
   import contact from '@anticrm/contact'
   import { Class, Doc, DocumentQuery, Lookup, Ref, SortingOrder, WithLookup } from '@anticrm/core'
   import { Kanban, TypeState } from '@anticrm/kanban'
   import notification from '@anticrm/notification'
   import { createQuery } from '@anticrm/presentation'
-  import {
-    Button,
-    Component,
-    Icon,
-    IconAdd,
-    showPanel,
-    showPopup,
-    getPlatformColor,
-    Loading,
-    tooltip
-  } from '@anticrm/ui'
-  import { Issue, IssuesGrouping, IssuesOrdering, IssueStatus, Team } from '@anticrm/tracker'
-  import tags from '@anticrm/tags'
-  import {
-    focusStore,
-    ListSelectionProvider,
-    SelectDirection,
-    selectionStore,
-    ActionContext,
-    Menu
-  } from '@anticrm/view-resources'
+  import { Issue, IssuesGrouping, IssuesOrdering, IssueStatus, Team, ViewOptions } from '@anticrm/tracker'
+  import { Button, Component, IconAdd, showPanel, showPopup, Loading, tooltip } from '@anticrm/ui'
+  import { focusStore, ListSelectionProvider, SelectDirection, selectionStore } from '@anticrm/view-resources'
+  import ActionContext from '@anticrm/view-resources/src/components/ActionContext.svelte'
+  import Menu from '@anticrm/view-resources/src/components/Menu.svelte'
+  import { onMount } from 'svelte'
   import tracker from '../../plugin'
   import {
     getIssueStatusStates,
@@ -56,6 +40,8 @@
   import ParentNamesPresenter from './ParentNamesPresenter.svelte'
   import PriorityEditor from './PriorityEditor.svelte'
   import StatusEditor from './StatusEditor.svelte'
+  import tags from '@anticrm/tags'
+  import IssueStatusIcon from './IssueStatusIcon.svelte'
 
   export let currentSpace: Ref<Team> = tracker.team.DefaultTeam
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
@@ -168,6 +154,9 @@
   $: states = getIssueStates(groupBy, shouldShowEmptyGroups, issueStates, issueStatusStates, priorityStates)
 
   const fullFilled: { [key: string]: boolean } = {}
+  const getState = (state: any): WithLookup<IssueStatus> | undefined => {
+    return issueStatuses?.filter((is) => is._id === state._id)[0]
+  }
 </script>
 
 {#if !states?.length}
@@ -201,10 +190,11 @@
     on:contextmenu={(evt) => showMenu(evt.detail.evt, evt.detail.objects)}
   >
     <svelte:fragment slot="header" let:state let:count>
+      {@const stateWLU = getState(state)}
       <div class="header flex-col">
         <div class="flex-between label font-medium w-full h-full">
           <div class="flex-row-center gap-2">
-            <Icon icon={state.icon} fill={getPlatformColor(state.color)} size={'small'} />
+            {#if stateWLU !== undefined}<IssueStatusIcon value={stateWLU} size={'small'} />{/if}
             <span class="lines-limit-2 ml-2">{state.title}</span>
             <span class="counter ml-2 text-md">{count}</span>
           </div>
