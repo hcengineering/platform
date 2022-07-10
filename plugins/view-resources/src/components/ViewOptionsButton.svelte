@@ -13,37 +13,37 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { IssuesDateModificationPeriod, IssuesGrouping, IssuesOrdering, ViewOptions } from '@anticrm/tracker'
   import { Button, eventToHTMLElement, IconDownOutline, showPopup, Label } from '@anticrm/ui'
-  import { getViewOptions, setViewOptions } from '@anticrm/view-resources'
-  import view, { Viewlet } from '@anticrm/view'
-
+  import view from '@anticrm/view'
   import ViewOptionsPopup from './ViewOptionsPopup.svelte'
-  import { viewOptionsStore } from '../../viewOptions'
+  import { getViewOptions, setViewOptions, viewOptionsStore, ViewOptionModel } from '../viewOptions'
 
-  export let viewlet: Viewlet | undefined
+  export let config: ViewOptionModel[]
+  export let viewOptionsKey: string
 
-  let viewOptions: ViewOptions
-  $: if (viewlet) {
-    const savedViewOptions = getViewOptions(viewlet._id)
-    viewOptions = savedViewOptions
-      ? JSON.parse(savedViewOptions)
-      : {
-          groupBy: IssuesGrouping.Status,
-          orderBy: IssuesOrdering.Status,
-          completedIssuesPeriod: IssuesDateModificationPeriod.All,
-          shouldShowEmptyGroups: false,
-          shouldShowSubIssues: false
-        }
+  $: loadViewOptionsStore(config, viewOptionsKey)
+
+  function loadViewOptionsStore (config: ViewOptionModel[], key: string) {
+    viewOptionsStore.set(
+      config.reduce(
+        (options, { key, defaultValue }) => ({ [key]: defaultValue, ...options }),
+        getViewOptions(key) ?? {}
+      )
+    )
   }
 
-  $: $viewOptionsStore = viewOptions
-
   const handleOptionsEditorOpened = (event: MouseEvent) => {
-    showPopup(ViewOptionsPopup, viewOptions, eventToHTMLElement(event), undefined, (result) => {
-      viewOptions = result
-      if (viewlet) setViewOptions(viewlet._id, JSON.stringify(viewOptions))
-    })
+    showPopup(
+      ViewOptionsPopup,
+      { config, viewOptions: $viewOptionsStore },
+      eventToHTMLElement(event),
+      undefined,
+      (result) => {
+        if (result?.key === undefined) return
+        $viewOptionsStore[result.key] = result.value
+        setViewOptions(viewOptionsKey, $viewOptionsStore)
+      }
+    )
   }
 </script>
 

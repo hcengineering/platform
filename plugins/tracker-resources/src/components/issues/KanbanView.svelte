@@ -18,7 +18,7 @@
   import { Kanban, TypeState } from '@anticrm/kanban'
   import notification from '@anticrm/notification'
   import { createQuery } from '@anticrm/presentation'
-  import { Issue, IssuesGrouping, IssuesOrdering, IssueStatus, Team, ViewOptions } from '@anticrm/tracker'
+  import { Issue, IssuesGrouping, IssuesOrdering, IssueStatus, Team } from '@anticrm/tracker'
   import { Button, Component, IconAdd, showPanel, showPopup, Loading, tooltip } from '@anticrm/ui'
   import { focusStore, ListSelectionProvider, SelectDirection, selectionStore } from '@anticrm/view-resources'
   import ActionContext from '@anticrm/view-resources/src/components/ActionContext.svelte'
@@ -45,8 +45,13 @@
 
   export let currentSpace: Ref<Team> = tracker.team.DefaultTeam
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
-  export let viewOptions: ViewOptions
   export let query: DocumentQuery<Issue> = {}
+  export let viewOptions: {
+    groupBy: IssuesGrouping
+    orderBy: IssuesOrdering
+    shouldShowEmptyGroups: boolean
+    shouldShowSubIssues: boolean
+  }
 
   $: currentSpace = typeof query.space === 'string' ? query.space : tracker.team.DefaultTeam
   $: ({ groupBy, orderBy, shouldShowEmptyGroups, shouldShowSubIssues } = viewOptions)
@@ -54,7 +59,6 @@
   $: rankFieldName = orderBy === IssuesOrdering.Manual ? orderBy : undefined
   $: resultQuery = {
     ...(shouldShowSubIssues ? {} : { attachedTo: tracker.ids.NoParent }),
-    space: currentSpace,
     ...query
   } as any
 
