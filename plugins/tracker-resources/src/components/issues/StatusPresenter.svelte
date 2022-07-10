@@ -18,12 +18,13 @@
   import IssueStatusIcon from './IssueStatusIcon.svelte'
 
   export let value: WithLookup<IssueStatus> | undefined
+  export let size: 'small' | 'medium' = 'medium'
 </script>
 
 {#if value}
   <div class="flex-presenter">
     {#if value.$lookup?.category?.icon}
-      <IssueStatusIcon {value} size="medium" />
+      <IssueStatusIcon {value} {size} />
     {/if}
     <span class="overflow-label" class:ml-2={value.$lookup?.category?.icon !== undefined}>
       {value.name}

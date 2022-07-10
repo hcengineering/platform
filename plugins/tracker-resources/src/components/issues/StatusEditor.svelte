@@ -17,9 +17,10 @@
   import { AttachedData, Ref, SortingOrder, WithLookup } from '@anticrm/core'
   import { Issue, IssueStatus } from '@anticrm/tracker'
   import { createQuery, getClient } from '@anticrm/presentation'
-  import { Button, showPopup, SelectPopup, TooltipAlignment, eventToHTMLElement, getPlatformColor } from '@anticrm/ui'
+  import { Button, showPopup, SelectPopup, TooltipAlignment, eventToHTMLElement } from '@anticrm/ui'
   import type { ButtonKind, ButtonSize } from '@anticrm/ui'
   import tracker from '../../plugin'
+  import StatusPresenter from './StatusPresenter.svelte'
   import IssueStatusIcon from './IssueStatusIcon.svelte'
 
   export let value: Issue | AttachedData<Issue>
@@ -64,14 +65,12 @@
 
   $: selectedStatus = statuses?.find((status) => status._id === value.status) ?? statuses?.[0]
   $: selectedStatusLabel = shouldShowLabel ? selectedStatus?.name : undefined
-  $: statusesInfo = statuses?.map((s) => {
-    const color = s.color ?? s.$lookup?.category?.color
-
+  $: statusesInfo = statuses?.map((s, i) => {
     return {
       id: s._id,
-      text: s.name,
-      icon: s.$lookup?.category?.icon,
-      ...(color !== undefined ? { iconColor: getPlatformColor(color) } : undefined)
+      component: StatusPresenter,
+      props: { value: s, size: 'small' },
+      isSelected: selectedStatus?._id === s._id ?? false
     }
   })
   $: if (!statuses) {
@@ -112,12 +111,12 @@
       {width}
       on:click={handleStatusEditorOpened}
     >
-      <span slot="content" class="inline-flex">
+      <span slot="content" class="inline-flex pointer-events-none">
         {#if selectedStatus}
           <IssueStatusIcon value={selectedStatus} size="inline" />
         {/if}
         {#if selectedStatusLabel}
-          <span class="overflow-label disabled" class:ml-1={selectedStatus}>{selectedStatusLabel}</span>
+          <span class="overflow-label disabled" class:ml-2={selectedStatus}>{selectedStatusLabel}</span>
         {/if}
       </span>
     </Button>

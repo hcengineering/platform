@@ -21,6 +21,7 @@
   import Icon from './Icon.svelte'
   import Label from './Label.svelte'
   import MouseSpeedTracker from './MouseSpeedTracker.svelte'
+  import { resizeObserver } from '../resize'
 
   export let actions: Action[] = []
   export let ctx: any = undefined
@@ -66,7 +67,7 @@
   }
 
   afterUpdate(() => {
-    dispatch('update', Date.now())
+    dispatch('changeContent', true)
   })
   onMount(() => {
     if (btns[0]) {
@@ -110,7 +111,13 @@
   $: popup?.focus()
 </script>
 
-<div class="antiPopup" on:keydown={keyDown}>
+<div
+  class="antiPopup"
+  use:resizeObserver={() => {
+    dispatch('changeContent', true)
+  }}
+  on:keydown={keyDown}
+>
   <MouseSpeedTracker bind:focusSpeed />
   <div class="ap-space" />
   <slot name="header" />

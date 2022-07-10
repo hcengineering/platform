@@ -13,11 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { WithLookup } from '@anticrm/core'
+  import { WithLookup, SortingOrder } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
   import { IssueStatus, IssueStatusCategory } from '@anticrm/tracker'
-  import { getPlatformColor, Icon, IconSize } from '@anticrm/ui'
+  import { getPlatformColor, IconSize } from '@anticrm/ui'
   import tracker from '../../plugin'
+  import StatusIcon from '../icons/StatusIcon.svelte'
 
   export let value: WithLookup<IssueStatus>
   export let size: IconSize
@@ -26,6 +27,11 @@
   const client = getClient()
 
   let category: IssueStatusCategory | undefined
+  let categories: IssueStatus[] | undefined
+  let statusIcon: {
+    index: number | undefined
+    count: number | undefined
+  } = { index: undefined, count: undefined }
 
   async function updateCategory (status: WithLookup<IssueStatus>) {
     if (status.$lookup?.category) {
@@ -33,6 +39,19 @@
     }
     if (category === undefined) {
       category = await client.findOne(tracker.class.IssueStatusCategory, { _id: value.category })
+    }
+    if (value.category === tracker.issueStatusCategory.Started) {
+      categories = await client.findAll(
+        tracker.class.IssueStatus,
+        { category: tracker.issueStatusCategory.Started },
+        { sort: { rank: SortingOrder.Ascending } }
+      )
+      if (categories) {
+        categories.map((cat, i) => {
+          if (cat._id === value._id) statusIcon = { index: i + 1, count: categories ? categories.length + 1 : 0 }
+          return true
+        })
+      }
     }
   }
 
@@ -45,6 +64,6 @@
     'currentColor'
 </script>
 
-{#if icon !== undefined}
-  <Icon {icon} fill={color} {size} />
+{#if icon !== undefined && color !== undefined && category !== undefined}
+  <StatusIcon {category} {size} fill={color} {statusIcon} />
 {/if}
