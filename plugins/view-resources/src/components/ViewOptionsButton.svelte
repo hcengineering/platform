@@ -21,10 +21,16 @@
   export let config: ViewOptionModel[]
   export let viewOptionsKey: string
 
-  $: $viewOptionsStore = config.reduce(
-    (options, { key, defaultValue }) => ({ [key]: defaultValue, ...options }),
-    getViewOptions(viewOptionsKey) ?? {}
-  )
+  $: loadViewOptionsStore(config, viewOptionsKey)
+
+  function loadViewOptionsStore (config: ViewOptionModel[], key: string) {
+    viewOptionsStore.set(
+      config.reduce(
+        (options, { key, defaultValue }) => ({ [key]: defaultValue, ...options }),
+        getViewOptions(key) ?? {}
+      )
+    )
+  }
 
   const handleOptionsEditorOpened = (event: MouseEvent) => {
     showPopup(
@@ -33,8 +39,8 @@
       eventToHTMLElement(event),
       undefined,
       (result) => {
-        const { key, value } = result
-        $viewOptionsStore = { ...$viewOptionsStore, [key]: value }
+        if (result?.key === undefined) return
+        $viewOptionsStore[result.key] = result.value
         setViewOptions(viewOptionsKey, $viewOptionsStore)
       }
     )
