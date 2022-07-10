@@ -18,7 +18,7 @@
   import { Kanban, TypeState } from '@anticrm/kanban'
   import notification from '@anticrm/notification'
   import { createQuery } from '@anticrm/presentation'
-  import { Issue, IssuesGrouping, IssuesOrdering, IssueStatus, Team, ViewOptions } from '@anticrm/tracker'
+  import { Issue, IssuesGrouping, IssuesOrdering, IssueStatus, Team } from '@anticrm/tracker'
   import { Button, Component, IconAdd, showPanel, showPopup, Loading, tooltip } from '@anticrm/ui'
   import { focusStore, ListSelectionProvider, SelectDirection, selectionStore } from '@anticrm/view-resources'
   import ActionContext from '@anticrm/view-resources/src/components/ActionContext.svelte'
