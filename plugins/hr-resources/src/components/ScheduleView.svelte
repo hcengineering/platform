@@ -115,7 +115,7 @@
     const time = date.getTime()
     const endTime = getEndDate(date)
     for (const request of requests) {
-      if (request.date < endTime && request.dueDate > time) {
+      if (request.date <= endTime && request.dueDate > time) {
         res.push(request)
       }
     }
