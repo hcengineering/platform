@@ -26,6 +26,7 @@
   import CreateIssue from '../CreateIssue.svelte'
   import notification from '@anticrm/notification'
   import { FixedColumn } from '@anticrm/view-resources'
+  import { ExpandCollapse } from '@anticrm/ui'
 
   export let _class: Ref<Class<Doc>>
   export let currentSpace: Ref<Team> | undefined = undefined
@@ -55,6 +56,7 @@
 
   let personPresenter: AttributeModel
 
+  $: isCollapsedMap = Object.fromEntries(categories.map((category) => [category, false]))
   $: combinedGroupedIssues = Object.values(groupedIssues).flat(1)
   $: options = { ...baseOptions, sort: { [orderBy]: issuesSortOrderMap[orderBy] } } as FindOptions<Issue>
   $: headerComponent = groupByKey === undefined || groupByKey === 'assignee' ? null : issuesGroupEditorMap[groupByKey]
@@ -134,6 +136,8 @@
     )
   }
 
+  const handleCollapseCategory = (category: any) => (isCollapsedMap[category] = !isCollapsedMap[category])
+
   const getLoadingElementsLength = (props: LoadingProps, options?: FindOptions<Doc>) => {
     if (options?.limit && options?.limit > 0) {
       return Math.min(options.limit, props.length)
@@ -158,7 +162,7 @@
 <div class="issueslist-container" style={varsStyle}>
   {#each categories as category}
     {#if headerComponent || groupByKey === 'assignee'}
-      <div class="flex-between categoryHeader row">
+      <div class="flex-between categoryHeader row" on:click={() => handleCollapseCategory(category)}>
         <div class="flex-row-center gap-2 clear-mins">
           {#if groupByKey === 'assignee' && personPresenter}
             <svelte:component
@@ -190,56 +194,80 @@
         </div>
       </div>
     {/if}
-    {#if itemModels}
-      {#if groupedIssues[category]}
-        {#each groupedIssues[category] as docObject (docObject._id)}
-          <div
-            bind:this={objectRefs[combinedGroupedIssues.findIndex((x) => x === docObject)]}
-            class="listGrid antiList__row row gap-2 flex-grow"
-            class:checking={selectedObjectIdsSet.has(docObject._id)}
-            class:mListGridFixed={selectedRowIndex === combinedGroupedIssues.findIndex((x) => x === docObject)}
-            class:mListGridSelected={selectedRowIndex === combinedGroupedIssues.findIndex((x) => x === docObject)}
-            on:contextmenu|preventDefault={(event) =>
-              handleMenuOpened(
-                event,
-                docObject,
-                combinedGroupedIssues.findIndex((x) => x === docObject)
-              )}
-            on:focus={() => {}}
-            on:mouseover={() => handleRowFocused(docObject)}
-          >
-            <div class="flex-center relative" use:tooltip={{ label: tracker.string.SelectIssue, direction: 'bottom' }}>
-              <div class="antiList-cells__notifyCell">
-                <div class="antiList-cells__checkCell">
-                  <CheckBox
-                    checked={selectedObjectIdsSet.has(docObject._id)}
-                    on:value={(event) => {
-                      onObjectChecked([docObject], event.detail)
-                    }}
+    <ExpandCollapse isExpanded={!isCollapsedMap[category]} duration={400}>
+      {#if itemModels}
+        {#if groupedIssues[category]}
+          {#each groupedIssues[category] as docObject (docObject._id)}
+            <div
+              bind:this={objectRefs[combinedGroupedIssues.findIndex((x) => x === docObject)]}
+              class="listGrid antiList__row row gap-2 flex-grow"
+              class:checking={selectedObjectIdsSet.has(docObject._id)}
+              class:mListGridFixed={selectedRowIndex === combinedGroupedIssues.findIndex((x) => x === docObject)}
+              class:mListGridSelected={selectedRowIndex === combinedGroupedIssues.findIndex((x) => x === docObject)}
+              on:contextmenu|preventDefault={(event) =>
+                handleMenuOpened(
+                  event,
+                  docObject,
+                  combinedGroupedIssues.findIndex((x) => x === docObject)
+                )}
+              on:focus={() => {}}
+              on:mouseover={() => handleRowFocused(docObject)}
+            >
+              <div
+                class="flex-center relative"
+                use:tooltip={{ label: tracker.string.SelectIssue, direction: 'bottom' }}
+              >
+                <div class="antiList-cells__notifyCell">
+                  <div class="antiList-cells__checkCell">
+                    <CheckBox
+                      checked={selectedObjectIdsSet.has(docObject._id)}
+                      on:value={(event) => {
+                        onObjectChecked([docObject], event.detail)
+                      }}
+                    />
+                  </div>
+                  <Component
+                    is={notification.component.NotificationPresenter}
+                    props={{ value: docObject, kind: 'table' }}
                   />
                 </div>
-                <Component
-                  is={notification.component.NotificationPresenter}
-                  props={{ value: docObject, kind: 'table' }}
-                />
               </div>
-            </div>
-            {#each itemModels as attributeModel, attributeModelIndex}
-              {#if attributeModelIndex === 0}
-                <div class="priorityPresenter">
+              {#each itemModels as attributeModel, attributeModelIndex}
+                {#if attributeModelIndex === 0}
+                  <div class="priorityPresenter">
+                    <svelte:component
+                      this={attributeModel.presenter}
+                      value={getObjectValue(attributeModel.key, docObject) ?? ''}
+                      {...attributeModel.props}
+                    />
+                  </div>
+                {:else if attributeModelIndex === 1}
+                  <div class="issuePresenter">
+                    <FixedColumn
+                      width={propsWidth.issue}
+                      key={'issue'}
+                      justify={'left'}
+                      on:update={(result) => checkWidth('issue', result)}
+                    >
+                      <svelte:component
+                        this={attributeModel.presenter}
+                        value={getObjectValue(attributeModel.key, docObject) ?? ''}
+                        {...attributeModel.props}
+                      />
+                    </FixedColumn>
+                  </div>
+                {:else if attributeModelIndex === 3}
                   <svelte:component
                     this={attributeModel.presenter}
                     value={getObjectValue(attributeModel.key, docObject) ?? ''}
                     {...attributeModel.props}
                   />
-                </div>
-              {:else if attributeModelIndex === 1}
-                <div class="issuePresenter">
+                {:else if attributeModel.props?.fixed}
                   <FixedColumn
-                    width={propsWidth.issue}
-                    key={'issue'}
-                    justify={'left'}
-                    on:update={(result) => checkWidth('issue', result)}
+                    width={propsWidth[attributeModel.key]}
+                    key={attributeModel.key}
+                    justify={attributeModel.props.fixed}
+                    on:update={(result) => checkWidth(attributeModel.key, result)}
                   >
                     <svelte:component
                       this={attributeModel.presenter}
@@ -247,54 +275,35 @@
                       {...attributeModel.props}
                     />
                   </FixedColumn>
-                </div>
-              {:else if attributeModelIndex === 3}
-                <svelte:component
-                  this={attributeModel.presenter}
-                  value={getObjectValue(attributeModel.key, docObject) ?? ''}
-                  {...attributeModel.props}
-                />
-              {:else if attributeModel.props?.fixed}
-                <FixedColumn
-                  width={propsWidth[attributeModel.key]}
-                  key={attributeModel.key}
-                  justify={attributeModel.props.fixed}
-                  on:update={(result) => checkWidth(attributeModel.key, result)}
-                >
-                  <svelte:component
-                    this={attributeModel.presenter}
-                    value={getObjectValue(attributeModel.key, docObject) ?? ''}
-                    {...attributeModel.props}
-                  />
-                </FixedColumn>
-              {:else}
+                {:else}
+                  <div class="gridElement">
+                    <svelte:component
+                      this={attributeModel.presenter}
+                      value={getObjectValue(attributeModel.key, docObject) ?? ''}
+                      issueId={docObject._id}
+                      {...attributeModel.props}
+                    />
+                  </div>
+                {/if}
+              {/each}
+            </div>
+          {/each}
+        {:else if loadingProps !== undefined}
+          {#each Array(getLoadingElementsLength(loadingProps, options)) as _, rowIndex}
+            <div class="listGrid row" class:fixed={rowIndex === selectedRowIndex}>
+              <div class="flex-center clear-mins h-full">
                 <div class="gridElement">
-                  <svelte:component
-                    this={attributeModel.presenter}
-                    value={getObjectValue(attributeModel.key, docObject) ?? ''}
-                    issueId={docObject._id}
-                    {...attributeModel.props}
-                  />
-                </div>
-              {/if}
-            {/each}
-          </div>
-        {/each}
-      {:else if loadingProps !== undefined}
-        {#each Array(getLoadingElementsLength(loadingProps, options)) as _, rowIndex}
-          <div class="listGrid row" class:fixed={rowIndex === selectedRowIndex}>
-            <div class="flex-center clear-mins h-full">
-              <div class="gridElement">
-                <CheckBox checked={false} />
-                <div class="ml-4">
-                  <Spinner size="small" />
+                  <CheckBox checked={false} />
+                  <div class="ml-4">
+                    <Spinner size="small" />
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        {/each}
+          {/each}
+        {/if}
       {/if}
-    {/if}
+    </ExpandCollapse>
   {/each}
 </div>
 
