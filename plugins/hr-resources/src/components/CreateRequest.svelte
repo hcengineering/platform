@@ -47,10 +47,24 @@
   })
 
   let value = new Date(date).getTime()
-  $: dueDate = new Date(value).setDate(new Date(value).getDate() + 1)
+  $: dueDate = new Date(value).getTime()
 
   export function canClose (): boolean {
     return description.length === 0
+  }
+
+  function toUTC (date: Date | number): number {
+    const res = new Date(date)
+    if (res.getUTCFullYear() !== res.getFullYear()) {
+      res.setUTCFullYear(res.getFullYear())
+    }
+    if (res.getUTCMonth() !== res.getMonth()) {
+      res.setUTCMonth(res.getMonth())
+    }
+    if (res.getUTCDate() !== res.getDate()) {
+      res.setUTCDate(res.getDate())
+    }
+    return res.setUTCHours(12, 0, 0, 0)
   }
 
   async function saveRequest () {
@@ -62,8 +76,8 @@
       attachedTo: staff._id,
       attachedToClass: staff._class,
       type: type._id,
-      date,
-      dueDate,
+      date: toUTC(date),
+      dueDate: toUTC(dueDate),
       description,
       collection: 'requests'
     })
@@ -72,10 +86,6 @@
 
   function typeSelected (_id: Ref<RequestType>): void {
     type = types.find((p) => p._id === _id)
-    dueDate =
-      Math.abs(type?.value ?? 0 % 1) === 0.5
-        ? new Date(value).setHours(12)
-        : new Date(value).setDate(new Date(value).getDate() + 1)
   }
 </script>
 
