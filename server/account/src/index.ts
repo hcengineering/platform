@@ -546,6 +546,21 @@ export async function changePassword (db: Db, token: string, oldPassword: string
 /**
  * @public
  */
+export async function replacePassword (db: Db, email: string, password: string): Promise<void> {
+  const account = await getAccount(db, email)
+
+  if (account === null) {
+    throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.InvalidPassword, { account: email }))
+  }
+  const salt = randomBytes(32)
+  const hash = hashWithSalt(password, salt)
+
+  await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: account._id }, { $set: { salt, hash } })
+}
+
+/**
+ * @public
+ */
 export async function changeName (db: Db, token: string, first: string, last: string): Promise<void> {
   const { email } = decodeToken(token)
   const account = await getAccount(db, email)

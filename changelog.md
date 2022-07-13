@@ -1,6 +1,13 @@
 # Changelog
 
-## 0.6.30 (upcoming)
+## 0.6.31 (upcoming)
+
+Core:
+
+- Fix password change settings
+- Fix settings collapse
+
+## 0.6.30
 
 Core:
 
@@ -37,7 +44,6 @@ Tracker:
 - Names of parent issues
 - Roadmap
 - Context menus (Priority/Status/Assignee)
-
 
 Chunter:
 

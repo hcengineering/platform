@@ -12,6 +12,7 @@
   let templates: MessageTemplate[] = []
   let selected: Ref<MessageTemplate> | undefined
   let newTemplate: Data<MessageTemplate> | undefined = undefined
+  let loading = true
 
   query.query(templatesPlugin.class.MessageTemplate, {}, (t) => {
     templates = t
@@ -19,6 +20,7 @@
       selected = undefined
       newTemplate = undefined
     }
+    loading = false
   })
 
   const Mode = {
@@ -79,7 +81,9 @@
     <div class="ac-column">
       <div id="create-template" class="flex-between trans-title mb-3">
         <Label label={templatesPlugin.string.TemplatesHeader} />
-        <CircleButton icon={IconAdd} on:click={addTemplate} />
+        {#if !loading}
+          <CircleButton icon={IconAdd} on:click={addTemplate} />
+        {/if}
       </div>
 
       <div class="flex-col overflow-y-auto">

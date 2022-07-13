@@ -23,9 +23,10 @@ import {
   dropWorkspace,
   getAccount,
   getWorkspace,
-  setRole,
   listAccounts,
   listWorkspaces,
+  replacePassword,
+  setRole,
   upgradeWorkspace
 } from '@anticrm/account'
 import { setMetadata } from '@anticrm/platform'
@@ -91,6 +92,18 @@ program
     return await withDatabase(mongodbUri, async (db) => {
       console.log(`creating account ${cmd.first as string} ${cmd.last as string} (${email})...`)
       await createAccount(db, email, cmd.password, cmd.first, cmd.last)
+    })
+  })
+
+program
+  .command('reset-account <email>')
+  .description('create user and corresponding account in master database')
+  .option('-p, --password <password>', 'new user password')
+  .action(async (email: string, cmd) => {
+    const { mongodbUri } = prepareTools()
+    return await withDatabase(mongodbUri, async (db) => {
+      console.log(`update account ${email} ${cmd.first as string} ${cmd.last as string}...`)
+      await replacePassword(db, email, cmd.password)
     })
   })
 

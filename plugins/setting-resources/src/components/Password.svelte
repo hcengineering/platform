@@ -17,12 +17,15 @@
   import presentation from '@anticrm/presentation'
   import { Button, EditBox, Icon, Label } from '@anticrm/ui'
   import { changePassword } from '@anticrm/login-resources'
+  import Error from './icons/Error.svelte'
+  import plugin from '../plugin'
 
   let oldPassword: string = ''
   let password: string = ''
   let password2: string = ''
   let label = presentation.string.Save
   let saved = false
+  let error = false
 
   $: disabled =
     password.length === 0 || oldPassword.length === 0 || oldPassword === password || password !== password2 || saved
@@ -37,8 +40,16 @@
       console.log(e)
       label = presentation.string.Save
       saved = false
+      error = true
     }
   }
+
+  function updateSaved (p1: string, p2: string, p3: string): void {
+    saved = false
+    label = presentation.string.Save
+    error = false
+  }
+  $: updateSaved(oldPassword, password, password2)
 </script>
 
 <div class="antiComponent">
@@ -48,6 +59,12 @@
   </div>
   <div class="flex-row-stretch flex-grow p-10">
     <div class="flex-grow flex-col">
+      {#if error}
+        <div class="flex-row-center gap-2">
+          <Icon icon={Error} size={'medium'} />
+          <Label label={plugin.string.FailedToSave} />
+        </div>
+      {/if}
       <div class="flex-grow flex-col">
         <div>
           <EditBox

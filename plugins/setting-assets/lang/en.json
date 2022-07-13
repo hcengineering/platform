@@ -53,6 +53,7 @@
     "User": "User",
     "Maintainer": "Maintainer",
     "Owner": "Owner",
-    "Role": "Role"
+    "Role": "Role",
+    "FailedToSave": "Failed to update password"
   }
 }

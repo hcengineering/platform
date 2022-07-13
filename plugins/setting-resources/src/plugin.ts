@@ -47,6 +47,7 @@ export default mergeIds(settingId, setting, {
     User: '' as IntlString,
     Maintainer: '' as IntlString,
     Owner: '' as IntlString,
-    Role: '' as IntlString
+    Role: '' as IntlString,
+    FailedToSave: '' as IntlString
   }
 })

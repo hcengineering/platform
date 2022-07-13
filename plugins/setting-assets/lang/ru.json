@@ -53,6 +53,7 @@
     "User": "Пользователь",
     "Maintainer": "Maintainer",
     "Owner": "Владелец",
-    "Role": "Роль"
+    "Role": "Роль",
+    "FailedToSave": "Не удалось обновить пароль"
   }
 }

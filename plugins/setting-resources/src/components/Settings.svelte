@@ -32,6 +32,7 @@
   import { EmployeeAccount } from '@anticrm/contact'
   import { setMetadata } from '@anticrm/platform'
 
+  export let visibileNav = true
   let category: SettingsCategory | undefined
   let categoryId: string = ''
 
@@ -86,44 +87,54 @@
 </script>
 
 <div class="flex h-full">
-  <div class="antiPanel-navigator filled indent">
-    <div class="antiNav-header">
-      <span class="fs-title overflow-label">
-        <Label label={setting.string.Settings} />
-      </span>
+  {#if visibileNav}
+    <div class="antiPanel-navigator filled indent">
+      <div class="antiNav-header">
+        <span class="fs-title overflow-label">
+          <Label label={setting.string.Settings} />
+        </span>
+      </div>
+      {#each categories as category, i}
+        {#if i > 0 && categories[i - 1].group !== category.group}
+          <div class="antiNav-divider short line" />
+        {/if}
+        <CategoryElement
+          icon={category.icon}
+          label={category.label}
+          selected={category.name === categoryId}
+          expandable={category._id === setting.ids.Setting}
+          on:click={() => {
+            selectCategory(category.name)
+          }}
+        />
+      {/each}
+      <div class="signout">
+        <CategoryElement icon={setting.icon.Signout} label={setting.string.Signout} on:click={signOut} />
+        <CategoryElement
+          icon={login.icon.InviteWorkspace}
+          label={setting.string.InviteWorkspace}
+          on:click={inviteWorkspace}
+        />
+        <CategoryElement
+          icon={setting.icon.SelectWorkspace}
+          label={setting.string.SelectWorkspace}
+          on:click={selectWorkspace}
+        />
+      </div>
     </div>
-    {#each categories as category, i}
-      {#if i > 0 && categories[i - 1].group !== category.group}
-        <div class="antiNav-divider short line" />
-      {/if}
-      <CategoryElement
-        icon={category.icon}
-        label={category.label}
-        selected={category.name === categoryId}
-        expandable={category._id === setting.ids.Setting}
-        on:click={() => {
-          selectCategory(category.name)
-        }}
-      />
-    {/each}
-    <div class="signout">
-      <CategoryElement icon={setting.icon.Signout} label={setting.string.Signout} on:click={signOut} />
-      <CategoryElement
-        icon={login.icon.InviteWorkspace}
-        label={setting.string.InviteWorkspace}
-        on:click={inviteWorkspace}
-      />
-      <CategoryElement
-        icon={setting.icon.SelectWorkspace}
-        label={setting.string.SelectWorkspace}
-        on:click={selectWorkspace}
-      />
-    </div>
-  </div>
+  {/if}
 
   <div class="antiPanel-component border-left filled">
     {#if category}
-      <Component is={category.component} />
+      <Component
+        is={category.component}
+        props={{
+          visibileNav,
+          onFirstCategory: () => {
+            selectCategory(categories[0].name)
+          }
+        }}
+      />
     {/if}
   </div>
 </div>
