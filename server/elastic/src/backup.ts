@@ -28,6 +28,7 @@ import core, {
   Tx,
   TxResult
 } from '@anticrm/core'
+import { PlatformError, unknownStatus } from '@anticrm/platform'
 import { DbAdapter, IndexedDoc } from '@anticrm/server-core'
 import { ApiResponse, Client } from '@elastic/elasticsearch'
 import { createHash } from 'node:crypto'
@@ -62,18 +63,23 @@ class ElasticDataAdapter implements DbAdapter {
     return {
       next: async () => {
         if (!listRecieved) {
-          resp = await this.client.search({
+          const q = {
             index: this.db,
             type: '_doc',
             scroll: '1s',
             // search_type: 'scan', //if I use search_type then it requires size otherwise it shows 0 result
-            size: 10000,
+            size: 500,
             body: {
               query: {
                 match_all: {}
               }
             }
-          })
+          }
+          resp = await this.client.search(q)
+          if (resp.statusCode !== 200) {
+            console.error('failed elastic query', q, resp)
+            throw new PlatformError(unknownStatus(`failed to elastic query ${JSON.stringify(resp)}`))
+          }
           buffer = resp.body.hits.hits.map((hit: any) => ({ _id: hit._id, data: hit._source }))
           if (buffer.length === 0) {
             finished = true
@@ -86,6 +92,10 @@ class ElasticDataAdapter implements DbAdapter {
             scroll: '1s'
           }
           resp = await this.client.scroll(params)
+          if (resp.statusCode !== 200) {
+            console.error('failed elastic query scroll', params, resp)
+            throw new PlatformError(unknownStatus(`failed to elastic query ${JSON.stringify(resp)}`))
+          }
           buffer = resp.body.hits.hits.map((hit: any) => ({ _id: hit._id, data: hit._source }))
           if (buffer.length === 0) {
             finished = true
