@@ -546,7 +546,7 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(recruit.mixin.Candidate, core.class.Class, view.mixin.ClassFilters, {
-    filters: ['_class', 'title', 'source', 'city', 'skills', 'modifiedOn', 'onsite', 'remote']
+    filters: ['_class', 'title', 'source', 'city', 'skills', 'modifiedOn', 'onsite', 'remote', 'applications']
   })
 
   builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.ClassFilters, {
@@ -723,6 +723,32 @@ export function createModel (builder: Builder): void {
       }
     },
     recruit.action.CopyCandidateLink
+  )
+
+  builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.AttributeFilter, {
+    component: recruit.component.ApplicantFilter
+  })
+
+  builder.createDoc(
+    view.class.FilterMode,
+    core.space.Model,
+    {
+      label: recruit.string.HasActiveApplicant,
+      result: recruit.function.HasActiveApplicant,
+      disableValueSelector: true
+    },
+    recruit.filter.HasActive
+  )
+
+  builder.createDoc(
+    view.class.FilterMode,
+    core.space.Model,
+    {
+      label: recruit.string.HasNoActiveApplicant,
+      result: recruit.function.HasNoActiveApplicant,
+      disableValueSelector: true
+    },
+    recruit.filter.NoActive
   )
 }
 

@@ -13,12 +13,13 @@
 // limitations under the License.
 //
 
-import { Client, Doc, Ref, Space } from '@anticrm/core'
+import { Client, Doc, ObjQueryType, Ref, Space } from '@anticrm/core'
 import type { IntlString, Resource, StatusCode } from '@anticrm/platform'
 import { mergeIds } from '@anticrm/platform'
 import recruit, { recruitId } from '@anticrm/recruit'
 import { TagCategory } from '@anticrm/tags'
 import { AnyComponent } from '@anticrm/ui'
+import { Filter, FilterMode } from '@anticrm/view'
 
 export default mergeIds(recruitId, recruit, {
   status: {
@@ -101,7 +102,9 @@ export default mergeIds(recruitId, recruit, {
     NumberSkills: '' as IntlString,
     AddDropHere: '' as IntlString,
     TalentSelect: '' as IntlString,
-    FullDescription: '' as IntlString
+    FullDescription: '' as IntlString,
+    HasActiveApplicant: '' as IntlString,
+    HasNoActiveApplicant: '' as IntlString
   },
   space: {
     CandidatesPublic: '' as Ref<Space>
@@ -119,6 +122,12 @@ export default mergeIds(recruitId, recruit, {
     CreateCandidate: '' as AnyComponent
   },
   function: {
-    ApplicationTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>) => Promise<string>>
+    ApplicationTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>) => Promise<string>>,
+    HasActiveApplicant: '' as Resource<(filter: Filter, onUpdate: () => void) => Promise<ObjQueryType<any>>>,
+    HasNoActiveApplicant: '' as Resource<(filter: Filter, onUpdate: () => void) => Promise<ObjQueryType<any>>>
+  },
+  filter: {
+    HasActive: '' as Ref<FilterMode>,
+    NoActive: '' as Ref<FilterMode>
   }
 })

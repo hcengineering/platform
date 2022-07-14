@@ -54,12 +54,14 @@
     const targetClass = isCollection ? (attribute.type as Collection<AttachedDoc>).of : attribute.type._class
     const clazz = hierarchy.getClass(targetClass)
     const filter = hierarchy.as(clazz, view.mixin.AttributeFilter)
+
+    const attrOf = hierarchy.getClass(attribute.attributeOf)
     if (filter.component === undefined) return undefined
     return {
       _class,
       key: isCollection ? '_id' : key,
       label: attribute.label,
-      icon: attribute.icon,
+      icon: attribute.icon ?? clazz.icon ?? attrOf.icon ?? view.icon.Setting,
       component: filter.component
     }
   }
@@ -190,9 +192,11 @@
               click(type)
             }}
           >
-            {#if type.icon}
-              <div class="icon mr-3"><Icon icon={type.icon} size={'small'} /></div>
-            {/if}
+            <div class="icon mr-3">
+              {#if type.icon}
+                <Icon icon={type.icon} size={'small'} />
+              {/if}
+            </div>
             <div class="pr-1"><Label label={type.label} /></div>
           </button>
         {/if}

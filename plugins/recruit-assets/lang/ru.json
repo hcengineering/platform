@@ -91,7 +91,9 @@
     "GotoRecruitApplication": "Перейти к Приложению Рекрутинг",
     "AddDropHere": "Добавить или перетянуть резюме",
     "CopyId": "Копировать ID",
-    "CopyLink": "Копировать ссылку"
+    "CopyLink": "Копировать ссылку",
+    "HasActiveApplicant":"Только активные",
+    "HasNoActiveApplicant": "Не активные"
   },
   "status": {
     "TalentRequired": "Пожалуйста выберите таланта",

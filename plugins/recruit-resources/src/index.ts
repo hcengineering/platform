@@ -13,12 +13,15 @@
 // limitations under the License.
 //
 
-import type { Client, Doc } from '@anticrm/core'
+import type { Client, Doc, FindResult, ObjQueryType, Ref } from '@anticrm/core'
 import { IntlString, OK, Resources, Severity, Status, translate } from '@anticrm/platform'
 import { ObjectSearchResult } from '@anticrm/presentation'
 import { Applicant } from '@anticrm/recruit'
 import task from '@anticrm/task'
 import { showPopup } from '@anticrm/ui'
+import { Filter } from '@anticrm/view'
+import { FilterQuery } from '@anticrm/view-resources'
+import ApplicantFilter from './components/ApplicantFilter.svelte'
 import ApplicationItem from './components/ApplicationItem.svelte'
 import ApplicationPresenter from './components/ApplicationPresenter.svelte'
 import Applications from './components/Applications.svelte'
@@ -45,8 +48,8 @@ import VacancyCountPresenter from './components/VacancyCountPresenter.svelte'
 import VacancyItemPresenter from './components/VacancyItemPresenter.svelte'
 import VacancyModifiedPresenter from './components/VacancyModifiedPresenter.svelte'
 import VacancyPresenter from './components/VacancyPresenter.svelte'
-import { getApplicationTitle, copyToClipboard } from './utils'
 import recruit from './plugin'
+import { copyToClipboard, getApplicationTitle } from './utils'
 
 async function createOpinion (object: Doc): Promise<void> {
   showPopup(CreateOpinion, { space: object.space, review: object._id })
@@ -111,6 +114,40 @@ export async function queryApplication (client: Client, search: string): Promise
   }))
 }
 
+export async function getActiveTalants (filter: Filter, onUpdate: () => void): Promise<Array<Ref<Doc>>> {
+  const promise = new Promise<Array<Ref<Doc>>>((resolve, reject) => {
+    let refresh: boolean = false
+
+    const lq = FilterQuery.getLiveQuery(filter.index)
+    refresh = lq.query(
+      recruit.class.Applicant,
+      {
+        doneState: undefined
+      },
+      (refs: FindResult<Applicant>) => {
+        const result = Array.from(new Set(refs.map((p) => p.attachedTo)))
+        FilterQuery.results.set(filter.index, result)
+        resolve(result)
+        onUpdate()
+      }
+    )
+
+    if (!refresh) {
+      resolve(FilterQuery.results.get(filter.index) ?? [])
+    }
+  })
+  return await promise
+}
+
+async function hasActiveApplicant (filter: Filter, onUpdate: () => void): Promise<ObjQueryType<any>> {
+  const result = await getActiveTalants(filter, onUpdate)
+  return { $in: result }
+}
+async function hasNoActiveApplicant (filter: Filter, onUpdate: () => void): Promise<ObjQueryType<any>> {
+  const result = await getActiveTalants(filter, onUpdate)
+  return { $nin: result }
+}
+
 export default async (): Promise<Resources> => ({
   actionImpl: {
     CreateOpinion: createOpinion,
@@ -145,12 +182,16 @@ export default async (): Promise<Resources> => ({
     OpinionPresenter,
     OpinionsPresenter,
 
-    NewCandidateHeader
+    NewCandidateHeader,
+
+    ApplicantFilter
   },
   completion: {
     ApplicationQuery: async (client: Client, query: string) => await queryApplication(client, query)
   },
   function: {
-    ApplicationTitleProvider: getApplicationTitle
+    ApplicationTitleProvider: getApplicationTitle,
+    HasActiveApplicant: hasActiveApplicant,
+    HasNoActiveApplicant: hasNoActiveApplicant
   }
 })

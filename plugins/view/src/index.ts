@@ -42,7 +42,7 @@ export interface KeyFilter {
   key: string
   component: AnyComponent
   label: IntlString
-  icon: Asset | undefined
+  icon: Asset | AnySvelteComponent | undefined
 }
 
 /**
@@ -50,6 +50,7 @@ export interface KeyFilter {
  */
 export interface FilterMode extends Doc {
   label: IntlString
+  disableValueSelector?: boolean
   result: Resource<(filter: Filter, onUpdate: () => void) => Promise<ObjQueryType<any>>>
 }
 
