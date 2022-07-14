@@ -25,6 +25,21 @@
       "protocol": "inspector"
     },
     {
+      "name": "Debug Account",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/index.ts"],
+      "env": {
+        "MONGO_URL": "mongodb://localhost:27017",
+        "SERVER_SECRET": "secret",
+        "TRANSACTOR_URL": "ws:/localhost:3333"
+      },
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "sourceMaps": true,
+      "cwd": "${workspaceRoot}/pods/account",
+      "protocol": "inspector"
+    },
+    {
       "type": "node",
       "request": "launch",
       "name": "Debug Jest tests",

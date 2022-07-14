@@ -121,8 +121,9 @@
     {/if}
     {#if format === 'password'}
       <input
+        id="userPassword"
         bind:this={input}
-        type="passsword"
+        type="Password"
         bind:value
         placeholder={phTraslate}
         {style}

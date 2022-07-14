@@ -17,7 +17,7 @@
   import { AccountRole, getCurrentAccount } from '@anticrm/core'
   import { createQuery } from '@anticrm/presentation'
   import setting, { SettingsCategory } from '@anticrm/setting'
-  import { Component, getCurrentLocation, Label, location, navigate } from '@anticrm/ui'
+  import ui, { Button, Component, getCurrentLocation, IconBack, Label, location, navigate } from '@anticrm/ui'
   import { onDestroy } from 'svelte'
   import CategoryElement from './CategoryElement.svelte'
 
@@ -26,6 +26,9 @@
 
   let categories: SettingsCategory[] = []
   const account = getCurrentAccount() as EmployeeAccount
+
+  export let visibileNav = true
+  export let onFirstCategory: () => void
 
   const settingsQuery = createQuery()
   settingsQuery.query(
@@ -58,23 +61,34 @@
 </script>
 
 <div class="flex h-full">
-  <div class="antiPanel-navigator filled indent">
-    <div class="antiNav-header">
-      <span class="fs-title overflow-label">
-        <Label label={setting.string.WorkspaceSetting} />
-      </span>
+  {#if visibileNav}
+    <div class="antiPanel-navigator filled indent">
+      <div class="antiNav-header">
+        <div class="flex-row-center gap-2">
+          <Button
+            kind={'link'}
+            icon={IconBack}
+            label={ui.string.Back}
+            on:click={() => onFirstCategory()}
+            size={'small'}
+          />
+          <span class="fs-title overflow-label">
+            <Label label={setting.string.WorkspaceSetting} />
+          </span>
+        </div>
+      </div>
+      {#each categories as category}
+        <CategoryElement
+          icon={category.icon}
+          label={category.label}
+          selected={category.name === categoryId}
+          on:click={() => {
+            selectCategory(category.name)
+          }}
+        />
+      {/each}
     </div>
-    {#each categories as category}
-      <CategoryElement
-        icon={category.icon}
-        label={category.label}
-        selected={category.name === categoryId}
-        on:click={() => {
-          selectCategory(category.name)
-        }}
-      />
-    {/each}
-  </div>
+  {/if}
 
   <div class="antiPanel-component border-left filled">
     {#if category}

@@ -488,14 +488,14 @@
       }}
     >
       {#if currentApplication && currentApplication.component}
-        <Component is={currentApplication.component} props={{ currentSpace }} />
+        <Component is={currentApplication.component} props={{ currentSpace, visibileNav }} />
       {:else if specialComponent}
         <Component
           is={specialComponent.component}
-          props={{ model: navigatorModel, ...specialComponent.componentProps, currentSpace }}
+          props={{ model: navigatorModel, ...specialComponent.componentProps, currentSpace, visibileNav }}
         />
       {:else if currentView?.component !== undefined}
-        <Component is={currentView.component} props={{ ...currentView.componentProps, currentView }} />
+        <Component is={currentView.component} props={{ ...currentView.componentProps, currentView, visibileNav }} />
       {:else}
         <SpaceView {currentSpace} {currentView} {createItemDialog} {createItemLabel} />
       {/if}

@@ -13,18 +13,18 @@
 // limitations under the License.
 //
 
+import login from '@anticrm/login'
 import {
+  getMetadata,
+  OK,
   PlatformError,
   Request,
   Response,
-  getMetadata,
-  OK,
   serialize,
   Status,
   unknownError,
   unknownStatus
 } from '@anticrm/platform'
-import login from '@anticrm/login'
 import { fetchMetadataLocalStorage, getCurrentLocation, navigate } from '@anticrm/ui'
 
 export interface WorkspaceLoginInfo extends LoginInfo {
@@ -437,7 +437,7 @@ export async function changePassword (oldPassword: string, password: string): Pr
     params: [oldPassword, password]
   }
 
-  await fetch(accountsUrl, {
+  const response = await fetch(accountsUrl, {
     method: 'POST',
     headers: {
       Authorization: 'Bearer ' + token,
@@ -445,6 +445,10 @@ export async function changePassword (oldPassword: string, password: string): Pr
     },
     body: serialize(request)
   })
+  const resp = await response.json()
+  if (resp.error !== undefined) {
+    throw new PlatformError(resp.error)
+  }
 }
 
 export async function leaveWorkspace (email: string): Promise<void> {
