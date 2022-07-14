@@ -89,7 +89,9 @@
     "GotoRecruitApplication": "Switch to Recruit Application",
     "AddDropHere": "Add or drop resume",
     "CopyId": "Copy ID",
-    "CopyLink": "Copy link"
+    "CopyLink": "Copy link",
+    "HasActiveApplicant":"Active Only",
+    "HasNoActiveApplicant": "No Active"
   },
   "status": {
     "TalentRequired": "Please select talent",

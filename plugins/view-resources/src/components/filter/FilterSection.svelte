@@ -13,16 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { IntlString, translate } from '@anticrm/platform'
   import { Class, Doc, Ref, RefTo } from '@anticrm/core'
-  import { eventToHTMLElement, IconClose, showPopup, Icon, Label } from '@anticrm/ui'
-  import { Filter, FilterMode } from '@anticrm/view'
-  import { createEventDispatcher } from 'svelte'
-  import view from '../../plugin'
+  import { translate } from '@anticrm/platform'
   import { getClient } from '@anticrm/presentation'
-  import task from '@anticrm/task'
   import type { State } from '@anticrm/task'
-  import { onDestroy } from 'svelte'
+  import task from '@anticrm/task'
+  import { eventToHTMLElement, Icon, IconClose, Label, showPopup } from '@anticrm/ui'
+  import { Filter, FilterMode } from '@anticrm/view'
+  import { createEventDispatcher, onDestroy } from 'svelte'
+  import view from '../../plugin'
 
   export let _class: Ref<Class<Doc>>
   export let filter: Filter
@@ -70,8 +69,8 @@
     dispatch('change')
   }
 
-  async function getModeLabel (mode: Ref<FilterMode>): Promise<IntlString | undefined> {
-    return (await client.findOne(view.class.FilterMode, { _id: mode }))?.label
+  async function getMode (mode: Ref<FilterMode>): Promise<FilterMode | undefined> {
+    return await client.findOne(view.class.FilterMode, { _id: mode })
   }
 
   function onChange (e: Filter | undefined) {
@@ -87,6 +86,8 @@
     filter.nested?.onRemove?.()
     filter.onRemove?.()
   })
+
+  $: modeValuePromise = getMode(filter.mode)
 </script>
 
 <div class="filter-section">
@@ -104,9 +105,9 @@
       toggle()
     }}
   >
-    {#await getModeLabel(filter.mode) then label}
-      {#if label}
-        <span><Label {label} params={{ value: filter.value.length }} /></span>
+    {#await modeValuePromise then mode}
+      {#if mode?.label}
+        <span><Label label={mode.label} params={{ value: filter.value.length }} /></span>
       {/if}
     {/await}
   </button>
@@ -125,29 +126,33 @@
         toggle(true)
       }}
     >
-      {#await getModeLabel(filter.nested.mode) then label}
-        {#if label}
-          <span><Label {label} params={{ value: filter.value.length }} /></span>
+      {#await modeValuePromise then mode}
+        {#if mode?.label}
+          <span><Label label={mode.label} params={{ value: filter.value.length }} /></span>
         {/if}
       {/await}
     </button>
   {/if}
-  <button
-    class="filter-button"
-    on:click={(e) => {
-      showPopup(
-        currentFilter.key.component,
-        {
-          _class: currentFilter.key._class,
-          filter: currentFilter,
-          onChange
-        },
-        eventToHTMLElement(e)
-      )
-    }}
-  >
-    <span>{countLabel}</span>
-  </button>
+  {#await modeValuePromise then mode}
+    {#if !(mode?.disableValueSelector ?? false)}
+      <button
+        class="filter-button"
+        on:click={(e) => {
+          showPopup(
+            currentFilter.key.component,
+            {
+              _class: currentFilter.key._class,
+              filter: currentFilter,
+              onChange
+            },
+            eventToHTMLElement(e)
+          )
+        }}
+      >
+        <span>{countLabel}</span>
+      </button>
+    {/if}
+  {/await}
   <button
     class="filter-button right-round"
     on:click={() => {
