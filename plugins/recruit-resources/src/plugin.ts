@@ -104,7 +104,8 @@ export default mergeIds(recruitId, recruit, {
     TalentSelect: '' as IntlString,
     FullDescription: '' as IntlString,
     HasActiveApplicant: '' as IntlString,
-    HasNoActiveApplicant: '' as IntlString
+    HasNoActiveApplicant: '' as IntlString,
+    NoneApplications: '' as IntlString
   },
   space: {
     CandidatesPublic: '' as Ref<Space>
@@ -124,10 +125,12 @@ export default mergeIds(recruitId, recruit, {
   function: {
     ApplicationTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>) => Promise<string>>,
     HasActiveApplicant: '' as Resource<(filter: Filter, onUpdate: () => void) => Promise<ObjQueryType<any>>>,
-    HasNoActiveApplicant: '' as Resource<(filter: Filter, onUpdate: () => void) => Promise<ObjQueryType<any>>>
+    HasNoActiveApplicant: '' as Resource<(filter: Filter, onUpdate: () => void) => Promise<ObjQueryType<any>>>,
+    NoneApplications: '' as Resource<(filter: Filter, onUpdate: () => void) => Promise<ObjQueryType<any>>>
   },
   filter: {
     HasActive: '' as Ref<FilterMode>,
-    NoActive: '' as Ref<FilterMode>
+    NoActive: '' as Ref<FilterMode>,
+    None: '' as Ref<FilterMode>
   }
 })

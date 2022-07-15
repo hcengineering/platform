@@ -14,8 +14,9 @@
 -->
 <script lang="ts">
   import { Class, Doc, Ref } from '@anticrm/core'
-  import { Button } from '@anticrm/ui'
-  import { Filter } from '@anticrm/view'
+  import { getClient } from '@anticrm/presentation'
+  import { SelectPopup } from '@anticrm/ui'
+  import view, { Filter, FilterMode } from '@anticrm/view'
   import { FilterQuery } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
@@ -23,28 +24,28 @@
   export let _class: Ref<Class<Doc>>
   export let filter: Filter
   export let onChange: (e: Filter) => void
+
+  const client = getClient()
   filter.onRemove = () => {
     FilterQuery.remove(filter.index)
   }
 
-  filter.modes = [recruit.filter.HasActive, recruit.filter.NoActive]
+  filter.modes = [recruit.filter.HasActive, recruit.filter.NoActive, recruit.filter.None]
   filter.mode = filter.mode === undefined ? filter.modes[0] : filter.mode
   const dispatch = createEventDispatcher()
+
+  let modes: FilterMode[] = []
+
+  client.findAll(view.class.FilterMode, { _id: { $in: filter.modes } }).then((res) => {
+    modes = res
+  })
 </script>
 
 <div class="selectPopup">
-  <Button
-    label={recruit.string.HasActiveApplicant}
-    on:click={async () => {
-      filter.mode = recruit.filter.HasActive
-      onChange(filter)
-      dispatch('close')
-    }}
-  />
-  <Button
-    label={recruit.string.HasNoActiveApplicant}
-    on:click={async () => {
-      filter.mode = recruit.filter.NoActive
+  <SelectPopup
+    value={modes.map((it) => ({ ...it, id: it._id }))}
+    on:close={(evt) => {
+      filter.mode = evt.detail
       onChange(filter)
       dispatch('close')
     }}

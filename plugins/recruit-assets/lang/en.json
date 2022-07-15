@@ -91,7 +91,8 @@
     "CopyId": "Copy ID",
     "CopyLink": "Copy link",
     "HasActiveApplicant":"Active Only",
-    "HasNoActiveApplicant": "No Active"
+    "HasNoActiveApplicant": "No Active",
+    "NoneApplications": "None"
   },
   "status": {
     "TalentRequired": "Please select talent",

@@ -93,7 +93,8 @@
     "CopyId": "Копировать ID",
     "CopyLink": "Копировать ссылку",
     "HasActiveApplicant":"Только активные",
-    "HasNoActiveApplicant": "Не активные"
+    "HasNoActiveApplicant": "Не активные",
+    "NoneApplications": "Отсутствуют"
   },
   "status": {
     "TalentRequired": "Пожалуйста выберите таланта",
