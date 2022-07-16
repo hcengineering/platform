@@ -253,6 +253,73 @@ export class LiveQuery extends TxProcessor implements Client {
     return {}
   }
 
+  private async checkSearch (q: Query, pos: number, _id: Ref<Doc>): Promise<boolean> {
+    if (q.result instanceof Promise) {
+      q.result = await q.result
+    }
+    const match = await this.findOne(q._class, { $search: q.query.$search, _id }, q.options)
+    if (match === undefined) {
+      if (q.options?.limit === q.result.length) {
+        await this.refresh(q)
+        return true
+      } else {
+        q.result.splice(pos, 1)
+        q.total--
+      }
+    } else {
+      q.result[pos] = match
+    }
+    return false
+  }
+
+  private async getCurrentDoc (q: Query, pos: number, _id: Ref<Doc>): Promise<boolean> {
+    if (q.result instanceof Promise) {
+      q.result = await q.result
+    }
+    const current = await this.findOne(q._class, { _id }, q.options)
+    if (current !== undefined && this.match(q, current)) {
+      q.result[pos] = current
+    } else {
+      if (q.options?.limit === q.result.length) {
+        await this.refresh(q)
+        return true
+      } else {
+        q.result.splice(pos, 1)
+        q.total--
+      }
+    }
+    return false
+  }
+
+  private async __updateMixinDoc (q: Query, updatedDoc: WithLookup<Doc>, tx: TxMixin<Doc, Doc>): Promise<void> {
+    updatedDoc = TxProcessor.updateMixin4Doc(updatedDoc, tx)
+
+    const ops = {
+      ...tx.attributes,
+      modifiedBy: tx.modifiedBy,
+      modifiedOn: tx.modifiedOn
+    }
+    await this.__updateLookup(q, updatedDoc, ops)
+  }
+
+  private async checkUpdatedDocMatch (q: Query, pos: number, updatedDoc: WithLookup<Doc>): Promise<boolean> {
+    if (q.result instanceof Promise) {
+      q.result = await q.result
+    }
+    if (!this.match(q, updatedDoc)) {
+      if (q.options?.limit === q.result.length) {
+        await this.refresh(q)
+        return true
+      } else {
+        q.result.splice(pos, 1)
+        q.total--
+      }
+    } else {
+      q.result[pos] = updatedDoc
+    }
+    return false
+  }
+
   protected override async txMixin (tx: TxMixin<Doc, Doc>): Promise<TxResult> {
     const hierarchy = this.client.getHierarchy()
     for (const queries of this.queries) {
@@ -267,12 +334,25 @@ export class LiveQuery extends TxProcessor implements Client {
         if (q.result instanceof Promise) {
           q.result = await q.result
         }
-        let updatedDoc = q.result.find((p) => p._id === tx.objectId)
-        if (updatedDoc !== undefined) {
-          // Create or apply mixin value
-          updatedDoc = TxProcessor.updateMixin4Doc(updatedDoc, tx)
-          await this.__updateLookup(q, updatedDoc, tx.attributes)
-          await this.updatedDocCallback(updatedDoc, q)
+        const pos = q.result.findIndex((p) => p._id === tx.objectId)
+        if (pos !== -1) {
+          // If query contains search we must check use fulltext
+          if (q.query.$search != null && q.query.$search.length > 0) {
+            const searchRefresh = await this.checkSearch(q, pos, tx.objectId)
+            if (searchRefresh) return {}
+          } else {
+            const updatedDoc = q.result[pos]
+            if (updatedDoc.modifiedOn < tx.modifiedOn) {
+              await this.__updateMixinDoc(q, updatedDoc, tx)
+              const updateRefresh = await this.checkUpdatedDocMatch(q, pos, updatedDoc)
+              if (updateRefresh) return {}
+            } else {
+              const currentRefresh = await this.getCurrentDoc(q, pos, updatedDoc._id)
+              if (currentRefresh) return {}
+            }
+          }
+          this.sort(q, tx)
+          await this.updatedDocCallback(q.result[pos], q)
         } else if (isMixin) {
           // Mixin potentially added to object we doesn't have in out results
           const doc = await this.findOne(q._class, { _id: tx.objectId }, q.options)
@@ -280,6 +360,7 @@ export class LiveQuery extends TxProcessor implements Client {
             await this.handleDocAdd(q, doc, false)
           }
         }
+        await this.handleDocUpdateLookup(q, tx)
       }
     }
     return {}
@@ -340,43 +421,17 @@ export class LiveQuery extends TxProcessor implements Client {
     if (pos !== -1) {
       // If query contains search we must check use fulltext
       if (q.query.$search != null && q.query.$search.length > 0) {
-        const match = await this.findOne(q._class, { $search: q.query.$search, _id: tx.objectId }, q.options)
-        if (match === undefined) {
-          if (q.options?.limit === q.result.length) {
-            return await this.refresh(q)
-          } else {
-            q.result.splice(pos, 1)
-            q.total--
-          }
-        } else {
-          q.result[pos] = match
-        }
+        const searchRefresh = await this.checkSearch(q, pos, tx.objectId)
+        if (searchRefresh) return
       } else {
         const updatedDoc = q.result[pos]
         if (updatedDoc.modifiedOn < tx.modifiedOn) {
           await this.__updateDoc(q, updatedDoc, tx)
-          if (!this.match(q, updatedDoc)) {
-            if (q.options?.limit === q.result.length) {
-              return await this.refresh(q)
-            } else {
-              q.result.splice(pos, 1)
-              q.total--
-            }
-          } else {
-            q.result[pos] = updatedDoc
-          }
+          const updateRefresh = await this.checkUpdatedDocMatch(q, pos, updatedDoc)
+          if (updateRefresh) return
         } else {
-          const current = await this.findOne(q._class, { _id: updatedDoc._id }, q.options)
-          if (current !== undefined && this.match(q, current)) {
-            q.result[pos] = current
-          } else {
-            if (q.options?.limit === q.result.length) {
-              return await this.refresh(q)
-            } else {
-              q.result.splice(pos, 1)
-              q.total--
-            }
-          }
+          const currentRefresh = await this.getCurrentDoc(q, pos, updatedDoc._id)
+          if (currentRefresh) return
         }
       }
       this.sort(q, tx)
@@ -388,7 +443,7 @@ export class LiveQuery extends TxProcessor implements Client {
     await this.handleDocUpdateLookup(q, tx)
   }
 
-  private async handleDocUpdateLookup (q: Query, tx: TxUpdateDoc<Doc>): Promise<void> {
+  private async handleDocUpdateLookup (q: Query, tx: TxUpdateDoc<Doc> | TxMixin<Doc, Doc>): Promise<void> {
     if (q.options?.lookup === undefined) return
     const lookup = q.options.lookup
     if (q.result instanceof Promise) {
@@ -405,7 +460,11 @@ export class LiveQuery extends TxProcessor implements Client {
     }
   }
 
-  private async proccesLookupUpdateDoc (docs: Doc[], lookup: Lookup<Doc>, tx: TxUpdateDoc<Doc>): Promise<boolean> {
+  private async proccesLookupUpdateDoc (
+    docs: Doc[],
+    lookup: Lookup<Doc>,
+    tx: TxUpdateDoc<Doc> | TxMixin<Doc, Doc>
+  ): Promise<boolean> {
     let needCallback = false
     const lookupWays = this.getLookupWays(lookup, tx.objectClass)
     for (const lookupWay of lookupWays) {
@@ -418,7 +477,11 @@ export class LiveQuery extends TxProcessor implements Client {
           let index = value.findIndex((p) => p._id === tx.objectId)
           if (this.client.getHierarchy().isDerived(tx.objectClass, core.class.AttachedDoc)) {
             if (reverseLookupKey !== undefined) {
-              const reverseLookupValue = (tx.operations as any)[reverseLookupKey]
+              const reverseLookupValue = (
+                tx._class === core.class.TxMixin
+                  ? ((tx as TxMixin<Doc, Doc>).attributes as any)
+                  : ((tx as TxUpdateDoc<Doc>).operations as any)
+              )[reverseLookupKey]
               if (index !== -1 && reverseLookupValue !== undefined && reverseLookupValue !== obj._id) {
                 value.splice(index, 1)
                 index = -1
@@ -432,13 +495,21 @@ export class LiveQuery extends TxProcessor implements Client {
             }
           }
           if (index !== -1) {
-            TxProcessor.updateDoc2Doc(value[index], tx)
+            if (tx._class === core.class.TxMixin) {
+              TxProcessor.updateMixin4Doc(value[index], tx as TxMixin<Doc, Doc>)
+            } else {
+              TxProcessor.updateDoc2Doc(value[index], tx as TxUpdateDoc<Doc>)
+            }
             needCallback = true
           }
         } else {
           if (obj[key] === tx.objectId) {
             if (obj.$lookup[key] !== undefined) {
-              TxProcessor.updateDoc2Doc(obj.$lookup[key], tx)
+              if (tx._class === core.class.TxMixin) {
+                TxProcessor.updateMixin4Doc(obj.$lookup[key], tx as TxMixin<Doc, Doc>)
+              } else {
+                TxProcessor.updateDoc2Doc(obj.$lookup[key], tx as TxUpdateDoc<Doc>)
+              }
               needCallback = true
             }
           }
@@ -875,7 +946,7 @@ export class LiveQuery extends TxProcessor implements Client {
     await this.__updateLookup(q, updatedDoc, ops)
   }
 
-  private sort (q: Query, tx: TxUpdateDoc<Doc>): void {
+  private sort (q: Query, tx: TxUpdateDoc<Doc> | TxMixin<Doc, Doc>): void {
     const sort = q.options?.sort
     if (sort === undefined) return
     let needSort = sort.modifiedBy !== undefined || sort.modifiedOn !== undefined
@@ -884,8 +955,11 @@ export class LiveQuery extends TxProcessor implements Client {
     if (needSort) resultSort(q.result as Doc[], sort, q._class, this.getHierarchy())
   }
 
-  private checkNeedSort (sort: SortingQuery<Doc>, tx: TxUpdateDoc<Doc>): boolean {
-    const ops = tx.operations as any
+  private checkNeedSort (sort: SortingQuery<Doc>, tx: TxUpdateDoc<Doc> | TxMixin<Doc, Doc>): boolean {
+    const ops =
+      tx._class === core.class.TxMixin
+        ? (tx as TxMixin<Doc, Doc>).attributes
+        : ((tx as TxUpdateDoc<Doc>).operations as any)
     for (const key in ops) {
       if (key.startsWith('$')) {
         for (const opKey in ops[key]) {
