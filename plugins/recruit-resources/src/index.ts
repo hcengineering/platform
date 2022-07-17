@@ -16,7 +16,7 @@
 import type { Client, Doc, FindResult, ObjQueryType, Ref } from '@anticrm/core'
 import { IntlString, OK, Resources, Severity, Status, translate } from '@anticrm/platform'
 import { ObjectSearchResult } from '@anticrm/presentation'
-import { Applicant } from '@anticrm/recruit'
+import { Applicant, Candidate } from '@anticrm/recruit'
 import task from '@anticrm/task'
 import { showPopup } from '@anticrm/ui'
 import { Filter } from '@anticrm/view'
@@ -114,10 +114,9 @@ export async function queryApplication (client: Client, search: string): Promise
   }))
 }
 
-export async function getActiveTalants (filter: Filter, onUpdate: () => void): Promise<Array<Ref<Doc>>> {
+async function getActiveTalants (filter: Filter, onUpdate: () => void): Promise<Array<Ref<Doc>>> {
   const promise = new Promise<Array<Ref<Doc>>>((resolve, reject) => {
     let refresh: boolean = false
-
     const lq = FilterQuery.getLiveQuery(filter.index)
     refresh = lq.query(
       recruit.class.Applicant,
@@ -129,6 +128,45 @@ export async function getActiveTalants (filter: Filter, onUpdate: () => void): P
         FilterQuery.results.set(filter.index, result)
         resolve(result)
         onUpdate()
+      },
+      {
+        projection: {
+          _id: 1,
+          _class: 1,
+          doneState: 1,
+          attachedTo: 1
+        }
+      }
+    )
+
+    if (!refresh) {
+      resolve(FilterQuery.results.get(filter.index) ?? [])
+    }
+  })
+  return await promise
+}
+
+async function getNoApplicantCandidates (filter: Filter, onUpdate: () => void): Promise<Array<Ref<Doc>>> {
+  const promise = new Promise<Array<Ref<Doc>>>((resolve, reject) => {
+    let refresh: boolean = false
+    const lq = FilterQuery.getLiveQuery(filter.index)
+    refresh = lq.query(
+      recruit.mixin.Candidate,
+      {
+        applications: { $in: [0, undefined] }
+      },
+      (refs: FindResult<Candidate>) => {
+        const result = Array.from(refs.map((p) => p._id))
+        FilterQuery.results.set(filter.index, result)
+        resolve(result)
+        onUpdate()
+      },
+      {
+        projection: {
+          _id: 1,
+          _class: 1,
+          applications: 1
+        }
       }
     )
 
@@ -146,6 +184,10 @@ async function hasActiveApplicant (filter: Filter, onUpdate: () => void): Promis
 async function hasNoActiveApplicant (filter: Filter, onUpdate: () => void): Promise<ObjQueryType<any>> {
   const result = await getActiveTalants(filter, onUpdate)
   return { $nin: result }
+}
+async function noneApplicant (filter: Filter, onUpdate: () => void): Promise<ObjQueryType<any>> {
+  const result = await getNoApplicantCandidates(filter, onUpdate)
+  return { $in: result }
 }
 
 export default async (): Promise<Resources> => ({
@@ -192,6 +234,7 @@ export default async (): Promise<Resources> => ({
   function: {
     ApplicationTitleProvider: getApplicationTitle,
     HasActiveApplicant: hasActiveApplicant,
-    HasNoActiveApplicant: hasNoActiveApplicant
+    HasNoActiveApplicant: hasNoActiveApplicant,
+    NoneApplications: noneApplicant
   }
 })

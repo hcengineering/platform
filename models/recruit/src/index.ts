@@ -750,6 +750,16 @@ export function createModel (builder: Builder): void {
     },
     recruit.filter.NoActive
   )
+  builder.createDoc(
+    view.class.FilterMode,
+    core.space.Model,
+    {
+      label: recruit.string.NoneApplications,
+      result: recruit.function.NoneApplications,
+      disableValueSelector: true
+    },
+    recruit.filter.None
+  )
 }
 
 export { recruitOperation } from './migration'
