@@ -117,8 +117,7 @@ export async function queryApplication (client: Client, search: string): Promise
 async function getActiveTalants (filter: Filter, onUpdate: () => void): Promise<Array<Ref<Doc>>> {
   const promise = new Promise<Array<Ref<Doc>>>((resolve, reject) => {
     let refresh: boolean = false
-    const indexKey = `${filter.index}:${filter.mode}`
-    const lq = FilterQuery.getLiveQuery(indexKey)
+    const lq = FilterQuery.getLiveQuery(filter.index)
     refresh = lq.query(
       recruit.class.Applicant,
       {
@@ -126,7 +125,7 @@ async function getActiveTalants (filter: Filter, onUpdate: () => void): Promise<
       },
       (refs: FindResult<Applicant>) => {
         const result = Array.from(new Set(refs.map((p) => p.attachedTo)))
-        FilterQuery.results.set(indexKey, result)
+        FilterQuery.results.set(filter.index, result)
         resolve(result)
         onUpdate()
       },
@@ -141,7 +140,7 @@ async function getActiveTalants (filter: Filter, onUpdate: () => void): Promise<
     )
 
     if (!refresh) {
-      resolve(FilterQuery.results.get(indexKey) ?? [])
+      resolve(FilterQuery.results.get(filter.index) ?? [])
     }
   })
   return await promise
@@ -150,8 +149,7 @@ async function getActiveTalants (filter: Filter, onUpdate: () => void): Promise<
 async function getNoApplicantCandidates (filter: Filter, onUpdate: () => void): Promise<Array<Ref<Doc>>> {
   const promise = new Promise<Array<Ref<Doc>>>((resolve, reject) => {
     let refresh: boolean = false
-    const indexKey = `${filter.index}:${filter.mode}`
-    const lq = FilterQuery.getLiveQuery(indexKey)
+    const lq = FilterQuery.getLiveQuery(filter.index)
     refresh = lq.query(
       recruit.mixin.Candidate,
       {
@@ -159,7 +157,7 @@ async function getNoApplicantCandidates (filter: Filter, onUpdate: () => void): 
       },
       (refs: FindResult<Candidate>) => {
         const result = Array.from(refs.map((p) => p._id))
-        FilterQuery.results.set(indexKey, result)
+        FilterQuery.results.set(filter.index, result)
         resolve(result)
         onUpdate()
       },
@@ -173,7 +171,7 @@ async function getNoApplicantCandidates (filter: Filter, onUpdate: () => void): 
     )
 
     if (!refresh) {
-      resolve(FilterQuery.results.get(indexKey) ?? [])
+      resolve(FilterQuery.results.get(filter.index) ?? [])
     }
   })
   return await promise

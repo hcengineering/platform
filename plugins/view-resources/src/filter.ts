@@ -50,17 +50,17 @@ export async function nestedDontMatchResult (filter: Filter, onUpdate: () => voi
  * @public
  */
 export const FilterQuery = {
-  queries: new Map<number | string, LiveQuery>(),
-  results: new Map<number | string, Array<Ref<Doc>>>(),
+  queries: new Map<number, LiveQuery>(),
+  results: new Map<number, Array<Ref<Doc>>>(),
 
-  getLiveQuery (index: number | string): LiveQuery {
+  getLiveQuery (index: number): LiveQuery {
     const current = FilterQuery.queries.get(index)
     if (current !== undefined) return current
     const query = createQuery(true)
     this.queries.set(index, query)
     return query
   },
-  remove (index: number | string): void {
+  remove (index: number): void {
     const lq = this.queries.get(index)
     lq?.unsubscribe()
     this.queries.delete(index)
