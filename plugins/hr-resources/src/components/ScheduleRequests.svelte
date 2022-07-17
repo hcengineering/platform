@@ -15,7 +15,7 @@
 <script lang="ts">
   import hr, { Request, RequestType } from '@anticrm/hr'
   import { getClient } from '@anticrm/presentation'
-  import { areDatesEqual, getPlatformColor, Icon, showPopup } from '@anticrm/ui'
+  import { getPlatformColor, Icon, showPopup } from '@anticrm/ui'
   import { ContextMenu } from '@anticrm/view-resources'
 
   export let requests: Request[]
@@ -46,21 +46,19 @@
   }
 </script>
 
-<div class="w-full h-full relative">
+<div class="w-full h-full relative p-1 flex">
   {#each requests as request}
     {#await getType(request) then type}
       {#if type}
         <div
-          class="request"
+          class="request flex-center"
           class:cursor-pointer={editable}
           style={getStyle(type)}
           on:click={(e) => {
             click(e, request)
           }}
         >
-          {#if areDatesEqual(new Date(request.date), date) || date.getDate() === 1}
-            <Icon icon={type.icon} size="large" />
-          {/if}
+          <Icon icon={type.icon} size={Math.abs(type.value % 1) !== 0.5 ? 'large' : 'small'} />
         </div>
       {/if}
     {/await}
@@ -69,8 +67,9 @@
 
 <style lang="scss">
   .request {
-    position: absolute;
-    height: 100%;
-    width: 100%;
+    border-radius: 3px;
+    flex-grow: 1;
+    // height: 100%;
+    width: 30px;
   }
 </style>

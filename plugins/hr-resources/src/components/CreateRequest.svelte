@@ -22,6 +22,7 @@
   import ui, { Button, DateRangePresenter, DropdownLabelsIntl, IconAttachment } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import hr from '../plugin'
+  import { toUTC } from '../utils'
 
   export let staff: Staff
   export let date: Date
@@ -53,20 +54,6 @@
     return description.length === 0
   }
 
-  function toUTC (date: Date | number): number {
-    const res = new Date(date)
-    if (res.getUTCFullYear() !== res.getFullYear()) {
-      res.setUTCFullYear(res.getFullYear())
-    }
-    if (res.getUTCMonth() !== res.getMonth()) {
-      res.setUTCMonth(res.getMonth())
-    }
-    if (res.getUTCDate() !== res.getDate()) {
-      res.setUTCDate(res.getDate())
-    }
-    return res.setUTCHours(12, 0, 0, 0)
-  }
-
   async function saveRequest () {
     let date: number | undefined
     if (value != null) date = value
@@ -79,7 +66,8 @@
       date: toUTC(date),
       dueDate: toUTC(dueDate),
       description,
-      collection: 'requests'
+      collection: 'requests',
+      timezoneOffset: new Date(date).getTimezoneOffset()
     })
     await descriptionBox.createAttachments()
   }

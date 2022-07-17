@@ -13,36 +13,23 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getCurrentAccount, Ref, Timestamp } from '@anticrm/core'
+  import { CalendarMode } from '@anticrm/calendar-resources'
+  import { Employee } from '@anticrm/contact'
+  import { Ref, Timestamp } from '@anticrm/core'
   import type { Department, Request, RequestType, Staff } from '@anticrm/hr'
   import { createQuery } from '@anticrm/presentation'
-  import {
-    Label,
-    daysInMonth,
-    isWeekend,
-    areDatesEqual,
-    day as getDay,
-    getWeekDayName,
-    showPopup,
-    eventToHTMLElement,
-    Scroller,
-    tooltip,
-    LabelAndProps
-  } from '@anticrm/ui'
-  import { EmployeePresenter } from '@anticrm/contact-resources'
-  import { CalendarMode } from '@anticrm/calendar-resources'
-  import contact from '@anticrm/contact-resources/src/plugin'
+  import { Label } from '@anticrm/ui'
   import hr from '../plugin'
-  import { Employee, EmployeeAccount } from '@anticrm/contact'
-  import CreateRequest from './CreateRequest.svelte'
-  import ScheduleRequests from './ScheduleRequests.svelte'
-  import RequestsPopup from './RequestsPopup.svelte'
+  import MonthTableView from './schedule/MonthTableView.svelte'
+  import MonthView from './schedule/MonthView.svelte'
+  import YearView from './schedule/YearView.svelte'
 
   export let department: Ref<Department>
   export let descendants: Map<Ref<Department>, Department[]>
   export let departmentById: Map<Ref<Department>, Department>
   export let currentDate: Date = new Date()
   export let mode: CalendarMode
+  export let display: 'chart' | 'stats'
 
   $: startDate = new Date(
     new Date(mode === CalendarMode.Year ? new Date(currentDate).setMonth(1) : currentDate).setDate(1)
@@ -67,9 +54,14 @@
     )
   })
 
-  staffQuery.query(hr.mixin.Staff, {}, (res) => {
-    staff = res
-  })
+  staffQuery.query(
+    hr.mixin.Staff,
+    {},
+    (res) => {
+      staff = res
+    },
+    { sort: { name: 1 } }
+  )
 
   let employeeRequests = new Map<Ref<Staff>, Request[]>()
 
@@ -106,38 +98,6 @@
 
   $: update(departments, startDate, endDate)
 
-  const todayDate = new Date()
-
-  function getRequests (employee: Ref<Staff>, date: Date): Request[] {
-    const requests = employeeRequests.get(employee)
-    if (requests === undefined) return []
-    const res: Request[] = []
-    const time = date.getTime()
-    const endTime = getEndDate(date)
-    for (const request of requests) {
-      if (request.date <= endTime && request.dueDate > time) {
-        res.push(request)
-      }
-    }
-    return res
-  }
-
-  function createRequest (e: MouseEvent, date: Date, staff: Staff): void {
-    if (!isEditable(staff)) return
-    e.preventDefault()
-    e.stopPropagation()
-    showPopup(
-      CreateRequest,
-      {
-        staff,
-        date
-      },
-      eventToHTMLElement(e)
-    )
-  }
-
-  const currentEmployee = (getCurrentAccount() as EmployeeAccount).employee
-
   function getTeamLead (_id: Ref<Department>): Ref<Employee> | undefined {
     const department = departmentById.get(_id)
     if (department === undefined) return
@@ -145,148 +105,27 @@
     return getTeamLead(department.space)
   }
 
-  function isEditable (employee: Staff): boolean {
-    if (employee._id === currentEmployee) return true
-    const lead = getTeamLead(employee.department)
-    return lead === currentEmployee
-  }
-
-  function getEndDate (date: Date): number {
-    return mode === CalendarMode.Year
-      ? new Date(date).setMonth(date.getMonth() + 1)
-      : new Date(date).setDate(date.getDate() + 1)
-  }
-
-  function getTooltip (requests: Request[], employee: Staff, date: Date): LabelAndProps | undefined {
-    if (requests.length === 0) return
-    const endDate = getEndDate(date)
-    return {
-      component: RequestsPopup,
-      props: { date, endDate, employee: employee._id }
-    }
-  }
-
   $: departmentStaff = staff.filter((p) => departments.includes(p.department) || employeeRequests.has(p._id))
-
-  $: values = [...Array(mode === CalendarMode.Year ? 12 : daysInMonth(currentDate)).keys()]
-
-  function getMonthName (date: Date): string {
-    return new Intl.DateTimeFormat('default', { month: 'long' }).format(date)
-  }
-  function getMonth (date: Date, m: number): Date {
-    date = new Date(date)
-    date.setDate(1)
-    date.setMonth(m)
-    return date
-  }
-
-  function getTotal (requests: Request[]): number {
-    let total = 0
-    for (const request of requests) {
-      const type = types.get(request.type)
-      const days = (request.dueDate - request.date) / 1000 / 60 / 60 / 24
-      total += Math.ceil(days) * (type?.value ?? 0)
-    }
-    return total
-  }
-
-  let hoveredIndex: number = -1
 </script>
 
 {#if departmentStaff.length}
-  <Scroller tableFade>
-    <table>
-      <thead class="scroller-thead">
-        <tr class="scroller-thead__tr">
-          <th>
-            <Label label={contact.string.Employee} />
-          </th>
-          {#each values as value, i}
-            {#if mode === CalendarMode.Year}
-              {@const month = getMonth(currentDate, value)}
-              <th
-                class="fixed"
-                class:today={month.getFullYear() === todayDate.getFullYear() &&
-                  month.getMonth() === todayDate.getMonth()}
-                on:mousemove={() => {
-                  hoveredIndex = i
-                }}
-                on:mouseleave={() => {
-                  hoveredIndex = -1
-                }}
-              >
-                {getMonthName(month)}
-              </th>
-            {:else}
-              {@const day = getDay(new Date(startDate), value)}
-              <th
-                class:today={areDatesEqual(todayDate, day)}
-                class:weekend={isWeekend(day)}
-                on:mousemove={() => {
-                  hoveredIndex = i
-                }}
-                on:mouseleave={() => {
-                  hoveredIndex = -1
-                }}
-              >
-                {getWeekDayName(day, 'short')}
-                <span>{day.getDate()}</span>
-              </th>
-            {/if}
-          {/each}
-        </tr>
-      </thead>
-      <tbody>
-        {#each departmentStaff as employee, row}
-          <tr>
-            <td>
-              <EmployeePresenter value={employee} />
-            </td>
-            {#each values as value, i}
-              {#if mode === CalendarMode.Year}
-                {@const month = getMonth(currentDate, value)}
-                {@const requests = getRequests(employee._id, month)}
-                {@const tooltipValue = getTooltip(requests, employee, month)}
-                {#key tooltipValue}
-                  <td
-                    class:today={month.getFullYear() === todayDate.getFullYear() &&
-                      month.getMonth() === todayDate.getMonth()}
-                    class="fixed"
-                    use:tooltip={tooltipValue}
-                  >
-                    <div class="flex-center">
-                      {getTotal(requests)}
-                    </div>
-                  </td>
-                {/key}
-              {:else}
-                {@const date = getDay(new Date(startDate), value)}
-                {@const requests = getRequests(employee._id, date)}
-                {@const editable = isEditable(employee)}
-                {@const tooltipValue = getTooltip(requests, employee, date)}
-                {#key [tooltipValue, editable]}
-                  <td
-                    class:today={areDatesEqual(todayDate, date)}
-                    class:weekend={isWeekend(date)}
-                    class:cursor-pointer={editable}
-                    class:hovered={i === hoveredIndex}
-                    class:firstLine={row === 0}
-                    class:lastLine={row === departmentStaff.length - 1}
-                    use:tooltip={tooltipValue}
-                    on:click={(e) => createRequest(e, date, employee)}
-                  >
-                    {#if requests.length}
-                      <ScheduleRequests {requests} {date} {editable} />
-                    {/if}
-                  </td>
-                {/key}
-              {/if}
-            {/each}
-          </tr>
-        {/each}
-      </tbody>
-    </table>
-  </Scroller>
+  {#if mode === CalendarMode.Year}
+    <YearView {departmentStaff} {employeeRequests} {types} {currentDate} />
+  {:else if mode === CalendarMode.Month}
+    {#if display === 'chart'}
+      <MonthView
+        {departmentStaff}
+        {employeeRequests}
+        {startDate}
+        {endDate}
+        teamLead={getTeamLead(department)}
+        {types}
+        {currentDate}
+      />
+    {:else if display === 'stats'}
+      <MonthTableView {departmentStaff} {employeeRequests} {startDate} {endDate} {types} {currentDate} />
+    {/if}
+  {/if}
 {:else}
   <div class="flex-center h-full w-full flex-grow fs-title">
     <Label label={hr.string.NoEmployeesInDepartment} />
