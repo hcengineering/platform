@@ -158,7 +158,7 @@ export async function getPresenter<T extends Doc> (
       sortingKey: sortingKey ?? '',
       _class,
       label: label as IntlString,
-      presenter: await getResource(presenter),
+      presenter: typeof presenter === 'string' ? await getResource(presenter) : presenter,
       props: key.props,
       collectionAttr: isCollectionAttr
     }

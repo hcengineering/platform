@@ -128,6 +128,9 @@ export class TRequest extends TAttachedDoc implements Request {
 
   @Prop(TypeDate(false), calendar.string.DueTo)
   dueDate!: Timestamp
+
+  // @Prop(TypeNumber(), calendar.string.Date)
+  timezoneOffset!: number
 }
 
 export function createModel (builder: Builder): void {
@@ -187,7 +190,7 @@ export function createModel (builder: Builder): void {
       label: hr.string.Vacation,
       icon: hr.icon.Vacation,
       color: 2,
-      value: 0
+      value: -1
     },
     hr.ids.Vacation
   )

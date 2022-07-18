@@ -330,7 +330,7 @@ export const viewId = 'view' as Plugin
  */
 export interface BuildModelKey {
   key: string
-  presenter?: AnyComponent
+  presenter?: AnyComponent | AnySvelteComponent
   // A set of extra props passed to presenter.
   props?: Record<string, any>
 

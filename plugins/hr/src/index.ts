@@ -70,9 +70,12 @@ export interface Request extends AttachedDoc {
   comments?: number
   attachments?: number
 
+  // Date always in UTC
   date: Timestamp
-
   dueDate: Timestamp
+
+  // Timezone offset in minutes.
+  timezoneOffset: number
 }
 
 /**

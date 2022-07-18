@@ -33,6 +33,7 @@
   export let options: FindOptions<Doc> | undefined = undefined
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
   export let config: (BuildModelKey | string)[]
+  export let tableId: string | undefined = undefined
 
   // If defined, will show a number of dummy items before real data will appear.
   export let loadingProps: LoadingProps | undefined = undefined
@@ -171,7 +172,7 @@
 {#await buildModel({ client, _class, keys: config, lookup })}
   <Loading />
 {:then model}
-  <table class="antiTable" class:metaColumn={enableChecking || showNotification} class:highlightRows>
+  <table id={tableId} class="antiTable" class:metaColumn={enableChecking || showNotification} class:highlightRows>
     {#if !hiddenHeader}
       <thead class="scroller-thead">
         <tr class="scroller-thead__tr">

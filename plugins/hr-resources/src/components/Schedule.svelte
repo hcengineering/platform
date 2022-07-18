@@ -13,13 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import calendar from '@anticrm/calendar-resources/src/plugin'
   import { CalendarMode } from '@anticrm/calendar-resources'
+  import calendar from '@anticrm/calendar-resources/src/plugin'
   import { Ref } from '@anticrm/core'
   import { Department } from '@anticrm/hr'
+  import { getEmbeddedLabel } from '@anticrm/platform'
   import { createQuery, SpaceSelector } from '@anticrm/presentation'
   import { Button, Icon, IconBack, IconForward, Label } from '@anticrm/ui'
+  import view from '@anticrm/view'
   import hr from '../plugin'
+  import { tableToCSV } from '../utils'
   import ScheduleMonthView from './ScheduleView.svelte'
 
   let department = hr.ids.Head
@@ -31,6 +34,7 @@
   let departments: Map<Ref<Department>, Department> = new Map<Ref<Department>, Department>()
 
   let mode: CalendarMode = CalendarMode.Month
+  let display: 'chart' | 'stats' = 'chart'
 
   query.query(hr.class.Department, {}, (res) => {
     departments.clear()
@@ -116,7 +120,46 @@
       {currentDate.getFullYear()}
     </div>
   </div>
+
+  {#if mode === CalendarMode.Month}
+    <div class="flex ml-4 gap-2">
+      <Button
+        icon={view.icon.Views}
+        selected={display === 'chart'}
+        size={'small'}
+        on:click={() => {
+          display = 'chart'
+        }}
+      />
+      <Button
+        size={'small'}
+        icon={view.icon.Table}
+        selected={display === 'stats'}
+        on:click={() => {
+          display = 'stats'
+        }}
+      />
+    </div>
+    {#if display === 'stats'}
+      <Button
+        label={getEmbeddedLabel('Export')}
+        on:click={() => {
+          // Download it
+          const filename = 'exportStaff' + new Date().toLocaleDateString() + '.csv'
+          const link = document.createElement('a')
+          link.style.display = 'none'
+          link.setAttribute('target', '_blank')
+          link.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(tableToCSV('exportableData')))
+          link.setAttribute('download', filename)
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+        }}
+      />
+    {/if}
+  {/if}
+
   <SpaceSelector _class={hr.class.Department} label={hr.string.Department} bind:space={department} />
 </div>
 
-<ScheduleMonthView {department} {descendants} departmentById={departments} {currentDate} {mode} />
+<ScheduleMonthView {department} {descendants} departmentById={departments} {currentDate} {mode} {display} />
