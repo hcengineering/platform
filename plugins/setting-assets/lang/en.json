@@ -54,6 +54,8 @@
     "Maintainer": "Maintainer",
     "Owner": "Owner",
     "Role": "Role",
-    "FailedToSave": "Failed to update password"
+    "FailedToSave": "Failed to update password",
+    "ImportEnum": "Import enum values",
+    "ImportEnumCopy": "Copy enum values from clipboard"
   }
 }

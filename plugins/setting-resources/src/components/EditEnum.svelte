@@ -14,16 +14,20 @@
 -->
 <script lang="ts">
   import core, { Enum } from '@anticrm/core'
-  import presentation, { Card, getClient } from '@anticrm/presentation'
-  import { ActionIcon, EditBox, IconCheck, IconDelete } from '@anticrm/ui'
+  import presentation, { Card, getClient, MessageBox } from '@anticrm/presentation'
+  import { ActionIcon, EditBox, IconAdd, IconAttachment, IconDelete, Label, ListView, showPopup } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import setting from '../plugin'
+  import Copy from './icons/Copy.svelte'
+  import view from '@anticrm/view-resources/src/plugin'
 
   export let value: Enum | undefined
   let name: string = value?.name ?? ''
   let values: string[] = value?.enumValues ?? []
   const client = getClient()
   const dispatch = createEventDispatcher()
+
+  let list: ListView
 
   async function save (): Promise<void> {
     if (value === undefined) {
@@ -41,7 +45,9 @@
   }
 
   function add () {
-    if (newValue.trim().length === 0) return
+    newValue = newValue.trim()
+    if (newValue.length === 0) return
+    if (values.includes(newValue)) return
     values.push(newValue)
     values = values
     newValue = ''
@@ -52,7 +58,109 @@
   }
 
   let newValue = ''
+  let inputFile: HTMLInputElement
+
+  function processText (text: string): void {
+    const newValues = text.split('\n').map((it) => it.trim())
+    for (const v of newValues) {
+      if (!values.includes(v)) {
+        values.push(v)
+      }
+    }
+    values = values
+    newValue = ''
+  }
+  async function processFile (file: File): Promise<void> {
+    const text = await file.text()
+    processText(text)
+  }
+
+  function fileSelected () {
+    const list = inputFile.files
+    if (list === null || list.length === 0) return
+    for (let index = 0; index < list.length; index++) {
+      const file = list.item(index)
+      if (file !== null) {
+        processFile(file)
+      }
+    }
+    inputFile.value = ''
+  }
+
+  function fileDrop (e: DragEvent) {
+    const list = e.dataTransfer?.files
+    if (list === undefined || list.length === 0) return
+    for (let index = 0; index < list.length; index++) {
+      const file = list.item(index)
+      if (file !== null) {
+        processFile(file)
+      }
+    }
+  }
+  function pasteAction (evt: ClipboardEvent): void {
+    const items = evt.clipboardData?.items ?? []
+    for (const index in items) {
+      const item = items[index]
+      if (item.kind === 'file') {
+        const blob = item.getAsFile()
+        if (blob !== null) {
+          processFile(blob)
+        }
+      }
+    }
+  }
+  async function handleClipboard (): Promise<void> {
+    const text = await navigator.clipboard.readText()
+    processText(text)
+  }
+  let dragover = false
+  let selection: number = 0
+
+  function onKeydown (key: KeyboardEvent): void {
+    if (key.code === 'ArrowUp') {
+      key.stopPropagation()
+      key.preventDefault()
+      list.select(selection - 1)
+    }
+    if (key.code === 'ArrowDown') {
+      key.stopPropagation()
+      key.preventDefault()
+      list.select(selection + 1)
+    }
+  }
+
+  $: filtered = newValue.length > 0 ? values.filter((it) => it.includes(newValue)) : values
+
+  function onDelete () {
+    showPopup(
+      MessageBox,
+      {
+        label: view.string.DeleteObject,
+        message: view.string.DeleteObjectConfirm,
+        params: { count: filtered.length }
+      },
+      undefined,
+      (result?: boolean) => {
+        if (result === true) {
+          values = values.filter((it) => !filtered.includes(it))
+          newValue = ''
+        }
+      }
+    )
+  }
 </script>
+
+<svelte:window on:paste={pasteAction} />
+
+<input
+  bind:this={inputFile}
+  multiple
+  type="file"
+  name="file"
+  id="file"
+  style="display: none"
+  on:change={fileSelected}
+/>
 
 <Card
   label={core.string.Enum}
@@ -63,27 +171,76 @@
     dispatch('close')
   }}
 >
-  <div class="mb-2"><EditBox bind:value={name} placeholder={core.string.Name} maxWidth="13rem" /></div>
-  <div class="flex-between mb-4">
-    <EditBox
-      placeholder={setting.string.NewValue}
-      kind="large-style"
-      bind:value={newValue}
-      maxWidth="13rem"
-    /><ActionIcon icon={IconCheck} label={presentation.string.Add} action={add} size={'small'} />
-  </div>
-  <div class="flex-row">
-    {#each values as value}
-      <div class="flex-between mb-2">
-        {value}<ActionIcon
+  <div on:keydown={onKeydown}>
+    <div class="mb-2">
+      <EditBox bind:value={name} placeholder={core.string.Name} maxWidth="13rem" />
+    </div>
+    <div class="flex-between mb-4">
+      <EditBox placeholder={presentation.string.Search} kind="large-style" bind:value={newValue} maxWidth="13rem" />
+      <div class="flex gap-2">
+        <ActionIcon icon={IconAdd} label={presentation.string.Add} action={add} size={'small'} />
+        <ActionIcon
+          icon={Copy}
+          label={setting.string.ImportEnumCopy}
+          action={() => {
+            handleClipboard()
+          }}
+          size={'small'}
+        />
+        <ActionIcon
           icon={IconDelete}
           label={setting.string.Delete}
           action={() => {
-            remove(value)
+            onDelete()
           }}
           size={'small'}
         />
       </div>
-    {/each}
+    </div>
+    <div class="scroll">
+      <div class="box flex max-h-125">
+        <ListView bind:this={list} count={filtered.length} bind:selection>
+          <svelte:fragment slot="item" let:item>
+            {@const value = filtered[item]}
+            <div class="flex-between flex-nowrap mb-2">
+              <span class="overflow-label">{value}</span>
+              <ActionIcon
+                icon={IconDelete}
+                label={setting.string.Delete}
+                action={() => {
+                  remove(value)
+                }}
+                size={'small'}
+              />
+            </div>
+          </svelte:fragment>
+        </ListView>
+        {#if filtered.length === 0}
+          <Label label={presentation.string.NoMatchesFound} />
+        {/if}
+      </div>
+    </div>
   </div>
+  <svelte:fragment slot="footer">
+    <div
+      class="resume flex gap-2"
+      class:solid={dragover}
+      on:dragover|preventDefault={() => {
+        dragover = true
+      }}
+      on:dragleave={() => {
+        dragover = false
+      }}
+      on:drop|preventDefault|stopPropagation={fileDrop}
+    >
+      <ActionIcon
+        icon={IconAttachment}
+        label={setting.string.ImportEnum}
+        action={() => {
+          inputFile.click()
+        }}
+        size={'small'}
+      />
+    </div>
+  </svelte:fragment>
 </Card>
