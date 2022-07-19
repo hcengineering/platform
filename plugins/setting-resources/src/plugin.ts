@@ -48,6 +48,8 @@ export default mergeIds(settingId, setting, {
     Maintainer: '' as IntlString,
     Owner: '' as IntlString,
     Role: '' as IntlString,
-    FailedToSave: '' as IntlString
+    FailedToSave: '' as IntlString,
+    ImportEnum: '' as IntlString,
+    ImportEnumCopy: '' as IntlString
   }
 })

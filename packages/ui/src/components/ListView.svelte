@@ -76,7 +76,6 @@
 
 <style lang="scss">
   .list-container {
-    background-color: var(--board-card-bg-color);
     border-radius: 0.25rem;
     user-select: none;
 
