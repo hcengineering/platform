@@ -14,7 +14,7 @@
 //
 
 import type { Employee, EmployeeAccount } from '@anticrm/contact'
-import type { Arr, AttachedDoc, Class, Doc, Markup, Mixin, Ref, Space, Timestamp } from '@anticrm/core'
+import type { Arr, AttachedDoc, Class, Doc, Markup, Mixin, Ref, Space, Type } from '@anticrm/core'
 import type { Asset, IntlString, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import { Viewlet } from '@anticrm/view'
@@ -57,6 +57,16 @@ export interface RequestType extends Doc {
 /**
  * @public
  */
+export interface TzDate {
+  year: number
+  month: number
+  day: number
+  offset: number
+}
+
+/**
+ * @public
+ */
 export interface Request extends AttachedDoc {
   attachedTo: Ref<Staff>
 
@@ -71,11 +81,8 @@ export interface Request extends AttachedDoc {
   attachments?: number
 
   // Date always in UTC
-  date: Timestamp
-  dueDate: Timestamp
-
-  // Timezone offset in minutes.
-  timezoneOffset: number
+  tzDate: TzDate
+  tzDueDate: TzDate
 }
 
 /**
@@ -94,7 +101,8 @@ const hr = plugin(hrId, {
     Department: '' as Ref<Class<Department>>,
     DepartmentMember: '' as Ref<Class<DepartmentMember>>,
     Request: '' as Ref<Class<Request>>,
-    RequestType: '' as Ref<Class<RequestType>>
+    RequestType: '' as Ref<Class<RequestType>>,
+    TzDate: '' as Ref<Class<Type<TzDate>>>
   },
   mixin: {
     Staff: '' as Ref<Mixin<Staff>>
@@ -121,7 +129,8 @@ const hr = plugin(hrId, {
     Overtime2: '' as Ref<RequestType>
   },
   viewlet: {
-    TableMember: '' as Ref<Viewlet>
+    TableMember: '' as Ref<Viewlet>,
+    StaffStats: '' as Ref<Viewlet>
   }
 })
 

@@ -39,7 +39,10 @@ export default mergeIds(hrId, hr, {
     DepartmentStaff: '' as AnyComponent,
     DepartmentEditor: '' as AnyComponent,
     Schedule: '' as AnyComponent,
-    EditRequest: '' as AnyComponent
+    EditRequest: '' as AnyComponent,
+    TzDatePresenter: '' as AnyComponent,
+    TzDateEditor: '' as AnyComponent,
+    RequestPresenter: '' as AnyComponent
   },
   category: {
     HR: '' as Ref<ActionCategory>

@@ -20,6 +20,9 @@ import EditDepartment from './components/EditDepartment.svelte'
 import EditRequest from './components/EditRequest.svelte'
 import Schedule from './components/Schedule.svelte'
 import Structure from './components/Structure.svelte'
+import TzDatePresenter from './components/TzDatePresenter.svelte'
+import TzDateEditor from './components/TzDateEditor.svelte'
+import RequestPresenter from './components/RequestPresenter.svelte'
 
 export default async (): Promise<Resources> => ({
   component: {
@@ -28,6 +31,9 @@ export default async (): Promise<Resources> => ({
     DepartmentStaff,
     DepartmentEditor,
     Schedule,
-    EditRequest
+    EditRequest,
+    TzDatePresenter,
+    TzDateEditor,
+    RequestPresenter
   }
 })

@@ -228,6 +228,7 @@
                   </div>
                   <Component
                     is={notification.component.NotificationPresenter}
+                    showLoading={false}
                     props={{ value: docObject, kind: 'table' }}
                   />
                 </div>

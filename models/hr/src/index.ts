@@ -14,8 +14,8 @@
 //
 
 import { Employee } from '@anticrm/contact'
-import { Arr, Class, Domain, DOMAIN_MODEL, IndexKind, Markup, Ref, Timestamp } from '@anticrm/core'
-import { Department, DepartmentMember, hrId, Request, RequestType, Staff } from '@anticrm/hr'
+import { Arr, Class, Domain, DOMAIN_MODEL, IndexKind, Markup, Ref, Type } from '@anticrm/core'
+import { Department, DepartmentMember, hrId, Request, RequestType, Staff, TzDate } from '@anticrm/hr'
 import {
   ArrOf,
   Builder,
@@ -25,7 +25,6 @@ import {
   Mixin,
   Model,
   Prop,
-  TypeDate,
   TypeIntlString,
   TypeMarkup,
   TypeRef,
@@ -36,8 +35,8 @@ import attachment from '@anticrm/model-attachment'
 import calendar from '@anticrm/model-calendar'
 import chunter from '@anticrm/model-chunter'
 import contact, { TEmployee, TEmployeeAccount } from '@anticrm/model-contact'
-import core, { TAttachedDoc, TDoc, TSpace } from '@anticrm/model-core'
-import view, { createAction } from '@anticrm/model-view'
+import core, { TAttachedDoc, TDoc, TSpace, TType } from '@anticrm/model-core'
+import view, { classPresenter, createAction } from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
 import { Asset, IntlString } from '@anticrm/platform'
 import hr from './plugin'
@@ -95,6 +94,22 @@ export class TRequestType extends TDoc implements RequestType {
   color!: number
 }
 
+@Model(hr.class.TzDate, core.class.Type)
+@UX(core.string.Timestamp)
+export class TTzDate extends TType {
+  year!: number
+  month!: number
+  day!: number
+  offset!: number
+}
+
+/**
+ * @public
+ */
+export function TypeTzDate (): Type<TzDate> {
+  return { _class: hr.class.TzDate, label: core.string.Timestamp }
+}
+
 @Model(hr.class.Request, core.class.AttachedDoc, DOMAIN_HR)
 @UX(hr.string.Request, hr.icon.PTO)
 export class TRequest extends TAttachedDoc implements Request {
@@ -123,18 +138,15 @@ export class TRequest extends TAttachedDoc implements Request {
   @Index(IndexKind.FullText)
   description!: Markup
 
-  @Prop(TypeDate(false), calendar.string.Date)
-  date!: Timestamp
+  @Prop(TypeTzDate(), calendar.string.Date)
+  tzDate!: TzDate
 
-  @Prop(TypeDate(false), calendar.string.DueTo)
-  dueDate!: Timestamp
-
-  // @Prop(TypeNumber(), calendar.string.Date)
-  timezoneOffset!: number
+  @Prop(TypeTzDate(), calendar.string.DueTo)
+  tzDueDate!: TzDate
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TDepartment, TDepartmentMember, TRequest, TRequestType, TStaff)
+  builder.createModel(TDepartment, TDepartmentMember, TRequest, TRequestType, TStaff, TTzDate)
 
   builder.createDoc(
     workbench.class.Application,
@@ -182,6 +194,8 @@ export function createModel (builder: Builder): void {
   builder.mixin(hr.class.DepartmentMember, core.class.Class, view.mixin.ArrayEditor, {
     editor: hr.component.DepartmentStaff
   })
+
+  classPresenter(builder, hr.class.TzDate, hr.component.TzDatePresenter, hr.component.TzDateEditor)
 
   builder.createDoc(
     hr.class.RequestType,
@@ -337,6 +351,18 @@ export function createModel (builder: Builder): void {
     hr.viewlet.TableMember
   )
 
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: hr.mixin.Staff,
+      descriptor: view.viewlet.Table,
+      config: [''],
+      hiddenKeys: []
+    },
+    hr.viewlet.StaffStats
+  )
+
   createAction(builder, {
     action: view.actionImpl.ValueSelector,
     actionPopup: view.component.ValueSelector,
@@ -358,6 +384,10 @@ export function createModel (builder: Builder): void {
       application: hr.app.HR,
       group: 'associate'
     }
+  })
+
+  builder.mixin(hr.class.Request, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: hr.component.RequestPresenter
   })
 }
 

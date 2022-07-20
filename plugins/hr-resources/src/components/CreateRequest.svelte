@@ -22,7 +22,7 @@
   import ui, { Button, DateRangePresenter, DropdownLabelsIntl, IconAttachment } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import hr from '../plugin'
-  import { toUTC } from '../utils'
+  import { toTzDate } from '../utils'
 
   export let staff: Staff
   export let date: Date
@@ -59,15 +59,11 @@
     if (value != null) date = value
     if (date === undefined) return
     if (type === undefined) return
-    await client.createDoc(hr.class.Request, staff.department, {
-      attachedTo: staff._id,
-      attachedToClass: staff._class,
+    await client.addCollection(hr.class.Request, staff.department, staff._id, staff._class, 'requests', {
       type: type._id,
-      date: toUTC(date),
-      dueDate: toUTC(dueDate),
-      description,
-      collection: 'requests',
-      timezoneOffset: new Date(date).getTimezoneOffset()
+      tzDate: toTzDate(new Date(date)),
+      tzDueDate: toTzDate(new Date(dueDate)),
+      description
     })
     await descriptionBox.createAttachments()
   }

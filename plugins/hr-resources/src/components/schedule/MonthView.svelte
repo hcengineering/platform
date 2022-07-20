@@ -32,20 +32,20 @@
     tooltip
   } from '@anticrm/ui'
   import hr from '../../plugin'
+  import { fromTzDate, getTotal } from '../../utils'
   import CreateRequest from '../CreateRequest.svelte'
   import RequestsPopup from '../RequestsPopup.svelte'
   import ScheduleRequests from '../ScheduleRequests.svelte'
 
   export let currentDate: Date = new Date()
 
-  export let startDate: number
-  export let endDate: number
+  export let startDate: Date
 
   export let departmentStaff: Staff[]
-  export let types: Map<Ref<RequestType>, RequestType>
 
   export let employeeRequests: Map<Ref<Staff>, Request[]>
   export let teamLead: Ref<Employee> | undefined
+  export let types: Map<Ref<RequestType>, RequestType>
 
   const todayDate = new Date()
 
@@ -56,7 +56,7 @@
     const time = date.getTime()
     const endTime = getEndDate(date)
     for (const request of requests) {
-      if (request.date <= endTime && request.dueDate > time) {
+      if (fromTzDate(request.tzDate) <= endTime && fromTzDate(request.tzDueDate) > time) {
         res.push(request)
       }
     }
@@ -85,15 +85,14 @@
   }
 
   function getEndDate (date: Date): number {
-    return new Date(date).setDate(date.getDate() + 1) - 1
+    return new Date(date).setDate(date.getDate() + 1)
   }
 
-  function getTooltip (requests: Request[], employee: Staff, date: Date): LabelAndProps | undefined {
+  function getTooltip (requests: Request[]): LabelAndProps | undefined {
     if (requests.length === 0) return
-    const endDate = getEndDate(date)
     return {
       component: RequestsPopup,
-      props: { date, endDate, employee: employee._id }
+      props: { requests: requests.map((it) => it._id) }
     }
   }
 
@@ -110,8 +109,9 @@
           <th>
             <Label label={contact.string.Employee} />
           </th>
+          <th>#</th>
           {#each values as value, i}
-            {@const day = getDay(new Date(startDate), value)}
+            {@const day = getDay(startDate, value)}
             <th
               class:today={areDatesEqual(todayDate, day)}
               class:weekend={isWeekend(day)}
@@ -130,15 +130,19 @@
       </thead>
       <tbody>
         {#each departmentStaff as employee, row}
+          {@const requests = employeeRequests.get(employee._id) ?? []}
           <tr>
             <td>
               <EmployeePresenter value={employee} />
             </td>
+            <td class="flex-center p-1" class:firstLine={row === 0} class:lastLine={row === departmentStaff.length - 1}>
+              {getTotal(requests, types)}
+            </td>
             {#each values as value, i}
-              {@const date = getDay(new Date(startDate), value)}
+              {@const date = getDay(startDate, value)}
               {@const requests = getRequests(employee._id, date)}
               {@const editable = isEditable(employee)}
-              {@const tooltipValue = getTooltip(requests, employee, date)}
+              {@const tooltipValue = getTooltip(requests)}
               {#key [tooltipValue, editable]}
                 <td
                   class:today={areDatesEqual(todayDate, date)}

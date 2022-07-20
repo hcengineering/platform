@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Ref, SortingOrder } from '@anticrm/core'
-  import { IntlString, translate } from '@anticrm/platform'
+  import { getEmbeddedLabel, IntlString, translate } from '@anticrm/platform'
   import { createQuery } from '@anticrm/presentation'
   import { Project } from '@anticrm/tracker'
   import type { ButtonKind, ButtonSize } from '@anticrm/ui'
@@ -89,32 +89,14 @@
   }
 </script>
 
-{#if onlyIcon}
-  <Button
-    {kind}
-    {size}
-    {shape}
-    {width}
-    {justify}
-    icon={projectIcon}
-    disabled={!isEditable}
-    on:click={handleProjectEditorOpened}
-  />
-{:else}
-  <Button
-    {kind}
-    {size}
-    {shape}
-    {width}
-    {justify}
-    icon={projectIcon}
-    disabled={!isEditable}
-    on:click={handleProjectEditorOpened}
-  >
-    <svelte:fragment slot="content">
-      {#if projectText}
-        <span class="overflow-label disabled">{projectText}</span>
-      {/if}
-    </svelte:fragment>
-  </Button>
-{/if}
+<Button
+  {kind}
+  {size}
+  {shape}
+  {width}
+  {justify}
+  label={onlyIcon || projectText === undefined ? undefined : getEmbeddedLabel(projectText)}
+  icon={projectIcon}
+  disabled={!isEditable}
+  on:click={handleProjectEditorOpened}
+/>

@@ -13,8 +13,9 @@
 // limitations under the License.
 //
 
-import { DOMAIN_TX, SortingOrder, TxCreateDoc, TxOperations, TxUpdateDoc } from '@anticrm/core'
-import { Request } from '@anticrm/hr'
+import { Employee } from '@anticrm/contact'
+import { DOMAIN_TX, TxCollectionCUD, TxCreateDoc, TxOperations, TxUpdateDoc } from '@anticrm/core'
+import { Request, TzDate } from '@anticrm/hr'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
 import core from '@anticrm/model-core'
 import hr, { DOMAIN_HR } from './index'
@@ -40,102 +41,72 @@ async function createSpace (tx: TxOperations): Promise<void> {
   }
 }
 
-function toUTC (date: Date | number): number {
+function toTzDate (date: number): TzDate {
   const res = new Date(date)
-  if (res.getUTCFullYear() !== res.getFullYear()) {
-    res.setUTCFullYear(res.getFullYear())
+  return {
+    year: res.getFullYear(),
+    month: res.getMonth(),
+    day: res.getDate(),
+    offset: res.getTimezoneOffset()
   }
-  if (res.getUTCMonth() !== res.getMonth()) {
-    res.setUTCMonth(res.getMonth())
-  }
-  if (res.getUTCDate() !== res.getDate()) {
-    res.setUTCDate(res.getDate())
-  }
-  return res.setUTCHours(12, 0, 0, 0)
-}
-
-function isDefault (date: number, due: number): boolean {
-  const start = new Date(date)
-  const end = new Date(due)
-  if (start.getDate() === end.getDate() && end.getHours() - start.getHours() === 12) {
-    return true
-  }
-  if (start.getDate() + 1 === end.getDate() && end.getHours() === start.getHours()) {
-    return true
-  }
-  return false
 }
 
 async function migrateRequestTime (client: MigrationClient, request: Request): Promise<void> {
-  const date = toUTC(request.date)
-  const dueDate = isDefault(request.date, request.dueDate) ? date : toUTC(request.dueDate)
+  const date = toTzDate((request as any).date as unknown as number)
+  const dueDate = toTzDate((request as any).dueDate as unknown as number)
   await client.update(
     DOMAIN_HR,
     { _id: request._id },
     {
-      date,
-      dueDate
+      tzDate: date,
+      tzDueDate: dueDate
     }
   )
 
-  const updateDateTx = (
-    await client.find<TxUpdateDoc<Request>>(
-      DOMAIN_TX,
-      { _class: core.class.TxUpdateDoc, objectId: request._id, 'operations.date': { $exists: true } },
-      { sort: { modifiedOn: SortingOrder.Descending } }
-    )
-  )[0]
-  if (updateDateTx !== undefined) {
-    const operations = updateDateTx.operations
-    operations.dueDate = date
-    await client.update(
-      DOMAIN_TX,
-      { _id: updateDateTx._id },
-      {
-        operations
-      }
-    )
-  }
-  const updateDueTx = (
-    await client.find<TxUpdateDoc<Request>>(
-      DOMAIN_TX,
-      { _class: core.class.TxUpdateDoc, objectId: request._id, 'operations.dueDate': { $exists: true } },
-      { sort: { modifiedOn: SortingOrder.Descending } }
-    )
-  )[0]
-  if (updateDueTx !== undefined) {
-    const operations = updateDueTx.operations
-    operations.dueDate = dueDate
-    await client.update(
-      DOMAIN_TX,
-      { _id: updateDateTx._id },
-      {
-        operations
-      }
-    )
-  }
+  const txes = await client.find<TxCollectionCUD<Employee, Request>>(DOMAIN_TX, {
+    'tx._class': { $in: [core.class.TxCreateDoc, core.class.TxUpdateDoc] },
+    'tx.objectId': request._id
+  })
 
-  if (updateDueTx === undefined || updateDateTx === undefined) {
-    const createTx = (
-      await client.find<TxCreateDoc<Request>>(
+  for (const utx of txes) {
+    if (utx.tx._class === core.class.TxCreateDoc) {
+      const ctx = utx.tx as TxCreateDoc<Request>
+      const { date, dueDate, ...attributes } = ctx.attributes as any
+      await client.update(
         DOMAIN_TX,
-        { _class: core.class.TxCreateDoc, objectId: request._id },
-        { sort: { modifiedOn: SortingOrder.Descending } }
+        { _id: utx._id },
+        {
+          tx: {
+            ...ctx,
+            attributes: {
+              ...attributes,
+              tzDate: toTzDate(date as unknown as number),
+              tzDueDate: toTzDate((dueDate ?? date) as unknown as number)
+            }
+          }
+        }
       )
-    )[0]
-    if (createTx !== undefined) {
-      const attributes = createTx.attributes
-      if (updateDateTx === undefined) {
-        attributes.date = date
+    }
+    if (utx.tx._class === core.class.TxUpdateDoc) {
+      const ctx = utx.tx as TxUpdateDoc<Request>
+      const { date, dueDate, ...operations } = ctx.operations as any
+      const ops: any = {
+        ...operations
       }
-      if (updateDueTx === undefined) {
-        attributes.dueDate = dueDate
+      if (date !== undefined) {
+        ops.tzDate = toTzDate(date as unknown as number)
+      }
+      if (dueDate !== undefined) {
+        ops.tzDueDate = toTzDate(dueDate as unknown as number)
       }
       await client.update(
         DOMAIN_TX,
-        { _id: createTx._id },
+        { _id: utx._id },
         {
-          attributes
+          tx: {
+            ...ctx,
+            operations: ops
+          }
         }
       )
     }
@@ -143,7 +114,34 @@ async function migrateRequestTime (client: MigrationClient, request: Request): P
 }
 
 async function migrateTime (client: MigrationClient): Promise<void> {
-  const requests = await client.find<Request>(DOMAIN_HR, { _class: hr.class.Request })
+  const createTxes = await client.find<TxCreateDoc<Request>>(DOMAIN_TX, {
+    _class: core.class.TxCreateDoc,
+    objectClass: hr.class.Request
+  })
+  for (const tx of createTxes) {
+    await client.update(
+      DOMAIN_TX,
+      { _id: tx._id },
+      {
+        _class: core.class.TxCollectionCUD,
+        tx: tx,
+        collection: tx.attributes.collection,
+        objectId: tx.attributes.attachedTo,
+        objectClass: tx.attributes.attachedToClass
+      }
+    )
+    await client.update(
+      DOMAIN_TX,
+      { _id: tx._id },
+      {
+        $unset: {
+          attributes: ''
+        }
+      }
+    )
+  }
+
+  const requests = await client.find<Request>(DOMAIN_HR, { _class: hr.class.Request, tzDate: { $exists: false } })
   for (const request of requests) {
     await migrateRequestTime(client, request)
   }

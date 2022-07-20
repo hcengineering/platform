@@ -17,12 +17,10 @@
   import calendar from '@anticrm/calendar-resources/src/plugin'
   import { Ref } from '@anticrm/core'
   import { Department } from '@anticrm/hr'
-  import { getEmbeddedLabel } from '@anticrm/platform'
   import { createQuery, SpaceSelector } from '@anticrm/presentation'
   import { Button, Icon, IconBack, IconForward, Label } from '@anticrm/ui'
   import view from '@anticrm/view'
   import hr from '../plugin'
-  import { tableToCSV } from '../utils'
   import ScheduleMonthView from './ScheduleView.svelte'
 
   let department = hr.ids.Head
@@ -140,23 +138,6 @@
         }}
       />
     </div>
-    {#if display === 'stats'}
-      <Button
-        label={getEmbeddedLabel('Export')}
-        on:click={() => {
-          // Download it
-          const filename = 'exportStaff' + new Date().toLocaleDateString() + '.csv'
-          const link = document.createElement('a')
-          link.style.display = 'none'
-          link.setAttribute('target', '_blank')
-          link.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(tableToCSV('exportableData')))
-          link.setAttribute('download', filename)
-          document.body.appendChild(link)
-          link.click()
-          document.body.removeChild(link)
-        }}
-      />
-    {/if}
   {/if}
 
   <SpaceSelector _class={hr.class.Department} label={hr.string.Department} bind:space={department} />
