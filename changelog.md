@@ -1,11 +1,21 @@
 # Changelog
 
-## 0.6.31 (upcoming)
+## 0.6.32 (upcoming)
+
+## 0.6.31
 
 Core:
 
 - Fix password change settings
 - Fix settings collapse
+- Allow to add multiple enum values
+- Fix password change issues
+- Fix minxin query
+
+HR:
+
+- Talant with Active/Inactive Application filter
+- Improve PTO table statistics
 
 ## 0.6.30
 

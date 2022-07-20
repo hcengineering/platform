@@ -18,27 +18,9 @@
   import { Request, Staff } from '@anticrm/hr'
 
   export let value: Staff
-  export let employeeRequests: Map<Ref<Staff>, Request[]>
   export let display: (requests: Request[]) => number | string
   export let month: Date
-
-  function getEndDate (date: Date): number {
-    return new Date(date).setMonth(date.getMonth() + 1)
-  }
-
-  function getRequests (employee: Ref<Staff>, date: Date): Request[] {
-    const requests = employeeRequests.get(employee)
-    if (requests === undefined) return []
-    const res: Request[] = []
-    const time = date.getTime()
-    const endTime = getEndDate(date)
-    for (const request of requests) {
-      if (request.date <= endTime && request.dueDate > time) {
-        res.push(request)
-      }
-    }
-    return res
-  }
+  export let getRequests: (employee: Ref<Staff>, date: Date) => Request[]
 
   $: reqs = getRequests(value._id, month)
   $: _value = display(reqs)

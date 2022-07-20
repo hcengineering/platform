@@ -1,6 +1,6 @@
 import { Employee, formatName } from '@anticrm/contact'
 import { Ref, TxOperations } from '@anticrm/core'
-import { Department, Request, RequestType } from '@anticrm/hr'
+import { Department, Request, RequestType, TzDate } from '@anticrm/hr'
 import { MessageBox } from '@anticrm/presentation'
 import { showPopup } from '@anticrm/ui'
 import hr from './plugin'
@@ -56,18 +56,27 @@ export async function addMember (client: TxOperations, employee?: Employee, valu
 /**
  * @public
  */
-export function toUTC (date: Date | number, hours = 12, mins = 0, sec = 0): number {
-  const res = new Date(date)
-  if (res.getUTCFullYear() !== res.getFullYear()) {
-    res.setUTCFullYear(res.getFullYear())
+export function toTzDate (date: Date): TzDate {
+  return {
+    year: date.getFullYear(),
+    month: date.getMonth(),
+    day: date.getDate(),
+    offset: date.getTimezoneOffset()
   }
-  if (res.getUTCMonth() !== res.getMonth()) {
-    res.setUTCMonth(res.getMonth())
-  }
-  if (res.getUTCDate() !== res.getDate()) {
-    res.setUTCDate(res.getDate())
-  }
-  return res.setUTCHours(hours, mins, sec, 0)
+}
+
+/**
+ * @public
+ */
+export function fromTzDate (tzDate: TzDate): number {
+  return new Date().setFullYear(tzDate?.year ?? 0, tzDate.month, tzDate.day)
+}
+
+/**
+ * @public
+ */
+export function tzDateEqual (tzDate: TzDate, tzDate2: TzDate): boolean {
+  return tzDate.year === tzDate2.year && tzDate.month === tzDate2.month && tzDate.day === tzDate2.day
 }
 
 /**
@@ -97,11 +106,9 @@ export function getTotal (
   let total = 0
   for (const request of requests) {
     const type = types.get(request.type)
-    let days = Math.abs((request.dueDate - request.date) / 1000 / 60 / 60 / 24)
-    if (days === 0) {
-      days = 1
-    }
-    const stDate = new Date(request.date)
+    const days =
+      Math.floor(Math.abs((1 + fromTzDate(request.tzDueDate) - fromTzDate(request.tzDate)) / 1000 / 60 / 60 / 24)) + 1
+    const stDate = new Date(fromTzDate(request.tzDate))
     const stDateDate = stDate.getDate()
     let ds = Array.from(Array(days).keys()).map((it) => stDateDate + it)
     if ((type?.value ?? -1) < 0) {

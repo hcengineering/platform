@@ -15,7 +15,7 @@
 <script lang="ts">
   import { CalendarMode } from '@anticrm/calendar-resources'
   import { Employee } from '@anticrm/contact'
-  import { Ref, Timestamp } from '@anticrm/core'
+  import { Ref } from '@anticrm/core'
   import type { Department, Request, RequestType, Staff } from '@anticrm/hr'
   import { createQuery } from '@anticrm/presentation'
   import { Label } from '@anticrm/ui'
@@ -33,11 +33,12 @@
 
   $: startDate = new Date(
     new Date(mode === CalendarMode.Year ? new Date(currentDate).setMonth(1) : currentDate).setDate(1)
-  ).setHours(0, 0, 0, 0)
-  $: endDate =
+  )
+  $: endDate = new Date(
     mode === CalendarMode.Year
       ? new Date(startDate).setFullYear(new Date(startDate).getFullYear() + 1)
       : new Date(startDate).setMonth(new Date(startDate).getMonth() + 1)
+  )
   $: departments = [department, ...getDescendants(department, descendants)]
 
   const lq = createQuery()
@@ -76,12 +77,14 @@
     return res
   }
 
-  function update (departments: Ref<Department>[], startDate: Timestamp, endDate: Timestamp) {
+  function update (departments: Ref<Department>[], startDate: Date, endDate: Date) {
     lq.query(
       hr.class.Request,
       {
-        dueDate: { $gte: startDate },
-        date: { $lt: endDate },
+        'tzDueDate.year': { $gte: startDate.getFullYear() },
+        'tzDueDate.month': { $gte: startDate.getMonth() },
+        'tzDate.year': { $lte: endDate.getFullYear() },
+        'tzDate.month': { $lte: endDate.getFullYear() },
         space: { $in: departments }
       },
       (res) => {
@@ -116,14 +119,13 @@
       <MonthView
         {departmentStaff}
         {employeeRequests}
-        {startDate}
-        {endDate}
-        teamLead={getTeamLead(department)}
         {types}
+        {startDate}
+        teamLead={getTeamLead(department)}
         {currentDate}
       />
     {:else if display === 'stats'}
-      <MonthTableView {departmentStaff} {employeeRequests} {startDate} {endDate} {types} {currentDate} />
+      <MonthTableView {departmentStaff} {employeeRequests} {types} {currentDate} />
     {/if}
   {/if}
 {:else}

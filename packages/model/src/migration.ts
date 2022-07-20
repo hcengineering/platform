@@ -1,4 +1,5 @@
 import {
+  ArrayAsElementPosition,
   Client,
   Doc,
   DocumentQuery,
@@ -6,6 +7,7 @@ import {
   FindOptions,
   IncOptions,
   ObjQueryType,
+  OmitNever,
   PushOptions,
   Ref
 } from '@anticrm/core'
@@ -13,9 +15,17 @@ import {
 /**
  * @public
  */
+export interface UnsetOptions<T extends object> {
+  $unset?: Partial<OmitNever<ArrayAsElementPosition<Required<T>>>>
+}
+
+/**
+ * @public
+ */
 export type MigrateUpdate<T extends Doc> = Partial<T> &
 Omit<PushOptions<T>, '$move'> &
-IncOptions<T> & {
+IncOptions<T> &
+UnsetOptions<T> & {
   // For any other mongo stuff
   [key: string]: any
 }

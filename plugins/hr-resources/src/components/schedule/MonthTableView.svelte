@@ -13,19 +13,18 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { FindOptions, Ref } from '@anticrm/core'
+  import { Doc, Ref } from '@anticrm/core'
   import type { Request, RequestType, Staff } from '@anticrm/hr'
   import { getEmbeddedLabel } from '@anticrm/platform'
-  import { Label, Scroller } from '@anticrm/ui'
-  import { Table } from '@anticrm/view-resources'
+  import { createQuery, getClient } from '@anticrm/presentation'
+  import { Button, Label, Loading, Scroller } from '@anticrm/ui'
+  import view, { BuildModelKey, Viewlet, ViewletPreference } from '@anticrm/view'
+  import { Table, ViewletSettingButton } from '@anticrm/view-resources'
   import hr from '../../plugin'
-  import { getMonth, getTotal, weekDays } from '../../utils'
+  import { fromTzDate, getMonth, getTotal, tableToCSV, weekDays } from '../../utils'
   import NumberPresenter from './StatPresenter.svelte'
 
   export let currentDate: Date = new Date()
-
-  export let startDate: number
-  export let endDate: number
 
   export let departmentStaff: Staff[]
   export let types: Map<Ref<RequestType>, RequestType>
@@ -35,91 +34,203 @@
   $: month = getMonth(currentDate, currentDate.getMonth())
   $: wDays = weekDays(month.getUTCFullYear(), month.getUTCMonth())
 
-  const options: FindOptions<Staff> = {
-    lookup: {
-      department: hr.class.Department
-    }
-  }
-
-  function getDateRange (req: Request): string {
-    const st = new Date(req.date).getDate()
-    let days = Math.abs((req.dueDate - req.date) / 1000 / 60 / 60 / 24)
-    if (days === 0) {
-      days = 1
-    }
-    const stDate = new Date(req.date)
+  function getDateRange (request: Request): string {
+    const st = new Date(fromTzDate(request.tzDate)).getDate()
+    const days =
+      Math.floor(Math.abs((1 + fromTzDate(request.tzDueDate) - fromTzDate(request.tzDate)) / 1000 / 60 / 60 / 24)) + 1
+    const stDate = new Date(fromTzDate(request.tzDate))
     let ds = Array.from(Array(days).keys()).map((it) => st + it)
-    const type = types.get(req.type)
+    const type = types.get(request.type)
     if ((type?.value ?? -1) < 0) {
       ds = ds.filter((it) => ![0, 6].includes(new Date(stDate.setDate(it)).getDay()))
     }
     return ds.join(' ')
   }
 
-  $: typevals = Array.from(
-    Array.from(types.values()).map((it) => ({
-      key: '',
-      label: it.label,
-      presenter: NumberPresenter,
-      props: {
-        month: month ?? getMonth(currentDate, currentDate.getMonth()),
-        employeeRequests,
-        display: (req: Request[]) =>
-          req
-            .filter((r) => r.type === it._id)
-            .map((it) => getDateRange(it))
-            .join(' ')
+  function getEndDate (date: Date): number {
+    return new Date(date).setMonth(date.getMonth() + 1)
+  }
+  function getRequests (employee: Ref<Staff>, date: Date): Request[] {
+    const requests = employeeRequests.get(employee)
+    if (requests === undefined) return []
+    const res: Request[] = []
+    const time = date.getTime()
+    const endTime = getEndDate(date)
+    for (const request of requests) {
+      if (fromTzDate(request.tzDate) <= endTime && fromTzDate(request.tzDueDate) > time) {
+        res.push(request)
       }
-    }))
+    }
+    return res
+  }
+
+  $: typevals = new Map<string, BuildModelKey>(
+    Array.from(types.values()).map((it) => [
+      it.label as string,
+      {
+        key: '',
+        label: it.label,
+        presenter: NumberPresenter,
+        props: {
+          month: month ?? getMonth(currentDate, currentDate.getMonth()),
+          display: (req: Request[]) =>
+            req
+              .filter((r) => r.type === it._id)
+              .map((it) => getDateRange(it))
+              .join(' '),
+          getRequests
+        }
+      }
+    ])
   )
 
-  $: config = [
-    '',
-    '$lookup.department',
-    {
-      key: '',
-      label: getEmbeddedLabel('Working days'),
-      presenter: NumberPresenter,
-      props: {
-        month: month ?? getMonth(currentDate, currentDate.getMonth()),
-        employeeRequests,
-        display: (req: Request[]) => wDays + getTotal(req, types)
+  $: overrideConfig = new Map<string, BuildModelKey>([
+    [
+      '@wdCount',
+      {
+        key: '',
+        label: getEmbeddedLabel('Working days'),
+        presenter: NumberPresenter,
+        props: {
+          month: month ?? getMonth(currentDate, currentDate.getMonth()),
+          display: (req: Request[]) => wDays + getTotal(req, types),
+          getRequests
+        },
+        sortingKey: '@wdCount',
+        sortingFunction: (a: Doc, b: Doc) =>
+          getTotal(getRequests(b._id as Ref<Staff>, month), types) -
+          getTotal(getRequests(a._id as Ref<Staff>, month), types)
       }
-    },
-    {
-      key: '',
-      label: getEmbeddedLabel('PTOs'),
-      presenter: NumberPresenter,
-      props: {
-        month: month ?? getMonth(currentDate, currentDate.getMonth()),
-        employeeRequests,
-        display: (req: Request[]) => getTotal(req, types, (a) => (a < 0 ? Math.abs(a) : 0))
+    ],
+    [
+      '@ptoCount',
+      {
+        key: '',
+        label: getEmbeddedLabel('PTOs'),
+        presenter: NumberPresenter,
+        props: {
+          month: month ?? getMonth(currentDate, currentDate.getMonth()),
+          display: (req: Request[]) => getTotal(req, types, (a) => (a < 0 ? Math.abs(a) : 0)),
+          getRequests
+        },
+        sortingKey: '@ptoCount',
+        sortingFunction: (a: Doc, b: Doc) =>
+          getTotal(getRequests(b._id as Ref<Staff>, month), types, (a) => (a < 0 ? Math.abs(a) : 0)) -
+          getTotal(getRequests(a._id as Ref<Staff>, month), types, (a) => (a < 0 ? Math.abs(a) : 0))
       }
-    },
-    {
-      key: '',
-      label: getEmbeddedLabel('EXTRa'),
-      presenter: NumberPresenter,
-      props: {
-        month: month ?? getMonth(currentDate, currentDate.getMonth()),
-        employeeRequests,
-        display: (req: Request[]) => getTotal(req, types, (a) => (a > 0 ? Math.abs(a) : 0))
+    ],
+    [
+      '@extraCount',
+      {
+        key: '',
+        label: getEmbeddedLabel('EXTRa'),
+        presenter: NumberPresenter,
+        props: {
+          month: month ?? getMonth(currentDate, currentDate.getMonth()),
+          display: (req: Request[]) => getTotal(req, types, (a) => (a > 0 ? Math.abs(a) : 0)),
+          getRequests
+        },
+        sortingKey: '@extraCount',
+        sortingFunction: (a: Doc, b: Doc) =>
+          getTotal(getRequests(b._id as Ref<Staff>, month), types, (a) => (a > 0 ? Math.abs(a) : 0)) -
+          getTotal(getRequests(a._id as Ref<Staff>, month), types, (a) => (a > 0 ? Math.abs(a) : 0))
       }
-    },
-    ...(typevals ?? [])
-  ]
+    ],
+    ...typevals
+  ])
+
+  const preferenceQuery = createQuery()
+  let preference: ViewletPreference | undefined
+  let descr: Viewlet | undefined
+
+  $: updateDescriptor(hr.viewlet.StaffStats)
+
+  const client = getClient()
+
+  let loading = false
+
+  function updateDescriptor (id: Ref<Viewlet>) {
+    loading = true
+    client
+      .findOne<Viewlet>(view.class.Viewlet, {
+        _id: id
+      })
+      .then((res) => {
+        descr = res
+        if (res !== undefined) {
+          preferenceQuery.query(
+            view.class.ViewletPreference,
+            {
+              attachedTo: res._id
+            },
+            (res) => {
+              preference = res[0]
+              loading = false
+            },
+            { limit: 1 }
+          )
+        }
+      })
+  }
+
+  function createConfig (descr: Viewlet, preference: ViewletPreference | undefined): (string | BuildModelKey)[] {
+    const base = preference?.config ?? descr.config
+    const result: (string | BuildModelKey)[] = []
+
+    for (const c of overrideConfig.values()) {
+      base.push(c)
+    }
+    for (const key of base) {
+      if (typeof key === 'string') {
+        result.push(overrideConfig.get(key) ?? key)
+      } else {
+        result.push(overrideConfig.get(key.key) ?? key)
+      }
+    }
+    return result
+  }
 </script>
 
 {#if departmentStaff.length}
   <Scroller tableFade>
     <div class="p-2">
-      <Table
-        tableId={'exportableData'}
-        _class={hr.mixin.Staff}
-        query={{ _id: { $in: departmentStaff.map((it) => it._id) } }}
-        {config}
-        {options}
-      />
+      {#if descr}
+        {#if loading}
+          <Loading />
+        {:else}
+          <div class="flex-row-center flex-reverse">
+            <div class="ml-1">
+              <ViewletSettingButton viewlet={descr} />
+            </div>
+            <Button
+              label={getEmbeddedLabel('Export')}
+              size={'small'}
+              on:click={() => {
+                // Download it
+                const filename = 'exportStaff' + new Date().toLocaleDateString() + '.csv'
+                const link = document.createElement('a')
+                link.style.display = 'none'
+                link.setAttribute('target', '_blank')
+                link.setAttribute(
+                  'href',
+                  'data:text/csv;charset=utf-8,' + encodeURIComponent(tableToCSV('exportableData'))
+                )
+                link.setAttribute('download', filename)
+                document.body.appendChild(link)
+                link.click()
+                document.body.removeChild(link)
+              }}
+            />
+          </div>
+          <Table
+            tableId={'exportableData'}
+            _class={hr.mixin.Staff}
+            query={{ _id: { $in: departmentStaff.map((it) => it._id) } }}
+            config={createConfig(descr, preference)}
+            options={descr.options}
+          />
+        {/if}
+      {/if}
     </div>
   </Scroller>
 {:else}

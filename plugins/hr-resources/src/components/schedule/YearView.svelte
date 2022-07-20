@@ -19,7 +19,7 @@
   import type { Request, RequestType, Staff } from '@anticrm/hr'
   import { Label, LabelAndProps, Scroller, tooltip } from '@anticrm/ui'
   import hr from '../../plugin'
-  import { getMonth, getTotal, weekDays } from '../../utils'
+  import { fromTzDate, getMonth, getTotal, weekDays } from '../../utils'
   import RequestsPopup from '../RequestsPopup.svelte'
 
   export let currentDate: Date = new Date()
@@ -38,7 +38,7 @@
     const time = date.getTime()
     const endTime = getEndDate(date)
     for (const request of requests) {
-      if (request.date <= endTime && request.dueDate > time) {
+      if (fromTzDate(request.tzDate) <= endTime && fromTzDate(request.tzDueDate) > time) {
         res.push(request)
       }
     }
@@ -49,12 +49,11 @@
     return new Date(date).setMonth(date.getMonth() + 1)
   }
 
-  function getTooltip (requests: Request[], employee: Staff, date: Date): LabelAndProps | undefined {
+  function getTooltip (requests: Request[]): LabelAndProps | undefined {
     if (requests.length === 0) return
-    const endDate = getEndDate(date)
     return {
       component: RequestsPopup,
-      props: { date, endDate, employee: employee._id }
+      props: { requests: requests.map((it) => it._id) }
     }
   }
 
@@ -119,7 +118,7 @@
             {#each values as value, i}
               {@const month = getMonth(currentDate, value)}
               {@const requests = getRequests(employeeRequests, employee._id, month)}
-              {@const tooltipValue = getTooltip(requests, employee, month)}
+              {@const tooltipValue = getTooltip(requests)}
               {#key tooltipValue}
                 <td
                   class:today={month.getFullYear() === todayDate.getFullYear() &&
