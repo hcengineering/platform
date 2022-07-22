@@ -23,6 +23,7 @@
   import { showPopup } from '@anticrm/ui'
   import {
     ActionContext,
+    FilterBar,
     focusStore,
     ListSelectionProvider,
     SelectDirection,
@@ -102,6 +103,8 @@
     listProvider.updateSelection(evt.detail.docs, evt.detail.value)
   }
   const onContextMenu = (evt: any) => showMenu(evt.detail.evt, evt.detail.objects)
+  $: query = { doneState: null, space }
+  let resultQuery = query
 </script>
 
 {#await cardPresenter then presenter}
@@ -110,13 +113,14 @@
       mode: 'browser'
     }}
   />
+  <FilterBar {_class} {query} on:change={(e) => (resultQuery = e.detail)} />
 
   <KanbanUI
     bind:this={kanbanUI}
     {_class}
     {search}
     {options}
-    query={{ doneState: null, space }}
+    query={resultQuery}
     {states}
     fieldName={'state'}
     rankFieldName={'rank'}
