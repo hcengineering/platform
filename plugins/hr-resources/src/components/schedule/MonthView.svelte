@@ -136,7 +136,7 @@
               <EmployeePresenter value={employee} />
             </td>
             <td class="flex-center p-1" class:firstLine={row === 0} class:lastLine={row === departmentStaff.length - 1}>
-              {getTotal(requests, types)}
+              {getTotal(requests, startDate.getMonth(), types)}
             </td>
             {#each values as value, i}
               {@const date = getDay(startDate, value)}

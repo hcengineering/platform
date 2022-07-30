@@ -127,7 +127,7 @@
                   use:tooltip={tooltipValue}
                 >
                   <div class="flex-center">
-                    {getTotal(requests, types)}
+                    {getTotal(requests, value, types)}
                   </div>
                 </td>
               {/key}
