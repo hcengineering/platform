@@ -146,7 +146,7 @@
     statusStates: TypeState[],
     priorityStates: TypeState[]
   ) {
-    if (!showEmptyGroups) return states
+    if (!showEmptyGroups && states.length > 0) return states
     if (groupBy === IssuesGrouping.Status) return statusStates
     if (groupBy === IssuesGrouping.Priority) return priorityStates
     return []
