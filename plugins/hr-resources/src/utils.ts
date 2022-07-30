@@ -2,7 +2,7 @@ import { Employee, formatName } from '@anticrm/contact'
 import { Ref, TxOperations } from '@anticrm/core'
 import { Department, Request, RequestType, TzDate } from '@anticrm/hr'
 import { MessageBox } from '@anticrm/presentation'
-import { showPopup } from '@anticrm/ui'
+import { isWeekend, showPopup } from '@anticrm/ui'
 import hr from './plugin'
 
 export async function addMember (client: TxOperations, employee?: Employee, value?: Department): Promise<void> {
@@ -98,22 +98,34 @@ export function getMonth (date: Date, m: number): Date {
   return date
 }
 
+export function getRequestDays (request: Request, types: Map<Ref<RequestType>, RequestType>, month: number): number[] {
+  const type = types.get(request.type)
+  const startDate =
+    request.tzDate.month === month ? fromTzDate(request.tzDate) : fromTzDate({ ...request.tzDate, month, day: 1 })
+  const endDate =
+    request.tzDueDate.month === month
+      ? fromTzDate(request.tzDueDate)
+      : fromTzDate({ ...request.tzDueDate, month: month + 1, day: -1 })
+  const days = Math.floor(Math.abs((1 + endDate - startDate) / 1000 / 60 / 60 / 24)) + 1
+  const stDate = new Date(startDate)
+  const stDateDate = stDate.getDate()
+  let ds = Array.from(Array(days).keys()).map((it) => stDateDate + it)
+  if ((type?.value ?? -1) < 0) {
+    ds = ds.filter((it) => !isWeekend(new Date(stDate.setDate(it))))
+  }
+  return ds
+}
+
 export function getTotal (
   requests: Request[],
+  month: number,
   types: Map<Ref<RequestType>, RequestType>,
   f: (v: number) => number = (f) => f
 ): number {
   let total = 0
   for (const request of requests) {
+    const ds = getRequestDays(request, types, month)
     const type = types.get(request.type)
-    const days =
-      Math.floor(Math.abs((1 + fromTzDate(request.tzDueDate) - fromTzDate(request.tzDate)) / 1000 / 60 / 60 / 24)) + 1
-    const stDate = new Date(fromTzDate(request.tzDate))
-    const stDateDate = stDate.getDate()
-    let ds = Array.from(Array(days).keys()).map((it) => stDateDate + it)
-    if ((type?.value ?? -1) < 0) {
-      ds = ds.filter((it) => ![0, 6].includes(new Date(stDate.setDate(it)).getDay()))
-    }
     const val = Math.ceil(ds.length) * (type?.value ?? 0)
     total += f(val)
   }

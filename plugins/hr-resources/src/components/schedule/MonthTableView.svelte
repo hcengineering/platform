@@ -21,7 +21,7 @@
   import view, { BuildModelKey, Viewlet, ViewletPreference } from '@anticrm/view'
   import { Table, ViewletSettingButton } from '@anticrm/view-resources'
   import hr from '../../plugin'
-  import { fromTzDate, getMonth, getTotal, tableToCSV, weekDays } from '../../utils'
+  import { fromTzDate, getMonth, getRequestDays, getTotal, tableToCSV, weekDays } from '../../utils'
   import NumberPresenter from './StatPresenter.svelte'
 
   export let currentDate: Date = new Date()
@@ -35,21 +35,14 @@
   $: wDays = weekDays(month.getUTCFullYear(), month.getUTCMonth())
 
   function getDateRange (request: Request): string {
-    const st = new Date(fromTzDate(request.tzDate)).getDate()
-    const days =
-      Math.floor(Math.abs((1 + fromTzDate(request.tzDueDate) - fromTzDate(request.tzDate)) / 1000 / 60 / 60 / 24)) + 1
-    const stDate = new Date(fromTzDate(request.tzDate))
-    let ds = Array.from(Array(days).keys()).map((it) => st + it)
-    const type = types.get(request.type)
-    if ((type?.value ?? -1) < 0) {
-      ds = ds.filter((it) => ![0, 6].includes(new Date(stDate.setDate(it)).getDay()))
-    }
+    const ds = getRequestDays(request, types, month.getMonth())
     return ds.join(' ')
   }
 
   function getEndDate (date: Date): number {
     return new Date(date).setMonth(date.getMonth() + 1)
   }
+
   function getRequests (employee: Ref<Staff>, date: Date): Request[] {
     const requests = employeeRequests.get(employee)
     if (requests === undefined) return []
@@ -64,80 +57,89 @@
     return res
   }
 
-  $: typevals = new Map<string, BuildModelKey>(
-    Array.from(types.values()).map((it) => [
-      it.label as string,
-      {
-        key: '',
-        label: it.label,
-        presenter: NumberPresenter,
-        props: {
-          month: month ?? getMonth(currentDate, currentDate.getMonth()),
-          display: (req: Request[]) =>
-            req
-              .filter((r) => r.type === it._id)
-              .map((it) => getDateRange(it))
-              .join(' '),
-          getRequests
+  function getTypeVals (month: Date): Map<string, BuildModelKey> {
+    return new Map(
+      Array.from(types.values()).map((it) => [
+        it.label as string,
+        {
+          key: '',
+          label: it.label,
+          presenter: NumberPresenter,
+          props: {
+            month: month ?? getMonth(currentDate, currentDate.getMonth()),
+            display: (req: Request[]) =>
+              req
+                .filter((r) => r.type === it._id)
+                .map((it) => getDateRange(it))
+                .join(' '),
+            getRequests
+          }
         }
-      }
-    ])
-  )
+      ])
+    )
+  }
 
-  $: overrideConfig = new Map<string, BuildModelKey>([
-    [
-      '@wdCount',
-      {
-        key: '',
-        label: getEmbeddedLabel('Working days'),
-        presenter: NumberPresenter,
-        props: {
-          month: month ?? getMonth(currentDate, currentDate.getMonth()),
-          display: (req: Request[]) => wDays + getTotal(req, types),
-          getRequests
-        },
-        sortingKey: '@wdCount',
-        sortingFunction: (a: Doc, b: Doc) =>
-          getTotal(getRequests(b._id as Ref<Staff>, month), types) -
-          getTotal(getRequests(a._id as Ref<Staff>, month), types)
-      }
-    ],
-    [
-      '@ptoCount',
-      {
-        key: '',
-        label: getEmbeddedLabel('PTOs'),
-        presenter: NumberPresenter,
-        props: {
-          month: month ?? getMonth(currentDate, currentDate.getMonth()),
-          display: (req: Request[]) => getTotal(req, types, (a) => (a < 0 ? Math.abs(a) : 0)),
-          getRequests
-        },
-        sortingKey: '@ptoCount',
-        sortingFunction: (a: Doc, b: Doc) =>
-          getTotal(getRequests(b._id as Ref<Staff>, month), types, (a) => (a < 0 ? Math.abs(a) : 0)) -
-          getTotal(getRequests(a._id as Ref<Staff>, month), types, (a) => (a < 0 ? Math.abs(a) : 0))
-      }
-    ],
-    [
-      '@extraCount',
-      {
-        key: '',
-        label: getEmbeddedLabel('EXTRa'),
-        presenter: NumberPresenter,
-        props: {
-          month: month ?? getMonth(currentDate, currentDate.getMonth()),
-          display: (req: Request[]) => getTotal(req, types, (a) => (a > 0 ? Math.abs(a) : 0)),
-          getRequests
-        },
-        sortingKey: '@extraCount',
-        sortingFunction: (a: Doc, b: Doc) =>
-          getTotal(getRequests(b._id as Ref<Staff>, month), types, (a) => (a > 0 ? Math.abs(a) : 0)) -
-          getTotal(getRequests(a._id as Ref<Staff>, month), types, (a) => (a > 0 ? Math.abs(a) : 0))
-      }
-    ],
-    ...typevals
-  ])
+  function getOverrideConfig (month: Date): Map<string, BuildModelKey> {
+    const typevals = getTypeVals(month)
+    return new Map<string, BuildModelKey>([
+      [
+        '@wdCount',
+        {
+          key: '',
+          label: getEmbeddedLabel('Working days'),
+          presenter: NumberPresenter,
+          props: {
+            month: month ?? getMonth(currentDate, currentDate.getMonth()),
+            display: (req: Request[]) => wDays + getTotal(req, month.getMonth(), types),
+            getRequests
+          },
+          sortingKey: '@wdCount',
+          sortingFunction: (a: Doc, b: Doc) =>
+            getTotal(getRequests(b._id as Ref<Staff>, month), month.getMonth(), types) -
+            getTotal(getRequests(a._id as Ref<Staff>, month), month.getMonth(), types)
+        }
+      ],
+      [
+        '@ptoCount',
+        {
+          key: '',
+          label: getEmbeddedLabel('PTOs'),
+          presenter: NumberPresenter,
+          props: {
+            month: month ?? getMonth(currentDate, currentDate.getMonth()),
+            display: (req: Request[]) => getTotal(req, month.getMonth(), types, (a) => (a < 0 ? Math.abs(a) : 0)),
+            getRequests
+          },
+          sortingKey: '@ptoCount',
+          sortingFunction: (a: Doc, b: Doc) =>
+            getTotal(getRequests(b._id as Ref<Staff>, month), month.getMonth(), types, (a) =>
+              a < 0 ? Math.abs(a) : 0
+            ) -
+            getTotal(getRequests(a._id as Ref<Staff>, month), month.getMonth(), types, (a) => (a < 0 ? Math.abs(a) : 0))
+        }
+      ],
+      [
+        '@extraCount',
+        {
+          key: '',
+          label: getEmbeddedLabel('EXTRa'),
+          presenter: NumberPresenter,
+          props: {
+            month: month ?? getMonth(currentDate, currentDate.getMonth()),
+            display: (req: Request[]) => getTotal(req, month.getMonth(), types, (a) => (a > 0 ? Math.abs(a) : 0)),
+            getRequests
+          },
+          sortingKey: '@extraCount',
+          sortingFunction: (a: Doc, b: Doc) =>
+            getTotal(getRequests(b._id as Ref<Staff>, month), month.getMonth(), types, (a) =>
+              a > 0 ? Math.abs(a) : 0
+            ) -
+            getTotal(getRequests(a._id as Ref<Staff>, month), month.getMonth(), types, (a) => (a > 0 ? Math.abs(a) : 0))
+        }
+      ],
+      ...typevals
+    ])
+  }
 
   const preferenceQuery = createQuery()
   let preference: ViewletPreference | undefined
@@ -173,14 +175,16 @@
       })
   }
 
-  function createConfig (descr: Viewlet, preference: ViewletPreference | undefined): (string | BuildModelKey)[] {
+  function createConfig (
+    descr: Viewlet,
+    preference: ViewletPreference | undefined,
+    month: Date
+  ): (string | BuildModelKey)[] {
     const base = preference?.config ?? descr.config
     const result: (string | BuildModelKey)[] = []
+    const overrideConfig = getOverrideConfig(month)
 
-    for (const c of overrideConfig.values()) {
-      base.push(c)
-    }
-    for (const key of base) {
+    for (const key of [...base, ...overrideConfig.values()]) {
       if (typeof key === 'string') {
         result.push(overrideConfig.get(key) ?? key)
       } else {
@@ -213,7 +217,7 @@
                 link.setAttribute('target', '_blank')
                 link.setAttribute(
                   'href',
-                  'data:text/csv;charset=utf-8,' + encodeURIComponent(tableToCSV('exportableData'))
+                  'data:text/csv;charset=utf-8,%EF%BB%BF' + encodeURIComponent(tableToCSV('exportableData'))
                 )
                 link.setAttribute('download', filename)
                 document.body.appendChild(link)
@@ -226,7 +230,7 @@
             tableId={'exportableData'}
             _class={hr.mixin.Staff}
             query={{ _id: { $in: departmentStaff.map((it) => it._id) } }}
-            config={createConfig(descr, preference)}
+            config={createConfig(descr, preference, month)}
             options={descr.options}
           />
         {/if}
