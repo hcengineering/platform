@@ -36,6 +36,8 @@
   export let shouldShowLabel: boolean = true
   export let size: 'x-small' | 'small' = 'small'
   export let kind: 'transparent' | 'primary' | 'link' | 'list' = 'primary'
+  export let label = ui.string.DueDate
+  export let detail = ui.string.IssueNeedsToBeCompletedByThisDate
 
   const dispatch = createEventDispatcher()
 
@@ -70,7 +72,7 @@
       opened = true
       showPopup(
         DatePopup,
-        { currentDate, mondayStart, withTime },
+        { currentDate, mondayStart, withTime, label, detail },
         undefined,
         () => {
           opened = false

@@ -183,7 +183,20 @@
     "DurYears": "{years, plural, =0 {this year} =1 {a year} other {# years}}",
     "StatusHistory": "State History",
     "NewSubIssue": "Add sub-issue...",
-    "AddLabel": "Add label"
+    "AddLabel": "Add label",
+
+    "Sprint": "Sprint",
+    "NoSprint": "No Sprint",
+    "MoveToSprint": "Select Sprint",
+    "Sprints": "Sprints",
+    "AllSprints": "All",
+    "PlannedSprints": "Planned",
+    "ActiveSprints": "Active",
+    "ClosedSprints": "Done",
+    "AddToSprint": "Add to Sprint",
+
+    "NewSprint": "New Sprint",
+    "CreateSprint": "Create"
   },
   "status": {}
 }

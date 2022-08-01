@@ -66,7 +66,10 @@
   $: if (docWidth > 900 && docSize) docSize = false
 </script>
 
-<IssuesHeader {viewlets} {label} bind:viewlet bind:search>
+<IssuesHeader {viewlets} {label} bind:viewlet bind:search showLabelSelector={$$slots.label_selector}>
+  <svelte:fragment slot="label_selector">
+    <slot name="label_selector" />
+  </svelte:fragment>
   <svelte:fragment slot="extra">
     {#if viewlet}
       <ViewOptionsButton viewOptionsKey={viewlet._id} config={viewOptionsConfig} />
@@ -91,7 +94,7 @@
     <IssuesContent {viewlet} query={resultQuery} />
   {/if}
   {#if $$slots.aside !== undefined && asideShown}
-    <div class="popupPanel-body__aside" class:float={asideFloat} class:shown={asideShown}>
+    <div class="popupPanel-body__aside flex" class:float={asideFloat} class:shown={asideShown}>
       <slot name="aside" />
     </div>
   {/if}

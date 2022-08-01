@@ -21,7 +21,8 @@ import {
   IssuesDateModificationPeriod,
   IssuesGrouping,
   IssuesOrdering,
-  ProjectStatus
+  ProjectStatus,
+  SprintStatus
 } from '@anticrm/tracker'
 import tracker from './plugin'
 
@@ -63,6 +64,13 @@ export const defaultProjectStatuses = [
   ProjectStatus.Canceled
 ]
 
+export const defaultSprintStatuses = [
+  SprintStatus.Planned,
+  SprintStatus.InProgress,
+  SprintStatus.Completed,
+  SprintStatus.Canceled
+]
+
 export const projectStatusAssets: Record<ProjectStatus, { icon: Asset, label: IntlString }> = {
   [ProjectStatus.Backlog]: { icon: tracker.icon.ProjectStatusBacklog, label: tracker.string.Backlog },
   [ProjectStatus.Planned]: { icon: tracker.icon.ProjectStatusPlanned, label: tracker.string.Planned },
@@ -71,6 +79,14 @@ export const projectStatusAssets: Record<ProjectStatus, { icon: Asset, label: In
   [ProjectStatus.Completed]: { icon: tracker.icon.ProjectStatusCompleted, label: tracker.string.Completed },
   [ProjectStatus.Canceled]: { icon: tracker.icon.ProjectStatusCanceled, label: tracker.string.Canceled }
 }
+
+export const sprintStatusAssets: Record<SprintStatus, { icon: Asset, label: IntlString }> = {
+  [SprintStatus.Planned]: { icon: tracker.icon.SprintStatusPlanned, label: tracker.string.Planned },
+  [SprintStatus.InProgress]: { icon: tracker.icon.SprintStatusInProgress, label: tracker.string.InProgress },
+  [SprintStatus.Completed]: { icon: tracker.icon.SprintStatusCompleted, label: tracker.string.Completed },
+  [SprintStatus.Canceled]: { icon: tracker.icon.SprintStatusCanceled, label: tracker.string.Canceled }
+}
+
 export const defaultPriorities = [
   IssuePriority.NoPriority,
   IssuePriority.Urgent,

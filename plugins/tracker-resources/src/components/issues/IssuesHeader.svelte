@@ -9,6 +9,7 @@
   export let viewlets: WithLookup<Viewlet>[] = []
   export let label: string
   export let search: string
+  export let showLabelSelector = false
 
   $: viewslist = viewlets.map((views) => {
     return {
@@ -21,8 +22,12 @@
 
 <div class="ac-header full">
   <div class="ac-header__wrap-title">
-    <div class="ac-header__icon"><Icon icon={tracker.icon.Issues} size={'small'} /></div>
-    <span class="ac-header__title">{label}</span>
+    {#if showLabelSelector}
+      <slot name="label_selector" />
+    {:else}
+      <div class="ac-header__icon"><Icon icon={tracker.icon.Issues} size={'small'} /></div>
+      <span class="ac-header__title">{label}</span>
+    {/if}
     <div class="ml-4"><FilterButton _class={tracker.class.Issue} /></div>
   </div>
   <SearchEdit bind:value={search} on:change={() => {}} />

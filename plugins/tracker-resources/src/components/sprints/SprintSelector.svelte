@@ -16,16 +16,16 @@
   import { Ref, SortingOrder } from '@anticrm/core'
   import { getEmbeddedLabel, IntlString, translate } from '@anticrm/platform'
   import { createQuery } from '@anticrm/presentation'
-  import { Project } from '@anticrm/tracker'
+  import { Sprint } from '@anticrm/tracker'
   import type { ButtonKind, ButtonSize } from '@anticrm/ui'
   import { Button, ButtonShape, eventToHTMLElement, SelectPopup, showPopup } from '@anticrm/ui'
-  import tracker from '../plugin'
+  import tracker from '../../plugin'
 
-  export let value: Ref<Project> | null | undefined
+  export let value: Ref<Sprint> | null | undefined
   export let shouldShowLabel: boolean = true
   export let isEditable: boolean = true
-  export let onProjectIdChange: ((newProjectId: Ref<Project> | undefined) => void) | undefined = undefined
-  export let popupPlaceholder: IntlString = tracker.string.AddToProject
+  export let onSprintIdChange: ((newSprintId: Ref<Sprint> | undefined) => void) | undefined = undefined
+  export let popupPlaceholder: IntlString = tracker.string.AddToSprint
   export let kind: ButtonKind = 'no-border'
   export let size: ButtonSize = 'small'
   export let shape: ButtonShape = undefined
@@ -33,60 +33,58 @@
   export let width: string | undefined = 'min-content'
   export let onlyIcon: boolean = false
 
-  let selectedProject: Project | undefined
-  let defaultProjectLabel = ''
+  let selectedSprint: Sprint | undefined
+  let defaultSprintLabel = ''
 
   const query = createQuery()
-  let rawProjects: Project[] = []
-  let loading = true
+  let rawSprints: Sprint[] = []
   query.query(
-    tracker.class.Project,
+    tracker.class.Sprint,
     {},
     (res) => {
-      rawProjects = res
-      loading = false
+      rawSprints = res
     },
     {
       sort: { modifiedOn: SortingOrder.Ascending }
     }
   )
 
-  $: handleSelectedProjectIdUpdated(value, rawProjects)
+  $: handleSelectedSprintIdUpdated(value, rawSprints)
 
-  $: translate(tracker.string.Project, {}).then((result) => (defaultProjectLabel = result))
-  $: projectIcon = selectedProject?.icon ?? tracker.icon.Projects
-  $: projectText = shouldShowLabel ? selectedProject?.label ?? defaultProjectLabel : undefined
+  $: translate(tracker.string.Sprint, {}).then((result) => (defaultSprintLabel = result))
+  const sprintIcon = tracker.icon.Sprint
+  $: sprintText = shouldShowLabel ? selectedSprint?.label ?? defaultSprintLabel : undefined
 
-  const handleSelectedProjectIdUpdated = async (newProjectId: Ref<Project> | null | undefined, projects: Project[]) => {
-    if (newProjectId === null || newProjectId === undefined) {
-      selectedProject = undefined
+  const handleSelectedSprintIdUpdated = async (newSprintId: Ref<Sprint> | null | undefined, sprints: Sprint[]) => {
+    if (newSprintId === null || newSprintId === undefined) {
+      selectedSprint = undefined
 
       return
     }
 
-    selectedProject = projects.find((it) => it._id === newProjectId)
+    selectedSprint = sprints.find((it) => it._id === newSprintId)
   }
 
-  const handleProjectEditorOpened = async (event: MouseEvent): Promise<void> => {
+  const handleSprintEditorOpened = async (event: MouseEvent): Promise<void> => {
     event.stopPropagation()
     if (!isEditable) {
       return
     }
 
-    const projectsInfo = [
-      { id: null, icon: tracker.icon.Projects, label: tracker.string.NoProject },
-      ...rawProjects.map((p) => ({
+    const sprintInfo = [
+      { id: null, icon: tracker.icon.Sprint, label: tracker.string.NoSprint },
+      ...rawSprints.map((p) => ({
         id: p._id,
-        icon: p.icon,
+        icon: tracker.icon.Sprint,
         text: p.label
       }))
     ]
 
     showPopup(
       SelectPopup,
-      { value: projectsInfo, placeholder: popupPlaceholder, searchable: true },
+      { value: sprintInfo, placeholder: popupPlaceholder, searchable: true },
       eventToHTMLElement(event),
-      onProjectIdChange
+      onSprintIdChange
     )
   }
 </script>
@@ -97,9 +95,8 @@
   {shape}
   {width}
   {justify}
-  label={onlyIcon || projectText === undefined ? undefined : getEmbeddedLabel(projectText)}
-  icon={projectIcon}
+  label={onlyIcon || sprintText === undefined ? undefined : getEmbeddedLabel(sprintText)}
+  icon={sprintIcon}
   disabled={!isEditable}
-  {loading}
-  on:click={handleProjectEditorOpened}
+  on:click={handleSprintEditorOpened}
 />

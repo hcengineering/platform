@@ -13,13 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher, afterUpdate } from 'svelte'
-  import { IntlString } from '@anticrm/platform'
+  import { afterUpdate, createEventDispatcher } from 'svelte'
   import ui from '../../plugin'
-  import IconClose from '../icons/Close.svelte'
   import ActionIcon from '../ActionIcon.svelte'
   import Button from '../Button.svelte'
   import Icon from '../Icon.svelte'
+  import IconClose from '../icons/Close.svelte'
   import Label from '../Label.svelte'
   import { daysInMonth } from './internal/DateUtils'
   import MonthSquare from './MonthSquare.svelte'
@@ -27,10 +26,11 @@
   export let currentDate: Date | null
   export let withTime: boolean = false
   export let mondayStart: boolean = true
+  export let label = currentDate != null ? ui.string.EditDueDate : ui.string.AddDueDate
+  export let detail = ui.string.IssueNeedsToBeCompletedByThisDate
 
   const dispatch = createEventDispatcher()
 
-  const popupCaption: IntlString = currentDate != null ? ui.string.EditDueDate : ui.string.AddDueDate
   type TEdits = 'day' | 'month' | 'year' | 'hour' | 'min'
   interface IEdits {
     id: TEdits
@@ -230,7 +230,7 @@
 
 <div class="date-popup-container">
   <div class="header">
-    <span class="fs-title overflow-label"><Label label={popupCaption} /></span>
+    <span class="fs-title overflow-label"><Label {label} /></span>
     <ActionIcon
       icon={IconClose}
       size={'small'}
@@ -241,9 +241,9 @@
   </div>
   <div class="content">
     <div class="label">
-      <span class="bold"><Label label={ui.string.DueDate} /></span>
+      <span class="bold"><Label {label} /></span>
       <span class="divider">-</span>
-      <Label label={ui.string.IssueNeedsToBeCompletedByThisDate} />
+      <Label label={detail} />
     </div>
 
     <div class="datetime-input">

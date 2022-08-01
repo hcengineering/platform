@@ -14,17 +14,19 @@
 -->
 <script lang="ts">
   import { WithLookup } from '@anticrm/core'
-  import type { Issue, IssueStatus } from '@anticrm/tracker'
-  import { createQuery } from '@anticrm/presentation'
-  import { Component, Label } from '@anticrm/ui'
+  import { AttributeBarEditor, createQuery, getClient, KeyedAttribute } from '@anticrm/presentation'
   import tags from '@anticrm/tags'
+  import type { Issue, IssueStatus } from '@anticrm/tracker'
+  import { Component, Label } from '@anticrm/ui'
+  import { getFiltredKeys, isCollectionAttr } from '@anticrm/view-resources/src/utils'
   import tracker from '../../../plugin'
-  import PriorityEditor from '../PriorityEditor.svelte'
-  import StatusEditor from '../StatusEditor.svelte'
   import ProjectEditor from '../../projects/ProjectEditor.svelte'
+  import SprintEditor from '../../sprints/SprintEditor.svelte'
   import AssigneeEditor from '../AssigneeEditor.svelte'
   import DueDateEditor from '../DueDateEditor.svelte'
+  import PriorityEditor from '../PriorityEditor.svelte'
   import RelationEditor from '../RelationEditor.svelte'
+  import StatusEditor from '../StatusEditor.svelte'
 
   export let issue: Issue
   export let issueStatuses: WithLookup<IssueStatus>[]
@@ -34,12 +36,25 @@
   query.query(tracker.class.Issue, { blockedBy: issue._id }, (result) => {
     showIsBlocking = result.length > 0
   })
+
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+
+  let keys: KeyedAttribute[] = []
+
+  function updateKeys (ignoreKeys: string[]): void {
+    const filtredKeys = getFiltredKeys(hierarchy, issue._class, ignoreKeys)
+    keys = filtredKeys.filter((key) => !isCollectionAttr(hierarchy, key))
+  }
+
+  $: updateKeys(['title', 'description', 'priority', 'status', 'number', 'assignee', 'project', 'dueDate', 'sprint'])
 </script>
 
 <div class="content">
   <span class="label">
     <Label label={tracker.string.Status} />
   </span>
+
   <StatusEditor value={issue} statuses={issueStatuses} shouldShowLabel />
 
   {#if issue.blockedBy?.length}
@@ -83,6 +98,13 @@
   </span>
   <ProjectEditor value={issue} />
 
+  {#if issue.sprint}
+    <span class="label">
+      <Label label={tracker.string.Sprint} />
+    </span>
+    <SprintEditor value={issue} />
+  {/if}
+
   {#if issue.dueDate !== null}
     <div class="divider" />
 
@@ -90,6 +112,13 @@
       <Label label={tracker.string.DueDate} />
     </span>
     <DueDateEditor value={issue} />
+  {/if}
+
+  {#if keys.length > 0}
+    <div class="divider" />
+    {#each keys as key (typeof key === 'string' ? key : key.key)}
+      <AttributeBarEditor {key} _class={issue._class} object={issue} showHeader={true} />
+    {/each}
   {/if}
 </div>
 

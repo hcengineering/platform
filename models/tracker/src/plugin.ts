@@ -37,7 +37,8 @@ export default mergeIds(trackerId, tracker, {
   },
   component: {
     // Required to pass build without errorsF
-    Nope: '' as AnyComponent
+    Nope: '' as AnyComponent,
+    SprintSelector: '' as AnyComponent
   },
   app: {
     Tracker: '' as Ref<Application>

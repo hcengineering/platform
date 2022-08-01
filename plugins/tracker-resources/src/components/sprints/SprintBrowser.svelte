@@ -17,55 +17,56 @@
   import { DocumentQuery, FindOptions, SortingOrder } from '@anticrm/core'
   import { IntlString } from '@anticrm/platform'
   import { createQuery } from '@anticrm/presentation'
-  import { Project } from '@anticrm/tracker'
-  import { Button, IconAdd, Label, showPopup } from '@anticrm/ui'
+  import { Sprint } from '@anticrm/tracker'
+  import { Button, Icon, IconAdd, Label, showPopup } from '@anticrm/ui'
   import tracker from '../../plugin'
-  import { getIncludedProjectStatuses, projectsTitleMap, ProjectsViewMode } from '../../utils'
-  import NewProject from './NewProject.svelte'
-  import ProjectsListBrowser from './ProjectsListBrowser.svelte'
+  import { getIncludedSprintStatuses, sprintTitleMap, SprintViewMode } from '../../utils'
+  import NewSprint from './NewSprint.svelte'
+  import SprintDatePresenter from './SprintDatePresenter.svelte'
+  import SprintListBrowser from './SprintListBrowser.svelte'
 
   export let label: IntlString
-  export let query: DocumentQuery<Project> = {}
+  export let query: DocumentQuery<Sprint> = {}
   export let search: string = ''
-  export let mode: ProjectsViewMode = 'all'
+  export let mode: SprintViewMode = 'all'
 
   const ENTRIES_LIMIT = 200
-  const resultProjectsQuery = createQuery()
+  const resultSprintsQuery = createQuery()
 
-  const projectOptions: FindOptions<Project> = {
+  const sprintOptions: FindOptions<Sprint> = {
     sort: { modifiedOn: SortingOrder.Descending },
     limit: ENTRIES_LIMIT,
-    lookup: { lead: contact.class.Employee, members: contact.class.Employee }
+    lookup: { lead: contact.class.Employee }
   }
 
-  let resultProjects: Project[] = []
+  let resultSprints: Sprint[] = []
 
-  $: includedProjectStatuses = getIncludedProjectStatuses(mode)
-  $: title = projectsTitleMap[mode]
-  $: includedProjectsQuery = { status: { $in: includedProjectStatuses } }
+  $: includedSprintStatuses = getIncludedSprintStatuses(mode)
+  $: title = sprintTitleMap[mode]
+  $: includedSprintsQuery = { status: { $in: includedSprintStatuses } }
 
   $: baseQuery = {
-    ...includedProjectsQuery,
+    ...includedSprintsQuery,
     ...query
   }
 
   $: resultQuery = search === '' ? baseQuery : { $search: search, ...baseQuery }
 
-  $: resultProjectsQuery.query<Project>(
-    tracker.class.Project,
+  $: resultSprintsQuery.query<Sprint>(
+    tracker.class.Sprint,
     { ...resultQuery },
     (result) => {
-      resultProjects = result
+      resultSprints = result
     },
-    projectOptions
+    sprintOptions
   )
 
   const space = typeof query.space === 'string' ? query.space : tracker.team.DefaultTeam
   const showCreateDialog = async () => {
-    showPopup(NewProject, { space, targetElement: null }, null)
+    showPopup(NewSprint, { space, targetElement: null }, null)
   }
 
-  const handleViewModeChanged = (newMode: ProjectsViewMode) => {
+  const handleViewModeChanged = (newMode: SprintViewMode) => {
     if (newMode === undefined || newMode === mode) {
       return
     }
@@ -82,7 +83,7 @@
         › <Label label={title} />
       </div>
     </div>
-    <Button size="small" icon={IconAdd} label={tracker.string.Project} kind="secondary" on:click={showCreateDialog} />
+    <Button size="small" icon={IconAdd} label={tracker.string.Sprint} kind="secondary" on:click={showCreateDialog} />
   </div>
   <div class="itemsContainer">
     <div class="flex-center">
@@ -92,7 +93,7 @@
             size="small"
             shape="rectangle-right"
             selected={mode === 'all'}
-            label={tracker.string.AllProjects}
+            label={tracker.string.AllSprints}
             on:click={() => handleViewModeChanged('all')}
           />
         </div>
@@ -100,9 +101,9 @@
           <Button
             size="small"
             shape="rectangle"
-            selected={mode === 'backlog'}
-            label={tracker.string.BacklogProjects}
-            on:click={() => handleViewModeChanged('backlog')}
+            selected={mode === 'planned'}
+            label={tracker.string.PlannedSprints}
+            on:click={() => handleViewModeChanged('planned')}
           />
         </div>
         <div class="buttonWrapper">
@@ -110,7 +111,7 @@
             size="small"
             shape="rectangle"
             selected={mode === 'active'}
-            label={tracker.string.ActiveProjects}
+            label={tracker.string.ActiveSprints}
             on:click={() => handleViewModeChanged('active')}
           />
         </div>
@@ -119,7 +120,7 @@
             size="small"
             shape="rectangle-left"
             selected={mode === 'closed'}
-            label={tracker.string.ClosedProjects}
+            label={tracker.string.ClosedSprints}
             on:click={() => handleViewModeChanged('closed')}
           />
         </div>
@@ -149,21 +150,21 @@
       </div>
     </div> -->
   </div>
-  <ProjectsListBrowser
-    _class={tracker.class.Project}
+  <SprintListBrowser
+    _class={tracker.class.Sprint}
     itemsConfig={[
-      { key: '', presenter: tracker.component.IconPresenter },
-      { key: '', presenter: tracker.component.ProjectPresenter, props: { kind: 'list' } },
+      { key: '', presenter: Icon, props: { icon: tracker.icon.Sprint, size: 'small' } },
+      { key: '', presenter: tracker.component.SprintPresenter, props: { kind: 'list' } },
       {
         key: '$lookup.lead',
         presenter: tracker.component.LeadPresenter,
         props: { defaultClass: contact.class.Employee, shouldShowLabel: false }
       },
-      { key: '', presenter: tracker.component.ProjectMembersPresenter, props: { kind: 'link' } },
-      { key: '', presenter: tracker.component.TargetDatePresenter },
-      { key: '', presenter: tracker.component.ProjectStatusPresenter }
+      { key: '', presenter: SprintDatePresenter, props: { field: 'startDate' } },
+      { key: '', presenter: SprintDatePresenter, props: { field: 'targetDate' } },
+      { key: '', presenter: tracker.component.SprintStatusPresenter }
     ]}
-    projects={resultProjects}
+    sprints={resultSprints}
   />
 </div>
 

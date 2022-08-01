@@ -118,7 +118,6 @@ specifiers:
   '@rush-temp/preference-assets': file:./projects/preference-assets.tgz
   '@rush-temp/presentation': file:./projects/presentation.tgz
   '@rush-temp/prod': file:./projects/prod.tgz
-  '@rush-temp/prod-tracker': file:./projects/prod-tracker.tgz
   '@rush-temp/query': file:./projects/query.tgz
   '@rush-temp/recruit': file:./projects/recruit.tgz
   '@rush-temp/recruit-assets': file:./projects/recruit-assets.tgz
@@ -221,6 +220,7 @@ specifiers:
   '@types/node': ~16.11.12
   '@types/pdfkit': ~0.12.3
   '@types/request': ~2.48.8
+  '@types/sharp': ~0.30.4
   '@types/tar-stream': ^2.2.2
   '@types/toposort': ^2.0.3
   '@types/uuid': ^8.3.1
@@ -271,7 +271,6 @@ specifiers:
   mini-css-extract-plugin: ^2.2.0
   minio: ^7.0.26
   mongodb: ^4.1.1
-  node-html-parser: ~5.3.3
   pdfkit: ~0.13.0
   postcss: ^8.3.4
   postcss-load-config: ^3.1.0
@@ -420,7 +419,6 @@ dependencies:
   '@rush-temp/preference-assets': file:projects/preference-assets.tgz
   '@rush-temp/presentation': file:projects/presentation.tgz_1e3963ebf0ceeb25b2fa6a1cc87e253c
   '@rush-temp/prod': file:projects/prod.tgz_8b34f51e833a67e51e5bff1df3e73cc8
-  '@rush-temp/prod-tracker': file:projects/prod-tracker.tgz_8b34f51e833a67e51e5bff1df3e73cc8
   '@rush-temp/query': file:projects/query.tgz
   '@rush-temp/recruit': file:projects/recruit.tgz
   '@rush-temp/recruit-assets': file:projects/recruit-assets.tgz_typescript@4.7.4
@@ -523,6 +521,7 @@ dependencies:
   '@types/node': 16.11.42
   '@types/pdfkit': 0.12.6
   '@types/request': 2.48.8
+  '@types/sharp': 0.30.4
   '@types/tar-stream': 2.2.2
   '@types/toposort': 2.0.3
   '@types/uuid': 8.3.4
@@ -573,7 +572,6 @@ dependencies:
   mini-css-extract-plugin: 2.6.1_webpack@5.73.0
   minio: 7.0.28
   mongodb: 4.7.0
-  node-html-parser: 5.3.3
   pdfkit: 0.13.0
   postcss: 8.4.14
   postcss-load-config: 3.1.4_postcss@8.4.14+ts-node@10.8.1
@@ -12464,52 +12462,6 @@ packages:
       - supports-color
     dev: false
 
-  file:projects/prod-tracker.tgz_8b34f51e833a67e51e5bff1df3e73cc8:
-    resolution: {integrity: sha512-hOYYMh2Au/J1fHweEgyZbMhrUqWpIej9lA02kjW+gOHzxZZO68RTfPBJq1d+UoaHUWPtC+YxkUPUcGiBPEKgfw==, tarball: file:projects/prod-tracker.tgz}
-    id: file:projects/prod-tracker.tgz
-    name: '@rush-temp/prod-tracker'
-    version: 0.0.0
-    dependencies:
-      '@types/node': 16.11.42
-      autoprefixer: 10.4.7_postcss@8.4.14
-      compression-webpack-plugin: 9.0.1_webpack@5.73.0
-      cross-env: 7.0.3
-      css-loader: 5.2.7_webpack@5.73.0
-      dotenv-webpack: 7.1.1_webpack@5.73.0
-      file-loader: 6.2.0_webpack@5.73.0
-      html-webpack-plugin: 5.5.0_webpack@5.73.0
-      mini-css-extract-plugin: 2.6.1_webpack@5.73.0
-      postcss: 8.4.14
-      postcss-load-config: 3.1.4_postcss@8.4.14+ts-node@10.8.1
-      postcss-loader: 6.2.1_postcss@8.4.14+webpack@5.73.0
-      sass-loader: 12.6.0_sass@1.53.0+webpack@5.73.0
-      style-loader: 3.3.1_webpack@5.73.0
-      svelte: 3.48.0
-      svelte-loader: 3.1.3_svelte@3.48.0
-      svgo-loader: 3.0.1
-      ts-loader: 9.3.1_typescript@4.7.4+webpack@5.73.0
-      webpack: 5.73.0_0539a1ee9cc1e8c0305465d979f40a3d
-      webpack-bundle-analyzer: 4.5.0
-      webpack-cli: 4.10.0_7445a258404e01c9b84d81171e5727fd
-      webpack-dev-server: 4.9.3_ffd7cf999054608223b9fc836cf5004f
-    transitivePeerDependencies:
-      - '@swc/core'
-      - '@webpack-cli/generators'
-      - '@webpack-cli/migrate'
-      - bufferutil
-      - debug
-      - esbuild
-      - fibers
-      - node-sass
-      - sass
-      - sass-embedded
-      - supports-color
-      - ts-node
-      - typescript
-      - uglify-js
-      - utf-8-validate
-    dev: false
-
   file:projects/prod.tgz_8b34f51e833a67e51e5bff1df3e73cc8:
     resolution: {integrity: sha512-lOWf2/caG2bTwygiVfaeuB2EmI0qXT2J5cyKpc6ZXUPxwGul+YkWiiwjT6gzg0BGVEJssuN4owh7okSdrrlJdg==, tarball: file:projects/prod.tgz}
     id: file:projects/prod.tgz
@@ -14080,7 +14032,7 @@ packages:
     dev: false
 
   file:projects/tool.tgz:
-    resolution: {integrity: sha512-LjCQIq8dqLFEXvLcBmfJKRtkoJublg0r6DWC2RwIlmJyw61xEEBFHdOn3p1l3EyQPg0PjgAaSoEUPF+ViaxlPQ==, tarball: file:projects/tool.tgz}
+    resolution: {integrity: sha512-7BKMRQ8UZ8cgJGDXvMGNoAdjUmEAyMx9GVBmBo3gmW56eLhxamaBqdwkunRIemCR77MJ8JJj+qhgWAzpRXpoRg==, tarball: file:projects/tool.tgz}
     name: '@rush-temp/tool'
     version: 0.0.0
     dependencies:
@@ -14153,7 +14105,7 @@ packages:
     dev: false
 
   file:projects/tracker-resources.tgz_1e3963ebf0ceeb25b2fa6a1cc87e253c:
-    resolution: {integrity: sha512-PKQD9e1Xy9uXITgztIDA3iXNVejZcOdX7dfkahRNSrPvWA7eiK1MOxO1TXGT8UKLAHCxOE9kaNQ9fJqaMca4og==, tarball: file:projects/tracker-resources.tgz}
+    resolution: {integrity: sha512-gNf+kxHBXh2EhUJNOFg36XUDijRQ7UkWIXl7Hf7Mt+Jg995unSk/8tKPsyJ+YcCkqGB7/Zfu4pTIvB/SGjEUwg==, tarball: file:projects/tracker-resources.tgz}
     id: file:projects/tracker-resources.tgz
     name: '@rush-temp/tracker-resources'
     version: 0.0.0
