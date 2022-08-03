@@ -62,6 +62,13 @@ import { copyToClipboard, getIssueId, getIssueTitle, resolveLocation } from './i
 import CreateIssue from './components/CreateIssue.svelte'
 import RelationsPopup from './components/RelationsPopup.svelte'
 
+import Sprints from './components/sprints/Sprints.svelte'
+import SprintPresenter from './components/sprints/SprintPresenter.svelte'
+import SprintStatusPresenter from './components/sprints/SprintStatusPresenter.svelte'
+import SprintTitlePresenter from './components/sprints/SprintTitlePresenter.svelte'
+import SprintSelector from './components/sprints/SprintSelector.svelte'
+import SprintEditor from './components/sprints/SprintEditor.svelte'
+
 export async function queryIssue<D extends Issue> (
   _class: Ref<Class<D>>,
   client: Client,
@@ -157,7 +164,13 @@ export default async (): Promise<Resources> => ({
     Roadmap,
     IssuePreview,
     RelationsPopup,
-    CreateIssue
+    CreateIssue,
+    Sprints,
+    SprintPresenter,
+    SprintStatusPresenter,
+    SprintTitlePresenter,
+    SprintSelector,
+    SprintEditor
   },
   completion: {
     IssueQuery: async (client: Client, query: string) => await queryIssue(tracker.class.Issue, client, query)

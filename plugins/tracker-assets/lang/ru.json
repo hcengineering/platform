@@ -183,7 +183,20 @@
     "DurYears": "{years, plural, =0 {меньше года} =1 {год} =2 {2 года} =3 {3 года} =4 {4 года} other {# лет}}",
     "StatusHistory": "История состояний",
     "NewSubIssue": "Добавить под-задачу...",
-    "AddLabel": "Добавить метку"
+    "AddLabel": "Добавить метку",
+
+    "Sprint": "Спринт",
+    "NoSprint": "Без Спринта",
+    "MoveToSprint": "Выбрать Спринт",
+    "Sprints": "Спринты",
+    "AllSprints": "Все",
+    "PlannedSprints": "Запланировано",
+    "ActiveSprints": "Активно",
+    "ClosedSprints": "Завершено",
+    "AddToSprint": "Добавить в Спринт",
+
+    "NewSprint": "Новый Спринт",
+    "CreateSprint": "Создать"
   },
   "status": {}
 }

@@ -34,6 +34,7 @@ loadMetadata(tracker.icon, {
   Labels: `${icons}#priority-nopriority`, // TODO: add icon
   DueDate: `${icons}#inbox`, // TODO: add icon
   Parent: `${icons}#myissues`, // TODO: add icon
+  Sprint: `${icons}#sprint`,
 
   CategoryBacklog: `${icons}#status-backlog`,
   CategoryUnstarted: `${icons}#status-todo`,
@@ -56,6 +57,12 @@ loadMetadata(tracker.icon, {
   ProjectStatusPaused: `${icons}#project-status-paused`,
   ProjectStatusCompleted: `${icons}#project-status-completed`,
   ProjectStatusCanceled: `${icons}#project-status-canceled`,
+
+  SprintStatusPlanned: `${icons}#project-status-planned`,
+  SprintStatusInProgress: `${icons}#project-status-in-progress`,
+  SprintStatusPaused: `${icons}#project-status-paused`,
+  SprintStatusCompleted: `${icons}#project-status-completed`,
+  SprintStatusCanceled: `${icons}#project-status-canceled`,
 
   CopyID: `${icons}#copyID`,
   CopyURL: `${icons}#copyURL`,

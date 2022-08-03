@@ -14,11 +14,11 @@
 -->
 <script lang="ts">
   import { WithLookup } from '@anticrm/core'
-  import { Project } from '@anticrm/tracker'
+  import { Sprint } from '@anticrm/tracker'
   import { getCurrentLocation, navigate } from '@anticrm/ui'
 
-  export let value: WithLookup<Project>
-  function navigateToProject () {
+  export let value: WithLookup<Sprint>
+  function navigateToSprint () {
     const loc = getCurrentLocation()
     loc.path[5] = value._id
     loc.path.length = 6
@@ -27,7 +27,7 @@
 </script>
 
 {#if value}
-  <div class="flex-presenter flex-grow" on:click={navigateToProject}>
+  <div class="flex-presenter flex-grow" on:click={navigateToSprint}>
     <span title={value.label} class="projectLabel flex-grow">{value.label}</span>
   </div>
 {/if}

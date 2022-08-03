@@ -33,8 +33,12 @@
   const dispatch = createEventDispatcher()
 
   const changeStatus = async (newStatus: any) => {
-    if (!isEditable || newStatus == null) {
-      dispatch('close', null)
+    if (newStatus === '#null') {
+      newStatus = null
+      return
+    }
+    if (!isEditable || newStatus === undefined) {
+      dispatch('close', undefined)
       return
     }
     const docs = Array.isArray(value) ? value : [value]
@@ -106,12 +110,14 @@
 
   $: updateQuery(query, value, fillQuery)
   $: huge = size === 'medium' || size === 'large'
+
+  $: valuesToShow = values !== undefined ? values.map((it) => ({ ...it, isSelected: it.id === current })) : []
 </script>
 
 {#if docMatch}
   {#if values}
     <SelectPopup
-      value={values.map((it) => ({ ...it, isSelected: it.id === current }))}
+      value={valuesToShow}
       on:close={(evt) => changeStatus(evt.detail)}
       placeholder={placeholder ?? view.string.Filter}
       searchable
@@ -126,7 +132,7 @@
       {searchField}
       allowDeselect={true}
       selected={current}
-      on:close={(evt) => changeStatus(evt.detail?._id)}
+      on:close={(evt) => changeStatus(evt.detail === null ? null : evt.detail?._id)}
       placeholder={placeholder ?? view.string.Filter}
       {width}
       {size}

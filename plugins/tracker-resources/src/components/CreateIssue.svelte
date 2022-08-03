@@ -17,7 +17,7 @@
   import { Employee } from '@anticrm/contact'
   import core, { Account, AttachedData, Doc, generateId, Ref, SortingOrder, WithLookup } from '@anticrm/core'
   import { Card, createQuery, getClient, KeyedAttribute, SpaceSelector } from '@anticrm/presentation'
-  import { calcRank, Issue, IssuePriority, IssueStatus, Project, Team } from '@anticrm/tracker'
+  import { calcRank, Issue, IssuePriority, IssueStatus, Project, Sprint, Team } from '@anticrm/tracker'
   import tags, { TagElement, TagReference } from '@anticrm/tags'
   import {
     ActionIcon,
@@ -40,12 +40,14 @@
   import ProjectSelector from './ProjectSelector.svelte'
   import SetDueDateActionPopup from './SetDueDateActionPopup.svelte'
   import SetParentIssueActionPopup from './SetParentIssueActionPopup.svelte'
+  import SprintSelector from './sprints/SprintSelector.svelte'
 
   export let space: Ref<Team>
   export let status: Ref<IssueStatus> | undefined = undefined
   export let priority: IssuePriority = IssuePriority.NoPriority
   export let assignee: Ref<Employee> | null = null
   export let project: Ref<Project> | null = null
+  export let sprint: Ref<Sprint> | null = null
 
   let issueStatuses: WithLookup<IssueStatus>[] | undefined
   export let parentIssue: Issue | undefined
@@ -57,6 +59,7 @@
     description: '',
     assignee: assignee,
     project: project,
+    sprint: sprint,
     number: 0,
     rank: '',
     status: '' as Ref<IssueStatus>,
@@ -220,6 +223,14 @@
     object = { ...object, project: projectId }
   }
 
+  const handleSprintIdChanged = (sprintId: Ref<Sprint> | null | undefined) => {
+    if (sprintId === undefined) {
+      return
+    }
+
+    object = { ...object, sprint: sprintId }
+  }
+
   function addTagRef (tag: TagElement): void {
     labels = [
       ...labels,
@@ -326,6 +337,7 @@
         }}
       />
       <ProjectSelector value={object.project} onProjectIdChange={handleProjectIdChanged} />
+      <SprintSelector value={object.sprint} onSprintIdChange={handleSprintIdChanged} />
       {#if object.dueDate !== null}
         <DatePresenter bind:value={object.dueDate} editable />
       {/if}

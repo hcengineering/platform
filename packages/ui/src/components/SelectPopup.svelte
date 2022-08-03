@@ -26,7 +26,7 @@
   import { resizeObserver } from '../resize'
 
   interface ValueType {
-    id: number | string
+    id: number | string | null
     icon?: Asset
     iconColor?: string
     label?: IntlString

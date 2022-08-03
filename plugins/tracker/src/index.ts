@@ -99,6 +99,36 @@ export enum IssuesDateModificationPeriod {
 /**
  * @public
  */
+export enum SprintStatus {
+  Planned,
+  InProgress,
+  Completed,
+  Canceled
+}
+
+/**
+ * @public
+ */
+export interface Sprint extends Doc {
+  label: string
+  description?: Markup
+
+  status: SprintStatus
+
+  lead: Ref<Employee> | null
+
+  space: Ref<Team>
+
+  comments: number
+  attachments?: number
+
+  startDate: Timestamp
+  targetDate: Timestamp
+}
+
+/**
+ * @public
+ */
 export interface Issue extends AttachedDoc {
   title: string
   description: Markup
@@ -124,6 +154,8 @@ export interface Issue extends AttachedDoc {
   dueDate: Timestamp | null
 
   rank: string
+
+  sprint?: Ref<Sprint> | null
 }
 
 /**
@@ -210,7 +242,9 @@ export default plugin(trackerId, {
     IssueStatus: '' as Ref<Class<IssueStatus>>,
     IssueStatusCategory: '' as Ref<Class<IssueStatusCategory>>,
     TypeIssuePriority: '' as Ref<Class<Type<IssuePriority>>>,
-    TypeProjectStatus: '' as Ref<Class<Type<ProjectStatus>>>
+    TypeProjectStatus: '' as Ref<Class<Type<ProjectStatus>>>,
+    Sprint: '' as Ref<Class<Sprint>>,
+    TypeSprintStatus: '' as Ref<Class<Type<SprintStatus>>>
   },
   ids: {
     NoParent: '' as Ref<Issue>
@@ -243,6 +277,7 @@ export default plugin(trackerId, {
     Labels: '' as Asset,
     DueDate: '' as Asset,
     Parent: '' as Asset,
+    Sprint: '' as Asset,
 
     CategoryBacklog: '' as Asset,
     CategoryUnstarted: '' as Asset,
@@ -267,6 +302,12 @@ export default plugin(trackerId, {
     ProjectStatusCompleted: '' as Asset,
     ProjectStatusCanceled: '' as Asset,
 
+    SprintStatusPlanned: '' as Asset,
+    SprintStatusInProgress: '' as Asset,
+    SprintStatusPaused: '' as Asset,
+    SprintStatusCompleted: '' as Asset,
+    SprintStatusCanceled: '' as Asset,
+
     CopyID: '' as Asset,
     CopyURL: '' as Asset,
     CopyBranch: '' as Asset
@@ -288,7 +329,8 @@ export default plugin(trackerId, {
     MoveToTeam: '' as Ref<Action>,
     Relations: '' as Ref<Action>,
     NewSubIssue: '' as Ref<Action>,
-    EditWorkflowStatuses: '' as Ref<Action>
+    EditWorkflowStatuses: '' as Ref<Action>,
+    SetSprint: '' as Ref<Action>
   },
   team: {
     DefaultTeam: '' as Ref<Team>

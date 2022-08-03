@@ -24,12 +24,14 @@ import {
   IssuesOrdering,
   IssueStatus,
   ProjectStatus,
+  Sprint,
+  SprintStatus,
   Team
 } from '@anticrm/tracker'
 import { ViewOptionModel } from '@anticrm/view-resources'
 import { AnyComponent, AnySvelteComponent, getMillisecondsInMonth, MILLISECONDS_IN_WEEK } from '@anticrm/ui'
 import tracker from './plugin'
-import { defaultPriorities, defaultProjectStatuses, issuePriorities } from './types'
+import { defaultPriorities, defaultProjectStatuses, defaultSprintStatuses, issuePriorities } from './types'
 
 export * from './types'
 
@@ -223,6 +225,8 @@ export const getDueDateIconModifier = (
 
 export type ProjectsViewMode = 'all' | 'backlog' | 'active' | 'closed'
 
+export type SprintViewMode = 'all' | 'planned' | 'active' | 'closed'
+
 export const getIncludedProjectStatuses = (mode: ProjectsViewMode): ProjectStatus[] => {
   switch (mode) {
     case 'all': {
@@ -243,11 +247,38 @@ export const getIncludedProjectStatuses = (mode: ProjectsViewMode): ProjectStatu
   }
 }
 
+export const getIncludedSprintStatuses = (mode: SprintViewMode): SprintStatus[] => {
+  switch (mode) {
+    case 'all': {
+      return defaultSprintStatuses
+    }
+    case 'active': {
+      return [SprintStatus.InProgress]
+    }
+    case 'planned': {
+      return [SprintStatus.Planned]
+    }
+    case 'closed': {
+      return [SprintStatus.Completed, SprintStatus.Canceled]
+    }
+    default: {
+      return []
+    }
+  }
+}
+
 export const projectsTitleMap: Record<ProjectsViewMode, IntlString> = Object.freeze({
   all: tracker.string.AllProjects,
   backlog: tracker.string.BacklogProjects,
   active: tracker.string.ActiveProjects,
   closed: tracker.string.ClosedProjects
+})
+
+export const sprintTitleMap: Record<SprintViewMode, IntlString> = Object.freeze({
+  all: tracker.string.AllSprints,
+  planned: tracker.string.PlannedSprints,
+  active: tracker.string.ActiveSprints,
+  closed: tracker.string.ClosedSprints
 })
 
 const listIssueStatusOrder = [
@@ -481,4 +512,17 @@ export function getDefaultViewOptionsConfig (): ViewOptionModel[] {
       hidden: ({ groupBy }) => !['status', 'priority'].includes(groupBy)
     }
   ]
+}
+
+/**
+ * @public
+ */
+export function getSprintDays (value: Sprint): string {
+  const st = new Date(value.startDate).getDate()
+  const days = Math.floor(Math.abs((1 + value.targetDate - value.startDate) / 1000 / 60 / 60 / 24)) + 1
+  const stDate = new Date(value.startDate)
+
+  let ds = Array.from(Array(days).keys()).map((it) => st + it)
+  ds = ds.filter((it) => ![0, 6].includes(new Date(stDate.setDate(it)).getDay()))
+  return ds.join(' ')
 }

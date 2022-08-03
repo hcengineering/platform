@@ -200,7 +200,20 @@ export default mergeIds(trackerId, tracker, {
     DurMonths: '' as IntlString,
     DurYears: '' as IntlString,
     StatusHistory: '' as IntlString,
-    AddLabel: '' as IntlString
+    AddLabel: '' as IntlString,
+
+    Sprint: '' as IntlString,
+    Sprints: '' as IntlString,
+    AllSprints: '' as IntlString,
+    PlannedSprints: '' as IntlString,
+    ActiveSprints: '' as IntlString,
+    ClosedSprints: '' as IntlString,
+
+    NewSprint: '' as IntlString,
+    CreateSprint: '' as IntlString,
+    AddToSprint: '' as IntlString,
+    MoveToSprint: '' as IntlString,
+    NoSprint: '' as IntlString
   },
   component: {
     NopeComponent: '' as AnyComponent,
@@ -219,6 +232,7 @@ export default mergeIds(trackerId, tracker, {
     PriorityPresenter: '' as AnyComponent,
     PriorityEditor: '' as AnyComponent,
     ProjectEditor: '' as AnyComponent,
+    SprintEditor: '' as AnyComponent,
     StatusPresenter: '' as AnyComponent,
     StatusEditor: '' as AnyComponent,
     AssigneePresenter: '' as AnyComponent,
@@ -242,7 +256,12 @@ export default mergeIds(trackerId, tracker, {
     TeamProjects: '' as AnyComponent,
     IssuePreview: '' as AnyComponent,
     RelationsPopup: '' as AnyComponent,
-    CreateIssue: '' as AnyComponent
+    CreateIssue: '' as AnyComponent,
+
+    Sprints: '' as AnyComponent,
+    SprintPresenter: '' as AnyComponent,
+    SprintStatusPresenter: '' as AnyComponent,
+    SprintTitlePresenter: '' as AnyComponent
   },
   function: {
     IssueTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>) => Promise<string>>

@@ -2,6 +2,10 @@
 
 ## 0.6.32 (upcoming)
 
+Tracker:
+
+- Basic sprints
+
 ## 0.6.31
 
 Core:

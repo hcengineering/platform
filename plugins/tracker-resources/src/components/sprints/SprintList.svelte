@@ -16,10 +16,10 @@
   import contact from '@anticrm/contact'
   import { Class, Doc, FindOptions, getObjectValue, Ref } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
-  import { Issue, Project } from '@anticrm/tracker'
+  import { Issue, Sprint } from '@anticrm/tracker'
   import { CheckBox, Spinner, tooltip } from '@anticrm/ui'
-  import { AttributeModel, BuildModelKey } from '@anticrm/view'
-  import { buildModel, getObjectPresenter, LoadingProps } from '@anticrm/view-resources'
+  import { BuildModelKey } from '@anticrm/view'
+  import { buildModel, LoadingProps } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
 
@@ -27,7 +27,7 @@
   export let itemsConfig: (BuildModelKey | string)[]
   export let selectedObjectIds: Doc[] = []
   export let selectedRowIndex: number | undefined = undefined
-  export let projects: Project[] | undefined = undefined
+  export let sprints: Sprint[] | undefined = undefined
   export let loadingProps: LoadingProps | undefined = undefined
 
   const dispatch = createEventDispatcher()
@@ -42,15 +42,9 @@
     }
   }
 
-  let personPresenter: AttributeModel
-
-  $: options = { ...baseOptions } as FindOptions<Project>
+  $: options = { ...baseOptions } as FindOptions<Sprint>
   $: selectedObjectIdsSet = new Set<Ref<Doc>>(selectedObjectIds.map((it) => it._id))
-  $: objectRefs.length = projects?.length ?? 0
-
-  $: getObjectPresenter(client, contact.class.Person, { key: '' }).then((p) => {
-    personPresenter = p
-  })
+  $: objectRefs.length = sprints?.length ?? 0
 
   export const onObjectChecked = (docs: Doc[], value: boolean) => {
     dispatch('check', { docs, value })
@@ -61,12 +55,12 @@
   }
 
   export const onElementSelected = (offset: 1 | -1 | 0, docObject?: Doc) => {
-    if (!projects) {
+    if (!sprints) {
       return
     }
 
     let position =
-      (docObject !== undefined ? projects?.findIndex((x) => x._id === docObject?._id) : selectedRowIndex) ?? -1
+      (docObject !== undefined ? sprints?.findIndex((x) => x._id === docObject?._id) : selectedRowIndex) ?? -1
 
     position += offset
 
@@ -74,15 +68,15 @@
       position = 0
     }
 
-    if (position >= projects.length) {
-      position = projects.length - 1
+    if (position >= sprints.length) {
+      position = sprints.length - 1
     }
 
     const objectRef = objectRefs[position]
 
     selectedRowIndex = position
 
-    handleRowFocused(projects[position])
+    handleRowFocused(sprints[position])
 
     if (objectRef) {
       objectRef.scrollIntoView({ behavior: 'auto', block: 'nearest' })
@@ -100,14 +94,14 @@
 
 {#await buildModel({ client, _class, keys: itemsConfig, lookup: options.lookup }) then itemModels}
   <div class="listRoot">
-    {#if projects}
-      {#each projects as docObject (docObject._id)}
+    {#if sprints}
+      {#each sprints as docObject (docObject._id)}
         <div
-          bind:this={objectRefs[projects.findIndex((x) => x === docObject)]}
+          bind:this={objectRefs[sprints.findIndex((x) => x === docObject)]}
           class="listGrid"
           class:mListGridChecked={selectedObjectIdsSet.has(docObject._id)}
-          class:mListGridFixed={selectedRowIndex === projects.findIndex((x) => x === docObject)}
-          class:mListGridSelected={selectedRowIndex === projects.findIndex((x) => x === docObject)}
+          class:mListGridFixed={selectedRowIndex === sprints.findIndex((x) => x === docObject)}
+          class:mListGridSelected={selectedRowIndex === sprints.findIndex((x) => x === docObject)}
           on:focus={() => {}}
           on:mouseover={() => handleRowFocused(docObject)}
         >

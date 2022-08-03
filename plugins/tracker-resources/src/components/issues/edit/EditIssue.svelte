@@ -19,22 +19,25 @@
   import { Panel } from '@anticrm/panel'
   import { getResource } from '@anticrm/platform'
   import presentation, { createQuery, getClient, MessageViewer } from '@anticrm/presentation'
+  import setting, { settingId } from '@anticrm/setting'
   import type { Issue, IssueStatus, Team } from '@anticrm/tracker'
   import {
     Button,
     EditBox,
+    getCurrentLocation,
     IconAttachment,
     IconEdit,
     IconMoreH,
     Label,
+    navigate,
     Scroller,
     showPopup,
     Spinner
   } from '@anticrm/ui'
   import { ContextMenu, UpDownNavigator } from '@anticrm/view-resources'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
-  import tracker from '../../../plugin'
   import { generateIssueShortLink, getIssueId } from '../../../issues'
+  import tracker from '../../../plugin'
   import IssueStatusActivity from '../IssueStatusActivity.svelte'
   import ControlPanel from './ControlPanel.svelte'
   import CopyToClipboard from './CopyToClipboard.svelte'
@@ -283,9 +286,26 @@
       {#if issueId}{issueId}{/if}
     </span>
     <svelte:fragment slot="actions">
+      <div class="flex-grow" />
       {#if issueId}
         <CopyToClipboard issueUrl={generateIssueShortLink(issueId)} {issueId} />
       {/if}
+      <Button
+        icon={setting.icon.Setting}
+        kind={'transparent'}
+        showTooltip={{ label: setting.string.ClassSetting }}
+        on:click={(ev) => {
+          ev.stopPropagation()
+          const loc = getCurrentLocation()
+          loc.path[2] = settingId
+          loc.path[3] = 'setting'
+          loc.path[4] = 'classes'
+          loc.path.length = 5
+          loc.query = { _class }
+          loc.fragment = undefined
+          navigate(loc)
+        }}
+      />
     </svelte:fragment>
 
     <svelte:fragment slot="custom-attributes">

@@ -13,18 +13,24 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Project } from '@anticrm/tracker'
-  import { Icon } from '@anticrm/ui'
+  import { Sprint } from '@anticrm/tracker'
+  import { getMonthName, Icon } from '@anticrm/ui'
   import tracker from '../../plugin'
-
-  export let value: Project | undefined
+  export let value: Sprint | undefined
 </script>
 
 {#if value}
-  <span class="overflow-label flex">
-    <Icon icon={value.icon ?? tracker.icon.Project} size={'small'} />
+  <span class="overflow-label flex-row-center flex-grow">
+    <Icon icon={tracker.icon.Sprint} size={'small'} />
     <div class="ml-2 mr-2">
       {value.label}
-    </div></span
-  >
+    </div>
+    <span class="flex flex-grow justify-end">
+      {new Date(value.startDate).getDate()}
+      {getMonthName(new Date(value.startDate), 'short')}
+      -
+      {new Date(value.targetDate).getDate()}
+      {getMonthName(new Date(value.targetDate), 'short')}
+    </span>
+  </span>
 {/if}
