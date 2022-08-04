@@ -325,3 +325,8 @@ export function getPopupPositionElement (
 
   return undefined
 }
+export function getEventPositionElement (evt: MouseEvent): PopupAlignment | undefined {
+  return {
+    getBoundingClientRect: () => DOMRect.fromRect({ width: 1, height: 1, x: evt.clientX, y: evt.clientY })
+  }
+}

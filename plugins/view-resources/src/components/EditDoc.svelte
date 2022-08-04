@@ -26,7 +26,7 @@
     getClient,
     KeyedAttribute
   } from '@anticrm/presentation'
-  import { AnyComponent, Component } from '@anticrm/ui'
+  import { AnyComponent, Button, Component } from '@anticrm/ui'
   import view from '@anticrm/view'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import { collectionsFilter, getCollectionCounter, getFiltredKeys } from '../utils'
@@ -77,17 +77,22 @@
 
   let mixins: Mixin<Doc>[] = []
 
+  let showAllMixins = false
+
   const dispatch = createEventDispatcher()
 
-  function getMixins (parentClass: Ref<Class<Doc>>, object: Doc): void {
+  function getMixins (parentClass: Ref<Class<Doc>>, object: Doc, showAllMixins: boolean): void {
     if (object === undefined || parentClass === undefined) return
     const descendants = hierarchy.getDescendants(parentClass).map((p) => hierarchy.getClass(p))
     mixins = descendants.filter(
-      (m) => m.kind === ClassifierKind.MIXIN && hierarchy.hasMixin(object, m._id) && !ignoreMixins.has(m._id)
+      (m) =>
+        m.kind === ClassifierKind.MIXIN &&
+        !ignoreMixins.has(m._id) &&
+        (hierarchy.hasMixin(object, m._id) || showAllMixins)
     )
   }
 
-  $: getMixins(parentClass, object)
+  $: getMixins(parentClass, object, showAllMixins)
 
   let ignoreKeys: string[] = []
   let allowedCollections: string[] = []
@@ -239,6 +244,30 @@
     </svelte:fragment>
 
     <svelte:fragment slot="attributes" let:direction={dir}>
+      <div class="flex flex-reverse flex-grow">
+        <Button
+          kind={'transparent'}
+          shape={'round'}
+          selected={showAllMixins}
+          on:click={() => {
+            showAllMixins = !showAllMixins
+          }}
+        >
+          <svelte:fragment slot="content">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="2.66602" y="2.66663" width="10.6667" height="4.66667" rx="1" stroke="white" />
+              <path
+                d="M2.66602 11.3334C2.66602 10.3906 2.66602 9.91916 2.95891 9.62627C3.2518 9.33337 3.72321 9.33337 4.66602 9.33337H6.66602V11.3334C6.66602 12.2762 6.66602 12.7476 6.37312 13.0405C6.37312 13.0405 6.37312 13.0405 6.37312 13.0405C6.08023 13.3334 5.60882 13.3334 4.66602 13.3334V13.3334C3.72321 13.3334 3.2518 13.3334 2.95891 13.0405C2.95891 13.0405 2.95891 13.0405 2.95891 13.0405C2.66602 12.7476 2.66602 12.2762 2.66602 11.3334V11.3334Z"
+                stroke="white"
+              />
+              <path
+                d="M9.33398 9.33337H11.334C12.2768 9.33337 12.7482 9.33337 13.0411 9.62627C13.334 9.91916 13.334 10.3906 13.334 11.3334V11.3334C13.334 12.2762 13.334 12.7476 13.0411 13.0405C12.7482 13.3334 12.2768 13.3334 11.334 13.3334V13.3334C10.3912 13.3334 9.91977 13.3334 9.62688 13.0405C9.33398 12.7476 9.33398 12.2762 9.33398 11.3334V9.33337Z"
+                stroke="white"
+              />
+            </svg>
+          </svelte:fragment>
+        </Button>
+      </div>
       {#if !headerLoading}
         {#if headerEditor !== undefined}
           <Component
@@ -269,7 +298,7 @@
           ignoreMixins = new Set(ev.detail.ignoreMixins)
           allowedCollections = ev.detail.allowedCollections ?? []
           collectionArrays = ev.detail.collectionArrays ?? []
-          getMixins(parentClass, object)
+          getMixins(parentClass, object, showAllMixins)
           updateKeys()
         }}
       />

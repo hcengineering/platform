@@ -13,12 +13,13 @@
 // limitations under the License.
 //
 
+import type { TxViewlet } from '@anticrm/activity'
 import { Doc, Ref } from '@anticrm/core'
 import { mergeIds } from '@anticrm/platform'
 import { settingId } from '@anticrm/setting'
 import setting from '@anticrm/setting-resources/src/plugin'
-import type { TxViewlet } from '@anticrm/activity'
 import { AnyComponent } from '@anticrm/ui'
+import { Action, ActionCategory, ViewAction } from '@anticrm/view'
 
 export default mergeIds(settingId, setting, {
   activity: {
@@ -37,6 +38,16 @@ export default mergeIds(settingId, setting, {
     DateTypeEditor: '' as AnyComponent,
     RefEditor: '' as AnyComponent,
     EnumTypeEditor: '' as AnyComponent,
-    Owners: '' as AnyComponent
+    Owners: '' as AnyComponent,
+    CreateMixin: '' as AnyComponent
+  },
+  category: {
+    Settings: '' as Ref<ActionCategory>
+  },
+  action: {
+    DeleteMixin: '' as Ref<Action>
+  },
+  actionImpl: {
+    DeleteMixin: '' as ViewAction<Record<string, any>>
   }
 })

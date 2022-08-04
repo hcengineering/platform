@@ -84,8 +84,10 @@
       <div style="padding: .75rem 1.5rem">
         {#if $$slots.actions}
           <div class="flex-row-center pb-3 bottom-divider">
-            <span class="fs-bold w-24 mr-6"><slot name="actions-label" /></span>
-            <div class="buttons-group xsmall-gap">
+            {#if $$slots['actions-label']}
+              <span class="fs-bold w-24 mr-6"><slot name="actions-label" /></span>
+            {/if}
+            <div class="buttons-group xsmall-gap flex flex-grow">
               <slot name="actions" />
             </div>
           </div>

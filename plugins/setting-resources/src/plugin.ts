@@ -30,6 +30,9 @@ export default mergeIds(settingId, setting, {
     DeleteAttribute: '' as IntlString,
     DeleteAttributeConfirm: '' as IntlString,
     DeleteAttributeExistConfirm: '' as IntlString,
+    DeleteMixin: '' as IntlString,
+    DeleteMixinConfirm: '' as IntlString,
+    DeleteMixinExistConfirm: '' as IntlString,
     Attribute: '' as IntlString,
     Attributes: '' as IntlString,
     Custom: '' as IntlString,
@@ -50,6 +53,9 @@ export default mergeIds(settingId, setting, {
     Role: '' as IntlString,
     FailedToSave: '' as IntlString,
     ImportEnum: '' as IntlString,
-    ImportEnumCopy: '' as IntlString
+    ImportEnumCopy: '' as IntlString,
+    CreateMixin: '' as IntlString,
+    OldNames: '' as IntlString,
+    NewClassName: '' as IntlString
   }
 })

@@ -15,18 +15,27 @@
 <script lang="ts">
   import contact, { Employee } from '@anticrm/contact'
   import { Class, Doc, FindOptions, getObjectValue, Ref, WithLookup } from '@anticrm/core'
+  import notification from '@anticrm/notification'
   import { getClient } from '@anticrm/presentation'
   import { Issue, IssueStatus, Team } from '@anticrm/tracker'
-  import { Button, CheckBox, Component, eventToHTMLElement, IconAdd, showPopup, Spinner, tooltip } from '@anticrm/ui'
+  import {
+    Button,
+    CheckBox,
+    Component,
+    eventToHTMLElement,
+    ExpandCollapse,
+    getEventPositionElement,
+    IconAdd,
+    showPopup,
+    Spinner,
+    tooltip
+  } from '@anticrm/ui'
   import { AttributeModel, BuildModelKey } from '@anticrm/view'
-  import { buildModel, getObjectPresenter, LoadingProps, Menu } from '@anticrm/view-resources'
+  import { buildModel, FixedColumn, getObjectPresenter, LoadingProps, Menu } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
   import { IssuesGroupByKeys, issuesGroupEditorMap, IssuesOrderByKeys, issuesSortOrderMap } from '../../utils'
   import CreateIssue from '../CreateIssue.svelte'
-  import notification from '@anticrm/notification'
-  import { FixedColumn } from '@anticrm/view-resources'
-  import { ExpandCollapse } from '@anticrm/ui'
 
   export let _class: Ref<Class<Doc>>
   export let currentSpace: Ref<Team> | undefined = undefined
@@ -78,16 +87,9 @@
 
     const items = selectedObjectIds.length > 0 ? selectedObjectIds : object
 
-    showPopup(
-      Menu,
-      { object: items, baseMenuClass },
-      {
-        getBoundingClientRect: () => DOMRect.fromRect({ width: 1, height: 1, x: event.clientX, y: event.clientY })
-      },
-      () => {
-        selectedRowIndex = undefined
-      }
-    )
+    showPopup(Menu, { object: items, baseMenuClass }, getEventPositionElement(event), () => {
+      selectedRowIndex = undefined
+    })
   }
 
   export const onObjectChecked = (docs: Doc[], value: boolean) => {

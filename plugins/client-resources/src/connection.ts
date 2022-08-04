@@ -68,11 +68,23 @@ class Connection implements ClientConnection {
     this.websocket?.close()
   }
 
+  delay = 1
   private async waitOpenConnection (): Promise<ClientSocket> {
     while (true) {
       try {
-        return await this.openConnection()
+        const conn = await this.openConnection()
+        this.delay = 1
+        return conn
       } catch (err: any) {
+        await new Promise((resolve) => {
+          setTimeout(() => {
+            console.log(`delay ${this.delay} second`)
+            resolve(null)
+            if (this.delay !== 5) {
+              this.delay++
+            }
+          }, this.delay * 1000)
+        })
         console.log('failed to connect', err)
         if (err.code === UNAUTHORIZED.code) {
           this.onUnauthorized?.()

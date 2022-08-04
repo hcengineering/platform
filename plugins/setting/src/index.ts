@@ -51,6 +51,13 @@ export interface Editable extends Class<Doc> {}
 
 /**
  * @public
+ *
+ * Mixin to allow delete of Custom classes.
+ */
+export interface UserMixin extends Class<Doc> {}
+
+/**
+ * @public
  */
 export interface SettingsCategory extends Doc {
   name: string
@@ -84,7 +91,8 @@ export default plugin(settingId, {
     Owners: '' as Ref<Doc>
   },
   mixin: {
-    Editable: '' as Ref<Mixin<Editable>>
+    Editable: '' as Ref<Mixin<Editable>>,
+    UserMixin: '' as Ref<Mixin<UserMixin>>
   },
   class: {
     SettingsCategory: '' as Ref<Class<SettingsCategory>>,

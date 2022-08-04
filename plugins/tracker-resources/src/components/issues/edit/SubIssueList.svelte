@@ -13,25 +13,25 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
-  import { flip } from 'svelte/animate'
   import { Doc, WithLookup } from '@anticrm/core'
   import { Issue, IssueStatus, Team } from '@anticrm/tracker'
+  import { getEventPositionElement, showPanel, showPopup } from '@anticrm/ui'
   import {
     ActionContext,
     ContextMenu,
+    FixedColumn,
     ListSelectionProvider,
-    SelectDirection,
-    FixedColumn
+    SelectDirection
   } from '@anticrm/view-resources'
-  import { showPanel, showPopup } from '@anticrm/ui'
-  import tracker from '../../../plugin'
+  import { createEventDispatcher } from 'svelte'
+  import { flip } from 'svelte/animate'
   import { getIssueId } from '../../../issues'
+  import tracker from '../../../plugin'
   import Circles from '../../icons/Circles.svelte'
   import AssigneeEditor from '../AssigneeEditor.svelte'
   import DueDateEditor from '../DueDateEditor.svelte'
-  import StatusEditor from '../StatusEditor.svelte'
   import PriorityEditor from '../PriorityEditor.svelte'
+  import StatusEditor from '../StatusEditor.svelte'
 
   export let issues: Issue[]
   export let issueStatuses: WithLookup<IssueStatus>[]
@@ -70,11 +70,7 @@
   }
 
   function showContextMenu (ev: MouseEvent, object: Issue) {
-    showPopup(
-      ContextMenu,
-      { object },
-      { getBoundingClientRect: () => DOMRect.fromRect({ width: 1, height: 1, x: ev.clientX, y: ev.clientY }) }
-    )
+    showPopup(ContextMenu, { object }, getEventPositionElement(ev))
   }
 
   const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {

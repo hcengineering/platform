@@ -1,19 +1,13 @@
 <script lang="ts">
-  import { Button, Component, getPlatformColor, IconMoreV, showPopup } from '@anticrm/ui'
-  import { State } from '@anticrm/task'
   import notification from '@anticrm/notification'
+  import { State } from '@anticrm/task'
+  import { Button, Component, getEventPositionElement, getPlatformColor, IconMoreV, showPopup } from '@anticrm/ui'
   import { ContextMenu } from '@anticrm/view-resources'
   export let state: State
 
   const showMenu = async (ev: MouseEvent): Promise<void> => {
     ev.preventDefault()
-    showPopup(
-      ContextMenu,
-      { object: state },
-      {
-        getBoundingClientRect: () => DOMRect.fromRect({ width: 1, height: 1, x: ev.clientX, y: ev.clientY })
-      }
-    )
+    showPopup(ContextMenu, { object: state }, getEventPositionElement(ev))
   }
 </script>
 

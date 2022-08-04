@@ -144,8 +144,8 @@ export class Hierarchy {
     ) {
       const _id = tx.objectId as Ref<Classifier>
       this.classifiers.set(_id, TxProcessor.createDoc2Doc(tx as TxCreateDoc<Classifier>))
-      this.addAncestors(_id)
-      this.addDescendant(_id)
+      this.updateAncestors(_id)
+      this.updateDescendant(_id)
     } else if (tx.objectClass === core.class.Attribute) {
       const createTx = tx as TxCreateDoc<AnyAttribute>
       this.addAttribute(TxProcessor.createDoc2Doc(createTx))
@@ -158,6 +158,11 @@ export class Hierarchy {
       const doc = this.attributesById.get(updateTx.objectId)
       if (doc === undefined) return
       this.addAttribute(TxProcessor.updateDoc2Doc(doc, updateTx))
+    } else if (tx.objectClass === core.class.Mixin || tx.objectClass === core.class.Class) {
+      const updateTx = tx as TxUpdateDoc<Mixin<Class<Doc>>>
+      const doc = this.classifiers.get(updateTx.objectId)
+      if (doc === undefined) return
+      TxProcessor.updateDoc2Doc(doc, updateTx)
     }
   }
 
@@ -169,6 +174,11 @@ export class Hierarchy {
       const map = this.attributes.get(doc.attributeOf)
       map?.delete(doc.name)
       this.attributesById.delete(removeTx.objectId)
+    } else if (tx.objectClass === core.class.Mixin) {
+      const removeTx = tx as TxRemoveDoc<Mixin<Class<Doc>>>
+      this.updateDescendant(removeTx.objectId, false)
+      this.updateAncestors(removeTx.objectId, false)
+      this.classifiers.delete(removeTx.objectId)
     }
   }
 
@@ -246,19 +256,28 @@ export class Hierarchy {
     return data
   }
 
-  private addDescendant (_class: Ref<Classifier>): void {
+  private updateDescendant (_class: Ref<Classifier>, add = true): void {
     const hierarchy = this.getAncestors(_class)
     for (const cls of hierarchy) {
       const list = this.descendants.get(cls)
       if (list === undefined) {
-        this.descendants.set(cls, [_class])
+        if (add) {
+          this.descendants.set(cls, [_class])
+        }
       } else {
-        list.push(_class)
+        if (add) {
+          list.push(_class)
+        } else {
+          const pos = list.indexOf(_class)
+          if (pos !== -1) {
+            list.splice(pos, 1)
+          }
+        }
       }
     }
   }
 
-  private addAncestors (_class: Ref<Classifier>): void {
+  private updateAncestors (_class: Ref<Classifier>, add = true): void {
     const cl: Ref<Classifier>[] = [_class]
     const visited = new Set<Ref<Classifier>>()
     while (cl.length > 0) {
@@ -266,9 +285,18 @@ export class Hierarchy {
       if (addNew(visited, classifier)) {
         const list = this.ancestors.get(_class)
         if (list === undefined) {
-          this.ancestors.set(_class, [classifier])
+          if (add) {
+            this.ancestors.set(_class, [classifier])
+          }
         } else {
-          addIf(list, classifier)
+          if (add) {
+            addIf(list, classifier)
+          } else {
+            const pos = list.indexOf(classifier)
+            if (pos !== -1) {
+              list.splice(pos, 1)
+            }
+          }
         }
         cl.push(...this.ancestorsOf(classifier))
       }

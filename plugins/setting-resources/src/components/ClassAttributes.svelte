@@ -18,6 +18,7 @@
     ArrOf,
     AttachedDoc,
     Class,
+    ClassifierKind,
     Collection,
     Doc,
     EnumOf,
@@ -26,11 +27,14 @@
     Type
   } from '@anticrm/core'
   import { IntlString } from '@anticrm/platform'
-  import presentation, { getClient, MessageBox } from '@anticrm/presentation'
+  import presentation, { createQuery, getClient, MessageBox } from '@anticrm/presentation'
   import {
     Action,
+    ActionIcon,
     CircleButton,
     Component,
+    getEventPositionElement,
+    Icon,
     IconAdd,
     IconDelete,
     IconEdit,
@@ -40,14 +44,22 @@
     showPopup
   } from '@anticrm/ui'
   import view from '@anticrm/view'
-  import setting from '../plugin'
+  import settings from '../plugin'
   import CreateAttribute from './CreateAttribute.svelte'
   import EditAttribute from './EditAttribute.svelte'
+  import EditClassLabel from './EditClassLabel.svelte'
   export let _class: Ref<Class<Doc>>
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
+  const classQuery = createQuery()
+
+  let clazz: Class<Doc> | undefined
+
+  $: classQuery.query(core.class.Class, { _id: _class }, (res) => {
+    clazz = res.shift()
+  })
   $: attributes = getCustomAttributes(_class)
 
   function getCustomAttributes (_class: Ref<Class<Doc>>): AnyAttribute[] {
@@ -73,8 +85,8 @@
     showPopup(
       MessageBox,
       {
-        label: setting.string.DeleteAttribute,
-        message: exist ? setting.string.DeleteAttributeExistConfirm : setting.string.DeleteAttributeConfirm
+        label: settings.string.DeleteAttribute,
+        message: exist ? settings.string.DeleteAttributeExistConfirm : settings.string.DeleteAttributeConfirm
       },
       'top',
       async (result) => {
@@ -105,14 +117,7 @@
         }
       }
     ]
-    showPopup(
-      Menu,
-      { actions },
-      {
-        getBoundingClientRect: () => DOMRect.fromRect({ width: 1, height: 1, x: ev.clientX, y: ev.clientY })
-      },
-      () => {}
-    )
+    showPopup(Menu, { actions }, getEventPositionElement(ev), () => {})
   }
 
   function getAttrType (type: Type<any>): IntlString | undefined {
@@ -133,10 +138,31 @@
     const res = await client.findOne(core.class.Enum, { _id: ref })
     return res?.name
   }
+  function editLabel (evt: MouseEvent): void {
+    showPopup(EditClassLabel, { clazz }, getEventPositionElement(evt), () => {})
+  }
 </script>
 
+<div class="flex-row-center fs-title mb-3">
+  {#if clazz?.icon}
+    <div class="mr-2 flex">
+      <Icon icon={clazz.icon} size={'medium'} />
+      {#if clazz.kind === ClassifierKind.MIXIN && hierarchy.hasMixin(clazz, settings.mixin.UserMixin)}
+        <Icon icon={IconAdd} size={'x-small'} />
+      {/if}
+    </div>
+  {/if}
+  {#if clazz}
+    <Label label={clazz.label} />
+    {#if clazz.kind === ClassifierKind.MIXIN && hierarchy.hasMixin(clazz, settings.mixin.UserMixin)}
+      <div class="ml-2">
+        <ActionIcon icon={IconEdit} size="small" action={editLabel} />
+      </div>
+    {/if}
+  {/if}
+</div>
 <div class="flex-between trans-title mb-3">
-  <Label label={setting.string.Attributes} />
+  <Label label={settings.string.Attributes} />
   <CircleButton icon={IconAdd} size="medium" on:click={createAttribute} />
 </div>
 <table class="antiTable">
@@ -144,17 +170,17 @@
     <tr class="scroller-thead__tr">
       <th>
         <div class="antiTable-cells">
-          <Label label={setting.string.Attribute} />
+          <Label label={settings.string.Attribute} />
         </div>
       </th>
       <th>
         <div class="antiTable-cells">
-          <Label label={setting.string.Type} />
+          <Label label={settings.string.Type} />
         </div>
       </th>
       <th>
         <div class="antiTable-cells">
-          <Label label={setting.string.Custom} />
+          <Label label={settings.string.Custom} />
         </div>
       </th>
     </tr>
