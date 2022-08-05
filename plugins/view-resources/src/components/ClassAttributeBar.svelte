@@ -30,12 +30,12 @@
   let keys: KeyedAttribute[] = []
   let collapsed: boolean = false
 
-  function updateKeys (ignoreKeys: string[]): void {
+  function updateKeys (_class: Ref<Class<Doc>>, ignoreKeys: string[], to: Ref<Class<Doc>> | undefined): void {
     const filtredKeys = getFiltredKeys(hierarchy, _class, ignoreKeys, to)
     keys = filtredKeys.filter((key) => !isCollectionAttr(hierarchy, key) || allowedCollections.includes(key.key))
   }
 
-  $: updateKeys(ignoreKeys)
+  $: updateKeys(_class, ignoreKeys, to)
 
   $: label = hierarchy.getClass(_class).label
 </script>

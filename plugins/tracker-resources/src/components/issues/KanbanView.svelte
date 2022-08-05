@@ -18,8 +18,18 @@
   import { Kanban, TypeState } from '@anticrm/kanban'
   import notification from '@anticrm/notification'
   import { createQuery } from '@anticrm/presentation'
+  import tags from '@anticrm/tags'
   import { Issue, IssuesGrouping, IssuesOrdering, IssueStatus, Team } from '@anticrm/tracker'
-  import { Button, Component, IconAdd, showPanel, showPopup, Loading, tooltip } from '@anticrm/ui'
+  import {
+    Button,
+    Component,
+    getEventPositionElement,
+    IconAdd,
+    Loading,
+    showPanel,
+    showPopup,
+    tooltip
+  } from '@anticrm/ui'
   import { focusStore, ListSelectionProvider, SelectDirection, selectionStore } from '@anticrm/view-resources'
   import ActionContext from '@anticrm/view-resources/src/components/ActionContext.svelte'
   import Menu from '@anticrm/view-resources/src/components/Menu.svelte'
@@ -37,11 +47,10 @@
   import AssigneePresenter from './AssigneePresenter.svelte'
   import SubIssuesSelector from './edit/SubIssuesSelector.svelte'
   import IssuePresenter from './IssuePresenter.svelte'
+  import IssueStatusIcon from './IssueStatusIcon.svelte'
   import ParentNamesPresenter from './ParentNamesPresenter.svelte'
   import PriorityEditor from './PriorityEditor.svelte'
   import StatusEditor from './StatusEditor.svelte'
-  import tags from '@anticrm/tags'
-  import IssueStatusIcon from './IssueStatusIcon.svelte'
 
   export let currentSpace: Ref<Team> = tracker.team.DefaultTeam
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
@@ -106,16 +115,9 @@
 
   const showMenu = async (ev: MouseEvent, items: Doc[]): Promise<void> => {
     ev.preventDefault()
-    showPopup(
-      Menu,
-      { object: items, baseMenuClass },
-      {
-        getBoundingClientRect: () => DOMRect.fromRect({ width: 1, height: 1, x: ev.clientX, y: ev.clientY })
-      },
-      () => {
-        // selection = undefined
-      }
-    )
+    showPopup(Menu, { object: items, baseMenuClass }, getEventPositionElement(ev), () => {
+      // selection = undefined
+    })
   }
   const issuesQuery = createQuery()
   let issueStates: TypeState[] = []

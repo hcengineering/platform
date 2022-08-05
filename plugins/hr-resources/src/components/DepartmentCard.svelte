@@ -18,7 +18,16 @@
   import { Ref, WithLookup } from '@anticrm/core'
   import { Department, Staff } from '@anticrm/hr'
   import { Avatar, getClient, UsersPopup } from '@anticrm/presentation'
-  import { Button, closeTooltip, eventToHTMLElement, IconAdd, Label, showPanel, showPopup } from '@anticrm/ui'
+  import {
+    Button,
+    closeTooltip,
+    eventToHTMLElement,
+    getEventPositionElement,
+    IconAdd,
+    Label,
+    showPanel,
+    showPopup
+  } from '@anticrm/ui'
   import view from '@anticrm/view'
   import { Menu } from '@anticrm/view-resources'
   import hr from '../plugin'
@@ -70,13 +79,7 @@
   }
 
   function showMenu (e: MouseEvent) {
-    showPopup(
-      Menu,
-      { object: value, baseMenuClass: value._class },
-      {
-        getBoundingClientRect: () => DOMRect.fromRect({ width: 1, height: 1, x: e.clientX, y: e.clientY })
-      }
-    )
+    showPopup(Menu, { object: value, baseMenuClass: value._class }, getEventPositionElement(e))
   }
 
   function edit (e: MouseEvent): void {

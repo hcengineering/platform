@@ -20,7 +20,7 @@
   import { createQuery, getClient } from '@anticrm/presentation'
   import type { Kanban, SpaceWithStates, State } from '@anticrm/task'
   import task, { calcRank } from '@anticrm/task'
-  import { showPopup } from '@anticrm/ui'
+  import { getEventPositionElement, showPopup } from '@anticrm/ui'
   import {
     ActionContext,
     ContextMenu,
@@ -31,8 +31,8 @@
   } from '@anticrm/view-resources'
   import { onMount } from 'svelte'
   import AddCard from './add-card/AddCard.svelte'
-  import KanbanCard from './KanbanCard.svelte'
   import AddPanel from './AddPanel.svelte'
+  import KanbanCard from './KanbanCard.svelte'
   import ListHeader from './ListHeader.svelte'
 
   export let _class: Ref<Class<Card>>
@@ -93,13 +93,7 @@
       return
     }
 
-    showPopup(
-      ContextMenu,
-      { object },
-      {
-        getBoundingClientRect: () => DOMRect.fromRect({ width: 1, height: 1, x: ev.clientX, y: ev.clientY })
-      }
-    )
+    showPopup(ContextMenu, { object }, getEventPositionElement(ev))
   }
 </script>
 

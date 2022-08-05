@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import core, { Class, Doc, Ref } from '@anticrm/core'
-  import { getClient } from '@anticrm/presentation'
+  import { createQuery, getClient } from '@anticrm/presentation'
   import { getCurrentLocation, Icon, Label, navigate } from '@anticrm/ui'
   import setting from '../plugin'
   import ClassAttributes from './ClassAttributes.svelte'
@@ -32,11 +32,14 @@
     navigate(loc)
   }
 
-  const classes = hierarchy
-    .getDescendants(core.class.Doc)
-    .map((p) => hierarchy.getClass(p))
-    .filter((p) => hierarchy.hasMixin(p, setting.mixin.Editable))
-    .map((p) => p._id)
+  const clQuery = createQuery()
+
+  let classes: Ref<Class<Doc>>[] = []
+  clQuery.query(core.class.Class, {}, (res) => {
+    classes = res
+      .filter((p) => hierarchy.hasMixin(p, setting.mixin.Editable) && !hierarchy.hasMixin(p, setting.mixin.UserMixin))
+      .map((p) => p._id)
+  })
 </script>
 
 <div class="antiComponent">

@@ -18,7 +18,17 @@
   import { getObjectValue, SortingOrder } from '@anticrm/core'
   import notification from '@anticrm/notification'
   import { createQuery, getClient } from '@anticrm/presentation'
-  import { CheckBox, Component, IconDown, IconUp, Label, Loading, showPopup, Spinner } from '@anticrm/ui'
+  import {
+    CheckBox,
+    Component,
+    getEventPositionElement,
+    IconDown,
+    IconUp,
+    Label,
+    Loading,
+    showPopup,
+    Spinner
+  } from '@anticrm/ui'
   import { BuildModelKey } from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
   import { buildConfigLookup, buildModel, LoadingProps } from '../utils'
@@ -103,16 +113,9 @@
       checked = []
     }
     const items = checked.length > 0 ? checked : object
-    showPopup(
-      Menu,
-      { object: items, baseMenuClass },
-      {
-        getBoundingClientRect: () => DOMRect.fromRect({ width: 1, height: 1, x: ev.clientX, y: ev.clientY })
-      },
-      () => {
-        selection = undefined
-      }
-    )
+    showPopup(Menu, { object: items, baseMenuClass }, getEventPositionElement(ev), () => {
+      selection = undefined
+    })
   }
 
   function changeSorting (key: string): void {

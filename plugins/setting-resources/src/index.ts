@@ -13,28 +13,56 @@
 // limitations under the License.
 //
 
+import { Class, Doc, Mixin } from '@anticrm/core'
 import { Resources } from '@anticrm/platform'
-import Profile from './components/Profile.svelte'
-import Password from './components/Password.svelte'
-import WorkspaceSettings from './components/WorkspaceSettings.svelte'
-import Integrations from './components/Integrations.svelte'
-import ManageStatuses from './components/statuses/ManageStatuses.svelte'
-import Support from './components/Support.svelte'
-import Privacy from './components/Privacy.svelte'
-import Terms from './components/Terms.svelte'
-import Settings from './components/Settings.svelte'
-import ClassSetting from './components/ClassSetting.svelte'
+import { getClient, MessageBox } from '@anticrm/presentation'
+import { showPopup } from '@anticrm/ui'
+import { deleteObject } from '@anticrm/view-resources/src/utils'
 import TxIntegrationDisable from './components/activity/TxIntegrationDisable.svelte'
 import TxIntegrationDisableReconnect from './components/activity/TxIntegrationDisableReconnect.svelte'
-import StringTypeEditor from './components/typeEditors/StringTypeEditor.svelte'
-import BooleanTypeEditor from './components/typeEditors/BooleanTypeEditor.svelte'
-import DateTypeEditor from './components/typeEditors/DateTypeEditor.svelte'
-import NumberTypeEditor from './components/typeEditors/NumberTypeEditor.svelte'
-import RefEditor from './components/typeEditors/RefEditor.svelte'
-import EnumTypeEditor from './components/typeEditors/EnumTypeEditor.svelte'
+import ClassSetting from './components/ClassSetting.svelte'
+import CreateMixin from './components/CreateMixin.svelte'
 import EditEnum from './components/EditEnum.svelte'
 import EnumSetting from './components/EnumSetting.svelte'
+import Integrations from './components/Integrations.svelte'
 import Owners from './components/Owners.svelte'
+import Password from './components/Password.svelte'
+import Privacy from './components/Privacy.svelte'
+import Profile from './components/Profile.svelte'
+import Settings from './components/Settings.svelte'
+import ManageStatuses from './components/statuses/ManageStatuses.svelte'
+import Support from './components/Support.svelte'
+import Terms from './components/Terms.svelte'
+import BooleanTypeEditor from './components/typeEditors/BooleanTypeEditor.svelte'
+import DateTypeEditor from './components/typeEditors/DateTypeEditor.svelte'
+import EnumTypeEditor from './components/typeEditors/EnumTypeEditor.svelte'
+import NumberTypeEditor from './components/typeEditors/NumberTypeEditor.svelte'
+import RefEditor from './components/typeEditors/RefEditor.svelte'
+import StringTypeEditor from './components/typeEditors/StringTypeEditor.svelte'
+import WorkspaceSettings from './components/WorkspaceSettings.svelte'
+import setting from './plugin'
+
+async function DeleteMixin (object: Mixin<Class<Doc>>): Promise<void> {
+  const docs = await getClient().findAll(object._id, {}, { limit: 1 })
+
+  showPopup(
+    MessageBox,
+    {
+      label: setting.string.DeleteMixin,
+      message: docs.length > 0 ? setting.string.DeleteMixinExistConfirm : setting.string.DeleteMixinConfirm,
+      params: { count: docs.length }
+    },
+    undefined,
+    (result?: boolean) => {
+      if (result === true) {
+        const objs = Array.isArray(object) ? object : [object]
+        for (const o of objs) {
+          deleteObject(getClient(), o).catch((err) => console.error(err))
+        }
+      }
+    }
+  )
+}
 
 export default async (): Promise<Resources> => ({
   activity: {
@@ -60,6 +88,10 @@ export default async (): Promise<Resources> => ({
     EnumTypeEditor,
     EditEnum,
     EnumSetting,
-    Owners
+    Owners,
+    CreateMixin
+  },
+  actionImpl: {
+    DeleteMixin
   }
 })

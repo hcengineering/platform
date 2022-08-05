@@ -14,15 +14,21 @@
 -->
 <script lang="ts">
   import { Doc, Mixin } from '@anticrm/core'
+  import { getClient } from '@anticrm/presentation'
+  import setting from '@anticrm/setting'
   import ClassAttributeBar from './ClassAttributeBar.svelte'
 
   export let object: Doc
   export let mixins: Mixin<Doc>[]
   export let ignoreKeys: string[]
   export let allowedCollections: string[] = []
+
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
 </script>
 
 <ClassAttributeBar _class={object._class} {object} {ignoreKeys} to={undefined} {allowedCollections} on:update />
 {#each mixins as mixin}
-  <ClassAttributeBar _class={mixin._id} {object} {ignoreKeys} to={object._class} {allowedCollections} on:update />
+  {@const to = !hierarchy.hasMixin(mixin, setting.mixin.UserMixin) ? object._class : mixin.extends}
+  <ClassAttributeBar _class={mixin._id} {object} {ignoreKeys} {to} {allowedCollections} on:update />
 {/each}

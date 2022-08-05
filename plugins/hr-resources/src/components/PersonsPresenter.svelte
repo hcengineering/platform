@@ -18,7 +18,7 @@
   import { EmployeePresenter } from '@anticrm/contact-resources'
   import { WithLookup } from '@anticrm/core'
   import { Staff } from '@anticrm/hr'
-  import { closeTooltip, showPopup } from '@anticrm/ui'
+  import { closeTooltip, getEventPositionElement, showPopup } from '@anticrm/ui'
   import { ContextMenu } from '@anticrm/view-resources'
   import hr from '../plugin'
 
@@ -36,11 +36,7 @@
   }
 
   function showContextMenu (ev: MouseEvent, object: Employee) {
-    showPopup(
-      ContextMenu,
-      { object },
-      { getBoundingClientRect: () => DOMRect.fromRect({ width: 1, height: 1, x: ev.clientX, y: ev.clientY }) }
-    )
+    showPopup(ContextMenu, { object }, getEventPositionElement(ev))
   }
 </script>
 

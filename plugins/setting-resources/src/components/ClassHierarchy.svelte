@@ -15,8 +15,10 @@
 <script lang="ts">
   import { Class, ClassifierKind, Doc, Ref } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
-  import { Icon, Label } from '@anticrm/ui'
+  import { getEventPositionElement, Icon, IconAdd, Label, showPopup } from '@anticrm/ui'
+  import { ContextMenu } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
+  import settings from '../plugin'
 
   export let classes: Ref<Class<Doc>>[] = ['contact:class:Contact' as Ref<Class<Doc>>]
   export let _class: Ref<Class<Doc>> | undefined
@@ -41,6 +43,9 @@
     }
     return result
   }
+  function showContextMenu (evt: MouseEvent, clazz: Class<Doc>): void {
+    showPopup(ContextMenu, { object: clazz }, getEventPositionElement(evt))
+  }
 </script>
 
 {#each classes as cl}
@@ -52,11 +57,15 @@
     on:click={() => {
       dispatch('select', cl)
     }}
+    on:contextmenu|preventDefault|stopPropagation={(evt) => showContextMenu(evt, clazz)}
   >
     <div class="flex gap-2">
       {#if clazz.icon}
-        <div class="mr-2">
+        <div class="mr-2 flex">
           <Icon icon={clazz.icon} size={'medium'} />
+          {#if clazz.kind === ClassifierKind.MIXIN && hierarchy.hasMixin(clazz, settings.mixin.UserMixin)}
+            <Icon icon={IconAdd} size={'x-small'} />
+          {/if}
         </div>
       {/if}
       <span class="overflow-label content-accent-color"><Label label={clazz.label} /></span>

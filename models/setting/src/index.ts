@@ -13,15 +13,23 @@
 // limitations under the License.
 //
 
-import { Builder, Mixin, Model } from '@anticrm/model'
-import { Ref, Domain, DOMAIN_MODEL } from '@anticrm/core'
-import core, { TClass, TDoc } from '@anticrm/model-core'
-import setting from './plugin'
-import { Editable, Integration, IntegrationType, Handler, SettingsCategory, settingId } from '@anticrm/setting'
-import type { Asset, IntlString } from '@anticrm/platform'
-import task from '@anticrm/task'
 import activity from '@anticrm/activity'
-import view from '@anticrm/view'
+import { Domain, DOMAIN_MODEL, Ref } from '@anticrm/core'
+import { Builder, Mixin, Model } from '@anticrm/model'
+import core, { TClass, TDoc } from '@anticrm/model-core'
+import view, { createAction } from '@anticrm/model-view'
+import type { Asset, IntlString } from '@anticrm/platform'
+import {
+  Editable,
+  Handler,
+  Integration,
+  IntegrationType,
+  settingId,
+  SettingsCategory,
+  UserMixin
+} from '@anticrm/setting'
+import task from '@anticrm/task'
+import setting from './plugin'
 
 import workbench from '@anticrm/model-workbench'
 import { AnyComponent } from '@anticrm/ui'
@@ -65,8 +73,18 @@ export class TIntegrationType extends TDoc implements IntegrationType {
 @Mixin(setting.mixin.Editable, core.class.Class)
 export class TEditable extends TClass implements Editable {}
 
+@Mixin(setting.mixin.UserMixin, core.class.Class)
+export class TUserMixin extends TClass implements UserMixin {}
+
 export function createModel (builder: Builder): void {
-  builder.createModel(TIntegration, TIntegrationType, TSettingsCategory, TWorkspaceSettingCategory, TEditable)
+  builder.createModel(
+    TIntegration,
+    TIntegrationType,
+    TSettingsCategory,
+    TWorkspaceSettingCategory,
+    TEditable,
+    TUserMixin
+  )
 
   builder.createDoc(
     setting.class.SettingsCategory,
@@ -276,6 +294,44 @@ export function createModel (builder: Builder): void {
   builder.mixin(core.class.EnumOf, core.class.Class, view.mixin.ObjectEditor, {
     editor: setting.component.EnumTypeEditor
   })
+
+  builder.mixin(core.class.Class, core.class.Class, view.mixin.IgnoreActions, {
+    actions: [view.action.Delete]
+  })
+
+  createAction(builder, {
+    action: view.actionImpl.ShowPopup,
+    actionProps: {
+      component: setting.component.CreateMixin,
+      fillProps: {
+        _object: 'value'
+      }
+    },
+    label: setting.string.CreateMixin,
+    input: 'focus',
+    icon: view.icon.Pin,
+    category: setting.category.Settings,
+    target: core.class.Class,
+    context: {
+      mode: ['context', 'browser'],
+      group: 'edit'
+    }
+  })
+
+  createAction(
+    builder,
+    {
+      action: setting.actionImpl.DeleteMixin,
+      label: view.string.Delete,
+      icon: view.icon.Delete,
+      keyBinding: ['Meta + Backspace', 'Ctrl + Backspace'],
+      category: view.category.General,
+      input: 'any',
+      target: setting.mixin.UserMixin,
+      context: { mode: ['context', 'browser'], group: 'tools' }
+    },
+    setting.action.DeleteMixin
+  )
 }
 
 export { settingOperation } from './migration'
