@@ -16,6 +16,7 @@
 <script lang="ts">
   import { Class, ClassifierKind, Doc, Mixin, Ref } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
+  import setting from '@anticrm/setting'
   import { Label } from '@anticrm/ui'
   import { getMixinStyle } from '../utils'
 
@@ -41,7 +42,12 @@
 
     mixins = hierarchy
       .getDescendants(parentClass)
-      .filter((m) => hierarchy.getClass(m).kind === ClassifierKind.MIXIN && hierarchy.hasMixin(value, m))
+      .filter(
+        (m) =>
+          hierarchy.getClass(m).kind === ClassifierKind.MIXIN &&
+          hierarchy.hasMixin(value, m) &&
+          !hierarchy.hasMixin(hierarchy.getClass(m), setting.mixin.UserMixin)
+      )
       .map((m) => hierarchy.getClass(m) as Mixin<Doc>)
   }
 </script>

@@ -35,7 +35,7 @@
     const mixin = hierarchy.as(clazz, view.mixin.ClassFilters)
     if (mixin.filters === undefined) return []
     const filters = mixin.filters.map((p) => {
-      return typeof p === 'string' ? buildFilterFromKey(p) : p
+      return typeof p === 'string' ? buildFilterFromKey(_class, p) : p
     })
     const result: KeyFilter[] = []
     for (const filter of filters) {
@@ -44,12 +44,12 @@
     return result
   }
 
-  function buildFilterFromKey (key: string): KeyFilter | undefined {
+  function buildFilterFromKey (_class: Ref<Class<Doc>>, key: string): KeyFilter | undefined {
     const attribute = hierarchy.getAttribute(_class, key)
-    return buildFilter(key, attribute)
+    return buildFilter(_class, key, attribute)
   }
 
-  function buildFilter (key: string, attribute: AnyAttribute): KeyFilter | undefined {
+  function buildFilter (_class: Ref<Class<Doc>>, key: string, attribute: AnyAttribute): KeyFilter | undefined {
     const isCollection = hierarchy.isDerived(attribute.type._class, core.class.Collection)
     const targetClass = isCollection ? (attribute.type as Collection<AttachedDoc>).of : attribute.type._class
     const clazz = hierarchy.getClass(targetClass)
@@ -73,17 +73,45 @@
     return name
   }
 
+  function buildFilterForAttr (_class: Ref<Class<Doc>>, attribute: AnyAttribute, result: KeyFilter[]): void {
+    if (attribute.isCustom !== true) {
+      return
+    }
+    if (attribute.label === undefined || attribute.hidden) {
+      return
+    }
+    const value = getValue(attribute.name, attribute.type)
+    if (result.findIndex((p) => p.key === value) !== -1) {
+      return
+    }
+    const filter = buildFilter(_class, value, attribute)
+    if (filter !== undefined) {
+      result.push(filter)
+    }
+  }
+  function buildFilterFor (
+    _class: Ref<Class<Doc>>,
+    allAttributes: Map<string, AnyAttribute>,
+    result: KeyFilter[]
+  ): void {
+    for (const [, attribute] of allAttributes) {
+      buildFilterForAttr(_class, attribute, result)
+    }
+  }
+
   function getTypes (_class: Ref<Class<Doc>>): KeyFilter[] {
     const result = getFilters(_class)
     const allAttributes = hierarchy.getAllAttributes(_class)
-    for (const [, attribute] of allAttributes) {
-      if (attribute.isCustom !== true) continue
-      if (attribute.label === undefined || attribute.hidden) continue
-      const value = getValue(attribute.name, attribute.type)
-      if (result.findIndex((p) => p.key === value) !== -1) continue
-      const filter = buildFilter(value, attribute)
-      if (filter !== undefined) {
-        result.push(filter)
+    buildFilterFor(_class, allAttributes, result)
+
+    const desc = hierarchy.getDescendants(_class)
+    for (const d of desc) {
+      const extra = hierarchy.getAllAttributes(d, _class)
+      for (const [k, v] of extra) {
+        if (!allAttributes.has(k)) {
+          allAttributes.set(k, v)
+          buildFilterForAttr(d, v, result)
+        }
       }
     }
 

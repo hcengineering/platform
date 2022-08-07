@@ -168,6 +168,7 @@
 <table class="antiTable">
   <thead class="scroller-thead">
     <tr class="scroller-thead__tr">
+      <!-- <th>Field name</th> -->
       <th>
         <div class="antiTable-cells">
           <Label label={settings.string.Attribute} />
@@ -197,6 +198,9 @@
           }
         }}
       >
+        <!-- <td class='select-text'>
+          {attr.name}
+        </td> -->
         <td>
           <div class="antiTable-cells__firstCell">
             <Label label={attr.label} />
@@ -207,7 +211,7 @@
             {/if}
           </div>
         </td>
-        <td>
+        <td class="select-text">
           <Label label={attr.type.label} />
           {#if attrType !== undefined}
             : <Label label={attrType} />

@@ -29,7 +29,18 @@ import {
 } from '@anticrm/contact'
 import type { Class, Domain, Ref, Timestamp } from '@anticrm/core'
 import { DOMAIN_MODEL, IndexKind } from '@anticrm/core'
-import { Builder, Collection, Index, Model, Prop, TypeRef, TypeString, TypeTimestamp, UX } from '@anticrm/model'
+import {
+  Builder,
+  Collection,
+  Index,
+  Model,
+  Prop,
+  TypeDate,
+  TypeRef,
+  TypeString,
+  TypeTimestamp,
+  UX
+} from '@anticrm/model'
 import attachment from '@anticrm/model-attachment'
 import chunter from '@anticrm/model-chunter'
 import core, { TAccount, TAttachedDoc, TDoc, TSpace } from '@anticrm/model-core'
@@ -94,7 +105,10 @@ export class TChannel extends TAttachedDoc implements Channel {
 
 @Model(contact.class.Person, contact.class.Contact)
 @UX(contact.string.Person, contact.icon.Person, undefined, 'name')
-export class TPerson extends TContact implements Person {}
+export class TPerson extends TContact implements Person {
+  @Prop(TypeDate(), contact.string.Birthday)
+  birthday?: Timestamp
+}
 
 @Model(contact.class.Member, core.class.AttachedDoc, DOMAIN_CONTACT)
 @UX(contact.string.Member, contact.icon.Person, undefined, 'name')

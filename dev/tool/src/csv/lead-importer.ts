@@ -23,7 +23,7 @@ import { updateClasses } from './classes'
 import { CustomCustomer, FieldType } from './types'
 import { filled } from './utils'
 
-import { parse } from 'csv-parse'
+import { parseCSV } from './parseCSV'
 
 const names = {
   orgName: 'Название компании',
@@ -125,31 +125,6 @@ async function updateStates<T extends State | DoneState> (
   }
 }
 
-export async function parseCSV (csvData: string): Promise<any[]> {
-  return await new Promise((resolve, reject) => {
-    parse(
-      csvData,
-      {
-        delimiter: ';',
-        columns: true,
-        quote: '"',
-        bom: true,
-        cast: true,
-        autoParse: true,
-        castDate: false,
-        skipEmptyLines: true,
-        skipRecordsWithEmptyValues: true
-      },
-      (err, records) => {
-        if (err !== undefined) {
-          console.error(err)
-          reject(err)
-        }
-        resolve(records)
-      }
-    )
-  })
-}
 export async function importLead (transactorUrl: string, dbName: string, csvFile: string): Promise<void> {
   const connection = await connect(transactorUrl, dbName)
 

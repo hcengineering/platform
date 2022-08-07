@@ -112,6 +112,7 @@
     "csv-parse": "~5.1.0",
     "@anticrm/lead": "~0.6.0",
     "email-addresses": "^5.0.0",
-    "libphonenumber-js": "^1.9.46"
+    "libphonenumber-js": "^1.9.46",
+    "@anticrm/setting": "~0.6.1"
   }
 }

@@ -33,7 +33,7 @@
 
   function getTargetClass (): Ref<Class<Doc>> | undefined {
     try {
-      return (hierarchy.getAttribute(_class, filter.key.key).type as RefTo<Doc>).to
+      return (hierarchy.getAttribute(filter.key._class, filter.key.key).type as RefTo<Doc>).to
     } catch (err: any) {
       console.error(err)
     }

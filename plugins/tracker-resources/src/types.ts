@@ -39,6 +39,7 @@ export const issuesGroupByOptions: Record<IssuesGrouping, IntlString> = {
   [IssuesGrouping.Assignee]: tracker.string.Assignee,
   [IssuesGrouping.Priority]: tracker.string.Priority,
   [IssuesGrouping.Project]: tracker.string.Project,
+  [IssuesGrouping.Sprint]: tracker.string.Sprint,
   [IssuesGrouping.NoGrouping]: tracker.string.NoGrouping
 }
 
@@ -100,5 +101,6 @@ export const issuesGroupBySorting: Record<IssuesGrouping, SortingQuery<Issue>> =
   [IssuesGrouping.Assignee]: { '$lookup.assignee.name': SortingOrder.Ascending },
   [IssuesGrouping.Priority]: { priority: SortingOrder.Ascending },
   [IssuesGrouping.Project]: { '$lookup.project.label': SortingOrder.Ascending },
+  [IssuesGrouping.Sprint]: { '$lookup.sprint.label': SortingOrder.Ascending },
   [IssuesGrouping.NoGrouping]: {}
 }

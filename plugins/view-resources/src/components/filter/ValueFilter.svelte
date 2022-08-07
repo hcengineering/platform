@@ -32,7 +32,7 @@
 
   const client = getClient()
   const key = { key: filter.key.key }
-  const promise = getPresenter(client, _class, key, key)
+  const promise = getPresenter(client, filter.key._class, key, key)
 
   let values = new Map<any, number>()
   let selectedValues: Set<any> = new Set<any>(filter.value.map((p) => p[0]))
@@ -53,8 +53,7 @@
           }
         : {}
     let prefix = ''
-
-    const attr = client.getHierarchy().getAttribute(_class, filter.key.key)
+    const attr = client.getHierarchy().getAttribute(filter.key._class, filter.key.key)
     if (client.getHierarchy().isMixin(attr.attributeOf)) {
       prefix = attr.attributeOf + '.'
       console.log('prefix', prefix)
@@ -66,7 +65,11 @@
     const res = await objectsPromise
 
     for (const object of res) {
-      const realValue = getObjectValue(filter.key.key, object)
+      let asDoc = object
+      if (client.getHierarchy().isMixin(filter.key._class)) {
+        asDoc = client.getHierarchy().as(object, filter.key._class)
+      }
+      const realValue = getObjectValue(filter.key.key, asDoc)
       const value = getValue(realValue)
       values.set(value, (values.get(value) ?? 0) + 1)
       realValues.set(value, (realValues.get(value) ?? new Set()).add(realValue))

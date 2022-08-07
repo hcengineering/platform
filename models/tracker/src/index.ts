@@ -732,7 +732,7 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.ClassFilters, {
-    filters: ['status', 'priority', 'assignee', 'project', 'dueDate', 'modifiedOn']
+    filters: ['status', 'priority', 'assignee', 'project', 'sprint', 'dueDate', 'modifiedOn']
   })
 
   builder.createDoc(

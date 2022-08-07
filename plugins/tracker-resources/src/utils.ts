@@ -51,7 +51,7 @@ export interface Selection {
   currentSpecial?: string
 }
 
-export type IssuesGroupByKeys = keyof Pick<Issue, 'status' | 'priority' | 'assignee' | 'project'>
+export type IssuesGroupByKeys = keyof Pick<Issue, 'status' | 'priority' | 'assignee' | 'project' | 'sprint'>
 export type IssuesOrderByKeys = keyof Pick<Issue, 'status' | 'priority' | 'modifiedOn' | 'dueDate' | 'rank'>
 
 export const issuesGroupKeyMap: Record<IssuesGrouping, IssuesGroupByKeys | undefined> = {
@@ -59,6 +59,7 @@ export const issuesGroupKeyMap: Record<IssuesGrouping, IssuesGroupByKeys | undef
   [IssuesGrouping.Priority]: 'priority',
   [IssuesGrouping.Assignee]: 'assignee',
   [IssuesGrouping.Project]: 'project',
+  [IssuesGrouping.Sprint]: 'sprint',
   [IssuesGrouping.NoGrouping]: undefined
 }
 
@@ -78,10 +79,11 @@ export const issuesSortOrderMap: Record<IssuesOrderByKeys, SortingOrder> = {
   rank: SortingOrder.Ascending
 }
 
-export const issuesGroupEditorMap: Record<'status' | 'priority' | 'project', AnyComponent | undefined> = {
+export const issuesGroupEditorMap: Record<'status' | 'priority' | 'project' | 'sprint', AnyComponent | undefined> = {
   status: tracker.component.StatusEditor,
   priority: tracker.component.PriorityEditor,
-  project: tracker.component.ProjectEditor
+  project: tracker.component.ProjectEditor,
+  sprint: tracker.component.SprintEditor
 }
 
 export const getIssuesModificationDatePeriodTime = (period: IssuesDateModificationPeriod | null): number => {
@@ -178,6 +180,12 @@ export const getIssueFilterAssetsByType = (type: string): { icon: Asset, label: 
       return {
         icon: tracker.icon.Project,
         label: tracker.string.Project
+      }
+    }
+    case 'sprint': {
+      return {
+        icon: tracker.icon.Sprint,
+        label: tracker.string.Sprint
       }
     }
     default: {
@@ -447,6 +455,21 @@ export async function getKanbanStatuses (
       ]
     }, [])
   }
+  if (groupBy === IssuesGrouping.Sprint) {
+    const noSprint = await translate(tracker.string.NoSprint, {})
+    return issues.reduce<TypeState[]>((result, issue) => {
+      if (result.find(({ _id }) => _id === issue.sprint) !== undefined) return result
+      return [
+        ...result,
+        {
+          _id: issue.sprint,
+          title: issue.$lookup?.sprint?.label ?? noSprint,
+          color: UNSET_COLOR,
+          icon: undefined
+        }
+      ]
+    }, [])
+  }
   return []
 }
 
@@ -481,6 +504,7 @@ export function getDefaultViewOptionsConfig (): ViewOptionModel[] {
         { id: 'assignee', label: tracker.string.Assignee },
         { id: 'priority', label: tracker.string.Priority },
         { id: 'project', label: tracker.string.Project },
+        { id: 'sprint', label: tracker.string.Sprint },
         { id: 'noGrouping', label: tracker.string.NoGrouping }
       ],
       type: 'dropdown'
