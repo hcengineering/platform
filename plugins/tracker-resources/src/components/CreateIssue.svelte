@@ -41,13 +41,14 @@
   import SetDueDateActionPopup from './SetDueDateActionPopup.svelte'
   import SetParentIssueActionPopup from './SetParentIssueActionPopup.svelte'
   import SprintSelector from './sprints/SprintSelector.svelte'
+  import { activeProject, activeSprint } from '../issues'
 
   export let space: Ref<Team>
   export let status: Ref<IssueStatus> | undefined = undefined
   export let priority: IssuePriority = IssuePriority.NoPriority
   export let assignee: Ref<Employee> | null = null
-  export let project: Ref<Project> | null = null
-  export let sprint: Ref<Sprint> | null = null
+  export let project: Ref<Project> | null = $activeProject ?? null
+  export let sprint: Ref<Sprint> | null = $activeSprint ?? null
 
   let issueStatuses: WithLookup<IssueStatus>[] | undefined
   export let parentIssue: Issue | undefined
@@ -140,6 +141,7 @@
       description: object.description,
       assignee: object.assignee,
       project: object.project,
+      sprint: object.sprint,
       number: (incResult as any).object.sequence,
       status: object.status,
       priority: object.priority,

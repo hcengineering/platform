@@ -34,7 +34,7 @@
   const resultSprintsQuery = createQuery()
 
   const sprintOptions: FindOptions<Sprint> = {
-    sort: { modifiedOn: SortingOrder.Descending },
+    sort: { startDate: SortingOrder.Descending },
     limit: ENTRIES_LIMIT,
     lookup: { lead: contact.class.Employee }
   }

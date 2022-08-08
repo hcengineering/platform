@@ -156,7 +156,7 @@
   }
 
   function hasNested (type: KeyFilter): boolean {
-    const targetClass = (hierarchy.getAttribute(_class, type.key).type as RefTo<Doc>).to
+    const targetClass = (hierarchy.getAttribute(type._class, type.key).type as RefTo<Doc>).to
     const clazz = hierarchy.getClass(targetClass)
     return hierarchy.hasMixin(clazz, view.mixin.ClassFilters)
   }

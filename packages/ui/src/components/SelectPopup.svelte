@@ -35,6 +35,11 @@
 
     component?: AnySvelteComponent
     props?: Record<string, any>
+
+    category?: {
+      icon?: Asset
+      label: IntlString
+    }
   }
 
   export let placeholder: IntlString | undefined = undefined
@@ -150,6 +155,19 @@
               {/if}
             </div>
           </button>
+        </svelte:fragment>
+        <svelte:fragment slot="category" let:item={row}>
+          {@const obj = filteredObjects[row]}
+          {#if obj.category && ((row === 0 && obj.category.label !== undefined) || obj.category.label !== filteredObjects[row - 1]?.category?.label)}
+            <div class="flex p-1">
+              <div class="icon mr-2">
+                {#if obj.category.icon}
+                  <Icon icon={obj.category.icon} size={'small'} />
+                {/if}
+              </div>
+              <Label label={obj.category.label} />
+            </div>
+          {/if}
         </svelte:fragment>
       </ListView>
     </div>

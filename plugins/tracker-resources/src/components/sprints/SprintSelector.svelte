@@ -20,6 +20,7 @@
   import type { ButtonKind, ButtonSize } from '@anticrm/ui'
   import { Button, ButtonShape, eventToHTMLElement, SelectPopup, showPopup } from '@anticrm/ui'
   import tracker from '../../plugin'
+  import { sprintStatusAssets } from '../../types'
 
   export let value: Ref<Sprint> | null | undefined
   export let shouldShowLabel: boolean = true
@@ -45,7 +46,7 @@
       rawSprints = res
     },
     {
-      sort: { modifiedOn: SortingOrder.Ascending }
+      sort: { startDate: SortingOrder.Descending }
     }
   )
 
@@ -76,7 +77,8 @@
       ...rawSprints.map((p) => ({
         id: p._id,
         icon: tracker.icon.Sprint,
-        text: p.label
+        text: p.label,
+        category: sprintStatusAssets[p.status]
       }))
     ]
 
