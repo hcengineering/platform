@@ -131,6 +131,7 @@
       lookup: {
         status: [tracker.class.IssueStatus, { category: tracker.class.IssueStatusCategory }],
         project: tracker.class.Project,
+        sprint: tracker.class.Sprint,
         assignee: contact.class.Employee
       },
       sort: issuesGroupBySorting[groupBy]

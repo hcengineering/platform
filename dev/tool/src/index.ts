@@ -36,11 +36,12 @@ import toolPlugin, { prepareTools, version } from '@anticrm/server-tool'
 import { program } from 'commander'
 import { Db, MongoClient } from 'mongodb'
 import { exit } from 'process'
+import { removeDuplicates } from './csv/duplicates'
+import { importLead } from './csv/lead-importer'
+import { importLead2 } from './csv/lead-importer2'
+import { importTalants } from './csv/talant-importer'
 import { rebuildElastic } from './elastic'
 import { importXml } from './importer'
-import { removeDuplicates } from './leads/duplicates'
-import { importLead } from './leads/lead-importer'
-import { importLead2 } from './leads/lead-importer2'
 import { updateCandidates } from './recruit'
 import { clearTelegramHistory } from './telegram'
 import { diffWorkspace, dumpWorkspace, restoreWorkspace } from './workspace'
@@ -372,6 +373,18 @@ program
   .description('Import LEAD csv customer organizations')
   .action(async (workspace, fileName, cmd) => {
     return await importLead2(transactorUrl, workspace, fileName)
+  })
+
+program
+  .command('import-talant-csv <workspace> <fileName>')
+  .description('Import Talant csv')
+  .action(async (workspace, fileName, cmd) => {
+    const rekoniUrl = process.env.REKONI_URL
+    if (rekoniUrl === undefined) {
+      console.log('Please provide REKONI_URL environment variable')
+      exit(1)
+    }
+    return await importTalants(transactorUrl, workspace, fileName, rekoniUrl)
   })
 
 program

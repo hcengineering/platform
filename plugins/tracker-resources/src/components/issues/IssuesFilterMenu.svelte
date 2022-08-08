@@ -16,10 +16,6 @@
   import { WithLookup } from '@anticrm/core'
   import { Issue, IssueStatus } from '@anticrm/tracker'
   import { showPopup } from '@anticrm/ui'
-  import StatusFilterMenuSection from './StatusFilterMenuSection.svelte'
-  import PriorityFilterMenuSection from './PriorityFilterMenuSection.svelte'
-  import ProjectFilterMenuSection from './ProjectFilterMenuSection.svelte'
-  import FilterMenu from '../FilterMenu.svelte'
   import {
     defaultPriorities,
     FilterAction,
@@ -27,6 +23,11 @@
     getIssueFilterAssetsByType,
     IssueFilter
   } from '../../utils'
+  import FilterMenu from '../FilterMenu.svelte'
+  import PriorityFilterMenuSection from './PriorityFilterMenuSection.svelte'
+  import ProjectFilterMenuSection from './ProjectFilterMenuSection.svelte'
+  import SprintFilterMenuSection from './SprintFilterMenuSection.svelte'
+  import StatusFilterMenuSection from './StatusFilterMenuSection.svelte'
 
   export let targetHtml: HTMLElement
   export let filters: IssueFilter[] = []
@@ -42,6 +43,7 @@
   $: groupedByStatus = getGroupedIssues('status', issues, defaultStatusIds)
   $: groupedByPriority = getGroupedIssues('priority', issues, defaultPriorities)
   $: groupedByProject = getGroupedIssues('project', issues)
+  $: groupedBySprint = getGroupedIssues('sprint', issues)
 
   const handleStatusFilterMenuSectionOpened = (event: MouseEvent | KeyboardEvent) => {
     const statusGroups: { [key: string]: number } = {}
@@ -103,6 +105,25 @@
     )
   }
 
+  const handleSprintFilterMenuSectionOpened = (event: MouseEvent | KeyboardEvent) => {
+    const sprintGroups: { [key: string]: number } = {}
+
+    for (const [project, value] of Object.entries(groupedBySprint)) {
+      sprintGroups[project] = value?.length ?? 0
+    }
+    showPopup(
+      SprintFilterMenuSection,
+      {
+        groups: sprintGroups,
+        selectedElements: currentFilterQuery?.sprint?.[currentFilterMode] ?? [],
+        index,
+        onUpdate,
+        onBack
+      },
+      targetHtml
+    )
+  }
+
   const actions: FilterAction[] = [
     {
       ...getIssueFilterAssetsByType('status'),
@@ -115,6 +136,10 @@
     {
       ...getIssueFilterAssetsByType('project'),
       onSelect: handleProjectFilterMenuSectionOpened
+    },
+    {
+      ...getIssueFilterAssetsByType('sprint'),
+      onSelect: handleSprintFilterMenuSectionOpened
     }
   ]
 </script>

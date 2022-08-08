@@ -38,6 +38,7 @@ export interface FieldType {
   name: string
   type?: Ref<Class<Doc>>
   label?: IntlString
+  sourceClass?: Ref<Class<Doc>>
   enumName?: string
   fName?: string
 }

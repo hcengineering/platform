@@ -30,7 +30,7 @@ import { ElasticTool } from './elastic'
 import { findOrUpdateAttached } from './utils'
 import { readMinioData } from './workspace'
 
-async function recognize (rekoniUrl: string, data: string, token: string): Promise<ReconiDocument | undefined> {
+export async function recognize (rekoniUrl: string, data: string, token: string): Promise<ReconiDocument | undefined> {
   const { body }: { body?: ReconiDocument } = await got.post(rekoniUrl + '/recognize?format=pdf', {
     headers: {
       Authorization: 'Bearer ' + token,
@@ -45,14 +45,14 @@ async function recognize (rekoniUrl: string, data: string, token: string): Promi
   return body
 }
 
-function isUndef (value?: string): boolean {
+export function isUndef (value?: string): boolean {
   if (value == null || value.trim().length === 0) {
     return true
   }
   return false
 }
 
-async function addChannel (
+export async function addChannel (
   client: TxOperations,
   channels: Channel[],
   c: Candidate,
@@ -149,7 +149,7 @@ export async function updateCandidates (
   }
 }
 
-async function updateSkills (client: TxOperations, c: Candidate, document: ReconiDocument): Promise<void> {
+export async function updateSkills (client: TxOperations, c: Candidate, document: ReconiDocument): Promise<void> {
   const skills = await client.findAll(tags.class.TagReference, { attachedTo: c._id })
   const namedSkills = new Set(Array.from(skills.map((it) => it.title.toLowerCase())))
 
@@ -185,7 +185,11 @@ async function updateSkills (client: TxOperations, c: Candidate, document: Recon
     }
   }
 }
-async function updateContacts (client: TxOperations, c: WithLookup<Candidate>, document: ReconiDocument): Promise<void> {
+export async function updateContacts (
+  client: TxOperations,
+  c: WithLookup<Candidate>,
+  document: ReconiDocument
+): Promise<void> {
   const channels = await client.findAll(contact.class.Channel, { attachedTo: c._id })
   await addChannel(client, channels, c, contact.channelProvider.Email, document.email)
   await addChannel(client, channels, c, contact.channelProvider.GitHub, document.github)

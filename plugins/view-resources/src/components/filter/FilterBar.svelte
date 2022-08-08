@@ -111,45 +111,53 @@
       const newValue = await result(filter, () => {
         makeQuery(query, filters)
       })
-      if (newQuery[filter.key.key] === undefined) {
-        newQuery[filter.key.key] = newValue
+
+      let filterKey = filter.key.key
+
+      const attr = client.getHierarchy().getAttribute(filter.key._class, filter.key.key)
+      if (client.getHierarchy().isMixin(attr.attributeOf)) {
+        filterKey = attr.attributeOf + '.' + filter.key.key
+      }
+
+      if (newQuery[filterKey] === undefined) {
+        newQuery[filterKey] = newValue
       } else {
         let merged = false
         for (const key in newValue) {
-          if (newQuery[filter.key.key][key] === undefined) {
-            if (key === '$in' && typeof newQuery[filter.key.key] === 'string') {
-              newQuery[filter.key.key] = { $in: newValue[key].filter((p: any) => p === newQuery[filter.key.key]) }
+          if (newQuery[filterKey][key] === undefined) {
+            if (key === '$in' && typeof newQuery[filterKey] === 'string') {
+              newQuery[filterKey] = { $in: newValue[key].filter((p: any) => p === newQuery[filterKey]) }
             } else {
-              newQuery[filter.key.key][key] = newValue[key]
+              newQuery[filterKey][key] = newValue[key]
             }
             merged = true
             continue
           }
           if (key === '$in') {
-            newQuery[filter.key.key][key] = newQuery[filter.key.key][key].filter((p: any) => newValue[key].includes(p))
+            newQuery[filterKey][key] = newQuery[filterKey][key].filter((p: any) => newValue[key].includes(p))
             merged = true
             continue
           }
           if (key === '$nin') {
-            newQuery[filter.key.key][key] = [...newQuery[filter.key.key][key], ...newValue[key]]
+            newQuery[filterKey][key] = [...newQuery[filterKey][key], ...newValue[key]]
             merged = true
             continue
           }
           if (key === '$lt') {
-            newQuery[filter.key.key][key] =
-              newQuery[filter.key.key][key] < newValue[key] ? newQuery[filter.key.key][key] : newValue[key]
+            newQuery[filterKey][key] =
+              newQuery[filterKey][key] < newValue[key] ? newQuery[filterKey][key] : newValue[key]
             merged = true
             continue
           }
           if (key === '$gt') {
-            newQuery[filter.key.key][key] =
-              newQuery[filter.key.key][key] > newValue[key] ? newQuery[filter.key.key][key] : newValue[key]
+            newQuery[filterKey][key] =
+              newQuery[filterKey][key] > newValue[key] ? newQuery[filterKey][key] : newValue[key]
             merged = true
             continue
           }
         }
         if (!merged) {
-          Object.assign(newQuery[filter.key.key], newValue)
+          Object.assign(newQuery[filterKey], newValue)
         }
       }
     }

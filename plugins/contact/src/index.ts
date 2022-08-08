@@ -76,7 +76,9 @@ export interface Contact extends Doc {
 /**
  * @public
  */
-export interface Person extends Contact {}
+export interface Person extends Contact {
+  birthday?: Timestamp | null
+}
 
 /**
  * @public

@@ -68,6 +68,7 @@
     "KickEmployeeDescr": "Are you sure you want to kick the employee out of the workspace? This action cannot be undone",
     "Email": "Email",
     "CreateEmployee": "Create an employee",
-    "Inactive": "Inactive"
+    "Inactive": "Inactive",
+    "Birthday": "Birthday"
   }
 }
