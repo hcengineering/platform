@@ -7,6 +7,8 @@
   import tracker from '../../plugin'
   import IssuesView from '../issues/IssuesView.svelte'
   import ProjectPopup from './ProjectPopup.svelte'
+  import { activeProject } from '../../issues'
+  import { onDestroy } from 'svelte'
 
   export let project: Project
 
@@ -22,6 +24,12 @@
       }
     })
   }
+
+  $: $activeProject = project?._id
+
+  onDestroy(() => {
+    $activeProject = undefined
+  })
 </script>
 
 <IssuesView query={{ project: project._id, space: project.space }} label={project.label}>

@@ -32,14 +32,14 @@
   const hierarchy = client.getHierarchy()
   const tkey = '$lookup.' + filter.key.key
   const key = { key: tkey }
-  const lookup = buildConfigLookup(hierarchy, _class, [tkey])
-  const promise = getPresenter(client, _class, key, key, lookup)
+  const lookup = buildConfigLookup(hierarchy, filter.key._class, [tkey])
+  const promise = getPresenter(client, filter.key._class, key, key, lookup)
   filter.modes = filter.modes === undefined ? [view.filter.FilterObjectIn, view.filter.FilterObjectNin] : filter.modes
   filter.mode = filter.mode === undefined ? filter.modes[0] : filter.mode
 
   let values: (Doc | undefined | null)[] = []
   let objectsPromise: Promise<FindResult<Doc>> | undefined
-  $: targetClass = (hierarchy.getAttribute(_class, filter.key.key).type as RefTo<Doc>).to
+  $: targetClass = (hierarchy.getAttribute(filter.key._class, filter.key.key).type as RefTo<Doc>).to
   $: clazz = hierarchy.getClass(targetClass)
   const targets = new Map<any, number>()
   $: isState = clazz._id === task.class.State ?? false
@@ -69,7 +69,7 @@
       await objectsPromise
     }
     targets.clear()
-    const baseObjects = await client.findAll(_class, {}, { projection: { [filter.key.key]: 1 } })
+    const baseObjects = await client.findAll(filter.key._class, {}, { projection: { [filter.key.key]: 1 } })
     for (const object of baseObjects) {
       const value = getObjectValue(filter.key.key, object) ?? undefined
       targets.set(value, (targets.get(value) ?? 0) + 1)

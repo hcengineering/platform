@@ -1,9 +1,13 @@
 import { Doc, Ref, TxOperations } from '@anticrm/core'
 import { getClient } from '@anticrm/presentation'
-import { Issue, Team, trackerId } from '@anticrm/tracker'
+import { Issue, Project, Sprint, Team, trackerId } from '@anticrm/tracker'
 import { getCurrentLocation, getPanelURI, Location } from '@anticrm/ui'
 import { workbenchId } from '@anticrm/workbench'
+import { writable } from 'svelte/store'
 import tracker from './plugin'
+
+export const activeProject = writable<Ref<Project> | undefined>(undefined)
+export const activeSprint = writable<Ref<Sprint> | undefined>(undefined)
 
 export function getIssueId (team: Team, issue: Issue): string {
   return `${team.identifier}-${issue.number}`

@@ -4,6 +4,8 @@
   import { Sprint } from '@anticrm/tracker'
   import { Button, EditBox, Icon, showPopup } from '@anticrm/ui'
   import { DocAttributeBar } from '@anticrm/view-resources'
+  import { onDestroy } from 'svelte'
+  import { activeSprint } from '../../issues'
   import tracker from '../../plugin'
   import Expanded from '../icons/Expanded.svelte'
   import IssuesView from '../issues/IssuesView.svelte'
@@ -24,6 +26,12 @@
       }
     })
   }
+
+  $: $activeSprint = sprint?._id
+
+  onDestroy(() => {
+    $activeSprint = undefined
+  })
 </script>
 
 <IssuesView query={{ sprint: sprint._id, space: sprint.space }} label={sprint.label}>
