@@ -29,11 +29,11 @@ test.describe('project tests', () => {
     await page.click('button:has-text("New issue")')
     await page.fill('[placeholder="Issue\\ title"]', 'issue')
     await page.click('form button:has-text("Project")')
-    await page.click(`.popup button:has-text("${prjId}")`)
+    await page.click(`.selectPopup button:has-text("${prjId}")`)
     await page.click('form button:has-text("Save issue")')
     await page.waitForSelector('form.antiCard', { state: 'detached' })
     await page.click(`.gridElement button:has-text("${prjId}")`)
-    await page.click('.popup button:has-text("No project")')
+    await page.click('.selectPopup button:has-text("No project")')
   })
 
   test('create-project-with-status', async ({ page }) => {
