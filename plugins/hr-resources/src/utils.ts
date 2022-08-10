@@ -105,7 +105,7 @@ export function getRequestDays (request: Request, types: Map<Ref<RequestType>, R
   const endDate =
     request.tzDueDate.month === month
       ? fromTzDate(request.tzDueDate)
-      : fromTzDate({ ...request.tzDueDate, month: month + 1, day: -1 })
+      : fromTzDate({ ...request.tzDueDate, month: month + 1, day: 0 })
   const days = Math.floor(Math.abs((1 + endDate - startDate) / 1000 / 60 / 60 / 24)) + 1
   const stDate = new Date(startDate)
   const stDateDate = stDate.getDate()
