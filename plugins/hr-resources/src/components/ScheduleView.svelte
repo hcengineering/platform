@@ -36,8 +36,8 @@
   )
   $: endDate = new Date(
     mode === CalendarMode.Year
-      ? new Date(startDate).setFullYear(new Date(startDate).getFullYear() + 1)
-      : new Date(startDate).setMonth(new Date(startDate).getMonth() + 1)
+      ? new Date(new Date(startDate).setFullYear(new Date(startDate).getFullYear() + 1)).setDate(-1)
+      : new Date(new Date(startDate).setMonth(new Date(startDate).getMonth() + 1)).setDate(-1)
   )
   $: departments = [department, ...getDescendants(department, descendants)]
 
@@ -84,7 +84,7 @@
         'tzDueDate.year': { $gte: startDate.getFullYear() },
         'tzDueDate.month': { $gte: startDate.getMonth() },
         'tzDate.year': { $lte: endDate.getFullYear() },
-        'tzDate.month': { $lte: endDate.getFullYear() },
+        'tzDate.month': { $lte: endDate.getMonth() },
         space: { $in: departments }
       },
       (res) => {
