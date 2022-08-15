@@ -20,6 +20,7 @@
   import { IntlString } from '@anticrm/platform'
   import tracker from '../../plugin'
   import ProjectSelector from '../ProjectSelector.svelte'
+  import { activeProject } from '../../issues'
 
   export let value: Issue
   export let isEditable: boolean = true
@@ -32,6 +33,7 @@
   export let justify: 'left' | 'center' = 'left'
   export let width: string | undefined = '100%'
   export let onlyIcon: boolean = false
+  export let groupBy: string | undefined
 
   const client = getClient()
 
@@ -52,7 +54,7 @@
   }
 </script>
 
-{#if value.project || shouldShowPlaceholder}
+{#if (value.project && value.project !== $activeProject && groupBy !== 'project') || shouldShowPlaceholder}
   <div
     class="clear-mins"
     use:tooltip={{ label: value.project ? tracker.string.MoveToProject : tracker.string.AddToProject }}

@@ -196,7 +196,19 @@
     "AddToSprint": "Добавить в Спринт",
 
     "NewSprint": "Новый Спринт",
-    "CreateSprint": "Создать"
+    "CreateSprint": "Создать",
+
+    "Estimation": "Оценка",
+    "ReportedTime": "Использовано",
+    "TimeSpendReports": "Отчеты по времени",
+    "TimeSpendReport": "Отчет по времени",
+    "TimeSpendReportAdd": "Добавить завтраченное время",
+    "TimeSpendReportDate": "Дата",
+    "TimeSpendReportValue": "Затраченное время",
+    "TimeSpendReportValueTooltip": "Затраченное время в человеко днях",
+    "TimeSpendReportDescription": "Описание",
+    "TimeSpendValue": "{value}d",
+    "SprintPassed": "{from}d/{to}d"
   },
   "status": {}
 }

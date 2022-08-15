@@ -29,7 +29,7 @@
     showPopup,
     Spinner
   } from '@anticrm/ui'
-  import { BuildModelKey } from '@anticrm/view'
+  import { AttributeModel, BuildModelKey } from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
   import { buildConfigLookup, buildModel, LoadingProps } from '../utils'
   import Menu from './Menu.svelte'
@@ -170,6 +170,17 @@
     }
     return props
   }
+  function getValue (attribute: AttributeModel, object: Doc): any {
+    if (attribute.castRequest) {
+      return (
+        getObjectValue(
+          attribute.key.substring(attribute.castRequest.length + 1),
+          client.getHierarchy().as(object, attribute.castRequest)
+        ) ?? ''
+      )
+    }
+    return getObjectValue(attribute.key, object) ?? ''
+  }
 </script>
 
 {#await buildModel({ client, _class, keys: config, lookup })}
@@ -267,7 +278,7 @@
                   <div class="antiTable-cells__firstCell">
                     <svelte:component
                       this={attribute.presenter}
-                      value={getObjectValue(attribute.key, object) ?? ''}
+                      value={getValue(attribute, object) ?? ''}
                       {...joinProps(attribute.collectionAttr, object, attribute.props)}
                     />
                     <!-- <div
@@ -283,7 +294,7 @@
                 <td>
                   <svelte:component
                     this={attribute.presenter}
-                    value={getObjectValue(attribute.key, object) ?? ''}
+                    value={getValue(attribute, object) ?? ''}
                     {...joinProps(attribute.collectionAttr, object, attribute.props)}
                   />
                 </td>

@@ -157,6 +157,30 @@ export interface Issue extends AttachedDoc {
   rank: string
 
   sprint?: Ref<Sprint> | null
+
+  // Estimation in man days
+  estimation: number
+  // ReportedTime time, auto updated using trigger.
+  reportedTime: number
+  // Collection of reportedTime entries, for proper time estimations per person.
+  reports: number
+}
+
+/**
+ * @public
+ *
+ * Declares time spend entry
+ */
+export interface TimeSpendReport extends AttachedDoc {
+  attachedTo: Ref<Issue>
+
+  employee: Ref<Employee> | null
+
+  date: Timestamp | null
+  // Value in man days
+  value: number
+
+  description: string
 }
 
 /**
@@ -245,7 +269,9 @@ export default plugin(trackerId, {
     TypeIssuePriority: '' as Ref<Class<Type<IssuePriority>>>,
     TypeProjectStatus: '' as Ref<Class<Type<ProjectStatus>>>,
     Sprint: '' as Ref<Class<Sprint>>,
-    TypeSprintStatus: '' as Ref<Class<Type<SprintStatus>>>
+    TypeSprintStatus: '' as Ref<Class<Type<SprintStatus>>>,
+    TimeSpendReport: '' as Ref<Class<TimeSpendReport>>,
+    TypeReportedTime: '' as Ref<Class<Type<number>>>
   },
   ids: {
     NoParent: '' as Ref<Issue>
@@ -311,7 +337,10 @@ export default plugin(trackerId, {
 
     CopyID: '' as Asset,
     CopyURL: '' as Asset,
-    CopyBranch: '' as Asset
+    CopyBranch: '' as Asset,
+
+    TimeReport: '' as Asset,
+    Estimation: '' as Asset
   },
   category: {
     Other: '' as Ref<TagCategory>,

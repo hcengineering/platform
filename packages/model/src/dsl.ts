@@ -161,6 +161,15 @@ export function Hidden () {
 /**
  * @public
  */
+export function ReadOnly () {
+  return function (target: any, propertyKey: string): void {
+    setAttr(target, propertyKey, 'readonly', true)
+  }
+}
+
+/**
+ * @public
+ */
 export function Index (kind: IndexKind) {
   return function (target: any, propertyKey: string): void {
     setIndex(target, propertyKey, kind)

@@ -26,9 +26,6 @@
 
   const client = getClient()
 
-  let actions: Action[] = []
-  let q = 0
-
   addTxListener((tx) => {
     if (tx._class === core.class.TxRemoveDoc) {
       const docId = (tx as TxRemoveDoc<Doc>).objectId
@@ -42,16 +39,14 @@
 
   let lastKey: KeyboardEvent | undefined
 
-  async function updateActions (
+  async function getCurrentActions (
     context: {
       mode: ViewContextType
       application?: Ref<Doc>
     },
     focus: Doc | undefined | null,
     selection: Doc[]
-  ): Promise<void> {
-    const t = ++q
-
+  ): Promise<Action[]> {
     let docs: Doc | Doc[] = []
     if (selection.find((it) => it._id === focus?._id) === undefined && focus != null) {
       docs = focus
@@ -59,18 +54,13 @@
       docs = selection
     }
 
-    const r = await getContextActions(client, docs, context)
-    if (t === q) {
-      actions = r
-    }
+    return await getContextActions(client, docs, context)
   }
 
   $: ctx = $contextStore[$contextStore.length - 1]
   $: mode = $contextStore[$contextStore.length - 1]?.mode
   $: application = $contextStore[$contextStore.length - 1]?.application
-  $: if (ctx !== undefined) {
-    updateActions({ mode: mode as ViewContextType, application: application }, $focusStore.focus, $selectionStore)
-  }
+
   function keyPrefix (key: KeyboardEvent): string {
     return (
       (key.altKey ? 'Alt + ' : '') +
@@ -114,7 +104,11 @@
       elm = prt
     }
 
-    let currentActions = actions
+    let currentActions = await getCurrentActions(
+      { mode: mode as ViewContextType, application: application },
+      $focusStore.focus,
+      $selectionStore
+    )
 
     // For none we ignore all actions.
     if (ctx.mode === 'none') {

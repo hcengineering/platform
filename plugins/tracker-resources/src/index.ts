@@ -69,6 +69,10 @@ import SprintTitlePresenter from './components/sprints/SprintTitlePresenter.svel
 import SprintSelector from './components/sprints/SprintSelector.svelte'
 import SprintEditor from './components/sprints/SprintEditor.svelte'
 
+import ReportedTimeEditor from './components/issues/timereport/ReportedTimeEditor.svelte'
+import TimeSpendReport from './components/issues/timereport/TimeSpendReport.svelte'
+import EstimationEditor from './components/issues/timereport/EstimationEditor.svelte'
+
 export async function queryIssue<D extends Issue> (
   _class: Ref<Class<D>>,
   client: Client,
@@ -170,7 +174,10 @@ export default async (): Promise<Resources> => ({
     SprintStatusPresenter,
     SprintTitlePresenter,
     SprintSelector,
-    SprintEditor
+    SprintEditor,
+    ReportedTimeEditor,
+    TimeSpendReport,
+    EstimationEditor
   },
   completion: {
     IssueQuery: async (client: Client, query: string) => await queryIssue(tracker.class.Issue, client, query)

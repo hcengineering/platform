@@ -283,7 +283,11 @@ export function createModel (builder: Builder): void {
           }
         },
         'modifiedOn',
-        { key: '$lookup.channels', sortingKey: ['$lookup.channels.lastMessage', 'channels'] }
+        {
+          key: '$lookup.channels',
+          label: contact.string.ContactInfo,
+          sortingKey: ['$lookup.channels.lastMessage', 'channels']
+        }
       ],
       hiddenKeys: ['name']
     },

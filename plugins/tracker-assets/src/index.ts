@@ -66,7 +66,9 @@ loadMetadata(tracker.icon, {
 
   CopyID: `${icons}#copyID`,
   CopyURL: `${icons}#copyURL`,
-  CopyBranch: `${icons}#copyBranch`
+  CopyBranch: `${icons}#copyBranch`,
+  TimeReport: `${icons}#timeReport`,
+  Estimation: `${icons}#timeReport`
 })
 
 addStringsLoader(trackerId, async (lang: string) => await import(`../lang/${lang}.json`))

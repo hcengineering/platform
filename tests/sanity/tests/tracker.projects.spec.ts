@@ -32,8 +32,8 @@ test.describe('project tests', () => {
     await page.click(`.selectPopup button:has-text("${prjId}")`)
     await page.click('form button:has-text("Save issue")')
     await page.waitForSelector('form.antiCard', { state: 'detached' })
-    await page.click(`.gridElement button:has-text("${prjId}")`)
-    await page.click('.selectPopup button:has-text("No project")')
+
+    await page.click('.listGrid :has-text("issue")')
   })
 
   test('create-project-with-status', async ({ page }) => {

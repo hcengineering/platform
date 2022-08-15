@@ -25,6 +25,7 @@
   export let maxWidth: string = '10rem'
   export let onChange: (value: string) => void
   export let kind: 'no-border' | 'link' = 'no-border'
+  export let readonly = false
 
   let shown: boolean = false
 
@@ -37,7 +38,7 @@
   <div
     class="link-container"
     on:click={(ev) => {
-      if (!shown) {
+      if (!shown && !readonly) {
         showPopup(EditBoxPopup, { value }, eventToHTMLElement(ev), (res) => {
           if (res !== undefined) {
             value = res
@@ -54,6 +55,12 @@
       <span class="dark-color"><Label label={placeholder} /></span>
     {/if}
   </div>
+{:else if readonly}
+  {#if value}
+    <span class="overflow-label">{value}</span>
+  {:else}
+    <span class="dark-color"><Label label={placeholder} /></span>
+  {/if}
 {:else}
   <EditBox {placeholder} {maxWidth} bind:value {focus} on:change={_onchange} />
 {/if}

@@ -27,7 +27,7 @@ import core, {
   TxProcessor,
   TxRemoveDoc
 } from '@anticrm/core'
-import { extractTx, TriggerControl } from '@anticrm/server-core'
+import { TriggerControl } from '@anticrm/server-core'
 import tags, { TagElement, TagReference } from '@anticrm/tags'
 
 /**
@@ -50,7 +50,7 @@ export async function TagElementRemove (
  * @public
  */
 export async function onTagReference (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const actualTx = extractTx(tx)
+  const actualTx = TxProcessor.extractTx(tx)
   const isCreate = control.hierarchy.isDerived(actualTx._class, core.class.TxCreateDoc)
   const isRemove = control.hierarchy.isDerived(actualTx._class, core.class.TxRemoveDoc)
   if (!isCreate && !isRemove) return []
@@ -68,7 +68,7 @@ export async function onTagReference (tx: Tx, control: TriggerControl): Promise<
       await control.findAll(core.class.TxCollectionCUD, { 'tx.objectId': ctx.objectId }, { limit: 1 })
     )[0]
     if (createTx !== undefined) {
-      const actualCreateTx = extractTx(createTx)
+      const actualCreateTx = TxProcessor.extractTx(createTx)
       const doc = TxProcessor.createDoc2Doc(actualCreateTx as TxCreateDoc<TagReference>)
       const res = control.txFactory.createTxUpdateDoc(tags.class.TagElement, tags.space.Tags, doc.tag, {
         $inc: { refCount: -1 }

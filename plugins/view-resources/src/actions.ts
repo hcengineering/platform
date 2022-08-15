@@ -120,13 +120,17 @@ export function filterActions (
   const role = getCurrentAccount().role
   const clazz = hierarchy.getClass(doc._class)
   const ignoreActions = hierarchy.as(clazz, view.mixin.IgnoreActions)
-  const ignore: Array<Ref<Action>> = ignoreActions?.actions ?? []
+  const ignore: Array<Ref<Action>> = Array.from(ignoreActions?.actions ?? [])
 
   // Collect ignores from parent
-  hierarchy.getAncestors(clazz._id).forEach((cl) => {
+  const ancestors = hierarchy.getAncestors(clazz._id)
+
+  for (const cl of ancestors) {
     const ignoreActions = hierarchy.as(hierarchy.getClass(cl), view.mixin.IgnoreActions)
-    ignore.push(...(ignoreActions?.actions ?? []))
-  })
+    if (ignoreActions?.actions !== undefined) {
+      ignore.push(...ignoreActions.actions)
+    }
+  }
   const overrideRemove: Array<Ref<Action>> = []
   for (const action of actions) {
     if (ignore.includes(action._id)) {

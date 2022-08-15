@@ -78,12 +78,12 @@ describe('server', () => {
       clean: async (domain: Domain, docs: Ref<Doc>[]) => {}
     }),
     (token, pipeline, broadcast) => new ClientSession(broadcast, token, pipeline),
-    3333
+    3335
   )
 
   function connect (): WebSocket {
     const token: string = generateToken('', 'latest')
-    return new WebSocket(`ws://localhost:3333/${token}`)
+    return new WebSocket(`ws://localhost:3335/${token}`)
   }
 
   it('should connect to server', (done) => {
@@ -97,7 +97,7 @@ describe('server', () => {
   })
 
   it('should not connect to server without token', (done) => {
-    const conn = new WebSocket('ws://localhost:3333/xyz')
+    const conn = new WebSocket('ws://localhost:3335/xyz')
     conn.on('error', () => {
       conn.close()
     })

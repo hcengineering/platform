@@ -16,7 +16,6 @@
 
 import type { Doc, Ref, Tx, TxCollectionCUD, TxCreateDoc, TxRemoveDoc } from '@anticrm/core'
 import type { TriggerControl } from '@anticrm/server-core'
-import { extractTx } from '@anticrm/server-core'
 import type { Attachment } from '@anticrm/attachment'
 import attachment from '@anticrm/attachment'
 import core, { TxProcessor } from '@anticrm/core'
@@ -51,7 +50,7 @@ export async function OnAttachmentDelete (
   tx: Tx,
   { findAll, hierarchy, fulltextFx, storageFx }: TriggerControl
 ): Promise<Tx[]> {
-  const actualTx = extractTx(tx)
+  const actualTx = TxProcessor.extractTx(tx)
   if (actualTx._class !== core.class.TxRemoveDoc) {
     return []
   }

@@ -196,7 +196,19 @@
     "AddToSprint": "Add to Sprint",
 
     "NewSprint": "New Sprint",
-    "CreateSprint": "Create"
+    "CreateSprint": "Create",
+
+    "Estimation": "Estimation",
+    "ReportedTime": "Reported Time",
+    "TimeSpendReports": "Time spend reports",
+    "TimeSpendReport": "Time spend report",
+    "TimeSpendReportAdd": "Add time report",
+    "TimeSpendReportDate": "Date",
+    "TimeSpendReportValue": "Reported time",
+    "TimeSpendReportValueTooltip": "Reported time in man days",
+    "TimeSpendReportDescription": "Description",
+    "TimeSpendValue": "{value}d",
+    "SprintPassed": "{from}d/{to}d"
   },
   "status": {}
 }

@@ -15,7 +15,7 @@
 <script lang="ts">
   import presentation, { Card, createQuery, getAttributePresenterClass, getClient } from '@anticrm/presentation'
   import { BuildModelKey, Viewlet, ViewletPreference } from '@anticrm/view'
-  import core, { ArrOf, Class, Doc, Lookup, Ref, Type } from '@anticrm/core'
+  import core, { AnyAttribute, ArrOf, Class, Doc, Lookup, Ref, Type } from '@anticrm/core'
   import { Button, ToggleButton } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
   import { IntlString } from '@anticrm/platform'
@@ -54,6 +54,7 @@
     enabled: boolean
     label: IntlString
     value: string | BuildModelKey
+    _class: Ref<Class<Doc>>
   }
 
   function getObjectConfig (_class: Ref<Class<Doc>>, param: string): AttributeConfig {
@@ -61,7 +62,8 @@
     return {
       value: param,
       label: clazz.label,
-      enabled: true
+      enabled: true,
+      _class
     }
   }
 
@@ -76,14 +78,16 @@
           result.push({
             value: param,
             enabled: true,
-            label: getKeyLabel(viewlet.attachTo, param, lookup)
+            label: getKeyLabel(viewlet.attachTo, param, lookup),
+            _class: viewlet.attachTo
           })
         }
       } else {
         result.push({
           value: param,
           label: param.label as IntlString,
-          enabled: true
+          enabled: true,
+          _class: viewlet.attachTo
         })
       }
     }
@@ -100,32 +104,58 @@
     return name
   }
 
+  function processAttribute (attribute: AnyAttribute, result: AttributeConfig[], useMixinProxy = false): void {
+    if (attribute.hidden === true || attribute.label === undefined) return
+    if (viewlet.hiddenKeys?.includes(attribute.name)) return
+    if (hierarchy.isDerived(attribute.type._class, core.class.Collection)) return
+    const value = getValue(attribute.name, attribute.type)
+    if (result.findIndex((p) => p.value === value) !== -1) return
+    const typeClassId = getAttributePresenterClass(hierarchy, attribute).attrClass
+    const typeClass = hierarchy.getClass(typeClassId)
+    let presenter = hierarchy.as(typeClass, view.mixin.AttributePresenter).presenter
+    let parent = typeClass.extends
+    while (presenter === undefined && parent !== undefined) {
+      const pclazz = hierarchy.getClass(parent)
+      presenter = hierarchy.as(pclazz, view.mixin.AttributePresenter).presenter
+      parent = pclazz.extends
+    }
+    if (presenter === undefined) return
+
+    if (useMixinProxy) {
+      result.push({
+        value: attribute.attributeOf + '.' + attribute.name,
+        label: attribute.label,
+        enabled: false,
+        _class: attribute.attributeOf
+      })
+    } else {
+      result.push({
+        value,
+        label: attribute.label,
+        enabled: false,
+        _class: attribute.attributeOf
+      })
+    }
+  }
   function getConfig (viewlet: Viewlet, preference: ViewletPreference | undefined): AttributeConfig[] {
     const result = getBaseConfig(viewlet)
 
     const allAttributes = hierarchy.getAllAttributes(viewlet.attachTo)
+
     for (const [, attribute] of allAttributes) {
-      if (attribute.hidden === true || attribute.label === undefined) continue
-      if (viewlet.hiddenKeys?.includes(attribute.name)) continue
-      if (hierarchy.isDerived(attribute.type._class, core.class.Collection)) continue
-      const value = getValue(attribute.name, attribute.type)
-      if (result.findIndex((p) => p.value === value) !== -1) continue
-      const typeClassId = getAttributePresenterClass(hierarchy, attribute).attrClass
-      const typeClass = hierarchy.getClass(typeClassId)
-      let presenter = hierarchy.as(typeClass, view.mixin.AttributePresenter).presenter
-      let parent = typeClass.extends
-      while (presenter === undefined && parent !== undefined) {
-        const pclazz = hierarchy.getClass(parent)
-        presenter = hierarchy.as(pclazz, view.mixin.AttributePresenter).presenter
-        parent = pclazz.extends
-      }
-      if (presenter === undefined) continue
-      result.push({
-        value,
-        label: attribute.label,
-        enabled: false
-      })
+      processAttribute(attribute, result)
     }
+
+    hierarchy
+      .getDescendants(viewlet.attachTo)
+      .filter((it) => hierarchy.isMixin(it))
+      .forEach((it) =>
+        hierarchy.getAllAttributes(it, viewlet.attachTo).forEach((attr) => {
+          if (attr.isCustom === true) {
+            processAttribute(attr, result, true)
+          }
+        })
+      )
 
     return preference === undefined ? result : setStatus(result, preference)
   }

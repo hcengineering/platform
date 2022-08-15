@@ -299,7 +299,7 @@ const listIssueStatusOrder = [
 
 export function getCategories (
   key: IssuesGroupByKeys | undefined,
-  elements: Issue[],
+  elements: Array<WithLookup<Issue>>,
   shouldShowAll: boolean,
   statuses: IssueStatus[],
   employees: Employee[]
@@ -307,7 +307,6 @@ export function getCategories (
   if (key === undefined) {
     return [undefined] // No grouping
   }
-
   const defaultStatuses = listIssueStatusOrder.map(
     (category) => statuses.find((status) => status.category === category)?._id
   )
@@ -345,6 +344,17 @@ export function getCategories (
       const i2 = defaultPriorities.findIndex((x) => x === p2)
 
       return i1 - i2
+    })
+  }
+
+  if (key === 'sprint') {
+    const sprints = new Map(elements.map((x) => [x.sprint, x.$lookup?.sprint]))
+
+    existingCategories.sort((p1, p2) => {
+      const i1 = sprints.get(p1 as Ref<Sprint>)
+      const i2 = sprints.get(p2 as Ref<Sprint>)
+
+      return (i2?.startDate ?? 0) - (i1?.startDate ?? 0)
     })
   }
 

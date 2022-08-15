@@ -184,6 +184,7 @@
                 shouldShowLabel: true,
                 value: groupByKey ? { [groupByKey]: category } : {},
                 statuses: groupByKey === 'status' ? statuses : undefined,
+                issues: groupedIssues[category],
                 size: 'inline',
                 kind: 'list'
               }}
@@ -241,6 +242,7 @@
                     <svelte:component
                       this={attributeModel.presenter}
                       value={getObjectValue(attributeModel.key, docObject) ?? ''}
+                      groupBy={groupByKey}
                       {...attributeModel.props}
                     />
                   </div>
@@ -255,6 +257,7 @@
                       <svelte:component
                         this={attributeModel.presenter}
                         value={getObjectValue(attributeModel.key, docObject) ?? ''}
+                        groupBy={groupByKey}
                         {...attributeModel.props}
                       />
                     </FixedColumn>
@@ -263,6 +266,7 @@
                   <svelte:component
                     this={attributeModel.presenter}
                     value={getObjectValue(attributeModel.key, docObject) ?? ''}
+                    groupBy={groupByKey}
                     {...attributeModel.props}
                   />
                 {:else if attributeModel.props?.fixed}
@@ -275,6 +279,7 @@
                     <svelte:component
                       this={attributeModel.presenter}
                       value={getObjectValue(attributeModel.key, docObject) ?? ''}
+                      groupBy={groupByKey}
                       {...attributeModel.props}
                     />
                   </FixedColumn>
@@ -284,6 +289,7 @@
                       this={attributeModel.presenter}
                       value={getObjectValue(attributeModel.key, docObject) ?? ''}
                       issueId={docObject._id}
+                      groupBy={groupByKey}
                       {...attributeModel.props}
                     />
                   </div>

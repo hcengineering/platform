@@ -230,6 +230,22 @@ export async function buildModel (options: BuildModelOptions): Promise<Attribute
     .map((key) => (typeof key === 'string' ? { key: key } : key))
     .map(async (key) => {
       try {
+        // Check if it is a mixin attribute configuration
+        const pos = key.key.lastIndexOf('.')
+        if (pos !== -1) {
+          const mixinName = key.key.substring(0, pos) as Ref<Class<Doc>>
+          if (options.client.getHierarchy().isMixin(mixinName)) {
+            const realKey = key.key.substring(pos + 1)
+            const rkey = { ...key, key: realKey }
+            return {
+              ...(await getPresenter(options.client, mixinName, rkey, rkey, options.lookup)),
+              castRequest: mixinName,
+              key: key.key,
+              sortingKey: key.key
+            }
+          }
+        }
+
         return await getPresenter(options.client, options._class, key, key, options.lookup)
       } catch (err: any) {
         if (options.ignoreMissing ?? false) {

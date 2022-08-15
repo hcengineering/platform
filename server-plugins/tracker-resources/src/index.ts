@@ -13,9 +13,18 @@
 // limitations under the License.
 //
 
-import core, { DocumentUpdate, Ref, Tx, TxUpdateDoc } from '@anticrm/core'
-import { extractTx, TriggerControl } from '@anticrm/server-core'
-import tracker, { Issue } from '@anticrm/tracker'
+import core, {
+  DocumentUpdate,
+  Ref,
+  Tx,
+  TxCollectionCUD,
+  TxCreateDoc,
+  TxCUD,
+  TxProcessor,
+  TxUpdateDoc
+} from '@anticrm/core'
+import { TriggerControl } from '@anticrm/server-core'
+import tracker, { Issue, TimeSpendReport } from '@anticrm/tracker'
 
 async function updateSubIssues (
   updateTx: TxUpdateDoc<Issue>,
@@ -34,16 +43,93 @@ async function updateSubIssues (
  * @public
  */
 export async function OnIssueUpdate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const actualTx = extractTx(tx)
+  const actualTx = TxProcessor.extractTx(tx)
+
+  // Check TimeReport operations
+  if (
+    actualTx._class === core.class.TxCreateDoc ||
+    actualTx._class === core.class.TxUpdateDoc ||
+    actualTx._class === core.class.TxRemoveDoc
+  ) {
+    const cud = actualTx as TxCUD<TimeSpendReport>
+    if (cud.objectClass === tracker.class.TimeSpendReport) {
+      return await doTimeReportUpdate(cud, tx, control)
+    }
+  }
+
   if (actualTx._class !== core.class.TxUpdateDoc) {
     return []
   }
 
   const updateTx = actualTx as TxUpdateDoc<Issue>
-  if (!control.hierarchy.isDerived(updateTx.objectClass, tracker.class.Issue)) {
-    return []
+  if (control.hierarchy.isDerived(updateTx.objectClass, tracker.class.Issue)) {
+    return await doIssueUpdate(updateTx, control)
   }
+  return []
+}
 
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+export default async () => ({
+  trigger: {
+    OnIssueUpdate
+  }
+})
+
+async function doTimeReportUpdate (cud: TxCUD<TimeSpendReport>, tx: Tx, control: TriggerControl): Promise<Tx[]> {
+  const parentTx = tx as TxCollectionCUD<Issue, TimeSpendReport>
+  switch (cud._class) {
+    case core.class.TxCreateDoc: {
+      const ccud = cud as TxCreateDoc<TimeSpendReport>
+      return [
+        control.txFactory.createTxUpdateDoc<Issue>(parentTx.objectClass, parentTx.objectSpace, parentTx.objectId, {
+          $inc: { reportedTime: ccud.attributes.value }
+        })
+      ]
+    }
+    case core.class.TxUpdateDoc: {
+      const upd = cud as TxUpdateDoc<TimeSpendReport>
+      if (upd.operations.value !== undefined) {
+        const logTxes = Array.from(
+          await control.findAll(core.class.TxCollectionCUD, {
+            'tx.objectId': cud.objectId,
+            _id: { $nin: [parentTx._id] }
+          })
+        ).map(TxProcessor.extractTx)
+        const doc: TimeSpendReport | undefined = TxProcessor.buildDoc2Doc(logTxes)
+        if (doc !== undefined) {
+          return [
+            control.txFactory.createTxUpdateDoc<Issue>(parentTx.objectClass, parentTx.objectSpace, parentTx.objectId, {
+              $inc: { reportedTime: -1 * doc.value }
+            }),
+            control.txFactory.createTxUpdateDoc<Issue>(parentTx.objectClass, parentTx.objectSpace, parentTx.objectId, {
+              $inc: { reportedTime: upd.operations.value }
+            })
+          ]
+        }
+      }
+      break
+    }
+    case core.class.TxRemoveDoc: {
+      const logTxes = Array.from(
+        await control.findAll(core.class.TxCollectionCUD, {
+          'tx.objectId': cud.objectId,
+          _id: { $nin: [parentTx._id] }
+        })
+      ).map(TxProcessor.extractTx)
+      const doc: TimeSpendReport | undefined = TxProcessor.buildDoc2Doc(logTxes)
+      if (doc !== undefined) {
+        return [
+          control.txFactory.createTxUpdateDoc<Issue>(parentTx.objectClass, parentTx.objectSpace, parentTx.objectId, {
+            $inc: { reportedTime: -1 * doc.value }
+          })
+        ]
+      }
+    }
+  }
+  return []
+}
+
+async function doIssueUpdate (updateTx: TxUpdateDoc<Issue>, control: TriggerControl): Promise<Tx[]> {
   const res: Tx[] = []
 
   if (Object.prototype.hasOwnProperty.call(updateTx.operations, 'attachedTo')) {
@@ -95,10 +181,3 @@ export async function OnIssueUpdate (tx: Tx, control: TriggerControl): Promise<T
 
   return res
 }
-
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-export default async () => ({
-  trigger: {
-    OnIssueUpdate
-  }
-})

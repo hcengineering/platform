@@ -13,22 +13,26 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getPlatformColor } from '../colors'
-  import { IconSize } from '../types'
+  import { FernColor, FlamingoColor, IconSize, PlatinumColor } from '@anticrm/ui'
 
   export let value: number
   export let min: number = 0
   export let max: number = 100
-  export let color: number = 5
   export let size: IconSize = 'small'
   export let primary: boolean = false
+
+  export let color: string = PlatinumColor
+  export let greenColor: string = FernColor
+  export let overdueColor = FlamingoColor
 
   if (value > max) value = max
   if (value < min) value = min
 
   const lenghtC: number = Math.PI * 14 - 1
   $: procC = lenghtC / (max - min)
-  $: dashOffset = (value - min) * procC
+  $: dashOffset = (Math.min(value, max) - min) * procC
+
+  $: color = value > max ? overdueColor : value === min ? color : greenColor
 </script>
 
 <svg class="svg-{size}" fill="none" viewBox="0 0 16 16">
@@ -48,7 +52,7 @@
     cy={8}
     r={7}
     class="progress-circle"
-    style:stroke={primary ? 'var(--primary-bg-color)' : getPlatformColor(color)}
+    style:stroke={primary ? 'var(--primary-bg-color)' : color}
     style:opacity={dashOffset === 0 ? 0 : 1}
     style:transform={'rotate(-82deg)'}
     style:stroke-dasharray={lenghtC}

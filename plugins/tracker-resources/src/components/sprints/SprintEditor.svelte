@@ -14,11 +14,13 @@
 -->
 <script lang="ts">
   import { Ref } from '@anticrm/core'
-  import { Issue, Sprint } from '@anticrm/tracker'
-  import { getClient } from '@anticrm/presentation'
-  import { ButtonKind, ButtonShape, ButtonSize, tooltip } from '@anticrm/ui'
   import { IntlString } from '@anticrm/platform'
+  import { createQuery, getClient } from '@anticrm/presentation'
+  import { Issue, Sprint } from '@anticrm/tracker'
+  import { ButtonKind, ButtonShape, ButtonSize, isWeekend, Label, tooltip } from '@anticrm/ui'
+  import { activeSprint } from '../../issues'
   import tracker from '../../plugin'
+  import EstimationProgressCircle from '../issues/timereport/EstimationProgressCircle.svelte'
   import SprintSelector from './SprintSelector.svelte'
 
   export let value: Issue
@@ -32,6 +34,8 @@
   export let justify: 'left' | 'center' = 'left'
   export let width: string | undefined = '100%'
   export let onlyIcon: boolean = false
+  export let issues: Issue[] | undefined
+  export let groupBy: string | undefined
 
   const client = getClient()
 
@@ -50,9 +54,35 @@
       { sprint: newSprintId }
     )
   }
+
+  $: totalEstimation = (issues ?? [{ estimation: 0 }])
+    .map((it) => it.estimation)
+    .reduce((it, cur) => {
+      return it + cur
+    })
+  $: totalReported = (issues ?? [{ reportedTime: 0 }])
+    .map((it) => it.reportedTime)
+    .reduce((it, cur) => {
+      return it + cur
+    })
+
+  const sprintQuery = createQuery()
+  let sprint: Sprint | undefined
+  $: if (issues !== undefined && value.sprint) {
+    sprintQuery.query(tracker.class.Sprint, { _id: value.sprint }, (res) => {
+      sprint = res.shift()
+    })
+  }
+  function getDayOfSprint (startDate: number, now: number): number {
+    const days = Math.floor(Math.abs((1 + now - startDate) / 1000 / 60 / 60 / 24)) + 1
+    const stDate = new Date(startDate)
+    const stDateDate = stDate.getDate()
+    const ds = Array.from(Array(days).keys()).map((it) => stDateDate + it)
+    return ds.filter((it) => !isWeekend(new Date(stDate.setDate(it)))).length
+  }
 </script>
 
-{#if value.sprint || shouldShowPlaceholder}
+{#if (value.sprint && value.sprint !== $activeSprint && groupBy !== 'sprint') || shouldShowPlaceholder}
   <div
     class="clear-mins"
     use:tooltip={{ label: value.sprint ? tracker.string.MoveToSprint : tracker.string.AddToSprint }}
@@ -70,5 +100,32 @@
       value={value.sprint}
       onSprintIdChange={handleSprintIdChanged}
     />
+  </div>
+{/if}
+
+{#if issues}
+  {#if sprint}
+    {@const now = Date.now()}
+    {#if sprint.startDate < now && now < sprint.targetDate}
+      <!-- Active sprint in time -->
+      <Label
+        label={tracker.string.SprintPassed}
+        params={{
+          from: getDayOfSprint(sprint.startDate, now),
+          to: getDayOfSprint(sprint.startDate, sprint.targetDate) - 1
+        }}
+      />
+    {/if}
+  {/if}
+  <!-- <Label label={tracker.string.SprintDay} value={}/> -->
+  <div class="ml-4 flex-row-center">
+    <div class="mr-2">
+      <EstimationProgressCircle value={totalReported} max={totalEstimation} />
+    </div>
+    {#if totalReported > 0}
+      <Label label={tracker.string.TimeSpendValue} params={{ value: totalReported }} />
+      /
+    {/if}
+    <Label label={tracker.string.TimeSpendValue} params={{ value: totalEstimation }} />
   </div>
 {/if}

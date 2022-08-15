@@ -68,7 +68,10 @@
     dueDate: null,
     comments: 0,
     subIssues: 0,
-    parents: []
+    parents: [],
+    reportedTime: 0,
+    estimation: 0,
+    reports: 0
   }
 
   const dispatch = createEventDispatcher()
@@ -151,7 +154,10 @@
       dueDate: object.dueDate,
       parents: parentIssue
         ? [{ parentId: parentIssue._id, parentTitle: parentIssue.title }, ...parentIssue.parents]
-        : []
+        : [],
+      reportedTime: 0,
+      estimation: 0,
+      reports: 0
     }
 
     await client.addCollection(

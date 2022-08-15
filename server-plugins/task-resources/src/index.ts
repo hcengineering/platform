@@ -13,10 +13,10 @@
 // limitations under the License.
 //
 
-import core, { Doc, Tx, TxUpdateDoc } from '@anticrm/core'
+import core, { Doc, Tx, TxProcessor, TxUpdateDoc } from '@anticrm/core'
 import login from '@anticrm/login'
 import { getMetadata } from '@anticrm/platform'
-import { extractTx, TriggerControl } from '@anticrm/server-core'
+import { TriggerControl } from '@anticrm/server-core'
 import { getUpdateLastViewTx } from '@anticrm/server-notification'
 import task, { Issue, Task, taskId } from '@anticrm/task'
 import view from '@anticrm/view'
@@ -43,7 +43,7 @@ export function issueTextPresenter (doc: Doc): string {
  * @public
  */
 export async function OnTaskUpdate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const actualTx = extractTx(tx)
+  const actualTx = TxProcessor.extractTx(tx)
   if (actualTx._class !== core.class.TxUpdateDoc) {
     return []
   }

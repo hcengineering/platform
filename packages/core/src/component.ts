@@ -80,7 +80,7 @@ export default plugin(coreId, {
     Type: '' as Ref<Class<Type<any>>>,
     TypeString: '' as Ref<Class<Type<string>>>,
     TypeIntlString: '' as Ref<Class<Type<IntlString>>>,
-    TypeNumber: '' as Ref<Class<Type<string>>>,
+    TypeNumber: '' as Ref<Class<Type<number>>>,
     TypeMarkup: '' as Ref<Class<Type<string>>>,
     TypeBoolean: '' as Ref<Class<Type<boolean>>>,
     TypeTimestamp: '' as Ref<Class<Type<Timestamp>>>,
