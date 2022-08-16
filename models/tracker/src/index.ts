@@ -24,6 +24,7 @@ import {
   Index,
   Model,
   Prop,
+  ReadOnly,
   TypeDate,
   TypeMarkup,
   TypeNumber,
@@ -34,11 +35,12 @@ import {
 import attachment from '@anticrm/model-attachment'
 import chunter from '@anticrm/model-chunter'
 import core, { DOMAIN_SPACE, TAttachedDoc, TDoc, TSpace, TType } from '@anticrm/model-core'
-import view, { createAction } from '@anticrm/model-view'
+import view, { classPresenter, createAction } from '@anticrm/model-view'
 import workbench, { createNavigateAction } from '@anticrm/model-workbench'
 import notification from '@anticrm/notification'
 import { Asset, IntlString } from '@anticrm/platform'
 import setting from '@anticrm/setting'
+import tags from '@anticrm/tags'
 import task from '@anticrm/task'
 import {
   Document,
@@ -52,10 +54,10 @@ import {
   Sprint,
   SprintStatus,
   Team,
+  TimeSpendReport,
   trackerId
 } from '@anticrm/tracker'
 import { KeyBinding } from '@anticrm/view'
-import tags from '@anticrm/tags'
 import tracker from './plugin'
 
 import presentation from '@anticrm/model-presentation'
@@ -162,6 +164,13 @@ export class TTeam extends TSpace implements Team {
 /**
  * @public
  */
+export function TypeReportedTime (): Type<number> {
+  return { _class: tracker.class.TypeReportedTime, label: core.string.Number }
+}
+
+/**
+ * @public
+ */
 @Model(tracker.class.Issue, core.class.AttachedDoc, DOMAIN_TRACKER)
 @UX(tracker.string.Issue, tracker.icon.Issue, tracker.string.Issue)
 export class TIssue extends TAttachedDoc implements Issue {
@@ -219,8 +228,38 @@ export class TIssue extends TAttachedDoc implements Issue {
 
   @Prop(TypeRef(tracker.class.Sprint), tracker.string.Sprint)
   sprint!: Ref<Sprint> | null
+
+  @Prop(TypeNumber(), tracker.string.Estimation)
+  estimation!: number
+
+  @Prop(TypeReportedTime(), tracker.string.ReportedTime)
+  @ReadOnly()
+  reportedTime!: number
+
+  @Prop(Collection(tracker.class.TimeSpendReport), tracker.string.TimeSpendReports)
+  reports!: number
 }
 
+/**
+ * @public
+ */
+@Model(tracker.class.TimeSpendReport, core.class.AttachedDoc, DOMAIN_TRACKER)
+@UX(tracker.string.TimeSpendReport, tracker.icon.TimeReport, tracker.string.TimeSpendReport)
+export class TTimeSpendReport extends TAttachedDoc implements TimeSpendReport {
+  declare attachedTo: Ref<Issue>
+
+  @Prop(TypeRef(contact.class.Employee), contact.string.Employee)
+  employee!: Ref<Employee>
+
+  @Prop(TypeDate(), tracker.string.TimeSpendReportDate)
+  date!: Timestamp | null
+
+  @Prop(TypeNumber(), tracker.string.TimeSpendReportValue)
+  value!: number
+
+  @Prop(TypeString(), tracker.string.TimeSpendReportDescription)
+  description!: string
+}
 /**
  * @public
  */
@@ -321,6 +360,10 @@ export class TSprint extends TDoc implements Sprint {
   declare space: Ref<Team>
 }
 
+@UX(core.string.Number)
+@Model(tracker.class.TypeReportedTime, core.class.Type)
+export class TTypeReportedTime extends TType {}
+
 export function createModel (builder: Builder): void {
   builder.createModel(
     TTeam,
@@ -331,7 +374,9 @@ export function createModel (builder: Builder): void {
     TTypeIssuePriority,
     TTypeProjectStatus,
     TSprint,
-    TTypeSprintStatus
+    TTypeSprintStatus,
+    TTimeSpendReport,
+    TTypeReportedTime
   )
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {
@@ -357,6 +402,7 @@ export function createModel (builder: Builder): void {
         presenter: tracker.component.SprintEditor,
         props: { kind: 'list', size: 'small', shape: 'round', shouldShowPlaceholder: false }
       },
+      { key: '', presenter: tracker.component.EstimationEditor, props: { kind: 'list', size: 'small' } },
       { key: 'modifiedOn', presenter: tracker.component.ModificationDatePresenter, props: { fixed: 'right' } },
       {
         key: '$lookup.assignee',
@@ -472,6 +518,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.PreviewPresenter, {
     presenter: tracker.component.IssuePreview
+  })
+
+  builder.mixin(tracker.class.TimeSpendReport, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: tracker.component.TimeSpendReport
   })
 
   builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.ObjectTitle, {
@@ -1014,5 +1064,12 @@ export function createModel (builder: Builder): void {
       }
     },
     tracker.action.Relations
+  )
+
+  classPresenter(
+    builder,
+    tracker.class.TypeReportedTime,
+    view.component.NumberPresenter,
+    tracker.component.ReportedTimeEditor
   )
 }

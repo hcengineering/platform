@@ -213,7 +213,18 @@ export default mergeIds(trackerId, tracker, {
     CreateSprint: '' as IntlString,
     AddToSprint: '' as IntlString,
     MoveToSprint: '' as IntlString,
-    NoSprint: '' as IntlString
+    NoSprint: '' as IntlString,
+
+    Estimation: '' as IntlString,
+    ReportedTime: '' as IntlString,
+    TimeSpendReport: '' as IntlString,
+    TimeSpendReportAdd: '' as IntlString,
+    TimeSpendReports: '' as IntlString,
+    TimeSpendReportDate: '' as IntlString,
+    TimeSpendReportValue: '' as IntlString,
+    TimeSpendReportDescription: '' as IntlString,
+    TimeSpendValue: '' as IntlString,
+    SprintPassed: '' as IntlString
   },
   component: {
     NopeComponent: '' as AnyComponent,
@@ -261,7 +272,10 @@ export default mergeIds(trackerId, tracker, {
     Sprints: '' as AnyComponent,
     SprintPresenter: '' as AnyComponent,
     SprintStatusPresenter: '' as AnyComponent,
-    SprintTitlePresenter: '' as AnyComponent
+    SprintTitlePresenter: '' as AnyComponent,
+    ReportedTimeEditor: '' as AnyComponent,
+    TimeSpendReport: '' as AnyComponent,
+    EstimationEditor: '' as AnyComponent
   },
   function: {
     IssueTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>) => Promise<string>>

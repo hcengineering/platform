@@ -15,54 +15,44 @@
 -->
 <script lang="ts">
   import type { IntlString } from '@anticrm/platform'
-  import { EditBox, Label, showPopup, eventToHTMLElement } from '@anticrm/ui'
-  import EditBoxPopup from './EditBoxPopup.svelte'
+  import { Issue } from '@anticrm/tracker'
+  import { ActionIcon, eventToHTMLElement, IconAdd, Label, showPopup } from '@anticrm/ui'
+  import ReportsPopup from './ReportsPopup.svelte'
+  import TimeSpendReportPopup from './TimeSpendReportPopup.svelte'
 
   // export let label: IntlString
   export let placeholder: IntlString
+  export let object: Issue
   export let value: number
-  export let focus: boolean
-  export let maxWidth: string = '10rem'
-  export let onChange: (value: number) => void
   export let kind: 'no-border' | 'link' = 'no-border'
-  export let readonly = false
 
-  let shown: boolean = false
-
-  function _onchange (ev: Event) {
-    onChange((ev.target as HTMLInputElement).valueAsNumber)
+  function addTimeReport (event: MouseEvent): void {
+    showPopup(
+      TimeSpendReportPopup,
+      { issueId: object._id, issueClass: object._class, space: object.space },
+      eventToHTMLElement(event)
+    )
+  }
+  function showReports (event: MouseEvent): void {
+    showPopup(ReportsPopup, { issue: object }, eventToHTMLElement(event))
   }
 </script>
 
 {#if kind === 'link'}
-  <div
-    class="link-container"
-    on:click={(ev) => {
-      if (!shown && !readonly) {
-        showPopup(EditBoxPopup, { value, format: 'number' }, eventToHTMLElement(ev), (res) => {
-          if (res !== undefined) {
-            value = res
-            onChange(value)
-          }
-          shown = false
-        })
-      }
-    }}
-  >
+  <div class="link-container flex-between" on:click={showReports}>
     {#if value !== undefined}
       <span class="overflow-label">{value}</span>
     {:else}
       <span class="dark-color"><Label label={placeholder} /></span>
     {/if}
+    <div class="add-action">
+      <ActionIcon icon={IconAdd} size={'small'} action={addTimeReport} />
+    </div>
   </div>
-{:else if readonly}
-  {#if value !== undefined}
-    <span class="overflow-label">{value}</span>
-  {:else}
-    <span class="dark-color"><Label label={placeholder} /></span>
-  {/if}
+{:else if value !== undefined}
+  <span class="overflow-label">{value}</span>
 {:else}
-  <EditBox {placeholder} {maxWidth} bind:value format={'number'} {focus} on:change={_onchange} />
+  <span class="dark-color"><Label label={placeholder} /></span>
 {/if}
 
 <style lang="scss">
@@ -76,10 +66,17 @@
     border-radius: 0.25rem;
     cursor: pointer;
 
+    .add-action {
+      visibility: hidden;
+    }
+
     &:hover {
       color: var(--caption-color);
       background-color: var(--body-color);
       border-color: var(--divider-color);
+      .add-action {
+        visibility: visible;
+      }
     }
   }
 </style>

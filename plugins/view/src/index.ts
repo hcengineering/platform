@@ -357,6 +357,8 @@ export interface AttributeModel {
 
   attribute?: AnyAttribute
   collectionAttr: boolean
+
+  castRequest?: Ref<Mixin<Doc>>
 }
 
 /**

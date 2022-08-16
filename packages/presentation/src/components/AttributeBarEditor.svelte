@@ -92,6 +92,7 @@
           type={attribute?.type}
           {maxWidth}
           value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
+          readonly={attribute.readonly ?? false}
           space={object.space}
           {onChange}
           {focus}
@@ -105,6 +106,7 @@
           type={attribute?.type}
           {maxWidth}
           value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
+          readonly={attribute.readonly ?? false}
           space={object.space}
           {onChange}
           {focus}

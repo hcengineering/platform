@@ -206,6 +206,7 @@ export function createModel (builder: Builder): void {
         '',
         {
           key: '$lookup.contact.$lookup.channels',
+          label: contact.string.Channel,
           sortingKey: ['$lookup.contact.$lookup.channels.lastMessage', '$lookup.contact.channels']
         },
         'modifiedOn'
@@ -232,7 +233,11 @@ export function createModel (builder: Builder): void {
         'attachments',
         'modifiedOn',
         { key: '', presenter: view.component.RolePresenter, label: view.string.Role },
-        { key: '$lookup.channels', sortingKey: ['$lookup.channels.lastMessage', 'channels'] }
+        {
+          key: '$lookup.channels',
+          label: contact.string.ContactInfo,
+          sortingKey: ['$lookup.channels.lastMessage', 'channels']
+        }
       ],
       hiddenKeys: ['name']
     },

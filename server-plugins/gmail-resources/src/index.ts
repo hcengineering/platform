@@ -27,7 +27,7 @@ import core, {
   TxProcessor
 } from '@anticrm/core'
 import gmail, { Message } from '@anticrm/gmail'
-import { extractTx, TriggerControl } from '@anticrm/server-core'
+import { TriggerControl } from '@anticrm/server-core'
 
 /**
  * @public
@@ -54,7 +54,7 @@ export async function FindMessages (
  * @public
  */
 export async function OnMessageCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const actualTx = extractTx(tx)
+  const actualTx = TxProcessor.extractTx(tx)
   if (actualTx._class !== core.class.TxCreateDoc) {
     return []
   }

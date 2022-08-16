@@ -65,6 +65,7 @@ export interface UXObject extends Obj {
   label: IntlString
   icon?: Asset
   hidden?: boolean
+  readonly?: boolean
 }
 
 /**

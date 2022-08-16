@@ -42,7 +42,6 @@ import notification, {
 } from '@anticrm/notification'
 import { getResource } from '@anticrm/platform'
 import type { TriggerControl } from '@anticrm/server-core'
-import { extractTx } from '@anticrm/server-core'
 import { createLastViewTx, getUpdateLastViewTx } from '@anticrm/server-notification'
 import view, { HTMLPresenter, TextPresenter } from '@anticrm/view'
 
@@ -139,7 +138,7 @@ async function getUpdateLastViewTxes (
  * @public
  */
 export async function UpdateLastView (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const actualTx = extractTx(tx)
+  const actualTx = TxProcessor.extractTx(tx)
   if (![core.class.TxUpdateDoc, core.class.TxCreateDoc, core.class.TxMixin].includes(actualTx._class)) {
     return []
   }

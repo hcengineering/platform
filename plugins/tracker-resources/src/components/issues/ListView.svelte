@@ -57,7 +57,8 @@
       lookup: {
         assignee: contact.class.Employee,
         status: tracker.class.IssueStatus,
-        space: tracker.class.Team
+        space: tracker.class.Team,
+        sprint: tracker.class.Sprint
       }
     }
   )

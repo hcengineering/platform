@@ -317,6 +317,15 @@ async function upgradeProjects (tx: TxOperations): Promise<void> {
 
 export const trackerOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
+    await client.update(
+      DOMAIN_TRACKER,
+      { _class: tracker.class.Issue, reports: { $exists: false } },
+      {
+        reports: 0,
+        estimation: 0,
+        reportedTime: 0
+      }
+    )
     await Promise.all([migrateIssueProjects(client), migrateParentIssues(client)])
     await migrateIssueParentInfo(client)
   },

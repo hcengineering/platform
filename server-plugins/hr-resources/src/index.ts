@@ -14,9 +14,9 @@
 //
 
 import contact, { Employee } from '@anticrm/contact'
-import core, { Ref, SortingOrder, Tx, TxFactory, TxMixin, TxUpdateDoc } from '@anticrm/core'
+import core, { Ref, SortingOrder, Tx, TxFactory, TxMixin, TxProcessor, TxUpdateDoc } from '@anticrm/core'
 import hr, { Department, DepartmentMember, Staff } from '@anticrm/hr'
-import { extractTx, TriggerControl } from '@anticrm/server-core'
+import { TriggerControl } from '@anticrm/server-core'
 
 async function getOldDepartment (
   currentTx: TxMixin<Employee, Staff> | TxUpdateDoc<Employee>,
@@ -89,7 +89,7 @@ function getTxes (
  * @public
  */
 export async function OnDepartmentStaff (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const actualTx = extractTx(tx)
+  const actualTx = TxProcessor.extractTx(tx)
   if (core.class.TxMixin !== actualTx._class) {
     return []
   }
@@ -134,7 +134,7 @@ export async function OnDepartmentStaff (tx: Tx, control: TriggerControl): Promi
  * @public
  */
 export async function OnEmployeeDeactivate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const actualTx = extractTx(tx)
+  const actualTx = TxProcessor.extractTx(tx)
   if (core.class.TxUpdateDoc !== actualTx._class) {
     return []
   }

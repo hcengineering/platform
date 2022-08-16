@@ -292,6 +292,48 @@ export abstract class TxProcessor implements WithTx {
     return rawDoc
   }
 
+  static buildDoc2Doc<D extends Doc>(txes: Tx[]): D | undefined {
+    let doc: Doc
+    let createTx = txes.find((tx) => tx._class === core.class.TxCreateDoc)
+    const collectionTxes = false
+    if (createTx === undefined) {
+      const collectionTxes = txes.filter((tx) => tx._class === core.class.TxCollectionCUD) as Array<
+      TxCollectionCUD<Doc, AttachedDoc>
+      >
+      createTx = collectionTxes.find((p) => p.tx._class === core.class.TxCreateDoc)
+    }
+    if (createTx === undefined) return
+    doc = TxProcessor.createDoc2Doc(createTx as TxCreateDoc<Doc>)
+    for (let tx of txes) {
+      if (collectionTxes) {
+        tx = TxProcessor.extractTx(tx)
+      }
+      if (tx._class === core.class.TxUpdateDoc) {
+        doc = TxProcessor.updateDoc2Doc(doc, tx as TxUpdateDoc<Doc>)
+      } else if (tx._class === core.class.TxMixin) {
+        const mixinTx = tx as TxMixin<Doc, Doc>
+        doc = TxProcessor.updateMixin4Doc(doc, mixinTx)
+      }
+    }
+    return doc as D
+  }
+
+  static extractTx (tx: Tx): Tx {
+    if (tx._class === core.class.TxCollectionCUD) {
+      const ctx = tx as TxCollectionCUD<Doc, AttachedDoc>
+      if (ctx.tx._class === core.class.TxCreateDoc) {
+        const create = ctx.tx as TxCreateDoc<AttachedDoc>
+        create.attributes.attachedTo = ctx.objectId
+        create.attributes.attachedToClass = ctx.objectClass
+        create.attributes.collection = ctx.collection
+        return create
+      }
+      return ctx.tx
+    }
+
+    return tx
+  }
+
   protected abstract txCreateDoc (tx: TxCreateDoc<Doc>): Promise<TxResult>
   protected abstract txPutBag (tx: TxPutBag<PropertyType>): Promise<TxResult>
   protected abstract txUpdateDoc (tx: TxUpdateDoc<Doc>): Promise<TxResult>
