@@ -3,7 +3,7 @@
   import { IntlString, translate } from '@anticrm/platform'
   import { getClient } from '@anticrm/presentation'
   import { Issue } from '@anticrm/tracker'
-  import { Button, IconDetails } from '@anticrm/ui'
+  import { Button, IconDetails, IconDetailsFilled } from '@anticrm/ui'
   import view, { Viewlet } from '@anticrm/view'
   import { FilterBar, ViewOptionModel, ViewOptionsButton, getActiveViewletId } from '@anticrm/view-resources'
   import IssuesContent from './IssuesContent.svelte'
@@ -75,8 +75,9 @@
       <ViewOptionsButton viewOptionsKey={viewlet._id} config={viewOptionsConfig} />
     {/if}
     {#if asideFloat && $$slots.aside}
+      <div class="buttons-divider" />
       <Button
-        icon={IconDetails}
+        icon={asideShown ? IconDetailsFilled : IconDetails}
         kind={'transparent'}
         size={'medium'}
         selected={asideShown}
