@@ -143,6 +143,10 @@ export async function UpdateLastView (tx: Tx, control: TriggerControl): Promise<
     return []
   }
 
+  if ((actualTx as TxCUD<Doc>).objectClass === notification.class.LastView) {
+    return []
+  }
+
   const result: Tx[] = []
 
   switch (actualTx._class) {
