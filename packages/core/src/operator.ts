@@ -32,7 +32,11 @@ function $push (document: Doc, keyval: Record<string, PropertyType>): void {
     if (typeof val === 'object') {
       const arr = doc[key] as Array<any>
       const desc = val as Position<PropertyType>
-      arr.splice(desc.$position, 0, ...desc.$each)
+      if ('$each' in desc) {
+        arr.splice(desc.$position ?? 0, 0, ...desc.$each)
+      } else {
+        arr.push(val)
+      }
     } else {
       doc[key].push(val)
     }
@@ -48,7 +52,20 @@ function $pull (document: Doc, keyval: Record<string, PropertyType>): void {
     const arr = doc[key] as Array<any>
     if (typeof keyval[key] === 'object') {
       const { $in } = keyval[key] as PullArray<PropertyType>
-      doc[key] = arr.filter((val) => !$in.includes(val))
+
+      doc[key] = arr.filter((val) => {
+        if ($in !== undefined) {
+          return !$in.includes(val)
+        } else {
+          // We need to match all fields
+          for (const [kk, kv] of Object.entries(keyval[key])) {
+            if (val[kk] !== kv) {
+              return true
+            }
+          }
+          return false
+        }
+      })
     } else {
       doc[key] = arr.filter((val) => val !== keyval[key])
     }

@@ -16,14 +16,15 @@
 <script lang="ts">
   import contact from '@anticrm/contact'
   import { FindOptions } from '@anticrm/core'
-  import { Card } from '@anticrm/presentation'
+  import presentation, { Card } from '@anticrm/presentation'
   import { Issue, TimeSpendReport } from '@anticrm/tracker'
-  import { Button, EditBox, EditStyle, eventToHTMLElement, IconAdd, Scroller, showPopup } from '@anticrm/ui'
+  import { Button, EditBox, EditStyle, eventToHTMLElement, IconAdd, Label, Scroller, showPopup } from '@anticrm/ui'
   import { TableBrowser } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../../plugin'
+  import IssuePresenter from '../IssuePresenter.svelte'
+  import ParentNamesPresenter from '../ParentNamesPresenter.svelte'
   import TimeSpendReportPopup from './TimeSpendReportPopup.svelte'
-  import presentation from '@anticrm/presentation'
 
   export let value: string | number | undefined
   export let format: 'text' | 'password' | 'number'
@@ -39,8 +40,9 @@
     if (ev.key === 'Enter') dispatch('close', _value)
   }
   const options: FindOptions<TimeSpendReport> = {
-    lookup: { employee: contact.class.Employee }
+    lookup: { employee: contact.class.Employee, attachedTo: tracker.class.Issue }
   }
+  $: childIds = Array.from((object.childInfo ?? []).map((it) => it.childId))
 </script>
 
 <Card
@@ -54,6 +56,9 @@
     dispatch('close', null)
   }}
 >
+  <svelte:fragment slot="header">
+    <IssuePresenter value={object} disableClick />
+  </svelte:fragment>
   <div class="header no-border flex-col p-1">
     <div class="flex-row-center flex-between">
       <EditBox
@@ -67,11 +72,28 @@
       />
     </div>
   </div>
+  <Label label={tracker.string.ChildEstimation} />:qwe
+  <Scroller tableFade>
+    <TableBrowser
+      _class={tracker.class.Issue}
+      query={{ _id: { $in: childIds } }}
+      config={['', { key: '$lookup.attachedTo', presenter: ParentNamesPresenter }, 'estimation']}
+      {options}
+    />
+  </Scroller>
+  <Label label={tracker.string.ReportedTime} />:
   <Scroller tableFade>
     <TableBrowser
       _class={tracker.class.TimeSpendReport}
-      query={{ attachedTo: object._id }}
-      config={['', '$lookup.employee', 'date', 'description']}
+      query={{ attachedTo: { $in: [object._id, ...childIds] } }}
+      config={[
+        '$lookup.attachedTo',
+        { key: '$lookup.attachedTo', presenter: ParentNamesPresenter },
+        '',
+        '$lookup.employee',
+        'date',
+        'description'
+      ]}
       {options}
     />
   </Scroller>

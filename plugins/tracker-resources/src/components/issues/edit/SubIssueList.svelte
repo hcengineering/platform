@@ -32,6 +32,7 @@
   import DueDateEditor from '../DueDateEditor.svelte'
   import PriorityEditor from '../PriorityEditor.svelte'
   import StatusEditor from '../StatusEditor.svelte'
+  import EstimationEditor from '../timereport/EstimationEditor.svelte'
 
   export let issues: Issue[]
   export let issueStatuses: WithLookup<IssueStatus>[]
@@ -148,6 +149,7 @@
       </span>
     </div>
     <div class="flex-center flex-no-shrink">
+      <EstimationEditor value={issue} kind={'list'} />
       {#if issue.dueDate !== null}
         <DueDateEditor value={issue} />
       {/if}

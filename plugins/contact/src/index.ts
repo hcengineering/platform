@@ -30,7 +30,7 @@ import {
 import type { Asset, Plugin } from '@anticrm/platform'
 import { IntlString, plugin } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'
-import { Viewlet } from '@anticrm/view'
+import { ViewAction, Viewlet } from '@anticrm/view'
 
 /**
  * @public
@@ -46,8 +46,16 @@ export interface Persons extends Space {}
  * @public
  */
 export interface ChannelProvider extends Doc, UXObject {
+  // Placeholder
   placeholder: IntlString
+
+  // Presenter will be shown on click for channel
   presenter?: AnyComponent
+
+  // Action to be performed if there is no presenter defined.
+  action?: ViewAction
+
+  // Integration type
   integrationType?: Ref<Doc>
 }
 

@@ -16,8 +16,10 @@
 <script lang="ts">
   import type { Channel } from '@anticrm/contact'
   import { Doc } from '@anticrm/core'
+  import { getResource } from '@anticrm/platform'
   import type { ButtonKind, ButtonSize } from '@anticrm/ui'
   import { showPopup } from '@anticrm/ui'
+  import { ViewAction } from '@anticrm/view'
   import ChannelsDropdown from './ChannelsDropdown.svelte'
 
   export let value: Channel[] | Channel | null
@@ -29,11 +31,15 @@
   export let shape: 'circle' | undefined = 'circle'
   export let object: Doc
 
-  function _open (ev: any) {
+  async function _open (ev: CustomEvent): Promise<void> {
     if (ev.detail.presenter !== undefined && Array.isArray(value)) {
-      const channel = value[0]
-      if (channel !== undefined) {
-        showPopup(ev.detail.presenter, { _id: object._id, _class: object._class }, 'float')
+      showPopup(ev.detail.presenter, { _id: object._id, _class: object._class }, 'float')
+    }
+    if (ev.detail.action !== undefined && Array.isArray(value)) {
+      const action = await getResource(ev.detail.action as ViewAction)
+      const channel = value.find((it) => it.value === ev.detail.value)
+      if (action !== undefined && channel !== undefined) {
+        action(channel, ev)
       }
     }
   }

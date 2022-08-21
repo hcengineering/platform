@@ -55,12 +55,15 @@
     )
   }
 
-  $: totalEstimation = (issues ?? [{ estimation: 0 }])
+  $: ids = new Set(issues?.map((it) => it._id) ?? [])
+
+  $: noParents = issues?.filter((it) => !ids.has(it.attachedTo as Ref<Issue>))
+  $: totalEstimation = (noParents ?? [{ estimation: 0 }])
     .map((it) => it.estimation)
     .reduce((it, cur) => {
       return it + cur
     })
-  $: totalReported = (issues ?? [{ reportedTime: 0 }])
+  $: totalReported = (noParents ?? [{ reportedTime: 0 }])
     .map((it) => it.reportedTime)
     .reduce((it, cur) => {
       return it + cur
@@ -108,13 +111,15 @@
     {@const now = Date.now()}
     {#if sprint.startDate < now && now < sprint.targetDate}
       <!-- Active sprint in time -->
-      <Label
-        label={tracker.string.SprintPassed}
-        params={{
-          from: getDayOfSprint(sprint.startDate, now),
-          to: getDayOfSprint(sprint.startDate, sprint.targetDate) - 1
-        }}
-      />
+      <div class="ml-2">
+        <Label
+          label={tracker.string.SprintPassed}
+          params={{
+            from: getDayOfSprint(sprint.startDate, now),
+            to: getDayOfSprint(sprint.startDate, sprint.targetDate) - 1
+          }}
+        />
+      </div>
     {/if}
   {/if}
   <!-- <Label label={tracker.string.SprintDay} value={}/> -->

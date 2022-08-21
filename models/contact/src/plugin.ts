@@ -83,6 +83,7 @@ export default mergeIds(contactId, contact, {
     KickEmployee: '' as Ref<Action>
   },
   actionImpl: {
-    KickEmployee: '' as ViewAction
+    KickEmployee: '' as ViewAction,
+    OpenChannel: '' as ViewAction
   }
 })

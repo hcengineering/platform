@@ -208,7 +208,9 @@
     "TimeSpendReportValueTooltip": "Затраченное время в человеко днях",
     "TimeSpendReportDescription": "Описание",
     "TimeSpendValue": "{value}d",
-    "SprintPassed": "{from}d/{to}d"
+    "SprintPassed": "{from}d/{to}d",
+    "ChildEstimation": "Subissues Estimation",
+    "ChildReportedTime": "Subissues Time"
   },
   "status": {}
 }

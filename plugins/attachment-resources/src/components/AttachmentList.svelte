@@ -22,9 +22,9 @@
 </script>
 
 {#if attachments.length}
-  <div class="flex-col">
+  <div class="flex flex-wrap">
     {#each attachments as attachment}
-      <div class="step-tb75">
+      <div class="p-2">
         <AttachmentPreview value={attachment} isSaved={savedAttachmentsIds?.includes(attachment._id) ?? false} />
       </div>
     {/each}

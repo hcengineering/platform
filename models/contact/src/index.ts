@@ -45,7 +45,7 @@ import attachment from '@anticrm/model-attachment'
 import chunter from '@anticrm/model-chunter'
 import core, { TAccount, TAttachedDoc, TDoc, TSpace } from '@anticrm/model-core'
 import presentation from '@anticrm/model-presentation'
-import view, { actionTemplates, createAction } from '@anticrm/model-view'
+import view, { actionTemplates, createAction, ViewAction } from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
 import type { Asset, IntlString } from '@anticrm/platform'
 import setting from '@anticrm/setting'
@@ -58,6 +58,7 @@ export const DOMAIN_CHANNEL = 'channel' as Domain
 export class TChannelProvider extends TDoc implements ChannelProvider {
   label!: IntlString
   icon?: Asset
+  action?: ViewAction
   placeholder!: IntlString
 }
 
@@ -305,7 +306,8 @@ export function createModel (builder: Builder): void {
     {
       label: contact.string.LinkedIn,
       icon: contact.icon.LinkedIn,
-      placeholder: contact.string.LinkedInPlaceholder
+      placeholder: contact.string.LinkedInPlaceholder,
+      action: contact.actionImpl.OpenChannel
     },
     contact.channelProvider.LinkedIn
   )
@@ -316,7 +318,8 @@ export function createModel (builder: Builder): void {
     {
       label: contact.string.Twitter,
       icon: contact.icon.Twitter,
-      placeholder: contact.string.AtPlaceHolder
+      placeholder: contact.string.AtPlaceHolder,
+      action: contact.actionImpl.OpenChannel
     },
     contact.channelProvider.Twitter
   )
@@ -327,7 +330,8 @@ export function createModel (builder: Builder): void {
     {
       label: contact.string.GitHub,
       icon: contact.icon.GitHub,
-      placeholder: contact.string.AtPlaceHolder
+      placeholder: contact.string.AtPlaceHolder,
+      action: contact.actionImpl.OpenChannel
     },
     contact.channelProvider.GitHub
   )
@@ -338,7 +342,8 @@ export function createModel (builder: Builder): void {
     {
       label: contact.string.Facebook,
       icon: contact.icon.Facebook,
-      placeholder: contact.string.FacebookPlaceholder
+      placeholder: contact.string.FacebookPlaceholder,
+      action: contact.actionImpl.OpenChannel
     },
     contact.channelProvider.Facebook
   )
@@ -349,7 +354,8 @@ export function createModel (builder: Builder): void {
     {
       label: contact.string.Homepage,
       icon: contact.icon.Homepage,
-      placeholder: contact.string.HomepagePlaceholder
+      placeholder: contact.string.HomepagePlaceholder,
+      action: contact.actionImpl.OpenChannel
     },
     contact.channelProvider.Homepage
   )
