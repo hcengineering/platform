@@ -72,7 +72,7 @@
       />
     </div>
   </div>
-  <Label label={tracker.string.ChildEstimation} />:qwe
+  <Label label={tracker.string.ChildEstimation} />:
   <Scroller tableFade>
     <TableBrowser
       _class={tracker.class.Issue}
