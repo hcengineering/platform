@@ -596,10 +596,12 @@ export class LiveQuery extends TxProcessor implements Client {
         ;(result as any)[key] = objects[0]
         const nestedResult = {}
         const parent = (result as any)[key]
-        await this.getLookupValue(_class, parent, nested, nestedResult)
-        Object.assign(parent, {
-          $lookup: nestedResult
-        })
+        if (parent !== undefined) {
+          await this.getLookupValue(_class, parent, nested, nestedResult)
+          Object.assign(parent, {
+            $lookup: nestedResult
+          })
+        }
       } else {
         const objects = await this.findAll(value, { _id: getObjectValue(tkey, doc) })
         ;(result as any)[key] = objects[0]
