@@ -99,6 +99,7 @@
   $: values = [...Array(daysInMonth(currentDate)).keys()]
 
   let hoveredIndex: number = -1
+  let hoveredColumn: number = -1
 </script>
 
 {#if departmentStaff.length}
@@ -115,6 +116,7 @@
             <th
               class:today={areDatesEqual(todayDate, day)}
               class:weekend={isWeekend(day)}
+              class:hoveredCell={hoveredColumn === i}
               on:mousemove={() => {
                 hoveredIndex = i
               }}
@@ -153,6 +155,12 @@
                   class:lastLine={row === departmentStaff.length - 1}
                   use:tooltip={tooltipValue}
                   on:click={(e) => createRequest(e, date, employee)}
+                  on:mousemove={() => {
+                    hoveredColumn = i
+                  }}
+                  on:mouseleave={() => {
+                    hoveredColumn = -1
+                  }}
                 >
                   {#if requests.length}
                     <ScheduleRequests {requests} {date} {editable} />
@@ -217,6 +225,9 @@
       }
       &.weekend:not(.today) {
         color: var(--warning-color);
+      }
+      &.hoveredCell {
+        background-color: var(--highlight-select);
       }
     }
     td {
