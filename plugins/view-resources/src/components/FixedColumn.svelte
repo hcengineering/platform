@@ -32,7 +32,7 @@
 
 <div
   class="flex-no-shrink"
-  style="{justify !== '' ? `text-align: ${justify}; ` : ''}min-width: var(--fixed-{key});"
+  style="{justify !== '' ? `text-align: ${justify}; ` : ''} min-width: var(--fixed-{key});"
   use:resizeObserver={(element) => {
     cWidth = element.clientWidth
   }}

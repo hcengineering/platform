@@ -58,7 +58,10 @@
         assignee: contact.class.Employee,
         status: tracker.class.IssueStatus,
         space: tracker.class.Team,
-        sprint: tracker.class.Sprint
+        sprint: tracker.class.Sprint,
+        _id: {
+          subIssues: tracker.class.Issue
+        }
       }
     }
   )

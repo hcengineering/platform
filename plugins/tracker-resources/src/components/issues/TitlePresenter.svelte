@@ -30,8 +30,8 @@
 <style lang="scss">
   .root {
     display: flex;
-    flex-grow: 1;
-    min-width: 0;
+    flex-grow: 0;
+    min-width: 7rem;
     white-space: nowrap;
     overflow: hidden;
     flex-shrink: 10;

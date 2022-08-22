@@ -4,15 +4,16 @@
   import { Project } from '@anticrm/tracker'
   import { Button, EditBox, Icon, showPopup } from '@anticrm/ui'
   import { DocAttributeBar } from '@anticrm/view-resources'
+  import { createEventDispatcher, onDestroy } from 'svelte'
+  import { activeProject } from '../../issues'
   import tracker from '../../plugin'
   import IssuesView from '../issues/IssuesView.svelte'
   import ProjectPopup from './ProjectPopup.svelte'
-  import { activeProject } from '../../issues'
-  import { onDestroy } from 'svelte'
 
   export let project: Project
 
   const client = getClient()
+  const dispatch = createEventDispatcher()
 
   async function change (field: string, value: any) {
     await client.update(project, { [field]: value })
@@ -21,6 +22,7 @@
     showPopup(ProjectPopup, { _class: tracker.class.Project }, evt.target as HTMLElement, (value) => {
       if (value != null) {
         project = value
+        dispatch('project', project._id)
       }
     })
   }

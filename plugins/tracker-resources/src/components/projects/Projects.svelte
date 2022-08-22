@@ -17,7 +17,7 @@
   import { IntlString } from '@anticrm/platform'
   import { createQuery } from '@anticrm/presentation'
   import { Project } from '@anticrm/tracker'
-  import { closePopup, closeTooltip, location } from '@anticrm/ui'
+  import { closePopup, closeTooltip, getCurrentLocation, location, navigate } from '@anticrm/ui'
   import { onDestroy } from 'svelte'
   import tracker from '../../plugin'
   import { ProjectsViewMode } from '../../utils'
@@ -43,10 +43,8 @@
 
   const projectQuery = createQuery()
   $: if (projectId !== undefined) {
-    console.log('call query for', projectId)
     projectQuery.query(tracker.class.Project, { _id: projectId }, (result) => {
       project = result.shift()
-      console.log('recieve result for', projectId, project)
     })
   } else {
     projectQuery.unsubscribe()
@@ -55,7 +53,14 @@
 </script>
 
 {#if project}
-  <EditProject {project} />
+  <EditProject
+    {project}
+    on:project={(evt) => {
+      const loc = getCurrentLocation()
+      loc.path[5] = evt.detail
+      navigate(loc)
+    }}
+  />
 {:else}
   <ProjectBrowser {label} {query} {search} {mode} />
 {/if}

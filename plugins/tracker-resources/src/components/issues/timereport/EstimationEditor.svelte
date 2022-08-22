@@ -82,7 +82,7 @@
   function hourFloor (value: number): number {
     const days = Math.ceil(value)
     const hours = value - days
-    return days + Math.floor(hours * 10) / 10
+    return days + Math.floor(hours * 100) / 100
   }
 </script>
 

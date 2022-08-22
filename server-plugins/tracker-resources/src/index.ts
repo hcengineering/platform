@@ -16,11 +16,13 @@
 import core, {
   DocumentUpdate,
   Ref,
+  Space,
   Tx,
   TxCollectionCUD,
   TxCreateDoc,
   TxCUD,
   TxProcessor,
+  TxRemoveDoc,
   TxUpdateDoc,
   WithLookup
 } from '@anticrm/core'
@@ -63,19 +65,8 @@ export async function OnIssueUpdate (tx: Tx, control: TriggerControl): Promise<T
     if (control.hierarchy.isDerived(createTx.objectClass, tracker.class.Issue)) {
       const issue = TxProcessor.createDoc2Doc(createTx)
       const res: Tx[] = []
-      for (const pinfo of issue.parents) {
-        res.push(
-          control.txFactory.createTxUpdateDoc(tracker.class.Issue, issue.space, pinfo.parentId, {
-            $push: {
-              childInfo: {
-                childId: issue._id,
-                estimation: issue.estimation,
-                reportedTime: issue.reportedTime
-              }
-            }
-          })
-        )
-      }
+      await updateIssueParentEstimations(issue, res, control, [], issue.parents)
+      return res
     }
   }
 
@@ -83,6 +74,29 @@ export async function OnIssueUpdate (tx: Tx, control: TriggerControl): Promise<T
     const updateTx = actualTx as TxUpdateDoc<Issue>
     if (control.hierarchy.isDerived(updateTx.objectClass, tracker.class.Issue)) {
       return await doIssueUpdate(updateTx, control)
+    }
+  }
+  if (actualTx._class === core.class.TxRemoveDoc) {
+    const removeTx = actualTx as TxRemoveDoc<Issue>
+    if (control.hierarchy.isDerived(removeTx.objectClass, tracker.class.Issue)) {
+      const parentIssue = await control.findAll(tracker.class.Issue, {
+        'childInfo.childId': removeTx.objectId
+      })
+      const res: Tx[] = []
+      const parents: IssueParentInfo[] = parentIssue.map((it) => ({ parentId: it._id, parentTitle: it.title }))
+      await updateIssueParentEstimations(
+        {
+          _id: removeTx.objectId,
+          estimation: 0,
+          reportedTime: 0,
+          space: removeTx.space
+        },
+        res,
+        control,
+        parents,
+        []
+      )
+      return res
     }
   }
   return []
@@ -252,7 +266,12 @@ async function doIssueUpdate (updateTx: TxUpdateDoc<Issue>, control: TriggerCont
   return res
 }
 function updateIssueParentEstimations (
-  issue: WithLookup<Issue>,
+  issue: {
+    _id: Ref<Issue>
+    space: Ref<Space>
+    estimation: number
+    reportedTime: number
+  },
   res: Tx[],
   control: TriggerControl,
   sourceParents: IssueParentInfo[],
