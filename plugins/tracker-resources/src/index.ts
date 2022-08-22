@@ -72,6 +72,8 @@ import SprintEditor from './components/sprints/SprintEditor.svelte'
 import ReportedTimeEditor from './components/issues/timereport/ReportedTimeEditor.svelte'
 import TimeSpendReport from './components/issues/timereport/TimeSpendReport.svelte'
 import EstimationEditor from './components/issues/timereport/EstimationEditor.svelte'
+import SubIssuesSelector from './components/issues/edit/SubIssuesSelector.svelte'
+import GrowPresenter from './components/issues/GrowPresenter.svelte'
 
 export async function queryIssue<D extends Issue> (
   _class: Ref<Class<D>>,
@@ -177,7 +179,9 @@ export default async (): Promise<Resources> => ({
     SprintEditor,
     ReportedTimeEditor,
     TimeSpendReport,
-    EstimationEditor
+    EstimationEditor,
+    SubIssuesSelector,
+    GrowPresenter
   },
   completion: {
     IssueQuery: async (client: Client, query: string) => await queryIssue(tracker.class.Issue, client, query)

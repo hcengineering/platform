@@ -18,6 +18,7 @@
   import { createQuery, getClient } from '@anticrm/presentation'
   import { Issue, Sprint } from '@anticrm/tracker'
   import { ButtonKind, ButtonShape, ButtonSize, isWeekend, Label, tooltip } from '@anticrm/ui'
+  import DatePresenter from '@anticrm/ui/src/components/calendar/DatePresenter.svelte'
   import { activeSprint } from '../../issues'
   import tracker from '../../plugin'
   import EstimationProgressCircle from '../issues/timereport/EstimationProgressCircle.svelte'
@@ -58,13 +59,29 @@
   $: ids = new Set(issues?.map((it) => it._id) ?? [])
 
   $: noParents = issues?.filter((it) => !ids.has(it.attachedTo as Ref<Issue>))
-  $: totalEstimation = (noParents ?? [{ estimation: 0 }])
-    .map((it) => it.estimation)
+  $: totalEstimation = (noParents ?? [{ estimation: 0, childInfo: [] } as unknown as Issue])
+    .map((it) => {
+      if (it.childInfo?.length > 0) {
+        const cEstimation = it.childInfo.map((ct) => ct.estimation).reduce((a, b) => a + b, 0)
+        if (cEstimation !== 0) {
+          return cEstimation
+        }
+      }
+      return it.estimation
+    })
     .reduce((it, cur) => {
       return it + cur
     })
-  $: totalReported = (noParents ?? [{ reportedTime: 0 }])
-    .map((it) => it.reportedTime)
+  $: totalReported = (noParents ?? [{ reportedTime: 0, childInfo: [] } as unknown as Issue])
+    .map((it) => {
+      if (it.childInfo?.length > 0) {
+        const cReported = it.childInfo.map((ct) => ct.reportedTime).reduce((a, b) => a + b, 0)
+        if (cReported !== 0) {
+          return cReported
+        }
+      }
+      return it.reportedTime
+    })
     .reduce((it, cur) => {
       return it + cur
     })
@@ -77,11 +94,12 @@
     })
   }
   function getDayOfSprint (startDate: number, now: number): number {
-    const days = Math.floor(Math.abs((1 + now - startDate) / 1000 / 60 / 60 / 24)) + 1
+    const days = Math.floor(Math.abs((1 + now - startDate) / 1000 / 60 / 60 / 24))
     const stDate = new Date(startDate)
     const stDateDate = stDate.getDate()
+    const stTime = stDate.getTime()
     const ds = Array.from(Array(days).keys()).map((it) => stDateDate + it)
-    return ds.filter((it) => !isWeekend(new Date(stDate.setDate(it)))).length
+    return ds.filter((it) => !isWeekend(new Date(new Date(stTime).setDate(it)))).length
   }
 </script>
 
@@ -106,22 +124,29 @@
   </div>
 {/if}
 
+{#if sprint}
+  {@const now = Date.now()}
+  <div class="flex-row-center">
+    <DatePresenter value={sprint.startDate} kind={'transparent'} />
+    <span class="p-1"> / </span><DatePresenter value={sprint.targetDate} kind={'transparent'} />
+  </div>
+  <div class="flex-row-center ml-2">
+    <!-- Active sprint in time -->
+    <Label
+      label={tracker.string.SprintPassed}
+      params={{
+        from:
+          now < sprint.startDate
+            ? 0
+            : now > sprint.targetDate
+            ? getDayOfSprint(sprint.startDate, sprint.targetDate)
+            : getDayOfSprint(sprint.startDate, now),
+        to: getDayOfSprint(sprint.startDate, sprint.targetDate)
+      }}
+    />
+  </div>
+{/if}
 {#if issues}
-  {#if sprint}
-    {@const now = Date.now()}
-    {#if sprint.startDate < now && now < sprint.targetDate}
-      <!-- Active sprint in time -->
-      <div class="ml-2">
-        <Label
-          label={tracker.string.SprintPassed}
-          params={{
-            from: getDayOfSprint(sprint.startDate, now),
-            to: getDayOfSprint(sprint.startDate, sprint.targetDate) - 1
-          }}
-        />
-      </div>
-    {/if}
-  {/if}
   <!-- <Label label={tracker.string.SprintDay} value={}/> -->
   <div class="ml-4 flex-row-center">
     <div class="mr-2">

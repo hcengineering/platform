@@ -78,7 +78,7 @@
   okLabel={value === undefined ? presentation.string.Create : presentation.string.Save}
 >
   <div class="flex-row-center gap-2">
-    <EditBox bind:value={data.value} {placeholder} format={'number'} kind={'editbox'} {maxWidth} focus />
+    <EditBox focus bind:value={data.value} {placeholder} format={'number'} kind={'editbox'} {maxWidth} />
     <UserBox
       _class={contact.class.Employee}
       label={contact.string.Employee}

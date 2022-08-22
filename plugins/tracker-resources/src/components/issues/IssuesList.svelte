@@ -16,7 +16,7 @@
   import contact, { Employee } from '@anticrm/contact'
   import { Class, Doc, FindOptions, getObjectValue, Ref, WithLookup } from '@anticrm/core'
   import notification from '@anticrm/notification'
-  import { getClient } from '@anticrm/presentation'
+  import { createQuery, getClient } from '@anticrm/presentation'
   import { Issue, IssueStatus, Team } from '@anticrm/tracker'
   import {
     Button,
@@ -36,6 +36,7 @@
   import tracker from '../../plugin'
   import { IssuesGroupByKeys, issuesGroupEditorMap, IssuesOrderByKeys, issuesSortOrderMap } from '../../utils'
   import CreateIssue from '../CreateIssue.svelte'
+  import GrowPresenter from './GrowPresenter.svelte'
 
   export let _class: Ref<Class<Doc>>
   export let currentSpace: Ref<Team> | undefined = undefined
@@ -59,9 +60,18 @@
     lookup: {
       assignee: contact.class.Employee,
       status: tracker.class.IssueStatus,
-      space: tracker.class.Team
+      space: tracker.class.Team,
+      _id: {
+        subIssues: tracker.class.Issue
+      }
     }
   }
+
+  const spaceQuery = createQuery()
+  let currentTeam: Team | undefined
+  $: spaceQuery.query(tracker.class.Team, { _id: currentSpace }, (res) => {
+    currentTeam = res.shift()
+  })
 
   let personPresenter: AttributeModel
 
@@ -175,6 +185,7 @@
               shouldShowPlaceholder={true}
               isInteractive={false}
               avatarSize={'x-small'}
+              {currentSpace}
             />
           {:else if headerComponent}
             <Component
@@ -186,7 +197,8 @@
                 statuses: groupByKey === 'status' ? statuses : undefined,
                 issues: groupedIssues[category],
                 size: 'inline',
-                kind: 'list'
+                kind: 'list',
+                currentSpace
               }}
             />
           {/if}
@@ -244,6 +256,8 @@
                       value={getObjectValue(attributeModel.key, docObject) ?? ''}
                       groupBy={groupByKey}
                       {...attributeModel.props}
+                      {statuses}
+                      {currentTeam}
                     />
                   </div>
                 {:else if attributeModelIndex === 1}
@@ -259,10 +273,12 @@
                         value={getObjectValue(attributeModel.key, docObject) ?? ''}
                         groupBy={groupByKey}
                         {...attributeModel.props}
+                        {statuses}
+                        {currentTeam}
                       />
                     </FixedColumn>
                   </div>
-                {:else if attributeModelIndex === 3}
+                {:else if attributeModelIndex === 3 || attributeModel.presenter === GrowPresenter}
                   <svelte:component
                     this={attributeModel.presenter}
                     value={getObjectValue(attributeModel.key, docObject) ?? ''}
@@ -281,6 +297,8 @@
                       value={getObjectValue(attributeModel.key, docObject) ?? ''}
                       groupBy={groupByKey}
                       {...attributeModel.props}
+                      {statuses}
+                      {currentTeam}
                     />
                   </FixedColumn>
                 {:else}
@@ -291,6 +309,8 @@
                       issueId={docObject._id}
                       groupBy={groupByKey}
                       {...attributeModel.props}
+                      {statuses}
+                      {currentTeam}
                     />
                   </div>
                 {/if}
@@ -367,12 +387,7 @@
 
   .priorityPresenter,
   .issuePresenter {
-    min-width: 0;
+    // min-width: 0;
     min-height: 0;
   }
-  // .grow-cell {
-  //   flex-grow: 1;
-  //   flex-shrink: 0;
-  //   min-width: 0;
-  // }
 </style>

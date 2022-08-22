@@ -70,9 +70,11 @@ function isLookupSort<T extends Doc> (sort: SortingQuery<T> | undefined): boolea
 
 interface LookupStep {
   from: string
-  localField: string
-  foreignField: string
+  localField?: string
+  foreignField?: string
   as: string
+  let?: any
+  pipeline?: any
 }
 
 abstract class MongoAdapterBase extends TxProcessor {
@@ -193,12 +195,23 @@ abstract class MongoAdapterBase extends TxProcessor {
         _class = value
       }
       const domain = this.hierarchy.getDomain(_class)
+      const desc = this.hierarchy.getDescendants(_class)
       if (domain !== DOMAIN_MODEL) {
-        const step = {
+        const asVal = as.split('.').join('') + '_lookup'
+        const step: LookupStep = {
           from: domain,
-          localField: fullKey,
-          foreignField: attr,
-          as: as.split('.').join('') + '_lookup'
+          // localField: fullKey,
+          // foreignField: attr,
+          let: { docId: '$' + fullKey },
+          pipeline: [
+            {
+              $match: {
+                _class: { $in: desc },
+                $expr: { $eq: ['$$docId', '$' + attr] }
+              }
+            }
+          ],
+          as: asVal
         }
         result.push(step)
       }

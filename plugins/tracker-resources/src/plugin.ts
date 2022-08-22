@@ -278,7 +278,8 @@ export default mergeIds(trackerId, tracker, {
     SprintTitlePresenter: '' as AnyComponent,
     ReportedTimeEditor: '' as AnyComponent,
     TimeSpendReport: '' as AnyComponent,
-    EstimationEditor: '' as AnyComponent
+    EstimationEditor: '' as AnyComponent,
+    GrowPresenter: '' as AnyComponent
   },
   function: {
     IssueTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>) => Promise<string>>

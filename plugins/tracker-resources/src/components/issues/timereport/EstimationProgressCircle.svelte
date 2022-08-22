@@ -44,17 +44,19 @@
     style:stroke-dasharray={lenghtC}
     style:stroke-dashoffset={dashOffset === 0 ? 0 : dashOffset + 3}
   />
-  <circle
-    cx={8}
-    cy={8}
-    r={7}
-    class="progress-circle"
-    style:stroke={primary ? 'var(--primary-bg-color)' : color}
-    style:opacity={dashOffset === 0 ? 0 : 1}
-    style:transform={'rotate(-82deg)'}
-    style:stroke-dasharray={lenghtC}
-    style:stroke-dashoffset={dashOffset === 0 ? lenghtC : lenghtC - dashOffset + 1}
-  />
+  {#if min !== max && min !== value}
+    <circle
+      cx={8}
+      cy={8}
+      r={7}
+      class="progress-circle"
+      style:stroke={primary ? 'var(--primary-bg-color)' : color}
+      style:opacity={dashOffset === 0 ? 0 : 1}
+      style:transform={'rotate(-82deg)'}
+      style:stroke-dasharray={lenghtC}
+      style:stroke-dashoffset={dashOffset === 0 ? lenghtC : lenghtC - dashOffset + 1}
+    />
+  {/if}
 </svg>
 
 <style lang="scss">

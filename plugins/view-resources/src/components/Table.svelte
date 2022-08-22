@@ -212,7 +212,9 @@
               on:click={() => changeSorting(attribute.sortingKey)}
             >
               <div class="antiTable-cells">
-                <Label label={attribute.label} />
+                {#if attribute.label}
+                  <Label label={attribute.label} />
+                {/if}
                 {#if attribute.sortingKey === sortKey}
                   <div class="icon">
                     {#if sortOrder === SortingOrder.Ascending}

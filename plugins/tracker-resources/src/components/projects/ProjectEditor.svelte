@@ -33,7 +33,7 @@
   export let justify: 'left' | 'center' = 'left'
   export let width: string | undefined = '100%'
   export let onlyIcon: boolean = false
-  export let groupBy: string | undefined
+  export let groupBy: string | undefined = undefined
 
   const client = getClient()
 

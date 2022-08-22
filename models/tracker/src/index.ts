@@ -394,6 +394,8 @@ export function createModel (builder: Builder): void {
         props: { kind: 'list', size: 'small', justify: 'center' }
       },
       { key: '', presenter: tracker.component.TitlePresenter, props: { shouldUseMargin: true, fixed: 'left' } },
+      { key: '', presenter: tracker.component.SubIssuesSelector, props: {} },
+      { key: '', presenter: tracker.component.GrowPresenter, props: {} },
       { key: '', presenter: tracker.component.DueDatePresenter, props: { kind: 'list' } },
       {
         key: '',

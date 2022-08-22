@@ -21,9 +21,9 @@
   import tracker from '../../../plugin'
   import { getIssueId } from '../../../issues'
 
-  export let issue: WithLookup<Issue>
+  export let value: WithLookup<Issue>
   export let currentTeam: Team | undefined
-  export let issueStatuses: WithLookup<IssueStatus>[] | undefined
+  export let statuses: WithLookup<IssueStatus>[] | undefined
 
   export let kind: ButtonKind = 'link-bordered'
   export let size: ButtonSize = 'inline'
@@ -36,18 +36,18 @@
   let doneStatus: Ref<Doc> | undefined
   let countComplate: number = 0
 
-  $: if (issue.$lookup?.subIssues !== undefined) {
-    subIssues = issue.$lookup.subIssues as Issue[]
-    subIssues.sort((a, b) => a.rank.localeCompare(b.rank))
+  $: if (value.$lookup?.subIssues !== undefined) {
+    subIssues = value.$lookup.subIssues as Issue[]
+    subIssues.sort((a, b) => (a.rank ?? '').localeCompare(b.rank ?? ''))
   }
-  $: if (issueStatuses && subIssues) {
-    doneStatus = issueStatuses.find((s) => s.category === tracker.issueStatusCategory.Completed)?._id ?? undefined
+  $: if (statuses && subIssues) {
+    doneStatus = statuses.find((s) => s.category === tracker.issueStatusCategory.Completed)?._id ?? undefined
     if (doneStatus) countComplate = subIssues.filter((si) => si.status === doneStatus).length
   }
   $: hasSubIssues = (subIssues?.length ?? 0) > 0
 
   function getIssueStatusIcon (issue: Issue) {
-    const status = issueStatuses?.find((s) => issue.status === s._id)
+    const status = statuses?.find((s) => issue.status === s._id)
     const category = status?.$lookup?.category
     const color = status?.color ?? category?.color
 
@@ -58,8 +58,8 @@
   }
 
   function openIssue (target: Ref<Issue>) {
-    if (target !== issue._id) {
-      showPanel(tracker.component.EditIssue, target, issue._class, 'content')
+    if (target !== value._id) {
+      showPanel(tracker.component.EditIssue, target, value._class, 'content')
     }
   }
   function showSubIssues () {
@@ -71,7 +71,7 @@
           value: subIssues.map((iss) => {
             const text = currentTeam ? `${getIssueId(currentTeam, iss)} ${iss.title}` : iss.title
 
-            return { id: iss._id, text, isSelected: iss._id === issue._id, ...getIssueStatusIcon(iss) }
+            return { id: iss._id, text, isSelected: iss._id === value._id, ...getIssueStatusIcon(iss) }
           }),
           width: 'large'
         },
