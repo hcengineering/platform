@@ -160,10 +160,13 @@ export interface Issue extends AttachedDoc {
 
   // Estimation in man days
   estimation: number
+
   // ReportedTime time, auto updated using trigger.
   reportedTime: number
   // Collection of reportedTime entries, for proper time estimations per person.
   reports: number
+
+  childInfo: IssueChildInfo[]
 }
 
 /**
@@ -189,6 +192,15 @@ export interface TimeSpendReport extends AttachedDoc {
 export interface IssueParentInfo {
   parentId: Ref<Issue>
   parentTitle: string
+}
+
+/**
+ * @public
+ */
+export interface IssueChildInfo {
+  childId: Ref<Issue>
+  estimation: number
+  reportedTime: number
 }
 
 /**

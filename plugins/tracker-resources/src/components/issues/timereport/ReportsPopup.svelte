@@ -20,6 +20,7 @@
   import { Button, eventToHTMLElement, IconAdd, Scroller, showPopup } from '@anticrm/ui'
   import { TableBrowser } from '@anticrm/view-resources'
   import tracker from '../../../plugin'
+  import IssuePresenter from '../IssuePresenter.svelte'
   import TimeSpendReportPopup from './TimeSpendReportPopup.svelte'
   export let issue: Issue
 
@@ -27,7 +28,10 @@
     return true
   }
   const options: FindOptions<TimeSpendReport> = {
-    lookup: { employee: contact.class.Employee }
+    lookup: {
+      attachedTo: tracker.class.Issue,
+      employee: contact.class.Employee
+    }
   }
   function addReport (event: MouseEvent): void {
     showPopup(
@@ -45,11 +49,23 @@
   okAction={() => {}}
   okLabel={presentation.string.Ok}
 >
+  <svelte:fragment slot="header">
+    <IssuePresenter value={issue} disableClick />
+  </svelte:fragment>
   <Scroller tableFade>
     <TableBrowser
       _class={tracker.class.TimeSpendReport}
-      query={{ attachedTo: issue._id }}
-      config={['', '$lookup.employee', 'description', 'date', 'modifiedOn', 'modifiedBy']}
+      query={{ attachedTo: { $in: [issue._id, ...issue.childInfo.map((it) => it.childId)] } }}
+      config={[
+        '$lookup.attachedTo',
+        '$lookup.attachedTo.title',
+        '',
+        '$lookup.employee',
+        'description',
+        'date',
+        'modifiedOn',
+        'modifiedBy'
+      ]}
       {options}
     />
   </Scroller>

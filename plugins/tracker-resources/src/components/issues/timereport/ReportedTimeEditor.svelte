@@ -36,12 +36,18 @@
   function showReports (event: MouseEvent): void {
     showPopup(ReportsPopup, { issue: object }, eventToHTMLElement(event))
   }
+  $: childTime = (object.childInfo ?? []).map((it) => it.reportedTime).reduce((a, b) => a + b, 0)
 </script>
 
 {#if kind === 'link'}
   <div class="link-container flex-between" on:click={showReports}>
     {#if value !== undefined}
-      <span class="overflow-label">{value}</span>
+      <span class="overflow-label">
+        {value}
+        {#if childTime !== 0}
+          / {childTime}
+        {/if}
+      </span>
     {:else}
       <span class="dark-color"><Label label={placeholder} /></span>
     {/if}
@@ -50,7 +56,12 @@
     </div>
   </div>
 {:else if value !== undefined}
-  <span class="overflow-label">{value}</span>
+  <span class="overflow-label">
+    {value}
+    {#if childTime !== 0}
+      / {childTime}
+    {/if}
+  </span>
 {:else}
   <span class="dark-color"><Label label={placeholder} /></span>
 {/if}

@@ -279,7 +279,9 @@
           <SubIssues {issue} {issueStatuses} {currentTeam} />
         {/key}
       </div>
-      <AttachmentDocList value={issue} />
+      <div class="mt-6">
+        <AttachmentDocList value={issue} />
+      </div>
     {/if}
 
     <span slot="actions-label">

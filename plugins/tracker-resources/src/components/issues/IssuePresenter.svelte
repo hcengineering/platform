@@ -21,8 +21,12 @@
 
   export let value: WithLookup<Issue>
   // export let inline: boolean = false
+  export let disableClick = false
 
   function handleIssueEditorOpened () {
+    if (disableClick) {
+      return
+    }
     showPanel(tracker.component.EditIssue, value._id, value._class, 'content')
   }
 
@@ -39,7 +43,7 @@
 </script>
 
 {#if value}
-  <span class="issuePresenterRoot" title="title" on:click={handleIssueEditorOpened}>
+  <span class="issuePresenterRoot" class:noPointer={disableClick} title="title" on:click={handleIssueEditorOpened}>
     {title}
   </span>
 {/if}
@@ -55,6 +59,10 @@
     font-size: 0.8125rem;
     color: var(--content-color);
     cursor: pointer;
+
+    &.noPointer {
+      cursor: default;
+    }
 
     &:hover {
       color: var(--caption-color);

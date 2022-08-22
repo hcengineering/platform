@@ -178,9 +178,10 @@ abstract class MongoAdapterBase extends TxProcessor {
     parent?: string
   ): Promise<any | undefined> {
     const fullKey = parent !== undefined ? parent + '.' + '_id' : '_id'
-    for (const key in lookup._id) {
+    const lid = lookup?._id ?? {}
+    for (const key in lid) {
       const as = parent !== undefined ? parent + key : key
-      const value = lookup._id[key]
+      const value = lid[key]
 
       let _class: Ref<Class<Doc>>
       let attr = 'attachedTo'

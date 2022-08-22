@@ -13,23 +13,22 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher, onMount, afterUpdate } from 'svelte'
   import type { IntlString } from '@anticrm/platform'
   import { translate } from '@anticrm/platform'
+  import type { PopupOptions } from '@anticrm/ui'
   import {
     Button,
-    IconClose,
-    closeTooltip,
-    IconBlueCheck,
-    registerFocus,
     createFocusManager,
+    FocusHandler,
     IconArrowRight,
-    IconEdit
+    IconBlueCheck,
+    IconClose,
+    IconEdit,
+    registerFocus
   } from '@anticrm/ui'
-  import IconCopy from './icons/Copy.svelte'
-  import { FocusHandler } from '@anticrm/ui'
-  import type { PopupOptions } from '@anticrm/ui'
+  import { afterUpdate, createEventDispatcher, onMount } from 'svelte'
   import plugin from '../plugin'
+  import IconCopy from './icons/Copy.svelte'
 
   export let value: string = ''
   export let placeholder: IntlString
@@ -101,8 +100,9 @@
         style="width: 100%;"
         on:keypress={(ev) => {
           if (ev.key === 'Enter') {
+            ev.preventDefault()
+            ev.stopPropagation()
             dispatch('close', value)
-            closeTooltip()
           }
         }}
         on:change

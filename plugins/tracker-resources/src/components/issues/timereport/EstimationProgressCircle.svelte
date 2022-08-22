@@ -25,9 +25,6 @@
   export let greenColor: string = FernColor
   export let overdueColor = FlamingoColor
 
-  if (value > max) value = max
-  if (value < min) value = min
-
   const lenghtC: number = Math.PI * 14 - 1
   $: procC = lenghtC / (max - min)
   $: dashOffset = (Math.min(value, max) - min) * procC

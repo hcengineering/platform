@@ -32,6 +32,7 @@
     Menu,
     showPopup
   } from '@anticrm/ui'
+  import { ViewAction } from '@anticrm/view'
   import { createEventDispatcher, tick } from 'svelte'
   import { getChannelProviders } from '../utils'
   import ChannelEditor from './ChannelEditor.svelte'
@@ -55,6 +56,7 @@
     icon: Asset
     value: string
     presenter?: AnyComponent
+    action?: ViewAction
     placeholder: IntlString
     provider: Ref<ChannelProvider>
     integration: boolean
@@ -74,6 +76,7 @@
         icon: provider.icon as Asset,
         value: item.value,
         presenter: provider.presenter,
+        action: provider.action,
         placeholder: provider.placeholder,
         provider: provider._id,
         notification,

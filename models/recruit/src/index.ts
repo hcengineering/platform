@@ -307,6 +307,7 @@ export function createModel (builder: Builder): void {
           label: recruit.string.Applications
         },
         '$lookup.company',
+        '$lookup.company.$lookup.channels',
         'location',
         'description',
         {

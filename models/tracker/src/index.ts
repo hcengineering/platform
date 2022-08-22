@@ -55,7 +55,8 @@ import {
   SprintStatus,
   Team,
   TimeSpendReport,
-  trackerId
+  trackerId,
+  IssueChildInfo
 } from '@anticrm/tracker'
 import { KeyBinding } from '@anticrm/view'
 import tracker from './plugin'
@@ -238,6 +239,8 @@ export class TIssue extends TAttachedDoc implements Issue {
 
   @Prop(Collection(tracker.class.TimeSpendReport), tracker.string.TimeSpendReports)
   reports!: number
+
+  declare childInfo: IssueChildInfo[]
 }
 
 /**

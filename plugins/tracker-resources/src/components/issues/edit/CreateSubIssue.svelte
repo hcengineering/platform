@@ -24,6 +24,7 @@
   import AssigneeEditor from '../AssigneeEditor.svelte'
   import StatusEditor from '../StatusEditor.svelte'
   import PriorityEditor from '../PriorityEditor.svelte'
+  import EstimationEditor from '../timereport/EstimationEditor.svelte'
 
   export let parentIssue: Issue
   export let issueStatuses: WithLookup<IssueStatus>[]
@@ -55,7 +56,12 @@
       dueDate: null,
       comments: 0,
       subIssues: 0,
-      parents: []
+      parents: [],
+      sprint: parentIssue.sprint,
+      estimation: 0,
+      reportedTime: 0,
+      reports: 0,
+      childInfo: []
     }
   }
 
@@ -209,6 +215,7 @@
           labels = labels.filter((it) => it._id !== evt.detail)
         }}
       />
+      <EstimationEditor kind={'no-border'} size={'small'} value={newIssue} />
     </div>
     <div class="buttons-group small-gap">
       <Button label={presentation.string.Cancel} size="small" kind="transparent" on:click={close} />

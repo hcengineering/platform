@@ -42,6 +42,7 @@
   import SetParentIssueActionPopup from './SetParentIssueActionPopup.svelte'
   import SprintSelector from './sprints/SprintSelector.svelte'
   import { activeProject, activeSprint } from '../issues'
+  import EstimationEditor from './issues/timereport/EstimationEditor.svelte'
 
   export let space: Ref<Team>
   export let status: Ref<IssueStatus> | undefined = undefined
@@ -71,7 +72,8 @@
     parents: [],
     reportedTime: 0,
     estimation: 0,
-    reports: 0
+    reports: 0,
+    childInfo: []
   }
 
   const dispatch = createEventDispatcher()
@@ -156,8 +158,9 @@
         ? [{ parentId: parentIssue._id, parentTitle: parentIssue.title }, ...parentIssue.parents]
         : [],
       reportedTime: 0,
-      estimation: 0,
-      reports: 0
+      estimation: object.estimation,
+      reports: 0,
+      childInfo: []
     }
 
     await client.addCollection(
@@ -344,6 +347,7 @@
           labels = labels.filter((it) => it._id !== evt.detail)
         }}
       />
+      <EstimationEditor kind={'no-border'} size={'small'} value={object} />
       <ProjectSelector value={object.project} onProjectIdChange={handleProjectIdChanged} />
       <SprintSelector value={object.sprint} onSprintIdChange={handleSprintIdChanged} />
       {#if object.dueDate !== null}
