@@ -2,11 +2,12 @@
   import { getClient } from '@anticrm/presentation'
   import { StyledTextBox } from '@anticrm/text-editor'
   import { Sprint } from '@anticrm/tracker'
-  import { Button, EditBox, Icon, showPopup } from '@anticrm/ui'
+  import { Button, DatePresenter, EditBox, Icon, Label, showPopup } from '@anticrm/ui'
   import { DocAttributeBar } from '@anticrm/view-resources'
   import { onDestroy } from 'svelte'
   import { activeSprint } from '../../issues'
   import tracker from '../../plugin'
+  import { getDayOfSprint } from '../../utils'
   import Expanded from '../icons/Expanded.svelte'
   import IssuesView from '../issues/IssuesView.svelte'
   import SprintPopup from './SprintPopup.svelte'
@@ -46,6 +47,33 @@
       </Button>
     </div>
   </svelte:fragment>
+  <svelte:fragment slot="afterHeader">
+    {@const now = Date.now()}
+    <div class="p-1 ml-6 flex-row-center">
+      <div class="flex-row-center">
+        <DatePresenter value={sprint.startDate} kind={'transparent'} />
+        <span class="p-1"> / </span><DatePresenter value={sprint.targetDate} kind={'transparent'} />
+      </div>
+      <div class="flex-row-center ml-2">
+        <!-- Active sprint in time -->
+        <Label
+          label={tracker.string.SprintPassed}
+          params={{
+            from:
+              now < sprint.startDate
+                ? 0
+                : now > sprint.targetDate
+                ? getDayOfSprint(sprint.startDate, sprint.targetDate)
+                : getDayOfSprint(sprint.startDate, now),
+            to: getDayOfSprint(sprint.startDate, sprint.targetDate)
+          }}
+        />
+        {#if sprint?.capacity}
+          <Label label={tracker.string.CapacityValue} params={{ value: sprint?.capacity }} />
+        {/if}
+      </div>
+    </div>
+  </svelte:fragment>
   <svelte:fragment slot="aside">
     <div class="flex-grow p-4 w-60 left-divider">
       <div class="fs-title text-xl">
@@ -64,3 +92,9 @@
     </div>
   </svelte:fragment>
 </IssuesView>
+
+<style lang="scss">
+  .showWarning {
+    color: var(--warning-color) !important;
+  }
+</style>

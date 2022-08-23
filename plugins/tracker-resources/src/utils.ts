@@ -29,7 +29,7 @@ import {
   Team
 } from '@anticrm/tracker'
 import { ViewOptionModel } from '@anticrm/view-resources'
-import { AnyComponent, AnySvelteComponent, getMillisecondsInMonth, MILLISECONDS_IN_WEEK } from '@anticrm/ui'
+import { AnyComponent, AnySvelteComponent, getMillisecondsInMonth, isWeekend, MILLISECONDS_IN_WEEK } from '@anticrm/ui'
 import tracker from './plugin'
 import { defaultPriorities, defaultProjectStatuses, defaultSprintStatuses, issuePriorities } from './types'
 
@@ -555,8 +555,17 @@ export function getSprintDays (value: Sprint): string {
   const st = new Date(value.startDate).getDate()
   const days = Math.floor(Math.abs((1 + value.targetDate - value.startDate) / 1000 / 60 / 60 / 24)) + 1
   const stDate = new Date(value.startDate)
-
+  const stTime = stDate.getTime()
   let ds = Array.from(Array(days).keys()).map((it) => st + it)
-  ds = ds.filter((it) => ![0, 6].includes(new Date(stDate.setDate(it)).getDay()))
+  ds = ds.filter((it) => ![0, 6].includes(new Date(new Date(stTime).setDate(it)).getDay()))
   return ds.join(' ')
+}
+
+export function getDayOfSprint (startDate: number, now: number): number {
+  const days = Math.floor(Math.abs((1 + now - startDate) / 1000 / 60 / 60 / 24))
+  const stDate = new Date(startDate)
+  const stDateDate = stDate.getDate()
+  const stTime = stDate.getTime()
+  const ds = Array.from(Array(days).keys()).map((it) => stDateDate + it)
+  return ds.filter((it) => !isWeekend(new Date(new Date(stTime).setDate(it)))).length
 }

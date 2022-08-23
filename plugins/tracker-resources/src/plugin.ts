@@ -227,7 +227,9 @@ export default mergeIds(trackerId, tracker, {
     SprintPassed: '' as IntlString,
 
     ChildEstimation: '' as IntlString,
-    ChildReportedTime: '' as IntlString
+    ChildReportedTime: '' as IntlString,
+    Capacity: '' as IntlString,
+    CapacityValue: '' as IntlString
   },
   component: {
     NopeComponent: '' as AnyComponent,

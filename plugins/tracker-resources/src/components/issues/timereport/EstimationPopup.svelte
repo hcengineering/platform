@@ -75,6 +75,7 @@
   <Label label={tracker.string.ChildEstimation} />:
   <Scroller tableFade>
     <TableBrowser
+      showFilterBar={false}
       _class={tracker.class.Issue}
       query={{ _id: { $in: childIds } }}
       config={['', { key: '$lookup.attachedTo', presenter: ParentNamesPresenter }, 'estimation']}
@@ -86,6 +87,7 @@
     <TableBrowser
       _class={tracker.class.TimeSpendReport}
       query={{ attachedTo: { $in: [object._id, ...childIds] } }}
+      showFilterBar={false}
       config={[
         '$lookup.attachedTo',
         { key: '$lookup.attachedTo', presenter: ParentNamesPresenter },

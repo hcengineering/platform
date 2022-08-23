@@ -125,6 +125,9 @@ export interface Sprint extends Doc {
 
   startDate: Timestamp
   targetDate: Timestamp
+
+  // Capacity in man days.
+  capacity: number
 }
 
 /**
