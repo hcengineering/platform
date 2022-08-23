@@ -361,6 +361,9 @@ export class TSprint extends TDoc implements Sprint {
   targetDate!: Timestamp
 
   declare space: Ref<Team>
+
+  @Prop(TypeNumber(), tracker.string.Capacity)
+  capacity!: number
 }
 
 @UX(core.string.Number)

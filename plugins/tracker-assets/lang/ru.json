@@ -209,8 +209,10 @@
     "TimeSpendReportDescription": "Описание",
     "TimeSpendValue": "{value}d",
     "SprintPassed": "{from}d/{to}d",
-    "ChildEstimation": "Subissues Estimation",
-    "ChildReportedTime": "Subissues Time"
+    "ChildEstimation": "Оценка подзадач",
+    "ChildReportedTime": "Время водзадач",
+    "Capacity": "Вместимость",
+    "CapacityValue": "из {value}d"
   },
   "status": {}
 }

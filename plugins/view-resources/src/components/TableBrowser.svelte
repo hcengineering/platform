@@ -29,6 +29,7 @@
   export let options: FindOptions<Doc> | undefined = undefined
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
   export let config: (BuildModelKey | string)[]
+  export let showFilterBar = true
 
   // If defined, will show a number of dummy items before real data will appear.
   export let loadingProps: LoadingProps | undefined = undefined
@@ -53,8 +54,9 @@
     mode: 'browser'
   }}
 />
-
-<FilterBar {_class} {query} on:change={(e) => (resultQuery = e.detail)} />
+{#if showFilterBar}
+  <FilterBar {_class} {query} on:change={(e) => (resultQuery = e.detail)} />
+{/if}
 <Scroller tableFade>
   <Table
     bind:this={table}

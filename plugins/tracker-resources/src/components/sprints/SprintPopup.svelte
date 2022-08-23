@@ -15,9 +15,10 @@
 <script lang="ts">
   import type { Class, Doc, DocumentQuery, Ref } from '@anticrm/core'
   import { ObjectCreate, ObjectPopup } from '@anticrm/presentation'
-  import { Sprint } from '@anticrm/tracker'
+  import { Sprint, SprintStatus } from '@anticrm/tracker'
+  import { Icon, Label } from '@anticrm/ui'
+  import { sprintStatusAssets } from '../../utils'
   import SprintTitlePresenter from './SprintTitlePresenter.svelte'
-
   export let _class: Ref<Class<Sprint>>
   export let selected: Ref<Sprint> | undefined
   export let sprintQuery: DocumentQuery<Sprint> = {}
@@ -31,6 +32,7 @@
           update: (doc: Doc) => (doc as Sprint).label
         }
       : undefined
+  const getStatus = (sprint: Sprint): SprintStatus => sprint.status
 </script>
 
 <ObjectPopup
@@ -44,8 +46,21 @@
   create={_create}
   on:update
   on:close
+  groupBy={'status'}
 >
   <svelte:fragment slot="item" let:item={sprint}>
     <SprintTitlePresenter value={sprint} />
+  </svelte:fragment>
+
+  <svelte:fragment slot="category" let:item={sprint}>
+    {@const status = sprintStatusAssets[getStatus(sprint)]}
+    {#if status}
+      <div class="flex-row-center p-1">
+        <Icon icon={status.icon} size={'small'} />
+        <div class="ml-2">
+          <Label label={status.label} />
+        </div>
+      </div>
+    {/if}
   </svelte:fragment>
 </ObjectPopup>

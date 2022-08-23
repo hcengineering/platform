@@ -54,6 +54,7 @@
   </svelte:fragment>
   <Scroller tableFade>
     <TableBrowser
+      showFilterBar={false}
       _class={tracker.class.TimeSpendReport}
       query={{ attachedTo: { $in: [issue._id, ...issue.childInfo.map((it) => it.childId)] } }}
       config={[

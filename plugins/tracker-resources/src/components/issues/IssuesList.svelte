@@ -75,7 +75,19 @@
 
   let personPresenter: AttributeModel
 
-  $: isCollapsedMap = Object.fromEntries(categories.map((category) => [category, false]))
+  const isCollapsedMap: Record<any, boolean> = {}
+
+  $: {
+    const exkeys = new Set(Object.keys(isCollapsedMap))
+    for (const c of categories) {
+      if (!exkeys.delete(c)) {
+        isCollapsedMap[c] = false
+      }
+    }
+    for (const k of exkeys) {
+      delete isCollapsedMap[k]
+    }
+  }
   $: combinedGroupedIssues = Object.values(groupedIssues).flat(1)
   $: options = { ...baseOptions, sort: { [orderBy]: issuesSortOrderMap[orderBy] } } as FindOptions<Issue>
   $: headerComponent = groupByKey === undefined || groupByKey === 'assignee' ? null : issuesGroupEditorMap[groupByKey]

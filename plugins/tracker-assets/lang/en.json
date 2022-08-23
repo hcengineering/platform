@@ -210,7 +210,9 @@
     "TimeSpendValue": "{value}d",
     "SprintPassed": "{from}d/{to}d",
     "ChildEstimation": "Subissues Estimation",
-    "ChildReportedTime": "Subissues Time"
+    "ChildReportedTime": "Subissues Time",
+    "Capacity": "Capacity",
+    "CapacityValue": "of {value}d"
   },
   "status": {}
 }

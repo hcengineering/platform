@@ -17,10 +17,11 @@
   import { IntlString } from '@anticrm/platform'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { Issue, Sprint } from '@anticrm/tracker'
-  import { ButtonKind, ButtonShape, ButtonSize, isWeekend, Label, tooltip } from '@anticrm/ui'
+  import { ButtonKind, ButtonShape, ButtonSize, Label, tooltip } from '@anticrm/ui'
   import DatePresenter from '@anticrm/ui/src/components/calendar/DatePresenter.svelte'
   import { activeSprint } from '../../issues'
   import tracker from '../../plugin'
+  import { getDayOfSprint } from '../../utils'
   import EstimationProgressCircle from '../issues/timereport/EstimationProgressCircle.svelte'
   import SprintSelector from './SprintSelector.svelte'
 
@@ -93,14 +94,6 @@
       sprint = res.shift()
     })
   }
-  function getDayOfSprint (startDate: number, now: number): number {
-    const days = Math.floor(Math.abs((1 + now - startDate) / 1000 / 60 / 60 / 24))
-    const stDate = new Date(startDate)
-    const stDateDate = stDate.getDate()
-    const stTime = stDate.getTime()
-    const ds = Array.from(Array(days).keys()).map((it) => stDateDate + it)
-    return ds.filter((it) => !isWeekend(new Date(new Date(stTime).setDate(it)))).length
-  }
 </script>
 
 {#if (value.sprint && value.sprint !== $activeSprint && groupBy !== 'sprint') || shouldShowPlaceholder}
@@ -148,7 +141,7 @@
 {/if}
 {#if issues}
   <!-- <Label label={tracker.string.SprintDay} value={}/> -->
-  <div class="ml-4 flex-row-center">
+  <div class="ml-4 flex-row-center" class:showWarning={totalEstimation > (sprint?.capacity ?? 0)}>
     <div class="mr-2">
       <EstimationProgressCircle value={totalReported} max={totalEstimation} />
     </div>
@@ -157,5 +150,14 @@
       /
     {/if}
     <Label label={tracker.string.TimeSpendValue} params={{ value: totalEstimation }} />
+    {#if sprint?.capacity}
+      <Label label={tracker.string.CapacityValue} params={{ value: sprint?.capacity }} />
+    {/if}
   </div>
 {/if}
+
+<style lang="scss">
+  .showWarning {
+    color: var(--warning-color) !important;
+  }
+</style>
