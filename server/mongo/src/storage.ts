@@ -202,12 +202,10 @@ abstract class MongoAdapterBase extends TxProcessor {
           from: domain,
           localField: fullKey,
           foreignField: attr,
-          let: { docId: '$' + fullKey },
           pipeline: [
             {
               $match: {
                 _class: { $in: desc }
-                // $expr: { $eq: ['$$docId', '$' + attr] }
               }
             }
           ],
