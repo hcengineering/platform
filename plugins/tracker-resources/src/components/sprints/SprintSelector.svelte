@@ -18,7 +18,7 @@
   import { createQuery } from '@anticrm/presentation'
   import { Sprint } from '@anticrm/tracker'
   import type { ButtonKind, ButtonSize } from '@anticrm/ui'
-  import { Button, ButtonShape, eventToHTMLElement, SelectPopup, showPopup } from '@anticrm/ui'
+  import { Button, ButtonShape, eventToHTMLElement, SelectPopup, showPopup, Label } from '@anticrm/ui'
   import tracker from '../../plugin'
   import { sprintStatusAssets } from '../../types'
 
@@ -33,6 +33,7 @@
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = 'min-content'
   export let onlyIcon: boolean = false
+  export let enlargedText = false
 
   let selectedSprint: Sprint | undefined
   let defaultSprintLabel = ''
@@ -91,14 +92,30 @@
   }
 </script>
 
-<Button
-  {kind}
-  {size}
-  {shape}
-  {width}
-  {justify}
-  label={onlyIcon || sprintText === undefined ? undefined : getEmbeddedLabel(sprintText)}
-  icon={sprintIcon}
-  disabled={!isEditable}
-  on:click={handleSprintEditorOpened}
-/>
+{#if onlyIcon || sprintText === undefined}
+  <Button
+    {kind}
+    {size}
+    {shape}
+    {width}
+    {justify}
+    icon={sprintIcon}
+    disabled={!isEditable}
+    on:click={handleSprintEditorOpened}
+  />
+{:else}
+  <Button
+    {kind}
+    {size}
+    {shape}
+    {width}
+    {justify}
+    icon={sprintIcon}
+    disabled={!isEditable}
+    on:click={handleSprintEditorOpened}
+  ><svelte:fragment slot="content">
+    <span class="{enlargedText ? 'ml-1 text-base fs-bold' : 'text-md'} overflow-label content-accent-color">
+      <Label label={getEmbeddedLabel(sprintText)} />
+    </span>
+  </svelte:fragment></Button>
+{/if}

@@ -20,6 +20,7 @@
 
   export let value: Person | null | undefined
   export let inline = false
+  export let enlargedText = false
   export let isInteractive = true
   export let shouldShowAvatar = true
   export let shouldShowName = true
@@ -55,5 +56,6 @@
     {shouldShowAvatar}
     {shouldShowName}
     {shouldShowPlaceholder}
+    {enlargedText}
   />
 {/if}

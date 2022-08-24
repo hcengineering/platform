@@ -64,13 +64,13 @@
 </script>
 
 {#if value}
-  {#if kind === 'list'}
+  {#if (kind === 'list' || kind === 'list-header')}
     <div class="priority-container" on:click={handlePriorityEditorOpened}>
       <div class="icon">
         {#if issuePriorities[value.priority]?.icon}<Icon icon={issuePriorities[value.priority]?.icon} {size} />{/if}
       </div>
       {#if shouldShowLabel}
-        <span class="overflow-label label">
+        <span class="{kind === 'list' ? 'ml-2 text-md' : 'ml-3 text-base'} overflow-label disabled fs-bold content-accent-color">
           <Label label={issuePriorities[value.priority]?.label} />
         </span>
       {/if}
@@ -108,9 +108,7 @@
       color: var(--content-color);
     }
     .label {
-      margin-left: 0.5rem;
       font-weight: 500;
-      font-size: 0.8125rem;
       color: var(--accent-color);
     }
     &:hover {

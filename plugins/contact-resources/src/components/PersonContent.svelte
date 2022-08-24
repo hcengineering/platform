@@ -30,6 +30,7 @@
   export let avatarSize: 'inline' | 'tiny' | 'x-small' | 'small' | 'medium' | 'large' | 'x-large' = 'x-small'
   export let onEdit: ((event: MouseEvent) => void) | undefined = undefined
   export let showTooltip: LabelAndProps | undefined = undefined
+  export let enlargedText = false
 
   $: element = getElement(value, onEdit, shouldShowPlaceholder, isInteractive)
 
@@ -61,13 +62,14 @@
   class="contentPresenter"
   class:inline-presenter={inline}
   class:mContentPresenterNotInteractive={!isInteractive}
+  class:text-base={enlargedText}
   on:click={onEdit}
   href={!isInteractive || onEdit || !value
     ? undefined
     : `#${getPanelURI(view.component.EditDoc, value._id, Hierarchy.mixinOrClass(value), 'content')}`}
 >
   {#if shouldShowAvatar}
-    <div class="eContentPresenterIcon" class:mr-2={shouldShowName}>
+    <div class="eContentPresenterIcon" class:mr-2={shouldShowName && !enlargedText} class:mr-3={shouldShowName && enlargedText}>
       <Avatar size={avatarSize} avatar={value?.avatar} />
     </div>
   {/if}

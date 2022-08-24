@@ -196,7 +196,8 @@
               defaultName={tracker.string.NoAssignee}
               shouldShowPlaceholder={true}
               isInteractive={false}
-              avatarSize={'x-small'}
+              avatarSize={'small'}
+              enlargedText
               {currentSpace}
             />
           {:else if headerComponent}
@@ -208,13 +209,14 @@
                 value: groupByKey ? { [groupByKey]: category } : {},
                 statuses: groupByKey === 'status' ? statuses : undefined,
                 issues: groupedIssues[category],
-                size: 'inline',
-                kind: 'list',
+                size: 'medium',
+                kind: 'list-header',
+                enlargedText: true,
                 currentSpace
               }}
             />
           {/if}
-          <span class="text-md content-dark-color ml-2">{(groupedIssues[category] ?? []).length}</span>
+          <span class="text-base content-dark-color ml-4">{(groupedIssues[category] ?? []).length}</span>
         </div>
         <div class="clear-mins" use:tooltip={{ label: tracker.string.AddIssueTooltip }}>
           <Button icon={IconAdd} kind={'transparent'} on:click={(event) => handleNewIssueAdded(event, category)} />
@@ -362,10 +364,10 @@
     position: sticky;
     top: 0;
     padding: 0 1.5rem 0 2.25rem;
-    height: 2.5rem;
-    min-height: 2.5rem;
+    height: 3rem;
+    min-height: 3rem;
     min-width: 0;
-    background-color: var(--body-accent);
+    background-color: var(--accent-bg-color);
     z-index: 5;
   }
 

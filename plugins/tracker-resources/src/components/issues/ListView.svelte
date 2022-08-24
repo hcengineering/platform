@@ -68,7 +68,7 @@
 </script>
 
 <div class="w-full h-full clear-mins">
-  <Scroller tableFade={categories[0] !== undefined}>
+  <Scroller tableFade={categories[0] !== undefined} fadeTopOffset={48}>
     <IssuesListBrowser
       {_class}
       {currentSpace}
