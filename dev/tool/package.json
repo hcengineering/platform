@@ -44,7 +44,7 @@
     "@types/email-addresses": "^3.0.0"
   },
   "dependencies": {
-    "mongodb": "^4.1.1",
+    "mongodb": "^4.9.0",
     "commander": "^8.1.0",
     "@anticrm/account": "~0.6.0",
     "@anticrm/core": "~0.6.16",

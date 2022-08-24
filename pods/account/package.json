@@ -42,7 +42,7 @@
   "dependencies": {
     "@anticrm/account": "~0.6.0",
     "@anticrm/platform": "~0.6.6",
-    "mongodb": "^4.1.1",
+    "mongodb": "^4.9.0",
     "koa": "^2.13.1",
     "koa-router": "^10.1.1",
     "koa-bodyparser": "^4.3.0",

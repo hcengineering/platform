@@ -58,7 +58,7 @@ export class MigrateClientImpl implements MigrationClient {
     if (isOperator(operations)) {
       const result = await this.db
         .collection(domain)
-        .updateMany(this.translateQuery(query), { ...operations } as unknown as UpdateFilter<any>)
+        .updateMany(this.translateQuery(query), { ...operations } as unknown as UpdateFilter<Document>)
 
       return { matched: result.matchedCount, updated: result.modifiedCount }
     } else {

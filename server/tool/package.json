@@ -28,7 +28,7 @@
     "@types/ws": "^8.2.1"
   },
   "dependencies": {
-    "mongodb": "^4.1.1",
+    "mongodb": "^4.9.0",
     "@anticrm/platform": "~0.6.6",
     "@anticrm/model-all": "~0.6.0",
     "minio": "^7.0.26",

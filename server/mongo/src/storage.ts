@@ -45,7 +45,7 @@ import core, {
   WithLookup
 } from '@anticrm/core'
 import type { DbAdapter, TxAdapter } from '@anticrm/server-core'
-import { Collection, Db, Document, Filter, MongoClient, Sort } from 'mongodb'
+import { Collection, Db, Document, Filter, MongoClient, Sort, UpdateFilter } from 'mongodb'
 import { createHash } from 'node:crypto'
 import { getMongoClient } from './utils'
 
@@ -200,14 +200,12 @@ abstract class MongoAdapterBase extends TxProcessor {
         const asVal = as.split('.').join('') + '_lookup'
         const step: LookupStep = {
           from: domain,
-          // localField: fullKey,
-          // foreignField: attr,
-          let: { docId: '$' + fullKey },
+          localField: fullKey,
+          foreignField: attr,
           pipeline: [
             {
               $match: {
-                _class: { $in: desc },
-                $expr: { $eq: ['$$docId', '$' + attr] }
+                _class: { $in: desc }
               }
             }
           ],
@@ -661,7 +659,7 @@ class MongoAdapter extends MongoAdapterBase {
                 modifiedBy: tx.modifiedBy,
                 modifiedOn: tx.modifiedOn
               }
-            },
+            } as unknown as UpdateFilter<Document>,
             { returnDocument: 'after' }
           )
           return { object: result.value }
@@ -680,13 +678,13 @@ class MongoAdapter extends MongoAdapterBase {
       }
     } else {
       if (tx.retrieve === true) {
-        const result = await this.db
-          .collection(domain)
-          .findOneAndUpdate(
-            { _id: tx.objectId },
-            { $set: { ...tx.operations, modifiedBy: tx.modifiedBy, modifiedOn: tx.modifiedOn } },
-            { returnDocument: 'after' }
-          )
+        const result = await this.db.collection(domain).findOneAndUpdate(
+          { _id: tx.objectId },
+          {
+            $set: { ...tx.operations, modifiedBy: tx.modifiedBy, modifiedOn: tx.modifiedOn }
+          } as unknown as UpdateFilter<Document>,
+          { returnDocument: 'after' }
+        )
         return { object: result.value }
       } else {
         return await this.db

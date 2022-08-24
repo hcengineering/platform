@@ -17,4 +17,4 @@
   export let value: string
 </script>
 
-<span class="lines-limit-2">{value}</span>
+<span class="lines-limit-2 select-text">{value}</span>

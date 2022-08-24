@@ -270,7 +270,7 @@ specifiers:
   mime-types: ~2.1.34
   mini-css-extract-plugin: ^2.2.0
   minio: ^7.0.26
-  mongodb: ^4.1.1
+  mongodb: ^4.9.0
   pdfkit: ~0.13.0
   postcss: ^8.3.4
   postcss-load-config: ^3.1.0
@@ -571,7 +571,7 @@ dependencies:
   mime-types: 2.1.35
   mini-css-extract-plugin: 2.6.1_webpack@5.73.0
   minio: 7.0.28
-  mongodb: 4.7.0
+  mongodb: 4.9.0
   pdfkit: 0.13.0
   postcss: 8.4.14
   postcss-load-config: 3.1.4_postcss@8.4.14+ts-node@10.8.1
@@ -3149,8 +3149,8 @@ packages:
       node-int64: 0.4.0
     dev: false
 
-  /bson/4.6.4:
-    resolution: {integrity: sha512-TdQ3FzguAu5HKPPlr0kYQCyrYUYh8tFM+CMTpxjNzVzxeiJY00Rtuj3LXLHSgiGvmaWlZ8PE+4KyM2thqE38pQ==}
+  /bson/4.7.0:
+    resolution: {integrity: sha512-VrlEE4vuiO1WTpfof4VmaVolCVYkYTgB9iWgYNOrVlnifpME/06fhFRmONgBhClD5pFC1t9ZWqFUQEQAzY43bA==}
     engines: {node: '>=6.9.0'}
     dependencies:
       buffer: 5.7.1
@@ -3840,8 +3840,8 @@ packages:
     resolution: {integrity: sha512-bd2L678uiWATM6m5Z1VzNCErI3jiGzt6HGY8OVICs40JQq/HALfbyNJmp0UDakEY4pMMaN0Ly5om/B1VI/+xfQ==}
     dev: false
 
-  /denque/2.0.1:
-    resolution: {integrity: sha512-tfiWc6BQLXNLpNiR5iGd0Ocu3P3VpxfzFiqubLgMfhfOw9WyvgJBd46CClNn9k3qfbjvT//0cf7AlYRX/OslMQ==}
+  /denque/2.1.0:
+    resolution: {integrity: sha512-HVQE3AAb/pxF8fQAoiqpvg9i3evqug3hoiwakOyZAwJm+6vZehbkYXZ0l4JxS+I3QxM97v5aaRNhj8v5oBhekw==}
     engines: {node: '>=0.10'}
     dev: false
 
@@ -5452,8 +5452,8 @@ packages:
       tslib: 2.4.0
     dev: false
 
-  /ip/1.1.8:
-    resolution: {integrity: sha512-PuExPYUiu6qMBQb4l06ecm6T6ujzhmh+MeJcW9wa89PoAz5pvd4zPgN5WJV104mb6S2T1AwNIAaB70JNrLQWhg==}
+  /ip/2.0.0:
+    resolution: {integrity: sha512-WKa+XuLG1A1R0UWhl2+1XQSi+fZWMsYKffMZTTYsiZaUD8k2yDAj5atimTUD2TZkyCkNEeYE5NhFZmupOGtjYQ==}
     dev: false
 
   /ipaddr.js/1.9.1:
@@ -6809,21 +6809,21 @@ packages:
     resolution: {integrity: sha512-ySViT69/76t8VhE1xXHK6Ch4NcDd26gx0MzKXLO+F7NOtnqH68d9zF94nT8ZWSxXh8ELOERsnJO/sWt1xZYw5A==}
     dev: false
 
-  /mongodb-connection-string-url/2.5.2:
-    resolution: {integrity: sha512-tWDyIG8cQlI5k3skB6ywaEA5F9f5OntrKKsT/Lteub2zgwSUlhqEN2inGgBTm8bpYJf8QYBdA/5naz65XDpczA==}
+  /mongodb-connection-string-url/2.5.3:
+    resolution: {integrity: sha512-f+/WsED+xF4B74l3k9V/XkTVj5/fxFH2o5ToKXd8Iyi5UhM+sO9u0Ape17Mvl/GkZaFtM0HQnzAG5OTmhKw+tQ==}
     dependencies:
       '@types/whatwg-url': 8.2.2
       whatwg-url: 11.0.0
     dev: false
 
-  /mongodb/4.7.0:
-    resolution: {integrity: sha512-HhVar6hsUeMAVlIbwQwWtV36iyjKd9qdhY+s4wcU8K6TOj4Q331iiMy+FoPuxEntDIijTYWivwFJkLv8q/ZgvA==}
+  /mongodb/4.9.0:
+    resolution: {integrity: sha512-tJJEFJz7OQTQPZeVHZJIeSOjMRqc5eSyXTt86vSQENEErpkiG7279tM/GT5AVZ7TgXNh9HQxoa2ZkbrANz5GQw==}
     engines: {node: '>=12.9.0'}
     dependencies:
-      bson: 4.6.4
-      denque: 2.0.1
-      mongodb-connection-string-url: 2.5.2
-      socks: 2.6.2
+      bson: 4.7.0
+      denque: 2.1.0
+      mongodb-connection-string-url: 2.5.3
+      socks: 2.7.0
     optionalDependencies:
       saslprep: 1.0.3
     dev: false
@@ -8261,11 +8261,11 @@ packages:
       websocket-driver: 0.7.4
     dev: false
 
-  /socks/2.6.2:
-    resolution: {integrity: sha512-zDZhHhZRY9PxRruRMR7kMhnf3I8hDs4S3f9RecfnGxvcBHQcKcIH/oUcEWffsfl1XxdYlA7nnlGbbTvPz9D8gA==}
+  /socks/2.7.0:
+    resolution: {integrity: sha512-scnOe9y4VuiNUULJN72GrM26BNOjVsfPXI+j+98PkyEfsIXroa5ofyjT+FzGvn/xHs73U2JtoBYAVx9Hl4quSA==}
     engines: {node: '>= 10.13.0', npm: '>= 3.0.0'}
     dependencies:
-      ip: 1.1.8
+      ip: 2.0.0
       smart-buffer: 4.2.0
     dev: false
 
@@ -9557,7 +9557,7 @@ packages:
     dev: false
 
   file:projects/account.tgz:
-    resolution: {integrity: sha512-DTGUi3jN9TvrTTEE9tys0cPWiBdE61Qoz4TEPPsx6GswWTqA74dJoHp/hqlGoMYhyKTu5WEn0rUOV7tQ4TD9xQ==, tarball: file:projects/account.tgz}
+    resolution: {integrity: sha512-8KbplLD66ruX6hHCIkK0TahwnfNsU/X811dYlRjl+d/Daa/j4azBJIRQV1mbrZMp/dIbqaZQE5Ne0bbw5obtIg==, tarball: file:projects/account.tgz}
     name: '@rush-temp/account'
     version: 0.0.0
     dependencies:
@@ -9573,7 +9573,7 @@ packages:
       eslint-plugin-node: 11.1.0_eslint@8.19.0
       eslint-plugin-promise: 6.0.0_eslint@8.19.0
       minio: 7.0.28
-      mongodb: 4.7.0
+      mongodb: 4.9.0
       prettier: 2.7.1
       typescript: 4.7.4
       ws: 8.8.0
@@ -12101,7 +12101,7 @@ packages:
     dev: false
 
   file:projects/mongo.tgz:
-    resolution: {integrity: sha512-Y+ZKnxpmqKiP8jvMidkwkwZCO6b394Mvek8NXO5UlvPyhWEWzhWHmhngHzuGldD85mYKtBUu3gzHfnh8xktITg==, tarball: file:projects/mongo.tgz}
+    resolution: {integrity: sha512-n9Zcx2tHE4bntEcfP6N5sFNJcnNtd7RHeglztOkt+TwH+dB1hlfOIAU6PmFlHEAHfq6J0mk5ta/4dyBFg3FjrQ==, tarball: file:projects/mongo.tgz}
     name: '@rush-temp/mongo'
     version: 0.0.0
     dependencies:
@@ -12114,7 +12114,7 @@ packages:
       eslint-plugin-import: 2.26.0_b991b8cc37fbaea14375bc1442f912c5
       eslint-plugin-node: 11.1.0_eslint@8.19.0
       eslint-plugin-promise: 6.0.0_eslint@8.19.0
-      mongodb: 4.7.0
+      mongodb: 4.9.0
       prettier: 2.7.1
       typescript: 4.7.4
     transitivePeerDependencies:
@@ -12310,7 +12310,7 @@ packages:
     dev: false
 
   file:projects/pod-account.tgz:
-    resolution: {integrity: sha512-Ibd59uVS5ksj9E8n97rMjPys+WfGrMLmQOygEMLeJV6SvZBDr0clK+ARAuVS6iqGvhvLdptph4Qru8h42JdsBg==, tarball: file:projects/pod-account.tgz}
+    resolution: {integrity: sha512-+8/IjgDxbTJaxQjVdu3IZNGLPdAC7sacfazFkbAL8v1err7Prs8a165JiAaXqvB2C9uLAnx3hL3RP6gRoG2OQA==, tarball: file:projects/pod-account.tgz}
     name: '@rush-temp/pod-account'
     version: 0.0.0
     dependencies:
@@ -12334,7 +12334,7 @@ packages:
       koa: 2.13.4
       koa-bodyparser: 4.3.0
       koa-router: 10.1.1
-      mongodb: 4.7.0
+      mongodb: 4.9.0
       prettier: 2.7.1
       ts-node: 10.8.1_eff44b0165567fe5f2c2cc6c8fd30ef7
       typescript: 4.7.4
@@ -12347,7 +12347,7 @@ packages:
     dev: false
 
   file:projects/pod-backup.tgz:
-    resolution: {integrity: sha512-HZ7qmm0ugd//Ac/m7ObjOa9EgnCU4R11GmaNp7wxnFEwJjnQZnFc8H1atViGXsVOiJ/7KqF+8sAtzUhjAeI6kQ==, tarball: file:projects/pod-backup.tgz}
+    resolution: {integrity: sha512-xNyM6G2tqNduzHK/7Js4iXoYvfaTpYCLGuyCl7lcwAAopITatQLp91uDPKhj4NxLlH9Ztef/MqgkCU78XSp7XQ==, tarball: file:projects/pod-backup.tgz}
     name: '@rush-temp/pod-backup'
     version: 0.0.0
     dependencies:
@@ -12367,7 +12367,7 @@ packages:
       eslint-plugin-promise: 6.0.0_eslint@8.19.0
       got: 11.8.5
       minio: 7.0.28
-      mongodb: 4.7.0
+      mongodb: 4.9.0
       prettier: 2.7.1
       ts-node: 10.8.1_eff44b0165567fe5f2c2cc6c8fd30ef7
       typescript: 4.7.4
@@ -13374,7 +13374,7 @@ packages:
     dev: false
 
   file:projects/server-tool.tgz:
-    resolution: {integrity: sha512-12Y6MCOs/4IC51MmAzl668InIWtRC8Zx5CE2R5u8RAr0snUQbxXh18TImJxADMrNW+m6W+wTBrjEScQX0GCszQ==, tarball: file:projects/server-tool.tgz}
+    resolution: {integrity: sha512-fslOzZIEbRO5bGBQgMCPg9o7lKgHbBxtBq+tLj5vuFDIzuZGigGk8IlJ9Z9IdiH9wXALC7eFW7abw+u8fU77oA==, tarball: file:projects/server-tool.tgz}
     name: '@rush-temp/server-tool'
     version: 0.0.0
     dependencies:
@@ -13390,7 +13390,7 @@ packages:
       eslint-plugin-node: 11.1.0_eslint@8.19.0
       eslint-plugin-promise: 6.0.0_eslint@8.19.0
       minio: 7.0.28
-      mongodb: 4.7.0
+      mongodb: 4.9.0
       prettier: 2.7.1
       typescript: 4.7.4
       ws: 8.8.0
@@ -14032,7 +14032,7 @@ packages:
     dev: false
 
   file:projects/tool.tgz:
-    resolution: {integrity: sha512-7BKMRQ8UZ8cgJGDXvMGNoAdjUmEAyMx9GVBmBo3gmW56eLhxamaBqdwkunRIemCR77MJ8JJj+qhgWAzpRXpoRg==, tarball: file:projects/tool.tgz}
+    resolution: {integrity: sha512-F7ozoOP7Rjk0WSp5vnw23R1AuP/FMZw+LNl0SiKIzMu3zKvA179Y3A65d7FKpMQSMrA2RCGRjcZszWfSbXDHPA==, tarball: file:projects/tool.tgz}
     name: '@rush-temp/tool'
     version: 0.0.0
     dependencies:
@@ -14063,7 +14063,7 @@ packages:
       libphonenumber-js: 1.10.7
       mime-types: 2.1.35
       minio: 7.0.28
-      mongodb: 4.7.0
+      mongodb: 4.9.0
       node-html-parser: 5.3.3
       prettier: 2.7.1
       ts-node: 10.8.1_eff44b0165567fe5f2c2cc6c8fd30ef7

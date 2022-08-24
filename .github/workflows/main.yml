@@ -196,7 +196,7 @@ jobs:
       - name: Start MongoDB
         uses: supercharge/mongodb-github-action@1.7.0
         with:
-          mongodb-version: 4.4
+          mongodb-version: 5.0
 
       - name: Testing...
         uses: paambaati/codeclimate-action@v3.0.0

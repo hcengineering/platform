@@ -38,7 +38,7 @@
   },
   "dependencies": {
     "@anticrm/platform": "~0.6.6",
-    "mongodb": "^4.1.1",
+    "mongodb": "^4.9.0",
     "@anticrm/server-tool": "~0.6.0",
     "@anticrm/server-token": "~0.6.0",
     "@anticrm/client": "~0.6.2",
