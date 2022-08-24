@@ -90,13 +90,17 @@
 </script>
 
 {#if value && statuses}
-  {#if (kind === 'list' || kind === 'list-header')}
+  {#if kind === 'list' || kind === 'list-header'}
     <div class="flex-row-center flex-no-shrink" class:cursor-pointer={isEditable} on:click={handleStatusEditorOpened}>
       <div class="flex-center flex-no-shrink square-4">
         {#if selectedStatus}<IssueStatusIcon value={selectedStatus} size={kind === 'list' ? 'inline' : 'medium'} />{/if}
       </div>
       {#if selectedStatusLabel}
-        <span class="{kind === 'list' ? 'ml-2 text-md' : 'ml-3 text-base'} overflow-label disabled fs-bold content-accent-color">
+        <span
+          class="{kind === 'list'
+            ? 'ml-2 text-md'
+            : 'ml-3 text-base'} overflow-label disabled fs-bold content-accent-color"
+        >
           {selectedStatusLabel}
         </span>
       {/if}

@@ -106,18 +106,19 @@
   />
 {:else}
   <Button
-  {kind}
-  {size}
-  {shape}
-  {width}
-  {justify}
-  icon={projectIcon}
-  disabled={!isEditable}
-  {loading}
-  on:click={handleProjectEditorOpened}
-  ><svelte:fragment slot="content">
-    <span class="{enlargedText ? 'ml-1 text-base fs-bold' : 'text-md'} overflow-label content-accent-color">
-      <Label label={getEmbeddedLabel(projectText)} />
-    </span>
-  </svelte:fragment></Button>
+    {kind}
+    {size}
+    {shape}
+    {width}
+    {justify}
+    icon={projectIcon}
+    disabled={!isEditable}
+    {loading}
+    on:click={handleProjectEditorOpened}
+    ><svelte:fragment slot="content">
+      <span class="{enlargedText ? 'ml-1 text-base fs-bold' : 'text-md'} overflow-label content-accent-color">
+        <Label label={getEmbeddedLabel(projectText)} />
+      </span>
+    </svelte:fragment></Button
+  >
 {/if}

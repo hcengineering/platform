@@ -113,9 +113,10 @@
     icon={sprintIcon}
     disabled={!isEditable}
     on:click={handleSprintEditorOpened}
-  ><svelte:fragment slot="content">
-    <span class="{enlargedText ? 'ml-1 text-base fs-bold' : 'text-md'} overflow-label content-accent-color">
-      <Label label={getEmbeddedLabel(sprintText)} />
-    </span>
-  </svelte:fragment></Button>
+    ><svelte:fragment slot="content">
+      <span class="{enlargedText ? 'ml-1 text-base fs-bold' : 'text-md'} overflow-label content-accent-color">
+        <Label label={getEmbeddedLabel(sprintText)} />
+      </span>
+    </svelte:fragment></Button
+  >
 {/if}

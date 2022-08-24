@@ -69,7 +69,11 @@
     : `#${getPanelURI(view.component.EditDoc, value._id, Hierarchy.mixinOrClass(value), 'content')}`}
 >
   {#if shouldShowAvatar}
-    <div class="eContentPresenterIcon" class:mr-2={shouldShowName && !enlargedText} class:mr-3={shouldShowName && enlargedText}>
+    <div
+      class="eContentPresenterIcon"
+      class:mr-2={shouldShowName && !enlargedText}
+      class:mr-3={shouldShowName && enlargedText}
+    >
       <Avatar size={avatarSize} avatar={value?.avatar} />
     </div>
   {/if}
