@@ -34,6 +34,7 @@
     "NoReminders": "Нет напоминаний",
     "AllDay": "Весь день",
     "AndMore": "И еще {count}",
-    "CreateEvent": "Создать событие"
+    "CreateEvent": "Создать событие",
+    "EventFor": "Событие для: "
   }
 }
