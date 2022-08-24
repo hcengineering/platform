@@ -680,13 +680,13 @@ class MongoAdapter extends MongoAdapterBase {
       }
     } else {
       if (tx.retrieve === true) {
-        const result = await this.db
-          .collection(domain)
-          .findOneAndUpdate(
-            { _id: tx.objectId },
-            { $set: { ...tx.operations, modifiedBy: tx.modifiedBy, modifiedOn: tx.modifiedOn } } as unknown as UpdateFilter<Document>,
-            { returnDocument: 'after' }
-          )
+        const result = await this.db.collection(domain).findOneAndUpdate(
+          { _id: tx.objectId },
+          {
+            $set: { ...tx.operations, modifiedBy: tx.modifiedBy, modifiedOn: tx.modifiedOn }
+          } as unknown as UpdateFilter<Document>,
+          { returnDocument: 'after' }
+        )
         return { object: result.value }
       } else {
         return await this.db
