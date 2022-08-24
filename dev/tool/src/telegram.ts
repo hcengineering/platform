@@ -20,7 +20,7 @@ import contact, { DOMAIN_CHANNEL } from '@anticrm/model-contact'
 import { DOMAIN_TELEGRAM } from '@anticrm/model-telegram'
 import telegram, { SharedTelegramMessage, SharedTelegramMessages } from '@anticrm/telegram'
 import { Client } from 'minio'
-import { MongoClient } from 'mongodb'
+import { Document, MongoClient, UpdateFilter } from 'mongodb'
 
 const LastMessages = 'last-msgs'
 
@@ -84,7 +84,7 @@ export async function clearTelegramHistory (
           $set: {
             items: 0
           }
-        }
+        } as unknown as UpdateFilter<Document>
       ),
       workspaceDB.collection(DOMAIN_ATTACHMENT).deleteMany({
         attachedToClass: telegram.class.Message

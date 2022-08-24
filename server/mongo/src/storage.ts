@@ -45,7 +45,7 @@ import core, {
   WithLookup
 } from '@anticrm/core'
 import type { DbAdapter, TxAdapter } from '@anticrm/server-core'
-import { Collection, Db, Document, Filter, MongoClient, Sort } from 'mongodb'
+import { Collection, Db, Document, Filter, MongoClient, Sort, UpdateFilter } from 'mongodb'
 import { createHash } from 'node:crypto'
 import { getMongoClient } from './utils'
 
@@ -200,14 +200,14 @@ abstract class MongoAdapterBase extends TxProcessor {
         const asVal = as.split('.').join('') + '_lookup'
         const step: LookupStep = {
           from: domain,
-          // localField: fullKey,
-          // foreignField: attr,
+          localField: fullKey,
+          foreignField: attr,
           let: { docId: '$' + fullKey },
           pipeline: [
             {
               $match: {
-                _class: { $in: desc },
-                $expr: { $eq: ['$$docId', '$' + attr] }
+                _class: { $in: desc }
+                // $expr: { $eq: ['$$docId', '$' + attr] }
               }
             }
           ],
@@ -661,7 +661,7 @@ class MongoAdapter extends MongoAdapterBase {
                 modifiedBy: tx.modifiedBy,
                 modifiedOn: tx.modifiedOn
               }
-            },
+            } as unknown as UpdateFilter<Document>,
             { returnDocument: 'after' }
           )
           return { object: result.value }
@@ -684,7 +684,7 @@ class MongoAdapter extends MongoAdapterBase {
           .collection(domain)
           .findOneAndUpdate(
             { _id: tx.objectId },
-            { $set: { ...tx.operations, modifiedBy: tx.modifiedBy, modifiedOn: tx.modifiedOn } },
+            { $set: { ...tx.operations, modifiedBy: tx.modifiedBy, modifiedOn: tx.modifiedOn } } as unknown as UpdateFilter<Document>,
             { returnDocument: 'after' }
           )
         return { object: result.value }
