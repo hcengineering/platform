@@ -36,6 +36,7 @@
     "NoReminders": "No reminders",
     "AllDay": "All day",
     "AndMore": "And {count} more",
-    "CreateEvent": "Create event"
+    "CreateEvent": "Create event",
+    "EventFor": "Event for: "
   }
 }

@@ -41,6 +41,7 @@ export default mergeIds(calendarId, calendar, {
     NoReminders: '' as IntlString,
     AllDay: '' as IntlString,
     AndMore: '' as IntlString,
-    CreateEvent: '' as IntlString
+    CreateEvent: '' as IntlString,
+    EventFor: '' as IntlString
   }
 })

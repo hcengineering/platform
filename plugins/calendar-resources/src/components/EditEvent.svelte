@@ -14,13 +14,16 @@
 -->
 <script lang="ts">
   import { Event } from '@anticrm/calendar'
-  import { getClient } from '@anticrm/presentation'
+  import { Doc, WithLookup } from '@anticrm/core'
+  import { createQuery, getClient } from '@anticrm/presentation'
   import { StyledTextBox } from '@anticrm/text-editor'
-  import { StylishEdit } from '@anticrm/ui'
+  import { AnyComponent, Component, Label, StylishEdit } from '@anticrm/ui'
+  import ObjectPresenter from '@anticrm/view-resources/src/components/ObjectPresenter.svelte'
+  import { getObjectPreview } from '@anticrm/view-resources/src/utils'
   import { createEventDispatcher, onMount } from 'svelte'
   import calendar from '../plugin'
 
-  export let object: Event
+  export let object: WithLookup<Event>
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -31,9 +34,43 @@
       ignoreMixins: [calendar.mixin.Reminder]
     })
   })
+
+  const query = createQuery()
+  let doc: Doc | undefined
+
+  $: if (object.attachedTo !== undefined && object.attachedToClass !== undefined) {
+    query.query(object.attachedToClass, { _id: object.attachedTo }, (res) => {
+      doc = res.shift()
+    })
+  }
+
+  let presenter: AnyComponent | undefined
+  async function updatePreviewPresenter (doc?: Doc): Promise<void> {
+    if (doc === undefined) {
+      return
+    }
+    presenter = doc !== undefined ? await getObjectPreview(client, doc._class) : undefined
+  }
+
+  $: updatePreviewPresenter(doc)
 </script>
 
 {#if object !== undefined}
+  {#if object.attachedTo && object.attachedToClass}
+    <div class="mb-4">
+      <div class="flex-row-center p-1">
+        <Label label={calendar.string.EventFor} />
+        <div class="ml-2">
+          <ObjectPresenter _class={object.attachedToClass} objectId={object.attachedTo} value={doc} />
+        </div>
+      </div>
+      {#if presenter !== undefined && doc}
+        <div class="antiPanel p-4">
+          <Component is={presenter} props={{ object: doc }} />
+        </div>
+      {/if}
+    </div>
+  {/if}
   <div class="mb-2">
     <div class="mb-4">
       <StylishEdit

@@ -20,7 +20,7 @@
 
   export let objectId: Ref<Doc>
   export let _class: Ref<Class<Doc>>
-  export let value: Doc | undefined
+  export let value: Doc | undefined = undefined
   export let props: Record<string, any> = {}
 
   const client = getClient()
