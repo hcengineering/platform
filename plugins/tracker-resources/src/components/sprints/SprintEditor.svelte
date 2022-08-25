@@ -38,6 +38,7 @@
   export let onlyIcon: boolean = false
   export let issues: Issue[] | undefined
   export let groupBy: string | undefined
+  export let enlargedText = false
 
   const client = getClient()
 
@@ -111,6 +112,7 @@
       {shouldShowLabel}
       {popupPlaceholder}
       {onlyIcon}
+      {enlargedText}
       value={value.sprint}
       onSprintIdChange={handleSprintIdChanged}
     />

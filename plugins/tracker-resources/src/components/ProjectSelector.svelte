@@ -18,7 +18,7 @@
   import { createQuery } from '@anticrm/presentation'
   import { Project } from '@anticrm/tracker'
   import type { ButtonKind, ButtonSize } from '@anticrm/ui'
-  import { Button, ButtonShape, eventToHTMLElement, SelectPopup, showPopup } from '@anticrm/ui'
+  import { Button, ButtonShape, eventToHTMLElement, SelectPopup, showPopup, Label } from '@anticrm/ui'
   import tracker from '../plugin'
 
   export let value: Ref<Project> | null | undefined
@@ -32,6 +32,7 @@
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = 'min-content'
   export let onlyIcon: boolean = false
+  export let enlargedText = false
 
   let selectedProject: Project | undefined
   let defaultProjectLabel = ''
@@ -91,15 +92,33 @@
   }
 </script>
 
-<Button
-  {kind}
-  {size}
-  {shape}
-  {width}
-  {justify}
-  label={onlyIcon || projectText === undefined ? undefined : getEmbeddedLabel(projectText)}
-  icon={projectIcon}
-  disabled={!isEditable}
-  {loading}
-  on:click={handleProjectEditorOpened}
-/>
+{#if onlyIcon || projectText === undefined}
+  <Button
+    {kind}
+    {size}
+    {shape}
+    {width}
+    {justify}
+    icon={projectIcon}
+    disabled={!isEditable}
+    {loading}
+    on:click={handleProjectEditorOpened}
+  />
+{:else}
+  <Button
+    {kind}
+    {size}
+    {shape}
+    {width}
+    {justify}
+    icon={projectIcon}
+    disabled={!isEditable}
+    {loading}
+    on:click={handleProjectEditorOpened}
+    ><svelte:fragment slot="content">
+      <span class="{enlargedText ? 'ml-1 text-base fs-bold' : 'text-md'} overflow-label content-accent-color">
+        <Label label={getEmbeddedLabel(projectText)} />
+      </span>
+    </svelte:fragment></Button
+  >
+{/if}

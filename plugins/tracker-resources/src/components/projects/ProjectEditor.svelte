@@ -34,6 +34,7 @@
   export let width: string | undefined = '100%'
   export let onlyIcon: boolean = false
   export let groupBy: string | undefined = undefined
+  export let enlargedText = false
 
   const client = getClient()
 
@@ -69,6 +70,7 @@
       {shouldShowLabel}
       {popupPlaceholder}
       {onlyIcon}
+      {enlargedText}
       value={value.project}
       onProjectIdChange={handleProjectIdChanged}
     />

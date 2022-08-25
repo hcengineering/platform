@@ -21,6 +21,7 @@
   // export let correctPadding: number = 0
   export let bottomStart: boolean = false
   export let tableFade: boolean = false
+  export let fadeTopOffset: number = 40
 
   let mask: 'top' | 'bottom' | 'both' | 'none' = 'none'
 
@@ -37,7 +38,7 @@
 
   let timer: number
 
-  $: shift = tableFade ? 40 : 0
+  $: shift = tableFade ? fadeTopOffset : 0
 
   const checkBar = (): void => {
     if (divBar && divScroll) {
@@ -148,7 +149,7 @@
 </script>
 
 <svelte:window on:resize={_resize} />
-<div class="scroller-container" class:bottomStart>
+<div class="scroller-container" class:bottomStart style="--scroller-header-height: {shift}px;">
   <div
     bind:this={divScroll}
     use:resizeObserver={(element) => {
