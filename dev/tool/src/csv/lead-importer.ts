@@ -98,7 +98,7 @@ const fieldMapping: Record<string, FieldType> = {
   }
 }
 
-async function updateStates<T extends State | DoneState> (
+export async function updateStates<T extends State | DoneState> (
   client: TxOperations,
   states: string[],
   _class: Ref<Class<T>>,

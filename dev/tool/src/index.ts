@@ -39,6 +39,7 @@ import { exit } from 'process'
 import { removeDuplicates } from './csv/duplicates'
 import { importLead } from './csv/lead-importer'
 import { importLead2 } from './csv/lead-importer2'
+import { importOrgs } from './csv/org-importer'
 import { importTalants } from './csv/talant-importer'
 import { rebuildElastic } from './elastic'
 import { importXml } from './importer'
@@ -385,6 +386,13 @@ program
       exit(1)
     }
     return await importTalants(transactorUrl, workspace, fileName, rekoniUrl)
+  })
+
+program
+  .command('import-org-csv <workspace> <fileName>')
+  .description('Import Organizations csv')
+  .action(async (workspace, fileName, cmd) => {
+    return await importOrgs(transactorUrl, workspace, fileName)
   })
 
 program

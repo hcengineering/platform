@@ -13,7 +13,8 @@
 // limitations under the License.
 //
 
-import contact, { ChannelProvider, combineName, Contact, EmployeeAccount, Person } from '@anticrm/contact'
+import attachment, { Attachment } from '@anticrm/attachment'
+import contact, { combineName, Contact, EmployeeAccount, Person } from '@anticrm/contact'
 import core, {
   AnyAttribute,
   BackupClient,
@@ -34,19 +35,18 @@ import core, {
 } from '@anticrm/core'
 import { Asset, getEmbeddedLabel, IntlString } from '@anticrm/platform'
 import recruit, { Candidate } from '@anticrm/recruit'
+import { ReconiDocument } from '@anticrm/rekoni'
+import { generateToken } from '@anticrm/server-token'
 import { connect } from '@anticrm/server-tool'
 import setting from '@anticrm/setting'
 import { readFile } from 'fs/promises'
-import { parseCSV } from './parseCSV'
-import { FieldType } from './types'
-import { filled } from './utils'
 import got from 'got'
 import mimetypes from 'mime-types'
-import attachment, { Attachment } from '@anticrm/attachment'
-import { generateToken } from '@anticrm/server-token'
 import { recognize, updateContacts, updateSkills } from '../recruit'
-import { ReconiDocument } from '@anticrm/rekoni'
 import { findOrUpdateAttached } from '../utils'
+import { parseCSV } from './parseCSV'
+import { FieldType } from './types'
+import { filled, getValid, updateChannel } from './utils'
 
 const names = {
   status: 'Status',
@@ -585,52 +585,29 @@ async function createTalants (
       dataLocationDetails
     )
 
-    function getValid (...names: string[]): string | undefined {
-      for (const o of names) {
-        const v = record[o]
-        if (v !== undefined && typeof v === 'string' && v.trim().length > 0) {
-          return v
-        }
-      }
-    }
-
-    async function updateChannel (value: string | undefined, provider: Ref<ChannelProvider>): Promise<void> {
-      if (value === undefined) {
-        return
-      }
-      const channels = await client.findAll(contact.class.Channel, { attachedTo: candidateId })
-      const emailPr = channels.find((it) => it.value === value)
-      if (emailPr === undefined) {
-        await client.addCollection(
-          contact.class.Channel,
-          contact.space.Contacts,
-          candidateId,
-          contact.class.Person,
-          'channels',
-          {
-            value,
-            provider
-          }
-        )
-      }
-    }
-
     await updateChannel(
+      client,
+      candidateId,
       getValid(record, names.workEmail, names.homeEmail, names.newsletterEmail, names.otherEmail),
       contact.channelProvider.Email
     )
-    await updateChannel(getValid(record, names.webSite), contact.channelProvider.Homepage)
-    await updateChannel(getValid(record, names.phone, names.phoneNumber), contact.channelProvider.Phone)
-    await updateChannel(getValid(record, names.telegram), contact.channelProvider.Telegram)
+    await updateChannel(client, candidateId, getValid(record, names.webSite), contact.channelProvider.Homepage)
+    await updateChannel(
+      client,
+      candidateId,
+      getValid(record, names.phone, names.phoneNumber),
+      contact.channelProvider.Phone
+    )
+    await updateChannel(client, candidateId, getValid(record, names.telegram), contact.channelProvider.Telegram)
 
     const ghval = getValid(record, names.githubPortfolio)
     if (ghval?.includes('https://github.com') ?? false) {
-      await updateChannel(ghval, contact.channelProvider.GitHub)
+      await updateChannel(client, candidateId, ghval, contact.channelProvider.GitHub)
     }
 
     const profile = getValid(record, names.profile)
     if (profile?.includes('linkedin.com') ?? false) {
-      await updateChannel(profile, contact.channelProvider.LinkedIn)
+      await updateChannel(client, candidateId, profile, contact.channelProvider.LinkedIn)
     }
 
     const resume = record[names.resume] as string

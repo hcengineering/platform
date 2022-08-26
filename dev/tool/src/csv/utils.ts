@@ -13,6 +13,9 @@
 // limitations under the License.
 //
 
+import contact, { ChannelProvider, Contact } from '@anticrm/contact'
+import { Class, Doc, Ref, TxOperations } from '@anticrm/core'
+
 export function filled (obj: any, uniqKeys: string[]): any {
   const result: Record<string, any> = {}
   for (const [k, v] of Object.entries(obj)) {
@@ -25,4 +28,32 @@ export function filled (obj: any, uniqKeys: string[]): any {
     result[k] = v
   }
   return result
+}
+
+export async function updateChannel (
+  client: TxOperations,
+  attachedTo: Ref<Contact>,
+  value: string | undefined,
+  provider: Ref<ChannelProvider>,
+  attachToClass: Ref<Class<Doc>> = contact.class.Person
+): Promise<void> {
+  if (value === undefined) {
+    return
+  }
+  const channels = await client.findAll(contact.class.Channel, { attachedTo })
+  const valueCh = channels.find((it) => it.value === value)
+  if (valueCh === undefined) {
+    await client.addCollection(contact.class.Channel, contact.space.Contacts, attachedTo, attachToClass, 'channels', {
+      value,
+      provider
+    })
+  }
+}
+export function getValid (record: any, ...names: string[]): string | undefined {
+  for (const o of names) {
+    const v = record[o]
+    if (v !== undefined && typeof v === 'string' && v.trim().length > 0) {
+      return v
+    }
+  }
 }
