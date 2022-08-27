@@ -17,10 +17,11 @@
   import { fetchMetadataLocalStorage, getCurrentLocation, navigate, setMetadataLocalStorage } from '@anticrm/ui'
 
   import Form from './Form.svelte'
-  import { join, signUpJoin } from '../utils'
+  import { checkJoined, join, signUpJoin } from '../utils'
 
   import login from '../plugin'
   import { workbenchId } from '@anticrm/workbench'
+  import { onMount } from 'svelte'
 
   const location = getCurrentLocation()
   let page = 'login'
@@ -88,6 +89,27 @@
   $: secondaryButtonLabel = page === 'login' ? login.string.SignUp : undefined
   $: secondaryButtonAction = () => {
     page = 'signUp'
+  }
+
+  onMount(() => {
+    check()
+  })
+
+  async function check () {
+    if (location.query?.inviteId === undefined || location.query?.inviteId === null) return
+    status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
+    const [, result] = await checkJoined(location.query.inviteId)
+    status = OK
+    if (result !== undefined) {
+    const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
+      setMetadata(login.metadata.LoginToken, result.token)
+      tokens[result.workspace] = result.token
+      setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
+      setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)
+      setMetadataLocalStorage(login.metadata.LoginEmail, result.email)
+
+      navigate({ path: [workbenchId, result.workspace] })
+    }
   }
 </script>
 
