@@ -92,7 +92,7 @@
     const setting = settings.get(notification.type)
     const enabled = setting?.enabled ?? provider?.default
     if (!enabled) return
-    if (setting?.modifiedOn ?? notification.modifiedOn < 0) return
+    if ((setting?.modifiedOn ?? notification.modifiedOn) < 0) return
     if (Notification.permission === 'granted') {
       await notify(text, notification)
     } else if (Notification.permission !== 'denied') {
@@ -105,7 +105,7 @@
 
   async function notify (text: string, notification: PlatformNotification): Promise<void> {
     const lastView = $lastViews.get(lastViewId)
-    if (lastView ?? notification.modifiedOn > 0) {
+    if ((lastView ?? notification.modifiedOn) > 0) {
       // eslint-disable-next-line
       new Notification(text, { tag: notification._id })
       await notificationClient.updateLastView(
