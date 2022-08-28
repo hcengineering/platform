@@ -101,7 +101,7 @@
     const [, result] = await checkJoined(location.query.inviteId)
     status = OK
     if (result !== undefined) {
-    const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
+      const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
       setMetadata(login.metadata.LoginToken, result.token)
       tokens[result.workspace] = result.token
       setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
