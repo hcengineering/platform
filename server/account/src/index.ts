@@ -625,6 +625,16 @@ export async function removeWorkspace (db: Db, email: string, workspace: string)
 /**
  * @public
  */
+export async function checkJoin (db: Db, token: string, inviteId: ObjectId): Promise<WorkspaceLoginInfo> {
+  const { email } = decodeToken(token)
+  const invite = await getInvite(db, inviteId)
+  const workspace = await checkInvite(invite, email)
+  return await selectWorkspace(db, token, workspace)
+}
+
+/**
+ * @public
+ */
 export async function dropWorkspace (db: Db, workspace: string): Promise<void> {
   const ws = await getWorkspace(db, workspace)
   if (ws === null) {
@@ -735,6 +745,7 @@ function wrap (f: (db: Db, ...args: any[]) => Promise<any>) {
 export const methods = {
   login: wrap(login),
   join: wrap(join),
+  checkJoin: wrap(checkJoin),
   signUpJoin: wrap(signUpJoin),
   selectWorkspace: wrap(selectWorkspace),
   getUserWorkspaces: wrap(getUserWorkspaces),

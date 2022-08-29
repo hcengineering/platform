@@ -268,6 +268,56 @@ export async function selectWorkspace (workspace: string): Promise<[Status, Work
   }
 }
 
+export async function checkJoined (inviteId: string): Promise<[Status, WorkspaceLoginInfo | undefined]> {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+
+  if (accountsUrl === undefined) {
+    throw new Error('accounts url not specified')
+  }
+
+  const overrideToken = getMetadata(login.metadata.OverrideLoginToken)
+  const email = fetchMetadataLocalStorage(login.metadata.LoginEmail) ?? ''
+  if (overrideToken !== undefined) {
+    const endpoint = getMetadata(login.metadata.OverrideEndpoint)
+    if (endpoint !== undefined) {
+      return [OK, { token: overrideToken, endpoint, email, workspace: DEV_WORKSPACE }]
+    }
+  }
+
+  let token = getMetadata(login.metadata.LoginToken)
+  if (token === undefined) {
+    const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
+    token = Object.values(tokens)[0]
+    if (token === undefined) {
+      const loc = getCurrentLocation()
+      loc.path[1] = 'login'
+      loc.path.length = 2
+      navigate(loc)
+      return [unknownStatus('Please login'), undefined]
+    }
+  }
+
+  const request: Request<[string]> = {
+    method: 'checkJoin',
+    params: [inviteId]
+  }
+
+  try {
+    const response = await fetch(accountsUrl, {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
+      body: serialize(request)
+    })
+    const result: Response<any> = await response.json()
+    return [result.error ?? OK, result.result]
+  } catch (err) {
+    return [unknownError(err), undefined]
+  }
+}
+
 export async function getInviteLink (): Promise<string> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
