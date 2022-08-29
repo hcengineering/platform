@@ -43,6 +43,7 @@
     "@anticrm/notification": "~0.6.0",
     "@anticrm/presentation": "~0.6.2",
     "@anticrm/setting": "~0.6.1",
-    "fast-equals": "^2.0.3"
+    "fast-equals": "^2.0.3",
+    "@anticrm/text-editor": "~0.6.0"
   }
 }

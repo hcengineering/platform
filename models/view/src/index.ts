@@ -34,6 +34,7 @@ import type {
   FilterMode,
   HTMLPresenter,
   IgnoreActions,
+  InlineAttributEditor,
   KeyBinding,
   KeyFilter,
   LinkPresenter,
@@ -116,6 +117,11 @@ export class TCollectionPresenter extends TClass implements CollectionPresenter 
 export class TCollectionEditor extends TClass implements CollectionEditor {
   editor!: AnyComponent
   inlineEditor?: AnyComponent
+}
+
+@Mixin(view.mixin.InlineAttributEditor, core.class.Class)
+export class TInlineAttributEditor extends TClass implements InlineAttributEditor {
+  editor!: AnyComponent
 }
 
 @Mixin(view.mixin.ArrayEditor, core.class.Class)
@@ -292,7 +298,8 @@ export function createModel (builder: Builder): void {
     TIgnoreActions,
     TPreviewPresenter,
     TLinkPresenter,
-    TArrayEditor
+    TArrayEditor,
+    TInlineAttributEditor
   )
 
   classPresenter(
@@ -311,6 +318,9 @@ export function createModel (builder: Builder): void {
     view.component.StringEditor,
     view.component.StringEditorPopup
   )
+  builder.mixin(core.class.TypeMarkup, core.class.Class, view.mixin.InlineAttributEditor, {
+    editor: view.component.HTMLEditor
+  })
   classPresenter(builder, core.class.TypeBoolean, view.component.BooleanPresenter, view.component.BooleanEditor)
   classPresenter(builder, core.class.TypeTimestamp, view.component.TimestampPresenter)
   classPresenter(builder, core.class.TypeDate, view.component.DatePresenter, view.component.DateEditor)

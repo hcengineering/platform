@@ -148,7 +148,9 @@ export async function getBlobURL (blob: Blob): Promise<string> {
   })
 }
 
-export type AttributeCategory = 'attribute' | 'collection' | 'array'
+export type AttributeCategory = 'attribute' | 'inplace' | 'collection' | 'array'
+
+export const AttributeCategoryOrder = { attribute: 0, inplace: 1, collection: 2, array: 2 }
 /**
  * @public
  */
@@ -161,6 +163,9 @@ export function getAttributePresenterClass (
   if (hierarchy.isDerived(attrClass, core.class.RefTo)) {
     attrClass = (attribute.type as RefTo<Doc>).to
     category = 'attribute'
+  }
+  if (hierarchy.isDerived(attrClass, core.class.TypeMarkup)) {
+    category = 'inplace'
   }
   if (hierarchy.isDerived(attrClass, core.class.Collection)) {
     attrClass = (attribute.type as Collection<AttachedDoc>).of
