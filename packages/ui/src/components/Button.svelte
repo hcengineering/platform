@@ -147,7 +147,6 @@
   .small {
     height: 1.5rem;
     font-size: 0.75rem;
-    line-height: 0.75rem;
     &.only-icon {
       width: 1.5rem;
     }

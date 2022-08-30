@@ -16,10 +16,12 @@
   import type { Issue } from '@anticrm/tracker'
 
   export let value: Issue | undefined
+
+  export let maxWidth = ''
 </script>
 
 {#if value}
-  <div class="root">
+  <div class="root" style:max-width={maxWidth}>
     <span class="names">
       {#each value.parents as parentInfo}
         <span class="name">{parentInfo.parentTitle}</span>

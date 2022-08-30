@@ -24,6 +24,7 @@
   import tracker from '../../../plugin'
   import IssuePresenter from '../IssuePresenter.svelte'
   import ParentNamesPresenter from '../ParentNamesPresenter.svelte'
+  import EstimationPresenter from './EstimationPresenter.svelte'
   import TimeSpendReportPopup from './TimeSpendReportPopup.svelte'
 
   export let value: string | number | undefined
@@ -73,32 +74,45 @@
     </div>
   </div>
   <Label label={tracker.string.ChildEstimation} />:
-  <Scroller tableFade>
-    <TableBrowser
-      showFilterBar={false}
-      _class={tracker.class.Issue}
-      query={{ _id: { $in: childIds } }}
-      config={['', { key: '$lookup.attachedTo', presenter: ParentNamesPresenter }, 'estimation']}
-      {options}
-    />
-  </Scroller>
+  <div class="h-50">
+    <Scroller tableFade>
+      <TableBrowser
+        showFilterBar={false}
+        _class={tracker.class.Issue}
+        query={{ _id: { $in: childIds } }}
+        config={[
+          '',
+          { key: 'estimation', presenter: EstimationPresenter, label: tracker.string.Estimation },
+          { key: '', presenter: ParentNamesPresenter, props: { maxWidth: '20rem' }, label: tracker.string.Title }
+        ]}
+        {options}
+      />
+    </Scroller>
+  </div>
   <Label label={tracker.string.ReportedTime} />:
-  <Scroller tableFade>
-    <TableBrowser
-      _class={tracker.class.TimeSpendReport}
-      query={{ attachedTo: { $in: [object._id, ...childIds] } }}
-      showFilterBar={false}
-      config={[
-        '$lookup.attachedTo',
-        { key: '$lookup.attachedTo', presenter: ParentNamesPresenter },
-        '',
-        '$lookup.employee',
-        'date',
-        'description'
-      ]}
-      {options}
-    />
-  </Scroller>
+  <div class="h-50">
+    <Scroller tableFade>
+      <TableBrowser
+        _class={tracker.class.TimeSpendReport}
+        query={{ attachedTo: { $in: [object._id, ...childIds] } }}
+        showFilterBar={false}
+        config={[
+          '$lookup.attachedTo',
+          '',
+          '$lookup.employee',
+          {
+            key: '$lookup.attachedTo',
+            presenter: ParentNamesPresenter,
+            props: { maxWidth: '20rem' },
+            label: tracker.string.Title
+          },
+          'date',
+          'description'
+        ]}
+        {options}
+      />
+    </Scroller>
+  </div>
   <svelte:fragment slot="buttons">
     <Button
       icon={IconAdd}
@@ -106,7 +120,7 @@
       on:click={(event) => {
         showPopup(
           TimeSpendReportPopup,
-          { issueId: object._id, issueClass: object._class, space: object.space },
+          { issueId: object._id, issueClass: object._class, space: object.space, assignee: object.assignee },
           eventToHTMLElement(event)
         )
       }}
