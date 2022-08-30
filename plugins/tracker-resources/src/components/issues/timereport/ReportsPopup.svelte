@@ -21,6 +21,7 @@
   import { TableBrowser } from '@anticrm/view-resources'
   import tracker from '../../../plugin'
   import IssuePresenter from '../IssuePresenter.svelte'
+  import ParentNamesPresenter from '../ParentNamesPresenter.svelte'
   import TimeSpendReportPopup from './TimeSpendReportPopup.svelte'
   export let issue: Issue
 
@@ -36,7 +37,7 @@
   function addReport (event: MouseEvent): void {
     showPopup(
       TimeSpendReportPopup,
-      { issueId: issue._id, issueClass: issue._class, space: issue.space },
+      { issueId: issue._id, issueClass: issue._class, space: issue.space, assignee: issue.assignee },
       eventToHTMLElement(event)
     )
   }
@@ -52,24 +53,29 @@
   <svelte:fragment slot="header">
     <IssuePresenter value={issue} disableClick />
   </svelte:fragment>
-  <Scroller tableFade>
-    <TableBrowser
-      showFilterBar={false}
-      _class={tracker.class.TimeSpendReport}
-      query={{ attachedTo: { $in: [issue._id, ...issue.childInfo.map((it) => it.childId)] } }}
-      config={[
-        '$lookup.attachedTo',
-        '$lookup.attachedTo.title',
-        '',
-        '$lookup.employee',
-        'description',
-        'date',
-        'modifiedOn',
-        'modifiedBy'
-      ]}
-      {options}
-    />
-  </Scroller>
+  <div class="h-50">
+    <Scroller tableFade>
+      <TableBrowser
+        showFilterBar={false}
+        _class={tracker.class.TimeSpendReport}
+        query={{ attachedTo: { $in: [issue._id, ...issue.childInfo.map((it) => it.childId)] } }}
+        config={[
+          '$lookup.attachedTo',
+          '',
+          '$lookup.employee',
+          {
+            key: '$lookup.attachedTo',
+            presenter: ParentNamesPresenter,
+            props: { maxWidth: '20rem' },
+            label: tracker.string.Title
+          },
+          'date',
+          'description'
+        ]}
+        {options}
+      />
+    </Scroller>
+  </div>
   <svelte:fragment slot="buttons">
     <Button icon={IconAdd} size={'large'} on:click={addReport} />
   </svelte:fragment>

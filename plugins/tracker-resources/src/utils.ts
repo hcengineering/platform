@@ -562,6 +562,8 @@ export function getSprintDays (value: Sprint): string {
 }
 
 export function getDayOfSprint (startDate: number, now: number): number {
+  startDate = new Date(startDate).setHours(0, 0)
+  now = new Date(now).setHours(0, 0)
   const days = Math.floor(Math.abs((1 + now - startDate) / 1000 / 60 / 60 / 24))
   const stDate = new Date(startDate)
   const stDateDate = stDate.getDate()

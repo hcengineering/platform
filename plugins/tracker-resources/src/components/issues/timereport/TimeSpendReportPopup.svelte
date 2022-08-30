@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact from '@anticrm/contact'
+  import contact, { Employee } from '@anticrm/contact'
   import { AttachedData, Class, DocumentUpdate, Ref, Space } from '@anticrm/core'
   import type { IntlString } from '@anticrm/platform'
   import presentation, { Card, getClient, UserBox } from '@anticrm/presentation'
@@ -24,6 +24,7 @@
   export let issueId: Ref<Issue>
   export let issueClass: Ref<Class<Issue>>
   export let space: Ref<Space>
+  export let assignee: Ref<Employee> | undefined
 
   export let value: TimeSpendReport | undefined
   export let placeholder: IntlString = tracker.string.TimeSpendReportValue
@@ -37,7 +38,7 @@
     date: value?.date ?? Date.now(),
     description: value?.description ?? '',
     value: value?.value,
-    employee: value?.employee ?? null
+    employee: value?.employee ?? assignee ?? null
   }
   async function create (): Promise<void> {
     if (value === undefined) {

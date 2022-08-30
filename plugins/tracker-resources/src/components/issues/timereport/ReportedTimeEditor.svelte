@@ -29,7 +29,7 @@
   function addTimeReport (event: MouseEvent): void {
     showPopup(
       TimeSpendReportPopup,
-      { issueId: object._id, issueClass: object._class, space: object.space },
+      { issueId: object._id, issueClass: object._class, space: object.space, assignee: object.assignee },
       eventToHTMLElement(event)
     )
   }
