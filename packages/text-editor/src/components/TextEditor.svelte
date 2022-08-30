@@ -96,12 +96,16 @@
     editor.commands.toggleCodeBlock()
   }
   let needFocus = false
+
+  let focused = false
   export function focus (): void {
     needFocus = true
   }
 
   $: if (editor && needFocus) {
-    editor.commands.focus()
+    if (!focused) {
+      editor.commands.focus()
+    }
     needFocus = false
   }
 
@@ -159,10 +163,12 @@
           // force re-render so `editor.isActive` works as expected
           editor = editor
         },
-        onBlur: () => {
-          dispatch('blur', editor.getHTML())
+        onBlur: ({ event }) => {
+          focused = false
+          dispatch('blur', event)
         },
         onFocus: () => {
+          focused = true
           dispatch('focus', editor.getHTML())
         },
         onUpdate: () => {

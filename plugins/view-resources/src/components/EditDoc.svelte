@@ -20,6 +20,8 @@
   import { Panel } from '@anticrm/panel'
   import { Asset, getResource, translate } from '@anticrm/platform'
   import {
+    AttributeCategory,
+    AttributeCategoryOrder,
     AttributesBar,
     createQuery,
     getAttributePresenterClass,
@@ -29,7 +31,7 @@
   import { AnyComponent, Button, Component } from '@anticrm/ui'
   import view from '@anticrm/view'
   import { createEventDispatcher, onDestroy } from 'svelte'
-  import { collectionsFilter, getCollectionCounter, getFiltredKeys } from '../utils'
+  import { fieldsFilter, getCollectionCounter, getFiltredKeys } from '../utils'
   import ActionContext from './ActionContext.svelte'
   import DocAttributeBar from './DocAttributeBar.svelte'
   import UpDownNavigator from './UpDownNavigator.svelte'
@@ -73,7 +75,7 @@
   }
 
   let keys: KeyedAttribute[] = []
-  let collectionEditors: { key: KeyedAttribute; editor: AnyComponent }[] = []
+  let fieldEditors: { key: KeyedAttribute; editor: AnyComponent; category: AttributeCategory }[] = []
 
   let mixins: Mixin<Doc>[] = []
 
@@ -97,9 +99,10 @@
   let ignoreKeys: string[] = []
   let allowedCollections: string[] = []
   let collectionArrays: string[] = []
+  let inplaceAttributes: string[] = []
   let ignoreMixins: Set<Ref<Mixin<Doc>>> = new Set<Ref<Mixin<Doc>>>()
 
-  async function updateKeys (): Promise<void> {
+  async function updateKeys (showAllMixins: boolean): Promise<void> {
     const keysMap = new Map(getFiltredKeys(hierarchy, realObjectClass, ignoreKeys).map((p) => [p.attr._id, p]))
     for (const m of mixins) {
       const mkeys = getFiltredKeys(hierarchy, m._id, ignoreKeys)
@@ -108,17 +111,22 @@
       }
     }
     const filtredKeys = Array.from(keysMap.values())
-    keys = collectionsFilter(hierarchy, filtredKeys, false, allowedCollections)
+    keys = fieldsFilter(hierarchy, filtredKeys, false, allowedCollections).map((it) => it.key)
 
-    const collectionKeys = collectionsFilter(hierarchy, filtredKeys, true, collectionArrays)
-    const editors: { key: KeyedAttribute; editor: AnyComponent }[] = []
-    for (const k of collectionKeys) {
-      if (allowedCollections.includes(k.key)) continue
-      const editor = await getCollectionEditor(k)
+    const fieldKeys = fieldsFilter(hierarchy, filtredKeys, true, collectionArrays)
+    const editors: { key: KeyedAttribute; editor: AnyComponent; category: AttributeCategory }[] = []
+    const newInplaceAttributes = []
+    for (const k of fieldKeys) {
+      if (allowedCollections.includes(k.key.key)) continue
+      const editor = await getFieldEditor(k.key)
       if (editor === undefined) continue
-      editors.push({ key: k, editor })
+      if (k.category === 'inplace') {
+        newInplaceAttributes.push(k.key.key)
+      }
+      editors.push({ key: k.key, editor, category: k.category })
     }
-    collectionEditors = editors
+    inplaceAttributes = newInplaceAttributes
+    fieldEditors = editors.sort((a, b) => AttributeCategoryOrder[a.category] - AttributeCategoryOrder[b.category])
   }
 
   async function getEditor (_class: Ref<Class<Doc>>): Promise<AnyComponent> {
@@ -129,18 +137,24 @@
   }
 
   let mainEditor: AnyComponent | undefined
-  $: getEditorOrDefault(realObjectClass)
+  $: getEditorOrDefault(realObjectClass, showAllMixins)
 
-  async function getEditorOrDefault (_class: Ref<Class<Doc>>): Promise<void> {
+  async function getEditorOrDefault (_class: Ref<Class<Doc>>, showAllMixins: boolean): Promise<void> {
     parentClass = getParentClass(_class)
     mainEditor = await getEditor(_class)
-    updateKeys()
+    updateKeys(showAllMixins)
   }
 
-  async function getCollectionEditor (key: KeyedAttribute): Promise<AnyComponent | undefined> {
+  async function getFieldEditor (key: KeyedAttribute): Promise<AnyComponent | undefined> {
     const attrClass = getAttributePresenterClass(hierarchy, key.attr)
     const clazz = hierarchy.getClass(attrClass.attrClass)
-    const mixinRef = attrClass.category === 'array' ? view.mixin.ArrayEditor : view.mixin.CollectionEditor
+    const mix = {
+      array: view.mixin.ArrayEditor,
+      collection: view.mixin.CollectionEditor,
+      inplace: view.mixin.InlineAttributEditor,
+      attribute: view.mixin.AttributeEditor
+    }
+    const mixinRef = mix[attrClass.category]
     const editorMixin = hierarchy.as(clazz, mixinRef)
     return editorMixin.editor
   }
@@ -273,15 +287,15 @@
           <Component
             is={headerEditor}
             props={{ object, keys, mixins, ignoreKeys, vertical: dir === 'column', allowedCollections }}
-            on:update={updateKeys}
+            on:update={() => updateKeys(showAllMixins)}
           />
         {:else if dir === 'column'}
           <DocAttributeBar
             {object}
             {mixins}
-            ignoreKeys={[...ignoreKeys, ...collectionArrays]}
+            ignoreKeys={[...ignoreKeys, ...collectionArrays, ...inplaceAttributes]}
             {allowedCollections}
-            on:update={updateKeys}
+            on:update={() => updateKeys(showAllMixins)}
           />
         {:else}
           <AttributesBar {object} _class={realObjectClass} {keys} />
@@ -303,7 +317,7 @@
         }}
       />
     {/if}
-    {#each collectionEditors as collection}
+    {#each fieldEditors as collection}
       {#if collection.editor}
         <div class="mt-6">
           <Component

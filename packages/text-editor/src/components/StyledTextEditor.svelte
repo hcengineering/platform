@@ -17,12 +17,26 @@
 
   import { Scroller, showPopup } from '@anticrm/ui'
   import { createEventDispatcher } from 'svelte'
-  import Emoji from './icons/Emoji.svelte'
-  import GIF from './icons/GIF.svelte'
-  import TextStyle from './icons/TextStyle.svelte'
-  import EmojiPopup from './EmojiPopup.svelte'
-  import TextEditor from './TextEditor.svelte'
   import textEditorPlugin from '../plugin'
+  import EmojiPopup from './EmojiPopup.svelte'
+  import Emoji from './icons/Emoji.svelte'
+  import TextStyle from './icons/TextStyle.svelte'
+  import TextEditor from './TextEditor.svelte'
+
+  import { Asset } from '@anticrm/platform'
+  import { AnySvelteComponent } from '@anticrm/ui'
+  import { FormatMode, FORMAT_MODES, RefInputAction, TextEditorHandler } from '../types'
+  import Bold from './icons/Bold.svelte'
+  import Code from './icons/Code.svelte'
+  import CodeBlock from './icons/CodeBlock.svelte'
+  import Italic from './icons/Italic.svelte'
+  import Link from './icons/Link.svelte'
+  import ListBullet from './icons/ListBullet.svelte'
+  import ListNumber from './icons/ListNumber.svelte'
+  import Quote from './icons/Quote.svelte'
+  import Strikethrough from './icons/Strikethrough.svelte'
+  import LinkPopup from './LinkPopup.svelte'
+  import StyleButton from './StyleButton.svelte'
 
   const dispatch = createEventDispatcher()
 
@@ -32,6 +46,7 @@
   export let isScrollable: boolean = true
   export let focusable: boolean = false
   export let maxHeight: 'max' | 'card' | string = 'max'
+  export let withoutTopBorder = false
 
   let textEditor: TextEditor
 
@@ -42,16 +57,160 @@
     textEditor.focus()
   }
 
-  function openEmojiPopup (ev: MouseEvent & { currentTarget: EventTarget & HTMLDivElement }) {
-    showPopup(EmojiPopup, {}, ev.target as HTMLElement, (emoji) => {
-      if (!emoji) return
-      textEditor.insertText(emoji)
+  $: varsStyle = maxHeight === 'card' ? 'calc(70vh - 12.5rem)' : maxHeight === 'max' ? 'max-content' : maxHeight
+
+  let isFormatting = false
+  let activeModes = new Set<FormatMode>()
+  let isSelectionEmpty = true
+
+  interface RefAction {
+    label: IntlString
+    icon: Asset | AnySvelteComponent
+    action: RefInputAction
+    order: number
+  }
+  const defActions: RefAction[] = [
+    {
+      label: textEditorPlugin.string.TextStyle,
+      icon: TextStyle,
+      action: () => {
+        isFormatting = !isFormatting
+        textEditor.focus()
+      },
+      order: 2000
+    },
+    {
+      label: textEditorPlugin.string.Emoji,
+      icon: Emoji,
+      action: (element) => {
+        showPopup(
+          EmojiPopup,
+          {},
+          element,
+          (emoji) => {
+            if (!emoji) return
+            textEditor.insertText(emoji)
+            textEditor.focus()
+          },
+          () => {}
+        )
+      },
+      order: 3000
+    }
+    // {
+    //   label: textEditorPlugin.string.GIF,
+    //   icon: GIF,
+    //   action: () => {},
+    //   order: 4000
+    // }
+  ]
+
+  function updateFormattingState () {
+    activeModes = new Set(FORMAT_MODES.filter(textEditor.checkIsActive))
+    isSelectionEmpty = textEditor.checkIsSelectionEmpty()
+  }
+
+  function getToggler (toggle: () => void) {
+    return () => {
+      toggle()
+      textEditor.focus()
+      updateFormattingState()
+    }
+  }
+
+  async function formatLink (): Promise<void> {
+    const link = textEditor.getLink()
+
+    showPopup(LinkPopup, { link }, undefined, undefined, (newLink) => {
+      if (newLink === '') {
+        textEditor.unsetLink()
+      } else {
+        textEditor.setLink(newLink)
+      }
     })
   }
-  $: varsStyle = maxHeight === 'card' ? 'calc(70vh - 12.5rem)' : maxHeight === 'max' ? 'max-content' : maxHeight
+  const editorHandler: TextEditorHandler = {
+    insertText: (text) => {
+      textEditor.insertText(text)
+    }
+  }
+  function handleAction (a: RefAction, evt?: Event): void {
+    a.action(evt?.target as HTMLElement, editorHandler)
+  }
 </script>
 
 <div class="ref-container">
+  {#if isFormatting}
+    <div class="formatPanel buttons-group xsmall-gap mb-4" class:withoutTopBorder>
+      <StyleButton
+        icon={Bold}
+        size={'small'}
+        selected={activeModes.has('bold')}
+        showTooltip={{ label: textEditorPlugin.string.Bold }}
+        on:click={getToggler(textEditor.toggleBold)}
+      />
+      <StyleButton
+        icon={Italic}
+        size={'small'}
+        selected={activeModes.has('italic')}
+        showTooltip={{ label: textEditorPlugin.string.Italic }}
+        on:click={getToggler(textEditor.toggleItalic)}
+      />
+      <StyleButton
+        icon={Strikethrough}
+        size={'small'}
+        selected={activeModes.has('strike')}
+        showTooltip={{ label: textEditorPlugin.string.Strikethrough }}
+        on:click={getToggler(textEditor.toggleStrike)}
+      />
+      <StyleButton
+        icon={Link}
+        size={'small'}
+        selected={activeModes.has('link')}
+        disabled={isSelectionEmpty && !activeModes.has('link')}
+        showTooltip={{ label: textEditorPlugin.string.Link }}
+        on:click={formatLink}
+      />
+      <div class="buttons-divider" />
+      <StyleButton
+        icon={ListNumber}
+        size={'small'}
+        selected={activeModes.has('orderedList')}
+        showTooltip={{ label: textEditorPlugin.string.OrderedList }}
+        on:click={getToggler(textEditor.toggleOrderedList)}
+      />
+      <StyleButton
+        icon={ListBullet}
+        size={'small'}
+        selected={activeModes.has('bulletList')}
+        showTooltip={{ label: textEditorPlugin.string.BulletedList }}
+        on:click={getToggler(textEditor.toggleBulletList)}
+      />
+      <div class="buttons-divider" />
+      <StyleButton
+        icon={Quote}
+        size={'small'}
+        selected={activeModes.has('blockquote')}
+        showTooltip={{ label: textEditorPlugin.string.Blockquote }}
+        on:click={getToggler(textEditor.toggleBlockquote)}
+      />
+      <div class="buttons-divider" />
+      <StyleButton
+        icon={Code}
+        size={'small'}
+        selected={activeModes.has('code')}
+        showTooltip={{ label: textEditorPlugin.string.Code }}
+        on:click={getToggler(textEditor.toggleCode)}
+      />
+      <StyleButton
+        icon={CodeBlock}
+        size={'small'}
+        selected={activeModes.has('codeBlock')}
+        showTooltip={{ label: textEditorPlugin.string.CodeBlock }}
+        on:click={getToggler(textEditor.toggleCodeBlock)}
+      />
+    </div>
+  {/if}
   <div class="textInput" class:focusable>
     <div class="inputMsg" class:scrollable={isScrollable} style="--texteditor-maxheight: {varsStyle};">
       {#if isScrollable}
@@ -69,6 +228,7 @@
             on:blur
             on:focus
             supportSubmit={false}
+            on:selection-update={updateFormattingState}
           />
         </Scroller>
       {:else}
@@ -85,15 +245,18 @@
           on:blur
           on:focus
           supportSubmit={false}
+          on:selection-update={updateFormattingState}
         />
       {/if}
     </div>
   </div>
   {#if showButtons}
     <div class="buttons">
-      <div class="tool"><TextStyle size={'large'} /></div>
-      <div class="tool" on:click={openEmojiPopup}><Emoji size={'large'} /></div>
-      <div class="tool"><GIF size={'large'} /></div>
+      {#each defActions as a}
+        <div class="p-1">
+          <StyleButton icon={a.icon} size={'large'} on:click={(evt) => handleAction(a, evt)} />
+        </div>
+      {/each}
       <div class="flex-grow">
         <slot />
       </div>
@@ -146,25 +309,8 @@
       }
     }
     .buttons {
-      margin: 10px 0 0 8px;
       display: flex;
       align-items: center;
-
-      .tool {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: 20px;
-        height: 20px;
-        opacity: 0.3;
-        cursor: pointer;
-        &:hover {
-          opacity: 1;
-        }
-      }
-      .tool + .tool {
-        margin-left: 16px;
-      }
     }
   }
 </style>

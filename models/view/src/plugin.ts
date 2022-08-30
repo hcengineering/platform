@@ -57,7 +57,8 @@ export default mergeIds(viewId, view, {
     YoutubePresenter: '' as AnyComponent,
     GithubPresenter: '' as AnyComponent,
     ClassPresenter: '' as AnyComponent,
-    EnumEditor: '' as AnyComponent
+    EnumEditor: '' as AnyComponent,
+    HTMLEditor: '' as AnyComponent
   },
   string: {
     Table: '' as IntlString,

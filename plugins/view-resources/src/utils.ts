@@ -29,7 +29,7 @@ import core, {
 } from '@anticrm/core'
 import type { IntlString } from '@anticrm/platform'
 import { getResource } from '@anticrm/platform'
-import { getAttributePresenterClass, KeyedAttribute } from '@anticrm/presentation'
+import { AttributeCategory, getAttributePresenterClass, KeyedAttribute } from '@anticrm/presentation'
 import { AnyComponent, ErrorPresenter, getCurrentLocation, getPlatformColorForText, locationToUrl } from '@anticrm/ui'
 import type { BuildModelOptions, Viewlet } from '@anticrm/view'
 import view, { AttributeModel, BuildModelKey } from '@anticrm/view'
@@ -406,18 +406,20 @@ export function getFiltredKeys (
   return filterKeys(hierarchy, keys, ignoreKeys)
 }
 
-export function collectionsFilter (
+export function fieldsFilter (
   hierarchy: Hierarchy,
   keys: KeyedAttribute[],
   get: boolean,
   include: string[]
-): KeyedAttribute[] {
-  const result: KeyedAttribute[] = []
+): Array<{ key: KeyedAttribute, category: AttributeCategory }> {
+  const result: Array<{ key: KeyedAttribute, category: AttributeCategory }> = []
+
   for (const key of keys) {
+    const cl = getAttributePresenterClass(hierarchy, key.attr)
     if (include.includes(key.key)) {
-      result.push(key)
-    } else if (isCollectionAttr(hierarchy, key) === get) {
-      result.push(key)
+      result.push({ key: key, category: cl.category })
+    } else if ((cl.category === 'collection') === get || (cl.category === 'inplace') === get) {
+      result.push({ key, category: cl.category })
     }
   }
   return result

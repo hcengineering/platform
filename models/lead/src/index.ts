@@ -68,7 +68,7 @@ export class TCustomer extends TContact implements Customer {
   @Prop(Collection(lead.class.Lead), lead.string.Leads)
   leads?: number
 
-  @Prop(TypeString(), core.string.Description)
+  @Prop(TypeMarkup(), core.string.Description)
   @Index(IndexKind.FullText)
   description!: string
 

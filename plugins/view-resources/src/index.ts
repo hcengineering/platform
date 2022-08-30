@@ -52,6 +52,7 @@ import TimestampPresenter from './components/TimestampPresenter.svelte'
 import UpDownNavigator from './components/UpDownNavigator.svelte'
 import ViewletSettingButton from './components/ViewletSettingButton.svelte'
 import ValueSelector from './components/ValueSelector.svelte'
+import HTMLEditor from './components/HTMLEditor.svelte'
 import {
   afterResult,
   beforeResult,
@@ -139,7 +140,8 @@ export default async (): Promise<Resources> => ({
     BooleanTruePresenter,
     EnumEditor,
     FilterTypePopup,
-    ValueSelector
+    ValueSelector,
+    HTMLEditor
   },
   popup: {
     PositionElementAlignment
