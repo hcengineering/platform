@@ -45,6 +45,7 @@ import SkillsView from './components/SkillsView.svelte'
 import TemplatesIcon from './components/TemplatesIcon.svelte'
 import Vacancies from './components/Vacancies.svelte'
 import VacancyCountPresenter from './components/VacancyCountPresenter.svelte'
+import VacancyItem from './components/VacancyItem.svelte'
 import VacancyItemPresenter from './components/VacancyItemPresenter.svelte'
 import VacancyModifiedPresenter from './components/VacancyModifiedPresenter.svelte'
 import VacancyPresenter from './components/VacancyPresenter.svelte'
@@ -111,6 +112,30 @@ export async function queryApplication (client: Client, search: string): Promise
     title: `${shortLabel}-${e.number}`,
     icon: recruit.icon.Application,
     component: ApplicationItem
+  }))
+}
+export async function queryVacancy (client: Client, search: string): Promise<ObjectSearchResult[]> {
+  const _class = recruit.class.Vacancy
+
+  const named = new Map((await client.findAll(_class, { $search: search }, { limit: 200 })).map((e) => [e._id, e]))
+
+  if (named.size === 0) {
+    const numbered = await client.findAll(_class, {}, { limit: 5000, projection: { _id: 1, name: 1, _class: 1 } })
+    return numbered
+      .filter((it) => it.name.includes(search))
+      .map((e) => ({
+        doc: e,
+        title: `${e.name}`,
+        icon: recruit.icon.Vacancy,
+        component: VacancyItem
+      }))
+  }
+
+  return Array.from(named.values()).map((e) => ({
+    doc: e,
+    title: `${e.name}`,
+    icon: recruit.icon.Vacancy,
+    component: VacancyItem
   }))
 }
 
@@ -229,7 +254,8 @@ export default async (): Promise<Resources> => ({
     ApplicantFilter
   },
   completion: {
-    ApplicationQuery: async (client: Client, query: string) => await queryApplication(client, query)
+    ApplicationQuery: async (client: Client, query: string) => await queryApplication(client, query),
+    VacancyQuery: async (client: Client, query: string) => await queryVacancy(client, query)
   },
   function: {
     ApplicationTitleProvider: getApplicationTitle,

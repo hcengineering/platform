@@ -126,7 +126,7 @@ export function filterActions (
   const ancestors = hierarchy.getAncestors(clazz._id)
 
   for (const cl of ancestors) {
-    const ignoreActions = hierarchy.as(hierarchy.getClass(cl), view.mixin.IgnoreActions)
+    const ignoreActions = hierarchy.as(hierarchy.getClassOrInterface(cl), view.mixin.IgnoreActions)
     if (ignoreActions?.actions !== undefined) {
       ignore.push(...ignoreActions.actions)
     }

@@ -92,6 +92,14 @@ export class Hierarchy {
     return data
   }
 
+  getClassOrInterface (_class: Ref<Class<Obj>>): Class<Obj> {
+    const data = this.classifiers.get(_class)
+    if (data === undefined) {
+      throw new Error('class not found: ' + _class)
+    }
+    return data
+  }
+
   getInterface (_interface: Ref<Interface<Doc>>): Interface<Doc> {
     const data = this.classifiers.get(_interface)
     if (data === undefined || !this.isInterface(data)) {

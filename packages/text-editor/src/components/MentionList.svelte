@@ -16,7 +16,8 @@
 <script lang="ts">
   import { getResource } from '@anticrm/platform'
   import { getClient, ObjectSearchCategory, ObjectSearchResult } from '@anticrm/presentation'
-  import { ActionIcon, EditWithIcon, IconSearch, Label, showPopup } from '@anticrm/ui'
+  import { Button, createFocusManager, EditWithIcon, IconSearch, Label, showPopup } from '@anticrm/ui'
+  import FocusHandler from '@anticrm/ui/src/components/FocusHandler.svelte'
   import { onDestroy, onMount } from 'svelte'
   import plugin from '../plugin'
   import DummyPopup from './DummyPopup.svelte'
@@ -113,7 +114,10 @@
     }
   }
   $: updateItems(category, query)
+  const manager = createFocusManager()
 </script>
+
+<FocusHandler {manager} />
 
 <svelte:window on:resize={() => updateStyle()} />
 <div
@@ -129,13 +133,16 @@
   on:keydown={onKeyDown}
 >
   <div class="ap-category">
-    {#each categories as c}
-      <div class="ap-categoryItem" class:selected={category.label === c.label}>
-        <ActionIcon
-          label={c.label}
+    {#each categories as c, i}
+      <div class="ap-categoryItem">
+        <Button
+          focusIndex={i + 1}
+          kind={'transparent'}
+          showTooltip={{ label: c.label }}
+          selected={category._id === c._id}
           icon={c.icon}
           size={'medium'}
-          action={() => {
+          on:click={() => {
             category = c
             onCategory(c)
             updateItems(c, query)

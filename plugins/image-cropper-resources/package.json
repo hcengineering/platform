@@ -5,7 +5,7 @@
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
   "scripts": {
-    "build": "tsc --noEmit && echo build",
+    "build": "tsc --incremental --noEmit --outDir ./dist_cache && echo build",
     "build:docs": "api-extractor run --local",
     "lint": "svelte-check && eslint",
     "lint:fix": "eslint --fix src",

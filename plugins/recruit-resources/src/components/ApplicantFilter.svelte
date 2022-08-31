@@ -13,7 +13,6 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, Ref } from '@anticrm/core'
   import { getClient } from '@anticrm/presentation'
   import { SelectPopup } from '@anticrm/ui'
   import view, { Filter, FilterMode } from '@anticrm/view'
@@ -21,7 +20,7 @@
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
 
-  export let _class: Ref<Class<Doc>>
+  // export let _class: Ref<Class<Doc>>
   export let filter: Filter
   export let onChange: (e: Filter) => void
 

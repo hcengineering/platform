@@ -342,8 +342,12 @@
         color: var(--theme-content-trans-color);
         cursor: pointer;
 
-        &.selected { color: var(--theme-caption-color); }
-        &:hover { color: var(--theme-content-accent-color); }
+        &.selected { 
+          color: var(--theme-content-accent-color) !important; 
+        }
+        &:hover { 
+          color: var(--theme-content-accent-color); 
+        }
       }
 
       &::-webkit-scrollbar:horizontal { height: .125rem; }

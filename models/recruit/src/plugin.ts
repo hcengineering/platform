@@ -44,6 +44,7 @@ export default mergeIds(recruitId, recruit, {
     RecruitApplication: '' as IntlString,
     TalentPools: '' as IntlString,
     SearchApplication: '' as IntlString,
+    SearchVacancy: '' as IntlString,
     Application: '' as IntlString,
     AssignedRecruiter: '' as IntlString,
     Due: '' as IntlString,
@@ -88,7 +89,9 @@ export default mergeIds(recruitId, recruit, {
   },
   completion: {
     ApplicationQuery: '' as Resource<ObjectSearchFactory>,
-    ApplicationCategory: '' as Ref<ObjectSearchCategory>
+    ApplicationCategory: '' as Ref<ObjectSearchCategory>,
+    VacancyCategory: '' as Ref<ObjectSearchCategory>,
+    VacancyQuery: '' as Resource<ObjectSearchFactory>
   },
   viewlet: {
     TableCandidate: '' as Ref<Viewlet>,
