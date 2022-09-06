@@ -289,10 +289,6 @@ export async function checkJoined (inviteId: string): Promise<[Status, Workspace
     const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
     token = Object.values(tokens)[0]
     if (token === undefined) {
-      const loc = getCurrentLocation()
-      loc.path[1] = 'login'
-      loc.path.length = 2
-      navigate(loc)
       return [unknownStatus('Please login'), undefined]
     }
   }
