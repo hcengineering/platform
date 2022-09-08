@@ -13,10 +13,10 @@
 // limitations under the License.
 //
 
-import type { Client, Doc, FindResult, ObjQueryType, Ref } from '@anticrm/core'
+import type { Client, Doc, DocumentQuery, FindResult, ObjQueryType, Ref, RelatedDocument } from '@anticrm/core'
 import { IntlString, OK, Resources, Severity, Status, translate } from '@anticrm/platform'
 import { ObjectSearchResult } from '@anticrm/presentation'
-import { Applicant, Candidate } from '@anticrm/recruit'
+import { Applicant, Candidate, Vacancy } from '@anticrm/recruit'
 import task from '@anticrm/task'
 import { showPopup } from '@anticrm/ui'
 import { Filter } from '@anticrm/view'
@@ -73,7 +73,11 @@ export async function applicantValidator (applicant: Applicant, client: Client):
   return OK
 }
 
-export async function queryApplication (client: Client, search: string): Promise<ObjectSearchResult[]> {
+export async function queryApplication (
+  client: Client,
+  search: string,
+  filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }
+): Promise<ObjectSearchResult[]> {
   const _class = recruit.class.Applicant
   const cl = client.getHierarchy().getClass(_class)
   const shortLabel = (await translate(cl.shortLabel ?? ('' as IntlString), {})).toUpperCase()
@@ -82,24 +86,38 @@ export async function queryApplication (client: Client, search: string): Promise
 
   const sequence = (await client.findOne(task.class.Sequence, { attachedTo: _class }))?.sequence ?? 0
 
+  const q: DocumentQuery<Applicant> = { $search: search }
+  if (filter?.in !== undefined || filter?.nin !== undefined) {
+    q._id = {}
+    if (filter.in !== undefined) {
+      q._id.$in = filter.in?.map((it) => it._id as Ref<Applicant>)
+    }
+    if (filter.nin !== undefined) {
+      q._id.$nin = filter.nin?.map((it) => it._id as Ref<Applicant>)
+    }
+  }
   const named = new Map(
-    (
-      await client.findAll(_class, { $search: search }, { limit: 200, lookup: { attachedTo: recruit.mixin.Candidate } })
-    ).map((e) => [e._id, e])
+    (await client.findAll(_class, q, { limit: 200, lookup: { attachedTo: recruit.mixin.Candidate } })).map((e) => [
+      e._id,
+      e
+    ])
   )
   const nids: number[] = []
   if (sequence > 0) {
-    for (let n = 0; n < sequence; n++) {
+    for (let n = 0; n <= sequence; n++) {
       const v = `${n}`
       if (v.includes(search)) {
         nids.push(n)
       }
     }
-    const numbered = await client.findAll<Applicant>(
-      _class,
-      { number: { $in: nids } },
-      { limit: 200, lookup: { attachedTo: recruit.mixin.Candidate } }
-    )
+    const q2: DocumentQuery<Applicant> = { number: { $in: nids } }
+    if (q._id !== undefined) {
+      q2._id = q._id
+    }
+    const numbered = await client.findAll<Applicant>(_class, q2, {
+      limit: 200,
+      lookup: { attachedTo: recruit.mixin.Candidate }
+    })
     for (const d of numbered) {
       if (!named.has(d._id)) {
         named.set(d._id, d)
@@ -114,13 +132,31 @@ export async function queryApplication (client: Client, search: string): Promise
     component: ApplicationItem
   }))
 }
-export async function queryVacancy (client: Client, search: string): Promise<ObjectSearchResult[]> {
+export async function queryVacancy (
+  client: Client,
+  search: string,
+  filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }
+): Promise<ObjectSearchResult[]> {
   const _class = recruit.class.Vacancy
 
-  const named = new Map((await client.findAll(_class, { $search: search }, { limit: 200 })).map((e) => [e._id, e]))
+  const q: DocumentQuery<Vacancy> = { $search: search }
+  if (filter?.in !== undefined || filter?.nin !== undefined) {
+    q._id = {}
+    if (filter.in !== undefined) {
+      q._id.$in = filter.in?.map((it) => it._id as Ref<Vacancy>)
+    }
+    if (filter.nin !== undefined) {
+      q._id.$nin = filter.nin?.map((it) => it._id as Ref<Vacancy>)
+    }
+  }
+  const named = new Map((await client.findAll(_class, q, { limit: 200 })).map((e) => [e._id, e]))
 
   if (named.size === 0) {
-    const numbered = await client.findAll(_class, {}, { limit: 5000, projection: { _id: 1, name: 1, _class: 1 } })
+    const q2: DocumentQuery<Vacancy> = {}
+    if (q._id !== undefined) {
+      q2._id = q._id
+    }
+    const numbered = await client.findAll(_class, q2, { limit: 5000, projection: { _id: 1, name: 1, _class: 1 } })
     return numbered
       .filter((it) => it.name.includes(search))
       .map((e) => ({
@@ -254,8 +290,13 @@ export default async (): Promise<Resources> => ({
     ApplicantFilter
   },
   completion: {
-    ApplicationQuery: async (client: Client, query: string) => await queryApplication(client, query),
-    VacancyQuery: async (client: Client, query: string) => await queryVacancy(client, query)
+    ApplicationQuery: async (
+      client: Client,
+      query: string,
+      filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }
+    ) => await queryApplication(client, query, filter),
+    VacancyQuery: async (client: Client, query: string, filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }) =>
+      await queryVacancy(client, query, filter)
   },
   function: {
     ApplicationTitleProvider: getApplicationTitle,

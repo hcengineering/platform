@@ -13,9 +13,9 @@
 // limitations under the License.
 //
 
-import type { Account, AttachedDoc, Class, Doc, Ref, Space, Timestamp } from '@anticrm/core'
+import type { Account, AttachedDoc, Class, Doc, Ref, RelatedDocument, Space, Timestamp } from '@anticrm/core'
 import type { Employee } from '@anticrm/contact'
-import type { Asset, Plugin } from '@anticrm/platform'
+import type { Asset, Plugin, Resource } from '@anticrm/platform'
 import { IntlString, plugin } from '@anticrm/platform'
 import type { Preference } from '@anticrm/preference'
 import { AnyComponent } from '@anticrm/ui'
@@ -158,5 +158,9 @@ export default plugin(chunterId, {
   },
   app: {
     Chunter: '' as Ref<Doc>
+  },
+  backreference: {
+    // Update list of back references
+    Update: '' as Resource<(source: Doc, key: string, target: RelatedDocument[], label: IntlString) => void>
   }
 })

@@ -40,7 +40,7 @@
       {/if}
       <span class="antiCard-header__title">
         {#if $$slots.title}
-          <slot name="title" />
+          <slot name="title" {label} labelProps={labelProps ?? {}} />
         {:else}
           <Label {label} params={labelProps ?? {}} />
         {/if}

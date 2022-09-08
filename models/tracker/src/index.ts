@@ -15,7 +15,18 @@
 
 import type { Employee } from '@anticrm/contact'
 import contact from '@anticrm/contact'
-import { Domain, DOMAIN_MODEL, FindOptions, IndexKind, Markup, Ref, SortingOrder, Timestamp, Type } from '@anticrm/core'
+import {
+  Domain,
+  DOMAIN_MODEL,
+  FindOptions,
+  IndexKind,
+  Markup,
+  Ref,
+  RelatedDocument,
+  SortingOrder,
+  Timestamp,
+  Type
+} from '@anticrm/core'
 import {
   ArrOf,
   Builder,
@@ -45,6 +56,7 @@ import task from '@anticrm/task'
 import {
   Document,
   Issue,
+  IssueChildInfo,
   IssueParentInfo,
   IssuePriority,
   IssueStatus,
@@ -55,8 +67,7 @@ import {
   SprintStatus,
   Team,
   TimeSpendReport,
-  trackerId,
-  IssueChildInfo
+  trackerId
 } from '@anticrm/tracker'
 import { KeyBinding } from '@anticrm/view'
 import tracker from './plugin'
@@ -201,11 +212,11 @@ export class TIssue extends TAttachedDoc implements Issue {
   @Prop(Collection(tracker.class.Issue), tracker.string.SubIssues)
   subIssues!: number
 
-  @Prop(ArrOf(TypeRef(tracker.class.Issue)), tracker.string.BlockedBy)
-  blockedBy!: Ref<Issue>[]
+  @Prop(ArrOf(TypeRef(core.class.TypeRelatedDocument)), tracker.string.BlockedBy)
+  blockedBy!: RelatedDocument[]
 
-  @Prop(ArrOf(TypeRef(tracker.class.Issue)), tracker.string.RelatedTo)
-  relatedIssue!: Ref<Issue>[]
+  @Prop(ArrOf(TypeRef(core.class.TypeRelatedDocument)), tracker.string.RelatedTo)
+  relations!: RelatedDocument[]
 
   parents!: IssueParentInfo[]
 
@@ -737,6 +748,32 @@ export function createModel (builder: Builder): void {
       }
     },
     tracker.action.NewSubIssue
+  )
+
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.ShowPopup,
+      actionProps: {
+        component: tracker.component.CreateIssue,
+        element: 'top',
+        fillProps: {
+          _object: 'relatedTo',
+          space: 'space'
+        }
+      },
+      label: tracker.string.NewRelatedIssue,
+      icon: tracker.icon.Issue,
+      keyBinding: [],
+      input: 'focus',
+      category: tracker.category.Tracker,
+      target: core.class.Doc,
+      context: {
+        mode: ['context', 'browser', 'editor'],
+        group: 'associate'
+      }
+    },
+    tracker.action.NewRelatedIssue
   )
 
   createAction(

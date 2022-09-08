@@ -13,8 +13,16 @@
 // limitations under the License.
 //
 
-import core, { Ref, Space } from '@anticrm/core'
-import chunter, { ChunterSpace, Channel, ChunterMessage, Message, ThreadMessage, DirectMessage } from '@anticrm/chunter'
+import core, { Data, Doc, DocumentQuery, Ref, RelatedDocument, Space } from '@anticrm/core'
+import chunter, {
+  ChunterSpace,
+  Channel,
+  ChunterMessage,
+  Message,
+  ThreadMessage,
+  DirectMessage,
+  Backlink
+} from '@anticrm/chunter'
 import { NotificationClientImpl } from '@anticrm/notification-resources'
 import { Resources } from '@anticrm/platform'
 import preference from '@anticrm/preference'
@@ -43,6 +51,7 @@ import ConvertDmToPrivateChannelModal from './components/ConvertDmToPrivateChann
 
 import { getDmName } from './utils'
 import { writable } from 'svelte/store'
+import { updateBacklinksList } from './backlinks'
 
 export { default as Header } from './components/Header.svelte'
 export { classIcon } from './utils'
@@ -181,6 +190,21 @@ export function chunterBrowserVisible (spaces: Space[]): boolean {
   return false
 }
 
+async function update (source: Doc, key: string, target: RelatedDocument[], msg: string): Promise<void> {
+  const backlinks: Array<Data<Backlink>> = target.map((it) => ({
+    backlinkId: source._id,
+    backlinkClass: source._class,
+    attachedTo: it._id,
+    attachedToClass: it._class,
+    message: msg,
+    collection: key
+  }))
+
+  const q: DocumentQuery<Backlink> = { backlinkId: source._id, backlinkClass: source._class, collection: key }
+
+  await updateBacklinksList(getClient(), q, backlinks)
+}
+
 export default async (): Promise<Resources> => ({
   component: {
     CommentInput,
@@ -218,5 +242,8 @@ export default async (): Promise<Resources> => ({
     ArchiveChannel,
     UnarchiveChannel,
     ConvertDmToPrivateChannel
+  },
+  backreference: {
+    Update: update
   }
 })

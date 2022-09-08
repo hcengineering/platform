@@ -39,6 +39,7 @@ import {
   TTypeNumber,
   TTypeString,
   TTypeTimestamp,
+  TTypeRelatedDocument,
   TVersion
 } from './core'
 import { TAccount, TSpace } from './security'
@@ -98,6 +99,7 @@ export function createModel (builder: Builder): void {
     TUserStatus,
     TEnum,
     TBlobData,
-    TFulltextData
+    TFulltextData,
+    TTypeRelatedDocument
   )
 }

@@ -47,6 +47,7 @@
   export let focusable: boolean = false
   export let maxHeight: 'max' | 'card' | string = 'max'
   export let withoutTopBorder = false
+  export let useReferences = false
 
   let textEditor: TextEditor
 

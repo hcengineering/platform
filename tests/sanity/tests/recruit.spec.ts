@@ -81,7 +81,7 @@ test.describe('recruit tests', () => {
     // await page.click('.applications-container .flex-row-center .flex-center')
     await page.click('button[id="appls.add"]')
 
-    await page.click('button:has-text("Vacancy")')
+    await page.click('button[id = "space.selector"]')
 
     await page.fill('[placeholder="Search..."]', vacancyId)
     await page.click(`button:has-text("${vacancyId}")`)

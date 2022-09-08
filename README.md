@@ -48,7 +48,7 @@ rushx run-local create-account user1 -p 1234 -f John -l Appleseed # Create accou
 rushx run-local assign-workspace user1 ws1 # Assign worksapce to user
 ```
 
-Following URL http://localhost:8081/login:component:LoginApp will lead us to app.
+Following URL http://localhost:8087/login:component:LoginApp will lead us to app.
 
 ## Update project structure and database
 

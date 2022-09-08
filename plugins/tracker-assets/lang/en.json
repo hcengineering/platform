@@ -88,7 +88,7 @@
     "SetDueDate": "Set due date\u2026",
     "ChangeDueDate": "Change due date\u2026",
     "ModificationDate": "Updated {value}",
-    "Team": "",
+    "Team": "Team",
     "Issue": "Issue",
     "Document": "",
     "DocumentIcon": "",
@@ -212,7 +212,12 @@
     "ChildEstimation": "Subissues Estimation",
     "ChildReportedTime": "Subissues Time",
     "Capacity": "Capacity",
-    "CapacityValue": "of {value}d"
+    "CapacityValue": "of {value}d",
+    "NewRelatedIssue": "New related issue",
+
+    "AddedReference": "Added reference",
+    "AddedAsBlocked": "Marked as blocked",
+    "AddedAsBlocking": "Marked as blocking"
   },
   "status": {}
 }

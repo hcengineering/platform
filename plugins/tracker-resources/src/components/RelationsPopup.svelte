@@ -1,13 +1,12 @@
 <script lang="ts">
-  import { Ref } from '@anticrm/core'
-  import { createQuery, getClient } from '@anticrm/presentation'
+  import { Class, Doc, Ref, RelatedDocument } from '@anticrm/core'
+  import { getResource, IntlString, translate } from '@anticrm/platform'
+  import { createQuery, getClient, ObjectSearchPopup, ObjectSearchResult } from '@anticrm/presentation'
   import { Issue } from '@anticrm/tracker'
   import { Action, closePopup, Menu, showPopup } from '@anticrm/ui'
-  import SelectIssuePopup from './SelectIssuePopup.svelte'
-  import SelectRelationPopup from './SelectRelationPopup.svelte'
-  import tracker from '../plugin'
   import { updateIssueRelation } from '../issues'
-  import { IntlString } from '@anticrm/platform'
+  import tracker from '../plugin'
+  import chunter from '@anticrm/chunter'
 
   export let value: Issue
 
@@ -15,46 +14,81 @@
   const query = createQuery()
   $: relations = {
     blockedBy: value.blockedBy ?? [],
-    relatedIssue: value.relatedIssue ?? [],
+    relations: value.relations ?? [],
     isBlocking: isBlocking ?? []
   }
-  let isBlocking: Ref<Issue>[] = []
-  $: query.query(tracker.class.Issue, { blockedBy: value._id }, (result) => {
-    isBlocking = result.map(({ _id }) => _id)
+  let isBlocking: { _id: Ref<Issue>; _class: Ref<Class<Doc>> }[] = []
+  $: query.query(value._class, { 'blockedBy._id': value._id }, (result) => {
+    isBlocking = result.map(({ _id, _class }) => ({ _id, _class }))
   })
   $: hasRelation = Object.values(relations).some(({ length }) => length)
 
-  async function updateRelation (issue: Issue, type: keyof typeof relations, operation: '$push' | '$pull') {
+  async function updateRelation (
+    refDocument: Doc,
+    type: keyof typeof relations,
+    operation: '$push' | '$pull',
+    placeholder: IntlString
+  ) {
     const prop = type === 'isBlocking' ? 'blockedBy' : type
     if (type !== 'isBlocking') {
-      await updateIssueRelation(client, value, issue._id, prop, operation)
+      await updateIssueRelation(client, value, refDocument, prop, operation)
     }
-    if (type !== 'blockedBy') {
-      await updateIssueRelation(client, issue, value._id, prop, operation)
+    if (type !== 'blockedBy' && client.getHierarchy().isDerived(refDocument._class, tracker.class.Issue)) {
+      await updateIssueRelation(client, refDocument as unknown as Issue, value, prop, operation)
     }
+    const update = await getResource(chunter.backreference.Update)
+
+    let docs: RelatedDocument[] = []
+    let label: IntlString = tracker.string.RemoveRelation
+    switch (type) {
+      case 'blockedBy':
+        docs = [...(value.blockedBy ?? [])]
+        label = tracker.string.AddedAsBlocking
+        break
+      case 'relations':
+        docs = [...(value.relations ?? [])]
+        label = tracker.string.AddedReference
+        break
+      case 'isBlocking':
+        docs = isBlocking ?? []
+        label = tracker.string.AddedAsBlocked
+        break
+    }
+
+    const pos = docs.findIndex((it) => it._id === refDocument._id)
+    if (operation === '$push' && pos === -1) {
+      docs.push(refDocument)
+    }
+    if (operation === '$pull' && pos !== -1) {
+      docs.splice(pos, 1)
+    }
+    await update(value, type, docs, await translate(label, {}))
   }
 
-  const makeAddAction = (type: keyof typeof relations, placeholder: IntlString) => async () => {
+  const makeAddAction = (type: keyof typeof relations, placeholder: IntlString) => async (props: any, evt: Event) => {
     closePopup('popup')
     showPopup(
-      SelectIssuePopup,
-      { ignoreObjects: [value._id, ...relations[type]], placeholder },
-      undefined,
-      async (issue: Issue | undefined) => {
+      ObjectSearchPopup,
+      { ignore: [value, ...relations[type]], label: placeholder },
+      'top',
+      async (issue: ObjectSearchResult | undefined) => {
         if (!issue) return
-        await updateRelation(issue, type, '$push')
+        await updateRelation(issue.doc, type, '$push', placeholder)
       }
     )
   }
-  async function removeRelation () {
+  async function removeRelation (evt: MouseEvent) {
     closePopup('popup')
     showPopup(
-      SelectRelationPopup,
-      relations,
-      undefined,
-      async (result: { type: keyof typeof relations; issue: Issue } | undefined) => {
+      ObjectSearchPopup,
+      {
+        label: tracker.string.RemoveRelation,
+        relatedDocuments: [...relations.blockedBy, ...relations.isBlocking, ...relations.relations]
+      },
+      'top',
+      async (result: { type: keyof typeof relations; doc: Doc } | undefined) => {
         if (!result) return
-        await updateRelation(result.issue, result.type, '$pull')
+        await updateRelation(result.doc, result.type, '$pull', tracker.string.RemoveRelation)
       }
     )
   }
@@ -79,7 +113,7 @@
       label: tracker.string.AddIsBlocking
     },
     {
-      action: makeAddAction('relatedIssue', tracker.string.RelatedIssueSearchPlaceholder),
+      action: makeAddAction('relations', tracker.string.RelatedIssueSearchPlaceholder),
       icon: tracker.icon.Issue,
       label: tracker.string.AddRelatedIssue
     },

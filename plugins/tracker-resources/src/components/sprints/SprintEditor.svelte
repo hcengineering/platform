@@ -36,8 +36,8 @@
   export let justify: 'left' | 'center' = 'left'
   export let width: string | undefined = '100%'
   export let onlyIcon: boolean = false
-  export let issues: Issue[] | undefined
-  export let groupBy: string | undefined
+  export let issues: Issue[] | undefined = undefined
+  export let groupBy: string | undefined = undefined
   export let enlargedText = false
 
   const client = getClient()

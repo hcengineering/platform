@@ -34,9 +34,10 @@
   let doc: Doc | undefined
   let target: Doc | undefined
 
-  $: docQuery.query(value.backlinkClass, { _id: value.backlinkId }, (r) => {
-    doc = r.shift()
-  })
+  $: value.backlinkClass != null &&
+    docQuery.query(value.backlinkClass, { _id: value.backlinkId }, (r) => {
+      doc = r.shift()
+    })
 
   $: targetQuery.query(value.attachedToClass, { _id: value.attachedTo }, (r) => {
     target = r.shift()

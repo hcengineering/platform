@@ -14,11 +14,13 @@
 -->
 <script lang="ts">
   import { AttachmentStyledBox } from '@anticrm/attachment-resources'
+  import chunter from '@anticrm/chunter'
   import { Employee } from '@anticrm/contact'
   import core, { Account, AttachedData, Doc, generateId, Ref, SortingOrder, WithLookup } from '@anticrm/core'
+  import { getResource, translate } from '@anticrm/platform'
   import { Card, createQuery, getClient, KeyedAttribute, SpaceSelector } from '@anticrm/presentation'
-  import { calcRank, Issue, IssuePriority, IssueStatus, Project, Sprint, Team } from '@anticrm/tracker'
   import tags, { TagElement, TagReference } from '@anticrm/tags'
+  import { calcRank, Issue, IssuePriority, IssueStatus, Project, Sprint, Team } from '@anticrm/tracker'
   import {
     ActionIcon,
     Button,
@@ -27,22 +29,24 @@
     EditBox,
     IconAttachment,
     IconMoreH,
+    Label,
     Menu,
     showPopup,
     Spinner
   } from '@anticrm/ui'
+  import view from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
+  import { activeProject, activeSprint } from '../issues'
   import tracker from '../plugin'
   import AssigneeEditor from './issues/AssigneeEditor.svelte'
   import ParentIssue from './issues/ParentIssue.svelte'
   import PriorityEditor from './issues/PriorityEditor.svelte'
   import StatusEditor from './issues/StatusEditor.svelte'
+  import EstimationEditor from './issues/timereport/EstimationEditor.svelte'
   import ProjectSelector from './ProjectSelector.svelte'
   import SetDueDateActionPopup from './SetDueDateActionPopup.svelte'
   import SetParentIssueActionPopup from './SetParentIssueActionPopup.svelte'
   import SprintSelector from './sprints/SprintSelector.svelte'
-  import { activeProject, activeSprint } from '../issues'
-  import EstimationEditor from './issues/timereport/EstimationEditor.svelte'
 
   export let space: Ref<Team>
   export let status: Ref<IssueStatus> | undefined = undefined
@@ -50,6 +54,7 @@
   export let assignee: Ref<Employee> | null = null
   export let project: Ref<Project> | null = $activeProject ?? null
   export let sprint: Ref<Sprint> | null = $activeSprint ?? null
+  export let relatedTo: Doc | undefined
 
   let issueStatuses: WithLookup<IssueStatus>[] | undefined
   export let parentIssue: Issue | undefined
@@ -91,7 +96,7 @@
   $: updateIssueStatusId(space, status)
   $: canSave = getTitle(object.title ?? '').length > 0
 
-  $: statusesQuery.query(tracker.class.IssueStatus, { attachedTo: space }, (statuses) => (issueStatuses = statuses), {
+  $: statusesQuery.query(tracker.class.IssueStatus, { attachedTo: _space }, (statuses) => (issueStatuses = statuses), {
     lookup: { category: tracker.class.IssueStatusCategory },
     sort: { rank: SortingOrder.Ascending }
   })
@@ -160,6 +165,7 @@
       reportedTime: 0,
       estimation: object.estimation,
       reports: 0,
+      relations: relatedTo !== undefined ? [{ _id: relatedTo._id, _class: relatedTo._class }] : [],
       childInfo: []
     }
 
@@ -180,6 +186,13 @@
       })
     }
     await descriptionBox.createAttachments()
+
+    const update = await getResource(chunter.backreference.Update)
+    if (relatedTo !== undefined) {
+      const doc = await client.findOne(tracker.class.Issue, { _id: objectId })
+      await update(doc, 'relations', [relatedTo], await translate(tracker.string.AddedReference, {}))
+    }
+
     objectId = generateId()
   }
 
@@ -205,7 +218,7 @@
       action: async () =>
         showPopup(
           SetParentIssueActionPopup,
-          { value: { ...object, space, attachedTo: parentIssue?._id } },
+          { value: { ...object, space: _space, attachedTo: parentIssue?._id } },
           'top',
           (selectedIssue) => selectedIssue !== undefined && (parentIssue = selectedIssue)
         )
@@ -273,7 +286,9 @@
   createMore={false}
 >
   <svelte:fragment slot="header">
-    <SpaceSelector _class={tracker.class.Team} label={tracker.string.Team} bind:space={_space} />
+    <div class="flex-row-center">
+      <SpaceSelector _class={tracker.class.Team} label={tracker.string.Team} bind:space={_space} />
+    </div>
     <!-- <Button
       icon={tracker.icon.Home}
       label={presentation.string.Save}
@@ -282,6 +297,22 @@
       disabled
       on:click={() => {}}
     /> -->
+  </svelte:fragment>
+  <svelte:fragment slot="title" let:label>
+    <div class="flex-row-center gap-1">
+      <div class="mr-2">
+        <Label {label} />
+      </div>
+      {#if relatedTo}
+        <div class="mr-2">
+          <Label label={tracker.string.RelatedTo} />
+        </div>
+        <Component
+          is={view.component.ObjectPresenter}
+          props={{ value: relatedTo, _class: relatedTo._class, objectId: relatedTo._id, inline: true }}
+        />
+      {/if}
+    </div>
   </svelte:fragment>
   {#if parentIssue}
     <ParentIssue issue={parentIssue} on:close={clearParentIssue} />

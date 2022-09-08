@@ -14,13 +14,13 @@
 // limitations under the License.
 //
 
-import { Ref } from '@anticrm/core'
+import { Doc, Ref } from '@anticrm/core'
 import { ObjectSearchCategory, ObjectSearchFactory } from '@anticrm/model-presentation'
 import { IntlString, mergeIds, Resource } from '@anticrm/platform'
 import { trackerId } from '@anticrm/tracker'
 import tracker from '@anticrm/tracker-resources/src/plugin'
 import type { AnyComponent } from '@anticrm/ui/src/types'
-import { ViewAction, ViewletDescriptor } from '@anticrm/view'
+import { Action, ViewAction, ViewletDescriptor } from '@anticrm/view'
 import { Application } from '@anticrm/workbench'
 
 export default mergeIds(trackerId, tracker, {
@@ -33,7 +33,8 @@ export default mergeIds(trackerId, tracker, {
     GotoBoard: '' as IntlString,
     GotoProjects: '' as IntlString,
     GotoTrackerApplication: '' as IntlString,
-    SearchIssue: '' as IntlString
+    SearchIssue: '' as IntlString,
+    NewRelatedIssue: '' as IntlString
   },
   component: {
     // Required to pass build without errorsF
@@ -55,5 +56,8 @@ export default mergeIds(trackerId, tracker, {
   actionImpl: {
     CopyToClipboard: '' as ViewAction,
     EditWorkflowStatuses: '' as ViewAction
+  },
+  action: {
+    NewRelatedIssue: '' as Ref<Action<Doc, Record<string, any>>>
   }
 })

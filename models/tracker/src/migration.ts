@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import core, { Doc, generateId, Ref, SortingOrder, TxOperations, TxResult } from '@anticrm/core'
+import core, { Doc, DocumentUpdate, generateId, Ref, SortingOrder, TxOperations, TxResult } from '@anticrm/core'
 import { createOrUpdate, MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
 import { IssueStatus, IssueStatusCategory, Team, genRanks, Issue } from '@anticrm/tracker'
 import tags from '@anticrm/tags'
@@ -309,6 +309,27 @@ async function upgradeTeams (tx: TxOperations): Promise<void> {
 
 async function upgradeIssues (tx: TxOperations): Promise<void> {
   await upgradeIssueStatuses(tx)
+
+  const issues = await tx.findAll(tracker.class.Issue, {
+    $or: [{ blockedBy: { $exists: true } }, { relatedIssue: { $exists: true } }]
+  })
+
+  for (const i of issues) {
+    const rel = (i as any).relatedIssue as Ref<Issue>[]
+    const upd: DocumentUpdate<Issue> = {}
+    if (rel != null) {
+      ;(upd as any).relatedIssue = null
+      upd.relations = rel.map((it) => ({ _id: it, _class: tracker.class.Issue }))
+    }
+    if (i.blockedBy !== undefined) {
+      if ((i.blockedBy as any[]).find((it) => typeof it === 'string') !== undefined) {
+        upd.blockedBy = (i.blockedBy as unknown as Ref<Issue>[]).map((it) => ({ _id: it, _class: tracker.class.Issue }))
+      }
+    }
+    if (Object.keys(upd).length > 0) {
+      await tx.update(i, upd)
+    }
+  }
 }
 
 async function upgradeProjects (tx: TxOperations): Promise<void> {

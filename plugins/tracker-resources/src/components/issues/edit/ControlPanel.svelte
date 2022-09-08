@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { WithLookup } from '@anticrm/core'
+  import { Doc, WithLookup } from '@anticrm/core'
   import { AttributeBarEditor, createQuery, getClient, KeyedAttribute } from '@anticrm/presentation'
   import tags from '@anticrm/tags'
   import type { Issue, IssueStatus } from '@anticrm/tracker'
@@ -33,7 +33,9 @@
 
   const query = createQuery()
   let showIsBlocking = false
-  query.query(tracker.class.Issue, { blockedBy: issue._id }, (result) => {
+  let blockedBy: Doc[]
+  $: query.query(tracker.class.Issue, { blockedBy: { _id: issue._id, _class: issue._class } }, (result) => {
+    blockedBy = result
     showIsBlocking = result.length > 0
   })
 
@@ -67,13 +69,13 @@
     <span class="labelTop">
       <Label label={tracker.string.Blocks} />
     </span>
-    <RelationEditor value={issue} type="isBlocking" />
+    <RelationEditor value={issue} type="isBlocking" {blockedBy} />
   {/if}
-  {#if issue.relatedIssue?.length}
+  {#if issue.relations?.length}
     <span class="labelTop">
       <Label label={tracker.string.Related} />
     </span>
-    <RelationEditor value={issue} type="relatedIssue" />
+    <RelationEditor value={issue} type="relations" />
   {/if}
 
   <span class="label">

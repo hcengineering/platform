@@ -55,6 +55,14 @@
   const mgr = getFocusManager()
   async function updateSelected (value: Ref<Space> | undefined) {
     selected = value !== undefined ? await client.findOne(_class, { ...(spaceQuery ?? {}), _id: value }) : undefined
+
+    if (selected === undefined) {
+      selected = await client.findOne(_class, { ...(spaceQuery ?? {}) })
+      if (selected !== undefined) {
+        value = selected._id
+        dispatch('change', value)
+      }
+    }
   }
 
   $: updateSelected(value)
@@ -84,6 +92,7 @@
 </script>
 
 <Button
+  id="space.selector"
   {focus}
   {focusIndex}
   icon={IconFolder}

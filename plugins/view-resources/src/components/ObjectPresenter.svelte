@@ -13,14 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Class, Doc, Ref } from '@anticrm/core'
+  import type { Class, Doc, Ref, RelatedDocument } from '@anticrm/core'
   import { createQuery, getClient } from '@anticrm/presentation'
   import { AttributeModel } from '@anticrm/view'
   import { getObjectPresenter } from '../utils'
 
-  export let objectId: Ref<Doc>
-  export let _class: Ref<Class<Doc>>
-  export let value: Doc | undefined = undefined
+  export let objectId: Ref<Doc> | undefined = undefined
+  export let _class: Ref<Class<Doc>> | undefined = undefined
+  export let value: Doc | RelatedDocument | undefined = undefined
   export let props: Record<string, any> = {}
 
   const client = getClient()
@@ -33,12 +33,22 @@
     docQuery.query(_class, { _id: objectId }, (r) => {
       doc = r.shift()
     })
-  } else {
+  } else if (
+    value?._id !== undefined &&
+    value?._class !== undefined &&
+    objectId === undefined &&
+    _class === undefined &&
+    (value as Doc)?.space === undefined
+  ) {
+    docQuery.query(value._class, { _id: value._id }, (r) => {
+      doc = r.shift()
+    })
+  } else if (value?._id !== undefined && value?._class !== undefined && (value as Doc).space !== undefined) {
     docQuery.unsubscribe()
-    doc = value
+    doc = value as Doc
   }
 
-  $: if (doc !== undefined && _class != null) {
+  $: if (doc !== undefined) {
     getObjectPresenter(client, doc._class, { key: '' }).then((p) => {
       presenter = p
     })

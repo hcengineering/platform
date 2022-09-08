@@ -203,12 +203,12 @@ module.exports = {
         logLevel: 'debug'
       },
       '/files': {
-        target: 'http://localhost:8081',
+        target: 'http://localhost:8087',
         changeOrigin: true,
         logLevel: 'debug'
       },
       '/import': {
-        target: 'http://localhost:8081',
+        target: 'http://localhost:8087',
         changeOrigin: true,
         logLevel: 'debug'
       },

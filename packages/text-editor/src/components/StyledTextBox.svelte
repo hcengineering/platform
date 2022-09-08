@@ -87,6 +87,7 @@
       {showButtons}
       {maxHeight}
       {focusable}
+      useReferences
       bind:content={rawValue}
       bind:this={textEditor}
       on:focus={() => {
