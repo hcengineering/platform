@@ -14,7 +14,7 @@
 //
 
 import { Employee } from '@anticrm/contact'
-import type { AttachedDoc, Class, Doc, Markup, Ref, Space, Timestamp, Type } from '@anticrm/core'
+import type { AttachedDoc, Class, Doc, Markup, Ref, RelatedDocument, Space, Timestamp, Type } from '@anticrm/core'
 import { Action, ActionCategory } from '@anticrm/view'
 import type { Asset, IntlString, Plugin, Resource } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
@@ -145,8 +145,8 @@ export interface Issue extends AttachedDoc {
 
   // For subtasks
   subIssues: number
-  blockedBy?: Ref<Issue>[]
-  relatedIssue?: Ref<Issue>[]
+  blockedBy?: RelatedDocument[]
+  relations?: RelatedDocument[]
   parents: IssueParentInfo[]
 
   comments: number

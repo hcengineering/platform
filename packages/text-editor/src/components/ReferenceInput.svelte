@@ -14,32 +14,32 @@
 -->
 <script lang="ts">
   import { Asset, getResource, IntlString } from '@anticrm/platform'
-  import presentation, { getClient, ObjectSearchCategory } from '@anticrm/presentation'
-  import { AnySvelteComponent, Icon, Button, showPopup } from '@anticrm/ui'
+  import { getClient } from '@anticrm/presentation'
+  import { AnySvelteComponent, Button, Icon, showPopup } from '@anticrm/ui'
   import { AnyExtension } from '@tiptap/core'
   import { createEventDispatcher } from 'svelte'
   import { Completion } from '../Completion'
   import textEditorPlugin from '../plugin'
-  import { RefInputAction, RefInputActionItem, TextEditorHandler, FORMAT_MODES, FormatMode } from '../types'
+  import { FormatMode, FORMAT_MODES, RefInputAction, RefInputActionItem, TextEditorHandler } from '../types'
+  import EmojiPopup from './EmojiPopup.svelte'
   import Attach from './icons/Attach.svelte'
   import Bold from './icons/Bold.svelte'
-  import Italic from './icons/Italic.svelte'
-  import Strikethrough from './icons/Strikethrough.svelte'
-  import Link from './icons/Link.svelte'
-  import ListNumber from './icons/ListNumber.svelte'
-  import ListBullet from './icons/ListBullet.svelte'
-  import Quote from './icons/Quote.svelte'
   import Code from './icons/Code.svelte'
   import CodeBlock from './icons/CodeBlock.svelte'
   import Emoji from './icons/Emoji.svelte'
   import GIF from './icons/GIF.svelte'
+  import Italic from './icons/Italic.svelte'
+  import Link from './icons/Link.svelte'
+  import ListBullet from './icons/ListBullet.svelte'
+  import ListNumber from './icons/ListNumber.svelte'
+  import Quote from './icons/Quote.svelte'
   import Send from './icons/Send.svelte'
+  import Strikethrough from './icons/Strikethrough.svelte'
   import TextStyle from './icons/TextStyle.svelte'
+  import LinkPopup from './LinkPopup.svelte'
   import MentionList from './MentionList.svelte'
   import { SvelteRenderer } from './SvelteRenderer'
   import TextEditor from './TextEditor.svelte'
-  import EmojiPopup from './EmojiPopup.svelte'
-  import LinkPopup from './LinkPopup.svelte'
 
   const dispatch = createEventDispatcher()
   export let content: string = ''
@@ -52,11 +52,6 @@
   let activeModes = new Set<FormatMode>()
   let isSelectionEmpty = true
 
-  export let categories: ObjectSearchCategory[] = []
-
-  client.findAll(presentation.class.ObjectSearchCategory, {}).then((r) => {
-    categories = r
-  })
   interface RefAction {
     label: IntlString
     icon: Asset | AnySvelteComponent
@@ -120,13 +115,6 @@
     actions = defActions.concat(...cont).sort((a, b) => a.order - b.order)
   })
 
-  // Current selected category
-  let category: ObjectSearchCategory | undefined = categories[0]
-
-  $: if (categories.length > 0 && category === undefined) {
-    category = categories[0]
-  }
-
   export function submit (): void {
     textEditor.submit()
   }
@@ -138,10 +126,6 @@
       },
       suggestion: {
         items: async (query: { query: string }) => {
-          if (category !== undefined) {
-            const f = await getResource(category.query)
-            return await f(client, query.query)
-          }
           return []
         },
         render: () => {
@@ -153,11 +137,6 @@
                 ...props,
                 close: () => {
                   component.destroy()
-                },
-                categories,
-                category,
-                onCategory: (cat: ObjectSearchCategory) => {
-                  category = cat
                 }
               })
             },

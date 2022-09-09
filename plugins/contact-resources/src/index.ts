@@ -15,7 +15,7 @@
 //
 
 import { Channel, Contact, Employee, formatName } from '@anticrm/contact'
-import { Class, Client, Ref } from '@anticrm/core'
+import { Class, Client, DocumentQuery, Ref, RelatedDocument, WithLookup } from '@anticrm/core'
 import { leaveWorkspace } from '@anticrm/login-resources'
 import { Resources } from '@anticrm/platform'
 import { Avatar, getClient, MessageBox, ObjectSearchResult, UserInfo } from '@anticrm/presentation'
@@ -64,19 +64,32 @@ export {
   EmployeeEditor
 }
 
+const toObjectSearchResult = (e: WithLookup<Contact>): ObjectSearchResult => ({
+  doc: e,
+  title: formatName(e.name),
+  icon: Avatar,
+  iconProps: { size: 'x-small', avatar: e.avatar },
+  component: UserInfo,
+  componentProps: { size: 'x-small' }
+})
+
 async function queryContact (
   _class: Ref<Class<Contact>>,
   client: Client,
-  search: string
+  search: string,
+  filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }
 ): Promise<ObjectSearchResult[]> {
-  return (await client.findAll(_class, { name: { $like: `%${search}%` } }, { limit: 200 })).map((e) => ({
-    doc: e,
-    title: formatName(e.name),
-    icon: Avatar,
-    iconProps: { size: 'x-small', avatar: e.avatar },
-    component: UserInfo,
-    componentProps: { size: 'x-small' }
-  }))
+  const q: DocumentQuery<Contact> = { name: { $like: `%${search}%` } }
+  if (filter?.in !== undefined || filter?.nin !== undefined) {
+    q._id = {}
+    if (filter.in !== undefined) {
+      q._id.$in = filter.in?.map((it) => it._id as Ref<Contact>)
+    }
+    if (filter.nin !== undefined) {
+      q._id.$nin = filter.nin?.map((it) => it._id as Ref<Contact>)
+    }
+  }
+  return (await client.findAll(_class, q, { limit: 200 })).map(toObjectSearchResult)
 }
 
 async function kickEmployee (doc: Employee): Promise<void> {
@@ -134,9 +147,17 @@ export default async (): Promise<Resources> => ({
     CreateEmployee
   },
   completion: {
-    EmployeeQuery: async (client: Client, query: string) => await queryContact(contact.class.Employee, client, query),
-    PersonQuery: async (client: Client, query: string) => await queryContact(contact.class.Person, client, query),
-    OrganizationQuery: async (client: Client, query: string) =>
-      await queryContact(contact.class.Organization, client, query)
+    EmployeeQuery: async (
+      client: Client,
+      query: string,
+      filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }
+    ) => await queryContact(contact.class.Employee, client, query, filter),
+    PersonQuery: async (client: Client, query: string, filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }) =>
+      await queryContact(contact.class.Person, client, query, filter),
+    OrganizationQuery: async (
+      client: Client,
+      query: string,
+      filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }
+    ) => await queryContact(contact.class.Organization, client, query, filter)
   }
 })

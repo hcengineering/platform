@@ -1,4 +1,4 @@
-import { Doc, Ref, TxOperations } from '@anticrm/core'
+import { Doc, DocumentUpdate, Ref, RelatedDocument, TxOperations } from '@anticrm/core'
 import { getClient } from '@anticrm/presentation'
 import { Issue, Project, Sprint, Team, trackerId } from '@anticrm/tracker'
 import { getCurrentLocation, getPanelURI, Location } from '@anticrm/ui'
@@ -105,12 +105,18 @@ export async function resolveLocation (loc: Location): Promise<Location | undefi
 export async function updateIssueRelation (
   client: TxOperations,
   value: Issue,
-  id: Ref<Issue>,
-  prop: 'blockedBy' | 'relatedIssue',
+  id: RelatedDocument,
+  prop: 'blockedBy' | 'relations',
   operation: '$push' | '$pull'
 ): Promise<void> {
-  const update = Array.isArray(value[prop])
-    ? { [operation]: { [prop]: id } }
-    : { [prop]: operation === '$push' ? [id] : [] }
+  let update: DocumentUpdate<Issue> = {}
+  switch (operation) {
+    case '$push':
+      update = { $push: { [prop]: { _id: id._id, _class: id._class } } }
+      break
+    case '$pull':
+      update = { $pull: { [prop]: { _id: id._id } } }
+      break
+  }
   await client.update(value, update)
 }

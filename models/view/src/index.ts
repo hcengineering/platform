@@ -327,6 +327,8 @@ export function createModel (builder: Builder): void {
   classPresenter(builder, core.class.Space, view.component.ObjectPresenter)
   classPresenter(builder, core.class.Class, view.component.ClassPresenter)
 
+  classPresenter(builder, core.class.TypeRelatedDocument, view.component.ObjectPresenter)
+
   builder.createDoc(
     view.class.ActionCategory,
     core.space.Model,

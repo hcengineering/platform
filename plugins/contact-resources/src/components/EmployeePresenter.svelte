@@ -24,10 +24,14 @@
   export let avatarSize: 'inline' | 'tiny' | 'x-small' | 'small' | 'medium' | 'large' | 'x-large' = 'x-small'
   export let isInteractive = true
   export let inline = false
+  export let disableClick = false
 
   let container: HTMLElement
 
   const onEdit = (evt: MouseEvent) => {
+    if (disableClick) {
+      return
+    }
     evt?.preventDefault()
     evt?.stopPropagation()
     if (value) {

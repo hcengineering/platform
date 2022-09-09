@@ -46,5 +46,7 @@
   {justify}
   {width}
   bind:value={space}
-  on:change
+  on:change={(evt) => {
+    space = evt.detail
+  }}
 />

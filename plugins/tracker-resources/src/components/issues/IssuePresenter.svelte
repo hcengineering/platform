@@ -33,13 +33,13 @@
   const spaceQuery = createQuery()
   let currentTeam: Team | undefined = value?.$lookup?.space
 
-  $: if (value?.$lookup?.space === undefined) {
+  $: if (value && value?.$lookup?.space === undefined) {
     spaceQuery.query(tracker.class.Team, { _id: value.space }, (res) => ([currentTeam] = res))
   } else {
     spaceQuery.unsubscribe()
   }
 
-  $: title = currentTeam ? `${currentTeam.identifier}-${value.number}` : `${value.number}`
+  $: title = currentTeam ? `${currentTeam.identifier}-${value?.number}` : `${value?.number}`
 </script>
 
 {#if value}

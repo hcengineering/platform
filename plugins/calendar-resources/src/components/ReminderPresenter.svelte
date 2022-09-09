@@ -30,10 +30,7 @@
 <div class="antiSelect w-full cursor-pointer flex-between" on:click={click}>
   {#if value}
     {#await objectPresenter then component}
-      <div
-        class="mr-4"
-        use:tooltip={{ component, props: { objectId: value.attachedTo, _class: value.attachedToClass } }}
-      >
+      <div class="mr-4" use:tooltip={{ component, props: { _id: value.attachedTo, _class: value.attachedToClass } }}>
         {value.title}
       </div>
     {/await}

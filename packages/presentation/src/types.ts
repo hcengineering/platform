@@ -1,4 +1,4 @@
-import { Client, Doc } from '@anticrm/core'
+import { Client, Doc, RelatedDocument } from '@anticrm/core'
 import { Asset, IntlString, Resource } from '@anticrm/platform'
 import { AnyComponent, AnySvelteComponent } from '@anticrm/ui'
 
@@ -25,8 +25,14 @@ export interface ObjectCreate {
 
 /**
  * @public
+ *
+ * Allow to map presentation from query or set of previously found values
  */
-export type ObjectSearchFactory = (client: Client, query: string) => Promise<ObjectSearchResult[]>
+export type ObjectSearchFactory = (
+  client: Client,
+  query: string,
+  filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }
+) => Promise<ObjectSearchResult[]>
 
 /**
  * @public

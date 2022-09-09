@@ -326,3 +326,8 @@ export interface BlobData extends Doc {
 export interface FullTextData extends Doc {
   data: any
 }
+
+/**
+ * @public
+ */
+export type RelatedDocument = Pick<Doc, '_id' | '_class'>

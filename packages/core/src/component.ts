@@ -33,6 +33,7 @@ import type {
   PropertyType,
   Ref,
   RefTo,
+  RelatedDocument,
   Space,
   Timestamp,
   Type,
@@ -95,7 +96,8 @@ export default plugin(coreId, {
     PluginConfiguration: '' as Ref<Class<PluginConfiguration>>,
     UserStatus: '' as Ref<Class<UserStatus>>,
     BlobData: '' as Ref<Class<BlobData>>,
-    FulltextData: '' as Ref<Class<FullTextData>>
+    FulltextData: '' as Ref<Class<FullTextData>>,
+    TypeRelatedDocument: '' as Ref<Class<Type<RelatedDocument>>>
   },
   space: {
     Tx: '' as Ref<Space>,

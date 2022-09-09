@@ -212,7 +212,12 @@
     "ChildEstimation": "Оценка подзадач",
     "ChildReportedTime": "Время водзадач",
     "Capacity": "Вместимость",
-    "CapacityValue": "из {value}d"
+    "CapacityValue": "из {value}d",
+    "NewRelatedIssue": "Завести связанную задачу",
+
+    "AddedReference": "Добавлена зависимость",
+    "AddedAsBlocked": "Отмечено как заблокировано",
+    "AddedAsBlocking": "Отмечено как блокирующее"
   },
   "status": {}
 }

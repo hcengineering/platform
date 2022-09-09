@@ -207,7 +207,7 @@
                     <Label label={activity.string.To} />
                     <Label label={m.label} />
                   </span>
-                  {#if hasMessageType}
+                  {#if hasMessageType && value.added.length < 2}
                     <div class="time"><TimeSince value={tx.tx.modifiedOn} /></div>
                   {/if}
                   <div class="strong">
@@ -217,6 +217,9 @@
                       {/each}
                     </div>
                   </div>
+                  {#if value.added.length > 1}
+                    <div class="time"><TimeSince value={tx.tx.modifiedOn} /></div>
+                  {/if}
                 {:else if value.removed.length}
                   <span class="lower" class:flex-grow={hasMessageType}>
                     <Label label={activity.string.Removed} />

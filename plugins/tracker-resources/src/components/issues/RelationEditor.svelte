@@ -1,51 +1,31 @@
 <script lang="ts">
-  import { WithLookup } from '@anticrm/core'
-  import { createQuery, getClient } from '@anticrm/presentation'
+  import { Class, Doc, Ref } from '@anticrm/core'
   import { Issue } from '@anticrm/tracker'
-  import { Icon, IconClose } from '@anticrm/ui'
-  import { getIssueId, updateIssueRelation } from '../../issues'
-  import tracker from '../../plugin'
+  import RelationEditorPart from './RelationEditorPart.svelte'
 
   export let value: Issue
-  export let type: 'isBlocking' | 'blockedBy' | 'relatedIssue'
+  export let type: 'isBlocking' | 'blockedBy' | 'relations'
+  export let blockedBy: Doc[] | undefined = undefined
 
-  const client = getClient()
-  const issuesQuery = createQuery()
-
-  // TODO: fix icon
-  $: icon = tracker.icon.Issue
-  $: query = type === 'isBlocking' ? { blockedBy: value._id } : { _id: { $in: value[type] } }
-  let issues: WithLookup<Issue>[] = []
-  $: issuesQuery.query(
-    tracker.class.Issue,
-    query,
-    (result) => {
-      issues = result
-    },
-    { lookup: { space: tracker.class.Team } }
-  )
-
-  async function handleClick (issue: Issue) {
-    const prop = type === 'isBlocking' ? 'blockedBy' : type
-    if (type !== 'isBlocking') {
-      await updateIssueRelation(client, value, issue._id, prop, '$pull')
+  $: valueGroup = (type === 'isBlocking' ? blockedBy ?? [] : value[type] ?? []).reduce<
+    Map<Ref<Class<Doc>>, Ref<Doc>[]>
+  >((rv, x) => {
+    if (rv.has(x._class)) {
+      rv.get(x._class)?.push(x._id)
+    } else {
+      rv.set(x._class, [x._id])
     }
-    if (type !== 'blockedBy') {
-      await updateIssueRelation(client, issue, value._id, prop, '$pull')
-    }
-  }
+    return rv
+  }, new Map())
+
+  $: classes = Array.from(valueGroup.keys())
 </script>
 
-<div class="flex-column">
-  {#each issues as issue}
-    {#if issue.$lookup?.space}
-      <div class="tag-container">
-        <Icon {icon} size={'small'} />
-        <span class="overflow-label ml-1-5 caption-color">{getIssueId(issue.$lookup.space, issue)}</span>
-        <button class="btn-close" on:click|stopPropagation={() => handleClick(issue)}>
-          <Icon icon={IconClose} size={'x-small'} />
-        </button>
-      </div>
+<div class="flex-column flex-grow">
+  {#each classes as classCategory}
+    {@const vals = valueGroup.get(classCategory)}
+    {#if vals}
+      <RelationEditorPart {value} _class={classCategory} documentIds={vals} {type} />
     {/if}
   {/each}
 </div>

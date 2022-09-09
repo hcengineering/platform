@@ -23,6 +23,7 @@
 
   export let value: Applicant
   export let inline: boolean = false
+  export let disableClick = false
 
   const client = getClient()
   const shortLabel = client.getHierarchy().getClass(value._class).shortLabel
@@ -32,7 +33,7 @@
   <a
     class="flex-presenter"
     class:inline-presenter={inline}
-    href="#{getPanelURI(view.component.EditDoc, value._id, value._class, 'content')}"
+    href="#{disableClick ? null : getPanelURI(view.component.EditDoc, value._id, value._class, 'content')}"
   >
     <div class="icon">
       <Icon icon={recruit.icon.Application} size={'small'} />

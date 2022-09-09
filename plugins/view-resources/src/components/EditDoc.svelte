@@ -28,9 +28,10 @@
     getClient,
     KeyedAttribute
   } from '@anticrm/presentation'
-  import { AnyComponent, Button, Component } from '@anticrm/ui'
+  import { AnyComponent, Button, Component, IconMoreH, showPopup } from '@anticrm/ui'
   import view from '@anticrm/view'
   import { createEventDispatcher, onDestroy } from 'svelte'
+  import { ContextMenu } from '..'
   import { fieldsFilter, getCollectionCounter, getFiltredKeys } from '../utils'
   import ActionContext from './ActionContext.svelte'
   import DocAttributeBar from './DocAttributeBar.svelte'
@@ -231,6 +232,12 @@
   }
   let panelWidth: number = 0
   let innerWidth: number = 0
+
+  function showMenu (ev?: Event): void {
+    if (object !== undefined) {
+      showPopup(ContextMenu, { object }, (ev as MouseEvent).target as HTMLElement)
+    }
+  }
 </script>
 
 <ActionContext
@@ -244,7 +251,7 @@
     {icon}
     {title}
     {object}
-    isHeader={false}
+    isHeader={true}
     isAside={true}
     bind:panelWidth
     bind:innerWidth
@@ -255,6 +262,30 @@
   >
     <svelte:fragment slot="navigator">
       <UpDownNavigator element={object} />
+    </svelte:fragment>
+
+    <svelte:fragment slot="header">
+      <span class="fs-title flex-grow">
+        {#if mainEditor}
+          <Component
+            is={mainEditor}
+            props={{ object }}
+            on:open={(ev) => {
+              ignoreKeys = ev.detail.ignoreKeys
+              ignoreMixins = new Set(ev.detail.ignoreMixins)
+              allowedCollections = ev.detail.allowedCollections ?? []
+              collectionArrays = ev.detail.collectionArrays ?? []
+              getMixins(parentClass, object, showAllMixins)
+              updateKeys(showAllMixins)
+            }}
+          />
+        {/if}
+      </span>
+    </svelte:fragment>
+    <svelte:fragment slot="tools">
+      <div class="p-1">
+        <Button icon={IconMoreH} kind={'transparent'} size={'medium'} on:click={showMenu} />
+      </div>
     </svelte:fragment>
 
     <svelte:fragment slot="attributes" let:direction={dir}>
@@ -303,20 +334,6 @@
       {/if}
     </svelte:fragment>
 
-    {#if mainEditor}
-      <Component
-        is={mainEditor}
-        props={{ object }}
-        on:open={(ev) => {
-          ignoreKeys = ev.detail.ignoreKeys
-          ignoreMixins = new Set(ev.detail.ignoreMixins)
-          allowedCollections = ev.detail.allowedCollections ?? []
-          collectionArrays = ev.detail.collectionArrays ?? []
-          getMixins(parentClass, object, showAllMixins)
-          updateKeys()
-        }}
-      />
-    {/if}
     {#each fieldEditors as collection}
       {#if collection.editor}
         <div class="mt-6">

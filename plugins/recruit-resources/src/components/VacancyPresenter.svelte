@@ -14,6 +14,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { getEmbeddedLabel } from '@anticrm/platform'
+
   import type { Vacancy } from '@anticrm/recruit'
   import {
     ActionIcon,
@@ -23,21 +25,28 @@
     Location,
     locationToUrl,
     navigate,
-    showPanel
+    showPanel,
+    tooltip
   } from '@anticrm/ui'
   import recruit from '../plugin'
 
   export let value: Vacancy
   export let inline: boolean = false
+  export let disableClick = false
 
   function editVacancy (): void {
+    if (disableClick) {
+      return
+    }
     showPanel(recruit.component.EditVacancy, value._id, value._class, 'content')
   }
 
   function getLoc (): Location {
     const loc = getCurrentLocation()
+    loc.path[2] = 'recruit'
     loc.path[3] = value._id
     loc.path.length = 4
+    loc.fragment = ''
     return loc
   }
 
@@ -48,12 +57,16 @@
 </script>
 
 {#if value}
-  <div class="flex-presenter" class:inline-presenter={inline}>
+  <div class="flex-presenter" class:inline-presenter={inline} use:tooltip={{ label: getEmbeddedLabel(value.name) }}>
     <div class="icon">
       <Icon icon={recruit.icon.Vacancy} size={'small'} />
     </div>
     <a
       on:click|preventDefault={(e) => {
+        if (inline) {
+          editVacancy()
+          return
+        }
         navigate(getLoc())
         e.preventDefault()
       }}
@@ -61,8 +74,10 @@
     >
       <span class="label">{value.name}</span>
     </a>
-    <div class="action">
-      <ActionIcon label={recruit.string.Edit} size={'small'} icon={IconEdit} action={editVacancy} />
-    </div>
+    {#if !inline}
+      <div class="action">
+        <ActionIcon label={recruit.string.Edit} size={'small'} icon={IconEdit} action={editVacancy} />
+      </div>
+    {/if}
   </div>
 {/if}

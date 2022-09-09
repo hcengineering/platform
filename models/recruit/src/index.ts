@@ -525,6 +525,17 @@ export function createModel (builder: Builder): void {
     recruit.completion.ApplicationCategory
   )
 
+  builder.createDoc(
+    presentation.class.ObjectSearchCategory,
+    core.space.Model,
+    {
+      icon: recruit.icon.Vacancy,
+      label: recruit.string.SearchVacancy,
+      query: recruit.completion.VacancyQuery
+    },
+    recruit.completion.VacancyCategory
+  )
+
   createAction(builder, { ...actionTemplates.archiveSpace, target: recruit.class.Vacancy })
   createAction(builder, { ...actionTemplates.unarchiveSpace, target: recruit.class.Vacancy })
 

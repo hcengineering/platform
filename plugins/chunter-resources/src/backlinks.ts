@@ -114,12 +114,23 @@ export async function updateBacklinks (
   attachedDocId: Ref<Doc> | undefined,
   content: string
 ): Promise<void> {
-  const q: DocumentQuery<Backlink> = { backlinkId, backlinkClass }
+  const q: DocumentQuery<Backlink> = { backlinkId, backlinkClass, collection: 'backlinks' }
   if (attachedDocId !== undefined) {
     q.attachedDocId = attachedDocId
   }
-  const current = await client.findAll(chunter.class.Backlink, q)
   const backlinks = getBacklinks(backlinkId, backlinkClass, attachedDocId, content)
+
+  await updateBacklinksList(client, q, backlinks)
+}
+/**
+ * @public
+ */
+export async function updateBacklinksList (
+  client: TxOperations,
+  q: DocumentQuery<Backlink>,
+  backlinks: Array<Data<Backlink>>
+): Promise<void> {
+  const current = await client.findAll(chunter.class.Backlink, q)
 
   // We need to find ones we need to remove, and ones we need to update.
   for (const c of current) {

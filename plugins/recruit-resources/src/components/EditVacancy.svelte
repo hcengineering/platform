@@ -21,8 +21,8 @@
   import { createQuery, getClient, MembersBox } from '@anticrm/presentation'
   import { Vacancy } from '@anticrm/recruit'
   import { FullDescriptionBox } from '@anticrm/text-editor'
-  import { EditBox, Grid } from '@anticrm/ui'
-  import { ClassAttributeBar } from '@anticrm/view-resources'
+  import { Button, EditBox, Grid, IconMoreH, showPopup } from '@anticrm/ui'
+  import { ClassAttributeBar, ContextMenu } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
 
@@ -51,6 +51,12 @@
 
   function onChange (key: string, value: any): void {
     client.updateDoc(object._class, object.space, object._id, { [key]: value })
+  }
+
+  function showMenu (ev?: Event): void {
+    if (object !== undefined) {
+      showPopup(ContextMenu, { object }, (ev as MouseEvent).target as HTMLElement)
+    }
   }
 </script>
 
@@ -81,18 +87,28 @@
       {/if}
     </svelte:fragment>
 
+    <svelte:fragment slot="header">
+      <span class="fs-title flex-grow">
+        <EditBox
+          bind:value={object.name}
+          placeholder={recruit.string.VacancyPlaceholder}
+          maxWidth={'39rem'}
+          kind={'large-style'}
+          focus
+          focusable
+          on:blur={() => {
+            if (rawName !== object.name) onChange('name', object.name)
+          }}
+        />
+      </span>
+    </svelte:fragment>
+    <svelte:fragment slot="tools">
+      <div class="p-1">
+        <Button icon={IconMoreH} kind={'transparent'} size={'medium'} on:click={showMenu} />
+      </div>
+    </svelte:fragment>
+
     <Grid column={1} rowGap={1.5}>
-      <EditBox
-        bind:value={object.name}
-        placeholder={recruit.string.VacancyPlaceholder}
-        maxWidth={'39rem'}
-        kind={'large-style'}
-        focus
-        focusable
-        on:blur={() => {
-          if (rawName !== object.name) onChange('name', object.name)
-        }}
-      />
       <EditBox
         bind:value={object.description}
         placeholder={recruit.string.VacancyDescription}

@@ -171,6 +171,10 @@ export class TTypeBoolean extends TType {}
 @Model(core.class.TypeTimestamp, core.class.Type)
 export class TTypeTimestamp extends TType {}
 
+@UX(core.string.Ref)
+@Model(core.class.TypeRelatedDocument, core.class.Type)
+export class TTypeRelatedDocument extends TType {}
+
 @UX(core.string.Date)
 @Model(core.class.TypeDate, core.class.Type)
 export class TTypeDate extends TType {}

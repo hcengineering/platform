@@ -229,7 +229,10 @@ export default mergeIds(trackerId, tracker, {
     ChildEstimation: '' as IntlString,
     ChildReportedTime: '' as IntlString,
     Capacity: '' as IntlString,
-    CapacityValue: '' as IntlString
+    CapacityValue: '' as IntlString,
+    AddedReference: '' as IntlString,
+    AddedAsBlocked: '' as IntlString,
+    AddedAsBlocking: '' as IntlString
   },
   component: {
     NopeComponent: '' as AnyComponent,
