@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, WithLookup } from '@anticrm/core'
+  import { Doc, Ref, WithLookup } from '@anticrm/core'
   import { Issue, IssueStatus, Team } from '@anticrm/tracker'
   import { getEventPositionElement, showPanel, showPopup } from '@anticrm/ui'
   import {
@@ -35,8 +35,9 @@
   import EstimationEditor from '../timereport/EstimationEditor.svelte'
 
   export let issues: Issue[]
-  export let issueStatuses: WithLookup<IssueStatus>[]
-  export let currentTeam: Team
+
+  export let teams: Map<Ref<Team>, Team>
+  export let issueStatuses: Map<Ref<Team>, WithLookup<IssueStatus>[]>
 
   const dispatch = createEventDispatcher()
 
@@ -99,6 +100,7 @@
 />
 
 {#each issues as issue, index (issue._id)}
+  {@const currentTeam = teams.get(issue.space)}
   <div
     class="flex-between row"
     class:is-dragging={index === draggingIndex}
@@ -133,12 +135,14 @@
           justify={'left'}
           on:update={(result) => checkWidth('issue', result)}
         >
-          {getIssueId(currentTeam, issue)}
+          {#if currentTeam}
+            {getIssueId(currentTeam, issue)}
+          {/if}
         </FixedColumn>
       </span>
       <StatusEditor
         value={issue}
-        statuses={issueStatuses}
+        statuses={issueStatuses.get(issue.space)}
         justify="center"
         kind={'list'}
         size={'small'}

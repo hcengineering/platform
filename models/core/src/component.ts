@@ -21,6 +21,7 @@ export default mergeIds(coreId, core, {
     Private: '' as IntlString,
     Archived: '' as IntlString,
     ClassLabel: '' as IntlString,
-    ClassPropertyLabel: '' as IntlString
+    ClassPropertyLabel: '' as IntlString,
+    Members: '' as IntlString
   }
 })

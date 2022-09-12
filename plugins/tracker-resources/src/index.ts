@@ -75,6 +75,8 @@ import EstimationEditor from './components/issues/timereport/EstimationEditor.sv
 import ReportedTimeEditor from './components/issues/timereport/ReportedTimeEditor.svelte'
 import TimeSpendReport from './components/issues/timereport/TimeSpendReport.svelte'
 
+import RelatedIssues from './components/issues/related/RelatedIssues.svelte'
+
 export async function queryIssue<D extends Issue> (
   _class: Ref<Class<D>>,
   client: Client,
@@ -189,7 +191,8 @@ export default async (): Promise<Resources> => ({
     TimeSpendReport,
     EstimationEditor,
     SubIssuesSelector,
-    GrowPresenter
+    GrowPresenter,
+    RelatedIssues
   },
   completion: {
     IssueQuery: async (client: Client, query: string, filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }) =>

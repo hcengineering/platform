@@ -16,17 +16,23 @@
 <script lang="ts">
   import contact, { Contact, formatName } from '@anticrm/contact'
   import type { Class, DocumentQuery, FindOptions, Ref } from '@anticrm/core'
-  import type { Asset, IntlString } from '@anticrm/platform'
+  import { Asset, getEmbeddedLabel, IntlString } from '@anticrm/platform'
   import {
+    ActionIcon,
     AnySvelteComponent,
     Button,
     ButtonKind,
     ButtonSize,
     getFocusManager,
+    Icon,
+    IconOpen,
     Label,
+    LabelAndProps,
+    showPanel,
     showPopup,
-    LabelAndProps
+    tooltip
   } from '@anticrm/ui'
+  import view from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
   import presentation from '..'
   import { ObjectCreate } from '../types'
@@ -52,6 +58,7 @@
   export let width: string | undefined = undefined
   export let focusIndex = -1
   export let showTooltip: LabelAndProps | undefined = undefined
+  export let showNavigate = true
 
   export let create: ObjectCreate | undefined = undefined
 
@@ -110,25 +117,42 @@
 </script>
 
 <div bind:this={container} class="min-w-0" class:w-full={width === '100%'}>
-  <Button
-    {focusIndex}
-    icon={hideIcon || selected ? undefined : icon}
-    width={width ?? 'min-content'}
-    {size}
-    {kind}
-    {justify}
-    {showTooltip}
-    on:click={_click}
-  >
-    <span slot="content" class="overflow-label disabled">
-      {#if selected}
-        {#if hideIcon || selected}
-          <UserInfo value={selected} size={kind === 'link' ? 'x-small' : 'tiny'} {icon} />
+  <Button {focusIndex} width={width ?? 'min-content'} {size} {kind} {justify} {showTooltip} on:click={_click}>
+    <span slot="content" class="overflow-label flex-grow" class:flex-between={showNavigate && selected}>
+      <div
+        class="disabled"
+        style:width={showNavigate && selected
+          ? `calc(${width ?? 'min-content'} - 1.5rem)`
+          : `${width ?? 'min-content'}`}
+        use:tooltip={selected !== undefined ? { label: getEmbeddedLabel(getName(selected)) } : undefined}
+      >
+        {#if selected}
+          {#if hideIcon || selected}
+            <UserInfo value={selected} size={kind === 'link' ? 'x-small' : 'tiny'} {icon} />
+          {:else}
+            {getName(selected)}
+          {/if}
         {:else}
-          {getName(selected)}
+          <div class="flex-row-center">
+            {#if icon}
+              <Icon {icon} size={kind === 'link' ? 'small' : size} />
+            {/if}
+            <div class="ml-2">
+              <Label {label} />
+            </div>
+          </div>
         {/if}
-      {:else}
-        <Label {label} />
+      </div>
+      {#if selected && showNavigate}
+        <ActionIcon
+          icon={IconOpen}
+          size={'small'}
+          action={() => {
+            if (selected) {
+              showPanel(view.component.EditDoc, selected._id, selected._class, 'content')
+            }
+          }}
+        />
       {/if}
     </span>
   </Button>

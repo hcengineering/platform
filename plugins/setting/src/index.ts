@@ -47,7 +47,9 @@ export interface Integration extends Doc {
 /**
  * @public
  */
-export interface Editable extends Class<Doc> {}
+export interface Editable extends Class<Doc> {
+  value: boolean // true is editable, false is not
+}
 
 /**
  * @public

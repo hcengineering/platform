@@ -1,0 +1,120 @@
+<!-- 
+// Copyright © 2022 Hardcore Engineering Inc.
+// 
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// 
+// See the License for the specific language governing permissions and
+// limitations under the License.
+-->
+<script lang="ts">
+  import { Doc, DocumentQuery, Ref, SortingOrder, WithLookup } from '@anticrm/core'
+  import presentation, { createQuery, getClient } from '@anticrm/presentation'
+  import { calcRank, Issue, IssueStatus, Team } from '@anticrm/tracker'
+  import { Label, Spinner } from '@anticrm/ui'
+  import { createEventDispatcher } from 'svelte'
+  import tracker from '../../../plugin'
+  import SubIssueList from '../edit/SubIssueList.svelte'
+  import CreateRelatedIssue from './CreateRelatedIssue.svelte'
+
+  export let object: Doc
+  export let isCreating = false
+
+  let query: DocumentQuery<Issue>
+  $: query = { 'relations._id': object._id, 'relations._class': object._class }
+
+  const subIssuesQuery = createQuery()
+  const client = getClient()
+  const dispatch = createEventDispatcher()
+
+  let subIssues: Issue[] = []
+
+  let teams: Map<Ref<Team>, Team> | undefined
+
+  async function handleIssueSwap (ev: CustomEvent<{ fromIndex: number; toIndex: number }>) {
+    const { fromIndex, toIndex } = ev.detail
+    const [prev, next] = [
+      subIssues[fromIndex < toIndex ? toIndex : toIndex - 1],
+      subIssues[fromIndex < toIndex ? toIndex + 1 : toIndex]
+    ]
+    const issue = subIssues[fromIndex]
+
+    await client.update(issue, { rank: calcRank(prev, next) })
+  }
+
+  $: subIssuesQuery.query(tracker.class.Issue, query, async (result) => (subIssues = result), {
+    sort: { rank: SortingOrder.Ascending }
+  })
+
+  const teamsQuery = createQuery()
+
+  $: teamsQuery.query(tracker.class.Team, {}, async (result) => {
+    teams = new Map(result.map((it) => [it._id, it]))
+  })
+
+  let issueStatuses = new Map<Ref<Team>, WithLookup<IssueStatus>[]>()
+
+  const statusesQuery = createQuery()
+  $: statusesQuery.query(
+    tracker.class.IssueStatus,
+    {},
+    (statuses) => {
+      const st = new Map<Ref<Team>, WithLookup<IssueStatus>[]>()
+      for (const s of statuses) {
+        const id = s.attachedTo as Ref<Team>
+        st.set(id, [...(st.get(id) ?? []), s])
+      }
+      issueStatuses = st
+    },
+    {
+      lookup: { category: tracker.class.IssueStatusCategory },
+      sort: { rank: SortingOrder.Ascending }
+    }
+  )
+</script>
+
+<div class="mt-1">
+  {#if subIssues !== undefined}
+    {#if issueStatuses.size > 0 && teams}
+      <SubIssueList issues={subIssues} {teams} {issueStatuses} on:move={handleIssueSwap} />
+    {:else}
+      <div class="p-1">
+        <Label label={presentation.string.NoMatchesFound} />
+      </div>
+    {/if}
+
+    {#if isCreating}
+      <div class="pt-4">
+        <CreateRelatedIssue
+          related={object}
+          {issueStatuses}
+          {teams}
+          on:close={() => {
+            isCreating = false
+            dispatch('close')
+          }}
+        />
+      </div>
+    {/if}
+  {:else}
+    <div class="flex-center pt-3">
+      <Spinner />
+    </div>
+  {/if}
+</div>
+
+<style lang="scss">
+  .list {
+    border-top: 1px solid var(--divider-color);
+
+    &.collapsed {
+      padding-top: 1px;
+      border-top: none;
+    }
+  }
+</style>

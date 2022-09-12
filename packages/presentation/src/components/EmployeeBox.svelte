@@ -38,6 +38,7 @@
   export let width: string | undefined = undefined
   export let focusIndex = -1
   export let showTooltip: LabelAndProps | undefined = undefined
+  export let showNavigate = true
 </script>
 
 <UserBox
@@ -56,5 +57,6 @@
   {width}
   {focusIndex}
   {showTooltip}
+  {showNavigate}
   on:change
 />

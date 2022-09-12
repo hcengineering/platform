@@ -28,7 +28,8 @@
   let name: string = ''
   const description: string = ''
   let templateId: Ref<KanbanTemplate> | undefined
-  let company: Ref<Organization> | undefined
+  export let company: Ref<Organization> | undefined
+  export let preserveCompany: boolean = false
 
   export function canClose (): boolean {
     return name === '' && templateId !== undefined
@@ -87,12 +88,15 @@
       _class={contact.class.Organization}
       label={recruit.string.Company}
       placeholder={recruit.string.Company}
+      justify={'left'}
       bind:value={company}
       allowDeselect
       titleDeselect={recruit.string.UnAssignCompany}
       kind={'no-border'}
       size={'small'}
       icon={Company}
+      readonly={preserveCompany}
+      showNavigate={false}
       create={{ component: contact.component.CreateOrganization, label: contact.string.CreateOrganization }}
     />
     <Component

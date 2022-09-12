@@ -132,6 +132,7 @@ export { default as IconDetails } from './components/icons/Details.svelte'
 export { default as IconDetailsFilled } from './components/icons/DetailsFilled.svelte'
 export { default as IconScale } from './components/icons/Scale.svelte'
 export { default as IconScaleFull } from './components/icons/ScaleFull.svelte'
+export { default as IconOpen } from './components/icons/Open.svelte'
 
 export { default as PanelInstance } from './components/PanelInstance.svelte'
 export { default as Panel } from './components/Panel.svelte'

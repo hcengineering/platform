@@ -32,7 +32,7 @@
   class="button {size}"
   use:tooltip={{ label, direction, props: labelProps }}
   tabindex="0"
-  on:click|stopPropagation={action}
+  on:click|stopPropagation|preventDefault={action}
 >
   <div class="icon {size}" class:invisible>
     <Icon {icon} {size} />

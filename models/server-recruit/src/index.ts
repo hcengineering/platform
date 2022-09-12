@@ -19,6 +19,7 @@ import core from '@anticrm/core'
 import recruit from '@anticrm/recruit'
 import view from '@anticrm/view'
 import serverRecruit from '@anticrm/server-recruit'
+import serverCore from '@anticrm/server-core'
 
 export function createModel (builder: Builder): void {
   builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.HTMLPresenter, {
@@ -35,5 +36,9 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(recruit.class.Vacancy, core.class.Class, view.mixin.TextPresenter, {
     presenter: serverRecruit.function.VacancyTextPresenter
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverRecruit.trigger.OnVacancyUpdate
   })
 }

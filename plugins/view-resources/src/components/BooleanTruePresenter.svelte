@@ -17,11 +17,15 @@
   import { getPlatformColor } from '@anticrm/ui'
 
   export let value: boolean
+  export let trueColor = 0
+  export let falseColor = 11
+  export let useInvert = false
 
-  $: color = value ? getPlatformColor(0) : getPlatformColor(11)
+  $: val = useInvert ? !value : value
+  $: color = val ? getPlatformColor(trueColor) : getPlatformColor(falseColor)
 </script>
 
-{#if value}
+{#if val}
   <div class="flex-center">
     <div class="pinned-container" style="background-color: {color};" />
   </div>

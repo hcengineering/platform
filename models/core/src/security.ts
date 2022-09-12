@@ -14,7 +14,7 @@
 //
 
 import { Account, AccountRole, Arr, Domain, DOMAIN_MODEL, IndexKind, Ref, Space } from '@anticrm/core'
-import { Index, Model, Prop, TypeBoolean, TypeString, UX } from '@anticrm/model'
+import { ArrOf, Index, Model, Prop, TypeBoolean, TypeRef, TypeString, UX } from '@anticrm/model'
 import core from './component'
 import { TDoc } from './core'
 
@@ -39,6 +39,7 @@ export class TSpace extends TDoc implements Space {
   @Prop(TypeBoolean(), core.string.Archived)
   archived!: boolean
 
+  @Prop(ArrOf(TypeRef(core.class.Account)), core.string.Members)
   members!: Arr<Ref<Account>>
 }
 

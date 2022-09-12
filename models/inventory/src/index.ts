@@ -95,7 +95,9 @@ export function createModel (builder: Builder): void {
     editor: inventory.component.EditProduct
   })
 
-  builder.mixin(inventory.class.Product, core.class.Class, setting.mixin.Editable, {})
+  builder.mixin(inventory.class.Product, core.class.Class, setting.mixin.Editable, {
+    value: true
+  })
 
   builder.createDoc(
     view.class.Viewlet,

@@ -34,7 +34,9 @@
       icon: value.icon
     }
     const id = await client.createDoc(core.class.Mixin, core.space.Model, data)
-    await client.createMixin(id, core.class.Mixin, core.space.Model, setting.mixin.Editable, {})
+    await client.createMixin(id, core.class.Mixin, core.space.Model, setting.mixin.Editable, {
+      value: true
+    })
     await client.createMixin(id, core.class.Mixin, core.space.Model, setting.mixin.UserMixin, {})
     dispatch('close')
   }

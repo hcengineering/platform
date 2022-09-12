@@ -41,7 +41,8 @@ export default mergeIds(contactId, contact, {
     EditMember: '' as AnyComponent,
     EmployeeArrayEditor: '' as AnyComponent,
     EmployeeEditor: '' as AnyComponent,
-    CreateEmployee: '' as AnyComponent
+    CreateEmployee: '' as AnyComponent,
+    AccountArrayEditor: '' as AnyComponent
   },
   string: {
     Persons: '' as IntlString,

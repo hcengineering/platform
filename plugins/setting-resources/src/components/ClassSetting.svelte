@@ -37,7 +37,12 @@
   let classes: Ref<Class<Doc>>[] = []
   clQuery.query(core.class.Class, {}, (res) => {
     classes = res
-      .filter((p) => hierarchy.hasMixin(p, setting.mixin.Editable) && !hierarchy.hasMixin(p, setting.mixin.UserMixin))
+      .filter(
+        (p) =>
+          hierarchy.hasMixin(p, setting.mixin.Editable) &&
+          hierarchy.as(p, setting.mixin.Editable).value &&
+          !hierarchy.hasMixin(p, setting.mixin.UserMixin)
+      )
       .map((p) => p._id)
   })
 </script>

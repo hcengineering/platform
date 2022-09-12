@@ -53,6 +53,7 @@
     {size}
     {kind}
     {width}
+    showNavigate={false}
     justify={'left'}
     showTooltip={{ label: tracker.string.AssignTo, direction: tooltipAlignment }}
     on:change={({ detail }) => handleAssigneeChanged(detail)}

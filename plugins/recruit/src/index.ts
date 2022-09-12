@@ -35,6 +35,13 @@ export interface Vacancy extends SpaceWithStates {
 /**
  * @public
  */
+export interface VacancyList extends Organization {
+  vacancies: number
+}
+
+/**
+ * @public
+ */
 export interface Candidates extends Space {}
 
 /**
@@ -105,7 +112,8 @@ const recruit = plugin(recruitId, {
     Opinion: '' as Ref<Class<Opinion>>
   },
   mixin: {
-    Candidate: '' as Ref<Mixin<Candidate>>
+    Candidate: '' as Ref<Mixin<Candidate>>,
+    VacancyList: '' as Ref<Mixin<VacancyList>>
   },
   component: {
     EditVacancy: '' as AnyComponent

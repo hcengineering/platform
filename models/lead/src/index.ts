@@ -93,7 +93,9 @@ export function createModel (builder: Builder): void {
     editor: lead.component.EditFunnel
   })
 
-  builder.mixin(lead.class.Lead, core.class.Class, setting.mixin.Editable, {})
+  builder.mixin(lead.class.Lead, core.class.Class, setting.mixin.Editable, {
+    value: true
+  })
 
   builder.createDoc(
     workbench.class.Application,

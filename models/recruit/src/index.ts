@@ -16,6 +16,7 @@
 import type { Employee, Organization } from '@anticrm/contact'
 import { Doc, FindOptions, IndexKind, Lookup, Ref, Timestamp } from '@anticrm/core'
 import {
+  ArrOf,
   Builder,
   Collection,
   Index,
@@ -32,17 +33,17 @@ import {
 import attachment from '@anticrm/model-attachment'
 import calendar from '@anticrm/model-calendar'
 import chunter from '@anticrm/model-chunter'
-import contact, { TPerson } from '@anticrm/model-contact'
+import contact, { TOrganization, TPerson } from '@anticrm/model-contact'
 import core, { TSpace } from '@anticrm/model-core'
 import presentation from '@anticrm/model-presentation'
 import tags from '@anticrm/model-tags'
-import task, { TSpaceWithStates, TTask, actionTemplates } from '@anticrm/model-task'
-import view, { createAction, actionTemplates as viewTemplates } from '@anticrm/model-view'
+import task, { actionTemplates, TSpaceWithStates, TTask } from '@anticrm/model-task'
+import view, { actionTemplates as viewTemplates, createAction } from '@anticrm/model-view'
 import workbench, { Application, createNavigateAction } from '@anticrm/model-workbench'
 import { IntlString } from '@anticrm/platform'
-import { Applicant, Candidate, Candidates, recruitId, Vacancy } from '@anticrm/recruit'
-import { KeyBinding } from '@anticrm/view'
+import { Applicant, Candidate, Candidates, recruitId, Vacancy, VacancyList } from '@anticrm/recruit'
 import setting from '@anticrm/setting'
+import { KeyBinding } from '@anticrm/view'
 import recruit from './plugin'
 import { createReviewModel, reviewTableConfig, reviewTableOptions } from './review'
 import { TOpinion, TReview } from './review-model'
@@ -69,6 +70,9 @@ export class TVacancy extends TSpaceWithStates implements Vacancy {
 
   @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
   comments?: number
+
+  @Prop(Collection(chunter.class.Backlink), chunter.string.Comments)
+  relations!: number
 }
 
 @Model(recruit.class.Candidates, core.class.Space)
@@ -102,6 +106,13 @@ export class TCandidate extends TPerson implements Candidate {
   reviews?: number
 }
 
+@Mixin(recruit.mixin.VacancyList, contact.class.Organization)
+@UX(recruit.string.VacancyList, recruit.icon.RecruitApplication, undefined, 'name')
+export class TVacancyList extends TOrganization implements VacancyList {
+  @Prop(ArrOf(TypeRef(recruit.class.Vacancy)), recruit.string.Vacancies)
+  vacancies!: number
+}
+
 @Model(recruit.class.Applicant, task.class.Task)
 @UX(recruit.string.Application, recruit.icon.Application, recruit.string.ApplicationShort, 'number')
 export class TApplicant extends TTask implements Applicant {
@@ -126,7 +137,7 @@ export class TApplicant extends TTask implements Applicant {
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TVacancy, TCandidates, TCandidate, TApplicant, TReview, TOpinion)
+  builder.createModel(TVacancy, TCandidates, TCandidate, TApplicant, TReview, TOpinion, TVacancyList)
 
   builder.mixin(recruit.class.Vacancy, core.class.Class, workbench.mixin.SpaceView, {
     view: {
@@ -140,13 +151,24 @@ export function createModel (builder: Builder): void {
     editor: recruit.component.Applications
   })
 
+  builder.mixin(recruit.class.Vacancy, core.class.Class, view.mixin.ArrayEditor, {
+    editor: recruit.component.VacancyList
+  })
+
   builder.mixin(recruit.mixin.Candidate, core.class.Mixin, view.mixin.ObjectFactory, {
     component: recruit.component.CreateCandidate
   })
 
-  builder.mixin(recruit.class.Applicant, core.class.Class, setting.mixin.Editable, {})
+  builder.mixin(recruit.class.Applicant, core.class.Class, setting.mixin.Editable, {
+    value: true
+  })
 
-  builder.mixin(recruit.class.Vacancy, core.class.Class, setting.mixin.Editable, {})
+  builder.mixin(recruit.class.Vacancy, core.class.Class, setting.mixin.Editable, {
+    value: true
+  })
+  builder.mixin(recruit.mixin.VacancyList, core.class.Class, setting.mixin.Editable, {
+    value: false
+  })
 
   const vacanciesId = 'vacancies'
   const talentsId = 'talents'
