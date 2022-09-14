@@ -364,6 +364,10 @@ export function createModel (builder: Builder): void {
     presenter: contact.component.PersonPresenter
   })
 
+  builder.mixin(core.class.Account, core.class.Class, view.mixin.ArrayEditor, {
+    inlineEditor: contact.component.AccountArrayEditor
+  })
+
   builder.mixin(core.class.Account, core.class.Class, view.mixin.AttributePresenter, {
     presenter: contact.component.EmployeeAccountPresenter
   })
@@ -388,9 +392,13 @@ export function createModel (builder: Builder): void {
     filters: ['_class', 'city', 'modifiedOn']
   })
 
-  builder.mixin(contact.class.Contact, core.class.Class, setting.mixin.Editable, {})
+  builder.mixin(contact.class.Contact, core.class.Class, setting.mixin.Editable, {
+    value: true
+  })
 
-  builder.mixin(contact.class.Member, core.class.Class, setting.mixin.Editable, {})
+  builder.mixin(contact.class.Member, core.class.Class, setting.mixin.Editable, {
+    value: true
+  })
 
   builder.createDoc(
     presentation.class.ObjectSearchCategory,

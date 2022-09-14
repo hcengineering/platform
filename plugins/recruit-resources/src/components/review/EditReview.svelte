@@ -46,7 +46,10 @@
   let candidate: Contact | undefined = undefined
 
   async function updateSelected (object: Review) {
-    candidate = await client.findOne<Contact>(object.attachedToClass, { _id: object.attachedTo })
+    candidate =
+      object?.attachedTo !== undefined
+        ? await client.findOne<Contact>(object.attachedToClass, { _id: object.attachedTo })
+        : undefined
   }
 
   $: updateSelected(object)

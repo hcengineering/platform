@@ -406,20 +406,44 @@ export function getFiltredKeys (
   return filterKeys(hierarchy, keys, ignoreKeys)
 }
 
-export function fieldsFilter (
+export interface CategoryKey {
+  key: KeyedAttribute
+  category: AttributeCategory
+}
+
+export function categorizeFields (
   hierarchy: Hierarchy,
   keys: KeyedAttribute[],
-  get: boolean,
-  include: string[]
-): Array<{ key: KeyedAttribute, category: AttributeCategory }> {
-  const result: Array<{ key: KeyedAttribute, category: AttributeCategory }> = []
+  useAsCollection: string[],
+  useAsAttribute: string[]
+): {
+    attributes: CategoryKey[]
+    collections: CategoryKey[]
+  } {
+  const result = {
+    attributes: [] as CategoryKey[],
+    collections: [] as CategoryKey[]
+  }
 
   for (const key of keys) {
     const cl = getAttributePresenterClass(hierarchy, key.attr)
-    if (include.includes(key.key)) {
-      result.push({ key: key, category: cl.category })
-    } else if ((cl.category === 'collection') === get || (cl.category === 'inplace') === get) {
-      result.push({ key, category: cl.category })
+    if (useAsCollection.includes(key.key)) {
+      result.collections.push({ key, category: cl.category })
+    } else if (useAsAttribute.includes(key.key)) {
+      result.attributes.push({ key, category: cl.category })
+    } else if (cl.category === 'collection' || cl.category === 'inplace') {
+      result.collections.push({ key, category: cl.category })
+    } else if (cl.category === 'array') {
+      const attrClass = getAttributePresenterClass(hierarchy, key.attr)
+      const clazz = hierarchy.getClass(attrClass.attrClass)
+      const mix = hierarchy.as(clazz, view.mixin.ArrayEditor)
+      if (mix.editor !== undefined && mix.inlineEditor === undefined) {
+        result.collections.push({ key, category: cl.category })
+      } else {
+        result.attributes.push({ key, category: cl.category })
+      }
+    } else {
+      result.attributes.push({ key, category: cl.category })
     }
   }
   return result

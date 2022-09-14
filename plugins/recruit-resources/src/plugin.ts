@@ -105,7 +105,8 @@ export default mergeIds(recruitId, recruit, {
     FullDescription: '' as IntlString,
     HasActiveApplicant: '' as IntlString,
     HasNoActiveApplicant: '' as IntlString,
-    NoneApplications: '' as IntlString
+    NoneApplications: '' as IntlString,
+    RelatedIssues: '' as IntlString
   },
   space: {
     CandidatesPublic: '' as Ref<Space>

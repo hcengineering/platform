@@ -51,6 +51,7 @@ import VacancyModifiedPresenter from './components/VacancyModifiedPresenter.svel
 import VacancyPresenter from './components/VacancyPresenter.svelte'
 import recruit from './plugin'
 import { copyToClipboard, getApplicationTitle } from './utils'
+import VacancyList from './components/VacancyList.svelte'
 
 async function createOpinion (object: Doc): Promise<void> {
   showPopup(CreateOpinion, { space: object.space, review: object._id })
@@ -287,7 +288,9 @@ export default async (): Promise<Resources> => ({
 
     NewCandidateHeader,
 
-    ApplicantFilter
+    ApplicantFilter,
+
+    VacancyList
   },
   completion: {
     ApplicationQuery: async (

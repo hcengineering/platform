@@ -36,7 +36,8 @@
         cls.extends === _class &&
         !cls.hidden &&
         [ClassifierKind.CLASS, ClassifierKind.MIXIN].includes(cls.kind) &&
-        cls.label !== undefined
+        cls.label !== undefined &&
+        (!hierarchy.hasMixin(cls, settings.mixin.Editable) || hierarchy.as(cls, settings.mixin.Editable).value)
       ) {
         result.push(clazz)
       }

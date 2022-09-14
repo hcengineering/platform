@@ -37,6 +37,7 @@ import EditOrganization from './components/EditOrganization.svelte'
 import EditPerson from './components/EditPerson.svelte'
 import EmployeeAccountPresenter from './components/EmployeeAccountPresenter.svelte'
 import EmployeeArrayEditor from './components/EmployeeArrayEditor.svelte'
+import AccountArrayEditor from './components/AccountArrayEditor.svelte'
 import EmployeeBrowser from './components/EmployeeBrowser.svelte'
 import EmployeeEditor from './components/EmployeeEditor.svelte'
 import EmployeePresenter from './components/EmployeePresenter.svelte'
@@ -44,7 +45,6 @@ import MemberPresenter from './components/MemberPresenter.svelte'
 import Members from './components/Members.svelte'
 import OrganizationEditor from './components/OrganizationEditor.svelte'
 import OrganizationPresenter from './components/OrganizationPresenter.svelte'
-import OrganizationSelector from './components/OrganizationSelector.svelte'
 import PersonEditor from './components/PersonEditor.svelte'
 import PersonPresenter from './components/PersonPresenter.svelte'
 import SocialEditor from './components/SocialEditor.svelte'
@@ -55,7 +55,6 @@ export {
   ChannelsEditor,
   ContactPresenter,
   ChannelsView,
-  OrganizationSelector,
   ChannelsDropdown,
   EmployeePresenter,
   PersonPresenter,
@@ -144,7 +143,8 @@ export default async (): Promise<Resources> => ({
     EditMember,
     EmployeeArrayEditor,
     EmployeeEditor,
-    CreateEmployee
+    CreateEmployee,
+    AccountArrayEditor
   },
   completion: {
     EmployeeQuery: async (

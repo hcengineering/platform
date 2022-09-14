@@ -275,8 +275,14 @@
         {/if}
       </div>
       <div class="mt-6">
-        {#key issue._id}
-          <SubIssues {issue} {issueStatuses} {currentTeam} />
+        {#key issue._id && currentTeam !== undefined}
+          {#if currentTeam !== undefined && issueStatuses !== undefined}
+            <SubIssues
+              {issue}
+              issueStatuses={new Map([[currentTeam._id, issueStatuses]])}
+              teams={new Map([[currentTeam?._id, currentTeam]])}
+            />
+          {/if}
         {/key}
       </div>
       <div class="mt-6">

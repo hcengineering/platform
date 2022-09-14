@@ -13,11 +13,15 @@
 // limitations under the License.
 //
 
+import { Organization } from '@anticrm/contact'
 import core, { Doc, Ref, Space, TxOperations } from '@anticrm/core'
 import { createOrUpdate, MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
 import { DOMAIN_CALENDAR } from '@anticrm/model-calendar'
+import contact, { DOMAIN_CONTACT } from '@anticrm/model-contact'
+import { DOMAIN_SPACE } from '@anticrm/model-core'
 import tags, { TagCategory } from '@anticrm/model-tags'
 import { createKanbanTemplate, createSequence } from '@anticrm/model-task'
+import { Vacancy } from '@anticrm/recruit'
 import { getCategories } from '@anticrm/skillset'
 import { KanbanTemplate } from '@anticrm/task'
 import recruit from './plugin'
@@ -34,6 +38,33 @@ export const recruitOperation: MigrateOperation = {
         space: recruit.space.Reviews
       }
     )
+
+    const vacancies = await client.find<Vacancy>(
+      DOMAIN_SPACE,
+      { _class: recruit.class.Vacancy, company: { $exists: true } },
+      { projection: { _id: 1, company: 1 } }
+    )
+
+    const orgIds = Array.from(vacancies.map((it) => it.company))
+      .filter((it) => it != null)
+      .filter((it, idx, arr) => arr.indexOf(it) === idx) as Ref<Organization>[]
+    const orgs = await client.find<Organization>(DOMAIN_CONTACT, {
+      _class: contact.class.Organization,
+      _id: { $in: orgIds }
+    })
+    for (const o of orgs) {
+      if ((o as any)[recruit.mixin.VacancyList] === undefined) {
+        await client.update(
+          DOMAIN_CONTACT,
+          { _id: o._id },
+          {
+            [recruit.mixin.VacancyList]: {
+              vacancies: vacancies.filter((it) => it.company === o._id).reduce((a) => a + 1, 0)
+            }
+          }
+        )
+      }
+    }
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)

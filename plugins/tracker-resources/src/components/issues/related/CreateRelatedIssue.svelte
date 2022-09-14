@@ -15,7 +15,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import core, { Account, AttachedData, Doc, generateId, Ref, SortingOrder, WithLookup } from '@anticrm/core'
-  import presentation, { getClient, KeyedAttribute } from '@anticrm/presentation'
+  import presentation, { getClient, KeyedAttribute, SpaceSelector } from '@anticrm/presentation'
   import { StyledTextArea } from '@anticrm/text-editor'
   import { IssueStatus, IssuePriority, Issue, Team, calcRank } from '@anticrm/tracker'
   import { Button, Component, EditBox } from '@anticrm/ui'
@@ -26,9 +26,9 @@
   import PriorityEditor from '../PriorityEditor.svelte'
   import EstimationEditor from '../timereport/EstimationEditor.svelte'
 
-  export let parentIssue: Issue
-  export let issueStatuses: WithLookup<IssueStatus>[]
-  export let currentTeam: Team
+  export let related: Doc
+  export let issueStatuses: Map<Ref<Team>, WithLookup<IssueStatus>[]>
+  export let teams: Map<Ref<Team>, Team> | undefined
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -37,6 +37,12 @@
   let thisRef: HTMLDivElement
   let focusIssueTitle: () => void
   let labels: TagReference[] = []
+
+  let currentTeam: Ref<Team>
+
+  $: if (currentTeam === undefined) {
+    currentTeam = teams?.values().next()?.value
+  }
 
   const key: KeyedAttribute = {
     key: 'labels',
@@ -57,7 +63,8 @@
       comments: 0,
       subIssues: 0,
       parents: [],
-      sprint: parentIssue.sprint,
+      relations: [{ _id: related?._id, _class: related?._class }],
+      sprint: undefined,
       estimation: 0,
       reportedTime: 0,
       reports: 0,
@@ -83,16 +90,15 @@
       return
     }
 
-    const space = currentTeam._id
     const lastOne = await client.findOne<Issue>(
       tracker.class.Issue,
-      { space },
+      { space: currentTeam },
       { sort: { rank: SortingOrder.Descending } }
     )
     const incResult = await client.updateDoc(
       tracker.class.Team,
       core.space.Space,
-      space,
+      currentTeam,
       { $inc: { sequence: 1 } },
       true
     )
@@ -102,15 +108,14 @@
       title: getTitle(newIssue.title),
       number: (incResult as any).object.sequence,
       rank: calcRank(lastOne, undefined),
-      project: parentIssue.project,
-      parents: [{ parentId: parentIssue._id, parentTitle: parentIssue.title }, ...parentIssue.parents]
+      parents: [{ parentId: tracker.ids.NoParent, parentTitle: '' }]
     }
 
     const objectId = await client.addCollection(
       tracker.class.Issue,
-      space,
-      parentIssue._id,
-      parentIssue._class,
+      currentTeam,
+      tracker.ids.NoParent,
+      tracker.class.Issue,
       'subIssues',
       value
     )
@@ -145,8 +150,11 @@
 
   $: thisRef && thisRef.scrollIntoView({ behavior: 'smooth' })
   $: canSave = getTitle(newIssue.title ?? '').length > 0
-  $: if (!newIssue.status && currentTeam?.defaultIssueStatus) {
-    newIssue.status = currentTeam.defaultIssueStatus
+  $: if (!newIssue.status) {
+    const t = teams?.get(currentTeam)
+    if (t?.defaultIssueStatus !== undefined) {
+      newIssue.status = t?.defaultIssueStatus
+    }
   }
 </script>
 
@@ -155,7 +163,7 @@
     <div id="status-editor" class="mr-1">
       <StatusEditor
         value={newIssue}
-        statuses={issueStatuses}
+        statuses={issueStatuses.get(currentTeam)}
         kind="transparent"
         size="medium"
         justify="center"
@@ -184,7 +192,7 @@
   </div>
   <div class="mt-4 flex-between">
     <div class="buttons-group xsmall-gap">
-      <!-- <SpaceSelector _class={tracker.class.Team} label={tracker.string.Team} bind:space /> -->
+      <SpaceSelector _class={tracker.class.Team} label={tracker.string.Team} bind:space={currentTeam} />
       <PriorityEditor
         value={newIssue}
         shouldShowLabel

@@ -94,7 +94,9 @@
     "CopyLink": "Копировать ссылку",
     "HasActiveApplicant":"Только активные",
     "HasNoActiveApplicant": "Не активные",
-    "NoneApplications": "Отсутствуют"
+    "NoneApplications": "Отсутствуют",
+    "RelatedIssues": "Связанные задачи",
+    "VacancyList": "Вакансии"
   },
   "status": {
     "TalentRequired": "Пожалуйста выберите таланта",

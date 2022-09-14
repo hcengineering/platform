@@ -71,7 +71,9 @@ export class TIntegrationType extends TDoc implements IntegrationType {
 }
 
 @Mixin(setting.mixin.Editable, core.class.Class)
-export class TEditable extends TClass implements Editable {}
+export class TEditable extends TClass implements Editable {
+  value!: boolean
+}
 
 @Mixin(setting.mixin.UserMixin, core.class.Class)
 export class TUserMixin extends TClass implements UserMixin {}
@@ -332,6 +334,8 @@ export function createModel (builder: Builder): void {
     },
     setting.action.DeleteMixin
   )
+
+  // builder.mixin(core.class.Space, core.class.Class, setting.mixin.Editable, {})
 }
 
 export { settingOperation } from './migration'

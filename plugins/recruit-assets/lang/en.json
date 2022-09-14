@@ -92,7 +92,9 @@
     "CopyLink": "Copy link",
     "HasActiveApplicant":"Active Only",
     "HasNoActiveApplicant": "No Active",
-    "NoneApplications": "None"
+    "NoneApplications": "None",
+    "RelatedIssues": "Related issues",
+    "VacancyList": "Vacancies"
   },
   "status": {
     "TalentRequired": "Please select talent",

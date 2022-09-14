@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import type { IntlString, Asset } from '@anticrm/platform'
+import type { Asset, IntlString } from '@anticrm/platform'
 
 /**
  * @public

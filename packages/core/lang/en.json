@@ -24,6 +24,7 @@
     "Collection": "Collection",
     "Array": "Array",
     "Bag": "Bag",
-    "Enum": "Enum"
+    "Enum": "Enum",
+    "Members": "Members"
   }
 }

@@ -32,7 +32,7 @@
   import view from '@anticrm/view'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import { ContextMenu } from '..'
-  import { fieldsFilter, getCollectionCounter, getFiltredKeys } from '../utils'
+  import { categorizeFields, getCollectionCounter, getFiltredKeys } from '../utils'
   import ActionContext from './ActionContext.svelte'
   import DocAttributeBar from './DocAttributeBar.svelte'
   import UpDownNavigator from './UpDownNavigator.svelte'
@@ -112,12 +112,13 @@
       }
     }
     const filtredKeys = Array.from(keysMap.values())
-    keys = fieldsFilter(hierarchy, filtredKeys, false, allowedCollections).map((it) => it.key)
 
-    const fieldKeys = fieldsFilter(hierarchy, filtredKeys, true, collectionArrays)
+    const { attributes, collections } = categorizeFields(hierarchy, filtredKeys, collectionArrays, allowedCollections)
+    keys = attributes.map((it) => it.key)
+
     const editors: { key: KeyedAttribute; editor: AnyComponent; category: AttributeCategory }[] = []
     const newInplaceAttributes = []
-    for (const k of fieldKeys) {
+    for (const k of collections) {
       if (allowedCollections.includes(k.key.key)) continue
       const editor = await getFieldEditor(k.key)
       if (editor === undefined) continue

@@ -18,10 +18,11 @@
   import type { Ref } from '@anticrm/core'
   import core from '@anticrm/core'
   import { Panel } from '@anticrm/panel'
-  import { createQuery, getClient, MembersBox } from '@anticrm/presentation'
+  import { createQuery, getClient } from '@anticrm/presentation'
   import { Vacancy } from '@anticrm/recruit'
   import { FullDescriptionBox } from '@anticrm/text-editor'
-  import { Button, EditBox, Grid, IconMoreH, showPopup } from '@anticrm/ui'
+  import tracker from '@anticrm/tracker'
+  import { Button, Component, EditBox, Grid, Icon, IconAdd, IconMoreH, Label, showPopup } from '@anticrm/ui'
   import { ClassAttributeBar, ContextMenu } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
@@ -58,6 +59,7 @@
       showPopup(ContextMenu, { object }, (ev as MouseEvent).target as HTMLElement)
     }
   }
+  let isCreateIssue = false
 </script>
 
 {#if object}
@@ -79,8 +81,8 @@
             <ClassAttributeBar
               {object}
               _class={object._class}
-              ignoreKeys={['name', 'description', 'fullDescription']}
-              to={core.class.Space}
+              ignoreKeys={['name', 'description', 'fullDescription', 'private', 'archived']}
+              to={core.class.Doc}
             />
           </div>
         </div>
@@ -130,7 +132,41 @@
         space={object.space}
         attachments={object.attachments ?? 0}
       />
-      <MembersBox label={recruit.string.Members} space={object} />
-    </Grid>
+      <!-- <MembersBox label={recruit.string.Members} space={object} /> -->
+
+      <div class="antiSection">
+        <div class="antiSection-header">
+          <div class="antiSection-header__icon">
+            <Icon icon={tracker.icon.Issue} size={'small'} />
+          </div>
+          <span class="antiSection-header__title">
+            <Label label={recruit.string.RelatedIssues} />
+          </span>
+          <div class="buttons-group small-gap">
+            <Button
+              id="add-sub-issue"
+              width="min-content"
+              icon={IconAdd}
+              label={undefined}
+              labelParams={{ subIssues: 0 }}
+              kind={'transparent'}
+              size={'small'}
+              on:click={() => {
+                isCreateIssue = true
+              }}
+            />
+          </div>
+        </div>
+        <div class="flex-row">
+          <Component
+            is={tracker.component.RelatedIssues}
+            props={{ object: object, isCreating: isCreateIssue }}
+            on:close={() => {
+              isCreateIssue = false
+            }}
+          />
+        </div>
+      </div></Grid
+    >
   </Panel>
 {/if}

@@ -567,7 +567,9 @@ export function createModel (builder: Builder): void {
     presenter: tracker.component.SprintTitlePresenter
   })
 
-  builder.mixin(tracker.class.Issue, core.class.Class, setting.mixin.Editable, {})
+  builder.mixin(tracker.class.Issue, core.class.Class, setting.mixin.Editable, {
+    value: true
+  })
 
   builder.mixin(tracker.class.TypeProjectStatus, core.class.Class, view.mixin.AttributeEditor, {
     inlineEditor: tracker.component.ProjectStatusEditor

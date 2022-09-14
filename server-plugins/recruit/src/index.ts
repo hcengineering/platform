@@ -16,6 +16,7 @@
 import type { Resource, Plugin } from '@anticrm/platform'
 import { plugin } from '@anticrm/platform'
 import { Doc } from '@anticrm/core'
+import { TriggerFunc } from '@anticrm/server-core'
 
 /**
  * @public
@@ -31,5 +32,8 @@ export default plugin(serverRecruitId, {
     ApplicationTextPresenter: '' as Resource<(doc: Doc) => string>,
     VacancyHTMLPresenter: '' as Resource<(doc: Doc) => string>,
     VacancyTextPresenter: '' as Resource<(doc: Doc) => string>
+  },
+  trigger: {
+    OnVacancyUpdate: '' as Resource<TriggerFunc>
   }
 })

@@ -16,7 +16,6 @@
   import calendar from '@anticrm/calendar'
   import type { Contact, EmployeeAccount, Organization, Person } from '@anticrm/contact'
   import contact from '@anticrm/contact'
-  import { OrganizationSelector } from '@anticrm/contact-resources'
   import { Account, Class, Client, Doc, generateId, getCurrentAccount, Ref } from '@anticrm/core'
   import { getResource, OK, Resource, Severity, Status } from '@anticrm/platform'
   import { Card, getClient, UserBox, UserBoxList } from '@anticrm/presentation'
@@ -171,7 +170,13 @@
         create={{ component: recruit.component.CreateCandidate, label: recruit.string.CreateTalent }}
       />
     {/if}
-    <OrganizationSelector bind:value={company} label={recruit.string.Company} kind={'no-border'} size={'small'} />
+    <UserBox
+      _class={contact.class.Organization}
+      bind:value={company}
+      label={recruit.string.Company}
+      kind={'no-border'}
+      size={'small'}
+    />
     <DateRangePresenter
       bind:value={startDate}
       labelNull={recruit.string.StartDate}

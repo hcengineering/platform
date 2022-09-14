@@ -293,7 +293,8 @@ export default plugin(trackerId, {
   },
   component: {
     Tracker: '' as AnyComponent,
-    TrackerApp: '' as AnyComponent
+    TrackerApp: '' as AnyComponent,
+    RelatedIssues: '' as AnyComponent
   },
   issueStatusCategory: {
     Backlog: '' as Ref<IssueStatusCategory>,
