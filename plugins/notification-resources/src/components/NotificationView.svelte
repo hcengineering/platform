@@ -19,6 +19,9 @@
   import core, { AttachedDoc, Doc, TxCollectionCUD } from '@anticrm/core'
   import { Notification, NotificationStatus } from '@anticrm/notification'
   import { getClient } from '@anticrm/presentation'
+  import { ActionIcon, Component, getPlatformColor, IconDelete } from '@anticrm/ui'
+  import view from '@anticrm/view'
+  import plugin from '../plugin'
 
   export let notification: Notification
   export let viewlets: Map<ActivityKey, TxViewlet>
@@ -47,12 +50,43 @@
     <!-- svelte-ignore a11y-mouse-events-have-key-events -->
     <div
       class="content"
-      class:isNew={notification.status !== NotificationStatus.Read}
       on:mouseover|once={() => {
         read(notification)
       }}
     >
-      <TxView tx={displayTx} {viewlets} showIcon={false} />
+      <div class="flex-row">
+        <div class="bottom-divider mb-2">
+          <div class="flex-row-center mb-2 mt-2">
+            <div
+              class="notify mr-4"
+              style:color={notification.status !== NotificationStatus.Read ? getPlatformColor(11) : '#555555'}
+            />
+            <!-- <Icon icon={IconArrowRight} size={'medium'} /> -->
+            <div class="flex-shrink">
+              <Component
+                is={view.component.ObjectPresenter}
+                props={{
+                  objectId: displayTx.tx.objectId,
+                  _class: displayTx.tx.objectClass,
+                  value: displayTx.doc,
+                  inline: true
+                }}
+              />
+            </div>
+            <div class="flex flex-reverse gap-2 flex-grow">
+              <ActionIcon
+                icon={IconDelete}
+                label={plugin.string.Remove}
+                size={'medium'}
+                action={() => {
+                  client.remove(notification)
+                }}
+              />
+            </div>
+          </div>
+        </div>
+        <TxView tx={displayTx} {viewlets} showIcon={false} />
+      </div>
     </div>
   {/if}
 {/await}
@@ -63,7 +97,14 @@
     border-radius: 0.5rem;
     border: 1px solid transparent;
   }
-  .isNew {
-    border: 1px solid var(--theme-bg-focused-border);
+  .notify {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 0.25rem;
+    outline: 1px solid transparent;
+    outline-offset: 2px;
+    transition: all 0.1s ease-in-out;
+    z-index: -1;
+    background-color: currentColor;
   }
 </style>

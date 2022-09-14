@@ -39,6 +39,6 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverRecruit.trigger.OnVacancyUpdate
+    trigger: serverRecruit.trigger.OnRecruitUpdate
   })
 }

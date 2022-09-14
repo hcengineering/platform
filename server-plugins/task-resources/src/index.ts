@@ -13,7 +13,20 @@
 // limitations under the License.
 //
 
-import core, { Doc, Tx, TxProcessor, TxUpdateDoc } from '@anticrm/core'
+import contact, { Employee, EmployeeAccount, formatName } from '@anticrm/contact'
+import core, {
+  Account,
+  AttachedDoc,
+  Data,
+  Doc,
+  generateId,
+  Ref,
+  Tx,
+  TxCollectionCUD,
+  TxCreateDoc,
+  TxProcessor,
+  TxUpdateDoc
+} from '@anticrm/core'
 import login from '@anticrm/login'
 import { getMetadata } from '@anticrm/platform'
 import { TriggerControl } from '@anticrm/server-core'
@@ -21,6 +34,7 @@ import { getUpdateLastViewTx } from '@anticrm/server-notification'
 import task, { Issue, Task, taskId } from '@anticrm/task'
 import view from '@anticrm/view'
 import { workbenchId } from '@anticrm/workbench'
+import notification, { Notification, NotificationStatus } from '@anticrm/notification'
 
 /**
  * @public
@@ -37,6 +51,79 @@ export function issueHTMLPresenter (doc: Doc): string {
 export function issueTextPresenter (doc: Doc): string {
   const issue = doc as Issue
   return `Task-${issue.number}`
+}
+
+/**
+ * @public
+ */
+export async function getEmployeeAccount (
+  employee: Ref<Account>,
+  control: TriggerControl
+): Promise<EmployeeAccount | undefined> {
+  const account = (
+    await control.modelDb.findAll(
+      contact.class.EmployeeAccount,
+      {
+        _id: employee as Ref<EmployeeAccount>
+      },
+      { limit: 1 }
+    )
+  )[0]
+  return account
+}
+
+async function getEmployee (employee: Ref<Employee>, control: TriggerControl): Promise<Employee | undefined> {
+  const account = (
+    await control.findAll(
+      contact.class.Employee,
+      {
+        _id: employee
+      },
+      { limit: 1 }
+    )
+  )[0]
+  return account
+}
+
+/**
+ * @public
+ */
+export async function addAssigneeNotification (
+  control: TriggerControl,
+  res: Tx[],
+  issue: Doc,
+  issueName: string,
+  assignee: Ref<Employee>,
+  ptx: TxCollectionCUD<AttachedDoc, AttachedDoc>
+): Promise<void> {
+  const sender = await getEmployeeAccount(ptx.modifiedBy, control)
+  if (sender === undefined) {
+    return
+  }
+
+  const target = await getEmployee(assignee, control)
+  if (target === undefined) {
+    return
+  }
+
+  const createTx: TxCreateDoc<Notification> = {
+    objectClass: notification.class.Notification,
+    objectSpace: notification.space.Notifications,
+    objectId: generateId(),
+    modifiedOn: ptx.modifiedOn,
+    modifiedBy: ptx.modifiedBy,
+    space: ptx.space,
+    _id: generateId(),
+    _class: core.class.TxCreateDoc,
+    attributes: {
+      tx: ptx._id,
+      status: NotificationStatus.New,
+      type: task.ids.AssigneedNotification,
+      text: `${issueName} was assigned to you by ${formatName(sender.name)}`
+    } as unknown as Data<Notification>
+  }
+
+  res.push(control.txFactory.createTxCollectionCUD(target._class, target._id, target.space, 'notifications', createTx))
 }
 
 /**

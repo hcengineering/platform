@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+import { Client, Doc, Ref } from '@anticrm/core'
 import type { IntlString, Resource } from '@anticrm/platform'
 import { mergeIds } from '@anticrm/platform'
-import tracker, { trackerId } from '../../tracker/lib'
 import { AnyComponent } from '@anticrm/ui'
-import { Client, Doc, Ref } from '@anticrm/core'
+import tracker, { trackerId } from '../../tracker/lib'
 
 export default mergeIds(trackerId, tracker, {
   string: {

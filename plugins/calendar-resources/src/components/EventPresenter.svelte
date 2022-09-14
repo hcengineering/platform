@@ -18,17 +18,20 @@
   import view from '@anticrm/view'
 
   export let value: Event
+  export let inline: boolean = false
 
   function click (): void {
     showPanel(view.component.EditDoc, value._id, value._class, 'content')
   }
 </script>
 
-<div class="antiSelect w-full cursor-pointer flex-between" on:click={click}>
+<div class="antiSelect w-full cursor-pointer flex-center flex-between" on:click={click}>
   {#if value}
     <div class="mr-4">
       {value.title}
     </div>
-    <DateTimeRangePresenter value={value.date} />
+    {#if !inline}
+      <DateTimeRangePresenter value={value.date} />
+    {/if}
   {/if}
 </div>

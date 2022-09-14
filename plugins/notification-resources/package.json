@@ -39,6 +39,7 @@
     "@anticrm/activity-resources": "~0.6.0",
     "@anticrm/activity": "~0.6.0",
     "@anticrm/contact": "~0.6.5",
-    "@anticrm/core": "~0.6.16"
+    "@anticrm/core": "~0.6.16",
+    "@anticrm/view": "~0.6.0"
   }
 }

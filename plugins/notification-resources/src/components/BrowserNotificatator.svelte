@@ -23,6 +23,7 @@
     NotificationType
   } from '@anticrm/notification'
   import { createQuery } from '@anticrm/presentation'
+  import { getCurrentLocation } from '@anticrm/ui'
   import notification from '../plugin'
   import { NotificationClientImpl } from '../utils'
 
@@ -93,11 +94,11 @@
     const enabled = setting?.enabled ?? provider?.default
     if (!enabled) return
     if ((setting?.modifiedOn ?? notification.modifiedOn) < 0) return
-    if (Notification.permission === 'granted') {
+    if (Notification.permission !== 'denied') {
       await notify(text, notification)
     } else if (Notification.permission !== 'denied') {
       const permission = await Notification.requestPermission()
-      if (permission === 'granted') {
+      if (permission !== 'denied') {
         await notify(text, notification)
       }
     }
@@ -107,7 +108,7 @@
     const lastView = $lastViews.get(lastViewId)
     if ((lastView ?? notification.modifiedOn) > 0) {
       // eslint-disable-next-line
-      new Notification(text, { tag: notification._id })
+      new Notification(getCurrentLocation().path[1], { tag: notification._id, icon: '/favicon.png', body: text })
       await notificationClient.updateLastView(
         lastViewId,
         contact.class.Employee,

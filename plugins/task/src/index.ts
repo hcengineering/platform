@@ -32,6 +32,7 @@ import { plugin } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'
 import { ViewletDescriptor } from '@anticrm/view'
 import { genRanks } from './utils'
+import { NotificationType } from '@anticrm/notification'
 
 /**
  * @public
@@ -270,6 +271,9 @@ const task = plugin(taskId, {
     KanbanTemplateEditor: '' as AnyComponent,
     KanbanTemplateSelector: '' as AnyComponent,
     TodoItemsPopup: '' as AnyComponent
+  },
+  ids: {
+    AssigneedNotification: '' as Ref<NotificationType>
   }
 })
 

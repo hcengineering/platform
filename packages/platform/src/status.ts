@@ -36,7 +36,7 @@ export enum Severity {
  * Status of an operation
  * @public
  */
-export class Status<P = {}> {
+export class Status<P extends Record<string, any> = {}> {
   readonly severity: Severity
   readonly code: StatusCode<P>
   readonly params: P

@@ -37,11 +37,13 @@
   {#await getEvent(tx.objectId) then event}
     {#if event}
       <span
-        class="over-underline caption-color"
+        class="over-underline caption-color flex-row-center"
         on:click={() => {
           click(event)
-        }}>{event.title}</span
-      >&nbsp
+        }}
+        >{event.title}
+      </span>
+      &nbsp
       <DateTimePresenter value={event.date} />
     {/if}
   {/await}

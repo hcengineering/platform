@@ -146,7 +146,7 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       label: notification.string.BrowserNotification,
-      default: false
+      default: true
     },
     notification.ids.BrowserNotification
   )

@@ -19,14 +19,15 @@
   import { EmployeeAccount } from '@anticrm/contact'
   import { getCurrentAccount, SortingOrder } from '@anticrm/core'
   import type { Notification } from '@anticrm/notification'
-  import { createQuery } from '@anticrm/presentation'
-  import { Scroller } from '@anticrm/ui'
+  import { createQuery, getClient } from '@anticrm/presentation'
+  import { ActionIcon, IconDelete, Scroller } from '@anticrm/ui'
   import Label from '@anticrm/ui/src/components/Label.svelte'
   import notification from '../plugin'
   import NotificationView from './NotificationView.svelte'
 
   const query = createQuery()
   let notifications: Notification[] = []
+  const client = getClient()
 
   $: query.query(
     notification.class.Notification,
@@ -37,7 +38,8 @@
       notifications = res
     },
     {
-      sort: { status: SortingOrder.Ascending, modifiedOn: SortingOrder.Descending }
+      sort: { status: SortingOrder.Ascending, modifiedOn: SortingOrder.Descending },
+      limit: 30
     }
   )
 
@@ -47,11 +49,21 @@
   $: descriptors.query(activity.class.TxViewlet, {}, (result) => {
     viewlets = new Map(result.map((r) => [activityKey(r.objectClass, r.txClass), r]))
   })
+
+  const deleteNotifications = async () => {
+    const allNotifications = await client.findAll(notification.class.Notification, {
+      attachedTo: (getCurrentAccount() as EmployeeAccount).employee
+    })
+    for (const n of allNotifications) {
+      await client.remove(n)
+    }
+  }
 </script>
 
 <div class="notifyPopup" class:justify-center={notifications.length === 0}>
-  <div class="header">
+  <div class="header flex-between">
     <span class="fs-title overflow-label"><Label label={notification.string.Notifications} /></span>
+    <ActionIcon icon={IconDelete} label={notification.string.RemoveAll} size={'medium'} action={deleteNotifications} />
   </div>
   {#if notifications.length > 0}
     <Scroller>

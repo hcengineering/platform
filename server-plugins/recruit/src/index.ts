@@ -34,6 +34,6 @@ export default plugin(serverRecruitId, {
     VacancyTextPresenter: '' as Resource<(doc: Doc) => string>
   },
   trigger: {
-    OnVacancyUpdate: '' as Resource<TriggerFunc>
+    OnRecruitUpdate: '' as Resource<TriggerFunc>
   }
 })
