@@ -29,6 +29,8 @@
   "dependencies": {
     "@anticrm/core": "~0.6.16",
     "@anticrm/platform": "~0.6.6",
-    "@anticrm/server-core": "~0.6.1"
+    "@anticrm/server-core": "~0.6.1",
+    "@anticrm/contact": "~0.6.5",
+    "@anticrm/server-task-resources": "~0.6.0"
   }
 }

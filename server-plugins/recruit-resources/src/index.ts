@@ -79,12 +79,12 @@ export async function OnRecruitUpdate (tx: Tx, control: TriggerControl): Promise
 
   if (actualTx._class === core.class.TxCreateDoc) {
     handleVacancyCreate(control, cud, actualTx, res)
-    await handleApplicantCreate(control, cud, actualTx, res, tx)
+    await handleApplicantCreate(control, cud, res, tx)
   }
 
   if (actualTx._class === core.class.TxUpdateDoc) {
     await handleVacancyUpdate(control, cud, res)
-    await handleApplicantUpdate(control, cud, actualTx, res, tx)
+    await handleApplicantUpdate(control, cud, res, tx)
   }
   if (actualTx._class === core.class.TxRemoveDoc) {
     await handleVacancyRemove(control, cud, actualTx)
@@ -172,15 +172,9 @@ async function handleVacancyRemove (control: TriggerControl, cud: TxCUD<Doc>, ac
   }
 }
 
-async function handleApplicantUpdate (
-  control: TriggerControl,
-  cud: TxCUD<Doc>,
-  actualTx: Tx,
-  res: Tx[],
-  tx: Tx
-): Promise<void> {
+async function handleApplicantUpdate (control: TriggerControl, cud: TxCUD<Doc>, res: Tx[], tx: Tx): Promise<void> {
   if (control.hierarchy.isDerived(cud.objectClass, recruit.class.Applicant)) {
-    const updateTx = actualTx as TxUpdateDoc<Applicant>
+    const updateTx = cud as TxUpdateDoc<Applicant>
     if (updateTx.operations.assignee != null) {
       const applicant = (
         await control.findAll(recruit.class.Applicant, { _id: updateTx.objectId }, { limit: 1 })
@@ -200,15 +194,9 @@ async function handleApplicantUpdate (
   }
 }
 
-async function handleApplicantCreate (
-  control: TriggerControl,
-  cud: TxCUD<Doc>,
-  actualTx: Tx,
-  res: Tx[],
-  tx: Tx
-): Promise<void> {
+async function handleApplicantCreate (control: TriggerControl, cud: TxCUD<Doc>, res: Tx[], tx: Tx): Promise<void> {
   if (control.hierarchy.isDerived(cud.objectClass, recruit.class.Applicant)) {
-    const createTx = actualTx as TxCreateDoc<Applicant>
+    const createTx = cud as TxCreateDoc<Applicant>
     const applicant = TxProcessor.createDoc2Doc(createTx)
     if (applicant.assignee != null) {
       await addAssigneeNotification(
