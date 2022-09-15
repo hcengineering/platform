@@ -19,6 +19,7 @@
   export let icon: Asset | AnySvelteComponent
   export let size: IconSize
   export let fill = 'currentColor'
+  export let iconProps: any | undefined = undefined
 
   function isAsset (icon: Asset | AnySvelteComponent): boolean {
     return typeof icon === 'string'
@@ -36,6 +37,6 @@
   <svg class="svg-{size}" {fill}>
     <use href={url} />
   </svg>
-{:else}
-  <svelte:component this={icon} {size} {fill} />
+{:else if typeof icon !== 'string'}
+  <svelte:component this={icon} {size} {fill} {...iconProps} />
 {/if}

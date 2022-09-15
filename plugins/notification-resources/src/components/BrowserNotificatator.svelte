@@ -40,7 +40,7 @@
   let settings: Map<Ref<NotificationType>, NotificationSetting> = new Map<Ref<NotificationType>, NotificationSetting>()
   let provider: NotificationProvider | undefined
 
-  const enabled = 'Notification' in window && Notification.permission !== 'denied'
+  $: enabled = 'Notification' in window && Notification?.permission !== 'denied'
 
   $: enabled &&
     providersQuery.query(
@@ -67,6 +67,8 @@
       }
     )
 
+  const alreadyShown = new Set<Ref<PlatformNotification>>()
+
   $: enabled &&
     settingsReceived &&
     provider !== undefined &&
@@ -77,7 +79,12 @@
         status: NotificationStatus.New
       },
       (res) => {
-        process(res)
+        process(res.reverse())
+      },
+      {
+        sort: {
+          modifiedOn: 1
+        }
       }
     )
 
@@ -94,25 +101,40 @@
     const enabled = setting?.enabled ?? provider?.default
     if (!enabled) return
     if ((setting?.modifiedOn ?? notification.modifiedOn) < 0) return
-    if (Notification.permission !== 'denied') {
+
+    if (Notification?.permission !== 'granted') {
+      await Notification?.requestPermission()
+    }
+
+    if (Notification?.permission === 'granted') {
       await notify(text, notification)
-    } else if (Notification.permission !== 'denied') {
-      const permission = await Notification.requestPermission()
-      if (permission !== 'denied') {
-        await notify(text, notification)
-      }
     }
   }
 
-  async function notify (text: string, notification: PlatformNotification): Promise<void> {
+  let clearTimer: number | undefined
+
+  async function notify (text: string, notifyInstance: PlatformNotification): Promise<void> {
+    if (alreadyShown.has(notifyInstance._id)) {
+      return
+    }
+    alreadyShown.add(notifyInstance._id)
+
+    if (clearTimer) {
+      clearTimeout(clearTimer)
+    }
+
+    clearTimer = setTimeout(() => {
+      alreadyShown.clear()
+    }, 5000)
+
     const lastView = $lastViews.get(lastViewId)
-    if ((lastView ?? notification.modifiedOn) > 0) {
+    if ((lastView ?? notifyInstance.modifiedOn) > 0) {
       // eslint-disable-next-line
-      new Notification(getCurrentLocation().path[1], { tag: notification._id, icon: '/favicon.png', body: text })
+      new Notification(getCurrentLocation().path[1], { tag: notifyInstance._id, icon: '/favicon.png', body: text })
       await notificationClient.updateLastView(
         lastViewId,
         contact.class.Employee,
-        notification.modifiedOn,
+        notifyInstance.modifiedOn,
         lastView === undefined
       )
     }

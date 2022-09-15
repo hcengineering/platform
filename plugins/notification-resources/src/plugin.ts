@@ -25,6 +25,8 @@ export default mergeIds(notificationId, notification, {
     Track: '' as IntlString,
     DontTrack: '' as IntlString,
     Remove: '' as IntlString,
-    RemoveAll: '' as IntlString
+    RemoveAll: '' as IntlString,
+    MarkAsRead: '' as IntlString,
+    MarkAllAsRead: '' as IntlString
   }
 })
