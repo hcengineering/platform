@@ -75,7 +75,9 @@
       const rectScroll = divScroll.getBoundingClientRect()
       let Y = event.clientY - dY
       if (Y < rectScroll.top + shiftTop + 2) Y = rectScroll.top + shiftTop + 2
-      if (Y > rectScroll.bottom - divBar.clientHeight - shiftBottom - 2) { Y = rectScroll.bottom - divBar.clientHeight - shiftBottom - 2 }
+      if (Y > rectScroll.bottom - divBar.clientHeight - shiftBottom - 2) {
+        Y = rectScroll.bottom - divBar.clientHeight - shiftBottom - 2
+      }
       divBar.style.top = Y - rectScroll.y + 'px'
       const topBar = Y - rectScroll.y - shiftTop - 2
       const heightScroll = rectScroll.height - 4 - divBar.clientHeight - shiftTop - shiftBottom
