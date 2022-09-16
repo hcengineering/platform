@@ -13,9 +13,10 @@
 // limitations under the License.
 //
 
-import type { Resource, Plugin } from '@anticrm/platform'
-import { plugin } from '@anticrm/platform'
 import { Doc } from '@anticrm/core'
+import type { Plugin, Resource } from '@anticrm/platform'
+import { plugin } from '@anticrm/platform'
+import { TriggerFunc } from '@anticrm/server-core'
 
 /**
  * @public
@@ -29,5 +30,8 @@ export default plugin(serverLeadId, {
   function: {
     LeadHTMLPresenter: '' as Resource<(doc: Doc) => string>,
     LeadTextPresenter: '' as Resource<(doc: Doc) => string>
+  },
+  trigger: {
+    OnLeadUpdate: '' as Resource<TriggerFunc>
   }
 })

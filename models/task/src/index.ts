@@ -565,4 +565,13 @@ export function createModel (builder: Builder): void {
     },
     task.action.ArchiveState
   )
+
+  builder.createDoc(
+    notification.class.NotificationType,
+    core.space.Model,
+    {
+      label: task.string.Assigned
+    },
+    task.ids.AssigneedNotification
+  )
 }

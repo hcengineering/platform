@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, FindResult, getObjectValue, Ref, RefTo, SortingOrder } from '@anticrm/core'
+  import { Doc, FindResult, getObjectValue, RefTo, SortingOrder } from '@anticrm/core'
   import { translate } from '@anticrm/platform'
   import presentation, { getClient } from '@anticrm/presentation'
   import type { State } from '@anticrm/task'
@@ -24,7 +24,6 @@
   import view from '../../plugin'
   import { buildConfigLookup, getPresenter } from '../../utils'
 
-  export let _class: Ref<Class<Doc>>
   export let filter: Filter
   export let onChange: (e: Filter) => void
 

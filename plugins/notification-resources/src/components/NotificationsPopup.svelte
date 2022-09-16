@@ -17,16 +17,17 @@
   import activity, { TxViewlet } from '@anticrm/activity'
   import { activityKey, ActivityKey } from '@anticrm/activity-resources'
   import { EmployeeAccount } from '@anticrm/contact'
-  import { getCurrentAccount, SortingOrder } from '@anticrm/core'
-  import type { Notification } from '@anticrm/notification'
-  import { createQuery } from '@anticrm/presentation'
-  import { Scroller } from '@anticrm/ui'
+  import core, { getCurrentAccount, WithLookup } from '@anticrm/core'
+  import { Notification, NotificationStatus } from '@anticrm/notification'
+  import { createQuery, getClient } from '@anticrm/presentation'
+  import { ActionIcon, IconCheck, IconDelete, Scroller } from '@anticrm/ui'
   import Label from '@anticrm/ui/src/components/Label.svelte'
   import notification from '../plugin'
   import NotificationView from './NotificationView.svelte'
 
   const query = createQuery()
-  let notifications: Notification[] = []
+  let notifications: WithLookup<Notification>[] = []
+  const client = getClient()
 
   $: query.query(
     notification.class.Notification,
@@ -37,7 +38,13 @@
       notifications = res
     },
     {
-      sort: { status: SortingOrder.Ascending, modifiedOn: SortingOrder.Descending }
+      sort: {
+        '$lookup.tx.modifiedOn': -1
+      },
+      limit: 30,
+      lookup: {
+        tx: core.class.TxCUD
+      }
     }
   )
 
@@ -47,16 +54,51 @@
   $: descriptors.query(activity.class.TxViewlet, {}, (result) => {
     viewlets = new Map(result.map((r) => [activityKey(r.objectClass, r.txClass), r]))
   })
+
+  const deleteNotifications = async () => {
+    const allNotifications = await client.findAll(notification.class.Notification, {
+      attachedTo: (getCurrentAccount() as EmployeeAccount).employee
+    })
+    for (const n of allNotifications) {
+      await client.remove(n)
+    }
+  }
+  const markAsReadNotifications = async () => {
+    const allNotifications = await client.findAll(notification.class.Notification, {
+      attachedTo: (getCurrentAccount() as EmployeeAccount).employee
+    })
+    for (const n of allNotifications) {
+      if (n.status !== NotificationStatus.Read) {
+        await client.updateDoc(n._class, n.space, n._id, {
+          status: NotificationStatus.Read
+        })
+      }
+    }
+  }
 </script>
 
 <div class="notifyPopup" class:justify-center={notifications.length === 0}>
-  <div class="header">
+  <div class="header flex-between">
     <span class="fs-title overflow-label"><Label label={notification.string.Notifications} /></span>
+    <div class="flex flex-gap-2">
+      <ActionIcon
+        icon={IconCheck}
+        label={notification.string.MarkAllAsRead}
+        size={'medium'}
+        action={markAsReadNotifications}
+      />
+      <ActionIcon
+        icon={IconDelete}
+        label={notification.string.RemoveAll}
+        size={'medium'}
+        action={deleteNotifications}
+      />
+    </div>
   </div>
   {#if notifications.length > 0}
     <Scroller>
       <div class="px-2 clear-mins">
-        {#each notifications as n (n._id)}
+        {#each notifications as n}
           <NotificationView notification={n} {viewlets} />
         {/each}
       </div>

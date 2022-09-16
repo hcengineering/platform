@@ -19,6 +19,7 @@ import core from '@anticrm/core'
 import lead from '@anticrm/lead'
 import view from '@anticrm/view'
 import serverLead from '@anticrm/server-lead'
+import serverCore from '@anticrm/server-core'
 
 export function createModel (builder: Builder): void {
   builder.mixin(lead.class.Lead, core.class.Class, view.mixin.HTMLPresenter, {
@@ -27,5 +28,9 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(lead.class.Lead, core.class.Class, view.mixin.TextPresenter, {
     presenter: serverLead.function.LeadTextPresenter
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverLead.trigger.OnLeadUpdate
   })
 }

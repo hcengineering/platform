@@ -42,6 +42,7 @@
   export let viewlets: Map<ActivityKey, TxViewlet>
   export let showIcon: boolean = true
   export let isNew: boolean = false
+  export let showDocument = false
 
   let ptx: DisplayTx | undefined
 
@@ -212,8 +213,8 @@
                   {/if}
                   <div class="strong">
                     <div class="flex flex-wrap gap-2" class:emphasized={value.added.length > 1}>
-                      {#each value.added as value}
-                        <svelte:component this={m.presenter} {value} />
+                      {#each value.added as cvalue}
+                        <svelte:component this={m.presenter} value={cvalue} />
                       {/each}
                     </div>
                   </div>
@@ -231,8 +232,8 @@
                   {/if}
                   <div class="strong">
                     <div class="flex flex-wrap gap-2 flex-grow" class:emphasized={value.removed.length > 1}>
-                      {#each value.removed as value}
-                        <svelte:component this={m.presenter} {value} />
+                      {#each value.removed as cvalue}
+                        <svelte:component this={m.presenter} value={cvalue} />
                       {/each}
                     </div>
                   </div>

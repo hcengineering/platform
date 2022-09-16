@@ -16,46 +16,82 @@
 <script lang="ts">
   import { TxViewlet } from '@anticrm/activity'
   import { ActivityKey, DisplayTx, getCollectionTx, newDisplayTx, TxView } from '@anticrm/activity-resources'
-  import core, { AttachedDoc, Doc, TxCollectionCUD } from '@anticrm/core'
+  import core, { AttachedDoc, Doc, TxCollectionCUD, WithLookup } from '@anticrm/core'
   import { Notification, NotificationStatus } from '@anticrm/notification'
   import { getClient } from '@anticrm/presentation'
+  import { ActionIcon, Component, getPlatformColor, IconBack, IconCheck, IconDelete } from '@anticrm/ui'
+  import view from '@anticrm/view'
+  import plugin from '../plugin'
 
-  export let notification: Notification
+  export let notification: WithLookup<Notification>
   export let viewlets: Map<ActivityKey, TxViewlet>
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  async function getDisplayTx (notification: Notification): Promise<DisplayTx | undefined> {
-    let tx = await client.findOne(core.class.TxCUD, { _id: notification.tx })
-    if (tx === undefined) return
-    if (hierarchy.isDerived(tx._class, core.class.TxCollectionCUD)) {
-      tx = getCollectionTx(tx as TxCollectionCUD<Doc, AttachedDoc>)
+  function getDisplayTx (notification: WithLookup<Notification>): DisplayTx | undefined {
+    let tx = notification.$lookup?.tx
+    if (tx) {
+      if (hierarchy.isDerived(tx._class, core.class.TxCollectionCUD)) {
+        tx = getCollectionTx(tx as TxCollectionCUD<Doc, AttachedDoc>)
+      }
+      return newDisplayTx(tx, hierarchy)
     }
-    return newDisplayTx(tx, hierarchy)
   }
 
-  async function read (notification: Notification): Promise<void> {
-    if (notification.status === NotificationStatus.Read) return
+  async function changeState (notification: Notification, status: NotificationStatus): Promise<void> {
+    if (notification.status === status) return
     await client.updateDoc(notification._class, notification.space, notification._id, {
-      status: NotificationStatus.Read
+      status
     })
   }
+
+  $: displayTx = getDisplayTx(notification)
 </script>
 
-{#await getDisplayTx(notification) then displayTx}
-  {#if displayTx}
-    <!-- svelte-ignore a11y-mouse-events-have-key-events -->
-    <div
-      class="content"
-      class:isNew={notification.status !== NotificationStatus.Read}
-      on:mouseover|once={() => {
-        read(notification)
-      }}
-    >
+{#if displayTx}
+  {@const isNew = notification.status === NotificationStatus.New}
+  <!-- svelte-ignore a11y-mouse-events-have-key-events -->
+  <div class="content">
+    <div class="flex-row">
+      <div class="bottom-divider mb-2">
+        <div class="flex-row-center mb-2 mt-2">
+          <div class="notify mr-4" style:color={isNew ? getPlatformColor(11) : '#555555'} />
+          <div class="flex-shrink">
+            <Component
+              is={view.component.ObjectPresenter}
+              props={{
+                objectId: displayTx.tx.objectId,
+                _class: displayTx.tx.objectClass,
+                value: displayTx.doc,
+                inline: true
+              }}
+            />
+          </div>
+          <div class="flex flex-reverse flex-gap-3 flex-grow">
+            <ActionIcon
+              icon={IconDelete}
+              label={plugin.string.Remove}
+              size={'medium'}
+              action={() => {
+                client.remove(notification)
+              }}
+            />
+            <ActionIcon
+              icon={isNew ? IconCheck : IconBack}
+              iconProps={!isNew ? { kind: 'curve' } : {}}
+              label={plugin.string.MarkAsRead}
+              size={'medium'}
+              action={() => {
+                changeState(notification, isNew ? NotificationStatus.Read : NotificationStatus.New)
+              }}
+            />
+          </div>
+        </div>
+      </div>
       <TxView tx={displayTx} {viewlets} showIcon={false} />
     </div>
-  {/if}
-{/await}
+  </div>
+{/if}
 
 <style lang="scss">
   .content {
@@ -63,7 +99,14 @@
     border-radius: 0.5rem;
     border: 1px solid transparent;
   }
-  .isNew {
-    border: 1px solid var(--theme-bg-focused-border);
+  .notify {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 0.25rem;
+    outline: 1px solid transparent;
+    outline-offset: 2px;
+    transition: all 0.1s ease-in-out;
+    z-index: -1;
+    background-color: currentColor;
   }
 </style>

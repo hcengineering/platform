@@ -9,6 +9,10 @@
     "PlatformNotification": "в системе",
     "Track": "Отслеживать",
     "DontTrack": "Не отслеживать",
-    "BrowserNotification": "в браузере"
+    "BrowserNotification": "в браузере",
+    "Remove": "Удалить нотификацию",
+    "RemoveAll": "Удалить все нотификации",
+    "MarkAllAsRead": "Отметить все нотификации как прочитанные",
+    "MarkAsRead": "Отметить нотификация прочитанной"
   }
 }

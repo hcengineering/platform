@@ -13,7 +13,9 @@
 // limitations under the License.
 //
 
+import { Employee } from '@anticrm/contact'
 import core, {
+  AttachedDoc,
   DocumentUpdate,
   Ref,
   Space,
@@ -27,6 +29,7 @@ import core, {
   WithLookup
 } from '@anticrm/core'
 import { TriggerControl } from '@anticrm/server-core'
+import { addAssigneeNotification } from '@anticrm/server-task-resources'
 import tracker, { Issue, IssueParentInfo, TimeSpendReport } from '@anticrm/tracker'
 
 async function updateSubIssues (
@@ -40,6 +43,22 @@ async function updateSubIssues (
     const docUpdate = typeof update === 'function' ? update(issue) : update
     return control.txFactory.createTxUpdateDoc(issue._class, issue.space, issue._id, docUpdate)
   })
+}
+
+/**
+ * @public
+ */
+export async function addTrackerAssigneeNotification (
+  control: TriggerControl,
+  res: Tx[],
+  issue: Issue,
+  assignee: Ref<Employee>,
+  ptx: TxCollectionCUD<Issue, AttachedDoc>
+): Promise<void> {
+  const team = (await control.findAll(tracker.class.Team, { _id: issue.space })).shift()
+  const issueName = `${team?.identifier ?? '?'}-${issue.number}`
+
+  await addAssigneeNotification(control, res, issue, issueName, assignee, ptx)
 }
 
 /**
@@ -66,6 +85,16 @@ export async function OnIssueUpdate (tx: Tx, control: TriggerControl): Promise<T
       const issue = TxProcessor.createDoc2Doc(createTx)
       const res: Tx[] = []
       await updateIssueParentEstimations(issue, res, control, [], issue.parents)
+
+      if (issue.assignee != null) {
+        await addTrackerAssigneeNotification(
+          control,
+          res,
+          issue,
+          issue.assignee,
+          tx as TxCollectionCUD<Issue, AttachedDoc>
+        )
+      }
       return res
     }
   }
@@ -73,7 +102,7 @@ export async function OnIssueUpdate (tx: Tx, control: TriggerControl): Promise<T
   if (actualTx._class === core.class.TxUpdateDoc) {
     const updateTx = actualTx as TxUpdateDoc<Issue>
     if (control.hierarchy.isDerived(updateTx.objectClass, tracker.class.Issue)) {
-      return await doIssueUpdate(updateTx, control)
+      return await doIssueUpdate(updateTx, control, tx as TxCollectionCUD<Issue, AttachedDoc>)
     }
   }
   if (actualTx._class === core.class.TxRemoveDoc) {
@@ -176,7 +205,11 @@ async function doTimeReportUpdate (cud: TxCUD<TimeSpendReport>, tx: Tx, control:
   return []
 }
 
-async function doIssueUpdate (updateTx: TxUpdateDoc<Issue>, control: TriggerControl): Promise<Tx[]> {
+async function doIssueUpdate (
+  updateTx: TxUpdateDoc<Issue>,
+  control: TriggerControl,
+  tx: TxCollectionCUD<Issue, AttachedDoc>
+): Promise<Tx[]> {
   const res: Tx[] = []
 
   let currentIssue: WithLookup<Issue> | undefined
@@ -188,6 +221,10 @@ async function doIssueUpdate (updateTx: TxUpdateDoc<Issue>, control: TriggerCont
     // We need to remove estimation information from out parent issue
     ;[currentIssue] = await control.findAll(tracker.class.Issue, { _id: updateTx.objectId }, { limit: 1 })
     return currentIssue
+  }
+
+  if (updateTx.operations.assignee != null) {
+    await addTrackerAssigneeNotification(control, res, await getCurrentIssue(), updateTx.operations.assignee, tx)
   }
 
   if (Object.prototype.hasOwnProperty.call(updateTx.operations, 'attachedTo')) {
