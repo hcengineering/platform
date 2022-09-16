@@ -18,7 +18,17 @@
   import { FindOptions } from '@anticrm/core'
   import presentation, { Card } from '@anticrm/presentation'
   import { Issue, TimeSpendReport } from '@anticrm/tracker'
-  import { Button, EditBox, EditStyle, eventToHTMLElement, IconAdd, Label, Scroller, tableSP, showPopup } from '@anticrm/ui'
+  import {
+    Button,
+    EditBox,
+    EditStyle,
+    eventToHTMLElement,
+    IconAdd,
+    Label,
+    Scroller,
+    tableSP,
+    showPopup
+  } from '@anticrm/ui'
   import { TableBrowser } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../../plugin'

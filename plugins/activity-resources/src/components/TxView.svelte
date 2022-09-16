@@ -324,7 +324,7 @@
   .comment,
   .mention {
     position: relative;
-    margin-top: .25rem;
+    margin-top: 0.25rem;
 
     &::after {
       content: '';

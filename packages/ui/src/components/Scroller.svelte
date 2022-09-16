@@ -42,12 +42,8 @@
 
   let timer: number
 
-  $: shiftTop = fade.offset?.top
-      ? (fade.multipler?.top ?? 0) * $themeOptions.fontSize
-      : 0
-  $: shiftBottom = fade.offset?.bottom
-      ? fade.multipler?.bottom! * $themeOptions.fontSize
-      : 0
+  $: shiftTop = fade.offset?.top ? (fade.multipler?.top ?? 0) * $themeOptions.fontSize : 0
+  $: shiftBottom = fade.offset?.bottom ? fade.multipler?.bottom! * $themeOptions.fontSize : 0
 
   const checkBar = (): void => {
     if (divBar && divScroll) {
@@ -78,10 +74,8 @@
     if (isScrolling && divBar && divScroll) {
       const rectScroll = divScroll.getBoundingClientRect()
       let Y = event.clientY - dY
-      if (Y < rectScroll.top + shiftTop + 2)
-        Y = rectScroll.top + shiftTop + 2
-      if (Y > rectScroll.bottom - divBar.clientHeight - shiftBottom - 2)
-        Y = rectScroll.bottom - divBar.clientHeight - shiftBottom - 2
+      if (Y < rectScroll.top + shiftTop + 2) Y = rectScroll.top + shiftTop + 2
+      if (Y > rectScroll.bottom - divBar.clientHeight - shiftBottom - 2) { Y = rectScroll.bottom - divBar.clientHeight - shiftBottom - 2 }
       divBar.style.top = Y - rectScroll.y + 'px'
       const topBar = Y - rectScroll.y - shiftTop - 2
       const heightScroll = rectScroll.height - 4 - divBar.clientHeight - shiftTop - shiftBottom
@@ -159,8 +153,12 @@
   $: if (boxHeight) checkFade()
 
   $: scrollerVars = `
-    --scroller-header-height: ${(fade.multipler && fade.multipler.top ? fade.multipler.top : 0) * $themeOptions.fontSize}px;
-    --scroller-footer-height: ${(fade.multipler && fade.multipler.bottom ? fade.multipler.bottom : 0) * $themeOptions.fontSize}px;
+    --scroller-header-height: ${
+      (fade.multipler && fade.multipler.top ? fade.multipler.top : 0) * $themeOptions.fontSize
+    }px;
+    --scroller-footer-height: ${
+      (fade.multipler && fade.multipler.bottom ? fade.multipler.bottom : 0) * $themeOptions.fontSize
+    }px;
     --scroller-header-fade: ${mask === 'none' || mask === 'top' ? '0px' : '2rem'};
     --scroller-footer-fade: ${mask === 'none' || mask === 'bottom' ? '0px' : '2rem'};
   `
@@ -168,11 +166,7 @@
 
 <svelte:window on:resize={_resize} />
 
-<div
-  class="scroller-container {invertScroll ? 'invert' : 'normal'}"
-  class:bottomStart
-  style={scrollerVars}
->
+<div class="scroller-container {invertScroll ? 'invert' : 'normal'}" class:bottomStart style={scrollerVars}>
   <div
     bind:this={divScroll}
     use:resizeObserver={(element) => {
@@ -200,7 +194,13 @@
     on:mousedown={onScrollStart}
     on:mouseleave={checkFade}
   />
-  <div class="track" class:hovered={isScrolling} class:fadeTopOffset={fade.offset?.top} class:fadeBottomOffset={fade.offset?.bottom} bind:this={divTrack} />
+  <div
+    class="track"
+    class:hovered={isScrolling}
+    class:fadeTopOffset={fade.offset?.top}
+    class:fadeBottomOffset={fade.offset?.bottom}
+    bind:this={divTrack}
+  />
 </div>
 
 <style lang="scss">
@@ -213,9 +213,13 @@
     min-height: 0;
 
     &.normal .track,
-    &.normal .bar { right: 2px; }
+    &.normal .bar {
+      right: 2px;
+    }
     &.invert .track,
-    &.invert .bar { left: 2px; }
+    &.invert .bar {
+      left: 2px;
+    }
   }
   .scroll {
     flex-grow: 1;
@@ -228,8 +232,8 @@
       width: 0;
     }
     &.verticalFade {
-      mask-image:
-        linear-gradient(0deg,
+      mask-image: linear-gradient(
+        0deg,
         rgba(0, 0, 0, 1) calc(var(--scroller-footer-height, 2.5rem)),
         rgba(0, 0, 0, 0) calc(var(--scroller-footer-height, 2.5rem)),
         rgba(0, 0, 0, 1) calc(var(--scroller-footer-height, 2.5rem) + var(--scroller-footer-fade, 0) + 1px),
@@ -268,8 +272,12 @@
     background-color: var(--scrollbar-track-color);
     border-radius: 0.5rem;
 
-    &.fadeTopOffset { top: var(--scroller-header-height); }
-    &.fadeBottomOffset { top: var(--scroller-footer-height); }
+    &.fadeTopOffset {
+      top: var(--scroller-header-height);
+    }
+    &.fadeBottomOffset {
+      top: var(--scroller-footer-height);
+    }
   }
   .bar {
     visibility: hidden;
