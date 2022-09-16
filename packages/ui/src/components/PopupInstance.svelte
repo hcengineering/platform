@@ -146,7 +146,7 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    max-height: calc(100vh - 2rem);
+    max-height: calc(100vh - 32px);
     background-color: transparent;
 
     &.anim {

@@ -200,3 +200,17 @@ export interface DashboardGroup {
   value: number
   color: number
 }
+
+interface Sides<T> {
+  top?: T
+  bottom?: T
+  left?: T
+  right?: T
+}
+export interface FadeOptions {
+  offset?: Sides<boolean>
+  multipler?: Sides<number>
+}
+export const defaultSP: FadeOptions = { multipler: { top: 0, bottom: 0 } }
+export const tableSP: FadeOptions = { offset: { top: true }, multipler: { top: 2.5, bottom: 0 } }
+export const issueSP: FadeOptions = { offset: { top: true }, multipler: { top: 3, bottom: 0 } }

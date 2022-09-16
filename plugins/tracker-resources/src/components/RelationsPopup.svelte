@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { createEventDispatcher, afterUpdate } from 'svelte'
   import { Class, Doc, Ref, RelatedDocument } from '@anticrm/core'
   import { getResource, IntlString, translate } from '@anticrm/platform'
   import { createQuery, getClient, ObjectSearchPopup, ObjectSearchResult } from '@anticrm/presentation'
@@ -9,6 +10,8 @@
   import chunter from '@anticrm/chunter'
 
   export let value: Issue
+
+  const dispatch = createEventDispatcher()
 
   const client = getClient()
   const query = createQuery()
@@ -119,6 +122,10 @@
     },
     ...(hasRelation ? removeRelationAction : [])
   ]
+
+  afterUpdate(() => dispatch('changeContent', true))
 </script>
 
-<Menu {actions} />
+{#if actions}
+  <Menu {actions} on:changeContent={() => dispatch('changeContent', true)} />
+{/if}

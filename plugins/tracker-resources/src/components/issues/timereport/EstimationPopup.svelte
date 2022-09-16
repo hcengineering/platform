@@ -18,7 +18,7 @@
   import { FindOptions } from '@anticrm/core'
   import presentation, { Card } from '@anticrm/presentation'
   import { Issue, TimeSpendReport } from '@anticrm/tracker'
-  import { Button, EditBox, EditStyle, eventToHTMLElement, IconAdd, Label, Scroller, showPopup } from '@anticrm/ui'
+  import { Button, EditBox, EditStyle, eventToHTMLElement, IconAdd, Label, Scroller, tableSP, showPopup } from '@anticrm/ui'
   import { TableBrowser } from '@anticrm/view-resources'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../../plugin'
@@ -75,7 +75,7 @@
   </div>
   <Label label={tracker.string.ChildEstimation} />:
   <div class="h-50">
-    <Scroller tableFade>
+    <Scroller fade={tableSP}>
       <TableBrowser
         showFilterBar={false}
         _class={tracker.class.Issue}
@@ -91,7 +91,7 @@
   </div>
   <Label label={tracker.string.ReportedTime} />:
   <div class="h-50">
-    <Scroller tableFade>
+    <Scroller fade={tableSP}>
       <TableBrowser
         _class={tracker.class.TimeSpendReport}
         query={{ attachedTo: { $in: [object._id, ...childIds] } }}

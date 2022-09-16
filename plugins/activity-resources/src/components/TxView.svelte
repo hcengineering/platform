@@ -324,11 +324,12 @@
   .comment,
   .mention {
     position: relative;
+    margin-top: .25rem;
 
     &::after {
       content: '';
       position: absolute;
-      bottom: -0.5rem;
+      bottom: -0.75rem;
       left: -0.625rem;
       right: -0.625rem;
       background-color: var(--accent-bg-color);
@@ -338,10 +339,10 @@
     }
   }
   .comment::after {
-    top: -0.25rem;
+    top: -0.375rem;
   }
   .mention::after {
-    top: -0.625rem;
+    top: -0.5rem;
   }
 
   .msgactivity-container {
@@ -350,7 +351,7 @@
   }
 
   .isNew {
-    padding-bottom: 0.25rem;
+    padding-bottom: 0.5rem;
     border-bottom: 1px solid var(--highlight-red);
   }
 

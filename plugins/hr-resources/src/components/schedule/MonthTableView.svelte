@@ -17,7 +17,7 @@
   import type { Request, RequestType, Staff } from '@anticrm/hr'
   import { getEmbeddedLabel } from '@anticrm/platform'
   import { createQuery, getClient } from '@anticrm/presentation'
-  import { Button, Label, Loading, Scroller } from '@anticrm/ui'
+  import { Button, Label, Loading, Scroller, tableSP } from '@anticrm/ui'
   import view, { BuildModelKey, Viewlet, ViewletPreference } from '@anticrm/view'
   import { Table, ViewletSettingButton } from '@anticrm/view-resources'
   import hr from '../../plugin'
@@ -196,7 +196,7 @@
 </script>
 
 {#if departmentStaff.length}
-  <Scroller tableFade>
+  <Scroller fade={tableSP}>
     <div class="p-2">
       {#if descr}
         {#if loading}
