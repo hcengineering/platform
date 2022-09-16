@@ -17,7 +17,7 @@
   import { FindOptions } from '@anticrm/core'
   import presentation, { Card } from '@anticrm/presentation'
   import { Issue, TimeSpendReport } from '@anticrm/tracker'
-  import { Button, eventToHTMLElement, IconAdd, Scroller, showPopup } from '@anticrm/ui'
+  import { Button, eventToHTMLElement, IconAdd, Scroller, tableSP, showPopup } from '@anticrm/ui'
   import { TableBrowser } from '@anticrm/view-resources'
   import tracker from '../../../plugin'
   import IssuePresenter from '../IssuePresenter.svelte'
@@ -54,7 +54,7 @@
     <IssuePresenter value={issue} disableClick />
   </svelte:fragment>
   <div class="h-50">
-    <Scroller tableFade>
+    <Scroller fade={tableSP}>
       <TableBrowser
         showFilterBar={false}
         _class={tracker.class.TimeSpendReport}

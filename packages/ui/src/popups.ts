@@ -156,17 +156,18 @@ export function fitPopupPositionedElement (
   newProps.maxWidth = newProps.width = ''
   if (alignment?.kind === 'submenu') {
     const dirH =
-      docWidth - rect.right - rectPopup.width - 16 > 0 ? 'right' : rect.left > docWidth - rect.right ? 'left' : 'right'
+      docWidth - rect.right - rectPopup.width - 12 > 0 ? 'right' : rect.left > docWidth - rect.left ? 'left' : 'right'
     const dirV =
-      docHeight - rect.top - rectPopup.height - 16 > 0
+      docHeight - rect.top - rectPopup.height - 20 > 0
         ? 'bottom'
-        : rect.bottom > docHeight - rect.top
+        : rect.bottom > rectPopup.height + 20
           ? 'top'
           : 'bottom'
     if (dirH === 'right') newProps.left = `${rect.right - 4}px`
     else newProps.right = `${docWidth - rect.left - 4}px`
     if (dirV === 'bottom') newProps.top = `${rect.top - 4}px`
     else newProps.bottom = `${docHeight - rect.bottom - 4}px`
+    direction = `${dirV}|${dirH}`
   } else if (alignment.position !== undefined) {
     if (alignment.position.v === 'top') {
       newProps.top = `${rect.top}px`
@@ -175,9 +176,9 @@ export function fitPopupPositionedElement (
     }
 
     if (alignment.position.h === 'right') {
-      newProps.left = `calc(${rect.right}px + .125rem)`
+      newProps.left = `${rect.right + 4}px`
     } else if (alignment.position.h === 'left') {
-      newProps.left = `calc(${rect.left - rectPopup.width}px - .125rem)`
+      newProps.left = `${rect.left - rectPopup.width - 4}px`
     }
     direction = alignment.position.v + '|' + alignment.position.h
   } else {
@@ -189,7 +190,7 @@ export function fitPopupPositionedElement (
       newProps.bottom = `${document.body.clientHeight - rect.top + 1}px`
       direction = 'top'
     } else {
-      newProps.top = modalHTML.style.bottom = '1rem'
+      newProps.top = modalHTML.style.bottom = '16px'
       direction = 'top'
     }
 
@@ -201,7 +202,7 @@ export function fitPopupPositionedElement (
       newProps.right = `${docWidth - rect.right}px`
       direction += '|left'
     } else {
-      newProps.left = '1rem'
+      newProps.left = '16px'
       direction += '|center'
     }
   }
@@ -233,7 +234,7 @@ export function fitPopupElement (
       return result
     } else if (element === 'right' && contentPanel !== undefined) {
       const rect = contentPanel.getBoundingClientRect()
-      newProps.top = `calc(${rect.top}px + 0.5rem)`
+      newProps.top = `calc(${rect.top}px + 8px)`
       newProps.bottom = '0.75rem'
       newProps.right = '0.75rem'
       newProps.maxWidth = '50%'
@@ -244,10 +245,10 @@ export function fitPopupElement (
       newProps.transform = 'translateX(-50%)'
       show = true
     } else if (element === 'float') {
-      newProps.top = 'calc(var(--status-bar-height) + .25rem)'
-      newProps.bottom = '.25rem'
+      newProps.top = 'calc(var(--status-bar-height) + 4px)'
+      newProps.bottom = '4px'
       newProps.left = '60%'
-      newProps.right = '.25rem'
+      newProps.right = '4px'
       show = true
     } else if (element === 'account') {
       newProps.bottom = '2.75rem'
@@ -263,9 +264,9 @@ export function fitPopupElement (
     } else if (element === 'full' && contentPanel !== undefined) {
       const rect = contentPanel.getBoundingClientRect()
       newProps.top = `${rect.top + 1}px`
-      newProps.bottom = '.25rem'
-      newProps.left = '.25rem'
-      newProps.right = '.25rem'
+      newProps.bottom = '4px'
+      newProps.left = '4px'
+      newProps.right = '4px'
       show = true
     } else if (element === 'content' && contentPanel !== undefined) {
       const rect = contentPanel.getBoundingClientRect()
@@ -282,7 +283,7 @@ export function fitPopupElement (
       } else {
         newProps.top = '15%'
       }
-      newProps.bottom = '0.75rem'
+      newProps.bottom = '12px'
       newProps.left = '50%'
       newProps.transform = 'translateX(-50%)'
     }

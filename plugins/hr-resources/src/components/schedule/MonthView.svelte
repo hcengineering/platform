@@ -28,6 +28,7 @@
     Label,
     LabelAndProps,
     Scroller,
+    tableSP,
     showPopup,
     tooltip
   } from '@anticrm/ui'
@@ -103,7 +104,7 @@
 </script>
 
 {#if departmentStaff.length}
-  <Scroller tableFade>
+  <Scroller fade={tableSP}>
     <table>
       <thead class="scroller-thead">
         <tr class="scroller-thead__tr">

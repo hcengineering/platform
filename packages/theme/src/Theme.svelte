@@ -15,6 +15,7 @@
 <script lang="ts">
   import { setContext, onMount } from 'svelte'
   import platform, { loadPluginStrings, setMetadata } from '@anticrm/platform'
+  import { themeStore as themeOptions } from './'
 
   const getCurrentTheme = (): string => localStorage.getItem('theme') ?? 'theme-dark'
   const getCurrnetFontSize = (): string => localStorage.getItem('fontsize') ?? 'normal-font'
@@ -28,6 +29,9 @@
   }
   const setRootFontSize = (fontsize: string) => {
     document.documentElement.setAttribute('class', `${getCurrentTheme()} ${fontsize}`)
+    themeOptions.update((opt) => {
+      return { ...opt, fontSize: fontsize === 'normal-font' ? 16 : 14 }
+    })
   }
 
   setContext('theme', {

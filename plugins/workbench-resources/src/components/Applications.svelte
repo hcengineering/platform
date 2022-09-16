@@ -17,6 +17,7 @@
   import type { Application } from '@anticrm/workbench'
   import { createEventDispatcher } from 'svelte'
   import AppItem from './AppItem.svelte'
+  import { Scroller } from '@anticrm/ui'
 
   export let active: Ref<Application> | undefined
   export let apps: Application[] = []
@@ -24,16 +25,18 @@
   const dispatch = createEventDispatcher()
 </script>
 
-<div class="flex-col">
-  {#each apps as app}
-    <AppItem
-      selected={app._id === active}
-      icon={app.icon}
-      label={app.label}
-      action={async () => {
-        dispatch('active', app)
-      }}
-      notify={false}
-    />
-  {/each}
+<div class="flex-col align-center py-1">
+  <Scroller invertScroll padding={'.5rem .5rem'}>
+    {#each apps as app}
+      <AppItem
+        selected={app._id === active}
+        icon={app.icon}
+        label={app.label}
+        action={async () => {
+          dispatch('active', app)
+        }}
+        notify={false}
+      />
+    {/each}
+  </Scroller>
 </div>

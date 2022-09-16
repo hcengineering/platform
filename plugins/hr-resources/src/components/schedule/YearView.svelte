@@ -17,7 +17,7 @@
   import contact from '@anticrm/contact-resources/src/plugin'
   import { Ref } from '@anticrm/core'
   import type { Request, RequestType, Staff } from '@anticrm/hr'
-  import { Label, LabelAndProps, Scroller, tooltip } from '@anticrm/ui'
+  import { Label, LabelAndProps, Scroller, tableSP, tooltip } from '@anticrm/ui'
   import hr from '../../plugin'
   import { fromTzDate, getMonth, getTotal, weekDays } from '../../utils'
   import RequestsPopup from '../RequestsPopup.svelte'
@@ -67,7 +67,7 @@
 </script>
 
 {#if departmentStaff.length}
-  <Scroller tableFade>
+  <Scroller fade={tableSP}>
     <table>
       <thead class="scroller-thead">
         <tr class="scroller-thead__tr">

@@ -15,13 +15,17 @@
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte'
   import { resizeObserver } from '../resize'
+  import { themeStore as themeOptions } from '@anticrm/theme'
+  import type { FadeOptions } from '../types'
+  import { defaultSP } from '../types'
 
   export let padding: string | undefined = undefined
   export let autoscroll: boolean = false
   // export let correctPadding: number = 0
   export let bottomStart: boolean = false
-  export let tableFade: boolean = false
-  export let fadeTopOffset: number = 40
+  export let fade: FadeOptions = defaultSP
+  // export let verticalFade: boolean = false
+  export let invertScroll: boolean = false
 
   let mask: 'top' | 'bottom' | 'both' | 'none' = 'none'
 
@@ -38,15 +42,16 @@
 
   let timer: number
 
-  $: shift = tableFade ? fadeTopOffset : 0
+  $: shiftTop = fade.offset?.top ? (fade.multipler?.top ?? 0) * $themeOptions.fontSize : 0
+  $: shiftBottom = fade.offset?.bottom ? fade.multipler?.bottom! * $themeOptions.fontSize : 0
 
   const checkBar = (): void => {
     if (divBar && divScroll) {
-      const trackH = divScroll.clientHeight - shift - 4
+      const trackH = divScroll.clientHeight - shiftTop - shiftBottom - 4
       const scrollH = divScroll.scrollHeight
       const proc = scrollH / trackH
       divBar.style.height = divScroll.clientHeight / proc + 'px'
-      divBar.style.top = divScroll.scrollTop / proc + shift + 2 + 'px'
+      divBar.style.top = divScroll.scrollTop / proc + shiftTop + shiftBottom + 2 + 'px'
       if (mask === 'none') divBar.style.visibility = 'hidden'
       else {
         divBar.style.visibility = 'visible'
@@ -57,7 +62,7 @@
           }
           timer = setTimeout(() => {
             if (divBar) divBar.style.opacity = '0'
-          }, 2000)
+          }, 1500)
         }
       }
       if (divScroll.clientHeight >= divScroll.scrollHeight) divBar.style.visibility = 'hidden'
@@ -69,11 +74,13 @@
     if (isScrolling && divBar && divScroll) {
       const rectScroll = divScroll.getBoundingClientRect()
       let Y = event.clientY - dY
-      if (Y < rectScroll.top + shift + 2) Y = rectScroll.top + shift + 2
-      if (Y > rectScroll.bottom - divBar.clientHeight - 2) Y = rectScroll.bottom - divBar.clientHeight - 2
+      if (Y < rectScroll.top + shiftTop + 2) Y = rectScroll.top + shiftTop + 2
+      if (Y > rectScroll.bottom - divBar.clientHeight - shiftBottom - 2) {
+        Y = rectScroll.bottom - divBar.clientHeight - shiftBottom - 2
+      }
       divBar.style.top = Y - rectScroll.y + 'px'
-      const topBar = Y - rectScroll.y - shift - 2
-      const heightScroll = rectScroll.height - 4 - divBar.clientHeight - shift
+      const topBar = Y - rectScroll.y - shiftTop - 2
+      const heightScroll = rectScroll.height - 4 - divBar.clientHeight - shiftTop - shiftBottom
       const procBar = topBar / heightScroll
       divScroll.scrollTop = (divScroll.scrollHeight - divScroll.clientHeight) * procBar
     }
@@ -146,21 +153,28 @@
 
   let boxHeight: number
   $: if (boxHeight) checkFade()
+
+  $: scrollerVars = `
+    --scroller-header-height: ${
+      (fade.multipler && fade.multipler.top ? fade.multipler.top : 0) * $themeOptions.fontSize
+    }px;
+    --scroller-footer-height: ${
+      (fade.multipler && fade.multipler.bottom ? fade.multipler.bottom : 0) * $themeOptions.fontSize
+    }px;
+    --scroller-header-fade: ${mask === 'none' || mask === 'top' ? '0px' : '2rem'};
+    --scroller-footer-fade: ${mask === 'none' || mask === 'bottom' ? '0px' : '2rem'};
+  `
 </script>
 
 <svelte:window on:resize={_resize} />
-<div class="scroller-container" class:bottomStart style="--scroller-header-height: {shift}px;">
+
+<div class="scroller-container {invertScroll ? 'invert' : 'normal'}" class:bottomStart style={scrollerVars}>
   <div
     bind:this={divScroll}
     use:resizeObserver={(element) => {
       divHeight = element.clientHeight
     }}
-    class="scroll relative"
-    class:tableFade
-    class:antiNav-topFade={mask === 'top'}
-    class:antiNav-bottomFade={mask === 'bottom'}
-    class:antiNav-bothFade={mask === 'both'}
-    class:antiNav-noneFade={mask === 'none'}
+    class="scroll relative verticalFade"
   >
     <div
       bind:this={divBox}
@@ -182,7 +196,13 @@
     on:mousedown={onScrollStart}
     on:mouseleave={checkFade}
   />
-  <div class="track" class:hovered={isScrolling} class:tableFade bind:this={divTrack} />
+  <div
+    class="track"
+    class:hovered={isScrolling}
+    class:fadeTopOffset={fade.offset?.top}
+    class:fadeBottomOffset={fade.offset?.bottom}
+    bind:this={divTrack}
+  />
 </div>
 
 <style lang="scss">
@@ -193,6 +213,15 @@
     height: 100%;
     min-width: 0;
     min-height: 0;
+
+    &.normal .track,
+    &.normal .bar {
+      right: 2px;
+    }
+    &.invert .track,
+    &.invert .bar {
+      left: 2px;
+    }
   }
   .scroll {
     flex-grow: 1;
@@ -203,6 +232,17 @@
 
     &::-webkit-scrollbar:vertical {
       width: 0;
+    }
+    &.verticalFade {
+      mask-image: linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 1) calc(var(--scroller-footer-height, 2.5rem)),
+        rgba(0, 0, 0, 0) calc(var(--scroller-footer-height, 2.5rem)),
+        rgba(0, 0, 0, 1) calc(var(--scroller-footer-height, 2.5rem) + var(--scroller-footer-fade, 0) + 1px),
+        rgba(0, 0, 0, 1) calc(100% - var(--scroller-header-height, 0) - var(--scroller-header-fade, 0) - 1px),
+        rgba(0, 0, 0, 0) calc(100% - var(--scroller-header-height, 0)),
+        rgba(0, 0, 0, 1) calc(100% - var(--scroller-header-height, 0))
+      );
     }
   }
   .box {
@@ -227,7 +267,6 @@
     position: absolute;
     top: 2px;
     bottom: 2px;
-    right: 2px;
     width: 8px;
     transform-origin: center;
     transform: scaleX(0);
@@ -235,8 +274,11 @@
     background-color: var(--scrollbar-track-color);
     border-radius: 0.5rem;
 
-    &.tableFade {
-      top: 42px;
+    &.fadeTopOffset {
+      top: var(--scroller-header-height);
+    }
+    &.fadeBottomOffset {
+      top: var(--scroller-footer-height);
     }
   }
   .bar {
@@ -267,7 +309,6 @@
 
       & + .track {
         visibility: visible;
-        right: 2px;
         transform: scaleX(1);
       }
     }

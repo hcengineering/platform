@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import type { Class, Doc, DocumentQuery, FindOptions, Ref } from '@anticrm/core'
-  import { Scroller } from '@anticrm/ui'
+  import { Scroller, tableSP } from '@anticrm/ui'
   import { BuildModelKey } from '@anticrm/view'
   import { onMount } from 'svelte'
   import { ActionContext } from '..'
@@ -57,7 +57,7 @@
 {#if showFilterBar}
   <FilterBar {_class} {query} on:change={(e) => (resultQuery = e.detail)} />
 {/if}
-<Scroller tableFade>
+<Scroller fade={tableSP}>
   <Table
     bind:this={table}
     {_class}

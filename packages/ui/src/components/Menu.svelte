@@ -81,7 +81,6 @@
   function showActionPopup (action: Action, target: HTMLElement): void {
     closePopup(category)
     if (action.component !== undefined) {
-      console.log(action.props)
       showPopup(
         action.component,
         action.props,

@@ -14,5 +14,11 @@
 //
 
 import '@anticrm/platform-rig/profiles/ui/svelte'
+import { writable } from 'svelte/store'
 
 export { default as Theme } from './Theme.svelte'
+
+export interface ThemeOptions {
+  fontSize: number
+}
+export const themeStore = writable<ThemeOptions>()
