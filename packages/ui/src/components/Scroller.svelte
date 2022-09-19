@@ -21,26 +21,31 @@
 
   export let padding: string | undefined = undefined
   export let autoscroll: boolean = false
-  // export let correctPadding: number = 0
   export let bottomStart: boolean = false
   export let fade: FadeOptions = defaultSP
-  // export let verticalFade: boolean = false
   export let invertScroll: boolean = false
+  export let horizontal: boolean = false
 
   let mask: 'top' | 'bottom' | 'both' | 'none' = 'none'
+  let maskH: 'left' | 'right' | 'both' | 'none' = 'none'
+
+  console.log('[SCROLLER] horizontal ', horizontal)
 
   let divScroll: HTMLElement
   let divBox: HTMLElement
   let divBar: HTMLElement
-  let divTrack: HTMLElement
-  let isScrolling: boolean = false
-  let dY: number
+  let divBarH: HTMLElement
+  let isScrolling: 'vertical' | 'horizontal' | false = false
+  let dXY: number
   let belowContent: number | undefined = undefined
   let beforeContent: number | undefined = undefined
+  let leftContent: number | undefined = undefined
+  let rightContent: number | undefined = undefined
   let scrolling: boolean = autoscroll
   let firstScroll: boolean = autoscroll
 
   let timer: number
+  let timerH: number
 
   $: shiftTop = fade.offset?.top ? (fade.multipler?.top ?? 0) * $themeOptions.fontSize : 0
   $: shiftBottom = fade.offset?.bottom ? fade.multipler?.bottom! * $themeOptions.fontSize : 0
@@ -68,21 +73,57 @@
       if (divScroll.clientHeight >= divScroll.scrollHeight) divBar.style.visibility = 'hidden'
     }
   }
+  const checkBarH = (): void => {
+    if (divBarH && divScroll) {
+      const trackW = divScroll.clientWidth - (mask !== 'none' ? 14 : 4)
+      const scrollW = divScroll.scrollWidth
+      const proc = scrollW / trackW
+      divBarH.style.width = divScroll.clientWidth / proc + 'px'
+      divBarH.style.left = divScroll.scrollLeft / proc + 2 + 'px'
+      if (maskH === 'none') divBarH.style.visibility = 'hidden'
+      else {
+        divBarH.style.visibility = 'visible'
+        if (divBarH) {
+          if (timerH) {
+            clearTimeout(timerH)
+            divBarH.style.opacity = '1'
+          }
+          timerH = setTimeout(() => {
+            if (divBarH) divBarH.style.opacity = '0'
+          }, 1500)
+        }
+      }
+      if (divScroll.clientWidth >= divScroll.scrollWidth) divBarH.style.visibility = 'hidden'
+    }
+  }
 
   const onScroll = (event: MouseEvent): void => {
     scrolling = false
     if (isScrolling && divBar && divScroll) {
       const rectScroll = divScroll.getBoundingClientRect()
-      let Y = event.clientY - dY
-      if (Y < rectScroll.top + shiftTop + 2) Y = rectScroll.top + shiftTop + 2
-      if (Y > rectScroll.bottom - divBar.clientHeight - shiftBottom - 2) {
-        Y = rectScroll.bottom - divBar.clientHeight - shiftBottom - 2
+      if (isScrolling === 'vertical') {
+        let Y = event.clientY - dXY
+        if (Y < rectScroll.top + shiftTop + 2) Y = rectScroll.top + shiftTop + 2
+        if (Y > rectScroll.bottom - divBar.clientHeight - shiftBottom - 2) {
+          Y = rectScroll.bottom - divBar.clientHeight - shiftBottom - 2
+        }
+        divBar.style.top = Y - rectScroll.y + 'px'
+        const topBar = Y - rectScroll.y - shiftTop - 2
+        const heightScroll = rectScroll.height - 4 - divBar.clientHeight - shiftTop - shiftBottom
+        const procBar = topBar / heightScroll
+        divScroll.scrollTop = (divScroll.scrollHeight - divScroll.clientHeight) * procBar
+      } else {
+        let X = event.clientX - dXY
+        if (X < rectScroll.left + 2) X = rectScroll.left + 2
+        if (X > rectScroll.right - divBarH.clientWidth - (mask !== 'none' ? 12 : 2)) {
+          X = rectScroll.right - divBarH.clientWidth - (mask !== 'none' ? 12 : 2)
+        }
+        divBarH.style.left = X - rectScroll.x + 'px'
+        const topBar = X - rectScroll.x - (mask !== 'none' ? 12 : 2)
+        const widthScroll = rectScroll.width - 2 - divBarH.clientWidth - (mask !== 'none' ? 12 : 2)
+        const procBar = topBar / widthScroll
+        divScroll.scrollLeft = (divScroll.scrollWidth - divScroll.clientWidth) * procBar
       }
-      divBar.style.top = Y - rectScroll.y + 'px'
-      const topBar = Y - rectScroll.y - shiftTop - 2
-      const heightScroll = rectScroll.height - 4 - divBar.clientHeight - shiftTop - shiftBottom
-      const procBar = topBar / heightScroll
-      divScroll.scrollTop = (divScroll.scrollHeight - divScroll.clientHeight) * procBar
     }
   }
   const onScrollEnd = (event: MouseEvent): void => {
@@ -95,16 +136,19 @@
     document.removeEventListener('mouseup', onScrollEnd)
     isScrolling = false
   }
-  const onScrollStart = (event: MouseEvent): void => {
+  const onScrollStart = (event: MouseEvent, direction: 'vertical' | 'horizontal'): void => {
     scrolling = false
     const el: HTMLElement = event.currentTarget as HTMLElement
     if (el && divScroll) {
-      dY = event.clientY - el.getBoundingClientRect().y
+      dXY =
+        direction === 'vertical'
+          ? event.clientY - el.getBoundingClientRect().y
+          : event.clientX - el.getBoundingClientRect().x
       document.addEventListener('mouseup', onScrollEnd)
       document.addEventListener('mousemove', onScroll)
       document.body.style.userSelect = 'none'
       document.body.style.webkitUserSelect = 'none'
-      isScrolling = true
+      isScrolling = direction
     }
   }
 
@@ -117,6 +161,15 @@
       else if (belowContent > 2) mask = 'top'
       else mask = 'none'
 
+      if (horizontal) {
+        leftContent = divScroll.scrollLeft
+        rightContent = divScroll.scrollWidth - divScroll.clientWidth - leftContent
+        if (leftContent > 2 && rightContent > 2) maskH = 'both'
+        else if (leftContent > 2) maskH = 'right'
+        else if (rightContent > 2) maskH = 'left'
+        else maskH = 'none'
+      }
+
       if (autoscroll) {
         if (scrolling && divScroll.scrollHeight - divScroll.clientHeight - divScroll.scrollTop > 10 && !firstScroll) {
           scrolling = false
@@ -125,6 +178,7 @@
       }
     }
     if (!isScrolling) checkBar()
+    if (!isScrolling && horizontal) checkBarH()
   }
 
   const scrollDown = (): void => {
@@ -142,6 +196,7 @@
         firstScroll = false
       }
       checkBar()
+      if (horizontal) checkBarH()
     }
   })
   onDestroy(() => {
@@ -153,6 +208,8 @@
 
   let boxHeight: number
   $: if (boxHeight) checkFade()
+  let boxWidth: number
+  $: if (boxWidth) checkFade()
 
   $: scrollerVars = `
     --scroller-header-height: ${
@@ -163,49 +220,75 @@
     }px;
     --scroller-header-fade: ${mask === 'none' || mask === 'top' ? '0px' : '2rem'};
     --scroller-footer-fade: ${mask === 'none' || mask === 'bottom' ? '0px' : '2rem'};
+    --scroller-left: ${maskH === 'none' || maskH === 'left' ? '0px' : '2rem'};
+    --scroller-right: ${maskH === 'none' || maskH === 'right' ? '0px' : '2rem'};
   `
 </script>
 
 <svelte:window on:resize={_resize} />
 
-<div class="scroller-container {invertScroll ? 'invert' : 'normal'}" class:bottomStart style={scrollerVars}>
-  <div
-    bind:this={divScroll}
-    use:resizeObserver={(element) => {
-      divHeight = element.clientHeight
-    }}
-    class="scroll relative verticalFade"
-  >
+<div style={scrollerVars} class="scroller-container {invertScroll ? 'invert' : 'normal'}" class:bottomStart>
+  <div class="horizontalBox" class:horizontalFade={horizontal}>
     <div
-      bind:this={divBox}
-      class="box"
-      style:padding
+      bind:this={divScroll}
       use:resizeObserver={(element) => {
-        boxHeight = element.clientHeight
+        divHeight = element.clientHeight
       }}
-      on:dragover
-      on:drop
+      class="scroll relative verticalFade"
+      class:overflowXauto={horizontal}
+      class:overflowXhidden={!horizontal}
     >
-      <slot />
+      <div
+        bind:this={divBox}
+        class="box"
+        style:padding
+        use:resizeObserver={(element) => {
+          boxHeight = element.clientHeight
+          boxWidth = element.clientWidth
+        }}
+        on:dragover
+        on:drop
+      >
+        <slot />
+      </div>
     </div>
   </div>
   <div
     class="bar"
-    class:hovered={isScrolling}
+    class:hovered={isScrolling === 'vertical'}
     bind:this={divBar}
-    on:mousedown={onScrollStart}
+    on:mousedown={(ev) => onScrollStart(ev, 'vertical')}
     on:mouseleave={checkFade}
   />
   <div
     class="track"
-    class:hovered={isScrolling}
+    class:hovered={isScrolling === 'vertical'}
     class:fadeTopOffset={fade.offset?.top}
     class:fadeBottomOffset={fade.offset?.bottom}
-    bind:this={divTrack}
   />
+  {#if horizontal}
+    <div
+      class="bar-horizontal"
+      class:hovered={isScrolling === 'horizontal'}
+      bind:this={divBarH}
+      on:mousedown={(ev) => onScrollStart(ev, 'horizontal')}
+      on:mouseleave={checkFade}
+    />
+    <div
+      class="track-horizontal"
+      class:hovered={isScrolling === 'horizontal'}
+      style:right={mask !== 'none' ? '12px' : '2px'}
+    />
+  {/if}
 </div>
 
 <style lang="scss">
+  .overflowXauto {
+    overflow-x: auto;
+  }
+  .overflowXhidden {
+    overflow-x: hidden;
+  }
   .scroller-container {
     position: relative;
     display: flex;
@@ -223,15 +306,35 @@
       left: 2px;
     }
   }
+  .horizontalBox {
+    min-width: 0;
+    min-height: 0;
+    width: 100%;
+    height: 100%;
+
+    &.horizontalFade {
+      mask-image: linear-gradient(
+        90deg,
+        rgba(0, 0, 0, 0) 0,
+        rgba(0, 0, 0, 1) var(--scroller-left, 0),
+        rgba(0, 0, 0, 1) calc(100% - var(--scroller-right, 0)),
+        rgba(0, 0, 0, 0) 100%
+      );
+    }
+  }
   .scroll {
     flex-grow: 1;
+    min-width: 0;
     min-height: 0;
-    height: max-content;
-    overflow-x: hidden;
+    width: 100%;
+    height: 100%;
     overflow-y: auto;
 
     &::-webkit-scrollbar:vertical {
       width: 0;
+    }
+    &::-webkit-scrollbar:horizontal {
+      height: 0;
     }
     &.verticalFade {
       mask-image: linear-gradient(
@@ -262,17 +365,20 @@
     }
   }
 
-  .track {
+  .track,
+  .track-horizontal {
     visibility: hidden;
     position: absolute;
-    top: 2px;
-    bottom: 2px;
-    width: 8px;
     transform-origin: center;
     transform: scaleX(0);
     transition: all 0.1s ease-in-out;
     background-color: var(--scrollbar-track-color);
     border-radius: 0.5rem;
+  }
+  .track {
+    top: 2px;
+    bottom: 2px;
+    width: 8px;
 
     &.fadeTopOffset {
       top: var(--scroller-header-height);
@@ -281,16 +387,17 @@
       top: var(--scroller-footer-height);
     }
   }
-  .bar {
+  .track-horizontal {
+    bottom: 2px;
+    left: 2px;
+    right: 2px;
+    height: 8px;
+  }
+  .bar,
+  .bar-horizontal {
     visibility: hidden;
     position: absolute;
-    top: 2px;
-    right: 2px;
-    width: 8px;
-    min-height: 2rem;
-    max-height: calc(100% - 12px);
     transform-origin: center;
-    transform: scaleX(0.5);
     background-color: var(--scrollbar-bar-color);
     border-radius: 0.125rem;
     opacity: 0;
@@ -302,18 +409,48 @@
     &:hover,
     &.hovered {
       background-color: var(--scrollbar-bar-hover);
-      transform: scaleX(1);
       border-radius: 0.25rem;
       opacity: 1 !important;
       box-shadow: 0 0 1px black;
+    }
+    &.hovered {
+      transition: none;
+    }
+  }
+  .bar {
+    top: 2px;
+    right: 2px;
+    width: 8px;
+    min-height: 2rem;
+    max-height: calc(100% - 12px);
+    transform: scaleX(0.5);
+
+    &:hover,
+    &.hovered {
+      transform: scaleX(1);
 
       & + .track {
         visibility: visible;
         transform: scaleX(1);
       }
     }
+  }
+  .bar-horizontal {
+    left: 2px;
+    bottom: 2px;
+    height: 8px;
+    min-width: 2rem;
+    max-width: calc(100% - 12px);
+    transform: scaleY(0.5);
+
+    &:hover,
     &.hovered {
-      transition: none;
+      transform: scaleY(1);
+
+      & + .track-horizontal {
+        visibility: visible;
+        transform: scaleY(1);
+      }
     }
   }
 </style>
