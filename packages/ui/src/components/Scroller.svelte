@@ -29,8 +29,6 @@
   let mask: 'top' | 'bottom' | 'both' | 'none' = 'none'
   let maskH: 'left' | 'right' | 'both' | 'none' = 'none'
 
-  console.log('[SCROLLER] horizontal ', horizontal)
-
   let divScroll: HTMLElement
   let divBox: HTMLElement
   let divBar: HTMLElement
