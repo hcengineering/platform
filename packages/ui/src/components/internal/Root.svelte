@@ -55,7 +55,7 @@
 
   let docWidth: number
   let docHeight: number
-  let isPortrait: boolean = window.innerWidth <= window.innerHeight
+  const isPortrait: boolean = window.innerWidth <= window.innerHeight
 </script>
 
 <svelte:window bind:innerWidth={docWidth} bind:innerHeight={docHeight} />

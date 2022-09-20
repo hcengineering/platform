@@ -562,8 +562,12 @@
     display: flex;
     flex-shrink: 0;
 
-    &.portrait { margin-left: .375rem; }
-    &.landscape { margin-top: .25rem; }
+    &.portrait {
+      margin-left: 0.375rem;
+    }
+    &.landscape {
+      margin-top: 0.25rem;
+    }
     &.mini {
       position: fixed;
       top: 4px;
@@ -578,7 +582,9 @@
       flex-direction: column;
       margin-bottom: 2rem;
     }
-    &.horizontal { margin-right: 1rem; }
+    &.horizontal {
+      margin-right: 1rem;
+    }
   }
 
   .cover {

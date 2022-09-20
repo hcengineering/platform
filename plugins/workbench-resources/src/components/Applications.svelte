@@ -27,12 +27,7 @@
 </script>
 
 <div class="flex align-center clear-mins apps-{direction}">
-  <Scroller
-    invertScroll
-    padding={'.5rem .5rem'}
-    horizontal={direction === 'horizontal'}
-    contentDirection={direction}
-  >
+  <Scroller invertScroll padding={'.5rem .5rem'} horizontal={direction === 'horizontal'} contentDirection={direction}>
     {#each apps as app}
       <AppItem
         selected={app._id === active}
@@ -50,10 +45,10 @@
 <style lang="scss">
   .apps-horizontal {
     margin: 0 1rem;
-    padding: 0 .25rem;
+    padding: 0 0.25rem;
   }
   .apps-vertical {
     margin: 1rem 0;
-    padding: .25rem 0;
+    padding: 0.25rem 0;
   }
 </style>

@@ -299,15 +299,23 @@
 
     &.normal {
       .track,
-      .bar { right: 2px; }
+      .bar {
+        right: 2px;
+      }
       .track-horizontal,
-      .bar-horizontal { bottom: 2px; }
+      .bar-horizontal {
+        bottom: 2px;
+      }
     }
     &.invert {
       .track,
-      .bar { left: 2px; }
+      .bar {
+        left: 2px;
+      }
       .track-horizontal,
-      .bar-horizontal { top: 2px; }
+      .bar-horizontal {
+        top: 2px;
+      }
     }
   }
   .horizontalBox {

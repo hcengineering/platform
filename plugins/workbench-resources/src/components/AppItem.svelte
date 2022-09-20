@@ -55,9 +55,11 @@
     .icon-container.mini {
       width: calc(var(--status-bar-height) - 8px);
       height: calc(var(--status-bar-height) - 8px);
-      border-radius: .25rem;
+      border-radius: 0.25rem;
     }
-    &.mini.selected { background-color: var(--button-border-hover); }
+    &.mini.selected {
+      background-color: var(--button-border-hover);
+    }
 
     .icon-container {
       width: 3.25rem;
