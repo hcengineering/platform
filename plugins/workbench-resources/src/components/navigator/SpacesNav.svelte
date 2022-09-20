@@ -13,25 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Class, Doc, Ref, Space } from '@anticrm/core'
+  import type { Doc, Ref, Space } from '@anticrm/core'
   import core from '@anticrm/core'
   import notification from '@anticrm/notification'
   import { NotificationClientImpl } from '@anticrm/notification-resources'
   import { getResource } from '@anticrm/platform'
-  import { getClient } from '@anticrm/presentation'
-  import {
-    Action,
-    AnyComponent,
-    getCurrentLocation,
-    IconAdd,
-    IconEdit,
-    IconSearch,
-    navigate,
-    showPanel,
-    showPopup
-  } from '@anticrm/ui'
-  import view from '@anticrm/view'
   import preference from '@anticrm/preference'
+  import { getClient } from '@anticrm/presentation'
+  import { Action, getCurrentLocation, IconAdd, IconEdit, IconSearch, navigate, showPopup } from '@anticrm/ui'
   import { getActions as getContributedActions } from '@anticrm/view-resources'
   import { SpacesNavModel } from '@anticrm/workbench'
   import { createEventDispatcher } from 'svelte'
@@ -69,16 +58,6 @@
     }
   }
 
-  const editSpace: Action = {
-    label: plugin.string.Open,
-    icon: IconEdit,
-    action: async (_id: Ref<Doc>): Promise<void> => {
-      const editor = await getEditor(model.spaceClass)
-      dispatch('open')
-      showPanel(editor ?? plugin.component.SpacePanel, _id, model.spaceClass, 'content')
-    }
-  }
-
   const starSpace: Action = {
     label: preference.string.Star,
     icon: preference.icon.Star,
@@ -89,27 +68,19 @@
     }
   }
 
-  async function getEditor (_class: Ref<Class<Doc>>): Promise<AnyComponent | undefined> {
-    const hierarchy = client.getHierarchy()
-    const clazz = hierarchy.getClass(_class)
-    const editorMixin = hierarchy.as(clazz, view.mixin.ObjectEditor)
-    if (editorMixin?.editor == null && clazz.extends != null) return getEditor(clazz.extends)
-    return editorMixin.editor
-  }
-
   function selectSpace (id: Ref<Space>, spaceSpecial?: string) {
     dispatch('space', { space: id, spaceSpecial })
   }
 
   async function getActions (space: Space): Promise<Action[]> {
-    const result = [editSpace, starSpace]
+    const result = [starSpace]
 
     const extraActions = await getContributedActions(client, space, core.class.Space)
     for (const act of extraActions) {
       result.push({
         icon: act.icon ?? IconEdit,
         label: act.label,
-        action: async (evt: Event) => {
+        action: async (ctx: any, evt: Event) => {
           const impl = await getResource(act.action)
           await impl(space, evt, act.actionProps)
         }

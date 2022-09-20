@@ -122,19 +122,25 @@
     if (presenter === undefined) return
 
     if (useMixinProxy) {
-      result.push({
+      const newValue = {
         value: attribute.attributeOf + '.' + attribute.name,
         label: attribute.label,
         enabled: false,
         _class: attribute.attributeOf
-      })
+      }
+      if (result.find((it) => it._class === newValue._class && it.value === newValue.value) === undefined) {
+        result.push(newValue)
+      }
     } else {
-      result.push({
+      const newValue = {
         value,
         label: attribute.label,
         enabled: false,
         _class: attribute.attributeOf
-      })
+      }
+      if (result.find((it) => it._class === newValue._class && it.value === newValue.value) === undefined) {
+        result.push(newValue)
+      }
     }
   }
   function getConfig (viewlet: Viewlet, preference: ViewletPreference | undefined): AttributeConfig[] {

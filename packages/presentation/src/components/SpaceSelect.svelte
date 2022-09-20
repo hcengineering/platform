@@ -17,24 +17,27 @@
   import { getClient } from '../utils'
 
   import {
+    AnySvelteComponent,
+    Button,
+    ButtonKind,
+    ButtonSize,
+    eventToHTMLElement,
+    getEventPositionElement,
+    getFocusManager,
+    IconFolder,
     Label,
     showPopup,
-    IconFolder,
-    Button,
-    eventToHTMLElement,
-    getFocusManager,
-    TooltipAlignment,
-    ButtonKind,
-    ButtonSize
+    TooltipAlignment
   } from '@anticrm/ui'
   import SpacesPopup from './SpacesPopup.svelte'
 
-  import type { Ref, Class, Space, DocumentQuery } from '@anticrm/core'
+  import type { Class, DocumentQuery, FindOptions, Ref, Space } from '@anticrm/core'
   import { createEventDispatcher } from 'svelte'
   import { ObjectCreate } from '../types'
 
   export let _class: Ref<Class<Space>>
   export let spaceQuery: DocumentQuery<Space> | undefined = { archived: false }
+  export let spaceOptions: FindOptions<Space> | undefined = {}
   export let label: IntlString
   export let value: Ref<Space> | undefined
   export let focusIndex = -1
@@ -46,6 +49,8 @@
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = undefined
   export let allowDeselect = false
+  export let component: AnySvelteComponent | undefined = undefined
+  export let componentProps: any | undefined = undefined
 
   let selected: Space | undefined
 
@@ -74,12 +79,14 @@
         _class,
         label,
         allowDeselect,
-        options: { sort: { modifiedOn: -1 } },
-        selected,
+        spaceOptions: { ...(spaceOptions ?? {}), sort: { ...(spaceOptions?.sort ?? {}), modifiedOn: -1 } },
+        selected: selected?._id,
         spaceQuery,
-        create
+        create,
+        component,
+        componentProps
       },
-      eventToHTMLElement(ev),
+      !$$slots.content ? eventToHTMLElement(ev) : getEventPositionElement(ev),
       (result) => {
         if (result) {
           value = result._id
@@ -91,19 +98,25 @@
   }
 </script>
 
-<Button
-  id="space.selector"
-  {focus}
-  {focusIndex}
-  icon={IconFolder}
-  {size}
-  {kind}
-  {justify}
-  {width}
-  showTooltip={{ label, direction: labelDirection }}
-  on:click={showSpacesPopup}
->
-  <span slot="content" class="overflow-label disabled text-sm">
-    {#if selected}{selected.name}{:else}<Label {label} />{/if}
-  </span>
-</Button>
+{#if $$slots.content}
+  <div id="space.selector" class="w-full h-full flex-streatch" on:click={showSpacesPopup}>
+    <slot name="content" />
+  </div>
+{:else}
+  <Button
+    id="space.selector"
+    {focus}
+    {focusIndex}
+    icon={IconFolder}
+    {size}
+    {kind}
+    {justify}
+    {width}
+    showTooltip={{ label, direction: labelDirection }}
+    on:click={showSpacesPopup}
+  >
+    <span slot="content" class="overflow-label disabled text-sm">
+      {#if selected}{selected.name}{:else}<Label {label} />{/if}
+    </span>
+  </Button>
+{/if}

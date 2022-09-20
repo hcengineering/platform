@@ -47,7 +47,7 @@ import attachment from '@anticrm/model-attachment'
 import core, { TAttachedDoc, TSpace } from '@anticrm/model-core'
 import notification from '@anticrm/model-notification'
 import preference, { TPreference } from '@anticrm/model-preference'
-import view, { createAction } from '@anticrm/model-view'
+import view, { actionTemplates as viewTemplates, createAction } from '@anticrm/model-view'
 import workbench from '@anticrm/model-workbench'
 import chunter from './plugin'
 
@@ -477,6 +477,19 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(chunter.class.Channel, core.class.Class, view.mixin.ClassFilters, {
     filters: ['private', 'archived']
+  })
+
+  createAction(builder, {
+    ...viewTemplates.open,
+    target: chunter.class.Channel,
+    context: {
+      mode: ['browser', 'context'],
+      group: 'create'
+    },
+    action: workbench.actionImpl.Navigate,
+    actionProps: {
+      mode: 'space'
+    }
   })
 }
 

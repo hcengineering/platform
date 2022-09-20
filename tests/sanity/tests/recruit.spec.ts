@@ -81,7 +81,7 @@ test.describe('recruit tests', () => {
     // await page.click('.applications-container .flex-row-center .flex-center')
     await page.click('button[id="appls.add"]')
 
-    await page.click('button[id = "space.selector"]')
+    await page.click('[id = "space.selector"]')
 
     await page.fill('[placeholder="Search..."]', vacancyId)
     await page.click(`button:has-text("${vacancyId}")`)
@@ -110,7 +110,7 @@ test.describe('recruit tests', () => {
 
     // Create Applicatio n1
     await page.click('button:has-text("Application")')
-    await page.click('form[id="recruit:string:CreateApplication"] button:has-text("Talent")')
+    await page.click('form[id="recruit:string:CreateApplication"] [id="vacancy.talant.selector"]')
     await page.click('button:has-text("Alex P.")')
     await page.click('form[id="recruit:string:CreateApplication"] button:has-text("Create")')
     await page.waitForSelector('form.antiCard', { state: 'detached' })

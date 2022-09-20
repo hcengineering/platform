@@ -54,6 +54,7 @@ export interface EmailNotification extends Doc {
  */
 export enum NotificationStatus {
   New,
+  Notified,
   Read
 }
 

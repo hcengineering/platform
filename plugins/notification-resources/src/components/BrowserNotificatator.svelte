@@ -22,8 +22,9 @@
     NotificationStatus,
     NotificationType
   } from '@anticrm/notification'
-  import { createQuery } from '@anticrm/presentation'
-  import { getCurrentLocation } from '@anticrm/ui'
+  import { createQuery, getClient } from '@anticrm/presentation'
+  import { getCurrentLocation, showPanel } from '@anticrm/ui'
+  import view from '@anticrm/view'
   import notification from '../plugin'
   import { NotificationClientImpl } from '../utils'
 
@@ -76,7 +77,7 @@
       notification.class.Notification,
       {
         attachedTo: (getCurrentAccount() as EmployeeAccount).employee,
-        status: NotificationStatus.New
+        status: { $nin: [NotificationStatus.Read] }
       },
       (res) => {
         process(res.reverse())
@@ -110,14 +111,22 @@
       await notify(text, notification)
     }
   }
+  const client = getClient()
 
   let clearTimer: number | undefined
 
   async function notify (text: string, notifyInstance: PlatformNotification): Promise<void> {
+    if (notifyInstance.status !== NotificationStatus.New) {
+      return
+    }
     if (alreadyShown.has(notifyInstance._id)) {
       return
     }
     alreadyShown.add(notifyInstance._id)
+
+    client.updateDoc(notifyInstance._class, notifyInstance.space, notifyInstance._id, {
+      status: NotificationStatus.Notified
+    })
 
     if (clearTimer) {
       clearTimeout(clearTimer)
@@ -129,14 +138,23 @@
 
     const lastView = $lastViews.get(lastViewId)
     if ((lastView ?? notifyInstance.modifiedOn) > 0) {
-      // eslint-disable-next-line
-      new Notification(getCurrentLocation().path[1], { tag: notifyInstance._id, icon: '/favicon.png', body: text })
       await notificationClient.updateLastView(
         lastViewId,
         contact.class.Employee,
         notifyInstance.modifiedOn,
         lastView === undefined
       )
+    }
+
+    // eslint-disable-next-line
+    const notification = new Notification(getCurrentLocation().path[1], {
+      tag: notifyInstance._id,
+      icon: '/favicon.png',
+      body: text
+    })
+
+    notification.onclick = () => {
+      showPanel(view.component.EditDoc, notifyInstance.attachedTo, notifyInstance.attachedToClass, 'content')
     }
   }
 </script>

@@ -23,6 +23,7 @@
     Button,
     ButtonKind,
     ButtonSize,
+    getEventPositionElement,
     getFocusManager,
     Icon,
     IconOpen,
@@ -59,6 +60,7 @@
   export let focusIndex = -1
   export let showTooltip: LabelAndProps | undefined = undefined
   export let showNavigate = true
+  export let id: string | undefined = undefined
 
   export let create: ObjectCreate | undefined = undefined
 
@@ -81,7 +83,7 @@
   }
   const mgr = getFocusManager()
 
-  const _click = (): void => {
+  const _click = (ev: MouseEvent): void => {
     if (!readonly) {
       showPopup(
         UsersPopup,
@@ -97,7 +99,7 @@
           placeholder,
           create
         },
-        container,
+        !$$slots.content ? container : getEventPositionElement(ev),
         (result) => {
           if (result === null) {
             value = null
@@ -116,44 +118,54 @@
   $: hideIcon = size === 'x-large' || (size === 'large' && kind !== 'link')
 </script>
 
-<div bind:this={container} class="min-w-0" class:w-full={width === '100%'}>
-  <Button {focusIndex} width={width ?? 'min-content'} {size} {kind} {justify} {showTooltip} on:click={_click}>
-    <span slot="content" class="overflow-label flex-grow" class:flex-between={showNavigate && selected}>
-      <div
-        class="disabled"
-        style:width={showNavigate && selected
-          ? `calc(${width ?? 'min-content'} - 1.5rem)`
-          : `${width ?? 'min-content'}`}
-        use:tooltip={selected !== undefined ? { label: getEmbeddedLabel(getName(selected)) } : undefined}
-      >
-        {#if selected}
-          {#if hideIcon || selected}
-            <UserInfo value={selected} size={kind === 'link' ? 'x-small' : 'tiny'} {icon} />
-          {:else}
-            {getName(selected)}
-          {/if}
-        {:else}
-          <div class="flex-row-center">
-            {#if icon}
-              <Icon {icon} size={kind === 'link' ? 'small' : size} />
+<div {id} bind:this={container} class="min-w-0" class:w-full={width === '100%'} class:h-full={$$slots.content}>
+  {#if $$slots.content}
+    <div
+      class="w-full h-full flex-streatch"
+      on:click={_click}
+      use:tooltip={selected !== undefined ? { label: getEmbeddedLabel(getName(selected)) } : undefined}
+    >
+      <slot name="content" />
+    </div>
+  {:else}
+    <Button {focusIndex} width={width ?? 'min-content'} {size} {kind} {justify} {showTooltip} on:click={_click}>
+      <span slot="content" class="overflow-label flex-grow" class:flex-between={showNavigate && selected}>
+        <div
+          class="disabled"
+          style:width={showNavigate && selected
+            ? `calc(${width ?? 'min-content'} - 1.5rem)`
+            : `${width ?? 'min-content'}`}
+          use:tooltip={selected !== undefined ? { label: getEmbeddedLabel(getName(selected)) } : undefined}
+        >
+          {#if selected}
+            {#if hideIcon || selected}
+              <UserInfo value={selected} size={kind === 'link' ? 'x-small' : 'tiny'} {icon} />
+            {:else}
+              {getName(selected)}
             {/if}
-            <div class="ml-2">
-              <Label {label} />
+          {:else}
+            <div class="flex-row-center">
+              {#if icon}
+                <Icon {icon} size={kind === 'link' ? 'small' : size} />
+              {/if}
+              <div class="ml-2">
+                <Label {label} />
+              </div>
             </div>
-          </div>
+          {/if}
+        </div>
+        {#if selected && showNavigate}
+          <ActionIcon
+            icon={IconOpen}
+            size={'small'}
+            action={() => {
+              if (selected) {
+                showPanel(view.component.EditDoc, selected._id, selected._class, 'content')
+              }
+            }}
+          />
         {/if}
-      </div>
-      {#if selected && showNavigate}
-        <ActionIcon
-          icon={IconOpen}
-          size={'small'}
-          action={() => {
-            if (selected) {
-              showPanel(view.component.EditDoc, selected._id, selected._class, 'content')
-            }
-          }}
-        />
-      {/if}
-    </span>
-  </Button>
+      </span>
+    </Button>
+  {/if}
 </div>

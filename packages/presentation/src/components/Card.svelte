@@ -87,7 +87,9 @@
           if (r instanceof Promise) {
             r.then(() => {
               okProcessing = false
-              dispatch('close')
+              if (!createMore) {
+                dispatch('close')
+              }
             })
           } else if (!createMore) {
             okProcessing = false
