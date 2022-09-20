@@ -49,14 +49,19 @@
 </script>
 
 {#if displayTx}
-  {@const isNew = notification.status === NotificationStatus.New}
+  {@const isNew = notification.status !== NotificationStatus.Read}
   <!-- svelte-ignore a11y-mouse-events-have-key-events -->
   <div class="content">
     <div class="flex-row">
       <div class="bottom-divider mb-2">
         <div class="flex-row-center mb-2 mt-2">
           <div class="notify mr-4" style:color={isNew ? getPlatformColor(11) : '#555555'} />
-          <div class="flex-shrink">
+          <div
+            class="flex-shrink"
+            on:click={() => {
+              changeState(notification, NotificationStatus.Read)
+            }}
+          >
             <Component
               is={view.component.ObjectPresenter}
               props={{
@@ -82,7 +87,7 @@
               label={plugin.string.MarkAsRead}
               size={'medium'}
               action={() => {
-                changeState(notification, isNew ? NotificationStatus.Read : NotificationStatus.New)
+                changeState(notification, isNew ? NotificationStatus.Read : NotificationStatus.Notified)
               }}
             />
           </div>

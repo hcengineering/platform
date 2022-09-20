@@ -15,7 +15,7 @@
 
 // To help typescript locate view plugin properly
 import automation, { AutomationSupport } from '@anticrm/automation'
-import { Board, Card, MenuPage, CommonBoardPreference, CardCover, boardId } from '@anticrm/board'
+import { Board, boardId, Card, CardCover, CommonBoardPreference, MenuPage } from '@anticrm/board'
 import type { Employee } from '@anticrm/contact'
 import { Class, DOMAIN_MODEL, IndexKind, Markup, Ref, Type } from '@anticrm/core'
 import {
@@ -35,13 +35,13 @@ import attachment from '@anticrm/model-attachment'
 import chunter from '@anticrm/model-chunter'
 import contact from '@anticrm/model-contact'
 import core, { TDoc, TType } from '@anticrm/model-core'
+import preference, { TPreference } from '@anticrm/model-preference'
+import tags from '@anticrm/model-tags'
 import task, { TSpaceWithStates, TTask } from '@anticrm/model-task'
-import view, { actionTemplates, createAction } from '@anticrm/model-view'
+import view, { actionTemplates, createAction, actionTemplates as viewTemplates } from '@anticrm/model-view'
 import workbench, { Application } from '@anticrm/model-workbench'
 import { IntlString } from '@anticrm/platform'
 import type { AnyComponent } from '@anticrm/ui'
-import preference, { TPreference } from '@anticrm/model-preference'
-import tags from '@anticrm/model-tags'
 import board from './plugin'
 
 @Model(board.class.Board, task.class.SpaceWithStates)
@@ -526,6 +526,19 @@ export function createModel (builder: Builder): void {
     },
     board.action.ConvertToCard
   )
+
+  createAction(builder, {
+    ...viewTemplates.open,
+    target: board.class.Board,
+    context: {
+      mode: ['browser', 'context'],
+      group: 'create'
+    },
+    action: workbench.actionImpl.Navigate,
+    actionProps: {
+      mode: 'space'
+    }
+  })
 }
 
 export { boardOperation } from './migration'

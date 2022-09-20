@@ -30,6 +30,7 @@ export interface Vacancy extends SpaceWithStates {
   dueTo?: Timestamp
   location?: string
   company?: Ref<Organization>
+  comments?: number
 }
 
 /**

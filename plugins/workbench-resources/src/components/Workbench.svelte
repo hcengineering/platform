@@ -126,7 +126,7 @@
     notification.class.Notification,
     {
       attachedTo: account.employee,
-      status: NotificationStatus.New
+      status: { $nin: [NotificationStatus.Read] }
     },
     (res) => {
       hasNotification = res.length > 0

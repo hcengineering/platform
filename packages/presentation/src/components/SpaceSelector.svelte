@@ -13,15 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Class, DocumentQuery, Ref, Space } from '@anticrm/core'
+  import type { Class, DocumentQuery, FindOptions, Ref, Space } from '@anticrm/core'
   import type { IntlString } from '@anticrm/platform'
-  import { ButtonKind, ButtonSize } from '@anticrm/ui'
+  import { AnySvelteComponent, ButtonKind, ButtonSize } from '@anticrm/ui'
   import { ObjectCreate } from '../types'
   import SpaceSelect from './SpaceSelect.svelte'
 
   export let space: Ref<Space> | undefined = undefined
   export let _class: Ref<Class<Space>>
   export let query: DocumentQuery<Space> = { archived: false }
+  export let queryOptions: FindOptions<Space> | undefined = {}
   export let label: IntlString
   export let kind: ButtonKind = 'no-border'
   export let size: ButtonSize = 'small'
@@ -29,6 +30,8 @@
   export let width: string | undefined = undefined
   export let allowDeselect = false
   export let focus = true
+  export let component: AnySvelteComponent | undefined = undefined
+  export let componentProps: any | undefined = undefined
 
   export let create: ObjectCreate | undefined = undefined
 </script>
@@ -39,12 +42,15 @@
   {focus}
   {_class}
   spaceQuery={query}
+  spaceOptions={queryOptions}
   {allowDeselect}
   {label}
   {size}
   {kind}
   {justify}
   {width}
+  {component}
+  {componentProps}
   bind:value={space}
   on:change={(evt) => {
     space = evt.detail

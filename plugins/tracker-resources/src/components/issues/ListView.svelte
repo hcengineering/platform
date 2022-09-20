@@ -53,7 +53,6 @@
     },
     {
       sort: { [orderByKey]: issuesSortOrderMap[orderByKey] },
-      limit: 200,
       lookup: {
         assignee: contact.class.Employee,
         status: tracker.class.IssueStatus,

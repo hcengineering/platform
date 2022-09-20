@@ -13,46 +13,55 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Channel, formatName } from '@anticrm/contact'
+  import attachment from '@anticrm/attachment'
+  import chunter from '@anticrm/chunter'
+  import contact, { Channel, formatName, Person } from '@anticrm/contact'
   import { ChannelsEditor } from '@anticrm/contact-resources'
-  import { Avatar, createQuery } from '@anticrm/presentation'
-  import type { Candidate } from '@anticrm/recruit'
+  import { Avatar, createQuery, getClient } from '@anticrm/presentation'
   import { Component, Label, showPanel } from '@anticrm/ui'
   import view from '@anticrm/view'
-  import chunter from '@anticrm/chunter'
-  import attachment from '@anticrm/attachment'
   import recruit from '../plugin'
 
-  export let candidate: Candidate
+  export let candidate: Person | undefined
   export let disabled: boolean = false
 
   let channels: Channel[] = []
   const channelsQuery = createQuery()
-  channelsQuery.query(
-    contact.class.Channel,
-    {
-      attachedTo: candidate._id
-    },
-    (res) => {
-      channels = res
-    }
-  )
+  $: if (candidate !== undefined) {
+    channelsQuery.query(
+      contact.class.Channel,
+      {
+        attachedTo: candidate._id
+      },
+      (res) => {
+        channels = res
+      }
+    )
+  } else {
+    channelsQuery.unsubscribe()
+  }
+  const client = getClient()
 </script>
 
-<div class="flex-col h-full card-container">
+<div class="flex-col h-full flex-grow card-container">
   <div class="label uppercase"><Label label={recruit.string.Talent} /></div>
-  <Avatar avatar={candidate.avatar} size={'large'} />
+  <Avatar avatar={candidate?.avatar} size={'large'} />
   {#if candidate}
     <div
       class="name lines-limit-2"
       class:over-underline={!disabled}
       on:click={() => {
-        if (!disabled) showPanel(view.component.EditDoc, candidate._id, candidate._class, 'content')
+        if (!disabled && candidate) {
+          showPanel(view.component.EditDoc, candidate._id, candidate._class, 'content')
+        }
       }}
     >
       {formatName(candidate.name)}
     </div>
-    <div class="description lines-limit-2">{candidate.title ?? ''}</div>
+    {#if client.getHierarchy().hasMixin(candidate, recruit.mixin.Candidate)}
+      {@const cand = client.getHierarchy().as(candidate, recruit.mixin.Candidate)}
+      <div class="description lines-limit-2">{cand.title ?? ''}</div>
+    {/if}
     <div class="description overflow-label">{candidate.city ?? ''}</div>
     <div class="footer flex flex-reverse flex-grow">
       <div class="flex-center flex-wrap">
@@ -89,6 +98,8 @@
     transition-timing-function: var(--timing-shadow);
     transition-duration: 0.15s;
     user-select: text;
+    min-width: 15rem;
+    min-height: 15rem;
 
     &:hover {
       background-color: var(--board-card-bg-hover);

@@ -13,7 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Class, Doc, DocumentQuery, Ref, Space } from '@anticrm/core'
+  import type { Class, Doc, DocumentQuery, FindOptions, Ref, Space } from '@anticrm/core'
+  import { AnySvelteComponent } from '@anticrm/ui'
   import { ObjectCreate } from '../types'
   import ObjectPopup from './ObjectPopup.svelte'
   import SpaceInfo from './SpaceInfo.svelte'
@@ -21,8 +22,11 @@
   export let _class: Ref<Class<Space>>
   export let selected: Ref<Space> | undefined
   export let spaceQuery: DocumentQuery<Space> | undefined
+  export let spaceOptions: FindOptions<Space> | undefined = {}
   export let create: ObjectCreate | undefined = undefined
   export let allowDeselect = false
+  export let component: AnySvelteComponent | undefined = undefined
+  export let componentProps: any | undefined = undefined
 
   $: _create =
     create !== undefined
@@ -35,6 +39,7 @@
 
 <ObjectPopup
   {_class}
+  options={spaceOptions}
   {selected}
   bind:docQuery={spaceQuery}
   multiSelect={false}
@@ -45,6 +50,10 @@
   on:close
 >
   <svelte:fragment slot="item" let:item={space}>
-    <SpaceInfo size={'large'} value={space} />
+    {#if component}
+      <svelte:component this={component} {...componentProps} size={'large'} value={space} />
+    {:else}
+      <SpaceInfo size={'large'} value={space} />
+    {/if}
   </svelte:fragment>
 </ObjectPopup>

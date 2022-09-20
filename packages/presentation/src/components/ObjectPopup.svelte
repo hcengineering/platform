@@ -28,10 +28,10 @@
     showPopup,
     tooltip
   } from '@anticrm/ui'
-  import { createEventDispatcher, afterUpdate } from 'svelte'
+  import { afterUpdate, createEventDispatcher } from 'svelte'
   import presentation from '..'
-  import { createQuery, getClient } from '../utils'
   import { ObjectCreate } from '../types'
+  import { createQuery, getClient } from '../utils'
 
   export let _class: Ref<Class<Doc>>
   export let options: FindOptions<Doc> | undefined = undefined
@@ -155,6 +155,35 @@
   }
 
   afterUpdate(() => dispatch('changeContent'))
+
+  let selectedDiv: HTMLElement | undefined
+  let scrollDiv: HTMLElement | undefined
+  let cHeight = 0
+
+  const updateLocation = (scrollDiv?: HTMLElement, selectedDiv?: HTMLElement, objects?: Doc[], selected?: Ref<Doc>) => {
+    const objIt = objects?.find((it) => it._id === selected)
+    if (objIt === undefined) {
+      cHeight = 0
+      return
+    }
+    if (scrollDiv && selectedDiv) {
+      const r = selectedDiv.getBoundingClientRect()
+      const r2 = scrollDiv.getBoundingClientRect()
+      if (r && r2) {
+        if (r.top > r2.top && r.bottom < r2.bottom) {
+          cHeight = 0
+        } else {
+          if (r.bottom < r2.bottom) {
+            cHeight = 1
+          } else {
+            cHeight = -1
+          }
+        }
+      }
+    }
+  }
+
+  $: updateLocation(scrollDiv, selectedDiv, objects, selected)
 </script>
 
 <FocusHandler {manager} />
@@ -181,7 +210,10 @@
       </div>
     {/if}
   </div>
-  <div class="scroll">
+  {#if cHeight === 1}
+    <div class="background-theme-content-accent" style:height={'2px'} />
+  {/if}
+  <div class="scroll" on:scroll={() => updateLocation(scrollDiv, selectedDiv)} bind:this={scrollDiv}>
     <div class="box">
       <ListView bind:this={list} count={objects.length} bind:selection>
         <svelte:fragment slot="category" let:item>
@@ -199,6 +231,8 @@
           {@const obj = objects[item]}
           <button
             class="menu-item w-full"
+            class:background-bg-focused={!allowDeselect && obj._id === selected}
+            class:border-radius-1={!allowDeselect && obj._id === selected}
             on:click={() => {
               handleSelection(undefined, objects, item)
             }}
@@ -206,19 +240,27 @@
             {#if allowDeselect && selected}
               <div class="icon">
                 {#if obj._id === selected}
-                  {#if titleDeselect}
-                    <div class="clear-mins" use:tooltip={{ label: titleDeselect ?? presentation.string.Deselect }}>
+                  <div bind:this={selectedDiv}>
+                    {#if titleDeselect}
+                      <div class="clear-mins" use:tooltip={{ label: titleDeselect ?? presentation.string.Deselect }}>
+                        <Icon icon={IconCheck} {size} />
+                      </div>
+                    {:else}
                       <Icon icon={IconCheck} {size} />
-                    </div>
-                  {:else}
-                    <Icon icon={IconCheck} {size} />
-                  {/if}
+                    {/if}
+                  </div>
                 {/if}
               </div>
             {/if}
 
             <span class="label">
-              <slot name="item" item={obj} />
+              {#if obj._id === selected}
+                <div bind:this={selectedDiv}>
+                  <slot name="item" item={obj} />
+                </div>
+              {:else}
+                <slot name="item" item={obj} />
+              {/if}
             </span>
             {#if multiSelect}
               <div class="check-right pointer-events-none">
@@ -230,6 +272,9 @@
       </ListView>
     </div>
   </div>
+  {#if cHeight === -1}
+    <div class="background-theme-content-accent" style:height={'2px'} />
+  {/if}
 </div>
 
 <style lang="scss">

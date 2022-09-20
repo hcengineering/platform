@@ -13,41 +13,69 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import attachment from '@anticrm/attachment'
+  import chunter from '@anticrm/chunter'
+  import contact, { Channel, Organization } from '@anticrm/contact'
+  import { ChannelsEditor } from '@anticrm/contact-resources'
+  import { Ref, WithLookup } from '@anticrm/core'
+  import { createQuery, getClient } from '@anticrm/presentation'
   import type { Vacancy } from '@anticrm/recruit'
-  import { closePanel, closePopup, closeTooltip, getCurrentLocation, Label, navigate } from '@anticrm/ui'
-  import VacancyIcon from './icons/Vacancy.svelte'
-  import contact, { Organization } from '@anticrm/contact'
+  import { closePanel, closePopup, closeTooltip, Component, getCurrentLocation, Label, navigate } from '@anticrm/ui'
   import recruit from '../plugin'
-  import { getClient } from '@anticrm/presentation'
-  import { Ref } from '@anticrm/core'
+  import VacancyIcon from './icons/Vacancy.svelte'
 
-  export let vacancy: Vacancy
+  export let vacancy: WithLookup<Vacancy> | undefined
   export let disabled: boolean = false
+  export let inline: boolean = false
   let company: Organization | undefined
 
-  $: getOrganization(vacancy?.company)
+  $: getOrganization(vacancy, vacancy?.company)
   const client = getClient()
 
-  async function getOrganization (_id: Ref<Organization> | undefined): Promise<void> {
+  async function getOrganization (
+    vacancy: WithLookup<Vacancy> | undefined,
+    _id: Ref<Organization> | undefined
+  ): Promise<void> {
+    if (vacancy?.$lookup?.company !== undefined) {
+      company = vacancy.$lookup?.company
+    }
     if (_id === undefined) {
       company = undefined
     } else {
       company = await client.findOne(contact.class.Organization, { _id })
     }
   }
+
+  let channels: Channel[] = []
+  const channelsQuery = createQuery()
+  $: if (vacancy?.company !== undefined) {
+    channelsQuery.query(
+      contact.class.Channel,
+      {
+        attachedTo: vacancy?.company
+      },
+      (res) => {
+        channels = res
+      }
+    )
+  } else {
+    channelsQuery.unsubscribe()
+  }
 </script>
 
-<div class="flex-col h-full card-container">
-  <div class="label uppercase"><Label label={recruit.string.Vacancy} /></div>
-  <div class="flex-center logo">
-    <VacancyIcon size={'large'} />
-  </div>
+<div class="flex-col h-full card-container" class:inline>
+  {#if !inline}
+    <div class="label uppercase"><Label label={recruit.string.Vacancy} /></div>
+    <div class="flex-center logo">
+      <VacancyIcon size={'large'} />
+    </div>
+  {/if}
   {#if vacancy}
     <div
       class="name lines-limit-2"
       class:over-underline={!disabled}
       on:click={() => {
-        if (!disabled) {
+        if (!disabled && vacancy) {
           closeTooltip()
           closePopup()
           closePanel()
@@ -58,12 +86,46 @@
         }
       }}
     >
-      {vacancy.name}
+      {#if inline}
+        <div class="flex-row-center">
+          <VacancyIcon size={'small'} />
+          <span class="ml-1">
+            {vacancy.name}
+          </span>
+        </div>
+      {:else}
+        {vacancy.name}
+      {/if}
     </div>
     {#if company}
       <span class="label">{company.name}</span>
     {/if}
-    <div class="description lines-limit-2">{vacancy.description ?? ''}</div>
+    {#if !inline || vacancy.description}
+      <div class="description lines-limit-2">{vacancy.description ?? ''}</div>
+    {/if}
+
+    <div class="footer flex flex-reverse flex-grow">
+      <div class="flex-center flex-wrap">
+        <Component
+          is={chunter.component.CommentsPresenter}
+          props={{ value: vacancy.comments, object: vacancy, size: 'medium', showCounter: true }}
+        />
+        <Component
+          is={attachment.component.AttachmentsPresenter}
+          props={{ value: vacancy.attachments, object: vacancy, size: 'medium', showCounter: true }}
+        />
+      </div>
+      {#if channels[0]}
+        <div class="flex flex-grow">
+          <ChannelsEditor
+            attachedTo={channels[0].attachedTo}
+            attachedClass={channels[0].attachedToClass}
+            length={'short'}
+            editable={false}
+          />
+        </div>
+      {/if}
+    </div>
   {/if}
 </div>
 
@@ -77,6 +139,8 @@
     transition-timing-function: var(--timing-shadow);
     transition-duration: 0.15s;
     user-select: text;
+    min-width: 15rem;
+    min-height: 15rem;
 
     &:hover {
       background-color: var(--board-card-bg-hover);
@@ -85,8 +149,8 @@
     }
 
     .logo {
-      width: 5rem;
-      height: 5rem;
+      width: 4.5rem;
+      height: 4.5rem;
       color: var(--primary-button-color);
       background-color: var(--primary-button-enabled);
       border-radius: 50%;
@@ -106,6 +170,23 @@
     .description {
       font-size: 0.75rem;
       color: var(--theme-content-dark-color);
+    }
+
+    &.inline {
+      padding: 0.5rem 0.5rem 0.25rem;
+      min-width: 1rem;
+      min-height: 1rem;
+
+      background-color: inherit;
+      border: inherit;
+      border-radius: inherit;
+      .name {
+        margin: 0.25rem 0 0.25rem;
+        font-size: 0.75rem;
+      }
+      .label {
+        margin-bottom: 0rem;
+      }
     }
   }
 </style>

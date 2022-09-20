@@ -15,10 +15,11 @@
 <script lang="ts">
   import type { Contact, Employee, Person } from '@anticrm/contact'
   import contact from '@anticrm/contact'
-  import { Account, Class, Client, Doc, generateId, Ref, SortingOrder, Space } from '@anticrm/core'
+  import ExpandRightDouble from '@anticrm/contact-resources/src/components/icons/ExpandRightDouble.svelte'
+  import { Account, Class, Client, Doc, FindOptions, generateId, Ref, SortingOrder, Space } from '@anticrm/core'
   import { getResource, OK, Resource, Severity, Status } from '@anticrm/platform'
-  import { Card, createQuery, EmployeeBox, getClient, SpaceSelector, UserBox } from '@anticrm/presentation'
-  import type { Applicant, Candidate } from '@anticrm/recruit'
+  import { Card, createQuery, EmployeeBox, getClient, SpaceSelect, UserBox } from '@anticrm/presentation'
+  import type { Applicant, Candidate, Vacancy } from '@anticrm/recruit'
   import task, { calcRank, SpaceWithStates, State } from '@anticrm/task'
   import ui, {
     Button,
@@ -34,6 +35,9 @@
   import view from '@anticrm/view'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
+  import CandidateCard from './CandidateCard.svelte'
+  import VacancyCard from './VacancyCard.svelte'
+  import VacancyOrgPresenter from './VacancyOrgPresenter.svelte'
 
   export let space: Ref<SpaceWithStates>
   export let candidate: Ref<Candidate>
@@ -45,6 +49,8 @@
   let createMore: boolean = false
 
   let _space = space
+
+  $: _candidate = candidate
 
   let doc: Applicant = {
     state: '' as Ref<State>,
@@ -69,7 +75,7 @@
   const hierarchy = client.getHierarchy()
 
   export function canClose (): boolean {
-    return (preserveCandidate || candidate === undefined) && assignee === undefined
+    return (preserveCandidate || _candidate === undefined) && assignee === undefined
   }
 
   async function createApplication () {
@@ -92,7 +98,7 @@
     )
     const incResult = await client.update(sequence, { $inc: { sequence: 1 } }, true)
 
-    const candidateInstance = await client.findOne(contact.class.Person, { _id: doc.attachedTo as Ref<Person> })
+    const candidateInstance = await client.findOne(contact.class.Person, { _id: _candidate })
     if (candidateInstance === undefined) {
       throw new Error('contact not found')
     }
@@ -125,13 +131,14 @@
 
     if (createMore) {
       // Prepare for next
+      _candidate = '' as Ref<Candidate>
       doc = {
         state: selectedState?._id as Ref<State>,
         doneState: null,
         number: 0,
         assignee: assignee,
         rank: '',
-        attachedTo: candidate,
+        attachedTo: _candidate,
         attachedToClass: recruit.mixin.Candidate,
         _class: recruit.class.Applicant,
         space: _space,
@@ -152,24 +159,35 @@
     return await impl({ ...doc, space: _space }, client)
   }
 
-  async function validate (doc: Applicant, space: Ref<Space>, _class: Ref<Class<Doc>>): Promise<void> {
+  async function validate (
+    doc: Applicant,
+    space: Ref<Space>,
+    _class: Ref<Class<Doc>>,
+    candidate: Ref<Candidate>
+  ): Promise<void> {
+    if (doc.attachedTo !== _candidate) {
+      doc.attachedTo = _candidate
+    }
     const clazz = hierarchy.getClass(_class)
     const validatorMixin = hierarchy.as(clazz, view.mixin.ObjectValidator)
     if (validatorMixin?.validator != null) {
       status = await invokeValidate(validatorMixin.validator)
     } else if (clazz.extends != null) {
-      await validate(doc, space, clazz.extends)
+      await validate(doc, space, clazz.extends, candidate)
     } else {
       status = OK
     }
   }
 
-  $: validate(doc, _space, doc._class)
+  $: validate(doc, _space, doc._class, _candidate)
 
   let states: Array<{ id: number | string; color: number; label: string }> = []
   let selectedState: State | undefined
   let rawStates: State[] = []
   const statesQuery = createQuery()
+  const spaceQuery = createQuery()
+
+  let vacancy: Vacancy | undefined
 
   $: if (_space) {
     statesQuery.query(
@@ -180,6 +198,9 @@
       },
       { sort: { rank: SortingOrder.Ascending } }
     )
+    spaceQuery.query(recruit.class.Vacancy, { _id: _space }, (res) => {
+      vacancy = res.shift()
+    })
   }
 
   $: if (rawStates.findIndex((it) => it._id === selectedState?._id) === -1) {
@@ -209,6 +230,22 @@
       }
     }
   )
+  const orgOptions: FindOptions<Vacancy> = {
+    lookup: {
+      company: contact.class.Organization
+    }
+  }
+
+  const candidateQuery = createQuery()
+  let _candidateInstance: Person | undefined
+
+  $: if (_candidate !== undefined) {
+    candidateQuery.query(contact.class.Person, { _id: _candidate }, (res) => {
+      _candidateInstance = res.shift()
+    })
+  } else {
+    candidateQuery.unsubscribe()
+  }
 </script>
 
 <FocusHandler {manager} />
@@ -222,53 +259,60 @@
     dispatch('close')
   }}
 >
-  <svelte:fragment slot="header">
-    <SpaceSelector
-      _class={recruit.class.Vacancy}
-      query={{ archived: false }}
-      label={recruit.string.Vacancy}
-      create={{
-        component: recruit.component.CreateVacancy,
-        label: recruit.string.CreateVacancy
-      }}
-      bind:space={_space}
-    />
-  </svelte:fragment>
   <svelte:fragment slot="title">
     <div class="flex-row-center gap-2">
-      {#if preserveCandidate}
-        <UserBox
-          readonly
-          _class={contact.class.Person}
-          options={{ sort: { modifiedOn: -1 } }}
-          excluded={existingApplicants}
-          label={recruit.string.Talent}
-          placeholder={recruit.string.Talents}
-          bind:value={doc.attachedTo}
-          kind={'no-border'}
-          size={'small'}
-        />
-      {/if}
       <Label label={recruit.string.CreateApplication} />
     </div>
   </svelte:fragment>
   <StatusControl slot="error" {status} />
+  <div class="candidate-vacancy">
+    <div class="flex flex-stretch">
+      <UserBox
+        id={'vacancy.talant.selector'}
+        focusIndex={1}
+        readonly={preserveCandidate}
+        _class={contact.class.Person}
+        options={{ sort: { modifiedOn: -1 } }}
+        excluded={existingApplicants}
+        label={recruit.string.Talent}
+        placeholder={recruit.string.Talents}
+        bind:value={_candidate}
+        kind={'no-border'}
+        size={'small'}
+        width={'100%'}
+        create={{ component: recruit.component.CreateCandidate, label: recruit.string.CreateTalent }}
+      >
+        <svelte:fragment slot="content">
+          <CandidateCard candidate={_candidateInstance} on:click disabled={true} />
+        </svelte:fragment>
+      </UserBox>
+    </div>
+
+    <div class="flex-center">
+      <ExpandRightDouble />
+    </div>
+    <div class="flex-grow">
+      <SpaceSelect
+        _class={recruit.class.Vacancy}
+        spaceQuery={{ archived: false }}
+        spaceOptions={orgOptions}
+        label={recruit.string.Vacancy}
+        create={{
+          component: recruit.component.CreateVacancy,
+          label: recruit.string.CreateVacancy
+        }}
+        bind:value={_space}
+        component={VacancyOrgPresenter}
+        componentProps={{ inline: true }}
+      >
+        <svelte:fragment slot="content">
+          <VacancyCard {vacancy} disabled={true} />
+        </svelte:fragment>
+      </SpaceSelect>
+    </div>
+  </div>
   <svelte:fragment slot="pool">
     {#key doc}
-      {#if !preserveCandidate}
-        <UserBox
-          focusIndex={1}
-          _class={contact.class.Person}
-          options={{ sort: { modifiedOn: -1 } }}
-          excluded={existingApplicants}
-          label={recruit.string.Talent}
-          placeholder={recruit.string.Talents}
-          bind:value={doc.attachedTo}
-          kind={'no-border'}
-          size={'small'}
-          create={{ component: recruit.component.CreateCandidate, label: recruit.string.CreateTalent }}
-        />
-      {/if}
       <EmployeeBox
         focusIndex={2}
         label={recruit.string.AssignRecruiter}
@@ -310,22 +354,11 @@
 </Card>
 
 <style lang="scss">
-  // .card {
-  //   align-self: stretch;
-  //   width: calc(50% - 3rem);
-  //   min-height: 16rem;
-
-  //   &.empty {
-  //     display: flex;
-  //     justify-content: center;
-  //     align-items: center;
-  //     font-size: .75rem;
-  //     color: var(--dark-color);
-  //     border: 1px solid var(--divider-color);
-  //     border-radius: .25rem;
-  //   }
-  // }
-  // .arrows { width: 4rem; }
+  .candidate-vacancy {
+    display: grid;
+    grid-template-columns: 3fr 1fr 3fr;
+    grid-template-rows: 1fr;
+  }
   .color {
     margin-right: 0.375rem;
     width: 0.875rem;
