@@ -25,6 +25,7 @@
   export let fade: FadeOptions = defaultSP
   export let invertScroll: boolean = false
   export let horizontal: boolean = false
+  export let contentDirection: 'vertical' | 'horizontal' = 'vertical'
 
   let mask: 'top' | 'bottom' | 'both' | 'none' = 'none'
   let maskH: 'left' | 'right' | 'both' | 'none' = 'none'
@@ -240,6 +241,7 @@
         bind:this={divBox}
         class="box"
         style:padding
+        style:flex-direction={contentDirection === 'vertical' ? 'column' : 'row'}
         use:resizeObserver={(element) => {
           boxHeight = element.clientHeight
           boxWidth = element.clientWidth
@@ -295,13 +297,17 @@
     min-width: 0;
     min-height: 0;
 
-    &.normal .track,
-    &.normal .bar {
-      right: 2px;
+    &.normal {
+      .track,
+      .bar { right: 2px; }
+      .track-horizontal,
+      .bar-horizontal { bottom: 2px; }
     }
-    &.invert .track,
-    &.invert .bar {
-      left: 2px;
+    &.invert {
+      .track,
+      .bar { left: 2px; }
+      .track-horizontal,
+      .bar-horizontal { top: 2px; }
     }
   }
   .horizontalBox {

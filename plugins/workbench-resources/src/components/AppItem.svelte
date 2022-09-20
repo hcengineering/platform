@@ -21,12 +21,20 @@
   export let icon: Asset | AnySvelteComponent
   export let action: () => Promise<void>
   export let selected: boolean
+  export let mini: boolean = false
   export let notify: boolean
 </script>
 
-<button class="app" class:selected id={'app-' + label} use:tooltip={{ label }} on:click|stopPropagation={action}>
-  <div class="flex-center icon-container" class:noty={notify}>
-    <Icon {icon} size={'large'} />
+<button
+  class="app"
+  class:selected
+  class:mini
+  id={'app-' + label}
+  use:tooltip={{ label }}
+  on:click|stopPropagation={action}
+>
+  <div class="flex-center icon-container" class:mini class:noty={notify}>
+    <Icon {icon} size={mini ? 'small' : 'large'} />
   </div>
   {#if notify}<div class="marker" />{/if}
 </button>
@@ -42,6 +50,14 @@
     border-radius: 0.5rem;
     cursor: pointer;
     outline: none;
+
+    &.mini,
+    .icon-container.mini {
+      width: calc(var(--status-bar-height) - 8px);
+      height: calc(var(--status-bar-height) - 8px);
+      border-radius: .25rem;
+    }
+    &.mini.selected { background-color: var(--button-border-hover); }
 
     .icon-container {
       width: 3.25rem;

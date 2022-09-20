@@ -52,13 +52,22 @@
   addEventListener(PlatformEvent, async (_event, _status) => {
     status = _status
   })
+
+  let docWidth: number
+  let docHeight: number
+  let isPortrait: boolean = window.innerWidth <= window.innerHeight
 </script>
+
+<svelte:window bind:innerWidth={docWidth} bind:innerHeight={docHeight} />
 
 <Theme>
   <div id="ui-root">
     <div class="status-bar">
       <div class="flex-row-center h-full content-color">
-        <div class="status-info">
+        <div
+          class="status-info"
+          style:margin-left={(isPortrait && docWidth <= 480) || (!isPortrait && docHeight <= 480) ? '1.5rem' : '0'}
+        >
           <StatusComponent {status} />
         </div>
         <div class="flex-row-reverse">
@@ -106,7 +115,7 @@
     .status-bar {
       min-height: var(--status-bar-height);
       height: var(--status-bar-height);
-      min-width: 600px;
+      // min-width: 600px;
       font-size: 12px;
       line-height: 150%;
       background-color: var(--divider-color);
@@ -116,7 +125,7 @@
         text-align: center;
       }
       .clock {
-        margin: 0 40px 0 24px;
+        margin: 0 1rem 0 24px;
         font-weight: 500;
         user-select: none;
       }
@@ -130,8 +139,8 @@
 
     .app {
       height: calc(100vh - var(--status-bar-height));
-      min-width: 600px;
-      min-height: 480px;
+      // min-width: 600px;
+      // min-height: 480px;
 
       .error {
         margin-top: 45vh;

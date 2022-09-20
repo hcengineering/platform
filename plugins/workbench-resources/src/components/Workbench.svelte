@@ -363,23 +363,24 @@
   }
 
   let docWidth: number
+  let docHeight: number
   let navFloat: boolean = !(window.innerWidth < 1024)
-  const windowResize = (): void => {
-    if (window.innerWidth <= 1024 && !navFloat) {
-      visibileNav = false
-      navFloat = true
-    } else if (window.innerWidth > 1024 && navFloat) {
-      navFloat = false
-      visibileNav = true
-    }
+  let isPortrait: boolean = window.innerWidth <= window.innerHeight
+  $: if (docWidth <= 1024 && !navFloat) {
+    visibileNav = false
+    navFloat = true
+  } else if (docWidth > 1024 && navFloat) {
+    navFloat = false
+    visibileNav = true
   }
-  windowResize()
+  $: if (docWidth <= docHeight && !isPortrait) isPortrait = true
+  $: if (docWidth > docHeight && isPortrait) isPortrait = false
   const checkOnHide = (): void => {
     if (visibileNav && docWidth <= 1024) visibileNav = false
   }
 </script>
 
-<svelte:window on:resize={windowResize} />
+<svelte:window bind:innerWidth={docWidth} bind:innerHeight={docHeight} />
 {#if employee?.active === true}
   <ActionHandler />
   <svg class="svg-mask">
@@ -402,32 +403,39 @@
       />
     </clipPath>
   </svg>
-  <div class="workbench-container">
-    <div class="antiPanel-application">
-      <div class="flex-col flex-no-shrink mt-1">
+  <div class="workbench-container" style:flex-direction={isPortrait ? 'column' : 'row'}>
+    <div class="antiPanel-application" class:vertical={!isPortrait} class:horizontal={isPortrait}>
+      <div
+        class="hamburger-container"
+        class:portrait={isPortrait && docWidth > 480}
+        class:landscape={!isPortrait && docHeight > 480}
+        class:mini={(isPortrait && docWidth <= 480) || (!isPortrait && docHeight <= 480)}
+      >
         <!-- <ActivityStatus status="active" /> -->
         <AppItem
           icon={TopMenu}
           label={visibileNav ? workbench.string.HideMenu : workbench.string.ShowMenu}
           selected={!visibileNav}
           action={toggleNav}
+          mini={(isPortrait && docWidth <= 480) || (!isPortrait && docHeight <= 480)}
           notify={false}
         />
       </div>
       <Applications
         {apps}
         active={currentApplication?._id}
+        direction={isPortrait ? 'horizontal' : 'vertical'}
         on:active={(evt) => {
           navigateApp(evt.detail)
         }}
       />
-      <div class="flex-row" style="margin-bottom: 2rem;">
+      <div class="info-box" class:horizontal={isPortrait} class:vertical={!isPortrait}>
         <AppItem
           icon={calendar.icon.Reminder}
           label={calendar.string.Reminders}
           selected={false}
           action={async () => {
-            showPopup(calendar.component.RemindersPopup, {}, 'account')
+            showPopup(calendar.component.RemindersPopup, {}, isPortrait ? 'account-portrait' : 'account')
           }}
           notify={false}
         />
@@ -436,16 +444,16 @@
           label={notification.string.Notifications}
           selected={false}
           action={async () => {
-            showPopup(notification.component.NotificationsPopup, {}, 'account')
+            showPopup(notification.component.NotificationsPopup, {}, isPortrait ? 'account-portrait' : 'account')
           }}
           notify={hasNotification}
         />
-        <div class="flex-center mt-2">
+        <div class="flex-center" class:mt-2={!isPortrait} class:ml-2={isPortrait}>
           <div
             id="profile-button"
             class="cursor-pointer"
             on:click|stopPropagation={() => {
-              showPopup(AccountPopup, {}, 'account')
+              showPopup(AccountPopup, {}, isPortrait ? 'account-portrait' : 'account')
             }}
           >
             <Avatar avatar={employee.avatar} size={'medium'} />
@@ -459,59 +467,67 @@
         application: currentApplication?._id
       }}
     />
-    {#if currentApplication && navigatorModel && navigator && visibileNav}
-      <div class="antiPanel-navigator" style="box-shadow: -1px 0px 2px rgba(0, 0, 0, .1)">
-        {#if currentApplication}
-          <NavHeader label={currentApplication.label} />
-          {#if currentApplication.navHeaderComponent}
-            <Component is={currentApplication.navHeaderComponent} props={{ currentSpace }} shrink />
+    <div class="workbench-container">
+      {#if currentApplication && navigatorModel && navigator && visibileNav}
+        <div
+          class="antiPanel-navigator"
+          class:portrait={isPortrait}
+          class:landscape={!isPortrait}
+          style="box-shadow: -1px 0px 2px rgba(0, 0, 0, .1)"
+        >
+          {#if currentApplication}
+            <NavHeader label={currentApplication.label} />
+            {#if currentApplication.navHeaderComponent}
+              <Component is={currentApplication.navHeaderComponent} props={{ currentSpace }} shrink />
+            {/if}
           {/if}
-        {/if}
-        <Navigator
-          {currentSpace}
-          {currentSpecial}
-          model={navigatorModel}
-          on:special={(evt) => selectSpecial(evt.detail)}
-          on:space={(evt) => selectSpace(evt.detail.space, evt.detail.spaceSpecial)}
-          on:open={checkOnHide}
-        />
-        {#if currentApplication.navFooterComponent}
-          <Component is={currentApplication.navFooterComponent} props={{ currentSpace }} />
+          <Navigator
+            {currentSpace}
+            {currentSpecial}
+            model={navigatorModel}
+            on:special={(evt) => selectSpecial(evt.detail)}
+            on:space={(evt) => selectSpace(evt.detail.space, evt.detail.spaceSpecial)}
+            on:open={checkOnHide}
+          />
+          {#if currentApplication.navFooterComponent}
+            <Component is={currentApplication.navFooterComponent} props={{ currentSpace }} />
+          {/if}
+        </div>
+      {/if}
+      <div
+        class="antiPanel-component antiComponent"
+        class:border-left={!isPortrait}
+        bind:this={contentPanel}
+        use:resizeObserver={(element) => {
+          componentWidth = element.clientWidth
+        }}
+      >
+        {#if currentApplication && currentApplication.component}
+          <Component is={currentApplication.component} props={{ currentSpace, visibileNav }} />
+        {:else if specialComponent}
+          <Component
+            is={specialComponent.component}
+            props={{ model: navigatorModel, ...specialComponent.componentProps, currentSpace, visibileNav }}
+          />
+        {:else if currentView?.component !== undefined}
+          <Component is={currentView.component} props={{ ...currentView.componentProps, currentView, visibileNav }} />
+        {:else}
+          <SpaceView {currentSpace} {currentView} {createItemDialog} {createItemLabel} />
         {/if}
       </div>
-    {/if}
-    <div
-      class="antiPanel-component antiComponent border-left"
-      bind:this={contentPanel}
-      use:resizeObserver={(element) => {
-        componentWidth = element.clientWidth
-      }}
-    >
-      {#if currentApplication && currentApplication.component}
-        <Component is={currentApplication.component} props={{ currentSpace, visibileNav }} />
-      {:else if specialComponent}
-        <Component
-          is={specialComponent.component}
-          props={{ model: navigatorModel, ...specialComponent.componentProps, currentSpace, visibileNav }}
-        />
-      {:else if currentView?.component !== undefined}
-        <Component is={currentView.component} props={{ ...currentView.componentProps, currentView, visibileNav }} />
-      {:else}
-        <SpaceView {currentSpace} {currentView} {createItemDialog} {createItemLabel} />
+      {#if asideId && navigatorModel?.aside !== undefined}
+        <div class="splitter" class:hovered={isResizing} on:mousedown={startResize} />
+        <div
+          class="antiPanel-component antiComponent aside"
+          use:resizeObserver={(element) => {
+            asideWidth = element.clientWidth
+          }}
+          bind:this={aside}
+        >
+          <Component is={navigatorModel.aside} props={{ currentSpace, _id: asideId }} on:close={closeAside} />
+        </div>
       {/if}
     </div>
-    {#if asideId && navigatorModel?.aside !== undefined}
-      <div class="splitter" class:hovered={isResizing} on:mousedown={startResize} />
-      <div
-        class="antiPanel-component antiComponent aside"
-        use:resizeObserver={(element) => {
-          asideWidth = element.clientWidth
-        }}
-        bind:this={aside}
-      >
-        <Component is={navigatorModel.aside} props={{ currentSpace, _id: asideId }} on:close={closeAside} />
-      </div>
-    {/if}
   </div>
   <div bind:this={cover} class="cover" />
   <TooltipInstance />
@@ -536,9 +552,33 @@
 
 <style lang="scss">
   .workbench-container {
-    // position: relative;
     display: flex;
+    min-width: 0;
+    min-height: 0;
+    width: 100%;
     height: 100%;
+  }
+  .hamburger-container {
+    display: flex;
+    flex-shrink: 0;
+
+    &.portrait { margin-left: .375rem; }
+    &.landscape { margin-top: .25rem; }
+    &.mini {
+      position: fixed;
+      top: 4px;
+      left: 4px;
+    }
+  }
+  .info-box {
+    display: flex;
+    align-items: center;
+
+    &.vertical {
+      flex-direction: column;
+      margin-bottom: 2rem;
+    }
+    &.horizontal { margin-right: 1rem; }
   }
 
   .cover {

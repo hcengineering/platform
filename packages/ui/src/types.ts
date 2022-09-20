@@ -125,7 +125,7 @@ export interface PopupPositionElement {
   kind?: 'submenu'
 }
 
-export type PopupPosAlignment = 'right' | 'top' | 'float' | 'account' | 'full' | 'content' | 'middle'
+export type PopupPosAlignment = 'right' | 'top' | 'float' | 'account' | 'account-portrait' | 'full' | 'content' | 'middle'
 
 export function isPopupPosAlignment (x: any): x is PopupPosAlignment {
   return (
