@@ -9,7 +9,7 @@ import {
   Ref,
   Space,
   TxOperations
-} from '@anticrm/core'
+} from '@hcengineering/core'
 
 export async function findOrUpdate<T extends Doc> (
   ctx: MeasureContext,

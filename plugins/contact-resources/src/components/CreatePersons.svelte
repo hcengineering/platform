@@ -15,12 +15,12 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { IconFolder, EditBox, ToggleWithLabel, Grid } from '@anticrm/ui'
+  import { IconFolder, EditBox, ToggleWithLabel, Grid } from '@hcengineering/ui'
 
-  import { getClient, SpaceCreateCard } from '@anticrm/presentation'
+  import { getClient, SpaceCreateCard } from '@hcengineering/presentation'
 
   import contact from '../plugin'
-  import core, { getCurrentAccount } from '@anticrm/core'
+  import core, { getCurrentAccount } from '@hcengineering/core'
 
   const dispatch = createEventDispatcher()
 

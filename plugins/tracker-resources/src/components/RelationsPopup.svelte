@@ -1,13 +1,13 @@
 <script lang="ts">
   import { createEventDispatcher, afterUpdate } from 'svelte'
-  import { Class, Doc, Ref, RelatedDocument } from '@anticrm/core'
-  import { getResource, IntlString, translate } from '@anticrm/platform'
-  import { createQuery, getClient, ObjectSearchPopup, ObjectSearchResult } from '@anticrm/presentation'
-  import { Issue } from '@anticrm/tracker'
-  import { Action, closePopup, Menu, showPopup } from '@anticrm/ui'
+  import { Class, Doc, Ref, RelatedDocument } from '@hcengineering/core'
+  import { getResource, IntlString, translate } from '@hcengineering/platform'
+  import { createQuery, getClient, ObjectSearchPopup, ObjectSearchResult } from '@hcengineering/presentation'
+  import { Issue } from '@hcengineering/tracker'
+  import { Action, closePopup, Menu, showPopup } from '@hcengineering/ui'
   import { updateIssueRelation } from '../issues'
   import tracker from '../plugin'
-  import chunter from '@anticrm/chunter'
+  import chunter from '@hcengineering/chunter'
 
   export let value: Issue
 

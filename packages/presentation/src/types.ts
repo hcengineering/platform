@@ -1,6 +1,6 @@
-import { Client, Doc, RelatedDocument } from '@anticrm/core'
-import { Asset, IntlString, Resource } from '@anticrm/platform'
-import { AnyComponent, AnySvelteComponent } from '@anticrm/ui'
+import { Client, Doc, RelatedDocument } from '@hcengineering/core'
+import { Asset, IntlString, Resource } from '@hcengineering/platform'
+import { AnyComponent, AnySvelteComponent } from '@hcengineering/ui'
 
 /**
  * @public

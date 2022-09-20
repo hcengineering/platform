@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { IntlString } from '@anticrm/platform'
+  import type { IntlString } from '@hcengineering/platform'
   import { createEventDispatcher } from 'svelte'
   import ui from '../plugin'
   import IconClose from './icons/Close.svelte'

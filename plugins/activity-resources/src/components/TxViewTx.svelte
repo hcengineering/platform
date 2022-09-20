@@ -1,6 +1,6 @@
 <script lang="ts">
-  import core, { Class, Doc, Ref } from '@anticrm/core'
-  import { Component, IconAdd, IconDelete } from '@anticrm/ui'
+  import core, { Class, Doc, Ref } from '@hcengineering/core'
+  import { Component, IconAdd, IconDelete } from '@hcengineering/ui'
   import { DisplayTx } from '../activity'
   import { getDTxProps, TxDisplayViewlet } from './utils'
 

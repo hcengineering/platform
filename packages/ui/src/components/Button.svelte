@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Asset, IntlString } from '@anticrm/platform'
+  import type { Asset, IntlString } from '@hcengineering/platform'
   import { onMount } from 'svelte'
   import { registerFocus } from '../focus'
   import { tooltip } from '../tooltips'

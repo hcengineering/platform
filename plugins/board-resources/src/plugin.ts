@@ -13,9 +13,9 @@
 // limitations under the License.
 //
 
-import board, { boardId } from '@anticrm/board'
-import { IntlString, mergeIds } from '@anticrm/platform'
-import type { AnyComponent } from '@anticrm/ui'
+import board, { boardId } from '@hcengineering/board'
+import { IntlString, mergeIds } from '@hcengineering/platform'
+import type { AnyComponent } from '@hcengineering/ui'
 
 export default mergeIds(boardId, board, {
   string: {

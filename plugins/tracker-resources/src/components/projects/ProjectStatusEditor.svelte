@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Project } from '@anticrm/tracker'
+  import { Project } from '@hcengineering/tracker'
   import ProjectStatusPresenter from './ProjectStatusPresenter.svelte'
 
   export let object: Project

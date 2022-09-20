@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { IntlString } from '@anticrm/platform'
+  import type { IntlString } from '@hcengineering/platform'
   import { getClient } from '../utils'
 
   import {
@@ -28,10 +28,10 @@
     Label,
     showPopup,
     TooltipAlignment
-  } from '@anticrm/ui'
+  } from '@hcengineering/ui'
   import SpacesPopup from './SpacesPopup.svelte'
 
-  import type { Class, DocumentQuery, FindOptions, Ref, Space } from '@anticrm/core'
+  import type { Class, DocumentQuery, FindOptions, Ref, Space } from '@hcengineering/core'
   import { createEventDispatcher } from 'svelte'
   import { ObjectCreate } from '../types'
 

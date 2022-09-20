@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import '@anticrm/platform-rig/profiles/ui/svelte'
+import '@hcengineering/platform-rig/profiles/ui/svelte'
 import { writable } from 'svelte/store'
 
 export { default as Theme } from './Theme.svelte'

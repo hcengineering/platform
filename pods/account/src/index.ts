@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-import { ACCOUNT_DB, methods } from '@anticrm/account'
-import toolPlugin from '@anticrm/server-tool'
-import serverToken from '@anticrm/server-token'
-import platform, { Request, Response, serialize, setMetadata, Severity, Status } from '@anticrm/platform'
+import { ACCOUNT_DB, methods } from '@hcengineering/account'
+import toolPlugin from '@hcengineering/server-tool'
+import serverToken from '@hcengineering/server-token'
+import platform, { Request, Response, serialize, setMetadata, Severity, Status } from '@hcengineering/platform'
 import cors from '@koa/cors'
 import { IncomingHttpHeaders } from 'http'
 import Koa from 'koa'

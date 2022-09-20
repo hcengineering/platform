@@ -25,9 +25,9 @@
     Ref,
     RefTo,
     Type
-  } from '@anticrm/core'
-  import { IntlString } from '@anticrm/platform'
-  import presentation, { createQuery, getClient, MessageBox } from '@anticrm/presentation'
+  } from '@hcengineering/core'
+  import { IntlString } from '@hcengineering/platform'
+  import presentation, { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
   import {
     Action,
     ActionIcon,
@@ -42,8 +42,8 @@
     Label,
     Menu,
     showPopup
-  } from '@anticrm/ui'
-  import view from '@anticrm/view'
+  } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
   import settings from '../plugin'
   import CreateAttribute from './CreateAttribute.svelte'
   import EditAttribute from './EditAttribute.svelte'

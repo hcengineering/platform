@@ -14,11 +14,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { TxViewlet } from '@anticrm/activity'
-  import contact, { EmployeeAccount, formatName } from '@anticrm/contact'
-  import core, { AnyAttribute, Doc, getCurrentAccount, Ref } from '@anticrm/core'
-  import { Asset, getResource } from '@anticrm/platform'
-  import { createQuery, getClient } from '@anticrm/presentation'
+  import type { TxViewlet } from '@hcengineering/activity'
+  import contact, { EmployeeAccount, formatName } from '@hcengineering/contact'
+  import core, { AnyAttribute, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
+  import { Asset, getResource } from '@hcengineering/platform'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import {
     Button,
     Component,
@@ -30,9 +30,9 @@
     ShowMore,
     showPopup,
     TimeSince
-  } from '@anticrm/ui'
-  import type { AttributeModel } from '@anticrm/view'
-  import { getActions } from '@anticrm/view-resources'
+  } from '@hcengineering/ui'
+  import type { AttributeModel } from '@hcengineering/view'
+  import { getActions } from '@hcengineering/view-resources'
   import { ActivityKey, DisplayTx } from '../activity'
   import activity from '../plugin'
   import TxViewTx from './TxViewTx.svelte'

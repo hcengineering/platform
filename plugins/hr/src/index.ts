@@ -13,11 +13,11 @@
 // limitations under the License.
 //
 
-import type { Employee, EmployeeAccount } from '@anticrm/contact'
-import type { Arr, AttachedDoc, Class, Doc, Markup, Mixin, Ref, Space, Type } from '@anticrm/core'
-import type { Asset, IntlString, Plugin } from '@anticrm/platform'
-import { plugin } from '@anticrm/platform'
-import { Viewlet } from '@anticrm/view'
+import type { Employee, EmployeeAccount } from '@hcengineering/contact'
+import type { Arr, AttachedDoc, Class, Doc, Markup, Mixin, Ref, Space, Type } from '@hcengineering/core'
+import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
+import { plugin } from '@hcengineering/platform'
+import { Viewlet } from '@hcengineering/view'
 
 /**
  * @public

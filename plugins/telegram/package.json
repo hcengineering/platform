@@ -1,5 +1,5 @@
 {
-  "name": "@anticrm/telegram",
+  "name": "@hcengineering/telegram",
   "version": "0.6.3",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
@@ -12,7 +12,7 @@
     "format": "prettier --write src && eslint --fix src"
   },
   "devDependencies": {
-    "@anticrm/platform-rig": "~0.6.0",
+    "@hcengineering/platform-rig": "~0.6.0",
     "@types/heft-jest": "^1.0.3",
     "@typescript-eslint/eslint-plugin": "^5.30.0",
     "eslint-plugin-import": "^2.26.0",
@@ -26,10 +26,10 @@
     "typescript": "^4.3.5"
   },
   "dependencies": {
-    "@anticrm/platform": "~0.6.6",
-    "@anticrm/core": "~0.6.16",
-    "@anticrm/ui": "~0.6.0",
-    "@anticrm/contact": "~0.6.5",
-    "@anticrm/setting": "~0.6.1"
+    "@hcengineering/platform": "^0.6.7",
+    "@hcengineering/core": "^0.6.17",
+    "@hcengineering/ui": "^0.6.2",
+    "@hcengineering/contact": "~0.6.5",
+    "@hcengineering/setting": "~0.6.1"
   }
 }

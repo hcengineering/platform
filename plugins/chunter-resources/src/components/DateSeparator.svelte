@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Timestamp } from '@anticrm/core'
+  import { Timestamp } from '@hcengineering/core'
 
   export let value: Timestamp
   export let line: boolean = false

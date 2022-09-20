@@ -13,13 +13,13 @@
 // limitations under the License.
 //
 
-import activity from '@anticrm/activity'
-import type { Attachment, Photo, SavedAttachments } from '@anticrm/attachment'
-import { Domain, IndexKind, Ref } from '@anticrm/core'
-import { Builder, Index, Model, Prop, TypeBoolean, TypeRef, TypeString, TypeTimestamp, UX } from '@anticrm/model'
-import core, { TAttachedDoc } from '@anticrm/model-core'
-import preference, { TPreference } from '@anticrm/model-preference'
-import view, { createAction } from '@anticrm/model-view'
+import activity from '@hcengineering/activity'
+import type { Attachment, Photo, SavedAttachments } from '@hcengineering/attachment'
+import { Domain, IndexKind, Ref } from '@hcengineering/core'
+import { Builder, Index, Model, Prop, TypeBoolean, TypeRef, TypeString, TypeTimestamp, UX } from '@hcengineering/model'
+import core, { TAttachedDoc } from '@hcengineering/model-core'
+import preference, { TPreference } from '@hcengineering/model-preference'
+import view, { createAction } from '@hcengineering/model-view'
 import attachment from './plugin'
 
 export { attachmentOperation } from './migration'

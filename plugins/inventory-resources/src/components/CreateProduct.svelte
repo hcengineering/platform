@@ -14,13 +14,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Account, generateId, Ref, Doc } from '@anticrm/core'
-  import { Card, createQuery, getClient } from '@anticrm/presentation'
-  import { DropdownLabels, EditBox, Grid } from '@anticrm/ui'
+  import { Account, generateId, Ref, Doc } from '@hcengineering/core'
+  import { Card, createQuery, getClient } from '@hcengineering/presentation'
+  import { DropdownLabels, EditBox, Grid } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import inventory from '../plugin'
-  import { Category, Product } from '@anticrm/inventory'
-  import { DropdownTextItem } from '@anticrm/ui/src/types'
+  import { Category, Product } from '@hcengineering/inventory'
+  import { DropdownTextItem } from '@hcengineering/ui/src/types'
 
   const doc: Product = {
     name: '',

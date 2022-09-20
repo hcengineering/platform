@@ -14,12 +14,12 @@
 // limitations under the License.
 //
 
-import type { Contact } from '@anticrm/contact'
-import type { Class, Doc, Ref } from '@anticrm/core'
-import { Mixin } from '@anticrm/core'
-import type { Asset, Plugin } from '@anticrm/platform'
-import { plugin } from '@anticrm/platform'
-import type { KanbanTemplateSpace, SpaceWithStates, Task } from '@anticrm/task'
+import type { Contact } from '@hcengineering/contact'
+import type { Class, Doc, Ref } from '@hcengineering/core'
+import { Mixin } from '@hcengineering/core'
+import type { Asset, Plugin } from '@hcengineering/platform'
+import { plugin } from '@hcengineering/platform'
+import type { KanbanTemplateSpace, SpaceWithStates, Task } from '@hcengineering/task'
 
 /**
  * @public

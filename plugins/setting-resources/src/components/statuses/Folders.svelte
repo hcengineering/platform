@@ -14,10 +14,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createQuery } from '@anticrm/presentation'
-  import { Label, Component } from '@anticrm/ui'
-  import task, { KanbanTemplateSpace } from '@anticrm/task'
-  import setting from '@anticrm/setting'
+  import { createQuery } from '@hcengineering/presentation'
+  import { Label, Component } from '@hcengineering/ui'
+  import task, { KanbanTemplateSpace } from '@hcengineering/task'
+  import setting from '@hcengineering/setting'
   import IconArrowRight from '../icons/ArrowRight.svelte'
 
   export let folder: KanbanTemplateSpace | undefined

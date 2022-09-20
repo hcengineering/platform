@@ -13,13 +13,22 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Enum } from '@anticrm/core'
-  import presentation, { Card, getClient, MessageBox } from '@anticrm/presentation'
-  import { ActionIcon, EditBox, IconAdd, IconAttachment, IconDelete, Label, ListView, showPopup } from '@anticrm/ui'
+  import core, { Enum } from '@hcengineering/core'
+  import presentation, { Card, getClient, MessageBox } from '@hcengineering/presentation'
+  import {
+    ActionIcon,
+    EditBox,
+    IconAdd,
+    IconAttachment,
+    IconDelete,
+    Label,
+    ListView,
+    showPopup
+  } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import setting from '../plugin'
   import Copy from './icons/Copy.svelte'
-  import view from '@anticrm/view-resources/src/plugin'
+  import view from '@hcengineering/view-resources/src/plugin'
 
   export let value: Enum | undefined
   let name: string = value?.name ?? ''

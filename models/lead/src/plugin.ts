@@ -14,14 +14,14 @@
 // limitations under the License.
 //
 
-import type { Ref, Space } from '@anticrm/core'
-import { leadId } from '@anticrm/lead'
-import lead from '@anticrm/lead-resources/src/plugin'
-import type { IntlString } from '@anticrm/platform'
-import { mergeIds } from '@anticrm/platform'
-import { KanbanTemplate } from '@anticrm/task'
-import type { AnyComponent } from '@anticrm/ui'
-import { Action, ActionCategory, Viewlet } from '@anticrm/view'
+import type { Ref, Space } from '@hcengineering/core'
+import { leadId } from '@hcengineering/lead'
+import lead from '@hcengineering/lead-resources/src/plugin'
+import type { IntlString } from '@hcengineering/platform'
+import { mergeIds } from '@hcengineering/platform'
+import { KanbanTemplate } from '@hcengineering/task'
+import type { AnyComponent } from '@hcengineering/ui'
+import { Action, ActionCategory, Viewlet } from '@hcengineering/view'
 
 export default mergeIds(leadId, lead, {
   string: {

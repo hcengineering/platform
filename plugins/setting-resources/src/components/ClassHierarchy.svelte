@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, ClassifierKind, Doc, Ref } from '@anticrm/core'
-  import { getClient } from '@anticrm/presentation'
-  import { getEventPositionElement, Icon, IconAdd, Label, showPopup } from '@anticrm/ui'
-  import { ContextMenu } from '@anticrm/view-resources'
+  import { Class, ClassifierKind, Doc, Ref } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
+  import { getEventPositionElement, Icon, IconAdd, Label, showPopup } from '@hcengineering/ui'
+  import { ContextMenu } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import settings from '../plugin'
 

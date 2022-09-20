@@ -13,10 +13,10 @@
 // limitations under the License.
 //
 
-import { ClientHook } from '@anticrm/client'
-import type { Asset, Metadata, Plugin, Resource } from '@anticrm/platform'
-import { plugin } from '@anticrm/platform'
-import type { AnyComponent } from '@anticrm/ui'
+import { ClientHook } from '@hcengineering/client'
+import type { Asset, Metadata, Plugin, Resource } from '@hcengineering/platform'
+import { plugin } from '@hcengineering/platform'
+import type { AnyComponent } from '@hcengineering/ui'
 
 /**
  * @public

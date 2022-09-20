@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc } from '@anticrm/core'
-  import { getPlatformColor } from '@anticrm/ui'
+  import { Doc } from '@hcengineering/core'
+  import { getPlatformColor } from '@hcengineering/ui'
   import { NotificationClientImpl } from '../utils'
 
   export let value: Doc

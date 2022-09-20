@@ -13,9 +13,9 @@
 // limitations under the License.
 //
 
-import type { Plugin, Asset, Metadata } from '@anticrm/platform'
-import { plugin } from '@anticrm/platform'
-import type { AnyComponent } from '@anticrm/ui'
+import type { Plugin, Asset, Metadata } from '@hcengineering/platform'
+import { plugin } from '@hcengineering/platform'
+import type { AnyComponent } from '@hcengineering/ui'
 
 /**
  * @public

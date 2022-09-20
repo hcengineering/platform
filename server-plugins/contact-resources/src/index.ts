@@ -14,13 +14,13 @@
 // limitations under the License.
 //
 
-import core, { Doc, Tx, TxCreateDoc, TxRemoveDoc, TxUpdateDoc } from '@anticrm/core'
-import type { TriggerControl, MinioClient, BucketItem } from '@anticrm/server-core'
-import contact, { Contact, contactId, formatName, Organization, Person } from '@anticrm/contact'
-import { getMetadata } from '@anticrm/platform'
-import login from '@anticrm/login'
-import { workbenchId } from '@anticrm/workbench'
-import view from '@anticrm/view'
+import core, { Doc, Tx, TxCreateDoc, TxRemoveDoc, TxUpdateDoc } from '@hcengineering/core'
+import type { TriggerControl, MinioClient, BucketItem } from '@hcengineering/server-core'
+import contact, { Contact, contactId, formatName, Organization, Person } from '@hcengineering/contact'
+import { getMetadata } from '@hcengineering/platform'
+import login from '@hcengineering/login'
+import { workbenchId } from '@hcengineering/workbench'
+import view from '@hcengineering/view'
 
 /**
  * @public

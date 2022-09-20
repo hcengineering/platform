@@ -1,14 +1,14 @@
 <script lang="ts">
-  import { Employee, EmployeeAccount, formatName, Status } from '@anticrm/contact'
-  import { getCurrentAccount, Ref, Hierarchy, WithLookup } from '@anticrm/core'
-  import { Avatar, createQuery, getClient } from '@anticrm/presentation'
-  import { Button, getPanelURI, Label, showPopup } from '@anticrm/ui'
+  import { Employee, EmployeeAccount, formatName, Status } from '@hcengineering/contact'
+  import { getCurrentAccount, Ref, Hierarchy, WithLookup } from '@hcengineering/core'
+  import { Avatar, createQuery, getClient } from '@hcengineering/presentation'
+  import { Button, getPanelURI, Label, showPopup } from '@hcengineering/ui'
   import EmployeeSetStatusPopup from './EmployeeSetStatusPopup.svelte'
   import contact from '../plugin'
   import EmployeeStatusPresenter from './EmployeeStatusPresenter.svelte'
   import Edit from './icons/Edit.svelte'
   import { createEventDispatcher } from 'svelte'
-  import view from '@anticrm/view'
+  import view from '@hcengineering/view'
 
   export let employeeId: Ref<Employee>
 

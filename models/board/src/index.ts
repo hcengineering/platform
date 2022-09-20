@@ -14,10 +14,10 @@
 //
 
 // To help typescript locate view plugin properly
-import automation, { AutomationSupport } from '@anticrm/automation'
-import { Board, boardId, Card, CardCover, CommonBoardPreference, MenuPage } from '@anticrm/board'
-import type { Employee } from '@anticrm/contact'
-import { Class, DOMAIN_MODEL, IndexKind, Markup, Ref, Type } from '@anticrm/core'
+import automation, { AutomationSupport } from '@hcengineering/automation'
+import { Board, boardId, Card, CardCover, CommonBoardPreference, MenuPage } from '@hcengineering/board'
+import type { Employee } from '@hcengineering/contact'
+import { Class, DOMAIN_MODEL, IndexKind, Markup, Ref, Type } from '@hcengineering/core'
 import {
   ArrOf,
   Builder,
@@ -30,18 +30,18 @@ import {
   TypeRef,
   TypeString,
   UX
-} from '@anticrm/model'
-import attachment from '@anticrm/model-attachment'
-import chunter from '@anticrm/model-chunter'
-import contact from '@anticrm/model-contact'
-import core, { TDoc, TType } from '@anticrm/model-core'
-import preference, { TPreference } from '@anticrm/model-preference'
-import tags from '@anticrm/model-tags'
-import task, { TSpaceWithStates, TTask } from '@anticrm/model-task'
-import view, { actionTemplates, createAction, actionTemplates as viewTemplates } from '@anticrm/model-view'
-import workbench, { Application } from '@anticrm/model-workbench'
-import { IntlString } from '@anticrm/platform'
-import type { AnyComponent } from '@anticrm/ui'
+} from '@hcengineering/model'
+import attachment from '@hcengineering/model-attachment'
+import chunter from '@hcengineering/model-chunter'
+import contact from '@hcengineering/model-contact'
+import core, { TDoc, TType } from '@hcengineering/model-core'
+import preference, { TPreference } from '@hcengineering/model-preference'
+import tags from '@hcengineering/model-tags'
+import task, { TSpaceWithStates, TTask } from '@hcengineering/model-task'
+import view, { actionTemplates, createAction, actionTemplates as viewTemplates } from '@hcengineering/model-view'
+import workbench, { Application } from '@hcengineering/model-workbench'
+import { IntlString } from '@hcengineering/platform'
+import type { AnyComponent } from '@hcengineering/ui'
 import board from './plugin'
 
 @Model(board.class.Board, task.class.SpaceWithStates)

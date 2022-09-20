@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { TypeBoolean } from '@anticrm/model'
+  import { TypeBoolean } from '@hcengineering/model'
   import { createEventDispatcher, onMount } from 'svelte'
 
   const dispatch = createEventDispatcher()

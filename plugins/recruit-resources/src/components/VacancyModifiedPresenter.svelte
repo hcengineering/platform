@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref } from '@anticrm/core'
-  import { Vacancy } from '@anticrm/recruit'
-  import { TimeSince } from '@anticrm/ui'
+  import { Ref } from '@hcengineering/core'
+  import { Vacancy } from '@hcengineering/recruit'
+  import { TimeSince } from '@hcengineering/ui'
 
   export let value: Vacancy
   export let applications: Map<Ref<Vacancy>, { count: number; modifiedOn: number }> | undefined

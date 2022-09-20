@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { ChunterMessage } from '@anticrm/chunter'
-  import { Ref, Space } from '@anticrm/core'
-  import { eventToHTMLElement, Label, showPopup } from '@anticrm/ui'
+  import { ChunterMessage } from '@hcengineering/chunter'
+  import { Ref, Space } from '@hcengineering/core'
+  import { eventToHTMLElement, Label, showPopup } from '@hcengineering/ui'
   import PinnedMessagesPopup from './PinnedMessagesPopup.svelte'
   import chunter from '../plugin'
 

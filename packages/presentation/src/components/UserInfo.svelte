@@ -15,9 +15,9 @@
 <script lang="ts">
   import Avatar from './Avatar.svelte'
 
-  import { formatName, Person } from '@anticrm/contact'
-  import { Asset } from '@anticrm/platform'
-  import { AnySvelteComponent, IconSize } from '@anticrm/ui'
+  import { formatName, Person } from '@hcengineering/contact'
+  import { Asset } from '@hcengineering/platform'
+  import { AnySvelteComponent, IconSize } from '@hcengineering/ui'
 
   export let value: Person
   export let subtitle: string | undefined = undefined

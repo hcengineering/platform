@@ -14,9 +14,9 @@
 -->
 <script lang="ts">
   import TreeElement from './TreeElement.svelte'
-  import type { Asset } from '@anticrm/platform'
-  import type { Ref, Space } from '@anticrm/core'
-  import type { Action } from '@anticrm/ui'
+  import type { Asset } from '@hcengineering/platform'
+  import type { Ref, Space } from '@hcengineering/core'
+  import type { Action } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
   export let _id: Ref<Space>

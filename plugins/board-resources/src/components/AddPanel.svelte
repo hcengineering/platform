@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Button, IconAdd, TextAreaEditor } from '@anticrm/ui'
+  import { Button, IconAdd, TextAreaEditor } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import board from '../plugin'
 

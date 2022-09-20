@@ -13,11 +13,11 @@
 // limitations under the License.
 //
 
-import contact, { Contact, EmployeeAccount, Organization } from '@anticrm/contact'
-import core, { Class, DocumentUpdate, MixinUpdate, Ref, SortingOrder, TxOperations } from '@anticrm/core'
-import lead, { Customer, Funnel, Lead } from '@anticrm/lead'
-import { connect } from '@anticrm/server-tool'
-import task, { calcRank, DoneState, genRanks, State } from '@anticrm/task'
+import contact, { Contact, EmployeeAccount, Organization } from '@hcengineering/contact'
+import core, { Class, DocumentUpdate, MixinUpdate, Ref, SortingOrder, TxOperations } from '@hcengineering/core'
+import lead, { Customer, Funnel, Lead } from '@hcengineering/lead'
+import { connect } from '@hcengineering/server-tool'
+import task, { calcRank, DoneState, genRanks, State } from '@hcengineering/task'
 import { readFile } from 'fs/promises'
 import { updateClasses } from './classes'
 import { CustomCustomer, FieldType } from './types'

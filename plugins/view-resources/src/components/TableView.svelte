@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Class, Doc, DocumentQuery, FindOptions, Ref, Space } from '@anticrm/core'
+  import type { Class, Doc, DocumentQuery, FindOptions, Ref, Space } from '@hcengineering/core'
   import { TableBrowser } from '..'
   import ActionContext from './ActionContext.svelte'
 

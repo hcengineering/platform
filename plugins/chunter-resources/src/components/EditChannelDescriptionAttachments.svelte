@@ -14,12 +14,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import attachment, { Attachment } from '@anticrm/attachment'
-  import { AttachmentPresenter, FileDownload } from '@anticrm/attachment-resources'
-  import { ChunterSpace } from '@anticrm/chunter'
-  import { Doc, SortingOrder, getCurrentAccount } from '@anticrm/core'
-  import { createQuery, getFileUrl, getClient } from '@anticrm/presentation'
-  import { getCurrentLocation, showPopup, IconMoreV, Label, navigate, Icon, Menu } from '@anticrm/ui'
+  import attachment, { Attachment } from '@hcengineering/attachment'
+  import { AttachmentPresenter, FileDownload } from '@hcengineering/attachment-resources'
+  import { ChunterSpace } from '@hcengineering/chunter'
+  import { Doc, SortingOrder, getCurrentAccount } from '@hcengineering/core'
+  import { createQuery, getFileUrl, getClient } from '@hcengineering/presentation'
+  import { getCurrentLocation, showPopup, IconMoreV, Label, navigate, Icon, Menu } from '@hcengineering/ui'
 
   export let channel: ChunterSpace | undefined
   const myAccId = getCurrentAccount()._id

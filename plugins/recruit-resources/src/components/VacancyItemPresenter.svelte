@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref } from '@anticrm/core'
-  import type { Vacancy } from '@anticrm/recruit'
-  import { ActionIcon, Icon, IconEdit, showPanel } from '@anticrm/ui'
+  import { Ref } from '@hcengineering/core'
+  import type { Vacancy } from '@hcengineering/recruit'
+  import { ActionIcon, Icon, IconEdit, showPanel } from '@hcengineering/ui'
   import recruit from '../plugin'
 
   export let value: Vacancy

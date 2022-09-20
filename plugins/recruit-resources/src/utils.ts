@@ -1,9 +1,9 @@
-import core, { Doc, Ref, TxOperations } from '@anticrm/core'
-import { translate } from '@anticrm/platform'
-import { getClient } from '@anticrm/presentation'
-import { Applicant, Candidate } from '@anticrm/recruit'
-import { getPanelURI } from '@anticrm/ui'
-import view from '@anticrm/view'
+import core, { Doc, Ref, TxOperations } from '@hcengineering/core'
+import { translate } from '@hcengineering/platform'
+import { getClient } from '@hcengineering/presentation'
+import { Applicant, Candidate } from '@hcengineering/recruit'
+import { getPanelURI } from '@hcengineering/ui'
+import view from '@hcengineering/view'
 import recruit from './plugin'
 
 export async function getApplicationTitle (client: TxOperations, ref: Ref<Doc>): Promise<string> {

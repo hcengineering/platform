@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Attachment } from '@anticrm/attachment'
-  import { Ref } from '@anticrm/core'
+  import { Attachment } from '@hcengineering/attachment'
+  import { Ref } from '@hcengineering/core'
   import AttachmentPreview from './AttachmentPreview.svelte'
 
   export let attachments: Attachment[] = []

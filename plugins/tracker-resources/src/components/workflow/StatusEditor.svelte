@@ -14,11 +14,11 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { Data } from '@anticrm/core'
-  import { IssueStatus } from '@anticrm/tracker'
-  import { Button, eventToHTMLElement, getPlatformColor, showPopup } from '@anticrm/ui'
-  import presentation from '@anticrm/presentation'
-  import { ColorsPopup } from '@anticrm/view-resources'
+  import { Data } from '@hcengineering/core'
+  import { IssueStatus } from '@hcengineering/tracker'
+  import { Button, eventToHTMLElement, getPlatformColor, showPopup } from '@hcengineering/ui'
+  import presentation from '@hcengineering/presentation'
+  import { ColorsPopup } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
   import Circles from '../icons/Circles.svelte'
   import StatusInput from './StatusInput.svelte'

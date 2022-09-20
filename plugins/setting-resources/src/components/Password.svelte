@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import setting from '@anticrm/setting'
-  import presentation from '@anticrm/presentation'
-  import { Button, EditBox, Icon, Label } from '@anticrm/ui'
-  import { changePassword } from '@anticrm/login-resources'
+  import setting from '@hcengineering/setting'
+  import presentation from '@hcengineering/presentation'
+  import { Button, EditBox, Icon, Label } from '@hcengineering/ui'
+  import { changePassword } from '@hcengineering/login-resources'
   import Error from './icons/Error.svelte'
   import plugin from '../plugin'
 

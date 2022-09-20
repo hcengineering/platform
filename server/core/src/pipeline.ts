@@ -26,7 +26,7 @@ import {
   StorageIterator,
   Tx,
   TxResult
-} from '@anticrm/core'
+} from '@hcengineering/core'
 import { createServerStorage, DbConfiguration } from './storage'
 import { Middleware, MiddlewareCreator, Pipeline, SessionContext } from './types'
 

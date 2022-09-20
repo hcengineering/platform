@@ -16,8 +16,8 @@ import core, {
   TxMixin,
   TxProcessor,
   TxUpdateDoc
-} from '@anticrm/core'
-import { createQuery, LiveQuery } from '@anticrm/presentation'
+} from '@hcengineering/core'
+import { createQuery, LiveQuery } from '@hcengineering/presentation'
 
 /**
  * @public

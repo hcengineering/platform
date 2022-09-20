@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { Timestamp, TypeDate } from '@anticrm/core'
-  import { ticker, tooltip } from '@anticrm/ui'
-  import { DateEditor } from '@anticrm/view-resources'
+  import { Timestamp, TypeDate } from '@hcengineering/core'
+  import { ticker, tooltip } from '@hcengineering/ui'
+  import { DateEditor } from '@hcengineering/view-resources'
   import EmployeeStatusDueDatePopup from './EmployeeStatusDueDatePopup.svelte'
   import { formatDate } from '../utils'
   import { createEventDispatcher } from 'svelte'

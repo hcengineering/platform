@@ -14,10 +14,10 @@
 // limitations under the License.
 */
 
-import type { IntlString } from '@anticrm/platform'
-import { mergeIds } from '@anticrm/platform'
+import type { IntlString } from '@hcengineering/platform'
+import { mergeIds } from '@hcengineering/platform'
 
-import notification, { notificationId } from '@anticrm/notification'
+import notification, { notificationId } from '@hcengineering/notification'
 
 export default mergeIds(notificationId, notification, {
   string: {

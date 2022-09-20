@@ -31,9 +31,9 @@ import type {
   Timestamp,
   Tx,
   TxResult
-} from '@anticrm/core'
-import { Hierarchy, TxFactory } from '@anticrm/core'
-import type { Resource } from '@anticrm/platform'
+} from '@hcengineering/core'
+import { Hierarchy, TxFactory } from '@hcengineering/core'
+import type { Resource } from '@hcengineering/platform'
 import type { Client as MinioClient, BucketItem } from 'minio'
 
 export { MinioClient, BucketItem }

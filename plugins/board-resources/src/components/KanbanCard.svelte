@@ -14,15 +14,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AttachmentDroppable, AttachmentsPresenter } from '@anticrm/attachment-resources'
-  import type { Card } from '@anticrm/board'
-  import { CommentsPresenter } from '@anticrm/chunter-resources'
-  import { Employee } from '@anticrm/contact'
-  import type { Ref, WithLookup } from '@anticrm/core'
-  import notification from '@anticrm/notification'
-  import view from '@anticrm/view'
-  import tags from '@anticrm/tags'
-  import { getClient, UserBoxList } from '@anticrm/presentation'
+  import { AttachmentDroppable, AttachmentsPresenter } from '@hcengineering/attachment-resources'
+  import type { Card } from '@hcengineering/board'
+  import { CommentsPresenter } from '@hcengineering/chunter-resources'
+  import { Employee } from '@hcengineering/contact'
+  import type { Ref, WithLookup } from '@hcengineering/core'
+  import notification from '@hcengineering/notification'
+  import view from '@hcengineering/view'
+  import tags from '@hcengineering/tags'
+  import { getClient, UserBoxList } from '@hcengineering/presentation'
   import {
     Button,
     Component,
@@ -33,8 +33,8 @@
     Label,
     numberToHexColor,
     showPopup
-  } from '@anticrm/ui'
-  import { ContextMenu } from '@anticrm/view-resources'
+  } from '@hcengineering/ui'
+  import { ContextMenu } from '@hcengineering/view-resources'
   import board from '../plugin'
   import DatePresenter from './presenters/DatePresenter.svelte'
   import { hasDate, openCardPanel, updateCard, updateCardMembers } from '../utils/CardUtils'

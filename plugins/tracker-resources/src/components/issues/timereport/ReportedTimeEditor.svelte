@@ -14,9 +14,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { IntlString } from '@anticrm/platform'
-  import { Issue } from '@anticrm/tracker'
-  import { ActionIcon, eventToHTMLElement, IconAdd, Label, showPopup } from '@anticrm/ui'
+  import type { IntlString } from '@hcengineering/platform'
+  import { Issue } from '@hcengineering/tracker'
+  import { ActionIcon, eventToHTMLElement, IconAdd, Label, showPopup } from '@hcengineering/ui'
   import ReportsPopup from './ReportsPopup.svelte'
   import TimeSpendReportPopup from './TimeSpendReportPopup.svelte'
 

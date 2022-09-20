@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import hr, { Request, RequestType } from '@anticrm/hr'
-  import { getClient } from '@anticrm/presentation'
-  import { getPlatformColor, Icon, showPopup } from '@anticrm/ui'
-  import { ContextMenu } from '@anticrm/view-resources'
+  import hr, { Request, RequestType } from '@hcengineering/hr'
+  import { getClient } from '@hcengineering/presentation'
+  import { getPlatformColor, Icon, showPopup } from '@hcengineering/ui'
+  import { ContextMenu } from '@hcengineering/view-resources'
 
   export let requests: Request[]
   export let date: Date

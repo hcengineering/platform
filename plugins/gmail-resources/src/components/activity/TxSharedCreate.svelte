@@ -14,9 +14,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { TxCreateDoc } from '@anticrm/core'
-  import { TxProcessor } from '@anticrm/core'
-  import { SharedMessages } from '@anticrm/gmail'
+  import type { TxCreateDoc } from '@hcengineering/core'
+  import { TxProcessor } from '@hcengineering/core'
+  import { SharedMessages } from '@hcengineering/gmail'
   import SharedMessagesView from '../SharedMessages.svelte'
 
   export let tx: TxCreateDoc<SharedMessages>

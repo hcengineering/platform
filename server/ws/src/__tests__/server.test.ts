@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-import { readResponse, serialize, UNAUTHORIZED } from '@anticrm/platform'
-import { generateToken } from '@anticrm/server-token'
+import { readResponse, serialize, UNAUTHORIZED } from '@hcengineering/platform'
+import { generateToken } from '@hcengineering/server-token'
 import WebSocket from 'ws'
 import { disableLogging, start } from '../server'
 
@@ -34,8 +34,8 @@ import {
   toFindResult,
   Tx,
   TxResult
-} from '@anticrm/core'
-import { SessionContext } from '@anticrm/server-core'
+} from '@hcengineering/core'
+import { SessionContext } from '@hcengineering/server-core'
 import { ClientSession } from '../client'
 import { genMinModel } from './minmodel'
 

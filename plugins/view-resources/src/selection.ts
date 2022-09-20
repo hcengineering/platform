@@ -1,5 +1,5 @@
-import { Doc } from '@anticrm/core'
-import { panelstore } from '@anticrm/ui'
+import { Doc } from '@hcengineering/core'
+import { panelstore } from '@hcengineering/ui'
 import { onDestroy } from 'svelte'
 import { writable } from 'svelte/store'
 

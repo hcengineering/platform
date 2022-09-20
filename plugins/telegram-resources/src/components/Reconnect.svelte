@@ -13,15 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getMetadata, serialize } from '@anticrm/platform'
-  import { Button, EditBox, IconClose, Label } from '@anticrm/ui'
+  import { getMetadata, serialize } from '@hcengineering/platform'
+  import { Button, EditBox, IconClose, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import login from '@anticrm/login'
+  import login from '@hcengineering/login'
   import PinPad from './PinPad.svelte'
   import telegram from '../plugin'
-  import { getClient } from '@anticrm/presentation'
-  import setting from '@anticrm/setting'
-  import { getCurrentAccount, Ref, Space } from '@anticrm/core'
+  import { getClient } from '@hcengineering/presentation'
+  import setting from '@hcengineering/setting'
+  import { getCurrentAccount, Ref, Space } from '@hcengineering/core'
 
   const dispatch = createEventDispatcher()
 

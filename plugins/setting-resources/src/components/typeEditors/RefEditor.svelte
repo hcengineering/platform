@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Class, Doc, Ref, RefTo } from '@anticrm/core'
-  import { TypeRef } from '@anticrm/model'
-  import { getClient } from '@anticrm/presentation'
-  import { DOMAIN_STATE } from '@anticrm/task'
-  import { DropdownLabelsIntl, Label } from '@anticrm/ui'
-  import view from '@anticrm/view-resources/src/plugin'
+  import core, { Class, Doc, Ref, RefTo } from '@hcengineering/core'
+  import { TypeRef } from '@hcengineering/model'
+  import { getClient } from '@hcengineering/presentation'
+  import { DOMAIN_STATE } from '@hcengineering/task'
+  import { DropdownLabelsIntl, Label } from '@hcengineering/ui'
+  import view from '@hcengineering/view-resources/src/plugin'
   import { createEventDispatcher } from 'svelte'
 
   export let type: RefTo<Doc> | undefined

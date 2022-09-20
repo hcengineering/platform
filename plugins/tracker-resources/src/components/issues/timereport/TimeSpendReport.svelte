@@ -13,13 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Employee } from '@anticrm/contact'
-  import { WithLookup } from '@anticrm/core'
-  import { getClient } from '@anticrm/presentation'
-  import type { TimeSpendReport } from '@anticrm/tracker'
-  import { eventToHTMLElement, Label, showPopup, tooltip } from '@anticrm/ui'
-  import view, { AttributeModel } from '@anticrm/view'
-  import { getObjectPresenter } from '@anticrm/view-resources'
+  import contact, { Employee } from '@hcengineering/contact'
+  import { WithLookup } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
+  import type { TimeSpendReport } from '@hcengineering/tracker'
+  import { eventToHTMLElement, Label, showPopup, tooltip } from '@hcengineering/ui'
+  import view, { AttributeModel } from '@hcengineering/view'
+  import { getObjectPresenter } from '@hcengineering/view-resources'
   import tracker from '../../../plugin'
   import TimeSpendReportPopup from './TimeSpendReportPopup.svelte'
 

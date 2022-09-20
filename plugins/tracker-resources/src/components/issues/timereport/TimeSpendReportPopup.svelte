@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Employee } from '@anticrm/contact'
-  import { AttachedData, Class, DocumentUpdate, Ref, Space } from '@anticrm/core'
-  import type { IntlString } from '@anticrm/platform'
-  import presentation, { Card, getClient, UserBox } from '@anticrm/presentation'
-  import { Issue, TimeSpendReport } from '@anticrm/tracker'
-  import { DatePresenter, EditBox } from '@anticrm/ui'
+  import contact, { Employee } from '@hcengineering/contact'
+  import { AttachedData, Class, DocumentUpdate, Ref, Space } from '@hcengineering/core'
+  import type { IntlString } from '@hcengineering/platform'
+  import presentation, { Card, getClient, UserBox } from '@hcengineering/presentation'
+  import { Issue, TimeSpendReport } from '@hcengineering/tracker'
+  import { DatePresenter, EditBox } from '@hcengineering/ui'
   import tracker from '../../../plugin'
 
   export let issueId: Ref<Issue>

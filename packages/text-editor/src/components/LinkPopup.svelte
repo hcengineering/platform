@@ -15,9 +15,9 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
 
-  import { Card } from '@anticrm/presentation'
-  import { EditBox } from '@anticrm/ui'
-  import type { IntlString } from '@anticrm/platform'
+  import { Card } from '@hcengineering/presentation'
+  import { EditBox } from '@hcengineering/ui'
+  import type { IntlString } from '@hcengineering/platform'
 
   import textEditorPlugin from '../plugin'
 

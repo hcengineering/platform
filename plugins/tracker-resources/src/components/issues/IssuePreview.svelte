@@ -13,14 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import attachment from '@anticrm/attachment'
-  import { AttachmentDocList } from '@anticrm/attachment-resources'
-  import chunter from '@anticrm/chunter'
-  import { CommentPopup } from '@anticrm/chunter-resources'
-  import { Ref, SortingOrder } from '@anticrm/core'
-  import { createQuery, getClient, MessageViewer } from '@anticrm/presentation'
-  import { Issue, IssueStatus, Team } from '@anticrm/tracker'
-  import { Label, resizeObserver, Scroller } from '@anticrm/ui'
+  import attachment from '@hcengineering/attachment'
+  import { AttachmentDocList } from '@hcengineering/attachment-resources'
+  import chunter from '@hcengineering/chunter'
+  import { CommentPopup } from '@hcengineering/chunter-resources'
+  import { Ref, SortingOrder } from '@hcengineering/core'
+  import { createQuery, getClient, MessageViewer } from '@hcengineering/presentation'
+  import { Issue, IssueStatus, Team } from '@hcengineering/tracker'
+  import { Label, resizeObserver, Scroller } from '@hcengineering/ui'
   import tracker from '../../plugin'
   import AssigneeEditor from './AssigneeEditor.svelte'
   import PriorityEditor from './PriorityEditor.svelte'

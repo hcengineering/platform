@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Asset } from '@anticrm/platform'
-  import { AnySvelteComponent, Icon, LabelAndProps, tooltip } from '@anticrm/ui'
+  import type { Asset } from '@hcengineering/platform'
+  import { AnySvelteComponent, Icon, LabelAndProps, tooltip } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
   export let icon: Asset | AnySvelteComponent

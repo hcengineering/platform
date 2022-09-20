@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Plugin } from '@anticrm/platform'
+import { Plugin } from '@hcengineering/platform'
 import { BackupClient, DocChunk } from './backup'
 import type { Class, Doc, Domain, PluginConfiguration, Ref } from './classes'
 import { DOMAIN_MODEL } from './classes'

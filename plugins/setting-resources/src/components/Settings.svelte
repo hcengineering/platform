@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createQuery } from '@anticrm/presentation'
-  import setting, { SettingsCategory } from '@anticrm/setting'
+  import { createQuery } from '@hcengineering/presentation'
+  import setting, { SettingsCategory } from '@hcengineering/setting'
   import {
     Component,
     fetchMetadataLocalStorage,
@@ -24,13 +24,13 @@
     navigate,
     setMetadataLocalStorage,
     showPopup
-  } from '@anticrm/ui'
+  } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import CategoryElement from './CategoryElement.svelte'
-  import login from '@anticrm/login'
-  import { AccountRole, getCurrentAccount } from '@anticrm/core'
-  import { EmployeeAccount } from '@anticrm/contact'
-  import { setMetadata } from '@anticrm/platform'
+  import login from '@hcengineering/login'
+  import { AccountRole, getCurrentAccount } from '@hcengineering/core'
+  import { EmployeeAccount } from '@hcengineering/contact'
+  import { setMetadata } from '@hcengineering/platform'
 
   export let visibileNav = true
   let category: SettingsCategory | undefined

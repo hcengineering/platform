@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { Resources } from '@anticrm/platform'
-import { getEventPopupPositionElement, PopupAlignment } from '@anticrm/ui'
+import { Resources } from '@hcengineering/platform'
+import { getEventPopupPositionElement, PopupAlignment } from '@hcengineering/ui'
 import { actionImpl } from './actionImpl'
 import ActionsPopup from './components/ActionsPopup.svelte'
 import BooleanEditor from './components/BooleanEditor.svelte'

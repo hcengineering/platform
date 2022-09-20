@@ -14,9 +14,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Organization } from '@anticrm/contact'
-  import { getPanelURI } from '@anticrm/ui'
-  import view from '@anticrm/view'
+  import { Organization } from '@hcengineering/contact'
+  import { getPanelURI } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
   import Company from './icons/Company.svelte'
 
   export let value: Organization

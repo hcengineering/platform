@@ -13,8 +13,8 @@
 // limitations under the f.
 //
 
-import contact, { combineName, Employee } from '@anticrm/contact'
-import core, { AccountRole, Ref, TxOperations } from '@anticrm/core'
+import contact, { combineName, Employee } from '@hcengineering/contact'
+import core, { AccountRole, Ref, TxOperations } from '@hcengineering/core'
 import platform, {
   getMetadata,
   PlatformError,
@@ -25,9 +25,9 @@ import platform, {
   Severity,
   Status,
   StatusCode
-} from '@anticrm/platform'
-import { decodeToken, generateToken } from '@anticrm/server-token'
-import toolPlugin, { connect, initModel, upgradeModel, version } from '@anticrm/server-tool'
+} from '@hcengineering/platform'
+import { decodeToken, generateToken } from '@hcengineering/server-token'
+import toolPlugin, { connect, initModel, upgradeModel, version } from '@hcengineering/server-tool'
 import { pbkdf2Sync, randomBytes } from 'crypto'
 import { Binary, Db, ObjectId } from 'mongodb'
 

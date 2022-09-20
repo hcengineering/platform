@@ -13,17 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { WithLookup } from '@anticrm/core'
-  import { getResource, translate } from '@anticrm/platform'
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import ui, { Button, closePopup, Component, Icon, IconArrowLeft, Label } from '@anticrm/ui'
-  import { Action, ViewContext } from '@anticrm/view'
+  import { WithLookup } from '@hcengineering/core'
+  import { getResource, translate } from '@hcengineering/platform'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import ui, { Button, closePopup, Component, Icon, IconArrowLeft, Label } from '@hcengineering/ui'
+  import { Action, ViewContext } from '@hcengineering/view'
   import { onMount } from 'svelte'
   import { filterActions, getSelection } from '../actions'
   import view from '../plugin'
   import { focusStore, selectionStore } from '../selection'
   import ActionContext from './ActionContext.svelte'
-  import { ListView } from '@anticrm/ui'
+  import { ListView } from '@hcengineering/ui'
   import ObjectPresenter from './ObjectPresenter.svelte'
   import { tick } from 'svelte'
 

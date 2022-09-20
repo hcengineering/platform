@@ -1,5 +1,5 @@
 {
-  "name": "@anticrm/model-contact",
+  "name": "@hcengineering/model-contact",
   "version": "0.6.1",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
@@ -12,7 +12,7 @@
     "format": "prettier --write src && eslint --fix src"
   },
   "devDependencies": {
-    "@anticrm/model-rig": "~0.6.0",
+    "@hcengineering/model-rig": "~0.6.0",
     "@typescript-eslint/eslint-plugin": "^5.30.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.0.0",
@@ -25,19 +25,19 @@
     "@rushstack/heft": "^0.46.1"
   },
   "dependencies": {
-    "@anticrm/model-core": "~0.6.0",
-    "@anticrm/model-chunter": "~0.6.0",
-    "@anticrm/model-workbench": "~0.6.1",
-    "@anticrm/model-attachment": "~0.6.0",
-    "@anticrm/model-view": "~0.6.0",
-    "@anticrm/model-presentation": "~0.6.0",
-    "@anticrm/model": "~0.6.0",
-    "@anticrm/setting": "~0.6.1",
-    "@anticrm/core": "~0.6.16",
-    "@anticrm/ui": "~0.6.0",
-    "@anticrm/platform": "~0.6.6",
-    "@anticrm/contact": "~0.6.5",
-    "@anticrm/contact-resources": "~0.6.0",
-    "@anticrm/view": "~0.6.0"
+    "@hcengineering/model-core": "~0.6.0",
+    "@hcengineering/model-chunter": "~0.6.0",
+    "@hcengineering/model-workbench": "~0.6.1",
+    "@hcengineering/model-attachment": "~0.6.0",
+    "@hcengineering/model-view": "~0.6.0",
+    "@hcengineering/model-presentation": "~0.6.0",
+    "@hcengineering/model": "~0.6.0",
+    "@hcengineering/setting": "~0.6.1",
+    "@hcengineering/core": "^0.6.17",
+    "@hcengineering/ui": "^0.6.2",
+    "@hcengineering/platform": "^0.6.7",
+    "@hcengineering/contact": "~0.6.5",
+    "@hcengineering/contact-resources": "~0.6.0",
+    "@hcengineering/view": "^0.6.1"
   }
 }

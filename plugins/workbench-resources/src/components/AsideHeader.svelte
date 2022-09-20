@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { IconAdd, IconClose } from '@anticrm/ui'
+  import { IconAdd, IconClose } from '@hcengineering/ui'
 
   export let title: string = 'Unknown'
 </script>

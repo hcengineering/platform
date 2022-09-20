@@ -14,7 +14,7 @@
 //
 
 const path = require('path')
-const prodModule = require('@anticrm/prod/webpack.config')
+const prodModule = require('@hcengineering/prod/webpack.config')
 
 module.exports = {
   ...prodModule,

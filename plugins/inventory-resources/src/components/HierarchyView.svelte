@@ -14,13 +14,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, DocumentQuery, FindOptions, Ref, SortingOrder } from '@anticrm/core'
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import { Label, Loading } from '@anticrm/ui'
-  import { buildModel } from '@anticrm/view-resources'
-  import { Category } from '@anticrm/inventory'
+  import { Class, Doc, DocumentQuery, FindOptions, Ref, SortingOrder } from '@hcengineering/core'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { Label, Loading } from '@hcengineering/ui'
+  import { buildModel } from '@hcengineering/view-resources'
+  import { Category } from '@hcengineering/inventory'
   import HierarchyElement from './HierarchyElement.svelte'
-  import { buildConfigLookup } from '@anticrm/view-resources/src/utils'
+  import { buildConfigLookup } from '@hcengineering/view-resources/src/utils'
 
   export let _class: Ref<Class<Category>>
   export let query: DocumentQuery<Category> = {}

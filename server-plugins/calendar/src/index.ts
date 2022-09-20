@@ -14,9 +14,9 @@
 // limitations under the License.
 //
 
-import { Class, Doc, DocumentQuery, FindOptions, FindResult, Hierarchy, Ref } from '@anticrm/core'
-import type { Plugin, Resource } from '@anticrm/platform'
-import { plugin } from '@anticrm/platform'
+import { Class, Doc, DocumentQuery, FindOptions, FindResult, Hierarchy, Ref } from '@hcengineering/core'
+import type { Plugin, Resource } from '@hcengineering/platform'
+import { plugin } from '@hcengineering/platform'
 
 /**
  * @public

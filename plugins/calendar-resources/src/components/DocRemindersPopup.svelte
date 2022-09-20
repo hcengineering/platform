@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { EmployeeAccount } from '@anticrm/contact'
-  import { Class, Doc, getCurrentAccount, Ref } from '@anticrm/core'
-  import { Button, showPopup, Label, Scroller, IconAdd } from '@anticrm/ui'
-  import { Table } from '@anticrm/view-resources'
+  import { EmployeeAccount } from '@hcengineering/contact'
+  import { Class, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
+  import { Button, showPopup, Label, Scroller, IconAdd } from '@hcengineering/ui'
+  import { Table } from '@hcengineering/view-resources'
   import calendar from '../plugin'
   import CreateReminder from './CreateReminder.svelte'
 

@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { IntlString, translate } from '@anticrm/platform'
+  import { IntlString, translate } from '@hcengineering/platform'
   import { onMount } from 'svelte'
 
   export let value: string | undefined = undefined

@@ -13,17 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createQuery, EditableAvatar, getClient } from '@anticrm/presentation'
-  import { createFocusManager, EditBox, FocusHandler } from '@anticrm/ui'
+  import { createQuery, EditableAvatar, getClient } from '@hcengineering/presentation'
+  import { createFocusManager, EditBox, FocusHandler } from '@hcengineering/ui'
 
   import { createEventDispatcher, onMount } from 'svelte'
-  import { Department } from '@anticrm/hr'
-  import core, { getCurrentAccount, Ref, Space } from '@anticrm/core'
+  import { Department } from '@hcengineering/hr'
+  import core, { getCurrentAccount, Ref, Space } from '@hcengineering/core'
   import hr from '../plugin'
-  import { getResource } from '@anticrm/platform'
-  import attachment from '@anticrm/attachment'
-  import { ChannelsEditor } from '@anticrm/contact-resources'
-  import setting, { IntegrationType } from '@anticrm/setting'
+  import { getResource } from '@hcengineering/platform'
+  import attachment from '@hcengineering/attachment'
+  import { ChannelsEditor } from '@hcengineering/contact-resources'
+  import setting, { IntegrationType } from '@hcengineering/setting'
 
   export let object: Department
 

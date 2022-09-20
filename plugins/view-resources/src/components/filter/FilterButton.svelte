@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, Ref } from '@anticrm/core'
-  import { getClient } from '@anticrm/presentation'
-  import { Button, eventToHTMLElement, IconAdd, IconClose, Icon, showPopup, Label } from '@anticrm/ui'
-  import { Filter } from '@anticrm/view'
+  import { Class, Doc, Ref } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
+  import { Button, eventToHTMLElement, IconAdd, IconClose, Icon, showPopup, Label } from '@hcengineering/ui'
+  import { Filter } from '@hcengineering/view'
   import { filterStore } from '../../filter'
   import view from '../../plugin'
   import FilterTypePopup from './FilterTypePopup.svelte'

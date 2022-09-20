@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import contact, { Channel } from '@anticrm/contact'
+import contact, { Channel } from '@hcengineering/contact'
 import core, {
   Class,
   Doc,
@@ -25,9 +25,9 @@ import core, {
   Tx,
   TxCreateDoc,
   TxProcessor
-} from '@anticrm/core'
-import gmail, { Message } from '@anticrm/gmail'
-import { TriggerControl } from '@anticrm/server-core'
+} from '@hcengineering/core'
+import gmail, { Message } from '@hcengineering/gmail'
+import { TriggerControl } from '@hcengineering/server-core'
 
 /**
  * @public

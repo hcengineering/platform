@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-import chunter, { Backlink } from '@anticrm/chunter'
-import contact, { Employee, EmployeeAccount, formatName } from '@anticrm/contact'
+import chunter, { Backlink } from '@hcengineering/chunter'
+import contact, { Employee, EmployeeAccount, formatName } from '@hcengineering/contact'
 import core, {
   Account,
   AttachedDoc,
@@ -33,17 +33,17 @@ import core, {
   TxCreateDoc,
   TxCUD,
   TxProcessor
-} from '@anticrm/core'
+} from '@hcengineering/core'
 import notification, {
   EmailNotification,
   Notification,
   NotificationProvider,
   NotificationStatus
-} from '@anticrm/notification'
-import { getResource } from '@anticrm/platform'
-import type { TriggerControl } from '@anticrm/server-core'
-import { createLastViewTx, getUpdateLastViewTx } from '@anticrm/server-notification'
-import view, { HTMLPresenter, TextPresenter } from '@anticrm/view'
+} from '@hcengineering/notification'
+import { getResource } from '@hcengineering/platform'
+import type { TriggerControl } from '@hcengineering/server-core'
+import { createLastViewTx, getUpdateLastViewTx } from '@hcengineering/server-notification'
+import view, { HTMLPresenter, TextPresenter } from '@hcengineering/view'
 
 /**
  * @public

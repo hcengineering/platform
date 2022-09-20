@@ -14,10 +14,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, RelatedDocument } from '@anticrm/core'
+  import { Ref, RelatedDocument } from '@hcengineering/core'
 
-  import { getResource, IntlString } from '@anticrm/platform'
-  import ui, { Button, createFocusManager, EditBox, FocusHandler, IconSearch, Label, ListView } from '@anticrm/ui'
+  import { getResource, IntlString } from '@hcengineering/platform'
+  import ui, { Button, createFocusManager, EditBox, FocusHandler, IconSearch, Label, ListView } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation from '../plugin'
   import { ObjectSearchCategory, ObjectSearchResult } from '../types'

@@ -13,14 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { OK, Status, Severity, setMetadata } from '@anticrm/platform'
-  import { fetchMetadataLocalStorage, getCurrentLocation, navigate, setMetadataLocalStorage } from '@anticrm/ui'
+  import { OK, Status, Severity, setMetadata } from '@hcengineering/platform'
+  import { fetchMetadataLocalStorage, getCurrentLocation, navigate, setMetadataLocalStorage } from '@hcengineering/ui'
 
   import Form from './Form.svelte'
   import { checkJoined, join, signUpJoin } from '../utils'
 
   import login from '../plugin'
-  import { workbenchId } from '@anticrm/workbench'
+  import { workbenchId } from '@hcengineering/workbench'
   import { onMount } from 'svelte'
 
   const location = getCurrentLocation()

@@ -13,13 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import attachment, { Attachment } from '@anticrm/attachment'
-  import { AttachmentRefInput } from '@anticrm/attachment-resources'
-  import { ChunterMessage, Message, ChunterSpace } from '@anticrm/chunter'
-  import { generateId, getCurrentAccount, Ref, Space } from '@anticrm/core'
-  import notification from '@anticrm/notification'
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import { getCurrentLocation, navigate } from '@anticrm/ui'
+  import attachment, { Attachment } from '@hcengineering/attachment'
+  import { AttachmentRefInput } from '@hcengineering/attachment-resources'
+  import { ChunterMessage, Message, ChunterSpace } from '@hcengineering/chunter'
+  import { generateId, getCurrentAccount, Ref, Space } from '@hcengineering/core'
+  import notification from '@hcengineering/notification'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { getCurrentLocation, navigate } from '@hcengineering/ui'
   import { createBacklinks } from '../backlinks'
   import chunter from '../plugin'
   import Channel from './Channel.svelte'

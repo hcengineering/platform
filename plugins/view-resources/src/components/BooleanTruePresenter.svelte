@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getPlatformColor } from '@anticrm/ui'
+  import { getPlatformColor } from '@hcengineering/ui'
 
   export let value: boolean
   export let trueColor = 0

@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getResource } from '@anticrm/platform'
+  import { getResource } from '@hcengineering/platform'
   import { afterUpdate, onMount } from 'svelte'
 
   import { closePanel, PanelProps, panelstore } from '../panelup'

@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Backlink } from '@anticrm/chunter'
-  import type { Doc } from '@anticrm/core'
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import { Label } from '@anticrm/ui'
-  import { AttributeModel } from '@anticrm/view'
-  import { getObjectPresenter } from '@anticrm/view-resources'
+  import type { Backlink } from '@hcengineering/chunter'
+  import type { Doc } from '@hcengineering/core'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { Label } from '@hcengineering/ui'
+  import { AttributeModel } from '@hcengineering/view'
+  import { getObjectPresenter } from '@hcengineering/view-resources'
   import chunter from '../../plugin'
 
   // export let tx: TxCreateDoc<Backlink>

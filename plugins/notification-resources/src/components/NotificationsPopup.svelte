@@ -14,14 +14,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import activity, { TxViewlet } from '@anticrm/activity'
-  import { activityKey, ActivityKey } from '@anticrm/activity-resources'
-  import { EmployeeAccount } from '@anticrm/contact'
-  import core, { getCurrentAccount, WithLookup } from '@anticrm/core'
-  import { Notification, NotificationStatus } from '@anticrm/notification'
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import { ActionIcon, IconCheck, IconDelete, Scroller } from '@anticrm/ui'
-  import Label from '@anticrm/ui/src/components/Label.svelte'
+  import activity, { TxViewlet } from '@hcengineering/activity'
+  import { activityKey, ActivityKey } from '@hcengineering/activity-resources'
+  import { EmployeeAccount } from '@hcengineering/contact'
+  import core, { getCurrentAccount, WithLookup } from '@hcengineering/core'
+  import { Notification, NotificationStatus } from '@hcengineering/notification'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { ActionIcon, IconCheck, IconDelete, Scroller } from '@hcengineering/ui'
+  import Label from '@hcengineering/ui/src/components/Label.svelte'
   import notification from '../plugin'
   import NotificationView from './NotificationView.svelte'
 

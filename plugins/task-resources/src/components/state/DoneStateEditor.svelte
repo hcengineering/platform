@@ -14,11 +14,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref } from '@anticrm/core'
-  import { createQuery } from '@anticrm/presentation'
-  import { DoneState, SpaceWithStates } from '@anticrm/task'
-  import { Label, showPopup, Button } from '@anticrm/ui'
-  import type { ButtonKind, ButtonSize } from '@anticrm/ui'
+  import { Ref } from '@hcengineering/core'
+  import { createQuery } from '@hcengineering/presentation'
+  import { DoneState, SpaceWithStates } from '@hcengineering/task'
+  import { Label, showPopup, Button } from '@hcengineering/ui'
+  import type { ButtonKind, ButtonSize } from '@hcengineering/ui'
   import DoneStatePresenter from './DoneStatePresenter.svelte'
   import DoneStatesPopup from './DoneStatesPopup.svelte'
   import task from '../../plugin'

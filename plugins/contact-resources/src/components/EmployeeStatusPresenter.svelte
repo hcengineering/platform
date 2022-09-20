@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { Employee, Status } from '@anticrm/contact'
-  import { WithLookup } from '@anticrm/core'
-  import { Label, tooltip } from '@anticrm/ui'
+  import { Employee, Status } from '@hcengineering/contact'
+  import { WithLookup } from '@hcengineering/core'
+  import { Label, tooltip } from '@hcengineering/ui'
   import contact from '../plugin'
   import { formatDate } from '../utils'
-  import { IntlString } from '@anticrm/platform'
+  import { IntlString } from '@hcengineering/platform'
 
   export let employee: WithLookup<Employee>
   export let withTooltip: boolean = true

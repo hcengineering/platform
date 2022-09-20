@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { Timestamp } from '@anticrm/core'
-  import { DateRangePopup, showPopup } from '@anticrm/ui'
+  import { Timestamp } from '@hcengineering/core'
+  import { DateRangePopup, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { getDay } from '../utils'
 

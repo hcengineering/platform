@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Class, ClassifierKind, Data, Doc, Mixin } from '@anticrm/core'
-  import { getEmbeddedLabel } from '@anticrm/platform'
-  import { Card, getClient } from '@anticrm/presentation'
-  import { EditBox, Icon, Label } from '@anticrm/ui'
+  import core, { Class, ClassifierKind, Data, Doc, Mixin } from '@hcengineering/core'
+  import { getEmbeddedLabel } from '@hcengineering/platform'
+  import { Card, getClient } from '@hcengineering/presentation'
+  import { EditBox, Icon, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import setting from '../plugin'
 

@@ -14,10 +14,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, Ref, Space } from '@anticrm/core'
-  import { Label, Spinner, Icon } from '@anticrm/ui'
-  import view from '@anticrm/view'
-  import { Table } from '@anticrm/view-resources'
+  import { Class, Doc, Ref, Space } from '@hcengineering/core'
+  import { Label, Spinner, Icon } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
+  import { Table } from '@hcengineering/view-resources'
   import attachment from '../plugin'
   import AddAttachment from './AddAttachment.svelte'
   import IconAttachment from './icons/Attachment.svelte'

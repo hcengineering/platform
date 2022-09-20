@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import pkg from '@anticrm/dev-server'
+import pkg from '@hcengineering/dev-server'
 
 pkg.start(3333)
 

@@ -13,14 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Contact, Employee, Person } from '@anticrm/contact'
-  import contact from '@anticrm/contact'
-  import ExpandRightDouble from '@anticrm/contact-resources/src/components/icons/ExpandRightDouble.svelte'
-  import { Account, Class, Client, Doc, FindOptions, generateId, Ref, SortingOrder, Space } from '@anticrm/core'
-  import { getResource, OK, Resource, Severity, Status } from '@anticrm/platform'
-  import { Card, createQuery, EmployeeBox, getClient, SpaceSelect, UserBox } from '@anticrm/presentation'
-  import type { Applicant, Candidate, Vacancy } from '@anticrm/recruit'
-  import task, { calcRank, SpaceWithStates, State } from '@anticrm/task'
+  import type { Contact, Employee, Person } from '@hcengineering/contact'
+  import contact from '@hcengineering/contact'
+  import ExpandRightDouble from '@hcengineering/contact-resources/src/components/icons/ExpandRightDouble.svelte'
+  import { Account, Class, Client, Doc, FindOptions, generateId, Ref, SortingOrder, Space } from '@hcengineering/core'
+  import { getResource, OK, Resource, Severity, Status } from '@hcengineering/platform'
+  import { Card, createQuery, EmployeeBox, getClient, SpaceSelect, UserBox } from '@hcengineering/presentation'
+  import type { Applicant, Candidate, Vacancy } from '@hcengineering/recruit'
+  import task, { calcRank, SpaceWithStates, State } from '@hcengineering/task'
   import ui, {
     Button,
     ColorPopup,
@@ -31,8 +31,8 @@
     Label,
     showPopup,
     Status as StatusControl
-  } from '@anticrm/ui'
-  import view from '@anticrm/view'
+  } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
   import CandidateCard from './CandidateCard.svelte'

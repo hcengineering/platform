@@ -13,9 +13,9 @@
 // limitations under the License.
 //
 
-import { Doc } from '@anticrm/core'
-import { Resources } from '@anticrm/platform'
-import { showPopup } from '@anticrm/ui'
+import { Doc } from '@hcengineering/core'
+import { Resources } from '@hcengineering/platform'
+import { showPopup } from '@hcengineering/ui'
 import CalendarView from './components/CalendarView.svelte'
 import SaveEventReminder from './components/SaveEventReminder.svelte'
 import DateTimePresenter from './components/DateTimePresenter.svelte'

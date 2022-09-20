@@ -13,11 +13,11 @@
 // limitations under the License.
 //
 
-import { Space } from '@anticrm/core'
-import { IntlString, mergeIds, Resource } from '@anticrm/platform'
-import { AnyComponent } from '@anticrm/ui'
-import { workbenchId } from '@anticrm/workbench'
-import workbench from '@anticrm/workbench-resources/src/plugin'
+import { Space } from '@hcengineering/core'
+import { IntlString, mergeIds, Resource } from '@hcengineering/platform'
+import { AnyComponent } from '@hcengineering/ui'
+import { workbenchId } from '@hcengineering/workbench'
+import workbench from '@hcengineering/workbench-resources/src/plugin'
 
 export default mergeIds(workbenchId, workbench, {
   component: {

@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { IntlString } from '@anticrm/platform'
+  import type { IntlString } from '@hcengineering/platform'
   import { createEventDispatcher, onMount } from 'svelte'
   import { showPopup } from '../popups'
   import { DateOrShift } from '../types'

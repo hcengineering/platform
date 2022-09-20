@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getResource } from '@anticrm/platform'
+  import { getResource } from '@hcengineering/platform'
   import type { AnyComponent } from '../types'
   // import Icon from './Icon.svelte'
   import ErrorPresenter from './ErrorPresenter.svelte'

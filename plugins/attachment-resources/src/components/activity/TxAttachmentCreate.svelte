@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Attachment } from '@anticrm/attachment'
-  import type { TxCreateDoc } from '@anticrm/core'
-  import { TxProcessor } from '@anticrm/core'
+  import type { Attachment } from '@hcengineering/attachment'
+  import type { TxCreateDoc } from '@hcengineering/core'
+  import { TxProcessor } from '@hcengineering/core'
   import AttachmentPresenter from '../AttachmentPresenter.svelte'
 
   export let tx: TxCreateDoc<Attachment>

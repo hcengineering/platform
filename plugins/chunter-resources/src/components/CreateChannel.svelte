@@ -14,13 +14,13 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { IconFolder, EditBox, ToggleWithLabel, Grid } from '@anticrm/ui'
-  import workbench from '@anticrm/workbench'
-  import { getClient, SpaceCreateCard } from '@anticrm/presentation'
-  import { getResource } from '@anticrm/platform'
+  import { IconFolder, EditBox, ToggleWithLabel, Grid } from '@hcengineering/ui'
+  import workbench from '@hcengineering/workbench'
+  import { getClient, SpaceCreateCard } from '@hcengineering/presentation'
+  import { getResource } from '@hcengineering/platform'
 
   import chunter from '../plugin'
-  import core, { getCurrentAccount } from '@anticrm/core'
+  import core, { getCurrentAccount } from '@hcengineering/core'
 
   const dispatch = createEventDispatcher()
 

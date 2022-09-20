@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { TextAreaEditor } from '@anticrm/ui'
+  import { TextAreaEditor } from '@hcengineering/ui'
   import board from '../../plugin'
 
   export let onClose: () => void

@@ -14,15 +14,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Class, Doc, DocumentQuery, Obj, Ref } from '@anticrm/core'
-  import core from '@anticrm/core'
-  import { createQuery, getClient, MessageBox } from '@anticrm/presentation'
-  import type { DoneState, Kanban, SpaceWithStates, State } from '@anticrm/task'
+  import type { Class, Doc, DocumentQuery, Obj, Ref } from '@hcengineering/core'
+  import core from '@hcengineering/core'
+  import { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
+  import type { DoneState, Kanban, SpaceWithStates, State } from '@hcengineering/task'
   import task from '../../plugin'
   import KanbanEditor from '../kanban/KanbanEditor.svelte'
-  import { Icon, Label, showPopup, Panel, Scroller } from '@anticrm/ui'
+  import { Icon, Label, showPopup, Panel, Scroller } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import workbench from '@anticrm/workbench'
+  import workbench from '@hcengineering/workbench'
 
   export let _id: Ref<SpaceWithStates>
   export let spaceClass: Ref<Class<Obj>>

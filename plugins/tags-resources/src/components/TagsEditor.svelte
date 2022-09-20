@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { AttachedDoc, Class, Collection, Doc, Ref } from '@anticrm/core'
-  import { translate } from '@anticrm/platform'
-  import { KeyedAttribute } from '@anticrm/presentation'
-  import { TagElement, TagReference } from '@anticrm/tags'
-  import { Button, IconAdd, IconClose, Label, ShowMore, showPopup } from '@anticrm/ui'
+  import type { AttachedDoc, Class, Collection, Doc, Ref } from '@hcengineering/core'
+  import { translate } from '@hcengineering/platform'
+  import { KeyedAttribute } from '@hcengineering/presentation'
+  import { TagElement, TagReference } from '@hcengineering/tags'
+  import { Button, IconAdd, IconClose, Label, ShowMore, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import tags from '../plugin'
   import TagItem from './TagItem.svelte'

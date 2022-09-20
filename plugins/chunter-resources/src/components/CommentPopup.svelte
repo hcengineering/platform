@@ -14,10 +14,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, Doc, SortingOrder } from '@anticrm/core'
+  import { Ref, Doc, SortingOrder } from '@hcengineering/core'
 
-  import chunter, { Comment } from '@anticrm/chunter'
-  import { createQuery } from '@anticrm/presentation'
+  import chunter, { Comment } from '@hcengineering/chunter'
+  import { createQuery } from '@hcengineering/presentation'
   import CommentPresenter from './CommentPresenter.svelte'
 
   export let objectId: Ref<Doc>

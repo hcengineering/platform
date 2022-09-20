@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import type { Employee, Organization } from '@anticrm/contact'
-import { Doc, FindOptions, IndexKind, Lookup, Ref, Timestamp } from '@anticrm/core'
+import type { Employee, Organization } from '@hcengineering/contact'
+import { Doc, FindOptions, IndexKind, Lookup, Ref, Timestamp } from '@hcengineering/core'
 import {
   ArrOf,
   Builder,
@@ -29,21 +29,21 @@ import {
   TypeRef,
   TypeString,
   UX
-} from '@anticrm/model'
-import attachment from '@anticrm/model-attachment'
-import calendar from '@anticrm/model-calendar'
-import chunter from '@anticrm/model-chunter'
-import contact, { TOrganization, TPerson } from '@anticrm/model-contact'
-import core, { TSpace } from '@anticrm/model-core'
-import presentation from '@anticrm/model-presentation'
-import tags from '@anticrm/model-tags'
-import task, { actionTemplates, TSpaceWithStates, TTask } from '@anticrm/model-task'
-import view, { actionTemplates as viewTemplates, createAction } from '@anticrm/model-view'
-import workbench, { Application, createNavigateAction } from '@anticrm/model-workbench'
-import { IntlString } from '@anticrm/platform'
-import { Applicant, Candidate, Candidates, recruitId, Vacancy, VacancyList } from '@anticrm/recruit'
-import setting from '@anticrm/setting'
-import { KeyBinding } from '@anticrm/view'
+} from '@hcengineering/model'
+import attachment from '@hcengineering/model-attachment'
+import calendar from '@hcengineering/model-calendar'
+import chunter from '@hcengineering/model-chunter'
+import contact, { TOrganization, TPerson } from '@hcengineering/model-contact'
+import core, { TSpace } from '@hcengineering/model-core'
+import presentation from '@hcengineering/model-presentation'
+import tags from '@hcengineering/model-tags'
+import task, { actionTemplates, TSpaceWithStates, TTask } from '@hcengineering/model-task'
+import view, { actionTemplates as viewTemplates, createAction } from '@hcengineering/model-view'
+import workbench, { Application, createNavigateAction } from '@hcengineering/model-workbench'
+import { IntlString } from '@hcengineering/platform'
+import { Applicant, Candidate, Candidates, recruitId, Vacancy, VacancyList } from '@hcengineering/recruit'
+import setting from '@hcengineering/setting'
+import { KeyBinding } from '@hcengineering/view'
 import recruit from './plugin'
 import { createReviewModel, reviewTableConfig, reviewTableOptions } from './review'
 import { TOpinion, TReview } from './review-model'

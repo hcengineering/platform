@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import setting from '@anticrm/setting'
-  import { Icon, Label } from '@anticrm/ui'
+  import setting from '@hcengineering/setting'
+  import { Icon, Label } from '@hcengineering/ui'
 </script>
 
 <div class="antiComponent">

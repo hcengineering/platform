@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { WithLookup } from '@anticrm/core'
-  import { Issue, IssueStatus } from '@anticrm/tracker'
-  import { showPopup } from '@anticrm/ui'
+  import { WithLookup } from '@hcengineering/core'
+  import { Issue, IssueStatus } from '@hcengineering/tracker'
+  import { showPopup } from '@hcengineering/ui'
   import {
     defaultPriorities,
     FilterAction,

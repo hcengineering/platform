@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Data, Doc, generateId, Ref } from '@anticrm/core'
-  import { Card, createQuery, getClient } from '@anticrm/presentation'
-  import { findTagCategory, TagCategory, TagElement } from '@anticrm/tags'
+  import { Class, Data, Doc, generateId, Ref } from '@hcengineering/core'
+  import { Card, createQuery, getClient } from '@hcengineering/presentation'
+  import { findTagCategory, TagCategory, TagElement } from '@hcengineering/tags'
   import {
     Button,
     DropdownLabels,
@@ -25,9 +25,9 @@
     getPlatformColor,
     IconFolder,
     showPopup
-  } from '@anticrm/ui'
-  import { DropdownTextItem } from '@anticrm/ui/src/types'
-  import { ColorsPopup } from '@anticrm/view-resources'
+  } from '@hcengineering/ui'
+  import { DropdownTextItem } from '@hcengineering/ui/src/types'
+  import { ColorsPopup } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import tags from '../plugin'
   import { getTagStyle } from '../utils'

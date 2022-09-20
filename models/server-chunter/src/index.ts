@@ -13,13 +13,13 @@
 // limitations under the License.
 //
 
-import { Builder } from '@anticrm/model'
+import { Builder } from '@hcengineering/model'
 
-import core, { Class, Doc } from '@anticrm/core'
-import chunter from '@anticrm/chunter'
-import view from '@anticrm/view'
-import serverCore, { ObjectDDParticipant } from '@anticrm/server-core'
-import serverChunter from '@anticrm/server-chunter'
+import core, { Class, Doc } from '@hcengineering/core'
+import chunter from '@hcengineering/chunter'
+import view from '@hcengineering/view'
+import serverCore, { ObjectDDParticipant } from '@hcengineering/server-core'
+import serverChunter from '@hcengineering/server-chunter'
 
 export function createModel (builder: Builder): void {
   builder.mixin(chunter.class.Channel, core.class.Class, view.mixin.HTMLPresenter, {

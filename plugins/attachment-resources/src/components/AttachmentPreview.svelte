@@ -14,9 +14,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Attachment } from '@anticrm/attachment'
-  import { getFileUrl, PDFViewer } from '@anticrm/presentation'
-  import { showPopup, closeTooltip } from '@anticrm/ui'
+  import type { Attachment } from '@hcengineering/attachment'
+  import { getFileUrl, PDFViewer } from '@hcengineering/presentation'
+  import { showPopup, closeTooltip } from '@hcengineering/ui'
   import { getType } from '../utils'
   import AttachmentPresenter from './AttachmentPresenter.svelte'
   import AttachmentActions from './AttachmentActions.svelte'

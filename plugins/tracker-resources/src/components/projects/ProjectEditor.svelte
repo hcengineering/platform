@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref } from '@anticrm/core'
-  import { Issue, Project } from '@anticrm/tracker'
-  import { getClient } from '@anticrm/presentation'
-  import { ButtonKind, ButtonShape, ButtonSize, tooltip } from '@anticrm/ui'
-  import { IntlString } from '@anticrm/platform'
+  import { Ref } from '@hcengineering/core'
+  import { Issue, Project } from '@hcengineering/tracker'
+  import { getClient } from '@hcengineering/presentation'
+  import { ButtonKind, ButtonShape, ButtonSize, tooltip } from '@hcengineering/ui'
+  import { IntlString } from '@hcengineering/platform'
   import tracker from '../../plugin'
   import ProjectSelector from '../ProjectSelector.svelte'
   import { activeProject } from '../../issues'

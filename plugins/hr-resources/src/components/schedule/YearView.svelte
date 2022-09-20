@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { EmployeePresenter } from '@anticrm/contact-resources'
-  import contact from '@anticrm/contact-resources/src/plugin'
-  import { Ref } from '@anticrm/core'
-  import type { Request, RequestType, Staff } from '@anticrm/hr'
-  import { Label, LabelAndProps, Scroller, tableSP, tooltip } from '@anticrm/ui'
+  import { EmployeePresenter } from '@hcengineering/contact-resources'
+  import contact from '@hcengineering/contact-resources/src/plugin'
+  import { Ref } from '@hcengineering/core'
+  import type { Request, RequestType, Staff } from '@hcengineering/hr'
+  import { Label, LabelAndProps, Scroller, tableSP, tooltip } from '@hcengineering/ui'
   import hr from '../../plugin'
   import { fromTzDate, getMonth, getTotal, weekDays } from '../../utils'
   import RequestsPopup from '../RequestsPopup.svelte'

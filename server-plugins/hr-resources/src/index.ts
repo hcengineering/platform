@@ -13,10 +13,10 @@
 // limitations under the License.
 //
 
-import contact, { Employee } from '@anticrm/contact'
-import core, { Ref, SortingOrder, Tx, TxFactory, TxMixin, TxProcessor, TxUpdateDoc } from '@anticrm/core'
-import hr, { Department, DepartmentMember, Staff } from '@anticrm/hr'
-import { TriggerControl } from '@anticrm/server-core'
+import contact, { Employee } from '@hcengineering/contact'
+import core, { Ref, SortingOrder, Tx, TxFactory, TxMixin, TxProcessor, TxUpdateDoc } from '@hcengineering/core'
+import hr, { Department, DepartmentMember, Staff } from '@hcengineering/hr'
+import { TriggerControl } from '@hcengineering/server-core'
 
 async function getOldDepartment (
   currentTx: TxMixin<Employee, Staff> | TxUpdateDoc<Employee>,

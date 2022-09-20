@@ -14,9 +14,9 @@
 // limitations under the License.
 //
 
-import { IntlString, mergeIds } from '@anticrm/platform'
+import { IntlString, mergeIds } from '@hcengineering/platform'
 
-import telegram, { telegramId } from '@anticrm/telegram'
+import telegram, { telegramId } from '@hcengineering/telegram'
 
 export default mergeIds(telegramId, telegram, {
   string: {

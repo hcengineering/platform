@@ -14,11 +14,11 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { Employee } from '@anticrm/contact'
-  import { AttachedData, Ref } from '@anticrm/core'
-  import { getClient, EmployeeBox } from '@anticrm/presentation'
-  import { Issue } from '@anticrm/tracker'
-  import { ButtonKind, ButtonSize, TooltipAlignment } from '@anticrm/ui'
+  import { Employee } from '@hcengineering/contact'
+  import { AttachedData, Ref } from '@hcengineering/core'
+  import { getClient, EmployeeBox } from '@hcengineering/presentation'
+  import { Issue } from '@hcengineering/tracker'
+  import { ButtonKind, ButtonSize, TooltipAlignment } from '@hcengineering/ui'
   import tracker from '../../plugin'
 
   export let value: Issue | AttachedData<Issue>

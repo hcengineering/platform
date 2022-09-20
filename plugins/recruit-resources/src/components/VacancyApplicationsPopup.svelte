@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Doc, DocumentQuery, FindOptions, Ref, Space } from '@anticrm/core'
-  import recruit, { Applicant } from '@anticrm/recruit'
-  import task from '@anticrm/task'
-  import { Table } from '@anticrm/view-resources'
+  import core, { Doc, DocumentQuery, FindOptions, Ref, Space } from '@hcengineering/core'
+  import recruit, { Applicant } from '@hcengineering/recruit'
+  import task from '@hcengineering/task'
+  import { Table } from '@hcengineering/view-resources'
 
   export let value: Ref<Space>
   export let resultQuery: DocumentQuery<Doc>

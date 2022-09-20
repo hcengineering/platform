@@ -1,10 +1,10 @@
 {
-  "name": "@anticrm/tags",
+  "name": "@hcengineering/tags",
   "version": "0.6.2",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
-  "template": "@anticrm/platform-package",
+  "template": "@hcengineering/platform-package",
   "scripts": {
     "build": "heft build",
     "build:watch": "tsc",
@@ -13,7 +13,7 @@
     "format": "prettier --write src && eslint --fix src"
   },
   "devDependencies": {
-    "@anticrm/platform-rig": "~0.6.0",
+    "@hcengineering/platform-rig": "~0.6.0",
     "@types/heft-jest": "^1.0.3",
     "@typescript-eslint/eslint-plugin": "^5.30.0",
     "eslint-plugin-import": "^2.26.0",
@@ -27,10 +27,10 @@
     "typescript": "^4.3.5"
   },
   "dependencies": {
-    "@anticrm/platform": "~0.6.6",
-    "@anticrm/core": "~0.6.16",
-    "@anticrm/view": "~0.6.0",
-    "@anticrm/ui": "~0.6.0",
+    "@hcengineering/platform": "^0.6.7",
+    "@hcengineering/core": "^0.6.17",
+    "@hcengineering/view": "^0.6.1",
+    "@hcengineering/ui": "^0.6.2",
     "svelte": "^3.47"
   }
 }

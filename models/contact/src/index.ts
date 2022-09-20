@@ -26,9 +26,9 @@ import {
   Person,
   Persons,
   Status
-} from '@anticrm/contact'
-import type { Class, Domain, Ref, Timestamp } from '@anticrm/core'
-import { DOMAIN_MODEL, IndexKind } from '@anticrm/core'
+} from '@hcengineering/contact'
+import type { Class, Domain, Ref, Timestamp } from '@hcengineering/core'
+import { DOMAIN_MODEL, IndexKind } from '@hcengineering/core'
 import {
   Builder,
   Collection,
@@ -40,15 +40,15 @@ import {
   TypeString,
   TypeTimestamp,
   UX
-} from '@anticrm/model'
-import attachment from '@anticrm/model-attachment'
-import chunter from '@anticrm/model-chunter'
-import core, { TAccount, TAttachedDoc, TDoc, TSpace } from '@anticrm/model-core'
-import presentation from '@anticrm/model-presentation'
-import view, { actionTemplates, createAction, ViewAction } from '@anticrm/model-view'
-import workbench from '@anticrm/model-workbench'
-import type { Asset, IntlString } from '@anticrm/platform'
-import setting from '@anticrm/setting'
+} from '@hcengineering/model'
+import attachment from '@hcengineering/model-attachment'
+import chunter from '@hcengineering/model-chunter'
+import core, { TAccount, TAttachedDoc, TDoc, TSpace } from '@hcengineering/model-core'
+import presentation from '@hcengineering/model-presentation'
+import view, { actionTemplates, createAction, ViewAction } from '@hcengineering/model-view'
+import workbench from '@hcengineering/model-workbench'
+import type { Asset, IntlString } from '@hcengineering/platform'
+import setting from '@hcengineering/setting'
 import contact from './plugin'
 
 export const DOMAIN_CONTACT = 'contact' as Domain

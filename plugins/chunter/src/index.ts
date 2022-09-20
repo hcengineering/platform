@@ -13,12 +13,12 @@
 // limitations under the License.
 //
 
-import type { Account, AttachedDoc, Class, Doc, Ref, RelatedDocument, Space, Timestamp } from '@anticrm/core'
-import type { Employee } from '@anticrm/contact'
-import type { Asset, Plugin, Resource } from '@anticrm/platform'
-import { IntlString, plugin } from '@anticrm/platform'
-import type { Preference } from '@anticrm/preference'
-import { AnyComponent } from '@anticrm/ui'
+import type { Account, AttachedDoc, Class, Doc, Ref, RelatedDocument, Space, Timestamp } from '@hcengineering/core'
+import type { Employee } from '@hcengineering/contact'
+import type { Asset, Plugin, Resource } from '@hcengineering/platform'
+import { IntlString, plugin } from '@hcengineering/platform'
+import type { Preference } from '@hcengineering/preference'
+import { AnyComponent } from '@hcengineering/ui'
 
 /**
  * @public

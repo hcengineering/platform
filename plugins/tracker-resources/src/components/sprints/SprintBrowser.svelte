@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact from '@anticrm/contact'
-  import { DocumentQuery, FindOptions, SortingOrder } from '@anticrm/core'
-  import { IntlString } from '@anticrm/platform'
-  import { createQuery } from '@anticrm/presentation'
-  import { Sprint } from '@anticrm/tracker'
-  import { Button, Icon, IconAdd, Label, showPopup } from '@anticrm/ui'
+  import contact from '@hcengineering/contact'
+  import { DocumentQuery, FindOptions, SortingOrder } from '@hcengineering/core'
+  import { IntlString } from '@hcengineering/platform'
+  import { createQuery } from '@hcengineering/presentation'
+  import { Sprint } from '@hcengineering/tracker'
+  import { Button, Icon, IconAdd, Label, showPopup } from '@hcengineering/ui'
   import tracker from '../../plugin'
   import { getIncludedSprintStatuses, sprintTitleMap, SprintViewMode } from '../../utils'
   import NewSprint from './NewSprint.svelte'

@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { createApp } from '@anticrm/ui'
+import { createApp } from '@hcengineering/ui'
 import { configurePlatform } from './platform'
 import { configurePlatformDev, configurePlatformDevServer } from './platform-dev'
 

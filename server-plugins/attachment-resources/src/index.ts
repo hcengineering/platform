@@ -14,11 +14,11 @@
 // limitations under the License.
 //
 
-import type { Doc, Ref, Tx, TxCollectionCUD, TxCreateDoc, TxRemoveDoc } from '@anticrm/core'
-import type { TriggerControl } from '@anticrm/server-core'
-import type { Attachment } from '@anticrm/attachment'
-import attachment from '@anticrm/attachment'
-import core, { TxProcessor } from '@anticrm/core'
+import type { Doc, Ref, Tx, TxCollectionCUD, TxCreateDoc, TxRemoveDoc } from '@hcengineering/core'
+import type { TriggerControl } from '@hcengineering/server-core'
+import type { Attachment } from '@hcengineering/attachment'
+import attachment from '@hcengineering/attachment'
+import core, { TxProcessor } from '@hcengineering/core'
 
 const findCreateTx = async (
   id: Ref<Attachment>,

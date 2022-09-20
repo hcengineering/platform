@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import Play from '../icons/Play.svelte'
-  import { getPlatformColor } from '@anticrm/ui'
+  import { getPlatformColor } from '@hcengineering/ui'
 
   export let href: string
   const maxWidth = 400

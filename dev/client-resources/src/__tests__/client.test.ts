@@ -14,7 +14,7 @@
 //
 
 import { connect } from '../connection'
-import core, { createClient, TxOperations } from '@anticrm/core'
+import core, { createClient, TxOperations } from '@hcengineering/core'
 
 describe('client', () => {
   it('should create connection', async () => {

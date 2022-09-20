@@ -14,10 +14,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Class, Doc, DocumentQuery, FindOptions, Lookup, Ref } from '@anticrm/core'
-  import { getObjectValue, SortingOrder } from '@anticrm/core'
-  import notification from '@anticrm/notification'
-  import { createQuery, getClient } from '@anticrm/presentation'
+  import type { Class, Doc, DocumentQuery, FindOptions, Lookup, Ref } from '@hcengineering/core'
+  import { getObjectValue, SortingOrder } from '@hcengineering/core'
+  import notification from '@hcengineering/notification'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import {
     CheckBox,
     Component,
@@ -28,8 +28,8 @@
     Loading,
     showPopup,
     Spinner
-  } from '@anticrm/ui'
-  import { AttributeModel, BuildModelKey } from '@anticrm/view'
+  } from '@hcengineering/ui'
+  import { AttributeModel, BuildModelKey } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import { buildConfigLookup, buildModel, LoadingProps } from '../utils'
   import Menu from './Menu.svelte'

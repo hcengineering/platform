@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import login from '@anticrm/login'
+import login from '@hcengineering/login'
 import {
   getMetadata,
   OK,
@@ -24,8 +24,8 @@ import {
   Status,
   unknownError,
   unknownStatus
-} from '@anticrm/platform'
-import { fetchMetadataLocalStorage, getCurrentLocation, navigate } from '@anticrm/ui'
+} from '@hcengineering/platform'
+import { fetchMetadataLocalStorage, getCurrentLocation, navigate } from '@hcengineering/ui'
 
 export interface WorkspaceLoginInfo extends LoginInfo {
   workspace: string

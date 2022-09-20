@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Button, eventToHTMLElement, IconDownOutline, showPopup, Label } from '@anticrm/ui'
-  import view from '@anticrm/view'
+  import { Button, eventToHTMLElement, IconDownOutline, showPopup, Label } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
   import ViewOptionsPopup from './ViewOptionsPopup.svelte'
   import { getViewOptions, setViewOptions, viewOptionsStore, ViewOptionModel } from '../viewOptions'
 

@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { Channel } from '@anticrm/chunter'
-  import { Button } from '@anticrm/ui'
+  import { Channel } from '@hcengineering/chunter'
+  import { Button } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { ArchiveChannel } from '../index'
   import chunter from '../plugin'

@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { IconClose, Label, Icon } from '@anticrm/ui'
+  import { IconClose, Label, Icon } from '@hcengineering/ui'
 
   import { getIssueFilterAssetsByType } from '../utils'
   import tracker from '../plugin'

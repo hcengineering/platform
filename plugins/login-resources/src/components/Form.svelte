@@ -14,11 +14,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { StylishEdit, Label, Button } from '@anticrm/ui'
+  import { StylishEdit, Label, Button } from '@hcengineering/ui'
   import StatusControl from './StatusControl.svelte'
-  import { OK, Status, Severity } from '@anticrm/platform'
-  import type { IntlString } from '@anticrm/platform'
-  import { translate } from '@anticrm/platform'
+  import { OK, Status, Severity } from '@hcengineering/platform'
+  import type { IntlString } from '@hcengineering/platform'
+  import { translate } from '@hcengineering/platform'
 
   import login from '../plugin'
 

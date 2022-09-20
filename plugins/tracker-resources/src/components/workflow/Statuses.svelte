@@ -15,14 +15,14 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import { flip } from 'svelte/animate'
-  import { AttachedData, Class, Ref, SortingOrder } from '@anticrm/core'
-  import { Button, Icon, Label, Panel, Scroller, IconAdd, Loading, closeTooltip, showPopup } from '@anticrm/ui'
-  import { createQuery, getClient, MessageBox } from '@anticrm/presentation'
-  import { calcRank, IssueStatus, IssueStatusCategory, Team } from '@anticrm/tracker'
+  import { AttachedData, Class, Ref, SortingOrder } from '@hcengineering/core'
+  import { Button, Icon, Label, Panel, Scroller, IconAdd, Loading, closeTooltip, showPopup } from '@hcengineering/ui'
+  import { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
+  import { calcRank, IssueStatus, IssueStatusCategory, Team } from '@hcengineering/tracker'
   import tracker from '../../plugin'
   import StatusEditor from './StatusEditor.svelte'
   import StatusPresenter from './StatusPresenter.svelte'
-  import ExpandCollapse from '@anticrm/ui/src/components/ExpandCollapse.svelte'
+  import ExpandCollapse from '@hcengineering/ui/src/components/ExpandCollapse.svelte'
 
   export let teamId: Ref<Team>
   export let teamClass: Ref<Class<Team>>

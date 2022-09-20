@@ -14,9 +14,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Product } from '@anticrm/inventory'
-  import { getPanelURI, Icon } from '@anticrm/ui'
-  import view from '@anticrm/view'
+  import { Product } from '@hcengineering/inventory'
+  import { getPanelURI, Icon } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
   import inventory from '../plugin'
 
   export let value: Product

@@ -14,8 +14,18 @@
 // limitations under the License.
 //
 
-import type { Tx, Storage, Class, Doc, DocumentQuery, FindOptions, Ref, FindResult, TxResult } from '@anticrm/core'
-import { serialize } from '@anticrm/platform'
+import type {
+  Tx,
+  Storage,
+  Class,
+  Doc,
+  DocumentQuery,
+  FindOptions,
+  Ref,
+  FindResult,
+  TxResult
+} from '@hcengineering/core'
+import { serialize } from '@hcengineering/platform'
 import WebSocket from 'ws'
 
 /**

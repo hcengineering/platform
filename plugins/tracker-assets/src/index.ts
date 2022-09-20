@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { loadMetadata, addStringsLoader } from '@anticrm/platform'
-import tracker, { trackerId } from '@anticrm/tracker'
+import { loadMetadata, addStringsLoader } from '@hcengineering/platform'
+import tracker, { trackerId } from '@hcengineering/tracker'
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(tracker.icon, {

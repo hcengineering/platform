@@ -1,5 +1,5 @@
 {
-  "name": "@anticrm/server-tool",
+  "name": "@hcengineering/server-tool",
   "version": "0.6.0",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
@@ -12,7 +12,7 @@
     "format": "prettier --write src && eslint --fix src"
   },
   "devDependencies": {
-    "@anticrm/platform-rig": "~0.6.0",
+    "@hcengineering/platform-rig": "~0.6.0",
     "@types/heft-jest": "^1.0.3",
     "@typescript-eslint/eslint-plugin": "^5.30.0",
     "eslint-plugin-import": "^2.26.0",
@@ -29,15 +29,15 @@
   },
   "dependencies": {
     "mongodb": "^4.9.0",
-    "@anticrm/platform": "~0.6.6",
-    "@anticrm/model-all": "~0.6.0",
+    "@hcengineering/platform": "^0.6.7",
+    "@hcengineering/model-all": "~0.6.0",
     "minio": "^7.0.26",
-    "@anticrm/core": "~0.6.16",
-    "@anticrm/contact": "~0.6.5",
-    "@anticrm/client-resources": "~0.6.4",
-    "@anticrm/client": "~0.6.2",
+    "@hcengineering/core": "^0.6.17",
+    "@hcengineering/contact": "~0.6.5",
+    "@hcengineering/client-resources": "~0.6.4",
+    "@hcengineering/client": "^0.6.3",
     "ws": "^8.2.0",
-    "@anticrm/model": "~0.6.0",
-    "@anticrm/server-token": "~0.6.0"
+    "@hcengineering/model": "~0.6.0",
+    "@hcengineering/server-token": "~0.6.0"
   }
 }

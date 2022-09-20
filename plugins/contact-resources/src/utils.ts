@@ -14,9 +14,9 @@
 // limitations under the License.
 //
 
-import contact, { ChannelProvider } from '@anticrm/contact'
-import { Ref, Timestamp } from '@anticrm/core'
-import { getClient } from '@anticrm/presentation'
+import contact, { ChannelProvider } from '@hcengineering/contact'
+import { Ref, Timestamp } from '@hcengineering/core'
+import { getClient } from '@hcengineering/presentation'
 
 const client = getClient()
 const channelProviders = client.findAll(contact.class.ChannelProvider, {})

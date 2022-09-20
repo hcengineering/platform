@@ -1,4 +1,4 @@
-# Change Log - @anticrm/dev-server
+# Change Log - @hcengineering/dev-server
 
 This log was last generated on Sat, 14 Aug 2021 09:13:32 GMT and should not be manually modified.
 

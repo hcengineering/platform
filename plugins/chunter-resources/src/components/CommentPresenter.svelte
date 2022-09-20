@@ -14,11 +14,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AttachmentDocList } from '@anticrm/attachment-resources'
-  import type { Comment } from '@anticrm/chunter'
-  import { formatName } from '@anticrm/contact'
-  import { Avatar, getClient, MessageViewer } from '@anticrm/presentation'
-  import { TimeSince, ShowMore } from '@anticrm/ui'
+  import { AttachmentDocList } from '@hcengineering/attachment-resources'
+  import type { Comment } from '@hcengineering/chunter'
+  import { formatName } from '@hcengineering/contact'
+  import { Avatar, getClient, MessageViewer } from '@hcengineering/presentation'
+  import { TimeSince, ShowMore } from '@hcengineering/ui'
   import { getUser } from '../utils'
 
   export let value: Comment

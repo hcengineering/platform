@@ -14,13 +14,22 @@
 // limitations under the License.
 //
 
-import { Model, Builder } from '@anticrm/model'
-import type { Resource } from '@anticrm/platform'
-import { TClass, TDoc } from '@anticrm/model-core'
+import { Model, Builder } from '@hcengineering/model'
+import type { Resource } from '@hcengineering/platform'
+import { TClass, TDoc } from '@hcengineering/model-core'
 
-import type { ObjectDDParticipant, Trigger, TriggerFunc } from '@anticrm/server-core'
-import core, { Class, Doc, DocumentQuery, DOMAIN_MODEL, FindOptions, FindResult, Hierarchy, Ref } from '@anticrm/core'
-import serverCore from '@anticrm/server-core'
+import type { ObjectDDParticipant, Trigger, TriggerFunc } from '@hcengineering/server-core'
+import core, {
+  Class,
+  Doc,
+  DocumentQuery,
+  DOMAIN_MODEL,
+  FindOptions,
+  FindResult,
+  Hierarchy,
+  Ref
+} from '@hcengineering/core'
+import serverCore from '@hcengineering/server-core'
 
 @Model(serverCore.class.Trigger, core.class.Doc, DOMAIN_MODEL)
 export class TTrigger extends TDoc implements Trigger {

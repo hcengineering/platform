@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { Icon } from '@anticrm/ui'
-  import board from '@anticrm/board'
+  import { Icon } from '@hcengineering/ui'
+  import board from '@hcengineering/board'
 </script>
 
 <div class="flex-center template-icon">

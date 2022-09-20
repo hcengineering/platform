@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getClient } from '@anticrm/presentation'
-  import { Issue } from '@anticrm/tracker'
-  import { DatePresenter, getDaysDifference } from '@anticrm/ui'
+  import { getClient } from '@hcengineering/presentation'
+  import { Issue } from '@hcengineering/tracker'
+  import { DatePresenter, getDaysDifference } from '@hcengineering/ui'
   import { getDueDateIconModifier } from '../../utils'
 
   export let value: Issue

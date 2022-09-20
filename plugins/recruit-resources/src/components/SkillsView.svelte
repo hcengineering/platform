@@ -1,6 +1,6 @@
 <script lang="ts">
-  import tags, { selectedTagElements, TagElement } from '@anticrm/tags'
-  import { Component, getCurrentLocation, navigate } from '@anticrm/ui'
+  import tags, { selectedTagElements, TagElement } from '@hcengineering/tags'
+  import { Component, getCurrentLocation, navigate } from '@hcengineering/ui'
   import recruit from '../plugin'
 
   function onTag (tag: TagElement): void {

@@ -14,12 +14,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { formatName, Person } from '@anticrm/contact'
-  import { Hierarchy } from '@anticrm/core'
-  import { Avatar } from '@anticrm/presentation'
+  import { formatName, Person } from '@hcengineering/contact'
+  import { Hierarchy } from '@hcengineering/core'
+  import { Avatar } from '@hcengineering/presentation'
   import calendar from '../plugin'
-  import { showPanel, tooltip } from '@anticrm/ui'
-  import view from '@anticrm/view'
+  import { showPanel, tooltip } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
 
   export let value: Person | Person[]
   export let inline: boolean = false

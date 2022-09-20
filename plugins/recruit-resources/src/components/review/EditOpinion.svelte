@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { DocumentUpdate, Ref } from '@anticrm/core'
-  import { Card, getClient } from '@anticrm/presentation'
-  import { Opinion } from '@anticrm/recruit'
-  import { StyledTextEditor } from '@anticrm/text-editor'
-  import { EditBox, Grid, Label } from '@anticrm/ui'
+  import type { DocumentUpdate, Ref } from '@hcengineering/core'
+  import { Card, getClient } from '@hcengineering/presentation'
+  import { Opinion } from '@hcengineering/recruit'
+  import { StyledTextEditor } from '@hcengineering/text-editor'
+  import { EditBox, Grid, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../../plugin'
 

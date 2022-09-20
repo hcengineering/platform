@@ -15,7 +15,7 @@
 <script lang="ts">
   import { onMount } from 'svelte'
   import { createEventDispatcher } from 'svelte'
-  import { IconInfo } from '@anticrm/ui'
+  import { IconInfo } from '@hcengineering/ui'
 
   export let length: number = 6
   export let value: string = ''

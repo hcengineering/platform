@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { SortingOrder, SortingQuery } from '@anticrm/core'
-import { Asset, IntlString } from '@anticrm/platform'
+import { SortingOrder, SortingQuery } from '@hcengineering/core'
+import { Asset, IntlString } from '@hcengineering/platform'
 import {
   Issue,
   IssuePriority,
@@ -23,7 +23,7 @@ import {
   IssuesOrdering,
   ProjectStatus,
   SprintStatus
-} from '@anticrm/tracker'
+} from '@hcengineering/tracker'
 import tracker from './plugin'
 
 export const issuePriorities: Record<IssuePriority, { icon: Asset, label: IntlString }> = {

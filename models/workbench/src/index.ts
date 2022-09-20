@@ -13,14 +13,14 @@
 // limitations under the License.
 //
 
-import type { IntlString, Asset } from '@anticrm/platform'
-import { Class, DOMAIN_MODEL, Ref, Space } from '@anticrm/core'
-import { Model, Mixin, Builder, UX } from '@anticrm/model'
-import type { Application, SpaceView, ViewConfiguration } from '@anticrm/workbench'
-import view, { KeyBinding } from '@anticrm/view'
-import { createAction } from '@anticrm/model-view'
+import type { IntlString, Asset } from '@hcengineering/platform'
+import { Class, DOMAIN_MODEL, Ref, Space } from '@hcengineering/core'
+import { Model, Mixin, Builder, UX } from '@hcengineering/model'
+import type { Application, SpaceView, ViewConfiguration } from '@hcengineering/workbench'
+import view, { KeyBinding } from '@hcengineering/view'
+import { createAction } from '@hcengineering/model-view'
 
-import core, { TDoc, TClass } from '@anticrm/model-core'
+import core, { TDoc, TClass } from '@hcengineering/model-core'
 import workbench from './plugin'
 
 export { Application }

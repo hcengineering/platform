@@ -45,8 +45,8 @@ import core, {
   TxProcessor,
   Type,
   TypeDate as TypeDateType
-} from '@anticrm/core'
-import type { Asset, IntlString } from '@anticrm/platform'
+} from '@hcengineering/core'
+import type { Asset, IntlString } from '@hcengineering/platform'
 import toposort from 'toposort'
 
 type NoIDs<T extends Tx> = Omit<T, '_id' | 'objectId'>

@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Icon, Label, IconDPCalendarOver, IconDPCalendar } from '@anticrm/ui'
+  import { Icon, Label, IconDPCalendarOver, IconDPCalendar } from '@hcengineering/ui'
   import tracker from '../plugin'
 
   export let formattedDate: string = ''

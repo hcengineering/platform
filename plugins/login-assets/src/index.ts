@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-import { addStringsLoader, loadMetadata } from '@anticrm/platform'
-import login, { loginId } from '@anticrm/login'
+import { addStringsLoader, loadMetadata } from '@hcengineering/platform'
+import login, { loginId } from '@hcengineering/login'
 
 addStringsLoader(loginId, async (lang: string) => {
   return await import(`../lang/${lang}.json`)

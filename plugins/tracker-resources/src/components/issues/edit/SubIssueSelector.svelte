@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, SortingOrder, WithLookup } from '@anticrm/core'
-  import { createQuery } from '@anticrm/presentation'
-  import { Issue, IssueStatus } from '@anticrm/tracker'
+  import { Ref, SortingOrder, WithLookup } from '@hcengineering/core'
+  import { createQuery } from '@hcengineering/presentation'
+  import { Issue, IssueStatus } from '@hcengineering/tracker'
   import {
     Icon,
     tooltip,
@@ -27,7 +27,7 @@
     closeTooltip,
     Spinner,
     getPlatformColor
-  } from '@anticrm/ui'
+  } from '@hcengineering/ui'
   import tracker from '../../../plugin'
   import { getIssueId } from '../../../issues'
   import IssueStatusIcon from '../IssueStatusIcon.svelte'

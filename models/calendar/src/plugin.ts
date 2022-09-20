@@ -13,14 +13,14 @@
 // limitations under the License.
 //
 
-import { TxViewlet } from '@anticrm/activity'
-import { calendarId } from '@anticrm/calendar'
-import calendar from '@anticrm/calendar-resources/src/plugin'
-import { Ref } from '@anticrm/core'
-import type { IntlString } from '@anticrm/platform'
-import { mergeIds } from '@anticrm/platform'
-import { AnyComponent } from '@anticrm/ui'
-import { Action, ActionCategory, ViewAction, Viewlet, ViewletDescriptor } from '@anticrm/view'
+import { TxViewlet } from '@hcengineering/activity'
+import { calendarId } from '@hcengineering/calendar'
+import calendar from '@hcengineering/calendar-resources/src/plugin'
+import { Ref } from '@hcengineering/core'
+import type { IntlString } from '@hcengineering/platform'
+import { mergeIds } from '@hcengineering/platform'
+import { AnyComponent } from '@hcengineering/ui'
+import { Action, ActionCategory, ViewAction, Viewlet, ViewletDescriptor } from '@hcengineering/view'
 
 export default mergeIds(calendarId, calendar, {
   component: {

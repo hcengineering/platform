@@ -14,12 +14,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AttachedData, Doc, Ref } from '@anticrm/core'
-  import { generateId } from '@anticrm/core'
-  import { OK, Status } from '@anticrm/platform'
-  import { Card, getClient } from '@anticrm/presentation'
-  import type { Category } from '@anticrm/inventory'
-  import { EditBox, Grid, Status as StatusControl } from '@anticrm/ui'
+  import { AttachedData, Doc, Ref } from '@hcengineering/core'
+  import { generateId } from '@hcengineering/core'
+  import { OK, Status } from '@hcengineering/platform'
+  import { Card, getClient } from '@hcengineering/presentation'
+  import type { Category } from '@hcengineering/inventory'
+  import { EditBox, Grid, Status as StatusControl } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import inventory from '../plugin'
 

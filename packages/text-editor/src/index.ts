@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-import { addStringsLoader } from '@anticrm/platform'
+import { addStringsLoader } from '@hcengineering/platform'
 import { textEditorId } from './plugin'
 
-export * from '@anticrm/presentation/src/types'
+export * from '@hcengineering/presentation/src/types'
 export { default as ReferenceInput } from './components/ReferenceInput.svelte'
 export { default as StyledTextBox } from './components/StyledTextBox.svelte'
 export { default as StyledTextArea } from './components/StyledTextArea.svelte'

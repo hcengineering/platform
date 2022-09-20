@@ -13,12 +13,12 @@
 // limitations under the License.
 //
 
-import { plugin } from '@anticrm/platform'
-import type { Plugin } from '@anticrm/platform'
-import type { Doc, Ref, Class, Space, AttachedDoc, Timestamp } from '@anticrm/core'
-import type { AnyComponent } from '@anticrm/ui'
-import type { IntegrationType, Handler } from '@anticrm/setting'
-import { Channel } from '@anticrm/contact'
+import { plugin } from '@hcengineering/platform'
+import type { Plugin } from '@hcengineering/platform'
+import type { Doc, Ref, Class, Space, AttachedDoc, Timestamp } from '@hcengineering/core'
+import type { AnyComponent } from '@hcengineering/ui'
+import type { IntegrationType, Handler } from '@hcengineering/setting'
+import { Channel } from '@hcengineering/contact'
 
 /**
  * @public

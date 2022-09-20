@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { Doc } from '@anticrm/core'
-  import { Button, IconDownOutline, IconUpOutline, panelstore, showPanel } from '@anticrm/ui'
+  import { Doc } from '@hcengineering/core'
+  import { Button, IconDownOutline, IconUpOutline, panelstore, showPanel } from '@hcengineering/ui'
   import { tick } from 'svelte'
   import { select } from '../actionImpl'
   import { focusStore } from '../selection'

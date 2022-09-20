@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Ref } from '@anticrm/core'
-  import type { Customer } from '@anticrm/lead'
-  import { Button, IconAdd, Label, showPopup } from '@anticrm/ui'
-  import { Table } from '@anticrm/view-resources'
+  import type { Ref } from '@hcengineering/core'
+  import type { Customer } from '@hcengineering/lead'
+  import { Button, IconAdd, Label, showPopup } from '@hcengineering/ui'
+  import { Table } from '@hcengineering/view-resources'
   import lead from '../plugin'
   import CreateLead from './CreateLead.svelte'
 

@@ -14,11 +14,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Employee, EmployeeAccount, formatName } from '@anticrm/contact'
-  import { Account } from '@anticrm/core'
-  import { Avatar, getClient } from '@anticrm/presentation'
-  import { showPopup } from '@anticrm/ui'
-  import { EditDoc } from '@anticrm/view-resources'
+  import { Employee, EmployeeAccount, formatName } from '@hcengineering/contact'
+  import { Account } from '@hcengineering/core'
+  import { Avatar, getClient } from '@hcengineering/presentation'
+  import { showPopup } from '@hcengineering/ui'
+  import { EditDoc } from '@hcengineering/view-resources'
   import contact from '../plugin'
 
   export let value: Account

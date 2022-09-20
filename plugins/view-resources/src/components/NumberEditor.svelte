@@ -14,8 +14,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { IntlString } from '@anticrm/platform'
-  import { EditBox, Label, showPopup, eventToHTMLElement } from '@anticrm/ui'
+  import type { IntlString } from '@hcengineering/platform'
+  import { EditBox, Label, showPopup, eventToHTMLElement } from '@hcengineering/ui'
   import EditBoxPopup from './EditBoxPopup.svelte'
 
   // export let label: IntlString

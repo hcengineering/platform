@@ -14,8 +14,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { TodoItem } from '@anticrm/task'
-  import { closeTooltip, Icon, showPopup } from '@anticrm/ui'
+  import type { TodoItem } from '@hcengineering/task'
+  import { closeTooltip, Icon, showPopup } from '@hcengineering/ui'
   import task from '../../plugin'
   import EditTodo from './EditTodo.svelte'
 

@@ -35,8 +35,8 @@ import {
   TxPutBag,
   TxRemoveDoc,
   TxUpdateDoc
-} from '@anticrm/core'
-import { Index, Model } from '@anticrm/model'
+} from '@hcengineering/core'
+import { Index, Model } from '@hcengineering/model'
 import core from './component'
 import { TDoc } from './core'
 

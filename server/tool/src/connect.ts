@@ -14,11 +14,11 @@
 // limitations under the License.
 //
 
-import client from '@anticrm/client'
-import clientResources from '@anticrm/client-resources'
-import { Client } from '@anticrm/core'
-import { setMetadata } from '@anticrm/platform'
-import { generateToken } from '@anticrm/server-token'
+import client from '@hcengineering/client'
+import clientResources from '@hcengineering/client-resources'
+import { Client } from '@hcengineering/core'
+import { setMetadata } from '@hcengineering/platform'
+import { generateToken } from '@hcengineering/server-token'
 
 /**
  * @public

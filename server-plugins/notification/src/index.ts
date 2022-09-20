@@ -14,11 +14,11 @@
 // limitations under the License.
 //
 
-import core, { Account, Class, Doc, Ref, TxCreateDoc, TxFactory, TxUpdateDoc } from '@anticrm/core'
-import type { Resource, Plugin } from '@anticrm/platform'
-import { plugin } from '@anticrm/platform'
-import type { TriggerControl, TriggerFunc } from '@anticrm/server-core'
-import notification, { LastView } from '@anticrm/notification'
+import core, { Account, Class, Doc, Ref, TxCreateDoc, TxFactory, TxUpdateDoc } from '@hcengineering/core'
+import type { Resource, Plugin } from '@hcengineering/platform'
+import { plugin } from '@hcengineering/platform'
+import type { TriggerControl, TriggerFunc } from '@hcengineering/server-core'
+import notification, { LastView } from '@hcengineering/notification'
 
 /**
  * @public

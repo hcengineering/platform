@@ -13,14 +13,14 @@
 // limitations under the License.
 //
 
-import type { Client, Doc, DocumentQuery, FindResult, ObjQueryType, Ref, RelatedDocument } from '@anticrm/core'
-import { IntlString, OK, Resources, Severity, Status, translate } from '@anticrm/platform'
-import { ObjectSearchResult } from '@anticrm/presentation'
-import { Applicant, Candidate, Vacancy } from '@anticrm/recruit'
-import task from '@anticrm/task'
-import { showPopup } from '@anticrm/ui'
-import { Filter } from '@anticrm/view'
-import { FilterQuery } from '@anticrm/view-resources'
+import type { Client, Doc, DocumentQuery, FindResult, ObjQueryType, Ref, RelatedDocument } from '@hcengineering/core'
+import { IntlString, OK, Resources, Severity, Status, translate } from '@hcengineering/platform'
+import { ObjectSearchResult } from '@hcengineering/presentation'
+import { Applicant, Candidate, Vacancy } from '@hcengineering/recruit'
+import task from '@hcengineering/task'
+import { showPopup } from '@hcengineering/ui'
+import { Filter } from '@hcengineering/view'
+import { FilterQuery } from '@hcengineering/view-resources'
 import ApplicantFilter from './components/ApplicantFilter.svelte'
 import ApplicationItem from './components/ApplicationItem.svelte'
 import ApplicationPresenter from './components/ApplicationPresenter.svelte'

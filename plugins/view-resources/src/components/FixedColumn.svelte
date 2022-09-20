@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { resizeObserver } from '@anticrm/ui'
+  import { resizeObserver } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
   export let width: number = 0

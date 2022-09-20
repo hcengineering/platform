@@ -14,8 +14,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { OK, Status, Severity, setMetadata } from '@anticrm/platform'
-  import { getCurrentLocation, navigate, setMetadataLocalStorage } from '@anticrm/ui'
+  import { OK, Status, Severity, setMetadata } from '@hcengineering/platform'
+  import { getCurrentLocation, navigate, setMetadataLocalStorage } from '@hcengineering/ui'
 
   import Form from './Form.svelte'
   import { doLogin } from '../utils'

@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref } from '@anticrm/core'
-  import { createQuery } from '@anticrm/presentation'
-  import type { Kanban } from '@anticrm/task'
-  import task, { DoneState, LostState, WonState } from '@anticrm/task'
+  import { Ref } from '@hcengineering/core'
+  import { createQuery } from '@hcengineering/presentation'
+  import type { Kanban } from '@hcengineering/task'
+  import task, { DoneState, LostState, WonState } from '@hcengineering/task'
   import { createEventDispatcher } from 'svelte'
   import Won from '../icons/Won.svelte'
   import Lost from '../icons/Lost.svelte'

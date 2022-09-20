@@ -14,10 +14,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { AnyAttribute, Class, Doc, Ref } from '@anticrm/core'
-  import { getResource } from '@anticrm/platform'
-  import { AnySvelteComponent, Label, tooltip } from '@anticrm/ui'
-  import view from '@anticrm/view'
+  import type { AnyAttribute, Class, Doc, Ref } from '@hcengineering/core'
+  import { getResource } from '@hcengineering/platform'
+  import { AnySvelteComponent, Label, tooltip } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
   import { getAttribute, KeyedAttribute, updateAttribute } from '../attributes'
   import { AttributeCategory, getAttributePresenterClass, getClient } from '../utils'
 

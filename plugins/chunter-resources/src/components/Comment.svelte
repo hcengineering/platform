@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Person } from '@anticrm/contact'
-  import { formatName } from '@anticrm/contact'
-  import { Avatar } from '@anticrm/presentation'
+  import type { Person } from '@hcengineering/contact'
+  import { formatName } from '@hcengineering/contact'
+  import { Avatar } from '@hcengineering/presentation'
 
   interface IMessage {
     text: string

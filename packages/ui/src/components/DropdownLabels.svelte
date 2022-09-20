@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { IntlString, Asset } from '@anticrm/platform'
+  import { IntlString, Asset } from '@hcengineering/platform'
   import type { AnySvelteComponent, DropdownTextItem, TooltipAlignment, ButtonKind, ButtonSize } from '../types'
   import { createEventDispatcher } from 'svelte'
   import ui from '../plugin'

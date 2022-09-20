@@ -1,8 +1,8 @@
 <script lang="ts">
   import emojiRegex from 'emoji-regex'
   import { createEventDispatcher } from 'svelte'
-  import { IntlString } from '@anticrm/platform'
-  import { AnySvelteComponent, Label, tooltip } from '@anticrm/ui'
+  import { IntlString } from '@hcengineering/platform'
+  import { AnySvelteComponent, Label, tooltip } from '@hcengineering/ui'
   import Emoji from './icons/Emoji.svelte'
   import Food from './icons/Food.svelte'
   import Nature from './icons/Nature.svelte'

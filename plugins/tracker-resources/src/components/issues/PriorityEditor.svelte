@@ -14,11 +14,11 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { AttachedData } from '@anticrm/core'
-  import { Issue, IssuePriority } from '@anticrm/tracker'
-  import { getClient } from '@anticrm/presentation'
-  import { Button, eventToHTMLElement } from '@anticrm/ui'
-  import { ButtonKind, ButtonSize, showPopup, SelectPopup, Icon, Label } from '@anticrm/ui'
+  import { AttachedData } from '@hcengineering/core'
+  import { Issue, IssuePriority } from '@hcengineering/tracker'
+  import { getClient } from '@hcengineering/presentation'
+  import { Button, eventToHTMLElement } from '@hcengineering/ui'
+  import { ButtonKind, ButtonSize, showPopup, SelectPopup, Icon, Label } from '@hcengineering/ui'
   import tracker from '../../plugin'
   import { defaultPriorities, issuePriorities } from '../../utils'
 

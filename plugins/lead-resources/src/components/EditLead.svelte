@@ -14,10 +14,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getClient, UserBox } from '@anticrm/presentation'
-  import type { Lead } from '@anticrm/lead'
-  import { EditBox, Grid } from '@anticrm/ui'
-  import contact from '@anticrm/contact'
+  import { getClient, UserBox } from '@hcengineering/presentation'
+  import type { Lead } from '@hcengineering/lead'
+  import { EditBox, Grid } from '@hcengineering/ui'
+  import contact from '@hcengineering/contact'
   import { createEventDispatcher, onMount } from 'svelte'
   import lead from '../plugin'
 

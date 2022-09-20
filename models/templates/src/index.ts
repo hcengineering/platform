@@ -14,12 +14,12 @@
 // limitations under the License.
 //
 
-import { Domain, IndexKind } from '@anticrm/core'
-import { Builder, Index, Model, Prop, TypeString } from '@anticrm/model'
-import core, { TDoc } from '@anticrm/model-core'
-import textEditor from '@anticrm/model-text-editor'
-import setting from '@anticrm/setting'
-import type { MessageTemplate } from '@anticrm/templates'
+import { Domain, IndexKind } from '@hcengineering/core'
+import { Builder, Index, Model, Prop, TypeString } from '@hcengineering/model'
+import core, { TDoc } from '@hcengineering/model-core'
+import textEditor from '@hcengineering/model-text-editor'
+import setting from '@hcengineering/setting'
+import type { MessageTemplate } from '@hcengineering/templates'
 import templates from './plugin'
 
 export const DOMAIN_TEMPLATES = 'templates' as Domain

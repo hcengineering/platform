@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { IntlString } from '@anticrm/platform'
-  import presentation, { MessageViewer } from '@anticrm/presentation'
-  import { ActionIcon, IconCheck, IconClose, IconEdit, Label, ShowMore } from '@anticrm/ui'
+  import { IntlString } from '@hcengineering/platform'
+  import presentation, { MessageViewer } from '@hcengineering/presentation'
+  import { ActionIcon, IconCheck, IconClose, IconEdit, Label, ShowMore } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import textEditorPlugin from '../plugin'
   import StyledTextEditor from './StyledTextEditor.svelte'

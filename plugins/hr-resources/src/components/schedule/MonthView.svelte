@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Employee, EmployeeAccount } from '@anticrm/contact'
-  import { EmployeePresenter } from '@anticrm/contact-resources'
-  import contact from '@anticrm/contact-resources/src/plugin'
-  import { getCurrentAccount, Ref } from '@anticrm/core'
-  import type { Request, RequestType, Staff } from '@anticrm/hr'
+  import { Employee, EmployeeAccount } from '@hcengineering/contact'
+  import { EmployeePresenter } from '@hcengineering/contact-resources'
+  import contact from '@hcengineering/contact-resources/src/plugin'
+  import { getCurrentAccount, Ref } from '@hcengineering/core'
+  import type { Request, RequestType, Staff } from '@hcengineering/hr'
   import {
     areDatesEqual,
     day as getDay,
@@ -31,7 +31,7 @@
     tableSP,
     showPopup,
     tooltip
-  } from '@anticrm/ui'
+  } from '@hcengineering/ui'
   import hr from '../../plugin'
   import { fromTzDate, getTotal } from '../../utils'
   import CreateRequest from '../CreateRequest.svelte'

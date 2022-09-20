@@ -28,8 +28,8 @@ import core, {
   TxResult,
   BlobData,
   Space
-} from '@anticrm/core'
-import { DbAdapter } from '@anticrm/server-core'
+} from '@hcengineering/core'
+import { DbAdapter } from '@hcengineering/server-core'
 import { BucketItem, Client, ItemBucketMetadata } from 'minio'
 
 class MinioBlobAdapter implements DbAdapter {

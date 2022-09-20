@@ -24,7 +24,7 @@ import core, {
   TxCreateDoc,
   TxOperations,
   WithLookup
-} from '@anticrm/core'
+} from '@hcengineering/core'
 import { LiveQuery } from '..'
 import { connect } from './connection'
 import { AttachedComment, genMinModel, ParticipantsHolder, test } from './minmodel'

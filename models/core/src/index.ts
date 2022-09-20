@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Builder } from '@anticrm/model'
+import { Builder } from '@hcengineering/model'
 import core from './component'
 import {
   TArrOf,

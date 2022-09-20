@@ -22,11 +22,11 @@ import automation, {
   AutomationTriggerSupport,
   Command,
   TriggerType
-} from '@anticrm/automation'
-import { Class, Doc, Domain, Ref } from '@anticrm/core'
-import { Builder, Mixin, Model, Prop, TypeString, UX } from '@anticrm/model'
-import core, { TAttachedDoc, TClass } from '@anticrm/model-core'
-import view from '@anticrm/view'
+} from '@hcengineering/automation'
+import { Class, Doc, Domain, Ref } from '@hcengineering/core'
+import { Builder, Mixin, Model, Prop, TypeString, UX } from '@hcengineering/model'
+import core, { TAttachedDoc, TClass } from '@hcengineering/model-core'
+import view from '@hcengineering/view'
 
 export const DOMAIN_AUTOMATION = 'automation' as Domain
 

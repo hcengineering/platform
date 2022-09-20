@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Class, DocumentQuery, FindOptions, Ref, Space } from '@anticrm/core'
-  import type { IntlString } from '@anticrm/platform'
-  import { AnySvelteComponent, ButtonKind, ButtonSize } from '@anticrm/ui'
+  import type { Class, DocumentQuery, FindOptions, Ref, Space } from '@hcengineering/core'
+  import type { IntlString } from '@hcengineering/platform'
+  import { AnySvelteComponent, ButtonKind, ButtonSize } from '@hcengineering/ui'
   import { ObjectCreate } from '../types'
   import SpaceSelect from './SpaceSelect.svelte'
 

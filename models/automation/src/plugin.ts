@@ -13,11 +13,11 @@
 // limitations under the License.
 //
 
-import { Ref } from '@anticrm/core'
-import { automationId } from '@anticrm/automation'
-import automation, { PluginType } from '@anticrm/automation-resources/src/plugin'
-import { mergeIds } from '@anticrm/platform'
-import { SettingsCategory } from '@anticrm/setting'
+import { Ref } from '@hcengineering/core'
+import { automationId } from '@hcengineering/automation'
+import automation, { PluginType } from '@hcengineering/automation-resources/src/plugin'
+import { mergeIds } from '@hcengineering/platform'
+import { SettingsCategory } from '@hcengineering/setting'
 
 const pluginData = {
   ids: {

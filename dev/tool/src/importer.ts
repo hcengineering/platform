@@ -14,9 +14,9 @@
 // limitations under the License.
 //
 
-import attachment, { Attachment } from '@anticrm/attachment'
-import chunter, { Comment } from '@anticrm/chunter'
-import contact, { Channel, ChannelProvider, EmployeeAccount, Person } from '@anticrm/contact'
+import attachment, { Attachment } from '@hcengineering/attachment'
+import chunter, { Comment } from '@hcengineering/chunter'
+import contact, { Channel, ChannelProvider, EmployeeAccount, Person } from '@hcengineering/contact'
 import core, {
   AttachedData,
   Class,
@@ -28,11 +28,11 @@ import core, {
   Space,
   TxOperations,
   TxResult
-} from '@anticrm/core'
-import recruit from '@anticrm/model-recruit'
-import { Applicant, Candidate, Vacancy } from '@anticrm/recruit'
-import { connect } from '@anticrm/server-tool'
-import task, { calcRank, DoneState, genRanks, Kanban, State } from '@anticrm/task'
+} from '@hcengineering/core'
+import recruit from '@hcengineering/model-recruit'
+import { Applicant, Candidate, Vacancy } from '@hcengineering/recruit'
+import { connect } from '@hcengineering/server-tool'
+import task, { calcRank, DoneState, genRanks, Kanban, State } from '@hcengineering/task'
 import { deepEqual } from 'fast-equals'
 import { existsSync } from 'fs'
 import { readdir, readFile, stat } from 'fs/promises'

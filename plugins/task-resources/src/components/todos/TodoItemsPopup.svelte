@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { WithLookup } from '@anticrm/core'
-  import type { Task, TodoItem } from '@anticrm/task'
-  import task from '@anticrm/task'
-  import { Table } from '@anticrm/view-resources'
+  import type { WithLookup } from '@hcengineering/core'
+  import type { Task, TodoItem } from '@hcengineering/task'
+  import task from '@hcengineering/task'
+  import { Table } from '@hcengineering/view-resources'
   import plugin from '../../plugin'
 
   export let value: WithLookup<Task>

@@ -13,11 +13,11 @@
 // limitations under the License.
 //
 
-import { mergeIds } from '@anticrm/platform'
-import type { IntlString } from '@anticrm/platform'
+import { mergeIds } from '@hcengineering/platform'
+import type { IntlString } from '@hcengineering/platform'
 
-import workbench, { workbenchId } from '@anticrm/workbench'
-import { AnyComponent } from '@anticrm/ui'
+import workbench, { workbenchId } from '@hcengineering/workbench'
+import { AnyComponent } from '@hcengineering/ui'
 
 export default mergeIds(workbenchId, workbench, {
   string: {

@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Enum, EnumOf, Ref } from '@anticrm/core'
-  import { TypeEnum } from '@anticrm/model'
-  import presentation, { getClient } from '@anticrm/presentation'
-  import { Button, Label, showPopup } from '@anticrm/ui'
+  import core, { Enum, EnumOf, Ref } from '@hcengineering/core'
+  import { TypeEnum } from '@hcengineering/model'
+  import presentation, { getClient } from '@hcengineering/presentation'
+  import { Button, Label, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import setting from '../../plugin'
   import EnumSelect from './EnumSelect.svelte'

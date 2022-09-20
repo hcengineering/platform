@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getClient } from '@anticrm/presentation'
-  import { SelectPopup } from '@anticrm/ui'
-  import view, { Filter, FilterMode } from '@anticrm/view'
-  import { FilterQuery } from '@anticrm/view-resources'
+  import { getClient } from '@hcengineering/presentation'
+  import { SelectPopup } from '@hcengineering/ui'
+  import view, { Filter, FilterMode } from '@hcengineering/view'
+  import { FilterQuery } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
 

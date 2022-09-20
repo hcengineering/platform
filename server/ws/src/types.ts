@@ -1,6 +1,16 @@
-import { Class, Doc, DocumentQuery, FindOptions, FindResult, MeasureContext, Ref, Tx, TxResult } from '@anticrm/core'
-import { Response } from '@anticrm/platform'
-import { Pipeline } from '@anticrm/server-core'
+import {
+  Class,
+  Doc,
+  DocumentQuery,
+  FindOptions,
+  FindResult,
+  MeasureContext,
+  Ref,
+  Tx,
+  TxResult
+} from '@hcengineering/core'
+import { Response } from '@hcengineering/platform'
+import { Pipeline } from '@hcengineering/server-core'
 
 /**
  * @public

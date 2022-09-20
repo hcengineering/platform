@@ -13,14 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AttachmentsPresenter } from '@anticrm/attachment-resources'
-  import { CommentsPresenter } from '@anticrm/chunter-resources'
-  import type { WithLookup } from '@anticrm/core'
-  import notification from '@anticrm/notification'
-  import { Avatar } from '@anticrm/presentation'
-  import type { Issue, TodoItem } from '@anticrm/task'
-  import { ActionIcon, Component, IconMoreH, showPopup, tooltip } from '@anticrm/ui'
-  import { ContextMenu } from '@anticrm/view-resources'
+  import { AttachmentsPresenter } from '@hcengineering/attachment-resources'
+  import { CommentsPresenter } from '@hcengineering/chunter-resources'
+  import type { WithLookup } from '@hcengineering/core'
+  import notification from '@hcengineering/notification'
+  import { Avatar } from '@hcengineering/presentation'
+  import type { Issue, TodoItem } from '@hcengineering/task'
+  import { ActionIcon, Component, IconMoreH, showPopup, tooltip } from '@hcengineering/ui'
+  import { ContextMenu } from '@hcengineering/view-resources'
   import task from '../plugin'
   import TaskPresenter from './TaskPresenter.svelte'
 

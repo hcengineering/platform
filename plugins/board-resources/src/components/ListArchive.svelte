@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { Button, Label } from '@anticrm/ui'
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import { DocumentQuery, SortingOrder } from '@anticrm/core'
-  import task, { State } from '@anticrm/task'
+  import { Button, Label } from '@hcengineering/ui'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { DocumentQuery, SortingOrder } from '@hcengineering/core'
+  import task, { State } from '@hcengineering/task'
   import board from '../plugin'
 
   export let query: DocumentQuery<State> = {}

@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref } from '@anticrm/core'
-  import { IntlString } from '@anticrm/platform'
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import { Issue, Sprint } from '@anticrm/tracker'
-  import { ButtonKind, ButtonShape, ButtonSize, Label, tooltip } from '@anticrm/ui'
-  import DatePresenter from '@anticrm/ui/src/components/calendar/DatePresenter.svelte'
+  import { Ref } from '@hcengineering/core'
+  import { IntlString } from '@hcengineering/platform'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { Issue, Sprint } from '@hcengineering/tracker'
+  import { ButtonKind, ButtonShape, ButtonSize, Label, tooltip } from '@hcengineering/ui'
+  import DatePresenter from '@hcengineering/ui/src/components/calendar/DatePresenter.svelte'
   import { activeSprint } from '../../issues'
   import tracker from '../../plugin'
   import { getDayOfSprint } from '../../utils'

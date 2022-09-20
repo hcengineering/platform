@@ -1,4 +1,4 @@
-import { MeasureContext, MeasureMetricsContext, metricsToString, newMetrics } from '@anticrm/core'
+import { MeasureContext, MeasureMetricsContext, metricsToString, newMetrics } from '@hcengineering/core'
 import { APMMeasureContext, createAPMAgent } from './apm'
 import { writeFile } from 'fs/promises'
 

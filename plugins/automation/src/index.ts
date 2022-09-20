@@ -1,6 +1,6 @@
-import { AttachedDoc, Class, Doc, DocumentQuery, DocumentUpdate, Mixin, Ref, Space } from '@anticrm/core'
-import { Asset, IntlString, Plugin, plugin } from '@anticrm/platform'
-import { ActionCategory, ViewAction } from '@anticrm/view'
+import { AttachedDoc, Class, Doc, DocumentQuery, DocumentUpdate, Mixin, Ref, Space } from '@hcengineering/core'
+import { Asset, IntlString, Plugin, plugin } from '@hcengineering/platform'
+import { ActionCategory, ViewAction } from '@hcengineering/view'
 
 /**
  * @public

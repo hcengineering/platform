@@ -1,1 +1,1 @@
-module.exports = require("@anticrm/platform-rig/profiles/default/config/jest.config")
+module.exports = require("@hcengineering/platform-rig/profiles/default/config/jest.config")

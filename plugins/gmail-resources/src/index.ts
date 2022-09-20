@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-import { getMetadata, Resources } from '@anticrm/platform'
-import login from '@anticrm/login'
+import { getMetadata, Resources } from '@hcengineering/platform'
+import login from '@hcengineering/login'
 import Main from './components/Main.svelte'
 import Connect from './components/Connect.svelte'
 import IconGmail from './components/icons/GmailColor.svelte'

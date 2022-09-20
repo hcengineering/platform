@@ -13,9 +13,9 @@
 // limitations under the License.
 //
 
-import clientPlugin from '@anticrm/client'
-import { Client, createClient, TxHander } from '@anticrm/core'
-import { getMetadata, getPlugins, getResource } from '@anticrm/platform'
+import clientPlugin from '@hcengineering/client'
+import { Client, createClient, TxHander } from '@hcengineering/core'
+import { getMetadata, getPlugins, getResource } from '@hcengineering/platform'
 import { connect } from './connection'
 
 export { connect }

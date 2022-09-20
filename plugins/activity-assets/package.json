@@ -1,9 +1,9 @@
 {
-  "name": "@anticrm/activity-assets",
+  "name": "@hcengineering/activity-assets",
   "version": "0.6.0",
   "main": "src/index.ts",
   "author": "Anticrm Platform Contributors",
-  "template": "@anticrm/assets-package",
+  "template": "@hcengineering/assets-package",
   "license": "EPL-2.0",
   "scripts": {
     "build": "heft build",
@@ -14,7 +14,7 @@
     "build:docs": ""
   },
   "devDependencies": {
-    "@anticrm/platform-rig": "~0.6.0",
+    "@hcengineering/platform-rig": "~0.6.0",
     "@typescript-eslint/eslint-plugin": "^5.30.0",
     "@typescript-eslint/parser": "^5.30.0",
     "eslint-config-standard-with-typescript": "^21.0.1",
@@ -29,7 +29,7 @@
     "@types/node": "~16.11.12"
   },
   "dependencies": {
-    "@anticrm/platform": "~0.6.6",
-    "@anticrm/activity": "~0.6.0"
+    "@hcengineering/platform": "^0.6.7",
+    "@hcengineering/activity": "~0.6.0"
   }
 }

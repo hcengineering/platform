@@ -13,13 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Class, Doc, Ref, Space } from '@anticrm/core'
-  import core, { WithLookup } from '@anticrm/core'
-  import { IntlString } from '@anticrm/platform'
-  import presentation, { createQuery, getClient } from '@anticrm/presentation'
-  import { AnyComponent, Button, IconAdd, SearchEdit, showPanel, showPopup, TabList } from '@anticrm/ui'
-  import view, { Viewlet } from '@anticrm/view'
-  import { ViewletSettingButton } from '@anticrm/view-resources'
+  import type { Class, Doc, Ref, Space } from '@hcengineering/core'
+  import core, { WithLookup } from '@hcengineering/core'
+  import { IntlString } from '@hcengineering/platform'
+  import presentation, { createQuery, getClient } from '@hcengineering/presentation'
+  import { AnyComponent, Button, IconAdd, SearchEdit, showPanel, showPopup, TabList } from '@hcengineering/ui'
+  import view, { Viewlet } from '@hcengineering/view'
+  import { ViewletSettingButton } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../plugin'
   import { classIcon } from '../utils'

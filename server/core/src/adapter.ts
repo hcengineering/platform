@@ -26,7 +26,7 @@ import {
   StorageIterator,
   Tx,
   TxResult
-} from '@anticrm/core'
+} from '@hcengineering/core'
 import { Client } from 'minio'
 
 /**

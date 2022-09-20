@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import type { Metadata, Plugin } from '@anticrm/platform'
-import { plugin } from '@anticrm/platform'
+import type { Metadata, Plugin } from '@hcengineering/platform'
+import { plugin } from '@hcengineering/platform'
 
 /**
  * @public

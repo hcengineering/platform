@@ -38,8 +38,14 @@ import core, {
   Tx,
   TxOperations,
   TxResult
-} from '@anticrm/core'
-import { createServerStorage, DbAdapter, DbConfiguration, FullTextAdapter, IndexedDoc } from '@anticrm/server-core'
+} from '@hcengineering/core'
+import {
+  createServerStorage,
+  DbAdapter,
+  DbConfiguration,
+  FullTextAdapter,
+  IndexedDoc
+} from '@hcengineering/server-core'
 import { MongoClient } from 'mongodb'
 import { createMongoAdapter, createMongoTxAdapter } from '..'
 import { getMongoClient, shutdown } from '../utils'

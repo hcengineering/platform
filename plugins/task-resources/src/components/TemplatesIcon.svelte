@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Icon } from '@anticrm/ui'
+  import { Icon } from '@hcengineering/ui'
   import IconFolder from './icons/Folder.svelte'
 </script>
 

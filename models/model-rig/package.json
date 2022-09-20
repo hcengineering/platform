@@ -1,5 +1,5 @@
 {
-  "name": "@anticrm/model-rig",
+  "name": "@hcengineering/model-rig",
   "version": "0.6.0",
   "scripts": {
     "build": ""

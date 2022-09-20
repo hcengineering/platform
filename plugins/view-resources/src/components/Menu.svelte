@@ -14,11 +14,11 @@
 -->
 <script lang="ts">
   import { createEventDispatcher, afterUpdate } from 'svelte'
-  import type { Class, Doc, Ref } from '@anticrm/core'
-  import type { Asset } from '@anticrm/platform'
-  import { getClient } from '@anticrm/presentation'
-  import { Action, Menu } from '@anticrm/ui'
-  import type { ActionGroup, ViewContextType } from '@anticrm/view'
+  import type { Class, Doc, Ref } from '@hcengineering/core'
+  import type { Asset } from '@hcengineering/platform'
+  import { getClient } from '@hcengineering/presentation'
+  import { Action, Menu } from '@hcengineering/ui'
+  import type { ActionGroup, ViewContextType } from '@hcengineering/view'
   import { getActions, invokeAction } from '../actions'
 
   export let object: Doc | Doc[]

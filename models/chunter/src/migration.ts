@@ -13,9 +13,9 @@
 // limitations under the License.
 //
 
-import { Comment, Message, ThreadMessage } from '@anticrm/chunter'
-import core, { Doc, DOMAIN_TX, Ref, TxCreateDoc, TxOperations } from '@anticrm/core'
-import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
+import { Comment, Message, ThreadMessage } from '@hcengineering/chunter'
+import core, { Doc, DOMAIN_TX, Ref, TxCreateDoc, TxOperations } from '@hcengineering/core'
+import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
 import { DOMAIN_CHUNTER, DOMAIN_COMMENT } from './index'
 import chunter from './plugin'
 

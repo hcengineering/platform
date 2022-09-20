@@ -14,11 +14,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { translate } from '@anticrm/platform'
-  import { getClient } from '@anticrm/presentation'
-  import type { Opinion } from '@anticrm/recruit'
-  import recruit from '@anticrm/recruit'
-  import { closeTooltip, Icon, showPopup } from '@anticrm/ui'
+  import { translate } from '@hcengineering/platform'
+  import { getClient } from '@hcengineering/presentation'
+  import type { Opinion } from '@hcengineering/recruit'
+  import recruit from '@hcengineering/recruit'
+  import { closeTooltip, Icon, showPopup } from '@hcengineering/ui'
   import EditOpinion from './EditOpinion.svelte'
 
   export let value: Opinion

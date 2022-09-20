@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, Ref, Space } from '@anticrm/core'
+  import { Class, Doc, Ref, Space } from '@hcengineering/core'
 
-  import { getClient } from '@anticrm/presentation'
+  import { getClient } from '@hcengineering/presentation'
   import { createAttachments } from '../utils'
 
   export let loading: number = 0

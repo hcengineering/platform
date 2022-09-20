@@ -13,13 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref } from '@anticrm/core'
-  import { Project } from '@anticrm/tracker'
-  import { Button, showPopup, eventToHTMLElement } from '@anticrm/ui'
-  import type { ButtonKind, ButtonSize } from '@anticrm/ui'
-  import contact, { Employee } from '@anticrm/contact'
-  import { getClient, UsersPopup } from '@anticrm/presentation'
-  import { translate } from '@anticrm/platform'
+  import { Ref } from '@hcengineering/core'
+  import { Project } from '@hcengineering/tracker'
+  import { Button, showPopup, eventToHTMLElement } from '@hcengineering/ui'
+  import type { ButtonKind, ButtonSize } from '@hcengineering/ui'
+  import contact, { Employee } from '@hcengineering/contact'
+  import { getClient, UsersPopup } from '@hcengineering/presentation'
+  import { translate } from '@hcengineering/platform'
   import tracker from '../../plugin'
 
   export let value: Project

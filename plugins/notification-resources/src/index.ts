@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { Resources } from '@anticrm/platform'
+import { Resources } from '@hcengineering/platform'
 import NotificationsPopup from './components/NotificationsPopup.svelte'
 import NotificationSettings from './components/NotificationSettings.svelte'
 import NotificationPresenter from './components/NotificationPresenter.svelte'

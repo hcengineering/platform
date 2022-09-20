@@ -1,5 +1,5 @@
 {
-  "name": "@anticrm/server-calendar-resources",
+  "name": "@hcengineering/server-calendar-resources",
   "version": "0.6.0",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
@@ -12,7 +12,7 @@
     "format": "prettier --write src && eslint --fix src"
   },
   "devDependencies": {
-    "@anticrm/platform-rig": "~0.6.0",
+    "@hcengineering/platform-rig": "~0.6.0",
     "@types/heft-jest": "^1.0.3",
     "@typescript-eslint/eslint-plugin": "^5.30.0",
     "eslint-plugin-import": "^2.26.0",
@@ -26,7 +26,7 @@
     "typescript": "^4.3.5"
   },
   "dependencies": {
-    "@anticrm/core": "~0.6.16",
-    "@anticrm/calendar": "~0.6.0"
+    "@hcengineering/core": "^0.6.17",
+    "@hcengineering/calendar": "~0.6.0"
   }
 }

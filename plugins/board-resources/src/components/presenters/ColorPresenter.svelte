@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { numberToHexColor, numberToRGB } from '@anticrm/ui'
+  import { numberToHexColor, numberToRGB } from '@hcengineering/ui'
 
   export let value: number
   export let size: 'tiny' | 'x-small' | 'small' | 'medium' | 'large' = 'medium'

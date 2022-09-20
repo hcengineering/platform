@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { addStringsLoader, loadMetadata } from '@anticrm/platform'
-import attachment, { attachmentId } from '@anticrm/attachment'
+import { addStringsLoader, loadMetadata } from '@hcengineering/platform'
+import attachment, { attachmentId } from '@hcengineering/attachment'
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(attachment.icon, {

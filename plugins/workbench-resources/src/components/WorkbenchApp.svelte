@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getMetadata } from '@anticrm/platform'
+  import { getMetadata } from '@hcengineering/platform'
 
-  import { connect, versionError } from '@anticrm/presentation'
-  import { Loading } from '@anticrm/ui'
+  import { connect, versionError } from '@hcengineering/presentation'
+  import { Loading } from '@hcengineering/ui'
   import Workbench from './Workbench.svelte'
   import workbench from '../plugin'
 </script>

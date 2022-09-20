@@ -13,15 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Comment } from '@anticrm/chunter'
-  import type { TxCreateDoc } from '@anticrm/core'
-  import { getClient, MessageViewer } from '@anticrm/presentation'
-  import { AttachmentDocList } from '@anticrm/attachment-resources'
-  import { Button } from '@anticrm/ui'
+  import type { Comment } from '@hcengineering/chunter'
+  import type { TxCreateDoc } from '@hcengineering/core'
+  import { getClient, MessageViewer } from '@hcengineering/presentation'
+  import { AttachmentDocList } from '@hcengineering/attachment-resources'
+  import { Button } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { updateBacklinks } from '../../backlinks'
   import chunter from '../../plugin'
-  import { AttachmentRefInput } from '@anticrm/attachment-resources'
+  import { AttachmentRefInput } from '@hcengineering/attachment-resources'
 
   export let tx: TxCreateDoc<Comment>
   export let value: Comment

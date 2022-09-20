@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Class, Doc, DocumentQuery, FindOptions, Ref, Space } from '@anticrm/core'
-  import { AnySvelteComponent } from '@anticrm/ui'
+  import type { Class, Doc, DocumentQuery, FindOptions, Ref, Space } from '@hcengineering/core'
+  import { AnySvelteComponent } from '@hcengineering/ui'
   import { ObjectCreate } from '../types'
   import ObjectPopup from './ObjectPopup.svelte'
   import SpaceInfo from './SpaceInfo.svelte'

@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import core, { TxFactory } from '@anticrm/core'
+import core, { TxFactory } from '@hcengineering/core'
 import { createStorage } from '../storage'
 
 describe('client', () => {

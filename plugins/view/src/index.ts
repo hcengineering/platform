@@ -29,10 +29,10 @@ import type {
   Space,
   Type,
   UXObject
-} from '@anticrm/core'
-import { Asset, IntlString, Plugin, plugin, Resource, Status } from '@anticrm/platform'
-import type { Preference } from '@anticrm/preference'
-import type { AnyComponent, AnySvelteComponent, PopupAlignment, PopupPosAlignment } from '@anticrm/ui'
+} from '@hcengineering/core'
+import { Asset, IntlString, Plugin, plugin, Resource, Status } from '@hcengineering/platform'
+import type { Preference } from '@hcengineering/preference'
+import type { AnyComponent, AnySvelteComponent, PopupAlignment, PopupPosAlignment } from '@hcengineering/ui'
 
 /**
  * @public

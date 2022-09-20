@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getCurrentAccount, Ref, Space, TxProcessor } from '@anticrm/core'
-  import type { NotificationProvider, NotificationSetting, NotificationType } from '@anticrm/notification'
-  import presentation, { createQuery, getClient } from '@anticrm/presentation'
-  import { Button, Grid, Icon, Label, ToggleWithLabel } from '@anticrm/ui'
+  import { getCurrentAccount, Ref, Space, TxProcessor } from '@hcengineering/core'
+  import type { NotificationProvider, NotificationSetting, NotificationType } from '@hcengineering/notification'
+  import presentation, { createQuery, getClient } from '@hcengineering/presentation'
+  import { Button, Grid, Icon, Label, ToggleWithLabel } from '@hcengineering/ui'
   import notification from '../plugin'
 
   const accountId = getCurrentAccount()._id

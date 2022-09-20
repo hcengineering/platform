@@ -13,10 +13,10 @@
 // limitations under the License.
 //
 
-import core, { Doc, DocumentUpdate, generateId, Ref, SortingOrder, TxOperations, TxResult } from '@anticrm/core'
-import { createOrUpdate, MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
-import { IssueStatus, IssueStatusCategory, Team, genRanks, Issue } from '@anticrm/tracker'
-import tags from '@anticrm/tags'
+import core, { Doc, DocumentUpdate, generateId, Ref, SortingOrder, TxOperations, TxResult } from '@hcengineering/core'
+import { createOrUpdate, MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
+import { IssueStatus, IssueStatusCategory, Team, genRanks, Issue } from '@hcengineering/tracker'
+import tags from '@hcengineering/tags'
 import { DOMAIN_TRACKER } from '.'
 import tracker from './plugin'
 

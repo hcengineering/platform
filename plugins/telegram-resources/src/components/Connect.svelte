@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getMetadata, serialize } from '@anticrm/platform'
-  import { Button, EditBox, IconClose, Label } from '@anticrm/ui'
+  import { getMetadata, serialize } from '@hcengineering/platform'
+  import { Button, EditBox, IconClose, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import login from '@anticrm/login'
+  import login from '@hcengineering/login'
   import PinPad from './PinPad.svelte'
   import telegram from '../plugin'
 

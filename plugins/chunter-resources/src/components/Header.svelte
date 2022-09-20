@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Asset, IntlString } from '@anticrm/platform'
-  import { AnySvelteComponent, Icon, Label, SearchEdit } from '@anticrm/ui'
+  import type { Asset, IntlString } from '@hcengineering/platform'
+  import { AnySvelteComponent, Icon, Label, SearchEdit } from '@hcengineering/ui'
   import { userSearch } from '../index'
   import { navigateToSpecial } from '../utils'
 

@@ -13,9 +13,9 @@
 // limitations under the License.
 //
 
-import contact, { EmployeeAccount } from '@anticrm/contact'
-import { Ref, TxOperations } from '@anticrm/core'
-import { connect } from '@anticrm/server-tool'
+import contact, { EmployeeAccount } from '@hcengineering/contact'
+import { Ref, TxOperations } from '@hcengineering/core'
+import { connect } from '@hcengineering/server-tool'
 import { deepEqual } from 'fast-equals'
 
 export async function removeDuplicates (transactorUrl: string, dbName: string): Promise<void> {

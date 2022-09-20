@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Channel } from '@anticrm/chunter'
-  import { getClient } from '@anticrm/presentation'
-  import { Icon } from '@anticrm/ui'
+  import type { Channel } from '@hcengineering/chunter'
+  import { getClient } from '@hcengineering/presentation'
+  import { Icon } from '@hcengineering/ui'
 
   import { getSpaceLink } from '../utils'
 

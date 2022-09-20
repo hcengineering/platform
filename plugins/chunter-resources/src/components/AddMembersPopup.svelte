@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { Channel } from '@anticrm/chunter'
-  import contact, { Employee, EmployeeAccount, formatName } from '@anticrm/contact'
-  import core, { Ref } from '@anticrm/core'
-  import presentation, { getClient, UsersPopup } from '@anticrm/presentation'
-  import { Label, Button, ActionIcon, IconClose } from '@anticrm/ui'
+  import { Channel } from '@hcengineering/chunter'
+  import contact, { Employee, EmployeeAccount, formatName } from '@hcengineering/contact'
+  import core, { Ref } from '@hcengineering/core'
+  import presentation, { getClient, UsersPopup } from '@hcengineering/presentation'
+  import { Label, Button, ActionIcon, IconClose } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import chunter from '../plugin'
 

@@ -13,17 +13,17 @@
 // limitations under the License.
 //
 
-import { Domain, IndexKind, Ref } from '@anticrm/core'
-import { Category, inventoryId, Product, Variant } from '@anticrm/inventory'
-import { Builder, Collection, Index, Model, Prop, TypeRef, TypeString, UX } from '@anticrm/model'
-import attachment from '@anticrm/model-attachment'
-import core, { TAttachedDoc } from '@anticrm/model-core'
-import { createAction } from '@anticrm/model-view'
-import workbench from '@anticrm/model-workbench'
-import notification from '@anticrm/notification'
-import setting from '@anticrm/setting'
-import type {} from '@anticrm/view'
-import view from '@anticrm/view'
+import { Domain, IndexKind, Ref } from '@hcengineering/core'
+import { Category, inventoryId, Product, Variant } from '@hcengineering/inventory'
+import { Builder, Collection, Index, Model, Prop, TypeRef, TypeString, UX } from '@hcengineering/model'
+import attachment from '@hcengineering/model-attachment'
+import core, { TAttachedDoc } from '@hcengineering/model-core'
+import { createAction } from '@hcengineering/model-view'
+import workbench from '@hcengineering/model-workbench'
+import notification from '@hcengineering/notification'
+import setting from '@hcengineering/setting'
+import type {} from '@hcengineering/view'
+import view from '@hcengineering/view'
 import inventory from './plugin'
 
 export const DOMAIN_INVENTORY = 'inventory' as Domain

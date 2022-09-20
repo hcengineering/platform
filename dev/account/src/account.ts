@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-import type { Request, Response } from '@anticrm/platform'
-import platform, { Status, Severity } from '@anticrm/platform'
+import type { Request, Response } from '@hcengineering/platform'
+import platform, { Status, Severity } from '@hcengineering/platform'
 
-import { generateToken } from '@anticrm/server-token'
+import { generateToken } from '@hcengineering/server-token'
 
 interface LoginInfo {
   token: string

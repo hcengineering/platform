@@ -1,8 +1,8 @@
 <script lang="ts">
-  import notification from '@anticrm/notification'
-  import { State } from '@anticrm/task'
-  import { Button, Component, getEventPositionElement, getPlatformColor, IconMoreV, showPopup } from '@anticrm/ui'
-  import { ContextMenu } from '@anticrm/view-resources'
+  import notification from '@hcengineering/notification'
+  import { State } from '@hcengineering/task'
+  import { Button, Component, getEventPositionElement, getPlatformColor, IconMoreV, showPopup } from '@hcengineering/ui'
+  import { ContextMenu } from '@hcengineering/view-resources'
   export let state: State
 
   const showMenu = async (ev: MouseEvent): Promise<void> => {

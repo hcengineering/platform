@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { Employee } from '@anticrm/contact'
-  import { Ref } from '@anticrm/core'
-  import { IntlString } from '@anticrm/platform'
-  import { UserBoxList } from '@anticrm/presentation'
+  import { Employee } from '@hcengineering/contact'
+  import { Ref } from '@hcengineering/core'
+  import { IntlString } from '@hcengineering/platform'
+  import { UserBoxList } from '@hcengineering/presentation'
 
   export let label: IntlString
   export let value: Ref<Employee>[]

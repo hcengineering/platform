@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import type { IntlString, Plugin } from '@anticrm/platform'
-import { plugin } from '@anticrm/platform'
+import type { IntlString, Plugin } from '@hcengineering/platform'
+import { plugin } from '@hcengineering/platform'
 import type { Arr, Class, Data, Doc, Interface, Mixin, Obj, Ref } from '../classes'
 import { AttachedDoc, ClassifierKind, DOMAIN_MODEL } from '../classes'
 import core from '../component'

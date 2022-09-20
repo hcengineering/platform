@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { addStringsLoader, loadMetadata } from '@anticrm/platform'
-import calendar, { calendarId } from '@anticrm/calendar'
+import { addStringsLoader, loadMetadata } from '@hcengineering/platform'
+import calendar, { calendarId } from '@hcengineering/calendar'
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(calendar.icon, {

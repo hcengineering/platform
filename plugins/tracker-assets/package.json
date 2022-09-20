@@ -1,10 +1,10 @@
 {
-  "name": "@anticrm/tracker-assets",
+  "name": "@hcengineering/tracker-assets",
   "version": "0.6.0",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
-  "template": "@anticrm/assets-package",
+  "template": "@hcengineering/assets-package",
   "scripts": {
     "build": "heft build",
     "build:docs": "",
@@ -14,7 +14,7 @@
     "build:watch": "tsc"
   },
   "devDependencies": {
-    "@anticrm/platform-rig": "~0.6.0",
+    "@hcengineering/platform-rig": "~0.6.0",
     "@types/heft-jest": "^1.0.3",
     "@typescript-eslint/eslint-plugin": "^5.30.0",
     "@typescript-eslint/parser": "^5.30.0",
@@ -28,7 +28,7 @@
     "@types/node": "~16.11.12"
   },
   "dependencies": {
-    "@anticrm/platform": "~0.6.6",
-    "@anticrm/tracker": "~0.6.0"
+    "@hcengineering/platform": "^0.6.7",
+    "@hcengineering/tracker": "~0.6.0"
   }
 }

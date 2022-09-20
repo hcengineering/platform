@@ -13,11 +13,11 @@
 // limitations under the License.
 //
 
-import { ObjQueryType } from '@anticrm/core'
-import { IntlString, mergeIds, Resource } from '@anticrm/platform'
-import type { AnyComponent } from '@anticrm/ui'
-import { Filter, ViewAction, viewId } from '@anticrm/view'
-import view from '@anticrm/view-resources/src/plugin'
+import { ObjQueryType } from '@hcengineering/core'
+import { IntlString, mergeIds, Resource } from '@hcengineering/platform'
+import type { AnyComponent } from '@hcengineering/ui'
+import { Filter, ViewAction, viewId } from '@hcengineering/view'
+import view from '@hcengineering/view-resources/src/plugin'
 
 export default mergeIds(viewId, view, {
   actionImpl: {

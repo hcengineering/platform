@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, Mixin } from '@anticrm/core'
-  import { getClient } from '@anticrm/presentation'
-  import setting from '@anticrm/setting'
+  import { Doc, Mixin } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
+  import setting from '@hcengineering/setting'
   import ClassAttributeBar from './ClassAttributeBar.svelte'
 
   export let object: Doc

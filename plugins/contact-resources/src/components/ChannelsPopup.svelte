@@ -14,8 +14,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { IntlString, Asset } from '@anticrm/platform'
-  import { CircleButton, closeTooltip, Label } from '@anticrm/ui'
+  import type { IntlString, Asset } from '@hcengineering/platform'
+  import { CircleButton, closeTooltip, Label } from '@hcengineering/ui'
   import IconCopy from './icons/Copy.svelte'
 
   interface Item {

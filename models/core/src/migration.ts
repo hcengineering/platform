@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
+import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
 
 export const coreOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {},

@@ -13,11 +13,11 @@
 // limitations under the License.
 //
 
-import attachment, { Attachment } from '@anticrm/attachment'
-import { ObjQueryType, SortingOrder, SortingQuery } from '@anticrm/core'
-import { IntlString, Resources } from '@anticrm/platform'
-import preference from '@anticrm/preference'
-import { getClient } from '@anticrm/presentation'
+import attachment, { Attachment } from '@hcengineering/attachment'
+import { ObjQueryType, SortingOrder, SortingQuery } from '@hcengineering/core'
+import { IntlString, Resources } from '@hcengineering/platform'
+import preference from '@hcengineering/preference'
+import { getClient } from '@hcengineering/presentation'
 import TxAttachmentCreate from './components/activity/TxAttachmentCreate.svelte'
 import AddAttachment from './components/AddAttachment.svelte'
 import AttachmentDocList from './components/AttachmentDocList.svelte'

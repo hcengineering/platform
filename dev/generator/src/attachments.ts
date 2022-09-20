@@ -1,5 +1,5 @@
-import attachment, { Attachment } from '@anticrm/attachment'
-import { Class, Doc, generateId, Ref, Space, TxOperations } from '@anticrm/core'
+import attachment, { Attachment } from '@hcengineering/attachment'
+import { Class, Doc, generateId, Ref, Space, TxOperations } from '@hcengineering/core'
 import faker from 'faker'
 import { Client } from 'minio'
 import PDFDocument from 'pdfkit'

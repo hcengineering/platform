@@ -14,9 +14,9 @@
 // limitations under the License.
 //
 
-import { Resources } from '@anticrm/platform'
-import { SpaceWithStates } from '@anticrm/task'
-import { showPopup } from '@anticrm/ui'
+import { Resources } from '@hcengineering/platform'
+import { SpaceWithStates } from '@hcengineering/task'
+import { showPopup } from '@hcengineering/ui'
 import AssignedTasks from './components/AssignedTasks.svelte'
 import CreateProject from './components/CreateProject.svelte'
 import EditIssue from './components/EditIssue.svelte'

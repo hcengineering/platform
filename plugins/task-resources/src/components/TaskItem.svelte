@@ -14,9 +14,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getClient } from '@anticrm/presentation'
-  import type { Issue, Task } from '@anticrm/task'
-  import { Icon, Label } from '@anticrm/ui'
+  import { getClient } from '@hcengineering/presentation'
+  import type { Issue, Task } from '@hcengineering/task'
+  import { Icon, Label } from '@hcengineering/ui'
   import task from '../plugin'
 
   export let value: Task

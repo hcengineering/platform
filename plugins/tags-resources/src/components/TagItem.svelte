@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Asset } from '@anticrm/platform'
-  import { TagElement, TagReference } from '@anticrm/tags'
-  import { ActionIcon, AnySvelteComponent, getPlatformColor, tooltip } from '@anticrm/ui'
+  import { Asset } from '@hcengineering/platform'
+  import { TagElement, TagReference } from '@hcengineering/tags'
+  import { ActionIcon, AnySvelteComponent, getPlatformColor, tooltip } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import tags from '../plugin'
   import { getTagStyle } from '../utils'

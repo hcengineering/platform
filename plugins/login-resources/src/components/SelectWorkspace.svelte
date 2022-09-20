@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { OK, setMetadata, Severity, Status } from '@anticrm/platform'
+  import { OK, setMetadata, Severity, Status } from '@hcengineering/platform'
   import {
     Button,
     fetchMetadataLocalStorage,
@@ -23,8 +23,8 @@
     Location,
     navigate,
     setMetadataLocalStorage
-  } from '@anticrm/ui'
-  import { workbenchId } from '@anticrm/workbench'
+  } from '@hcengineering/ui'
+  import { workbenchId } from '@hcengineering/workbench'
   import login from '../plugin'
   import { getWorkspaces, selectWorkspace, Workspace } from '../utils'
   import StatusControl from './StatusControl.svelte'

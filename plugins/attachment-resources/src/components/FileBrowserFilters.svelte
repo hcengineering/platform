@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Employee } from '@anticrm/contact'
-  import { Class, Ref, Space } from '@anticrm/core'
-  import { SpaceMultiBoxList, UserBoxList } from '@anticrm/presentation'
-  import { DropdownLabelsIntl } from '@anticrm/ui'
+  import { Employee } from '@hcengineering/contact'
+  import { Class, Ref, Space } from '@hcengineering/core'
+  import { SpaceMultiBoxList, UserBoxList } from '@hcengineering/presentation'
+  import { DropdownLabelsIntl } from '@hcengineering/ui'
   import attachment from '../plugin'
   import { dateFileBrowserFilters, fileTypeFileBrowserFilters } from '..'
 

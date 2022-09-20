@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { tooltip } from '@anticrm/ui'
+  import { tooltip } from '@hcengineering/ui'
   import tracker from '../../plugin'
 
   export let value: number

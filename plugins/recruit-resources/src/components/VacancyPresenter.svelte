@@ -14,9 +14,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getEmbeddedLabel } from '@anticrm/platform'
+  import { getEmbeddedLabel } from '@hcengineering/platform'
 
-  import type { Vacancy } from '@anticrm/recruit'
+  import type { Vacancy } from '@hcengineering/recruit'
   import {
     ActionIcon,
     getCurrentLocation,
@@ -27,7 +27,7 @@
     navigate,
     showPanel,
     tooltip
-  } from '@anticrm/ui'
+  } from '@hcengineering/ui'
   import recruit from '../plugin'
 
   export let value: Vacancy

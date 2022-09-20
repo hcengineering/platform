@@ -43,8 +43,8 @@ import core, {
   TxResult,
   TxUpdateDoc,
   WithLookup
-} from '@anticrm/core'
-import type { DbAdapter, TxAdapter } from '@anticrm/server-core'
+} from '@hcengineering/core'
+import type { DbAdapter, TxAdapter } from '@hcengineering/server-core'
 import { Collection, Db, Document, Filter, MongoClient, Sort, UpdateFilter } from 'mongodb'
 import { createHash } from 'node:crypto'
 import { getMongoClient } from './utils'

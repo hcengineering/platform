@@ -13,13 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Event } from '@anticrm/calendar'
-  import { Doc, WithLookup } from '@anticrm/core'
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import { StyledTextBox } from '@anticrm/text-editor'
-  import { AnyComponent, Component, Label, StylishEdit } from '@anticrm/ui'
-  import ObjectPresenter from '@anticrm/view-resources/src/components/ObjectPresenter.svelte'
-  import { getObjectPreview } from '@anticrm/view-resources/src/utils'
+  import { Event } from '@hcengineering/calendar'
+  import { Doc, WithLookup } from '@hcengineering/core'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { StyledTextBox } from '@hcengineering/text-editor'
+  import { AnyComponent, Component, Label, StylishEdit } from '@hcengineering/ui'
+  import ObjectPresenter from '@hcengineering/view-resources/src/components/ObjectPresenter.svelte'
+  import { getObjectPreview } from '@hcengineering/view-resources/src/utils'
   import { createEventDispatcher, onMount } from 'svelte'
   import calendar from '../plugin'
 

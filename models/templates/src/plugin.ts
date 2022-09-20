@@ -14,14 +14,14 @@
 // limitations under the License.
 //
 
-import { Ref } from '@anticrm/core'
-import { IntlString, mergeIds, Resource } from '@anticrm/platform'
-import { SettingsCategory } from '@anticrm/setting'
-import { templatesId } from '@anticrm/templates'
-import templates from '@anticrm/templates-resources/src/plugin'
+import { Ref } from '@hcengineering/core'
+import { IntlString, mergeIds, Resource } from '@hcengineering/platform'
+import { SettingsCategory } from '@hcengineering/setting'
+import { templatesId } from '@hcengineering/templates'
+import templates from '@hcengineering/templates-resources/src/plugin'
 
-import type { AnyComponent } from '@anticrm/ui'
-import { RefInputAction, RefInputActionItem } from '@anticrm/model-text-editor'
+import type { AnyComponent } from '@hcengineering/ui'
+import { RefInputAction, RefInputActionItem } from '@hcengineering/model-text-editor'
 
 export default mergeIds(templatesId, templates, {
   ids: {

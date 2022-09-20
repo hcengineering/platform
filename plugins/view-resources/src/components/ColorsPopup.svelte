@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { getPlatformColors } from '@anticrm/ui'
+  import { getPlatformColors } from '@hcengineering/ui'
   import PopupDialog from './PopupDialog.svelte'
   import view from '../plugin'
 

@@ -1,13 +1,13 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
 
-  import { Card } from '@anticrm/board'
-  import { WithLookup } from '@anticrm/core'
-  import task, { calcRank, TodoItem } from '@anticrm/task'
-  import { translate } from '@anticrm/platform'
-  import presentation, { Card as Popup, createQuery, getClient } from '@anticrm/presentation'
-  import { Label, Dropdown, EditBox } from '@anticrm/ui'
-  import type { ListItem } from '@anticrm/ui'
+  import { Card } from '@hcengineering/board'
+  import { WithLookup } from '@hcengineering/core'
+  import task, { calcRank, TodoItem } from '@hcengineering/task'
+  import { translate } from '@hcengineering/platform'
+  import presentation, { Card as Popup, createQuery, getClient } from '@hcengineering/presentation'
+  import { Label, Dropdown, EditBox } from '@hcengineering/ui'
+  import type { ListItem } from '@hcengineering/ui'
 
   import board from '../../plugin'
 

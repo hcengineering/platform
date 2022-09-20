@@ -41,9 +41,19 @@ import {
   Timestamp,
   Type,
   Version
-} from '@anticrm/core'
-import { Hidden, Index, Model, Prop, TypeIntlString, TypeRef, TypeString, TypeTimestamp, UX } from '@anticrm/model'
-import type { IntlString } from '@anticrm/platform'
+} from '@hcengineering/core'
+import {
+  Hidden,
+  Index,
+  Model,
+  Prop,
+  TypeIntlString,
+  TypeRef,
+  TypeString,
+  TypeTimestamp,
+  UX
+} from '@hcengineering/model'
+import type { IntlString } from '@hcengineering/platform'
 import core from './component'
 
 // C O R E

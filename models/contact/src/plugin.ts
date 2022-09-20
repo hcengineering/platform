@@ -13,14 +13,14 @@
 // limitations under the License.
 //
 
-import { contactId } from '@anticrm/contact'
-import contact from '@anticrm/contact-resources/src/plugin'
-import type { Ref } from '@anticrm/core'
-import {} from '@anticrm/core'
-import { ObjectSearchCategory, ObjectSearchFactory } from '@anticrm/model-presentation'
-import { IntlString, mergeIds, Resource } from '@anticrm/platform'
-import type { AnyComponent } from '@anticrm/ui'
-import { Action, ActionCategory, ViewAction } from '@anticrm/view'
+import { contactId } from '@hcengineering/contact'
+import contact from '@hcengineering/contact-resources/src/plugin'
+import type { Ref } from '@hcengineering/core'
+import {} from '@hcengineering/core'
+import { ObjectSearchCategory, ObjectSearchFactory } from '@hcengineering/model-presentation'
+import { IntlString, mergeIds, Resource } from '@hcengineering/platform'
+import type { AnyComponent } from '@hcengineering/ui'
+import { Action, ActionCategory, ViewAction } from '@hcengineering/view'
 
 export default mergeIds(contactId, contact, {
   component: {

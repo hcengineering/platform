@@ -14,14 +14,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Attachments } from '@anticrm/attachment-resources'
-  import type { Card } from '@anticrm/board'
-  import core, { Class, Doc, Mixin, Ref, Space } from '@anticrm/core'
-  import { Panel } from '@anticrm/panel'
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import type { State, TodoItem } from '@anticrm/task'
-  import task from '@anticrm/task'
-  import { StyledTextBox } from '@anticrm/text-editor'
+  import { Attachments } from '@hcengineering/attachment-resources'
+  import type { Card } from '@hcengineering/board'
+  import core, { Class, Doc, Mixin, Ref, Space } from '@hcengineering/core'
+  import { Panel } from '@hcengineering/panel'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import type { State, TodoItem } from '@hcengineering/task'
+  import task from '@hcengineering/task'
+  import { StyledTextBox } from '@hcengineering/text-editor'
   import {
     Button,
     CircleButton,
@@ -31,8 +31,8 @@
     IconMoreH,
     Label,
     showPopup
-  } from '@anticrm/ui'
-  import { ContextMenu, DocAttributeBar, invokeAction, UpDownNavigator } from '@anticrm/view-resources'
+  } from '@hcengineering/ui'
+  import { ContextMenu, DocAttributeBar, invokeAction, UpDownNavigator } from '@hcengineering/view-resources'
   import { createEventDispatcher, onMount } from 'svelte'
   import board from '../plugin'
   import { getCardActions } from '../utils/CardActionUtils'

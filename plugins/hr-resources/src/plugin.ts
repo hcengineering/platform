@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import hr, { hrId } from '@anticrm/hr'
-import { IntlString, mergeIds } from '@anticrm/platform'
+import hr, { hrId } from '@hcengineering/hr'
+import { IntlString, mergeIds } from '@hcengineering/platform'
 
 export default mergeIds(hrId, hr, {
   string: {

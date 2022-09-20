@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, Ref } from '@anticrm/core'
-  import type { IntlString } from '@anticrm/platform'
-  import { translate } from '@anticrm/platform'
-  import presentation, { createQuery, getClient } from '@anticrm/presentation'
-  import { TagCategory, TagElement } from '@anticrm/tags'
-  import { Button, CheckBox, getPlatformColor, Icon, IconAdd, IconClose, Label, showPopup } from '@anticrm/ui'
+  import { Class, Doc, Ref } from '@hcengineering/core'
+  import type { IntlString } from '@hcengineering/platform'
+  import { translate } from '@hcengineering/platform'
+  import presentation, { createQuery, getClient } from '@hcengineering/presentation'
+  import { TagCategory, TagElement } from '@hcengineering/tags'
+  import { Button, CheckBox, getPlatformColor, Icon, IconAdd, IconClose, Label, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import tags from '../plugin'
   import CreateTagElement from './CreateTagElement.svelte'

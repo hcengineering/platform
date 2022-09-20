@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { addStringsLoader } from '@anticrm/platform'
-import { gmailId } from '@anticrm/gmail'
+import { addStringsLoader } from '@hcengineering/platform'
+import { gmailId } from '@hcengineering/gmail'
 
 addStringsLoader(gmailId, async (lang: string) => await import(`../lang/${lang}.json`))

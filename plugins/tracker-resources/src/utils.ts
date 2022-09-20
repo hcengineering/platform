@@ -13,10 +13,10 @@
 // limitations under the License.
 //
 
-import { Employee, formatName } from '@anticrm/contact'
-import { DocumentQuery, Ref, SortingOrder, WithLookup } from '@anticrm/core'
-import { TypeState } from '@anticrm/kanban'
-import { Asset, IntlString, translate } from '@anticrm/platform'
+import { Employee, formatName } from '@hcengineering/contact'
+import { DocumentQuery, Ref, SortingOrder, WithLookup } from '@hcengineering/core'
+import { TypeState } from '@hcengineering/kanban'
+import { Asset, IntlString, translate } from '@hcengineering/platform'
 import {
   Issue,
   IssuesDateModificationPeriod,
@@ -27,9 +27,15 @@ import {
   Sprint,
   SprintStatus,
   Team
-} from '@anticrm/tracker'
-import { ViewOptionModel } from '@anticrm/view-resources'
-import { AnyComponent, AnySvelteComponent, getMillisecondsInMonth, isWeekend, MILLISECONDS_IN_WEEK } from '@anticrm/ui'
+} from '@hcengineering/tracker'
+import { ViewOptionModel } from '@hcengineering/view-resources'
+import {
+  AnyComponent,
+  AnySvelteComponent,
+  getMillisecondsInMonth,
+  isWeekend,
+  MILLISECONDS_IN_WEEK
+} from '@hcengineering/ui'
 import tracker from './plugin'
 import { defaultPriorities, defaultProjectStatuses, defaultSprintStatuses, issuePriorities } from './types'
 

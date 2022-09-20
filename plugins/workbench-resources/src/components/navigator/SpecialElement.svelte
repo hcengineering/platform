@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Asset, IntlString } from '@anticrm/platform'
-  import type { Action } from '@anticrm/ui'
-  import { ActionIcon, Icon, Label } from '@anticrm/ui'
+  import type { Asset, IntlString } from '@hcengineering/platform'
+  import type { Action } from '@hcengineering/ui'
+  import { ActionIcon, Icon, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
   export let icon: Asset | undefined = undefined

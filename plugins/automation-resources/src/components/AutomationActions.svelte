@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { Command } from '@anticrm/automation'
-  import core, { AnyAttribute, Class, Doc, Ref } from '@anticrm/core'
-  import { getClient } from '@anticrm/presentation'
-  import { Button, IconDelete, Label } from '@anticrm/ui'
+  import { Command } from '@hcengineering/automation'
+  import core, { AnyAttribute, Class, Doc, Ref } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
+  import { Button, IconDelete, Label } from '@hcengineering/ui'
   import { ActionTab } from '../models'
   import automation from '../plugin'
 

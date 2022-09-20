@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Event } from '@anticrm/calendar'
-  import { translate } from '@anticrm/platform'
-  import { DateRangePresenter } from '@anticrm/ui'
+  import { Event } from '@hcengineering/calendar'
+  import { translate } from '@hcengineering/platform'
+  import { DateRangePresenter } from '@hcengineering/ui'
   import calendar from '../plugin'
 
   export let value: Event

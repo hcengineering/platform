@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { Card } from '@anticrm/board'
-  import { Class, FindOptions, Ref } from '@anticrm/core'
-  import { createQuery } from '@anticrm/presentation'
-  import task, { SpaceWithStates, State } from '@anticrm/task'
-  import tags from '@anticrm/tags'
-  import { TableBrowser } from '@anticrm/view-resources'
+  import { Card } from '@hcengineering/board'
+  import { Class, FindOptions, Ref } from '@hcengineering/core'
+  import { createQuery } from '@hcengineering/presentation'
+  import task, { SpaceWithStates, State } from '@hcengineering/task'
+  import tags from '@hcengineering/tags'
+  import { TableBrowser } from '@hcengineering/view-resources'
   import board from '../plugin'
 
   export let _class: Ref<Class<Card>>

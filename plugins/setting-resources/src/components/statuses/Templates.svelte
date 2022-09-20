@@ -14,12 +14,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Doc, Ref, Space } from '@anticrm/core'
-  import { AttributeEditor, createQuery, getClient } from '@anticrm/presentation'
-  import setting from '@anticrm/setting'
-  import task, { genRanks, KanbanTemplate, KanbanTemplateSpace } from '@anticrm/task'
-  import { CircleButton, eventToHTMLElement, IconAdd, IconMoreH, Label, showPopup } from '@anticrm/ui'
-  import { ContextMenu } from '@anticrm/view-resources'
+  import type { Doc, Ref, Space } from '@hcengineering/core'
+  import { AttributeEditor, createQuery, getClient } from '@hcengineering/presentation'
+  import setting from '@hcengineering/setting'
+  import task, { genRanks, KanbanTemplate, KanbanTemplateSpace } from '@hcengineering/task'
+  import { CircleButton, eventToHTMLElement, IconAdd, IconMoreH, Label, showPopup } from '@hcengineering/ui'
+  import { ContextMenu } from '@hcengineering/view-resources'
 
   export let folder: KanbanTemplateSpace | undefined
   export let template: KanbanTemplate | undefined

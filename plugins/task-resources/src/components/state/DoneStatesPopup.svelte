@@ -14,10 +14,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, Ref, SortingOrder } from '@anticrm/core'
-  import { createQuery } from '@anticrm/presentation'
-  import { DoneState, SpaceWithStates } from '@anticrm/task'
-  import { getPlatformColor, Label } from '@anticrm/ui'
+  import { Class, Doc, Ref, SortingOrder } from '@hcengineering/core'
+  import { createQuery } from '@hcengineering/presentation'
+  import { DoneState, SpaceWithStates } from '@hcengineering/task'
+  import { getPlatformColor, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import task from '../../plugin'
   import Won from '../icons/Won.svelte'

@@ -1,4 +1,4 @@
-import { getResource } from '@anticrm/platform'
+import { getResource } from '@hcengineering/platform'
 import { writable } from 'svelte/store'
 import type {
   AnyComponent,

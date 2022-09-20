@@ -13,15 +13,25 @@
 // limitations under the License.
 //
 
-import activity from '@anticrm/activity'
-import { Channel } from '@anticrm/contact'
-import { Class, Domain, IndexKind, Ref, Timestamp, Type } from '@anticrm/core'
-import type { Message, NewMessage, SharedMessage, SharedMessages } from '@anticrm/gmail'
-import { ArrOf, Builder, Collection, Index, Model, Prop, TypeBoolean, TypeString, TypeTimestamp } from '@anticrm/model'
-import attachment from '@anticrm/model-attachment'
-import contact from '@anticrm/model-contact'
-import core, { TAttachedDoc, TDoc } from '@anticrm/model-core'
-import setting from '@anticrm/setting'
+import activity from '@hcengineering/activity'
+import { Channel } from '@hcengineering/contact'
+import { Class, Domain, IndexKind, Ref, Timestamp, Type } from '@hcengineering/core'
+import type { Message, NewMessage, SharedMessage, SharedMessages } from '@hcengineering/gmail'
+import {
+  ArrOf,
+  Builder,
+  Collection,
+  Index,
+  Model,
+  Prop,
+  TypeBoolean,
+  TypeString,
+  TypeTimestamp
+} from '@hcengineering/model'
+import attachment from '@hcengineering/model-attachment'
+import contact from '@hcengineering/model-contact'
+import core, { TAttachedDoc, TDoc } from '@hcengineering/model-core'
+import setting from '@hcengineering/setting'
 import gmail from './plugin'
 
 export const DOMAIN_GMAIL = 'gmail' as Domain

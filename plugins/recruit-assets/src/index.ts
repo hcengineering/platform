@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { loadMetadata, addStringsLoader } from '@anticrm/platform'
-import recruit, { recruitId } from '@anticrm/recruit'
+import { loadMetadata, addStringsLoader } from '@hcengineering/platform'
+import recruit, { recruitId } from '@hcengineering/recruit'
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(recruit.icon, {

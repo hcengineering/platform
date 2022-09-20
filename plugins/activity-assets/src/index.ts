@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { addStringsLoader, loadMetadata } from '@anticrm/platform'
-import activity, { activityId } from '@anticrm/activity'
+import { addStringsLoader, loadMetadata } from '@hcengineering/platform'
+import activity, { activityId } from '@hcengineering/activity'
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(activity.icon, {

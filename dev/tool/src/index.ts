@@ -28,11 +28,17 @@ import {
   replacePassword,
   setRole,
   upgradeWorkspace
-} from '@anticrm/account'
-import { setMetadata } from '@anticrm/platform'
-import { backup, backupList, createFileBackupStorage, createMinioBackupStorage, restore } from '@anticrm/server-backup'
-import serverToken, { decodeToken, generateToken } from '@anticrm/server-token'
-import toolPlugin, { prepareTools, version } from '@anticrm/server-tool'
+} from '@hcengineering/account'
+import { setMetadata } from '@hcengineering/platform'
+import {
+  backup,
+  backupList,
+  createFileBackupStorage,
+  createMinioBackupStorage,
+  restore
+} from '@hcengineering/server-backup'
+import serverToken, { decodeToken, generateToken } from '@hcengineering/server-token'
+import toolPlugin, { prepareTools, version } from '@hcengineering/server-tool'
 import { program } from 'commander'
 import { Db, MongoClient } from 'mongodb'
 import { exit } from 'process'

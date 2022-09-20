@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { addStringsLoader, loadMetadata } from '@anticrm/platform'
-import workbench, { workbenchId } from '@anticrm/workbench'
+import { addStringsLoader, loadMetadata } from '@hcengineering/platform'
+import workbench, { workbenchId } from '@hcengineering/workbench'
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(workbench.icon, {

@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Asset, IntlString } from '@anticrm/platform'
-  import { translate } from '@anticrm/platform'
+  import type { Asset, IntlString } from '@hcengineering/platform'
+  import { translate } from '@hcengineering/platform'
   import { afterUpdate, createEventDispatcher, onMount } from 'svelte'
   import { registerFocus } from '../focus'
   import plugin from '../plugin'

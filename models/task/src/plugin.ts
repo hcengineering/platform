@@ -14,13 +14,13 @@
 // limitations under the License.
 //
 
-import type { Ref, Space } from '@anticrm/core'
-import { mergeIds } from '@anticrm/platform'
-import { TagCategory } from '@anticrm/tags'
-import { KanbanTemplate, taskId } from '@anticrm/task'
-import task from '@anticrm/task-resources/src/plugin'
-import type { AnyComponent } from '@anticrm/ui'
-import type { Action, ActionCategory, ViewAction, Viewlet } from '@anticrm/view'
+import type { Ref, Space } from '@hcengineering/core'
+import { mergeIds } from '@hcengineering/platform'
+import { TagCategory } from '@hcengineering/tags'
+import { KanbanTemplate, taskId } from '@hcengineering/task'
+import task from '@hcengineering/task-resources/src/plugin'
+import type { AnyComponent } from '@hcengineering/ui'
+import type { Action, ActionCategory, ViewAction, Viewlet } from '@hcengineering/view'
 
 export default mergeIds(taskId, task, {
   action: {

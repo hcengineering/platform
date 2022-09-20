@@ -14,16 +14,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import { Message, SharedMessage } from '@anticrm/gmail'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { Message, SharedMessage } from '@hcengineering/gmail'
   import gmail from '../plugin'
-  import { Channel, Contact, EmployeeAccount, formatName } from '@anticrm/contact'
-  import contact from '@anticrm/contact'
-  import plugin, { IconShare, Button, Icon, Label, Scroller } from '@anticrm/ui'
-  import { getCurrentAccount, Ref, SortingOrder, Space } from '@anticrm/core'
-  import setting from '@anticrm/setting'
+  import { Channel, Contact, EmployeeAccount, formatName } from '@hcengineering/contact'
+  import contact from '@hcengineering/contact'
+  import plugin, { IconShare, Button, Icon, Label, Scroller } from '@hcengineering/ui'
+  import { getCurrentAccount, Ref, SortingOrder, Space } from '@hcengineering/core'
+  import setting from '@hcengineering/setting'
   import Messages from './Messages.svelte'
-  import { NotificationClientImpl } from '@anticrm/notification-resources'
+  import { NotificationClientImpl } from '@hcengineering/notification-resources'
   import IconInbox from './icons/Inbox.svelte'
 
   export let object: Contact

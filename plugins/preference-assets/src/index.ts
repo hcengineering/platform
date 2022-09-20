@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { addStringsLoader, loadMetadata } from '@anticrm/platform'
-import preference, { preferenceId } from '@anticrm/preference'
+import { addStringsLoader, loadMetadata } from '@hcengineering/platform'
+import preference, { preferenceId } from '@hcengineering/preference'
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(preference.icon, {

@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core from '@anticrm/core'
-  import { Icon, Label } from '@anticrm/ui'
-  import view from '@anticrm/view'
-  import { TableBrowser } from '@anticrm/view-resources'
-  import { NavigatorModel } from '@anticrm/workbench'
+  import core from '@hcengineering/core'
+  import { Icon, Label } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
+  import { TableBrowser } from '@hcengineering/view-resources'
+  import { NavigatorModel } from '@hcengineering/workbench'
   import workbench from '../plugin'
   import { getSpecialSpaceClass } from '../utils'
 

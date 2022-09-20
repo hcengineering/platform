@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import attachment, { Attachment } from '@anticrm/attachment'
-  import type { Message } from '@anticrm/chunter'
-  import { getCurrentAccount, Ref, SortingOrder } from '@anticrm/core'
-  import { createQuery } from '@anticrm/presentation'
-  import { Label, Scroller } from '@anticrm/ui'
+  import attachment, { Attachment } from '@hcengineering/attachment'
+  import type { Message } from '@hcengineering/chunter'
+  import { getCurrentAccount, Ref, SortingOrder } from '@hcengineering/core'
+  import { createQuery } from '@hcengineering/presentation'
+  import { Label, Scroller } from '@hcengineering/ui'
   import chunter from '../plugin'
   import Thread from './Thread.svelte'
 

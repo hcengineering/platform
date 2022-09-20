@@ -22,14 +22,14 @@ import core, {
   TxCUD,
   TxProcessor,
   TxUpdateDoc
-} from '@anticrm/core'
-import lead, { leadId, Lead } from '@anticrm/lead'
-import login from '@anticrm/login'
-import { getMetadata } from '@anticrm/platform'
-import { TriggerControl } from '@anticrm/server-core'
-import view from '@anticrm/view'
-import { workbenchId } from '@anticrm/workbench'
-import { addAssigneeNotification } from '@anticrm/server-task-resources'
+} from '@hcengineering/core'
+import lead, { leadId, Lead } from '@hcengineering/lead'
+import login from '@hcengineering/login'
+import { getMetadata } from '@hcengineering/platform'
+import { TriggerControl } from '@hcengineering/server-core'
+import view from '@hcengineering/view'
+import { workbenchId } from '@hcengineering/workbench'
+import { addAssigneeNotification } from '@hcengineering/server-task-resources'
 
 /**
  * @public

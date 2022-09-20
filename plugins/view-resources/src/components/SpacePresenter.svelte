@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Space } from '@anticrm/core'
+  import type { Space } from '@hcengineering/core'
 
   export let value: Space
 </script>

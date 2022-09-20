@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Space } from '@anticrm/core'
-  import type { IntlString } from '@anticrm/platform'
-  import { Icon, Label } from '@anticrm/ui'
+  import type { Space } from '@hcengineering/core'
+  import type { IntlString } from '@hcengineering/platform'
+  import { Icon, Label } from '@hcengineering/ui'
   import plugin, { Members, IconMembersOutline } from '..'
 
   export let label: IntlString = plugin.string.Members

@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Class, Doc, Ref } from '@anticrm/core'
-  import { createQuery } from '@anticrm/presentation'
-  import { TagElement, TagReference } from '@anticrm/tags'
+  import type { Class, Doc, Ref } from '@hcengineering/core'
+  import { createQuery } from '@hcengineering/presentation'
+  import { TagElement, TagReference } from '@hcengineering/tags'
   import tags from '../plugin'
   import TagItem from './TagItem.svelte'
-  import { selectedTagElements } from '@anticrm/tags'
+  import { selectedTagElements } from '@hcengineering/tags'
 
   export let object: Doc
   export let _class: Ref<Class<Doc>>

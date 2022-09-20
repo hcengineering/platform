@@ -14,12 +14,20 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Ref } from '@anticrm/core'
-  import { AttributeEditor, getClient } from '@anticrm/presentation'
-  import type { DoneState, State } from '@anticrm/task'
-  import { CircleButton, IconAdd, IconMoreH, Label, showPopup, getPlatformColor, eventToHTMLElement } from '@anticrm/ui'
+  import { Class, Ref } from '@hcengineering/core'
+  import { AttributeEditor, getClient } from '@hcengineering/presentation'
+  import type { DoneState, State } from '@hcengineering/task'
+  import {
+    CircleButton,
+    IconAdd,
+    IconMoreH,
+    Label,
+    showPopup,
+    getPlatformColor,
+    eventToHTMLElement
+  } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import { ColorsPopup } from '@anticrm/view-resources'
+  import { ColorsPopup } from '@hcengineering/view-resources'
   import Circles from './Circles.svelte'
   import StatusesPopup from './StatusesPopup.svelte'
   import task from '../../plugin'

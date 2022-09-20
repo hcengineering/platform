@@ -14,9 +14,9 @@
 // limitations under the License.
 //
 
-import { Doc } from '@anticrm/core'
-import { Resources } from '@anticrm/platform'
-import { showPopup } from '@anticrm/ui'
+import { Doc } from '@hcengineering/core'
+import { Resources } from '@hcengineering/platform'
+import { showPopup } from '@hcengineering/ui'
 import Categories from './components/Categories.svelte'
 import CategoryPresenter from './components/CategoryPresenter.svelte'
 import CreateCategory from './components/CreateCategory.svelte'

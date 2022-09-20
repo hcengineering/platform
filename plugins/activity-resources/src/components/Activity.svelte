@@ -13,13 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import activity, { TxViewlet } from '@anticrm/activity'
-  import chunter from '@anticrm/chunter'
-  import core, { Class, Doc, Ref, SortingOrder } from '@anticrm/core'
-  import { getResource } from '@anticrm/platform'
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import notification from '@anticrm/notification'
-  import { Component, Grid, IconActivity, Label, Scroller } from '@anticrm/ui'
+  import activity, { TxViewlet } from '@hcengineering/activity'
+  import chunter from '@hcengineering/chunter'
+  import core, { Class, Doc, Ref, SortingOrder } from '@hcengineering/core'
+  import { getResource } from '@hcengineering/platform'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import notification from '@hcengineering/notification'
+  import { Component, Grid, IconActivity, Label, Scroller } from '@hcengineering/ui'
   import { ActivityKey, activityKey, DisplayTx, newActivity } from '../activity'
   import TxView from './TxView.svelte'
   import { filterCollectionTxes } from './utils'

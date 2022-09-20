@@ -13,9 +13,19 @@
 // limitations under the License.
 //
 
-import { Class, Doc, DocumentQuery, FindOptions, FindResult, MeasureContext, Ref, Tx, TxResult } from '@anticrm/core'
-import type { Pipeline, SessionContext } from '@anticrm/server-core'
-import { Token } from '@anticrm/server-token'
+import {
+  Class,
+  Doc,
+  DocumentQuery,
+  FindOptions,
+  FindResult,
+  MeasureContext,
+  Ref,
+  Tx,
+  TxResult
+} from '@hcengineering/core'
+import type { Pipeline, SessionContext } from '@hcengineering/server-core'
+import { Token } from '@hcengineering/server-token'
 import { BroadcastCall, Session } from './types'
 
 /**

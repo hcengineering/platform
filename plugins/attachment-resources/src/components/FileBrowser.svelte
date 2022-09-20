@@ -13,12 +13,20 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Attachment } from '@anticrm/attachment'
-  import contact, { Employee, EmployeeAccount } from '@anticrm/contact'
-  import core, { Class, getCurrentAccount, Ref, Space } from '@anticrm/core'
-  import { getClient } from '@anticrm/presentation'
-  import ui, { EditWithIcon, getCurrentLocation, IconSearch, Label, navigate, Loading, TabList } from '@anticrm/ui'
-  import view from '@anticrm/view'
+  import { Attachment } from '@hcengineering/attachment'
+  import contact, { Employee, EmployeeAccount } from '@hcengineering/contact'
+  import core, { Class, getCurrentAccount, Ref, Space } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
+  import ui, {
+    EditWithIcon,
+    getCurrentLocation,
+    IconSearch,
+    Label,
+    navigate,
+    Loading,
+    TabList
+  } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
   import { dateFileBrowserFilters, FileBrowserSortMode, fileTypeFileBrowserFilters, sortModeToOptionObject } from '..'
   import attachment from '../plugin'
   import AttachmentsGalleryView from './AttachmentsGalleryView.svelte'

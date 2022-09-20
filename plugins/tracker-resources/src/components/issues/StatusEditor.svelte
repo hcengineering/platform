@@ -14,11 +14,11 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { AttachedData, Ref, SortingOrder, WithLookup } from '@anticrm/core'
-  import { Issue, IssueStatus } from '@anticrm/tracker'
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import { Button, showPopup, SelectPopup, TooltipAlignment, eventToHTMLElement } from '@anticrm/ui'
-  import type { ButtonKind, ButtonSize } from '@anticrm/ui'
+  import { AttachedData, Ref, SortingOrder, WithLookup } from '@hcengineering/core'
+  import { Issue, IssueStatus } from '@hcengineering/tracker'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { Button, showPopup, SelectPopup, TooltipAlignment, eventToHTMLElement } from '@hcengineering/ui'
+  import type { ButtonKind, ButtonSize } from '@hcengineering/ui'
   import tracker from '../../plugin'
   import StatusPresenter from './StatusPresenter.svelte'
   import IssueStatusIcon from './IssueStatusIcon.svelte'

@@ -14,13 +14,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Attachment } from '@anticrm/attachment'
-  import { AttachmentList } from '@anticrm/attachment-resources'
-  import { formatName } from '@anticrm/contact'
-  import { WithLookup } from '@anticrm/core'
-  import { MessageViewer } from '@anticrm/presentation'
-  import type { SharedTelegramMessage } from '@anticrm/telegram'
-  import { CheckBox, getPlatformColorForText } from '@anticrm/ui'
+  import { Attachment } from '@hcengineering/attachment'
+  import { AttachmentList } from '@hcengineering/attachment-resources'
+  import { formatName } from '@hcengineering/contact'
+  import { WithLookup } from '@hcengineering/core'
+  import { MessageViewer } from '@hcengineering/presentation'
+  import type { SharedTelegramMessage } from '@hcengineering/telegram'
+  import { CheckBox, getPlatformColorForText } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
   export let message: WithLookup<SharedTelegramMessage>

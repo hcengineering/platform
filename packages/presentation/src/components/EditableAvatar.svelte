@@ -14,12 +14,12 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { AnySvelteComponent, IconSize, showPopup } from '@anticrm/ui'
+  import { AnySvelteComponent, IconSize, showPopup } from '@hcengineering/ui'
 
   import Avatar from './Avatar.svelte'
   import EditAvatarPopup from './EditAvatarPopup.svelte'
   import { getFileUrl } from '../utils'
-  import { Asset } from '@anticrm/platform'
+  import { Asset } from '@hcengineering/platform'
 
   export let avatar: string | null | undefined = undefined
   export let size: IconSize

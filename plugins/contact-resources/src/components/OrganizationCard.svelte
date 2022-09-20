@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Organization } from '@anticrm/contact'
-  import { Avatar } from '@anticrm/presentation'
-  import { closePanel, closePopup, closeTooltip, getCurrentLocation, Label, navigate } from '@anticrm/ui'
+  import { Organization } from '@hcengineering/contact'
+  import { Avatar } from '@hcengineering/presentation'
+  import { closePanel, closePopup, closeTooltip, getCurrentLocation, Label, navigate } from '@hcengineering/ui'
   import contact from '../plugin'
 
   export let organization: Organization

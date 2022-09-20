@@ -13,14 +13,24 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { AnyAttribute, Class, Data, Doc, generateId, IndexKind, PropertyType, Ref, Type } from '@anticrm/core'
-  import { getEmbeddedLabel } from '@anticrm/platform'
-  import { Card, getClient } from '@anticrm/presentation'
-  import { AnyComponent, Component, DropdownLabelsIntl, EditBox, Label } from '@anticrm/ui'
-  import { DropdownIntlItem } from '@anticrm/ui/src/types'
+  import core, {
+    AnyAttribute,
+    Class,
+    Data,
+    Doc,
+    generateId,
+    IndexKind,
+    PropertyType,
+    Ref,
+    Type
+  } from '@hcengineering/core'
+  import { getEmbeddedLabel } from '@hcengineering/platform'
+  import { Card, getClient } from '@hcengineering/presentation'
+  import { AnyComponent, Component, DropdownLabelsIntl, EditBox, Label } from '@hcengineering/ui'
+  import { DropdownIntlItem } from '@hcengineering/ui/src/types'
   import { createEventDispatcher } from 'svelte'
   import setting from '../plugin'
-  import view from '@anticrm/view'
+  import view from '@hcengineering/view'
 
   export let _class: Ref<Class<Doc>>
   let name: string

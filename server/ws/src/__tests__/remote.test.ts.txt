@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-import { readResponse, serialize } from '@anticrm/platform'
-import type { Token } from '@anticrm/server-core'
+import { readResponse, serialize } from '@hcengineering/platform'
+import type { Token } from '@hcengineering/server-core'
 import WebSocket from 'ws'
 
 describe('server', () => {

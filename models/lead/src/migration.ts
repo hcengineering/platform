@@ -13,11 +13,11 @@
 // limitations under the License.
 //
 
-import { Doc, Ref, Space, TxOperations } from '@anticrm/core'
-import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
-import core from '@anticrm/model-core'
-import { createKanbanTemplate, createSequence } from '@anticrm/model-task'
-import task, { KanbanTemplate, createKanban } from '@anticrm/task'
+import { Doc, Ref, Space, TxOperations } from '@hcengineering/core'
+import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
+import core from '@hcengineering/model-core'
+import { createKanbanTemplate, createSequence } from '@hcengineering/model-task'
+import task, { KanbanTemplate, createKanban } from '@hcengineering/task'
 import lead from './plugin'
 
 async function createSpace (tx: TxOperations): Promise<void> {

@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, DocumentQuery, Ref } from '@anticrm/core'
-  import { Vacancy } from '@anticrm/recruit'
-  import { Icon, tooltip } from '@anticrm/ui'
+  import { Doc, DocumentQuery, Ref } from '@hcengineering/core'
+  import { Vacancy } from '@hcengineering/recruit'
+  import { Icon, tooltip } from '@hcengineering/ui'
   import recruit from '../plugin'
   import VacancyApplicationsPopup from './VacancyApplicationsPopup.svelte'
 

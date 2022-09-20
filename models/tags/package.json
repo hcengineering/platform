@@ -1,5 +1,5 @@
 {
-  "name": "@anticrm/model-tags",
+  "name": "@hcengineering/model-tags",
   "version": "0.6.0",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
@@ -12,7 +12,7 @@
     "format": "prettier --write src && eslint --fix src"
   },
   "devDependencies": {
-    "@anticrm/model-rig": "~0.6.0",
+    "@hcengineering/model-rig": "~0.6.0",
     "@typescript-eslint/eslint-plugin": "^5.30.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.0.0",
@@ -25,15 +25,15 @@
     "@rushstack/heft": "^0.46.1"
   },
   "dependencies": {
-    "@anticrm/activity": "~0.6.0",
-    "@anticrm/model": "~0.6.0",
-    "@anticrm/core": "~0.6.16",
-    "@anticrm/platform": "~0.6.6",
-    "@anticrm/tags": "~0.6.2",
-    "@anticrm/tags-resources": "~0.6.0",
-    "@anticrm/ui": "~0.6.0",
-    "@anticrm/model-core": "~0.6.0",
-    "@anticrm/view": "~0.6.0",
-    "@anticrm/model-view": "~0.6.0"
+    "@hcengineering/activity": "~0.6.0",
+    "@hcengineering/model": "~0.6.0",
+    "@hcengineering/core": "^0.6.17",
+    "@hcengineering/platform": "^0.6.7",
+    "@hcengineering/tags": "~0.6.2",
+    "@hcengineering/tags-resources": "~0.6.0",
+    "@hcengineering/ui": "^0.6.2",
+    "@hcengineering/model-core": "~0.6.0",
+    "@hcengineering/view": "^0.6.1",
+    "@hcengineering/model-view": "~0.6.0"
   }
 }

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Button, IconDelete, Label } from '@anticrm/ui'
+  import { Button, IconDelete, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { Trigger } from '../models'
   import automation from '../plugin'

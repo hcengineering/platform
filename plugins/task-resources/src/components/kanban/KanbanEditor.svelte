@@ -14,10 +14,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Ref, SortingOrder } from '@anticrm/core'
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import type { DoneState, Kanban, State } from '@anticrm/task'
-  import task, { calcRank } from '@anticrm/task'
+  import { Class, Ref, SortingOrder } from '@hcengineering/core'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import type { DoneState, Kanban, State } from '@hcengineering/task'
+  import task, { calcRank } from '@hcengineering/task'
   import StatesEditor from '../state/StatesEditor.svelte'
 
   export let kanban: Kanban

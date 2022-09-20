@@ -13,13 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AttachmentStyledBox } from '@anticrm/attachment-resources'
-  import calendar from '@anticrm/calendar'
-  import core, { generateId, Ref } from '@anticrm/core'
-  import { Request, RequestType, Staff } from '@anticrm/hr'
-  import { translate } from '@anticrm/platform'
-  import { Card, createQuery, getClient } from '@anticrm/presentation'
-  import ui, { Button, DateRangePresenter, DropdownLabelsIntl, IconAttachment } from '@anticrm/ui'
+  import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
+  import calendar from '@hcengineering/calendar'
+  import core, { generateId, Ref } from '@hcengineering/core'
+  import { Request, RequestType, Staff } from '@hcengineering/hr'
+  import { translate } from '@hcengineering/platform'
+  import { Card, createQuery, getClient } from '@hcengineering/presentation'
+  import ui, { Button, DateRangePresenter, DropdownLabelsIntl, IconAttachment } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import hr from '../plugin'
   import { toTzDate } from '../utils'

@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { WithLookup } from '@anticrm/core'
-  import { Project } from '@anticrm/tracker'
-  import { Button } from '@anticrm/ui'
+  import { WithLookup } from '@hcengineering/core'
+  import { Project } from '@hcengineering/tracker'
+  import { Button } from '@hcengineering/ui'
 
   export let value: WithLookup<Project>
 </script>

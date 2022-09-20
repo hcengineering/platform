@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { Status } from '@anticrm/contact'
-  import { Timestamp } from '@anticrm/core'
-  import { Card } from '@anticrm/presentation'
-  import { EditBox, Grid, Label, ticker } from '@anticrm/ui'
+  import { Status } from '@hcengineering/contact'
+  import { Timestamp } from '@hcengineering/core'
+  import { Card } from '@hcengineering/presentation'
+  import { EditBox, Grid, Label, ticker } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import contact from '../plugin'
   import EmployeeStatusDueDatePresenter from './EmployeeStatusDueDatePresenter.svelte'

@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { addStringsLoader, loadMetadata } from '@anticrm/platform'
-import task, { taskId } from '@anticrm/task'
+import { addStringsLoader, loadMetadata } from '@hcengineering/platform'
+import task, { taskId } from '@hcengineering/task'
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(task.icon, {

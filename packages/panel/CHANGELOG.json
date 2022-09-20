@@ -1,14 +1,14 @@
 {
-  "name": "@anticrm/panel",
+  "name": "@hcengineering/panel",
   "entries": [
     {
       "version": "0.6.0",
-      "tag": "@anticrm/panel_v0.6.0",
+      "tag": "@hcengineering/panel_v0.6.0",
       "date": "Tue, 09 Nov 2021 17:01:22 GMT",
       "comments": {
         "dependency": [
           {
-            "comment": "Updating dependency \"@anticrm/presentation\" from `~0.6.1` to `~0.6.2`"
+            "comment": "Updating dependency \"@hcengineering/presentation\" from `~0.6.1` to `~0.6.2`"
           }
         ]
       }

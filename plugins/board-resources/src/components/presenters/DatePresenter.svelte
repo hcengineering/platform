@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type { Card } from '@anticrm/board'
-  import { DatePresenter } from '@anticrm/ui'
+  import type { Card } from '@hcengineering/board'
+  import { DatePresenter } from '@hcengineering/ui'
 
   export let value: Card
   export let size: 'x-small' | 'small' = 'small'

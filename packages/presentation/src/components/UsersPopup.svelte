@@ -14,10 +14,10 @@
 -->
 <script lang="ts">
   import { createEventDispatcher, afterUpdate } from 'svelte'
-  import { Contact, getFirstName, Person } from '@anticrm/contact'
-  import type { Class, Doc, DocumentQuery, FindOptions, Ref } from '@anticrm/core'
-  import type { Asset, IntlString } from '@anticrm/platform'
-  import { AnySvelteComponent, Icon, Label } from '@anticrm/ui'
+  import { Contact, getFirstName, Person } from '@hcengineering/contact'
+  import type { Class, Doc, DocumentQuery, FindOptions, Ref } from '@hcengineering/core'
+  import type { Asset, IntlString } from '@hcengineering/platform'
+  import { AnySvelteComponent, Icon, Label } from '@hcengineering/ui'
   import presentation from '..'
   import { getClient } from '../utils'
   import ObjectPopup from './ObjectPopup.svelte'

@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { setContext, onMount } from 'svelte'
-  import platform, { loadPluginStrings, setMetadata } from '@anticrm/platform'
+  import platform, { loadPluginStrings, setMetadata } from '@hcengineering/platform'
   import { themeStore as themeOptions } from './'
 
   const getCurrentTheme = (): string => localStorage.getItem('theme') ?? 'theme-dark'

@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { IntlString } from '@anticrm/platform'
+  import type { IntlString } from '@hcengineering/platform'
   import { createEventDispatcher } from 'svelte'
-  import { Label, Button } from '@anticrm/ui'
+  import { Label, Button } from '@hcengineering/ui'
   import presentation from '..'
 
   export let label: IntlString

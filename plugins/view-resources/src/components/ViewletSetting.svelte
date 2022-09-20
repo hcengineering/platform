@@ -13,15 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import presentation, { Card, createQuery, getAttributePresenterClass, getClient } from '@anticrm/presentation'
-  import { BuildModelKey, Viewlet, ViewletPreference } from '@anticrm/view'
-  import core, { AnyAttribute, ArrOf, Class, Doc, Lookup, Ref, Type } from '@anticrm/core'
-  import { Button, ToggleButton } from '@anticrm/ui'
+  import presentation, { Card, createQuery, getAttributePresenterClass, getClient } from '@hcengineering/presentation'
+  import { BuildModelKey, Viewlet, ViewletPreference } from '@hcengineering/view'
+  import core, { AnyAttribute, ArrOf, Class, Doc, Lookup, Ref, Type } from '@hcengineering/core'
+  import { Button, ToggleButton } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import { IntlString } from '@anticrm/platform'
+  import { IntlString } from '@hcengineering/platform'
   import { buildConfigLookup, getLookupClass, getLookupLabel, getLookupProperty } from '../utils'
   import { deepEqual } from 'fast-equals'
-  import preferencePlugin from '@anticrm/preference'
+  import preferencePlugin from '@hcengineering/preference'
   import view from '../plugin'
 
   export let viewlet: Viewlet

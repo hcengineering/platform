@@ -13,13 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import attachment from '@anticrm/attachment'
-  import chunter from '@anticrm/chunter'
-  import contact, { Channel, formatName, Person } from '@anticrm/contact'
-  import { ChannelsEditor } from '@anticrm/contact-resources'
-  import { Avatar, createQuery, getClient } from '@anticrm/presentation'
-  import { Component, Label, showPanel } from '@anticrm/ui'
-  import view from '@anticrm/view'
+  import attachment from '@hcengineering/attachment'
+  import chunter from '@hcengineering/chunter'
+  import contact, { Channel, formatName, Person } from '@hcengineering/contact'
+  import { ChannelsEditor } from '@hcengineering/contact-resources'
+  import { Avatar, createQuery, getClient } from '@hcengineering/presentation'
+  import { Component, Label, showPanel } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
   import recruit from '../plugin'
 
   export let candidate: Person | undefined

@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { generateId } from '@anticrm/core'
-  import { ViewContext } from '@anticrm/view'
+  import { generateId } from '@hcengineering/core'
+  import { ViewContext } from '@hcengineering/view'
   import { onDestroy } from 'svelte'
   import { contextStore } from '../context'
 

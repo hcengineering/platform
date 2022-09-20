@@ -15,11 +15,11 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { Ref, Space, SortingOrder, Class } from '@anticrm/core'
-  import core from '@anticrm/core'
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import type { State, DoneStateTemplate, KanbanTemplate, StateTemplate, DoneState } from '@anticrm/task'
-  import task, { calcRank } from '@anticrm/task'
+  import { Ref, Space, SortingOrder, Class } from '@hcengineering/core'
+  import core from '@hcengineering/core'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import type { State, DoneStateTemplate, KanbanTemplate, StateTemplate, DoneState } from '@hcengineering/task'
+  import task, { calcRank } from '@hcengineering/task'
 
   import StatesEditor from '../state/StatesEditor.svelte'
 

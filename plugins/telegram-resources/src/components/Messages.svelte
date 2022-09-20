@@ -14,9 +14,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { SharedTelegramMessage } from '@anticrm/telegram'
+  import type { SharedTelegramMessage } from '@hcengineering/telegram'
   import Message from './Message.svelte'
-  import { Ref } from '@anticrm/core'
+  import { Ref } from '@hcengineering/core'
   import DateView from './Date.svelte'
 
   export let messages: SharedTelegramMessage[] = []

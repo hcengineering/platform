@@ -14,9 +14,9 @@
 // limitations under the License.
 //
 
-import { Class, Ref } from '@anticrm/core'
-import type { IntlString, Metadata, Plugin } from '@anticrm/platform'
-import { plugin } from '@anticrm/platform'
+import { Class, Ref } from '@hcengineering/core'
+import type { IntlString, Metadata, Plugin } from '@hcengineering/platform'
+import { plugin } from '@hcengineering/platform'
 import { ObjectSearchCategory } from './types'
 
 /**

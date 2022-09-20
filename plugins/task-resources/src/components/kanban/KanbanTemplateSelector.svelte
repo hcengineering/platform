@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Doc, Ref, Space } from '@anticrm/core'
-  import { createQuery } from '@anticrm/presentation'
-  import type { KanbanTemplate, KanbanTemplateSpace } from '@anticrm/task'
-  import task from '@anticrm/task'
-  import { DropdownLabels } from '@anticrm/ui'
-  import type { DropdownTextItem } from '@anticrm/ui/src/types'
+  import type { Doc, Ref, Space } from '@hcengineering/core'
+  import { createQuery } from '@hcengineering/presentation'
+  import type { KanbanTemplate, KanbanTemplateSpace } from '@hcengineering/task'
+  import task from '@hcengineering/task'
+  import { DropdownLabels } from '@hcengineering/ui'
+  import type { DropdownTextItem } from '@hcengineering/ui/src/types'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
 

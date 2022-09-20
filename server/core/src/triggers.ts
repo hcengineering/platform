@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-import type { Tx, Doc, TxCreateDoc, Ref, Account, TxCollectionCUD, AttachedDoc } from '@anticrm/core'
-import core, { TxFactory } from '@anticrm/core'
+import type { Tx, Doc, TxCreateDoc, Ref, Account, TxCollectionCUD, AttachedDoc } from '@hcengineering/core'
+import core, { TxFactory } from '@hcengineering/core'
 
-import { getResource } from '@anticrm/platform'
+import { getResource } from '@hcengineering/platform'
 import type { Trigger, TriggerFunc, TriggerControl } from './types'
 
 import serverCore from './plugin'

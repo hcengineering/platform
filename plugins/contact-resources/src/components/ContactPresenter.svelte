@@ -14,9 +14,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Contact, Employee, Organization } from '@anticrm/contact'
-  import { getClient } from '@anticrm/presentation'
-  import { Label } from '@anticrm/ui'
+  import { Contact, Employee, Organization } from '@hcengineering/contact'
+  import { getClient } from '@hcengineering/presentation'
+  import { Label } from '@hcengineering/ui'
   import contact from '../plugin'
 
   import OrganizationPresenter from './OrganizationPresenter.svelte'

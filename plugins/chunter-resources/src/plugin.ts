@@ -13,12 +13,12 @@
 // limitations under the License.
 //
 
-import chunter, { chunterId } from '@anticrm/chunter'
-import type { Client, Space } from '@anticrm/core'
-import type { IntlString, Resource } from '@anticrm/platform'
-import { mergeIds } from '@anticrm/platform'
-import type { AnyComponent } from '@anticrm/ui'
-import { ViewAction } from '@anticrm/view'
+import chunter, { chunterId } from '@hcengineering/chunter'
+import type { Client, Space } from '@hcengineering/core'
+import type { IntlString, Resource } from '@hcengineering/platform'
+import { mergeIds } from '@hcengineering/platform'
+import type { AnyComponent } from '@hcengineering/ui'
+import { ViewAction } from '@hcengineering/view'
 
 export default mergeIds(chunterId, chunter, {
   component: {

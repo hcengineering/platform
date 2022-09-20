@@ -13,12 +13,12 @@
 // limitations under the License.
 //
 
-import { Doc } from '@anticrm/core'
-import { inventoryId, Product } from '@anticrm/inventory'
-import login from '@anticrm/login'
-import { getMetadata } from '@anticrm/platform'
-import view from '@anticrm/view'
-import { workbenchId } from '@anticrm/workbench'
+import { Doc } from '@hcengineering/core'
+import { inventoryId, Product } from '@hcengineering/inventory'
+import login from '@hcengineering/login'
+import { getMetadata } from '@hcengineering/platform'
+import view from '@hcengineering/view'
+import { workbenchId } from '@hcengineering/workbench'
 
 /**
  * @public

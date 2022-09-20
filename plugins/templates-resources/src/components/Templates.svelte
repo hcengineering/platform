@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { Data, Ref } from '@anticrm/core'
-  import { getClient, LiveQuery, MessageViewer } from '@anticrm/presentation'
-  import { MessageTemplate } from '@anticrm/templates'
-  import { StyledTextEditor } from '@anticrm/text-editor'
-  import { Button, CircleButton, EditBox, Icon, IconAdd, Label } from '@anticrm/ui'
+  import { Data, Ref } from '@hcengineering/core'
+  import { getClient, LiveQuery, MessageViewer } from '@hcengineering/presentation'
+  import { MessageTemplate } from '@hcengineering/templates'
+  import { StyledTextEditor } from '@hcengineering/text-editor'
+  import { Button, CircleButton, EditBox, Icon, IconAdd, Label } from '@hcengineering/ui'
   import templatesPlugin from '../plugin'
   import TemplateElement from './TemplateElement.svelte'
 

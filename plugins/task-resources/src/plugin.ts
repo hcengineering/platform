@@ -13,10 +13,10 @@
 // limitations under the License.
 //
 
-import type { IntlString } from '@anticrm/platform'
-import { mergeIds } from '@anticrm/platform'
-import task, { taskId } from '@anticrm/task'
-import { AnyComponent } from '@anticrm/ui'
+import type { IntlString } from '@hcengineering/platform'
+import { mergeIds } from '@hcengineering/platform'
+import task, { taskId } from '@hcengineering/task'
+import { AnyComponent } from '@hcengineering/ui'
 
 export default mergeIds(taskId, task, {
   string: {

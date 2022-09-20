@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc } from '@anticrm/core'
-  import { IconMoreH, showPopup } from '@anticrm/ui'
-  import { ContextMenu } from '@anticrm/view-resources'
+  import { Doc } from '@hcengineering/core'
+  import { IconMoreH, showPopup } from '@hcengineering/ui'
+  import { ContextMenu } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
 
   export let label: string = ''

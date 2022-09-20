@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Asset, getMetadata } from '@anticrm/platform'
+  import { Asset, getMetadata } from '@hcengineering/platform'
   import { AnySvelteComponent, IconSize } from '../types'
 
   export let icon: Asset | AnySvelteComponent

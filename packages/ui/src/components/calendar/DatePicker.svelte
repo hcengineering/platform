@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import type { IntlString } from '@anticrm/platform'
+  import type { IntlString } from '@hcengineering/platform'
   import ui from '../../plugin'
   import Label from '../Label.svelte'
   import DatePresenter from './DatePresenter.svelte'

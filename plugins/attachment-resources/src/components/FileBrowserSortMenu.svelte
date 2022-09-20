@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { IntlString } from '@anticrm/platform'
-  import { Label, Menu, showPopup } from '@anticrm/ui'
+  import { IntlString } from '@hcengineering/platform'
+  import { Label, Menu, showPopup } from '@hcengineering/ui'
   import { FileBrowserSortMode } from '..'
   import attachment from '../plugin'
 

@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { translate } from '@anticrm/platform'
-  import { IssuePriority } from '@anticrm/tracker'
-  import { IconNavPrev } from '@anticrm/ui'
+  import { translate } from '@hcengineering/platform'
+  import { IssuePriority } from '@hcengineering/tracker'
+  import { IconNavPrev } from '@hcengineering/ui'
   import FilterMenuSection from '../FilterMenuSection.svelte'
   import tracker from '../../plugin'
   import { FilterSectionElement, issuePriorities } from '../../utils'

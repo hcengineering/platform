@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Employee } from '@anticrm/contact'
-  import { DocumentQuery, Ref, RefTo } from '@anticrm/core'
-  import { IntlString } from '@anticrm/platform'
-  import { EmployeeBox } from '@anticrm/presentation'
+  import { Employee } from '@hcengineering/contact'
+  import { DocumentQuery, Ref, RefTo } from '@hcengineering/core'
+  import { IntlString } from '@hcengineering/platform'
+  import { EmployeeBox } from '@hcengineering/presentation'
   import contact from '../plugin'
-  import { ButtonKind, ButtonSize } from '@anticrm/ui'
+  import { ButtonKind, ButtonSize } from '@hcengineering/ui'
 
   export let value: Ref<Employee> | undefined
   export let label: IntlString = contact.string.Employee

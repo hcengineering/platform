@@ -13,13 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact from '@anticrm/contact'
-  import { Ref, WithLookup } from '@anticrm/core'
-  import { Department, Staff } from '@anticrm/hr'
-  import { createQuery, getClient, UsersPopup } from '@anticrm/presentation'
-  import { Button, eventToHTMLElement, IconAdd, Label, Scroller, showPopup } from '@anticrm/ui'
-  import view, { Viewlet, ViewletPreference } from '@anticrm/view'
-  import { Table, ViewletSettingButton } from '@anticrm/view-resources'
+  import contact from '@hcengineering/contact'
+  import { Ref, WithLookup } from '@hcengineering/core'
+  import { Department, Staff } from '@hcengineering/hr'
+  import { createQuery, getClient, UsersPopup } from '@hcengineering/presentation'
+  import { Button, eventToHTMLElement, IconAdd, Label, Scroller, showPopup } from '@hcengineering/ui'
+  import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
+  import { Table, ViewletSettingButton } from '@hcengineering/view-resources'
   import hr from '../plugin'
   import { addMember } from '../utils'
 

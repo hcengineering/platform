@@ -1,6 +1,6 @@
-import { Class, Doc, DocumentQuery, Hierarchy, Ref } from '@anticrm/core'
-import { Asset, getResource, IntlString, Resource } from '@anticrm/platform'
-import { getClient, MessageBox, updateAttribute } from '@anticrm/presentation'
+import { Class, Doc, DocumentQuery, Hierarchy, Ref } from '@hcengineering/core'
+import { Asset, getResource, IntlString, Resource } from '@hcengineering/platform'
+import { getClient, MessageBox, updateAttribute } from '@hcengineering/presentation'
 import {
   AnyComponent,
   AnySvelteComponent,
@@ -10,8 +10,8 @@ import {
   PopupPosAlignment,
   showPanel,
   showPopup
-} from '@anticrm/ui'
-import { Action, ViewContext } from '@anticrm/view'
+} from '@hcengineering/ui'
+import { Action, ViewContext } from '@hcengineering/view'
 import MoveView from './components/Move.svelte'
 import { contextStore } from './context'
 import view from './plugin'

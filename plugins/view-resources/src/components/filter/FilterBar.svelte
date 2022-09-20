@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, DocumentQuery, Ref } from '@anticrm/core'
-  import { getResource } from '@anticrm/platform'
-  import { getClient } from '@anticrm/presentation'
-  import { Button, eventToHTMLElement, getCurrentLocation, IconAdd, locationToUrl, showPopup } from '@anticrm/ui'
-  import { Filter } from '@anticrm/view'
+  import { Class, Doc, DocumentQuery, Ref } from '@hcengineering/core'
+  import { getResource } from '@hcengineering/platform'
+  import { getClient } from '@hcengineering/presentation'
+  import { Button, eventToHTMLElement, getCurrentLocation, IconAdd, locationToUrl, showPopup } from '@hcengineering/ui'
+  import { Filter } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import { filterStore } from '../../filter'
   import view from '../../plugin'

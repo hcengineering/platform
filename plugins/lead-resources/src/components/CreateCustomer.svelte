@@ -13,15 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import attachment from '@anticrm/attachment'
-  import { Channel, combineName, Contact, findContacts } from '@anticrm/contact'
-  import { ChannelsDropdown } from '@anticrm/contact-resources'
-  import PersonPresenter from '@anticrm/contact-resources/src/components/PersonPresenter.svelte'
-  import contact from '@anticrm/contact-resources/src/plugin'
-  import { AttachedData, Class, Data, Doc, generateId, MixinData, Ref, WithLookup } from '@anticrm/core'
-  import type { Customer } from '@anticrm/lead'
-  import { getResource } from '@anticrm/platform'
-  import { Card, EditableAvatar, getClient } from '@anticrm/presentation'
+  import attachment from '@hcengineering/attachment'
+  import { Channel, combineName, Contact, findContacts } from '@hcengineering/contact'
+  import { ChannelsDropdown } from '@hcengineering/contact-resources'
+  import PersonPresenter from '@hcengineering/contact-resources/src/components/PersonPresenter.svelte'
+  import contact from '@hcengineering/contact-resources/src/plugin'
+  import { AttachedData, Class, Data, Doc, generateId, MixinData, Ref, WithLookup } from '@hcengineering/core'
+  import type { Customer } from '@hcengineering/lead'
+  import { getResource } from '@hcengineering/platform'
+  import { Card, EditableAvatar, getClient } from '@hcengineering/presentation'
   import {
     Button,
     createFocusManager,
@@ -32,7 +32,7 @@
     Label,
     SelectPopup,
     showPopup
-  } from '@anticrm/ui'
+  } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import lead from '../plugin'
 

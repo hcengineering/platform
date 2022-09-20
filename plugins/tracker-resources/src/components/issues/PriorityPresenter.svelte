@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Asset, IntlString } from '@anticrm/platform'
-  import { IssuePriority } from '@anticrm/tracker'
-  import { Icon, Label } from '@anticrm/ui'
+  import { Asset, IntlString } from '@hcengineering/platform'
+  import { IssuePriority } from '@hcengineering/tracker'
+  import { Icon, Label } from '@hcengineering/ui'
   import { issuePriorities } from '../../utils'
 
   export let value: IssuePriority | undefined

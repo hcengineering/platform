@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { DirectMessage } from '@anticrm/chunter'
-  import type { Ref } from '@anticrm/core'
-  import { getCurrentAccount } from '@anticrm/core'
-  import { createQuery, getClient, CombineAvatars } from '@anticrm/presentation'
-  import contact, { EmployeeAccount } from '@anticrm/contact'
-  import { SearchEdit, showPanel } from '@anticrm/ui'
+  import { DirectMessage } from '@hcengineering/chunter'
+  import type { Ref } from '@hcengineering/core'
+  import { getCurrentAccount } from '@hcengineering/core'
+  import { createQuery, getClient, CombineAvatars } from '@hcengineering/presentation'
+  import contact, { EmployeeAccount } from '@hcengineering/contact'
+  import { SearchEdit, showPanel } from '@hcengineering/ui'
   import chunter from '../plugin'
   import { getDmName, navigateToSpecial } from '../utils'
   import { userSearch } from '../index'

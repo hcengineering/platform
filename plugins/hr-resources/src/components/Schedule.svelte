@@ -13,13 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { CalendarMode } from '@anticrm/calendar-resources'
-  import calendar from '@anticrm/calendar-resources/src/plugin'
-  import { Ref } from '@anticrm/core'
-  import { Department } from '@anticrm/hr'
-  import { createQuery, SpaceSelector } from '@anticrm/presentation'
-  import { Button, Icon, IconBack, IconForward, Label } from '@anticrm/ui'
-  import view from '@anticrm/view'
+  import { CalendarMode } from '@hcengineering/calendar-resources'
+  import calendar from '@hcengineering/calendar-resources/src/plugin'
+  import { Ref } from '@hcengineering/core'
+  import { Department } from '@hcengineering/hr'
+  import { createQuery, SpaceSelector } from '@hcengineering/presentation'
+  import { Button, Icon, IconBack, IconForward, Label } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
   import hr from '../plugin'
   import ScheduleMonthView from './ScheduleView.svelte'
 

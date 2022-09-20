@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Asset, IntlString } from '@anticrm/platform'
+  import type { Asset, IntlString } from '@hcengineering/platform'
   import { getFocusManager } from '../focus'
   import { showPopup } from '../popups'
   import type { AnySvelteComponent, ButtonKind, ButtonSize, ListItem, TooltipAlignment } from '../types'

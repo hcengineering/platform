@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { formatName, Person } from '@anticrm/contact'
-  import { Hierarchy } from '@anticrm/core'
-  import { IntlString } from '@anticrm/platform'
-  import { Avatar } from '@anticrm/presentation'
-  import { getPanelURI, Label, LabelAndProps, tooltip } from '@anticrm/ui'
-  import view from '@anticrm/view'
+  import { formatName, Person } from '@hcengineering/contact'
+  import { Hierarchy } from '@hcengineering/core'
+  import { IntlString } from '@hcengineering/platform'
+  import { Avatar } from '@hcengineering/presentation'
+  import { getPanelURI, Label, LabelAndProps, tooltip } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
 
   export let value: Person | undefined | null
   export let inline: boolean = false

@@ -1,9 +1,9 @@
 {
-  "name": "@anticrm/query",
+  "name": "@hcengineering/query",
   "entries": [
     {
       "version": "0.6.1",
-      "tag": "@anticrm/query_v0.6.1",
+      "tag": "@hcengineering/query_v0.6.1",
       "date": "Sun, 08 Aug 2021 21:05:26 GMT",
       "comments": {
         "patch": [
@@ -13,19 +13,19 @@
         ],
         "dependency": [
           {
-            "comment": "Updating dependency \"@anticrm/core\" from `~0.6.3` to `~0.6.8`"
+            "comment": "Updating dependency \"@hcengineering/core\" from `~0.6.3` to `~0.6.8`"
           }
         ]
       }
     },
     {
       "version": "0.6.0",
-      "tag": "@anticrm/query_v0.6.0",
+      "tag": "@hcengineering/query_v0.6.0",
       "date": "Sun, 08 Aug 2021 10:14:57 GMT",
       "comments": {
         "dependency": [
           {
-            "comment": "Updating dependency \"@anticrm/platform\" from `~0.6.3` to `~0.6.4`"
+            "comment": "Updating dependency \"@hcengineering/platform\" from `~0.6.3` to `~0.6.4`"
           }
         ]
       }

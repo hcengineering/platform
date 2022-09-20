@@ -14,13 +14,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { TxViewlet } from '@anticrm/activity'
-  import { ActivityKey, DisplayTx, getCollectionTx, newDisplayTx, TxView } from '@anticrm/activity-resources'
-  import core, { AttachedDoc, Doc, TxCollectionCUD, WithLookup } from '@anticrm/core'
-  import { Notification, NotificationStatus } from '@anticrm/notification'
-  import { getClient } from '@anticrm/presentation'
-  import { ActionIcon, Component, getPlatformColor, IconBack, IconCheck, IconDelete } from '@anticrm/ui'
-  import view from '@anticrm/view'
+  import { TxViewlet } from '@hcengineering/activity'
+  import { ActivityKey, DisplayTx, getCollectionTx, newDisplayTx, TxView } from '@hcengineering/activity-resources'
+  import core, { AttachedDoc, Doc, TxCollectionCUD, WithLookup } from '@hcengineering/core'
+  import { Notification, NotificationStatus } from '@hcengineering/notification'
+  import { getClient } from '@hcengineering/presentation'
+  import { ActionIcon, Component, getPlatformColor, IconBack, IconCheck, IconDelete } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
   import plugin from '../plugin'
 
   export let notification: WithLookup<Notification>

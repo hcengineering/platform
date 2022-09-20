@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { IntlString } from '@anticrm/platform'
-  import { translate } from '@anticrm/platform'
+  import type { IntlString } from '@hcengineering/platform'
+  import { translate } from '@hcengineering/platform'
   import { createEventDispatcher, onMount } from 'svelte'
 
-  import core, { Class, getCurrentAccount, Ref, Space } from '@anticrm/core'
-  import { tooltip, CheckBox } from '@anticrm/ui'
+  import core, { Class, getCurrentAccount, Ref, Space } from '@hcengineering/core'
+  import { tooltip, CheckBox } from '@hcengineering/ui'
 
   import { createQuery } from '../utils'
   import presentation from '..'

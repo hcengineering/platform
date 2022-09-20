@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Class, Doc, Ref } from '@anticrm/core'
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import { getCurrentLocation, Icon, Label, navigate } from '@anticrm/ui'
+  import core, { Class, Doc, Ref } from '@hcengineering/core'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { getCurrentLocation, Icon, Label, navigate } from '@hcengineering/ui'
   import setting from '../plugin'
   import ClassAttributes from './ClassAttributes.svelte'
   import ClassHierarchy from './ClassHierarchy.svelte'

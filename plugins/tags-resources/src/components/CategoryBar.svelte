@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, Ref, SortingOrder } from '@anticrm/core'
-  import { createQuery } from '@anticrm/presentation'
-  import { TagCategory, TagElement } from '@anticrm/tags'
-  import { Button, getPlatformColorForText, showPopup } from '@anticrm/ui'
+  import { Class, Doc, Ref, SortingOrder } from '@hcengineering/core'
+  import { createQuery } from '@hcengineering/presentation'
+  import { TagCategory, TagElement } from '@hcengineering/tags'
+  import { Button, getPlatformColorForText, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import tags from '../plugin'
   import { getTagStyle } from '../utils'

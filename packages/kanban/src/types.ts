@@ -1,5 +1,5 @@
-import { Doc } from '@anticrm/core'
-import { Asset } from '@anticrm/platform'
+import { Doc } from '@hcengineering/core'
+import { Asset } from '@hcengineering/platform'
 
 /**
  * @public

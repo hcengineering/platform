@@ -13,13 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, Ref, RefTo } from '@anticrm/core'
-  import { translate } from '@anticrm/platform'
-  import { getClient } from '@anticrm/presentation'
-  import type { State } from '@anticrm/task'
-  import task from '@anticrm/task'
-  import { eventToHTMLElement, Icon, IconClose, Label, showPopup } from '@anticrm/ui'
-  import { Filter, FilterMode } from '@anticrm/view'
+  import { Class, Doc, Ref, RefTo } from '@hcengineering/core'
+  import { translate } from '@hcengineering/platform'
+  import { getClient } from '@hcengineering/presentation'
+  import type { State } from '@hcengineering/task'
+  import task from '@hcengineering/task'
+  import { eventToHTMLElement, Icon, IconClose, Label, showPopup } from '@hcengineering/ui'
+  import { Filter, FilterMode } from '@hcengineering/view'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import view from '../../plugin'
 

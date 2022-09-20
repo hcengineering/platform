@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { MessageViewer } from '@anticrm/presentation'
-  import { getPlatformColor, Label as LabelComponent } from '@anticrm/ui'
+  import { MessageViewer } from '@hcengineering/presentation'
+  import { getPlatformColor, Label as LabelComponent } from '@hcengineering/ui'
   import view from '../../plugin'
 
   export let href: string

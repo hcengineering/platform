@@ -13,13 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Employee, EmployeeAccount, formatName } from '@anticrm/contact'
-  import { AccountRole, getCurrentAccount } from '@anticrm/core'
-  import login from '@anticrm/login'
-  import { setMetadata } from '@anticrm/platform'
-  import { Avatar, createQuery } from '@anticrm/presentation'
-  import setting, { settingId, SettingsCategory } from '@anticrm/setting'
-  import { Action, fetchMetadataLocalStorage } from '@anticrm/ui'
+  import contact, { Employee, EmployeeAccount, formatName } from '@hcengineering/contact'
+  import { AccountRole, getCurrentAccount } from '@hcengineering/core'
+  import login from '@hcengineering/login'
+  import { setMetadata } from '@hcengineering/platform'
+  import { Avatar, createQuery } from '@hcengineering/presentation'
+  import setting, { settingId, SettingsCategory } from '@hcengineering/setting'
+  import { Action, fetchMetadataLocalStorage } from '@hcengineering/ui'
   import {
     closePanel,
     closePopup,
@@ -29,8 +29,8 @@
     showPopup,
     Menu,
     locationToUrl
-  } from '@anticrm/ui'
-  import view from '@anticrm/view'
+  } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
 
   let items: SettingsCategory[] = []
 

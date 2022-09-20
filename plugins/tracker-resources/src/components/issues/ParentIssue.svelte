@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createQuery } from '@anticrm/presentation'
-  import { Team, Issue } from '@anticrm/tracker'
-  import { Spinner, IconClose, tooltip } from '@anticrm/ui'
+  import { createQuery } from '@hcengineering/presentation'
+  import { Team, Issue } from '@hcengineering/tracker'
+  import { Spinner, IconClose, tooltip } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
   import { getIssueId } from '../../issues'

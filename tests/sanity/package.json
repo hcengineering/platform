@@ -1,7 +1,7 @@
 {
-  "name": "@anticrm/tests-sanity",
+  "name": "@hcengineering/tests-sanity",
   "version": "0.6.1",
-  "template": "@anticrm/default-package",
+  "template": "@hcengineering/default-package",
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
   "scripts": {
@@ -20,7 +20,7 @@
     "dev-codegen": "cross-env playwright codegen --load-storage storage-dev.json http://localhost:8080/workbench%3Acomponent%3AWorkbenchApp"
   },
   "devDependencies": {
-    "@anticrm/platform-rig": "~0.6.0",
+    "@hcengineering/platform-rig": "~0.6.0",
     "@types/heft-jest": "^1.0.3",
     "@types/node": "~16.11.12",
     "@typescript-eslint/eslint-plugin": "^5.30.0",
@@ -37,7 +37,7 @@
   "dependencies": {
     "dotenv": "~16.0.0",
     "cross-env": "~7.0.3",
-    "@anticrm/core": "~0.6.16",
-    "@anticrm/client-resources": "~0.6.4"
+    "@hcengineering/core": "^0.6.17",
+    "@hcengineering/client-resources": "~0.6.4"
   }
 }

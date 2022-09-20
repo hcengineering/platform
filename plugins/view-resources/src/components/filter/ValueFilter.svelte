@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, FindResult, getObjectValue, Ref, SortingOrder } from '@anticrm/core'
-  import { translate } from '@anticrm/platform'
-  import presentation, { getClient } from '@anticrm/presentation'
-  import ui, { Button, CheckBox, Label, Loading } from '@anticrm/ui'
-  import { Filter } from '@anticrm/view'
+  import { Class, Doc, FindResult, getObjectValue, Ref, SortingOrder } from '@hcengineering/core'
+  import { translate } from '@hcengineering/platform'
+  import presentation, { getClient } from '@hcengineering/presentation'
+  import ui, { Button, CheckBox, Label, Loading } from '@hcengineering/ui'
+  import { Filter } from '@hcengineering/view'
   import { onMount } from 'svelte'
   import { getPresenter } from '../../utils'
   import view from '../../plugin'

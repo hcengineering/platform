@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import attachment, { Attachment } from '@anticrm/attachment'
-import contact, { combineName, Contact, EmployeeAccount, Person } from '@anticrm/contact'
+import attachment, { Attachment } from '@hcengineering/attachment'
+import contact, { combineName, Contact, EmployeeAccount, Person } from '@hcengineering/contact'
 import core, {
   AnyAttribute,
   BackupClient,
@@ -32,13 +32,13 @@ import core, {
   Timestamp,
   TxOperations,
   WithLookup
-} from '@anticrm/core'
-import { Asset, getEmbeddedLabel, IntlString } from '@anticrm/platform'
-import recruit, { Candidate } from '@anticrm/recruit'
-import { ReconiDocument } from '@anticrm/rekoni'
-import { generateToken } from '@anticrm/server-token'
-import { connect } from '@anticrm/server-tool'
-import setting from '@anticrm/setting'
+} from '@hcengineering/core'
+import { Asset, getEmbeddedLabel, IntlString } from '@hcengineering/platform'
+import recruit, { Candidate } from '@hcengineering/recruit'
+import { ReconiDocument } from '@hcengineering/rekoni'
+import { generateToken } from '@hcengineering/server-token'
+import { connect } from '@hcengineering/server-tool'
+import setting from '@hcengineering/setting'
 import { readFile } from 'fs/promises'
 import got from 'got'
 import mimetypes from 'mime-types'

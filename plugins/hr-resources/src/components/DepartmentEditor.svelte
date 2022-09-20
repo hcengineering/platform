@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref } from '@anticrm/core'
-  import { Department } from '@anticrm/hr'
-  import { IntlString } from '@anticrm/platform'
-  import { SpaceSelector } from '@anticrm/presentation'
-  import { ButtonKind, ButtonSize } from '@anticrm/ui'
+  import { Ref } from '@hcengineering/core'
+  import { Department } from '@hcengineering/hr'
+  import { IntlString } from '@hcengineering/platform'
+  import { SpaceSelector } from '@hcengineering/presentation'
+  import { ButtonKind, ButtonSize } from '@hcengineering/ui'
   import hr from '../plugin'
 
   export let value: Ref<Department> | undefined

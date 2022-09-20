@@ -14,9 +14,9 @@
 // limitations under the License.
 //
 
-import type { Ref, Doc, Class, Account, Space } from '@anticrm/core'
+import type { Ref, Doc, Class, Account, Space } from '@hcengineering/core'
 import { createElasticAdapter } from '../adapter'
-import type { IndexedDoc } from '@anticrm/server-core'
+import type { IndexedDoc } from '@hcengineering/server-core'
 
 describe('client', () => {
   it('should create document', async () => {

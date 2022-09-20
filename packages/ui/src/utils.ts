@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import type { Metadata } from '@anticrm/platform'
-import { setMetadata } from '@anticrm/platform'
+import type { Metadata } from '@hcengineering/platform'
+import { setMetadata } from '@hcengineering/platform'
 
 export function setMetadataLocalStorage<T> (id: Metadata<T>, value: T | null): void {
   if (value != null) {

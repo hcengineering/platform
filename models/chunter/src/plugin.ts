@@ -13,14 +13,14 @@
 // limitations under the License.
 //
 
-import type { TxViewlet } from '@anticrm/activity'
-import { Channel, chunterId } from '@anticrm/chunter'
-import chunter from '@anticrm/chunter-resources/src/plugin'
-import type { Ref, Space } from '@anticrm/core'
-import type { IntlString, Resource } from '@anticrm/platform'
-import { mergeIds } from '@anticrm/platform'
-import type { AnyComponent } from '@anticrm/ui'
-import type { Action, ActionCategory, ViewAction, ViewletDescriptor } from '@anticrm/view'
+import type { TxViewlet } from '@hcengineering/activity'
+import { Channel, chunterId } from '@hcengineering/chunter'
+import chunter from '@hcengineering/chunter-resources/src/plugin'
+import type { Ref, Space } from '@hcengineering/core'
+import type { IntlString, Resource } from '@hcengineering/platform'
+import { mergeIds } from '@hcengineering/platform'
+import type { AnyComponent } from '@hcengineering/ui'
+import type { Action, ActionCategory, ViewAction, ViewletDescriptor } from '@hcengineering/view'
 
 export default mergeIds(chunterId, chunter, {
   component: {

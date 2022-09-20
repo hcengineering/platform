@@ -13,11 +13,11 @@
 // limitations under the License.
 //
 
-import type { Class, Doc, Mixin, Obj, Ref, Space } from '@anticrm/core'
-import type { Asset, IntlString, Metadata, Plugin, Resource } from '@anticrm/platform'
-import { plugin } from '@anticrm/platform'
-import { AnyComponent, Location } from '@anticrm/ui'
-import { ViewAction } from '@anticrm/view'
+import type { Class, Doc, Mixin, Obj, Ref, Space } from '@hcengineering/core'
+import type { Asset, IntlString, Metadata, Plugin, Resource } from '@hcengineering/platform'
+import { plugin } from '@hcengineering/platform'
+import { AnyComponent, Location } from '@hcengineering/ui'
+import { ViewAction } from '@hcengineering/view'
 
 /**
  * @public

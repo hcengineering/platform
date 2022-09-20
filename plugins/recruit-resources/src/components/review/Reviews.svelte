@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Doc, Ref } from '@anticrm/core'
-  import core from '@anticrm/core'
-  import { IntlString } from '@anticrm/platform'
-  import calendar from '@anticrm/calendar'
-  import { Button, IconAdd, Label, showPopup } from '@anticrm/ui'
-  import { Table } from '@anticrm/view-resources'
+  import type { Doc, Ref } from '@hcengineering/core'
+  import core from '@hcengineering/core'
+  import { IntlString } from '@hcengineering/platform'
+  import calendar from '@hcengineering/calendar'
+  import { Button, IconAdd, Label, showPopup } from '@hcengineering/ui'
+  import { Table } from '@hcengineering/view-resources'
   import recruit from '../../plugin'
   import FileDuo from '../icons/FileDuo.svelte'
   import CreateReview from './CreateReview.svelte'

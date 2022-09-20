@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Doc, Ref } from '@anticrm/core'
-  import { Button, IconAdd, Label, showPopup, Icon } from '@anticrm/ui'
-  import { BuildModelKey } from '@anticrm/view'
-  import { Table } from '@anticrm/view-resources'
+  import type { Doc, Ref } from '@hcengineering/core'
+  import { Button, IconAdd, Label, showPopup, Icon } from '@hcengineering/ui'
+  import { BuildModelKey } from '@hcengineering/view'
+  import { Table } from '@hcengineering/view-resources'
   import recruit from '../plugin'
   import CreateApplication from './CreateApplication.svelte'
   import FileDuo from './icons/FileDuo.svelte'

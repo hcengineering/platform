@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, DocumentQuery, Ref, SortingOrder, WithLookup } from '@anticrm/core'
-  import presentation, { createQuery, getClient } from '@anticrm/presentation'
-  import { calcRank, Issue, IssueStatus, Team } from '@anticrm/tracker'
-  import { Label, Spinner } from '@anticrm/ui'
+  import { Doc, DocumentQuery, Ref, SortingOrder, WithLookup } from '@hcengineering/core'
+  import presentation, { createQuery, getClient } from '@hcengineering/presentation'
+  import { calcRank, Issue, IssueStatus, Team } from '@hcengineering/tracker'
+  import { Label, Spinner } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../../plugin'
   import SubIssueList from '../edit/SubIssueList.svelte'

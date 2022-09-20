@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-import type { Class, Doc, DocumentQuery, Ref, TxResult } from '@anticrm/core'
-import type { FullTextAdapter, IndexedDoc } from '@anticrm/server-core'
+import type { Class, Doc, DocumentQuery, Ref, TxResult } from '@hcengineering/core'
+import type { FullTextAdapter, IndexedDoc } from '@hcengineering/server-core'
 
 import { Client, errors as esErr } from '@elastic/elasticsearch'
 class ElasticAdapter implements FullTextAdapter {

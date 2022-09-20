@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { DocumentQuery, WithLookup } from '@anticrm/core'
-  import { Component } from '@anticrm/ui'
-  import { Viewlet } from '@anticrm/view'
-  import { Issue } from '@anticrm/tracker'
-  import { viewOptionsStore } from '@anticrm/view-resources'
+  import { DocumentQuery, WithLookup } from '@hcengineering/core'
+  import { Component } from '@hcengineering/ui'
+  import { Viewlet } from '@hcengineering/view'
+  import { Issue } from '@hcengineering/tracker'
+  import { viewOptionsStore } from '@hcengineering/view-resources'
 
   export let viewlet: WithLookup<Viewlet>
   export let query: DocumentQuery<Issue> = {}

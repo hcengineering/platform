@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { loadMetadata, addStringsLoader } from '@anticrm/platform'
-import notification, { notificationId } from '@anticrm/notification'
+import { loadMetadata, addStringsLoader } from '@hcengineering/platform'
+import notification, { notificationId } from '@hcengineering/notification'
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(notification.icon, {

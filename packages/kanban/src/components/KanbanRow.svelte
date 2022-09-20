@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, Ref } from '@anticrm/core'
+  import { Doc, Ref } from '@hcengineering/core'
   import { createEventDispatcher } from 'svelte'
   import { slide } from 'svelte/transition'
   import { CardDragEvent, ExtItem, Item, TypeState } from '../types'

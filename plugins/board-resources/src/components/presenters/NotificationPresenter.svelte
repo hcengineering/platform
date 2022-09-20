@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc } from '@anticrm/core'
-  import notification from '@anticrm/notification'
-  import { NotificationClientImpl } from '@anticrm/notification-resources'
-  import { Icon, IconSize } from '@anticrm/ui'
+  import { Doc } from '@hcengineering/core'
+  import notification from '@hcengineering/notification'
+  import { NotificationClientImpl } from '@hcengineering/notification-resources'
+  import { Icon, IconSize } from '@hcengineering/ui'
 
   export let object: Doc
   export let size: IconSize = 'small'

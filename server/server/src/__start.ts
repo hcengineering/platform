@@ -15,8 +15,8 @@
 //
 
 // Add this to the VERY top of the first file loaded in your app
-import { setMetadata } from '@anticrm/platform'
-import serverToken from '@anticrm/server-token'
+import { setMetadata } from '@hcengineering/platform'
+import serverToken from '@hcengineering/server-token'
 import { start } from '.'
 
 const serverPort = parseInt(process.env.SERVER_PORT ?? '3333')

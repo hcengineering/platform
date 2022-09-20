@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Message } from '@anticrm/chunter'
-  import contact, { Employee } from '@anticrm/contact'
-  import { Ref } from '@anticrm/core'
-  import { Avatar, createQuery } from '@anticrm/presentation'
-  import { Label, TimeSince } from '@anticrm/ui'
+  import { Message } from '@hcengineering/chunter'
+  import contact, { Employee } from '@hcengineering/contact'
+  import { Ref } from '@hcengineering/core'
+  import { Avatar, createQuery } from '@hcengineering/presentation'
+  import { Label, TimeSince } from '@hcengineering/ui'
   import chunter from '../plugin'
 
   export let message: Message

@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Class, Doc, DocumentQuery, FindOptions, Ref } from '@anticrm/core'
-  import type { IntlString } from '@anticrm/platform'
+  import type { Class, Doc, DocumentQuery, FindOptions, Ref } from '@hcengineering/core'
+  import type { IntlString } from '@hcengineering/platform'
   import {
     Button,
     CheckBox,
@@ -27,7 +27,7 @@
     ListView,
     showPopup,
     tooltip
-  } from '@anticrm/ui'
+  } from '@hcengineering/ui'
   import { afterUpdate, createEventDispatcher } from 'svelte'
   import presentation from '..'
   import { ObjectCreate } from '../types'

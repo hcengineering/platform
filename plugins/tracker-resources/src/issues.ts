@@ -1,8 +1,8 @@
-import { Doc, DocumentUpdate, Ref, RelatedDocument, TxOperations } from '@anticrm/core'
-import { getClient } from '@anticrm/presentation'
-import { Issue, Project, Sprint, Team, trackerId } from '@anticrm/tracker'
-import { getCurrentLocation, getPanelURI, Location } from '@anticrm/ui'
-import { workbenchId } from '@anticrm/workbench'
+import { Doc, DocumentUpdate, Ref, RelatedDocument, TxOperations } from '@hcengineering/core'
+import { getClient } from '@hcengineering/presentation'
+import { Issue, Project, Sprint, Team, trackerId } from '@hcengineering/tracker'
+import { getCurrentLocation, getPanelURI, Location } from '@hcengineering/ui'
+import { workbenchId } from '@hcengineering/workbench'
 import { writable } from 'svelte/store'
 import tracker from './plugin'
 

@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { WithLookup } from '@anticrm/core'
-  import { createQuery } from '@anticrm/presentation'
-  import type { Issue, Team } from '@anticrm/tracker'
-  import { showPanel } from '@anticrm/ui'
+  import { WithLookup } from '@hcengineering/core'
+  import { createQuery } from '@hcengineering/presentation'
+  import type { Issue, Team } from '@hcengineering/tracker'
+  import { showPanel } from '@hcengineering/ui'
   import tracker from '../../plugin'
 
   export let value: WithLookup<Issue>

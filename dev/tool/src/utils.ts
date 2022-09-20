@@ -1,4 +1,4 @@
-import { AttachedData, AttachedDoc, Class, Doc, DocumentUpdate, Ref, Space, TxOperations } from '@anticrm/core'
+import { AttachedData, AttachedDoc, Class, Doc, DocumentUpdate, Ref, Space, TxOperations } from '@hcengineering/core'
 
 export async function findOrUpdateAttached<T extends AttachedDoc> (
   client: TxOperations,

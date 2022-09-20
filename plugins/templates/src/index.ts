@@ -13,9 +13,9 @@
 // limitations under the License.
 //
 
-import type { Class, Doc, Ref, Space } from '@anticrm/core'
-import type { Plugin } from '@anticrm/platform'
-import { Asset, plugin } from '@anticrm/platform'
+import type { Class, Doc, Ref, Space } from '@hcengineering/core'
+import type { Plugin } from '@hcengineering/platform'
+import { Asset, plugin } from '@hcengineering/platform'
 
 /**
  * @public

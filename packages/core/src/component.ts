@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import type { IntlString, Plugin, StatusCode } from '@anticrm/platform'
-import { plugin } from '@anticrm/platform'
+import type { IntlString, Plugin, StatusCode } from '@hcengineering/platform'
+import { plugin } from '@hcengineering/platform'
 import { Mixin, Version } from '.'
 import type {
   Account,

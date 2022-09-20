@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AttachedData, FindOptions, Ref, SortingOrder } from '@anticrm/core'
-  import { getClient, ObjectPopup } from '@anticrm/presentation'
-  import { calcRank, Issue } from '@anticrm/tracker'
+  import { AttachedData, FindOptions, Ref, SortingOrder } from '@hcengineering/core'
+  import { getClient, ObjectPopup } from '@hcengineering/presentation'
+  import { calcRank, Issue } from '@hcengineering/tracker'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../plugin'
   import { getIssueId } from '../issues'

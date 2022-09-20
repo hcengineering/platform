@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Asset } from '@anticrm/platform'
-  import { AnySvelteComponent, Icon, IconSize } from '@anticrm/ui'
+  import { Asset } from '@hcengineering/platform'
+  import { AnySvelteComponent, Icon, IconSize } from '@hcengineering/ui'
   import { getBlobURL, getFileUrl } from '../utils'
   import Avatar from './icons/Avatar.svelte'
 

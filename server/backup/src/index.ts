@@ -23,12 +23,12 @@ import core, {
   DOMAIN_MODEL,
   DOMAIN_TRANSIENT,
   Ref
-} from '@anticrm/core'
+} from '@hcengineering/core'
 import { createGzip } from 'node:zlib'
 import { join } from 'path'
 import { extract, Pack, pack } from 'tar-stream'
 import { createGunzip, gunzipSync, gzipSync } from 'zlib'
-import { connect } from '@anticrm/server-tool'
+import { connect } from '@hcengineering/server-tool'
 import { BackupStorage } from './storage'
 export * from './storage'
 

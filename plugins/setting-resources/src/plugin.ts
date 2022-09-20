@@ -13,10 +13,10 @@
 // limitations under the License.
 //
 
-import type { IntlString } from '@anticrm/platform'
-import { mergeIds } from '@anticrm/platform'
-import setting, { settingId } from '@anticrm/setting'
-import { AnyComponent } from '@anticrm/ui'
+import type { IntlString } from '@hcengineering/platform'
+import { mergeIds } from '@hcengineering/platform'
+import setting, { settingId } from '@hcengineering/setting'
+import { AnyComponent } from '@hcengineering/ui'
 
 export default mergeIds(settingId, setting, {
   component: {

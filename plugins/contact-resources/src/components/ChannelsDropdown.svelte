@@ -14,12 +14,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Channel, ChannelProvider } from '@anticrm/contact'
-  import contact from '@anticrm/contact'
-  import type { AttachedData, Doc, Ref, Timestamp } from '@anticrm/core'
-  import { NotificationClientImpl } from '@anticrm/notification-resources'
-  import type { Asset, IntlString } from '@anticrm/platform'
-  import presentation from '@anticrm/presentation'
+  import type { Channel, ChannelProvider } from '@hcengineering/contact'
+  import contact from '@hcengineering/contact'
+  import type { AttachedData, Doc, Ref, Timestamp } from '@hcengineering/core'
+  import { NotificationClientImpl } from '@hcengineering/notification-resources'
+  import type { Asset, IntlString } from '@hcengineering/platform'
+  import presentation from '@hcengineering/presentation'
   import {
     Action,
     AnyComponent,
@@ -31,8 +31,8 @@
     getFocusManager,
     Menu,
     showPopup
-  } from '@anticrm/ui'
-  import { ViewAction } from '@anticrm/view'
+  } from '@hcengineering/ui'
+  import { ViewAction } from '@hcengineering/view'
   import { createEventDispatcher, tick } from 'svelte'
   import { getChannelProviders } from '../utils'
   import ChannelEditor from './ChannelEditor.svelte'

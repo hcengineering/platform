@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { Space } from '@anticrm/core'
-import { Resources } from '@anticrm/platform'
+import { Space } from '@hcengineering/core'
+import { Resources } from '@hcengineering/platform'
 import ApplicationPresenter from './components/ApplicationPresenter.svelte'
 import Archive from './components/Archive.svelte'
 import SpacePanel from './components/navigator/SpacePanel.svelte'

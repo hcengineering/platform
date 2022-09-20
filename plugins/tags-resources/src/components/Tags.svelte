@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Class, Doc, Ref } from '@anticrm/core'
-  import { createQuery, getClient, KeyedAttribute } from '@anticrm/presentation'
-  import { TagElement, TagReference } from '@anticrm/tags'
+  import type { Class, Doc, Ref } from '@hcengineering/core'
+  import { createQuery, getClient, KeyedAttribute } from '@hcengineering/presentation'
+  import { TagElement, TagReference } from '@hcengineering/tags'
   import tags from '../plugin'
   import TagsEditor from './TagsEditor.svelte'
 

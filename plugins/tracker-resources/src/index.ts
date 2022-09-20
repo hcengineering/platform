@@ -13,11 +13,11 @@
 // limitations under the License.
 //
 
-import { Class, Client, DocumentQuery, Ref, RelatedDocument } from '@anticrm/core'
-import { Resources } from '@anticrm/platform'
-import { ObjectSearchResult } from '@anticrm/presentation'
-import { Issue, Team } from '@anticrm/tracker'
-import { showPopup } from '@anticrm/ui'
+import { Class, Client, DocumentQuery, Ref, RelatedDocument } from '@hcengineering/core'
+import { Resources } from '@hcengineering/platform'
+import { ObjectSearchResult } from '@hcengineering/presentation'
+import { Issue, Team } from '@hcengineering/tracker'
+import { showPopup } from '@hcengineering/ui'
 import CreateIssue from './components/CreateIssue.svelte'
 import Inbox from './components/inbox/Inbox.svelte'
 import Active from './components/issues/Active.svelte'

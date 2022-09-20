@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { addStringsLoader, loadMetadata } from '@anticrm/platform'
-import automation, { automationId } from '@anticrm/automation'
+import { addStringsLoader, loadMetadata } from '@hcengineering/platform'
+import automation, { automationId } from '@hcengineering/automation'
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(automation.icon, {

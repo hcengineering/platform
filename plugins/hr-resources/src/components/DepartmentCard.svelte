@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Employee } from '@anticrm/contact'
-  import { EmployeePresenter } from '@anticrm/contact-resources'
-  import { Ref, WithLookup } from '@anticrm/core'
-  import { Department, Staff } from '@anticrm/hr'
-  import { Avatar, getClient, UsersPopup } from '@anticrm/presentation'
+  import contact, { Employee } from '@hcengineering/contact'
+  import { EmployeePresenter } from '@hcengineering/contact-resources'
+  import { Ref, WithLookup } from '@hcengineering/core'
+  import { Department, Staff } from '@hcengineering/hr'
+  import { Avatar, getClient, UsersPopup } from '@hcengineering/presentation'
   import {
     Button,
     closeTooltip,
@@ -27,9 +27,9 @@
     Label,
     showPanel,
     showPopup
-  } from '@anticrm/ui'
-  import view from '@anticrm/view'
-  import { Menu } from '@anticrm/view-resources'
+  } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
+  import { Menu } from '@hcengineering/view-resources'
   import hr from '../plugin'
   import { addMember } from '../utils'
   import CreateDepartment from './CreateDepartment.svelte'

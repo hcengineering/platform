@@ -13,17 +13,17 @@
 // limitations under the License.
 //
 
-import { Organization } from '@anticrm/contact'
-import core, { Doc, Ref, Space, TxOperations } from '@anticrm/core'
-import { createOrUpdate, MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
-import { DOMAIN_CALENDAR } from '@anticrm/model-calendar'
-import contact, { DOMAIN_CONTACT } from '@anticrm/model-contact'
-import { DOMAIN_SPACE } from '@anticrm/model-core'
-import tags, { TagCategory } from '@anticrm/model-tags'
-import { createKanbanTemplate, createSequence } from '@anticrm/model-task'
-import { Vacancy } from '@anticrm/recruit'
+import { Organization } from '@hcengineering/contact'
+import core, { Doc, Ref, Space, TxOperations } from '@hcengineering/core'
+import { createOrUpdate, MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
+import { DOMAIN_CALENDAR } from '@hcengineering/model-calendar'
+import contact, { DOMAIN_CONTACT } from '@hcengineering/model-contact'
+import { DOMAIN_SPACE } from '@hcengineering/model-core'
+import tags, { TagCategory } from '@hcengineering/model-tags'
+import { createKanbanTemplate, createSequence } from '@hcengineering/model-task'
+import { Vacancy } from '@hcengineering/recruit'
 import { getCategories } from '@anticrm/skillset'
-import { KanbanTemplate } from '@anticrm/task'
+import { KanbanTemplate } from '@hcengineering/task'
 import recruit from './plugin'
 
 export const recruitOperation: MigrateOperation = {

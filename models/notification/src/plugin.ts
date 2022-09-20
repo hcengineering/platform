@@ -14,9 +14,9 @@
 // limitations under the License.
 //
 
-import notification, { notificationId } from '@anticrm/notification'
-import { IntlString, mergeIds } from '@anticrm/platform'
-import { AnyComponent } from '@anticrm/ui'
+import notification, { notificationId } from '@hcengineering/notification'
+import { IntlString, mergeIds } from '@hcengineering/platform'
+import { AnyComponent } from '@hcengineering/ui'
 
 export default mergeIds(notificationId, notification, {
   string: {

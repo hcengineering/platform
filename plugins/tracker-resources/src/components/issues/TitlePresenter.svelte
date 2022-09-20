@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Issue } from '@anticrm/tracker'
+  import type { Issue } from '@hcengineering/tracker'
   import ParentNamesPresenter from './ParentNamesPresenter.svelte'
 
   export let value: Issue

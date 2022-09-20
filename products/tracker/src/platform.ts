@@ -13,47 +13,47 @@
 // limitations under the License.
 //
 
-import { addLocation } from '@anticrm/platform'
+import { addLocation } from '@hcengineering/platform'
 
-import login, { loginId } from '@anticrm/login'
-import workbench, { workbenchId } from '@anticrm/workbench'
-import uiPlugin from '@anticrm/ui'
-import { viewId } from '@anticrm/view'
-import { taskId } from '@anticrm/task'
-import contact, { contactId } from '@anticrm/contact'
-import { chunterId } from '@anticrm/chunter'
-import { activityId } from '@anticrm/activity'
-import { settingId } from '@anticrm/setting'
-import { telegramId } from '@anticrm/telegram'
-import { attachmentId } from '@anticrm/attachment'
-import client, { clientId } from '@anticrm/client'
-import { gmailId } from '@anticrm/gmail'
-import { imageCropperId } from '@anticrm/image-cropper'
-import { templatesId } from '@anticrm/templates'
-import { notificationId } from '@anticrm/notification'
-import { calendarId } from '@anticrm/calendar'
-import { trackerId } from '@anticrm/tracker'
+import login, { loginId } from '@hcengineering/login'
+import workbench, { workbenchId } from '@hcengineering/workbench'
+import uiPlugin from '@hcengineering/ui'
+import { viewId } from '@hcengineering/view'
+import { taskId } from '@hcengineering/task'
+import contact, { contactId } from '@hcengineering/contact'
+import { chunterId } from '@hcengineering/chunter'
+import { activityId } from '@hcengineering/activity'
+import { settingId } from '@hcengineering/setting'
+import { telegramId } from '@hcengineering/telegram'
+import { attachmentId } from '@hcengineering/attachment'
+import client, { clientId } from '@hcengineering/client'
+import { gmailId } from '@hcengineering/gmail'
+import { imageCropperId } from '@hcengineering/image-cropper'
+import { templatesId } from '@hcengineering/templates'
+import { notificationId } from '@hcengineering/notification'
+import { calendarId } from '@hcengineering/calendar'
+import { trackerId } from '@hcengineering/tracker'
 
-import '@anticrm/login-assets'
-import '@anticrm/task-assets'
-import '@anticrm/view-assets'
-import '@anticrm/chunter-assets'
-import '@anticrm/attachment-assets'
-import '@anticrm/contact-assets'
-import '@anticrm/activity-assets'
-import '@anticrm/setting-assets'
-import '@anticrm/telegram-assets'
-import '@anticrm/gmail-assets'
-import '@anticrm/workbench-assets'
-import '@anticrm/templates-assets'
-import '@anticrm/notification-assets'
-import '@anticrm/preference-assets'
-import '@anticrm/tracker-assets'
-import presentation, { presentationId } from '@anticrm/presentation'
-import { coreId } from '@anticrm/core'
-import { textEditorId } from '@anticrm/text-editor'
+import '@hcengineering/login-assets'
+import '@hcengineering/task-assets'
+import '@hcengineering/view-assets'
+import '@hcengineering/chunter-assets'
+import '@hcengineering/attachment-assets'
+import '@hcengineering/contact-assets'
+import '@hcengineering/activity-assets'
+import '@hcengineering/setting-assets'
+import '@hcengineering/telegram-assets'
+import '@hcengineering/gmail-assets'
+import '@hcengineering/workbench-assets'
+import '@hcengineering/templates-assets'
+import '@hcengineering/notification-assets'
+import '@hcengineering/preference-assets'
+import '@hcengineering/tracker-assets'
+import presentation, { presentationId } from '@hcengineering/presentation'
+import { coreId } from '@hcengineering/core'
+import { textEditorId } from '@hcengineering/text-editor'
 
-import { setMetadata } from '@anticrm/platform'
+import { setMetadata } from '@hcengineering/platform'
 
 export async function configurePlatform() {
   const config = await (await fetch('/config.json')).json()
@@ -85,24 +85,24 @@ export async function configurePlatform() {
   addLocation(presentationId, async () => ({ default: async () => ({}) }))
   addLocation(textEditorId, async () => ({ default: async () => ({}) }))
 
-  addLocation(clientId, () => import(/* webpackChunkName: "client" */ '@anticrm/client-resources'))
-  addLocation(loginId, () => import(/* webpackChunkName: "login" */ '@anticrm/login-resources'))
-  addLocation(workbenchId, () => import(/* webpackChunkName: "workbench" */ '@anticrm/workbench-resources'))
-  addLocation(viewId, () => import(/* webpackChunkName: "view" */ '@anticrm/view-resources'))
-  addLocation(taskId, () => import(/* webpackChunkName: "task" */ '@anticrm/task-resources'))
-  addLocation(contactId, () => import(/* webpackChunkName: "contact" */ '@anticrm/contact-resources'))
-  addLocation(chunterId, () => import(/* webpackChunkName: "chunter" */ '@anticrm/chunter-resources'))
-  addLocation(activityId, () => import(/*webpackChunkName: "activity" */ '@anticrm/activity-resources'))
-  addLocation(settingId, () => import(/* webpackChunkName: "setting" */ '@anticrm/setting-resources'))
-  addLocation(telegramId, () => import(/* webpackChunkName: "telegram" */ '@anticrm/telegram-resources'))
-  addLocation(attachmentId, () => import(/* webpackChunkName: "attachment" */ '@anticrm/attachment-resources'))
-  addLocation(gmailId, () => import(/* webpackChunkName: "gmail" */ '@anticrm/gmail-resources'))
-  addLocation(imageCropperId, () => import(/* webpackChunkName: "image-cropper" */ '@anticrm/image-cropper-resources'))
-  addLocation(templatesId, () => import(/* webpackChunkName: "templates" */ '@anticrm/templates-resources'))
-  addLocation(notificationId, () => import(/* webpackChunkName: "notification" */ '@anticrm/notification-resources'))
-  addLocation(calendarId, () => import(/* webpackChunkName: "calendar" */ '@anticrm/calendar-resources'))
+  addLocation(clientId, () => import(/* webpackChunkName: "client" */ '@hcengineering/client-resources'))
+  addLocation(loginId, () => import(/* webpackChunkName: "login" */ '@hcengineering/login-resources'))
+  addLocation(workbenchId, () => import(/* webpackChunkName: "workbench" */ '@hcengineering/workbench-resources'))
+  addLocation(viewId, () => import(/* webpackChunkName: "view" */ '@hcengineering/view-resources'))
+  addLocation(taskId, () => import(/* webpackChunkName: "task" */ '@hcengineering/task-resources'))
+  addLocation(contactId, () => import(/* webpackChunkName: "contact" */ '@hcengineering/contact-resources'))
+  addLocation(chunterId, () => import(/* webpackChunkName: "chunter" */ '@hcengineering/chunter-resources'))
+  addLocation(activityId, () => import(/*webpackChunkName: "activity" */ '@hcengineering/activity-resources'))
+  addLocation(settingId, () => import(/* webpackChunkName: "setting" */ '@hcengineering/setting-resources'))
+  addLocation(telegramId, () => import(/* webpackChunkName: "telegram" */ '@hcengineering/telegram-resources'))
+  addLocation(attachmentId, () => import(/* webpackChunkName: "attachment" */ '@hcengineering/attachment-resources'))
+  addLocation(gmailId, () => import(/* webpackChunkName: "gmail" */ '@hcengineering/gmail-resources'))
+  addLocation(imageCropperId, () => import(/* webpackChunkName: "image-cropper" */ '@hcengineering/image-cropper-resources'))
+  addLocation(templatesId, () => import(/* webpackChunkName: "templates" */ '@hcengineering/templates-resources'))
+  addLocation(notificationId, () => import(/* webpackChunkName: "notification" */ '@hcengineering/notification-resources'))
+  addLocation(calendarId, () => import(/* webpackChunkName: "calendar" */ '@hcengineering/calendar-resources'))
 
-  addLocation(trackerId, () => import(/* webpackChunkName: "tracker" */ '@anticrm/tracker-resources'))
+  addLocation(trackerId, () => import(/* webpackChunkName: "tracker" */ '@hcengineering/tracker-resources'))
   setMetadata(workbench.metadata.PlatformTitle, 'Tracker')
 
   setMetadata(client.metadata.FilterModel, true)

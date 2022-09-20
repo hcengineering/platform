@@ -13,10 +13,20 @@
 // limitations under the License.
 //
 
-import core, { Tx, Doc, Ref, Class, DocumentQuery, FindOptions, ServerStorage, Account, TxCUD } from '@anticrm/core'
-import platform, { PlatformError, Severity, Status } from '@anticrm/platform'
-import { Middleware, SessionContext, TxMiddlewareResult, FindAllMiddlewareResult } from '@anticrm/server-core'
-import { DOMAIN_PREFERENCE } from '@anticrm/server-preference'
+import core, {
+  Tx,
+  Doc,
+  Ref,
+  Class,
+  DocumentQuery,
+  FindOptions,
+  ServerStorage,
+  Account,
+  TxCUD
+} from '@hcengineering/core'
+import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
+import { Middleware, SessionContext, TxMiddlewareResult, FindAllMiddlewareResult } from '@hcengineering/server-core'
+import { DOMAIN_PREFERENCE } from '@hcengineering/server-preference'
 import { BaseMiddleware } from './base'
 
 /**

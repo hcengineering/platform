@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { DatePresenter, Icon } from '@anticrm/ui'
-  import board, { Card } from '@anticrm/board'
-  import { createQuery } from '@anticrm/presentation'
-  import task, { TodoItem } from '@anticrm/task'
-  import { Ref } from '@anticrm/core'
+  import { DatePresenter, Icon } from '@hcengineering/ui'
+  import board, { Card } from '@hcengineering/board'
+  import { createQuery } from '@hcengineering/presentation'
+  import task, { TodoItem } from '@hcengineering/task'
+  import { Ref } from '@hcengineering/core'
   import { getDateIcon } from '../../utils/BoardUtils'
 
   export let value: Card

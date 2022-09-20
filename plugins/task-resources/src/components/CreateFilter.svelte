@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Timestamp } from '@anticrm/core'
+  import { Timestamp } from '@hcengineering/core'
   import task from '../plugin'
-  import { eventToHTMLElement, Label, showPopup } from '@anticrm/ui'
-  import { TimestampPresenter } from '@anticrm/view-resources'
+  import { eventToHTMLElement, Label, showPopup } from '@hcengineering/ui'
+  import { TimestampPresenter } from '@hcengineering/view-resources'
   import CreateFilterPopup from './CreateFilterPopup.svelte'
 
   export let value: Timestamp | undefined

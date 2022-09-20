@@ -13,12 +13,12 @@
 // limitations under the License.
 //
 
-import { DOMAIN_MODEL } from '@anticrm/core'
-import { Builder, Model } from '@anticrm/model'
-import core, { TDoc } from '@anticrm/model-core'
-import type { Asset, IntlString, Resource } from '@anticrm/platform'
+import { DOMAIN_MODEL } from '@hcengineering/core'
+import { Builder, Model } from '@hcengineering/model'
+import core, { TDoc } from '@hcengineering/model-core'
+import type { Asset, IntlString, Resource } from '@hcengineering/platform'
 // Import types to prevent .svelte components to being exposed to type typescript.
-import { RefInputAction, RefInputActionItem } from '@anticrm/text-editor/src/types'
+import { RefInputAction, RefInputActionItem } from '@hcengineering/text-editor/src/types'
 import textEditor from './plugin'
 
 export { default } from './plugin'

@@ -13,14 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AttachmentDocList, AttachmentStyledBox } from '@anticrm/attachment-resources'
-  import { Class, Data, Doc, Ref, SortingOrder, WithLookup } from '@anticrm/core'
-  import notification from '@anticrm/notification'
-  import { Panel } from '@anticrm/panel'
-  import { getResource } from '@anticrm/platform'
-  import presentation, { createQuery, getClient, MessageViewer } from '@anticrm/presentation'
-  import setting, { settingId } from '@anticrm/setting'
-  import type { Issue, IssueStatus, Team } from '@anticrm/tracker'
+  import { AttachmentDocList, AttachmentStyledBox } from '@hcengineering/attachment-resources'
+  import { Class, Data, Doc, Ref, SortingOrder, WithLookup } from '@hcengineering/core'
+  import notification from '@hcengineering/notification'
+  import { Panel } from '@hcengineering/panel'
+  import { getResource } from '@hcengineering/platform'
+  import presentation, { createQuery, getClient, MessageViewer } from '@hcengineering/presentation'
+  import setting, { settingId } from '@hcengineering/setting'
+  import type { Issue, IssueStatus, Team } from '@hcengineering/tracker'
   import {
     Button,
     EditBox,
@@ -33,8 +33,8 @@
     Scroller,
     showPopup,
     Spinner
-  } from '@anticrm/ui'
-  import { ContextMenu, UpDownNavigator } from '@anticrm/view-resources'
+  } from '@hcengineering/ui'
+  import { ContextMenu, UpDownNavigator } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import { generateIssueShortLink, getIssueId } from '../../../issues'
   import tracker from '../../../plugin'

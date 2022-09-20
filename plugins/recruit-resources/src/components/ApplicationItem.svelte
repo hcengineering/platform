@@ -14,11 +14,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { formatName, Person } from '@anticrm/contact'
-  import { Ref } from '@anticrm/core'
-  import { getClient } from '@anticrm/presentation'
-  import type { Applicant } from '@anticrm/recruit'
-  import { Icon, Label } from '@anticrm/ui'
+  import contact, { formatName, Person } from '@hcengineering/contact'
+  import { Ref } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
+  import type { Applicant } from '@hcengineering/recruit'
+  import { Icon, Label } from '@hcengineering/ui'
   import recruit from '../plugin'
 
   export let value: Applicant

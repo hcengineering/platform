@@ -13,12 +13,12 @@
 // limitations under the License.
 //
 
-import { setMetadata } from '@anticrm/platform'
-import { backup, createMinioBackupStorage } from '@anticrm/server-backup'
+import { setMetadata } from '@hcengineering/platform'
+import { backup, createMinioBackupStorage } from '@hcengineering/server-backup'
 import got from 'got'
 import { Client as MinioClient } from 'minio'
 import config from './config'
-import serverToken from '@anticrm/server-token'
+import serverToken from '@hcengineering/server-token'
 
 async function getWorkspaces (): Promise<string[]> {
   const { body }: { body: { error?: string, result?: any[] } } = await got.post(config.AccountsURL, {

@@ -16,11 +16,11 @@
   import { createEventDispatcher } from 'svelte'
   import { deepEqual } from 'fast-equals'
 
-  import contact, { Employee } from '@anticrm/contact'
-  import core, { getCurrentAccount, Ref } from '@anticrm/core'
-  import { getClient, SpaceCreateCard, UserBoxList } from '@anticrm/presentation'
-  import workbench from '@anticrm/workbench'
-  import { getResource } from '@anticrm/platform'
+  import contact, { Employee } from '@hcengineering/contact'
+  import core, { getCurrentAccount, Ref } from '@hcengineering/core'
+  import { getClient, SpaceCreateCard, UserBoxList } from '@hcengineering/presentation'
+  import workbench from '@hcengineering/workbench'
+  import { getResource } from '@hcengineering/platform'
 
   import chunter from '../plugin'
 

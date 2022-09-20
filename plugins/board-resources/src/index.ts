@@ -13,9 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { Resources } from '@anticrm/platform'
-import { TodoItem } from '@anticrm/task'
-import { getClient } from '@anticrm/presentation'
+import { Resources } from '@hcengineering/platform'
+import { TodoItem } from '@hcengineering/task'
+import { getClient } from '@hcengineering/presentation'
 
 import BoardPresenter from './components/BoardPresenter.svelte'
 import CardPresenter from './components/CardPresenter.svelte'

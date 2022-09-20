@@ -1,4 +1,4 @@
-import core, { AnyAttribute, Class, Client, Doc, Ref, TxOperations } from '@anticrm/core'
+import core, { AnyAttribute, Class, Client, Doc, Ref, TxOperations } from '@hcengineering/core'
 
 /**
  * @public

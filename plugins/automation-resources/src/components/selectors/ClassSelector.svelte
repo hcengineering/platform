@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { Class, Obj } from '@anticrm/core'
-  import { translate } from '@anticrm/platform'
-  import { DropdownLabels, DropdownTextItem } from '@anticrm/ui'
+  import { Class, Obj } from '@hcengineering/core'
+  import { translate } from '@hcengineering/platform'
+  import { DropdownLabels, DropdownTextItem } from '@hcengineering/ui'
 
   import automation from '../../plugin'
 

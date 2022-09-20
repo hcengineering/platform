@@ -14,10 +14,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc } from '@anticrm/core'
+  import { Doc } from '@hcengineering/core'
 
-  import { getAttribute, getClient, KeyedAttribute, updateAttribute } from '@anticrm/presentation'
-  import { FullDescriptionBox } from '@anticrm/text-editor'
+  import { getAttribute, getClient, KeyedAttribute, updateAttribute } from '@hcengineering/presentation'
+  import { FullDescriptionBox } from '@hcengineering/text-editor'
 
   // export let objectId: Ref<Doc>
   // export let _class: Ref<Class<Doc>>

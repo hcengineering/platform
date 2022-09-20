@@ -13,13 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact from '@anticrm/contact'
-  import { Class, Doc, DocumentQuery, Lookup, Ref, SortingOrder, WithLookup } from '@anticrm/core'
-  import { Kanban, TypeState } from '@anticrm/kanban'
-  import notification from '@anticrm/notification'
-  import { createQuery } from '@anticrm/presentation'
-  import tags from '@anticrm/tags'
-  import { Issue, IssuesGrouping, IssuesOrdering, IssueStatus, Team } from '@anticrm/tracker'
+  import contact from '@hcengineering/contact'
+  import { Class, Doc, DocumentQuery, Lookup, Ref, SortingOrder, WithLookup } from '@hcengineering/core'
+  import { Kanban, TypeState } from '@hcengineering/kanban'
+  import notification from '@hcengineering/notification'
+  import { createQuery } from '@hcengineering/presentation'
+  import tags from '@hcengineering/tags'
+  import { Issue, IssuesGrouping, IssuesOrdering, IssueStatus, Team } from '@hcengineering/tracker'
   import {
     Button,
     Component,
@@ -29,10 +29,10 @@
     showPanel,
     showPopup,
     tooltip
-  } from '@anticrm/ui'
-  import { focusStore, ListSelectionProvider, SelectDirection, selectionStore } from '@anticrm/view-resources'
-  import ActionContext from '@anticrm/view-resources/src/components/ActionContext.svelte'
-  import Menu from '@anticrm/view-resources/src/components/Menu.svelte'
+  } from '@hcengineering/ui'
+  import { focusStore, ListSelectionProvider, SelectDirection, selectionStore } from '@hcengineering/view-resources'
+  import ActionContext from '@hcengineering/view-resources/src/components/ActionContext.svelte'
+  import Menu from '@hcengineering/view-resources/src/components/Menu.svelte'
   import { onMount } from 'svelte'
   import tracker from '../../plugin'
   import {

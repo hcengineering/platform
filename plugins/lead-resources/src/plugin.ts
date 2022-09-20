@@ -13,10 +13,10 @@
 // limitations under the License.
 //
 
-import lead, { leadId } from '@anticrm/lead'
-import { IntlString, mergeIds, Resource } from '@anticrm/platform'
-import { Client, Doc, Ref } from '@anticrm/core'
-import { AnyComponent } from '@anticrm/ui'
+import lead, { leadId } from '@hcengineering/lead'
+import { IntlString, mergeIds, Resource } from '@hcengineering/platform'
+import { Client, Doc, Ref } from '@hcengineering/core'
+import { AnyComponent } from '@hcengineering/ui'
 
 export default mergeIds(leadId, lead, {
   string: {

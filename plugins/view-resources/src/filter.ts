@@ -1,7 +1,7 @@
-import { Doc, FindResult, ObjQueryType, Ref } from '@anticrm/core'
-import { getResource } from '@anticrm/platform'
-import { createQuery, getClient, LiveQuery } from '@anticrm/presentation'
-import { Filter } from '@anticrm/view'
+import { Doc, FindResult, ObjQueryType, Ref } from '@hcengineering/core'
+import { getResource } from '@hcengineering/platform'
+import { createQuery, getClient, LiveQuery } from '@hcengineering/presentation'
+import { Filter } from '@hcengineering/view'
 import { writable } from 'svelte/store'
 import view from './plugin'
 

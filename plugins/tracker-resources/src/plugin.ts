@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { Client, Doc, Ref } from '@anticrm/core'
-import type { IntlString, Resource } from '@anticrm/platform'
-import { mergeIds } from '@anticrm/platform'
-import { AnyComponent } from '@anticrm/ui'
+import { Client, Doc, Ref } from '@hcengineering/core'
+import type { IntlString, Resource } from '@hcengineering/platform'
+import { mergeIds } from '@hcengineering/platform'
+import { AnyComponent } from '@hcengineering/ui'
 import tracker, { trackerId } from '../../tracker/lib'
 
 export default mergeIds(trackerId, tracker, {

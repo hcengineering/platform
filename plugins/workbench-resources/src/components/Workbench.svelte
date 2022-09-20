@@ -13,13 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import calendar from '@anticrm/calendar'
-  import contact, { Employee, EmployeeAccount } from '@anticrm/contact'
-  import core, { Class, Client, Doc, getCurrentAccount, Ref, setCurrentAccount, Space } from '@anticrm/core'
-  import notification, { NotificationStatus } from '@anticrm/notification'
-  import { NotificationClientImpl, BrowserNotificatator } from '@anticrm/notification-resources'
-  import { getMetadata, getResource, IntlString } from '@anticrm/platform'
-  import { Avatar, createQuery, setClient } from '@anticrm/presentation'
+  import calendar from '@hcengineering/calendar'
+  import contact, { Employee, EmployeeAccount } from '@hcengineering/contact'
+  import core, { Class, Client, Doc, getCurrentAccount, Ref, setCurrentAccount, Space } from '@hcengineering/core'
+  import notification, { NotificationStatus } from '@hcengineering/notification'
+  import { NotificationClientImpl, BrowserNotificatator } from '@hcengineering/notification-resources'
+  import { getMetadata, getResource, IntlString } from '@hcengineering/platform'
+  import { Avatar, createQuery, setClient } from '@hcengineering/presentation'
   import {
     AnyComponent,
     closePopup,
@@ -37,10 +37,10 @@
     resizeObserver,
     showPopup,
     TooltipInstance
-  } from '@anticrm/ui'
-  import view from '@anticrm/view'
-  import { ActionContext, ActionHandler } from '@anticrm/view-resources'
-  import type { Application, NavigatorModel, SpecialNavModel, ViewConfiguration } from '@anticrm/workbench'
+  } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
+  import { ActionContext, ActionHandler } from '@hcengineering/view-resources'
+  import type { Application, NavigatorModel, SpecialNavModel, ViewConfiguration } from '@hcengineering/workbench'
   import { onDestroy, tick } from 'svelte'
   import { doNavigate } from '../utils'
   import workbench from '../plugin'

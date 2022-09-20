@@ -14,12 +14,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, Ref, getObjectValue } from '@anticrm/core'
-  import { IconMoreV, showPopup } from '@anticrm/ui'
-  import { AttributeModel } from '@anticrm/view'
-  import inventory, { Category } from '@anticrm/inventory'
+  import { Doc, Ref, getObjectValue } from '@hcengineering/core'
+  import { IconMoreV, showPopup } from '@hcengineering/ui'
+  import { AttributeModel } from '@hcengineering/view'
+  import inventory, { Category } from '@hcengineering/inventory'
   import HierarchyElement from './HierarchyElement.svelte'
-  import { ContextMenu } from '@anticrm/view-resources'
+  import { ContextMenu } from '@hcengineering/view-resources'
   import Expand from './icons/Expand.svelte'
   import Collapse from './icons/Collapse.svelte'
 

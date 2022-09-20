@@ -14,11 +14,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Member } from '@anticrm/contact'
-  import { Hierarchy } from '@anticrm/core'
-  import { getClient } from '@anticrm/presentation'
-  import { getPanelURI } from '@anticrm/ui'
-  import view from '@anticrm/view'
+  import contact, { Member } from '@hcengineering/contact'
+  import { Hierarchy } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
+  import { getPanelURI } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
   import { ContactPresenter } from '..'
 
   export let value: Member

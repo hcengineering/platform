@@ -13,12 +13,12 @@
 // limitations under the License.
 //
 
-import { Builder } from '@anticrm/model'
+import { Builder } from '@hcengineering/model'
 
-import core from '@anticrm/core'
-import serverTask from '@anticrm/server-task'
-import task from '@anticrm/task'
-import view from '@anticrm/view'
+import core from '@hcengineering/core'
+import serverTask from '@hcengineering/server-task'
+import task from '@hcengineering/task'
+import view from '@hcengineering/view'
 
 export function createModel (builder: Builder): void {
   builder.mixin(task.class.Issue, core.class.Class, view.mixin.HTMLPresenter, {

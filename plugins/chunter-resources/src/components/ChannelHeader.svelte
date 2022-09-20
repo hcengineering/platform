@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Channel } from '@anticrm/chunter'
-  import type { Ref } from '@anticrm/core'
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import { showPanel } from '@anticrm/ui'
+  import { Channel } from '@hcengineering/chunter'
+  import type { Ref } from '@hcengineering/core'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { showPanel } from '@hcengineering/ui'
   import chunter from '../plugin'
   import { classIcon } from '../utils'
   import Header from './Header.svelte'

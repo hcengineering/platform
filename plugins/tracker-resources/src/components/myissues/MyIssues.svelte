@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { DocumentQuery, getCurrentAccount, Ref, TxCollectionCUD } from '@anticrm/core'
-  import type { Issue, IssueStatus } from '@anticrm/tracker'
-  import type { EmployeeAccount } from '@anticrm/contact'
-  import type { IntlString } from '@anticrm/platform'
-  import { createQuery } from '@anticrm/presentation'
-  import notification from '@anticrm/notification'
+  import core, { DocumentQuery, getCurrentAccount, Ref, TxCollectionCUD } from '@hcengineering/core'
+  import type { Issue, IssueStatus } from '@hcengineering/tracker'
+  import type { EmployeeAccount } from '@hcengineering/contact'
+  import type { IntlString } from '@hcengineering/platform'
+  import { createQuery } from '@hcengineering/presentation'
+  import notification from '@hcengineering/notification'
 
   import IssuesView from '../issues/IssuesView.svelte'
   import ModeSelector from '../ModeSelector.svelte'

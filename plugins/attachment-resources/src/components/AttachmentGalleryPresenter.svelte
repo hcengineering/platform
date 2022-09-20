@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Attachment } from '@anticrm/attachment'
-  import { showPopup, closeTooltip } from '@anticrm/ui'
-  import { PDFViewer, getFileUrl } from '@anticrm/presentation'
+  import type { Attachment } from '@hcengineering/attachment'
+  import { showPopup, closeTooltip } from '@hcengineering/ui'
+  import { PDFViewer, getFileUrl } from '@hcengineering/presentation'
   import filesize from 'filesize'
 
   export let value: Attachment

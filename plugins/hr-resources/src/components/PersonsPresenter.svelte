@@ -14,12 +14,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Employee } from '@anticrm/contact'
-  import { EmployeePresenter } from '@anticrm/contact-resources'
-  import { WithLookup } from '@anticrm/core'
-  import { Staff } from '@anticrm/hr'
-  import { closeTooltip, getEventPositionElement, showPopup } from '@anticrm/ui'
-  import { ContextMenu } from '@anticrm/view-resources'
+  import { Employee } from '@hcengineering/contact'
+  import { EmployeePresenter } from '@hcengineering/contact-resources'
+  import { WithLookup } from '@hcengineering/core'
+  import { Staff } from '@hcengineering/hr'
+  import { closeTooltip, getEventPositionElement, showPopup } from '@hcengineering/ui'
+  import { ContextMenu } from '@hcengineering/view-resources'
   import hr from '../plugin'
 
   import { flip } from 'svelte/animate'

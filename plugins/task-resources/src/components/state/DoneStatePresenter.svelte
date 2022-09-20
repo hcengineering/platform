@@ -14,9 +14,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { DoneState } from '@anticrm/task'
-  import task from '@anticrm/task'
-  import { getPlatformColor } from '@anticrm/ui'
+  import type { DoneState } from '@hcengineering/task'
+  import task from '@hcengineering/task'
+  import { getPlatformColor } from '@hcengineering/ui'
   import Won from '../icons/Won.svelte'
   import Lost from '../icons/Lost.svelte'
 

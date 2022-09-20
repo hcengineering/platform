@@ -14,11 +14,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, DocumentQuery } from '@anticrm/core'
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import { Button, Icon, IconAdd, Label, Loading, SearchEdit, showPopup } from '@anticrm/ui'
-  import view, { Viewlet, ViewletPreference } from '@anticrm/view'
-  import { ActionContext, FilterButton, TableBrowser, ViewletSettingButton } from '@anticrm/view-resources'
+  import { Doc, DocumentQuery } from '@hcengineering/core'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { Button, Icon, IconAdd, Label, Loading, SearchEdit, showPopup } from '@hcengineering/ui'
+  import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
+  import { ActionContext, FilterButton, TableBrowser, ViewletSettingButton } from '@hcengineering/view-resources'
   import contact from '../plugin'
   import CreateContact from './CreateContact.svelte'
 

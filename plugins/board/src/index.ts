@@ -14,15 +14,15 @@
 // limitations under the License.
 //
 
-import { Employee } from '@anticrm/contact'
-import type { Class, Doc, Markup, Ref, Type } from '@anticrm/core'
-import type { Asset, IntlString, Plugin } from '@anticrm/platform'
-import { plugin } from '@anticrm/platform'
-import type { Preference } from '@anticrm/preference'
-import type { DoneState, KanbanTemplateSpace, SpaceWithStates, Task } from '@anticrm/task'
-import type { AnyComponent } from '@anticrm/ui'
-import { Action, ActionCategory } from '@anticrm/view'
-import { TagCategory } from '@anticrm/tags'
+import { Employee } from '@hcengineering/contact'
+import type { Class, Doc, Markup, Ref, Type } from '@hcengineering/core'
+import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
+import { plugin } from '@hcengineering/platform'
+import type { Preference } from '@hcengineering/preference'
+import type { DoneState, KanbanTemplateSpace, SpaceWithStates, Task } from '@hcengineering/task'
+import type { AnyComponent } from '@hcengineering/ui'
+import { Action, ActionCategory } from '@hcengineering/view'
+import { TagCategory } from '@hcengineering/tags'
 
 /**
  * @public

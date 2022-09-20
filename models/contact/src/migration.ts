@@ -13,10 +13,10 @@
 // limitations under the License.
 //
 
-import { Employee, EmployeeAccount } from '@anticrm/contact'
-import { AccountRole, DOMAIN_TX, TxCreateDoc, TxOperations } from '@anticrm/core'
-import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
-import core from '@anticrm/model-core'
+import { Employee, EmployeeAccount } from '@hcengineering/contact'
+import { AccountRole, DOMAIN_TX, TxCreateDoc, TxOperations } from '@hcengineering/core'
+import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
+import core from '@hcengineering/model-core'
 import contact, { DOMAIN_CONTACT } from './index'
 
 async function createSpace (tx: TxOperations): Promise<void> {

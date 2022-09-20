@@ -13,18 +13,18 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { EmployeeAccount } from '@anticrm/contact'
-  import { Doc, getCurrentAccount, Ref, Space } from '@anticrm/core'
+  import contact, { EmployeeAccount } from '@hcengineering/contact'
+  import { Doc, getCurrentAccount, Ref, Space } from '@hcengineering/core'
   import {
     Notification as PlatformNotification,
     NotificationProvider,
     NotificationSetting,
     NotificationStatus,
     NotificationType
-  } from '@anticrm/notification'
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import { getCurrentLocation, showPanel } from '@anticrm/ui'
-  import view from '@anticrm/view'
+  } from '@hcengineering/notification'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { getCurrentLocation, showPanel } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
   import notification from '../plugin'
   import { NotificationClientImpl } from '../utils'
 

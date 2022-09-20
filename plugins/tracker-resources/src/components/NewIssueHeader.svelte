@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, Space } from '@anticrm/core'
-  import { getClient } from '@anticrm/presentation'
-  import { Button, showPopup } from '@anticrm/ui'
+  import { Ref, Space } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
+  import { Button, showPopup } from '@hcengineering/ui'
   import tracker from '../plugin'
   import CreateIssue from './CreateIssue.svelte'
 

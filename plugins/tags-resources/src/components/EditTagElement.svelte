@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Data, DocumentUpdate } from '@anticrm/core'
-  import { Card, createQuery, getClient } from '@anticrm/presentation'
-  import { TagElement, TagReference } from '@anticrm/tags'
-  import { DropdownLabels, EditBox, eventToHTMLElement, getPlatformColor, showPopup } from '@anticrm/ui'
-  import { DropdownTextItem } from '@anticrm/ui/src/types'
-  import { ColorsPopup } from '@anticrm/view-resources'
+  import core, { Data, DocumentUpdate } from '@hcengineering/core'
+  import { Card, createQuery, getClient } from '@hcengineering/presentation'
+  import { TagElement, TagReference } from '@hcengineering/tags'
+  import { DropdownLabels, EditBox, eventToHTMLElement, getPlatformColor, showPopup } from '@hcengineering/ui'
+  import { DropdownTextItem } from '@hcengineering/ui/src/types'
+  import { ColorsPopup } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import tags from '../plugin'
   import { getTagStyle } from '../utils'

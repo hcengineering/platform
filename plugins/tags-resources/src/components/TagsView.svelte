@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, DocumentQuery, FindOptions, Ref } from '@anticrm/core'
-  import { Asset, IntlString, translate } from '@anticrm/platform'
-  import { createQuery } from '@anticrm/presentation'
-  import { TagCategory, TagElement } from '@anticrm/tags'
-  import { AnySvelteComponent, Button, Icon, IconAdd, Label, SearchEdit, showPopup } from '@anticrm/ui'
-  import { TableBrowser } from '@anticrm/view-resources'
+  import { Class, Doc, DocumentQuery, FindOptions, Ref } from '@hcengineering/core'
+  import { Asset, IntlString, translate } from '@hcengineering/platform'
+  import { createQuery } from '@hcengineering/presentation'
+  import { TagCategory, TagElement } from '@hcengineering/tags'
+  import { AnySvelteComponent, Button, Icon, IconAdd, Label, SearchEdit, showPopup } from '@hcengineering/ui'
+  import { TableBrowser } from '@hcengineering/view-resources'
   import tags from '../plugin'
   import CategoryBar from './CategoryBar.svelte'
   import CreateTagElement from './CreateTagElement.svelte'

@@ -13,10 +13,10 @@
 // limitations under the License.
 //
 
-import { Doc, Ref, Space } from '@anticrm/core'
-import { Builder, Model, Prop, TypeRef } from '@anticrm/model'
-import core, { TDoc } from '@anticrm/model-core'
-import preference, { DOMAIN_PREFERENCE, Preference, SpacePreference } from '@anticrm/preference'
+import { Doc, Ref, Space } from '@hcengineering/core'
+import { Builder, Model, Prop, TypeRef } from '@hcengineering/model'
+import core, { TDoc } from '@hcengineering/model-core'
+import preference, { DOMAIN_PREFERENCE, Preference, SpacePreference } from '@hcengineering/preference'
 
 @Model(preference.class.Preference, core.class.Doc, DOMAIN_PREFERENCE)
 export class TPreference extends TDoc implements Preference {

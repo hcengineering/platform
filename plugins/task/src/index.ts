@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Employee } from '@anticrm/contact'
+import type { Employee } from '@hcengineering/contact'
 import {
   AttachedDoc,
   Class,
@@ -26,13 +26,13 @@ import {
   Space,
   Timestamp,
   TxOperations
-} from '@anticrm/core'
-import type { Asset, IntlString, Plugin } from '@anticrm/platform'
-import { plugin } from '@anticrm/platform'
-import type { AnyComponent } from '@anticrm/ui'
-import { ViewletDescriptor } from '@anticrm/view'
+} from '@hcengineering/core'
+import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
+import { plugin } from '@hcengineering/platform'
+import type { AnyComponent } from '@hcengineering/ui'
+import { ViewletDescriptor } from '@hcengineering/view'
 import { genRanks } from './utils'
-import { NotificationType } from '@anticrm/notification'
+import { NotificationType } from '@hcengineering/notification'
 
 /**
  * @public

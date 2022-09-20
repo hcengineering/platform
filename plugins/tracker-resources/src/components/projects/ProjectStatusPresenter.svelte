@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Project, ProjectStatus } from '@anticrm/tracker'
-  import { getClient } from '@anticrm/presentation'
-  import type { ButtonKind, ButtonSize } from '@anticrm/ui'
+  import { Project, ProjectStatus } from '@hcengineering/tracker'
+  import { getClient } from '@hcengineering/presentation'
+  import type { ButtonKind, ButtonSize } from '@hcengineering/ui'
   import tracker from '../../plugin'
 
   import ProjectStatusSelector from './ProjectStatusSelector.svelte'

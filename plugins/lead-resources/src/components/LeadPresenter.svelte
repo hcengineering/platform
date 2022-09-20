@@ -14,9 +14,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Lead } from '@anticrm/lead'
-  import { getPanelURI, Icon } from '@anticrm/ui'
-  import view from '@anticrm/view'
+  import type { Lead } from '@hcengineering/lead'
+  import { getPanelURI, Icon } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
   import lead from '../plugin'
 
   export let value: Lead

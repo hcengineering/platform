@@ -14,13 +14,13 @@
 // limitations under the License.
 //
 
-import { Builder } from '@anticrm/model'
+import { Builder } from '@hcengineering/model'
 
-import serverCore from '@anticrm/server-core'
-import core from '@anticrm/core'
-import contact from '@anticrm/contact'
-import view from '@anticrm/view'
-import serverContact from '@anticrm/server-contact'
+import serverCore from '@hcengineering/server-core'
+import core from '@hcengineering/core'
+import contact from '@hcengineering/contact'
+import view from '@hcengineering/view'
+import serverContact from '@hcengineering/server-contact'
 
 export function createModel (builder: Builder): void {
   builder.mixin(contact.class.Person, core.class.Class, view.mixin.HTMLPresenter, {

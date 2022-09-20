@@ -1,5 +1,5 @@
 {
-  "name": "@anticrm/core-package",
+  "name": "@hcengineering/core-package",
   "version": "0.6.0",
   "scripts": {
     "build": "heft build",
@@ -9,7 +9,7 @@
     "format": "prettier --write src && eslint --fix src"
   },
   "peerDependencies": {
-    "@anticrm/model-rig": "*"
+    "@hcengineering/model-rig": "*"
   },
   "devDependencies": {
     "@types/heft-jest":"^1.0.3",

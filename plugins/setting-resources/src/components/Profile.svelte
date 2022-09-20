@@ -13,18 +13,18 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AttributeEditor, createQuery, EditableAvatar, getClient } from '@anticrm/presentation'
+  import { AttributeEditor, createQuery, EditableAvatar, getClient } from '@hcengineering/presentation'
 
   import setting from '../plugin'
-  import { EditBox, Icon, Label, createFocusManager, FocusHandler, Button, showPopup } from '@anticrm/ui'
-  import contact, { Employee, EmployeeAccount, getFirstName, getLastName } from '@anticrm/contact'
-  import contactRes from '@anticrm/contact-resources/src/plugin'
-  import { getCurrentAccount } from '@anticrm/core'
-  import { getResource } from '@anticrm/platform'
-  import attachment from '@anticrm/attachment'
-  import { changeName, leaveWorkspace } from '@anticrm/login-resources'
-  import { ChannelsEditor } from '@anticrm/contact-resources'
-  import MessageBox from '@anticrm/presentation/src/components/MessageBox.svelte'
+  import { EditBox, Icon, Label, createFocusManager, FocusHandler, Button, showPopup } from '@hcengineering/ui'
+  import contact, { Employee, EmployeeAccount, getFirstName, getLastName } from '@hcengineering/contact'
+  import contactRes from '@hcengineering/contact-resources/src/plugin'
+  import { getCurrentAccount } from '@hcengineering/core'
+  import { getResource } from '@hcengineering/platform'
+  import attachment from '@hcengineering/attachment'
+  import { changeName, leaveWorkspace } from '@hcengineering/login-resources'
+  import { ChannelsEditor } from '@hcengineering/contact-resources'
+  import MessageBox from '@hcengineering/presentation/src/components/MessageBox.svelte'
   const client = getClient()
 
   let employee: Employee | undefined

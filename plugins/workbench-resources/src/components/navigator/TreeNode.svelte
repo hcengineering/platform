@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Asset, IntlString } from '@anticrm/platform'
-  import type { Action } from '@anticrm/ui'
+  import type { Asset, IntlString } from '@hcengineering/platform'
+  import type { Action } from '@hcengineering/ui'
   import TreeElement from './TreeElement.svelte'
 
   export let title: string | undefined = undefined

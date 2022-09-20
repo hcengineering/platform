@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, Ref } from '@anticrm/core'
-  import { getEmbeddedLabel } from '@anticrm/platform'
-  import presentation from '@anticrm/presentation'
-  import { Button, Icon, IconAdd, Label, showPopup } from '@anticrm/ui'
-  import view, { BuildModelKey } from '@anticrm/view'
-  import { Table } from '@anticrm/view-resources'
+  import { Doc, Ref } from '@hcengineering/core'
+  import { getEmbeddedLabel } from '@hcengineering/platform'
+  import presentation from '@hcengineering/presentation'
+  import { Button, Icon, IconAdd, Label, showPopup } from '@hcengineering/ui'
+  import view, { BuildModelKey } from '@hcengineering/view'
+  import { Table } from '@hcengineering/view-resources'
   import recruit from '../plugin'
   import CreateVacancy from './CreateVacancy.svelte'
   import FileDuo from './icons/FileDuo.svelte'

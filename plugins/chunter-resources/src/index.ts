@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import core, { Data, Doc, DocumentQuery, Ref, RelatedDocument, Space } from '@anticrm/core'
+import core, { Data, Doc, DocumentQuery, Ref, RelatedDocument, Space } from '@hcengineering/core'
 import chunter, {
   ChunterSpace,
   Channel,
@@ -22,12 +22,12 @@ import chunter, {
   ThreadMessage,
   DirectMessage,
   Backlink
-} from '@anticrm/chunter'
-import { NotificationClientImpl } from '@anticrm/notification-resources'
-import { Resources } from '@anticrm/platform'
-import preference from '@anticrm/preference'
-import { getClient, MessageBox } from '@anticrm/presentation'
-import { getCurrentLocation, navigate, showPopup } from '@anticrm/ui'
+} from '@hcengineering/chunter'
+import { NotificationClientImpl } from '@hcengineering/notification-resources'
+import { Resources } from '@hcengineering/platform'
+import preference from '@hcengineering/preference'
+import { getClient, MessageBox } from '@hcengineering/presentation'
+import { getCurrentLocation, navigate, showPopup } from '@hcengineering/ui'
 import TxBacklinkCreate from './components/activity/TxBacklinkCreate.svelte'
 import TxBacklinkReference from './components/activity/TxBacklinkReference.svelte'
 import TxCommentCreate from './components/activity/TxCommentCreate.svelte'

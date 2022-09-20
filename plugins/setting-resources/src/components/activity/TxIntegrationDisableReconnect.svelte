@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { TxUpdateDoc } from '@anticrm/core'
-  import { getClient } from '@anticrm/presentation'
-  import { Integration, IntegrationType } from '@anticrm/setting'
-  import { Button, eventToHTMLElement, showPopup } from '@anticrm/ui'
+  import { TxUpdateDoc } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
+  import { Integration, IntegrationType } from '@hcengineering/setting'
+  import { Button, eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import setting from '../../plugin'
 
   export let tx: TxUpdateDoc<Integration>

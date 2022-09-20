@@ -13,14 +13,14 @@
 // limitations under the License.
 //
 
-import type { TxViewlet } from '@anticrm/activity'
-import { attachmentId } from '@anticrm/attachment'
-import attachment from '@anticrm/attachment-resources/src/plugin'
-import type { Ref } from '@anticrm/core'
-import type { IntlString } from '@anticrm/platform'
-import { mergeIds } from '@anticrm/platform'
-import type { AnyComponent } from '@anticrm/ui'
-import type { ActionCategory } from '@anticrm/view'
+import type { TxViewlet } from '@hcengineering/activity'
+import { attachmentId } from '@hcengineering/attachment'
+import attachment from '@hcengineering/attachment-resources/src/plugin'
+import type { Ref } from '@hcengineering/core'
+import type { IntlString } from '@hcengineering/platform'
+import { mergeIds } from '@hcengineering/platform'
+import type { AnyComponent } from '@hcengineering/ui'
+import type { ActionCategory } from '@hcengineering/view'
 
 export default mergeIds(attachmentId, attachment, {
   component: {

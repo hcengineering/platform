@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-import type { Resource, Plugin } from '@anticrm/platform'
-import { plugin } from '@anticrm/platform'
-import type { TriggerFunc } from '@anticrm/server-core'
-import { Doc } from '@anticrm/core'
+import type { Resource, Plugin } from '@hcengineering/platform'
+import { plugin } from '@hcengineering/platform'
+import type { TriggerFunc } from '@hcengineering/server-core'
+import { Doc } from '@hcengineering/core'
 
 /**
  * @public

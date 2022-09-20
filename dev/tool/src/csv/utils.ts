@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import contact, { ChannelProvider, Contact } from '@anticrm/contact'
-import { Class, Doc, Ref, TxOperations } from '@anticrm/core'
+import contact, { ChannelProvider, Contact } from '@hcengineering/contact'
+import { Class, Doc, Ref, TxOperations } from '@hcengineering/core'
 
 export function filled (obj: any, uniqKeys: string[]): any {
   const result: Record<string, any> = {}

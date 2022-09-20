@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { IntlString } from '@anticrm/platform'
+  import { IntlString } from '@hcengineering/platform'
   import { createEventDispatcher } from 'svelte'
   import ui from '../plugin'
   import { showPopup } from '../popups'

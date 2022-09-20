@@ -14,13 +14,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Card as BoardCard } from '@anticrm/board'
-  import { AttachedData, generateId, Ref, SortingOrder, Space } from '@anticrm/core'
-  import { OK, Status } from '@anticrm/platform'
-  import { Card, getClient } from '@anticrm/presentation'
-  import SpaceSelector from '@anticrm/presentation/src/components/SpaceSelector.svelte'
-  import task, { calcRank } from '@anticrm/task'
-  import { EditBox, Grid, Status as StatusControl } from '@anticrm/ui'
+  import type { Card as BoardCard } from '@hcengineering/board'
+  import { AttachedData, generateId, Ref, SortingOrder, Space } from '@hcengineering/core'
+  import { OK, Status } from '@hcengineering/platform'
+  import { Card, getClient } from '@hcengineering/presentation'
+  import SpaceSelector from '@hcengineering/presentation/src/components/SpaceSelector.svelte'
+  import task, { calcRank } from '@hcengineering/task'
+  import { EditBox, Grid, Status as StatusControl } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import board from '../plugin'
 

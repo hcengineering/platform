@@ -29,17 +29,17 @@ import {
   Tx,
   TxHander,
   TxResult
-} from '@anticrm/core'
-import { createInMemoryTxAdapter } from '@anticrm/dev-storage'
-import devmodel from '@anticrm/devmodel'
-import { protoDeserialize, protoSerialize, setMetadata } from '@anticrm/platform'
+} from '@hcengineering/core'
+import { createInMemoryTxAdapter } from '@hcengineering/dev-storage'
+import devmodel from '@hcengineering/devmodel'
+import { protoDeserialize, protoSerialize, setMetadata } from '@hcengineering/platform'
 import {
   createInMemoryAdapter,
   createServerStorage,
   DbConfiguration,
   FullTextAdapter,
   IndexedDoc
-} from '@anticrm/server-core'
+} from '@hcengineering/server-core'
 
 class ServerStorageWrapper implements ClientConnection {
   measureCtx = new MeasureMetricsContext('client', {})

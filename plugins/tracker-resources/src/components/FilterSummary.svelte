@@ -13,13 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Button, eventToHTMLElement, IconAdd, showPopup, Label } from '@anticrm/ui'
+  import { Button, eventToHTMLElement, IconAdd, showPopup, Label } from '@hcengineering/ui'
   import FilterSummarySection from './FilterSummarySection.svelte'
   import StatusFilterMenuSection from './issues/StatusFilterMenuSection.svelte'
   import PriorityFilterMenuSection from './issues/PriorityFilterMenuSection.svelte'
   import { defaultPriorities, getGroupedIssues, IssueFilter } from '../utils'
-  import { WithLookup } from '@anticrm/core'
-  import { Issue, IssueStatus } from '@anticrm/tracker'
+  import { WithLookup } from '@hcengineering/core'
+  import { Issue, IssueStatus } from '@hcengineering/tracker'
   import tracker from '../plugin'
 
   export let filters: IssueFilter[] = []

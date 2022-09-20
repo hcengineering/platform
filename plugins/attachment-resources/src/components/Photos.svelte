@@ -14,11 +14,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Photo } from '@anticrm/attachment'
-  import { Class, Doc, Ref, Space } from '@anticrm/core'
-  import { setPlatformStatus, unknownError } from '@anticrm/platform'
-  import { createQuery, getClient, getFileUrl, PDFViewer } from '@anticrm/presentation'
-  import { Button, IconAdd, Label, showPopup, Spinner } from '@anticrm/ui'
+  import { Photo } from '@hcengineering/attachment'
+  import { Class, Doc, Ref, Space } from '@hcengineering/core'
+  import { setPlatformStatus, unknownError } from '@hcengineering/platform'
+  import { createQuery, getClient, getFileUrl, PDFViewer } from '@hcengineering/presentation'
+  import { Button, IconAdd, Label, showPopup, Spinner } from '@hcengineering/ui'
   import attachment from '../plugin'
   import { uploadFile } from '../utils'
   import UploadDuo from './icons/UploadDuo.svelte'

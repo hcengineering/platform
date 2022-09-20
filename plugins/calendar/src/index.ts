@@ -11,12 +11,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Employee } from '@anticrm/contact'
-import type { AttachedDoc, Class, Doc, Markup, Mixin, Ref, Space, Timestamp } from '@anticrm/core'
-import type { Asset, IntlString, Plugin } from '@anticrm/platform'
-import { plugin } from '@anticrm/platform'
-import { AnyComponent } from '@anticrm/ui'
-import { NotificationType } from '@anticrm/notification'
+import { Employee } from '@hcengineering/contact'
+import type { AttachedDoc, Class, Doc, Markup, Mixin, Ref, Space, Timestamp } from '@hcengineering/core'
+import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
+import { plugin } from '@hcengineering/platform'
+import { AnyComponent } from '@hcengineering/ui'
+import { NotificationType } from '@hcengineering/notification'
 
 /**
  * @public

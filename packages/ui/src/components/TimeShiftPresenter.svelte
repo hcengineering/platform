@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { translate } from '@anticrm/platform'
+  import { translate } from '@hcengineering/platform'
   import ui from '../plugin'
 
   export let value: number

@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { WithLookup } from '@anticrm/core'
-  import { IssueStatus } from '@anticrm/tracker'
+  import { WithLookup } from '@hcengineering/core'
+  import { IssueStatus } from '@hcengineering/tracker'
   import IssueStatusIcon from './IssueStatusIcon.svelte'
 
   export let value: WithLookup<IssueStatus> | undefined

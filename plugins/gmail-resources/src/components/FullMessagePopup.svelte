@@ -14,8 +14,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { SharedMessage } from '@anticrm/gmail'
-  import { Label } from '@anticrm/ui'
+  import { SharedMessage } from '@hcengineering/gmail'
+  import { Label } from '@hcengineering/ui'
   import gmail from '../plugin'
   import FullMessageContent from './FullMessageContent.svelte'
 

@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Attachment } from '@anticrm/attachment'
-  import type { Doc } from '@anticrm/core'
-  import { createQuery } from '@anticrm/presentation'
+  import { Attachment } from '@hcengineering/attachment'
+  import type { Doc } from '@hcengineering/core'
+  import { createQuery } from '@hcengineering/presentation'
   import attachment from '../plugin'
   import AttachmentList from './AttachmentList.svelte'
 

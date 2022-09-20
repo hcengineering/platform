@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Class, Doc, DocumentQuery, FindOptions, Ref } from '@anticrm/core'
-  import { Scroller, tableSP } from '@anticrm/ui'
-  import { BuildModelKey } from '@anticrm/view'
+  import type { Class, Doc, DocumentQuery, FindOptions, Ref } from '@hcengineering/core'
+  import { Scroller, tableSP } from '@hcengineering/ui'
+  import { BuildModelKey } from '@hcengineering/view'
   import { onMount } from 'svelte'
   import { ActionContext } from '..'
   import { focusStore, ListSelectionProvider, SelectDirection, selectionStore } from '../selection'

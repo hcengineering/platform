@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Sprint } from '@anticrm/tracker'
-  import { getMonthName, Icon } from '@anticrm/ui'
+  import { Sprint } from '@hcengineering/tracker'
+  import { getMonthName, Icon } from '@hcengineering/ui'
   import tracker from '../../plugin'
   export let value: Sprint | undefined
 </script>

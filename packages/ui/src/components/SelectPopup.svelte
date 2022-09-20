@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Asset, IntlString } from '@anticrm/platform'
+  import type { Asset, IntlString } from '@hcengineering/platform'
   import { afterUpdate, createEventDispatcher } from 'svelte'
   import { createFocusManager } from '../focus'
   import EditBox from './EditBox.svelte'

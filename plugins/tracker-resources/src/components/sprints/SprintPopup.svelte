@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Class, Doc, DocumentQuery, Ref } from '@anticrm/core'
-  import { ObjectCreate, ObjectPopup } from '@anticrm/presentation'
-  import { Sprint, SprintStatus } from '@anticrm/tracker'
-  import { Icon, Label } from '@anticrm/ui'
+  import type { Class, Doc, DocumentQuery, Ref } from '@hcengineering/core'
+  import { ObjectCreate, ObjectPopup } from '@hcengineering/presentation'
+  import { Sprint, SprintStatus } from '@hcengineering/tracker'
+  import { Icon, Label } from '@hcengineering/ui'
   import { sprintStatusAssets } from '../../utils'
   import SprintTitlePresenter from './SprintTitlePresenter.svelte'
   export let _class: Ref<Class<Sprint>>

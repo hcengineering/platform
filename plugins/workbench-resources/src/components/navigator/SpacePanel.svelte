@@ -14,10 +14,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Class, Ref, Space } from '@anticrm/core'
-  import core from '@anticrm/core'
-  import { createQuery, getClient, Members } from '@anticrm/presentation'
-  import { EditBox, Icon, Label, Scroller, Panel } from '@anticrm/ui'
+  import type { Class, Ref, Space } from '@hcengineering/core'
+  import core from '@hcengineering/core'
+  import { createQuery, getClient, Members } from '@hcengineering/presentation'
+  import { EditBox, Icon, Label, Scroller, Panel } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import workbench from '../../plugin'
 

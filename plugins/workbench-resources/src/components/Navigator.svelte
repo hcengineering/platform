@@ -13,15 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Doc, Ref, SortingOrder, Space, getCurrentAccount } from '@anticrm/core'
-  import { getResource } from '@anticrm/platform'
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import { Scroller } from '@anticrm/ui'
-  import type { NavigatorModel, SpecialNavModel } from '@anticrm/workbench'
+  import core, { Doc, Ref, SortingOrder, Space, getCurrentAccount } from '@hcengineering/core'
+  import { getResource } from '@hcengineering/platform'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { Scroller } from '@hcengineering/ui'
+  import type { NavigatorModel, SpecialNavModel } from '@hcengineering/workbench'
   import { createEventDispatcher } from 'svelte'
-  import preferece, { SpacePreference } from '@anticrm/preference'
+  import preferece, { SpacePreference } from '@hcengineering/preference'
   import { getSpecialSpaceClass } from '../utils'
-  import preference from '@anticrm/preference'
+  import preference from '@hcengineering/preference'
   import SpacesNav from './navigator/SpacesNav.svelte'
   import SpecialElement from './navigator/SpecialElement.svelte'
   import StarredNav from './navigator/StarredNav.svelte'

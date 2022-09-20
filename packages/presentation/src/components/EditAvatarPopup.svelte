@@ -14,9 +14,9 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { getResource } from '@anticrm/platform'
-  import { Button } from '@anticrm/ui'
-  import imageCropper from '@anticrm/image-cropper'
+  import { getResource } from '@hcengineering/platform'
+  import { Button } from '@hcengineering/ui'
+  import imageCropper from '@hcengineering/image-cropper'
   import plugin from '../plugin'
 
   export let file: Blob

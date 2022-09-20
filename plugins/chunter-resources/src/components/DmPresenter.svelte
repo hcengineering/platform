@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { DirectMessage } from '@anticrm/chunter'
-  import { getClient } from '@anticrm/presentation'
-  import { Icon } from '@anticrm/ui'
+  import type { DirectMessage } from '@hcengineering/chunter'
+  import { getClient } from '@hcengineering/presentation'
+  import { Icon } from '@hcengineering/ui'
 
   import { getSpaceLink, getDmName } from '../utils'
 

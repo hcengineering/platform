@@ -1,9 +1,9 @@
 {
-  "name": "@anticrm/mongo",
+  "name": "@hcengineering/mongo",
   "entries": [
     {
       "version": "0.6.1",
-      "tag": "@anticrm/mongo_v0.6.1",
+      "tag": "@hcengineering/mongo_v0.6.1",
       "date": "Fri, 20 Aug 2021 16:21:03 GMT",
       "comments": {
         "patch": [
@@ -13,7 +13,7 @@
         ],
         "dependency": [
           {
-            "comment": "Updating dependency \"@anticrm/core\" from `~0.6.10` to `~0.6.11`"
+            "comment": "Updating dependency \"@hcengineering/core\" from `~0.6.10` to `~0.6.11`"
           }
         ]
       }

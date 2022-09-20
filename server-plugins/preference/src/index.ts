@@ -13,10 +13,10 @@
 // limitations under the License.
 //
 
-import type { Plugin } from '@anticrm/platform'
-import { plugin } from '@anticrm/platform'
+import type { Plugin } from '@hcengineering/platform'
+import { plugin } from '@hcengineering/platform'
 
-export { DOMAIN_PREFERENCE } from '@anticrm/preference'
+export { DOMAIN_PREFERENCE } from '@hcengineering/preference'
 
 /**
  * @public

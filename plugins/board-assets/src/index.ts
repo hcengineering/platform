@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-import { addStringsLoader, loadMetadata } from '@anticrm/platform'
-import board, { boardId } from '@anticrm/board'
+import { addStringsLoader, loadMetadata } from '@hcengineering/platform'
+import board, { boardId } from '@hcengineering/board'
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(board.icon, {

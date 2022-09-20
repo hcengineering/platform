@@ -13,12 +13,12 @@
 // limitations under the License.
 //
 
-import type { Class, Client, Data, Doc, DocumentQuery, Ref, Space } from '@anticrm/core'
-import { DOMAIN_MODEL } from '@anticrm/core'
-import { Builder, Mixin, Model } from '@anticrm/model'
-import core, { TClass, TDoc } from '@anticrm/model-core'
-import type { Asset, IntlString, Resource, Status } from '@anticrm/platform'
-import type { AnyComponent } from '@anticrm/ui'
+import type { Class, Client, Data, Doc, DocumentQuery, Ref, Space } from '@hcengineering/core'
+import { DOMAIN_MODEL } from '@hcengineering/core'
+import { Builder, Mixin, Model } from '@hcengineering/model'
+import core, { TClass, TDoc } from '@hcengineering/model-core'
+import type { Asset, IntlString, Resource, Status } from '@hcengineering/platform'
+import type { AnyComponent } from '@hcengineering/ui'
 import type {
   Action,
   ActionCategory,
@@ -53,8 +53,8 @@ import type {
   Viewlet,
   ViewletDescriptor,
   ViewletPreference
-} from '@anticrm/view'
-import preference, { TPreference } from '@anticrm/model-preference'
+} from '@hcengineering/view'
+import preference, { TPreference } from '@hcengineering/model-preference'
 import view from './plugin'
 
 export { viewOperation } from './migration'

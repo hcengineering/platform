@@ -13,9 +13,9 @@
 // limitations under the License.
 //
 
-import automation, { automationId } from '@anticrm/automation'
-import { mergeIds } from '@anticrm/platform'
-import type { AnyComponent } from '@anticrm/ui'
+import automation, { automationId } from '@hcengineering/automation'
+import { mergeIds } from '@hcengineering/platform'
+import type { AnyComponent } from '@hcengineering/ui'
 
 const automations = mergeIds(automationId, automation, {
   component: {

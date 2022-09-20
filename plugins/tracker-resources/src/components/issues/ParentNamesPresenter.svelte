@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Issue } from '@anticrm/tracker'
+  import type { Issue } from '@hcengineering/tracker'
 
   export let value: Issue | undefined
 

@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Status, Severity, OK, setMetadata } from '@anticrm/platform'
+  import { Status, Severity, OK, setMetadata } from '@hcengineering/platform'
 
   import Form from './Form.svelte'
   import { createWorkspace } from '../utils'
@@ -24,9 +24,9 @@
     navigate,
     setMetadataLocalStorage,
     showPopup
-  } from '@anticrm/ui'
+  } from '@hcengineering/ui'
   import login from '../plugin'
-  import { workbenchId } from '@anticrm/workbench'
+  import { workbenchId } from '@hcengineering/workbench'
   import InviteLink from './InviteLink.svelte'
 
   const fields = [

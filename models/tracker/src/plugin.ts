@@ -14,14 +14,14 @@
 // limitations under the License.
 //
 
-import { Doc, Ref } from '@anticrm/core'
-import { ObjectSearchCategory, ObjectSearchFactory } from '@anticrm/model-presentation'
-import { IntlString, mergeIds, Resource } from '@anticrm/platform'
-import { trackerId } from '@anticrm/tracker'
-import tracker from '@anticrm/tracker-resources/src/plugin'
-import type { AnyComponent } from '@anticrm/ui/src/types'
-import { Action, ViewAction, ViewletDescriptor } from '@anticrm/view'
-import { Application } from '@anticrm/workbench'
+import { Doc, Ref } from '@hcengineering/core'
+import { ObjectSearchCategory, ObjectSearchFactory } from '@hcengineering/model-presentation'
+import { IntlString, mergeIds, Resource } from '@hcengineering/platform'
+import { trackerId } from '@hcengineering/tracker'
+import tracker from '@hcengineering/tracker-resources/src/plugin'
+import type { AnyComponent } from '@hcengineering/ui/src/types'
+import { Action, ViewAction, ViewletDescriptor } from '@hcengineering/view'
+import { Application } from '@hcengineering/workbench'
 
 export default mergeIds(trackerId, tracker, {
   string: {

@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core from '@anticrm/core'
-  import { Request } from '@anticrm/hr'
-  import { getClient } from '@anticrm/presentation'
-  import { StyledTextArea } from '@anticrm/text-editor'
-  import { createFocusManager, FocusHandler } from '@anticrm/ui'
+  import core from '@hcengineering/core'
+  import { Request } from '@hcengineering/hr'
+  import { getClient } from '@hcengineering/presentation'
+  import { StyledTextArea } from '@hcengineering/text-editor'
+  import { createFocusManager, FocusHandler } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
 
   export let object: Request
