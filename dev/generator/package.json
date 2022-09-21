@@ -28,7 +28,7 @@
     "@typescript-eslint/parser": "^5.30.0",
     "eslint-config-standard-with-typescript": "^21.0.1",
     "prettier": "^2.7.1",
-    "@rushstack/heft": "^0.46.1",
+    "@rushstack/heft": "^0.47.9",
     "typescript": "^4.3.5",
     "@types/ws": "^8.2.1",
     "@types/faker": "~5.5.9",
