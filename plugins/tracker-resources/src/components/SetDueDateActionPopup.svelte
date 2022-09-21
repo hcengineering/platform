@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AttachedData } from '@anticrm/core'
-  import { DatePopup } from '@anticrm/ui'
-  import { getClient } from '@anticrm/presentation'
-  import { Issue } from '@anticrm/tracker'
+  import { AttachedData } from '@hcengineering/core'
+  import { DatePopup } from '@hcengineering/ui'
+  import { getClient } from '@hcengineering/presentation'
+  import { Issue } from '@hcengineering/tracker'
   import { createEventDispatcher } from 'svelte'
 
   export let value: Issue | AttachedData<Issue>

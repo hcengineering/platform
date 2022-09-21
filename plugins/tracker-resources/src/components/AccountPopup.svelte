@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Employee, EmployeeAccount, formatName } from '@anticrm/contact'
-  import { getCurrentAccount } from '@anticrm/core'
-  import login from '@anticrm/login'
-  import { setMetadata } from '@anticrm/platform'
-  import { Avatar, createQuery } from '@anticrm/presentation'
-  import setting, { SettingsCategory, settingId } from '@anticrm/setting'
+  import contact, { Employee, EmployeeAccount, formatName } from '@hcengineering/contact'
+  import { getCurrentAccount } from '@hcengineering/core'
+  import login from '@hcengineering/login'
+  import { setMetadata } from '@hcengineering/platform'
+  import { Avatar, createQuery } from '@hcengineering/presentation'
+  import setting, { SettingsCategory, settingId } from '@hcengineering/setting'
   import {
     closePopup,
     fetchMetadataLocalStorage,
@@ -27,7 +27,7 @@
     Label,
     navigate,
     setMetadataLocalStorage
-  } from '@anticrm/ui'
+  } from '@hcengineering/ui'
 
   // const client = getClient()
   async function getItems (): Promise<SettingsCategory[]> {

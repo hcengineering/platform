@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-import { addStringsLoader, loadMetadata } from '@anticrm/platform'
-import tags, { tagsId } from '@anticrm/tags'
+import { addStringsLoader, loadMetadata } from '@hcengineering/platform'
+import tags, { tagsId } from '@hcengineering/tags'
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(tags.icon, {

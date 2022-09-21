@@ -14,10 +14,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Comment } from '@anticrm/chunter'
-  import { Doc, generateId, Ref } from '@anticrm/core'
-  import { getClient } from '@anticrm/presentation'
-  import { AttachmentRefInput } from '@anticrm/attachment-resources'
+  import { Comment } from '@hcengineering/chunter'
+  import { Doc, generateId, Ref } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
+  import { AttachmentRefInput } from '@hcengineering/attachment-resources'
   import { createBacklinks } from '../backlinks'
   import chunter from '../plugin'
 

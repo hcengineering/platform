@@ -14,13 +14,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import calendar from '@anticrm/calendar'
-  import contact, { Contact } from '@anticrm/contact'
-  import { getClient, UserBox } from '@anticrm/presentation'
-  import type { Review } from '@anticrm/recruit'
-  import { FullDescriptionBox } from '@anticrm/text-editor'
-  import { EditBox, Grid, showPanel } from '@anticrm/ui'
-  import view from '@anticrm/view'
+  import calendar from '@hcengineering/calendar'
+  import contact, { Contact } from '@hcengineering/contact'
+  import { getClient, UserBox } from '@hcengineering/presentation'
+  import type { Review } from '@hcengineering/recruit'
+  import { FullDescriptionBox } from '@hcengineering/text-editor'
+  import { EditBox, Grid, showPanel } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
   import { createEventDispatcher, onMount } from 'svelte'
   import recruit from '../../plugin'
 

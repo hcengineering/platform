@@ -27,9 +27,9 @@ import core, {
   StorageIterator,
   Tx,
   TxResult
-} from '@anticrm/core'
-import { PlatformError, unknownStatus } from '@anticrm/platform'
-import { DbAdapter, IndexedDoc } from '@anticrm/server-core'
+} from '@hcengineering/core'
+import { PlatformError, unknownStatus } from '@hcengineering/platform'
+import { DbAdapter, IndexedDoc } from '@hcengineering/server-core'
 import { ApiResponse, Client } from '@elastic/elasticsearch'
 import { createHash } from 'node:crypto'
 

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Icon, IconDPCalendarOver, IconDPCalendar, Label } from '@anticrm/ui'
+  import { Icon, IconDPCalendarOver, IconDPCalendar, Label } from '@hcengineering/ui'
   import contact from '../plugin'
 
   export let isOverdue: boolean = false

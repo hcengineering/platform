@@ -14,10 +14,10 @@
 // limitations under the License.
 */
 
-import type { StatusCode, IntlString } from '@anticrm/platform'
-import { mergeIds } from '@anticrm/platform'
+import type { StatusCode, IntlString } from '@hcengineering/platform'
+import { mergeIds } from '@hcengineering/platform'
 
-import login, { loginId } from '@anticrm/login'
+import login, { loginId } from '@hcengineering/login'
 
 export default mergeIds(loginId, login, {
   status: {

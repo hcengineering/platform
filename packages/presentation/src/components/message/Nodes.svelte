@@ -14,8 +14,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { CheckBox, Component, navigate, parseLocation } from '@anticrm/ui'
-  import view from '@anticrm/view'
+  import { CheckBox, Component, navigate, parseLocation } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
 
   export let nodes: NodeListOf<any>
 </script>

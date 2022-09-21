@@ -1,6 +1,6 @@
 <script lang="ts">
   import board from '../../plugin'
-  import { Button, ActionIcon, IconClose, Label } from '@anticrm/ui'
+  import { Button, ActionIcon, IconClose, Label } from '@hcengineering/ui'
 
   export let cardsNumber: number
   export let onAddSingle: () => void

@@ -1,4 +1,4 @@
-import core, { Attribute, Data, Doc, DocumentUpdate, Hierarchy, ModelDb, Ref, Tx, Type } from '@anticrm/core'
+import core, { Attribute, Data, Doc, DocumentUpdate, Hierarchy, ModelDb, Ref, Tx, Type } from '@hcengineering/core'
 import { deepEqual } from 'fast-equals'
 
 /**

@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import ui, { Label, Icon, CheckBox } from '@anticrm/ui'
+  import ui, { Label, Icon, CheckBox } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import { FilterSectionElement } from '../utils'
 

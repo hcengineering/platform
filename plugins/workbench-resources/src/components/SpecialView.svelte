@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, DocumentQuery, Ref } from '@anticrm/core'
-  import { Asset, IntlString } from '@anticrm/platform'
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import { AnyComponent, Button, Icon, IconAdd, Label, Loading, SearchEdit, showPopup } from '@anticrm/ui'
-  import view, { Viewlet, ViewletDescriptor, ViewletPreference } from '@anticrm/view'
-  import { FilterButton, TableBrowser, ViewletSettingButton } from '@anticrm/view-resources'
+  import { Class, Doc, DocumentQuery, Ref } from '@hcengineering/core'
+  import { Asset, IntlString } from '@hcengineering/platform'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { AnyComponent, Button, Icon, IconAdd, Label, Loading, SearchEdit, showPopup } from '@hcengineering/ui'
+  import view, { Viewlet, ViewletDescriptor, ViewletPreference } from '@hcengineering/view'
+  import { FilterButton, TableBrowser, ViewletSettingButton } from '@hcengineering/view-resources'
 
   export let _class: Ref<Class<Doc>>
   export let icon: Asset

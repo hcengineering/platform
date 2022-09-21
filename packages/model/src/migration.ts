@@ -10,7 +10,7 @@ import {
   OmitNever,
   PushOptions,
   Ref
-} from '@anticrm/core'
+} from '@hcengineering/core'
 
 /**
  * @public

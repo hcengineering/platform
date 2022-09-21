@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { CardCover, Card } from '@anticrm/board'
-  import presentation, { Card as Popup, getClient } from '@anticrm/presentation'
-  import { Button, hexColorToNumber, Icon, Label, IconCheck } from '@anticrm/ui'
+  import { CardCover, Card } from '@hcengineering/board'
+  import presentation, { Card as Popup, getClient } from '@hcengineering/presentation'
+  import { Button, hexColorToNumber, Icon, Label, IconCheck } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import board from '../../plugin'
   import { getBoardAvailableColors } from '../../utils/BoardUtils'

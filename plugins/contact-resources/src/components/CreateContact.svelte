@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { Asset } from '@anticrm/platform'
+  import { Asset } from '@hcengineering/platform'
   import { afterUpdate, createEventDispatcher } from 'svelte'
-  import { getClient } from '@anticrm/presentation'
-  import { Menu, Action, showPopup, closePopup } from '@anticrm/ui'
-  import view from '@anticrm/view'
+  import { getClient } from '@hcengineering/presentation'
+  import { Menu, Action, showPopup, closePopup } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
   import contact from '../plugin'
 
   const dispatch = createEventDispatcher()

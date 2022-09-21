@@ -1,10 +1,10 @@
 import { readable } from 'svelte/store'
-import board, { Board, CommonBoardPreference } from '@anticrm/board'
-import core, { Ref, TxOperations } from '@anticrm/core'
-import type { KanbanTemplate, TodoItem } from '@anticrm/task'
-import preference from '@anticrm/preference'
-import { createKanban } from '@anticrm/task'
-import { createQuery, getClient } from '@anticrm/presentation'
+import board, { Board, CommonBoardPreference } from '@hcengineering/board'
+import core, { Ref, TxOperations } from '@hcengineering/core'
+import type { KanbanTemplate, TodoItem } from '@hcengineering/task'
+import preference from '@hcengineering/preference'
+import { createKanban } from '@hcengineering/task'
+import { createQuery, getClient } from '@hcengineering/presentation'
 import {
   FernColor,
   FlamingoColor,
@@ -17,7 +17,7 @@ import {
   SalmonColor,
   SeagullColor,
   areDatesEqual
-} from '@anticrm/ui'
+} from '@hcengineering/ui'
 
 export async function createBoard (
   client: TxOperations,

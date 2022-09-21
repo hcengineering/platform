@@ -13,16 +13,16 @@
 // limitations under the License.
 //
 
-import contact from '@anticrm/contact'
-import core, { DOMAIN_TX, Tx, Client as CoreClient, Domain, IndexKind, DOMAIN_MODEL } from '@anticrm/core'
-import builder, { migrateOperations } from '@anticrm/model-all'
+import contact from '@hcengineering/contact'
+import core, { DOMAIN_TX, Tx, Client as CoreClient, Domain, IndexKind, DOMAIN_MODEL } from '@hcengineering/core'
+import builder, { migrateOperations } from '@hcengineering/model-all'
 import { Client } from 'minio'
 import { Db, Document, MongoClient } from 'mongodb'
 import { connect } from './connect'
 import toolPlugin from './plugin'
 import { MigrateClientImpl } from './upgrade'
 
-export { version } from '@anticrm/model-all'
+export { version } from '@hcengineering/model-all'
 export * from './connect'
 export * from './plugin'
 export { toolPlugin as default }

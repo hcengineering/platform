@@ -13,9 +13,9 @@
 // limitations under the License.
 //
 
-import core, { DOMAIN_TX, Ref, TxCreateDoc, TxOperations } from '@anticrm/core'
-import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
-import notification, { Notification, NotificationType } from '@anticrm/notification'
+import core, { DOMAIN_TX, Ref, TxCreateDoc, TxOperations } from '@hcengineering/core'
+import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
+import notification, { Notification, NotificationType } from '@hcengineering/notification'
 import { DOMAIN_NOTIFICATION } from '.'
 
 async function fillNotificationText (client: MigrationClient): Promise<void> {

@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Employee } from '@anticrm/contact'
-  import type { Class, DocumentQuery, Ref } from '@anticrm/core'
-  import type { IntlString } from '@anticrm/platform'
-  import { ButtonKind, ButtonSize, Label, TooltipAlignment } from '@anticrm/ui'
-  import { showPopup, Button } from '@anticrm/ui'
+  import contact, { Employee } from '@hcengineering/contact'
+  import type { Class, DocumentQuery, Ref } from '@hcengineering/core'
+  import type { IntlString } from '@hcengineering/platform'
+  import { ButtonKind, ButtonSize, Label, TooltipAlignment } from '@hcengineering/ui'
+  import { showPopup, Button } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation, { CombineAvatars, UsersPopup } from '..'
   import { createQuery } from '../utils'

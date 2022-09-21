@@ -13,11 +13,11 @@
 // limitations under the License.
 //
 
-import { Class, Doc, Mixin } from '@anticrm/core'
-import { Resources } from '@anticrm/platform'
-import { getClient, MessageBox } from '@anticrm/presentation'
-import { showPopup } from '@anticrm/ui'
-import { deleteObject } from '@anticrm/view-resources/src/utils'
+import { Class, Doc, Mixin } from '@hcengineering/core'
+import { Resources } from '@hcengineering/platform'
+import { getClient, MessageBox } from '@hcengineering/presentation'
+import { showPopup } from '@hcengineering/ui'
+import { deleteObject } from '@hcengineering/view-resources/src/utils'
 import TxIntegrationDisable from './components/activity/TxIntegrationDisable.svelte'
 import TxIntegrationDisableReconnect from './components/activity/TxIntegrationDisableReconnect.svelte'
 import ClassSetting from './components/ClassSetting.svelte'

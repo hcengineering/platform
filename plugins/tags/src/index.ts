@@ -13,12 +13,12 @@
 // limitations under the License.
 //
 
-import type { AttachedDoc, Class, Doc, Ref, Space } from '@anticrm/core'
-import type { Asset, Plugin } from '@anticrm/platform'
-import { plugin } from '@anticrm/platform'
-import { AnyComponent } from '@anticrm/ui'
+import type { AttachedDoc, Class, Doc, Ref, Space } from '@hcengineering/core'
+import type { Asset, Plugin } from '@hcengineering/platform'
+import { plugin } from '@hcengineering/platform'
+import { AnyComponent } from '@hcengineering/ui'
 import { writable } from 'svelte/store'
-import { FilterMode } from '@anticrm/view'
+import { FilterMode } from '@hcengineering/view'
 
 /**
  * @public

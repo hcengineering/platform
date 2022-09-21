@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { addStringsLoader, loadMetadata } from '@anticrm/platform'
-import chunter, { chunterId } from '@anticrm/chunter'
+import { addStringsLoader, loadMetadata } from '@hcengineering/platform'
+import chunter, { chunterId } from '@hcengineering/chunter'
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(chunter.icon, {

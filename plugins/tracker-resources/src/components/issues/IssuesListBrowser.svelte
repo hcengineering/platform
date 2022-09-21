@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Class, Doc, Ref, WithLookup } from '@anticrm/core'
-  import { BuildModelKey } from '@anticrm/view'
+  import type { Class, Doc, Ref, WithLookup } from '@hcengineering/core'
+  import { BuildModelKey } from '@hcengineering/view'
   import {
     ActionContext,
     focusStore,
@@ -22,10 +22,10 @@
     SelectDirection,
     selectionStore,
     LoadingProps
-  } from '@anticrm/view-resources'
+  } from '@hcengineering/view-resources'
   import IssuesList from './IssuesList.svelte'
-  import { Issue, IssueStatus, Team } from '@anticrm/tracker'
-  import { Employee } from '@anticrm/contact'
+  import { Issue, IssueStatus, Team } from '@hcengineering/tracker'
+  import { Employee } from '@hcengineering/contact'
   import { onMount } from 'svelte'
   import { IssuesGroupByKeys, IssuesOrderByKeys } from '../../utils'
 

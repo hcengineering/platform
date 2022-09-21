@@ -13,13 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import attachment, { Attachment } from '@anticrm/attachment'
-  import type { ChunterMessage, Message } from '@anticrm/chunter'
-  import contact, { Employee } from '@anticrm/contact'
-  import core, { Doc, Ref, Space, Timestamp, WithLookup } from '@anticrm/core'
-  import { NotificationClientImpl } from '@anticrm/notification-resources'
-  import { createQuery } from '@anticrm/presentation'
-  import { location as locationStore } from '@anticrm/ui'
+  import attachment, { Attachment } from '@hcengineering/attachment'
+  import type { ChunterMessage, Message } from '@hcengineering/chunter'
+  import contact, { Employee } from '@hcengineering/contact'
+  import core, { Doc, Ref, Space, Timestamp, WithLookup } from '@hcengineering/core'
+  import { NotificationClientImpl } from '@hcengineering/notification-resources'
+  import { createQuery } from '@hcengineering/presentation'
+  import { location as locationStore } from '@hcengineering/ui'
   import { afterUpdate, beforeUpdate, onDestroy } from 'svelte'
   import chunter from '../plugin'
   import { getDay, messageIdForScroll, shouldScrollToMessage, isMessageHighlighted, scrollAndHighLight } from '../utils'

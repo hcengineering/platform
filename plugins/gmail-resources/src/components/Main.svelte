@@ -14,15 +14,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, Doc, Class } from '@anticrm/core'
-  import contact, { Channel, formatName } from '@anticrm/contact'
-  import { SharedMessage } from '@anticrm/gmail'
+  import { Ref, Doc, Class } from '@hcengineering/core'
+  import contact, { Channel, formatName } from '@hcengineering/contact'
+  import { SharedMessage } from '@hcengineering/gmail'
   import NewMessage from './NewMessage.svelte'
   import FullMessage from './FullMessage.svelte'
   import Chats from './Chats.svelte'
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import { NotificationClientImpl } from '@anticrm/notification-resources'
-  import { Panel, Icon, Label, Button, eventToHTMLElement, showPopup } from '@anticrm/ui'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { NotificationClientImpl } from '@hcengineering/notification-resources'
+  import { Panel, Icon, Label, Button, eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import gmail from '../plugin'
   import Connect from './Connect.svelte'

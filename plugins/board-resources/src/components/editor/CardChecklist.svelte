@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref } from '@anticrm/core'
-  import { createQuery, getClient, EmployeeBox, MessageBox } from '@anticrm/presentation'
-  import type { TodoItem } from '@anticrm/task'
-  import task, { calcRank } from '@anticrm/task'
+  import { Ref } from '@hcengineering/core'
+  import { createQuery, getClient, EmployeeBox, MessageBox } from '@hcengineering/presentation'
+  import type { TodoItem } from '@hcengineering/task'
+  import task, { calcRank } from '@hcengineering/task'
   import {
     Button,
     CheckBox,
@@ -28,9 +28,9 @@
     Progress,
     showPopup,
     DateRangePresenter
-  } from '@anticrm/ui'
-  import { ContextMenu, HTMLPresenter } from '@anticrm/view-resources'
-  import { Employee } from '@anticrm/contact'
+  } from '@hcengineering/ui'
+  import { ContextMenu, HTMLPresenter } from '@hcengineering/view-resources'
+  import { Employee } from '@hcengineering/contact'
 
   import board from '../../plugin'
   import { getDateIcon } from '../../utils/BoardUtils'

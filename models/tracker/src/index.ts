@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import type { Employee } from '@anticrm/contact'
-import contact from '@anticrm/contact'
+import type { Employee } from '@hcengineering/contact'
+import contact from '@hcengineering/contact'
 import {
   Domain,
   DOMAIN_MODEL,
@@ -26,7 +26,7 @@ import {
   SortingOrder,
   Timestamp,
   Type
-} from '@anticrm/core'
+} from '@hcengineering/core'
 import {
   ArrOf,
   Builder,
@@ -42,17 +42,17 @@ import {
   TypeRef,
   TypeString,
   UX
-} from '@anticrm/model'
-import attachment from '@anticrm/model-attachment'
-import chunter from '@anticrm/model-chunter'
-import core, { DOMAIN_SPACE, TAttachedDoc, TDoc, TSpace, TType } from '@anticrm/model-core'
-import view, { classPresenter, createAction } from '@anticrm/model-view'
-import workbench, { createNavigateAction } from '@anticrm/model-workbench'
-import notification from '@anticrm/notification'
-import { Asset, IntlString } from '@anticrm/platform'
-import setting from '@anticrm/setting'
-import tags from '@anticrm/tags'
-import task from '@anticrm/task'
+} from '@hcengineering/model'
+import attachment from '@hcengineering/model-attachment'
+import chunter from '@hcengineering/model-chunter'
+import core, { DOMAIN_SPACE, TAttachedDoc, TDoc, TSpace, TType } from '@hcengineering/model-core'
+import view, { classPresenter, createAction } from '@hcengineering/model-view'
+import workbench, { createNavigateAction } from '@hcengineering/model-workbench'
+import notification from '@hcengineering/notification'
+import { Asset, IntlString } from '@hcengineering/platform'
+import setting from '@hcengineering/setting'
+import tags from '@hcengineering/tags'
+import task from '@hcengineering/task'
 import {
   Document,
   Issue,
@@ -68,12 +68,12 @@ import {
   Team,
   TimeSpendReport,
   trackerId
-} from '@anticrm/tracker'
-import { KeyBinding } from '@anticrm/view'
+} from '@hcengineering/tracker'
+import { KeyBinding } from '@hcengineering/view'
 import tracker from './plugin'
 
-import presentation from '@anticrm/model-presentation'
-import { defaultPriorities, issuePriorities } from '@anticrm/tracker-resources/src/types'
+import presentation from '@hcengineering/model-presentation'
+import { defaultPriorities, issuePriorities } from '@hcengineering/tracker-resources/src/types'
 
 export { trackerOperation } from './migration'
 export { default } from './plugin'

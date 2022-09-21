@@ -14,8 +14,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { MessageViewer } from '@anticrm/presentation'
-  import { ShowMore } from '@anticrm/ui'
+  import { MessageViewer } from '@hcengineering/presentation'
+  import { ShowMore } from '@hcengineering/ui'
 
   export let value: string
 </script>

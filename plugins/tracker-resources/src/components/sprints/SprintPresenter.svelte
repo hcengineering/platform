@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { WithLookup } from '@anticrm/core'
-  import { Sprint } from '@anticrm/tracker'
-  import { getCurrentLocation, navigate } from '@anticrm/ui'
+  import { WithLookup } from '@hcengineering/core'
+  import { Sprint } from '@hcengineering/tracker'
+  import { getCurrentLocation, navigate } from '@hcengineering/ui'
 
   export let value: WithLookup<Sprint>
   function navigateToSprint () {

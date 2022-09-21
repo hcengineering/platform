@@ -14,12 +14,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact from '@anticrm/contact'
-  import core, { Class, Doc, Mixin, Ref, RefTo } from '@anticrm/core'
-  import { AttributesBar, getClient, KeyedAttribute, UserBox } from '@anticrm/presentation'
-  import { Task } from '@anticrm/task'
+  import contact from '@hcengineering/contact'
+  import core, { Class, Doc, Mixin, Ref, RefTo } from '@hcengineering/core'
+  import { AttributesBar, getClient, KeyedAttribute, UserBox } from '@hcengineering/presentation'
+  import { Task } from '@hcengineering/task'
   import task from '../plugin'
-  import { DocAttributeBar } from '@anticrm/view-resources'
+  import { DocAttributeBar } from '@hcengineering/view-resources'
 
   export let object: Task
   export let keys: KeyedAttribute[]

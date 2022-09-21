@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Ref } from '@anticrm/core'
-import { IntlString, mergeIds } from '@anticrm/platform'
-import { TagCategory, tagsId } from '@anticrm/tags'
-import tags from '@anticrm/tags-resources/src/plugin'
-import type { AnyComponent } from '@anticrm/ui'
-import { ViewAction } from '@anticrm/model-view'
+import { Ref } from '@hcengineering/core'
+import { IntlString, mergeIds } from '@hcengineering/platform'
+import { TagCategory, tagsId } from '@hcengineering/tags'
+import tags from '@hcengineering/tags-resources/src/plugin'
+import type { AnyComponent } from '@hcengineering/ui'
+import { ViewAction } from '@hcengineering/model-view'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import view from '@anticrm/view'
+import view from '@hcengineering/view'
 
 export default mergeIds(tagsId, tags, {
   // Without it, CLI version is failed with some svelte dependency exception.

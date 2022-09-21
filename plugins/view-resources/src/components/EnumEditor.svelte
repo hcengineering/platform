@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { EnumOf } from '@anticrm/core'
-  import type { IntlString } from '@anticrm/platform'
-  import { createQuery } from '@anticrm/presentation'
-  import { DropdownLabels, DropdownTextItem } from '@anticrm/ui'
+  import core, { EnumOf } from '@hcengineering/core'
+  import type { IntlString } from '@hcengineering/platform'
+  import { createQuery } from '@hcengineering/presentation'
+  import { DropdownLabels, DropdownTextItem } from '@hcengineering/ui'
 
   export let label: IntlString
   export let value: string

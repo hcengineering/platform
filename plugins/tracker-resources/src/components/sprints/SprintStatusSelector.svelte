@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { SprintStatus } from '@anticrm/tracker'
-  import { Button, showPopup, SelectPopup, eventToHTMLElement } from '@anticrm/ui'
-  import type { ButtonKind, ButtonSize, LabelAndProps } from '@anticrm/ui'
+  import { SprintStatus } from '@hcengineering/tracker'
+  import { Button, showPopup, SelectPopup, eventToHTMLElement } from '@hcengineering/ui'
+  import type { ButtonKind, ButtonSize, LabelAndProps } from '@hcengineering/ui'
   import tracker from '../../plugin'
   import { defaultSprintStatuses, sprintStatusAssets } from '../../utils'
 

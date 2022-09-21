@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AttachedData } from '@anticrm/core'
+  import { AttachedData } from '@hcengineering/core'
 
-  import { getClient } from '@anticrm/presentation'
-  import { Issue } from '@anticrm/tracker'
-  import { Button, ButtonKind, ButtonSize, eventToHTMLElement, Label, showPopup } from '@anticrm/ui'
-  import EditBoxPopup from '@anticrm/view-resources/src/components/EditBoxPopup.svelte'
+  import { getClient } from '@hcengineering/presentation'
+  import { Issue } from '@hcengineering/tracker'
+  import { Button, ButtonKind, ButtonSize, eventToHTMLElement, Label, showPopup } from '@hcengineering/ui'
+  import EditBoxPopup from '@hcengineering/view-resources/src/components/EditBoxPopup.svelte'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../../plugin'
   import EstimationPopup from './EstimationPopup.svelte'

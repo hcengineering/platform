@@ -24,10 +24,10 @@ import type {
   StorageIterator,
   Tx,
   TxResult
-} from '@anticrm/core'
-import { Hierarchy, TxDb } from '@anticrm/core'
-import builder from '@anticrm/model-all'
-import type { TxAdapter } from '@anticrm/server-core'
+} from '@hcengineering/core'
+import { Hierarchy, TxDb } from '@hcengineering/core'
+import builder from '@hcengineering/model-all'
+import type { TxAdapter } from '@hcengineering/server-core'
 
 class InMemoryTxAdapter implements TxAdapter {
   private readonly txdb: TxDb

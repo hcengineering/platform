@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Employee, EmployeeAccount } from '@anticrm/contact'
-  import { Class, Doc, getCurrentAccount, Ref } from '@anticrm/core'
-  import { Card, getClient, UserBoxList } from '@anticrm/presentation'
-  import ui, { EditBox, DateRangePresenter } from '@anticrm/ui'
+  import { Employee, EmployeeAccount } from '@hcengineering/contact'
+  import { Class, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
+  import { Card, getClient, UserBoxList } from '@hcengineering/presentation'
+  import ui, { EditBox, DateRangePresenter } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import calendar from '../plugin'
 

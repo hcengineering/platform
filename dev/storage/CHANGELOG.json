@@ -1,9 +1,9 @@
 {
-  "name": "@anticrm/dev-storage",
+  "name": "@hcengineering/dev-storage",
   "entries": [
     {
       "version": "0.6.6",
-      "tag": "@anticrm/dev-storage_v0.6.6",
+      "tag": "@hcengineering/dev-storage_v0.6.6",
       "date": "Wed, 11 Aug 2021 09:37:04 GMT",
       "comments": {
         "patch": [
@@ -13,14 +13,14 @@
         ],
         "dependency": [
           {
-            "comment": "Updating dependency \"@anticrm/core\" from `~0.6.8` to `~0.6.10`"
+            "comment": "Updating dependency \"@hcengineering/core\" from `~0.6.8` to `~0.6.10`"
           }
         ]
       }
     },
     {
       "version": "0.6.3",
-      "tag": "@anticrm/dev-storage_v0.6.3",
+      "tag": "@hcengineering/dev-storage_v0.6.3",
       "date": "Wed, 04 Aug 2021 21:18:44 GMT",
       "comments": {
         "patch": [
@@ -30,17 +30,17 @@
         ],
         "dependency": [
           {
-            "comment": "Updating dependency \"@anticrm/core\" from `~0.6.6` to `~0.6.7`"
+            "comment": "Updating dependency \"@hcengineering/core\" from `~0.6.6` to `~0.6.7`"
           },
           {
-            "comment": "Updating dependency \"@anticrm/platform\" from `~0.6.2` to `~0.6.3`"
+            "comment": "Updating dependency \"@hcengineering/platform\" from `~0.6.2` to `~0.6.3`"
           }
         ]
       }
     },
     {
       "version": "0.6.2",
-      "tag": "@anticrm/dev-storage_v0.6.2",
+      "tag": "@hcengineering/dev-storage_v0.6.2",
       "date": "Wed, 04 Aug 2021 21:00:14 GMT",
       "comments": {
         "patch": [
@@ -50,14 +50,14 @@
         ],
         "dependency": [
           {
-            "comment": "Updating dependency \"@anticrm/core\" from `~0.6.5` to `~0.6.6`"
+            "comment": "Updating dependency \"@hcengineering/core\" from `~0.6.5` to `~0.6.6`"
           }
         ]
       }
     },
     {
       "version": "0.6.1",
-      "tag": "@anticrm/dev-storage_v0.6.1",
+      "tag": "@hcengineering/dev-storage_v0.6.1",
       "date": "Wed, 04 Aug 2021 17:38:30 GMT",
       "comments": {
         "patch": [
@@ -67,10 +67,10 @@
         ],
         "dependency": [
           {
-            "comment": "Updating dependency \"@anticrm/core\" from `~0.6.0` to `~0.6.1`"
+            "comment": "Updating dependency \"@hcengineering/core\" from `~0.6.0` to `~0.6.1`"
           },
           {
-            "comment": "Updating dependency \"@anticrm/platform\" from `~0.6.0` to `~0.6.1`"
+            "comment": "Updating dependency \"@hcengineering/platform\" from `~0.6.0` to `~0.6.1`"
           }
         ]
       }

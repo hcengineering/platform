@@ -1,5 +1,5 @@
-import { Account, AttachedDoc, Class, ClassifierKind, Data, Doc, Domain, Ref, Space, Tx } from '@anticrm/core'
-import { IntlString, plugin, Plugin } from '@anticrm/platform'
+import { Account, AttachedDoc, Class, ClassifierKind, Data, Doc, Domain, Ref, Space, Tx } from '@hcengineering/core'
+import { IntlString, plugin, Plugin } from '@hcengineering/platform'
 import { createClass } from './minmodel'
 
 export interface TaskComment extends AttachedDoc {

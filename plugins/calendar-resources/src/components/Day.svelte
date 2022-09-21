@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Event } from '@anticrm/calendar'
-  import { Class, Doc, DocumentQuery, FindOptions, Ref } from '@anticrm/core'
-  import { addZero, Label, tooltip, getPlatformColorForText } from '@anticrm/ui'
-  import { BuildModelKey } from '@anticrm/view'
+  import { Event } from '@hcengineering/calendar'
+  import { Class, Doc, DocumentQuery, FindOptions, Ref } from '@hcengineering/core'
+  import { addZero, Label, tooltip, getPlatformColorForText } from '@hcengineering/ui'
+  import { BuildModelKey } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import calendar from '../plugin'
   import EventsPopup from './EventsPopup.svelte'

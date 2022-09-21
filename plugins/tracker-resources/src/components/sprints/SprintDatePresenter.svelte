@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Timestamp } from '@anticrm/core'
+  import { Timestamp } from '@hcengineering/core'
 
-  import { getClient } from '@anticrm/presentation'
-  import { Sprint } from '@anticrm/tracker'
-  import { DatePresenter } from '@anticrm/ui'
+  import { getClient } from '@hcengineering/presentation'
+  import { Sprint } from '@hcengineering/tracker'
+  import { DatePresenter } from '@hcengineering/ui'
 
   export let value: Sprint
   export let field = 'targetDate'

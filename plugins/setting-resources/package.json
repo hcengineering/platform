@@ -1,5 +1,5 @@
 {
-  "name": "@anticrm/setting-resources",
+  "name": "@hcengineering/setting-resources",
   "version": "0.6.0",
   "main": "src/index.ts",
   "author": "Anticrm Platform Contributors",
@@ -16,7 +16,7 @@
     "svelte-loader": "^3.1.3",
     "sass": "^1.53.0",
     "svelte-preprocess": "^4.10.7",
-    "@anticrm/platform-rig": "~0.6.0",
+    "@hcengineering/platform-rig": "~0.6.0",
     "@typescript-eslint/eslint-plugin": "^5.30.0",
     "@typescript-eslint/parser": "^5.30.0",
     "eslint-config-standard-with-typescript": "^21.0.1",
@@ -31,20 +31,20 @@
     "typescript": "^4.3.5"
   },
   "dependencies": {
-    "@anticrm/platform": "~0.6.6",
-    "@anticrm/core": "~0.6.16",
+    "@hcengineering/platform": "^0.6.7",
+    "@hcengineering/core": "^0.6.17",
     "svelte": "^3.47",
-    "@anticrm/setting": "~0.6.1",
-    "@anticrm/contact": "~0.6.5",
-    "@anticrm/attachment": "~0.6.1",
-    "@anticrm/ui": "~0.6.0",
-    "@anticrm/presentation": "~0.6.2",
-    "@anticrm/view": "~0.6.0",
-    "@anticrm/view-resources": "~0.6.0",
-    "@anticrm/login-resources": "~0.6.2",
-    "@anticrm/task": "~0.6.0",
-    "@anticrm/contact-resources": "~0.6.0",
-    "@anticrm/login": "~0.6.1",
-    "@anticrm/model": "~0.6.0"
+    "@hcengineering/setting": "~0.6.1",
+    "@hcengineering/contact": "~0.6.5",
+    "@hcengineering/attachment": "~0.6.1",
+    "@hcengineering/ui": "^0.6.2",
+    "@hcengineering/presentation": "~0.6.2",
+    "@hcengineering/view": "^0.6.1",
+    "@hcengineering/view-resources": "~0.6.0",
+    "@hcengineering/login-resources": "~0.6.2",
+    "@hcengineering/task": "~0.6.0",
+    "@hcengineering/contact-resources": "~0.6.0",
+    "@hcengineering/login": "~0.6.1",
+    "@hcengineering/model": "~0.6.0"
   }
 }

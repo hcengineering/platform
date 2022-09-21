@@ -1,4 +1,4 @@
-import type { TxViewlet } from '@anticrm/activity'
+import type { TxViewlet } from '@hcengineering/activity'
 import core, {
   AttachedDoc,
   Class,
@@ -12,11 +12,11 @@ import core, {
   TxOperations,
   TxProcessor,
   TxUpdateDoc
-} from '@anticrm/core'
-import { Asset, IntlString, translate } from '@anticrm/platform'
-import { AnyComponent, AnySvelteComponent } from '@anticrm/ui'
-import { AttributeModel } from '@anticrm/view'
-import { buildModel, getObjectPresenter } from '@anticrm/view-resources'
+} from '@hcengineering/core'
+import { Asset, IntlString, translate } from '@hcengineering/platform'
+import { AnyComponent, AnySvelteComponent } from '@hcengineering/ui'
+import { AttributeModel } from '@hcengineering/view'
+import { buildModel, getObjectPresenter } from '@hcengineering/view-resources'
 import { ActivityKey, activityKey, DisplayTx } from '../activity'
 import activity from '../plugin'
 

@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-import { mergeIds } from '@anticrm/platform'
+import { mergeIds } from '@hcengineering/platform'
 // Import plugin directly to prevent .svelte components to being exposed to type typescript.
-import textEditor, { textEditorId } from '@anticrm/text-editor/src/plugin'
+import textEditor, { textEditorId } from '@hcengineering/text-editor/src/plugin'
 
 export default mergeIds(textEditorId, textEditor, {})

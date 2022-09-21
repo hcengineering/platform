@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { Class, Doc, Ref } from '@anticrm/core'
-import { Customer } from '@anticrm/lead'
-import { IntlString } from '@anticrm/platform'
+import { Class, Doc, Ref } from '@hcengineering/core'
+import { Customer } from '@hcengineering/lead'
+import { IntlString } from '@hcengineering/platform'
 
 export interface CustomCustomer extends Customer {
   annualTurnover?: string

@@ -11,9 +11,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Resources } from '@anticrm/platform'
-import { TagElement } from '@anticrm/tags'
-import { eventToHTMLElement, showPopup } from '@anticrm/ui'
+import { Resources } from '@hcengineering/platform'
+import { TagElement } from '@hcengineering/tags'
+import { eventToHTMLElement, showPopup } from '@hcengineering/ui'
 import TagsCategoryBar from './components/CategoryBar.svelte'
 import CategoryPresenter from './components/CategoryPresenter.svelte'
 import EditTagElement from './components/EditTagElement.svelte'
@@ -30,9 +30,9 @@ import TagsFilter from './components/TagsFilter.svelte'
 import TagsAttributeEditor from './components/TagsAttributeEditor.svelte'
 import TagsEditorPopup from './components/TagsEditorPopup.svelte'
 import LabelsPresenter from './components/LabelsPresenter.svelte'
-import { ObjQueryType } from '@anticrm/core'
+import { ObjQueryType } from '@hcengineering/core'
 import { getRefs } from './utils'
-import { Filter } from '@anticrm/view'
+import { Filter } from '@hcengineering/view'
 
 export async function tagsInResult (filter: Filter, onUpdate: () => void): Promise<ObjQueryType<any>> {
   const result = await getRefs(filter, onUpdate)

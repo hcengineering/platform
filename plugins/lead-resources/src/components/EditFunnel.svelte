@@ -14,15 +14,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Attachments } from '@anticrm/attachment-resources'
-  import type { Ref } from '@anticrm/core'
-  import core from '@anticrm/core'
-  import { Panel } from '@anticrm/panel'
-  import { createQuery, getClient, MembersBox } from '@anticrm/presentation'
-  import type { Funnel } from '@anticrm/lead'
-  import { FullDescriptionBox } from '@anticrm/text-editor'
-  import { EditBox, Grid } from '@anticrm/ui'
-  import { ClassAttributeBar } from '@anticrm/view-resources'
+  import { Attachments } from '@hcengineering/attachment-resources'
+  import type { Ref } from '@hcengineering/core'
+  import core from '@hcengineering/core'
+  import { Panel } from '@hcengineering/panel'
+  import { createQuery, getClient, MembersBox } from '@hcengineering/presentation'
+  import type { Funnel } from '@hcengineering/lead'
+  import { FullDescriptionBox } from '@hcengineering/text-editor'
+  import { EditBox, Grid } from '@hcengineering/ui'
+  import { ClassAttributeBar } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import lead from '../plugin'
 

@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, SortingOrder, WithLookup } from '@anticrm/core'
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import { calcRank, Issue, IssueStatus, Team } from '@anticrm/tracker'
-  import { Button, Spinner, ExpandCollapse, closeTooltip, IconAdd } from '@anticrm/ui'
+  import { Ref, SortingOrder, WithLookup } from '@hcengineering/core'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { calcRank, Issue, IssueStatus, Team } from '@hcengineering/tracker'
+  import { Button, Spinner, ExpandCollapse, closeTooltip, IconAdd } from '@hcengineering/ui'
   import tracker from '../../../plugin'
   import Collapsed from '../../icons/Collapsed.svelte'
   import Expanded from '../../icons/Expanded.svelte'

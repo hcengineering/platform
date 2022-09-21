@@ -13,13 +13,23 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import attachment from '@anticrm/attachment'
-  import contact, { Channel, ChannelProvider, combineName, findContacts, Person } from '@anticrm/contact'
-  import { ChannelsDropdown } from '@anticrm/contact-resources'
-  import PersonPresenter from '@anticrm/contact-resources/src/components/PersonPresenter.svelte'
-  import { Account, AttachedData, Data, Doc, generateId, MixinData, Ref, TxProcessor, WithLookup } from '@anticrm/core'
-  import login from '@anticrm/login'
-  import { getMetadata, getResource, setPlatformStatus, unknownError } from '@anticrm/platform'
+  import attachment from '@hcengineering/attachment'
+  import contact, { Channel, ChannelProvider, combineName, findContacts, Person } from '@hcengineering/contact'
+  import { ChannelsDropdown } from '@hcengineering/contact-resources'
+  import PersonPresenter from '@hcengineering/contact-resources/src/components/PersonPresenter.svelte'
+  import {
+    Account,
+    AttachedData,
+    Data,
+    Doc,
+    generateId,
+    MixinData,
+    Ref,
+    TxProcessor,
+    WithLookup
+  } from '@hcengineering/core'
+  import login from '@hcengineering/login'
+  import { getMetadata, getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import {
     Card,
     createQuery,
@@ -28,10 +38,10 @@
     getFileUrl,
     KeyedAttribute,
     PDFViewer
-  } from '@anticrm/presentation'
-  import type { Candidate } from '@anticrm/recruit'
-  import { recognizeDocument } from '@anticrm/rekoni'
-  import tags, { findTagCategory, TagElement, TagReference } from '@anticrm/tags'
+  } from '@hcengineering/presentation'
+  import type { Candidate } from '@hcengineering/recruit'
+  import { recognizeDocument } from '@hcengineering/rekoni'
+  import tags, { findTagCategory, TagElement, TagReference } from '@hcengineering/tags'
   import {
     Button,
     Component,
@@ -45,7 +55,7 @@
     Link,
     showPopup,
     Spinner
-  } from '@anticrm/ui'
+  } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
   import FileUpload from './icons/FileUpload.svelte'

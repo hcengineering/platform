@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Reminder } from '@anticrm/calendar'
-  import { getResource } from '@anticrm/platform'
-  import { DateTimeRangePresenter, showPanel, tooltip } from '@anticrm/ui'
-  import view from '@anticrm/view'
+  import { Reminder } from '@hcengineering/calendar'
+  import { getResource } from '@hcengineering/platform'
+  import { DateTimeRangePresenter, showPanel, tooltip } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
 
   export let value: Reminder
 

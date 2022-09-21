@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Class, Doc, Ref } from '@anticrm/core'
+  import type { Class, Doc, Ref } from '@hcengineering/core'
   import { createQuery } from '../utils'
-  import { Person } from '@anticrm/contact'
+  import { Person } from '@hcengineering/contact'
   import Avatar from './Avatar.svelte'
-  import { IconSize } from '@anticrm/ui'
+  import { IconSize } from '@hcengineering/ui'
 
   export let _class: Ref<Class<Doc>>
   export let items: Ref<Person>[] = []

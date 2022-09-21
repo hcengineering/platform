@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getCurrentAccount, Ref, Space } from '@anticrm/core'
-  import { createQuery } from '@anticrm/presentation'
-  import setting from '@anticrm/setting'
-  import type { Integration, IntegrationType } from '@anticrm/setting'
+  import { getCurrentAccount, Ref, Space } from '@hcengineering/core'
+  import { createQuery } from '@hcengineering/presentation'
+  import setting from '@hcengineering/setting'
+  import type { Integration, IntegrationType } from '@hcengineering/setting'
   import PluginCard from './PluginCard.svelte'
-  import { Icon, Label } from '@anticrm/ui'
+  import { Icon, Label } from '@hcengineering/ui'
 
   const accountId = getCurrentAccount()._id
   const typeQuery = createQuery()

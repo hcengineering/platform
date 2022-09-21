@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, Ref } from '@anticrm/core'
-  import { Asset } from '@anticrm/platform'
-  import { getClient } from '@anticrm/presentation'
-  import { AnySvelteComponent, Icon, tooltip } from '@anticrm/ui'
-  import { getCollectionCounter } from '@anticrm/view-resources'
+  import { Class, Doc, Ref } from '@hcengineering/core'
+  import { Asset } from '@hcengineering/platform'
+  import { getClient } from '@hcengineering/presentation'
+  import { AnySvelteComponent, Icon, tooltip } from '@hcengineering/ui'
+  import { getCollectionCounter } from '@hcengineering/view-resources'
   import tagsId from '../plugin'
   import TagsPresentationPopup from './TagsPresentationPopup.svelte'
 

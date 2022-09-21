@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Member } from '@anticrm/contact'
-  import type { Class, Doc, Ref, Space } from '@anticrm/core'
-  import { createQuery, getClient, UsersPopup, IconMembersOutline } from '@anticrm/presentation'
-  import { Button, IconAdd, Label, showPopup, Icon } from '@anticrm/ui'
-  import view, { Viewlet, ViewletPreference } from '@anticrm/view'
-  import { Table, ViewletSettingButton } from '@anticrm/view-resources'
+  import { Member } from '@hcengineering/contact'
+  import type { Class, Doc, Ref, Space } from '@hcengineering/core'
+  import { createQuery, getClient, UsersPopup, IconMembersOutline } from '@hcengineering/presentation'
+  import { Button, IconAdd, Label, showPopup, Icon } from '@hcengineering/ui'
+  import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
+  import { Table, ViewletSettingButton } from '@hcengineering/view-resources'
   import contact from '../plugin'
 
   export let objectId: Ref<Doc>

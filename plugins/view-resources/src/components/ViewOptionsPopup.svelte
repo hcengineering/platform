@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { DropdownLabelsIntl, MiniToggle, Label } from '@anticrm/ui'
+  import { DropdownLabelsIntl, MiniToggle, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { isDropdownType, isToggleType, ViewOptions, ViewOptionModel } from '../viewOptions'
 

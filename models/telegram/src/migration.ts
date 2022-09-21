@@ -13,10 +13,10 @@
 // limitations under the License.
 //
 
-import core, { SortingOrder, TxOperations } from '@anticrm/core'
+import core, { SortingOrder, TxOperations } from '@hcengineering/core'
 import telegram from './plugin'
-import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
-import contact from '@anticrm/model-contact'
+import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
+import contact from '@hcengineering/model-contact'
 
 async function updateChannlLastMessage (client: TxOperations): Promise<void> {
   const channels = await client.findAll(contact.class.Channel, {

@@ -14,12 +14,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import activity from '@anticrm/activity'
-  import calendar from '@anticrm/calendar'
-  import type { Doc } from '@anticrm/core'
-  import notification from '@anticrm/notification'
-  import type { Asset } from '@anticrm/platform'
-  import { AnySvelteComponent, Component, Panel, Icon, Scroller } from '@anticrm/ui'
+  import activity from '@hcengineering/activity'
+  import calendar from '@hcengineering/calendar'
+  import type { Doc } from '@hcengineering/core'
+  import notification from '@hcengineering/notification'
+  import type { Asset } from '@hcengineering/platform'
+  import { AnySvelteComponent, Component, Panel, Icon, Scroller } from '@hcengineering/ui'
 
   export let title: string | undefined = undefined
   export let subtitle: string | undefined = undefined

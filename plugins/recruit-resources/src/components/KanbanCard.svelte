@@ -13,17 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AttachmentsPresenter } from '@anticrm/attachment-resources'
-  import { CommentsPresenter } from '@anticrm/chunter-resources'
-  import contact, { formatName } from '@anticrm/contact'
-  import type { WithLookup } from '@anticrm/core'
-  import notification from '@anticrm/notification'
-  import { Avatar } from '@anticrm/presentation'
-  import type { Applicant, Candidate } from '@anticrm/recruit'
-  import task, { TodoItem } from '@anticrm/task'
-  import { AssigneePresenter } from '@anticrm/task-resources'
-  import { Component, showPanel, tooltip } from '@anticrm/ui'
-  import view from '@anticrm/view'
+  import { AttachmentsPresenter } from '@hcengineering/attachment-resources'
+  import { CommentsPresenter } from '@hcengineering/chunter-resources'
+  import contact, { formatName } from '@hcengineering/contact'
+  import type { WithLookup } from '@hcengineering/core'
+  import notification from '@hcengineering/notification'
+  import { Avatar } from '@hcengineering/presentation'
+  import type { Applicant, Candidate } from '@hcengineering/recruit'
+  import task, { TodoItem } from '@hcengineering/task'
+  import { AssigneePresenter } from '@hcengineering/task-resources'
+  import { Component, showPanel, tooltip } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
   import ApplicationPresenter from './ApplicationPresenter.svelte'
 
   export let object: WithLookup<Applicant>

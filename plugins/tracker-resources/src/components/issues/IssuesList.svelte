@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Employee } from '@anticrm/contact'
-  import { Class, Doc, FindOptions, getObjectValue, Ref, WithLookup } from '@anticrm/core'
-  import notification from '@anticrm/notification'
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import { Issue, IssueStatus, Team } from '@anticrm/tracker'
+  import contact, { Employee } from '@hcengineering/contact'
+  import { Class, Doc, FindOptions, getObjectValue, Ref, WithLookup } from '@hcengineering/core'
+  import notification from '@hcengineering/notification'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { Issue, IssueStatus, Team } from '@hcengineering/tracker'
   import {
     Button,
     CheckBox,
@@ -29,9 +29,9 @@
     showPopup,
     Spinner,
     tooltip
-  } from '@anticrm/ui'
-  import { AttributeModel, BuildModelKey } from '@anticrm/view'
-  import { buildModel, FixedColumn, getObjectPresenter, LoadingProps, Menu } from '@anticrm/view-resources'
+  } from '@hcengineering/ui'
+  import { AttributeModel, BuildModelKey } from '@hcengineering/view'
+  import { buildModel, FixedColumn, getObjectPresenter, LoadingProps, Menu } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
   import { IssuesGroupByKeys, issuesGroupEditorMap, IssuesOrderByKeys, issuesSortOrderMap } from '../../utils'

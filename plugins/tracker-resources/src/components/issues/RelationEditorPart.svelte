@@ -1,11 +1,11 @@
 <script lang="ts">
-  import chunter from '@anticrm/chunter'
-  import { Class, Doc, Ref, RelatedDocument, WithLookup } from '@anticrm/core'
-  import { getResource, IntlString, translate } from '@anticrm/platform'
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import { Issue } from '@anticrm/tracker'
-  import { Component, Icon, IconClose } from '@anticrm/ui'
-  import view from '@anticrm/view'
+  import chunter from '@hcengineering/chunter'
+  import { Class, Doc, Ref, RelatedDocument, WithLookup } from '@hcengineering/core'
+  import { getResource, IntlString, translate } from '@hcengineering/platform'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { Issue } from '@hcengineering/tracker'
+  import { Component, Icon, IconClose } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
   import { getIssueId, updateIssueRelation } from '../../issues'
   import tracker from '../../plugin'
 

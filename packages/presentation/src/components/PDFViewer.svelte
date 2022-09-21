@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Button, Panel } from '@anticrm/ui'
-  import type { PopupOptions } from '@anticrm/ui'
+  import { Button, Panel } from '@hcengineering/ui'
+  import type { PopupOptions } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation from '..'
   import { getFileUrl } from '../utils'

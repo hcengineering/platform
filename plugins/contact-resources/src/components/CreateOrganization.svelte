@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Channel, findContacts, Organization } from '@anticrm/contact'
-  import { AttachedData, generateId, WithLookup } from '@anticrm/core'
-  import { Card, getClient } from '@anticrm/presentation'
-  import { Button, createFocusManager, EditBox, FocusHandler, IconInfo, Label } from '@anticrm/ui'
+  import { Channel, findContacts, Organization } from '@hcengineering/contact'
+  import { AttachedData, generateId, WithLookup } from '@hcengineering/core'
+  import { Card, getClient } from '@hcengineering/presentation'
+  import { Button, createFocusManager, EditBox, FocusHandler, IconInfo, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import contact from '../plugin'
   import ChannelsDropdown from './ChannelsDropdown.svelte'

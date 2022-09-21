@@ -14,9 +14,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Card } from '@anticrm/board'
-  import { getPanelURI, Icon } from '@anticrm/ui'
-  import view from '@anticrm/view'
+  import type { Card } from '@hcengineering/board'
+  import { getPanelURI, Icon } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
   import board from '../plugin'
 
   export let value: Card

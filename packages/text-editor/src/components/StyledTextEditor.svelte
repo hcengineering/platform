@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { IntlString } from '@anticrm/platform'
+  import { IntlString } from '@hcengineering/platform'
 
-  import { Scroller, showPopup } from '@anticrm/ui'
+  import { Scroller, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import textEditorPlugin from '../plugin'
   import EmojiPopup from './EmojiPopup.svelte'
@@ -23,8 +23,8 @@
   import TextStyle from './icons/TextStyle.svelte'
   import TextEditor from './TextEditor.svelte'
 
-  import { Asset } from '@anticrm/platform'
-  import { AnySvelteComponent } from '@anticrm/ui'
+  import { Asset } from '@hcengineering/platform'
+  import { AnySvelteComponent } from '@hcengineering/ui'
   import { FormatMode, FORMAT_MODES, RefInputAction, TextEditorHandler } from '../types'
   import Bold from './icons/Bold.svelte'
   import Code from './icons/Code.svelte'

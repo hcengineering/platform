@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { TimeSince } from '@anticrm/ui'
+  import { TimeSince } from '@hcengineering/ui'
 
   export let value: number
 </script>

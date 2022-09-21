@@ -13,14 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import attachment, { Attachment } from '@anticrm/attachment'
-  import { AttachmentRefInput } from '@anticrm/attachment-resources'
-  import type { ThreadMessage, Message, ChunterMessage } from '@anticrm/chunter'
-  import contact, { Employee } from '@anticrm/contact'
-  import core, { Doc, generateId, getCurrentAccount, Ref, Space } from '@anticrm/core'
-  import { NotificationClientImpl } from '@anticrm/notification-resources'
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import { IconClose, Label, getCurrentLocation, navigate } from '@anticrm/ui'
+  import attachment, { Attachment } from '@hcengineering/attachment'
+  import { AttachmentRefInput } from '@hcengineering/attachment-resources'
+  import type { ThreadMessage, Message, ChunterMessage } from '@hcengineering/chunter'
+  import contact, { Employee } from '@hcengineering/contact'
+  import core, { Doc, generateId, getCurrentAccount, Ref, Space } from '@hcengineering/core'
+  import { NotificationClientImpl } from '@hcengineering/notification-resources'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { IconClose, Label, getCurrentLocation, navigate } from '@hcengineering/ui'
   import { afterUpdate, beforeUpdate, createEventDispatcher } from 'svelte'
   import { createBacklinks } from '../backlinks'
   import chunter from '../plugin'

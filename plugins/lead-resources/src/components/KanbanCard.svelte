@@ -14,16 +14,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AttachmentsPresenter } from '@anticrm/attachment-resources'
-  import { CommentsPresenter } from '@anticrm/chunter-resources'
-  import { ContactPresenter } from '@anticrm/contact-resources'
-  import type { WithLookup } from '@anticrm/core'
-  import type { Lead } from '@anticrm/lead'
-  import { ActionIcon, Component, IconMoreH, showPanel, showPopup } from '@anticrm/ui'
-  import view from '@anticrm/view'
-  import { ContextMenu } from '@anticrm/view-resources'
+  import { AttachmentsPresenter } from '@hcengineering/attachment-resources'
+  import { CommentsPresenter } from '@hcengineering/chunter-resources'
+  import { ContactPresenter } from '@hcengineering/contact-resources'
+  import type { WithLookup } from '@hcengineering/core'
+  import type { Lead } from '@hcengineering/lead'
+  import { ActionIcon, Component, IconMoreH, showPanel, showPopup } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
+  import { ContextMenu } from '@hcengineering/view-resources'
   import lead from '../plugin'
-  import notification from '@anticrm/notification'
+  import notification from '@hcengineering/notification'
 
   export let object: WithLookup<Lead>
 

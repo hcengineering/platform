@@ -14,8 +14,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getClient } from '@anticrm/presentation'
-  import type { Applicant } from '@anticrm/recruit'
+  import { getClient } from '@hcengineering/presentation'
+  import type { Applicant } from '@hcengineering/recruit'
 
   export let value: Applicant
 

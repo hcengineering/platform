@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { AttachedDoc, Class, Doc, DocumentQuery, DocumentUpdate, FindOptions, Ref } from '@anticrm/core'
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import { getPlatformColor, ScrollBox, Scroller } from '@anticrm/ui'
+  import core, { AttachedDoc, Class, Doc, DocumentQuery, DocumentUpdate, FindOptions, Ref } from '@hcengineering/core'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { getPlatformColor, ScrollBox, Scroller } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { CardDragEvent, ExtItem, Item, StateType, TypeState } from '../types'
   import { calcRank } from '../utils'

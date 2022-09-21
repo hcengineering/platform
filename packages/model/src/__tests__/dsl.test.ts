@@ -13,10 +13,10 @@
 // limitations under the License.
 //
 
-import type { IntlString } from '@anticrm/platform'
-import type { Class, Ref, Obj, Doc } from '@anticrm/core'
+import type { IntlString } from '@hcengineering/platform'
+import type { Class, Ref, Obj, Doc } from '@hcengineering/core'
 import { Model, Prop, TypeString, Builder } from '../dsl'
-import core from '@anticrm/core'
+import core from '@hcengineering/core'
 
 function removeIds (txes: Doc[]): void {
   txes.forEach((i) => {

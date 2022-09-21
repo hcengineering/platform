@@ -14,12 +14,12 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import core, { Account, AttachedData, Doc, generateId, Ref, SortingOrder, WithLookup } from '@anticrm/core'
-  import presentation, { getClient, KeyedAttribute, SpaceSelector } from '@anticrm/presentation'
-  import { StyledTextArea } from '@anticrm/text-editor'
-  import { IssueStatus, IssuePriority, Issue, Team, calcRank } from '@anticrm/tracker'
-  import { Button, Component, EditBox } from '@anticrm/ui'
-  import tags, { TagElement, TagReference } from '@anticrm/tags'
+  import core, { Account, AttachedData, Doc, generateId, Ref, SortingOrder, WithLookup } from '@hcengineering/core'
+  import presentation, { getClient, KeyedAttribute, SpaceSelector } from '@hcengineering/presentation'
+  import { StyledTextArea } from '@hcengineering/text-editor'
+  import { IssueStatus, IssuePriority, Issue, Team, calcRank } from '@hcengineering/tracker'
+  import { Button, Component, EditBox } from '@hcengineering/ui'
+  import tags, { TagElement, TagReference } from '@hcengineering/tags'
   import tracker from '../../../plugin'
   import AssigneeEditor from '../AssigneeEditor.svelte'
   import StatusEditor from '../StatusEditor.svelte'

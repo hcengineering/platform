@@ -1,6 +1,6 @@
 {
-  "name": "@anticrm/platform",
-  "version": "0.6.6",
+  "name": "@hcengineering/platform",
+  "version": "0.6.7",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
@@ -13,7 +13,7 @@
     "format": "prettier --write src && eslint --fix src"
   },
   "devDependencies": {
-    "@anticrm/platform-rig": "~0.6.0",
+    "@hcengineering/platform-rig": "~0.6.0",
     "@types/heft-jest": "^1.0.3",
     "@typescript-eslint/eslint-plugin": "^5.30.0",
     "eslint-plugin-import": "^2.26.0",
@@ -28,5 +28,9 @@
   },
   "dependencies": {
     "intl-messageformat": "^9.7.1"
+  },
+  "repository":"https://github.com/hcengineering/anticrm",
+  "publishConfig": {
+    "registry":"https://npm.pkg.github.com"
   }
 }

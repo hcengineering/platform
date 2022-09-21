@@ -1,4 +1,4 @@
-import { Class, Data, Doc, DocumentUpdate, Ref, Space, TxOperations } from '@anticrm/core'
+import { Class, Data, Doc, DocumentUpdate, Ref, Space, TxOperations } from '@hcengineering/core'
 import { deepEqual } from 'fast-equals'
 
 function toUndef (value: any): any {

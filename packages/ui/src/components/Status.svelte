@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type { Status } from '@anticrm/platform'
-  import { Severity } from '@anticrm/platform'
+  import type { Status } from '@hcengineering/platform'
+  import { Severity } from '@hcengineering/platform'
 
   import Info from './icons/Info.svelte'
   import Label from './Label.svelte'

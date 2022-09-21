@@ -1,5 +1,5 @@
-import { Card } from '@anticrm/board'
-import { Employee, EmployeeAccount } from '@anticrm/contact'
+import { Card } from '@hcengineering/board'
+import { Employee, EmployeeAccount } from '@hcengineering/contact'
 import {
   TxOperations as Client,
   TxResult,
@@ -8,9 +8,9 @@ import {
   Space,
   AttachedData,
   SortingOrder
-} from '@anticrm/core'
-import { showPanel } from '@anticrm/ui'
-import task, { calcRank, State, TodoItem } from '@anticrm/task'
+} from '@hcengineering/core'
+import { showPanel } from '@hcengineering/ui'
+import task, { calcRank, State, TodoItem } from '@hcengineering/task'
 import board from '../plugin'
 
 export async function createCard (

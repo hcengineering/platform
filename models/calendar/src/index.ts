@@ -13,11 +13,11 @@
 // limitations under the License.
 //
 
-import activity from '@anticrm/activity'
-import { calendarId, Calendar, Event, Reminder } from '@anticrm/calendar'
-import { Employee } from '@anticrm/contact'
-import type { Domain, Markup, Ref, Timestamp } from '@anticrm/core'
-import { IndexKind } from '@anticrm/core'
+import activity from '@hcengineering/activity'
+import { calendarId, Calendar, Event, Reminder } from '@hcengineering/calendar'
+import { Employee } from '@hcengineering/contact'
+import type { Domain, Markup, Ref, Timestamp } from '@hcengineering/core'
+import { IndexKind } from '@hcengineering/core'
 import {
   ArrOf,
   Builder,
@@ -32,18 +32,18 @@ import {
   TypeRef,
   TypeString,
   UX
-} from '@anticrm/model'
-import attachment from '@anticrm/model-attachment'
-import chunter from '@anticrm/model-chunter'
-import contact from '@anticrm/model-contact'
-import core, { TAttachedDoc } from '@anticrm/model-core'
-import { TSpaceWithStates } from '@anticrm/model-task'
-import view, { createAction } from '@anticrm/model-view'
-import workbench from '@anticrm/model-workbench'
-import notification from '@anticrm/notification'
+} from '@hcengineering/model'
+import attachment from '@hcengineering/model-attachment'
+import chunter from '@hcengineering/model-chunter'
+import contact from '@hcengineering/model-contact'
+import core, { TAttachedDoc } from '@hcengineering/model-core'
+import { TSpaceWithStates } from '@hcengineering/model-task'
+import view, { createAction } from '@hcengineering/model-view'
+import workbench from '@hcengineering/model-workbench'
+import notification from '@hcengineering/notification'
 import calendar from './plugin'
 
-export * from '@anticrm/calendar'
+export * from '@hcengineering/calendar'
 
 export const DOMAIN_CALENDAR = 'calendar' as Domain
 

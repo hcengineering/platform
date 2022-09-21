@@ -46,8 +46,8 @@ import core, {
   TxRemoveDoc,
   TxResult,
   TxUpdateDoc
-} from '@anticrm/core'
-import { getResource } from '@anticrm/platform'
+} from '@hcengineering/core'
+import { getResource } from '@hcengineering/platform'
 import type { Client as MinioClient } from 'minio'
 import { DbAdapter, DbAdapterConfiguration, TxAdapter } from './adapter'
 import { FullTextIndex } from './fulltext'

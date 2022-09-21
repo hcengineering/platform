@@ -1,5 +1,5 @@
 {
-  "name": "@anticrm/dev-server-app",
+  "name": "@hcengineering/dev-server-app",
   "version": "0.6.0",
   "description": "",
   "main": "index.js",
@@ -7,6 +7,6 @@
     "start": "node ./index.js"
   },
   "dependencies": {
-    "@anticrm/dev-server": "^0.6.5"
+    "@hcengineering/dev-server": "^0.6.5"
   }
 }

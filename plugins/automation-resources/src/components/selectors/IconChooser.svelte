@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { Metadata } from '@anticrm/platform'
-  import presentation, { Card } from '@anticrm/presentation'
-  import { Button } from '@anticrm/ui'
-  import view from '@anticrm/view'
+  import { Metadata } from '@hcengineering/platform'
+  import presentation, { Card } from '@hcengineering/presentation'
+  import { Button } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
 
   import automation from '../../plugin'

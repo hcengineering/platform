@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Card as BoardCard } from '@anticrm/board'
+  import type { Card as BoardCard } from '@hcengineering/board'
   import board from '../../plugin'
-  import task, { calcRank } from '@anticrm/task'
-  import { AttachedData, generateId, Ref, SortingOrder, Space } from '@anticrm/core'
-  import { IconAdd, Button, showPopup } from '@anticrm/ui'
-  import { getClient } from '@anticrm/presentation'
+  import task, { calcRank } from '@hcengineering/task'
+  import { AttachedData, generateId, Ref, SortingOrder, Space } from '@hcengineering/core'
+  import { IconAdd, Button, showPopup } from '@hcengineering/ui'
+  import { getClient } from '@hcengineering/presentation'
   import AddCardEditor from './AddCardEditor.svelte'
   import AddMultipleCardsPopup from './AddMultipleCardsPopup.svelte'
 

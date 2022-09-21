@@ -22,7 +22,7 @@
     SortingOrder,
     SortingQuery,
     Space
-  } from '@anticrm/core'
+  } from '@hcengineering/core'
   import {
     AnyComponent,
     Button,
@@ -33,11 +33,11 @@
     Scroller,
     SearchEdit,
     showPopup
-  } from '@anticrm/ui'
-  import presentation, { createQuery, getClient } from '@anticrm/presentation'
+  } from '@hcengineering/ui'
+  import presentation, { createQuery, getClient } from '@hcengineering/presentation'
   import plugin from '../plugin'
-  import { FilterBar, FilterButton, SpacePresenter } from '@anticrm/view-resources'
-  import { IntlString } from '@anticrm/platform'
+  import { FilterBar, FilterButton, SpacePresenter } from '@hcengineering/view-resources'
+  import { IntlString } from '@hcengineering/platform'
   import { classIcon } from '../utils'
 
   export let _class: Ref<Class<Space>>

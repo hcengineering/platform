@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Class, Doc } from '@anticrm/core'
-  import { Label } from '@anticrm/ui'
+  import type { Class, Doc } from '@hcengineering/core'
+  import { Label } from '@hcengineering/ui'
 
   export let value: Class<Doc>
 </script>

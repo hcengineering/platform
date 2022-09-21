@@ -14,15 +14,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Channel, ChannelProvider } from '@anticrm/contact'
-  import type { AttachedData, Doc, Ref, Timestamp } from '@anticrm/core'
-  import type { Asset, IntlString } from '@anticrm/platform'
-  import type { AnyComponent } from '@anticrm/ui'
-  import { Button } from '@anticrm/ui'
+  import type { Channel, ChannelProvider } from '@hcengineering/contact'
+  import type { AttachedData, Doc, Ref, Timestamp } from '@hcengineering/core'
+  import type { Asset, IntlString } from '@hcengineering/platform'
+  import type { AnyComponent } from '@hcengineering/ui'
+  import { Button } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { getChannelProviders } from '../utils'
   import ChannelsPopup from './ChannelsPopup.svelte'
-  import { NotificationClientImpl } from '@anticrm/notification-resources'
+  import { NotificationClientImpl } from '@hcengineering/notification-resources'
 
   export let value: AttachedData<Channel>[] | Channel | null
   export let size: 'small' | 'medium' | 'large' | 'x-large' = 'large'

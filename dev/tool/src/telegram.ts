@@ -14,11 +14,11 @@
 // limitations under the License.
 //
 
-import { DOMAIN_TX, Ref } from '@anticrm/core'
-import { DOMAIN_ATTACHMENT } from '@anticrm/model-attachment'
-import contact, { DOMAIN_CHANNEL } from '@anticrm/model-contact'
-import { DOMAIN_TELEGRAM } from '@anticrm/model-telegram'
-import telegram, { SharedTelegramMessage, SharedTelegramMessages } from '@anticrm/telegram'
+import { DOMAIN_TX, Ref } from '@hcengineering/core'
+import { DOMAIN_ATTACHMENT } from '@hcengineering/model-attachment'
+import contact, { DOMAIN_CHANNEL } from '@hcengineering/model-contact'
+import { DOMAIN_TELEGRAM } from '@hcengineering/model-telegram'
+import telegram, { SharedTelegramMessage, SharedTelegramMessages } from '@hcengineering/telegram'
 import { Client } from 'minio'
 import { Document, MongoClient, UpdateFilter } from 'mongodb'
 

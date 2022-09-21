@@ -14,10 +14,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Channel } from '@anticrm/contact'
-  import type { AttachedData, Doc, Ref } from '@anticrm/core'
-  import presentation from '@anticrm/presentation'
-  import { CircleButton, eventToHTMLElement, IconAdd, Label, showPopup } from '@anticrm/ui'
+  import { Channel } from '@hcengineering/contact'
+  import type { AttachedData, Doc, Ref } from '@hcengineering/core'
+  import presentation from '@hcengineering/presentation'
+  import { CircleButton, eventToHTMLElement, IconAdd, Label, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import contact from '../plugin'
   import ChannelsView from './ChannelsView.svelte'

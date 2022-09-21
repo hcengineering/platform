@@ -1,6 +1,6 @@
-import { Backlink } from '@anticrm/chunter'
-import contact, { EmployeeAccount } from '@anticrm/contact'
-import { Account, Class, Client, Data, Doc, DocumentQuery, Ref, TxOperations } from '@anticrm/core'
+import { Backlink } from '@hcengineering/chunter'
+import contact, { EmployeeAccount } from '@hcengineering/contact'
+import { Account, Class, Client, Data, Doc, DocumentQuery, Ref, TxOperations } from '@hcengineering/core'
 import chunter from './plugin'
 
 export async function getUser (

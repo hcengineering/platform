@@ -14,14 +14,14 @@
 // limitations under the License.
 //
 
-import type { Class, Client, Doc, Obj, Ref, Space } from '@anticrm/core'
-import core from '@anticrm/core'
-import type { Asset } from '@anticrm/platform'
-import { getResource } from '@anticrm/platform'
-import { NavigatorModel } from '@anticrm/workbench'
-import view from '@anticrm/view'
-import { closePanel, getCurrentLocation, navigate } from '@anticrm/ui'
-import { getClient } from '@anticrm/presentation'
+import type { Class, Client, Doc, Obj, Ref, Space } from '@hcengineering/core'
+import core from '@hcengineering/core'
+import type { Asset } from '@hcengineering/platform'
+import { getResource } from '@hcengineering/platform'
+import { NavigatorModel } from '@hcengineering/workbench'
+import view from '@hcengineering/view'
+import { closePanel, getCurrentLocation, navigate } from '@hcengineering/ui'
+import { getClient } from '@hcengineering/presentation'
 
 export function classIcon (client: Client, _class: Ref<Class<Obj>>): Asset | undefined {
   return client.getHierarchy().getClass(_class).icon

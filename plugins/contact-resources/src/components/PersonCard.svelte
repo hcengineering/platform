@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import attachment from '@anticrm/attachment'
-  import contact, { Channel, Contact, formatName } from '@anticrm/contact'
-  import { Avatar, createQuery } from '@anticrm/presentation'
-  import { Component, Label, showPanel } from '@anticrm/ui'
-  import view from '@anticrm/view'
+  import attachment from '@hcengineering/attachment'
+  import contact, { Channel, Contact, formatName } from '@hcengineering/contact'
+  import { Avatar, createQuery } from '@hcengineering/presentation'
+  import { Component, Label, showPanel } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
   import ChannelsEditor from './ChannelsEditor.svelte'
 
   export let object: Contact

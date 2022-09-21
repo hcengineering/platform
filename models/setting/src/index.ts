@@ -13,12 +13,12 @@
 // limitations under the License.
 //
 
-import activity from '@anticrm/activity'
-import { Domain, DOMAIN_MODEL, Ref } from '@anticrm/core'
-import { Builder, Mixin, Model } from '@anticrm/model'
-import core, { TClass, TDoc } from '@anticrm/model-core'
-import view, { createAction } from '@anticrm/model-view'
-import type { Asset, IntlString } from '@anticrm/platform'
+import activity from '@hcengineering/activity'
+import { Domain, DOMAIN_MODEL, Ref } from '@hcengineering/core'
+import { Builder, Mixin, Model } from '@hcengineering/model'
+import core, { TClass, TDoc } from '@hcengineering/model-core'
+import view, { createAction } from '@hcengineering/model-view'
+import type { Asset, IntlString } from '@hcengineering/platform'
 import {
   Editable,
   Handler,
@@ -27,12 +27,12 @@ import {
   settingId,
   SettingsCategory,
   UserMixin
-} from '@anticrm/setting'
-import task from '@anticrm/task'
+} from '@hcengineering/setting'
+import task from '@hcengineering/task'
 import setting from './plugin'
 
-import workbench from '@anticrm/model-workbench'
-import { AnyComponent } from '@anticrm/ui'
+import workbench from '@hcengineering/model-workbench'
+import { AnyComponent } from '@hcengineering/ui'
 
 export const DOMAIN_SETTING = 'setting' as Domain
 

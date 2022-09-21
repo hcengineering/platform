@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import contact from '@anticrm/contact'
+import contact from '@hcengineering/contact'
 import core, {
   AttachedDoc,
   Doc,
@@ -24,14 +24,14 @@ import core, {
   TxProcessor,
   TxRemoveDoc,
   TxUpdateDoc
-} from '@anticrm/core'
-import login from '@anticrm/login'
-import { getMetadata } from '@anticrm/platform'
-import recruit, { Applicant, recruitId, Vacancy } from '@anticrm/recruit'
-import { TriggerControl } from '@anticrm/server-core'
-import { addAssigneeNotification } from '@anticrm/server-task-resources'
-import view from '@anticrm/view'
-import { workbenchId } from '@anticrm/workbench'
+} from '@hcengineering/core'
+import login from '@hcengineering/login'
+import { getMetadata } from '@hcengineering/platform'
+import recruit, { Applicant, recruitId, Vacancy } from '@hcengineering/recruit'
+import { TriggerControl } from '@hcengineering/server-core'
+import { addAssigneeNotification } from '@hcengineering/server-task-resources'
+import view from '@hcengineering/view'
+import { workbenchId } from '@hcengineering/workbench'
 
 /**
  * @public

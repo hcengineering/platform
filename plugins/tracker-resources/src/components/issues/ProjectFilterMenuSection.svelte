@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { translate } from '@anticrm/platform'
-  import { IconNavPrev } from '@anticrm/ui'
+  import { translate } from '@hcengineering/platform'
+  import { IconNavPrev } from '@hcengineering/ui'
   import FilterMenuSection from '../FilterMenuSection.svelte'
   import tracker from '../../plugin'
   import { FilterSectionElement } from '../../utils'
-  import { getClient } from '@anticrm/presentation'
+  import { getClient } from '@hcengineering/presentation'
 
   export let selectedElements: any[] = []
   export let groups: { [key: string]: number }

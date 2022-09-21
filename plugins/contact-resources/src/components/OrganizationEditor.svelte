@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Organization } from '@anticrm/contact'
-  import { Ref } from '@anticrm/core'
-  import { IntlString } from '@anticrm/platform'
-  import { UserBox } from '@anticrm/presentation'
-  import type { ButtonKind, ButtonSize } from '@anticrm/ui'
+  import { Organization } from '@hcengineering/contact'
+  import { Ref } from '@hcengineering/core'
+  import { IntlString } from '@hcengineering/platform'
+  import { UserBox } from '@hcengineering/presentation'
+  import type { ButtonKind, ButtonSize } from '@hcengineering/ui'
   import contact from '../plugin'
 
   export let value: Ref<Organization> | undefined

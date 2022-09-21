@@ -1,5 +1,5 @@
 {
-  "name": "@anticrm/ui-package",
+  "name": "@hcengineering/ui-package",
   "version": "0.6.0",
   "scripts": {
     "build": "tsc --incremental --noEmit --outDir ./dist_cache && echo build",
@@ -8,7 +8,7 @@
     "format": "prettier --write --plugin-search-dir=. src && eslint --fix src"
   },
   "devDependencies": {    
-    "@anticrm/platform-rig": "~0.6.0",
+    "@hcengineering/platform-rig": "~0.6.0",
     "svelte-loader":"^3.1.3",
     "sass":"^1.53.0",
     "svelte-preprocess":"^4.10.7",

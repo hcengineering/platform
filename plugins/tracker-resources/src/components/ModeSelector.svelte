@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { IntlString } from '@anticrm/platform'
-  import { Button } from '@anticrm/ui'
+  import { IntlString } from '@hcengineering/platform'
+  import { Button } from '@hcengineering/ui'
 
   export let mode: string
   export let config: [string, IntlString][]

@@ -14,11 +14,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Ref, Doc } from '@anticrm/core'
-  import { Table } from '@anticrm/view-resources'
+  import type { Ref, Doc } from '@hcengineering/core'
+  import { Table } from '@hcengineering/view-resources'
 
   import attachment from '../plugin'
-  import view from '@anticrm/view'
+  import view from '@hcengineering/view'
 
   export let objectId: Ref<Doc>
   export let attachments: number

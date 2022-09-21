@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { AnyAttribute, ArrOf, AttachedDoc, Class, Collection, Doc, Ref, RefTo, Type } from '@anticrm/core'
-  import { getClient } from '@anticrm/presentation'
-  import { closePopup, closeTooltip, Icon, Label, showPopup, Submenu } from '@anticrm/ui'
-  import { Filter, KeyFilter } from '@anticrm/view'
+  import core, { AnyAttribute, ArrOf, AttachedDoc, Class, Collection, Doc, Ref, RefTo, Type } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
+  import { closePopup, closeTooltip, Icon, Label, showPopup, Submenu } from '@hcengineering/ui'
+  import { Filter, KeyFilter } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import { FilterQuery } from '../../filter'
   import view from '../../plugin'

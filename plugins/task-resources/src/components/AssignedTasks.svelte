@@ -13,13 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { EmployeeAccount } from '@anticrm/contact'
-  import { Class, DocumentQuery, getCurrentAccount, Ref } from '@anticrm/core'
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import tags, { selectedTagElements, TagCategory, TagElement } from '@anticrm/tags'
-  import { DoneState, Task } from '@anticrm/task'
-  import { Component, Icon, Label, SearchEdit } from '@anticrm/ui'
-  import { TableBrowser } from '@anticrm/view-resources'
+  import { EmployeeAccount } from '@hcengineering/contact'
+  import { Class, DocumentQuery, getCurrentAccount, Ref } from '@hcengineering/core'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import tags, { selectedTagElements, TagCategory, TagElement } from '@hcengineering/tags'
+  import { DoneState, Task } from '@hcengineering/task'
+  import { Component, Icon, Label, SearchEdit } from '@hcengineering/ui'
+  import { TableBrowser } from '@hcengineering/view-resources'
   import task from '../plugin'
 
   export let _class: Ref<Class<Task>> = task.class.Task

@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { IntlString, Asset } from '@anticrm/platform'
+  import type { IntlString, Asset } from '@hcengineering/platform'
   import type { AnySvelteComponent, TooltipAlignment } from '../types'
 
   import Icon from './Icon.svelte'

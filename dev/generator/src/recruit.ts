@@ -1,4 +1,4 @@
-import contact, { Channel, Employee, EmployeeAccount, Person } from '@anticrm/contact'
+import contact, { Channel, Employee, EmployeeAccount, Person } from '@hcengineering/contact'
 import core, {
   AttachedData,
   Data,
@@ -9,10 +9,10 @@ import core, {
   MixinUpdate,
   Ref,
   TxOperations
-} from '@anticrm/core'
-import recruit from '@anticrm/model-recruit'
-import { Applicant, Candidate, Vacancy } from '@anticrm/recruit'
-import { genRanks, State } from '@anticrm/task'
+} from '@hcengineering/core'
+import recruit from '@hcengineering/model-recruit'
+import { Applicant, Candidate, Vacancy } from '@hcengineering/recruit'
+import { genRanks, State } from '@hcengineering/task'
 import faker from 'faker'
 import jpeg, { BufferRet } from 'jpeg-js'
 import { Client } from 'minio'

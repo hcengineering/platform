@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Doc, DocumentQuery, Ref } from '@anticrm/core'
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import { Vacancy } from '@anticrm/recruit'
-  import { Button, Icon, IconAdd, Label, Loading, SearchEdit, showPopup } from '@anticrm/ui'
-  import view, { BuildModelKey, Viewlet, ViewletPreference } from '@anticrm/view'
-  import { FilterButton, TableBrowser, ViewletSettingButton } from '@anticrm/view-resources'
+  import core, { Doc, DocumentQuery, Ref } from '@hcengineering/core'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { Vacancy } from '@hcengineering/recruit'
+  import { Button, Icon, IconAdd, Label, Loading, SearchEdit, showPopup } from '@hcengineering/ui'
+  import view, { BuildModelKey, Viewlet, ViewletPreference } from '@hcengineering/view'
+  import { FilterButton, TableBrowser, ViewletSettingButton } from '@hcengineering/view-resources'
   import recruit from '../plugin'
   import CreateVacancy from './CreateVacancy.svelte'
 

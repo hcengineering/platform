@@ -4,11 +4,11 @@ import automation, {
   isUpdateDocCommand,
   PerformAutomationProps,
   TriggerType
-} from '@anticrm/automation'
-import core, { Class, Doc, Ref, Space, TxOperations } from '@anticrm/core'
-import { IntlString } from '@anticrm/platform'
-import { getClient } from '@anticrm/presentation'
-import view, { Action } from '@anticrm/view'
+} from '@hcengineering/automation'
+import core, { Class, Doc, Ref, Space, TxOperations } from '@hcengineering/core'
+import { IntlString } from '@hcengineering/platform'
+import { getClient } from '@hcengineering/presentation'
+import view, { Action } from '@hcengineering/view'
 import { Trigger } from './models'
 
 export async function createAutomation (

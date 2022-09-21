@@ -14,12 +14,12 @@
 // limitations under the License.
 //
 
-import type { Ref } from '@anticrm/core'
-import { inventoryId } from '@anticrm/inventory'
-import inventory from '@anticrm/inventory-resources/src/plugin'
-import { mergeIds } from '@anticrm/platform'
-import type { AnyComponent } from '@anticrm/ui'
-import { Action, ActionCategory, ViewAction, Viewlet } from '@anticrm/view'
+import type { Ref } from '@hcengineering/core'
+import { inventoryId } from '@hcengineering/inventory'
+import inventory from '@hcengineering/inventory-resources/src/plugin'
+import { mergeIds } from '@hcengineering/platform'
+import type { AnyComponent } from '@hcengineering/ui'
+import { Action, ActionCategory, ViewAction, Viewlet } from '@hcengineering/view'
 
 export default mergeIds(inventoryId, inventory, {
   action: {

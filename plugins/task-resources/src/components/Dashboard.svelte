@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Class, DocumentQuery, Ref, SortingOrder, Timestamp } from '@anticrm/core'
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import type { DoneState, SpaceWithStates, State, Task } from '@anticrm/task'
-  import task from '@anticrm/task'
-  import { BarDashboard, DashboardItem } from '@anticrm/ui'
-  import { FilterBar } from '@anticrm/view-resources'
+  import core, { Class, DocumentQuery, Ref, SortingOrder, Timestamp } from '@hcengineering/core'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import type { DoneState, SpaceWithStates, State, Task } from '@hcengineering/task'
+  import task from '@hcengineering/task'
+  import { BarDashboard, DashboardItem } from '@hcengineering/ui'
+  import { FilterBar } from '@hcengineering/view-resources'
   import CreateFilter from './CreateFilter.svelte'
 
   export let _class: Ref<Class<Task>>

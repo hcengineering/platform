@@ -1,17 +1,17 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte'
-  import { Label, Status as StatusControl, TextArea } from '@anticrm/ui'
-  import { Class, Client, Doc, Ref } from '@anticrm/core'
-  import { getResource, OK, Resource, Status } from '@anticrm/platform'
-  import { Card as Popup, getClient } from '@anticrm/presentation'
-  import { Card } from '@anticrm/board'
-  import view from '@anticrm/view'
+  import { Label, Status as StatusControl, TextArea } from '@hcengineering/ui'
+  import { Class, Client, Doc, Ref } from '@hcengineering/core'
+  import { getResource, OK, Resource, Status } from '@hcengineering/platform'
+  import { Card as Popup, getClient } from '@hcengineering/presentation'
+  import { Card } from '@hcengineering/board'
+  import view from '@hcengineering/view'
   import board from '../../plugin'
   import SpaceSelect from '../selectors/SpaceSelect.svelte'
   import StateSelect from '../selectors/StateSelect.svelte'
   import RankSelect from '../selectors/RankSelect.svelte'
-  import { generateId, AttachedData } from '@anticrm/core'
-  import task from '@anticrm/task'
+  import { generateId, AttachedData } from '@hcengineering/core'
+  import task from '@hcengineering/task'
 
   export let value: Card
   const client = getClient()

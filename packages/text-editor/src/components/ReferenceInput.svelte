@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Asset, getResource, IntlString } from '@anticrm/platform'
-  import { getClient } from '@anticrm/presentation'
-  import { AnySvelteComponent, Button, Icon, showPopup } from '@anticrm/ui'
+  import { Asset, getResource, IntlString } from '@hcengineering/platform'
+  import { getClient } from '@hcengineering/presentation'
+  import { AnySvelteComponent, Button, Icon, showPopup } from '@hcengineering/ui'
   import { AnyExtension } from '@tiptap/core'
   import { createEventDispatcher } from 'svelte'
   import { Completion } from '../Completion'

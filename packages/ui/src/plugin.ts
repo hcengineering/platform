@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-import type { IntlString, Metadata, Plugin } from '@anticrm/platform'
-import { plugin } from '@anticrm/platform'
+import type { IntlString, Metadata, Plugin } from '@hcengineering/platform'
+import { plugin } from '@hcengineering/platform'
 import { AnyComponent } from './types'
 
 /**

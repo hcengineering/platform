@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { IntlString } from '@anticrm/platform'
+  import { IntlString } from '@hcengineering/platform'
   import { createEventDispatcher } from 'svelte'
   import CheckBox from './CheckBox.svelte'
   import Label from './Label.svelte'

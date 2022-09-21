@@ -13,15 +13,15 @@
 // limitations under the License.
 //
 
-import type { Client, Doc, Ref } from '@anticrm/core'
-import { ObjectSearchCategory, ObjectSearchFactory } from '@anticrm/model-presentation'
-import type { IntlString, Resource, Status } from '@anticrm/platform'
-import { mergeIds } from '@anticrm/platform'
-import { recruitId } from '@anticrm/recruit'
-import recruit from '@anticrm/recruit-resources/src/plugin'
-import { KanbanTemplate } from '@anticrm/task'
-import type { AnyComponent } from '@anticrm/ui'
-import type { Action, ActionCategory, ViewAction, Viewlet } from '@anticrm/view'
+import type { Client, Doc, Ref } from '@hcengineering/core'
+import { ObjectSearchCategory, ObjectSearchFactory } from '@hcengineering/model-presentation'
+import type { IntlString, Resource, Status } from '@hcengineering/platform'
+import { mergeIds } from '@hcengineering/platform'
+import { recruitId } from '@hcengineering/recruit'
+import recruit from '@hcengineering/recruit-resources/src/plugin'
+import { KanbanTemplate } from '@hcengineering/task'
+import type { AnyComponent } from '@hcengineering/ui'
+import type { Action, ActionCategory, ViewAction, Viewlet } from '@hcengineering/view'
 
 export default mergeIds(recruitId, recruit, {
   action: {

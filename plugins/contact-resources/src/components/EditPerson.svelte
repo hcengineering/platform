@@ -14,13 +14,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import attachment from '@anticrm/attachment'
-  import { combineName, EmployeeAccount, getFirstName, getLastName, Person } from '@anticrm/contact'
-  import { AccountRole, getCurrentAccount, Ref, Space } from '@anticrm/core'
-  import { getResource } from '@anticrm/platform'
-  import { AttributeEditor, Avatar, createQuery, EditableAvatar, getClient } from '@anticrm/presentation'
-  import setting, { IntegrationType } from '@anticrm/setting'
-  import { EditBox, createFocusManager, FocusHandler } from '@anticrm/ui'
+  import attachment from '@hcengineering/attachment'
+  import { combineName, EmployeeAccount, getFirstName, getLastName, Person } from '@hcengineering/contact'
+  import { AccountRole, getCurrentAccount, Ref, Space } from '@hcengineering/core'
+  import { getResource } from '@hcengineering/platform'
+  import { AttributeEditor, Avatar, createQuery, EditableAvatar, getClient } from '@hcengineering/presentation'
+  import setting, { IntegrationType } from '@hcengineering/setting'
+  import { EditBox, createFocusManager, FocusHandler } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import contact from '../plugin'
   import ChannelsEditor from './ChannelsEditor.svelte'

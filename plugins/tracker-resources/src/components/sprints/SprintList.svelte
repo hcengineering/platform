@@ -13,13 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact from '@anticrm/contact'
-  import { Class, Doc, FindOptions, getObjectValue, Ref } from '@anticrm/core'
-  import { getClient } from '@anticrm/presentation'
-  import { Issue, Sprint } from '@anticrm/tracker'
-  import { CheckBox, Spinner, tooltip } from '@anticrm/ui'
-  import { BuildModelKey } from '@anticrm/view'
-  import { buildModel, LoadingProps } from '@anticrm/view-resources'
+  import contact from '@hcengineering/contact'
+  import { Class, Doc, FindOptions, getObjectValue, Ref } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
+  import { Issue, Sprint } from '@hcengineering/tracker'
+  import { CheckBox, Spinner, tooltip } from '@hcengineering/ui'
+  import { BuildModelKey } from '@hcengineering/view'
+  import { buildModel, LoadingProps } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
 

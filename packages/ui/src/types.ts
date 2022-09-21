@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import type { Asset, IntlString } from '@anticrm/platform'
-import { /* Metadata, Plugin, plugin, */ Resource /*, Service */ } from '@anticrm/platform'
+import type { Asset, IntlString } from '@hcengineering/platform'
+import { /* Metadata, Plugin, plugin, */ Resource /*, Service */ } from '@hcengineering/platform'
 import { /* getContext, */ SvelteComponent } from 'svelte'
 
 /**

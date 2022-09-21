@@ -25,8 +25,8 @@ import type {
   Ref,
   Tx,
   TxResult
-} from '@anticrm/core'
-import core, { DOMAIN_TX, Hierarchy, ModelDb, TxDb } from '@anticrm/core'
+} from '@hcengineering/core'
+import core, { DOMAIN_TX, Hierarchy, ModelDb, TxDb } from '@hcengineering/core'
 import { genMinModel } from './minmodel'
 
 export async function connect (handler: (tx: Tx) => void): Promise<Client & BackupClient> {

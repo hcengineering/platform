@@ -447,924 +447,924 @@
     // },
     // 
     {
-      "packageName": "@anticrm/platform-rig",
+      "packageName": "@hcengineering/platform-rig",
       "projectFolder": "packages/platform-rig",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/platform",
+      "packageName": "@hcengineering/platform",
       "projectFolder": "packages/platform",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/core",
+      "packageName": "@hcengineering/core",
       "projectFolder": "packages/core",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/server-ws",
+      "packageName": "@hcengineering/server-ws",
       "projectFolder": "server/ws",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/dev-storage",
+      "packageName": "@hcengineering/dev-storage",
       "projectFolder": "dev/storage",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/dev-server",
+      "packageName": "@hcengineering/dev-server",
       "projectFolder": "dev/server",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/theme",
+      "packageName": "@hcengineering/theme",
       "projectFolder": "packages/theme",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/ui",
+      "packageName": "@hcengineering/ui",
       "projectFolder": "packages/ui",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/prod",
+      "packageName": "@hcengineering/prod",
       "projectFolder": "dev/prod",
       "shouldPublish": false
     },
     // {
-    //   "packageName": "@anticrm/prod-tracker",
+    //   "packageName": "@hcengineering/prod-tracker",
     //   "projectFolder": "products/tracker",
     //   "shouldPublish": false
     // },
     {
-      "packageName": "@anticrm/server-core",
+      "packageName": "@hcengineering/server-core",
       "projectFolder": "server/core",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/server-token",
+      "packageName": "@hcengineering/server-token",
       "projectFolder": "server/token",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/server",
+      "packageName": "@hcengineering/server",
       "projectFolder": "server/server",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/login",
+      "packageName": "@hcengineering/login",
       "projectFolder": "plugins/login",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/login-assets",
+      "packageName": "@hcengineering/login-assets",
       "projectFolder": "plugins/login-assets",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/login-resources",
+      "packageName": "@hcengineering/login-resources",
       "projectFolder": "plugins/login-resources",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/workbench",
+      "packageName": "@hcengineering/workbench",
       "projectFolder": "plugins/workbench",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/workbench-assets",
+      "packageName": "@hcengineering/workbench-assets",
       "projectFolder": "plugins/workbench-assets",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/workbench-resources",
+      "packageName": "@hcengineering/workbench-resources",
       "projectFolder": "plugins/workbench-resources",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/presentation",
+      "packageName": "@hcengineering/presentation",
       "projectFolder": "packages/presentation",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/model-presentation",
+      "packageName": "@hcengineering/model-presentation",
       "projectFolder": "models/presentation",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/client",
+      "packageName": "@hcengineering/client",
       "projectFolder": "plugins/client",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/client-resources",
+      "packageName": "@hcengineering/client-resources",
       "projectFolder": "plugins/client-resources",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/query",
+      "packageName": "@hcengineering/query",
       "projectFolder": "packages/query",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/view",
+      "packageName": "@hcengineering/view",
       "projectFolder": "plugins/view",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/view-assets",
+      "packageName": "@hcengineering/view-assets",
       "projectFolder": "plugins/view-assets",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/view-resources",
+      "packageName": "@hcengineering/view-resources",
       "projectFolder": "plugins/view-resources",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/model",
+      "packageName": "@hcengineering/model",
       "projectFolder": "packages/model",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/model-core",
+      "packageName": "@hcengineering/model-core",
       "projectFolder": "models/core",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/model-rig",
+      "packageName": "@hcengineering/model-rig",
       "projectFolder": "models/model-rig",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/model-all",
+      "packageName": "@hcengineering/model-all",
       "projectFolder": "models/all",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/model-view",
+      "packageName": "@hcengineering/model-view",
       "projectFolder": "models/view",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/contact",
+      "packageName": "@hcengineering/contact",
       "projectFolder": "plugins/contact",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/contact-assets",
+      "packageName": "@hcengineering/contact-assets",
       "projectFolder": "plugins/contact-assets",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/contact-resources",
+      "packageName": "@hcengineering/contact-resources",
       "projectFolder": "plugins/contact-resources",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/task",
+      "packageName": "@hcengineering/task",
       "projectFolder": "plugins/task",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/task-assets",
+      "packageName": "@hcengineering/task-assets",
       "projectFolder": "plugins/task-assets",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/task-resources",
+      "packageName": "@hcengineering/task-resources",
       "projectFolder": "plugins/task-resources",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/dev-client-resources",
+      "packageName": "@hcengineering/dev-client-resources",
       "projectFolder": "dev/client-resources",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/model-workbench",
+      "packageName": "@hcengineering/model-workbench",
       "projectFolder": "models/workbench",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/model-task",
+      "packageName": "@hcengineering/model-task",
       "projectFolder": "models/task",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/model-contact",
+      "packageName": "@hcengineering/model-contact",
       "projectFolder": "models/contact",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/text-editor",
+      "packageName": "@hcengineering/text-editor",
       "projectFolder": "packages/text-editor",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/chunter",
+      "packageName": "@hcengineering/chunter",
       "projectFolder": "plugins/chunter",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/chunter-assets",
+      "packageName": "@hcengineering/chunter-assets",
       "projectFolder": "plugins/chunter-assets",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/chunter-resources",
+      "packageName": "@hcengineering/chunter-resources",
       "projectFolder": "plugins/chunter-resources",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/model-chunter",
+      "packageName": "@hcengineering/model-chunter",
       "projectFolder": "models/chunter",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/recruit",
+      "packageName": "@hcengineering/recruit",
       "projectFolder": "plugins/recruit",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/recruit-assets",
+      "packageName": "@hcengineering/recruit-assets",
       "projectFolder": "plugins/recruit-assets",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/recruit-resources",
+      "packageName": "@hcengineering/recruit-resources",
       "projectFolder": "plugins/recruit-resources",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/model-recruit",
+      "packageName": "@hcengineering/model-recruit",
       "projectFolder": "models/recruit",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/model-demo",
+      "packageName": "@hcengineering/model-demo",
       "projectFolder": "models/demo",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/image-cropper",
+      "packageName": "@hcengineering/image-cropper",
       "projectFolder": "plugins/image-cropper",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/image-cropper-resources",
+      "packageName": "@hcengineering/image-cropper-resources",
       "projectFolder": "plugins/image-cropper-resources",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/model-server-core",
+      "packageName": "@hcengineering/model-server-core",
       "projectFolder": "models/server-core",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/dev-account",
+      "packageName": "@hcengineering/dev-account",
       "projectFolder": "dev/account",
       "shouldPublish": true
     },
     {    
-      "packageName": "@anticrm/server-attachment",
+      "packageName": "@hcengineering/server-attachment",
       "projectFolder": "server-plugins/attachment",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/model-server-attachment",
+      "packageName": "@hcengineering/model-server-attachment",
       "projectFolder": "models/server-attachment",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/server-attachment-resources",
+      "packageName": "@hcengineering/server-attachment-resources",
       "projectFolder": "server-plugins/attachment-resources",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/server-contact",
+      "packageName": "@hcengineering/server-contact",
       "projectFolder": "server-plugins/contact",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/model-server-contact",
+      "packageName": "@hcengineering/model-server-contact",
       "projectFolder": "models/server-contact",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/server-contact-resources",
+      "packageName": "@hcengineering/server-contact-resources",
       "projectFolder": "server-plugins/contact-resources",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/mongo",
+      "packageName": "@hcengineering/mongo",
       "projectFolder": "server/mongo",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/elastic",
+      "packageName": "@hcengineering/elastic",
       "projectFolder": "server/elastic",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/contrib",
+      "packageName": "@hcengineering/contrib",
       "projectFolder": "server/contrib",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/front",
+      "packageName": "@hcengineering/front",
       "projectFolder": "server/front",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/account",
+      "packageName": "@hcengineering/account",
       "projectFolder": "server/account",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/tool",
+      "packageName": "@hcengineering/tool",
       "projectFolder": "dev/tool",
       "shouldPublish": false
     },
     {
-      "packageName": "@anticrm/pod-account",
+      "packageName": "@hcengineering/pod-account",
       "projectFolder": "pods/account",
       "shouldPublish": false
     },
     {
-      "packageName": "@anticrm/panel",
+      "packageName": "@hcengineering/panel",
       "projectFolder": "packages/panel",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/activity",
+      "packageName": "@hcengineering/activity",
       "projectFolder": "plugins/activity",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/activity-assets",
+      "packageName": "@hcengineering/activity-assets",
       "projectFolder": "plugins/activity-assets",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/activity-resources",
+      "packageName": "@hcengineering/activity-resources",
       "projectFolder": "plugins/activity-resources",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/model-activity",
+      "packageName": "@hcengineering/model-activity",
       "projectFolder": "models/activity",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/setting",
+      "packageName": "@hcengineering/setting",
       "projectFolder": "plugins/setting",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/setting-assets",
+      "packageName": "@hcengineering/setting-assets",
       "projectFolder": "plugins/setting-assets",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/setting-resources",
+      "packageName": "@hcengineering/setting-resources",
       "projectFolder": "plugins/setting-resources",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/model-setting",
+      "packageName": "@hcengineering/model-setting",
       "projectFolder": "models/setting",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/telegram",
+      "packageName": "@hcengineering/telegram",
       "projectFolder": "plugins/telegram",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/telegram-assets",
+      "packageName": "@hcengineering/telegram-assets",
       "projectFolder": "plugins/telegram-assets",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/telegram-resources",
+      "packageName": "@hcengineering/telegram-resources",
       "projectFolder": "plugins/telegram-resources",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/model-telegram",
+      "packageName": "@hcengineering/model-telegram",
       "projectFolder": "models/telegram",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/devmodel-resources",
+      "packageName": "@hcengineering/devmodel-resources",
       "projectFolder": "plugins/devmodel-resources",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/devmodel",
+      "packageName": "@hcengineering/devmodel",
       "projectFolder": "plugins/devmodel",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/attachment",
+      "packageName": "@hcengineering/attachment",
       "projectFolder": "plugins/attachment",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/attachment-assets",
+      "packageName": "@hcengineering/attachment-assets",
       "projectFolder": "plugins/attachment-assets",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/attachment-resources",
+      "packageName": "@hcengineering/attachment-resources",
       "projectFolder": "plugins/attachment-resources",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/model-attachment",
+      "packageName": "@hcengineering/model-attachment",
       "projectFolder": "models/attachment",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/lead",
+      "packageName": "@hcengineering/lead",
       "projectFolder": "plugins/lead",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/lead-assets",
+      "packageName": "@hcengineering/lead-assets",
       "projectFolder": "plugins/lead-assets",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/lead-resources",
+      "packageName": "@hcengineering/lead-resources",
       "projectFolder": "plugins/lead-resources",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/model-lead",
+      "packageName": "@hcengineering/model-lead",
       "projectFolder": "models/lead",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/generator",
+      "packageName": "@hcengineering/generator",
       "projectFolder": "dev/generator",
       "shouldPublish": false
     },
     {
-      "packageName": "@anticrm/model-gmail",
+      "packageName": "@hcengineering/model-gmail",
       "projectFolder": "models/gmail",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/gmail",
+      "packageName": "@hcengineering/gmail",
       "projectFolder": "plugins/gmail",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/gmail-assets",
+      "packageName": "@hcengineering/gmail-assets",
       "projectFolder": "plugins/gmail-assets",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/gmail-resources",
+      "packageName": "@hcengineering/gmail-resources",
       "projectFolder": "plugins/gmail-resources",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/model-inventory",
+      "packageName": "@hcengineering/model-inventory",
       "projectFolder": "models/inventory",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/inventory",
+      "packageName": "@hcengineering/inventory",
       "projectFolder": "plugins/inventory",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/inventory-assets",
+      "packageName": "@hcengineering/inventory-assets",
       "projectFolder": "plugins/inventory-assets",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/inventory-resources",
+      "packageName": "@hcengineering/inventory-resources",
       "projectFolder": "plugins/inventory-resources",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/templates",
+      "packageName": "@hcengineering/templates",
       "projectFolder": "plugins/templates",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/templates-assets",
+      "packageName": "@hcengineering/templates-assets",
       "projectFolder": "plugins/templates-assets",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/templates-resources",
+      "packageName": "@hcengineering/templates-resources",
       "projectFolder": "plugins/templates-resources",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/model-templates",
+      "packageName": "@hcengineering/model-templates",
       "projectFolder": "models/templates",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/model-text-editor",
+      "packageName": "@hcengineering/model-text-editor",
       "projectFolder": "models/text-editor",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/server-tool",
+      "packageName": "@hcengineering/server-tool",
       "projectFolder": "server/tool",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/tests-sanity",
+      "packageName": "@hcengineering/tests-sanity",
       "projectFolder": "tests/sanity",
       "shouldPublish": false
     },
     {
-      "packageName": "@anticrm/rekoni",
+      "packageName": "@hcengineering/rekoni",
       "projectFolder": "packages/rekoni",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/model-notification",
+      "packageName": "@hcengineering/model-notification",
       "projectFolder": "models/notification",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/notification",
+      "packageName": "@hcengineering/notification",
       "projectFolder": "plugins/notification",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/notification-assets",
+      "packageName": "@hcengineering/notification-assets",
       "projectFolder": "plugins/notification-assets",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/notification-resources",
+      "packageName": "@hcengineering/notification-resources",
       "projectFolder": "plugins/notification-resources",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/server-notification",
+      "packageName": "@hcengineering/server-notification",
       "projectFolder": "server-plugins/notification",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/model-server-notification",
+      "packageName": "@hcengineering/model-server-notification",
       "projectFolder": "models/server-notification",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/server-notification-resources",
+      "packageName": "@hcengineering/server-notification-resources",
       "projectFolder": "server-plugins/notification-resources",
       "shouldPublish": true
     },
     {
-    "packageName": "@anticrm/tags",
+    "packageName": "@hcengineering/tags",
       "projectFolder": "plugins/tags",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/tags-assets",
+      "packageName": "@hcengineering/tags-assets",
       "projectFolder": "plugins/tags-assets",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/tags-resources",
+      "packageName": "@hcengineering/tags-resources",
       "projectFolder": "plugins/tags-resources",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/model-tags",
+      "packageName": "@hcengineering/model-tags",
       "projectFolder": "models/tags",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/server-chunter",
+      "packageName": "@hcengineering/server-chunter",
       "projectFolder": "server-plugins/chunter",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/model-server-chunter",
+      "packageName": "@hcengineering/model-server-chunter",
       "projectFolder": "models/server-chunter",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/server-chunter-resources",
+      "packageName": "@hcengineering/server-chunter-resources",
       "projectFolder": "server-plugins/chunter-resources",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/server-inventory",
+      "packageName": "@hcengineering/server-inventory",
       "projectFolder": "server-plugins/inventory",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/model-server-inventory",
+      "packageName": "@hcengineering/model-server-inventory",
       "projectFolder": "models/server-inventory",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/server-inventory-resources",
+      "packageName": "@hcengineering/server-inventory-resources",
       "projectFolder": "server-plugins/inventory-resources",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/server-lead",
+      "packageName": "@hcengineering/server-lead",
       "projectFolder": "server-plugins/lead",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/model-server-lead",
+      "packageName": "@hcengineering/model-server-lead",
       "projectFolder": "models/server-lead",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/server-lead-resources",
+      "packageName": "@hcengineering/server-lead-resources",
       "projectFolder": "server-plugins/lead-resources",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/server-recruit",
+      "packageName": "@hcengineering/server-recruit",
       "projectFolder": "server-plugins/recruit",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/model-server-recruit",
+      "packageName": "@hcengineering/model-server-recruit",
       "projectFolder": "models/server-recruit",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/server-recruit-resources",
+      "packageName": "@hcengineering/server-recruit-resources",
       "projectFolder": "server-plugins/recruit-resources",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/server-task",
+      "packageName": "@hcengineering/server-task",
       "projectFolder": "server-plugins/task",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/model-server-task",
+      "packageName": "@hcengineering/model-server-task",
       "projectFolder": "models/server-task",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/server-tracker",
+      "packageName": "@hcengineering/server-tracker",
       "projectFolder": "server-plugins/tracker",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/model-server-tracker",
+      "packageName": "@hcengineering/model-server-tracker",
       "projectFolder": "models/server-tracker",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/server-tracker-resources",
+      "packageName": "@hcengineering/server-tracker-resources",
       "projectFolder": "server-plugins/tracker-resources",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/server-task-resources",
+      "packageName": "@hcengineering/server-task-resources",
       "projectFolder": "server-plugins/task-resources",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/server-setting",
+      "packageName": "@hcengineering/server-setting",
       "projectFolder": "server-plugins/setting",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/model-server-setting",
+      "packageName": "@hcengineering/model-server-setting",
       "projectFolder": "models/server-setting",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/server-setting-resources",
+      "packageName": "@hcengineering/server-setting-resources",
       "projectFolder": "server-plugins/setting-resources",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/calendar",
+      "packageName": "@hcengineering/calendar",
       "projectFolder": "plugins/calendar",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/calendar-assets",
+      "packageName": "@hcengineering/calendar-assets",
       "projectFolder": "plugins/calendar-assets",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/calendar-resources",
+      "packageName": "@hcengineering/calendar-resources",
       "projectFolder": "plugins/calendar-resources",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/model-calendar",
+      "packageName": "@hcengineering/model-calendar",
       "projectFolder": "models/calendar",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/server-tags",
+      "packageName": "@hcengineering/server-tags",
       "projectFolder": "server-plugins/tags",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/model-server-tags",
+      "packageName": "@hcengineering/model-server-tags",
       "projectFolder": "models/server-tags",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/server-tags-resources",
+      "packageName": "@hcengineering/server-tags-resources",
       "projectFolder": "server-plugins/tags-resources",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/server-calendar",
+      "packageName": "@hcengineering/server-calendar",
       "projectFolder": "server-plugins/calendar",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/model-server-calendar",
+      "packageName": "@hcengineering/model-server-calendar",
       "projectFolder": "models/server-calendar",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/server-calendar-resources",
+      "packageName": "@hcengineering/server-calendar-resources",
       "projectFolder": "server-plugins/calendar-resources",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/server-gmail",
+      "packageName": "@hcengineering/server-gmail",
       "projectFolder": "server-plugins/gmail",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/model-server-gmail",
+      "packageName": "@hcengineering/model-server-gmail",
       "projectFolder": "models/server-gmail",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/server-gmail-resources",
+      "packageName": "@hcengineering/server-gmail-resources",
       "projectFolder": "server-plugins/gmail-resources",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/server-telegram",
+      "packageName": "@hcengineering/server-telegram",
       "projectFolder": "server-plugins/telegram",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/model-server-telegram",
+      "packageName": "@hcengineering/model-server-telegram",
       "projectFolder": "models/server-telegram",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/server-telegram-resources",
+      "packageName": "@hcengineering/server-telegram-resources",
       "projectFolder": "server-plugins/telegram-resources",
       "shouldPublish": true
     },
 
     {
-      "packageName": "@anticrm/tracker",
+      "packageName": "@hcengineering/tracker",
       "projectFolder": "plugins/tracker",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/tracker-assets",
+      "packageName": "@hcengineering/tracker-assets",
       "projectFolder": "plugins/tracker-assets",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/tracker-resources",
+      "packageName": "@hcengineering/tracker-resources",
       "projectFolder": "plugins/tracker-resources",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/model-tracker",
+      "packageName": "@hcengineering/model-tracker",
       "projectFolder": "models/tracker",
       "shouldPublish": true
     },
 
     {
-      "packageName": "@anticrm/board",
+      "packageName": "@hcengineering/board",
       "projectFolder": "plugins/board",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/board-assets",
+      "packageName": "@hcengineering/board-assets",
       "projectFolder": "plugins/board-assets",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/board-resources",
+      "packageName": "@hcengineering/board-resources",
       "projectFolder": "plugins/board-resources",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/model-board",
+      "packageName": "@hcengineering/model-board",
       "projectFolder": "models/board",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/kanban",
+      "packageName": "@hcengineering/kanban",
       "projectFolder": "packages/kanban",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/preference",
+      "packageName": "@hcengineering/preference",
       "projectFolder": "plugins/preference",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/preference-assets",
+      "packageName": "@hcengineering/preference-assets",
       "projectFolder": "plugins/preference-assets",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/model-preference",
+      "packageName": "@hcengineering/model-preference",
       "projectFolder": "models/preference",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/server-preference",
+      "packageName": "@hcengineering/server-preference",
       "projectFolder": "server-plugins/preference",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/middleware",
+      "packageName": "@hcengineering/middleware",
       "projectFolder": "server/middleware",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/server-backup",
+      "packageName": "@hcengineering/server-backup",
       "projectFolder": "server/backup",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/pod-backup",
+      "packageName": "@hcengineering/pod-backup",
       "projectFolder": "pods/backup",
       "shouldPublish": false
     },
     {
-      "packageName": "@anticrm/automation",
+      "packageName": "@hcengineering/automation",
       "projectFolder": "plugins/automation",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/automation-resources",
+      "packageName": "@hcengineering/automation-resources",
       "projectFolder": "plugins/automation-resources",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/automation-assets",
+      "packageName": "@hcengineering/automation-assets",
       "projectFolder": "plugins/automation-assets",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/model-automation",
+      "packageName": "@hcengineering/model-automation",
       "projectFolder": "models/automation",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/hr",
+      "packageName": "@hcengineering/hr",
       "projectFolder": "plugins/hr",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/hr-assets",
+      "packageName": "@hcengineering/hr-assets",
       "projectFolder": "plugins/hr-assets",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/hr-resources",
+      "packageName": "@hcengineering/hr-resources",
       "projectFolder": "plugins/hr-resources",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/model-hr",
+      "packageName": "@hcengineering/model-hr",
       "projectFolder": "models/hr",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/server-hr",
+      "packageName": "@hcengineering/server-hr",
       "projectFolder": "server-plugins/hr",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/model-server-hr",
+      "packageName": "@hcengineering/model-server-hr",
       "projectFolder": "models/server-hr",
       "shouldPublish": true
     },
     {
-      "packageName": "@anticrm/server-hr-resources",
+      "packageName": "@hcengineering/server-hr-resources",
       "projectFolder": "server-plugins/hr-resources",
       "shouldPublish": true
     }

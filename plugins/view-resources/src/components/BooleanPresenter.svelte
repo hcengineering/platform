@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Label } from '@anticrm/ui'
+  import { Label } from '@hcengineering/ui'
   import { getBooleanLabel } from '../utils'
 
   export let value: any

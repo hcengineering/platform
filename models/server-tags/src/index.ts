@@ -13,11 +13,11 @@
 // limitations under the License.
 //
 
-import core, { Class, Doc } from '@anticrm/core'
-import { Builder } from '@anticrm/model'
-import serverCore, { ObjectDDParticipant } from '@anticrm/server-core'
-import serverTags from '@anticrm/server-tags'
-import tags from '@anticrm/tags'
+import core, { Class, Doc } from '@hcengineering/core'
+import { Builder } from '@hcengineering/model'
+import serverCore, { ObjectDDParticipant } from '@hcengineering/server-core'
+import serverTags from '@hcengineering/server-tags'
+import tags from '@hcengineering/tags'
 
 export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {

@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-import { addStringsLoader, loadMetadata } from '@anticrm/platform'
-import inventory, { inventoryId } from '@anticrm/inventory'
+import { addStringsLoader, loadMetadata } from '@hcengineering/platform'
+import inventory, { inventoryId } from '@hcengineering/inventory'
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(inventory.icon, {

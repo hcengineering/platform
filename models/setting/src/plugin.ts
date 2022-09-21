@@ -13,13 +13,13 @@
 // limitations under the License.
 //
 
-import type { TxViewlet } from '@anticrm/activity'
-import { Doc, Ref } from '@anticrm/core'
-import { mergeIds } from '@anticrm/platform'
-import { settingId } from '@anticrm/setting'
-import setting from '@anticrm/setting-resources/src/plugin'
-import { AnyComponent } from '@anticrm/ui'
-import { Action, ActionCategory, ViewAction } from '@anticrm/view'
+import type { TxViewlet } from '@hcengineering/activity'
+import { Doc, Ref } from '@hcengineering/core'
+import { mergeIds } from '@hcengineering/platform'
+import { settingId } from '@hcengineering/setting'
+import setting from '@hcengineering/setting-resources/src/plugin'
+import { AnyComponent } from '@hcengineering/ui'
+import { Action, ActionCategory, ViewAction } from '@hcengineering/view'
 
 export default mergeIds(settingId, setting, {
   activity: {

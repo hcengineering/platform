@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Variant } from '@anticrm/inventory'
+  import { Variant } from '@hcengineering/inventory'
 
   export let value: Variant
 </script>

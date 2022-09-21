@@ -14,8 +14,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { ObjectSearchPopup, ObjectSearchResult } from '@anticrm/presentation'
-  import { showPopup } from '@anticrm/ui'
+  import { ObjectSearchPopup, ObjectSearchResult } from '@hcengineering/presentation'
+  import { showPopup } from '@hcengineering/ui'
   import { onDestroy, onMount } from 'svelte'
   import DummyPopup from './DummyPopup.svelte'
 

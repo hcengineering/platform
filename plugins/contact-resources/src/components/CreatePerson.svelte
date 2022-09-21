@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import attachment from '@anticrm/attachment'
-  import { Channel, combineName, findPerson, Person } from '@anticrm/contact'
-  import { AttachedData, Data, generateId } from '@anticrm/core'
-  import { getResource } from '@anticrm/platform'
-  import { Card, EditableAvatar, getClient } from '@anticrm/presentation'
-  import { EditBox, IconInfo, Label, createFocusManager, FocusHandler } from '@anticrm/ui'
+  import attachment from '@hcengineering/attachment'
+  import { Channel, combineName, findPerson, Person } from '@hcengineering/contact'
+  import { AttachedData, Data, generateId } from '@hcengineering/core'
+  import { getResource } from '@hcengineering/platform'
+  import { Card, EditableAvatar, getClient } from '@hcengineering/presentation'
+  import { EditBox, IconInfo, Label, createFocusManager, FocusHandler } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { ChannelsDropdown } from '..'
   import contact from '../plugin'

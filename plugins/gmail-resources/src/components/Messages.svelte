@@ -14,9 +14,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { SharedMessage } from '@anticrm/gmail'
+  import type { SharedMessage } from '@hcengineering/gmail'
   import MessageView from './Message.svelte'
-  import { Ref } from '@anticrm/core'
+  import { Ref } from '@hcengineering/core'
   import { createEventDispatcher } from 'svelte'
 
   export let messages: SharedMessage[] = []

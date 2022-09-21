@@ -32,13 +32,13 @@ import core, {
   Tx,
   TxOperations,
   TxResult
-} from '@anticrm/core'
-import login from '@anticrm/login'
-import { getMetadata } from '@anticrm/platform'
-import { LiveQuery as LQ } from '@anticrm/query'
+} from '@hcengineering/core'
+import login from '@hcengineering/login'
+import { getMetadata } from '@hcengineering/platform'
+import { LiveQuery as LQ } from '@hcengineering/query'
 import { onDestroy } from 'svelte'
 import { deepEqual } from 'fast-equals'
-import { IconSize } from '@anticrm/ui'
+import { IconSize } from '@hcengineering/ui'
 
 let liveQuery: LQ
 let client: TxOperations

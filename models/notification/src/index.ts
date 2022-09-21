@@ -14,9 +14,9 @@
 // limitations under the License.
 //
 
-import { Account, Doc, Domain, DOMAIN_MODEL, Ref, Timestamp, TxCUD } from '@anticrm/core'
-import { ArrOf, Builder, Mixin, Model, Prop, TypeRef, TypeString, TypeTimestamp } from '@anticrm/model'
-import core, { TAttachedDoc, TClass, TDoc } from '@anticrm/model-core'
+import { Account, Doc, Domain, DOMAIN_MODEL, Ref, Timestamp, TxCUD } from '@hcengineering/core'
+import { ArrOf, Builder, Mixin, Model, Prop, TypeRef, TypeString, TypeTimestamp } from '@hcengineering/model'
+import core, { TAttachedDoc, TClass, TDoc } from '@hcengineering/model-core'
 import type {
   AnotherUserNotifications,
   EmailNotification,
@@ -28,9 +28,9 @@ import type {
   NotificationStatus,
   NotificationType,
   SpaceLastEdit
-} from '@anticrm/notification'
-import type { IntlString } from '@anticrm/platform'
-import setting from '@anticrm/setting'
+} from '@hcengineering/notification'
+import type { IntlString } from '@hcengineering/platform'
+import setting from '@hcengineering/setting'
 import notification from './plugin'
 
 export const DOMAIN_NOTIFICATION = 'notification' as Domain

@@ -15,9 +15,9 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { IntlString, Asset } from '@anticrm/platform'
-  import { Label, Icon } from '@anticrm/ui'
-  import type { AnySvelteComponent } from '@anticrm/ui'
+  import { IntlString, Asset } from '@hcengineering/platform'
+  import { Label, Icon } from '@hcengineering/ui'
+  import type { AnySvelteComponent } from '@hcengineering/ui'
   import StyledTextBox from './StyledTextBox.svelte'
   import textEditorPlugin from '../plugin'
   import IconDescription from './icons/Description.svelte'

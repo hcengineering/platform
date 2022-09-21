@@ -14,11 +14,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { formatName } from '@anticrm/contact'
-  import { Class, ClassifierKind, Doc, Mixin, Obj, Ref } from '@anticrm/core'
-  import notification from '@anticrm/notification'
-  import { Panel } from '@anticrm/panel'
-  import { Asset, getResource, translate } from '@anticrm/platform'
+  import contact, { formatName } from '@hcengineering/contact'
+  import { Class, ClassifierKind, Doc, Mixin, Obj, Ref } from '@hcengineering/core'
+  import notification from '@hcengineering/notification'
+  import { Panel } from '@hcengineering/panel'
+  import { Asset, getResource, translate } from '@hcengineering/platform'
   import {
     AttributeCategory,
     AttributeCategoryOrder,
@@ -27,9 +27,9 @@
     getAttributePresenterClass,
     getClient,
     KeyedAttribute
-  } from '@anticrm/presentation'
-  import { AnyComponent, Button, Component, IconMoreH, showPopup } from '@anticrm/ui'
-  import view from '@anticrm/view'
+  } from '@hcengineering/presentation'
+  import { AnyComponent, Button, Component, IconMoreH, showPopup } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import { ContextMenu } from '..'
   import { categorizeFields, getCollectionCounter, getFiltredKeys } from '../utils'

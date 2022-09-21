@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { formatName, Person } from '@anticrm/contact'
-  import { IntlString } from '@anticrm/platform'
+  import { formatName, Person } from '@hcengineering/contact'
+  import { IntlString } from '@hcengineering/platform'
   import PersonContent from './PersonContent.svelte'
-  import type { AnyComponent, AnySvelteComponent } from '@anticrm/ui'
+  import type { AnyComponent, AnySvelteComponent } from '@hcengineering/ui'
 
   export let value: Person | null | undefined
   export let inline = false

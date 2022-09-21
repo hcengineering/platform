@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { SharedTelegramMessage } from '@anticrm/telegram'
+  import type { SharedTelegramMessage } from '@hcengineering/telegram'
 
   export let message: SharedTelegramMessage
 

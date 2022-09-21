@@ -1,5 +1,5 @@
 {
-  "name": "@anticrm/gmail-resources",
+  "name": "@hcengineering/gmail-resources",
   "version": "0.6.0",
   "main": "src/index.ts",
   "author": "Anticrm Platform Contributors",
@@ -13,7 +13,7 @@
     "svelte-check": "svelte-check"
   },
   "devDependencies": {
-    "@anticrm/platform-rig": "~0.6.0",
+    "@hcengineering/platform-rig": "~0.6.0",
     "svelte-loader": "^3.1.3",
     "sass": "^1.53.0",
     "svelte-preprocess": "^4.10.7",
@@ -31,21 +31,21 @@
     "typescript": "^4.3.5"
   },
   "dependencies": {
-    "@anticrm/platform": "~0.6.6",
+    "@hcengineering/platform": "^0.6.7",
     "svelte": "^3.47",
-    "@anticrm/gmail": "~0.6.0",
-    "@anticrm/ui": "~0.6.0",
-    "@anticrm/presentation": "~0.6.2",
-    "@anticrm/text-editor": "~0.6.0",
-    "@anticrm/contact": "~0.6.5",
-    "@anticrm/setting": "~0.6.1",
-    "@anticrm/chunter": "~0.6.1",
-    "@anticrm/chunter-resources": "~0.6.0",
-    "@anticrm/notification-resources": "~0.6.0",
-    "@anticrm/attachment": "~0.6.1",
-    "@anticrm/attachment-resources": "~0.6.0",
-    "@anticrm/login": "~0.6.1",
-    "@anticrm/core": "~0.6.16",
-    "@anticrm/panel": "~0.6.0"
+    "@hcengineering/gmail": "~0.6.0",
+    "@hcengineering/ui": "^0.6.2",
+    "@hcengineering/presentation": "~0.6.2",
+    "@hcengineering/text-editor": "~0.6.0",
+    "@hcengineering/contact": "~0.6.5",
+    "@hcengineering/setting": "~0.6.1",
+    "@hcengineering/chunter": "~0.6.1",
+    "@hcengineering/chunter-resources": "~0.6.0",
+    "@hcengineering/notification-resources": "~0.6.0",
+    "@hcengineering/attachment": "~0.6.1",
+    "@hcengineering/attachment-resources": "~0.6.0",
+    "@hcengineering/login": "~0.6.1",
+    "@hcengineering/core": "^0.6.17",
+    "@hcengineering/panel": "~0.6.0"
   }
 }

@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Class, Doc, Ref, RelatedDocument } from '@anticrm/core'
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import { AttributeModel } from '@anticrm/view'
+  import type { Class, Doc, Ref, RelatedDocument } from '@hcengineering/core'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { AttributeModel } from '@hcengineering/view'
   import { getObjectPresenter } from '../utils'
 
   export let objectId: Ref<Doc> | undefined = undefined

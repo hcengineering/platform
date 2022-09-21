@@ -26,11 +26,11 @@ import {
   Space,
   Timestamp,
   UXObject
-} from '@anticrm/core'
-import type { Asset, Plugin } from '@anticrm/platform'
-import { IntlString, plugin } from '@anticrm/platform'
-import type { AnyComponent } from '@anticrm/ui'
-import { ViewAction, Viewlet } from '@anticrm/view'
+} from '@hcengineering/core'
+import type { Asset, Plugin } from '@hcengineering/platform'
+import { IntlString, plugin } from '@hcengineering/platform'
+import type { AnyComponent } from '@hcengineering/ui'
+import { ViewAction, Viewlet } from '@hcengineering/view'
 
 /**
  * @public

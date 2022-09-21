@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { IntlString } from '@anticrm/platform'
-  import type { ButtonKind, ButtonSize, TooltipAlignment } from '@anticrm/ui'
-  import { Button, Label } from '@anticrm/ui'
+  import type { IntlString } from '@hcengineering/platform'
+  import type { ButtonKind, ButtonSize, TooltipAlignment } from '@hcengineering/ui'
+  import { Button, Label } from '@hcengineering/ui'
 
   export let label: IntlString
   export let tooltip: IntlString

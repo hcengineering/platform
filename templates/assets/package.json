@@ -1,5 +1,5 @@
 {
-  "name": "@anticrm/assets-package",
+  "name": "@hcengineering/assets-package",
   "version": "0.6.0",
   "scripts": {
     "build": "heft build",
@@ -10,7 +10,7 @@
     "build:watch": "tsc"
   },
   "devDependencies": {    
-    "@anticrm/platform-rig": "~0.6.0",
+    "@hcengineering/platform-rig": "~0.6.0",
     "@types/heft-jest": "^1.0.3",
     "@typescript-eslint/eslint-plugin": "^5.30.0",
     "@typescript-eslint/parser": "^5.30.0",

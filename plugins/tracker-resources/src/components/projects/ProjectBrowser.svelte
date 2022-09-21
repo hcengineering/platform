@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact from '@anticrm/contact'
-  import { DocumentQuery, FindOptions, SortingOrder } from '@anticrm/core'
-  import { IntlString } from '@anticrm/platform'
-  import { createQuery } from '@anticrm/presentation'
-  import { Project } from '@anticrm/tracker'
-  import { Button, IconAdd, Label, showPopup } from '@anticrm/ui'
+  import contact from '@hcengineering/contact'
+  import { DocumentQuery, FindOptions, SortingOrder } from '@hcengineering/core'
+  import { IntlString } from '@hcengineering/platform'
+  import { createQuery } from '@hcengineering/presentation'
+  import { Project } from '@hcengineering/tracker'
+  import { Button, IconAdd, Label, showPopup } from '@hcengineering/ui'
   import tracker from '../../plugin'
   import { getIncludedProjectStatuses, projectsTitleMap, ProjectsViewMode } from '../../utils'
   import NewProject from './NewProject.svelte'

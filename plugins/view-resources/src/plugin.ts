@@ -14,9 +14,9 @@
 // limitations under the License.
 //
 
-import { IntlString, mergeIds } from '@anticrm/platform'
-import { AnyComponent } from '@anticrm/ui'
-import view, { viewId } from '@anticrm/view'
+import { IntlString, mergeIds } from '@hcengineering/platform'
+import { AnyComponent } from '@hcengineering/ui'
+import view, { viewId } from '@hcengineering/view'
 
 export default mergeIds(viewId, view, {
   component: {

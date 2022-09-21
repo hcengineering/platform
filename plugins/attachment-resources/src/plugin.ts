@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-import attachment, { attachmentId } from '@anticrm/attachment'
-import type { IntlString } from '@anticrm/platform'
-import { mergeIds } from '@anticrm/platform'
-import { ViewAction } from '@anticrm/view'
+import attachment, { attachmentId } from '@hcengineering/attachment'
+import type { IntlString } from '@hcengineering/platform'
+import { mergeIds } from '@hcengineering/platform'
+import { ViewAction } from '@hcengineering/view'
 
 export default mergeIds(attachmentId, attachment, {
   string: {

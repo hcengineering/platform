@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { TagReference } from '@anticrm/tags'
-  import { getPlatformColor, IconClose, Icon, resizeObserver } from '@anticrm/ui'
+  import type { TagReference } from '@hcengineering/tags'
+  import { getPlatformColor, IconClose, Icon, resizeObserver } from '@hcengineering/ui'
   import TagItem from './TagItem.svelte'
   import { createEventDispatcher } from 'svelte'
 

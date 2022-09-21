@@ -13,14 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Employee } from '@anticrm/contact'
-  import { Class, Doc, Ref } from '@anticrm/core'
-  import { Project } from '@anticrm/tracker'
-  import { UsersPopup, getClient } from '@anticrm/presentation'
-  import { AttributeModel } from '@anticrm/view'
-  import { eventToHTMLElement, showPopup } from '@anticrm/ui'
-  import { getObjectPresenter } from '@anticrm/view-resources'
-  import { IntlString } from '@anticrm/platform'
+  import contact, { Employee } from '@hcengineering/contact'
+  import { Class, Doc, Ref } from '@hcengineering/core'
+  import { Project } from '@hcengineering/tracker'
+  import { UsersPopup, getClient } from '@hcengineering/presentation'
+  import { AttributeModel } from '@hcengineering/view'
+  import { eventToHTMLElement, showPopup } from '@hcengineering/ui'
+  import { getObjectPresenter } from '@hcengineering/view-resources'
+  import { IntlString } from '@hcengineering/platform'
   import tracker from '../../plugin'
   import LeadPopup from './LeadPopup.svelte'
 

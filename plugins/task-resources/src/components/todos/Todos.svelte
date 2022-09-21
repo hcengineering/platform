@@ -13,14 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Ref, Space, Doc, Class } from '@anticrm/core'
-  import type { TodoItem } from '@anticrm/task'
-  import { createQuery } from '@anticrm/presentation'
-  import { Button, IconAdd, showPopup, Label } from '@anticrm/ui'
+  import type { Ref, Space, Doc, Class } from '@hcengineering/core'
+  import type { TodoItem } from '@hcengineering/task'
+  import { createQuery } from '@hcengineering/presentation'
+  import { Button, IconAdd, showPopup, Label } from '@hcengineering/ui'
   import CreateTodo from './CreateTodo.svelte'
-  import { Table } from '@anticrm/view-resources'
+  import { Table } from '@hcengineering/view-resources'
 
-  import task from '@anticrm/task'
+  import task from '@hcengineering/task'
   import plugin from '../../plugin'
 
   export let objectId: Ref<Doc>

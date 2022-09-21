@@ -13,13 +13,13 @@
 // limitations under the License.
 //
 
-import type { TxViewlet } from '@anticrm/activity'
-import activity from '@anticrm/activity'
-import core, { Class, Doc, DocumentQuery, DOMAIN_MODEL, Ref, Tx } from '@anticrm/core'
-import { Builder, Model } from '@anticrm/model'
-import { TDoc } from '@anticrm/model-core'
-import type { Asset, IntlString } from '@anticrm/platform'
-import { AnyComponent } from '@anticrm/ui'
+import type { TxViewlet } from '@hcengineering/activity'
+import activity from '@hcengineering/activity'
+import core, { Class, Doc, DocumentQuery, DOMAIN_MODEL, Ref, Tx } from '@hcengineering/core'
+import { Builder, Model } from '@hcengineering/model'
+import { TDoc } from '@hcengineering/model-core'
+import type { Asset, IntlString } from '@hcengineering/platform'
+import { AnyComponent } from '@hcengineering/ui'
 
 @Model(activity.class.TxViewlet, core.class.Doc, DOMAIN_MODEL)
 export class TTxViewlet extends TDoc implements TxViewlet {

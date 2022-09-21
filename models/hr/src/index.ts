@@ -13,9 +13,9 @@
 // limitations under the License.
 //
 
-import { Employee } from '@anticrm/contact'
-import { Arr, Class, Domain, DOMAIN_MODEL, IndexKind, Markup, Ref, Type } from '@anticrm/core'
-import { Department, DepartmentMember, hrId, Request, RequestType, Staff, TzDate } from '@anticrm/hr'
+import { Employee } from '@hcengineering/contact'
+import { Arr, Class, Domain, DOMAIN_MODEL, IndexKind, Markup, Ref, Type } from '@hcengineering/core'
+import { Department, DepartmentMember, hrId, Request, RequestType, Staff, TzDate } from '@hcengineering/hr'
 import {
   ArrOf,
   Builder,
@@ -30,15 +30,15 @@ import {
   TypeRef,
   TypeString,
   UX
-} from '@anticrm/model'
-import attachment from '@anticrm/model-attachment'
-import calendar from '@anticrm/model-calendar'
-import chunter from '@anticrm/model-chunter'
-import contact, { TEmployee, TEmployeeAccount } from '@anticrm/model-contact'
-import core, { TAttachedDoc, TDoc, TSpace, TType } from '@anticrm/model-core'
-import view, { classPresenter, createAction } from '@anticrm/model-view'
-import workbench from '@anticrm/model-workbench'
-import { Asset, IntlString } from '@anticrm/platform'
+} from '@hcengineering/model'
+import attachment from '@hcengineering/model-attachment'
+import calendar from '@hcengineering/model-calendar'
+import chunter from '@hcengineering/model-chunter'
+import contact, { TEmployee, TEmployeeAccount } from '@hcengineering/model-contact'
+import core, { TAttachedDoc, TDoc, TSpace, TType } from '@hcengineering/model-core'
+import view, { classPresenter, createAction } from '@hcengineering/model-view'
+import workbench from '@hcengineering/model-workbench'
+import { Asset, IntlString } from '@hcengineering/platform'
 import hr from './plugin'
 
 export const DOMAIN_HR = 'hr' as Domain

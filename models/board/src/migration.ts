@@ -27,15 +27,15 @@ import {
   TxOperations,
   TxProcessor,
   TxUpdateDoc
-} from '@anticrm/core'
-import { createOrUpdate, MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
-import core from '@anticrm/model-core'
-import { createKanbanTemplate, createSequence, DOMAIN_TASK } from '@anticrm/model-task'
-import task, { createKanban, KanbanTemplate } from '@anticrm/task'
-import { DOMAIN_TAGS } from '@anticrm/model-tags'
-import tags, { TagElement, TagReference } from '@anticrm/tags'
+} from '@hcengineering/core'
+import { createOrUpdate, MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
+import core from '@hcengineering/model-core'
+import { createKanbanTemplate, createSequence, DOMAIN_TASK } from '@hcengineering/model-task'
+import task, { createKanban, KanbanTemplate } from '@hcengineering/task'
+import { DOMAIN_TAGS } from '@hcengineering/model-tags'
+import tags, { TagElement, TagReference } from '@hcengineering/tags'
 import board from './plugin'
-import { Board, Card } from '@anticrm/board'
+import { Board, Card } from '@hcengineering/board'
 
 async function createSpace (tx: TxOperations): Promise<void> {
   const current = await tx.findOne(core.class.Space, {

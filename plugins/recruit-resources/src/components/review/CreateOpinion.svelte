@@ -13,14 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Employee } from '@anticrm/contact'
-  import { Account, generateId, Ref } from '@anticrm/core'
-  import { OK, Status } from '@anticrm/platform'
-  import { Card, getClient } from '@anticrm/presentation'
-  import type { Opinion, Review } from '@anticrm/recruit'
-  import task, { SpaceWithStates } from '@anticrm/task'
-  import { StyledTextEditor } from '@anticrm/text-editor'
-  import { EditBox, Grid, Label, Status as StatusControl } from '@anticrm/ui'
+  import type { Employee } from '@hcengineering/contact'
+  import { Account, generateId, Ref } from '@hcengineering/core'
+  import { OK, Status } from '@hcengineering/platform'
+  import { Card, getClient } from '@hcengineering/presentation'
+  import type { Opinion, Review } from '@hcengineering/recruit'
+  import task, { SpaceWithStates } from '@hcengineering/task'
+  import { StyledTextEditor } from '@hcengineering/text-editor'
+  import { EditBox, Grid, Label, Status as StatusControl } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../../plugin'
 

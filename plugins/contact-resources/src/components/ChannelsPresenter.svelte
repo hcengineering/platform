@@ -14,12 +14,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Channel } from '@anticrm/contact'
-  import { Doc } from '@anticrm/core'
-  import { getResource } from '@anticrm/platform'
-  import type { ButtonKind, ButtonSize } from '@anticrm/ui'
-  import { showPopup } from '@anticrm/ui'
-  import { ViewAction } from '@anticrm/view'
+  import type { Channel } from '@hcengineering/contact'
+  import { Doc } from '@hcengineering/core'
+  import { getResource } from '@hcengineering/platform'
+  import type { ButtonKind, ButtonSize } from '@hcengineering/ui'
+  import { showPopup } from '@hcengineering/ui'
+  import { ViewAction } from '@hcengineering/view'
   import ChannelsDropdown from './ChannelsDropdown.svelte'
 
   export let value: Channel[] | Channel | null

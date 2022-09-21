@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-import type { Plugin } from '@anticrm/platform'
-import { plugin } from '@anticrm/platform'
+import type { Plugin } from '@hcengineering/platform'
+import { plugin } from '@hcengineering/platform'
 
-import type { Ref, Class } from '@anticrm/core'
+import type { Ref, Class } from '@hcengineering/core'
 import type { ObjectDDParticipant, Trigger } from './types'
 
 /**

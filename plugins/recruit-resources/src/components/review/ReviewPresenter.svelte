@@ -14,12 +14,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { translate } from '@anticrm/platform'
-  import { getClient } from '@anticrm/presentation'
-  import type { Review } from '@anticrm/recruit'
-  import recruit from '@anticrm/recruit'
-  import { getPanelURI, Icon } from '@anticrm/ui'
-  import view from '@anticrm/view'
+  import { translate } from '@hcengineering/platform'
+  import { getClient } from '@hcengineering/presentation'
+  import type { Review } from '@hcengineering/recruit'
+  import recruit from '@hcengineering/recruit'
+  import { getPanelURI, Icon } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
 
   export let value: Review
   export let inline: boolean = false

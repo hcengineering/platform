@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Class, Doc, Ref, Space, WithLookup } from '@anticrm/core'
-  import { IntlString } from '@anticrm/platform'
-  import { getClient } from '@anticrm/presentation'
-  import { AnyComponent, Component } from '@anticrm/ui'
-  import view, { Viewlet } from '@anticrm/view'
-  import type { ViewConfiguration } from '@anticrm/workbench'
+  import core, { Class, Doc, Ref, Space, WithLookup } from '@hcengineering/core'
+  import { IntlString } from '@hcengineering/platform'
+  import { getClient } from '@hcengineering/presentation'
+  import { AnyComponent, Component } from '@hcengineering/ui'
+  import view, { Viewlet } from '@hcengineering/view'
+  import type { ViewConfiguration } from '@hcengineering/workbench'
   import SpaceContent from './SpaceContent.svelte'
   import SpaceHeader from './SpaceHeader.svelte'
 

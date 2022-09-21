@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { IntlString } from '@anticrm/platform'
+  import type { IntlString } from '@hcengineering/platform'
   import ui from '../../plugin'
   import DateRangePresenter from './DateRangePresenter.svelte'
 

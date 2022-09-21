@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Ref, Space } from '@anticrm/core'
-  import type { Asset, IntlString } from '@anticrm/platform'
-  import type { Action } from '@anticrm/ui'
-  import { ActionIcon, Icon, IconMoreV, Label, Menu, showPopup } from '@anticrm/ui'
+  import type { Ref, Space } from '@hcengineering/core'
+  import type { Asset, IntlString } from '@hcengineering/platform'
+  import type { Action } from '@hcengineering/ui'
+  import { ActionIcon, Icon, IconMoreV, Label, Menu, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
   export let _id: Ref<Space> | undefined = undefined

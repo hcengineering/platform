@@ -13,10 +13,19 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Enum } from '@anticrm/core'
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import { CircleButton, EditBox, Icon, eventToHTMLElement, IconAdd, IconMoreH, Label, showPopup } from '@anticrm/ui'
-  import { ContextMenu } from '@anticrm/view-resources'
+  import core, { Enum } from '@hcengineering/core'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import {
+    CircleButton,
+    EditBox,
+    Icon,
+    eventToHTMLElement,
+    IconAdd,
+    IconMoreH,
+    Label,
+    showPopup
+  } from '@hcengineering/ui'
+  import { ContextMenu } from '@hcengineering/view-resources'
   import setting from '../plugin'
   import EnumValues from './EnumValues.svelte'
 

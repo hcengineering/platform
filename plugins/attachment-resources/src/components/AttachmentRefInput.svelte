@@ -13,14 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import { ReferenceInput } from '@anticrm/text-editor'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { ReferenceInput } from '@hcengineering/text-editor'
   import { deleteFile, uploadFile } from '../utils'
   import attachment from '../plugin'
-  import { setPlatformStatus, unknownError } from '@anticrm/platform'
+  import { setPlatformStatus, unknownError } from '@hcengineering/platform'
   import { createEventDispatcher, onDestroy } from 'svelte'
-  import { Account, Class, Doc, generateId, Ref, Space } from '@anticrm/core'
-  import { Attachment } from '@anticrm/attachment'
+  import { Account, Class, Doc, generateId, Ref, Space } from '@hcengineering/core'
+  import { Attachment } from '@hcengineering/attachment'
   import AttachmentPresenter from './AttachmentPresenter.svelte'
 
   export let objectId: Ref<Doc>

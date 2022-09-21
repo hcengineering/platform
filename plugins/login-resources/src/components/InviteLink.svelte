@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Timestamp } from '@anticrm/core'
-  import { Button, getCurrentLocation, Label, locationToUrl, ticker } from '@anticrm/ui'
+  import { Timestamp } from '@hcengineering/core'
+  import { Button, getCurrentLocation, Label, locationToUrl, ticker } from '@hcengineering/ui'
   import { getInviteLink } from '../utils'
   import { createEventDispatcher } from 'svelte'
   import login from '../plugin'

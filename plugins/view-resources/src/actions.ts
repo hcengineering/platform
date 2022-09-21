@@ -14,9 +14,18 @@
 // limitations under the License.
 //
 
-import core, { AccountRole, Doc, getCurrentAccount, WithLookup, Class, Client, matchQuery, Ref } from '@anticrm/core'
-import { getResource } from '@anticrm/platform'
-import type { Action, ViewAction, ViewActionInput, ViewContextType } from '@anticrm/view'
+import core, {
+  AccountRole,
+  Doc,
+  getCurrentAccount,
+  WithLookup,
+  Class,
+  Client,
+  matchQuery,
+  Ref
+} from '@hcengineering/core'
+import { getResource } from '@hcengineering/platform'
+import type { Action, ViewAction, ViewActionInput, ViewContextType } from '@hcengineering/view'
 import view from './plugin'
 import { FocusSelection } from './selection'
 

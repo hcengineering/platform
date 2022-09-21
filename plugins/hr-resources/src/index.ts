@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Resources } from '@anticrm/platform'
+import { Resources } from '@hcengineering/platform'
 import DepartmentEditor from './components/DepartmentEditor.svelte'
 import DepartmentStaff from './components/DepartmentStaff.svelte'
 import EditDepartment from './components/EditDepartment.svelte'

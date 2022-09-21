@@ -14,13 +14,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import board, { Card } from '@anticrm/board'
-  import { Class, Doc, FindOptions, Ref, SortingOrder, WithLookup } from '@anticrm/core'
-  import { Kanban as KanbanUI } from '@anticrm/kanban'
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import type { Kanban, SpaceWithStates, State } from '@anticrm/task'
-  import task, { calcRank } from '@anticrm/task'
-  import { getEventPositionElement, showPopup } from '@anticrm/ui'
+  import board, { Card } from '@hcengineering/board'
+  import { Class, Doc, FindOptions, Ref, SortingOrder, WithLookup } from '@hcengineering/core'
+  import { Kanban as KanbanUI } from '@hcengineering/kanban'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import type { Kanban, SpaceWithStates, State } from '@hcengineering/task'
+  import task, { calcRank } from '@hcengineering/task'
+  import { getEventPositionElement, showPopup } from '@hcengineering/ui'
   import {
     ActionContext,
     ContextMenu,
@@ -28,7 +28,7 @@
     ListSelectionProvider,
     SelectDirection,
     selectionStore
-  } from '@anticrm/view-resources'
+  } from '@hcengineering/view-resources'
   import { onMount } from 'svelte'
   import AddCard from './add-card/AddCard.svelte'
   import AddPanel from './AddPanel.svelte'

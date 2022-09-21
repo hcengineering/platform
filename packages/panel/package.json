@@ -1,5 +1,5 @@
 {
-  "name": "@anticrm/panel",
+  "name": "@hcengineering/panel",
   "version": "0.6.0",
   "main": "src/index.ts",
   "author": "Anticrm Platform Contributors",
@@ -17,7 +17,7 @@
     "sass": "^1.53.0",
     "svelte-preprocess": "^4.10.7",
     "svelte-check": "^2.8.0",
-    "@anticrm/platform-rig": "~0.6.0",
+    "@hcengineering/platform-rig": "~0.6.0",
     "@typescript-eslint/eslint-plugin": "^5.30.0",
     "@typescript-eslint/parser": "^5.30.0",
     "eslint-config-standard-with-typescript": "^21.0.1",
@@ -31,15 +31,15 @@
     "typescript": "^4.3.5"
   },
   "dependencies": {
-    "@anticrm/ui": "~0.6.0",
-    "@anticrm/text-editor": "~0.6.0",
+    "@hcengineering/ui": "^0.6.2",
+    "@hcengineering/text-editor": "~0.6.0",
     "svelte": "^3.47",
-    "@anticrm/platform": "~0.6.6",
-    "@anticrm/core": "~0.6.16",
-    "@anticrm/chunter": "~0.6.1",
-    "@anticrm/presentation": "~0.6.2",
-    "@anticrm/activity": "~0.6.0",
-    "@anticrm/calendar": "~0.6.0",
-    "@anticrm/notification": "~0.6.0"
+    "@hcengineering/platform": "^0.6.7",
+    "@hcengineering/core": "^0.6.17",
+    "@hcengineering/chunter": "~0.6.1",
+    "@hcengineering/presentation": "~0.6.2",
+    "@hcengineering/activity": "~0.6.0",
+    "@hcengineering/calendar": "~0.6.0",
+    "@hcengineering/notification": "~0.6.0"
   }
 }

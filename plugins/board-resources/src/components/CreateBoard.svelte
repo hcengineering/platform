@@ -14,10 +14,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref } from '@anticrm/core'
-  import { getClient, SpaceCreateCard } from '@anticrm/presentation'
-  import task, { KanbanTemplate } from '@anticrm/task'
-  import { Component, EditBox, Grid, IconFolder } from '@anticrm/ui'
+  import { Ref } from '@hcengineering/core'
+  import { getClient, SpaceCreateCard } from '@hcengineering/presentation'
+  import task, { KanbanTemplate } from '@hcengineering/task'
+  import { Component, EditBox, Grid, IconFolder } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import board from '../plugin'
   import { createBoard } from '../utils/BoardUtils'

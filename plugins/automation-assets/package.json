@@ -1,9 +1,9 @@
 {
-  "name": "@anticrm/automation-assets",
+  "name": "@hcengineering/automation-assets",
   "version": "0.6.0",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
-  "template": "@anticrm/assets-package",
+  "template": "@hcengineering/assets-package",
   "license": "EPL-2.0",
   "scripts": {
     "build": "heft build",
@@ -25,10 +25,10 @@
     "prettier": "^2.7.1",
     "@rushstack/heft": "^0.46.1",
     "@types/node": "~16.11.12",
-    "@anticrm/platform-rig": "~0.6.0"
+    "@hcengineering/platform-rig": "~0.6.0"
   },
   "dependencies": {
-    "@anticrm/platform": "~0.6.6",
-    "@anticrm/automation": "~0.6.0"
+    "@hcengineering/platform": "^0.6.7",
+    "@hcengineering/automation": "~0.6.0"
   }
 }

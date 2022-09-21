@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { Icon } from '@anticrm/ui'
-  import lead from '@anticrm/lead'
+  import { Icon } from '@hcengineering/ui'
+  import lead from '@hcengineering/lead'
 </script>
 
 <div class="flex-center template-icon">

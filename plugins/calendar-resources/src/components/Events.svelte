@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Event } from '@anticrm/calendar'
-  import { Class, DocumentQuery, Ref, Space, WithLookup } from '@anticrm/core'
-  import { Asset, IntlString } from '@anticrm/platform'
-  import { createQuery } from '@anticrm/presentation'
+  import { Event } from '@hcengineering/calendar'
+  import { Class, DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
+  import { Asset, IntlString } from '@hcengineering/platform'
+  import { createQuery } from '@hcengineering/presentation'
   import {
     AnyComponent,
     Button,
@@ -28,9 +28,9 @@
     SearchEdit,
     showPopup,
     TabList
-  } from '@anticrm/ui'
-  import view, { Viewlet, ViewletPreference } from '@anticrm/view'
-  import { FilterButton, ViewletSettingButton } from '@anticrm/view-resources'
+  } from '@hcengineering/ui'
+  import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
+  import { FilterButton, ViewletSettingButton } from '@hcengineering/view-resources'
   import calendar from '../plugin'
 
   export let _class: Ref<Class<Event>> = calendar.class.Event

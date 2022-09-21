@@ -1,4 +1,4 @@
-# Change Log - @anticrm/server-ws
+# Change Log - @hcengineering/server-ws
 
 This log was last generated on Tue, 09 Nov 2021 11:00:07 GMT and should not be manually modified.
 

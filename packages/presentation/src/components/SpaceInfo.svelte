@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { IconFolder, Label } from '@anticrm/ui'
+  import { IconFolder, Label } from '@hcengineering/ui'
 
-  import type { Space } from '@anticrm/core'
+  import type { Space } from '@hcengineering/core'
   import presentation from '..'
 
   export let value: Space

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import ui, { Button, Icon, IconAdd, IconBack, Label } from '@anticrm/ui'
+  import ui, { Button, Icon, IconAdd, IconBack, Label } from '@hcengineering/ui'
   import automation from '../plugin'
   import AddAutomation from './AddAutomation.svelte'
   import Automations from './Automations.svelte'

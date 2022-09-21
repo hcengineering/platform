@@ -27,12 +27,12 @@ import core, {
   Tx,
   TxResult,
   WithLookup
-} from '@anticrm/core'
-import { devModelId } from '@anticrm/devmodel'
-import { Builder } from '@anticrm/model'
-import { getMetadata, IntlString, Resources } from '@anticrm/platform'
-import view from '@anticrm/view'
-import workbench from '@anticrm/workbench'
+} from '@hcengineering/core'
+import { devModelId } from '@hcengineering/devmodel'
+import { Builder } from '@hcengineering/model'
+import { getMetadata, IntlString, Resources } from '@hcengineering/platform'
+import view from '@hcengineering/view'
+import workbench from '@hcengineering/workbench'
 import ModelView from './components/ModelView.svelte'
 import QueryView from './components/QueryView.svelte'
 import devmodel from './plugin'

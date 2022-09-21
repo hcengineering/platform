@@ -13,9 +13,9 @@
 // limitations under the License.
 //
 
-import calendar, { calendarId } from '@anticrm/calendar'
-import { IntlString, mergeIds } from '@anticrm/platform'
-import { AnyComponent } from '@anticrm/ui'
+import calendar, { calendarId } from '@hcengineering/calendar'
+import { IntlString, mergeIds } from '@hcengineering/platform'
+import { AnyComponent } from '@hcengineering/ui'
 
 export default mergeIds(calendarId, calendar, {
   component: {

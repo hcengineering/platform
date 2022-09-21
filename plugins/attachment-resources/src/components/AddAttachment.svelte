@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, Ref, Space } from '@anticrm/core'
-  import { getClient } from '@anticrm/presentation'
-  import { Button, IconAdd } from '@anticrm/ui'
+  import { Class, Doc, Ref, Space } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
+  import { Button, IconAdd } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { createAttachments } from '../utils'
 

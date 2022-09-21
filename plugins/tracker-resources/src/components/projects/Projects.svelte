@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { DocumentQuery, Ref } from '@anticrm/core'
-  import { IntlString } from '@anticrm/platform'
-  import { createQuery } from '@anticrm/presentation'
-  import { Project } from '@anticrm/tracker'
-  import { closePopup, closeTooltip, getCurrentLocation, location, navigate } from '@anticrm/ui'
+  import { DocumentQuery, Ref } from '@hcengineering/core'
+  import { IntlString } from '@hcengineering/platform'
+  import { createQuery } from '@hcengineering/presentation'
+  import { Project } from '@hcengineering/tracker'
+  import { closePopup, closeTooltip, getCurrentLocation, location, navigate } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import tracker from '../../plugin'
   import { ProjectsViewMode } from '../../utils'

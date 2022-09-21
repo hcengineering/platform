@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { Account, AccountRole, Arr, Domain, DOMAIN_MODEL, IndexKind, Ref, Space } from '@anticrm/core'
-import { ArrOf, Index, Model, Prop, TypeBoolean, TypeRef, TypeString, UX } from '@anticrm/model'
+import { Account, AccountRole, Arr, Domain, DOMAIN_MODEL, IndexKind, Ref, Space } from '@hcengineering/core'
+import { ArrOf, Index, Model, Prop, TypeBoolean, TypeRef, TypeString, UX } from '@hcengineering/model'
 import core from './component'
 import { TDoc } from './core'
 

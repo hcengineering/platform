@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import chunter, { chunterId, ChunterSpace, Comment, Message, ThreadMessage } from '@anticrm/chunter'
-import { EmployeeAccount } from '@anticrm/contact'
+import chunter, { chunterId, ChunterSpace, Comment, Message, ThreadMessage } from '@hcengineering/chunter'
+import { EmployeeAccount } from '@hcengineering/contact'
 import core, {
   Class,
   Doc,
@@ -29,11 +29,11 @@ import core, {
   TxUpdateDoc,
   TxRemoveDoc,
   TxCollectionCUD
-} from '@anticrm/core'
-import login from '@anticrm/login'
-import { getMetadata } from '@anticrm/platform'
-import { TriggerControl } from '@anticrm/server-core'
-import { workbenchId } from '@anticrm/workbench'
+} from '@hcengineering/core'
+import login from '@hcengineering/login'
+import { getMetadata } from '@hcengineering/platform'
+import { TriggerControl } from '@hcengineering/server-core'
+import { workbenchId } from '@hcengineering/workbench'
 
 /**
  * @public

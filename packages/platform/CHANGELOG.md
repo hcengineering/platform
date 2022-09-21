@@ -1,4 +1,4 @@
-# Change Log - @anticrm/platform
+# Change Log - @hcengineering/platform
 
 This log was last generated on Sun, 08 Aug 2021 11:34:23 GMT and should not be manually modified.
 

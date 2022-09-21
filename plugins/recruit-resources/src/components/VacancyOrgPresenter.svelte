@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { WithLookup } from '@anticrm/core'
-  import type { Vacancy } from '@anticrm/recruit'
+  import { WithLookup } from '@hcengineering/core'
+  import type { Vacancy } from '@hcengineering/recruit'
   import VacancyCard from './VacancyCard.svelte'
 
   export let value: WithLookup<Vacancy>

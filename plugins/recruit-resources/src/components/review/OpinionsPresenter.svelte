@@ -14,8 +14,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Review } from '@anticrm/recruit'
-  import { Icon, tooltip } from '@anticrm/ui'
+  import type { Review } from '@hcengineering/recruit'
+  import { Icon, tooltip } from '@hcengineering/ui'
   import OpinionsPopup from './OpinionsPopup.svelte'
   import recruit from '../../plugin'
 

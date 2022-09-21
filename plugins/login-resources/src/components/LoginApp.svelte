@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { location, Popup, ticker } from '@anticrm/ui'
+  import { location, Popup, ticker } from '@hcengineering/ui'
 
   import LoginForm from './LoginForm.svelte'
   import SignupForm from './SignupForm.svelte'
@@ -23,7 +23,7 @@
   import Join from './Join.svelte'
   import { onDestroy } from 'svelte'
   import login from '../plugin'
-  import { getMetadata } from '@anticrm/platform'
+  import { getMetadata } from '@hcengineering/platform'
 
   export let page: string = 'login'
 

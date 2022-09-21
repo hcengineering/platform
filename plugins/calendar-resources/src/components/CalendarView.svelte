@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Event } from '@anticrm/calendar'
-  import { Class, Doc, DocumentQuery, FindOptions, Ref, SortingOrder, Space } from '@anticrm/core'
-  import { createQuery } from '@anticrm/presentation'
+  import { Event } from '@hcengineering/calendar'
+  import { Class, Doc, DocumentQuery, FindOptions, Ref, SortingOrder, Space } from '@hcengineering/core'
+  import { createQuery } from '@hcengineering/presentation'
   import {
     AnyComponent,
     areDatesEqual,
@@ -26,9 +26,9 @@
     showPopup,
     WeekCalendar,
     YearCalendar
-  } from '@anticrm/ui'
-  import Scroller from '@anticrm/ui/src/components/Scroller.svelte'
-  import { BuildModelKey } from '@anticrm/view'
+  } from '@hcengineering/ui'
+  import Scroller from '@hcengineering/ui/src/components/Scroller.svelte'
+  import { BuildModelKey } from '@hcengineering/view'
   import { CalendarMode } from '../index'
   import calendar from '../plugin'
   import Day from './Day.svelte'

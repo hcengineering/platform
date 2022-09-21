@@ -14,9 +14,9 @@
 // limitations under the License.
 //
 
-import { IntlString, mergeIds } from '@anticrm/platform'
-import { AnyComponent } from '@anticrm/ui'
-import templates, { templatesId } from '@anticrm/templates'
+import { IntlString, mergeIds } from '@hcengineering/platform'
+import { AnyComponent } from '@hcengineering/ui'
+import templates, { templatesId } from '@hcengineering/templates'
 
 export default mergeIds(templatesId, templates, {
   string: {

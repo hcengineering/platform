@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { addStringsLoader } from '@anticrm/platform'
-import { telegramId } from '@anticrm/telegram'
+import { addStringsLoader } from '@hcengineering/platform'
+import { telegramId } from '@hcengineering/telegram'
 
 addStringsLoader(telegramId, async (lang: string) => await import(`../lang/${lang}.json`))

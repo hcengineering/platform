@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import core, { coreId } from '@anticrm/core'
-import { IntlString, mergeIds } from '@anticrm/platform'
+import core, { coreId } from '@hcengineering/core'
+import { IntlString, mergeIds } from '@hcengineering/platform'
 
 export default mergeIds(coreId, core, {
   string: {

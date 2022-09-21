@@ -14,11 +14,11 @@
 // limitations under the License.
 //
 
-import { Builder } from '@anticrm/model'
+import { Builder } from '@hcengineering/model'
 
-import serverCore from '@anticrm/server-core'
-import core from '@anticrm/core'
-import serverNotification from '@anticrm/server-notification'
+import serverCore from '@hcengineering/server-core'
+import core from '@hcengineering/core'
+import serverNotification from '@hcengineering/server-notification'
 
 export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {

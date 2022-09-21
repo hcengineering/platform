@@ -13,17 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import calendar from '@anticrm/calendar'
-  import type { Contact, EmployeeAccount, Organization, Person } from '@anticrm/contact'
-  import contact from '@anticrm/contact'
-  import { Account, Class, Client, Doc, generateId, getCurrentAccount, Ref } from '@anticrm/core'
-  import { getResource, OK, Resource, Severity, Status } from '@anticrm/platform'
-  import { Card, getClient, UserBox, UserBoxList } from '@anticrm/presentation'
-  import type { Candidate, Review } from '@anticrm/recruit'
-  import task from '@anticrm/task'
-  import { StyledTextBox } from '@anticrm/text-editor'
-  import { DateRangePresenter, EditBox, Status as StatusControl } from '@anticrm/ui'
-  import view from '@anticrm/view'
+  import calendar from '@hcengineering/calendar'
+  import type { Contact, EmployeeAccount, Organization, Person } from '@hcengineering/contact'
+  import contact from '@hcengineering/contact'
+  import { Account, Class, Client, Doc, generateId, getCurrentAccount, Ref } from '@hcengineering/core'
+  import { getResource, OK, Resource, Severity, Status } from '@hcengineering/platform'
+  import { Card, getClient, UserBox, UserBoxList } from '@hcengineering/presentation'
+  import type { Candidate, Review } from '@hcengineering/recruit'
+  import task from '@hcengineering/task'
+  import { StyledTextBox } from '@hcengineering/text-editor'
+  import { DateRangePresenter, EditBox, Status as StatusControl } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../../plugin'
 

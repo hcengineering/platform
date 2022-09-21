@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Event, Reminder } from '@anticrm/calendar'
-  import { Ref, TxMixin } from '@anticrm/core'
-  import { getClient } from '@anticrm/presentation'
-  import { DateTimePresenter, showPanel } from '@anticrm/ui'
-  import view from '@anticrm/view'
+  import { Event, Reminder } from '@hcengineering/calendar'
+  import { Ref, TxMixin } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
+  import { DateTimePresenter, showPanel } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
   import calendar from '../../plugin'
 
   export let tx: TxMixin<Event, Reminder>

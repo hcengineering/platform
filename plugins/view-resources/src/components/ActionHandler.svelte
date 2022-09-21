@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Doc, Ref, TxRemoveDoc } from '@anticrm/core'
-  import { getResource } from '@anticrm/platform'
-  import { addTxListener, getClient } from '@anticrm/presentation'
-  import { AnyComponent, Component } from '@anticrm/ui'
-  import { Action, ViewContextType } from '@anticrm/view'
+  import core, { Doc, Ref, TxRemoveDoc } from '@hcengineering/core'
+  import { getResource } from '@hcengineering/platform'
+  import { addTxListener, getClient } from '@hcengineering/presentation'
+  import { AnyComponent, Component } from '@hcengineering/ui'
+  import { Action, ViewContextType } from '@hcengineering/view'
   import { fly } from 'svelte/transition'
   import { getContextActions, getSelection } from '../actions'
   import { contextStore } from '../context'

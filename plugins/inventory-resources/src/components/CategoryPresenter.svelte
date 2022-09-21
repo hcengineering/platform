@@ -14,9 +14,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Category } from '@anticrm/inventory'
-  import { getPanelURI } from '@anticrm/ui'
-  import view from '@anticrm/view'
+  import { Category } from '@hcengineering/inventory'
+  import { getPanelURI } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
 
   export let value: Category
   export let inline: boolean = false

@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-import { Class, Ref } from '@anticrm/core'
-import { IntlString, Plugin, plugin } from '@anticrm/platform'
+import { Class, Ref } from '@hcengineering/core'
+import { IntlString, Plugin, plugin } from '@hcengineering/platform'
 import { RefInputActionItem } from './types'
 
 /**

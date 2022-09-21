@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { IconSize } from '@anticrm/ui'
-  import { IssueStatusCategory } from '@anticrm/tracker'
+  import { IconSize } from '@hcengineering/ui'
+  import { IssueStatusCategory } from '@hcengineering/tracker'
   import tracker from '../../plugin'
 
   export let size: IconSize

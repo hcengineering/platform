@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { TagElement } from '@anticrm/tags'
-  import { eventToHTMLElement, showPopup } from '@anticrm/ui'
+  import { TagElement } from '@hcengineering/tags'
+  import { eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import EditTagElement from './EditTagElement.svelte'
   import TagItem from './TagItem.svelte'
 

@@ -14,13 +14,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Contact } from '@anticrm/contact'
-  import { AttachedData, generateId, Ref, SortingOrder, Space } from '@anticrm/core'
-  import type { Customer, Lead } from '@anticrm/lead'
-  import { OK, Status } from '@anticrm/platform'
-  import { Card, getClient, SpaceSelector, UserBox } from '@anticrm/presentation'
-  import task, { calcRank } from '@anticrm/task'
-  import { createFocusManager, EditBox, FocusHandler, Label, Status as StatusControl } from '@anticrm/ui'
+  import contact, { Contact } from '@hcengineering/contact'
+  import { AttachedData, generateId, Ref, SortingOrder, Space } from '@hcengineering/core'
+  import type { Customer, Lead } from '@hcengineering/lead'
+  import { OK, Status } from '@hcengineering/platform'
+  import { Card, getClient, SpaceSelector, UserBox } from '@hcengineering/presentation'
+  import task, { calcRank } from '@hcengineering/task'
+  import { createFocusManager, EditBox, FocusHandler, Label, Status as StatusControl } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import lead from '../plugin'
 

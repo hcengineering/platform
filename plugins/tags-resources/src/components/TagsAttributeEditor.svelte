@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { IntlString } from '@anticrm/platform'
-  import { Doc, Ref } from '@anticrm/core'
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import type { TagReference, TagElement } from '@anticrm/tags'
-  import tags from '@anticrm/tags'
-  import { getEventPopupPositionElement, Icon, IconAdd, Label, showPopup } from '@anticrm/ui'
+  import { IntlString } from '@hcengineering/platform'
+  import { Doc, Ref } from '@hcengineering/core'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import type { TagReference, TagElement } from '@hcengineering/tags'
+  import tags from '@hcengineering/tags'
+  import { getEventPopupPositionElement, Icon, IconAdd, Label, showPopup } from '@hcengineering/ui'
   import TagReferencePresenter from './TagReferencePresenter.svelte'
   import TagsEditorPopup from './TagsEditorPopup.svelte'
 

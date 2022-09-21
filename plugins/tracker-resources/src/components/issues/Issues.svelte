@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref } from '@anticrm/core'
-  import { Team } from '@anticrm/tracker'
+  import { Ref } from '@hcengineering/core'
+  import { Team } from '@hcengineering/tracker'
   import tracker from '../../plugin'
   import IssuesView from './IssuesView.svelte'
 

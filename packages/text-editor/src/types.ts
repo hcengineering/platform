@@ -1,5 +1,5 @@
-import { Asset, IntlString, Resource } from '@anticrm/platform'
-import { Doc } from '@anticrm/core'
+import { Asset, IntlString, Resource } from '@hcengineering/platform'
+import { Doc } from '@hcengineering/core'
 
 /**
  * @public

@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Class, Doc, Ref } from '@anticrm/core'
-  import { BuildModelKey } from '@anticrm/view'
+  import type { Class, Doc, Ref } from '@hcengineering/core'
+  import { BuildModelKey } from '@hcengineering/view'
   import {
     ActionContext,
     focusStore,
@@ -22,8 +22,8 @@
     SelectDirection,
     selectionStore,
     LoadingProps
-  } from '@anticrm/view-resources'
-  import { Project } from '@anticrm/tracker'
+  } from '@hcengineering/view-resources'
+  import { Project } from '@hcengineering/tracker'
   import { onMount } from 'svelte'
   import ProjectsList from './ProjectsList.svelte'
 

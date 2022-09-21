@@ -1,8 +1,8 @@
-import { Employee, formatName } from '@anticrm/contact'
-import { Ref, TxOperations } from '@anticrm/core'
-import { Department, Request, RequestType, TzDate } from '@anticrm/hr'
-import { MessageBox } from '@anticrm/presentation'
-import { isWeekend, showPopup } from '@anticrm/ui'
+import { Employee, formatName } from '@hcengineering/contact'
+import { Ref, TxOperations } from '@hcengineering/core'
+import { Department, Request, RequestType, TzDate } from '@hcengineering/hr'
+import { MessageBox } from '@hcengineering/presentation'
+import { isWeekend, showPopup } from '@hcengineering/ui'
 import hr from './plugin'
 
 export async function addMember (client: TxOperations, employee?: Employee, value?: Department): Promise<void> {

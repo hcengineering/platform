@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-import { Resources } from '@anticrm/platform'
+import { Resources } from '@hcengineering/platform'
 import Templates from './components/Templates.svelte'
-import { TextEditorHandler } from '@anticrm/text-editor'
-import { showPopup } from '@anticrm/ui'
+import { TextEditorHandler } from '@hcengineering/text-editor'
+import { showPopup } from '@hcengineering/ui'
 import TemplatePopup from './components/TemplatePopup.svelte'
 
 function ShowTemplates (element: HTMLElement, editor: TextEditorHandler): void {

@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getClient } from '@anticrm/presentation'
-  import { AnyComponent, Component } from '@anticrm/ui'
+  import { getClient } from '@hcengineering/presentation'
+  import { AnyComponent, Component } from '@hcengineering/ui'
   import view from '../plugin'
 
   export let link: HTMLLinkElement

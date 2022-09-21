@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Employee } from '@anticrm/contact'
-  import { Ref } from '@anticrm/core'
-  import { Card, getClient, SpaceSelector, EmployeeBox } from '@anticrm/presentation'
-  import { Button, createFocusManager, EditBox, FocusHandler } from '@anticrm/ui'
+  import { Employee } from '@hcengineering/contact'
+  import { Ref } from '@hcengineering/core'
+  import { Card, getClient, SpaceSelector, EmployeeBox } from '@hcengineering/presentation'
+  import { Button, createFocusManager, EditBox, FocusHandler } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import hr from '../plugin'
 

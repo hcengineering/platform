@@ -13,10 +13,10 @@
 // limitations under the License.
 //
 
-import type { Class, Doc, DocumentQuery, Ref, Tx } from '@anticrm/core'
-import type { Asset, IntlString, Plugin } from '@anticrm/platform'
-import { plugin } from '@anticrm/platform'
-import type { AnyComponent } from '@anticrm/ui'
+import type { Class, Doc, DocumentQuery, Ref, Tx } from '@hcengineering/core'
+import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
+import { plugin } from '@hcengineering/platform'
+import type { AnyComponent } from '@hcengineering/ui'
 
 /**
  * Define an display for all transaction kinds for particular class.

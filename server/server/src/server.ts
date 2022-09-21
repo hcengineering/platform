@@ -32,15 +32,15 @@ import {
   toFindResult,
   Tx,
   TxResult
-} from '@anticrm/core'
-import { createElasticAdapter, createElasticBackupDataAdapter } from '@anticrm/elastic'
-import { ModifiedMiddleware, PrivateMiddleware } from '@anticrm/middleware'
-import { createMongoAdapter, createMongoTxAdapter } from '@anticrm/mongo'
-import { addLocation } from '@anticrm/platform'
-import { serverAttachmentId } from '@anticrm/server-attachment'
-import { serverCalendarId } from '@anticrm/server-calendar'
-import { serverChunterId } from '@anticrm/server-chunter'
-import { serverContactId } from '@anticrm/server-contact'
+} from '@hcengineering/core'
+import { createElasticAdapter, createElasticBackupDataAdapter } from '@hcengineering/elastic'
+import { ModifiedMiddleware, PrivateMiddleware } from '@hcengineering/middleware'
+import { createMongoAdapter, createMongoTxAdapter } from '@hcengineering/mongo'
+import { addLocation } from '@hcengineering/platform'
+import { serverAttachmentId } from '@hcengineering/server-attachment'
+import { serverCalendarId } from '@hcengineering/server-calendar'
+import { serverChunterId } from '@hcengineering/server-chunter'
+import { serverContactId } from '@hcengineering/server-contact'
 import {
   createInMemoryAdapter,
   createPipeline,
@@ -48,20 +48,20 @@ import {
   DbConfiguration,
   MiddlewareCreator,
   Pipeline
-} from '@anticrm/server-core'
-import { serverGmailId } from '@anticrm/server-gmail'
-import { serverInventoryId } from '@anticrm/server-inventory'
-import { serverLeadId } from '@anticrm/server-lead'
-import { serverNotificationId } from '@anticrm/server-notification'
-import { serverRecruitId } from '@anticrm/server-recruit'
-import { serverSettingId } from '@anticrm/server-setting'
-import { serverTagsId } from '@anticrm/server-tags'
-import { serverTaskId } from '@anticrm/server-task'
-import { serverTrackerId } from '@anticrm/server-tracker'
-import { serverTelegramId } from '@anticrm/server-telegram'
-import { serverHrId } from '@anticrm/server-hr'
-import { Token } from '@anticrm/server-token'
-import { BroadcastCall, ClientSession, start as startJsonRpc } from '@anticrm/server-ws'
+} from '@hcengineering/server-core'
+import { serverGmailId } from '@hcengineering/server-gmail'
+import { serverInventoryId } from '@hcengineering/server-inventory'
+import { serverLeadId } from '@hcengineering/server-lead'
+import { serverNotificationId } from '@hcengineering/server-notification'
+import { serverRecruitId } from '@hcengineering/server-recruit'
+import { serverSettingId } from '@hcengineering/server-setting'
+import { serverTagsId } from '@hcengineering/server-tags'
+import { serverTaskId } from '@hcengineering/server-task'
+import { serverTrackerId } from '@hcengineering/server-tracker'
+import { serverTelegramId } from '@hcengineering/server-telegram'
+import { serverHrId } from '@hcengineering/server-hr'
+import { Token } from '@hcengineering/server-token'
+import { BroadcastCall, ClientSession, start as startJsonRpc } from '@hcengineering/server-ws'
 import { Client as MinioClient } from 'minio'
 import { BackupClientSession } from './backup'
 import { metricsContext } from './metrics'
@@ -122,21 +122,21 @@ export function start (
   port: number,
   host?: string
 ): () => void {
-  addLocation(serverAttachmentId, () => import('@anticrm/server-attachment-resources'))
-  addLocation(serverContactId, () => import('@anticrm/server-contact-resources'))
-  addLocation(serverNotificationId, () => import('@anticrm/server-notification-resources'))
-  addLocation(serverSettingId, () => import('@anticrm/server-setting-resources'))
-  addLocation(serverChunterId, () => import('@anticrm/server-chunter-resources'))
-  addLocation(serverInventoryId, () => import('@anticrm/server-inventory-resources'))
-  addLocation(serverLeadId, () => import('@anticrm/server-lead-resources'))
-  addLocation(serverRecruitId, () => import('@anticrm/server-recruit-resources'))
-  addLocation(serverTaskId, () => import('@anticrm/server-task-resources'))
-  addLocation(serverTrackerId, () => import('@anticrm/server-tracker-resources'))
-  addLocation(serverTagsId, () => import('@anticrm/server-tags-resources'))
-  addLocation(serverCalendarId, () => import('@anticrm/server-calendar-resources'))
-  addLocation(serverGmailId, () => import('@anticrm/server-gmail-resources'))
-  addLocation(serverTelegramId, () => import('@anticrm/server-telegram-resources'))
-  addLocation(serverHrId, () => import('@anticrm/server-hr-resources'))
+  addLocation(serverAttachmentId, () => import('@hcengineering/server-attachment-resources'))
+  addLocation(serverContactId, () => import('@hcengineering/server-contact-resources'))
+  addLocation(serverNotificationId, () => import('@hcengineering/server-notification-resources'))
+  addLocation(serverSettingId, () => import('@hcengineering/server-setting-resources'))
+  addLocation(serverChunterId, () => import('@hcengineering/server-chunter-resources'))
+  addLocation(serverInventoryId, () => import('@hcengineering/server-inventory-resources'))
+  addLocation(serverLeadId, () => import('@hcengineering/server-lead-resources'))
+  addLocation(serverRecruitId, () => import('@hcengineering/server-recruit-resources'))
+  addLocation(serverTaskId, () => import('@hcengineering/server-task-resources'))
+  addLocation(serverTrackerId, () => import('@hcengineering/server-tracker-resources'))
+  addLocation(serverTagsId, () => import('@hcengineering/server-tags-resources'))
+  addLocation(serverCalendarId, () => import('@hcengineering/server-calendar-resources'))
+  addLocation(serverGmailId, () => import('@hcengineering/server-gmail-resources'))
+  addLocation(serverTelegramId, () => import('@hcengineering/server-telegram-resources'))
+  addLocation(serverHrId, () => import('@hcengineering/server-hr-resources'))
 
   const middlewares: MiddlewareCreator[] = [ModifiedMiddleware.create, PrivateMiddleware.create]
 

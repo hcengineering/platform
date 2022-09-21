@@ -13,11 +13,11 @@
 // limitations under the License.
 //
 
-import core, { AccountRole, DOMAIN_TX, TxCreateDoc, TxOperations } from '@anticrm/core'
-import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
-import contact, { EmployeeAccount } from '@anticrm/contact'
-import recruit from '@anticrm/model-recruit'
-import { DOMAIN_CONTACT } from '@anticrm/model-contact'
+import core, { AccountRole, DOMAIN_TX, TxCreateDoc, TxOperations } from '@hcengineering/core'
+import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
+import contact, { EmployeeAccount } from '@hcengineering/contact'
+import recruit from '@hcengineering/model-recruit'
+import { DOMAIN_CONTACT } from '@hcengineering/model-contact'
 
 async function createCandidate (
   tx: TxOperations,

@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Employee } from '@anticrm/contact'
+import { Employee } from '@hcengineering/contact'
 import core, {
   AttachedDoc,
   DocumentUpdate,
@@ -27,10 +27,10 @@ import core, {
   TxRemoveDoc,
   TxUpdateDoc,
   WithLookup
-} from '@anticrm/core'
-import { TriggerControl } from '@anticrm/server-core'
-import { addAssigneeNotification } from '@anticrm/server-task-resources'
-import tracker, { Issue, IssueParentInfo, TimeSpendReport } from '@anticrm/tracker'
+} from '@hcengineering/core'
+import { TriggerControl } from '@hcengineering/server-core'
+import { addAssigneeNotification } from '@hcengineering/server-task-resources'
+import tracker, { Issue, IssueParentInfo, TimeSpendReport } from '@hcengineering/tracker'
 
 async function updateSubIssues (
   updateTx: TxUpdateDoc<Issue>,

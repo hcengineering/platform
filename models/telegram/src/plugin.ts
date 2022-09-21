@@ -14,12 +14,12 @@
 // limitations under the License.
 //
 
-import { Ref } from '@anticrm/core'
-import { IntlString, mergeIds } from '@anticrm/platform'
-import { telegramId } from '@anticrm/telegram'
-import telegram from '@anticrm/telegram-resources/src/plugin'
-import type { AnyComponent } from '@anticrm/ui'
-import type { TxViewlet } from '@anticrm/activity'
+import { Ref } from '@hcengineering/core'
+import { IntlString, mergeIds } from '@hcengineering/platform'
+import { telegramId } from '@hcengineering/telegram'
+import telegram from '@hcengineering/telegram-resources/src/plugin'
+import type { AnyComponent } from '@hcengineering/ui'
+import type { TxViewlet } from '@hcengineering/activity'
 
 export default mergeIds(telegramId, telegram, {
   string: {

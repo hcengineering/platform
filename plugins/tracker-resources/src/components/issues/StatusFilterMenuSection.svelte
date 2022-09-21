@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { WithLookup } from '@anticrm/core'
-  import { translate } from '@anticrm/platform'
-  import { IssueStatus } from '@anticrm/tracker'
-  import { IconNavPrev } from '@anticrm/ui'
+  import { WithLookup } from '@hcengineering/core'
+  import { translate } from '@hcengineering/platform'
+  import { IssueStatus } from '@hcengineering/tracker'
+  import { IconNavPrev } from '@hcengineering/ui'
   import FilterMenuSection from '../FilterMenuSection.svelte'
   import tracker from '../../plugin'
   import { FilterSectionElement } from '../../utils'

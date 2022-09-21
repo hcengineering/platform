@@ -13,13 +13,13 @@
 // limitations under the License.
 //
 
-import { Class, Doc, Ref, Space, TxOperations } from '@anticrm/core'
-import { createOrUpdate, MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
-import core from '@anticrm/model-core'
-import { KanbanTemplate, StateTemplate, DoneStateTemplate, genRanks, createKanban } from '@anticrm/task'
+import { Class, Doc, Ref, Space, TxOperations } from '@hcengineering/core'
+import { createOrUpdate, MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
+import core from '@hcengineering/model-core'
+import { KanbanTemplate, StateTemplate, DoneStateTemplate, genRanks, createKanban } from '@hcengineering/task'
 import { DOMAIN_TASK } from '.'
 import task from './plugin'
-import tags from '@anticrm/model-tags'
+import tags from '@hcengineering/model-tags'
 
 /**
  * @public

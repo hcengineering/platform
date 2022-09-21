@@ -1,4 +1,4 @@
-import { getMetadata } from '@anticrm/platform'
+import { getMetadata } from '@hcengineering/platform'
 import serverPlugin from './plugin'
 import { encode, decode } from 'jwt-simple'
 

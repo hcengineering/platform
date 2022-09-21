@@ -13,13 +13,13 @@
 // limitations under the License.
 //
 
-import { Event } from '@anticrm/calendar'
-import type { Organization, Person } from '@anticrm/contact'
-import type { AttachedDoc, Class, Doc, Mixin, Ref, Space, Timestamp } from '@anticrm/core'
-import type { Asset, Plugin } from '@anticrm/platform'
-import { plugin } from '@anticrm/platform'
-import type { KanbanTemplateSpace, SpaceWithStates, Task } from '@anticrm/task'
-import { AnyComponent } from '@anticrm/ui'
+import { Event } from '@hcengineering/calendar'
+import type { Organization, Person } from '@hcengineering/contact'
+import type { AttachedDoc, Class, Doc, Mixin, Ref, Space, Timestamp } from '@hcengineering/core'
+import type { Asset, Plugin } from '@hcengineering/platform'
+import { plugin } from '@hcengineering/platform'
+import type { KanbanTemplateSpace, SpaceWithStates, Task } from '@hcengineering/task'
+import { AnyComponent } from '@hcengineering/ui'
 
 /**
  * @public

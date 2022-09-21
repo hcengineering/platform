@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { IntlString } from '@anticrm/platform'
-  import { translate } from '@anticrm/platform'
+  import type { IntlString } from '@hcengineering/platform'
+  import { translate } from '@hcengineering/platform'
   import { createEventDispatcher, onMount } from 'svelte'
   import { getPlatformColor } from '../colors'
   import ListView from './ListView.svelte'

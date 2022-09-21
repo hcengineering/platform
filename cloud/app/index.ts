@@ -8,7 +8,7 @@ import { getType } from 'mime'
 import { readdirSync, lstatSync } from 'fs'
 import { join } from 'path'
 
-import { handle } from '@anticrm/dev-account'
+import { handle } from '@hcengineering/dev-account'
 
 const siteBucket = new aws.s3.Bucket('anticrm-app', {
   acl: "public-read",

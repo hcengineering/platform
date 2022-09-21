@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, SortingOrder } from '@anticrm/core'
-  import { getEmbeddedLabel, IntlString, translate } from '@anticrm/platform'
-  import { createQuery } from '@anticrm/presentation'
-  import { Sprint } from '@anticrm/tracker'
-  import type { ButtonKind, ButtonSize } from '@anticrm/ui'
-  import { Button, ButtonShape, eventToHTMLElement, SelectPopup, showPopup, Label } from '@anticrm/ui'
+  import { Ref, SortingOrder } from '@hcengineering/core'
+  import { getEmbeddedLabel, IntlString, translate } from '@hcengineering/platform'
+  import { createQuery } from '@hcengineering/presentation'
+  import { Sprint } from '@hcengineering/tracker'
+  import type { ButtonKind, ButtonSize } from '@hcengineering/ui'
+  import { Button, ButtonShape, eventToHTMLElement, SelectPopup, showPopup, Label } from '@hcengineering/ui'
   import tracker from '../../plugin'
   import { sprintStatusAssets } from '../../types'
 

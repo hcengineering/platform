@@ -1,5 +1,5 @@
-import { MeasureContext, Ref, TxOperations } from '@anticrm/core'
-import task, { DoneState, genRanks, Kanban, SpaceWithStates, State } from '@anticrm/task'
+import { MeasureContext, Ref, TxOperations } from '@hcengineering/core'
+import task, { DoneState, genRanks, Kanban, SpaceWithStates, State } from '@hcengineering/task'
 import { findOrUpdate } from './utils'
 
 export async function createUpdateSpaceKanban (

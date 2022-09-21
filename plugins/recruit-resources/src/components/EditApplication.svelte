@@ -15,14 +15,14 @@
 -->
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte'
-  import { createQuery } from '@anticrm/presentation'
-  import type { Candidate, Applicant, Vacancy } from '@anticrm/recruit'
+  import { createQuery } from '@hcengineering/presentation'
+  import type { Candidate, Applicant, Vacancy } from '@hcengineering/recruit'
   import CandidateCard from './CandidateCard.svelte'
   import VacancyCard from './VacancyCard.svelte'
   import ExpandRightDouble from './icons/ExpandRightDouble.svelte'
 
   import recruit from '../plugin'
-  import { Ref } from '@anticrm/core'
+  import { Ref } from '@hcengineering/core'
   import Reviews from './review/Reviews.svelte'
 
   export let object: Applicant

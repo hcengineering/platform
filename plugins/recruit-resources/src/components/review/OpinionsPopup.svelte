@@ -14,9 +14,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Review } from '@anticrm/recruit'
-  import recruit from '@anticrm/recruit'
-  import { Table } from '@anticrm/view-resources'
+  import type { Review } from '@hcengineering/recruit'
+  import recruit from '@hcengineering/recruit'
+  import { Table } from '@hcengineering/view-resources'
 
   export let value: Review
 </script>

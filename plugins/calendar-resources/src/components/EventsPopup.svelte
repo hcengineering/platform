@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Event } from '@anticrm/calendar'
-  import { Class, Doc, DocumentQuery, FindOptions, Ref } from '@anticrm/core'
-  import { Table } from '@anticrm/view-resources'
+  import type { Event } from '@hcengineering/calendar'
+  import { Class, Doc, DocumentQuery, FindOptions, Ref } from '@hcengineering/core'
+  import { Table } from '@hcengineering/view-resources'
 
   export let value: Event[]
 

@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { TagReference } from '@anticrm/tags'
+  import { TagReference } from '@hcengineering/tags'
   import TagItem from './TagItem.svelte'
 
   export let value: TagReference[] | TagReference

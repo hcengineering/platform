@@ -14,11 +14,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getClient } from '@anticrm/presentation'
-  import type { Issue } from '@anticrm/task'
-  import task from '@anticrm/task'
-  import { StyledTextBox } from '@anticrm/text-editor'
-  import { EditBox, Grid } from '@anticrm/ui'
+  import { getClient } from '@hcengineering/presentation'
+  import type { Issue } from '@hcengineering/task'
+  import task from '@hcengineering/task'
+  import { StyledTextBox } from '@hcengineering/text-editor'
+  import { EditBox, Grid } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import plugin from '../plugin'
 

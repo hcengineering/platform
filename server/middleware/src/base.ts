@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { Class, Doc, DocumentQuery, FindOptions, Ref, ServerStorage, Tx } from '@anticrm/core'
-import { FindAllMiddlewareResult, Middleware, SessionContext, TxMiddlewareResult } from '@anticrm/server-core'
+import { Class, Doc, DocumentQuery, FindOptions, Ref, ServerStorage, Tx } from '@hcengineering/core'
+import { FindAllMiddlewareResult, Middleware, SessionContext, TxMiddlewareResult } from '@hcengineering/server-core'
 
 /**
  * @public

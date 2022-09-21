@@ -14,15 +14,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { SharedMessage } from '@anticrm/gmail'
-  import Button from '@anticrm/ui/src/components/Button.svelte'
+  import { SharedMessage } from '@hcengineering/gmail'
+  import Button from '@hcengineering/ui/src/components/Button.svelte'
   import { createEventDispatcher } from 'svelte'
-  import { IconArrowLeft, Label, Scroller } from '@anticrm/ui'
+  import { IconArrowLeft, Label, Scroller } from '@hcengineering/ui'
   import gmail from '../plugin'
   import FullMessageContent from './FullMessageContent.svelte'
-  import { createQuery } from '@anticrm/presentation'
-  import attachment, { Attachment } from '@anticrm/attachment'
-  import { AttachmentPresenter } from '@anticrm/attachment-resources'
+  import { createQuery } from '@hcengineering/presentation'
+  import attachment, { Attachment } from '@hcengineering/attachment'
+  import { AttachmentPresenter } from '@hcengineering/attachment-resources'
 
   export let currentMessage: SharedMessage
   export let newMessage: boolean

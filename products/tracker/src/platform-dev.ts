@@ -13,43 +13,43 @@
 // limitations under the License.
 //
 
-import { addLocation } from '@anticrm/platform'
+import { addLocation } from '@hcengineering/platform'
 
-import login from '@anticrm/login'
-import { clientId } from '@anticrm/client'
-import { serverAttachmentId } from '@anticrm/server-attachment'
-import { serverContactId } from '@anticrm/server-contact'
-import { serverNotificationId } from '@anticrm/server-notification'
-import { serverSettingId } from '@anticrm/server-setting'
-import { serverChunterId } from '@anticrm/server-chunter'
-import { serverTaskId } from '@anticrm/server-task'
-import { serverTrackerId } from '@anticrm/server-tracker'
-import { serverCalendarId } from '@anticrm/server-calendar'
-import { serverGmailId } from '@anticrm/server-gmail'
-import { serverTelegramId } from '@anticrm/server-telegram'
+import login from '@hcengineering/login'
+import { clientId } from '@hcengineering/client'
+import { serverAttachmentId } from '@hcengineering/server-attachment'
+import { serverContactId } from '@hcengineering/server-contact'
+import { serverNotificationId } from '@hcengineering/server-notification'
+import { serverSettingId } from '@hcengineering/server-setting'
+import { serverChunterId } from '@hcengineering/server-chunter'
+import { serverTaskId } from '@hcengineering/server-task'
+import { serverTrackerId } from '@hcengineering/server-tracker'
+import { serverCalendarId } from '@hcengineering/server-calendar'
+import { serverGmailId } from '@hcengineering/server-gmail'
+import { serverTelegramId } from '@hcengineering/server-telegram'
 
 
-import { setMetadata } from '@anticrm/platform'
+import { setMetadata } from '@hcengineering/platform'
 
-import devmodel, { devModelId } from '@anticrm/devmodel'
-import client from '@anticrm/client'
+import devmodel, { devModelId } from '@hcengineering/devmodel'
+import client from '@hcengineering/client'
 
 export function configurePlatformDev() {  
     setMetadata(login.metadata.OverrideLoginToken, process.env.LOGIN_TOKEN_DEV)
     setMetadata(login.metadata.OverrideEndpoint, process.env.LOGIN_ENDPOINT_DEV)
     console.log('Use DEV server')
-    addLocation(clientId, () => import(/* webpackChunkName: "client-dev" */ '@anticrm/dev-client-resources'))
+    addLocation(clientId, () => import(/* webpackChunkName: "client-dev" */ '@hcengineering/dev-client-resources'))
 
-    addLocation(serverAttachmentId, () => import(/* webpackChunkName: "server-attachment" */ '@anticrm/server-attachment-resources'))
-    addLocation(serverContactId, () => import(/* webpackChunkName: "server-contact" */ '@anticrm/server-contact-resources'))
-    addLocation(serverNotificationId, () => import(/* webpackChunkName: "server-notification" */ '@anticrm/server-notification-resources'))
-    addLocation(serverSettingId, () => import(/* webpackChunkName: "server-setting" */ '@anticrm/server-setting-resources'))
-    addLocation(serverChunterId, () => import(/* webpackChunkName: "server-chunter" */ '@anticrm/server-chunter-resources'))
-    addLocation(serverTaskId, () => import/* webpackChunkName: "server-task" */ ('@anticrm/server-task-resources'))
-    addLocation(serverTrackerId, () => import/* webpackChunkName: "server-tracker" */ ('@anticrm/server-tracker-resources'))
-    addLocation(serverCalendarId, () => import/* webpackChunkName: "server-calendar" */ ('@anticrm/server-calendar-resources'))
-    addLocation(serverGmailId, () => import/* webpackChunkName: "server-gmail" */ ('@anticrm/server-gmail-resources'))
-    addLocation(serverTelegramId, () => import/* webpackChunkName: "server-telegram" */ ('@anticrm/server-telegram-resources'))
+    addLocation(serverAttachmentId, () => import(/* webpackChunkName: "server-attachment" */ '@hcengineering/server-attachment-resources'))
+    addLocation(serverContactId, () => import(/* webpackChunkName: "server-contact" */ '@hcengineering/server-contact-resources'))
+    addLocation(serverNotificationId, () => import(/* webpackChunkName: "server-notification" */ '@hcengineering/server-notification-resources'))
+    addLocation(serverSettingId, () => import(/* webpackChunkName: "server-setting" */ '@hcengineering/server-setting-resources'))
+    addLocation(serverChunterId, () => import(/* webpackChunkName: "server-chunter" */ '@hcengineering/server-chunter-resources'))
+    addLocation(serverTaskId, () => import/* webpackChunkName: "server-task" */ ('@hcengineering/server-task-resources'))
+    addLocation(serverTrackerId, () => import/* webpackChunkName: "server-tracker" */ ('@hcengineering/server-tracker-resources'))
+    addLocation(serverCalendarId, () => import/* webpackChunkName: "server-calendar" */ ('@hcengineering/server-calendar-resources'))
+    addLocation(serverGmailId, () => import/* webpackChunkName: "server-gmail" */ ('@hcengineering/server-gmail-resources'))
+    addLocation(serverTelegramId, () => import/* webpackChunkName: "server-telegram" */ ('@hcengineering/server-telegram-resources'))
 
     // Set devmodel to hook client to be able to present all activity
     enableDevModel()
@@ -66,5 +66,5 @@ export function configurePlatformDevServer() {
 
 function enableDevModel() {
   setMetadata(client.metadata.ClientHook, devmodel.hook.Hook)
-  addLocation(devModelId, () => import(/* webpackChunkName: "devmodel" */ '@anticrm/devmodel-resources'))
+  addLocation(devModelId, () => import(/* webpackChunkName: "devmodel" */ '@hcengineering/devmodel-resources'))
 }

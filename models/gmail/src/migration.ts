@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import core, { TxOperations } from '@anticrm/core'
-import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@anticrm/model'
+import core, { TxOperations } from '@hcengineering/core'
+import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
 import gmail from './plugin'
 
 export const gmailOperation: MigrateOperation = {

@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { IntlString } from '@anticrm/platform'
-  import { translate } from '@anticrm/platform'
-  import type { PopupOptions } from '@anticrm/ui'
+  import type { IntlString } from '@hcengineering/platform'
+  import { translate } from '@hcengineering/platform'
+  import type { PopupOptions } from '@hcengineering/ui'
   import {
     Button,
     createFocusManager,
@@ -25,7 +25,7 @@
     IconClose,
     IconEdit,
     registerFocus
-  } from '@anticrm/ui'
+  } from '@hcengineering/ui'
   import { afterUpdate, createEventDispatcher, onMount } from 'svelte'
   import plugin from '../plugin'
   import IconCopy from './icons/Copy.svelte'

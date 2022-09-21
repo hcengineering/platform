@@ -14,9 +14,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Request } from '@anticrm/hr'
-  import { getClient } from '@anticrm/presentation'
-  import { DateRangePresenter, Label } from '@anticrm/ui'
+  import { Request } from '@hcengineering/hr'
+  import { getClient } from '@hcengineering/presentation'
+  import { DateRangePresenter, Label } from '@hcengineering/ui'
   import { fromTzDate, tzDateEqual } from '../utils'
 
   export let value: Request | null | undefined

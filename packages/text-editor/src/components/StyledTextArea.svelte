@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { IntlString } from '@anticrm/platform'
-  import { Label } from '@anticrm/ui'
+  import { IntlString } from '@hcengineering/platform'
+  import { Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import textEditorPlugin from '../plugin'
   import StyledTextEditor from './StyledTextEditor.svelte'

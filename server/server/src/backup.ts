@@ -1,7 +1,7 @@
-import { Doc, DocChunk, Domain, MeasureContext, Ref, StorageIterator } from '@anticrm/core'
-import { Pipeline } from '@anticrm/server-core'
-import { Token } from '@anticrm/server-token'
-import { BroadcastCall, ClientSession, Session } from '@anticrm/server-ws'
+import { Doc, DocChunk, Domain, MeasureContext, Ref, StorageIterator } from '@hcengineering/core'
+import { Pipeline } from '@hcengineering/server-core'
+import { Token } from '@hcengineering/server-token'
+import { BroadcastCall, ClientSession, Session } from '@hcengineering/server-ws'
 
 const chunkSize = 1024 * 1024
 

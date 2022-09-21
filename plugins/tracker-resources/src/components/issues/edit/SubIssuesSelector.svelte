@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, Ref, WithLookup } from '@anticrm/core'
-  import { Issue, IssueStatus, Team } from '@anticrm/tracker'
-  import { ButtonKind, ButtonSize, getPlatformColor } from '@anticrm/ui'
-  import { Button, closeTooltip, ProgressCircle, SelectPopup, showPanel, showPopup } from '@anticrm/ui'
-  import { updateFocus } from '@anticrm/view-resources'
+  import { Doc, Ref, WithLookup } from '@hcengineering/core'
+  import { Issue, IssueStatus, Team } from '@hcengineering/tracker'
+  import { ButtonKind, ButtonSize, getPlatformColor } from '@hcengineering/ui'
+  import { Button, closeTooltip, ProgressCircle, SelectPopup, showPanel, showPopup } from '@hcengineering/ui'
+  import { updateFocus } from '@hcengineering/view-resources'
   import tracker from '../../../plugin'
   import { getIssueId } from '../../../issues'
 

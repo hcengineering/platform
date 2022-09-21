@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { EmployeeAccount } from '@anticrm/contact'
-  import { getCurrentAccount } from '@anticrm/core'
-  import { Table } from '@anticrm/view-resources'
-  import { createQuery } from '@anticrm/presentation'
-  import { Label, Scroller } from '@anticrm/ui'
+  import { EmployeeAccount } from '@hcengineering/contact'
+  import { getCurrentAccount } from '@hcengineering/core'
+  import { Table } from '@hcengineering/view-resources'
+  import { createQuery } from '@hcengineering/presentation'
+  import { Label, Scroller } from '@hcengineering/ui'
   import calendar from '../plugin'
 
   const currentUser = getCurrentAccount() as EmployeeAccount

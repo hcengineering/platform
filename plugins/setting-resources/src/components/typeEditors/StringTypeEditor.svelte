@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { IndexKind } from '@anticrm/core'
-  import { TypeString } from '@anticrm/model'
+  import { IndexKind } from '@hcengineering/core'
+  import { TypeString } from '@hcengineering/model'
   import { createEventDispatcher, onMount } from 'svelte'
 
   const dispatch = createEventDispatcher()

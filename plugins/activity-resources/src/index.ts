@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Resources } from '@anticrm/platform'
+import { Resources } from '@hcengineering/platform'
 import Activity from './components/Activity.svelte'
 import TxView from './components/TxView.svelte'
 

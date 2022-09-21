@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { CalendarMode } from '@anticrm/calendar-resources'
-  import { Employee } from '@anticrm/contact'
-  import { Ref } from '@anticrm/core'
-  import type { Department, Request, RequestType, Staff } from '@anticrm/hr'
-  import { createQuery } from '@anticrm/presentation'
-  import { Label } from '@anticrm/ui'
+  import { CalendarMode } from '@hcengineering/calendar-resources'
+  import { Employee } from '@hcengineering/contact'
+  import { Ref } from '@hcengineering/core'
+  import type { Department, Request, RequestType, Staff } from '@hcengineering/hr'
+  import { createQuery } from '@hcengineering/presentation'
+  import { Label } from '@hcengineering/ui'
   import hr from '../plugin'
   import MonthTableView from './schedule/MonthTableView.svelte'
   import MonthView from './schedule/MonthView.svelte'

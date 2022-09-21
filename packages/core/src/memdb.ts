@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { PlatformError, Severity, Status } from '@anticrm/platform'
+import { PlatformError, Severity, Status } from '@hcengineering/platform'
 import { getObjectValue, Lookup, ReverseLookups } from '.'
 import type { Class, Doc, Ref } from './classes'
 import core from './component'

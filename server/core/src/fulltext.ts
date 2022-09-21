@@ -42,7 +42,7 @@ import core, {
   TxRemoveDoc,
   TxResult,
   TxUpdateDoc
-} from '@anticrm/core'
+} from '@hcengineering/core'
 import type { FullTextAdapter, IndexedDoc, WithFind } from './types'
 
 /**

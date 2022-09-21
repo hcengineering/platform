@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { Doc } from '@anticrm/core'
-  import { Command, isUpdateDocCommand, UpdateDocCommand } from '@anticrm/automation'
-  import { getClient } from '@anticrm/presentation'
-  import { Label } from '@anticrm/ui'
-  import { ClassPresenter } from '@anticrm/view-resources'
+  import { Doc } from '@hcengineering/core'
+  import { Command, isUpdateDocCommand, UpdateDocCommand } from '@hcengineering/automation'
+  import { getClient } from '@hcengineering/presentation'
+  import { Label } from '@hcengineering/ui'
+  import { ClassPresenter } from '@hcengineering/view-resources'
 
   import automation from '../../plugin'
 

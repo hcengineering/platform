@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Asset, IntlString } from '@anticrm/platform'
+  import { Asset, IntlString } from '@hcengineering/platform'
   import type { AnySvelteComponent } from '../types'
   import Label from './Label.svelte'
   import ArrowUp from './icons/Up.svelte'

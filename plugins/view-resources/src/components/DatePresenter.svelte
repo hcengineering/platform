@@ -14,8 +14,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  // import { TypeDate } from '@anticrm/core'
-  import { DateRangePresenter } from '@anticrm/ui'
+  // import { TypeDate } from '@hcengineering/core'
+  import { DateRangePresenter } from '@hcengineering/ui'
 
   export let value: number | null | undefined
   export let noShift: boolean = false

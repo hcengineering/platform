@@ -13,9 +13,9 @@
 // limitations under the License.
 //
 
-import activity, { activityId } from '@anticrm/activity'
-import type { IntlString } from '@anticrm/platform'
-import { mergeIds } from '@anticrm/platform'
+import activity, { activityId } from '@hcengineering/activity'
+import type { IntlString } from '@hcengineering/platform'
+import { mergeIds } from '@hcengineering/platform'
 
 export default mergeIds(activityId, activity, {
   string: {

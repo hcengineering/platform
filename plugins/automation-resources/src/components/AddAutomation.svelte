@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { Command } from '@anticrm/automation'
-  import core, { Class, Doc, Ref } from '@anticrm/core'
-  import presentation, { getClient } from '@anticrm/presentation'
-  import { Button, EditBox, Label } from '@anticrm/ui'
+  import { Command } from '@hcengineering/automation'
+  import core, { Class, Doc, Ref } from '@hcengineering/core'
+  import presentation, { getClient } from '@hcengineering/presentation'
+  import { Button, EditBox, Label } from '@hcengineering/ui'
 
   import { Trigger } from '../models'
 

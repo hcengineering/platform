@@ -15,7 +15,7 @@
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte'
   import { resizeObserver } from '../resize'
-  import { themeStore as themeOptions } from '@anticrm/theme'
+  import { themeStore as themeOptions } from '@hcengineering/theme'
   import type { FadeOptions } from '../types'
   import { defaultSP } from '../types'
 

@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Attachment } from '@anticrm/attachment'
-  import { getResource } from '@anticrm/platform'
-  import { showPopup, ActionIcon, IconMoreH, Menu } from '@anticrm/ui'
-  import { Action } from '@anticrm/view'
-  import { getFileUrl } from '@anticrm/presentation'
+  import type { Attachment } from '@hcengineering/attachment'
+  import { getResource } from '@hcengineering/platform'
+  import { showPopup, ActionIcon, IconMoreH, Menu } from '@hcengineering/ui'
+  import { Action } from '@hcengineering/view'
+  import { getFileUrl } from '@hcengineering/presentation'
 
   import attachmentPlugin from '../plugin'
   import FileDownload from './icons/FileDownload.svelte'

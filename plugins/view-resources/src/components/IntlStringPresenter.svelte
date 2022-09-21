@@ -14,8 +14,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { IntlString } from '@anticrm/platform'
-  import { Label } from '@anticrm/ui'
+  import { IntlString } from '@hcengineering/platform'
+  import { Label } from '@hcengineering/ui'
 
   export let value: IntlString
 </script>

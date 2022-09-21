@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Organization } from '@anticrm/contact'
-  import core, { Ref } from '@anticrm/core'
-  import { Card, getClient, UserBox } from '@anticrm/presentation'
-  import task, { createKanban, KanbanTemplate } from '@anticrm/task'
-  import { Button, Component, createFocusManager, EditBox, FocusHandler } from '@anticrm/ui'
+  import contact, { Organization } from '@hcengineering/contact'
+  import core, { Ref } from '@hcengineering/core'
+  import { Card, getClient, UserBox } from '@hcengineering/presentation'
+  import task, { createKanban, KanbanTemplate } from '@hcengineering/task'
+  import { Button, Component, createFocusManager, EditBox, FocusHandler } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
   import Company from './icons/Company.svelte'

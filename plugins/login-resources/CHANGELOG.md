@@ -1,4 +1,4 @@
-# Change Log - @anticrm/login-resources
+# Change Log - @hcengineering/login-resources
 
 This log was last generated on Mon, 09 Aug 2021 08:00:44 GMT and should not be manually modified.
 

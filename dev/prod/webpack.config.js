@@ -30,7 +30,7 @@ const dev = (process.env.CLIENT_TYPE ?? '') === 'dev' || devServer
 module.exports = {
   entry: {
     bundle: [
-      '@anticrm/theme/styles/global.scss',
+      '@hcengineering/theme/styles/global.scss',
       ...(dev ? ['./src/main-dev.ts']: ['./src/main.ts'] ),
     ]
   },
@@ -38,7 +38,7 @@ module.exports = {
     symlinks: true,
     alias: {
       svelte: path.resolve('./node_modules', 'svelte'),
-      '@anticrm/platform-rig/profiles/ui/svelte': path.resolve('./node_modules', 'svelte')
+      '@hcengineering/platform-rig/profiles/ui/svelte': path.resolve('./node_modules', 'svelte')
     },
     extensions: ['.mjs', '.js', '.svelte', '.ts'],
     mainFields: ['svelte', 'browser', 'module', 'main']

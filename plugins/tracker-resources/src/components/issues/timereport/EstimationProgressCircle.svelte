@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { FernColor, FlamingoColor, IconSize, PlatinumColor } from '@anticrm/ui'
+  import { FernColor, FlamingoColor, IconSize, PlatinumColor } from '@hcengineering/ui'
 
   export let value: number
   export let min: number = 0

@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import calendar from '@anticrm/calendar'
-import { Class, Doc, DocumentQuery, FindOptions, FindResult, Hierarchy, Ref } from '@anticrm/core'
+import calendar from '@hcengineering/calendar'
+import { Class, Doc, DocumentQuery, FindOptions, FindResult, Hierarchy, Ref } from '@hcengineering/core'
 
 /**
  * @public

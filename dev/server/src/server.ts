@@ -14,17 +14,17 @@
 // limitations under the License.
 //
 
-import type { Doc, Ref, TxResult } from '@anticrm/core'
-import { DOMAIN_TX, MeasureMetricsContext } from '@anticrm/core'
-import { createInMemoryTxAdapter } from '@anticrm/dev-storage'
+import type { Doc, Ref, TxResult } from '@hcengineering/core'
+import { DOMAIN_TX, MeasureMetricsContext } from '@hcengineering/core'
+import { createInMemoryTxAdapter } from '@hcengineering/dev-storage'
 import {
   createInMemoryAdapter,
   createPipeline,
   DbConfiguration,
   FullTextAdapter,
   IndexedDoc
-} from '@anticrm/server-core'
-import { ClientSession, start as startJsonRpc } from '@anticrm/server-ws'
+} from '@hcengineering/server-core'
+import { ClientSession, start as startJsonRpc } from '@hcengineering/server-ws'
 
 class NullFullTextAdapter implements FullTextAdapter {
   async index (doc: IndexedDoc): Promise<TxResult> {

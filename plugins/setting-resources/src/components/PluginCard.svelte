@@ -13,13 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Button, Component, eventToHTMLElement, Label, Link } from '@anticrm/ui'
-  import { getResource } from '@anticrm/platform'
-  import { showPopup } from '@anticrm/ui'
-  import type { Integration, IntegrationType } from '@anticrm/setting'
+  import { Button, Component, eventToHTMLElement, Label, Link } from '@hcengineering/ui'
+  import { getResource } from '@hcengineering/platform'
+  import { showPopup } from '@hcengineering/ui'
+  import type { Integration, IntegrationType } from '@hcengineering/setting'
   import setting from '../plugin'
-  import { getClient } from '@anticrm/presentation'
-  import { getCurrentAccount, Ref, Space } from '@anticrm/core'
+  import { getClient } from '@hcengineering/presentation'
+  import { getCurrentAccount, Ref, Space } from '@hcengineering/core'
 
   export let integrationType: IntegrationType
   export let integration: Integration | undefined

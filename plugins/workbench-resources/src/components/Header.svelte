@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Ref, Class, Doc } from '@anticrm/core'
-  import type { Asset } from '@anticrm/platform'
-  import { Icon } from '@anticrm/ui'
-  import { FilterButton } from '@anticrm/view-resources'
+  import type { Ref, Class, Doc } from '@hcengineering/core'
+  import type { Asset } from '@hcengineering/platform'
+  import { Icon } from '@hcengineering/ui'
+  import { FilterButton } from '@hcengineering/view-resources'
 
   export let icon: Asset | undefined
   export let label: string

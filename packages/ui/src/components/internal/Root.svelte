@@ -1,12 +1,12 @@
 <script lang="ts">
   import { onDestroy } from 'svelte'
-  import { getMetadata, OK } from '@anticrm/platform'
-  import { PlatformEvent, addEventListener } from '@anticrm/platform'
+  import { getMetadata, OK } from '@hcengineering/platform'
+  import { PlatformEvent, addEventListener } from '@hcengineering/platform'
   import type { AnyComponent } from '../../types'
   // import { applicationShortcutKey } from '../../utils'
   import { getCurrentLocation, location, navigate } from '../../location'
 
-  import { Theme } from '@anticrm/theme'
+  import { Theme } from '@hcengineering/theme'
   import Component from '../Component.svelte'
 
   import StatusComponent from '../Status.svelte'

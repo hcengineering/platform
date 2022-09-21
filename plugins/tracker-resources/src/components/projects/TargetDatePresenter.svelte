@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Project } from '@anticrm/tracker'
-  import { getClient } from '@anticrm/presentation'
+  import { Project } from '@hcengineering/tracker'
+  import { getClient } from '@hcengineering/presentation'
   import CommonTrackerDatePresenter from '../CommonTrackerDatePresenter.svelte'
 
   export let value: Project

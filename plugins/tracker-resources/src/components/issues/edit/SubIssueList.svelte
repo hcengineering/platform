@@ -13,16 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, Ref, WithLookup } from '@anticrm/core'
-  import { Issue, IssueStatus, Team } from '@anticrm/tracker'
-  import { getEventPositionElement, showPanel, showPopup } from '@anticrm/ui'
+  import { Doc, Ref, WithLookup } from '@hcengineering/core'
+  import { Issue, IssueStatus, Team } from '@hcengineering/tracker'
+  import { getEventPositionElement, showPanel, showPopup } from '@hcengineering/ui'
   import {
     ActionContext,
     ContextMenu,
     FixedColumn,
     ListSelectionProvider,
     SelectDirection
-  } from '@anticrm/view-resources'
+  } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import { flip } from 'svelte/animate'
   import { getIssueId } from '../../../issues'

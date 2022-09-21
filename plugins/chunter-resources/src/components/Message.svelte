@@ -13,15 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Attachment } from '@anticrm/attachment'
-  import { AttachmentList, AttachmentRefInput } from '@anticrm/attachment-resources'
-  import type { ChunterMessage, Message, Reaction } from '@anticrm/chunter'
-  import { Employee, EmployeeAccount } from '@anticrm/contact'
-  import { EmployeePresenter } from '@anticrm/contact-resources'
-  import { Ref, WithLookup, getCurrentAccount } from '@anticrm/core'
-  import { NotificationClientImpl } from '@anticrm/notification-resources'
-  import { getResource } from '@anticrm/platform'
-  import { Avatar, getClient, MessageViewer } from '@anticrm/presentation'
+  import { Attachment } from '@hcengineering/attachment'
+  import { AttachmentList, AttachmentRefInput } from '@hcengineering/attachment-resources'
+  import type { ChunterMessage, Message, Reaction } from '@hcengineering/chunter'
+  import { Employee, EmployeeAccount } from '@hcengineering/contact'
+  import { EmployeePresenter } from '@hcengineering/contact-resources'
+  import { Ref, WithLookup, getCurrentAccount } from '@hcengineering/core'
+  import { NotificationClientImpl } from '@hcengineering/notification-resources'
+  import { getResource } from '@hcengineering/platform'
+  import { Avatar, getClient, MessageViewer } from '@hcengineering/presentation'
   import ui, {
     ActionIcon,
     IconMoreH,
@@ -32,10 +32,10 @@
     Button,
     getCurrentLocation,
     locationToUrl
-  } from '@anticrm/ui'
-  import { Action } from '@anticrm/view'
-  import { getActions, LinkPresenter } from '@anticrm/view-resources'
-  import { EmojiPopup } from '@anticrm/text-editor'
+  } from '@hcengineering/ui'
+  import { Action } from '@hcengineering/view'
+  import { getActions, LinkPresenter } from '@hcengineering/view-resources'
+  import { EmojiPopup } from '@hcengineering/text-editor'
   import { createEventDispatcher } from 'svelte'
   import { AddMessageToSaved, DeleteMessageFromSaved, UnpinMessage } from '../index'
   import chunter from '../plugin'

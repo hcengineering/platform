@@ -13,10 +13,10 @@
 // limitations under the License.
 //
 
-import devmodel, { devModelId } from '@anticrm/devmodel'
-import { mergeIds } from '@anticrm/platform'
-import { Ref } from '@anticrm/core'
-import { Application } from '@anticrm/workbench'
+import devmodel, { devModelId } from '@hcengineering/devmodel'
+import { mergeIds } from '@hcengineering/platform'
+import { Ref } from '@hcengineering/core'
+import { Application } from '@hcengineering/workbench'
 
 export default mergeIds(devModelId, devmodel, {
   ids: {

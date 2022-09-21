@@ -14,10 +14,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getClient } from '@anticrm/presentation'
-  import type { Issue } from '@anticrm/task'
-  import { getPanelURI, Icon, Label } from '@anticrm/ui'
-  import view from '@anticrm/view'
+  import { getClient } from '@hcengineering/presentation'
+  import type { Issue } from '@hcengineering/task'
+  import { getPanelURI, Icon, Label } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
   import task from '../plugin'
 
   export let value: Issue

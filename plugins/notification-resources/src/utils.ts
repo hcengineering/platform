@@ -14,9 +14,9 @@
 // limitations under the License.
 //
 
-import core, { Class, Doc, getCurrentAccount, Ref, Timestamp } from '@anticrm/core'
-import notification, { LastView, NotificationClient } from '@anticrm/notification'
-import { createQuery, getClient } from '@anticrm/presentation'
+import core, { Class, Doc, getCurrentAccount, Ref, Timestamp } from '@hcengineering/core'
+import notification, { LastView, NotificationClient } from '@hcengineering/notification'
+import { createQuery, getClient } from '@hcengineering/presentation'
 import { writable, Writable } from 'svelte/store'
 
 /**

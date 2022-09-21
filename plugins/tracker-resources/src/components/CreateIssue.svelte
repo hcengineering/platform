@@ -13,14 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AttachmentStyledBox } from '@anticrm/attachment-resources'
-  import chunter from '@anticrm/chunter'
-  import { Employee } from '@anticrm/contact'
-  import core, { Account, AttachedData, Doc, generateId, Ref, SortingOrder, WithLookup } from '@anticrm/core'
-  import { getResource, translate } from '@anticrm/platform'
-  import { Card, createQuery, getClient, KeyedAttribute, SpaceSelector } from '@anticrm/presentation'
-  import tags, { TagElement, TagReference } from '@anticrm/tags'
-  import { calcRank, Issue, IssuePriority, IssueStatus, Project, Sprint, Team } from '@anticrm/tracker'
+  import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
+  import chunter from '@hcengineering/chunter'
+  import { Employee } from '@hcengineering/contact'
+  import core, { Account, AttachedData, Doc, generateId, Ref, SortingOrder, WithLookup } from '@hcengineering/core'
+  import { getResource, translate } from '@hcengineering/platform'
+  import { Card, createQuery, getClient, KeyedAttribute, SpaceSelector } from '@hcengineering/presentation'
+  import tags, { TagElement, TagReference } from '@hcengineering/tags'
+  import { calcRank, Issue, IssuePriority, IssueStatus, Project, Sprint, Team } from '@hcengineering/tracker'
   import {
     ActionIcon,
     Button,
@@ -33,8 +33,8 @@
     Menu,
     showPopup,
     Spinner
-  } from '@anticrm/ui'
-  import view from '@anticrm/view'
+  } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import { activeProject, activeSprint } from '../issues'
   import tracker from '../plugin'

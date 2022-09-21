@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import activity from '@anticrm/activity'
+import activity from '@hcengineering/activity'
 import {
   Backlink,
   Channel,
@@ -26,10 +26,10 @@ import {
   Reaction,
   SavedMessages,
   ThreadMessage
-} from '@anticrm/chunter'
-import contact, { Employee } from '@anticrm/contact'
-import type { Account, Class, Doc, Domain, Ref, Space, Timestamp } from '@anticrm/core'
-import { IndexKind } from '@anticrm/core'
+} from '@hcengineering/chunter'
+import contact, { Employee } from '@hcengineering/contact'
+import type { Account, Class, Doc, Domain, Ref, Space, Timestamp } from '@hcengineering/core'
+import { IndexKind } from '@hcengineering/core'
 import {
   ArrOf,
   Builder,
@@ -42,13 +42,13 @@ import {
   TypeString,
   TypeTimestamp,
   UX
-} from '@anticrm/model'
-import attachment from '@anticrm/model-attachment'
-import core, { TAttachedDoc, TSpace } from '@anticrm/model-core'
-import notification from '@anticrm/model-notification'
-import preference, { TPreference } from '@anticrm/model-preference'
-import view, { actionTemplates as viewTemplates, createAction } from '@anticrm/model-view'
-import workbench from '@anticrm/model-workbench'
+} from '@hcengineering/model'
+import attachment from '@hcengineering/model-attachment'
+import core, { TAttachedDoc, TSpace } from '@hcengineering/model-core'
+import notification from '@hcengineering/model-notification'
+import preference, { TPreference } from '@hcengineering/model-preference'
+import view, { actionTemplates as viewTemplates, createAction } from '@hcengineering/model-view'
+import workbench from '@hcengineering/model-workbench'
 import chunter from './plugin'
 
 export const DOMAIN_CHUNTER = 'chunter' as Domain

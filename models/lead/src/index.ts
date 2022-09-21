@@ -14,18 +14,29 @@
 //
 
 // To help typescript locate view plugin properly
-import type { Employee } from '@anticrm/contact'
-import { Class, Doc, FindOptions, IndexKind, Ref } from '@anticrm/core'
-import { Customer, Funnel, Lead, leadId } from '@anticrm/lead'
-import { Builder, Collection, Index, Mixin, Model, Prop, TypeRef, TypeString, TypeMarkup, UX } from '@anticrm/model'
-import attachment from '@anticrm/model-attachment'
-import chunter from '@anticrm/model-chunter'
-import contact, { TContact } from '@anticrm/model-contact'
-import core from '@anticrm/model-core'
-import task, { actionTemplates, TSpaceWithStates, TTask } from '@anticrm/model-task'
-import view, { createAction, actionTemplates as viewTemplates } from '@anticrm/model-view'
-import workbench from '@anticrm/model-workbench'
-import setting from '@anticrm/setting'
+import type { Employee } from '@hcengineering/contact'
+import { Class, Doc, FindOptions, IndexKind, Ref } from '@hcengineering/core'
+import { Customer, Funnel, Lead, leadId } from '@hcengineering/lead'
+import {
+  Builder,
+  Collection,
+  Index,
+  Mixin,
+  Model,
+  Prop,
+  TypeRef,
+  TypeString,
+  TypeMarkup,
+  UX
+} from '@hcengineering/model'
+import attachment from '@hcengineering/model-attachment'
+import chunter from '@hcengineering/model-chunter'
+import contact, { TContact } from '@hcengineering/model-contact'
+import core from '@hcengineering/model-core'
+import task, { actionTemplates, TSpaceWithStates, TTask } from '@hcengineering/model-task'
+import view, { createAction, actionTemplates as viewTemplates } from '@hcengineering/model-view'
+import workbench from '@hcengineering/model-workbench'
+import setting from '@hcengineering/setting'
 import lead from './plugin'
 
 @Model(lead.class.Funnel, task.class.SpaceWithStates)

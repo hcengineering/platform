@@ -14,8 +14,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Candidate } from '@anticrm/recruit'
-  import { Icon, tooltip } from '@anticrm/ui'
+  import type { Candidate } from '@hcengineering/recruit'
+  import { Icon, tooltip } from '@hcengineering/ui'
   import recruit from '../plugin'
   import ApplicationsPopup from './ApplicationsPopup.svelte'
 

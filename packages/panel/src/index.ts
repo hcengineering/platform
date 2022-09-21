@@ -14,5 +14,5 @@
 // limitations under the License.
 //
 
-import '@anticrm/platform-rig/profiles/ui/svelte'
+import '@hcengineering/platform-rig/profiles/ui/svelte'
 export { default as Panel } from './components/Panel.svelte'

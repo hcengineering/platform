@@ -15,11 +15,11 @@
 <script lang="ts">
   import { afterUpdate, createEventDispatcher } from 'svelte'
 
-  import ui, { Label, EditWithIcon, IconSearch } from '@anticrm/ui'
+  import ui, { Label, EditWithIcon, IconSearch } from '@hcengineering/ui'
   import SpaceInfo from './SpaceInfo.svelte'
 
-  import type { Ref, Class, Space, DocumentQuery } from '@anticrm/core'
-  import { createQuery } from '@anticrm/presentation'
+  import type { Ref, Class, Space, DocumentQuery } from '@hcengineering/core'
+  import { createQuery } from '@hcengineering/presentation'
 
   export let _class: Ref<Class<Space>>
   export let spaceQuery: DocumentQuery<Space> | undefined

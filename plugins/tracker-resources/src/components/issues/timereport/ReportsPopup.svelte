@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact from '@anticrm/contact'
-  import { FindOptions } from '@anticrm/core'
-  import presentation, { Card } from '@anticrm/presentation'
-  import { Issue, TimeSpendReport } from '@anticrm/tracker'
-  import { Button, eventToHTMLElement, IconAdd, Scroller, tableSP, showPopup } from '@anticrm/ui'
-  import { TableBrowser } from '@anticrm/view-resources'
+  import contact from '@hcengineering/contact'
+  import { FindOptions } from '@hcengineering/core'
+  import presentation, { Card } from '@hcengineering/presentation'
+  import { Issue, TimeSpendReport } from '@hcengineering/tracker'
+  import { Button, eventToHTMLElement, IconAdd, Scroller, tableSP, showPopup } from '@hcengineering/ui'
+  import { TableBrowser } from '@hcengineering/view-resources'
   import tracker from '../../../plugin'
   import IssuePresenter from '../IssuePresenter.svelte'
   import ParentNamesPresenter from '../ParentNamesPresenter.svelte'

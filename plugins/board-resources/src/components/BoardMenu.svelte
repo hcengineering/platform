@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { Ref, Space } from '@anticrm/core'
-  import Label from '@anticrm/ui/src/components/Label.svelte'
+  import { Ref, Space } from '@hcengineering/core'
+  import Label from '@hcengineering/ui/src/components/Label.svelte'
   import board from '../plugin'
-  import { createQuery } from '@anticrm/presentation'
-  import { MenuPage } from '@anticrm/board'
-  import { Button, Component, IconBack, IconClose } from '@anticrm/ui'
+  import { createQuery } from '@hcengineering/presentation'
+  import { MenuPage } from '@hcengineering/board'
+  import { Button, Component, IconBack, IconClose } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
   export let currentSpace: Ref<Space> | undefined

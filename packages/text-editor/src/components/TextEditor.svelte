@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { IntlString, translate } from '@anticrm/platform'
+  import { IntlString, translate } from '@hcengineering/platform'
 
   import { AnyExtension, Editor, Extension, HTMLContent } from '@tiptap/core'
   import Highlight from '@tiptap/extension-highlight'

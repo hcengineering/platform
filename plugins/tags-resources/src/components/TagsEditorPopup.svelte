@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { Doc, Ref } from '@anticrm/core'
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import tags, { TagElement } from '@anticrm/tags'
+  import { Doc, Ref } from '@hcengineering/core'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import tags, { TagElement } from '@hcengineering/tags'
   import TagsPopup from './TagsPopup.svelte'
 
   export let object: Doc

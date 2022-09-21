@@ -23,7 +23,7 @@
 </script>
 
 <script lang="ts">
-  import { translate } from '@anticrm/platform'
+  import { translate } from '@hcengineering/platform'
   import { ticker } from '..'
   import ui from '../plugin'
   import { tooltip } from '../tooltips'

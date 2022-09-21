@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { IntlString } from '@anticrm/platform'
+  import type { IntlString } from '@hcengineering/platform'
   import {
     Label,
     showPopup,
@@ -22,11 +22,11 @@
     eventToHTMLElement,
     getFocusManager,
     TooltipAlignment
-  } from '@anticrm/ui'
+  } from '@hcengineering/ui'
   import EnumPopup from './EnumPopup.svelte'
 
-  import core, { Ref, Class, DocumentQuery, Enum } from '@anticrm/core'
-  import { ObjectCreate } from '@anticrm/presentation'
+  import core, { Ref, Class, DocumentQuery, Enum } from '@hcengineering/core'
+  import { ObjectCreate } from '@hcengineering/presentation'
 
   export let label: IntlString
   export let value: Enum | undefined

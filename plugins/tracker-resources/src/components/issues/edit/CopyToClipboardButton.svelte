@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Asset, IntlString } from '@anticrm/platform'
-  import { Button } from '@anticrm/ui'
+  import { Asset, IntlString } from '@hcengineering/platform'
+  import { Button } from '@hcengineering/ui'
 
   export let icon: Asset
   export let title: IntlString

@@ -1,10 +1,10 @@
 // Copyright © 2022 Hardcore Engineering Inc.
 
-import { Doc, FindResult, Ref } from '@anticrm/core'
-import { TagReference } from '@anticrm/tags'
+import { Doc, FindResult, Ref } from '@hcengineering/core'
+import { TagReference } from '@hcengineering/tags'
 import tags from './plugin'
-import { FilterQuery } from '@anticrm/view-resources'
-import { Filter } from '@anticrm/view'
+import { FilterQuery } from '@hcengineering/view-resources'
+import { Filter } from '@hcengineering/view'
 
 export function getTagStyle (color: string, selected = false): string {
   return `

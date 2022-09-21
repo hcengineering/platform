@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { TagReference } from '@anticrm/tags'
+  import { TagReference } from '@hcengineering/tags'
   import ColorPresenter from './ColorPresenter.svelte'
 
   export let value: TagReference

@@ -13,16 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, FindResult, Ref } from '@anticrm/core'
-  import { translate } from '@anticrm/platform'
-  import presentation, { getClient } from '@anticrm/presentation'
-  import { Button, CheckBox, getPlatformColor, Loading } from '@anticrm/ui'
-  import { Filter } from '@anticrm/view'
-  import view from '@anticrm/view-resources/src/plugin'
+  import { Class, Doc, FindResult, Ref } from '@hcengineering/core'
+  import { translate } from '@hcengineering/platform'
+  import presentation, { getClient } from '@hcengineering/presentation'
+  import { Button, CheckBox, getPlatformColor, Loading } from '@hcengineering/ui'
+  import { Filter } from '@hcengineering/view'
+  import view from '@hcengineering/view-resources/src/plugin'
   import { createEventDispatcher, onMount } from 'svelte'
   import tags from '../plugin'
-  import { TagCategory, TagElement } from '@anticrm/tags'
-  import { FilterQuery } from '@anticrm/view-resources'
+  import { TagCategory, TagElement } from '@hcengineering/tags'
+  import { FilterQuery } from '@hcengineering/view-resources'
 
   export let _class: Ref<Class<Doc>>
   export let filter: Filter

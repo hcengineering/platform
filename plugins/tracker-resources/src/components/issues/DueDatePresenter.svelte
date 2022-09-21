@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { WithLookup } from '@anticrm/core'
-  import { Issue } from '@anticrm/tracker'
-  import { getClient } from '@anticrm/presentation'
+  import { WithLookup } from '@hcengineering/core'
+  import { Issue } from '@hcengineering/tracker'
+  import { getClient } from '@hcengineering/presentation'
   import CommonTrackerDatePresenter from '../CommonTrackerDatePresenter.svelte'
   import tracker from '../../plugin'
 

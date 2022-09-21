@@ -15,13 +15,13 @@
 -->
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte'
-  import { getCurrentAccount, Ref, Space } from '@anticrm/core'
-  import { EditBox, createFocusManager, FocusHandler } from '@anticrm/ui'
-  import { getClient, createQuery } from '@anticrm/presentation'
-  import setting from '@anticrm/setting'
-  import { IntegrationType } from '@anticrm/setting'
+  import { getCurrentAccount, Ref, Space } from '@hcengineering/core'
+  import { EditBox, createFocusManager, FocusHandler } from '@hcengineering/ui'
+  import { getClient, createQuery } from '@hcengineering/presentation'
+  import setting from '@hcengineering/setting'
+  import { IntegrationType } from '@hcengineering/setting'
   import contact from '../plugin'
-  import { Organization } from '@anticrm/contact'
+  import { Organization } from '@hcengineering/contact'
   import Company from './icons/Company.svelte'
   import ChannelsEditor from './ChannelsEditor.svelte'
 

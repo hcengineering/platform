@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import client, { ClientSocket } from '@anticrm/client'
+import client, { ClientSocket } from '@hcengineering/client'
 import type {
   Class,
   ClientConnection,
@@ -28,9 +28,9 @@ import type {
   Tx,
   TxHander,
   TxResult
-} from '@anticrm/core'
-import core from '@anticrm/core'
-import { getMetadata, PlatformError, readResponse, ReqId, serialize, UNAUTHORIZED } from '@anticrm/platform'
+} from '@hcengineering/core'
+import core from '@hcengineering/core'
+import { getMetadata, PlatformError, readResponse, ReqId, serialize, UNAUTHORIZED } from '@hcengineering/platform'
 
 class DeferredPromise {
   readonly promise: Promise<any>

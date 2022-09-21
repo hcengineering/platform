@@ -14,9 +14,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { WithLookup } from '@anticrm/core'
-  import type { Issue, Team } from '@anticrm/tracker'
-  import { Icon } from '@anticrm/ui'
+  import { WithLookup } from '@hcengineering/core'
+  import type { Issue, Team } from '@hcengineering/tracker'
+  import { Icon } from '@hcengineering/ui'
   import tracker from '../../plugin'
   import { getIssueId } from '../../issues'
 

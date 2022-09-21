@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, Ref } from '@anticrm/core'
-  import { AttributesBar, getClient, KeyedAttribute } from '@anticrm/presentation'
-  import setting, { settingId } from '@anticrm/setting'
-  import { Button, getCurrentLocation, Label, navigate } from '@anticrm/ui'
+  import { Class, Doc, Ref } from '@hcengineering/core'
+  import { AttributesBar, getClient, KeyedAttribute } from '@hcengineering/presentation'
+  import setting, { settingId } from '@hcengineering/setting'
+  import { Button, getCurrentLocation, Label, navigate } from '@hcengineering/ui'
   import { getFiltredKeys, isCollectionAttr } from '../utils'
 
   export let object: Doc

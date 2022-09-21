@@ -85,3 +85,11 @@ rush docker:build
 ## runs UI tests 
 rushx uitest
 ```
+
+
+## Package publishing
+
+```
+npm login --registry=https://npm.pkg.github.com --scope=@hcengineering/anticrm
+npm publish
+```

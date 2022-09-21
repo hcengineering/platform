@@ -14,11 +14,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { ChunterSpace } from '@anticrm/chunter'
-  import { EmployeeAccount } from '@anticrm/contact'
-  import type { Class, Ref } from '@anticrm/core'
-  import { createQuery, getClient, Members } from '@anticrm/presentation'
-  import { Icon, Label, Scroller, showPopup, Panel } from '@anticrm/ui'
+  import { ChunterSpace } from '@hcengineering/chunter'
+  import { EmployeeAccount } from '@hcengineering/contact'
+  import type { Class, Ref } from '@hcengineering/core'
+  import { createQuery, getClient, Members } from '@hcengineering/presentation'
+  import { Icon, Label, Scroller, showPopup, Panel } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
   import chunter from '../plugin'

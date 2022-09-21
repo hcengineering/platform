@@ -1,4 +1,4 @@
-import { Metadata, plugin, Plugin } from '@anticrm/platform'
+import { Metadata, plugin, Plugin } from '@hcengineering/platform'
 
 /**
  * @public

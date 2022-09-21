@@ -13,9 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import '@anticrm/platform-rig/profiles/ui/svelte'
+import '@hcengineering/platform-rig/profiles/ui/svelte'
 
-import { Resources } from '@anticrm/platform'
+import { Resources } from '@hcengineering/platform'
 
 import Cropper from './components/Cropper.svelte'
 

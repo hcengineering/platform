@@ -13,12 +13,12 @@
 // limitations under the License.
 //
 
-import { Builder } from '@anticrm/model'
+import { Builder } from '@hcengineering/model'
 
-import core from '@anticrm/core'
-import inventory from '@anticrm/inventory'
-import serverInventory from '@anticrm/server-inventory'
-import view from '@anticrm/view'
+import core from '@hcengineering/core'
+import inventory from '@hcengineering/inventory'
+import serverInventory from '@hcengineering/server-inventory'
+import view from '@hcengineering/view'
 
 export function createModel (builder: Builder): void {
   builder.mixin(inventory.class.Product, core.class.Class, view.mixin.HTMLPresenter, {

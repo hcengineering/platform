@@ -14,8 +14,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Doc } from '@anticrm/core'
-  import { IconAttachment, tooltip } from '@anticrm/ui'
+  import type { Doc } from '@hcengineering/core'
+  import { IconAttachment, tooltip } from '@hcengineering/ui'
   import attachment from '../plugin'
   import AttachmentPopup from './AttachmentPopup.svelte'
 

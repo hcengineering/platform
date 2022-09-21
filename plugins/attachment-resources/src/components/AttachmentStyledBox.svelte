@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Attachment } from '@anticrm/attachment'
-  import { Account, Class, Doc, generateId, Ref, Space } from '@anticrm/core'
-  import { IntlString, setPlatformStatus, unknownError } from '@anticrm/platform'
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import { StyledTextBox } from '@anticrm/text-editor'
+  import { Attachment } from '@hcengineering/attachment'
+  import { Account, Class, Doc, generateId, Ref, Space } from '@hcengineering/core'
+  import { IntlString, setPlatformStatus, unknownError } from '@hcengineering/platform'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { StyledTextBox } from '@hcengineering/text-editor'
   import { onDestroy } from 'svelte'
   import attachment from '../plugin'
   import { deleteFile, uploadFile } from '../utils'

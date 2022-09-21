@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { IntlString, translate } from '@anticrm/platform'
-  import { createQuery } from '@anticrm/presentation'
-  import { DropdownLabels } from '@anticrm/ui'
-  import { Ref, SortingOrder } from '@anticrm/core'
-  import { DropdownTextItem } from '@anticrm/ui/src/types'
-  import { calcRank, State } from '@anticrm/task'
-  import { Card } from '@anticrm/board'
+  import { IntlString, translate } from '@hcengineering/platform'
+  import { createQuery } from '@hcengineering/presentation'
+  import { DropdownLabels } from '@hcengineering/ui'
+  import { Ref, SortingOrder } from '@hcengineering/core'
+  import { DropdownTextItem } from '@hcengineering/ui/src/types'
+  import { calcRank, State } from '@hcengineering/task'
+  import { Card } from '@hcengineering/board'
   import board from '../../plugin'
 
   export let object: Card

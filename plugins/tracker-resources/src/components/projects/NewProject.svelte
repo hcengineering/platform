@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Data, Ref } from '@anticrm/core'
-  import { IntlString } from '@anticrm/platform'
-  import { Card, getClient, SpaceSelector, EmployeeBox, UserBoxList } from '@anticrm/presentation'
-  import { Project, ProjectStatus, Team } from '@anticrm/tracker'
-  import { DatePresenter, EditBox } from '@anticrm/ui'
+  import { Data, Ref } from '@hcengineering/core'
+  import { IntlString } from '@hcengineering/platform'
+  import { Card, getClient, SpaceSelector, EmployeeBox, UserBoxList } from '@hcengineering/presentation'
+  import { Project, ProjectStatus, Team } from '@hcengineering/tracker'
+  import { DatePresenter, EditBox } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
   import ProjectStatusSelector from './ProjectStatusSelector.svelte'

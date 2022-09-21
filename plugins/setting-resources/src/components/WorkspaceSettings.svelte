@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { EmployeeAccount } from '@anticrm/contact'
-  import { AccountRole, getCurrentAccount } from '@anticrm/core'
-  import { createQuery } from '@anticrm/presentation'
-  import setting, { SettingsCategory } from '@anticrm/setting'
-  import ui, { Button, Component, getCurrentLocation, IconBack, Label, location, navigate } from '@anticrm/ui'
+  import { EmployeeAccount } from '@hcengineering/contact'
+  import { AccountRole, getCurrentAccount } from '@hcengineering/core'
+  import { createQuery } from '@hcengineering/presentation'
+  import setting, { SettingsCategory } from '@hcengineering/setting'
+  import ui, { Button, Component, getCurrentLocation, IconBack, Label, location, navigate } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import CategoryElement from './CategoryElement.svelte'
 

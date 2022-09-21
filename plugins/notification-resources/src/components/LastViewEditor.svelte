@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc } from '@anticrm/core'
-  import { Button, tooltip } from '@anticrm/ui'
+  import { Doc } from '@hcengineering/core'
+  import { Button, tooltip } from '@hcengineering/ui'
   import notification from '../plugin'
   import { NotificationClientImpl } from '../utils'
 

@@ -13,13 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { TypeDate as DateType } from '@anticrm/core'
-  import { TypeDate } from '@anticrm/model'
-  import { Label } from '@anticrm/ui'
+  import { TypeDate as DateType } from '@hcengineering/core'
+  import { TypeDate } from '@hcengineering/model'
+  import { Label } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import setting from '../../plugin'
-  import BooleanEditor from '@anticrm/view-resources/src/components/BooleanEditor.svelte'
-  import BooleanPresenter from '@anticrm/view-resources/src/components/BooleanPresenter.svelte'
+  import BooleanEditor from '@hcengineering/view-resources/src/components/BooleanEditor.svelte'
+  import BooleanPresenter from '@hcengineering/view-resources/src/components/BooleanPresenter.svelte'
 
   export let type: DateType | undefined
   export let editable: boolean = true

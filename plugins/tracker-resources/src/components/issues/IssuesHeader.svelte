@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { Icon, TabList, SearchEdit } from '@anticrm/ui'
-  import { Viewlet } from '@anticrm/view'
-  import { FilterButton, setActiveViewletId } from '@anticrm/view-resources'
+  import { Icon, TabList, SearchEdit } from '@hcengineering/ui'
+  import { Viewlet } from '@hcengineering/view'
+  import { FilterButton, setActiveViewletId } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
-  import { WithLookup } from '@anticrm/core'
+  import { WithLookup } from '@hcengineering/core'
 
   export let viewlet: WithLookup<Viewlet> | undefined
   export let viewlets: WithLookup<Viewlet>[] = []

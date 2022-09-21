@@ -13,13 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, Ref } from '@anticrm/core'
-  import type { Request, RequestType, Staff } from '@anticrm/hr'
-  import { getEmbeddedLabel } from '@anticrm/platform'
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import { Button, Label, Loading, Scroller, tableSP } from '@anticrm/ui'
-  import view, { BuildModelKey, Viewlet, ViewletPreference } from '@anticrm/view'
-  import { Table, ViewletSettingButton } from '@anticrm/view-resources'
+  import { Doc, Ref } from '@hcengineering/core'
+  import type { Request, RequestType, Staff } from '@hcengineering/hr'
+  import { getEmbeddedLabel } from '@hcengineering/platform'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { Button, Label, Loading, Scroller, tableSP } from '@hcengineering/ui'
+  import view, { BuildModelKey, Viewlet, ViewletPreference } from '@hcengineering/view'
+  import { Table, ViewletSettingButton } from '@hcengineering/view-resources'
   import hr from '../../plugin'
   import { fromTzDate, getMonth, getRequestDays, getTotal, tableToCSV, weekDays } from '../../utils'
   import NumberPresenter from './StatPresenter.svelte'

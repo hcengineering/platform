@@ -13,13 +13,13 @@
 // limitations under the License.
 //
 
-import { Client, Doc, ObjQueryType, Ref, Space } from '@anticrm/core'
-import type { IntlString, Resource, StatusCode } from '@anticrm/platform'
-import { mergeIds } from '@anticrm/platform'
-import recruit, { recruitId } from '@anticrm/recruit'
-import { TagCategory } from '@anticrm/tags'
-import { AnyComponent } from '@anticrm/ui'
-import { Filter, FilterMode } from '@anticrm/view'
+import { Client, Doc, ObjQueryType, Ref, Space } from '@hcengineering/core'
+import type { IntlString, Resource, StatusCode } from '@hcengineering/platform'
+import { mergeIds } from '@hcengineering/platform'
+import recruit, { recruitId } from '@hcengineering/recruit'
+import { TagCategory } from '@hcengineering/tags'
+import { AnyComponent } from '@hcengineering/ui'
+import { Filter, FilterMode } from '@hcengineering/view'
 
 export default mergeIds(recruitId, recruit, {
   status: {

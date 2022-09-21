@@ -1,5 +1,5 @@
 {
-  "name": "@anticrm/calendar-resources",
+  "name": "@hcengineering/calendar-resources",
   "version": "0.6.0",
   "main": "src/index.ts",
   "author": "Anticrm Platform Contributors",
@@ -16,7 +16,7 @@
     "svelte-loader": "^3.1.3",
     "sass": "^1.53.0",
     "svelte-preprocess": "^4.10.7",
-    "@anticrm/platform-rig": "~0.6.0",
+    "@hcengineering/platform-rig": "~0.6.0",
     "@typescript-eslint/eslint-plugin": "^5.30.0",
     "@typescript-eslint/parser": "^5.30.0",
     "eslint-config-standard-with-typescript": "^21.0.1",
@@ -31,17 +31,17 @@
     "typescript": "^4.3.5"
   },
   "dependencies": {
-    "@anticrm/core": "~0.6.16",
-    "@anticrm/platform": "~0.6.6",
-    "@anticrm/ui": "~0.6.0",
-    "@anticrm/presentation": "~0.6.2",
-    "@anticrm/calendar": "~0.6.0",
+    "@hcengineering/core": "^0.6.17",
+    "@hcengineering/platform": "^0.6.7",
+    "@hcengineering/ui": "^0.6.2",
+    "@hcengineering/presentation": "~0.6.2",
+    "@hcengineering/calendar": "~0.6.0",
     "svelte": "^3.47",
-    "@anticrm/text-editor": "~0.6.0",
-    "@anticrm/contact": "~0.6.5",
-    "@anticrm/contact-resources": "~0.6.0",
-    "@anticrm/view-resources": "~0.6.0",
-    "@anticrm/view": "~0.6.0",
-    "@anticrm/workbench": "~0.6.1"
+    "@hcengineering/text-editor": "~0.6.0",
+    "@hcengineering/contact": "~0.6.5",
+    "@hcengineering/contact-resources": "~0.6.0",
+    "@hcengineering/view-resources": "~0.6.0",
+    "@hcengineering/view": "^0.6.1",
+    "@hcengineering/workbench": "~0.6.1"
   }
 }

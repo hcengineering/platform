@@ -13,12 +13,21 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Enum } from '@anticrm/core'
-  import presentation, { getClient, MessageBox } from '@anticrm/presentation'
-  import { ActionIcon, EditBox, IconAdd, IconAttachment, IconDelete, Label, ListView, showPopup } from '@anticrm/ui'
+  import { Enum } from '@hcengineering/core'
+  import presentation, { getClient, MessageBox } from '@hcengineering/presentation'
+  import {
+    ActionIcon,
+    EditBox,
+    IconAdd,
+    IconAttachment,
+    IconDelete,
+    Label,
+    ListView,
+    showPopup
+  } from '@hcengineering/ui'
   import setting from '../plugin'
   import Copy from './icons/Copy.svelte'
-  import view from '@anticrm/view-resources/src/plugin'
+  import view from '@hcengineering/view-resources/src/plugin'
 
   export let value: Enum
 

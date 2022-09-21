@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { DocumentUpdate, Ref, Timestamp } from '@anticrm/core'
-  import { Card, getClient } from '@anticrm/presentation'
-  import type { TodoItem } from '@anticrm/task'
-  import task from '@anticrm/task'
-  import { DatePicker, EditBox, Grid } from '@anticrm/ui'
+  import type { DocumentUpdate, Ref, Timestamp } from '@hcengineering/core'
+  import { Card, getClient } from '@hcengineering/presentation'
+  import type { TodoItem } from '@hcengineering/task'
+  import task from '@hcengineering/task'
+  import { DatePicker, EditBox, Grid } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
 

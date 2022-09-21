@@ -14,16 +14,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Attachments } from '@anticrm/attachment-resources'
-  import type { Ref } from '@anticrm/core'
-  import core from '@anticrm/core'
-  import { Panel } from '@anticrm/panel'
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import { Vacancy } from '@anticrm/recruit'
-  import { FullDescriptionBox } from '@anticrm/text-editor'
-  import tracker from '@anticrm/tracker'
-  import { Button, Component, EditBox, Grid, Icon, IconAdd, IconMoreH, Label, showPopup } from '@anticrm/ui'
-  import { ClassAttributeBar, ContextMenu } from '@anticrm/view-resources'
+  import { Attachments } from '@hcengineering/attachment-resources'
+  import type { Ref } from '@hcengineering/core'
+  import core from '@hcengineering/core'
+  import { Panel } from '@hcengineering/panel'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { Vacancy } from '@hcengineering/recruit'
+  import { FullDescriptionBox } from '@hcengineering/text-editor'
+  import tracker from '@hcengineering/tracker'
+  import { Button, Component, EditBox, Grid, Icon, IconAdd, IconMoreH, Label, showPopup } from '@hcengineering/ui'
+  import { ClassAttributeBar, ContextMenu } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
 

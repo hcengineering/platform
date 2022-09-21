@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Contact, Member, Organization } from '@anticrm/contact'
-  import { Ref } from '@anticrm/core'
-  import { createQuery } from '@anticrm/presentation'
+  import contact, { Contact, Member, Organization } from '@hcengineering/contact'
+  import { Ref } from '@hcengineering/core'
+  import { createQuery } from '@hcengineering/presentation'
   import { createEventDispatcher, onMount } from 'svelte'
   import ExpandRightDouble from './icons/ExpandRightDouble.svelte'
   import OrganizationCard from './OrganizationCard.svelte'

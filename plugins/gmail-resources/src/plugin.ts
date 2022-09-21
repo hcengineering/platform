@@ -14,9 +14,9 @@
 // limitations under the License.
 //
 
-import { IntlString, mergeIds } from '@anticrm/platform'
+import { IntlString, mergeIds } from '@hcengineering/platform'
 
-import gmail, { gmailId } from '@anticrm/gmail'
+import gmail, { gmailId } from '@hcengineering/gmail'
 
 export default mergeIds(gmailId, gmail, {
   string: {

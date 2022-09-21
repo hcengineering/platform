@@ -1,5 +1,5 @@
-import { IntlString } from '@anticrm/platform'
-import { getCurrentLocation, locationToUrl } from '@anticrm/ui'
+import { IntlString } from '@hcengineering/platform'
+import { getCurrentLocation, locationToUrl } from '@hcengineering/ui'
 import { writable } from 'svelte/store'
 
 export type ViewOptions = Record<string, any>

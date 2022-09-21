@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import core, { AttachedDoc, Doc, ServerStorage, Timestamp, Tx, TxCollectionCUD, TxCreateDoc } from '@anticrm/core'
-import { Middleware, SessionContext, TxMiddlewareResult } from '@anticrm/server-core'
+import core, { AttachedDoc, Doc, ServerStorage, Timestamp, Tx, TxCollectionCUD, TxCreateDoc } from '@hcengineering/core'
+import { Middleware, SessionContext, TxMiddlewareResult } from '@hcengineering/server-core'
 import { BaseMiddleware } from './base'
 
 /**

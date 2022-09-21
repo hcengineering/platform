@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Class, Ref, Space } from '@anticrm/core'
-  import { Card, createQuery, getClient } from '@anticrm/presentation'
-  import type { Task, TodoItem } from '@anticrm/task'
-  import task, { calcRank } from '@anticrm/task'
-  import { DatePicker, EditBox, Grid } from '@anticrm/ui'
+  import type { Class, Ref, Space } from '@hcengineering/core'
+  import { Card, createQuery, getClient } from '@hcengineering/presentation'
+  import type { Task, TodoItem } from '@hcengineering/task'
+  import task, { calcRank } from '@hcengineering/task'
+  import { DatePicker, EditBox, Grid } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
 

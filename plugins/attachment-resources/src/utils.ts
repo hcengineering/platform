@@ -14,9 +14,9 @@
 // limitations under the License.
 //
 
-import type { Class, Doc, Ref, Space, TxOperations as Client } from '@anticrm/core'
-import login from '@anticrm/login'
-import { getMetadata, setPlatformStatus, unknownError } from '@anticrm/platform'
+import type { Class, Doc, Ref, Space, TxOperations as Client } from '@hcengineering/core'
+import login from '@hcengineering/login'
+import { getMetadata, setPlatformStatus, unknownError } from '@hcengineering/platform'
 
 import attachment from './plugin'
 

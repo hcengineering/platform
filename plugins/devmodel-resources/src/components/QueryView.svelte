@@ -14,9 +14,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { ScrollBox, tooltip } from '@anticrm/ui'
-  import ActionIcon from '@anticrm/ui/src/components/ActionIcon.svelte'
-  import view from '@anticrm/view'
+  import { ScrollBox, tooltip } from '@hcengineering/ui'
+  import ActionIcon from '@hcengineering/ui/src/components/ActionIcon.svelte'
+  import view from '@hcengineering/view'
   import { queries, toIntl } from '..'
   import ContentPopup from './ContentPopup.svelte'
 </script>

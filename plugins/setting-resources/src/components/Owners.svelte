@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Employee, EmployeeAccount, formatName } from '@anticrm/contact'
-  import { PersonPresenter } from '@anticrm/contact-resources'
-  import { AccountRole, getCurrentAccount, Ref, SortingOrder } from '@anticrm/core'
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import { DropdownIntlItem, DropdownLabelsIntl, Icon, Label } from '@anticrm/ui'
+  import contact, { Employee, EmployeeAccount, formatName } from '@hcengineering/contact'
+  import { PersonPresenter } from '@hcengineering/contact-resources'
+  import { AccountRole, getCurrentAccount, Ref, SortingOrder } from '@hcengineering/core'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { DropdownIntlItem, DropdownLabelsIntl, Icon, Label } from '@hcengineering/ui'
   import setting from '../plugin'
 
   const client = getClient()

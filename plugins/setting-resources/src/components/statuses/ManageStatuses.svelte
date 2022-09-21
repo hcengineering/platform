@@ -14,11 +14,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getClient, MessageBox } from '@anticrm/presentation'
-  import { Label, Icon, showPopup, Component } from '@anticrm/ui'
-  import type { DoneStateTemplate, KanbanTemplate, KanbanTemplateSpace, StateTemplate } from '@anticrm/task'
+  import { getClient, MessageBox } from '@hcengineering/presentation'
+  import { Label, Icon, showPopup, Component } from '@hcengineering/ui'
+  import type { DoneStateTemplate, KanbanTemplate, KanbanTemplateSpace, StateTemplate } from '@hcengineering/task'
   import setting from '../../plugin'
-  import task from '@anticrm/task'
+  import task from '@hcengineering/task'
 
   import Folders from './Folders.svelte'
   import Templates from './Templates.svelte'

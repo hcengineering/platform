@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Attachment } from '@anticrm/attachment'
-  import { getFileUrl } from '@anticrm/presentation'
-  import { CircleButton, Progress } from '@anticrm/ui'
+  import type { Attachment } from '@hcengineering/attachment'
+  import { getFileUrl } from '@hcengineering/presentation'
+  import { CircleButton, Progress } from '@hcengineering/ui'
   import Play from './icons/Play.svelte'
   import Pause from './icons/Pause.svelte'
 

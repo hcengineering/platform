@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Ref } from '@anticrm/core'
-  import type { Application } from '@anticrm/workbench'
+  import type { Ref } from '@hcengineering/core'
+  import type { Application } from '@hcengineering/workbench'
   import { createEventDispatcher } from 'svelte'
   import AppItem from './AppItem.svelte'
-  import { Scroller } from '@anticrm/ui'
+  import { Scroller } from '@hcengineering/ui'
 
   export let active: Ref<Application> | undefined
   export let apps: Application[] = []

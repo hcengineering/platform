@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Timestamp } from '@anticrm/core'
-  import { DatePresenter, tooltip, getDaysDifference } from '@anticrm/ui'
+  import { Timestamp } from '@hcengineering/core'
+  import { DatePresenter, tooltip, getDaysDifference } from '@hcengineering/ui'
   import DueDatePopup from './DueDatePopup.svelte'
   import { getDueDateIconModifier } from '../utils'
 

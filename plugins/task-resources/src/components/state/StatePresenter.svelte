@@ -14,8 +14,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { State } from '@anticrm/task'
-  import { getPlatformColor } from '@anticrm/ui'
+  import type { State } from '@hcengineering/task'
+  import { getPlatformColor } from '@hcengineering/ui'
 
   export let value: State
 </script>

@@ -13,10 +13,10 @@
 // limitations under the License.
 //
 
-import { Metadata, plugin } from '@anticrm/platform'
-import type { Plugin, Resource } from '@anticrm/platform'
-import type { Client } from '@anticrm/core'
-// import type { LiveQuery } from '@anticrm/query'
+import { Metadata, plugin } from '@hcengineering/platform'
+import type { Plugin, Resource } from '@hcengineering/platform'
+import type { Client } from '@hcengineering/core'
+// import type { LiveQuery } from '@hcengineering/query'
 
 // export type Connection = Client & LiveQuery & TxOperations
 

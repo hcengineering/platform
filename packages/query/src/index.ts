@@ -45,7 +45,7 @@ import core, {
   TxResult,
   TxUpdateDoc,
   WithLookup
-} from '@anticrm/core'
+} from '@hcengineering/core'
 import { deepEqual } from 'fast-equals'
 
 const CACHE_SIZE = 20

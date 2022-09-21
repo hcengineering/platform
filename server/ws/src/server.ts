@@ -13,10 +13,10 @@
 // limitations under the License.
 //
 
-import core, { MeasureContext, Ref, Space, TxFactory } from '@anticrm/core'
-import { readRequest, Response, serialize, UNAUTHORIZED, unknownError } from '@anticrm/platform'
-import type { Pipeline } from '@anticrm/server-core'
-import { decodeToken, Token } from '@anticrm/server-token'
+import core, { MeasureContext, Ref, Space, TxFactory } from '@hcengineering/core'
+import { readRequest, Response, serialize, UNAUTHORIZED, unknownError } from '@hcengineering/platform'
+import type { Pipeline } from '@hcengineering/server-core'
+import { decodeToken, Token } from '@hcengineering/server-token'
 import { createServer, IncomingMessage } from 'http'
 import WebSocket, { Server } from 'ws'
 import { BroadcastCall, Session } from './types'

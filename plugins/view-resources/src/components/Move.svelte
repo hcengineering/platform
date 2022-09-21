@@ -14,15 +14,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Label, Button, Status as StatusControl } from '@anticrm/ui'
-  import { getClient } from '@anticrm/presentation'
+  import { Label, Button, Status as StatusControl } from '@hcengineering/ui'
+  import { getClient } from '@hcengineering/presentation'
 
-  import core, { AttachedDoc, Collection, Doc, Ref, Space, SortingOrder, Client, Class } from '@anticrm/core'
-  import { SpaceSelect } from '@anticrm/presentation'
+  import core, { AttachedDoc, Collection, Doc, Ref, Space, SortingOrder, Client, Class } from '@hcengineering/core'
+  import { SpaceSelect } from '@hcengineering/presentation'
   import { createEventDispatcher } from 'svelte'
   import view from '../plugin'
-  import task, { Task, calcRank } from '@anticrm/task'
-  import { getResource, OK, Resource, Status, translate } from '@anticrm/platform'
+  import task, { Task, calcRank } from '@hcengineering/task'
+  import { getResource, OK, Resource, Status, translate } from '@hcengineering/platform'
 
   export let object: Doc
 

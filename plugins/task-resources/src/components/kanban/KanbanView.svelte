@@ -14,13 +14,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, FindOptions, Ref, SortingOrder } from '@anticrm/core'
-  import { Kanban as KanbanUI } from '@anticrm/kanban'
-  import { getResource } from '@anticrm/platform'
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import type { Kanban, SpaceWithStates, State, Task } from '@anticrm/task'
-  import task from '@anticrm/task'
-  import { getEventPositionElement, showPopup } from '@anticrm/ui'
+  import { Class, Doc, FindOptions, Ref, SortingOrder } from '@hcengineering/core'
+  import { Kanban as KanbanUI } from '@hcengineering/kanban'
+  import { getResource } from '@hcengineering/platform'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import type { Kanban, SpaceWithStates, State, Task } from '@hcengineering/task'
+  import task from '@hcengineering/task'
+  import { getEventPositionElement, showPopup } from '@hcengineering/ui'
   import {
     ActionContext,
     FilterBar,
@@ -28,8 +28,8 @@
     ListSelectionProvider,
     SelectDirection,
     selectionStore
-  } from '@anticrm/view-resources'
-  import Menu from '@anticrm/view-resources/src/components/Menu.svelte'
+  } from '@hcengineering/view-resources'
+  import Menu from '@hcengineering/view-resources/src/components/Menu.svelte'
   import { onMount } from 'svelte'
   import KanbanDragDone from './KanbanDragDone.svelte'
 

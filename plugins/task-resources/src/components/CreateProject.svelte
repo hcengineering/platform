@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Ref } from '@anticrm/core'
-  import { getClient, SpaceCreateCard } from '@anticrm/presentation'
-  import { EditBox, Grid, IconFolder, ToggleWithLabel } from '@anticrm/ui'
+  import core, { Ref } from '@hcengineering/core'
+  import { getClient, SpaceCreateCard } from '@hcengineering/presentation'
+  import { EditBox, Grid, IconFolder, ToggleWithLabel } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import task, { createKanban, KanbanTemplate } from '@anticrm/task'
+  import task, { createKanban, KanbanTemplate } from '@hcengineering/task'
   import KanbanTemplateSelector from './kanban/KanbanTemplateSelector.svelte'
   import plugin from '../plugin'
 

@@ -14,10 +14,10 @@
 // limitations under the License.
 //
 
-import contact from '@anticrm/contact'
-import core, { DOMAIN_TX, Tx } from '@anticrm/core'
-import builder, { version } from '@anticrm/model-all'
-import { upgradeModel } from '@anticrm/server-tool'
+import contact from '@hcengineering/contact'
+import core, { DOMAIN_TX, Tx } from '@hcengineering/core'
+import builder, { version } from '@hcengineering/model-all'
+import { upgradeModel } from '@hcengineering/server-tool'
 import { existsSync } from 'fs'
 import { mkdir, open, readFile, writeFile } from 'fs/promises'
 import { Client } from 'minio'

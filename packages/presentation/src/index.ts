@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { addStringsLoader } from '@anticrm/platform'
+import { addStringsLoader } from '@hcengineering/platform'
 import { presentationId } from './plugin'
 export * from './attributes'
 export { default as AttributeBarEditor } from './components/AttributeBarEditor.svelte'

@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { CardCover } from '@anticrm/board'
-  import { Button, eventToHTMLElement, Icon, IconAdd, showPopup } from '@anticrm/ui'
+  import { CardCover } from '@hcengineering/board'
+  import { Button, eventToHTMLElement, Icon, IconAdd, showPopup } from '@hcengineering/ui'
   import CardCoverPicker from '../popups/CardCoverPicker.svelte'
   import CardCoverPresenter from '../presenters/CardCoverPresenter.svelte'
 

@@ -1,6 +1,6 @@
-import core, { Ref, TxOperations } from '@anticrm/core'
-import { MigrateOperation, MigrationClient, MigrationResult, MigrationUpgradeClient } from '@anticrm/model'
-import { TagElement, TagReference } from '@anticrm/tags'
+import core, { Ref, TxOperations } from '@hcengineering/core'
+import { MigrateOperation, MigrationClient, MigrationResult, MigrationUpgradeClient } from '@hcengineering/model'
+import { TagElement, TagReference } from '@hcengineering/tags'
 import { DOMAIN_TAGS } from './index'
 import tags from './plugin'
 

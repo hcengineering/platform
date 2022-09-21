@@ -1,5 +1,5 @@
-import { Class, Doc, Ref } from '@anticrm/core'
-import { Asset } from '@anticrm/platform'
+import { Class, Doc, Ref } from '@hcengineering/core'
+import { Asset } from '@hcengineering/platform'
 
 export enum ActionTab {
   Add = 'Add',

@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Reaction } from '@anticrm/chunter'
-  import { Account, Ref } from '@anticrm/core'
-  import { tooltip } from '@anticrm/ui'
+  import { Reaction } from '@hcengineering/chunter'
+  import { Account, Ref } from '@hcengineering/core'
+  import { tooltip } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import ReactionsTooltip from './ReactionsTooltip.svelte'
 

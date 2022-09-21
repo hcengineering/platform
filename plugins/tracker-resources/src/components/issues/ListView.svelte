@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { Scroller, issueSP, defaultSP } from '@anticrm/ui'
+  import { Scroller, issueSP, defaultSP } from '@hcengineering/ui'
   import IssuesListBrowser from './IssuesListBrowser.svelte'
   import tracker from '../../plugin'
-  import { Issue, IssueStatus, ViewOptions } from '@anticrm/tracker'
-  import { Class, Doc, DocumentQuery, Ref, SortingOrder, WithLookup } from '@anticrm/core'
+  import { Issue, IssueStatus, ViewOptions } from '@hcengineering/tracker'
+  import { Class, Doc, DocumentQuery, Ref, SortingOrder, WithLookup } from '@hcengineering/core'
   import {
     getCategories,
     groupBy as groupByFunc,
@@ -11,9 +11,9 @@
     issuesOrderKeyMap,
     issuesSortOrderMap
   } from '../../utils'
-  import { createQuery } from '@anticrm/presentation'
-  import contact, { Employee } from '@anticrm/contact'
-  import { BuildModelKey } from '@anticrm/view'
+  import { createQuery } from '@hcengineering/presentation'
+  import contact, { Employee } from '@hcengineering/contact'
+  import { BuildModelKey } from '@hcengineering/view'
 
   export let _class: Ref<Class<Doc>>
   export let config: (string | BuildModelKey)[]

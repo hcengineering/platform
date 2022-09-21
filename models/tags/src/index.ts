@@ -12,15 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Class, Doc, Domain, IndexKind, Ref } from '@anticrm/core'
-import { ArrOf, Builder, Index, Model, Prop, TypeNumber, TypeRef, TypeString, UX } from '@anticrm/model'
-import core, { TAttachedDoc, TDoc } from '@anticrm/model-core'
-import view from '@anticrm/model-view'
-import { Asset, IntlString } from '@anticrm/platform'
-import type { TagCategory, TagElement, TagReference } from '@anticrm/tags'
+import { Class, Doc, Domain, IndexKind, Ref } from '@hcengineering/core'
+import { ArrOf, Builder, Index, Model, Prop, TypeNumber, TypeRef, TypeString, UX } from '@hcengineering/model'
+import core, { TAttachedDoc, TDoc } from '@hcengineering/model-core'
+import view from '@hcengineering/model-view'
+import { Asset, IntlString } from '@hcengineering/platform'
+import type { TagCategory, TagElement, TagReference } from '@hcengineering/tags'
 import tags from './plugin'
 
-export { TagCategory, TagElement, TagReference } from '@anticrm/tags'
+export { TagCategory, TagElement, TagReference } from '@hcengineering/tags'
 export { tagsOperation } from './migration'
 export { tags as default }
 

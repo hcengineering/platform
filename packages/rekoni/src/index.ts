@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { getMetadata, PlatformError, unknownError } from '@anticrm/platform'
+import { getMetadata, PlatformError, unknownError } from '@hcengineering/platform'
 import plugin from './plugin'
 import { ReconiDocument } from './types'
 

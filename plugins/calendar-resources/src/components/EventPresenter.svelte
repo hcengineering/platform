@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Event } from '@anticrm/calendar'
-  import { DateTimeRangePresenter, showPanel } from '@anticrm/ui'
-  import view from '@anticrm/view'
+  import { Event } from '@hcengineering/calendar'
+  import { DateTimeRangePresenter, showPanel } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
 
   export let value: Event
   export let inline: boolean = false

@@ -26,9 +26,9 @@ import core, {
   TxCUD,
   TxProcessor,
   TxRemoveDoc
-} from '@anticrm/core'
-import { TriggerControl } from '@anticrm/server-core'
-import tags, { TagElement, TagReference } from '@anticrm/tags'
+} from '@hcengineering/core'
+import { TriggerControl } from '@hcengineering/server-core'
+import tags, { TagElement, TagReference } from '@hcengineering/tags'
 
 /**
  * @public

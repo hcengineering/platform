@@ -14,8 +14,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { IntlString } from '@anticrm/platform'
-  import { Button, IconClose, Label, MiniToggle } from '@anticrm/ui'
+  import type { IntlString } from '@hcengineering/platform'
+  import { Button, IconClose, Label, MiniToggle } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation from '..'
 

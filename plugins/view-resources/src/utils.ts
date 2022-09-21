@@ -26,13 +26,19 @@ import core, {
   Ref,
   RefTo,
   TxOperations
-} from '@anticrm/core'
-import type { IntlString } from '@anticrm/platform'
-import { getResource } from '@anticrm/platform'
-import { AttributeCategory, getAttributePresenterClass, KeyedAttribute } from '@anticrm/presentation'
-import { AnyComponent, ErrorPresenter, getCurrentLocation, getPlatformColorForText, locationToUrl } from '@anticrm/ui'
-import type { BuildModelOptions, Viewlet } from '@anticrm/view'
-import view, { AttributeModel, BuildModelKey } from '@anticrm/view'
+} from '@hcengineering/core'
+import type { IntlString } from '@hcengineering/platform'
+import { getResource } from '@hcengineering/platform'
+import { AttributeCategory, getAttributePresenterClass, KeyedAttribute } from '@hcengineering/presentation'
+import {
+  AnyComponent,
+  ErrorPresenter,
+  getCurrentLocation,
+  getPlatformColorForText,
+  locationToUrl
+} from '@hcengineering/ui'
+import type { BuildModelOptions, Viewlet } from '@hcengineering/view'
+import view, { AttributeModel, BuildModelKey } from '@hcengineering/view'
 import plugin from './plugin'
 
 /**

@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, WithLookup } from '@anticrm/core'
-  import { AttributeBarEditor, createQuery, getClient, KeyedAttribute } from '@anticrm/presentation'
-  import tags from '@anticrm/tags'
-  import type { Issue, IssueStatus } from '@anticrm/tracker'
-  import { Component, Label } from '@anticrm/ui'
-  import { getFiltredKeys, isCollectionAttr } from '@anticrm/view-resources/src/utils'
+  import { Doc, WithLookup } from '@hcengineering/core'
+  import { AttributeBarEditor, createQuery, getClient, KeyedAttribute } from '@hcengineering/presentation'
+  import tags from '@hcengineering/tags'
+  import type { Issue, IssueStatus } from '@hcengineering/tracker'
+  import { Component, Label } from '@hcengineering/ui'
+  import { getFiltredKeys, isCollectionAttr } from '@hcengineering/view-resources/src/utils'
   import tracker from '../../../plugin'
   import ProjectEditor from '../../projects/ProjectEditor.svelte'
   import SprintEditor from '../../sprints/SprintEditor.svelte'

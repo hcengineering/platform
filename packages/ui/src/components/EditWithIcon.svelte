@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Asset, IntlString } from '@anticrm/platform'
-  import { translate } from '@anticrm/platform'
+  import type { Asset, IntlString } from '@hcengineering/platform'
+  import { translate } from '@hcengineering/platform'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../plugin'
   import type { AnySvelteComponent } from '../types'

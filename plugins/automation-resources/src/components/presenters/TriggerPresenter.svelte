@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { getClient } from '@anticrm/presentation'
-  import { Icon, Label } from '@anticrm/ui'
-  import { ClassPresenter } from '@anticrm/view-resources'
+  import { getClient } from '@hcengineering/presentation'
+  import { Icon, Label } from '@hcengineering/ui'
+  import { ClassPresenter } from '@hcengineering/view-resources'
   import { Trigger } from '../../models'
   import automation from '../../plugin'
 

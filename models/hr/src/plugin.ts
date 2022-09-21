@@ -13,12 +13,12 @@
 // limitations under the License.
 //
 
-import { Ref } from '@anticrm/core'
-import { hrId } from '@anticrm/hr'
-import hr from '@anticrm/hr-resources/src/plugin'
-import { IntlString, mergeIds } from '@anticrm/platform'
-import { AnyComponent } from '@anticrm/ui'
-import { Action, ActionCategory } from '@anticrm/view'
+import { Ref } from '@hcengineering/core'
+import { hrId } from '@hcengineering/hr'
+import hr from '@hcengineering/hr-resources/src/plugin'
+import { IntlString, mergeIds } from '@hcengineering/platform'
+import { AnyComponent } from '@hcengineering/ui'
+import { Action, ActionCategory } from '@hcengineering/view'
 
 export default mergeIds(hrId, hr, {
   string: {

@@ -14,9 +14,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { DocumentQuery } from '@anticrm/core'
-  import { Button, Icon, Label, Scroller, SearchEdit, showPopup, IconAdd, eventToHTMLElement } from '@anticrm/ui'
-  import type { Category } from '@anticrm/inventory'
+  import { DocumentQuery } from '@hcengineering/core'
+  import { Button, Icon, Label, Scroller, SearchEdit, showPopup, IconAdd, eventToHTMLElement } from '@hcengineering/ui'
+  import type { Category } from '@hcengineering/inventory'
   import inventory from '../plugin'
   import CreateCategory from './CreateCategory.svelte'
   import HierarchyView from './HierarchyView.svelte'

@@ -1,9 +1,9 @@
 {
-  "name": "@anticrm/dev-account",
+  "name": "@hcengineering/dev-account",
   "entries": [
     {
       "version": "0.6.7",
-      "tag": "@anticrm/dev-account_v0.6.7",
+      "tag": "@hcengineering/dev-account_v0.6.7",
       "date": "Mon, 09 Aug 2021 08:00:44 GMT",
       "comments": {
         "patch": [
@@ -15,7 +15,7 @@
     },
     {
       "version": "0.6.6",
-      "tag": "@anticrm/dev-account_v0.6.6",
+      "tag": "@hcengineering/dev-account_v0.6.6",
       "date": "Sun, 08 Aug 2021 12:00:07 GMT",
       "comments": {
         "patch": [
@@ -27,7 +27,7 @@
     },
     {
       "version": "0.6.5",
-      "tag": "@anticrm/dev-account_v0.6.5",
+      "tag": "@hcengineering/dev-account_v0.6.5",
       "date": "Sun, 08 Aug 2021 11:43:36 GMT",
       "comments": {
         "patch": [
@@ -39,7 +39,7 @@
     },
     {
       "version": "0.6.4",
-      "tag": "@anticrm/dev-account_v0.6.4",
+      "tag": "@hcengineering/dev-account_v0.6.4",
       "date": "Sun, 08 Aug 2021 11:38:34 GMT",
       "comments": {
         "patch": [
@@ -51,7 +51,7 @@
     },
     {
       "version": "0.6.3",
-      "tag": "@anticrm/dev-account_v0.6.3",
+      "tag": "@hcengineering/dev-account_v0.6.3",
       "date": "Sun, 08 Aug 2021 10:21:31 GMT",
       "comments": {
         "patch": [
@@ -63,7 +63,7 @@
     },
     {
       "version": "0.6.2",
-      "tag": "@anticrm/dev-account_v0.6.2",
+      "tag": "@hcengineering/dev-account_v0.6.2",
       "date": "Sun, 08 Aug 2021 10:14:57 GMT",
       "comments": {
         "patch": [
@@ -73,14 +73,14 @@
         ],
         "dependency": [
           {
-            "comment": "Updating dependency \"@anticrm/platform\" from `~0.6.0` to `~0.6.4`"
+            "comment": "Updating dependency \"@hcengineering/platform\" from `~0.6.0` to `~0.6.4`"
           }
         ]
       }
     },
     {
       "version": "0.6.1",
-      "tag": "@anticrm/dev-account_v0.6.1",
+      "tag": "@hcengineering/dev-account_v0.6.1",
       "date": "Sun, 08 Aug 2021 09:33:36 GMT",
       "comments": {
         "patch": [

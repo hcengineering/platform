@@ -14,12 +14,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Account, generateId, Ref } from '@anticrm/core'
-  import { Card, getClient } from '@anticrm/presentation'
-  import { EditBox, Grid } from '@anticrm/ui'
+  import { Account, generateId, Ref } from '@hcengineering/core'
+  import { Card, getClient } from '@hcengineering/presentation'
+  import { EditBox, Grid } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import inventory from '../plugin'
-  import { Product, Variant } from '@anticrm/inventory'
+  import { Product, Variant } from '@hcengineering/inventory'
 
   export let product: Ref<Product>
 

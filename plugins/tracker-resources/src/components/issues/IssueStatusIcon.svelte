@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { WithLookup, SortingOrder } from '@anticrm/core'
-  import { getClient } from '@anticrm/presentation'
-  import { IssueStatus, IssueStatusCategory } from '@anticrm/tracker'
-  import { getPlatformColor, IconSize } from '@anticrm/ui'
+  import { WithLookup, SortingOrder } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
+  import { IssueStatus, IssueStatusCategory } from '@hcengineering/tracker'
+  import { getPlatformColor, IconSize } from '@hcengineering/ui'
   import tracker from '../../plugin'
   import StatusIcon from '../icons/StatusIcon.svelte'
 

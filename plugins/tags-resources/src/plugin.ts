@@ -11,11 +11,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { ObjQueryType } from '@anticrm/core'
-import { IntlString, mergeIds, Resource } from '@anticrm/platform'
-import tags, { tagsId } from '@anticrm/tags'
-import { AnyComponent } from '@anticrm/ui'
-import { Filter } from '@anticrm/view'
+import { ObjQueryType } from '@hcengineering/core'
+import { IntlString, mergeIds, Resource } from '@hcengineering/platform'
+import tags, { tagsId } from '@hcengineering/tags'
+import { AnyComponent } from '@hcengineering/ui'
+import { Filter } from '@hcengineering/view'
 
 export default mergeIds(tagsId, tags, {
   component: {

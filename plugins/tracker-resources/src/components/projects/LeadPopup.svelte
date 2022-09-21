@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Employee } from '@anticrm/contact'
-  import { Avatar } from '@anticrm/presentation'
-  import { Label } from '@anticrm/ui'
+  import { Employee } from '@hcengineering/contact'
+  import { Avatar } from '@hcengineering/presentation'
+  import { Label } from '@hcengineering/ui'
   import tracker from '../../plugin'
 
   export let lead: Employee

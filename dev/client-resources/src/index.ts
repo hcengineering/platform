@@ -13,11 +13,11 @@
 // limitations under the License.
 //
 
-import { createClient, Client } from '@anticrm/core'
-import { getMetadata, getResource } from '@anticrm/platform'
-import { migrateOperations } from '@anticrm/model-all'
+import { createClient, Client } from '@hcengineering/core'
+import { getMetadata, getResource } from '@hcengineering/platform'
+import { migrateOperations } from '@hcengineering/model-all'
 import { connect } from './connection'
-import clientPlugin from '@anticrm/client'
+import clientPlugin from '@hcengineering/client'
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => {

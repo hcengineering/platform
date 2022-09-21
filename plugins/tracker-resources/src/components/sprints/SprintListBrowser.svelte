@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Class, Doc, Ref } from '@anticrm/core'
-  import { Sprint } from '@anticrm/tracker'
-  import { BuildModelKey } from '@anticrm/view'
+  import type { Class, Doc, Ref } from '@hcengineering/core'
+  import { Sprint } from '@hcengineering/tracker'
+  import { BuildModelKey } from '@hcengineering/view'
   import {
     ActionContext,
     focusStore,
@@ -23,7 +23,7 @@
     LoadingProps,
     SelectDirection,
     selectionStore
-  } from '@anticrm/view-resources'
+  } from '@hcengineering/view-resources'
   import { onMount } from 'svelte'
   import SprintList from './SprintList.svelte'
 

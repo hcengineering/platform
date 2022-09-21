@@ -14,10 +14,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, SortingOrder } from '@anticrm/core'
-  import { createQuery } from '@anticrm/presentation'
-  import task, { SpaceWithStates, State } from '@anticrm/task'
-  import { getPlatformColor } from '@anticrm/ui'
+  import { Ref, SortingOrder } from '@hcengineering/core'
+  import { createQuery } from '@hcengineering/presentation'
+  import task, { SpaceWithStates, State } from '@hcengineering/task'
+  import { getPlatformColor } from '@hcengineering/ui'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import StatesBarElement from './StatesBarElement.svelte'
   import type { StatesBarPosition } from '../..'

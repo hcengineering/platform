@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { closeTooltip } from '@anticrm/ui'
+  import { closeTooltip } from '@hcengineering/ui'
 
-  import { Filter } from '@anticrm/view'
+  import { Filter } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import view from '../../plugin'
   import TimestampPresenter from '../TimestampPresenter.svelte'

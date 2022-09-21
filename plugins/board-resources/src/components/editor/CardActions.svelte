@@ -14,10 +14,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Card } from '@anticrm/board'
-  import board from '@anticrm/board'
-  import { getClient } from '@anticrm/presentation'
-  import { CheckBox, Label } from '@anticrm/ui'
+  import type { Card } from '@hcengineering/board'
+  import board from '@hcengineering/board'
+  import { getClient } from '@hcengineering/presentation'
+  import { CheckBox, Label } from '@hcengineering/ui'
   import plugin from '../../plugin'
 
   export let value: Card

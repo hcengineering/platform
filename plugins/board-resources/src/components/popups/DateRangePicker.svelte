@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { Card } from '@anticrm/board'
-  import calendar from '@anticrm/calendar'
-  import { DocumentUpdate } from '@anticrm/core'
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import task from '@anticrm/task'
-  import { Label, Button, DateRangePresenter, Component } from '@anticrm/ui'
+  import { Card } from '@hcengineering/board'
+  import calendar from '@hcengineering/calendar'
+  import { DocumentUpdate } from '@hcengineering/core'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import task from '@hcengineering/task'
+  import { Label, Button, DateRangePresenter, Component } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
   import board from '../../plugin'

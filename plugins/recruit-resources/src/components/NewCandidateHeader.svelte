@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Button, showPopup } from '@anticrm/ui'
+  import { Button, showPopup } from '@hcengineering/ui'
   import recruit from '../plugin'
   import CreateCandidate from './CreateCandidate.svelte'
 

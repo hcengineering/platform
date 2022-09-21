@@ -13,22 +13,22 @@
         ],
         "dependency": [
           {
-            "comment": "Updating dependency \"@anticrm/login\" from `~0.6.0` to `~0.6.1`"
+            "comment": "Updating dependency \"@hcengineering/login\" from `~0.6.0` to `~0.6.1`"
           },
           {
-            "comment": "Updating dependency \"@anticrm/login-resources\" from `~0.6.0` to `~0.6.1`"
+            "comment": "Updating dependency \"@hcengineering/login-resources\" from `~0.6.0` to `~0.6.1`"
           },
           {
-            "comment": "Updating dependency \"@anticrm/client\" from `~0.6.0` to `~0.6.1`"
+            "comment": "Updating dependency \"@hcengineering/client\" from `~0.6.0` to `~0.6.1`"
           },
           {
-            "comment": "Updating dependency \"@anticrm/workbench\" from `~0.6.0` to `~0.6.1`"
+            "comment": "Updating dependency \"@hcengineering/workbench\" from `~0.6.0` to `~0.6.1`"
           },
           {
-            "comment": "Updating dependency \"@anticrm/workbench-resources\" from `~0.6.0` to `~0.6.1`"
+            "comment": "Updating dependency \"@hcengineering/workbench-resources\" from `~0.6.0` to `~0.6.1`"
           },
           {
-            "comment": "Updating dependency \"@anticrm/client-resources\" from `~0.6.0` to `~0.6.1`"
+            "comment": "Updating dependency \"@hcengineering/client-resources\" from `~0.6.0` to `~0.6.1`"
           }
         ]
       }
@@ -40,7 +40,7 @@
       "comments": {
         "dependency": [
           {
-            "comment": "Updating dependency \"@anticrm/platform\" from `~0.6.3` to `~0.6.4`"
+            "comment": "Updating dependency \"@hcengineering/platform\" from `~0.6.3` to `~0.6.4`"
           }
         ]
       }

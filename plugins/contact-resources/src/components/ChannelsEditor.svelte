@@ -14,12 +14,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Class, Doc, Ref } from '@anticrm/core'
-  import { createQuery, getClient } from '@anticrm/presentation'
-  import { ButtonKind, ButtonSize, closeTooltip } from '@anticrm/ui'
+  import type { Class, Doc, Ref } from '@hcengineering/core'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { ButtonKind, ButtonSize, closeTooltip } from '@hcengineering/ui'
 
-  import { ChannelProvider, Channel } from '@anticrm/contact'
-  import { showPopup } from '@anticrm/ui'
+  import { ChannelProvider, Channel } from '@hcengineering/contact'
+  import { showPopup } from '@hcengineering/ui'
   import contact from '../plugin'
   import ChannelsDropdown from './ChannelsDropdown.svelte'
 

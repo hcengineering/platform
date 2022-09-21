@@ -14,11 +14,11 @@
 // limitations under the License.
 //
 
-import attachment from '@anticrm/attachment'
-import { Account, Doc, Ref, Space } from '@anticrm/core'
-import { createElasticAdapter } from '@anticrm/elastic'
-import type { IndexedDoc } from '@anticrm/server-core'
-import { decodeToken, Token } from '@anticrm/server-token'
+import attachment from '@hcengineering/attachment'
+import { Account, Doc, Ref, Space } from '@hcengineering/core'
+import { createElasticAdapter } from '@hcengineering/elastic'
+import type { IndexedDoc } from '@hcengineering/server-core'
+import { decodeToken, Token } from '@hcengineering/server-token'
 import bp from 'body-parser'
 import compression from 'compression'
 import cors from 'cors'

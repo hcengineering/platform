@@ -13,13 +13,13 @@
 // limitations under the License.
 //
 
-import { Builder } from '@anticrm/model'
+import { Builder } from '@hcengineering/model'
 
-import core from '@anticrm/core'
-import recruit from '@anticrm/recruit'
-import view from '@anticrm/view'
-import serverRecruit from '@anticrm/server-recruit'
-import serverCore from '@anticrm/server-core'
+import core from '@hcengineering/core'
+import recruit from '@hcengineering/recruit'
+import view from '@hcengineering/view'
+import serverRecruit from '@hcengineering/server-recruit'
+import serverCore from '@hcengineering/server-core'
 
 export function createModel (builder: Builder): void {
   builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.HTMLPresenter, {

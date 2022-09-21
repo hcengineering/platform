@@ -14,8 +14,8 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { IssueStatus } from '@anticrm/tracker'
-  import { Icon, Label, IconEdit, IconClose, tooltip } from '@anticrm/ui'
+  import { IssueStatus } from '@hcengineering/tracker'
+  import { Icon, Label, IconEdit, IconClose, tooltip } from '@hcengineering/ui'
   import tracker from '../../plugin'
   import Circles from '../icons/Circles.svelte'
   import IssueStatusIcon from '../issues/IssueStatusIcon.svelte'

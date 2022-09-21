@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { CommandType, UpdateDocCommand } from '@anticrm/automation'
-  import core, { AnyAttribute, Class, Doc, Ref } from '@anticrm/core'
-  import ui, { Button, EditBox, IconAdd, Label } from '@anticrm/ui'
-  import { BooleanEditor, NumberEditor } from '@anticrm/view-resources'
+  import { CommandType, UpdateDocCommand } from '@hcengineering/automation'
+  import core, { AnyAttribute, Class, Doc, Ref } from '@hcengineering/core'
+  import ui, { Button, EditBox, IconAdd, Label } from '@hcengineering/ui'
+  import { BooleanEditor, NumberEditor } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
 
   import automation from '../../plugin'

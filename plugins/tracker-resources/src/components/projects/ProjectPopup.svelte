@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Class, Doc, DocumentQuery, Ref } from '@anticrm/core'
-  import { ObjectCreate, ObjectPopup } from '@anticrm/presentation'
-  import { Project } from '@anticrm/tracker'
+  import type { Class, Doc, DocumentQuery, Ref } from '@hcengineering/core'
+  import { ObjectCreate, ObjectPopup } from '@hcengineering/presentation'
+  import { Project } from '@hcengineering/tracker'
   import ProjectTitlePresenter from './ProjectTitlePresenter.svelte'
 
   export let _class: Ref<Class<Project>>

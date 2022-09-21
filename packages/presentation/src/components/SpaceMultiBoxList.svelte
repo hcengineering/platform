@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Ref, Space } from '@anticrm/core'
-  import type { IntlString } from '@anticrm/platform'
-  import { translate } from '@anticrm/platform'
-  import type { ButtonKind, ButtonSize, TooltipAlignment } from '@anticrm/ui'
-  import { showPopup, Button } from '@anticrm/ui'
+  import { Class, Ref, Space } from '@hcengineering/core'
+  import type { IntlString } from '@hcengineering/platform'
+  import { translate } from '@hcengineering/platform'
+  import type { ButtonKind, ButtonSize, TooltipAlignment } from '@hcengineering/ui'
+  import { showPopup, Button } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation, { SpacesMultiPopup } from '..'
 

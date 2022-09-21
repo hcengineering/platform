@@ -14,9 +14,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { SharedMessage } from '@anticrm/gmail'
-  import { AttachmentsPresenter } from '@anticrm/attachment-resources'
-  import { CheckBox, Label } from '@anticrm/ui'
+  import type { SharedMessage } from '@hcengineering/gmail'
+  import { AttachmentsPresenter } from '@hcengineering/attachment-resources'
+  import { CheckBox, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { getTime } from '../utils'
   import gmail from '../plugin'

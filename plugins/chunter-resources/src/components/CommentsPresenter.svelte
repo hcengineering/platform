@@ -14,9 +14,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import chunter from '@anticrm/chunter'
-  import type { Doc } from '@anticrm/core'
-  import { IconThread, tooltip } from '@anticrm/ui'
+  import chunter from '@hcengineering/chunter'
+  import type { Doc } from '@hcengineering/core'
+  import { IconThread, tooltip } from '@hcengineering/ui'
   import CommentPopup from './CommentPopup.svelte'
 
   export let value: number | undefined

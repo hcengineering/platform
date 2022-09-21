@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { Class, Doc, DocumentQuery, FindOptions, Hierarchy, Ref } from '@anticrm/core'
-  import { Asset, IntlString } from '@anticrm/platform'
-  import { getClient, ObjectPopup, updateAttribute } from '@anticrm/presentation'
-  import { Label, SelectPopup } from '@anticrm/ui'
+  import { Class, Doc, DocumentQuery, FindOptions, Hierarchy, Ref } from '@hcengineering/core'
+  import { Asset, IntlString } from '@hcengineering/platform'
+  import { getClient, ObjectPopup, updateAttribute } from '@hcengineering/presentation'
+  import { Label, SelectPopup } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import view from '../plugin'
   import ObjectPresenter from './ObjectPresenter.svelte'

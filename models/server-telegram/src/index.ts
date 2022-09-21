@@ -13,12 +13,12 @@
 // limitations under the License.
 //
 
-import { Builder } from '@anticrm/model'
+import { Builder } from '@hcengineering/model'
 
-import core, { Class, Doc } from '@anticrm/core'
-import serverCore, { ObjectDDParticipant } from '@anticrm/server-core'
-import contact from '@anticrm/contact'
-import serverTelegram from '@anticrm/server-telegram'
+import core, { Class, Doc } from '@hcengineering/core'
+import serverCore, { ObjectDDParticipant } from '@hcengineering/server-core'
+import contact from '@hcengineering/contact'
+import serverTelegram from '@hcengineering/server-telegram'
 
 export function createModel (builder: Builder): void {
   builder.mixin<Class<Doc>, ObjectDDParticipant>(

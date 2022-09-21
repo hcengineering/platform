@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { DocumentQuery, Ref } from '@anticrm/core'
-  import { createQuery } from '@anticrm/presentation'
-  import { Issue, Team } from '@anticrm/tracker'
+  import { DocumentQuery, Ref } from '@hcengineering/core'
+  import { createQuery } from '@hcengineering/presentation'
+  import { Issue, Team } from '@hcengineering/tracker'
   import tracker from '../../plugin'
   import IssuesView from './IssuesView.svelte'
 

@@ -1,5 +1,5 @@
 {
-  "name": "@anticrm/server-backup",
+  "name": "@hcengineering/server-backup",
   "version": "0.6.0",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
@@ -12,7 +12,7 @@
     "format": "prettier --write src && eslint --fix src"
   },
   "devDependencies": {
-    "@anticrm/platform-rig": "~0.6.0",
+    "@hcengineering/platform-rig": "~0.6.0",
     "@types/heft-jest": "^1.0.3",
     "@typescript-eslint/eslint-plugin": "^5.30.0",
     "eslint-plugin-import": "^2.26.0",
@@ -29,14 +29,14 @@
     "@types/minio": "~7.0.11"
   },
   "dependencies": {
-    "@anticrm/platform": "~0.6.6",
-    "@anticrm/core": "~0.6.16",
-    "@anticrm/contact": "~0.6.5",
-    "@anticrm/client-resources": "~0.6.4",
-    "@anticrm/client": "~0.6.2",
-    "@anticrm/model": "~0.6.0",
+    "@hcengineering/platform": "^0.6.7",
+    "@hcengineering/core": "^0.6.17",
+    "@hcengineering/contact": "~0.6.5",
+    "@hcengineering/client-resources": "~0.6.4",
+    "@hcengineering/client": "^0.6.3",
+    "@hcengineering/model": "~0.6.0",
     "tar-stream": "^2.2.0",
-    "@anticrm/server-tool": "~0.6.0",
+    "@hcengineering/server-tool": "~0.6.0",
     "minio": "^7.0.26"
   }
 }

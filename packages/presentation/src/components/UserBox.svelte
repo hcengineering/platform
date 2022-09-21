@@ -14,9 +14,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Contact, formatName } from '@anticrm/contact'
-  import type { Class, DocumentQuery, FindOptions, Ref } from '@anticrm/core'
-  import { Asset, getEmbeddedLabel, IntlString } from '@anticrm/platform'
+  import contact, { Contact, formatName } from '@hcengineering/contact'
+  import type { Class, DocumentQuery, FindOptions, Ref } from '@hcengineering/core'
+  import { Asset, getEmbeddedLabel, IntlString } from '@hcengineering/platform'
   import {
     ActionIcon,
     AnySvelteComponent,
@@ -32,8 +32,8 @@
     showPanel,
     showPopup,
     tooltip
-  } from '@anticrm/ui'
-  import view from '@anticrm/view'
+  } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import presentation from '..'
   import { ObjectCreate } from '../types'

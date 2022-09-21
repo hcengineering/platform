@@ -14,10 +14,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { IntlString } from '@anticrm/platform'
+  import type { IntlString } from '@hcengineering/platform'
   import { createEventDispatcher } from 'svelte'
-  import { EditBox } from '@anticrm/ui'
-  import type { EditStyle } from '@anticrm/ui'
+  import { EditBox } from '@hcengineering/ui'
+  import type { EditStyle } from '@hcengineering/ui'
 
   export let value: string | number | undefined
   export let format: 'text' | 'password' | 'number'

@@ -14,12 +14,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, DocumentQuery, FindOptions, Ref, SortingOrder } from '@anticrm/core'
-  import { createQuery } from '@anticrm/presentation'
-  import { DoneState, SpaceWithStates, State, Task } from '@anticrm/task'
-  import { TabList } from '@anticrm/ui'
-  import type { TabItem } from '@anticrm/ui'
-  import { TableBrowser } from '@anticrm/view-resources'
+  import { Class, DocumentQuery, FindOptions, Ref, SortingOrder } from '@hcengineering/core'
+  import { createQuery } from '@hcengineering/presentation'
+  import { DoneState, SpaceWithStates, State, Task } from '@hcengineering/task'
+  import { TabList } from '@hcengineering/ui'
+  import type { TabItem } from '@hcengineering/ui'
+  import { TableBrowser } from '@hcengineering/view-resources'
   import task from '../plugin'
   import StatesBar from './state/StatesBar.svelte'
   import Won from './icons/Won.svelte'

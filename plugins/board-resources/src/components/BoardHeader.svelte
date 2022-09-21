@@ -1,9 +1,9 @@
 <script lang="ts">
-  import core, { Ref, Space, WithLookup } from '@anticrm/core'
-  import { Button, getCurrentLocation, navigate, location, TabList, Icon } from '@anticrm/ui'
-  import { createQuery } from '@anticrm/presentation'
+  import core, { Ref, Space, WithLookup } from '@hcengineering/core'
+  import { Button, getCurrentLocation, navigate, location, TabList, Icon } from '@hcengineering/ui'
+  import { createQuery } from '@hcengineering/presentation'
   import board from '../plugin'
-  import { Viewlet } from '@anticrm/view'
+  import { Viewlet } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
 
   export let spaceId: Ref<Space> | undefined

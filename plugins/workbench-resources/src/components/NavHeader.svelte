@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { IntlString } from '@anticrm/platform'
-  import { getCurrentLocation, Label } from '@anticrm/ui'
+  import type { IntlString } from '@hcengineering/platform'
+  import { getCurrentLocation, Label } from '@hcengineering/ui'
 
   export let label: IntlString
   // export let action: () => Promise<void> | void

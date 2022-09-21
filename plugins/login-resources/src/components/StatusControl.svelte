@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Status } from '@anticrm/platform'
-  import { Severity } from '@anticrm/platform'
+  import type { Status } from '@hcengineering/platform'
+  import { Severity } from '@hcengineering/platform'
 
-  import { Status as StatusControl } from '@anticrm/ui'
+  import { Status as StatusControl } from '@hcengineering/ui'
 
   export let status: Status
 </script>

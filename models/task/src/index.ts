@@ -13,9 +13,20 @@
 // limitations under the License.
 //
 
-import type { Employee } from '@anticrm/contact'
-import contact from '@anticrm/contact'
-import { Arr, Class, Doc, Domain, DOMAIN_MODEL, FindOptions, IndexKind, Ref, Space, Timestamp } from '@anticrm/core'
+import type { Employee } from '@hcengineering/contact'
+import contact from '@hcengineering/contact'
+import {
+  Arr,
+  Class,
+  Doc,
+  Domain,
+  DOMAIN_MODEL,
+  FindOptions,
+  IndexKind,
+  Ref,
+  Space,
+  Timestamp
+} from '@hcengineering/core'
 import {
   Builder,
   Collection,
@@ -31,14 +42,14 @@ import {
   TypeRef,
   TypeString,
   UX
-} from '@anticrm/model'
-import attachment from '@anticrm/model-attachment'
-import chunter from '@anticrm/model-chunter'
-import core, { TAttachedDoc, TClass, TDoc, TSpace } from '@anticrm/model-core'
-import view, { actionTemplates as viewTemplates, createAction, template } from '@anticrm/model-view'
-import notification from '@anticrm/notification'
-import { IntlString } from '@anticrm/platform'
-import tags from '@anticrm/tags'
+} from '@hcengineering/model'
+import attachment from '@hcengineering/model-attachment'
+import chunter from '@hcengineering/model-chunter'
+import core, { TAttachedDoc, TClass, TDoc, TSpace } from '@hcengineering/model-core'
+import view, { actionTemplates as viewTemplates, createAction, template } from '@hcengineering/model-view'
+import notification from '@hcengineering/notification'
+import { IntlString } from '@hcengineering/platform'
+import tags from '@hcengineering/tags'
 import {
   DOMAIN_STATE,
   DoneState,
@@ -58,9 +69,9 @@ import {
   TodoItem,
   WonState,
   WonStateTemplate
-} from '@anticrm/task'
-import { AnyComponent } from '@anticrm/ui'
-import { ViewAction } from '@anticrm/view'
+} from '@hcengineering/task'
+import { AnyComponent } from '@hcengineering/ui'
+import { ViewAction } from '@hcengineering/view'
 import task from './plugin'
 
 export { createKanbanTemplate, createSequence, taskOperation } from './migration'

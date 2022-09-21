@@ -15,11 +15,11 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
 
-  import { getClient, Card } from '@anticrm/presentation'
-  import { DirectMessage } from '@anticrm/chunter'
-  import workbench from '@anticrm/workbench'
-  import { getResource } from '@anticrm/platform'
-  import { EditBox, IconFolder } from '@anticrm/ui'
+  import { getClient, Card } from '@hcengineering/presentation'
+  import { DirectMessage } from '@hcengineering/chunter'
+  import workbench from '@hcengineering/workbench'
+  import { getResource } from '@hcengineering/platform'
+  import { EditBox, IconFolder } from '@hcengineering/ui'
 
   import chunter from '../plugin'
 

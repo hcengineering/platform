@@ -13,9 +13,9 @@
 // limitations under the License.
 //
 
-import core, { AnyAttribute, Data, Enum, EnumOf, Ref, TxOperations } from '@anticrm/core'
-import lead from '@anticrm/lead'
-import { getEmbeddedLabel } from '@anticrm/platform'
+import core, { AnyAttribute, Data, Enum, EnumOf, Ref, TxOperations } from '@hcengineering/core'
+import lead from '@hcengineering/lead'
+import { getEmbeddedLabel } from '@hcengineering/platform'
 import { FieldType } from './types'
 
 export async function updateClasses (

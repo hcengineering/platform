@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { Label, IconDelete as Delete } from '@anticrm/ui'
+  import { Label, IconDelete as Delete } from '@hcengineering/ui'
   import task from '../../plugin'
 
   export let onDelete: () => void

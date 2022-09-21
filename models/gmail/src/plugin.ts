@@ -14,12 +14,12 @@
 // limitations under the License.
 //
 
-import { Ref } from '@anticrm/core'
-import { IntlString, mergeIds } from '@anticrm/platform'
-import { gmailId } from '@anticrm/gmail'
-import gmail from '@anticrm/gmail-resources/src/plugin'
-import type { AnyComponent } from '@anticrm/ui'
-import type { TxViewlet } from '@anticrm/activity'
+import { Ref } from '@hcengineering/core'
+import { IntlString, mergeIds } from '@hcengineering/platform'
+import { gmailId } from '@hcengineering/gmail'
+import gmail from '@hcengineering/gmail-resources/src/plugin'
+import type { AnyComponent } from '@hcengineering/ui'
+import type { TxViewlet } from '@hcengineering/activity'
 
 export default mergeIds(gmailId, gmail, {
   string: {

@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Button, showPopup, IconDownOutline, Label } from '@anticrm/ui'
-  import { Viewlet } from '@anticrm/view'
+  import { Button, showPopup, IconDownOutline, Label } from '@hcengineering/ui'
+  import { Viewlet } from '@hcengineering/view'
   import ViewletSetting from './ViewletSetting.svelte'
   import view from '../plugin'
 

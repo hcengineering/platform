@@ -14,21 +14,31 @@
 // limitations under the License.
 //
 
-import { Builder, Model, TypeString, TypeBoolean, Prop, ArrOf, Index, Collection, TypeTimestamp } from '@anticrm/model'
-import core, { TAttachedDoc } from '@anticrm/model-core'
-import contact from '@anticrm/model-contact'
+import {
+  Builder,
+  Model,
+  TypeString,
+  TypeBoolean,
+  Prop,
+  ArrOf,
+  Index,
+  Collection,
+  TypeTimestamp
+} from '@hcengineering/model'
+import core, { TAttachedDoc } from '@hcengineering/model-core'
+import contact from '@hcengineering/model-contact'
 import telegram from './plugin'
 import type {
   TelegramMessage,
   NewTelegramMessage,
   SharedTelegramMessage,
   SharedTelegramMessages
-} from '@anticrm/telegram'
-import { Class, Domain, IndexKind, Ref, Timestamp, Type } from '@anticrm/core'
-import setting from '@anticrm/setting'
-import activity from '@anticrm/activity'
-import { Channel } from '@anticrm/contact'
-import attachment from '@anticrm/model-attachment'
+} from '@hcengineering/telegram'
+import { Class, Domain, IndexKind, Ref, Timestamp, Type } from '@hcengineering/core'
+import setting from '@hcengineering/setting'
+import activity from '@hcengineering/activity'
+import { Channel } from '@hcengineering/contact'
+import attachment from '@hcengineering/model-attachment'
 
 export const DOMAIN_TELEGRAM = 'telegram' as Domain
 

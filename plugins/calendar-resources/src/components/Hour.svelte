@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Event } from '@anticrm/calendar'
-  import { Ref } from '@anticrm/core'
-  import { getPlatformColorForText, showPanel, tooltip } from '@anticrm/ui'
-  import { areDatesEqual } from '@anticrm/ui/src/components/calendar/internal/DateUtils'
-  import view from '@anticrm/view'
+  import { Event } from '@hcengineering/calendar'
+  import { Ref } from '@hcengineering/core'
+  import { getPlatformColorForText, showPanel, tooltip } from '@hcengineering/ui'
+  import { areDatesEqual } from '@hcengineering/ui/src/components/calendar/internal/DateUtils'
+  import view from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import EventPresenter from './EventPresenter.svelte'
 

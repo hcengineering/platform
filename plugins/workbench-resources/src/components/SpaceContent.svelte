@@ -14,10 +14,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Class, Doc, Ref, Space, WithLookup } from '@anticrm/core'
-  import { createQuery } from '@anticrm/presentation'
-  import { Component, Loading } from '@anticrm/ui'
-  import view, { Viewlet, ViewletPreference } from '@anticrm/view'
+  import type { Class, Doc, Ref, Space, WithLookup } from '@hcengineering/core'
+  import { createQuery } from '@hcengineering/presentation'
+  import { Component, Loading } from '@hcengineering/ui'
+  import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
 
   export let _class: Ref<Class<Doc>>
   export let space: Ref<Space>

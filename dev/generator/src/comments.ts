@@ -1,5 +1,5 @@
-import chunter, { Comment } from '@anticrm/chunter'
-import { AttachedData, Class, Doc, generateId, Ref, Space, TxOperations } from '@anticrm/core'
+import chunter, { Comment } from '@hcengineering/chunter'
+import { AttachedData, Class, Doc, generateId, Ref, Space, TxOperations } from '@hcengineering/core'
 import faker from 'faker'
 
 export interface CommentOptions {

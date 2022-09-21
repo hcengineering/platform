@@ -13,10 +13,10 @@
 // limitations under the License.
 //
 
-import { Asset, IntlString, plugin, Resource } from '@anticrm/platform'
-import type { Plugin } from '@anticrm/platform'
-import { AnyComponent } from '@anticrm/ui'
-import type { Class, Doc, Mixin, Ref } from '@anticrm/core'
+import { Asset, IntlString, plugin, Resource } from '@hcengineering/platform'
+import type { Plugin } from '@hcengineering/platform'
+import { AnyComponent } from '@hcengineering/ui'
+import type { Class, Doc, Mixin, Ref } from '@hcengineering/core'
 
 /**
  * @public

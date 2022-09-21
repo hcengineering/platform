@@ -1,5 +1,5 @@
-import { Doc, DocumentQuery, Domain, FindOptions, isOperator, Ref, SortingOrder } from '@anticrm/core'
-import { MigrationClient, MigrateUpdate, MigrationResult } from '@anticrm/model'
+import { Doc, DocumentQuery, Domain, FindOptions, isOperator, Ref, SortingOrder } from '@hcengineering/core'
+import { MigrationClient, MigrateUpdate, MigrationResult } from '@hcengineering/model'
 import { Db, Document, Filter, Sort, UpdateFilter } from 'mongodb'
 
 /**

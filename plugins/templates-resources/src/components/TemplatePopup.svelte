@@ -14,10 +14,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createQuery } from '@anticrm/presentation'
-  import { MessageTemplate } from '@anticrm/templates'
-  import { TextEditorHandler } from '@anticrm/text-editor'
-  import { closePopup, EditWithIcon, IconSearch, Label } from '@anticrm/ui'
+  import { createQuery } from '@hcengineering/presentation'
+  import { MessageTemplate } from '@hcengineering/templates'
+  import { TextEditorHandler } from '@hcengineering/text-editor'
+  import { closePopup, EditWithIcon, IconSearch, Label } from '@hcengineering/ui'
   import templates from '../plugin'
 
   export let editor: TextEditorHandler

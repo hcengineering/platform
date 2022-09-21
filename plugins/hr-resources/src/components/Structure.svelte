@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact from '@anticrm/contact'
-  import { DocumentQuery, Ref, WithLookup } from '@anticrm/core'
-  import type { Department, Staff } from '@anticrm/hr'
-  import { createQuery } from '@anticrm/presentation'
-  import { Button, eventToHTMLElement, Icon, IconAdd, Label, Scroller, SearchEdit, showPopup } from '@anticrm/ui'
+  import contact from '@hcengineering/contact'
+  import { DocumentQuery, Ref, WithLookup } from '@hcengineering/core'
+  import type { Department, Staff } from '@hcengineering/hr'
+  import { createQuery } from '@hcengineering/presentation'
+  import { Button, eventToHTMLElement, Icon, IconAdd, Label, Scroller, SearchEdit, showPopup } from '@hcengineering/ui'
   import hr from '../plugin'
   import CreateDepartment from './CreateDepartment.svelte'
   import DepartmentCard from './DepartmentCard.svelte'

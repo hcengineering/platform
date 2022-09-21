@@ -14,12 +14,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Status, Severity, OK, setMetadata } from '@anticrm/platform'
+  import { Status, Severity, OK, setMetadata } from '@hcengineering/platform'
 
   import Form from './Form.svelte'
   import { signUp } from '../utils'
   import login from '../plugin'
-  import { getCurrentLocation, navigate, setMetadataLocalStorage } from '@anticrm/ui'
+  import { getCurrentLocation, navigate, setMetadataLocalStorage } from '@hcengineering/ui'
 
   const fields = [
     { id: 'given-name', name: 'first', i18n: login.string.FirstName, short: true },

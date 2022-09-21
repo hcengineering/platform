@@ -14,13 +14,13 @@
 // limitations under the License.
 //
 
-import { boardId } from '@anticrm/board'
-import board from '@anticrm/board-resources/src/plugin'
-import type { Ref, Space } from '@anticrm/core'
-import { IntlString, mergeIds } from '@anticrm/platform'
-import { KanbanTemplate, Sequence } from '@anticrm/task'
-import type { AnyComponent } from '@anticrm/ui'
-import { Action, ViewAction, ViewletDescriptor } from '@anticrm/view'
+import { boardId } from '@hcengineering/board'
+import board from '@hcengineering/board-resources/src/plugin'
+import type { Ref, Space } from '@hcengineering/core'
+import { IntlString, mergeIds } from '@hcengineering/platform'
+import { KanbanTemplate, Sequence } from '@hcengineering/task'
+import type { AnyComponent } from '@hcengineering/ui'
+import { Action, ViewAction, ViewletDescriptor } from '@hcengineering/view'
 
 export default mergeIds(boardId, board, {
   component: {

@@ -5,8 +5,8 @@ Package allow to create a client to interact with running platform.
 ## Usage
 
 ```ts
-  import clientResources from '@anticrm/client-resources'
-  import core, { Client } from '@anticrm/core'
+  import clientResources from '@hcengineering/client-resources'
+  import core, { Client } from '@hcengineering/core'
 
   // ...
 

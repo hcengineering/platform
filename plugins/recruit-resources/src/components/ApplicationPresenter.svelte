@@ -14,12 +14,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getClient } from '@anticrm/presentation'
-  import type { Applicant } from '@anticrm/recruit'
-  import recruit from '@anticrm/recruit'
-  import { Icon, Label } from '@anticrm/ui'
-  import { getPanelURI } from '@anticrm/ui/src/panelup'
-  import view from '@anticrm/view'
+  import { getClient } from '@hcengineering/presentation'
+  import type { Applicant } from '@hcengineering/recruit'
+  import recruit from '@hcengineering/recruit'
+  import { Icon, Label } from '@hcengineering/ui'
+  import { getPanelURI } from '@hcengineering/ui/src/panelup'
+  import view from '@hcengineering/view'
 
   export let value: Applicant
   export let inline: boolean = false

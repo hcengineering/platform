@@ -13,11 +13,21 @@
 // limitations under the License.
 //
 
-import core, { Account, Data, Doc, generateId, Ref, Tx, TxCollectionCUD, TxCreateDoc, TxUpdateDoc } from '@anticrm/core'
-import type { TriggerControl } from '@anticrm/server-core'
-import setting, { Integration } from '@anticrm/setting'
-import contact, { EmployeeAccount } from '@anticrm/contact'
-import notification, { Notification, NotificationStatus } from '@anticrm/notification'
+import core, {
+  Account,
+  Data,
+  Doc,
+  generateId,
+  Ref,
+  Tx,
+  TxCollectionCUD,
+  TxCreateDoc,
+  TxUpdateDoc
+} from '@hcengineering/core'
+import type { TriggerControl } from '@hcengineering/server-core'
+import setting, { Integration } from '@hcengineering/setting'
+import contact, { EmployeeAccount } from '@hcengineering/contact'
+import notification, { Notification, NotificationStatus } from '@hcengineering/notification'
 
 /**
  * @public

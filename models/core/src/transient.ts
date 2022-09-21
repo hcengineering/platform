@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { DOMAIN_TRANSIENT, UserStatus } from '@anticrm/core'
-import { Model } from '@anticrm/model'
+import { DOMAIN_TRANSIENT, UserStatus } from '@hcengineering/core'
+import { Model } from '@hcengineering/model'
 import core from './component'
 import { TDoc } from './core'
 

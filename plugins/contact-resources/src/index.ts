@@ -14,12 +14,12 @@
 // limitations under the License.
 //
 
-import { Channel, Contact, Employee, formatName } from '@anticrm/contact'
-import { Class, Client, DocumentQuery, Ref, RelatedDocument, WithLookup } from '@anticrm/core'
-import { leaveWorkspace } from '@anticrm/login-resources'
-import { Resources } from '@anticrm/platform'
-import { Avatar, getClient, MessageBox, ObjectSearchResult, UserInfo } from '@anticrm/presentation'
-import { showPopup } from '@anticrm/ui'
+import { Channel, Contact, Employee, formatName } from '@hcengineering/contact'
+import { Class, Client, DocumentQuery, Ref, RelatedDocument, WithLookup } from '@hcengineering/core'
+import { leaveWorkspace } from '@hcengineering/login-resources'
+import { Resources } from '@hcengineering/platform'
+import { Avatar, getClient, MessageBox, ObjectSearchResult, UserInfo } from '@hcengineering/presentation'
+import { showPopup } from '@hcengineering/ui'
 import Channels from './components/Channels.svelte'
 import ChannelsDropdown from './components/ChannelsDropdown.svelte'
 import ChannelsEditor from './components/ChannelsEditor.svelte'

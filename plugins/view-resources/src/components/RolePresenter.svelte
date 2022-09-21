@@ -14,10 +14,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, ClassifierKind, Doc, Mixin, Ref } from '@anticrm/core'
-  import { getClient } from '@anticrm/presentation'
-  import setting from '@anticrm/setting'
-  import { Label } from '@anticrm/ui'
+  import { Class, ClassifierKind, Doc, Mixin, Ref } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
+  import setting from '@hcengineering/setting'
+  import { Label } from '@hcengineering/ui'
   import { getMixinStyle } from '../utils'
 
   export let value: Doc

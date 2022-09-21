@@ -1,8 +1,8 @@
 <script lang="ts">
-  import core, { Ref, Timestamp, Tx, TxCollectionCUD, TxCreateDoc, TxUpdateDoc, WithLookup } from '@anticrm/core'
-  import { createQuery } from '@anticrm/presentation'
-  import { Issue, IssueStatus } from '@anticrm/tracker'
-  import { Label, ticker } from '@anticrm/ui'
+  import core, { Ref, Timestamp, Tx, TxCollectionCUD, TxCreateDoc, TxUpdateDoc, WithLookup } from '@hcengineering/core'
+  import { createQuery } from '@hcengineering/presentation'
+  import { Issue, IssueStatus } from '@hcengineering/tracker'
+  import { Label, ticker } from '@hcengineering/ui'
   import tracker from '../../plugin'
   import Duration from './Duration.svelte'
   import StatusPresenter from './StatusPresenter.svelte'

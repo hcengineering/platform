@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { addStringsLoader, loadMetadata } from '@anticrm/platform'
-import view, { viewId } from '@anticrm/view'
+import { addStringsLoader, loadMetadata } from '@hcengineering/platform'
+import view, { viewId } from '@hcengineering/view'
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(view.icon, {

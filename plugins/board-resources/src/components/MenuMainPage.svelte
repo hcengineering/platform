@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { Button, Component } from '@anticrm/ui'
+  import { Button, Component } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import activity from '@anticrm/activity'
-  import board from '@anticrm/board'
+  import activity from '@hcengineering/activity'
+  import board from '@hcengineering/board'
   import plugin from '../plugin'
-  import { createQuery } from '@anticrm/presentation'
-  import core, { Ref, Space } from '@anticrm/core'
+  import { createQuery } from '@hcengineering/presentation'
+  import core, { Ref, Space } from '@hcengineering/core'
 
   export let space: Ref<Space>
 
