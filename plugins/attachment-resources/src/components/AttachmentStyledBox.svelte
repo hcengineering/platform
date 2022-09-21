@@ -217,8 +217,7 @@
     overflow-y: hidden;
     background-color: var(--accent-bg-color);
     border: 1px solid var(--divider-color);
-    border-radius: 0.5rem 0.5rem 0 0;
-    border-bottom: none;
+    border-radius: 0.5rem;
 
     .item + .item {
       padding-left: 1rem;
