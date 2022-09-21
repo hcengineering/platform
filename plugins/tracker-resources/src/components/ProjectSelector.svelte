@@ -24,7 +24,7 @@
   export let value: Ref<Project> | null | undefined
   export let shouldShowLabel: boolean = true
   export let isEditable: boolean = true
-  export let onProjectIdChange: ((newProjectId: Ref<Project> | undefined) => void) | undefined = undefined
+  export let onChange: ((newProjectId: Ref<Project> | undefined) => void) | undefined = undefined
   export let popupPlaceholder: IntlString = tracker.string.AddToProject
   export let kind: ButtonKind = 'no-border'
   export let size: ButtonSize = 'small'
@@ -87,7 +87,7 @@
       SelectPopup,
       { value: projectsInfo, placeholder: popupPlaceholder, searchable: true },
       eventToHTMLElement(event),
-      onProjectIdChange
+      onChange
     )
   }
 </script>

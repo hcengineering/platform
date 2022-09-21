@@ -18,7 +18,7 @@
   import login from '@hcengineering/login'
   import { setMetadata } from '@hcengineering/platform'
   import { Avatar, createQuery } from '@hcengineering/presentation'
-  import setting, { SettingsCategory, settingId } from '@hcengineering/setting'
+  import setting, { settingId, SettingsCategory } from '@hcengineering/setting'
   import {
     closePopup,
     fetchMetadataLocalStorage,

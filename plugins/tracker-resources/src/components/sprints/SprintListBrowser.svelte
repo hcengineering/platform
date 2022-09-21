@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Class, Doc, Ref } from '@hcengineering/core'
+  import type { Class, Doc, Ref, WithLookup } from '@hcengineering/core'
   import { Sprint } from '@hcengineering/tracker'
   import { BuildModelKey } from '@hcengineering/view'
   import {
@@ -30,7 +30,7 @@
   export let _class: Ref<Class<Doc>>
   export let itemsConfig: (BuildModelKey | string)[]
   export let loadingProps: LoadingProps | undefined = undefined
-  export let sprints: Sprint[] = []
+  export let sprints: WithLookup<Sprint>[] = []
 
   const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
     if (dir === 'vertical') {

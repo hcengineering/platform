@@ -375,6 +375,9 @@ export class TSprint extends TDoc implements Sprint {
 
   @Prop(TypeNumber(), tracker.string.Capacity)
   capacity!: number
+
+  @Prop(TypeRef(tracker.class.Project), tracker.string.Project)
+  project!: Ref<Project>
 }
 
 @UX(core.string.Number)
@@ -561,6 +564,17 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(tracker.class.Project, core.class.Class, view.mixin.AttributePresenter, {
     presenter: tracker.component.ProjectTitlePresenter
+  })
+
+  classPresenter(
+    builder,
+    tracker.class.Project,
+    tracker.component.ProjectTitlePresenter,
+    tracker.component.ProjectSelector
+  )
+
+  builder.mixin(tracker.class.Project, core.class.Class, view.mixin.AttributeEditor, {
+    inlineEditor: tracker.component.ProjectSelector
   })
 
   builder.mixin(tracker.class.Sprint, core.class.Class, view.mixin.AttributePresenter, {
@@ -963,6 +977,12 @@ export function createModel (builder: Builder): void {
       actionProps: {
         attribute: 'sprint',
         _class: tracker.class.Sprint,
+        queryOptions: {
+          sort: {
+            startDate: -1,
+            targetDate: -1
+          }
+        },
         query: {},
         searchField: 'label',
         placeholder: tracker.string.Sprint

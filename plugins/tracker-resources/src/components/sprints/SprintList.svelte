@@ -14,20 +14,21 @@
 -->
 <script lang="ts">
   import contact from '@hcengineering/contact'
-  import { Class, Doc, FindOptions, getObjectValue, Ref } from '@hcengineering/core'
+  import { Class, Doc, FindOptions, getObjectValue, Ref, WithLookup } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { Issue, Sprint } from '@hcengineering/tracker'
-  import { CheckBox, Spinner, tooltip } from '@hcengineering/ui'
+  import { Issue, Project, Sprint } from '@hcengineering/tracker'
+  import { CheckBox, ExpandCollapse, Spinner, tooltip } from '@hcengineering/ui'
   import { BuildModelKey } from '@hcengineering/view'
   import { buildModel, LoadingProps } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
+  import SprintProjectEditor from './SprintProjectEditor.svelte'
 
   export let _class: Ref<Class<Doc>>
   export let itemsConfig: (BuildModelKey | string)[]
   export let selectedObjectIds: Doc[] = []
   export let selectedRowIndex: number | undefined = undefined
-  export let sprints: Sprint[] | undefined = undefined
+  export let sprints: WithLookup<Sprint>[] | undefined = undefined
   export let loadingProps: LoadingProps | undefined = undefined
 
   const dispatch = createEventDispatcher()
@@ -45,6 +46,12 @@
   $: options = { ...baseOptions } as FindOptions<Sprint>
   $: selectedObjectIdsSet = new Set<Ref<Doc>>(selectedObjectIds.map((it) => it._id))
   $: objectRefs.length = sprints?.length ?? 0
+
+  $: byProject = sprints?.reduce((s, cur) => {
+    const pid = cur.project ?? ''
+    s.set(pid, [...(s.get(pid) ?? []), cur])
+    return s
+  }, new Map<Ref<Project> | '', WithLookup<Sprint>[]>())
 
   export const onObjectChecked = (docs: Doc[], value: boolean) => {
     dispatch('check', { docs, value })
@@ -90,66 +97,97 @@
 
     return props.length
   }
+
+  const isCollapsedMap: Record<any, boolean> = {}
+
+  $: {
+    const exkeys = new Set(Object.keys(isCollapsedMap))
+    for (const c of byProject?.keys() ?? []) {
+      if (!exkeys.delete(c)) {
+        isCollapsedMap[c] = false
+      }
+    }
+    for (const k of exkeys) {
+      delete isCollapsedMap[k]
+    }
+  }
+
+  const handleCollapseCategory = (category: any) => (isCollapsedMap[category] = !isCollapsedMap[category])
 </script>
 
 {#await buildModel({ client, _class, keys: itemsConfig, lookup: options.lookup }) then itemModels}
   <div class="listRoot">
     {#if sprints}
-      {#each sprints as docObject (docObject._id)}
-        <div
-          bind:this={objectRefs[sprints.findIndex((x) => x === docObject)]}
-          class="listGrid"
-          class:mListGridChecked={selectedObjectIdsSet.has(docObject._id)}
-          class:mListGridFixed={selectedRowIndex === sprints.findIndex((x) => x === docObject)}
-          class:mListGridSelected={selectedRowIndex === sprints.findIndex((x) => x === docObject)}
-          on:focus={() => {}}
-          on:mouseover={() => handleRowFocused(docObject)}
-        >
-          <div class="contentWrapper">
-            {#each itemModels as attributeModel, attributeModelIndex}
-              {#if attributeModelIndex === 0}
-                <div class="gridElement">
-                  <div
-                    class="eListGridCheckBox"
-                    use:tooltip={{ direction: 'bottom', label: tracker.string.SelectIssue }}
-                  >
-                    <CheckBox
-                      checked={selectedObjectIdsSet.has(docObject._id)}
-                      on:value={(event) => {
-                        onObjectChecked([docObject], event.detail)
-                      }}
-                    />
-                  </div>
-                  <div class="iconPresenter">
-                    <svelte:component
-                      this={attributeModel.presenter}
-                      value={getObjectValue(attributeModel.key, docObject) ?? ''}
-                      {...attributeModel.props}
-                    />
-                  </div>
-                </div>
-              {:else if attributeModelIndex === 1}
-                <div class="projectPresenter flex-grow">
-                  <svelte:component
-                    this={attributeModel.presenter}
-                    value={getObjectValue(attributeModel.key, docObject) ?? ''}
-                    {...attributeModel.props}
-                  />
-                </div>
-                <div class="filler" />
-              {:else}
-                <div class="gridElement">
-                  <svelte:component
-                    this={attributeModel.presenter}
-                    value={getObjectValue(attributeModel.key, docObject) ?? ''}
-                    projectId={docObject._id}
-                    {...attributeModel.props}
-                  />
-                </div>
-              {/if}
-            {/each}
+      {#each Array.from(byProject?.entries() ?? []) as e}
+        <div class="flex-between categoryHeader row" on:click={() => handleCollapseCategory(e[0])}>
+          <div class="flex-row-center gap-2 clear-mins">
+            <SprintProjectEditor
+              isEditable={false}
+              value={e[1][0]}
+              enlargedText={true}
+              kind={'list-header'}
+              shouldShowPlaceholder={false}
+            />
           </div>
         </div>
+        <ExpandCollapse isExpanded={!isCollapsedMap[e[0]]} duration={400}>
+          {#each e[1] as docObject (docObject._id)}
+            <div
+              bind:this={objectRefs[sprints.findIndex((x) => x === docObject)]}
+              class="listGrid"
+              class:mListGridChecked={selectedObjectIdsSet.has(docObject._id)}
+              class:mListGridFixed={selectedRowIndex === sprints.findIndex((x) => x === docObject)}
+              class:mListGridSelected={selectedRowIndex === sprints.findIndex((x) => x === docObject)}
+              on:focus={() => {}}
+              on:mouseover={() => handleRowFocused(docObject)}
+            >
+              <div class="contentWrapper">
+                {#each itemModels as attributeModel, attributeModelIndex}
+                  {#if attributeModelIndex === 0}
+                    <div class="gridElement">
+                      <div
+                        class="eListGridCheckBox"
+                        use:tooltip={{ direction: 'bottom', label: tracker.string.SelectIssue }}
+                      >
+                        <CheckBox
+                          checked={selectedObjectIdsSet.has(docObject._id)}
+                          on:value={(event) => {
+                            onObjectChecked([docObject], event.detail)
+                          }}
+                        />
+                      </div>
+                      <div class="iconPresenter">
+                        <svelte:component
+                          this={attributeModel.presenter}
+                          value={getObjectValue(attributeModel.key, docObject) ?? ''}
+                          {...attributeModel.props}
+                        />
+                      </div>
+                    </div>
+                  {:else if attributeModelIndex === 1}
+                    <div class="projectPresenter flex-grow">
+                      <svelte:component
+                        this={attributeModel.presenter}
+                        value={getObjectValue(attributeModel.key, docObject) ?? ''}
+                        {...attributeModel.props}
+                      />
+                    </div>
+                    <div class="filler" />
+                  {:else}
+                    <div class="gridElement">
+                      <svelte:component
+                        this={attributeModel.presenter}
+                        value={getObjectValue(attributeModel.key, docObject) ?? ''}
+                        projectId={docObject._id}
+                        {...attributeModel.props}
+                      />
+                    </div>
+                  {/if}
+                {/each}
+              </div>
+            </div>
+          {/each}
+        </ExpandCollapse>
       {/each}
     {:else if loadingProps !== undefined}
       {#each Array(getLoadingElementsLength(loadingProps, options)) as _, rowIndex}
@@ -171,6 +209,17 @@
 <style lang="scss">
   .listRoot {
     width: 100%;
+  }
+
+  .categoryHeader {
+    position: sticky;
+    top: 0;
+    padding: 0 1.5rem 0 2.25rem;
+    height: 3rem;
+    min-height: 3rem;
+    min-width: 0;
+    background-color: var(--accent-bg-color);
+    z-index: 5;
   }
 
   .contentWrapper {

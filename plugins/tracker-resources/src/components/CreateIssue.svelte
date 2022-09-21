@@ -380,8 +380,12 @@
           }}
         />
         <EstimationEditor kind={'no-border'} size={'small'} value={object} />
-        <ProjectSelector value={object.project} onProjectIdChange={handleProjectIdChanged} />
-        <SprintSelector value={object.sprint} onSprintIdChange={handleSprintIdChanged} />
+        <ProjectSelector value={object.project} onChange={handleProjectIdChanged} />
+        <SprintSelector
+          value={object.sprint}
+          onChange={handleSprintIdChanged}
+          useProject={object.project ?? undefined}
+        />
         {#if object.dueDate !== null}
           <DatePresenter bind:value={object.dueDate} editable />
         {/if}

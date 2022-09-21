@@ -128,6 +128,8 @@ export interface Sprint extends Doc {
 
   // Capacity in man days.
   capacity: number
+
+  project?: Ref<Project>
 }
 
 /**

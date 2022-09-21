@@ -157,7 +157,7 @@
       {
         key: '$lookup.lead',
         presenter: tracker.component.LeadPresenter,
-        props: { defaultClass: contact.class.Employee, shouldShowLabel: false }
+        props: { _class: tracker.class.Project, defaultClass: contact.class.Employee, shouldShowLabel: false }
       },
       { key: '', presenter: tracker.component.ProjectMembersPresenter, props: { kind: 'link' } },
       { key: '', presenter: tracker.component.TargetDatePresenter },
