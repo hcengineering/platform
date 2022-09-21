@@ -16,7 +16,7 @@
   import { Ref, SortingOrder } from '@hcengineering/core'
   import { getEmbeddedLabel, IntlString, translate } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
-  import { Sprint } from '@hcengineering/tracker'
+  import { Project, Sprint } from '@hcengineering/tracker'
   import type { ButtonKind, ButtonSize } from '@hcengineering/ui'
   import { Button, ButtonShape, eventToHTMLElement, SelectPopup, showPopup, Label } from '@hcengineering/ui'
   import tracker from '../../plugin'
@@ -25,7 +25,7 @@
   export let value: Ref<Sprint> | null | undefined
   export let shouldShowLabel: boolean = true
   export let isEditable: boolean = true
-  export let onSprintIdChange: ((newSprintId: Ref<Sprint> | undefined) => void) | undefined = undefined
+  export let onChange: ((newSprintId: Ref<Sprint> | undefined) => void) | undefined = undefined
   export let popupPlaceholder: IntlString = tracker.string.AddToSprint
   export let kind: ButtonKind = 'no-border'
   export let size: ButtonSize = 'small'
@@ -35,6 +35,8 @@
   export let onlyIcon: boolean = false
   export let enlargedText = false
 
+  export let useProject: Ref<Project> | undefined = undefined
+
   let selectedSprint: Sprint | undefined
   let defaultSprintLabel = ''
 
@@ -42,7 +44,7 @@
   let rawSprints: Sprint[] = []
   query.query(
     tracker.class.Sprint,
-    {},
+    useProject ? { project: useProject } : {},
     (res) => {
       rawSprints = res
     },
@@ -87,7 +89,7 @@
       SelectPopup,
       { value: sprintInfo, placeholder: popupPlaceholder, searchable: true },
       eventToHTMLElement(event),
-      onSprintIdChange
+      onChange
     )
   }
 </script>

@@ -15,17 +15,19 @@
 <script lang="ts">
   import contact, { Employee } from '@hcengineering/contact'
   import { Class, Doc, Ref } from '@hcengineering/core'
-  import { Project } from '@hcengineering/tracker'
+  import { Project, Sprint } from '@hcengineering/tracker'
   import { UsersPopup, getClient } from '@hcengineering/presentation'
   import { AttributeModel } from '@hcengineering/view'
-  import { eventToHTMLElement, showPopup } from '@hcengineering/ui'
+  import { eventToHTMLElement, IconSize, showPopup } from '@hcengineering/ui'
   import { getObjectPresenter } from '@hcengineering/view-resources'
   import { IntlString } from '@hcengineering/platform'
   import tracker from '../../plugin'
   import LeadPopup from './LeadPopup.svelte'
 
   export let value: Employee | null
-  export let projectId: Ref<Project>
+  export let _class: Ref<Class<Project | Sprint>>
+  export let size: IconSize = 'x-small'
+  export let parentId: Ref<Project>
   export let defaultClass: Ref<Class<Doc>> | undefined = undefined
   export let isEditable: boolean = true
   export let shouldShowLabel: boolean = false
@@ -52,15 +54,15 @@
       return
     }
 
-    const currentProject = await client.findOne(tracker.class.Project, { _id: projectId })
+    const currentParent = await client.findOne(_class, { _id: parentId })
 
-    if (currentProject === undefined) {
+    if (currentParent === undefined) {
       return
     }
 
     const newLead = result === null ? null : result._id
 
-    await client.update(currentProject, { lead: newLead })
+    await client.update(currentParent, { lead: newLead })
   }
 
   const handleLeadEditorOpened = async (event: MouseEvent) => {
@@ -89,7 +91,7 @@
     this={presenter.presenter}
     {value}
     {defaultName}
-    avatarSize={'tiny'}
+    avatarSize={size}
     isInteractive={true}
     shouldShowPlaceholder={true}
     shouldShowName={shouldShowLabel}
@@ -101,7 +103,7 @@
     this={presenter.presenter}
     {value}
     {defaultName}
-    avatarSize={'tiny'}
+    avatarSize={size}
     isInteractive={true}
     shouldShowPlaceholder={true}
     shouldShowName={shouldShowLabel}

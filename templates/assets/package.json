@@ -20,7 +20,7 @@
     "eslint-plugin-promise": "^6.0.0",
     "eslint": "^8.18.0",
     "prettier": "^2.7.1",
-    "@rushstack/heft": "^0.46.1",
+    "@rushstack/heft": "^0.47.9",
     "@types/node": "~16.11.12"
   },
   "#replaces": [

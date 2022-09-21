@@ -77,6 +77,8 @@ import TimeSpendReport from './components/issues/timereport/TimeSpendReport.svel
 
 import RelatedIssues from './components/issues/related/RelatedIssues.svelte'
 
+import ProjectSelector from './components/ProjectSelector.svelte'
+
 export async function queryIssue<D extends Issue> (
   _class: Ref<Class<D>>,
   client: Client,
@@ -192,7 +194,8 @@ export default async (): Promise<Resources> => ({
     EstimationEditor,
     SubIssuesSelector,
     GrowPresenter,
-    RelatedIssues
+    RelatedIssues,
+    ProjectSelector
   },
   completion: {
     IssueQuery: async (client: Client, query: string, filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }) =>

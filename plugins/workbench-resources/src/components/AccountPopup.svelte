@@ -162,8 +162,9 @@
 
 <svelte:component this={Menu} bind:this={menu} {actions} on:close>
   <svelte:fragment slot="header">
+    <div class="p-1 ml-2 overflow-label fs-bold caption-color">{getCurrentLocation().path[1]}</div>
     <div
-      class="ap-menuHeader"
+      class="ap-menuHeader mb-2"
       on:mousemove={() => {
         menu.clearFocus()
       }}

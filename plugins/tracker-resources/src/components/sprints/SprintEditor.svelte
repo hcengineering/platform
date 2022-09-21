@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref } from '@hcengineering/core'
+  import { Ref, WithLookup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Issue, Sprint } from '@hcengineering/tracker'
+  import { Issue, IssueStatus, Sprint } from '@hcengineering/tracker'
   import { ButtonKind, ButtonShape, ButtonSize, Label, tooltip } from '@hcengineering/ui'
   import DatePresenter from '@hcengineering/ui/src/components/calendar/DatePresenter.svelte'
   import { activeSprint } from '../../issues'
@@ -61,15 +61,41 @@
   $: ids = new Set(issues?.map((it) => it._id) ?? [])
 
   $: noParents = issues?.filter((it) => !ids.has(it.attachedTo as Ref<Issue>))
+
+  const statuses = createQuery()
+  let issueStatuses: Map<Ref<IssueStatus>, WithLookup<IssueStatus>> = new Map()
+  $: if (noParents !== undefined) {
+    statuses.query(tracker.class.IssueStatus, { _id: { $in: Array.from(noParents.map((it) => it.status)) } }, (res) => {
+      issueStatuses = new Map(res.map((it) => [it._id, it]))
+    })
+  } else {
+    statuses.unsubscribe()
+  }
+
   $: totalEstimation = (noParents ?? [{ estimation: 0, childInfo: [] } as unknown as Issue])
     .map((it) => {
+      const cat = issueStatuses.get(it.status)?.category
+
+      let retEst = it.estimation
       if (it.childInfo?.length > 0) {
         const cEstimation = it.childInfo.map((ct) => ct.estimation).reduce((a, b) => a + b, 0)
+        const cReported = it.childInfo.map((ct) => ct.reportedTime).reduce((a, b) => a + b, 0)
         if (cEstimation !== 0) {
-          return cEstimation
+          retEst = cEstimation
+          if (cat === tracker.issueStatusCategory.Completed || cat === tracker.issueStatusCategory.Canceled) {
+            if (cReported < cEstimation) {
+              retEst = cReported
+            }
+          }
+        }
+      } else {
+        if (cat === tracker.issueStatusCategory.Completed || cat === tracker.issueStatusCategory.Canceled) {
+          if (it.reportedTime < it.estimation) {
+            return it.reportedTime
+          }
         }
       }
-      return it.estimation
+      return retEst
     })
     .reduce((it, cur) => {
       return it + cur
@@ -79,7 +105,7 @@
       if (it.childInfo?.length > 0) {
         const cReported = it.childInfo.map((ct) => ct.reportedTime).reduce((a, b) => a + b, 0)
         if (cReported !== 0) {
-          return cReported
+          return cReported + it.reportedTime
         }
       }
       return it.reportedTime
@@ -114,7 +140,7 @@
       {onlyIcon}
       {enlargedText}
       value={value.sprint}
-      onSprintIdChange={handleSprintIdChanged}
+      onChange={handleSprintIdChanged}
     />
   </div>
 {/if}

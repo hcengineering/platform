@@ -72,47 +72,49 @@
 
 {#if editor}
   {#await editor then instance}
-    {#if showHeader}
-      <span
-        class="fs-bold overflow-label"
-        use:tooltip={{
-          component: Label,
-          props: { label: attribute.label }
-        }}><Label label={attribute.label} /></span
-      >
-      <div class="flex flex-grow min-w-0">
-        <svelte:component
-          this={instance}
-          label={attribute?.label}
-          placeholder={attribute?.label}
-          kind={'link'}
-          size={'large'}
-          width={'100%'}
-          justify={'left'}
-          type={attribute?.type}
-          {maxWidth}
-          value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
-          readonly={attribute.readonly ?? false}
-          space={object.space}
-          {onChange}
-          {focus}
-          {object}
-        />
-      </div>
-    {:else}
-      <div style="grid-column: 1/3;">
-        <svelte:component
-          this={instance}
-          type={attribute?.type}
-          {maxWidth}
-          value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
-          readonly={attribute.readonly ?? false}
-          space={object.space}
-          {onChange}
-          {focus}
-          {object}
-        />
-      </div>
+    {#if instance}
+      {#if showHeader}
+        <span
+          class="fs-bold overflow-label"
+          use:tooltip={{
+            component: Label,
+            props: { label: attribute.label }
+          }}><Label label={attribute.label} /></span
+        >
+        <div class="flex flex-grow min-w-0">
+          <svelte:component
+            this={instance}
+            label={attribute?.label}
+            placeholder={attribute?.label}
+            kind={'link'}
+            size={'large'}
+            width={'100%'}
+            justify={'left'}
+            type={attribute?.type}
+            {maxWidth}
+            value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
+            readonly={attribute.readonly ?? false}
+            space={object.space}
+            {onChange}
+            {focus}
+            {object}
+          />
+        </div>
+      {:else}
+        <div style="grid-column: 1/3;">
+          <svelte:component
+            this={instance}
+            type={attribute?.type}
+            {maxWidth}
+            value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
+            readonly={attribute.readonly ?? false}
+            space={object.space}
+            {onChange}
+            {focus}
+            {object}
+          />
+        </div>
+      {/if}
     {/if}
   {/await}
 {/if}

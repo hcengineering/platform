@@ -14,16 +14,17 @@
 -->
 <script lang="ts">
   import contact from '@hcengineering/contact'
-  import { DocumentQuery, FindOptions, SortingOrder } from '@hcengineering/core'
+  import { DocumentQuery, FindOptions, SortingOrder, WithLookup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import { Sprint } from '@hcengineering/tracker'
-  import { Button, Icon, IconAdd, Label, showPopup } from '@hcengineering/ui'
+  import { Button, defaultSP, Icon, IconAdd, Label, Scroller, showPopup } from '@hcengineering/ui'
   import tracker from '../../plugin'
   import { getIncludedSprintStatuses, sprintTitleMap, SprintViewMode } from '../../utils'
   import NewSprint from './NewSprint.svelte'
   import SprintDatePresenter from './SprintDatePresenter.svelte'
   import SprintListBrowser from './SprintListBrowser.svelte'
+  import SprintProjectEditor from './SprintProjectEditor.svelte'
 
   export let label: IntlString
   export let query: DocumentQuery<Sprint> = {}
@@ -36,10 +37,13 @@
   const sprintOptions: FindOptions<Sprint> = {
     sort: { startDate: SortingOrder.Descending },
     limit: ENTRIES_LIMIT,
-    lookup: { lead: contact.class.Employee }
+    lookup: {
+      lead: contact.class.Employee,
+      project: tracker.class.Project
+    }
   }
 
-  let resultSprints: Sprint[] = []
+  let resultSprints: WithLookup<Sprint>[] = []
 
   $: includedSprintStatuses = getIncludedSprintStatuses(mode)
   $: title = sprintTitleMap[mode]
@@ -75,57 +79,56 @@
   }
 </script>
 
-<div>
-  <div class="fs-title flex-between header">
+<div class="fs-title flex-between header">
+  <div class="flex-center">
+    <Label {label} />
+    <div class="projectTitle">
+      › <Label label={title} />
+    </div>
+  </div>
+  <Button size="small" icon={IconAdd} label={tracker.string.Sprint} kind="secondary" on:click={showCreateDialog} />
+</div>
+<div class="itemsContainer">
+  <div class="flex-center">
     <div class="flex-center">
-      <Label {label} />
-      <div class="projectTitle">
-        › <Label label={title} />
+      <div class="buttonWrapper">
+        <Button
+          size="small"
+          shape="rectangle-right"
+          selected={mode === 'all'}
+          label={tracker.string.AllSprints}
+          on:click={() => handleViewModeChanged('all')}
+        />
+      </div>
+      <div class="buttonWrapper">
+        <Button
+          size="small"
+          shape="rectangle"
+          selected={mode === 'planned'}
+          label={tracker.string.PlannedSprints}
+          on:click={() => handleViewModeChanged('planned')}
+        />
+      </div>
+      <div class="buttonWrapper">
+        <Button
+          size="small"
+          shape="rectangle"
+          selected={mode === 'active'}
+          label={tracker.string.ActiveSprints}
+          on:click={() => handleViewModeChanged('active')}
+        />
+      </div>
+      <div class="buttonWrapper">
+        <Button
+          size="small"
+          shape="rectangle-left"
+          selected={mode === 'closed'}
+          label={tracker.string.ClosedSprints}
+          on:click={() => handleViewModeChanged('closed')}
+        />
       </div>
     </div>
-    <Button size="small" icon={IconAdd} label={tracker.string.Sprint} kind="secondary" on:click={showCreateDialog} />
-  </div>
-  <div class="itemsContainer">
-    <div class="flex-center">
-      <div class="flex-center">
-        <div class="buttonWrapper">
-          <Button
-            size="small"
-            shape="rectangle-right"
-            selected={mode === 'all'}
-            label={tracker.string.AllSprints}
-            on:click={() => handleViewModeChanged('all')}
-          />
-        </div>
-        <div class="buttonWrapper">
-          <Button
-            size="small"
-            shape="rectangle"
-            selected={mode === 'planned'}
-            label={tracker.string.PlannedSprints}
-            on:click={() => handleViewModeChanged('planned')}
-          />
-        </div>
-        <div class="buttonWrapper">
-          <Button
-            size="small"
-            shape="rectangle"
-            selected={mode === 'active'}
-            label={tracker.string.ActiveSprints}
-            on:click={() => handleViewModeChanged('active')}
-          />
-        </div>
-        <div class="buttonWrapper">
-          <Button
-            size="small"
-            shape="rectangle-left"
-            selected={mode === 'closed'}
-            label={tracker.string.ClosedSprints}
-            on:click={() => handleViewModeChanged('closed')}
-          />
-        </div>
-      </div>
-      <!-- <div class="ml-3 filterButton">
+    <!-- <div class="ml-3 filterButton">
         <Button
           size="small"
           icon={IconAdd}
@@ -135,8 +138,8 @@
           on:click={() => {}}
         />
       </div> -->
-    </div>
-    <!-- <div class="flex-center">
+  </div>
+  <!-- <div class="flex-center">
       <div class="flex-center">
         <div class="buttonWrapper">
           <Button selected size="small" shape="rectangle-right" icon={tracker.icon.ProjectsList} />
@@ -149,23 +152,32 @@
         <Button size="small" icon={IconOptions} />
       </div>
     </div> -->
-  </div>
-  <SprintListBrowser
-    _class={tracker.class.Sprint}
-    itemsConfig={[
-      { key: '', presenter: Icon, props: { icon: tracker.icon.Sprint, size: 'small' } },
-      { key: '', presenter: tracker.component.SprintPresenter, props: { kind: 'list' } },
-      {
-        key: '$lookup.lead',
-        presenter: tracker.component.LeadPresenter,
-        props: { defaultClass: contact.class.Employee, shouldShowLabel: false }
-      },
-      { key: '', presenter: SprintDatePresenter, props: { field: 'startDate' } },
-      { key: '', presenter: SprintDatePresenter, props: { field: 'targetDate' } },
-      { key: '', presenter: tracker.component.SprintStatusPresenter }
-    ]}
-    sprints={resultSprints}
-  />
+</div>
+<div class="w-full h-full clear-mins">
+  <Scroller fade={defaultSP}>
+    <SprintListBrowser
+      _class={tracker.class.Sprint}
+      itemsConfig={[
+        { key: '', presenter: Icon, props: { icon: tracker.icon.Sprint, size: 'small' } },
+        { key: '', presenter: tracker.component.SprintPresenter, props: { kind: 'list' } },
+        { key: '', presenter: SprintProjectEditor, props: { kind: 'list' } },
+        {
+          key: '$lookup.lead',
+          presenter: tracker.component.LeadPresenter,
+          props: {
+            _class: tracker.class.Sprint,
+            defaultClass: contact.class.Employee,
+            shouldShowLabel: false,
+            size: 'x-small'
+          }
+        },
+        { key: '', presenter: SprintDatePresenter, props: { field: 'startDate' } },
+        { key: '', presenter: SprintDatePresenter, props: { field: 'targetDate' } },
+        { key: '', presenter: tracker.component.SprintStatusPresenter }
+      ]}
+      sprints={resultSprints}
+    />
+  </Scroller>
 </div>
 
 <style lang="scss">
