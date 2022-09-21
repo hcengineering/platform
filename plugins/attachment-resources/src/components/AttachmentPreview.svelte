@@ -121,8 +121,11 @@
       max-width: 20rem;
       max-height: 20rem;
       border-radius: 0.75rem;
-      width: 100%;
-      height: 100%;
+      width: auto;
+      height: auto;
+    }
+    img {
+      object-fit: contain;
     }
   }
 </style>
