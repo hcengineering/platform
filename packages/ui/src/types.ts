@@ -125,7 +125,16 @@ export interface PopupPositionElement {
   kind?: 'submenu'
 }
 
-export type PopupPosAlignment = 'right' | 'top' | 'float' | 'account' | 'full' | 'content' | 'middle'
+export type PopupPosAlignment =
+  | 'right'
+  | 'top'
+  | 'float'
+  | 'account'
+  | 'account-portrait'
+  | 'account-mobile'
+  | 'full'
+  | 'content'
+  | 'middle'
 
 export function isPopupPosAlignment (x: any): x is PopupPosAlignment {
   return (
@@ -214,3 +223,10 @@ export interface FadeOptions {
 export const defaultSP: FadeOptions = { multipler: { top: 0, bottom: 0 } }
 export const tableSP: FadeOptions = { offset: { top: true }, multipler: { top: 2.5, bottom: 0 } }
 export const issueSP: FadeOptions = { offset: { top: true }, multipler: { top: 3, bottom: 0 } }
+
+export interface DeviceOptions {
+  docWidth: number
+  docHeight: number
+  isPortrait: boolean
+  isMobile: boolean
+}

@@ -32,6 +32,7 @@
   import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
   import { FilterButton, ViewletSettingButton } from '@hcengineering/view-resources'
   import calendar from '../plugin'
+  import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
 
   export let _class: Ref<Class<Event>> = calendar.class.Event
   export let space: Ref<Space> | undefined = undefined
@@ -98,36 +99,43 @@
       tooltip: views.$lookup?.descriptor?.label
     }
   })
+
+  let twoRows: boolean
+  $: twoRows = $deviceInfo.docWidth <= 680
 </script>
 
-<div class="ac-header full withSettings">
-  <div class="ac-header__wrap-title">
-    <div class="ac-header__icon"><Icon icon={viewIcon} size={'small'} /></div>
-    <span class="ac-header__title"><Label label={viewLabel} /></span>
-    <div class="ml-4"><FilterButton {_class} /></div>
-  </div>
+<div class="ac-header withSettings" class:full={!twoRows} class:mini={twoRows}>
+  <div class:ac-header-full={!twoRows} class:flex-between={twoRows}>
+    <div class="ac-header__wrap-title mr-3">
+      <div class="ac-header__icon"><Icon icon={viewIcon} size={'small'} /></div>
+      <span class="ac-header__title"><Label label={viewLabel} /></span>
+      <div class="ml-4"><FilterButton {_class} /></div>
+    </div>
 
-  <SearchEdit
-    bind:value={search}
-    on:change={() => {
-      updateResultQuery(search)
-    }}
-  />
-  <Button icon={IconAdd} label={createLabel} kind={'primary'} size={'small'} on:click={showCreateDialog} />
-
-  {#if viewlets.length > 1}
-    <TabList
-      items={viewslist}
-      multiselect={false}
-      selected={selectedViewlet?._id}
-      kind={'secondary'}
-      size={'small'}
-      on:select={(result) => {
-        if (result.detail !== undefined) selectedViewlet = viewlets.find((vl) => vl._id === result.detail.id)
+    <SearchEdit
+      bind:value={search}
+      on:change={() => {
+        updateResultQuery(search)
       }}
     />
-  {/if}
-  <ViewletSettingButton viewlet={selectedViewlet} />
+  </div>
+  <div class="ac-header-full" class:secondRow={twoRows}>
+    <Button icon={IconAdd} label={createLabel} kind={'primary'} size={'small'} on:click={showCreateDialog} />
+
+    {#if viewlets.length > 1}
+      <TabList
+        items={viewslist}
+        multiselect={false}
+        selected={selectedViewlet?._id}
+        kind={'secondary'}
+        size={'small'}
+        on:select={(result) => {
+          if (result.detail !== undefined) selectedViewlet = viewlets.find((vl) => vl._id === result.detail.id)
+        }}
+      />
+    {/if}
+    <ViewletSettingButton viewlet={selectedViewlet} />
+  </div>
 </div>
 
 {#if selectedViewlet?.$lookup?.descriptor?.component}

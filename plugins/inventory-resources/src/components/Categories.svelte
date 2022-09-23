@@ -20,6 +20,7 @@
   import inventory from '../plugin'
   import CreateCategory from './CreateCategory.svelte'
   import HierarchyView from './HierarchyView.svelte'
+  import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
 
   let search = ''
   let resultQuery: DocumentQuery<Category> = {}
@@ -31,27 +32,34 @@
   function showCreateDialog (ev: MouseEvent) {
     showPopup(CreateCategory, { space: inventory.space.Category }, eventToHTMLElement(ev))
   }
+
+  let twoRows: boolean
+  $: twoRows = $deviceInfo.docWidth <= 680
 </script>
 
-<div class="ac-header full">
-  <div class="ac-header__wrap-title">
-    <div class="ac-header__icon"><Icon icon={inventory.icon.Categories} size={'small'} /></div>
-    <span class="ac-header__title"><Label label={inventory.string.Categories} /></span>
-  </div>
+<div class="ac-header withSettings" class:full={!twoRows} class:mini={twoRows}>
+  <div class:ac-header-full={!twoRows} class:flex-between={twoRows}>
+    <div class="ac-header__wrap-title mr-3">
+      <div class="ac-header__icon"><Icon icon={inventory.icon.Categories} size={'small'} /></div>
+      <span class="ac-header__title"><Label label={inventory.string.Categories} /></span>
+    </div>
 
-  <SearchEdit
-    bind:value={search}
-    on:change={() => {
-      updateResultQuery(search)
-    }}
-  />
-  <Button
-    label={inventory.string.CategoryCreateLabel}
-    icon={IconAdd}
-    kind={'primary'}
-    size={'small'}
-    on:click={showCreateDialog}
-  />
+    <SearchEdit
+      bind:value={search}
+      on:change={() => {
+        updateResultQuery(search)
+      }}
+    />
+  </div>
+  <div class="ac-header-full" class:secondRow={twoRows}>
+    <Button
+      label={inventory.string.CategoryCreateLabel}
+      icon={IconAdd}
+      kind={'primary'}
+      size={'small'}
+      on:click={showCreateDialog}
+    />
+  </div>
 </div>
 
 <Scroller>

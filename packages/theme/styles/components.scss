@@ -20,24 +20,28 @@
   height: 100%;
 
   .ac-header {
-    padding: 0 1.5rem 0 2.25rem;
-    height: 3.5rem;
-    min-height: 3.5rem;
+    padding: 0.5rem 1.5rem 0.5rem 2.25rem;
+    // height: 3.5rem;
+    // min-height: 3.5rem;
 
     &.short {
       display: flex;
       align-items: center;
       flex-wrap: nowrap;
     }
-    &.full {
+    &.full,
+    &-full {
       display: grid;
       grid-template-columns: auto;
       grid-auto-flow: column;
-      grid-auto-columns: min-content;
+      grid-auto-columns: max-content;
       gap: .75rem;
       align-items: center;
-
-      &.withSettings { padding-right: .75rem; }
+    }
+    &.withSettings { padding-right: .75rem; }
+    &.mini {
+      display: flex;
+      flex-direction: column;
     }
     &.mirror {
       justify-content: space-between;
@@ -50,6 +54,10 @@
     }
     &.divide {
       border-bottom: 1px solid var(--divider-color);
+    }
+    .secondRow {
+      align-self: flex-end;
+      margin-top: .5rem;
     }
   }
 

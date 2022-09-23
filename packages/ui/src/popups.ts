@@ -253,6 +253,12 @@ export function fitPopupElement (
     } else if (element === 'account') {
       newProps.bottom = '2.75rem'
       newProps.left = '5rem'
+    } else if (element === 'account-portrait') {
+      newProps.bottom = 'calc(var(--app-panel-width) + .75rem)'
+      newProps.right = '.5rem'
+    } else if (element === 'account-mobile') {
+      newProps.bottom = '.5rem'
+      newProps.left = 'calc(var(--app-panel-width) + .5rem)'
     } else if (element === 'full' && contentPanel === undefined) {
       newProps.top = '0'
       newProps.bottom = '0'

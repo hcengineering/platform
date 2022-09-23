@@ -214,6 +214,7 @@ input.search {
 .justify-stretch { justify-content: stretch; }
 .items-baseline { align-items: baseline; }
 .items-center { align-items: center; }
+.self-end { align-self: end; }
 
 .flex-gap-3 { gap: .75rem; }
 .flex-gap-2 { gap: .5rem; }
@@ -422,6 +423,7 @@ input.search {
 .pb-4 { padding-bottom: 1rem; }
 .pb-6 { padding-bottom: 1.5rem; }
 .pb-16 { padding-bottom: 4rem; }
+.px-1 { padding: 0 .25rem; }
 .px-2 { padding: 0 .5rem; }
 .px-3 { padding: 0 .75rem; }
 .px-4 { padding: 0 1rem; }

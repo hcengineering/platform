@@ -21,12 +21,13 @@
 
   export let active: Ref<Application> | undefined
   export let apps: Application[] = []
+  export let direction: 'vertical' | 'horizontal' = 'vertical'
 
   const dispatch = createEventDispatcher()
 </script>
 
-<div class="flex-col align-center py-1">
-  <Scroller invertScroll padding={'.5rem .5rem'}>
+<div class="flex align-center clear-mins apps-{direction}">
+  <Scroller invertScroll padding={'.5rem .5rem'} horizontal={direction === 'horizontal'} contentDirection={direction}>
     {#each apps as app}
       <AppItem
         selected={app._id === active}
@@ -40,3 +41,14 @@
     {/each}
   </Scroller>
 </div>
+
+<style lang="scss">
+  .apps-horizontal {
+    margin: 0 1rem;
+    padding: 0 0.25rem;
+  }
+  .apps-vertical {
+    margin: 1rem 0;
+    padding: 0.25rem 0;
+  }
+</style>

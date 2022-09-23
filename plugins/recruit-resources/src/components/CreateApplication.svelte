@@ -38,6 +38,7 @@
   import CandidateCard from './CandidateCard.svelte'
   import VacancyCard from './VacancyCard.svelte'
   import VacancyOrgPresenter from './VacancyOrgPresenter.svelte'
+  import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
 
   export let space: Ref<SpaceWithStates>
   export let candidate: Ref<Candidate>
@@ -265,7 +266,7 @@
     </div>
   </svelte:fragment>
   <StatusControl slot="error" {status} />
-  <div class="candidate-vacancy">
+  <div class:candidate-vacancy={!$deviceInfo.isMobile} class:flex-col={$deviceInfo.isMobile}>
     <div class="flex flex-stretch">
       <UserBox
         id={'vacancy.talant.selector'}
@@ -288,7 +289,7 @@
       </UserBox>
     </div>
 
-    <div class="flex-center">
+    <div class="flex-center" class:rotate={$deviceInfo.isMobile}>
       <ExpandRightDouble />
     </div>
     <div class="flex-grow">
@@ -358,6 +359,9 @@
     display: grid;
     grid-template-columns: 3fr 1fr 3fr;
     grid-template-rows: 1fr;
+  }
+  .rotate {
+    transform: rotate(90deg);
   }
   .color {
     margin-right: 0.375rem;

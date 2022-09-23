@@ -21,6 +21,7 @@
   import { ActionContext, FilterButton, TableBrowser, ViewletSettingButton } from '@hcengineering/view-resources'
   import contact from '../plugin'
   import CreateContact from './CreateContact.svelte'
+  import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
 
   let search = ''
   let resultQuery: DocumentQuery<Doc> = {}
@@ -61,6 +62,9 @@
   function showCreateDialog (ev: Event) {
     showPopup(CreateContact, { space: contact.space.Contacts, targetElement: ev.target }, ev.target as HTMLElement)
   }
+
+  let twoRows: boolean
+  $: twoRows = $deviceInfo.docWidth <= 680
 </script>
 
 <ActionContext
@@ -69,27 +73,31 @@
   }}
 />
 <div class="antiPanel-component">
-  <div class="ac-header full withSettings">
-    <div class="ac-header__wrap-title">
-      <div class="ac-header__icon"><Icon icon={contact.icon.Person} size={'small'} /></div>
-      <span class="ac-header__title"><Label label={contact.string.Contacts} /></span>
-      <div class="ml-4"><FilterButton _class={contact.class.Contact} /></div>
-    </div>
+  <div class="ac-header withSettings" class:full={!twoRows} class:mini={twoRows}>
+    <div class:ac-header-full={!twoRows} class:flex-between={twoRows}>
+      <div class="ac-header__wrap-title mr-3">
+        <div class="ac-header__icon"><Icon icon={contact.icon.Person} size={'small'} /></div>
+        <span class="ac-header__title"><Label label={contact.string.Contacts} /></span>
+        <div class="ml-4"><FilterButton _class={contact.class.Contact} /></div>
+      </div>
 
-    <SearchEdit
-      bind:value={search}
-      on:change={() => {
-        updateResultQuery(search)
-      }}
-    />
-    <Button
-      icon={IconAdd}
-      label={contact.string.ContactCreateLabel}
-      kind={'primary'}
-      size={'small'}
-      on:click={(ev) => showCreateDialog(ev)}
-    />
-    <ViewletSettingButton {viewlet} />
+      <SearchEdit
+        bind:value={search}
+        on:change={() => {
+          updateResultQuery(search)
+        }}
+      />
+    </div>
+    <div class="ac-header-full" class:secondRow={twoRows}>
+      <Button
+        icon={IconAdd}
+        label={contact.string.ContactCreateLabel}
+        kind={'primary'}
+        size={'small'}
+        on:click={(ev) => showCreateDialog(ev)}
+      />
+      <ViewletSettingButton {viewlet} />
+    </div>
   </div>
 
   {#if viewlet}
