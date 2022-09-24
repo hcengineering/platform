@@ -13,18 +13,27 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Issue } from '@hcengineering/tracker'
+  import type { Issue, IssueParentInfo } from '@hcengineering/tracker'
+  import { showPanel } from '@hcengineering/ui'
+  import tracker from '../../plugin'
 
   export let value: Issue | undefined
 
   export let maxWidth = ''
+
+  function handleIssueEditorOpened (parent: IssueParentInfo) {
+    if (value === undefined) return
+    showPanel(tracker.component.EditIssue, parent.parentId, value._class, 'content')
+  }
 </script>
 
 {#if value}
   <div class="root" style:max-width={maxWidth}>
     <span class="names">
       {#each value.parents as parentInfo}
-        <span class="name">{parentInfo.parentTitle}</span>
+        <span class="name cursor-pointer" on:click={() => handleIssueEditorOpened(parentInfo)}
+          >{parentInfo.parentTitle}</span
+        >
       {/each}
     </span>
   </div>
@@ -40,6 +49,17 @@
       white-space: nowrap;
       text-overflow: ellipsis;
       color: var(--content-color);
+    }
+
+    .name {
+      &:hover {
+        color: var(--caption-color);
+        text-decoration: underline;
+      }
+
+      &:active {
+        color: var(--accent-color);
+      }
     }
 
     .name::before {
