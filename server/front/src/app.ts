@@ -101,29 +101,23 @@ async function getFileRange (
     return
   }
 
-  client.getPartialObject(
-    workspace,
-    uuid,
-    start,
-    end - start + 1,
-    (err, dataStream) => {
-      if (err !== null) {
-        console.log(err)
-        res.status(500).send()
-        return
-      }
-
-      res.writeHead(206, {
-        Connection: 'keep-alive',
-        'Content-Range': `bytes ${start}-${end}/${size}`,
-        'Accept-Ranges': 'bytes',
-        'Content-Length': end - start + 1,
-        'Content-Type': stat.metaData['content-type']
-      })
-
-      dataStream.pipe(res)
+  client.getPartialObject(workspace, uuid, start, end - start + 1, (err, dataStream) => {
+    if (err !== null) {
+      console.log(err)
+      res.status(500).send()
+      return
     }
-  )
+
+    res.writeHead(206, {
+      Connection: 'keep-alive',
+      'Content-Range': `bytes ${start}-${end}/${size}`,
+      'Accept-Ranges': 'bytes',
+      'Content-Length': end - start + 1,
+      'Content-Type': stat.metaData['content-type']
+    })
+
+    dataStream.pipe(res)
+  })
 }
 
 async function getFile (client: Client, workspace: string, uuid: string, res: Response): Promise<void> {
