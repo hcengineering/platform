@@ -22,7 +22,7 @@ import { decodeToken, Token } from '@hcengineering/server-token'
 import bp from 'body-parser'
 import compression from 'compression'
 import cors from 'cors'
-import express from 'express'
+import express, { Response } from 'express'
 import fileUpload, { UploadedFile } from 'express-fileupload'
 import https from 'https'
 import { BucketItem, Client, ItemBucketMetadata } from 'minio'
@@ -60,6 +60,100 @@ async function readMinioData (client: Client, db: string, name: string): Promise
     })
   })
   return chunks
+}
+
+function getRange (range: string, size: number): [number, number] {
+  const [startStr, endStr] = range.replace(/bytes=/, '').split('-')
+
+  let start = parseInt(startStr, 10)
+  let end = endStr !== undefined ? parseInt(endStr, 10) : size - 1
+
+  if (!isNaN(start) && isNaN(end)) {
+    end = size - 1
+  }
+
+  if (isNaN(start) && !isNaN(end)) {
+    start = size - end
+    end = size - 1
+  }
+
+  return [start, end]
+}
+
+async function getFileRange (
+  range: string,
+  client: Client,
+  workspace: string,
+  uuid: string,
+  res: Response
+): Promise<void> {
+  const stat = await client.statObject(workspace, uuid)
+
+  const size = stat.size
+
+  const [start, end] = getRange(range, size)
+
+  if (start >= size || end >= size) {
+    res.writeHead(416, {
+      'Content-Range': `bytes */${size}`
+    })
+    res.end()
+    return
+  }
+
+  client.getPartialObject(
+    workspace,
+    uuid,
+    start,
+    end - start + 1,
+    (err, dataStream) => {
+      if (err !== null) {
+        console.log(err)
+        res.status(500).send()
+        return
+      }
+
+      res.writeHead(206, {
+        Connection: 'keep-alive',
+        'Content-Range': `bytes ${start}-${end}/${size}`,
+        'Accept-Ranges': 'bytes',
+        'Content-Length': end - start + 1,
+        'Content-Type': stat.metaData['content-type']
+      })
+
+      dataStream.pipe(res)
+    }
+  )
+}
+
+async function getFile (client: Client, workspace: string, uuid: string, res: Response): Promise<void> {
+  const stat = await client.statObject(workspace, uuid)
+
+  client.getObject(workspace, uuid, (err, dataStream) => {
+    if (err !== null) {
+      console.log(err)
+      res.status(500).send()
+      return
+    }
+    res.status(200)
+    res.set('Cache-Control', 'max-age=604800')
+
+    const contentType = stat.metaData['content-type']
+    if (contentType !== undefined) {
+      res.setHeader('Content-Type', contentType)
+    }
+
+    dataStream.on('data', function (chunk) {
+      res.write(chunk)
+    })
+    dataStream.on('end', function () {
+      res.end()
+    })
+    dataStream.on('error', function (err) {
+      console.log(err)
+      res.status(500).send()
+    })
+  })
 }
 
 /**
@@ -113,7 +207,33 @@ export function start (
   app.use(express.static(dist, { maxAge: '168h' }))
 
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
-  app.get('/files', async (req, res) => {
+  app.head('/files', async (req, res: Response) => {
+    try {
+      const token = req.query.token as string
+      const payload = decodeToken(token)
+      let uuid = req.query.file as string
+      const size = req.query.size as 'inline' | 'tiny' | 'x-small' | 'small' | 'medium' | 'large' | 'x-large' | 'full'
+
+      uuid = await getResizeID(size, uuid, config, payload)
+      const stat = await config.minio.statObject(payload.workspace, uuid)
+
+      const fileSize = stat.size
+
+      res.status(200)
+
+      res.setHeader('accept-ranges', 'bytes')
+
+      res.setHeader('content-length', fileSize)
+
+      res.end()
+    } catch (error) {
+      console.log(error)
+      res.status(500).send()
+    }
+  })
+
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+  app.get('/files', async (req, res: Response) => {
     try {
       const token = req.query.token as string
       const payload = decodeToken(token)
@@ -122,30 +242,12 @@ export function start (
 
       uuid = await getResizeID(size, uuid, config, payload)
 
-      const stat = await config.minio.statObject(payload.workspace, uuid)
-
-      config.minio.getObject(payload.workspace, uuid, function (err, dataStream) {
-        if (err !== null) {
-          return console.log(err)
-        }
-        res.status(200)
-        res.set('Cache-Control', 'max-age=604800')
-
-        const contentType = stat.metaData['content-type']
-        if (contentType !== undefined) {
-          res.setHeader('Content-Type', contentType)
-        }
-
-        dataStream.on('data', function (chunk) {
-          res.write(chunk)
-        })
-        dataStream.on('end', function () {
-          res.end()
-        })
-        dataStream.on('error', function (err) {
-          console.log(err)
-        })
-      })
+      const range = req.headers.range
+      if (range !== undefined) {
+        await getFileRange(range, config.minio, payload.workspace, uuid, res)
+      } else {
+        await getFile(config.minio, payload.workspace, uuid, res)
+      }
     } catch (error) {
       console.log(error)
       res.status(500).send()
@@ -170,25 +272,11 @@ export function start (
     try {
       const token = authHeader.split(' ')[1]
       const payload = decodeToken(token)
-      // const fileId = await awsUpload(file as UploadedFile)
       const uuid = await minioUpload(config.minio, payload.workspace, file)
       console.log('uploaded uuid', uuid)
 
       const space = req.query.space as Ref<Space> | undefined
       const attachedTo = req.query.attachedTo as Ref<Doc> | undefined
-
-      // const name = req.query.name as string
-
-      // await createAttachment(
-      //   transactorEndpoint,
-      //   token,
-      //   'core:account:System' as Ref<Account>,
-      //   space,
-      //   attachedTo,
-      //   collection,
-      //   name,
-      //   fileId
-      // )
 
       if (space !== undefined && attachedTo !== undefined) {
         const elastic = await createElasticAdapter(config.elasticUrl, payload.workspace)
