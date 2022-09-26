@@ -15,14 +15,20 @@
 <script lang="ts">
   import type { Issue } from '@hcengineering/tracker'
   import ParentNamesPresenter from './ParentNamesPresenter.svelte'
+  import tracker from '../../plugin'
+  import { showPanel } from '@hcengineering/ui'
 
   export let value: Issue
   export let shouldUseMargin: boolean = false
+
+  function handleIssueEditorOpened () {
+    showPanel(tracker.component.EditIssue, value._id, value._class, 'content')
+  }
 </script>
 
 {#if value}
   <span class="root" class:with-margin={shouldUseMargin} title={value.title}>
-    <span class="name">{value.title}</span>
+    <span class="name cursor-pointer" on:click={handleIssueEditorOpened}>{value.title}</span>
     <ParentNamesPresenter {value} />
   </span>
 {/if}
@@ -35,6 +41,16 @@
     white-space: nowrap;
     overflow: hidden;
     flex-shrink: 10;
+
+    .name {
+      &:hover {
+        text-decoration: underline;
+      }
+
+      &:active {
+        color: var(--accent-color);
+      }
+    }
 
     &.with-margin {
       margin-left: 0.5rem;
