@@ -62,7 +62,8 @@
   $: isPortrait = docWidth <= docHeight
   let isMobile: boolean
   let alwaysMobile: boolean = false
-  $: isMobile = alwaysMobile ?? /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+  $: isMobile =
+    alwaysMobile ?? /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
 
   $: $deviceInfo.docWidth = docWidth
   $: $deviceInfo.docHeight = docHeight
@@ -95,7 +96,12 @@
           <div class="flex-center widget cursor-pointer mr-3">
             <FontSizeSelector />
           </div>
-          <div class="flex-center widget mr-3" class:on={isMobile} class:always={alwaysMobile} on:click={() => alwaysMobile = !alwaysMobile}>
+          <div
+            class="flex-center widget mr-3"
+            class:on={isMobile}
+            class:always={alwaysMobile}
+            on:click={() => (alwaysMobile = !alwaysMobile)}
+          >
             <WiFi size={'small'} />
           </div>
         </div>
@@ -150,7 +156,9 @@
         &.on {
           color: var(--caption-color);
 
-          &.always { color: var(--won-color); }
+          &.always {
+            color: var(--won-color);
+          }
         }
       }
     }
