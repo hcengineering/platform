@@ -479,7 +479,7 @@
     />
     <div class="workbench-container">
       {#if currentApplication && navigatorModel && navigator && visibileNav}
-        {#if visibileNav && navFloat}<div class="cover shown" on:click={() => visibileNav = false} />{/if}
+        {#if visibileNav && navFloat}<div class="cover shown" on:click={() => (visibileNav = false)} />{/if}
         <div
           class="antiPanel-navigator {appsDirection === 'horizontal' ? 'portrait' : 'landscape'}"
           style="box-shadow: -1px 0px 2px rgba(0, 0, 0, .1)"
@@ -609,7 +609,9 @@
     height: 100vh;
     z-index: 10;
 
-    &.shown { display: block; }
+    &.shown {
+      display: block;
+    }
   }
   .splitter {
     position: relative;
