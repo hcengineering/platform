@@ -67,7 +67,7 @@
   }
 
   afterUpdate(() => {
-    dispatch('changeContent', true)
+    dispatch('changeContent')
   })
   onMount(() => {
     if (btns[0]) {
@@ -113,7 +113,7 @@
 <div
   class="antiPopup"
   use:resizeObserver={() => {
-    dispatch('changeContent', true)
+    dispatch('changeContent')
   }}
   on:keydown={keyDown}
 >

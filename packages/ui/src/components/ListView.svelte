@@ -54,7 +54,7 @@
     }
   }
 
-  afterUpdate(() => dispatch('changeContent', true))
+  afterUpdate(() => dispatch('changeContent'))
 </script>
 
 {#if count}

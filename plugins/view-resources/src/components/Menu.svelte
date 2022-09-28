@@ -61,5 +61,5 @@
 </script>
 
 {#if loaded}
-  <Menu {actions} on:close on:changeContent={() => dispatch('changeContent', true)} />
+  <Menu {actions} on:close on:changeContent={() => dispatch('changeContent')} />
 {/if}

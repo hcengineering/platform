@@ -31,8 +31,8 @@
     })
 
   afterUpdate(() => {
-    dispatch('changeContent', true)
+    dispatch('changeContent')
   })
 </script>
 
-<Menu {actions} on:changeContent={() => dispatch('changeContent', true)} />
+<Menu {actions} on:changeContent={() => dispatch('changeContent')} />
