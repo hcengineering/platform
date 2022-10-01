@@ -247,6 +247,8 @@
   } else {
     candidateQuery.unsubscribe()
   }
+  let verticalContent: boolean = false
+  $: verticalContent = $deviceInfo.isMobile && $deviceInfo.isPortrait
 </script>
 
 <FocusHandler {manager} />
@@ -266,7 +268,7 @@
     </div>
   </svelte:fragment>
   <StatusControl slot="error" {status} />
-  <div class:candidate-vacancy={!$deviceInfo.isMobile} class:flex-col={$deviceInfo.isMobile}>
+  <div class:candidate-vacancy={!verticalContent} class:flex-col={verticalContent}>
     <div class="flex flex-stretch">
       <UserBox
         id={'vacancy.talant.selector'}
@@ -289,7 +291,7 @@
       </UserBox>
     </div>
 
-    <div class="flex-center" class:rotate={$deviceInfo.isMobile}>
+    <div class="flex-center" class:rotate={verticalContent}>
       <ExpandRightDouble />
     </div>
     <div class="flex-grow">
