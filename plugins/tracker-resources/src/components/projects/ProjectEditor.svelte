@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
-  import { Issue, Project } from '@hcengineering/tracker'
+  import { Issue, IssueTemplate, Project } from '@hcengineering/tracker'
   import { getClient } from '@hcengineering/presentation'
   import { ButtonKind, ButtonShape, ButtonSize, tooltip } from '@hcengineering/ui'
   import { IntlString } from '@hcengineering/platform'
@@ -22,7 +22,7 @@
   import ProjectSelector from '../ProjectSelector.svelte'
   import { activeProject } from '../../issues'
 
-  export let value: Issue
+  export let value: Issue | IssueTemplate
   export let isEditable: boolean = true
   export let shouldShowLabel: boolean = true
   export let popupPlaceholder: IntlString = tracker.string.MoveToProject
@@ -43,15 +43,7 @@
       return
     }
 
-    await client.updateCollection(
-      value._class,
-      value.space,
-      value._id,
-      value.attachedTo,
-      value.attachedToClass,
-      value.collection,
-      { project: newProjectId }
-    )
+    await client.update(value, { project: newProjectId })
   }
 </script>
 

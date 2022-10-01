@@ -15,7 +15,7 @@
 <script lang="ts">
   import { IntlString } from '@hcengineering/platform'
 
-  import { Scroller, showPopup } from '@hcengineering/ui'
+  import { IconSize, Scroller, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import textEditorPlugin from '../plugin'
   import EmojiPopup from './EmojiPopup.svelte'
@@ -43,11 +43,11 @@
   export let content: string = ''
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
   export let showButtons: boolean = true
+  export let buttonSize: IconSize = 'large'
   export let isScrollable: boolean = true
   export let focusable: boolean = false
   export let maxHeight: 'max' | 'card' | string = 'max'
   export let withoutTopBorder = false
-  export let useReferences = false
 
   let textEditor: TextEditor
 
@@ -145,28 +145,28 @@
     <div class="formatPanel buttons-group xsmall-gap mb-4" class:withoutTopBorder>
       <StyleButton
         icon={Bold}
-        size={'small'}
+        size={buttonSize}
         selected={activeModes.has('bold')}
         showTooltip={{ label: textEditorPlugin.string.Bold }}
         on:click={getToggler(textEditor.toggleBold)}
       />
       <StyleButton
         icon={Italic}
-        size={'small'}
+        size={buttonSize}
         selected={activeModes.has('italic')}
         showTooltip={{ label: textEditorPlugin.string.Italic }}
         on:click={getToggler(textEditor.toggleItalic)}
       />
       <StyleButton
         icon={Strikethrough}
-        size={'small'}
+        size={buttonSize}
         selected={activeModes.has('strike')}
         showTooltip={{ label: textEditorPlugin.string.Strikethrough }}
         on:click={getToggler(textEditor.toggleStrike)}
       />
       <StyleButton
         icon={Link}
-        size={'small'}
+        size={buttonSize}
         selected={activeModes.has('link')}
         disabled={isSelectionEmpty && !activeModes.has('link')}
         showTooltip={{ label: textEditorPlugin.string.Link }}
@@ -175,14 +175,14 @@
       <div class="buttons-divider" />
       <StyleButton
         icon={ListNumber}
-        size={'small'}
+        size={buttonSize}
         selected={activeModes.has('orderedList')}
         showTooltip={{ label: textEditorPlugin.string.OrderedList }}
         on:click={getToggler(textEditor.toggleOrderedList)}
       />
       <StyleButton
         icon={ListBullet}
-        size={'small'}
+        size={buttonSize}
         selected={activeModes.has('bulletList')}
         showTooltip={{ label: textEditorPlugin.string.BulletedList }}
         on:click={getToggler(textEditor.toggleBulletList)}
@@ -190,7 +190,7 @@
       <div class="buttons-divider" />
       <StyleButton
         icon={Quote}
-        size={'small'}
+        size={buttonSize}
         selected={activeModes.has('blockquote')}
         showTooltip={{ label: textEditorPlugin.string.Blockquote }}
         on:click={getToggler(textEditor.toggleBlockquote)}
@@ -198,14 +198,14 @@
       <div class="buttons-divider" />
       <StyleButton
         icon={Code}
-        size={'small'}
+        size={buttonSize}
         selected={activeModes.has('code')}
         showTooltip={{ label: textEditorPlugin.string.Code }}
         on:click={getToggler(textEditor.toggleCode)}
       />
       <StyleButton
         icon={CodeBlock}
-        size={'small'}
+        size={buttonSize}
         selected={activeModes.has('codeBlock')}
         showTooltip={{ label: textEditorPlugin.string.CodeBlock }}
         on:click={getToggler(textEditor.toggleCodeBlock)}
@@ -254,9 +254,7 @@
   {#if showButtons}
     <div class="buttons">
       {#each defActions as a}
-        <div class="p-1">
-          <StyleButton icon={a.icon} size={'large'} on:click={(evt) => handleAction(a, evt)} />
-        </div>
+        <StyleButton icon={a.icon} size={buttonSize} on:click={(evt) => handleAction(a, evt)} />
       {/each}
       <div class="flex-grow">
         <slot />

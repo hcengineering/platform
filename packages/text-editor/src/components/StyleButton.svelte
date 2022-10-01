@@ -14,11 +14,11 @@
 -->
 <script lang="ts">
   import type { Asset } from '@hcengineering/platform'
-  import { AnySvelteComponent, Icon, LabelAndProps, tooltip } from '@hcengineering/ui'
+  import { AnySvelteComponent, Icon, IconSize, LabelAndProps, tooltip } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
   export let icon: Asset | AnySvelteComponent
-  export let size: 'small' | 'medium' | 'large'
+  export let size: IconSize
   export let selected: boolean = false
   export let showTooltip: LabelAndProps | undefined = undefined
   export let disabled: boolean = false

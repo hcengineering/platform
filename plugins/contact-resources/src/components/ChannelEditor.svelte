@@ -122,6 +122,7 @@
       }}
     />
     <Button
+      id="channel-ok"
       focusIndex={3}
       kind={'transparent'}
       size={'small'}

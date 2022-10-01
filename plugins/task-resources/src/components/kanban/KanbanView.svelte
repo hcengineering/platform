@@ -96,8 +96,7 @@
     listProvider.updateSelection(evt.detail.docs, evt.detail.value)
   }
   const onContextMenu = (evt: any) => showMenu(evt.detail.evt, evt.detail.objects)
-  $: query = { doneState: null, space }
-  let resultQuery = query
+  let resultQuery = { doneState: null, space }
 </script>
 
 {#await cardPresenter then presenter}
@@ -106,8 +105,13 @@
       mode: 'browser'
     }}
   />
-  <FilterBar {_class} {query} on:change={(e) => (resultQuery = e.detail)} />
-
+  <FilterBar
+    {_class}
+    query={{ doneState: null, space }}
+    on:change={(e) => {
+      resultQuery = e.detail
+    }}
+  />
   <KanbanUI
     bind:this={kanbanUI}
     {_class}

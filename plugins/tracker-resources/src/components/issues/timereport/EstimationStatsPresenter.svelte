@@ -1,0 +1,122 @@
+<!--
+// Copyright © 2022 Hardcore Engineering Inc.
+// 
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// 
+// See the License for the specific language governing permissions and
+// limitations under the License.
+-->
+<script lang="ts">
+  import { AttachedData } from '@hcengineering/core'
+
+  import { Issue } from '@hcengineering/tracker'
+  import { Label } from '@hcengineering/ui'
+  import tracker from '../../../plugin'
+  import EstimationProgressCircle from './EstimationProgressCircle.svelte'
+
+  export let value: Issue | AttachedData<Issue>
+
+  $: childReportTime =
+    value.reportedTime + (value.childInfo ?? []).map((it) => it.reportedTime).reduce((a, b) => a + b, 0)
+  $: childEstimationTime = (value.childInfo ?? []).map((it) => it.estimation).reduce((a, b) => a + b, 0)
+
+  function hourFloor (value: number): number {
+    const days = Math.ceil(value)
+    const hours = value - days
+    return days + Math.floor(hours * 100) / 100
+  }
+</script>
+
+<div class="estimation-container" on:click>
+  <div class="icon">
+    <EstimationProgressCircle value={Math.max(value.reportedTime, childReportTime)} max={value.estimation} />
+  </div>
+  <span class="overflow-label label flex-row-center flex-nowrap text-md">
+    {#if value.reportedTime > 0 || childReportTime > 0}
+      {#if childReportTime}
+        {@const rchildReportTime = hourFloor(childReportTime)}
+        {@const reportDiff = rchildReportTime - hourFloor(value.reportedTime)}
+        {#if reportDiff !== 0 && value.reportedTime !== 0}
+          <div class="flex flex-nowrap mr-1" class:showError={reportDiff > 0}>
+            <Label label={tracker.string.TimeSpendValue} params={{ value: rchildReportTime }} />
+          </div>
+          <div class="romColor">
+            (<Label label={tracker.string.TimeSpendValue} params={{ value: hourFloor(value.reportedTime) }} />)
+          </div>
+        {:else if value.reportedTime === 0}
+          <Label label={tracker.string.TimeSpendValue} params={{ value: hourFloor(childReportTime) }} />
+        {:else}
+          <Label label={tracker.string.TimeSpendValue} params={{ value: hourFloor(value.reportedTime) }} />
+        {/if}
+      {:else}
+        <Label label={tracker.string.TimeSpendValue} params={{ value: hourFloor(value.reportedTime) }} />
+      {/if}
+      <div class="p-1">/</div>
+    {/if}
+    {#if childEstimationTime}
+      {@const childEstTime = Math.round(childEstimationTime)}
+      {@const estimationDiff = childEstTime - Math.round(value.estimation)}
+      {#if estimationDiff !== 0}
+        <div class="flex flex-nowrap mr-1" class:showWarning={estimationDiff !== 0}>
+          <Label label={tracker.string.TimeSpendValue} params={{ value: childEstTime }} />
+        </div>
+        {#if value.estimation !== 0}
+          <div class="romColor">
+            (<Label label={tracker.string.TimeSpendValue} params={{ value: hourFloor(value.estimation) }} />)
+          </div>
+        {/if}
+      {:else}
+        <Label label={tracker.string.TimeSpendValue} params={{ value: hourFloor(value.estimation) }} />
+      {/if}
+    {:else}
+      <Label label={tracker.string.TimeSpendValue} params={{ value: hourFloor(value.estimation) }} />
+    {/if}
+  </span>
+</div>
+
+<style lang="scss">
+  .estimation-container {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    min-width: 0;
+    cursor: pointer;
+
+    .icon {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-shrink: 0;
+      width: 1rem;
+      height: 1rem;
+      color: var(--content-color);
+    }
+    .label {
+      margin-left: 0.5rem;
+      font-weight: 500;
+      font-size: 0.8125rem;
+      color: var(--accent-color);
+    }
+    &:hover {
+      .icon {
+        color: var(--caption-color) !important;
+      }
+    }
+
+    .showError {
+      color: var(--error-color) !important;
+    }
+    .showWarning {
+      color: var(--warning-color) !important;
+    }
+    .romColor {
+      color: var(--content-color) !important;
+    }
+  }
+</style>

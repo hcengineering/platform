@@ -13,15 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
   import { Employee } from '@hcengineering/contact'
   import { AttachedData, Ref } from '@hcengineering/core'
-  import { getClient, EmployeeBox } from '@hcengineering/presentation'
-  import { Issue } from '@hcengineering/tracker'
+  import { EmployeeBox, getClient } from '@hcengineering/presentation'
+  import { Issue, IssueTemplateData } from '@hcengineering/tracker'
   import { ButtonKind, ButtonSize, TooltipAlignment } from '@hcengineering/ui'
+  import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
 
-  export let value: Issue | AttachedData<Issue>
+  export let value: Issue | AttachedData<Issue> | IssueTemplateData
   export let size: ButtonSize = 'large'
   export let kind: ButtonKind = 'link'
   export let tooltipAlignment: TooltipAlignment | undefined = undefined

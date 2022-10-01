@@ -20,9 +20,10 @@
 
   // export let label: IntlString
   export let placeholder: IntlString
-  export let value: number
+  export let value: number | undefined
   export let focus: boolean
-  export let onChange: (value: number) => void
+  export let maxWidth: string = '10rem'
+  export let onChange: (value: number | undefined) => void
   export let kind: 'no-border' | 'link' = 'no-border'
   export let readonly = false
 

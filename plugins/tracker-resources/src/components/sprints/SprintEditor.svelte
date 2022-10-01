@@ -16,7 +16,7 @@
   import { Ref, WithLookup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Issue, IssueStatus, Sprint } from '@hcengineering/tracker'
+  import { Issue, IssueStatus, IssueTemplate, Sprint } from '@hcengineering/tracker'
   import { ButtonKind, ButtonShape, ButtonSize, Label, tooltip } from '@hcengineering/ui'
   import DatePresenter from '@hcengineering/ui/src/components/calendar/DatePresenter.svelte'
   import { activeSprint } from '../../issues'
@@ -25,7 +25,7 @@
   import EstimationProgressCircle from '../issues/timereport/EstimationProgressCircle.svelte'
   import SprintSelector from './SprintSelector.svelte'
 
-  export let value: Issue
+  export let value: Issue | IssueTemplate
   export let isEditable: boolean = true
   export let shouldShowLabel: boolean = true
   export let popupPlaceholder: IntlString = tracker.string.MoveToSprint
@@ -47,15 +47,7 @@
       return
     }
 
-    await client.updateCollection(
-      value._class,
-      value.space,
-      value._id,
-      value.attachedTo,
-      value.attachedToClass,
-      value.collection,
-      { sprint: newSprintId }
-    )
+    await client.update(value, { sprint: newSprintId })
   }
 
   $: ids = new Set(issues?.map((it) => it._id) ?? [])

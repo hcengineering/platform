@@ -1,7 +1,7 @@
 <script lang="ts">
   import { IntlString } from '@hcengineering/platform'
   import presentation, { MessageViewer } from '@hcengineering/presentation'
-  import { ActionIcon, IconCheck, IconClose, IconEdit, Label, ShowMore } from '@hcengineering/ui'
+  import { ActionIcon, IconCheck, IconClose, IconEdit, IconSize, Label, ShowMore } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import textEditorPlugin from '../plugin'
   import StyledTextEditor from './StyledTextEditor.svelte'
@@ -13,6 +13,7 @@
   export let emphasized: boolean = false
   export let alwaysEdit: boolean = false
   export let showButtons: boolean = true
+  export let buttonSize: IconSize = 'small'
   export let hideExtraButtons: boolean = false
   export let maxHeight: 'max' | 'card' | string = 'max'
   export let previewLimit: number = 240
@@ -85,9 +86,9 @@
     <StyledTextEditor
       {placeholder}
       {showButtons}
+      {buttonSize}
       {maxHeight}
       {focusable}
-      useReferences
       bind:content={rawValue}
       bind:this={textEditor}
       on:focus={() => {

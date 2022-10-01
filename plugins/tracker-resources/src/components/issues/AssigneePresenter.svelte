@@ -15,7 +15,7 @@
 <script lang="ts">
   import contact, { Employee } from '@hcengineering/contact'
   import { Class, Doc, Ref } from '@hcengineering/core'
-  import { Issue } from '@hcengineering/tracker'
+  import { Issue, IssueTemplate } from '@hcengineering/tracker'
   import { UsersPopup, getClient } from '@hcengineering/presentation'
   import { AttributeModel } from '@hcengineering/view'
   import { eventToHTMLElement, showPopup } from '@hcengineering/ui'
@@ -25,6 +25,7 @@
 
   export let value: Employee | null | undefined
   export let issueId: Ref<Issue>
+  export let issueClass: Ref<Class<Issue | IssueTemplate>> = tracker.class.Issue
   export let defaultClass: Ref<Class<Doc>> | undefined = undefined
   export let isEditable: boolean = true
   export let shouldShowLabel: boolean = false
@@ -51,7 +52,7 @@
       return
     }
 
-    const currentIssue = await client.findOne(tracker.class.Issue, { _id: issueId })
+    const currentIssue = await client.findOne(issueClass, { _id: issueId })
 
     if (currentIssue === undefined) {
       return
@@ -59,15 +60,7 @@
 
     const newAssignee = result === null ? null : result._id
 
-    await client.updateCollection(
-      currentIssue._class,
-      currentIssue.space,
-      currentIssue._id,
-      currentIssue.attachedTo,
-      currentIssue.attachedToClass,
-      currentIssue.collection,
-      { assignee: newAssignee }
-    )
+    await client.update(currentIssue, { assignee: newAssignee })
   }
 
   const handleAssigneeEditorOpened = async (event: MouseEvent) => {

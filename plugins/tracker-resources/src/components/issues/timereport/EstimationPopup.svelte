@@ -14,28 +14,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact from '@hcengineering/contact'
-  import { FindOptions } from '@hcengineering/core'
-  import presentation, { Card } from '@hcengineering/presentation'
-  import { Issue, TimeSpendReport } from '@hcengineering/tracker'
-  import {
-    Button,
-    EditBox,
-    EditStyle,
-    eventToHTMLElement,
-    IconAdd,
-    Label,
-    Scroller,
-    tableSP,
-    showPopup
-  } from '@hcengineering/ui'
-  import { TableBrowser } from '@hcengineering/view-resources'
+  import { SortingOrder, WithLookup } from '@hcengineering/core'
+  import presentation, { Card, createQuery } from '@hcengineering/presentation'
+  import { Issue, IssueStatus, Team } from '@hcengineering/tracker'
+  import { Button, EditBox, EditStyle, eventToHTMLElement, IconAdd, Label, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../../plugin'
   import IssuePresenter from '../IssuePresenter.svelte'
-  import ParentNamesPresenter from '../ParentNamesPresenter.svelte'
-  import EstimationPresenter from './EstimationPresenter.svelte'
+  import EstimationStatsPresenter from './EstimationStatsPresenter.svelte'
+  import SubIssuesEstimations from './SubIssuesEstimations.svelte'
   import TimeSpendReportPopup from './TimeSpendReportPopup.svelte'
+  import TimeSpendReports from './TimeSpendReports.svelte'
 
   export let value: string | number | undefined
   export let format: 'text' | 'password' | 'number'
@@ -49,10 +38,43 @@
   function _onkeypress (ev: KeyboardEvent) {
     if (ev.key === 'Enter') dispatch('close', _value)
   }
-  const options: FindOptions<TimeSpendReport> = {
-    lookup: { employee: contact.class.Employee, attachedTo: tracker.class.Issue }
-  }
+
   $: childIds = Array.from((object.childInfo ?? []).map((it) => it.childId))
+
+  const query = createQuery()
+
+  let currentTeam: Team | undefined
+  let issueStatuses: WithLookup<IssueStatus>[] | undefined
+
+  $: query.query(
+    object._class,
+    { _id: object._id },
+    (res) => {
+      const r = res.shift()
+      if (r !== undefined) {
+        object = r
+        currentTeam = r.$lookup?.space
+      }
+    },
+    {
+      lookup: {
+        space: tracker.class.Team
+      }
+    }
+  )
+
+  const statusesQuery = createQuery()
+
+  $: currentTeam &&
+    statusesQuery.query(
+      tracker.class.IssueStatus,
+      { attachedTo: currentTeam._id },
+      (statuses) => (issueStatuses = statuses),
+      {
+        lookup: { category: tracker.class.IssueStatusCategory },
+        sort: { rank: SortingOrder.Ascending }
+      }
+    )
 </script>
 
 <Card
@@ -66,6 +88,15 @@
     dispatch('close', null)
   }}
 >
+  <svelte:fragment slot="title">
+    <div class="flex-row-center">
+      <Label label={tracker.string.Estimation} />
+      <div class="ml-2">
+        <EstimationStatsPresenter value={object} />
+      </div>
+    </div>
+  </svelte:fragment>
+
   <svelte:fragment slot="header">
     <IssuePresenter value={object} disableClick />
   </svelte:fragment>
@@ -78,49 +109,29 @@
         placeholder={tracker.string.Estimation}
         focus
         on:keypress={_onkeypress}
+        on:change={() => {
+          if (typeof _value === 'number') {
+            object.estimation = _value
+          }
+        }}
       />
     </div>
   </div>
-  <Label label={tracker.string.ChildEstimation} />:
-  <div class="h-50">
-    <Scroller fade={tableSP}>
-      <TableBrowser
-        showFilterBar={false}
-        _class={tracker.class.Issue}
-        query={{ _id: { $in: childIds } }}
-        config={[
-          '',
-          { key: 'estimation', presenter: EstimationPresenter, label: tracker.string.Estimation },
-          { key: '', presenter: ParentNamesPresenter, props: { maxWidth: '20rem' }, label: tracker.string.Title }
-        ]}
-        {options}
-      />
-    </Scroller>
-  </div>
-  <Label label={tracker.string.ReportedTime} />:
-  <div class="h-50">
-    <Scroller fade={tableSP}>
-      <TableBrowser
-        _class={tracker.class.TimeSpendReport}
-        query={{ attachedTo: { $in: [object._id, ...childIds] } }}
-        showFilterBar={false}
-        config={[
-          '$lookup.attachedTo',
-          '',
-          '$lookup.employee',
-          {
-            key: '$lookup.attachedTo',
-            presenter: ParentNamesPresenter,
-            props: { maxWidth: '20rem' },
-            label: tracker.string.Title
-          },
-          'date',
-          'description'
-        ]}
-        {options}
-      />
-    </Scroller>
-  </div>
+  {#if currentTeam && issueStatuses}
+    <SubIssuesEstimations
+      issue={object}
+      issueStatuses={new Map([[currentTeam._id, issueStatuses]])}
+      teams={new Map([[currentTeam?._id, currentTeam]])}
+    />
+  {/if}
+
+  {#if currentTeam}
+    <TimeSpendReports
+      issue={object}
+      teams={new Map([[currentTeam?._id, currentTeam]])}
+      query={{ attachedTo: { $in: [object._id, ...childIds] } }}
+    />
+  {/if}
   <svelte:fragment slot="buttons">
     <Button
       icon={IconAdd}

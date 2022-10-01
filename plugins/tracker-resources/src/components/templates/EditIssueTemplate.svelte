@@ -14,13 +14,13 @@
 -->
 <script lang="ts">
   import { AttachmentDocList, AttachmentStyledBox } from '@hcengineering/attachment-resources'
-  import { Class, Data, Doc, Ref, SortingOrder, WithLookup } from '@hcengineering/core'
+  import { Class, Data, Doc, Ref, WithLookup } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
   import { getResource } from '@hcengineering/platform'
   import presentation, { createQuery, getClient, MessageViewer } from '@hcengineering/presentation'
   import setting, { settingId } from '@hcengineering/setting'
-  import type { Issue, IssueStatus, Team } from '@hcengineering/tracker'
+  import type { IssueTemplate, IssueTemplateChild, Team } from '@hcengineering/tracker'
   import {
     Button,
     EditBox,
@@ -31,32 +31,26 @@
     Label,
     navigate,
     Scroller,
-    showPopup,
-    Spinner
+    showPopup
   } from '@hcengineering/ui'
   import { ContextMenu, UpDownNavigator } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
-  import { generateIssueShortLink, getIssueId } from '../../../issues'
-  import tracker from '../../../plugin'
-  import IssueStatusActivity from '../IssueStatusActivity.svelte'
-  import ControlPanel from './ControlPanel.svelte'
-  import CopyToClipboard from './CopyToClipboard.svelte'
-  import SubIssues from './SubIssues.svelte'
-  import SubIssueSelector from './SubIssueSelector.svelte'
+  import tracker from '../../plugin'
 
-  export let _id: Ref<Issue>
-  export let _class: Ref<Class<Issue>>
+  import SubIssueTemplates from './IssueTemplateChilds.svelte'
+  import TemplateControlPanel from './TemplateControlPanel.svelte'
+
+  export let _id: Ref<IssueTemplate>
+  export let _class: Ref<Class<IssueTemplate>>
 
   let lastId: Ref<Doc> = _id
   let lastClass: Ref<Class<Doc>> = _class
   const query = createQuery()
-  const statusesQuery = createQuery()
   const dispatch = createEventDispatcher()
   const client = getClient()
 
-  let issue: WithLookup<Issue> | undefined
+  let template: WithLookup<IssueTemplate> | undefined
   let currentTeam: Team | undefined
-  let issueStatuses: WithLookup<IssueStatus>[] | undefined
   let title = ''
   let description = ''
   let innerWidth: number
@@ -86,26 +80,14 @@
       _class,
       { _id },
       async (result) => {
-        ;[issue] = result
-        title = issue.title
-        description = issue.description
-        currentTeam = issue.$lookup?.space
+        ;[template] = result
+        title = template.title
+        description = template.description
+        currentTeam = template.$lookup?.space
       },
-      { lookup: { attachedTo: tracker.class.Issue, space: tracker.class.Team } }
+      { lookup: { space: tracker.class.Team } }
     )
 
-  $: currentTeam &&
-    statusesQuery.query(
-      tracker.class.IssueStatus,
-      { attachedTo: currentTeam._id },
-      (statuses) => (issueStatuses = statuses),
-      {
-        lookup: { category: tracker.class.IssueStatusCategory },
-        sort: { rank: SortingOrder.Ascending }
-      }
-    )
-
-  $: issueId = currentTeam && issue && getIssueId(currentTeam, issue)
   $: canSave = title.trim().length > 0
   $: isDescriptionEmpty = !new DOMParser().parseFromString(description, 'text/html').documentElement.innerText?.trim()
 
@@ -120,59 +102,80 @@
 
     isEditing = false
 
-    if (issue) {
-      title = issue.title
-      description = issue.description
+    if (template) {
+      title = template.title
+      description = template.description
     }
   }
 
   async function save (ev: MouseEvent) {
     ev.preventDefault()
 
-    if (!issue || !canSave) {
+    if (!template || !canSave) {
       return
     }
 
-    const updates: Partial<Data<Issue>> = {}
+    const updates: Partial<Data<IssueTemplate>> = {}
     const trimmedTitle = title.trim()
 
-    if (trimmedTitle.length > 0 && trimmedTitle !== issue.title) {
+    if (trimmedTitle.length > 0 && trimmedTitle !== template.title) {
       updates.title = trimmedTitle
     }
 
-    if (description !== issue.description) {
+    if (description !== template.description) {
       updates.description = description
     }
 
     if (Object.keys(updates).length > 0) {
-      await client.updateCollection(
-        issue._class,
-        issue.space,
-        issue._id,
-        issue.attachedTo,
-        issue.attachedToClass,
-        issue.collection,
-        updates
-      )
+      await client.update(template, updates)
     }
     await descriptionBox.createAttachments()
     isEditing = false
   }
 
   function showMenu (ev?: Event): void {
-    if (issue) {
-      showPopup(ContextMenu, { object: issue }, (ev as MouseEvent).target as HTMLElement)
+    if (template) {
+      showPopup(ContextMenu, { object: template }, (ev as MouseEvent).target as HTMLElement)
     }
   }
 
   onMount(() => {
     dispatch('open', { ignoreKeys: ['comments', 'name', 'description', 'number'] })
   })
+  const createIssue = async (evt: CustomEvent<IssueTemplateChild>): Promise<void> => {
+    if (template === undefined) {
+      return
+    }
+    await client.update(template, {
+      $push: { children: evt.detail }
+    })
+  }
+  const updateIssue = async (evt: CustomEvent<Partial<IssueTemplateChild>>): Promise<void> => {
+    if (template === undefined) {
+      return
+    }
+    await client.update(template, {
+      $update: {
+        children: {
+          $query: { id: evt.detail.id },
+          $update: evt.detail
+        }
+      }
+    })
+  }
+  const updateIssues = async (evt: CustomEvent<IssueTemplateChild[]>): Promise<void> => {
+    if (template === undefined) {
+      return
+    }
+    await client.update(template, {
+      children: evt.detail
+    })
+  }
 </script>
 
-{#if issue !== undefined}
+{#if template !== undefined}
   <Panel
-    object={issue}
+    object={template}
     isHeader
     isAside={true}
     isSub={false}
@@ -180,13 +183,12 @@
     bind:innerWidth
     on:close={() => dispatch('close')}
   >
-    {@const { attachedTo: parentIssue } = issue?.$lookup ?? {}}
     <svelte:fragment slot="navigator">
-      <UpDownNavigator element={issue} />
+      <UpDownNavigator element={template} />
     </svelte:fragment>
     <svelte:fragment slot="header">
       <span class="fs-title">
-        {#if issueId}{issueId}{/if}
+        {template.title}
       </span>
     </svelte:fragment>
     <svelte:fragment slot="tools">
@@ -202,16 +204,12 @@
     {#if isEditing}
       <Scroller>
         <div class="popupPanel-body__main-content py-10 clear-mins content">
-          {#if parentIssue}
-            <div class="mb-6">
-              {#if currentTeam && issueStatuses}
-                <SubIssueSelector {issue} />
-              {:else}
-                <Spinner />
-              {/if}
-            </div>
-          {/if}
-          <EditBox bind:value={title} placeholder={tracker.string.IssueTitlePlaceholder} kind="large-style" />
+          <EditBox
+            bind:value={title}
+            maxWidth="53.75rem"
+            placeholder={tracker.string.IssueTitlePlaceholder}
+            kind="large-style"
+          />
           <div class="flex-between mt-6">
             {#key description}
               <div class="flex-grow">
@@ -219,7 +217,7 @@
                   bind:this={descriptionBox}
                   objectId={_id}
                   _class={tracker.class.Issue}
-                  space={issue.space}
+                  space={template.space}
                   alwaysEdit
                   showButtons
                   maxHeight={'card'}
@@ -240,15 +238,6 @@
         </div>
       </Scroller>
     {:else}
-      {#if parentIssue}
-        <div class="mb-6">
-          {#if currentTeam && issueStatuses}
-            <SubIssueSelector {issue} />
-          {:else}
-            <Spinner />
-          {/if}
-        </div>
-      {/if}
       <span class="title select-text">{title}</span>
       <div class="mt-6 description-preview select-text">
         {#if isDescriptionEmpty}
@@ -260,29 +249,28 @@
         {/if}
       </div>
       <div class="mt-6">
-        {#key issue._id && currentTeam !== undefined}
-          {#if currentTeam !== undefined && issueStatuses !== undefined}
-            <SubIssues
-              {issue}
-              issueStatuses={new Map([[currentTeam._id, issueStatuses]])}
-              teams={new Map([[currentTeam?._id, currentTeam]])}
+        {#key template._id && currentTeam !== undefined}
+          {#if currentTeam !== undefined}
+            <SubIssueTemplates
+              bind:children={template.children}
+              on:create-issue={createIssue}
+              on:update-issue={updateIssue}
+              on:update-issues={updateIssues}
             />
           {/if}
         {/key}
       </div>
       <div class="mt-6">
-        <AttachmentDocList value={issue} />
+        <AttachmentDocList value={template} />
       </div>
     {/if}
 
-    <span slot="actions-label">
-      {#if issueId}{issueId}{/if}
-    </span>
+    <span slot="actions-label"> ID </span>
     <svelte:fragment slot="actions">
       <div class="flex-grow" />
-      {#if issueId}
+      <!-- {#if issueId}
         <CopyToClipboard issueUrl={generateIssueShortLink(issueId)} {issueId} />
-      {/if}
+      {/if} -->
       <Button
         icon={setting.icon.Setting}
         kind={'transparent'}
@@ -302,12 +290,12 @@
     </svelte:fragment>
 
     <svelte:fragment slot="custom-attributes">
-      {#if issue && currentTeam && issueStatuses}
-        <ControlPanel {issue} {issueStatuses} />
+      {#if template && currentTeam}
+        <TemplateControlPanel issue={template} />
       {/if}
 
       <div class="divider" />
-      <IssueStatusActivity {issue} />
+      <!-- <IssueStatusActivity issue={template} /> -->
     </svelte:fragment>
   </Panel>
 {/if}

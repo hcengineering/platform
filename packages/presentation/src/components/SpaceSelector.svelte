@@ -55,4 +55,5 @@
   on:change={(evt) => {
     space = evt.detail
   }}
+  on:space
 />

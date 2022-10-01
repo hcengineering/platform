@@ -653,7 +653,6 @@ export class LiveQuery extends TxProcessor implements Client {
       if (q.result instanceof Promise) {
         q.result = await q.result
       }
-
       if (q.options?.lookup !== undefined && handleLookup) {
         await this.lookup(q._class, doc, q.options.lookup)
       }

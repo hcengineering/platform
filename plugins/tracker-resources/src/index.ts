@@ -79,6 +79,11 @@ import RelatedIssues from './components/issues/related/RelatedIssues.svelte'
 
 import ProjectSelector from './components/ProjectSelector.svelte'
 
+import IssueTemplatePresenter from './components/templates/IssueTemplatePresenter.svelte'
+import IssueTemplates from './components/templates/IssueTemplates.svelte'
+
+import EditIssueTemplate from './components/templates/EditIssueTemplate.svelte'
+
 export async function queryIssue<D extends Issue> (
   _class: Ref<Class<D>>,
   client: Client,
@@ -195,7 +200,10 @@ export default async (): Promise<Resources> => ({
     SubIssuesSelector,
     GrowPresenter,
     RelatedIssues,
-    ProjectSelector
+    ProjectSelector,
+    IssueTemplates,
+    IssueTemplatePresenter,
+    EditIssueTemplate
   },
   completion: {
     IssueQuery: async (client: Client, query: string, filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }) =>

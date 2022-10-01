@@ -84,6 +84,7 @@
       label={contact.string.Employee}
       kind={'link-bordered'}
       bind:value={data.employee}
+      showNavigate={false}
     />
     <DatePresenter kind={'link'} bind:value={data.date} editable />
   </div>

@@ -18,6 +18,7 @@
   import { IntlString, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { StyledTextBox } from '@hcengineering/text-editor'
+  import { IconSize } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import attachment from '../plugin'
   import { deleteFile, uploadFile } from '../utils'
@@ -30,6 +31,7 @@
   export let placeholder: IntlString | undefined = undefined
   export let alwaysEdit = false
   export let showButtons = false
+  export let buttonSize: IconSize = 'small'
   export let maxHeight: 'max' | 'card' | string = 'max'
 
   export function attach (): void {
@@ -191,7 +193,7 @@
   on:dragleave={() => {}}
   on:drop|preventDefault|stopPropagation={fileDrop}
 >
-  <StyledTextBox bind:this={refInput} bind:content {placeholder} {alwaysEdit} {showButtons} {maxHeight} />
+  <StyledTextBox bind:this={refInput} bind:content {placeholder} {alwaysEdit} {showButtons} {buttonSize} {maxHeight} />
   {#if attachments.size}
     <div class="flex-row-center list scroll-divider-color mt-1">
       {#each Array.from(attachments.values()) as attachment}

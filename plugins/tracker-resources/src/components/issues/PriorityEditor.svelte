@@ -13,16 +13,24 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
   import { AttachedData } from '@hcengineering/core'
-  import { Issue, IssuePriority } from '@hcengineering/tracker'
   import { getClient } from '@hcengineering/presentation'
-  import { Button, eventToHTMLElement } from '@hcengineering/ui'
-  import { ButtonKind, ButtonSize, showPopup, SelectPopup, Icon, Label } from '@hcengineering/ui'
+  import { Issue, IssuePriority, IssueTemplateData } from '@hcengineering/tracker'
+  import {
+    Button,
+    ButtonKind,
+    ButtonSize,
+    eventToHTMLElement,
+    Icon,
+    Label,
+    SelectPopup,
+    showPopup
+  } from '@hcengineering/ui'
+  import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
   import { defaultPriorities, issuePriorities } from '../../utils'
 
-  export let value: Issue | AttachedData<Issue>
+  export let value: Issue | AttachedData<Issue> | IssueTemplateData
   export let isEditable: boolean = true
   export let shouldShowLabel: boolean = false
 

@@ -13,15 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
   import { AttachedData, Ref, SortingOrder, WithLookup } from '@hcengineering/core'
-  import { Issue, IssueStatus } from '@hcengineering/tracker'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Button, showPopup, SelectPopup, TooltipAlignment, eventToHTMLElement } from '@hcengineering/ui'
+  import { Issue, IssueStatus } from '@hcengineering/tracker'
   import type { ButtonKind, ButtonSize } from '@hcengineering/ui'
+  import { Button, eventToHTMLElement, SelectPopup, showPopup, TooltipAlignment } from '@hcengineering/ui'
+  import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
-  import StatusPresenter from './StatusPresenter.svelte'
   import IssueStatusIcon from './IssueStatusIcon.svelte'
+  import StatusPresenter from './StatusPresenter.svelte'
 
   export let value: Issue | AttachedData<Issue>
   export let statuses: WithLookup<IssueStatus>[] | undefined = undefined
