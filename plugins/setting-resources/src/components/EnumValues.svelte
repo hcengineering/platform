@@ -125,7 +125,6 @@
       on:keydown={handleKeydown}
       kind="large-style"
       bind:value={newValue}
-      maxWidth="18rem"
     />
     <div class="flex gap-2">
       <ActionIcon icon={IconAdd} label={setting.string.Add} action={add} size={'small'} />

@@ -221,12 +221,7 @@
               {/if}
             </div>
           {/if}
-          <EditBox
-            bind:value={title}
-            maxWidth="53.75rem"
-            placeholder={tracker.string.IssueTitlePlaceholder}
-            kind="large-style"
-          />
+          <EditBox bind:value={title} placeholder={tracker.string.IssueTitlePlaceholder} kind="large-style" />
           <div class="flex-between mt-6">
             {#key description}
               <div class="flex-grow">

@@ -196,7 +196,6 @@
           placeholder={contact.string.PersonFirstNamePlaceholder}
           bind:value={firstName}
           kind={'large-style'}
-          maxWidth={'32rem'}
           focus
           focusIndex={1}
         />
@@ -204,7 +203,6 @@
           placeholder={contact.string.PersonLastNamePlaceholder}
           bind:value={lastName}
           kind={'large-style'}
-          maxWidth={'32rem'}
           focusIndex={2}
         />
         <div class="mt-1">
@@ -212,7 +210,6 @@
             placeholder={contact.string.PersonLocationPlaceholder}
             bind:value={object.city}
             kind={'small-style'}
-            maxWidth={'32rem'}
             focusIndex={3}
           />
         </div>
@@ -220,7 +217,6 @@
           placeholder={lead.string.IssueDescriptionPlaceholder}
           bind:value={object.description}
           kind={'small-style'}
-          maxWidth={'32rem'}
           focusIndex={4}
         />
       </div>
@@ -242,7 +238,6 @@
       <EditBox
         placeholder={contact.string.OrganizationNamePlaceholder}
         bind:value={object.name}
-        maxWidth={'37.5rem'}
         kind={'large-style'}
         focus
         focusIndex={1}

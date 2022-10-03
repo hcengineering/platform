@@ -40,7 +40,6 @@
   export let value: string | number | undefined
   export let format: 'text' | 'password' | 'number'
   export let kind: EditStyle = 'search-style'
-  export let maxWidth: string = '10rem'
   export let object: Issue
 
   let _value = value
@@ -76,7 +75,6 @@
         bind:value={_value}
         {format}
         {kind}
-        {maxWidth}
         placeholder={tracker.string.Estimation}
         focus
         on:keypress={_onkeypress}

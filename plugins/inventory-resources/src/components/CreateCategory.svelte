@@ -70,7 +70,6 @@
       icon={inventory.icon.Categories}
       bind:value={name}
       placeholder={inventory.string.Category}
-      maxWidth={'16rem'}
       focus
     />
   </Grid>

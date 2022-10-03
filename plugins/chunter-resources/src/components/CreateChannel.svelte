@@ -62,7 +62,6 @@
       icon={IconFolder}
       bind:value={name}
       placeholder={chunter.string.ChannelNamePlaceholder}
-      maxWidth={'16rem'}
       focus
     />
     <ToggleWithLabel

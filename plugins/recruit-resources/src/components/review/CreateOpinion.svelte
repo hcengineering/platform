@@ -94,7 +94,6 @@
       label={recruit.string.OpinionValue}
       placeholder={recruit.string.OpinionValuePlaceholder}
       focus
-      maxWidth={'10rem'}
     />
     <div class="mt-1 mb-1">
       <Label label={recruit.string.Description} />:

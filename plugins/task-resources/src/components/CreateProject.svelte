@@ -67,7 +67,6 @@
       icon={IconFolder}
       bind:value={name}
       placeholder={plugin.string.ProjectNamePlaceholder}
-      maxWidth={'16rem'}
       focus
     />
     <ToggleWithLabel label={plugin.string.MakePrivate} description={plugin.string.MakePrivateDescription} />

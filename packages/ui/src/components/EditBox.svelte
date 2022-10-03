@@ -21,6 +21,7 @@
   import type { AnySvelteComponent, EditStyle } from '../types'
   import Icon from './Icon.svelte'
   import Label from './Label.svelte'
+  import { resizeObserver } from '../resize'
 
   export let label: IntlString | undefined = undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
@@ -39,8 +40,11 @@
   let input: HTMLInputElement
   let style: string
   let phTraslate: string = ''
+  let parentWidth: number | undefined
 
-  $: style = maxWidth ? `max-width: ${maxWidth};` : ''
+  $: style = `max-width: ${
+    maxWidth || (parentWidth ? (icon ? `calc(${parentWidth}px - 1.25rem)` : `${parentWidth}px`) : 'max-content')
+  };`
   $: translate(placeholder, placeholderParam ?? {}).then((res) => {
     phTraslate = res
   })
@@ -104,6 +108,9 @@
   class:w-full={focusable}
   on:click={() => {
     input.focus()
+  }}
+  use:resizeObserver={(element) => {
+    parentWidth = element.parentElement?.getBoundingClientRect().width
   }}
 >
   <!-- {focusIndex} -->

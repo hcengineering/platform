@@ -115,11 +115,7 @@
         </span>
         <div class="text-lg caption-color">
           {#if mode !== Mode.View}
-            <EditBox
-              bind:value={newTemplate.title}
-              maxWidth={'12rem'}
-              placeholder={templatesPlugin.string.TemplatePlaceholder}
-            />
+            <EditBox bind:value={newTemplate.title} placeholder={templatesPlugin.string.TemplatePlaceholder} />
           {:else}
             {newTemplate.title}
           {/if}

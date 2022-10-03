@@ -109,7 +109,6 @@
         placeholder={contact.string.PersonFirstNamePlaceholder}
         bind:value={firstName}
         kind={'large-style'}
-        maxWidth={'32rem'}
         focus
         focusIndex={1}
       />
@@ -117,7 +116,6 @@
         placeholder={contact.string.PersonLastNamePlaceholder}
         bind:value={lastName}
         kind={'large-style'}
-        maxWidth={'32rem'}
         focusIndex={2}
       />
       <div class="mt-1">
@@ -125,7 +123,6 @@
           placeholder={contact.string.PersonLocationPlaceholder}
           bind:value={object.city}
           kind={'small-style'}
-          maxWidth={'32rem'}
           focusIndex={3}
         />
       </div>

@@ -148,8 +148,8 @@
   }}
 >
   <StatusControl slot="error" {status} />
-  <EditBox placeholder={recruit.string.Title} bind:value={title} maxWidth={'37.5rem'} kind={'large-style'} focus />
-  <EditBox placeholder={recruit.string.Location} bind:value={location} maxWidth={'37.5rem'} kind={'small-style'} />
+  <EditBox placeholder={recruit.string.Title} bind:value={title} kind={'large-style'} focus />
+  <EditBox placeholder={recruit.string.Location} bind:value={location} kind={'small-style'} />
   <StyledTextBox
     emphasized
     showButtons={false}

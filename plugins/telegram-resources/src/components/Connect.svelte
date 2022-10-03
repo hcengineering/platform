@@ -140,7 +140,6 @@
       <p><Label label={telegram.string.PasswordDescr} /></p>
       <EditBox
         label={telegram.string.Password}
-        maxWidth="10rem"
         format="password"
         placeholder={telegram.string.Password}
         bind:value={password}
@@ -150,12 +149,7 @@
       <PinPad length={5} bind:value={code} bind:error />
     {:else}
       <p><Label label={telegram.string.PhoneDescr} /></p>
-      <EditBox
-        label={telegram.string.Phone}
-        maxWidth="10rem"
-        placeholder={telegram.string.PhonePlaceholder}
-        bind:value={phone}
-      />
+      <EditBox label={telegram.string.Phone} placeholder={telegram.string.PhonePlaceholder} bind:value={phone} />
     {/if}
     <div class="footer">
       <Button {label} kind={'primary'} {disabled} on:click={click} />

@@ -67,7 +67,6 @@
       icon={IconFolder}
       bind:value={name}
       placeholder={lead.string.FunnelName}
-      maxWidth={'16rem'}
       focus
     />
     <ToggleWithLabel label={lead.string.MakePrivate} description={lead.string.MakePrivateDescription} />

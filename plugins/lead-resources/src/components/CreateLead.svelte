@@ -142,7 +142,6 @@
     bind:value={title}
     icon={lead.icon.Lead}
     placeholder={lead.string.LeadPlaceholder}
-    maxWidth={'16rem'}
     focus
   />
   <svelte:fragment slot="pool">

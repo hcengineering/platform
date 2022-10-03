@@ -118,7 +118,6 @@
           {#if editable}
             <EditBox
               placeholder={contact.string.PersonFirstNamePlaceholder}
-              maxWidth="20rem"
               bind:value={firstName}
               on:change={firstNameChange}
               focusIndex={1}
@@ -131,7 +130,6 @@
           {#if editable}
             <EditBox
               placeholder={contact.string.PersonLastNamePlaceholder}
-              maxWidth="20rem"
               bind:value={lastName}
               on:change={lastNameChange}
               focusIndex={2}

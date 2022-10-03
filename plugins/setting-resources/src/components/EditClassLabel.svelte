@@ -74,7 +74,7 @@
   }}
 >
   <div class="mb-2">
-    <EditBox bind:value={name} placeholder={setting.string.NewClassName} maxWidth="23rem" />
+    <EditBox bind:value={name} placeholder={setting.string.NewClassName} />
   </div>
   <Label label={setting.string.OldNames} />
   <div class="flex-col">

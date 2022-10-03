@@ -59,7 +59,6 @@
         label={chunter.string.Topic}
         bind:value={channel.topic}
         placeholder={chunter.string.Topic}
-        maxWidth="39rem"
         focus
         on:change={onTopicChange}
       />
@@ -67,7 +66,6 @@
         label={chunter.string.ChannelDescription}
         bind:value={channel.description}
         placeholder={chunter.string.ChannelDescription}
-        maxWidth="39rem"
         focus
         on:change={onDescriptionChange}
       />

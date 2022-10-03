@@ -435,7 +435,6 @@
         placeholder={recruit.string.PersonFirstNamePlaceholder}
         bind:value={firstName}
         kind={'large-style'}
-        maxWidth={'32rem'}
         focus
         focusIndex={1}
       />
@@ -443,25 +442,12 @@
         placeholder={recruit.string.PersonLastNamePlaceholder}
         bind:value={lastName}
         kind={'large-style'}
-        maxWidth={'32rem'}
         focusIndex={2}
       />
       <div class="mt-1">
-        <EditBox
-          placeholder={recruit.string.Title}
-          bind:value={object.title}
-          kind={'small-style'}
-          maxWidth={'32rem'}
-          focusIndex={3}
-        />
+        <EditBox placeholder={recruit.string.Title} bind:value={object.title} kind={'small-style'} focusIndex={3} />
       </div>
-      <EditBox
-        placeholder={recruit.string.Location}
-        bind:value={object.city}
-        kind={'small-style'}
-        maxWidth={'32rem'}
-        focusIndex={4}
-      />
+      <EditBox placeholder={recruit.string.Location} bind:value={object.city} kind={'small-style'} focusIndex={4} />
     </div>
     <div class="ml-4">
       <EditableAvatar

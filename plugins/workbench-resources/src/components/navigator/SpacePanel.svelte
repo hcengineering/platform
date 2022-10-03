@@ -78,7 +78,6 @@
           icon={clazz.icon}
           bind:value={space.name}
           placeholder={clazz.label}
-          maxWidth="39rem"
           focus
           on:change={onNameChange}
         />

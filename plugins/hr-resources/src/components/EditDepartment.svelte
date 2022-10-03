@@ -101,13 +101,7 @@
     </div>
     <div class="flex-grow flex-col">
       <div class="name">
-        <EditBox
-          placeholder={core.string.Name}
-          maxWidth="20rem"
-          bind:value={object.name}
-          on:change={nameChange}
-          focusIndex={1}
-        />
+        <EditBox placeholder={core.string.Name} bind:value={object.name} on:change={nameChange} focusIndex={1} />
       </div>
       <div class="separator" />
       <div class="flex-row-center">

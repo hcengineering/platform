@@ -48,7 +48,6 @@
       bind:value={rawTitle}
       placeholder={lead.string.LeadPlaceholder}
       kind={'large-style'}
-      maxWidth={'20rem'}
       focusable
       on:blur={() => {
         if (rawTitle !== object.title) change('title', rawTitle)

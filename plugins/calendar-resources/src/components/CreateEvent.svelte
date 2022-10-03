@@ -67,7 +67,7 @@
     dispatch('close')
   }}
 >
-  <EditBox bind:value={title} placeholder={calendar.string.Title} maxWidth={'37.5rem'} kind={'large-style'} focus />
+  <EditBox bind:value={title} placeholder={calendar.string.Title} kind={'large-style'} focus />
   <svelte:fragment slot="pool">
     <DateRangePresenter bind:value withTime editable labelNull={ui.string.SelectDate} />
     <DateRangePresenter bind:value={dueDate} labelNull={calendar.string.DueTo} withTime editable />

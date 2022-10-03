@@ -181,20 +181,10 @@
     on:drop|preventDefault|stopPropagation={fileDrop}
   >
     <div class="mb-2">
-      <EditBox
-        label={plugin.string.Subject}
-        bind:value={obj.subject}
-        placeholder={plugin.string.SubjectPlaceholder}
-        maxWidth={'min-content'}
-      />
+      <EditBox label={plugin.string.Subject} bind:value={obj.subject} placeholder={plugin.string.SubjectPlaceholder} />
     </div>
     <div>
-      <EditBox
-        label={plugin.string.Copy}
-        bind:value={copy}
-        placeholder={plugin.string.CopyPlaceholder}
-        maxWidth={'min-content'}
-      />
+      <EditBox label={plugin.string.Copy} bind:value={copy} placeholder={plugin.string.CopyPlaceholder} />
     </div>
     {#if attachments.length}
       <div class="flex-row-center list mt-2 scroll-divider-color">

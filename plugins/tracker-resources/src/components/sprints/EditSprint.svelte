@@ -77,7 +77,7 @@
   <svelte:fragment slot="aside">
     <div class="flex-grow p-4 w-60 left-divider">
       <div class="fs-title text-xl">
-        <EditBox bind:value={sprint.label} maxWidth="39rem" on:change={() => change('label', sprint.label)} />
+        <EditBox bind:value={sprint.label} on:change={() => change('label', sprint.label)} />
       </div>
       <div class="mt-2">
         <StyledTextBox

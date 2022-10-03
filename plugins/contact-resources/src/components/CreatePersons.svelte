@@ -56,7 +56,6 @@
       icon={IconFolder}
       bind:value={name}
       placeholder={contact.string.PersonsNamePlaceholder}
-      maxWidth={'16rem'}
       focus
     />
     <ToggleWithLabel label={contact.string.MakePrivate} description={contact.string.MakePrivateDescription} />

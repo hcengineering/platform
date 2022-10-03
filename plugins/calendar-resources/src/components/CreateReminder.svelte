@@ -70,7 +70,7 @@
     dispatch('close')
   }}
 >
-  <EditBox bind:value={title} placeholder={calendar.string.Title} maxWidth={'37.5rem'} kind={'large-style'} focus />
+  <EditBox bind:value={title} placeholder={calendar.string.Title} kind={'large-style'} focus />
   <svelte:fragment slot="pool">
     <!-- <TimeShiftPicker title={calendar.string.Date} bind:value direction="after" /> -->
     <DateRangePresenter bind:value withTime={true} editable={true} labelNull={ui.string.SelectDate} />

@@ -85,7 +85,6 @@
       <EditBox
         bind:value={object.name}
         placeholder={lead.string.FunnelPlaceholder}
-        maxWidth={'39rem'}
         kind={'large-style'}
         focus
         focusable
@@ -96,7 +95,6 @@
       <EditBox
         bind:value={object.description}
         placeholder={lead.string.Description}
-        maxWidth={'39rem'}
         focusable
         on:blur={() => {
           if (rawDesc !== object.description) onChange('description', object.description)
