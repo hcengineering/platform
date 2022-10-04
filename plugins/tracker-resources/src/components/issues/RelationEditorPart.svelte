@@ -68,7 +68,7 @@
     if (pos !== -1) {
       docs.splice(pos, 1)
     }
-    await update(value, type, docs, await translate(label, {}))
+    await update(value, type, docs, label)
   }
   const asIssue = (x: Doc) => x as WithLookup<Issue>
 </script>

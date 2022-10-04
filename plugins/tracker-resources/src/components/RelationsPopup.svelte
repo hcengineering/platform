@@ -65,7 +65,7 @@
     if (operation === '$pull' && pos !== -1) {
       docs.splice(pos, 1)
     }
-    await update(value, type, docs, await translate(label, {}))
+    await update(value, type, docs, label)
   }
 
   const makeAddAction = (type: keyof typeof relations, placeholder: IntlString) => async (props: any, evt: Event) => {

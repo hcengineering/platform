@@ -82,46 +82,51 @@
     if (!canSave) {
       return
     }
+    loading = true
+    try {
 
-    const space = currentTeam._id
-    const lastOne = await client.findOne<Issue>(
-      tracker.class.Issue,
-      { space },
-      { sort: { rank: SortingOrder.Descending } }
-    )
-    const incResult = await client.updateDoc(
-      tracker.class.Team,
-      core.space.Space,
-      space,
-      { $inc: { sequence: 1 } },
-      true
-    )
-
-    const value: AttachedData<Issue> = {
-      ...newIssue,
-      title: getTitle(newIssue.title),
-      number: (incResult as any).object.sequence,
-      rank: calcRank(lastOne, undefined),
-      project: parentIssue.project,
-      parents: [{ parentId: parentIssue._id, parentTitle: parentIssue.title }, ...parentIssue.parents]
+      const space = currentTeam._id
+      const lastOne = await client.findOne<Issue>(
+        tracker.class.Issue,
+        { space },
+        { sort: { rank: SortingOrder.Descending } }
+      )
+      const incResult = await client.updateDoc(
+        tracker.class.Team,
+        core.space.Space,
+        space,
+        { $inc: { sequence: 1 } },
+        true
+      )
+  
+      const value: AttachedData<Issue> = {
+        ...newIssue,
+        title: getTitle(newIssue.title),
+        number: (incResult as any).object.sequence,
+        rank: calcRank(lastOne, undefined),
+        project: parentIssue.project,
+        parents: [{ parentId: parentIssue._id, parentTitle: parentIssue.title }, ...parentIssue.parents]
+      }
+  
+      const objectId = await client.addCollection(
+        tracker.class.Issue,
+        space,
+        parentIssue._id,
+        parentIssue._class,
+        'subIssues',
+        value
+      )
+      for (const label of labels) {
+        await client.addCollection(label._class, label.space, objectId, tracker.class.Issue, 'labels', {
+          title: label.title,
+          color: label.color,
+          tag: label.tag
+        })
+      }
+    } finally {
+      resetToDefaults()
+      loading = false
     }
-
-    const objectId = await client.addCollection(
-      tracker.class.Issue,
-      space,
-      parentIssue._id,
-      parentIssue._class,
-      'subIssues',
-      value
-    )
-    for (const label of labels) {
-      await client.addCollection(label._class, label.space, objectId, tracker.class.Issue, 'labels', {
-        title: label.title,
-        color: label.color,
-        tag: label.tag
-      })
-    }
-    resetToDefaults()
   }
 
   function addTagRef (tag: TagElement): void {
@@ -142,6 +147,8 @@
       }
     ]
   }
+
+  let loading = false
 
   $: thisRef && thisRef.scrollIntoView({ behavior: 'smooth' })
   $: canSave = getTitle(newIssue.title ?? '').length > 0
@@ -222,6 +229,7 @@
     <div class="buttons-group small-gap">
       <Button label={presentation.string.Cancel} size="small" kind="transparent" on:click={close} />
       <Button
+        {loading}
         disabled={!canSave}
         label={presentation.string.Save}
         size="small"

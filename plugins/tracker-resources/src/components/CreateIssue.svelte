@@ -190,7 +190,9 @@
     const update = await getResource(chunter.backreference.Update)
     if (relatedTo !== undefined) {
       const doc = await client.findOne(tracker.class.Issue, { _id: objectId })
-      await update(doc, 'relations', [relatedTo], await translate(tracker.string.AddedReference, {}))
+      if (doc !== undefined) {
+        await update(doc, 'relations', [relatedTo], tracker.string.AddedReference)
+      }
     }
 
     objectId = generateId()
