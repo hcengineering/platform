@@ -1,7 +1,7 @@
 <script lang="ts">
   import chunter from '@hcengineering/chunter'
   import { Class, Doc, Ref, RelatedDocument, WithLookup } from '@hcengineering/core'
-  import { getResource, IntlString, translate } from '@hcengineering/platform'
+  import { getResource, IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Issue } from '@hcengineering/tracker'
   import { Component, Icon, IconClose } from '@hcengineering/ui'
@@ -68,7 +68,7 @@
     if (pos !== -1) {
       docs.splice(pos, 1)
     }
-    await update(value, type, docs, await translate(label, {}))
+    await update(value, type, docs, label)
   }
   const asIssue = (x: Doc) => x as WithLookup<Issue>
 </script>

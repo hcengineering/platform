@@ -17,7 +17,7 @@
   import chunter from '@hcengineering/chunter'
   import { Employee } from '@hcengineering/contact'
   import core, { Account, AttachedData, Doc, generateId, Ref, SortingOrder, WithLookup } from '@hcengineering/core'
-  import { getResource, translate } from '@hcengineering/platform'
+  import { getResource } from '@hcengineering/platform'
   import { Card, createQuery, getClient, KeyedAttribute, SpaceSelector } from '@hcengineering/presentation'
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
   import { calcRank, Issue, IssuePriority, IssueStatus, Project, Sprint, Team } from '@hcengineering/tracker'
@@ -190,7 +190,9 @@
     const update = await getResource(chunter.backreference.Update)
     if (relatedTo !== undefined) {
       const doc = await client.findOne(tracker.class.Issue, { _id: objectId })
-      await update(doc, 'relations', [relatedTo], await translate(tracker.string.AddedReference, {}))
+      if (doc !== undefined) {
+        await update(doc, 'relations', [relatedTo], tracker.string.AddedReference)
+      }
     }
 
     objectId = generateId()

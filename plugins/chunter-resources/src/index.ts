@@ -24,7 +24,7 @@ import chunter, {
   Backlink
 } from '@hcengineering/chunter'
 import { NotificationClientImpl } from '@hcengineering/notification-resources'
-import { Resources } from '@hcengineering/platform'
+import { IntlString, Resources, translate } from '@hcengineering/platform'
 import preference from '@hcengineering/preference'
 import { getClient, MessageBox } from '@hcengineering/presentation'
 import { getCurrentLocation, navigate, showPopup } from '@hcengineering/ui'
@@ -190,13 +190,14 @@ export function chunterBrowserVisible (spaces: Space[]): boolean {
   return false
 }
 
-async function update (source: Doc, key: string, target: RelatedDocument[], msg: string): Promise<void> {
+async function update (source: Doc, key: string, target: RelatedDocument[], msg: IntlString): Promise<void> {
+  const message = await translate(msg, {})
   const backlinks: Array<Data<Backlink>> = target.map((it) => ({
     backlinkId: source._id,
     backlinkClass: source._class,
     attachedTo: it._id,
     attachedToClass: it._class,
-    message: msg,
+    message,
     collection: key
   }))
 

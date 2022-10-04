@@ -161,6 +161,6 @@ export default plugin(chunterId, {
   },
   backreference: {
     // Update list of back references
-    Update: '' as Resource<(source: Doc, key: string, target: RelatedDocument[], label: IntlString) => void>
+    Update: '' as Resource<(source: Doc, key: string, target: RelatedDocument[], label: IntlString) => Promise<void>>
   }
 })
