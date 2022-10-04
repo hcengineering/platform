@@ -84,7 +84,6 @@
     <EditBox
       placeholder={contact.string.OrganizationNamePlaceholder}
       bind:value={object.name}
-      maxWidth={'37.5rem'}
       kind={'large-style'}
       focus
       focusIndex={1}

@@ -123,9 +123,9 @@
     ...(hasRelation ? removeRelationAction : [])
   ]
 
-  afterUpdate(() => dispatch('changeContent', true))
+  afterUpdate(() => dispatch('changeContent'))
 </script>
 
 {#if actions}
-  <Menu {actions} on:changeContent={() => dispatch('changeContent', true)} />
+  <Menu {actions} on:changeContent={() => dispatch('changeContent')} />
 {/if}

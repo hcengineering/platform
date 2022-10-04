@@ -4,6 +4,7 @@
   import { FilterButton, setActiveViewletId } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
   import { WithLookup } from '@hcengineering/core'
+  import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
 
   export let viewlet: WithLookup<Viewlet> | undefined
   export let viewlets: WithLookup<Viewlet>[] = []
@@ -18,34 +19,41 @@
       tooltip: views.$lookup?.descriptor?.label
     }
   })
+
+  let twoRows: boolean
+  $: twoRows = $deviceInfo.docWidth <= 680
 </script>
 
-<div class="ac-header full">
-  <div class="ac-header__wrap-title">
-    {#if showLabelSelector}
-      <slot name="label_selector" />
-    {:else}
-      <div class="ac-header__icon"><Icon icon={tracker.icon.Issues} size={'small'} /></div>
-      <span class="ac-header__title">{label}</span>
-    {/if}
-    <div class="ml-4"><FilterButton _class={tracker.class.Issue} /></div>
+<div class="ac-header withSettings" class:full={!twoRows} class:mini={twoRows}>
+  <div class:ac-header-full={!twoRows} class:flex-between={twoRows}>
+    <div class="ac-header__wrap-title mr-3">
+      {#if showLabelSelector}
+        <slot name="label_selector" />
+      {:else}
+        <div class="ac-header__icon"><Icon icon={tracker.icon.Issues} size={'small'} /></div>
+        <span class="ac-header__title">{label}</span>
+      {/if}
+      <div class="ml-4"><FilterButton _class={tracker.class.Issue} /></div>
+    </div>
+    <SearchEdit bind:value={search} on:change={() => {}} />
   </div>
-  <SearchEdit bind:value={search} on:change={() => {}} />
-  {#if viewlets.length > 1}
-    <TabList
-      items={viewslist}
-      multiselect={false}
-      selected={viewlet?._id}
-      kind={'secondary'}
-      size={'small'}
-      on:select={(result) => {
-        if (result.detail !== undefined) {
-          if (viewlet?._id === result.detail.id) return
-          viewlet = viewlets.find((vl) => vl._id === result.detail.id)
-          if (viewlet) setActiveViewletId(viewlet._id)
-        }
-      }}
-    />
-  {/if}
-  <slot name="extra" />
+  <div class="ac-header-full" class:secondRow={twoRows}>
+    {#if viewlets.length > 1}
+      <TabList
+        items={viewslist}
+        multiselect={false}
+        selected={viewlet?._id}
+        kind={'secondary'}
+        size={'small'}
+        on:select={(result) => {
+          if (result.detail !== undefined) {
+            if (viewlet?._id === result.detail.id) return
+            viewlet = viewlets.find((vl) => vl._id === result.detail.id)
+            if (viewlet) setActiveViewletId(viewlet._id)
+          }
+        }}
+      />
+    {/if}
+    <slot name="extra" />
+  </div>
 </div>

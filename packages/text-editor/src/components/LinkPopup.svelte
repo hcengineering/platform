@@ -40,5 +40,5 @@
     dispatch('close')
   }}
 >
-  <EditBox placeholder={linkPlaceholder} bind:value={link} maxWidth={'37.75rem'} focus />
+  <EditBox placeholder={linkPlaceholder} bind:value={link} focus />
 </Card>

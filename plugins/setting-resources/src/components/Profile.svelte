@@ -99,44 +99,38 @@
   </div>
   <div class="ac-body p-10">
     {#if employee}
-      <div class="flex flex-grow">
+      <div class="flex flex-grow w-full">
         <div class="mr-8">
           <EditableAvatar avatar={employee.avatar} size={'x-large'} on:done={onAvatarDone} on:remove={removeAvatar} />
         </div>
         <div class="flex-grow flex-col">
-          <div class="flex-col">
-            <div class="name">
-              <EditBox
-                placeholder={contactRes.string.PersonFirstNamePlaceholder}
-                maxWidth="20rem"
-                bind:value={firstName}
-                focus
-                focusIndex={1}
-                on:change={() => {
-                  changeName(firstName, lastName)
-                }}
-              />
-            </div>
-            <div class="name">
-              <EditBox
-                placeholder={contactRes.string.PersonLastNamePlaceholder}
-                maxWidth="20rem"
-                bind:value={lastName}
-                focusIndex={2}
-                on:change={() => {
-                  changeName(firstName, lastName)
-                }}
-              />
-            </div>
-            <div class="location">
-              <AttributeEditor
-                maxWidth="20rem"
-                _class={contact.class.Person}
-                object={employee}
-                focusIndex={3}
-                key="city"
-              />
-            </div>
+          <EditBox
+            placeholder={contactRes.string.PersonFirstNamePlaceholder}
+            bind:value={firstName}
+            kind={'large-style'}
+            focus
+            focusIndex={1}
+            on:change={() => {
+              changeName(firstName, lastName)
+            }}
+          />
+          <EditBox
+            placeholder={contactRes.string.PersonLastNamePlaceholder}
+            bind:value={lastName}
+            kind={'large-style'}
+            focusIndex={2}
+            on:change={() => {
+              changeName(firstName, lastName)
+            }}
+          />
+          <div class="location">
+            <AttributeEditor
+              maxWidth="20rem"
+              _class={contact.class.Person}
+              object={employee}
+              focusIndex={3}
+              key="city"
+            />
           </div>
           <div class="separator" />
           <ChannelsEditor attachedTo={employee._id} attachedClass={employee._class} focusIndex={10} allowOpen={false} />

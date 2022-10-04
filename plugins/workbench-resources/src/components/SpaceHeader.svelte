@@ -24,6 +24,7 @@
   import plugin from '../plugin'
   import { classIcon } from '../utils'
   import Header from './Header.svelte'
+  import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
 
   export let spaceId: Ref<Space> | undefined
   export let createItemDialog: AnyComponent | undefined
@@ -80,44 +81,51 @@
       tooltip: views.$lookup?.descriptor?.label
     }
   })
+
+  let twoRows: boolean
+  $: twoRows = $deviceInfo.docWidth <= 768
 </script>
 
-<div class="ac-header full withSettings">
+<div class="ac-header withSettings" class:full={!twoRows} class:mini={twoRows}>
   {#if space}
-    <Header
-      icon={classIcon(client, space._class)}
-      label={space.name}
-      description={space.description}
-      {_class}
-      on:click={onSpaceEdit}
-    />
-    <SearchEdit
-      bind:value={search}
-      on:change={() => {
-        dispatch('search', search)
-      }}
-    />
-    {#if createItemDialog}
-      <Button
-        icon={IconAdd}
-        label={createItemLabel}
-        kind={'primary'}
-        size={'small'}
-        on:click={(ev) => showCreateDialog(ev)}
+    <div class:ac-header-full={!twoRows} class:flex-stretch={twoRows}>
+      <Header
+        icon={classIcon(client, space._class)}
+        label={space.name}
+        description={space.description}
+        {_class}
+        on:click={onSpaceEdit}
       />
-    {/if}
-    {#if viewlets.length > 1}
-      <TabList
-        items={viewslist}
-        multiselect={false}
-        selected={viewlet?._id}
-        kind={'secondary'}
-        size={'small'}
-        on:select={(result) => {
-          if (result.detail !== undefined) viewlet = viewlets.find((vl) => vl._id === result.detail.id)
+      <SearchEdit
+        bind:value={search}
+        on:change={() => {
+          dispatch('search', search)
         }}
       />
-    {/if}
-    <ViewletSettingButton {viewlet} />
+    </div>
+    <div class="ac-header-full" class:secondRow={twoRows}>
+      {#if createItemDialog}
+        <Button
+          icon={IconAdd}
+          label={createItemLabel}
+          kind={'primary'}
+          size={'small'}
+          on:click={(ev) => showCreateDialog(ev)}
+        />
+      {/if}
+      {#if viewlets.length > 1}
+        <TabList
+          items={viewslist}
+          multiselect={false}
+          selected={viewlet?._id}
+          kind={'secondary'}
+          size={'small'}
+          on:select={(result) => {
+            if (result.detail !== undefined) viewlet = viewlets.find((vl) => vl._id === result.detail.id)
+          }}
+        />
+      {/if}
+      <ViewletSettingButton {viewlet} />
+    </div>
   {/if}
 </div>

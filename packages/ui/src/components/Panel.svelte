@@ -20,6 +20,8 @@
   import IconDetails from './icons/Details.svelte'
   import IconScale from './icons/Scale.svelte'
   import IconScaleFull from './icons/ScaleFull.svelte'
+  import Scroller from './Scroller.svelte'
+  import { deviceOptionsStore as deviceInfo } from '../../'
 
   export let innerWidth: number = 0
   export let panelWidth: number = 0
@@ -31,8 +33,9 @@
 
   let asideFloat: boolean = false
   let asideShown: boolean = false
-  let docWidth: number
   let fullSize: boolean = false
+  let twoRows: boolean = false
+  $: twoRows = $deviceInfo.docWidth <= 480
 
   const checkPanel = (): void => {
     if (panelWidth <= 900 && !asideFloat) asideFloat = true
@@ -53,59 +56,84 @@
     checkPanel()
   }}
 >
-  <div class="popupPanel-title">
-    <Button
-      icon={IconClose}
-      kind={'transparent'}
-      size={'medium'}
-      on:click={() => {
-        dispatch('close')
-      }}
-    />
-    <div class="popupPanel-title__content"><slot name="title" /></div>
-    <div class="buttons-group xsmall-gap">
-      <slot name="utils" />
-      {#if isFullSize || (asideFloat && $$slots.aside && isAside)}<div class="buttons-divider" />{/if}
-      {#if asideFloat && $$slots.aside && isAside}
-        <Button
-          icon={IconDetails}
-          kind={'transparent'}
-          size={'medium'}
-          selected={asideShown}
-          on:click={() => {
-            asideShown = !asideShown
-          }}
-        />
-      {/if}
-      {#if isFullSize}
-        <Button
-          icon={fullSize || docWidth <= 900 ? IconScale : IconScaleFull}
-          kind={'transparent'}
-          size={'medium'}
-          selected={fullSize}
-          disabled={docWidth <= 900}
-          on:click={() => {
-            fullSize = !fullSize
-            dispatch('fullsize')
-          }}
-        />
-      {/if}
+  <div class="popupPanel-title__bordered {twoRows ? 'flex-col flex-no-shrink' : 'flex-row-center'}">
+    <div class="popupPanel-title {twoRows ? 'row-top' : 'row'}">
+      <Button
+        icon={IconClose}
+        kind={'transparent'}
+        size={'medium'}
+        on:click={() => {
+          dispatch('close')
+        }}
+      />
+      {#if $$slots.navigator}<slot name="navigator" />{/if}
+      <div class="popupPanel-title__content">
+        {#if !twoRows}<slot name="title" />{/if}
+      </div>
+      <div class="buttons-group xsmall-gap">
+        <slot name="utils" />
+        {#if isFullSize || (asideFloat && $$slots.aside && isAside)}<div class="buttons-divider" />{/if}
+        {#if asideFloat && $$slots.aside && isAside}
+          <Button
+            icon={IconDetails}
+            kind={'transparent'}
+            size={'medium'}
+            selected={asideShown}
+            on:click={() => {
+              asideShown = !asideShown
+            }}
+          />
+        {/if}
+        {#if isFullSize}
+          <Button
+            icon={fullSize ? IconScale : IconScaleFull}
+            kind={'transparent'}
+            size={'medium'}
+            selected={fullSize}
+            on:click={() => {
+              fullSize = !fullSize
+              dispatch('fullsize')
+            }}
+          />
+        {/if}
+      </div>
     </div>
+    {#if twoRows}
+      <div class="popupPanel-title row-bottom"><slot name="title" /></div>
+    {/if}
   </div>
-  <div class="popupPanel-body" class:asideShown>
-    <div
-      class="popupPanel-body__main"
-      use:resizeObserver={(element) => {
-        innerWidth = element.clientWidth
-      }}
-    >
-      {#if $$slots.header && isHeader}
-        <div class="popupPanel-body__main-header bottom-divider">
-          <slot name="header" />
+  <div class="popupPanel-body {$deviceInfo.isMobile ? 'mobile' : 'main'}" class:asideShown>
+    {#if $deviceInfo.isMobile}
+      <Scroller horizontal padding={'.5rem .75rem'}>
+        <div
+          class="popupPanel-body__mobile"
+          use:resizeObserver={(element) => {
+            innerWidth = element.clientWidth
+          }}
+        >
+          {#if $$slots.header && isHeader}
+            <div class="popupPanel-body__header mobile bottom-divider">
+              <slot name="header" />
+            </div>
+          {/if}
+          <slot />
         </div>
-      {/if}
-      <slot />
-    </div>
+      </Scroller>
+    {:else}
+      <div
+        class="popupPanel-body__main"
+        use:resizeObserver={(element) => {
+          innerWidth = element.clientWidth
+        }}
+      >
+        {#if $$slots.header && isHeader}
+          <div class="popupPanel-body__header main bottom-divider">
+            <slot name="header" />
+          </div>
+        {/if}
+        <slot />
+      </div>
+    {/if}
     {#if $$slots.aside && isAside}
       <div class="popupPanel-body__aside" class:float={asideFloat} class:shown={asideShown}>
         <slot name="aside" />

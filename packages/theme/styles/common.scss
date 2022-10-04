@@ -20,13 +20,21 @@
 .antiPanel-application {
   flex-shrink: 0;
   display: flex;
-  flex-direction: column;
   justify-content: space-between;
   align-items: center;
-  min-width: var(--app-panel-width);
-  width: var(--app-panel-width);
-  height: 100%;
   background-color: var(--board-bg-color);
+
+  &.vertical {
+    flex-direction: column;
+    min-width: var(--app-panel-width);
+    width: var(--app-panel-width);
+    height: 100%;
+  }
+  &.horizonatl {
+    min-height: var(--app-panel-width);
+    height: var(--app-panel-width);
+    width: 100%;
+  }
 }
 .antiPanel-navigator,
 .antiPanel-component {
@@ -49,11 +57,18 @@
 @media (max-width: 1024px) {
   .antiPanel-navigator {
     position: fixed;
-    top: var(--status-bar-height);
-    left: var(--app-panel-width);
     background-color: var(--body-accent);
     filter: drop-shadow(2px 0 1px rgba(0, 0, 0, .2));
     z-index: 450;
+
+    &.portrait {
+      top: var(--status-bar-height);
+      left: 0;
+    }
+    &.landscape {
+      top: var(--status-bar-height);
+      left: var(--app-panel-width);  
+    }
   }
 }
 .antiPanel-component:not(.aside) {

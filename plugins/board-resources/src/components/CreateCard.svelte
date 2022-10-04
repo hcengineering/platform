@@ -93,7 +93,6 @@
       bind:value={title}
       icon={board.icon.Card}
       placeholder={board.string.CardPlaceholder}
-      maxWidth={'16rem'}
       focus
     />
   </Grid>

@@ -21,6 +21,7 @@
   import hr from '../plugin'
   import CreateDepartment from './CreateDepartment.svelte'
   import DepartmentCard from './DepartmentCard.svelte'
+  import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
 
   let search = ''
   let resultQuery: DocumentQuery<Department> = {}
@@ -63,27 +64,34 @@
   spaceMembers.query(hr.mixin.Staff, {}, (res) => {
     allEmployees = res
   })
+
+  let twoRows: boolean
+  $: twoRows = $deviceInfo.docWidth <= 680
 </script>
 
-<div class="ac-header full divide">
-  <div class="ac-header__wrap-title">
-    <div class="ac-header__icon"><Icon icon={hr.icon.Structure} size={'small'} /></div>
-    <span class="ac-header__title"><Label label={hr.string.Structure} /></span>
-  </div>
+<div class="ac-header withSettings divide" class:full={!twoRows} class:mini={twoRows}>
+  <div class:ac-header-full={!twoRows} class:flex-between={twoRows}>
+    <div class="ac-header__wrap-title mr-3">
+      <div class="ac-header__icon"><Icon icon={hr.icon.Structure} size={'small'} /></div>
+      <span class="ac-header__title"><Label label={hr.string.Structure} /></span>
+    </div>
 
-  <SearchEdit
-    bind:value={search}
-    on:change={() => {
-      updateResultQuery(search)
-    }}
-  />
-  <Button
-    label={hr.string.CreateDepartmentLabel}
-    icon={IconAdd}
-    kind={'primary'}
-    size={'small'}
-    on:click={showCreateDialog}
-  />
+    <SearchEdit
+      bind:value={search}
+      on:change={() => {
+        updateResultQuery(search)
+      }}
+    />
+  </div>
+  <div class="ac-header-full" class:secondRow={twoRows}>
+    <Button
+      label={hr.string.CreateDepartmentLabel}
+      icon={IconAdd}
+      kind={'primary'}
+      size={'small'}
+      on:click={showCreateDialog}
+    />
+  </div>
 </div>
 
 <Scroller>

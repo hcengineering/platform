@@ -73,7 +73,6 @@
       bind:value
       icon={recruit.icon.Application}
       placeholder={recruit.string.OpinionValue}
-      maxWidth="39rem"
       focus
     />
     <div class="mt-1 mb-1">

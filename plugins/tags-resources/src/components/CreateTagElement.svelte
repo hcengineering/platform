@@ -117,22 +117,16 @@
         </svelte:fragment>
       </Button>
     </div>
-    <div class="flex-col mt-0-5">
+    <div class="flex-col mt-0-5 w-full">
       <EditBox
         bind:value={title}
         placeholder={tags.string.TagName}
         placeholderParam={{ word: keyTitle }}
-        maxWidth={'35rem'}
         kind={'large-style'}
         focus
       />
       <div class="mt-2">
-        <EditBox
-          bind:value={description}
-          placeholder={tags.string.TagDescriptionPlaceholder}
-          maxWidth={'35rem'}
-          kind={'small-style'}
-        />
+        <EditBox bind:value={description} placeholder={tags.string.TagDescriptionPlaceholder} kind={'small-style'} />
       </div>
     </div>
   </div>

@@ -82,7 +82,6 @@
       icon={inventory.icon.Products}
       bind:value={doc.name}
       placeholder={inventory.string.Product}
-      maxWidth={'16rem'}
       focus
     />
     <DropdownLabels

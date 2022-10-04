@@ -181,7 +181,6 @@
       <EditBox
         bind:value={newIssue.title}
         bind:focusInput={focusIssueTitle}
-        maxWidth="33rem"
         placeholder={tracker.string.IssueTitlePlaceholder}
         focus
       />

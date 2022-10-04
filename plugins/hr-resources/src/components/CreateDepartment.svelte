@@ -61,14 +61,15 @@
     <div class="mr-3">
       <Button focusIndex={1} icon={hr.icon.Department} size={'medium'} kind={'link-bordered'} disabled />
     </div>
-    <EditBox
-      focusIndex={2}
-      bind:value={name}
-      placeholder={hr.string.DepartmentPlaceholder}
-      maxWidth={'37.5rem'}
-      kind={'large-style'}
-      focus
-    />
+    <div class="clear-mins flex-grow">
+      <EditBox
+        focusIndex={2}
+        bind:value={name}
+        placeholder={hr.string.DepartmentPlaceholder}
+        kind={'large-style'}
+        focus
+      />
+    </div>
   </div>
   <svelte:fragment slot="header">
     <SpaceSelector _class={hr.class.Department} label={hr.string.ParentDepartmentLabel} bind:space />

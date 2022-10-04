@@ -153,7 +153,6 @@
       <p><Label label={telegram.string.PasswordDescr} /></p>
       <EditBox
         label={telegram.string.Password}
-        maxWidth="10rem"
         format="password"
         placeholder={telegram.string.Password}
         bind:value={password}
@@ -164,12 +163,7 @@
     {:else}
       <p><Label label={telegram.string.PhoneDescr} /></p>
       {#await getCurrent() then value}
-        <EditBox
-          label={telegram.string.Phone}
-          maxWidth="10rem"
-          placeholder={telegram.string.PhonePlaceholder}
-          bind:value={phone}
-        />
+        <EditBox label={telegram.string.Phone} placeholder={telegram.string.PhonePlaceholder} bind:value={phone} />
       {/await}
     {/if}
     <div class="footer">

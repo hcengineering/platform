@@ -71,7 +71,6 @@
             format="password"
             placeholder={setting.string.EnterCurrentPassword}
             label={setting.string.CurrentPassword}
-            maxWidth="20rem"
             bind:value={oldPassword}
           />
         </div>
@@ -80,7 +79,6 @@
             format="password"
             placeholder={setting.string.EnterNewPassword}
             label={setting.string.NewPassword}
-            maxWidth="20rem"
             bind:value={password}
           />
         </div>
@@ -89,7 +87,6 @@
             format="password"
             placeholder={setting.string.RepeatNewPassword}
             label={setting.string.NewPassword}
-            maxWidth="20rem"
             bind:value={password2}
           />
         </div>

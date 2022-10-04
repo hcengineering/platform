@@ -337,7 +337,7 @@
 
     {#each fieldEditors as collection}
       {#if collection.editor}
-        <div class="mt-6">
+        <div class="mt-6 clear-mins">
           <Component
             is={collection.editor}
             props={{

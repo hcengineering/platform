@@ -182,10 +182,10 @@
 >
   <div on:keydown={onKeydown}>
     <div class="mb-2">
-      <EditBox bind:value={name} placeholder={core.string.Name} maxWidth="13rem" />
+      <EditBox bind:value={name} placeholder={core.string.Name} />
     </div>
     <div class="flex-between mb-4">
-      <EditBox placeholder={presentation.string.Search} kind="large-style" bind:value={newValue} maxWidth="13rem" />
+      <EditBox placeholder={presentation.string.Search} kind="large-style" bind:value={newValue} />
       <div class="flex gap-2">
         <ActionIcon icon={IconAdd} label={presentation.string.Add} action={add} size={'small'} />
         <ActionIcon

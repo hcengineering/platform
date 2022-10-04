@@ -17,6 +17,7 @@
   import FontSizeSelector from './FontSizeSelector.svelte'
   import LangSelector from './LangSelector.svelte'
   import uiPlugin from '../../plugin'
+  import { deviceOptionsStore as deviceInfo } from '../../'
 
   let application: AnyComponent | undefined
 
@@ -52,13 +53,34 @@
   addEventListener(PlatformEvent, async (_event, _status) => {
     status = _status
   })
+
+  let docWidth: number = window.innerWidth
+  let docHeight: number = window.innerHeight
+  let maxLenght: number
+  $: maxLenght = docWidth >= docHeight ? docWidth : docHeight
+  let isPortrait: boolean
+  $: isPortrait = docWidth <= docHeight
+  let isMobile: boolean
+  let alwaysMobile: boolean = false
+  $: isMobile =
+    alwaysMobile ?? /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+
+  $: $deviceInfo.docWidth = docWidth
+  $: $deviceInfo.docHeight = docHeight
+  $: $deviceInfo.isPortrait = isPortrait
+  $: $deviceInfo.isMobile = isMobile
 </script>
+
+<svelte:window bind:innerWidth={docWidth} bind:innerHeight={docHeight} />
 
 <Theme>
   <div id="ui-root">
     <div class="status-bar">
       <div class="flex-row-center h-full content-color">
-        <div class="status-info">
+        <div
+          class="status-info"
+          style:margin-left={(isPortrait && docWidth <= 480) || (!isPortrait && docHeight <= 480) ? '1.5rem' : '0'}
+        >
           <StatusComponent {status} />
         </div>
         <div class="flex-row-reverse">
@@ -74,7 +96,12 @@
           <div class="flex-center widget cursor-pointer mr-3">
             <FontSizeSelector />
           </div>
-          <div class="flex-center widget mr-3">
+          <div
+            class="flex-center widget mr-3"
+            class:on={isMobile}
+            class:always={alwaysMobile}
+            on:click={() => (alwaysMobile = !alwaysMobile)}
+          >
             <WiFi size={'small'} />
           </div>
         </div>
@@ -106,7 +133,7 @@
     .status-bar {
       min-height: var(--status-bar-height);
       height: var(--status-bar-height);
-      min-width: 600px;
+      // min-width: 600px;
       font-size: 12px;
       line-height: 150%;
       background-color: var(--divider-color);
@@ -116,7 +143,7 @@
         text-align: center;
       }
       .clock {
-        margin: 0 40px 0 24px;
+        margin: 0 1rem 0 24px;
         font-weight: 500;
         user-select: none;
       }
@@ -124,14 +151,22 @@
         width: 16px;
         height: 16px;
         font-size: 14px;
-        color: var(--theme-content-color);
+        color: var(--content-color);
+
+        &.on {
+          color: var(--caption-color);
+
+          &.always {
+            color: var(--won-color);
+          }
+        }
       }
     }
 
     .app {
       height: calc(100vh - var(--status-bar-height));
-      min-width: 600px;
-      min-height: 480px;
+      // min-width: 600px;
+      // min-height: 480px;
 
       .error {
         margin-top: 45vh;

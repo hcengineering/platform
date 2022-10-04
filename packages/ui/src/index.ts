@@ -15,9 +15,10 @@
 
 import { addLocation, addStringsLoader } from '@hcengineering/platform'
 import { SvelteComponent } from 'svelte'
-import { readable } from 'svelte/store'
+import { readable, writable } from 'svelte/store'
 import Root from './components/internal/Root.svelte'
 import { uiId, uis } from './plugin'
+import type { DeviceOptions } from './types'
 
 export type {
   AnyComponent,
@@ -33,7 +34,8 @@ export type {
   ButtonKind,
   ButtonSize,
   IconSize,
-  TabItem
+  TabItem,
+  DeviceOptions
 } from './types'
 // export { applicationShortcutKey } from './utils'
 export { getCurrentLocation, locationToUrl, navigate, location } from './location'
@@ -173,5 +175,12 @@ addStringsLoader(uiId, async (lang: string) => {
 })
 
 addLocation(uiId, async () => ({ default: async () => ({}) }))
+
+export const deviceOptionsStore = writable<DeviceOptions>({
+  docWidth: 0,
+  docHeight: 0,
+  isPortrait: false,
+  isMobile: false
+})
 
 export default uis

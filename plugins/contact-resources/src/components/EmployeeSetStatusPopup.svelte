@@ -43,7 +43,7 @@
   }}
 >
   <Grid column={1} rowGap={1}>
-    <EditBox bind:value={statusName} maxWidth={'16rem'} />
+    <EditBox bind:value={statusName} />
     <div><Label label={contact.string.StatusDueDate} /></div>
 
     <EmployeeStatusDueDatePresenter {statusDueDate} on:change={handleDueDateChanged} />

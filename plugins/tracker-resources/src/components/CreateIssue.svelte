@@ -319,13 +319,7 @@
   {#if parentIssue}
     <ParentIssue issue={parentIssue} on:close={clearParentIssue} />
   {/if}
-  <EditBox
-    bind:value={object.title}
-    placeholder={tracker.string.IssueTitlePlaceholder}
-    maxWidth={'37.5rem'}
-    kind={'large-style'}
-    focus
-  />
+  <EditBox bind:value={object.title} placeholder={tracker.string.IssueTitlePlaceholder} kind={'large-style'} focus />
   <AttachmentStyledBox
     bind:this={descriptionBox}
     {objectId}

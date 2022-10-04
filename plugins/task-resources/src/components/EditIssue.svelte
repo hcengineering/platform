@@ -52,7 +52,6 @@
       bind:value={object.name}
       icon={task.icon.Task}
       placeholder={plugin.string.TaskNamePlaceholder}
-      maxWidth="39rem"
       focus
       on:change={() => change('name', object.name)}
     />

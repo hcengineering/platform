@@ -136,7 +136,14 @@
     height: max-content;
     max-width: 60rem;
     max-height: calc(100vh - 2rem);
-
+  }
+  &.mobile {
+    width: 90vw;
+    max-width: 90vw;
+    max-height: 90vh;
+  }
+  &.dialog,
+  &.mobile {
     .antiCard-header {
       padding: .75rem .75rem .375rem;
 

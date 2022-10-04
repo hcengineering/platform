@@ -16,6 +16,7 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte'
   import { createQuery } from '@hcengineering/presentation'
+  import { Scroller } from '@hcengineering/ui'
   import type { Candidate, Applicant, Vacancy } from '@hcengineering/recruit'
   import CandidateCard from './CandidateCard.svelte'
   import VacancyCard from './VacancyCard.svelte'
@@ -51,14 +52,16 @@
 </script>
 
 {#if object !== undefined && candidate !== undefined}
-  <div class="flex-between">
-    <div class="card"><CandidateCard {candidate} on:click /></div>
-    <div class="arrows"><ExpandRightDouble /></div>
-    <div class="card"><VacancyCard {vacancy} /></div>
-  </div>
-  <div class="mt-6">
-    <Reviews objectId={candidate._id} reviews={candidate.reviews ?? 0} label={recruit.string.TalentReviews} />
-  </div>
+  <Scroller horizontal>
+    <div class="flex-between">
+      <div class="card"><CandidateCard {candidate} on:click /></div>
+      <div class="arrows"><ExpandRightDouble /></div>
+      <div class="card"><VacancyCard {vacancy} /></div>
+    </div>
+    <div class="mt-6">
+      <Reviews objectId={candidate._id} reviews={candidate.reviews ?? 0} label={recruit.string.TalentReviews} />
+    </div>
+  </Scroller>
 {/if}
 
 <style lang="scss">

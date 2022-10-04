@@ -17,6 +17,7 @@
   import { afterUpdate, onMount } from 'svelte'
   import { fitPopupElement } from '../popups'
   import type { AnyComponent, AnySvelteComponent, PopupAlignment, PopupOptions } from '../types'
+  import { deviceOptionsStore as deviceInfo } from '..'
 
   export let is: AnyComponent | AnySvelteComponent
   export let props: object
@@ -30,7 +31,6 @@
 
   let modalHTML: HTMLElement
   let componentInstance: any
-  let docWidth: number
   let docSize: boolean = false
   let fullSize: boolean = false
 
@@ -88,13 +88,13 @@
   }
 
   onMount(() => fitPopup())
-  $: if (docWidth <= 900 && !docSize) docSize = true
-  $: if (docWidth > 900 && docSize) docSize = false
+  $: if ($deviceInfo.docWidth <= 900 && !docSize) docSize = true
+  $: if ($deviceInfo.docWidth > 900 && docSize) docSize = false
 
   afterUpdate(() => fitPopup())
 </script>
 
-<svelte:window on:resize={fitPopup} on:keydown={handleKeydown} bind:innerWidth={docWidth} />
+<svelte:window on:resize={fitPopup} on:keydown={handleKeydown} />
 
 <div
   class="popup"
@@ -145,7 +145,7 @@
     position: fixed;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    // justify-content: center;
     max-height: calc(100vh - 32px);
     background-color: transparent;
 

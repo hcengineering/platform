@@ -73,7 +73,7 @@
               selected = value
             }}
           >
-            <EditBox maxWidth="15rem" bind:value={value.name} on:change={() => update(value)} />
+            <EditBox bind:value={value.name} on:change={() => update(value)} />
             <div
               class="hover-trans"
               on:click|stopPropagation={(ev) => {

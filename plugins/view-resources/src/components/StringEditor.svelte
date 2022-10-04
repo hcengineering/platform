@@ -22,7 +22,6 @@
   export let placeholder: IntlString
   export let value: string
   export let focus: boolean
-  export let maxWidth: string = '10rem'
   export let onChange: (value: string) => void
   export let kind: 'no-border' | 'link' = 'no-border'
   export let readonly = false
@@ -62,7 +61,7 @@
     <span class="dark-color"><Label label={placeholder} /></span>
   {/if}
 {:else}
-  <EditBox {placeholder} {maxWidth} bind:value {focus} on:change={_onchange} />
+  <EditBox {placeholder} bind:value {focus} on:change={_onchange} />
 {/if}
 
 <style lang="scss">

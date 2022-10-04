@@ -100,7 +100,7 @@
     dispatch('close')
   }}
 >
-  <div class="mb-2"><EditBox bind:value={name} placeholder={core.string.Name} maxWidth="13rem" /></div>
+  <div class="mb-2"><EditBox bind:value={name} placeholder={core.string.Name} /></div>
   <div class="flex-col mb-2">
     <div class="flex-row-center flex-grow">
       <Label label={setting.string.Type} />

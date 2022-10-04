@@ -61,19 +61,12 @@
     <SpaceSelector _class={tracker.class.Team} label={tracker.string.Team} bind:space />
   </svelte:fragment>
   <div class="label">
-    <EditBox
-      bind:value={object.label}
-      placeholder={tracker.string.ProjectNamePlaceholder}
-      maxWidth="37.5rem"
-      kind="large-style"
-      focus
-    />
+    <EditBox bind:value={object.label} placeholder={tracker.string.ProjectNamePlaceholder} kind="large-style" focus />
   </div>
   <div class="description">
     <EditBox
       bind:value={object.description}
       placeholder={tracker.string.ProjectDescriptionPlaceholder}
-      maxWidth="37.5rem"
       kind="editbox"
     />
   </div>

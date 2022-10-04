@@ -36,7 +36,8 @@
     Popup,
     resizeObserver,
     showPopup,
-    TooltipInstance
+    TooltipInstance,
+    PopupPosAlignment
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { ActionContext, ActionHandler } from '@hcengineering/view-resources'
@@ -51,6 +52,7 @@
   import NavHeader from './NavHeader.svelte'
   import Navigator from './Navigator.svelte'
   import SpaceView from './SpaceView.svelte'
+  import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
 
   export let client: Client
   let contentPanel: HTMLElement
@@ -362,24 +364,33 @@
     }
   }
 
-  let docWidth: number
-  let navFloat: boolean = !(window.innerWidth < 1024)
-  const windowResize = (): void => {
-    if (window.innerWidth <= 1024 && !navFloat) {
-      visibileNav = false
-      navFloat = true
-    } else if (window.innerWidth > 1024 && navFloat) {
-      navFloat = false
-      visibileNav = true
-    }
+  let navFloat: boolean = !($deviceInfo.docWidth < 1024)
+  $: if ($deviceInfo.docWidth <= 1024 && !navFloat) {
+    visibileNav = false
+    navFloat = true
+  } else if ($deviceInfo.docWidth > 1024 && navFloat) {
+    navFloat = false
+    visibileNav = true
   }
-  windowResize()
   const checkOnHide = (): void => {
-    if (visibileNav && docWidth <= 1024) visibileNav = false
+    if (visibileNav && $deviceInfo.docWidth <= 1024) visibileNav = false
   }
+  let appsDirection: 'vertical' | 'horizontal'
+  $: appsDirection = $deviceInfo.isMobile && $deviceInfo.isPortrait ? 'horizontal' : 'vertical'
+  let appsMini: boolean
+  $: appsMini =
+    $deviceInfo.isMobile &&
+    (($deviceInfo.isPortrait && $deviceInfo.docWidth <= 480) ||
+      (!$deviceInfo.isPortrait && $deviceInfo.docHeight <= 480))
+  let popupPosition: PopupPosAlignment
+  $: popupPosition =
+    appsDirection === 'horizontal'
+      ? 'account-portrait'
+      : appsDirection === 'vertical' && $deviceInfo.isMobile
+        ? 'account-mobile'
+        : 'account'
 </script>
 
-<svelte:window on:resize={windowResize} />
 {#if employee?.active === true}
   <ActionHandler />
   <svg class="svg-mask">
@@ -402,32 +413,39 @@
       />
     </clipPath>
   </svg>
-  <div class="workbench-container">
-    <div class="antiPanel-application">
-      <div class="flex-col flex-no-shrink mt-1">
+  <div class="workbench-container" style:flex-direction={appsDirection === 'horizontal' ? 'column-reverse' : 'row'}>
+    <div class="antiPanel-application {appsDirection}">
+      <div
+        class="hamburger-container"
+        class:portrait={appsDirection === 'horizontal' && !appsMini}
+        class:landscape={appsDirection === 'vertical' && !appsMini}
+        class:mini={appsMini}
+      >
         <!-- <ActivityStatus status="active" /> -->
         <AppItem
           icon={TopMenu}
           label={visibileNav ? workbench.string.HideMenu : workbench.string.ShowMenu}
           selected={!visibileNav}
           action={toggleNav}
+          mini={appsMini}
           notify={false}
         />
       </div>
       <Applications
         {apps}
         active={currentApplication?._id}
+        direction={appsDirection}
         on:active={(evt) => {
           navigateApp(evt.detail)
         }}
       />
-      <div class="flex-row" style="margin-bottom: 2rem;">
+      <div class="info-box {appsDirection}" class:vertical-mobile={appsDirection === 'vertical' && appsMini}>
         <AppItem
           icon={calendar.icon.Reminder}
           label={calendar.string.Reminders}
           selected={false}
           action={async () => {
-            showPopup(calendar.component.RemindersPopup, {}, 'account')
+            showPopup(calendar.component.RemindersPopup, {}, popupPosition)
           }}
           notify={false}
         />
@@ -436,16 +454,16 @@
           label={notification.string.Notifications}
           selected={false}
           action={async () => {
-            showPopup(notification.component.NotificationsPopup, {}, 'account')
+            showPopup(notification.component.NotificationsPopup, {}, popupPosition)
           }}
           notify={hasNotification}
         />
-        <div class="flex-center mt-2">
+        <div class="flex-center" class:mt-2={appsDirection === 'vertical'} class:ml-2={appsDirection === 'horizontal'}>
           <div
             id="profile-button"
             class="cursor-pointer"
             on:click|stopPropagation={() => {
-              showPopup(AccountPopup, {}, 'account')
+              showPopup(AccountPopup, {}, popupPosition)
             }}
           >
             <Avatar avatar={employee.avatar} size={'medium'} />
@@ -459,59 +477,66 @@
         application: currentApplication?._id
       }}
     />
-    {#if currentApplication && navigatorModel && navigator && visibileNav}
-      <div class="antiPanel-navigator" style="box-shadow: -1px 0px 2px rgba(0, 0, 0, .1)">
-        {#if currentApplication}
-          <NavHeader label={currentApplication.label} />
-          {#if currentApplication.navHeaderComponent}
-            <Component is={currentApplication.navHeaderComponent} props={{ currentSpace }} shrink />
+    <div class="workbench-container">
+      {#if currentApplication && navigatorModel && navigator && visibileNav}
+        {#if visibileNav && navFloat}<div class="cover shown" on:click={() => (visibileNav = false)} />{/if}
+        <div
+          class="antiPanel-navigator {appsDirection === 'horizontal' ? 'portrait' : 'landscape'}"
+          style="box-shadow: -1px 0px 2px rgba(0, 0, 0, .1)"
+        >
+          {#if currentApplication}
+            <NavHeader label={currentApplication.label} />
+            {#if currentApplication.navHeaderComponent}
+              <Component is={currentApplication.navHeaderComponent} props={{ currentSpace }} shrink />
+            {/if}
           {/if}
-        {/if}
-        <Navigator
-          {currentSpace}
-          {currentSpecial}
-          model={navigatorModel}
-          on:special={(evt) => selectSpecial(evt.detail)}
-          on:space={(evt) => selectSpace(evt.detail.space, evt.detail.spaceSpecial)}
-          on:open={checkOnHide}
-        />
-        {#if currentApplication.navFooterComponent}
-          <Component is={currentApplication.navFooterComponent} props={{ currentSpace }} />
+          <Navigator
+            {currentSpace}
+            {currentSpecial}
+            model={navigatorModel}
+            on:special={(evt) => selectSpecial(evt.detail)}
+            on:space={(evt) => selectSpace(evt.detail.space, evt.detail.spaceSpecial)}
+            on:open={checkOnHide}
+          />
+          {#if currentApplication.navFooterComponent}
+            <Component is={currentApplication.navFooterComponent} props={{ currentSpace }} />
+          {/if}
+        </div>
+      {/if}
+      <div
+        class="antiPanel-component antiComponent"
+        class:border-left={!$deviceInfo.isPortrait}
+        bind:this={contentPanel}
+        use:resizeObserver={(element) => {
+          componentWidth = element.clientWidth
+        }}
+      >
+        {#if currentApplication && currentApplication.component}
+          <Component is={currentApplication.component} props={{ currentSpace, visibileNav }} />
+        {:else if specialComponent}
+          <Component
+            is={specialComponent.component}
+            props={{ model: navigatorModel, ...specialComponent.componentProps, currentSpace, visibileNav }}
+          />
+        {:else if currentView?.component !== undefined}
+          <Component is={currentView.component} props={{ ...currentView.componentProps, currentView, visibileNav }} />
+        {:else}
+          <SpaceView {currentSpace} {currentView} {createItemDialog} {createItemLabel} />
         {/if}
       </div>
-    {/if}
-    <div
-      class="antiPanel-component antiComponent border-left"
-      bind:this={contentPanel}
-      use:resizeObserver={(element) => {
-        componentWidth = element.clientWidth
-      }}
-    >
-      {#if currentApplication && currentApplication.component}
-        <Component is={currentApplication.component} props={{ currentSpace, visibileNav }} />
-      {:else if specialComponent}
-        <Component
-          is={specialComponent.component}
-          props={{ model: navigatorModel, ...specialComponent.componentProps, currentSpace, visibileNav }}
-        />
-      {:else if currentView?.component !== undefined}
-        <Component is={currentView.component} props={{ ...currentView.componentProps, currentView, visibileNav }} />
-      {:else}
-        <SpaceView {currentSpace} {currentView} {createItemDialog} {createItemLabel} />
+      {#if asideId && navigatorModel?.aside !== undefined}
+        <div class="splitter" class:hovered={isResizing} on:mousedown={startResize} />
+        <div
+          class="antiPanel-component antiComponent aside"
+          use:resizeObserver={(element) => {
+            asideWidth = element.clientWidth
+          }}
+          bind:this={aside}
+        >
+          <Component is={navigatorModel.aside} props={{ currentSpace, _id: asideId }} on:close={closeAside} />
+        </div>
       {/if}
     </div>
-    {#if asideId && navigatorModel?.aside !== undefined}
-      <div class="splitter" class:hovered={isResizing} on:mousedown={startResize} />
-      <div
-        class="antiPanel-component antiComponent aside"
-        use:resizeObserver={(element) => {
-          asideWidth = element.clientWidth
-        }}
-        bind:this={aside}
-      >
-        <Component is={navigatorModel.aside} props={{ currentSpace, _id: asideId }} on:close={closeAside} />
-      </div>
-    {/if}
   </div>
   <div bind:this={cover} class="cover" />
   <TooltipInstance />
@@ -536,9 +561,43 @@
 
 <style lang="scss">
   .workbench-container {
-    // position: relative;
     display: flex;
+    min-width: 0;
+    min-height: 0;
+    width: 100%;
     height: 100%;
+  }
+  .hamburger-container {
+    display: flex;
+    flex-shrink: 0;
+
+    &.portrait {
+      margin-left: 0.375rem;
+    }
+    &.landscape {
+      margin-top: 0.25rem;
+    }
+    &.mini {
+      position: fixed;
+      top: 4px;
+      left: 4px;
+    }
+  }
+  .info-box {
+    display: flex;
+    align-items: center;
+
+    &.vertical {
+      flex-direction: column;
+      margin-bottom: 2rem;
+
+      &-mobile {
+        margin-bottom: 1rem;
+      }
+    }
+    &.horizontal {
+      margin-right: 1rem;
+    }
   }
 
   .cover {
@@ -549,6 +608,10 @@
     width: 100vw;
     height: 100vh;
     z-index: 10;
+
+    &.shown {
+      display: block;
+    }
   }
   .splitter {
     position: relative;

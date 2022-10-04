@@ -28,7 +28,6 @@
 
   export let value: TimeSpendReport | undefined
   export let placeholder: IntlString = tracker.string.TimeSpendReportValue
-  export let maxWidth: string = '10rem'
 
   export function canClose (): boolean {
     return true
@@ -79,7 +78,7 @@
   okLabel={value === undefined ? presentation.string.Create : presentation.string.Save}
 >
   <div class="flex-row-center gap-2">
-    <EditBox focus bind:value={data.value} {placeholder} format={'number'} kind={'editbox'} {maxWidth} />
+    <EditBox focus bind:value={data.value} {placeholder} format={'number'} kind={'editbox'} />
     <UserBox
       _class={contact.class.Employee}
       label={contact.string.Employee}
@@ -88,10 +87,5 @@
     />
     <DatePresenter kind={'link'} bind:value={data.date} editable />
   </div>
-  <EditBox
-    bind:value={data.description}
-    placeholder={tracker.string.TimeSpendReportDescription}
-    kind={'editbox'}
-    {maxWidth}
-  />
+  <EditBox bind:value={data.description} placeholder={tracker.string.TimeSpendReportDescription} kind={'editbox'} />
 </Card>

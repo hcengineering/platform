@@ -61,7 +61,6 @@
       <EditBox
         bind:value={rawTitle}
         kind={'large-style'}
-        maxWidth={'20rem'}
         focusable
         on:blur={() => {
           if (rawTitle !== object.title) client.update(object, { title: rawTitle })
@@ -99,7 +98,6 @@
       bind:value={object.verdict}
       placeholder={recruit.string.Verdict}
       kind={'large-style'}
-      maxWidth={'39rem'}
       focusable
       on:change={() => client.update(object, { verdict: object.verdict })}
     />

@@ -86,7 +86,7 @@
 
   $: huge = size === 'medium' || size === 'large'
 
-  afterUpdate(() => dispatch('changeContent', true))
+  afterUpdate(() => dispatch('changeContent'))
 </script>
 
 <FocusHandler {manager} />
@@ -96,7 +96,7 @@
   class:full-width={width === 'full'}
   class:max-width-40={width === 'large'}
   use:resizeObserver={() => {
-    dispatch('changeContent', true)
+    dispatch('changeContent')
   }}
   on:keydown={onKeydown}
 >
@@ -119,7 +119,7 @@
         bind:this={list}
         count={filteredObjects.length}
         bind:selection
-        on:changeContent={() => dispatch('changeContent', true)}
+        on:changeContent={() => dispatch('changeContent')}
       >
         <svelte:fragment slot="item" let:item={itemId}>
           {@const item = filteredObjects[itemId]}

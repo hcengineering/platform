@@ -21,6 +21,7 @@
   import { FilterButton, TableBrowser, ViewletSettingButton } from '@hcengineering/view-resources'
   import recruit from '../plugin'
   import CreateVacancy from './CreateVacancy.svelte'
+  import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
 
   let search: string = ''
   let resultQuery: DocumentQuery<Doc> = {}
@@ -129,29 +130,37 @@
     }
     return result
   }
+
+  let twoRows: boolean
+  $: twoRows = $deviceInfo.docWidth <= 680
 </script>
 
-<div class="ac-header full">
-  <div class="ac-header__wrap-title">
-    <div class="ac-header__icon"><Icon icon={recruit.icon.Vacancy} size={'small'} /></div>
-    <span class="ac-header__title"><Label label={recruit.string.Vacancies} /></span>
-    <div class="ml-4"><FilterButton _class={recruit.class.Vacancy} /></div>
+<div class="ac-header withSettings" class:full={!twoRows} class:mini={twoRows}>
+  <div class:ac-header-full={!twoRows} class:flex-between={twoRows}>
+    <div class="ac-header__wrap-title mr-3">
+      <div class="ac-header__icon"><Icon icon={recruit.icon.Vacancy} size={'small'} /></div>
+      <span class="ac-header__title"><Label label={recruit.string.Vacancies} /></span>
+      <div class="ml-4"><FilterButton _class={recruit.class.Vacancy} /></div>
+    </div>
+    <SearchEdit
+      bind:value={search}
+      on:change={(e) => {
+        search = e.detail
+      }}
+    />
   </div>
-  <SearchEdit
-    bind:value={search}
-    on:change={(e) => {
-      search = e.detail
-    }}
-  />
-  <Button
-    icon={IconAdd}
-    label={recruit.string.VacancyCreateLabel}
-    size={'small'}
-    kind={'primary'}
-    on:click={showCreateDialog}
-  />
-  <ViewletSettingButton viewlet={descr} />
+  <div class="ac-header-full" class:secondRow={twoRows}>
+    <Button
+      icon={IconAdd}
+      label={recruit.string.VacancyCreateLabel}
+      size={'small'}
+      kind={'primary'}
+      on:click={showCreateDialog}
+    />
+    <ViewletSettingButton viewlet={descr} />
+  </div>
 </div>
+
 {#if descr}
   {#if loading}
     <Loading />

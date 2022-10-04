@@ -19,6 +19,7 @@
   import { AnyComponent, Button, Icon, IconAdd, Label, Loading, SearchEdit, showPopup } from '@hcengineering/ui'
   import view, { Viewlet, ViewletDescriptor, ViewletPreference } from '@hcengineering/view'
   import { FilterButton, TableBrowser, ViewletSettingButton } from '@hcengineering/view-resources'
+  import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
 
   export let _class: Ref<Class<Doc>>
   export let icon: Asset
@@ -73,26 +74,33 @@
   function updateResultQuery (search: string, baseQuery: DocumentQuery<Doc> = {}): DocumentQuery<Doc> {
     return search === '' ? baseQuery : { ...baseQuery, $search: search }
   }
+
+  let twoRows: boolean
+  $: twoRows = $deviceInfo.docWidth <= 680
 </script>
 
-<div class="ac-header full withSettings">
-  <div class="ac-header__wrap-title">
-    <span class="ac-header__icon"><Icon {icon} size={'small'} /></span>
-    <span class="ac-header__title"><Label {label} /></span>
-    <div class="ml-4"><FilterButton {_class} /></div>
-  </div>
+<div class="ac-header withSettings" class:full={!twoRows} class:mini={twoRows}>
+  <div class:ac-header-full={!twoRows} class:flex-between={twoRows}>
+    <div class="ac-header__wrap-title mr-3">
+      <span class="ac-header__icon"><Icon {icon} size={'small'} /></span>
+      <span class="ac-header__title"><Label {label} /></span>
+      <div class="ml-4"><FilterButton {_class} /></div>
+    </div>
 
-  <SearchEdit bind:value={search} />
-  {#if createLabel && createComponent}
-    <Button
-      label={createLabel}
-      icon={IconAdd}
-      kind={'primary'}
-      size={'small'}
-      on:click={(ev) => showCreateDialog(ev)}
-    />
-  {/if}
-  <ViewletSettingButton viewlet={descr} />
+    <SearchEdit bind:value={search} />
+  </div>
+  <div class="ac-header-full" class:secondRow={twoRows}>
+    {#if createLabel && createComponent}
+      <Button
+        label={createLabel}
+        icon={IconAdd}
+        kind={'primary'}
+        size={'small'}
+        on:click={(ev) => showCreateDialog(ev)}
+      />
+    {/if}
+    <ViewletSettingButton viewlet={descr} />
+  </div>
 </div>
 
 {#if descr}

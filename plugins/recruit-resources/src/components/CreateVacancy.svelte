@@ -73,14 +73,15 @@
     <div class="mr-3">
       <Button focusIndex={1} icon={Vacancy} size={'medium'} kind={'link-bordered'} disabled />
     </div>
-    <EditBox
-      focusIndex={2}
-      bind:value={name}
-      placeholder={recruit.string.VacancyPlaceholder}
-      maxWidth={'37.5rem'}
-      kind={'large-style'}
-      focus
-    />
+    <div class="clear-mins flex-grow">
+      <EditBox
+        focusIndex={2}
+        bind:value={name}
+        placeholder={recruit.string.VacancyPlaceholder}
+        kind={'large-style'}
+        focus
+      />
+    </div>
   </div>
   <svelte:fragment slot="pool">
     <UserBox

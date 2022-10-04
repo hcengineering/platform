@@ -59,12 +59,7 @@
     <div class="popup-block">
       <span><Label label={contact.string.SocialLinks} /></span>
       {#each providers as provider, i}
-        <EditBox
-          label={provider.label}
-          placeholder={provider.placeholder}
-          bind:value={newValues[i].value}
-          maxWidth={'14.5rem'}
-        />
+        <EditBox label={provider.label} placeholder={provider.placeholder} bind:value={newValues[i].value} />
       {/each}
     </div>
   </ScrollBox>

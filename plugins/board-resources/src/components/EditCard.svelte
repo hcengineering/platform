@@ -139,37 +139,27 @@
         }}
       />
     </svelte:fragment>
-    <div class="flex-row-stretch">
-      <div class="fs-title text-xl">
-        <EditBox bind:value={object.title} maxWidth="39rem" focus on:change={() => change('title', object?.title)} />
-      </div>
+    <EditBox bind:value={object.title} kind={'large-style'} focus on:change={() => change('title', object?.title)} />
+    <div class="background-bg-accent border-bg-accent border-radius-3 p-4 mt-4 w-full">
+      <StyledTextBox
+        alwaysEdit={true}
+        showButtons={false}
+        placeholder={board.string.DescriptionPlaceholder}
+        bind:content={object.description}
+        on:value={(evt) => change('description', evt.detail)}
+      />
     </div>
-    <div class="flex-row-stretch">
-      <div class="flex-grow mr-4">
-        <div class="flex-row-stretch">
-          <div class="background-bg-accent border-bg-accent border-radius-3 p-2 mt-2 w-full">
-            <StyledTextBox
-              alwaysEdit={true}
-              showButtons={false}
-              placeholder={board.string.DescriptionPlaceholder}
-              bind:content={object.description}
-              on:value={(evt) => change('description', evt.detail)}
-            />
-          </div>
-        </div>
-        <div class="mt-6">
-          <Attachments objectId={_id} {_class} space={object.space} attachments={object.attachments ?? 0} />
-        </div>
-        <div class="flex-row-center mt-6">
-          <span class="text-xl font-medium caption-color mr-3"><Label label={board.string.Checklists} /></span>
-          <CircleButton icon={IconAdd} size="small" selected on:click={addChecklist} />
-        </div>
-        <div class="mr-2 ml-2 mb-4">
-          {#each checklists as checklist}
-            <CardChecklist value={checklist} />
-          {/each}
-        </div>
-      </div>
+    <div class="mt-6">
+      <Attachments objectId={_id} {_class} space={object.space} attachments={object.attachments ?? 0} />
+    </div>
+    <div class="flex-row-center mt-6">
+      <span class="text-xl font-medium caption-color mr-3"><Label label={board.string.Checklists} /></span>
+      <CircleButton icon={IconAdd} size="small" selected on:click={addChecklist} />
+    </div>
+    <div class="mr-2 ml-2 mb-4">
+      {#each checklists as checklist}
+        <CardChecklist value={checklist} />
+      {/each}
     </div>
     <svelte:fragment slot="custom-attributes" let:direction>
       {#if direction === 'column'}

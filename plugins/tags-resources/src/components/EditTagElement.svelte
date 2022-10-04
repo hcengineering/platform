@@ -113,16 +113,11 @@
             })
           }}
         />
-        <EditBox
-          placeholder={tags.string.TagName}
-          placeholderParam={{ word: keyTitle }}
-          maxWidth="15rem"
-          bind:value={data.title}
-        />
+        <EditBox placeholder={tags.string.TagName} placeholderParam={{ word: keyTitle }} bind:value={data.title} />
       </div>
 
       <div class="fs-title mt-4">
-        <EditBox placeholder={tags.string.TagDescriptionPlaceholder} maxWidth="15rem" bind:value={data.description} />
+        <EditBox placeholder={tags.string.TagDescriptionPlaceholder} bind:value={data.description} />
       </div>
 
       <div class="text-sm mt-4">

@@ -20,6 +20,7 @@
   import notification from '@hcengineering/notification'
   import type { Asset } from '@hcengineering/platform'
   import { AnySvelteComponent, Component, Panel, Icon, Scroller } from '@hcengineering/ui'
+  import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
 
   export let title: string | undefined = undefined
   export let subtitle: string | undefined = undefined
@@ -35,13 +36,16 @@
 </script>
 
 <Panel bind:isAside isHeader={$$slots.header || isHeader} bind:panelWidth bind:innerWidth on:close>
+  <svelte:fragment slot="navigator">
+    {#if $$slots.navigator}
+      <div class="buttons-group xsmall-gap mx-2">
+        <slot name="navigator" />
+      </div>
+    {/if}
+  </svelte:fragment>
+
   <svelte:fragment slot="title">
     <div class="popupPanel-title__content-container antiTitle">
-      {#if $$slots.navigator}
-        <div class="buttons-group xsmall-gap mr-4">
-          <slot name="navigator" />
-        </div>
-      {/if}
       {#if $$slots.title}
         <slot name="title" />
       {:else}
@@ -102,6 +106,12 @@
 
   {#if withoutActivity}
     <slot />
+  {:else if $deviceInfo.isMobile}
+    <div class="popupPanel-body__mobile-content clear-mins">
+      <Component is={activity.component.Activity} props={{ object, integrate: true }}>
+        <slot />
+      </Component>
+    </div>
   {:else}
     <Scroller>
       <div class="popupPanel-body__main-content py-8 clear-mins">

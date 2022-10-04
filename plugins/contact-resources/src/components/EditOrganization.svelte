@@ -64,7 +64,6 @@
       <div class="name">
         <EditBox
           placeholder={contact.string.PersonFirstNamePlaceholder}
-          maxWidth="20rem"
           bind:value={object.name}
           on:change={nameChange}
           focus
