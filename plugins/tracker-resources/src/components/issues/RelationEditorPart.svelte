@@ -1,7 +1,7 @@
 <script lang="ts">
   import chunter from '@hcengineering/chunter'
   import { Class, Doc, Ref, RelatedDocument, WithLookup } from '@hcengineering/core'
-  import { getResource, IntlString, translate } from '@hcengineering/platform'
+  import { getResource, IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Issue } from '@hcengineering/tracker'
   import { Component, Icon, IconClose } from '@hcengineering/ui'

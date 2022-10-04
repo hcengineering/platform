@@ -92,7 +92,6 @@
     loading = true
 
     try {
-
       const lastOne = await client.findOne<Issue>(
         tracker.class.Issue,
         { space: currentTeam },
@@ -105,7 +104,7 @@
         { $inc: { sequence: 1 } },
         true
       )
-  
+
       const value: AttachedData<Issue> = {
         ...newIssue,
         title: getTitle(newIssue.title),
@@ -113,7 +112,7 @@
         rank: calcRank(lastOne, undefined),
         parents: [{ parentId: tracker.ids.NoParent, parentTitle: '' }]
       }
-  
+
       const objectId = await client.addCollection(
         tracker.class.Issue,
         currentTeam,

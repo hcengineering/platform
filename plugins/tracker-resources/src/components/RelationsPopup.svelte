@@ -1,13 +1,13 @@
 <script lang="ts">
-  import { createEventDispatcher, afterUpdate } from 'svelte'
+  import chunter from '@hcengineering/chunter'
   import { Class, Doc, Ref, RelatedDocument } from '@hcengineering/core'
-  import { getResource, IntlString, translate } from '@hcengineering/platform'
+  import { getResource, IntlString } from '@hcengineering/platform'
   import { createQuery, getClient, ObjectSearchPopup, ObjectSearchResult } from '@hcengineering/presentation'
   import { Issue } from '@hcengineering/tracker'
   import { Action, closePopup, Menu, showPopup } from '@hcengineering/ui'
+  import { afterUpdate, createEventDispatcher } from 'svelte'
   import { updateIssueRelation } from '../issues'
   import tracker from '../plugin'
-  import chunter from '@hcengineering/chunter'
 
   export let value: Issue
 
