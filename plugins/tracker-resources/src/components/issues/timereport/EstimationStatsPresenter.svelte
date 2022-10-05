@@ -27,9 +27,7 @@
   $: childEstimationTime = (value.childInfo ?? []).map((it) => it.estimation).reduce((a, b) => a + b, 0)
 
   function hourFloor (value: number): number {
-    const days = Math.ceil(value)
-    const hours = value - days
-    return days + Math.floor(hours * 100) / 100
+    return Number(value.toFixed(2))
   }
 </script>
 
