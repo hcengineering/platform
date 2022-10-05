@@ -28,6 +28,7 @@ import core, {
   Lookup,
   Mixin,
   ModelDb,
+  QueryUpdate,
   Ref,
   ReverseLookups,
   SortingOrder,
@@ -643,6 +644,37 @@ class MongoAdapter extends MongoAdapterBase {
                     $each: [desc.$value],
                     $position: desc.$position
                   }
+                }
+              }
+            }
+          }
+        ]
+        return await this.db.collection(domain).bulkWrite(ops as any)
+      } else if (operator === '$update') {
+        const keyval = (tx.operations as any).$update
+        const arr = Object.keys(keyval)[0]
+        const desc = keyval[arr] as QueryUpdate<any>
+        const ops = [
+          {
+            updateOne: {
+              filter: {
+                _id: tx.objectId,
+                ...Object.fromEntries(Object.entries(desc.$query).map((it) => [arr + '.' + it[0], it[1]]))
+              },
+              update: {
+                $set: {
+                  ...Object.fromEntries(Object.entries(desc.$update).map((it) => [arr + '.$.' + it[0], it[1]]))
+                }
+              }
+            }
+          },
+          {
+            updateOne: {
+              filter: { _id: tx.objectId },
+              update: {
+                $set: {
+                  modifiedBy: tx.modifiedBy,
+                  modifiedOn: tx.modifiedOn
                 }
               }
             }

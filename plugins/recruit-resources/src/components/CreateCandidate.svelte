@@ -436,18 +436,32 @@
         bind:value={firstName}
         kind={'large-style'}
         focus
+        maxWidth={'30rem'}
         focusIndex={1}
       />
       <EditBox
         placeholder={recruit.string.PersonLastNamePlaceholder}
         bind:value={lastName}
+        maxWidth={'30rem'}
         kind={'large-style'}
         focusIndex={2}
       />
       <div class="mt-1">
-        <EditBox placeholder={recruit.string.Title} bind:value={object.title} kind={'small-style'} focusIndex={3} />
+        <EditBox
+          placeholder={recruit.string.Title}
+          bind:value={object.title}
+          kind={'small-style'}
+          focusIndex={3}
+          maxWidth={'30rem'}
+        />
       </div>
-      <EditBox placeholder={recruit.string.Location} bind:value={object.city} kind={'small-style'} focusIndex={4} />
+      <EditBox
+        placeholder={recruit.string.Location}
+        bind:value={object.city}
+        kind={'small-style'}
+        focusIndex={4}
+        maxWidth={'30rem'}
+      />
     </div>
     <div class="ml-4">
       <EditableAvatar

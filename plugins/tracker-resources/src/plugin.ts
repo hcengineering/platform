@@ -117,6 +117,7 @@ export default mergeIds(trackerId, tracker, {
     ChangeDueDate: '' as IntlString,
     ModificationDate: '' as IntlString,
     Issue: '' as IntlString,
+    IssueTemplate: '' as IntlString,
     Document: '' as IntlString,
     DocumentIcon: '' as IntlString,
     DocumentColor: '' as IntlString,
@@ -232,7 +233,14 @@ export default mergeIds(trackerId, tracker, {
     CapacityValue: '' as IntlString,
     AddedReference: '' as IntlString,
     AddedAsBlocked: '' as IntlString,
-    AddedAsBlocking: '' as IntlString
+    AddedAsBlocking: '' as IntlString,
+
+    IssueTemplates: '' as IntlString,
+    NewProcess: '' as IntlString,
+    SaveProcess: '' as IntlString,
+    NoIssueTemplate: '' as IntlString,
+    TemplateReplace: '' as IntlString,
+    TemplateReplaceConfirm: '' as IntlString
   },
   component: {
     NopeComponent: '' as AnyComponent,
@@ -257,6 +265,7 @@ export default mergeIds(trackerId, tracker, {
     AssigneePresenter: '' as AnyComponent,
     DueDatePresenter: '' as AnyComponent,
     EditIssue: '' as AnyComponent,
+    EditIssueTemplate: '' as AnyComponent,
     CreateTeam: '' as AnyComponent,
     NewIssueHeader: '' as AnyComponent,
     IconPresenter: '' as AnyComponent,
@@ -286,7 +295,10 @@ export default mergeIds(trackerId, tracker, {
     EstimationEditor: '' as AnyComponent,
     GrowPresenter: '' as AnyComponent,
 
-    ProjectSelector: '' as AnyComponent
+    ProjectSelector: '' as AnyComponent,
+
+    IssueTemplates: '' as AnyComponent,
+    IssueTemplatePresenter: '' as AnyComponent
   },
   function: {
     IssueTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>) => Promise<string>>

@@ -217,7 +217,15 @@
 
     "AddedReference": "Added reference",
     "AddedAsBlocked": "Marked as blocked",
-    "AddedAsBlocking": "Marked as blocking"
+    "AddedAsBlocking": "Marked as blocking",
+
+    "IssueTemplate": "Process",
+    "IssueTemplates": "Process",
+    "NewProcess": "New Process",
+    "SaveProcess": "Save Process",
+    "NoIssueTemplate": "No Process",
+    "TemplateReplace": "You you replace applied template?",
+    "TemplateReplaceConfirm": "All changes to template values will be lost."
   },
   "status": {}
 }

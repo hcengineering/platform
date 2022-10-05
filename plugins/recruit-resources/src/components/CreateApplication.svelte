@@ -305,6 +305,9 @@
           label: recruit.string.CreateVacancy
         }}
         bind:value={_space}
+        on:change={(evt) => {
+          _space = evt.detail
+        }}
         component={VacancyOrgPresenter}
         componentProps={{ inline: true }}
       >

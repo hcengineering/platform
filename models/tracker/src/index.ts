@@ -51,7 +51,7 @@ import workbench, { createNavigateAction } from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
 import { Asset, IntlString } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
-import tags from '@hcengineering/tags'
+import tags, { TagElement } from '@hcengineering/tags'
 import task from '@hcengineering/task'
 import {
   Document,
@@ -61,6 +61,8 @@ import {
   IssuePriority,
   IssueStatus,
   IssueStatusCategory,
+  IssueTemplate,
+  IssueTemplateChild,
   Project,
   ProjectStatus,
   Sprint,
@@ -257,6 +259,53 @@ export class TIssue extends TAttachedDoc implements Issue {
 /**
  * @public
  */
+@Model(tracker.class.IssueTemplate, core.class.Doc, DOMAIN_TRACKER)
+@UX(tracker.string.IssueTemplate, tracker.icon.Issue, tracker.string.IssueTemplate)
+export class TIssueTemplate extends TDoc implements IssueTemplate {
+  @Prop(TypeString(), tracker.string.Title)
+  @Index(IndexKind.FullText)
+  title!: string
+
+  @Prop(TypeMarkup(), tracker.string.Description)
+  @Index(IndexKind.FullText)
+  description!: Markup
+
+  @Prop(TypeIssuePriority(), tracker.string.Priority)
+  priority!: IssuePriority
+
+  @Prop(TypeRef(contact.class.Employee), tracker.string.Assignee)
+  assignee!: Ref<Employee> | null
+
+  @Prop(TypeRef(tracker.class.Project), tracker.string.Project)
+  project!: Ref<Project> | null
+
+  @Prop(ArrOf(TypeRef(tags.class.TagElement)), tracker.string.Labels)
+  labels?: Ref<TagElement>[]
+
+  declare space: Ref<Team>
+
+  @Prop(TypeDate(true), tracker.string.DueDate)
+  dueDate!: Timestamp | null
+
+  @Prop(TypeRef(tracker.class.Sprint), tracker.string.Sprint)
+  sprint!: Ref<Sprint> | null
+
+  @Prop(TypeNumber(), tracker.string.Estimation)
+  estimation!: number
+
+  @Prop(ArrOf(TypeRef(tracker.class.IssueTemplate)), tracker.string.IssueTemplate)
+  children!: IssueTemplateChild[]
+
+  @Prop(Collection(chunter.class.Comment), tracker.string.Comments)
+  comments!: number
+
+  @Prop(Collection(attachment.class.Attachment), tracker.string.Attachments)
+  attachments!: number
+}
+
+/**
+ * @public
+ */
 @Model(tracker.class.TimeSpendReport, core.class.AttachedDoc, DOMAIN_TRACKER)
 @UX(tracker.string.TimeSpendReport, tracker.icon.TimeReport, tracker.string.TimeSpendReport)
 export class TTimeSpendReport extends TAttachedDoc implements TimeSpendReport {
@@ -389,6 +438,7 @@ export function createModel (builder: Builder): void {
     TTeam,
     TProject,
     TIssue,
+    TIssueTemplate,
     TIssueStatus,
     TIssueStatusCategory,
     TTypeIssuePriority,
@@ -403,16 +453,20 @@ export function createModel (builder: Builder): void {
     attachTo: tracker.class.Issue,
     descriptor: tracker.viewlet.List,
     config: [
-      { key: '', presenter: tracker.component.PriorityEditor, props: { kind: 'list', size: 'small' } },
-      { key: '', presenter: tracker.component.IssuePresenter },
+      {
+        key: '',
+        presenter: tracker.component.PriorityEditor,
+        props: { type: 'priority', kind: 'list', size: 'small' }
+      },
+      { key: '', presenter: tracker.component.IssuePresenter, props: { type: 'issue' } },
       {
         key: '',
         presenter: tracker.component.StatusEditor,
         props: { kind: 'list', size: 'small', justify: 'center' }
       },
-      { key: '', presenter: tracker.component.TitlePresenter, props: { shouldUseMargin: true, fixed: 'left' } },
+      { key: '', presenter: tracker.component.TitlePresenter, props: { shouldUseMargin: true } },
       { key: '', presenter: tracker.component.SubIssuesSelector, props: {} },
-      { key: '', presenter: tracker.component.GrowPresenter, props: {} },
+      { key: '', presenter: tracker.component.GrowPresenter, props: { type: 'grow' } },
       { key: '', presenter: tracker.component.DueDatePresenter, props: { kind: 'list' } },
       {
         key: '',
@@ -429,7 +483,35 @@ export function createModel (builder: Builder): void {
       {
         key: '$lookup.assignee',
         presenter: tracker.component.AssigneePresenter,
-        props: { defaultClass: contact.class.Employee, shouldShowLabel: false }
+        props: { issueClass: tracker.class.Issue, defaultClass: contact.class.Employee, shouldShowLabel: false }
+      }
+    ]
+  })
+
+  builder.createDoc(view.class.Viewlet, core.space.Model, {
+    attachTo: tracker.class.IssueTemplate,
+    descriptor: tracker.viewlet.List,
+    config: [
+      // { key: '', presenter: tracker.component.PriorityEditor, props: { kind: 'list', size: 'small' } },
+      { key: '', presenter: tracker.component.IssueTemplatePresenter, props: { type: 'issue', shouldUseMargin: true } },
+      { key: '', presenter: tracker.component.GrowPresenter, props: { type: 'grow' } },
+      // { key: '', presenter: tracker.component.DueDatePresenter, props: { kind: 'list' } },
+      {
+        key: '',
+        presenter: tracker.component.ProjectEditor,
+        props: { kind: 'list', size: 'small', shape: 'round', shouldShowPlaceholder: false }
+      },
+      {
+        key: '',
+        presenter: tracker.component.SprintEditor,
+        props: { kind: 'list', size: 'small', shape: 'round', shouldShowPlaceholder: false }
+      },
+      // { key: '', presenter: tracker.component.EstimationEditor, props: { kind: 'list', size: 'small' } },
+      { key: 'modifiedOn', presenter: tracker.component.ModificationDatePresenter, props: { fixed: 'right' } },
+      {
+        key: '$lookup.assignee',
+        presenter: tracker.component.AssigneePresenter,
+        props: { issueClass: tracker.class.IssueTemplate, defaultClass: contact.class.Employee, shouldShowLabel: false }
       }
     ]
   })
@@ -533,9 +615,14 @@ export function createModel (builder: Builder): void {
   const boardId = 'board'
   const projectsId = 'projects'
   const sprintsId = 'sprints'
+  const templatesId = 'templates'
 
   builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.AttributePresenter, {
     presenter: tracker.component.IssuePresenter
+  })
+
+  builder.mixin(tracker.class.IssueTemplate, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: tracker.component.IssueTemplatePresenter
   })
 
   builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.PreviewPresenter, {
@@ -671,6 +758,12 @@ export function createModel (builder: Builder): void {
                 label: tracker.string.Sprints,
                 icon: tracker.icon.Sprint,
                 component: tracker.component.Sprints
+              },
+              {
+                id: templatesId,
+                label: tracker.string.IssueTemplates,
+                icon: tracker.icon.Issues,
+                component: tracker.component.IssueTemplates
               }
             ]
           }
@@ -844,6 +937,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.ClassFilters, {
     filters: ['status', 'priority', 'assignee', 'project', 'sprint', 'dueDate', 'modifiedOn']
+  })
+
+  builder.mixin(tracker.class.IssueTemplate, core.class.Class, view.mixin.ClassFilters, {
+    filters: ['priority', 'assignee', 'project', 'sprint', 'dueDate', 'modifiedOn']
   })
 
   builder.createDoc(

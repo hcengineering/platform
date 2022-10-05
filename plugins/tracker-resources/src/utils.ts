@@ -23,6 +23,7 @@ import {
   IssuesGrouping,
   IssuesOrdering,
   IssueStatus,
+  IssueTemplate,
   ProjectStatus,
   Sprint,
   SprintStatus,
@@ -305,7 +306,7 @@ const listIssueStatusOrder = [
 
 export function getCategories (
   key: IssuesGroupByKeys | undefined,
-  elements: Array<WithLookup<Issue>>,
+  elements: Array<WithLookup<Issue | IssueTemplate>>,
   shouldShowAll: boolean,
   statuses: IssueStatus[],
   employees: Employee[]
@@ -320,7 +321,7 @@ export function getCategories (
   const existingCategories = Array.from(
     new Set(
       elements.map((x) => {
-        return x[key]
+        return (x as any)[key]
       })
     )
   )
@@ -509,49 +510,90 @@ export async function getPriorityStates (): Promise<TypeState[]> {
   )
 }
 
-export function getDefaultViewOptionsConfig (): ViewOptionModel[] {
-  return [
-    {
-      key: 'groupBy',
-      label: tracker.string.Grouping,
-      defaultValue: 'status',
-      values: [
-        { id: 'status', label: tracker.string.Status },
-        { id: 'assignee', label: tracker.string.Assignee },
-        { id: 'priority', label: tracker.string.Priority },
-        { id: 'project', label: tracker.string.Project },
-        { id: 'sprint', label: tracker.string.Sprint },
-        { id: 'noGrouping', label: tracker.string.NoGrouping }
-      ],
-      type: 'dropdown'
-    },
-    {
-      key: 'orderBy',
-      label: tracker.string.Ordering,
-      defaultValue: 'status',
-      values: [
-        { id: 'status', label: tracker.string.Status },
-        { id: 'modifiedOn', label: tracker.string.LastUpdated },
-        { id: 'priority', label: tracker.string.Priority },
-        { id: 'dueDate', label: tracker.string.DueDate },
-        { id: 'rank', label: tracker.string.Manual }
-      ],
-      type: 'dropdown'
-    },
-    {
-      key: 'shouldShowSubIssues',
-      label: tracker.string.SubIssues,
-      defaultValue: false,
-      type: 'toggle'
-    },
-    {
-      key: 'shouldShowEmptyGroups',
-      label: tracker.string.ShowEmptyGroups,
-      defaultValue: false,
-      type: 'toggle',
-      hidden: ({ groupBy }) => !['status', 'priority'].includes(groupBy)
-    }
-  ]
+export function getDefaultViewOptionsConfig (enableSubIssues = true): ViewOptionModel[] {
+  const groupByCategory: ViewOptionModel = {
+    key: 'groupBy',
+    label: tracker.string.Grouping,
+    defaultValue: 'status',
+    values: [
+      { id: 'status', label: tracker.string.Status },
+      { id: 'assignee', label: tracker.string.Assignee },
+      { id: 'priority', label: tracker.string.Priority },
+      { id: 'project', label: tracker.string.Project },
+      { id: 'sprint', label: tracker.string.Sprint },
+      { id: 'noGrouping', label: tracker.string.NoGrouping }
+    ],
+    type: 'dropdown'
+  }
+  const orderByCategory: ViewOptionModel = {
+    key: 'orderBy',
+    label: tracker.string.Ordering,
+    defaultValue: 'status',
+    values: [
+      { id: 'status', label: tracker.string.Status },
+      { id: 'modifiedOn', label: tracker.string.LastUpdated },
+      { id: 'priority', label: tracker.string.Priority },
+      { id: 'dueDate', label: tracker.string.DueDate },
+      { id: 'rank', label: tracker.string.Manual }
+    ],
+    type: 'dropdown'
+  }
+  const showSubIssuesCategory: ViewOptionModel = {
+    key: 'shouldShowSubIssues',
+    label: tracker.string.SubIssues,
+    defaultValue: false,
+    type: 'toggle'
+  }
+  const showEmptyGroups: ViewOptionModel = {
+    key: 'shouldShowEmptyGroups',
+    label: tracker.string.ShowEmptyGroups,
+    defaultValue: false,
+    type: 'toggle',
+    hidden: ({ groupBy }) => !['status', 'priority'].includes(groupBy)
+  }
+  const result: ViewOptionModel[] = [groupByCategory, orderByCategory]
+  if (enableSubIssues) {
+    result.push(showSubIssuesCategory)
+  }
+  result.push(showEmptyGroups)
+  return result
+}
+
+export function getDefaultViewOptionsTemplatesConfig (): ViewOptionModel[] {
+  const groupByCategory: ViewOptionModel = {
+    key: 'groupBy',
+    label: tracker.string.Grouping,
+    defaultValue: 'project',
+    values: [
+      { id: 'assignee', label: tracker.string.Assignee },
+      { id: 'priority', label: tracker.string.Priority },
+      { id: 'project', label: tracker.string.Project },
+      { id: 'sprint', label: tracker.string.Sprint },
+      { id: 'noGrouping', label: tracker.string.NoGrouping }
+    ],
+    type: 'dropdown'
+  }
+  const orderByCategory: ViewOptionModel = {
+    key: 'orderBy',
+    label: tracker.string.Ordering,
+    defaultValue: 'priority',
+    values: [
+      { id: 'modifiedOn', label: tracker.string.LastUpdated },
+      { id: 'priority', label: tracker.string.Priority },
+      { id: 'dueDate', label: tracker.string.DueDate }
+    ],
+    type: 'dropdown'
+  }
+  const showEmptyGroups: ViewOptionModel = {
+    key: 'shouldShowEmptyGroups',
+    label: tracker.string.ShowEmptyGroups,
+    defaultValue: false,
+    type: 'toggle',
+    hidden: ({ groupBy }) => !['status', 'priority'].includes(groupBy)
+  }
+  const result: ViewOptionModel[] = [groupByCategory, orderByCategory]
+  result.push(showEmptyGroups)
+  return result
 }
 
 /**

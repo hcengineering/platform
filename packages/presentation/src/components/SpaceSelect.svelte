@@ -66,6 +66,7 @@
       if (selected !== undefined) {
         value = selected._id
         dispatch('change', value)
+        dispatch('space', selected)
       }
     }
   }

@@ -13,13 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
   import contact, { Organization } from '@hcengineering/contact'
-  import core, { Ref } from '@hcengineering/core'
+  import core, { generateId, getCurrentAccount, Ref } from '@hcengineering/core'
   import { Card, getClient, UserBox } from '@hcengineering/presentation'
   import task, { createKanban, KanbanTemplate } from '@hcengineering/task'
-  import { Button, Component, createFocusManager, EditBox, FocusHandler } from '@hcengineering/ui'
+  import { Button, Component, createFocusManager, EditBox, FocusHandler, IconAttachment } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
+  import { Vacancy as VacancyClass } from '@hcengineering/recruit'
   import Company from './icons/Company.svelte'
   import Vacancy from './icons/Vacancy.svelte'
 
@@ -27,7 +29,10 @@
 
   let name: string = ''
   const description: string = ''
+  let fullDescription: string = ''
   let templateId: Ref<KanbanTemplate> | undefined
+  let objectId: Ref<VacancyClass> = generateId()
+
   export let company: Ref<Organization> | undefined
   export let preserveCompany: boolean = false
 
@@ -45,19 +50,31 @@
       throw Error(`Failed to find target kanban template: ${templateId}`)
     }
 
-    const id = await client.createDoc(recruit.class.Vacancy, core.space.Space, {
-      name,
-      description,
-      private: false,
-      archived: false,
-      company,
-      members: []
-    })
+    const id = await client.createDoc(
+      recruit.class.Vacancy,
+      core.space.Space,
+      {
+        name,
+        description,
+        fullDescription,
+        private: false,
+        archived: false,
+        company,
+        members: [getCurrentAccount()._id]
+      },
+      objectId
+    )
 
     await createKanban(client, id, templateId)
+
+    await descriptionBox.createAttachments()
+    objectId = generateId()
+
     dispatch('close', id)
   }
   const manager = createFocusManager()
+
+  let descriptionBox: AttachmentStyledBox
 </script>
 
 <FocusHandler {manager} />
@@ -83,7 +100,7 @@
       />
     </div>
   </div>
-  <svelte:fragment slot="pool">
+  <svelte:fragment slot="header">
     <UserBox
       focusIndex={3}
       _class={contact.class.Organization}
@@ -100,6 +117,20 @@
       showNavigate={false}
       create={{ component: contact.component.CreateOrganization, label: contact.string.CreateOrganization }}
     />
+  </svelte:fragment>
+
+  <AttachmentStyledBox
+    bind:this={descriptionBox}
+    {objectId}
+    _class={recruit.class.Vacancy}
+    space={objectId}
+    alwaysEdit
+    showButtons={false}
+    maxHeight={'card'}
+    bind:content={fullDescription}
+    placeholder={recruit.string.FullDescription}
+  />
+  <svelte:fragment slot="pool">
     <Component
       is={task.component.KanbanTemplateSelector}
       props={{
@@ -109,6 +140,15 @@
       }}
       on:change={(evt) => {
         templateId = evt.detail
+      }}
+    />
+  </svelte:fragment>
+  <svelte:fragment slot="footer">
+    <Button
+      icon={IconAttachment}
+      kind={'transparent'}
+      on:click={() => {
+        descriptionBox.attach()
       }}
     />
   </svelte:fragment>

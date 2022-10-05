@@ -217,7 +217,12 @@
 
     "AddedReference": "Добавлена зависимость",
     "AddedAsBlocked": "Отмечено как заблокировано",
-    "AddedAsBlocking": "Отмечено как блокирующее"
+    "AddedAsBlocking": "Отмечено как блокирующее",
+
+    "IssueTemplate": "Процесс",
+    "IssueTemplates": "Процессы",
+    "NewProcess": "Новый процесс",
+    "NoIssueTemplate": "Без процесса"
   },
   "status": {}
 }

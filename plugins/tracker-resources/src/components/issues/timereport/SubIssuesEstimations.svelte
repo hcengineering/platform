@@ -1,0 +1,62 @@
+<!-- 
+// Copyright © 2022 Hardcore Engineering Inc.
+// 
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// 
+// See the License for the specific language governing permissions and
+// limitations under the License.
+-->
+<script lang="ts">
+  import { Ref, SortingOrder, WithLookup } from '@hcengineering/core'
+  import { createQuery } from '@hcengineering/presentation'
+  import { Issue, IssueStatus, Team } from '@hcengineering/tracker'
+  import { Label, Scroller, Spinner } from '@hcengineering/ui'
+  import tracker from '../../../plugin'
+  import EstimationSubIssueList from './EstimationSubIssueList.svelte'
+
+  export let issue: Issue
+  export let teams: Map<Ref<Team>, Team>
+  export let issueStatuses: Map<Ref<Team>, WithLookup<IssueStatus>[]>
+
+  const subIssuesQuery = createQuery()
+
+  let subIssues: Issue[] | undefined
+
+  $: hasSubIssues = issue.subIssues > 0
+  $: subIssuesQuery.query(tracker.class.Issue, { attachedTo: issue._id }, async (result) => (subIssues = result), {
+    sort: { estimation: SortingOrder.Descending }
+  })
+  $: total = (subIssues ?? []).reduce((a, b) => a + b.estimation, 0)
+</script>
+
+{#if subIssues && issueStatuses}
+  {#if hasSubIssues}
+    <Label label={tracker.string.ChildEstimation} />: {total}
+    <div class="h-50">
+      <Scroller>
+        <EstimationSubIssueList issues={subIssues} {teams} />
+      </Scroller>
+    </div>
+  {/if}
+{:else}
+  <div class="flex-center pt-3">
+    <Spinner />
+  </div>
+{/if}
+
+<style lang="scss">
+  .list {
+    border-top: 1px solid var(--divider-color);
+
+    &.collapsed {
+      padding-top: 1px;
+      border-top: none;
+    }
+  }
+</style>

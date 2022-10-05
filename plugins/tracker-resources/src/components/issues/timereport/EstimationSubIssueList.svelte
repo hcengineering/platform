@@ -1,0 +1,114 @@
+<!-- 
+// Copyright © 2022 Hardcore Engineering Inc.
+// 
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// 
+// See the License for the specific language governing permissions and
+// limitations under the License.
+-->
+<script lang="ts">
+  import contact from '@hcengineering/contact'
+  import { Doc, Ref } from '@hcengineering/core'
+  import { UserBox } from '@hcengineering/presentation'
+  import { Issue, Team } from '@hcengineering/tracker'
+  import { getEventPositionElement, ListView, showPopup } from '@hcengineering/ui'
+  import { ContextMenu, FixedColumn, ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
+  import { getIssueId } from '../../../issues'
+  import tracker from '../../../plugin'
+  import EstimationPresenter from './EstimationPresenter.svelte'
+
+  export let issues: Issue[]
+
+  export let teams: Map<Ref<Team>, Team>
+
+  function showContextMenu (ev: MouseEvent, object: Issue) {
+    showPopup(ContextMenu, { object }, getEventPositionElement(ev))
+  }
+
+  const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {})
+
+  let varsStyle: string = ''
+  const propsWidth: Record<string, number> = { issue: 0 }
+  $: if (propsWidth) {
+    varsStyle = ''
+    for (const key in propsWidth) varsStyle += `--fixed-${key}: ${propsWidth[key]}px;`
+  }
+  const checkWidth = (key: string, result: CustomEvent): void => {
+    if (result !== undefined) propsWidth[key] = result.detail
+  }
+</script>
+
+<ListView count={issues.length}>
+  <svelte:fragment slot="item" let:item>
+    {@const issue = issues[item]}
+    {@const currentTeam = teams.get(issue.space)}
+    <div
+      class="flex-between row"
+      style={varsStyle}
+      on:contextmenu|preventDefault={(ev) => showContextMenu(ev, issue)}
+      on:mouseover={() => {
+        listProvider.updateFocus(issue)
+      }}
+      on:focus={() => {
+        listProvider.updateFocus(issue)
+      }}
+    >
+      <div class="flex-row-center clear-mins gap-2 p-2">
+        <span class="issuePresenter">
+          <FixedColumn
+            width={propsWidth.issue}
+            key={'issue'}
+            justify={'left'}
+            on:update={(result) => checkWidth('issue', result)}
+          >
+            {#if currentTeam}
+              {getIssueId(currentTeam, issue)}
+            {/if}
+          </FixedColumn>
+        </span>
+        <span class="text name" title={issue.title}>
+          {issue.title}
+        </span>
+      </div>
+      <div class="flex-center flex-no-shrink">
+        <UserBox
+          label={tracker.string.Assignee}
+          _class={contact.class.Employee}
+          value={issue.assignee}
+          readonly
+          showNavigate={false}
+        />
+        <EstimationPresenter value={issue.estimation} />
+      </div>
+    </div>
+  </svelte:fragment>
+</ListView>
+
+<style lang="scss">
+  .row {
+    .text {
+      font-weight: 500;
+      color: var(--caption-color);
+    }
+
+    .issuePresenter {
+      flex-shrink: 0;
+      min-width: 0;
+      min-height: 0;
+      font-weight: 500;
+      color: var(--content-color);
+    }
+
+    .name {
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+  }
+</style>

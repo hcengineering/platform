@@ -15,7 +15,7 @@
 //
 
 import type { Doc, PropertyType } from './classes'
-import type { Position, PullArray } from './tx'
+import type { Position, PullArray, QueryUpdate } from './tx'
 
 /**
  * @internal
@@ -72,6 +72,45 @@ function $pull (document: Doc, keyval: Record<string, PropertyType>): void {
   }
 }
 
+function matchArrayElement<T extends Doc> (docs: any[], query: Partial<T>): any[] {
+  let result = [...docs]
+  for (const key in query) {
+    const value = (query as any)[key]
+
+    const tresult: any[] = []
+    for (const object of result) {
+      const val = object[key]
+      if (val === value) {
+        tresult.push(object)
+      }
+    }
+    result = tresult
+    if (tresult.length === 0) {
+      break
+    }
+  }
+  return result
+}
+
+function $update (document: Doc, keyval: Record<string, PropertyType>): void {
+  const doc = document as any
+  for (const key in keyval) {
+    if (doc[key] === undefined) {
+      doc[key] = []
+    }
+    const val = keyval[key]
+    if (typeof val === 'object') {
+      const arr = doc[key] as Array<any>
+      const desc = val as QueryUpdate<PropertyType>
+      for (const m of matchArrayElement(arr, desc.$query)) {
+        for (const [k, v] of Object.entries(desc.$update)) {
+          m[k] = v
+        }
+      }
+    }
+  }
+}
+
 function $move (document: Doc, keyval: Record<string, PropertyType>): void {
   const doc = document as any
   for (const key in keyval) {
@@ -114,6 +153,7 @@ function $inc (document: Doc, keyval: Record<string, number>): void {
 const operators: Record<string, _OperatorFunc> = {
   $push,
   $pull,
+  $update,
   $move,
   $pushMixin,
   $inc

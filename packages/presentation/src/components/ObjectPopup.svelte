@@ -104,7 +104,11 @@
     const person = objects[selection]
 
     if (!multiSelect) {
-      selected = person._id === selected ? undefined : person._id
+      if (allowDeselect) {
+        selected = person._id === selected ? undefined : person._id
+      } else {
+        selected = person._id
+      }
       dispatch('close', selected !== undefined ? person : undefined)
     } else {
       checkSelected(person, objects)

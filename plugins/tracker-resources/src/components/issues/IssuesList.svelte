@@ -18,7 +18,8 @@
   import notification from '@hcengineering/notification'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Issue, IssueStatus, Team } from '@hcengineering/tracker'
-  import {
+  import ui, {
+    ActionIcon,
     Button,
     CheckBox,
     Component,
@@ -26,6 +27,7 @@
     ExpandCollapse,
     getEventPositionElement,
     IconAdd,
+    IconMoreH,
     showPopup,
     Spinner,
     tooltip
@@ -36,7 +38,6 @@
   import tracker from '../../plugin'
   import { IssuesGroupByKeys, issuesGroupEditorMap, IssuesOrderByKeys, issuesSortOrderMap } from '../../utils'
   import CreateIssue from '../CreateIssue.svelte'
-  import GrowPresenter from './GrowPresenter.svelte'
 
   export let _class: Ref<Class<Doc>>
   export let currentSpace: Ref<Team> | undefined = undefined
@@ -75,13 +76,19 @@
 
   let personPresenter: AttributeModel
 
+  const defaultLimit = 20
+  const autoFoldLimit = 20
+  const singleCategoryLimit = 200
+
   const isCollapsedMap: Record<any, boolean> = {}
+
+  const noCategory = '#no_category'
 
   $: {
     const exkeys = new Set(Object.keys(isCollapsedMap))
     for (const c of categories) {
-      if (!exkeys.delete(c)) {
-        isCollapsedMap[c] = false
+      if (!exkeys.delete(toCat(c))) {
+        isCollapsedMap[toCat(c)] = categories.length === 1 ? false : (groupedIssues[c]?.length ?? 0) > autoFoldLimit
       }
     }
     for (const k of exkeys) {
@@ -160,7 +167,13 @@
     )
   }
 
-  const handleCollapseCategory = (category: any) => (isCollapsedMap[category] = !isCollapsedMap[category])
+  function toCat (category: any): any {
+    return category ?? noCategory
+  }
+
+  const handleCollapseCategory = (category: any) => {
+    isCollapsedMap[category] = !isCollapsedMap[category]
+  }
 
   const getLoadingElementsLength = (props: LoadingProps, options?: FindOptions<Doc>) => {
     if (options?.limit && options?.limit > 0) {
@@ -181,12 +194,27 @@
   const checkWidth = (key: string, result: CustomEvent): void => {
     if (result !== undefined) propsWidth[key] = result.detail
   }
+  function limitGroup (
+    category: any,
+    groupes: { [key: string | number | symbol]: Issue[] },
+    categoryLimit: Record<any, number>
+  ): Issue[] {
+    const issues = groupes[category] ?? []
+    if (Object.keys(groupes).length === 1) {
+      return issues.slice(0, singleCategoryLimit)
+    }
+    const limit = categoryLimit[toCat(category)] ?? defaultLimit
+    return issues.slice(0, limit)
+  }
+  const categoryLimit: Record<any, number> = {}
 </script>
 
 <div class="issueslist-container" style={varsStyle}>
   {#each categories as category}
+    {@const items = groupedIssues[category] ?? []}
+    {@const limited = limitGroup(category, groupedIssues, categoryLimit) ?? []}
     {#if headerComponent || groupByKey === 'assignee'}
-      <div class="flex-between categoryHeader row" on:click={() => handleCollapseCategory(category)}>
+      <div class="flex-between categoryHeader row" on:click={() => handleCollapseCategory(toCat(category))}>
         <div class="flex-row-center gap-2 clear-mins">
           {#if groupByKey === 'assignee' && personPresenter}
             <svelte:component
@@ -216,17 +244,29 @@
               }}
             />
           {/if}
-          <span class="text-base content-dark-color ml-4">{(groupedIssues[category] ?? []).length}</span>
+          {#if limited.length < items.length}
+            <span class="text-base content-dark-color ml-4"> {limited.length} / {items.length}</span>
+            <ActionIcon
+              size={'small'}
+              icon={IconMoreH}
+              label={ui.string.ShowMore}
+              action={() => {
+                categoryLimit[toCat(category)] = limited.length + 20
+              }}
+            />
+          {:else}
+            <span class="text-base content-dark-color ml-4">{items.length}</span>
+          {/if}
         </div>
         <div class="clear-mins" use:tooltip={{ label: tracker.string.AddIssueTooltip }}>
           <Button icon={IconAdd} kind={'transparent'} on:click={(event) => handleNewIssueAdded(event, category)} />
         </div>
       </div>
     {/if}
-    <ExpandCollapse isExpanded={!isCollapsedMap[category]} duration={400}>
+    <ExpandCollapse isExpanded={!isCollapsedMap[toCat(category)]} duration={400}>
       {#if itemModels}
         {#if groupedIssues[category]}
-          {#each groupedIssues[category] as docObject (docObject._id)}
+          {#each limited as docObject (docObject._id)}
             <div
               bind:this={objectRefs[combinedGroupedIssues.findIndex((x) => x === docObject)]}
               class="listGrid antiList__row row gap-2 flex-grow"
@@ -262,8 +302,8 @@
                   />
                 </div>
               </div>
-              {#each itemModels as attributeModel, attributeModelIndex}
-                {#if attributeModelIndex === 0}
+              {#each itemModels as attributeModel}
+                {#if attributeModel.props?.type === 'priority'}
                   <div class="priorityPresenter">
                     <svelte:component
                       this={attributeModel.presenter}
@@ -274,7 +314,7 @@
                       {currentTeam}
                     />
                   </div>
-                {:else if attributeModelIndex === 1}
+                {:else if attributeModel.props?.type === 'issue'}
                   <div class="issuePresenter">
                     <FixedColumn
                       width={propsWidth.issue}
@@ -292,7 +332,7 @@
                       />
                     </FixedColumn>
                   </div>
-                {:else if attributeModelIndex === 3 || attributeModel.presenter === GrowPresenter}
+                {:else if attributeModel.props?.type === 'grow'}
                   <svelte:component
                     this={attributeModel.presenter}
                     value={getObjectValue(attributeModel.key, docObject) ?? ''}

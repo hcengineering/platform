@@ -1,6 +1,6 @@
 <script lang="ts">
   import { IntlString } from '@hcengineering/platform'
-  import { Label } from '@hcengineering/ui'
+  import { IconSize, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import textEditorPlugin from '../plugin'
   import StyledTextEditor from './StyledTextEditor.svelte'
@@ -10,6 +10,7 @@
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
 
   export let showButtons = true
+  export let buttonSize: IconSize = 'small'
   export let focus = false
 
   let rawValue: string
@@ -50,6 +51,7 @@
   <StyledTextEditor
     {placeholder}
     {showButtons}
+    {buttonSize}
     isScrollable={false}
     bind:content={rawValue}
     bind:this={textEditor}

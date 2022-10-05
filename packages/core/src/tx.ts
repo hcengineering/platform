@@ -117,6 +117,14 @@ export interface Position<X extends PropertyType> {
 /**
  * @public
  */
+export interface QueryUpdate<X extends PropertyType> {
+  $query: Partial<X>
+  $update: Partial<X>
+}
+
+/**
+ * @public
+ */
 export interface PullArray<X extends PropertyType> {
   $in: X[]
 }
@@ -134,6 +142,13 @@ export interface MoveDescriptor<X extends PropertyType> {
  */
 export type ArrayAsElementPosition<T extends object> = {
   [P in keyof T]-?: T[P] extends Arr<infer X> ? X | Position<X> : never
+}
+
+/**
+ * @public
+ */
+export type ArrayAsElementUpdate<T extends object> = {
+  [P in keyof T]-?: T[P] extends Arr<infer X> ? X | QueryUpdate<X> : never
 }
 
 /**
@@ -167,6 +182,13 @@ export interface PushOptions<T extends object> {
 /**
  * @public
  */
+export interface UpdateArrayOptions<T extends object> {
+  $update?: Partial<OmitNever<ArrayAsElementUpdate<Required<T>>>>
+}
+
+/**
+ * @public
+ */
 export interface PushMixinOptions<D extends Doc> {
   $pushMixin?: {
     $mixin: Ref<Mixin<D>>
@@ -193,6 +215,7 @@ export interface SpaceUpdate {
  */
 export type DocumentUpdate<T extends Doc> = Partial<Data<T>> &
 PushOptions<T> &
+UpdateArrayOptions<T> &
 PushMixinOptions<T> &
 IncOptions<T> &
 SpaceUpdate
