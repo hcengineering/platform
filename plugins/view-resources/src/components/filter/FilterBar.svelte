@@ -119,7 +119,7 @@
         filterKey = attr.attributeOf + '.' + filter.key.key
       }
 
-      if (!newQuery[filterKey]) {
+      if (newQuery[filterKey] === null || newQuery[filterKey] === undefined) {
         newQuery[filterKey] = newValue
       } else {
         let merged = false
