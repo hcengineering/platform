@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Data } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { IssueTemplate, IssueTemplateChild } from '@hcengineering/tracker'
   import { Button, ButtonKind, ButtonSize, eventToHTMLElement, showPopup } from '@hcengineering/ui'
@@ -20,7 +21,7 @@
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
 
-  export let value: IssueTemplateChild | IssueTemplate
+  export let value: IssueTemplateChild | IssueTemplate | Data<IssueTemplate>
   export let isEditable: boolean = true
 
   export let kind: ButtonKind = 'link'

@@ -21,6 +21,7 @@
   import presentation, { createQuery, getClient, MessageViewer } from '@hcengineering/presentation'
   import setting, { settingId } from '@hcengineering/setting'
   import type { IssueTemplate, IssueTemplateChild, Team } from '@hcengineering/tracker'
+  import tags from '@hcengineering/tags'
   import {
     Button,
     EditBox,
@@ -85,7 +86,7 @@
         description = template.description
         currentTeam = template.$lookup?.space
       },
-      { lookup: { space: tracker.class.Team } }
+      { lookup: { space: tracker.class.Team, labels: tags.class.TagElement } }
     )
 
   $: canSave = title.trim().length > 0

@@ -13,10 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc } from '@hcengineering/core'
+  import { Doc, generateId, Ref, WithLookup } from '@hcengineering/core'
   import { AttributeBarEditor, createQuery, getClient, KeyedAttribute } from '@hcengineering/presentation'
+  import tags, { TagElement, TagReference } from '@hcengineering/tags'
   import type { IssueTemplate } from '@hcengineering/tracker'
-  import { Label } from '@hcengineering/ui'
+  import { Component, Label } from '@hcengineering/ui'
   import { getFiltredKeys, isCollectionAttr } from '@hcengineering/view-resources/src/utils'
   import tracker from '../../plugin'
   import AssigneeEditor from '../issues/AssigneeEditor.svelte'
@@ -24,7 +25,7 @@
   import ProjectEditor from '../projects/ProjectEditor.svelte'
   import SprintEditor from '../sprints/SprintEditor.svelte'
 
-  export let issue: IssueTemplate
+  export let issue: WithLookup<IssueTemplate>
 
   const query = createQuery()
   let showIsBlocking = false
@@ -45,6 +46,30 @@
   }
 
   $: updateKeys(['title', 'description', 'priority', 'number', 'assignee', 'project', 'sprint'])
+
+  const key: KeyedAttribute = {
+    key: 'labels',
+    attr: client.getHierarchy().getAttribute(tracker.class.IssueTemplate, 'labels')
+  }
+
+  let labelRefs: TagReference[] = []
+
+  $: labelIds = issue?.$lookup?.labels ?? []
+
+  $: if (labelIds !== undefined) {
+    labelRefs = (Array.isArray(labelIds) ? labelIds : [labelIds]).map(
+      (it) => ({ ...(it as unknown as TagReference), _id: generateId(), tag: it._id } as unknown as TagReference)
+    )
+  }
+
+  const onTagDelete = async (evt: CustomEvent<Ref<TagReference>>): Promise<void> => {
+    const itm = labelRefs.find((it) => it._id === evt.detail)
+    if (itm !== undefined) {
+      await client.update(issue, {
+        $pull: { labels: itm.tag as unknown as Ref<TagElement> }
+      })
+    }
+  }
 </script>
 
 <div class="content">
@@ -58,10 +83,24 @@
   </span>
   <AssigneeEditor value={issue} />
 
-  <!-- <span class="labelTop">
+  <span class="labelTop">
     <Label label={tracker.string.Labels} />
-  </span> -->
-  <!-- <Component is={tags.component.TagsAttributeEditor} props={{ object: issue, label: tracker.string.AddLabel }} /> -->
+  </span>
+
+  <Component
+    is={tags.component.TagsDropdownEditor}
+    props={{
+      kind: 'no-border',
+      items: labelRefs,
+      key,
+      targetClass: tracker.class.Issue,
+      countLabel: tracker.string.NumberLabels
+    }}
+    on:open={async (evt) => {
+      await client.update(issue, { $push: { labels: evt.detail._id } })
+    }}
+    on:delete={onTagDelete}
+  />
 
   <div class="divider" />
 

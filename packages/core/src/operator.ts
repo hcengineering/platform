@@ -50,7 +50,7 @@ function $pull (document: Doc, keyval: Record<string, PropertyType>): void {
       doc[key] = []
     }
     const arr = doc[key] as Array<any>
-    if (typeof keyval[key] === 'object') {
+    if (typeof keyval[key] === 'object' && keyval[key] !== null) {
       const { $in } = keyval[key] as PullArray<PropertyType>
 
       doc[key] = arr.filter((val) => {

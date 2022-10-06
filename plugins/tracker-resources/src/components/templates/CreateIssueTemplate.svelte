@@ -27,6 +27,7 @@
   import PriorityEditor from '../issues/PriorityEditor.svelte'
   import ProjectSelector from '../ProjectSelector.svelte'
   import SprintSelector from '../sprints/SprintSelector.svelte'
+  import EstimationEditor from './EstimationEditor.svelte'
   import SubIssueTemplates from './IssueTemplateChilds.svelte'
 
   export let space: Ref<Team>
@@ -35,7 +36,6 @@
   export let project: Ref<Project> | null = $activeProject ?? null
   export let sprint: Ref<Sprint> | null = $activeSprint ?? null
 
-  const dueDate: number | undefined = undefined
   let labels: TagElement[] = []
 
   let objectId: Ref<IssueTemplate> = generateId()
@@ -46,7 +46,6 @@
     project: project,
     sprint: sprint,
     priority: priority,
-    dueDate: dueDate ?? null,
     estimation: 0,
     children: [],
     labels: [],
@@ -89,7 +88,6 @@
       project: object.project,
       sprint: object.sprint,
       priority: object.priority,
-      dueDate: dueDate ?? null,
       estimation: object.estimation,
       children: object.children,
       comments: 0,
@@ -211,9 +209,7 @@
           labels = labels.filter((it) => it._id !== evt.detail)
         }}
       />
-      <!-- <EstimationEditor kind={'no-border'} size={'small'} value={object} /> -->
-      <!-- <NumberEditor kind={'no-border'} bind:value={dueDate} placeholder={tracker.string.DueDate} 
-          focus={false} onChange={({ detail }) => (dueDate = detail) }/> -->
+      <EstimationEditor kind={'no-border'} size={'small'} value={object} />
       <ProjectSelector value={object.project} onChange={handleProjectIdChanged} />
       <SprintSelector value={object.sprint} onChange={handleSprintIdChanged} useProject={object.project ?? undefined} />
     </div>
