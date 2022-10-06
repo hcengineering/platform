@@ -45,8 +45,21 @@ let client: TxOperations
 
 const txListeners: Array<(tx: Tx) => void> = []
 
+/**
+ * @public
+ */
 export function addTxListener (l: (tx: Tx) => void): void {
   txListeners.push(l)
+}
+
+/**
+ * @public
+ */
+export function removeTxListener (l: (tx: Tx) => void): void {
+  const pos = txListeners.findIndex((it) => it === l)
+  if (pos !== -1) {
+    txListeners.splice(pos, 1)
+  }
 }
 
 class UIClient extends TxOperations implements Client {
@@ -59,10 +72,16 @@ class UIClient extends TxOperations implements Client {
   }
 }
 
+/**
+ * @public
+ */
 export function getClient (): TxOperations {
   return client
 }
 
+/**
+ * @public
+ */
 export function setClient (_client: Client): void {
   liveQuery = new LQ(_client)
   client = new UIClient(_client, liveQuery)
@@ -73,6 +92,9 @@ export function setClient (_client: Client): void {
   }
 }
 
+/**
+ * @public
+ */
 export class LiveQuery {
   private oldClass: Ref<Class<Doc>> | undefined
   private oldQuery: DocumentQuery<Doc> | undefined
@@ -128,10 +150,16 @@ export class LiveQuery {
   }
 }
 
+/**
+ * @public
+ */
 export function createQuery (dontDestroy?: boolean): LiveQuery {
   return new LiveQuery(dontDestroy)
 }
 
+/**
+ * @public
+ */
 export function getFileUrl (file: string, size: IconSize = 'full'): string {
   const uploadUrl = getMetadata(login.metadata.UploadUrl)
   const token = getMetadata(login.metadata.LoginToken)
@@ -139,6 +167,9 @@ export function getFileUrl (file: string, size: IconSize = 'full'): string {
   return url
 }
 
+/**
+ * @public
+ */
 export async function getBlobURL (blob: Blob): Promise<string> {
   return await new Promise((resolve) => {
     const reader = new FileReader()
@@ -148,6 +179,9 @@ export async function getBlobURL (blob: Blob): Promise<string> {
   })
 }
 
+/**
+ * @public
+ */
 export async function copyTextToClipboard (text: string): Promise<void> {
   try {
     // Safari specific behavior
@@ -162,9 +196,16 @@ export async function copyTextToClipboard (text: string): Promise<void> {
   }
 }
 
+/**
+ * @public
+ */
 export type AttributeCategory = 'attribute' | 'inplace' | 'collection' | 'array'
 
+/**
+ * @public
+ */
 export const AttributeCategoryOrder = { attribute: 0, inplace: 1, collection: 2, array: 2 }
+
 /**
  * @public
  */

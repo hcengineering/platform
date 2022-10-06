@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { generateId, Ref } from '@hcengineering/core'
-  import presentation, { getClient, KeyedAttribute } from '@hcengineering/presentation'
+  import presentation, { createQuery, getClient, KeyedAttribute } from '@hcengineering/presentation'
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
   import { StyledTextArea } from '@hcengineering/text-editor'
   import { IssuePriority, IssueTemplateChild, Project, Sprint } from '@hcengineering/tracker'
@@ -38,6 +38,12 @@
   let focusIssueTitle: () => void
   let labels: TagElement[] = []
 
+  const labelsQuery = createQuery()
+
+  $: labelsQuery.query(tags.class.TagElement, { _id: { $in: childIssue?.labels ?? [] } }, (res) => {
+    labels = res
+  })
+
   const key: KeyedAttribute = {
     key: 'labels',
     attr: client.getHierarchy().getAttribute(tracker.class.IssueTemplate, 'labels')
@@ -51,7 +57,6 @@
       assignee: null,
       project: null,
       priority: IssuePriority.NoPriority,
-      dueDate: null,
       sprint: sprint,
       estimation: 0
     }

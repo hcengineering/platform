@@ -132,12 +132,27 @@
     templateQuery.unsubscribe()
   }
 
-  function updateObject (template: IssueTemplate): void {
+  function tagAsRef (tag: TagElement): TagReference {
+    return {
+      _class: tags.class.TagReference,
+      _id: generateId() as Ref<TagReference>,
+      attachedTo: '' as Ref<Doc>,
+      attachedToClass: tracker.class.Issue,
+      collection: 'labels',
+      space: tags.space.Tags,
+      modifiedOn: 0,
+      modifiedBy: '' as Ref<Account>,
+      title: tag.title,
+      tag: tag._id,
+      color: tag.color
+    }
+  }
+  async function updateObject (template: IssueTemplate): Promise<void> {
     if (object.template?.template === template._id) {
       return
     }
 
-    const { _class, _id, space, children, comments, attachments, labels, dueDate, ...templBase } = template
+    const { _class, _id, space, children, comments, attachments, labels: labels_, ...templBase } = template
 
     subIssues = template.children
 
@@ -148,6 +163,8 @@
         template: template._id
       }
     }
+    const tagElements = await client.findAll(tags.class.TagElement, { _id: { $in: labels_ } })
+    labels = tagElements.map(tagAsRef)
   }
   function updateTemplate (template?: IssueTemplate): void {
     if (template !== undefined) {
@@ -304,7 +321,7 @@
         rank: calcRank(lastOne, undefined),
         comments: 0,
         subIssues: 0,
-        dueDate: subIssue.dueDate,
+        dueDate: null,
         parents: parentIssue
           ? [
               { parentId: objectId, parentTitle: value.title },
@@ -313,7 +330,7 @@
             ]
           : [{ parentId: objectId, parentTitle: value.title }],
         reportedTime: 0,
-        estimation: object.estimation,
+        estimation: subIssue.estimation,
         reports: 0,
         relations: [],
         childInfo: []
@@ -405,22 +422,7 @@
   }
 
   function addTagRef (tag: TagElement): void {
-    labels = [
-      ...labels,
-      {
-        _class: tags.class.TagReference,
-        _id: generateId() as Ref<TagReference>,
-        attachedTo: '' as Ref<Doc>,
-        attachedToClass: tracker.class.Issue,
-        collection: 'labels',
-        space: tags.space.Tags,
-        modifiedOn: 0,
-        modifiedBy: '' as Ref<Account>,
-        title: tag.title,
-        tag: tag._id,
-        color: tag.color
-      }
-    ]
+    labels = [...labels, tagAsRef(tag)]
   }
   function handleTemplateChange (evt: CustomEvent<Ref<IssueTemplate>>): void {
     if (templateId == null) {
