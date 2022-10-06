@@ -47,7 +47,7 @@ export class ClientSession implements Session {
   }
 
   async ping (): Promise<string> {
-    console.log('ping')
+    // console.log('ping')
     return 'pong!'
   }
 

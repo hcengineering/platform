@@ -1,9 +1,11 @@
 <script lang="ts">
-  import { Scroller, issueSP, defaultSP } from '@hcengineering/ui'
-  import IssuesListBrowser from './IssuesListBrowser.svelte'
-  import tracker from '../../plugin'
-  import { Issue, IssueStatus, ViewOptions } from '@hcengineering/tracker'
+  import contact, { Employee } from '@hcengineering/contact'
   import { Class, Doc, DocumentQuery, Ref, SortingOrder, WithLookup } from '@hcengineering/core'
+  import { createQuery } from '@hcengineering/presentation'
+  import { Issue, IssueStatus, ViewOptions } from '@hcengineering/tracker'
+  import { issueSP, Scroller } from '@hcengineering/ui'
+  import { BuildModelKey } from '@hcengineering/view'
+  import tracker from '../../plugin'
   import {
     getCategories,
     groupBy as groupByFunc,
@@ -11,9 +13,7 @@
     issuesOrderKeyMap,
     issuesSortOrderMap
   } from '../../utils'
-  import { createQuery } from '@hcengineering/presentation'
-  import contact, { Employee } from '@hcengineering/contact'
-  import { BuildModelKey } from '@hcengineering/view'
+  import IssuesListBrowser from './IssuesListBrowser.svelte'
 
   export let _class: Ref<Class<Doc>>
   export let config: (string | BuildModelKey)[]
@@ -67,7 +67,7 @@
 </script>
 
 <div class="w-full h-full clear-mins">
-  <Scroller fade={categories[0] !== undefined ? issueSP : defaultSP}>
+  <Scroller fade={issueSP}>
     <IssuesListBrowser
       {_class}
       {currentSpace}

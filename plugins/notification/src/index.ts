@@ -37,6 +37,13 @@ export interface Notification extends AttachedDoc {
   status: NotificationStatus
   text: string
   type: Ref<NotificationType>
+
+  // Defined to open particular item if required.
+  action?: {
+    component: AnyComponent
+    objectId: Ref<Doc>
+    objectClass: Ref<Class<Doc>>
+  }
 }
 
 /**

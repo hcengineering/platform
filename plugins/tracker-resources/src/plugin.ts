@@ -264,7 +264,6 @@ export default mergeIds(trackerId, tracker, {
     StatusEditor: '' as AnyComponent,
     AssigneePresenter: '' as AnyComponent,
     DueDatePresenter: '' as AnyComponent,
-    EditIssue: '' as AnyComponent,
     EditIssueTemplate: '' as AnyComponent,
     CreateTeam: '' as AnyComponent,
     NewIssueHeader: '' as AnyComponent,
@@ -293,6 +292,7 @@ export default mergeIds(trackerId, tracker, {
     ReportedTimeEditor: '' as AnyComponent,
     TimeSpendReport: '' as AnyComponent,
     EstimationEditor: '' as AnyComponent,
+    TemplateEstimationEditor: '' as AnyComponent,
     GrowPresenter: '' as AnyComponent,
 
     ProjectSelector: '' as AnyComponent,

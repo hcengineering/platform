@@ -28,6 +28,7 @@ import core, {
   TxUpdateDoc,
   WithLookup
 } from '@hcengineering/core'
+import { Resource } from '@hcengineering/platform/lib/platform'
 import { TriggerControl } from '@hcengineering/server-core'
 import { addAssigneeNotification } from '@hcengineering/server-task-resources'
 import tracker, { Issue, IssueParentInfo, TimeSpendReport } from '@hcengineering/tracker'
@@ -58,7 +59,15 @@ export async function addTrackerAssigneeNotification (
   const team = (await control.findAll(tracker.class.Team, { _id: issue.space })).shift()
   const issueName = `${team?.identifier ?? '?'}-${issue.number}`
 
-  await addAssigneeNotification(control, res, issue, issueName, assignee, ptx)
+  await addAssigneeNotification(
+    control,
+    res,
+    issue,
+    issueName,
+    assignee,
+    ptx,
+    tracker.component.EditIssue as unknown as Resource<string>
+  )
 }
 
 /**

@@ -213,7 +213,7 @@
   {#each categories as category}
     {@const items = groupedIssues[category] ?? []}
     {@const limited = limitGroup(category, groupedIssues, categoryLimit) ?? []}
-    {#if headerComponent || groupByKey === 'assignee'}
+    {#if headerComponent || groupByKey === 'assignee' || category === undefined}
       <div class="flex-between categoryHeader row" on:click={() => handleCollapseCategory(toCat(category))}>
         <div class="flex-row-center gap-2 clear-mins">
           {#if groupByKey === 'assignee' && personPresenter}

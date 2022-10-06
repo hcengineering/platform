@@ -222,7 +222,9 @@
     "IssueTemplate": "Процесс",
     "IssueTemplates": "Процессы",
     "NewProcess": "Новый процесс",
-    "NoIssueTemplate": "Без процесса"
+    "NoIssueTemplate": "Без процесса",
+    "TemplateReplace": "Вы хотите заменить выбранный процесс?",
+    "TemplateReplaceConfirm": "Все внесенные изменения в задачу будут потеряны"
   },
   "status": {}
 }
