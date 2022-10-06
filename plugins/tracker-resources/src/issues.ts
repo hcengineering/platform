@@ -1,5 +1,5 @@
 import { Doc, DocumentUpdate, Ref, RelatedDocument, TxOperations } from '@hcengineering/core'
-import { getClient } from '@hcengineering/presentation'
+import { copyTextToClipboard, getClient } from '@hcengineering/presentation'
 import { Issue, Project, Sprint, Team, trackerId } from '@hcengineering/tracker'
 import { getCurrentLocation, getPanelURI, Location } from '@hcengineering/ui'
 import { workbenchId } from '@hcengineering/workbench'
@@ -48,17 +48,7 @@ export async function copyToClipboard (object: Issue, ev: Event, { type }: { typ
       return
   }
 
-  try {
-    // Chromium
-    await navigator.clipboard.writeText(text)
-  } catch {
-    // Safari specific behavior
-    // see https://bugs.webkit.org/show_bug.cgi?id=222262
-    const clipboardItem = new ClipboardItem({
-      'text/plain': Promise.resolve(text)
-    })
-    await navigator.clipboard.write([clipboardItem])
-  }
+  await copyTextToClipboard(text)
 }
 
 export function generateIssueShortLink (issueId: string): string {

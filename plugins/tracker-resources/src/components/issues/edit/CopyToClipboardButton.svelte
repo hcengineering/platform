@@ -14,6 +14,7 @@
 -->
 <script lang="ts">
   import { Asset, IntlString } from '@hcengineering/platform'
+  import { copyTextToClipboard } from '@hcengineering/presentation'
   import { Button } from '@hcengineering/ui'
 
   export let icon: Asset
@@ -25,5 +26,5 @@
   {icon}
   kind={'transparent'}
   showTooltip={{ label: title, direction: 'bottom' }}
-  on:click={() => navigator.clipboard.writeText(text)}
+  on:click={() => copyTextToClipboard(text)}
 />

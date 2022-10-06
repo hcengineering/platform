@@ -15,6 +15,7 @@
 <script lang="ts">
   import type { IntlString } from '@hcengineering/platform'
   import { translate } from '@hcengineering/platform'
+  import { copyTextToClipboard } from '@hcengineering/presentation'
   import type { PopupOptions } from '@hcengineering/ui'
   import {
     Button,
@@ -47,7 +48,7 @@
 
   const copyChannel = (): void => {
     if (label === plugin.string.CopyToClipboard) {
-      navigator.clipboard.writeText(value).then(() => (label = plugin.string.Copied))
+      copyTextToClipboard(value).then(() => (label = plugin.string.Copied))
       setTimeout(() => {
         label = plugin.string.CopyToClipboard
       }, 3000)

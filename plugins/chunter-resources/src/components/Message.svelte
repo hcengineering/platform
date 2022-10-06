@@ -21,7 +21,7 @@
   import { Ref, WithLookup, getCurrentAccount } from '@hcengineering/core'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
   import { getResource } from '@hcengineering/platform'
-  import { Avatar, getClient, MessageViewer } from '@hcengineering/presentation'
+  import { Avatar, copyTextToClipboard, getClient, MessageViewer } from '@hcengineering/presentation'
   import ui, {
     ActionIcon,
     IconMoreH,
@@ -121,7 +121,7 @@
       } else {
         location.path.length = 4
       }
-      await navigator.clipboard.writeText(`${window.location.origin}${locationToUrl(location)}`)
+      await copyTextToClipboard(`${window.location.origin}${locationToUrl(location)}`)
     }
   }
 

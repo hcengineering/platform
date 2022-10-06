@@ -15,6 +15,7 @@
 -->
 <script lang="ts">
   import type { IntlString, Asset } from '@hcengineering/platform'
+  import { copyTextToClipboard } from '@hcengineering/presentation'
   import { CircleButton, closeTooltip, Label } from '@hcengineering/ui'
   import IconCopy from './icons/Copy.svelte'
 
@@ -27,7 +28,7 @@
   export let value: Item
 
   const copyLink = (): void => {
-    navigator.clipboard.writeText(value.value)
+    copyTextToClipboard(value.value)
     // .then(() => {
     //   console.log('Copied!', value.value)
     // })

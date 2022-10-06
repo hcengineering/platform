@@ -14,6 +14,7 @@
 -->
 <script lang="ts">
   import { Timestamp } from '@hcengineering/core'
+  import { copyTextToClipboard } from '@hcengineering/presentation'
   import { Button, getCurrentLocation, Label, locationToUrl, ticker } from '@hcengineering/ui'
   import { getInviteLink } from '../utils'
   import { createEventDispatcher } from 'svelte'
@@ -47,7 +48,7 @@
     }
   }
   function copy (link: string): void {
-    navigator.clipboard.writeText(link)
+    copyTextToClipboard(link)
     copied = true
     copiedTime = Date.now()
   }
