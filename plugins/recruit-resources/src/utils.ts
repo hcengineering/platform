@@ -1,6 +1,6 @@
 import core, { Doc, Ref, TxOperations } from '@hcengineering/core'
 import { translate } from '@hcengineering/platform'
-import { getClient } from '@hcengineering/presentation'
+import { copyTextToClipboard, getClient } from '@hcengineering/presentation'
 import { Applicant, Candidate } from '@hcengineering/recruit'
 import { getPanelURI } from '@hcengineering/ui'
 import view from '@hcengineering/view'
@@ -37,5 +37,5 @@ export async function copyToClipboard (
     default:
       return
   }
-  await navigator.clipboard.writeText(text)
+  await copyTextToClipboard(text)
 }

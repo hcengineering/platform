@@ -148,6 +148,20 @@ export async function getBlobURL (blob: Blob): Promise<string> {
   })
 }
 
+export async function copyTextToClipboard (text: string): Promise<void> {
+  try {
+    // Safari specific behavior
+    // see https://bugs.webkit.org/show_bug.cgi?id=222262
+    const clipboardItem = new ClipboardItem({
+      'text/plain': Promise.resolve(text)
+    })
+    await navigator.clipboard.write([clipboardItem])
+  } catch {
+    // Fallback to default clipboard API implementation
+    await navigator.clipboard.writeText(text)
+  }
+}
+
 export type AttributeCategory = 'attribute' | 'inplace' | 'collection' | 'array'
 
 export const AttributeCategoryOrder = { attribute: 0, inplace: 1, collection: 2, array: 2 }
