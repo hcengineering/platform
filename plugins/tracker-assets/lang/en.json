@@ -224,7 +224,7 @@
     "NewProcess": "New Process",
     "SaveProcess": "Save Process",
     "NoIssueTemplate": "No Process",
-    "TemplateReplace": "You you replace applied template?",
+    "TemplateReplace": "You you replace applied process?",
     "TemplateReplaceConfirm": "All changes to template values will be lost."
   },
   "status": {}

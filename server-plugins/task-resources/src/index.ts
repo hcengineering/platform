@@ -28,13 +28,13 @@ import core, {
   TxUpdateDoc
 } from '@hcengineering/core'
 import login from '@hcengineering/login'
-import { getMetadata } from '@hcengineering/platform'
+import notification, { Notification, NotificationStatus } from '@hcengineering/notification'
+import { getMetadata, Resource } from '@hcengineering/platform'
 import { TriggerControl } from '@hcengineering/server-core'
 import { getUpdateLastViewTx } from '@hcengineering/server-notification'
 import task, { Issue, Task, taskId } from '@hcengineering/task'
 import view from '@hcengineering/view'
 import { workbenchId } from '@hcengineering/workbench'
-import notification, { Notification, NotificationStatus } from '@hcengineering/notification'
 
 /**
  * @public
@@ -94,7 +94,8 @@ export async function addAssigneeNotification (
   issue: Doc,
   issueName: string,
   assignee: Ref<Employee>,
-  ptx: TxCollectionCUD<AttachedDoc, AttachedDoc>
+  ptx: TxCollectionCUD<AttachedDoc, AttachedDoc>,
+  component?: Resource<string>
 ): Promise<void> {
   const sender = await getEmployeeAccount(ptx.modifiedBy, control)
   if (sender === undefined) {
@@ -119,7 +120,12 @@ export async function addAssigneeNotification (
       tx: ptx._id,
       status: NotificationStatus.New,
       type: task.ids.AssigneedNotification,
-      text: `${issueName} was assigned to you by ${formatName(sender.name)}`
+      text: `${issueName} was assigned to you by ${formatName(sender.name)}`,
+      action: {
+        component: component ?? view.component.EditDoc,
+        objectId: issue._id,
+        objectClass: issue._class
+      }
     } as unknown as Data<Notification>
   }
 

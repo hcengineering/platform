@@ -23,6 +23,7 @@
   import tracker from '../../plugin'
   import AssigneeEditor from '../issues/AssigneeEditor.svelte'
   import PriorityEditor from '../issues/PriorityEditor.svelte'
+  import EstimationEditor from './EstimationEditor.svelte'
 
   export let sprint: Ref<Sprint> | null = null
   export let project: Ref<Project> | null = null
@@ -139,6 +140,14 @@
           on:change={({ detail }) => (newIssue.assignee = detail)}
         />
       {/key}
+      <EstimationEditor
+        kind={'no-border'}
+        size={'small'}
+        bind:value={newIssue}
+        on:change={(evt) => {
+          newIssue.estimation = evt.detail
+        }}
+      />
       <Component
         is={tags.component.TagsDropdownEditor}
         props={{

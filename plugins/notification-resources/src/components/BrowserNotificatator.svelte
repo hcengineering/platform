@@ -154,7 +154,16 @@
     })
 
     notification.onclick = () => {
-      showPanel(view.component.EditDoc, notifyInstance.attachedTo, notifyInstance.attachedToClass, 'content')
+      if (notifyInstance.action !== undefined) {
+        showPanel(
+          notifyInstance.action.component,
+          notifyInstance.action.objectId,
+          notifyInstance.action.objectClass,
+          'content'
+        )
+      } else {
+        showPanel(view.component.EditDoc, notifyInstance.attachedTo, notifyInstance.attachedToClass, 'content')
+      }
     }
   }
 </script>

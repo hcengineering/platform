@@ -83,6 +83,7 @@ import IssueTemplatePresenter from './components/templates/IssueTemplatePresente
 import IssueTemplates from './components/templates/IssueTemplates.svelte'
 
 import EditIssueTemplate from './components/templates/EditIssueTemplate.svelte'
+import TemplateEstimationEditor from './components/templates/EstimationEditor.svelte'
 
 export async function queryIssue<D extends Issue> (
   _class: Ref<Class<D>>,
@@ -203,7 +204,8 @@ export default async (): Promise<Resources> => ({
     ProjectSelector,
     IssueTemplates,
     IssueTemplatePresenter,
-    EditIssueTemplate
+    EditIssueTemplate,
+    TemplateEstimationEditor
   },
   completion: {
     IssueQuery: async (client: Client, query: string, filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }) =>

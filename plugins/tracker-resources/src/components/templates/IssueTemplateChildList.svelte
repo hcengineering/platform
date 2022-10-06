@@ -22,6 +22,7 @@
   import Circles from '../icons/Circles.svelte'
   import AssigneeEditor from '../issues/AssigneeEditor.svelte'
   import PriorityEditor from '../issues/PriorityEditor.svelte'
+  import EstimationEditor from './EstimationEditor.svelte'
   import IssueTemplateChildEditor from './IssueTemplateChildEditor.svelte'
 
   export let issues: IssueTemplateChild[]
@@ -153,6 +154,15 @@
       </span>
     </div>
     <div class="flex-center flex-no-shrink">
+      <EstimationEditor
+        kind={'link'}
+        size={'small'}
+        bind:value={issue}
+        on:change={(evt) => {
+          dispatch('update-issue', { id: issue.id, estimation: evt.detail })
+          issue.estimation = evt.detail
+        }}
+      />
       <AssigneeEditor
         value={issue}
         on:change={(evt) => {

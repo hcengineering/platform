@@ -197,8 +197,6 @@ export interface IssueTemplateData {
   // Estimation in man days
   estimation: number
 
-  dueDate: number | null
-
   labels?: Ref<TagElement>[]
 }
 
@@ -345,7 +343,8 @@ export default plugin(trackerId, {
   component: {
     Tracker: '' as AnyComponent,
     TrackerApp: '' as AnyComponent,
-    RelatedIssues: '' as AnyComponent
+    RelatedIssues: '' as AnyComponent,
+    EditIssue: '' as AnyComponent
   },
   issueStatusCategory: {
     Backlog: '' as Ref<IssueStatusCategory>,

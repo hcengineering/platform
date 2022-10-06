@@ -506,7 +506,7 @@ export function createModel (builder: Builder): void {
         presenter: tracker.component.SprintEditor,
         props: { kind: 'list', size: 'small', shape: 'round', shouldShowPlaceholder: false }
       },
-      // { key: '', presenter: tracker.component.EstimationEditor, props: { kind: 'list', size: 'small' } },
+      { key: '', presenter: tracker.component.TemplateEstimationEditor, props: { kind: 'list', size: 'small' } },
       { key: 'modifiedOn', presenter: tracker.component.ModificationDatePresenter, props: { fixed: 'right' } },
       {
         key: '$lookup.assignee',
@@ -936,11 +936,11 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.ClassFilters, {
-    filters: ['status', 'priority', 'assignee', 'project', 'sprint', 'dueDate', 'modifiedOn']
+    filters: ['status', 'priority', 'assignee', 'project', 'sprint', 'estimation', 'dueDate', 'modifiedOn']
   })
 
   builder.mixin(tracker.class.IssueTemplate, core.class.Class, view.mixin.ClassFilters, {
-    filters: ['priority', 'assignee', 'project', 'sprint', 'dueDate', 'modifiedOn']
+    filters: ['priority', 'assignee', 'project', 'sprint', 'estimation', 'modifiedOn']
   })
 
   builder.createDoc(
