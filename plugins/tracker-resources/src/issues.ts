@@ -47,7 +47,18 @@ export async function copyToClipboard (object: Issue, ev: Event, { type }: { typ
     default:
       return
   }
-  await navigator.clipboard.writeText(text)
+
+  try {
+    // Chromium
+    await navigator.clipboard.writeText(text)
+  } catch {
+    // Safari specific behavior
+    // see https://bugs.webkit.org/show_bug.cgi?id=222262
+    const clipboardItem = new ClipboardItem({
+      'text/plain': Promise.resolve(text)
+    })
+    await navigator.clipboard.write([clipboardItem])
+  }
 }
 
 export function generateIssueShortLink (issueId: string): string {
