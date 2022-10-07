@@ -17,7 +17,7 @@
   import FontSizeSelector from './FontSizeSelector.svelte'
   import LangSelector from './LangSelector.svelte'
   import uiPlugin from '../../plugin'
-  import { deviceOptionsStore as deviceInfo } from '../../'
+  import { checkMobile, deviceOptionsStore as deviceInfo } from '../../'
 
   let application: AnyComponent | undefined
 
@@ -62,8 +62,7 @@
   $: isPortrait = docWidth <= docHeight
   let isMobile: boolean
   let alwaysMobile: boolean = false
-  $: isMobile =
-    alwaysMobile ?? /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+  $: isMobile = alwaysMobile || checkMobile()
 
   $: $deviceInfo.docWidth = docWidth
   $: $deviceInfo.docHeight = docHeight
