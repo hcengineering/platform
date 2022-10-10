@@ -17,6 +17,7 @@
   import type { IntlString } from '@hcengineering/platform'
   import { Issue } from '@hcengineering/tracker'
   import { ActionIcon, eventToHTMLElement, IconAdd, Label, showPopup } from '@hcengineering/ui'
+  import { floorFractionDigits } from '../../../utils'
   import ReportsPopup from './ReportsPopup.svelte'
   import TimeSpendReportPopup from './TimeSpendReportPopup.svelte'
 
@@ -26,24 +27,27 @@
   export let value: number
   export let kind: 'no-border' | 'link' = 'no-border'
 
-  function addTimeReport (event: MouseEvent): void {
+  function addTimeReport(event: MouseEvent): void {
     showPopup(
       TimeSpendReportPopup,
       { issueId: object._id, issueClass: object._class, space: object.space, assignee: object.assignee },
       eventToHTMLElement(event)
     )
   }
-  function showReports (event: MouseEvent): void {
+  function showReports(event: MouseEvent): void {
     showPopup(ReportsPopup, { issue: object }, eventToHTMLElement(event))
   }
-  $: childTime = (object.childInfo ?? []).map((it) => it.reportedTime).reduce((a, b) => a + b, 0)
+  $: childTime = floorFractionDigits(
+    (object.childInfo ?? []).map((it) => it.reportedTime).reduce((a, b) => a + b, 0),
+    2
+  )
 </script>
 
 {#if kind === 'link'}
   <div class="link-container flex-between" on:click={showReports}>
     {#if value !== undefined}
       <span class="overflow-label">
-        {value}
+        {floorFractionDigits(value, 2)}
         {#if childTime !== 0}
           / {childTime}
         {/if}
@@ -57,7 +61,7 @@
   </div>
 {:else if value !== undefined}
   <span class="overflow-label">
-    {value}
+    {floorFractionDigits(value, 2)}
     {#if childTime !== 0}
       / {childTime}
     {/if}

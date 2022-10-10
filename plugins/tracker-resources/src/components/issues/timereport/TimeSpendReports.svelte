@@ -18,6 +18,7 @@
   import { Issue, Team, TimeSpendReport } from '@hcengineering/tracker'
   import { Label, Scroller, Spinner } from '@hcengineering/ui'
   import tracker from '../../../plugin'
+  import { floorFractionDigits } from '../../../utils'
   import TimeSpendReportsList from './TimeSpendReportsList.svelte'
 
   export let issue: Issue
@@ -35,11 +36,15 @@
     }
   })
 
-  $: total = (reports ?? []).reduce((a, b) => a + b.value, 0)
+  $: total = floorFractionDigits(
+    (reports ?? []).reduce((a, b) => a + b.value, 0),
+    2
+  )
+  $: reportedTime = floorFractionDigits(issue.reportedTime, 2)
 </script>
 
 {#if reports}
-  <Label label={tracker.string.ReportedTime} />: {issue.reportedTime}
+  <Label label={tracker.string.ReportedTime} />: {reportedTime}
   <Label label={tracker.string.TimeSpendReports} />: {total}
   <div class="h-50">
     <Scroller>

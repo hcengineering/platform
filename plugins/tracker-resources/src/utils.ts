@@ -619,3 +619,10 @@ export function getDayOfSprint (startDate: number, now: number): number {
   const ds = Array.from(Array(days).keys()).map((it) => stDateDate + it)
   return ds.filter((it) => !isWeekend(new Date(new Date(stTime).setDate(it)))).length
 }
+
+/**
+ * @public
+ */
+export const floorFractionDigits = (n: number, amount: number): number => {
+  return Number(n.toFixed(amount))
+}
