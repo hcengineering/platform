@@ -324,7 +324,7 @@ export class FullTextIndex implements WithFind {
 function isFullTextAttribute (attr: AnyAttribute): boolean {
   return (
     attr.index === IndexKind.FullText &&
-    (attr.type._class === core.class.TypeString || attr.type._class === core.class.TypeMarkup)
+    (attr.type._class === core.class.TypeNumber || attr.type._class === core.class.TypeString || attr.type._class === core.class.TypeMarkup)
   )
 }
 

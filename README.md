@@ -33,7 +33,7 @@ rush docker:build   # Will build docker containers for all applications.
 cd ./dev/
 docker-compose up -d --force-recreate # Will setup all containers
 
-# we a few seconds delay, to be sure elastic is up and running.
+# wait a few seconds delay, to be sure elastic is up and running.
 ./deploy/setup-es-attachment-pipeline.sh    # Setup elastic search plugin configuration.
 ```
 
