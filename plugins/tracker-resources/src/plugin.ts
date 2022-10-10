@@ -283,7 +283,6 @@ export default mergeIds(trackerId, tracker, {
     TeamProjects: '' as AnyComponent,
     IssuePreview: '' as AnyComponent,
     RelationsPopup: '' as AnyComponent,
-    CreateIssue: '' as AnyComponent,
 
     Sprints: '' as AnyComponent,
     SprintPresenter: '' as AnyComponent,

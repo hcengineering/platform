@@ -222,6 +222,7 @@
     "IssueTemplate": "Процесс",
     "IssueTemplates": "Процессы",
     "NewProcess": "Новый процесс",
+    "SaveProcess": "Сохранить процесс",
     "NoIssueTemplate": "Без процесса",
     "TemplateReplace": "Вы хотите заменить выбранный процесс?",
     "TemplateReplaceConfirm": "Все внесенные изменения в задачу будут потеряны"

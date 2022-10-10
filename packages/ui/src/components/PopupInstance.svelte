@@ -120,7 +120,7 @@
     on:update={(ev) => {
       _update(ev.detail)
     }}
-    on:close={(ev) => _close(ev.detail)}
+    on:close={(ev) => _close(ev?.detail)}
     on:fullsize={() => {
       fullSize = !fullSize
     }}

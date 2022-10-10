@@ -94,6 +94,8 @@
   }
 
   function resetObject (): void {
+    templateId = undefined
+    template = undefined
     object = {
       title: '',
       description: '',
