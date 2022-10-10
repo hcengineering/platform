@@ -203,6 +203,7 @@ export class TIssue extends TAttachedDoc implements Issue {
   priority!: IssuePriority
 
   @Prop(TypeNumber(), tracker.string.Number)
+  @Index(IndexKind.FullText)
   number!: number
 
   @Prop(TypeRef(contact.class.Employee), tracker.string.Assignee)
