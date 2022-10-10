@@ -36,7 +36,7 @@
   let created = { _id: { $in: [] as Ref<Issue>[] } }
   let subscribed = { _id: { $in: [] as Ref<Issue>[] } }
 
-  const viewOptionsConfig: ViewOptionModel[] = getDefaultViewOptionsConfig(false)
+  const viewOptionsConfig: ViewOptionModel[] = getDefaultViewOptionsConfig(true)
 
   const createdQuery = createQuery()
   $: createdQuery.query<TxCollectionCUD<Issue, Issue>>(

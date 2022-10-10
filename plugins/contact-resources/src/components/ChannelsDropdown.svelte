@@ -194,7 +194,7 @@
             if (result === '') {
               displayItems = dropItem(n)
             } else {
-              if (result !== 'open') displayItems[n].value = result
+              if (result !== 'open') item.value = result
             }
             saveItems()
             focusManager?.setFocusPos(focusIndex + 1 + n)
@@ -208,7 +208,7 @@
             if (result === '') {
               displayItems = dropItem(n)
             } else {
-              displayItems[n].value = result
+              item.value = result
             }
             saveItems()
           }
