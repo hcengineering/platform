@@ -37,12 +37,13 @@
     resizeObserver,
     showPopup,
     TooltipInstance,
-    PopupPosAlignment
+    PopupPosAlignment,
+    checkMobile
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { ActionContext, ActionHandler } from '@hcengineering/view-resources'
   import type { Application, NavigatorModel, SpecialNavModel, ViewConfiguration } from '@hcengineering/workbench'
-  import { onDestroy, tick } from 'svelte'
+  import { onDestroy, onMount, tick } from 'svelte'
   import { doNavigate } from '../utils'
   import workbench from '../plugin'
   import AccountPopup from './AccountPopup.svelte'
@@ -389,6 +390,32 @@
       : appsDirection === 'vertical' && $deviceInfo.isMobile
         ? 'account-mobile'
         : 'account'
+
+  onMount(() => {
+    if (checkMobile()) {
+      onmessage = (event: MessageEvent) => {
+        try {
+          const data = JSON.parse(event.data)
+          if (data.action === 'navigate') {
+            const location = getCurrentLocation()
+            location.path.length = 3
+            location.path[2] = data.value.path[0]
+            if (data.value.path[1] !== undefined) {
+              location.path[3] = data.value.path[1]
+            }
+            if (data.value.path[2] !== undefined) {
+              location.path[4] = data.value.path[2]
+            }
+            location.fragment = undefined
+            location.query = undefined
+            navigate(location)
+          }
+        } catch (err) {
+          console.log(`Couldn't recognize event ${JSON.stringify(event)}`)
+        }
+      }
+    }
+  })
 </script>
 
 {#if employee?.active === true}
