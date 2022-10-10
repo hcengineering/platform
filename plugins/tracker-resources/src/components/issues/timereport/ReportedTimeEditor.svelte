@@ -27,14 +27,14 @@
   export let value: number
   export let kind: 'no-border' | 'link' = 'no-border'
 
-  function addTimeReport(event: MouseEvent): void {
+  function addTimeReport (event: MouseEvent): void {
     showPopup(
       TimeSpendReportPopup,
       { issueId: object._id, issueClass: object._class, space: object.space, assignee: object.assignee },
       eventToHTMLElement(event)
     )
   }
-  function showReports(event: MouseEvent): void {
+  function showReports (event: MouseEvent): void {
     showPopup(ReportsPopup, { issue: object }, eventToHTMLElement(event))
   }
   $: childTime = floorFractionDigits(
