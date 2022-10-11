@@ -17,6 +17,7 @@
   import type { IntlString } from '@hcengineering/platform'
   import { Issue } from '@hcengineering/tracker'
   import { ActionIcon, eventToHTMLElement, IconAdd, Label, showPopup } from '@hcengineering/ui'
+  import { floorFractionDigits } from '../../../utils'
   import ReportsPopup from './ReportsPopup.svelte'
   import TimeSpendReportPopup from './TimeSpendReportPopup.svelte'
 
@@ -36,14 +37,17 @@
   function showReports (event: MouseEvent): void {
     showPopup(ReportsPopup, { issue: object }, eventToHTMLElement(event))
   }
-  $: childTime = (object.childInfo ?? []).map((it) => it.reportedTime).reduce((a, b) => a + b, 0)
+  $: childTime = floorFractionDigits(
+    (object.childInfo ?? []).map((it) => it.reportedTime).reduce((a, b) => a + b, 0),
+    2
+  )
 </script>
 
 {#if kind === 'link'}
   <div class="link-container flex-between" on:click={showReports}>
     {#if value !== undefined}
       <span class="overflow-label">
-        {value}
+        {floorFractionDigits(value, 2)}
         {#if childTime !== 0}
           / {childTime}
         {/if}
@@ -57,7 +61,7 @@
   </div>
 {:else if value !== undefined}
   <span class="overflow-label">
-    {value}
+    {floorFractionDigits(value, 2)}
     {#if childTime !== 0}
       / {childTime}
     {/if}

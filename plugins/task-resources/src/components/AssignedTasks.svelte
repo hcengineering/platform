@@ -48,7 +48,7 @@
   const doneStateQuery = createQuery()
   doneStateQuery.query(task.class.DoneState, {}, (res) => (doneStates = res))
 
-  // Find all tags for object classe with matched elements
+  // Find all tags for object class with matched elements
   const query = createQuery()
 
   $: query.query(tags.class.TagReference, { tag: { $in: $selectedTagElements } }, (result) => {

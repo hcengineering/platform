@@ -19,16 +19,15 @@
   import { Label } from '@hcengineering/ui'
   import tracker from '../../../plugin'
   import EstimationProgressCircle from './EstimationProgressCircle.svelte'
+  import { floorFractionDigits } from '../../../utils'
 
   export let value: Issue | AttachedData<Issue>
 
-  $: childReportTime =
-    value.reportedTime + (value.childInfo ?? []).map((it) => it.reportedTime).reduce((a, b) => a + b, 0)
+  $: childReportTime = floorFractionDigits(
+    value.reportedTime + (value.childInfo ?? []).map((it) => it.reportedTime).reduce((a, b) => a + b, 0),
+    2
+  )
   $: childEstimationTime = (value.childInfo ?? []).map((it) => it.estimation).reduce((a, b) => a + b, 0)
-
-  function hourFloor (value: number): number {
-    return Number(value.toFixed(2))
-  }
 </script>
 
 <div class="estimation-container" on:click>
@@ -38,22 +37,25 @@
   <span class="overflow-label label flex-row-center flex-nowrap text-md">
     {#if value.reportedTime > 0 || childReportTime > 0}
       {#if childReportTime}
-        {@const rchildReportTime = hourFloor(childReportTime)}
-        {@const reportDiff = rchildReportTime - hourFloor(value.reportedTime)}
+        {@const rchildReportTime = childReportTime}
+        {@const reportDiff = floorFractionDigits(rchildReportTime - value.reportedTime, 2)}
         {#if reportDiff !== 0 && value.reportedTime !== 0}
           <div class="flex flex-nowrap mr-1" class:showError={reportDiff > 0}>
             <Label label={tracker.string.TimeSpendValue} params={{ value: rchildReportTime }} />
           </div>
           <div class="romColor">
-            (<Label label={tracker.string.TimeSpendValue} params={{ value: hourFloor(value.reportedTime) }} />)
+            (<Label
+              label={tracker.string.TimeSpendValue}
+              params={{ value: floorFractionDigits(value.reportedTime, 2) }}
+            />)
           </div>
         {:else if value.reportedTime === 0}
-          <Label label={tracker.string.TimeSpendValue} params={{ value: hourFloor(childReportTime) }} />
+          <Label label={tracker.string.TimeSpendValue} params={{ value: childReportTime }} />
         {:else}
-          <Label label={tracker.string.TimeSpendValue} params={{ value: hourFloor(value.reportedTime) }} />
+          <Label label={tracker.string.TimeSpendValue} params={{ value: floorFractionDigits(value.reportedTime, 2) }} />
         {/if}
       {:else}
-        <Label label={tracker.string.TimeSpendValue} params={{ value: hourFloor(value.reportedTime) }} />
+        <Label label={tracker.string.TimeSpendValue} params={{ value: floorFractionDigits(value.reportedTime, 2) }} />
       {/if}
       <div class="p-1">/</div>
     {/if}
@@ -66,14 +68,17 @@
         </div>
         {#if value.estimation !== 0}
           <div class="romColor">
-            (<Label label={tracker.string.TimeSpendValue} params={{ value: hourFloor(value.estimation) }} />)
+            (<Label
+              label={tracker.string.TimeSpendValue}
+              params={{ value: floorFractionDigits(value.estimation, 2) }}
+            />)
           </div>
         {/if}
       {:else}
-        <Label label={tracker.string.TimeSpendValue} params={{ value: hourFloor(value.estimation) }} />
+        <Label label={tracker.string.TimeSpendValue} params={{ value: floorFractionDigits(value.estimation, 2) }} />
       {/if}
     {:else}
-      <Label label={tracker.string.TimeSpendValue} params={{ value: hourFloor(value.estimation) }} />
+      <Label label={tracker.string.TimeSpendValue} params={{ value: floorFractionDigits(value.estimation, 2) }} />
     {/if}
   </span>
 </div>
