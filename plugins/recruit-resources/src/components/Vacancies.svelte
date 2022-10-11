@@ -60,8 +60,8 @@
   const applicationSorting = (a: Doc, b: Doc) =>
     (applications?.get(b._id as Ref<Vacancy>)?.count ?? 0) - (applications?.get(a._id as Ref<Vacancy>)?.count ?? 0) ?? 0
   const modifiedSorting = (a: Doc, b: Doc) =>
-    (applications?.get(b._id as Ref<Vacancy>)?.modifiedOn ?? 0) -
-      (applications?.get(a._id as Ref<Vacancy>)?.modifiedOn ?? 0) ?? 0
+    (applications?.get(b._id as Ref<Vacancy>)?.modifiedOn ?? b.modifiedOn) -
+      (applications?.get(a._id as Ref<Vacancy>)?.modifiedOn ?? a.modifiedOn) ?? 0
 
   const replacedKeys: Map<string, BuildModelKey> = new Map<string, BuildModelKey>([
     [
