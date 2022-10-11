@@ -41,5 +41,5 @@ export function fetchMetadataLocalStorage<T> (id: Metadata<T>): T | null {
 }
 
 export function checkMobile (): boolean {
-  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|Mobile|Opera Mini/i.test(navigator.userAgent)
 }

@@ -68,6 +68,8 @@
   $: $deviceInfo.docHeight = docHeight
   $: $deviceInfo.isPortrait = isPortrait
   $: $deviceInfo.isMobile = isMobile
+
+  $: document.documentElement.style.setProperty('--app-height', `${docHeight}px`)
 </script>
 
 <svelte:window bind:innerWidth={docWidth} bind:innerHeight={docHeight} />
@@ -127,7 +129,9 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    height: 100vh;
+    // height: 100vh;
+    height: 100%;
+    // height: var(--app-height);
 
     .status-bar {
       min-height: var(--status-bar-height);
@@ -163,7 +167,7 @@
     }
 
     .app {
-      height: calc(100vh - var(--status-bar-height));
+      height: calc(100% - var(--status-bar-height));
       // min-width: 600px;
       // min-height: 480px;
 
