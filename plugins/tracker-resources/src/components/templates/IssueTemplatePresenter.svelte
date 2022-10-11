@@ -33,7 +33,7 @@
 </script>
 
 {#if value}
-  <span class="issuePresenterRoot flex" class:noPointer={disableClick} title="title" on:click={handleIssueEditorOpened}>
+  <span class="issuePresenterRoot flex" class:noPointer={disableClick} on:click={handleIssueEditorOpened}>
     <Icon icon={tracker.icon.Issues} size={'small'} />
     <span class="ml-2">
       {title}
