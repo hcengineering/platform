@@ -14,6 +14,8 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
+  import attachment from '@hcengineering/attachment'
+  import { getResource } from '@hcengineering/platform'
   import { AnySvelteComponent, IconSize, showPopup } from '@hcengineering/ui'
 
   import Avatar from './Avatar.svelte'
@@ -25,6 +27,22 @@
   export let size: IconSize
   export let direct: Blob | undefined = undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
+
+  export async function createAvatar (): Promise<string> {
+    if (!direct) {
+      throw new Error('Avatar file not selected')
+    }
+    const uploadFile = await getResource(attachment.helper.UploadFile)
+    const file = new File([direct], 'avatar')
+    return uploadFile(file)
+  }
+
+  export async function removeAvatar (avatar: string | null | undefined) {
+    if (avatar !== null && avatar !== undefined) {
+      const deleteFile = await getResource(attachment.helper.DeleteFile)
+      await deleteFile(avatar)
+    }
+  }
 
   const dispatch = createEventDispatcher()
 

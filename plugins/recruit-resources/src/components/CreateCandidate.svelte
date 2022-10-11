@@ -69,6 +69,8 @@
     return firstName === '' && lastName === '' && resume.uuid === undefined
   }
 
+  let avatarEditor: EditableAvatar
+
   let object: Candidate = {} as Candidate
 
   const resume = {} as {
@@ -126,8 +128,7 @@
       city: object.city
     }
     if (avatar !== undefined) {
-      const uploadFile = await getResource(attachment.helper.UploadFile)
-      candidate.avatar = await uploadFile(avatar)
+      candidate.avatar = await avatarEditor.createAvatar()
     }
     const candidateData: MixinData<Person, Candidate> = {
       title: object.title,
@@ -366,12 +367,6 @@
     manager.setFocusPos(102)
   }
 
-  function onAvatarDone (e: any) {
-    const { file } = e.detail
-
-    avatar = file
-  }
-
   function addTagRef (tag: TagElement): void {
     skills = [
       ...skills,
@@ -400,10 +395,6 @@
     matches = p.contacts
     matchedChannels = p.channels
   })
-
-  function removeAvatar (): void {
-    avatar = undefined
-  }
 
   const manager = createFocusManager()
 </script>
@@ -465,11 +456,10 @@
     </div>
     <div class="ml-4">
       <EditableAvatar
+        bind:this={avatarEditor}
         bind:direct={avatar}
         avatar={object.avatar}
         size={'large'}
-        on:remove={removeAvatar}
-        on:done={onAvatarDone}
       />
     </div>
   </div>

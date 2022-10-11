@@ -31,6 +31,7 @@
     "typescript": "^4.3.5"
   },
   "dependencies": {
+    "@hcengineering/attachment": "~0.6.1",
     "@hcengineering/platform": "^0.6.7",
     "@hcengineering/core": "^0.6.17",
     "@hcengineering/query": "~0.6.1",
