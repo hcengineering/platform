@@ -1230,6 +1230,32 @@ export function createModel (builder: Builder): void {
     },
     tracker.action.Relations
   )
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.ShowPopup,
+      actionProps: {
+        component: tracker.component.CreateIssue,
+        element: 'top',
+        fillProps: {
+          _object: 'originalIssue',
+          space: 'space'
+        }
+      },
+      label: tracker.string.Duplicate,
+      icon: tracker.icon.Duplicate,
+      keyBinding: [],
+      input: 'none',
+      category: tracker.category.Tracker,
+      target: tracker.class.Issue,
+      context: {
+        mode: ['context', 'browser'],
+        application: tracker.app.Tracker,
+        group: 'associate'
+      }
+    },
+    tracker.action.Duplicate
+  )
 
   classPresenter(
     builder,

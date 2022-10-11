@@ -405,6 +405,7 @@ export default plugin(trackerId, {
     CopyID: '' as Asset,
     CopyURL: '' as Asset,
     CopyBranch: '' as Asset,
+    Duplicate: '' as Asset,
 
     TimeReport: '' as Asset,
     Estimation: '' as Asset
@@ -424,6 +425,7 @@ export default plugin(trackerId, {
     CopyIssueTitle: '' as Ref<Action>,
     CopyIssueLink: '' as Ref<Action>,
     MoveToTeam: '' as Ref<Action>,
+    Duplicate: '' as Ref<Action>,
     Relations: '' as Ref<Action>,
     NewSubIssue: '' as Ref<Action>,
     EditWorkflowStatuses: '' as Ref<Action>,
