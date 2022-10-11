@@ -13,14 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import attachment from '@hcengineering/attachment'
   import { Channel, combineName, Contact, findContacts } from '@hcengineering/contact'
   import { ChannelsDropdown } from '@hcengineering/contact-resources'
   import PersonPresenter from '@hcengineering/contact-resources/src/components/PersonPresenter.svelte'
   import contact from '@hcengineering/contact-resources/src/plugin'
   import { AttachedData, Class, Data, Doc, generateId, MixinData, Ref, WithLookup } from '@hcengineering/core'
   import type { Customer } from '@hcengineering/lead'
-  import { getResource } from '@hcengineering/platform'
   import { Card, EditableAvatar, getClient } from '@hcengineering/presentation'
   import {
     Button,
@@ -44,6 +42,8 @@
     return firstName === '' && lastName === ''
   }
 
+  let avatarEditor: EditableAvatar
+
   let object: Customer = {
     _class: contact.class.Person
   } as Customer
@@ -65,8 +65,7 @@
       city: object.city
     }
     if (avatar !== undefined) {
-      const uploadFile = await getResource(attachment.helper.UploadFile)
-      candidate.avatar = await uploadFile(avatar)
+      candidate.avatar = await avatarEditor.createAvatar()
     }
     const candidateData: MixinData<Contact, Customer> = {
       description: object.description
@@ -108,15 +107,6 @@
     }
   }
 
-  function onAvatarDone (e: any) {
-    const { file } = e.detail
-
-    avatar = file
-  }
-
-  function removeAvatar (): void {
-    avatar = undefined
-  }
   const targets = [
     client.getModel().getObject(contact.class.Person),
     client.getModel().getObject(contact.class.Organization)
@@ -222,11 +212,10 @@
       </div>
       <div class="ml-4 flex">
         <EditableAvatar
-          bind:direct={avatar}
           avatar={object.avatar}
           size={'large'}
-          on:remove={removeAvatar}
-          on:done={onAvatarDone}
+          bind:this={avatarEditor}
+          bind:direct={avatar}
         />
       </div>
     </div>

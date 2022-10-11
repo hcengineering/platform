@@ -24,6 +24,8 @@
   import contact from '../plugin'
   import PersonPresenter from './PersonPresenter.svelte'
 
+  let avatarEditor: EditableAvatar
+
   let firstName = ''
   let lastName = ''
 
@@ -38,28 +40,13 @@
   const dispatch = createEventDispatcher()
   const client = getClient()
 
-  let avatar: File | undefined
-
-  function onAvatarDone (e: any) {
-    const { file } = e.detail
-
-    avatar = file
-  }
-
-  function removeAvatar (): void {
-    avatar = undefined
-  }
-
   async function createPerson () {
     const person: Data<Person> = {
       name: combineName(firstName, lastName),
       city: object.city
     }
 
-    if (avatar !== undefined) {
-      const uploadFile = await getResource(attachment.helper.UploadFile)
-      person.avatar = await uploadFile(avatar)
-    }
+    person.avatar = await avatarEditor.createAvatar()
 
     await client.createDoc(contact.class.Person, contact.space.Contacts, person, id)
 
@@ -128,7 +115,11 @@
       </div>
     </div>
     <div class="ml-4">
-      <EditableAvatar avatar={object.avatar} size={'large'} on:done={onAvatarDone} on:remove={removeAvatar} />
+      <EditableAvatar
+        avatar={object.avatar}
+        size={'large'}
+        bind:this={avatarEditor}
+      />
     </div>
   </div>
   <svelte:fragment slot="pool">
