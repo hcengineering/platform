@@ -51,6 +51,7 @@
   import ParentNamesPresenter from './ParentNamesPresenter.svelte'
   import PriorityEditor from './PriorityEditor.svelte'
   import StatusEditor from './StatusEditor.svelte'
+  import EstimationEditor from './timereport/EstimationEditor.svelte'
 
   export let currentSpace: Ref<Team> = tracker.team.DefaultTeam
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
@@ -264,6 +265,7 @@
             width={''}
             bind:onlyIcon={fullFilled[issueId]}
           />
+          <EstimationEditor kind={'list'} size={'small'} value={issue} />
           <div
             class="clear-mins"
             use:tooltip={{
