@@ -71,9 +71,18 @@ export interface Channel extends AttachedDoc {
 
 /**
  * @public
+ *  file - file avatar.
+ *  gravatar - gravatar avatar.
+ *  undefined => file
+ */
+export type AvatarType = 'file' | 'gravatar'
+
+/**
+ * @public
  */
 export interface Contact extends Doc {
   name: string
+  avatarType?: AvatarType
   avatar?: string | null
   attachments?: number
   comments?: number

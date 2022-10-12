@@ -18,6 +18,7 @@
     "eslint-plugin-promise": "^6.0.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint": "^8.18.0",
+    "@types/crypto-js": "^4.1.1",
     "@types/heft-jest": "^1.0.3",
     "@typescript-eslint/parser": "^5.30.0",
     "eslint-config-standard-with-typescript": "^21.0.1",
@@ -38,6 +39,7 @@
     "@hcengineering/platform": "^0.6.7",
     "@hcengineering/contact": "~0.6.5",
     "@hcengineering/contact-resources": "~0.6.0",
-    "@hcengineering/view": "^0.6.1"
+    "@hcengineering/view": "^0.6.1",
+    "crypto-js": "~4.1.1"
   }
 }

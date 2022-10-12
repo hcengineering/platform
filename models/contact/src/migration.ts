@@ -18,6 +18,7 @@ import { AccountRole, DOMAIN_TX, TxCreateDoc, TxOperations } from '@hcengineerin
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
 import contact, { DOMAIN_CONTACT } from './index'
+import { buildGravatarId, gravatarExists } from './gravatar'
 
 async function createSpace (tx: TxOperations): Promise<void> {
   const current = await tx.findOne(core.class.Space, {
@@ -97,6 +98,36 @@ async function setRole (client: MigrationClient): Promise<void> {
   )
 }
 
+async function updateEmployeeAvatar (tx: TxOperations): Promise<void> {
+  const accounts = await tx.findAll(contact.class.EmployeeAccount, {})
+  const employees = await tx.findAll(
+    contact.class.Employee,
+    { _id: { $in: accounts.map((a) => a.employee) } }
+  )
+  const employeesById = new Map(employees.map((it) => [it._id, it]))
+
+  // update avatar type for users with avatar
+  let promises = employees
+    .filter((e) => e.avatar != null && e.avatar !== undefined && e.avatarType === undefined)
+    .map(async (e) => {
+      await tx.update(e, { avatarType: 'file' })
+    })
+  await Promise.all(promises)
+
+  // set gravatar for users without avatar
+  promises = accounts.map(async (account) => {
+    const employee = employeesById.get(account.employee)
+    if (employee === undefined) return
+    if (employee.avatar != null && employee.avatar !== undefined) return
+
+    const gravatarId = buildGravatarId(account.email)
+    if (await gravatarExists(gravatarId)) {
+      await tx.update(employee, { avatarType: 'gravatar', avatar: gravatarId })
+    }
+  })
+  await Promise.all(promises)
+}
+
 export const contactOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await setActiveEmployee(client)
@@ -105,5 +136,6 @@ export const contactOperation: MigrateOperation = {
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)
     await createSpace(tx)
+    await updateEmployeeAvatar(tx)
   }
 }

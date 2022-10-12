@@ -24,10 +24,12 @@
     "prettier": "^2.7.1",
     "@rushstack/heft": "^0.47.9",
     "typescript": "^4.3.5",
+    "@types/crypto-js": "^4.1.1",
     "@types/minio": "~7.0.11",
     "@types/ws": "^8.2.1"
   },
   "dependencies": {
+    "crypto-js": "4.1.1",
     "mongodb": "^4.9.0",
     "@hcengineering/platform": "^0.6.7",
     "minio": "^7.0.26",

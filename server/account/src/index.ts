@@ -13,7 +13,7 @@
 // limitations under the f.
 //
 
-import contact, { combineName, Employee } from '@hcengineering/contact'
+import contact, { AvatarType, combineName, Employee } from '@hcengineering/contact'
 import core, { AccountRole, Ref, TxOperations } from '@hcengineering/core'
 import platform, {
   getMetadata,
@@ -28,6 +28,7 @@ import platform, {
 } from '@hcengineering/platform'
 import { decodeToken, generateToken } from '@hcengineering/server-token'
 import toolPlugin, { connect, initModel, upgradeModel, version } from '@hcengineering/server-tool'
+import { buildGravatarId, gravatarExists } from './gravatar'
 import { pbkdf2Sync, randomBytes } from 'crypto'
 import { Binary, Db, ObjectId } from 'mongodb'
 
@@ -483,10 +484,22 @@ export async function assignWorkspace (db: Db, email: string, workspace: string)
   if (account !== null) await createEmployeeAccount(account, workspace)
 }
 
-async function createEmployee (ops: TxOperations, name: string): Promise<Ref<Employee>> {
+async function createEmployee (ops: TxOperations, name: string, email: string): Promise<Ref<Employee>> {
+  let avatarType: AvatarType | undefined
+  let avatar: string | undefined
+
+  const gravatarId = buildGravatarId(email)
+  const hasGravatar = await gravatarExists(gravatarId)
+  if (hasGravatar) {
+    avatarType = 'gravatar'
+    avatar = gravatarId
+  }
+
   return await ops.createDoc(contact.class.Employee, contact.space.Employee, {
     name,
     city: '',
+    avatarType: avatarType,
+    avatar: avatar,
     active: true
   })
 }
@@ -502,7 +515,7 @@ async function createEmployeeAccount (account: Account, workspace: string): Prom
     const existingAccount = await ops.findOne(contact.class.EmployeeAccount, { email: account.email })
 
     if (existingAccount === undefined) {
-      const employee = await createEmployee(ops, name)
+      const employee = await createEmployee(ops, name, account.email)
 
       await ops.createDoc(contact.class.EmployeeAccount, core.space.Model, {
         email: account.email,
@@ -514,7 +527,7 @@ async function createEmployeeAccount (account: Account, workspace: string): Prom
       const employee = await ops.findOne(contact.class.Employee, { _id: existingAccount.employee })
       if (employee === undefined) {
         // Employee was deleted, let's restore it.
-        const employeeId = await createEmployee(ops, name)
+        const employeeId = await createEmployee(ops, name, account.email)
 
         await ops.updateDoc(contact.class.EmployeeAccount, existingAccount.space, existingAccount._id, {
           employee: employeeId
