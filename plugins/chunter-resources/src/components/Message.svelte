@@ -248,7 +248,7 @@
 </script>
 
 <div class="container" class:highlighted={isHighlighted} id={message._id}>
-  <div class="avatar"><Avatar size={'medium'} avatar={employee?.avatar} /></div>
+  <div class="avatar"><Avatar size={'medium'} avatar={employee?.avatar} avatarType={employee?.avatarType} /></div>
   <div class="message">
     <div class="header">
       {#if employee}

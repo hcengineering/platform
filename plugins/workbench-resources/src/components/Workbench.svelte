@@ -499,7 +499,7 @@
               showPopup(AccountPopup, {}, popupPosition)
             }}
           >
-            <Avatar avatar={employee.avatar} size={'medium'} />
+            <Avatar avatar={employee.avatar} avatarType={employee.avatarType} size={'medium'} />
           </div>
         </div>
       </div>

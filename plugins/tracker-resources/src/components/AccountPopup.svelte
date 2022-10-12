@@ -98,7 +98,7 @@
           }}
         >
           {#if employee}
-            <Avatar avatar={employee.avatar} size={'medium'} />
+            <Avatar avatar={employee.avatar} avatarType={employee.avatarType} size={'medium'} />
           {/if}
           <div class="ml-2 flex-col">
             {#if account}

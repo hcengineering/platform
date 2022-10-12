@@ -39,7 +39,7 @@
 <div class="avatars-container">
   {#each persons as person}
     <div class="combine-avatar {size}">
-      <Avatar avatar={person.avatar} {size} />
+      <Avatar avatar={person.avatar} avatarType={person.avatarType} {size} />
     </div>
   {/each}
 </div>

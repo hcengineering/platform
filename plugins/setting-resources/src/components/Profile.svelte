@@ -102,6 +102,7 @@
         <div class="mr-8">
           <EditableAvatar
             avatar={employee.avatar}
+            avatarType={employee.avatarType}
             size={'x-large'}
             bind:this={avatarEditor}
             on:done={onAvatarDone}

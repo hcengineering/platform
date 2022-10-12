@@ -25,7 +25,7 @@
 <div class="flex-col h-full card-container">
   <div class="label uppercase"><Label label={contact.string.Organization} /></div>
   <div class="flex-center logo">
-    <Avatar avatar={organization.avatar} size={'large'} icon={contact.icon.Company} />
+    <Avatar avatar={organization.avatar} avatarType={organization.avatarType} size={'large'} icon={contact.icon.Company} />
   </div>
   {#if organization}
     <div

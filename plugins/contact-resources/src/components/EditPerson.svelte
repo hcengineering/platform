@@ -109,7 +109,7 @@
             on:remove={removeAvatar}
           />
         {:else}
-          <Avatar avatar={object.avatar} size={'x-large'} />
+          <Avatar avatar={object.avatar} avatarType={object.avatarType} size={'x-large'} />
         {/if}
       {/key}
     </div>

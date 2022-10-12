@@ -120,6 +120,8 @@
     <div class="ml-4">
       <EditableAvatar
         avatar={object.avatar}
+        avatarType={object.avatarType}
+        email={email}
         size={'large'}
         bind:this={avatarEditor}
       />

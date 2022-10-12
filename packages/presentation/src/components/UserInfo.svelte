@@ -26,7 +26,7 @@
 </script>
 
 <div class="flex-row-center" on:click>
-  <Avatar avatar={value.avatar} {size} {icon} />
+  <Avatar avatar={value.avatar} avatarType={value.avatarType} {size} {icon} />
   <div class="flex-col ml-2 min-w-0">
     {#if subtitle}<div class="content-dark-color text-sm">{subtitle}</div>{/if}
     <div class="content-accent-color overflow-label text-left">{formatName(value.name)}</div>

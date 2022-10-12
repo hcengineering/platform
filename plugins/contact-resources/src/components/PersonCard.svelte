@@ -39,7 +39,7 @@
 <div class="flex-col h-full card-container">
   <div class="label uppercase"><Label label={contact.string.Person} /></div>
   <div class="flex-center logo">
-    <Avatar avatar={object.avatar} size={'large'} icon={contact.icon.Company} />
+    <Avatar avatar={object.avatar} avatarType={object.avatarType} size={'large'} icon={contact.icon.Company} />
   </div>
   {#if object}
     <div

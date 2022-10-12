@@ -42,7 +42,11 @@
 <div class="flex-col pt-2 pb-2 pr-4 pl-4 cursor-pointer" on:click={showCandidate}>
   <div class="flex-between mb-3">
     <div class="flex-row-center">
-      <Avatar avatar={object.$lookup?.attachedTo?.avatar} size={'medium'} />
+      <Avatar
+        avatar={object.$lookup?.attachedTo?.avatar}
+        avatarType={object.$lookup?.attachedTo?.avatarType}
+        size={'medium'}
+      />
       <div class="flex-grow flex-col min-w-0 ml-2">
         <div class="fs-title over-underline lines-limit-2">
           {formatName(object.$lookup?.attachedTo?.name ?? '')}
