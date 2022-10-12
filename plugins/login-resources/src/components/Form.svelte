@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { StylishEdit, Label, Button } from '@hcengineering/ui'
+  import { StylishEdit, Label, Button, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
   import StatusControl from './StatusControl.svelte'
   import { OK, Status, Severity } from '@hcengineering/platform'
   import type { IntlString } from '@hcengineering/platform'
@@ -101,7 +101,7 @@
   }
 </script>
 
-<form class="container">
+<form class="container" style:padding={$deviceInfo.docWidth <= 480 ? '1.25rem' : '5rem'}>
   <div class="grow-separator" />
   <div class="title"><Label label={caption} /></div>
   <div class="status">
@@ -109,7 +109,7 @@
   </div>
   <div class="form">
     {#each fields as field (field.name)}
-      <div class={field.short ? 'form-col' : 'form-row'}>
+      <div class={field.short && !($deviceInfo.docWidth <= 600) ? 'form-col' : 'form-row'}>
         <StylishEdit
           label={field.i18n}
           name={field.id}
@@ -168,9 +168,10 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    flex-grow: 1;
     overflow: hidden;
-    height: 100%;
-    padding: 5rem;
+    // height: 100%;
+    // padding: 5rem;
 
     .title {
       font-weight: 600;

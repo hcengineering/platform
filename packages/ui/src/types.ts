@@ -229,4 +229,5 @@ export interface DeviceOptions {
   docHeight: number
   isPortrait: boolean
   isMobile: boolean
+  theme?: any
 }

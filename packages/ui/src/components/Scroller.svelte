@@ -26,7 +26,7 @@
   export let fade: FadeOptions = defaultSP
   export let invertScroll: boolean = false
   export let horizontal: boolean = false
-  export let contentDirection: 'vertical' | 'horizontal' = 'vertical'
+  export let contentDirection: 'vertical' | 'vertical-reverse' | 'horizontal' = 'vertical'
 
   let mask: 'top' | 'bottom' | 'both' | 'none' = 'none'
   let maskH: 'left' | 'right' | 'both' | 'none' = 'none'
@@ -245,7 +245,12 @@
         bind:this={divBox}
         class="box"
         style:padding
-        style:flex-direction={contentDirection === 'vertical' ? 'column' : 'row'}
+        style:flex-direction={contentDirection === 'vertical'
+          ? 'column'
+          : contentDirection === 'vertical-reverse'
+          ? 'column-reverse'
+          : 'row'}
+        style:height={contentDirection === 'vertical-reverse' ? 'max-content' : '100%'}
         use:resizeObserver={(element) => {
           boxHeight = element.clientHeight
           boxWidth = element.clientWidth
@@ -368,7 +373,6 @@
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    height: 100%;
   }
   .scroller-container.bottomStart {
     justify-content: flex-end;
