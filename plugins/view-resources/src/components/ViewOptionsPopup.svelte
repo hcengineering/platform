@@ -12,17 +12,16 @@
 <div class="antiCard">
   <div class="antiCard-group grid">
     {#each config as model}
-      {@const value = viewOptions[model.key]}
       <span class="label"><Label label={model.label} /></span>
       <div class="value">
         {#if isToggleType(model)}
-          <MiniToggle on={value} on:change={() => dispatch('update', { key: model.key, value: !viewOptions[model.key] })} />
+          <MiniToggle on={viewOptions[model.key]} on:change={() => dispatch('update', { key: model.key, value: !viewOptions[model.key] })} />
         {:else if isDropdownType(model)}
           {@const items = model.values.filter(({ hidden }) => !hidden?.(viewOptions))}
           <DropdownLabelsIntl
             label={model.label}
             {items}
-            selected={value}
+            selected={viewOptions[model.key]}
             width="10rem"
             justify="left"
             on:selected={(e) => dispatch('update', { key: model.key, value: e.detail })}
