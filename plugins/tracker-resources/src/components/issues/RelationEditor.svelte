@@ -29,35 +29,3 @@
     {/if}
   {/each}
 </div>
-
-<style lang="scss">
-  .tag-container {
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    flex-shrink: 0;
-    padding-left: 0.5rem;
-    height: 1.5rem;
-    min-width: 0;
-    min-height: 0;
-    border-radius: 0.5rem;
-    width: fit-content;
-    &:hover {
-      border: 1px solid var(--divider-color);
-    }
-
-    .btn-close {
-      flex-shrink: 0;
-      margin-left: 0.125rem;
-      padding: 0 0.25rem 0 0.125rem;
-      height: 1.75rem;
-      color: var(--content-color);
-      border-left: 1px solid transparent;
-
-      &:hover {
-        color: var(--caption-color);
-        border-left-color: var(--divider-color);
-      }
-    }
-  }
-</style>

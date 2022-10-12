@@ -20,7 +20,7 @@
   onDestroy(() => clearInterval(interval))
 </script>
 
-<div>
+<div style="min-width: 2.5rem">
   <span>{hours}</span>
   <span style="visibility: {delimiter ? 'visible' : 'hidden'}">:</span>
   <span>{minutes}</span>

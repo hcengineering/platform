@@ -191,11 +191,6 @@
       width: 2rem;
       min-width: 1.5rem;
       border: none;
-      &.fixed {
-        width: 5rem;
-        padding: 0 0.125rem;
-        hyphens: auto;
-      }
       &:first-child {
         width: 15rem;
         padding: 0.5rem;

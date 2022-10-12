@@ -16,10 +16,11 @@
 <script lang="ts">
   import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
 
-  export let size: 'small' | 'medium' = 'medium'
+  export let landscape: boolean = false
+  export let mini: boolean = false
 </script>
 
-<div class="intro">
+<div class="intro" class:landscape class:mini>
   <div class="content">
     <div class="logo {$deviceInfo.theme === 'theme-light' ? 'dark' : 'light'}" />
   </div>
@@ -44,12 +45,16 @@
       justify-content: center;
       align-items: center;
       flex-grow: 1;
+      transition: all 0.15s var(--timing-main);
       .logo {
         position: relative;
-        &::after {
+        &::after,
+        &::before {
           position: absolute;
           content: '';
           transform: translate(-50%, -50%);
+        }
+        &::after {
           width: 63px;
           height: 79px;
         }
@@ -60,9 +65,6 @@
           background: center url('../../img/logo-dark.svg');
         }
         &::before {
-          position: absolute;
-          content: '';
-          transform: translate(-50%, -50%);
           width: 16rem;
           height: 16rem;
           border: 1.8px solid var(--caption-color);
@@ -72,6 +74,7 @@
       }
     }
     .slogan {
+      transition: all 0.15s var(--timing-main);
       margin-bottom: 60px;
       p {
         margin: 0;
@@ -80,6 +83,53 @@
         text-align: center;
         color: var(--theme-caption-color);
         opacity: 0.8;
+      }
+    }
+
+    &.landscape {
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      min-width: 20rem;
+      min-height: 10rem;
+      margin-bottom: 1.25rem;
+
+      .content .logo::after,
+      .content .logo::before {
+        transform: translate(-50%, -50%) scale(0.5);
+      }
+      .content {
+        max-width: 8rem;
+        max-height: 10rem;
+        margin: 0 1rem 0 0;
+      }
+      .slogan {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        margin: 0 0 0 1rem;
+      }
+
+      &.mini {
+        min-width: 16rem;
+        min-height: 8rem;
+
+        .content .logo::after,
+        .content .logo::before {
+          transform: translate(-50%, -50%) scale(0.35);
+        }
+        .content {
+          max-width: 5.5rem;
+          max-height: 8rem;
+          margin: 0 0.5rem 0 0;
+        }
+        .slogan {
+          margin: 0 0 0 0.5rem;
+          p {
+            font-size: 0.6rem;
+          }
+        }
       }
     }
   }
