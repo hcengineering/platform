@@ -15,7 +15,10 @@
       <span class="label"><Label label={model.label} /></span>
       <div class="value">
         {#if isToggleType(model)}
-          <MiniToggle on={viewOptions[model.key]} on:change={() => dispatch('update', { key: model.key, value: !viewOptions[model.key] })} />
+          <MiniToggle
+            on={viewOptions[model.key]}
+            on:change={() => dispatch('update', { key: model.key, value: !viewOptions[model.key] })}
+          />
         {:else if isDropdownType(model)}
           {@const items = model.values.filter(({ hidden }) => !hidden?.(viewOptions))}
           <DropdownLabelsIntl
