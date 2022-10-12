@@ -37,11 +37,11 @@
   const client = getClient()
   const dispatch = createEventDispatcher()
 
-  async function getAvatar (_id?: Ref<Employee>): Promise<string | undefined | null> {
-    if (_id === undefined) return (await client.findOne(contact.class.Employee, { _id }))?.avatar
+  async function getEmployee (_id?: Ref<Employee>): Promise<Employee | undefined> {
+    if (_id === undefined) return (await client.findOne(contact.class.Employee, { _id }))
   }
 
-  function getEmployee (message: ChunterMessage): EmployeeAccount | undefined {
+  function getEmployeeAccount (message: ChunterMessage): EmployeeAccount | undefined {
     return employeeAcounts?.find((e) => e._id === message.createBy)
   }
 </script>
@@ -50,10 +50,10 @@
   {#each pinnedMessages as message}
     <div class="message">
       <div class="header">
-        {#await getEmployee(message) then employeeAccount}
-          {#await getAvatar(employeeAccount?.employee) then avatar}
+        {#await getEmployeeAccount(message) then employeeAccount}
+          {#await getEmployee(employeeAccount?.employee) then employee}
             <div class="avatar">
-              <Avatar size={'medium'} {avatar} />
+              <Avatar size={'medium'} avatar={employee?.avatar} avatarType={employee?.avatarType} />
             </div>
           {/await}
           <span class="name">

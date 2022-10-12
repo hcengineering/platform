@@ -459,6 +459,7 @@
         bind:this={avatarEditor}
         bind:direct={avatar}
         avatar={object.avatar}
+        avatarType={object.avatarType}
         size={'large'}
       />
     </div>

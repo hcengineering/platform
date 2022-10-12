@@ -42,7 +42,7 @@
 {#if value}
   <div class="flex-row-center" class:user-container={employee !== undefined} on:click={onClick}>
     {#if employee}
-      <Avatar size={'x-small'} avatar={employee.avatar} />
+      <Avatar size={'x-small'} avatar={employee.avatar} avatarType={employee.avatarType} />
       <div class="overflow-label user">{formatName(employee.name)}</div>
     {:else}
       <div class="overflow-label user">{value.email}</div>
