@@ -35,7 +35,6 @@
     "@hcengineering/platform": "^0.6.7",
     "@hcengineering/core": "^0.6.17",
     "@hcengineering/ui": "^0.6.2",
-    
     "svelte": "^3.47",
     "@tiptap/core": "~2.0.0-beta.181",
     "@tiptap/starter-kit": "~2.0.0-beta.190",
