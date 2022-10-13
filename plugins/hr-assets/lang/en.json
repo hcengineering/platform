@@ -32,6 +32,7 @@
     "EditRequest": "Edit {type}",
     "Request": "Request",
     "Staff": "Worker",
+    "Member": "Member",
     "Members": "Members",
     "NoMembers": "No members added",
     "AddMember": "Add member"

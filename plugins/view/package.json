@@ -31,8 +31,8 @@
     "@hcengineering/ui": "^0.6.2",
     "@hcengineering/preference": "^0.6.1"
   },
-  "repository":"https://github.com/hcenginneing/anticrm",
+  "repository": "https://github.com/hcenginneing/anticrm",
   "publishConfig": {
-    "registry":"https://npm.pkg.github.com"
+    "registry": "https://npm.pkg.github.com"
   }
 }
