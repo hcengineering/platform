@@ -212,7 +212,7 @@
     }
   }
 
-  .filterButton {
-    color: var(--caption-color);
-  }
+  // .filterButton {
+  //   color: var(--caption-color);
+  // }
 </style>

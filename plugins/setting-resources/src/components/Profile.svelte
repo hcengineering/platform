@@ -155,12 +155,6 @@
     font-size: 0.75rem;
   }
 
-  .name {
-    font-weight: 500;
-    font-size: 1.25rem;
-    color: var(--theme-caption-color);
-  }
-
   .separator {
     margin: 1rem 0;
     height: 1px;

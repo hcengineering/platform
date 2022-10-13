@@ -42,7 +42,7 @@
   export let viewlets: Map<ActivityKey, TxViewlet>
   export let showIcon: boolean = true
   export let isNew: boolean = false
-  export let showDocument = false
+  // export let showDocument = false
 
   let ptx: DisplayTx | undefined
 

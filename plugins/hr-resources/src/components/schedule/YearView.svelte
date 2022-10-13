@@ -187,9 +187,6 @@
       &.today {
         color: var(--caption-color);
       }
-      &.weekend:not(.today) {
-        color: var(--warning-color);
-      }
     }
     td {
       height: 3.5rem;
@@ -197,9 +194,6 @@
       color: var(--caption-color);
       &.today {
         background-color: var(--theme-bg-accent-hover);
-      }
-      &.weekend:not(.today) {
-        background-color: var(--theme-bg-accent-color);
       }
     }
     td:not(:last-child) {
@@ -210,21 +204,6 @@
     }
     tr.scroller-thead__tr:not(:last-child) {
       border-right: 1px solid var(--divider-color);
-    }
-
-    .hovered {
-      position: relative;
-
-      &::after {
-        position: absolute;
-        content: '';
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: var(--caption-color);
-        opacity: 0.15;
-      }
     }
   }
 </style>

@@ -92,9 +92,3 @@
     </div>
   </svelte:fragment>
 </IssuesView>
-
-<style lang="scss">
-  .showWarning {
-    color: var(--warning-color) !important;
-  }
-</style>

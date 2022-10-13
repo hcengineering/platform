@@ -47,9 +47,11 @@
 <Scroller padding={'1.25rem'} contentDirection={$deviceInfo.docWidth <= 768 ? 'vertical-reverse' : 'horizontal'}>
   <div
     class="panel"
+    class:minHeight={!$deviceInfo.isPortrait}
     class:landscape={$deviceInfo.docWidth > 768}
     style:border-radius={$deviceInfo.docWidth <= 480 ? '.75rem' : '1.25rem'}
   >
+    <div class="flex-grow" />
     {#if page === 'login'}
       <LoginForm {navigateUrl} />
     {:else if page === 'signup'}
@@ -62,7 +64,7 @@
       <Join />
     {/if}
   </div>
-  <Intro />
+  <Intro landscape={$deviceInfo.docWidth <= 768} mini={$deviceInfo.docWidth <= 480} />
 </Scroller>
 <Popup />
 
@@ -71,10 +73,13 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    min-height: 100%;
-    height: max-content;
+    height: 100%;
     background: var(--popup-bg-color);
     box-shadow: var(--popup-aside-shadow);
+
+    &.minHeight {
+      min-height: 40rem;
+    }
 
     $circle-size: calc(1vh + 1vw);
     $r1: 23;
@@ -87,16 +92,18 @@
       z-index: -1;
     }
     &::before {
-      top: calc(-1 * $circle-size * $r1 / 2 + $circle-size * 4);
-      left: calc(-1 * $circle-size * $r1 / 2);
+      top: calc(-1 * $circle-size * $r1 / 2 + $circle-size * 5);
+      left: auto;
+      right: calc(-1 * $circle-size * $r1 / 2);
       width: calc($circle-size * $r1);
       height: calc($circle-size * $r1);
       border: 1px solid var(--content-color);
       opacity: 0.05;
     }
     &::after {
-      top: calc(-1 * $circle-size * $r2 / 2 + $circle-size * 4);
-      left: calc(-1 * $circle-size * $r2 / 2);
+      top: calc(-1 * $circle-size * $r2 / 2 + $circle-size * 5);
+      left: auto;
+      right: calc(-1 * $circle-size * $r2 / 2);
       width: calc($circle-size * $r2);
       height: calc($circle-size * $r2);
       background: var(--dark-color);
@@ -106,6 +113,14 @@
     &.landscape {
       margin-right: 1.25rem;
       width: 41.75rem;
+      &::before {
+        left: calc(-1 * $circle-size * $r1 / 2);
+        right: auto;
+      }
+      &::after {
+        left: calc(-1 * $circle-size * $r2 / 2);
+        right: auto;
+      }
     }
   }
 </style>

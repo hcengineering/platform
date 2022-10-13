@@ -89,14 +89,3 @@
     </div>
   {/if}
 </div>
-
-<style lang="scss">
-  .list {
-    border-top: 1px solid var(--divider-color);
-
-    &.collapsed {
-      padding-top: 1px;
-      border-top: none;
-    }
-  }
-</style>
