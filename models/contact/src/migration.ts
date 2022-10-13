@@ -18,7 +18,7 @@ import { AccountRole, DOMAIN_TX, TxCreateDoc, TxOperations } from '@hcengineerin
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
 import contact, { DOMAIN_CONTACT } from './index'
-import { buildGravatarId, gravatarExists } from './gravatar'
+import { MD5 } from 'crypto-js'
 
 async function createSpace (tx: TxOperations): Promise<void> {
   const current = await tx.findOne(core.class.Space, {
@@ -120,10 +120,8 @@ async function updateEmployeeAvatar (tx: TxOperations): Promise<void> {
     if (employee === undefined) return
     if (employee.avatar != null && employee.avatar !== undefined) return
 
-    const gravatarId = buildGravatarId(account.email)
-    if (await gravatarExists(gravatarId)) {
-      await tx.update(employee, { avatarType: 'gravatar', avatar: gravatarId })
-    }
+    const gravatarId = MD5(account.email.trim().toLowerCase()).toString()
+    await tx.update(employee, { avatarType: 'gravatar', avatar: gravatarId })
   })
   await Promise.all(promises)
 }

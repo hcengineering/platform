@@ -13,7 +13,7 @@
 // limitations under the f.
 //
 
-import contact, { AvatarType, combineName, Employee } from '@hcengineering/contact'
+import contact, { combineName, Employee } from '@hcengineering/contact'
 import core, { AccountRole, Ref, TxOperations } from '@hcengineering/core'
 import platform, {
   getMetadata,
@@ -28,8 +28,7 @@ import platform, {
 } from '@hcengineering/platform'
 import { decodeToken, generateToken } from '@hcengineering/server-token'
 import toolPlugin, { connect, initModel, upgradeModel, version } from '@hcengineering/server-tool'
-import { buildGravatarId, gravatarExists } from './gravatar'
-import { pbkdf2Sync, randomBytes } from 'crypto'
+import { createHash, pbkdf2Sync, randomBytes } from 'crypto'
 import { Binary, Db, ObjectId } from 'mongodb'
 
 const WORKSPACE_COLLECTION = 'workspace'
@@ -485,21 +484,12 @@ export async function assignWorkspace (db: Db, email: string, workspace: string)
 }
 
 async function createEmployee (ops: TxOperations, name: string, email: string): Promise<Ref<Employee>> {
-  let avatarType: AvatarType | undefined
-  let avatar: string | undefined
-
-  const gravatarId = buildGravatarId(email)
-  const hasGravatar = await gravatarExists(gravatarId)
-  if (hasGravatar) {
-    avatarType = 'gravatar'
-    avatar = gravatarId
-  }
-
+  const gravatarId = createHash('md5').update(email.trim().toLowerCase()).digest('hex')
   return await ops.createDoc(contact.class.Employee, contact.space.Employee, {
     name,
     city: '',
-    avatarType: avatarType,
-    avatar: avatar,
+    avatarType: 'gravatar',
+    avatar: gravatarId,
     active: true
   })
 }
