@@ -488,8 +488,10 @@ async function createEmployee (ops: TxOperations, name: string, email: string): 
   return await ops.createDoc(contact.class.Employee, contact.space.Employee, {
     name,
     city: '',
-    avatarType: 'gravatar',
-    avatar: gravatarId,
+    avatar: {
+      type: 'gravatar',
+      value: gravatarId
+    },
     active: true
   })
 }
