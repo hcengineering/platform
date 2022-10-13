@@ -62,6 +62,7 @@
   let innerWidth: number
   let isEditing = false
   let descriptionBox: AttachmentStyledBox
+  let parentIssue: Doc | undefined
 
   const notificationClient = getResource(notification.function.GetNotificationClient).then((res) => res())
 
@@ -108,6 +109,10 @@
   $: issueId = currentTeam && issue && getIssueId(currentTeam, issue)
   $: canSave = title.trim().length > 0
   $: isDescriptionEmpty = !new DOMParser().parseFromString(description, 'text/html').documentElement.innerText?.trim()
+  $: {
+    const lookUp = issue?.$lookup
+    parentIssue = lookUp?.attachedTo
+  }
 
   function edit (ev: MouseEvent) {
     ev.preventDefault()
@@ -180,9 +185,8 @@
     bind:innerWidth
     on:close={() => dispatch('close')}
   >
-    {@const { attachedTo: parentIssue } = issue?.$lookup ?? {}}
     <svelte:fragment slot="navigator">
-      <UpDownNavigator element={issue} />
+      <UpDownNavigator element={issue} {parentIssue} />
     </svelte:fragment>
     <svelte:fragment slot="header">
       <span class="fs-title">
