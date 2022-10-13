@@ -246,6 +246,6 @@ async function updateAvatar (
 
     await tool.indexAttachmentDoc(attachedDoc, data)
 
-    await client.update(c, { avatar: attachId })
+    await client.update(c, { avatar: { type: 'image', value: attachId } })
   }
 }

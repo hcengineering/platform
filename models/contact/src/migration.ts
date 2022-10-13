@@ -95,9 +95,17 @@ async function updateEmployeeAvatar (tx: TxOperations): Promise<void> {
 
   // update avatar type for users with avatar
   let promises = employees
-    .filter((e) => e.avatar != null && e.avatar !== undefined && e.avatarType === undefined)
+    .filter((e) => e.avatar != null && e.avatar !== undefined)
     .map(async (e) => {
-      await tx.update(e, { avatarType: 'file' })
+      await tx.update(
+        e,
+        {
+          avatar: {
+            type: 'image',
+            value: e.avatar as unknown as string
+          }
+        }
+      )
     })
   await Promise.all(promises)
 
@@ -108,7 +116,15 @@ async function updateEmployeeAvatar (tx: TxOperations): Promise<void> {
     if (employee.avatar != null && employee.avatar !== undefined) return
 
     const gravatarId = MD5(account.email.trim().toLowerCase()).toString()
-    await tx.update(employee, { avatarType: 'gravatar', avatar: gravatarId })
+    await tx.update(
+      employee,
+      {
+        avatar: {
+          type: 'gravatar',
+          value: gravatarId
+        }
+      }
+    )
   })
   await Promise.all(promises)
 }
