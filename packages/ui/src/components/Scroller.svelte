@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { onDestroy, onMount } from 'svelte'
+  import { beforeUpdate, afterUpdate, onDestroy, onMount } from 'svelte'
   import { resizeObserver } from '../resize'
   import { themeStore as themeOptions } from '@hcengineering/theme'
   import type { FadeOptions } from '../types'
@@ -201,6 +201,16 @@
   })
   onDestroy(() => {
     if (divScroll) divScroll.removeEventListener('scroll', checkFade)
+  })
+
+  let oldTop: number
+  beforeUpdate(() => {
+    if (divBox && divScroll) oldTop = divScroll.scrollTop
+  })
+  afterUpdate(() => {
+    if (divBox && divScroll) {
+      if (oldTop !== divScroll.scrollTop) divScroll.scrollTop = oldTop
+    }
   })
 
   let divHeight: number
