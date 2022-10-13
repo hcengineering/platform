@@ -47,7 +47,7 @@
   import view from '@hcengineering/view'
   import { ObjectBox } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
-  import { activeProject, activeSprint } from '../issues'
+  import { activeProject, activeSprint, updateIssueRelation } from '../issues'
   import tracker from '../plugin'
   import AssigneeEditor from './issues/AssigneeEditor.svelte'
   import ParentIssue from './issues/ParentIssue.svelte'
@@ -318,11 +318,15 @@
     }
     await descriptionBox.createAttachments()
 
-    const update = await getResource(chunter.backreference.Update)
     if (relatedTo !== undefined) {
       const doc = await client.findOne(tracker.class.Issue, { _id: objectId })
       if (doc !== undefined) {
-        await update(doc, 'relations', [relatedTo], tracker.string.AddedReference)
+        if (client.getHierarchy().isDerived(relatedTo._class, tracker.class.Issue)) {
+          await updateIssueRelation(client, relatedTo as Issue, doc, 'relations', '$push')
+        } else {
+          const update = await getResource(chunter.backreference.Update)
+          await update(doc, 'relations', [relatedTo], tracker.string.AddedReference)
+        }
       }
     }
     for (const subIssue of subIssues) {
