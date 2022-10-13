@@ -16,6 +16,7 @@
 
 import { program } from 'commander'
 import { Client } from 'minio'
+import { generateIssues } from './issues'
 import { generateContacts } from './recruit'
 
 const transactorUrl = process.env.TRANSACTOR_URL
@@ -52,30 +53,40 @@ const minio = new Client({
 
 program.version('0.0.1')
 
+// available types: recruit, issue
 program
-  .command('gen-recruit <workspace> <count>')
-  .description('generate a bunch of random candidates with attachemnts and comments.')
+  .command('gen <genType> <workspace> <count>')
+  .description('generate a bunch of random candidates with attachemnts and comments or issues')
   .option('-r, --random', 'generate random ids. So every call will add count <count> more candidates.', false)
   .option('-l, --lite', 'use same pdf and same account for applicant and candidates', false)
-  .action(async (workspace: string, count: number, cmd) => {
-    return await generateContacts(
-      transactorUrl,
-      workspace,
-      {
-        contacts: count,
-        random: cmd.random as boolean,
-        comments: { min: 1, max: 10, paragraphMin: 1, paragraphMax: 20, updateFactor: 30 },
-        attachments: {
-          min: 1,
-          max: 3,
-          deleteFactor: 20
-        },
-        vacancy: 3,
-        applicants: { min: 50, max: 200, applicantUpdateFactor: 70 },
-        lite: cmd.lite as boolean
-      },
-      minio
-    )
+  .action(async (genType: string, workspace: string, count: number, cmd) => {
+    switch (genType) {
+      case 'recruit':
+        return await generateContacts(
+          transactorUrl,
+          workspace,
+          {
+            contacts: count,
+            random: cmd.random as boolean,
+            comments: { min: 1, max: 10, paragraphMin: 1, paragraphMax: 20, updateFactor: 30 },
+            attachments: {
+              min: 1,
+              max: 3,
+              deleteFactor: 20
+            },
+            vacancy: 3,
+            applicants: { min: 50, max: 200, applicantUpdateFactor: 70 },
+            lite: cmd.lite as boolean
+          },
+          minio
+        )
+      case 'issue':
+        return await generateIssues(transactorUrl, workspace, {
+          count: count
+        })
+      default:
+        console.error(`Expected types: recruit, issue. Got type: ${genType}`)
+    }
   })
 
 program.parse(process.argv)

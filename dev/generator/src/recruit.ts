@@ -21,6 +21,7 @@ import { addComments, CommentOptions } from './comments'
 import { connect } from './connect'
 import { createUpdateSpaceKanban } from './kanban'
 import { findOrUpdate, findOrUpdateAttached } from './utils'
+
 export interface RecruitOptions {
   random: boolean // random id prefix.
   contacts: number // how many contacts to add
@@ -73,6 +74,7 @@ export async function generateContacts (
 
   console.info(metricsToString(ctx.metrics, 'Client'))
 }
+
 async function genVacansyApplicants (
   ctx: MeasureContext,
   accountIds: Ref<EmployeeAccount>[],
