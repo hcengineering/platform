@@ -57,6 +57,6 @@
     "@hcengineering/notification": "~0.6.0",
     "@hcengineering/tags": "~0.6.2",
     "@hcengineering/calendar": "~0.6.0",
-    "@hcengineering/tracker": "~0.6.0"
+    "@hcengineering/tracker": "^0.6.1"
   }
 }
