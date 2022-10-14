@@ -44,17 +44,7 @@ import {
 } from './core'
 import { TAccount, TSpace } from './security'
 import { TUserStatus } from './transient'
-import {
-  TTx,
-  TTxBulkWrite,
-  TTxCollectionCUD,
-  TTxCreateDoc,
-  TTxCUD,
-  TTxMixin,
-  TTxPutBag,
-  TTxRemoveDoc,
-  TTxUpdateDoc
-} from './tx'
+import { TTx, TTxApplyIf, TTxCollectionCUD, TTxCreateDoc, TTxCUD, TTxMixin, TTxRemoveDoc, TTxUpdateDoc } from './tx'
 
 export * from './core'
 export { coreOperation } from './migration'
@@ -74,11 +64,10 @@ export function createModel (builder: Builder): void {
     TTxCreateDoc,
     TAttachedDoc,
     TTxCollectionCUD,
-    TTxPutBag,
     TTxMixin,
     TTxUpdateDoc,
     TTxRemoveDoc,
-    TTxBulkWrite,
+    TTxApplyIf,
     TSpace,
     TAccount,
     TAttribute,

@@ -212,18 +212,6 @@ export interface Collection<T extends AttachedDoc> extends Type<number> {
 /**
  * @public
  */
-export type Bag<T extends PropertyType> = Record<string, T>
-
-/**
- * @public
- */
-export interface BagOf<T extends PropertyType> extends Type<Bag<T>> {
-  of: Type<T>
-}
-
-/**
- * @public
- */
 export type Arr<T extends PropertyType> = T[]
 
 /**

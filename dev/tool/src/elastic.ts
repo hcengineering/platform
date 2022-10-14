@@ -37,7 +37,6 @@ import core, {
   TxCreateDoc,
   TxMixin,
   TxProcessor,
-  TxPutBag,
   TxRemoveDoc,
   TxResult,
   TxUpdateDoc
@@ -394,10 +393,6 @@ class MongoReadOnlyAdapter extends TxProcessor implements DbAdapter {
   }
 
   protected txCreateDoc (tx: TxCreateDoc<Doc>): Promise<TxResult> {
-    throw new Error('Method not implemented.')
-  }
-
-  protected txPutBag (tx: TxPutBag<any>): Promise<TxResult> {
     throw new Error('Method not implemented.')
   }
 

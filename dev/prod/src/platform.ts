@@ -42,6 +42,7 @@ import { trackerId } from '@hcengineering/tracker'
 import { boardId } from '@hcengineering/board'
 import { hrId } from '@hcengineering/hr'
 import rekoni from '@hcengineering/rekoni'
+import { documentId } from '@hcengineering/document'
 
 import '@hcengineering/login-assets'
 import '@hcengineering/task-assets'
@@ -66,6 +67,8 @@ import '@hcengineering/tracker-assets'
 import '@hcengineering/board-assets'
 import '@hcengineering/preference-assets'
 import '@hcengineering/hr-assets'
+import '@hcengineering/document-assets'
+
 import presentation, { presentationId } from '@hcengineering/presentation'
 import { coreId } from '@hcengineering/core'
 import { textEditorId } from '@hcengineering/text-editor'
@@ -128,6 +131,7 @@ export async function configurePlatform() {
   addLocation(boardId, () => import(/* webpackChunkName: "board" */ '@hcengineering/board-resources'))
   addLocation(automationId, () => import(/* webpackChunkName: "automation" */ '@hcengineering/automation-resources'))
   addLocation(hrId, () => import(/* webpackChunkName: "hr" */ '@hcengineering/hr-resources'))
+  addLocation(documentId, () => import(/* webpackChunkName: "hr" */ '@hcengineering/document-resources'))
 
   setMetadata(workbench.metadata.PlatformTitle, 'Platform')
 }
