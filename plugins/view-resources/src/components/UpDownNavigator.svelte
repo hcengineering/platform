@@ -15,7 +15,7 @@
   import tracker from '../../../tracker-resources/src/plugin'
 
   export let element: Doc
-  export let parentIssue: Doc | undefined
+  export let showBackButton: boolean = false
 
   async function next (evt: Event, pn: boolean): Promise<void> {
     select(evt, pn ? 1 : -1, element, 'vertical')
@@ -31,10 +31,10 @@
     }
   }
 
-  function openParentIssue () {
-    if (parentIssue) {
+  function goBack () {
+    if (showBackButton) {
       closeTooltip()
-      showPanel(tracker.component.EditIssue, parentIssue._id, parentIssue._class, 'content')
+      history.back()
     }
   }
 
@@ -44,12 +44,12 @@
 <Button icon={IconDownOutline} kind={'secondary'} size={'medium'} on:click={(evt) => next(evt, true)} />
 <Button icon={IconUpOutline} kind={'secondary'} size={'medium'} on:click={(evt) => next(evt, false)} />
 
-{#if parentIssue !== undefined}
+{#if showBackButton}
   <Button
-    showTooltip={{ label: tracker.string.OpenParent, direction: 'bottom' }}
+    showTooltip={{ label: tracker.string.Back, direction: 'bottom' }}
     icon={IconNavPrev}
     kind={'secondary'}
     size={'medium'}
-    on:click={openParentIssue}
+    on:click={goBack}
   />
 {/if}
