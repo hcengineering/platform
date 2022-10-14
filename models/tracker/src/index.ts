@@ -1129,9 +1129,9 @@ export function createModel (builder: Builder): void {
   createAction(
     builder,
     {
-      action: tracker.actionImpl.CopyToClipboard,
+      action: view.actionImpl.CopyTextToClipboard,
       actionProps: {
-        type: 'id'
+        textProvider: tracker.function.GetIssueId
       },
       label: tracker.string.CopyIssueId,
       icon: tracker.icon.CopyID,
@@ -1150,9 +1150,9 @@ export function createModel (builder: Builder): void {
   createAction(
     builder,
     {
-      action: tracker.actionImpl.CopyToClipboard,
+      action: view.actionImpl.CopyTextToClipboard,
       actionProps: {
-        type: 'title'
+        textProvider: tracker.function.GetIssueTitle
       },
       label: tracker.string.CopyIssueTitle,
       icon: tracker.icon.CopyBranch,
@@ -1171,9 +1171,9 @@ export function createModel (builder: Builder): void {
   createAction(
     builder,
     {
-      action: tracker.actionImpl.CopyToClipboard,
+      action: view.actionImpl.CopyTextToClipboard,
       actionProps: {
-        type: 'link'
+        textProvider: tracker.function.GetIssueLink
       },
       label: tracker.string.CopyIssueUrl,
       icon: tracker.icon.CopyURL,
