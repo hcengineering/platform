@@ -62,7 +62,6 @@
   let innerWidth: number
   let isEditing = false
   let descriptionBox: AttachmentStyledBox
-  let parentIssue: Doc | undefined
 
   const notificationClient = getResource(notification.function.GetNotificationClient).then((res) => res())
 
@@ -109,10 +108,7 @@
   $: issueId = currentTeam && issue && getIssueId(currentTeam, issue)
   $: canSave = title.trim().length > 0
   $: isDescriptionEmpty = !new DOMParser().parseFromString(description, 'text/html').documentElement.innerText?.trim()
-  $: {
-    const lookUp = issue?.$lookup
-    parentIssue = lookUp?.attachedTo
-  }
+  $: parentIssue = issue?.$lookup?.attachedTo
 
   function edit (ev: MouseEvent) {
     ev.preventDefault()
