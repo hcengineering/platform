@@ -140,7 +140,7 @@
     "@hcengineering/presentation": "~0.6.2",
     "@hcengineering/server-tracker": "~0.6.0",
     "@hcengineering/server-tracker-resources": "~0.6.0",
-    "@hcengineering/tracker": "~0.6.0",
+    "@hcengineering/tracker": "^0.6.1",
     "@hcengineering/tracker-assets": "~0.6.0",
     "@hcengineering/tracker-resources": "~0.6.0",
     "@hcengineering/text-editor": "~0.6.0",
