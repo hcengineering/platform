@@ -18,6 +18,41 @@ import view from './plugin'
 import { FocusSelection, focusStore, previewDocument, SelectDirection, selectionStore } from './selection'
 import { deleteObject } from './utils'
 
+/**
+ * Action to be used for copying text to clipboard.
+ * In Safari a request to write to the clipboard must be triggered during a user gesture.
+ * A call to clipboard.write or clipboard.writeText outside the scope of a user
+ * gesture(such as "click" or "touch" event handlers) will result in the immediate
+ * rejection of the promise returned by the API call.
+ * https://webkit.org/blog/10855/async-clipboard-api/
+ *
+ *  * Require props:
+ * - textProvider - a function that provides text to be copied.
+ * - props - additional text provider props.
+ */
+async function CopyTextToClipboard (
+  doc: Doc,
+  evt: Event,
+  props: {
+    textProvider: Resource<(doc: Doc, props?: Record<string, any>) => Promise<string>>
+    props?: Record<string, any>
+  }
+): Promise<void> {
+  const getText = await getResource(props.textProvider)
+  try {
+    // Safari specific behavior
+    // see https://bugs.webkit.org/show_bug.cgi?id=222262
+    const clipboardItem = new ClipboardItem({
+      'text/plain': getText(doc, props.props)
+    })
+    await navigator.clipboard.write([clipboardItem])
+  } catch {
+    // Fallback to default clipboard API implementation
+    const text = await getText(doc, props.props)
+    await navigator.clipboard.writeText(text)
+  }
+}
+
 function Delete (object: Doc): void {
   showPopup(
     MessageBox,
@@ -334,6 +369,7 @@ async function getPopupAlignment (
  * @public
  */
 export const actionImpl = {
+  CopyTextToClipboard,
   Delete,
   Move,
   MoveUp,

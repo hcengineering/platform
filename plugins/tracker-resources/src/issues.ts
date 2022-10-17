@@ -1,5 +1,5 @@
 import { Doc, DocumentUpdate, Ref, RelatedDocument, TxOperations } from '@hcengineering/core'
-import { copyTextToClipboard, getClient } from '@hcengineering/presentation'
+import { getClient } from '@hcengineering/presentation'
 import { Issue, Project, Sprint, Team, trackerId } from '@hcengineering/tracker'
 import { getCurrentLocation, getPanelURI, Location } from '@hcengineering/ui'
 import { workbenchId } from '@hcengineering/workbench'
@@ -31,24 +31,18 @@ export function generateIssuePanelUri (issue: Issue): string {
   return getPanelURI(tracker.component.EditIssue, issue._id, issue._class, 'content')
 }
 
-export async function copyToClipboard (object: Issue, ev: Event, { type }: { type: string }): Promise<void> {
+export async function issueIdProvider (doc: Doc): Promise<string> {
   const client = getClient()
-  let text: string
-  switch (type) {
-    case 'id':
-      text = await getIssueTitle(client, object._id)
-      break
-    case 'title':
-      text = object.title
-      break
-    case 'link':
-      text = generateIssueShortLink(await getIssueTitle(client, object._id))
-      break
-    default:
-      return
-  }
+  return await getIssueTitle(client, doc._id)
+}
 
-  await copyTextToClipboard(text)
+export async function issueTitleProvider (doc: Issue): Promise<string> {
+  return await Promise.resolve(doc.title)
+}
+
+export async function issueLinkProvider (doc: Doc): Promise<string> {
+  const client = getClient()
+  return await getIssueTitle(client, doc._id).then(generateIssueShortLink)
 }
 
 export function generateIssueShortLink (issueId: string): string {

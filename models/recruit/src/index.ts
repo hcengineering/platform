@@ -702,9 +702,9 @@ export function createModel (builder: Builder): void {
   createAction(
     builder,
     {
-      action: recruit.actionImpl.CopyToClipboard,
+      action: view.actionImpl.CopyTextToClipboard,
       actionProps: {
-        type: 'id'
+        textProvider: recruit.function.GetApplicationId
       },
       label: recruit.string.CopyId,
       icon: recruit.icon.Application,
@@ -723,9 +723,9 @@ export function createModel (builder: Builder): void {
   createAction(
     builder,
     {
-      action: recruit.actionImpl.CopyToClipboard,
+      action: view.actionImpl.CopyTextToClipboard,
       actionProps: {
-        type: 'link'
+        textProvider: recruit.function.GetApplicationLink
       },
       label: recruit.string.CopyLink,
       icon: recruit.icon.Application,
@@ -744,9 +744,9 @@ export function createModel (builder: Builder): void {
   createAction(
     builder,
     {
-      action: recruit.actionImpl.CopyToClipboard,
+      action: view.actionImpl.CopyTextToClipboard,
       actionProps: {
-        type: 'link'
+        textProvider: recruit.function.GetRecruitLink
       },
       label: recruit.string.CopyLink,
       icon: recruit.icon.Application,

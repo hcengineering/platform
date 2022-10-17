@@ -121,7 +121,8 @@
       } else {
         location.path.length = 4
       }
-      await copyTextToClipboard(`${window.location.origin}${locationToUrl(location)}`)
+      const text = `${window.location.origin}${locationToUrl(location)}`
+      await copyTextToClipboard(text)
     }
   }
 
