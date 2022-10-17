@@ -181,6 +181,7 @@
     left: 0;
     width: 100%;
     height: 100%;
+    touch-action: none;
 
     &.show {
       background: rgba(0, 0, 0, 0.5);
