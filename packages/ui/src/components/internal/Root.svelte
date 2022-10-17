@@ -101,7 +101,10 @@
             class="flex-center widget mr-3"
             class:on={isMobile}
             class:always={alwaysMobile}
-            on:click={() => (alwaysMobile = !alwaysMobile)}
+            on:click={() => {
+              alwaysMobile = !alwaysMobile
+              document.documentElement.style.setProperty('--app-height', `${window.innerHeight}px`)
+            }}
           >
             <WiFi size={'small'} />
           </div>
