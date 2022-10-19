@@ -217,9 +217,9 @@
     border-top: 1px solid var(--popup-divider);
     display: flex;
     flex: 1;
+    justify-content: flex-end;
+    margin: 0 16px;
     padding-top: 10px;
-    margin-right: 12px;
-    justify-content: right;
   }
   .key-box {
     background-color: var(--button-bg-color);
