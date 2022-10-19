@@ -17,7 +17,7 @@
   import FontSizeSelector from './FontSizeSelector.svelte'
   import LangSelector from './LangSelector.svelte'
   import uiPlugin from '../../plugin'
-  import { deviceOptionsStore as deviceInfo } from '../../'
+  import { checkMobile, deviceOptionsStore as deviceInfo } from '../../'
 
   let application: AnyComponent | undefined
 
@@ -62,13 +62,14 @@
   $: isPortrait = docWidth <= docHeight
   let isMobile: boolean
   let alwaysMobile: boolean = false
-  $: isMobile =
-    alwaysMobile ?? /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+  $: isMobile = alwaysMobile || checkMobile()
 
   $: $deviceInfo.docWidth = docWidth
   $: $deviceInfo.docHeight = docHeight
   $: $deviceInfo.isPortrait = isPortrait
   $: $deviceInfo.isMobile = isMobile
+
+  $: document.documentElement.style.setProperty('--app-height', `${docHeight}px`)
 </script>
 
 <svelte:window bind:innerWidth={docWidth} bind:innerHeight={docHeight} />
@@ -100,7 +101,10 @@
             class="flex-center widget mr-3"
             class:on={isMobile}
             class:always={alwaysMobile}
-            on:click={() => (alwaysMobile = !alwaysMobile)}
+            on:click={() => {
+              alwaysMobile = !alwaysMobile
+              document.documentElement.style.setProperty('--app-height', `${window.innerHeight}px`)
+            }}
           >
             <WiFi size={'small'} />
           </div>
@@ -128,7 +132,9 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    height: 100vh;
+    // height: 100vh;
+    height: 100%;
+    // height: var(--app-height);
 
     .status-bar {
       min-height: var(--status-bar-height);
@@ -164,7 +170,7 @@
     }
 
     .app {
-      height: calc(100vh - var(--status-bar-height));
+      height: calc(100% - var(--status-bar-height));
       // min-width: 600px;
       // min-height: 480px;
 

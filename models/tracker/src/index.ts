@@ -203,6 +203,7 @@ export class TIssue extends TAttachedDoc implements Issue {
   priority!: IssuePriority
 
   @Prop(TypeNumber(), tracker.string.Number)
+  @Index(IndexKind.FullText)
   number!: number
 
   @Prop(TypeRef(contact.class.Employee), tracker.string.Assignee)
@@ -1128,9 +1129,9 @@ export function createModel (builder: Builder): void {
   createAction(
     builder,
     {
-      action: tracker.actionImpl.CopyToClipboard,
+      action: view.actionImpl.CopyTextToClipboard,
       actionProps: {
-        type: 'id'
+        textProvider: tracker.function.GetIssueId
       },
       label: tracker.string.CopyIssueId,
       icon: tracker.icon.CopyID,
@@ -1149,9 +1150,9 @@ export function createModel (builder: Builder): void {
   createAction(
     builder,
     {
-      action: tracker.actionImpl.CopyToClipboard,
+      action: view.actionImpl.CopyTextToClipboard,
       actionProps: {
-        type: 'title'
+        textProvider: tracker.function.GetIssueTitle
       },
       label: tracker.string.CopyIssueTitle,
       icon: tracker.icon.CopyBranch,
@@ -1170,9 +1171,9 @@ export function createModel (builder: Builder): void {
   createAction(
     builder,
     {
-      action: tracker.actionImpl.CopyToClipboard,
+      action: view.actionImpl.CopyTextToClipboard,
       actionProps: {
-        type: 'link'
+        textProvider: tracker.function.GetIssueLink
       },
       label: tracker.string.CopyIssueUrl,
       icon: tracker.icon.CopyURL,
@@ -1228,6 +1229,32 @@ export function createModel (builder: Builder): void {
       }
     },
     tracker.action.Relations
+  )
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.ShowPopup,
+      actionProps: {
+        component: tracker.component.CreateIssue,
+        element: 'top',
+        fillProps: {
+          _object: 'originalIssue',
+          space: 'space'
+        }
+      },
+      label: tracker.string.Duplicate,
+      icon: tracker.icon.Duplicate,
+      keyBinding: [],
+      input: 'none',
+      category: tracker.category.Tracker,
+      target: tracker.class.Issue,
+      context: {
+        mode: ['context', 'browser'],
+        application: tracker.app.Tracker,
+        group: 'associate'
+      }
+    },
+    tracker.action.Duplicate
   )
 
   classPresenter(

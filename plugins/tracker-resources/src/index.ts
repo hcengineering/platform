@@ -59,7 +59,14 @@ import SetDueDateActionPopup from './components/SetDueDateActionPopup.svelte'
 import SetParentIssueActionPopup from './components/SetParentIssueActionPopup.svelte'
 import Views from './components/views/Views.svelte'
 import Statuses from './components/workflow/Statuses.svelte'
-import { copyToClipboard, getIssueId, getIssueTitle, resolveLocation } from './issues'
+import {
+  getIssueId,
+  getIssueTitle,
+  issueIdProvider,
+  issueLinkProvider,
+  issueTitleProvider,
+  resolveLocation
+} from './issues'
 import tracker from './plugin'
 
 import SprintEditor from './components/sprints/SprintEditor.svelte'
@@ -212,10 +219,12 @@ export default async (): Promise<Resources> => ({
       await queryIssue(tracker.class.Issue, client, query, filter)
   },
   function: {
-    IssueTitleProvider: getIssueTitle
+    IssueTitleProvider: getIssueTitle,
+    GetIssueId: issueIdProvider,
+    GetIssueLink: issueLinkProvider,
+    GetIssueTitle: issueTitleProvider
   },
   actionImpl: {
-    CopyToClipboard: copyToClipboard,
     EditWorkflowStatuses: editWorkflowStatuses
   },
   resolver: {

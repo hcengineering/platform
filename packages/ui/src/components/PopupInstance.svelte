@@ -120,7 +120,7 @@
     on:update={(ev) => {
       _update(ev.detail)
     }}
-    on:close={(ev) => _close(ev.detail)}
+    on:close={(ev) => _close(ev?.detail)}
     on:fullsize={() => {
       fullSize = !fullSize
     }}
@@ -162,5 +162,6 @@
     width: 100%;
     height: 100vh;
     transition: background-color 0.5s ease;
+    touch-action: none;
   }
 </style>

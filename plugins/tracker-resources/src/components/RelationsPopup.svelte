@@ -36,8 +36,12 @@
     if (type !== 'isBlocking') {
       await updateIssueRelation(client, value, refDocument, prop, operation)
     }
-    if (type !== 'blockedBy' && client.getHierarchy().isDerived(refDocument._class, tracker.class.Issue)) {
-      await updateIssueRelation(client, refDocument as unknown as Issue, value, prop, operation)
+    if (client.getHierarchy().isDerived(refDocument._class, tracker.class.Issue)) {
+      if (type !== 'blockedBy') {
+        await updateIssueRelation(client, refDocument as Issue, value, prop, operation)
+      }
+
+      return
     }
     const update = await getResource(chunter.backreference.Update)
 

@@ -68,6 +68,9 @@
   --timing-main: cubic-bezier(0.25, 0.46, 0.45, 0.94);
   // transition-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
+:root {
+  --app-height: 100%;
+}
 
 ::-webkit-scrollbar {
   width: 6px;
@@ -109,4 +112,11 @@ body {
   color: var(--content-color);
   background-color: var(--body-color);
   user-select: none;
+}
+
+html,
+body {
+  height: var(--app-height);
+  width: 100%;
+  overflow: hidden;
 }

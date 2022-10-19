@@ -43,7 +43,12 @@
 </script>
 
 {#if value}
-  <span class="issuePresenterRoot" class:noPointer={disableClick} title="title" on:click={handleIssueEditorOpened}>
+  <span
+    class="issuePresenterRoot"
+    class:noPointer={disableClick}
+    title={value?.title}
+    on:click={handleIssueEditorOpened}
+  >
     {title}
   </span>
 {/if}

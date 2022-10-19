@@ -153,6 +153,7 @@ export default mergeIds(trackerId, tracker, {
     NumberLabels: '' as IntlString,
     Roadmap: '' as IntlString,
     MoveToTeam: '' as IntlString,
+    Duplicate: '' as IntlString,
 
     IssueTitlePlaceholder: '' as IntlString,
     IssueDescriptionPlaceholder: '' as IntlString,
@@ -283,7 +284,6 @@ export default mergeIds(trackerId, tracker, {
     TeamProjects: '' as AnyComponent,
     IssuePreview: '' as AnyComponent,
     RelationsPopup: '' as AnyComponent,
-    CreateIssue: '' as AnyComponent,
 
     Sprints: '' as AnyComponent,
     SprintPresenter: '' as AnyComponent,
@@ -301,6 +301,9 @@ export default mergeIds(trackerId, tracker, {
     IssueTemplatePresenter: '' as AnyComponent
   },
   function: {
-    IssueTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>) => Promise<string>>
+    IssueTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>) => Promise<string>>,
+    GetIssueId: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>,
+    GetIssueLink: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>,
+    GetIssueTitle: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>
   }
 })

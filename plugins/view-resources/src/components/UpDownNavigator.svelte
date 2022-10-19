@@ -1,11 +1,21 @@
 <script lang="ts">
   import { Doc } from '@hcengineering/core'
-  import { Button, IconDownOutline, IconUpOutline, panelstore, showPanel } from '@hcengineering/ui'
+  import {
+    Button,
+    IconNavPrev,
+    IconDownOutline,
+    IconUpOutline,
+    panelstore,
+    showPanel,
+    closeTooltip
+  } from '@hcengineering/ui'
   import { tick } from 'svelte'
   import { select } from '../actionImpl'
   import { focusStore } from '../selection'
+  import tracker from '../../../tracker-resources/src/plugin'
 
   export let element: Doc
+  export let showBackButton: boolean = false
 
   async function next (evt: Event, pn: boolean): Promise<void> {
     select(evt, pn ? 1 : -1, element, 'vertical')
@@ -21,8 +31,25 @@
     }
   }
 
+  function goBack () {
+    if (showBackButton) {
+      closeTooltip()
+      history.back()
+    }
+  }
+
   $: select(undefined, 0, element, 'vertical')
 </script>
 
 <Button icon={IconDownOutline} kind={'secondary'} size={'medium'} on:click={(evt) => next(evt, true)} />
 <Button icon={IconUpOutline} kind={'secondary'} size={'medium'} on:click={(evt) => next(evt, false)} />
+
+{#if showBackButton}
+  <Button
+    showTooltip={{ label: tracker.string.Back, direction: 'bottom' }}
+    icon={IconNavPrev}
+    kind={'secondary'}
+    size={'medium'}
+    on:click={goBack}
+  />
+{/if}

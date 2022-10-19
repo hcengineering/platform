@@ -36,10 +36,10 @@
     "@hcengineering/platform": "^0.6.7",
     "@hcengineering/theme": "^0.6.1",
     "@hcengineering/core": "^0.6.17",
-    "svelte": "^3.47"    
+    "svelte": "^3.47"
   },
-  "repository":"https://github.com/hcenginneing/anticrm",
+  "repository": "https://github.com/hcenginneing/anticrm",
   "publishConfig": {
-    "registry":"https://npm.pkg.github.com"
+    "registry": "https://npm.pkg.github.com"
   }
 }

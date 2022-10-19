@@ -22,7 +22,9 @@
     Label,
     Location,
     navigate,
-    setMetadataLocalStorage
+    setMetadataLocalStorage,
+    deviceOptionsStore as deviceInfo,
+    Scroller
   } from '@hcengineering/ui'
   import { workbenchId } from '@hcengineering/workbench'
   import login from '../plugin'
@@ -84,28 +86,30 @@
   }
 </script>
 
-<form class="container">
+<form class="container" style:padding={$deviceInfo.docWidth <= 480 ? '1.25rem' : '5rem'}>
   <div class="grow-separator" />
   <div class="title"><Label label={login.string.SelectWorkspace} /></div>
   <div class="status">
     <StatusControl {status} />
   </div>
   {#await _getWorkspaces() then workspaces}
-    <div class="form">
-      {#each workspaces as workspace}
-        <div
-          class="workspace flex-center fs-title cursor-pointer focused-button form-row"
-          on:click={() => select(workspace.workspace)}
-        >
-          {workspace.workspace}
-        </div>
-      {/each}
-      {#if !workspaces.length}
-        <div class="form-row send">
-          <Button label={login.string.CreateWorkspace} kind={'primary'} width="100%" on:click={createWorkspace} />
-        </div>
-      {/if}
-    </div>
+    <Scroller padding={'.125rem 0'}>
+      <div class="form">
+        {#each workspaces as workspace}
+          <div
+            class="workspace flex-center fs-title cursor-pointer focused-button bordered form-row"
+            on:click={() => select(workspace.workspace)}
+          >
+            {workspace.workspace}
+          </div>
+        {/each}
+        {#if !workspaces.length}
+          <div class="form-row send">
+            <Button label={login.string.CreateWorkspace} kind={'primary'} width="100%" on:click={createWorkspace} />
+          </div>
+        {/if}
+      </div>
+    </Scroller>
     <div class="grow-separator" />
     <div class="footer">
       {#if workspaces.length}
@@ -127,9 +131,8 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    flex-grow: 1;
     overflow: hidden;
-    height: 100%;
-    padding: 5rem;
 
     .title {
       font-weight: 600;

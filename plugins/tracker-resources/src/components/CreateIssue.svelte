@@ -47,7 +47,7 @@
   import view from '@hcengineering/view'
   import { ObjectBox } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
-  import { activeProject, activeSprint } from '../issues'
+  import { activeProject, activeSprint, updateIssueRelation } from '../issues'
   import tracker from '../plugin'
   import AssigneeEditor from './issues/AssigneeEditor.svelte'
   import ParentIssue from './issues/ParentIssue.svelte'
@@ -70,30 +70,44 @@
 
   let issueStatuses: WithLookup<IssueStatus>[] | undefined
   export let parentIssue: Issue | undefined
+  export let originalIssue: Issue | undefined
   let labels: TagReference[] = []
 
   let objectId: Ref<Issue> = generateId()
-  let object: AttachedData<Issue> = {
-    title: '',
-    description: '',
-    assignee: assignee,
-    project: project,
-    sprint: sprint,
-    number: 0,
-    rank: '',
-    status: '' as Ref<IssueStatus>,
-    priority: priority,
-    dueDate: null,
-    comments: 0,
-    subIssues: 0,
-    parents: [],
-    reportedTime: 0,
-    estimation: 0,
-    reports: 0,
-    childInfo: []
-  }
+
+  let object: AttachedData<Issue> = originalIssue
+    ? {
+        ...originalIssue,
+        title: `${originalIssue.title} (copy)`,
+        subIssues: 0,
+        attachments: 0,
+        reportedTime: 0,
+        reports: 0,
+        childInfo: []
+      }
+    : {
+        title: '',
+        description: '',
+        assignee: assignee,
+        project: project,
+        sprint: sprint,
+        number: 0,
+        rank: '',
+        status: '' as Ref<IssueStatus>,
+        priority: priority,
+        dueDate: null,
+        comments: 0,
+        subIssues: 0,
+        parents: [],
+        reportedTime: 0,
+        estimation: 0,
+        reports: 0,
+        childInfo: []
+      }
 
   function resetObject (): void {
+    templateId = undefined
+    template = undefined
     object = {
       title: '',
       description: '',
@@ -185,7 +199,7 @@
   }
 
   $: _space = space
-  $: updateIssueStatusId(_space, status)
+  $: !originalIssue && updateIssueStatusId(_space, status)
   $: canSave = getTitle(object.title ?? '').length > 0
 
   $: statusesQuery.query(
@@ -199,6 +213,24 @@
       sort: { rank: SortingOrder.Ascending }
     }
   )
+
+  async function setPropsFromOriginalIssue () {
+    if (!originalIssue) {
+      return
+    }
+    const { _id, relations, parents } = originalIssue
+
+    if (relations?.[0]) {
+      relatedTo = await client.findOne(tracker.class.Issue, { _id: relations[0]._id as Ref<Issue> })
+    }
+    if (parents?.[0]) {
+      parentIssue = await client.findOne(tracker.class.Issue, { _id: parents[0].parentId })
+    }
+    if (originalIssue.labels) {
+      labels = await client.findAll(tags.class.TagReference, { attachedTo: _id })
+    }
+  }
+  $: originalIssue && setPropsFromOriginalIssue()
 
   async function updateIssueStatusId (teamId: Ref<Team>, issueStatusId?: Ref<IssueStatus>) {
     if (issueStatusId !== undefined) {
@@ -286,11 +318,15 @@
     }
     await descriptionBox.createAttachments()
 
-    const update = await getResource(chunter.backreference.Update)
     if (relatedTo !== undefined) {
       const doc = await client.findOne(tracker.class.Issue, { _id: objectId })
       if (doc !== undefined) {
-        await update(doc, 'relations', [relatedTo], tracker.string.AddedReference)
+        if (client.getHierarchy().isDerived(relatedTo._class, tracker.class.Issue)) {
+          await updateIssueRelation(client, relatedTo as Issue, doc, 'relations', '$push')
+        } else {
+          const update = await getResource(chunter.backreference.Update)
+          await update(doc, 'relations', [relatedTo], tracker.string.AddedReference)
+        }
       }
     }
     for (const subIssue of subIssues) {
@@ -569,7 +605,7 @@
         <SprintSelector
           value={object.sprint}
           onChange={handleSprintIdChanged}
-          useProject={object.project ?? undefined}
+          useProject={(!originalIssue && object.project) || undefined}
         />
         {#if object.dueDate !== null}
           <DatePresenter bind:value={object.dueDate} editable />

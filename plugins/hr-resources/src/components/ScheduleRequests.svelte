@@ -19,7 +19,7 @@
   import { ContextMenu } from '@hcengineering/view-resources'
 
   export let requests: Request[]
-  export let date: Date
+  // export let date: Date
   export let editable: boolean = false
 
   const client = getClient()

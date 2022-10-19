@@ -59,7 +59,6 @@
       showPopup(ContextMenu, { object }, (ev as MouseEvent).target as HTMLElement)
     }
   }
-  let isCreateIssue = false
 </script>
 
 {#if object}
@@ -150,19 +149,13 @@
               kind={'transparent'}
               size={'small'}
               on:click={() => {
-                isCreateIssue = true
+                showPopup(tracker.component.CreateIssue, { relatedTo: object, space: object.space }, 'top')
               }}
             />
           </div>
         </div>
         <div class="flex-row">
-          <Component
-            is={tracker.component.RelatedIssues}
-            props={{ object: object, isCreating: isCreateIssue }}
-            on:close={() => {
-              isCreateIssue = false
-            }}
-          />
+          <Component is={tracker.component.RelatedIssues} props={{ object: object }} />
         </div>
       </div></Grid
     >

@@ -668,6 +668,9 @@ a.no-line {
     box-shadow: 0 0 0 3px var(--primary-button-outline);
     & > .icon { color: var(--theme-caption-color); }
   }
+
+  &.bordered,
+  &.bordered:hover { border-color: var(--theme-button-border-pressed); }
 }
 
 .overflow-x-auto { overflow-x: auto; }

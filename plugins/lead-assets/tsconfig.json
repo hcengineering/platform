@@ -2,7 +2,9 @@
   "compilerOptions": {
     "moduleResolution": "node",
     "target": "esnext",
-    "module": "esnext",
+    "module": "commonjs",
+    "sourceMap": true,
+    "types": ["node", "heft-jest"],
     "declaration": true,
     "outDir": "./lib",
     "strict": true,

@@ -18,6 +18,7 @@
   import tags from '@hcengineering/tags'
   import type { Issue, IssueStatus } from '@hcengineering/tracker'
   import { Component, Label } from '@hcengineering/ui'
+  import { ObjectBox } from '@hcengineering/view-resources'
   import { getFiltredKeys, isCollectionAttr } from '@hcengineering/view-resources/src/utils'
   import tracker from '../../../plugin'
   import ProjectEditor from '../../projects/ProjectEditor.svelte'
@@ -53,6 +54,26 @@
 </script>
 
 <div class="content">
+  {#if issue.template?.template}
+    <span class="label">
+      <Label label={tracker.string.IssueTemplate} />
+    </span>
+    <ObjectBox
+      _class={tracker.class.IssueTemplate}
+      value={issue.template?.template}
+      size={'small'}
+      kind={'link'}
+      width={'100%'}
+      label={tracker.string.NoIssueTemplate}
+      icon={tracker.icon.Issues}
+      searchField={'title'}
+      allowDeselect={true}
+      showNavigate={false}
+      readonly
+      docProps={{ disableClick: true }}
+    />
+  {/if}
+
   <span class="label">
     <Label label={tracker.string.Status} />
   </span>

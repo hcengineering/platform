@@ -119,7 +119,7 @@
     "@hcengineering/server-telegram": "~0.6.0",
     "@hcengineering/server-telegram-resources": "~0.6.0",
     "@hcengineering/presentation": "~0.6.2",
-    "@hcengineering/tracker": "~0.6.0",
+    "@hcengineering/tracker": "^0.6.1",
     "@hcengineering/tracker-assets": "~0.6.0",
     "@hcengineering/tracker-resources": "~0.6.0",
     "@hcengineering/prod": "~1.0.1",

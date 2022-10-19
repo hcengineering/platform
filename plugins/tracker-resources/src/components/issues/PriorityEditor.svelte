@@ -119,10 +119,6 @@
       height: 1rem;
       color: var(--content-color);
     }
-    .label {
-      font-weight: 500;
-      color: var(--accent-color);
-    }
     &:hover {
       .icon {
         color: var(--caption-color) !important;

@@ -503,6 +503,10 @@ const view = plugin(viewId, {
     PositionElementAlignment: '' as Resource<(e?: Event) => PopupAlignment | undefined>
   },
   actionImpl: {
+    CopyTextToClipboard: '' as ViewAction<{
+      textProvider: Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>
+      props?: Record<string, any>
+    }>,
     UpdateDocument: '' as ViewAction<{
       key: string
       value: any

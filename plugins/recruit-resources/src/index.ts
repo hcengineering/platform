@@ -50,7 +50,7 @@ import VacancyItemPresenter from './components/VacancyItemPresenter.svelte'
 import VacancyModifiedPresenter from './components/VacancyModifiedPresenter.svelte'
 import VacancyPresenter from './components/VacancyPresenter.svelte'
 import recruit from './plugin'
-import { copyToClipboard, getApplicationTitle } from './utils'
+import { objectIdProvider, objectLinkProvider, getApplicationTitle } from './utils'
 import VacancyList from './components/VacancyList.svelte'
 
 async function createOpinion (object: Doc): Promise<void> {
@@ -254,8 +254,7 @@ async function noneApplicant (filter: Filter, onUpdate: () => void): Promise<Obj
 
 export default async (): Promise<Resources> => ({
   actionImpl: {
-    CreateOpinion: createOpinion,
-    CopyToClipboard: copyToClipboard
+    CreateOpinion: createOpinion
   },
   validator: {
     ApplicantValidator: applicantValidator
@@ -305,6 +304,9 @@ export default async (): Promise<Resources> => ({
     ApplicationTitleProvider: getApplicationTitle,
     HasActiveApplicant: hasActiveApplicant,
     HasNoActiveApplicant: hasNoActiveApplicant,
-    NoneApplications: noneApplicant
+    NoneApplications: noneApplicant,
+    GetApplicationId: objectIdProvider,
+    GetApplicationLink: objectLinkProvider,
+    GetRecruitLink: objectLinkProvider
   }
 })

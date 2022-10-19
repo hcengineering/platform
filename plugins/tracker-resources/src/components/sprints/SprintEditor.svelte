@@ -21,7 +21,7 @@
   import DatePresenter from '@hcengineering/ui/src/components/calendar/DatePresenter.svelte'
   import { activeSprint } from '../../issues'
   import tracker from '../../plugin'
-  import { getDayOfSprint } from '../../utils'
+  import { floorFractionDigits, getDayOfSprint } from '../../utils'
   import EstimationProgressCircle from '../issues/timereport/EstimationProgressCircle.svelte'
   import SprintSelector from './SprintSelector.svelte'
 
@@ -64,47 +64,53 @@
     statuses.unsubscribe()
   }
 
-  $: totalEstimation = (noParents ?? [{ estimation: 0, childInfo: [] } as unknown as Issue])
-    .map((it) => {
-      const cat = issueStatuses.get(it.status)?.category
+  $: totalEstimation = floorFractionDigits(
+    (noParents ?? [{ estimation: 0, childInfo: [] } as unknown as Issue])
+      .map((it) => {
+        const cat = issueStatuses.get(it.status)?.category
 
-      let retEst = it.estimation
-      if (it.childInfo?.length > 0) {
-        const cEstimation = it.childInfo.map((ct) => ct.estimation).reduce((a, b) => a + b, 0)
-        const cReported = it.childInfo.map((ct) => ct.reportedTime).reduce((a, b) => a + b, 0)
-        if (cEstimation !== 0) {
-          retEst = cEstimation
+        let retEst = it.estimation
+        if (it.childInfo?.length > 0) {
+          const cEstimation = it.childInfo.map((ct) => ct.estimation).reduce((a, b) => a + b, 0)
+          const cReported = it.childInfo.map((ct) => ct.reportedTime).reduce((a, b) => a + b, 0)
+          if (cEstimation !== 0) {
+            retEst = cEstimation
+            if (cat === tracker.issueStatusCategory.Completed || cat === tracker.issueStatusCategory.Canceled) {
+              if (cReported < cEstimation) {
+                retEst = cReported
+              }
+            }
+          }
+        } else {
           if (cat === tracker.issueStatusCategory.Completed || cat === tracker.issueStatusCategory.Canceled) {
-            if (cReported < cEstimation) {
-              retEst = cReported
+            if (it.reportedTime < it.estimation) {
+              return it.reportedTime
             }
           }
         }
-      } else {
-        if (cat === tracker.issueStatusCategory.Completed || cat === tracker.issueStatusCategory.Canceled) {
-          if (it.reportedTime < it.estimation) {
-            return it.reportedTime
+        return retEst
+      })
+      .reduce((it, cur) => {
+        return it + cur
+      }),
+    2
+  )
+  $: totalReported = floorFractionDigits(
+    (noParents ?? [{ reportedTime: 0, childInfo: [] } as unknown as Issue])
+      .map((it) => {
+        if (it.childInfo?.length > 0) {
+          const cReported = it.childInfo.map((ct) => ct.reportedTime).reduce((a, b) => a + b, 0)
+          if (cReported !== 0) {
+            return cReported + it.reportedTime
           }
         }
-      }
-      return retEst
-    })
-    .reduce((it, cur) => {
-      return it + cur
-    })
-  $: totalReported = (noParents ?? [{ reportedTime: 0, childInfo: [] } as unknown as Issue])
-    .map((it) => {
-      if (it.childInfo?.length > 0) {
-        const cReported = it.childInfo.map((ct) => ct.reportedTime).reduce((a, b) => a + b, 0)
-        if (cReported !== 0) {
-          return cReported + it.reportedTime
-        }
-      }
-      return it.reportedTime
-    })
-    .reduce((it, cur) => {
-      return it + cur
-    })
+        return it.reportedTime
+      })
+      .reduce((it, cur) => {
+        return it + cur
+      }),
+    2
+  )
 
   const sprintQuery = createQuery()
   let sprint: Sprint | undefined

@@ -17,20 +17,16 @@
   import presentation, { createQuery, getClient } from '@hcengineering/presentation'
   import { calcRank, Issue, IssueStatus, Team } from '@hcengineering/tracker'
   import { Label, Spinner } from '@hcengineering/ui'
-  import { createEventDispatcher } from 'svelte'
   import tracker from '../../../plugin'
   import SubIssueList from '../edit/SubIssueList.svelte'
-  import CreateRelatedIssue from './CreateRelatedIssue.svelte'
 
   export let object: Doc
-  export let isCreating = false
 
   let query: DocumentQuery<Issue>
   $: query = { 'relations._id': object._id, 'relations._class': object._class }
 
   const subIssuesQuery = createQuery()
   const client = getClient()
-  const dispatch = createEventDispatcher()
 
   let subIssues: Issue[] = []
 
@@ -87,34 +83,9 @@
         <Label label={presentation.string.NoMatchesFound} />
       </div>
     {/if}
-
-    {#if isCreating}
-      <div class="pt-4">
-        <CreateRelatedIssue
-          related={object}
-          {issueStatuses}
-          {teams}
-          on:close={() => {
-            isCreating = false
-            dispatch('close')
-          }}
-        />
-      </div>
-    {/if}
   {:else}
     <div class="flex-center pt-3">
       <Spinner />
     </div>
   {/if}
 </div>
-
-<style lang="scss">
-  .list {
-    border-top: 1px solid var(--divider-color);
-
-    &.collapsed {
-      padding-top: 1px;
-      border-top: none;
-    }
-  }
-</style>

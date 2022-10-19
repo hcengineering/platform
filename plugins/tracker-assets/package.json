@@ -7,6 +7,7 @@
   "template": "@hcengineering/assets-package",
   "scripts": {
     "build": "heft build",
+    "test": "heft test",
     "build:docs": "",
     "lint": "eslint src",
     "lint:fix": "eslint --fix src",
@@ -29,6 +30,6 @@
   },
   "dependencies": {
     "@hcengineering/platform": "^0.6.7",
-    "@hcengineering/tracker": "~0.6.0"
+    "@hcengineering/tracker": "^0.6.1"
   }
 }

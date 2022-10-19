@@ -510,7 +510,7 @@ export async function getPriorityStates (): Promise<TypeState[]> {
   )
 }
 
-export function getDefaultViewOptionsConfig (enableSubIssues = true): ViewOptionModel[] {
+export function getDefaultViewOptionsConfig (subIssuesValue = false): ViewOptionModel[] {
   const groupByCategory: ViewOptionModel = {
     key: 'groupBy',
     label: tracker.string.Grouping,
@@ -541,7 +541,7 @@ export function getDefaultViewOptionsConfig (enableSubIssues = true): ViewOption
   const showSubIssuesCategory: ViewOptionModel = {
     key: 'shouldShowSubIssues',
     label: tracker.string.SubIssues,
-    defaultValue: false,
+    defaultValue: subIssuesValue,
     type: 'toggle'
   }
   const showEmptyGroups: ViewOptionModel = {
@@ -552,9 +552,9 @@ export function getDefaultViewOptionsConfig (enableSubIssues = true): ViewOption
     hidden: ({ groupBy }) => !['status', 'priority'].includes(groupBy)
   }
   const result: ViewOptionModel[] = [groupByCategory, orderByCategory]
-  if (enableSubIssues) {
-    result.push(showSubIssuesCategory)
-  }
+
+  result.push(showSubIssuesCategory)
+
   result.push(showEmptyGroups)
   return result
 }
@@ -618,4 +618,11 @@ export function getDayOfSprint (startDate: number, now: number): number {
   const stTime = stDate.getTime()
   const ds = Array.from(Array(days).keys()).map((it) => stDateDate + it)
   return ds.filter((it) => !isWeekend(new Date(new Date(stTime).setDate(it)))).length
+}
+
+/**
+ * @public
+ */
+export const floorFractionDigits = (n: number, amount: number): number => {
+  return Number(n.toFixed(amount))
 }

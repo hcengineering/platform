@@ -39,6 +39,8 @@
       on:input
       autocomplete="off"
       placeholder=" "
+      spellcheck="false"
+      autocapitalize="off"
     />
   {:else}
     <input
@@ -53,6 +55,8 @@
       on:input
       autocomplete="off"
       placeholder=" "
+      spellcheck="false"
+      autocapitalize="off"
     />
   {/if}
   {#if label}

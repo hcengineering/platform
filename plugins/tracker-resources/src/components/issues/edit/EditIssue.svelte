@@ -108,6 +108,7 @@
   $: issueId = currentTeam && issue && getIssueId(currentTeam, issue)
   $: canSave = title.trim().length > 0
   $: isDescriptionEmpty = !new DOMParser().parseFromString(description, 'text/html').documentElement.innerText?.trim()
+  $: parentIssue = issue?.$lookup?.attachedTo
 
   function edit (ev: MouseEvent) {
     ev.preventDefault()
@@ -180,9 +181,8 @@
     bind:innerWidth
     on:close={() => dispatch('close')}
   >
-    {@const { attachedTo: parentIssue } = issue?.$lookup ?? {}}
     <svelte:fragment slot="navigator">
-      <UpDownNavigator element={issue} />
+      <UpDownNavigator element={issue} showBackButton={!!parentIssue} />
     </svelte:fragment>
     <svelte:fragment slot="header">
       <span class="fs-title">

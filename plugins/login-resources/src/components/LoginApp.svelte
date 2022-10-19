@@ -14,13 +14,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { location, Popup, ticker } from '@hcengineering/ui'
+  import { location, Popup, ticker, Scroller, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
 
   import LoginForm from './LoginForm.svelte'
   import SignupForm from './SignupForm.svelte'
   import CreateWorkspaceForm from './CreateWorkspaceForm.svelte'
   import SelectWorkspace from './SelectWorkspace.svelte'
   import Join from './Join.svelte'
+  import Intro from './Intro.svelte'
   import { onDestroy } from 'svelte'
   import login from '../plugin'
   import { getMetadata } from '@hcengineering/platform'
@@ -43,8 +44,14 @@
   )
 </script>
 
-<div class="container">
-  <div class="panel">
+<Scroller padding={'1.25rem'} contentDirection={$deviceInfo.docWidth <= 768 ? 'vertical-reverse' : 'horizontal'}>
+  <div
+    class="panel"
+    class:minHeight={!$deviceInfo.isPortrait}
+    class:landscape={$deviceInfo.docWidth > 768}
+    style:border-radius={$deviceInfo.docWidth <= 480 ? '.75rem' : '1.25rem'}
+  >
+    <div class="flex-grow" />
     {#if page === 'login'}
       <LoginForm {navigateUrl} />
     {:else if page === 'signup'}
@@ -57,78 +64,62 @@
       <Join />
     {/if}
   </div>
-  <div class="intro">
-    <div class="content">
-      <div class="logo" />
-    </div>
-    <div class="slogan">
-      <p>A unique place to manage all of your work</p>
-      <p>Welcome to the Platform</p>
-    </div>
-  </div>
-  <Popup />
-</div>
+  <Intro landscape={$deviceInfo.docWidth <= 768} mini={$deviceInfo.docWidth <= 480} />
+</Scroller>
+<Popup />
 
 <style lang="scss">
-  .container {
+  .panel {
+    position: relative;
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     height: 100%;
-    padding: 0px 1.25rem 1.25rem 1.25rem;
+    background: var(--popup-bg-color);
+    box-shadow: var(--popup-aside-shadow);
 
-    .panel {
-      margin-right: 1.25rem;
-      width: 41.75rem;
-      height: 100%;
-      border-radius: 1.25rem;
-      background-color: var(--theme-menu-selection);
+    &.minHeight {
+      min-height: 40rem;
     }
 
-    .intro {
-      display: flex;
-      flex-direction: column;
-      flex-grow: 1;
-      overflow: hidden;
-      min-width: 20rem;
-
-      .content {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        flex-grow: 1;
-        .logo {
-          position: relative;
-          &:after {
-            position: absolute;
-            content: '';
-            background: center url('../../img/logo.svg');
-            transform: translate(-50%, -50%);
-            width: 63px;
-            height: 79px;
-          }
-          &:before {
-            position: absolute;
-            content: '';
-            transform: translate(-50%, -50%);
-            width: 16rem;
-            height: 16rem;
-            border: 1.8px solid var(--theme-caption-color);
-            border-radius: 50%;
-            opacity: 0.08;
-          }
-        }
+    $circle-size: calc(1vh + 1vw);
+    $r1: 23;
+    $r2: 17;
+    &::before,
+    &::after {
+      content: '';
+      position: absolute;
+      border-radius: 50%;
+      z-index: -1;
+    }
+    &::before {
+      top: calc(-1 * $circle-size * $r1 / 2 + $circle-size * 5);
+      left: auto;
+      right: calc(-1 * $circle-size * $r1 / 2);
+      width: calc($circle-size * $r1);
+      height: calc($circle-size * $r1);
+      border: 1px solid var(--content-color);
+      opacity: 0.05;
+    }
+    &::after {
+      top: calc(-1 * $circle-size * $r2 / 2 + $circle-size * 5);
+      left: auto;
+      right: calc(-1 * $circle-size * $r2 / 2);
+      width: calc($circle-size * $r2);
+      height: calc($circle-size * $r2);
+      background: var(--dark-color);
+      border: 1px solid var(--caption-color);
+      opacity: 0.05;
+    }
+    &.landscape {
+      margin-right: 1.25rem;
+      width: 41.75rem;
+      &::before {
+        left: calc(-1 * $circle-size * $r1 / 2);
+        right: auto;
       }
-      .slogan {
-        margin-bottom: 60px;
-        p {
-          margin: 0;
-          font-weight: 400;
-          font-size: 0.8rem;
-          text-align: center;
-          color: var(--theme-caption-color);
-          opacity: 0.8;
-        }
+      &::after {
+        left: calc(-1 * $circle-size * $r2 / 2);
+        right: auto;
       }
     }
   }

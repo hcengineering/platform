@@ -1,6 +1,6 @@
 import core, { Doc, Ref, TxOperations } from '@hcengineering/core'
 import { translate } from '@hcengineering/platform'
-import { copyTextToClipboard, getClient } from '@hcengineering/presentation'
+import { getClient } from '@hcengineering/presentation'
 import { Applicant, Candidate } from '@hcengineering/recruit'
 import { getPanelURI } from '@hcengineering/ui'
 import view from '@hcengineering/view'
@@ -19,23 +19,13 @@ export async function getApplicationTitle (client: TxOperations, ref: Ref<Doc>):
   return `${label}-${object.number}`
 }
 
-export async function copyToClipboard (
-  object: Applicant | Candidate,
-  ev: Event,
-  { type }: { type: string }
-): Promise<void> {
+export async function objectIdProvider (doc: Applicant | Candidate): Promise<string> {
   const client = getClient()
-  let text: string
-  switch (type) {
-    case 'id':
-      text = await getApplicationTitle(client, object._id)
-      break
-    case 'link':
-      // TODO: fix when short link is available
-      text = `${window.location.href}#${getPanelURI(view.component.EditDoc, object._id, object._class, 'content')}`
-      break
-    default:
-      return
-  }
-  await copyTextToClipboard(text)
+  return await getApplicationTitle(client, doc._id)
+}
+
+export async function objectLinkProvider (doc: Applicant | Candidate): Promise<string> {
+  return await Promise.resolve(
+    `${window.location.href}#${getPanelURI(view.component.EditDoc, doc._id, doc._class, 'content')}`
+  )
 }

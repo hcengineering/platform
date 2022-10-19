@@ -75,12 +75,7 @@
     showPopup(ContextMenu, { object }, getEventPositionElement(ev))
   }
 
-  const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
-    // if (dir === 'vertical') {
-    //   // Select next
-    //   table.select(offset, of)
-    // }
-  })
+  const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {})
 
   let varsStyle: string = ''
   const propsWidth: Record<string, number> = { issue: 0 }

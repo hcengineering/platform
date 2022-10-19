@@ -127,6 +127,7 @@
     "ProjectMembersSearchPlaceholder": "Измененить участников проекта\u2026",
     "Roadmap": "Планирование",
     "MoveToTeam": "Изменить команду",
+    "Duplicate": "Дублировать",
 
     "GotoIssues": "Перейти к задачам",
     "GotoActive": "Перейти к активным задачам",
@@ -222,6 +223,7 @@
     "IssueTemplate": "Процесс",
     "IssueTemplates": "Процессы",
     "NewProcess": "Новый процесс",
+    "SaveProcess": "Сохранить процесс",
     "NoIssueTemplate": "Без процесса",
     "TemplateReplace": "Вы хотите заменить выбранный процесс?",
     "TemplateReplaceConfirm": "Все внесенные изменения в задачу будут потеряны"

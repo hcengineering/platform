@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { StylishEdit, Label, Button } from '@hcengineering/ui'
+  import { StylishEdit, Label, Button, Scroller, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
   import StatusControl from './StatusControl.svelte'
   import { OK, Status, Severity } from '@hcengineering/platform'
   import type { IntlString } from '@hcengineering/platform'
@@ -101,55 +101,57 @@
   }
 </script>
 
-<form class="container">
+<form class="container" style:padding={$deviceInfo.docWidth <= 480 ? '1.25rem' : '5rem'}>
   <div class="grow-separator" />
   <div class="title"><Label label={caption} /></div>
   <div class="status">
     <StatusControl {status} />
   </div>
-  <div class="form">
-    {#each fields as field (field.name)}
-      <div class={field.short ? 'form-col' : 'form-row'}>
-        <StylishEdit
-          label={field.i18n}
-          name={field.id}
-          password={field.password}
-          bind:value={object[field.name]}
-          on:input={validate}
-          on:blur={() => {
-            trim(field.name)
-          }}
-        />
-      </div>
-    {/each}
+  <Scroller padding={'.125rem 0'}>
+    <div class="form">
+      {#each fields as field (field.name)}
+        <div class={field.short && !($deviceInfo.docWidth <= 600) ? 'form-col' : 'form-row'}>
+          <StylishEdit
+            label={field.i18n}
+            name={field.id}
+            password={field.password}
+            bind:value={object[field.name]}
+            on:input={validate}
+            on:blur={() => {
+              trim(field.name)
+            }}
+          />
+        </div>
+      {/each}
 
-    <div class="form-row send">
-      <Button
-        label={action.i18n}
-        kind={'primary'}
-        size={'x-large'}
-        width="100%"
-        loading={inAction}
-        disabled={status.severity !== Severity.OK && status.severity !== Severity.ERROR}
-        on:click={(e) => {
-          e.preventDefault()
-          performAction(action)
-        }}
-      />
-    </div>
-    {#if secondaryButtonLabel && secondaryButtonAction}
-      <div class="form-row">
+      <div class="form-row send">
         <Button
-          label={secondaryButtonLabel}
+          label={action.i18n}
+          kind={'primary'}
+          size={'x-large'}
           width="100%"
+          loading={inAction}
+          disabled={status.severity !== Severity.OK && status.severity !== Severity.ERROR}
           on:click={(e) => {
             e.preventDefault()
-            secondaryButtonAction?.()
+            performAction(action)
           }}
         />
       </div>
-    {/if}
-  </div>
+      {#if secondaryButtonLabel && secondaryButtonAction}
+        <div class="form-row">
+          <Button
+            label={secondaryButtonLabel}
+            width="100%"
+            on:click={(e) => {
+              e.preventDefault()
+              secondaryButtonAction?.()
+            }}
+          />
+        </div>
+      {/if}
+    </div>
+  </Scroller>
   {#if bottomCaption || (bottomActionLabel && bottomActionFunc)}
     <div class="grow-separator" />
     <div class="footer">
@@ -168,9 +170,10 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    flex-grow: 1;
     overflow: hidden;
-    height: 100%;
-    padding: 5rem;
+    // height: 100%;
+    // padding: 5rem;
 
     .title {
       font-weight: 600;
