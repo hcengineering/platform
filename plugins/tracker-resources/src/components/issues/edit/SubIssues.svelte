@@ -37,7 +37,7 @@
   let isCollapsed = false
   let isCreating = false
 
-  async function handleIssueSwap(ev: CustomEvent<{ fromIndex: number; toIndex: number }>) {
+  async function handleIssueSwap (ev: CustomEvent<{ fromIndex: number; toIndex: number }>) {
     if (subIssues) {
       const { fromIndex, toIndex } = ev.detail
       const [prev, next] = [
@@ -75,7 +75,7 @@
   $: subIssuesQuery.query(tracker.class.Issue, { attachedTo: issue._id }, async (result) => (subIssues = result), {
     sort: { rank: SortingOrder.Ascending }
   })
-  $: if (!!parentIssue) {
+  $: if (parentIssue) {
     subIssuesQuery.query(
       tracker.class.Issue,
       { attachedTo: parentIssue?._id },

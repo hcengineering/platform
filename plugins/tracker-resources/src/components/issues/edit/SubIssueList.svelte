@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, Ref, WithLookup } from '@hcengineering/core'
+  import { Ref, WithLookup } from '@hcengineering/core'
   import { Issue, IssueStatus, Team } from '@hcengineering/tracker'
   import { getEventPositionElement, showPanel, showPopup } from '@hcengineering/ui'
   import { ActionContext, ContextMenu, FixedColumn } from '@hcengineering/view-resources'
