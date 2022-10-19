@@ -606,7 +606,7 @@
       margin-top: 0.25rem;
     }
     &.mini {
-      position: fixed;
+      position: absolute;
       top: 4px;
       left: 4px;
     }

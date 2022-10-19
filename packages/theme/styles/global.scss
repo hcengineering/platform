@@ -113,7 +113,6 @@ body {
   color: var(--content-color);
   background-color: var(--body-color);
   user-select: none;
-  touch-action: none;
 }
 
 html,
@@ -121,4 +120,5 @@ body {
   height: var(--app-height);
   width: 100%;
   overflow: hidden;
+  touch-action: none;
 }
