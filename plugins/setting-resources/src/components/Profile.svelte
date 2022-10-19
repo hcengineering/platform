@@ -20,8 +20,6 @@
   import contact, { Employee, EmployeeAccount, getFirstName, getLastName } from '@hcengineering/contact'
   import contactRes from '@hcengineering/contact-resources/src/plugin'
   import { getCurrentAccount } from '@hcengineering/core'
-  import { getResource } from '@hcengineering/platform'
-  import attachment from '@hcengineering/attachment'
   import { changeName, leaveWorkspace } from '@hcengineering/login-resources'
   import { ChannelsEditor } from '@hcengineering/contact-resources'
   import MessageBox from '@hcengineering/presentation/src/components/MessageBox.svelte'
@@ -34,10 +32,12 @@
   let lastName: string
   const employeeQ = createQuery()
 
+  const account = getCurrentAccount() as EmployeeAccount
+
   employeeQ.query(
     contact.class.Employee,
     {
-      _id: (getCurrentAccount() as EmployeeAccount).employee
+      _id: account.employee
     },
     (res) => {
       employee = res[0]
@@ -66,7 +66,6 @@
         avatar: null
       })
       await avatarEditor.removeAvatar(employee.avatar)
-      
     }
   }
 
@@ -102,7 +101,7 @@
         <div class="mr-8">
           <EditableAvatar
             avatar={employee.avatar}
-            avatarType={employee.avatarType}
+            email={account.email}
             size={'x-large'}
             bind:this={avatarEditor}
             on:done={onAvatarDone}

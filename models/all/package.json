@@ -73,6 +73,7 @@
     "@hcengineering/model-board": "~0.6.0",
     "@hcengineering/model-preference": "~0.6.0",
     "@hcengineering/model-hr": "~0.6.0",
-    "@hcengineering/model-server-hr": "~0.6.0"
+    "@hcengineering/model-server-hr": "~0.6.0",
+    "@hcengineering/presentation": "~0.6.2"
   }
 }
