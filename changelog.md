@@ -6,6 +6,10 @@ Tracker:
 
 - Basic sprints
 
+Workbench:
+
+- Help Center
+
 ## 0.6.31
 
 Core:
