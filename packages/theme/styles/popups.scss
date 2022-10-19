@@ -411,7 +411,7 @@
   }
 }
 
-.notifyPopup {
+.notifyPopup, .helpAndSupportPopup {
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -434,6 +434,11 @@
     height: 3rem;
     border-bottom: 1px solid var(--popup-divider);
   }
+}
+
+.helpAndSupportPopup {
+  min-height: 100%;
+  min-width: 20rem;
 }
 
 // Remove highlights table rows and hide dots in popups

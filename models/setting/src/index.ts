@@ -200,20 +200,21 @@ export function createModel (builder: Builder): void {
     },
     setting.ids.EnumSetting
   )
-  builder.createDoc(
-    setting.class.SettingsCategory,
-    core.space.Model,
-    {
-      name: 'support',
-      label: setting.string.Support,
-      icon: setting.icon.Support,
-      component: setting.component.Support,
-      group: 'main',
-      secured: false,
-      order: 5000
-    },
-    setting.ids.Support
-  )
+  // Currently remove Support item from settings
+  // builder.createDoc(
+  //   setting.class.SettingsCategory,
+  //   core.space.Model,
+  //   {
+  //     name: 'support',
+  //     label: setting.string.Support,
+  //     icon: setting.icon.Support,
+  //     component: setting.component.Support,
+  //     group: 'main',
+  //     secured: false,
+  //     order: 5000
+  //   },
+  //   setting.ids.Support
+  // )
   builder.createDoc(
     setting.class.SettingsCategory,
     core.space.Model,

@@ -217,6 +217,12 @@
   flex-shrink: 0;
   height: 1rem;
 }
+.antiNav-footer {
+  align-items: flex-end;
+  display: flex;
+  flex: 1;
+  margin: 2rem .75rem;
+}
 
 /* Basic */
 .antiTitle {

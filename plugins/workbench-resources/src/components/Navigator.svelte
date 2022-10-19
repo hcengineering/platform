@@ -16,8 +16,9 @@
   import core, { Doc, Ref, SortingOrder, Space, getCurrentAccount } from '@hcengineering/core'
   import { getResource } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Scroller } from '@hcengineering/ui'
+  import { Button, Scroller, showPopup } from '@hcengineering/ui'
   import type { NavigatorModel, SpecialNavModel } from '@hcengineering/workbench'
+  import setting from '@hcengineering/setting'
   import { createEventDispatcher } from 'svelte'
   import preferece, { SpacePreference } from '@hcengineering/preference'
   import { getSpecialSpaceClass } from '../utils'
@@ -26,6 +27,8 @@
   import SpecialElement from './navigator/SpecialElement.svelte'
   import StarredNav from './navigator/StarredNav.svelte'
   import TreeSeparator from './navigator/TreeSeparator.svelte'
+  import HelpAndSupport from './HelpAndSupport.svelte'
+  import workbench from '../plugin'
 
   export let model: NavigatorModel | undefined
   export let currentSpace: Ref<Space> | undefined
@@ -158,5 +161,16 @@
       />
     {/each}
     <div class="antiNav-space" />
+
+    <div class="antiNav-footer">
+      <Button
+        id="contact-us"
+        icon={setting.icon.Support}
+        kind={'transparent'}
+        size={'small'}
+        label={workbench.string.HelpAndSupport}
+        on:click={() => showPopup(HelpAndSupport, {}, 'help-center')}
+      />
+    </div>
   </Scroller>
 {/if}
