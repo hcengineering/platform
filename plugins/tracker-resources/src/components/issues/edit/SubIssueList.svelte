@@ -16,13 +16,7 @@
   import { Doc, Ref, WithLookup } from '@hcengineering/core'
   import { Issue, IssueStatus, Team } from '@hcengineering/tracker'
   import { getEventPositionElement, showPanel, showPopup } from '@hcengineering/ui'
-  import {
-    ActionContext,
-    ContextMenu,
-    FixedColumn,
-    ListSelectionProvider,
-    SelectDirection
-  } from '@hcengineering/view-resources'
+  import { ActionContext, ContextMenu, FixedColumn } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import { flip } from 'svelte/animate'
   import { getIssueId } from '../../../issues'
@@ -45,6 +39,7 @@
   let hoveringIndex: number | null = null
 
   function openIssue (target: Issue) {
+    dispatch('issue-focus', target)
     showPanel(tracker.component.EditIssue, target._id, target._class, 'content')
   }
 
@@ -75,8 +70,6 @@
     showPopup(ContextMenu, { object }, getEventPositionElement(ev))
   }
 
-  const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {})
-
   let varsStyle: string = ''
   const propsWidth: Record<string, number> = { issue: 0 }
   $: if (propsWidth) {
@@ -96,6 +89,7 @@
 
 {#each issues as issue, index (issue._id)}
   {@const currentTeam = teams.get(issue.space)}
+  {@const openIssueCall = () => openIssue(issue)}
   <div
     class="flex-between row"
     class:is-dragging={index === draggingIndex}
@@ -104,26 +98,20 @@
     style={varsStyle}
     animate:flip={{ duration: 400 }}
     draggable={true}
-    on:click|self={() => openIssue(issue)}
+    on:click|self={openIssueCall}
     on:contextmenu|preventDefault={(ev) => showContextMenu(ev, issue)}
     on:dragstart={(ev) => handleDragStart(ev, index)}
     on:dragover|preventDefault={() => false}
     on:dragenter={() => (hoveringIndex = index)}
     on:drop|preventDefault={(ev) => handleDrop(ev, index)}
     on:dragend={resetDrag}
-    on:mouseover={() => {
-      listProvider.updateFocus(issue)
-    }}
-    on:focus={() => {
-      listProvider.updateFocus(issue)
-    }}
   >
     <div class="draggable-container">
       <div class="draggable-mark"><Circles /></div>
     </div>
     <div class="flex-row-center ml-6 clear-mins gap-2">
       <PriorityEditor value={issue} isEditable kind={'list'} size={'small'} justify={'center'} />
-      <span class="issuePresenter" on:click={() => openIssue(issue)}>
+      <span class="issuePresenter" on:click={openIssueCall}>
         <FixedColumn
           width={propsWidth.issue}
           key={'issue'}
@@ -143,7 +131,7 @@
         size={'small'}
         tooltipAlignment="bottom"
       />
-      <span class="text name" title={issue.title} on:click={() => openIssue(issue)}>
+      <span class="text name" title={issue.title} on:click={openIssueCall}>
         {issue.title}
       </span>
     </div>
