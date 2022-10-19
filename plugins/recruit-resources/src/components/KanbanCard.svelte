@@ -44,7 +44,6 @@
     <div class="flex-row-center">
       <Avatar
         avatar={object.$lookup?.attachedTo?.avatar}
-        avatarType={object.$lookup?.attachedTo?.avatarType}
         size={'medium'}
       />
       <div class="flex-grow flex-col min-w-0 ml-2">

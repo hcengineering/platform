@@ -14,7 +14,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { combineName, EmployeeAccount, getFirstName, getLastName, Person } from '@hcengineering/contact'
+  import attachment from '@hcengineering/attachment'
+  import { combineName, Employee, EmployeeAccount, getFirstName, getLastName, Person } from '@hcengineering/contact'
   import { AccountRole, getCurrentAccount, Ref, Space } from '@hcengineering/core'
   import { AttributeEditor, Avatar, createQuery, EditableAvatar, getClient } from '@hcengineering/presentation'
   import setting, { IntegrationType } from '@hcengineering/setting'
@@ -39,6 +40,13 @@
   let lastName = getLastName(object.name)
 
   $: setName(object)
+
+  let email: string | undefined
+  $: if (editable && hierarchy.isDerived(object._class, contact.class.Employee)) {
+    client.findOne(contact.class.EmployeeAccount, { employee: (object as Employee)._id }).then((acc) => {
+      email = acc?.email
+    })
+  }
 
   function setName (object: Person) {
     firstName = getFirstName(object.name)
@@ -72,7 +80,7 @@
   const sendOpen = () => dispatch('open', { ignoreKeys: ['comments', 'name', 'channels', 'city'] })
   onMount(sendOpen)
 
-  async function onAvatarDone () {
+  async function onAvatarDone (e: any) {
     if (object.avatar != null) {
       await avatarEditor.removeAvatar(object.avatar)
     }
@@ -103,6 +111,7 @@
         {#if editable}
           <EditableAvatar
             avatar={object.avatar}
+            email={email}
             size={'x-large'}
             bind:this={avatarEditor}
             on:done={onAvatarDone}

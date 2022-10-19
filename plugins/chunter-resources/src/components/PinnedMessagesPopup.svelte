@@ -53,7 +53,7 @@
         {#await getEmployeeAccount(message) then employeeAccount}
           {#await getEmployee(employeeAccount?.employee) then employee}
             <div class="avatar">
-              <Avatar size={'medium'} avatar={employee?.avatar} avatarType={employee?.avatarType} />
+              <Avatar size={'medium'} avatar={employee?.avatar} />
             </div>
           {/await}
           <span class="name">

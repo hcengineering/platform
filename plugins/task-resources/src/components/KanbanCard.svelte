@@ -75,7 +75,6 @@
     </div>
     <Avatar
       avatar={object.$lookup?.assignee?.avatar}
-      avatarType={object.$lookup?.assignee?.avatarType}
       size={'x-small'}
     />
   </div>

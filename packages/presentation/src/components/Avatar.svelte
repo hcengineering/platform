@@ -13,15 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { AvatarType } from '@hcengineering/contact'
+  import contact, { Avatar } from '@hcengineering/contact'
   import { Asset } from '@hcengineering/platform'
   import { AnySvelteComponent, Icon, IconSize } from '@hcengineering/ui'
   import { getBlobURL, getFileUrl } from '../utils'
-  import { buildGravatarUrl } from '../gravatar'
-  import Avatar from './icons/Avatar.svelte'
+  import { getGravatarUrl } from '../gravatar'
+  import AvatarIcon from './icons/Avatar.svelte'
 
-  export let avatarType: AvatarType | undefined = undefined
-  export let avatar: string | null | undefined = undefined
+  export let avatar: Avatar | null | undefined = undefined
   export let direct: Blob | undefined = undefined
   export let size: IconSize
   export let icon: Asset | AnySvelteComponent | undefined = undefined
@@ -31,10 +30,14 @@
       getBlobURL(direct).then((blobURL) => {
         url = blobURL
       })
-  } else if (avatarType === 'file' && avatar !== undefined && avatar !== null) {
-    url = getFileUrl(avatar, size)
-  } else if (avatarType === 'gravatar' && avatar !== undefined && avatar !== null) {
-    url = buildGravatarUrl(avatar, size)
+  } else if (avatar !== undefined && avatar !== null) {
+    if (avatar.type == 'image' ) {
+      url = getFileUrl(avatar.value, size)
+    } else if (avatar.type === 'gravatar') {
+      url = getGravatarUrl(avatar.value, size)
+    } else {
+      url == undefined
+    }
   } else {
     url = undefined
   }
@@ -47,7 +50,7 @@
     {/if}
     <img class="ava-{size} ava-mask" src={url} alt={''} />
   {:else}
-    <Icon icon={icon ?? Avatar} {size} />
+    <Icon icon={icon ?? AvatarIcon} {size} />
   {/if}
 </div>
 

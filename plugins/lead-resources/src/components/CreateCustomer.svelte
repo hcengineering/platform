@@ -213,7 +213,6 @@
       <div class="ml-4 flex">
         <EditableAvatar
           avatar={object.avatar}
-          avatarType={object.avatarType}
           size={'large'}
           bind:this={avatarEditor}
           bind:direct={avatar}
