@@ -57,18 +57,18 @@
     const rawActions = await client.findAll(view.class.Action, [])
 
     const openAction = rawActions.find(
-      (action) => action.label == 'view:string:Open' && action.category == 'view:category:General'
+      (action) => action.label === 'view:string:Open' && action.category === 'view:category:General'
     )
     const deleteAction = rawActions.find(
-      (action) => action.label == 'view:string:Delete' && action.category == 'view:category:General'
+      (action) => action.label === 'view:string:Delete' && action.category === 'view:category:General'
     )
 
     actions = rawActions.filter(
       (action) =>
         action.keyBinding &&
-        action.keyBinding.length != 0 &&
-        action.label != 'view:string:Open' &&
-        action.label != 'view:string:Delete'
+        action.keyBinding.length !== 0 &&
+        action.label !== 'view:string:Open' &&
+        action.label !== 'view:string:Delete'
     )
 
     deleteAction && actions.unshift(deleteAction)
@@ -78,7 +78,7 @@
   }
   $: getActions()
 
-  let cards = [
+  const cards = [
     {
       icon: DocumentationIcon,
       title: workbench.string.Documentation,
@@ -139,7 +139,7 @@
           {#if item === 0 || (item > 0 && actions[item - 1].category !== action.category)}
             {#if action.category}
               {@const category = categories.find((cat) => cat._id === action.category)}
-              {#if category?.label && category.label != categories.find((cat) => cat._id === actions[item - 1]?.category)?.label}
+              {#if category?.label && category.label !== categories.find((cat) => cat._id === actions[item - 1]?.category)?.label}
                 <div class="category-box">
                   <Label label={category.label} />
                 </div>
