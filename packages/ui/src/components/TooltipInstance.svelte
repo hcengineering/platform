@@ -193,9 +193,11 @@
     }}
     bind:this={tooltipHTML}
   >
-    {#if $tooltip.label}<div class="fs-title mb-4">
+    {#if $tooltip.label}
+      <div class="fs-title mb-4">
         <Label label={$tooltip.label} params={$tooltip.props ?? {}} />
-      </div>{/if}
+      </div>
+    {/if}
     {#if typeof $tooltip.component === 'string'}
       <Component
         is={$tooltip.component}

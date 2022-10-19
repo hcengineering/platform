@@ -61,6 +61,7 @@
 
 * {
   box-sizing: border-box;
+  touch-action: manipulation;
   scrollbar-color: var(--theme-menu-color) var(--theme-bg-color);
   scrollbar-width: thin;
   --font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto;
@@ -112,6 +113,7 @@ body {
   color: var(--content-color);
   background-color: var(--body-color);
   user-select: none;
+  touch-action: none;
 }
 
 html,

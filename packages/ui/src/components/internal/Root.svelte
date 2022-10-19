@@ -70,6 +70,16 @@
   $: $deviceInfo.isMobile = isMobile
 
   $: document.documentElement.style.setProperty('--app-height', `${docHeight}px`)
+
+  let doubleTouchStartTimestamp = 0
+  document.addEventListener('touchstart', event => {
+    const now = +(new Date())
+    if (doubleTouchStartTimestamp + 500 > now) {
+      event.preventDefault()
+    }
+    doubleTouchStartTimestamp = now
+  })
+  document.addEventListener('dblclick', event => { event.preventDefault() })
 </script>
 
 <svelte:window bind:innerWidth={docWidth} bind:innerHeight={docHeight} />
