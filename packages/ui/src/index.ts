@@ -180,7 +180,9 @@ export const deviceOptionsStore = writable<DeviceOptions>({
   docWidth: 0,
   docHeight: 0,
   isPortrait: false,
-  isMobile: false
+  isMobile: false,
+  minWidth: false,
+  twoRows: false
 })
 
 export default uis

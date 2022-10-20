@@ -17,7 +17,7 @@
   import { getEmbeddedLabel, IntlString, translate } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import { Project, Sprint } from '@hcengineering/tracker'
-  import type { ButtonKind, ButtonSize } from '@hcengineering/ui'
+  import type { ButtonKind, ButtonSize, LabelAndProps } from '@hcengineering/ui'
   import { Button, ButtonShape, eventToHTMLElement, SelectPopup, showPopup, Label } from '@hcengineering/ui'
   import tracker from '../../plugin'
   import { sprintStatusAssets } from '../../types'
@@ -36,6 +36,7 @@
   export let enlargedText = false
 
   export let useProject: Ref<Project> | undefined = undefined
+  export let showTooltip: LabelAndProps | undefined = undefined
 
   let selectedSprint: Sprint | undefined
   let defaultSprintLabel = ''
@@ -101,6 +102,7 @@
     {shape}
     {width}
     {justify}
+    {showTooltip}
     icon={sprintIcon}
     disabled={!isEditable}
     on:click={handleSprintEditorOpened}
@@ -112,13 +114,15 @@
     {shape}
     {width}
     {justify}
+    {showTooltip}
     icon={sprintIcon}
     disabled={!isEditable}
     on:click={handleSprintEditorOpened}
-    ><svelte:fragment slot="content">
-      <span class="{enlargedText ? 'ml-1 text-base fs-bold' : 'text-md'} overflow-label content-accent-color">
+  >
+    <svelte:fragment slot="content">
+      <span class="{enlargedText ? 'text-base' : 'text-md'} font-medium overflow-label content-accent-color">
         <Label label={getEmbeddedLabel(sprintText)} />
       </span>
-    </svelte:fragment></Button
-  >
+    </svelte:fragment>
+  </Button>
 {/if}

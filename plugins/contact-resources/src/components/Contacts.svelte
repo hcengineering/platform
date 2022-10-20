@@ -63,8 +63,7 @@
     showPopup(CreateContact, { space: contact.space.Contacts, targetElement: ev.target }, ev.target as HTMLElement)
   }
 
-  let twoRows: boolean
-  $: twoRows = $deviceInfo.docWidth <= 680
+  $: twoRows = $deviceInfo.twoRows
 </script>
 
 <ActionContext

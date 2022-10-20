@@ -358,6 +358,7 @@ input.search {
 .step-lr75 + .step-lr75 { margin-left: .75rem; }
 .step-tb75 + .step-tb75 { margin-top: .75rem; }
 
+.ml-0-5 { margin-left: .125rem; }
 .ml-1 { margin-left: .25rem; }
 .ml-1-5 { margin-left: .375rem; }
 .ml-2 { margin-left: .5rem; }
@@ -501,7 +502,9 @@ input.search {
 .w-85 { width: 21.25rem; }
 .w-165 { width: 41.25rem; }
 .min-w-0 { min-width: 0; }
+.min-w-2 { min-width: .5rem; }
 .min-w-4 { min-width: 1rem; }
+.min-w-8 { min-width: 2rem; }
 .min-w-9 { min-width: 2.25rem; }
 .min-w-80 { min-width: 20rem; }
 .min-w-min { min-width: min-content; }

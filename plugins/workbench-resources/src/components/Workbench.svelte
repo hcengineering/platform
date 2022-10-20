@@ -38,7 +38,8 @@
     showPopup,
     TooltipInstance,
     PopupPosAlignment,
-    checkMobile
+    checkMobile,
+    deviceOptionsStore as deviceInfo
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { ActionContext, ActionHandler } from '@hcengineering/view-resources'
@@ -53,7 +54,6 @@
   import NavHeader from './NavHeader.svelte'
   import Navigator from './Navigator.svelte'
   import SpaceView from './SpaceView.svelte'
-  import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
 
   export let client: Client
   let contentPanel: HTMLElement

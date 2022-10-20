@@ -237,7 +237,7 @@
                 value: groupByKey ? { [groupByKey]: category } : {},
                 statuses: groupByKey === 'status' ? statuses : undefined,
                 issues: groupedIssues[category],
-                size: 'medium',
+                width: 'min-content',
                 kind: 'list-header',
                 enlargedText: true,
                 currentSpace
@@ -245,7 +245,11 @@
             />
           {/if}
           {#if limited.length < items.length}
-            <span class="text-base content-dark-color ml-4"> {limited.length} / {items.length}</span>
+            <div class="counter">
+              {limited.length}
+              <div class="text-xs mx-1">/</div>
+              {items.length}
+            </div>
             <ActionIcon
               size={'small'}
               icon={IconMoreH}
@@ -255,12 +259,15 @@
               }}
             />
           {:else}
-            <span class="text-base content-dark-color ml-4">{items.length}</span>
+            <span class="counter">{items.length}</span>
           {/if}
         </div>
-        <div class="clear-mins" use:tooltip={{ label: tracker.string.AddIssueTooltip }}>
-          <Button icon={IconAdd} kind={'transparent'} on:click={(event) => handleNewIssueAdded(event, category)} />
-        </div>
+        <Button
+          icon={IconAdd}
+          kind={'transparent'}
+          showTooltip={{ label: tracker.string.AddIssueTooltip }}
+          on:click={(event) => handleNewIssueAdded(event, category)}
+        />
       </div>
     {/if}
     <ExpandCollapse isExpanded={!isCollapsedMap[toCat(category)]} duration={400}>
@@ -356,17 +363,15 @@
                     />
                   </FixedColumn>
                 {:else}
-                  <div class="gridElement">
-                    <svelte:component
-                      this={attributeModel.presenter}
-                      value={getObjectValue(attributeModel.key, docObject) ?? ''}
-                      issueId={docObject._id}
-                      groupBy={groupByKey}
-                      {...attributeModel.props}
-                      {statuses}
-                      {currentTeam}
-                    />
-                  </div>
+                  <svelte:component
+                    this={attributeModel.presenter}
+                    value={getObjectValue(attributeModel.key, docObject) ?? ''}
+                    issueId={docObject._id}
+                    groupBy={groupByKey}
+                    {...attributeModel.props}
+                    {statuses}
+                    {currentTeam}
+                  />
                 {/if}
               {/each}
             </div>
@@ -403,11 +408,11 @@
   .categoryHeader {
     position: sticky;
     top: 0;
-    padding: 0 1.5rem 0 2.25rem;
+    padding: 0 0.75rem 0 2.25rem;
     height: 3rem;
     min-height: 3rem;
     min-width: 0;
-    background-color: var(--accent-bg-color);
+    background: var(--header-bg-color);
     z-index: 5;
   }
 
@@ -415,10 +420,28 @@
     border-bottom: 1px solid var(--accent-bg-color);
   }
 
+  .counter {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    flex-shrink: 0;
+    margin-left: 1rem;
+    padding: 0.25rem 0.5rem;
+    min-width: 1.325rem;
+    text-align: center;
+    font-weight: 500;
+    font-size: 1rem;
+    line-height: 1rem;
+    color: var(--accent-color);
+    background-color: var(--body-color);
+    border: 1px solid var(--divider-color);
+    border-radius: 1rem;
+  }
+
   .listGrid {
     display: flex;
     align-items: center;
-    padding: 0 1.5rem 0 0.875rem;
+    padding: 0 0.75rem 0 0.875rem;
     width: 100%;
     height: 2.75rem;
     min-height: 2.75rem;
