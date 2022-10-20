@@ -61,6 +61,7 @@
 
 * {
   box-sizing: border-box;
+  touch-action: manipulation;
   scrollbar-color: var(--theme-menu-color) var(--theme-bg-color);
   scrollbar-width: thin;
   --font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto;
@@ -119,4 +120,5 @@ body {
   height: var(--app-height);
   width: 100%;
   overflow: hidden;
+  touch-action: none;
 }

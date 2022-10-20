@@ -593,6 +593,7 @@
     min-height: 0;
     width: 100%;
     height: 100%;
+    touch-action: none;
   }
   .hamburger-container {
     display: flex;
@@ -605,7 +606,7 @@
       margin-top: 0.25rem;
     }
     &.mini {
-      position: fixed;
+      position: absolute;
       top: 4px;
       left: 4px;
     }
