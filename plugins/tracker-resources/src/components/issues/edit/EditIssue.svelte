@@ -264,6 +264,7 @@
           {#if currentTeam !== undefined && issueStatuses !== undefined}
             <SubIssues
               {issue}
+              {parentIssue}
               issueStatuses={new Map([[currentTeam._id, issueStatuses]])}
               teams={new Map([[currentTeam?._id, currentTeam]])}
             />
