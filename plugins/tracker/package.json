@@ -37,8 +37,8 @@
     "@hcengineering/tags": "~0.6.2",
     "lexorank": "~1.0.4"
   },
-  "repository": "https://github.com/hcengineering/anticrm",
+  "repository":"https://github.com/hcengineering/anticrm",
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "registry":"https://npm.pkg.github.com"
   }
 }

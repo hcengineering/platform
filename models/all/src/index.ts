@@ -58,6 +58,7 @@ import { createModel as boardModel } from '@hcengineering/model-board'
 import { createModel as preferenceModel } from '@hcengineering/model-preference'
 import { createModel as hrModel } from '@hcengineering/model-hr'
 import { createModel as serverHrModel } from '@hcengineering/model-server-hr'
+import { createModel as documentModel } from '@hcengineering/model-document'
 
 export const version: Data<Version> = jsonVersion as Data<Version>
 
@@ -85,6 +86,7 @@ const builders: [(b: Builder) => void, string][] = [
   [notificationModel, 'notification'],
   [preferenceModel, 'preference'],
   [hrModel, 'hr'],
+  [documentModel, 'document'],
 
   [serverCoreModel, 'server-core'],
   [serverAttachmentModel, 'server-attachment'],

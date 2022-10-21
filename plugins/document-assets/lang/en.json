@@ -1,0 +1,22 @@
+{
+  "string": {
+    "CreateDocument": "Create an document",
+    "DocumentCreateLabel": "Document",
+    "Documents": "Documents",
+    "Document": "Document",
+    "DocumentNamePlaceholder": "Name...",
+    "Name": "Name",
+    "Cancel": "Cancel",
+    "EditorPlaceholder": "type to start editing...",
+    "Version": "Version",
+    "SearchDocument": "Search document...",
+    "Revision": "Revision",
+    "NoVersions": "No version's defined",
+    "CreateEnVersion": "Create version for review",
+    "Versions": "Versions",
+    "CreateDocumentVersion": "Review content version",
+    "ApprovedBy": "Approved by",
+    "Status": "Status",
+    "LastRevision": "Last revision"
+  }
+}

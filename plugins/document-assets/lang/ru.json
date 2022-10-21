@@ -1,0 +1,22 @@
+{
+  "string": {
+    "CreateDocument": "Создать документ",
+    "DocumentCreateLabel": "Документ",
+    "Documents": "Документы",
+    "Document": "Документ",
+    "DocumentNamePlaceholder": "Имя...",
+    "Name": "Имя",
+    "Cancel": "Отмена",
+    "EditorPlaceholder": "Начните печатать тут...",
+    "Version": "Версия",
+    "SearchDocument": "Поиск документов...",
+    "Revision": "Ревизия",
+    "NoVersions": "Нет определенных версиф",
+    "CreateEnVersion": "Добавить версию для процедуры ревью",
+    "Versions": "Версии",
+    "CreateDocumentVersion": "Оцените версию документа",
+    "ApprovedBy": "Подтверждено",
+    "Status": "Статус",
+    "LastRevision": "Последняя ревизия"
+  }
+}
