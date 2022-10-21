@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Avatar } from '@hcengineering/contact'
+  import { Avatar } from '@hcengineering/contact'
   import { Asset } from '@hcengineering/platform'
   import { AnySvelteComponent, Icon, IconSize } from '@hcengineering/ui'
   import { getBlobURL, getFileUrl } from '../utils'
@@ -27,16 +27,16 @@
 
   let url: string | undefined
   $: if (direct !== undefined) {
-      getBlobURL(direct).then((blobURL) => {
-        url = blobURL
-      })
+    getBlobURL(direct).then((blobURL) => {
+      url = blobURL
+    })
   } else if (avatar !== undefined && avatar !== null) {
-    if (avatar.type == 'image' ) {
+    if (avatar.type === 'image') {
       url = getFileUrl(avatar.value, size)
     } else if (avatar.type === 'gravatar') {
       url = getGravatarUrl(avatar.value, size)
     } else {
-      url == undefined
+      url = undefined
     }
   } else {
     url = undefined

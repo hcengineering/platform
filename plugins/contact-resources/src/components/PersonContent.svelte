@@ -74,7 +74,7 @@
       class:mr-2={shouldShowName && !enlargedText}
       class:mr-3={shouldShowName && enlargedText}
     >
-      <Avatar size={avatarSize} avatar={value?.avatar} avatarType={value?.avatarType} />
+      <Avatar size={avatarSize} avatar={value?.avatar} />
     </div>
   {/if}
   {#if value && shouldShowName}

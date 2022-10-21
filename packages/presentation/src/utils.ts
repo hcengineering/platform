@@ -38,7 +38,8 @@ import { getMetadata } from '@hcengineering/platform'
 import { LiveQuery as LQ } from '@hcengineering/query'
 import { onDestroy } from 'svelte'
 import { deepEqual } from 'fast-equals'
-import { IconSize } from '@hcengineering/ui'
+import { IconSize, DropdownIntlItem } from '@hcengineering/ui'
+import contact from '@hcengineering/contact'
 
 let liveQuery: LQ
 let client: TxOperations
@@ -233,3 +234,18 @@ export function getAttributePresenterClass (
   }
   return { attrClass, category }
 }
+
+export const avatarTypeDropdownItems: DropdownIntlItem[] = [
+  {
+    id: 'color',
+    label: contact.string.UseColor
+  },
+  {
+    id: 'image',
+    label: contact.string.UseImage
+  },
+  {
+    id: 'gravatar',
+    label: contact.string.UseGravatar
+  }
+]

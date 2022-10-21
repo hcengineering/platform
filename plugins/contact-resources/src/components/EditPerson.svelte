@@ -14,7 +14,6 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import attachment from '@hcengineering/attachment'
   import { combineName, Employee, EmployeeAccount, getFirstName, getLastName, Person } from '@hcengineering/contact'
   import { AccountRole, getCurrentAccount, Ref, Space } from '@hcengineering/core'
   import { AttributeEditor, Avatar, createQuery, EditableAvatar, getClient } from '@hcengineering/presentation'
@@ -93,7 +92,7 @@
   async function removeAvatar (): Promise<void> {
     if (object.avatar != null) {
       await client.updateDoc(object._class, object.space, object._id, {
-        avatar: null
+        avatar: undefined
       })
       await avatarEditor.removeAvatar(object.avatar)
     }
@@ -111,14 +110,14 @@
         {#if editable}
           <EditableAvatar
             avatar={object.avatar}
-            email={email}
+            {email}
             size={'x-large'}
             bind:this={avatarEditor}
             on:done={onAvatarDone}
             on:remove={removeAvatar}
           />
         {:else}
-          <Avatar avatar={object.avatar} avatarType={object.avatarType} size={'x-large'} />
+          <Avatar avatar={object.avatar} size={'x-large'} />
         {/if}
       {/key}
     </div>

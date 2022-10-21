@@ -125,7 +125,7 @@
         <div class="mr-2">
           <Button icon={IconAdd} kind={'link-bordered'} on:click={createChild} />
         </div>
-        <Avatar size={'medium'} avatar={value.avatar} avatarType={'file'} icon={hr.icon.Department} />
+        <Avatar size={'medium'} avatar={value.avatar} icon={hr.icon.Department} />
         <div class="flex-row ml-2">
           <div class="fs-title">
             {value.name}

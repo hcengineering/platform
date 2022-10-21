@@ -46,7 +46,7 @@
     if (object === undefined) return
     if (object.avatar != null) {
       await client.updateDoc(object._class, object.space, object._id, {
-        avatar: null
+        avatar: undefined
       })
       await avatarEditor.removeAvatar(object.avatar)
     }

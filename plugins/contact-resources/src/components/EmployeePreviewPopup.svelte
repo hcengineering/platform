@@ -58,7 +58,7 @@
 <div class="antiPopup p-4 flex-col">
   {#if employee}
     <div class="flex-col-center pb-2">
-      <Avatar size="x-large" avatar={employee?.avatar} avatarType={employee?.avatarType} />
+      <Avatar size="x-large" avatar={employee?.avatar} />
     </div>
     <div class="pb-2">{formatName(employee?.name ?? '')}</div>
     <a href={`#${getPanelURI(view.component.EditDoc, employee._id, Hierarchy.mixinOrClass(employee), 'content')}`}

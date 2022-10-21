@@ -19,7 +19,15 @@ import { MD5 } from 'crypto-js'
 /**
  * @public
  */
-export type GravatarPlaceholderType = '404' | 'mp' | 'identicon' | 'monsterid' | 'wavatar' | 'retro' | 'robohash' | 'blank'
+export type GravatarPlaceholderType =
+  | '404'
+  | 'mp'
+  | 'identicon'
+  | 'monsterid'
+  | 'wavatar'
+  | 'retro'
+  | 'robohash'
+  | 'blank'
 
 /**
  * @public
@@ -31,7 +39,11 @@ export function buildGravatarId (email: string): string {
 /**
  * @public
  */
-export function getGravatarUrl (gravatarId: string, size: IconSize = 'full', placeholder: GravatarPlaceholderType = 'identicon'): string {
+export function getGravatarUrl (
+  gravatarId: string,
+  size: IconSize = 'full',
+  placeholder: GravatarPlaceholderType = 'identicon'
+): string {
   let width = 64
   switch (size) {
     case 'inline':
