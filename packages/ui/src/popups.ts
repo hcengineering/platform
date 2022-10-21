@@ -292,6 +292,11 @@ export function fitPopupElement (
       newProps.bottom = '12px'
       newProps.left = '50%'
       newProps.transform = 'translateX(-50%)'
+    } else if (element === 'help-center') {
+      newProps.top = 'calc(var(--status-bar-height) + 12px)'
+      newProps.bottom = '12px'
+      newProps.right = '12px'
+      show = true
     }
   } else {
     newProps.top = '50%'

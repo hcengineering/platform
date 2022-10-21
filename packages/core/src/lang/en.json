@@ -23,7 +23,6 @@
     "Ref": "Ref",
     "Collection": "Collection",
     "Array": "Array",
-    "Bag": "Bag",
     "Enum": "Enum",
     "Members": "Members"
   }

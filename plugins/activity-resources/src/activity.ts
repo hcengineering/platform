@@ -232,6 +232,14 @@ class ActivityImpl implements Activity {
       .filter((tx) => {
         const utx = this.getUpdateTx(tx)
 
+        if (hierarchy.isDerived(tx._class, core.class.TxCollectionCUD)) {
+          // Check if collection attribute is hidden
+          const txColl = tx as TxCollectionCUD<Doc, AttachedDoc>
+          if (this.hiddenAttributes.has(txColl.collection)) {
+            return false
+          }
+        }
+
         if (utx === undefined) {
           return true
         }
@@ -254,7 +262,6 @@ class ActivityImpl implements Activity {
     let updateCUD = false
     let mixinCUD = false
     const hierarchy = this.client.getHierarchy()
-
     let collectionAttribute: Attribute<Collection<AttachedDoc>> | undefined
     if (hierarchy.isDerived(tx._class, core.class.TxCollectionCUD)) {
       const cltx = tx as TxCollectionCUD<Doc, AttachedDoc>

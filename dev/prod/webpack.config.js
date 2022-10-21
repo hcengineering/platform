@@ -168,7 +168,11 @@ module.exports = {
   },
   mode,
   plugins: [
-    new HtmlWebpackPlugin(), 
+    new HtmlWebpackPlugin({
+      meta: {
+        viewport: 'width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=1'
+      }
+    }),
     ...(prod ? [new CompressionPlugin()] : []),
     // new MiniCssExtractPlugin({
     //   filename: '[name].[id][contenthash].css'

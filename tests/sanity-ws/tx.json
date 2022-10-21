@@ -11,7 +11,8 @@
     "attributes": {
       "email": "rosamund@hc.engineering",
       "employee": "61f1031bff96c329e8f3d61c",
-      "name": "Chen,Rosamund"
+      "name": "Chen,Rosamund",
+      "active": true
     }
   },
   {
@@ -899,7 +900,8 @@
     "modifiedBy": "61f1031bff96c329e8f3d61d",
     "attributes": {
       "name": "Chen,Rosamund",
-      "city": "Mountain View"
+      "city": "Mountain View",
+      "active": true
     }
   },
   {

@@ -13,12 +13,13 @@
 // limitations under the License.
 //
 
+import { MD5 } from 'crypto-js'
+
 import { Employee, EmployeeAccount } from '@hcengineering/contact'
 import { AccountRole, DOMAIN_TX, TxCreateDoc, TxOperations } from '@hcengineering/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
-import contact, { DOMAIN_CONTACT } from './index'
-import { MD5 } from 'crypto-js'
+import contact from './index'
 
 async function createSpace (tx: TxOperations): Promise<void> {
   const current = await tx.findOne(core.class.Space, {
@@ -55,19 +56,6 @@ async function createSpace (tx: TxOperations): Promise<void> {
       contact.space.Contacts
     )
   }
-}
-
-async function setActiveEmployee (client: MigrationClient): Promise<void> {
-  await client.update(
-    DOMAIN_CONTACT,
-    {
-      _class: contact.class.Employee
-    },
-    {
-      active: true
-    }
-  )
-  await setActiveEmployeeTx(client)
 }
 
 async function setActiveEmployeeTx (client: MigrationClient): Promise<void> {
@@ -135,7 +123,7 @@ async function updateEmployeeAvatar (tx: TxOperations): Promise<void> {
 
 export const contactOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
-    await setActiveEmployee(client)
+    await setActiveEmployeeTx(client)
     await setRole(client)
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {

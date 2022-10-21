@@ -29,16 +29,13 @@ import core, {
   MeasureContext,
   Obj,
   ObjQueryType,
-  PropertyType,
   Ref,
   toFindResult,
   Tx,
-  TxBulkWrite,
   TxCollectionCUD,
   TxCreateDoc,
   TxMixin,
   TxProcessor,
-  TxPutBag,
   TxRemoveDoc,
   TxResult,
   TxUpdateDoc
@@ -55,11 +52,6 @@ export class FullTextIndex implements WithFind {
     private readonly dbStorage: WithFind,
     private readonly skipUpdateAttached: boolean
   ) {}
-
-  protected async txPutBag (ctx: MeasureContext, tx: TxPutBag<any>): Promise<TxResult> {
-    // console.log('FullTextIndex.txPutBag: Method not implemented.')
-    return {}
-  }
 
   protected async txRemoveDoc (ctx: MeasureContext, tx: TxRemoveDoc<Doc>): Promise<TxResult> {
     // console.log('FullTextIndex.txRemoveDoc: Method not implemented.')
@@ -101,10 +93,9 @@ export class FullTextIndex implements WithFind {
         return await this.txRemoveDoc(ctx, tx as TxRemoveDoc<Doc>)
       case core.class.TxMixin:
         return await this.txMixin(ctx, tx as TxMixin<Doc, Doc>)
-      case core.class.TxPutBag:
-        return await this.txPutBag(ctx, tx as TxPutBag<PropertyType>)
-      case core.class.TxBulkWrite:
-        return await this.txBulkWrite(ctx, tx as TxBulkWrite)
+      case core.class.TxApplyIf:
+        // Apply if processed on server
+        return await Promise.resolve({})
     }
     throw new Error('TxProcessor: unhandled transaction class: ' + tx._class)
   }
@@ -125,13 +116,6 @@ export class FullTextIndex implements WithFind {
       return this.txCreateDoc(ctx, d)
     }
     return this.tx(ctx, tx.tx)
-  }
-
-  protected async txBulkWrite (ctx: MeasureContext, bulkTx: TxBulkWrite): Promise<TxResult> {
-    for (const tx of bulkTx.txes) {
-      await this.tx(ctx, tx)
-    }
-    return {}
   }
 
   async findAll<T extends Doc>(

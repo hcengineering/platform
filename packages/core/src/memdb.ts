@@ -20,7 +20,7 @@ import core from './component'
 import { Hierarchy } from './hierarchy'
 import { matchQuery, resultSort, checkMixinKey } from './query'
 import type { DocumentQuery, FindOptions, FindResult, LookupData, Storage, TxResult, WithLookup } from './storage'
-import type { Tx, TxCreateDoc, TxMixin, TxPutBag, TxRemoveDoc, TxUpdateDoc } from './tx'
+import type { Tx, TxCreateDoc, TxMixin, TxRemoveDoc, TxUpdateDoc } from './tx'
 import { TxProcessor } from './tx'
 import { toFindResult } from './utils'
 
@@ -199,10 +199,6 @@ export class TxDb extends MemDb implements Storage {
     throw new Error('Method not implemented.')
   }
 
-  protected txPutBag (tx: TxPutBag<any>): Promise<TxResult> {
-    throw new Error('Method not implemented.')
-  }
-
   protected txUpdateDoc (tx: TxUpdateDoc<Doc>): Promise<TxResult> {
     throw new Error('Method not implemented.')
   }
@@ -227,18 +223,6 @@ export class TxDb extends MemDb implements Storage {
  * @public
  */
 export class ModelDb extends MemDb implements Storage {
-  protected override async txPutBag (tx: TxPutBag<any>): Promise<TxResult> {
-    const doc = this.getObject(tx.objectId) as any
-    let bag = doc[tx.bag]
-    if (bag === undefined) {
-      doc[tx.bag] = bag = {}
-    }
-    bag[tx.key] = tx.value
-    doc.modifiedBy = tx.modifiedBy
-    doc.modifiedOn = tx.modifiedOn
-    return {}
-  }
-
   protected override async txCreateDoc (tx: TxCreateDoc<Doc>): Promise<TxResult> {
     this.addDoc(TxProcessor.createDoc2Doc(tx))
     return {}

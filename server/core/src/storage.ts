@@ -36,7 +36,7 @@ import core, {
   ServerStorage,
   StorageIterator,
   Tx,
-  TxBulkWrite,
+  TxApplyIf,
   TxCollectionCUD,
   TxCreateDoc,
   TxCUD,
@@ -73,6 +73,8 @@ export interface DbConfiguration {
 class TServerStorage implements ServerStorage {
   private readonly fulltext: FullTextIndex
   hierarchy: Hierarchy
+
+  scopes = new Map<string, Promise<any>>()
 
   constructor (
     private readonly _domains: Record<string, string>,
@@ -114,14 +116,6 @@ class TServerStorage implements ServerStorage {
       const res = await adapter.tx(txCUD)
       return res
     } else {
-      if (this.hierarchy.isDerived(tx._class, core.class.TxBulkWrite)) {
-        const bulkWrite = tx as TxBulkWrite
-        for (const tx of bulkWrite.txes) {
-          await this.tx(ctx, tx)
-        }
-      } else {
-        throw new Error('not implemented (routeTx)')
-      }
       return [{}, false]
     }
   }
@@ -174,16 +168,21 @@ class TServerStorage implements ServerStorage {
     const oldAttachedTo = (await this.findAll(ctx, _class, { _id }, { limit: 1 }))[0]
     let oldTx: Tx | null = null
     if (oldAttachedTo !== undefined) {
-      oldTx = await this.getCollectionUpdateTx(_id, _class, tx.modifiedBy, colTx.modifiedOn, oldAttachedTo, {
-        $inc: { [colTx.collection]: -1 }
-      })
+      const attr = this.hierarchy.getAttribute(oldAttachedTo._class, colTx.collection)
+
+      if (attr !== undefined) {
+        oldTx = await this.getCollectionUpdateTx(_id, _class, tx.modifiedBy, colTx.modifiedOn, oldAttachedTo, {
+          $inc: { [colTx.collection]: -1 }
+        })
+      }
     }
 
     const newAttachedToClass = operations.attachedToClass ?? _class
     const newAttachedToCollection = operations.collection ?? colTx.collection
     const newAttachedTo = (await this.findAll(ctx, newAttachedToClass, { _id: operations.attachedTo }, { limit: 1 }))[0]
     let newTx: Tx | null = null
-    if (newAttachedTo !== undefined) {
+    const newAttr = this.hierarchy.getAttribute(newAttachedToClass, newAttachedToCollection)
+    if (newAttachedTo !== undefined && newAttr !== undefined) {
       newTx = await this.getCollectionUpdateTx(
         newAttachedTo._id,
         newAttachedTo._class,
@@ -426,6 +425,10 @@ class TServerStorage implements ServerStorage {
       ))
     ]
 
+    return await this.processDerivedTxes(derived, ctx, triggerFx)
+  }
+
+  private async processDerivedTxes (derived: Tx[], ctx: MeasureContext, triggerFx: Effects): Promise<Tx[]> {
     derived.sort((a, b) => a.modifiedOn - b.modifiedOn)
 
     for (const tx of derived) {
@@ -443,12 +446,46 @@ class TServerStorage implements ServerStorage {
     return res
   }
 
+  /**
+   * Verify if apply if is possible to apply.
+   */
+  async verifyApplyIf (
+    ctx: MeasureContext,
+    applyIf: TxApplyIf
+  ): Promise<{
+      onEnd: () => void
+      passed: boolean
+    }> {
+    // Wait for synchronized.
+    ;(await this.scopes.get(applyIf.scope)) ?? Promise.resolve()
+    let onEnd = (): void => {}
+    // Put sync code
+    this.scopes.set(
+      applyIf.scope,
+      new Promise((resolve) => {
+        onEnd = () => {
+          this.scopes.delete(applyIf.scope)
+          resolve(null)
+        }
+      })
+    )
+    let passed = true
+    for (const { _class, query } of applyIf.match) {
+      const res = await this.findAll(ctx, _class, query, { limit: 1 })
+      if (res.length === 0) {
+        passed = false
+        break
+      }
+    }
+    return { passed, onEnd }
+  }
+
   async tx (ctx: MeasureContext, tx: Tx): Promise<[TxResult, Tx[]]> {
     // store tx
     const _class = txClass(tx)
     const objClass = txObjectClass(tx)
     return await ctx.with('tx', { _class, objClass }, async (ctx) => {
-      if (tx.space !== core.space.DerivedTx) {
+      if (tx.space !== core.space.DerivedTx && !this.hierarchy.isDerived(tx._class, core.class.TxApplyIf)) {
         await ctx.with('domain-tx', { _class, objClass }, async () => await this.getAdapter(DOMAIN_TX).tx(tx))
       }
 
@@ -461,20 +498,43 @@ class TServerStorage implements ServerStorage {
 
       const triggerFx = new Effects()
 
-      // store object
-      const result = await ctx.with('route-tx', { _class, objClass }, (ctx) => this.routeTx(ctx, tx))
-      // invoke triggers and store derived objects
-      const derived = await this.proccessDerived(ctx, tx, _class, triggerFx)
+      let result: TxResult = {}
+      let derived: Tx[] = []
+      let onEnd = (): void => {}
 
-      // index object
-      await ctx.with('fulltext', { _class, objClass }, (ctx) => this.fulltext.tx(ctx, tx))
-      // index derived objects
-      for (const tx of derived) {
-        await ctx.with('derived-fulltext', { _class: txClass(tx) }, (ctx) => this.fulltext.tx(ctx, tx))
-      }
+      try {
+        if (this.hierarchy.isDerived(tx._class, core.class.TxApplyIf)) {
+          const applyIf = tx as TxApplyIf
+          // Wait for scope promise if found
+          let passed: boolean
+          ;({ passed, onEnd } = await this.verifyApplyIf(ctx, applyIf))
+          result = passed
+          if (passed) {
+            // Store apply if transaction
+            await ctx.with('domain-tx', { _class, objClass }, async () => await this.getAdapter(DOMAIN_TX).tx(tx))
+            derived = await this.processDerivedTxes(applyIf.txes, ctx, triggerFx)
+          }
+        } else {
+          // store object
+          result = await ctx.with('route-tx', { _class, objClass }, (ctx) => this.routeTx(ctx, tx))
+          // invoke triggers and store derived objects
+          derived = await this.proccessDerived(ctx, tx, _class, triggerFx)
+        }
 
-      for (const fx of triggerFx.effects) {
-        await fx()
+        // index object
+        await ctx.with('fulltext', { _class, objClass }, (ctx) => this.fulltext.tx(ctx, tx))
+        // index derived objects
+        for (const tx of derived) {
+          await ctx.with('derived-fulltext', { _class: txClass(tx) }, (ctx) => this.fulltext.tx(ctx, tx))
+        }
+
+        for (const fx of triggerFx.effects) {
+          await fx()
+        }
+      } catch (err: any) {
+        console.log(err)
+      } finally {
+        onEnd()
       }
 
       return [result, derived]

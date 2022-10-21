@@ -35,12 +35,10 @@ import core, {
   SortingQuery,
   toFindResult,
   Tx,
-  TxBulkWrite,
   TxCollectionCUD,
   TxCreateDoc,
   TxMixin,
   TxProcessor,
-  TxPutBag,
   TxRemoveDoc,
   TxResult,
   TxUpdateDoc,
@@ -230,27 +228,6 @@ export class LiveQuery extends TxProcessor implements Client {
         this.queue.push(q)
       }
     }
-  }
-
-  protected override async txPutBag (tx: TxPutBag<any>): Promise<TxResult> {
-    for (const queries of this.queries.values()) {
-      for (const q of queries) {
-        if (q.result instanceof Promise) {
-          q.result = await q.result
-        }
-        const updatedDoc = q.result.find((p) => p._id === tx.objectId)
-        if (updatedDoc !== undefined) {
-          const doc = updatedDoc as any
-          let bag = doc[tx.bag]
-          if (bag === undefined) {
-            doc[tx.bag] = bag = {}
-          }
-          bag[tx.key] = tx.value
-          await this.updatedDocCallback(updatedDoc, q)
-        }
-      }
-    }
-    return {}
   }
 
   private async checkSearch (q: Query, pos: number, _id: Ref<Doc>): Promise<boolean> {
@@ -853,10 +830,6 @@ export class LiveQuery extends TxProcessor implements Client {
       }
     }
     return result
-  }
-
-  protected override async txBulkWrite (tx: TxBulkWrite): Promise<TxResult> {
-    return await super.txBulkWrite(tx)
   }
 
   async tx (tx: Tx): Promise<TxResult> {

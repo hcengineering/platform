@@ -13,6 +13,8 @@
   import Clock from './Clock.svelte'
   // import Mute from './icons/Mute.svelte'
   import WiFi from './icons/WiFi.svelte'
+  import Computer from './icons/Computer.svelte'
+  import Phone from './icons/Phone.svelte'
   import ThemeSelector from './ThemeSelector.svelte'
   import FontSizeSelector from './FontSizeSelector.svelte'
   import LangSelector from './LangSelector.svelte'
@@ -58,11 +60,11 @@
   let docHeight: number = window.innerHeight
   let maxLenght: number
   $: maxLenght = docWidth >= docHeight ? docWidth : docHeight
-  let isPortrait: boolean
-  $: isPortrait = docWidth <= docHeight
   let isMobile: boolean
   let alwaysMobile: boolean = false
   $: isMobile = alwaysMobile || checkMobile()
+  let isPortrait: boolean
+  $: isPortrait = docWidth <= docHeight
 
   $: $deviceInfo.docWidth = docWidth
   $: $deviceInfo.docHeight = docHeight
@@ -70,6 +72,18 @@
   $: $deviceInfo.isMobile = isMobile
 
   $: document.documentElement.style.setProperty('--app-height', `${docHeight}px`)
+
+  let doubleTouchStartTimestamp = 0
+  document.addEventListener('touchstart', (event) => {
+    const now = +new Date()
+    if (doubleTouchStartTimestamp + 500 > now) {
+      event.preventDefault()
+    }
+    doubleTouchStartTimestamp = now
+  })
+  document.addEventListener('dblclick', (event) => {
+    event.preventDefault()
+  })
 </script>
 
 <svelte:window bind:innerWidth={docWidth} bind:innerHeight={docHeight} />
@@ -99,13 +113,19 @@
           </div>
           <div
             class="flex-center widget mr-3"
-            class:on={isMobile}
-            class:always={alwaysMobile}
+            class:rotated={!isPortrait && isMobile}
             on:click={() => {
               alwaysMobile = !alwaysMobile
               document.documentElement.style.setProperty('--app-height', `${window.innerHeight}px`)
             }}
           >
+            <svelte:component
+              this={isMobile ? Phone : Computer}
+              fill={alwaysMobile ? 'var(--won-color)' : 'var(--content-color)'}
+              size={'small'}
+            />
+          </div>
+          <div class="flex-center widget cursor-pointer mr-3">
             <WiFi size={'small'} />
           </div>
         </div>
@@ -158,13 +178,11 @@
         height: 16px;
         font-size: 14px;
         color: var(--content-color);
+        transition: transform 0.15s ease-in-out;
 
-        &.on {
-          color: var(--caption-color);
-
-          &.always {
-            color: var(--won-color);
-          }
+        &.rotated {
+          transform-origin: center center;
+          transform: rotate(90deg);
         }
       }
     }

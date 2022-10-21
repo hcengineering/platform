@@ -1367,6 +1367,27 @@
       "packageName": "@hcengineering/server-hr-resources",
       "projectFolder": "server-plugins/hr-resources",
       "shouldPublish": true
+    },
+
+    {
+      "packageName": "@hcengineering/document",
+      "projectFolder": "plugins/document",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/document-assets",
+      "projectFolder": "plugins/document-assets",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/document-resources",
+      "projectFolder": "plugins/document-resources",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/model-document",
+      "projectFolder": "models/document",
+      "shouldPublish": true
     }
   ]
 }
