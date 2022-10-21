@@ -472,12 +472,12 @@ export function createModel (builder: Builder): void {
       {
         key: '',
         presenter: tracker.component.ProjectEditor,
-        props: { kind: 'list', size: 'small', shape: 'round', shouldShowPlaceholder: false }
+        props: { kind: 'list', size: 'small', shape: 'round', shouldShowPlaceholder: false, exclude: 'project' }
       },
       {
         key: '',
         presenter: tracker.component.SprintEditor,
-        props: { kind: 'list', size: 'small', shape: 'round', shouldShowPlaceholder: false }
+        props: { kind: 'list', size: 'small', shape: 'round', shouldShowPlaceholder: false, exclude: 'sprint' }
       },
       { key: '', presenter: tracker.component.EstimationEditor, props: { kind: 'list', size: 'small' } },
       { key: 'modifiedOn', presenter: tracker.component.ModificationDatePresenter, props: { fixed: 'right' } },

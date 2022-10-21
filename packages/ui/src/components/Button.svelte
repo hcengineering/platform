@@ -127,7 +127,7 @@
     <Spinner />
   {/if}
   {#if label}
-    <span class="overflow-label disabled" class:ml-2={loading}>
+    <span class="overflow-label disabled pointer-events-none" class:ml-2={loading}>
       <Label {label} params={labelParams} />
     </span>
   {:else if $$slots.content}

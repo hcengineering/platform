@@ -362,7 +362,7 @@
                       {currentTeam}
                     />
                   </FixedColumn>
-                {:else}
+                {:else if attributeModel.props?.exclude !== groupByKey}
                   <svelte:component
                     this={attributeModel.presenter}
                     value={getObjectValue(attributeModel.key, docObject) ?? ''}
