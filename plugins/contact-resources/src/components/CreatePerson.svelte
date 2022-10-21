@@ -13,10 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import attachment from '@hcengineering/attachment'
   import { Channel, combineName, findPerson, Person } from '@hcengineering/contact'
   import { AttachedData, Data, generateId } from '@hcengineering/core'
-  import { getResource } from '@hcengineering/platform'
   import { Card, EditableAvatar, getClient } from '@hcengineering/presentation'
   import { EditBox, IconInfo, Label, createFocusManager, FocusHandler } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
@@ -115,11 +113,7 @@
       </div>
     </div>
     <div class="ml-4">
-      <EditableAvatar
-        avatar={object.avatar}
-        size={'large'}
-        bind:this={avatarEditor}
-      />
+      <EditableAvatar avatar={object.avatar} size={'large'} bind:this={avatarEditor} />
     </div>
   </div>
   <svelte:fragment slot="pool">

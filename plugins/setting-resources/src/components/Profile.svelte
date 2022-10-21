@@ -50,7 +50,7 @@
   async function onAvatarDone (e: any) {
     if (employee === undefined) return
 
-    if (employee.avatar != null) {
+    if (employee.avatar) {
       await avatarEditor.removeAvatar(employee.avatar)
     }
     const avatar = await avatarEditor.createAvatar()
@@ -63,7 +63,7 @@
     if (employee === undefined) return
     if (employee.avatar != null) {
       await client.updateDoc(employee._class, employee.space, employee._id, {
-        avatar: null
+        avatar: undefined
       })
       await avatarEditor.removeAvatar(employee.avatar)
     }

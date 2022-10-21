@@ -45,7 +45,7 @@
 
 <div class="flex-col h-full flex-grow card-container">
   <div class="label uppercase"><Label label={recruit.string.Talent} /></div>
-  <Avatar avatar={candidate?.avatar} avatarType={candidate?.avatarType} size={'large'} />
+  <Avatar avatar={candidate?.avatar} size={'large'} />
   {#if candidate}
     <div
       class="name lines-limit-2"

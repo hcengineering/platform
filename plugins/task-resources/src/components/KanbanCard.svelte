@@ -73,9 +73,6 @@
         </div>
       {/if}
     </div>
-    <Avatar
-      avatar={object.$lookup?.assignee?.avatar}
-      size={'x-small'}
-    />
+    <Avatar avatar={object.$lookup?.assignee?.avatar} size={'x-small'} />
   </div>
 </div>

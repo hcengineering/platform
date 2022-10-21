@@ -38,7 +38,7 @@
   const dispatch = createEventDispatcher()
 
   async function getEmployee (_id?: Ref<Employee>): Promise<Employee | undefined> {
-    if (_id === undefined) return (await client.findOne(contact.class.Employee, { _id }))
+    if (_id === undefined) return await client.findOne(contact.class.Employee, { _id })
   }
 
   function getEmployeeAccount (message: ChunterMessage): EmployeeAccount | undefined {

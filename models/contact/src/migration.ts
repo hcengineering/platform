@@ -100,25 +100,19 @@ async function setRole (client: MigrationClient): Promise<void> {
 
 async function updateEmployeeAvatar (tx: TxOperations): Promise<void> {
   const accounts = await tx.findAll(contact.class.EmployeeAccount, {})
-  const employees = await tx.findAll(
-    contact.class.Employee,
-    { _id: { $in: accounts.map((a) => a.employee) } }
-  )
+  const employees = await tx.findAll(contact.class.Employee, { _id: { $in: accounts.map((a) => a.employee) } })
   const employeesById = new Map(employees.map((it) => [it._id, it]))
 
   // update avatar type for users with avatar
   let promises = employees
     .filter((e) => e.avatar != null && e.avatar !== undefined)
     .map(async (e) => {
-      await tx.update(
-        e,
-        {
-          avatar: {
-            type: 'image',
-            value: e.avatar as unknown as string
-          }
+      await tx.update(e, {
+        avatar: {
+          type: 'image',
+          value: e.avatar as unknown as string
         }
-      )
+      })
     })
   await Promise.all(promises)
 
@@ -129,15 +123,12 @@ async function updateEmployeeAvatar (tx: TxOperations): Promise<void> {
     if (employee.avatar != null && employee.avatar !== undefined) return
 
     const gravatarId = MD5(account.email.trim().toLowerCase()).toString()
-    await tx.update(
-      employee,
-      {
-        avatar: {
-          type: 'gravatar',
-          value: gravatarId
-        }
+    await tx.update(employee, {
+      avatar: {
+        type: 'gravatar',
+        value: gravatarId
       }
-    )
+    })
   })
   await Promise.all(promises)
 }
