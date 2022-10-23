@@ -67,7 +67,7 @@
 </script>
 
 <div class="w-full h-full clear-mins">
-  <Scroller fade={issueSP} horizontal>
+  <Scroller fade={issueSP}>
     <IssuesListBrowser
       {_class}
       {currentSpace}
