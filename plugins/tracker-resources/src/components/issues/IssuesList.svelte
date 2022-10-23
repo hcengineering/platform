@@ -402,7 +402,7 @@
     flex-direction: column;
     width: 100%;
     height: max-content;
-    min-width: auto;
+    min-width: 35rem;
     min-height: auto;
   }
   .categoryHeader {
