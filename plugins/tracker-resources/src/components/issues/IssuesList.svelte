@@ -511,7 +511,7 @@
       background-color: var(--accent-bg-color);
       opacity: 0;
       pointer-events: none;
-      z-index: 1;
+      z-index: 2;
       transition-property: opacity, width;
       transition-duration: 0.15s;
       transition-timing-function: var(--timing-main);
@@ -536,7 +536,7 @@
       border: 1px solid transparent;
       border-radius: 0.25rem;
       opacity: 0.1;
-      z-index: 2;
+      z-index: 1;
       transition: opacity 0.15s var(--timing-main);
 
       &:focus {
