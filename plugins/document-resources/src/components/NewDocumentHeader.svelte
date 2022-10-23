@@ -1,38 +1,35 @@
 <!--
-//
 // Copyright © 2022 Hardcore Engineering Inc.
-//
+// 
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-//
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//
+// 
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 -->
 <script lang="ts">
-  import { WithLookup } from '@hcengineering/core'
-  import { Document } from '@hcengineering/document'
-  import { getPanelURI, Icon } from '@hcengineering/ui'
+  import { Button, showPopup } from '@hcengineering/ui'
   import document from '../plugin'
+  import CreateDocument from './CreateDocument.svelte'
 
-  export let value: WithLookup<Document>
-  export let inline = false
+  async function newDocument (): Promise<void> {
+    showPopup(CreateDocument, {}, 'top')
+  }
 </script>
 
-{#if value}
-  <a
-    class="flex-presenter"
-    href="#{getPanelURI(document.component.EditDoc, value._id, value._class, 'content')}"
-    class:inline-presenter={inline}
-  >
-    <div class="icon">
-      <Icon icon={document.icon.Document} size={'small'} />
-    </div>
-    <span class="label">{value.name}</span>
-  </a>
-{/if}
+<div class="antiNav-subheader gap-2">
+  <div class="flex-grow text-md">
+    <Button
+      icon={document.icon.Document}
+      label={document.string.CreateDocument}
+      justify={'left'}
+      width={'100%'}
+      on:click={newDocument}
+    />
+  </div>
+</div>

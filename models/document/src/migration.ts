@@ -14,8 +14,9 @@
 //
 
 import { TxOperations } from '@hcengineering/core'
-import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
+import { createOrUpdate, MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
+import tags from '@hcengineering/tags'
 import document from './index'
 
 async function createSpace (tx: TxOperations): Promise<void> {
@@ -38,10 +39,24 @@ async function createSpace (tx: TxOperations): Promise<void> {
   }
 }
 
-export const contactOperation: MigrateOperation = {
+export const documentOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {},
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)
     await createSpace(tx)
+
+    await createOrUpdate(
+      tx,
+      tags.class.TagCategory,
+      tags.space.Tags,
+      {
+        icon: tags.icon.Tags,
+        label: 'Labels',
+        targetClass: document.class.Document,
+        tags: [],
+        default: true
+      },
+      document.category.Other
+    )
   }
 }

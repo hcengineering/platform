@@ -34,6 +34,7 @@ import { trackerOperation } from '@hcengineering/model-tracker'
 import { boardOperation } from '@hcengineering/model-board'
 import { demoOperation } from '@hcengineering/model-demo'
 import { hrOperation } from '@hcengineering/model-hr'
+import { documentOperation } from '@hcengineering/model-document'
 
 export const migrateOperations: MigrateOperation[] = [
   coreOperation,
@@ -54,5 +55,6 @@ export const migrateOperations: MigrateOperation[] = [
   settingOperation,
   trackerOperation,
   boardOperation,
-  hrOperation
+  hrOperation,
+  documentOperation
 ]

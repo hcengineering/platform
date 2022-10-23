@@ -16,27 +16,20 @@
 -->
 <script lang="ts">
   import { Doc, DocumentQuery } from '@hcengineering/core'
+  import { Document } from '@hcengineering/document'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import {
-    Button,
-    deviceOptionsStore as deviceInfo,
-    Icon,
-    IconAdd,
-    Label,
-    Loading,
-    SearchEdit,
-    showPopup
-  } from '@hcengineering/ui'
+  import { deviceOptionsStore as deviceInfo, Icon, Label, Loading, SearchEdit } from '@hcengineering/ui'
   import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
   import { ActionContext, FilterButton, TableBrowser, ViewletSettingButton } from '@hcengineering/view-resources'
   import document from '../plugin'
-  import CreateDocument from './CreateDocument.svelte'
+
+  export let query: DocumentQuery<Document> = {}
 
   let search = ''
-  let resultQuery: DocumentQuery<Doc> = {}
+  let resultQuery: DocumentQuery<Doc> = query
 
-  function updateResultQuery (search: string): void {
-    resultQuery = search === '' ? {} : { $search: search }
+  function updateResultQuery (search: string, query: DocumentQuery<Document>): void {
+    resultQuery = search === '' ? { ...query } : { ...query, $search: search }
   }
 
   let viewlet: Viewlet | undefined
@@ -68,10 +61,6 @@
       }
     })
 
-  function showCreateDialog (ev: Event) {
-    showPopup(CreateDocument, { space: document.space.Documents, targetElement: ev.target }, ev.target as HTMLElement)
-  }
-
   let twoRows: boolean
   $: twoRows = $deviceInfo.docWidth <= 680
 </script>
@@ -93,18 +82,11 @@
       <SearchEdit
         bind:value={search}
         on:change={() => {
-          updateResultQuery(search)
+          updateResultQuery(search, query)
         }}
       />
     </div>
     <div class="ac-header-full" class:secondRow={twoRows}>
-      <Button
-        icon={IconAdd}
-        label={document.string.DocumentCreateLabel}
-        kind={'primary'}
-        size={'small'}
-        on:click={(ev) => showCreateDialog(ev)}
-      />
       <ViewletSettingButton {viewlet} />
     </div>
   </div>
