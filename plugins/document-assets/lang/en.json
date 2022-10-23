@@ -17,6 +17,16 @@
     "CreateDocumentVersion": "Review content version",
     "ApprovedBy": "Approved by",
     "Status": "Status",
-    "LastRevision": "Last revision"
+    "LastRevision": "Last revision",
+    "DocumentApplication": "Documents",
+    "MyDocuments": "My documents",
+    "Library": "Library",
+    "Labels": "Labels",
+    "AddLabel": "Add label...",
+    "Responsible": "Responsible",
+
+    "PendingReview": "Pending",
+    "Latest": "Actual",
+    "Draft": "Draft"
   }
 }

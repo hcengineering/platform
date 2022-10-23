@@ -22,12 +22,13 @@
   import { Panel } from '@hcengineering/panel'
   import { getResource } from '@hcengineering/platform'
   import presentation, { createQuery, getClient } from '@hcengineering/presentation'
+  import tags from '@hcengineering/tags'
 
   import {
     Button,
+    Component,
     EditBox,
     eventToHTMLElement,
-    Grid,
     IconAdd,
     IconEdit,
     IconMoreH,
@@ -279,7 +280,18 @@
 
       <div class="divider" />
 
-      <Grid column={2} rowGap={1}>
+      <div class="tab-content">
+        <span class="label labelTop">
+          <Label label={document.string.Labels} />
+        </span>
+        <div class="flex">
+          <Component
+            is={tags.component.TagsAttributeEditor}
+            props={{ object: documentObject, label: document.string.AddLabel }}
+          />
+        </div>
+        <div class="divider" />
+
         <span class="label">
           <Label label={document.string.LastRevision} />
         </span>
@@ -289,7 +301,7 @@
           <Label label={document.string.Versions} />
         </span>
         <span>{documentObject?.versions}</span>
-      </Grid>
+      </div>
     </svelte:fragment>
   </Panel>
 {/if}
@@ -301,10 +313,6 @@
     color: var(--theme-caption-color);
   }
 
-  .content {
-    height: auto;
-  }
-
   .description-preview {
     color: var(--theme-content-color);
     line-height: 150%;
@@ -312,13 +320,6 @@
     .placeholder {
       color: var(--theme-content-trans-color);
     }
-  }
-  .divider {
-    margin-top: 1rem;
-    margin-bottom: 1rem;
-    grid-column: 1 / 3;
-    height: 1px;
-    background-color: var(--divider-color);
   }
 
   .tool {
@@ -330,5 +331,26 @@
     &:hover {
       opacity: 1;
     }
+  }
+
+  .tab-content {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    grid-auto-flow: row;
+    justify-content: start;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1rem;
+    width: 100%;
+    height: min-content;
+  }
+
+  .divider {
+    grid-column: 1 / 3;
+    height: 1px;
+    background-color: var(--divider-color);
+  }
+  .labelTop {
+    align-self: start;
   }
 </style>

@@ -17,6 +17,16 @@
     "CreateDocumentVersion": "Оцените версию документа",
     "ApprovedBy": "Подтверждено",
     "Status": "Статус",
-    "LastRevision": "Последняя ревизия"
-  }
+    "LastRevision": "Последняя ревизия",
+    "DocumentApplication": "Документы",
+    "MyDocuments": "Мои документы",
+    "Library": "Библиотека",
+    "Labels": "Метки",
+    "AddLabel": "Добавить метку...",
+    "Responsible": "Ответственные",
+
+    "PendingReview": "Ожидает",
+    "Latest": "Актуальная",
+    "Draft": "Драфт"
+  }  
 }

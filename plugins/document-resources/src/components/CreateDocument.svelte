@@ -15,7 +15,8 @@
 //
 -->
 <script lang="ts">
-  import { Data, generateId } from '@hcengineering/core'
+  import { EmployeeAccount } from '@hcengineering/contact'
+  import { Data, generateId, getCurrentAccount } from '@hcengineering/core'
   import { Document } from '@hcengineering/document'
   import { Card, getClient } from '@hcengineering/presentation'
   import { Button, createFocusManager, EditBox, FocusHandler } from '@hcengineering/ui'
@@ -27,6 +28,7 @@
   }
 
   const id = generateId()
+  const currentUser = getCurrentAccount() as EmployeeAccount
 
   const object: Data<Document> = {
     name: '',
@@ -36,7 +38,8 @@
     attachments: 0,
     labels: 0,
     comments: 0,
-    versionCounter: 0
+    versionCounter: 0,
+    responsible: [currentUser.employee]
   }
 
   const dispatch = createEventDispatcher()

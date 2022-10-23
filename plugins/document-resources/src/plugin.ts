@@ -19,7 +19,12 @@ import { AnyComponent } from '@hcengineering/ui'
 
 export default mergeIds(documentId, document, {
   component: {
-    EditDoc: '' as AnyComponent
+    EditDoc: '' as AnyComponent,
+    MyDocuments: '' as AnyComponent,
+    NewDocumentHeader: '' as AnyComponent,
+    Status: '' as AnyComponent,
+    Version: '' as AnyComponent,
+    Revision: '' as AnyComponent
   },
   string: {
     Apply: '' as IntlString,
@@ -39,6 +44,16 @@ export default mergeIds(documentId, document, {
     CreateDocumentVersion: '' as IntlString,
     ApprovedBy: '' as IntlString,
     Status: '' as IntlString,
-    LastRevision: '' as IntlString
+    LastRevision: '' as IntlString,
+    DocumentApplication: '' as IntlString,
+    MyDocuments: '' as IntlString,
+    Library: '' as IntlString,
+    Labels: '' as IntlString,
+    Responsible: '' as IntlString,
+    AddLabel: '' as IntlString,
+
+    PendingReview: '' as IntlString,
+    Latest: '' as IntlString,
+    Draft: '' as IntlString
   }
 })

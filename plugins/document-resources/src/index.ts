@@ -22,9 +22,14 @@ import CreateDocument from './components/CreateDocument.svelte'
 import DocumentPresenter from './components/DocumentPresenter.svelte'
 import DocumentVersionPresenter from './components/DocumentVersionPresenter.svelte'
 import Documents from './components/Documents.svelte'
+import MyDocuments from './components/MyDocuments.svelte'
 import DocumentVersions from './components/DocumentVersions.svelte'
 import EditDoc from './components/EditDoc.svelte'
 import DocumentItem from './components/DocumentItem.svelte'
+import NewDocumentHeader from './components/NewDocumentHeader.svelte'
+import Status from './components/Status.svelte'
+import Revision from './components/Revision.svelte'
+import Version from './components/Version.svelte'
 
 import document from './plugin'
 
@@ -70,7 +75,12 @@ export default async (): Promise<Resources> => ({
     Documents,
     EditDoc,
     DocumentVersions,
-    DocumentVersionPresenter
+    DocumentVersionPresenter,
+    NewDocumentHeader,
+    MyDocuments,
+    Status,
+    Revision,
+    Version
   },
   completion: {
     DocumentQuery: async (
