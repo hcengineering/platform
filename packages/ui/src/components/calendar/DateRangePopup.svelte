@@ -62,7 +62,7 @@
             <div
               class="btn"
               on:click={() => {
-                const shiftedDate = new Date(today.getTime() + value * base)
+                const shiftedDate = new Date(currentDate.getTime() + value * base)
                 dispatch('change', shiftedDate)
               }}
             >
