@@ -25,7 +25,6 @@
   let frendlyFocus: HTMLElement[] | undefined
   let componentInstance: any
 
-  $: component = $dpstore.component
   $: frendlyFocus = $dpstore.frendlyFocus
   $: if ($dpstore.anchor) {
     anchor = $dpstore.anchor
@@ -99,12 +98,12 @@
 <svelte:window on:resize={fitPopup} on:keydown={handleKeydown} />
 <div
   class="popup"
-  class:visibility={$dpstore.component !== undefined}
+  class:visibility={component !== undefined}
   bind:this={modalHTML}
   tabindex="0"
   on:blur={(ev) => unfocus(ev)}
 >
-  {#if $dpstore.component}
+  {#if component}
     <svelte:component
       this={component}
       bind:shift
