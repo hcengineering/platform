@@ -125,7 +125,7 @@
 </script>
 
 <div
-  class="flex flex-wrap min-w-8"
+  class="flex flex-wrap"
   class:minus-margin={kind === 'list-header'}
   style:flex-direction={twoRows ? 'column' : 'row'}
 >

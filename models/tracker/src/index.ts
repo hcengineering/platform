@@ -459,7 +459,7 @@ export function createModel (builder: Builder): void {
         presenter: tracker.component.PriorityEditor,
         props: { type: 'priority', kind: 'list', size: 'small' }
       },
-      { key: '', presenter: tracker.component.IssuePresenter, props: { type: 'issue' } },
+      { key: '', presenter: tracker.component.IssuePresenter, props: { type: 'issue', fixed: 'left' } },
       {
         key: '',
         presenter: tracker.component.StatusEditor,

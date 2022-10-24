@@ -49,7 +49,6 @@
 
 {#if (value.project && value.project !== $activeProject && groupBy !== 'project') || shouldShowPlaceholder}
   <div
-    class="min-w-8"
     class:minus-margin={kind === 'list-header'}
     use:tooltip={{ label: value.project ? tracker.string.MoveToProject : tracker.string.AddToProject }}
   >

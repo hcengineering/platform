@@ -14,8 +14,7 @@
 -->
 <script lang="ts">
   import contact, { Employee } from '@hcengineering/contact'
-  import { Class, Doc, FindOptions, getObjectValue, Ref, WithLookup } from '@hcengineering/core'
-  import notification from '@hcengineering/notification'
+  import { Class, Doc, FindOptions, Ref, WithLookup } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Issue, IssueStatus, Team } from '@hcengineering/tracker'
   import ui, {
@@ -29,17 +28,15 @@
     IconAdd,
     IconMoreH,
     showPopup,
-    Spinner,
-    tooltip,
-    deviceOptionsStore as deviceInfo
+    Spinner
   } from '@hcengineering/ui'
   import { AttributeModel, BuildModelKey } from '@hcengineering/view'
-  import { buildModel, FixedColumn, getObjectPresenter, LoadingProps, Menu } from '@hcengineering/view-resources'
+  import { buildModel, getObjectPresenter, LoadingProps, Menu } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
   import { IssuesGroupByKeys, issuesGroupEditorMap, IssuesOrderByKeys, issuesSortOrderMap } from '../../utils'
   import CreateIssue from '../CreateIssue.svelte'
-  import Circles from '../icons/Circles.svelte'
+  import IssuesListItem from './IssuesListItem.svelte'
 
   export let _class: Ref<Class<Doc>>
   export let currentSpace: Ref<Team> | undefined = undefined
@@ -108,6 +105,7 @@
   })
 
   const handleMenuOpened = async (event: MouseEvent, object: Doc, rowIndex: number) => {
+    event.preventDefault()
     selectedRowIndex = rowIndex
 
     if (!selectedObjectIdsSet.has(object._id)) {
@@ -186,15 +184,15 @@
   }
 
   let varsStyle: string = ''
-  const propsWidth: Record<string, number> = { issue: 0 }
+  let propsWidth: Record<string, number> = {}
   let itemModels: AttributeModel[]
   $: buildModel({ client, _class, keys: itemsConfig, lookup: options.lookup }).then((res) => (itemModels = res))
+  $: if (itemModels) {
+    for (const item of itemModels) if (item.props?.fixed !== undefined) propsWidth[item.key] = 0
+  }
   $: if (propsWidth) {
     varsStyle = ''
     for (const key in propsWidth) varsStyle += `--fixed-${key}: ${propsWidth[key]}px;`
-  }
-  const checkWidth = (key: string, result: CustomEvent): void => {
-    if (result !== undefined) propsWidth[key] = result.detail
   }
   function limitGroup (
     category: any,
@@ -276,13 +274,21 @@
       {#if itemModels}
         {#if groupedIssues[category]}
           {#each limited as docObject (docObject._id)}
-            <div
-              bind:this={objectRefs[combinedGroupedIssues.findIndex((x) => x === docObject)]}
-              class="listGrid antiList__row row gap-2 flex-grow"
-              class:checking={selectedObjectIdsSet.has(docObject._id)}
-              class:mListGridFixed={selectedRowIndex === combinedGroupedIssues.findIndex((x) => x === docObject)}
-              class:mListGridSelected={selectedRowIndex === combinedGroupedIssues.findIndex((x) => x === docObject)}
-              on:contextmenu|preventDefault={(event) =>
+            <IssuesListItem
+              bind:use={objectRefs[combinedGroupedIssues.findIndex((x) => x === docObject)]}
+              {docObject}
+              model={itemModels}
+              {groupByKey}
+              selected={selectedRowIndex === combinedGroupedIssues.findIndex((x) => x === docObject)}
+              checked={selectedObjectIdsSet.has(docObject._id)}
+              {statuses}
+              {currentTeam}
+              {propsWidth}
+              on:fitting={(ev) => {
+                if (ev.detail !== undefined) propsWidth = ev.detail
+              }}
+              on:check={(ev) => dispatch('check', { docs: ev.detail.docs, value: ev.detail.value })}
+              on:contextmenu={(event) =>
                 handleMenuOpened(
                   event,
                   docObject,
@@ -290,124 +296,7 @@
                 )}
               on:focus={() => {}}
               on:mouseover={() => handleRowFocused(docObject)}
-            >
-              <div
-                class="flex-center relative"
-                use:tooltip={{ label: tracker.string.SelectIssue, direction: 'bottom' }}
-              >
-                <div class="antiList-cells__notifyCell">
-                  <div class="antiList-cells__checkCell">
-                    <CheckBox
-                      checked={selectedObjectIdsSet.has(docObject._id)}
-                      on:value={(event) => {
-                        onObjectChecked([docObject], event.detail)
-                      }}
-                    />
-                  </div>
-                  <Component
-                    is={notification.component.NotificationPresenter}
-                    showLoading={false}
-                    props={{ value: docObject, kind: 'table' }}
-                  />
-                </div>
-              </div>
-              {#each itemModels as attributeModel}
-                {#if attributeModel.props?.type === 'priority'}
-                  <div class="priorityPresenter">
-                    <svelte:component
-                      this={attributeModel.presenter}
-                      value={getObjectValue(attributeModel.key, docObject) ?? ''}
-                      groupBy={groupByKey}
-                      {...attributeModel.props}
-                      {statuses}
-                      {currentTeam}
-                    />
-                  </div>
-                {:else if attributeModel.props?.type === 'issue'}
-                  <div class="issuePresenter">
-                    <FixedColumn
-                      width={propsWidth.issue}
-                      key={'issue'}
-                      justify={'left'}
-                      on:update={(result) => checkWidth('issue', result)}
-                    >
-                      <svelte:component
-                        this={attributeModel.presenter}
-                        value={getObjectValue(attributeModel.key, docObject) ?? ''}
-                        groupBy={groupByKey}
-                        {...attributeModel.props}
-                        {statuses}
-                        {currentTeam}
-                      />
-                    </FixedColumn>
-                  </div>
-                {:else if attributeModel.props?.type === 'grow'}
-                  <svelte:component
-                    this={attributeModel.presenter}
-                    value={getObjectValue(attributeModel.key, docObject) ?? ''}
-                    groupBy={groupByKey}
-                    {...attributeModel.props}
-                  />
-                {:else if attributeModel.props?.fixed}
-                  {#if !(attributeModel.props?.optional && $deviceInfo.minWidth)}
-                    <FixedColumn
-                      width={propsWidth[attributeModel.key]}
-                      key={attributeModel.key}
-                      justify={attributeModel.props.fixed}
-                      on:update={(result) => checkWidth(attributeModel.key, result)}
-                    >
-                      <svelte:component
-                        this={attributeModel.presenter}
-                        value={getObjectValue(attributeModel.key, docObject) ?? ''}
-                        groupBy={groupByKey}
-                        {...attributeModel.props}
-                        {statuses}
-                        {currentTeam}
-                      />
-                    </FixedColumn>
-                  {/if}
-                {:else if attributeModel.props?.excludeByKey !== groupByKey}
-                  {#if !(attributeModel.props?.optional && $deviceInfo.minWidth)}
-                    <svelte:component
-                      this={attributeModel.presenter}
-                      value={getObjectValue(attributeModel.key, docObject) ?? ''}
-                      issueId={docObject._id}
-                      groupBy={groupByKey}
-                      {...attributeModel.props}
-                      {statuses}
-                      {currentTeam}
-                    />
-                  {/if}
-                {/if}
-              {/each}
-              {#if $deviceInfo.minWidth}
-                <div class="panel-trigger" tabindex="-1">
-                  <Circles />
-                  <div class="space" />
-                  <Circles />
-                </div>
-                <div class="hidden-panel gap-2" tabindex="-1">
-                  <div class="header">
-                    <Circles />
-                    <div class="space" />
-                    <Circles />
-                  </div>
-                  {#each itemModels as attributeModel}
-                    {#if attributeModel.props?.optional && attributeModel.props?.excludeByKey !== groupByKey}
-                      <svelte:component
-                        this={attributeModel.presenter}
-                        value={getObjectValue(attributeModel.key, docObject) ?? ''}
-                        issueId={docObject._id}
-                        groupBy={groupByKey}
-                        {...attributeModel.props}
-                        {statuses}
-                        {currentTeam}
-                      />
-                    {/if}
-                  {/each}
-                </div>
-              {/if}
-            </div>
+            />
           {/each}
         {:else if loadingProps !== undefined}
           {#each Array(getLoadingElementsLength(loadingProps, options)) as _, rowIndex}
@@ -469,98 +358,5 @@
     background-color: var(--body-color);
     border: 1px solid var(--divider-color);
     border-radius: 1rem;
-  }
-
-  .listGrid {
-    position: relative;
-    display: flex;
-    align-items: center;
-    padding: 0 0.75rem 0 0.875rem;
-    width: 100%;
-    height: 2.75rem;
-    min-height: 2.75rem;
-    color: var(--theme-caption-color);
-
-    &.checking {
-      background-color: var(--highlight-select);
-      border-bottom-color: var(--highlight-select);
-
-      &:hover {
-        background-color: var(--highlight-select-hover);
-        border-bottom-color: var(--highlight-select-hover);
-      }
-    }
-
-    &.mListGridSelected {
-      background-color: var(--highlight-hover);
-    }
-
-    .hidden-panel,
-    .panel-trigger {
-      position: absolute;
-      display: flex;
-      align-items: center;
-      top: 0;
-      bottom: 0;
-      height: 100%;
-    }
-    .hidden-panel {
-      overflow: hidden;
-      right: 0;
-      width: 80%;
-      background-color: var(--accent-bg-color);
-      opacity: 0;
-      pointer-events: none;
-      z-index: 2;
-      transition-property: opacity, width;
-      transition-duration: 0.15s;
-      transition-timing-function: var(--timing-main);
-
-      .header {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        margin: 0 0.25rem;
-        width: 0.375rem;
-        min-width: 0.375rem;
-        height: 100%;
-        opacity: 0.25;
-      }
-    }
-    .panel-trigger {
-      flex-direction: column;
-      justify-content: center;
-      padding: 0 0.125rem;
-      right: 2.5rem;
-      width: 0.75rem;
-      border: 1px solid transparent;
-      border-radius: 0.25rem;
-      opacity: 0.1;
-      z-index: 1;
-      transition: opacity 0.15s var(--timing-main);
-
-      &:focus {
-        border-color: var(--primary-edit-border-color);
-        opacity: 0.25;
-      }
-      & > * {
-        pointer-events: none;
-      }
-    }
-    .hidden-panel:focus-within,
-    .panel-trigger:focus + .hidden-panel {
-      width: 100%;
-      opacity: 1;
-      pointer-events: all;
-    }
-    .space {
-      min-height: 0.1075rem;
-    }
-  }
-
-  .priorityPresenter,
-  .issuePresenter {
-    // min-width: 0;
-    min-height: 0;
   }
 </style>
