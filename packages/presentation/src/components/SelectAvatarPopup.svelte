@@ -20,7 +20,7 @@
   import { Asset } from '@hcengineering/platform'
 
   import presentation from '..'
-  import { avatarTypeDropdownItems, getFileUrl } from '../utils'
+  import { getAvatarTypeDropdownItems, getFileUrl, getAvatarColorForId } from '../utils'
   import { buildGravatarId } from '../gravatar'
   import Card from './Card.svelte'
   import AvatarComponent from './Avatar.svelte'
@@ -28,12 +28,13 @@
 
   export let avatar: Avatar | undefined
   export let email: string | undefined
+  export let id: string
   export let file: Blob | undefined
   export let icon: Asset | AnySvelteComponent | undefined
   export let onSubmit: (avatarType?: AvatarType, avatar?: string, file?: Blob) => void
 
-  let selectedAvatarType: AvatarType | undefined = avatar?.type
-  let selectedAvatar: string | undefined = avatar?.value
+  let selectedAvatarType: AvatarType | undefined = avatar?.type || 'color'
+  let selectedAvatar: string | undefined = avatar?.value || getAvatarColorForId(id)
   let selectedFile: Blob | undefined = file
 
   const dispatch = createEventDispatcher()
@@ -58,6 +59,8 @@
       } else {
         inputRef.click()
       }
+    } else {
+      selectedAvatar = getAvatarColorForId(id)
     }
   }
 
@@ -79,12 +82,12 @@
     showPopup(EditAvatarPopup, { file: editableFile }, undefined, (blob) => {
       if (blob === undefined) {
         if (!selectedFile && avatar?.type !== 'image') {
-          selectedAvatarType = 'gravatar'
+          selectedAvatarType = 'color'
         }
         return
       }
       if (blob === null) {
-        selectedAvatarType = 'gravatar'
+        selectedAvatarType = 'color'
         selectedFile = undefined
       } else {
         selectedFile = blob
@@ -108,7 +111,7 @@
 
     if (!inputRef.value.length) {
       if (!selectedFile) {
-        selectedAvatarType = 'gravatar'
+        selectedAvatarType = 'color'
       }
     }
   }
@@ -124,7 +127,7 @@
   }}
 >
   <DropdownLabelsIntl
-    items={avatarTypeDropdownItems}
+    items={getAvatarTypeDropdownItems(!!email)}
     label={presentation.string.SelectAvatar}
     bind:selected={selectedAvatarType}
     on:selected={handleDropdownSelection}

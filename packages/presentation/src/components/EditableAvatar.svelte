@@ -19,11 +19,13 @@
   import { AvatarType, Avatar } from '@hcengineering/contact'
   import { Asset, getResource } from '@hcengineering/platform'
 
+  import { getAvatarColorForId } from '../utils'
   import AvatarComponent from './Avatar.svelte'
   import SelectAvatarPopup from './SelectAvatarPopup.svelte'
 
   export let avatar: Avatar | null | undefined
   export let email: string | undefined = undefined
+  export let id: string
   export let size: IconSize
   export let direct: Blob | undefined = undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
@@ -38,7 +40,7 @@
 
       return { type: selectedAvatarType, value: await uploadFile(file) }
     }
-    if (selectedAvatarType === 'gravatar' && selectedAvatar !== undefined) {
+    if (selectedAvatarType && selectedAvatar) {
       return { type: selectedAvatarType, value: selectedAvatar }
     }
   }
@@ -59,13 +61,13 @@
   const dispatch = createEventDispatcher()
 
   async function showSelectionPopup (e: MouseEvent) {
-    showPopup(SelectAvatarPopup, { avatar, email, onSubmit: handlePopupSubmit })
+    showPopup(SelectAvatarPopup, { avatar, email, id, onSubmit: handlePopupSubmit })
   }
 </script>
 
 <div class="cursor-pointer" on:click|self={showSelectionPopup}>
   <AvatarComponent
-    avatar={{ type: selectedAvatarType || 'gravatar', value: selectedAvatar || '' }}
+    avatar={{ type: selectedAvatarType || 'color', value: selectedAvatar || getAvatarColorForId(id) }}
     {direct}
     {size}
     {icon}

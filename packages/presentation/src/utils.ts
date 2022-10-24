@@ -235,17 +235,48 @@ export function getAttributePresenterClass (
   return { attrClass, category }
 }
 
-export const avatarTypeDropdownItems: DropdownIntlItem[] = [
-  {
-    id: 'color',
-    label: contact.string.UseColor
-  },
-  {
-    id: 'image',
-    label: contact.string.UseImage
-  },
-  {
-    id: 'gravatar',
-    label: contact.string.UseGravatar
-  }
+export function getAvatarTypeDropdownItems (hasEmail: boolean): DropdownIntlItem[] {
+  return [
+    {
+      id: 'color',
+      label: contact.string.UseColor
+    },
+    {
+      id: 'image',
+      label: contact.string.UseImage
+    },
+    ...(hasEmail
+      ? [
+          {
+            id: 'gravatar',
+            label: contact.string.UseGravatar
+          }
+        ]
+      : [])
+  ]
+}
+
+const AVATAR_COLORS = [
+  '#4674ca', // blue
+  '#315cac', // blue_dark
+  '#57be8c', // green
+  '#3fa372', // green_dark
+  '#f9a66d', // yellow_orange
+  '#ec5e44', // red
+  '#e63717', // red_dark
+  '#f868bc', // pink
+  '#6c5fc7', // purple
+  '#4e3fb4', // purple_dark
+  '#57b1be', // teal
+  '#847a8c' // gray
 ]
+
+export function getAvatarColorForId (id: string): string {
+  let hash = 0
+
+  for (let i = 0; i < id.length; i++) {
+    hash += id.charCodeAt(i)
+  }
+
+  return AVATAR_COLORS[hash % AVATAR_COLORS.length]
+}

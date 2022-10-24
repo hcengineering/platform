@@ -102,6 +102,7 @@
           <EditableAvatar
             avatar={employee.avatar}
             email={account.email}
+            id={employee._id}
             size={'x-large'}
             bind:this={avatarEditor}
             on:done={onAvatarDone}

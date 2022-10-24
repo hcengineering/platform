@@ -118,7 +118,7 @@
       </div>
     </div>
     <div class="ml-4">
-      <EditableAvatar avatar={object.avatar} {email} size={'large'} bind:this={avatarEditor} />
+      <EditableAvatar avatar={object.avatar} {email} {id} size={'large'} bind:this={avatarEditor} />
     </div>
   </div>
   <svelte:fragment slot="pool">

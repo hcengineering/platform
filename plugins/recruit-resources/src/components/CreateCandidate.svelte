@@ -257,7 +257,7 @@
         object.city = doc.city
       }
 
-      if (isUndef(object.avatar ?? undefined) && doc.avatar !== undefined) {
+      if (!object.avatar && doc.avatar !== undefined) {
         // We had avatar, let's try to upload it.
         const data = atob(doc.avatar)
         let n = data.length
@@ -455,7 +455,13 @@
       />
     </div>
     <div class="ml-4">
-      <EditableAvatar bind:this={avatarEditor} bind:direct={avatar} avatar={object.avatar} size={'large'} />
+      <EditableAvatar
+        bind:this={avatarEditor}
+        bind:direct={avatar}
+        avatar={object.avatar}
+        id={candidateId}
+        size={'large'}
+      />
     </div>
   </div>
   <svelte:fragment slot="pool">
