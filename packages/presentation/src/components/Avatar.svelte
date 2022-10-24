@@ -43,7 +43,11 @@
   }
 </script>
 
-<div class="ava-{size} flex-center avatar-container" class:no-img={!url}>
+<div
+  class="ava-{size} flex-center avatar-container"
+  class:no-img={!url}
+  style={avatar?.type === 'color' ? `background-color: ${avatar.value}` : ''}
+>
   {#if url}
     {#if size === 'large' || size === 'x-large'}
       <img class="ava-{size} ava-blur" src={url} alt={''} />

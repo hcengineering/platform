@@ -88,6 +88,7 @@
       {#key object}
         <EditableAvatar
           avatar={object.avatar}
+          id={object._id}
           size={'x-large'}
           icon={hr.icon.Department}
           bind:this={avatarEditor}
