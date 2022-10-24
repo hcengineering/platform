@@ -93,7 +93,7 @@ async function updateEmployeeAvatar (tx: TxOperations): Promise<void> {
 
   // update avatar type for users with avatar
   let promises = employees
-    .filter((e) => e.avatar != null && e.avatar !== undefined)
+    .filter((e) => e.avatar !== null && e.avatar !== undefined && e.avatar.type === undefined)
     .map(async (e) => {
       await tx.update(e, {
         avatar: {

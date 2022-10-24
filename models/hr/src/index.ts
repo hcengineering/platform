@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Employee } from '@hcengineering/contact'
+import { Avatar, Employee } from '@hcengineering/contact'
 import { Arr, Class, Domain, DOMAIN_MODEL, IndexKind, Markup, Ref, Type } from '@hcengineering/core'
 import { Department, DepartmentMember, hrId, Request, RequestType, Staff, TzDate } from '@hcengineering/hr'
 import {
@@ -63,7 +63,7 @@ export class TDepartment extends TSpace implements Department {
   @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
   comments?: number
 
-  avatar?: string | null
+  avatar?: Avatar
 
   @Prop(TypeRef(contact.class.Employee), hr.string.TeamLead)
   teamLead!: Ref<Employee> | null

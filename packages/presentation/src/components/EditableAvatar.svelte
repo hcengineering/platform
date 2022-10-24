@@ -19,7 +19,6 @@
   import { AvatarType, Avatar } from '@hcengineering/contact'
   import { Asset, getResource } from '@hcengineering/platform'
 
-  import { getAvatarColorForId } from '../utils'
   import AvatarComponent from './Avatar.svelte'
   import SelectAvatarPopup from './SelectAvatarPopup.svelte'
 
@@ -61,13 +60,13 @@
   const dispatch = createEventDispatcher()
 
   async function showSelectionPopup (e: MouseEvent) {
-    showPopup(SelectAvatarPopup, { avatar, email, id, onSubmit: handlePopupSubmit })
+    showPopup(SelectAvatarPopup, { avatar, email, id, icon, onSubmit: handlePopupSubmit })
   }
 </script>
 
 <div class="cursor-pointer" on:click|self={showSelectionPopup}>
   <AvatarComponent
-    avatar={{ type: selectedAvatarType || 'color', value: selectedAvatar || getAvatarColorForId(id) }}
+    avatar={selectedAvatarType && selectedAvatar ? { type: selectedAvatarType, value: selectedAvatar } : null}
     {direct}
     {size}
     {icon}
