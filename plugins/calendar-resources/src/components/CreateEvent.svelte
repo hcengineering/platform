@@ -17,6 +17,7 @@
   import { Class, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
   import { Card, getClient, UserBoxList } from '@hcengineering/presentation'
   import ui, { EditBox, DateRangePresenter } from '@hcengineering/ui'
+  import { tick } from 'svelte'
   import { createEventDispatcher } from 'svelte'
   import calendar from '../plugin'
 
@@ -27,10 +28,14 @@
   export let withTime = false
 
   const now = new Date()
+  const defaultDuration = 30 * 60 * 1000
 
-  let value =
+  let startDate =
     date === undefined ? now.getTime() : withTime ? date.getTime() : date.setHours(now.getHours(), now.getMinutes())
-  let dueDate = value + 30 * 60 * 1000
+  let duration = defaultDuration
+  let dueDate = startDate + duration
+  let dueDateRef: DateRangePresenter
+
   const currentUser = getCurrentAccount() as EmployeeAccount
   let participants: Ref<Employee>[] = [currentUser.employee]
   const space = calendar.space.PersonalEvents
@@ -44,7 +49,7 @@
 
   async function saveEvent () {
     let date: number | undefined
-    if (value != null) date = value
+    if (startDate != null) date = startDate
     if (date === undefined) return
     await client.createDoc(calendar.class.Event, space, {
       attachedTo,
@@ -57,20 +62,56 @@
       title
     })
   }
+
+  const handleNewStartDate = async (newStartDate: number | null) => {
+    if (newStartDate !== null) {
+      startDate = newStartDate
+      dueDate = startDate + duration
+      await tick()
+      dueDateRef.adaptValue()
+    }
+  }
+
+  const handleNewDueDate = async (newDueDate: number | null) => {
+    if (newDueDate !== null) {
+      const diff = newDueDate - startDate
+      if (diff > 0) {
+        dueDate = newDueDate
+        duration = diff
+      } else {
+        dueDate = startDate + duration
+      }
+      await tick()
+      dueDateRef.adaptValue()
+    }
+  }
 </script>
 
 <Card
   label={calendar.string.CreateEvent}
   okAction={saveEvent}
-  canSave={title !== undefined && title.trim().length > 0 && participants.length > 0 && value !== undefined}
+  canSave={title !== undefined && title.trim().length > 0 && participants.length > 0 && startDate !== undefined}
   on:close={() => {
     dispatch('close')
   }}
 >
   <EditBox bind:value={title} placeholder={calendar.string.Title} kind={'large-style'} focus />
   <svelte:fragment slot="pool">
-    <DateRangePresenter bind:value withTime editable labelNull={ui.string.SelectDate} />
-    <DateRangePresenter bind:value={dueDate} labelNull={calendar.string.DueTo} withTime editable />
+    <DateRangePresenter
+      value={startDate}
+      labelNull={ui.string.SelectDate}
+      on:change={async (event) => await handleNewStartDate(event.detail)}
+      withTime
+      editable
+    />
+    <DateRangePresenter
+      bind:this={dueDateRef}
+      value={dueDate}
+      labelNull={calendar.string.DueTo}
+      on:change={async (event) => await handleNewDueDate(event.detail)}
+      withTime
+      editable
+    />
     <UserBoxList bind:items={participants} label={calendar.string.Participants} />
   </svelte:fragment>
 </Card>

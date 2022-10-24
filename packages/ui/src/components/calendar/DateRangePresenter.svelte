@@ -45,8 +45,7 @@
   const editsType: TEdits[] = ['day', 'month', 'year', 'hour', 'min']
   const getIndex = (id: TEdits): number => editsType.indexOf(id)
   const today: Date = new Date(Date.now())
-  let currentDate: Date = new Date(value ?? Date.now())
-  currentDate.setSeconds(0, 0)
+  let currentDate: Date
   let selected: TEdits = 'day'
 
   let edit: boolean = false
@@ -114,21 +113,12 @@
     })
     edits = edits
   }
-  const saveDate = (): void => {
-    // currentDate.setHours(edits[3].value > 0 ? edits[3].value : 0)
-    // currentDate.setMinutes(edits[4].value > 0 ? edits[4].value : 0)
+  export const saveDate = (): void => {
     currentDate.setSeconds(0, 0)
     value = currentDate.getTime()
     dateToEdits()
     $dpstore.currentDate = currentDate
     dispatch('change', value)
-  }
-  if (value !== null && value !== undefined) dateToEdits()
-  else if (value === null) {
-    edits.forEach((edit) => {
-      edit.value = -1
-    })
-    currentDate = today
   }
 
   const fixEdits = (): void => {
@@ -265,6 +255,21 @@
     frendlyFocus.push(closeBtn)
     $dpstore.frendlyFocus = frendlyFocus
   }
+
+  export const adaptValue = () => {
+    currentDate = new Date(value ?? Date.now())
+    currentDate.setSeconds(0, 0)
+    if (value !== null && value !== undefined) {
+      dateToEdits()
+    } else if (value === null) {
+      edits.forEach((edit) => {
+        edit.value = -1
+      })
+      currentDate = today
+    }
+  }
+
+  adaptValue()
 </script>
 
 <button
