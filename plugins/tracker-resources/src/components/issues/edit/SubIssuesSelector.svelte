@@ -99,7 +99,7 @@
 </script>
 
 {#if hasSubIssues}
-  <div class="flex-center clear-mins" bind:this={btn}>
+  <div class="flex-center flex-no-shrink" bind:this={btn}>
     <Button
       {width}
       {kind}

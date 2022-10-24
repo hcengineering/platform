@@ -35,7 +35,7 @@
   let asideShown: boolean = false
   let fullSize: boolean = false
   let twoRows: boolean = false
-  $: twoRows = $deviceInfo.docWidth <= 480
+  $: twoRows = $deviceInfo.minWidth
 
   const checkPanel = (): void => {
     if (panelWidth <= 900 && !asideFloat) asideFloat = true

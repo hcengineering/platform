@@ -70,6 +70,8 @@
   $: $deviceInfo.docHeight = docHeight
   $: $deviceInfo.isPortrait = isPortrait
   $: $deviceInfo.isMobile = isMobile
+  $: $deviceInfo.minWidth = docWidth <= 480
+  $: $deviceInfo.twoRows = docWidth <= 680
 
   $: document.documentElement.style.setProperty('--app-height', `${docHeight}px`)
 

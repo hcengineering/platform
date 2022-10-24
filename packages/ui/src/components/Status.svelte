@@ -12,7 +12,9 @@
 <div class="flex-center container {status.severity}" class:overflow-label={overflow}>
   {#if status.severity !== Severity.OK}
     <Info size={'small'} />
-    <div class="text-sm ml-2" class:overflow-label={overflow}><Label label={status.code} params={status.params} /></div>
+    <span class="text-sm ml-2" class:overflow-label={overflow}
+      ><Label label={status.code} params={status.params} /></span
+    >
   {/if}
 </div>
 

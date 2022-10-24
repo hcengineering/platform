@@ -30,7 +30,8 @@
     IconMoreH,
     showPopup,
     Spinner,
-    tooltip
+    tooltip,
+    deviceOptionsStore as deviceInfo
   } from '@hcengineering/ui'
   import { AttributeModel, BuildModelKey } from '@hcengineering/view'
   import { buildModel, FixedColumn, getObjectPresenter, LoadingProps, Menu } from '@hcengineering/view-resources'
@@ -38,6 +39,7 @@
   import tracker from '../../plugin'
   import { IssuesGroupByKeys, issuesGroupEditorMap, IssuesOrderByKeys, issuesSortOrderMap } from '../../utils'
   import CreateIssue from '../CreateIssue.svelte'
+  import Circles from '../icons/Circles.svelte'
 
   export let _class: Ref<Class<Doc>>
   export let currentSpace: Ref<Team> | undefined = undefined
@@ -237,7 +239,7 @@
                 value: groupByKey ? { [groupByKey]: category } : {},
                 statuses: groupByKey === 'status' ? statuses : undefined,
                 issues: groupedIssues[category],
-                size: 'medium',
+                width: 'min-content',
                 kind: 'list-header',
                 enlargedText: true,
                 currentSpace
@@ -245,7 +247,11 @@
             />
           {/if}
           {#if limited.length < items.length}
-            <span class="text-base content-dark-color ml-4"> {limited.length} / {items.length}</span>
+            <div class="counter">
+              {limited.length}
+              <div class="text-xs mx-1">/</div>
+              {items.length}
+            </div>
             <ActionIcon
               size={'small'}
               icon={IconMoreH}
@@ -255,12 +261,15 @@
               }}
             />
           {:else}
-            <span class="text-base content-dark-color ml-4">{items.length}</span>
+            <span class="counter">{items.length}</span>
           {/if}
         </div>
-        <div class="clear-mins" use:tooltip={{ label: tracker.string.AddIssueTooltip }}>
-          <Button icon={IconAdd} kind={'transparent'} on:click={(event) => handleNewIssueAdded(event, category)} />
-        </div>
+        <Button
+          icon={IconAdd}
+          kind={'transparent'}
+          showTooltip={{ label: tracker.string.AddIssueTooltip }}
+          on:click={(event) => handleNewIssueAdded(event, category)}
+        />
       </div>
     {/if}
     <ExpandCollapse isExpanded={!isCollapsedMap[toCat(category)]} duration={400}>
@@ -340,23 +349,25 @@
                     {...attributeModel.props}
                   />
                 {:else if attributeModel.props?.fixed}
-                  <FixedColumn
-                    width={propsWidth[attributeModel.key]}
-                    key={attributeModel.key}
-                    justify={attributeModel.props.fixed}
-                    on:update={(result) => checkWidth(attributeModel.key, result)}
-                  >
-                    <svelte:component
-                      this={attributeModel.presenter}
-                      value={getObjectValue(attributeModel.key, docObject) ?? ''}
-                      groupBy={groupByKey}
-                      {...attributeModel.props}
-                      {statuses}
-                      {currentTeam}
-                    />
-                  </FixedColumn>
-                {:else}
-                  <div class="gridElement">
+                  {#if !(attributeModel.props?.optional && $deviceInfo.minWidth)}
+                    <FixedColumn
+                      width={propsWidth[attributeModel.key]}
+                      key={attributeModel.key}
+                      justify={attributeModel.props.fixed}
+                      on:update={(result) => checkWidth(attributeModel.key, result)}
+                    >
+                      <svelte:component
+                        this={attributeModel.presenter}
+                        value={getObjectValue(attributeModel.key, docObject) ?? ''}
+                        groupBy={groupByKey}
+                        {...attributeModel.props}
+                        {statuses}
+                        {currentTeam}
+                      />
+                    </FixedColumn>
+                  {/if}
+                {:else if attributeModel.props?.excludeByKey !== groupByKey}
+                  {#if !(attributeModel.props?.optional && $deviceInfo.minWidth)}
                     <svelte:component
                       this={attributeModel.presenter}
                       value={getObjectValue(attributeModel.key, docObject) ?? ''}
@@ -366,9 +377,36 @@
                       {statuses}
                       {currentTeam}
                     />
-                  </div>
+                  {/if}
                 {/if}
               {/each}
+              {#if $deviceInfo.minWidth}
+                <div class="panel-trigger" tabindex="-1">
+                  <Circles />
+                  <div class="space" />
+                  <Circles />
+                </div>
+                <div class="hidden-panel gap-2" tabindex="-1">
+                  <div class="header">
+                    <Circles />
+                    <div class="space" />
+                    <Circles />
+                  </div>
+                  {#each itemModels as attributeModel}
+                    {#if attributeModel.props?.optional && attributeModel.props?.excludeByKey !== groupByKey}
+                      <svelte:component
+                        this={attributeModel.presenter}
+                        value={getObjectValue(attributeModel.key, docObject) ?? ''}
+                        issueId={docObject._id}
+                        groupBy={groupByKey}
+                        {...attributeModel.props}
+                        {statuses}
+                        {currentTeam}
+                      />
+                    {/if}
+                  {/each}
+                </div>
+              {/if}
             </div>
           {/each}
         {:else if loadingProps !== undefined}
@@ -403,11 +441,11 @@
   .categoryHeader {
     position: sticky;
     top: 0;
-    padding: 0 1.5rem 0 2.25rem;
+    padding: 0 0.75rem 0 2.25rem;
     height: 3rem;
     min-height: 3rem;
     min-width: 0;
-    background-color: var(--accent-bg-color);
+    background: var(--header-bg-color);
     z-index: 5;
   }
 
@@ -415,10 +453,29 @@
     border-bottom: 1px solid var(--accent-bg-color);
   }
 
-  .listGrid {
+  .counter {
     display: flex;
     align-items: center;
-    padding: 0 1.5rem 0 0.875rem;
+    flex-wrap: nowrap;
+    flex-shrink: 0;
+    margin-left: 1rem;
+    padding: 0.25rem 0.5rem;
+    min-width: 1.325rem;
+    text-align: center;
+    font-weight: 500;
+    font-size: 1rem;
+    line-height: 1rem;
+    color: var(--accent-color);
+    background-color: var(--body-color);
+    border: 1px solid var(--divider-color);
+    border-radius: 1rem;
+  }
+
+  .listGrid {
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 0 0.75rem 0 0.875rem;
     width: 100%;
     height: 2.75rem;
     min-height: 2.75rem;
@@ -436,6 +493,68 @@
 
     &.mListGridSelected {
       background-color: var(--highlight-hover);
+    }
+
+    .hidden-panel,
+    .panel-trigger {
+      position: absolute;
+      display: flex;
+      align-items: center;
+      top: 0;
+      bottom: 0;
+      height: 100%;
+    }
+    .hidden-panel {
+      overflow: hidden;
+      right: 0;
+      width: 80%;
+      background-color: var(--accent-bg-color);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 2;
+      transition-property: opacity, width;
+      transition-duration: 0.15s;
+      transition-timing-function: var(--timing-main);
+
+      .header {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        margin: 0 0.25rem;
+        width: 0.375rem;
+        min-width: 0.375rem;
+        height: 100%;
+        opacity: 0.25;
+      }
+    }
+    .panel-trigger {
+      flex-direction: column;
+      justify-content: center;
+      padding: 0 0.125rem;
+      right: 2.5rem;
+      width: 0.75rem;
+      border: 1px solid transparent;
+      border-radius: 0.25rem;
+      opacity: 0.1;
+      z-index: 1;
+      transition: opacity 0.15s var(--timing-main);
+
+      &:focus {
+        border-color: var(--primary-edit-border-color);
+        opacity: 0.25;
+      }
+      & > * {
+        pointer-events: none;
+      }
+    }
+    .hidden-panel:focus-within,
+    .panel-trigger:focus + .hidden-panel {
+      width: 100%;
+      opacity: 1;
+      pointer-events: all;
+    }
+    .space {
+      min-height: 0.1075rem;
     }
   }
 

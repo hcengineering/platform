@@ -49,7 +49,8 @@
 
 {#if (value.project && value.project !== $activeProject && groupBy !== 'project') || shouldShowPlaceholder}
   <div
-    class="clear-mins"
+    class="min-w-8"
+    class:minus-margin={kind === 'list-header'}
     use:tooltip={{ label: value.project ? tracker.string.MoveToProject : tracker.string.AddToProject }}
   >
     <ProjectSelector
@@ -68,3 +69,9 @@
     />
   </div>
 {/if}
+
+<style lang="scss">
+  .minus-margin {
+    margin-left: -0.5rem;
+  }
+</style>

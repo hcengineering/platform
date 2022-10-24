@@ -75,8 +75,7 @@
     return search === '' ? baseQuery : { ...baseQuery, $search: search }
   }
 
-  let twoRows: boolean
-  $: twoRows = $deviceInfo.docWidth <= 680
+  $: twoRows = $deviceInfo.twoRows
 </script>
 
 <div class="ac-header withSettings" class:full={!twoRows} class:mini={twoRows}>
