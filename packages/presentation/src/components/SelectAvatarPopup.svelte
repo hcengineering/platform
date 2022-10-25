@@ -15,7 +15,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
 
-  import { DropdownLabelsIntl, AnySvelteComponent, showPopup } from '@hcengineering/ui'
+  import { DropdownLabelsIntl, AnySvelteComponent, showPopup, Label } from '@hcengineering/ui'
   import { AvatarType, Avatar } from '@hcengineering/contact'
   import { Asset } from '@hcengineering/platform'
 
@@ -83,11 +83,13 @@
       if (blob === undefined) {
         if (!selectedFile && avatar?.type !== 'image') {
           selectedAvatarType = 'color'
+          selectedAvatar = getAvatarColorForId(id)
         }
         return
       }
       if (blob === null) {
         selectedAvatarType = 'color'
+        selectedAvatar = getAvatarColorForId(id)
         selectedFile = undefined
       } else {
         selectedFile = blob
@@ -112,6 +114,7 @@
     if (!inputRef.value.length) {
       if (!selectedFile) {
         selectedAvatarType = 'color'
+        selectedAvatar = getAvatarColorForId(id)
       }
     }
   }
@@ -147,6 +150,12 @@
       size={'x-large'}
       {icon}
     />
+  {/if}
+  {#if selectedAvatarType === 'gravatar'}
+    <span>
+      <Label label={presentation.string.GravatarsManaged} />
+      <a target="”_blank”" href="//gravatar.com">Gravatar.com</a>
+    </span>
   {/if}
   <input
     style="display: none;"
