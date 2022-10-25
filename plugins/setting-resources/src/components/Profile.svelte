@@ -59,16 +59,6 @@
     })
   }
 
-  async function removeAvatar (): Promise<void> {
-    if (employee === undefined) return
-    if (employee.avatar != null) {
-      await client.updateDoc(employee._class, employee.space, employee._id, {
-        avatar: undefined
-      })
-      await avatarEditor.removeAvatar(employee.avatar)
-    }
-  }
-
   const manager = createFocusManager()
 
   async function leave (): Promise<void> {
@@ -106,7 +96,6 @@
             size={'x-large'}
             bind:this={avatarEditor}
             on:done={onAvatarDone}
-            on:remove={removeAvatar}
           />
         </div>
         <div class="flex-grow flex-col">

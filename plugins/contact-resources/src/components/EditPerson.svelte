@@ -89,15 +89,6 @@
     })
   }
 
-  async function removeAvatar (): Promise<void> {
-    if (object.avatar != null) {
-      await client.updateDoc(object._class, object.space, object._id, {
-        avatar: undefined
-      })
-      await avatarEditor.removeAvatar(object.avatar)
-    }
-  }
-
   const manager = createFocusManager()
 </script>
 
@@ -115,7 +106,6 @@
             size={'x-large'}
             bind:this={avatarEditor}
             on:done={onAvatarDone}
-            on:remove={removeAvatar}
           />
         {:else}
           <Avatar avatar={object.avatar} size={'x-large'} />

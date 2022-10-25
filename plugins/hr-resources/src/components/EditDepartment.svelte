@@ -42,16 +42,6 @@
     })
   }
 
-  async function removeAvatar (): Promise<void> {
-    if (object === undefined) return
-    if (object.avatar != null) {
-      await client.updateDoc(object._class, object.space, object._id, {
-        avatar: undefined
-      })
-      await avatarEditor.removeAvatar(object.avatar)
-    }
-  }
-
   async function nameChange (): Promise<void> {
     if (object === undefined) return
     await client.update(object, {
@@ -93,7 +83,6 @@
           icon={hr.icon.Department}
           bind:this={avatarEditor}
           on:done={onAvatarDone}
-          on:remove={removeAvatar}
         />
       {/key}
     </div>
