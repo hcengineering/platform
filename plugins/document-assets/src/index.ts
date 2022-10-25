@@ -19,6 +19,8 @@ import { addStringsLoader, loadMetadata } from '@hcengineering/platform'
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(document.icon, {
   DocumentApplication: `${icons}#documentapplication`,
-  Document: `${icons}#document`
+  NewDocument: `${icons}#newdocument`,
+  Document: `${icons}#document`,
+  Library: `${icons}#library`
 })
 addStringsLoader(documentId, async (lang: string) => await import(`../lang/${lang}.json`))

@@ -134,7 +134,7 @@ export function createModel (builder: Builder): void {
             id: 'library',
             position: 'top',
             label: document.string.Library,
-            icon: document.icon.Document,
+            icon: document.icon.Library,
             component: document.component.Documents
           }
         ],

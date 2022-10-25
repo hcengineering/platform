@@ -25,7 +25,7 @@
 <div class="antiNav-subheader gap-2">
   <div class="flex-grow text-md">
     <Button
-      icon={document.icon.Document}
+      icon={document.icon.NewDocument}
       label={document.string.CreateDocument}
       justify={'left'}
       width={'100%'}

@@ -41,9 +41,10 @@
   export let borderStyle: 'solid' | 'dashed' = 'solid'
   export let id: string | undefined = undefined
   export let input: HTMLButtonElement | undefined = undefined
-
   export let showTooltip: LabelAndProps | undefined = undefined
 
+  let iconSize: ButtonSize
+  $: iconSize = size === 'inline' ? 'inline' : 'small'
   $: iconOnly = label === undefined && $$slots.content === undefined
 
   onMount(() => {
@@ -85,20 +86,12 @@
 <button
   use:tooltip={showTooltip}
   bind:this={input}
-  class="button {kind} {size} jf-{justify}"
+  class="button {kind} {size} jf-{justify} sh-{shape ?? 'no-shape'} bs-{borderStyle}"
   class:only-icon={iconOnly}
-  class:border-radius-1={shape === undefined}
-  class:border-radius-2={shape === 'round'}
-  class:border-radius-4={shape === 'circle'}
-  class:border-radius-left-1={shape === 'rectangle-right'}
-  class:border-radius-right-1={shape === 'rectangle-left'}
-  class:border-solid={borderStyle === 'solid'}
-  class:border-dashed={borderStyle === 'dashed'}
   class:highlight
   class:selected
   disabled={disabled || loading}
   style:width
-  style:padding={shape === 'circle' && kind === 'link' ? '0 .5rem 0 .25rem' : '0 .5rem'}
   {title}
   type={kind === 'primary' ? 'submit' : 'button'}
   on:click|stopPropagation|preventDefault
@@ -109,22 +102,12 @@
   {id}
 >
   {#if icon && !loading}
-    <div
-      class="btn-icon pointer-events-none"
-      class:mr-1={!iconOnly &&
-        (kind === 'no-border' || kind === 'link-bordered' || kind === 'list' || shape === 'circle')}
-      class:mr-2={!iconOnly &&
-        kind !== 'no-border' &&
-        kind !== 'link-bordered' &&
-        kind !== 'list' &&
-        shape !== 'circle'}
-      class:resetIconSize
-    >
-      <Icon bind:icon size={size === 'inline' ? 'inline' : 'small'} />
+    <div class="btn-icon pointer-events-none" class:resetIconSize>
+      <Icon bind:icon size={iconSize} />
     </div>
   {/if}
   {#if loading}
-    <Spinner />
+    <Spinner size={iconSize} />
   {/if}
   {#if label}
     <span class="overflow-label disabled pointer-events-none" class:ml-2={loading}>
@@ -184,19 +167,48 @@
     transition-property: border, background-color, color, box-shadow;
     transition-duration: 0.15s;
 
-    &.border-solid {
-      border-style: solid;
-    }
-
-    &.border-dashed {
-      border-style: dashed;
-    }
-
     .btn-icon {
       color: var(--content-color);
       transition: color 0.15s;
       pointer-events: none;
     }
+    &:not(.only-icon) .btn-icon {
+      margin-right: 0.5rem;
+    }
+    &.no-border:not(.only-icon) .btn-icon,
+    &.link-bordered:not(.only-icon) .btn-icon,
+    &.list:not(.only-icon) .btn-icon,
+    &.sh-circle:not(.only-icon) .btn-icon {
+      margin-right: 0.25rem;
+    }
+
+    &.sh-no-shape {
+      border-radius: 0.25rem;
+    }
+    &.sh-round {
+      border-radius: 0.5rem;
+    }
+    &.sh-circle {
+      border-radius: 1rem;
+      &.link {
+        padding: 0 0.5rem 0 0.25rem;
+      }
+    }
+    &.sh-rectangle-right {
+      border-top-left-radius: 0.25rem;
+      border-bottom-left-radius: 0.25rem;
+    }
+    &.sh-rectangle-left {
+      border-top-right-radius: 0.25rem;
+      border-bottom-right-radius: 0.25rem;
+    }
+    &.bs-solid {
+      border-style: solid;
+    }
+    &.bs-dashed {
+      border-style: dashed;
+    }
+
     &.highlight {
       box-shadow: inset 0 0 1px 1px var(--primary-bg-color);
 

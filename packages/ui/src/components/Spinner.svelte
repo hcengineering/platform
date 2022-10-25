@@ -13,7 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  export let size: 'small' | 'medium' = 'medium'
+  import type { ButtonSize } from '../types'
+
+  export let size: ButtonSize = 'medium'
 </script>
 
 <div class="spinner spinner-{size}">
@@ -32,6 +34,10 @@
     -webkit-animation: spinCircle 1s infinite linear;
     animation: spinCircle 1s infinite linear;
 
+    &-inline {
+      width: 0.75rem;
+      height: 0.75rem;
+    }
     &-small {
       width: 1rem;
       height: 1rem;
@@ -39,6 +45,14 @@
     &-medium {
       width: 1.5rem;
       height: 1.5rem;
+    }
+    &-large {
+      width: 2rem;
+      height: 2rem;
+    }
+    &-x-large {
+      width: 3rem;
+      height: 3rem;
     }
   }
   @-webkit-keyframes spinCircle {
