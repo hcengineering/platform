@@ -55,7 +55,8 @@ export default plugin(presentationId, {
     NotInThis: '' as IntlString,
     Add: '' as IntlString,
     Edit: '' as IntlString,
-    SelectAvatar: '' as IntlString
+    SelectAvatar: '' as IntlString,
+    GravatarsManaged: '' as IntlString
   },
   metadata: {
     RequiredVersion: '' as Metadata<string>

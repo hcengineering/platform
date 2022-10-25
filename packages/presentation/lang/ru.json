@@ -26,6 +26,7 @@
     "NotInThis": "Не в этом {space}",
     "Add": "Добавить",
     "Edit": "Редактировать",
-    "SelectAvatar": "Выбрать аватар"
+    "SelectAvatar": "Выбрать аватар",
+    "GravatarsManaged": "Граватары управляются через"
   }
 }

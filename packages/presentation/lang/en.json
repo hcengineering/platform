@@ -26,6 +26,7 @@
     "NotInThis": "Not in this {space}",
     "Add": "Add",
     "Edit": "Edit",
-    "SelectAvatar": "Select avatar"
+    "SelectAvatar": "Select avatar",
+    "GravatarsManaged": "Gravatars are managed through"
   }
 }
