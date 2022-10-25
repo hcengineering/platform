@@ -58,6 +58,9 @@ export interface Document extends Doc {
   attachments?: number
   comments?: number
   labels?: number
+
+  // List of reponsible persons, for document.
+  responsible: Ref<Employee>[]
 }
 
 /**

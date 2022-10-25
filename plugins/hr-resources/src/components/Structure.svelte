@@ -65,8 +65,7 @@
     allEmployees = res
   })
 
-  let twoRows: boolean
-  $: twoRows = $deviceInfo.docWidth <= 680
+  $: twoRows = $deviceInfo.twoRows
 </script>
 
 <div class="ac-header withSettings divide" class:full={!twoRows} class:mini={twoRows}>

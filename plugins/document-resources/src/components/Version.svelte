@@ -16,23 +16,25 @@
 -->
 <script lang="ts">
   import { WithLookup } from '@hcengineering/core'
-  import { Document } from '@hcengineering/document'
-  import { getPanelURI, Icon } from '@hcengineering/ui'
-  import document from '../plugin'
+  import { Document, DocumentVersion } from '@hcengineering/document'
 
   export let value: WithLookup<Document>
-  export let inline = false
+
+  let lastVersion: DocumentVersion | undefined
+
+  $: if (value.$lookup?.versions !== undefined) {
+    let vv = -1
+    let dv: DocumentVersion | undefined
+    for (const v of value.$lookup.versions as DocumentVersion[]) {
+      if (v.version > vv) {
+        dv = v
+        vv = v.version
+      }
+    }
+    lastVersion = dv
+  }
 </script>
 
-{#if value}
-  <a
-    class="flex-presenter"
-    href="#{getPanelURI(document.component.EditDoc, value._id, value._class, 'content')}"
-    class:inline-presenter={inline}
-  >
-    <div class="icon">
-      <Icon icon={document.icon.Document} size={'small'} />
-    </div>
-    <span class="label">{value.name}</span>
-  </a>
+{#if lastVersion}
+  {lastVersion.version}
 {/if}

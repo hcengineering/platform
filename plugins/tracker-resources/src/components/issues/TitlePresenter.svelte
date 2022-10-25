@@ -27,20 +27,18 @@
 </script>
 
 {#if value}
-  <span class="root" class:with-margin={shouldUseMargin} title={value.title}>
-    <span class="name cursor-pointer" on:click={handleIssueEditorOpened}>{value.title}</span>
+  <span class="titlePresenter-container" class:with-margin={shouldUseMargin} title={value.title}>
+    <span class="name overflow-label cursor-pointer" on:click={handleIssueEditorOpened}>{value.title}</span>
     <ParentNamesPresenter {value} />
   </span>
 {/if}
 
 <style lang="scss">
-  .root {
+  .titlePresenter-container {
     display: flex;
     flex-grow: 0;
-    min-width: 7rem;
-    white-space: nowrap;
-    overflow: hidden;
-    flex-shrink: 10;
+    min-width: 1.5rem;
+    // flex-shrink: 10;
 
     .name {
       &:hover {

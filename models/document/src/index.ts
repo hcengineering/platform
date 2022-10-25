@@ -13,11 +13,12 @@
 // limitations under the License.
 //
 
-import { Employee } from '@hcengineering/contact'
+import contact, { Employee } from '@hcengineering/contact'
 import type { Class, Domain, Markup, Ref } from '@hcengineering/core'
 import { IndexKind } from '@hcengineering/core'
 import { Document, documentId, DocumentVersion, RichDocumentContent, Step } from '@hcengineering/document'
 import {
+  ArrOf,
   Builder,
   Collection,
   Hidden,
@@ -36,17 +37,20 @@ import core, { TAttachedDoc, TDoc } from '@hcengineering/model-core'
 import presentation from '@hcengineering/model-presentation'
 import view, { actionTemplates, createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
+import tags from '@hcengineering/tags'
 import document from './plugin'
 
 export const DOMAIN_DOCUMENT = 'document' as Domain
 
 @Model(document.class.RichDocumentContent, core.class.AttachedDoc, DOMAIN_DOCUMENT)
+@UX(document.string.Document)
 export class TRichDocumentContent extends TAttachedDoc implements RichDocumentContent {
   steps!: Step[]
   version!: number
 }
 
 @Model(document.class.DocumentVersion, core.class.AttachedDoc, DOMAIN_DOCUMENT)
+@UX(document.string.Version)
 export class TDocumentVersion extends TAttachedDoc implements DocumentVersion {
   @Prop(TypeNumber(), document.string.Version)
   @ReadOnly()
@@ -79,6 +83,9 @@ export class TDocument extends TDoc implements Document {
   @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
   comments?: number
 
+  @Prop(Collection(tags.class.TagReference), document.string.Labels)
+  labels?: number
+
   @Prop(TypeRef(core.class.Class), core.string.ClassLabel)
   declare _class: Ref<Class<this>>
 
@@ -98,27 +105,53 @@ export class TDocument extends TDoc implements Document {
   @ReadOnly()
   @Hidden()
   versionCounter!: number
+
+  @Prop(ArrOf(TypeRef(contact.class.Employee)), document.string.Responsible)
+  responsible!: Ref<Employee>[]
 }
 
 export function createModel (builder: Builder): void {
   builder.createModel(TDocument, TRichDocumentContent, TDocumentVersion)
 
-  builder.mixin(document.class.Document, core.class.Class, view.mixin.ObjectFactory, {
-    component: document.component.CreateDocument
-  })
-
   builder.createDoc(
     workbench.class.Application,
     core.space.Model,
     {
-      label: document.string.Documents,
+      label: document.string.DocumentApplication,
       icon: document.icon.DocumentApplication,
       alias: documentId,
       hidden: false,
-      component: document.component.Documents
+      navigatorModel: {
+        specials: [
+          {
+            id: 'my-documents',
+            position: 'top',
+            label: document.string.MyDocuments,
+            icon: document.icon.Document,
+            component: document.component.MyDocuments
+          },
+          {
+            id: 'library',
+            position: 'top',
+            label: document.string.Library,
+            icon: document.icon.Document,
+            component: document.component.Documents
+          }
+        ],
+        spaces: []
+      },
+      navHeaderComponent: document.component.NewDocumentHeader
     },
     document.app.Documents
   )
+
+  builder.mixin(document.class.Document, core.class.Class, view.mixin.ObjectFactory, {
+    component: document.component.CreateDocument
+  })
+
+  builder.mixin(document.class.Document, core.class.Class, view.mixin.ClassFilters, {
+    filters: ['_class', 'modifiedOn']
+  })
 
   builder.createDoc(
     view.class.Viewlet,
@@ -126,7 +159,38 @@ export function createModel (builder: Builder): void {
     {
       attachTo: document.class.Document,
       descriptor: view.viewlet.Table,
-      config: ['', 'comments', 'attachments', 'modifiedOn'],
+      config: [
+        '',
+        {
+          key: '',
+          presenter: document.component.Status,
+          label: document.string.Status
+        },
+        {
+          key: '',
+          presenter: document.component.Version,
+          label: document.string.Version
+        },
+        {
+          key: '',
+          presenter: document.component.Revision,
+          label: document.string.Revision
+        },
+        'comments',
+        'attachments',
+        {
+          key: '',
+          presenter: tags.component.TagsPresenter,
+          label: document.string.Labels,
+          sortingKey: 'labels',
+          props: {
+            _class: document.class.Document,
+            key: 'labels',
+            icon: document.icon.Document
+          }
+        },
+        'modifiedOn'
+      ],
       options: {
         lookup: {
           _id: {
@@ -173,5 +237,5 @@ export function createModel (builder: Builder): void {
   })
 }
 
-export { contactOperation } from './migration'
+export { documentOperation } from './migration'
 export { document as default }

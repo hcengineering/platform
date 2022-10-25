@@ -41,6 +41,7 @@
 <style lang="scss">
   .modificationDateLabel {
     overflow: hidden;
+    min-width: min-content;
     white-space: nowrap;
     text-overflow: ellipsis;
     font-size: 0.75rem;

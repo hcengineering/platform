@@ -84,6 +84,7 @@
   --divider-color: #303236;
   --menu-bg-select: #2d2f36;
   --menu-icon-hover: #f3f3f8;
+  --header-bg-color: linear-gradient(0deg, var(--accent-bg-color), #2d2e31);
   --popup-bg-color: linear-gradient(136.61deg, var(--accent-bg-color) 13.72%, #2d2e31 74.3%);
   --popup-bg-hover: #37373c;
   --popup-divider: #313236;
@@ -236,8 +237,9 @@
   --divider-color: #e0e0e0;
   --menu-bg-select: #f0f3f9;
   --menu-icon-hover: #282a30;
-  --popup-bg-color: linear-gradient(136.61deg, rgb(255, 255, 255) 13.72%, rgb(255, 255, 255) 74.3%);
-  --popup-bg-hover: #f8f9fb;
+  --header-bg-color: linear-gradient(0deg, #eee, #f6f6f6);
+  --popup-bg-color: linear-gradient(136.61deg, #fff 13.72%, #fefefe 74.3%);
+  --popup-bg-hover: #f0f3f9;
   --popup-divider: #eff1f4;
   --popup-shadow: rgb(0 0 0 / 20%) 0px 4px 24px;  // Dark
   --popup-panel-shadow: rgb(0 0 0 / 10%) 0px 4px 18px;

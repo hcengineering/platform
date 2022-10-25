@@ -19,6 +19,7 @@ import { documentId } from '@hcengineering/document'
 import document from '@hcengineering/document-resources/src/plugin'
 import { ObjectSearchCategory, ObjectSearchFactory } from '@hcengineering/model-presentation'
 import { mergeIds, Resource } from '@hcengineering/platform'
+import { TagCategory } from '@hcengineering/tags'
 import { AnyComponent } from '@hcengineering/ui'
 import { ActionCategory } from '@hcengineering/view'
 
@@ -34,7 +35,8 @@ export default mergeIds(documentId, document, {
     DocumentQueryCategory: '' as Ref<ObjectSearchCategory>
   },
   category: {
-    Document: '' as Ref<ActionCategory>
+    Document: '' as Ref<ActionCategory>,
+    Other: '' as Ref<TagCategory>
   },
   viewlet: {
     TableDocument: '' as Ref<Doc>
