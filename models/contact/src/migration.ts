@@ -17,7 +17,7 @@ import { Employee, EmployeeAccount } from '@hcengineering/contact'
 import { AccountRole, DOMAIN_TX, TxCreateDoc, TxOperations } from '@hcengineering/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
-import contact, { DOMAIN_CONTACT } from './index'
+import contact from './index'
 import { MD5 } from 'crypto-js'
 
 async function createSpace (tx: TxOperations): Promise<void> {
