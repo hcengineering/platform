@@ -44,7 +44,7 @@
   import view from '@hcengineering/view'
   import { ActionContext, ActionHandler } from '@hcengineering/view-resources'
   import type { Application, NavigatorModel, SpecialNavModel, ViewConfiguration } from '@hcengineering/workbench'
-  import { onDestroy, onMount, tick } from 'svelte'
+  import { getContext, onDestroy, onMount, tick } from 'svelte'
   import { doNavigate } from '../utils'
   import workbench from '../plugin'
   import AccountPopup from './AccountPopup.svelte'
@@ -138,6 +138,9 @@
 
   onDestroy(
     location.subscribe(async (loc) => {
+      if (window.nsWebViewBridge !== undefined) {
+        window.nsWebViewBridge.emit('navigate', JSON.stringify(loc))
+      }
       closeTooltip()
       closePopup()
 
@@ -409,6 +412,9 @@
             location.fragment = undefined
             location.query = undefined
             navigate(location)
+          } else if (data.action === 'theme') {
+            const { setTheme } = getContext('theme') as any
+            setTheme(`theme-${data.value}`)
           }
         } catch (err) {
           console.log(`Couldn't recognize event ${JSON.stringify(event)}`)
