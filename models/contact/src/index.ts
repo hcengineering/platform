@@ -15,8 +15,6 @@
 
 import {
   Avatar,
-  AvatarProvider,
-  AvatarType,
   Channel,
   ChannelProvider,
   Contact,
@@ -56,12 +54,6 @@ import contact from './plugin'
 
 export const DOMAIN_CONTACT = 'contact' as Domain
 export const DOMAIN_CHANNEL = 'channel' as Domain
-
-@Model(contact.class.AvatarProvider, core.class.Doc, DOMAIN_MODEL)
-export class TAvatarProvider extends TDoc implements AvatarProvider {
-  type!: AvatarType
-  label!: IntlString
-}
 
 @Model(contact.class.ChannelProvider, core.class.Doc, DOMAIN_MODEL)
 export class TChannelProvider extends TDoc implements ChannelProvider {
@@ -168,7 +160,6 @@ export class TPersons extends TSpace implements Persons {}
 
 export function createModel (builder: Builder): void {
   builder.createModel(
-    TAvatarProvider,
     TChannelProvider,
     TContact,
     TPerson,
@@ -368,36 +359,6 @@ export function createModel (builder: Builder): void {
       action: contact.actionImpl.OpenChannel
     },
     contact.channelProvider.Homepage
-  )
-
-  builder.createDoc(
-    contact.class.AvatarProvider,
-    core.space.Model,
-    {
-      type: 'color',
-      label: contact.string.UseColor
-    },
-    contact.avatarProvider.Color
-  )
-
-  builder.createDoc(
-    contact.class.AvatarProvider,
-    core.space.Model,
-    {
-      type: 'image',
-      label: contact.string.UseImage
-    },
-    contact.avatarProvider.Image
-  )
-
-  builder.createDoc(
-    contact.class.AvatarProvider,
-    core.space.Model,
-    {
-      type: 'gravatar',
-      label: contact.string.UseGravatar
-    },
-    contact.avatarProvider.Gravatar
   )
 
   builder.mixin(contact.class.Person, core.class.Class, view.mixin.AttributePresenter, {

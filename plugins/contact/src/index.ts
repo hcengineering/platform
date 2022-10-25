@@ -27,7 +27,7 @@ import {
   Timestamp,
   UXObject
 } from '@hcengineering/core'
-import type { Asset, Plugin, Resource } from '@hcengineering/platform'
+import type { Asset, Plugin } from '@hcengineering/platform'
 import { IntlString, plugin } from '@hcengineering/platform'
 import type { AnyComponent } from '@hcengineering/ui'
 import { ViewAction, Viewlet } from '@hcengineering/view'
@@ -80,15 +80,6 @@ export type AvatarType = 'color' | 'image' | 'gravatar'
 export interface Avatar {
   type: AvatarType
   value: string
-}
-
-/**
- * @public
- */
-export interface AvatarProvider extends Doc {
-  type: AvatarType
-  label: IntlString
-  presenter?: AnyComponent
 }
 
 /**
@@ -189,7 +180,6 @@ export const contactId = 'contact' as Plugin
  */
 const contactPlugin = plugin(contactId, {
   class: {
-    AvatarProvider: '' as Ref<Class<AvatarProvider>>,
     ChannelProvider: '' as Ref<Class<ChannelProvider>>,
     Channel: '' as Ref<Class<Channel>>,
     Contact: '' as Ref<Class<Contact>>,
@@ -217,11 +207,6 @@ const contactPlugin = plugin(contactId, {
     GitHub: '' as Ref<ChannelProvider>,
     Facebook: '' as Ref<ChannelProvider>,
     Homepage: '' as Ref<ChannelProvider>
-  },
-  avatarProvider: {
-    Color: '' as Ref<AvatarProvider>,
-    Image: '' as Ref<AvatarProvider>,
-    Gravatar: '' as Ref<AvatarProvider>
   },
   icon: {
     ContactApplication: '' as Asset,
@@ -262,9 +247,6 @@ const contactPlugin = plugin(contactId, {
   viewlet: {
     TableMember: '' as Ref<Viewlet>,
     TableContact: '' as Ref<Viewlet>
-  },
-  function: {
-    AvatarProvider: '' as Resource<(client: Client, type: AvatarType) => Promise<AvatarProvider>>
   }
 })
 

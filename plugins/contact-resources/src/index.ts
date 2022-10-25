@@ -48,7 +48,6 @@ import OrganizationPresenter from './components/OrganizationPresenter.svelte'
 import PersonEditor from './components/PersonEditor.svelte'
 import PersonPresenter from './components/PersonPresenter.svelte'
 import SocialEditor from './components/SocialEditor.svelte'
-import { getAvatarProvider } from './avatar'
 import contact from './plugin'
 
 export {
@@ -160,8 +159,5 @@ export default async (): Promise<Resources> => ({
       query: string,
       filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }
     ) => await queryContact(contact.class.Organization, client, query, filter)
-  },
-  function: {
-    AvatarProvider: getAvatarProvider
   }
 })
