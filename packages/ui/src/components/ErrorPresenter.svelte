@@ -19,7 +19,7 @@
   export let error: any
 </script>
 
-<div use:tooltip={{ component: ErrorPopup, props: { error: error } }}>
+<div use:tooltip={{ component: ErrorPopup, props: { error } }}>
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
     <circle cx="10" cy="10" r="7.275" stroke="#EE7A7A" stroke-width="1.2" />
     <path

@@ -24,7 +24,7 @@
     showPopup(TagsEditorPopup, { object }, getEventPopupPositionElement(evt))
   }
   async function removeTag (tag: Ref<TagElement>): Promise<void> {
-    const tagRef = await client.findOne(tags.class.TagReference, { tag: tag })
+    const tagRef = await client.findOne(tags.class.TagReference, { tag })
     if (tagRef) await client.remove(tagRef)
   }
 </script>

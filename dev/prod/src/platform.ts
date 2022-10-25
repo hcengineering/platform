@@ -42,7 +42,7 @@ import { trackerId } from '@hcengineering/tracker'
 import { boardId } from '@hcengineering/board'
 import { hrId } from '@hcengineering/hr'
 import rekoni from '@hcengineering/rekoni'
-import { documentId } from '@hcengineering/document'
+import document, { documentId } from '@hcengineering/document'
 
 import '@hcengineering/login-assets'
 import '@hcengineering/task-assets'
@@ -80,6 +80,8 @@ export async function configurePlatform() {
   console.log('loading configuration', config)
   setMetadata(login.metadata.AccountsUrl, config.ACCOUNTS_URL)
   setMetadata(login.metadata.UploadUrl, config.UPLOAD_URL)
+  
+  setMetadata(document.metadata.CollaboratorUrl, config.COLLABORATOR_URL)
 
   if (config.MODEL_VERSION != null) {
     console.log('Minimal Model version requirement', config.MODEL_VERSION)

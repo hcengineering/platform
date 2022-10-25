@@ -49,10 +49,10 @@
         direction: 'top',
         component: DueDatePopup,
         props: {
-          formattedDate: formattedDate,
-          daysDifference: daysDifference,
-          isOverdue: isOverdue,
-          iconModifier: iconModifier
+          formattedDate,
+          daysDifference,
+          isOverdue,
+          iconModifier
         }
       }}
     >

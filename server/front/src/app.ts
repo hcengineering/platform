@@ -162,6 +162,7 @@ export function start (
     accountsUrl: string
     uploadUrl: string
     modelVersion: string
+    collaboratorUrl: string
   },
   port: number
 ): () => void {
@@ -192,7 +193,8 @@ export function start (
     res.json({
       ACCOUNTS_URL: config.accountsUrl,
       UPLOAD_URL: config.uploadUrl,
-      MODEL_VERSION: config.modelVersion
+      MODEL_VERSION: config.modelVersion,
+      COLLABORATOR_URL: config.collaboratorUrl
     })
   })
 

@@ -28,11 +28,11 @@ export const DOMAIN_TEMPLATES = 'templates' as Domain
 export class TMessageTemplate extends TDoc implements MessageTemplate {
   @Prop(TypeString(), templates.string.Title)
   @Index(IndexKind.FullText)
-  title!: string
+    title!: string
 
   @Prop(TypeString(), templates.string.Message)
   @Index(IndexKind.FullText)
-  message!: string
+    message!: string
 }
 
 export function createModel (builder: Builder): void {

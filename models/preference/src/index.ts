@@ -21,7 +21,7 @@ import preference, { DOMAIN_PREFERENCE, Preference, SpacePreference } from '@hce
 @Model(preference.class.Preference, core.class.Doc, DOMAIN_PREFERENCE)
 export class TPreference extends TDoc implements Preference {
   @Prop(TypeRef(core.class.Doc), core.string.AttachedTo)
-  attachedTo!: Ref<Doc>
+    attachedTo!: Ref<Doc>
 }
 
 @Model(preference.class.SpacePreference, preference.class.Preference)

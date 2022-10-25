@@ -80,7 +80,7 @@ export async function getEmployeeAccount (
     await control.modelDb.findAll(
       contact.class.EmployeeAccount,
       {
-        employee: employee
+        employee
       },
       { limit: 1 }
     )

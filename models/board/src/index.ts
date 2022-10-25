@@ -65,7 +65,7 @@ export class TCardCover extends TType implements CardCover {
 @Model(board.class.CommonBoardPreference, preference.class.Preference)
 export class TCommonBoardPreference extends TPreference implements CommonBoardPreference {
   @Prop(TypeRef(workbench.class.Application), board.string.CommonBoardPreference)
-  attachedTo!: Ref<Application>
+    attachedTo!: Ref<Application>
 }
 
 @Model(board.class.Card, task.class.Task)
@@ -73,33 +73,33 @@ export class TCommonBoardPreference extends TPreference implements CommonBoardPr
 export class TCard extends TTask implements Card {
   @Prop(TypeString(), board.string.Title)
   @Index(IndexKind.FullText)
-  title!: string
+    title!: string
 
   @Prop(TypeBoolean(), board.string.IsArchived)
-  isArchived?: boolean
+    isArchived?: boolean
 
   @Prop(TypeMarkup(), board.string.Description)
   @Index(IndexKind.FullText)
-  description!: Markup
+    description!: Markup
 
   @Prop(TypeString(), board.string.Location)
   @Index(IndexKind.FullText)
-  location?: string
+    location?: string
 
   @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
-  comments?: number
+    comments?: number
 
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, undefined, attachment.string.Files)
-  attachments?: number
+    attachments?: number
 
   @Prop(TypeRef(contact.class.Employee), board.string.Assignee)
   declare assignee: Ref<Employee> | null
 
   @Prop(ArrOf(TypeRef(contact.class.Employee)), board.string.Members)
-  members?: Ref<Employee>[]
+    members?: Ref<Employee>[]
 
   @Prop(TypeCardCover(), board.string.Cover)
-  cover?: CardCover
+    cover?: CardCover
 }
 
 @Model(board.class.MenuPage, core.class.Doc, DOMAIN_MODEL)

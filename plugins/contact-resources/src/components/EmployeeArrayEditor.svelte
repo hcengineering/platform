@@ -7,6 +7,7 @@
   export let label: IntlString
   export let value: Ref<Employee>[]
   export let onChange: (refs: Ref<Employee>[]) => void
+  export let readonly = false
 
   let timer: any
 
@@ -18,4 +19,13 @@
   }
 </script>
 
-<UserBoxList items={value} {label} on:update={onUpdate} kind={'link'} size={'medium'} justify={'left'} width={'100%'} />
+<UserBoxList
+  items={value}
+  {label}
+  on:update={onUpdate}
+  kind={'link'}
+  size={'medium'}
+  justify={'left'}
+  width={'100%'}
+  {readonly}
+/>

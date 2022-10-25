@@ -1,5 +1,6 @@
 {
   "ACCOUNTS_URL":"/account",
+  "COLLABORATOR_URL": "ws://localhost:3078",
   "UPLOAD_URL":"/files",
   "MODEL_VERSION": null
 }
