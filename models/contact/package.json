@@ -40,6 +40,6 @@
     "@hcengineering/contact": "~0.6.5",
     "@hcengineering/contact-resources": "~0.6.0",
     "@hcengineering/view": "^0.6.1",
-    "crypto-js": "~4.1.1"
+    "crypto-js": "^4.1.1"
   }
 }
