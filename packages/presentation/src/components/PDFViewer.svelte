@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Button, Panel } from '@hcengineering/ui'
+  import { Button, Panel, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
   import type { PopupOptions } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation from '..'
@@ -29,7 +29,7 @@
   export let options: PopupOptions
 
   const dispatch = createEventDispatcher()
-  let imgView: 'img-horizontal-fit' | 'img-vertical-fit' | 'img-original-fit' = 'img-horizontal-fit'
+  let imgView: 'img-horizontal-fit' | 'img-vertical-fit' | 'img-original-fit' = 'img-original-fit'
 
   function iconLabel (name: string): string {
     const parts = name.split('.')
@@ -100,11 +100,17 @@
   </svelte:fragment>
 
   {#if contentType && contentType.startsWith('image/')}
-    <div class="pdfviewer-content">
+    <div class="pdfviewer-content" style:margin={$deviceInfo.minWidth ? '.5rem' : '1.5rem'}>
       <img class={imgView} src={getFileUrl(file)} alt="" />
     </div>
+    <div class="space" />
   {:else}
-    <iframe class="pdfviewer-content" src={getFileUrl(file)} title="" />
+    <iframe
+      class="pdfviewer-content"
+      style:margin={$deviceInfo.minWidth ? '.5rem' : '1.5rem'}
+      src={getFileUrl(file)}
+      title=""
+    />
   {/if}
 </Panel>
 
@@ -125,7 +131,6 @@
   .pdfviewer-content {
     flex-grow: 1;
     overflow: auto;
-    margin: 1.5rem;
     border-style: none;
     border-radius: 0.5rem;
     background-color: var(--theme-menu-color);
@@ -157,5 +162,9 @@
     grid-auto-columns: min-content;
     gap: 0.5rem;
     align-items: center;
+  }
+  .space {
+    min-height: 0.5rem;
+    height: 0.5rem;
   }
 </style>
