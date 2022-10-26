@@ -18,14 +18,14 @@ import { Builder } from '@hcengineering/model'
 import core from '@hcengineering/core'
 import inventory from '@hcengineering/inventory'
 import serverInventory from '@hcengineering/server-inventory'
-import view from '@hcengineering/view'
+import serverNotification from '@hcengineering/server-notification'
 
 export function createModel (builder: Builder): void {
-  builder.mixin(inventory.class.Product, core.class.Class, view.mixin.HTMLPresenter, {
+  builder.mixin(inventory.class.Product, core.class.Class, serverNotification.mixin.HTMLPresenter, {
     presenter: serverInventory.function.ProductHTMLPresenter
   })
 
-  builder.mixin(inventory.class.Product, core.class.Class, view.mixin.TextPresenter, {
+  builder.mixin(inventory.class.Product, core.class.Class, serverNotification.mixin.TextPresenter, {
     presenter: serverInventory.function.ProductTextPresenter
   })
 }

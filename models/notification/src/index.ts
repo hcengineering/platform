@@ -81,6 +81,9 @@ export class TEmaiNotification extends TDoc implements EmailNotification {
 @Model(notification.class.NotificationType, core.class.Doc, DOMAIN_MODEL)
 export class TNotificationType extends TDoc implements NotificationType {
   label!: IntlString
+  textTemplate!: string
+  htmlTemplate!: string
+  subjectTemplate!: string
 }
 
 @Model(notification.class.NotificationProvider, core.class.Doc, DOMAIN_MODEL)
@@ -126,7 +129,10 @@ export function createModel (builder: Builder): void {
     notification.class.NotificationType,
     core.space.Model,
     {
-      label: notification.string.MentionNotification
+      label: notification.string.MentionNotification,
+      textTemplate: '{sender} mentioned you in {doc} {data}',
+      htmlTemplate: '<p><b>{sender}</b> mentioned you in {doc}</p> {data}',
+      subjectTemplate: 'You was mentioned in {doc}'
     },
     notification.ids.MentionNotification
   )

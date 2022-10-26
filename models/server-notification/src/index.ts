@@ -14,13 +14,27 @@
 // limitations under the License.
 //
 
-import { Builder } from '@hcengineering/model'
+import { Builder, Mixin } from '@hcengineering/model'
 
 import serverCore from '@hcengineering/server-core'
 import core from '@hcengineering/core'
-import serverNotification from '@hcengineering/server-notification'
+import serverNotification, { HTMLPresenter, TextPresenter, Presenter } from '@hcengineering/server-notification'
+import { Resource } from '@hcengineering/platform'
+import { TClass } from '@hcengineering/model-core'
+
+@Mixin(serverNotification.mixin.HTMLPresenter, core.class.Class)
+export class THTMLPresenter extends TClass implements HTMLPresenter {
+  presenter!: Resource<Presenter>
+}
+
+@Mixin(serverNotification.mixin.TextPresenter, core.class.Class)
+export class TTextPresenter extends TClass implements TextPresenter {
+  presenter!: Resource<Presenter>
+}
 
 export function createModel (builder: Builder): void {
+  builder.createModel(THTMLPresenter, TTextPresenter)
+
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverNotification.trigger.OnBacklinkCreate
   })

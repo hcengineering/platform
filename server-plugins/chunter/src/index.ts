@@ -17,6 +17,7 @@ import { Class, Doc, DocumentQuery, FindOptions, FindResult, Hierarchy, Ref } fr
 import type { Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { TriggerFunc } from '@hcengineering/server-core'
+import { Presenter } from '@hcengineering/server-notification'
 
 /**
  * @public
@@ -42,7 +43,7 @@ export default plugin(serverChunterId, {
       ) => Promise<FindResult<T>>
     ) => Promise<Doc[]>
     >,
-    ChannelHTMLPresenter: '' as Resource<(doc: Doc) => string>,
-    ChannelTextPresenter: '' as Resource<(doc: Doc) => string>
+    ChannelHTMLPresenter: '' as Resource<Presenter>,
+    ChannelTextPresenter: '' as Resource<Presenter>
   }
 })

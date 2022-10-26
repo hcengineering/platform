@@ -16,6 +16,7 @@
 import { Employee } from '@hcengineering/contact'
 import core, {
   AttachedDoc,
+  Doc,
   DocumentUpdate,
   Ref,
   Space,
@@ -28,10 +29,13 @@ import core, {
   TxUpdateDoc,
   WithLookup
 } from '@hcengineering/core'
+import login from '@hcengineering/login'
+import { workbenchId } from '@hcengineering/workbench'
+import { getMetadata } from '@hcengineering/platform'
 import { Resource } from '@hcengineering/platform/lib/platform'
 import { TriggerControl } from '@hcengineering/server-core'
 import { addAssigneeNotification } from '@hcengineering/server-task-resources'
-import tracker, { Issue, IssueParentInfo, TimeSpendReport } from '@hcengineering/tracker'
+import tracker, { Issue, IssueParentInfo, TimeSpendReport, trackerId } from '@hcengineering/tracker'
 
 async function updateSubIssues (
   updateTx: TxUpdateDoc<Issue>,
@@ -49,6 +53,29 @@ async function updateSubIssues (
 /**
  * @public
  */
+export async function issueHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
+  const issue = doc as Issue
+  const team = (await control.findAll(tracker.class.Team, { _id: issue.space })).shift()
+  const issueName = `${team?.identifier ?? '?'}-${issue.number}`
+
+  const front = getMetadata(login.metadata.FrontUrl) ?? ''
+  return `<a href="${front}/${workbenchId}/${control.workspace}/${trackerId}/${issue.space}/#${tracker.component.EditIssue}|${issue._id}|${issue._class}">${issueName}</a>`
+}
+
+/**
+ * @public
+ */
+export async function issueTextPresenter (doc: Doc, control: TriggerControl): Promise<string> {
+  const issue = doc as Issue
+  const team = (await control.findAll(tracker.class.Team, { _id: issue.space })).shift()
+  const issueName = `${team?.identifier ?? '?'}-${issue.number}`
+
+  return issueName
+}
+
+/**
+ * @public
+ */
 export async function addTrackerAssigneeNotification (
   control: TriggerControl,
   res: Tx[],
@@ -56,14 +83,10 @@ export async function addTrackerAssigneeNotification (
   assignee: Ref<Employee>,
   ptx: TxCollectionCUD<Issue, AttachedDoc>
 ): Promise<void> {
-  const team = (await control.findAll(tracker.class.Team, { _id: issue.space })).shift()
-  const issueName = `${team?.identifier ?? '?'}-${issue.number}`
-
   await addAssigneeNotification(
     control,
     res,
     issue,
-    issueName,
     assignee,
     ptx,
     tracker.component.EditIssue as unknown as Resource<string>
@@ -142,6 +165,10 @@ export async function OnIssueUpdate (tx: Tx, control: TriggerControl): Promise<T
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
+  function: {
+    IssueHTMLPresenter: issueHTMLPresenter,
+    IssueTextPresenter: issueTextPresenter
+  },
   trigger: {
     OnIssueUpdate
   }

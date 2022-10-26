@@ -13,10 +13,10 @@
 // limitations under the License.
 //
 
-import type { Resource, Plugin } from '@hcengineering/platform'
+import type { Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
-import { Doc } from '@hcengineering/core'
 import { TriggerFunc } from '@hcengineering/server-core'
+import { Presenter } from '@hcengineering/server-notification'
 
 /**
  * @public
@@ -28,10 +28,10 @@ export const serverRecruitId = 'server-recruit' as Plugin
  */
 export default plugin(serverRecruitId, {
   function: {
-    ApplicationHTMLPresenter: '' as Resource<(doc: Doc) => string>,
-    ApplicationTextPresenter: '' as Resource<(doc: Doc) => string>,
-    VacancyHTMLPresenter: '' as Resource<(doc: Doc) => string>,
-    VacancyTextPresenter: '' as Resource<(doc: Doc) => string>
+    ApplicationHTMLPresenter: '' as Resource<Presenter>,
+    ApplicationTextPresenter: '' as Resource<Presenter>,
+    VacancyHTMLPresenter: '' as Resource<Presenter>,
+    VacancyTextPresenter: '' as Resource<Presenter>
   },
   trigger: {
     OnRecruitUpdate: '' as Resource<TriggerFunc>

@@ -18,14 +18,14 @@ import { Builder } from '@hcengineering/model'
 import core from '@hcengineering/core'
 import serverTask from '@hcengineering/server-task'
 import task from '@hcengineering/task'
-import view from '@hcengineering/view'
+import serverNotification from '@hcengineering/server-notification'
 
 export function createModel (builder: Builder): void {
-  builder.mixin(task.class.Issue, core.class.Class, view.mixin.HTMLPresenter, {
+  builder.mixin(task.class.Issue, core.class.Class, serverNotification.mixin.HTMLPresenter, {
     presenter: serverTask.function.IssueHTMLPresenter
   })
 
-  builder.mixin(task.class.Issue, core.class.Class, view.mixin.TextPresenter, {
+  builder.mixin(task.class.Issue, core.class.Class, serverNotification.mixin.TextPresenter, {
     presenter: serverTask.function.IssueTextPresenter
   })
 }

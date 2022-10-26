@@ -581,7 +581,10 @@ export function createModel (builder: Builder): void {
     notification.class.NotificationType,
     core.space.Model,
     {
-      label: task.string.Assigned
+      label: task.string.Assigned,
+      textTemplate: '{doc} was assigned to you by {sender}',
+      htmlTemplate: '<p>{doc} was assigned to you by {sender}</p>',
+      subjectTemplate: '{doc} was assigned to you'
     },
     task.ids.AssigneedNotification
   )

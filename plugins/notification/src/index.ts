@@ -32,6 +32,15 @@ export interface LastView extends AttachedDoc {
 /**
  * @public
  */
+export interface NotificationAction {
+  component: AnyComponent
+  objectId: Ref<Doc>
+  objectClass: Ref<Class<Doc>>
+}
+
+/**
+ * @public
+ */
 export interface Notification extends AttachedDoc {
   tx: Ref<TxCUD<Doc>>
   status: NotificationStatus
@@ -39,11 +48,7 @@ export interface Notification extends AttachedDoc {
   type: Ref<NotificationType>
 
   // Defined to open particular item if required.
-  action?: {
-    component: AnyComponent
-    objectId: Ref<Doc>
-    objectClass: Ref<Class<Doc>>
-  }
+  action?: NotificationAction
 }
 
 /**
@@ -72,6 +77,9 @@ export enum NotificationStatus {
  */
 export interface NotificationType extends Doc {
   label: IntlString
+  textTemplate: string
+  htmlTemplate: string
+  subjectTemplate: string
 }
 
 /**

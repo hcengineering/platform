@@ -17,24 +17,24 @@ import { Builder } from '@hcengineering/model'
 
 import core from '@hcengineering/core'
 import recruit from '@hcengineering/recruit'
-import view from '@hcengineering/view'
+import serverNotification from '@hcengineering/server-notification'
 import serverRecruit from '@hcengineering/server-recruit'
 import serverCore from '@hcengineering/server-core'
 
 export function createModel (builder: Builder): void {
-  builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.HTMLPresenter, {
+  builder.mixin(recruit.class.Applicant, core.class.Class, serverNotification.mixin.HTMLPresenter, {
     presenter: serverRecruit.function.ApplicationHTMLPresenter
   })
 
-  builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.TextPresenter, {
+  builder.mixin(recruit.class.Applicant, core.class.Class, serverNotification.mixin.TextPresenter, {
     presenter: serverRecruit.function.ApplicationTextPresenter
   })
 
-  builder.mixin(recruit.class.Vacancy, core.class.Class, view.mixin.HTMLPresenter, {
+  builder.mixin(recruit.class.Vacancy, core.class.Class, serverNotification.mixin.HTMLPresenter, {
     presenter: serverRecruit.function.VacancyHTMLPresenter
   })
 
-  builder.mixin(recruit.class.Vacancy, core.class.Class, view.mixin.TextPresenter, {
+  builder.mixin(recruit.class.Vacancy, core.class.Class, serverNotification.mixin.TextPresenter, {
     presenter: serverRecruit.function.VacancyTextPresenter
   })
 

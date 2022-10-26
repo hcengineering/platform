@@ -27,7 +27,9 @@
   "dependencies": {
     "@hcengineering/core": "^0.6.17",
     "@hcengineering/model": "~0.6.0",
+    "@hcengineering/tracker": "^0.6.1",
     "@hcengineering/server-core": "~0.6.1",
+    "@hcengineering/server-notification": "^0.6.0",
     "@hcengineering/server-tracker": "~0.6.0"
   }
 }

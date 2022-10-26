@@ -128,7 +128,10 @@ export function createModel (builder: Builder): void {
     notification.class.NotificationType,
     core.space.Model,
     {
-      label: calendar.string.Reminder
+      label: calendar.string.Reminder,
+      textTemplate: 'Reminder: {doc}',
+      htmlTemplate: 'Reminder: {doc}',
+      subjectTemplate: 'Reminder: {doc}'
     },
     calendar.ids.ReminderNotification
   )

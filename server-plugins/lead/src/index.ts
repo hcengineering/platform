@@ -13,10 +13,10 @@
 // limitations under the License.
 //
 
-import { Doc } from '@hcengineering/core'
 import type { Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { TriggerFunc } from '@hcengineering/server-core'
+import { Presenter } from '@hcengineering/server-notification'
 
 /**
  * @public
@@ -28,8 +28,8 @@ export const serverLeadId = 'server-lead' as Plugin
  */
 export default plugin(serverLeadId, {
   function: {
-    LeadHTMLPresenter: '' as Resource<(doc: Doc) => string>,
-    LeadTextPresenter: '' as Resource<(doc: Doc) => string>
+    LeadHTMLPresenter: '' as Resource<Presenter>,
+    LeadTextPresenter: '' as Resource<Presenter>
   },
   trigger: {
     OnLeadUpdate: '' as Resource<TriggerFunc>

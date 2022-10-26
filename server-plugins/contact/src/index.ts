@@ -17,7 +17,7 @@
 import type { Resource, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { TriggerFunc } from '@hcengineering/server-core'
-import { Doc } from '@hcengineering/core'
+import { Presenter } from '@hcengineering/server-notification'
 
 /**
  * @public
@@ -32,9 +32,9 @@ export default plugin(serverContactId, {
     OnContactDelete: '' as Resource<TriggerFunc>
   },
   function: {
-    PersonHTMLPresenter: '' as Resource<(doc: Doc) => string>,
-    PersonTextPresenter: '' as Resource<(doc: Doc) => string>,
-    OrganizationHTMLPresenter: '' as Resource<(doc: Doc) => string>,
-    OrganizationTextPresenter: '' as Resource<(doc: Doc) => string>
+    PersonHTMLPresenter: '' as Resource<Presenter>,
+    PersonTextPresenter: '' as Resource<Presenter>,
+    OrganizationHTMLPresenter: '' as Resource<Presenter>,
+    OrganizationTextPresenter: '' as Resource<Presenter>
   }
 })
