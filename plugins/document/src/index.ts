@@ -92,7 +92,9 @@ const documentPlugin = plugin(documentId, {
   },
   icon: {
     DocumentApplication: '' as Asset,
-    Document: '' as Asset
+    NewDocument: '' as Asset,
+    Document: '' as Asset,
+    Library: '' as Asset
   },
   space: {
     Documents: '' as Ref<Space>

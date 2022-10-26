@@ -307,30 +307,9 @@
 {/if}
 
 <style lang="scss">
-  .title {
-    font-weight: 500;
-    font-size: 1.125rem;
-    color: var(--theme-caption-color);
-  }
-
   .description-preview {
     color: var(--theme-content-color);
     line-height: 150%;
-
-    .placeholder {
-      color: var(--theme-content-trans-color);
-    }
-  }
-
-  .tool {
-    align-self: start;
-    width: 20px;
-    height: 20px;
-    opacity: 0.3;
-    cursor: pointer;
-    &:hover {
-      opacity: 1;
-    }
   }
 
   .tab-content {

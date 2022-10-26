@@ -148,6 +148,8 @@
 
       .icon { color: var(--accent-color); }
     }
+    &.no-focus:focus { background-color: transparent; }
+    &.no-focus:hover { background-color: var(--popup-bg-hover); }
   }
   .sticky-wrapper {
     display: flex;

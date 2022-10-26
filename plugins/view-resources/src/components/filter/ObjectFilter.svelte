@@ -156,7 +156,7 @@
         {:else}
           {#each values as value, i}
             <button
-              class="menu-item"
+              class="menu-item no-focus"
               on:click={() => {
                 toggle(value)
               }}
@@ -167,7 +167,7 @@
                     <CheckBox checked={isSelected(value, filter.value)} primary />
                   </div>
                   {#if value}
-                    <svelte:component this={attribute.presenter} {value} {...attribute.props} />
+                    <svelte:component this={attribute.presenter} {value} {...attribute.props} isInteractive={false} />
                   {:else}
                     <Label label={ui.string.NotSelected} />
                   {/if}
