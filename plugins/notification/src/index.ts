@@ -18,7 +18,7 @@ import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platfor
 import { plugin } from '@hcengineering/platform'
 import { AnyComponent } from '@hcengineering/ui'
 import { Writable } from './types'
-
+import { IntegrationType } from '@hcengineering/setting'
 export * from './types'
 
 /**
@@ -152,6 +152,9 @@ const notification = plugin(notificationId, {
     BrowserNotification: '' as Ref<NotificationProvider>,
     EmailNotification: '' as Ref<NotificationProvider>,
     NotificationSettings: '' as Ref<Doc>
+  },
+  integrationType: {
+    MobileApp: '' as Ref<IntegrationType>
   },
   component: {
     NotificationsPopup: '' as AnyComponent,
