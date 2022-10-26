@@ -63,11 +63,6 @@ export async function addAssigneeNotification (
     return
   }
 
-  const target = await getEmployee(assignee, control)
-  if (target === undefined) {
-    return
-  }
-
   const receiver = await getEmployeeAccount(assignee, control)
   if (receiver === undefined) {
     return
