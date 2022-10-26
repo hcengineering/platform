@@ -77,7 +77,7 @@
     "@hcengineering/attachment": "~0.6.1",
     "@hcengineering/server-contact": "~0.6.1",
     "@hcengineering/server-contact-resources": "~0.6.0",
-    "@hcengineering/server-notification": "~0.6.0",
+    "@hcengineering/server-notification": "^0.6.0",
     "@hcengineering/server-notification-resources": "~0.6.0",
     "@hcengineering/server-setting": "~0.6.0",
     "@hcengineering/server-setting-resources": "~0.6.0",
