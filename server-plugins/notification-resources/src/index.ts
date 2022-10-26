@@ -332,7 +332,6 @@ async function getUpdateLastViewTxes (
  * @public
  */
 export async function UpdateLastView (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  control.txFactory.account
   const actualTx = TxProcessor.extractTx(tx)
   if (![core.class.TxUpdateDoc, core.class.TxCreateDoc, core.class.TxMixin].includes(actualTx._class)) {
     return []
