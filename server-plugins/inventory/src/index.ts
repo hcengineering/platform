@@ -13,9 +13,9 @@
 // limitations under the License.
 //
 
-import { Doc } from '@hcengineering/core'
 import type { Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
+import { Presenter } from '@hcengineering/server-notification'
 
 /**
  * @public
@@ -27,7 +27,7 @@ export const serverInventoryId = 'server-inventory' as Plugin
  */
 export default plugin(serverInventoryId, {
   function: {
-    ProductHTMLPresenter: '' as Resource<(doc: Doc) => string>,
-    ProductTextPresenter: '' as Resource<(doc: Doc) => string>
+    ProductHTMLPresenter: '' as Resource<Presenter>,
+    ProductTextPresenter: '' as Resource<Presenter>
   }
 })

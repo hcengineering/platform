@@ -67,10 +67,10 @@ export async function OnContactDelete (tx: Tx, { findAll, hierarchy, storageFx }
 /**
  * @public
  */
-export function personHTMLPresenter (doc: Doc): string {
+export function personHTMLPresenter (doc: Doc, control: TriggerControl): string {
   const person = doc as Person
   const front = getMetadata(login.metadata.FrontUrl) ?? ''
-  return `<a href="${front}/${workbenchId}/${contactId}#${view.component.EditDoc}|${person._id}|${
+  return `<a href="${front}/${workbenchId}/${control.workspace}/${contactId}#${view.component.EditDoc}|${person._id}|${
     person._class
   }">${formatName(person.name)}</a>`
 }
@@ -86,10 +86,10 @@ export function personTextPresenter (doc: Doc): string {
 /**
  * @public
  */
-export function organizationHTMLPresenter (doc: Doc): string {
+export function organizationHTMLPresenter (doc: Doc, control: TriggerControl): string {
   const organization = doc as Organization
   const front = getMetadata(login.metadata.FrontUrl) ?? ''
-  return `<a href="${front}/${workbenchId}/${contactId}#${view.component.EditDoc}|${organization._id}|${organization._class}">${organization.name}</a>`
+  return `<a href="${front}/${workbenchId}/${control.workspace}/${contactId}#${view.component.EditDoc}|${organization._id}|${organization._class}">${organization.name}</a>`
 }
 
 /**

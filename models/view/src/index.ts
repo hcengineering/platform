@@ -17,6 +17,7 @@ import type { Class, Client, Data, Doc, DocumentQuery, Ref, Space } from '@hceng
 import { DOMAIN_MODEL } from '@hcengineering/core'
 import { Builder, Mixin, Model } from '@hcengineering/model'
 import core, { TClass, TDoc } from '@hcengineering/model-core'
+import preference, { TPreference } from '@hcengineering/model-preference'
 import type { Asset, IntlString, Resource, Status } from '@hcengineering/platform'
 import type { AnyComponent } from '@hcengineering/ui'
 import type {
@@ -32,7 +33,6 @@ import type {
   CollectionPresenter,
   Filter,
   FilterMode,
-  HTMLPresenter,
   IgnoreActions,
   InlineAttributEditor,
   KeyBinding,
@@ -46,7 +46,6 @@ import type {
   PreviewPresenter,
   SpaceHeader,
   SpaceName,
-  TextPresenter,
   ViewAction,
   ViewActionInput,
   ViewContext,
@@ -54,7 +53,6 @@ import type {
   ViewletDescriptor,
   ViewletPreference
 } from '@hcengineering/view'
-import preference, { TPreference } from '@hcengineering/model-preference'
 import view from './plugin'
 
 export { viewOperation } from './migration'
@@ -223,16 +221,6 @@ export class TIgnoreActions extends TClass implements IgnoreActions {
   actions!: Ref<Action>[]
 }
 
-@Mixin(view.mixin.HTMLPresenter, core.class.Class)
-export class THTMLPresenter extends TClass implements HTMLPresenter {
-  presenter!: Resource<(doc: Doc) => string>
-}
-
-@Mixin(view.mixin.TextPresenter, core.class.Class)
-export class TTextPresenter extends TClass implements TextPresenter {
-  presenter!: Resource<(doc: Doc) => string>
-}
-
 @Mixin(view.mixin.PreviewPresenter, core.class.Class)
 export class TPreviewPresenter extends TClass implements PreviewPresenter {
   presenter!: AnyComponent
@@ -291,10 +279,8 @@ export function createModel (builder: Builder): void {
     TObjectFactory,
     TObjectTitle,
     TObjectEditorHeader,
-    THTMLPresenter,
     TSpaceHeader,
     TSpaceName,
-    TTextPresenter,
     TIgnoreActions,
     TPreviewPresenter,
     TLinkPresenter,

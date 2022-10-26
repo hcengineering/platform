@@ -408,6 +408,7 @@ class TServerStorage implements ServerStorage {
       ...(await ctx.with('process-move', { _class }, () => this.processMove(ctx, tx))),
       ...(await ctx.with('process-triggers', {}, (ctx) =>
         this.triggers.apply(tx.modifiedBy, tx, {
+          workspace: this.workspace,
           fx: triggerFx.fx,
           fulltextFx: (f) => triggerFx.fx(() => f(this.fulltextAdapter)),
           storageFx: (f) => {

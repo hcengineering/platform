@@ -17,16 +17,16 @@ import { Builder } from '@hcengineering/model'
 
 import core, { Class, Doc } from '@hcengineering/core'
 import chunter from '@hcengineering/chunter'
-import view from '@hcengineering/view'
+import serverNotification from '@hcengineering/server-notification'
 import serverCore, { ObjectDDParticipant } from '@hcengineering/server-core'
 import serverChunter from '@hcengineering/server-chunter'
 
 export function createModel (builder: Builder): void {
-  builder.mixin(chunter.class.Channel, core.class.Class, view.mixin.HTMLPresenter, {
+  builder.mixin(chunter.class.Channel, core.class.Class, serverNotification.mixin.HTMLPresenter, {
     presenter: serverChunter.function.ChannelHTMLPresenter
   })
 
-  builder.mixin(chunter.class.Channel, core.class.Class, view.mixin.TextPresenter, {
+  builder.mixin(chunter.class.Channel, core.class.Class, serverNotification.mixin.TextPresenter, {
     presenter: serverChunter.function.ChannelTextPresenter
   })
 

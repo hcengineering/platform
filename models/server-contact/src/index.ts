@@ -19,23 +19,23 @@ import { Builder } from '@hcengineering/model'
 import serverCore from '@hcengineering/server-core'
 import core from '@hcengineering/core'
 import contact from '@hcengineering/contact'
-import view from '@hcengineering/view'
+import serverNotification from '@hcengineering/server-notification'
 import serverContact from '@hcengineering/server-contact'
 
 export function createModel (builder: Builder): void {
-  builder.mixin(contact.class.Person, core.class.Class, view.mixin.HTMLPresenter, {
+  builder.mixin(contact.class.Person, core.class.Class, serverNotification.mixin.HTMLPresenter, {
     presenter: serverContact.function.PersonHTMLPresenter
   })
 
-  builder.mixin(contact.class.Person, core.class.Class, view.mixin.TextPresenter, {
+  builder.mixin(contact.class.Person, core.class.Class, serverNotification.mixin.TextPresenter, {
     presenter: serverContact.function.PersonTextPresenter
   })
 
-  builder.mixin(contact.class.Organization, core.class.Class, view.mixin.HTMLPresenter, {
+  builder.mixin(contact.class.Organization, core.class.Class, serverNotification.mixin.HTMLPresenter, {
     presenter: serverContact.function.OrganizationHTMLPresenter
   })
 
-  builder.mixin(contact.class.Organization, core.class.Class, view.mixin.TextPresenter, {
+  builder.mixin(contact.class.Organization, core.class.Class, serverNotification.mixin.TextPresenter, {
     presenter: serverContact.function.OrganizationTextPresenter
   })
 

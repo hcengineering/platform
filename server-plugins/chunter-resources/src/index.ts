@@ -38,16 +38,16 @@ import { workbenchId } from '@hcengineering/workbench'
 /**
  * @public
  */
-export function channelHTMLPresenter (doc: Doc): string {
+export async function channelHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const channel = doc as ChunterSpace
   const front = getMetadata(login.metadata.FrontUrl) ?? ''
-  return `<a href="${front}/${workbenchId}/${chunterId}/${channel._id}">${channel.name}</a>`
+  return `<a href="${front}/${workbenchId}/${control.workspace}/${chunterId}/${channel._id}">${channel.name}</a>`
 }
 
 /**
  * @public
  */
-export function channelTextPresenter (doc: Doc): string {
+export async function channelTextPresenter (doc: Doc): Promise<string> {
   const channel = doc as ChunterSpace
   return `${channel.name}`
 }

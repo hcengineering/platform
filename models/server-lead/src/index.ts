@@ -17,16 +17,16 @@ import { Builder } from '@hcengineering/model'
 
 import core from '@hcengineering/core'
 import lead from '@hcengineering/lead'
-import view from '@hcengineering/view'
+import serverNotification from '@hcengineering/server-notification'
 import serverLead from '@hcengineering/server-lead'
 import serverCore from '@hcengineering/server-core'
 
 export function createModel (builder: Builder): void {
-  builder.mixin(lead.class.Lead, core.class.Class, view.mixin.HTMLPresenter, {
+  builder.mixin(lead.class.Lead, core.class.Class, serverNotification.mixin.HTMLPresenter, {
     presenter: serverLead.function.LeadHTMLPresenter
   })
 
-  builder.mixin(lead.class.Lead, core.class.Class, view.mixin.TextPresenter, {
+  builder.mixin(lead.class.Lead, core.class.Class, serverNotification.mixin.TextPresenter, {
     presenter: serverLead.function.LeadTextPresenter
   })
 

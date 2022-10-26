@@ -36,16 +36,16 @@ import { workbenchId } from '@hcengineering/workbench'
 /**
  * @public
  */
-export function vacancyHTMLPresenter (doc: Doc): string {
+export async function vacancyHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const vacancy = doc as Vacancy
   const front = getMetadata(login.metadata.FrontUrl) ?? ''
-  return `<a href="${front}/${workbenchId}/${recruitId}/${vacancy._id}/#${recruit.component.EditVacancy}|${vacancy._id}|${vacancy._class}">${vacancy.name}</a>`
+  return `<a href="${front}/${workbenchId}/${control.workspace}/${recruitId}/${vacancy._id}/#${recruit.component.EditVacancy}|${vacancy._id}|${vacancy._class}">${vacancy.name}</a>`
 }
 
 /**
  * @public
  */
-export function vacancyTextPresenter (doc: Doc): string {
+export async function vacancyTextPresenter (doc: Doc): Promise<string> {
   const vacancy = doc as Vacancy
   return `${vacancy.name}`
 }
@@ -53,16 +53,16 @@ export function vacancyTextPresenter (doc: Doc): string {
 /**
  * @public
  */
-export function applicationHTMLPresenter (doc: Doc): string {
+export async function applicationHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const applicant = doc as Applicant
   const front = getMetadata(login.metadata.FrontUrl) ?? ''
-  return `<a href="${front}/${workbenchId}/${recruitId}/${applicant.space}/#${view.component.EditDoc}|${applicant._id}|${applicant._class}">APP-${applicant.number}</a>`
+  return `<a href="${front}/${workbenchId}/${control.workspace}/${recruitId}/${applicant.space}/#${view.component.EditDoc}|${applicant._id}|${applicant._class}">APP-${applicant.number}</a>`
 }
 
 /**
  * @public
  */
-export function applicationTextPresenter (doc: Doc): string {
+export async function applicationTextPresenter (doc: Doc): Promise<string> {
   const applicant = doc as Applicant
   return `APP-${applicant.number}`
 }
@@ -185,7 +185,6 @@ async function handleApplicantUpdate (control: TriggerControl, cud: TxCUD<Doc>, 
           control,
           res,
           applicant,
-          applicationTextPresenter(applicant),
           applicant.assignee,
           tx as TxCollectionCUD<Applicant, AttachedDoc>
         )
@@ -203,7 +202,6 @@ async function handleApplicantCreate (control: TriggerControl, cud: TxCUD<Doc>, 
         control,
         res,
         applicant,
-        applicationTextPresenter(applicant),
         applicant.assignee,
         tx as TxCollectionCUD<Applicant, AttachedDoc>
       )

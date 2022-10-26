@@ -34,16 +34,16 @@ import { addAssigneeNotification } from '@hcengineering/server-task-resources'
 /**
  * @public
  */
-export function leadHTMLPresenter (doc: Doc): string {
+export async function leadHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const lead = doc as Lead
   const front = getMetadata(login.metadata.FrontUrl) ?? ''
-  return `<a href="${front}/${workbenchId}/${leadId}/${lead.space}/#${view.component.EditDoc}|${lead._id}|${lead._class}">${lead.title}</a>`
+  return `<a href="${front}/${workbenchId}/${control.workspace}/${leadId}/${lead.space}/#${view.component.EditDoc}|${lead._id}|${lead._class}">${lead.title}</a>`
 }
 
 /**
  * @public
  */
-export function leadTextPresenter (doc: Doc): string {
+export async function leadTextPresenter (doc: Doc): Promise<string> {
   const lead = doc as Lead
   return `LEAD-${lead.number}`
 }
@@ -77,7 +77,6 @@ async function handleLeadCreate (control: TriggerControl, cud: TxCUD<Doc>, res: 
         control,
         res,
         leadValue,
-        leadTextPresenter(leadValue),
         leadValue.assignee,
         tx as TxCollectionCUD<Lead, AttachedDoc>
       )
@@ -96,7 +95,6 @@ async function handleLeadUpdate (control: TriggerControl, cud: TxCUD<Doc>, res: 
           control,
           res,
           leadValue,
-          leadTextPresenter(leadValue),
           leadValue.assignee,
           tx as TxCollectionCUD<Lead, AttachedDoc>
         )
