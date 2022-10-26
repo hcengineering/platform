@@ -20,7 +20,6 @@ import { NotificationAction } from '@hcengineering/notification'
 import { getMetadata, Resource } from '@hcengineering/platform'
 import { TriggerControl } from '@hcengineering/server-core'
 import {
-  getEmployee,
   getEmployeeAccount,
   getEmployeeAccountById,
   getUpdateLastViewTx
