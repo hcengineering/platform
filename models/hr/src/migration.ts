@@ -147,24 +147,6 @@ async function migrateTime (client: MigrationClient): Promise<void> {
   }
 }
 
-async function updateDepartmentsAvatars (tx: TxOperations): Promise<void> {
-  const departments = await tx.findAll(hr.class.Department, {})
-
-  // update avatar type for departments with avatar
-  await Promise.all(
-    departments
-      .filter((d) => d.avatar !== null && d.avatar !== undefined && d.avatar.type === undefined)
-      .map((d) =>
-        tx.update(d, {
-          avatar: {
-            type: 'image',
-            value: d.avatar as unknown as string
-          }
-        })
-      )
-  )
-}
-
 export const hrOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await migrateTime(client)
@@ -172,6 +154,5 @@ export const hrOperation: MigrateOperation = {
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)
     await createSpace(tx)
-    await updateDepartmentsAvatars(tx)
   }
 }

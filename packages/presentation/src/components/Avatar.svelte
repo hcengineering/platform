@@ -13,41 +13,51 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Avatar } from '@hcengineering/contact'
+  import { AvatarType } from '@hcengineering/contact'
   import { Asset } from '@hcengineering/platform'
   import { AnySvelteComponent, Icon, IconSize } from '@hcengineering/ui'
   import { getBlobURL, getFileUrl } from '../utils'
   import { getGravatarUrl } from '../gravatar'
   import AvatarIcon from './icons/Avatar.svelte'
 
-  export let avatar: Avatar | null | undefined = undefined
+  export let avatar: string | null | undefined = undefined
   export let direct: Blob | undefined = undefined
   export let size: IconSize
   export let icon: Asset | AnySvelteComponent | undefined = undefined
 
   let url: string | undefined
+
   $: if (direct !== undefined) {
     getBlobURL(direct).then((blobURL) => {
       url = blobURL
     })
-  } else if (avatar !== undefined && avatar !== null) {
-    if (avatar.type === 'image') {
-      url = getFileUrl(avatar.value, size)
-    } else if (avatar.type === 'gravatar') {
-      url = getGravatarUrl(avatar.value, size)
+  } else if (avatar) {
+    if (!avatar.includes('://')) {
+      url = getFileUrl(avatar, size)
     } else {
-      url = undefined
+      const [schema, uri] = avatar.split('://')
+
+      if (schema === AvatarType.GRAVATAR) {
+        url = getGravatarUrl(uri, size)
+      } else {
+        url = undefined
+      }
     }
   } else {
     url = undefined
   }
+
+  let style = ''
+  $: if (!avatar) {
+    style = ''
+  } else {
+    const [schema, uri] = avatar.split('://')
+
+    style = schema === AvatarType.COLOR ? `background-color: ${uri}` : ''
+  }
 </script>
 
-<div
-  class="ava-{size} flex-center avatar-container"
-  class:no-img={!url}
-  style={avatar?.type === 'color' ? `background-color: ${avatar.value}` : ''}
->
+<div class="ava-{size} flex-center avatar-container" class:no-img={!url} {style}>
   {#if url}
     {#if size === 'large' || size === 'x-large'}
       <img class="ava-{size} ava-blur" src={url} alt={''} />

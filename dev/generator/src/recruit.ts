@@ -231,10 +231,7 @@ async function genCandidate (
   const candidate: Data<Person> = {
     name: fName + ',' + lName,
     city: faker.address.city(),
-    avatar: {
-      type: 'image',
-      value: imgId
-    }
+    avatar: imgId
   }
 
   const candidateMixin: MixinUpdate<Person, Candidate> = {

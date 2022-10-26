@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Avatar, Employee, EmployeeAccount } from '@hcengineering/contact'
+import type { Employee, EmployeeAccount } from '@hcengineering/contact'
 import type { Arr, AttachedDoc, Class, Doc, Markup, Mixin, Ref, Space, Type } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
@@ -24,7 +24,7 @@ import { Viewlet } from '@hcengineering/view'
  */
 export interface Department extends Space {
   space: Ref<Department>
-  avatar?: Avatar
+  avatar?: string | null
   teamLead: Ref<Employee> | null
   attachments?: number
   comments?: number

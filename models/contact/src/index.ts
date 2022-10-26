@@ -14,7 +14,6 @@
 //
 
 import {
-  Avatar,
   Channel,
   ChannelProvider,
   Contact,
@@ -70,7 +69,7 @@ export class TContact extends TDoc implements Contact {
   @Index(IndexKind.FullText)
   name!: string
 
-  avatar?: Avatar
+  avatar?: string | null
 
   @Prop(Collection(contact.class.Channel), contact.string.ContactInfo)
   channels?: number

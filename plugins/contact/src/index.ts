@@ -72,14 +72,10 @@ export interface Channel extends AttachedDoc {
 /**
  * @public
  */
-export type AvatarType = 'color' | 'image' | 'gravatar'
-
-/**
- * @public
- */
-export interface Avatar {
-  type: AvatarType
-  value: string
+export enum AvatarType {
+  COLOR = 'color',
+  IMAGE = 'image',
+  GRAVATAR = 'gravatar'
 }
 
 /**
@@ -87,7 +83,7 @@ export interface Avatar {
  */
 export interface Contact extends Doc {
   name: string
-  avatar?: Avatar
+  avatar?: string | null
   attachments?: number
   comments?: number
   channels?: number

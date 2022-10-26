@@ -732,6 +732,6 @@ async function updateAvatar (
         collection: 'photos'
       }
     )
-    await client.update(c, { avatar: { type: 'image', value: attachId } })
+    await client.update(c, { avatar: attachId })
   }
 }

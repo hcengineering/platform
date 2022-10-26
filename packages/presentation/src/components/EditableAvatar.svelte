@@ -16,38 +16,40 @@
   import { createEventDispatcher } from 'svelte'
   import attachment from '@hcengineering/attachment'
   import { AnySvelteComponent, IconSize, showPopup } from '@hcengineering/ui'
-  import { AvatarType, Avatar } from '@hcengineering/contact'
+  import { AvatarType } from '@hcengineering/contact'
   import { Asset, getResource } from '@hcengineering/platform'
 
   import AvatarComponent from './Avatar.svelte'
   import SelectAvatarPopup from './SelectAvatarPopup.svelte'
 
-  export let avatar: Avatar | null | undefined
+  export let avatar: string | null | undefined
   export let email: string | undefined = undefined
   export let id: string
   export let size: IconSize
   export let direct: Blob | undefined = undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
 
-  let selectedAvatarType: AvatarType | undefined = avatar?.type
-  let selectedAvatar: string | undefined = avatar?.value
+  const [schema, uri] = avatar?.split('://') || []
 
-  export async function createAvatar (): Promise<Avatar | undefined> {
-    if (selectedAvatarType === 'image' && direct !== undefined) {
+  let selectedAvatarType: AvatarType | undefined = avatar?.includes('://') ? (schema as AvatarType) : AvatarType.IMAGE
+  let selectedAvatar: string | null | undefined = selectedAvatarType === AvatarType.IMAGE ? avatar : uri
+
+  export async function createAvatar (): Promise<string | undefined> {
+    if (selectedAvatarType === AvatarType.IMAGE && direct !== undefined) {
       const uploadFile = await getResource(attachment.helper.UploadFile)
       const file = new File([direct], 'avatar')
 
-      return { type: selectedAvatarType, value: await uploadFile(file) }
+      return await uploadFile(file)
     }
     if (selectedAvatarType && selectedAvatar) {
-      return { type: selectedAvatarType, value: selectedAvatar }
+      return `${selectedAvatarType}://${selectedAvatar}`
     }
   }
 
-  export async function removeAvatar (avatar: Avatar) {
-    if (avatar.type === 'image') {
+  export async function removeAvatar (avatar: string) {
+    if (!avatar.includes('://')) {
       const deleteFile = await getResource(attachment.helper.DeleteFile)
-      await deleteFile(avatar.value)
+      await deleteFile(avatar)
     }
   }
 
@@ -66,7 +68,7 @@
 
 <div class="cursor-pointer" on:click|self={showSelectionPopup}>
   <AvatarComponent
-    avatar={selectedAvatarType && selectedAvatar ? { type: selectedAvatarType, value: selectedAvatar } : null}
+    avatar={selectedAvatarType === AvatarType.IMAGE ? selectedAvatar : `${selectedAvatarType}://${selectedAvatar}`}
     {direct}
     {size}
     {icon}

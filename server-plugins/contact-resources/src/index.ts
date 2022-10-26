@@ -16,7 +16,7 @@
 
 import core, { Doc, Tx, TxCreateDoc, TxRemoveDoc, TxUpdateDoc } from '@hcengineering/core'
 import type { TriggerControl, MinioClient, BucketItem } from '@hcengineering/server-core'
-import contact, { Avatar, Contact, contactId, formatName, Organization, Person } from '@hcengineering/contact'
+import contact, { Contact, contactId, formatName, Organization, Person } from '@hcengineering/contact'
 import { getMetadata } from '@hcengineering/platform'
 import login from '@hcengineering/login'
 import { workbenchId } from '@hcengineering/workbench'
@@ -42,18 +42,18 @@ export async function OnContactDelete (tx: Tx, { findAll, hierarchy, storageFx }
   }
 
   const updateTxes = await findAll<TxUpdateDoc<Contact>>(core.class.TxUpdateDoc, { objectId: rmTx.objectId })
-  const avatar: Avatar | undefined = [createTx.attributes.avatar, ...updateTxes.map((x) => x.operations.avatar)]
-    .filter((x): x is Avatar => x !== undefined && x.type !== 'image')
+  const avatar: string | undefined = [createTx.attributes.avatar, ...updateTxes.map((x) => x.operations.avatar)]
+    .filter((x): x is string => x !== undefined)
     .slice(-1)[0]
 
-  if (avatar === undefined || avatar.value === undefined) {
+  if (avatar === undefined) {
     return []
   }
 
   storageFx(async (adapter, bucket) => {
-    await adapter.removeObject(bucket, avatar.value)
+    await adapter.removeObject(bucket, avatar)
 
-    const extra = await listMinioObjects(adapter, bucket, avatar.value)
+    const extra = await listMinioObjects(adapter, bucket, avatar)
     if (extra.size > 0) {
       for (const e of extra.entries()) {
         await adapter.removeObject(bucket, e[1].name)

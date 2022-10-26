@@ -39,7 +39,7 @@ import { LiveQuery as LQ } from '@hcengineering/query'
 import { onDestroy } from 'svelte'
 import { deepEqual } from 'fast-equals'
 import { IconSize, DropdownIntlItem } from '@hcengineering/ui'
-import contact from '@hcengineering/contact'
+import contact, { AvatarType } from '@hcengineering/contact'
 
 let liveQuery: LQ
 let client: TxOperations
@@ -238,17 +238,17 @@ export function getAttributePresenterClass (
 export function getAvatarTypeDropdownItems (hasEmail: boolean): DropdownIntlItem[] {
   return [
     {
-      id: 'color',
+      id: AvatarType.COLOR,
       label: contact.string.UseColor
     },
     {
-      id: 'image',
+      id: AvatarType.IMAGE,
       label: contact.string.UseImage
     },
     ...(hasEmail
       ? [
           {
-            id: 'gravatar',
+            id: AvatarType.GRAVATAR,
             label: contact.string.UseGravatar
           }
         ]

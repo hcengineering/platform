@@ -16,7 +16,7 @@
   import { createEventDispatcher } from 'svelte'
 
   import { DropdownLabelsIntl, AnySvelteComponent, showPopup, Label } from '@hcengineering/ui'
-  import { AvatarType, Avatar } from '@hcengineering/contact'
+  import { AvatarType } from '@hcengineering/contact'
   import { Asset } from '@hcengineering/platform'
 
   import presentation from '..'
@@ -26,36 +26,54 @@
   import AvatarComponent from './Avatar.svelte'
   import EditAvatarPopup from './EditAvatarPopup.svelte'
 
-  export let avatar: Avatar | undefined
+  export let avatar: string | undefined
   export let email: string | undefined
   export let id: string
   export let file: Blob | undefined
   export let icon: Asset | AnySvelteComponent | undefined
   export let onSubmit: (avatarType?: AvatarType, avatar?: string, file?: Blob) => void
 
-  let selectedAvatarType: AvatarType | undefined = avatar?.type || 'color'
-  let selectedAvatar: string | undefined = avatar?.value || getAvatarColorForId(id)
+  const [schema, uri] = avatar?.split('://') || []
+
+  const initialSelectedType = (() => {
+    if (!avatar) {
+      return AvatarType.COLOR
+    }
+
+    return avatar.includes('://') ? (schema as AvatarType) : AvatarType.IMAGE
+  })()
+
+  const initialSelectedAvatar = (() => {
+    if (!avatar) {
+      return getAvatarColorForId(id)
+    }
+
+    return avatar.includes('://') ? uri : avatar
+  })()
+
+  let selectedAvatarType: AvatarType = initialSelectedType
+  let selectedAvatar: string = initialSelectedAvatar
   let selectedFile: Blob | undefined = file
 
   const dispatch = createEventDispatcher()
 
   function submit () {
-    onSubmit(selectedAvatarType, selectedAvatar, selectedAvatarType === 'image' ? selectedFile : undefined)
+    onSubmit(selectedAvatarType, selectedAvatar, selectedAvatarType === AvatarType.IMAGE ? selectedFile : undefined)
   }
   let inputRef: HTMLInputElement
   const targetMimes = ['image/png', 'image/jpg', 'image/jpeg']
 
   function handleDropdownSelection (e: any) {
-    if (selectedAvatarType === 'gravatar' && email) {
+    if (selectedAvatarType === AvatarType.GRAVATAR && email) {
       selectedAvatar = buildGravatarId(email)
-    } else if (selectedAvatarType === 'image') {
+    } else if (selectedAvatarType === AvatarType.IMAGE) {
       if (selectedFile) {
         return
       }
       if (file) {
         selectedFile = file
-      } else if (avatar?.type === 'image') {
-        selectedAvatar = avatar.value
+      } else if (avatar && !avatar.includes('://')) {
+        selectedAvatar = avatar
       } else {
         inputRef.click()
       }
@@ -81,14 +99,14 @@
   function showCropper (editableFile: Blob) {
     showPopup(EditAvatarPopup, { file: editableFile }, undefined, (blob) => {
       if (blob === undefined) {
-        if (!selectedFile && avatar?.type !== 'image') {
-          selectedAvatarType = 'color'
+        if (!selectedFile && (!avatar || avatar.includes('://'))) {
+          selectedAvatarType = AvatarType.COLOR
           selectedAvatar = getAvatarColorForId(id)
         }
         return
       }
       if (blob === null) {
-        selectedAvatarType = 'color'
+        selectedAvatarType = AvatarType.COLOR
         selectedAvatar = getAvatarColorForId(id)
         selectedFile = undefined
       } else {
@@ -113,7 +131,7 @@
 
     if (!inputRef.value.length) {
       if (!selectedFile) {
-        selectedAvatarType = 'color'
+        selectedAvatarType = AvatarType.COLOR
         selectedAvatar = getAvatarColorForId(id)
       }
     }
@@ -123,7 +141,10 @@
 <Card
   label={presentation.string.SelectAvatar}
   okLabel={presentation.string.Save}
-  canSave={(() => selectedAvatarType !== avatar?.type || selectedAvatar !== avatar?.value || selectedFile !== file)()}
+  canSave={selectedAvatarType !== initialSelectedType ||
+    selectedAvatar !== initialSelectedAvatar ||
+    selectedFile !== file ||
+    !avatar}
   okAction={submit}
   on:close={() => {
     dispatch('close')
@@ -135,23 +156,14 @@
     bind:selected={selectedAvatarType}
     on:selected={handleDropdownSelection}
   />
-  {#if selectedAvatarType === 'image'}
+  {#if selectedAvatarType === AvatarType.IMAGE}
     <div class="cursor-pointer" on:click|self={handleImageAvatarClick}>
-      <AvatarComponent
-        avatar={selectedAvatar ? { type: selectedAvatarType, value: selectedAvatar } : null}
-        direct={selectedFile}
-        size={'x-large'}
-        {icon}
-      />
+      <AvatarComponent avatar={selectedAvatar} direct={selectedFile} size={'x-large'} {icon} />
     </div>
   {:else}
-    <AvatarComponent
-      avatar={selectedAvatarType && selectedAvatar ? { type: selectedAvatarType, value: selectedAvatar } : null}
-      size={'x-large'}
-      {icon}
-    />
+    <AvatarComponent avatar={`${selectedAvatarType}://${selectedAvatar}`} size={'x-large'} {icon} />
   {/if}
-  {#if selectedAvatarType === 'gravatar'}
+  {#if selectedAvatarType === AvatarType.GRAVATAR}
     <span>
       <Label label={presentation.string.GravatarsManaged} />
       <a target="”_blank”" href="//gravatar.com">Gravatar.com</a>

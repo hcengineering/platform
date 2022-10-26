@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Employee, EmployeeAccount } from '@hcengineering/contact'
+import { Employee, EmployeeAccount, AvatarType } from '@hcengineering/contact'
 import { AccountRole, DOMAIN_TX, TxCreateDoc, TxOperations } from '@hcengineering/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
@@ -90,31 +90,15 @@ async function updateEmployeeAvatar (tx: TxOperations): Promise<void> {
   const employees = await tx.findAll(contact.class.Employee, { _id: { $in: accounts.map((a) => a.employee) } })
   const employeesById = new Map(employees.map((it) => [it._id, it]))
 
-  // update avatar type for users with avatar
-  let promises = employees
-    .filter((e) => e.avatar !== null && e.avatar !== undefined && e.avatar.type === undefined)
-    .map(async (e) => {
-      await tx.update(e, {
-        avatar: {
-          type: 'image',
-          value: e.avatar as unknown as string
-        }
-      })
-    })
-  await Promise.all(promises)
-
   // set gravatar for users without avatar
-  promises = accounts.map(async (account) => {
+  const promises = accounts.map(async (account) => {
     const employee = employeesById.get(account.employee)
     if (employee === undefined) return
     if (employee.avatar != null && employee.avatar !== undefined) return
 
     const gravatarId = MD5(account.email.trim().toLowerCase()).toString()
     await tx.update(employee, {
-      avatar: {
-        type: 'gravatar',
-        value: gravatarId
-      }
+      avatar: `${AvatarType.GRAVATAR}://${gravatarId}`
     })
   })
   await Promise.all(promises)

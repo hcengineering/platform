@@ -13,7 +13,7 @@
 // limitations under the f.
 //
 
-import contact, { combineName, Employee } from '@hcengineering/contact'
+import contact, { AvatarType, combineName, Employee } from '@hcengineering/contact'
 import core, { AccountRole, Ref, TxOperations } from '@hcengineering/core'
 import platform, {
   getMetadata,
@@ -488,10 +488,7 @@ async function createEmployee (ops: TxOperations, name: string, email: string): 
   return await ops.createDoc(contact.class.Employee, contact.space.Employee, {
     name,
     city: '',
-    avatar: {
-      type: 'gravatar',
-      value: gravatarId
-    },
+    avatar: `${AvatarType.GRAVATAR}://${gravatarId}`,
     active: true
   })
 }
