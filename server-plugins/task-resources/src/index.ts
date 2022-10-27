@@ -19,12 +19,7 @@ import login from '@hcengineering/login'
 import { NotificationAction } from '@hcengineering/notification'
 import { getMetadata, Resource } from '@hcengineering/platform'
 import { TriggerControl } from '@hcengineering/server-core'
-import {
-  getEmployee,
-  getEmployeeAccount,
-  getEmployeeAccountById,
-  getUpdateLastViewTx
-} from '@hcengineering/server-notification'
+import { getEmployeeAccount, getEmployeeAccountById, getUpdateLastViewTx } from '@hcengineering/server-notification'
 import { createNotificationTxes } from '@hcengineering/server-notification-resources'
 import task, { Issue, Task, taskId } from '@hcengineering/task'
 import view from '@hcengineering/view'
@@ -60,11 +55,6 @@ export async function addAssigneeNotification (
 ): Promise<void> {
   const sender = await getEmployeeAccountById(ptx.modifiedBy, control)
   if (sender === undefined) {
-    return
-  }
-
-  const target = await getEmployee(assignee, control)
-  if (target === undefined) {
     return
   }
 

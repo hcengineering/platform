@@ -32,6 +32,7 @@ import core, {
   TxCollectionCUD,
   TxCreateDoc,
   TxCUD,
+  TxFactory,
   TxProcessor
 } from '@hcengineering/core'
 import notification, {
@@ -50,7 +51,8 @@ import serverNotification, {
   createLastViewTx,
   getEmployeeAccount,
   getEmployeeAccountById,
-  getUpdateLastViewTx
+  getUpdateLastViewTx,
+  getEmployee
 } from '@hcengineering/server-notification'
 import { replaceAll } from './utils'
 import { Content } from './types'
@@ -209,9 +211,19 @@ export async function createNotificationTxes (
   const content = await getContent(doc, senderName, type, control, data)
 
   if (await isAllowed(control, receiver, notification.ids.PlatformNotification)) {
-    const createNotificationTx = await getPlatformNotificationTx(ptx, type, content?.text, action)
+    const target = await getEmployee(receiver.employee, control)
+    if (target !== undefined) {
+      const createNotificationTx = await getPlatformNotificationTx(
+        ptx,
+        type,
+        control.txFactory,
+        target,
+        content?.text,
+        action
+      )
 
-    res.push(createNotificationTx)
+      res.push(createNotificationTx)
+    }
   }
 
   if (content !== undefined && (await isAllowed(control, receiver, notification.ids.EmailNotification))) {
@@ -227,6 +239,8 @@ export async function createNotificationTxes (
 async function getPlatformNotificationTx (
   ptx: TxCollectionCUD<Doc, AttachedDoc>,
   type: Ref<NotificationType>,
+  txFactory: TxFactory,
+  target: Employee,
   text?: string,
   action?: NotificationAction
 ): Promise<TxCollectionCUD<Doc, Notification>> {
@@ -254,14 +268,7 @@ async function getPlatformNotificationTx (
     createTx.attributes.action = action
   }
 
-  const createNotificationTx: TxCollectionCUD<Doc, Notification> = {
-    ...ptx,
-    _id: generateId(),
-    collection: 'notifications',
-    tx: createTx
-  }
-
-  return createNotificationTx
+  return txFactory.createTxCollectionCUD(target._class, target._id, target.space, 'notifications', createTx)
 }
 
 async function getEmailNotificationTx (
