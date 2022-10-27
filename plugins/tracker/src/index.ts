@@ -193,6 +193,9 @@ export interface Issue extends AttachedDoc {
   }
 }
 
+/**
+ * @public
+ */
 export interface IssueDraft extends Obj {
   issueId: Ref<Issue>
   title: string
