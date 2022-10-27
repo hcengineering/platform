@@ -2,14 +2,13 @@
   import { onDestroy } from 'svelte'
 
   import { Notification } from './Notification'
-  import { getNotificationsContext } from './store'
+  import store from './store'
 
   export let notification: Notification
 
-  const { removeNotification } = getNotificationsContext()
   const { id, closeTimeout } = notification
 
-  const removeNotificationHandler = () => removeNotification(id)
+  const removeNotificationHandler = () => store.removeNotification(id)
 
   let timeout: number | null = null
 

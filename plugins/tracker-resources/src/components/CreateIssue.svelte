@@ -43,10 +43,10 @@
     Menu,
     showPopup,
     Spinner,
-    getNotificationsContext,
     NotificationPosition,
     NotificationSeverity,
-    Notification
+    Notification,
+    notificationsStore
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { ObjectBox } from '@hcengineering/view-resources'
@@ -141,8 +141,6 @@
   const templateQuery = createQuery()
 
   let subIssues: IssueTemplateChild[] = []
-
-  const { addNotification } = getNotificationsContext()
 
   $: if (templateId !== undefined) {
     templateQuery.query(tracker.class.IssueTemplate, { _id: templateId }, (res) => {
@@ -414,7 +412,7 @@
       }
     }
 
-    addNotification(notification)
+    notificationsStore.addNotification(notification)
 
     objectId = generateId()
     resetObject()
