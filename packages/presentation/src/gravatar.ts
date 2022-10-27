@@ -14,7 +14,7 @@
 //
 
 import { IconSize } from '@hcengineering/ui'
-import { MD5 } from 'crypto-js'
+import MD5 from 'crypto-js/md5'
 
 /**
  * @public

@@ -18,7 +18,7 @@ import { AccountRole, DOMAIN_TX, TxCreateDoc, TxOperations } from '@hcengineerin
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
 import contact from './index'
-import { MD5 } from 'crypto-js'
+import MD5 from 'crypto-js/md5'
 
 async function createSpace (tx: TxOperations): Promise<void> {
   const current = await tx.findOne(core.class.Space, {
