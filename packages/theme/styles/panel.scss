@@ -232,13 +232,9 @@
       }
     }
 
-    &.asideShown {
-      border: none;
-
-      .popupPanel-body__main {
-        border: 1px solid var(--divider-color);
-        border-radius: 0 0 .5rem .5rem;
-      }
+    &.asideShown .popupPanel-body__main {
+      border: 1px solid var(--divider-color);
+      border-radius: 0 0 .5rem .5rem;
     }
   }
 }
