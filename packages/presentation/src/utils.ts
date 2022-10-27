@@ -34,12 +34,12 @@ import core, {
   TxResult
 } from '@hcengineering/core'
 import login from '@hcengineering/login'
-import { getMetadata } from '@hcengineering/platform'
+import { getMetadata, Resource } from '@hcengineering/platform'
 import { LiveQuery as LQ } from '@hcengineering/query'
 import { onDestroy } from 'svelte'
 import { deepEqual } from 'fast-equals'
 import { IconSize, DropdownIntlItem } from '@hcengineering/ui'
-import contact, { AvatarType } from '@hcengineering/contact'
+import contact, { AvatarType, AvatarProvider } from '@hcengineering/contact'
 
 let liveQuery: LQ
 let client: TxOperations
@@ -279,4 +279,21 @@ export function getAvatarColorForId (id: string): string {
   }
 
   return AVATAR_COLORS[hash % AVATAR_COLORS.length]
+}
+
+export function getAvatarProviderId (avatar?: string | null): Resource<AvatarProvider> | undefined {
+  if (avatar === null || avatar === undefined || avatar === '') {
+    return
+  }
+  if (!avatar.includes('://')) {
+    return contact.avatarProvider.Image
+  }
+  const [schema] = avatar.split('://')
+
+  switch (schema) {
+    case AvatarType.GRAVATAR:
+      return contact.avatarProvider.Gravatar
+    case AvatarType.COLOR:
+      return contact.avatarProvider.Color
+  }
 }

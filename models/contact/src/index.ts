@@ -14,6 +14,8 @@
 //
 
 import {
+  AvatarProvider,
+  AvatarType,
   Channel,
   ChannelProvider,
   Contact,
@@ -49,10 +51,17 @@ import view, { actionTemplates, createAction, ViewAction } from '@hcengineering/
 import workbench from '@hcengineering/model-workbench'
 import type { Asset, IntlString } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
+import { IconSize } from '@hcengineering/ui'
 import contact from './plugin'
 
 export const DOMAIN_CONTACT = 'contact' as Domain
 export const DOMAIN_CHANNEL = 'channel' as Domain
+
+@Model(contact.class.AvatarProvider, core.class.Doc, DOMAIN_MODEL)
+export class TAvatarProvider extends TDoc implements AvatarProvider {
+  type!: AvatarType
+  getUrl!: (uri: string, size: IconSize) => string
+}
 
 @Model(contact.class.ChannelProvider, core.class.Doc, DOMAIN_MODEL)
 export class TChannelProvider extends TDoc implements ChannelProvider {
@@ -159,6 +168,7 @@ export class TPersons extends TSpace implements Persons {}
 
 export function createModel (builder: Builder): void {
   builder.createModel(
+    TAvatarProvider,
     TChannelProvider,
     TContact,
     TPerson,

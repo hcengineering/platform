@@ -27,9 +27,9 @@ import {
   Timestamp,
   UXObject
 } from '@hcengineering/core'
-import type { Asset, Plugin } from '@hcengineering/platform'
+import type { Asset, Plugin, Resource } from '@hcengineering/platform'
 import { IntlString, plugin } from '@hcengineering/platform'
-import type { AnyComponent } from '@hcengineering/ui'
+import type { AnyComponent, IconSize } from '@hcengineering/ui'
 import { ViewAction, Viewlet } from '@hcengineering/view'
 
 /**
@@ -76,6 +76,14 @@ export enum AvatarType {
   COLOR = 'color',
   IMAGE = 'image',
   GRAVATAR = 'gravatar'
+}
+
+/**
+ * @public
+ */
+export interface AvatarProvider extends Doc {
+  type: AvatarType
+  getUrl: (uri: string, size: IconSize) => string
 }
 
 /**
@@ -176,6 +184,7 @@ export const contactId = 'contact' as Plugin
  */
 const contactPlugin = plugin(contactId, {
   class: {
+    AvatarProvider: '' as Ref<Class<AvatarProvider>>,
     ChannelProvider: '' as Ref<Class<ChannelProvider>>,
     Channel: '' as Ref<Class<Channel>>,
     Contact: '' as Ref<Class<Contact>>,
@@ -203,6 +212,11 @@ const contactPlugin = plugin(contactId, {
     GitHub: '' as Ref<ChannelProvider>,
     Facebook: '' as Ref<ChannelProvider>,
     Homepage: '' as Ref<ChannelProvider>
+  },
+  avatarProvider: {
+    Color: '' as Resource<AvatarProvider>,
+    Image: '' as Resource<AvatarProvider>,
+    Gravatar: '' as Resource<AvatarProvider>
   },
   icon: {
     ContactApplication: '' as Asset,

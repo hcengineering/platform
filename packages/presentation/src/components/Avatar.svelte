@@ -13,11 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AvatarType } from '@hcengineering/contact'
-  import { Asset } from '@hcengineering/platform'
+  import { AvatarType, AvatarProvider } from '@hcengineering/contact'
+  import { Asset, getResource } from '@hcengineering/platform'
   import { AnySvelteComponent, Icon, IconSize } from '@hcengineering/ui'
-  import { getBlobURL, getFileUrl } from '../utils'
-  import { getGravatarUrl } from '../gravatar'
+  import { getBlobURL, getAvatarProviderId } from '../utils'
   import AvatarIcon from './icons/Avatar.svelte'
 
   export let avatar: string | null | undefined = undefined
@@ -26,34 +25,41 @@
   export let icon: Asset | AnySvelteComponent | undefined = undefined
 
   let url: string | undefined
+  let avatarProvider: AvatarProvider | undefined
 
-  $: if (direct !== undefined) {
-    getBlobURL(direct).then((blobURL) => {
-      url = blobURL
-    })
-  } else if (avatar) {
-    if (!avatar.includes('://')) {
-      url = getFileUrl(avatar, size)
-    } else {
-      const [schema, uri] = avatar.split('://')
+  async function update (size: IconSize, avatar?: string | null, direct?: Blob) {
+    if (direct !== undefined) {
+      getBlobURL(direct).then((blobURL) => {
+        url = blobURL
+        avatarProvider = undefined
+      })
+    } else if (avatar) {
+      const avatarProviderId = getAvatarProviderId(avatar)
+      avatarProvider = avatarProviderId && (await getResource(avatarProviderId))
 
-      if (schema === AvatarType.GRAVATAR) {
-        url = getGravatarUrl(uri, size)
-      } else {
+      if (!avatarProvider || avatarProvider.type === AvatarType.COLOR) {
         url = undefined
+      } else if (avatarProvider.type === AvatarType.IMAGE) {
+        url = avatarProvider.getUrl(avatar, size)
+      } else {
+        const uri = avatar.split('://')[1]
+        url = avatarProvider.getUrl(uri, size)
       }
+    } else {
+      url = undefined
+      avatarProvider = undefined
     }
-  } else {
-    url = undefined
   }
+  $: update(size, avatar, direct)
 
   let style = ''
-  $: if (!avatar) {
+  $: if (!avatar || avatarProvider?.type !== AvatarType.COLOR) {
     style = ''
   } else {
-    const [schema, uri] = avatar.split('://')
+    const uri = avatar.split('://')[1]
 
-    style = schema === AvatarType.COLOR ? `background-color: ${uri}` : ''
+    const color = avatarProvider.getUrl(uri, size)
+    style = `background-color: ${color}`
   }
 </script>
 
