@@ -217,7 +217,7 @@
     attr: client.getHierarchy().getAttribute(tracker.class.Issue, 'labels')
   }
 
-  $: _space = space
+  $: _space = draft?.team || space
   $: !originalIssue && !draft && updateIssueStatusId(_space, status)
   $: canSave = getTitle(object.title ?? '').length > 0
 
@@ -295,6 +295,7 @@
       sprint: null,
       subIssues: [],
       template: undefined,
+      team: null,
       title: ''
     }
 
@@ -344,11 +345,12 @@
       template: object.template,
       labels,
       parentIssue: parentIssue?._id,
+      team: _space,
       subIssues
     }
 
     const isEmpty = await isDraftEmpty(newDraft)
-    console.error({ isEmpty, descriptionBox })
+
     if (isEmpty) {
       return
     }

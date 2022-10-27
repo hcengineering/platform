@@ -201,7 +201,7 @@ export interface IssueDraft extends Obj {
   priority: IssuePriority
   assignee: Ref<Employee> | null
   project: Ref<Project> | null
-  // space: Ref<Team>
+  team: Ref<Team> | null
   dueDate: Timestamp | null
   sprint?: Ref<Sprint> | null
 
