@@ -4,7 +4,7 @@
   import { Notification } from './Notification'
   import { getNotificationsContext } from './store'
 
-  export let notification: Notification = {}
+  export let notification: Notification
 
   const { removeNotification } = getNotificationsContext()
   const { id, closeTimeout } = notification
