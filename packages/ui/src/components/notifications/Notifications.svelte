@@ -9,12 +9,11 @@
     'top-left': NotificationPosition.TopLeft,
     'top-right': NotificationPosition.TopRight
   }
-
 </script>
 
 <slot />
 <div class="notifications">
-  {#each Object.entries(positionByClassName) as [className, position] }
+  {#each Object.entries(positionByClassName) as [className, position]}
     <div class={className} style:z-index={9999}>
       {#each $store as notification (notification.id)}
         {#if notification.position === position}
