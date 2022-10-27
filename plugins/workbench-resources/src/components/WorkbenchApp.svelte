@@ -25,7 +25,7 @@
   <Loading />
 {:then client}
   {#if !client && versionError}
-    <div class='antiPopup version-popup'>
+    <div class="antiPopup version-popup">
       <h1>Server is under maintenance.</h1>
       {versionError}
     </div>

@@ -1,4 +1,4 @@
-<script lang='ts'>
+<script lang="ts">
   import { fade } from 'svelte/transition'
   import {
     NotificationSeverity,
@@ -8,7 +8,8 @@
     IconClose,
     IconInfo,
     IconCheckCircle,
-    Label, showPanel
+    Label,
+    showPanel
   } from '@hcengineering/ui'
   import { createQuery } from '@hcengineering/presentation'
   import { Issue, IssueStatus } from '@hcengineering/tracker'
@@ -26,12 +27,7 @@
   let issue: Issue | undefined
   let status: IssueStatus | undefined
 
-  const {
-    title,
-    subTitle,
-    severity,
-    params
-  } = notification
+  const { title, subTitle, severity, params } = notification
 
   $: issueQuery.query(
     tracker.class.Issue,
@@ -83,109 +79,99 @@
 
     onRemove()
   }
-
 </script>
 
+<div class="root" in:fade out:fade>
+  <Icon icon={getIcon()} size="medium" fill={getIconColor()} />
 
-<div class='root'
-     in:fade
-     out:fade>
-  <Icon icon={getIcon()} size='medium' fill={getIconColor()} />
-
-  <div class='content'>
-    <div class='title'>
+  <div class="content">
+    <div class="title">
       <Label label={title} />
     </div>
-    <div class='row'>
-      <div class='issue'>
+    <div class="row">
+      <div class="issue">
         {#if status}
-          <IssueStatusIcon value={status} size='small' />
+          <IssueStatusIcon value={status} size="small" />
         {/if}
         {#if issue}
           <IssuePresenter value={issue} onClick={onRemove} />
         {/if}
-        <div class='sub-title'>
+        <div class="sub-title">
           {subTitle}
         </div>
-        <div class='postfix'>
+        <div class="postfix">
           {params.subTitlePostfix}
         </div>
       </div>
     </div>
-    <div class='view-issue-button'>
-      <Button label={tracker.string.ViewIssue}
-              kind='link'
-              size='medium'
-              on:click={handleIssueOpened} />
+    <div class="view-issue-button">
+      <Button label={tracker.string.ViewIssue} kind="link" size="medium" on:click={handleIssueOpened} />
     </div>
   </div>
 
-  <div class='close-button'>
-    <Button icon={IconClose}
-            kind='transparent'
-            size='small'
-            on:click={onRemove} />
+  <div class="close-button">
+    <Button icon={IconClose} kind="transparent" size="small" on:click={onRemove} />
   </div>
 </div>
 
-<style lang='scss'>
-	.root {
-		position: relative;
-		display: flex;
-		margin: 10px;
-		box-shadow: 0 4px 10px var(--divider-color);
-		height: 100px;
-		width: 400px;
-		overflow: hidden;
-		color: var(--caption-color);
-		background-color: var(--body-color);
-		border: 1px solid var(--divider-color);
-		border-radius: 6px;
-		padding: 10px;
-	}
+<style lang="scss">
+  .root {
+    position: relative;
+    display: flex;
+    margin: 10px;
+    box-shadow: 0 4px 10px var(--divider-color);
+    height: 100px;
+    width: 400px;
+    overflow: hidden;
+    color: var(--caption-color);
+    background-color: var(--body-color);
+    border: 1px solid var(--divider-color);
+    border-radius: 6px;
+    padding: 10px;
+  }
 
-	.sub-title {
-		max-width: 210px;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
+  .sub-title {
+    max-width: 210px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 
-	.content {
-		margin-left: 10px;
-	}
+  .content {
+    margin-left: 10px;
+  }
 
-	.issue {
-		display: flex;
-		align-items: center;
-		gap: 5px;
-	}
+  .issue {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
 
-	.view-issue-button {
-		margin-top: 10px;
-		margin-left: -5px;
-	}
+  .view-issue-button {
+    margin-top: 10px;
+    margin-left: -5px;
+  }
 
-	.title {
-		display: flex;
-		align-items: center;
-		color: var(--caption-color);
-		font-weight: 500;
-		margin-bottom: 10px;
-	}
+  .title {
+    display: flex;
+    align-items: center;
+    color: var(--caption-color);
+    font-weight: 500;
+    margin-bottom: 10px;
+  }
 
-	.close-button {
-		position: absolute;
-		top: 5px;
-		right: 5px;
-	}
+  .close-button {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+  }
 
-	.row {
-		display: flex;
-		align-items: center;
-	}
+  .row {
+    display: flex;
+    align-items: center;
+  }
 
-	.postfix {
-		color: var(--dark-color)
-	}
+  .postfix {
+    color: var(--dark-color);
+  }
 </style>

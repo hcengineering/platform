@@ -7,10 +7,7 @@
   export let notification: Notification = {}
 
   const { removeNotification } = getNotificationsContext()
-  const {
-    id,
-    closeTimeout
-  } = notification
+  const { id, closeTimeout } = notification
 
   const removeNotificationHandler = () => removeNotification(id)
 
@@ -27,9 +24,4 @@
   })
 </script>
 
-<svelte:component
-  this={notification.component}
-  {notification}
-  onRemove={removeNotificationHandler}
-/>
-
+<svelte:component this={notification.component} {notification} onRemove={removeNotificationHandler} />

@@ -18,9 +18,11 @@ export const addNotification = (notification: Notification, store: Writable<Noti
     id: generateId()
   }
 
-  update((notifications: Notification[]) => [NotificationPosition.TopRight, NotificationPosition.TopLeft].includes(newNotification.position)
-    ? [newNotification, ...notifications]
-    : [...notifications, newNotification])
+  update((notifications: Notification[]) =>
+    [NotificationPosition.TopRight, NotificationPosition.TopLeft].includes(newNotification.position)
+      ? [newNotification, ...notifications]
+      : [...notifications, newNotification]
+  )
 }
 
 export const removeNotification = (notificationId: string, { update }: Writable<Notification[]>): void => {
@@ -28,5 +30,5 @@ export const removeNotification = (notificationId: string, { update }: Writable<
     return
   }
 
-  update(notifications => notifications.filter(({ id }) => id !== notificationId))
+  update((notifications) => notifications.filter(({ id }) => id !== notificationId))
 }

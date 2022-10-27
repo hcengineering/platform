@@ -10,6 +10,6 @@ export interface Notification {
   subTitlePostfix?: string
   position: NotificationPosition
   severity?: NotificationSeverity
-  params?: {[key: string]: any}
+  params?: { [key: string]: any }
   closeTimeout?: number
 }
