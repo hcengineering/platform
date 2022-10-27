@@ -1,21 +1,22 @@
 <!--
 // Copyright © 2022 Hardcore Engineering Inc.
-// 
+//
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// 
+//
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-<script lang="ts">
-  import { Ref, Space } from '@hcengineering/core'
+<script lang='ts'>
+  import { Data, Ref, Space } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { Button, showPopup } from '@hcengineering/ui'
+  import { IssueDraft } from '@hcengineering/tracker'
+  import { Button, fetchMetadataLocalStorage, setMetadataLocalStorage, showPopup } from '@hcengineering/ui'
   import tracker from '../plugin'
   import CreateIssue from './CreateIssue.svelte'
 
@@ -25,6 +26,12 @@
 
   let space: Ref<Space> | undefined
   $: updateSpace(currentSpace)
+
+  let issueDraft: Data<IssueDraft> | null = fetchMetadataLocalStorage(tracker.metadata.CreateIssueDraft)
+
+  const handleDraftChanged = (draft: Data<IssueDraft>) => {
+    issueDraft = draft
+  }
 
   async function updateSpace (spaceId: Ref<Space> | undefined): Promise<void> {
     if (spaceId !== undefined) {
@@ -41,7 +48,11 @@
       const team = await client.findOne(tracker.class.Team, {})
       space = team?._id
     }
-    showPopup(CreateIssue, { space }, 'top')
+
+    showPopup(CreateIssue, { space, shouldSaveDraft: true, draft: issueDraft, onDraftChanged: handleDraftChanged }, 'top')
+
+    setMetadataLocalStorage(tracker.metadata.CreateIssueDraft, null)
+    issueDraft = null
   }
 </script>
 
@@ -49,11 +60,31 @@
   <div class="flex-grow text-md">
     <Button
       icon={tracker.icon.NewIssue}
-      label={tracker.string.NewIssue}
+      label={issueDraft ? tracker.string.ResumeDraft : tracker.string.NewIssue}
       justify={'left'}
       width={'100%'}
       on:click={newIssue}
-    />
+    >
+      <div slot='content' class='draft-circle-container'>
+        {#if issueDraft}
+          <div class='draft-circle' />
+        {/if}
+      </div>
+    </Button>
+
   </div>
   <Button icon={tracker.icon.Magnifier} on:click={async () => {}} />
 </div>
+
+<style lang='scss'>
+	.draft-circle-container {
+		margin-left: auto;
+	}
+
+	.draft-circle {
+		height: 6px;
+		width: 6px;
+		background-color: var(--primary-bg-color);
+		border-radius: 50%;
+	}
+</style>
