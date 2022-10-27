@@ -22,7 +22,7 @@ loadMetadata(task.icon, {
   Kanban: `${icons}#kanban`,
   TodoCheck: `${icons}#todo-check`,
   TodoUnCheck: `${icons}#todo-uncheck`,
-  ManageStatuses: `${icons}#manage-statuses`,
+  ManageTemplates: `${icons}#manage-templates`,
   TaskState: `${icons}#task-state`,
   Dashboard: `${icons}#dashboard`
 })

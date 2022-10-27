@@ -1,8 +1,8 @@
 {
   "string": {
     "Cancel": "Cancel",
-    "Templates": "Templates",
-    "TemplatesHeader": "TEMPLATES",
+    "Templates": "Text Templates",
+    "TemplatesHeader": "TEXT TEMPLATES",
     "CreateTemplate": "CREATE TEMPLATE",
     "SaveTemplate": "Save template",
     "EditTemplate": "Edit template",

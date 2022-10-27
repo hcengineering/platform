@@ -61,8 +61,8 @@
 
 <div class="antiComponent">
   <div class="ac-header short divide">
-    <div class="ac-header__icon"><Icon icon={task.icon.ManageStatuses} size={'medium'} /></div>
-    <div class="ac-header__title"><Label label={setting.string.ManageStatuses} /></div>
+    <div class="ac-header__icon"><Icon icon={task.icon.ManageTemplates} size={'medium'} /></div>
+    <div class="ac-header__title"><Label label={setting.string.ManageTemplates} /></div>
   </div>
   <div class="ac-body columns hScroll">
     <div class="ac-column">

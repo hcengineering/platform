@@ -255,7 +255,7 @@ const task = plugin(taskId, {
     Kanban: '' as Asset,
     TodoCheck: '' as Asset,
     TodoUnCheck: '' as Asset,
-    ManageStatuses: '' as Asset,
+    ManageTemplates: '' as Asset,
     TaskState: '' as Asset,
     Dashboard: '' as Asset
   },

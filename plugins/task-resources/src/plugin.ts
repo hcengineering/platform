@@ -21,13 +21,14 @@ import { AnyComponent } from '@hcengineering/ui'
 export default mergeIds(taskId, task, {
   string: {
     CreateProject: '' as IntlString,
+    Description: '' as IntlString,
+    DescriptionPlaceholder: '' as IntlString,
+    ShortDescription: '' as IntlString,
     ProjectName: '' as IntlString,
     ProjectNamePlaceholder: '' as IntlString,
     TaskCreateLabel: '' as IntlString,
     TaskAssignee: '' as IntlString,
     TaskNamePlaceholder: '' as IntlString,
-    TaskDescription: '' as IntlString,
-    TaskDescriptionPlaceholder: '' as IntlString,
     States: '' as IntlString,
     DoneStates: '' as IntlString,
     TodoDescriptionPlaceholder: '' as IntlString,

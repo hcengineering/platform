@@ -103,7 +103,7 @@
   <svelte:fragment slot="title">
     <div class="antiTitle icon-wrapper">
       <div class="wrapped-icon">
-        <Icon icon={task.icon.ManageStatuses} size={'small'} />
+        <Icon icon={task.icon.ManageTemplates} size={'small'} />
       </div>
       <div class="title-wrapper">
         <span class="wrapped-title">

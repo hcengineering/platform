@@ -1,5 +1,8 @@
 {
   "string": {
+    "Description": "Description",
+    "DescriptionPlaceholder": "Description",
+    "ShortDescription": "Short description",
     "StartDate": "Start date",
     "DueDate": "Due date",
     "TaskState": "State",
@@ -14,7 +17,6 @@
     "Task": "Task",
     "TaskParent": "Parent",
     "IssueName": "Name",
-    "TaskDescription": "Description",
     "TaskComments": "Comments",
     "TaskLabels": "Labels",
     "TaskAssignee": "Assignee",
@@ -34,7 +36,6 @@
     "CreateProject": "New Project",
     "ProjectNamePlaceholder": "Project name",
     "TaskNamePlaceholder": "The boring task",
-    "TaskDescriptionPlaceholder": "Description",
     "TodoDescriptionPlaceholder": "todo...",
     "MakePrivate": "Make Private",
     "MakePrivateDescription": "Only members can see it",

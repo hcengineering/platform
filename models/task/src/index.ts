@@ -180,7 +180,7 @@ export class TIssue extends TTask implements Issue {
   @Index(IndexKind.FullText)
   name!: string
 
-  @Prop(TypeMarkup(), task.string.TaskDescription)
+  @Prop(TypeMarkup(), task.string.Description)
   @Index(IndexKind.FullText)
   description!: string
 
@@ -347,7 +347,7 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       label: task.string.States,
-      icon: task.icon.ManageStatuses,
+      icon: task.icon.ManageTemplates,
       component: task.component.StatusTableView
     },
     task.viewlet.StatusTable
