@@ -115,7 +115,7 @@
     </span>
   {/if}
   {#if $$slots.content}
-    <slot name="content" />
+    <slot name='content' />
   {/if}
 </button>
 

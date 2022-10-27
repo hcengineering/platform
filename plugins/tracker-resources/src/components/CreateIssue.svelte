@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-<script lang="ts">
+<script lang='ts'>
   import { deepEqual } from 'fast-equals'
   import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
   import chunter from '@hcengineering/chunter'
@@ -118,7 +118,7 @@
         estimation: 0,
         reports: 0,
         childInfo: [],
-        ...(draft || {})
+        ...draft || {}
       }
 
   function resetObject (): void {
@@ -318,7 +318,7 @@
     }
 
     return status === ''
-  }
+}
 
   export function canClose (): boolean {
     return true

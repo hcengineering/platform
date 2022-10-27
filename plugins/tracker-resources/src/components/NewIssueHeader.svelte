@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-<script lang="ts">
+<script lang='ts'>
   import { Data, Ref, Space } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { IssueDraft } from '@hcengineering/tracker'
@@ -49,11 +49,7 @@
       space = team?._id
     }
 
-    showPopup(
-      CreateIssue,
-      { space, shouldSaveDraft: true, draft: issueDraft, onDraftChanged: handleDraftChanged },
-      'top'
-    )
+    showPopup(CreateIssue, { space, shouldSaveDraft: true, draft: issueDraft, onDraftChanged: handleDraftChanged }, 'top')
 
     setMetadataLocalStorage(tracker.metadata.CreateIssueDraft, null)
     issueDraft = null
@@ -69,25 +65,26 @@
       width={'100%'}
       on:click={newIssue}
     >
-      <div slot="content" class="draft-circle-container">
+      <div slot='content' class='draft-circle-container'>
         {#if issueDraft}
-          <div class="draft-circle" />
+          <div class='draft-circle' />
         {/if}
       </div>
     </Button>
+
   </div>
   <Button icon={tracker.icon.Magnifier} on:click={async () => {}} />
 </div>
 
-<style lang="scss">
-  .draft-circle-container {
-    margin-left: auto;
-  }
+<style lang='scss'>
+	.draft-circle-container {
+		margin-left: auto;
+	}
 
-  .draft-circle {
-    height: 6px;
-    width: 6px;
-    background-color: var(--primary-bg-color);
-    border-radius: 50%;
-  }
+	.draft-circle {
+		height: 6px;
+		width: 6px;
+		background-color: var(--primary-bg-color);
+		border-radius: 50%;
+	}
 </style>
