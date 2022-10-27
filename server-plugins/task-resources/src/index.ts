@@ -19,11 +19,7 @@ import login from '@hcengineering/login'
 import { NotificationAction } from '@hcengineering/notification'
 import { getMetadata, Resource } from '@hcengineering/platform'
 import { TriggerControl } from '@hcengineering/server-core'
-import {
-  getEmployeeAccount,
-  getEmployeeAccountById,
-  getUpdateLastViewTx
-} from '@hcengineering/server-notification'
+import { getEmployeeAccount, getEmployeeAccountById, getUpdateLastViewTx } from '@hcengineering/server-notification'
 import { createNotificationTxes } from '@hcengineering/server-notification-resources'
 import task, { Issue, Task, taskId } from '@hcengineering/task'
 import view from '@hcengineering/view'

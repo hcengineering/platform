@@ -213,7 +213,14 @@ export async function createNotificationTxes (
   if (await isAllowed(control, receiver, notification.ids.PlatformNotification)) {
     const target = await getEmployee(receiver.employee, control)
     if (target !== undefined) {
-      const createNotificationTx = await getPlatformNotificationTx(ptx, type, control.txFactory, target, content?.text, action)
+      const createNotificationTx = await getPlatformNotificationTx(
+        ptx,
+        type,
+        control.txFactory,
+        target,
+        content?.text,
+        action
+      )
 
       res.push(createNotificationTx)
     }
