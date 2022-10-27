@@ -14,7 +14,7 @@
 
   const removeNotificationHandler = () => removeNotification(id)
 
-  let timeout = null
+  let timeout: number | null = null
 
   if (closeTimeout) {
     timeout = setTimeout(removeNotificationHandler, closeTimeout)
