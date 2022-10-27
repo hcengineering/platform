@@ -73,6 +73,6 @@
   }
   .simpleFilterButton {
     max-width: 12rem;
-    margin-left: 0.75rem;
+    margin: 0.125rem 0.5rem 0.125rem 0;
   }
 </style>

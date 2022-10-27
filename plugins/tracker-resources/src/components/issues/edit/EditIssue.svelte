@@ -178,6 +178,7 @@
     isAside={true}
     isSub={false}
     withoutActivity={isEditing}
+    withoutTitle
     bind:innerWidth
     on:close={() => dispatch('close')}
   >
