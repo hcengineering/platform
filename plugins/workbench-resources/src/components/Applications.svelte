@@ -17,7 +17,7 @@
   import type { Application } from '@hcengineering/workbench'
   import { createEventDispatcher } from 'svelte'
   import AppItem from './AppItem.svelte'
-  import { Scroller } from '@hcengineering/ui'
+  import { Scroller, IconDownOutline } from '@hcengineering/ui'
 
   export let active: Ref<Application> | undefined
   export let apps: Application[] = []
@@ -51,7 +51,9 @@
     {/each}
     <div class="apps-space-{direction}" />
   </Scroller>
-  <div class="thinButton {direction}" class:shown on:click={() => (shown = !shown)} />
+  <div class="thinButton {direction}" class:shown on:click={() => (shown = !shown)}>
+    <IconDownOutline size={'medium'} />
+  </div>
 </div>
 
 <style lang="scss">
@@ -78,13 +80,13 @@
 
   .thinButton {
     position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     transform-origin: center center;
-    background-color: var(--button-bg-color);
-    border: 1px solid var(--button-border-color);
-    border-radius: 0.125rem;
-    box-shadow: var(--button-shadow);
+    border-radius: 0.5rem;
     opacity: 0.2;
-    // z-index: 1;
     cursor: pointer;
 
     transition-property: opacity, transform;
@@ -92,19 +94,17 @@
     transition-duration: 0.1s;
 
     &.vertical {
-      top: calc(100% + 0.25rem);
+      top: 100%;
       left: 50%;
-      height: 0.375rem;
       width: 2.5rem;
-      transform: translateX(-50%) scale(0.6);
+      transform: translateX(-50%) scale(0.6) rotate(0deg);
       &:hover {
         transform: translateX(-50%) scale(0.8);
       }
     }
     &.horizontal {
-      left: calc(100% + 0.25rem);
+      left: 100%;
       top: 50%;
-      width: 0.375rem;
       height: 2.5rem;
       transform: translateY(-50%) scale(0.6);
       &:hover {
@@ -120,19 +120,17 @@
 
     &:hover {
       transform: translateX(-50%) scale(0.8);
-      background-color: var(--button-bg-hover);
-      border-color: var(--button-border-hover);
+      background-color: var(--accent-bg-color);
       opacity: 0.9;
     }
 
     &.shown {
-      transform: translateX(-50%) scale(0.9);
+      transform: translateX(-50%) scale(0.9) rotate(180deg);
       opacity: 0.8;
 
       &:hover {
-        transform: translateX(-50%) scale(1);
-        background-color: var(--button-bg-hover);
-        border-color: var(--button-border-hover);
+        transform: translateX(-50%) scale(1) rotate(180deg);
+        background-color: var(--accent-bg-color);
         opacity: 1;
       }
     }
