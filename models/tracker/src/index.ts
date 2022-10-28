@@ -916,7 +916,7 @@ export function createModel (builder: Builder): void {
         component: tracker.component.SetParentIssueActionPopup,
         element: 'top',
         fillProps: {
-          _object: 'value'
+          _objects: 'value'
         }
       },
       label: tracker.string.SetParent,
