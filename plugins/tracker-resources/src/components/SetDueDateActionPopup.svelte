@@ -19,7 +19,7 @@
   import { Issue } from '@hcengineering/tracker'
   import { createEventDispatcher } from 'svelte'
 
-  export let value: Issue | AttachedData<Issue>
+  export let value: Issue | AttachedData<Issue> | Issue[]
   export let mondayStart = true
   export let withTime = false
 
@@ -29,14 +29,17 @@
   async function onUpdate ({ detail }: CustomEvent<Date | null | undefined>) {
     const newDueDate = detail && detail?.getTime()
 
-    if ('_id' in value && newDueDate !== undefined && newDueDate !== value.dueDate) {
-      await client.update(value, { dueDate: newDueDate })
+    const vv = Array.isArray(value) ? value : [value]
+    for (const docValue of vv) {
+      if ('_id' in docValue && newDueDate !== undefined && newDueDate !== docValue.dueDate) {
+        await client.update(docValue, { dueDate: newDueDate })
+      }
     }
 
     dispatch('update', newDueDate)
   }
 
-  $: currentDate = value.dueDate !== null ? new Date(value.dueDate) : null
+  $: currentDate = Array.isArray(value) || value.dueDate === null ? null : new Date(value.dueDate)
 </script>
 
 <DatePopup {currentDate} {mondayStart} {withTime} on:close on:update={onUpdate} />

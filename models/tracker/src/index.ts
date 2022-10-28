@@ -1131,7 +1131,7 @@ export function createModel (builder: Builder): void {
         props: { mondayStart: true, withTime: false },
         element: 'top',
         fillProps: {
-          _object: 'value'
+          _objects: 'value'
         }
       },
       label: tracker.string.SetDueDate,
