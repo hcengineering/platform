@@ -547,7 +547,14 @@ export class LiveQuery extends TxProcessor implements Client {
         if (q.result instanceof Promise) {
           q.result = await q.result
         }
-        q.result.push(res[0])
+        const doc = res[0]
+        const pos = q.result.findIndex((el) => el._id === doc._id)
+        if (pos !== -1) {
+          q.result[pos] = doc
+        } else {
+          q.result.push(doc)
+          q.total++
+        }
         return true
       }
     }
