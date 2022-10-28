@@ -31,7 +31,7 @@
     "@hcengineering/server-core": "~0.6.1",
     "@hcengineering/tracker": "^0.6.1",
     "@hcengineering/contact": "~0.6.5",
-    "@hcengineering/notification": "~0.6.0",
+    "@hcengineering/notification": "~0.6.4",
     "@hcengineering/task": "~0.6.0",
     "@hcengineering/view": "^0.6.1",
     "@hcengineering/login": "~0.6.1",

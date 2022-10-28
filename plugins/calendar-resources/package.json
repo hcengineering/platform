@@ -35,7 +35,7 @@
     "@hcengineering/platform": "^0.6.7",
     "@hcengineering/ui": "^0.6.2",
     "@hcengineering/presentation": "~0.6.2",
-    "@hcengineering/calendar": "~0.6.0",
+    "@hcengineering/calendar": "~0.6.1",
     "svelte": "^3.47",
     "@hcengineering/text-editor": "~0.6.0",
     "@hcengineering/contact": "~0.6.5",
