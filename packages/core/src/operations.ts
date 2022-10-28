@@ -161,7 +161,12 @@ export class TxOperations implements Omit<Client, 'notify'> {
   }
 
   update<T extends Doc>(doc: T, update: DocumentUpdate<T>, retrieve?: boolean): Promise<TxResult> {
-    if (this.client.getHierarchy().isDerived(doc._class, core.class.AttachedDoc)) {
+    const hierarchy = this.client.getHierarchy()
+    if (hierarchy.isMixin(doc._class)) {
+      const baseClass = hierarchy.getBaseClass(doc._class)
+      return this.updateMixin(doc._id, baseClass, doc.space, doc._class, update)
+    }
+    if (hierarchy.isDerived(doc._class, core.class.AttachedDoc)) {
       const adoc = doc as unknown as AttachedDoc
       return this.updateCollection(
         doc._class,
