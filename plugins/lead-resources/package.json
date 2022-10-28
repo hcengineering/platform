@@ -46,7 +46,7 @@
     "@hcengineering/attachment-resources": "~0.6.0",
     "@hcengineering/contact-resources": "~0.6.0",
     "@hcengineering/chunter-resources": "~0.6.0",
-    "@hcengineering/notification": "~0.6.0",
+    "@hcengineering/notification": "~0.6.4",
     "@hcengineering/attachment": "~0.6.1",
     "@hcengineering/text-editor": "~0.6.0"
   }

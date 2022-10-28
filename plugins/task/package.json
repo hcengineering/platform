@@ -32,6 +32,6 @@
     "@hcengineering/view": "^0.6.1",
     "@hcengineering/ui": "^0.6.2",
     "lexorank": "~1.0.4",
-    "@hcengineering/notification": "~0.6.0"
+    "@hcengineering/notification": "~0.6.4"
   }
 }

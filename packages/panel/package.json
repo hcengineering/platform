@@ -39,7 +39,7 @@
     "@hcengineering/chunter": "~0.6.1",
     "@hcengineering/presentation": "~0.6.2",
     "@hcengineering/activity": "~0.6.0",
-    "@hcengineering/calendar": "~0.6.0",
-    "@hcengineering/notification": "~0.6.0"
+    "@hcengineering/calendar": "~0.6.1",
+    "@hcengineering/notification": "~0.6.4"
   }
 }

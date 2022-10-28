@@ -37,6 +37,6 @@
     "@hcengineering/platform": "^0.6.7",
     "@hcengineering/core": "^0.6.17",
     "@hcengineering/presentation": "~0.6.2",
-    "@hcengineering/notification": "~0.6.0"
+    "@hcengineering/notification": "~0.6.4"
   }
 }

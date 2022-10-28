@@ -30,6 +30,6 @@
   },
   "dependencies": {
     "@hcengineering/platform": "^0.6.7",
-    "@hcengineering/notification": "~0.6.0"
+    "@hcengineering/notification": "~0.6.4"
   }
 }
