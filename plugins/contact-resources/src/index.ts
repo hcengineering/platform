@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { AvatarType, Channel, Contact, Employee, formatName } from '@hcengineering/contact'
+import { Channel, Contact, Employee, formatName } from '@hcengineering/contact'
 import { Class, Client, DocumentQuery, Ref, RelatedDocument, WithLookup } from '@hcengineering/core'
 import { leaveWorkspace } from '@hcengineering/login-resources'
 import { Resources } from '@hcengineering/platform'
@@ -168,9 +168,9 @@ export default async (): Promise<Resources> => ({
       filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }
     ) => await queryContact(contact.class.Organization, client, query, filter)
   },
-  avatarProvider: {
-    Image: { type: AvatarType.IMAGE, getUrl: getFileUrl },
-    Gravatar: { type: AvatarType.GRAVATAR, getUrl: getGravatarUrl },
-    Color: { type: AvatarType.COLOR, getUrl: (uri: string) => uri }
+  function: {
+    GetFileUrl: getFileUrl,
+    GetGravatarUrl: getGravatarUrl,
+    GetColorUrl: (uri: string) => uri
   }
 })

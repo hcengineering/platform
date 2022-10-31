@@ -16,6 +16,7 @@
 import {
   AvatarProvider,
   AvatarType,
+  GetAvatarUrl,
   Channel,
   ChannelProvider,
   Contact,
@@ -49,9 +50,8 @@ import core, { TAccount, TAttachedDoc, TDoc, TSpace } from '@hcengineering/model
 import presentation from '@hcengineering/model-presentation'
 import view, { actionTemplates, createAction, ViewAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
-import type { Asset, IntlString } from '@hcengineering/platform'
+import type { Asset, IntlString, Resource } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
-import { IconSize } from '@hcengineering/ui'
 import contact from './plugin'
 
 export const DOMAIN_CONTACT = 'contact' as Domain
@@ -60,7 +60,7 @@ export const DOMAIN_CHANNEL = 'channel' as Domain
 @Model(contact.class.AvatarProvider, core.class.Doc, DOMAIN_MODEL)
 export class TAvatarProvider extends TDoc implements AvatarProvider {
   type!: AvatarType
-  getUrl!: (uri: string, size: IconSize) => string
+  getUrl!: Resource<GetAvatarUrl>
 }
 
 @Model(contact.class.ChannelProvider, core.class.Doc, DOMAIN_MODEL)
@@ -368,6 +368,36 @@ export function createModel (builder: Builder): void {
       action: contact.actionImpl.OpenChannel
     },
     contact.channelProvider.Homepage
+  )
+
+  builder.createDoc(
+    contact.class.AvatarProvider,
+    core.space.Model,
+    {
+      type: AvatarType.COLOR,
+      getUrl: contact.function.GetColorUrl
+    },
+    contact.avatarProvider.Color
+  )
+
+  builder.createDoc(
+    contact.class.AvatarProvider,
+    core.space.Model,
+    {
+      type: AvatarType.IMAGE,
+      getUrl: contact.function.GetFileUrl
+    },
+    contact.avatarProvider.Image
+  )
+
+  builder.createDoc(
+    contact.class.AvatarProvider,
+    core.space.Model,
+    {
+      type: AvatarType.GRAVATAR,
+      getUrl: contact.function.GetGravatarUrl
+    },
+    contact.avatarProvider.Gravatar
   )
 
   builder.mixin(contact.class.Person, core.class.Class, view.mixin.AttributePresenter, {

@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AvatarType, AvatarProvider } from '@hcengineering/contact'
+  import contact, { AvatarType, AvatarProvider } from '@hcengineering/contact'
   import { Asset, getResource } from '@hcengineering/platform'
   import { AnySvelteComponent, Icon, IconSize } from '@hcengineering/ui'
-  import { getBlobURL, getAvatarProviderId } from '../utils'
+  import { getBlobURL, getAvatarProviderId, getClient } from '../utils'
   import AvatarIcon from './icons/Avatar.svelte'
 
   export let avatar: string | null | undefined = undefined
@@ -35,15 +35,16 @@
       })
     } else if (avatar) {
       const avatarProviderId = getAvatarProviderId(avatar)
-      avatarProvider = avatarProviderId && (await getResource(avatarProviderId))
+      avatarProvider =
+        avatarProviderId && (await getClient().findOne(contact.class.AvatarProvider, { _id: avatarProviderId }))
 
       if (!avatarProvider || avatarProvider.type === AvatarType.COLOR) {
         url = undefined
       } else if (avatarProvider.type === AvatarType.IMAGE) {
-        url = avatarProvider.getUrl(avatar, size)
+        url = (await getResource(avatarProvider.getUrl))(avatar, size)
       } else {
         const uri = avatar.split('://')[1]
-        url = avatarProvider.getUrl(uri, size)
+        url = (await getResource(avatarProvider.getUrl))(uri, size)
       }
     } else {
       url = undefined
@@ -53,14 +54,18 @@
   $: update(size, avatar, direct)
 
   let style = ''
-  $: if (!avatar || avatarProvider?.type !== AvatarType.COLOR) {
-    style = ''
-  } else {
-    const uri = avatar.split('://')[1]
 
-    const color = avatarProvider.getUrl(uri, size)
-    style = `background-color: ${color}`
+  async function updateStyle (avatar?: string | null, avatarProvider?: AvatarProvider) {
+    if (!avatar || avatarProvider?.type !== AvatarType.COLOR) {
+      style = ''
+    } else {
+      const uri = avatar.split('://')[1]
+
+      const color = (await getResource(avatarProvider.getUrl))(uri, size)
+      style = `background-color: ${color}`
+    }
   }
+  $: updateStyle(avatar, avatarProvider)
 </script>
 
 <div class="ava-{size} flex-center avatar-container" class:no-img={!url} {style}>
