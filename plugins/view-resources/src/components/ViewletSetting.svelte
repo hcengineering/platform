@@ -147,21 +147,18 @@
     const result = getBaseConfig(viewlet)
 
     const allAttributes = hierarchy.getAllAttributes(viewlet.attachTo)
-
     for (const [, attribute] of allAttributes) {
       processAttribute(attribute, result)
     }
 
-    hierarchy
-      .getDescendants(viewlet.attachTo)
-      .filter((it) => hierarchy.isMixin(it))
-      .forEach((it) =>
-        hierarchy.getAllAttributes(it, viewlet.attachTo).forEach((attr) => {
-          if (attr.isCustom === true) {
-            processAttribute(attr, result, true)
-          }
-        })
-      )
+    hierarchy.getDescendants(viewlet.attachTo).forEach((it) => {
+      const ancestor = hierarchy.getAncestors(it)[1]
+      hierarchy.getAllAttributes(it, ancestor).forEach((attr) => {
+        if (attr.isCustom === true) {
+          processAttribute(attr, result, true)
+        }
+      })
+    })
 
     return preference === undefined ? result : setStatus(result, preference)
   }

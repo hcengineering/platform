@@ -53,8 +53,9 @@
           }
         : {}
     let prefix = ''
-    const attr = client.getHierarchy().getAttribute(filter.key._class, filter.key.key)
-    if (client.getHierarchy().isMixin(attr.attributeOf)) {
+    const hieararchy = client.getHierarchy()
+    const attr = hieararchy.getAttribute(filter.key._class, filter.key.key)
+    if (hieararchy.isMixin(attr.attributeOf)) {
       prefix = attr.attributeOf + '.'
       console.log('prefix', prefix)
     }
@@ -66,8 +67,8 @@
 
     for (const object of res) {
       let asDoc = object
-      if (client.getHierarchy().isMixin(filter.key._class)) {
-        asDoc = client.getHierarchy().as(object, filter.key._class)
+      if (hieararchy.isMixin(filter.key._class)) {
+        asDoc = hieararchy.as(object, filter.key._class)
       }
       const realValue = getObjectValue(filter.key.key, asDoc)
       const value = getValue(realValue)
