@@ -146,7 +146,6 @@
     transition-property: border, background-color, color, box-shadow;
     transition-duration: 0.15s;
 
-
     .btn-icon {
       color: var(--content-color);
       transition: color 0.15s;
