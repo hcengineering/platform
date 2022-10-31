@@ -99,7 +99,7 @@
           showNavigate={false}
         />
         <EstimationPresenter value={report.value} />
-        <DatePresenter value={report.modifiedOn} />
+        <DatePresenter value={report.date} />
       </div>
     </div>
   </svelte:fragment>
