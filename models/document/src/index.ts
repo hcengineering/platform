@@ -14,7 +14,7 @@
 //
 
 import contact, { Employee } from '@hcengineering/contact'
-import type { Class, Domain, Markup, Ref } from '@hcengineering/core'
+import type { Domain, Markup, Ref } from '@hcengineering/core'
 import { IndexKind } from '@hcengineering/core'
 import { Document, documentId, DocumentVersion, RichDocumentContent, Step } from '@hcengineering/document'
 import {
@@ -85,9 +85,6 @@ export class TDocument extends TDoc implements Document {
 
   @Prop(Collection(tags.class.TagReference), document.string.Labels)
   labels?: number
-
-  @Prop(TypeRef(core.class.Class), core.string.ClassLabel)
-  declare _class: Ref<Class<this>>
 
   @Prop(TypeNumber(), document.string.Revision)
   @ReadOnly()
