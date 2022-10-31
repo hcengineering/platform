@@ -15,6 +15,7 @@
 <script lang="ts">
   import type { IntlString, Asset } from '@hcengineering/platform'
   import type { AnySvelteComponent } from '@hcengineering/ui'
+  import { createEventDispatcher } from 'svelte'
   import { Icon, tooltip, IconColStar } from '@hcengineering/ui'
 
   export let label: IntlString
@@ -25,6 +26,8 @@
   export let notify: boolean
   export let hidden: boolean = false
   export let editable: boolean = false
+
+  const dispatch = createEventDispatcher()
 </script>
 
 <button
@@ -42,7 +45,14 @@
   </div>
   {#if notify}<div class="marker" />{/if}
   {#if editable}
-    <div class="starButton" class:hidden on:click|preventDefault|stopPropagation={() => (hidden = !hidden)}>
+    <div
+      class="starButton"
+      class:hidden
+      on:click|preventDefault|stopPropagation={() => {
+        hidden = !hidden
+        dispatch('visible', !hidden)
+      }}
+    >
       <IconColStar
         size={'small'}
         fill={hidden ? 'var(--warning-color)' : 'var(--activity-status-busy)'}
@@ -136,17 +146,13 @@
     height: 1rem;
     width: 1rem;
     transform-origin: center center;
-    transform: scale(0.85);
+    transform: scale(1);
     opacity: 0.8;
     z-index: 10000;
     cursor: pointer;
 
-    transition-property: opacity, transform;
-    transition-timing-function: var(--timing-main);
-    transition-duration: 0.15s;
-
     &:hover {
-      transform: scale(1);
+      transform: scale(1.2);
       opacity: 1;
     }
     &.hidden {
@@ -154,7 +160,7 @@
       opacity: 0.5;
 
       &:hover {
-        transform: scale(0.8);
+        transform: scale(0.9);
         opacity: 0.8;
       }
     }
