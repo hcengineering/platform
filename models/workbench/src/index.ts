@@ -15,10 +15,11 @@
 
 import type { IntlString, Asset } from '@hcengineering/platform'
 import { Class, DOMAIN_MODEL, Ref, Space } from '@hcengineering/core'
-import { Model, Mixin, Builder, UX } from '@hcengineering/model'
-import type { Application, SpaceView, ViewConfiguration } from '@hcengineering/workbench'
+import { Model, Mixin, Builder, UX, Prop, TypeRef } from '@hcengineering/model'
+import type { Application, SpaceView, ViewConfiguration, HiddenApplication } from '@hcengineering/workbench'
 import view, { KeyBinding } from '@hcengineering/view'
 import { createAction } from '@hcengineering/model-view'
+import preference, { TPreference } from '@hcengineering/model-preference'
 
 import core, { TDoc, TClass } from '@hcengineering/model-core'
 import workbench from './plugin'
@@ -34,13 +35,19 @@ export class TApplication extends TDoc implements Application {
   hidden!: boolean
 }
 
+@Model(workbench.class.HiddenApplication, preference.class.Preference)
+export class THiddenApplication extends TPreference implements HiddenApplication {
+  @Prop(TypeRef(workbench.class.Application), workbench.string.HiddenApplication)
+  attachedTo!: Ref<Application>
+}
+
 @Mixin(workbench.mixin.SpaceView, core.class.Class)
 export class TSpaceView extends TClass implements SpaceView {
   view!: ViewConfiguration
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TApplication, TSpaceView)
+  builder.createModel(TApplication, TSpaceView, THiddenApplication)
   builder.mixin(workbench.class.Application, core.class.Class, view.mixin.AttributePresenter, {
     presenter: workbench.component.ApplicationPresenter
   })
