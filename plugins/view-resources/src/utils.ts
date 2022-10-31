@@ -240,7 +240,7 @@ export async function buildModel (options: BuildModelOptions): Promise<Attribute
         const pos = key.key.lastIndexOf('.')
         if (pos !== -1) {
           const mixinName = key.key.substring(0, pos) as Ref<Class<Doc>>
-          if (mixinName !== '$lookup') {
+          if (!mixinName.includes('$lookup')) {
             const realKey = key.key.substring(pos + 1)
             const rkey = { ...key, key: realKey }
             return {
