@@ -81,9 +81,14 @@ export enum AvatarType {
 /**
  * @public
  */
+export type GetAvatarUrl = (uri: string, size: IconSize) => string
+
+/**
+ * @public
+ */
 export interface AvatarProvider extends Doc {
   type: AvatarType
-  getUrl: (uri: string, size: IconSize) => string
+  getUrl: Resource<GetAvatarUrl>
 }
 
 /**
@@ -214,9 +219,14 @@ const contactPlugin = plugin(contactId, {
     Homepage: '' as Ref<ChannelProvider>
   },
   avatarProvider: {
-    Color: '' as Resource<AvatarProvider>,
-    Image: '' as Resource<AvatarProvider>,
-    Gravatar: '' as Resource<AvatarProvider>
+    Color: '' as Ref<AvatarProvider>,
+    Image: '' as Ref<AvatarProvider>,
+    Gravatar: '' as Ref<AvatarProvider>
+  },
+  function: {
+    GetColorUrl: '' as Resource<GetAvatarUrl>,
+    GetFileUrl: '' as Resource<GetAvatarUrl>,
+    GetGravatarUrl: '' as Resource<GetAvatarUrl>
   },
   icon: {
     ContactApplication: '' as Asset,

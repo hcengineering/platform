@@ -34,7 +34,7 @@ import core, {
   TxResult
 } from '@hcengineering/core'
 import login from '@hcengineering/login'
-import { getMetadata, Resource } from '@hcengineering/platform'
+import { getMetadata } from '@hcengineering/platform'
 import { LiveQuery as LQ } from '@hcengineering/query'
 import { onDestroy } from 'svelte'
 import { deepEqual } from 'fast-equals'
@@ -281,7 +281,7 @@ export function getAvatarColorForId (id: string): string {
   return AVATAR_COLORS[hash % AVATAR_COLORS.length]
 }
 
-export function getAvatarProviderId (avatar?: string | null): Resource<AvatarProvider> | undefined {
+export function getAvatarProviderId (avatar?: string | null): Ref<AvatarProvider> | undefined {
   if (avatar === null || avatar === undefined || avatar === '') {
     return
   }
