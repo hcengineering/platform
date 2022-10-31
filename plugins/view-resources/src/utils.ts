@@ -231,7 +231,6 @@ export function buildConfigLookup<T extends Doc> (
 }
 
 export async function buildModel (options: BuildModelOptions): Promise<AttributeModel[]> {
-  console.log(options.keys)
   // eslint-disable-next-line array-callback-return
   const model = options.keys
     .map((key) => (typeof key === 'string' ? { key: key } : key))

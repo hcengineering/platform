@@ -147,7 +147,6 @@
     const result = getBaseConfig(viewlet)
 
     const allAttributes = hierarchy.getAllAttributes(viewlet.attachTo)
-    console.log('base attributes', allAttributes)
     for (const [, attribute] of allAttributes) {
       processAttribute(attribute, result)
     }
