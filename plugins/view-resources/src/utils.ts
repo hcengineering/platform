@@ -231,6 +231,7 @@ export function buildConfigLookup<T extends Doc> (
 }
 
 export async function buildModel (options: BuildModelOptions): Promise<AttributeModel[]> {
+  console.log(options.keys)
   // eslint-disable-next-line array-callback-return
   const model = options.keys
     .map((key) => (typeof key === 'string' ? { key: key } : key))
@@ -240,7 +241,7 @@ export async function buildModel (options: BuildModelOptions): Promise<Attribute
         const pos = key.key.lastIndexOf('.')
         if (pos !== -1) {
           const mixinName = key.key.substring(0, pos) as Ref<Class<Doc>>
-          if (options.client.getHierarchy().isMixin(mixinName)) {
+          if (mixinName !== '$lookup') {
             const realKey = key.key.substring(pos + 1)
             const rkey = { ...key, key: realKey }
             return {
@@ -251,7 +252,6 @@ export async function buildModel (options: BuildModelOptions): Promise<Attribute
             }
           }
         }
-
         return await getPresenter(options.client, options._class, key, key, options.lookup)
       } catch (err: any) {
         if (options.ignoreMissing ?? false) {
