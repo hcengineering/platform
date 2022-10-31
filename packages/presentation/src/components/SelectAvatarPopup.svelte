@@ -1,0 +1,180 @@
+<!--
+// Copyright © 2022 Hardcore Engineering Inc.
+// 
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// 
+// See the License for the specific language governing permissions and
+// limitations under the License.
+-->
+<script lang="ts">
+  import { createEventDispatcher } from 'svelte'
+
+  import { DropdownLabelsIntl, AnySvelteComponent, showPopup, Label } from '@hcengineering/ui'
+  import { AvatarType } from '@hcengineering/contact'
+  import { Asset } from '@hcengineering/platform'
+
+  import presentation from '..'
+  import { getAvatarTypeDropdownItems, getFileUrl, getAvatarColorForId } from '../utils'
+  import { buildGravatarId } from '../gravatar'
+  import Card from './Card.svelte'
+  import AvatarComponent from './Avatar.svelte'
+  import EditAvatarPopup from './EditAvatarPopup.svelte'
+
+  export let avatar: string | undefined
+  export let email: string | undefined
+  export let id: string
+  export let file: Blob | undefined
+  export let icon: Asset | AnySvelteComponent | undefined
+  export let onSubmit: (avatarType?: AvatarType, avatar?: string, file?: Blob) => void
+
+  const [schema, uri] = avatar?.split('://') || []
+
+  const initialSelectedType = (() => {
+    if (!avatar) {
+      return AvatarType.COLOR
+    }
+
+    return avatar.includes('://') ? (schema as AvatarType) : AvatarType.IMAGE
+  })()
+
+  const initialSelectedAvatar = (() => {
+    if (!avatar) {
+      return getAvatarColorForId(id)
+    }
+
+    return avatar.includes('://') ? uri : avatar
+  })()
+
+  let selectedAvatarType: AvatarType = initialSelectedType
+  let selectedAvatar: string = initialSelectedAvatar
+  let selectedFile: Blob | undefined = file
+
+  const dispatch = createEventDispatcher()
+
+  function submit () {
+    onSubmit(selectedAvatarType, selectedAvatar, selectedAvatarType === AvatarType.IMAGE ? selectedFile : undefined)
+  }
+  let inputRef: HTMLInputElement
+  const targetMimes = ['image/png', 'image/jpg', 'image/jpeg']
+
+  function handleDropdownSelection (e: any) {
+    if (selectedAvatarType === AvatarType.GRAVATAR && email) {
+      selectedAvatar = buildGravatarId(email)
+    } else if (selectedAvatarType === AvatarType.IMAGE) {
+      if (selectedFile) {
+        return
+      }
+      if (file) {
+        selectedFile = file
+      } else if (avatar && !avatar.includes('://')) {
+        selectedAvatar = avatar
+      } else {
+        inputRef.click()
+      }
+    } else {
+      selectedAvatar = getAvatarColorForId(id)
+    }
+  }
+
+  async function handleImageAvatarClick () {
+    let editableFile: Blob
+
+    if (selectedFile !== undefined) {
+      editableFile = selectedFile
+    } else if (selectedAvatar) {
+      const url = getFileUrl(selectedAvatar, 'full')
+      editableFile = await (await fetch(url)).blob()
+    } else {
+      return inputRef.click()
+    }
+    showCropper(editableFile)
+  }
+
+  function showCropper (editableFile: Blob) {
+    showPopup(EditAvatarPopup, { file: editableFile }, undefined, (blob) => {
+      if (blob === undefined) {
+        if (!selectedFile && (!avatar || avatar.includes('://'))) {
+          selectedAvatarType = AvatarType.COLOR
+          selectedAvatar = getAvatarColorForId(id)
+        }
+        return
+      }
+      if (blob === null) {
+        selectedAvatarType = AvatarType.COLOR
+        selectedAvatar = getAvatarColorForId(id)
+        selectedFile = undefined
+      } else {
+        selectedFile = blob
+      }
+    })
+  }
+
+  function onSelectFile (e: any) {
+    const targetFile = e.target?.files[0] as File | undefined
+
+    if (targetFile === undefined || !targetMimes.includes(targetFile.type)) {
+      return
+    }
+    showCropper(targetFile)
+    e.target.value = null
+    document.body.onfocus = null
+  }
+
+  function handleFileSelectionCancel () {
+    document.body.onfocus = null
+
+    if (!inputRef.value.length) {
+      if (!selectedFile) {
+        selectedAvatarType = AvatarType.COLOR
+        selectedAvatar = getAvatarColorForId(id)
+      }
+    }
+  }
+</script>
+
+<Card
+  label={presentation.string.SelectAvatar}
+  okLabel={presentation.string.Save}
+  canSave={selectedAvatarType !== initialSelectedType ||
+    selectedAvatar !== initialSelectedAvatar ||
+    selectedFile !== file ||
+    !avatar}
+  okAction={submit}
+  on:close={() => {
+    dispatch('close')
+  }}
+>
+  <DropdownLabelsIntl
+    items={getAvatarTypeDropdownItems(!!email)}
+    label={presentation.string.SelectAvatar}
+    bind:selected={selectedAvatarType}
+    on:selected={handleDropdownSelection}
+  />
+  {#if selectedAvatarType === AvatarType.IMAGE}
+    <div class="cursor-pointer" on:click|self={handleImageAvatarClick}>
+      <AvatarComponent avatar={selectedAvatar} direct={selectedFile} size={'x-large'} {icon} />
+    </div>
+  {:else}
+    <AvatarComponent avatar={`${selectedAvatarType}://${selectedAvatar}`} size={'x-large'} {icon} />
+  {/if}
+  {#if selectedAvatarType === AvatarType.GRAVATAR}
+    <span>
+      <Label label={presentation.string.GravatarsManaged} />
+      <a target="”_blank”" href="//gravatar.com">Gravatar.com</a>
+    </span>
+  {/if}
+  <input
+    style="display: none;"
+    type="file"
+    bind:this={inputRef}
+    on:change={onSelectFile}
+    on:click={() => (document.body.onfocus = handleFileSelectionCancel)}
+    accept={targetMimes.join(',')}
+  />
+</Card>

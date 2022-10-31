@@ -47,6 +47,7 @@ export { connect, versionError } from './connect'
 export { default } from './plugin'
 export * from './types'
 export * from './utils'
+export * from './gravatar'
 export { presentationId }
 
 addStringsLoader(presentationId, async (lang: string) => {

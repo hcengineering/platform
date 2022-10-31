@@ -34,11 +34,12 @@ import core, {
   TxResult
 } from '@hcengineering/core'
 import login from '@hcengineering/login'
-import { getMetadata } from '@hcengineering/platform'
+import { getMetadata, Resource } from '@hcengineering/platform'
 import { LiveQuery as LQ } from '@hcengineering/query'
 import { onDestroy } from 'svelte'
 import { deepEqual } from 'fast-equals'
-import { IconSize } from '@hcengineering/ui'
+import { IconSize, DropdownIntlItem } from '@hcengineering/ui'
+import contact, { AvatarType, AvatarProvider } from '@hcengineering/contact'
 
 let liveQuery: LQ
 let client: TxOperations
@@ -232,4 +233,67 @@ export function getAttributePresenterClass (
     category = 'array'
   }
   return { attrClass, category }
+}
+
+export function getAvatarTypeDropdownItems (hasEmail: boolean): DropdownIntlItem[] {
+  return [
+    {
+      id: AvatarType.COLOR,
+      label: contact.string.UseColor
+    },
+    {
+      id: AvatarType.IMAGE,
+      label: contact.string.UseImage
+    },
+    ...(hasEmail
+      ? [
+          {
+            id: AvatarType.GRAVATAR,
+            label: contact.string.UseGravatar
+          }
+        ]
+      : [])
+  ]
+}
+
+const AVATAR_COLORS = [
+  '#4674ca', // blue
+  '#315cac', // blue_dark
+  '#57be8c', // green
+  '#3fa372', // green_dark
+  '#f9a66d', // yellow_orange
+  '#ec5e44', // red
+  '#e63717', // red_dark
+  '#f868bc', // pink
+  '#6c5fc7', // purple
+  '#4e3fb4', // purple_dark
+  '#57b1be', // teal
+  '#847a8c' // gray
+]
+
+export function getAvatarColorForId (id: string): string {
+  let hash = 0
+
+  for (let i = 0; i < id.length; i++) {
+    hash += id.charCodeAt(i)
+  }
+
+  return AVATAR_COLORS[hash % AVATAR_COLORS.length]
+}
+
+export function getAvatarProviderId (avatar?: string | null): Resource<AvatarProvider> | undefined {
+  if (avatar === null || avatar === undefined || avatar === '') {
+    return
+  }
+  if (!avatar.includes('://')) {
+    return contact.avatarProvider.Image
+  }
+  const [schema] = avatar.split('://')
+
+  switch (schema) {
+    case AvatarType.GRAVATAR:
+      return contact.avatarProvider.Gravatar
+    case AvatarType.COLOR:
+      return contact.avatarProvider.Color
+  }
 }
