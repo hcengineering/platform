@@ -23,9 +23,17 @@ import {
   serialize,
   Status,
   unknownError,
-  unknownStatus
+  unknownStatus,
+  setMetadata
 } from '@hcengineering/platform'
-import { fetchMetadataLocalStorage, getCurrentLocation, navigate } from '@hcengineering/ui'
+import {
+  fetchMetadataLocalStorage,
+  getCurrentLocation,
+  navigate,
+  setMetadataLocalStorage,
+  Location
+} from '@hcengineering/ui'
+import { workbenchId } from '@hcengineering/workbench'
 
 export interface WorkspaceLoginInfo extends LoginInfo {
   workspace: string
@@ -266,6 +274,30 @@ export async function selectWorkspace (workspace: string): Promise<[Status, Work
   } catch (err) {
     return [unknownError(err), undefined]
   }
+}
+
+export function navigateToWorkspace (workspace: string, loginInfo?: WorkspaceLoginInfo, navigateUrl?: string): void {
+  if (loginInfo == null) {
+    return
+  }
+  setMetadata(login.metadata.LoginToken, loginInfo.token)
+  const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
+  tokens[loginInfo.workspace] = loginInfo.token
+
+  setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
+  setMetadataLocalStorage(login.metadata.LoginEndpoint, loginInfo.endpoint)
+  setMetadataLocalStorage(login.metadata.LoginEmail, loginInfo.email)
+
+  if (navigateUrl !== undefined) {
+    const url = JSON.parse(decodeURIComponent(navigateUrl)) as Location
+
+    if (url.path[1] === workspace) {
+      navigate(url)
+
+      return
+    }
+  }
+  navigate({ path: [workbenchId, workspace] })
 }
 
 export async function checkJoined (inviteId: string): Promise<[Status, WorkspaceLoginInfo | undefined]> {
