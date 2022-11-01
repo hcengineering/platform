@@ -24,7 +24,8 @@
   import task, { Task, calcRank } from '@hcengineering/task'
   import { getResource, OK, Resource, Status, translate } from '@hcengineering/platform'
 
-  export let object: Doc
+  export let selected: Doc | Doc[]
+  $: docs = Array.isArray(selected) ? selected : [selected]
 
   let status: Status = OK
   let currentSpace: Space | undefined
@@ -32,9 +33,15 @@
   const dispatch = createEventDispatcher()
   const hierarchy = client.getHierarchy()
   let label = ''
+  let space: Ref<Space>
+
   $: _class = currentSpace ? hierarchy.getClass(currentSpace._class).label : undefined
   let classLabel = ''
-  $: translate(hierarchy.getClass(object._class).label, {}).then((res) => (label = res.toLocaleLowerCase()))
+  $: {
+    const doc = docs[0]
+    space = doc.space
+    translate(hierarchy.getClass(doc._class).label, {}).then((res) => (label = res.toLocaleLowerCase()))
+  }
   $: _class && translate(_class, {}).then((res) => (classLabel = res.toLocaleLowerCase()))
 
   async function move (doc: Doc): Promise<void> {
@@ -69,22 +76,27 @@
     dispatch('close')
   }
 
+  const moveAll = async () => {
+    docs.forEach(async (doc) => await move(doc))
+  }
+
   async function getSpace (): Promise<void> {
-    client.findOne(core.class.Space, { _id: object.space }).then((res) => (currentSpace = res))
+    client.findOne(core.class.Space, { _id: space }).then((res) => (currentSpace = res))
   }
 
   async function invokeValidate (
+    doc: Doc,
     action: Resource<<T extends Doc>(doc: T, client: Client) => Promise<Status>>
   ): Promise<Status> {
     const impl = await getResource(action)
-    return await impl(object, client)
+    return await impl(doc, client)
   }
 
   async function validate (doc: Doc, _class: Ref<Class<Doc>>): Promise<void> {
     const clazz = hierarchy.getClass(_class)
     const validatorMixin = hierarchy.as(clazz, view.mixin.ObjectValidator)
     if (validatorMixin?.validator != null) {
-      status = await invokeValidate(validatorMixin.validator)
+      status = await invokeValidate(doc, validatorMixin.validator)
     } else if (clazz.extends != null) {
       await validate(doc, clazz.extends)
     } else {
@@ -92,7 +104,11 @@
     }
   }
 
-  $: validate(object, object._class)
+  $: {
+    docs.forEach((doc) => {
+      validate(doc, doc._class)
+    })
+  }
 </script>
 
 <div class="container">
@@ -106,7 +122,7 @@
   <div class="spaceSelect">
     {#await getSpace() then}
       {#if currentSpace && _class}
-        <SpaceSelect _class={currentSpace._class} label={_class} bind:value={object.space} />
+        <SpaceSelect _class={currentSpace._class} label={_class} bind:value={space} />
       {/if}
     {/await}
   </div>
@@ -114,11 +130,9 @@
     <Button
       label={view.string.Move}
       size={'small'}
-      disabled={object.space === currentSpace?._id || status !== OK}
+      disabled={space === currentSpace?._id || status !== OK}
       kind={'primary'}
-      on:click={() => {
-        move(object)
-      }}
+      on:click={moveAll}
     />
     <Button
       size={'small'}
