@@ -13,16 +13,27 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { deepEqual } from 'fast-equals'
   import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
   import chunter from '@hcengineering/chunter'
   import { Employee } from '@hcengineering/contact'
-  import core, { Account, AttachedData, Doc, generateId, Ref, SortingOrder, WithLookup } from '@hcengineering/core'
+  import core, {
+    Account,
+    AttachedData,
+    Data,
+    Doc,
+    generateId,
+    Ref,
+    SortingOrder,
+    WithLookup
+  } from '@hcengineering/core'
   import { getResource, translate } from '@hcengineering/platform'
   import { Card, createQuery, getClient, KeyedAttribute, MessageBox, SpaceSelector } from '@hcengineering/presentation'
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
   import {
     calcRank,
     Issue,
+    IssueDraft,
     IssuePriority,
     IssueStatus,
     IssueTemplate,
@@ -41,6 +52,7 @@
     IconMoreH,
     Label,
     Menu,
+    setMetadataLocalStorage,
     showPopup,
     Spinner,
     NotificationPosition,
@@ -63,6 +75,7 @@
   import SetParentIssueActionPopup from './SetParentIssueActionPopup.svelte'
   import SprintSelector from './sprints/SprintSelector.svelte'
   import IssueTemplateChilds from './templates/IssueTemplateChilds.svelte'
+  import attachment from '@hcengineering/attachment-resources/src/plugin'
   import IssueNotification from './issues/IssueNotification.svelte'
 
   export let space: Ref<Team>
@@ -72,13 +85,15 @@
   export let project: Ref<Project> | null = $activeProject ?? null
   export let sprint: Ref<Sprint> | null = $activeSprint ?? null
   export let relatedTo: Doc | undefined
-
-  let issueStatuses: WithLookup<IssueStatus>[] | undefined
+  export let shouldSaveDraft: boolean = false
+  export let draft: IssueDraft | null
   export let parentIssue: Issue | undefined
   export let originalIssue: Issue | undefined
-  let labels: TagReference[] = []
+  export let onDraftChanged: (draft: Data<IssueDraft>) => void
 
-  let objectId: Ref<Issue> = generateId()
+  let issueStatuses: WithLookup<IssueStatus>[] | undefined
+  let labels: TagReference[] = draft?.labels || []
+  let objectId: Ref<Issue> = draft?.issueId || generateId()
 
   let object: AttachedData<Issue> = originalIssue
     ? {
@@ -107,7 +122,8 @@
         reportedTime: 0,
         estimation: 0,
         reports: 0,
-        childInfo: []
+        childInfo: [],
+        ...(draft || {})
       }
 
   function resetObject (): void {
@@ -135,12 +151,12 @@
     subIssues = []
   }
 
-  let templateId: Ref<IssueTemplate> | undefined = undefined
+  let templateId: Ref<IssueTemplate> | undefined = draft?.template?.template
 
   let template: IssueTemplate | undefined = undefined
   const templateQuery = createQuery()
 
-  let subIssues: IssueTemplateChild[] = []
+  let subIssues: IssueTemplateChild[] = draft?.subIssues || []
 
   $: if (templateId !== undefined) {
     templateQuery.query(tracker.class.IssueTemplate, { _id: templateId }, (res) => {
@@ -166,6 +182,7 @@
       color: tag.color
     }
   }
+
   async function updateObject (template: IssueTemplate): Promise<void> {
     if (object.template?.template === template._id) {
       return
@@ -185,11 +202,13 @@
     const tagElements = await client.findAll(tags.class.TagElement, { _id: { $in: labels_ } })
     labels = tagElements.map(tagAsRef)
   }
+
   function updateTemplate (template?: IssueTemplate): void {
     if (template !== undefined) {
       updateObject(template)
     }
   }
+
   $: updateTemplate(template)
 
   const dispatch = createEventDispatcher()
@@ -203,8 +222,8 @@
     attr: client.getHierarchy().getAttribute(tracker.class.Issue, 'labels')
   }
 
-  $: _space = space
-  $: !originalIssue && updateIssueStatusId(_space, status)
+  $: _space = draft?.team || space
+  $: !originalIssue && !draft && updateIssueStatusId(_space, status)
   $: canSave = getTitle(object.title ?? '').length > 0
 
   $: statusesQuery.query(
@@ -235,7 +254,17 @@
       labels = await client.findAll(tags.class.TagReference, { attachedTo: _id })
     }
   }
+
+  async function setPropsFromDraft () {
+    if (!draft?.parentIssue) {
+      return
+    }
+
+    parentIssue = await client.findOne(tracker.class.Issue, { _id: draft.parentIssue })
+  }
+
   $: originalIssue && setPropsFromOriginalIssue()
+  $: draft && setPropsFromDraft()
 
   async function updateIssueStatusId (teamId: Ref<Team>, issueStatusId?: Ref<IssueStatus>) {
     if (issueStatusId !== undefined) {
@@ -258,8 +287,84 @@
     return value.trim()
   }
 
+  async function isDraftEmpty (draft: Data<IssueDraft>): Promise<boolean> {
+    const emptyDraft = {
+      assignee: null,
+      description: '',
+      dueDate: null,
+      estimation: 0,
+      labels: [],
+      parentIssue: undefined,
+      priority: 0,
+      project: null,
+      sprint: null,
+      subIssues: [],
+      template: undefined,
+      team: null,
+      title: ''
+    }
+
+    for (const key of Object.keys(emptyDraft)) {
+      if (!deepEqual(emptyDraft[key], draft[key])) {
+        return false
+      }
+    }
+
+    const attachmentResult = await client.findOne(attachment.class.Attachment, { attachedTo: objectId })
+
+    if (attachmentResult) {
+      return false
+    }
+
+    const team = await client.findOne(tracker.class.Team, { _id: _space })
+
+    if (team?.defaultIssueStatus) {
+      return draft.status === team.defaultIssueStatus
+    }
+
+    return status === ''
+  }
+
   export function canClose (): boolean {
-    return !canSave
+    return true
+  }
+
+  export async function onOutsideClick () {
+    if (!shouldSaveDraft) {
+      return
+    }
+
+    await descriptionBox?.createAttachments()
+
+    const newDraft: Data<IssueDraft> = {
+      issueId: objectId,
+      title: getTitle(object.title),
+      description: object.description,
+      assignee: object.assignee,
+      project: object.project,
+      sprint: object.sprint,
+      status: object.status,
+      priority: object.priority,
+      dueDate: object.dueDate,
+      estimation: object.estimation,
+      template: object.template,
+      labels,
+      parentIssue: parentIssue?._id,
+      team: _space,
+      subIssues
+    }
+
+    const isEmpty = await isDraftEmpty(newDraft)
+
+    if (isEmpty) {
+      return
+    }
+
+    setMetadataLocalStorage(tracker.metadata.CreateIssueDraft, newDraft)
+
+    if (onDraftChanged) {
+      return onDraftChanged(newDraft)
+    }
   }
 
   async function createIssue () {
