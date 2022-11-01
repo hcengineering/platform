@@ -119,7 +119,7 @@ abstract class MongoAdapterBase extends TxProcessor {
     const classes = this.hierarchy.getDescendants(baseClass)
 
     // Only replace if not specified
-    if (translated._class?.$in === undefined) {
+    if (translated._class === undefined) {
       translated._class = { $in: classes }
     }
 

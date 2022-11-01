@@ -1,14 +1,14 @@
 <!--
 // Copyright © 2022 Hardcore Engineering Inc.
-// 
+//
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// 
+//
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
@@ -17,7 +17,7 @@
   import chunter from '@hcengineering/chunter'
   import { Employee } from '@hcengineering/contact'
   import core, { Account, AttachedData, Doc, generateId, Ref, SortingOrder, WithLookup } from '@hcengineering/core'
-  import { getResource } from '@hcengineering/platform'
+  import { getResource, translate } from '@hcengineering/platform'
   import { Card, createQuery, getClient, KeyedAttribute, MessageBox, SpaceSelector } from '@hcengineering/presentation'
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
   import {
@@ -42,7 +42,11 @@
     Label,
     Menu,
     showPopup,
-    Spinner
+    Spinner,
+    NotificationPosition,
+    NotificationSeverity,
+    Notification,
+    notificationsStore
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { ObjectBox } from '@hcengineering/view-resources'
@@ -59,6 +63,7 @@
   import SetParentIssueActionPopup from './SetParentIssueActionPopup.svelte'
   import SprintSelector from './sprints/SprintSelector.svelte'
   import IssueTemplateChilds from './templates/IssueTemplateChilds.svelte'
+  import IssueNotification from './issues/IssueNotification.svelte'
 
   export let space: Ref<Team>
   export let status: Ref<IssueStatus> | undefined = undefined
@@ -393,6 +398,21 @@
         }
       }
     }
+
+    const notification: Notification = {
+      title: tracker.string.IssueCreated,
+      subTitle: getTitle(object.title),
+      severity: NotificationSeverity.Success,
+      position: NotificationPosition.BottomRight,
+      component: IssueNotification,
+      closeTimeout: 10000,
+      params: {
+        issueId: objectId,
+        subTitlePostfix: (await translate(tracker.string.Created, { value: 1 })).toLowerCase()
+      }
+    }
+
+    notificationsStore.addNotification(notification)
 
     objectId = generateId()
     resetObject()

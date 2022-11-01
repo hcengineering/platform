@@ -3,7 +3,7 @@
   import { Button } from '@hcengineering/ui'
 
   export let mode: string
-  export let config: [string, IntlString][]
+  export let config: [string, IntlString, object][]
   export let onChange: (_mode: string) => void
 
   function getButtonShape (i: number) {
@@ -21,10 +21,11 @@
 
 <div class="itemsContainer">
   <div class="flex-center">
-    {#each config as [_mode, label], i}
+    {#each config as [_mode, label, params], i}
       <div class="buttonWrapper">
         <Button
           {label}
+          labelParams={params}
           size="small"
           on:click={() => onChange(_mode)}
           selected={_mode === mode}

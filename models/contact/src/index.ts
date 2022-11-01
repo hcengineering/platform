@@ -92,9 +92,6 @@ export class TContact extends TDoc implements Contact {
   @Prop(TypeString(), contact.string.Location)
   @Index(IndexKind.FullText)
   city!: string
-
-  @Prop(TypeRef(core.class.Class), core.string.ClassLabel)
-  declare _class: Ref<Class<this>>
 }
 
 @Model(contact.class.Channel, core.class.AttachedDoc, DOMAIN_CHANNEL)
