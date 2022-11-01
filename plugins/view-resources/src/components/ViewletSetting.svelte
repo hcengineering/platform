@@ -240,7 +240,7 @@
       selected = i
     }
   }
-  
+
   function getColor (attribute: AttributeConfig): string {
     const color = getPlatformColorForText(attribute._class)
     return `${color + (attribute.enabled ? 'cc' : '33')};`
