@@ -55,6 +55,10 @@
 
   $: noParents = issues?.filter((it) => !ids.has(it.attachedTo as Ref<Issue>))
 
+  $: rootNoBacklogIssues = noParents?.filter(
+    (it) => issueStatuses.get(it.status)?.category !== tracker.issueStatusCategory.Backlog
+  )
+
   const statuses = createQuery()
   let issueStatuses: Map<Ref<IssueStatus>, WithLookup<IssueStatus>> = new Map()
   $: if (noParents !== undefined) {
@@ -66,8 +70,7 @@
   }
 
   $: totalEstimation = floorFractionDigits(
-    (noParents ?? [{ estimation: 0, childInfo: [] } as unknown as Issue])
-      .filter((it) => issueStatuses.get(it.status)?.category !== tracker.issueStatusCategory.Backlog)
+    (rootNoBacklogIssues ?? [{ estimation: 0, childInfo: [] } as unknown as Issue])
       .map((it) => {
         const cat = issueStatuses.get(it.status)?.category
 
@@ -94,7 +97,7 @@
       })
       .reduce((it, cur) => {
         return it + cur
-      }),
+      }, 0),
     2
   )
   $: totalReported = floorFractionDigits(
