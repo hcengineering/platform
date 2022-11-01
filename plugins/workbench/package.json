@@ -30,6 +30,6 @@
     "@hcengineering/platform": "^0.6.7",
     "@hcengineering/ui": "^0.6.2",
     "@hcengineering/view": "^0.6.1",
-    "@hcengineering/preference": "~0.6.0"
+    "@hcengineering/preference": "^0.6.1"
   }
 }
