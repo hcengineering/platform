@@ -276,10 +276,7 @@ export async function selectWorkspace (workspace: string): Promise<[Status, Work
   }
 }
 
-export function navigateToWorkspace (workspace: string, loginInfo?: WorkspaceLoginInfo, navigateUrl?: string): void {
-  if (loginInfo == null) {
-    return
-  }
+export function setLoginInfo (loginInfo: WorkspaceLoginInfo): void {
   setMetadata(login.metadata.LoginToken, loginInfo.token)
   const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
   tokens[loginInfo.workspace] = loginInfo.token
@@ -287,6 +284,13 @@ export function navigateToWorkspace (workspace: string, loginInfo?: WorkspaceLog
   setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
   setMetadataLocalStorage(login.metadata.LoginEndpoint, loginInfo.endpoint)
   setMetadataLocalStorage(login.metadata.LoginEmail, loginInfo.email)
+}
+
+export function navigateToWorkspace (workspace: string, loginInfo?: WorkspaceLoginInfo, navigateUrl?: string): void {
+  if (loginInfo == null) {
+    return
+  }
+  setLoginInfo(loginInfo)
 
   if (navigateUrl !== undefined) {
     const url = JSON.parse(decodeURIComponent(navigateUrl)) as Location

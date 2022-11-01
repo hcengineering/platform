@@ -16,7 +16,13 @@
   import contact, { Employee, EmployeeAccount, formatName } from '@hcengineering/contact'
   import { AccountRole, getCurrentAccount } from '@hcengineering/core'
   import login from '@hcengineering/login'
-  import { getWorkspaces, selectWorkspace, Workspace, navigateToWorkspace } from '@hcengineering/login-resources'
+  import {
+    getWorkspaces,
+    selectWorkspace,
+    Workspace,
+    navigateToWorkspace,
+    setLoginInfo
+  } from '@hcengineering/login-resources'
   import { setMetadata, getEmbeddedLabel } from '@hcengineering/platform'
   import { Avatar, createQuery } from '@hcengineering/presentation'
   import setting, { settingId, SettingsCategory } from '@hcengineering/setting'
@@ -32,6 +38,7 @@
     locationToUrl
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
+  import { workbenchId } from '@hcengineering/workbench'
   import HelpAndSupport from './HelpAndSupport.svelte'
   import workbench from '../plugin'
 
@@ -136,6 +143,25 @@
       action: async () => {
         const loginInfo = (await selectWorkspace(w.workspace))[1]
         navigateToWorkspace(w.workspace, loginInfo)
+      },
+      isSubmenuRightClicking: true,
+      component: Menu,
+      props: {
+        actions: [
+          {
+            label: workbench.string.OpenInNewTab,
+            action: async () => {
+              const loginInfo = (await selectWorkspace(w.workspace))[1]
+
+              if (!loginInfo) {
+                return
+              }
+              setLoginInfo(loginInfo)
+              const url = locationToUrl({ path: [workbenchId, w.workspace] })
+              window.open(url, '_blank')?.focus()
+            }
+          }
+        ]
       }
     }))
   }

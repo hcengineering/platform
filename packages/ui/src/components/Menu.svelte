@@ -93,10 +93,10 @@
       )
     }
   }
-  function focusTarget (action: Action, target: HTMLElement): void {
+  function focusTarget (action: Action, target: HTMLElement, isPopupHidden?: boolean): void {
     if (focusSpeed && target !== activeElement) {
       activeElement = target
-      showActionPopup(action, target)
+      !isPopupHidden && showActionPopup(action, target)
     }
   }
   export function clearFocus (): void {
@@ -148,7 +148,7 @@
               <span class="overflow-label pr-1 flex-grow"><Label label={action.label} /></span>
             </button>
           </a>
-        {:else if action.component !== undefined}
+        {:else if action.component !== undefined && !action.isSubmenuRightClicking}
           <!-- svelte-ignore a11y-mouse-events-have-key-events -->
           <button
             bind:this={btns[i]}
@@ -168,10 +168,16 @@
             bind:this={btns[i]}
             class="ap-menuItem flex-row-center withIcon"
             class:hover={btns[i] === activeElement}
-            on:mouseover={() => focusTarget(action, btns[i])}
+            on:mouseover={() => focusTarget(action, btns[i], action.isSubmenuRightClicking)}
             on:click={(evt) => {
               if (!action.inline) dispatch('close')
               action.action(ctx, evt)
+            }}
+            on:contextmenu={(evt) => {
+              if (action.component) {
+                evt.preventDefault()
+                showActionPopup(action, btns[i])
+              }
             }}
           >
             {#if action.icon}

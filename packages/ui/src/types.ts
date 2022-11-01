@@ -72,6 +72,7 @@ export interface Action {
   // Submenu component
   component?: AnyComponent | AnySvelteComponent
   props?: Record<string, any>
+  isSubmenuRightClicking?: boolean
 
   group?: string
 }
