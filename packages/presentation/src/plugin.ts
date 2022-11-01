@@ -54,7 +54,9 @@ export default plugin(presentationId, {
     NoMatchesFound: '' as IntlString,
     NotInThis: '' as IntlString,
     Add: '' as IntlString,
-    Edit: '' as IntlString
+    Edit: '' as IntlString,
+    SelectAvatar: '' as IntlString,
+    GravatarsManaged: '' as IntlString
   },
   metadata: {
     RequiredVersion: '' as Metadata<string>

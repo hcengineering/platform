@@ -9,6 +9,8 @@
     "Open": "Открыть",
     "Members": "Участиники",
     "Inbox": "Входящие",
+    "ViewIssue": "Открыть задачу",
+    "IssueCreated": "Задача создана",
     "MyIssues": "Мои задачи",
     "Issues": "Задачи",
     "Views": "Отображения",
@@ -144,7 +146,7 @@
     "FilterIsEither": "является ли любой из",
     "FilterStatesCount": "{value, plural, =1 {1 state} other {# states}}",
     "Assigned": "Назначенные",
-    "Created": "Созданные",
+    "Created": "{value, plural, =1 {Создана} other {Созданные}}",
     "Subscribed": "Отслеживаемые",
 
     "Relations": "Зависимости",

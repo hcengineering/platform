@@ -221,6 +221,8 @@ async function ShowPopup (
     }
     if (docKey === '_object') {
       ;(cprops as any)[propKey] = docs[0]
+    } else if (docKey === '_objects') {
+      ;(cprops as any)[propKey] = docs.length === 1 ? docs[0] : docs
     }
   }
 

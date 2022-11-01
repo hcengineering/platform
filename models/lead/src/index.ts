@@ -15,7 +15,7 @@
 
 // To help typescript locate view plugin properly
 import type { Employee } from '@hcengineering/contact'
-import { Class, Doc, FindOptions, IndexKind, Ref } from '@hcengineering/core'
+import { Doc, FindOptions, IndexKind, Ref } from '@hcengineering/core'
 import { Customer, Funnel, Lead, leadId } from '@hcengineering/lead'
 import {
   Builder,
@@ -24,9 +24,9 @@ import {
   Mixin,
   Model,
   Prop,
+  TypeMarkup,
   TypeRef,
   TypeString,
-  TypeMarkup,
   UX
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
@@ -34,7 +34,7 @@ import chunter from '@hcengineering/model-chunter'
 import contact, { TContact } from '@hcengineering/model-contact'
 import core from '@hcengineering/model-core'
 import task, { actionTemplates, TSpaceWithStates, TTask } from '@hcengineering/model-task'
-import view, { createAction, actionTemplates as viewTemplates } from '@hcengineering/model-view'
+import view, { actionTemplates as viewTemplates, createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import setting from '@hcengineering/setting'
 import lead from './plugin'
@@ -82,9 +82,6 @@ export class TCustomer extends TContact implements Customer {
   @Prop(TypeMarkup(), core.string.Description)
   @Index(IndexKind.FullText)
   description!: string
-
-  @Prop(TypeRef(core.class.Class), core.string.ClassLabel)
-  declare _class: Ref<Class<this>>
 }
 
 export function createModel (builder: Builder): void {

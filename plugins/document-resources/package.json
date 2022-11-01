@@ -44,7 +44,7 @@
     "@hcengineering/panel": "~0.6.0",
     "@hcengineering/view-resources": "~0.6.0",
     "@hcengineering/attachment": "~0.6.1",
-    "@hcengineering/notification": "~0.6.0",
+    "@hcengineering/notification": "~0.6.4",
 
     "@tiptap/core": "~2.0.0-beta.199",
     "@tiptap/starter-kit": "~2.0.0-beta.199",

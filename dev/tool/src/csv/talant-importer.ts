@@ -660,7 +660,9 @@ async function createTalants (
               const document = await recognize(rekoniUrl, data.base64Data, token)
               if (document !== undefined) {
                 if (document.title !== undefined) {
-                  await client.update(doc, { title: document.title })
+                  await client.updateMixin(doc._id, contact.class.Person, doc.space, recruit.mixin.Candidate, {
+                    title: document.title
+                  })
                 }
 
                 await updateAvatar(doc, document, connection, client)

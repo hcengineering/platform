@@ -27,7 +27,7 @@
     SortingOrder,
     WithLookup
   } from '@hcengineering/core'
-  import { getResource } from '@hcengineering/platform'
+  import { getResource, translate } from '@hcengineering/platform'
   import { Card, createQuery, getClient, KeyedAttribute, MessageBox, SpaceSelector } from '@hcengineering/presentation'
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
   import {
@@ -54,7 +54,11 @@
     Menu,
     setMetadataLocalStorage,
     showPopup,
-    Spinner
+    Spinner,
+    NotificationPosition,
+    NotificationSeverity,
+    Notification,
+    notificationsStore
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { ObjectBox } from '@hcengineering/view-resources'
@@ -72,6 +76,7 @@
   import SprintSelector from './sprints/SprintSelector.svelte'
   import IssueTemplateChilds from './templates/IssueTemplateChilds.svelte'
   import attachment from '@hcengineering/attachment-resources/src/plugin'
+  import IssueNotification from './issues/IssueNotification.svelte'
 
   export let space: Ref<Team>
   export let status: Ref<IssueStatus> | undefined = undefined
@@ -498,6 +503,21 @@
         }
       }
     }
+
+    const notification: Notification = {
+      title: tracker.string.IssueCreated,
+      subTitle: getTitle(object.title),
+      severity: NotificationSeverity.Success,
+      position: NotificationPosition.BottomRight,
+      component: IssueNotification,
+      closeTimeout: 10000,
+      params: {
+        issueId: objectId,
+        subTitlePostfix: (await translate(tracker.string.Created, { value: 1 })).toLowerCase()
+      }
+    }
+
+    notificationsStore.addNotification(notification)
 
     objectId = generateId()
     resetObject()

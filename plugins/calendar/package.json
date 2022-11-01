@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/calendar",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
@@ -28,7 +28,7 @@
   "dependencies": {
     "@hcengineering/platform": "^0.6.7",
     "@hcengineering/ui": "^0.6.2",
-    "@hcengineering/notification": "~0.6.0",
+    "@hcengineering/notification": "~0.6.4",
     "@hcengineering/core": "^0.6.17",
     "@hcengineering/contact": "~0.6.5"
   }

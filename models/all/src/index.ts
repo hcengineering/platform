@@ -87,11 +87,13 @@ const builders: [(b: Builder) => void, string][] = [
   [preferenceModel, 'preference'],
   [hrModel, 'hr'],
   [documentModel, 'document'],
+  [trackerModel, 'tracker'],
+  [boardModel, 'board'],
+  [calendarModel, 'calendar'],
 
   [serverCoreModel, 'server-core'],
   [serverAttachmentModel, 'server-attachment'],
   [serverContactModel, 'server-contact'],
-  [serverNotificationModel, 'server-notification'],
   [serveSettingModel, 'server-setting'],
   [serverChunterModel, 'server-chunter'],
   [serverInventoryModel, 'server-inventory'],
@@ -104,9 +106,7 @@ const builders: [(b: Builder) => void, string][] = [
   [serverGmailModel, 'server-gmail'],
   [serverTelegramModel, 'server-telegram'],
   [serverHrModel, 'server-hr'],
-  [trackerModel, 'tracker'],
-  [boardModel, 'board'],
-  [calendarModel, 'calendar'],
+  [serverNotificationModel, 'server-notification'],
   [automationModel, 'automation']
 ]
 

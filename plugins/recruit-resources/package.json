@@ -54,9 +54,9 @@
     "@hcengineering/task-resources": "~0.6.0",
     "@hcengineering/contact-resources": "~0.6.0",
     "@hcengineering/rekoni": "~0.6.0",
-    "@hcengineering/notification": "~0.6.0",
+    "@hcengineering/notification": "~0.6.4",
     "@hcengineering/tags": "~0.6.2",
-    "@hcengineering/calendar": "~0.6.0",
+    "@hcengineering/calendar": "~0.6.1",
     "@hcengineering/tracker": "^0.6.1"
   }
 }

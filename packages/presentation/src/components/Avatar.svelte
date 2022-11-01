@@ -13,10 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Asset } from '@hcengineering/platform'
+  import contact, { AvatarType, AvatarProvider } from '@hcengineering/contact'
+  import { Asset, getResource } from '@hcengineering/platform'
   import { AnySvelteComponent, Icon, IconSize } from '@hcengineering/ui'
-  import { getBlobURL, getFileUrl } from '../utils'
-  import Avatar from './icons/Avatar.svelte'
+  import { getBlobURL, getAvatarProviderId, getClient } from '../utils'
+  import AvatarIcon from './icons/Avatar.svelte'
 
   export let avatar: string | null | undefined = undefined
   export let direct: Blob | undefined = undefined
@@ -24,25 +25,57 @@
   export let icon: Asset | AnySvelteComponent | undefined = undefined
 
   let url: string | undefined
-  $: if (direct !== undefined) {
-    getBlobURL(direct).then((blobURL) => {
-      url = blobURL
-    })
-  } else if (avatar !== undefined && avatar !== null) {
-    url = getFileUrl(avatar, size)
-  } else {
-    url = undefined
+  let avatarProvider: AvatarProvider | undefined
+
+  async function update (size: IconSize, avatar?: string | null, direct?: Blob) {
+    if (direct !== undefined) {
+      getBlobURL(direct).then((blobURL) => {
+        url = blobURL
+        avatarProvider = undefined
+      })
+    } else if (avatar) {
+      const avatarProviderId = getAvatarProviderId(avatar)
+      avatarProvider =
+        avatarProviderId && (await getClient().findOne(contact.class.AvatarProvider, { _id: avatarProviderId }))
+
+      if (!avatarProvider || avatarProvider.type === AvatarType.COLOR) {
+        url = undefined
+      } else if (avatarProvider.type === AvatarType.IMAGE) {
+        url = (await getResource(avatarProvider.getUrl))(avatar, size)
+      } else {
+        const uri = avatar.split('://')[1]
+        url = (await getResource(avatarProvider.getUrl))(uri, size)
+      }
+    } else {
+      url = undefined
+      avatarProvider = undefined
+    }
   }
+  $: update(size, avatar, direct)
+
+  let style = ''
+
+  async function updateStyle (avatar?: string | null, avatarProvider?: AvatarProvider) {
+    if (!avatar || avatarProvider?.type !== AvatarType.COLOR) {
+      style = ''
+    } else {
+      const uri = avatar.split('://')[1]
+
+      const color = (await getResource(avatarProvider.getUrl))(uri, size)
+      style = `background-color: ${color}`
+    }
+  }
+  $: updateStyle(avatar, avatarProvider)
 </script>
 
-<div class="ava-{size} flex-center avatar-container" class:no-img={!url}>
+<div class="ava-{size} flex-center avatar-container" class:no-img={!url} {style}>
   {#if url}
     {#if size === 'large' || size === 'x-large'}
       <img class="ava-{size} ava-blur" src={url} alt={''} />
     {/if}
     <img class="ava-{size} ava-mask" src={url} alt={''} />
   {:else}
-    <Icon icon={icon ?? Avatar} {size} />
+    <Icon icon={icon ?? AvatarIcon} {size} />
   {/if}
 </div>
 

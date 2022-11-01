@@ -13,11 +13,12 @@
 // limitations under the License.
 //
 
-import { Employee, EmployeeAccount } from '@hcengineering/contact'
+import { Employee, EmployeeAccount, AvatarType } from '@hcengineering/contact'
 import { AccountRole, DOMAIN_TX, TxCreateDoc, TxOperations } from '@hcengineering/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
 import contact from './index'
+import MD5 from 'crypto-js/md5'
 
 async function createSpace (tx: TxOperations): Promise<void> {
   const current = await tx.findOne(core.class.Space, {
@@ -84,6 +85,25 @@ async function setRole (client: MigrationClient): Promise<void> {
   )
 }
 
+async function updateEmployeeAvatar (tx: TxOperations): Promise<void> {
+  const accounts = await tx.findAll(contact.class.EmployeeAccount, {})
+  const employees = await tx.findAll(contact.class.Employee, { _id: { $in: accounts.map((a) => a.employee) } })
+  const employeesById = new Map(employees.map((it) => [it._id, it]))
+
+  // set gravatar for users without avatar
+  const promises = accounts.map(async (account) => {
+    const employee = employeesById.get(account.employee)
+    if (employee === undefined) return
+    if (employee.avatar != null && employee.avatar !== undefined) return
+
+    const gravatarId = MD5(account.email.trim().toLowerCase()).toString()
+    await tx.update(employee, {
+      avatar: `${AvatarType.GRAVATAR}://${gravatarId}`
+    })
+  })
+  await Promise.all(promises)
+}
+
 export const contactOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await setActiveEmployeeTx(client)
@@ -92,5 +112,6 @@ export const contactOperation: MigrateOperation = {
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)
     await createSpace(tx)
+    await updateEmployeeAvatar(tx)
   }
 }

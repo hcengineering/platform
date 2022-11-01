@@ -20,22 +20,24 @@
   import contact, { Employee, EmployeeAccount, getFirstName, getLastName } from '@hcengineering/contact'
   import contactRes from '@hcengineering/contact-resources/src/plugin'
   import { getCurrentAccount } from '@hcengineering/core'
-  import { getResource } from '@hcengineering/platform'
-  import attachment from '@hcengineering/attachment'
   import { changeName, leaveWorkspace } from '@hcengineering/login-resources'
   import { ChannelsEditor } from '@hcengineering/contact-resources'
   import MessageBox from '@hcengineering/presentation/src/components/MessageBox.svelte'
   const client = getClient()
+
+  let avatarEditor: EditableAvatar
 
   let employee: Employee | undefined
   let firstName: string
   let lastName: string
   const employeeQ = createQuery()
 
+  const account = getCurrentAccount() as EmployeeAccount
+
   employeeQ.query(
     contact.class.Employee,
     {
-      _id: (getCurrentAccount() as EmployeeAccount).employee
+      _id: account.employee
     },
     (res) => {
       employee = res[0]
@@ -47,28 +49,14 @@
 
   async function onAvatarDone (e: any) {
     if (employee === undefined) return
-    const uploadFile = await getResource(attachment.helper.UploadFile)
-    const deleteFile = await getResource(attachment.helper.DeleteFile)
-    const { file: avatar } = e.detail
 
-    if (employee.avatar != null) {
-      await deleteFile(employee.avatar)
+    if (employee.avatar) {
+      await avatarEditor.removeAvatar(employee.avatar)
     }
-    const uuid = await uploadFile(avatar)
+    const avatar = await avatarEditor.createAvatar()
     await client.updateDoc(employee._class, employee.space, employee._id, {
-      avatar: uuid
+      avatar: avatar
     })
-  }
-
-  async function removeAvatar (): Promise<void> {
-    if (employee === undefined) return
-    const deleteFile = await getResource(attachment.helper.DeleteFile)
-    if (employee.avatar != null) {
-      await client.updateDoc(employee._class, employee.space, employee._id, {
-        avatar: null
-      })
-      await deleteFile(employee.avatar)
-    }
   }
 
   const manager = createFocusManager()
@@ -101,7 +89,14 @@
     {#if employee}
       <div class="flex flex-grow w-full">
         <div class="mr-8">
-          <EditableAvatar avatar={employee.avatar} size={'x-large'} on:done={onAvatarDone} on:remove={removeAvatar} />
+          <EditableAvatar
+            avatar={employee.avatar}
+            email={account.email}
+            id={employee._id}
+            size={'x-large'}
+            bind:this={avatarEditor}
+            on:done={onAvatarDone}
+          />
         </div>
         <div class="flex-grow flex-col">
           <EditBox
