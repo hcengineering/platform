@@ -67,6 +67,7 @@
 
   $: totalEstimation = floorFractionDigits(
     (noParents ?? [{ estimation: 0, childInfo: [] } as unknown as Issue])
+      .filter((it) => issueStatuses.get(it.status)?.category !== tracker.issueStatusCategory.Backlog)
       .map((it) => {
         const cat = issueStatuses.get(it.status)?.category
 
