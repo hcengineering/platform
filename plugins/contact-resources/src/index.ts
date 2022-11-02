@@ -14,19 +14,11 @@
 // limitations under the License.
 //
 
-import { Channel, Contact, Employee, formatName } from '@hcengineering/contact'
+import { Channel, Contact, Employee, formatName, getGravatarUrl } from '@hcengineering/contact'
 import { Class, Client, DocumentQuery, Ref, RelatedDocument, WithLookup } from '@hcengineering/core'
 import { leaveWorkspace } from '@hcengineering/login-resources'
 import { Resources } from '@hcengineering/platform'
-import {
-  Avatar,
-  getClient,
-  MessageBox,
-  ObjectSearchResult,
-  UserInfo,
-  getFileUrl,
-  getGravatarUrl
-} from '@hcengineering/presentation'
+import { Avatar, getClient, MessageBox, ObjectSearchResult, UserInfo, getFileUrl } from '@hcengineering/presentation'
 import { showPopup } from '@hcengineering/ui'
 import Channels from './components/Channels.svelte'
 import ChannelsDropdown from './components/ChannelsDropdown.svelte'

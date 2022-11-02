@@ -13,6 +13,8 @@
 // limitations under the License.
 //
 
+import MD5 from 'crypto-js/md5'
+
 import {
   Account,
   AttachedData,
@@ -353,7 +355,6 @@ export async function findContacts (
 
 /**
  * @public
-
  */
 export async function findPerson (
   client: Client,
@@ -362,4 +363,90 @@ export async function findPerson (
 ): Promise<Person[]> {
   const result = await findContacts(client, contactPlugin.class.Person, person, channels)
   return result.contacts as Person[]
+}
+
+/**
+ * @public
+ */
+export type GravatarPlaceholderType =
+  | '404'
+  | 'mp'
+  | 'identicon'
+  | 'monsterid'
+  | 'wavatar'
+  | 'retro'
+  | 'robohash'
+  | 'blank'
+
+/**
+ * @public
+ */
+export function buildGravatarId (email: string): string {
+  return MD5(email.trim().toLowerCase()).toString()
+}
+
+/**
+ * @public
+ */
+export function getGravatarUrl (
+  gravatarId: string,
+  size: IconSize = 'full',
+  placeholder: GravatarPlaceholderType = 'identicon'
+): string {
+  let width = 64
+  switch (size) {
+    case 'inline':
+    case 'tiny':
+    case 'x-small':
+    case 'small':
+    case 'medium':
+      width = 64
+      break
+    case 'large':
+      width = 256
+      break
+    case 'x-large':
+      width = 512
+      break
+  }
+  return `https://gravatar.com/avatar/${gravatarId}?s=${width}&d=${placeholder}`
+}
+
+/**
+ * @public
+ */
+export async function checkHasGravatar (gravatarId: string): Promise<boolean> {
+  try {
+    return (await fetch(getGravatarUrl(gravatarId, 'full', '404'))).ok
+  } catch {
+    return false
+  }
+}
+
+const AVATAR_COLORS = [
+  '#4674ca', // blue
+  '#315cac', // blue_dark
+  '#57be8c', // green
+  '#3fa372', // green_dark
+  '#f9a66d', // yellow_orange
+  '#ec5e44', // red
+  '#e63717', // red_dark
+  '#f868bc', // pink
+  '#6c5fc7', // purple
+  '#4e3fb4', // purple_dark
+  '#57b1be', // teal
+  '#847a8c' // gray
+]
+
+/**
+ * @public
+ */
+export function getAvatarColorForId (id: string): string {
+  let hash = 0
+
+  for (let i = 0; i < id.length; i++) {
+    hash += id.charCodeAt(i)
+  }
+
+  return AVATAR_COLORS[hash % AVATAR_COLORS.length]
 }
