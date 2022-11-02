@@ -26,7 +26,7 @@ export default class errorBoundary extends ErrorComponent {
     })
     super(config)
     if (error) {
-      this.$set({ error: error })
+      this.$set({ error })
     }
   }
 }

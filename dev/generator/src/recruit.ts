@@ -313,8 +313,8 @@ function generateAvatar (pos: number): { imgId: string, jpegImageData: BufferRet
   }
   const rawImageData = {
     data: frameData,
-    width: width,
-    height: height
+    width,
+    height
   }
   const jpegImageData = jpeg.encode(rawImageData, 50)
   return { imgId, jpegImageData }

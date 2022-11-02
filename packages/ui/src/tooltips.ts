@@ -67,13 +67,13 @@ export function showTooltip (
   kind?: 'tooltip' | 'submenu'
 ): void {
   storedValue = {
-    label: label,
-    element: element,
-    direction: direction,
-    component: component,
-    props: props,
-    anchor: anchor,
-    onUpdate: onUpdate,
+    label,
+    element,
+    direction,
+    component,
+    props,
+    anchor,
+    onUpdate,
     kind: kind ?? 'tooltip'
   }
   tooltipstore.set(storedValue)

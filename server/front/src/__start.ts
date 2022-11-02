@@ -71,6 +71,12 @@ if (uploadUrl === undefined) {
   process.exit(1)
 }
 
+const collaboratorUrl = process.env.COLLABORATOR_URL
+if (collaboratorUrl === undefined) {
+  console.error('please provide collaborator url')
+  process.exit(1)
+}
+
 const modelVersion = process.env.MODEL_VERSION
 if (modelVersion === undefined) {
   console.error('please provide model version requirement')
@@ -85,7 +91,7 @@ if (serverSecret === undefined) {
 
 setMetadata(serverToken.metadata.Secret, serverSecret)
 
-const config = { transactorEndpoint, elasticUrl, minio, accountsUrl, uploadUrl, modelVersion }
+const config = { transactorEndpoint, elasticUrl, minio, accountsUrl, uploadUrl, modelVersion, collaboratorUrl }
 console.log('Starting Front service with', config)
 const shutdown = start(config, SERVER_PORT)
 

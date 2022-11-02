@@ -168,7 +168,7 @@ export class ElasticTool {
     const id: Ref<Doc> = (generateId() + '/attachments/') as Ref<Doc>
 
     const indexedDoc: IndexedDoc = {
-      id: id,
+      id,
       _class: doc._class,
       space: doc.space,
       modifiedOn: doc.modifiedOn,

@@ -45,7 +45,7 @@
         title: label,
         count: value,
         isSelected: selected.includes(sprint),
-        onSelect: () => onUpdate({ sprint: sprint }, index)
+        onSelect: () => onUpdate({ sprint }, index)
       })
     }
     return onBack

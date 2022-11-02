@@ -16,9 +16,9 @@
 -->
 <script lang="ts">
   import { EmployeeAccount } from '@hcengineering/contact'
-  import { Data, generateId, getCurrentAccount } from '@hcengineering/core'
-  import { Document } from '@hcengineering/document'
-  import { Card, getClient } from '@hcengineering/presentation'
+  import { Data, generateId, getCurrentAccount, Ref } from '@hcengineering/core'
+  import { CollaboratorDocument, Document, DocumentVersionState } from '@hcengineering/document'
+  import { Card, getClient, UserBoxList } from '@hcengineering/presentation'
   import { Button, createFocusManager, EditBox, FocusHandler } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import document from '../plugin'
@@ -32,21 +32,62 @@
 
   const object: Data<Document> = {
     name: '',
-    content: 0,
-    editSequence: 0,
     versions: 0,
     attachments: 0,
     labels: 0,
     comments: 0,
-    versionCounter: 0,
-    responsible: [currentUser.employee]
+    version: 0,
+    latest: 0.1,
+    approvers: [],
+    authors: [currentUser.employee],
+    reviewers: [],
+    requests: 0
   }
 
   const dispatch = createEventDispatcher()
   const client = getClient()
 
   async function createDocument () {
-    await client.createDoc(document.class.Document, document.space.Documents, object, id)
+    const docId = await client.createDoc(document.class.Document, document.space.Documents, object, id)
+    const contentAttachmentId: Ref<CollaboratorDocument> = generateId()
+    const versionId = await client.addCollection(
+      document.class.DocumentVersion,
+      document.space.Documents,
+      docId,
+      document.class.Document,
+      'versions',
+      {
+        content: '',
+        description: '',
+        impact: '',
+        reason: '',
+        state: DocumentVersionState.Draft,
+        version: 0.1,
+        attachments: 0,
+        comments: 0,
+        contentAttachmentId,
+        initialContentId: '' as Ref<CollaboratorDocument>
+      }
+    )
+
+    await client.addCollection(
+      document.class.CollaboratorDocument,
+      document.space.Documents,
+      versionId,
+      document.class.DocumentVersion,
+      'attachments',
+      {
+        file: contentAttachmentId,
+        name: 'content',
+        size: 0,
+        type: 'application/ydoc',
+        description: '',
+        pinned: false,
+        lastModified: Date.now()
+      },
+      contentAttachmentId
+    )
+
     dispatch('close', id)
   }
 
@@ -75,4 +116,39 @@
       focusIndex={1}
     />
   </div>
+  <svelte:fragment slot="pool">
+    <div class="flex flex-wrap" style:gap={'0.2vw'}>
+      <UserBoxList
+        items={object.authors}
+        size="small"
+        label={document.string.Authors}
+        emptyLabel={document.string.Authors}
+        kind="no-border"
+        width={'min-content'}
+        on:update={({ detail }) => (object.authors = detail)}
+      />
+    </div>
+    <div class="flex flex-wrap" style:gap={'0.2vw'}>
+      <UserBoxList
+        items={object.approvers}
+        size="small"
+        label={document.string.Approvers}
+        emptyLabel={document.string.Approvers}
+        kind="no-border"
+        width={'min-content'}
+        on:update={({ detail }) => (object.approvers = detail)}
+      />
+    </div>
+    <div class="flex flex-wrap" style:gap={'0.2vw'}>
+      <UserBoxList
+        items={object.reviewers}
+        size="small"
+        label={document.string.Reviewers}
+        emptyLabel={document.string.Reviewers}
+        kind="no-border"
+        width={'min-content'}
+        on:update={({ detail }) => (object.reviewers = detail)}
+      />
+    </div>
+  </svelte:fragment>
 </Card>

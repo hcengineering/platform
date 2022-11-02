@@ -233,7 +233,7 @@ export function buildConfigLookup<T extends Doc> (
 export async function buildModel (options: BuildModelOptions): Promise<AttributeModel[]> {
   // eslint-disable-next-line array-callback-return
   const model = options.keys
-    .map((key) => (typeof key === 'string' ? { key: key } : key))
+    .map((key) => (typeof key === 'string' ? { key } : key))
     .map(async (key) => {
       try {
         // Check if it is a mixin attribute configuration

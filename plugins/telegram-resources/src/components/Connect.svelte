@@ -50,7 +50,7 @@
   }
 
   async function sendCode (): Promise<void> {
-    const res = await sendRequest('/signin/code', { phone, code: code })
+    const res = await sendRequest('/signin/code', { phone, code })
     if (res.next === 'pass') {
       secondFactor = true
     } else if (res.next === 'end') {

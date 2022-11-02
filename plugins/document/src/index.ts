@@ -13,30 +13,12 @@
 // limitations under the License.
 //
 
+import { Attachment } from '@hcengineering/attachment'
 import { Employee } from '@hcengineering/contact'
 import { AttachedDoc, Class, Doc, Markup, Ref, Space } from '@hcengineering/core'
-import type { Asset, Plugin } from '@hcengineering/platform'
+import type { Asset, Metadata, Plugin } from '@hcengineering/platform'
 import { IntlString, plugin } from '@hcengineering/platform'
 import type { AnyComponent } from '@hcengineering/ui'
-
-/**
- * @public
- */
-export interface Step {
-  stepType: string
-  from: number
-  to: number
-  slice: any
-}
-
-/**
- * @public
- * Document in transient state describe a list of editing documents.
- */
-export interface RichDocumentContent extends AttachedDoc {
-  steps: Step[]
-  version: number
-}
 
 /**
  * @public
@@ -44,33 +26,80 @@ export interface RichDocumentContent extends AttachedDoc {
 export interface Document extends Doc {
   name: string
 
-  // Rich content version edit counter
-  editSequence: number
-
-  // Rich Document content collection indicator.
-  content: number
+  version: number // Latest approved version of document
+  latest: number // Latest draft version
 
   // Collection of versions of this document.
   versions: number
-
-  versionCounter: number
 
   attachments?: number
   comments?: number
   labels?: number
 
-  // List of reponsible persons, for document.
-  responsible: Ref<Employee>[]
+  // List of authors, who could edit the version until it will be published
+  // Combined with reviewers.
+  authors: Ref<Employee>[]
+
+  // List of persons who revieded version
+  reviewers: Ref<Employee>[]
+
+  // List of persions who approved version.
+  approvers: Ref<Employee>[]
+
+  requests: number
 }
 
 /**
  * @public
  */
+export enum DocumentVersionState {
+  Draft,
+  Approved,
+  Rejected
+}
+/**
+ * @public
+ */
 export interface DocumentVersion extends AttachedDoc {
-  version: number
-  sequenceNumber: number
+  version: number // Uniq version of document.
+
+  description: Markup
+  reason: Markup
+  impact: Markup
+
+  state: DocumentVersionState
+
+  // Defined only if document being proposed for review or approval
   content: Markup
-  approved: Ref<Employee> | null
+  contentAttachmentId: Ref<CollaboratorDocument>
+  initialContentId: Ref<CollaboratorDocument> | undefined
+
+  // Attachments contain a CollaboratorDocument with content hold in S3
+  attachments: number
+  comments: number
+}
+
+/**
+ * A collaborative document handle, with a minio document in collaborative mode.
+ * @public
+ */
+export interface CollaboratorDocument extends Attachment {}
+
+/**
+ * @public
+ */
+export enum DocumentRequestKind {
+  Review, // Review requested
+  Approve, // Approve requested
+  Changes // Changes requested
+}
+/**
+ * @public
+ */
+export interface DocumentRequest extends AttachedDoc {
+  kind: DocumentRequestKind
+  assignee: Ref<Employee>
+  message?: Markup
 }
 
 /**
@@ -85,7 +114,8 @@ const documentPlugin = plugin(documentId, {
   class: {
     Document: '' as Ref<Class<Document>>,
     DocumentVersion: '' as Ref<Class<DocumentVersion>>,
-    RichDocumentContent: '' as Ref<Class<RichDocumentContent>>
+    DocumentRequest: '' as Ref<Class<DocumentRequest>>,
+    CollaboratorDocument: '' as Ref<Class<CollaboratorDocument>>
   },
   component: {
     CreateDocument: '' as AnyComponent
@@ -104,6 +134,12 @@ const documentPlugin = plugin(documentId, {
   },
   string: {
     CreateDocument: '' as IntlString
+  },
+  ids: {
+    NO_VERSION: '' as Ref<DocumentVersion>
+  },
+  metadata: {
+    CollaboratorUrl: '' as Metadata<string>
   }
 })
 

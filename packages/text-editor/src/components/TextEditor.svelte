@@ -142,7 +142,7 @@
     ph.then(() => {
       editor = new Editor({
         element,
-        content: content,
+        content,
         extensions: [
           StarterKit,
           Highlight,

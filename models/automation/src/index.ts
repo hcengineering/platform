@@ -34,10 +34,10 @@ export const DOMAIN_AUTOMATION = 'automation' as Domain
 @UX(automation.string.Automation)
 export class TAutomation extends TAttachedDoc implements Automation<Doc> {
   @Prop(TypeString(), core.string.Name)
-  name!: string
+    name!: string
 
   @Prop(TypeString(), core.string.Description)
-  description!: string | null
+    description!: string | null
 
   targetClass!: Ref<Class<Doc>> | null
   declare trigger: {

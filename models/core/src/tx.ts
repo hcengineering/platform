@@ -52,7 +52,7 @@ export class TTxModelUpgrade extends TTx {}
 @Model(core.class.TxCUD, core.class.Tx)
 export class TTxCUD<T extends Doc> extends TTx implements TxCUD<T> {
   @Index(IndexKind.Indexed)
-  objectId!: Ref<T>
+    objectId!: Ref<T>
 
   objectClass!: Ref<Class<T>>
 }

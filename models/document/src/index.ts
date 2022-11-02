@@ -16,7 +16,15 @@
 import contact, { Employee } from '@hcengineering/contact'
 import type { Domain, Markup, Ref } from '@hcengineering/core'
 import { IndexKind } from '@hcengineering/core'
-import { Document, documentId, DocumentVersion, RichDocumentContent, Step } from '@hcengineering/document'
+import {
+  CollaboratorDocument,
+  Document,
+  documentId,
+  DocumentRequest,
+  DocumentRequestKind,
+  DocumentVersion,
+  DocumentVersionState
+} from '@hcengineering/document'
 import {
   ArrOf,
   Builder,
@@ -31,7 +39,7 @@ import {
   TypeString,
   UX
 } from '@hcengineering/model'
-import attachment from '@hcengineering/model-attachment'
+import attachment, { TAttachment } from '@hcengineering/model-attachment'
 import chunter from '@hcengineering/model-chunter'
 import core, { TAttachedDoc, TDoc } from '@hcengineering/model-core'
 import presentation from '@hcengineering/model-presentation'
@@ -42,32 +50,52 @@ import document from './plugin'
 
 export const DOMAIN_DOCUMENT = 'document' as Domain
 
-@Model(document.class.RichDocumentContent, core.class.AttachedDoc, DOMAIN_DOCUMENT)
+@Model(document.class.DocumentRequest, core.class.AttachedDoc, DOMAIN_DOCUMENT)
 @UX(document.string.Document)
-export class TRichDocumentContent extends TAttachedDoc implements RichDocumentContent {
-  steps!: Step[]
-  version!: number
+export class TDocumentRequest extends TAttachedDoc implements DocumentRequest {
+  kind!: DocumentRequestKind
+  assignee!: Ref<Employee>
+  message!: Markup
 }
+
+@Model(document.class.CollaboratorDocument, attachment.class.Attachment, DOMAIN_DOCUMENT)
+@UX(document.string.Document)
+export class TCollaboratorDocument extends TAttachment implements CollaboratorDocument {}
 
 @Model(document.class.DocumentVersion, core.class.AttachedDoc, DOMAIN_DOCUMENT)
 @UX(document.string.Version)
 export class TDocumentVersion extends TAttachedDoc implements DocumentVersion {
   @Prop(TypeNumber(), document.string.Version)
   @ReadOnly()
-  version!: number
+    version!: number
 
-  @Prop(TypeNumber(), document.string.Revision)
-  @ReadOnly()
-  sequenceNumber!: number
-
-  @Prop(TypeNumber(), document.string.Revision)
-  @ReadOnly()
+  @Prop(TypeString(), document.string.Description)
   @Index(IndexKind.FullText)
-  content!: Markup
+    description!: Markup
 
-  @Prop(TypeNumber(), document.string.ApprovedBy)
-  @ReadOnly()
-  approved!: Ref<Employee> | null
+  @Prop(TypeString(), document.string.Description)
+  @Index(IndexKind.FullText)
+    reason!: Markup
+
+  @Prop(TypeString(), document.string.Description)
+  @Index(IndexKind.FullText)
+    impact!: Markup
+
+  // @Prop(TypeString(), document.string.Status)
+  state!: DocumentVersionState
+
+  @Prop(TypeString(), document.string.Document)
+  @Hidden()
+    content!: Markup
+
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, undefined, attachment.string.Files)
+    attachments!: number
+
+  @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
+    comments!: number
+
+  contentAttachmentId!: Ref<CollaboratorDocument>
+  initialContentId!: Ref<CollaboratorDocument>
 }
 
 @Model(document.class.Document, core.class.Doc, DOMAIN_DOCUMENT)
@@ -75,40 +103,47 @@ export class TDocumentVersion extends TAttachedDoc implements DocumentVersion {
 export class TDocument extends TDoc implements Document {
   @Prop(TypeString(), document.string.Name)
   @Index(IndexKind.FullText)
-  name!: string
-
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, undefined, attachment.string.Files)
-  attachments?: number
-
-  @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
-  comments?: number
-
-  @Prop(Collection(tags.class.TagReference), document.string.Labels)
-  labels?: number
-
-  @Prop(TypeNumber(), document.string.Revision)
-  @ReadOnly()
-  @Hidden()
-  editSequence!: number
-
-  @Prop(Collection(document.class.DocumentVersion), document.string.Version)
-  versions!: number
-
-  @Prop(Collection(document.class.RichDocumentContent), document.string.Document)
-  @Hidden()
-  content!: number
+    name!: string
 
   @Prop(TypeNumber(), document.string.Version)
   @ReadOnly()
   @Hidden()
-  versionCounter!: number
+    version!: number
 
-  @Prop(ArrOf(TypeRef(contact.class.Employee)), document.string.Responsible)
-  responsible!: Ref<Employee>[]
+  @Prop(TypeNumber(), document.string.LastRevision)
+  @ReadOnly()
+  @Hidden()
+    latest!: number
+
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, undefined, attachment.string.Files)
+    attachments?: number
+
+  @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
+    comments?: number
+
+  @Prop(Collection(tags.class.TagReference), document.string.Labels)
+    labels?: number
+
+  @Prop(Collection(document.class.DocumentVersion), document.string.Version)
+  @Hidden()
+    versions!: number
+
+  @Prop(ArrOf(TypeRef(contact.class.Employee)), document.string.Authors)
+    authors!: Ref<Employee>[]
+
+  @Prop(ArrOf(TypeRef(contact.class.Employee)), document.string.Reviewers)
+    reviewers!: Ref<Employee>[]
+
+  @Prop(ArrOf(TypeRef(contact.class.Employee)), document.string.Approvers)
+    approvers!: Ref<Employee>[]
+
+  @Prop(Collection(document.class.DocumentRequest), document.string.Requests)
+  @Hidden()
+    requests!: number
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TDocument, TRichDocumentContent, TDocumentVersion)
+  builder.createModel(TDocument, TDocumentVersion, TCollaboratorDocument, TDocumentRequest)
 
   builder.createDoc(
     workbench.class.Application,
@@ -146,10 +181,6 @@ export function createModel (builder: Builder): void {
     component: document.component.CreateDocument
   })
 
-  builder.mixin(document.class.Document, core.class.Class, view.mixin.ClassFilters, {
-    filters: ['_class', 'modifiedOn']
-  })
-
   builder.createDoc(
     view.class.Viewlet,
     core.space.Model,
@@ -160,18 +191,8 @@ export function createModel (builder: Builder): void {
         '',
         {
           key: '',
-          presenter: document.component.Status,
-          label: document.string.Status
-        },
-        {
-          key: '',
           presenter: document.component.Version,
           label: document.string.Version
-        },
-        {
-          key: '',
-          presenter: document.component.Revision,
-          label: document.string.Revision
         },
         'comments',
         'attachments',

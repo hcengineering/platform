@@ -280,7 +280,7 @@
       check(objects, false)
       checked = []
     }
-    dispatch('contextmenu', { evt: evt, objects: checked.length > 0 ? checked : object.it })
+    dispatch('contextmenu', { evt, objects: checked.length > 0 ? checked : object.it })
   }
 </script>
 

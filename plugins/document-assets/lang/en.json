@@ -3,6 +3,7 @@
     "CreateDocument": "Create an document",
     "DocumentCreateLabel": "Document",
     "Documents": "Documents",
+    "CreateAnVersion": "Create new version",
     "Document": "Document",
     "DocumentNamePlaceholder": "Name...",
     "Name": "Name",
@@ -14,8 +15,8 @@
     "NoVersions": "No version's defined",
     "CreateEnVersion": "Create version for review",
     "Versions": "Versions",
-    "CreateDocumentVersion": "Review content version",
-    "ApprovedBy": "Approved by",
+    "CreateDocumentVersion": "Create new version",
+    "Approvers": "Approvers",
     "Status": "Status",
     "LastRevision": "Last revision",
     "DocumentApplication": "Documents",
@@ -23,10 +24,28 @@
     "Library": "Library",
     "Labels": "Labels",
     "AddLabel": "Add label...",
-    "Responsible": "Responsible",
+    "Authors": "Authors",
+    "DocumentVersionPlaceholder": "version...",
+    "DescriptionPlaceholder": "type for details...",
 
     "PendingReview": "Pending",
     "Latest": "Actual",
-    "Draft": "Draft"
+    "Draft": "Draft",
+
+    "Description": "Description",
+    "Reviewers": "Reviewers",
+
+    "ViewMode": "View",
+    "EditMode": "Edit",
+    "SuggestMode": "Suggest",
+
+    "CreateDraft": "New Draft",
+    "SendForApproval": "Ask Approval",
+    "SendForReview": "Ask for Review",
+
+    "Approve": "Approve",
+    "Reject": "Reject",
+    "Approved": "Approved",
+    "Rejected": "Rejected"
   }
 }

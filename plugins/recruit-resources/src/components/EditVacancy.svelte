@@ -155,7 +155,7 @@
           </div>
         </div>
         <div class="flex-row">
-          <Component is={tracker.component.RelatedIssues} props={{ object: object }} />
+          <Component is={tracker.component.RelatedIssues} props={{ object }} />
         </div>
       </div></Grid
     >

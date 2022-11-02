@@ -55,7 +55,7 @@
     }
     const avatar = await avatarEditor.createAvatar()
     await client.updateDoc(employee._class, employee.space, employee._id, {
-      avatar: avatar
+      avatar
     })
   }
 

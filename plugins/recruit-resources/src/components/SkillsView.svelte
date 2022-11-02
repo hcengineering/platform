@@ -21,6 +21,6 @@
     item: recruit.string.SkillLabel,
     key: 'skills',
     сreateItemLabel: recruit.string.SkillCreateLabel,
-    onTag: onTag
+    onTag
   }}
 />

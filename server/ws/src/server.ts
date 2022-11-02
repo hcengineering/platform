@@ -18,7 +18,7 @@ import { readRequest, Response, serialize, UNAUTHORIZED, unknownError } from '@h
 import type { Pipeline } from '@hcengineering/server-core'
 import { decodeToken, Token } from '@hcengineering/server-token'
 import { createServer, IncomingMessage } from 'http'
-import WebSocket, { Server } from 'ws'
+import WebSocket, { WebSocketServer } from 'ws'
 import { BroadcastCall, Session } from './types'
 
 let LOGGING_ENABLED = true
@@ -219,7 +219,7 @@ export function start (
 
   const sessions = new SessionManager(sessionFactory)
 
-  const wss = new Server({
+  const wss = new WebSocketServer({
     noServer: true,
     perMessageDeflate: {
       zlibDeflateOptions: {

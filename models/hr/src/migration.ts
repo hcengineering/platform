@@ -124,7 +124,7 @@ async function migrateTime (client: MigrationClient): Promise<void> {
       { _id: tx._id },
       {
         _class: core.class.TxCollectionCUD,
-        tx: tx,
+        tx,
         collection: tx.attributes.collection,
         objectId: tx.attributes.attachedTo,
         objectClass: tx.attributes.attachedToClass
