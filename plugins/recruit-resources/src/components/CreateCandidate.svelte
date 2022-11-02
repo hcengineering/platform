@@ -523,32 +523,37 @@
       }}
       on:drop|preventDefault|stopPropagation={drop}
     >
-      {#if resume.uuid}
-        <Button
-          kind={'transparent'}
-          focusIndex={103}
-          icon={FileIcon}
-          on:click={() => {
-            showPopup(PDFViewer, { file: resume.uuid, name: resume.name }, 'float')
-          }}
-        >
-          <svelte:fragment slot="content">
-            <span class="overflow-label disabled">{resume.name}</span>
-          </svelte:fragment>
-        </Button>
+      {#if loading && resume.uuid}
+        <Link label={"Parsing..."} icon={Spinner} disabled />   
       {:else}
         {#if loading}
-          <Link label={'Uploading...'} icon={Spinner} disabled />
+          <Link label={"Uploading..."} icon={Spinner} disabled />   
         {:else}
-          <Button
-            kind={'transparent'}
-            focusIndex={103}
-            label={recruit.string.AddDropHere}
-            icon={FileUpload}
-            on:click={() => {
-              inputFile.click()
-            }}
-          />
+          {#if resume.uuid}
+            <Button
+              disabled={loading}
+              kind={'transparent'}
+              focusIndex={103}
+              icon={FileIcon}
+              on:click={() => {
+                showPopup(PDFViewer, { file: resume.uuid, name: resume.name }, 'float')
+              }}
+            >
+              <svelte:fragment slot="content">
+                <span class="overflow-label disabled">{resume.name}</span>
+              </svelte:fragment>
+            </Button>
+          {:else}
+            <Button
+              kind={'transparent'}
+              focusIndex={103}
+              label={recruit.string.AddDropHere}
+              icon={FileUpload}
+              on:click={() => {
+                inputFile.click()
+              }}
+            />
+          {/if}
         {/if}
         <input bind:this={inputFile} type="file" name="file" id="file" style="display: none" on:change={fileSelected} />
       {/if}
