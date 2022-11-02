@@ -167,6 +167,8 @@ export interface LostStateTemplate extends DoneStateTemplate, LostState {}
  */
 export interface KanbanTemplate extends Doc {
   title: string
+  description: string
+  shortDescription: string
   statesC: number
   doneStatesC: number
 }

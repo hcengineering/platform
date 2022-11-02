@@ -129,6 +129,8 @@ async function createDefaultKanbanTemplate (tx: TxOperations): Promise<Ref<Kanba
     kanbanId: recruit.template.DefaultVacancy,
     space: recruit.space.VacancyTemplates as Ref<Doc> as Ref<Space>,
     title: 'Default vacancy',
+    description: '',
+    shortDescription: '',
     states: defaultKanban.states,
     doneStates: defaultKanban.doneStates
   })

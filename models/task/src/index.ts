@@ -244,6 +244,12 @@ export class TKanbanTemplate extends TDoc implements KanbanTemplate {
   @Index(IndexKind.FullText)
   title!: string
 
+  @Prop(TypeString(), task.string.Description)
+  description!: string
+
+  @Prop(TypeString(), task.string.ShortDescription)
+  shortDescription!: string
+
   @Prop(Collection(task.class.StateTemplate), task.string.States)
   statesC!: number
 

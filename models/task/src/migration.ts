@@ -28,6 +28,8 @@ export interface KanbanTemplateData {
   kanbanId: Ref<KanbanTemplate>
   space: Ref<Space>
   title: KanbanTemplate['title']
+  description: string
+  shortDescription: string
   states: Pick<StateTemplate, 'title' | 'color'>[]
   doneStates: (Pick<DoneStateTemplate, 'title'> & { isWon: boolean })[]
 }
@@ -62,7 +64,9 @@ export async function createKanbanTemplate (
     {
       doneStatesC: 0,
       statesC: 0,
-      title: data.title
+      title: data.title,
+      description: '',
+      shortDescription: ''
     },
     data.kanbanId
   )
@@ -157,6 +161,8 @@ async function createDefaultKanbanTemplate (tx: TxOperations): Promise<Ref<Kanba
     kanbanId: task.template.DefaultProject,
     space: task.space.ProjectTemplates as Ref<Doc> as Ref<Space>,
     title: 'Default project',
+    description: '',
+    shortDescription: '',
     states: defaultKanban.states,
     doneStates: defaultKanban.doneStates
   })

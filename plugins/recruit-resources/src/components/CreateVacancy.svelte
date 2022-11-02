@@ -16,7 +16,7 @@
   import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
   import contact, { Organization } from '@hcengineering/contact'
   import core, { generateId, getCurrentAccount, Ref } from '@hcengineering/core'
-  import { Card, getClient, UserBox } from '@hcengineering/presentation'
+  import { Card, createQuery, getClient, UserBox } from '@hcengineering/presentation'
   import task, { createKanban, KanbanTemplate } from '@hcengineering/task'
   import { Button, Component, createFocusManager, EditBox, FocusHandler, IconAttachment } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
@@ -28,8 +28,8 @@
   const dispatch = createEventDispatcher()
 
   let name: string = ''
-  const description: string = ''
   let fullDescription: string = ''
+  let description: string = ''
   let templateId: Ref<KanbanTemplate> | undefined
   let objectId: Ref<VacancyClass> = generateId()
 
@@ -41,6 +41,12 @@
   }
 
   const client = getClient()
+
+  const descriptionQ = createQuery()
+  $: descriptionQ.query(task.class.KanbanTemplate, { _id: templateId }, (result) => {
+    fullDescription = result[0].description
+    description = result[0].shortDescription
+  })
 
   async function createVacancy () {
     if (
@@ -117,20 +123,6 @@
       showNavigate={false}
       create={{ component: contact.component.CreateOrganization, label: contact.string.CreateOrganization }}
     />
-  </svelte:fragment>
-
-  <AttachmentStyledBox
-    bind:this={descriptionBox}
-    {objectId}
-    _class={recruit.class.Vacancy}
-    space={objectId}
-    alwaysEdit
-    showButtons={false}
-    maxHeight={'card'}
-    bind:content={fullDescription}
-    placeholder={recruit.string.FullDescription}
-  />
-  <svelte:fragment slot="pool">
     <Component
       is={task.component.KanbanTemplateSelector}
       props={{
@@ -143,6 +135,19 @@
       }}
     />
   </svelte:fragment>
+  {#key fullDescription}
+    <AttachmentStyledBox
+      bind:this={descriptionBox}
+      {objectId}
+      _class={recruit.class.Vacancy}
+      space={objectId}
+      alwaysEdit
+      showButtons={false}
+      maxHeight={'card'}
+      bind:content={fullDescription}
+      placeholder={recruit.string.FullDescription}
+    />
+  {/key}
   <svelte:fragment slot="footer">
     <Button
       icon={IconAttachment}

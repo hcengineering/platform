@@ -73,6 +73,8 @@ async function createDefaultKanbanTemplate (tx: TxOperations): Promise<Ref<Kanba
     kanbanId: board.template.DefaultBoard,
     space: board.space.BoardTemplates as Ref<Doc> as Ref<Space>,
     title: 'Default board',
+    description: '',
+    shortDescription: '',
     states: defaultKanban.states,
     doneStates: defaultKanban.doneStates
   })
