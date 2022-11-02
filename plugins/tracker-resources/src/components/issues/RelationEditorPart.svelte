@@ -4,6 +4,7 @@
   import { getResource, IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Issue } from '@hcengineering/tracker'
+  import { KanbanTemplate } from '@hcengineering/task'
   import { Component, Icon, IconClose } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { getIssueId, updateIssueRelation } from '../../issues'
@@ -71,6 +72,7 @@
     await update(value, type, docs, label)
   }
   const asIssue = (x: Doc) => x as WithLookup<Issue>
+  const asKanbanTemplate = (x: Doc) => x as WithLookup<KanbanTemplate>
 </script>
 
 {#each documents as doc}
@@ -91,10 +93,15 @@
     <div class="tag-container">
       <div class="flex-grow">
         <div class="overflow-label max-w-30">
-          <Component
-            is={view.component.ObjectPresenter}
-            props={{ objectId: doc._id, _class: doc._class, value: doc, inline: true }}
-          />
+          {#if doc._class === "task:class:KanbanTemplate"}
+            {@const template = asKanbanTemplate(doc)}
+            <span class="overflow-label ml-1-5 caption-color">{template.title}</span>
+          {:else}
+            <Component
+              is={view.component.ObjectPresenter}
+              props={{ objectId: doc._id, _class: doc._class, value: doc, inline: true }}
+            />
+          {/if}
         </div>
       </div>
       <button class="btn-close" on:click|stopPropagation={() => handleClick(doc)}>

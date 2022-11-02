@@ -15,10 +15,11 @@
 <script lang="ts">
   import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
   import contact, { Organization } from '@hcengineering/contact'
-  import core, { generateId, getCurrentAccount, Ref } from '@hcengineering/core'
+  import core, { FindResult, generateId, getCurrentAccount, Ref } from '@hcengineering/core'
   import { Card, createQuery, getClient, UserBox } from '@hcengineering/presentation'
   import task, { createKanban, KanbanTemplate } from '@hcengineering/task'
   import { Button, Component, createFocusManager, EditBox, FocusHandler, IconAttachment } from '@hcengineering/ui'
+  import tracker, { Issue } from '@hcengineering/tracker'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
   import { Vacancy as VacancyClass } from '@hcengineering/recruit'
@@ -32,6 +33,7 @@
   let description: string = ''
   let templateId: Ref<KanbanTemplate> | undefined
   let objectId: Ref<VacancyClass> = generateId()
+  let subIssues: FindResult<Issue>
 
   export let company: Ref<Organization> | undefined
   export let preserveCompany: boolean = false
@@ -46,6 +48,11 @@
   $: descriptionQ.query(task.class.KanbanTemplate, { _id: templateId }, (result) => {
     fullDescription = result[0].description
     description = result[0].shortDescription
+  })
+
+  const subIssuesQ = createQuery()
+  $: subIssuesQ.query(tracker.class.Issue, { 'relations._id': templateId }, async (result) => {
+    subIssues = result
   })
 
   async function createVacancy () {
@@ -70,6 +77,12 @@
       },
       objectId
     )
+
+    for (const issue of subIssues) {
+      await client.updateDoc(issue._class, issue.space, issue._id, {
+        relations: issue.relations?.concat({ _id: id, _class: recruit.class.Vacancy })
+      })
+    }
 
     await createKanban(client, id, templateId)
 

@@ -129,6 +129,33 @@
       {/key}
     </div>
   </div>
+  <div class="antiSection mt-9 mb-9">
+    <div class="antiSection-header">
+      <div class="antiSection-header__icon">
+        <Icon icon={tracker.icon.Issue} size={'small'} />
+      </div>
+      <span class="antiSection-header__title">
+        <Label label={recruit.string.RelatedIssues} />
+      </span>
+      <div class="buttons-group small-gap">
+        <Button
+          id="add-sub-issue"
+          width="min-content"
+          icon={IconAdd}
+          label={undefined}
+          labelParams={{ subIssues: 0 }}
+          kind={'transparent'}
+          size={'small'}
+          on:click={() => {
+            showPopup(tracker.component.CreateIssue, { relatedTo: template, space: template.space }, 'top')
+          }}
+        />
+      </div>
+    </div>
+    <div class="flex-row">
+      <Component is={tracker.component.RelatedIssues} props={{ object: template }} />
+    </div>
+  </div>
 {/if}
 <div class="flex-no-shrink flex-between trans-title uppercase">
   <Label label={task.string.ActiveStates} />
