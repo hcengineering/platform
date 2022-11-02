@@ -524,10 +524,10 @@
       on:drop|preventDefault|stopPropagation={drop}
     >
       {#if loading && resume.uuid}
-        <Link label={"Parsing..."} icon={Spinner} disabled />   
+        <Link label={recruit.string.Parsing} icon={Spinner} disabled />   
       {:else}
         {#if loading}
-          <Link label={"Uploading..."} icon={Spinner} disabled />   
+          <Link label={recruit.string.Uploading} icon={Spinner} disabled />   
         {:else}
           {#if resume.uuid}
             <Button

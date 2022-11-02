@@ -101,6 +101,8 @@ export default mergeIds(recruitId, recruit, {
     AddDescription: '' as IntlString,
     NumberSkills: '' as IntlString,
     AddDropHere: '' as IntlString,
+    Uploading: '' as IntlString,
+    Parsing: '' as IntlString,
     TalentSelect: '' as IntlString,
     FullDescription: '' as IntlString,
     HasActiveApplicant: '' as IntlString,
