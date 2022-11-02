@@ -20,40 +20,26 @@
   import { Department } from '@hcengineering/hr'
   import core, { getCurrentAccount, Ref, Space } from '@hcengineering/core'
   import hr from '../plugin'
-  import { getResource } from '@hcengineering/platform'
-  import attachment from '@hcengineering/attachment'
   import { ChannelsEditor } from '@hcengineering/contact-resources'
   import setting, { IntegrationType } from '@hcengineering/setting'
 
   export let object: Department
 
+  let avatarEditor: EditableAvatar
+
   const dispatch = createEventDispatcher()
   const client = getClient()
 
-  async function onAvatarDone (e: any) {
+  async function onAvatarDone () {
     if (object === undefined) return
-    const uploadFile = await getResource(attachment.helper.UploadFile)
-    const deleteFile = await getResource(attachment.helper.DeleteFile)
-    const { file: avatar } = e.detail
 
     if (object.avatar != null) {
-      await deleteFile(object.avatar)
+      await avatarEditor.removeAvatar(object.avatar)
     }
-    const uuid = await uploadFile(avatar)
+    const avatar = await avatarEditor.createAvatar()
     await client.updateDoc(object._class, object.space, object._id, {
-      avatar: uuid
+      avatar
     })
-  }
-
-  async function removeAvatar (): Promise<void> {
-    if (object === undefined) return
-    const deleteFile = await getResource(attachment.helper.DeleteFile)
-    if (object.avatar != null) {
-      await client.updateDoc(object._class, object.space, object._id, {
-        avatar: null
-      })
-      await deleteFile(object.avatar)
-    }
   }
 
   async function nameChange (): Promise<void> {
@@ -92,10 +78,11 @@
       {#key object}
         <EditableAvatar
           avatar={object.avatar}
+          id={object._id}
           size={'x-large'}
           icon={hr.icon.Department}
+          bind:this={avatarEditor}
           on:done={onAvatarDone}
-          on:remove={removeAvatar}
         />
       {/key}
     </div>

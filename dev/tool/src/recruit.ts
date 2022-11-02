@@ -69,7 +69,7 @@ export async function addChannel (
         contact.class.Person,
         'channels',
         {
-          value: value,
+          value,
           provider: type
         }
       )
@@ -77,7 +77,7 @@ export async function addChannel (
       if (isUndef(provider.value)) {
         provider.value = value
         await client.update(provider, {
-          value: value,
+          value,
           provider: type
         })
       }
@@ -173,12 +173,12 @@ export async function updateSkills (client: TxOperations, c: Candidate, document
           color,
           targetClass: recruit.mixin.Candidate,
           description: '',
-          category: category
+          category
         })
       }
       namedSkills.add(title)
       await client.addCollection(tags.class.TagReference, c.space, c._id, recruit.mixin.Candidate, 'skills', {
-        title: title,
+        title,
         color,
         tag
       })

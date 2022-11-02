@@ -13,25 +13,14 @@
 // limitations under the License.
 //
 
-import contact, { Employee, EmployeeAccount, formatName } from '@hcengineering/contact'
-import core, {
-  Account,
-  AttachedDoc,
-  Data,
-  Doc,
-  generateId,
-  Ref,
-  Tx,
-  TxCollectionCUD,
-  TxCreateDoc,
-  TxProcessor,
-  TxUpdateDoc
-} from '@hcengineering/core'
+import { Employee } from '@hcengineering/contact'
+import core, { AttachedDoc, Doc, Ref, Tx, TxCollectionCUD, TxProcessor, TxUpdateDoc } from '@hcengineering/core'
 import login from '@hcengineering/login'
-import notification, { Notification, NotificationStatus } from '@hcengineering/notification'
+import { NotificationAction } from '@hcengineering/notification'
 import { getMetadata, Resource } from '@hcengineering/platform'
 import { TriggerControl } from '@hcengineering/server-core'
-import { getUpdateLastViewTx } from '@hcengineering/server-notification'
+import { getEmployeeAccount, getEmployeeAccountById, getUpdateLastViewTx } from '@hcengineering/server-notification'
+import { createNotificationTxes } from '@hcengineering/server-notification-resources'
 import task, { Issue, Task, taskId } from '@hcengineering/task'
 import view from '@hcengineering/view'
 import { workbenchId } from '@hcengineering/workbench'
@@ -39,50 +28,18 @@ import { workbenchId } from '@hcengineering/workbench'
 /**
  * @public
  */
-export function issueHTMLPresenter (doc: Doc): string {
+export async function issueHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const issue = doc as Issue
   const front = getMetadata(login.metadata.FrontUrl) ?? ''
-  return `<a href="${front}/${workbenchId}/${taskId}/${issue.space}/#${view.component.EditDoc}|${issue._id}|${issue._class}">Task-${issue.number}</a>`
+  return `<a href="${front}/${workbenchId}/${control.workspace}/${taskId}/${issue.space}/#${view.component.EditDoc}|${issue._id}|${issue._class}">Task-${issue.number}</a>`
 }
 
 /**
  * @public
  */
-export function issueTextPresenter (doc: Doc): string {
+export async function issueTextPresenter (doc: Doc): Promise<string> {
   const issue = doc as Issue
   return `Task-${issue.number}`
-}
-
-/**
- * @public
- */
-export async function getEmployeeAccount (
-  employee: Ref<Account>,
-  control: TriggerControl
-): Promise<EmployeeAccount | undefined> {
-  const account = (
-    await control.modelDb.findAll(
-      contact.class.EmployeeAccount,
-      {
-        _id: employee as Ref<EmployeeAccount>
-      },
-      { limit: 1 }
-    )
-  )[0]
-  return account
-}
-
-async function getEmployee (employee: Ref<Employee>, control: TriggerControl): Promise<Employee | undefined> {
-  const account = (
-    await control.findAll(
-      contact.class.Employee,
-      {
-        _id: employee
-      },
-      { limit: 1 }
-    )
-  )[0]
-  return account
 }
 
 /**
@@ -92,44 +49,39 @@ export async function addAssigneeNotification (
   control: TriggerControl,
   res: Tx[],
   issue: Doc,
-  issueName: string,
   assignee: Ref<Employee>,
   ptx: TxCollectionCUD<AttachedDoc, AttachedDoc>,
   component?: Resource<string>
 ): Promise<void> {
-  const sender = await getEmployeeAccount(ptx.modifiedBy, control)
+  const sender = await getEmployeeAccountById(ptx.modifiedBy, control)
   if (sender === undefined) {
     return
   }
 
-  const target = await getEmployee(assignee, control)
-  if (target === undefined) {
+  const receiver = await getEmployeeAccount(assignee, control)
+  if (receiver === undefined) {
     return
   }
 
-  const createTx: TxCreateDoc<Notification> = {
-    objectClass: notification.class.Notification,
-    objectSpace: notification.space.Notifications,
-    objectId: generateId(),
-    modifiedOn: ptx.modifiedOn,
-    modifiedBy: ptx.modifiedBy,
-    space: ptx.space,
-    _id: generateId(),
-    _class: core.class.TxCreateDoc,
-    attributes: {
-      tx: ptx._id,
-      status: NotificationStatus.New,
-      type: task.ids.AssigneedNotification,
-      text: `${issueName} was assigned to you by ${formatName(sender.name)}`,
-      action: {
-        component: component ?? view.component.EditDoc,
-        objectId: issue._id,
-        objectClass: issue._class
-      }
-    } as unknown as Data<Notification>
-  }
+  // eslint-disable-next-line
+  const action: NotificationAction = {
+    component: component ?? view.component.EditDoc,
+    objectId: issue._id,
+    objectClass: issue._class
+  } as NotificationAction
 
-  res.push(control.txFactory.createTxCollectionCUD(target._class, target._id, target.space, 'notifications', createTx))
+  const result = await createNotificationTxes(
+    control,
+    ptx,
+    task.ids.AssigneedNotification,
+    issue,
+    sender,
+    receiver,
+    undefined,
+    action
+  )
+
+  res.push(...result)
 }
 
 /**

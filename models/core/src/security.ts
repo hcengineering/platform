@@ -27,20 +27,20 @@ export const DOMAIN_SPACE = 'space' as Domain
 export class TSpace extends TDoc implements Space {
   @Prop(TypeString(), core.string.Name)
   @Index(IndexKind.FullText)
-  name!: string
+    name!: string
 
   @Prop(TypeString(), core.string.Description)
   @Index(IndexKind.FullText)
-  description!: string
+    description!: string
 
   @Prop(TypeBoolean(), core.string.Private)
-  private!: boolean
+    private!: boolean
 
   @Prop(TypeBoolean(), core.string.Archived)
-  archived!: boolean
+    archived!: boolean
 
   @Prop(ArrOf(TypeRef(core.class.Account)), core.string.Members)
-  members!: Arr<Ref<Account>>
+    members!: Arr<Ref<Account>>
 }
 
 @Model(core.class.Account, core.class.Doc, DOMAIN_MODEL)

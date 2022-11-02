@@ -20,7 +20,7 @@
   export let duration = 200
   export let easing: (t: number) => number = quintOut
 
-  const tweenedHeight = tweened(0, { duration: duration, easing })
+  const tweenedHeight = tweened(0, { duration, easing })
 
   let height = 0
 

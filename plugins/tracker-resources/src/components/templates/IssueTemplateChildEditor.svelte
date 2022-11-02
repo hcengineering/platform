@@ -57,7 +57,7 @@
       assignee: null,
       project: null,
       priority: IssuePriority.NoPriority,
-      sprint: sprint,
+      sprint,
       estimation: 0
     }
   }

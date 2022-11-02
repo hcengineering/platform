@@ -105,7 +105,7 @@
     }
 
     let currentActions = await getCurrentActions(
-      { mode: mode as ViewContextType, application: application },
+      { mode: mode as ViewContextType, application },
       $focusStore.focus,
       $selectionStore
     )

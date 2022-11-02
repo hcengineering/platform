@@ -176,7 +176,6 @@
       {#if !loading}
         {#each $filterStore as filter, i}
           <FilterSection
-            {_class}
             {filter}
             on:change={() => {
               makeQuery(query, $filterStore)

@@ -39,7 +39,6 @@ import core, {
   TxCreateDoc,
   TxMixin,
   TxProcessor,
-  TxPutBag,
   TxRemoveDoc,
   TxResult,
   TxUpdateDoc,
@@ -120,7 +119,7 @@ abstract class MongoAdapterBase extends TxProcessor {
     const classes = this.hierarchy.getDescendants(baseClass)
 
     // Only replace if not specified
-    if (translated._class?.$in === undefined) {
+    if (translated._class === undefined) {
       translated._class = { $in: classes }
     }
 
@@ -508,12 +507,6 @@ abstract class MongoAdapterBase extends TxProcessor {
 }
 
 class MongoAdapter extends MongoAdapterBase {
-  protected override async txPutBag (tx: TxPutBag<any>): Promise<TxResult> {
-    const domain = this.hierarchy.getDomain(tx.objectClass)
-    await this.db.collection(domain).updateOne({ _id: tx.objectId }, { $set: { [tx.bag + '.' + tx.key]: tx.value } })
-    return {}
-  }
-
   protected override async txRemoveDoc (tx: TxRemoveDoc<Doc>): Promise<TxResult> {
     const domain = this.hierarchy.getDomain(tx.objectClass)
     await this.db.collection(domain).deleteOne({ _id: tx.objectId })
@@ -733,10 +726,6 @@ class MongoAdapter extends MongoAdapterBase {
 class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
   txColl: Collection | undefined
   protected txCreateDoc (tx: TxCreateDoc<Doc>): Promise<TxResult> {
-    throw new Error('Method not implemented.')
-  }
-
-  protected txPutBag (tx: TxPutBag<any>): Promise<TxResult> {
     throw new Error('Method not implemented.')
   }
 

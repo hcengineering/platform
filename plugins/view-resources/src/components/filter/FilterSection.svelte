@@ -23,7 +23,6 @@
   import { createEventDispatcher, onDestroy } from 'svelte'
   import view from '../../plugin'
 
-  // export let _class: Ref<Class<Doc>>
   export let filter: Filter
 
   $: currentFilter = filter.nested ? filter.nested : filter

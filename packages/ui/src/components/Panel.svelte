@@ -28,6 +28,7 @@
   export let isHeader: boolean = true
   export let isAside: boolean = true
   export let isFullSize: boolean = false
+  export let withoutTitle: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -35,7 +36,7 @@
   let asideShown: boolean = false
   let fullSize: boolean = false
   let twoRows: boolean = false
-  $: twoRows = $deviceInfo.docWidth <= 480
+  $: twoRows = $deviceInfo.minWidth
 
   const checkPanel = (): void => {
     if (panelWidth <= 900 && !asideFloat) asideFloat = true
@@ -56,8 +57,8 @@
     checkPanel()
   }}
 >
-  <div class="popupPanel-title__bordered {twoRows ? 'flex-col flex-no-shrink' : 'flex-row-center'}">
-    <div class="popupPanel-title {twoRows ? 'row-top' : 'row'}">
+  <div class="popupPanel-title__bordered {twoRows && !withoutTitle ? 'flex-col flex-no-shrink' : 'flex-row-center'}">
+    <div class="popupPanel-title {twoRows && !withoutTitle ? 'row-top' : 'row'}">
       <Button
         icon={IconClose}
         kind={'transparent'}
@@ -68,7 +69,7 @@
       />
       {#if $$slots.navigator}<slot name="navigator" />{/if}
       <div class="popupPanel-title__content">
-        {#if !twoRows}<slot name="title" />{/if}
+        {#if !twoRows && !withoutTitle}<slot name="title" />{/if}
       </div>
       <div class="buttons-group xsmall-gap">
         <slot name="utils" />
@@ -98,7 +99,7 @@
         {/if}
       </div>
     </div>
-    {#if twoRows}
+    {#if twoRows && !withoutTitle}
       <div class="popupPanel-title row-bottom"><slot name="title" /></div>
     {/if}
   </div>

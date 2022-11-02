@@ -83,7 +83,7 @@ export const DOMAIN_KANBAN = 'kanban' as Domain
 @UX(task.string.TaskState, task.icon.TaskState, undefined, 'rank')
 export class TState extends TDoc implements State {
   @Prop(TypeString(), task.string.TaskStateTitle)
-  title!: string
+    title!: string
 
   color!: number
 
@@ -94,7 +94,7 @@ export class TState extends TDoc implements State {
 @UX(task.string.TaskStateDone, task.icon.TaskState, undefined, 'title')
 export class TDoneState extends TDoc implements DoneState {
   @Prop(TypeString(), task.string.TaskStateTitle)
-  title!: string
+    title!: string
 
   declare rank: string
 }
@@ -114,30 +114,30 @@ export class TLostState extends TDoneState implements LostState {}
 @UX(task.string.Task, task.icon.Task, task.string.Task)
 export class TTask extends TAttachedDoc implements Task {
   @Prop(TypeRef(task.class.State), task.string.TaskState)
-  state!: Ref<State>
+    state!: Ref<State>
 
   @Prop(TypeRef(task.class.DoneState), task.string.TaskStateDone)
-  doneState!: Ref<DoneState> | null
+    doneState!: Ref<DoneState> | null
 
   @Prop(TypeString(), task.string.TaskNumber)
-  number!: number
+    number!: number
 
   // @Prop(TypeRef(contact.class.Employee), task.string.TaskAssignee)
   assignee!: Ref<Employee> | null
 
   @Prop(TypeDate(), task.string.DueDate)
-  dueDate!: Timestamp | null
+    dueDate!: Timestamp | null
 
   @Prop(TypeDate(), task.string.StartDate)
-  startDate!: Timestamp | null
+    startDate!: Timestamp | null
 
   declare rank: string
 
   @Prop(Collection(task.class.TodoItem), task.string.Todos)
-  todoItems!: number
+    todoItems!: number
 
   @Prop(Collection(tags.class.TagReference, task.string.TaskLabels), task.string.TaskLabels)
-  labels!: number
+    labels!: number
 }
 
 @Model(task.class.TodoItem, core.class.AttachedDoc, DOMAIN_TASK, [task.interface.DocWithRank])
@@ -145,19 +145,19 @@ export class TTask extends TAttachedDoc implements Task {
 export class TTodoItem extends TAttachedDoc implements TodoItem {
   @Prop(TypeMarkup(), task.string.TodoName, task.icon.Task)
   @Index(IndexKind.FullText)
-  name!: string
+    name!: string
 
   @Prop(TypeRef(contact.class.Employee), task.string.TaskAssignee)
-  assignee!: Ref<Employee> | null
+    assignee!: Ref<Employee> | null
 
   @Prop(TypeBoolean(), task.string.TaskDone)
-  done!: boolean
+    done!: boolean
 
   @Prop(TypeDate(), task.string.TaskDueTo)
-  dueTo!: Timestamp | null
+    dueTo!: Timestamp | null
 
   @Prop(Collection(task.class.TodoItem), task.string.Todos)
-  items!: number
+    items!: number
 
   declare rank: string
 }
@@ -178,17 +178,17 @@ export class TIssue extends TTask implements Issue {
 
   @Prop(TypeString(), task.string.IssueName)
   @Index(IndexKind.FullText)
-  name!: string
+    name!: string
 
   @Prop(TypeMarkup(), task.string.Description)
   @Index(IndexKind.FullText)
-  description!: string
+    description!: string
 
   @Prop(Collection(chunter.class.Comment), task.string.TaskComments)
-  comments!: number
+    comments!: number
 
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, undefined, attachment.string.Files)
-  attachments!: number
+    attachments!: number
 
   @Prop(TypeRef(contact.class.Employee), task.string.TaskAssignee)
   declare assignee: Ref<Employee> | null
@@ -216,10 +216,10 @@ export class TKanbanTemplateSpace extends TDoc implements KanbanTemplateSpace {
 @Model(task.class.StateTemplate, core.class.AttachedDoc, DOMAIN_KANBAN, [task.interface.DocWithRank])
 export class TStateTemplate extends TAttachedDoc implements StateTemplate {
   @Prop(TypeString(), task.string.StateTemplateTitle)
-  title!: string
+    title!: string
 
   @Prop(TypeString(), task.string.StateTemplateColor)
-  color!: number
+    color!: number
 
   declare rank: string
 }
@@ -227,7 +227,7 @@ export class TStateTemplate extends TAttachedDoc implements StateTemplate {
 @Model(task.class.DoneStateTemplate, core.class.AttachedDoc, DOMAIN_KANBAN, [task.interface.DocWithRank])
 export class TDoneStateTemplate extends TAttachedDoc implements DoneStateTemplate {
   @Prop(TypeString(), task.string.StateTemplateTitle)
-  title!: string
+    title!: string
 
   declare rank: string
 }
@@ -242,7 +242,7 @@ export class TLostStateTemplate extends TDoneStateTemplate implements LostStateT
 export class TKanbanTemplate extends TDoc implements KanbanTemplate {
   @Prop(TypeString(), task.string.KanbanTemplateTitle)
   @Index(IndexKind.FullText)
-  title!: string
+    title!: string
 
   @Prop(TypeString(), task.string.Description)
   description!: string
@@ -251,10 +251,10 @@ export class TKanbanTemplate extends TDoc implements KanbanTemplate {
   shortDescription!: string
 
   @Prop(Collection(task.class.StateTemplate), task.string.States)
-  statesC!: number
+    statesC!: number
 
   @Prop(Collection(task.class.DoneStateTemplate), task.string.DoneStates)
-  doneStatesC!: number
+    doneStatesC!: number
 }
 
 @Model(task.class.Sequence, core.class.Doc, DOMAIN_KANBAN)
@@ -267,7 +267,7 @@ export class TSequence extends TDoc implements Sequence {
 export class TDocWithRank extends TDoc {
   @Prop(TypeString(), task.string.Rank)
   @Hidden()
-  rank!: string
+    rank!: string
 }
 
 /**
@@ -587,7 +587,10 @@ export function createModel (builder: Builder): void {
     notification.class.NotificationType,
     core.space.Model,
     {
-      label: task.string.Assigned
+      label: task.string.Assigned,
+      textTemplate: '{doc} was assigned to you by {sender}',
+      htmlTemplate: '<p>{doc} was assigned to you by {sender}</p>',
+      subjectTemplate: '{doc} was assigned to you'
     },
     task.ids.AssigneedNotification
   )

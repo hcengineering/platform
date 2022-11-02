@@ -17,22 +17,23 @@ import { Doc } from '@hcengineering/core'
 import { inventoryId, Product } from '@hcengineering/inventory'
 import login from '@hcengineering/login'
 import { getMetadata } from '@hcengineering/platform'
+import { TriggerControl } from '@hcengineering/server-core'
 import view from '@hcengineering/view'
 import { workbenchId } from '@hcengineering/workbench'
 
 /**
  * @public
  */
-export function productHTMLPresenter (doc: Doc): string {
+export async function productHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const product = doc as Product
   const front = getMetadata(login.metadata.FrontUrl) ?? ''
-  return `<a href="${front}/${workbenchId}/${inventoryId}/Products/#${view.component.EditDoc}|${product._id}|${product._class}">${product.name}</a>`
+  return `<a href="${front}/${workbenchId}/${control.workspace}/${inventoryId}/Products/#${view.component.EditDoc}|${product._id}|${product._class}">${product.name}</a>`
 }
 
 /**
  * @public
  */
-export function productTextPresenter (doc: Doc): string {
+export async function productTextPresenter (doc: Doc): Promise<string> {
   const product = doc as Product
   return `${product.name}`
 }

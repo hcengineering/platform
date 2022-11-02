@@ -26,6 +26,7 @@
   export let subtitle: string | undefined = undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let withoutActivity: boolean = false
+  export let withoutTitle: boolean = false
   export let object: Doc
   export let panelWidth: number = 0
   export let innerWidth: number = 0
@@ -35,7 +36,7 @@
   export let isCustomAttr: boolean = true
 </script>
 
-<Panel bind:isAside isHeader={$$slots.header || isHeader} bind:panelWidth bind:innerWidth on:close>
+<Panel bind:isAside isHeader={$$slots.header || isHeader} bind:panelWidth bind:innerWidth bind:withoutTitle on:close>
   <svelte:fragment slot="navigator">
     {#if $$slots.navigator}
       <div class="buttons-group xsmall-gap mx-2">
@@ -45,19 +46,21 @@
   </svelte:fragment>
 
   <svelte:fragment slot="title">
-    <div class="popupPanel-title__content-container antiTitle">
-      {#if $$slots.title}
-        <slot name="title" />
-      {:else}
-        <div class="icon-wrapper">
-          {#if icon}<div class="wrapped-icon"><Icon {icon} size={'medium'} /></div>{/if}
-          <div class="title-wrapper">
-            {#if title}<span class="wrapped-title">{title}</span>{/if}
-            {#if subtitle}<span class="wrapped-subtitle">{subtitle}</span>{/if}
+    {#if !withoutTitle}
+      <div class="popupPanel-title__content-container antiTitle">
+        {#if $$slots.title}
+          <slot name="title" />
+        {:else}
+          <div class="icon-wrapper">
+            {#if icon}<div class="wrapped-icon"><Icon {icon} size={'medium'} /></div>{/if}
+            <div class="title-wrapper">
+              {#if title}<span class="wrapped-title">{title}</span>{/if}
+              {#if subtitle}<span class="wrapped-subtitle">{subtitle}</span>{/if}
+            </div>
           </div>
-        </div>
-      {/if}
-    </div>
+        {/if}
+      </div>
+    {/if}
   </svelte:fragment>
 
   <svelte:fragment slot="utils">
@@ -105,7 +108,15 @@
   </svelte:fragment>
 
   {#if withoutActivity}
-    <slot />
+    {#if $deviceInfo.isMobile}
+      <div class="popupPanel-body__mobile-content clear-mins">
+        <slot />
+      </div>
+    {:else}
+      <div class="popupPanel-body__main-content py-8 clear-mins">
+        <slot />
+      </div>
+    {/if}
   {:else if $deviceInfo.isMobile}
     <div class="popupPanel-body__mobile-content clear-mins">
       <Component is={activity.component.Activity} props={{ object, integrate: true }}>

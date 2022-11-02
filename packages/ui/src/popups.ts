@@ -110,14 +110,14 @@ export function showDatePopup (
   shift?: boolean
 ): void {
   dpstore.set({
-    component: component,
-    currentDate: currentDate,
-    anchor: anchor,
-    popup: popup,
-    frendlyFocus: frendlyFocus,
-    onClose: onClose,
-    onChange: onChange,
-    shift: shift
+    component,
+    currentDate,
+    anchor,
+    popup,
+    frendlyFocus,
+    onClose,
+    onChange,
+    shift
   })
 }
 
@@ -292,6 +292,11 @@ export function fitPopupElement (
       newProps.bottom = '12px'
       newProps.left = '50%'
       newProps.transform = 'translateX(-50%)'
+    } else if (element === 'help-center') {
+      newProps.top = 'calc(var(--status-bar-height) + 12px)'
+      newProps.bottom = '12px'
+      newProps.right = '12px'
+      show = true
     }
   } else {
     newProps.top = '50%'

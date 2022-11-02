@@ -26,8 +26,21 @@ import { getCategories } from '@anticrm/skillset'
 import { KanbanTemplate } from '@hcengineering/task'
 import recruit from './plugin'
 
+async function fixImportedTitle (client: MigrationClient): Promise<void> {
+  await client.update(
+    DOMAIN_CONTACT,
+    {
+      title: { $exists: true }
+    },
+    {
+      $rename: { title: 'recruit:mixin:Candidate.title' }
+    }
+  )
+}
+
 export const recruitOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
+    await fixImportedTitle(client)
     await client.update(
       DOMAIN_CALENDAR,
       {

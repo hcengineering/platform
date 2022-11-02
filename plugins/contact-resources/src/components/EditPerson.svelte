@@ -14,10 +14,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import attachment from '@hcengineering/attachment'
-  import { combineName, EmployeeAccount, getFirstName, getLastName, Person } from '@hcengineering/contact'
+  import { combineName, Employee, EmployeeAccount, getFirstName, getLastName, Person } from '@hcengineering/contact'
   import { AccountRole, getCurrentAccount, Ref, Space } from '@hcengineering/core'
-  import { getResource } from '@hcengineering/platform'
   import { AttributeEditor, Avatar, createQuery, EditableAvatar, getClient } from '@hcengineering/presentation'
   import setting, { IntegrationType } from '@hcengineering/setting'
   import { EditBox, createFocusManager, FocusHandler } from '@hcengineering/ui'
@@ -31,6 +29,8 @@
   const hierarchy = client.getHierarchy()
   const account = getCurrentAccount() as EmployeeAccount
 
+  let avatarEditor: EditableAvatar
+
   $: editable =
     !hierarchy.isDerived(object._class, contact.class.Employee) ||
     account.role === AccountRole.Owner ||
@@ -39,6 +39,13 @@
   let lastName = getLastName(object.name)
 
   $: setName(object)
+
+  let email: string | undefined
+  $: if (editable && hierarchy.isDerived(object._class, contact.class.Employee)) {
+    client.findOne(contact.class.EmployeeAccount, { employee: (object as Employee)._id }).then((acc) => {
+      email = acc?.email
+    })
+  }
 
   function setName (object: Person) {
     firstName = getFirstName(object.name)
@@ -73,27 +80,13 @@
   onMount(sendOpen)
 
   async function onAvatarDone (e: any) {
-    const uploadFile = await getResource(attachment.helper.UploadFile)
-    const deleteFile = await getResource(attachment.helper.DeleteFile)
-    const { file: avatar } = e.detail
-
     if (object.avatar != null) {
-      await deleteFile(object.avatar)
+      await avatarEditor.removeAvatar(object.avatar)
     }
-    const uuid = await uploadFile(avatar)
+    const avatar = await avatarEditor.createAvatar()
     await client.updateDoc(object._class, object.space, object._id, {
-      avatar: uuid
+      avatar
     })
-  }
-
-  async function removeAvatar (): Promise<void> {
-    const deleteFile = await getResource(attachment.helper.DeleteFile)
-    if (object.avatar != null) {
-      await client.updateDoc(object._class, object.space, object._id, {
-        avatar: null
-      })
-      await deleteFile(object.avatar)
-    }
   }
 
   const manager = createFocusManager()
@@ -106,7 +99,14 @@
     <div class="mr-8">
       {#key object}
         {#if editable}
-          <EditableAvatar avatar={object.avatar} size={'x-large'} on:done={onAvatarDone} on:remove={removeAvatar} />
+          <EditableAvatar
+            avatar={object.avatar}
+            {email}
+            id={object._id}
+            size={'x-large'}
+            bind:this={avatarEditor}
+            on:done={onAvatarDone}
+          />
         {:else}
           <Avatar avatar={object.avatar} size={'x-large'} />
         {/if}

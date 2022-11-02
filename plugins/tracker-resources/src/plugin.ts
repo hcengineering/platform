@@ -13,10 +13,11 @@
 // limitations under the License.
 //
 import { Client, Doc, Ref } from '@hcengineering/core'
-import type { IntlString, Resource } from '@hcengineering/platform'
+import type { IntlString, Metadata, Resource } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import { AnyComponent } from '@hcengineering/ui'
 import tracker, { trackerId } from '../../tracker/lib'
+import { IssueDraft } from '@hcengineering/tracker'
 
 export default mergeIds(trackerId, tracker, {
   string: {
@@ -28,6 +29,8 @@ export default mergeIds(trackerId, tracker, {
     Members: '' as IntlString,
     Inbox: '' as IntlString,
     MyIssues: '' as IntlString,
+    ViewIssue: '' as IntlString,
+    IssueCreated: '' as IntlString,
     Issues: '' as IntlString,
     Views: '' as IntlString,
     Active: '' as IntlString,
@@ -59,6 +62,7 @@ export default mergeIds(trackerId, tracker, {
     CreateTeam: '' as IntlString,
     AddIssue: '' as IntlString,
     NewIssue: '' as IntlString,
+    ResumeDraft: '' as IntlString,
     NewSubIssue: '' as IntlString,
     Team: '' as IntlString,
     SelectIssue: '' as IntlString,
@@ -299,6 +303,9 @@ export default mergeIds(trackerId, tracker, {
 
     IssueTemplates: '' as AnyComponent,
     IssueTemplatePresenter: '' as AnyComponent
+  },
+  metadata: {
+    CreateIssueDraft: '' as Metadata<IssueDraft>
   },
   function: {
     IssueTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>) => Promise<string>>,

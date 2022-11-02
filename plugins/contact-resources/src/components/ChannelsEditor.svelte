@@ -49,7 +49,7 @@
     query.query(
       contact.class.Channel,
       {
-        attachedTo: attachedTo
+        attachedTo
       },
       (res) => {
         channels = res

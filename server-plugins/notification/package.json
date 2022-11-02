@@ -15,13 +15,13 @@
     "@hcengineering/platform-rig": "~0.6.0",
     "@types/heft-jest": "^1.0.3",
     "@types/node": "~16.11.12",
-    "@typescript-eslint/eslint-plugin": "^5.30.0",
+    "@typescript-eslint/eslint-plugin": "^5.41.0",
     "eslint-plugin-import": "^2.26.0",
-    "eslint-plugin-promise": "^6.0.0",
-    "eslint-plugin-node": "^11.1.0",
-    "eslint": "^8.18.0",
-    "@typescript-eslint/parser": "^5.30.0",
-    "eslint-config-standard-with-typescript": "^21.0.1",
+    "eslint-plugin-promise": "^6.1.1",
+    "eslint-plugin-n": "^15.4.0",
+    "eslint": "^8.26.0",
+    "@typescript-eslint/parser": "^5.41.0",
+    "eslint-config-standard-with-typescript": "^23.0.0",
     "prettier": "^2.7.1",
     "@rushstack/heft": "^0.47.9",
     "typescript": "^4.3.5"
@@ -29,7 +29,8 @@
   "dependencies": {
     "@hcengineering/core": "^0.6.17",
     "@hcengineering/platform": "^0.6.7",
-    "@hcengineering/notification": "~0.6.0",
-    "@hcengineering/server-core": "~0.6.1"
+    "@hcengineering/notification": "~0.6.4",
+    "@hcengineering/server-core": "~0.6.1",
+    "@hcengineering/contact": "~0.6.5"
   }
 }

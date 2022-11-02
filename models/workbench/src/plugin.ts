@@ -28,7 +28,8 @@ export default mergeIds(workbenchId, workbench, {
   },
   string: {
     Application: '' as IntlString,
-    SpaceBrowser: '' as IntlString
+    SpaceBrowser: '' as IntlString,
+    HiddenApplication: '' as IntlString
   },
   function: {
     HasArchiveSpaces: '' as Resource<(spaces: Space[]) => boolean>

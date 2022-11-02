@@ -14,69 +14,63 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
+  import attachment from '@hcengineering/attachment'
   import { AnySvelteComponent, IconSize, showPopup } from '@hcengineering/ui'
+  import { AvatarType } from '@hcengineering/contact'
+  import { Asset, getResource } from '@hcengineering/platform'
 
-  import Avatar from './Avatar.svelte'
-  import EditAvatarPopup from './EditAvatarPopup.svelte'
-  import { getFileUrl } from '../utils'
-  import { Asset } from '@hcengineering/platform'
+  import AvatarComponent from './Avatar.svelte'
+  import SelectAvatarPopup from './SelectAvatarPopup.svelte'
 
-  export let avatar: string | null | undefined = undefined
+  export let avatar: string | null | undefined
+  export let email: string | undefined = undefined
+  export let id: string
   export let size: IconSize
   export let direct: Blob | undefined = undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
 
-  const dispatch = createEventDispatcher()
+  const [schema, uri] = avatar?.split('://') || []
 
-  let inputRef: HTMLInputElement
-  const targetMimes = ['image/png', 'image/jpg', 'image/jpeg']
-  async function onClick () {
-    let file: Blob
-    if (direct !== undefined) {
-      file = direct
-    } else if (avatar != null) {
-      const url = getFileUrl(avatar, 'full')
-      file = await (await fetch(url)).blob()
-    } else {
-      return inputRef.click()
+  let selectedAvatarType: AvatarType | undefined = avatar?.includes('://') ? (schema as AvatarType) : AvatarType.IMAGE
+  let selectedAvatar: string | null | undefined = selectedAvatarType === AvatarType.IMAGE ? avatar : uri
+
+  export async function createAvatar (): Promise<string | undefined> {
+    if (selectedAvatarType === AvatarType.IMAGE && direct !== undefined) {
+      const uploadFile = await getResource(attachment.helper.UploadFile)
+      const file = new File([direct], 'avatar')
+
+      return await uploadFile(file)
     }
-    showPopup(EditAvatarPopup, { file }, undefined, (blob) => {
-      if (blob === undefined) {
-        return
-      }
-      if (blob === null) {
-        direct = undefined
-        dispatch('remove')
-      } else {
-        direct = blob
-        dispatch('done', { file: new File([blob], 'avatar') })
-      }
-    })
+    if (selectedAvatarType && selectedAvatar) {
+      return `${selectedAvatarType}://${selectedAvatar}`
+    }
   }
 
-  function onSelect (e: any) {
-    const file = e.target?.files[0] as File | undefined
-    if (file === undefined || !targetMimes.includes(file.type)) {
-      return
+  export async function removeAvatar (avatar: string) {
+    if (!avatar.includes('://')) {
+      const deleteFile = await getResource(attachment.helper.DeleteFile)
+      await deleteFile(avatar)
     }
+  }
 
-    showPopup(EditAvatarPopup, { file }, undefined, (blob) => {
-      if (blob === undefined) {
-        return
-      }
-      if (blob === null) {
-        direct = undefined
-        dispatch('remove')
-      } else {
-        direct = blob
-        dispatch('done', { file: new File([blob], file.name) })
-      }
-    })
-    e.target.value = null
+  function handlePopupSubmit (submittedAvatarType?: AvatarType, submittedAvatar?: string, submittedDirect?: Blob) {
+    selectedAvatarType = submittedAvatarType
+    selectedAvatar = submittedAvatar
+    direct = submittedDirect
+    dispatch('done')
+  }
+  const dispatch = createEventDispatcher()
+
+  async function showSelectionPopup (e: MouseEvent) {
+    showPopup(SelectAvatarPopup, { avatar, email, id, icon, onSubmit: handlePopupSubmit })
   }
 </script>
 
-<div class="cursor-pointer" on:click={onClick}>
-  <Avatar {avatar} {direct} {size} {icon} />
-  <input style="display: none;" type="file" bind:this={inputRef} on:change={onSelect} accept={targetMimes.join(',')} />
+<div class="cursor-pointer" on:click|self={showSelectionPopup}>
+  <AvatarComponent
+    avatar={selectedAvatarType === AvatarType.IMAGE ? selectedAvatar : `${selectedAvatarType}://${selectedAvatar}`}
+    {direct}
+    {size}
+    {icon}
+  />
 </div>

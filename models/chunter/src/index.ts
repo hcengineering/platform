@@ -57,10 +57,10 @@ export const DOMAIN_COMMENT = 'comment' as Domain
 @Model(chunter.class.ChunterSpace, core.class.Space)
 export class TChunterSpace extends TSpace implements ChunterSpace {
   @Prop(TypeTimestamp(), chunter.string.LastMessage)
-  lastMessage?: Timestamp
+    lastMessage?: Timestamp
 
   @Prop(ArrOf(TypeRef(chunter.class.ChunterMessage)), chunter.string.PinnedMessages)
-  pinned?: Ref<ChunterMessage>[]
+    pinned?: Ref<ChunterMessage>[]
 }
 
 @Model(chunter.class.Channel, chunter.class.ChunterSpace)
@@ -68,7 +68,7 @@ export class TChunterSpace extends TSpace implements ChunterSpace {
 export class TChannel extends TChunterSpace implements Channel {
   @Prop(TypeString(), chunter.string.Topic)
   @Index(IndexKind.FullText)
-  topic?: string
+    topic?: string
 }
 
 @Model(chunter.class.DirectMessage, chunter.class.ChunterSpace)
@@ -79,22 +79,22 @@ export class TDirectMessage extends TChunterSpace implements DirectMessage {}
 export class TChunterMessage extends TAttachedDoc implements ChunterMessage {
   @Prop(TypeMarkup(), chunter.string.Content)
   @Index(IndexKind.FullText)
-  content!: string
+    content!: string
 
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, undefined, attachment.string.Files)
-  attachments?: number
+    attachments?: number
 
   @Prop(TypeRef(core.class.Account), chunter.string.CreateBy)
-  createBy!: Ref<Account>
+    createBy!: Ref<Account>
 
   @Prop(TypeTimestamp(), chunter.string.Create)
-  createOn!: Timestamp
+    createOn!: Timestamp
 
   @Prop(TypeTimestamp(), chunter.string.Edit)
-  editedOn?: Timestamp
+    editedOn?: Timestamp
 
   @Prop(Collection(chunter.class.Reaction), chunter.string.Reactions)
-  reactions?: number
+    reactions?: number
 }
 
 @Model(chunter.class.ThreadMessage, chunter.class.ChunterMessage)
@@ -113,19 +113,19 @@ export class TMessage extends TChunterMessage implements Message {
   declare attachedToClass: Ref<Class<Space>>
 
   @Prop(ArrOf(TypeRef(contact.class.Employee)), chunter.string.Replies)
-  replies?: Ref<Employee>[]
+    replies?: Ref<Employee>[]
 
   @Prop(TypeTimestamp(), chunter.string.LastReply)
-  lastReply?: Timestamp
+    lastReply?: Timestamp
 }
 
 @Model(chunter.class.Reaction, core.class.AttachedDoc, DOMAIN_CHUNTER)
 export class TReaction extends TAttachedDoc implements Reaction {
   @Prop(TypeString(), chunter.string.Emoji)
-  emoji!: string
+    emoji!: string
 
   @Prop(TypeRef(core.class.Account), chunter.string.CreateBy)
-  createBy!: Ref<Account>
+    createBy!: Ref<Account>
 
   declare attachedTo: Ref<ChunterMessage>
   declare attachedToClass: Ref<Class<ChunterMessage>>
@@ -136,10 +136,10 @@ export class TReaction extends TAttachedDoc implements Reaction {
 export class TComment extends TAttachedDoc implements Comment {
   @Prop(TypeMarkup(), chunter.string.Message)
   @Index(IndexKind.FullText)
-  message!: string
+    message!: string
 
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, undefined, attachment.string.Files)
-  attachments?: number
+    attachments?: number
 }
 
 @Model(chunter.class.Backlink, chunter.class.Comment)
@@ -152,7 +152,7 @@ export class TBacklink extends TComment implements Backlink {
 @Model(chunter.class.SavedMessages, preference.class.Preference)
 export class TSavedMessages extends TPreference implements SavedMessages {
   @Prop(TypeRef(chunter.class.ChunterMessage), chunter.string.SavedMessages)
-  attachedTo!: Ref<ChunterMessage>
+    attachedTo!: Ref<ChunterMessage>
 }
 
 export function createModel (builder: Builder): void {

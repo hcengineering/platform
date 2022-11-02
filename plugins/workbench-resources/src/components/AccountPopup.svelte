@@ -31,6 +31,8 @@
     locationToUrl
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
+  import HelpAndSupport from './HelpAndSupport.svelte'
+  import workbench from '../plugin'
 
   let items: SettingsCategory[] = []
 
@@ -90,6 +92,10 @@
     showPopup(login.component.InviteLink, {})
   }
 
+  function helpAndSupport (): void {
+    showPopup(HelpAndSupport, {}, 'help-center')
+  }
+
   function filterItems (items: SettingsCategory[], keys: string[]): SettingsCategory[] {
     return items.filter(
       (p) => p._id !== setting.ids.Profile && p._id !== setting.ids.Password && keys.includes(p.group ?? '')
@@ -147,6 +153,12 @@
         icon: login.icon.InviteWorkspace,
         label: setting.string.InviteWorkspace,
         action: async () => inviteWorkspace(),
+        group: 'end'
+      },
+      {
+        icon: setting.icon.Support,
+        label: workbench.string.HelpAndSupport,
+        action: async () => helpAndSupport(),
         group: 'end'
       },
       {

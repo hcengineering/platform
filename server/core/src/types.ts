@@ -98,6 +98,7 @@ export interface Pipeline extends LowLevelStorage {
  * @public
  */
 export interface TriggerControl {
+  workspace: string
   txFactory: TxFactory
   findAll: Storage['findAll']
   hierarchy: Hierarchy

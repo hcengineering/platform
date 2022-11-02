@@ -16,6 +16,7 @@
 import type { Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { TriggerFunc } from '@hcengineering/server-core'
+import { Presenter } from '@hcengineering/server-notification'
 
 /**
  * @public
@@ -26,6 +27,10 @@ export const serverTrackerId = 'server-tracker' as Plugin
  * @public
  */
 export default plugin(serverTrackerId, {
+  function: {
+    IssueHTMLPresenter: '' as Resource<Presenter>,
+    IssueTextPresenter: '' as Resource<Presenter>
+  },
   trigger: {
     OnIssueUpdate: '' as Resource<TriggerFunc>
   }

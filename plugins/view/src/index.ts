@@ -309,20 +309,6 @@ export interface IgnoreActions extends Class<Doc> {
 /**
  * @public
  */
-export interface HTMLPresenter extends Class<Doc> {
-  presenter: Resource<(doc: Doc) => string>
-}
-
-/**
- * @public
- */
-export interface TextPresenter extends Class<Doc> {
-  presenter: Resource<(doc: Doc) => string>
-}
-
-/**
- * @public
- */
 export interface PreviewPresenter extends Class<Doc> {
   presenter: AnyComponent
 }
@@ -359,6 +345,8 @@ export interface AttributeModel {
   // Extra properties for component
   props?: Record<string, any>
   sortingKey: string | string[]
+  optional?: boolean
+  excludeByKey?: string
   // Extra icon if applicable
   icon?: Asset
 
@@ -418,8 +406,6 @@ const view = plugin(viewId, {
     SpaceHeader: '' as Ref<Mixin<SpaceHeader>>,
     SpaceName: '' as Ref<Mixin<SpaceName>>,
     IgnoreActions: '' as Ref<Mixin<IgnoreActions>>,
-    HTMLPresenter: '' as Ref<Mixin<HTMLPresenter>>,
-    TextPresenter: '' as Ref<Mixin<TextPresenter>>,
     PreviewPresenter: '' as Ref<Mixin<PreviewPresenter>>
   },
   class: {

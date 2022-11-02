@@ -17,7 +17,8 @@
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Issue, IssueStatus, IssueTemplate, Sprint } from '@hcengineering/tracker'
-  import { ButtonKind, ButtonShape, ButtonSize, Label, tooltip } from '@hcengineering/ui'
+  import type { ButtonKind, ButtonSize, ButtonShape } from '@hcengineering/ui'
+  import { Label, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
   import DatePresenter from '@hcengineering/ui/src/components/calendar/DatePresenter.svelte'
   import { activeSprint } from '../../issues'
   import tracker from '../../plugin'
@@ -30,15 +31,15 @@
   export let shouldShowLabel: boolean = true
   export let popupPlaceholder: IntlString = tracker.string.MoveToSprint
   export let shouldShowPlaceholder = true
-  export let kind: ButtonKind = 'link'
   export let size: ButtonSize = 'large'
+  export let kind: ButtonKind = 'link'
   export let shape: ButtonShape = undefined
   export let justify: 'left' | 'center' = 'left'
   export let width: string | undefined = '100%'
   export let onlyIcon: boolean = false
   export let issues: Issue[] | undefined = undefined
   export let groupBy: string | undefined = undefined
-  export let enlargedText = false
+  export let enlargedText: boolean = false
 
   const client = getClient()
 
@@ -54,6 +55,10 @@
 
   $: noParents = issues?.filter((it) => !ids.has(it.attachedTo as Ref<Issue>))
 
+  $: rootNoBacklogIssues = noParents?.filter(
+    (it) => issueStatuses.get(it.status)?.category !== tracker.issueStatusCategory.Backlog
+  )
+
   const statuses = createQuery()
   let issueStatuses: Map<Ref<IssueStatus>, WithLookup<IssueStatus>> = new Map()
   $: if (noParents !== undefined) {
@@ -65,7 +70,7 @@
   }
 
   $: totalEstimation = floorFractionDigits(
-    (noParents ?? [{ estimation: 0, childInfo: [] } as unknown as Issue])
+    (rootNoBacklogIssues ?? [{ estimation: 0, childInfo: [] } as unknown as Issue])
       .map((it) => {
         const cat = issueStatuses.get(it.status)?.category
 
@@ -92,7 +97,7 @@
       })
       .reduce((it, cur) => {
         return it + cur
-      }),
+      }, 0),
     2
   )
   $: totalReported = floorFractionDigits(
@@ -119,71 +124,92 @@
       sprint = res.shift()
     })
   }
+
+  $: twoRows = $deviceInfo.twoRows
 </script>
 
-{#if (value.sprint && value.sprint !== $activeSprint && groupBy !== 'sprint') || shouldShowPlaceholder}
-  <div
-    class="clear-mins"
-    use:tooltip={{ label: value.sprint ? tracker.string.MoveToSprint : tracker.string.AddToSprint }}
-  >
-    <SprintSelector
-      {kind}
-      {size}
-      {shape}
-      {width}
-      {justify}
-      {isEditable}
-      {shouldShowLabel}
-      {popupPlaceholder}
-      {onlyIcon}
-      {enlargedText}
-      value={value.sprint}
-      onChange={handleSprintIdChanged}
-    />
-  </div>
-{/if}
-
-{#if sprint}
-  {@const now = Date.now()}
-  <div class="flex-row-center">
-    <DatePresenter value={sprint.startDate} kind={'transparent'} />
-    <span class="p-1"> / </span><DatePresenter value={sprint.targetDate} kind={'transparent'} />
-  </div>
-  <div class="flex-row-center ml-2">
-    <!-- Active sprint in time -->
-    <Label
-      label={tracker.string.SprintPassed}
-      params={{
-        from:
-          now < sprint.startDate
-            ? 0
-            : now > sprint.targetDate
-            ? getDayOfSprint(sprint.startDate, sprint.targetDate)
-            : getDayOfSprint(sprint.startDate, now),
-        to: getDayOfSprint(sprint.startDate, sprint.targetDate)
-      }}
-    />
-  </div>
-{/if}
-{#if issues}
-  <!-- <Label label={tracker.string.SprintDay} value={}/> -->
-  <div class="ml-4 flex-row-center" class:showWarning={totalEstimation > (sprint?.capacity ?? 0)}>
-    <div class="mr-2">
-      <EstimationProgressCircle value={totalReported} max={totalEstimation} />
+<div
+  class="flex flex-wrap"
+  class:minus-margin={kind === 'list-header'}
+  style:flex-direction={twoRows ? 'column' : 'row'}
+>
+  {#if (value.sprint && value.sprint !== $activeSprint && groupBy !== 'sprint') || shouldShowPlaceholder}
+    <div class="flex-row-center" class:minus-margin-vSpace={kind === 'list-header'} style:width>
+      <SprintSelector
+        {kind}
+        {size}
+        {shape}
+        {width}
+        {justify}
+        {isEditable}
+        {shouldShowLabel}
+        {popupPlaceholder}
+        {onlyIcon}
+        {enlargedText}
+        showTooltip={{ label: value.sprint ? tracker.string.MoveToSprint : tracker.string.AddToSprint }}
+        value={value.sprint}
+        onChange={handleSprintIdChanged}
+      />
     </div>
-    {#if totalReported > 0}
-      <Label label={tracker.string.TimeSpendValue} params={{ value: totalReported }} />
-      /
-    {/if}
-    <Label label={tracker.string.TimeSpendValue} params={{ value: totalEstimation }} />
-    {#if sprint?.capacity}
-      <Label label={tracker.string.CapacityValue} params={{ value: sprint?.capacity }} />
-    {/if}
-  </div>
-{/if}
+  {/if}
+
+  {#if sprint || issues}
+    <div class="flex-row-center" class:minus-margin-space={kind === 'list-header'} class:text-sm={twoRows}>
+      {#if sprint}
+        {@const now = Date.now()}
+        <DatePresenter value={sprint.startDate} kind={'transparent'} />
+        <span class="p-1"> / </span>
+        <DatePresenter value={sprint.targetDate} kind={'transparent'} />
+        <div class="w-2 min-w-2" />
+        <!-- Active sprint in time -->
+        <Label
+          label={tracker.string.SprintPassed}
+          params={{
+            from:
+              now < sprint.startDate
+                ? 0
+                : now > sprint.targetDate
+                ? getDayOfSprint(sprint.startDate, sprint.targetDate)
+                : getDayOfSprint(sprint.startDate, now),
+            to: getDayOfSprint(sprint.startDate, sprint.targetDate)
+          }}
+        />
+      {/if}
+      {#if issues}
+        <!-- <Label label={tracker.string.SprintDay} value={}/> -->
+        <div
+          class="flex-row-center flex-no-shrink h-6"
+          class:ml-2={sprint}
+          class:ml-0-5={!sprint}
+          class:showWarning={totalEstimation > (sprint?.capacity ?? 0)}
+        >
+          <EstimationProgressCircle value={totalReported} max={totalEstimation} />
+          <div class="w-2 min-w-2" />
+          {#if totalReported > 0}
+            <Label label={tracker.string.TimeSpendValue} params={{ value: totalReported }} />
+            /
+          {/if}
+          <Label label={tracker.string.TimeSpendValue} params={{ value: totalEstimation }} />
+          {#if sprint?.capacity}
+            <Label label={tracker.string.CapacityValue} params={{ value: sprint?.capacity }} />
+          {/if}
+        </div>
+      {/if}
+    </div>
+  {/if}
+</div>
 
 <style lang="scss">
   .showWarning {
     color: var(--warning-color) !important;
+  }
+  .minus-margin {
+    margin-left: -0.5rem;
+    &-vSpace {
+      margin: -0.25rem 0;
+    }
+    &-space {
+      margin: -0.25rem 0 -0.25rem 0.5rem;
+    }
   }
 </style>

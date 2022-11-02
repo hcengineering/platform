@@ -60,7 +60,7 @@
   {size}
   {justify}
   on:click={addSpace}
-  showTooltip={{ label: label, direction: labelDirection }}
+  showTooltip={{ label, direction: labelDirection }}
 >
   <svelte:fragment slot="content">
     {#if selectedItems.length > 0}

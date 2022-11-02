@@ -80,6 +80,7 @@
 
       {#each [...Array(displayedWeeksCount).keys()] as weekIndex}
         {#each [...Array(7).keys()] as dayOfWeek}
+          {@const wrongM = weekday(firstDayOfCurrentMonth, weekIndex, dayOfWeek).getMonth() !== viewDate.getMonth()}
           <div
             class="day"
             class:weekend={isWeekend(weekday(firstDayOfCurrentMonth, weekIndex, dayOfWeek))}
@@ -87,9 +88,13 @@
             class:selected={currentDate &&
               weekday(firstDayOfCurrentMonth, weekIndex, dayOfWeek).getMonth() === currentDate.getMonth() &&
               areDatesEqual(currentDate, weekday(firstDayOfCurrentMonth, weekIndex, dayOfWeek))}
-            class:wrongMonth={weekday(firstDayOfCurrentMonth, weekIndex, dayOfWeek).getMonth() !== viewDate.getMonth()}
+            class:wrongMonth={wrongM}
             style={`grid-column-start: ${dayOfWeek + 1}; grid-row-start: ${weekIndex + 2};`}
-            on:click|stopPropagation={() => {
+            on:click|stopPropagation={(ev) => {
+              if (wrongM) {
+                ev.preventDefault()
+                return
+              }
               viewDate = weekday(firstDayOfCurrentMonth, weekIndex, dayOfWeek)
               if (currentDate) {
                 viewDate.setHours(currentDate.getHours())
@@ -194,6 +199,7 @@
       }
       &.wrongMonth {
         color: var(--dark-color);
+        cursor: default;
       }
       &.today {
         font-weight: 500;
@@ -201,8 +207,8 @@
         background-color: var(--button-bg-color);
         border-color: var(--dark-color);
       }
-      &.selected,
-      &:hover {
+      &.selected:not(.wrongMonth),
+      &:not(.wrongMonth):hover {
         color: var(--caption-color);
         background-color: var(--primary-bg-color);
       }

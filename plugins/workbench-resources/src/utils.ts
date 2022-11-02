@@ -18,10 +18,12 @@ import type { Class, Client, Doc, Obj, Ref, Space } from '@hcengineering/core'
 import core from '@hcengineering/core'
 import type { Asset } from '@hcengineering/platform'
 import { getResource } from '@hcengineering/platform'
-import { NavigatorModel } from '@hcengineering/workbench'
+import workbench, { NavigatorModel } from '@hcengineering/workbench'
 import view from '@hcengineering/view'
 import { closePanel, getCurrentLocation, navigate } from '@hcengineering/ui'
 import { getClient } from '@hcengineering/presentation'
+import type { Application } from '@hcengineering/workbench'
+import preference from '@hcengineering/preference'
 
 export function classIcon (client: Client, _class: Ref<Class<Obj>>): Asset | undefined {
   return client.getHierarchy().getClass(_class).icon
@@ -114,5 +116,22 @@ export async function doNavigate (
 
       break
     }
+  }
+}
+
+export async function hideApplication (app: Application): Promise<void> {
+  const client = getClient()
+
+  await client.createDoc(workbench.class.HiddenApplication, preference.space.Preference, {
+    attachedTo: app._id
+  })
+}
+
+export async function showApplication (app: Application): Promise<void> {
+  const client = getClient()
+
+  const current = await client.findOne(workbench.class.HiddenApplication, { attachedTo: app._id })
+  if (current !== undefined) {
+    await client.remove(current)
   }
 }

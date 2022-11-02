@@ -38,19 +38,19 @@ export const DOMAIN_NOTIFICATION = 'notification' as Domain
 @Model(notification.class.LastView, core.class.AttachedDoc, DOMAIN_NOTIFICATION)
 export class TLastView extends TAttachedDoc implements LastView {
   @Prop(TypeTimestamp(), notification.string.LastView)
-  lastView!: Timestamp
+    lastView!: Timestamp
 
   @Prop(TypeRef(core.class.Account), core.string.ModifiedBy)
-  user!: Ref<Account>
+    user!: Ref<Account>
 }
 
 @Model(notification.class.Notification, core.class.AttachedDoc, DOMAIN_NOTIFICATION)
 export class TNotification extends TAttachedDoc implements Notification {
   @Prop(TypeRef(core.class.Tx), 'TX' as IntlString)
-  tx!: Ref<TxCUD<Doc>>
+    tx!: Ref<TxCUD<Doc>>
 
   @Prop(TypeString(), 'Status' as IntlString)
-  status!: NotificationStatus
+    status!: NotificationStatus
 
   text!: string
 
@@ -60,27 +60,30 @@ export class TNotification extends TAttachedDoc implements Notification {
 @Model(notification.class.EmailNotification, core.class.Doc, DOMAIN_NOTIFICATION)
 export class TEmaiNotification extends TDoc implements EmailNotification {
   @Prop(TypeString(), 'Sender' as IntlString)
-  sender!: string
+    sender!: string
 
   @Prop(ArrOf(TypeString()), 'Receivers' as IntlString)
-  receivers!: string[]
+    receivers!: string[]
 
   @Prop(TypeString(), 'Subject' as IntlString)
-  subject!: string
+    subject!: string
 
   @Prop(TypeString(), 'Text' as IntlString)
-  text!: string
+    text!: string
 
   @Prop(TypeString(), 'Html' as IntlString)
-  html?: string
+    html?: string
 
   @Prop(TypeString(), 'Status' as IntlString)
-  status!: 'new' | 'sent'
+    status!: 'new' | 'sent'
 }
 
 @Model(notification.class.NotificationType, core.class.Doc, DOMAIN_MODEL)
 export class TNotificationType extends TDoc implements NotificationType {
   label!: IntlString
+  textTemplate!: string
+  htmlTemplate!: string
+  subjectTemplate!: string
 }
 
 @Model(notification.class.NotificationProvider, core.class.Doc, DOMAIN_MODEL)
@@ -126,7 +129,10 @@ export function createModel (builder: Builder): void {
     notification.class.NotificationType,
     core.space.Model,
     {
-      label: notification.string.MentionNotification
+      label: notification.string.MentionNotification,
+      textTemplate: '{sender} mentioned you in {doc} {data}',
+      htmlTemplate: '<p><b>{sender}</b> mentioned you in {doc}</p> {data}',
+      subjectTemplate: 'You was mentioned in {doc}'
     },
     notification.ids.MentionNotification
   )

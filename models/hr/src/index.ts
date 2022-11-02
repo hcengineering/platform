@@ -52,21 +52,21 @@ export class TDepartment extends TSpace implements Department {
 
   @Prop(TypeString(), core.string.Name)
   @Index(IndexKind.FullText)
-  name!: string
+    name!: string
 
   @Prop(Collection(contact.class.Channel), contact.string.ContactInfo)
-  channels?: number
+    channels?: number
 
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, undefined, attachment.string.Files)
-  attachments?: number
+    attachments?: number
 
   @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
-  comments?: number
+    comments?: number
 
   avatar?: string | null
 
   @Prop(TypeRef(contact.class.Employee), hr.string.TeamLead)
-  teamLead!: Ref<Employee> | null
+    teamLead!: Ref<Employee> | null
 
   @Prop(ArrOf(TypeRef(hr.class.DepartmentMember)), contact.string.Members)
   declare members: Arr<Ref<DepartmentMember>>
@@ -80,14 +80,14 @@ export class TDepartmentMember extends TEmployeeAccount implements DepartmentMem
 @UX(hr.string.Staff, hr.icon.HR)
 export class TStaff extends TEmployee implements Staff {
   @Prop(TypeRef(hr.class.Department), hr.string.Department)
-  department!: Ref<Department>
+    department!: Ref<Department>
 }
 
 @Model(hr.class.RequestType, core.class.Doc, DOMAIN_MODEL)
 @UX(hr.string.RequestType)
 export class TRequestType extends TDoc implements RequestType {
   @Prop(TypeIntlString(), core.string.Name)
-  label!: IntlString
+    label!: IntlString
 
   icon!: Asset
   value!: number
@@ -126,23 +126,23 @@ export class TRequest extends TAttachedDoc implements Request {
 
   @Prop(TypeRef(hr.class.RequestType), hr.string.RequestType)
   @Hidden()
-  type!: Ref<RequestType>
+    type!: Ref<RequestType>
 
   @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
-  comments?: number
+    comments?: number
 
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, undefined, attachment.string.Files)
-  attachments?: number
+    attachments?: number
 
   @Prop(TypeMarkup(), core.string.Description)
   @Index(IndexKind.FullText)
-  description!: Markup
+    description!: Markup
 
   @Prop(TypeTzDate(), calendar.string.Date)
-  tzDate!: TzDate
+    tzDate!: TzDate
 
   @Prop(TypeTzDate(), calendar.string.DueTo)
-  tzDueDate!: TzDate
+    tzDueDate!: TzDate
 }
 
 export function createModel (builder: Builder): void {

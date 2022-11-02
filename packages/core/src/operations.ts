@@ -1,9 +1,9 @@
 import { DocumentUpdate, Hierarchy, MixinData, MixinUpdate, ModelDb } from '.'
-import type { Account, AttachedData, AttachedDoc, Class, Data, Doc, Mixin, PropertyType, Ref, Space } from './classes'
+import type { Account, AttachedData, AttachedDoc, Class, Data, Doc, Mixin, Ref, Space } from './classes'
 import { Client } from './client'
 import core from './component'
 import type { DocumentQuery, FindOptions, FindResult, TxResult, WithLookup } from './storage'
-import { Tx, TxFactory } from './tx'
+import { DocumentClassQuery, Tx, TxCUD, TxFactory } from './tx'
 
 /**
  * @public
@@ -15,7 +15,7 @@ import { Tx, TxFactory } from './tx'
 export class TxOperations implements Omit<Client, 'notify'> {
   readonly txFactory: TxFactory
 
-  constructor (protected readonly client: Client, user: Ref<Account>) {
+  constructor (readonly client: Client, readonly user: Ref<Account>) {
     this.txFactory = new TxFactory(user)
   }
 
@@ -122,18 +122,6 @@ export class TxOperations implements Omit<Client, 'notify'> {
     return tx.objectId
   }
 
-  putBag<P extends PropertyType>(
-    _class: Ref<Class<Doc>>,
-    space: Ref<Space>,
-    objectId: Ref<Doc>,
-    bag: string,
-    key: string,
-    value: P
-  ): Promise<TxResult> {
-    const tx = this.txFactory.createTxPutBag(_class, space, objectId, bag, key, value)
-    return this.client.tx(tx)
-  }
-
   updateDoc<T extends Doc>(
     _class: Ref<Class<T>>,
     space: Ref<Space>,
@@ -173,7 +161,12 @@ export class TxOperations implements Omit<Client, 'notify'> {
   }
 
   update<T extends Doc>(doc: T, update: DocumentUpdate<T>, retrieve?: boolean): Promise<TxResult> {
-    if (this.client.getHierarchy().isDerived(doc._class, core.class.AttachedDoc)) {
+    const hierarchy = this.client.getHierarchy()
+    if (hierarchy.isMixin(doc._class)) {
+      const baseClass = hierarchy.getBaseClass(doc._class)
+      return this.updateMixin(doc._id, baseClass, doc.space, doc._class, update)
+    }
+    if (hierarchy.isDerived(doc._class, core.class.AttachedDoc)) {
       const adoc = doc as unknown as AttachedDoc
       return this.updateCollection(
         doc._class,
@@ -202,5 +195,48 @@ export class TxOperations implements Omit<Client, 'notify'> {
       )
     }
     return this.removeDoc(doc._class, doc.space, doc._id)
+  }
+
+  apply (scope: string): ApplyOperations {
+    return new ApplyOperations(this, scope)
+  }
+}
+
+/**
+ * @public
+ *
+ * Builder for ApplyOperation, with same syntax as TxOperations.
+ *
+ * Will send real command on commit and will return boolean of operation success.
+ */
+export class ApplyOperations extends TxOperations {
+  txes: TxCUD<Doc>[] = []
+  matches: DocumentClassQuery<Doc>[] = []
+  constructor (readonly ops: TxOperations, readonly scope: string) {
+    const txClient: Client = {
+      getHierarchy: () => ops.client.getHierarchy(),
+      getModel: () => ops.client.getModel(),
+      close: () => ops.client.close(),
+      findOne: (_class, query, options?) => ops.client.findOne(_class, query, options),
+      findAll: (_class, query, options?) => ops.client.findAll(_class, query, options),
+      tx: async (tx): Promise<TxResult> => {
+        if (ops.getHierarchy().isDerived(tx._class, core.class.TxCUD)) {
+          this.txes.push(tx as TxCUD<Doc>)
+        }
+        return {}
+      }
+    }
+    super(txClient, ops.user)
+  }
+
+  match<T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>): ApplyOperations {
+    this.matches.push({ _class, query })
+    return this
+  }
+
+  async commit (): Promise<boolean> {
+    return await ((await this.ops.tx(
+      this.ops.txFactory.createTxApplyIf(core.space.Tx, this.scope, this.matches, this.txes)
+    )) as Promise<boolean>)
   }
 }

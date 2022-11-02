@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Employee } from '@hcengineering/contact'
   import { Doc, Ref } from '@hcengineering/core'
   import type { Request, RequestType, Staff } from '@hcengineering/hr'
   import { getEmbeddedLabel } from '@hcengineering/platform'
@@ -21,8 +22,9 @@
   import view, { BuildModelKey, Viewlet, ViewletPreference } from '@hcengineering/view'
   import { Table, ViewletSettingButton } from '@hcengineering/view-resources'
   import hr from '../../plugin'
-  import { fromTzDate, getMonth, getRequestDays, getTotal, tableToCSV, weekDays } from '../../utils'
-  import NumberPresenter from './StatPresenter.svelte'
+  import { EmployeeReports, fromTzDate, getMonth, getRequestDays, getTotal, tableToCSV, weekDays } from '../../utils'
+  import StatPresenter from './StatPresenter.svelte'
+  import ReportPresenter from './ReportPresenter.svelte'
 
   export let currentDate: Date = new Date()
 
@@ -30,6 +32,7 @@
   export let types: Map<Ref<RequestType>, RequestType>
 
   export let employeeRequests: Map<Ref<Staff>, Request[]>
+  export let timeReports: Map<Ref<Employee>, EmployeeReports>
 
   $: month = getMonth(currentDate, currentDate.getMonth())
   $: wDays = weekDays(month.getUTCFullYear(), month.getUTCMonth())
@@ -64,7 +67,7 @@
         {
           key: '',
           label: it.label,
-          presenter: NumberPresenter,
+          presenter: StatPresenter,
           props: {
             month: month ?? getMonth(currentDate, currentDate.getMonth()),
             display: (req: Request[]) =>
@@ -87,7 +90,7 @@
         {
           key: '',
           label: getEmbeddedLabel('Working days'),
-          presenter: NumberPresenter,
+          presenter: StatPresenter,
           props: {
             month: month ?? getMonth(currentDate, currentDate.getMonth()),
             display: (req: Request[]) => wDays + getTotal(req, month.getMonth(), types),
@@ -100,11 +103,27 @@
         }
       ],
       [
+        '@wdCountReported',
+        {
+          key: '',
+          label: getEmbeddedLabel('Reported days'),
+          presenter: ReportPresenter,
+          props: {
+            month: month ?? getMonth(currentDate, currentDate.getMonth()),
+            display: (staff: Staff) => (timeReports.get(staff._id) ?? { value: 0 }).value
+          },
+          sortingKey: '@wdCount',
+          sortingFunction: (a: Doc, b: Doc) =>
+            getTotal(getRequests(b._id as Ref<Staff>, month), month.getMonth(), types) -
+            getTotal(getRequests(a._id as Ref<Staff>, month), month.getMonth(), types)
+        }
+      ],
+      [
         '@ptoCount',
         {
           key: '',
           label: getEmbeddedLabel('PTOs'),
-          presenter: NumberPresenter,
+          presenter: StatPresenter,
           props: {
             month: month ?? getMonth(currentDate, currentDate.getMonth()),
             display: (req: Request[]) => getTotal(req, month.getMonth(), types, (a) => (a < 0 ? Math.abs(a) : 0)),
@@ -123,7 +142,7 @@
         {
           key: '',
           label: getEmbeddedLabel('EXTRa'),
-          presenter: NumberPresenter,
+          presenter: StatPresenter,
           props: {
             month: month ?? getMonth(currentDate, currentDate.getMonth()),
             display: (req: Request[]) => getTotal(req, month.getMonth(), types, (a) => (a > 0 ? Math.abs(a) : 0)),

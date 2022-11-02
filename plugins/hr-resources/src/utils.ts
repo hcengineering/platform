@@ -2,6 +2,7 @@ import { Employee, formatName } from '@hcengineering/contact'
 import { Ref, TxOperations } from '@hcengineering/core'
 import { Department, Request, RequestType, TzDate } from '@hcengineering/hr'
 import { MessageBox } from '@hcengineering/presentation'
+import { TimeSpendReport } from '@hcengineering/tracker'
 import { isWeekend, showPopup } from '@hcengineering/ui'
 import hr from './plugin'
 
@@ -147,4 +148,9 @@ export function tableToCSV (tableId: string, separator = ','): string {
     csv.push(row.join(separator))
   }
   return csv.join('\n')
+}
+
+export interface EmployeeReports {
+  reports: TimeSpendReport[]
+  value: number
 }

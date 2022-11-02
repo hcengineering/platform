@@ -1,5 +1,5 @@
 <script lang="ts">
-  const fill: string = 'var(--theme-caption-color)'
+  const fill: string = 'var(--caption-color)'
 </script>
 
 <svg {fill} viewBox="0 0 6 16" xmlns="http://www.w3.org/2000/svg">

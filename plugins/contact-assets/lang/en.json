@@ -69,6 +69,9 @@
     "Email": "Email",
     "CreateEmployee": "Create an employee",
     "Inactive": "Inactive",
-    "Birthday": "Birthday"
+    "Birthday": "Birthday",
+    "UseImage": "Upload an image",
+    "UseGravatar": "Use Gravatar",
+    "UseColor": "Use color"
   }
 }

@@ -18,7 +18,7 @@ import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platfor
 import { plugin } from '@hcengineering/platform'
 import { AnyComponent } from '@hcengineering/ui'
 import { Writable } from './types'
-
+import { IntegrationType } from '@hcengineering/setting'
 export * from './types'
 
 /**
@@ -32,6 +32,15 @@ export interface LastView extends AttachedDoc {
 /**
  * @public
  */
+export interface NotificationAction {
+  component: AnyComponent
+  objectId: Ref<Doc>
+  objectClass: Ref<Class<Doc>>
+}
+
+/**
+ * @public
+ */
 export interface Notification extends AttachedDoc {
   tx: Ref<TxCUD<Doc>>
   status: NotificationStatus
@@ -39,11 +48,7 @@ export interface Notification extends AttachedDoc {
   type: Ref<NotificationType>
 
   // Defined to open particular item if required.
-  action?: {
-    component: AnyComponent
-    objectId: Ref<Doc>
-    objectClass: Ref<Class<Doc>>
-  }
+  action?: NotificationAction
 }
 
 /**
@@ -72,6 +77,9 @@ export enum NotificationStatus {
  */
 export interface NotificationType extends Doc {
   label: IntlString
+  textTemplate: string
+  htmlTemplate: string
+  subjectTemplate: string
 }
 
 /**
@@ -152,6 +160,9 @@ const notification = plugin(notificationId, {
     BrowserNotification: '' as Ref<NotificationProvider>,
     EmailNotification: '' as Ref<NotificationProvider>,
     NotificationSettings: '' as Ref<Doc>
+  },
+  integrationType: {
+    MobileApp: '' as Ref<IntegrationType>
   },
   component: {
     NotificationsPopup: '' as AnyComponent,

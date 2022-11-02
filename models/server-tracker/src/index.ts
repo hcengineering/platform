@@ -17,8 +17,18 @@ import { Builder } from '@hcengineering/model'
 import core from '@hcengineering/core'
 import serverCore from '@hcengineering/server-core'
 import serverTracker from '@hcengineering/server-tracker'
+import tracker from '@hcengineering/tracker'
+import serverNotification from '@hcengineering/server-notification'
 
 export function createModel (builder: Builder): void {
+  builder.mixin(tracker.class.Issue, core.class.Class, serverNotification.mixin.HTMLPresenter, {
+    presenter: serverTracker.function.IssueHTMLPresenter
+  })
+
+  builder.mixin(tracker.class.Issue, core.class.Class, serverNotification.mixin.TextPresenter, {
+    presenter: serverTracker.function.IssueTextPresenter
+  })
+
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverTracker.trigger.OnIssueUpdate
   })

@@ -14,11 +14,11 @@
 // limitations under the License.
 //
 
-import core, { Account, Class, Doc, Ref, TxCreateDoc, TxFactory, TxUpdateDoc } from '@hcengineering/core'
-import type { Resource, Plugin } from '@hcengineering/platform'
-import { plugin } from '@hcengineering/platform'
-import type { TriggerControl, TriggerFunc } from '@hcengineering/server-core'
+import contact, { Employee, EmployeeAccount } from '@hcengineering/contact'
+import core, { Account, Class, Doc, Mixin, Ref, TxCreateDoc, TxFactory, TxUpdateDoc } from '@hcengineering/core'
 import notification, { LastView } from '@hcengineering/notification'
+import { Plugin, plugin, Resource } from '@hcengineering/platform'
+import type { TriggerControl, TriggerFunc } from '@hcengineering/server-core'
 
 /**
  * @public
@@ -72,6 +72,60 @@ export async function getUpdateLastViewTx (
 /**
  * @public
  */
+export async function getEmployeeAccount (
+  employee: Ref<Employee>,
+  control: TriggerControl
+): Promise<EmployeeAccount | undefined> {
+  const account = (
+    await control.modelDb.findAll(
+      contact.class.EmployeeAccount,
+      {
+        employee
+      },
+      { limit: 1 }
+    )
+  )[0]
+  return account
+}
+
+/**
+ * @public
+ */
+export async function getEmployeeAccountById (
+  _id: Ref<Account>,
+  control: TriggerControl
+): Promise<EmployeeAccount | undefined> {
+  const account = (
+    await control.modelDb.findAll(
+      contact.class.EmployeeAccount,
+      {
+        _id: _id as Ref<EmployeeAccount>
+      },
+      { limit: 1 }
+    )
+  )[0]
+  return account
+}
+
+/**
+ * @public
+ */
+export async function getEmployee (employee: Ref<Employee>, control: TriggerControl): Promise<Employee | undefined> {
+  const account = (
+    await control.findAll(
+      contact.class.Employee,
+      {
+        _id: employee
+      },
+      { limit: 1 }
+    )
+  )[0]
+  return account
+}
+
+/**
+ * @public
+ */
 export async function createLastViewTx (
   findAll: TriggerControl['findAll'],
   attachedTo: Ref<Doc>,
@@ -106,7 +160,30 @@ export async function createLastViewTx (
 /**
  * @public
  */
+export type Presenter = (doc: Doc, control: TriggerControl) => Promise<string>
+
+/**
+ * @public
+ */
+export interface HTMLPresenter extends Class<Doc> {
+  presenter: Resource<Presenter>
+}
+
+/**
+ * @public
+ */
+export interface TextPresenter extends Class<Doc> {
+  presenter: Resource<Presenter>
+}
+
+/**
+ * @public
+ */
 export default plugin(serverNotificationId, {
+  mixin: {
+    HTMLPresenter: '' as Ref<Mixin<HTMLPresenter>>,
+    TextPresenter: '' as Ref<Mixin<TextPresenter>>
+  },
   trigger: {
     OnBacklinkCreate: '' as Resource<TriggerFunc>,
     UpdateLastView: '' as Resource<TriggerFunc>

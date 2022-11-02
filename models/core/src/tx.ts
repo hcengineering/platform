@@ -18,21 +18,20 @@ import {
   Class,
   Data,
   Doc,
+  DocumentClassQuery,
   DocumentUpdate,
   DOMAIN_TX,
   IndexKind,
   Mixin,
   MixinUpdate,
-  PropertyType,
   Ref,
   Space,
   Tx,
-  TxBulkWrite,
+  TxApplyIf,
   TxCollectionCUD,
   TxCreateDoc,
   TxCUD,
   TxMixin,
-  TxPutBag,
   TxRemoveDoc,
   TxUpdateDoc
 } from '@hcengineering/core'
@@ -53,7 +52,7 @@ export class TTxModelUpgrade extends TTx {}
 @Model(core.class.TxCUD, core.class.Tx)
 export class TTxCUD<T extends Doc> extends TTx implements TxCUD<T> {
   @Index(IndexKind.Indexed)
-  objectId!: Ref<T>
+    objectId!: Ref<T>
 
   objectClass!: Ref<Class<T>>
 }
@@ -67,13 +66,6 @@ export class TTxCreateDoc<T extends Doc> extends TTxCUD<T> implements TxCreateDo
 export class TTxCollectionCUD<T extends Doc, P extends AttachedDoc> extends TTxCUD<T> implements TxCollectionCUD<T, P> {
   collection!: string
   tx!: TxCUD<P>
-}
-
-@Model(core.class.TxPutBag, core.class.TxCUD)
-export class TTxPutBag<T extends PropertyType> extends TTxCUD<Doc> implements TxPutBag<T> {
-  bag!: string
-  key!: string
-  value!: T
 }
 
 @Model(core.class.TxMixin, core.class.TxCUD)
@@ -90,7 +82,11 @@ export class TTxUpdateDoc<T extends Doc> extends TTxCUD<T> implements TxUpdateDo
 @Model(core.class.TxRemoveDoc, core.class.TxCUD)
 export class TTxRemoveDoc<T extends Doc> extends TTxCUD<T> implements TxRemoveDoc<T> {}
 
-@Model(core.class.TxBulkWrite, core.class.Tx)
-export class TTxBulkWrite extends TTx implements TxBulkWrite {
+@Model(core.class.TxApplyIf, core.class.Tx)
+export class TTxApplyIf extends TTx implements TxApplyIf {
+  scope!: string
+
+  // All matches should be true with at least one document.
+  match!: DocumentClassQuery<Doc>[]
   txes!: TxCUD<Doc>[]
 }

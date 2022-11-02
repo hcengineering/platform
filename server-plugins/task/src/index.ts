@@ -13,9 +13,9 @@
 // limitations under the License.
 //
 
-import { Doc } from '@hcengineering/core'
 import type { Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
+import { Presenter } from '@hcengineering/server-notification'
 
 /**
  * @public
@@ -27,7 +27,7 @@ export const serverTaskId = 'server-task' as Plugin
  */
 export default plugin(serverTaskId, {
   function: {
-    IssueHTMLPresenter: '' as Resource<(doc: Doc) => string>,
-    IssueTextPresenter: '' as Resource<(doc: Doc) => string>
+    IssueHTMLPresenter: '' as Resource<Presenter>,
+    IssueTextPresenter: '' as Resource<Presenter>
   }
 })

@@ -56,6 +56,18 @@ services:
       - MINIO_ENDPOINT=minio
       - MINIO_ACCESS_KEY=minioadmin
       - MINIO_SECRET_KEY=minioadmin
+  collaborator:
+    image: hardcoreeng/collaborator
+    links:
+      - transactor
+    ports:
+      - 3078:3078
+    environment:
+      - COLLABORATOR_PORT=3078
+      - SECRET=secret
+      - MINIO_ENDPOINT=minio
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin      
   front:
     image: hardcoreeng/front
     links:
@@ -69,6 +81,7 @@ services:
       - SERVER_PORT=8080
       - SERVER_SECRET=secret
       - ACCOUNTS_URL=http://localhost:3000
+      - COLLABORATOR_URL=ws://localhost:3078
       - FRONT_URL=http://localhost:8087
       - UPLOAD_URL=/files
       - TRANSACTOR_URL=ws://localhost:3333

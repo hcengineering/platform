@@ -18,7 +18,7 @@ import type { Account, Arr, AttachedDoc, Class, Data, Doc, Domain, Mixin, Proper
 import core from './component'
 import { _getOperator } from './operator'
 import { _toDoc } from './proxy'
-import type { TxResult } from './storage'
+import type { DocumentQuery, TxResult } from './storage'
 import { generateId } from './utils'
 
 /**
@@ -63,16 +63,23 @@ export interface TxCollectionCUD<T extends Doc, P extends AttachedDoc> extends T
 /**
  * @public
  */
-export interface TxPutBag<T extends PropertyType> extends TxCUD<Doc> {
-  bag: string
-  key: string
-  value: T
+export interface DocumentClassQuery<T extends Doc> {
+  _class: Ref<Class<T>>
+  query: DocumentQuery<T>
 }
 
 /**
  * @public
+ * Apply set of transactions in sequential manner with verification of set of queries.
  */
-export interface TxBulkWrite extends Tx {
+export interface TxApplyIf extends Tx {
+  // only one operation per scope is allowed at one time.
+  scope: string
+
+  // All matches should be true with at least one document.
+  match: DocumentClassQuery<Doc>[]
+
+  // If all matched execute following transactions.
   txes: TxCUD<Doc>[]
 }
 
@@ -182,7 +189,7 @@ export interface PushOptions<T extends object> {
 /**
  * @public
  */
-export interface UpdateArrayOptions<T extends object> {
+export interface SetEmbeddedOptions<T extends object> {
   $update?: Partial<OmitNever<ArrayAsElementUpdate<Required<T>>>>
 }
 
@@ -215,7 +222,7 @@ export interface SpaceUpdate {
  */
 export type DocumentUpdate<T extends Doc> = Partial<Data<T>> &
 PushOptions<T> &
-UpdateArrayOptions<T> &
+SetEmbeddedOptions<T> &
 PushMixinOptions<T> &
 IncOptions<T> &
 SpaceUpdate
@@ -261,10 +268,9 @@ export abstract class TxProcessor implements WithTx {
         return await this.txRemoveDoc(tx as TxRemoveDoc<Doc>)
       case core.class.TxMixin:
         return await this.txMixin(tx as TxMixin<Doc, Doc>)
-      case core.class.TxPutBag:
-        return await this.txPutBag(tx as TxPutBag<PropertyType>)
-      case core.class.TxBulkWrite:
-        return await this.txBulkWrite(tx as TxBulkWrite)
+      case core.class.TxApplyIf:
+        // Apply if processed on server
+        return await Promise.resolve({})
     }
     throw new Error('TxProcessor: unhandled transaction class: ' + tx._class)
   }
@@ -358,7 +364,6 @@ export abstract class TxProcessor implements WithTx {
   }
 
   protected abstract txCreateDoc (tx: TxCreateDoc<Doc>): Promise<TxResult>
-  protected abstract txPutBag (tx: TxPutBag<PropertyType>): Promise<TxResult>
   protected abstract txUpdateDoc (tx: TxUpdateDoc<Doc>): Promise<TxResult>
   protected abstract txRemoveDoc (tx: TxRemoveDoc<Doc>): Promise<TxResult>
   protected abstract txMixin (tx: TxMixin<Doc, Doc>): Promise<TxResult>
@@ -379,13 +384,6 @@ export abstract class TxProcessor implements WithTx {
       return this.txCreateDoc(d)
     }
     return this.tx(tx.tx)
-  }
-
-  protected async txBulkWrite (bulkTx: TxBulkWrite): Promise<TxResult> {
-    for (const tx of bulkTx.txes) {
-      await this.tx(tx)
-    }
-    return {}
   }
 }
 
@@ -432,29 +430,6 @@ export class TxFactory {
       modifiedBy: this.account,
       collection,
       tx
-    }
-  }
-
-  createTxPutBag<P extends PropertyType>(
-    _class: Ref<Class<Doc>>,
-    space: Ref<Space>,
-    objectId: Ref<Doc>,
-    bag: string,
-    key: string,
-    value: P
-  ): TxPutBag<P> {
-    return {
-      _id: generateId(),
-      _class: core.class.TxPutBag,
-      space: core.space.Tx,
-      modifiedBy: this.account,
-      modifiedOn: Date.now(),
-      objectId,
-      objectClass: _class,
-      objectSpace: space,
-      bag,
-      key,
-      value
     }
   }
 
@@ -513,14 +488,16 @@ export class TxFactory {
     }
   }
 
-  createTxBulkWrite (space: Ref<Space>, txes: TxCUD<Doc>[]): TxBulkWrite {
+  createTxApplyIf (space: Ref<Space>, scope: string, match: DocumentClassQuery<Doc>[], txes: TxCUD<Doc>[]): TxApplyIf {
     return {
       _id: generateId(),
-      _class: core.class.TxBulkWrite,
+      _class: core.class.TxApplyIf,
       space: core.space.Tx,
       modifiedBy: this.account,
       modifiedOn: Date.now(),
       objectSpace: space,
+      scope,
+      match,
       txes
     }
   }

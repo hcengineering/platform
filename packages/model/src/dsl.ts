@@ -423,10 +423,3 @@ export function Collection<T extends AttachedDoc> (clazz: Ref<Class<T>>, itemLab
 export function ArrOf<T extends PropertyType | Ref<Doc>> (type: Type<T>): TypeArrOf<T> {
   return { _class: core.class.ArrOf, label: core.string.Array, of: type }
 }
-
-/**
- * @public
- */
-export function Bag (): Type<Record<string, PropertyType>> {
-  return { _class: core.class.Bag, label: core.string.Bag }
-}

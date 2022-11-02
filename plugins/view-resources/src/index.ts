@@ -113,7 +113,7 @@ export {
 }
 
 export default async (): Promise<Resources> => ({
-  actionImpl: actionImpl,
+  actionImpl,
   component: {
     ClassPresenter,
     ObjectFilter,

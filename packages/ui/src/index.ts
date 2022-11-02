@@ -135,6 +135,8 @@ export { default as IconDetailsFilled } from './components/icons/DetailsFilled.s
 export { default as IconScale } from './components/icons/Scale.svelte'
 export { default as IconScaleFull } from './components/icons/ScaleFull.svelte'
 export { default as IconOpen } from './components/icons/Open.svelte'
+export { default as IconCheckCircle } from './components/icons/CheckCircle.svelte'
+export { default as IconColStar } from './components/icons/ColStar.svelte'
 
 export { default as PanelInstance } from './components/PanelInstance.svelte'
 export { default as Panel } from './components/Panel.svelte'
@@ -148,6 +150,11 @@ export { default as ListView } from './components/ListView.svelte'
 export { default as ToggleButton } from './components/ToggleButton.svelte'
 export { default as ExpandCollapse } from './components/ExpandCollapse.svelte'
 export { default as BarDashboard } from './components/BarDashboard.svelte'
+export { default as Notifications } from './components/notifications/Notifications.svelte'
+export { default as notificationsStore } from './components/notifications/store'
+export { NotificationPosition } from './components/notifications/NotificationPosition'
+export { NotificationSeverity } from './components/notifications/NotificationSeverity'
+export { Notification } from './components/notifications/Notification'
 
 export * from './types'
 export * from './location'
@@ -180,7 +187,9 @@ export const deviceOptionsStore = writable<DeviceOptions>({
   docWidth: 0,
   docHeight: 0,
   isPortrait: false,
-  isMobile: false
+  isMobile: false,
+  minWidth: false,
+  twoRows: false
 })
 
 export default uis

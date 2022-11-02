@@ -38,12 +38,13 @@
     showPopup,
     TooltipInstance,
     PopupPosAlignment,
-    checkMobile
+    checkMobile,
+    deviceOptionsStore as deviceInfo
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { ActionContext, ActionHandler } from '@hcengineering/view-resources'
   import type { Application, NavigatorModel, SpecialNavModel, ViewConfiguration } from '@hcengineering/workbench'
-  import { onDestroy, onMount, tick } from 'svelte'
+  import { getContext, onDestroy, onMount, tick } from 'svelte'
   import { doNavigate } from '../utils'
   import workbench from '../plugin'
   import AccountPopup from './AccountPopup.svelte'
@@ -53,7 +54,6 @@
   import NavHeader from './NavHeader.svelte'
   import Navigator from './Navigator.svelte'
   import SpaceView from './SpaceView.svelte'
-  import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
 
   export let client: Client
   let contentPanel: HTMLElement
@@ -138,6 +138,9 @@
 
   onDestroy(
     location.subscribe(async (loc) => {
+      if (window.nsWebViewBridge !== undefined) {
+        window.nsWebViewBridge.emit('navigate', JSON.stringify(loc))
+      }
       closeTooltip()
       closePopup()
 
@@ -276,7 +279,7 @@
     doNavigate([], undefined, {
       mode: 'space',
       space: spaceId,
-      spaceSpecial: spaceSpecial
+      spaceSpecial
     })
     checkOnHide()
   }
@@ -409,6 +412,9 @@
             location.fragment = undefined
             location.query = undefined
             navigate(location)
+          } else if (data.action === 'theme') {
+            const { setTheme } = getContext('theme') as any
+            setTheme(`theme-${data.value}`)
           }
         } catch (err) {
           console.log(`Couldn't recognize event ${JSON.stringify(event)}`)
@@ -593,6 +599,7 @@
     min-height: 0;
     width: 100%;
     height: 100%;
+    touch-action: none;
   }
   .hamburger-container {
     display: flex;
@@ -605,7 +612,7 @@
       margin-top: 0.25rem;
     }
     &.mini {
-      position: fixed;
+      position: absolute;
       top: 4px;
       left: 4px;
     }

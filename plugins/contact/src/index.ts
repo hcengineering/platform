@@ -27,9 +27,9 @@ import {
   Timestamp,
   UXObject
 } from '@hcengineering/core'
-import type { Asset, Plugin } from '@hcengineering/platform'
+import type { Asset, Plugin, Resource } from '@hcengineering/platform'
 import { IntlString, plugin } from '@hcengineering/platform'
-import type { AnyComponent } from '@hcengineering/ui'
+import type { AnyComponent, IconSize } from '@hcengineering/ui'
 import { ViewAction, Viewlet } from '@hcengineering/view'
 
 /**
@@ -67,6 +67,28 @@ export interface Channel extends AttachedDoc {
   value: string
   items?: number
   lastMessage?: Timestamp
+}
+
+/**
+ * @public
+ */
+export enum AvatarType {
+  COLOR = 'color',
+  IMAGE = 'image',
+  GRAVATAR = 'gravatar'
+}
+
+/**
+ * @public
+ */
+export type GetAvatarUrl = (uri: string, size: IconSize) => string
+
+/**
+ * @public
+ */
+export interface AvatarProvider extends Doc {
+  type: AvatarType
+  getUrl: Resource<GetAvatarUrl>
 }
 
 /**
@@ -167,6 +189,7 @@ export const contactId = 'contact' as Plugin
  */
 const contactPlugin = plugin(contactId, {
   class: {
+    AvatarProvider: '' as Ref<Class<AvatarProvider>>,
     ChannelProvider: '' as Ref<Class<ChannelProvider>>,
     Channel: '' as Ref<Class<Channel>>,
     Contact: '' as Ref<Class<Contact>>,
@@ -194,6 +217,16 @@ const contactPlugin = plugin(contactId, {
     GitHub: '' as Ref<ChannelProvider>,
     Facebook: '' as Ref<ChannelProvider>,
     Homepage: '' as Ref<ChannelProvider>
+  },
+  avatarProvider: {
+    Color: '' as Ref<AvatarProvider>,
+    Image: '' as Ref<AvatarProvider>,
+    Gravatar: '' as Ref<AvatarProvider>
+  },
+  function: {
+    GetColorUrl: '' as Resource<GetAvatarUrl>,
+    GetFileUrl: '' as Resource<GetAvatarUrl>,
+    GetGravatarUrl: '' as Resource<GetAvatarUrl>
   },
   icon: {
     ContactApplication: '' as Asset,
@@ -226,7 +259,10 @@ const contactPlugin = plugin(contactId, {
     PersonAlreadyExists: '' as IntlString,
     Person: '' as IntlString,
     Employee: '' as IntlString,
-    CreateOrganization: '' as IntlString
+    CreateOrganization: '' as IntlString,
+    UseImage: '' as IntlString,
+    UseGravatar: '' as IntlString,
+    UseColor: '' as IntlString
   },
   viewlet: {
     TableMember: '' as Ref<Viewlet>,

@@ -56,30 +56,30 @@ export class TCalendar extends TSpaceWithStates implements Calendar {}
 export class TEvent extends TAttachedDoc implements Event {
   @Prop(TypeString(), calendar.string.Title)
   @Index(IndexKind.FullText)
-  title!: string
+    title!: string
 
   @Prop(TypeMarkup(), calendar.string.Description)
   @Index(IndexKind.FullText)
-  description!: Markup
+    description!: Markup
 
   @Prop(TypeString(), calendar.string.Location, calendar.icon.Location)
   @Index(IndexKind.FullText)
-  location?: string
+    location?: string
 
   @Prop(TypeDate(true), calendar.string.Date)
-  date!: Timestamp
+    date!: Timestamp
 
   @Prop(TypeDate(true), calendar.string.DueTo)
-  dueDate!: Timestamp
+    dueDate!: Timestamp
 
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, undefined, attachment.string.Files)
-  attachments?: number
+    attachments?: number
 
   @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
-  comments?: number
+    comments?: number
 
   @Prop(ArrOf(TypeRef(contact.class.Employee)), calendar.string.Participants)
-  participants!: Ref<Employee>[]
+    participants!: Ref<Employee>[]
 }
 
 @Mixin(calendar.mixin.Reminder, calendar.class.Event)
@@ -87,12 +87,12 @@ export class TEvent extends TAttachedDoc implements Event {
 export class TReminder extends TEvent implements Reminder {
   @Prop(TypeDate(true), calendar.string.Shift)
   @Hidden()
-  shift!: Timestamp
+    shift!: Timestamp
 
   @Prop(TypeString(), calendar.string.State)
   @Index(IndexKind.Indexed)
   @Hidden()
-  state!: 'active' | 'done'
+    state!: 'active' | 'done'
 }
 
 export function createModel (builder: Builder): void {
@@ -128,7 +128,10 @@ export function createModel (builder: Builder): void {
     notification.class.NotificationType,
     core.space.Model,
     {
-      label: calendar.string.Reminder
+      label: calendar.string.Reminder,
+      textTemplate: 'Reminder: {doc}',
+      htmlTemplate: 'Reminder: {doc}',
+      subjectTemplate: 'Reminder: {doc}'
     },
     calendar.ids.ReminderNotification
   )

@@ -183,7 +183,7 @@
     const targetClass = (hierarchy.getAttribute(_class, type.key).type as RefTo<Doc>).to
     return {
       _class: targetClass,
-      index: index,
+      index,
       target,
       onChange: (e: Filter | undefined) => {
         setNestedFilter(type, e)
