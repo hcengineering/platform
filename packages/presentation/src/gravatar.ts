@@ -62,3 +62,11 @@ export function getGravatarUrl (
   }
   return `https://gravatar.com/avatar/${gravatarId}?s=${width}&d=${placeholder}`
 }
+
+export async function checkHasGravatar (gravatarId: string): Promise<boolean> {
+  try {
+    return (await fetch(getGravatarUrl(gravatarId, 'full', '404'))).ok
+  } catch {
+    return false
+  }
+}

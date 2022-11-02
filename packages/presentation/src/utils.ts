@@ -235,7 +235,7 @@ export function getAttributePresenterClass (
   return { attrClass, category }
 }
 
-export function getAvatarTypeDropdownItems (hasEmail: boolean): DropdownIntlItem[] {
+export function getAvatarTypeDropdownItems (hasGravatar: boolean): DropdownIntlItem[] {
   return [
     {
       id: AvatarType.COLOR,
@@ -245,7 +245,7 @@ export function getAvatarTypeDropdownItems (hasEmail: boolean): DropdownIntlItem
       id: AvatarType.IMAGE,
       label: contact.string.UseImage
     },
-    ...(hasEmail
+    ...(hasGravatar
       ? [
           {
             id: AvatarType.GRAVATAR,
