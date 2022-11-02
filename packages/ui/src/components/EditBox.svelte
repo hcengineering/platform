@@ -33,6 +33,7 @@
   export let kind: EditStyle = 'editbox'
   export let focus: boolean = false
   export let focusable: boolean = false
+  export let disabled: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -128,6 +129,7 @@
     {/if}
     {#if format === 'password'}
       <input
+        {disabled}
         id="userPassword"
         bind:this={input}
         type="Password"
@@ -142,6 +144,7 @@
       />
     {:else if format === 'number'}
       <input
+        {disabled}
         bind:this={input}
         type="number"
         class="number"
@@ -156,6 +159,7 @@
       />
     {:else}
       <input
+        {disabled}
         bind:this={input}
         type="text"
         bind:value

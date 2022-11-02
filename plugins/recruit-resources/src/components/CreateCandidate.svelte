@@ -404,7 +404,7 @@
 <Card
   label={recruit.string.CreateTalent}
   okAction={createCandidate}
-  canSave={firstName.length > 0 && lastName.length > 0}
+  canSave={!loading && firstName.length > 0 && lastName.length > 0}
   on:close={() => {
     dispatch('close')
   }}
@@ -423,6 +423,7 @@
   <div class="flex-between">
     <div class="flex-col">
       <EditBox
+        disabled={loading}
         placeholder={recruit.string.PersonFirstNamePlaceholder}
         bind:value={firstName}
         kind={'large-style'}
@@ -431,6 +432,7 @@
         focusIndex={1}
       />
       <EditBox
+        disabled={loading}
         placeholder={recruit.string.PersonLastNamePlaceholder}
         bind:value={lastName}
         maxWidth={'30rem'}
@@ -439,6 +441,7 @@
       />
       <div class="mt-1">
         <EditBox
+          disabled={loading}
           placeholder={recruit.string.Title}
           bind:value={object.title}
           kind={'small-style'}
@@ -447,6 +450,7 @@
         />
       </div>
       <EditBox
+        disabled={loading}
         placeholder={recruit.string.Location}
         bind:value={object.city}
         kind={'small-style'}
@@ -456,6 +460,7 @@
     </div>
     <div class="ml-4">
       <EditableAvatar
+        disabled={loading}
         bind:this={avatarEditor}
         bind:direct={avatar}
         avatar={object.avatar}
@@ -466,18 +471,20 @@
   </div>
   <svelte:fragment slot="pool">
     <ChannelsDropdown
+      editable={!loading}
       focusIndex={10}
       bind:value={channels}
-      editable
       highlighted={matchedChannels.map((it) => it.provider)}
     />
     <YesNo
+      disabled={loading}
       focusIndex={100}
       label={recruit.string.Onsite}
       tooltip={recruit.string.WorkLocationPreferences}
       bind:value={object.onsite}
     />
     <YesNo
+      disabled={loading}
       focusIndex={101}
       label={recruit.string.Remote}
       tooltip={recruit.string.WorkLocationPreferences}
@@ -486,6 +493,7 @@
     <Component
       is={tags.component.TagsDropdownEditor}
       props={{
+        disabled: loading,
         focusIndex: 102,
         items: skills,
         key,

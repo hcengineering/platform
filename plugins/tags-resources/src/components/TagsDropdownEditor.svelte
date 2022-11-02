@@ -35,6 +35,8 @@
   export let width: string | undefined = undefined
   export let labelDirection: TooltipAlignment | undefined = undefined
 
+  export let disabled: boolean = false
+
   const dispatch = createEventDispatcher()
 
   let keyLabel: string = ''
@@ -74,6 +76,7 @@
 </script>
 
 <Button
+  {disabled}
   icon={key.attr.icon ?? tags.icon.Tags}
   label={items.length > 0 ? undefined : key.attr.label}
   width={width ?? 'min-content'}
