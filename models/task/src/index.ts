@@ -387,6 +387,10 @@ export function createModel (builder: Builder): void {
     presenter: task.component.TaskPresenter
   })
 
+  builder.mixin(task.class.KanbanTemplate, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: task.component.KanbanTemplatePresenter
+  })
+
   builder.mixin(task.class.Issue, core.class.Class, view.mixin.ObjectEditor, {
     editor: task.component.EditIssue
   })
