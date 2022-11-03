@@ -42,7 +42,7 @@
   import Lost from '../icons/Lost.svelte'
   import recruit from '../../../../recruit-resources/src/plugin'
 
-  export let template: KanbanTemplate
+  export let template: KanbanTemplate | undefined = undefined
   export let states: State[] = []
   export let wonStates: DoneState[] = []
   export let lostStates: DoneState[] = []
@@ -105,15 +105,15 @@
   }
 </script>
 
-{#if template.space === 'recruit:space:VacancyTemplates'}
+{#if template?.space === 'recruit:space:VacancyTemplates'}
   <div class="flex-no-shrink flex-between trans-title uppercase">
     <Label label={task.string.ShortDescription} />
   </div>
   <div class="mt-3">
     <EditBox
       kind={'small-style'}
-      bind:value={template.shortDescription}
-      on:change={() => onShortDescriptionChange(template.shortDescription)}
+      value={template?.shortDescription ?? ''}
+      on:change={() => onShortDescriptionChange(template?.shortDescription ?? '')}
     />
   </div>
   <div class="mt-9">
@@ -121,12 +121,12 @@
       <Label label={task.string.Description} />
     </div>
     <div class="mt-3">
-      {#key template._id}
+      {#key template?._id}
         <StyledTextBox
           emphasized
           alwaysEdit
           showButtons={false}
-          content={template.description}
+          content={template?.description ?? ''}
           on:value={(evt) => onDescriptionChange(evt.detail)}
         />
       {/key}
@@ -150,7 +150,7 @@
           kind={'transparent'}
           size={'small'}
           on:click={() => {
-            showPopup(tracker.component.CreateIssue, { relatedTo: template, space: template.space }, 'top')
+            showPopup(tracker.component.CreateIssue, { relatedTo: template, space: template?.space }, 'top')
           }}
         />
       </div>
