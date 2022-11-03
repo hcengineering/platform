@@ -56,7 +56,7 @@
 
   $: handleSelectedSprintIdUpdated(value, rawSprints)
 
-  $: translate(tracker.string.Sprint, {}).then((result) => (defaultSprintLabel = result))
+  $: translate(tracker.string.NoSprint, {}).then((result) => (defaultSprintLabel = result))
   const sprintIcon = tracker.icon.Sprint
   $: sprintText = shouldShowLabel ? selectedSprint?.label ?? defaultSprintLabel : undefined
 
