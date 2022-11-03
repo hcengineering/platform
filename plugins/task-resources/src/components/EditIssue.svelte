@@ -59,7 +59,7 @@
     <div class="description">
       <StyledTextBox
         bind:content={object.description}
-        placeholder={plugin.string.TaskDescriptionPlaceholder}
+        placeholder={plugin.string.DescriptionPlaceholder}
         on:value={onChangeDescription}
       />
     </div>

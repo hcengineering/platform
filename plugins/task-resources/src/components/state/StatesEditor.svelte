@@ -103,7 +103,6 @@
   async function onShortDescriptionChange (value: string) {
     dispatch('shortDescriptionChange', { value })
   }
-
 </script>
 
 {#if template.space === 'recruit:space:VacancyTemplates'}

@@ -93,7 +93,7 @@
     <div class="tag-container">
       <div class="flex-grow">
         <div class="overflow-label max-w-30">
-          {#if doc._class === "task:class:KanbanTemplate"}
+          {#if doc._class === 'task:class:KanbanTemplate'}
             {@const template = asKanbanTemplate(doc)}
             <span class="overflow-label ml-1-5 caption-color">{template.title}</span>
           {:else}
