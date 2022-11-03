@@ -90,6 +90,8 @@
     "GotoApplicants": "Перейти к кандидатам",
     "GotoRecruitApplication": "Перейти к Приложению Рекрутинг",
     "AddDropHere": "Добавить или перетянуть резюме",
+    "Uploading": "Загрузка...",
+    "Parsing": "Обработка...",
     "CopyId": "Копировать ID",
     "CopyLink": "Копировать ссылку",
     "HasActiveApplicant":"Только активные",

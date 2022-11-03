@@ -88,6 +88,8 @@
     "GotoApplicants": "Go to Applications",
     "GotoRecruitApplication": "Switch to Recruit Application",
     "AddDropHere": "Add or drop resume",
+    "Uploading": "Uploading...",
+    "Parsing": "Parsing...",
     "CopyId": "Copy ID",
     "CopyLink": "Copy link",
     "HasActiveApplicant":"Active Only",

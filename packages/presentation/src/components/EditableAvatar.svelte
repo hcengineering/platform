@@ -28,6 +28,7 @@
   export let size: IconSize
   export let direct: Blob | undefined = undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
+  export let disabled: boolean = false
 
   const [schema, uri] = avatar?.split('://') || []
 
@@ -62,7 +63,9 @@
   const dispatch = createEventDispatcher()
 
   async function showSelectionPopup (e: MouseEvent) {
-    showPopup(SelectAvatarPopup, { avatar, email, id, icon, onSubmit: handlePopupSubmit })
+    if (!disabled) {
+      showPopup(SelectAvatarPopup, { avatar, email, id, icon, onSubmit: handlePopupSubmit })
+    }
   }
 </script>
 
