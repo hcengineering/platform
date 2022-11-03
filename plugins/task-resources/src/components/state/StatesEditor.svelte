@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Ref, Space } from '@hcengineering/core'
+  import { Class, Ref } from '@hcengineering/core'
   import { AttributeEditor, AttributesBar, getClient } from '@hcengineering/presentation'
   import type { DoneState, KanbanTemplate, State } from '@hcengineering/task'
   import {
