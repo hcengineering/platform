@@ -27,6 +27,7 @@ import type {
   Enum,
   EnumOf,
   FullTextData,
+  Hyperlink,
   Interface,
   Obj,
   PluginConfiguration,
@@ -78,6 +79,7 @@ export default plugin(coreId, {
     Type: '' as Ref<Class<Type<any>>>,
     TypeString: '' as Ref<Class<Type<string>>>,
     TypeIntlString: '' as Ref<Class<Type<IntlString>>>,
+    TypeHyperlink: '' as Ref<Class<Type<Hyperlink>>>,
     TypeNumber: '' as Ref<Class<Type<number>>>,
     TypeMarkup: '' as Ref<Class<Type<string>>>,
     TypeBoolean: '' as Ref<Class<Type<boolean>>>,
@@ -131,6 +133,7 @@ export default plugin(coreId, {
     Array: '' as IntlString,
     Name: '' as IntlString,
     Enum: '' as IntlString,
-    Description: '' as IntlString
+    Description: '' as IntlString,
+    Hyperlink: '' as IntlString
   }
 })

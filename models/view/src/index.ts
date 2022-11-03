@@ -295,6 +295,13 @@ export function createModel (builder: Builder): void {
     view.component.StringEditor,
     view.component.StringEditorPopup
   )
+  classPresenter(
+    builder,
+    core.class.TypeHyperlink,
+    view.component.HyperlinkPresenter,
+    view.component.StringEditor,
+    view.component.StringEditorPopup
+  )
   classPresenter(builder, core.class.TypeIntlString, view.component.IntlStringPresenter)
   classPresenter(builder, core.class.TypeNumber, view.component.NumberPresenter, view.component.NumberEditor)
   classPresenter(
@@ -517,6 +524,10 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(core.class.TypeString, core.class.Class, view.mixin.AttributeFilter, {
+    component: view.component.ValueFilter
+  })
+
+  builder.mixin(core.class.TypeHyperlink, core.class.Class, view.mixin.AttributeFilter, {
     component: view.component.ValueFilter
   })
 

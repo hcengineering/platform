@@ -39,6 +39,11 @@ export type Markup = string
 /**
  * @public
  */
+export type Hyperlink = string
+
+/**
+ * @public
+ */
 export interface Obj {
   _class: Ref<Class<this>>
 }
@@ -227,6 +232,11 @@ export interface ArrOf<T extends PropertyType> extends Type<T[]> {
 export interface EnumOf extends Type<string> {
   of: Ref<Enum>
 }
+
+/**
+ * @public
+ */
+export interface TypeHyperlink extends Type<Hyperlink> {}
 
 /**
  * @public
