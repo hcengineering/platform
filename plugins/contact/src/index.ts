@@ -415,9 +415,9 @@ export function getGravatarUrl (
 /**
  * @public
  */
-export async function checkHasGravatar (gravatarId: string): Promise<boolean> {
+export async function checkHasGravatar (gravatarId: string, fetch?: typeof window.fetch): Promise<boolean> {
   try {
-    return (await fetch(getGravatarUrl(gravatarId, 'full', '404'))).ok
+    return (await (fetch ?? window.fetch)(getGravatarUrl(gravatarId, 'full', '404'))).ok
   } catch {
     return false
   }
