@@ -75,6 +75,7 @@
       } else if (avatar && !avatar.includes('://')) {
         selectedAvatar = avatar
       } else {
+        selectedAvatar = ''
         inputRef.click()
       }
     } else {

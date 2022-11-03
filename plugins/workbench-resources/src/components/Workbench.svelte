@@ -279,7 +279,7 @@
     doNavigate([], undefined, {
       mode: 'space',
       space: spaceId,
-      spaceSpecial: spaceSpecial
+      spaceSpecial
     })
     checkOnHide()
   }

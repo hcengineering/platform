@@ -13,16 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import presentation, { Card, createQuery, getAttributePresenterClass, getClient } from '@hcengineering/presentation'
-  import { BuildModelKey, Viewlet, ViewletPreference } from '@hcengineering/view'
   import core, { AnyAttribute, ArrOf, Class, Doc, Lookup, Ref, Type } from '@hcengineering/core'
-  import { Button, ToggleButton } from '@hcengineering/ui'
-  import { createEventDispatcher } from 'svelte'
   import { IntlString } from '@hcengineering/platform'
-  import { buildConfigLookup, getLookupClass, getLookupLabel, getLookupProperty } from '../utils'
-  import { deepEqual } from 'fast-equals'
   import preferencePlugin from '@hcengineering/preference'
+  import presentation, { Card, createQuery, getAttributePresenterClass, getClient } from '@hcengineering/presentation'
+  import { Button, getPlatformColorForText, ToggleButton } from '@hcengineering/ui'
+  import { BuildModelKey, Viewlet, ViewletPreference } from '@hcengineering/view'
+  import { deepEqual } from 'fast-equals'
+  import { createEventDispatcher } from 'svelte'
   import view from '../plugin'
+  import { buildConfigLookup, getLookupClass, getLookupLabel, getLookupProperty } from '../utils'
 
   export let viewlet: Viewlet
 
@@ -237,6 +237,16 @@
       selected = i
     }
   }
+
+  function getColor (attribute: AttributeConfig): string {
+    const color = getPlatformColorForText(attribute._class)
+    return `${color + (attribute.enabled ? 'cc' : '33')};`
+  }
+
+  function getStyle (attribute: AttributeConfig): string {
+    const color = getPlatformColorForText(attribute._class)
+    return `border: 1px solid ${color + (attribute.enabled ? 'ff' : 'cc')};`
+  }
 </script>
 
 <Card
@@ -252,6 +262,7 @@
     {#each attributes as attribute, i}
       <div
         class="mr-2 mb-2"
+        style={getStyle(attribute)}
         bind:this={elements[i]}
         draggable={true}
         on:dragover|preventDefault={(ev) => {
@@ -265,7 +276,7 @@
           selected = undefined
         }}
       >
-        <ToggleButton label={attribute.label} bind:value={attribute.enabled} />
+        <ToggleButton backgroundColor={getColor(attribute)} label={attribute.label} bind:value={attribute.enabled} />
       </div>
     {/each}
   </div>

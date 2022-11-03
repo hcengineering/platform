@@ -14,12 +14,24 @@
 //
 
 import { Employee } from '@hcengineering/contact'
-import type { AttachedDoc, Class, Doc, Markup, Ref, RelatedDocument, Space, Timestamp, Type } from '@hcengineering/core'
+import type {
+  AttachedDoc,
+  Class,
+  Doc,
+  Markup,
+  Obj,
+  Ref,
+  RelatedDocument,
+  Space,
+  Timestamp,
+  Type
+} from '@hcengineering/core'
 import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { TagCategory, TagElement } from '@hcengineering/tags'
 import { AnyComponent, Location } from '@hcengineering/ui'
 import { Action, ActionCategory } from '@hcengineering/view'
+import { TagReference } from '@hcengineering/tags'
 
 /**
  * @public
@@ -184,6 +196,34 @@ export interface Issue extends AttachedDoc {
 /**
  * @public
  */
+export interface IssueDraft extends Obj {
+  issueId: Ref<Issue>
+  title: string
+  description: Markup
+  status: Ref<IssueStatus>
+  priority: IssuePriority
+  assignee: Ref<Employee> | null
+  project: Ref<Project> | null
+  team: Ref<Team> | null
+  dueDate: Timestamp | null
+  sprint?: Ref<Sprint> | null
+
+  // Estimation in man days
+  estimation: number
+  parentIssue?: string
+  labels?: TagReference[]
+  subIssues?: IssueTemplateChild[]
+  template?: {
+    // A template issue is based on
+    template: Ref<IssueTemplate>
+    // Child id in template
+    childId?: string
+  }
+}
+
+/**
+ * @public
+ */
 export interface IssueTemplateData {
   title: string
   description: Markup
@@ -325,6 +365,7 @@ export default plugin(trackerId, {
   class: {
     Team: '' as Ref<Class<Team>>,
     Issue: '' as Ref<Class<Issue>>,
+    IssueDraft: '' as Ref<Class<IssueDraft>>,
     IssueTemplate: '' as Ref<Class<IssueTemplate>>,
     Document: '' as Ref<Class<Document>>,
     Project: '' as Ref<Class<Project>>,

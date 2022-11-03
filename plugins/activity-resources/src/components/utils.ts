@@ -57,7 +57,7 @@ async function createPseudoViewlet (
     return {
       display,
       icon: docClass.icon ?? activity.icon.Activity,
-      label: label,
+      label,
       labelParams: {
         _class: trLabel,
         collection

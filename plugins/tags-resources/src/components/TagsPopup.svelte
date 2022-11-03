@@ -76,7 +76,7 @@
       selected = [..._selected, element._id]
       dispatch('update', { action: 'add', tag: element })
     }
-    dispatch('update', { action: 'selected', selected: selected })
+    dispatch('update', { action: 'selected', selected })
   }
   const toggleGroup = (ev: MouseEvent): void => {
     const el: HTMLElement = ev.currentTarget as HTMLElement

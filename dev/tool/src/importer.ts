@@ -170,7 +170,7 @@ export async function importXml (
               {
                 name: f,
                 file: attachId,
-                type: type,
+                type,
                 size: stats.size,
                 lastModified: stats.mtime.getTime()
               },

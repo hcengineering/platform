@@ -73,8 +73,8 @@ function Delete (object: Doc): void {
   )
 }
 
-async function Move (object: Doc): Promise<void> {
-  showPopup(MoveView, { object })
+async function Move (docs: Doc | Doc[]): Promise<void> {
+  showPopup(MoveView, { selected: docs })
 }
 
 let $focusStore: FocusSelection

@@ -15,12 +15,24 @@
 //
 -->
 <script lang="ts">
-  import { DocumentVersion } from '@hcengineering/document'
-  import { getPanelURI, Icon, Label } from '@hcengineering/ui'
+  import { Ref, WithLookup } from '@hcengineering/core'
+  import { Document, DocumentVersion } from '@hcengineering/document'
+  import { getClient } from '@hcengineering/presentation'
+  import { getPanelURI, Icon } from '@hcengineering/ui'
   import document from '../plugin'
 
-  export let value: DocumentVersion
+  export let value: WithLookup<DocumentVersion>
   export let inline = false
+
+  $: doc = value.$lookup?.attachedTo as Document
+
+  $: if (doc === undefined) {
+    getClient()
+      .findOne(document.class.Document, { _id: value.attachedTo as Ref<Document> })
+      .then((res) => {
+        doc = res as Document
+      })
+  }
 </script>
 
 {#if value}
@@ -33,8 +45,7 @@
       <Icon icon={document.icon.Document} size={'small'} />
     </div>
     <span class="label">
-      <Label label={document.string.Version} />
-      {value.version}
+      {doc?.name} - {value.version}
     </span>
   </a>
 {/if}

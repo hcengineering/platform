@@ -254,6 +254,7 @@
       <div
         bind:this={divBox}
         class="box"
+        class:align-center={contentDirection === 'horizontal'}
         style:padding
         style:flex-direction={contentDirection === 'vertical'
           ? 'column'

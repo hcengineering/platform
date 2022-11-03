@@ -35,7 +35,7 @@
     attachedTo: review,
     attachedToClass: recruit.class.Review,
     _class: recruit.class.Opinion,
-    space: space,
+    space,
     _id: generateId(),
     collection: 'reviews',
     modifiedOn: Date.now(),

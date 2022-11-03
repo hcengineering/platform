@@ -18,6 +18,7 @@ import type { Asset, IntlString, Metadata, Plugin, Resource } from '@hcengineeri
 import { plugin } from '@hcengineering/platform'
 import { AnyComponent, Location } from '@hcengineering/ui'
 import { ViewAction } from '@hcengineering/view'
+import type { Preference } from '@hcengineering/preference'
 
 /**
  * @public
@@ -35,6 +36,13 @@ export interface Application extends Doc {
 
   navHeaderComponent?: AnyComponent
   navFooterComponent?: AnyComponent
+}
+
+/**
+ * @public
+ */
+export interface HiddenApplication extends Preference {
+  attachedTo: Ref<Application>
 }
 
 /**
@@ -103,7 +111,8 @@ export const workbenchId = 'workbench' as Plugin
 
 export default plugin(workbenchId, {
   class: {
-    Application: '' as Ref<Class<Application>>
+    Application: '' as Ref<Class<Application>>,
+    HiddenApplication: '' as Ref<Class<HiddenApplication>>
   },
   mixin: {
     SpaceView: '' as Ref<Mixin<SpaceView>>

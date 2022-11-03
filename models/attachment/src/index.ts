@@ -31,26 +31,26 @@ export const DOMAIN_ATTACHMENT = 'attachment' as Domain
 export class TAttachment extends TAttachedDoc implements Attachment {
   @Prop(TypeString(), attachment.string.Name)
   @Index(IndexKind.FullText)
-  name!: string
+    name!: string
 
   @Prop(TypeString(), attachment.string.File)
-  file!: string
+    file!: string
 
   @Prop(TypeString(), attachment.string.Size)
-  size!: number
+    size!: number
 
   @Prop(TypeString(), attachment.string.Type)
   @Index(IndexKind.FullText)
-  type!: string
+    type!: string
 
   @Prop(TypeTimestamp(), attachment.string.Date)
-  lastModified!: number
+    lastModified!: number
 
   @Prop(TypeString(), attachment.string.Description)
-  description!: string
+    description!: string
 
   @Prop(TypeBoolean(), attachment.string.Pinned)
-  pinned!: boolean
+    pinned!: boolean
 }
 
 @Model(attachment.class.Photo, attachment.class.Attachment)
@@ -60,7 +60,7 @@ export class TPhoto extends TAttachment implements Photo {}
 @Model(attachment.class.SavedAttachments, preference.class.Preference)
 export class TSavedAttachments extends TPreference implements SavedAttachments {
   @Prop(TypeRef(attachment.class.Attachment), attachment.string.SavedAttachments)
-  attachedTo!: Ref<Attachment>
+    attachedTo!: Ref<Attachment>
 }
 
 export function createModel (builder: Builder): void {

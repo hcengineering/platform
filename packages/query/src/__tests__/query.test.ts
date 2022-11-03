@@ -239,7 +239,7 @@ describe('query', () => {
           }
           if (attempt === 1) resolve(null)
         },
-        { limit: limit, sort: { name: SortingOrder.Ascending } }
+        { limit, sort: { name: SortingOrder.Ascending } }
       )
     })
 
@@ -255,7 +255,7 @@ describe('query', () => {
           }
           if (descAttempt === 10) resolve(null)
         },
-        { limit: limit, sort: { name: SortingOrder.Descending } }
+        { limit, sort: { name: SortingOrder.Descending } }
       )
     })
 

@@ -82,7 +82,7 @@ program
         )
       case 'issue':
         return await generateIssues(transactorUrl, workspace, {
-          count: count
+          count
         })
       default:
         console.error(`Expected types: recruit, issue. Got type: ${genType}`)

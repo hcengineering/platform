@@ -53,26 +53,26 @@ import { TOpinion, TReview } from './review-model'
 export class TVacancy extends TSpaceWithStates implements Vacancy {
   @Prop(TypeMarkup(), recruit.string.FullDescription)
   @Index(IndexKind.FullText)
-  fullDescription?: string
+    fullDescription?: string
 
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, undefined, attachment.string.Files)
-  attachments?: number
+    attachments?: number
 
   @Prop(TypeDate(), recruit.string.Due, recruit.icon.Calendar)
-  dueTo?: Timestamp
+    dueTo?: Timestamp
 
   @Prop(TypeString(), recruit.string.Location, recruit.icon.Location)
   @Index(IndexKind.FullText)
-  location?: string
+    location?: string
 
   @Prop(TypeRef(contact.class.Organization), recruit.string.Company, contact.icon.Company)
-  company?: Ref<Organization>
+    company?: Ref<Organization>
 
   @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
-  comments?: number
+    comments?: number
 
   @Prop(Collection(chunter.class.Backlink), chunter.string.Comments)
-  relations!: number
+    relations!: number
 }
 
 @Model(recruit.class.Candidates, core.class.Space)
@@ -84,33 +84,33 @@ export class TCandidates extends TSpace implements Candidates {}
 export class TCandidate extends TPerson implements Candidate {
   @Prop(TypeString(), recruit.string.Title)
   @Index(IndexKind.FullText)
-  title?: string
+    title?: string
 
   @Prop(Collection(recruit.class.Applicant), recruit.string.Applications, undefined, recruit.string.ApplicationsShort)
-  applications?: number
+    applications?: number
 
   @Prop(TypeBoolean(), recruit.string.Onsite)
-  onsite?: boolean
+    onsite?: boolean
 
   @Prop(TypeBoolean(), recruit.string.Remote)
-  remote?: boolean
+    remote?: boolean
 
   @Prop(TypeString(), recruit.string.Source)
   @Index(IndexKind.FullText)
-  source?: string
+    source?: string
 
   @Prop(Collection(tags.class.TagReference, recruit.string.SkillLabel), recruit.string.SkillsLabel, recruit.icon.Skills)
-  skills?: number
+    skills?: number
 
   @Prop(Collection(recruit.class.Review, recruit.string.Review), recruit.string.Reviews)
-  reviews?: number
+    reviews?: number
 }
 
 @Mixin(recruit.mixin.VacancyList, contact.class.Organization)
 @UX(recruit.string.VacancyList, recruit.icon.RecruitApplication, undefined, 'name')
 export class TVacancyList extends TOrganization implements VacancyList {
   @Prop(ArrOf(TypeRef(recruit.class.Vacancy)), recruit.string.Vacancies)
-  vacancies!: number
+    vacancies!: number
 }
 
 @Model(recruit.class.Applicant, task.class.Task)
@@ -127,10 +127,10 @@ export class TApplicant extends TTask implements Applicant {
   declare space: Ref<Vacancy>
 
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, undefined, attachment.string.Files)
-  attachments?: number
+    attachments?: number
 
   @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
-  comments?: number
+    comments?: number
 
   @Prop(TypeRef(contact.class.Employee), recruit.string.AssignedRecruiter)
   declare assignee: Ref<Employee> | null

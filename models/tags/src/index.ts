@@ -31,23 +31,23 @@ export const DOMAIN_TAGS = 'tags' as Domain
 export class TTagElement extends TDoc implements TagElement {
   @Prop(TypeString(), tags.string.TitleLabel)
   @Index(IndexKind.FullText)
-  title!: string
+    title!: string
 
   @Prop(TypeRef(core.class.Class), tags.string.TargetClassLabel)
-  targetClass!: Ref<Class<Doc>>
+    targetClass!: Ref<Class<Doc>>
 
   @Prop(TypeString(), tags.string.DescriptionLabel)
   @Index(IndexKind.FullText)
-  description!: string
+    description!: string
 
   @Prop(TypeString(), tags.string.ColorLabel)
-  color!: number
+    color!: number
 
   @Prop(TypeRef(tags.class.TagCategory), tags.string.CategoryLabel)
-  category!: Ref<TagCategory>
+    category!: Ref<TagCategory>
 
   @Prop(TypeNumber(), tags.string.TagReference)
-  refCount?: number
+    refCount?: number
 }
 
 @Model(tags.class.TagReference, core.class.AttachedDoc, DOMAIN_TAGS)
@@ -55,33 +55,33 @@ export class TTagElement extends TDoc implements TagElement {
 export class TTagReference extends TAttachedDoc implements TagReference {
   @Prop(TypeString(), tags.string.TitleLabel)
   @Index(IndexKind.FullText)
-  title!: string
+    title!: string
 
   @Prop(TypeRef(tags.class.TagElement), tags.string.TagLabel)
   @Index(IndexKind.Indexed)
-  tag!: Ref<TagElement>
+    tag!: Ref<TagElement>
 
   @Prop(TypeString(), tags.string.ColorLabel)
-  color!: number
+    color!: number
 }
 
 @Model(tags.class.TagCategory, core.class.Doc, DOMAIN_TAGS)
 @UX(tags.string.TargetCategoryLabel)
 export class TTagCategory extends TDoc implements TagCategory {
   @Prop(TypeString(), tags.string.AssetLabel)
-  icon!: Asset
+    icon!: Asset
 
   @Prop(TypeString(), tags.string.CategoryLabel)
-  label!: IntlString
+    label!: IntlString
 
   @Prop(TypeString(), tags.string.CategoryTargetClass)
-  targetClass!: Ref<Class<Doc>>
+    targetClass!: Ref<Class<Doc>>
 
   @Prop(ArrOf(TypeRef(core.class.TypeString)), tags.string.CategoryTagsLabel)
-  tags!: string[]
+    tags!: string[]
 
   @Prop(TypeString(), tags.string.DefaultLabel)
-  default!: boolean
+    default!: boolean
 }
 
 export function createModel (builder: Builder): void {

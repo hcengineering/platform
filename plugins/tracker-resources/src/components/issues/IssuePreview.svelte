@@ -138,7 +138,6 @@
 <style lang="scss">
   .descr {
     overflow: hidden;
-    max-height: 25rem;
 
     &.mask {
       mask: linear-gradient(to top, rgba(0, 0, 0, 0) 0, black 5rem);

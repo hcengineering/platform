@@ -6,4 +6,4 @@
   const currentUser = getCurrentAccount() as EmployeeAccount
 </script>
 
-<Documents query={{ responsible: currentUser.employee }} />
+<Documents query={{ authors: currentUser.employee }} />

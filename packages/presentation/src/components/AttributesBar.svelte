@@ -22,11 +22,12 @@
   export let _class: Ref<Class<Doc>>
   export let keys: (string | KeyedAttribute)[]
   export let showHeader: boolean = true
+  export let readonly = false
 </script>
 
 <div class="attributes-bar-container vertical">
   {#each keys as key (typeof key === 'string' ? key : key.key)}
-    <AttributeBarEditor {key} {_class} {object} {showHeader} />
+    <AttributeBarEditor {key} {_class} {object} {showHeader} {readonly} />
   {/each}
 </div>
 

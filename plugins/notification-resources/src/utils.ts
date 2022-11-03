@@ -67,7 +67,7 @@ export class NotificationClientImpl implements NotificationClient {
       if (current.lastView === -1 && !force) return
       if (current.lastView < lastView || force) {
         const u = client.txFactory.createTxUpdateDoc(current._class, current.space, current._id, {
-          lastView: lastView
+          lastView
         })
         u.space = core.space.DerivedTx
         await client.tx(u)

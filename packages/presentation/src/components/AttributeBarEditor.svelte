@@ -27,6 +27,7 @@
   export let maxWidth: string | undefined = undefined
   export let focus: boolean = false
   export let showHeader: boolean = true
+  export let readonly = false
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -68,6 +69,7 @@
     const doc = object as Doc
     updateAttribute(client, doc, _class, { key: attributeKey, attr: attribute }, value)
   }
+  $: isReadonly = (attribute.readonly ?? false) || readonly
 </script>
 
 {#if editor}
@@ -84,6 +86,7 @@
         <div class="flex flex-grow min-w-0">
           <svelte:component
             this={instance}
+            readonly={isReadonly}
             label={attribute?.label}
             placeholder={attribute?.label}
             kind={'link'}
@@ -93,7 +96,6 @@
             type={attribute?.type}
             {maxWidth}
             value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
-            readonly={attribute.readonly ?? false}
             space={object.space}
             {onChange}
             {focus}
@@ -107,7 +109,7 @@
             type={attribute?.type}
             {maxWidth}
             value={getAttribute(client, object, { key: attributeKey, attr: attribute })}
-            readonly={attribute.readonly ?? false}
+            readonly={isReadonly}
             space={object.space}
             {onChange}
             {focus}
