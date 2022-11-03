@@ -40,20 +40,42 @@ export default mergeIds(documentId, document, {
     Version: '' as IntlString,
     Revision: '' as IntlString,
     NoVersions: '' as IntlString,
+    NoBaseVersion: '' as IntlString,
     CreateAnVersion: '' as IntlString,
     CreateDocumentVersion: '' as IntlString,
-    ApprovedBy: '' as IntlString,
+    Approvers: '' as IntlString,
     Status: '' as IntlString,
     LastRevision: '' as IntlString,
     DocumentApplication: '' as IntlString,
     MyDocuments: '' as IntlString,
     Library: '' as IntlString,
     Labels: '' as IntlString,
-    Responsible: '' as IntlString,
+    Authors: '' as IntlString,
     AddLabel: '' as IntlString,
+    DocumentVersionPlaceholder: '' as IntlString,
 
     PendingReview: '' as IntlString,
     Latest: '' as IntlString,
-    Draft: '' as IntlString
+    Draft: '' as IntlString,
+    Approved: '' as IntlString,
+    Rejected: '' as IntlString,
+
+    Description: '' as IntlString,
+    DescriptionPlaceholder: '' as IntlString,
+    Baseline: '' as IntlString,
+    Reviewers: '' as IntlString,
+
+    ViewMode: '' as IntlString,
+    EditMode: '' as IntlString,
+    SuggestMode: '' as IntlString,
+
+    CreateDraft: '' as IntlString,
+    SendForApproval: '' as IntlString,
+    SendForReview: '' as IntlString,
+
+    Requests: '' as IntlString,
+
+    Approve: '' as IntlString,
+    Reject: '' as IntlString
   }
 })

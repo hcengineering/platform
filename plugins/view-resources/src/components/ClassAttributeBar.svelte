@@ -24,6 +24,8 @@
   export let to: Ref<Class<Doc>> | undefined
   export let ignoreKeys: string[] = []
   export let allowedCollections: string[] = []
+  export let readonly = false
+
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
@@ -78,7 +80,7 @@
 </div>
 {#if keys.length}
   <div class="collapsed-container" class:collapsed>
-    <AttributesBar {_class} {object} keys={keys.map((p) => p.key)} />
+    <AttributesBar {_class} {object} keys={keys.map((p) => p.key)} {readonly} />
   </div>
 {/if}
 

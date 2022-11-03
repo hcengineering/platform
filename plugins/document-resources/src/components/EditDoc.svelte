@@ -16,12 +16,20 @@
 -->
 <script lang="ts">
   import { Attachments } from '@hcengineering/attachment-resources'
-  import core, { Class, Doc, Ref, WithLookup } from '@hcengineering/core'
-  import { Document, DocumentVersion } from '@hcengineering/document'
+  import { EmployeeAccount } from '@hcengineering/contact'
+  import core, { Class, Doc, generateId, getCurrentAccount, Ref, WithLookup } from '@hcengineering/core'
+  import {
+    CollaboratorDocument,
+    Document,
+    DocumentRequest,
+    DocumentRequestKind,
+    DocumentVersion,
+    DocumentVersionState
+  } from '@hcengineering/document'
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
-  import { getResource } from '@hcengineering/platform'
-  import presentation, { createQuery, getClient } from '@hcengineering/presentation'
+  import { getResource, translate } from '@hcengineering/platform'
+  import { createQuery, getClient, MessageViewer } from '@hcengineering/presentation'
   import tags from '@hcengineering/tags'
 
   import {
@@ -29,9 +37,11 @@
     Component,
     EditBox,
     eventToHTMLElement,
-    IconAdd,
+    IconCheck,
+    IconClose,
     IconEdit,
     IconMoreH,
+    IconShare,
     Label,
     SelectPopup,
     showPopup
@@ -40,9 +50,7 @@
   import ClassAttributeBar from '@hcengineering/view-resources/src/components/ClassAttributeBar.svelte'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import document from '../plugin'
-  import CreateDocumentVersion from './CreateDocumentVersion.svelte'
   import DocumentEditor from './DocumentEditor.svelte'
-  import DocumentViewer from './DocumentViewer.svelte'
 
   // import ControlPanel from './ControlPanel.svelte'
   // import CopyToClipboard from './CopyToClipboard.svelte'
@@ -63,7 +71,6 @@
   let name = ''
 
   let innerWidth: number
-  let isEditing = false
 
   const notificationClient = getResource(notification.function.GetNotificationClient).then((res) => res())
 
@@ -78,9 +85,20 @@
     }
   }
 
+  const currentUser = getCurrentAccount() as EmployeeAccount
+
   onDestroy(async () => {
     notificationClient.then((client) => client.updateLastView(_id, _class))
   })
+
+  let requests: DocumentRequest[] = []
+
+  $: myRequests = requests.filter((it) => it.assignee === currentUser.employee)
+
+  $: approveRequest = myRequests.find((it) => it.kind === DocumentRequestKind.Approve)
+  $: allApproveRequest = requests.find((it) => it.kind === DocumentRequestKind.Approve)
+  // $: changesRequest = myRequests.find((it) => it.kind === DocumentRequestKind.Changes)
+  // $: reviewRequest = myRequests.find((it) => it.kind === DocumentRequestKind.Review)
 
   $: _id &&
     _class &&
@@ -89,31 +107,22 @@
       { _id },
       async (result) => {
         ;[documentObject] = result
-        name = documentObject.name
+        name = documentObject?.name ?? ''
+
+        requests = (documentObject.$lookup?.requests as DocumentRequest[]) ?? []
       },
-      {}
+      {
+        lookup: {
+          _id: {
+            requests: document.class.DocumentRequest
+          }
+        }
+      }
     )
 
   $: canSave = name.trim().length > 0
 
-  function edit (ev: MouseEvent) {
-    ev.preventDefault()
-
-    isEditing = true
-  }
-
-  let documentEditor: DocumentEditor
-
-  function commitEditing (ev: MouseEvent) {
-    ev.preventDefault()
-
-    documentEditor.applySteps().then(() => {
-      autoSelect = true
-      isEditing = false
-    })
-  }
-
-  async function save (ev: Event) {
+  async function saveTitle (ev: Event) {
     ev.preventDefault()
 
     if (!documentObject || !canSave) {
@@ -134,7 +143,7 @@
   }
 
   onMount(() => {
-    dispatch('open', { ignoreKeys: ['comments', 'name', 'description', 'number'] })
+    dispatch('open', { ignoreKeys: ['comments', 'name'] })
   })
 
   const versionQuery = createQuery()
@@ -145,6 +154,9 @@
     { attachedTo: _id },
     (res) => {
       versions = res
+      if (autoSelect) {
+        version = versions[versions.length - 1]
+      }
     },
     { sort: { version: 1 } }
   )
@@ -152,19 +164,28 @@
 
   let info: any
 
+  let labels: Record<DocumentVersionState, string> = {
+    [DocumentVersionState.Draft]: '',
+    [DocumentVersionState.Approved]: '',
+    [DocumentVersionState.Rejected]: ''
+  }
+
+  async function updateLabels (): Promise<void> {
+    labels = {
+      [DocumentVersionState.Draft]: await translate(document.string.Draft, {}),
+      [DocumentVersionState.Approved]: await translate(document.string.Approved, {}),
+      [DocumentVersionState.Rejected]: await translate(document.string.Rejected, {})
+    }
+  }
+  updateLabels()
+
   $: {
     const ifo: any = [
       ...versions.map((it) => ({
         id: it._id as string,
-        text: `${it.version} - ${new Date(it.modifiedOn).toDateString()} `
+        text: `${it.version} - ${labels[it.state]} - ${new Date(it.modifiedOn).toDateString()} `
       }))
     ]
-    if (lastVersion === undefined || lastVersion.sequenceNumber !== documentObject?.editSequence) {
-      ifo.push({
-        id: '#latest',
-        label: document.string.LastRevision
-      })
-    }
     info = ifo
   }
   function selectVersion (event: MouseEvent): void {
@@ -184,16 +205,177 @@
     )
   }
 
-  function createVersion (event: MouseEvent) {
-    showPopup(CreateDocumentVersion, { object: documentObject }, 'top')
-  }
-
-  $: lastVersion = versions[versions.length - 1]
+  $: readonly = !documentObject?.authors.includes(currentUser.employee)
 
   let autoSelect = true
-  $: if (autoSelect && version === undefined && lastVersion) {
-    version = lastVersion
-    autoSelect = false
+
+  type ModelType = 'view' | 'edit' // | 'suggest'
+  let mode: ModelType = 'view'
+  const modeLabels = {
+    view: document.string.ViewMode,
+    edit: document.string.EditMode
+    // ,suggest: document.string.SuggestMode
+  }
+
+  function selectMode (event: MouseEvent): void {
+    showPopup(
+      SelectPopup,
+      {
+        value: Object.entries(modeLabels).map(([mode, label]) => ({
+          id: mode,
+          label
+        })),
+        placeholder: document.string.Version,
+        searchable: false
+      },
+      eventToHTMLElement(event),
+      (res) => {
+        if (res != null) {
+          mode = res
+        }
+      }
+    )
+  }
+
+  async function doEdit (documentObject: Document): Promise<void> {
+    processing = true
+    // Looking for a draft version
+    const draft = versions.find((it) => it.state === DocumentVersionState.Draft)
+    const lastVersion = versions[versions.length - 1]
+    if (draft === undefined) {
+      // We need to create draft document.
+      const newVersion = Math.round(documentObject.latest * 1000 + 100) / 1000
+
+      const versionId: Ref<DocumentVersion> = generateId()
+      const contentAttachmentId: Ref<CollaboratorDocument> = generateId()
+
+      const ops = client
+        .apply(documentObject._id)
+        .match(document.class.Document, { _id: documentObject._id, latest: documentObject.latest })
+
+      ops.update(documentObject, { latest: newVersion })
+
+      ops.addCollection(
+        document.class.DocumentVersion,
+        documentObject.space,
+        documentObject._id,
+        documentObject._class,
+        'versions',
+        {
+          content: lastVersion.content,
+          description: '',
+          impact: '',
+          reason: '',
+          state: DocumentVersionState.Draft,
+          version: newVersion,
+          attachments: 0,
+          comments: 0,
+          initialContentId: lastVersion.contentAttachmentId,
+          contentAttachmentId
+        },
+        versionId
+      )
+      ops.addCollection(
+        document.class.CollaboratorDocument,
+        documentObject.space,
+        versionId,
+        document.class.DocumentVersion,
+        'attachments',
+        {
+          file: contentAttachmentId,
+          name: 'content',
+          size: 0,
+          type: 'application/ydoc',
+          description: '',
+          pinned: false,
+          lastModified: Date.now()
+        },
+        contentAttachmentId
+      )
+      if (await ops.commit()) {
+        // We should have a draft created by someone else.
+        version = undefined
+        autoSelect = true
+      }
+    }
+    mode = 'edit'
+    processing = false
+  }
+
+  let processing = false
+
+  let content = ''
+
+  const updateRequests = async (kind: DocumentRequestKind): Promise<void> => {
+    processing = true
+    if (documentObject === undefined) {
+      return
+    }
+
+    const requests = await client.findAll(document.class.DocumentRequest, {
+      attachedTo: documentObject?._id,
+      kind
+    })
+    for (const a of documentObject?.approvers ?? []) {
+      const ex = requests.find((it) => it.assignee === a)
+      if (ex === undefined) {
+        await client.addCollection(
+          document.class.DocumentRequest,
+          documentObject.space,
+          documentObject._id,
+          documentObject._class,
+          'requests',
+          {
+            assignee: a,
+            kind
+          }
+        )
+      }
+    }
+
+    if (version) {
+      await client.update(version, {
+        content
+      })
+    }
+
+    mode = 'view'
+
+    processing = false
+  }
+
+  const updateState = async (state: DocumentVersionState): Promise<void> => {
+    processing = true
+    if (documentObject === undefined) {
+      return
+    }
+
+    const draft = versions.find((it) => it.state === DocumentVersionState.Draft)
+    if (draft !== undefined) {
+      // We need to create draft document.
+      const newVersion = documentObject.version + 1
+
+      const ops = client
+        .apply(documentObject._id)
+        .match(document.class.Document, { _id: documentObject._id, latest: documentObject.latest })
+
+      if (state === DocumentVersionState.Approved) {
+        ops.update(documentObject, { latest: newVersion, version: newVersion })
+        ops.update(draft, { version: newVersion, state })
+      } else {
+        ops.update(draft, { state })
+      }
+      // Remove all requests
+
+      if (await ops.commit()) {
+        const docs = await client.findAll(document.class.DocumentRequest, { attachedTo: documentObject._id })
+        for (const d of docs) {
+          client.remove(d)
+        }
+      }
+    }
+
+    processing = false
   }
 </script>
 
@@ -203,7 +385,6 @@
     isHeader
     isAside={true}
     isSub={false}
-    withoutActivity={isEditing}
     bind:innerWidth
     on:close={() => dispatch('close')}
   >
@@ -216,59 +397,105 @@
           bind:value={name}
           placeholder={document.string.DocumentNamePlaceholder}
           kind="large-style"
-          on:blur={(evt) => save(evt)}
+          on:blur={(evt) => saveTitle(evt)}
         />
+
         <div class="p-1">-</div>
-        <Button disabled={isEditing || info.length === 1} kind={'link-bordered'} on:click={selectVersion}>
+        <Button loading={processing} kind={'link-bordered'} on:click={selectVersion} disabled={info.length < 2}>
           <svelte:fragment slot="content">
-            {#if version && !isEditing}
-              <Label label={document.string.Version} /> {version.version}
+            {#if version}
+              {version.version} - {labels[version.state]}
             {:else}
-              <Label label={document.string.Revision} /> {documentObject.editSequence}
+              <Label label={document.string.Draft} />
             {/if}
           </svelte:fragment>
         </Button>
-
-        {#if !isEditing}
-          {#if documentObject && version && version.sequenceNumber !== documentObject.editSequence}
-            (<Label label={document.string.Revision} /> {version.sequenceNumber} / {documentObject.editSequence})
-          {:else if documentObject}
-            (<Label label={document.string.Revision} /> {documentObject.editSequence})
-          {/if}
-        {/if}
       </span>
     </svelte:fragment>
     <svelte:fragment slot="tools">
-      {#if isEditing}
-        <Button disabled={!canSave} label={presentation.string.Save} on:click={commitEditing} />
-      {:else}
-        <Button icon={IconEdit} kind={'transparent'} size={'medium'} on:click={edit} />
-      {/if}
-      {#if lastVersion === undefined || lastVersion.sequenceNumber !== documentObject.editSequence}
+      {#if version && version?.state !== DocumentVersionState.Draft}
         <Button
-          icon={IconAdd}
-          kind={'transparent'}
+          loading={processing}
+          kind={'link-bordered'}
+          label={document.string.CreateDraft}
+          on:click={() => {
+            if (documentObject) {
+              doEdit(documentObject)
+            }
+          }}
+          icon={IconEdit}
           size={'medium'}
-          on:click={createVersion}
-          showTooltip={{ label: document.string.CreateDocumentVersion }}
         />
+      {/if}
+
+      {#if !readonly && version && version?.state === DocumentVersionState.Draft && version.version === documentObject.latest && !allApproveRequest}
+        <Button
+          loading={processing}
+          kind={'link-bordered'}
+          label={document.string.SendForApproval}
+          on:click={() => updateRequests(DocumentRequestKind.Approve)}
+          icon={IconShare}
+          size={'medium'}
+          disabled={documentObject?.approvers?.length === 0}
+        />
+        <Button
+          loading={processing}
+          kind={'link-bordered'}
+          label={document.string.SendForReview}
+          on:click={() => updateRequests(DocumentRequestKind.Review)}
+          icon={IconShare}
+          size={'medium'}
+          disabled={documentObject?.reviewers?.length === 0}
+        />
+      {/if}
+      {#if version?.state === DocumentVersionState.Draft && approveRequest}
+        <Button
+          loading={processing}
+          kind={'link-bordered'}
+          label={document.string.Approve}
+          on:click={() => updateState(DocumentVersionState.Approved)}
+          icon={IconCheck}
+          size={'medium'}
+        />
+        <Button
+          loading={processing}
+          kind={'link-bordered'}
+          label={document.string.Reject}
+          on:click={() => updateState(DocumentVersionState.Rejected)}
+          icon={IconClose}
+          size={'medium'}
+        />
+      {/if}
+      {#if !readonly && version?.state === DocumentVersionState.Draft && approveRequest === undefined}
+        <Button loading={processing} kind={'link-bordered'} on:click={selectMode} icon={IconEdit} size={'medium'}>
+          <svelte:fragment slot="content">
+            <Label label={modeLabels[mode]} />
+          </svelte:fragment>
+        </Button>
       {/if}
       <Button icon={IconMoreH} kind={'transparent'} size={'medium'} on:click={showMenu} />
     </svelte:fragment>
 
-    {#if isEditing}
-      <div class="popupPanel-body__main-content py-10 clear-mins content">
-        <DocumentEditor object={documentObject} bind:this={documentEditor} />
-      </div>
-    {:else}
-      <div class="description-preview select-text mt-2">
-        <DocumentViewer object={documentObject} revision={version?.sequenceNumber ?? documentObject.editSequence} />
-      </div>
+    <div class="description-preview select-text mt-2 emphasized">
+      {#if version && version.state === DocumentVersionState.Draft && approveRequest === undefined}
+        {#key version?._id}
+          <DocumentEditor
+            object={version}
+            initialContentId={version.initialContentId}
+            readonly={mode === 'view'}
+            on:content={(evt) => {
+              content = evt.detail
+            }}
+          />
+        {/key}
+      {:else if version}
+        <MessageViewer message={version.content} />
+      {/if}
+    </div>
 
-      <div class="p-1 mt-6">
-        <Attachments objectId={documentObject._id} space={documentObject.space} _class={documentObject._class} />
-      </div>
-    {/if}
+    <div class="p-1 mt-6">
+      <Attachments objectId={documentObject._id} space={documentObject.space} _class={documentObject._class} />
+    </div>
 
     <svelte:fragment slot="custom-attributes">
       <ClassAttributeBar
@@ -276,6 +503,7 @@
         _class={documentObject._class}
         to={core.class.Doc}
         ignoreKeys={['name']}
+        {readonly}
       />
 
       <div class="divider" />
@@ -295,12 +523,7 @@
         <span class="label">
           <Label label={document.string.LastRevision} />
         </span>
-        <span>{documentObject?.editSequence}</span>
-
-        <span class="label">
-          <Label label={document.string.Versions} />
-        </span>
-        <span>{documentObject?.versions}</span>
+        <span>{documentObject?.latest}</span>
       </div>
     </svelte:fragment>
   </Panel>
@@ -331,5 +554,11 @@
   }
   .labelTop {
     align-self: start;
+  }
+  .emphasized {
+    padding: 1rem;
+    background-color: var(--theme-bg-accent-color);
+    border: 1px solid var(--theme-bg-accent-hover);
+    border-radius: 0.5rem;
   }
 </style>

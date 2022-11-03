@@ -22,6 +22,8 @@ spec:
           env:
           - name: ACCOUNTS_URL
             value: https://account.hc.engineering/
+          - name: COLLABORATOR_URL
+            value: https://collaborator.hc.engineering/
           - name: UPLOAD_URL
             value: /files
           - name: TRANSACTOR_URL

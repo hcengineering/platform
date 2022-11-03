@@ -68,7 +68,7 @@
       state: state._id,
       doneState: null,
       number: (incResult as any).object.sequence,
-      title: title,
+      title,
       rank: calcRank(lastOne, undefined),
       assignee: null,
       startDate: null,

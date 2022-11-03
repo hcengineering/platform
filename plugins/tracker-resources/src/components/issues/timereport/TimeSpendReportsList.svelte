@@ -49,7 +49,7 @@
   function editSpendReport (event: MouseEvent, value: TimeSpendReport): void {
     showPopup(
       TimeSpendReportPopup,
-      { issue: value.attachedTo, issueClass: value.attachedToClass, value: value, assignee: value.employee },
+      { issue: value.attachedTo, issueClass: value.attachedToClass, value, assignee: value.employee },
       eventToHTMLElement(event)
     )
   }

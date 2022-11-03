@@ -3,19 +3,20 @@
     "CreateDocument": "Создать документ",
     "DocumentCreateLabel": "Документ",
     "Documents": "Документы",
+    "CreateAnVersion": "Создать новую версию",
     "Document": "Документ",
     "DocumentNamePlaceholder": "Имя...",
     "Name": "Имя",
     "Cancel": "Отмена",
-    "EditorPlaceholder": "Начните печатать тут...",
+    "EditorPlaceholder": "введите для начала...",
     "Version": "Версия",
-    "SearchDocument": "Поиск документов...",
+    "SearchDocument": "Найти документ...",
     "Revision": "Ревизия",
-    "NoVersions": "Нет определенных версиф",
-    "CreateEnVersion": "Добавить версию для процедуры ревью",
+    "NoVersions": "Версии не определены",
+    "CreateEnVersion": "Создать версию для оценки",
     "Versions": "Версии",
-    "CreateDocumentVersion": "Оцените версию документа",
-    "ApprovedBy": "Подтверждено",
+    "CreateDocumentVersion": "Создать версию",
+    "Approvers": "Утверждающие",
     "Status": "Статус",
     "LastRevision": "Последняя ревизия",
     "DocumentApplication": "Документы",
@@ -23,10 +24,28 @@
     "Library": "Библиотека",
     "Labels": "Метки",
     "AddLabel": "Добавить метку...",
-    "Responsible": "Ответственные",
+    "Authors": "Авторы",
+    "DocumentVersionPlaceholder": "версия...",
+    "DescriptionPlaceholder": "введите для деталей...",
 
     "PendingReview": "Ожидает",
-    "Latest": "Актуальная",
-    "Draft": "Драфт"
+    "Latest": "Актуально",
+    "Draft": "Рабочая копия",
+
+    "Description": "Описание",
+    "Reviewers": "Рецензенты",
+
+    "ViewMode": "Просмотр",
+    "EditMode": "Редактирование",
+    "SuggestMode": "Комментирование",
+
+    "CreateDraft": "Новая рабочая копия",
+    "SendForApproval": "Попросить утверждения",
+    "SendForReview": "Попросить рецензию",
+
+    "Approve": "Утвердить",
+    "Reject": "Отказать",
+    "Approved": "Утверждено",
+    "Rejected": "Отказано"
   }  
 }

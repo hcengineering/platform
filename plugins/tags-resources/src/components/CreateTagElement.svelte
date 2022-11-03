@@ -79,7 +79,7 @@
 
   async function createTagElenent () {
     const tagElement: Data<TagElement> = {
-      title: title,
+      title,
       description,
       targetClass,
       color,

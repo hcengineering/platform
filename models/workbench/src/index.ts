@@ -38,7 +38,7 @@ export class TApplication extends TDoc implements Application {
 @Model(workbench.class.HiddenApplication, preference.class.Preference)
 export class THiddenApplication extends TPreference implements HiddenApplication {
   @Prop(TypeRef(workbench.class.Application), workbench.string.HiddenApplication)
-  attachedTo!: Ref<Application>
+    attachedTo!: Ref<Application>
 }
 
 @Mixin(workbench.mixin.SpaceView, core.class.Class)

@@ -35,21 +35,21 @@
   }
 
   setContext('theme', {
-    currentTheme: currentTheme,
+    currentTheme,
     setTheme: (name: string) => {
       setRootColors(name)
       localStorage.setItem('theme', name)
     }
   })
   setContext('fontsize', {
-    currentFontSize: currentFontSize,
+    currentFontSize,
     setFontSize: (fontsize: string) => {
       setRootFontSize(fontsize)
       localStorage.setItem('fontsize', fontsize)
     }
   })
   setContext('lang', {
-    currentLanguage: currentLanguage,
+    currentLanguage,
     setLanguage: (lang: string) => {
       currentLanguage = lang
       localStorage.setItem('lang', lang)

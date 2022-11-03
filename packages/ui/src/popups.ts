@@ -110,14 +110,14 @@ export function showDatePopup (
   shift?: boolean
 ): void {
   dpstore.set({
-    component: component,
-    currentDate: currentDate,
-    anchor: anchor,
-    popup: popup,
-    frendlyFocus: frendlyFocus,
-    onClose: onClose,
-    onChange: onChange,
-    shift: shift
+    component,
+    currentDate,
+    anchor,
+    popup,
+    frendlyFocus,
+    onClose,
+    onChange,
+    shift
   })
 }
 

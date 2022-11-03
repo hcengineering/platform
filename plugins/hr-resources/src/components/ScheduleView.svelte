@@ -109,6 +109,38 @@
   }
 
   $: departmentStaff = staff.filter((p) => departments.includes(p.department) || employeeRequests.has(p._id))
+
+  const reportQuery = createQuery()
+
+  import tracker from '@hcengineering/tracker'
+  import { EmployeeReports } from '../utils'
+
+  let timeReports: Map<Ref<Employee>, EmployeeReports> = new Map()
+
+  $: reportQuery.query(
+    tracker.class.TimeSpendReport,
+    {
+      employee: { $in: Array.from(staff.map((it) => it._id)) },
+      date: { $gt: startDate.getTime(), $lt: endDate.getTime() }
+    },
+    (res) => {
+      const newMap = new Map<Ref<Employee>, EmployeeReports>()
+      for (const r of res) {
+        if (r.employee != null) {
+          const or = newMap.get(r.employee)
+          newMap.set(r.employee, { value: (or?.value ?? 0) + r.value, reports: [...(or?.reports ?? []), r] })
+        }
+      }
+      timeReports = newMap
+    },
+    {
+      lookup: {
+        _id: {
+          attachedTo: tracker.class.Issue
+        }
+      }
+    }
+  )
 </script>
 
 {#if departmentStaff.length}
@@ -123,9 +155,10 @@
         {startDate}
         teamLead={getTeamLead(department)}
         {currentDate}
+        {timeReports}
       />
     {:else if display === 'stats'}
-      <MonthTableView {departmentStaff} {employeeRequests} {types} {currentDate} />
+      <MonthTableView {departmentStaff} {employeeRequests} {types} {currentDate} {timeReports} />
     {/if}
   {/if}
 {:else}

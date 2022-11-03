@@ -46,7 +46,7 @@
   })
 
   const spaceI = createQuery()
-  $: spaceI.query<SpaceWithStates>(spaceClass, { _id: _id }, (result) => {
+  $: spaceI.query<SpaceWithStates>(spaceClass, { _id }, (result) => {
     spaceInstance = result.shift()
   })
 

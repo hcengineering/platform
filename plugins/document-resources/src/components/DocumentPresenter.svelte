@@ -33,6 +33,6 @@
     <div class="icon">
       <Icon icon={document.icon.Document} size={'small'} />
     </div>
-    <span class="label">{value.name}</span>
+    <span class="label">{value.name}-{value.version}</span>
   </a>
 {/if}

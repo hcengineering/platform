@@ -42,7 +42,7 @@
       state: selected.state,
       doneState: null,
       number: (incResult as any).object.sequence,
-      title: title,
+      title,
       rank: selected.rank,
       assignee: null,
       description: '',

@@ -61,39 +61,39 @@ import core from './component'
 export class TObj implements Obj {
   @Prop(TypeRef(core.class.Class), core.string.ClassLabel)
   @Index(IndexKind.Indexed)
-  _class!: Ref<Class<this>>
+    _class!: Ref<Class<this>>
 }
 
 @Model(core.class.Doc, core.class.Obj)
 export class TDoc extends TObj implements Doc {
   @Prop(TypeRef(core.class.Doc), core.string.Id)
   // @Index(IndexKind.Indexed) // - automatically indexed by default.
-  _id!: Ref<this>
+    _id!: Ref<this>
 
   @Prop(TypeRef(core.class.Space), core.string.Space)
   @Index(IndexKind.Indexed)
-  space!: Ref<Space>
+    space!: Ref<Space>
 
   @Prop(TypeTimestamp(), core.string.Modified)
-  modifiedOn!: Timestamp
+    modifiedOn!: Timestamp
 
   @Prop(TypeRef(core.class.Account), core.string.ModifiedBy)
-  modifiedBy!: Ref<Account>
+    modifiedBy!: Ref<Account>
 }
 
 @Model(core.class.AttachedDoc, core.class.Doc)
 export class TAttachedDoc extends TDoc implements AttachedDoc {
   @Prop(TypeRef(core.class.Doc), core.string.AttachedTo)
   @Index(IndexKind.Indexed)
-  attachedTo!: Ref<Doc>
+    attachedTo!: Ref<Doc>
 
   @Prop(TypeRef(core.class.Class), core.string.AttachedToClass)
   @Index(IndexKind.Indexed)
-  attachedToClass!: Ref<Class<Doc>>
+    attachedToClass!: Ref<Class<Doc>>
 
   @Prop(TypeString(), core.string.Collection)
   @Hidden()
-  collection!: string
+    collection!: string
 }
 
 @UX(core.string.ClassLabel)
@@ -102,7 +102,7 @@ export class TClass extends TDoc implements Class<Obj> {
   kind!: ClassifierKind
 
   @Prop(TypeIntlString(), core.string.ClassPropertyLabel)
-  label!: IntlString
+    label!: IntlString
 
   extends!: Ref<Class<Obj>>
   domain!: Domain

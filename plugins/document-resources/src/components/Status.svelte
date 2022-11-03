@@ -16,42 +16,28 @@
 -->
 <script lang="ts">
   import { WithLookup } from '@hcengineering/core'
-  import { Document, DocumentVersion } from '@hcengineering/document'
+  import { DocumentVersion, DocumentVersionState } from '@hcengineering/document'
   import { EastSideColor, FernColor, Label, SeaBuckthornColor } from '@hcengineering/ui'
   import document from '../plugin'
 
-  export let value: WithLookup<Document>
-
-  let lastVersion: DocumentVersion | undefined
-
-  $: if (value.$lookup?.versions !== undefined) {
-    let vv = -1
-    let dv: DocumentVersion | undefined
-    for (const v of value.$lookup.versions as DocumentVersion[]) {
-      if (v.version > vv) {
-        dv = v
-        vv = v.version
-      }
-    }
-    lastVersion = dv
-  }
+  export let value: WithLookup<DocumentVersion>
 </script>
 
 {#if value}
   <div class="status-container">
-    {#if value.versions === 0}
+    {#if value.state === DocumentVersionState.Draft}
       <div class="status p-1" style:background-color={EastSideColor}>
         <Label label={document.string.Draft} />
       </div>
     {/if}
-    {#if value.editSequence !== lastVersion?.sequenceNumber}
+    {#if value.state === DocumentVersionState.Approved}
       <div class="status p-1" style:background-color={SeaBuckthornColor}>
-        <Label label={document.string.PendingReview} />
+        <Label label={document.string.Approved} />
       </div>
     {/if}
-    {#if value.editSequence === lastVersion?.sequenceNumber}
+    {#if value.state === DocumentVersionState.Rejected}
       <div class="status p-1" style:background-color={FernColor}>
-        <Label label={document.string.Latest} />
+        <Label label={document.string.Rejected} />
       </div>
     {/if}
   </div>

@@ -108,7 +108,15 @@
   </svelte:fragment>
 
   {#if withoutActivity}
-    <slot />
+    {#if $deviceInfo.isMobile}
+      <div class="popupPanel-body__mobile-content clear-mins">
+        <slot />
+      </div>
+    {:else}
+      <div class="popupPanel-body__main-content py-8 clear-mins">
+        <slot />
+      </div>
+    {/if}
   {:else if $deviceInfo.isMobile}
     <div class="popupPanel-body__mobile-content clear-mins">
       <Component is={activity.component.Activity} props={{ object, integrate: true }}>

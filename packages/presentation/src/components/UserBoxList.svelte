@@ -16,8 +16,7 @@
   import contact, { Employee } from '@hcengineering/contact'
   import type { Class, DocumentQuery, Ref } from '@hcengineering/core'
   import type { IntlString } from '@hcengineering/platform'
-  import { ButtonKind, ButtonSize, Label, TooltipAlignment } from '@hcengineering/ui'
-  import { showPopup, Button } from '@hcengineering/ui'
+  import { Button, ButtonKind, ButtonSize, Label, showPopup, TooltipAlignment } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation, { CombineAvatars, UsersPopup } from '..'
   import { createQuery } from '../utils'
@@ -35,6 +34,8 @@
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = undefined
   export let labelDirection: TooltipAlignment | undefined = undefined
+  export let emptyLabel = presentation.string.Members
+  export let readonly: boolean = false
 
   let persons: Employee[] = []
 
@@ -71,13 +72,14 @@
 
 <Button
   icon={persons.length === 0 ? Members : undefined}
-  label={persons.length === 0 ? presentation.string.Members : undefined}
+  label={persons.length === 0 ? emptyLabel : undefined}
   width={width ?? 'min-content'}
   {kind}
   {size}
   {justify}
   showTooltip={{ label, direction: labelDirection }}
   on:click={addPerson}
+  disabled={readonly}
 >
   <svelte:fragment slot="content">
     {#if persons.length > 0}

@@ -92,11 +92,11 @@ export class TIssueStatus extends TAttachedDoc implements IssueStatus {
   color?: number
 
   @Prop(TypeRef(tracker.class.IssueStatusCategory), tracker.string.StatusCategory)
-  category!: Ref<IssueStatusCategory>
+    category!: Ref<IssueStatusCategory>
 
   @Prop(TypeString(), tracker.string.Rank)
   @Hidden()
-  rank!: string
+    rank!: string
 }
 
 /**
@@ -158,21 +158,21 @@ export class TTypeSprintStatus extends TType {}
 export class TTeam extends TSpace implements Team {
   @Prop(TypeString(), tracker.string.Title)
   @Index(IndexKind.FullText)
-  reamLogo!: IntlString
+    reamLogo!: IntlString
 
   @Prop(TypeString(), tracker.string.Identifier)
   @Index(IndexKind.FullText)
-  identifier!: IntlString
+    identifier!: IntlString
 
   @Prop(TypeNumber(), tracker.string.Number)
   @Hidden()
-  sequence!: number
+    sequence!: number
 
   @Prop(Collection(tracker.class.IssueStatus), tracker.string.IssueStatuses)
-  issueStatuses!: number
+    issueStatuses!: number
 
   @Prop(TypeRef(tracker.class.IssueStatus), tracker.string.DefaultIssueStatus)
-  defaultIssueStatus!: Ref<IssueStatus>
+    defaultIssueStatus!: Ref<IssueStatus>
 }
 
 /**
@@ -190,69 +190,69 @@ export function TypeReportedTime (): Type<number> {
 export class TIssue extends TAttachedDoc implements Issue {
   @Prop(TypeString(), tracker.string.Title)
   @Index(IndexKind.FullText)
-  title!: string
+    title!: string
 
   @Prop(TypeMarkup(), tracker.string.Description)
   @Index(IndexKind.FullText)
-  description!: Markup
+    description!: Markup
 
   @Prop(TypeRef(tracker.class.IssueStatus), tracker.string.Status)
-  status!: Ref<IssueStatus>
+    status!: Ref<IssueStatus>
 
   @Prop(TypeIssuePriority(), tracker.string.Priority)
-  priority!: IssuePriority
+    priority!: IssuePriority
 
   @Prop(TypeNumber(), tracker.string.Number)
   @Index(IndexKind.FullText)
-  number!: number
+    number!: number
 
   @Prop(TypeRef(contact.class.Employee), tracker.string.Assignee)
-  assignee!: Ref<Employee> | null
+    assignee!: Ref<Employee> | null
 
   @Prop(TypeRef(tracker.class.Project), tracker.string.Project)
-  project!: Ref<Project> | null
+    project!: Ref<Project> | null
 
   @Prop(Collection(tracker.class.Issue), tracker.string.SubIssues)
-  subIssues!: number
+    subIssues!: number
 
   @Prop(ArrOf(TypeRef(core.class.TypeRelatedDocument)), tracker.string.BlockedBy)
-  blockedBy!: RelatedDocument[]
+    blockedBy!: RelatedDocument[]
 
   @Prop(ArrOf(TypeRef(core.class.TypeRelatedDocument)), tracker.string.RelatedTo)
-  relations!: RelatedDocument[]
+    relations!: RelatedDocument[]
 
   parents!: IssueParentInfo[]
 
   @Prop(Collection(chunter.class.Comment), tracker.string.Comments)
-  comments!: number
+    comments!: number
 
   @Prop(Collection(attachment.class.Attachment), tracker.string.Attachments)
-  attachments!: number
+    attachments!: number
 
   @Prop(Collection(tags.class.TagReference), tracker.string.Labels)
-  labels?: number
+    labels?: number
 
   declare space: Ref<Team>
 
   @Prop(TypeDate(true), tracker.string.DueDate)
-  dueDate!: Timestamp | null
+    dueDate!: Timestamp | null
 
   @Prop(TypeString(), tracker.string.Rank)
   @Hidden()
-  rank!: string
+    rank!: string
 
   @Prop(TypeRef(tracker.class.Sprint), tracker.string.Sprint)
-  sprint!: Ref<Sprint> | null
+    sprint!: Ref<Sprint> | null
 
   @Prop(TypeNumber(), tracker.string.Estimation)
-  estimation!: number
+    estimation!: number
 
   @Prop(TypeReportedTime(), tracker.string.ReportedTime)
   @ReadOnly()
-  reportedTime!: number
+    reportedTime!: number
 
   @Prop(Collection(tracker.class.TimeSpendReport), tracker.string.TimeSpendReports)
-  reports!: number
+    reports!: number
 
   declare childInfo: IssueChildInfo[]
 }
@@ -265,43 +265,43 @@ export class TIssue extends TAttachedDoc implements Issue {
 export class TIssueTemplate extends TDoc implements IssueTemplate {
   @Prop(TypeString(), tracker.string.Title)
   @Index(IndexKind.FullText)
-  title!: string
+    title!: string
 
   @Prop(TypeMarkup(), tracker.string.Description)
   @Index(IndexKind.FullText)
-  description!: Markup
+    description!: Markup
 
   @Prop(TypeIssuePriority(), tracker.string.Priority)
-  priority!: IssuePriority
+    priority!: IssuePriority
 
   @Prop(TypeRef(contact.class.Employee), tracker.string.Assignee)
-  assignee!: Ref<Employee> | null
+    assignee!: Ref<Employee> | null
 
   @Prop(TypeRef(tracker.class.Project), tracker.string.Project)
-  project!: Ref<Project> | null
+    project!: Ref<Project> | null
 
   @Prop(ArrOf(TypeRef(tags.class.TagElement)), tracker.string.Labels)
-  labels?: Ref<TagElement>[]
+    labels?: Ref<TagElement>[]
 
   declare space: Ref<Team>
 
   @Prop(TypeDate(true), tracker.string.DueDate)
-  dueDate!: Timestamp | null
+    dueDate!: Timestamp | null
 
   @Prop(TypeRef(tracker.class.Sprint), tracker.string.Sprint)
-  sprint!: Ref<Sprint> | null
+    sprint!: Ref<Sprint> | null
 
   @Prop(TypeNumber(), tracker.string.Estimation)
-  estimation!: number
+    estimation!: number
 
   @Prop(ArrOf(TypeRef(tracker.class.IssueTemplate)), tracker.string.IssueTemplate)
-  children!: IssueTemplateChild[]
+    children!: IssueTemplateChild[]
 
   @Prop(Collection(chunter.class.Comment), tracker.string.Comments)
-  comments!: number
+    comments!: number
 
   @Prop(Collection(attachment.class.Attachment), tracker.string.Attachments)
-  attachments!: number
+    attachments!: number
 }
 
 /**
@@ -313,16 +313,16 @@ export class TTimeSpendReport extends TAttachedDoc implements TimeSpendReport {
   declare attachedTo: Ref<Issue>
 
   @Prop(TypeRef(contact.class.Employee), contact.string.Employee)
-  employee!: Ref<Employee>
+    employee!: Ref<Employee>
 
   @Prop(TypeDate(), tracker.string.TimeSpendReportDate)
-  date!: Timestamp | null
+    date!: Timestamp | null
 
   @Prop(TypeNumber(), tracker.string.TimeSpendReportValue)
-  value!: number
+    value!: number
 
   @Prop(TypeString(), tracker.string.TimeSpendReportDescription)
-  description!: string
+    description!: string
 }
 /**
  * @public
@@ -332,17 +332,17 @@ export class TTimeSpendReport extends TAttachedDoc implements TimeSpendReport {
 export class TDocument extends TDoc implements Document {
   @Prop(TypeString(), tracker.string.Title)
   @Index(IndexKind.FullText)
-  title!: string
+    title!: string
 
   @Prop(TypeString(), tracker.string.DocumentIcon)
-  icon!: string | null
+    icon!: string | null
 
   @Prop(TypeString(), tracker.string.DocumentColor)
-  color!: number
+    color!: number
 
   @Prop(TypeMarkup(), tracker.string.Description)
   @Index(IndexKind.FullText)
-  content!: Markup
+    content!: Markup
 
   declare space: Ref<Team>
 }
@@ -355,37 +355,37 @@ export class TDocument extends TDoc implements Document {
 export class TProject extends TDoc implements Project {
   @Prop(TypeString(), tracker.string.Title)
   // @Index(IndexKind.FullText)
-  label!: string
+    label!: string
 
   @Prop(TypeMarkup(), tracker.string.Description)
-  description?: Markup
+    description?: Markup
 
   @Prop(TypeString(), tracker.string.AssetLabel)
-  icon!: Asset
+    icon!: Asset
 
   @Prop(TypeProjectStatus(), tracker.string.Status)
-  status!: ProjectStatus
+    status!: ProjectStatus
 
   @Prop(TypeRef(contact.class.Employee), tracker.string.ProjectLead)
-  lead!: Ref<Employee> | null
+    lead!: Ref<Employee> | null
 
   @Prop(ArrOf(TypeRef(contact.class.Employee)), tracker.string.Members)
-  members!: Ref<Employee>[]
+    members!: Ref<Employee>[]
 
   @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
-  comments!: number
+    comments!: number
 
   @Prop(Collection(tracker.class.Document), tracker.string.Document)
-  documents!: number
+    documents!: number
 
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, undefined, attachment.string.Files)
-  attachments?: number
+    attachments?: number
 
   @Prop(TypeDate(true), tracker.string.StartDate)
-  startDate!: Timestamp | null
+    startDate!: Timestamp | null
 
   @Prop(TypeDate(true), tracker.string.TargetDate)
-  targetDate!: Timestamp | null
+    targetDate!: Timestamp | null
 
   declare space: Ref<Team>
 }
@@ -398,36 +398,36 @@ export class TProject extends TDoc implements Project {
 export class TSprint extends TDoc implements Sprint {
   @Prop(TypeString(), tracker.string.Title)
   // @Index(IndexKind.FullText)
-  label!: string
+    label!: string
 
   @Prop(TypeMarkup(), tracker.string.Description)
-  description?: Markup
+    description?: Markup
 
   @Prop(TypeSprintStatus(), tracker.string.Status)
-  status!: SprintStatus
+    status!: SprintStatus
 
   @Prop(TypeRef(contact.class.Employee), tracker.string.ProjectLead)
-  lead!: Ref<Employee> | null
+    lead!: Ref<Employee> | null
 
   @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
-  comments!: number
+    comments!: number
 
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, undefined, attachment.string.Files)
-  attachments?: number
+    attachments?: number
 
   @Prop(TypeDate(false), tracker.string.StartDate)
-  startDate!: Timestamp
+    startDate!: Timestamp
 
   @Prop(TypeDate(false), tracker.string.TargetDate)
-  targetDate!: Timestamp
+    targetDate!: Timestamp
 
   declare space: Ref<Team>
 
   @Prop(TypeNumber(), tracker.string.Capacity)
-  capacity!: number
+    capacity!: number
 
   @Prop(TypeRef(tracker.class.Project), tracker.string.Project)
-  project!: Ref<Project>
+    project!: Ref<Project>
 }
 
 @UX(core.string.Number)

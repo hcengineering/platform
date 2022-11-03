@@ -56,7 +56,7 @@
       <div class="flex-center flex-wrap">
         <Component
           is={attachment.component.AttachmentsPresenter}
-          props={{ value: object.attachments, object: object, size: 'medium', showCounter: true }}
+          props={{ value: object.attachments, object, size: 'medium', showCounter: true }}
         />
       </div>
       {#if channels[0]}

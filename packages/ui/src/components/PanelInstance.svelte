@@ -117,16 +117,16 @@
       class="panel-instance"
       class:bg={props.element === 'content'}
       bind:this={modalHTML}
-      style:top={options.props.top}
-      style:bottom={options.props.bottom}
-      style:left={options.props.left}
-      style:right={options.props.right}
-      style:width={options.props.width}
-      style:height={options.props.height}
-      style:max-width={options.props.maxWidth}
-      style:max-height={options.props.maxHeight}
-      style:min-width={options.props.minWidth}
-      style:transform={options.props.transform}
+      style:top={options?.props?.top}
+      style:bottom={options?.props?.bottom}
+      style:left={options?.props?.left}
+      style:right={options?.props?.right}
+      style:width={options?.props?.width}
+      style:height={options?.props?.height}
+      style:max-width={options?.props?.maxWidth}
+      style:max-height={options?.props?.maxHeight}
+      style:min-width={options?.props?.minWidth}
+      style:transform={options?.props?.transform}
     >
       <div class="panel-container" class:padding={props.element === 'content'}>
         <svelte:component

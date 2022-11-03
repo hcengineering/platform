@@ -53,35 +53,35 @@ export class TTelegramMessage extends TAttachedDoc implements TelegramMessage {
 
   @Prop(TypeString(), telegram.string.Content)
   @Index(IndexKind.FullText)
-  content!: string
+    content!: string
 
   @Prop(TypeBoolean(), telegram.string.Incoming)
-  incoming!: boolean
+    incoming!: boolean
 
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, undefined, attachment.string.Files)
-  attachments?: number
+    attachments?: number
 
   @Prop(TypeTimestamp(), core.string.Modified)
-  sendOn!: Timestamp
+    sendOn!: Timestamp
 }
 
 @Model(telegram.class.NewMessage, core.class.AttachedDoc, DOMAIN_TELEGRAM)
 export class TNewTelegramMessage extends TAttachedDoc implements NewTelegramMessage {
   @Prop(TypeString(), telegram.string.Content)
   @Index(IndexKind.FullText)
-  content!: string
+    content!: string
 
   @Prop(TypeString(), telegram.string.Status)
-  status!: 'new' | 'sent'
+    status!: 'new' | 'sent'
 
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, undefined, attachment.string.Files)
-  attachments?: number
+    attachments?: number
 }
 
 @Model(telegram.class.SharedMessages, core.class.AttachedDoc, DOMAIN_TELEGRAM)
 export class TSharedTelegramMessages extends TAttachedDoc implements SharedTelegramMessages {
   @Prop(ArrOf(TypeSharedMessage()), telegram.string.Messages)
-  messages!: SharedTelegramMessage[]
+    messages!: SharedTelegramMessage[]
 }
 
 export function createModel (builder: Builder): void {

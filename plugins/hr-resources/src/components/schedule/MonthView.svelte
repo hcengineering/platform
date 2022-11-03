@@ -28,12 +28,12 @@
     Label,
     LabelAndProps,
     Scroller,
-    tableSP,
     showPopup,
+    tableSP,
     tooltip
   } from '@hcengineering/ui'
   import hr from '../../plugin'
-  import { fromTzDate, getTotal } from '../../utils'
+  import { EmployeeReports, fromTzDate, getTotal } from '../../utils'
   import CreateRequest from '../CreateRequest.svelte'
   import RequestsPopup from '../RequestsPopup.svelte'
   import ScheduleRequests from '../ScheduleRequests.svelte'
@@ -47,6 +47,7 @@
   export let employeeRequests: Map<Ref<Staff>, Request[]>
   export let teamLead: Ref<Employee> | undefined
   export let types: Map<Ref<RequestType>, RequestType>
+  export let timeReports: Map<Ref<Employee>, EmployeeReports>
 
   const todayDate = new Date()
 
@@ -101,6 +102,13 @@
 
   let hoveredIndex: number = -1
   let hoveredColumn: number = -1
+
+  function findReports (employee: Employee, date: Date, timeReports: Map<Ref<Employee>, EmployeeReports>): number {
+    const wday = date.getDate()
+    return (timeReports.get(employee._id)?.reports ?? [])
+      .filter((it) => new Date(it.date ?? 0).getDate() === wday)
+      .reduce((a, b) => a + b.value, 0)
+  }
 </script>
 
 {#if departmentStaff.length}
@@ -112,6 +120,7 @@
             <Label label={contact.string.Employee} />
           </th>
           <th>#</th>
+          <th>##</th>
           {#each values as value, i}
             {@const day = getDay(startDate, value)}
             <th
@@ -134,18 +143,31 @@
       <tbody>
         {#each departmentStaff as employee, row}
           {@const requests = employeeRequests.get(employee._id) ?? []}
+          {@const rTime = timeReports.get(employee._id)}
           <tr>
             <td>
               <EmployeePresenter value={employee} />
             </td>
-            <td class="flex-center p-1" class:firstLine={row === 0} class:lastLine={row === departmentStaff.length - 1}>
+            <td
+              class="flex-center p-1 whitespace-nowrap"
+              class:firstLine={row === 0}
+              class:lastLine={row === departmentStaff.length - 1}
+            >
               {getTotal(requests, startDate.getMonth(), types)}
+            </td>
+            <td class="p-1">
+              {#if rTime !== undefined}
+                {rTime.value}
+              {:else}
+                0
+              {/if}
             </td>
             {#each values as value, i}
               {@const date = getDay(startDate, value)}
               {@const requests = getRequests(employee._id, date)}
               {@const editable = isEditable(employee)}
               {@const tooltipValue = getTooltip(requests)}
+              {@const ww = findReports(employee, date, timeReports)}
               {#key [tooltipValue, editable]}
                 <td
                   class:today={areDatesEqual(todayDate, date)}
@@ -163,9 +185,11 @@
                     hoveredColumn = -1
                   }}
                 >
-                  {#if requests.length}
-                    <ScheduleRequests {requests} {date} {editable} />
-                  {/if}
+                  <div class:worked={ww > 0} class="h-full w-full">
+                    {#if requests.length}
+                      <ScheduleRequests {requests} {editable} />
+                    {/if}
+                  </div>
                 </td>
               {/key}
             {/each}
@@ -261,5 +285,8 @@
         opacity: 0.15;
       }
     }
+  }
+  .worked {
+    background-color: var(--highlight-select);
   }
 </style>
