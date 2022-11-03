@@ -318,11 +318,7 @@ export function getCategories (
     (category) => statuses.find((status) => status.category === category)?._id
   )
 
-  const existingCategories = Array.from(
-    new Set(
-      elements.map((x: any) => x[key] ?? undefined)
-    )
-  )
+  const existingCategories = Array.from(new Set(elements.map((x: any) => x[key] ?? undefined)))
 
   if (shouldShowAll) {
     if (key === 'status') {
