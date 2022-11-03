@@ -60,8 +60,6 @@ async function createDefaultKanbanTemplate (tx: TxOperations): Promise<Ref<Kanba
     kanbanId: lead.template.DefaultFunnel,
     space: lead.space.FunnelTemplates as Ref<Doc> as Ref<Space>,
     title: 'Default funnel',
-    description: '',
-    shortDescription: '',
     states: defaultKanban.states,
     doneStates: defaultKanban.doneStates
   })

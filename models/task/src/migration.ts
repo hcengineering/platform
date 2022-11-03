@@ -28,8 +28,8 @@ export interface KanbanTemplateData {
   kanbanId: Ref<KanbanTemplate>
   space: Ref<Space>
   title: KanbanTemplate['title']
-  description: string
-  shortDescription: string
+  description?: string
+  shortDescription?: string
   states: Pick<StateTemplate, 'title' | 'color'>[]
   doneStates: (Pick<DoneStateTemplate, 'title'> & { isWon: boolean })[]
 }
@@ -64,9 +64,7 @@ export async function createKanbanTemplate (
     {
       doneStatesC: 0,
       statesC: 0,
-      title: data.title,
-      description: '',
-      shortDescription: ''
+      title: data.title
     },
     data.kanbanId
   )
