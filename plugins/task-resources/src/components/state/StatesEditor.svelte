@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import { Class, Ref, Space } from '@hcengineering/core'
-  import { AttributeEditor, getClient } from '@hcengineering/presentation'
+  import { AttributeEditor, AttributesBar, getClient } from '@hcengineering/presentation'
   import type { DoneState, KanbanTemplate, State } from '@hcengineering/task'
   import {
     CircleButton,
@@ -34,6 +34,7 @@
   import { ColorsPopup } from '@hcengineering/view-resources'
   import { StyledTextBox } from '@hcengineering/text-editor'
   import tracker from '@hcengineering/tracker'
+  import { getFiltredKeys } from '@hcengineering/view-resources/src/utils'
   import Circles from './Circles.svelte'
   import StatusesPopup from './StatusesPopup.svelte'
   import task from '../../plugin'
@@ -52,6 +53,9 @@
   const elements: HTMLElement[] = []
   let selected: number | undefined
   let dragState: Ref<State>
+
+  const hierarchy = client.getHierarchy()
+  const customKeys = getFiltredKeys(hierarchy, recruit.class.Vacancy, []).filter((key) => key.attr.isCustom)
 
   function dragswap (ev: MouseEvent, i: number): boolean {
     const s = selected as number
@@ -98,7 +102,7 @@
 
   async function onShortDescriptionChange (value: string) {
     dispatch('shortDescriptionChange', { value })
-  }  
+  }
 
 </script>
 
@@ -156,6 +160,11 @@
       <Component is={tracker.component.RelatedIssues} props={{ object: template }} />
     </div>
   </div>
+  {#if customKeys.length > 0}
+    <div class="antiSection mb-9">
+      <AttributesBar object={template} _class={template._class} keys={customKeys} />
+    </div>
+  {/if}
 {/if}
 <div class="flex-no-shrink flex-between trans-title uppercase">
   <Label label={task.string.ActiveStates} />

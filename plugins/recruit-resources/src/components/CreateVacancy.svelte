@@ -29,8 +29,7 @@
   const dispatch = createEventDispatcher()
 
   let name: string = ''
-  let fullDescription: string = ''
-  let description: string = ''
+  let template: KanbanTemplate | undefined
   let templateId: Ref<KanbanTemplate> | undefined
   let objectId: Ref<VacancyClass> = generateId()
   let subIssues: FindResult<Issue>
@@ -43,11 +42,9 @@
   }
 
   const client = getClient()
-
-  const descriptionQ = createQuery()
-  $: descriptionQ.query(task.class.KanbanTemplate, { _id: templateId }, (result) => {
-    fullDescription = result[0].description
-    description = result[0].shortDescription
+  const templateQ = createQuery()
+  $: templateQ.query(task.class.KanbanTemplate, { _id: templateId }, (result) => {
+    template = result[0]
   })
 
   const subIssuesQ = createQuery()
@@ -67,9 +64,10 @@
       recruit.class.Vacancy,
       core.space.Space,
       {
+        ...template,
         name,
-        description,
-        fullDescription,
+        description: template?.shortDescription ?? '',
+        fullDescription: template?.description ?? '',
         private: false,
         archived: false,
         company,
@@ -148,7 +146,7 @@
       }}
     />
   </svelte:fragment>
-  {#key fullDescription}
+  {#key template?.description}
     <AttachmentStyledBox
       bind:this={descriptionBox}
       {objectId}
@@ -157,7 +155,7 @@
       alwaysEdit
       showButtons={false}
       maxHeight={'card'}
-      bind:content={fullDescription}
+      content={template?.description ?? ''}
       placeholder={recruit.string.FullDescription}
     />
   {/key}
