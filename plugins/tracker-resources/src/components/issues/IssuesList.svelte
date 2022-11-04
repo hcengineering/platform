@@ -32,6 +32,7 @@
   } from '@hcengineering/ui'
   import { AttributeModel, BuildModelKey } from '@hcengineering/view'
   import { buildModel, filterStore, getObjectPresenter, LoadingProps, Menu } from '@hcengineering/view-resources'
+  import { onDestroy } from 'svelte'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
   import { IssuesGroupByKeys, issuesGroupEditorMap, IssuesOrderByKeys, issuesSortOrderMap } from '../../utils'
@@ -177,12 +178,13 @@
   const getInitCollapseValue = (category: any) =>
     categories.length === 1 ? false : (groupedIssues[category]?.length ?? 0) > autoFoldLimit
 
-  $: filterStore.subscribe(() => isFilterUpdate = true)
+  const unsubscribeFilter = filterStore.subscribe(() => (isFilterUpdate = true))
+  onDestroy(unsubscribeFilter)
 
   $: {
     if (isFilterUpdate && groupedIssuesBeforeFilter !== groupedIssues) {
       isCollapsedMap = {}
-    
+  
       categories.forEach(category => isCollapsedMap[toCat(category)] = getInitCollapseValue(category))
 
       isFilterUpdate = false
