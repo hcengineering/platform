@@ -168,10 +168,8 @@
     categoryLimit: Record<any, number>
   ): Issue[] {
     const issues = groupes[category] ?? []
-    if (Object.keys(groupes).length === 1) {
-      return issues.slice(0, singleCategoryLimit)
-    }
-    const limit = categoryLimit[toCat(category)] ?? defaultLimit
+    const initialLimit = Object.keys(groupes).length === 1 ? singleCategoryLimit : defaultLimit
+    const limit = categoryLimit[toCat(category)] ?? initialLimit
     return issues.slice(0, limit)
   }
 

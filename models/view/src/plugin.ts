@@ -43,6 +43,7 @@ export default mergeIds(viewId, view, {
     StringEditor: '' as AnyComponent,
     StringEditorPopup: '' as AnyComponent,
     StringPresenter: '' as AnyComponent,
+    HyperlinkPresenter: '' as AnyComponent,
     IntlStringPresenter: '' as AnyComponent,
     NumberEditor: '' as AnyComponent,
     NumberPresenter: '' as AnyComponent,

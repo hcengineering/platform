@@ -28,48 +28,52 @@
 
   const dispatch = createEventDispatcher()
 
+  let loaded: boolean = false
   let hiddenAppsIds: Ref<Application>[] = []
   const hiddenAppsIdsQuery = createQuery()
   hiddenAppsIdsQuery.query(workbench.class.HiddenApplication, {}, (res) => {
     hiddenAppsIds = res.map((r) => r.attachedTo)
+    loaded = true
   })
 
   let shown: boolean = false
 </script>
 
 <div class="flex-row-center clear-mins apps-{direction} relative">
-  <Scroller
-    invertScroll
-    padding={direction === 'horizontal' ? '.25rem 0' : '0 .5rem'}
-    horizontal={direction === 'horizontal'}
-    contentDirection={direction}
-  >
-    <div class="apps-space-{direction}" />
-    {#each apps.filter((it) => (shown ? true : !hiddenAppsIds.includes(it._id))) as app}
-      <AppItem
-        selected={app._id === active}
-        icon={app.icon}
-        label={app.label}
-        hidden={hiddenAppsIds.includes(app._id)}
-        editable={shown}
-        action={async () => {
-          dispatch('active', app)
-        }}
-        notify={false}
-        on:visible={(res) => {
-          if (res.detail === undefined) return
-          if (res.detail) showApplication(app)
-          else hideApplication(app)
-        }}
-      />
-    {/each}
-    <div class="apps-space-{direction}" />
-  </Scroller>
-  <div class="thinButton {direction}" class:shown on:click={() => (shown = !shown)}>
-    <div class="clear-mins pointer-events-none" class:rotate90={direction === 'horizontal'}>
-      <IconDownOutline size={'medium'} />
+  {#if loaded}
+    <Scroller
+      invertScroll
+      padding={direction === 'horizontal' ? '.25rem 0' : '0 .5rem'}
+      horizontal={direction === 'horizontal'}
+      contentDirection={direction}
+    >
+      <div class="apps-space-{direction}" />
+      {#each apps.filter((it) => (shown ? true : !hiddenAppsIds.includes(it._id))) as app}
+        <AppItem
+          selected={app._id === active}
+          icon={app.icon}
+          label={app.label}
+          hidden={hiddenAppsIds.includes(app._id)}
+          editable={shown}
+          action={async () => {
+            dispatch('active', app)
+          }}
+          notify={false}
+          on:visible={(res) => {
+            if (res.detail === undefined) return
+            if (res.detail) showApplication(app)
+            else hideApplication(app)
+          }}
+        />
+      {/each}
+      <div class="apps-space-{direction}" />
+    </Scroller>
+    <div class="thinButton {direction}" class:shown on:click={() => (shown = !shown)}>
+      <div class="clear-mins pointer-events-none" class:rotate90={direction === 'horizontal'}>
+        <IconDownOutline size={'medium'} />
+      </div>
     </div>
-  </div>
+  {/if}
 </div>
 
 <style lang="scss">

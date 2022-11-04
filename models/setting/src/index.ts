@@ -278,6 +278,10 @@ export function createModel (builder: Builder): void {
     editor: setting.component.StringTypeEditor
   })
 
+  builder.mixin(core.class.TypeHyperlink, core.class.Class, view.mixin.ObjectEditor, {
+    editor: setting.component.HyperlinkTypeEditor
+  })
+
   builder.mixin(core.class.TypeBoolean, core.class.Class, view.mixin.ObjectEditor, {
     editor: setting.component.BooleanTypeEditor
   })

@@ -111,7 +111,7 @@ export const getIssuesModificationDatePeriodTime = (period: IssuesDateModificati
 
 export const groupBy = (data: any, key: any): { [key: string]: any[] } => {
   return data.reduce((storage: { [key: string]: any[] }, item: any) => {
-    const group = item[key]
+    const group = item[key] ?? undefined
 
     storage[group] = storage[group] ?? []
 
@@ -318,13 +318,7 @@ export function getCategories (
     (category) => statuses.find((status) => status.category === category)?._id
   )
 
-  const existingCategories = Array.from(
-    new Set(
-      elements.map((x) => {
-        return (x as any)[key]
-      })
-    )
-  )
+  const existingCategories = Array.from(new Set(elements.map((x: any) => x[key] ?? undefined)))
 
   if (shouldShowAll) {
     if (key === 'status') {

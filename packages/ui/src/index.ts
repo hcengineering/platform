@@ -97,6 +97,7 @@ export { default as Submenu } from './components/Submenu.svelte'
 export { default as TimeShiftPicker } from './components/TimeShiftPicker.svelte'
 export { default as ErrorPresenter } from './components/ErrorPresenter.svelte'
 export { default as Scroller } from './components/Scroller.svelte'
+export { default as ScrollerBar } from './components/ScrollerBar.svelte'
 export { default as TabList } from './components/TabList.svelte'
 
 export { default as IconAdd } from './components/icons/Add.svelte'

@@ -24,6 +24,7 @@
     "Collection": "Коллекция",
     "Array": "Массив",
     "Enum": "Справочник",
-    "Members": "Участники"
+    "Members": "Участники",
+    "Hyperlink": "URL"
   }
 }
