@@ -177,7 +177,7 @@
   const getInitCollapseValue = (category: any) =>
     categories.length === 1 ? false : (groupedIssues[category]?.length ?? 0) > autoFoldLimit
 
-  filterStore.subscribe(() => isFilterUpdate = true)
+  $: filterStore.subscribe(() => isFilterUpdate = true)
 
   $: {
     if (isFilterUpdate && groupedIssuesBeforeFilter !== groupedIssues) {
