@@ -22,20 +22,32 @@
   import document from '../plugin'
 
   import { CollaboratorEditor } from '@hcengineering/text-editor'
+  import { Markup } from '@hcengineering/core'
 
   export let object: DocumentVersion
   export let readonly = false
   export let initialContentId: string | undefined = undefined
+  export let suggestMode = false
+  export let comparedVersion: Markup | undefined = undefined
 
   const token = getMetadata(login.metadata.LoginToken) ?? ''
   const collaboratorURL = getMetadata(document.metadata.CollaboratorUrl) ?? ''
+  let editor: CollaboratorEditor
+  export function getHTML (): string {
+    return editor.getHTML()
+  }
 </script>
 
-<CollaboratorEditor
-  documentId={object.contentAttachmentId}
-  {token}
-  {collaboratorURL}
-  {readonly}
-  on:content
-  {initialContentId}
-/>
+{#key comparedVersion}
+  <CollaboratorEditor
+    documentId={object.contentAttachmentId}
+    {token}
+    {suggestMode}
+    {collaboratorURL}
+    {readonly}
+    on:content
+    {initialContentId}
+    {comparedVersion}
+    bind:this={editor}
+  />
+{/key}

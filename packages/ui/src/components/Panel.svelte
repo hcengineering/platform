@@ -29,6 +29,7 @@
   export let isAside: boolean = true
   export let isFullSize: boolean = false
   export let withoutTitle: boolean = false
+  export let floatAside = false
 
   const dispatch = createEventDispatcher()
 
@@ -39,7 +40,9 @@
   $: twoRows = $deviceInfo.minWidth
 
   const checkPanel = (): void => {
-    if (panelWidth <= 900 && !asideFloat) asideFloat = true
+    if (floatAside) {
+      asideFloat = true
+    } else if (panelWidth <= 900 && !asideFloat) asideFloat = true
     else if (panelWidth > 900 && asideFloat) {
       asideFloat = false
       asideShown = false

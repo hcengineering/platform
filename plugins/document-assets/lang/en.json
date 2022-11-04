@@ -46,6 +46,8 @@
     "Approve": "Approve",
     "Reject": "Reject",
     "Approved": "Approved",
-    "Rejected": "Rejected"
+    "Rejected": "Rejected",
+
+    "CompareTo": "Compare to..."
   }
 }

@@ -29,8 +29,9 @@
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
   import { getResource, translate } from '@hcengineering/platform'
-  import { createQuery, getClient, MessageViewer } from '@hcengineering/presentation'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import tags from '@hcengineering/tags'
+  import { CollaborationDiffViewer } from '@hcengineering/text-editor'
 
   import {
     Button,
@@ -161,6 +162,7 @@
     { sort: { version: 1 } }
   )
   let version: DocumentVersion | undefined
+  let compareTo: DocumentVersion | undefined
 
   let info: any
 
@@ -205,6 +207,25 @@
     )
   }
 
+  function selectCompareToVersion (event: MouseEvent): void {
+    showPopup(
+      SelectPopup,
+      {
+        value: [{ id: null, text: '-' }, ...info.slice(0, info.length - 1)],
+        placeholder: document.string.Version,
+        searchable: true
+      },
+      eventToHTMLElement(event),
+      (res) => {
+        if (res != null) {
+          compareTo = versions.find((it) => it._id === res)
+        } else if (res === null) {
+          compareTo = undefined
+        }
+      }
+    )
+  }
+
   $: readonly = !documentObject?.authors.includes(currentUser.employee)
 
   let autoSelect = true
@@ -213,8 +234,8 @@
   let mode: ModelType = 'view'
   const modeLabels = {
     view: document.string.ViewMode,
-    edit: document.string.EditMode
-    // ,suggest: document.string.SuggestMode
+    edit: document.string.EditMode,
+    suggest: document.string.SuggestMode
   }
 
   function selectMode (event: MouseEvent): void {
@@ -304,8 +325,6 @@
 
   let processing = false
 
-  let content = ''
-
   const updateRequests = async (kind: DocumentRequestKind): Promise<void> => {
     processing = true
     if (documentObject === undefined) {
@@ -335,7 +354,7 @@
 
     if (version) {
       await client.update(version, {
-        content
+        content: editor.getHTML()
       })
     }
 
@@ -343,7 +362,7 @@
 
     processing = false
   }
-
+  let editor: DocumentEditor
   const updateState = async (state: DocumentVersionState): Promise<void> => {
     processing = true
     if (documentObject === undefined) {
@@ -377,6 +396,12 @@
 
     processing = false
   }
+  async function switchToDraft (): Promise<void> {
+    const requests = await client.findAll(document.class.DocumentRequest, { attachedTo: documentObject?._id })
+    for (const r of requests) {
+      client.remove(r)
+    }
+  }
 </script>
 
 {#if documentObject !== undefined}
@@ -386,6 +411,7 @@
     isAside={true}
     isSub={false}
     bind:innerWidth
+    floatAside={true}
     on:close={() => dispatch('close')}
   >
     <svelte:fragment slot="navigator">
@@ -407,6 +433,21 @@
               {version.version} - {labels[version.state]}
             {:else}
               <Label label={document.string.Draft} />
+            {/if}
+          </svelte:fragment>
+        </Button>
+
+        <Button
+          loading={processing}
+          kind={'link-bordered'}
+          on:click={selectCompareToVersion}
+          disabled={info.length < 2}
+        >
+          <svelte:fragment slot="content">
+            {#if compareTo}
+              {compareTo.version} - {labels[compareTo.state]}
+            {:else}
+              <Label label={document.string.CompareTo} />
             {/if}
           </svelte:fragment>
         </Button>
@@ -465,6 +506,16 @@
           icon={IconClose}
           size={'medium'}
         />
+        {#if !readonly}
+          <Button
+            loading={processing}
+            kind={'link-bordered'}
+            label={document.string.Draft}
+            on:click={() => switchToDraft()}
+            icon={IconEdit}
+            size={'medium'}
+          />
+        {/if}
       {/if}
       {#if !readonly && version?.state === DocumentVersionState.Draft && approveRequest === undefined}
         <Button loading={processing} kind={'link-bordered'} on:click={selectMode} icon={IconEdit} size={'medium'}>
@@ -479,17 +530,19 @@
     <div class="description-preview select-text mt-2 emphasized">
       {#if version && version.state === DocumentVersionState.Draft && approveRequest === undefined}
         {#key version?._id}
+          <!-- suggestMode={mode === 'suggest'} -->
           <DocumentEditor
             object={version}
             initialContentId={version.initialContentId}
+            comparedVersion={compareTo?.content ?? versions[versions.length - 1].content}
             readonly={mode === 'view'}
-            on:content={(evt) => {
-              content = evt.detail
-            }}
+            bind:this={editor}
           />
         {/key}
       {:else if version}
-        <MessageViewer message={version.content} />
+        {#key [compareTo?.content, version.content]}
+          <CollaborationDiffViewer content={version.content} comparedVersion={compareTo?.content} />
+        {/key}
       {/if}
     </div>
 
@@ -533,6 +586,7 @@
   .description-preview {
     color: var(--theme-content-color);
     line-height: 150%;
+    overflow: auto;
   }
 
   .tab-content {

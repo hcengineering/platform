@@ -54,6 +54,7 @@ export default plugin(textEditorId, {
     Food: '' as IntlString,
     Objects: '' as IntlString,
     FullDescription: '' as IntlString,
-    NoFullDescription: '' as IntlString
+    NoFullDescription: '' as IntlString,
+    EnableDiffMode: '' as IntlString
   }
 })

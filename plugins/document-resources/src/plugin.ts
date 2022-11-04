@@ -76,6 +76,8 @@ export default mergeIds(documentId, document, {
     Requests: '' as IntlString,
 
     Approve: '' as IntlString,
-    Reject: '' as IntlString
+    Reject: '' as IntlString,
+
+    CompareTo: '' as IntlString
   }
 })
