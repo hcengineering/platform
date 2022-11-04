@@ -46,6 +46,7 @@ import RolePresenter from './components/RolePresenter.svelte'
 import SpacePresenter from './components/SpacePresenter.svelte'
 import StringEditor from './components/StringEditor.svelte'
 import StringPresenter from './components/StringPresenter.svelte'
+import HyperlinkPresenter from './components/HyperlinkPresenter.svelte'
 import Table from './components/Table.svelte'
 import TableBrowser from './components/TableBrowser.svelte'
 import TimestampPresenter from './components/TimestampPresenter.svelte'
@@ -123,6 +124,7 @@ export default async (): Promise<Resources> => ({
     SpacePresenter,
     StringEditor,
     StringPresenter,
+    HyperlinkPresenter,
     NumberEditor,
     NumberPresenter,
     BooleanPresenter,

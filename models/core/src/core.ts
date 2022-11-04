@@ -143,6 +143,10 @@ export class TType extends TObj implements Type<any> {
 @Model(core.class.TypeString, core.class.Type)
 export class TTypeString extends TType {}
 
+@UX(core.string.Hyperlink)
+@Model(core.class.TypeHyperlink, core.class.Type)
+export class TTypeHyperlink extends TType {}
+
 @UX(core.string.IntlString)
 @Model(core.class.TypeIntlString, core.class.Type)
 export class TTypeIntlString extends TType {}

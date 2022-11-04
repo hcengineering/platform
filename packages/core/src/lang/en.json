@@ -24,6 +24,7 @@
     "Collection": "Collection",
     "Array": "Array",
     "Enum": "Enum",
-    "Members": "Members"
+    "Members": "Members",
+    "Hyperlink": "URL"
   }
 }

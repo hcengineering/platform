@@ -39,6 +39,7 @@ import EnumTypeEditor from './components/typeEditors/EnumTypeEditor.svelte'
 import NumberTypeEditor from './components/typeEditors/NumberTypeEditor.svelte'
 import RefEditor from './components/typeEditors/RefEditor.svelte'
 import StringTypeEditor from './components/typeEditors/StringTypeEditor.svelte'
+import HyperlinkTypeEditor from './components/typeEditors/HyperlinkTypeEditor.svelte'
 import WorkspaceSettings from './components/WorkspaceSettings.svelte'
 import setting from './plugin'
 
@@ -81,6 +82,7 @@ export default async (): Promise<Resources> => ({
     ManageStatuses,
     ClassSetting,
     StringTypeEditor,
+    HyperlinkTypeEditor,
     BooleanTypeEditor,
     NumberTypeEditor,
     RefEditor,

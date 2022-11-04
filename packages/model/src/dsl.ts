@@ -28,6 +28,7 @@ import core, {
   Enum,
   EnumOf,
   generateId,
+  Hyperlink,
   IndexKind,
   Interface,
   Markup,
@@ -352,6 +353,13 @@ export class Builder {
  */
 export function TypeString (): Type<string> {
   return { _class: core.class.TypeString, label: core.string.String }
+}
+
+/**
+ * @public
+ */
+export function TypeHyperlink (): Type<Hyperlink> {
+  return { _class: core.class.TypeHyperlink, label: core.string.Hyperlink }
 }
 
 /**

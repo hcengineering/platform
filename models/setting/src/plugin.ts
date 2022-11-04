@@ -33,6 +33,7 @@ export default mergeIds(settingId, setting, {
   component: {
     EnumSetting: '' as AnyComponent,
     StringTypeEditor: '' as AnyComponent,
+    HyperlinkTypeEditor: '' as AnyComponent,
     BooleanTypeEditor: '' as AnyComponent,
     NumberTypeEditor: '' as AnyComponent,
     DateTypeEditor: '' as AnyComponent,

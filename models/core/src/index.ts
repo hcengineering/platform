@@ -38,6 +38,7 @@ import {
   TTypeMarkup,
   TTypeNumber,
   TTypeString,
+  TTypeHyperlink,
   TTypeTimestamp,
   TTypeRelatedDocument,
   TVersion
@@ -81,6 +82,7 @@ export function createModel (builder: Builder): void {
     TTypeNumber,
     TTypeBoolean,
     TTypeString,
+    TTypeHyperlink,
     TCollection,
     TVersion,
     TTypeIntlString,
