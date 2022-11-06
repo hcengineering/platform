@@ -71,7 +71,7 @@
     width: 100%;
     max-width: 100%;
     min-width: 0;
-    min-height: 0;
+    min-height: min-content;
   }
   .message-row {
     display: flex;
