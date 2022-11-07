@@ -77,7 +77,7 @@
           {issue.title}
         </span>
       </div>
-      <div class="flex-center flex-no-shrink">
+      <div class="flex-center flex-no-shrink gap-2">
         <UserBox
           label={tracker.string.Assignee}
           _class={contact.class.Employee}
