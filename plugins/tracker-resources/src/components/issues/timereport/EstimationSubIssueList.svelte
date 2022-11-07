@@ -21,7 +21,6 @@
   import { ContextMenu, FixedColumn, ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
   import { getIssueId } from '../../../issues'
   import tracker from '../../../plugin'
-  import EstimationPresenter from './EstimationPresenter.svelte'
   import EstimationEditor from './EstimationEditor.svelte'
 
   export let issues: Issue[]
