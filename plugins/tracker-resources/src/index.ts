@@ -83,6 +83,7 @@ import ReportedTimeEditor from './components/issues/timereport/ReportedTimeEdito
 import TimeSpendReport from './components/issues/timereport/TimeSpendReport.svelte'
 
 import RelatedIssues from './components/issues/related/RelatedIssues.svelte'
+import RelatedIssueTemplates from './components/issues/related/RelatedIssueTemplates.svelte'
 
 import ProjectSelector from './components/ProjectSelector.svelte'
 
@@ -208,6 +209,7 @@ export default async (): Promise<Resources> => ({
     SubIssuesSelector,
     GrowPresenter,
     RelatedIssues,
+    RelatedIssueTemplates,
     ProjectSelector,
     IssueTemplates,
     IssueTemplatePresenter,

@@ -258,6 +258,8 @@ export interface IssueTemplate extends Doc, IssueTemplateData {
   // Discussion stuff
   comments: number
   attachments?: number
+
+  relations?: RelatedDocument[]
 }
 
 /**
@@ -385,6 +387,7 @@ export default plugin(trackerId, {
     Tracker: '' as AnyComponent,
     TrackerApp: '' as AnyComponent,
     RelatedIssues: '' as AnyComponent,
+    RelatedIssueTemplates: '' as AnyComponent,
     EditIssue: '' as AnyComponent,
     CreateIssue: '' as AnyComponent
   },

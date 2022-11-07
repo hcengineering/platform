@@ -33,14 +33,14 @@
   import { createEventDispatcher } from 'svelte'
   import { ColorsPopup } from '@hcengineering/view-resources'
   import { StyledTextBox } from '@hcengineering/text-editor'
-  import tracker from '@hcengineering/tracker'
   import { getFiltredKeys } from '@hcengineering/view-resources/src/utils'
+  import tracker from '@hcengineering/tracker'
   import Circles from './Circles.svelte'
   import StatusesPopup from './StatusesPopup.svelte'
   import task from '../../plugin'
   import Won from '../icons/Won.svelte'
   import Lost from '../icons/Lost.svelte'
-  import recruit from '../../../../recruit-resources/src/plugin'
+  import CreateIssueTemplate from '../../../../tracker-resources/src/components/templates/CreateIssueTemplate.svelte'
 
   export let template: KanbanTemplate | undefined = undefined
   export let states: State[] = []
@@ -55,7 +55,7 @@
   let dragState: Ref<State>
 
   const hierarchy = client.getHierarchy()
-  const customKeys = getFiltredKeys(hierarchy, recruit.class.Vacancy, []).filter((key) => key.attr.isCustom)
+  const customKeys = template && getFiltredKeys(hierarchy, template._class, []).filter((key) => key.attr.isCustom)
 
   function dragswap (ev: MouseEvent, i: number): boolean {
     const s = selected as number
@@ -135,7 +135,7 @@
   <div class="antiSection mt-9 mb-9">
     <div class="antiSection-header">
       <div class="antiSection-header__icon">
-        <Icon icon={tracker.icon.Issue} size={'small'} />
+        <Icon icon={task.icon.Issue} size={'small'} />
       </div>
       <span class="antiSection-header__title">
         <Label label={task.string.RelatedIssues} />
@@ -149,17 +149,15 @@
           labelParams={{ subIssues: 0 }}
           kind={'transparent'}
           size={'small'}
-          on:click={() => {
-            showPopup(tracker.component.CreateIssue, { relatedTo: template, space: template?.space }, 'top')
-          }}
+          on:click={() => showPopup(CreateIssueTemplate, { relatedTo: template })}
         />
       </div>
     </div>
     <div class="flex-row">
-      <Component is={tracker.component.RelatedIssues} props={{ object: template }} />
+      <Component is={tracker.component.RelatedIssueTemplates} props={{ object: template }} />
     </div>
   </div>
-  {#if customKeys.length > 0}
+  {#if customKeys && customKeys.length > 0}
     <div class="antiSection mb-9">
       <AttributesBar object={template} _class={template._class} keys={customKeys} />
     </div>

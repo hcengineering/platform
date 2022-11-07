@@ -19,7 +19,7 @@
   import { Card, createQuery, getClient, UserBox } from '@hcengineering/presentation'
   import task, { createKanban, KanbanTemplate } from '@hcengineering/task'
   import { Button, Component, createFocusManager, EditBox, FocusHandler, IconAttachment } from '@hcengineering/ui'
-  import tracker, { Issue } from '@hcengineering/tracker'
+  import tracker, { IssueStatus, IssueTemplate } from '@hcengineering/tracker'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
   import { Vacancy as VacancyClass } from '@hcengineering/recruit'
@@ -32,7 +32,7 @@
   let template: KanbanTemplate | undefined
   let templateId: Ref<KanbanTemplate> | undefined
   let objectId: Ref<VacancyClass> = generateId()
-  let subIssues: FindResult<Issue>
+  let issueTemplates: FindResult<IssueTemplate>
 
   export let company: Ref<Organization> | undefined
   export let preserveCompany: boolean = false
@@ -47,9 +47,9 @@
     template = result[0]
   })
 
-  const subIssuesQ = createQuery()
-  $: subIssuesQ.query(tracker.class.Issue, { 'relations._id': templateId }, async (result) => {
-    subIssues = result
+  const issueTemplatesQ = createQuery()
+  $: issueTemplatesQ.query(tracker.class.IssueTemplate, { 'relations._id': templateId }, async (result) => {
+    issueTemplates = result
   })
 
   async function createVacancy () {
@@ -76,10 +76,43 @@
       objectId
     )
 
-    for (const issue of subIssues) {
-      await client.updateDoc(issue._class, issue.space, issue._id, {
-        relations: issue.relations?.concat({ _id: id, _class: recruit.class.Vacancy })
-      })
+    for (const issueTemplate of issueTemplates) {
+      const incResult = await client.updateDoc(
+        tracker.class.Team,
+        core.space.Space,
+        issueTemplate.space,
+        {
+          $inc: { sequence: 1 }
+        },
+        true
+      )
+      await client.addCollection(
+        tracker.class.Issue,
+        issueTemplate.space,
+        tracker.ids.NoParent,
+        tracker.class.Issue,
+        'subIssues',
+        {
+          title: issueTemplate.title,
+          description: issueTemplate.description,
+          assignee: issueTemplate.assignee,
+          project: issueTemplate.project,
+          sprint: issueTemplate.sprint,
+          number: (incResult as any).object.sequence,
+          status: '' as Ref<IssueStatus>,
+          priority: issueTemplate.priority,
+          rank: '',
+          comments: 0,
+          subIssues: 0,
+          dueDate: null,
+          parents: [],
+          reportedTime: 0,
+          estimation: issueTemplate.estimation,
+          reports: 0,
+          relations: [{ _id: id, _class: recruit.class.Vacancy }],
+          childInfo: []
+        }
+     )
     }
 
     await createKanban(client, id, templateId)

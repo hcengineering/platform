@@ -15,7 +15,7 @@
 <script lang="ts">
   import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
   import { Employee } from '@hcengineering/contact'
-  import { Data, generateId, Ref } from '@hcengineering/core'
+  import { Data, Doc, generateId, Ref } from '@hcengineering/core'
   import { Card, getClient, KeyedAttribute, SpaceSelector } from '@hcengineering/presentation'
   import tags, { TagElement } from '@hcengineering/tags'
   import { IssuePriority, IssueTemplate, Project, Sprint, Team } from '@hcengineering/tracker'
@@ -35,6 +35,7 @@
   export let assignee: Ref<Employee> | null = null
   export let project: Ref<Project> | null = $activeProject ?? null
   export let sprint: Ref<Sprint> | null = $activeSprint ?? null
+  export let relatedTo: Doc | undefined
 
   let labels: TagElement[] = []
 
@@ -50,7 +51,8 @@
     children: [],
     labels: [],
     comments: 0,
-    attachments: 0
+    attachments: 0,
+    relations: []
   }
 
   const dispatch = createEventDispatcher()
@@ -92,7 +94,8 @@
       children: object.children,
       comments: 0,
       attachments: 0,
-      labels: labels.map((it) => it._id)
+      labels: labels.map((it) => it._id),
+      relations: relatedTo !== undefined ? [{ _id: relatedTo._id, _class: relatedTo._class }] : []
     }
 
     await client.createDoc(tracker.class.IssueTemplate, _space, value, objectId)
