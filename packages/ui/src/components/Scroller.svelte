@@ -237,7 +237,7 @@
 
 <svelte:window on:resize={_resize} />
 
-<div style={scrollerVars} class="scroller-container {invertScroll ? 'invert' : 'normal'}" class:bottomStart>
+<div style={scrollerVars} class="scroller-container {invertScroll ? 'invert' : 'normal'}">
   <div class="horizontalBox" class:horizontalFade={horizontal}>
     <div
       bind:this={divScroll}
@@ -269,6 +269,7 @@
         on:dragover
         on:drop
       >
+        {#if bottomStart}<div class="flex-grow flex-shrink" />{/if}
         <slot />
       </div>
     </div>
@@ -384,16 +385,6 @@
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-  }
-  .scroller-container.bottomStart {
-    justify-content: flex-end;
-    .scroll {
-      flex-grow: 0;
-      height: min-content;
-      .box {
-        height: min-content;
-      }
-    }
   }
 
   .track,
