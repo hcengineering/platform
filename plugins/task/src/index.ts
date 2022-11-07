@@ -259,7 +259,8 @@ const task = plugin(taskId, {
     TodoUnCheck: '' as Asset,
     ManageTemplates: '' as Asset,
     TaskState: '' as Asset,
-    Dashboard: '' as Asset
+    Dashboard: '' as Asset,
+    Issue: '' as Asset
   },
   global: {
     // Global task root, if not attached to some other object.
