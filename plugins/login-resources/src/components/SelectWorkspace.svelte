@@ -14,21 +14,18 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { OK, setMetadata, Severity, Status } from '@hcengineering/platform'
+  import { OK, Severity, Status } from '@hcengineering/platform'
   import {
     Button,
-    fetchMetadataLocalStorage,
     getCurrentLocation,
     Label,
-    Location,
     navigate,
     setMetadataLocalStorage,
     deviceOptionsStore as deviceInfo,
     Scroller
   } from '@hcengineering/ui'
-  import { workbenchId } from '@hcengineering/workbench'
   import login from '../plugin'
-  import { getWorkspaces, selectWorkspace, Workspace } from '../utils'
+  import { getWorkspaces, selectWorkspace, Workspace, navigateToWorkspace } from '../utils'
   import StatusControl from './StatusControl.svelte'
 
   export let navigateUrl: string | undefined = undefined
@@ -41,22 +38,7 @@
     const [loginStatus, result] = await selectWorkspace(workspace)
     status = loginStatus
 
-    if (result !== undefined) {
-      setMetadata(login.metadata.LoginToken, result.token)
-      const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
-      tokens[result.workspace] = result.token
-      setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
-      setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)
-      setMetadataLocalStorage(login.metadata.LoginEmail, result.email)
-      if (navigateUrl !== undefined) {
-        const url = JSON.parse(decodeURIComponent(navigateUrl)) as Location
-        if (url.path[1] === workspace) {
-          navigate(url)
-          return
-        }
-      }
-      navigate({ path: [workbenchId, workspace] })
-    }
+    navigateToWorkspace(workspace, result, navigateUrl)
   }
 
   async function _getWorkspaces (): Promise<Workspace[]> {

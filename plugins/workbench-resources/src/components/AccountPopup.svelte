@@ -16,7 +16,14 @@
   import contact, { Employee, EmployeeAccount, formatName } from '@hcengineering/contact'
   import { AccountRole, getCurrentAccount } from '@hcengineering/core'
   import login from '@hcengineering/login'
-  import { setMetadata } from '@hcengineering/platform'
+  import {
+    getWorkspaces,
+    selectWorkspace,
+    Workspace,
+    navigateToWorkspace,
+    setLoginInfo
+  } from '@hcengineering/login-resources'
+  import { setMetadata, getEmbeddedLabel } from '@hcengineering/platform'
   import { Avatar, createQuery } from '@hcengineering/presentation'
   import setting, { settingId, SettingsCategory } from '@hcengineering/setting'
   import { Action, fetchMetadataLocalStorage } from '@hcengineering/ui'
@@ -31,10 +38,14 @@
     locationToUrl
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
+  import { workbenchId } from '@hcengineering/workbench'
   import HelpAndSupport from './HelpAndSupport.svelte'
   import workbench from '../plugin'
 
   let items: SettingsCategory[] = []
+  let workspaces: Workspace[] = []
+
+  getWorkspaces().then((ws: Workspace[]) => (workspaces = ws))
 
   const settingsQuery = createQuery()
   settingsQuery.query(
@@ -84,10 +95,6 @@
     navigate({ path: [login.component.LoginApp] })
   }
 
-  function selectWorkspace (): void {
-    navigate({ path: [login.component.LoginApp, 'selectWorkspace'] })
-  }
-
   function inviteWorkspace (): void {
     showPopup(login.component.InviteLink, {})
   }
@@ -130,8 +137,37 @@
     return actions
   }
 
+  function getWorkspaceItems () {
+    return workspaces.map((w) => ({
+      label: getEmbeddedLabel(w.workspace),
+      action: async () => {
+        const loginInfo = (await selectWorkspace(w.workspace))[1]
+        navigateToWorkspace(w.workspace, loginInfo)
+      },
+      isSubmenuRightClicking: true,
+      component: Menu,
+      props: {
+        actions: [
+          {
+            label: workbench.string.OpenInNewTab,
+            action: async () => {
+              const loginInfo = (await selectWorkspace(w.workspace))[1]
+
+              if (!loginInfo) {
+                return
+              }
+              setLoginInfo(loginInfo)
+              const url = locationToUrl({ path: [workbenchId, w.workspace] })
+              window.open(url, '_blank')?.focus()
+            }
+          }
+        ]
+      }
+    }))
+  }
+
   let actions: Action[] = []
-  $: if (items) {
+  $: if (items && workspaces) {
     actions = []
     const subActions: Action[] = getMenu(items, ['settings', 'settings-editor'])
     actions.push({
@@ -146,7 +182,9 @@
       {
         icon: setting.icon.SelectWorkspace,
         label: setting.string.SelectWorkspace,
-        action: async () => selectWorkspace(),
+        action: async () => {},
+        component: Menu,
+        props: { actions: getWorkspaceItems() },
         group: 'end'
       },
       {
