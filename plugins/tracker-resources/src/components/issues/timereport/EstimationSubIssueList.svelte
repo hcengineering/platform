@@ -21,7 +21,7 @@
   import { ContextMenu, FixedColumn, ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
   import { getIssueId } from '../../../issues'
   import tracker from '../../../plugin'
-  import EstimationPresenter from './EstimationPresenter.svelte'
+  import EstimationEditor from './EstimationEditor.svelte'
 
   export let issues: Issue[]
 
@@ -76,7 +76,7 @@
           {issue.title}
         </span>
       </div>
-      <div class="flex-center flex-no-shrink">
+      <div class="flex-center flex-no-shrink gap-2">
         <UserBox
           label={tracker.string.Assignee}
           _class={contact.class.Employee}
@@ -84,7 +84,7 @@
           readonly
           showNavigate={false}
         />
-        <EstimationPresenter value={issue.estimation} />
+        <EstimationEditor value={issue} kind={'list'} />
       </div>
     </div>
   </svelte:fragment>
