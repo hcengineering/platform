@@ -15,6 +15,8 @@
 <script lang="ts">
   import { IntlString, Asset } from '@hcengineering/platform'
   import { createEventDispatcher } from 'svelte'
+  import { deepEqual } from 'fast-equals'
+
   import type { AnySvelteComponent, TooltipAlignment, ButtonKind, ButtonSize, DropdownIntlItem } from '../types'
   import { showPopup, closePopup } from '../popups'
   import Button from './Button.svelte'
@@ -56,14 +58,16 @@
     }
   }
 
-  function updatePopup () {
+  let prevItems: DropdownIntlItem[]
+  $: if (!deepEqual(items, prevItems)) {
+    prevItems = items
+
     if (opened) {
       closePopup()
       opened = false
       openPopup()
     }
   }
-  $: items && updatePopup()
 </script>
 
 <div bind:this={container} class="min-w-0">

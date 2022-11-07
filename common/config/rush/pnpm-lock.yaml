@@ -14714,7 +14714,7 @@ packages:
     dev: false
 
   file:projects/ui.tgz_1e3963ebf0ceeb25b2fa6a1cc87e253c:
-    resolution: {integrity: sha512-46COtAECm8v7tfsMRV9ol2UMMwpXYPwvp//qyVSlCIhNrWA7Mk7rBzMKeyDwi28EmjxasIbNhRQScOa5DTccig==, tarball: file:projects/ui.tgz}
+    resolution: {integrity: sha512-tEGe2W6LdHgwewLIjCYDQwX+tSqWYivga5zeLBin75rsNZYJVujyTyDx7opwnVDZvCDmoVYRDCjv08X1XHzNEA==, tarball: file:projects/ui.tgz}
     id: file:projects/ui.tgz
     name: '@rush-temp/ui'
     version: 0.0.0
@@ -14729,6 +14729,7 @@ packages:
       eslint-plugin-node: 11.1.0_eslint@8.26.0
       eslint-plugin-promise: 6.1.1_eslint@8.26.0
       eslint-plugin-svelte3: 4.0.0_eslint@8.26.0+svelte@3.48.0
+      fast-equals: 2.0.4
       prettier: 2.7.1
       prettier-plugin-svelte: 2.8.0_prettier@2.7.1+svelte@3.48.0
       sass: 1.53.0
