@@ -22,6 +22,7 @@
   import { getIssueId } from '../../../issues'
   import tracker from '../../../plugin'
   import EstimationPresenter from './EstimationPresenter.svelte'
+  import EstimationEditor from './EstimationEditor.svelte'
 
   export let issues: Issue[]
 
@@ -84,7 +85,7 @@
           readonly
           showNavigate={false}
         />
-        <EstimationPresenter value={issue.estimation} />
+        <EstimationEditor value={issue} kind={'list'} />
       </div>
     </div>
   </svelte:fragment>
