@@ -49,7 +49,6 @@
     "@hcengineering/workbench": "~0.6.1",
     "@hcengineering/notification": "~0.6.4",
     "@hcengineering/tags": "~0.6.2",
-    "@hcengineering/kanban": "~0.6.0",
-    "@hcengineering/tracker": "^0.6.1"
+    "@hcengineering/kanban": "~0.6.0"
   }
 }

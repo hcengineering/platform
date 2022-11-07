@@ -180,6 +180,8 @@ export interface KanbanTemplateSpace extends Doc {
   name: IntlString
   description: IntlString
   icon: AnyComponent
+  relatedIssueTemplatesComponent?: AnyComponent
+  createIssueTemplateComponent?: AnyComponent
 }
 
 /**

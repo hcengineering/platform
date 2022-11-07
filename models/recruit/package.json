@@ -47,6 +47,7 @@
     "@hcengineering/model-presentation": "~0.6.0",
     "@hcengineering/model-calendar": "~0.6.0",
     "@hcengineering/model-tags": "~0.6.0",
-    "@anticrm/skillset": "^0.6.0"
+    "@anticrm/skillset": "^0.6.0",
+    "@hcengineering/tracker": "^0.6.1"
   }
 }

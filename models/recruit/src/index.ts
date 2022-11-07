@@ -44,6 +44,7 @@ import { IntlString } from '@hcengineering/platform'
 import { Applicant, Candidate, Candidates, recruitId, Vacancy, VacancyList } from '@hcengineering/recruit'
 import setting from '@hcengineering/setting'
 import { KeyBinding } from '@hcengineering/view'
+import tracker from '@hcengineering/tracker'
 import recruit from './plugin'
 import { createReviewModel, reviewTableConfig, reviewTableOptions } from './review'
 import { TOpinion, TReview } from './review-model'
@@ -531,7 +532,9 @@ export function createModel (builder: Builder): void {
     {
       name: recruit.string.Vacancies,
       description: recruit.string.ManageVacancyStatuses,
-      icon: recruit.component.TemplatesIcon
+      icon: recruit.component.TemplatesIcon,
+      createIssueTemplateComponent: tracker.component.CreateIssueTemplate,
+      relatedIssueTemplatesComponent: tracker.component.RelatedIssueTemplates
     },
     recruit.space.VacancyTemplates
   )
