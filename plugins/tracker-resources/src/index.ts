@@ -19,6 +19,7 @@ import { ObjectSearchResult } from '@hcengineering/presentation'
 import { Issue, Team } from '@hcengineering/tracker'
 import { showPopup } from '@hcengineering/ui'
 import CreateIssue from './components/CreateIssue.svelte'
+import CreateIssueTemplate from './components/templates/CreateIssueTemplate.svelte'
 import Inbox from './components/inbox/Inbox.svelte'
 import Active from './components/issues/Active.svelte'
 import AssigneePresenter from './components/issues/AssigneePresenter.svelte'
@@ -197,6 +198,7 @@ export default async (): Promise<Resources> => ({
     IssuePreview,
     RelationsPopup,
     CreateIssue,
+    CreateIssueTemplate,
     Sprints,
     SprintPresenter,
     SprintStatusPresenter,

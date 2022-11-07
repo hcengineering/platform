@@ -40,7 +40,6 @@
   import task from '../../plugin'
   import Won from '../icons/Won.svelte'
   import Lost from '../icons/Lost.svelte'
-  import CreateIssueTemplate from '../../../../tracker-resources/src/components/templates/CreateIssueTemplate.svelte'
 
   export let template: KanbanTemplate | undefined = undefined
   export let states: State[] = []
@@ -149,7 +148,7 @@
           labelParams={{ subIssues: 0 }}
           kind={'transparent'}
           size={'small'}
-          on:click={() => showPopup(CreateIssueTemplate, { relatedTo: template })}
+          on:click={() => showPopup(tracker.component.CreateIssueTemplate, { relatedTo: template })}
         />
       </div>
     </div>
