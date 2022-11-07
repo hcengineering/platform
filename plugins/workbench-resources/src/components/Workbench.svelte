@@ -59,7 +59,7 @@
   let contentPanel: HTMLElement
 
   setClient(client)
-  NotificationClientImpl.getClient()
+  NotificationClientImpl.createClient()
 
   let currentAppAlias: string | undefined
   let currentSpace: Ref<Space> | undefined
