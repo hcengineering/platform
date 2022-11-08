@@ -48,7 +48,7 @@
   }
 </script>
 
-{#if value}
+{#if value && value.value}
   <span
     class="issuePresenterRoot flex-row-center"
     on:click={editSpendReport}
