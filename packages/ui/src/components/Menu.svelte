@@ -25,7 +25,7 @@
 
   export let actions: Action[] = []
   export let ctx: any = undefined
-  export let popupCategory: Ref<Doc> | undefined
+  export let popupCategory: Ref<Doc> | undefined = undefined
 
   const dispatch = createEventDispatcher()
   const btns: HTMLElement[] = []
