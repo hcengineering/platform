@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import { Class, Ref } from '@hcengineering/core'
-  import { AttributeEditor, AttributesBar, getClient } from '@hcengineering/presentation'
+  import { AttributeEditor, getClient } from '@hcengineering/presentation'
   import type { DoneState, KanbanTemplate, KanbanTemplateSpace, State } from '@hcengineering/task'
   import {
     CircleButton,
@@ -25,15 +25,10 @@
     showPopup,
     getPlatformColor,
     eventToHTMLElement,
-    EditBox,
-    Icon,
-    Button,
     Component
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { ColorsPopup } from '@hcengineering/view-resources'
-  import { StyledTextBox } from '@hcengineering/text-editor'
-  import { getFiltredKeys } from '@hcengineering/view-resources/src/utils'
   import Circles from './Circles.svelte'
   import StatusesPopup from './StatusesPopup.svelte'
   import task from '../../plugin'
@@ -52,9 +47,6 @@
   const elements: HTMLElement[] = []
   let selected: number | undefined
   let dragState: Ref<State>
-
-  const hierarchy = client.getHierarchy()
-  const customKeys = template && getFiltredKeys(hierarchy, template._class, []).filter((key) => key.attr.isCustom)
 
   function dragswap (ev: MouseEvent, i: number): boolean {
     const s = selected as number
@@ -94,76 +86,10 @@
   async function onAdd (_class: Ref<Class<State | DoneState>>) {
     dispatch('add', _class)
   }
-
-  async function onDescriptionChange (value: string) {
-    dispatch('descriptionChange', { value })
-  }
-
-  async function onShortDescriptionChange (value: string) {
-    dispatch('shortDescriptionChange', { value })
-  }
 </script>
 
-{#if template?.space === 'recruit:space:VacancyTemplates' && space}
-  {@const { createIssueTemplateComponent, relatedIssueTemplatesComponent } = space}
-  {#if createIssueTemplateComponent && relatedIssueTemplatesComponent}
-    <div class="flex-no-shrink flex-between trans-title uppercase">
-      <Label label={task.string.ShortDescription} />
-    </div>
-    <div class="mt-3">
-      <EditBox
-        kind={'small-style'}
-        value={template?.shortDescription ?? ''}
-        on:change={() => onShortDescriptionChange(template?.shortDescription ?? '')}
-      />
-    </div>
-    <div class="mt-9">
-      <div class="flex-no-shrink flex-between trans-title uppercase">
-        <Label label={task.string.Description} />
-      </div>
-      <div class="mt-3">
-        {#key template?._id}
-          <StyledTextBox
-            emphasized
-            alwaysEdit
-            showButtons={false}
-            content={template?.description ?? ''}
-            on:value={(evt) => onDescriptionChange(evt.detail)}
-          />
-        {/key}
-      </div>
-    </div>
-    <div class="antiSection mt-9 mb-9">
-      <div class="antiSection-header">
-        <div class="antiSection-header__icon">
-          <Icon icon={task.icon.Issue} size={'small'} />
-        </div>
-        <span class="antiSection-header__title">
-          <Label label={task.string.RelatedIssues} />
-        </span>
-        <div class="buttons-group small-gap">
-          <Button
-            id="add-sub-issue"
-            width="min-content"
-            icon={IconAdd}
-            label={undefined}
-            labelParams={{ subIssues: 0 }}
-            kind={'transparent'}
-            size={'small'}
-            on:click={() => showPopup(createIssueTemplateComponent, { relatedTo: template })}
-          />
-        </div>
-      </div>
-      <div class="flex-row">
-        <Component is={relatedIssueTemplatesComponent} props={{ object: template }} />
-      </div>
-    </div>
-    {#if customKeys && customKeys.length > 0}
-      <div class="antiSection mb-9">
-        <AttributesBar object={template} _class={template._class} keys={customKeys} />
-      </div>
-    {/if}
-  {/if}
+{#if space?.editor}
+  <Component is={space.editor} props={{template}} />
 {/if}
 <div class="flex-no-shrink flex-between trans-title uppercase">
   <Label label={task.string.ActiveStates} />

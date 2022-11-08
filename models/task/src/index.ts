@@ -211,8 +211,7 @@ export class TKanbanTemplateSpace extends TDoc implements KanbanTemplateSpace {
   name!: IntlString
   description!: IntlString
   icon!: AnyComponent
-  createIssueTemplateComponent!: AnyComponent
-  relatedIssueTemplatesComponent!: AnyComponent
+  editor!: AnyComponent
 }
 
 @Model(task.class.StateTemplate, core.class.AttachedDoc, DOMAIN_KANBAN, [task.interface.DocWithRank])

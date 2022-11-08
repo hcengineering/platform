@@ -124,14 +124,6 @@
 
     dispatch('delete', { state })
   }
-
-  async function onDescriptionChange ({ detail: { value } }: { detail: { value: string } }) {
-    await client.update(kanban, { description: value })
-  }
-
-  async function onShortDescriptionChange ({ detail: { value } }: { detail: { value: string } }) {
-    await client.update(kanban, { shortDescription: value })
-  }
 </script>
 
 <StatesEditor
@@ -145,6 +137,4 @@
   }}
   on:delete={onDelete}
   on:move={onMove}
-  on:descriptionChange={onDescriptionChange}
-  on:shortDescriptionChange={onShortDescriptionChange}
 />

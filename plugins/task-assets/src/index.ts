@@ -24,8 +24,7 @@ loadMetadata(task.icon, {
   TodoUnCheck: `${icons}#todo-uncheck`,
   ManageTemplates: `${icons}#manage-templates`,
   TaskState: `${icons}#task-state`,
-  Dashboard: `${icons}#dashboard`,
-  Issue: `${icons}#issue`
+  Dashboard: `${icons}#dashboard`
 })
 
 addStringsLoader(taskId, async (lang: string) => await import(`../lang/${lang}.json`))

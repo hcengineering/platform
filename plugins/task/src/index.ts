@@ -180,8 +180,7 @@ export interface KanbanTemplateSpace extends Doc {
   name: IntlString
   description: IntlString
   icon: AnyComponent
-  relatedIssueTemplatesComponent?: AnyComponent
-  createIssueTemplateComponent?: AnyComponent
+  editor?: AnyComponent
 }
 
 /**
@@ -261,8 +260,7 @@ const task = plugin(taskId, {
     TodoUnCheck: '' as Asset,
     ManageTemplates: '' as Asset,
     TaskState: '' as Asset,
-    Dashboard: '' as Asset,
-    Issue: '' as Asset
+    Dashboard: '' as Asset
   },
   global: {
     // Global task root, if not attached to some other object.
