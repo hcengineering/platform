@@ -234,8 +234,8 @@
   let mode: ModelType = 'view'
   const modeLabels = {
     view: document.string.ViewMode,
-    edit: document.string.EditMode,
-    suggest: document.string.SuggestMode
+    edit: document.string.EditMode
+    // suggest: document.string.SuggestMode
   }
 
   function selectMode (event: MouseEvent): void {
@@ -534,7 +534,7 @@
           <DocumentEditor
             object={version}
             initialContentId={version.initialContentId}
-            comparedVersion={compareTo?.content ?? versions[versions.length - 1].content}
+            comparedVersion={compareTo?.content ?? versions[versions.length - 2]?.content}
             readonly={mode === 'view'}
             bind:this={editor}
           />

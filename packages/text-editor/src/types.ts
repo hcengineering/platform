@@ -35,7 +35,8 @@ export const FORMAT_MODES = [
   'blockquote',
   'code',
   'codeBlock',
-  'heading'
+  'heading',
+  'table'
 ] as const
 
 export type FormatMode = typeof FORMAT_MODES[number]

@@ -23,6 +23,20 @@
     "Food": "Food",
     "FullDescription": "Full description",
     "NoFullDescription": "There are no detailed description",
-    "EnableDiffMode": "Diff mode"
+    "EnableDiffMode": "Diff mode",
+
+    "AddColumnBefore": "Add before",
+    "AddColumnAfter": "Add after",
+    "DeleteColumn": "Delete",
+    "AddRowBefore": "Add before",
+    "AddRowAfter": "Add after",
+    "DeleteRow": "Delete",
+    "DeleteTable": "Delete",
+
+    "CategoryRow": "Rows",
+    "CategoryColumn": "Columns",
+    "Table": "Table",
+    "InsertTable": "Insert table",
+    "TableOptions": "Customize table"
   }
 }

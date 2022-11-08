@@ -23,6 +23,20 @@
     "Food": "Еда",
     "FullDescription": "Детальное описание",
     "NoFullDescription": "Нет детального описания",
-    "EnableDiffMode": "Режим сравнения"
+    "EnableDiffMode": "Режим сравнения",
+
+    "AddColumnBefore": "Добавить до",
+    "AddColumnAfter": "Добавить после",
+    "DeleteColumn": "Удалить",
+    "AddRowBefore": "Добавить до",
+    "AddRowAfter": "Добавить после",
+    "DeleteRow": "Удалить",
+    "DeleteTable": "Удалить",
+
+    "CategoryRow": "Строки",
+    "CategoryColumn": "Колонки",
+    "Table": "Таблица",
+    "InsertTable": "Добавить таблицу",
+    "TableOptions": "Настроить таблицу"
   }
 }

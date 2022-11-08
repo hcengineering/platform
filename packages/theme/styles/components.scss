@@ -372,6 +372,13 @@
     .checkall { visibility: visible; }
   }
 
+  &.editable {
+    th, td, tr {
+      border: 1px dashed var(--divider-color);
+    }
+  }
+  
+
   &.metaColumn {
     th, td {
       &:first-child {
