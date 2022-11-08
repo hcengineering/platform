@@ -15,8 +15,10 @@
 <script lang="ts">
   import { IntlString, Asset } from '@hcengineering/platform'
   import { createEventDispatcher } from 'svelte'
+  import { deepEqual } from 'fast-equals'
+
   import type { AnySvelteComponent, TooltipAlignment, ButtonKind, ButtonSize, DropdownIntlItem } from '../types'
-  import { showPopup } from '../popups'
+  import { showPopup, closePopup } from '../popups'
   import Button from './Button.svelte'
   import DropdownLabelsPopupIntl from './DropdownLabelsPopupIntl.svelte'
   import Label from './Label.svelte'
@@ -42,6 +44,30 @@
   }
 
   const dispatch = createEventDispatcher()
+
+  function openPopup () {
+    if (!opened) {
+      opened = true
+      showPopup(DropdownLabelsPopupIntl, { items, selected }, container, (result) => {
+        if (result) {
+          selected = result
+          dispatch('selected', result)
+        }
+        opened = false
+      })
+    }
+  }
+
+  let prevItems: DropdownIntlItem[]
+  $: if (!deepEqual(items, prevItems)) {
+    prevItems = items
+
+    if (opened) {
+      closePopup()
+      opened = false
+      openPopup()
+    }
+  }
 </script>
 
 <div bind:this={container} class="min-w-0">
@@ -53,18 +79,7 @@
     {disabled}
     {justify}
     showTooltip={{ label, direction: labelDirection }}
-    on:click={() => {
-      if (!opened) {
-        opened = true
-        showPopup(DropdownLabelsPopupIntl, { items, selected }, container, (result) => {
-          if (result) {
-            selected = result
-            dispatch('selected', result)
-          }
-          opened = false
-        })
-      }
-    }}
+    on:click={openPopup}
   >
     <span slot="content" class="overflow-label disabled">
       <Label label={selectedItem ? selectedItem.label : label} />

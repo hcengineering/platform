@@ -13,12 +13,20 @@
 // limitations under the License.
 //
 
-import { Employee, EmployeeAccount, AvatarType } from '@hcengineering/contact'
+import fetch from 'cross-fetch'
+
+import {
+  Employee,
+  EmployeeAccount,
+  AvatarType,
+  buildGravatarId,
+  checkHasGravatar,
+  getAvatarColorForId
+} from '@hcengineering/contact'
 import { AccountRole, DOMAIN_TX, TxCreateDoc, TxOperations } from '@hcengineering/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
 import contact from './index'
-import MD5 from 'crypto-js/md5'
 
 async function createSpace (tx: TxOperations): Promise<void> {
   const current = await tx.findOne(core.class.Space, {
@@ -96,9 +104,13 @@ async function updateEmployeeAvatar (tx: TxOperations): Promise<void> {
     if (employee === undefined) return
     if (employee.avatar != null && employee.avatar !== undefined) return
 
-    const gravatarId = MD5(account.email.trim().toLowerCase()).toString()
+    const gravatarId = buildGravatarId(account.email)
+    const hasGravatar = await checkHasGravatar(gravatarId, fetch)
+
     await tx.update(employee, {
-      avatar: `${AvatarType.GRAVATAR}://${gravatarId}`
+      avatar: hasGravatar
+        ? `${AvatarType.GRAVATAR}://${gravatarId}`
+        : `${AvatarType.COLOR}://${getAvatarColorForId(employee._id)}`
     })
   })
   await Promise.all(promises)

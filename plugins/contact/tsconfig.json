@@ -4,6 +4,7 @@
   "compilerOptions": {
     "rootDir": "./src",
     "outDir": "./lib",
-    "lib": ["esnext", "dom"]
+    "lib": ["esnext", "dom"],
+    "esModuleInterop": true
   }
 }

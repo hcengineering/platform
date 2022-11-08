@@ -13,6 +13,7 @@
   },
   "devDependencies": {
     "@hcengineering/platform-rig": "~0.6.0",
+    "@types/crypto-js": "^4.1.1",
     "@types/heft-jest": "^1.0.3",
     "@typescript-eslint/eslint-plugin": "^5.41.0",
     "eslint-plugin-import": "^2.26.0",
@@ -29,7 +30,8 @@
     "@hcengineering/platform": "^0.6.7",
     "@hcengineering/ui": "^0.6.2",
     "@hcengineering/core": "^0.6.17",
-    "@hcengineering/view": "^0.6.1"
+    "@hcengineering/view": "^0.6.1",
+    "crypto-js": "^4.1.1"
   },
   "repository": "https://github.com/hcengineering/anticrm",
   "publishConfig": {

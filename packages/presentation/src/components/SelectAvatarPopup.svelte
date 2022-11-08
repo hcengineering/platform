@@ -16,12 +16,11 @@
   import { createEventDispatcher } from 'svelte'
 
   import { DropdownLabelsIntl, AnySvelteComponent, showPopup, Label } from '@hcengineering/ui'
-  import { AvatarType } from '@hcengineering/contact'
+  import { AvatarType, buildGravatarId, checkHasGravatar, getAvatarColorForId } from '@hcengineering/contact'
   import { Asset } from '@hcengineering/platform'
 
   import presentation from '..'
-  import { getAvatarTypeDropdownItems, getFileUrl, getAvatarColorForId } from '../utils'
-  import { buildGravatarId } from '../gravatar'
+  import { getAvatarTypeDropdownItems, getFileUrl } from '../utils'
   import Card from './Card.svelte'
   import AvatarComponent from './Avatar.svelte'
   import EditAvatarPopup from './EditAvatarPopup.svelte'
@@ -54,6 +53,12 @@
   let selectedAvatarType: AvatarType = initialSelectedType
   let selectedAvatar: string = initialSelectedAvatar
   let selectedFile: Blob | undefined = file
+
+  let hasGravatar = false
+  async function updateHasGravatar (email?: string) {
+    hasGravatar = !!email && (await checkHasGravatar(buildGravatarId(email)))
+  }
+  $: updateHasGravatar(email)
 
   const dispatch = createEventDispatcher()
 
@@ -152,7 +157,7 @@
   }}
 >
   <DropdownLabelsIntl
-    items={getAvatarTypeDropdownItems(!!email)}
+    items={getAvatarTypeDropdownItems(hasGravatar)}
     label={presentation.string.SelectAvatar}
     bind:selected={selectedAvatarType}
     on:selected={handleDropdownSelection}

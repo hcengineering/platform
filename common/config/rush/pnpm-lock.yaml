@@ -243,6 +243,7 @@ specifiers:
   cors: ^2.8.5
   cropperjs: ~1.5.12
   cross-env: ~7.0.3
+  cross-fetch: ^3.1.5
   crypto-js: ^4.1.1
   css-loader: ^5.2.1
   csv-parse: ~5.1.0
@@ -560,6 +561,7 @@ dependencies:
   cors: 2.8.5
   cropperjs: 1.5.12
   cross-env: 7.0.3
+  cross-fetch: 3.1.5
   crypto-js: 4.1.1
   css-loader: 5.2.7_webpack@5.73.0
   csv-parse: 5.1.0
@@ -3782,6 +3784,14 @@ packages:
       cross-spawn: 7.0.3
     dev: false
 
+  /cross-fetch/3.1.5:
+    resolution: {integrity: sha512-lvb1SBsI0Z7GDwmuid+mU3kWVBwTVUbe7S0H52yaaAdQOXq2YktTCZdlAcNKFzE6QtRz0snpw9bNiPeOIkkQvw==}
+    dependencies:
+      node-fetch: 2.6.7
+    transitivePeerDependencies:
+      - encoding
+    dev: false
+
   /cross-spawn/7.0.3:
     resolution: {integrity: sha512-iRDPJKUPVEND7dHPO8rkbOnPpyDygcDFtWjpeWNCgy8WP2rXcxXL8TskReQl6OrB2G7+UJrags1q15Fudc7G6w==}
     engines: {node: '>= 8'}
@@ -3887,6 +3897,11 @@ packages:
 
   /csv-parse/5.1.0:
     resolution: {integrity: sha512-JL+Q6YEikT2uoe57InjFFa6VejhSv0tDwOxeQ1bVQKeUC/NCnLAAZ8n3PzowPQQLuZ37fysDYZipB2UJkH9C6A==}
+    dev: false
+
+  /data-uri-to-buffer/4.0.0:
+    resolution: {integrity: sha512-Vr3mLBA8qWmcuschSLAOogKgQ/Jwxulv3RNE4FXnYWRGujzrRWQI4m12fQqRkwX06C0KanhLr4hK+GydchZsaA==}
+    engines: {node: '>= 12'}
     dev: false
 
   /data-urls/2.0.0:
@@ -4943,6 +4958,14 @@ packages:
       bser: 2.1.1
     dev: false
 
+  /fetch-blob/3.2.0:
+    resolution: {integrity: sha512-7yAQpD2UMJzLi1Dqv7qFYnPbaPx7ZfFK6PiIxQ4PfkGPyNyl2Ugx+a/umUonmKqjhM4DnfbMvdX6otXq83soQQ==}
+    engines: {node: ^12.20 || >= 14.13}
+    dependencies:
+      node-domexception: 1.0.0
+      web-streams-polyfill: 3.2.1
+    dev: false
+
   /file-entry-cache/6.0.1:
     resolution: {integrity: sha512-7Gps/XWymbLk2QLYK4NzpMOrYjMhdIxXuIvy2QBsLE6ljuodKvdkWs/cpyJJ3CVIVpH0Oi1Hvg1ovbMzLdFBBg==}
     engines: {node: ^10.12.0 || >=12.0.0}
@@ -5071,6 +5094,13 @@ packages:
       asynckit: 0.4.0
       combined-stream: 1.0.8
       mime-types: 2.1.35
+    dev: false
+
+  /formdata-polyfill/4.0.10:
+    resolution: {integrity: sha512-buewHzMvYL29jdeQTVILecSaZKnt/RJWjoZCF5OW60Z67/GmSLBkOFM7qh1PI3zFNtJbaZL5eQu1vLfazOwj4g==}
+    engines: {node: '>=12.20.0'}
+    dependencies:
+      fetch-blob: 3.2.0
     dev: false
 
   /forwarded-parse/2.1.2:
@@ -7271,6 +7301,32 @@ packages:
     resolution: {integrity: sha512-CvkDw2OEnme7ybCykJpVcKH+uAOLV2qLqiyla128dN9TkEWfrYmxG6C2boDe5KcNQqZF3orkqzGgOMvZ/JNekA==}
     dev: false
 
+  /node-domexception/1.0.0:
+    resolution: {integrity: sha512-/jKZoMpw0F8GRwl4/eLROPA3cfcXtLApP0QzLmUT/HuPCZWyB7IY9ZrMeKw2O/nFIqPQB3PVM9aYm0F312AXDQ==}
+    engines: {node: '>=10.5.0'}
+    dev: false
+
+  /node-fetch/2.6.7:
+    resolution: {integrity: sha512-ZjMPFEfVx5j+y2yF35Kzx5sF7kDzxuDj6ziH4FFbOp87zKDZNx8yExJIb05OGF4Nlt9IHFIMBkRl41VdvcNdbQ==}
+    engines: {node: 4.x || >=6.0.0}
+    peerDependencies:
+      encoding: ^0.1.0
+    peerDependenciesMeta:
+      encoding:
+        optional: true
+    dependencies:
+      whatwg-url: 5.0.0
+    dev: false
+
+  /node-fetch/3.2.10:
+    resolution: {integrity: sha512-MhuzNwdURnZ1Cp4XTazr69K0BTizsBroX7Zx3UgDSVcZYKF/6p0CBe4EUb/hLqmzVhl0UpYfgRljQ4yxE+iCxA==}
+    engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
+    dependencies:
+      data-uri-to-buffer: 4.0.0
+      fetch-blob: 3.2.0
+      formdata-polyfill: 4.0.10
+    dev: false
+
   /node-forge/1.3.1:
     resolution: {integrity: sha512-dPEtOeMvF9VMcYV/1Wb8CPoVAXtp6MKMlcbAt4ddqmGqUJ6fQZFXkNZNkNlfevtNkGtaSoXf/vNNNSvgrdXwtA==}
     engines: {node: '>= 6.13.0'}
@@ -9215,6 +9271,10 @@ packages:
       universalify: 0.1.2
     dev: false
 
+  /tr46/0.0.3:
+    resolution: {integrity: sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==}
+    dev: false
+
   /tr46/2.1.0:
     resolution: {integrity: sha512-15Ih7phfcdP5YxqiB+iDtLoaTz4Nd35+IiAv0kQ5FNKHzXgdWqPoTIqEDDJmXceQt4JZk6lVPT8lnDlPpGDppw==}
     engines: {node: '>=8'}
@@ -9557,6 +9617,15 @@ packages:
       '@zxing/text-encoding': 0.9.0
     dev: false
 
+  /web-streams-polyfill/3.2.1:
+    resolution: {integrity: sha512-e0MO3wdXWKrLbL0DgGnUV7WHVuw9OUvL4hjgnPkIeEvESk74gAITi5G606JtZPp39cd8HA9VQzCIvA49LpPN5Q==}
+    engines: {node: '>= 8'}
+    dev: false
+
+  /webidl-conversions/3.0.1:
+    resolution: {integrity: sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ==}
+    dev: false
+
   /webidl-conversions/5.0.0:
     resolution: {integrity: sha512-VlZwKPCkYKxQgeSbH5EyngOmRp7Ww7I9rQLERETtf5ofd9pGeswWiOtogpEO850jziPRarreGxn5QIiTqpb2wA==}
     engines: {node: '>=8'}
@@ -9775,6 +9844,13 @@ packages:
     dependencies:
       tr46: 3.0.0
       webidl-conversions: 7.0.0
+    dev: false
+
+  /whatwg-url/5.0.0:
+    resolution: {integrity: sha512-saE57nupxk6v3HY35+jzBwYa0rKSy0XR8JSxZPwgLr7ys0IBzhGviA1/TUGJLmSVqs8pb9AnvICXEuOHLprYTw==}
+    dependencies:
+      tr46: 0.0.3
+      webidl-conversions: 3.0.1
     dev: false
 
   /whatwg-url/8.7.0:
@@ -10633,20 +10709,23 @@ packages:
     dev: false
 
   file:projects/contact.tgz:
-    resolution: {integrity: sha512-XEyVNwWUMw6+kqGTrKrdY5qIKl+AXkFTL42bbgC5egcrvSZaMfnKqfq4ZwoWcYUFhLAa8VOJ6BJRZbxW0UfLcA==, tarball: file:projects/contact.tgz}
+    resolution: {integrity: sha512-PZ/ICZGSAaO5SiOpbIAc9mwxHq8UhCtnjEAf59gO6fP1+UNyj+Oy8zdtJ/v0LobOzhYLHUikeezgJdFSIqFirA==, tarball: file:projects/contact.tgz}
     name: '@rush-temp/contact'
     version: 0.0.0
     dependencies:
       '@rushstack/heft': 0.47.9
+      '@types/crypto-js': 4.1.1
       '@types/heft-jest': 1.0.3
       '@typescript-eslint/eslint-plugin': 5.42.0_8b6083565a963e7484743e25607ce89c
       '@typescript-eslint/parser': 5.42.0_eslint@8.26.0+typescript@4.7.4
+      crypto-js: 4.1.1
       eslint: 8.26.0
       eslint-config-standard-with-typescript: 23.0.0_35db0d754f34ccffcc0e5a361183072e
       eslint-plugin-import: 2.26.0_eslint@8.26.0
       eslint-plugin-n: 15.4.0_eslint@8.26.0
       eslint-plugin-node: 11.1.0_eslint@8.26.0
       eslint-plugin-promise: 6.1.1_eslint@8.26.0
+      node-fetch: 3.2.10
       prettier: 2.7.1
       typescript: 4.7.4
     transitivePeerDependencies:
@@ -11727,7 +11806,7 @@ packages:
     dev: false
 
   file:projects/model-contact.tgz_typescript@4.7.4:
-    resolution: {integrity: sha512-/KNyMsjF/sEWcLixUTYNy530r/IgRQeikYoX3aDxRyXWlofDTZEGME03o/qqiNSxw34WTzu6mHUE3+6dTUFexg==, tarball: file:projects/model-contact.tgz}
+    resolution: {integrity: sha512-1LXDgoRC+p48CfA8Dhk/JuUttYtwkJXaXADwFcvDJGLmWN062SEHy5mOCB56RcYxbBZvMOuRbKKkdZ7u678jzw==, tarball: file:projects/model-contact.tgz}
     id: file:projects/model-contact.tgz
     name: '@rush-temp/model-contact'
     version: 0.0.0
@@ -11739,6 +11818,7 @@ packages:
       '@types/node': 16.11.42
       '@typescript-eslint/eslint-plugin': 5.42.0_8b6083565a963e7484743e25607ce89c
       '@typescript-eslint/parser': 5.42.0_eslint@8.26.0+typescript@4.7.4
+      cross-fetch: 3.1.5
       crypto-js: 4.1.1
       eslint: 8.26.0
       eslint-config-standard-with-typescript: 23.0.0_35db0d754f34ccffcc0e5a361183072e
@@ -11748,8 +11828,10 @@ packages:
       eslint-plugin-promise: 6.1.1_eslint@8.26.0
       md5: 2.3.0
       md5.js: 1.3.5
+      node-fetch: 3.2.10
       prettier: 2.7.1
     transitivePeerDependencies:
+      - encoding
       - supports-color
       - typescript
     dev: false
@@ -12942,7 +13024,7 @@ packages:
     dev: false
 
   file:projects/presentation.tgz_1e3963ebf0ceeb25b2fa6a1cc87e253c:
-    resolution: {integrity: sha512-/eG/9sTCMrZJrJmVa0ePYhfOtw2omr+HgzqeCSmawUzczU8M1zoSHIJxkvhI/Vk4n8p7cTMfI6GFL7MN4sfiqg==, tarball: file:projects/presentation.tgz}
+    resolution: {integrity: sha512-BRrMCOYZQWq7l4bHtorlsbF3Vd1xC3d1+HFwxAapz+2dWVdzTZa9LWbUnxdgOdVKnoPNEBshBb7yweuAz+QYvQ==, tarball: file:projects/presentation.tgz}
     id: file:projects/presentation.tgz
     name: '@rush-temp/presentation'
     version: 0.0.0
@@ -14632,7 +14714,7 @@ packages:
     dev: false
 
   file:projects/ui.tgz_1e3963ebf0ceeb25b2fa6a1cc87e253c:
-    resolution: {integrity: sha512-46COtAECm8v7tfsMRV9ol2UMMwpXYPwvp//qyVSlCIhNrWA7Mk7rBzMKeyDwi28EmjxasIbNhRQScOa5DTccig==, tarball: file:projects/ui.tgz}
+    resolution: {integrity: sha512-tEGe2W6LdHgwewLIjCYDQwX+tSqWYivga5zeLBin75rsNZYJVujyTyDx7opwnVDZvCDmoVYRDCjv08X1XHzNEA==, tarball: file:projects/ui.tgz}
     id: file:projects/ui.tgz
     name: '@rush-temp/ui'
     version: 0.0.0
@@ -14647,6 +14729,7 @@ packages:
       eslint-plugin-node: 11.1.0_eslint@8.26.0
       eslint-plugin-promise: 6.1.1_eslint@8.26.0
       eslint-plugin-svelte3: 4.0.0_eslint@8.26.0+svelte@3.48.0
+      fast-equals: 2.0.4
       prettier: 2.7.1
       prettier-plugin-svelte: 2.8.0_prettier@2.7.1+svelte@3.48.0
       sass: 1.53.0
