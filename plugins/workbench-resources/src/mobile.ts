@@ -62,7 +62,6 @@ export function subscribeMobile (setTheme: SetTheme): void {
 }
 
 function handleMessage (data: ThemeMessage | NavigateMessage, setTheme: SetTheme): void {
-  console.log('MESSAGE NEW', data)
   if (data.action === 'navigate') {
     const location = getCurrentLocation()
     location.path.length = 3
