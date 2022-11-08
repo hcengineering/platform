@@ -18,16 +18,11 @@
   import { getEmbeddedLabel, IntlString, translate } from '@hcengineering/platform'
 
   import { Editor, Extension, HTMLContent } from '@tiptap/core'
-  import Highlight from '@tiptap/extension-highlight'
-  import Link from '@tiptap/extension-link'
-  import Placeholder from '@tiptap/extension-placeholder'
   import Collaboration from '@tiptap/extension-collaboration'
   import CollaborationCursor from '@tiptap/extension-collaboration-cursor'
-  import Heading, { Level } from '@tiptap/extension-heading'
-  import TaskItem from '@tiptap/extension-task-item'
-  import TaskList from '@tiptap/extension-task-list'
+  import { Level } from '@tiptap/extension-heading'
+  import Placeholder from '@tiptap/extension-placeholder'
 
-  import StarterKit from '@tiptap/starter-kit'
   import { Plugin, PluginKey, Transaction } from 'prosemirror-state'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
 
@@ -38,8 +33,8 @@
   import * as Y from 'yjs'
   import StyleButton from './StyleButton.svelte'
 
-  import TipTapCodeBlock from '@tiptap/extension-code-block'
-  import Gapcursor from '@tiptap/extension-gapcursor'
+  import presentation from '@hcengineering/presentation'
+
   import { DecorationSet } from 'prosemirror-view'
   import textEditorPlugin from '../plugin'
   import { FormatMode, FORMAT_MODES } from '../types'
@@ -48,7 +43,9 @@
   import CodeBlock from './icons/CodeBlock.svelte'
 
   import { calculateDecorations } from './diff/decorations'
+  import { defaultExtensions, headingLevels } from './extensions'
   import Header from './icons/Header.svelte'
+  import IconTable from './icons/IconTable.svelte'
   import Italic from './icons/Italic.svelte'
   import LinkEl from './icons/Link.svelte'
   import ListBullet from './icons/ListBullet.svelte'
@@ -70,8 +67,6 @@
   export let initialContentId: string | undefined = undefined
   export let suggestMode = false
   export let comparedVersion: Markup | undefined = undefined
-
-  export let headingLevels: Level[] = [1, 2, 3, 4]
 
   const ydoc = new Y.Doc()
   const wsProvider = new WebsocketProvider(collaboratorURL, documentId, ydoc, {
@@ -213,37 +208,9 @@
         // content: 'Hello world<br/> This is simple text<br/>Some more text<br/>Yahoo <br/>Cool <br/><br/> Done',
         editable: true,
         extensions: [
-          StarterKit,
-          Highlight.configure({
-            multicolor: false
-          }),
-          TipTapCodeBlock.configure({
-            languageClassPrefix: 'language-',
-            exitOnArrowDown: true,
-            exitOnTripleEnter: true,
-            HTMLAttributes: {
-              class: 'code-block'
-            }
-          }),
-          Gapcursor,
-          Heading.configure({
-            levels: headingLevels
-          }),
-          // ChangeHighlight,
-          // ChangesetExtension.configure({
-          //   isSuggestMode
-          // }),
-          Link.configure({ openOnClick: false }),
-          // ...(supportSubmit ? [Handle] : []), // order important
-          // Typography, // we need to disable 1/2 -> ½ rule (https://github.com/hcengineering/anticrm/issues/345)
+          ...defaultExtensions,
           Placeholder.configure({ placeholder: placeHolderStr }),
-          TaskList,
-          TaskItem.configure({
-            nested: true,
-            HTMLAttributes: {
-              class: 'flex flex-grow gap-1 checkbox_style'
-            }
-          }),
+
           Collaboration.configure({
             document: ydoc
           }),
@@ -269,7 +236,6 @@
           focused = true
         },
         onUpdate: (op: { editor: Editor; transaction: Transaction }) => {
-          // _decoration = DecorationSet.empty
           dispatch('content', editor.getHTML())
           updateFormattingState()
         },
@@ -328,7 +294,7 @@
       showPopup(
         SelectPopup,
         {
-          value: Array.from(headingLevels).map((it) => ({ id: it.toString(), label: it.toString() }))
+          value: Array.from(headingLevels).map((it) => ({ id: it.toString(), text: it.toString() }))
         },
         getEventPositionElement(event),
         (val) => {
@@ -340,6 +306,182 @@
         }
       )
     }
+  }
+
+  function insertTable (event: MouseEvent) {
+    const tables = [
+      {
+        label: '2x2',
+        rows: 2,
+        cols: 2,
+        header: false
+      },
+      {
+        label: '3x3',
+        rows: 3,
+        cols: 3,
+        header: false
+      },
+      {
+        label: '2x1',
+        rows: 2,
+        cols: 1,
+        header: false
+      },
+      {
+        label: '5x5',
+        rows: 5,
+        cols: 5,
+        header: false
+      },
+      {
+        label: '1x2',
+        rows: 1,
+        cols: 2,
+        header: false
+      },
+      {
+        label: 'Headed 2x2',
+        rows: 2,
+        cols: 2,
+        header: true
+      },
+      {
+        label: 'Headed 3x3',
+        rows: 3,
+        cols: 3,
+        header: true
+      },
+      {
+        label: 'Headed 2x1',
+        rows: 2,
+        cols: 1,
+        header: true
+      },
+      {
+        label: 'Headed 5x5',
+        rows: 5,
+        cols: 5,
+        header: true
+      },
+      {
+        label: 'Headed 1x2',
+        rows: 1,
+        cols: 2,
+        header: true
+      }
+    ]
+    showPopup(
+      SelectPopup,
+      {
+        value: [
+          { id: '#delete', label: presentation.string.Remove },
+          ...tables.map((it) => ({ id: it.label, text: it.label }))
+        ]
+      },
+      getEventPositionElement(event),
+      (val) => {
+        if (val !== undefined) {
+          if (val === '#delete') {
+            editor.commands.deleteTable()
+            needFocus = true
+            updateFormattingState()
+            return
+          }
+          const tab = tables.find((it) => it.label === val)
+          if (tab) {
+            editor.commands.insertTable({
+              cols: tab.cols,
+              rows: tab.rows,
+              withHeaderRow: tab.header
+            })
+
+            needFocus = true
+            updateFormattingState()
+          }
+        }
+      }
+    )
+  }
+
+  function tableOptions (event: MouseEvent) {
+    const ops = [
+      {
+        id: '#addColumnBefore',
+        label: textEditorPlugin.string.AddColumnBefore,
+        action: () => editor.commands.addColumnBefore(),
+        category: {
+          label: textEditorPlugin.string.CategoryColumn
+        }
+      },
+      {
+        id: '#addColumnAfter',
+        label: textEditorPlugin.string.AddColumnAfter,
+        action: () => editor.commands.addColumnAfter(),
+        category: {
+          label: textEditorPlugin.string.CategoryColumn
+        }
+      },
+
+      {
+        id: '#deleteColumn',
+        label: textEditorPlugin.string.DeleteColumn,
+        action: () => editor.commands.deleteColumn(),
+        category: {
+          label: textEditorPlugin.string.CategoryColumn
+        }
+      },
+      {
+        id: '#addRowBefore',
+        label: textEditorPlugin.string.AddRowBefore,
+        action: () => editor.commands.addRowBefore(),
+        category: {
+          label: textEditorPlugin.string.CategoryRow
+        }
+      },
+      {
+        id: '#addRowAfter',
+        label: textEditorPlugin.string.AddRowAfter,
+        action: () => editor.commands.addRowAfter(),
+        category: {
+          label: textEditorPlugin.string.CategoryRow
+        }
+      },
+      {
+        id: '#deleteRow',
+        label: textEditorPlugin.string.DeleteRow,
+        action: () => editor.commands.deleteRow(),
+        category: {
+          label: textEditorPlugin.string.CategoryRow
+        }
+      },
+      {
+        id: '#deleteTable',
+        label: textEditorPlugin.string.DeleteTable,
+        action: () => editor.commands.deleteTable(),
+        category: {
+          label: textEditorPlugin.string.Table
+        }
+      }
+    ]
+
+    showPopup(
+      SelectPopup,
+      {
+        value: ops
+      },
+      getEventPositionElement(event),
+      (val) => {
+        if (val !== undefined) {
+          const op = ops.find((it) => it.id === val)
+          if (op) {
+            op.action()
+            needFocus = true
+            updateFormattingState()
+          }
+        }
+      }
+    )
   }
 
   async function formatLink (): Promise<void> {
@@ -435,6 +577,24 @@
           showTooltip={{ label: textEditorPlugin.string.CodeBlock }}
           on:click={getToggler(toggleCodeBlock)}
         />
+
+        <StyleButton
+          icon={IconTable}
+          iconProps={{ style: 'table' }}
+          size={buttonSize}
+          selected={activeModes.has('table')}
+          on:click={insertTable}
+          showTooltip={{ label: textEditorPlugin.string.InsertTable }}
+        />
+        {#if activeModes.has('table')}
+          <StyleButton
+            icon={IconTable}
+            iconProps={{ style: 'grid' }}
+            size={buttonSize}
+            on:click={tableOptions}
+            showTooltip={{ label: textEditorPlugin.string.TableOptions }}
+          />
+        {/if}
       </div>
     {/if}
     <div class="flex-grow" />

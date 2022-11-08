@@ -17,6 +17,7 @@
   import { AnySvelteComponent, Icon, IconSize, LabelAndProps, tooltip } from '@hcengineering/ui'
 
   export let icon: Asset | AnySvelteComponent
+  export let iconProps: any = undefined
   export let size: IconSize
   export let selected: boolean = false
   export let showTooltip: LabelAndProps | undefined = undefined
@@ -32,7 +33,7 @@
   on:click|preventDefault|stopPropagation
 >
   <div class="icon {size} flex">
-    <Icon {icon} {size} />
+    <Icon {icon} {size} {iconProps} />
   </div>
 </button>
 

@@ -62,6 +62,10 @@
     "diff": "~5.1.0",
     "@tiptap/extension-code-block": "~2.0.0-beta.200",
     "@tiptap/extension-gapcursor": "~2.0.0-beta.200",
-    "@tiptap/extension-heading": "~2.0.0-beta.200"
+    "@tiptap/extension-heading": "~2.0.0-beta.200",
+    "@tiptap/extension-table": "~2.0.0-beta.202",
+    "@tiptap/extension-table-cell": "~2.0.0-beta.202",
+    "@tiptap/extension-table-header": "~2.0.0-beta.202",
+    "@tiptap/extension-table-row": "~2.0.0-beta.202"
   }
 }

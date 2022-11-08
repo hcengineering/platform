@@ -16,13 +16,7 @@
 -->
 <script lang="ts">
   import { Editor, Extension } from '@tiptap/core'
-  import Highlight from '@tiptap/extension-highlight'
-  import Link from '@tiptap/extension-link'
-  import Heading, { Level } from '@tiptap/extension-heading'
-  import TaskItem from '@tiptap/extension-task-item'
-  import TaskList from '@tiptap/extension-task-list'
 
-  import StarterKit from '@tiptap/starter-kit'
   import { Plugin, PluginKey } from 'prosemirror-state'
   import { onDestroy, onMount } from 'svelte'
 
@@ -30,18 +24,16 @@
   import { IconSize } from '@hcengineering/ui'
   import StyleButton from './StyleButton.svelte'
 
-  import TipTapCodeBlock from '@tiptap/extension-code-block'
-  import Gapcursor from '@tiptap/extension-gapcursor'
   import { DecorationSet } from 'prosemirror-view'
   import textEditorPlugin from '../plugin'
 
   import { calculateDecorations } from './diff/decorations'
+  import { defaultExtensions } from './extensions'
   import Objects from './icons/Objects.svelte'
 
   export let content: Markup
   export let buttonSize: IconSize = 'small'
   export let comparedVersion: Markup | undefined = undefined
-  export let headingLevels: Level[] = [1, 2, 3, 4]
 
   let element: HTMLElement
   let editor: Editor
@@ -89,34 +81,7 @@
       element,
       content,
       editable: true,
-      extensions: [
-        StarterKit,
-        Highlight.configure({
-          multicolor: false
-        }),
-        TipTapCodeBlock.configure({
-          languageClassPrefix: 'language-',
-          exitOnArrowDown: true,
-          exitOnTripleEnter: true,
-          HTMLAttributes: {
-            class: 'code-block'
-          }
-        }),
-        Gapcursor,
-        Heading.configure({
-          levels: headingLevels
-        }),
-        Link.configure({ openOnClick: false }),
-        TaskList,
-        TaskItem.configure({
-          nested: true,
-          HTMLAttributes: {
-            class: 'flex flex-grow gap-1 checkbox_style'
-          }
-        }),
-        DecorationExtension
-        // ...extensions
-      ],
+      extensions: [...defaultExtensions, DecorationExtension],
       onTransaction: () => {
         // force re-render so `editor.isActive` works as expected
         editor = editor

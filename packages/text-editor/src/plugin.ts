@@ -55,6 +55,19 @@ export default plugin(textEditorId, {
     Objects: '' as IntlString,
     FullDescription: '' as IntlString,
     NoFullDescription: '' as IntlString,
-    EnableDiffMode: '' as IntlString
+    EnableDiffMode: '' as IntlString,
+
+    InsertTable: '' as IntlString,
+    AddColumnBefore: '' as IntlString,
+    AddColumnAfter: '' as IntlString,
+    DeleteColumn: '' as IntlString,
+    AddRowBefore: '' as IntlString,
+    AddRowAfter: '' as IntlString,
+    DeleteRow: '' as IntlString,
+    DeleteTable: '' as IntlString,
+    CategoryRow: '' as IntlString,
+    CategoryColumn: '' as IntlString,
+    Table: '' as IntlString,
+    TableOptions: '' as IntlString
   }
 })
