@@ -183,7 +183,7 @@
     if (isFilterUpdate && groupedIssuesBeforeFilter !== groupedIssues) {
       isCollapsedMap = {}
   
-      categories.forEach(category => (isCollapsedMap[toCat(category)] = getInitCollapseValue(category)))
+      categories.forEach((category) => (isCollapsedMap[toCat(category)] = getInitCollapseValue(category)))
 
       isFilterUpdate = false
       groupedIssuesBeforeFilter = groupedIssues
