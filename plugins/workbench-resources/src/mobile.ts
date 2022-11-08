@@ -37,11 +37,12 @@ interface NavigateMessageValue {
 }
 
 interface Bridge {
-  on(eventName: string, callback: (data: any) => void): any
-  emit(eventName: string, data: any): void
+  on: (eventName: string, callback: (data: any) => void) => any
+  emit: (eventName: string, data: any) => void
 }
 
-type MobileNSWindow = Window & typeof globalThis & {
+type MobileNSWindow = Window &
+  typeof globalThis & {
   nsWebViewBridge: Bridge
 }
 
@@ -53,7 +54,7 @@ export function subscribeMobile (setTheme: SetTheme): void {
     webView.nsWebViewBridge.on('message', (e) => handleMessage(e, setTheme))
 
     onDestroy(
-      location.subscribe(async (loc) => {
+      location.subscribe((loc) => {
         webView.nsWebViewBridge.emit('navigate', JSON.stringify(loc))
       })
     )

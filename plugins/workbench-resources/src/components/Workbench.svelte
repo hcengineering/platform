@@ -17,36 +17,36 @@
   import contact, { Employee, EmployeeAccount } from '@hcengineering/contact'
   import core, { Class, Client, Doc, getCurrentAccount, Ref, setCurrentAccount, Space } from '@hcengineering/core'
   import notification, { NotificationStatus } from '@hcengineering/notification'
-  import { NotificationClientImpl, BrowserNotificatator } from '@hcengineering/notification-resources'
+  import { BrowserNotificatator, NotificationClientImpl } from '@hcengineering/notification-resources'
   import { getMetadata, getResource, IntlString } from '@hcengineering/platform'
   import { Avatar, createQuery, setClient } from '@hcengineering/presentation'
   import {
     AnyComponent,
+    areLocationsEqual,
     closePopup,
     closeTooltip,
     Component,
     DatePickerPopup,
+    deviceOptionsStore as deviceInfo,
     getCurrentLocation,
     Label,
     location,
     Location,
-    areLocationsEqual,
     navigate,
     PanelInstance,
     Popup,
+    PopupPosAlignment,
     resizeObserver,
     showPopup,
-    TooltipInstance,
-    PopupPosAlignment,
-    checkMobile,
-    deviceOptionsStore as deviceInfo
+    TooltipInstance
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { ActionContext, ActionHandler } from '@hcengineering/view-resources'
   import type { Application, NavigatorModel, SpecialNavModel, ViewConfiguration } from '@hcengineering/workbench'
   import { getContext, onDestroy, onMount, tick } from 'svelte'
-  import { doNavigate } from '../utils'
+  import { subscribeMobile } from '../mobile'
   import workbench from '../plugin'
+  import { doNavigate } from '../utils'
   import AccountPopup from './AccountPopup.svelte'
   import AppItem from './AppItem.svelte'
   import Applications from './Applications.svelte'
@@ -54,7 +54,6 @@
   import NavHeader from './NavHeader.svelte'
   import Navigator from './Navigator.svelte'
   import SpaceView from './SpaceView.svelte'
-  import { subscribeMobile } from '../mobile'
 
   export let client: Client
   let contentPanel: HTMLElement
