@@ -36,7 +36,7 @@
   const data = {
     date: value?.date ?? Date.now(),
     description: value?.description ?? '',
-    value: value?.value,
+    value: value?.value ?? 0,
     employee: value?.employee ?? assignee ?? null
   }
   async function create (): Promise<void> {
