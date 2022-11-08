@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { afterUpdate, createEventDispatcher, onDestroy, onMount } from 'svelte'
-  import { generateId } from '@hcengineering/core'
+  import { generateId, Ref, Doc } from '@hcengineering/core'
   import ui from '../plugin'
   import { closePopup, showPopup } from '../popups'
   import { Action } from '../types'
@@ -25,11 +25,13 @@
 
   export let actions: Action[] = []
   export let ctx: any = undefined
+  export let popupCategory: Ref<Doc> | undefined = undefined
 
   const dispatch = createEventDispatcher()
   const btns: HTMLElement[] = []
   let activeElement: HTMLElement
-  const category = generateId()
+  const category = popupCategory || generateId()
+  const nextCategory = generateId()
 
   const keyDown = (ev: KeyboardEvent): void => {
     if (ev.key === 'Tab') {
@@ -78,12 +80,14 @@
     closePopup(category)
   })
 
-  function showActionPopup (action: Action, target: HTMLElement): void {
+  function showActionPopup (action: Action, target: HTMLElement, isPopupHidden?: boolean): void {
     closePopup(category)
-    if (action.component !== undefined) {
+    closePopup(nextCategory)
+
+    if (action.component !== undefined && !isPopupHidden) {
       showPopup(
         action.component,
-        action.props,
+        { ...action.props, popupCategory: nextCategory },
         { getBoundingClientRect: () => target.getBoundingClientRect(), kind: 'submenu' },
         (evt) => {
           dispatch('close')
@@ -96,7 +100,7 @@
   function focusTarget (action: Action, target: HTMLElement, isPopupHidden?: boolean): void {
     if (focusSpeed && target !== activeElement) {
       activeElement = target
-      !isPopupHidden && showActionPopup(action, target)
+      showActionPopup(action, target, isPopupHidden)
     }
   }
   export function clearFocus (): void {
