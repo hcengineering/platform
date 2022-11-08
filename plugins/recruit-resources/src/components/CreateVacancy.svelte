@@ -112,7 +112,7 @@
           relations: [{ _id: id, _class: recruit.class.Vacancy }],
           childInfo: []
         }
-     )
+      )
     }
 
     await createKanban(client, id, templateId)

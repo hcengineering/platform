@@ -75,7 +75,11 @@
     </div>
     <div class="ac-column max">
       {#if template !== undefined}
-        <Component is={task.component.KanbanTemplateEditor} props={{ kanban: template, folder }} on:delete={onDeleteState} />
+        <Component
+          is={task.component.KanbanTemplateEditor}
+          props={{ kanban: template, folder }}
+          on:delete={onDeleteState}
+        />
       {/if}
     </div>
   </div>

@@ -150,7 +150,8 @@
             labelParams={{ subIssues: 0 }}
             kind={'transparent'}
             size={'small'}
-            on:click={() => showPopup(createIssueTemplateComponent, { relatedTo: template })}          />
+            on:click={() => showPopup(createIssueTemplateComponent, { relatedTo: template })}
+          />
         </div>
       </div>
       <div class="flex-row">
