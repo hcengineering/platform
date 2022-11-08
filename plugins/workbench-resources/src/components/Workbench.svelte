@@ -17,36 +17,36 @@
   import contact, { Employee, EmployeeAccount } from '@hcengineering/contact'
   import core, { Class, Client, Doc, getCurrentAccount, Ref, setCurrentAccount, Space } from '@hcengineering/core'
   import notification, { NotificationStatus } from '@hcengineering/notification'
-  import { NotificationClientImpl, BrowserNotificatator } from '@hcengineering/notification-resources'
+  import { BrowserNotificatator, NotificationClientImpl } from '@hcengineering/notification-resources'
   import { getMetadata, getResource, IntlString } from '@hcengineering/platform'
   import { Avatar, createQuery, setClient } from '@hcengineering/presentation'
   import {
     AnyComponent,
+    areLocationsEqual,
     closePopup,
     closeTooltip,
     Component,
     DatePickerPopup,
+    deviceOptionsStore as deviceInfo,
     getCurrentLocation,
     Label,
     location,
     Location,
-    areLocationsEqual,
     navigate,
     PanelInstance,
     Popup,
+    PopupPosAlignment,
     resizeObserver,
     showPopup,
-    TooltipInstance,
-    PopupPosAlignment,
-    checkMobile,
-    deviceOptionsStore as deviceInfo
+    TooltipInstance
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { ActionContext, ActionHandler } from '@hcengineering/view-resources'
   import type { Application, NavigatorModel, SpecialNavModel, ViewConfiguration } from '@hcengineering/workbench'
   import { getContext, onDestroy, onMount, tick } from 'svelte'
-  import { doNavigate } from '../utils'
+  import { subscribeMobile } from '../mobile'
   import workbench from '../plugin'
+  import { doNavigate } from '../utils'
   import AccountPopup from './AccountPopup.svelte'
   import AppItem from './AppItem.svelte'
   import Applications from './Applications.svelte'
@@ -58,6 +58,7 @@
   export let client: Client
   let contentPanel: HTMLElement
 
+  const { setTheme } = getContext('theme') as any
   setClient(client)
   NotificationClientImpl.createClient()
 
@@ -138,9 +139,6 @@
 
   onDestroy(
     location.subscribe(async (loc) => {
-      if (window.nsWebViewBridge !== undefined) {
-        window.nsWebViewBridge.emit('navigate', JSON.stringify(loc))
-      }
       closeTooltip()
       closePopup()
 
@@ -394,34 +392,7 @@
         ? 'account-mobile'
         : 'account'
 
-  onMount(() => {
-    if (checkMobile()) {
-      onmessage = (event: MessageEvent) => {
-        try {
-          const data = JSON.parse(event.data)
-          if (data.action === 'navigate') {
-            const location = getCurrentLocation()
-            location.path.length = 3
-            location.path[2] = data.value.path[0]
-            if (data.value.path[1] !== undefined) {
-              location.path[3] = data.value.path[1]
-            }
-            if (data.value.path[2] !== undefined) {
-              location.path[4] = data.value.path[2]
-            }
-            location.fragment = undefined
-            location.query = undefined
-            navigate(location)
-          } else if (data.action === 'theme') {
-            const { setTheme } = getContext('theme') as any
-            setTheme(`theme-${data.value}`)
-          }
-        } catch (err) {
-          console.log(`Couldn't recognize event ${JSON.stringify(event)}`)
-        }
-      }
-    }
-  })
+  onMount(() => subscribeMobile(setTheme))
 </script>
 
 {#if employee?.active === true}
