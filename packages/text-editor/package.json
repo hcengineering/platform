@@ -27,7 +27,8 @@
     "eslint": "^8.26.0",
     "prettier": "^2.7.1",
     "svelte-check": "^2.8.0",
-    "typescript": "^4.3.5"
+    "typescript": "^4.3.5",
+    "@types/diff": "~5.0.2"
   },
   "dependencies": {
     "@hcengineering/presentation": "~0.6.2",
@@ -53,6 +54,14 @@
     "prosemirror-state": "~1.4.1",
     "prosemirror-transform": "~1.7.0",
     "yjs": "^13.5.42",
-    "y-websocket": "^1.4.5"
+    "y-websocket": "^1.4.5",
+    "prosemirror-changeset": "~2.2.0",
+    "prosemirror-model": "~1.18.1",
+    "prosemirror-view": "~1.29.0",
+    "rfc6902": "~5.0.1",
+    "diff": "~5.1.0",
+    "@tiptap/extension-code-block": "~2.0.0-beta.200",
+    "@tiptap/extension-gapcursor": "~2.0.0-beta.200",
+    "@tiptap/extension-heading": "~2.0.0-beta.200"
   }
 }

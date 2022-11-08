@@ -22,6 +22,7 @@
     "Objects": "Objects",
     "Food": "Food",
     "FullDescription": "Full description",
-    "NoFullDescription": "There are no detailed description"
+    "NoFullDescription": "There are no detailed description",
+    "EnableDiffMode": "Diff mode"
   }
 }

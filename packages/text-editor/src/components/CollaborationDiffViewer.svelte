@@ -1,0 +1,278 @@
+<!--
+//
+// Copyright © 2022 Hardcore Engineering Inc.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+-->
+<script lang="ts">
+  import { Editor, Extension } from '@tiptap/core'
+  import Highlight from '@tiptap/extension-highlight'
+  import Link from '@tiptap/extension-link'
+  import Heading, { Level } from '@tiptap/extension-heading'
+  import TaskItem from '@tiptap/extension-task-item'
+  import TaskList from '@tiptap/extension-task-list'
+
+  import StarterKit from '@tiptap/starter-kit'
+  import { Plugin, PluginKey } from 'prosemirror-state'
+  import { onDestroy, onMount } from 'svelte'
+
+  import { Markup } from '@hcengineering/core'
+  import { IconSize } from '@hcengineering/ui'
+  import StyleButton from './StyleButton.svelte'
+
+  import TipTapCodeBlock from '@tiptap/extension-code-block'
+  import Gapcursor from '@tiptap/extension-gapcursor'
+  import { DecorationSet } from 'prosemirror-view'
+  import textEditorPlugin from '../plugin'
+
+  import { calculateDecorations } from './diff/decorations'
+  import Objects from './icons/Objects.svelte'
+
+  export let content: Markup
+  export let buttonSize: IconSize = 'small'
+  export let comparedVersion: Markup | undefined = undefined
+  export let headingLevels: Level[] = [1, 2, 3, 4]
+
+  let element: HTMLElement
+  let editor: Editor
+
+  let _decoration = DecorationSet.empty
+  let oldContent = ''
+
+  function updateEditor (editor?: Editor, comparedVersion?: Markup): void {
+    const r = calculateDecorations(editor, oldContent, comparedVersion)
+    if (r !== undefined) {
+      oldContent = r.oldContent
+      _decoration = r.decorations
+    }
+  }
+
+  const updateDecorations = () => {
+    if (editor && editor.schema) {
+      updateEditor(editor, comparedVersion)
+    }
+  }
+
+  const DecorationExtension = Extension.create({
+    addProseMirrorPlugins () {
+      return [
+        new Plugin({
+          key: new PluginKey('diffs'),
+          props: {
+            decorations (state) {
+              updateDecorations()
+              if (showDiff) {
+                return _decoration
+              }
+              return undefined
+            }
+          }
+        })
+      ]
+    }
+  })
+
+  $: updateEditor(editor, comparedVersion)
+
+  onMount(() => {
+    editor = new Editor({
+      element,
+      content,
+      editable: true,
+      extensions: [
+        StarterKit,
+        Highlight.configure({
+          multicolor: false
+        }),
+        TipTapCodeBlock.configure({
+          languageClassPrefix: 'language-',
+          exitOnArrowDown: true,
+          exitOnTripleEnter: true,
+          HTMLAttributes: {
+            class: 'code-block'
+          }
+        }),
+        Gapcursor,
+        Heading.configure({
+          levels: headingLevels
+        }),
+        Link.configure({ openOnClick: false }),
+        TaskList,
+        TaskItem.configure({
+          nested: true,
+          HTMLAttributes: {
+            class: 'flex flex-grow gap-1 checkbox_style'
+          }
+        }),
+        DecorationExtension
+        // ...extensions
+      ],
+      onTransaction: () => {
+        // force re-render so `editor.isActive` works as expected
+        editor = editor
+      }
+    })
+  })
+
+  onDestroy(() => {
+    if (editor) {
+      editor.destroy()
+    }
+  })
+  let showDiff = true
+</script>
+
+<div class="ref-container">
+  {#if comparedVersion !== undefined}
+    <div class="flex">
+      <div class="flex-grow" />
+      <div class="formatPanel buttons-group xsmall-gap mb-4">
+        <StyleButton
+          icon={Objects}
+          size={buttonSize}
+          selected={showDiff}
+          showTooltip={{ label: textEditorPlugin.string.EnableDiffMode }}
+          on:click={() => {
+            showDiff = !showDiff
+            editor.chain().focus()
+          }}
+        />
+      </div>
+    </div>
+  {/if}
+  <div class="textInput">
+    <div class="select-text" style="width: 100%;" bind:this={element} />
+  </div>
+</div>
+
+<style lang="scss" global>
+  .ProseMirror {
+    flex-grow: 1;
+    overflow: auto;
+    max-height: 60vh;
+    outline: none;
+    line-height: 150%;
+    color: var(--accent-color);
+
+    p:not(:last-child) {
+      margin-block-end: 1em;
+    }
+
+    pre {
+      white-space: pre !important;
+    }
+
+    > * + * {
+      margin-top: 0.75em;
+    }
+
+    /* Placeholder (at the top) */
+    p.is-editor-empty:first-child::before {
+      content: attr(data-placeholder);
+      float: left;
+      color: var(--dark-color);
+      pointer-events: none;
+      height: 0;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background-color: var(--theme-bg-accent-hover);
+    }
+    &::-webkit-scrollbar-corner {
+      background-color: var(--theme-bg-accent-hover);
+    }
+    &::-webkit-scrollbar-track {
+      margin: 0;
+    }
+  }
+  /* Placeholder (at the top) */
+  .ProseMirror p.is-editor-empty:first-child::before {
+    color: #adb5bd;
+    content: attr(data-placeholder);
+    float: left;
+    height: 0;
+    pointer-events: none;
+  }
+
+  .lint-icon {
+    display: inline-block;
+    position: absolute;
+    right: 2px;
+    cursor: pointer;
+    border-radius: 100px;
+    // background: #f22;
+    color: white;
+    font-family: times, georgia, serif;
+    font-size: 15px;
+    font-weight: bold;
+    width: 0.7em;
+    height: 0.7em;
+    text-align: center;
+    padding-left: 0.5px;
+    line-height: 1.1em;
+    &.add {
+      background: lightblue;
+    }
+    &.delete {
+      background: orange;
+    }
+  }
+
+  /* Give a remote user a caret */
+  .collaboration-cursor__caret {
+    border-left: 1px solid #0d0d0d;
+    border-right: 1px solid #0d0d0d;
+    margin-left: -1px;
+    margin-right: -1px;
+    pointer-events: none;
+    position: relative;
+    word-break: normal;
+  }
+
+  /* Render the username above the caret */
+  .collaboration-cursor__label {
+    border-radius: 3px 3px 3px 0;
+    color: #0d0d0d;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 600;
+    left: -1px;
+    line-height: normal;
+    padding: 0.1rem 0.3rem;
+    position: absolute;
+    top: -1.4em;
+    user-select: none;
+    white-space: nowrap;
+  }
+
+  .code-block {
+    border: 1px solid var(--divider-color);
+    border-radius: 4px;
+    padding: 0.5rem;
+  }
+
+  cmark {
+    border-top: 1px solid lightblue;
+    border-bottom: 1px solid lightblue;
+    border-radius: 2px;
+  }
+
+  span.insertion {
+    border-top: 1px solid lightblue;
+    border-bottom: 1px solid lightblue;
+    border-radius: 2px;
+  }
+  span.deletion {
+    text-decoration: line-through;
+  }
+</style>

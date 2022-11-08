@@ -15,15 +15,12 @@
 <script lang="ts">
   import type { Asset } from '@hcengineering/platform'
   import { AnySvelteComponent, Icon, IconSize, LabelAndProps, tooltip } from '@hcengineering/ui'
-  import { createEventDispatcher } from 'svelte'
 
   export let icon: Asset | AnySvelteComponent
   export let size: IconSize
   export let selected: boolean = false
   export let showTooltip: LabelAndProps | undefined = undefined
   export let disabled: boolean = false
-
-  const dispatch = createEventDispatcher()
 </script>
 
 <button
@@ -32,11 +29,9 @@
   {disabled}
   use:tooltip={showTooltip}
   tabindex="0"
-  on:mousedown|preventDefault|stopPropagation={() => {
-    dispatch('click')
-  }}
+  on:click|preventDefault|stopPropagation
 >
-  <div class="icon {size}">
+  <div class="icon {size} flex">
     <Icon {icon} {size} />
   </div>
 </button>

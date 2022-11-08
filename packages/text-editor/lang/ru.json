@@ -22,6 +22,7 @@
     "Objects": "Объекты",
     "Food": "Еда",
     "FullDescription": "Детальное описание",
-    "NoFullDescription": "Нет детального описания"
+    "NoFullDescription": "Нет детального описания",
+    "EnableDiffMode": "Режим сравнения"
   }
 }

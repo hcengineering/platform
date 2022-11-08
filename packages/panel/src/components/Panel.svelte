@@ -34,9 +34,18 @@
   export let isSub: boolean = true
   export let isAside: boolean = true
   export let isCustomAttr: boolean = true
+  export let floatAside = false
 </script>
 
-<Panel bind:isAside isHeader={$$slots.header || isHeader} bind:panelWidth bind:innerWidth bind:withoutTitle on:close>
+<Panel
+  bind:isAside
+  isHeader={$$slots.header || isHeader}
+  bind:panelWidth
+  bind:innerWidth
+  bind:withoutTitle
+  on:close
+  {floatAside}
+>
   <svelte:fragment slot="navigator">
     {#if $$slots.navigator}
       <div class="buttons-group xsmall-gap mx-2">
