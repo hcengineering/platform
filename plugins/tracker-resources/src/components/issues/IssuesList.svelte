@@ -31,7 +31,8 @@
     Spinner
   } from '@hcengineering/ui'
   import { AttributeModel, BuildModelKey } from '@hcengineering/view'
-  import { buildModel, getObjectPresenter, LoadingProps, Menu } from '@hcengineering/view-resources'
+  import { buildModel, filterStore, getObjectPresenter, LoadingProps, Menu } from '@hcengineering/view-resources'
+  import { onDestroy } from 'svelte'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
   import { IssuesGroupByKeys, issuesGroupEditorMap, IssuesOrderByKeys, issuesSortOrderMap } from '../../utils'
@@ -66,43 +67,21 @@
       }
     }
   }
-
+  const categoryLimit: Record<any, number> = {}
   const spaceQuery = createQuery()
-  let currentTeam: Team | undefined
-  $: spaceQuery.query(tracker.class.Team, { _id: currentSpace }, (res) => {
-    currentTeam = res.shift()
-  })
-
-  let personPresenter: AttributeModel
-
   const defaultLimit = 20
   const autoFoldLimit = 20
   const singleCategoryLimit = 200
-
-  const isCollapsedMap: Record<any, boolean> = {}
-
   const noCategory = '#no_category'
 
-  $: {
-    const exkeys = new Set(Object.keys(isCollapsedMap))
-    for (const c of categories) {
-      if (!exkeys.delete(toCat(c))) {
-        isCollapsedMap[toCat(c)] = categories.length === 1 ? false : (groupedIssues[c]?.length ?? 0) > autoFoldLimit
-      }
-    }
-    for (const k of exkeys) {
-      delete isCollapsedMap[k]
-    }
-  }
-  $: combinedGroupedIssues = Object.values(groupedIssues).flat(1)
-  $: options = { ...baseOptions, sort: { [orderBy]: issuesSortOrderMap[orderBy] } } as FindOptions<Issue>
-  $: headerComponent = groupByKey === undefined || groupByKey === 'assignee' ? null : issuesGroupEditorMap[groupByKey]
-  $: selectedObjectIdsSet = new Set<Ref<Doc>>(selectedObjectIds.map((it) => it._id))
-  $: objectRefs.length = combinedGroupedIssues.length
-
-  $: getObjectPresenter(client, contact.class.Person, { key: '' }).then((p) => {
-    personPresenter = p
-  })
+  let currentTeam: Team | undefined
+  let personPresenter: AttributeModel
+  let isCollapsedMap: Record<any, boolean> = {}
+  let varsStyle: string = ''
+  let propsWidth: Record<string, number> = {}
+  let itemModels: AttributeModel[]
+  let isFilterUpdate = false
+  let groupedIssuesBeforeFilter = groupedIssues
 
   const handleMenuOpened = async (event: MouseEvent, object: Doc, rowIndex: number) => {
     event.preventDefault()
@@ -183,17 +162,6 @@
     return props.length
   }
 
-  let varsStyle: string = ''
-  let propsWidth: Record<string, number> = {}
-  let itemModels: AttributeModel[]
-  $: buildModel({ client, _class, keys: itemsConfig, lookup: options.lookup }).then((res) => (itemModels = res))
-  $: if (itemModels) {
-    for (const item of itemModels) if (item.props?.fixed !== undefined) propsWidth[item.key] = 0
-  }
-  $: if (propsWidth) {
-    varsStyle = ''
-    for (const key in propsWidth) varsStyle += `--fixed-${key}: ${propsWidth[key]}px;`
-  }
   function limitGroup (
     category: any,
     groupes: { [key: string | number | symbol]: Issue[] },
@@ -204,7 +172,54 @@
     const limit = categoryLimit[toCat(category)] ?? initialLimit
     return issues.slice(0, limit)
   }
-  const categoryLimit: Record<any, number> = {}
+
+  const getInitCollapseValue = (category: any) =>
+    categories.length === 1 ? false : (groupedIssues[category]?.length ?? 0) > autoFoldLimit
+
+  const unsubscribeFilter = filterStore.subscribe(() => (isFilterUpdate = true))
+  onDestroy(unsubscribeFilter)
+
+  $: {
+    if (isFilterUpdate && groupedIssuesBeforeFilter !== groupedIssues) {
+      isCollapsedMap = {}
+
+      categories.forEach((category) => (isCollapsedMap[toCat(category)] = getInitCollapseValue(category)))
+
+      isFilterUpdate = false
+      groupedIssuesBeforeFilter = groupedIssues
+    }
+  }
+
+  $: spaceQuery.query(tracker.class.Team, { _id: currentSpace }, (res) => {
+    currentTeam = res.shift()
+  })
+  $: {
+    const exkeys = new Set(Object.keys(isCollapsedMap))
+    for (const c of categories) {
+      if (!exkeys.delete(toCat(c))) {
+        isCollapsedMap[toCat(c)] = getInitCollapseValue(c)
+      }
+    }
+    for (const k of exkeys) {
+      delete isCollapsedMap[k]
+    }
+  }
+  $: combinedGroupedIssues = Object.values(groupedIssues).flat(1)
+  $: options = { ...baseOptions, sort: { [orderBy]: issuesSortOrderMap[orderBy] } } as FindOptions<Issue>
+  $: headerComponent = groupByKey === undefined || groupByKey === 'assignee' ? null : issuesGroupEditorMap[groupByKey]
+  $: selectedObjectIdsSet = new Set<Ref<Doc>>(selectedObjectIds.map((it) => it._id))
+  $: objectRefs.length = combinedGroupedIssues.length
+  $: getObjectPresenter(client, contact.class.Person, { key: '' }).then((p) => {
+    personPresenter = p
+  })
+  $: buildModel({ client, _class, keys: itemsConfig, lookup: options.lookup }).then((res) => (itemModels = res))
+  $: if (itemModels) {
+    for (const item of itemModels) if (item.props?.fixed !== undefined) propsWidth[item.key] = 0
+  }
+  $: if (propsWidth) {
+    varsStyle = ''
+    for (const key in propsWidth) varsStyle += `--fixed-${key}: ${propsWidth[key]}px;`
+  }
 </script>
 
 <div class="issueslist-container" style={varsStyle}>
