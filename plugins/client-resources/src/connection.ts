@@ -153,7 +153,7 @@ class Connection implements ClientConnection {
         )
       }
       websocket.onerror = (event: any) => {
-        console.log('client websocket error', event)
+        console.log('client websocket error', JSON.stringify(event))
         reject(new Error('websocket error'))
       }
     })

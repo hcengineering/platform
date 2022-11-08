@@ -54,10 +54,12 @@
   import NavHeader from './NavHeader.svelte'
   import Navigator from './Navigator.svelte'
   import SpaceView from './SpaceView.svelte'
+  import { subscribeMobile } from '../mobile'
 
   export let client: Client
   let contentPanel: HTMLElement
 
+  const { setTheme } = getContext('theme') as any
   setClient(client)
   NotificationClientImpl.createClient()
 
@@ -138,9 +140,6 @@
 
   onDestroy(
     location.subscribe(async (loc) => {
-      if (window.nsWebViewBridge !== undefined) {
-        window.nsWebViewBridge.emit('navigate', JSON.stringify(loc))
-      }
       closeTooltip()
       closePopup()
 
@@ -394,34 +393,7 @@
         ? 'account-mobile'
         : 'account'
 
-  onMount(() => {
-    if (checkMobile()) {
-      onmessage = (event: MessageEvent) => {
-        try {
-          const data = JSON.parse(event.data)
-          if (data.action === 'navigate') {
-            const location = getCurrentLocation()
-            location.path.length = 3
-            location.path[2] = data.value.path[0]
-            if (data.value.path[1] !== undefined) {
-              location.path[3] = data.value.path[1]
-            }
-            if (data.value.path[2] !== undefined) {
-              location.path[4] = data.value.path[2]
-            }
-            location.fragment = undefined
-            location.query = undefined
-            navigate(location)
-          } else if (data.action === 'theme') {
-            const { setTheme } = getContext('theme') as any
-            setTheme(`theme-${data.value}`)
-          }
-        } catch (err) {
-          console.log(`Couldn't recognize event ${JSON.stringify(event)}`)
-        }
-      }
-    }
-  })
+  onMount(() => subscribeMobile(setTheme))
 </script>
 
 {#if employee?.active === true}
