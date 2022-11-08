@@ -32,7 +32,10 @@
 
 <div class="estimation-container" on:click>
   <div class="icon">
-    <EstimationProgressCircle value={Math.max(value.reportedTime, childReportTime)} max={value.estimation} />
+    <EstimationProgressCircle
+      value={Math.max(value.reportedTime, childReportTime)}
+      max={childEstimationTime || value.estimation}
+    />
   </div>
   <span class="overflow-label label flex-row-center flex-nowrap text-md">
     {#if value.reportedTime > 0 || childReportTime > 0}
