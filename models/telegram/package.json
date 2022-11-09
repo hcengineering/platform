@@ -32,7 +32,7 @@
     "@hcengineering/model-core": "~0.6.0",
     "@hcengineering/model-attachment": "~0.6.0",
     "@hcengineering/model-contact": "~0.6.1",
-    "@hcengineering/contact": "~0.6.5",
+    "@hcengineering/contact": "~0.6.8",
     "@hcengineering/telegram": "~0.6.2",
     "@hcengineering/telegram-resources": "~0.6.0",
     "@hcengineering/setting": "~0.6.1",

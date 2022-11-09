@@ -30,7 +30,7 @@
     "@hcengineering/core": "^0.6.17",
     "@hcengineering/platform": "^0.6.7",
     "@hcengineering/model-core": "~0.6.0",
-    "@hcengineering/contact": "~0.6.5",
+    "@hcengineering/contact": "~0.6.8",
     "@hcengineering/model-contact": "~0.6.1",
     "@hcengineering/gmail": "~0.6.0",
     "@hcengineering/gmail-resources": "~0.6.0",

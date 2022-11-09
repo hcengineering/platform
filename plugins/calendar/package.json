@@ -30,6 +30,6 @@
     "@hcengineering/ui": "^0.6.2",
     "@hcengineering/notification": "~0.6.4",
     "@hcengineering/core": "^0.6.17",
-    "@hcengineering/contact": "~0.6.5"
+    "@hcengineering/contact": "~0.6.8"
   }
 }
