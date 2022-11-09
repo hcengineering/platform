@@ -33,6 +33,6 @@
     "@hcengineering/notification": "~0.6.4",
     "@hcengineering/chunter": "~0.6.1",
     "@hcengineering/view": "^0.6.1",
-    "@hcengineering/contact": "~0.6.5"
+    "@hcengineering/contact": "~0.6.8"
   }
 }

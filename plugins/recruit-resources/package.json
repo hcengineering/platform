@@ -39,7 +39,7 @@
     "@hcengineering/presentation": "~0.6.2",
     "@hcengineering/text-editor": "~0.6.0",
     "@hcengineering/chunter": "~0.6.1",
-    "@hcengineering/contact": "~0.6.5",
+    "@hcengineering/contact": "~0.6.8",
     "@hcengineering/login": "~0.6.1",
     "@hcengineering/workbench": "~0.6.2",
     "deep-equal": "^2.0.5",

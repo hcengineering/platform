@@ -46,7 +46,7 @@
     "@hcengineering/attachment": "~0.6.1",
     "@hcengineering/notification": "~0.6.4",
     "@hcengineering/login": "~0.6.1",
-    "@hcengineering/contact": "~0.6.5",
+    "@hcengineering/contact": "~0.6.8",
     "@hcengineering/tags": "~0.6.2",
     "@hcengineering/text-editor": "~0.6.0"
   }

@@ -30,7 +30,7 @@
     "@hcengineering/platform": "^0.6.7",
     "@hcengineering/server-core": "~0.6.1",
     "@hcengineering/tracker": "^0.6.1",
-    "@hcengineering/contact": "~0.6.5",
+    "@hcengineering/contact": "~0.6.8",
     "@hcengineering/notification": "~0.6.4",
     "@hcengineering/task": "~0.6.0",
     "@hcengineering/view": "^0.6.1",

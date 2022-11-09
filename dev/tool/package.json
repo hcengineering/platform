@@ -47,7 +47,7 @@
     "commander": "^8.1.0",
     "@hcengineering/account": "~0.6.0",
     "@hcengineering/core": "^0.6.17",
-    "@hcengineering/contact": "~0.6.5",
+    "@hcengineering/contact": "~0.6.8",
     "minio": "^7.0.26",
     "@hcengineering/model-all": "~0.6.0",
     "@hcengineering/model-telegram": "~0.6.0",

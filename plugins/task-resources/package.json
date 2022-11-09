@@ -36,7 +36,7 @@
     "@hcengineering/ui": "^0.6.2",
     "@hcengineering/presentation": "~0.6.2",
     "@hcengineering/text-editor": "~0.6.0",
-    "@hcengineering/contact": "~0.6.5",
+    "@hcengineering/contact": "~0.6.8",
     "@hcengineering/core": "^0.6.17",
     "@hcengineering/chunter": "~0.6.1",
     "@hcengineering/attachment": "~0.6.1",
