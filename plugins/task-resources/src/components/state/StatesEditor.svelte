@@ -89,7 +89,7 @@
 </script>
 
 {#if space?.editor}
-  <Component is={space.editor} props={{template}} />
+  <Component is={space.editor} props={{ template }} />
 {/if}
 <div class="flex-no-shrink flex-between trans-title uppercase">
   <Label label={task.string.ActiveStates} />
