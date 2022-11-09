@@ -16,7 +16,7 @@
 <script lang="ts">
   import { Class, Ref } from '@hcengineering/core'
   import { AttributeEditor, getClient } from '@hcengineering/presentation'
-  import type { DoneState, State } from '@hcengineering/task'
+  import type { DoneState, KanbanTemplate, KanbanTemplateSpace, State } from '@hcengineering/task'
   import {
     CircleButton,
     IconAdd,
@@ -24,7 +24,8 @@
     Label,
     showPopup,
     getPlatformColor,
-    eventToHTMLElement
+    eventToHTMLElement,
+    Component
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { ColorsPopup } from '@hcengineering/view-resources'
@@ -34,6 +35,8 @@
   import Won from '../icons/Won.svelte'
   import Lost from '../icons/Lost.svelte'
 
+  export let template: KanbanTemplate | undefined = undefined
+  export let space: KanbanTemplateSpace | undefined = undefined
   export let states: State[] = []
   export let wonStates: DoneState[] = []
   export let lostStates: DoneState[] = []
@@ -85,6 +88,9 @@
   }
 </script>
 
+{#if space?.editor}
+  <Component is={space.editor} props={{ template }} />
+{/if}
 <div class="flex-no-shrink flex-between trans-title uppercase">
   <Label label={task.string.ActiveStates} />
   <CircleButton

@@ -1,5 +1,8 @@
 {
   "string": {
+    "Description": "Описание",
+    "DescriptionPlaceholder": "Описание",
+    "ShortDescription": "Короткое описание",
     "StartDate": "Начало",
     "DueDate": "Срок",
     "TaskState": "Статус",
@@ -14,7 +17,6 @@
     "Task": "Задача",
     "TaskParent": "Родитель",
     "IssueName": "Название",
-    "TaskDescription": "Описание",
     "TaskComments": "Комментарии",
     "TaskLabels": "Ярлыки",
     "TaskAssignee": "Назначен",
@@ -34,7 +36,6 @@
     "CreateProject": "Новый проект",
     "ProjectNamePlaceholder": "Название проекта",
     "TaskNamePlaceholder": "Задача",
-    "TaskDescriptionPlaceholder": "Описание",
     "TodoDescriptionPlaceholder": "todo...",
     "MakePrivate": "Сделать личным",
     "MakePrivateDescription": "Только пользователи могут видеть это",
@@ -76,6 +77,7 @@
     "Assigned": "Назначения",
     "TodoItems": "Todos",
     "Dashboard": "Дашборд",
-    "AllTime": "Все время"
+    "AllTime": "Все время",
+    "RelatedIssues": "Связанные процессы"
   }
 }

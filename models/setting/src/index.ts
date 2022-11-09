@@ -163,14 +163,14 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       name: 'statuses',
-      label: setting.string.ManageStatuses,
-      icon: task.icon.ManageStatuses,
-      component: setting.component.ManageStatuses,
+      label: setting.string.ManageTemplates,
+      icon: task.icon.ManageTemplates,
+      component: setting.component.ManageTemplates,
       group: 'settings-editor',
       secured: false,
       order: 4000
     },
-    setting.ids.ManageStatuses
+    setting.ids.ManageTemplates
   )
   builder.createDoc(
     setting.class.WorkspaceSettingCategory,

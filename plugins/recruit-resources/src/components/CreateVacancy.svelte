@@ -15,10 +15,11 @@
 <script lang="ts">
   import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
   import contact, { Organization } from '@hcengineering/contact'
-  import core, { generateId, getCurrentAccount, Ref } from '@hcengineering/core'
-  import { Card, getClient, UserBox } from '@hcengineering/presentation'
+  import core, { FindResult, generateId, getCurrentAccount, Ref } from '@hcengineering/core'
+  import { Card, createQuery, getClient, UserBox } from '@hcengineering/presentation'
   import task, { createKanban, KanbanTemplate } from '@hcengineering/task'
   import { Button, Component, createFocusManager, EditBox, FocusHandler, IconAttachment } from '@hcengineering/ui'
+  import tracker, { IssueStatus, IssueTemplate } from '@hcengineering/tracker'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
   import { Vacancy as VacancyClass } from '@hcengineering/recruit'
@@ -28,10 +29,10 @@
   const dispatch = createEventDispatcher()
 
   let name: string = ''
-  const description: string = ''
-  let fullDescription: string = ''
+  let template: KanbanTemplate | undefined
   let templateId: Ref<KanbanTemplate> | undefined
   let objectId: Ref<VacancyClass> = generateId()
+  let issueTemplates: FindResult<IssueTemplate>
 
   export let company: Ref<Organization> | undefined
   export let preserveCompany: boolean = false
@@ -41,6 +42,15 @@
   }
 
   const client = getClient()
+  const templateQ = createQuery()
+  $: templateQ.query(task.class.KanbanTemplate, { _id: templateId }, (result) => {
+    template = result[0]
+  })
+
+  const issueTemplatesQ = createQuery()
+  $: issueTemplatesQ.query(tracker.class.IssueTemplate, { 'relations._id': templateId }, async (result) => {
+    issueTemplates = result
+  })
 
   async function createVacancy () {
     if (
@@ -54,9 +64,10 @@
       recruit.class.Vacancy,
       core.space.Space,
       {
+        ...template,
         name,
-        description,
-        fullDescription,
+        description: template?.shortDescription ?? '',
+        fullDescription: template?.description ?? '',
         private: false,
         archived: false,
         company,
@@ -64,6 +75,45 @@
       },
       objectId
     )
+
+    for (const issueTemplate of issueTemplates) {
+      const incResult = await client.updateDoc(
+        tracker.class.Team,
+        core.space.Space,
+        issueTemplate.space,
+        {
+          $inc: { sequence: 1 }
+        },
+        true
+      )
+      await client.addCollection(
+        tracker.class.Issue,
+        issueTemplate.space,
+        tracker.ids.NoParent,
+        tracker.class.Issue,
+        'subIssues',
+        {
+          title: issueTemplate.title,
+          description: issueTemplate.description,
+          assignee: issueTemplate.assignee,
+          project: issueTemplate.project,
+          sprint: issueTemplate.sprint,
+          number: (incResult as any).object.sequence,
+          status: '' as Ref<IssueStatus>,
+          priority: issueTemplate.priority,
+          rank: '',
+          comments: 0,
+          subIssues: 0,
+          dueDate: null,
+          parents: [],
+          reportedTime: 0,
+          estimation: issueTemplate.estimation,
+          reports: 0,
+          relations: [{ _id: id, _class: recruit.class.Vacancy }],
+          childInfo: []
+        }
+      )
+    }
 
     await createKanban(client, id, templateId)
 
@@ -117,20 +167,6 @@
       showNavigate={false}
       create={{ component: contact.component.CreateOrganization, label: contact.string.CreateOrganization }}
     />
-  </svelte:fragment>
-
-  <AttachmentStyledBox
-    bind:this={descriptionBox}
-    {objectId}
-    _class={recruit.class.Vacancy}
-    space={objectId}
-    alwaysEdit
-    showButtons={false}
-    maxHeight={'card'}
-    bind:content={fullDescription}
-    placeholder={recruit.string.FullDescription}
-  />
-  <svelte:fragment slot="pool">
     <Component
       is={task.component.KanbanTemplateSelector}
       props={{
@@ -143,6 +179,19 @@
       }}
     />
   </svelte:fragment>
+  {#key template?.description}
+    <AttachmentStyledBox
+      bind:this={descriptionBox}
+      {objectId}
+      _class={recruit.class.Vacancy}
+      space={objectId}
+      alwaysEdit
+      showButtons={false}
+      maxHeight={'card'}
+      content={template?.description ?? ''}
+      placeholder={recruit.string.FullDescription}
+    />
+  {/key}
   <svelte:fragment slot="footer">
     <Button
       icon={IconAttachment}

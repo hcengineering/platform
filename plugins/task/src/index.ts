@@ -167,6 +167,8 @@ export interface LostStateTemplate extends DoneStateTemplate, LostState {}
  */
 export interface KanbanTemplate extends Doc {
   title: string
+  description?: string
+  shortDescription?: string
   statesC: number
   doneStatesC: number
 }
@@ -178,6 +180,7 @@ export interface KanbanTemplateSpace extends Doc {
   name: IntlString
   description: IntlString
   icon: AnyComponent
+  editor?: AnyComponent
 }
 
 /**
@@ -255,7 +258,7 @@ const task = plugin(taskId, {
     Kanban: '' as Asset,
     TodoCheck: '' as Asset,
     TodoUnCheck: '' as Asset,
-    ManageStatuses: '' as Asset,
+    ManageTemplates: '' as Asset,
     TaskState: '' as Asset,
     Dashboard: '' as Asset
   },

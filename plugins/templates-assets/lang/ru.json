@@ -1,8 +1,8 @@
 {
   "string": {
     "Cancel": "Отменить",
-    "Templates": "Шаблоны",
-    "TemplatesHeader": "ШАБЛОНЫ",
+    "Templates": "Текстовые шаблоны",
+    "TemplatesHeader": "ТЕКСТОВЫЕ ШАБЛОНЫ",
     "CreateTemplate": "СОЗДАТЬ ШАБЛОН",
     "SaveTemplate": "Сохранить шаблон",
     "EditTemplate": "Редактировать шаблон",

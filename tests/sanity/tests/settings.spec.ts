@@ -69,7 +69,7 @@ test.describe('contact tests', () => {
     // Click text=Edit template
   })
 
-  test('manage-status-templates', async ({ page }) => {
+  test('manage-templates', async ({ page }) => {
     // Go to http://localhost:8083/workbench%3Acomponent%3AWorkbenchApp/sanity-ws
     await page.goto(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/sanity-ws`)
     // Click #profile-button
@@ -79,8 +79,8 @@ test.describe('contact tests', () => {
     await page.click('button:has-text("Settings")')
     // Click text=Workspace Notifications >> button
     await page.click('text=Workspace Notifications >> button')
-    // Click button:has-text("Manage Statuses")
-    await page.click('text="Manage Statuses"')
+    // Click button:has-text("Manage Templates")
+    await page.click('text="Manage Templates"')
     // Click text=Vacancies
     await page.click('text=Vacancies')
     // Click #create-template div

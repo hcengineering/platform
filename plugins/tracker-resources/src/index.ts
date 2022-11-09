@@ -19,6 +19,7 @@ import { ObjectSearchResult } from '@hcengineering/presentation'
 import { Issue, Team } from '@hcengineering/tracker'
 import { showPopup } from '@hcengineering/ui'
 import CreateIssue from './components/CreateIssue.svelte'
+import CreateIssueTemplate from './components/templates/CreateIssueTemplate.svelte'
 import Inbox from './components/inbox/Inbox.svelte'
 import Active from './components/issues/Active.svelte'
 import AssigneePresenter from './components/issues/AssigneePresenter.svelte'
@@ -83,6 +84,7 @@ import ReportedTimeEditor from './components/issues/timereport/ReportedTimeEdito
 import TimeSpendReport from './components/issues/timereport/TimeSpendReport.svelte'
 
 import RelatedIssues from './components/issues/related/RelatedIssues.svelte'
+import RelatedIssueTemplates from './components/issues/related/RelatedIssueTemplates.svelte'
 
 import ProjectSelector from './components/ProjectSelector.svelte'
 
@@ -196,6 +198,7 @@ export default async (): Promise<Resources> => ({
     IssuePreview,
     RelationsPopup,
     CreateIssue,
+    CreateIssueTemplate,
     Sprints,
     SprintPresenter,
     SprintStatusPresenter,
@@ -208,6 +211,7 @@ export default async (): Promise<Resources> => ({
     SubIssuesSelector,
     GrowPresenter,
     RelatedIssues,
+    RelatedIssueTemplates,
     ProjectSelector,
     IssueTemplates,
     IssueTemplatePresenter,

@@ -53,7 +53,7 @@
       >
         <Label label={task.string.AllTime} />
       </div>
-      {#each values as value, i}
+      {#each values as value}
         <div
           class="menu-item"
           on:click={() => {

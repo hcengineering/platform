@@ -51,7 +51,7 @@
 <DropdownLabels
   {focusIndex}
   {items}
-  icon={task.icon.ManageStatuses}
+  icon={task.icon.ManageTemplates}
   bind:selected={selectedItem}
   label={plugin.string.States}
 />

@@ -302,6 +302,9 @@ export class TIssueTemplate extends TDoc implements IssueTemplate {
 
   @Prop(Collection(attachment.class.Attachment), tracker.string.Attachments)
     attachments!: number
+
+  @Prop(ArrOf(TypeRef(core.class.TypeRelatedDocument)), tracker.string.RelatedTo)
+    relations!: RelatedDocument[]
 }
 
 /**

@@ -180,7 +180,7 @@ export class TIssue extends TTask implements Issue {
   @Index(IndexKind.FullText)
     name!: string
 
-  @Prop(TypeMarkup(), task.string.TaskDescription)
+  @Prop(TypeMarkup(), task.string.Description)
   @Index(IndexKind.FullText)
     description!: string
 
@@ -211,6 +211,7 @@ export class TKanbanTemplateSpace extends TDoc implements KanbanTemplateSpace {
   name!: IntlString
   description!: IntlString
   icon!: AnyComponent
+  editor!: AnyComponent
 }
 
 @Model(task.class.StateTemplate, core.class.AttachedDoc, DOMAIN_KANBAN, [task.interface.DocWithRank])
@@ -243,6 +244,12 @@ export class TKanbanTemplate extends TDoc implements KanbanTemplate {
   @Prop(TypeString(), task.string.KanbanTemplateTitle)
   @Index(IndexKind.FullText)
     title!: string
+
+  @Prop(TypeString(), task.string.Description)
+    description!: string
+
+  @Prop(TypeString(), task.string.ShortDescription)
+    shortDescription!: string
 
   @Prop(Collection(task.class.StateTemplate), task.string.States)
     statesC!: number
@@ -347,7 +354,7 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       label: task.string.States,
-      icon: task.icon.ManageStatuses,
+      icon: task.icon.ManageTemplates,
       component: task.component.StatusTableView
     },
     task.viewlet.StatusTable
@@ -379,6 +386,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(task.class.Issue, core.class.Class, view.mixin.AttributePresenter, {
     presenter: task.component.TaskPresenter
+  })
+
+  builder.mixin(task.class.KanbanTemplate, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: task.component.KanbanTemplatePresenter
   })
 
   builder.mixin(task.class.Issue, core.class.Class, view.mixin.ObjectEditor, {
