@@ -72,7 +72,7 @@
 
 <Card
   label={tracker.string.TimeSpendReportAdd}
-  canSave={data.value !== 0}
+  canSave={Number.isFinite(data.value) && data.value !== 0}
   okAction={create}
   on:close
   okLabel={value === undefined ? presentation.string.Create : presentation.string.Save}

@@ -30,7 +30,10 @@
   let shown: boolean = false
 
   function _onchange (ev: Event) {
-    onChange((ev.target as HTMLInputElement).valueAsNumber)
+    const value = (ev.target as HTMLInputElement).valueAsNumber
+    if (Number.isFinite(value)) {
+      onChange(value)
+    }
   }
 </script>
 
@@ -40,7 +43,7 @@
     on:click={(ev) => {
       if (!shown && !readonly) {
         showPopup(EditBoxPopup, { value, format: 'number' }, eventToHTMLElement(ev), (res) => {
-          if (res !== undefined) {
+          if (Number.isFinite(res)) {
             value = res
             onChange(value)
           }
