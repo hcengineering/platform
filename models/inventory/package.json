@@ -37,7 +37,7 @@
     "@hcengineering/inventory-resources": "~0.6.0",
     "@hcengineering/view": "^0.6.1",
     "@hcengineering/setting": "~0.6.1",
-    "@hcengineering/workbench": "~0.6.1",
+    "@hcengineering/workbench": "~0.6.2",
     "@hcengineering/model-view": "~0.6.0"
   }
 }

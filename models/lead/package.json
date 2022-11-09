@@ -42,6 +42,6 @@
     "@hcengineering/view": "^0.6.1",
     "@hcengineering/task": "~0.6.0",
     "@hcengineering/model-task": "~0.6.0",
-    "@hcengineering/workbench": "~0.6.1"
+    "@hcengineering/workbench": "~0.6.2"
   }
 }

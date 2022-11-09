@@ -33,6 +33,6 @@
     "@hcengineering/chunter": "~0.6.1",
     "@hcengineering/view": "^0.6.1",
     "@hcengineering/login": "~0.6.1",
-    "@hcengineering/workbench": "~0.6.1"
+    "@hcengineering/workbench": "~0.6.2"
   }
 }

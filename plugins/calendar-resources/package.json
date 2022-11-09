@@ -42,6 +42,6 @@
     "@hcengineering/contact-resources": "~0.6.0",
     "@hcengineering/view-resources": "~0.6.0",
     "@hcengineering/view": "^0.6.1",
-    "@hcengineering/workbench": "~0.6.1"
+    "@hcengineering/workbench": "~0.6.2"
   }
 }

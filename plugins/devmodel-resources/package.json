@@ -43,6 +43,6 @@
     "@hcengineering/client": "^0.6.3",
     "@hcengineering/devmodel": "~0.6.0",
     "@hcengineering/model": "~0.6.0",
-    "@hcengineering/workbench": "~0.6.1"
+    "@hcengineering/workbench": "~0.6.2"
   }
 }

@@ -34,7 +34,7 @@
     "@hcengineering/platform": "^0.6.7",
     "@hcengineering/core": "^0.6.17",
     "@hcengineering/client": "^0.6.3",
-    "@hcengineering/workbench": "~0.6.1",
+    "@hcengineering/workbench": "~0.6.2",
     "@hcengineering/ui": "^0.6.2",
     "@hcengineering/view": "^0.6.1",
     "@hcengineering/presentation": "~0.6.2",

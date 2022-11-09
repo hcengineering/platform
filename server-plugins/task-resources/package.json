@@ -34,7 +34,7 @@
     "@hcengineering/task": "~0.6.0",
     "@hcengineering/view": "^0.6.1",
     "@hcengineering/login": "~0.6.1",
-    "@hcengineering/workbench": "~0.6.1",
+    "@hcengineering/workbench": "~0.6.2",
     "@hcengineering/notification": "~0.6.4",
     "@hcengineering/contact": "~0.6.5"
   }
