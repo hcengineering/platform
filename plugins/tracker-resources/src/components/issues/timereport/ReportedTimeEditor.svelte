@@ -44,7 +44,7 @@
 </script>
 
 {#if kind === 'link'}
-  <div class="link-container flex-between" on:click={showReports}>
+  <div id="ReportedTimeEditor" class="link-container flex-between" on:click={showReports}>
     {#if value !== undefined}
       <span class="overflow-label">
         {floorFractionDigits(value, 2)}
