@@ -300,7 +300,6 @@
       sprint: null,
       subIssues: [],
       template: undefined,
-      team: null,
       title: ''
     }
 
@@ -329,13 +328,7 @@
     return true
   }
 
-  export async function onOutsideClick () {
-    if (!shouldSaveDraft) {
-      return
-    }
-
-    await descriptionBox?.createAttachments()
-
+  function createDraftFromObject () {
     const newDraft: Data<IssueDraft> = {
       issueId: objectId,
       title: getTitle(object.title),
@@ -354,6 +347,17 @@
       subIssues
     }
 
+    return newDraft
+  }
+
+  export async function onOutsideClick () {
+    if (!shouldSaveDraft) {
+      return
+    }
+
+    await descriptionBox?.createAttachments()
+
+    const newDraft = createDraftFromObject()
     const isEmpty = await isDraftEmpty(newDraft)
 
     if (isEmpty) {
@@ -610,6 +614,30 @@
       }
     )
   }
+
+  async function showConfirmationDialog () {
+    const newDraft = createDraftFromObject()
+    const isFormEmpty = await isDraftEmpty(newDraft)
+
+    if (isFormEmpty) {
+      console.log('isFormEmpty')
+      dispatch('close')
+    } else {
+      showPopup(
+        MessageBox,
+        {
+          label: tracker.string.NewIssueDialogClose,
+          message: tracker.string.NewIssueDialogCloseNote
+        },
+        'top',
+        (result?: boolean) => {
+          if (result === true) {
+            dispatch('close')
+          }
+        }
+      )
+    }
+  }
 </script>
 
 <Card
@@ -617,10 +645,9 @@
   okAction={createIssue}
   {canSave}
   okLabel={tracker.string.SaveIssue}
-  on:close={() => {
-    dispatch('close')
-  }}
+  on:close={() => dispatch('close')}
   createMore={false}
+  onCancel={showConfirmationDialog}
 >
   <svelte:fragment slot="header">
     <div class="flex-row-center">
