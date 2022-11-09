@@ -26,6 +26,7 @@
   export let canSave: boolean = false
   export let createMore: boolean | undefined = undefined
   export let okLabel: IntlString = presentation.string.Create
+  export let onCancel: Function | undefined = undefined
 
   const dispatch = createEventDispatcher()
 
@@ -54,7 +55,11 @@
         icon={IconClose}
         kind={'transparent'}
         on:click={() => {
-          dispatch('close')
+          if (onCancel) {
+            onCancel()
+          } else {
+            dispatch('close')
+          }
         }}
       />
     </div>

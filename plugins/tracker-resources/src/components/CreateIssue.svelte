@@ -620,6 +620,7 @@
     const isFormEmpty = await isDraftEmpty(newDraft)
 
     if (isFormEmpty) {
+      console.log('isFormEmpty')
       dispatch('close')
     } else {
       showPopup(
@@ -644,8 +645,9 @@
   okAction={createIssue}
   {canSave}
   okLabel={tracker.string.SaveIssue}
-  on:close={showConfirmationDialog}
+  on:close={() => dispatch('close')}
   createMore={false}
+  onCancel={showConfirmationDialog}
 >
   <svelte:fragment slot="header">
     <div class="flex-row-center">
