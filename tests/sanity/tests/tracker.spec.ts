@@ -218,7 +218,9 @@ test('report-time-from-issue-card', async ({ page }) => {
     await page.click('text="View issue"')
 
     await page.click('#ReportedTimeEditor')
+    await page.waitForSelector('text="Time spend reports"')
     await page.click('#ReportsPopupAddButton')
+    await page.waitForSelector('text="Add time report"')
     await expect(page.locator('button:has-text("Create")')).toBeDisabled()
     await page.fill('[placeholder="Reported\\ time"]', time)
     await expect(page.locator('button:has-text("Create")')).toBeEnabled()
@@ -256,6 +258,7 @@ test('report-time-from-main-view', async ({ page }) => {
       await page.waitForSelector('text="Estimation"')
 
       await page.click('text="Add time report"')
+      await page.waitForSelector('.antiCard-header >> .antiCard-header__title-wrap >> span:has-text("Add time report")')
       await expect(page.locator('button:has-text("Create")')).toBeDisabled()
       await page.fill('[placeholder="Reported\\ time"]', `${time}`)
       await expect(page.locator('button:has-text("Create")')).toBeEnabled()
