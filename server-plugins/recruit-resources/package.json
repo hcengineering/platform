@@ -32,7 +32,7 @@
     "@hcengineering/recruit": "~0.6.3",
     "@hcengineering/view": "^0.6.1",
     "@hcengineering/login": "~0.6.1",
-    "@hcengineering/workbench": "~0.6.1",
+    "@hcengineering/workbench": "~0.6.2",
     "@hcengineering/contact": "~0.6.5",
     "@hcengineering/server-task-resources": "~0.6.0"
   }

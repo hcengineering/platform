@@ -29,7 +29,7 @@
     "@hcengineering/model": "~0.6.0",
     "@hcengineering/platform": "^0.6.7",
     "@hcengineering/model-core": "~0.6.0",
-    "@hcengineering/workbench": "~0.6.1",
+    "@hcengineering/workbench": "~0.6.2",
     "@hcengineering/ui": "^0.6.2",
     "@hcengineering/view": "^0.6.1",
     "@hcengineering/model-view": "~0.6.0",

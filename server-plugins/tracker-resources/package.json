@@ -35,7 +35,7 @@
     "@hcengineering/task": "~0.6.0",
     "@hcengineering/view": "^0.6.1",
     "@hcengineering/login": "~0.6.1",
-    "@hcengineering/workbench": "~0.6.1",
+    "@hcengineering/workbench": "~0.6.2",
     "@hcengineering/server-task-resources": "~0.6.0"
   }
 }
