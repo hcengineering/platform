@@ -50,6 +50,7 @@
 
 {#if value && value.value}
   <span
+    id="TimeSpendReportValue"
     class="issuePresenterRoot flex-row-center"
     on:click={editSpendReport}
     use:tooltip={value.employee
