@@ -100,6 +100,8 @@
     "IssueTitlePlaceholder": "Issue title",
     "IssueDescriptionPlaceholder": "Add description",
     "AddIssueTooltip": "Add issue...",
+    "NewIssueDialogClose": "Do you want to close this dialog?",
+    "NewIssueDialogCloseNote": "All changes will be lost",
     "DueDatePopupTitle": "Due on {value}",
     "DueDatePopupOverdueTitle": "Was due on {value}",
     "DueDatePopupDescription": "{value, plural, =0 {Today} =1 {Tomorrow} other {# days remaining}}",

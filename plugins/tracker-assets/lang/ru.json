@@ -100,6 +100,8 @@
     "IssueTitlePlaceholder": "Имя задачи",
     "IssueDescriptionPlaceholder": "Описание задачи",
     "AddIssueTooltip": "Добавить задачу\u2026",
+    "NewIssueDialogClose": "Вы действительно хотите закрыть окно?",
+    "NewIssueDialogCloseNote": "Все внесенные изменения будут потеряны",
     "DueDatePopupTitle": "Срок {value}",
     "DueDatePopupOverdueTitle": "Должна была завершится {value}",
     "DueDatePopupDescription": "{value, plural, =0 {Сегодня} =1 {Завтра} other {# дней осталось}}",

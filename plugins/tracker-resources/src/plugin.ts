@@ -163,6 +163,8 @@ export default mergeIds(trackerId, tracker, {
     IssueDescriptionPlaceholder: '' as IntlString,
     Unassigned: '' as IntlString,
     AddIssueTooltip: '' as IntlString,
+    NewIssueDialogClose: '' as IntlString,
+    NewIssueDialogCloseNote: '' as IntlString, 
 
     CopyIssueUrl: '' as IntlString,
     CopyIssueId: '' as IntlString,
