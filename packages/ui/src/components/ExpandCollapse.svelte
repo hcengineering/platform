@@ -13,12 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher, afterUpdate } from 'svelte'
   import { quintOut } from 'svelte/easing'
   import { tweened } from 'svelte/motion'
 
   export let isExpanded = false
   export let duration = 200
   export let easing: (t: number) => number = quintOut
+
+  const dispatch = createEventDispatcher()
+  afterUpdate(() => dispatch('changeContent'))
 
   const tweenedHeight = tweened(0, { duration, easing })
 
@@ -28,7 +32,7 @@
 </script>
 
 <div class="root" style="height: {$tweenedHeight}px">
-  <div bind:offsetHeight={height}>
+  <div bind:offsetHeight={height} class="clear-mins">
     <slot />
   </div>
 </div>
@@ -36,5 +40,6 @@
 <style lang="scss">
   .root {
     overflow: hidden;
+    min-height: 0;
   }
 </style>

@@ -40,7 +40,7 @@
 </script>
 
 <div
-  class="antiComponent styled-box"
+  class="antiComponent styled-box clear-mins"
   on:click={() => {
     if (focused) {
       textEditor?.focus()
@@ -68,6 +68,7 @@
     }}
     on:value={(evt) => {
       rawValue = evt.detail
+      dispatch('changeContent')
     }}
   />
 </div>

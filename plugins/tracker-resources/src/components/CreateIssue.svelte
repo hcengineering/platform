@@ -58,12 +58,11 @@
     NotificationPosition,
     NotificationSeverity,
     Notification,
-    notificationsStore,
-    Scroller
+    notificationsStore
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { ObjectBox } from '@hcengineering/view-resources'
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, afterUpdate } from 'svelte'
   import { activeProject, activeSprint, updateIssueRelation } from '../issues'
   import tracker from '../plugin'
   import AssigneeEditor from './issues/AssigneeEditor.svelte'
@@ -639,6 +638,8 @@
       )
     }
   }
+
+  afterUpdate(() => dispatch('changeContent'))
 </script>
 
 <Card
@@ -691,32 +692,32 @@
       {/if}
     </div>
   </svelte:fragment>
-  <Scroller>
-    {#if parentIssue}
-      <ParentIssue issue={parentIssue} on:close={clearParentIssue} />
-    {/if}
-    <EditBox bind:value={object.title} placeholder={tracker.string.IssueTitlePlaceholder} kind={'large-style'} focus />
-    {#key object.description}
-      <AttachmentStyledBox
-        bind:this={descriptionBox}
-        {objectId}
-        _class={tracker.class.Issue}
-        space={_space}
-        alwaysEdit
-        showButtons={false}
-        maxHeight={'limited'}
-        bind:content={object.description}
-        placeholder={tracker.string.IssueDescriptionPlaceholder}
-      />
-    {/key}
-    <IssueTemplateChilds
-      bind:children={subIssues}
-      sprint={object.sprint}
-      project={object.project}
-      maxHeight={'limited'}
-      isScrollable
+  {#if parentIssue}
+    <ParentIssue issue={parentIssue} on:close={clearParentIssue} />
+  {/if}
+  <EditBox bind:value={object.title} placeholder={tracker.string.IssueTitlePlaceholder} kind={'large-style'} focus />
+  {#key object.description}
+    <AttachmentStyledBox
+      bind:this={descriptionBox}
+      {objectId}
+      _class={tracker.class.Issue}
+      space={_space}
+      alwaysEdit
+      showButtons={false}
+      maxHeight={'20vh'}
+      bind:content={object.description}
+      placeholder={tracker.string.IssueDescriptionPlaceholder}
+      on:changeContent
     />
-  </Scroller>
+  {/key}
+  <IssueTemplateChilds
+    bind:children={subIssues}
+    sprint={object.sprint}
+    project={object.project}
+    isScrollable
+    maxHeight={'20vh'}
+    on:changeContent
+  />
   <svelte:fragment slot="pool">
     <div class="flex flex-wrap" style:gap={'0.2vw'}>
       {#if issueStatuses}

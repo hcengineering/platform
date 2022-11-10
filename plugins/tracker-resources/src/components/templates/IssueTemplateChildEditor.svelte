@@ -107,8 +107,8 @@
   $: labelRefs = labels.map((it) => ({ ...(it as unknown as TagReference), _id: generateId(), tag: it._id }))
 </script>
 
-<div bind:this={thisRef} class="flex-col root" class:antiPopup={showBorder}>
-  <div class="flex-row-top">
+<div bind:this={thisRef} class="flex-col root clear-mins" class:antiPopup={showBorder}>
+  <div class="flex-row-top clear-mins">
     <div class="w-full flex-col content">
       <EditBox
         bind:value={newIssue.title}
@@ -117,7 +117,7 @@
         placeholder={tracker.string.IssueTitlePlaceholder}
         focus
       />
-      <div class="mt-4">
+      <div class="mt-4 clear-mins">
         {#key newIssue.description}
           <StyledTextArea
             bind:content={newIssue.description}
@@ -125,6 +125,7 @@
             showButtons={false}
             {isScrollable}
             {maxHeight}
+            on:changeContent
           />
         {/key}
       </div>
