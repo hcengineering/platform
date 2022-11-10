@@ -214,7 +214,8 @@ test('report-time-from-issue-card', async ({ page }) => {
     const time = values[random]
     const name = getIssueName()
     await createIssue(page, { name, assignee, status })
-
+    await page.waitForSelector(`text="${name}"`)
+    await page.waitForSelector('text="View issue"')
     await page.click('text="View issue"')
 
     await page.click('#ReportedTimeEditor')
@@ -225,7 +226,7 @@ test('report-time-from-issue-card', async ({ page }) => {
     await page.fill('[placeholder="Reported\\ time"]', time)
     await expect(page.locator('button:has-text("Create")')).toBeEnabled()
     await page.click('button:has-text("Create")')
-    await page.keyboard.press('Escape')
+    await page.click('#card-close')
 
     await expect(page.locator('#TimeSpendReportValue')).toContainText(`${time}d`)
   }
@@ -247,25 +248,25 @@ test('report-time-from-main-view', async ({ page }) => {
     const name = getIssueName()
     await createIssue(page, { name, assignee, status })
     await page.waitForSelector(`text="${name}"`)
-    await page.click('.close-button >> button')
+    await page.click('.close-button > .button')
 
     let count = 0
     for (let i = 0; i < 5; i++) {
       const random = Math.floor(Math.random() * values.length)
       const time = values[random]
       count += time
-      await page.click('.estimation-container')
+      await page.locator('.estimation-container').first().click()
       await page.waitForSelector('text="Estimation"')
 
-      await page.click('text="Add time report"')
+      await page.click('button:has-text("Add time report")')
       await page.waitForSelector('.antiCard-header >> .antiCard-header__title-wrap >> span:has-text("Add time report")')
       await expect(page.locator('button:has-text("Create")')).toBeDisabled()
       await page.fill('[placeholder="Reported\\ time"]', `${time}`)
       await expect(page.locator('button:has-text("Create")')).toBeEnabled()
       await page.click('button:has-text("Create")')
-      await page.keyboard.press('Escape')
+      await page.click('#card-close')
 
-      await expect(page.locator('.estimation-container >> span').nth(0)).toContainText(`${Number(count.toFixed(2))}d`)
+      await expect(page.locator('.estimation-container >> span').first()).toContainText(`${Number(count.toFixed(2))}d`)
     }
   }
 })
