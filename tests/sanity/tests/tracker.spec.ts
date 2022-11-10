@@ -208,8 +208,10 @@ test('report-time-from-issue-card', async ({ page }) => {
   await navigate(page)
   const assignee = 'Rosamund Chen'
   const status = 'In Progress'
-  const time = 0.25
+  const values = [0.25, 0.5, 0.75, 1]
   for (let i = 0; i < 10; i++) {
+    const random = Math.floor(Math.random() * values.length)
+    const time = values[random]
     const name = getIssueName()
     await createIssue(page, { name, assignee, status })
     await page.waitForSelector(`text="${name}"`)
@@ -239,9 +241,9 @@ test('report-time-from-main-view', async ({ page }) => {
   await page.click('text="Last updated"')
   await page.keyboard.press('Escape')
 
+  const values = [0.25, 0.5, 0.75, 1]
   const assignee = 'Rosamund Chen'
   const status = 'In Progress'
-  const time = 0.25
   for (let i = 0; i < 5; i++) {
     const name = getIssueName()
     await createIssue(page, { name, assignee, status })
@@ -249,7 +251,9 @@ test('report-time-from-main-view', async ({ page }) => {
     await page.click('.close-button > .button')
 
     let count = 0
-    for (let i = 0; i < 5; i++) {
+    for (let j = 0; j < 5; j++) {
+      const random = Math.floor(Math.random() * values.length)
+      const time = values[random]
       count += time
       await page.locator('.estimation-container').first().click()
       await page.waitForSelector('text="Estimation"')
