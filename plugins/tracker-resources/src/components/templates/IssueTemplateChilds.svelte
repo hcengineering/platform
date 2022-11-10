@@ -27,6 +27,8 @@
   export let teamId: string = 'TSK'
   export let sprint: Ref<Sprint> | null = null
   export let project: Ref<Project> | null = null
+  export let isScrollable: boolean = false
+  export let maxHeight: 'max' | 'card' | 'limited' | string | undefined = undefined
 
   const dispatch = createEventDispatcher()
 
@@ -100,6 +102,8 @@
         <IssueTemplateChildEditor
           {project}
           {sprint}
+          {isScrollable}
+          {maxHeight}
           on:close={() => {
             isCreating = false
           }}

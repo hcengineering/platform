@@ -46,7 +46,7 @@
   export let buttonSize: IconSize = 'large'
   export let isScrollable: boolean = true
   export let focusable: boolean = false
-  export let maxHeight: 'max' | 'card' | string = 'max'
+  export let maxHeight: 'max' | 'card' | 'limited' | string | undefined = undefined
   export let withoutTopBorder = false
 
   let textEditor: TextEditor
@@ -58,7 +58,14 @@
     textEditor.focus()
   }
 
-  $: varsStyle = maxHeight === 'card' ? 'calc(70vh - 12.5rem)' : maxHeight === 'max' ? 'max-content' : maxHeight
+  $: varsStyle =
+    maxHeight === 'card'
+      ? 'calc(70vh - 12.5rem)'
+      : maxHeight === 'limited'
+        ? '10rem'
+        : maxHeight === 'max'
+          ? 'max-content'
+          : maxHeight
 
   let isFormatting = false
   let activeModes = new Set<FormatMode>()

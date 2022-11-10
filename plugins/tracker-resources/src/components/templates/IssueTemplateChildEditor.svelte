@@ -29,6 +29,8 @@
   export let project: Ref<Project> | null = null
   export let childIssue: IssueTemplateChild | undefined = undefined
   export let showBorder = false
+  export let isScrollable: boolean = false
+  export let maxHeight: 'max' | 'card' | 'limited' | string | undefined = undefined
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -121,6 +123,8 @@
             bind:content={newIssue.description}
             placeholder={tracker.string.IssueDescriptionPlaceholder}
             showButtons={false}
+            {isScrollable}
+            {maxHeight}
           />
         {/key}
       </div>

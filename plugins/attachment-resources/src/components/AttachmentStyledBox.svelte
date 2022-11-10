@@ -32,7 +32,7 @@
   export let alwaysEdit = false
   export let showButtons = false
   export let buttonSize: IconSize = 'small'
-  export let maxHeight: 'max' | 'card' | string = 'max'
+  export let maxHeight: 'max' | 'card' | 'limited' | string = 'max'
 
   export function attach (): void {
     inputFile.click()

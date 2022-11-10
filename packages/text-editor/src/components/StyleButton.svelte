@@ -32,53 +32,43 @@
   tabindex="0"
   on:click|preventDefault|stopPropagation
 >
-  <div class="icon {size} flex">
-    <Icon {icon} {size} {iconProps} />
-  </div>
+  <Icon {icon} {size} {iconProps} />
 </button>
 
 <style lang="scss">
   .button {
-    color: inherit;
-    border-radius: 0.125rem;
-    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     padding: 0.75rem;
+    color: var(--dark-color);
+    border-radius: 0.25rem;
+    cursor: pointer;
 
-    .icon {
-      color: var(--dark-color);
-    }
-    &:hover .icon {
+    &:hover {
       color: var(--accent-color);
-      opacity: 1;
     }
     &:focus {
+      color: var(--theme-caption-color);
       border: 1px solid var(--primary-button-focused-border);
       box-shadow: 0 0 0 3px var(--primary-button-outline);
-      .icon {
-        color: var(--theme-caption-color);
-        opacity: 1;
-      }
     }
     &.selected {
-      background-color: var(--button-bg-hover);
-      border-color: var(--button-border-hover);
-      color: var(--caption-color);
-
-      .btn-icon {
-        color: var(--accent-color);
-      }
+      background-color: var(--button-bg-color);
+      border-color: var(--button-border-color);
+      color: var(--accent-color);
     }
-  }
-  .small {
-    width: 1.143em;
-    height: 1.143em;
-  }
-  .medium {
-    width: 1.429em;
-    height: 1.429em;
-  }
-  .large {
-    width: 1.715em;
-    height: 1.715em;
+    &.small {
+      width: 1.143em;
+      height: 1.143em;
+    }
+    &.medium {
+      width: 1.429em;
+      height: 1.429em;
+    }
+    &.large {
+      width: 1.715em;
+      height: 1.715em;
+    }
   }
 </style>

@@ -58,7 +58,8 @@
     NotificationPosition,
     NotificationSeverity,
     Notification,
-    notificationsStore
+    notificationsStore,
+    Scroller
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { ObjectBox } from '@hcengineering/view-resources'
@@ -690,24 +691,32 @@
       {/if}
     </div>
   </svelte:fragment>
-  {#if parentIssue}
-    <ParentIssue issue={parentIssue} on:close={clearParentIssue} />
-  {/if}
-  <EditBox bind:value={object.title} placeholder={tracker.string.IssueTitlePlaceholder} kind={'large-style'} focus />
-  {#key object.description}
-    <AttachmentStyledBox
-      bind:this={descriptionBox}
-      {objectId}
-      _class={tracker.class.Issue}
-      space={_space}
-      alwaysEdit
-      showButtons={false}
-      maxHeight={'card'}
-      bind:content={object.description}
-      placeholder={tracker.string.IssueDescriptionPlaceholder}
+  <Scroller>
+    {#if parentIssue}
+      <ParentIssue issue={parentIssue} on:close={clearParentIssue} />
+    {/if}
+    <EditBox bind:value={object.title} placeholder={tracker.string.IssueTitlePlaceholder} kind={'large-style'} focus />
+    {#key object.description}
+      <AttachmentStyledBox
+        bind:this={descriptionBox}
+        {objectId}
+        _class={tracker.class.Issue}
+        space={_space}
+        alwaysEdit
+        showButtons={false}
+        maxHeight={'limited'}
+        bind:content={object.description}
+        placeholder={tracker.string.IssueDescriptionPlaceholder}
+      />
+    {/key}
+    <IssueTemplateChilds
+      bind:children={subIssues}
+      sprint={object.sprint}
+      project={object.project}
+      maxHeight={'limited'}
+      isScrollable
     />
-  {/key}
-  <IssueTemplateChilds bind:children={subIssues} sprint={object.sprint} project={object.project} />
+  </Scroller>
   <svelte:fragment slot="pool">
     <div class="flex flex-wrap" style:gap={'0.2vw'}>
       {#if issueStatuses}

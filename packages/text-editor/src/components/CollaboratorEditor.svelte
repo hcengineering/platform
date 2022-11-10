@@ -54,6 +54,13 @@
   import Quote from './icons/Quote.svelte'
   import Strikethrough from './icons/Strikethrough.svelte'
   import LinkPopup from './LinkPopup.svelte'
+  import AddRowBefore from './icons/table/AddRowBefore.svelte'
+  import AddRowAfter from './icons/table/AddRowAfter.svelte'
+  import AddColBefore from './icons/table/AddColBefore.svelte'
+  import AddColAfter from './icons/table/AddColAfter.svelte'
+  import DeleteRow from './icons/table/DeleteRow.svelte'
+  import DeleteCol from './icons/table/DeleteCol.svelte'
+  import DeleteTable from './icons/table/DeleteTable.svelte'
 
   export let documentId: string
   export let readonly = false
@@ -408,6 +415,7 @@
     const ops = [
       {
         id: '#addColumnBefore',
+        icon: AddColBefore,
         label: textEditorPlugin.string.AddColumnBefore,
         action: () => editor.commands.addColumnBefore(),
         category: {
@@ -416,6 +424,7 @@
       },
       {
         id: '#addColumnAfter',
+        icon: AddColAfter,
         label: textEditorPlugin.string.AddColumnAfter,
         action: () => editor.commands.addColumnAfter(),
         category: {
@@ -425,6 +434,7 @@
 
       {
         id: '#deleteColumn',
+        icon: DeleteCol,
         label: textEditorPlugin.string.DeleteColumn,
         action: () => editor.commands.deleteColumn(),
         category: {
@@ -433,6 +443,7 @@
       },
       {
         id: '#addRowBefore',
+        icon: AddRowBefore,
         label: textEditorPlugin.string.AddRowBefore,
         action: () => editor.commands.addRowBefore(),
         category: {
@@ -441,6 +452,7 @@
       },
       {
         id: '#addRowAfter',
+        icon: AddRowAfter,
         label: textEditorPlugin.string.AddRowAfter,
         action: () => editor.commands.addRowAfter(),
         category: {
@@ -449,6 +461,7 @@
       },
       {
         id: '#deleteRow',
+        icon: DeleteRow,
         label: textEditorPlugin.string.DeleteRow,
         action: () => editor.commands.deleteRow(),
         category: {
@@ -457,6 +470,7 @@
       },
       {
         id: '#deleteTable',
+        icon: DeleteTable,
         label: textEditorPlugin.string.DeleteTable,
         action: () => editor.commands.deleteTable(),
         category: {
@@ -589,7 +603,7 @@
         {#if activeModes.has('table')}
           <StyleButton
             icon={IconTable}
-            iconProps={{ style: 'grid' }}
+            iconProps={{ style: 'tableProps' }}
             size={buttonSize}
             on:click={tableOptions}
             showTooltip={{ label: textEditorPlugin.string.TableOptions }}

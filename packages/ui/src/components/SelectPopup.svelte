@@ -124,7 +124,7 @@
         <svelte:fragment slot="item" let:item={itemId}>
           {@const item = filteredObjects[itemId]}
           <button
-            class="menu-item  w-full"
+            class="menu-item w-full"
             on:click={() => dispatch('close', item.id)}
             on:focus={() => dispatch('update', item)}
             on:mouseover={() => dispatch('update', item)}
@@ -141,7 +141,7 @@
                 <svelte:component this={item.component} {...item.props} />
               {:else}
                 {#if item.icon}
-                  <div class="mr-2">
+                  <div class="icon mr-2">
                     <Icon icon={item.icon} fill={item.iconColor} {size} />
                   </div>
                 {/if}
