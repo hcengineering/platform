@@ -108,32 +108,6 @@
     dispatch('row-focus', object)
   }
 
-  export const onElementSelected = (offset: 1 | -1 | 0, docObject?: Doc) => {
-    let position =
-      (docObject !== undefined ? combinedGroupedIssues.findIndex((x) => x._id === docObject?._id) : selectedRowIndex) ??
-      -1
-
-    position += offset
-
-    if (position < 0) {
-      position = 0
-    }
-
-    if (position >= combinedGroupedIssues.length) {
-      position = combinedGroupedIssues.length - 1
-    }
-
-    const objectRef = objectRefs[position]
-
-    selectedRowIndex = position
-
-    handleRowFocused(combinedGroupedIssues[position])
-
-    if (objectRef) {
-      objectRef.scrollIntoView({ behavior: 'auto', block: 'nearest' })
-    }
-  }
-
   const handleNewIssueAdded = (event: MouseEvent, category: any) => {
     if (!currentSpace) {
       return

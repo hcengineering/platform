@@ -41,11 +41,7 @@
   export let groupedIssues: { [key: string | number | symbol]: Issue[] } = {}
   export let loadingProps: LoadingProps | undefined = undefined
 
-  const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
-    if (dir === 'vertical') {
-      issuesList.onElementSelected(offset, of)
-    }
-  })
+  const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {})
 
   let issuesList: IssuesList
 
