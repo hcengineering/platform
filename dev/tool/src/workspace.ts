@@ -16,7 +16,7 @@
 
 import contact from '@hcengineering/contact'
 import core, { DOMAIN_TX, Tx } from '@hcengineering/core'
-import builder, { version } from '@hcengineering/model-all'
+import { MigrateOperation } from '@hcengineering/model'
 import { upgradeModel } from '@hcengineering/server-tool'
 import { existsSync } from 'fs'
 import { mkdir, open, readFile, writeFile } from 'fs/promises'
@@ -54,7 +54,7 @@ export async function dumpWorkspace (mongoUrl: string, dbName: string, fileName:
     }
 
     const workspaceInfo: WorkspaceInfo = {
-      version: `${version.major}.${version.minor}.${version.patch}`,
+      version: '0.0.0',
       collections: [],
       minioData: []
     }
@@ -118,7 +118,9 @@ export async function restoreWorkspace (
   fileName: string,
   minio: Client,
   elasticUrl: string,
-  transactorUrl: string
+  transactorUrl: string,
+  rawTxes: Tx[],
+  migrateOperations: MigrateOperation[]
 ): Promise<void> {
   console.log('Restoring workspace', mongoUrl, dbName, fileName)
   const client = new MongoClient(mongoUrl)
@@ -170,7 +172,7 @@ export async function restoreWorkspace (
       }
     }
 
-    await upgradeModel(transactorUrl, dbName)
+    await upgradeModel(transactorUrl, dbName, rawTxes, migrateOperations)
 
     await rebuildElastic(mongoUrl, dbName, minio, elasticUrl)
   } finally {
@@ -178,7 +180,7 @@ export async function restoreWorkspace (
   }
 }
 
-export async function diffWorkspace (mongoUrl: string, dbName: string): Promise<void> {
+export async function diffWorkspace (mongoUrl: string, dbName: string, rawTxes: Tx[]): Promise<void> {
   const client = new MongoClient(mongoUrl)
   try {
     await client.connect()
@@ -195,7 +197,7 @@ export async function diffWorkspace (mongoUrl: string, dbName: string): Promise<
     })
       .toArray()
 
-    const txes = builder.getTxes().filter((tx) => {
+    const txes = rawTxes.filter((tx) => {
       return (
         tx.objectSpace === core.space.Model &&
         tx.modifiedBy === core.account.System &&

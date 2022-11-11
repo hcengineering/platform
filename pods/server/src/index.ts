@@ -14,8 +14,4 @@
 // limitations under the License.
 //
 
-export * from './server'
-export * from './apm'
-export * from './minio'
-export * from './backup'
-export * from './metrics'
+export { start } from './server'

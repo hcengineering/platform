@@ -1,6 +1,6 @@
 //
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021, 2022 Hardcore Engineering Inc.
+// Copyright © 2021 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,8 +14,4 @@
 // limitations under the License.
 //
 
-export * from './server'
-export * from './apm'
-export * from './minio'
-export * from './backup'
-export * from './metrics'
+import '@hcengineering/front/src/__start'

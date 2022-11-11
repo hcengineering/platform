@@ -38,6 +38,7 @@
     "ws": "^8.10.0",
     "@hcengineering/model": "~0.6.0",
     "@hcengineering/server-tool": "~0.6.0",
-    "@hcengineering/server-token": "~0.6.0"
+    "@hcengineering/server-token": "~0.6.0",
+    "@hcengineering/model-all": "~0.6.0"
   }
 }

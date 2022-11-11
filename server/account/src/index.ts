@@ -15,13 +15,14 @@
 
 import contact, {
   AvatarType,
-  combineName,
-  Employee,
   buildGravatarId,
   checkHasGravatar,
+  combineName,
+  Employee,
   getAvatarColorForId
 } from '@hcengineering/contact'
-import core, { AccountRole, Ref, TxOperations } from '@hcengineering/core'
+import core, { AccountRole, Data, Ref, Tx, TxOperations, Version } from '@hcengineering/core'
+import { MigrateOperation } from '@hcengineering/model'
 import platform, {
   getMetadata,
   PlatformError,
@@ -34,7 +35,7 @@ import platform, {
   StatusCode
 } from '@hcengineering/platform'
 import { decodeToken, generateToken } from '@hcengineering/server-token'
-import toolPlugin, { connect, initModel, upgradeModel, version } from '@hcengineering/server-tool'
+import toolPlugin, { connect, initModel, upgradeModel } from '@hcengineering/server-tool'
 import { pbkdf2Sync, randomBytes } from 'crypto'
 import { Binary, Db, ObjectId } from 'mongodb'
 
@@ -61,7 +62,8 @@ const accountPlugin = plugin(accountId, {
     WorkspaceNotFound: '' as StatusCode<{ workspace: string }>,
     InvalidPassword: '' as StatusCode<{ account: string }>,
     AccountAlreadyExists: '' as StatusCode<{ account: string }>,
-    WorkspaceAlreadyExists: '' as StatusCode<{ workspace: string }>
+    WorkspaceAlreadyExists: '' as StatusCode<{ workspace: string }>,
+    ProductIdMismatch: '' as StatusCode<{ productId: string }>
   }
 })
 
@@ -102,6 +104,7 @@ export interface Workspace {
   workspace: string
   organisation: string
   accounts: ObjectId[]
+  productId: string
 }
 
 /**
@@ -333,8 +336,14 @@ export async function createAccount (
 /**
  * @public
  */
-export async function listWorkspaces (db: Db): Promise<Workspace[]> {
-  return await db.collection<Workspace>(WORKSPACE_COLLECTION).find({}).toArray()
+export async function listWorkspaces (db: Db, productId: string): Promise<Workspace[]> {
+  if (productId === '') {
+    return await db
+      .collection<Workspace>(WORKSPACE_COLLECTION)
+      .find({ productId: { $exits: false } })
+      .toArray()
+  }
+  return await db.collection<Workspace>(WORKSPACE_COLLECTION).find({ productId }).toArray()
 }
 
 /**
@@ -347,7 +356,15 @@ export async function listAccounts (db: Db): Promise<Account[]> {
 /**
  * @public
  */
-export async function createWorkspace (db: Db, workspace: string, organisation: string): Promise<string> {
+export async function createWorkspace (
+  version: Data<Version>,
+  txes: Tx[],
+  migrationOperation: MigrateOperation[],
+  productId: string,
+  db: Db,
+  workspace: string,
+  organisation: string
+): Promise<string> {
   if ((await getWorkspace(db, workspace)) !== null) {
     throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.WorkspaceAlreadyExists, { workspace }))
   }
@@ -356,19 +373,31 @@ export async function createWorkspace (db: Db, workspace: string, organisation: 
     .insertOne({
       workspace,
       organisation,
-      version
+      version,
+      productId
     })
     .then((e) => e.insertedId.toHexString())
-  await initModel(getTransactor(), workspace)
+  await initModel(getTransactor(), workspace, txes, migrationOperation)
   return result
 }
 
 /**
  * @public
  */
-export async function upgradeWorkspace (db: Db, workspace: string): Promise<string> {
-  if ((await getWorkspace(db, workspace)) === null) {
+export async function upgradeWorkspace (
+  version: Data<Version>,
+  txes: Tx[],
+  migrationOperation: MigrateOperation[],
+  productId: string,
+  db: Db,
+  workspace: string
+): Promise<string> {
+  const ws = await getWorkspace(db, workspace)
+  if (ws === null) {
     throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.WorkspaceNotFound, { workspace }))
+  }
+  if (ws.productId !== productId) {
+    throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.ProductIdMismatch, { productId }))
   }
   await db.collection(WORKSPACE_COLLECTION).updateOne(
     { workspace },
@@ -376,25 +405,27 @@ export async function upgradeWorkspace (db: Db, workspace: string): Promise<stri
       $set: { version }
     }
   )
-  await upgradeModel(getTransactor(), workspace)
+  await upgradeModel(getTransactor(), workspace, txes, migrationOperation)
   return `${version.major}.${version.minor}.${version.patch}`
 }
 
 /**
  * @public
  */
-export async function createUserWorkspace (db: Db, token: string, workspace: string): Promise<LoginInfo> {
-  const { email } = decodeToken(token)
-  await createWorkspace(db, workspace, '')
-  await assignWorkspace(db, email, workspace)
-  await setRole(email, workspace, AccountRole.Owner)
-  const result = {
-    endpoint: getEndpoint(),
-    email,
-    token: generateToken(email, workspace)
-  }
-  return result
-}
+export const createUserWorkspace =
+  (version: Data<Version>, txes: Tx[], migrationOperation: MigrateOperation[], productId: string) =>
+    async (db: Db, token: string, workspace: string): Promise<LoginInfo> => {
+      const { email } = decodeToken(token)
+      await createWorkspace(version, txes, migrationOperation, productId, db, workspace, '')
+      await assignWorkspace(db, email, workspace)
+      await setRole(email, workspace, AccountRole.Owner)
+      const result = {
+        endpoint: getEndpoint(),
+        email,
+        token: generateToken(email, workspace)
+      }
+      return result
+    }
 
 /**
  * @public
@@ -743,7 +774,12 @@ async function deactivateEmployeeAccount (email: string, workspace: string): Pro
   }
 }
 
-function wrap (f: (db: Db, ...args: any[]) => Promise<any>) {
+/**
+ * @public
+ */
+export type AccountMethod = (db: Db, request: Request<any[]>, token?: string) => Promise<Response<any>>
+
+function wrap (f: (db: Db, ...args: any[]) => Promise<any>): AccountMethod {
   return async function (db: Db, request: Request<any[]>, token?: string): Promise<Response<any>> {
     if (token !== undefined) request.params.unshift(token)
     return await f(db, ...request.params)
@@ -760,24 +796,31 @@ function wrap (f: (db: Db, ...args: any[]) => Promise<any>) {
 /**
  * @public
  */
-export const methods = {
-  login: wrap(login),
-  join: wrap(join),
-  checkJoin: wrap(checkJoin),
-  signUpJoin: wrap(signUpJoin),
-  selectWorkspace: wrap(selectWorkspace),
-  getUserWorkspaces: wrap(getUserWorkspaces),
-  getInviteLink: wrap(getInviteLink),
-  getAccountInfo: wrap(getAccountInfo),
-  createAccount: wrap(createAccount),
-  createWorkspace: wrap(createUserWorkspace),
-  assignWorkspace: wrap(assignWorkspace),
-  removeWorkspace: wrap(removeWorkspace),
-  leaveWorkspace: wrap(leaveWorkspace),
-  listWorkspaces: wrap(listWorkspaces),
-  changeName: wrap(changeName),
-  changePassword: wrap(changePassword)
-  // updateAccount: wrap(updateAccount)
+export function getMethods (
+  version: Data<Version>,
+  txes: Tx[],
+  migrateOperations: MigrateOperation[],
+  productId: string
+): Record<string, AccountMethod> {
+  return {
+    login: wrap(login),
+    join: wrap(join),
+    checkJoin: wrap(checkJoin),
+    signUpJoin: wrap(signUpJoin),
+    selectWorkspace: wrap(selectWorkspace),
+    getUserWorkspaces: wrap(getUserWorkspaces),
+    getInviteLink: wrap(getInviteLink),
+    getAccountInfo: wrap(getAccountInfo),
+    createAccount: wrap(createAccount),
+    createWorkspace: wrap(createUserWorkspace(version, txes, migrateOperations, productId)),
+    assignWorkspace: wrap(assignWorkspace),
+    removeWorkspace: wrap(removeWorkspace),
+    leaveWorkspace: wrap(leaveWorkspace),
+    listWorkspaces: wrap(listWorkspaces),
+    changeName: wrap(changeName),
+    changePassword: wrap(changePassword)
+    // updateAccount: wrap(updateAccount)
+  }
 }
 
 export default accountPlugin

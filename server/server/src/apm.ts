@@ -1,8 +1,6 @@
 import { MeasureContext, MeasureLogger, ParamType } from '@hcengineering/core'
 import apm, { Agent, Span, Transaction } from 'elastic-apm-node'
 
-export let metricsContext: MeasureContext
-
 /**
  * @public
  */

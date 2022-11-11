@@ -126,7 +126,7 @@
     "@hcengineering/text-editor": "~0.6.0",
     "@hcengineering/devmodel": "~0.6.0",
     "@hcengineering/devmodel-resources": "~0.6.0",
-    "@hcengineering/front": "~0.6.0",
+    "@hcengineering/front": "^0.6.0",
     "svelte-loader": "^3.1.3"
   }
 }
