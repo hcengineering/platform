@@ -62,7 +62,7 @@
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { ObjectBox } from '@hcengineering/view-resources'
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, afterUpdate } from 'svelte'
   import { activeProject, activeSprint, updateIssueRelation } from '../issues'
   import tracker from '../plugin'
   import AssigneeEditor from './issues/AssigneeEditor.svelte'
@@ -638,6 +638,8 @@
       )
     }
   }
+
+  afterUpdate(() => dispatch('changeContent'))
 </script>
 
 <Card
@@ -702,12 +704,20 @@
       space={_space}
       alwaysEdit
       showButtons={false}
-      maxHeight={'card'}
+      maxHeight={'20vh'}
       bind:content={object.description}
       placeholder={tracker.string.IssueDescriptionPlaceholder}
+      on:changeContent
     />
   {/key}
-  <IssueTemplateChilds bind:children={subIssues} sprint={object.sprint} project={object.project} />
+  <IssueTemplateChilds
+    bind:children={subIssues}
+    sprint={object.sprint}
+    project={object.project}
+    isScrollable
+    maxHeight={'20vh'}
+    on:changeContent
+  />
   <svelte:fragment slot="pool">
     <div class="flex flex-wrap" style:gap={'0.2vw'}>
       {#if issueStatuses}

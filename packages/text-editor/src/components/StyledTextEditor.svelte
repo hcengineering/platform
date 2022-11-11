@@ -46,7 +46,7 @@
   export let buttonSize: IconSize = 'large'
   export let isScrollable: boolean = true
   export let focusable: boolean = false
-  export let maxHeight: 'max' | 'card' | string = 'max'
+  export let maxHeight: 'max' | 'card' | 'limited' | string | undefined = undefined
   export let withoutTopBorder = false
 
   let textEditor: TextEditor
@@ -58,7 +58,14 @@
     textEditor.focus()
   }
 
-  $: varsStyle = maxHeight === 'card' ? 'calc(70vh - 12.5rem)' : maxHeight === 'max' ? 'max-content' : maxHeight
+  $: varsStyle =
+    maxHeight === 'card'
+      ? 'calc(70vh - 12.5rem)'
+      : maxHeight === 'limited'
+        ? '12.5rem'
+        : maxHeight === 'max'
+          ? 'max-content'
+          : maxHeight
 
   let isFormatting = false
   let activeModes = new Set<FormatMode>()
@@ -140,7 +147,7 @@
   }
 </script>
 
-<div class="ref-container">
+<div class="ref-container clear-mins">
   {#if isFormatting}
     <div class="formatPanel buttons-group xsmall-gap mb-4" class:withoutTopBorder>
       <StyleButton
@@ -281,12 +288,13 @@
       .inputMsg {
         align-self: stretch;
         width: 100%;
+        min-height: 0;
         color: var(--content-color);
         background-color: transparent;
 
         :global(.ProseMirror) {
           min-height: 0;
-          max-height: 100%;
+          // max-height: 100%;
           height: 100%;
         }
 

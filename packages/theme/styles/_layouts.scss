@@ -512,16 +512,18 @@ input.search {
 .min-w-80 { min-width: 20rem; }
 .min-w-min { min-width: min-content; }
 .min-h-0 { min-height: 0; }
+.min-h-2 { min-height: .5rem; }
 .min-h-7 { min-height: 1.75rem; }
 .min-h-60 { min-height: 15rem; }
-.max-h-125 { max-height: 31.25rem; }
-.max-h-30 { max-height: 7.5rem; }
-.max-h-50 { max-height: 12.5rem; }
-.max-h-60 { max-height: 15rem; }
 .max-w-30 { max-width: 7.5rem; }
 .max-w-60 { max-width: 15rem; }
 .max-w-80 { max-width: 20rem; }
 .max-w-240 { max-width: 60rem; }
+.max-h-2 { max-height: .5rem; }
+.max-h-30 { max-height: 7.5rem; }
+.max-h-50 { max-height: 12.5rem; }
+.max-h-60 { max-height: 15rem; }
+.max-h-125 { max-height: 31.25rem; }
 .clear-mins {
   min-width: 0;
   min-height: 0;

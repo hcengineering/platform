@@ -12,6 +12,8 @@
   export let showButtons = true
   export let buttonSize: IconSize = 'small'
   export let focus = false
+  export let isScrollable: boolean = false
+  export let maxHeight: 'max' | 'card' | 'limited' | string | undefined = undefined
 
   let rawValue: string
   let oldContent = ''
@@ -38,7 +40,7 @@
 </script>
 
 <div
-  class="antiComponent styled-box"
+  class="antiComponent styled-box clear-mins"
   on:click={() => {
     if (focused) {
       textEditor?.focus()
@@ -52,7 +54,8 @@
     {placeholder}
     {showButtons}
     {buttonSize}
-    isScrollable={false}
+    {maxHeight}
+    {isScrollable}
     bind:content={rawValue}
     bind:this={textEditor}
     on:focus={() => {
@@ -65,6 +68,7 @@
     }}
     on:value={(evt) => {
       rawValue = evt.detail
+      dispatch('changeContent')
     }}
   />
 </div>

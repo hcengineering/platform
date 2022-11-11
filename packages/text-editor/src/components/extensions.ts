@@ -19,14 +19,10 @@ export const tableExtensions = [
   Table.configure({
     resizable: false,
     HTMLAttributes: {
-      class: 'antiTable editable '
+      class: 'proseTable'
     }
   }),
-  TableRow.configure({
-    HTMLAttributes: {
-      class: 'antiTable-body__row'
-    }
-  }),
+  TableRow.configure({}),
   TableHeader.configure({}),
   TableCell.configure({})
 ]

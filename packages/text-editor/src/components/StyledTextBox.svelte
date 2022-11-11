@@ -15,7 +15,7 @@
   export let showButtons: boolean = true
   export let buttonSize: IconSize = 'small'
   export let hideExtraButtons: boolean = false
-  export let maxHeight: 'max' | 'card' | string = 'max'
+  export let maxHeight: 'max' | 'card' | 'limited' | string = 'max'
   export let previewLimit: number = 240
   export let previewUnlimit: boolean = false
   export let focusable: boolean = false
@@ -70,7 +70,7 @@
 </script>
 
 <div
-  class="antiComponent styled-box"
+  class="antiComponent styled-box clear-mins"
   class:emphasized
   class:emphasized-focus={(mode === Mode.Edit || alwaysEdit) && focused}
   on:click={() => {
@@ -103,6 +103,7 @@
       }}
       on:value={(evt) => {
         rawValue = evt.detail
+        dispatch('changeContent')
       }}
     >
       {#if !alwaysEdit && !hideExtraButtons}

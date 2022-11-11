@@ -16,6 +16,7 @@
   import { Ref } from '@hcengineering/core'
   import { IssueTemplateChild, Project, Sprint } from '@hcengineering/tracker'
   import { Button, closeTooltip, ExpandCollapse, IconAdd } from '@hcengineering/ui'
+  import { afterUpdate } from 'svelte'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
   import Collapsed from '../icons/Collapsed.svelte'
@@ -27,6 +28,8 @@
   export let teamId: string = 'TSK'
   export let sprint: Ref<Sprint> | null = null
   export let project: Ref<Project> | null = null
+  export let isScrollable: boolean = false
+  export let maxHeight: 'max' | 'card' | 'limited' | string | undefined = undefined
 
   const dispatch = createEventDispatcher()
 
@@ -44,10 +47,12 @@
     }
   }
 
+  afterUpdate(() => dispatch('changeContent'))
+
   $: hasSubIssues = children.length > 0
 </script>
 
-<div class="flex-between">
+<div class="flex-between clear-mins">
   {#if hasSubIssues}
     <Button
       width="min-content"
@@ -79,42 +84,41 @@
     }}
   />
 </div>
-<div class="mt-1">
-  <ExpandCollapse isExpanded={!isCollapsed} duration={400}>
-    {#if hasSubIssues}
-      <div class="list" class:collapsed={isCollapsed}>
-        <IssueTemplateChildList
-          {project}
-          {sprint}
-          bind:issues={children}
-          {teamId}
-          on:move={handleIssueSwap}
-          on:update-issue
-        />
-      </div>
-    {/if}
+{#if hasSubIssues}
+  <ExpandCollapse isExpanded={!isCollapsed} duration={400} on:changeContent>
+    <div class="list" class:collapsed={isCollapsed}>
+      <IssueTemplateChildList
+        {project}
+        {sprint}
+        bind:issues={children}
+        {teamId}
+        on:move={handleIssueSwap}
+        on:update-issue
+      />
+    </div>
   </ExpandCollapse>
-  <ExpandCollapse isExpanded={!isCollapsed} duration={400}>
-    {#if isCreating}
-      <div class="pt-4">
-        <IssueTemplateChildEditor
-          {project}
-          {sprint}
-          on:close={() => {
-            isCreating = false
-          }}
-          on:create={(evt) => {
-            if (children === undefined) {
-              children = []
-            }
-            children = [...children, evt.detail]
-            dispatch('create-issue', evt.detail)
-          }}
-        />
-      </div>
-    {/if}
+{/if}
+{#if isCreating}
+  <ExpandCollapse isExpanded={!isCollapsed} duration={400} on:changeContent>
+    <IssueTemplateChildEditor
+      {project}
+      {sprint}
+      {isScrollable}
+      {maxHeight}
+      on:close={() => {
+        isCreating = false
+      }}
+      on:create={(evt) => {
+        if (children === undefined) {
+          children = []
+        }
+        children = [...children, evt.detail]
+        dispatch('create-issue', evt.detail)
+      }}
+      on:changeContent
+    />
   </ExpandCollapse>
-</div>
+{/if}
 
 <style lang="scss">
   .list {
