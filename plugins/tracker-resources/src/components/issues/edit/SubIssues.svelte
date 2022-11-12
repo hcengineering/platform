@@ -13,11 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, Ref, SortingOrder, WithLookup } from '@hcengineering/core'
+  import { Ref, SortingOrder, WithLookup } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { calcRank, Issue, IssueStatus, Team } from '@hcengineering/tracker'
   import { Button, Spinner, ExpandCollapse, closeTooltip, IconAdd } from '@hcengineering/ui'
-  import { focusStore, ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
   import tracker from '../../../plugin'
   import Collapsed from '../../icons/Collapsed.svelte'
   import Expanded from '../../icons/Expanded.svelte'
@@ -25,7 +24,6 @@
   import SubIssueList from './SubIssueList.svelte'
 
   export let issue: Issue
-  export let parentIssue: Doc | undefined
   export let teams: Map<Ref<Team>, Team>
   export let issueStatuses: Map<Ref<Team>, WithLookup<IssueStatus>[]>
 
@@ -33,7 +31,6 @@
   const client = getClient()
 
   let subIssues: Issue[] | undefined
-  let neighbourIssues: Issue[] | undefined
   let isCollapsed = false
   let isCreating = false
 
@@ -50,42 +47,10 @@
     }
   }
 
-  const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
-    if (dir === 'vertical') {
-      if (neighbourIssues) {
-        const selectedRowIndex = listProvider.current($focusStore)
-        let position = (of !== undefined ? neighbourIssues.findIndex((x) => x._id === of?._id) : selectedRowIndex) ?? -1
-
-        position += offset
-
-        if (position < 0) {
-          position = 0
-        }
-
-        if (position >= neighbourIssues.length) {
-          position = neighbourIssues.length - 1
-        }
-
-        listProvider.updateFocus(neighbourIssues[position])
-      }
-    }
-  })
-
   $: hasSubIssues = issue.subIssues > 0
   $: subIssuesQuery.query(tracker.class.Issue, { attachedTo: issue._id }, async (result) => (subIssues = result), {
     sort: { rank: SortingOrder.Ascending }
   })
-  $: if (parentIssue) {
-    subIssuesQuery.query(
-      tracker.class.Issue,
-      { attachedTo: parentIssue?._id },
-      async (result) => (neighbourIssues = result),
-      {
-        sort: { rank: SortingOrder.Ascending }
-      }
-    )
-  }
-  $: if (neighbourIssues && neighbourIssues.length > 0) listProvider.update(neighbourIssues)
 </script>
 
 <div class="flex-between">
@@ -125,15 +90,7 @@
     <ExpandCollapse isExpanded={!isCollapsed} duration={400}>
       {#if hasSubIssues}
         <div class="list" class:collapsed={isCollapsed}>
-          <SubIssueList
-            issues={subIssues}
-            {issueStatuses}
-            {teams}
-            on:move={handleIssueSwap}
-            on:issue-focus={(event) => {
-              listProvider.updateFocus(event.detail ?? undefined)
-            }}
-          />
+          <SubIssueList issues={subIssues} {issueStatuses} {teams} on:move={handleIssueSwap} />
         </div>
       {/if}
     </ExpandCollapse>
