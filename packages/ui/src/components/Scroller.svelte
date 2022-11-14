@@ -29,9 +29,12 @@
   export let contentDirection: 'vertical' | 'vertical-reverse' | 'horizontal' = 'vertical'
 
   let mask: 'top' | 'bottom' | 'both' | 'none' = 'none'
+  let topCrop: 'top' | 'bottom' | 'full' | 'none' = 'none'
+  let topCropValue: number = 0
   let maskH: 'left' | 'right' | 'both' | 'none' = 'none'
 
   let divScroll: HTMLElement
+  let divHScroll: HTMLElement
   let divBox: HTMLElement
   let divBar: HTMLElement
   let divBarH: HTMLElement
@@ -47,8 +50,11 @@
   let timer: number
   let timerH: number
 
-  $: shiftTop = fade.offset?.top ? (fade.multipler?.top ?? 0) * $themeOptions.fontSize : 0
-  $: shiftBottom = fade.offset?.bottom ? fade.multipler?.bottom! * $themeOptions.fontSize : 0
+  const inter = new Set<Element>()
+
+  $: fz = $themeOptions.fontSize
+  $: shiftTop = fade.offset?.top ? (fade.multipler?.top ?? 0) * fz : 0
+  $: shiftBottom = fade.offset?.bottom ? fade.multipler?.bottom! * fz : 0
 
   const checkBar = (): void => {
     if (divBar && divScroll) {
@@ -152,13 +158,45 @@
     }
   }
 
+  const renderFade = () => {
+    if (divScroll) {
+      const th = shiftTop + (topCrop === 'top' ? 2 * fz - topCropValue : 0)
+      const tf =
+        topCrop === 'full'
+          ? 0
+          : mask === 'both' || mask === 'top'
+            ? 2 * fz - (topCrop === 'bottom' ? topCropValue : topCrop === 'top' ? 2 * fz - topCropValue : 0)
+            : 0
+      const gradient = `linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 1) ${shiftBottom}px,
+        rgba(0, 0, 0, 0) ${shiftBottom}px,
+        rgba(0, 0, 0, 1) ${shiftBottom + (mask === 'both' || mask === 'bottom' ? 2 * fz : 0)}px,
+        rgba(0, 0, 0, 1) calc(100% - ${th + tf}px),
+        rgba(0, 0, 0, 0) calc(100% - ${th}px),
+        rgba(0, 0, 0, 1) calc(100% - ${th}px)
+      )`
+      divScroll.style.webkitMaskImage = gradient
+    }
+    if (divHScroll && horizontal) {
+      const gradientH = `linear-gradient(
+        90deg,
+        rgba(0, 0, 0, 0) 0,
+        rgba(0, 0, 0, 1) ${maskH === 'none' || maskH === 'left' ? '0px' : '2rem'},
+        rgba(0, 0, 0, 1) calc(100% - ${maskH === 'none' || maskH === 'right' ? '0px' : '2rem'}),
+        rgba(0, 0, 0, 0) 100%
+      )`
+      divHScroll.style.webkitMaskImage = gradientH
+    }
+  }
+
   const checkFade = (): void => {
     if (divScroll) {
       beforeContent = divScroll.scrollTop
       belowContent = divScroll.scrollHeight - divScroll.clientHeight - beforeContent
       if (beforeContent > 2 && belowContent > 2) mask = 'both'
-      else if (beforeContent > 2) mask = 'bottom'
-      else if (belowContent > 2) mask = 'top'
+      else if (beforeContent > 2) mask = 'top'
+      else if (belowContent > 2) mask = 'bottom'
       else mask = 'none'
 
       if (horizontal) {
@@ -169,6 +207,8 @@
         else if (rightContent > 2) maskH = 'left'
         else maskH = 'none'
       }
+      if (inter.size) checkIntersectionFade()
+      renderFade()
 
       if (autoscroll) {
         if (scrolling && divScroll.scrollHeight - divScroll.clientHeight - divScroll.scrollTop > 10 && !firstScroll) {
@@ -185,12 +225,41 @@
     divScroll.scrollTop = divScroll.scrollHeight - divHeight
   }
   $: if (scrolling && belowContent && belowContent > 10) scrollDown()
+
+  const checkIntersection = (entries: IntersectionObserverEntry[], observer: IntersectionObserver) => {
+    entries.forEach((el) => {
+      if (el.isIntersecting) inter.add(el.target)
+      else inter.delete(el.target)
+    })
+  }
+
+  const checkIntersectionFade = () => {
+    topCrop = 'none'
+    topCropValue = 0
+    if (!fade.offset?.top) return
+    const offset = divScroll.getBoundingClientRect().top
+    inter.forEach((el) => {
+      const rect = el.getBoundingClientRect()
+      if (shiftTop > 0) {
+        if (offset + shiftTop < rect.top && offset + shiftTop + 2 * fz >= rect.top) {
+          if (topCrop === 'top' || topCrop === 'full') topCrop = 'full'
+          else topCrop = 'bottom'
+          topCropValue = offset + shiftTop + 2 * fz - rect.top
+        } else if (offset + shiftTop < rect.bottom && offset + shiftTop + 2 * fz > rect.bottom) {
+          topCrop = 'top'
+          topCropValue = offset + shiftTop + 2 * fz - rect.bottom
+        } else if (offset + shiftTop >= rect.top && offset + shiftTop + 2 * fz <= rect.bottom) {
+          topCrop = 'full'
+          topCropValue = offset + shiftTop + 2 * fz
+        }
+      }
+    })
+  }
+
+  let observer: IntersectionObserver
   onMount(() => {
     if (divScroll && divBox) {
       divScroll.addEventListener('scroll', checkFade)
-      const observer = new IntersectionObserver(() => checkFade(), { root: null, threshold: 0.1 })
-      const tempEl = divBox.querySelector('*') as HTMLElement
-      if (tempEl) observer.observe(tempEl)
       if (autoscroll && scrolling) {
         scrollDown()
         firstScroll = false
@@ -200,6 +269,7 @@
     }
   })
   onDestroy(() => {
+    if (observer) observer.disconnect()
     if (divScroll) divScroll.removeEventListener('scroll', checkFade)
   })
 
@@ -210,6 +280,10 @@
   afterUpdate(() => {
     if (divBox && divScroll) {
       if (oldTop !== divScroll.scrollTop) divScroll.scrollTop = oldTop
+
+      const tempEls = divBox.querySelectorAll('.categoryHeader')
+      observer = new IntersectionObserver(checkIntersection, { root: null, rootMargin: '0px', threshold: 0.1 })
+      tempEls.forEach((el) => observer.observe(el))
     }
   })
 
@@ -220,31 +294,18 @@
   $: if (boxHeight) checkFade()
   let boxWidth: number
   $: if (boxWidth) checkFade()
-
-  $: scrollerVars = `
-    --scroller-header-height: ${
-      (fade.multipler && fade.multipler.top ? fade.multipler.top : 0) * $themeOptions.fontSize
-    }px;
-    --scroller-footer-height: ${
-      (fade.multipler && fade.multipler.bottom ? fade.multipler.bottom : 0) * $themeOptions.fontSize
-    }px;
-    --scroller-header-fade: ${mask === 'none' || mask === 'top' ? '0px' : '2rem'};
-    --scroller-footer-fade: ${mask === 'none' || mask === 'bottom' ? '0px' : '2rem'};
-    --scroller-left: ${maskH === 'none' || maskH === 'left' ? '0px' : '2rem'};
-    --scroller-right: ${maskH === 'none' || maskH === 'right' ? '0px' : '2rem'};
-  `
 </script>
 
 <svelte:window on:resize={_resize} />
 
-<div style={scrollerVars} class="scroller-container {invertScroll ? 'invert' : 'normal'}">
-  <div class="horizontalBox" class:horizontalFade={horizontal}>
+<div class="scroller-container {invertScroll ? 'invert' : 'normal'}">
+  <div bind:this={divHScroll} class="horizontalBox">
     <div
       bind:this={divScroll}
       use:resizeObserver={(element) => {
         divHeight = element.clientHeight
       }}
-      class="scroll relative verticalFade"
+      class="scroll relative"
       class:overflowXauto={horizontal}
       class:overflowXhidden={!horizontal}
       on:scroll={() => {
@@ -344,16 +405,6 @@
     min-height: 0;
     width: 100%;
     height: 100%;
-
-    &.horizontalFade {
-      mask-image: linear-gradient(
-        90deg,
-        rgba(0, 0, 0, 0) 0,
-        rgba(0, 0, 0, 1) var(--scroller-left, 0),
-        rgba(0, 0, 0, 1) calc(100% - var(--scroller-right, 0)),
-        rgba(0, 0, 0, 0) 100%
-      );
-    }
   }
   .scroll {
     flex-grow: 1;
@@ -368,17 +419,6 @@
     }
     &::-webkit-scrollbar:horizontal {
       height: 0;
-    }
-    &.verticalFade {
-      mask-image: linear-gradient(
-        0deg,
-        rgba(0, 0, 0, 1) calc(var(--scroller-footer-height, 2.5rem)),
-        rgba(0, 0, 0, 0) calc(var(--scroller-footer-height, 2.5rem)),
-        rgba(0, 0, 0, 1) calc(var(--scroller-footer-height, 2.5rem) + var(--scroller-footer-fade, 0) + 1px),
-        rgba(0, 0, 0, 1) calc(100% - var(--scroller-header-height, 0) - var(--scroller-header-fade, 0) - 1px),
-        rgba(0, 0, 0, 0) calc(100% - var(--scroller-header-height, 0)),
-        rgba(0, 0, 0, 1) calc(100% - var(--scroller-header-height, 0))
-      );
     }
   }
   .box {
