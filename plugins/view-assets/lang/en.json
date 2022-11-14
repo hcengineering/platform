@@ -3,6 +3,7 @@
     "MoveClass": "Move {class}",
     "SelectToMove": "Select the {classLabel} you want to move {class} to.",
     "Delete": "Delete",
+    "Edit": "Edit",
     "Move": "Move",
     "Cancel": "Cancel",
     "LabelYes": "Yes",

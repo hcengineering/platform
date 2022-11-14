@@ -79,6 +79,10 @@ export async function getActions (
   if (Array.isArray(doc) && doc.length > 0) {
     inputVal.push('selection')
     inputVal.push('any')
+
+    if (doc.length > 1 && doc.every((d) => d._class === doc[0]._class)) {
+      inputVal.push('multiSelection')
+    }
   }
   filteredActions = filteredActions.filter((it) => inputVal.includes(it.input))
   filteredActions.sort((a, b) => {

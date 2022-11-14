@@ -32,7 +32,7 @@
   import view from '@hcengineering/view'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import { ContextMenu } from '..'
-  import { categorizeFields, getCollectionCounter, getFiltredKeys } from '../utils'
+  import { categorizeFields, getCollectionCounter, getFiltredKeys, setSameFields } from '../utils'
   import ActionContext from './ActionContext.svelte'
   import DocAttributeBar from './DocAttributeBar.svelte'
   import UpDownNavigator from './UpDownNavigator.svelte'
@@ -46,6 +46,14 @@
   let object: Doc
   let parentClass: Ref<Class<Doc>>
 
+  let isMulti: boolean
+  $: isMulti = _id.includes(',')
+
+  let ids: string[]
+  $: ids = _id.split(',')
+
+  let objects: Doc[]
+
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const notificationClient = getResource(notification.function.GetNotificationClient).then((res) => res())
@@ -57,19 +65,32 @@
       const prevClass = lastClass
       lastId = _id
       lastClass = _class
-      notificationClient.then((client) => client.updateLastView(prev, prevClass))
+
+      if (!prev.includes(',')) {
+        notificationClient.then((client) => client.updateLastView(prev, prevClass))
+      }
     }
   }
 
   onDestroy(async () => {
-    notificationClient.then((client) => client.updateLastView(_id, _class))
+    if (!isMulti) {
+      notificationClient.then((client) => client.updateLastView(_id, _class))
+    }
   })
 
   const query = createQuery()
+
   $: if (_id && _class) {
-    query.query(_class, { _id }, (result) => {
-      object = result[0]
-      realObjectClass = object._class
+    query.query(_class, isMulti ? { _id: { $in: ids as Ref<Doc>[] } } : { _id }, (result) => {
+      realObjectClass = result[0]._class
+
+      if (isMulti) {
+        objects = result
+        object = { _id } as Doc
+        setSameFields(object, objects)
+      } else {
+        object = result[0]
+      }
     })
   } else {
     query.unsubscribe()
@@ -103,7 +124,7 @@
   let inplaceAttributes: string[] = []
   let ignoreMixins: Set<Ref<Mixin<Doc>>> = new Set<Ref<Mixin<Doc>>>()
 
-  async function updateKeys (showAllMixins: boolean): Promise<void> {
+  async function updateKeys (): Promise<void> {
     const keysMap = new Map(getFiltredKeys(hierarchy, realObjectClass, ignoreKeys).map((p) => [p.attr._id, p]))
     for (const m of mixins) {
       const mkeys = getFiltredKeys(hierarchy, m._id, ignoreKeys)
@@ -139,12 +160,12 @@
   }
 
   let mainEditor: AnyComponent | undefined
-  $: getEditorOrDefault(realObjectClass, showAllMixins)
+  $: getEditorOrDefault(realObjectClass)
 
-  async function getEditorOrDefault (_class: Ref<Class<Doc>>, showAllMixins: boolean): Promise<void> {
+  async function getEditorOrDefault (_class: Ref<Class<Doc>>): Promise<void> {
     parentClass = getParentClass(_class)
     mainEditor = await getEditor(_class)
-    updateKeys(showAllMixins)
+    updateKeys()
   }
 
   async function getFieldEditor (key: KeyedAttribute): Promise<AnyComponent | undefined> {
@@ -201,7 +222,8 @@
 
   async function getTitle (object: Doc): Promise<string> {
     const name = (object as any).name
-    if (name !== undefined) {
+
+    if (name !== undefined && !isMulti) {
       if (hierarchy.isDerived(object._class, contact.class.Person)) {
         return formatName(name)
       }
@@ -251,7 +273,8 @@
   <Panel
     {icon}
     {title}
-    {object}
+    object={isMulti ? undefined : object}
+    withoutActivity={isMulti}
     isHeader={false}
     isAside={true}
     bind:panelWidth
@@ -262,13 +285,17 @@
     }}
   >
     <svelte:fragment slot="navigator">
-      <UpDownNavigator element={object} />
+      {#if !isMulti}
+        <UpDownNavigator element={object} />
+      {/if}
     </svelte:fragment>
 
     <svelte:fragment slot="tools">
-      <div class="p-1">
-        <Button icon={IconMoreH} kind={'transparent'} size={'medium'} on:click={showMenu} />
-      </div>
+      {#if !isMulti}
+        <div class="p-1">
+          <Button icon={IconMoreH} kind={'transparent'} size={'medium'} on:click={showMenu} />
+        </div>
+      {/if}
     </svelte:fragment>
 
     <svelte:fragment slot="attributes" let:direction={dir}>
@@ -301,15 +328,16 @@
           <Component
             is={headerEditor}
             props={{ object, keys, mixins, ignoreKeys, vertical: dir === 'column', allowedCollections }}
-            on:update={() => updateKeys(showAllMixins)}
+            on:update={() => updateKeys()}
           />
         {:else if dir === 'column'}
           <DocAttributeBar
             {object}
+            {objects}
             {mixins}
             ignoreKeys={[...ignoreKeys, ...collectionArrays, ...inplaceAttributes]}
             {allowedCollections}
-            on:update={() => updateKeys(showAllMixins)}
+            on:update={() => updateKeys()}
           />
         {:else}
           <AttributesBar {object} _class={realObjectClass} {keys} />
@@ -327,26 +355,32 @@
           allowedCollections = ev.detail.allowedCollections ?? []
           collectionArrays = ev.detail.collectionArrays ?? []
           getMixins(parentClass, object, showAllMixins)
-          updateKeys(showAllMixins)
+          updateKeys()
+
+          if (isMulti) {
+            mainEditor = undefined
+          }
         }}
       />
     {/if}
-    {#each fieldEditors as collection}
-      {#if collection.editor}
-        <div class="mt-6 clear-mins">
-          <Component
-            is={collection.editor}
-            props={{
-              objectId: object._id,
-              _class: collection.key.attr.attributeOf,
-              object,
-              space: object.space,
-              key: collection.key,
-              [collection.key.key]: getCollectionCounter(hierarchy, object, collection.key)
-            }}
-          />
-        </div>
-      {/if}
-    {/each}
+    {#if !isMulti}
+      {#each fieldEditors as collection}
+        {#if collection.editor}
+          <div class="mt-6 clear-mins">
+            <Component
+              is={collection.editor}
+              props={{
+                objectId: object._id,
+                _class: collection.key.attr.attributeOf,
+                object,
+                space: object.space,
+                key: collection.key,
+                [collection.key.key]: getCollectionCounter(hierarchy, object, collection.key)
+              }}
+            />
+          </div>
+        {/if}
+      {/each}
+    {/if}
   </Panel>
 {/if}

@@ -9,7 +9,8 @@ import {
   PopupAlignment,
   PopupPosAlignment,
   showPanel,
-  showPopup
+  showPopup,
+  panelstore
 } from '@hcengineering/ui'
 import { Action, ViewContext } from '@hcengineering/view'
 import MoveView from './components/Move.svelte'
@@ -51,6 +52,19 @@ async function CopyTextToClipboard (
     const text = await getText(doc, props.props)
     await navigator.clipboard.writeText(text)
   }
+}
+
+function Edit (objects: Doc[]): void {
+  panelstore.update(() => {
+    return {
+      panel: {
+        component: view.component.EditDoc,
+        _id: objects.map((o) => o._id).join(),
+        _class: objects[0]._class,
+        element: 'content'
+      }
+    }
+  })
 }
 
 function Delete (object: Doc): void {
@@ -372,6 +386,7 @@ async function getPopupAlignment (
  */
 export const actionImpl = {
   CopyTextToClipboard,
+  Edit,
   Delete,
   Move,
   MoveUp,

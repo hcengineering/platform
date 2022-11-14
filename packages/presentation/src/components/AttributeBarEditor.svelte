@@ -23,6 +23,7 @@
 
   export let key: KeyedAttribute | string
   export let object: Doc
+  export let objects: Doc[] | undefined = undefined
   export let _class: Ref<Class<Doc>>
   export let maxWidth: string | undefined = undefined
   export let focus: boolean = false
@@ -66,8 +67,9 @@
   $: update(attribute, presenterClass)
 
   function onChange (value: any) {
-    const doc = object as Doc
-    updateAttribute(client, doc, _class, { key: attributeKey, attr: attribute }, value)
+    for (const doc of objects || [object]) {
+      updateAttribute(client, doc, _class, { key: attributeKey, attr: attribute }, value)
+    }
   }
   $: isReadonly = (attribute.readonly ?? false) || readonly
 </script>

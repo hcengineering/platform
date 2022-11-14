@@ -19,6 +19,7 @@
   import ClassAttributeBar from './ClassAttributeBar.svelte'
 
   export let object: Doc
+  export let objects: Doc[] | undefined = undefined
   export let mixins: Mixin<Doc>[]
   export let ignoreKeys: string[]
   export let allowedCollections: string[] = []
@@ -27,10 +28,18 @@
   const hierarchy = client.getHierarchy()
 </script>
 
-<ClassAttributeBar _class={object._class} {object} {ignoreKeys} to={undefined} {allowedCollections} on:update />
+<ClassAttributeBar
+  _class={object._class}
+  {object}
+  {objects}
+  {ignoreKeys}
+  to={undefined}
+  {allowedCollections}
+  on:update
+/>
 {#each mixins as mixin}
   {@const to = !hierarchy.hasMixin(mixin, setting.mixin.UserMixin) ? object._class : mixin.extends}
   {#if !hierarchy.hasMixin(mixin, setting.mixin.Editable) || hierarchy.as(mixin, setting.mixin.Editable).value}
-    <ClassAttributeBar _class={mixin._id} {object} {ignoreKeys} {to} {allowedCollections} on:update />
+    <ClassAttributeBar _class={mixin._id} {object} {objects} {ignoreKeys} {to} {allowedCollections} on:update />
   {/if}
 {/each}

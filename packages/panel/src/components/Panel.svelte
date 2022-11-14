@@ -27,7 +27,7 @@
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let withoutActivity: boolean = false
   export let withoutTitle: boolean = false
-  export let object: Doc
+  export let object: Doc | undefined = undefined
   export let panelWidth: number = 0
   export let innerWidth: number = 0
   export let isHeader: boolean = true
@@ -73,8 +73,10 @@
   </svelte:fragment>
 
   <svelte:fragment slot="utils">
-    <Component is={calendar.component.DocReminder} props={{ value: object, title }} />
-    <Component is={notification.component.LastViewEditor} props={{ value: object }} />
+    {#if object}
+      <Component is={calendar.component.DocReminder} props={{ value: object, title }} />
+      <Component is={notification.component.LastViewEditor} props={{ value: object }} />
+    {/if}
     {#if $$slots.utils}
       <div class="buttons-divider" />
       <slot name="utils" />

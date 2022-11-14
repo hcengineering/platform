@@ -20,6 +20,7 @@
   import { getFiltredKeys, isCollectionAttr } from '../utils'
 
   export let object: Doc
+  export let objects: Doc[] | undefined = undefined
   export let _class: Ref<Class<Doc>>
   export let to: Ref<Class<Doc>> | undefined
   export let ignoreKeys: string[] = []
@@ -80,7 +81,7 @@
 </div>
 {#if keys.length}
   <div class="collapsed-container" class:collapsed>
-    <AttributesBar {_class} {object} keys={keys.map((p) => p.key)} {readonly} />
+    <AttributesBar {_class} {object} {objects} keys={keys.map((p) => p.key)} {readonly} />
   </div>
 {/if}
 

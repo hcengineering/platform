@@ -206,7 +206,7 @@ export type KeyBinding = string
 /**
  * @public
  */
-export type ViewActionInput = 'focus' | 'selection' | 'any' | 'none'
+export type ViewActionInput = 'focus' | 'selection' | 'multiSelection' | 'any' | 'none'
 
 /**
  * @public
@@ -419,6 +419,7 @@ const view = plugin(viewId, {
   },
   action: {
     Delete: '' as Ref<Action>,
+    Edit: '' as Ref<Action>,
     Move: '' as Ref<Action>,
     MoveLeft: '' as Ref<Action>,
     MoveRight: '' as Ref<Action>,

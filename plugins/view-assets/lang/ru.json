@@ -3,6 +3,7 @@
     "MoveClass": "Переместить {class}",
     "SelectToMove": "Выберите {classLabel} который вы хотите переместить в {class}.",
     "Delete": "Удалить",
+    "Edit": "Редактировать",
     "Move": "Переместить",
     "Cancel": "Отменть",
     "LabelYes": "Да",

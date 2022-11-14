@@ -367,6 +367,20 @@ export function createModel (builder: Builder): void {
   createAction(
     builder,
     {
+      action: view.actionImpl.Edit,
+      label: view.string.Edit,
+      icon: view.icon.Open,
+      category: view.category.General,
+      input: 'multiSelection',
+      target: core.class.Doc,
+      context: { mode: ['context', 'browser'], group: 'edit' }
+    },
+    view.action.Edit
+  )
+
+  createAction(
+    builder,
+    {
       action: view.actionImpl.Delete,
       label: view.string.Delete,
       icon: view.icon.Delete,

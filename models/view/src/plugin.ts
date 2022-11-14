@@ -21,6 +21,7 @@ import view from '@hcengineering/view-resources/src/plugin'
 
 export default mergeIds(viewId, view, {
   actionImpl: {
+    Edit: '' as ViewAction,
     Delete: '' as ViewAction,
     Move: '' as ViewAction,
     MoveLeft: '' as ViewAction,
@@ -64,6 +65,7 @@ export default mergeIds(viewId, view, {
   string: {
     Table: '' as IntlString,
     Delete: '' as IntlString,
+    Edit: '' as IntlString,
     Role: '' as IntlString,
     // Keybaord actions
     MoveUp: '' as IntlString,

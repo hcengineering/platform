@@ -478,3 +478,21 @@ export function getActiveViewletId (): Ref<Viewlet> | null {
   const key = makeViewletKey()
   return localStorage.getItem(key) as Ref<Viewlet> | null
 }
+
+export function setSameFields (object: object, objects: object[]): void {
+  for (const propKey of Object.keys(objects[0])) {
+    const propValue = (objects[0] as any)[propKey]
+    const propValues = objects.map((o) => (o as any)[propKey])
+
+    if (typeof propValue === 'object' && propValue !== null) {
+      const newObjectValue = {}
+      setSameFields(newObjectValue, propValues)
+
+      if (Object.keys(newObjectValue).length !== 0) {
+        ;(object as any)[propKey] = newObjectValue
+      }
+    } else if (propValues.every((v) => v === propValue)) {
+      ;(object as any)[propKey] = propValue
+    }
+  }
+}

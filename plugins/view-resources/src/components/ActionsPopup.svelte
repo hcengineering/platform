@@ -65,6 +65,8 @@
     }
     if (docs.length === 0) {
       fActions = fActions.filter((it) => it.input === 'none')
+    } else {
+      fActions = fActions.filter((it) => it.input !== 'multiSelection')
     }
     fActions = fActions.filter(
       (it) =>
