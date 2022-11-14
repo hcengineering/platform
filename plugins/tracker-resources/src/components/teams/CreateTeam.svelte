@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { AnySvelteComponent, Button, EditBox, eventToHTMLElement, Label, showPopup, ToggleWithLabel } from '@hcengineering/ui'
+  import { Button, EditBox, eventToHTMLElement, Label, showPopup, ToggleWithLabel } from '@hcengineering/ui'
   import { getClient, SpaceCreateCard } from '@hcengineering/presentation'
   import core, { getCurrentAccount, Ref } from '@hcengineering/core'
   import { IssueStatus } from '@hcengineering/tracker'
