@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { Button, EditBox, eventToHTMLElement, Label, showPopup, ToggleWithLabel } from '@hcengineering/ui'
+  import { AnySvelteComponent, Button, EditBox, eventToHTMLElement, Label, showPopup, ToggleWithLabel } from '@hcengineering/ui'
   import { getClient, SpaceCreateCard } from '@hcengineering/presentation'
   import core, { getCurrentAccount, Ref } from '@hcengineering/core'
   import { IssueStatus } from '@hcengineering/tracker'
@@ -22,6 +22,7 @@
   import { Asset } from '@hcengineering/platform'
   import tracker from '../../plugin'
   import TeamIconChooser from './TeamIconChooser.svelte'
+  import TeamPresenter from './TeamPresenter.svelte'
 
   let name: string = ''
   let description: string = ''
@@ -42,7 +43,8 @@
       sequence: 0,
       issueStatuses: 0,
       defaultIssueStatus: '' as Ref<IssueStatus>,
-      icon
+      icon,
+      presenter: TeamPresenter
     })
   }
 

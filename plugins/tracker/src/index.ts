@@ -63,6 +63,7 @@ export interface Team extends Space {
   sequence: number
   issueStatuses: number
   defaultIssueStatus: Ref<IssueStatus>
+  icon?: Asset
 }
 
 /**

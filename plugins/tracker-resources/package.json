@@ -55,6 +55,7 @@
     "@hcengineering/attachment-resources": "~0.6.0",
     "@hcengineering/workbench": "~0.6.2",
     "@hcengineering/attachment": "~0.6.1",
-    "@hcengineering/chunter-resources": "~0.6.0"
+    "@hcengineering/chunter-resources": "~0.6.0",
+    "@hcengineering/workbench-resources": "~0.6.1"
   }
 }

@@ -271,7 +271,7 @@ export interface Space extends Doc {
   private: boolean
   members: Arr<Ref<Account>>
   archived: boolean
-  icon?: Asset
+  presenter?: AnyAttribute
 }
 
 /**

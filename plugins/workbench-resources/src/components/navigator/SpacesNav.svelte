@@ -20,7 +20,16 @@
   import { getResource } from '@hcengineering/platform'
   import preference from '@hcengineering/preference'
   import { getClient } from '@hcengineering/presentation'
-  import { Action, getCurrentLocation, IconAdd, IconEdit, IconSearch, navigate, showPopup } from '@hcengineering/ui'
+  import {
+    Action,
+    AnySvelteComponent,
+    getCurrentLocation,
+    IconAdd,
+    IconEdit,
+    IconSearch,
+    navigate,
+    showPopup
+  } from '@hcengineering/ui'
   import { getActions as getContributedActions } from '@hcengineering/view-resources'
   import { SpacesNavModel } from '@hcengineering/workbench'
   import { createEventDispatcher } from 'svelte'
@@ -109,12 +118,19 @@
   function getParentActions (): Action[] {
     return hasSpaceBrowser ? [browseSpaces, addSpace] : [addSpace]
   }
+
+  function asComponent (val: any): AnySvelteComponent {
+    return val as AnySvelteComponent
+  }
 </script>
 
 <TreeNode label={model.label} parent actions={async () => getParentActions()} indent={'ml-2'}>
   {#each spaces as space (space._id)}
-    {#if model.specials}
-      <TreeNode icon={space?.icon ?? model.icon} title={space.name} indent={'ml-2'} actions={() => getActions(space)}>
+    {#if space.presenter}
+      {@const presenter = asComponent(space.presenter)}
+      <svelte:component this={presenter} {space} {model} {getActions} {selectSpace} />
+    {:else if model.specials}
+      <TreeNode icon={model.icon} title={space.name} indent={'ml-2'} actions={() => getActions(space)}>
         {#each model.specials as special}
           <SpecialElement
             indent={'ml-4'}
