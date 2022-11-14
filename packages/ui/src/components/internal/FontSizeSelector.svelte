@@ -16,7 +16,10 @@
   import { getContext } from 'svelte'
   import FontSize from './icons/FontSize.svelte'
 
-  const { currentFontSize, setFontSize } = getContext('fontsize')
+  const { currentFontSize, setFontSize } = getContext('fontsize') as {
+    currentFontSize: string
+    setFontSize: (size: string) => void
+  }
 
   const fontsizes = ['small-font', 'normal-font']
 
@@ -28,6 +31,7 @@
   }
 </script>
 
+<!-- svelte-ignore a11y-click-events-have-key-events -->
 <div class="flex-center" on:click={changeFontSize}>
   <FontSize size={'small'} />
 </div>

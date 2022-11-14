@@ -40,7 +40,7 @@
   let selection = 0
   let list: ListView
 
-  async function handleSelection (evt: Event | undefined, selection: number): Promise<void> {
+  async function handleSelection (_: Event | undefined, selection: number): Promise<void> {
     const space = objects[selection]
     dispatch('close', space)
   }
@@ -76,14 +76,7 @@
 <div class="selectPopup" on:keydown={onKeydown}>
   {#if searchable}
     <div class="header">
-      <input
-        bind:this={input}
-        type="text"
-        bind:value={search}
-        placeholder={phTraslate}
-        on:input={(ev) => {}}
-        on:change
-      />
+      <input bind:this={input} type="text" bind:value={search} placeholder={phTraslate} on:input={() => {}} on:change />
     </div>
   {/if}
   <div class="scroll">
