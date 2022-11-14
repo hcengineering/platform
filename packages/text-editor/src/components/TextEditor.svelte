@@ -28,6 +28,7 @@
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
   export let extensions: AnyExtension[] = []
   export let supportSubmit = true
+  export let isEmpty = true
 
   let element: HTMLElement
   let editor: Editor
@@ -41,8 +42,10 @@
   const dispatch = createEventDispatcher()
 
   export function submit (): void {
-    content = editor.getHTML()
-    dispatch('content', content)
+    if (!editor.isEmpty) {
+      content = editor.getHTML()
+      dispatch('content', content)
+    }
   }
 
   export function clear (): void {
@@ -159,6 +162,7 @@
         },
         onUpdate: () => {
           content = editor.getHTML()
+          isEmpty = editor.isEmpty
           dispatch('value', content)
         },
         onSelectionUpdate: () => dispatch('selection-update')
