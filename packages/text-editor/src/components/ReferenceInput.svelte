@@ -51,6 +51,7 @@
   let isFormatting = false
   let activeModes = new Set<FormatMode>()
   let isSelectionEmpty = true
+  let isEmpty = true
 
   interface RefAction {
     label: IntlString
@@ -275,6 +276,7 @@
     <div class="inputMsg">
       <TextEditor
         bind:content
+        bind:isEmpty
         bind:this={textEditor}
         on:content={(ev) => {
           dispatch('message', ev.detail)
@@ -286,7 +288,9 @@
       />
     </div>
     {#if showSend}
-      <button class="sendButton" on:click={submit}><div class="icon"><Send size={'medium'} /></div></button>
+      <button class="sendButton" on:click={submit} disabled={isEmpty}>
+        <div class="icon"><Send size={'medium'} /></div>
+      </button>
     {/if}
   </div>
   <div class="buttons-group large-gap ml-4 mt-2">
@@ -416,6 +420,15 @@
 
           & > .icon {
             color: var(--theme-caption-color);
+          }
+        }
+
+        &:disabled {
+          pointer-events: none;
+
+          .icon {
+            opacity: 0.5;
+            cursor: not-allowed;
           }
         }
       }
