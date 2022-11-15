@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Ref, Space } from '@hcengineering/core'
   import { Team } from '@hcengineering/tracker'
   import { SpacesNavModel } from '@hcengineering/workbench'
   import { TreeNode, SpecialElement } from '@hcengineering/workbench-resources'
@@ -20,6 +21,8 @@
 
   export let space: Team
   export let model: SpacesNavModel
+  export let currentSpace: Ref<Space> | undefined
+  export let currentSpecial: string | undefined
   export let selectSpace: Function
   export let getActions: Function
 
@@ -34,7 +37,7 @@
         label={special.label}
         icon={special.icon}
         on:click={() => dispatch('special', special.id)}
-        selected={false}
+        selected={currentSpace === space._id && special.id === currentSpecial}
         on:click={() => {
           selectSpace(space._id, special.id)
         }}

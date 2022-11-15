@@ -114,7 +114,15 @@
   {#each spaces as space (space._id)}
     {#await getObjectPresenter(client, space._class, { key: '' }) then presenter}
       {#if model.specials && presenter}
-        <svelte:component this={presenter.presenter} {space} {model} {getActions} {selectSpace} />
+        <svelte:component
+          this={presenter.presenter}
+          {space}
+          {model}
+          {currentSpace}
+          {currentSpecial}
+          {getActions}
+          {selectSpace}
+        />
       {:else}
         {#await getSpaceName(client, space) then name}
           <TreeItem
