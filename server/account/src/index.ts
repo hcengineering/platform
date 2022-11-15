@@ -340,7 +340,7 @@ export async function listWorkspaces (db: Db, productId: string): Promise<Worksp
   if (productId === '') {
     return await db
       .collection<Workspace>(WORKSPACE_COLLECTION)
-      .find({ productId: { $exists: false } })
+      .find({ $or: [{ productId: { $exists: false } }, { productId: '' }] })
       .toArray()
   }
   return await db.collection<Workspace>(WORKSPACE_COLLECTION).find({ productId }).toArray()
@@ -397,7 +397,9 @@ export async function upgradeWorkspace (
     throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.WorkspaceNotFound, { workspace }))
   }
   if (ws.productId !== productId) {
-    throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.ProductIdMismatch, { productId }))
+    if (productId !== '' || ws.productId !== undefined) {
+      throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.ProductIdMismatch, { productId }))
+    }
   }
   await db.collection(WORKSPACE_COLLECTION).updateOne(
     { workspace },
