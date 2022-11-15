@@ -17,7 +17,7 @@
 import { Client } from 'minio'
 import { setMetadata } from '@hcengineering/platform'
 import serverToken from '@hcengineering/server-token'
-import { start } from './app'
+import { start } from '.'
 
 const SERVER_PORT = parseInt(process.env.SERVER_PORT ?? '8080')
 

@@ -155,7 +155,7 @@ export class TSavedMessages extends TPreference implements SavedMessages {
     attachedTo!: Ref<ChunterMessage>
 }
 
-export function createModel (builder: Builder): void {
+export function createModel (builder: Builder, options = { addApplication: true }): void {
   builder.createModel(
     TChunterSpace,
     TChannel,
@@ -319,88 +319,90 @@ export function createModel (builder: Builder): void {
     chunter.action.ConvertToPrivate
   )
 
-  builder.createDoc(
-    workbench.class.Application,
-    core.space.Model,
-    {
-      label: chunter.string.ApplicationLabelChunter,
-      icon: chunter.icon.Chunter,
-      alias: chunterId,
-      hidden: false,
-      navigatorModel: {
-        specials: [
-          {
-            id: 'spaceBrowser',
-            component: workbench.component.SpaceBrowser,
-            icon: chunter.icon.ChannelBrowser,
-            label: chunter.string.ChannelBrowser,
-            position: 'top',
-            spaceClass: chunter.class.Channel,
-            componentProps: {
-              _class: chunter.class.Channel,
+  if (options.addApplication) {
+    builder.createDoc(
+      workbench.class.Application,
+      core.space.Model,
+      {
+        label: chunter.string.ApplicationLabelChunter,
+        icon: chunter.icon.Chunter,
+        alias: chunterId,
+        hidden: false,
+        navigatorModel: {
+          specials: [
+            {
+              id: 'spaceBrowser',
+              component: workbench.component.SpaceBrowser,
+              icon: chunter.icon.ChannelBrowser,
               label: chunter.string.ChannelBrowser,
-              createItemDialog: chunter.component.CreateChannel,
-              createItemLabel: chunter.string.CreateChannel
+              position: 'top',
+              spaceClass: chunter.class.Channel,
+              componentProps: {
+                _class: chunter.class.Channel,
+                label: chunter.string.ChannelBrowser,
+                createItemDialog: chunter.component.CreateChannel,
+                createItemLabel: chunter.string.CreateChannel
+              }
+            },
+            {
+              id: 'archive',
+              component: workbench.component.Archive,
+              icon: view.icon.Archive,
+              label: workbench.string.Archive,
+              position: 'top',
+              visibleIf: workbench.function.HasArchiveSpaces,
+              spaceClass: chunter.class.Channel
+            },
+            {
+              id: 'threads',
+              label: chunter.string.Threads,
+              icon: chunter.icon.Thread,
+              component: chunter.component.Threads,
+              position: 'top'
+            },
+            {
+              id: 'savedItems',
+              label: chunter.string.SavedItems,
+              icon: chunter.icon.Bookmark,
+              component: chunter.component.SavedMessages
+            },
+            {
+              id: 'fileBrowser',
+              label: attachment.string.FileBrowser,
+              icon: attachment.icon.FileBrowser,
+              component: attachment.component.FileBrowser,
+              componentProps: {
+                requestedSpaceClasses: [chunter.class.Channel, chunter.class.DirectMessage]
+              }
+            },
+            {
+              id: 'chunterBrowser',
+              label: chunter.string.ChunterBrowser,
+              icon: workbench.icon.Search,
+              component: chunter.component.ChunterBrowser,
+              visibleIf: chunter.function.ChunterBrowserVisible
             }
-          },
-          {
-            id: 'archive',
-            component: workbench.component.Archive,
-            icon: view.icon.Archive,
-            label: workbench.string.Archive,
-            position: 'top',
-            visibleIf: workbench.function.HasArchiveSpaces,
-            spaceClass: chunter.class.Channel
-          },
-          {
-            id: 'threads',
-            label: chunter.string.Threads,
-            icon: chunter.icon.Thread,
-            component: chunter.component.Threads,
-            position: 'top'
-          },
-          {
-            id: 'savedItems',
-            label: chunter.string.SavedItems,
-            icon: chunter.icon.Bookmark,
-            component: chunter.component.SavedMessages
-          },
-          {
-            id: 'fileBrowser',
-            label: attachment.string.FileBrowser,
-            icon: attachment.icon.FileBrowser,
-            component: attachment.component.FileBrowser,
-            componentProps: {
-              requestedSpaceClasses: [chunter.class.Channel, chunter.class.DirectMessage]
+          ],
+          spaces: [
+            {
+              label: chunter.string.Channels,
+              spaceClass: chunter.class.Channel,
+              addSpaceLabel: chunter.string.CreateChannel,
+              createComponent: chunter.component.CreateChannel
+            },
+            {
+              label: chunter.string.DirectMessages,
+              spaceClass: chunter.class.DirectMessage,
+              addSpaceLabel: chunter.string.NewDirectMessage,
+              createComponent: chunter.component.CreateDirectMessage
             }
-          },
-          {
-            id: 'chunterBrowser',
-            label: chunter.string.ChunterBrowser,
-            icon: workbench.icon.Search,
-            component: chunter.component.ChunterBrowser,
-            visibleIf: chunter.function.ChunterBrowserVisible
-          }
-        ],
-        spaces: [
-          {
-            label: chunter.string.Channels,
-            spaceClass: chunter.class.Channel,
-            addSpaceLabel: chunter.string.CreateChannel,
-            createComponent: chunter.component.CreateChannel
-          },
-          {
-            label: chunter.string.DirectMessages,
-            spaceClass: chunter.class.DirectMessage,
-            addSpaceLabel: chunter.string.NewDirectMessage,
-            createComponent: chunter.component.CreateDirectMessage
-          }
-        ],
-        aside: chunter.component.ThreadView
-      }
-    },
-    chunter.app.Chunter
-  )
+          ],
+          aside: chunter.component.ThreadView
+        }
+      },
+      chunter.app.Chunter
+    )
+  }
 
   builder.mixin(chunter.class.Comment, core.class.Class, view.mixin.AttributePresenter, {
     presenter: chunter.component.CommentPresenter

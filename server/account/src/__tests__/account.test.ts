@@ -14,10 +14,14 @@
 // limitations under the License.
 //
 
-import { MongoClient, Db } from 'mongodb'
-import { methods, getAccount, getWorkspace } from '..'
+import builder, { migrateOperations, version } from '@hcengineering/model-all'
 import { randomBytes } from 'crypto'
+import { Db, MongoClient } from 'mongodb'
+import { getAccount, getMethods, getWorkspace } from '..'
+
 const DB_NAME = 'test_accounts'
+
+const methods = getMethods(version, builder.getTxes(), migrateOperations, '')
 
 describe('server', () => {
   const dbUri = process.env.MONGODB_URI ?? 'mongodb://localhost:27017'

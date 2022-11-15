@@ -14,15 +14,14 @@
 //
 
 import contact from '@hcengineering/contact'
-import core, { DOMAIN_TX, Tx, Client as CoreClient, Domain, IndexKind, DOMAIN_MODEL } from '@hcengineering/core'
-import builder, { migrateOperations } from '@hcengineering/model-all'
+import core, { Client as CoreClient, Domain, DOMAIN_MODEL, DOMAIN_TX, IndexKind, Tx } from '@hcengineering/core'
+import { MigrateOperation } from '@hcengineering/model'
 import { Client } from 'minio'
 import { Db, Document, MongoClient } from 'mongodb'
 import { connect } from './connect'
 import toolPlugin from './plugin'
 import { MigrateClientImpl } from './upgrade'
 
-export { version } from '@hcengineering/model-all'
 export * from './connect'
 export * from './plugin'
 export { toolPlugin as default }
@@ -30,7 +29,7 @@ export { toolPlugin as default }
 /**
  * @public
  */
-export function prepareTools (): { mongodbUri: string, minio: Client, txes: Tx[] } {
+export function prepareTools (rawTxes: Tx[]): { mongodbUri: string, minio: Client, txes: Tx[] } {
   let minioEndpoint = process.env.MINIO_ENDPOINT
   if (minioEndpoint === undefined) {
     console.error('please provide minio endpoint')
@@ -70,15 +69,19 @@ export function prepareTools (): { mongodbUri: string, minio: Client, txes: Tx[]
     secretKey: minioSecretKey
   })
 
-  const txes = JSON.parse(JSON.stringify(builder.getTxes())) as Tx[]
-  return { mongodbUri, minio, txes }
+  return { mongodbUri, minio, txes: JSON.parse(JSON.stringify(rawTxes)) as Tx[] }
 }
 
 /**
  * @public
  */
-export async function initModel (transactorUrl: string, dbName: string): Promise<void> {
-  const { mongodbUri, minio, txes } = prepareTools()
+export async function initModel (
+  transactorUrl: string,
+  dbName: string,
+  rawTxes: Tx[],
+  migrateOperations: MigrateOperation[]
+): Promise<void> {
+  const { mongodbUri, minio, txes } = prepareTools(rawTxes)
   if (txes.some((tx) => tx.objectSpace !== core.space.Model)) {
     throw Error('Model txes must target only core.space.Model')
   }
@@ -123,8 +126,13 @@ export async function initModel (transactorUrl: string, dbName: string): Promise
 /**
  * @public
  */
-export async function upgradeModel (transactorUrl: string, dbName: string): Promise<void> {
-  const { mongodbUri, txes } = prepareTools()
+export async function upgradeModel (
+  transactorUrl: string,
+  dbName: string,
+  rawTxes: Tx[],
+  migrateOperations: MigrateOperation[]
+): Promise<void> {
+  const { mongodbUri, txes } = prepareTools(rawTxes)
 
   if (txes.some((tx) => tx.objectSpace !== core.space.Model)) {
     throw Error('Model txes must target only core.space.Model')

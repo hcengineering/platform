@@ -29,8 +29,7 @@
   },
   "dependencies": {
     "mongodb": "^4.9.0",
-    "@hcengineering/platform": "^0.6.7",
-    "@hcengineering/model-all": "~0.6.0",
+    "@hcengineering/platform": "^0.6.7",    
     "minio": "^7.0.26",
     "@hcengineering/core": "^0.6.17",
     "@hcengineering/contact": "~0.6.8",

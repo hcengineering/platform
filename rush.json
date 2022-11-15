@@ -772,6 +772,16 @@
       "shouldPublish": true
     },
     {
+      "packageName": "@hcengineering/pod-front",
+      "projectFolder": "pods/front",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/pod-server",
+      "projectFolder": "pods/server",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/front",
       "projectFolder": "server/front",
       "shouldPublish": true
@@ -1393,6 +1403,11 @@
       "packageName": "@hcengineering/model-document",
       "projectFolder": "models/document",
       "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/apm",
+      "projectFolder": "tools/apm",
+      "shouldPublish": false
     }
   ]
 }

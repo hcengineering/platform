@@ -14,16 +14,23 @@
 #  limitations under the License.
 #
 
-export MONGO_URL=$(kubectl get secret mongodb -o jsonpath="{.data.url}" | base64 --decode)
-export MINIO_ENDPOINT=$(kubectl get secret minio -o jsonpath="{.data.endpoint}" | base64 --decode)
-export MINIO_ACCESS_KEY=$(kubectl get secret minio -o jsonpath="{.data.accessKey}" | base64 --decode)
-export MINIO_SECRET_KEY=$(kubectl get secret minio -o jsonpath="{.data.secretKey}" | base64 --decode)
+export MONGO_URL=$(kubectl get configmaps anticrm-config -o jsonpath="{.data.mongoDbUrl}")
+
+export ELASTIC_URL=$(kubectl get configmaps anticrm-config -o jsonpath="{.data.elasticUrl}")
+
+export MINIO_ENDPOINT=$(kubectl get configmaps anticrm-config -o jsonpath="{.data.minioEndpointUrl}")
+export MINIO_ACCESS_KEY=$(kubectl get secret anticrm-secret -o jsonpath="{.data.minioAccessKey}" | base64 --decode)
+export MINIO_SECRET_KEY=$(kubectl get secret anticrm-secret -o jsonpath="{.data.minioSecretKey}" | base64 --decode)
+
+export SERVER_SECRET=$(kubectl get secret anticrm-secret -o jsonpath="{.data.serverSecret}" | base64 --decode)
 
 kubectl run anticrm-tool --rm --tty -i --restart='Never' \
   --env="MONGO_URL=$MONGO_URL" \
   --env="TRANSACTOR_URL=ws://transactor/" \
-  --env="ELASTIC_URL=http://10.1.96.8:9200/" \
+  --env="ELASTIC_URL=$ELASTIC_URL" \
   --env="TELEGRAM_DATABASE=telegram-service" \
   --env="MINIO_ENDPOINT=$MINIO_ENDPOINT" \
   --env="MINIO_ACCESS_KEY=$MINIO_ACCESS_KEY" \
-  --env="MINIO_SECRET_KEY=$MINIO_SECRET_KEY" --image hardcoreeng/tool --command -- bash
+  --env="MINIO_SECRET_KEY=$MINIO_SECRET_KEY" \
+  --env="SERVER_SECRET=$SERVER_SECRET" \
+  --image hardcoreeng/tool:v0.6.40 --command -- bash

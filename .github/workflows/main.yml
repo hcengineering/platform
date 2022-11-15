@@ -82,6 +82,7 @@ jobs:
             tests
             rush.json
             .prettierrc
+            tools
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
   svelte-check:
@@ -113,6 +114,7 @@ jobs:
             tests
             rush.json
             .prettierrc
+            tools
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
 
@@ -146,6 +148,7 @@ jobs:
             tests
             rush.json
             .prettierrc
+            tools
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
 
@@ -190,6 +193,7 @@ jobs:
             tests
             rush.json
             .prettierrc
+            tools
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
 
@@ -236,6 +240,7 @@ jobs:
             tests
             rush.json
             .prettierrc
+            tools
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
 
@@ -293,6 +298,7 @@ jobs:
             tests
             rush.json
             .prettierrc
+            tools
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
 

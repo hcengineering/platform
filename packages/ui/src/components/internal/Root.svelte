@@ -58,8 +58,7 @@
 
   let docWidth: number = window.innerWidth
   let docHeight: number = window.innerHeight
-  let maxLenght: number
-  $: maxLenght = docWidth >= docHeight ? docWidth : docHeight
+
   let isMobile: boolean
   let alwaysMobile: boolean = false
   $: isMobile = alwaysMobile || checkMobile()
@@ -113,6 +112,7 @@
           <div class="flex-center widget cursor-pointer mr-3">
             <FontSizeSelector />
           </div>
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
           <div
             class="flex-center widget mr-3"
             class:rotated={!isPortrait && isMobile}

@@ -3,7 +3,7 @@
   import Mute from './icons/Mute.svelte'
   import { deviceOptionsStore as deviceInfo } from '../../'
 
-  const { currentTheme, setTheme } = getContext('theme')
+  const { currentTheme, setTheme } = getContext('theme') as { currentTheme: string; setTheme: (theme: string) => void }
 
   const themes = ['theme-light', 'theme-dark']
 
@@ -17,6 +17,7 @@
   }
 </script>
 
+<!-- svelte-ignore a11y-click-events-have-key-events -->
 <div class="flex-center" on:click={changeTheme}>
   <Mute size={'small'} />
 </div>

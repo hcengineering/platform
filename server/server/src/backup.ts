@@ -5,7 +5,10 @@ import { BroadcastCall, ClientSession, Session } from '@hcengineering/server-ws'
 
 const chunkSize = 1024 * 1024
 
-interface ChunkInfo {
+/**
+ * @public
+ */
+export interface ChunkInfo {
   idx: number
   index: 0
   finished: boolean
@@ -21,6 +24,9 @@ export interface BackupSession extends Session {
   loadDocs: (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]) => Promise<Doc[]>
 }
 
+/**
+ * @public
+ */
 export class BackupClientSession extends ClientSession implements BackupSession {
   constructor (
     protected readonly broadcast: BroadcastCall,

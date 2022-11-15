@@ -14,5 +14,8 @@
 // limitations under the License.
 //
 
-export { start } from './server'
-export type { MinioConfig } from './server'
+export * from './server'
+export * from './apm'
+export * from './minio'
+export * from './backup'
+export * from './metrics'
