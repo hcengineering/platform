@@ -397,7 +397,9 @@ export async function upgradeWorkspace (
     throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.WorkspaceNotFound, { workspace }))
   }
   if (ws.productId !== productId) {
-    throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.ProductIdMismatch, { productId }))
+    if (productId !== '' || ws.productId !== undefined) {
+      throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.ProductIdMismatch, { productId }))
+    }
   }
   await db.collection(WORKSPACE_COLLECTION).updateOne(
     { workspace },
