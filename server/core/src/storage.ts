@@ -45,10 +45,11 @@ import core, {
   TxProcessor,
   TxRemoveDoc,
   TxResult,
-  TxUpdateDoc
+  TxUpdateDoc,
+  WorkspaceId
 } from '@hcengineering/core'
+import { MinioService } from '@hcengineering/minio'
 import { getResource } from '@hcengineering/platform'
-import type { Client as MinioClient } from 'minio'
 import { DbAdapter, DbAdapterConfiguration, TxAdapter } from './adapter'
 import { FullTextIndex } from './fulltext'
 import serverCore from './plugin'
@@ -62,12 +63,12 @@ export interface DbConfiguration {
   adapters: Record<string, DbAdapterConfiguration>
   domains: Record<string, string>
   defaultAdapter: string
-  workspace: string
+  workspace: WorkspaceId
   fulltextAdapter: {
     factory: FullTextAdapterFactory
     url: string
   }
-  storageFactory?: () => MinioClient
+  storageFactory?: () => MinioService
 }
 
 class TServerStorage implements ServerStorage {
@@ -83,9 +84,9 @@ class TServerStorage implements ServerStorage {
     hierarchy: Hierarchy,
     private readonly triggers: Triggers,
     private readonly fulltextAdapter: FullTextAdapter,
-    readonly storageAdapter: MinioClient | undefined,
+    readonly storageAdapter: MinioService | undefined,
     readonly modelDb: ModelDb,
-    private readonly workspace: string,
+    private readonly workspace: WorkspaceId,
     options?: ServerStorageOptions
   ) {
     this.hierarchy = hierarchy

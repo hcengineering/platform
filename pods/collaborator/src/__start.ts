@@ -19,8 +19,8 @@ import serverToken from '@hcengineering/server-token'
 import { metricsContext } from './metrics'
 import { start } from './server'
 
+import { MinioService } from '@hcengineering/minio'
 import config from './config'
-import { Client as MinioClient } from 'minio'
 
 setMetadata(serverToken.metadata.Secret, config.Secret)
 
@@ -32,7 +32,7 @@ if (sp.length > 1) {
   minioPort = parseInt(sp[1])
 }
 
-const minio = new MinioClient({
+const minio = new MinioService({
   endPoint: minioEndpoint,
   port: minioPort,
   useSSL: false,

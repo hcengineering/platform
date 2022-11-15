@@ -26,6 +26,7 @@ import {
   Domain,
   FindOptions,
   FindResult,
+  getWorkspaceId,
   Hierarchy,
   MeasureMetricsContext,
   ModelDb,
@@ -78,11 +79,12 @@ describe('server', () => {
       clean: async (domain: Domain, docs: Ref<Doc>[]) => {}
     }),
     (token, pipeline, broadcast) => new ClientSession(broadcast, token, pipeline),
-    3335
+    3335,
+    ''
   )
 
   function connect (): WebSocket {
-    const token: string = generateToken('', 'latest')
+    const token: string = generateToken('', getWorkspaceId('latest', ''))
     return new WebSocket(`ws://localhost:3335/${token}`)
   }
 

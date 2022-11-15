@@ -42,12 +42,13 @@ import core, {
   TxRemoveDoc,
   TxResult,
   TxUpdateDoc,
-  WithLookup
+  WithLookup,
+  WorkspaceId
 } from '@hcengineering/core'
 import type { DbAdapter, TxAdapter } from '@hcengineering/server-core'
 import { Collection, Db, Document, Filter, MongoClient, Sort, UpdateFilter } from 'mongodb'
 import { createHash } from 'node:crypto'
-import { getMongoClient } from './utils'
+import { getMongoClient, getWorkspaceDB } from './utils'
 
 function translateDoc (doc: Doc): Document {
   return doc as Document
@@ -779,11 +780,11 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
 export async function createMongoAdapter (
   hierarchy: Hierarchy,
   url: string,
-  dbName: string,
+  workspaceId: WorkspaceId,
   modelDb: ModelDb
 ): Promise<DbAdapter> {
   const client = await getMongoClient(url)
-  const db = client.db(dbName)
+  const db = getWorkspaceDB(client, workspaceId)
   return new MongoAdapter(db, hierarchy, modelDb, client)
 }
 
@@ -793,10 +794,10 @@ export async function createMongoAdapter (
 export async function createMongoTxAdapter (
   hierarchy: Hierarchy,
   url: string,
-  dbName: string,
+  workspaceId: WorkspaceId,
   modelDb: ModelDb
 ): Promise<TxAdapter> {
   const client = await getMongoClient(url)
-  const db = client.db(dbName)
+  const db = getWorkspaceDB(client, workspaceId)
   return new MongoTxAdapter(db, hierarchy, modelDb, client)
 }

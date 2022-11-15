@@ -1,5 +1,5 @@
 {
-  "name": "@hcengineering/server-contact-resources",
+  "name": "@hcengineering/minio",
   "version": "0.6.0",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
@@ -7,6 +7,7 @@
   "scripts": {
     "build": "heft build",
     "build:watch": "tsc",
+    "test": "heft test",
     "lint:fix": "eslint --fix src",
     "lint": "eslint src",
     "format": "prettier --write src && eslint --fix src"
@@ -26,13 +27,8 @@
     "typescript": "^4.3.5"
   },
   "dependencies": {
+    "@types/minio": "~7.0.11",
     "@hcengineering/core": "^0.6.17",
-    "@hcengineering/platform": "^0.6.7",
-    "@hcengineering/server-core": "~0.6.1",
-    "@hcengineering/contact": "~0.6.8",
-    "@hcengineering/view": "^0.6.1",
-    "@hcengineering/login": "~0.6.1",
-    "@hcengineering/workbench": "~0.6.2",
-    "@hcengineering/minio": "^0.6.0"
+    "minio": "^7.0.26"
   }
 }

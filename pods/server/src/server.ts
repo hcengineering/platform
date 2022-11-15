@@ -13,7 +13,14 @@
 // limitations under the License.
 //
 
-import { DOMAIN_BLOB, DOMAIN_FULLTEXT_BLOB, DOMAIN_MODEL, DOMAIN_TRANSIENT, DOMAIN_TX } from '@hcengineering/core'
+import {
+  DOMAIN_BLOB,
+  DOMAIN_FULLTEXT_BLOB,
+  DOMAIN_MODEL,
+  DOMAIN_TRANSIENT,
+  DOMAIN_TX,
+  WorkspaceId
+} from '@hcengineering/core'
 import { createElasticAdapter, createElasticBackupDataAdapter } from '@hcengineering/elastic'
 import { ModifiedMiddleware, PrivateMiddleware } from '@hcengineering/middleware'
 import { createMongoAdapter, createMongoTxAdapter } from '@hcengineering/mongo'
@@ -49,7 +56,7 @@ import { serverTelegramId } from '@hcengineering/server-telegram'
 import { Token } from '@hcengineering/server-token'
 import { serverTrackerId } from '@hcengineering/server-tracker'
 import { BroadcastCall, ClientSession, start as startJsonRpc } from '@hcengineering/server-ws'
-import { Client as MinioClient } from 'minio'
+import { MinioService } from '@hcengineering/minio'
 
 /**
  * @public
@@ -59,6 +66,7 @@ export function start (
   fullTextUrl: string,
   minioConf: MinioConfig,
   port: number,
+  productId: string,
   host?: string
 ): () => void {
   addLocation(serverAttachmentId, () => import('@hcengineering/server-attachment-resources'))
@@ -81,7 +89,7 @@ export function start (
 
   return startJsonRpc(
     getMetricsContext(),
-    (workspace: string) => {
+    (workspace: WorkspaceId) => {
       const conf: DbConfiguration = {
         domains: {
           [DOMAIN_TX]: 'MongoTx',
@@ -122,7 +130,7 @@ export function start (
           url: fullTextUrl
         },
         storageFactory: () =>
-          new MinioClient({
+          new MinioService({
             ...minioConf,
             port: 9000,
             useSSL: false
@@ -138,6 +146,7 @@ export function start (
       return new ClientSession(broadcast, token, pipeline)
     },
     port,
+    productId,
     host
   )
 }

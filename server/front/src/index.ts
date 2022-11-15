@@ -15,8 +15,9 @@
 //
 
 import attachment from '@hcengineering/attachment'
-import { Account, Doc, Ref, Space } from '@hcengineering/core'
+import { Account, Doc, Ref, Space, WorkspaceId } from '@hcengineering/core'
 import { createElasticAdapter } from '@hcengineering/elastic'
+import { MinioService } from '@hcengineering/minio'
 import type { IndexedDoc } from '@hcengineering/server-core'
 import { decodeToken, Token } from '@hcengineering/server-token'
 import bp from 'body-parser'
@@ -25,41 +26,20 @@ import cors from 'cors'
 import express, { Response } from 'express'
 import fileUpload, { UploadedFile } from 'express-fileupload'
 import https from 'https'
-import { BucketItem, Client, ItemBucketMetadata } from 'minio'
 import { join, resolve } from 'path'
-import { v4 as uuid } from 'uuid'
 import sharp from 'sharp'
+import { v4 as uuid } from 'uuid'
 
-async function minioUpload (minio: Client, workspace: string, file: UploadedFile): Promise<string> {
+async function minioUpload (minio: MinioService, workspace: WorkspaceId, file: UploadedFile): Promise<string> {
   const id = uuid()
-  const meta: ItemBucketMetadata = {
+  const meta: any = {
     'Content-Type': file.mimetype
   }
 
-  const resp = await minio.putObject(workspace, id, file.data, file.size, meta)
+  const resp = await minio.put(workspace, id, file.data, file.size, meta)
 
   console.log(resp)
   return id
-}
-
-async function readMinioData (client: Client, db: string, name: string): Promise<Buffer[]> {
-  const data = await client.getObject(db, name)
-  const chunks: Buffer[] = []
-
-  await new Promise((resolve) => {
-    data.on('readable', () => {
-      let chunk
-      while ((chunk = data.read()) !== null) {
-        const b = chunk as Buffer
-        chunks.push(b)
-      }
-    })
-
-    data.on('end', () => {
-      resolve(null)
-    })
-  })
-  return chunks
 }
 
 function getRange (range: string, size: number): [number, number] {
@@ -82,14 +62,14 @@ function getRange (range: string, size: number): [number, number] {
 
 async function getFileRange (
   range: string,
-  client: Client,
-  workspace: string,
+  client: MinioService,
+  workspace: WorkspaceId,
   uuid: string,
   res: Response
 ): Promise<void> {
-  const stat = await client.statObject(workspace, uuid)
+  const stat = await client.stat(workspace, uuid)
 
-  const size = stat.size
+  const size: number = stat.size
 
   const [start, end] = getRange(range, size)
 
@@ -101,13 +81,8 @@ async function getFileRange (
     return
   }
 
-  client.getPartialObject(workspace, uuid, start, end - start + 1, (err, dataStream) => {
-    if (err !== null) {
-      console.log(err)
-      res.status(500).send()
-      return
-    }
-
+  try {
+    const dataStream = await client.partial(workspace, uuid, start, end - start + 1)
     res.writeHead(206, {
       Connection: 'keep-alive',
       'Content-Range': `bytes ${start}-${end}/${size}`,
@@ -117,18 +92,17 @@ async function getFileRange (
     })
 
     dataStream.pipe(res)
-  })
+  } catch (err: any) {
+    console.log(err)
+    res.status(500).send()
+  }
 }
 
-async function getFile (client: Client, workspace: string, uuid: string, res: Response): Promise<void> {
-  const stat = await client.statObject(workspace, uuid)
+async function getFile (client: MinioService, workspace: WorkspaceId, uuid: string, res: Response): Promise<void> {
+  const stat = await client.stat(workspace, uuid)
 
-  client.getObject(workspace, uuid, (err, dataStream) => {
-    if (err !== null) {
-      console.log(err)
-      res.status(500).send()
-      return
-    }
+  try {
+    const dataStream = await client.get(workspace, uuid)
     res.status(200)
     res.set('Cache-Control', 'max-age=604800')
 
@@ -147,7 +121,10 @@ async function getFile (client: Client, workspace: string, uuid: string, res: Re
       console.log(err)
       res.status(500).send()
     })
-  })
+  } catch (err: any) {
+    console.log(err)
+    res.status(500).send()
+  }
 }
 
 /**
@@ -158,7 +135,7 @@ export function start (
   config: {
     transactorEndpoint: string
     elasticUrl: string
-    minio: Client
+    minio: MinioService
     accountsUrl: string
     uploadUrl: string
     modelVersion: string
@@ -211,7 +188,7 @@ export function start (
       const size = req.query.size as 'inline' | 'tiny' | 'x-small' | 'small' | 'medium' | 'large' | 'x-large' | 'full'
 
       uuid = await getResizeID(size, uuid, config, payload)
-      const stat = await config.minio.statObject(payload.workspace, uuid)
+      const stat = await config.minio.stat(payload.workspace, uuid)
 
       const fileSize = stat.size
 
@@ -310,13 +287,14 @@ export function start (
       const payload = decodeToken(token)
       const uuid = req.query.file as string
 
-      await config.minio.removeObject(payload.workspace, uuid)
+      await config.minio.remove(payload.workspace, [uuid])
 
-      const extra = await listMinioObjects(config.minio, payload.workspace, uuid)
-      if (extra.size > 0) {
-        for (const e of extra.entries()) {
-          await config.minio.removeObject(payload.workspace, e[1].name)
-        }
+      const extra = await config.minio.list(payload.workspace, uuid)
+      if (extra.length > 0) {
+        await config.minio.remove(
+          payload.workspace,
+          Array.from(extra.entries()).map((it) => it[1].name)
+        )
       }
 
       res.status(200).send()
@@ -365,7 +343,7 @@ export function start (
         }
         const id = uuid()
         const contentType = response.headers['content-type']
-        const meta: ItemBucketMetadata = {
+        const meta = {
           'Content-Type': contentType
         }
         const data: Buffer[] = []
@@ -375,12 +353,9 @@ export function start (
           })
           .on('end', function () {
             const buffer = Buffer.concat(data)
-            // eslint-disable-next-line @typescript-eslint/no-misused-promises
-            config.minio.putObject(payload.workspace, id, buffer, 0, meta, async (err, objInfo) => {
-              if (err !== null) {
-                console.log('minio putObject error', err)
-                res.status(500).send(err)
-              } else {
+            config.minio
+              .put(payload.workspace, id, buffer, 0, meta)
+              .then(async (objInfo) => {
                 console.log('uploaded uuid', id)
 
                 if (attachedTo !== undefined) {
@@ -405,8 +380,13 @@ export function start (
                   contentType,
                   size: buffer.length
                 })
-              }
-            })
+              })
+              .catch((err) => {
+                if (err !== null) {
+                  console.log('minio putObject error', err)
+                  res.status(500).send(err)
+                }
+              })
           })
           .on('error', function (err) {
             res.status(500).send(err)
@@ -454,7 +434,7 @@ export function start (
         }
         const id = uuid()
         const contentType = response.headers['content-type']
-        const meta: ItemBucketMetadata = {
+        const meta = {
           'Content-Type': contentType
         }
         const data: Buffer[] = []
@@ -465,11 +445,9 @@ export function start (
           .on('end', function () {
             const buffer = Buffer.concat(data)
             // eslint-disable-next-line @typescript-eslint/no-misused-promises
-            config.minio.putObject(payload.workspace, id, buffer, 0, meta, async (err, objInfo) => {
-              if (err !== null) {
-                console.log('minio putObject error', err)
-                res.status(500).send(err)
-              } else {
+            config.minio
+              .put(payload.workspace, id, buffer, 0, meta)
+              .then(async () => {
                 console.log('uploaded uuid', id)
 
                 if (attachedTo !== undefined) {
@@ -493,8 +471,11 @@ export function start (
                   contentType,
                   size: buffer.length
                 })
-              }
-            })
+              })
+              .catch((err) => {
+                console.log('minio putObject error', err)
+                res.status(500).send(err)
+              })
           })
           .on('error', function (err) {
             res.status(500).send(err)
@@ -515,7 +496,12 @@ export function start (
     server.close()
   }
 }
-async function getResizeID (size: string, uuid: string, config: { minio: Client }, payload: Token): Promise<string> {
+async function getResizeID (
+  size: string,
+  uuid: string,
+  config: { minio: MinioService },
+  payload: Token
+): Promise<string> {
   if (size !== undefined && size !== 'full') {
     let width = 64
     switch (size) {
@@ -536,7 +522,7 @@ async function getResizeID (size: string, uuid: string, config: { minio: Client 
     let hasSmall = false
     const sizeId = uuid + `%size%${width}`
     try {
-      const d = await config.minio.statObject(payload.workspace, sizeId)
+      const d = await config.minio.stat(payload.workspace, sizeId)
       hasSmall = d !== undefined && d.size > 0
     } catch (err) {}
     if (hasSmall) {
@@ -544,7 +530,7 @@ async function getResizeID (size: string, uuid: string, config: { minio: Client 
       uuid = sizeId
     } else {
       // Let's get data and resize it
-      const data = Buffer.concat(await readMinioData(config.minio, payload.workspace, uuid))
+      const data = Buffer.concat(await config.minio.read(payload.workspace, uuid))
 
       const dataBuff = await sharp(data)
         .resize({
@@ -552,29 +538,11 @@ async function getResizeID (size: string, uuid: string, config: { minio: Client 
         })
         .jpeg()
         .toBuffer()
-      await config.minio.putObject(payload.workspace, sizeId, dataBuff, {
+      await config.minio.put(payload.workspace, sizeId, dataBuff, dataBuff.length, {
         'Content-Type': 'image/jpeg'
       })
       uuid = sizeId
     }
   }
   return uuid
-}
-
-async function listMinioObjects (
-  client: Client,
-  db: string,
-  prefix: string
-): Promise<Map<string, BucketItem & { metaData: ItemBucketMetadata }>> {
-  const items = new Map<string, BucketItem & { metaData: ItemBucketMetadata }>()
-  const list = await client.listObjects(db, prefix, true)
-  await new Promise((resolve) => {
-    list.on('data', (data) => {
-      items.set(data.name, { metaData: {}, ...data })
-    })
-    list.on('end', () => {
-      resolve(null)
-    })
-  })
-  return items
 }

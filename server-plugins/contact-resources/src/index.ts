@@ -14,13 +14,13 @@
 // limitations under the License.
 //
 
-import core, { Doc, Tx, TxCreateDoc, TxRemoveDoc, TxUpdateDoc } from '@hcengineering/core'
-import type { TriggerControl, MinioClient, BucketItem } from '@hcengineering/server-core'
 import contact, { Contact, contactId, formatName, Organization, Person } from '@hcengineering/contact'
-import { getMetadata } from '@hcengineering/platform'
+import core, { Doc, Tx, TxCreateDoc, TxRemoveDoc, TxUpdateDoc } from '@hcengineering/core'
 import login from '@hcengineering/login'
-import { workbenchId } from '@hcengineering/workbench'
+import { getMetadata } from '@hcengineering/platform'
+import type { TriggerControl } from '@hcengineering/server-core'
 import view from '@hcengineering/view'
+import { workbenchId } from '@hcengineering/workbench'
 
 /**
  * @public
@@ -51,13 +51,14 @@ export async function OnContactDelete (tx: Tx, { findAll, hierarchy, storageFx }
   }
 
   storageFx(async (adapter, bucket) => {
-    await adapter.removeObject(bucket, avatar)
+    await adapter.remove(bucket, [avatar])
 
-    const extra = await listMinioObjects(adapter, bucket, avatar)
-    if (extra.size > 0) {
-      for (const e of extra.entries()) {
-        await adapter.removeObject(bucket, e[1].name)
-      }
+    const extra = await adapter.list(bucket, avatar)
+    if (extra.length > 0) {
+      await adapter.remove(
+        bucket,
+        Array.from(extra.entries()).map((it) => it[1].name)
+      )
     }
   })
 
@@ -70,9 +71,9 @@ export async function OnContactDelete (tx: Tx, { findAll, hierarchy, storageFx }
 export function personHTMLPresenter (doc: Doc, control: TriggerControl): string {
   const person = doc as Person
   const front = getMetadata(login.metadata.FrontUrl) ?? ''
-  return `<a href="${front}/${workbenchId}/${control.workspace}/${contactId}#${view.component.EditDoc}|${person._id}|${
-    person._class
-  }">${formatName(person.name)}</a>`
+  return `<a href="${front}/${workbenchId}/${control.workspace.name}/${contactId}#${view.component.EditDoc}|${
+    person._id
+  }|${person._class}">${formatName(person.name)}</a>`
 }
 
 /**
@@ -89,7 +90,7 @@ export function personTextPresenter (doc: Doc): string {
 export function organizationHTMLPresenter (doc: Doc, control: TriggerControl): string {
   const organization = doc as Organization
   const front = getMetadata(login.metadata.FrontUrl) ?? ''
-  return `<a href="${front}/${workbenchId}/${control.workspace}/${contactId}#${view.component.EditDoc}|${organization._id}|${organization._class}">${organization.name}</a>`
+  return `<a href="${front}/${workbenchId}/${control.workspace.name}/${contactId}#${view.component.EditDoc}|${organization._id}|${organization._class}">${organization.name}</a>`
 }
 
 /**
@@ -112,17 +113,3 @@ export default async () => ({
     OrganizationTextPresenter: organizationTextPresenter
   }
 })
-
-async function listMinioObjects (client: MinioClient, db: string, prefix: string): Promise<Map<string, BucketItem>> {
-  const items = new Map<string, BucketItem>()
-  const list = await client.listObjects(db, prefix, true)
-  await new Promise((resolve) => {
-    list.on('data', (data) => {
-      items.set(data.name, { ...data })
-    })
-    list.on('end', () => {
-      resolve(null)
-    })
-  })
-  return items
-}

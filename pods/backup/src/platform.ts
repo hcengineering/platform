@@ -13,12 +13,13 @@
 // limitations under the License.
 //
 
+import { getWorkspaceId } from '@hcengineering/core'
+import { MinioService } from '@hcengineering/minio'
 import { setMetadata } from '@hcengineering/platform'
 import { backup, createMinioBackupStorage } from '@hcengineering/server-backup'
-import got from 'got'
-import { Client as MinioClient } from 'minio'
-import config from './config'
 import serverToken from '@hcengineering/server-token'
+import got from 'got'
+import config from './config'
 
 async function getWorkspaces (): Promise<string[]> {
   const { body }: { body: { error?: string, result?: any[] } } = await got.post(config.AccountsURL, {
@@ -37,7 +38,7 @@ async function getWorkspaces (): Promise<string[]> {
 }
 
 export class PlatformWorker {
-  minio?: MinioClient
+  minio!: MinioService
 
   async close (): Promise<void> {}
 
@@ -51,7 +52,7 @@ export class PlatformWorker {
       minioPort = parseInt(sp[1])
     }
 
-    this.minio = new MinioClient({
+    this.minio = new MinioService({
       endPoint: minioEndpoint,
       port: minioPort,
       useSSL: false,
@@ -78,8 +79,8 @@ export class PlatformWorker {
     for (const ws of workspaces) {
       console.log('\n\nBACKUP WORKSPACE ', ws)
       try {
-        const storage = await createMinioBackupStorage(this.minio as MinioClient, 'backups', ws)
-        await backup(config.TransactorURL, ws, storage)
+        const storage = await createMinioBackupStorage(this.minio, getWorkspaceId('backups', config.ProductId), ws)
+        await backup(config.TransactorURL, getWorkspaceId(ws, config.ProductId), storage)
       } catch (err: any) {
         console.error('\n\nFAILED to BACKUP', ws, err)
       }

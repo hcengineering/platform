@@ -31,7 +31,6 @@
     "@types/express-fileupload": "^1.1.7",
     "@types/uuid": "^8.3.1",
     "@types/cors": "^2.8.12",
-    "@types/minio": "~7.0.11",
     "esbuild": "^0.15.13",
     "prettier": "^2.7.1",
     "@rushstack/heft": "^0.47.9",
@@ -55,7 +54,6 @@
     "@hcengineering/server-token": "~0.6.0",
     "@hcengineering/attachment": "~0.6.1",
     "@hcengineering/contrib": "~0.6.0",
-    "minio": "^7.0.26",
     "body-parser": "~1.19.1",
     "compression": "~1.7.4",
     "sharp": "~0.30.7"

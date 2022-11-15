@@ -28,7 +28,7 @@ import { Db, MongoClient } from 'mongodb'
 /**
  * @public
  */
-export function serveAccount (methods: Record<string, AccountMethod>): void {
+export function serveAccount (methods: Record<string, AccountMethod>, productId = ''): void {
   const ACCOUNT_PORT = parseInt(process.env.ACCOUNT_PORT ?? '3000')
   const dbUri = process.env.MONGO_URL
   if (dbUri === undefined) {
@@ -71,9 +71,9 @@ export function serveAccount (methods: Record<string, AccountMethod>): void {
     const token = extractToken(ctx.request.headers)
 
     const request = ctx.request.body as any
-    const method = (methods as { [key: string]: (db: Db, request: Request<any>, token?: string) => Response<any> })[
-      request.method
-    ]
+    const method = (
+      methods as { [key: string]: (db: Db, productId: string, request: Request<any>, token?: string) => Response<any> }
+    )[request.method]
     if (method === undefined) {
       const response: Response<void> = {
         id: request.id,
@@ -87,7 +87,7 @@ export function serveAccount (methods: Record<string, AccountMethod>): void {
       client = await MongoClient.connect(dbUri)
     }
     const db = client.db(ACCOUNT_DB)
-    const result = await method(db, request, token)
+    const result = await method(db, productId, request, token)
     console.log(result)
     ctx.body = result
   })

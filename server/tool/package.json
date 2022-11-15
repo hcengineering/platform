@@ -24,19 +24,19 @@
     "prettier": "^2.7.1",
     "@rushstack/heft": "^0.47.9",
     "typescript": "^4.3.5",
-    "@types/minio": "~7.0.11",
     "@types/ws": "^8.5.3"
   },
   "dependencies": {
-    "mongodb": "^4.9.0",
+    "mongodb": "^4.11.0",
     "@hcengineering/platform": "^0.6.7",    
-    "minio": "^7.0.26",
     "@hcengineering/core": "^0.6.17",
     "@hcengineering/contact": "~0.6.8",
     "@hcengineering/client-resources": "~0.6.4",
     "@hcengineering/client": "^0.6.3",
     "ws": "^8.10.0",
     "@hcengineering/model": "~0.6.0",
-    "@hcengineering/server-token": "~0.6.0"
+    "@hcengineering/server-token": "~0.6.0",
+    "@hcengineering/mongo": "~0.6.1",
+    "@hcengineering/minio": "^0.6.0"
   }
 }

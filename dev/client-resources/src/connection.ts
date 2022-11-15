@@ -23,6 +23,7 @@ import {
   DOMAIN_TX,
   FindOptions,
   FindResult,
+  getWorkspaceId,
   MeasureMetricsContext,
   Ref,
   ServerStorage,
@@ -122,7 +123,7 @@ export async function connect (handler: (tx: Tx) => void): Promise<ClientConnect
       factory: createNullFullTextAdapter,
       url: ''
     },
-    workspace: ''
+    workspace: getWorkspaceId('')
   }
   const serverStorage = await createServerStorage(conf)
   setMetadata(devmodel.metadata.DevModel, serverStorage)

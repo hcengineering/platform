@@ -30,13 +30,12 @@ import type {
   Storage,
   Timestamp,
   Tx,
-  TxResult
+  TxResult,
+  WorkspaceId
 } from '@hcengineering/core'
 import { Hierarchy, TxFactory } from '@hcengineering/core'
+import { MinioService } from '@hcengineering/minio'
 import type { Resource } from '@hcengineering/platform'
-import type { Client as MinioClient, BucketItem } from 'minio'
-
-export { MinioClient, BucketItem }
 
 /**
  * @public
@@ -98,7 +97,7 @@ export interface Pipeline extends LowLevelStorage {
  * @public
  */
 export interface TriggerControl {
-  workspace: string
+  workspace: WorkspaceId
   txFactory: TxFactory
   findAll: Storage['findAll']
   hierarchy: Hierarchy
@@ -107,7 +106,7 @@ export interface TriggerControl {
   fulltextFx: (f: (adapter: FullTextAdapter) => Promise<void>) => void
   // Since we don't have other storages let's consider adapter is MinioClient
   // Later can be replaced with generic one with bucket encapsulated inside.
-  storageFx: (f: (adapter: MinioClient, bucket: string) => Promise<void>) => void
+  storageFx: (f: (adapter: MinioService, workspaceId: WorkspaceId) => Promise<void>) => void
   fx: (f: () => Promise<void>) => void
 }
 
@@ -157,7 +156,7 @@ export interface FullTextAdapter {
 /**
  * @public
  */
-export type FullTextAdapterFactory = (url: string, workspace: string) => Promise<FullTextAdapter>
+export type FullTextAdapterFactory = (url: string, workspace: WorkspaceId) => Promise<FullTextAdapter>
 
 /**
  * @public

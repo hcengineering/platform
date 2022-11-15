@@ -67,7 +67,7 @@ setMetadata(serverToken.metadata.Secret, serverSecret)
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 console.log(`starting server on ${serverPort}`)
-const shutdown = start(url, elasticUrl, minioConf, serverPort)
+const shutdown = start(url, elasticUrl, minioConf, serverPort, '')
 
 const close = (): void => {
   console.trace('Exiting from server')

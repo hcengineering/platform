@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import core, { MeasureContext, Ref, Space, TxFactory } from '@hcengineering/core'
+import core, { MeasureContext, Ref, Space, toWorkspaceString, TxFactory, WorkspaceId } from '@hcengineering/core'
 import { readRequest, Response, serialize, UNAUTHORIZED, unknownError } from '@hcengineering/platform'
 import type { Pipeline } from '@hcengineering/server-core'
 import { decodeToken, Token } from '@hcengineering/server-token'
@@ -46,9 +46,11 @@ class SessionManager {
     ctx: MeasureContext,
     ws: WebSocket,
     token: Token,
-    pipelineFactory: (ws: string) => Promise<Pipeline>
+    pipelineFactory: (ws: WorkspaceId) => Promise<Pipeline>,
+    productId: string
   ): Promise<Session> {
-    const workspace = this.workspaces.get(token.workspace)
+    const wsString = toWorkspaceString(token.workspace, '@')
+    const workspace = this.workspaces.get(wsString)
     if (workspace === undefined) {
       return await this.createWorkspace(ctx, pipelineFactory, token, ws)
     } else {
@@ -115,7 +117,7 @@ class SessionManager {
 
   private async createWorkspace (
     ctx: MeasureContext,
-    pipelineFactory: (ws: string) => Promise<Pipeline>,
+    pipelineFactory: (ws: WorkspaceId) => Promise<Pipeline>,
     token: Token,
     ws: WebSocket
   ): Promise<Session> {
@@ -126,14 +128,21 @@ class SessionManager {
       sessions: [[session, ws]],
       upgrade: token.extra?.model === 'upgrade'
     }
-    this.workspaces.set(token.workspace, workspace)
+    this.workspaces.set(toWorkspaceString(token.workspace), workspace)
     await this.setStatus(ctx, session, true)
     return session
   }
 
-  async close (ctx: MeasureContext, ws: WebSocket, workspaceId: string, code: number, reason: string): Promise<void> {
+  async close (
+    ctx: MeasureContext,
+    ws: WebSocket,
+    workspaceId: WorkspaceId,
+    code: number,
+    reason: string
+  ): Promise<void> {
     if (LOGGING_ENABLED) console.log(`closing websocket, code: ${code}, reason: ${reason}`)
-    const workspace = this.workspaces.get(workspaceId)
+    const wsid = toWorkspaceString(workspaceId)
+    const workspace = this.workspaces.get(wsid)
     if (workspace === undefined) {
       console.error(new Error('internal: cannot find sessions'))
       return
@@ -149,15 +158,15 @@ class SessionManager {
         await this.setStatus(ctx, session[0], false)
       }
       if (workspace.sessions.length === 0) {
-        if (LOGGING_ENABLED) console.log('no sessions for workspace', workspaceId)
-        this.workspaces.delete(workspaceId)
+        if (LOGGING_ENABLED) console.log('no sessions for workspace', wsid)
+        this.workspaces.delete(wsid)
         await workspace.pipeline.close().catch((err) => console.error(err))
       }
     }
   }
 
-  broadcast (from: Session | null, workspaceId: string, resp: Response<any>, target?: string): void {
-    const workspace = this.workspaces.get(workspaceId)
+  broadcast (from: Session | null, workspaceId: WorkspaceId, resp: Response<any>, target?: string): void {
+    const workspace = this.workspaces.get(toWorkspaceString(workspaceId))
     if (workspace === undefined) {
       console.error(new Error('internal: cannot find sessions'))
       return
@@ -210,9 +219,10 @@ async function handleRequest<S extends Session> (
  */
 export function start (
   ctx: MeasureContext,
-  pipelineFactory: (workspace: string) => Promise<Pipeline>,
+  pipelineFactory: (workspace: WorkspaceId) => Promise<Pipeline>,
   sessionFactory: (token: Token, pipeline: Pipeline, broadcast: BroadcastCall) => Session,
   port: number,
+  productId: string,
   host?: string
 ): () => void {
   console.log(`starting server on port ${port} ...`)
@@ -244,12 +254,13 @@ export function start (
     ws.on('message', (msg: string) => {
       buffer.push(msg)
     })
-    const session = await sessions.addSession(ctx, ws, token, pipelineFactory)
+    const session = await sessions.addSession(ctx, ws, token, pipelineFactory, productId)
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     ws.on('message', async (msg: string) => await handleRequest(ctx, session, ws, msg))
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    ws.on('close', async (code: number, reason: string) => await sessions.close(ctx, ws, token.workspace, code, reason))
-
+    ws.on('close', (code: number, reason: string) => {
+      void sessions.close(ctx, ws, token.workspace, code, reason)
+    })
     for (const msg of buffer) {
       await handleRequest(ctx, session, ws, msg)
     }
@@ -261,6 +272,11 @@ export function start (
     try {
       const payload = decodeToken(token ?? '')
       console.log('client connected with payload', payload)
+
+      if (productId !== '' && payload.workspace.productId !== productId) {
+        throw new Error('Invalid workspace product')
+      }
+
       wss.handleUpgrade(request, socket, head, (ws) => wss.emit('connection', ws, request, payload))
     } catch (err) {
       wss.handleUpgrade(request, socket, head, (ws) => {

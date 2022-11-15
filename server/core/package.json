@@ -15,7 +15,6 @@
     "@hcengineering/platform-rig": "~0.6.0",
     "@types/heft-jest": "^1.0.3",
     "@types/node": "~16.11.12",
-    "@types/minio": "~7.0.11",
     "@typescript-eslint/eslint-plugin": "^5.41.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.1",
@@ -30,6 +29,6 @@
   "dependencies": {
     "@hcengineering/core": "^0.6.17",
     "@hcengineering/platform": "^0.6.7",
-    "minio": "^7.0.26"
+    "@hcengineering/minio": "^0.6.0"
   }
 }

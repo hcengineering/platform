@@ -27,6 +27,7 @@ import core, {
   FindOptions,
   FindResult,
   generateId,
+  getWorkspaceId,
   Hierarchy,
   MeasureMetricsContext,
   ModelDb,
@@ -37,7 +38,8 @@ import core, {
   toFindResult,
   Tx,
   TxOperations,
-  TxResult
+  TxResult,
+  WorkspaceId
 } from '@hcengineering/core'
 import {
   createServerStorage,
@@ -88,7 +90,12 @@ class NullDbAdapter implements DbAdapter {
   async clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {}
 }
 
-async function createNullAdapter (hierarchy: Hierarchy, url: string, db: string, modelDb: ModelDb): Promise<DbAdapter> {
+async function createNullAdapter (
+  hierarchy: Hierarchy,
+  url: string,
+  db: WorkspaceId,
+  modelDb: ModelDb
+): Promise<DbAdapter> {
   return new NullDbAdapter()
 }
 
@@ -153,7 +160,7 @@ describe('mongo operations', () => {
       await model.tx(t)
     }
 
-    const txStorage = await createMongoTxAdapter(hierarchy, mongodbUri, dbId, model)
+    const txStorage = await createMongoTxAdapter(hierarchy, mongodbUri, getWorkspaceId(dbId, ''), model)
 
     // Put all transactions to Tx
     for (const t of txes) {
@@ -184,7 +191,7 @@ describe('mongo operations', () => {
         factory: createNullFullTextAdapter,
         url: ''
       },
-      workspace: dbId
+      workspace: getWorkspaceId(dbId, '')
     }
     const serverStorage = await createServerStorage(conf)
     const ctx = new MeasureMetricsContext('client', {})

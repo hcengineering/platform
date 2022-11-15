@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { Client } from 'minio'
+import { MinioService } from '@hcengineering/minio'
 import { setMetadata } from '@hcengineering/platform'
 import serverToken from '@hcengineering/server-token'
 import { start } from '.'
@@ -51,7 +51,7 @@ if (minioSecretKey === undefined) {
   process.exit(1)
 }
 
-const minio = new Client({
+const minio = new MinioService({
   endPoint: minioEndpoint,
   port: 9000,
   useSSL: false,
