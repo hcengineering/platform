@@ -26,7 +26,6 @@
   import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
   import { classIcon, getSpaceName } from '../../utils'
-  import SpecialElement from './SpecialElement.svelte'
   import TreeItem from './TreeItem.svelte'
   import TreeNode from './TreeNode.svelte'
 
