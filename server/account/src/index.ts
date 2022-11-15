@@ -340,7 +340,7 @@ export async function listWorkspaces (db: Db, productId: string): Promise<Worksp
   if (productId === '') {
     return await db
       .collection<Workspace>(WORKSPACE_COLLECTION)
-      .find({ $or: [{productId: { $exists: false }}, {productId: ''}] })
+      .find({ $or: [{ productId: { $exists: false } }, { productId: '' }] })
       .toArray()
   }
   return await db.collection<Workspace>(WORKSPACE_COLLECTION).find({ productId }).toArray()
