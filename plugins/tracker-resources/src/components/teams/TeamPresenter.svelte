@@ -27,7 +27,7 @@
 </script>
 
 {#if model.specials}
-  <TreeNode icon={model.icon} title={space.name} indent={'ml-2'} actions={() => getActions(space)}>
+  <TreeNode icon={space?.icon ?? model.icon} title={space.name} indent={'ml-2'} actions={() => getActions(space)}>
     {#each model.specials as special}
       <SpecialElement
         indent={'ml-4'}

@@ -22,7 +22,6 @@
   import { Asset } from '@hcengineering/platform'
   import tracker from '../../plugin'
   import TeamIconChooser from './TeamIconChooser.svelte'
-  import TeamPresenter from './TeamPresenter.svelte'
 
   let name: string = ''
   let description: string = ''
@@ -43,8 +42,7 @@
       sequence: 0,
       issueStatuses: 0,
       defaultIssueStatus: '' as Ref<IssueStatus>,
-      icon,
-      presenter: TeamPresenter
+      icon
     })
   }
 

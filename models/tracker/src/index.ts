@@ -679,6 +679,10 @@ export function createModel (builder: Builder): void {
     presenter: tracker.component.ProjectTitlePresenter
   })
 
+  builder.mixin(tracker.class.Team, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: tracker.component.TeamPresenter
+  })
+
   classPresenter(
     builder,
     tracker.class.Project,

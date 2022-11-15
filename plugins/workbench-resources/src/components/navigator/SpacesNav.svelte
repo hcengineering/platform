@@ -20,17 +20,8 @@
   import { getResource } from '@hcengineering/platform'
   import preference from '@hcengineering/preference'
   import { getClient } from '@hcengineering/presentation'
-  import {
-    Action,
-    AnySvelteComponent,
-    getCurrentLocation,
-    IconAdd,
-    IconEdit,
-    IconSearch,
-    navigate,
-    showPopup
-  } from '@hcengineering/ui'
-  import { getActions as getContributedActions } from '@hcengineering/view-resources'
+  import { Action, getCurrentLocation, IconAdd, IconEdit, IconSearch, navigate, showPopup } from '@hcengineering/ui'
+  import { getActions as getContributedActions, getObjectPresenter } from '@hcengineering/view-resources'
   import { SpacesNavModel } from '@hcengineering/workbench'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
@@ -118,47 +109,29 @@
   function getParentActions (): Action[] {
     return hasSpaceBrowser ? [browseSpaces, addSpace] : [addSpace]
   }
-
-  function asComponent (val: any): AnySvelteComponent {
-    return val as AnySvelteComponent
-  }
 </script>
 
 <TreeNode label={model.label} parent actions={async () => getParentActions()} indent={'ml-2'}>
   {#each spaces as space (space._id)}
-    {#if space.presenter}
-      {@const presenter = asComponent(space.presenter)}
-      <svelte:component this={presenter} {space} {model} {getActions} {selectSpace} />
-    {:else if model.specials}
-      <TreeNode icon={model.icon} title={space.name} indent={'ml-2'} actions={() => getActions(space)}>
-        {#each model.specials as special}
-          <SpecialElement
+    {#await getObjectPresenter(client, space._class, { key: '' }) then presenter}
+      {#if model.specials && presenter}
+        <svelte:component this={presenter.presenter} {space} {model} {getActions} {selectSpace} />
+      {:else}
+        {#await getSpaceName(client, space) then name}
+          <TreeItem
             indent={'ml-4'}
-            label={special.label}
-            icon={special.icon}
-            on:click={() => dispatch('special', special.id)}
-            selected={currentSpace === space._id && special.id === currentSpecial}
+            _id={space._id}
+            title={name}
+            icon={classIcon(client, space._class)}
+            selected={currentSpace === space._id}
+            actions={() => getActions(space)}
+            bold={isChanged(space, $lastViews)}
             on:click={() => {
-              selectSpace(space._id, special.id)
+              selectSpace(space._id)
             }}
           />
-        {/each}
-      </TreeNode>
-    {:else}
-      {#await getSpaceName(client, space) then name}
-        <TreeItem
-          indent={'ml-4'}
-          _id={space._id}
-          title={name}
-          icon={classIcon(client, space._class)}
-          selected={currentSpace === space._id}
-          actions={() => getActions(space)}
-          bold={isChanged(space, $lastViews)}
-          on:click={() => {
-            selectSpace(space._id)
-          }}
-        />
-      {/await}
-    {/if}
+        {/await}
+      {/if}
+    {/await}
   {/each}
 </TreeNode>
