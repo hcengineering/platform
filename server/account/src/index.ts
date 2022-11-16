@@ -21,7 +21,16 @@ import contact, {
   Employee,
   getAvatarColorForId
 } from '@hcengineering/contact'
-import core, { AccountRole, Data, getWorkspaceId, Ref, Tx, TxOperations, Version } from '@hcengineering/core'
+import core, {
+  AccountRole,
+  Data,
+  getWorkspaceId,
+  Ref,
+  Tx,
+  TxOperations,
+  Version,
+  WorkspaceId
+} from '@hcengineering/core'
 import { MigrateOperation } from '@hcengineering/model'
 import platform, {
   getMetadata,
@@ -129,7 +138,7 @@ export interface WorkspaceLoginInfo extends LoginInfo {
  */
 export interface Invite {
   _id: ObjectId
-  workspace: string
+  workspace: WorkspaceId
   exp: number
   emailMask: string
   limit: number
@@ -256,7 +265,7 @@ export async function getInvite (db: Db, inviteId: ObjectId): Promise<Invite | n
 /**
  * @public
  */
-export async function checkInvite (invite: Invite | null, email: string): Promise<string> {
+export async function checkInvite (invite: Invite | null, email: string): Promise<WorkspaceId> {
   if (invite === null || invite.limit === 0) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
@@ -289,10 +298,10 @@ export async function join (
 ): Promise<WorkspaceLoginInfo> {
   const invite = await getInvite(db, inviteId)
   const workspace = await checkInvite(invite, email)
-  await assignWorkspace(db, productId, email, workspace)
+  await assignWorkspace(db, productId, email, workspace.name)
 
   const token = (await login(db, productId, email, password)).token
-  const result = await selectWorkspace(db, productId, token, workspace)
+  const result = await selectWorkspace(db, productId, token, workspace.name)
   await useInvite(db, inviteId)
   return result
 }
@@ -312,10 +321,10 @@ export async function signUpJoin (
   const invite = await getInvite(db, inviteId)
   const workspace = await checkInvite(invite, email)
   await createAccount(db, productId, email, password, first, last)
-  await assignWorkspace(db, productId, email, workspace)
+  await assignWorkspace(db, productId, email, workspace.name)
 
   const token = (await login(db, productId, email, password)).token
-  const result = await selectWorkspace(db, productId, token, workspace)
+  const result = await selectWorkspace(db, productId, token, workspace.name)
   await useInvite(db, inviteId)
   return result
 }
@@ -713,7 +722,7 @@ export async function checkJoin (
   const { email } = decodeToken(token)
   const invite = await getInvite(db, inviteId)
   const workspace = await checkInvite(invite, email)
-  return await selectWorkspace(db, productId, token, workspace)
+  return await selectWorkspace(db, productId, token, workspace.name)
 }
 
 /**
