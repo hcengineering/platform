@@ -76,3 +76,30 @@ export function toFindResult<T extends Doc> (docs: T[], total?: number): FindRes
   const length = total ?? docs.length
   return Object.assign(docs, { total: length })
 }
+
+/**
+ * @public
+ */
+export interface WorkspaceId {
+  name: string
+  productId: string
+}
+
+/**
+ * @public
+ *
+ * Combine workspace with productId, if not equal ''
+ */
+export function getWorkspaceId (workspace: string, productId: string = ''): WorkspaceId {
+  return {
+    name: workspace,
+    productId
+  }
+}
+
+/**
+ * @public
+ */
+export function toWorkspaceString (id: WorkspaceId, sep = '@'): string {
+  return id.name + (id.productId === '' ? '' : sep + id.productId)
+}

@@ -30,6 +30,6 @@
     "@hcengineering/core": "^0.6.17",
     "@hcengineering/platform": "^0.6.7",
     "@hcengineering/server-core": "~0.6.1",
-    "mongodb": "^4.9.0"
+    "mongodb": "^4.11.0"
   }
 }

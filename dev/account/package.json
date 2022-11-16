@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "@hcengineering/platform": "^0.6.7",
+    "@hcengineering/core": "^0.6.17",
     "@hcengineering/server-token": "~0.6.0"
   }
 }

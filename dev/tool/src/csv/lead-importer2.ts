@@ -14,7 +14,7 @@
 //
 
 import contact, { Contact, EmployeeAccount, Organization } from '@hcengineering/contact'
-import core, { generateId, MixinUpdate, Ref, TxOperations } from '@hcengineering/core'
+import core, { generateId, MixinUpdate, Ref, TxOperations, WorkspaceId } from '@hcengineering/core'
 import lead from '@hcengineering/lead'
 import { connect } from '@hcengineering/server-tool'
 import { readFile } from 'fs/promises'
@@ -98,8 +98,8 @@ export async function parseCSV (csvData: string): Promise<any[]> {
   })
 }
 
-export async function importLead2 (transactorUrl: string, dbName: string, csvFile: string): Promise<void> {
-  const connection = await connect(transactorUrl, dbName)
+export async function importLead2 (transactorUrl: string, workspaceId: WorkspaceId, csvFile: string): Promise<void> {
+  const connection = await connect(transactorUrl, workspaceId)
 
   try {
     console.log('loading cvs document...')

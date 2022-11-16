@@ -24,7 +24,8 @@ import core, {
   Ref,
   SortingOrder,
   TxOperations,
-  WithLookup
+  WithLookup,
+  WorkspaceId
 } from '@hcengineering/core'
 import lead, { Customer, Funnel, Lead } from '@hcengineering/lead'
 import { connect } from '@hcengineering/server-tool'
@@ -229,8 +230,8 @@ export async function parseCSV (csvData: string): Promise<any[]> {
   })
 }
 
-export async function importOrgs (transactorUrl: string, dbName: string, csvFile: string): Promise<void> {
-  const connection = (await connect(transactorUrl, dbName, undefined, {
+export async function importOrgs (transactorUrl: string, workspaceId: WorkspaceId, csvFile: string): Promise<void> {
+  const connection = (await connect(transactorUrl, workspaceId, undefined, {
     mode: 'backup'
   })) as unknown as Client & BackupClient
   try {

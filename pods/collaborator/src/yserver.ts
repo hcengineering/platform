@@ -8,8 +8,7 @@ import { createEncoder, length, toUint8Array, writeVarUint, writeVarUint8Array }
 import { Token } from '@hcengineering/server-token'
 import WebSocket from 'ws'
 
-import { Client as MinioClient } from 'minio'
-import { Readable } from 'stream'
+import { MinioService } from '@hcengineering/minio'
 
 const wsReadyStateConnecting = 0
 const wsReadyStateOpen = 1
@@ -27,31 +26,13 @@ export interface YPersistence {
     documentId: string,
     ydoc: WSSharedDoc,
     token: Token,
-    minio: MinioClient,
+    minio: MinioService,
     initialContentId: string
   ) => Promise<void>
   writeState: (documentId: string, ydoc: WSSharedDoc, token: Token) => Promise<void>
   provider: any
 }
 
-async function loadData (data: Readable): Promise<Buffer> {
-  const chunks: Buffer[] = []
-
-  await new Promise((resolve) => {
-    data.on('readable', () => {
-      let chunk
-      while ((chunk = data.read()) !== null) {
-        const b = chunk as Buffer
-        chunks.push(b)
-      }
-    })
-
-    data.on('end', () => {
-      resolve(null)
-    })
-  })
-  return Buffer.concat(chunks)
-}
 /**
  * @public
  */
@@ -62,30 +43,27 @@ persistence = {
     documentId: string,
     ydoc: WSSharedDoc,
     token: Token,
-    minio: MinioClient,
+    minio: MinioService,
     initialContentId: string
   ): Promise<void> => {
     try {
       ydoc.minio = minio
 
-      let minioDocument: Readable | undefined
+      let minioDocument: Buffer | undefined
       try {
-        minioDocument = await minio.getObject(token.workspace, documentId)
+        minioDocument = Buffer.concat(await minio.read(token.workspace, documentId))
       } catch (err: any) {
         if (initialContentId !== undefined && initialContentId.length > 0) {
-          minioDocument = await minio.getObject(token.workspace, initialContentId)
+          minioDocument = Buffer.concat(await minio.read(token.workspace, initialContentId))
         }
       }
 
-      if (minioDocument !== undefined) {
-        const buffer = await loadData(minioDocument)
-        if (buffer.length > 0) {
-          try {
-            const uint8arr = new Uint8Array(buffer)
-            applyUpdate(ydoc, uint8arr)
-          } catch (err) {
-            console.error(err)
-          }
+      if (minioDocument !== undefined && minioDocument.length > 0) {
+        try {
+          const uint8arr = new Uint8Array(minioDocument)
+          applyUpdate(ydoc, uint8arr)
+        } catch (err) {
+          console.error(err)
         }
       }
     } catch (err: any) {
@@ -97,7 +75,7 @@ persistence = {
       const newUpdates = encodeStateAsUpdate(ydoc)
       const buffer = Buffer.from(newUpdates.buffer)
 
-      await ydoc?.minio?.putObject(token.workspace, documentId, buffer)
+      await ydoc?.minio?.put(token.workspace, documentId, buffer)
     } catch (err: any) {
       console.error(err)
     }
@@ -147,7 +125,7 @@ class WSSharedDoc extends Doc {
   conns = new Map<WebSocket, ConnectionEntry>()
   awareness: Awareness
 
-  minio?: MinioClient
+  minio?: MinioService
 
   /**
    * @param {{ added: Array<number>, updated: Array<number>, removed: Array<number> }} changes
@@ -201,7 +179,7 @@ export function getYDoc (
   docId: string,
   token: Token,
   gc = true,
-  minio: MinioClient,
+  minio: MinioService,
   initialContentId: string
 ): WSSharedDoc {
   let doc = docs.get(docId)
@@ -300,7 +278,7 @@ export function setupWSConnection (
   req: any,
   documentId: string,
   token: Token,
-  minio: MinioClient,
+  minio: MinioService,
   initialContentId: string,
   gc = true
 ): void {

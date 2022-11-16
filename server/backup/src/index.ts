@@ -22,13 +22,14 @@ import core, {
   Domain,
   DOMAIN_MODEL,
   DOMAIN_TRANSIENT,
-  Ref
+  Ref,
+  WorkspaceId
 } from '@hcengineering/core'
+import { connect } from '@hcengineering/server-tool'
 import { createGzip } from 'node:zlib'
 import { join } from 'path'
 import { extract, Pack, pack } from 'tar-stream'
 import { createGunzip, gunzipSync, gzipSync } from 'zlib'
-import { connect } from '@hcengineering/server-tool'
 import { BackupStorage } from './storage'
 export * from './storage'
 
@@ -72,6 +73,7 @@ export interface BackupSnapshot {
 export interface BackupInfo {
   workspace: string
   version: string
+  productId: string
   snapshots: BackupSnapshot[]
 }
 
@@ -107,8 +109,8 @@ async function loadDigest (
 /**
  * @public
  */
-export async function backup (transactorUrl: string, dbName: string, storage: BackupStorage): Promise<void> {
-  const connection = (await connect(transactorUrl, dbName, undefined, {
+export async function backup (transactorUrl: string, workspaceId: WorkspaceId, storage: BackupStorage): Promise<void> {
+  const connection = (await connect(transactorUrl, workspaceId, undefined, {
     mode: 'backup'
   })) as unknown as CoreClient & BackupClient
   try {
@@ -118,7 +120,8 @@ export async function backup (transactorUrl: string, dbName: string, storage: Ba
       .filter((it) => it !== DOMAIN_TRANSIENT && it !== DOMAIN_MODEL)
 
     let backupInfo: BackupInfo = {
-      workspace: dbName,
+      workspace: workspaceId.name,
+      productId: workspaceId.productId,
       version: '0.6',
       snapshots: []
     }
@@ -128,7 +131,8 @@ export async function backup (transactorUrl: string, dbName: string, storage: Ba
       backupInfo = JSON.parse(gunzipSync(await storage.loadFile(infoFile)).toString())
     }
 
-    backupInfo.workspace = dbName
+    backupInfo.workspace = workspaceId.name
+    backupInfo.productId = workspaceId.productId
 
     const snapshot: BackupSnapshot = {
       date: Date.now(),
@@ -282,7 +286,7 @@ export async function backupList (storage: BackupStorage): Promise<void> {
  */
 export async function restore (
   transactorUrl: string,
-  dbName: string,
+  workspaceId: WorkspaceId,
   storage: BackupStorage,
   date: number
 ): Promise<void> {
@@ -311,7 +315,7 @@ export async function restore (
     Object.keys(s.domains).forEach((it) => domains.add(it as Domain))
   }
 
-  const connection = (await connect(transactorUrl, dbName, undefined, {
+  const connection = (await connect(transactorUrl, workspaceId, undefined, {
     mode: 'backup',
     model: 'upgrade'
   })) as unknown as CoreClient & BackupClient

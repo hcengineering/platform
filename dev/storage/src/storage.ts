@@ -23,7 +23,8 @@ import type {
   Ref,
   StorageIterator,
   Tx,
-  TxResult
+  TxResult,
+  WorkspaceId
 } from '@hcengineering/core'
 import { Hierarchy, TxDb } from '@hcengineering/core'
 import builder from '@hcengineering/model-all'
@@ -82,7 +83,7 @@ class InMemoryTxAdapter implements TxAdapter {
 export async function createInMemoryTxAdapter (
   hierarchy: Hierarchy,
   url: string,
-  workspace: string
+  workspace: WorkspaceId
 ): Promise<TxAdapter> {
   return new InMemoryTxAdapter(hierarchy)
 }

@@ -14,6 +14,7 @@
 //
 
 import core, {
+  BlobData,
   Class,
   Doc,
   DocumentQuery,
@@ -23,17 +24,17 @@ import core, {
   Hierarchy,
   ModelDb,
   Ref,
+  Space,
   StorageIterator,
   Tx,
   TxResult,
-  BlobData,
-  Space
+  WorkspaceId
 } from '@hcengineering/core'
+import { MinioService, MinioWorkspaceItem } from '@hcengineering/minio'
 import { DbAdapter } from '@hcengineering/server-core'
-import { BucketItem, Client, ItemBucketMetadata } from 'minio'
 
 class MinioBlobAdapter implements DbAdapter {
-  constructor (readonly db: string, readonly client: Client) {}
+  constructor (readonly workspaceId: WorkspaceId, readonly client: MinioService) {}
 
   async findAll<T extends Doc>(
     _class: Ref<Class<T>>,
@@ -51,48 +52,14 @@ class MinioBlobAdapter implements DbAdapter {
 
   async close (): Promise<void> {}
 
-  async listMinioObjects (): Promise<Map<string, BucketItem & { metaData: ItemBucketMetadata }>> {
-    const items = new Map<string, BucketItem & { metaData: ItemBucketMetadata }>()
-    const list = await this.client.listObjects(this.db, undefined, true)
-    await new Promise((resolve) => {
-      list.on('data', (data) => {
-        items.set(data.name, { metaData: {}, ...data })
-      })
-      list.on('end', () => {
-        resolve(null)
-      })
-    })
-    return items
-  }
-
-  async readMinioData (name: string): Promise<Buffer[]> {
-    const data = await this.client.getObject(this.db, name)
-    const chunks: Buffer[] = []
-
-    await new Promise((resolve) => {
-      data.on('readable', () => {
-        let chunk
-        while ((chunk = data.read()) !== null) {
-          const b = chunk as Buffer
-          chunks.push(b)
-        }
-      })
-
-      data.on('end', () => {
-        resolve(null)
-      })
-    })
-    return chunks
-  }
-
   find (domain: Domain): StorageIterator {
     let listRecieved = false
-    let items: (BucketItem & { metaData: ItemBucketMetadata })[]
+    let items: MinioWorkspaceItem[] = []
     let pos = 0
     return {
       next: async () => {
         if (!listRecieved) {
-          items = Array.from((await this.listMinioObjects()).values())
+          items = await this.client.list(this.workspaceId)
           listRecieved = true
         }
         if (pos < items?.length) {
@@ -113,8 +80,8 @@ class MinioBlobAdapter implements DbAdapter {
   async load (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
     const result: Doc[] = []
     for (const item of docs) {
-      const stat = await this.client.statObject(this.db, item)
-      const chunks: Buffer[] = await this.readMinioData(item)
+      const stat = await this.client.stat(this.workspaceId, item)
+      const chunks: Buffer[] = await this.client.read(this.workspaceId, item)
       const final = Buffer.concat(chunks)
       const dta: BlobData = {
         _id: item as Ref<BlobData>,
@@ -142,12 +109,12 @@ class MinioBlobAdapter implements DbAdapter {
       const blob = d as unknown as BlobData
       // Remove existing document
       try {
-        await this.client.removeObject(this.db, blob._id)
+        await this.client.remove(this.workspaceId, [blob._id])
       } catch (ee) {
         // ignore error
       }
       const buffer = Buffer.from(blob.base64Data, 'base64')
-      await this.client.putObject(this.db, blob._id, buffer, buffer.length, {
+      await this.client.put(this.workspaceId, blob._id, buffer, buffer.length, {
         'Content-Type': blob.type,
         lastModified: new Date(blob.modifiedOn)
       })
@@ -155,7 +122,7 @@ class MinioBlobAdapter implements DbAdapter {
   }
 
   async clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {
-    await this.client.removeObjects(this.db, docs)
+    await this.client.remove(this.workspaceId, docs)
   }
 }
 
@@ -165,12 +132,12 @@ class MinioBlobAdapter implements DbAdapter {
 export async function createMinioDataAdapter (
   hierarchy: Hierarchy,
   url: string,
-  db: string,
+  workspaceId: WorkspaceId,
   modelDb: ModelDb,
-  storage?: Client
+  storage?: MinioService
 ): Promise<DbAdapter> {
   if (storage === undefined) {
     throw new Error('minio storage adapter require minio')
   }
-  return new MinioBlobAdapter(db, storage)
+  return new MinioBlobAdapter(workspaceId, storage)
 }

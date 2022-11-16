@@ -12,12 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+import { getWorkspaceId } from '@hcengineering/core'
+import { getBucketId } from '..'
 
-import { getMethods } from '@hcengineering/account'
-import { Tx } from '@hcengineering/core'
-import builder, { migrateOperations, version } from '@hcengineering/model-all'
-import { serveAccount } from '.'
+describe('minio operations', () => {
+  it('check dot', async () => {
+    const wsid = getWorkspaceId('my-workspace', 'product')
 
-const txes = JSON.parse(JSON.stringify(builder.getTxes())) as Tx[]
-
-serveAccount(getMethods(version, txes, migrateOperations))
+    expect(getBucketId(wsid)).toEqual('my-workspace.product')
+  })
+})

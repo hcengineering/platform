@@ -1,7 +1,7 @@
 import attachment, { Attachment } from '@hcengineering/attachment'
-import { Class, Doc, generateId, Ref, Space, TxOperations } from '@hcengineering/core'
+import { Class, Doc, generateId, Ref, Space, TxOperations, WorkspaceId } from '@hcengineering/core'
+import { MinioService } from '@hcengineering/minio'
 import faker from 'faker'
-import { Client } from 'minio'
 import PDFDocument from 'pdfkit'
 
 export interface AttachmentOptions {
@@ -13,8 +13,8 @@ export interface AttachmentOptions {
 export async function addAttachments<T extends Doc> (
   options: AttachmentOptions,
   client: TxOperations,
-  minio: Client,
-  dbName: string,
+  minio: MinioService,
+  workspaceId: WorkspaceId,
   space: Ref<Space>,
   objectId: Ref<T>,
   _class: Ref<Class<T>>,
@@ -35,7 +35,7 @@ export async function addAttachments<T extends Doc> (
 
       const buf = doc.read()
       bufLen = buf.length
-      await minio.putObject(dbName, attachmentId, buf, bufLen, { 'Content-Type': 'application/pdf' })
+      await minio.put(workspaceId, attachmentId, buf, bufLen, { 'Content-Type': 'application/pdf' })
     }
 
     await client.addCollection(

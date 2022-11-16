@@ -54,9 +54,9 @@ import { updateCandidates } from './recruit'
 import { clearTelegramHistory } from './telegram'
 import { diffWorkspace, dumpWorkspace, restoreWorkspace } from './workspace'
 
-import { Data, Tx, Version } from '@hcengineering/core'
+import { Data, getWorkspaceId, Tx, Version } from '@hcengineering/core'
+import { MinioService } from '@hcengineering/minio'
 import { MigrateOperation } from '@hcengineering/model'
-import { Client } from 'minio'
 
 /**
  * @public
@@ -64,12 +64,12 @@ import { Client } from 'minio'
 export function devTool (
   prepareTools: () => {
     mongodbUri: string
-    minio: Client
+    minio: MinioService
     txes: Tx[]
     version: Data<Version>
     migrateOperations: MigrateOperation[]
-    productId: string
-  }
+  },
+  productId: string
 ): void {
   const serverSecret = process.env.SERVER_SECRET
   if (serverSecret === undefined) {
@@ -117,7 +117,7 @@ export function devTool (
       const { mongodbUri } = prepareTools()
       return await withDatabase(mongodbUri, async (db) => {
         console.log(`creating account ${cmd.first as string} ${cmd.last as string} (${email})...`)
-        await createAccount(db, email, cmd.password, cmd.first, cmd.last)
+        await createAccount(db, productId, email, cmd.password, cmd.first, cmd.last)
       })
     })
 
@@ -129,7 +129,7 @@ export function devTool (
       const { mongodbUri } = prepareTools()
       return await withDatabase(mongodbUri, async (db) => {
         console.log(`update account ${email} ${cmd.first as string} ${cmd.last as string}...`)
-        await replacePassword(db, email, cmd.password)
+        await replacePassword(db, productId, email, cmd.password)
       })
     })
 
@@ -140,7 +140,7 @@ export function devTool (
       const { mongodbUri } = prepareTools()
       return await withDatabase(mongodbUri, async (db, client) => {
         console.log(`assigning user ${email} to ${workspace}...`)
-        await assignWorkspace(db, email, workspace)
+        await assignWorkspace(db, productId, email, workspace)
       })
     })
 
@@ -160,9 +160,9 @@ export function devTool (
     .description('create workspace')
     .requiredOption('-o, --organization <organization>', 'organization name')
     .action(async (workspace, cmd) => {
-      const { mongodbUri, txes, version, migrateOperations, productId } = prepareTools()
+      const { mongodbUri, txes, version, migrateOperations } = prepareTools()
       return await withDatabase(mongodbUri, async (db) => {
-        await createWorkspace(version, txes, migrateOperations, productId, db, workspace, cmd.organization)
+        await createWorkspace(version, txes, migrateOperations, db, productId, workspace, cmd.organization)
       })
     })
 
@@ -171,14 +171,14 @@ export function devTool (
     .description('set user role')
     .action(async (email: string, workspace: string, role: number, cmd) => {
       console.log(`set user ${email} role for ${workspace}...`)
-      await setRole(email, workspace, role)
+      await setRole(email, workspace, productId, role)
     })
 
   program
     .command('upgrade-workspace <name>')
     .description('upgrade workspace')
     .action(async (workspace, cmd) => {
-      const { mongodbUri, version, txes, migrateOperations, productId } = prepareTools()
+      const { mongodbUri, version, txes, migrateOperations } = prepareTools()
       return await withDatabase(mongodbUri, async (db) => {
         await upgradeWorkspace(version, txes, migrateOperations, productId, db, workspace)
       })
@@ -188,7 +188,7 @@ export function devTool (
     .command('upgrade')
     .description('upgrade')
     .action(async (cmd) => {
-      const { mongodbUri, version, txes, migrateOperations, productId } = prepareTools()
+      const { mongodbUri, version, txes, migrateOperations } = prepareTools()
       return await withDatabase(mongodbUri, async (db) => {
         const workspaces = await listWorkspaces(db, productId)
         for (const ws of workspaces) {
@@ -204,12 +204,12 @@ export function devTool (
     .action(async (workspace, cmd) => {
       const { mongodbUri } = prepareTools()
       return await withDatabase(mongodbUri, async (db) => {
-        const ws = await getWorkspace(db, workspace)
+        const ws = await getWorkspace(db, productId, workspace)
         if (ws === null) {
           console.log('no workspace exists')
           return
         }
-        await dropWorkspace(db, workspace)
+        await dropWorkspace(db, productId, workspace)
       })
     })
 
@@ -217,7 +217,7 @@ export function devTool (
     .command('list-workspaces')
     .description('List workspaces')
     .action(async () => {
-      const { mongodbUri, version, productId } = prepareTools()
+      const { mongodbUri, version } = prepareTools()
       return await withDatabase(mongodbUri, async (db) => {
         const workspacesJSON = JSON.stringify(await listWorkspaces(db, productId), null, 2)
         console.info(workspacesJSON)
@@ -240,27 +240,27 @@ export function devTool (
   program
     .command('drop-account <name>')
     .description('drop account')
-    .action(async (email, cmd) => {
+    .action(async (email: string, cmd) => {
       const { mongodbUri } = prepareTools()
       return await withDatabase(mongodbUri, async (db) => {
-        await dropAccount(db, email)
+        await dropAccount(db, productId, email)
       })
     })
 
   program
     .command('dump-workspace <workspace> <dirName>')
     .description('dump workspace transactions and minio resources')
-    .action(async (workspace, dirName, cmd) => {
+    .action(async (workspace: string, dirName: string, cmd) => {
       const { mongodbUri, minio } = prepareTools()
-      return await dumpWorkspace(mongodbUri, workspace, dirName, minio)
+      return await dumpWorkspace(mongodbUri, getWorkspaceId(workspace, productId), dirName, minio)
     })
 
   program
     .command('backup <dirName> <workspace>')
     .description('dump workspace transactions and minio resources')
-    .action(async (dirName, workspace, cmd) => {
+    .action(async (dirName: string, workspace: string, cmd) => {
       const storage = await createFileBackupStorage(dirName)
-      return await backup(transactorUrl, workspace, storage)
+      return await backup(transactorUrl, getWorkspaceId(workspace, productId), storage)
     })
 
   program
@@ -274,7 +274,7 @@ export function devTool (
   program
     .command('backup-list <dirName>')
     .description('list snaphost ids for backup')
-    .action(async (dirName, cmd) => {
+    .action(async (dirName: string, cmd) => {
       const storage = await createFileBackupStorage(dirName)
       return await backupList(storage)
     })
@@ -282,36 +282,39 @@ export function devTool (
   program
     .command('backup-s3 <bucketName> <dirName> <workspace>')
     .description('dump workspace transactions and minio resources')
-    .action(async (bucketName, dirName, workspace, cmd) => {
+    .action(async (bucketName: string, dirName: string, workspace: string, cmd) => {
       const { minio } = prepareTools()
-      const storage = await createMinioBackupStorage(minio, bucketName, dirName)
-      return await backup(transactorUrl, workspace, storage)
+      const wsId = getWorkspaceId(workspace, productId)
+      const storage = await createMinioBackupStorage(minio, wsId, dirName)
+      return await backup(transactorUrl, wsId, storage)
     })
   program
     .command('backup-s3-restore <bucketName>, <dirName> <workspace> [date]')
     .description('dump workspace transactions and minio resources')
-    .action(async (bucketName, dirName, workspace, date, cmd) => {
+    .action(async (bucketName: string, dirName: string, workspace: string, date, cmd) => {
       const { minio } = prepareTools()
-      const storage = await createMinioBackupStorage(minio, bucketName, dirName)
-      return await restore(transactorUrl, workspace, storage, parseInt(date ?? '-1'))
+      const wsId = getWorkspaceId(bucketName, productId)
+      const storage = await createMinioBackupStorage(minio, wsId, dirName)
+      return await restore(transactorUrl, wsId, storage, parseInt(date ?? '-1'))
     })
   program
     .command('backup-s3-list <bucketName> <dirName>')
     .description('list snaphost ids for backup')
-    .action(async (bucketName, dirName, cmd) => {
+    .action(async (bucketName: string, dirName: string, cmd) => {
       const { minio } = prepareTools()
-      const storage = await createMinioBackupStorage(minio, bucketName, dirName)
+      const wsId = getWorkspaceId(bucketName, productId)
+      const storage = await createMinioBackupStorage(minio, wsId, dirName)
       return await backupList(storage)
     })
 
   program
     .command('restore-workspace <workspace> <dirName>')
     .description('restore workspace transactions and minio resources from previous dump.')
-    .action(async (workspace, dirName, cmd) => {
+    .action(async (workspace: string, dirName: string, cmd) => {
       const { mongodbUri, minio, txes, migrateOperations } = prepareTools()
       return await restoreWorkspace(
         mongodbUri,
-        workspace,
+        getWorkspaceId(workspace, productId),
         dirName,
         minio,
         getElasticUrl(),
@@ -324,9 +327,9 @@ export function devTool (
   program
     .command('diff-workspace <workspace>')
     .description('restore workspace transactions and minio resources from previous dump.')
-    .action(async (workspace, cmd) => {
+    .action(async (workspace: string, cmd) => {
       const { mongodbUri, txes } = prepareTools()
-      return await diffWorkspace(mongodbUri, workspace, txes)
+      return await diffWorkspace(mongodbUri, getWorkspaceId(workspace, productId), txes)
     })
 
   program
@@ -343,7 +346,7 @@ export function devTool (
         }
 
         console.log(`clearing ${workspace} history:`)
-        await clearTelegramHistory(mongodbUri, workspace, telegramDB, minio)
+        await clearTelegramHistory(mongodbUri, getWorkspaceId(workspace, productId), telegramDB, minio)
       })
     })
 
@@ -351,7 +354,7 @@ export function devTool (
     .command('clear-telegram-all-history')
     .description('clear telegram history')
     .action(async (cmd) => {
-      const { mongodbUri, minio, productId } = prepareTools()
+      const { mongodbUri, minio } = prepareTools()
       return await withDatabase(mongodbUri, async (db) => {
         const telegramDB = process.env.TELEGRAM_DATABASE
         if (telegramDB === undefined) {
@@ -363,7 +366,7 @@ export function devTool (
 
         for (const w of workspaces) {
           console.log(`clearing ${w.workspace} history:`)
-          await clearTelegramHistory(mongodbUri, w.workspace, telegramDB, minio)
+          await clearTelegramHistory(mongodbUri, getWorkspaceId(w.workspace, productId), telegramDB, minio)
         }
       })
     })
@@ -371,17 +374,17 @@ export function devTool (
   program
     .command('rebuild-elastic [workspace]')
     .description('rebuild elastic index')
-    .action(async (workspace, cmd) => {
-      const { mongodbUri, minio, productId } = prepareTools()
+    .action(async (workspace: string, cmd) => {
+      const { mongodbUri, minio } = prepareTools()
       return await withDatabase(mongodbUri, async (db) => {
         if (workspace === undefined) {
           const workspaces = await listWorkspaces(db, productId)
 
           for (const w of workspaces) {
-            await rebuildElastic(mongodbUri, w.workspace, minio, getElasticUrl())
+            await rebuildElastic(mongodbUri, getWorkspaceId(w.workspace, productId), minio, getElasticUrl())
           }
         } else {
-          await rebuildElastic(mongodbUri, workspace, minio, getElasticUrl())
+          await rebuildElastic(mongodbUri, getWorkspaceId(workspace, productId), minio, getElasticUrl())
           console.log('rebuild end')
         }
       })
@@ -390,56 +393,63 @@ export function devTool (
   program
     .command('import-xml <workspace> <fileName>')
     .description('Import Talants.')
-    .action(async (workspace, fileName, cmd) => {
+    .action(async (workspace: string, fileName: string, cmd) => {
       const { mongodbUri, minio } = prepareTools()
-      return await importXml(transactorUrl, workspace, minio, fileName, mongodbUri, getElasticUrl())
+      return await importXml(
+        transactorUrl,
+        getWorkspaceId(workspace, productId),
+        minio,
+        fileName,
+        mongodbUri,
+        getElasticUrl()
+      )
     })
 
   program
     .command('import-lead-csv <workspace> <fileName>')
     .description('Import LEAD csv customer organizations')
-    .action(async (workspace, fileName, cmd) => {
-      return await importLead(transactorUrl, workspace, fileName)
+    .action(async (workspace: string, fileName: string, cmd) => {
+      return await importLead(transactorUrl, getWorkspaceId(workspace, productId), fileName)
     })
 
   program
     .command('import-lead-csv2 <workspace> <fileName>')
     .description('Import LEAD csv customer organizations')
-    .action(async (workspace, fileName, cmd) => {
-      return await importLead2(transactorUrl, workspace, fileName)
+    .action(async (workspace: string, fileName: string, cmd) => {
+      return await importLead2(transactorUrl, getWorkspaceId(workspace, productId), fileName)
     })
 
   program
     .command('import-talant-csv <workspace> <fileName>')
     .description('Import Talant csv')
-    .action(async (workspace, fileName, cmd) => {
+    .action(async (workspace: string, fileName: string, cmd) => {
       const rekoniUrl = process.env.REKONI_URL
       if (rekoniUrl === undefined) {
         console.log('Please provide REKONI_URL environment variable')
         exit(1)
       }
-      return await importTalants(transactorUrl, workspace, fileName, rekoniUrl)
+      return await importTalants(transactorUrl, getWorkspaceId(workspace, productId), fileName, rekoniUrl)
     })
 
   program
     .command('import-org-csv <workspace> <fileName>')
     .description('Import Organizations csv')
-    .action(async (workspace, fileName, cmd) => {
-      return await importOrgs(transactorUrl, workspace, fileName)
+    .action(async (workspace: string, fileName: string, cmd) => {
+      return await importOrgs(transactorUrl, getWorkspaceId(workspace, productId), fileName)
     })
 
   program
     .command('lead-duplicates <workspace>')
     .description('Find and remove duplicate organizations.')
-    .action(async (workspace, cmd) => {
-      return await removeDuplicates(transactorUrl, workspace)
+    .action(async (workspace: string, cmd) => {
+      return await removeDuplicates(transactorUrl, getWorkspaceId(workspace, productId))
     })
 
   program
-    .command('generate-token <name> <workspace>')
+    .command('generate-token <name> <workspace> <productId>')
     .description('generate token')
-    .action(async (name, workspace) => {
-      console.log(generateToken(name, workspace))
+    .action(async (name: string, workspace: string, productId) => {
+      console.log(generateToken(name, getWorkspaceId(workspace, productId)))
     })
   program
     .command('decode-token <token>')
@@ -450,14 +460,21 @@ export function devTool (
   program
     .command('update-recruit <workspace>')
     .description('process pdf documents inside minio and update resumes with skills, etc.')
-    .action(async (workspace) => {
+    .action(async (workspace: string) => {
       const rekoniUrl = process.env.REKONI_URL
       if (rekoniUrl === undefined) {
         console.log('Please provide REKONI_URL environment variable')
         exit(1)
       }
       const { mongodbUri, minio } = prepareTools()
-      return await updateCandidates(transactorUrl, workspace, minio, mongodbUri, getElasticUrl(), rekoniUrl)
+      return await updateCandidates(
+        transactorUrl,
+        getWorkspaceId(workspace, productId),
+        minio,
+        mongodbUri,
+        getElasticUrl(),
+        rekoniUrl
+      )
     })
 
   program.parse(process.argv)

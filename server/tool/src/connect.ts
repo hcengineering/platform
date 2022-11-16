@@ -16,7 +16,7 @@
 
 import client from '@hcengineering/client'
 import clientResources from '@hcengineering/client-resources'
-import { Client } from '@hcengineering/core'
+import { Client, WorkspaceId } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
 import { generateToken } from '@hcengineering/server-token'
 
@@ -25,7 +25,7 @@ import { generateToken } from '@hcengineering/server-token'
  */
 export async function connect (
   transactorUrl: string,
-  workspace: string,
+  workspace: WorkspaceId,
   email?: string,
   extra?: Record<string, string>
 ): Promise<Client> {

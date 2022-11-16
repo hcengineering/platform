@@ -1,6 +1,7 @@
+import { WorkspaceId } from '@hcengineering/core'
+import { MinioService } from '@hcengineering/minio'
 import { createReadStream, createWriteStream, existsSync } from 'fs'
 import { mkdir, readFile, writeFile } from 'fs/promises'
-import { Client as MinioClient } from 'minio'
 import { dirname, join } from 'path'
 import { PassThrough, Readable, Writable } from 'stream'
 
@@ -51,40 +52,25 @@ class FileStorage implements BackupStorage {
 }
 
 class MinioStorage implements BackupStorage {
-  constructor (readonly client: MinioClient, readonly bucketName: string, readonly root: string) {}
+  constructor (readonly client: MinioService, readonly workspaceId: WorkspaceId, readonly root: string) {}
   async loadFile (name: string): Promise<Buffer> {
-    const data = await this.client.getObject(this.bucketName, join(this.root, name))
-    const chunks: Buffer[] = []
-
-    await new Promise((resolve) => {
-      data.on('readable', () => {
-        let chunk
-        while ((chunk = data.read()) !== null) {
-          const b = chunk as Buffer
-          chunks.push(b)
-        }
-      })
-
-      data.on('end', () => {
-        resolve(null)
-      })
-    })
-    return Buffer.concat(chunks)
+    const data = await this.client.read(this.workspaceId, join(this.root, name))
+    return Buffer.concat(data)
   }
 
   async write (name: string): Promise<Writable> {
     const wr = new PassThrough()
-    void this.client.putObject(this.bucketName, join(this.root, name), wr)
+    void this.client.put(this.workspaceId, join(this.root, name), wr)
     return wr
   }
 
   async load (name: string): Promise<Readable> {
-    return await this.client.getObject(this.bucketName, join(this.root, name))
+    return await this.client.get(this.workspaceId, join(this.root, name))
   }
 
   async exists (name: string): Promise<boolean> {
     try {
-      await this.client.statObject(this.bucketName, join(this.root, name))
+      await this.client.stat(this.workspaceId, join(this.root, name))
       return true
     } catch (err) {
       return false
@@ -92,7 +78,7 @@ class MinioStorage implements BackupStorage {
   }
 
   async writeFile (name: string, data: string | Buffer): Promise<void> {
-    void this.client.putObject(this.bucketName, join(this.root, name), data, data.length)
+    void this.client.put(this.workspaceId, join(this.root, name), data, data.length)
   }
 }
 
@@ -110,12 +96,12 @@ export async function createFileBackupStorage (fileName: string): Promise<Backup
  * @public
  */
 export async function createMinioBackupStorage (
-  client: MinioClient,
-  bucketName: string,
+  client: MinioService,
+  workspaceId: WorkspaceId,
   root: string
 ): Promise<BackupStorage> {
-  if (!(await client.bucketExists(bucketName))) {
-    await client.makeBucket(bucketName, 'k8s')
+  if (!(await client.exists(workspaceId))) {
+    await client.make(workspaceId)
   }
-  return new MinioStorage(client, bucketName, root)
+  return new MinioStorage(client, workspaceId, root)
 }

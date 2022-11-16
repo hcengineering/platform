@@ -14,9 +14,18 @@
 //
 
 import contact from '@hcengineering/contact'
-import core, { Client as CoreClient, Domain, DOMAIN_MODEL, DOMAIN_TX, IndexKind, Tx } from '@hcengineering/core'
+import core, {
+  Client as CoreClient,
+  Domain,
+  DOMAIN_MODEL,
+  DOMAIN_TX,
+  IndexKind,
+  Tx,
+  WorkspaceId
+} from '@hcengineering/core'
+import { MinioService } from '@hcengineering/minio'
 import { MigrateOperation } from '@hcengineering/model'
-import { Client } from 'minio'
+import { getWorkspaceDB } from '@hcengineering/mongo'
 import { Db, Document, MongoClient } from 'mongodb'
 import { connect } from './connect'
 import toolPlugin from './plugin'
@@ -29,7 +38,7 @@ export { toolPlugin as default }
 /**
  * @public
  */
-export function prepareTools (rawTxes: Tx[]): { mongodbUri: string, minio: Client, txes: Tx[] } {
+export function prepareTools (rawTxes: Tx[]): { mongodbUri: string, minio: MinioService, txes: Tx[] } {
   let minioEndpoint = process.env.MINIO_ENDPOINT
   if (minioEndpoint === undefined) {
     console.error('please provide minio endpoint')
@@ -61,7 +70,7 @@ export function prepareTools (rawTxes: Tx[]): { mongodbUri: string, minio: Clien
     minioPort = parseInt(sp[1])
   }
 
-  const minio = new Client({
+  const minio = new MinioService({
     endPoint: minioEndpoint,
     port: minioPort,
     useSSL: false,
@@ -77,7 +86,7 @@ export function prepareTools (rawTxes: Tx[]): { mongodbUri: string, minio: Clien
  */
 export async function initModel (
   transactorUrl: string,
-  dbName: string,
+  workspaceId: WorkspaceId,
   rawTxes: Tx[],
   migrateOperations: MigrateOperation[]
 ): Promise<void> {
@@ -89,7 +98,7 @@ export async function initModel (
   const client = new MongoClient(mongodbUri)
   try {
     await client.connect()
-    const db = client.db(dbName)
+    const db = getWorkspaceDB(client, workspaceId)
 
     console.log('dropping database...')
     await db.dropDatabase()
@@ -100,7 +109,7 @@ export async function initModel (
     console.log(`${result.insertedCount} model transactions inserted.`)
 
     console.log('creating data...')
-    const connection = await connect(transactorUrl, dbName, undefined, { model: 'upgrade' })
+    const connection = await connect(transactorUrl, workspaceId, undefined, { model: 'upgrade' })
     try {
       for (const op of migrateOperations) {
         await op.upgrade(connection)
@@ -115,8 +124,8 @@ export async function initModel (
     await createUpdateIndexes(connection, db)
 
     console.log('create minio bucket')
-    if (!(await minio.bucketExists(dbName))) {
-      await minio.makeBucket(dbName, 'k8s')
+    if (!(await minio.exists(workspaceId))) {
+      await minio.make(workspaceId)
     }
   } finally {
     await client.close()
@@ -128,7 +137,7 @@ export async function initModel (
  */
 export async function upgradeModel (
   transactorUrl: string,
-  dbName: string,
+  workspaceId: WorkspaceId,
   rawTxes: Tx[],
   migrateOperations: MigrateOperation[]
 ): Promise<void> {
@@ -141,7 +150,7 @@ export async function upgradeModel (
   const client = new MongoClient(mongodbUri)
   try {
     await client.connect()
-    const db = client.db(dbName)
+    const db = getWorkspaceDB(client, workspaceId)
 
     console.log('removing model...')
     // we're preserving accounts (created by core.account.System).
@@ -164,7 +173,7 @@ export async function upgradeModel (
 
     console.log('Apply upgrade operations')
 
-    const connection = await connect(transactorUrl, dbName, undefined, { model: 'upgrade' })
+    const connection = await connect(transactorUrl, workspaceId, undefined, { model: 'upgrade' })
 
     // Create update indexes
     await createUpdateIndexes(connection, db)

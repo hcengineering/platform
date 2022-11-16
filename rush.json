@@ -1408,6 +1408,11 @@
       "packageName": "@hcengineering/apm",
       "projectFolder": "tools/apm",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/minio",
+      "projectFolder": "server/minio",
+      "shouldPublish": true
     }
   ]
 }

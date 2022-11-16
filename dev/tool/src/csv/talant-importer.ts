@@ -31,7 +31,8 @@ import core, {
   Ref,
   Timestamp,
   TxOperations,
-  WithLookup
+  WithLookup,
+  WorkspaceId
 } from '@hcengineering/core'
 import { Asset, getEmbeddedLabel, IntlString } from '@hcengineering/platform'
 import recruit, { Candidate } from '@hcengineering/recruit'
@@ -385,11 +386,11 @@ export async function updateTalantClasses (
 
 export async function importTalants (
   transactorUrl: string,
-  dbName: string,
+  workspaceId: WorkspaceId,
   csvFile: string,
   rekoniUrl: string
 ): Promise<void> {
-  const connection = (await connect(transactorUrl, dbName, undefined, {
+  const connection = (await connect(transactorUrl, workspaceId, undefined, {
     mode: 'backup'
   })) as unknown as Client & BackupClient
 
@@ -410,7 +411,13 @@ export async function importTalants (
     await createMissingClass(client, locationDetails, getEmbeddedLabel('Language & Relocations'))
 
     await updateTalantClasses(client, records, fieldMapping)
-    await createTalants(client, filledFields, connection, rekoniUrl, generateToken('anticrm@hc.engineering', dbName))
+    await createTalants(
+      client,
+      filledFields,
+      connection,
+      rekoniUrl,
+      generateToken('anticrm@hc.engineering', workspaceId)
+    )
   } catch (err: any) {
     console.error(err)
   } finally {

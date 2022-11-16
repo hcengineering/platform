@@ -14,12 +14,13 @@
 // limitations under the License.
 //
 
-import { DOMAIN_TX, Ref } from '@hcengineering/core'
+import { DOMAIN_TX, Ref, WorkspaceId } from '@hcengineering/core'
+import { MinioService } from '@hcengineering/minio'
 import { DOMAIN_ATTACHMENT } from '@hcengineering/model-attachment'
 import contact, { DOMAIN_CHANNEL } from '@hcengineering/model-contact'
 import { DOMAIN_TELEGRAM } from '@hcengineering/model-telegram'
+import { getWorkspaceDB } from '@hcengineering/mongo'
 import telegram, { SharedTelegramMessage, SharedTelegramMessages } from '@hcengineering/telegram'
-import { Client } from 'minio'
 import { Document, MongoClient, UpdateFilter } from 'mongodb'
 
 const LastMessages = 'last-msgs'
@@ -29,14 +30,14 @@ const LastMessages = 'last-msgs'
  */
 export async function clearTelegramHistory (
   mongoUrl: string,
-  workspace: string,
+  workspaceId: WorkspaceId,
   tgDb: string,
-  minio: Client
+  minio: MinioService
 ): Promise<void> {
   const client = new MongoClient(mongoUrl)
   try {
     await client.connect()
-    const workspaceDB = client.db(workspace)
+    const workspaceDB = getWorkspaceDB(client, workspaceId)
     const telegramDB = client.db(tgDb)
 
     const sharedMessages = await workspaceDB
@@ -89,12 +90,12 @@ export async function clearTelegramHistory (
       workspaceDB.collection(DOMAIN_ATTACHMENT).deleteMany({
         attachedToClass: telegram.class.Message
       }),
-      minio.removeObjects(workspace, Array.from(attachments))
+      minio.remove(workspaceId, Array.from(attachments))
     ])
 
     console.log('clearing telegram service data...')
     await telegramDB.collection(LastMessages).deleteMany({
-      workspace
+      workspace: workspaceId
     })
   } finally {
     await client.close()

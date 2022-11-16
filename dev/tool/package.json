@@ -43,12 +43,11 @@
     "@types/request": "~2.48.8"
   },
   "dependencies": {
-    "mongodb": "^4.9.0",
+    "mongodb": "^4.11.0",
     "commander": "^8.1.0",
     "@hcengineering/account": "~0.6.0",
     "@hcengineering/core": "^0.6.17",
     "@hcengineering/contact": "~0.6.8",
-    "minio": "^7.0.26",
     "@hcengineering/model-all": "~0.6.0",
     "@hcengineering/model-telegram": "~0.6.0",
     "@hcengineering/telegram": "~0.6.2",
@@ -112,6 +111,7 @@
     "@hcengineering/lead": "~0.6.0",
     "email-addresses": "^5.0.0",
     "libphonenumber-js": "^1.9.46",
-    "@hcengineering/setting": "~0.6.1"
+    "@hcengineering/setting": "~0.6.1",
+    "@hcengineering/minio": "^0.6.0"
   }
 }

@@ -8,7 +8,8 @@ import core, {
   AttachedData,
   generateId,
   Ref,
-  SortingOrder
+  SortingOrder,
+  WorkspaceId
 } from '@hcengineering/core'
 import tracker, { calcRank, Issue, IssuePriority, IssueStatus } from '../../../plugins/tracker/lib'
 
@@ -41,8 +42,12 @@ export interface IssueOptions {
   count: number // how many issues to add
 }
 
-export async function generateIssues (transactorUrl: string, dbName: string, options: IssueOptions): Promise<void> {
-  const connection = await connect(transactorUrl, dbName)
+export async function generateIssues (
+  transactorUrl: string,
+  workspaceId: WorkspaceId,
+  options: IssueOptions
+): Promise<void> {
+  const connection = await connect(transactorUrl, workspaceId)
   const accounts = await connection.findAll(contact.class.EmployeeAccount, {})
   const account = faker.random.arrayElement(accounts)
   const client = new TxOperations(connection, account._id)

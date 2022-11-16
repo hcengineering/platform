@@ -43,7 +43,7 @@
     "@hcengineering/account": "~0.6.0",
     "@hcengineering/platform": "^0.6.7",
     "@hcengineering/core": "^0.6.17",
-    "mongodb": "^4.9.0",
+    "mongodb": "^4.11.0",
     "koa": "^2.13.1",
     "koa-router": "^10.1.1",
     "koa-bodyparser": "^4.3.0",

@@ -35,12 +35,13 @@
       "type": "node",
       "request": "launch",
       "args": [
-        "src/index.ts"
+        "src/__start.ts"
       ],
       "env": {
-        "MONGO_URL": "mongodb://localhost:27017",
+        "MONGO_URL": "mongodb://localhost:27018",
         "SERVER_SECRET": "secret",
-        "TRANSACTOR_URL": "ws:/localhost:3333"
+        "TRANSACTOR_URL": "ws:/localhost:3333",
+        "ACCOUNT_PORT": "3000"
       },
       "runtimeArgs": [
         "--nolazy",

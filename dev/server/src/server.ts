@@ -14,8 +14,7 @@
 // limitations under the License.
 //
 
-import type { Doc, Ref, TxResult } from '@hcengineering/core'
-import { DOMAIN_TX, MeasureMetricsContext } from '@hcengineering/core'
+import { Doc, DOMAIN_TX, getWorkspaceId, MeasureMetricsContext, Ref, TxResult } from '@hcengineering/core'
 import { createInMemoryTxAdapter } from '@hcengineering/dev-storage'
 import {
   createInMemoryAdapter,
@@ -74,12 +73,13 @@ export async function start (port: number, host?: string): Promise<void> {
           factory: createNullFullTextAdapter,
           url: ''
         },
-        workspace: ''
+        workspace: getWorkspaceId('')
       }
       return createPipeline(conf, [])
     },
     (token, pipeline, broadcast) => new ClientSession(broadcast, token, pipeline),
     port,
+    '',
     host
   )
 }
