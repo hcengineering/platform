@@ -2,7 +2,7 @@
   import { Class, Doc, DocumentQuery, FindOptions, Hierarchy, Ref } from '@hcengineering/core'
   import { Asset, IntlString } from '@hcengineering/platform'
   import { getClient, ObjectPopup, updateAttribute } from '@hcengineering/presentation'
-  import { Label, SelectPopup } from '@hcengineering/ui'
+  import { Label, SelectPopup, resizeObserver } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import view from '../plugin'
   import ObjectPresenter from './ObjectPresenter.svelte'
@@ -123,6 +123,7 @@
       searchable
       {width}
       {size}
+      on:changeContent
     />
   {:else if _class !== undefined}
     <ObjectPopup
@@ -136,6 +137,7 @@
       placeholder={placeholder ?? view.string.Filter}
       {width}
       {size}
+      on:changeContent
     >
       <svelte:fragment slot="item" let:item>
         <div class="flex flex-grow overflow-label" class:mt-2={huge} class:mb-2={huge}>
@@ -150,7 +152,7 @@
     </ObjectPopup>
   {/if}
 {:else}
-  <div class="selectPopup">
+  <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
     <div class="flex-center w-60 h-18">
       <Label label={view.string.DontMatchCriteria} />
     </div>

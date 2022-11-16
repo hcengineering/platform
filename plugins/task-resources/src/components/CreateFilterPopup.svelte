@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Timestamp } from '@hcengineering/core'
-  import { closeTooltip, Label } from '@hcengineering/ui'
+  import { closeTooltip, Label, resizeObserver } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import task from '../plugin'
   import { TimestampPresenter } from '@hcengineering/view-resources'
@@ -42,7 +42,7 @@
   ]
 </script>
 
-<div class="selectPopup">
+<div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
   <div class="scroll">
     <div class="box">
       <div

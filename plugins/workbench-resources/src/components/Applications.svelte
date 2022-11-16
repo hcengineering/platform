@@ -39,7 +39,7 @@
   let shown: boolean = false
 </script>
 
-<div class="flex-row-center clear-mins apps-{direction} relative">
+<div class="flex-{direction === 'horizontal' ? 'row-center' : 'col'} clear-mins apps-{direction} relative">
   {#if loaded}
     <Scroller
       invertScroll

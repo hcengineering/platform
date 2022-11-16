@@ -17,7 +17,6 @@
   import type { Class, Doc, DocumentQuery, FindOptions, Ref } from '@hcengineering/core'
   import type { IntlString } from '@hcengineering/platform'
   import presentation, { ObjectCreate, ObjectPopup } from '@hcengineering/presentation'
-  import { afterUpdate, createEventDispatcher } from 'svelte'
   import ObjectPresenter from './ObjectPresenter.svelte'
 
   export let _class: Ref<Class<Doc>>
@@ -35,10 +34,6 @@
   export let create: ObjectCreate | undefined = undefined
   export let searchField: string = 'name'
   export let docProps: Record<string, any> = {}
-
-  const dispatch = createEventDispatcher()
-
-  afterUpdate(() => dispatch('changeContent'))
 </script>
 
 <ObjectPopup
@@ -58,7 +53,7 @@
   {create}
   on:update
   on:close
-  on:changeContent={() => dispatch('changeContent')}
+  on:changeContent
 >
   <svelte:fragment slot="item" let:item={doc}>
     <div class="flex flex-grow overflow-label">

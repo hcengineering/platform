@@ -18,6 +18,7 @@
   import CheckBox from './CheckBox.svelte'
   import Label from './Label.svelte'
   import ListView from './ListView.svelte'
+  import { resizeObserver } from '..'
 
   export let items: Record<any, IntlString>
   export let selected: any | undefined = undefined
@@ -58,7 +59,7 @@
   }
 </script>
 
-<div class="selectPopup" on:keydown={onKeydown}>
+<div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')} on:keydown={onKeydown}>
   <div class="scroll">
     <div class="box">
       <ListView bind:this={list} count={objects.length} bind:selection>

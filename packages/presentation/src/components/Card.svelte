@@ -18,7 +18,7 @@
   import { Button, IconClose, Label, MiniToggle } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation from '..'
-  import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
+  import { deviceOptionsStore as deviceInfo, resizeObserver } from '@hcengineering/ui'
 
   export let label: IntlString
   export let labelProps: any | undefined = undefined
@@ -33,7 +33,14 @@
   let okProcessing = false
 </script>
 
-<form id={label} class="antiCard {$deviceInfo.isMobile ? 'mobile' : 'dialog'}" on:submit|preventDefault={() => {}}>
+<form
+  id={label}
+  class="antiCard {$deviceInfo.isMobile ? 'mobile' : 'dialog'}"
+  on:submit|preventDefault={() => {}}
+  use:resizeObserver={() => {
+    dispatch('changeContent')
+  }}
+>
   <div class="antiCard-header">
     <div class="antiCard-header__title-wrap">
       {#if $$slots.header}

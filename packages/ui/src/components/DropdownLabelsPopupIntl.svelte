@@ -17,6 +17,7 @@
   import type { DropdownIntlItem } from '../types'
   import CheckBox from './CheckBox.svelte'
   import Label from './Label.svelte'
+  import { resizeObserver } from '..'
 
   export let items: DropdownIntlItem[]
   export let selected: DropdownIntlItem['id'] | undefined = undefined
@@ -35,7 +36,7 @@
   }
 </script>
 
-<div class="selectPopup">
+<div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
   <div class="scroll">
     <div class="box">
       {#each items as item, i}

@@ -1,12 +1,10 @@
 <script lang="ts">
   import { Asset } from '@hcengineering/platform'
-  import { afterUpdate, createEventDispatcher } from 'svelte'
   import { getClient } from '@hcengineering/presentation'
   import { Menu, Action, showPopup, closePopup } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import contact from '../plugin'
 
-  const dispatch = createEventDispatcher()
   const client = getClient()
 
   const actions: Action[] = []
@@ -29,10 +27,6 @@
         })
       }
     })
-
-  afterUpdate(() => {
-    dispatch('changeContent')
-  })
 </script>
 
-<Menu {actions} on:changeContent={() => dispatch('changeContent')} />
+<Menu {actions} on:changeContent />

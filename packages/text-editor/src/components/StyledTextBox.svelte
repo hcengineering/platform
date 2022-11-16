@@ -1,7 +1,16 @@
 <script lang="ts">
   import { IntlString } from '@hcengineering/platform'
   import presentation, { MessageViewer } from '@hcengineering/presentation'
-  import { ActionIcon, IconCheck, IconClose, IconEdit, IconSize, Label, ShowMore } from '@hcengineering/ui'
+  import {
+    ActionIcon,
+    IconCheck,
+    IconClose,
+    IconEdit,
+    IconSize,
+    Label,
+    ShowMore,
+    resizeObserver
+  } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import textEditorPlugin from '../plugin'
   import StyledTextEditor from './StyledTextEditor.svelte'
@@ -77,6 +86,9 @@
     if (alwaysEdit && focused) {
       textEditor?.focus()
     }
+  }}
+  use:resizeObserver={() => {
+    dispatch('changeSize')
   }}
 >
   {#if label}

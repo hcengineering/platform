@@ -20,6 +20,7 @@
   import plugin from '../plugin'
   import CheckBox from './CheckBox.svelte'
   import ListView from './ListView.svelte'
+  import { resizeObserver } from '..'
 
   export let placeholder: IntlString = plugin.string.SearchDots
   export let items: DropdownTextItem[]
@@ -72,7 +73,13 @@
   }
 </script>
 
-<div class="selectPopup" on:keydown={onKeydown}>
+<div
+  class="selectPopup"
+  on:keydown={onKeydown}
+  use:resizeObserver={() => {
+    dispatch('changeContent')
+  }}
+>
   <div class="header">
     <input
       bind:this={searchInput}

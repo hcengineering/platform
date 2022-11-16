@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import type { Asset, IntlString } from '@hcengineering/platform'
-  import { afterUpdate, createEventDispatcher } from 'svelte'
+  import { createEventDispatcher } from 'svelte'
   import { createFocusManager } from '../focus'
   import EditBox from './EditBox.svelte'
   import FocusHandler from './FocusHandler.svelte'
@@ -85,8 +85,6 @@
   $: filteredObjects = value.filter((el) => (el.label ?? el.text ?? '').toLowerCase().includes(search.toLowerCase()))
 
   $: huge = size === 'medium' || size === 'large'
-
-  afterUpdate(() => dispatch('changeContent'))
 </script>
 
 <FocusHandler {manager} />

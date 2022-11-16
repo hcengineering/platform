@@ -13,8 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { closeTooltip } from '@hcengineering/ui'
-
+  import { closeTooltip, resizeObserver } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import view from '../../plugin'
@@ -54,7 +53,7 @@
   ]
 </script>
 
-<div class="selectPopup">
+<div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
   <div class="scroll">
     <div class="box">
       {#each values as value, i}

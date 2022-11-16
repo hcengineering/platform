@@ -16,11 +16,11 @@
   import type { Asset, IntlString } from '@hcengineering/platform'
   import { translate } from '@hcengineering/platform'
   import { createEventDispatcher, onMount } from 'svelte'
-
   import type { AnySvelteComponent, ListItem } from '../types'
   import plugin from '../plugin'
   import Icon from './Icon.svelte'
   import ListView from './ListView.svelte'
+  import { resizeObserver } from '..'
 
   export let icon: Asset | AnySvelteComponent
   export let placeholder: IntlString = plugin.string.SearchDots
@@ -77,7 +77,7 @@
   }
 </script>
 
-<div class="selectPopup" on:keydown={onKeydown}>
+<div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')} on:keydown={onKeydown}>
   <div class="header">
     <input
       bind:this={searchInput}

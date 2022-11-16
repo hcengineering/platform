@@ -32,7 +32,7 @@
 </script>
 
 <div class="root" style="height: {$tweenedHeight}px">
-  <div bind:offsetHeight={height} class="clear-mins">
+  <div bind:offsetHeight={height} class="flex-no-shrink clear-mins">
     <slot />
   </div>
 </div>
@@ -41,5 +41,6 @@
   .root {
     overflow: hidden;
     min-height: 0;
+    flex-shrink: 0;
   }
 </style>
