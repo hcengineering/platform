@@ -16,10 +16,8 @@
   import type { IntlString } from '@hcengineering/platform'
   import { translate } from '@hcengineering/platform'
   import { createEventDispatcher, onMount } from 'svelte'
-
   import core, { Class, getCurrentAccount, Ref, Space } from '@hcengineering/core'
-  import { tooltip, CheckBox } from '@hcengineering/ui'
-
+  import { tooltip, CheckBox, resizeObserver } from '@hcengineering/ui'
   import { createQuery } from '../utils'
   import presentation from '..'
   import SpaceInfo from './SpaceInfo.svelte'
@@ -91,7 +89,7 @@
   })
 </script>
 
-<div class="selectPopup">
+<div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
   <div class="header">
     <input bind:this={input} type="text" bind:value={searchQuery} placeholder={phTraslate} on:change />
   </div>

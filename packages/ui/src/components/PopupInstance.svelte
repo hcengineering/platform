@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { afterUpdate, onMount } from 'svelte'
+  import { onMount } from 'svelte'
   import { fitPopupElement } from '../popups'
   import type { AnyComponent, AnySvelteComponent, PopupAlignment, PopupOptions } from '../types'
   import { deviceOptionsStore as deviceInfo } from '..'
@@ -44,7 +44,8 @@
       height: '',
       maxWidth: '',
       maxHeight: '',
-      minWidth: ''
+      minWidth: '',
+      minHeight: ''
     },
     showOverlay: false,
     direction: 'bottom'
@@ -101,8 +102,6 @@
   onMount(() => fitPopup())
   $: if ($deviceInfo.docWidth <= 900 && !docSize) docSize = true
   $: if ($deviceInfo.docWidth > 900 && docSize) docSize = false
-
-  afterUpdate(() => fitPopup())
 </script>
 
 <svelte:window on:resize={fitPopup} on:keydown={handleKeydown} />
@@ -121,6 +120,7 @@
   style:max-width={options.props.maxWidth}
   style:max-height={options.props.maxHeight}
   style:min-width={options.props.minWidth}
+  style:min-height={options.props.minHeight}
   style:transform={options.props.transform}
 >
   <svelte:component

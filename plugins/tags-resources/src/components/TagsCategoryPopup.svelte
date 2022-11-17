@@ -18,7 +18,7 @@
   import { translate } from '@hcengineering/platform'
   import presentation, { createQuery } from '@hcengineering/presentation'
   import { TagCategory, TagElement } from '@hcengineering/tags'
-  import { Button, CheckBox, getPlatformColor, Icon, IconClose, Label } from '@hcengineering/ui'
+  import { Button, CheckBox, getPlatformColor, Icon, IconClose, Label, resizeObserver } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import tags from '../plugin'
 
@@ -96,7 +96,7 @@
   )
 </script>
 
-<div class="selectPopup maxHeight">
+<div class="selectPopup maxHeight" use:resizeObserver={() => dispatch('changeContent')}>
   <div class="header no-border">
     <div class="flex-between flex-grow pr-2">
       <div class="flex-grow">

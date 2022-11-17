@@ -16,7 +16,7 @@
 <script lang="ts">
   import type { IntlString } from '@hcengineering/platform'
   import { createEventDispatcher } from 'svelte'
-  import { EditBox } from '@hcengineering/ui'
+  import { EditBox, resizeObserver } from '@hcengineering/ui'
   import type { EditStyle } from '@hcengineering/ui'
 
   export let value: string | number | undefined
@@ -31,7 +31,7 @@
   }
 </script>
 
-<div class="selectPopup">
+<div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
   <div class="header no-border">
     <EditBox bind:value {placeholder} {format} {kind} focus on:keypress={_onkeypress} />
   </div>

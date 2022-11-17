@@ -17,7 +17,7 @@
   import { Ref, SortingOrder } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import task, { SpaceWithStates, State } from '@hcengineering/task'
-  import { getPlatformColor } from '@hcengineering/ui'
+  import { getPlatformColor, resizeObserver } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
   export let space: Ref<SpaceWithStates>
@@ -38,7 +38,7 @@
   )
 </script>
 
-<div class="selectPopup">
+<div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
   <div class="scroll">
     <div class="box">
       {#each states as state}

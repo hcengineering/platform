@@ -299,13 +299,13 @@
 <svelte:window on:resize={_resize} />
 
 <div class="scroller-container {invertScroll ? 'invert' : 'normal'}">
-  <div bind:this={divHScroll} class="horizontalBox">
+  <div bind:this={divHScroll} class="horizontalBox flex-shrink">
     <div
       bind:this={divScroll}
       use:resizeObserver={(element) => {
         divHeight = element.clientHeight
       }}
-      class="scroll relative"
+      class="scroll relative flex-shrink"
       class:overflowXauto={horizontal}
       class:overflowXhidden={!horizontal}
       on:scroll={() => {
@@ -375,6 +375,7 @@
     position: relative;
     display: flex;
     flex-direction: column;
+    flex-shrink: 1;
     height: 100%;
     min-width: 0;
     min-height: 0;

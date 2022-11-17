@@ -5,13 +5,10 @@
   import { createQuery, getClient, ObjectSearchPopup, ObjectSearchResult } from '@hcengineering/presentation'
   import { Issue } from '@hcengineering/tracker'
   import { Action, closePopup, Menu, showPopup } from '@hcengineering/ui'
-  import { afterUpdate, createEventDispatcher } from 'svelte'
   import { updateIssueRelation } from '../issues'
   import tracker from '../plugin'
 
   export let value: Issue
-
-  const dispatch = createEventDispatcher()
 
   const client = getClient()
   const query = createQuery()
@@ -126,10 +123,8 @@
     },
     ...(hasRelation ? removeRelationAction : [])
   ]
-
-  afterUpdate(() => dispatch('changeContent'))
 </script>
 
 {#if actions}
-  <Menu {actions} on:changeContent={() => dispatch('changeContent')} />
+  <Menu {actions} on:changeContent />
 {/if}

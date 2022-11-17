@@ -16,7 +16,7 @@
   import { Class, Doc, FindResult, Ref } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
   import presentation, { getClient } from '@hcengineering/presentation'
-  import { Button, CheckBox, getPlatformColor, Loading } from '@hcengineering/ui'
+  import { Button, CheckBox, getPlatformColor, Loading, resizeObserver } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
   import view from '@hcengineering/view-resources/src/plugin'
   import { createEventDispatcher, onMount } from 'svelte'
@@ -102,7 +102,7 @@
   getValues(search)
 </script>
 
-<div class="selectPopup">
+<div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
   <div class="header">
     <input
       bind:this={searchInput}

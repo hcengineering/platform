@@ -18,6 +18,7 @@
   import { createEventDispatcher, onMount } from 'svelte'
   import { getPlatformColor } from '../colors'
   import ListView from './ListView.svelte'
+  import { resizeObserver } from '..'
 
   export let placeholder: IntlString | undefined = undefined
   export let placeholderParam: any | undefined = undefined
@@ -73,7 +74,13 @@
   })
 </script>
 
-<div class="selectPopup" on:keydown={onKeydown}>
+<div
+  class="selectPopup"
+  on:keydown={onKeydown}
+  use:resizeObserver={() => {
+    dispatch('changeContent')
+  }}
+>
   {#if searchable}
     <div class="header">
       <input bind:this={input} type="text" bind:value={search} placeholder={phTraslate} on:input={() => {}} on:change />

@@ -13,7 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { afterUpdate, createEventDispatcher } from 'svelte'
+  import { createEventDispatcher } from 'svelte'
+  import { resizeObserver } from '..'
 
   export let selection: number = 0
   export let count: number
@@ -53,12 +54,16 @@
       r?.scrollIntoView({ behavior: 'auto', block: 'nearest' })
     }
   }
-
-  afterUpdate(() => dispatch('changeContent'))
 </script>
 
 {#if count}
-  <div class="list-container flex-col flex-grow" style:overflow={'auto'}>
+  <div
+    class="list-container flex-col flex-grow"
+    style:overflow={'auto'}
+    use:resizeObserver={() => {
+      dispatch('changeContent')
+    }}
+  >
     {#each Array(count) as _, row}
       <slot name="category" item={row} />
       <div
@@ -76,7 +81,7 @@
 
 <style lang="scss">
   .list-container {
-    border-radius: 0.25rem;
+    // border-radius: 0.25rem;
     user-select: none;
 
     .selection {

@@ -23,7 +23,7 @@
   import view from '../plugin'
   import { focusStore, selectionStore } from '../selection'
   import ActionContext from './ActionContext.svelte'
-  import { ListView } from '@hcengineering/ui'
+  import { ListView, resizeObserver } from '@hcengineering/ui'
   import ObjectPresenter from './ObjectPresenter.svelte'
   import { tick } from 'svelte'
 
@@ -179,7 +179,12 @@
   }}
 />
 
-<div class="selectPopup width-40" style:width="15rem" on:keydown={onKeydown}>
+<div
+  class="selectPopup width-40"
+  style:width="15rem"
+  on:keydown={onKeydown}
+  use:resizeObserver={() => dispatch('changeContent')}
+>
   <div class="mt-2 ml-2 flex-between">
     {#if $selectionStore.length > 0}
       <div class="item-box">

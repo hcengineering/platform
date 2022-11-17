@@ -18,7 +18,17 @@
   import { translate } from '@hcengineering/platform'
   import presentation, { createQuery, getClient } from '@hcengineering/presentation'
   import { TagCategory, TagElement } from '@hcengineering/tags'
-  import { Button, CheckBox, getPlatformColor, Icon, IconAdd, IconClose, Label, showPopup } from '@hcengineering/ui'
+  import {
+    Button,
+    CheckBox,
+    getPlatformColor,
+    Icon,
+    IconAdd,
+    IconClose,
+    Label,
+    showPopup,
+    resizeObserver
+  } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import tags from '../plugin'
   import CreateTagElement from './CreateTagElement.svelte'
@@ -99,7 +109,7 @@
   }
 </script>
 
-<div class="selectPopup maxHeight">
+<div class="selectPopup maxHeight" use:resizeObserver={() => dispatch('changeContent')}>
   <div class="header no-border">
     <div class="flex-between flex-grow pr-2">
       <div class="flex-grow">
