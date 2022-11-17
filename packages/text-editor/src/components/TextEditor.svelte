@@ -23,6 +23,7 @@
   import textEditorPlugin from '../plugin'
   import { FormatMode } from '../types'
   import { defaultExtensions } from './extensions'
+  import { Level } from '@tiptap/extension-heading'
 
   export let content: string = ''
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
@@ -55,8 +56,8 @@
   export function insertText (text: string): void {
     editor.commands.insertContent(text as HTMLContent)
   }
-  export function checkIsActive (formatMode: FormatMode) {
-    return editor.isActive(formatMode)
+  export function checkIsActive (formatMode: FormatMode, attributes?: {} | undefined) {
+    return editor.isActive(formatMode, attributes)
   }
   export function toggleBold () {
     editor.commands.toggleBold()
@@ -94,9 +95,41 @@
   export function toggleCodeBlock () {
     editor.commands.toggleCodeBlock()
   }
-  let needFocus = false
+  export function toggleHeading (attributes: { level: Level }) {
+    editor.commands.toggleHeading(attributes)
+  }
+  export function addColumnBefore () {
+    editor.commands.addColumnBefore()
+  }
+  export function addColumnAfter () {
+    editor.commands.addColumnAfter()
+  }
+  export function deleteColumn () {
+    editor.commands.deleteColumn()
+  }
+  export function addRowBefore () {
+    editor.commands.addRowBefore()
+  }
+  export function addRowAfter () {
+    editor.commands.addRowAfter()
+  }
+  export function deleteRow () {
+    editor.commands.deleteRow()
+  }
+  export function deleteTable () {
+    editor.commands.deleteTable()
+  }
+  export function insertTable (options?: { rows?: number; cols?: number; withHeaderRow?: boolean }) {
+    editor.commands.insertTable({
+      cols: options?.cols ?? 2,
+      rows: options?.rows ?? 1,
+      withHeaderRow: options?.withHeaderRow
+    })
+  }
 
+  let needFocus = false
   let focused = false
+
   export function focus (): void {
     needFocus = true
   }
@@ -164,6 +197,7 @@
           content = editor.getHTML()
           isEmpty = editor.isEmpty
           dispatch('value', content)
+          dispatch('update', content)
         },
         onSelectionUpdate: () => dispatch('selection-update')
       })

@@ -22,6 +22,7 @@
   export let emphasized: boolean = false
   export let alwaysEdit: boolean = false
   export let showButtons: boolean = true
+  export let showAttach: boolean = false
   export let buttonSize: IconSize = 'small'
   export let hideExtraButtons: boolean = false
   export let maxHeight: 'max' | 'card' | 'limited' | string = 'max'
@@ -78,6 +79,7 @@
   }
 </script>
 
+<!-- svelte-ignore a11y-click-events-have-key-events -->
 <div
   class="antiComponent styled-box clear-mins"
   class:emphasized
@@ -98,11 +100,13 @@
     <StyledTextEditor
       {placeholder}
       {showButtons}
+      {showAttach}
       {buttonSize}
       {maxHeight}
       {focusable}
       bind:content={rawValue}
       bind:this={textEditor}
+      on:attach
       on:focus={() => {
         focused = true
       }}

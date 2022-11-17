@@ -97,6 +97,16 @@
           }
         }}
       />
+    {:else if node.nodeName === 'TABLE'}
+      <table class={node.className}><svelte:self nodes={node.childNodes} /></table>
+    {:else if node.nodeName === 'TBODY'}
+      <tbody><svelte:self nodes={node.childNodes} /></tbody>
+    {:else if node.nodeName === 'TR'}
+      <tr><svelte:self nodes={node.childNodes} /></tr>
+    {:else if node.nodeName === 'TH'}
+      <th><svelte:self nodes={node.childNodes} /></th>
+    {:else if node.nodeName === 'TD'}
+      <td><svelte:self nodes={node.childNodes} /></td>
     {:else}
       Unknown {node.nodeName}
     {/if}

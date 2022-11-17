@@ -25,7 +25,6 @@
     Button,
     EditBox,
     getCurrentLocation,
-    IconAttachment,
     IconEdit,
     IconMoreH,
     Label,
@@ -296,30 +295,19 @@
             </div>
           {/if}
           <EditBox bind:value={title} placeholder={tracker.string.IssueTitlePlaceholder} kind="large-style" />
-          <div class="flex-between mt-6">
-            {#key description}
-              <div class="flex-grow">
-                <AttachmentStyledBox
-                  bind:this={descriptionBox}
-                  objectId={_id}
-                  _class={tracker.class.Issue}
-                  space={issue.space}
-                  alwaysEdit
-                  showButtons
-                  maxHeight={'card'}
-                  bind:content={description}
-                  placeholder={tracker.string.IssueDescriptionPlaceholder}
-                />
-              </div>
-            {/key}
-            <div
-              class="tool"
-              on:click={() => {
-                descriptionBox.attach()
-              }}
-            >
-              <IconAttachment size={'large'} />
-            </div>
+          <div class="w-full mt-6">
+            <AttachmentStyledBox
+              bind:this={descriptionBox}
+              objectId={_id}
+              _class={tracker.class.Issue}
+              space={issue.space}
+              alwaysEdit
+              showButtons
+              maxHeight={'card'}
+              focusable
+              bind:content={description}
+              placeholder={tracker.string.IssueDescriptionPlaceholder}
+            />
           </div>
         </div>
       </Scroller>
@@ -421,16 +409,5 @@
     grid-column: 1 / 3;
     height: 1px;
     background-color: var(--divider-color);
-  }
-
-  .tool {
-    align-self: start;
-    width: 20px;
-    height: 20px;
-    opacity: 0.3;
-    cursor: pointer;
-    &:hover {
-      opacity: 1;
-    }
   }
 </style>
