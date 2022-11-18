@@ -29,7 +29,7 @@
   export let width: 'medium' | 'large' | 'full' = 'medium'
   export let ignoreSprints: Sprint[] | undefined = undefined
 
-  $: ignoreObjects = ignoreSprints?.filter(s => '_id' in s).map(s => s._id)
+  $: ignoreObjects = ignoreSprints?.filter((s) => '_id' in s).map((s) => s._id)
   $: _create =
     create !== undefined
       ? {
@@ -49,8 +49,8 @@
   multiSelect={false}
   {allowDeselect}
   {closeAfterSelect}
-  shadows={shadows}
-  width={width}
+  {shadows}
+  {width}
   create={_create}
   on:update
   on:close

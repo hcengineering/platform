@@ -191,10 +191,15 @@ async function deleteSprint (sprint: Sprint): Promise<void> {
   // Check if available to move issues to another sprint
   const firstSearchedSprint = await client.findOne(tracker.class.Sprint, { _id: { $nin: [sprint._id] } })
   if (firstSearchedSprint !== undefined) {
-    showPopup(MoveAndDeleteSprintPopup, {
-      sprint,
-      moveAndDeleteSprint: async (selectedSprint?: Sprint) => await moveAndDeleteSprint(client, sprint, selectedSprint)
-    }, 'top')
+    showPopup(
+      MoveAndDeleteSprintPopup,
+      {
+        sprint,
+        moveAndDeleteSprint: async (selectedSprint?: Sprint) =>
+          await moveAndDeleteSprint(client, sprint, selectedSprint)
+      },
+      'top'
+    )
   } else {
     await moveAndDeleteSprint(client, sprint)
   }

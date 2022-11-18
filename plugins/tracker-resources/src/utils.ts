@@ -614,7 +614,11 @@ export function getDayOfSprint (startDate: number, now: number): number {
   return ds.filter((it) => !isWeekend(new Date(new Date(stTime).setDate(it)))).length
 }
 
-export async function moveIssuesToAnotherSprint (client: TxOperations, oldSprint: Sprint, newSprint: Sprint | undefined): Promise<boolean> {
+export async function moveIssuesToAnotherSprint (
+  client: TxOperations,
+  oldSprint: Sprint,
+  newSprint: Sprint | undefined
+): Promise<boolean> {
   try {
     // Find all Issues by Sprint
     const movedIssues = await client.findAll(tracker.class.Issue, { sprint: oldSprint._id })
@@ -628,7 +632,12 @@ export async function moveIssuesToAnotherSprint (client: TxOperations, oldSprint
 
     return true
   } catch (error) {
-    console.error(`Error happened while moving issues between sprints from ${oldSprint.label} to ${newSprint?.label ?? 'No Sprint'}: `, error)
+    console.error(
+      `Error happened while moving issues between sprints from ${oldSprint.label} to ${
+        newSprint?.label ?? 'No Sprint'
+      }: `,
+      error
+    )
     return false
   }
 }
