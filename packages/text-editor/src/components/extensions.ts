@@ -60,3 +60,66 @@ export const defaultExtensions = [
   ...tableExtensions,
   ...taskListExtensions
 ]
+
+export const mInsertTable = [
+  {
+    label: '2x2',
+    rows: 2,
+    cols: 2,
+    header: false
+  },
+  {
+    label: '3x3',
+    rows: 3,
+    cols: 3,
+    header: false
+  },
+  {
+    label: '2x1',
+    rows: 2,
+    cols: 1,
+    header: false
+  },
+  {
+    label: '5x5',
+    rows: 5,
+    cols: 5,
+    header: false
+  },
+  {
+    label: '1x2',
+    rows: 1,
+    cols: 2,
+    header: false
+  },
+  {
+    label: 'Headed 2x2',
+    rows: 2,
+    cols: 2,
+    header: true
+  },
+  {
+    label: 'Headed 3x3',
+    rows: 3,
+    cols: 3,
+    header: true
+  },
+  {
+    label: 'Headed 2x1',
+    rows: 2,
+    cols: 1,
+    header: true
+  },
+  {
+    label: 'Headed 5x5',
+    rows: 5,
+    cols: 5,
+    header: true
+  },
+  {
+    label: 'Headed 1x2',
+    rows: 1,
+    cols: 2,
+    header: true
+  }
+]

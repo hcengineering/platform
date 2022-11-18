@@ -33,6 +33,7 @@
   export let showButtons = false
   export let buttonSize: IconSize = 'small'
   export let maxHeight: 'max' | 'card' | 'limited' | string = 'max'
+  export let focusable: boolean = false
 
   export function attach (): void {
     inputFile.click()
@@ -199,12 +200,15 @@
     {placeholder}
     {alwaysEdit}
     {showButtons}
+    showAttach
     {buttonSize}
     {maxHeight}
+    {focusable}
     on:changeSize
+    on:attach={() => attach()}
   />
   {#if attachments.size}
-    <div class="flex-row-center list scroll-divider-color mt-1">
+    <div class="flex-row-center list scroll-divider-color">
       {#each Array.from(attachments.values()) as attachment}
         <div class="item flex">
           <AttachmentPresenter
@@ -223,6 +227,7 @@
 <style lang="scss">
   .list {
     padding: 0.5rem;
+    min-width: 0;
     color: var(--theme-caption-color);
     overflow-x: auto;
     overflow-y: hidden;

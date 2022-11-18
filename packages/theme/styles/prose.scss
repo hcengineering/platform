@@ -24,6 +24,7 @@ table.proseTable {
   td,
   th {
     min-width: 1rem;
+    height: 2rem;
     border: 1px solid var(--button-border-hover);
     padding: .25rem .5rem;
     vertical-align: top;

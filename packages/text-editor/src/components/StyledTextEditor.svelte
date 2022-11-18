@@ -13,19 +13,29 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { IntlString } from '@hcengineering/platform'
-
-  import { IconSize, Scroller, showPopup } from '@hcengineering/ui'
+  import { IntlString, getEmbeddedLabel } from '@hcengineering/platform'
+  import {
+    IconSize,
+    Scroller,
+    showPopup,
+    SelectPopup,
+    AnySvelteComponent,
+    getEventPositionElement
+  } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import textEditorPlugin from '../plugin'
   import EmojiPopup from './EmojiPopup.svelte'
   import Emoji from './icons/Emoji.svelte'
   import TextStyle from './icons/TextStyle.svelte'
   import TextEditor from './TextEditor.svelte'
-
   import { Asset } from '@hcengineering/platform'
-  import { AnySvelteComponent } from '@hcengineering/ui'
   import { FormatMode, FORMAT_MODES, RefInputAction, TextEditorHandler } from '../types'
+  import { headingLevels, mInsertTable } from './extensions'
+  import { Level } from '@tiptap/extension-heading'
+  import presentation from '@hcengineering/presentation'
+  import Header from './icons/Header.svelte'
+  import IconTable from './icons/IconTable.svelte'
+  import Attach from './icons/Attach.svelte'
   import Bold from './icons/Bold.svelte'
   import Code from './icons/Code.svelte'
   import CodeBlock from './icons/CodeBlock.svelte'
@@ -37,12 +47,20 @@
   import Strikethrough from './icons/Strikethrough.svelte'
   import LinkPopup from './LinkPopup.svelte'
   import StyleButton from './StyleButton.svelte'
+  import AddRowBefore from './icons/table/AddRowBefore.svelte'
+  import AddRowAfter from './icons/table/AddRowAfter.svelte'
+  import AddColBefore from './icons/table/AddColBefore.svelte'
+  import AddColAfter from './icons/table/AddColAfter.svelte'
+  import DeleteRow from './icons/table/DeleteRow.svelte'
+  import DeleteCol from './icons/table/DeleteCol.svelte'
+  import DeleteTable from './icons/table/DeleteTable.svelte'
 
   const dispatch = createEventDispatcher()
 
   export let content: string = ''
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
   export let showButtons: boolean = true
+  export let showAttach: boolean = false
   export let buttonSize: IconSize = 'large'
   export let isScrollable: boolean = true
   export let focusable: boolean = false
@@ -76,8 +94,19 @@
     icon: Asset | AnySvelteComponent
     action: RefInputAction
     order: number
+    hidden?: boolean
   }
-  const defActions: RefAction[] = [
+  let defActions: RefAction[]
+  $: defActions = [
+    {
+      label: textEditorPlugin.string.Attach,
+      icon: Attach,
+      action: () => {
+        dispatch('attach')
+      },
+      order: 1000,
+      hidden: showAttach
+    },
     {
       label: textEditorPlugin.string.TextStyle,
       icon: TextStyle,
@@ -115,8 +144,21 @@
 
   function updateFormattingState () {
     activeModes = new Set(FORMAT_MODES.filter(textEditor.checkIsActive))
+    for (const l of headingLevels) {
+      if (textEditor.checkIsActive('heading', { level: l })) {
+        headingLevel = l
+        activeModes.add('heading')
+      }
+    }
+    if (!activeModes.has('heading')) {
+      headingLevel = 0
+    }
     isSelectionEmpty = textEditor.checkIsSelectionEmpty()
   }
+  // function updateFormattingState () {
+  //   activeModes = new Set(FORMAT_MODES.filter(textEditor.checkIsActive))
+  //   isSelectionEmpty = textEditor.checkIsSelectionEmpty()
+  // }
 
   function getToggler (toggle: () => void) {
     return () => {
@@ -145,11 +187,172 @@
   function handleAction (a: RefAction, evt?: Event): void {
     a.action(evt?.target as HTMLElement, editorHandler)
   }
+
+  let needFocus = false
+  const focused = false
+
+  $: if (textEditor && needFocus) {
+    if (!focused) textEditor.focus()
+    needFocus = false
+  }
+
+  let headingLevel = 0
+
+  function toggleHeader (event: MouseEvent) {
+    if (activeModes.has('heading')) {
+      textEditor.toggleHeading({ level: headingLevel as Level })
+      needFocus = true
+      updateFormattingState()
+    } else {
+      showPopup(
+        SelectPopup,
+        {
+          value: Array.from(headingLevels).map((it) => ({ id: it.toString(), text: it.toString() }))
+        },
+        getEventPositionElement(event),
+        (val) => {
+          if (val !== undefined) {
+            textEditor.toggleHeading({ level: parseInt(val) as Level })
+            needFocus = true
+            updateFormattingState()
+          }
+        }
+      )
+    }
+  }
+
+  function insertTable (event: MouseEvent) {
+    showPopup(
+      SelectPopup,
+      {
+        value: [
+          { id: '#delete', label: presentation.string.Remove },
+          ...mInsertTable.map((it) => ({ id: it.label, text: it.label }))
+        ]
+      },
+      getEventPositionElement(event),
+      (val) => {
+        if (val !== undefined) {
+          if (val === '#delete') {
+            textEditor.deleteTable()
+            needFocus = true
+            updateFormattingState()
+            return
+          }
+          const tab = mInsertTable.find((it) => it.label === val)
+          if (tab) {
+            textEditor.insertTable({
+              cols: tab.cols,
+              rows: tab.rows,
+              withHeaderRow: tab.header
+            })
+
+            needFocus = true
+            updateFormattingState()
+          }
+        }
+      }
+    )
+  }
+
+  function tableOptions (event: MouseEvent) {
+    const ops = [
+      {
+        id: '#addColumnBefore',
+        icon: AddColBefore,
+        label: textEditorPlugin.string.AddColumnBefore,
+        action: () => textEditor.addColumnBefore(),
+        category: {
+          label: textEditorPlugin.string.CategoryColumn
+        }
+      },
+      {
+        id: '#addColumnAfter',
+        icon: AddColAfter,
+        label: textEditorPlugin.string.AddColumnAfter,
+        action: () => textEditor.addColumnAfter(),
+        category: {
+          label: textEditorPlugin.string.CategoryColumn
+        }
+      },
+
+      {
+        id: '#deleteColumn',
+        icon: DeleteCol,
+        label: textEditorPlugin.string.DeleteColumn,
+        action: () => textEditor.deleteColumn(),
+        category: {
+          label: textEditorPlugin.string.CategoryColumn
+        }
+      },
+      {
+        id: '#addRowBefore',
+        icon: AddRowBefore,
+        label: textEditorPlugin.string.AddRowBefore,
+        action: () => textEditor.addRowBefore(),
+        category: {
+          label: textEditorPlugin.string.CategoryRow
+        }
+      },
+      {
+        id: '#addRowAfter',
+        icon: AddRowAfter,
+        label: textEditorPlugin.string.AddRowAfter,
+        action: () => textEditor.addRowAfter(),
+        category: {
+          label: textEditorPlugin.string.CategoryRow
+        }
+      },
+      {
+        id: '#deleteRow',
+        icon: DeleteRow,
+        label: textEditorPlugin.string.DeleteRow,
+        action: () => textEditor.deleteRow(),
+        category: {
+          label: textEditorPlugin.string.CategoryRow
+        }
+      },
+      {
+        id: '#deleteTable',
+        icon: DeleteTable,
+        label: textEditorPlugin.string.DeleteTable,
+        action: () => textEditor.deleteTable(),
+        category: {
+          label: textEditorPlugin.string.Table
+        }
+      }
+    ]
+
+    showPopup(
+      SelectPopup,
+      {
+        value: ops
+      },
+      getEventPositionElement(event),
+      (val) => {
+        if (val !== undefined) {
+          const op = ops.find((it) => it.id === val)
+          if (op) {
+            op.action()
+            needFocus = true
+            updateFormattingState()
+          }
+        }
+      }
+    )
+  }
 </script>
 
 <div class="ref-container clear-mins">
   {#if isFormatting}
     <div class="formatPanel buttons-group xsmall-gap mb-4" class:withoutTopBorder>
+      <StyleButton
+        icon={Header}
+        size={buttonSize}
+        selected={activeModes.has('heading')}
+        showTooltip={{ label: getEmbeddedLabel(`H${headingLevel}`) }}
+        on:click={toggleHeader}
+      />
       <StyleButton
         icon={Bold}
         size={buttonSize}
@@ -217,6 +420,23 @@
         showTooltip={{ label: textEditorPlugin.string.CodeBlock }}
         on:click={getToggler(textEditor.toggleCodeBlock)}
       />
+      <StyleButton
+        icon={IconTable}
+        iconProps={{ style: 'table' }}
+        size={buttonSize}
+        selected={activeModes.has('table')}
+        on:click={insertTable}
+        showTooltip={{ label: textEditorPlugin.string.InsertTable }}
+      />
+      {#if activeModes.has('table')}
+        <StyleButton
+          icon={IconTable}
+          iconProps={{ style: 'tableProps' }}
+          size={buttonSize}
+          on:click={tableOptions}
+          showTooltip={{ label: textEditorPlugin.string.TableOptions }}
+        />
+      {/if}
     </div>
   {/if}
   <div class="textInput" class:focusable>
@@ -259,8 +479,8 @@
     </div>
   </div>
   {#if showButtons}
-    <div class="buttons">
-      {#each defActions as a}
+    <div class="buttons-group xsmall-gap my-4">
+      {#each defActions.filter((it) => it.hidden === undefined || it.hidden === true) as a}
         <StyleButton icon={a.icon} size={buttonSize} on:click={(evt) => handleAction(a, evt)} />
       {/each}
       <div class="flex-grow">
@@ -314,10 +534,6 @@
           border-color: var(--primary-edit-border-color);
         }
       }
-    }
-    .buttons {
-      display: flex;
-      align-items: center;
     }
   }
 </style>

@@ -43,7 +43,7 @@
   import CodeBlock from './icons/CodeBlock.svelte'
 
   import { calculateDecorations } from './diff/decorations'
-  import { defaultExtensions, headingLevels } from './extensions'
+  import { defaultExtensions, headingLevels, mInsertTable } from './extensions'
   import Header from './icons/Header.svelte'
   import IconTable from './icons/IconTable.svelte'
   import Italic from './icons/Italic.svelte'
@@ -316,74 +316,12 @@
   }
 
   function insertTable (event: MouseEvent) {
-    const tables = [
-      {
-        label: '2x2',
-        rows: 2,
-        cols: 2,
-        header: false
-      },
-      {
-        label: '3x3',
-        rows: 3,
-        cols: 3,
-        header: false
-      },
-      {
-        label: '2x1',
-        rows: 2,
-        cols: 1,
-        header: false
-      },
-      {
-        label: '5x5',
-        rows: 5,
-        cols: 5,
-        header: false
-      },
-      {
-        label: '1x2',
-        rows: 1,
-        cols: 2,
-        header: false
-      },
-      {
-        label: 'Headed 2x2',
-        rows: 2,
-        cols: 2,
-        header: true
-      },
-      {
-        label: 'Headed 3x3',
-        rows: 3,
-        cols: 3,
-        header: true
-      },
-      {
-        label: 'Headed 2x1',
-        rows: 2,
-        cols: 1,
-        header: true
-      },
-      {
-        label: 'Headed 5x5',
-        rows: 5,
-        cols: 5,
-        header: true
-      },
-      {
-        label: 'Headed 1x2',
-        rows: 1,
-        cols: 2,
-        header: true
-      }
-    ]
     showPopup(
       SelectPopup,
       {
         value: [
           { id: '#delete', label: presentation.string.Remove },
-          ...tables.map((it) => ({ id: it.label, text: it.label }))
+          ...mInsertTable.map((it) => ({ id: it.label, text: it.label }))
         ]
       },
       getEventPositionElement(event),
@@ -395,7 +333,7 @@
             updateFormattingState()
             return
           }
-          const tab = tables.find((it) => it.label === val)
+          const tab = mInsertTable.find((it) => it.label === val)
           if (tab) {
             editor.commands.insertTable({
               cols: tab.cols,
