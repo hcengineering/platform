@@ -13,10 +13,10 @@
 // limitations under the License.
 //
 
-import { Class, Client, DocumentQuery, Ref, RelatedDocument } from '@hcengineering/core'
-import { Resources } from '@hcengineering/platform'
-import { ObjectSearchResult } from '@hcengineering/presentation'
-import { Issue, Team } from '@hcengineering/tracker'
+import { Class, Client, DocumentQuery, Ref, RelatedDocument, TxOperations } from '@hcengineering/core'
+import { Resources, translate } from '@hcengineering/platform'
+import { getClient, MessageBox, ObjectSearchResult } from '@hcengineering/presentation'
+import { Issue, Sprint, Team } from '@hcengineering/tracker'
 import { showPopup } from '@hcengineering/ui'
 import CreateIssue from './components/CreateIssue.svelte'
 import CreateIssueTemplate from './components/templates/CreateIssueTemplate.svelte'
@@ -93,6 +93,9 @@ import IssueTemplates from './components/templates/IssueTemplates.svelte'
 
 import EditIssueTemplate from './components/templates/EditIssueTemplate.svelte'
 import TemplateEstimationEditor from './components/templates/EstimationEditor.svelte'
+import MoveAndDeleteSprintPopup from './components/sprints/MoveAndDeleteSprintPopup.svelte'
+import { moveIssuesToAnotherSprint } from './utils'
+import { deleteObject } from '@hcengineering/view-resources/src/utils'
 
 export async function queryIssue<D extends Issue> (
   _class: Ref<Class<D>>,
@@ -154,6 +157,43 @@ export async function queryIssue<D extends Issue> (
 async function editWorkflowStatuses (team: Team | undefined): Promise<void> {
   if (team !== undefined) {
     showPopup(Statuses, { teamId: team._id, teamClass: team._class }, 'float')
+  }
+}
+
+async function moveAndDeleteSprint (client: TxOperations, oldSprint: Sprint, newSprint?: Sprint): Promise<void> {
+  const noSprintLabel = await translate(tracker.string.NoSprint, {})
+
+  showPopup(
+    MessageBox,
+    {
+      label: tracker.string.MoveAndDeleteSprint,
+      message: tracker.string.MoveAndDeleteSprintConfirm,
+      labelProps: { newSprint: newSprint?.label ?? noSprintLabel, deleteSprint: oldSprint.label }
+    },
+    undefined,
+    (result?: boolean) => {
+      if (result === true) {
+        void moveIssuesToAnotherSprint(client, oldSprint, newSprint).then((succes) => {
+          if (succes) {
+            void deleteObject(client, oldSprint)
+          }
+        })
+      }
+    }
+  )
+}
+
+async function deleteSprint (sprint: Sprint): Promise<void> {
+  const client = getClient()
+  // Check if available to move issues to another sprint
+  const firstSearchedSprint = await client.findOne(tracker.class.Sprint, { _id: { $nin: [sprint._id] } })
+  if (firstSearchedSprint !== undefined) {
+    showPopup(MoveAndDeleteSprintPopup, {
+      sprint,
+      moveAndDeleteSprint: async (selectedSprint?: Sprint) => await moveAndDeleteSprint(client, sprint, selectedSprint)
+    }, 'top')
+  } else {
+    await moveAndDeleteSprint(client, sprint)
   }
 }
 
@@ -229,7 +269,8 @@ export default async (): Promise<Resources> => ({
     GetIssueTitle: issueTitleProvider
   },
   actionImpl: {
-    EditWorkflowStatuses: editWorkflowStatuses
+    EditWorkflowStatuses: editWorkflowStatuses,
+    DeleteSprint: deleteSprint
   },
   resolver: {
     Location: resolveLocation

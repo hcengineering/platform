@@ -2,8 +2,8 @@
   import { getClient } from '@hcengineering/presentation'
   import { StyledTextBox } from '@hcengineering/text-editor'
   import { Sprint } from '@hcengineering/tracker'
-  import { Button, DatePresenter, EditBox, Icon, Label, showPopup } from '@hcengineering/ui'
-  import { DocAttributeBar } from '@hcengineering/view-resources'
+  import { Button, DatePresenter, EditBox, Icon, IconMoreH, Label, showPopup } from '@hcengineering/ui'
+  import { ContextMenu, DocAttributeBar } from '@hcengineering/view-resources'
   import { onDestroy } from 'svelte'
   import { activeSprint } from '../../issues'
   import tracker from '../../plugin'
@@ -26,6 +26,12 @@
         sprint = value
       }
     })
+  }
+
+  function showMenu (ev?: Event): void {
+    if (sprint) {
+      showPopup(ContextMenu, { object: sprint }, (ev as MouseEvent).target as HTMLElement)
+    }
   }
 
   $: $activeSprint = sprint?._id
@@ -71,6 +77,7 @@
         {#if sprint?.capacity}
           <Label label={tracker.string.CapacityValue} params={{ value: sprint?.capacity }} />
         {/if}
+        <Button icon={IconMoreH} kind={'transparent'} size={'medium'} on:click={showMenu} />
       </div>
     </div>
   </svelte:fragment>

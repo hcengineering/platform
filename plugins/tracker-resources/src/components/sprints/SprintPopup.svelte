@@ -20,11 +20,16 @@
   import { sprintStatusAssets } from '../../utils'
   import SprintTitlePresenter from './SprintTitlePresenter.svelte'
   export let _class: Ref<Class<Sprint>>
-  export let selected: Ref<Sprint> | undefined
+  export let selected: Ref<Sprint> | undefined = undefined
   export let sprintQuery: DocumentQuery<Sprint> = {}
   export let create: ObjectCreate | undefined = undefined
   export let allowDeselect = false
+  export let closeAfterSelect: boolean = true
+  export let shadows = true
+  export let width: 'medium' | 'large' | 'full' = 'medium'
+  export let ignoreSprints: Sprint[] | undefined = undefined
 
+  $: ignoreObjects = ignoreSprints?.filter(s => '_id' in s).map(s => s._id)
   $: _create =
     create !== undefined
       ? {
@@ -38,11 +43,14 @@
 <ObjectPopup
   {_class}
   {selected}
+  {ignoreObjects}
   bind:docQuery={sprintQuery}
   searchField={'label'}
   multiSelect={false}
   {allowDeselect}
-  shadows={true}
+  {closeAfterSelect}
+  shadows={shadows}
+  width={width}
   create={_create}
   on:update
   on:close

@@ -105,8 +105,7 @@
 </script>
 
 <div
-  class="editbox-container"
-  class:w-full={focusable}
+  class="editbox-container w-full"
   on:click={() => {
     input.focus()
   }}

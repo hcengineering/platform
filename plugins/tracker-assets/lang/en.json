@@ -204,6 +204,9 @@
     "NewSprint": "New Sprint",
     "CreateSprint": "Create",
 
+    "MoveAndDeleteSprint": "Move Issues to {newSprint} and Delete {deleteSprint}",
+    "MoveAndDeleteSprintConfirm": "Do you want to delete sprint and move issues to another sprint?",
+
     "Estimation": "Estimation",
     "ReportedTime": "Reported Time",
     "TimeSpendReports": "Time spend reports",

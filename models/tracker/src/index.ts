@@ -1282,6 +1282,25 @@ export function createModel (builder: Builder): void {
     tracker.action.Duplicate
   )
 
+  createAction(
+    builder,
+    {
+      action: tracker.actionImpl.DeleteSprint,
+      label: view.string.Delete,
+      icon: view.icon.Delete,
+      keyBinding: ['Meta + Backspace', 'Ctrl + Backspace'],
+      category: tracker.category.Tracker,
+      input: 'any',
+      target: tracker.class.Sprint,
+      context: { mode: ['context', 'browser'], group: 'tools' }
+    },
+    tracker.action.DeleteSprint
+  )
+
+  builder.mixin(tracker.class.Sprint, core.class.Class, view.mixin.IgnoreActions, {
+    actions: [view.action.Delete]
+  })
+
   classPresenter(
     builder,
     tracker.class.TypeReportedTime,

@@ -40,6 +40,7 @@
   export let docQuery: DocumentQuery<Doc> | undefined = undefined
 
   export let multiSelect: boolean = false
+  export let closeAfterSelect: boolean = true
   export let allowDeselect: boolean = false
   export let titleDeselect: IntlString | undefined = undefined
   export let placeholder: IntlString = presentation.string.Search
@@ -109,7 +110,7 @@
       } else {
         selected = person._id
       }
-      dispatch('close', selected !== undefined ? person : undefined)
+      dispatch(closeAfterSelect ? 'close' : 'update', selected !== undefined ? person : undefined)
     } else {
       checkSelected(person, objects)
     }
