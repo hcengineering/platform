@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { Client as ElasticClient } from '@elastic/elasticsearch'
 import { Attachment } from '@hcengineering/attachment'
 import core, {
   AttachedDoc,
@@ -32,6 +33,7 @@ import core, {
   Ref,
   ServerStorage,
   StorageIterator,
+  toWorkspaceString,
   Tx,
   TxCollectionCUD,
   TxCreateDoc,
@@ -39,16 +41,13 @@ import core, {
   TxProcessor,
   TxRemoveDoc,
   TxResult,
-  TxUpdateDoc
+  TxUpdateDoc,
+  WorkspaceId
 } from '@hcengineering/core'
 import { createElasticAdapter } from '@hcengineering/elastic'
+import { MinioService } from '@hcengineering/minio'
 import { DOMAIN_ATTACHMENT } from '@hcengineering/model-attachment'
-import { createMongoAdapter, createMongoTxAdapter } from '@hcengineering/mongo'
-import { addLocation } from '@hcengineering/platform'
-import { serverAttachmentId } from '@hcengineering/server-attachment'
-import { serverCalendarId } from '@hcengineering/server-calendar'
-import { serverChunterId } from '@hcengineering/server-chunter'
-import { serverContactId } from '@hcengineering/server-contact'
+import { createMongoAdapter, createMongoTxAdapter, getWorkspaceDB } from '@hcengineering/mongo'
 import {
   createServerStorage,
   DbAdapter,
@@ -58,48 +57,35 @@ import {
   IndexedDoc,
   TxAdapter
 } from '@hcengineering/server-core'
-import { serverGmailId } from '@hcengineering/server-gmail'
-import { serverInventoryId } from '@hcengineering/server-inventory'
-import { serverLeadId } from '@hcengineering/server-lead'
-import { serverNotificationId } from '@hcengineering/server-notification'
-import { serverRecruitId } from '@hcengineering/server-recruit'
-import { serverSettingId } from '@hcengineering/server-setting'
-import { serverTagsId } from '@hcengineering/server-tags'
-import { serverTaskId } from '@hcengineering/server-task'
-import { serverTrackerId } from '@hcengineering/server-tracker'
-import { serverTelegramId } from '@hcengineering/server-telegram'
-import { serverHrId } from '@hcengineering/server-hr'
-import { Client as ElasticClient } from '@elastic/elasticsearch'
-import { Client } from 'minio'
 import { Db, MongoClient } from 'mongodb'
-import { listMinioObjects } from './minio'
 
 export async function rebuildElastic (
   mongoUrl: string,
-  dbName: string,
-  minio: Client,
+  workspaceId: WorkspaceId,
+  minio: MinioService,
   elasticUrl: string
 ): Promise<void> {
-  await dropElastic(elasticUrl, dbName)
-  return await restoreElastic(mongoUrl, dbName, minio, elasticUrl)
+  await dropElastic(elasticUrl, workspaceId)
+  return await restoreElastic(mongoUrl, workspaceId, minio, elasticUrl)
 }
 
-async function dropElastic (elasticUrl: string, dbName: string): Promise<void> {
+async function dropElastic (elasticUrl: string, workspaceId: WorkspaceId): Promise<void> {
   console.log('drop existing elastic docment')
   const client = new ElasticClient({
     node: elasticUrl
   })
+  const productWs = toWorkspaceString(workspaceId)
   await new Promise((resolve, reject) => {
     client.indices.exists(
       {
-        index: dbName
+        index: productWs
       },
       (err: any, result: any) => {
         if (err != null) reject(err)
         if (result.body === true) {
           client.indices.delete(
             {
-              index: dbName
+              index: productWs
             },
             (err: any, result: any) => {
               if (err != null) reject(err)
@@ -122,31 +108,21 @@ export class ElasticTool {
   db!: Db
   fulltext!: FullTextIndex
 
-  constructor (readonly mongoUrl: string, readonly dbName: string, readonly minio: Client, readonly elasticUrl: string) {
-    addLocation(serverAttachmentId, () => import('@hcengineering/server-attachment-resources'))
-    addLocation(serverContactId, () => import('@hcengineering/server-contact-resources'))
-    addLocation(serverNotificationId, () => import('@hcengineering/server-notification-resources'))
-    addLocation(serverChunterId, () => import('@hcengineering/server-chunter-resources'))
-    addLocation(serverInventoryId, () => import('@hcengineering/server-inventory-resources'))
-    addLocation(serverLeadId, () => import('@hcengineering/server-lead-resources'))
-    addLocation(serverRecruitId, () => import('@hcengineering/server-recruit-resources'))
-    addLocation(serverSettingId, () => import('@hcengineering/server-setting-resources'))
-    addLocation(serverTaskId, () => import('@hcengineering/server-task-resources'))
-    addLocation(serverTrackerId, () => import('@hcengineering/server-tracker-resources'))
-    addLocation(serverTagsId, () => import('@hcengineering/server-tags-resources'))
-    addLocation(serverCalendarId, () => import('@hcengineering/server-calendar-resources'))
-    addLocation(serverGmailId, () => import('@hcengineering/server-gmail-resources'))
-    addLocation(serverTelegramId, () => import('@hcengineering/server-telegram-resources'))
-    addLocation(serverHrId, () => import('@hcengineering/server-hr-resources'))
+  constructor (
+    readonly mongoUrl: string,
+    readonly workspaceId: WorkspaceId,
+    readonly minio: MinioService,
+    readonly elasticUrl: string
+  ) {
     this.mongoClient = new MongoClient(mongoUrl)
   }
 
   async connect (): Promise<() => Promise<void>> {
     await this.mongoClient.connect()
 
-    this.db = this.mongoClient.db(this.dbName)
-    this.elastic = await createElasticAdapter(this.elasticUrl, this.dbName)
-    this.storage = await createStorage(this.mongoUrl, this.elasticUrl, this.dbName)
+    this.db = getWorkspaceDB(this.mongoClient, this.workspaceId)
+    this.elastic = await createElasticAdapter(this.elasticUrl, this.workspaceId)
+    this.storage = await createStorage(this.mongoUrl, this.elasticUrl, this.workspaceId)
     this.fulltext = new FullTextIndex(this.storage.hierarchy, this.elastic, this.storage, true)
 
     return async () => {
@@ -160,8 +136,8 @@ export class ElasticTool {
     const doc: Attachment | null = await this.db.collection<Attachment>(DOMAIN_ATTACHMENT).findOne({ file: name })
     if (doc == null) return
 
-    const buffer = await this.readMinioObject(name)
-    await this.indexAttachmentDoc(doc, buffer)
+    const buffer = await this.minio.read(this.workspaceId, name)
+    await this.indexAttachmentDoc(doc, Buffer.concat(buffer))
   }
 
   async indexAttachmentDoc (doc: Attachment, buffer: Buffer): Promise<void> {
@@ -179,29 +155,15 @@ export class ElasticTool {
 
     await this.elastic.index(indexedDoc)
   }
-
-  private async readMinioObject (name: string): Promise<Buffer> {
-    const data = await this.minio.getObject(this.dbName, name)
-    const chunks: Buffer[] = []
-    await new Promise<void>((resolve) => {
-      data.on('readable', () => {
-        let chunk
-        while ((chunk = data.read()) !== null) {
-          const b = chunk as Buffer
-          chunks.push(b)
-        }
-      })
-
-      data.on('end', () => {
-        resolve()
-      })
-    })
-    return Buffer.concat(chunks)
-  }
 }
 
-async function restoreElastic (mongoUrl: string, dbName: string, minio: Client, elasticUrl: string): Promise<void> {
-  const tool = new ElasticTool(mongoUrl, dbName, minio, elasticUrl)
+async function restoreElastic (
+  mongoUrl: string,
+  workspaceId: WorkspaceId,
+  minio: MinioService,
+  elasticUrl: string
+): Promise<void> {
+  const tool = new ElasticTool(mongoUrl, workspaceId, minio, elasticUrl)
   const done = await tool.connect()
   try {
     const data = await tool.db.collection<Tx>(DOMAIN_TX).find().toArray()
@@ -319,8 +281,8 @@ async function restoreElastic (mongoUrl: string, dbName: string, minio: Client, 
     console.log('replay elastic mixin transactions done', Date.now() - startMixin)
 
     let apos = 0
-    if (await minio.bucketExists(dbName)) {
-      const minioObjects = await listMinioObjects(minio, dbName)
+    if (await minio.exists(workspaceId)) {
+      const minioObjects = await minio.list(workspaceId)
       console.log('reply elastic documents', minioObjects.length)
       for (const d of minioObjects) {
         apos++
@@ -342,7 +304,7 @@ async function restoreElastic (mongoUrl: string, dbName: string, minio: Client, 
   }
 }
 
-async function createStorage (mongoUrl: string, elasticUrl: string, workspace: string): Promise<ServerStorage> {
+async function createStorage (mongoUrl: string, elasticUrl: string, workspace: WorkspaceId): Promise<ServerStorage> {
   const conf: DbConfiguration = {
     domains: {
       [DOMAIN_TX]: 'MongoTx'
@@ -370,20 +332,20 @@ async function createStorage (mongoUrl: string, elasticUrl: string, workspace: s
 async function createMongoReadOnlyAdapter (
   hierarchy: Hierarchy,
   url: string,
-  dbName: string,
+  workspaceId: WorkspaceId,
   modelDb: ModelDb
 ): Promise<DbAdapter> {
-  const adapter = await createMongoAdapter(hierarchy, url, dbName, modelDb)
+  const adapter = await createMongoAdapter(hierarchy, url, workspaceId, modelDb)
   return new MongoReadOnlyAdapter(adapter)
 }
 
 async function createMongoReadOnlyTxAdapter (
   hierarchy: Hierarchy,
   url: string,
-  dbName: string,
+  workspaceId: WorkspaceId,
   modelDb: ModelDb
 ): Promise<TxAdapter> {
-  const adapter = await createMongoTxAdapter(hierarchy, url, dbName, modelDb)
+  const adapter = await createMongoTxAdapter(hierarchy, url, workspaceId, modelDb)
   return new MongoReadOnlyTxAdapter(adapter)
 }
 

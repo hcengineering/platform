@@ -16,7 +16,7 @@
   import { Class, Doc, FindResult, getObjectValue, Ref, SortingOrder } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
   import presentation, { getClient } from '@hcengineering/presentation'
-  import ui, { Button, CheckBox, Label, Loading } from '@hcengineering/ui'
+  import ui, { Button, CheckBox, Label, Loading, resizeObserver } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
   import { onMount } from 'svelte'
   import { getPresenter } from '../../utils'
@@ -116,7 +116,7 @@
   getValues(search)
 </script>
 
-<div class="selectPopup">
+<div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
   <div class="header">
     <input
       bind:this={searchInput}

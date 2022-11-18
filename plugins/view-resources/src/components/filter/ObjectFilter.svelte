@@ -18,7 +18,7 @@
   import presentation, { getClient } from '@hcengineering/presentation'
   import type { State } from '@hcengineering/task'
   import task from '@hcengineering/task'
-  import ui, { Button, CheckBox, Label, Loading } from '@hcengineering/ui'
+  import ui, { Button, CheckBox, Label, Loading, resizeObserver } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
   import { createEventDispatcher, onMount } from 'svelte'
   import view from '../../plugin'
@@ -134,7 +134,7 @@
   getValues(search)
 </script>
 
-<div class="selectPopup">
+<div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
   {#if clazz.sortingKey}
     <div class="header">
       <input

@@ -15,9 +15,10 @@
 //
 
 import { program } from 'commander'
-import { Client } from 'minio'
+import { MinioService } from '@hcengineering/minio'
 import { generateIssues } from './issues'
 import { generateContacts } from './recruit'
+import { getWorkspaceId } from '@hcengineering/core'
 
 const transactorUrl = process.env.TRANSACTOR_URL
 if (transactorUrl === undefined) {
@@ -43,7 +44,7 @@ if (minioSecretKey === undefined) {
   process.exit(1)
 }
 
-const minio = new Client({
+const minio = new MinioService({
   endPoint: minioEndpoint,
   port: 9000,
   useSSL: false,
@@ -55,16 +56,16 @@ program.version('0.0.1')
 
 // available types: recruit, issue
 program
-  .command('gen <genType> <workspace> <count>')
+  .command('gen <genType> <workspace> <productId> <count>')
   .description('generate a bunch of random candidates with attachemnts and comments or issues')
   .option('-r, --random', 'generate random ids. So every call will add count <count> more candidates.', false)
   .option('-l, --lite', 'use same pdf and same account for applicant and candidates', false)
-  .action(async (genType: string, workspace: string, count: number, cmd) => {
+  .action(async (genType: string, workspace: string, productId: string, count: number, cmd) => {
     switch (genType) {
       case 'recruit':
         return await generateContacts(
           transactorUrl,
-          workspace,
+          getWorkspaceId(workspace, productId),
           {
             contacts: count,
             random: cmd.random as boolean,
@@ -81,7 +82,7 @@ program
           minio
         )
       case 'issue':
-        return await generateIssues(transactorUrl, workspace, {
+        return await generateIssues(transactorUrl, getWorkspaceId(workspace, productId), {
           count
         })
       default:

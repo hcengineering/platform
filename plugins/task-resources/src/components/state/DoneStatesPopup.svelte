@@ -17,7 +17,7 @@
   import { Class, Doc, Ref, SortingOrder } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { DoneState, SpaceWithStates } from '@hcengineering/task'
-  import { getPlatformColor, Label } from '@hcengineering/ui'
+  import { getPlatformColor, Label, resizeObserver } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import task from '../../plugin'
   import Won from '../icons/Won.svelte'
@@ -46,7 +46,7 @@
   }
 </script>
 
-<div class="selectPopup">
+<div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
   <div class="scroll">
     <div class="box">
       {#each states as state}

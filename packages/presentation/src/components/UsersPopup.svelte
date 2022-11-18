@@ -13,7 +13,6 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher, afterUpdate } from 'svelte'
   import { Contact, getFirstName, Person } from '@hcengineering/contact'
   import type { Class, Doc, DocumentQuery, FindOptions, Ref } from '@hcengineering/core'
   import type { Asset, IntlString } from '@hcengineering/platform'
@@ -51,10 +50,6 @@
           }
         }
       : undefined
-
-  const dispatch = createEventDispatcher()
-
-  afterUpdate(() => dispatch('changeContent'))
 </script>
 
 <ObjectPopup
@@ -73,7 +68,7 @@
   create={_create}
   on:update
   on:close
-  on:changeContent={() => dispatch('changeContent')}
+  on:changeContent
 >
   <svelte:fragment slot="item" let:item={person}>
     <div class="flex flex-grow overflow-label">

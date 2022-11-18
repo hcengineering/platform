@@ -15,7 +15,7 @@
 <script lang="ts">
   import core, { AnyAttribute, ArrOf, AttachedDoc, Class, Collection, Doc, Ref, RefTo, Type } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { closePopup, closeTooltip, Icon, Label, showPopup, Submenu } from '@hcengineering/ui'
+  import { closePopup, closeTooltip, Icon, Label, showPopup, Submenu, resizeObserver } from '@hcengineering/ui'
   import { Filter, KeyFilter } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import { FilterQuery } from '../../filter'
@@ -192,7 +192,7 @@
   }
 </script>
 
-<div class="selectPopup">
+<div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
   <div class="scroll">
     <div class="box">
       {#each getTypes(_class) as type, i}

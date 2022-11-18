@@ -156,7 +156,7 @@ export function fitPopupPositionedElement (
   newProps.maxWidth = newProps.width = ''
   if (alignment?.kind === 'submenu') {
     const dirH =
-      docWidth - rect.right - rectPopup.width - 12 > 0 ? 'right' : rect.left > docWidth - rect.left ? 'left' : 'right'
+      docWidth - rect.right - rectPopup.width - 12 > 0 ? 'right' : rect.left > docWidth - rect.left ? 'left' : 'inside'
     const dirV =
       docHeight - rect.top - rectPopup.height - 20 > 0
         ? 'bottom'
@@ -164,6 +164,7 @@ export function fitPopupPositionedElement (
           ? 'top'
           : 'bottom'
     if (dirH === 'right') newProps.left = `${rect.right - 4}px`
+    else if (dirH === 'inside') newProps.right = '1rem'
     else newProps.right = `${docWidth - rect.left - 4}px`
     if (dirV === 'bottom') newProps.top = `${rect.top - 4}px`
     else newProps.bottom = `${docHeight - rect.bottom - 4}px`

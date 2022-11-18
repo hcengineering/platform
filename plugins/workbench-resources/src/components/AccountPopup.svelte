@@ -137,33 +137,42 @@
     return actions
   }
 
-  function getWorkspaceItems () {
-    return workspaces.map((w) => ({
-      label: getEmbeddedLabel(w.workspace),
-      action: async () => {
-        const loginInfo = (await selectWorkspace(w.workspace))[1]
-        navigateToWorkspace(w.workspace, loginInfo)
-      },
-      isSubmenuRightClicking: true,
-      component: Menu,
-      props: {
-        actions: [
-          {
-            label: workbench.string.OpenInNewTab,
-            action: async () => {
-              const loginInfo = (await selectWorkspace(w.workspace))[1]
+  function getWorkspaceItems (): Action[] {
+    return [
+      ...workspaces.map((w) => ({
+        label: getEmbeddedLabel(w.workspace),
+        action: async () => {
+          const loginInfo = (await selectWorkspace(w.workspace))[1]
+          navigateToWorkspace(w.workspace, loginInfo)
+        },
+        isSubmenuRightClicking: true,
+        component: Menu,
+        props: {
+          actions: [
+            {
+              label: workbench.string.OpenInNewTab,
+              action: async () => {
+                const loginInfo = (await selectWorkspace(w.workspace))[1]
 
-              if (!loginInfo) {
-                return
+                if (!loginInfo) {
+                  return
+                }
+                setLoginInfo(loginInfo)
+                const url = locationToUrl({ path: [workbenchId, w.workspace] })
+                window.open(url, '_blank')?.focus()
               }
-              setLoginInfo(loginInfo)
-              const url = locationToUrl({ path: [workbenchId, w.workspace] })
-              window.open(url, '_blank')?.focus()
             }
-          }
-        ]
+          ]
+        }
+      })),
+      {
+        label: getEmbeddedLabel('...'),
+        action: async () => {
+          navigate({ path: [login.component.LoginApp, 'selectWorkspace'] })
+        },
+        isSubmenuRightClicking: false
       }
-    }))
+    ]
   }
 
   let actions: Action[] = []

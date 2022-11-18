@@ -14,7 +14,15 @@
 //
 
 import contact, { Contact, EmployeeAccount, Organization } from '@hcengineering/contact'
-import core, { Class, DocumentUpdate, MixinUpdate, Ref, SortingOrder, TxOperations } from '@hcengineering/core'
+import core, {
+  Class,
+  DocumentUpdate,
+  MixinUpdate,
+  Ref,
+  SortingOrder,
+  TxOperations,
+  WorkspaceId
+} from '@hcengineering/core'
 import lead, { Customer, Funnel, Lead } from '@hcengineering/lead'
 import { connect } from '@hcengineering/server-tool'
 import task, { calcRank, DoneState, genRanks, State } from '@hcengineering/task'
@@ -125,8 +133,8 @@ export async function updateStates<T extends State | DoneState> (
   }
 }
 
-export async function importLead (transactorUrl: string, dbName: string, csvFile: string): Promise<void> {
-  const connection = await connect(transactorUrl, dbName)
+export async function importLead (transactorUrl: string, workspaceId: WorkspaceId, csvFile: string): Promise<void> {
+  const connection = await connect(transactorUrl, workspaceId)
 
   try {
     console.log('loading cvs document...')

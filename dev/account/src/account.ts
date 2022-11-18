@@ -15,8 +15,9 @@
 //
 
 import type { Request, Response } from '@hcengineering/platform'
-import platform, { Status, Severity } from '@hcengineering/platform'
+import platform, { Severity, Status } from '@hcengineering/platform'
 
+import { getWorkspaceId } from '@hcengineering/core'
 import { generateToken } from '@hcengineering/server-token'
 
 interface LoginInfo {
@@ -37,7 +38,7 @@ function login (endpoint: string, email: string, password: string, workspace: st
     return { error: new Status(Severity.ERROR, platform.status.Unauthorized, {}) }
   }
 
-  const token = generateToken(email, workspace)
+  const token = generateToken(email, getWorkspaceId(workspace))
   return { result: { token, endpoint } }
 }
 

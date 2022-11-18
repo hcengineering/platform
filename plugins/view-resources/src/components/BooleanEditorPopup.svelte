@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { CheckBox } from '@hcengineering/ui'
+  import { CheckBox, resizeObserver } from '@hcengineering/ui'
   import BooleanPresenter from './BooleanPresenter.svelte'
 
   export let value: boolean
@@ -24,7 +24,7 @@
   const dispatch = createEventDispatcher()
 </script>
 
-<div class="selectPopup">
+<div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
   <div class="menu-item" on:click={() => dispatch('close', 1)}>
     <BooleanPresenter value={true} />
     {#if value === true}

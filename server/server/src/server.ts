@@ -26,7 +26,8 @@ import {
   StorageIterator,
   toFindResult,
   Tx,
-  TxResult
+  TxResult,
+  WorkspaceId
 } from '@hcengineering/core'
 import { DbAdapter } from '@hcengineering/server-core'
 
@@ -68,7 +69,7 @@ class NullDbAdapter implements DbAdapter {
 export async function createNullAdapter (
   hierarchy: Hierarchy,
   url: string,
-  db: string,
+  workspaceId: WorkspaceId,
   modelDb: ModelDb
 ): Promise<DbAdapter> {
   return new NullDbAdapter()

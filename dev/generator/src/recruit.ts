@@ -8,14 +8,15 @@ import core, {
   metricsToString,
   MixinUpdate,
   Ref,
-  TxOperations
+  TxOperations,
+  WorkspaceId
 } from '@hcengineering/core'
+import { MinioService } from '@hcengineering/minio'
 import recruit from '@hcengineering/model-recruit'
 import { Applicant, Candidate, Vacancy } from '@hcengineering/recruit'
 import { genRanks, State } from '@hcengineering/task'
 import faker from 'faker'
 import jpeg, { BufferRet } from 'jpeg-js'
-import { Client } from 'minio'
 import { addAttachments, AttachmentOptions } from './attachments'
 import { addComments, CommentOptions } from './comments'
 import { connect } from './connect'
@@ -41,11 +42,11 @@ export interface RecruitOptions {
 
 export async function generateContacts (
   transactorUrl: string,
-  dbName: string,
+  workspaceId: WorkspaceId,
   options: RecruitOptions,
-  minio: Client
+  minio: MinioService
 ): Promise<void> {
-  const connection = await connect(transactorUrl, dbName)
+  const connection = await connect(transactorUrl, workspaceId)
 
   const accounts = await connection.findAll(contact.class.EmployeeAccount, {})
   const accountIds = accounts.map((a) => a._id)
@@ -60,12 +61,12 @@ export async function generateContacts (
   const ctx = new MeasureMetricsContext('recruit', { contacts: options.contacts })
 
   for (let i = 0; i < options.contacts; i++) {
-    await ctx.with('candidate', {}, (ctx) => genCandidate(ctx, i, minio, dbName, options, candidates, client))
+    await ctx.with('candidate', {}, (ctx) => genCandidate(ctx, i, minio, workspaceId, options, candidates, client))
   }
   // Work on Vacancy/Applications.
   for (let i = 0; i < options.vacancy; i++) {
     await ctx.with('vacancy', {}, (ctx) =>
-      genVacansyApplicants(ctx, accountIds, options, i, client, minio, dbName, candidates, emoloyeeIds)
+      genVacansyApplicants(ctx, accountIds, options, i, client, minio, workspaceId, candidates, emoloyeeIds)
     )
   }
 
@@ -81,8 +82,8 @@ async function genVacansyApplicants (
   options: RecruitOptions,
   i: number,
   client: TxOperations,
-  minio: Client,
-  dbName: string,
+  minio: MinioService,
+  workspaceId: WorkspaceId,
   candidates: Ref<Candidate>[],
   emoloyeeIds: Ref<Employee>[]
 ): Promise<void> {
@@ -112,7 +113,7 @@ async function genVacansyApplicants (
         options.attachments,
         client,
         minio,
-        dbName,
+        workspaceId,
         vacancyId,
         vacancyId,
         recruit.class.Vacancy,
@@ -133,7 +134,7 @@ async function genVacansyApplicants (
   const rankGen = genRanks(candidates.length)
   for (const candidateId of applicantsFor) {
     await ctx.with('applicant', {}, (ctx) =>
-      genApplicant(ctx, vacancyId, candidateId, emoloyeeIds, states, client, options, minio, dbName, rankGen)
+      genApplicant(ctx, vacancyId, candidateId, emoloyeeIds, states, client, options, minio, workspaceId, rankGen)
     )
   }
 }
@@ -146,8 +147,8 @@ async function genApplicant (
   states: Ref<State>[],
   client: TxOperations,
   options: RecruitOptions,
-  minio: Client,
-  dbName: string,
+  minio: MinioService,
+  workspaceId: WorkspaceId,
   rankGen: Generator<string, void, unknown>
 ): Promise<void> {
   const applicantId = `vacancy-${vacancyId}-${candidateId}` as Ref<Applicant>
@@ -180,7 +181,7 @@ async function genApplicant (
         options.attachments,
         client,
         minio,
-        dbName,
+        workspaceId,
         vacancyId,
         applicantId,
         recruit.class.Applicant,
@@ -212,8 +213,8 @@ const liteAvatar = generateAvatar(0)
 async function genCandidate (
   ctx: MeasureContext,
   i: number,
-  minio: Client,
-  dbName: string,
+  minio: MinioService,
+  workspaceId: WorkspaceId,
   options: RecruitOptions,
   candidates: Ref<Candidate>[],
   client: TxOperations
@@ -225,7 +226,7 @@ async function genCandidate (
 
   if (!options.lite) {
     await ctx.with('avatar', {}, () =>
-      minio.putObject(dbName, imgId, jpegImageData.data, jpegImageData.data.length, { 'Content-Type': 'image/jpeg' })
+      minio.put(workspaceId, imgId, jpegImageData.data, jpegImageData.data.length, { 'Content-Type': 'image/jpeg' })
     )
   }
   const candidate: Data<Person> = {
@@ -283,7 +284,7 @@ async function genCandidate (
         options.attachments,
         client,
         minio,
-        dbName,
+        workspaceId,
         recruit.space.CandidatesPublic,
         candidateId,
         contact.class.Person,

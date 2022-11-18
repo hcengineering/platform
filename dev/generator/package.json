@@ -31,8 +31,7 @@
     "@rushstack/heft": "^0.47.9",
     "typescript": "^4.3.5",
     "@types/ws": "^8.5.3",
-    "@types/faker": "~5.5.9",
-    "@types/minio": "~7.0.11"
+    "@types/faker": "~5.5.9"
   },
   "dependencies": {
     "commander": "^8.1.0",
@@ -53,10 +52,10 @@
     "@hcengineering/chunter": "~0.6.1",
     "pdfkit": "~0.13.0",
     "@hcengineering/attachment": "~0.6.1",
-    "minio": "^7.0.26",
     "@types/pdfkit": "~0.12.3",
     "@hcengineering/task": "~0.6.0",
     "jpeg-js": "~0.4.3",
-    "@hcengineering/server-token": "~0.6.0"
+    "@hcengineering/server-token": "~0.6.0",
+    "@hcengineering/minio": "^0.6.0"
   }
 }

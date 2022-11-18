@@ -18,18 +18,50 @@ import { prepareTools as prepareToolsRaw } from '@hcengineering/server-tool'
 import { Data, Tx, Version } from '@hcengineering/core'
 import { MigrateOperation } from '@hcengineering/model'
 import builder, { migrateOperations, version } from '@hcengineering/model-all'
-import { Client } from 'minio'
+import { MinioService } from '@hcengineering/minio'
 import { devTool } from '.'
+
+import { serverAttachmentId } from '@hcengineering/server-attachment'
+import { serverCalendarId } from '@hcengineering/server-calendar'
+import { serverChunterId } from '@hcengineering/server-chunter'
+import { serverContactId } from '@hcengineering/server-contact'
+import { serverGmailId } from '@hcengineering/server-gmail'
+import { serverInventoryId } from '@hcengineering/server-inventory'
+import { serverLeadId } from '@hcengineering/server-lead'
+import { serverNotificationId } from '@hcengineering/server-notification'
+import { serverRecruitId } from '@hcengineering/server-recruit'
+import { serverSettingId } from '@hcengineering/server-setting'
+import { serverTagsId } from '@hcengineering/server-tags'
+import { serverTaskId } from '@hcengineering/server-task'
+import { serverTrackerId } from '@hcengineering/server-tracker'
+import { serverTelegramId } from '@hcengineering/server-telegram'
+import { serverHrId } from '@hcengineering/server-hr'
+import { addLocation } from '@hcengineering/platform'
+
+addLocation(serverAttachmentId, () => import('@hcengineering/server-attachment-resources'))
+addLocation(serverContactId, () => import('@hcengineering/server-contact-resources'))
+addLocation(serverNotificationId, () => import('@hcengineering/server-notification-resources'))
+addLocation(serverChunterId, () => import('@hcengineering/server-chunter-resources'))
+addLocation(serverInventoryId, () => import('@hcengineering/server-inventory-resources'))
+addLocation(serverLeadId, () => import('@hcengineering/server-lead-resources'))
+addLocation(serverRecruitId, () => import('@hcengineering/server-recruit-resources'))
+addLocation(serverSettingId, () => import('@hcengineering/server-setting-resources'))
+addLocation(serverTaskId, () => import('@hcengineering/server-task-resources'))
+addLocation(serverTrackerId, () => import('@hcengineering/server-tracker-resources'))
+addLocation(serverTagsId, () => import('@hcengineering/server-tags-resources'))
+addLocation(serverCalendarId, () => import('@hcengineering/server-calendar-resources'))
+addLocation(serverGmailId, () => import('@hcengineering/server-gmail-resources'))
+addLocation(serverTelegramId, () => import('@hcengineering/server-telegram-resources'))
+addLocation(serverHrId, () => import('@hcengineering/server-hr-resources'))
 
 function prepareTools (): {
   mongodbUri: string
-  minio: Client
+  minio: MinioService
   txes: Tx[]
   version: Data<Version>
   migrateOperations: MigrateOperation[]
-  productId: string
 } {
-  return { ...prepareToolsRaw(builder.getTxes()), version, migrateOperations, productId: '' }
+  return { ...prepareToolsRaw(builder.getTxes()), version, migrateOperations }
 }
 
-devTool(prepareTools)
+devTool(prepareTools, '')

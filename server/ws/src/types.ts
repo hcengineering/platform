@@ -7,7 +7,8 @@ import {
   MeasureContext,
   Ref,
   Tx,
-  TxResult
+  TxResult,
+  WorkspaceId
 } from '@hcengineering/core'
 import { Response } from '@hcengineering/platform'
 import { Pipeline } from '@hcengineering/server-core'
@@ -31,4 +32,9 @@ export interface Session {
 /**
  * @public
  */
-export type BroadcastCall = (from: Session | null, workspaceId: string, resp: Response<any>, target?: string) => void
+export type BroadcastCall = (
+  from: Session | null,
+  workspaceId: WorkspaceId,
+  resp: Response<any>,
+  target?: string
+) => void

@@ -15,17 +15,17 @@
 //
 
 import contact from '@hcengineering/contact'
-import core, { DOMAIN_TX, Tx } from '@hcengineering/core'
+import core, { DOMAIN_TX, Tx, WorkspaceId } from '@hcengineering/core'
+import { MinioService, MinioWorkspaceItem } from '@hcengineering/minio'
 import { MigrateOperation } from '@hcengineering/model'
+import { getWorkspaceDB } from '@hcengineering/mongo'
 import { upgradeModel } from '@hcengineering/server-tool'
 import { existsSync } from 'fs'
 import { mkdir, open, readFile, writeFile } from 'fs/promises'
-import { Client } from 'minio'
 import { Document, MongoClient } from 'mongodb'
 import { join } from 'path'
 import { rebuildElastic } from './elastic'
 import { generateModelDiff, printDiff } from './mdiff'
-import { listMinioObjects, MinioWorkspaceItem } from './minio'
 
 interface CollectionInfo {
   name: string
@@ -41,11 +41,16 @@ interface WorkspaceInfo {
 /**
  * @public
  */
-export async function dumpWorkspace (mongoUrl: string, dbName: string, fileName: string, minio: Client): Promise<void> {
+export async function dumpWorkspace (
+  mongoUrl: string,
+  workspaceId: WorkspaceId,
+  fileName: string,
+  minio: MinioService
+): Promise<void> {
   const client = new MongoClient(mongoUrl)
   try {
     await client.connect()
-    const db = client.db(dbName)
+    const db = getWorkspaceDB(client, workspaceId)
 
     console.log('dumping transactions...')
 
@@ -66,19 +71,19 @@ export async function dumpWorkspace (mongoUrl: string, dbName: string, fileName:
     }
 
     console.log('Dump minio objects')
-    if (await minio.bucketExists(dbName)) {
-      workspaceInfo.minioData.push(...(await listMinioObjects(minio, dbName)))
+    if (await minio.exists(workspaceId)) {
+      workspaceInfo.minioData.push(...(await minio.list(workspaceId)))
       const minioDbLocation = fileName + '.minio'
       if (!existsSync(minioDbLocation)) {
         await mkdir(minioDbLocation)
       }
       for (const d of workspaceInfo.minioData) {
-        const stat = await minio.statObject(dbName, d.name)
+        const stat = await minio.stat(workspaceId, d.name)
         d.metaData = stat.metaData
 
         const fileHandle = await open(join(minioDbLocation, d.name), 'w')
 
-        const chunks: Buffer[] = await readMinioData(minio, dbName, d.name)
+        const chunks: Buffer[] = await minio.read(workspaceId, d.name)
         for (const b of chunks) {
           await fileHandle.write(b)
         }
@@ -92,41 +97,21 @@ export async function dumpWorkspace (mongoUrl: string, dbName: string, fileName:
   }
 }
 
-export async function readMinioData (minio: Client, dbName: string, name: string): Promise<Buffer[]> {
-  const data = await minio.getObject(dbName, name)
-  const chunks: Buffer[] = []
-
-  await new Promise((resolve) => {
-    data.on('readable', () => {
-      let chunk
-      while ((chunk = data.read()) !== null) {
-        const b = chunk as Buffer
-        chunks.push(b)
-      }
-    })
-
-    data.on('end', () => {
-      resolve(null)
-    })
-  })
-  return chunks
-}
-
 export async function restoreWorkspace (
   mongoUrl: string,
-  dbName: string,
+  workspaceId: WorkspaceId,
   fileName: string,
-  minio: Client,
+  minio: MinioService,
   elasticUrl: string,
   transactorUrl: string,
   rawTxes: Tx[],
   migrateOperations: MigrateOperation[]
 ): Promise<void> {
-  console.log('Restoring workspace', mongoUrl, dbName, fileName)
+  console.log('Restoring workspace', mongoUrl, workspaceId, fileName)
   const client = new MongoClient(mongoUrl)
   try {
     await client.connect()
-    const db = client.db(dbName)
+    const db = getWorkspaceDB(client, workspaceId)
 
     const workspaceInfo = JSON.parse((await readFile(fileName + '.workspace.json')).toString()) as WorkspaceInfo
 
@@ -148,12 +133,12 @@ export async function restoreWorkspace (
       }
     }
 
-    if (await minio.bucketExists(dbName)) {
-      const objectNames = (await listMinioObjects(minio, dbName)).map((i) => i.name)
-      await minio.removeObjects(dbName, objectNames)
-      await minio.removeBucket(dbName)
+    if (await minio.exists(workspaceId)) {
+      const objectNames = (await minio.list(workspaceId)).map((i) => i.name)
+      await minio.remove(workspaceId, objectNames)
+      await minio.delete(workspaceId)
     }
-    await minio.makeBucket(dbName, 'k8s')
+    await minio.make(workspaceId)
 
     const minioDbLocation = fileName + '.minio'
     console.log('Restore minio objects', workspaceInfo.minioData.length)
@@ -162,7 +147,7 @@ export async function restoreWorkspace (
       const file = await open(join(minioDbLocation, d.name), 'r')
       const stream = file.createReadStream()
       promises.push(
-        minio.putObject(dbName, d.name, stream, d.size, d.metaData).then(async () => {
+        minio.put(workspaceId, d.name, stream, d.size, d.metaData).then(async () => {
           await file.close()
         })
       )
@@ -172,19 +157,19 @@ export async function restoreWorkspace (
       }
     }
 
-    await upgradeModel(transactorUrl, dbName, rawTxes, migrateOperations)
+    await upgradeModel(transactorUrl, workspaceId, rawTxes, migrateOperations)
 
-    await rebuildElastic(mongoUrl, dbName, minio, elasticUrl)
+    await rebuildElastic(mongoUrl, workspaceId, minio, elasticUrl)
   } finally {
     await client.close()
   }
 }
 
-export async function diffWorkspace (mongoUrl: string, dbName: string, rawTxes: Tx[]): Promise<void> {
+export async function diffWorkspace (mongoUrl: string, workspace: WorkspaceId, rawTxes: Tx[]): Promise<void> {
   const client = new MongoClient(mongoUrl)
   try {
     await client.connect()
-    const db = client.db(dbName)
+    const db = getWorkspaceDB(client, workspace)
 
     console.log('diffing transactions...')
 

@@ -25,9 +25,10 @@ import {
   Ref,
   StorageIterator,
   Tx,
-  TxResult
+  TxResult,
+  WorkspaceId
 } from '@hcengineering/core'
-import { Client } from 'minio'
+import { MinioService } from '@hcengineering/minio'
 
 /**
  * @public
@@ -65,9 +66,9 @@ export interface TxAdapter extends DbAdapter {
 export type DbAdapterFactory = (
   hierarchy: Hierarchy,
   url: string,
-  db: string,
+  workspaceId: WorkspaceId,
   modelDb: ModelDb,
-  storage?: Client
+  storage?: MinioService
 ) => Promise<DbAdapter>
 
 /**
@@ -129,6 +130,10 @@ class InMemoryAdapter implements DbAdapter {
 /**
  * @public
  */
-export async function createInMemoryAdapter (hierarchy: Hierarchy, url: string, db: string): Promise<DbAdapter> {
+export async function createInMemoryAdapter (
+  hierarchy: Hierarchy,
+  url: string,
+  workspaceId: WorkspaceId
+): Promise<DbAdapter> {
   return new InMemoryAdapter(hierarchy)
 }

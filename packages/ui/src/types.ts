@@ -64,7 +64,7 @@ export interface AnySvelteComponentWithProps {
 
 export interface Action {
   label: IntlString
-  icon: Asset | AnySvelteComponent
+  icon?: Asset | AnySvelteComponent
   action: (props: any, ev: Event) => Promise<void>
   inline?: boolean
   link?: string

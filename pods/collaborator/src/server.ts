@@ -5,14 +5,14 @@ import { createServer, IncomingMessage } from 'http'
 import WebSocket, { WebSocketServer } from 'ws'
 import { setupWSConnection } from './yserver'
 
-import { Client as MinioClient } from 'minio'
+import { MinioService } from '@hcengineering/minio'
 /**
  * @public
  * @param sessionFactory -
  * @param port -
  * @param host -
  */
-export function start (ctx: MeasureContext, port: number, minio: MinioClient, host?: string): () => void {
+export function start (ctx: MeasureContext, port: number, minio: MinioService, host?: string): () => void {
   console.log(`starting server on port ${port} ...`)
 
   const wss = new WebSocketServer({

@@ -20,4 +20,4 @@ import { serveAccount } from '.'
 
 const txes = JSON.parse(JSON.stringify(builder.getTxes())) as Tx[]
 
-serveAccount(getMethods(version, txes, migrateOperations, ''))
+serveAccount(getMethods(version, txes, migrateOperations))

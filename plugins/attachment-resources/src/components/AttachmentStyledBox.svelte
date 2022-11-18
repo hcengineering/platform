@@ -201,7 +201,7 @@
     {showButtons}
     {buttonSize}
     {maxHeight}
-    on:changeContent
+    on:changeSize
   />
   {#if attachments.size}
     <div class="flex-row-center list scroll-divider-color mt-1">

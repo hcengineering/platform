@@ -1,13 +1,13 @@
 import client from '@hcengineering/client'
 import clientResources from '@hcengineering/client-resources'
-import { Client } from '@hcengineering/core'
+import { Client, WorkspaceId } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
 import { generateToken } from '@hcengineering/server-token'
 
 // eslint-disable-next-line
 const WebSocket = require('ws')
 
-export async function connect (transactorUrl: string, workspace: string): Promise<Client> {
+export async function connect (transactorUrl: string, workspace: WorkspaceId): Promise<Client> {
   console.log('connecting to transactor...')
   const token = generateToken('anticrm@hc.engineering', workspace)
 

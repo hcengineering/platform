@@ -59,11 +59,11 @@ export interface IssueStatusCategory extends Doc {
  * @public
  */
 export interface Team extends Space {
-  teamLogo?: string | null
   identifier: string // Team identifier
   sequence: number
   issueStatuses: number
   defaultIssueStatus: Ref<IssueStatus>
+  icon?: Asset
 }
 
 /**
@@ -413,6 +413,7 @@ export default plugin(trackerId, {
     NewIssue: '' as Asset,
     Magnifier: '' as Asset,
     Home: '' as Asset,
+    RedCircle: '' as Asset,
     Labels: '' as Asset,
     DueDate: '' as Asset,
     Parent: '' as Asset,

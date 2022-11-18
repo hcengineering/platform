@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { afterUpdate, createEventDispatcher, onDestroy, onMount } from 'svelte'
+  import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import { generateId, Ref, Doc } from '@hcengineering/core'
   import ui from '../plugin'
   import { closePopup, showPopup } from '../popups'
@@ -68,9 +68,6 @@
     }
   }
 
-  afterUpdate(() => {
-    dispatch('changeContent')
-  })
   onMount(() => {
     if (btns[0]) {
       btns[0].focus()
@@ -142,7 +139,9 @@
               bind:this={btns[i]}
               class="ap-menuItem flex-row-center withIcon w-full"
               class:hover={btns[i] === activeElement}
-              on:mouseover={(evt) => focusTarget(action, btns[i])}
+              on:mousemove={() => {
+                if (btns[i] !== activeElement) focusTarget(action, btns[i])
+              }}
               on:click|preventDefault|stopPropagation={(evt) => {
                 if (!action.inline) dispatch('close')
                 action.action(ctx, evt)
@@ -158,7 +157,9 @@
             bind:this={btns[i]}
             class="ap-menuItem antiPopup-submenu withIconHover"
             class:hover={btns[i] === activeElement}
-            on:mouseover={() => focusTarget(action, btns[i])}
+            on:mousemove={() => {
+              if (btns[i] !== activeElement) focusTarget(action, btns[i])
+            }}
             on:click={() => focusTarget(action, btns[i])}
           >
             {#if action.icon}
@@ -172,7 +173,9 @@
             bind:this={btns[i]}
             class="ap-menuItem flex-row-center withIcon"
             class:hover={btns[i] === activeElement}
-            on:mouseover={() => focusTarget(action, btns[i], action.isSubmenuRightClicking)}
+            on:mousemove={() => {
+              if (btns[i] !== activeElement) focusTarget(action, btns[i], action.isSubmenuRightClicking)
+            }}
             on:click={(evt) => {
               if (!action.inline) dispatch('close')
               action.action(ctx, evt)

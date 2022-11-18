@@ -14,12 +14,12 @@
 //
 
 import contact, { EmployeeAccount } from '@hcengineering/contact'
-import { Ref, TxOperations } from '@hcengineering/core'
+import { Ref, TxOperations, WorkspaceId } from '@hcengineering/core'
 import { connect } from '@hcengineering/server-tool'
 import { deepEqual } from 'fast-equals'
 
-export async function removeDuplicates (transactorUrl: string, dbName: string): Promise<void> {
-  const connection = await connect(transactorUrl, dbName)
+export async function removeDuplicates (transactorUrl: string, workspaceId: WorkspaceId): Promise<void> {
+  const connection = await connect(transactorUrl, workspaceId)
 
   try {
     console.log('loading cvs document...')

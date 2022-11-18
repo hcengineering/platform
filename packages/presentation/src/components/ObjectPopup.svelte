@@ -26,9 +26,10 @@
     IconCheck,
     ListView,
     showPopup,
-    tooltip
+    tooltip,
+    resizeObserver
   } from '@hcengineering/ui'
-  import { afterUpdate, createEventDispatcher } from 'svelte'
+  import { createEventDispatcher } from 'svelte'
   import presentation from '..'
   import { ObjectCreate } from '../types'
   import { createQuery, getClient } from '../utils'
@@ -159,8 +160,6 @@
     return obj
   }
 
-  afterUpdate(() => dispatch('changeContent'))
-
   let selectedDiv: HTMLElement | undefined
   let scrollDiv: HTMLElement | undefined
   let cHeight = 0
@@ -199,6 +198,9 @@
   class:plainContainer={!shadows}
   class:width-40={width === 'large'}
   on:keydown={onKeydown}
+  use:resizeObserver={() => {
+    dispatch('changeContent')
+  }}
 >
   <div class="header flex-between">
     <EditBox kind={'search-style'} focusIndex={1} focus bind:value={search} {placeholder} />

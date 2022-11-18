@@ -74,7 +74,7 @@ export async function OnAttachmentDelete (
   })
 
   storageFx(async (adapter, bucket) => {
-    await adapter.removeObject(bucket, attach.file)
+    await adapter.remove(bucket, [attach.file])
   })
 
   return []

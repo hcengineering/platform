@@ -13,7 +13,6 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher, afterUpdate } from 'svelte'
   import type { Class, Doc, Ref } from '@hcengineering/core'
   import type { Asset } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
@@ -27,7 +26,6 @@
   export let mode: ViewContextType | undefined = undefined
 
   const client = getClient()
-  const dispatch = createEventDispatcher()
 
   let loaded = 0
 
@@ -56,10 +54,8 @@
       }))
     loaded = 1
   })
-
-  afterUpdate(() => dispatch('changeContent'))
 </script>
 
 {#if loaded}
-  <Menu {actions} on:close on:changeContent={() => dispatch('changeContent')} />
+  <Menu {actions} on:close on:changeContent />
 {/if}

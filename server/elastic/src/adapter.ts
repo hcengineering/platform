@@ -14,12 +14,12 @@
 // limitations under the License.
 //
 
-import type { Class, Doc, DocumentQuery, Ref, TxResult } from '@hcengineering/core'
+import { Class, Doc, DocumentQuery, Ref, toWorkspaceString, TxResult, WorkspaceId } from '@hcengineering/core'
 import type { FullTextAdapter, IndexedDoc } from '@hcengineering/server-core'
 
 import { Client, errors as esErr } from '@elastic/elasticsearch'
 class ElasticAdapter implements FullTextAdapter {
-  constructor (private readonly client: Client, private readonly db: string) {}
+  constructor (private readonly client: Client, private readonly workspaceId: WorkspaceId) {}
 
   async close (): Promise<void> {
     await this.client.close()
@@ -95,7 +95,7 @@ class ElasticAdapter implements FullTextAdapter {
 
     try {
       const result = await this.client.search({
-        index: this.db,
+        index: toWorkspaceString(this.workspaceId),
         body: {
           query: request,
           size: size ?? 200,
@@ -113,14 +113,14 @@ class ElasticAdapter implements FullTextAdapter {
   async index (doc: IndexedDoc): Promise<TxResult> {
     if (doc.data === undefined) {
       await this.client.index({
-        index: this.db,
+        index: toWorkspaceString(this.workspaceId),
         id: doc.id,
         type: '_doc',
         body: doc
       })
     } else {
       await this.client.index({
-        index: this.db,
+        index: toWorkspaceString(this.workspaceId),
         id: doc.id,
         type: '_doc',
         pipeline: 'attachment',
@@ -132,7 +132,7 @@ class ElasticAdapter implements FullTextAdapter {
 
   async update (id: Ref<Doc>, update: Record<string, any>): Promise<TxResult> {
     await this.client.update({
-      index: this.db,
+      index: toWorkspaceString(this.workspaceId),
       id,
       body: {
         doc: update
@@ -145,7 +145,7 @@ class ElasticAdapter implements FullTextAdapter {
   async remove (id: Ref<Doc>): Promise<void> {
     try {
       await this.client.delete({
-        index: this.db,
+        index: toWorkspaceString(this.workspaceId),
         id
       })
     } catch (e: any) {
@@ -163,11 +163,11 @@ class ElasticAdapter implements FullTextAdapter {
  */
 export async function createElasticAdapter (
   url: string,
-  dbName: string
+  workspaceId: WorkspaceId
 ): Promise<FullTextAdapter & { close: () => Promise<void> }> {
   const client = new Client({
     node: url
   })
 
-  return new ElasticAdapter(client, dbName)
+  return new ElasticAdapter(client, workspaceId)
 }

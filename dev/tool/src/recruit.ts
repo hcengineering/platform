@@ -16,7 +16,8 @@
 
 import { Attachment } from '@hcengineering/attachment'
 import contact, { Channel, ChannelProvider, EmployeeAccount } from '@hcengineering/contact'
-import { Ref, TxOperations, WithLookup } from '@hcengineering/core'
+import { Ref, TxOperations, WithLookup, WorkspaceId } from '@hcengineering/core'
+import { MinioService } from '@hcengineering/minio'
 import attachment from '@hcengineering/model-attachment'
 import recruit from '@hcengineering/model-recruit'
 import { Candidate } from '@hcengineering/recruit'
@@ -24,11 +25,9 @@ import { ReconiDocument } from '@hcengineering/rekoni'
 import { generateToken } from '@hcengineering/server-token'
 import { connect } from '@hcengineering/server-tool'
 import tags, { findTagCategory } from '@hcengineering/tags'
-import { Client } from 'minio'
 import got from 'got'
 import { ElasticTool } from './elastic'
 import { findOrUpdateAttached } from './utils'
-import { readMinioData } from './workspace'
 
 export async function recognize (rekoniUrl: string, data: string, token: string): Promise<ReconiDocument | undefined> {
   const { body }: { body?: ReconiDocument } = await got.post(rekoniUrl + '/recognize?format=pdf', {
@@ -87,18 +86,18 @@ export async function addChannel (
 
 export async function updateCandidates (
   transactorUrl: string,
-  dbName: string,
-  minio: Client,
+  workspaceId: WorkspaceId,
+  minio: MinioService,
   mongoUrl: string,
   elasticUrl: string,
   rekoniUrl: string
 ): Promise<void> {
-  const connection = await connect(transactorUrl, dbName)
+  const connection = await connect(transactorUrl, workspaceId)
 
-  const tool = new ElasticTool(mongoUrl, dbName, minio, elasticUrl)
+  const tool = new ElasticTool(mongoUrl, workspaceId, minio, elasticUrl)
   const done = await tool.connect()
 
-  const token = generateToken('anticrm@hc.engineering', dbName)
+  const token = generateToken('anticrm@hc.engineering', workspaceId)
   try {
     const client = new TxOperations(connection, 'recruit:account:candidate-importer' as Ref<EmployeeAccount>)
 
@@ -115,10 +114,10 @@ export async function updateCandidates (
         if (a.type.includes('application/pdf')) {
           console.log('processing', c.name, a.name, `(${cpos}, ${candidates.length})`)
           try {
-            const buffer = Buffer.concat(await readMinioData(minio, dbName, a.file)).toString('base64')
+            const buffer = Buffer.concat(await minio.read(workspaceId, a.file)).toString('base64')
             const document = await recognize(rekoniUrl, buffer, token)
             if (document !== undefined) {
-              await updateAvatar(c, document, minio, dbName, client, tool)
+              await updateAvatar(c, document, minio, workspaceId, client, tool)
 
               // Update candidate values if applicable
               if (isUndef(c.city) && document.city !== undefined) {
@@ -203,8 +202,8 @@ export async function updateContacts (
 async function updateAvatar (
   c: WithLookup<Candidate>,
   document: ReconiDocument,
-  minio: Client,
-  dbName: string,
+  minio: MinioService,
+  workspaceId: WorkspaceId,
   client: TxOperations,
   tool: ElasticTool
 ): Promise<void> {
@@ -221,7 +220,7 @@ async function updateAvatar (
     const attachId = `${c._id}.${document.avatarName}` as Ref<Attachment>
     // Upload new avatar for candidate
     const data = Buffer.from(document.avatar, 'base64')
-    await minio.putObject(dbName, attachId, data, data.length, {
+    await minio.put(workspaceId, attachId, data, data.length, {
       'Content-Type': document.avatarFormat
     })
 

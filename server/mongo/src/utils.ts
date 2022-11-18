@@ -13,7 +13,8 @@
 // limitations under the License.
 //
 
-import { MongoClient, MongoClientOptions } from 'mongodb'
+import { toWorkspaceString, WorkspaceId } from '@hcengineering/core'
+import { Db, MongoClient, MongoClientOptions } from 'mongodb'
 
 let connections: MongoClient[] = []
 
@@ -39,4 +40,13 @@ export async function getMongoClient (uri: string, options?: MongoClientOptions)
   const client = await MongoClient.connect(uri, { ...options })
   connections.push(client)
   return client
+}
+
+/**
+ * @public
+ *
+ * Construct MongoDB table from workspace.
+ */
+export function getWorkspaceDB (client: MongoClient, workspaceId: WorkspaceId): Db {
+  return client.db(toWorkspaceString(workspaceId))
 }

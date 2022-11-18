@@ -27,8 +27,10 @@ import core, {
   SortingOrder,
   Space,
   TxOperations,
-  TxResult
+  TxResult,
+  WorkspaceId
 } from '@hcengineering/core'
+import { MinioService } from '@hcengineering/minio'
 import recruit from '@hcengineering/model-recruit'
 import { Applicant, Candidate, Vacancy } from '@hcengineering/recruit'
 import { connect } from '@hcengineering/server-tool'
@@ -37,7 +39,6 @@ import { deepEqual } from 'fast-equals'
 import { existsSync } from 'fs'
 import { readdir, readFile, stat } from 'fs/promises'
 import mime from 'mime-types'
-import { Client } from 'minio'
 import { dirname, join } from 'path'
 import { parseStringPromise } from 'xml2js'
 import { ElasticTool } from './elastic'
@@ -90,15 +91,15 @@ function get (data: any, key: string): string | undefined {
 
 export async function importXml (
   transactorUrl: string,
-  dbName: string,
-  minio: Client,
+  workspaceId: WorkspaceId,
+  minio: MinioService,
   xmlFile: string,
   mongoUrl: string,
   elasticUrl: string
 ): Promise<void> {
-  const connection = await connect(transactorUrl, dbName)
+  const connection = await connect(transactorUrl, workspaceId)
 
-  const tool = new ElasticTool(mongoUrl, dbName, minio, elasticUrl)
+  const tool = new ElasticTool(mongoUrl, workspaceId, minio, elasticUrl)
   const done = await tool.connect()
   try {
     console.log('loading xml document...')
@@ -152,10 +153,10 @@ export async function importXml (
             const fileName = join(candidateRoot, f)
             const data = await readFile(fileName)
             try {
-              await minio.statObject(dbName, attachId)
+              await minio.stat(workspaceId, attachId)
             } catch (err: any) {
               // No object, put new one.
-              await minio.putObject(dbName, attachId, data, data.length, {
+              await minio.put(workspaceId, attachId, data, data.length, {
                 'Content-Type': type
               })
             }
