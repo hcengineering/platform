@@ -55,9 +55,11 @@ export default mergeIds(trackerId, tracker, {
   },
   actionImpl: {
     CopyToClipboard: '' as ViewAction,
-    EditWorkflowStatuses: '' as ViewAction
+    EditWorkflowStatuses: '' as ViewAction,
+    DeleteSprint: '' as ViewAction
   },
   action: {
-    NewRelatedIssue: '' as Ref<Action<Doc, Record<string, any>>>
+    NewRelatedIssue: '' as Ref<Action<Doc, Record<string, any>>>,
+    DeleteSprint: '' as Ref<Action<Doc, Record<string, any>>>
   }
 })

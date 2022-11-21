@@ -228,6 +228,9 @@ export default mergeIds(trackerId, tracker, {
     MoveToSprint: '' as IntlString,
     NoSprint: '' as IntlString,
 
+    MoveAndDeleteSprint: '' as IntlString,
+    MoveAndDeleteSprintConfirm: '' as IntlString,
+
     Estimation: '' as IntlString,
     ReportedTime: '' as IntlString,
     TimeSpendReport: '' as IntlString,

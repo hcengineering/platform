@@ -14,7 +14,7 @@
 //
 
 import { Employee, formatName } from '@hcengineering/contact'
-import { DocumentQuery, Ref, SortingOrder, WithLookup } from '@hcengineering/core'
+import { DocumentQuery, Ref, SortingOrder, TxOperations, WithLookup } from '@hcengineering/core'
 import { TypeState } from '@hcengineering/kanban'
 import { Asset, IntlString, translate } from '@hcengineering/platform'
 import {
@@ -612,6 +612,34 @@ export function getDayOfSprint (startDate: number, now: number): number {
   const stTime = stDate.getTime()
   const ds = Array.from(Array(days).keys()).map((it) => stDateDate + it)
   return ds.filter((it) => !isWeekend(new Date(new Date(stTime).setDate(it)))).length
+}
+
+export async function moveIssuesToAnotherSprint (
+  client: TxOperations,
+  oldSprint: Sprint,
+  newSprint: Sprint | undefined
+): Promise<boolean> {
+  try {
+    // Find all Issues by Sprint
+    const movedIssues = await client.findAll(tracker.class.Issue, { sprint: oldSprint._id })
+
+    // Update Issues by new Sprint
+    const awaitedUpdates = []
+    for (const issue of movedIssues) {
+      awaitedUpdates.push(client.update(issue, { sprint: newSprint?._id ?? undefined }))
+    }
+    await Promise.all(awaitedUpdates)
+
+    return true
+  } catch (error) {
+    console.error(
+      `Error happened while moving issues between sprints from ${oldSprint.label} to ${
+        newSprint?.label ?? 'No Sprint'
+      }: `,
+      error
+    )
+    return false
+  }
 }
 
 /**
