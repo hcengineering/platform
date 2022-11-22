@@ -29,7 +29,7 @@
   export let value: TimeSpendReport | undefined
   export let placeholder: IntlString = tracker.string.TimeSpendReportValue
 
-  export function canClose(): boolean {
+  export function canClose (): boolean {
     return true
   }
 
@@ -39,7 +39,7 @@
     value: value?.value,
     employee: value?.employee ?? assignee ?? null
   }
-  async function create(): Promise<void> {
+  async function create (): Promise<void> {
     if (value === undefined) {
       getClient().addCollection(
         tracker.class.TimeSpendReport,
