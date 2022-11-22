@@ -43,11 +43,7 @@
     }
 
     if (kind === 'list') {
-      showPopup(
-        EstimationPopup,
-        { value: value.estimation || undefined, format: 'number', object: value },
-        'top',
-        (res) => {
+      showPopup(EstimationPopup, { value: value.estimation, format: 'number', object: value }, 'top', (res) => {
           if (res != null) {
             changeEstimation(res)
           }
