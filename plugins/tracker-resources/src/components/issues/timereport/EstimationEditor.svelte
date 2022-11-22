@@ -44,11 +44,10 @@
 
     if (kind === 'list') {
       showPopup(EstimationPopup, { value: value.estimation, format: 'number', object: value }, 'top', (res) => {
-          if (res != null) {
-            changeEstimation(res)
-          }
+        if (res != null) {
+          changeEstimation(res)
         }
-      )
+      })
     } else {
       showPopup(EditBoxPopup, { value, format: 'number' }, eventToHTMLElement(event), (res) => {
         if (res !== undefined) {
