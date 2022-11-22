@@ -93,7 +93,7 @@
     {:else}
       <div class="fs-title mr-4 flex-row-center flex-grow firstLetter">
         {#if mode === CalendarMode.Month}
-          {getMonthName(currentDate)}
+          <span class="mr-2">{getMonthName(currentDate)}</span>
         {/if}
         {currentDate.getFullYear()}
       </div>
@@ -137,7 +137,7 @@
     {#if !twoRows}
       <div class="fs-title ml-4 flex-row-center firstLetter">
         {#if mode === CalendarMode.Month}
-          <span class="mr-3">{getMonthName(currentDate)}</span>
+          <span class="mr-2">{getMonthName(currentDate)}</span>
         {/if}
         {currentDate.getFullYear()}
       </div>
