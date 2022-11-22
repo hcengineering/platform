@@ -35,7 +35,7 @@
 
   export let teams: Map<Ref<Team>, Team>
 
-  function showContextMenu(ev: MouseEvent, object: TimeSpendReport) {
+  function showContextMenu (ev: MouseEvent, object: TimeSpendReport) {
     showPopup(ContextMenu, { object }, getEventPositionElement(ev))
   }
 
@@ -52,7 +52,7 @@
   }
   const toTeamId = (ref: Ref<Space>) => ref as Ref<Team>
 
-  function editSpendReport(event: MouseEvent, value: TimeSpendReport): void {
+  function editSpendReport (event: MouseEvent, value: TimeSpendReport): void {
     showPopup(
       TimeSpendReportPopup,
       { issue: value.attachedTo, issueClass: value.attachedToClass, value, assignee: value.employee },

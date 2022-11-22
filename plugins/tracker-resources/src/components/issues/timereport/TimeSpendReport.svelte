@@ -31,7 +31,7 @@
     presenter = p
   })
 
-  function editSpendReport(event: MouseEvent): void {
+  function editSpendReport (event: MouseEvent): void {
     showPopup(
       TimeSpendReportPopup,
       { issue: value.attachedTo, issueClass: value.attachedToClass, value, assignee: value.employee },

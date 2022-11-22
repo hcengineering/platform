@@ -62,7 +62,7 @@
     phTraslate = res
   })
 
-  function computeSize(t: HTMLInputElement | EventTarget | null) {
+  function computeSize (t: HTMLInputElement | EventTarget | null) {
     const target = t as HTMLInputElement
     const value = target.value
     text.innerHTML = (value === '' ? phTraslate : value)
@@ -91,7 +91,7 @@
     computeSize(input)
   })
 
-  export function focusInput() {
+  export function focusInput () {
     input?.focus()
   }
 
@@ -111,7 +111,7 @@
     input.addEventListener('focus', updateFocus, { once: true })
   }
 
-  export function focused(): void {
+  export function focused (): void {
     input.focus()
   }
 </script>
