@@ -112,7 +112,7 @@
 </script>
 
 {#if departmentStaff.length}
-  <Scroller fade={tableSP}>
+  <Scroller fade={tableSP} horizontal>
     <table>
       <thead class="scroller-thead">
         <tr class="scroller-thead__tr">
@@ -149,13 +149,13 @@
               <EmployeePresenter value={employee} />
             </td>
             <td
-              class="flex-center p-1 whitespace-nowrap"
+              class="flex-center p-1 whitespace-nowrap text-center"
               class:firstLine={row === 0}
               class:lastLine={row === departmentStaff.length - 1}
             >
               {getTotal(requests, startDate.getMonth(), types)}
             </td>
-            <td class="p-1">
+            <td class="p-1 text-center">
               {#if rTime !== undefined}
                 {rTime.value}
               {:else}
@@ -170,6 +170,7 @@
               {@const ww = findReports(employee, date, timeReports)}
               {#key [tooltipValue, editable]}
                 <td
+                  class="w-9 max-w-9 min-w-9"
                   class:today={areDatesEqual(todayDate, date)}
                   class:weekend={isWeekend(date)}
                   class:cursor-pointer={editable}
@@ -211,7 +212,6 @@
 
     td,
     th {
-      width: auto;
       width: 2rem;
       min-width: 1.5rem;
       border: none;
