@@ -205,6 +205,12 @@
     "ActiveSprints": "Активно",
     "ClosedSprints": "Завершено",
     "AddToSprint": "Добавить в Спринт",
+    "SprintNamePlaceholder": "Название спринта",
+    "SprintLead": "Руководитель",
+    "SprintLeadTitle": "Руководитель спринта",
+    "SprintLeadSearchPlaceholder": "Назначьте руководителя спринта\u2026",
+    "SprintMembersTitle": "Участники спринта",
+    "SprintMembersSearchPlaceholder": "Измененить участников спринта\u2026",
 
     "NewSprint": "Новый Спринт",
     "CreateSprint": "Создать",

@@ -225,6 +225,7 @@ export interface FadeOptions {
 }
 export const defaultSP: FadeOptions = { multipler: { top: 0, bottom: 0 } }
 export const tableSP: FadeOptions = { offset: { top: true }, multipler: { top: 2.5, bottom: 0 } }
+export const tableHRscheduleY: FadeOptions = { offset: { top: true }, multipler: { top: 5, bottom: 0 } }
 export const issueSP: FadeOptions = { offset: { top: true }, multipler: { top: 3, bottom: 0 } }
 
 export interface DeviceOptions {

@@ -171,6 +171,7 @@
             size: 'x-small'
           }
         },
+        { key: '', presenter: tracker.component.SprintMembersPresenter, props: { kind: 'link' } },
         { key: '', presenter: SprintDatePresenter, props: { field: 'startDate' } },
         { key: '', presenter: SprintDatePresenter, props: { field: 'targetDate' } },
         { key: '', presenter: tracker.component.SprintStatusPresenter }
