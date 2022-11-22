@@ -129,6 +129,7 @@ export interface Sprint extends Doc {
   status: SprintStatus
 
   lead: Ref<Employee> | null
+  members: Ref<Employee>[]
 
   space: Ref<Team>
 

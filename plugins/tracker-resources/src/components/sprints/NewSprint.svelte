@@ -15,11 +15,12 @@
 <script lang="ts">
   import { Data, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { Card, EmployeeBox, getClient, SpaceSelector } from '@hcengineering/presentation'
-  import { Sprint, SprintStatus, Team } from '@hcengineering/tracker'
+  import { Card, EmployeeBox, getClient, SpaceSelector, UserBoxList } from '@hcengineering/presentation'
+  import { Project, Sprint, SprintStatus, Team } from '@hcengineering/tracker'
   import ui, { DatePresenter, EditBox } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
+  import ProjectSelector from '../ProjectSelector.svelte'
   import SprintStatusSelector from './SprintStatusSelector.svelte'
 
   export let space: Ref<Team>
@@ -31,8 +32,10 @@
     description: '',
     status: SprintStatus.Planned,
     lead: null,
+    members: [],
     comments: 0,
     attachments: 0,
+    capacity: 0,
     startDate: Date.now(),
     targetDate: Date.now() + 14 * 24 * 60 * 60 * 1000
   }
@@ -48,6 +51,14 @@
 
     object.status = newSprintStatus
   }
+
+  const handleProjectIdChanged = async (projectId: Ref<Project> | null | undefined) => {
+    if (projectId === undefined) {
+      return
+    }
+
+    object.project = projectId ?? undefined
+  }
 </script>
 
 <Card
@@ -61,7 +72,7 @@
     <SpaceSelector _class={tracker.class.Team} label={tracker.string.Team} bind:space />
   </svelte:fragment>
   <div class="label">
-    <EditBox bind:value={object.label} placeholder={tracker.string.ProjectNamePlaceholder} kind="large-style" focus />
+    <EditBox bind:value={object.label} placeholder={tracker.string.SprintNamePlaceholder} kind="large-style" focus />
   </div>
   <div class="description">
     <EditBox
@@ -72,13 +83,16 @@
   </div>
   <div slot="pool" class="flex-row-center text-sm gap-1-5">
     <SprintStatusSelector selectedSprintStatus={object.status} onSprintStatusChange={handleProjectStatusChanged} />
+    <ProjectSelector value={object.project} onChange={handleProjectIdChanged} />
     <EmployeeBox
-      label={tracker.string.ProjectLead}
+      label={tracker.string.SprintLead}
       placeholder={tracker.string.AssignTo}
       bind:value={object.lead}
       allowDeselect
       titleDeselect={tracker.string.Unassigned}
+      showNavigate={false}
     />
+    <UserBoxList bind:items={object.members} label={tracker.string.SprintMembersSearchPlaceholder} />
     <DatePresenter
       bind:value={object.startDate}
       editable
