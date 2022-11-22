@@ -36,7 +36,6 @@
   let asideFloat: boolean = false
   let asideShown: boolean = false
   let fullSize: boolean = false
-  let twoRows: boolean = false
   $: twoRows = $deviceInfo.minWidth
 
   const checkPanel = (): void => {

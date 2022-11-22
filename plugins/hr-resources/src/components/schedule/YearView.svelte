@@ -17,7 +17,7 @@
   import contact from '@hcengineering/contact-resources/src/plugin'
   import { Ref } from '@hcengineering/core'
   import type { Request, RequestType, Staff } from '@hcengineering/hr'
-  import { Label, LabelAndProps, Scroller, tableSP, tooltip } from '@hcengineering/ui'
+  import { Label, LabelAndProps, Scroller, tableHRscheduleY, tooltip } from '@hcengineering/ui'
   import hr from '../../plugin'
   import { fromTzDate, getMonth, getTotal, weekDays } from '../../utils'
   import RequestsPopup from '../RequestsPopup.svelte'
@@ -67,7 +67,7 @@
 </script>
 
 {#if departmentStaff.length}
-  <Scroller fade={tableSP}>
+  <Scroller fade={tableHRscheduleY} horizontal>
     <table>
       <thead class="scroller-thead">
         <tr class="scroller-thead__tr">
@@ -77,7 +77,7 @@
           {#each values as value, i}
             {@const month = getMonth(currentDate, value)}
             <th
-              class="fixed"
+              class="fixed first-row"
               class:today={month.getFullYear() === todayDate.getFullYear() && month.getMonth() === todayDate.getMonth()}
               on:mousemove={() => {
                 hoveredIndex = i
@@ -91,7 +91,7 @@
           {/each}
         </tr>
         <tr>
-          <th class="fixed">
+          <th class="fixed last-row">
             <span class="flex-center">
               {departmentStaff.length}
             </span>
@@ -99,7 +99,7 @@
           {#each values as value, i}
             {@const month = getMonth(currentDate, value)}
             <th
-              class="fixed"
+              class="fixed last-row"
               class:today={month.getFullYear() === todayDate.getFullYear() && month.getMonth() === todayDate.getMonth()}
             >
               <span class="flex-center">
@@ -111,8 +111,8 @@
       </thead>
       <tbody>
         {#each departmentStaff as employee, row}
-          <tr>
-            <td>
+          <tr class="tr-body">
+            <td class="td-body">
               <EmployeePresenter value={employee} />
             </td>
             {#each values as value, i}
@@ -123,7 +123,7 @@
                 <td
                   class:today={month.getFullYear() === todayDate.getFullYear() &&
                     month.getMonth() === todayDate.getMonth()}
-                  class="fixed"
+                  class="fixed td-body"
                   use:tooltip={tooltipValue}
                 >
                   <div class="flex-center">
@@ -146,14 +146,15 @@
 <style lang="scss">
   table {
     position: relative;
+    border-collapse: separate;
     width: 100%;
 
     td,
     th {
-      width: auto;
-      width: 2rem;
-      min-width: 1.5rem;
-      border: none;
+      padding: 0 0.5rem;
+      width: 2.25rem;
+      min-width: 2.25rem;
+      border: 1px solid var(--accent-bg-color);
       &.fixed {
         width: 5rem;
         padding: 0 0.125rem;
@@ -175,7 +176,7 @@
       font-size: 0.75rem;
       line-height: 105%;
       color: var(--dark-color);
-      box-shadow: inset 0 -1px 0 0 var(--divider-color);
+      border: none;
       user-select: none;
       cursor: pointer;
 
@@ -195,15 +196,15 @@
       &.today {
         background-color: var(--theme-bg-accent-hover);
       }
+      &.td-body {
+        border-bottom: 1px solid var(--divider-color);
+        &:not(:last-child) {
+          border-right: 1px solid var(--divider-color);
+        }
+      }
     }
-    td:not(:last-child) {
-      border-right: 1px solid var(--divider-color);
-    }
-    tr:not(.scroller-thead__tr) {
+    th.last-row {
       border-bottom: 1px solid var(--divider-color);
-    }
-    tr.scroller-thead__tr:not(:last-child) {
-      border-right: 1px solid var(--divider-color);
     }
   }
 </style>

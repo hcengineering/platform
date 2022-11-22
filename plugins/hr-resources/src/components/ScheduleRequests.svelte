@@ -15,7 +15,7 @@
 <script lang="ts">
   import hr, { Request, RequestType } from '@hcengineering/hr'
   import { getClient } from '@hcengineering/presentation'
-  import { getPlatformColor, Icon, showPopup } from '@hcengineering/ui'
+  import { closeTooltip, getPlatformColor, Icon, showPopup } from '@hcengineering/ui'
   import { ContextMenu } from '@hcengineering/view-resources'
 
   export let requests: Request[]
@@ -42,6 +42,7 @@
     if (!editable) return
     e.stopPropagation()
     e.preventDefault()
+    closeTooltip()
     showPopup(ContextMenu, { object: request }, e.target as HTMLElement)
   }
 </script>
