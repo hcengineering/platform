@@ -66,6 +66,7 @@
   export let focusable: boolean = false
   export let maxHeight: 'max' | 'card' | 'limited' | string | undefined = undefined
   export let withoutTopBorder = false
+  export let enableFormatting = false
 
   let textEditor: TextEditor
 
@@ -85,7 +86,7 @@
           ? 'max-content'
           : maxHeight
 
-  let isFormatting = false
+  let isFormatting = enableFormatting
   let activeModes = new Set<FormatMode>()
   let isSelectionEmpty = true
 

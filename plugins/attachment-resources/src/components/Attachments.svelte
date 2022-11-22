@@ -14,19 +14,20 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, Ref, Space } from '@hcengineering/core'
-  import { Label, Spinner, Icon } from '@hcengineering/ui'
+  import { Class, Doc, DocumentQuery, Ref, Space } from '@hcengineering/core'
+  import { Icon, Label, Spinner } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { Table } from '@hcengineering/view-resources'
   import attachment from '../plugin'
   import AddAttachment from './AddAttachment.svelte'
-  import IconAttachment from './icons/Attachment.svelte'
   import AttachmentDroppable from './AttachmentDroppable.svelte'
+  import IconAttachment from './icons/Attachment.svelte'
   import UploadDuo from './icons/UploadDuo.svelte'
 
   export let objectId: Ref<Doc>
   export let space: Ref<Space>
   export let _class: Ref<Class<Doc>>
+  export let query: DocumentQuery<Doc> = {}
 
   export let attachments: number | undefined = undefined
 
@@ -59,6 +60,7 @@
         <div class="text-sm dark-color" style:pointer-events="none">
           <Label label={attachment.string.NoAttachments} />
         </div>
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div
           class="over-underline text-sm content-accent-color"
           style:pointer-events={dragover ? 'none' : 'all'}
@@ -83,8 +85,11 @@
         'lastModified'
       ]}
       options={{ sort: { pinned: -1 } }}
-      query={{ attachedTo: objectId }}
+      query={{ ...query, attachedTo: objectId }}
       loadingProps={{ length: attachments ?? 0 }}
+      on:content={(evt) => {
+        attachments = evt.detail.length
+      }}
     />
   {/if}
 </div>

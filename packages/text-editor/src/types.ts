@@ -25,6 +25,9 @@ export interface RefInputActionItem extends Doc {
   order?: number
 }
 
+/**
+ * @public
+ */
 export const FORMAT_MODES = [
   'bold',
   'italic',
@@ -39,4 +42,15 @@ export const FORMAT_MODES = [
   'table'
 ] as const
 
+/**
+ * @public
+ */
 export type FormatMode = typeof FORMAT_MODES[number]
+
+/**
+ * @public
+ */
+export const CollaborationIds = {
+  Doc: 'text-editor.collaborator.document',
+  Provider: 'text-editor.collaborator.provider'
+}

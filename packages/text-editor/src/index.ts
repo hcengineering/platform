@@ -29,6 +29,7 @@ export { default as CollaboratorEditor } from './components/CollaboratorEditor.s
 export { default as CollaborationDiffViewer } from './components/CollaborationDiffViewer.svelte'
 export { default } from './plugin'
 export * from './types'
+export { default as Collaboration } from './components/Collaboration.svelte'
 
 addStringsLoader(textEditorId, async (lang: string) => {
   return await import(`../lang/${lang}.json`)

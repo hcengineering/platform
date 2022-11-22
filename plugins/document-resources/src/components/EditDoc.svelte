@@ -144,7 +144,7 @@
   }
 
   onMount(() => {
-    dispatch('open', { ignoreKeys: ['comments', 'name'] })
+    dispatch('open', { ignoreKeys: ['comments', 'name', 'reviewers'] })
   })
 
   const versionQuery = createQuery()
@@ -230,34 +230,6 @@
 
   let autoSelect = true
 
-  type ModelType = 'view' | 'edit' // | 'suggest'
-  let mode: ModelType = 'view'
-  const modeLabels = {
-    view: document.string.ViewMode,
-    edit: document.string.EditMode
-    // suggest: document.string.SuggestMode
-  }
-
-  function selectMode (event: MouseEvent): void {
-    showPopup(
-      SelectPopup,
-      {
-        value: Object.entries(modeLabels).map(([mode, label]) => ({
-          id: mode,
-          label
-        })),
-        placeholder: document.string.Version,
-        searchable: false
-      },
-      eventToHTMLElement(event),
-      (res) => {
-        if (res != null) {
-          mode = res
-        }
-      }
-    )
-  }
-
   async function doEdit (documentObject: Document): Promise<void> {
     processing = true
     // Looking for a draft version
@@ -319,7 +291,6 @@
         autoSelect = true
       }
     }
-    mode = 'edit'
     processing = false
   }
 
@@ -357,8 +328,6 @@
         content: editor.getHTML()
       })
     }
-
-    mode = 'view'
 
     processing = false
   }
@@ -479,7 +448,7 @@
           size={'medium'}
           disabled={documentObject?.approvers?.length === 0}
         />
-        <Button
+        <!-- <Button
           loading={processing}
           kind={'link-bordered'}
           label={document.string.SendForReview}
@@ -487,7 +456,7 @@
           icon={IconShare}
           size={'medium'}
           disabled={documentObject?.reviewers?.length === 0}
-        />
+        /> -->
       {/if}
       {#if version?.state === DocumentVersionState.Draft && approveRequest}
         <Button
@@ -517,13 +486,6 @@
           />
         {/if}
       {/if}
-      {#if !readonly && version?.state === DocumentVersionState.Draft && approveRequest === undefined}
-        <Button loading={processing} kind={'link-bordered'} on:click={selectMode} icon={IconEdit} size={'medium'}>
-          <svelte:fragment slot="content">
-            <Label label={modeLabels[mode]} />
-          </svelte:fragment>
-        </Button>
-      {/if}
       <Button icon={IconMoreH} kind={'transparent'} size={'medium'} on:click={showMenu} />
     </svelte:fragment>
 
@@ -535,7 +497,7 @@
             object={version}
             initialContentId={version.initialContentId}
             comparedVersion={compareTo?.content ?? versions[versions.length - 2]?.content}
-            readonly={mode === 'view'}
+            readonly={false}
             bind:this={editor}
           />
         {/key}
@@ -547,7 +509,12 @@
     </div>
 
     <div class="p-1 mt-6">
-      <Attachments objectId={documentObject._id} space={documentObject.space} _class={documentObject._class} />
+      <Attachments
+        objectId={documentObject._id}
+        space={documentObject.space}
+        _class={documentObject._class}
+        attachments={documentObject.attachments ?? 0}
+      />
     </div>
 
     <svelte:fragment slot="custom-attributes">
@@ -555,7 +522,7 @@
         object={documentObject}
         _class={documentObject._class}
         to={core.class.Doc}
-        ignoreKeys={['name']}
+        ignoreKeys={['name', 'reviewers']}
         {readonly}
       />
 
@@ -586,7 +553,7 @@
   .description-preview {
     color: var(--theme-content-color);
     line-height: 150%;
-    overflow: auto;
+    // overflow: auto;
   }
 
   .tab-content {
