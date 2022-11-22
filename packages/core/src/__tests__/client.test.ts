@@ -153,7 +153,12 @@ describe('client', () => {
       pluginId: 'testPlugin3',
       transactions: [txCreateDoc1._id]
     }
-    const txUpdateDoc = txFactory.createTxUpdateDoc(core.class.PluginConfiguration, core.space.Model, txCreateDoc1.objectId, pluginData3)
+    const txUpdateDoc = txFactory.createTxUpdateDoc(
+      core.class.PluginConfiguration,
+      core.space.Model,
+      txCreateDoc1.objectId,
+      pluginData3
+    )
     txes.push(txUpdateDoc)
     const client3 = new TxOperations(await createClient(connectPlugin, ['testPlugin2' as Plugin]), core.account.System)
     const result3 = await client3.findAll(core.class.PluginConfiguration, {})
