@@ -93,12 +93,12 @@
     {:else}
       <div class="fs-title mr-4 flex-row-center flex-grow firstLetter">
         {#if mode === CalendarMode.Month}
-          <span class="mr-2">{getMonthName(currentDate)}</span>
+          <span class="mr-2 overflow-label">{getMonthName(currentDate)}</span>
         {/if}
         {currentDate.getFullYear()}
       </div>
     {/if}
-    <div class="flex-row-center gap-2" class:ml-6={!twoRows}>
+    <div class="flex-row-center gap-2 flex-no-shrink" class:ml-6={!twoRows}>
       <TabList
         items={[
           { id: 'ModeMonth', labelIntl: calendar.string.ModeMonth },
@@ -137,7 +137,7 @@
     {#if !twoRows}
       <div class="fs-title ml-4 flex-row-center firstLetter">
         {#if mode === CalendarMode.Month}
-          <span class="mr-2">{getMonthName(currentDate)}</span>
+          <span class="overflow-label mr-2">{getMonthName(currentDate)}</span>
         {/if}
         {currentDate.getFullYear()}
       </div>
