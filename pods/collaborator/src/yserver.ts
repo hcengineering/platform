@@ -52,9 +52,20 @@ persistence = {
       let minioDocument: Buffer | undefined
       try {
         minioDocument = Buffer.concat(await minio.read(token.workspace, documentId))
+        console.log('bind for document', documentId, token.email)
       } catch (err: any) {
         if (initialContentId !== undefined && initialContentId.length > 0) {
-          minioDocument = Buffer.concat(await minio.read(token.workspace, initialContentId))
+          // Try first take existing document.
+
+          const existingDoc = getYDoc(initialContentId, token, true, minio, initialContentId, false)
+          if (existingDoc !== undefined) {
+            const newUpdates = encodeStateAsUpdate(existingDoc)
+            minioDocument = Buffer.from(newUpdates.buffer)
+            console.log('bind for existing document', documentId, token.email)
+          } else {
+            minioDocument = Buffer.concat(await minio.read(token.workspace, initialContentId))
+            console.log('bind for initial document', documentId, token.email, initialContentId)
+          }
         }
       }
 
@@ -76,6 +87,8 @@ persistence = {
       const buffer = Buffer.from(newUpdates.buffer)
 
       await ydoc?.minio?.put(token.workspace, documentId, buffer)
+
+      console.log('state written for', documentId, token.email)
     } catch (err: any) {
       console.error(err)
     }
@@ -180,10 +193,11 @@ export function getYDoc (
   token: Token,
   gc = true,
   minio: MinioService,
-  initialContentId: string
-): WSSharedDoc {
+  initialContentId: string,
+  allowBind = true
+): WSSharedDoc | undefined {
   let doc = docs.get(docId)
-  if (doc === undefined) {
+  if (doc === undefined && allowBind) {
     doc = new WSSharedDoc(docId)
     doc.gc = gc
     docs.set(docId, doc)
@@ -241,10 +255,10 @@ const closeConn = (doc: WSSharedDoc, conn: any): void => {
       // if persisted, we store state and destroy ydocument
       if (controlledIds !== undefined) {
         void persistence.writeState(doc.name, doc, controlledIds?.token).then(() => {
+          docs.delete(doc.name)
           doc.destroy()
         })
       }
-      docs.delete(doc.name)
     }
   }
   conn.close()
@@ -285,6 +299,10 @@ export function setupWSConnection (
   conn.binaryType = 'arraybuffer'
   // get doc, initialize if it does not exist yet
   const doc = getYDoc(documentId, token, gc, minio, initialContentId)
+  if (doc === undefined) {
+    conn.close()
+    return
+  }
   doc.conns.set(conn, { ids: new Set(), token })
   // listen and reply to events
   conn.on('message', (message: ArrayBuffer) => messageListener(conn, doc, new Uint8Array(message)))

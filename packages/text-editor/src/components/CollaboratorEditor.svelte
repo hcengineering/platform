@@ -37,7 +37,7 @@
 
   import { DecorationSet } from 'prosemirror-view'
   import textEditorPlugin from '../plugin'
-  import { FormatMode, FORMAT_MODES } from '../types'
+  import { CollaborationIds, FormatMode, FORMAT_MODES } from '../types'
   import Bold from './icons/Bold.svelte'
   import Code from './icons/Code.svelte'
   import CodeBlock from './icons/CodeBlock.svelte'
@@ -61,32 +61,41 @@
   import DeleteRow from './icons/table/DeleteRow.svelte'
   import DeleteCol from './icons/table/DeleteCol.svelte'
   import DeleteTable from './icons/table/DeleteTable.svelte'
+  import { getContext } from 'svelte'
 
   export let documentId: string
   export let readonly = false
 
   export let token: string
   export let collaboratorURL: string
+
   export let isFormatting = true
   export let buttonSize: IconSize = 'small'
   export let focusable: boolean = false
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
   export let initialContentId: string | undefined = undefined
-  export let suggestMode = false
-  export let comparedVersion: Markup | undefined = undefined
+  // export let suggestMode = false
+  export let comparedVersion: Markup | ArrayBuffer | undefined = undefined
 
-  const ydoc = new Y.Doc()
-  const wsProvider = new WebsocketProvider(collaboratorURL, documentId, ydoc, {
-    params: {
-      token,
-      documentId,
-      initialContentId: initialContentId ?? ''
-    }
-  })
+  export let field: string | undefined = undefined
 
-  wsProvider.on('status', (event: any) => {
-    console.log(documentId, event.status) // logs "connected" or "disconnected"
-  })
+  const ydoc = (getContext(CollaborationIds.Doc) as Y.Doc | undefined) ?? new Y.Doc()
+  const contextProvider = getContext(CollaborationIds.Provider) as WebsocketProvider | undefined
+  const wsProvider =
+    contextProvider ??
+    new WebsocketProvider(collaboratorURL, documentId, ydoc, {
+      params: {
+        token,
+        documentId,
+        initialContentId: initialContentId ?? ''
+      }
+    })
+
+  if (contextProvider === undefined) {
+    wsProvider?.on('status', (event: any) => {
+      console.log(documentId, event.status) // logs "connected" or "disconnected"
+    })
+  }
 
   const currentUser = getCurrentAccount() as EmployeeAccount
 
@@ -173,8 +182,8 @@
   let _decoration = DecorationSet.empty
   let oldContent = ''
 
-  function updateEditor (editor?: Editor, comparedVersion?: Markup): void {
-    const r = calculateDecorations(editor, oldContent, comparedVersion)
+  function updateEditor (editor?: Editor, field?: string, comparedVersion?: Markup | ArrayBuffer): void {
+    const r = calculateDecorations(editor, oldContent, field, comparedVersion)
     if (r !== undefined) {
       oldContent = r.oldContent
       _decoration = r.decorations
@@ -183,7 +192,7 @@
 
   const updateDecorations = () => {
     if (editor && editor.schema) {
-      updateEditor(editor, comparedVersion)
+      updateEditor(editor, field, comparedVersion)
     }
   }
 
@@ -206,7 +215,7 @@
     }
   })
 
-  $: updateEditor(editor, comparedVersion)
+  $: updateEditor(editor, field, comparedVersion)
 
   onMount(() => {
     ph.then(() => {
@@ -219,7 +228,8 @@
           Placeholder.configure({ placeholder: placeHolderStr }),
 
           Collaboration.configure({
-            document: ydoc
+            document: ydoc,
+            field
           }),
           CollaborationCursor.configure({
             provider: wsProvider,
@@ -256,8 +266,12 @@
 
   onDestroy(() => {
     if (editor) {
-      editor.destroy()
-      wsProvider.disconnect()
+      try {
+        editor.destroy()
+      } catch (err: any) {}
+      if (contextProvider === undefined) {
+        wsProvider.disconnect()
+      }
     }
   })
 
@@ -573,8 +587,8 @@
 <style lang="scss" global>
   .ProseMirror {
     flex-grow: 1;
-    overflow: auto;
-    max-height: 60vh;
+    min-height: 3rem;
+    max-height: inherit !important;
     outline: none;
     line-height: 150%;
     color: var(--accent-color);

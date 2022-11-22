@@ -30,6 +30,7 @@
   export let isFullSize: boolean = false
   export let withoutTitle: boolean = false
   export let floatAside = false
+  export let allowClose = true
 
   const dispatch = createEventDispatcher()
 
@@ -61,14 +62,16 @@
 >
   <div class="popupPanel-title__bordered {twoRows && !withoutTitle ? 'flex-col flex-no-shrink' : 'flex-row-center'}">
     <div class="popupPanel-title {twoRows && !withoutTitle ? 'row-top' : 'row'}">
-      <Button
-        icon={IconClose}
-        kind={'transparent'}
-        size={'medium'}
-        on:click={() => {
-          dispatch('close')
-        }}
-      />
+      {#if allowClose}
+        <Button
+          icon={IconClose}
+          kind={'transparent'}
+          size={'medium'}
+          on:click={() => {
+            dispatch('close')
+          }}
+        />
+      {/if}
       {#if $$slots.navigator}<slot name="navigator" />{/if}
       <div class="popupPanel-title__content">
         {#if !twoRows && !withoutTitle}<slot name="title" />{/if}

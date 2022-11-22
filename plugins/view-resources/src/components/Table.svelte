@@ -61,6 +61,7 @@
   let loading = 0
 
   let objects: Doc[] = []
+  let objectsRecieved = false
   const refs: HTMLElement[] = []
 
   $: refs.length = objects.length
@@ -91,6 +92,7 @@
       query,
       (result) => {
         objects = result
+        objectsRecieved = true
         if (sortingFunction !== undefined) {
           const sf = sortingFunction
           objects.sort((a, b) => -1 * sortOrder * sf(a, b))
@@ -230,7 +232,7 @@
         </tr>
       </thead>
     {/if}
-    {#if objects.length}
+    {#if objects.length || objectsRecieved}
       <tbody>
         {#each objects as object, row (object._id)}
           <tr

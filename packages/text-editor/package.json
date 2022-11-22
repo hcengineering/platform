@@ -55,6 +55,7 @@
     "prosemirror-transform": "~1.7.0",
     "yjs": "^13.5.42",
     "y-websocket": "^1.4.5",
+    "y-prosemirror": "1.0.20",
     "prosemirror-changeset": "~2.2.0",
     "prosemirror-model": "~1.18.1",
     "prosemirror-view": "~1.29.0",
