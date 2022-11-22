@@ -1,6 +1,6 @@
 //
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering, Inc.
+// Copyright © 2021, 2022 Hardcore Engineering, Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -30,7 +30,7 @@ describe('client', () => {
   it('should create client and spaces', async () => {
     const klass = core.class.Space
     const client = new TxOperations(await createClient(connect), core.account.System)
-    const result = await client.findAll(core.class.Space, {})
+    const result = await client.findAll(klass, {})
     expect(result).toHaveLength(2)
 
     await client.createDoc<Space>(klass, core.space.Model, {
@@ -128,10 +128,10 @@ describe('client', () => {
     const result1 = await client1.findAll(core.class.PluginConfiguration, {})
 
     expect(result1).toHaveLength(1)
-    expect(TxProcessor.createDoc2Doc).toBeCalledTimes(95)
-    expect(TxProcessor.updateDoc2Doc).toBeCalledTimes(0)
+    expect(result1[0]._id).toStrictEqual(txCreateDoc1.objectId)
+    expect(spyCreate).toHaveBeenLastCalledWith(txCreateDoc1)
+    expect(spyUpdate).toBeCalledTimes(0)
     await client1.close()
-    spyCreate.mockClear()
 
     const pluginData2 = {
       pluginId: 'testPlugin2',
@@ -143,24 +143,27 @@ describe('client', () => {
     const result2 = await client2.findAll(core.class.PluginConfiguration, {})
 
     expect(result2).toHaveLength(2)
-    expect(TxProcessor.createDoc2Doc).toBeCalledTimes(98)
-    expect(TxProcessor.updateDoc2Doc).toBeCalledTimes(0)
-
+    expect(result2[0]._id).toStrictEqual(txCreateDoc1.objectId)
+    expect(result2[1]._id).toStrictEqual(txCreateDoc2.objectId)
+    expect(spyCreate).toHaveBeenLastCalledWith(txCreateDoc2)
+    expect(spyUpdate).toBeCalledTimes(0)
     await client2.close()
-    spyCreate.mockClear()
 
     const pluginData3 = {
       pluginId: 'testPlugin3',
       transactions: [txCreateDoc1._id]
     }
-    txes.push(
-      txFactory.createTxUpdateDoc(core.class.PluginConfiguration, core.space.Model, txCreateDoc1.objectId, pluginData3)
-    )
+    const txUpdateDoc = txFactory.createTxUpdateDoc(core.class.PluginConfiguration, core.space.Model, txCreateDoc1.objectId, pluginData3)
+    txes.push(txUpdateDoc)
     const client3 = new TxOperations(await createClient(connectPlugin, ['testPlugin2' as Plugin]), core.account.System)
     const result3 = await client3.findAll(core.class.PluginConfiguration, {})
+
     expect(result3).toHaveLength(1)
-    expect(TxProcessor.createDoc2Doc).toBeCalledTimes(97)
-    expect(TxProcessor.updateDoc2Doc).toBeCalledTimes(2)
+    expect(result3[0]._id).toStrictEqual(txCreateDoc2.objectId)
+    expect(spyCreate).toHaveBeenLastCalledWith(txCreateDoc2)
+    expect(spyUpdate.mock.calls[1][1]).toStrictEqual(txUpdateDoc);
+    expect(spyUpdate).toBeCalledTimes(2)
+    await client3.close()
 
     spyCreate.mockReset()
     spyCreate.mockRestore()
