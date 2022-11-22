@@ -17,12 +17,12 @@
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Issue, IssueStatus, IssueTemplate, Sprint } from '@hcengineering/tracker'
-  import type { ButtonKind, ButtonSize, ButtonShape } from '@hcengineering/ui'
+  import { ButtonKind, ButtonSize, ButtonShape, floorFractionDigits } from '@hcengineering/ui'
   import { Label, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
   import DatePresenter from '@hcengineering/ui/src/components/calendar/DatePresenter.svelte'
   import { activeSprint } from '../../issues'
   import tracker from '../../plugin'
-  import { floorFractionDigits, getDayOfSprint } from '../../utils'
+  import { getDayOfSprint } from '../../utils'
   import EstimationProgressCircle from '../issues/timereport/EstimationProgressCircle.svelte'
   import SprintSelector from './SprintSelector.svelte'
 
@@ -98,7 +98,7 @@
       .reduce((it, cur) => {
         return it + cur
       }, 0),
-    2
+    3
   )
   $: totalReported = floorFractionDigits(
     (noParents ?? [{ reportedTime: 0, childInfo: [] } as unknown as Issue])
@@ -114,7 +114,7 @@
       .reduce((it, cur) => {
         return it + cur
       }),
-    2
+    3
   )
 
   const sprintQuery = createQuery()

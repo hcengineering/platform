@@ -35,7 +35,7 @@
 
   const dispatch = createEventDispatcher()
 
-  function _onkeypress (ev: KeyboardEvent) {
+  function _onkeypress(ev: KeyboardEvent) {
     if (ev.key === 'Enter') dispatch('close', _value)
   }
 
@@ -108,6 +108,7 @@
         {kind}
         placeholder={tracker.string.Estimation}
         focus
+        maxDigitsAfterPoint={3}
         on:keypress={_onkeypress}
         on:change={() => {
           if (typeof _value === 'number') {

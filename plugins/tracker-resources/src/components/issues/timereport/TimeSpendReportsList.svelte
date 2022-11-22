@@ -17,7 +17,13 @@
   import { Doc, Ref, Space, WithLookup } from '@hcengineering/core'
   import UserBox from '@hcengineering/presentation/src/components/UserBox.svelte'
   import { Team, TimeSpendReport } from '@hcengineering/tracker'
-  import { eventToHTMLElement, getEventPositionElement, ListView, showPopup } from '@hcengineering/ui'
+  import {
+    eventToHTMLElement,
+    floorFractionDigits,
+    getEventPositionElement,
+    ListView,
+    showPopup
+  } from '@hcengineering/ui'
   import DatePresenter from '@hcengineering/ui/src/components/calendar/DatePresenter.svelte'
   import { ContextMenu, FixedColumn, ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
   import { getIssueId } from '../../../issues'
@@ -29,7 +35,7 @@
 
   export let teams: Map<Ref<Team>, Team>
 
-  function showContextMenu (ev: MouseEvent, object: TimeSpendReport) {
+  function showContextMenu(ev: MouseEvent, object: TimeSpendReport) {
     showPopup(ContextMenu, { object }, getEventPositionElement(ev))
   }
 
@@ -46,7 +52,7 @@
   }
   const toTeamId = (ref: Ref<Space>) => ref as Ref<Team>
 
-  function editSpendReport (event: MouseEvent, value: TimeSpendReport): void {
+  function editSpendReport(event: MouseEvent, value: TimeSpendReport): void {
     showPopup(
       TimeSpendReportPopup,
       { issue: value.attachedTo, issueClass: value.attachedToClass, value, assignee: value.employee },
@@ -98,7 +104,7 @@
           readonly
           showNavigate={false}
         />
-        <EstimationPresenter value={report.value} />
+        <EstimationPresenter value={floorFractionDigits(report.value, 3)} />
         <DatePresenter value={report.date} />
       </div>
     </div>

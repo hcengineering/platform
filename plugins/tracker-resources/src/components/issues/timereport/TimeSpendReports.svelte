@@ -16,9 +16,8 @@
   import { DocumentQuery, Ref, SortingOrder } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { Issue, Team, TimeSpendReport } from '@hcengineering/tracker'
-  import { Label, Scroller, Spinner } from '@hcengineering/ui'
+  import { floorFractionDigits, Label, Scroller, Spinner } from '@hcengineering/ui'
   import tracker from '../../../plugin'
-  import { floorFractionDigits } from '../../../utils'
   import TimeSpendReportsList from './TimeSpendReportsList.svelte'
 
   export let issue: Issue
@@ -36,11 +35,8 @@
     }
   })
 
-  $: total = floorFractionDigits(
-    (reports ?? []).reduce((a, b) => a + b.value, 0),
-    2
-  )
-  $: reportedTime = floorFractionDigits(issue.reportedTime, 2)
+  $: total = (reports ?? []).reduce((a, b) => a + floorFractionDigits(b.value, 3), 0)
+  $: reportedTime = floorFractionDigits(issue.reportedTime, 3)
 </script>
 
 {#if reports}

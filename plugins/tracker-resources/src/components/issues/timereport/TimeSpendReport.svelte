@@ -17,11 +17,10 @@
   import { WithLookup } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import type { TimeSpendReport } from '@hcengineering/tracker'
-  import { eventToHTMLElement, Label, showPopup, tooltip } from '@hcengineering/ui'
+  import { eventToHTMLElement, floorFractionDigits, Label, showPopup, tooltip } from '@hcengineering/ui'
   import view, { AttributeModel } from '@hcengineering/view'
   import { getObjectPresenter } from '@hcengineering/view-resources'
   import tracker from '../../../plugin'
-  import { floorFractionDigits } from '../../../utils'
   import TimeSpendReportPopup from './TimeSpendReportPopup.svelte'
 
   export let value: WithLookup<TimeSpendReport>
@@ -32,7 +31,7 @@
     presenter = p
   })
 
-  function editSpendReport (event: MouseEvent): void {
+  function editSpendReport(event: MouseEvent): void {
     showPopup(
       TimeSpendReportPopup,
       { issue: value.attachedTo, issueClass: value.attachedToClass, value, assignee: value.employee },
@@ -65,7 +64,7 @@
         }
       : undefined}
   >
-    <Label label={tracker.string.TimeSpendValue} params={{ value: floorFractionDigits(value.value, 2) }} />
+    <Label label={tracker.string.TimeSpendValue} params={{ value: floorFractionDigits(value.value, 3) }} />
   </span>
 {/if}
 
