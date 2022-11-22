@@ -161,7 +161,7 @@ describe('client', () => {
     expect(result3).toHaveLength(1)
     expect(result3[0]._id).toStrictEqual(txCreateDoc2.objectId)
     expect(spyCreate).toHaveBeenLastCalledWith(txCreateDoc2)
-    expect(spyUpdate.mock.calls[1][1]).toStrictEqual(txUpdateDoc);
+    expect(spyUpdate.mock.calls[1][1]).toStrictEqual(txUpdateDoc)
     expect(spyUpdate).toBeCalledTimes(2)
     await client3.close()
 
