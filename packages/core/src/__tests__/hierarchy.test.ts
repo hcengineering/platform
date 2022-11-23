@@ -17,6 +17,7 @@ import type { Class, Doc, Obj, Ref } from '../classes'
 import type { TxCreateDoc } from '../tx'
 import core from '../component'
 import { Hierarchy } from '../hierarchy'
+import * as Proxy from '../proxy'
 import { genMinModel, test } from './minmodel'
 
 const txes = genMinModel()
@@ -68,5 +69,41 @@ describe('hierarchy', () => {
     expect(txDomain).toBe('tx')
     const modelDomain = hierarchy.getDomain(core.class.Class)
     expect(modelDomain).toBe('model')
+  })
+
+  it('should create Mixin proxy', async () => {
+    const spyProxy = jest.spyOn(Proxy, '_createMixinProxy')
+    const hierarchy = prepare()
+
+    hierarchy.as(txes[0], test.mixin.TestMixin)
+    expect(spyProxy).toBeCalledTimes(1)
+
+    hierarchy.as(txes[0], test.mixin.TestMixin)
+    expect(spyProxy).toBeCalledTimes(1)
+
+    spyProxy.mockReset()
+    spyProxy.mockRestore()
+  })
+
+  it('should call static methods', async () => {
+    const spyToDoc = jest.spyOn(Proxy, '_toDoc')
+    Hierarchy.toDoc(txes[0])
+    expect(spyToDoc).toBeCalledTimes(1)
+    spyToDoc.mockReset()
+    spyToDoc.mockRestore()
+
+    const spyMixinClass = jest.spyOn(Proxy, '_mixinClass')
+    Hierarchy.mixinClass(txes[0])
+    expect(spyMixinClass).toBeCalledTimes(1)
+
+    spyMixinClass.mockImplementationOnce(() => undefined).mockImplementationOnce(() => test.mixin.TestMixin)
+    let result = Hierarchy.mixinOrClass(txes[0])
+    expect(result).toStrictEqual(txes[0]._class)
+    result = Hierarchy.mixinOrClass(txes[0])
+    expect(result).toStrictEqual(test.mixin.TestMixin)
+    expect(spyMixinClass).toBeCalledTimes(3)
+
+    spyMixinClass.mockReset()
+    spyMixinClass.mockRestore()
   })
 })
