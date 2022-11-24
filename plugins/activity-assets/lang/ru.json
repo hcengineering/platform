@@ -13,6 +13,8 @@
     "CollectionUpdated": "Обновлена {collection}",
     "Added": "добавила(а)",
     "Removed": "удалил(а)",
-    "From": "из"
+    "From": "из",
+    "All": "Все",
+    "StatusChanges": "Изменение статусов"
   }
 }

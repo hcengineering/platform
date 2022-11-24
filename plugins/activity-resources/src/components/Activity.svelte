@@ -14,16 +14,20 @@
 -->
 <script lang="ts">
   import activity, { TxViewlet } from '@hcengineering/activity'
+  import activityPlg from '../plugin'
   import chunter from '@hcengineering/chunter'
   import core, { Class, Doc, Ref, SortingOrder } from '@hcengineering/core'
   import { getResource } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import notification from '@hcengineering/notification'
-  import { Component, Grid, IconActivity, Label, Scroller } from '@hcengineering/ui'
+  import { Component, Grid, IconActivity, Label, Scroller, SearchEdit, Button, showPopup } from '@hcengineering/ui'
   import { ActivityKey, activityKey, DisplayTx, newActivity } from '../activity'
   import TxView from './TxView.svelte'
   import { filterCollectionTxes } from './utils'
   import { Writable } from 'svelte/store'
+  import view from '@hcengineering/view'
+  import FilterPopup from './FilterPopup.svelte'
+  import type { FilterOptions } from '..'
 
   export let object: Doc
   export let integrate: boolean = false
@@ -31,6 +35,7 @@
   export let transparent: boolean = false
 
   let txes: DisplayTx[] = []
+  let txesF: DisplayTx[] = []
 
   const client = getClient()
   const attrs = client.getHierarchy().getAllAttributes(object._class)
@@ -46,6 +51,8 @@
   let allViewlets: TxViewlet[] = []
   let editableMap: Map<Ref<Class<Doc>>, boolean> | undefined = undefined
 
+  let filter: FilterOptions = undefined
+
   const descriptors = createQuery()
   $: descriptors.query(activity.class.TxViewlet, {}, (result) => {
     allViewlets = result
@@ -54,6 +61,16 @@
         .filter((tx) => tx.txClass === core.class.TxCreateDoc)
         .map((it) => [it.objectClass, it.editable ?? false])
     )
+    filter = new Map()
+    filter.set('All', { label: activityPlg.string.All, visible: true })
+    filter.set('Status', { label: activityPlg.string.StatusChanges, visible: true })
+    editableMap.forEach((v, i) => {
+      const str = client.getHierarchy().getClass(i).label
+      filter?.set(i, {
+        label: str ?? allViewlets.find((obj) => obj.objectClass === i)?.label,
+        visible: true
+      })
+    })
   })
 
   $: viewlets = new Map(allViewlets.map((r) => [activityKey(r.objectClass, r.txClass), r]))
@@ -82,6 +99,29 @@
     }
     return -1
   }
+
+  let search: string
+  let optionsBtn: HTMLButtonElement
+  const handleOptions = () => {
+    showPopup(
+      FilterPopup,
+      { filter },
+      optionsBtn,
+      () => {},
+      (res) => {
+        if (res === undefined) return
+        filter?.set(res.filter, { label: res.label, visible: res.visible })
+        filter = filter
+      }
+    )
+  }
+
+  $: txesF = filterTxes(txes, filter)
+  const filterTxes = (dtx: DisplayTx[], f: FilterOptions) => {
+    return f?.get('All')?.visible
+      ? dtx
+      : dtx.filter((it) => (f?.has(it.tx.objectClass) ? f?.get(it.tx.objectClass)?.visible : f?.get('Status')?.visible))
+  }
 </script>
 
 {#if !integrate || transparent}
@@ -96,9 +136,9 @@
   <div class="flex-col flex-grow min-h-0" class:background-accent-bg-color={!transparent}>
     <Scroller>
       <div class="p-10 select-text" id={activity.string.Activity}>
-        {#if txes}
+        {#if txesF}
           <Grid column={1} rowGap={1.5}>
-            {#each txes as tx, i}
+            {#each txesF as tx, i}
               <TxView {tx} {viewlets} isNew={newTxPos === i} />
             {/each}
           </Grid>
@@ -117,6 +157,15 @@
   <div class="antiSection-header mt-6">
     <div class="antiSection-header__icon"><IconActivity size={'small'} /></div>
     <span class="antiSection-header__title"><Label label={activity.string.Activity} /></span>
+    <SearchEdit bind:value={search} on:change={() => {}} />
+    <div class="w-2 min-w-2 max-w-2" />
+    <Button
+      bind:input={optionsBtn}
+      icon={view.icon.ViewButton}
+      kind={'transparent'}
+      shape={'circle'}
+      on:click={handleOptions}
+    />
   </div>
   {#if showCommenInput}
     <div class="ref-input">
@@ -124,9 +173,9 @@
     </div>
   {/if}
   <div class="p-activity select-text" id={activity.string.Activity}>
-    {#if txes}
+    {#if txesF}
       <Grid column={1} rowGap={1.5}>
-        {#each txes as tx, i}
+        {#each txesF as tx, i}
           <TxView {tx} {viewlets} isNew={newTxPos === i} />
         {/each}
       </Grid>

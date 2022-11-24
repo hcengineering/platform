@@ -13,6 +13,8 @@
     "CollectionUpdated": "Update {collection}",
     "Added": "added",
     "Removed": "removed",
-    "From": "from"
+    "From": "from",
+    "All": "All",
+    "StatusChanges": "Status changes"
   }
 }

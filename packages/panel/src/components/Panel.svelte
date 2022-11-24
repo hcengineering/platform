@@ -87,7 +87,7 @@
     {#if $$slots.header}
       <div class="header-row between">
         {#if $$slots.header}<slot name="header" />{/if}
-        <div class="buttons-group xsmall-gap ml-4" style:align-self={'flex-start'}>
+        <div class="buttons-group xsmall-gap ml-4" style:align-self={'flex-end'}>
           <slot name="tools" />
         </div>
       </div>

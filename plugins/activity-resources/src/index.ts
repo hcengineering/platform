@@ -13,9 +13,17 @@
 // limitations under the License.
 //
 
-import { Resources } from '@hcengineering/platform'
+import { Resources, IntlString } from '@hcengineering/platform'
+import { Class, Doc, Ref } from '@hcengineering/core'
 import Activity from './components/Activity.svelte'
 import TxView from './components/TxView.svelte'
+
+export interface FilterItem {
+  label: IntlString
+  visible: boolean
+}
+export type FilterIndex = Ref<Class<Doc>> | 'All' | 'Status'
+export type FilterOptions = Map<FilterIndex, FilterItem> | undefined
 
 export { TxView }
 
