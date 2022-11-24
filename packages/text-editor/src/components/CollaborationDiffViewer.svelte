@@ -124,7 +124,7 @@
   .ProseMirror {
     flex-grow: 1;
     overflow: auto;
-    min-height: 3rem;
+    min-height: inherit !important;
     max-height: inherit !important;
     outline: none;
     line-height: 150%;

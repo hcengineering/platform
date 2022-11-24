@@ -1,11 +1,11 @@
 import { NotificationPosition } from './NotificationPosition'
 import { NotificationSeverity } from './NotificationSeverity'
-import { AnyComponent } from '../../types'
+import { AnyComponent, AnySvelteComponent } from '../../types'
 
 export interface Notification {
   id: string
   title: string
-  component: AnyComponent
+  component: AnyComponent | AnySvelteComponent
   subTitle?: string
   subTitlePostfix?: string
   position: NotificationPosition

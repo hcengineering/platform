@@ -95,6 +95,14 @@
   let labels: TagReference[] = draft?.labels || []
   let objectId: Ref<Issue> = draft?.issueId || generateId()
 
+  function toIssue (initials: AttachedData<Issue>, draft: IssueDraft | null): AttachedData<Issue> {
+    if (draft == null) {
+      return { ...initials }
+    }
+    const { labels, subIssues, ...issue } = draft
+    return { ...initials, ...issue }
+  }
+
   let object: AttachedData<Issue> = originalIssue
     ? {
         ...originalIssue,
@@ -105,7 +113,8 @@
         reports: 0,
         childInfo: []
       }
-    : {
+    : toIssue(
+      {
         title: '',
         description: '',
         assignee,
@@ -122,9 +131,10 @@
         reportedTime: 0,
         estimation: 0,
         reports: 0,
-        childInfo: [],
-        ...(draft || {})
-      }
+        childInfo: []
+      },
+      draft
+    )
 
   function resetObject (): void {
     templateId = undefined
@@ -260,7 +270,7 @@
       return
     }
 
-    parentIssue = await client.findOne(tracker.class.Issue, { _id: draft.parentIssue })
+    parentIssue = await client.findOne(tracker.class.Issue, { _id: draft.parentIssue as Ref<Issue> })
   }
 
   $: originalIssue && setPropsFromOriginalIssue()
@@ -288,7 +298,7 @@
   }
 
   async function isDraftEmpty (draft: Data<IssueDraft>): Promise<boolean> {
-    const emptyDraft = {
+    const emptyDraft: Partial<IssueDraft> = {
       assignee: null,
       description: '',
       dueDate: null,
@@ -304,7 +314,7 @@
     }
 
     for (const key of Object.keys(emptyDraft)) {
-      if (!deepEqual(emptyDraft[key], draft[key])) {
+      if (!deepEqual((emptyDraft as any)[key], (draft as any)[key])) {
         return false
       }
     }
@@ -509,6 +519,7 @@
     }
 
     const notification: Notification = {
+      id: generateId(),
       title: tracker.string.IssueCreated,
       subTitle: getTitle(object.title),
       severity: NotificationSeverity.Success,
@@ -695,20 +706,18 @@
     <ParentIssue issue={parentIssue} on:close={clearParentIssue} />
   {/if}
   <EditBox bind:value={object.title} placeholder={tracker.string.IssueTitlePlaceholder} kind={'large-style'} focus />
-  {#key object.description}
-    <AttachmentStyledBox
-      bind:this={descriptionBox}
-      {objectId}
-      _class={tracker.class.Issue}
-      space={_space}
-      alwaysEdit
-      showButtons={false}
-      maxHeight={'20vh'}
-      bind:content={object.description}
-      placeholder={tracker.string.IssueDescriptionPlaceholder}
-      on:changeSize={() => dispatch('changeContent')}
-    />
-  {/key}
+  <AttachmentStyledBox
+    bind:this={descriptionBox}
+    {objectId}
+    _class={tracker.class.Issue}
+    space={_space}
+    alwaysEdit
+    showButtons={false}
+    maxHeight={'20vh'}
+    bind:content={object.description}
+    placeholder={tracker.string.IssueDescriptionPlaceholder}
+    on:changeSize={() => dispatch('changeContent')}
+  />
   <IssueTemplateChilds
     bind:children={subIssues}
     sprint={object.sprint}

@@ -212,21 +212,21 @@
             kind="large-style"
           />
           <div class="flex-between mt-6">
-            {#key description}
-              <div class="flex-grow">
-                <AttachmentStyledBox
-                  bind:this={descriptionBox}
-                  objectId={_id}
-                  _class={tracker.class.Issue}
-                  space={template.space}
-                  alwaysEdit
-                  showButtons
-                  maxHeight={'card'}
-                  bind:content={description}
-                  placeholder={tracker.string.IssueDescriptionPlaceholder}
-                />
-              </div>
-            {/key}
+            <div class="flex-grow">
+              <AttachmentStyledBox
+                bind:this={descriptionBox}
+                objectId={_id}
+                _class={tracker.class.Issue}
+                space={template.space}
+                alwaysEdit
+                showButtons
+                maxHeight={'card'}
+                bind:content={description}
+                placeholder={tracker.string.IssueDescriptionPlaceholder}
+              />
+            </div>
+
+            <!-- svelte-ignore a11y-click-events-have-key-events -->
             <div
               class="tool"
               on:click={() => {
@@ -242,6 +242,7 @@
       <span class="title select-text">{title}</span>
       <div class="mt-6 description-preview select-text">
         {#if isDescriptionEmpty}
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
           <div class="placeholder" on:click={edit}>
             <Label label={tracker.string.IssueDescriptionPlaceholder} />
           </div>

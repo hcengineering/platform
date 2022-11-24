@@ -67,6 +67,7 @@ async function loadTranslationsForComponent (plugin: Plugin, locale: string): Pr
   try {
     return (await loader(locale)) as Record<string, IntlString> | Status
   } catch (err) {
+    console.error(err)
     const status = unknownError(err)
     await setPlatformStatus(status)
     return status
