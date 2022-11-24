@@ -33,12 +33,19 @@ import { ViewOptionModel } from '@hcengineering/view-resources'
 import {
   AnyComponent,
   AnySvelteComponent,
+  areDatesEqual,
   getMillisecondsInMonth,
   isWeekend,
   MILLISECONDS_IN_WEEK
 } from '@hcengineering/ui'
 import tracker from './plugin'
-import { defaultPriorities, defaultProjectStatuses, defaultSprintStatuses, issuePriorities } from './types'
+import {
+  defaultPriorities,
+  defaultProjectStatuses,
+  defaultSprintStatuses,
+  issuePriorities,
+  WorkDaysType
+} from './types'
 
 export * from './types'
 
@@ -639,5 +646,31 @@ export async function moveIssuesToAnotherSprint (
       error
     )
     return false
+  }
+}
+
+export function getWorkDate (type: WorkDaysType): number {
+  const date = new Date(Date.now())
+  if (type === WorkDaysType.PREVIOUS) {
+    date.setDate(date.getDate() - 1)
+  }
+
+  // if currentDate is day off then set date to last working day
+  while (isWeekend(date)) {
+    date.setDate(date.getDate() - 1)
+  }
+
+  return date.valueOf()
+}
+
+export function getWorkDayType (timestamp: number): WorkDaysType | undefined {
+  const date = new Date(timestamp)
+  const currentWorkDate = new Date(getWorkDate(WorkDaysType.CURRENT))
+  const previousWorkDate = new Date(getWorkDate(WorkDaysType.PREVIOUS))
+
+  if (areDatesEqual(date, currentWorkDate)) {
+    return WorkDaysType.CURRENT
+  } else if (areDatesEqual(date, previousWorkDate)) {
+    return WorkDaysType.PREVIOUS
   }
 }

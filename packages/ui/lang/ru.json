@@ -39,6 +39,7 @@
     "NoActionsDefined": "Нет доступных действий",
     "Incoming": "Входящие",
     "HoursLabel": "Часы",
-    "Back": "Назад"
+    "Back": "Назад",
+    "DropdownDefaultLabel": "Выберите Элемент"
   }
 }

@@ -261,7 +261,11 @@ export default mergeIds(trackerId, tracker, {
     SaveProcess: '' as IntlString,
     NoIssueTemplate: '' as IntlString,
     TemplateReplace: '' as IntlString,
-    TemplateReplaceConfirm: '' as IntlString
+    TemplateReplaceConfirm: '' as IntlString,
+
+    WorkDayCurrent: '' as IntlString,
+    WorkDayPrevious: '' as IntlString,
+    WorkDayLabel: '' as IntlString
   },
   component: {
     NopeComponent: '' as AnyComponent,

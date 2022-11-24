@@ -22,9 +22,10 @@
   import Button from './Button.svelte'
   import DropdownLabelsPopupIntl from './DropdownLabelsPopupIntl.svelte'
   import Label from './Label.svelte'
+  import ui from '../plugin'
 
   export let icon: Asset | AnySvelteComponent | undefined = undefined
-  export let label: IntlString
+  export let label: IntlString = ui.string.DropdownDefaultLabel
   export let items: DropdownIntlItem[]
   export let selected: DropdownIntlItem['id'] | undefined = undefined
   export let disabled: boolean = false
@@ -33,12 +34,13 @@
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = undefined
   export let labelDirection: TooltipAlignment | undefined = undefined
+  export let shouldUpdateUndefined: boolean = true
 
   let container: HTMLElement
   let opened: boolean = false
 
   $: selectedItem = items.find((x) => x.id === selected)
-  $: if (selected === undefined && items[0] !== undefined) {
+  $: if (shouldUpdateUndefined && selected === undefined && items[0] !== undefined) {
     selected = items[0].id
     dispatch('selected', selected)
   }
