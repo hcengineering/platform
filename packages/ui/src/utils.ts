@@ -44,6 +44,6 @@ export function checkMobile (): boolean {
   return /Android|webOS|iPhone|iPad|iPod|BlackBerry|Mobile|Opera Mini/i.test(navigator.userAgent)
 }
 
-export const floorFractionDigits = (n: number | string, amount: number): number => {
+export function floorFractionDigits (n: number | string, amount: number): number {
   return Number(Number(n).toFixed(amount))
 }
