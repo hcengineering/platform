@@ -107,5 +107,5 @@ export const issuesGroupBySorting: Record<IssuesGrouping, SortingQuery<Issue>> =
 
 export enum WorkDaysType {
   CURRENT = 'current',
-  PREVIOUS = 'previous',
+  PREVIOUS = 'previous'
 }

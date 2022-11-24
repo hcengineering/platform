@@ -39,7 +39,13 @@ import {
   MILLISECONDS_IN_WEEK
 } from '@hcengineering/ui'
 import tracker from './plugin'
-import { defaultPriorities, defaultProjectStatuses, defaultSprintStatuses, issuePriorities, WorkDaysType } from './types'
+import {
+  defaultPriorities,
+  defaultProjectStatuses,
+  defaultSprintStatuses,
+  issuePriorities,
+  WorkDaysType
+} from './types'
 
 export * from './types'
 
