@@ -239,7 +239,11 @@
     "SaveProcess": "Сохранить процесс",
     "NoIssueTemplate": "Без процесса",
     "TemplateReplace": "Вы хотите заменить выбранный процесс?",
-    "TemplateReplaceConfirm": "Все внесенные изменения в задачу будут потеряны"
+    "TemplateReplaceConfirm": "Все внесенные изменения в задачу будут потеряны",
+
+    "WorkDayCurrent": "Текущий Рабочий День",
+    "WorkDayPrevious": "Предыдущий Рабочий День",
+    "WorkDayLabel": "Выберите Тип Рабочего Дня"
   },
   "status": {}
 }

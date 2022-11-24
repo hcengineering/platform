@@ -64,7 +64,8 @@ export const uis = plugin(uiId, {
     NoActionsDefined: '' as IntlString,
     Incoming: '' as IntlString,
     HoursLabel: '' as IntlString,
-    Back: '' as IntlString
+    Back: '' as IntlString,
+    DropdownDefaultLabel: '' as IntlString
   },
   metadata: {
     DefaultApplication: '' as Metadata<AnyComponent>,

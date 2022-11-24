@@ -39,6 +39,7 @@
     "NoActionsDefined": "No actions applicable",
     "Incoming": "Incoming",
     "HoursLabel": "Hours",
-    "Back": "Back"
+    "Back": "Back",
+    "DropdownDefaultLabel": "Select Item"
   }
 }
