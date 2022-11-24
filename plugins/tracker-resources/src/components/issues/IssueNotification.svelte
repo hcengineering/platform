@@ -18,7 +18,7 @@
   import IssuePresenter from './IssuePresenter.svelte'
   import tracker from '../../plugin'
 
-  export let notification: Notification = {}
+  export let notification: Notification
   export let onRemove: () => void
 
   const issueQuery = createQuery()

@@ -14,18 +14,7 @@
 //
 
 import { Employee } from '@hcengineering/contact'
-import type {
-  AttachedDoc,
-  Class,
-  Doc,
-  Markup,
-  Obj,
-  Ref,
-  RelatedDocument,
-  Space,
-  Timestamp,
-  Type
-} from '@hcengineering/core'
+import type { AttachedDoc, Class, Doc, Markup, Ref, RelatedDocument, Space, Timestamp, Type } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { TagCategory, TagElement } from '@hcengineering/tags'
@@ -197,7 +186,7 @@ export interface Issue extends AttachedDoc {
 /**
  * @public
  */
-export interface IssueDraft extends Obj {
+export interface IssueDraft extends Doc {
   issueId: Ref<Issue>
   title: string
   description: Markup
