@@ -273,12 +273,13 @@ export function start (
       const payload = decodeToken(token ?? '')
       console.log('client connected with payload', payload)
 
-      if (productId !== '' && payload.workspace.productId !== productId) {
+      if (payload.workspace.productId !== productId) {
         throw new Error('Invalid workspace product')
       }
 
       wss.handleUpgrade(request, socket, head, (ws) => wss.emit('connection', ws, request, payload))
     } catch (err) {
+      console.error('invalid token', err)
       wss.handleUpgrade(request, socket, head, (ws) => {
         const resp: Response<any> = {
           id: -1,

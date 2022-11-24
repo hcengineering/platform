@@ -649,13 +649,6 @@ export async function moveIssuesToAnotherSprint (
   }
 }
 
-/**
- * @public
- */
-export const floorFractionDigits = (n: number, amount: number): number => {
-  return Number(n.toFixed(amount))
-}
-
 export function getWorkDate (type: WorkDaysType): number {
   const date = new Date(Date.now())
   if (type === WorkDaysType.PREVIOUS) {

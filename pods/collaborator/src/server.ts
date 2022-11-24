@@ -42,14 +42,15 @@ export function start (ctx: MeasureContext, port: number, minio: MinioService, h
   )
 
   const server = createServer()
+
   server.on('upgrade', (request: IncomingMessage, socket: any, head: Buffer) => {
     try {
       const parsedUrl = new URL('http://host' + (request.url ?? ''))
       const token = parsedUrl.searchParams.get('token')
       const payload = decodeToken(token ?? '')
-      console.log('client connected with payload', payload)
 
       const documentId = parsedUrl.searchParams.get('documentId') as string
+      console.log('client connected with payload', payload, documentId)
       const initialContentId = parsedUrl.searchParams.get('initialContentId') as string
       wss.handleUpgrade(request, socket, head, (ws) =>
         wss.emit('connection', ws, request, payload, documentId, initialContentId)

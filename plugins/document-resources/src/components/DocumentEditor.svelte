@@ -27,7 +27,6 @@
   export let object: DocumentVersion
   export let readonly = false
   export let initialContentId: string | undefined = undefined
-  export let suggestMode = false
   export let comparedVersion: Markup | undefined = undefined
 
   const token = getMetadata(login.metadata.LoginToken) ?? ''
@@ -42,7 +41,6 @@
   <CollaboratorEditor
     documentId={object.contentAttachmentId}
     {token}
-    {suggestMode}
     {collaboratorURL}
     {readonly}
     on:content

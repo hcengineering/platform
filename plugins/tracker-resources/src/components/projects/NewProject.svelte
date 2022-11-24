@@ -81,8 +81,9 @@
       bind:value={object.lead}
       allowDeselect
       titleDeselect={tracker.string.Unassigned}
+      showNavigate={false}
     />
-    <UserBoxList bind:items={object.members} label={tracker.string.ProjectStatusPlaceholder} />
+    <UserBoxList bind:items={object.members} label={tracker.string.ProjectMembersSearchPlaceholder} />
     <!-- TODO: add labels after customize IssueNeedsToBeCompletedByThisDate -->
     <DatePresenter bind:value={object.startDate} labelNull={tracker.string.StartDate} editable />
     <DatePresenter bind:value={object.targetDate} labelNull={tracker.string.TargetDate} editable />

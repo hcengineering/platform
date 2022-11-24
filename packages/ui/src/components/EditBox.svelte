@@ -22,6 +22,7 @@
   import Icon from './Icon.svelte'
   import Label from './Label.svelte'
   import { resizeObserver } from '../resize'
+  import { floorFractionDigits } from '../utils'
 
   export let label: IntlString | undefined = undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
@@ -30,6 +31,7 @@
   export let placeholder: IntlString = plugin.string.EditBoxPlaceholder
   export let placeholderParam: any | undefined = undefined
   export let format: 'text' | 'password' | 'number' = 'text'
+  export let maxDigitsAfterPoint: number | undefined = undefined
   export let kind: EditStyle = 'editbox'
   export let focus: boolean = false
   export let focusable: boolean = false
@@ -43,6 +45,16 @@
   let phTraslate: string = ''
   let parentWidth: number | undefined
 
+  $: {
+    if (
+      format === 'number' &&
+      maxDigitsAfterPoint &&
+      value &&
+      !value.toString().match(`^\\d+\\.?\\d{0,${maxDigitsAfterPoint}}$`)
+    ) {
+      value = floorFractionDigits(Number(value), maxDigitsAfterPoint)
+    }
+  }
   $: style = `max-width: ${
     maxWidth || (parentWidth ? (icon ? `calc(${parentWidth}px - 1.25rem)` : `${parentWidth}px`) : 'max-content')
   };`

@@ -216,7 +216,8 @@
 <style lang="scss" global>
   .ProseMirror {
     overflow-y: auto;
-    max-height: 40vh;
+    min-height: 3rem;
+    max-height: inherit !important;
     outline: none;
     line-height: 150%;
     color: var(--accent-color);

@@ -205,6 +205,12 @@
     "ActiveSprints": "Active",
     "ClosedSprints": "Done",
     "AddToSprint": "Add to Sprint",
+    "SprintNamePlaceholder": "Sprint name",
+    "SprintLead": "Lead",
+    "SprintLeadTitle": "Sprint lead",
+    "SprintLeadSearchPlaceholder": "Set sprint lead\u2026",
+    "SprintMembersTitle": "Sprint members",
+    "SprintMembersSearchPlaceholder": "Change sprint members\u2026",
 
     "NewSprint": "New Sprint",
     "CreateSprint": "Create",

@@ -333,7 +333,7 @@
     {/if}
     {#each fieldEditors as collection}
       {#if collection.editor}
-        <div class="mt-6 clear-mins">
+        <div class="mt-6">
           <Component
             is={collection.editor}
             props={{

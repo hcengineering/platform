@@ -18,7 +18,15 @@
   import { Ref } from '@hcengineering/core'
   import { Department } from '@hcengineering/hr'
   import { createQuery, SpaceSelector } from '@hcengineering/presentation'
-  import { Button, Icon, IconBack, IconForward, Label } from '@hcengineering/ui'
+  import {
+    Button,
+    Icon,
+    IconBack,
+    IconForward,
+    Label,
+    deviceOptionsStore as deviceInfo,
+    TabList
+  } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import hr from '../plugin'
   import ScheduleMonthView from './ScheduleView.svelte'
@@ -66,81 +74,108 @@
       month: 'long'
     }).format(date)
   }
+
+  $: twoRows = $deviceInfo.twoRows
+  const handleSelect = (result: any) => {
+    if (result.type === 'select') {
+      const res = result.detail
+      if (res.id === 'ModeMonth') mode = CalendarMode.Month
+      else if (res.id === 'ModeYear') mode = CalendarMode.Year
+    }
+  }
 </script>
 
-<div class="ac-header full divide">
-  <div class="ac-header__wrap-title">
-    <div class="ac-header__icon"><Icon icon={calendar.icon.Calendar} size={'small'} /></div>
-    <span class="ac-header__title"><Label label={hr.string.Schedule} /></span>
-    <div class="flex gap-2 ml-6">
-      <Button
-        size={'small'}
-        label={calendar.string.ModeMonth}
-        on:click={() => {
-          mode = CalendarMode.Month
-        }}
-      />
-      <Button
-        size={'small'}
-        label={calendar.string.ModeYear}
-        on:click={() => {
-          mode = CalendarMode.Year
-        }}
-      />
-      <div class="flex ml-4 gap-2">
-        <Button
-          icon={IconBack}
-          size={'small'}
-          on:click={() => {
-            inc(-1)
-          }}
-        />
-        <Button
-          size={'small'}
-          label={calendar.string.Today}
-          on:click={() => {
-            currentDate = new Date()
-          }}
-        />
-        <Button
-          icon={IconForward}
-          size={'small'}
-          on:click={() => {
-            inc(1)
-          }}
-        />
+<div class="ac-header divide {twoRows ? 'flex-col-reverse' : 'full'} withSettings">
+  <div class="ac-header__wrap-title" class:mt-2={twoRows}>
+    {#if !twoRows}
+      <div class="ac-header__icon"><Icon icon={calendar.icon.Calendar} size={'small'} /></div>
+      <span class="ac-header__title"><Label label={hr.string.Schedule} /></span>
+    {:else}
+      <div class="fs-title mr-4 flex-row-center flex-grow firstLetter">
+        {#if mode === CalendarMode.Month}
+          <span class="mr-2 overflow-label">{getMonthName(currentDate)}</span>
+        {/if}
+        {currentDate.getFullYear()}
       </div>
+    {/if}
+    <div class="flex-row-center gap-2 flex-no-shrink" class:ml-6={!twoRows}>
+      <TabList
+        items={[
+          { id: 'ModeMonth', labelIntl: calendar.string.ModeMonth },
+          { id: 'ModeYear', labelIntl: calendar.string.ModeYear }
+        ]}
+        multiselect={false}
+        size={'small'}
+        on:select={handleSelect}
+      />
+      <div class="buttons-divider" />
+      <Button
+        icon={IconBack}
+        size={'small'}
+        kind={'link-bordered'}
+        on:click={() => {
+          inc(-1)
+        }}
+      />
+      <Button
+        size={'small'}
+        label={calendar.string.Today}
+        kind={'link-bordered'}
+        on:click={() => {
+          currentDate = new Date()
+        }}
+      />
+      <Button
+        icon={IconForward}
+        size={'small'}
+        kind={'link-bordered'}
+        on:click={() => {
+          inc(1)
+        }}
+      />
     </div>
-    <div class="fs-title ml-4 flex-row-center">
-      {#if mode === CalendarMode.Month}
-        {getMonthName(currentDate)}
-      {/if}
-      {currentDate.getFullYear()}
-    </div>
+    {#if !twoRows}
+      <div class="fs-title ml-4 flex-row-center firstLetter">
+        {#if mode === CalendarMode.Month}
+          <span class="overflow-label mr-2">{getMonthName(currentDate)}</span>
+        {/if}
+        {currentDate.getFullYear()}
+      </div>
+    {/if}
   </div>
 
-  {#if mode === CalendarMode.Month}
-    <div class="flex ml-4 gap-2">
-      <Button
-        icon={view.icon.Views}
-        selected={display === 'chart'}
-        size={'small'}
-        on:click={() => {
-          display = 'chart'
-        }}
-      />
-      <Button
-        size={'small'}
-        icon={view.icon.Table}
-        selected={display === 'stats'}
-        on:click={() => {
-          display = 'stats'
-        }}
+  <div class="ac-header__wrap-title {twoRows ? 'mt-1' : 'ml-4'}">
+    {#if twoRows}
+      <div class="ac-header__icon flex-center"><Icon icon={calendar.icon.Calendar} size={'small'} /></div>
+      <span class="ac-header__title" class:flex-grow={twoRows}><Label label={hr.string.Schedule} /></span>
+    {/if}
+    <div class="flex-row-center gap-2">
+      {#if mode === CalendarMode.Month}
+        <Button
+          icon={view.icon.Views}
+          selected={display === 'chart'}
+          size={'small'}
+          on:click={() => {
+            display = 'chart'
+          }}
+        />
+        <Button
+          size={'small'}
+          icon={view.icon.Table}
+          selected={display === 'stats'}
+          on:click={() => {
+            display = 'stats'
+          }}
+        />
+      {/if}
+      <SpaceSelector
+        _class={hr.class.Department}
+        label={hr.string.Department}
+        bind:space={department}
+        kind={'secondary'}
       />
     </div>
-  {/if}
-
-  <SpaceSelector _class={hr.class.Department} label={hr.string.Department} bind:space={department} />
+  </div>
 </div>
 
 <ScheduleMonthView {department} {descendants} departmentById={departments} {currentDate} {mode} {display} />

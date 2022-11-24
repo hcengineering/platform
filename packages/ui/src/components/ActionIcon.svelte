@@ -24,7 +24,7 @@
   export let direction: TooltipAlignment | undefined = undefined
   export let icon: Asset | AnySvelteComponent
   export let iconProps: any | undefined = undefined
-  export let size: 'small' | 'medium' | 'large'
+  export let size: 'x-small' | 'small' | 'medium' | 'large'
   export let action: (ev: MouseEvent) => Promise<void> | void = async () => {}
   export let invisible: boolean = false
 </script>

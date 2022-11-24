@@ -219,6 +219,7 @@
       {content}
       {showSend}
       on:message={onMessage}
+      haveAttachment={attachments.size > 0}
       withoutTopBorder={attachments.size > 0}
       on:attach={() => {
         inputFile.click()

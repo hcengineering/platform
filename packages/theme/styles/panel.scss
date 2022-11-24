@@ -139,7 +139,7 @@
       &-content {
         display: flex;
         flex-direction: column;
-        flex-shrink: 0;
+        // flex-shrink: 0;
         margin-left: auto;
         margin-right: auto;
         width: calc(100% - 7.5rem);
@@ -171,6 +171,7 @@
         align-items: center;
         width: 100%;
         min-width: 0;
+        flex-wrap: wrap;
 
         &.between { justify-content: space-between; }
       }

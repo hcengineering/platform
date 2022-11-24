@@ -412,6 +412,9 @@ export class TSprint extends TDoc implements Sprint {
   @Prop(TypeRef(contact.class.Employee), tracker.string.ProjectLead)
     lead!: Ref<Employee> | null
 
+  @Prop(ArrOf(TypeRef(contact.class.Employee)), tracker.string.Members)
+    members!: Ref<Employee>[]
+
   @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
     comments!: number
 

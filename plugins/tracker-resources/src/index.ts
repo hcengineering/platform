@@ -74,6 +74,7 @@ import SprintEditor from './components/sprints/SprintEditor.svelte'
 import SprintPresenter from './components/sprints/SprintPresenter.svelte'
 import Sprints from './components/sprints/Sprints.svelte'
 import SprintSelector from './components/sprints/SprintSelector.svelte'
+import SprintMembersPresenter from './components/sprints/SprintMembersPresenter.svelte'
 import SprintStatusPresenter from './components/sprints/SprintStatusPresenter.svelte'
 import SprintTitlePresenter from './components/sprints/SprintTitlePresenter.svelte'
 
@@ -249,6 +250,7 @@ export default async (): Promise<Resources> => ({
     CreateIssueTemplate,
     Sprints,
     SprintPresenter,
+    SprintMembersPresenter,
     SprintStatusPresenter,
     SprintTitlePresenter,
     SprintSelector,

@@ -35,6 +35,7 @@
   export let isAside: boolean = true
   export let isCustomAttr: boolean = true
   export let floatAside = false
+  export let allowClose = true
 </script>
 
 <Panel
@@ -44,6 +45,7 @@
   bind:innerWidth
   bind:withoutTitle
   on:close
+  {allowClose}
   {floatAside}
 >
   <svelte:fragment slot="navigator">

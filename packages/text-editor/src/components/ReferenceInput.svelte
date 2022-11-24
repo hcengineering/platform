@@ -44,6 +44,7 @@
   const dispatch = createEventDispatcher()
   export let content: string = ''
   export let showSend = true
+  export let haveAttachment = false
   export let withoutTopBorder = false
   const client = getClient()
 
@@ -288,7 +289,7 @@
       />
     </div>
     {#if showSend}
-      <button class="sendButton" on:click={submit} disabled={isEmpty}>
+      <button class="sendButton" on:click={submit} disabled={isEmpty && !haveAttachment}>
         <div class="icon"><Send size={'medium'} /></div>
       </button>
     {/if}

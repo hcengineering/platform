@@ -19,16 +19,32 @@ import { ChangeSet } from 'prosemirror-changeset'
 import { DOMParser, Node, Schema } from 'prosemirror-model'
 import { Decoration, DecorationSet } from 'prosemirror-view'
 import { recreateTransform } from './recreate'
+import { yDocToProsemirrorJSON } from 'y-prosemirror'
+import { Doc, applyUpdate } from 'yjs'
 
 /**
  * @public
  */
-export function createDocument (schema: Schema, content: Markup): Node {
-  const wrappedValue = `<body>${content}</body>`
+export function createDocument (schema: Schema, content: Markup | ArrayBuffer, field?: string): Node {
+  if (typeof content === 'string') {
+    const wrappedValue = `<body>${content}</body>`
 
-  const body = new window.DOMParser().parseFromString(wrappedValue, 'text/html').body
+    const body = new window.DOMParser().parseFromString(wrappedValue, 'text/html').body
 
-  return DOMParser.fromSchema(schema).parse(body)
+    return DOMParser.fromSchema(schema).parse(body)
+  } else {
+    try {
+      const ydoc = new Doc()
+      const uint8arr = new Uint8Array(content)
+      applyUpdate(ydoc, uint8arr)
+
+      const body = yDocToProsemirrorJSON(ydoc, field)
+      return schema.nodeFromJSON(body)
+    } catch (err: any) {
+      console.error(err)
+      return schema.node(schema.topNodeType)
+    }
+  }
 }
 
 /**
@@ -37,7 +53,8 @@ export function createDocument (schema: Schema, content: Markup): Node {
 export function calculateDecorations (
   editor?: Editor,
   oldContent?: string,
-  comparedVersion?: Markup
+  field?: string,
+  comparedVersion?: Markup | ArrayBuffer
 ):
   | {
     decorations: DecorationSet
@@ -52,7 +69,7 @@ export function calculateDecorations (
       return
     }
     const schema = editor.schema
-    const docOld = createDocument(schema, comparedVersion)
+    const docOld = createDocument(schema, comparedVersion, field)
     const docNew = editor.state.doc
 
     const c = editor.getHTML()
@@ -93,6 +110,7 @@ export function calculateDecorations (
     if (decorations.length > 0) {
       return { decorations: DecorationSet.empty.add(docNew, decorations), oldContent: c }
     }
+    return { decorations: DecorationSet.empty, oldContent: c }
   } catch (error: any) {
     console.error(error)
   }

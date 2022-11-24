@@ -29,6 +29,7 @@
   export let previewLimit: number = 240
   export let previewUnlimit: boolean = false
   export let focusable: boolean = false
+  export let enableFormatting = false
 
   const Mode = {
     View: 1,
@@ -104,6 +105,7 @@
       {buttonSize}
       {maxHeight}
       {focusable}
+      {enableFormatting}
       bind:content={rawValue}
       bind:this={textEditor}
       on:attach
@@ -119,6 +121,9 @@
       }}
       on:value={(evt) => {
         rawValue = evt.detail
+        if (alwaysEdit) {
+          content = evt.detail
+        }
         dispatch('changeContent')
       }}
     >

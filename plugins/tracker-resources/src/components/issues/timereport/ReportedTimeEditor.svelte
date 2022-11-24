@@ -16,8 +16,7 @@
 <script lang="ts">
   import type { IntlString } from '@hcengineering/platform'
   import { Issue } from '@hcengineering/tracker'
-  import { ActionIcon, eventToHTMLElement, IconAdd, Label, showPopup } from '@hcengineering/ui'
-  import { floorFractionDigits } from '../../../utils'
+  import { ActionIcon, eventToHTMLElement, floorFractionDigits, IconAdd, Label, showPopup } from '@hcengineering/ui'
   import ReportsPopup from './ReportsPopup.svelte'
   import TimeSpendReportPopup from './TimeSpendReportPopup.svelte'
 
@@ -39,7 +38,7 @@
   }
   $: childTime = floorFractionDigits(
     (object.childInfo ?? []).map((it) => it.reportedTime).reduce((a, b) => a + b, 0),
-    2
+    3
   )
 </script>
 
@@ -47,7 +46,7 @@
   <div id="ReportedTimeEditor" class="link-container flex-between" on:click={showReports}>
     {#if value !== undefined}
       <span class="overflow-label">
-        {floorFractionDigits(value, 2)}
+        {floorFractionDigits(value, 3)}
         {#if childTime !== 0}
           / {childTime}
         {/if}
@@ -61,7 +60,7 @@
   </div>
 {:else if value !== undefined}
   <span class="overflow-label">
-    {floorFractionDigits(value, 2)}
+    {floorFractionDigits(value, 3)}
     {#if childTime !== 0}
       / {childTime}
     {/if}
