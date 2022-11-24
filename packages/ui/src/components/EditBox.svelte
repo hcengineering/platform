@@ -50,7 +50,7 @@
       format === 'number' &&
       maxDigitsAfterPoint &&
       value &&
-      !value.toString().match(`^\d+\.?\d{0,${maxDigitsAfterPoint}}$`)
+      !value.toString().match(`^\\d+\\.?\\d{0,${maxDigitsAfterPoint}}$`)
     ) {
       value = floorFractionDigits(Number(value), maxDigitsAfterPoint)
     }
