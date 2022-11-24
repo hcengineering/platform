@@ -43,3 +43,7 @@ export function fetchMetadataLocalStorage<T> (id: Metadata<T>): T | null {
 export function checkMobile (): boolean {
   return /Android|webOS|iPhone|iPad|iPod|BlackBerry|Mobile|Opera Mini/i.test(navigator.userAgent)
 }
+
+export function floorFractionDigits (n: number | string, amount: number): number {
+  return Number(Number(n).toFixed(amount))
+}

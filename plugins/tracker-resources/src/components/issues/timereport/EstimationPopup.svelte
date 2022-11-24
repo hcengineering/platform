@@ -108,6 +108,7 @@
         {kind}
         placeholder={tracker.string.Estimation}
         focus
+        maxDigitsAfterPoint={3}
         on:keypress={_onkeypress}
         on:change={() => {
           if (typeof _value === 'number') {

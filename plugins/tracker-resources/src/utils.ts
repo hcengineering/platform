@@ -641,10 +641,3 @@ export async function moveIssuesToAnotherSprint (
     return false
   }
 }
-
-/**
- * @public
- */
-export const floorFractionDigits = (n: number, amount: number): number => {
-  return Number(n.toFixed(amount))
-}
