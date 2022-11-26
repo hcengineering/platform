@@ -404,7 +404,7 @@
 <Card
   label={recruit.string.CreateTalent}
   okAction={createCandidate}
-  canSave={!loading && firstName.length > 0 && lastName.length > 0}
+  canSave={!loading && (firstName.length > 0 || lastName.length > 0 || channels.length > 0)}
   on:close={() => {
     dispatch('close')
   }}

@@ -48,10 +48,9 @@
     ;(document.activeElement as HTMLElement)?.blur()
   })
 
-  let docWidth: number
 </script>
 
-<svelte:window bind:innerWidth={docWidth} />
+<svelte:window/>
 
 <ActionContext
   context={{
@@ -61,7 +60,7 @@
 {#if showFilterBar}
   <FilterBar {_class} {query} on:change={(e) => (resultQuery = e.detail)} />
 {/if}
-<Scroller fade={tableSP} horizontal={docWidth < 1024}>
+<Scroller fade={tableSP} horizontal={true}>
   <Table
     bind:this={table}
     {_class}
