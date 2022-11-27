@@ -33,6 +33,7 @@ import FileDownload from './components/icons/FileDownload.svelte'
 import Photos from './components/Photos.svelte'
 import AttachmentStyledBox from './components/AttachmentStyledBox.svelte'
 import { deleteFile, uploadFile } from './utils'
+import { DisplayTx } from '@hcengineering/activity'
 
 export {
   AddAttachment,
@@ -221,7 +222,14 @@ export async function DeleteAttachment (attach: Attachment): Promise<void> {
   )
 }
 
+export function attachmentsFilter (txes: DisplayTx[]): DisplayTx[] {
+  return txes.filter((tx) => tx.tx.objectClass === attachment.class.Attachment)
+}
+
 export default async (): Promise<Resources> => ({
+  filter: {
+    AttachmentsFilter: attachmentsFilter
+  },
   component: {
     AttachmentsPresenter,
     AttachmentPresenter,

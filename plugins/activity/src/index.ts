@@ -13,8 +13,21 @@
 // limitations under the License.
 //
 
-import type { Class, Doc, DocumentQuery, Ref, Tx } from '@hcengineering/core'
-import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
+import type {
+  AttachedDoc,
+  Attribute,
+  Class,
+  Collection,
+  Doc,
+  DocumentQuery,
+  Ref,
+  Tx,
+  TxCreateDoc,
+  TxCUD,
+  TxMixin,
+  TxUpdateDoc
+} from '@hcengineering/core'
+import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { AnyComponent } from '@hcengineering/ui'
 
@@ -47,23 +60,64 @@ export interface TxViewlet extends Doc {
   // If defined and true, will hide all transactions from object in case it is deleted.
   hideOnRemove?: boolean
 }
+
+/**
+ * Transaction being displayed.
+ * @public
+ */
+export interface DisplayTx {
+  // Source tx
+  tx: TxCUD<Doc>
+
+  // A set of collapsed transactions.
+  txes: DisplayTx[]
+  txDocIds?: Set<Ref<Doc>>
+
+  // type check for createTx
+  createTx?: TxCreateDoc<Doc>
+
+  // Type check for updateTx
+  updateTx?: TxUpdateDoc<Doc>
+
+  // Type check for updateTx
+  mixinTx?: TxMixin<Doc, Doc>
+
+  // Document in case it is required.
+  doc?: Doc
+
+  updated: boolean
+  mixin: boolean
+  removed: boolean
+
+  collectionAttribute?: Attribute<Collection<AttachedDoc>>
+}
+
+/**
+ * @public
+ */
+export interface ActivityFilter extends Doc {
+  label: IntlString
+  filter: Resource<(txes: DisplayTx[]) => DisplayTx[]>
+}
+
 /**
  * @public
  */
 export const activityId = 'activity' as Plugin
 
 export default plugin(activityId, {
+  icon: {
+    Activity: '' as Asset
+  },
   string: {
     Delete: '' as IntlString,
     Edit: '' as IntlString,
     Edited: '' as IntlString,
     Activity: '' as IntlString
   },
-  icon: {
-    Activity: '' as Asset
-  },
   class: {
-    TxViewlet: '' as Ref<Class<TxViewlet>>
+    TxViewlet: '' as Ref<Class<TxViewlet>>,
+    ActivityFilter: '' as Ref<Class<ActivityFilter>>
   },
   component: {
     Activity: '' as AnyComponent

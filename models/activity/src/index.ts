@@ -13,12 +13,12 @@
 // limitations under the License.
 //
 
-import type { TxViewlet } from '@hcengineering/activity'
+import type { ActivityFilter, DisplayTx, TxViewlet } from '@hcengineering/activity'
 import activity from '@hcengineering/activity'
 import core, { Class, Doc, DocumentQuery, DOMAIN_MODEL, Ref, Tx } from '@hcengineering/core'
 import { Builder, Model } from '@hcengineering/model'
 import { TDoc } from '@hcengineering/model-core'
-import type { Asset, IntlString } from '@hcengineering/platform'
+import type { Asset, IntlString, Resource } from '@hcengineering/platform'
 import { AnyComponent } from '@hcengineering/ui'
 
 @Model(activity.class.TxViewlet, core.class.Doc, DOMAIN_MODEL)
@@ -36,6 +36,12 @@ export class TTxViewlet extends TDoc implements TxViewlet {
   hideOnRemove!: boolean
 }
 
+@Model(activity.class.ActivityFilter, core.class.Class, DOMAIN_MODEL)
+export class TActivityFilter extends TDoc implements ActivityFilter {
+  label!: IntlString
+  filter!: Resource<(txes: DisplayTx[]) => DisplayTx[]>
+}
+
 export function createModel (builder: Builder): void {
-  builder.createModel(TTxViewlet)
+  builder.createModel(TTxViewlet, TActivityFilter)
 }
