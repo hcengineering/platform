@@ -96,6 +96,11 @@ export function createModel (builder: Builder): void {
     attachment.ids.TxAttachmentCreate
   )
 
+  builder.createDoc(activity.class.ActivityFilter, core.space.Model, {
+    label: attachment.string.FilterAttachments,
+    filter: attachment.filter.AttachmentsFilter
+  })
+
   builder.createDoc(
     view.class.ActionCategory,
     core.space.Model,

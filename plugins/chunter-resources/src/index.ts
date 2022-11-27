@@ -52,6 +52,7 @@ import ConvertDmToPrivateChannelModal from './components/ConvertDmToPrivateChann
 import { getDmName } from './utils'
 import { writable } from 'svelte/store'
 import { updateBacklinksList } from './backlinks'
+import { DisplayTx } from '../../activity/lib'
 
 export { default as Header } from './components/Header.svelte'
 export { classIcon } from './utils'
@@ -206,7 +207,19 @@ async function update (source: Doc, key: string, target: RelatedDocument[], msg:
   await updateBacklinksList(getClient(), q, backlinks)
 }
 
+export function commentsFilter (txes: DisplayTx[]): DisplayTx[] {
+  return txes.filter((tx) => tx.tx.objectClass === chunter.class.Comment)
+}
+
+export function backlinksFilter (txes: DisplayTx[]): DisplayTx[] {
+  return txes.filter((tx) => tx.tx.objectClass === chunter.class.Backlink)
+}
+
 export default async (): Promise<Resources> => ({
+  filter: {
+    CommentsFilter: commentsFilter,
+    BacklinksFilter: backlinksFilter
+  },
   component: {
     CommentInput,
     CreateChannel,

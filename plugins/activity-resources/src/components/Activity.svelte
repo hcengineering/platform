@@ -13,17 +13,20 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import activity, { TxViewlet } from '@hcengineering/activity'
+  import activity, { TxViewlet, ActivityFilter } from '@hcengineering/activity'
   import chunter from '@hcengineering/chunter'
   import core, { Class, Doc, Ref, SortingOrder } from '@hcengineering/core'
-  import { getResource } from '@hcengineering/platform'
+  import { getResource, IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import notification from '@hcengineering/notification'
-  import { Component, Grid, IconActivity, Label, Scroller } from '@hcengineering/ui'
+  import { Component, Grid, IconActivity, Label, Scroller, Button, showPopup } from '@hcengineering/ui'
   import { ActivityKey, activityKey, DisplayTx, newActivity } from '../activity'
   import TxView from './TxView.svelte'
   import { filterCollectionTxes } from './utils'
   import { Writable } from 'svelte/store'
+  import view from '@hcengineering/view'
+  import activityPlg from '../plugin'
+  import FilterPopup from './FilterPopup.svelte'
 
   export let object: Doc
   export let integrate: boolean = false
@@ -31,9 +34,17 @@
   export let transparent: boolean = false
 
   let txes: DisplayTx[] = []
+  let txesF: DisplayTx[] = []
 
   const client = getClient()
   const attrs = client.getHierarchy().getAllAttributes(object._class)
+
+  let filterLabel: IntlString = activityPlg.string.All
+  const filters: ActivityFilter[] = []
+  const saved = localStorage.getItem('activity-filter')
+  let selectedFilter: Ref<Doc> | 'All' = saved !== null && saved !== undefined ? JSON.parse(saved) : 'All'
+  $: localStorage.setItem('activity-filter', JSON.stringify(selectedFilter))
+  client.findAll(activity.class.ActivityFilter, {}).then((res) => res.map((it) => filters.push(it)))
 
   const activityQuery = newActivity(client, attrs)
   getResource(notification.function.GetNotificationClient).then((res) => {
@@ -82,6 +93,25 @@
     }
     return -1
   }
+
+  let optionsBtn: HTMLButtonElement
+  const handleOptions = () => {
+    showPopup(FilterPopup, { selectedFilter, filters }, optionsBtn, (res) => {
+      if (res === undefined) return
+      if (res.action === 'select') selectedFilter = res.value as Ref<Doc> | 'All'
+    })
+  }
+
+  $: if (selectedFilter || txes) {
+    const filter = filters.find((it) => it._id === selectedFilter)
+    if (filter) {
+      filterLabel = filter.label
+      getResource(filter.filter).then((result) => (txesF = result(txes)))
+    } else {
+      filterLabel = activityPlg.string.All
+      txesF = txes
+    }
+  }
 </script>
 
 {#if !integrate || transparent}
@@ -96,9 +126,9 @@
   <div class="flex-col flex-grow min-h-0" class:background-accent-bg-color={!transparent}>
     <Scroller>
       <div class="p-10 select-text" id={activity.string.Activity}>
-        {#if txes}
+        {#if txesF}
           <Grid column={1} rowGap={1.5}>
-            {#each txes as tx, i}
+            {#each txesF as tx, i}
               <TxView {tx} {viewlets} isNew={newTxPos === i} />
             {/each}
           </Grid>
@@ -117,6 +147,15 @@
   <div class="antiSection-header mt-6">
     <div class="antiSection-header__icon"><IconActivity size={'small'} /></div>
     <span class="antiSection-header__title"><Label label={activity.string.Activity} /></span>
+    <span class="dark-color text-md"><Label label={filterLabel} /></span>
+    <div class="w-2 min-w-2 max-w-2" />
+    <Button
+      bind:input={optionsBtn}
+      icon={view.icon.ViewButton}
+      kind={'transparent'}
+      shape={'circle'}
+      on:click={handleOptions}
+    />
   </div>
   {#if showCommenInput}
     <div class="ref-input">
@@ -124,9 +163,9 @@
     </div>
   {/if}
   <div class="p-activity select-text" id={activity.string.Activity}>
-    {#if txes}
+    {#if txesF}
       <Grid column={1} rowGap={1.5}>
-        {#each txes as tx, i}
+        {#each txesF as tx, i}
           <TxView {tx} {viewlets} isNew={newTxPos === i} />
         {/each}
       </Grid>

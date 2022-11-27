@@ -44,6 +44,7 @@
     "@hcengineering/text-editor": "~0.6.0",
     "@hcengineering/login": "~0.6.1",
     "filesize": "^8.0.3",
-    "@hcengineering/preference": "^0.6.1"
+    "@hcengineering/preference": "^0.6.1",
+    "@hcengineering/activity": "~0.6.0"
   }
 }

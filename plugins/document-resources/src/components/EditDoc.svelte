@@ -387,7 +387,7 @@
       <UpDownNavigator element={documentObject} />
     </svelte:fragment>
     <svelte:fragment slot="header">
-      <span class="fs-title flex-row-center">
+      <span class="fs-title flex-row-center flex-shrink gap-1-5">
         <EditBox
           bind:value={name}
           placeholder={document.string.DocumentNamePlaceholder}
