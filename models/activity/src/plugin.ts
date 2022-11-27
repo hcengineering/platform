@@ -13,22 +13,21 @@
 // limitations under the License.
 //
 
-import activity, { activityId } from '@hcengineering/activity'
-import type { IntlString } from '@hcengineering/platform'
+import type { Resource, IntlString } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
+import { activityId } from '@hcengineering/activity'
+import type { DisplayTx } from '@hcengineering/activity'
+import activity from '@hcengineering/activity-resources/src/plugin'
 
 export default mergeIds(activityId, activity, {
   string: {
-    DocCreated: '' as IntlString,
-    DocDeleted: '' as IntlString,
-    CollectionUpdated: '' as IntlString,
-    Changed: '' as IntlString,
-    To: '' as IntlString,
-    Unset: '' as IntlString,
-    System: '' as IntlString,
-    Added: '' as IntlString,
-    Removed: '' as IntlString,
-    From: '' as IntlString,
-    All: '' as IntlString
+    Comments: '' as IntlString,
+    Backlinks: '' as IntlString,
+    Attachments: '' as IntlString
+  },
+  filter: {
+    CommentsFilter: '' as Resource<(txes: DisplayTx[]) => DisplayTx[]>,
+    BacklinksFilter: '' as Resource<(txes: DisplayTx[]) => DisplayTx[]>,
+    AttachmentsFilter: '' as Resource<(txes: DisplayTx[]) => DisplayTx[]>
   }
 })

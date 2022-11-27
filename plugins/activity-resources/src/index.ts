@@ -13,23 +13,35 @@
 // limitations under the License.
 //
 
-import { Resources, IntlString } from '@hcengineering/platform'
-import { Class, Doc, Ref } from '@hcengineering/core'
+import { Resources } from '@hcengineering/platform'
+import chunter from '@hcengineering/chunter'
+import attachment from '@hcengineering/attachment'
 import Activity from './components/Activity.svelte'
 import TxView from './components/TxView.svelte'
-
-export interface FilterItem {
-  label: IntlString
-  visible: boolean
-}
-export type FilterIndex = Ref<Class<Doc>> | 'All' | 'Status'
-export type FilterOptions = Map<FilterIndex, FilterItem> | undefined
+import { DisplayTx } from './activity'
 
 export { TxView }
 
 export * from './activity'
 
+export function commentsFilter (txes: DisplayTx[]): DisplayTx[] {
+  return txes.filter((tx) => tx.tx.objectClass === chunter.class.Comment)
+}
+
+export function backlinksFilter (txes: DisplayTx[]): DisplayTx[] {
+  return txes.filter((tx) => tx.tx.objectClass === chunter.class.Backlink)
+}
+
+export function attachmentsFilter (txes: DisplayTx[]): DisplayTx[] {
+  return txes.filter((tx) => tx.tx.objectClass === attachment.class.Attachment)
+}
+
 export default async (): Promise<Resources> => ({
+  filter: {
+    CommentsFilter: commentsFilter,
+    BacklinksFilter: backlinksFilter,
+    AttachmentsFilter: attachmentsFilter
+  },
   component: {
     Activity
   }

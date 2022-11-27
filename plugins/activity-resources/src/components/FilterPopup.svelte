@@ -15,30 +15,32 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte'
   import { IntlString } from '@hcengineering/platform'
-  import { Label, resizeObserver, CheckBox, MiniToggle } from '@hcengineering/ui'
-  import type { FilterOptions, FilterItem, FilterIndex } from '..'
+  import { Label, resizeObserver, CheckBox } from '@hcengineering/ui'
+  import { Doc, Ref } from '@hcengineering/core'
+  import { ActivityFilter } from '@hcengineering/activity'
+  import activity from '../plugin'
 
-  export let filter: FilterOptions
+  export let selectedFilter: Ref<Doc> | 'All' = 'All'
+  export let filters: ActivityFilter[] = []
 
   const dispatch = createEventDispatcher()
 
-  let arrFilter: Array<{ index: FilterIndex; value: FilterItem }>
-  $: if (filter) {
-    arrFilter = []
-    filter.forEach((value, index) => arrFilter.push({ index, value }))
+  interface ActionMenu {
+    label: IntlString
+    checked: boolean
+    value: Ref<Doc> | 'All'
   }
-
-  const checking = (fi: FilterIndex, val: boolean) => {
-    dispatch('update', {
-      filter: fi,
-      label: filter?.get(fi)?.label,
-      visible: val
-    })
-  }
+  const menu: ActionMenu[] = [
+    {
+      label: activity.string.All,
+      checked: selectedFilter === 'All',
+      value: 'All'
+    }
+  ]
+  filters.map((fl) => menu.push({ label: fl.label, checked: selectedFilter === fl._id, value: fl._id }))
 
   let popup: HTMLElement
   $: popup?.focus()
-  const noString: IntlString = '' as IntlString
 
   const btns: HTMLElement[] = []
   let activeElement: HTMLElement
@@ -51,22 +53,19 @@
       btns[n].focus()
       btns[n].click()
     }
-    if (filter?.get('All')?.visible) activeElement = btns[0]
-    else {
-      if (ev.key === 'ArrowDown') {
-        if (n < btns.length - 1) {
-          activeElement = btns[n + 1]
-        }
-        ev.preventDefault()
-        ev.stopPropagation()
+    if (ev.key === 'ArrowDown') {
+      if (n < btns.length - 1) {
+        activeElement = btns[n + 1]
       }
-      if (ev.key === 'ArrowUp') {
-        if (n > 0) {
-          activeElement = btns[n - 1]
-        }
-        ev.preventDefault()
-        ev.stopPropagation()
+      ev.preventDefault()
+      ev.stopPropagation()
+    }
+    if (ev.key === 'ArrowUp') {
+      if (n > 0) {
+        activeElement = btns[n - 1]
       }
+      ev.preventDefault()
+      ev.stopPropagation()
     }
   }
 
@@ -88,38 +87,23 @@
   <div class="ap-scroll">
     <div class="ap-box" bind:this={popup}>
       <!-- svelte-ignore a11y-mouse-events-have-key-events -->
-      {#each arrFilter as f, i}
+      {#each menu as item, i}
         <button
           bind:this={btns[i]}
           class="ap-menuItem flex-row-center withIcon"
           class:hover={btns[i] === activeElement}
-          disabled={f.index !== 'All' && filter?.get('All')?.visible}
           on:mousemove={() => {
             if (btns[i] !== activeElement) activeElement = btns[i]
           }}
           on:click={() => {
-            checking(f.index, !f.value.visible)
-            filter?.set(f.index, {
-              label: filter.get(f.index)?.label ?? noString,
-              visible: !f.value.visible
-            })
-            filter = filter
+            dispatch('close', { action: 'select', value: item.value })
           }}
         >
-          <div class="flex-center min-w-8 justify-end mr-3 pointer-events-none">
-            {#if f.index === 'All'}
-              <MiniToggle bind:on={f.value.visible} />
-            {:else}
-              <CheckBox checked={f.value.visible} readonly={f.index !== 'All' && filter?.get('All')?.visible} />
-            {/if}
+          <div class="flex-center justify-end mr-3 pointer-events-none">
+            <CheckBox checked={item.checked} />
           </div>
-          <span
-            class="overflow-label mr-2{(f.index !== 'All' && filter?.get('All')?.visible) ||
-            (f.index === 'All' && !filter?.get('All')?.visible)
-              ? ' dark-color'
-              : ''}"
-          >
-            <Label label={f.value.label} />
+          <span class="overflow-label">
+            <Label label={item.label} />
           </span>
         </button>
       {/each}
