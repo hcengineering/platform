@@ -66,6 +66,8 @@
     "ChunterBrowser": "Search",
     "Messages": "Messages",
     "NoResults": "No results",
-    "CopyLink": "Copy link"
+    "CopyLink": "Copy link",
+    "FilterComments": "Comments",
+    "FilterBacklinks": "Backlinks"
   }
 }

@@ -13,11 +13,11 @@
 // limitations under the License.
 //
 
-import type { TxViewlet } from '@hcengineering/activity'
+import type { DisplayTx, TxViewlet } from '@hcengineering/activity'
 import { attachmentId } from '@hcengineering/attachment'
 import attachment from '@hcengineering/attachment-resources/src/plugin'
 import type { Ref } from '@hcengineering/core'
-import type { IntlString } from '@hcengineering/platform'
+import type { IntlString, Resource } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import type { AnyComponent } from '@hcengineering/ui'
 import type { ActionCategory } from '@hcengineering/view'
@@ -38,7 +38,8 @@ export default mergeIds(attachmentId, attachment, {
     SavedAttachments: '' as IntlString,
     Description: '' as IntlString,
     PinAttachment: '' as IntlString,
-    UnPinAttachment: '' as IntlString
+    UnPinAttachment: '' as IntlString,
+    FilterAttachments: '' as IntlString
   },
   ids: {
     TxAttachmentCreate: '' as Ref<TxViewlet>
@@ -48,5 +49,8 @@ export default mergeIds(attachmentId, attachment, {
   },
   category: {
     Attachments: '' as Ref<ActionCategory>
+  },
+  filter: {
+    AttachmentsFilter: '' as Resource<(txes: DisplayTx[]) => DisplayTx[]>
   }
 })

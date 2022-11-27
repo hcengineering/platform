@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { TxViewlet } from '@hcengineering/activity'
+import type { DisplayTx, TxViewlet } from '@hcengineering/activity'
 import { Channel, chunterId } from '@hcengineering/chunter'
 import chunter from '@hcengineering/chunter-resources/src/plugin'
 import type { Ref, Space } from '@hcengineering/core'
@@ -67,7 +67,9 @@ export default mergeIds(chunterId, chunter, {
     SavedMessages: '' as IntlString,
     ThreadMessage: '' as IntlString,
     Reactions: '' as IntlString,
-    Emoji: '' as IntlString
+    Emoji: '' as IntlString,
+    FilterComments: '' as IntlString,
+    FilterBacklinks: '' as IntlString
   },
   viewlet: {
     Chat: '' as Ref<ViewletDescriptor>
@@ -89,5 +91,9 @@ export default mergeIds(chunterId, chunter, {
   },
   function: {
     ChunterBrowserVisible: '' as Resource<(spaces: Space[]) => boolean>
+  },
+  filter: {
+    CommentsFilter: '' as Resource<(txes: DisplayTx[]) => DisplayTx[]>,
+    BacklinksFilter: '' as Resource<(txes: DisplayTx[]) => DisplayTx[]>
   }
 })

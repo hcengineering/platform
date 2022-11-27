@@ -41,7 +41,6 @@
     "@hcengineering/contact": "~0.6.8",
     "@hcengineering/notification": "~0.6.4",
     "@hcengineering/view": "^0.6.1",
-    "@hcengineering/view-resources": "~0.6.0",
-    "@hcengineering/attachment": "~0.6.1"
+    "@hcengineering/view-resources": "~0.6.0"
   }
 }

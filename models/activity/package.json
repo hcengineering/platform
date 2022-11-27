@@ -31,7 +31,6 @@
     "@hcengineering/platform": "^0.6.7",
     "@hcengineering/model-core": "~0.6.0",
     "@hcengineering/activity": "~0.6.0",
-    "@hcengineering/ui": "^0.6.2",
-    "@hcengineering/activity-resources": "~0.6.1"
+    "@hcengineering/ui": "^0.6.2"
   }
 }

@@ -14,7 +14,7 @@
 //
 
 import type { ActivityFilter, DisplayTx, TxViewlet } from '@hcengineering/activity'
-import activity from './plugin'
+import activity from '@hcengineering/activity'
 import core, { Class, Doc, DocumentQuery, DOMAIN_MODEL, Ref, Tx } from '@hcengineering/core'
 import { Builder, Model } from '@hcengineering/model'
 import { TDoc } from '@hcengineering/model-core'
@@ -44,19 +44,4 @@ export class TActivityFilter extends TDoc implements ActivityFilter {
 
 export function createModel (builder: Builder): void {
   builder.createModel(TTxViewlet, TActivityFilter)
-
-  builder.createDoc(activity.class.ActivityFilter, core.space.Model, {
-    label: activity.string.Comments,
-    filter: activity.filter.CommentsFilter
-  })
-
-  builder.createDoc(activity.class.ActivityFilter, core.space.Model, {
-    label: activity.string.Backlinks,
-    filter: activity.filter.BacklinksFilter
-  })
-
-  builder.createDoc(activity.class.ActivityFilter, core.space.Model, {
-    label: activity.string.Attachments,
-    filter: activity.filter.AttachmentsFilter
-  })
 }
