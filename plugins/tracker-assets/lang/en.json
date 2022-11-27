@@ -245,7 +245,11 @@
     "SaveProcess": "Save Process",
     "NoIssueTemplate": "No Process",
     "TemplateReplace": "You you replace applied process?",
-    "TemplateReplaceConfirm": "All changes to template values will be lost."
+    "TemplateReplaceConfirm": "All changes to template values will be lost.",
+
+    "WorkDayCurrent": "Current Working Day",
+    "WorkDayPrevious": "Previous Working Day",
+    "WorkDayLabel": "Select Working Day Type"
   },
   "status": {}
 }

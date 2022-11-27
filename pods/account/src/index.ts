@@ -15,7 +15,7 @@
 //
 
 import { AccountMethod, ACCOUNT_DB } from '@hcengineering/account'
-import platform, { Request, Response, serialize, setMetadata, Severity, Status } from '@hcengineering/platform'
+import platform, { Response, serialize, setMetadata, Severity, Status } from '@hcengineering/platform'
 import serverToken from '@hcengineering/server-token'
 import toolPlugin from '@hcengineering/server-tool'
 import cors from '@koa/cors'
@@ -23,7 +23,7 @@ import { IncomingHttpHeaders } from 'http'
 import Koa from 'koa'
 import bodyParser from 'koa-bodyparser'
 import Router from 'koa-router'
-import { Db, MongoClient } from 'mongodb'
+import { MongoClient } from 'mongodb'
 
 /**
  * @public
@@ -71,9 +71,7 @@ export function serveAccount (methods: Record<string, AccountMethod>, productId 
     const token = extractToken(ctx.request.headers)
 
     const request = ctx.request.body as any
-    const method = (
-      methods as { [key: string]: (db: Db, productId: string, request: Request<any>, token?: string) => Response<any> }
-    )[request.method]
+    const method = (methods as { [key: string]: AccountMethod })[request.method]
     if (method === undefined) {
       const response: Response<void> = {
         id: request.id,

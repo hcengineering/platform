@@ -20,6 +20,8 @@
   import { Issue, TimeSpendReport } from '@hcengineering/tracker'
   import { DatePresenter, EditBox } from '@hcengineering/ui'
   import tracker from '../../../plugin'
+  import { getWorkDate, WorkDaysType } from '../../../utils'
+  import WorkDaysDropdown from './WorkDaysDropdown.svelte'
 
   export let issueId: Ref<Issue>
   export let issueClass: Ref<Class<Issue>>
@@ -34,7 +36,7 @@
   }
 
   const data = {
-    date: value?.date ?? Date.now(),
+    date: value?.date ?? getWorkDate(WorkDaysType.PREVIOUS),
     description: value?.description ?? '',
     value: value?.value,
     employee: value?.employee ?? assignee ?? null
@@ -78,7 +80,7 @@
   okLabel={value === undefined ? presentation.string.Create : presentation.string.Save}
 >
   <div class="flex-row-center gap-2">
-    <EditBox focus bind:value={data.value} {placeholder} format={'number'} kind={'editbox'} />
+    <EditBox focus bind:value={data.value} {placeholder} format={'number'} maxDigitsAfterPoint={3} kind={'editbox'} />
     <UserBox
       _class={contact.class.Employee}
       label={contact.string.Employee}
@@ -86,6 +88,7 @@
       bind:value={data.employee}
       showNavigate={false}
     />
+    <WorkDaysDropdown bind:dateTimestamp={data.date} />
     <DatePresenter kind={'link'} bind:value={data.date} editable />
   </div>
   <EditBox bind:value={data.description} placeholder={tracker.string.TimeSpendReportDescription} kind={'editbox'} />

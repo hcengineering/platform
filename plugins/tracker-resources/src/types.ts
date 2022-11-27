@@ -104,3 +104,8 @@ export const issuesGroupBySorting: Record<IssuesGrouping, SortingQuery<Issue>> =
   [IssuesGrouping.Sprint]: { '$lookup.sprint.label': SortingOrder.Ascending },
   [IssuesGrouping.NoGrouping]: {}
 }
+
+export enum WorkDaysType {
+  CURRENT = 'current',
+  PREVIOUS = 'previous'
+}

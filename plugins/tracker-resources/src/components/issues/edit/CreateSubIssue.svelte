@@ -67,6 +67,7 @@
 
   function resetToDefaults () {
     newIssue = getIssueDefaults()
+    labels = []
     focusIssueTitle?.()
   }
 
