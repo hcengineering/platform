@@ -19,7 +19,10 @@ import tags, { tagsId } from '@hcengineering/tags'
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(tags.icon, {
-  Tags: `${icons}#tags`
+  Tags: `${icons}#tags`,
+  Level1: `${icons}#level-1`,
+  Level2: `${icons}#level-2`,
+  Level3: `${icons}#level-3`
 })
 
 addStringsLoader(tagsId, async (lang: string) => await import(`../lang/${lang}.json`))

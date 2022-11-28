@@ -2,4 +2,19 @@
   <symbol id="tags" viewBox="0 0 16 16">
     <path d="M2.5,9.8l3.7,3.7c0,0,0,0,0,0c0.6,0.6,1.6,0.6,2.2,0l5.5-5.5C13.9,8,14,7.8,14,7.7V2.5C14,2.2,13.8,2,13.5,2H8.3 C8.1,2,8,2.1,7.9,2.1L2.5,7.6C2.2,7.9,2,8.3,2,8.7C2,9.1,2.2,9.5,2.5,9.8z M3.2,8.3L8.5,3H13v4.5l-5.3,5.3c-0.2,0.2-0.6,0.2-0.8,0 L3.2,9.1C3.1,9,3,8.9,3,8.7S3.1,8.4,3.2,8.3z"/>
   </symbol>
+  <symbol id="level-3" viewBox="0 0 16 16">
+    <rect x="1" y="8" width="3" height="6" rx="1" />
+    <rect x="6" y="5" width="3" height="9" rx="1" />
+    <rect x="11" y="2" width="3" height="12" rx="1" />
+  </symbol>
+  <symbol id="level-2" viewBox="0 0 16 16">
+    <rect x="1" y="8" width="3" height="6" rx="1" />
+    <rect x="6" y="5" width="3" height="9" rx="1" />
+    <rect x="11" y="2" width="3" height="12" rx="1" fill-opacity=".4" />
+  </symbol>
+  <symbol id="level-1" viewBox="0 0 16 16">
+    <rect x="1" y="8" width="3" height="6" rx="1" />
+    <rect x="6" y="5" width="3" height="9" rx="1" fill-opacity=".4" />
+    <rect x="11" y="2" width="3" height="12" rx="1" fill-opacity=".4" />
+  </symbol>
 </svg>

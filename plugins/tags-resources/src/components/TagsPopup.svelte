@@ -123,6 +123,7 @@
         />
       </div>
       <div class="buttons-group small-gap">
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div
           class="clear-btn"
           class:show={search !== ''}

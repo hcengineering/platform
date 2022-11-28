@@ -47,10 +47,9 @@
   onMount(() => {
     ;(document.activeElement as HTMLElement)?.blur()
   })
-
 </script>
 
-<svelte:window/>
+<svelte:window />
 
 <ActionContext
   context={{

@@ -46,7 +46,12 @@ export default mergeIds(tagsId, tags, {
     AllCategories: '' as IntlString,
     SelectAll: '' as IntlString,
     SelectNone: '' as IntlString,
-    ApplyTags: '' as IntlString
+    ApplyTags: '' as IntlString,
+
+    Weight: '' as IntlString,
+    Expert: '' as IntlString,
+    Meaningfull: '' as IntlString,
+    Initial: '' as IntlString
   },
   function: {
     FilterTagsInResult: '' as Resource<(filter: Filter, onUpdate: () => void) => Promise<ObjQueryType<any>>>,
