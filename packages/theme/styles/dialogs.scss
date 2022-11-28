@@ -134,9 +134,9 @@
 
   &.dialog {
     width: 45rem;
-    height: max-content;
+    height: auto;
     max-width: 60rem;
-    max-height: calc(100vh - 2rem);
+    max-height: inherit;
   }
   &.mobile {
     width: 90vw;
