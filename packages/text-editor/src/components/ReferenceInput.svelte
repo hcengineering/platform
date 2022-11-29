@@ -286,6 +286,7 @@
         }}
         extensions={editorExtensions}
         on:selection-update={updateFormattingState}
+        on:update
       />
     </div>
     {#if showSend}
