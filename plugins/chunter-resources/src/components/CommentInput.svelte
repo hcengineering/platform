@@ -114,4 +114,11 @@
   }
 </script>
 
-<AttachmentRefInput {_class} space={object.space} objectId={_id} on:message={onMessage} />
+<AttachmentRefInput
+  bind:content={inputContent}
+  {_class}
+  space={object.space}
+  objectId={_id}
+  on:message={onMessage}
+  on:update={onUpdate}
+/>
