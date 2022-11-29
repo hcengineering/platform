@@ -17,6 +17,7 @@
   import { createEventDispatcher, onMount } from 'svelte'
   import { createQuery } from '@hcengineering/presentation'
   import type { Candidate, Applicant, Vacancy } from '@hcengineering/recruit'
+  import { Scroller } from '@hcengineering/ui'
   import CandidateCard from './CandidateCard.svelte'
   import VacancyCard from './VacancyCard.svelte'
   import ExpandRightDouble from './icons/ExpandRightDouble.svelte'
@@ -51,11 +52,13 @@
 </script>
 
 {#if object !== undefined && candidate !== undefined}
-  <div class="flex-between">
-    <div class="card"><CandidateCard {candidate} on:click /></div>
-    <div class="arrows"><ExpandRightDouble /></div>
-    <div class="card"><VacancyCard {vacancy} /></div>
-  </div>
+  <Scroller horizontal>
+    <div class="flex-between min-w-min">
+      <div class="card"><CandidateCard {candidate} on:click /></div>
+      <div class="flex-center arrows"><ExpandRightDouble /></div>
+      <div class="card"><VacancyCard {vacancy} /></div>
+    </div>
+  </Scroller>
   <div class="mt-6">
     <Reviews objectId={candidate._id} reviews={candidate.reviews ?? 0} label={recruit.string.TalentReviews} />
   </div>
@@ -63,11 +66,14 @@
 
 <style lang="scss">
   .card {
+    flex-shrink: 0;
     align-self: stretch;
-    width: calc(50% - 3rem);
+    width: calc(50% - 5rem);
+    min-width: max-content;
     min-height: 16rem;
   }
   .arrows {
+    flex-shrink: 0;
     width: 4rem;
   }
 </style>

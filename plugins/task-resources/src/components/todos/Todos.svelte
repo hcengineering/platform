@@ -16,7 +16,7 @@
   import type { Ref, Space, Doc, Class } from '@hcengineering/core'
   import type { TodoItem } from '@hcengineering/task'
   import { createQuery } from '@hcengineering/presentation'
-  import { Button, IconAdd, showPopup, Label } from '@hcengineering/ui'
+  import { Button, IconAdd, showPopup, Label, resizeObserver, Scroller } from '@hcengineering/ui'
   import CreateTodo from './CreateTodo.svelte'
   import { Table } from '@hcengineering/view-resources'
 
@@ -37,9 +37,10 @@
   const createApp = (ev: MouseEvent): void => {
     showPopup(CreateTodo, { objectId, _class, space }, ev.target as HTMLElement)
   }
+  let wSection: number
 </script>
 
-<div class="antiSection">
+<div class="antiSection" use:resizeObserver={(element) => (wSection = element.clientWidth)}>
   <div class="antiSection-header">
     <span class="antiSection-header__title">
       <Label label={plugin.string.Todos} />
@@ -47,20 +48,39 @@
     <Button icon={IconAdd} kind={'transparent'} shape={'circle'} on:click={createApp} />
   </div>
   {#if todos.length > 0}
-    <Table
-      _class={task.class.TodoItem}
-      config={[
-        { key: '', label: plugin.string.TodoName },
-        'dueTo',
-        { key: 'done', presenter: plugin.component.TodoStatePresenter, label: plugin.string.TodoState }
-      ]}
-      options={{
-        sort: {
-          rank: 1
-        }
-      }}
-      query={{ attachedTo: objectId }}
-    />
+    {#if wSection < 640}
+      <Scroller horizontal>
+        <Table
+          _class={task.class.TodoItem}
+          config={[
+            { key: '', label: plugin.string.TodoName },
+            'dueTo',
+            { key: 'done', presenter: plugin.component.TodoStatePresenter, label: plugin.string.TodoState }
+          ]}
+          options={{
+            sort: {
+              rank: 1
+            }
+          }}
+          query={{ attachedTo: objectId }}
+        />
+      </Scroller>
+    {:else}
+      <Table
+        _class={task.class.TodoItem}
+        config={[
+          { key: '', label: plugin.string.TodoName },
+          'dueTo',
+          { key: 'done', presenter: plugin.component.TodoStatePresenter, label: plugin.string.TodoState }
+        ]}
+        options={{
+          sort: {
+            rank: 1
+          }
+        }}
+        query={{ attachedTo: objectId }}
+      />
+    {/if}
   {:else}
     <div class="antiSection-empty solid flex-col-center mt-3">
       <span class="text-sm over-underline" on:click={createApp}>

@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import { Class, Doc, DocumentQuery, Ref, Space } from '@hcengineering/core'
-  import { Icon, Label, Spinner } from '@hcengineering/ui'
+  import { Icon, Label, Spinner, resizeObserver, Scroller } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { Table } from '@hcengineering/view-resources'
   import attachment from '../plugin'
@@ -34,9 +34,10 @@
   let inputFile: HTMLInputElement
   let loading = 0
   let dragover = false
+  let wSection: number
 </script>
 
-<div class="antiSection">
+<div class="antiSection" use:resizeObserver={(element) => (wSection = element.clientWidth)}>
   <div class="antiSection-header">
     <div class="antiSection-header__icon">
       <Icon icon={IconAttachment} size={'small'} />
@@ -70,6 +71,29 @@
         </div>
       </div>
     </AttachmentDroppable>
+  {:else if wSection < 640}
+    <Scroller horizontal>
+      <Table
+        _class={attachment.class.Attachment}
+        config={[
+          '',
+          'description',
+          {
+            key: 'pinned',
+            presenter: view.component.BooleanTruePresenter,
+            label: attachment.string.Pinned,
+            sortingKey: 'pinned'
+          },
+          'lastModified'
+        ]}
+        options={{ sort: { pinned: -1 } }}
+        query={{ ...query, attachedTo: objectId }}
+        loadingProps={{ length: attachments ?? 0 }}
+        on:content={(evt) => {
+          attachments = evt.detail.length
+        }}
+      />
+    </Scroller>
   {:else}
     <Table
       _class={attachment.class.Attachment}

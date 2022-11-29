@@ -15,7 +15,7 @@
 <script lang="ts">
   import type { Ref } from '@hcengineering/core'
   import type { Customer } from '@hcengineering/lead'
-  import { Button, IconAdd, Label, showPopup } from '@hcengineering/ui'
+  import { Button, IconAdd, Label, showPopup, resizeObserver, Scroller } from '@hcengineering/ui'
   import { Table } from '@hcengineering/view-resources'
   import lead from '../plugin'
   import CreateLead from './CreateLead.svelte'
@@ -27,9 +27,10 @@
   const createLead = (ev: MouseEvent): void => {
     showPopup(CreateLead, { candidate: objectId, preserveCandidate: true }, ev.target as HTMLElement)
   }
+  let wSection: number
 </script>
 
-<div class="antiSection">
+<div class="antiSection" use:resizeObserver={(element) => (wSection = element.clientWidth)}>
   <div class="antiSection-header">
     <span class="antiSection-header__title">
       <Label label={lead.string.Leads} />
@@ -37,12 +38,23 @@
     <Button icon={IconAdd} kind={'transparent'} shape={'circle'} on:click={createLead} />
   </div>
   {#if leads !== undefined && leads > 0}
-    <Table
-      _class={lead.class.Lead}
-      config={['', '$lookup.state', '$lookup.doneState']}
-      query={{ attachedTo: objectId }}
-      {loadingProps}
-    />
+    {#if wSection < 640}
+      <Scroller horizontal>
+        <Table
+          _class={lead.class.Lead}
+          config={['', '$lookup.state', '$lookup.doneState']}
+          query={{ attachedTo: objectId }}
+          {loadingProps}
+        />
+      </Scroller>
+    {:else}
+      <Table
+        _class={lead.class.Lead}
+        config={['', '$lookup.state', '$lookup.doneState']}
+        query={{ attachedTo: objectId }}
+        {loadingProps}
+      />
+    {/if}
   {:else}
     <div class="antiSection-empty solid flex-col-center mt-3">
       <span class="text-sm dark-color">

@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import type { Doc, Ref } from '@hcengineering/core'
-  import { Button, IconAdd, Label, showPopup, Icon } from '@hcengineering/ui'
+  import { Button, IconAdd, Label, showPopup, Icon, Scroller, resizeObserver } from '@hcengineering/ui'
   import { BuildModelKey } from '@hcengineering/view'
   import { Table } from '@hcengineering/view-resources'
   import recruit from '../plugin'
@@ -38,9 +38,10 @@
     '$lookup.state',
     '$lookup.doneState'
   ]
+  let wSection: number
 </script>
 
-<div class="antiSection">
+<div class="antiSection" use:resizeObserver={(element) => (wSection = element.clientWidth)}>
   <div class="antiSection-header">
     <div class="antiSection-header__icon">
       <Icon icon={IconApplication} size={'small'} />
@@ -51,12 +52,23 @@
     <Button id="appls.add" icon={IconAdd} kind={'transparent'} shape={'circle'} on:click={createApp} />
   </div>
   {#if applications > 0}
-    <Table
-      _class={recruit.class.Applicant}
-      {config}
-      query={{ attachedTo: objectId }}
-      loadingProps={{ length: applications }}
-    />
+    {#if wSection < 640}
+      <Scroller horizontal>
+        <Table
+          _class={recruit.class.Applicant}
+          {config}
+          query={{ attachedTo: objectId }}
+          loadingProps={{ length: applications }}
+        />
+      </Scroller>
+    {:else}
+      <Table
+        _class={recruit.class.Applicant}
+        {config}
+        query={{ attachedTo: objectId }}
+        loadingProps={{ length: applications }}
+      />
+    {/if}
   {:else}
     <div class="antiSection-empty solid flex-col-center mt-3">
       <div class="caption-color">

@@ -161,7 +161,7 @@
         flex-shrink: 0;
         padding: .5rem .75rem .75rem;
         width: 100%;
-        min-width: 700px;
+        min-width: 320px;
       }
 
       &.bottom-divider { border-bottom: 1px solid var(--divider-color); }
@@ -179,7 +179,7 @@
     }
     .popupPanel-body__mobile-content {
       padding: .5rem;
-      min-width: 700px;
+      min-width: 320px;
     }
 
     &__aside {

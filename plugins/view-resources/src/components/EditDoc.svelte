@@ -36,6 +36,7 @@
   import ActionContext from './ActionContext.svelte'
   import DocAttributeBar from './DocAttributeBar.svelte'
   import UpDownNavigator from './UpDownNavigator.svelte'
+  import IconMixin from './icons/Mixin.svelte'
 
   export let _id: Ref<Doc>
   export let _class: Ref<Class<Doc>>
@@ -131,14 +132,19 @@
     fieldEditors = editors.sort((a, b) => AttributeCategoryOrder[a.category] - AttributeCategoryOrder[b.category])
   }
 
-  async function getEditor (_class: Ref<Class<Doc>>): Promise<AnyComponent> {
+  interface MixinEditor {
+    editor: AnyComponent
+    pinned?: boolean
+  }
+
+  async function getEditor (_class: Ref<Class<Doc>>): Promise<MixinEditor> {
     const clazz = hierarchy.getClass(_class)
     const editorMixin = hierarchy.as(clazz, view.mixin.ObjectEditor)
     if (editorMixin?.editor == null && clazz.extends != null) return getEditor(clazz.extends)
-    return editorMixin.editor
+    return { editor: editorMixin.editor, pinned: editorMixin?.pinned }
   }
 
-  let mainEditor: AnyComponent | undefined
+  let mainEditor: MixinEditor | undefined
   $: getEditorOrDefault(realObjectClass, showAllMixins)
 
   async function getEditorOrDefault (_class: Ref<Class<Doc>>, showAllMixins: boolean): Promise<void> {
@@ -252,7 +258,7 @@
     {icon}
     {title}
     {object}
-    isHeader={false}
+    isHeader={mainEditor?.pinned ?? false}
     isAside={true}
     bind:panelWidth
     bind:innerWidth
@@ -265,7 +271,7 @@
       <UpDownNavigator element={object} />
     </svelte:fragment>
 
-    <svelte:fragment slot="tools">
+    <svelte:fragment slot="utils">
       <div class="p-1">
         <Button icon={IconMoreH} kind={'transparent'} size={'medium'} on:click={showMenu} />
       </div>
@@ -282,17 +288,7 @@
           }}
         >
           <svelte:fragment slot="content">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="2.66602" y="2.66663" width="10.6667" height="4.66667" rx="1" stroke="white" />
-              <path
-                d="M2.66602 11.3334C2.66602 10.3906 2.66602 9.91916 2.95891 9.62627C3.2518 9.33337 3.72321 9.33337 4.66602 9.33337H6.66602V11.3334C6.66602 12.2762 6.66602 12.7476 6.37312 13.0405C6.37312 13.0405 6.37312 13.0405 6.37312 13.0405C6.08023 13.3334 5.60882 13.3334 4.66602 13.3334V13.3334C3.72321 13.3334 3.2518 13.3334 2.95891 13.0405C2.95891 13.0405 2.95891 13.0405 2.95891 13.0405C2.66602 12.7476 2.66602 12.2762 2.66602 11.3334V11.3334Z"
-                stroke="white"
-              />
-              <path
-                d="M9.33398 9.33337H11.334C12.2768 9.33337 12.7482 9.33337 13.0411 9.62627C13.334 9.91916 13.334 10.3906 13.334 11.3334V11.3334C13.334 12.2762 13.334 12.7476 13.0411 13.0405C12.7482 13.3334 12.2768 13.3334 11.334 13.3334V13.3334C10.3912 13.3334 9.91977 13.3334 9.62688 13.0405C9.33398 12.7476 9.33398 12.2762 9.33398 11.3334V9.33337Z"
-                stroke="white"
-              />
-            </svg>
+            <IconMixin size={'small'} />
           </svelte:fragment>
         </Button>
       </div>
@@ -317,23 +313,45 @@
       {/if}
     </svelte:fragment>
 
-    {#if mainEditor}
-      <Component
-        is={mainEditor}
-        props={{ object }}
-        on:open={(ev) => {
-          ignoreKeys = ev.detail.ignoreKeys
-          ignoreMixins = new Set(ev.detail.ignoreMixins)
-          allowedCollections = ev.detail.allowedCollections ?? []
-          collectionArrays = ev.detail.collectionArrays ?? []
-          getMixins(parentClass, object, showAllMixins)
-          updateKeys(showAllMixins)
-        }}
-      />
+    <svelte:fragment slot="subheader">
+      {#if mainEditor && mainEditor.pinned}
+        <div class="flex-col flex-grow step-tb-6">
+          <Component
+            is={mainEditor.editor}
+            props={{ object }}
+            on:open={(ev) => {
+              ignoreKeys = ev.detail.ignoreKeys
+              ignoreMixins = new Set(ev.detail.ignoreMixins)
+              allowedCollections = ev.detail.allowedCollections ?? []
+              collectionArrays = ev.detail.collectionArrays ?? []
+              getMixins(parentClass, object, showAllMixins)
+              updateKeys(showAllMixins)
+            }}
+          />
+        </div>
+      {/if}
+    </svelte:fragment>
+
+    {#if mainEditor && !mainEditor.pinned}
+      <div class="flex-col flex-grow flex-no-shrink step-tb-6">
+        <Component
+          is={mainEditor.editor}
+          props={{ object }}
+          on:open={(ev) => {
+            ignoreKeys = ev.detail.ignoreKeys
+            ignoreMixins = new Set(ev.detail.ignoreMixins)
+            allowedCollections = ev.detail.allowedCollections ?? []
+            collectionArrays = ev.detail.collectionArrays ?? []
+            getMixins(parentClass, object, showAllMixins)
+            updateKeys(showAllMixins)
+          }}
+        />
+      </div>
     {/if}
+
     {#each fieldEditors as collection}
       {#if collection.editor}
-        <div class="mt-6">
+        <div class="step-tb-6">
           <Component
             is={collection.editor}
             props={{

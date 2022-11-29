@@ -136,6 +136,7 @@ export class TAttributePresenter extends TClass implements AttributePresenter {
 @Mixin(view.mixin.ObjectEditor, core.class.Class)
 export class TObjectEditor extends TClass implements ObjectEditor {
   editor!: AnyComponent
+  pinned?: boolean
 }
 
 @Mixin(view.mixin.ObjectEditorHeader, core.class.Class)
