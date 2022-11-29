@@ -155,6 +155,10 @@
     dispatch('message', { message: event.detail, attachments: attachments.size })
   }
 
+  async function onUpdate (event: CustomEvent) {
+    dispatch('update', { message: event.detail, attachments: attachments.size })
+  }
+
   function pasteAction (evt: ClipboardEvent): void {
     let t: HTMLElement | null = evt.target as HTMLElement
     let allowed = false
@@ -224,6 +228,7 @@
       on:attach={() => {
         inputFile.click()
       }}
+      on:update={onUpdate}
     />
   </div>
 </div>
