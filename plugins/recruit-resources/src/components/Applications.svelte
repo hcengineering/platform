@@ -34,8 +34,7 @@
   const config: (BuildModelKey | string)[] = [
     '',
     '$lookup.space.name',
-    'comments',
-    'attachments',
+    '$lookup.space.$lookup.company',
     '$lookup.state',
     '$lookup.doneState'
   ]

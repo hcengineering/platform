@@ -15,10 +15,10 @@
 <script lang="ts">
   import { Asset } from '@hcengineering/platform'
   import { TagElement, TagReference } from '@hcengineering/tags'
-  import { ActionIcon, AnySvelteComponent, getPlatformColor, tooltip } from '@hcengineering/ui'
+  import { ActionIcon, AnySvelteComponent, getPlatformColor, Icon, tooltip } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import tags from '../plugin'
-  import { getTagStyle } from '../utils'
+  import { getTagStyle, tagLevel } from '../utils'
 
   export let tag: TagReference | undefined = undefined
   export let element: TagElement | undefined = undefined
@@ -28,11 +28,15 @@
   const dispatch = createEventDispatcher()
 
   $: name = element?.title ?? tag?.title ?? 'New item'
+
+  $: tagIcon = tagLevel[(((tag?.weight ?? 0) % 3) + 1) as 1 | 2 | 3]
 </script>
 
 <div
   class="text-sm flex flex-between tag-item"
   style={`${getTagStyle(getPlatformColor(tag?.color ?? element?.color ?? 0), selected)}`}
+  on:click
+  on:keydown
   use:tooltip={{
     label: element?.description ? tags.string.TagTooltip : undefined,
     props: { text: element?.description },
@@ -40,11 +44,16 @@
   }}
 >
   {name}
+  <span class="ml-1">
+    {#if tag}
+      <Icon icon={tagIcon} size={'small'} />
+    {/if}
+  </span>
   {#if action}
     <div class="ml-1">
       <ActionIcon
         icon={action}
-        size={'small'}
+        size={'medium'}
         action={() => {
           dispatch('action')
         }}
@@ -61,7 +70,7 @@
     border-radius: 0.25rem;
 
     font-weight: 500;
-    font-size: 0.625rem;
+    font-size: 0.75rem;
 
     text-transform: uppercase;
     color: var(--accent-color);

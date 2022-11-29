@@ -19,6 +19,7 @@
   import tags from '../plugin'
   import TagItem from './TagItem.svelte'
   import { selectedTagElements } from '@hcengineering/tags'
+  import { Label } from '@hcengineering/ui'
 
   export let object: Doc
   export let _class: Ref<Class<Doc>>
@@ -39,13 +40,32 @@
     (res) => {
       items = res
     },
-    { sort: { title: 1 } }
+    { sort: { weight: -1, title: 1 } }
   )
+
+  $: expert = items.filter((it) => (it.weight ?? 0) >= 6 && (it.weight ?? 0) <= 8)
+  $: meaningfull = items.filter((it) => (it.weight ?? 0) >= 3 && (it.weight ?? 0) <= 5)
+  $: initial = items.filter((it) => (it.weight ?? 1) >= 0 && (it.weight ?? 0) <= 2)
+
+  $: categories = [
+    { items: expert, label: tags.string.Expert },
+    { items: meaningfull, label: tags.string.Meaningfull },
+    { items: initial, label: tags.string.Initial }
+  ]
 </script>
 
-<div class="tags flex flex-wrap">
-  {#each items as tag}
-    <TagItem {tag} element={elements.get(tag.tag)} selected={$selectedTagElements.includes(tag.tag)} />
+<div class="tags flex flex-col">
+  {#each categories as cat, ci}
+    {#if cat.items.length > 0}
+      <div class="text-xs mb-1" class:mt-2={ci > 0 && categories[ci - 1].items.length > 0}>
+        <Label label={cat.label} />
+      </div>
+    {/if}
+    <div class="flex-row-center flex-wrap tags">
+      {#each cat.items as tag}
+        <TagItem {tag} element={elements.get(tag.tag)} selected={$selectedTagElements.includes(tag.tag)} />
+      {/each}
+    </div>
   {/each}
 </div>
 

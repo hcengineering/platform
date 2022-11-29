@@ -17,7 +17,14 @@ import { ArrOf, Builder, Index, Model, Prop, TypeNumber, TypeRef, TypeString, UX
 import core, { TAttachedDoc, TDoc } from '@hcengineering/model-core'
 import view from '@hcengineering/model-view'
 import { Asset, IntlString } from '@hcengineering/platform'
-import type { TagCategory, TagElement, TagReference } from '@hcengineering/tags'
+import type {
+  ExpertKnowledge,
+  InitialKnowledge,
+  MeaningfullKnowledge,
+  TagCategory,
+  TagElement,
+  TagReference
+} from '@hcengineering/tags'
 import tags from './plugin'
 
 export { TagCategory, TagElement, TagReference } from '@hcengineering/tags'
@@ -63,6 +70,9 @@ export class TTagReference extends TAttachedDoc implements TagReference {
 
   @Prop(TypeString(), tags.string.ColorLabel)
     color!: number
+
+  @Prop(TypeNumber(), tags.string.Weight)
+    weight!: InitialKnowledge | MeaningfullKnowledge | ExpertKnowledge
 }
 
 @Model(tags.class.TagCategory, core.class.Doc, DOMAIN_TAGS)

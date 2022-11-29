@@ -17,11 +17,20 @@
   import { translate } from '@hcengineering/platform'
   import { KeyedAttribute } from '@hcengineering/presentation'
   import { TagElement, TagReference } from '@hcengineering/tags'
-  import { Button, IconAdd, IconClose, Label, ShowMore, showPopup } from '@hcengineering/ui'
+  import {
+    Button,
+    getEventPopupPositionElement,
+    IconAdd,
+    IconClose,
+    Label,
+    ShowMore,
+    showPopup
+  } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import tags from '../plugin'
   import TagItem from './TagItem.svelte'
   import TagsPopup from './TagsPopup.svelte'
+  import WeightPopup from './WeightPopup.svelte'
 
   export let items: TagReference[] = []
   export let targetClass: Ref<Class<Doc>>
@@ -38,6 +47,16 @@
   $: translate(itemLabel ?? key.attr.label, {}).then((v) => {
     keyLabel = v
   })
+
+  $: expert = items.filter((it) => (it.weight ?? 0) >= 6 && (it.weight ?? 0) <= 8)
+  $: meaningfull = items.filter((it) => (it.weight ?? 0) >= 3 && (it.weight ?? 0) <= 5)
+  $: initial = items.filter((it) => (it.weight ?? 1) >= 0 && (it.weight ?? 0) <= 2)
+
+  $: categories = [
+    { items: expert, label: tags.string.Expert },
+    { items: meaningfull, label: tags.string.Meaningfull },
+    { items: initial, label: tags.string.Initial }
+  ]
 
   async function addRef (tag: TagElement): Promise<void> {
     dispatch('open', tag)
@@ -87,7 +106,7 @@
   {/if}
   <ShowMore ignore={!showTitle}>
     <div class:tags-container={showTitle} class:mt-3={showTitle} class:empty={items.length === 0}>
-      <div class="tag-items" class:tag-items-scroll={!showTitle}>
+      <div class="tag-items-container" class:tag-items-scroll={!showTitle}>
         {#if items.length === 0}
           {#if keyLabel}
             <div class="text-sm dark-color w-full flex-center">
@@ -95,15 +114,38 @@
             </div>
           {/if}
         {/if}
-        {#each items as tag}
-          <TagItem
-            {tag}
-            element={elements.get(tag.tag)}
-            action={IconClose}
-            on:action={() => {
-              removeTag(tag._id)
-            }}
-          />
+        {#each categories as cat, ci}
+          {#if cat.items.length > 0}
+            <div class="text-sm mb-1" class:mt-2={ci > 0 && categories[ci - 1].items.length > 0}>
+              <Label label={cat.label} />
+            </div>
+          {/if}
+          <div class="tag-items">
+            {#each cat.items as tag}
+              <TagItem
+                {tag}
+                element={elements.get(tag.tag)}
+                action={IconClose}
+                on:action={() => {
+                  removeTag(tag._id)
+                }}
+                on:click={(evt) => {
+                  showPopup(
+                    WeightPopup,
+                    { value: tag.weight ?? 1, format: 'number' },
+                    getEventPopupPositionElement(evt),
+                    (res) => {
+                      if (Number.isFinite(res) && res >= 0 && res <= 8) {
+                        if (res != null) {
+                          dispatch('change', { tag, weight: res })
+                        }
+                      }
+                    }
+                  )
+                }}
+              />
+            {/each}
+          </div>
         {/each}
       </div>
     </div>
@@ -122,6 +164,11 @@
       background-color: transparent;
     }
   }
+  .tag-items-container {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+  }
   .tag-items {
     flex-grow: 1;
     display: flex;
@@ -129,6 +176,6 @@
   }
   .tag-items-scroll {
     overflow-y: scroll;
-    max-height: 10rem;
+    max-height: 20rem;
   }
 </style>

@@ -63,6 +63,7 @@ export interface Filter {
   mode: Ref<FilterMode>
   modes: Ref<FilterMode>[]
   value: any[]
+  props?: Record<string, any>
   index: number
   onRemove?: () => void
 }
