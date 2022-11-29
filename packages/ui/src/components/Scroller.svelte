@@ -28,7 +28,7 @@
   export let horizontal: boolean = false
   export let contentDirection: 'vertical' | 'vertical-reverse' | 'horizontal' = 'vertical'
   export let noStretch: boolean = false
-  export let divScroll: HTMLElement
+  export let divScroll: HTMLElement | undefined = undefined
 
   const dispatch = createEventDispatcher()
 
@@ -225,7 +225,7 @@
   }
 
   const scrollDown = (): void => {
-    divScroll.scrollTop = divScroll.scrollHeight - divHeight
+    if (divScroll) divScroll.scrollTop = divScroll.scrollHeight - divHeight
   }
   $: if (scrolling && belowContent && belowContent > 10) scrollDown()
 
@@ -247,7 +247,7 @@
   const checkIntersectionFade = () => {
     topCrop = 'none'
     topCropValue = 0
-    if (!fade.offset?.top) return
+    if (!fade.offset?.top || !divScroll) return
     const offset = divScroll.getBoundingClientRect().top
     inter.forEach((el) => {
       const rect = el.getBoundingClientRect()
