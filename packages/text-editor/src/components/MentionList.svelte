@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import { ObjectSearchPopup, ObjectSearchResult } from '@hcengineering/presentation'
-  import { showPopup } from '@hcengineering/ui'
+  import { showPopup, resizeObserver, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
   import { onDestroy, onMount } from 'svelte'
   import DummyPopup from './DummyPopup.svelte'
 
@@ -28,9 +28,14 @@
   let popupClose: () => void
 
   onMount(() => {
-    popupClose = showPopup(DummyPopup, {}, undefined, () => {
-      close()
-    })
+    popupClose = showPopup(
+      DummyPopup,
+      {},
+      undefined,
+      () => close(),
+      () => {},
+      { overlay: false }
+    )
   })
 
   onDestroy(() => {
@@ -55,38 +60,42 @@
 
   function updateStyle (): void {
     const rect = clientRect()
-    const docW = document.body.clientWidth
+    const wDoc = $deviceInfo.docWidth
+    const hDoc = $deviceInfo.docHeight
     let tempStyle = ''
-    if (rect.top < 292) {
+    if (rect.top < hDoc - rect.bottom) {
       // 20rem - 1.75rem
-      tempStyle = `top: calc(${rect.bottom}px + .75rem); max-heigth: calc(115vh - ${rect.bottom}px - 1.75rem); `
+      tempStyle = `top: calc(${rect.bottom}px + .75rem); max-height: calc(${hDoc - rect.bottom}px - 1.75rem); `
     } else {
-      tempStyle = `bottom: calc(115vh - ${rect.top}px + .75rem); max-heigth: calc(${rect.top}px - 1.75rem); `
+      tempStyle = `bottom: calc(${hDoc - rect.top}px + .75rem); max-height: calc(${rect.top}px - 1.75rem); `
     }
-    if (docW - rect.left > 452) {
+    if (rect.left + wPopup > wDoc - 16) {
       // 30rem - 1.75rem
-      tempStyle += `left: ${rect.left}px;`
+      tempStyle += 'right: 1rem;'
     } else {
-      tempStyle += `right: calc(115vh - ${rect.right}px);`
+      tempStyle += `left: ${rect.left}px;`
     }
     style = tempStyle
   }
 
   let style = 'visibility: hidden'
   $: if (popup) updateStyle()
+  let wPopup: number = 0
 </script>
 
 <svelte:window on:resize={() => updateStyle()} />
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<div class="overlay" on:click={() => close()} />
 <div
-  class="overlay"
-  on:click={() => {
-    close()
+  bind:this={popup}
+  class="completion"
+  {style}
+  use:resizeObserver={(element) => {
+    wPopup = element.clientWidth
+    updateStyle()
   }}
-/>
-<div bind:this={popup} class="antiPopup antiPopup-withHeader antiPopup-withCategory completion" {style}>
-  <div class="completion">
-    <ObjectSearchPopup bind:this={searchPopup} {query} on:close={(evt) => dispatchItem(evt.detail)} />
-  </div>
+>
+  <ObjectSearchPopup bind:this={searchPopup} {query} on:close={(evt) => dispatchItem(evt.detail)} />
 </div>
 
 <style lang="scss">
@@ -101,10 +110,10 @@
 
   .completion {
     position: absolute;
-    min-width: 20rem;
-    max-width: 30rem;
-    min-height: 0;
-    height: 20rem;
+    // min-width: 20rem;
+    // max-width: 30rem;
+    // min-height: 0;
+    // max-height: 30rem;
     z-index: 2000;
   }
 </style>

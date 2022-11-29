@@ -17,7 +17,16 @@
   import { Ref, RelatedDocument } from '@hcengineering/core'
 
   import { getResource, IntlString } from '@hcengineering/platform'
-  import ui, { Button, createFocusManager, EditBox, FocusHandler, IconSearch, Label, ListView } from '@hcengineering/ui'
+  import ui, {
+    Button,
+    createFocusManager,
+    EditBox,
+    FocusHandler,
+    IconSearch,
+    Label,
+    ListView,
+    resizeObserver
+  } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation from '../plugin'
   import { ObjectSearchCategory, ObjectSearchResult } from '../types'
@@ -135,48 +144,42 @@
 
 <FocusHandler {manager} />
 
-<form class="antiCard dialog completion" on:keydown={onKeyDown}>
-  <div class="p-4 flex-col flex-grow">
+<form class="antiCard dialog completion" on:keydown={onKeyDown} use:resizeObserver={() => dispatch('changeSize')}>
+  <div class="header-dialog">
     {#if label}
       <div class="fs-title flex-grow mb-4">
         <Label {label} />
       </div>
     {/if}
-    <div class="flex-col flex-grow">
-      <div class="flex">
-        {#each categories as c, i}
-          {@const status = categoryStatus[c._id] ?? 0}
-          <div class="flex">
-            <div class="ap-categoryItem">
-              <Button
-                focusIndex={i + 1}
-                kind={'transparent'}
-                showTooltip={{ label: c.label }}
-                selected={category?._id === c._id}
-                icon={c.icon}
-                size={'x-large'}
-                disabled={status === 0}
-                on:click={() => {
-                  category = c
-                }}
-              />
-            </div>
-          </div>
-        {/each}
-      </div>
-      <div class="mt-2 mb-1 flex-row-center">
-        <EditBox
-          focus
-          icon={IconSearch}
-          kind={'search-style'}
-          focusIndex={0}
-          bind:value={query}
-          on:input={() => updateItems(category, query, relatedDocuments)}
-          placeholder={category?.label}
-        />
-      </div>
-      <Label label={ui.string.Suggested} />
+    <div class="flex-row-center gap-1">
+      {#each categories as c, i}
+        {@const status = categoryStatus[c._id] ?? 0}
+        <div class="ap-categoryItem">
+          <Button
+            focusIndex={i + 1}
+            kind={'transparent'}
+            showTooltip={{ label: c.label }}
+            selected={category?._id === c._id}
+            icon={c.icon}
+            size={'x-large'}
+            disabled={status === 0}
+            on:click={() => {
+              category = c
+            }}
+          />
+        </div>
+      {/each}
     </div>
+    <EditBox
+      focus
+      icon={IconSearch}
+      kind={'search-style'}
+      focusIndex={0}
+      bind:value={query}
+      on:input={() => updateItems(category, query, relatedDocuments)}
+      placeholder={category?.label}
+    />
+    <Label label={ui.string.Suggested} />
   </div>
   <div class="antiCard-content min-h-60 max-h-60">
     <ListView bind:this={list} bind:selection count={items.length}>
@@ -197,6 +200,14 @@
 </form>
 
 <style lang="scss">
+  .header-dialog {
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    padding: 1.125rem 1.125rem 0;
+    min-width: 0;
+    min-height: 0;
+  }
   .completion {
     z-index: 2000;
   }

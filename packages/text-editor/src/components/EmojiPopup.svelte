@@ -1,8 +1,10 @@
 <script lang="ts">
   import emojiRegex from 'emoji-regex'
+  import { getContext } from 'svelte'
   import { createEventDispatcher } from 'svelte'
   import { IntlString } from '@hcengineering/platform'
-  import { AnySvelteComponent, Label, tooltip } from '@hcengineering/ui'
+  import { Label, tooltip, Scroller, emojiSP } from '@hcengineering/ui'
+  import type { AnySvelteComponent } from '@hcengineering/ui'
   import Emoji from './icons/Emoji.svelte'
   import Food from './icons/Food.svelte'
   import Nature from './icons/Nature.svelte'
@@ -14,6 +16,8 @@
 
   let div: HTMLDivElement
   const regex = emojiRegex()
+
+  const { currentFontSize } = getContext('fontsize') as { currentFontSize: string }
 
   function getEmojis (startCode: number, endCode: number, postfix?: number[]): (string | undefined)[] {
     return [...Array(endCode - startCode + 1).keys()].map((v) => {
@@ -101,44 +105,30 @@
   ]
   const dispatch = createEventDispatcher()
 
-  const headerHeight = 55
   function handleScrollToCategory (categoryId: string) {
-    const offset = document.getElementById(categoryId)?.offsetTop
-    if (offset) div.scrollTo(0, offset - headerHeight)
+    const el = document.getElementById(categoryId)
+    if (el) {
+      const next = el.nextElementSibling as HTMLElement
+      div.scroll(0, next.offsetTop - (currentFontSize === 'small-font' ? 14 : 16) * 1.75)
+    }
   }
 
   let currentCategory = categories[0]
-  const padding = 16
-  function handleScroll () {
-    const divTop = div?.getBoundingClientRect().top
-    const categoryDivs = div.getElementsByClassName('categoryName')
-    const i = Array.from(categoryDivs).findIndex((element) => {
-      if (element?.nodeType === Node.ELEMENT_NODE) {
-        const elementTop = element?.getBoundingClientRect().top
-        if (elementTop >= divTop + padding) {
-          return true
-        }
-      }
-      return false
-    })
-    let firstVisibleCategory: Element | null
-    if (i > 0) {
-      firstVisibleCategory = categoryDivs.item(i - 1)
-    } else {
-      firstVisibleCategory = categoryDivs.item(categoryDivs.length - 1)
-    }
-    if (firstVisibleCategory !== null) {
-      currentCategory = categories.find((c) => c.id === firstVisibleCategory!.id) ?? categories[0]
+  function handleScrolled (catId?: CustomEvent) {
+    if (catId) {
+      const curCat = categories.find((it) => it.id === catId.detail[catId.detail.length - 1])
+      if (curCat) currentCategory = curCat
     }
   }
 </script>
 
-<div class="antiPopup antiPopup-withHeader pb-3 popup">
-  <div class="flex-between ml-4 pt-2 pb-2 mr-4 header">
+<div class="antiPopup antiPopup-withHeader popup">
+  <div class="flex-row-center popup-header">
     {#each categories as category}
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
       <div
         use:tooltip={{ label: category.label }}
-        class="flex-grow pt-2 pb-2 pl-2 pr-2 element"
+        class="element m-0-5"
         class:selected={currentCategory === category}
         on:click={() => handleScrollToCategory(category.id)}
       >
@@ -146,35 +136,69 @@
       </div>
     {/each}
   </div>
-  <div class="flex-col vScroll" bind:this={div} on:scroll={handleScroll}>
-    <div class="w-85 flex-col">
+  <div class="scrolling">
+    <Scroller bind:divScroll={div} on:scrolledCategories={handleScrolled} fade={emojiSP} noStretch>
       {#each categories as category}
-        <div class="ap-header">
-          <div id={category.id} class="ap-caption categoryName"><Label label={category.label} /></div>
+        <div id={category.id} class="scroll-header categoryHeader">
+          <Label label={category.label} />
         </div>
-        <div class="palette ml-4">
+        <div class="palette ml-3">
           {#each category.emojis as emoji}
             {#if emoji !== undefined}
-              <div class="p-1 element" on:click={() => dispatch('close', emoji)}>{emoji}</div>
+              <!-- svelte-ignore a11y-click-events-have-key-events -->
+              <div class="element m-0-5" on:click={() => dispatch('close', emoji)}>{emoji}</div>
             {/if}
           {/each}
         </div>
       {/each}
-    </div>
+    </Scroller>
   </div>
+  <div class="ap-space x2" />
 </div>
 
 <style lang="scss">
   .popup {
-    height: 25rem;
+    height: 21.25rem;
+  }
+  .scrolling {
+    min-height: 0;
+    height: 16.5rem;
+    max-height: 16.5rem;
+  }
+  .popup-header {
+    margin: 0.75rem 0.75rem 0.5rem;
+  }
+  .scroll-header {
+    position: sticky;
+    top: 0;
+    margin: 0.75rem 0.75rem 0.25rem;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--dark-color);
+    background-color: var(--board-bg-color);
+    border-radius: 0.25rem;
+    &:first-child {
+      margin-top: 0;
+    }
   }
   .palette {
-    display: grid;
-    grid-template-columns: repeat(8, 1fr);
-    font-size: x-large;
+    display: flex;
+    flex-wrap: wrap;
+    width: 19.25rem;
+    font-size: 1.75rem;
   }
-
   .element {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.25rem;
+    color: var(--caption-color);
+    cursor: pointer;
+
     &:hover {
       background-color: var(--popup-bg-hover);
     }
@@ -182,10 +206,5 @@
     &.selected {
       background-color: var(--popup-bg-hover);
     }
-  }
-
-  .header {
-    justify-content: start;
-    border-bottom: 1px solid var(--divider-color);
   }
 </style>
