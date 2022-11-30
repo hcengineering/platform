@@ -161,7 +161,8 @@ export class TObjectValidator extends TClass implements ObjectValidator {
 
 @Mixin(view.mixin.ObjectFactory, core.class.Class)
 export class TObjectFactory extends TClass implements ObjectFactory {
-  component!: AnyComponent
+  component?: AnyComponent
+  create?: Resource<() => Promise<void>>
 }
 
 @Mixin(view.mixin.ObjectTitle, core.class.Class)

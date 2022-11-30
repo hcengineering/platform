@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Asset } from '@hcengineering/platform'
+  import { Asset, getResource } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { Menu, Action, showPopup, closePopup } from '@hcengineering/ui'
   import view from '@hcengineering/view'
@@ -13,18 +13,28 @@
   client
     .getHierarchy()
     .getDescendants(contact.class.Contact)
-    .forEach((v) => {
+    .forEach(async (v) => {
       const cl = hierarchy.getClass(v)
       if (hierarchy.hasMixin(cl, view.mixin.ObjectFactory)) {
-        const f = hierarchy.as(cl, view.mixin.ObjectFactory)
-        actions.push({
-          icon: cl.icon as Asset,
-          label: cl.label,
-          action: async () => {
+        const { component, create } = hierarchy.as(cl, view.mixin.ObjectFactory)
+        let action: (() => Promise<void>) | undefined
+
+        if (component) {
+          action = async () => {
             closePopup()
-            showPopup(f.component, {}, 'top')
+            showPopup(component, {}, 'top')
           }
-        })
+        } else if (create) {
+          action = await getResource(create)
+        }
+
+        if (action) {
+          actions.push({
+            icon: cl.icon as Asset,
+            label: cl.label,
+            action
+          })
+        }
       }
     })
 </script>

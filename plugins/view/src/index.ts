@@ -376,7 +376,8 @@ export interface BuildModelOptions {
  *
  */
 export interface ObjectFactory extends Class<Obj> {
-  component: AnyComponent
+  component?: AnyComponent
+  create?: Resource<() => Promise<void>>
 }
 
 /**
