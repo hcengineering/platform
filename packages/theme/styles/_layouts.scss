@@ -368,6 +368,7 @@ input.search {
 .step-lr25 + .step-lr25 { margin-left: .25rem; }
 .step-lr75 + .step-lr75 { margin-left: .75rem; }
 .step-tb75 + .step-tb75 { margin-top: .75rem; }
+.step-tb-6 + .step-tb-6 { margin-top: 1.5rem; }
 
 .ml-0-5 { margin-left: .125rem; }
 .ml-1 { margin-left: .25rem; }
@@ -541,6 +542,7 @@ input.search {
 .max-h-50 { max-height: 12.5rem; }
 .max-h-60 { max-height: 15rem; }
 .max-h-125 { max-height: 31.25rem; }
+.max-h-30vh { max-height: 30vh; }
 .clear-mins {
   min-width: 0;
   min-height: 0;

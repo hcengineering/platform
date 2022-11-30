@@ -17,7 +17,7 @@
   import core from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import calendar from '@hcengineering/calendar'
-  import { Button, IconAdd, Label, showPopup } from '@hcengineering/ui'
+  import { Button, IconAdd, Label, showPopup, resizeObserver, Scroller } from '@hcengineering/ui'
   import { Table } from '@hcengineering/view-resources'
   import recruit from '../../plugin'
   import FileDuo from '../icons/FileDuo.svelte'
@@ -30,9 +30,10 @@
   const createApp = (ev: MouseEvent): void => {
     showPopup(CreateReview, { candidate: objectId, preserveCandidate: true }, ev.target as HTMLElement)
   }
+  let wSection: number
 </script>
 
-<div class="antiSection">
+<div class="antiSection" use:resizeObserver={(element) => (wSection = element.clientWidth)}>
   <div class="antiSection-header">
     <span class="antiSection-header__title">
       <Label {label} />
@@ -40,27 +41,58 @@
     <Button icon={IconAdd} kind={'transparent'} shape={'circle'} on:click={createApp} />
   </div>
   {#if reviews > 0}
-    <Table
-      _class={recruit.class.Review}
-      config={[
-        '',
-        'verdict',
-        {
-          key: '',
-          presenter: recruit.component.OpinionsPresenter,
-          label: recruit.string.Opinions,
-          sortingKey: 'opinions'
-        },
-        { key: '', presenter: calendar.component.DateTimePresenter, label: calendar.string.Date, sortingKey: 'date' }
-      ]}
-      options={{
-        lookup: {
-          space: core.class.Space
-        }
-      }}
-      query={{ attachedTo: objectId }}
-      loadingProps={{ length: reviews }}
-    />
+    {#if wSection < 640}
+      <Scroller horizontal>
+        <Table
+          _class={recruit.class.Review}
+          config={[
+            '',
+            'verdict',
+            {
+              key: '',
+              presenter: recruit.component.OpinionsPresenter,
+              label: recruit.string.Opinions,
+              sortingKey: 'opinions'
+            },
+            {
+              key: '',
+              presenter: calendar.component.DateTimePresenter,
+              label: calendar.string.Date,
+              sortingKey: 'date'
+            }
+          ]}
+          options={{
+            lookup: {
+              space: core.class.Space
+            }
+          }}
+          query={{ attachedTo: objectId }}
+          loadingProps={{ length: reviews }}
+        />
+      </Scroller>
+    {:else}
+      <Table
+        _class={recruit.class.Review}
+        config={[
+          '',
+          'verdict',
+          {
+            key: '',
+            presenter: recruit.component.OpinionsPresenter,
+            label: recruit.string.Opinions,
+            sortingKey: 'opinions'
+          },
+          { key: '', presenter: calendar.component.DateTimePresenter, label: calendar.string.Date, sortingKey: 'date' }
+        ]}
+        options={{
+          lookup: {
+            space: core.class.Space
+          }
+        }}
+        query={{ attachedTo: objectId }}
+        loadingProps={{ length: reviews }}
+      />
+    {/if}
   {:else}
     <div class="antiSection-empty solid flex-col-center mt-3">
       <div class="caption-color">

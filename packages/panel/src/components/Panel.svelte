@@ -87,13 +87,16 @@
     {#if $$slots.header}
       <div class="header-row between">
         {#if $$slots.header}<slot name="header" />{/if}
-        <div class="buttons-group xsmall-gap ml-4" style:align-self={'flex-end'}>
+        <div class="buttons-group xsmall-gap ml-4" style:align-self={'flex-start'}>
           <slot name="tools" />
         </div>
       </div>
     {/if}
     {#if $$slots['custom-attributes'] && isCustomAttr}
       {#if isSub}<div class="header-row"><slot name="custom-attributes" direction="row" /></div>{/if}
+    {/if}
+    {#if $$slots.subheader}
+      <slot name="subheader" />
     {/if}
   </svelte:fragment>
 

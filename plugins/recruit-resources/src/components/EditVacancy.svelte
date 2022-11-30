@@ -66,7 +66,7 @@
     icon={clazz.icon}
     title={object.name}
     subtitle={object.description}
-    isHeader={false}
+    isHeader={true}
     isAside={true}
     {object}
     on:close={() => {
@@ -88,7 +88,7 @@
       {/if}
     </svelte:fragment>
 
-    <svelte:fragment slot="header">
+    <svelte:fragment slot="subheader">
       <span class="fs-title flex-grow">
         <EditBox
           bind:value={object.name}
@@ -102,7 +102,7 @@
         />
       </span>
     </svelte:fragment>
-    <svelte:fragment slot="tools">
+    <svelte:fragment slot="utils">
       <div class="p-1">
         <Button icon={IconMoreH} kind={'transparent'} size={'medium'} on:click={showMenu} />
       </div>

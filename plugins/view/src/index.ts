@@ -133,6 +133,7 @@ export interface AttributePresenter extends Class<Doc> {
  */
 export interface ObjectEditor extends Class<Doc> {
   editor: AnyComponent
+  pinned?: boolean
 }
 
 /**
