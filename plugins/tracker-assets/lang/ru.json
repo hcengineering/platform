@@ -172,6 +172,7 @@
 
     "EditIssue": "Редактирование {title}",
     "EditWorkflowStatuses": "Редактировать статусы задач",
+    "EditTeam": "Редактировать команду",
     "ManageWorkflowStatuses": "Управлять статусами задач для команды",
     "AddWorkflowStatus": "Добавить статус задачи",
     "EditWorkflowStatus": "Редактировать статус задачи",
@@ -228,6 +229,7 @@
     "TimeSpendReportValueTooltip": "Затраченное время в человеко днях",
     "TimeSpendReportDescription": "Описание",
     "TimeSpendValue": "{value}d",
+    "TimeSpendHours": "{value}h",
     "SprintPassed": "{from}d/{to}d",
     "ChildEstimation": "Оценка подзадач",
     "ChildReportedTime": "Время водзадач",
@@ -247,9 +249,14 @@
     "TemplateReplace": "Вы хотите заменить выбранный процесс?",
     "TemplateReplaceConfirm": "Все внесенные изменения в задачу будут потеряны",
 
-    "WorkDayCurrent": "Текущий Рабочий День",
-    "WorkDayPrevious": "Предыдущий Рабочий День",
-    "WorkDayLabel": "Выберите Тип Рабочего Дня"
+    "CurrentWorkDay": "Текущий Рабочий День",
+    "PreviousWorkDay": "Предыдущий Рабочий День",
+    "TimeReportDayTypeLabel": "Выберите тип дня для временного отчета",
+    "DefaultTimeReportDay": "Выберите дeнь для временного отчета по умолчанию",
+
+    "WorkDayLength": "Выберите длину рабочего дня",
+    "SevenHoursLength": "Семь Часов",
+    "EightHoursLength": "Восемь Часов"
   },
   "status": {}
 }

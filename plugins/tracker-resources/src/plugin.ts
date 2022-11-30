@@ -90,6 +90,7 @@ export default mergeIds(trackerId, tracker, {
     DefaultIssueStatus: '' as IntlString,
     IssueStatuses: '' as IntlString,
     EditWorkflowStatuses: '' as IntlString,
+    EditTeam: '' as IntlString,
     ManageWorkflowStatuses: '' as IntlString,
     AddWorkflowStatus: '' as IntlString,
     EditWorkflowStatus: '' as IntlString,
@@ -246,6 +247,7 @@ export default mergeIds(trackerId, tracker, {
     TimeSpendReportValue: '' as IntlString,
     TimeSpendReportDescription: '' as IntlString,
     TimeSpendValue: '' as IntlString,
+    TimeSpendHours: '' as IntlString,
     SprintPassed: '' as IntlString,
 
     ChildEstimation: '' as IntlString,
@@ -263,9 +265,14 @@ export default mergeIds(trackerId, tracker, {
     TemplateReplace: '' as IntlString,
     TemplateReplaceConfirm: '' as IntlString,
 
-    WorkDayCurrent: '' as IntlString,
-    WorkDayPrevious: '' as IntlString,
-    WorkDayLabel: '' as IntlString
+    CurrentWorkDay: '' as IntlString,
+    PreviousWorkDay: '' as IntlString,
+    TimeReportDayTypeLabel: '' as IntlString,
+    DefaultTimeReportDay: '' as IntlString,
+
+    WorkDayLength: '' as IntlString,
+    SevenHoursLength: '' as IntlString,
+    EightHoursLength: '' as IntlString
   },
   component: {
     NopeComponent: '' as AnyComponent,

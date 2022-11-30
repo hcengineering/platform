@@ -172,6 +172,7 @@
 
     "EditIssue": "Edit {title}",
     "EditWorkflowStatuses": "Edit issue statuses",
+    "EditTeam": "Edit team",
     "ManageWorkflowStatuses": "Manage issue statuses within team",
     "AddWorkflowStatus": "Add issue status",
     "EditWorkflowStatus": "Edit issue status",
@@ -228,6 +229,7 @@
     "TimeSpendReportValueTooltip": "Reported time in man days",
     "TimeSpendReportDescription": "Description",
     "TimeSpendValue": "{value}d",
+    "TimeSpendHours": "{value}h",
     "SprintPassed": "{from}d/{to}d",
     "ChildEstimation": "Subissues Estimation",
     "ChildReportedTime": "Subissues Time",
@@ -247,9 +249,14 @@
     "TemplateReplace": "You you replace applied process?",
     "TemplateReplaceConfirm": "All changes to template values will be lost.",
 
-    "WorkDayCurrent": "Current Working Day",
-    "WorkDayPrevious": "Previous Working Day",
-    "WorkDayLabel": "Select Working Day Type"
+    "CurrentWorkDay": "Current Working Day",
+    "PreviousWorkDay": "Previous Working Day",
+    "TimeReportDayTypeLabel": "Select time report day type",
+    "DefaultTimeReportDay": "Select default day for time report",
+
+    "WorkDayLength": "Select length of working day",
+    "SevenHoursLength": "Seven Hours",
+    "EightHoursLength": "Eight Hours"
   },
   "status": {}
 }

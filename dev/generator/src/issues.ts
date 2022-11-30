@@ -11,7 +11,14 @@ import core, {
   SortingOrder,
   WorkspaceId
 } from '@hcengineering/core'
-import tracker, { calcRank, Issue, IssuePriority, IssueStatus } from '../../../plugins/tracker/lib'
+import tracker, {
+  calcRank,
+  Issue,
+  IssuePriority,
+  IssueStatus,
+  TimeReportDayType,
+  WorkDayLength
+} from '../../../plugins/tracker/lib'
 
 import { connect } from './connect'
 
@@ -35,7 +42,9 @@ const object: AttachedData<Issue> = {
   reportedTime: 0,
   estimation: 0,
   reports: 0,
-  childInfo: []
+  childInfo: [],
+  workDayLength: WorkDayLength.EIGHT_HOURS,
+  defaultTimeReportDay: TimeReportDayType.PreviousWorkDay
 }
 
 export interface IssueOptions {
@@ -97,7 +106,9 @@ async function genIssue (client: TxOperations): Promise<void> {
     estimation: object.estimation,
     reports: 0,
     relations: [],
-    childInfo: []
+    childInfo: [],
+    workDayLength: object.workDayLength,
+    defaultTimeReportDay: object.defaultTimeReportDay
   }
   await client.addCollection(
     tracker.class.Issue,

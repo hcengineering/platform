@@ -56,6 +56,7 @@ export default mergeIds(trackerId, tracker, {
   actionImpl: {
     CopyToClipboard: '' as ViewAction,
     EditWorkflowStatuses: '' as ViewAction,
+    EditTeam: '' as ViewAction,
     DeleteSprint: '' as ViewAction
   },
   action: {

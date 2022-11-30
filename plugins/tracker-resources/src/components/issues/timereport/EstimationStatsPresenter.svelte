@@ -16,12 +16,13 @@
   import { AttachedData } from '@hcengineering/core'
 
   import { Issue } from '@hcengineering/tracker'
-  import { floorFractionDigits, Label } from '@hcengineering/ui'
-  import tracker from '../../../plugin'
+  import { floorFractionDigits } from '@hcengineering/ui'
   import EstimationProgressCircle from './EstimationProgressCircle.svelte'
+  import TimePresenter from './TimePresenter.svelte'
 
   export let value: Issue | AttachedData<Issue>
 
+  $: workDayLength = value.workDayLength
   $: childReportTime = floorFractionDigits(
     value.reportedTime + (value.childInfo ?? []).map((it) => it.reportedTime).reduce((a, b) => a + b, 0),
     3
@@ -43,21 +44,18 @@
         {@const reportDiff = floorFractionDigits(rchildReportTime - value.reportedTime, 3)}
         {#if reportDiff !== 0 && value.reportedTime !== 0}
           <div class="flex flex-nowrap mr-1" class:showError={reportDiff > 0}>
-            <Label label={tracker.string.TimeSpendValue} params={{ value: rchildReportTime }} />
+            <TimePresenter value={rchildReportTime} {workDayLength} />
           </div>
           <div class="romColor">
-            (<Label
-              label={tracker.string.TimeSpendValue}
-              params={{ value: floorFractionDigits(value.reportedTime, 3) }}
-            />)
+            (<TimePresenter value={value.reportedTime} {workDayLength} />)
           </div>
         {:else if value.reportedTime === 0}
-          <Label label={tracker.string.TimeSpendValue} params={{ value: childReportTime }} />
+          <TimePresenter value={childReportTime} {workDayLength} />
         {:else}
-          <Label label={tracker.string.TimeSpendValue} params={{ value: floorFractionDigits(value.reportedTime, 3) }} />
+          <TimePresenter value={value.reportedTime} {workDayLength} />
         {/if}
       {:else}
-        <Label label={tracker.string.TimeSpendValue} params={{ value: floorFractionDigits(value.reportedTime, 3) }} />
+        <TimePresenter value={value.reportedTime} {workDayLength} />
       {/if}
       <div class="p-1">/</div>
     {/if}
@@ -66,21 +64,18 @@
       {@const estimationDiff = childEstTime - Math.round(value.estimation)}
       {#if estimationDiff !== 0}
         <div class="flex flex-nowrap mr-1" class:showWarning={estimationDiff !== 0}>
-          <Label label={tracker.string.TimeSpendValue} params={{ value: childEstTime }} />
+          <TimePresenter value={childEstTime} {workDayLength} />
         </div>
         {#if value.estimation !== 0}
           <div class="romColor">
-            (<Label
-              label={tracker.string.TimeSpendValue}
-              params={{ value: floorFractionDigits(value.estimation, 3) }}
-            />)
+            (<TimePresenter value={value.estimation} {workDayLength} />)
           </div>
         {/if}
       {:else}
-        <Label label={tracker.string.TimeSpendValue} params={{ value: floorFractionDigits(value.estimation, 3) }} />
+        <TimePresenter value={value.estimation} {workDayLength} />
       {/if}
     {:else}
-      <Label label={tracker.string.TimeSpendValue} params={{ value: floorFractionDigits(value.estimation, 3) }} />
+      <TimePresenter value={value.estimation} {workDayLength} />
     {/if}
   </span>
 </div>

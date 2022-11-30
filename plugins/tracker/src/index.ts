@@ -53,6 +53,24 @@ export interface Team extends Space {
   issueStatuses: number
   defaultIssueStatus: Ref<IssueStatus>
   icon?: Asset
+  workDayLength: WorkDayLength
+  defaultTimeReportDay: TimeReportDayType
+}
+
+/**
+ * @public
+ */
+export enum TimeReportDayType {
+  CurrentWorkDay = 'CurrentWorkDay',
+  PreviousWorkDay = 'PreviousWorkDay'
+}
+
+/**
+ * @public
+ */
+export enum WorkDayLength {
+  SEVEN_HOURS = 7,
+  EIGHT_HOURS = 8
 }
 
 /**
@@ -174,6 +192,9 @@ export interface Issue extends AttachedDoc {
   reports: number
 
   childInfo: IssueChildInfo[]
+
+  workDayLength: WorkDayLength
+  defaultTimeReportDay: TimeReportDayType
 
   template?: {
     // A template issue is based on
@@ -465,6 +486,7 @@ export default plugin(trackerId, {
     Relations: '' as Ref<Action>,
     NewSubIssue: '' as Ref<Action>,
     EditWorkflowStatuses: '' as Ref<Action>,
+    EditTeam: '' as Ref<Action>,
     SetSprint: '' as Ref<Action>
   },
   team: {

@@ -61,7 +61,9 @@
       estimation: 0,
       reportedTime: 0,
       reports: 0,
-      childInfo: []
+      childInfo: [],
+      workDayLength: currentTeam.workDayLength,
+      defaultTimeReportDay: currentTeam.defaultTimeReportDay
     }
   }
 

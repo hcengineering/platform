@@ -17,11 +17,11 @@
   import { AttachedData, Class, DocumentUpdate, Ref, Space } from '@hcengineering/core'
   import type { IntlString } from '@hcengineering/platform'
   import presentation, { Card, getClient, UserBox } from '@hcengineering/presentation'
-  import { Issue, TimeSpendReport } from '@hcengineering/tracker'
+  import { Issue, TimeReportDayType, TimeSpendReport } from '@hcengineering/tracker'
   import { DatePresenter, EditBox } from '@hcengineering/ui'
   import tracker from '../../../plugin'
-  import { getWorkDate, WorkDaysType } from '../../../utils'
-  import WorkDaysDropdown from './WorkDaysDropdown.svelte'
+  import { getTimeReportDate, getTimeReportDayType } from '../../../utils'
+  import TimeReportDayDropdown from './TimeReportDayDropdown.svelte'
 
   export let issueId: Ref<Issue>
   export let issueClass: Ref<Class<Issue>>
@@ -30,17 +30,21 @@
 
   export let value: TimeSpendReport | undefined
   export let placeholder: IntlString = tracker.string.TimeSpendReportValue
+  export let defaultTimeReportDay = TimeReportDayType.PreviousWorkDay
+
+  const data = {
+    date: value?.date ?? getTimeReportDate(defaultTimeReportDay),
+    description: value?.description ?? '',
+    value: value?.value,
+    employee: value?.employee ?? assignee ?? null
+  }
+
+  let selectedTimeReportDay = getTimeReportDayType(data.date)
 
   export function canClose (): boolean {
     return true
   }
 
-  const data = {
-    date: value?.date ?? getWorkDate(WorkDaysType.PREVIOUS),
-    description: value?.description ?? '',
-    value: value?.value,
-    employee: value?.employee ?? assignee ?? null
-  }
   async function create (): Promise<void> {
     if (value === undefined) {
       getClient().addCollection(
@@ -88,8 +92,16 @@
       bind:value={data.employee}
       showNavigate={false}
     />
-    <WorkDaysDropdown bind:dateTimestamp={data.date} />
-    <DatePresenter kind={'link'} bind:value={data.date} editable />
+    <TimeReportDayDropdown
+      bind:selected={selectedTimeReportDay}
+      on:selected={({ detail }) => (data.date = getTimeReportDate(detail))}
+    />
+    <DatePresenter
+      kind={'link'}
+      bind:value={data.date}
+      editable
+      on:change={({ detail }) => (selectedTimeReportDay = getTimeReportDayType(detail))}
+    />
   </div>
   <EditBox bind:value={data.description} placeholder={tracker.string.TimeSpendReportDescription} kind={'editbox'} />
 </Card>
