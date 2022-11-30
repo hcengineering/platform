@@ -48,6 +48,7 @@
     "Description": "Описание",
     "Pinned": "Важное",
     "PinAttachment": "Пометить как важное",
-    "UnPinAttachment": "Убрать пометку важное"
+    "UnPinAttachment": "Убрать пометку важное",
+    "FilterAttachments": "Вложения"
   }
 }

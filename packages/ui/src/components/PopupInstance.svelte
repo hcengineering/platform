@@ -45,7 +45,8 @@
       maxWidth: '',
       maxHeight: '',
       minWidth: '',
-      minHeight: ''
+      minHeight: '',
+      transform: ''
     },
     showOverlay: false,
     direction: 'bottom'

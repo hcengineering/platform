@@ -473,6 +473,16 @@ export function createModel (builder: Builder, options = { addApplication: true 
     chunter.ids.TxBacklinkRemove
   )
 
+  builder.createDoc(activity.class.ActivityFilter, core.space.Model, {
+    label: chunter.string.FilterComments,
+    filter: chunter.filter.CommentsFilter
+  })
+
+  builder.createDoc(activity.class.ActivityFilter, core.space.Model, {
+    label: chunter.string.FilterBacklinks,
+    filter: chunter.filter.BacklinksFilter
+  })
+
   builder.mixin(chunter.class.ChunterMessage, core.class.Class, view.mixin.ClassFilters, {
     filters: ['space', 'modifiedOn', 'createBy', '_class']
   })

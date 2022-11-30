@@ -66,6 +66,8 @@
     "ChunterBrowser": "Поиск",
     "Messages": "Сообщения",
     "NoResults": "Нет результатов",
-    "CopyLink": "Копировать ссылку"
+    "CopyLink": "Копировать ссылку",
+    "FilterComments": "Коментарии",
+    "FilterBacklinks": "Упоминания"
   }
 }

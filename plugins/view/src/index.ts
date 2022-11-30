@@ -63,6 +63,7 @@ export interface Filter {
   mode: Ref<FilterMode>
   modes: Ref<FilterMode>[]
   value: any[]
+  props?: Record<string, any>
   index: number
   onRemove?: () => void
 }
@@ -132,6 +133,7 @@ export interface AttributePresenter extends Class<Doc> {
  */
 export interface ObjectEditor extends Class<Doc> {
   editor: AnyComponent
+  pinned?: boolean
 }
 
 /**
@@ -374,7 +376,8 @@ export interface BuildModelOptions {
  *
  */
 export interface ObjectFactory extends Class<Obj> {
-  component: AnyComponent
+  component?: AnyComponent
+  create?: Resource<() => Promise<void>>
 }
 
 /**

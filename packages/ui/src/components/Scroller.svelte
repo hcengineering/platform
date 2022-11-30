@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { beforeUpdate, afterUpdate, onDestroy, onMount } from 'svelte'
+  import { beforeUpdate, afterUpdate, onDestroy, onMount, createEventDispatcher } from 'svelte'
   import { resizeObserver } from '../resize'
   import { themeStore as themeOptions } from '@hcengineering/theme'
   import type { FadeOptions } from '../types'
@@ -27,13 +27,16 @@
   export let invertScroll: boolean = false
   export let horizontal: boolean = false
   export let contentDirection: 'vertical' | 'vertical-reverse' | 'horizontal' = 'vertical'
+  export let noStretch: boolean = false
+  export let divScroll: HTMLElement | undefined = undefined
+
+  const dispatch = createEventDispatcher()
 
   let mask: 'top' | 'bottom' | 'both' | 'none' = 'none'
   let topCrop: 'top' | 'bottom' | 'full' | 'none' = 'none'
   let topCropValue: number = 0
   let maskH: 'left' | 'right' | 'both' | 'none' = 'none'
 
-  let divScroll: HTMLElement
   let divHScroll: HTMLElement
   let divBox: HTMLElement
   let divBar: HTMLElement
@@ -222,21 +225,29 @@
   }
 
   const scrollDown = (): void => {
-    divScroll.scrollTop = divScroll.scrollHeight - divHeight
+    if (divScroll) divScroll.scrollTop = divScroll.scrollHeight - divHeight
   }
   $: if (scrolling && belowContent && belowContent > 10) scrollDown()
 
   const checkIntersection = (entries: IntersectionObserverEntry[], observer: IntersectionObserver) => {
+    const interArr: Element[] = []
     entries.forEach((el) => {
-      if (el.isIntersecting) inter.add(el.target)
-      else inter.delete(el.target)
+      if (el.isIntersecting) {
+        inter.add(el.target)
+        interArr.push(el.target)
+      } else inter.delete(el.target)
     })
+    if (interArr.length > 0) {
+      dispatch('lastScrolledCategory', interArr[interArr.length - 1]?.getAttribute('id'))
+      const interCats: string[] = interArr.map((it) => it.getAttribute('id') as string)
+      dispatch('scrolledCategories', interCats)
+    }
   }
 
   const checkIntersectionFade = () => {
     topCrop = 'none'
     topCropValue = 0
-    if (!fade.offset?.top) return
+    if (!fade.offset?.top || !divScroll) return
     const offset = divScroll.getBoundingClientRect().top
     inter.forEach((el) => {
       const rect = el.getBoundingClientRect()
@@ -322,13 +333,14 @@
           : contentDirection === 'vertical-reverse'
           ? 'column-reverse'
           : 'row'}
-        style:height={contentDirection === 'vertical-reverse' ? 'max-content' : '100%'}
+        style:height={contentDirection === 'vertical-reverse' ? 'max-content' : noStretch ? 'auto' : '100%'}
         use:resizeObserver={(element) => {
           boxHeight = element.clientHeight
           boxWidth = element.clientWidth
         }}
         on:dragover
         on:drop
+        on:scroll
       >
         {#if bottomStart}<div class="flex-grow flex-shrink" />{/if}
         <slot />

@@ -14,9 +14,10 @@
 -->
 <script lang="ts">
   import type { TagReference } from '@hcengineering/tags'
-  import { getPlatformColor, IconClose, Icon, resizeObserver } from '@hcengineering/ui'
-  import TagItem from './TagItem.svelte'
+  import { getPlatformColor, Icon, IconClose, resizeObserver } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
+  import { tagLevel } from '../utils'
+  import TagItem from './TagItem.svelte'
 
   export let value: TagReference
   export let isEditable: boolean = false
@@ -24,6 +25,7 @@
   export let realWidth: number | undefined = undefined
 
   const dispatch = createEventDispatcher()
+  $: tagIcon = tagLevel[(((value?.weight ?? 0) % 3) + 1) as 1 | 2 | 3]
 </script>
 
 {#if value}
@@ -48,7 +50,10 @@
       }}
     >
       <div class="color" style:background-color={getPlatformColor(value.color ?? 0)} />
-      <span class="overflow-label ml-1-5 caption-color">{value.title}</span>
+      <span class="overflow-label ml-1-5 caption-color"
+        >{value.title}-
+        <Icon icon={tagIcon} size={'small'} />
+      </span>
       {#if isEditable}
         <button class="btn-close" on:click|stopPropagation={() => dispatch('remove', value.tag)}>
           <Icon icon={IconClose} size={'x-small'} />

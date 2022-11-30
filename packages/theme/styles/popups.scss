@@ -208,6 +208,8 @@
   .ap-space {
     flex-shrink: 0;
     height: .25rem;
+    &.x2 { height: .5rem; }
+    &.x3 { height: .75rem; }
   }
   .ap-scroll {
     flex-grow: 1;
@@ -312,8 +314,8 @@
         font-size: .75rem;
         font-weight: 600;
         text-transform: uppercase;
-        color: var(--theme-content-dark-color);
-      }    
+        color: var(--dark-color);
+      }
     }
   }
 

@@ -34,7 +34,7 @@
   }
 </script>
 
-<label class="checkbox" class:circle class:primary class:checked>
+<label class="checkbox" class:circle class:primary class:readonly class:checked>
   <input class="chBox" disabled={readonly} type="checkbox" bind:checked on:change={handleValueChanged} />
   <svg class="checkSVG" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
     {#if checked}
@@ -71,6 +71,10 @@
       background-color: var(--primary-bg-color);
       border-color: transparent;
     }
+    &.readonly.checked {
+      background-color: var(--dark-color);
+      border-color: transparent;
+    }
 
     .chBox {
       position: absolute;
@@ -94,8 +98,8 @@
       &:not(:disabled) + .checkSVG {
         cursor: pointer;
       }
-      &:disabled + .checkSVG {
-        filter: grayscale(70%);
+      &:disabled + .checkSVG .check {
+        fill: var(--content-color);
       }
     }
     .checkSVG {

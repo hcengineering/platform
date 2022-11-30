@@ -35,10 +35,28 @@ export interface TagElement extends Doc {
 /**
  * @public
  */
+export type InitialKnowledge = 0 | 1 | 2
+
+/**
+ * @public
+ */
+export type MeaningfullKnowledge = 3 | 4 | 5
+
+/**
+ * @public
+ */
+export type ExpertKnowledge = 6 | 7 | 8
+
+/**
+ * @public
+ */
 export interface TagReference extends AttachedDoc {
   tag: Ref<TagElement>
   title: string // Copy of title for full text search, updated with trigger.
   color: number // Copy of color from tagElement. Updated with trigger.
+
+  // If set in [8-10] it is speciality, [5-7] - meaningfull, [1-4] - initial
+  weight?: InitialKnowledge | MeaningfullKnowledge | ExpertKnowledge
 }
 
 /**
@@ -76,7 +94,10 @@ const tagsPlugin = plugin(tagsId, {
     Tags: '' as Ref<Space>
   },
   icon: {
-    Tags: '' as Asset
+    Tags: '' as Asset,
+    Level1: '' as Asset,
+    Level2: '' as Asset,
+    Level3: '' as Asset
   },
   component: {
     TagsView: '' as AnyComponent,

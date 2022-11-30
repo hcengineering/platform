@@ -95,6 +95,9 @@
     {#if $$slots['custom-attributes'] && isCustomAttr}
       {#if isSub}<div class="header-row"><slot name="custom-attributes" direction="row" /></div>{/if}
     {/if}
+    {#if $$slots.subheader}
+      <slot name="subheader" />
+    {/if}
   </svelte:fragment>
 
   <svelte:fragment slot="aside">
