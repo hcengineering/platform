@@ -82,7 +82,7 @@
 
   $: if (editableMap) updateTxes(object)
 
-  $: newTxPos = newTx(txes, $lastViews)
+  $: newTxPos = newTx(txesF, $lastViews)
 
   function newTx (txes: DisplayTx[], lastViews: Map<Ref<Doc>, number> | undefined): number {
     const lastView = lastViews?.get(object._id)
@@ -129,7 +129,7 @@
         {#if txesF}
           <Grid column={1} rowGap={1.5}>
             {#each txesF as tx, i}
-              <TxView {tx} {viewlets} isNew={newTxPos === i} />
+              <TxView {tx} {viewlets} isNew={newTxPos <= i && newTxPos !== -1} isNextNew={newTxPos < i && newTxPos !== -1} />
             {/each}
           </Grid>
         {/if}
@@ -166,7 +166,7 @@
     {#if txesF}
       <Grid column={1} rowGap={1.5}>
         {#each txesF as tx, i}
-          <TxView {tx} {viewlets} isNew={newTxPos === i} />
+          <TxView {tx} {viewlets} isNew={newTxPos <= i && newTxPos !== -1} isNextNew={newTxPos < i && newTxPos !== -1} />
         {/each}
       </Grid>
     {/if}

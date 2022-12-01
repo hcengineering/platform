@@ -42,6 +42,7 @@
   export let viewlets: Map<ActivityKey, TxViewlet>
   export let showIcon: boolean = true
   export let isNew: boolean = false
+  export let isNextNew: boolean = false
   // export let showDocument = false
 
   let ptx: DisplayTx | undefined
@@ -141,7 +142,7 @@
 </script>
 
 {#if (viewlet !== undefined && !((viewlet?.hideOnRemove ?? false) && tx.removed)) || model.length > 0}
-  <div class="flex-between msgactivity-container" class:showIcon>
+  <div class="flex-between msgactivity-container" class:showIcon class:isNew class:isNextNew>
     {#if showIcon}
       <div class="flex-center icon">
         {#if viewlet}
@@ -156,7 +157,6 @@
 
     <div
       class="flex-grow flex-col clear-mins"
-      class:isNew
       class:comment={viewlet && viewlet?.editable}
       class:mention={viewlet?.display === 'emphasized' || isMessageType(model[0]?.attribute)}
     >
@@ -351,11 +351,6 @@
     min-width: 0;
   }
 
-  .isNew {
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--highlight-red);
-  }
-
   .showIcon {
     &::after,
     &::before {
@@ -363,6 +358,19 @@
       left: 1.125rem;
       width: 1px;
       background-color: var(--popup-divider);
+    }
+    &.isNew {
+      &::before {
+        background-color: var(--highlight-red);
+      }
+      .icon {
+        border: 1px solid var(--highlight-red);
+      }
+      &.isNextNew {
+        &:after {
+        background-color: var(--highlight-red);
+      }
+      }
     }
     &::before {
       top: -1.5rem;
