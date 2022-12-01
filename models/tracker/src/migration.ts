@@ -138,7 +138,7 @@ async function fixTeamsIssueStatusesOrder (tx: TxOperations): Promise<void> {
 }
 
 async function upgradeTeamSettings (tx: TxOperations): Promise<void> {
-  const teams = await tx.findAll(tracker.class.Team, {})
+  const teams = await tx.findAll(tracker.class.Team, { defaultTimeReportDay: undefined, workDayLength: undefined })
   await Promise.all(
     teams.map((team) =>
       tx.update(team, {
@@ -201,9 +201,9 @@ async function upgradeIssueStatuses (tx: TxOperations): Promise<void> {
 }
 
 async function upgradeIssueTimeReportSettings (tx: TxOperations): Promise<void> {
-  const issues = await tx.findAll(tracker.class.Issue, {})
+  const issues = await tx.findAll(tracker.class.Issue, { defaultTimeReportDay: undefined, workDayLength: undefined })
 
-  const teams = await tx.findAll(tracker.class.Team, { $in: issues.map((issue) => issue.space) })
+  const teams = await tx.findAll(tracker.class.Team, { $in: new Set(issues.map((issue) => issue.space)) })
   const teamsById = new Map(teams.map((team) => [team._id, team]))
 
   await Promise.all(
