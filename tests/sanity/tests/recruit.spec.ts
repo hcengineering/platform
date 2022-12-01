@@ -47,7 +47,7 @@ test.describe('recruit tests', () => {
     await page.locator('.antiCard button:has-text("Create")').click()
     await page.waitForSelector('form.antiCard', { state: 'detached' })
 
-    await page.click(`text="${first} ${last}"`)
+    await page.click(`text="${last} ${first}"`)
 
     await expect(page.locator(`text=${first}`).first()).toBeVisible()
     await expect(page.locator(`text=${last}`).first()).toBeVisible()
@@ -75,7 +75,7 @@ test.describe('recruit tests', () => {
     await page.click('text=Talents')
 
     await page.click('text=Talents')
-    await page.click('text=Andrey P.')
+    await page.click('text=P. Andrey')
 
     // Click on Add button
     // await page.click('.applications-container .flex-row-center .flex-center')
@@ -91,7 +91,7 @@ test.describe('recruit tests', () => {
 
     await page.click(`tr:has-text("${vacancyId}") >> text=APP-`)
     await page.click('button:has-text("Assigned recruiter")')
-    await page.click('button:has-text("Rosamund Chen")')
+    await page.click('button:has-text("Chen Rosamund")')
   })
 
   test('create-vacancy', async ({ page }) => {
@@ -111,12 +111,12 @@ test.describe('recruit tests', () => {
     // Create Applicatio n1
     await page.click('button:has-text("Application")')
     await page.click('form[id="recruit:string:CreateApplication"] [id="vacancy.talant.selector"]')
-    await page.click('button:has-text("Alex P.")')
+    await page.click('button:has-text("P. Alex")')
     await page.click('form[id="recruit:string:CreateApplication"] button:has-text("Create")')
     await page.waitForSelector('form.antiCard', { state: 'detached' })
 
     await expect(page.locator('text=APP-').first()).toBeVisible()
-    await expect(page.locator('text=Alex P.').first()).toBeVisible()
+    await expect(page.locator('text=P. Alex').first()).toBeVisible()
   })
   test('use-kanban', async ({ page }) => {
     await page.locator('[id="app-recruit\\:string\\:RecruitApplication"]').click()
@@ -127,9 +127,9 @@ test.describe('recruit tests', () => {
     // await page.click('[name="tooltip-task:string:Kanban"]')
     await page.click('.tablist-container div:nth-child(2)')
 
-    await expect(page.locator('text=Marina M.').first()).toBeVisible()
-    await expect(page.locator('text=John Multiseed').first()).toBeVisible()
-    await expect(page.locator('text=Alex P.').first()).toBeVisible()
+    await expect(page.locator('text=M. Marina').first()).toBeVisible()
+    await expect(page.locator('text=Multiseed John').first()).toBeVisible()
+    await expect(page.locator('text=P. Alex').first()).toBeVisible()
   })
 
   test('application-search', async ({ page }) => {
@@ -138,7 +138,7 @@ test.describe('recruit tests', () => {
     await page.locator('text=Vacancies').click()
     await page.click('text=Software Engineer')
 
-    await expect(page.locator('text=Marina M.')).toBeVisible()
+    await expect(page.locator('text=M. Marina')).toBeVisible()
     expect(await page.locator('.antiTable-body__row').count()).toBeGreaterThan(2)
 
     const searchBox = page.locator('[placeholder="Search"]')
@@ -150,7 +150,7 @@ test.describe('recruit tests', () => {
     await searchBox.fill('')
     await searchBox.press('Enter')
 
-    await expect(page.locator('text=Marina M.')).toBeVisible()
+    await expect(page.locator('text=M. Marina')).toBeVisible()
     expect(await page.locator('.antiTable-body__row').count()).toBeGreaterThan(2)
   })
 
@@ -173,7 +173,7 @@ test.describe('recruit tests', () => {
 
     await page.fill('[placeholder="Location"]', 'NSK')
     await page.click('form button:has-text("Talent")')
-    await page.click('button:has-text("Andrey P.")')
+    await page.click('button:has-text("P. Andrey")')
     await page.click('text=Create')
     await page.waitForSelector('form.antiCard', { state: 'detached' })
     await page.click('td:has-text("RVE-")')

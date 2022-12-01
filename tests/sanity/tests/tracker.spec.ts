@@ -107,7 +107,7 @@ async function openIssue (page: Page, name: string): Promise<void> {
 }
 
 const defaultStatuses = ['Backlog', 'Todo', 'In Progress', 'Done', 'Canceled']
-const defaultUser = 'John Appleseed'
+const defaultUser = 'Appleseed John'
 enum viewletSelectors {
   Table = '.tablist-container >> div.button:nth-child(1)',
   Board = '.tablist-container >> div.button:nth-child(2)'
@@ -206,7 +206,7 @@ test('my-issues', async ({ page }) => {
 
 test('report-time-from-issue-card', async ({ page }) => {
   await navigate(page)
-  const assignee = 'Rosamund Chen'
+  const assignee = 'Chen Rosamund'
   const status = 'In Progress'
   const values = [0.25, 0.5, 0.75, 1]
   for (let i = 0; i < 10; i++) {
@@ -242,7 +242,7 @@ test('report-time-from-main-view', async ({ page }) => {
   await page.keyboard.press('Escape')
 
   const values = [0.25, 0.5, 0.75, 1]
-  const assignee = 'Rosamund Chen'
+  const assignee = 'Chen Rosamund'
   const status = 'In Progress'
   const name = getIssueName()
 

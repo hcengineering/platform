@@ -106,7 +106,7 @@ test.describe('recruit tests', () => {
     await page.click('button:has-text("Create")')
     await page.waitForSelector('form.antiCard', { state: 'detached' })
     // Click text=q w
-    await page.click(`tr > :has-text("${first} ${last}")`)
+    await page.click(`tr > :has-text("${last} ${first}")`)
     // Click text=java
     await expect(page.locator('text=java').first()).toBeVisible()
   })
