@@ -20,7 +20,7 @@
   import { Button, getCurrentLocation, Label, navigate } from '@hcengineering/ui'
   import { getFiltredKeys, isCollectionAttr } from '../utils'
 
-  export let object: Doc
+  export let object: Doc | Record<string, any>
   export let _class: Ref<Class<Doc>>
   export let to: Ref<Class<Doc>> | undefined = core.class.Doc
   export let ignoreKeys: string[] = []
@@ -28,6 +28,7 @@
   export let readonly = false
   export let showLabel: IntlString | undefined = undefined
   export let defaultCollapsed = false
+  export let draft = false
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -84,7 +85,7 @@
 </div>
 {#if keys.length}
   <div class="collapsed-container" class:collapsed>
-    <AttributesBar {_class} {object} keys={keys.map((p) => p.key)} {readonly} />
+    <AttributesBar {_class} {object} keys={keys.map((p) => p.key)} {readonly} {draft} on:update />
   </div>
 {/if}
 
