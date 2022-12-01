@@ -22,9 +22,9 @@
   // export let label: IntlString
   export let onChange: (value: any) => void
   export let kind: 'no-border' | 'link' = 'no-border'
-  export let noShift: boolean = false
 
   $: withTime = type?.withTime ?? true
+  $: withShift = type?.withShift ?? true
 </script>
 
 <DateRangePresenter
@@ -32,7 +32,7 @@
   {withTime}
   editable
   {kind}
-  {noShift}
+  noShift={!withShift}
   on:change={(res) => {
     if (res.detail !== undefined) onChange(res.detail)
   }}
