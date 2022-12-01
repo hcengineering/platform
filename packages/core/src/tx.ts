@@ -16,6 +16,7 @@
 import type { KeysByType } from 'simplytyped'
 import type { Account, Arr, AttachedDoc, Class, Data, Doc, Domain, Mixin, PropertyType, Ref, Space } from './classes'
 import core from './component'
+import { setObjectValue } from './objvalue'
 import { _getOperator } from './operator'
 import { _toDoc } from './proxy'
 import type { DocumentQuery, TxResult } from './storage'
@@ -295,7 +296,7 @@ export abstract class TxProcessor implements WithTx {
         const operator = _getOperator(key)
         operator(doc, ops[key])
       } else {
-        ;(doc as any)[key] = ops[key]
+        setObjectValue(key, doc, ops[key])
       }
     }
     doc.modifiedBy = tx.modifiedBy
@@ -312,7 +313,7 @@ export abstract class TxProcessor implements WithTx {
         const operator = _getOperator(key)
         operator(mixin, ops[key])
       } else {
-        mixin[key] = ops[key]
+        setObjectValue(key, mixin, ops[key])
       }
     }
     rawDoc.modifiedBy = tx.modifiedBy
