@@ -129,7 +129,12 @@
         {#if txesF}
           <Grid column={1} rowGap={1.5}>
             {#each txesF as tx, i}
-              <TxView {tx} {viewlets} isNew={newTxPos <= i && newTxPos !== -1} isNextNew={newTxPos < i && newTxPos !== -1} />
+              <TxView
+                {tx}
+                {viewlets}
+                isNew={newTxPos <= i && newTxPos !== -1}
+                isNextNew={newTxPos < i && newTxPos !== -1}
+              />
             {/each}
           </Grid>
         {/if}
@@ -166,7 +171,12 @@
     {#if txesF}
       <Grid column={1} rowGap={1.5}>
         {#each txesF as tx, i}
-          <TxView {tx} {viewlets} isNew={newTxPos <= i && newTxPos !== -1} isNextNew={newTxPos < i && newTxPos !== -1} />
+          <TxView
+            {tx}
+            {viewlets}
+            isNew={newTxPos <= i && newTxPos !== -1}
+            isNextNew={newTxPos < i && newTxPos !== -1}
+          />
         {/each}
       </Grid>
     {/if}

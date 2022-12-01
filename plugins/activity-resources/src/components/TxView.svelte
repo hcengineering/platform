@@ -368,8 +368,8 @@
       }
       &.isNextNew {
         &:after {
-        background-color: var(--highlight-red);
-      }
+          background-color: var(--highlight-red);
+        }
       }
     }
     &::before {
