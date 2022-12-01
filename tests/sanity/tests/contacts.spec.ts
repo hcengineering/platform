@@ -52,7 +52,7 @@ test.describe('contact tests', () => {
   test('contact-search', async ({ page }) => {
     await page.locator('[id="app-contact\\:string\\:Contacts"]').click()
 
-    await expect(page.locator('text=Marina M.')).toBeVisible()
+    await expect(page.locator('text=M. Marina')).toBeVisible()
     expect(await page.locator('.antiTable-body__row').count()).toBeGreaterThan(5)
 
     const searchBox = page.locator('[placeholder="Search"]')
@@ -64,7 +64,7 @@ test.describe('contact tests', () => {
     await searchBox.fill('')
     await searchBox.press('Enter')
 
-    await expect(page.locator('text=Rosamund Chen')).toBeVisible()
+    await expect(page.locator('text=Chen Rosamund')).toBeVisible()
     expect(await page.locator('.antiTable-body__row').count()).toBeGreaterThan(5)
   })
 
@@ -91,8 +91,8 @@ test.describe('contact tests', () => {
     await page.waitForSelector('form.antiCard', { state: 'detached' })
 
     // Click #context-menu svg
-    await page.hover(`td:has-text("${first} ${last}")`)
-    await page.click(`td:has-text("${first} ${last}")`, {
+    await page.hover(`td:has-text("${last} ${first}")`)
+    await page.click(`td:has-text("${last} ${first}")`, {
       button: 'right'
     })
     await page.click('text="Delete"')

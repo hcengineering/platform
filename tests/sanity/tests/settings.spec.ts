@@ -14,7 +14,7 @@ test.describe('contact tests', () => {
     await page.goto(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/sanity-ws`)
     // Click #profile-button
     await page.click('#profile-button')
-    await page.click('text=John Appleseed')
+    await page.click('text=Appleseed John')
     // await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/sanity-ws/setting/setting`)
     // Click text=Edit profile
     // await page.click('text=Edit profile')

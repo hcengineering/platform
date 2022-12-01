@@ -24,7 +24,7 @@ test.describe('workbench tests', () => {
     await page.click('text=Talents')
     await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/sanity-ws/recruit/talents`)
 
-    await expect(page.locator('text=Andrey P.')).toBeVisible()
+    await expect(page.locator('text=P. Andrey')).toBeVisible()
 
     // Click text=Vacancies
     await page.click('text=Vacancies')
@@ -48,6 +48,6 @@ test.describe('workbench tests', () => {
     await page.click('[id="app-contact\\:string\\:Contacts"]')
     await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/sanity-ws/contact`)
     // Click text=John Appleseed
-    await expect(page.locator('text=John Appleseed')).toBeVisible()
+    await expect(page.locator('text=Appleseed John')).toBeVisible()
   })
 })

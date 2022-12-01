@@ -23,8 +23,8 @@ test.describe('recruit tests', () => {
     await page.click(`text=${orgId}`)
 
     await page.click('[id="contact:string:AddMember"]')
-    await page.click('button:has-text("Rosamund Chen")')
-    await page.click('text=Rosamund Chen less than a minute ago >> span')
+    await page.click('button:has-text("Chen Rosamund")')
+    await page.click('text=Chen Rosamund less than a minute ago >> span')
     await page.click(`:nth-match(:text("${orgId}"), 2)`)
   })
 })
