@@ -39,6 +39,7 @@
   }
 </script>
 
+<!-- svelte-ignore a11y-click-events-have-key-events -->
 <div
   class="antiComponent styled-box clear-mins"
   on:click={() => {

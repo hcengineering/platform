@@ -576,6 +576,11 @@
             editor.chain().focus()
           }}
         />
+        <slot name="tools" />
+      </div>
+    {:else}
+      <div class="formatPanel buttons-group xsmall-gap mb-4">
+        <slot name="tools" />
       </div>
     {/if}
   </div>
