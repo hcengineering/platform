@@ -178,7 +178,7 @@ export function getLastName (name: string): string {
  * @public
  */
 export function formatName (name: string): string {
-  return getFirstName(name) + ' ' + getLastName(name)
+  return getLastName(name) + ' ' + getFirstName(name)
 }
 
 /**
