@@ -93,7 +93,9 @@ export {
   getObjectPresenter,
   LoadingProps,
   setActiveViewletId,
-  getActiveViewletId
+  getActiveViewletId,
+  getFiltredKeys,
+  isCollectionAttr
 } from './utils'
 export {
   HTMLPresenter,
