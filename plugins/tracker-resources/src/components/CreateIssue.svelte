@@ -150,7 +150,7 @@
   function resetObject (): void {
     templateId = undefined
     template = undefined
-    object = defaultIssue
+    object = { ...defaultIssue }
     subIssues = []
   }
 
