@@ -132,8 +132,8 @@
               <TxView
                 {tx}
                 {viewlets}
-                isNew={newTxPos <= i && newTxPos !== -1}
-                isNextNew={newTxPos < i && newTxPos !== -1}
+                isNew={newTxPos >= i && newTxPos !== -1}
+                isNextNew={newTxPos > i && newTxPos !== -1}
               />
             {/each}
           </Grid>
@@ -174,8 +174,8 @@
           <TxView
             {tx}
             {viewlets}
-            isNew={newTxPos <= i && newTxPos !== -1}
-            isNextNew={newTxPos < i && newTxPos !== -1}
+            isNew={newTxPos >= i && newTxPos !== -1}
+            isNextNew={newTxPos > i && newTxPos !== -1}
           />
         {/each}
       </Grid>
