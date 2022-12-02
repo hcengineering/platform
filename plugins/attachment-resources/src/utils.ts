@@ -14,7 +14,8 @@
 // limitations under the License.
 //
 
-import type { Class, Doc, Ref, Space, TxOperations as Client } from '@hcengineering/core'
+import { Attachment } from '@hcengineering/attachment'
+import type { Class, Data, Doc, Ref, Space, TxOperations as Client } from '@hcengineering/core'
 import login from '@hcengineering/login'
 import { getMetadata, setPlatformStatus, unknownError } from '@hcengineering/platform'
 
@@ -77,7 +78,9 @@ export async function deleteFile (id: string): Promise<void> {
 export async function createAttachments (
   client: Client,
   list: FileList,
-  attachTo: { objectClass: Ref<Class<Doc>>, space: Ref<Space>, objectId: Ref<Doc> }
+  attachTo: { objectClass: Ref<Class<Doc>>, space: Ref<Space>, objectId: Ref<Doc> },
+  attachmentClass: Ref<Class<Attachment>> = attachment.class.Attachment,
+  extraData: Partial<Data<Attachment>> = {}
 ): Promise<void> {
   const { objectClass, objectId, space } = attachTo
   try {
@@ -85,7 +88,8 @@ export async function createAttachments (
       const file = list.item(index)
       if (file !== null) {
         const uuid = await uploadFile(file, { space, attachedTo: objectId })
-        await client.addCollection(attachment.class.Attachment, space, objectId, objectClass, 'attachments', {
+        await client.addCollection(attachmentClass, space, objectId, objectClass, 'attachments', {
+          ...extraData,
           name: file.name,
           file: uuid,
           type: file.type,

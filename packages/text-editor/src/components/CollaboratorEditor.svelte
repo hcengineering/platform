@@ -79,6 +79,8 @@
 
   export let field: string | undefined = undefined
 
+  export let autoOverflow = false
+
   const ydoc = (getContext(CollaborationIds.Doc) as Y.Doc | undefined) ?? new Y.Doc()
   const contextProvider = getContext(CollaborationIds.Provider) as WebsocketProvider | undefined
   const wsProvider =
@@ -464,7 +466,7 @@
   let showDiff = true
 </script>
 
-<div class="ref-container">
+<div class="ref-container" class:autoOverflow>
   <div class="flex">
     {#if isFormatting && !readonly}
       <div class="formatPanel buttons-group xsmall-gap mb-4">
@@ -708,5 +710,8 @@
   }
   span.deletion {
     text-decoration: line-through;
+  }
+  .autoOverflow {
+    overflow: auto;
   }
 </style>
