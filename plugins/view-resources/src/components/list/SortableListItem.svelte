@@ -13,26 +13,107 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import presentation from '@hcengineering/presentation'
+  import { Icon, IconEdit, IconClose, tooltip, Button } from '@hcengineering/ui'
+  import { createEventDispatcher } from 'svelte'
   import Circles from '../icons/Circles.svelte'
 
   export let isDraggable = false
+  export let isEditable = false
+  export let isDeletable = false
+  export let isEditing = false
+  export let isSaving = false
+  export let canSave = false
+
+  const dispatch = createEventDispatcher()
+
+  $: areButtonsVisible = isEditable || isDeletable || isEditing
 </script>
 
-<div class="root flex background-button-bg-color border-radius-1">
+<div
+  class="root flex background-button-bg-color border-radius-1"
+  on:dblclick|preventDefault={isEditable && !isEditing ? () => dispatch('edit') : undefined}
+>
   <div class="flex-center ml-2">
     <div class="flex-no-shrink circles-mark" class:isDraggable><Circles /></div>
   </div>
 
-  <slot />
+  <div class="root flex flex-between items-center w-full p-2">
+    <div class="content w-full">
+      <slot />
+    </div>
+
+    {#if areButtonsVisible}
+      <div class="ml-auto pl-2 buttons-group small-gap flex-no-shrink">
+        {#if isEditing}
+          <Button label={presentation.string.Cancel} kind="secondary" on:click={() => dispatch('cancel')} />
+          <Button
+            label={presentation.string.Save}
+            kind="primary"
+            loading={isSaving}
+            disabled={!canSave}
+            on:click={() => dispatch('save')}
+          />
+        {:else}
+          {#if isEditable}
+            <button
+              class="btn"
+              use:tooltip={{ label: presentation.string.Edit }}
+              on:click|preventDefault={() => dispatch('edit')}
+            >
+              <Icon icon={IconEdit} size="small" />
+            </button>
+          {/if}
+          {#if isDeletable}
+            <button
+              class="btn"
+              use:tooltip={{ label: presentation.string.Remove }}
+              on:click|preventDefault={() => dispatch('delete')}
+            >
+              <Icon icon={IconClose} size="small" />
+            </button>
+          {/if}
+        {/if}
+      </div>
+    {/if}
+  </div>
 </div>
 
 <style lang="scss">
   .root {
+    overflow: hidden;
+
     &:hover {
+      .btn {
+        opacity: 1;
+      }
+
       .circles-mark.isDraggable {
         cursor: grab;
         opacity: 0.4;
       }
+    }
+  }
+
+  .content {
+    overflow: hidden;
+  }
+
+  .btn {
+    position: relative;
+    opacity: 0;
+    cursor: pointer;
+    color: var(--content-color);
+    transition: opacity 0.15s;
+
+    &:hover {
+      color: var(--caption-color);
+    }
+
+    &::before {
+      position: absolute;
+      content: '';
+      inset: -0.5rem;
     }
   }
 

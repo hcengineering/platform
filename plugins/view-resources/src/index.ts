@@ -56,7 +56,6 @@ import ValueSelector from './components/ValueSelector.svelte'
 import HTMLEditor from './components/HTMLEditor.svelte'
 import SortableList from './components/list/SortableList.svelte'
 import SortableListItem from './components/list/SortableListItem.svelte'
-import SortableListItemPresenter from './components/list/SortableListItemPresenter.svelte'
 import {
   afterResult,
   beforeResult,
@@ -117,8 +116,7 @@ export {
   NumberPresenter,
   TimestampPresenter,
   SortableList,
-  SortableListItem,
-  SortableListItemPresenter
+  SortableListItem
 }
 
 export default async (): Promise<Resources> => ({
