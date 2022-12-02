@@ -21,7 +21,6 @@
   import view, { AttributeModel, ObjectFactory } from '@hcengineering/view'
   import { flip } from 'svelte/animate'
   import { getObjectPresenter } from '../../utils'
-  import SortableListItem from './SortableListItem.svelte'
 
   /*
   How to use:
@@ -32,7 +31,6 @@
   To create a new items, we should add "ObjectFactory" mixin also.
 
   We can create a custom list items or editor based on "SortableListItem"
-  and "SortableListItemPresenter"
 
   Important: the "ObjectFactory" component must emit the "close" event
 */
@@ -42,6 +40,7 @@
   export let query: DocumentQuery<Doc> = {}
   export let queryOptions: FindOptions<Doc> | undefined = undefined
   export let presenterProps: Record<string, any> = {}
+  export let direction: 'row' | 'column' = 'column'
   export let flipDuration = 200
 
   const client = getClient()
@@ -169,13 +168,16 @@
   {#if isLoading}
     <Loading />
   {:else if model && items}
-    <div class="flex-col flex-gap-1">
+    {@const isVertical = direction === 'column'}
+    <div class="flex-gap-1" class:flex-col={isVertical} class:flex={!isVertical} class:flex-wrap={!isVertical}>
       {#each items as item, index (item._id)}
         {@const isDraggable = isSortable && items.length > 1 && !areItemsSorting}
         <div
-          class="row"
-          class:is-dragged-over-up={draggingIndex !== null && index === hoveringIndex && index < draggingIndex}
-          class:is-dragged-over-down={draggingIndex !== null && index === hoveringIndex && index > draggingIndex}
+          class="item"
+          class:column={isVertical}
+          class:row={!isVertical}
+          class:is-dragged-over-before={draggingIndex !== null && index === hoveringIndex && index < draggingIndex}
+          class:is-dragged-over-after={draggingIndex !== null && index === hoveringIndex && index > draggingIndex}
           draggable={isDraggable}
           animate:flip={{ duration: flipDuration }}
           on:dragstart={(ev) => handleDragStart(ev, index)}
@@ -183,9 +185,7 @@
           on:drop={() => handleDrop(index)}
           on:dragend={resetDrag}
         >
-          <SortableListItem {isDraggable}>
-            <svelte:component this={model.presenter} {...model.props ?? {}} value={item} />
-          </SortableListItem>
+          <svelte:component this={model.presenter} {isDraggable} {...model.props ?? {}} value={item} />
         </div>
       {/each}
 
@@ -198,22 +198,27 @@
 </div>
 
 <style lang="scss">
-  .row {
+  .item {
     position: relative;
-    overflow: hidden;
 
-    &.is-dragged-over-up::before {
+    &.is-dragged-over-before::before,
+    &.is-dragged-over-after::before {
       position: absolute;
       content: '';
       inset: 0;
-      border-top: 1px solid var(--theme-bg-check);
     }
 
-    &.is-dragged-over-down::before {
-      position: absolute;
-      content: '';
-      inset: 0;
+    &.column.is-dragged-over-before::before {
+      border-top: 1px solid var(--theme-bg-check);
+    }
+    &.column.is-dragged-over-after::before {
       border-bottom: 1px solid var(--theme-bg-check);
+    }
+    &.row.is-dragged-over-before::before {
+      border-left: 1px solid var(--theme-bg-check);
+    }
+    &.row.is-dragged-over-after::before {
+      border-right: 1px solid var(--theme-bg-check);
     }
   }
 </style>
