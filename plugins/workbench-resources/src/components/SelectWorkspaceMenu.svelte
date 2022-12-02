@@ -72,4 +72,4 @@
   ]
 </script>
 
-<Menu {actions} />
+<Menu {actions} on:close />
