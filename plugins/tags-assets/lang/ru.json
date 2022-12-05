@@ -33,6 +33,10 @@
     "DefaultLabel": "Категория по умолчанию",
     "SelectAll": "Выбрать все",
     "SelectNone": "Выбрать ничего",
-    "ApplyTags": "Применить"
+    "ApplyTags": "Применить",
+    "Weight": "Вес",
+    "Expert": "Эксперт",
+    "Meaningfull": "Значимый",
+    "Initial": "Начальный"
   }
 }

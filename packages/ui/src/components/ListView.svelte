@@ -67,6 +67,7 @@
     {#each Array(count) as _, row}
       <slot name="category" item={row} />
       <div
+        class="list-item"
         class:selection={row === selection}
         on:mouseover={() => onRow(row)}
         on:focus={() => {}}
@@ -84,6 +85,9 @@
     // border-radius: 0.25rem;
     user-select: none;
 
+    .list-item {
+      border-radius: 0.25rem;
+    }
     .selection {
       background-color: var(--menu-bg-select);
     }

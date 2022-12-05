@@ -20,20 +20,20 @@ test.describe('recruit review tests', () => {
 
     await page.click('button:has-text("1 member")')
 
-    await page.click('button:has-text("Rosamund Chen")')
+    await page.click('button:has-text("Chen Rosamund")')
 
     await page.press('[placeholder="Search\\.\\.\\."]', 'Escape')
 
     await page.click('form button :has-text("Talent")')
-    // Click button:has-text("Rosamund Chen")
-    await page.click('button:has-text("Rosamund Chen")')
+    // Click button:has-text("Chen Rosamund")
+    await page.click('button:has-text("Chen Rosamund")')
 
     await page.click('button:has-text("Create")')
     await page.waitForSelector('form.antiCard', { state: 'detached' })
 
     await page.click(`tr:has-text('${reviewId}') td a`)
     await page.click('button:has-text("2 members")')
-    await page.click('.popup button:has-text("Rosamund Chen")')
+    await page.click('.popup button:has-text("Chen Rosamund")')
     await page.press('[placeholder="Search\\.\\.\\."]', 'Escape')
     await page.click('button:has-text("1 member")')
   })

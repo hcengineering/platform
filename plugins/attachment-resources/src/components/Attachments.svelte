@@ -14,9 +14,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, DocumentQuery, Ref, Space } from '@hcengineering/core'
-  import { Icon, Label, Spinner } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
+  import { Attachment } from '@hcengineering/attachment'
+  import { Class, Data, Doc, DocumentQuery, Ref, Space } from '@hcengineering/core'
+  import { Icon, Label, resizeObserver, Scroller, Spinner } from '@hcengineering/ui'
+  import view, { BuildModelKey } from '@hcengineering/view'
   import { Table } from '@hcengineering/view-resources'
   import attachment from '../plugin'
   import AddAttachment from './AddAttachment.svelte'
@@ -28,30 +29,49 @@
   export let space: Ref<Space>
   export let _class: Ref<Class<Doc>>
   export let query: DocumentQuery<Doc> = {}
-
+  export let attachmentClass: Ref<Class<Attachment>> = attachment.class.Attachment
+  export let attachmentClassOptions: Partial<Data<Attachment>> = {}
+  export let extraConfig: (BuildModelKey | string)[] = []
+  export let readonly = false
+  export let showHeader = true
   export let attachments: number | undefined = undefined
 
   let inputFile: HTMLInputElement
   let loading = 0
   let dragover = false
+  let wSection: number
 </script>
 
-<div class="antiSection">
+<div class="antiSection" use:resizeObserver={(element) => (wSection = element.clientWidth)}>
   <div class="antiSection-header">
     <div class="antiSection-header__icon">
-      <Icon icon={IconAttachment} size={'small'} />
+      {#if showHeader}
+        <Icon icon={IconAttachment} size={'small'} />
+      {/if}
     </div>
-    <span class="antiSection-header__title"><Label label={attachment.string.Attachments} /></span>
+    <span class="antiSection-header__title">
+      {#if showHeader}
+        <Label label={attachment.string.Attachments} />
+      {/if}
+    </span>
     <div class="buttons-group small-gap">
       {#if loading}
         <Spinner />
-      {:else}
-        <AddAttachment bind:loading bind:inputFile objectClass={_class} {objectId} {space} />
+      {:else if !readonly}
+        <AddAttachment
+          bind:loading
+          bind:inputFile
+          objectClass={_class}
+          {objectId}
+          {space}
+          {attachmentClass}
+          {attachmentClassOptions}
+        />
       {/if}
     </div>
   </div>
 
-  {#if !loading && (attachments === null || attachments === 0)}
+  {#if !loading && (attachments === null || attachments === 0) && !readonly}
     <AttachmentDroppable bind:loading bind:dragover objectClass={_class} {objectId} {space}>
       <div class="antiSection-empty attachments flex-col mt-3" class:solid={dragover}>
         <div class="flex-center content-accent-color">
@@ -70,9 +90,34 @@
         </div>
       </div>
     </AttachmentDroppable>
+  {:else if wSection < 640}
+    <Scroller horizontal>
+      <Table
+        _class={attachmentClass}
+        config={[
+          '',
+          'description',
+          {
+            key: 'pinned',
+            presenter: view.component.BooleanTruePresenter,
+            label: attachment.string.Pinned,
+            sortingKey: 'pinned'
+          },
+          ...extraConfig,
+          'lastModified'
+        ]}
+        options={{ sort: { pinned: -1 } }}
+        query={{ ...query, attachedTo: objectId }}
+        loadingProps={{ length: attachments ?? 0 }}
+        on:content={(evt) => {
+          attachments = evt.detail.length
+        }}
+        {readonly}
+      />
+    </Scroller>
   {:else}
     <Table
-      _class={attachment.class.Attachment}
+      _class={attachmentClass}
       config={[
         '',
         'description',
@@ -82,6 +127,7 @@
           label: attachment.string.Pinned,
           sortingKey: 'pinned'
         },
+        ...extraConfig,
         'lastModified'
       ]}
       options={{ sort: { pinned: -1 } }}
@@ -90,6 +136,7 @@
       on:content={(evt) => {
         attachments = evt.detail.length
       }}
+      {readonly}
     />
   {/if}
 </div>

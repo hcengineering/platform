@@ -400,8 +400,8 @@ export function TypeTimestamp (): Type<Timestamp> {
 /**
  * @public
  */
-export function TypeDate (withTime?: boolean): TypeDateType {
-  return { _class: core.class.TypeDate, label: core.string.Date, withTime }
+export function TypeDate (withTime?: boolean, withShift?: boolean): TypeDateType {
+  return { _class: core.class.TypeDate, label: core.string.Date, withTime, withShift }
 }
 
 /**

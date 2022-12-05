@@ -225,7 +225,8 @@ export function createModel (builder: Builder): void {
   )
 
   builder.mixin(contact.class.Member, core.class.Class, view.mixin.ObjectEditor, {
-    editor: contact.component.EditMember
+    editor: contact.component.EditMember,
+    pinned: true
   })
 
   builder.createDoc(
@@ -253,15 +254,18 @@ export function createModel (builder: Builder): void {
   )
 
   builder.mixin(contact.class.Person, core.class.Class, view.mixin.ObjectEditor, {
-    editor: contact.component.EditPerson
+    editor: contact.component.EditPerson,
+    pinned: true
   })
 
   builder.mixin(contact.class.Employee, core.class.Class, view.mixin.ObjectEditor, {
-    editor: contact.component.EditPerson
+    editor: contact.component.EditPerson,
+    pinned: true
   })
 
   builder.mixin(contact.class.Organization, core.class.Class, view.mixin.ObjectEditor, {
-    editor: contact.component.EditOrganization
+    editor: contact.component.EditOrganization,
+    pinned: true
   })
 
   builder.mixin(contact.class.Organization, core.class.Class, view.mixin.AttributeEditor, {

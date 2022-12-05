@@ -26,7 +26,8 @@
   export let label: IntlString
   export let createLabel: IntlString | undefined
   export let createComponent: AnyComponent | undefined
-  export let descriptor: Ref<ViewletDescriptor> | undefined
+  export let createComponentProps: Record<string, any> = {}
+  export let descriptor: Ref<ViewletDescriptor> | undefined = undefined
   export let baseQuery: DocumentQuery<Doc> = {}
 
   let search = ''
@@ -68,7 +69,7 @@
 
   function showCreateDialog (ev: MouseEvent) {
     if (createComponent === undefined) return
-    showPopup(createComponent, {}, 'top')
+    showPopup(createComponent, createComponentProps, 'top')
   }
 
   function updateResultQuery (search: string, baseQuery: DocumentQuery<Doc> = {}): DocumentQuery<Doc> {

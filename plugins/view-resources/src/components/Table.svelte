@@ -44,6 +44,7 @@
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
   export let config: (BuildModelKey | string)[]
   export let tableId: string | undefined = undefined
+  export let readonly = false
 
   // If defined, will show a number of dummy items before real data will appear.
   export let loadingProps: LoadingProps | undefined = undefined
@@ -243,7 +244,11 @@
             on:mouseover={() => onRow(object)}
             on:focus={() => {}}
             bind:this={refs[row]}
-            on:contextmenu|preventDefault={(ev) => showMenu(ev, object, row)}
+            on:contextmenu|preventDefault={(ev) => {
+              if (!readonly) {
+                showMenu(ev, object, row)
+              }
+            }}
           >
             {#each model as attribute, cell}
               {#if !cell}

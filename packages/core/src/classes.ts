@@ -197,6 +197,8 @@ export type AttachedData<T extends AttachedDoc> = Omit<T, keyof AttachedDoc>
 export interface TypeDate extends Type<Date> {
   // If not set to true, will be false
   withTime?: boolean
+  // If not set to true, will be false
+  withShift?: boolean
 }
 
 /**

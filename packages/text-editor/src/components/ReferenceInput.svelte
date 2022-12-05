@@ -297,6 +297,7 @@
   </div>
   <div class="buttons-group large-gap ml-4 mt-2">
     {#each actions as a}
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
       <div class="icon-button" on:click={(evt) => handleAction(a, evt)}>
         <Icon icon={a.icon} size={'medium'} />
       </div>

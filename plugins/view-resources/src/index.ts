@@ -54,6 +54,8 @@ import UpDownNavigator from './components/UpDownNavigator.svelte'
 import ViewletSettingButton from './components/ViewletSettingButton.svelte'
 import ValueSelector from './components/ValueSelector.svelte'
 import HTMLEditor from './components/HTMLEditor.svelte'
+import SortableList from './components/list/SortableList.svelte'
+import SortableListItem from './components/list/SortableListItem.svelte'
 import {
   afterResult,
   beforeResult,
@@ -90,7 +92,9 @@ export {
   getObjectPresenter,
   LoadingProps,
   setActiveViewletId,
-  getActiveViewletId
+  getActiveViewletId,
+  getFiltredKeys,
+  isCollectionAttr
 } from './utils'
 export {
   HTMLPresenter,
@@ -110,7 +114,9 @@ export {
   BooleanPresenter,
   NumberEditor,
   NumberPresenter,
-  TimestampPresenter
+  TimestampPresenter,
+  SortableList,
+  SortableListItem
 }
 
 export default async (): Promise<Resources> => ({

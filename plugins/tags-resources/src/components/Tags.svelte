@@ -34,7 +34,7 @@
     (result) => {
       items = result
     },
-    { sort: { title: 1 } }
+    { sort: { weight: -1, title: 1 } }
   )
 
   async function addRef (tag: TagElement): Promise<void> {
@@ -47,6 +47,10 @@
 
   async function removeTag (id: Ref<TagReference>): Promise<void> {
     await client.removeCollection(tags.class.TagReference, object.space, id, object._id, _class, key.key)
+  }
+
+  async function updateWeight (tag: TagReference, weight: TagReference['weight']): Promise<void> {
+    await client.update(tag, { weight })
   }
 
   let elements: Map<Ref<TagElement>, TagElement> = new Map()
@@ -63,4 +67,5 @@
   targetClass={_class}
   on:open={(evt) => addRef(evt.detail)}
   on:delete={(evt) => removeTag(evt.detail)}
+  on:change={(evt) => updateWeight(evt.detail.tag, evt.detail.weight)}
 />

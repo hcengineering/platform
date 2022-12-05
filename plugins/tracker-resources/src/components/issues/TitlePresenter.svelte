@@ -28,7 +28,11 @@
 
 {#if value}
   <span class="titlePresenter-container" class:with-margin={shouldUseMargin} title={value.title}>
-    <span class="name overflow-label cursor-pointer" on:click={handleIssueEditorOpened}>{value.title}</span>
+    <span
+      class="name overflow-label cursor-pointer"
+      style={`max-width: ${value.parents.length !== 0 ? 95 : 100}%`}
+      on:click={handleIssueEditorOpened}>{value.title}</span
+    >
     <ParentNamesPresenter {value} />
   </span>
 {/if}
@@ -41,6 +45,7 @@
     // flex-shrink: 10;
 
     .name {
+      flex-shrink: 0;
       &:hover {
         text-decoration: underline;
       }

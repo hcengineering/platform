@@ -368,6 +368,7 @@ input.search {
 .step-lr25 + .step-lr25 { margin-left: .25rem; }
 .step-lr75 + .step-lr75 { margin-left: .75rem; }
 .step-tb75 + .step-tb75 { margin-top: .75rem; }
+.step-tb-6 + .step-tb-6 { margin-top: 1.5rem; }
 
 .ml-0-5 { margin-left: .125rem; }
 .ml-1 { margin-left: .25rem; }
@@ -416,6 +417,8 @@ input.search {
 .mx-auto { margin: 0 auto; }
 .my-2 { margin: .5rem 0; }
 .my-4 { margin: 1rem 0; }
+
+.m-0-5 { margin: .125rem; }
 
 .pl-1 { padding-left: .25rem; }
 .pl-2 { padding-left: .5rem; }
@@ -494,6 +497,7 @@ input.search {
 .h-full { height: 100%; }
 .h-75p { height: 75%; }
 .h-2 { height: .5rem; }
+.h-3 { height: .75rem; }
 .h-4 { height: 1rem; }
 .h-6 { height: 1.5rem; }
 .h-7 { height: 1.75rem; }
@@ -538,6 +542,7 @@ input.search {
 .max-h-50 { max-height: 12.5rem; }
 .max-h-60 { max-height: 15rem; }
 .max-h-125 { max-height: 31.25rem; }
+.max-h-30vh { max-height: 30vh; }
 .clear-mins {
   min-width: 0;
   min-height: 0;

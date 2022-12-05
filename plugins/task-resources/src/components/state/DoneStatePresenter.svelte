@@ -21,7 +21,7 @@
   import Lost from '../icons/Lost.svelte'
 
   export let value: DoneState
-  export let showTitle: boolean = false
+  export let showTitle: boolean = true
 
   $: color = value._class === task.class.WonState ? getPlatformColor(0) : getPlatformColor(11)
 </script>

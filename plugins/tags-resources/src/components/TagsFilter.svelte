@@ -16,13 +16,24 @@
   import { Class, Doc, FindResult, Ref } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
   import presentation, { getClient } from '@hcengineering/presentation'
-  import { Button, CheckBox, getPlatformColor, Loading, resizeObserver } from '@hcengineering/ui'
+  import { TagCategory, TagElement } from '@hcengineering/tags'
+  import {
+    Button,
+    CheckBox,
+    getEventPopupPositionElement,
+    getPlatformColor,
+    Label,
+    Loading,
+    resizeObserver,
+    showPopup
+  } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
+  import { FilterQuery } from '@hcengineering/view-resources'
   import view from '@hcengineering/view-resources/src/plugin'
   import { createEventDispatcher, onMount } from 'svelte'
   import tags from '../plugin'
-  import { TagCategory, TagElement } from '@hcengineering/tags'
-  import { FilterQuery } from '@hcengineering/view-resources'
+  import { tagLevel } from '../utils'
+  import WeightPopup from './WeightPopup.svelte'
 
   export let _class: Ref<Class<Doc>>
   export let filter: Filter
@@ -32,6 +43,7 @@
   }
   const client = getClient()
   let selected: Ref<TagElement>[] = filter.value
+  let level: number = filter.props?.level ?? 0
 
   filter.modes = [tags.filter.FilterTagsIn, tags.filter.FilterTagsNin]
   filter.mode = filter.mode === undefined ? filter.modes[0] : filter.mode
@@ -100,6 +112,9 @@
 
   const dispatch = createEventDispatcher()
   getValues(search)
+
+  $: tagLevelIcon = tagLevel[((level % 3) + 1) as 1 | 2 | 3]
+  $: tagLevelLabel = [tags.string.Initial, tags.string.Meaningfull, tags.string.Expert][Math.floor(level / 3)]
 </script>
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
@@ -113,6 +128,22 @@
       }}
       placeholder={phTraslate}
     />
+    <div class="flex-row-center flex-between flex-grow p-1">
+      <Label label={tags.string.Weight} />
+      <Button
+        label={tagLevelLabel}
+        icon={tagLevelIcon}
+        on:click={(evt) => {
+          showPopup(WeightPopup, { value: level }, getEventPopupPositionElement(evt), (res) => {
+            if (Number.isFinite(res) && res >= 0 && res <= 8) {
+              if (res != null) {
+                level = res
+              }
+            }
+          })
+        }}
+      />
+    </div>
   </div>
   <div class="scroll">
     <div class="box">
@@ -169,7 +200,9 @@
     shape={'round'}
     label={view.string.Apply}
     on:click={async () => {
-      filter.value = selected
+      filter.value = [...selected]
+      // Replace last one with value with level
+      filter.props = { level }
       onChange(filter)
       dispatch('close')
     }}

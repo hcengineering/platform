@@ -197,7 +197,8 @@
       await client.addCollection(skill._class, skill.space, candidateId, recruit.mixin.Candidate, 'skills', {
         title: skill.title,
         color: skill.color,
-        tag: skill.tag
+        tag: skill.tag,
+        weight: skill.weight
       })
     }
 
@@ -404,7 +405,7 @@
 <Card
   label={recruit.string.CreateTalent}
   okAction={createCandidate}
-  canSave={!loading && firstName.length > 0 && lastName.length > 0}
+  canSave={!loading && (firstName.length > 0 || lastName.length > 0 || channels.length > 0)}
   on:close={() => {
     dispatch('close')
   }}
@@ -470,47 +471,80 @@
     </div>
   </div>
   <svelte:fragment slot="pool">
-    <ChannelsDropdown
-      editable={!loading}
-      focusIndex={10}
-      bind:value={channels}
-      highlighted={matchedChannels.map((it) => it.provider)}
-    />
-    <YesNo
-      disabled={loading}
-      focusIndex={100}
-      label={recruit.string.Onsite}
-      tooltip={recruit.string.WorkLocationPreferences}
-      bind:value={object.onsite}
-    />
-    <YesNo
-      disabled={loading}
-      focusIndex={101}
-      label={recruit.string.Remote}
-      tooltip={recruit.string.WorkLocationPreferences}
-      bind:value={object.remote}
-    />
-    <Component
-      is={tags.component.TagsDropdownEditor}
-      props={{
-        disabled: loading,
-        focusIndex: 102,
-        items: skills,
-        key,
-        targetClass: recruit.mixin.Candidate,
-        showTitle: false,
-        elements,
-        newElements,
-        countLabel: recruit.string.NumberSkills
-      }}
-      on:open={(evt) => {
-        addTagRef(evt.detail)
-      }}
-      on:delete={(evt) => {
-        skills = skills.filter((it) => it._id !== evt.detail)
-      }}
-    />
+    <div class="flex-col flex-grow">
+      <div class="flex flex-wrap">
+        <ChannelsDropdown
+          editable={!loading}
+          focusIndex={10}
+          bind:value={channels}
+          highlighted={matchedChannels.map((it) => it.provider)}
+        />
+        <YesNo
+          disabled={loading}
+          focusIndex={100}
+          label={recruit.string.Onsite}
+          tooltip={recruit.string.WorkLocationPreferences}
+          bind:value={object.onsite}
+        />
+        <YesNo
+          disabled={loading}
+          focusIndex={101}
+          label={recruit.string.Remote}
+          tooltip={recruit.string.WorkLocationPreferences}
+          bind:value={object.remote}
+        />
+        <Component
+          is={tags.component.TagsDropdownEditor}
+          props={{
+            disabled: loading,
+            focusIndex: 102,
+            items: skills,
+            key,
+            targetClass: recruit.mixin.Candidate,
+            showTitle: false,
+            elements,
+            newElements,
+            countLabel: recruit.string.NumberSkills
+          }}
+          on:open={(evt) => {
+            addTagRef(evt.detail)
+          }}
+          on:delete={(evt) => {
+            skills = skills.filter((it) => it._id !== evt.detail)
+          }}
+        />
+      </div>
+      {#if skills.length > 0}
+        <div class="skills-box p-1 mt-2">
+          <Component
+            is={tags.component.TagsEditor}
+            props={{
+              disabled: loading,
+              focusIndex: 102,
+              items: skills,
+              key,
+              targetClass: recruit.mixin.Candidate,
+              showTitle: false,
+              elements,
+              newElements,
+              countLabel: recruit.string.NumberSkills
+            }}
+            on:open={(evt) => {
+              addTagRef(evt.detail)
+            }}
+            on:delete={(evt) => {
+              skills = skills.filter((it) => it._id !== evt.detail)
+            }}
+            on:change={(evt) => {
+              evt.detail.tag.weight = evt.detail.weight
+              skills = skills
+            }}
+          />
+        </div>
+      {/if}
+    </div>
   </svelte:fragment>
+
   <svelte:fragment slot="footer">
     <div
       class="flex-center resume"
@@ -580,5 +614,11 @@
     &.solid {
       border-style: solid;
     }
+  }
+  .skills-box {
+    padding: 0.5rem 0.75rem;
+    background: var(--accent-bg-color);
+    border: 1px dashed var(--divider-color);
+    border-radius: 0.5rem;
   }
 </style>

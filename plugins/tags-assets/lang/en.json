@@ -33,6 +33,10 @@
     "DefaultLabel": "Default category",
     "SelectAll": "Select all",
     "SelectNone": "Select none",
-    "ApplyTags": "Apply"
+    "ApplyTags": "Apply",
+    "Weight": "Weight",
+    "Expert": "Expert",
+    "Meaningfull": "Meaningfull",
+    "Initial": "Initial"
   }
 }

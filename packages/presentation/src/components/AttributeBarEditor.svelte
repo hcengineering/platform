@@ -18,19 +18,23 @@
   import { getResource } from '@hcengineering/platform'
   import { AnySvelteComponent, Label, tooltip } from '@hcengineering/ui'
   import view from '@hcengineering/view'
+  import { createEventDispatcher } from 'svelte'
   import { getAttribute, KeyedAttribute, updateAttribute } from '../attributes'
   import { AttributeCategory, getAttributePresenterClass, getClient } from '../utils'
 
   export let key: KeyedAttribute | string
-  export let object: Doc
+  export let object: Doc | Record<string, any>
   export let _class: Ref<Class<Doc>>
   export let maxWidth: string | undefined = undefined
   export let focus: boolean = false
   export let showHeader: boolean = true
   export let readonly = false
+  export let draft = false
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
+
+  const dispatch = createEventDispatcher()
 
   $: attribute = typeof key === 'string' ? hierarchy.getAttribute(_class, key) : key.attr
   $: attributeKey = typeof key === 'string' ? key : key.key
@@ -67,7 +71,12 @@
 
   function onChange (value: any) {
     const doc = object as Doc
-    updateAttribute(client, doc, _class, { key: attributeKey, attr: attribute }, value)
+    if (draft) {
+      ;(doc as any)[attributeKey] = value
+      dispatch('update', { key, value })
+    } else {
+      updateAttribute(client, doc, _class, { key: attributeKey, attr: attribute }, value)
+    }
   }
   $: isReadonly = (attribute.readonly ?? false) || readonly
 </script>

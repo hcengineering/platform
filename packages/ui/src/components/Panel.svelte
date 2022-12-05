@@ -31,6 +31,7 @@
   export let withoutTitle: boolean = false
   export let floatAside = false
   export let allowClose = true
+  export let useMaxWidth = false
 
   const dispatch = createEventDispatcher()
 
@@ -118,7 +119,7 @@
           }}
         >
           {#if $$slots.header && isHeader}
-            <div class="popupPanel-body__header mobile bottom-divider">
+            <div class="popupPanel-body__header mobile bottom-divider" class:max={useMaxWidth}>
               <slot name="header" />
             </div>
           {/if}
@@ -133,7 +134,7 @@
         }}
       >
         {#if $$slots.header && isHeader}
-          <div class="popupPanel-body__header main bottom-divider">
+          <div class="popupPanel-body__header main bottom-divider" class:max={useMaxWidth}>
             <slot name="header" />
           </div>
         {/if}

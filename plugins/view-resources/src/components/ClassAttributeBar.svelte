@@ -20,7 +20,7 @@
   import { Button, getCurrentLocation, Label, navigate } from '@hcengineering/ui'
   import { getFiltredKeys, isCollectionAttr } from '../utils'
 
-  export let object: Doc
+  export let object: Doc | Record<string, any>
   export let _class: Ref<Class<Doc>>
   export let to: Ref<Class<Doc>> | undefined = core.class.Doc
   export let ignoreKeys: string[] = []
@@ -28,6 +28,8 @@
   export let readonly = false
   export let showLabel: IntlString | undefined = undefined
   export let defaultCollapsed = false
+  export let draft = false
+  export let showHeader: boolean = true
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -46,45 +48,47 @@
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<div
-  class="attrbar-header"
-  class:collapsed
-  on:click={() => {
-    collapsed = !collapsed
-  }}
->
-  <div class="flex-row-center">
-    <span class="overflow-label">
-      <Label {label} />
-    </span>
-    <div class="icon-arrow">
-      <svg fill="var(--dark-color)" viewBox="0 0 6 6" xmlns="http://www.w3.org/2000/svg">
-        <path d="M0,0L6,3L0,6Z" />
-      </svg>
+{#if showHeader}
+  <div
+    class="attrbar-header"
+    class:collapsed
+    on:click={() => {
+      collapsed = !collapsed
+    }}
+  >
+    <div class="flex-row-center">
+      <span class="overflow-label">
+        <Label {label} />
+      </span>
+      <div class="icon-arrow">
+        <svg fill="var(--dark-color)" viewBox="0 0 6 6" xmlns="http://www.w3.org/2000/svg">
+          <path d="M0,0L6,3L0,6Z" />
+        </svg>
+      </div>
+    </div>
+    <div class="tool">
+      <Button
+        icon={setting.icon.Setting}
+        kind={'transparent'}
+        showTooltip={{ label: setting.string.ClassSetting }}
+        on:click={(ev) => {
+          ev.stopPropagation()
+          const loc = getCurrentLocation()
+          loc.path[2] = settingId
+          loc.path[3] = 'setting'
+          loc.path[4] = 'classes'
+          loc.path.length = 5
+          loc.query = { _class }
+          loc.fragment = undefined
+          navigate(loc)
+        }}
+      />
     </div>
   </div>
-  <div class="tool">
-    <Button
-      icon={setting.icon.Setting}
-      kind={'transparent'}
-      showTooltip={{ label: setting.string.ClassSetting }}
-      on:click={(ev) => {
-        ev.stopPropagation()
-        const loc = getCurrentLocation()
-        loc.path[2] = settingId
-        loc.path[3] = 'setting'
-        loc.path[4] = 'classes'
-        loc.path.length = 5
-        loc.query = { _class }
-        loc.fragment = undefined
-        navigate(loc)
-      }}
-    />
-  </div>
-</div>
+{/if}
 {#if keys.length}
   <div class="collapsed-container" class:collapsed>
-    <AttributesBar {_class} {object} keys={keys.map((p) => p.key)} {readonly} />
+    <AttributesBar {_class} {object} keys={keys.map((p) => p.key)} {readonly} {draft} on:update />
   </div>
 {/if}
 

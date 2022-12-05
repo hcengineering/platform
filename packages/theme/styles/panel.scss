@@ -144,6 +144,10 @@
         margin-right: auto;
         width: calc(100% - 7.5rem);
         max-width: 860px;
+
+        &.max {
+          max-width: 100%;
+        }
       }
     }
 
@@ -156,12 +160,16 @@
         padding: .75rem 1.25rem;
         width: calc(100% - 5rem);
         max-width: 900px;
+
+        &.max {
+          max-width: 100%;
+        }
       }
       &.mobile {
         flex-shrink: 0;
         padding: .5rem .75rem .75rem;
         width: 100%;
-        min-width: 700px;
+        min-width: 320px;
       }
 
       &.bottom-divider { border-bottom: 1px solid var(--divider-color); }
@@ -179,7 +187,7 @@
     }
     .popupPanel-body__mobile-content {
       padding: .5rem;
-      min-width: 700px;
+      min-width: 320px;
     }
 
     &__aside {

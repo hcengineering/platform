@@ -36,6 +36,7 @@
   export let isCustomAttr: boolean = true
   export let floatAside = false
   export let allowClose = true
+  export let useMaxWidth = false
 </script>
 
 <Panel
@@ -47,6 +48,7 @@
   on:close
   {allowClose}
   {floatAside}
+  {useMaxWidth}
 >
   <svelte:fragment slot="navigator">
     {#if $$slots.navigator}
@@ -87,13 +89,16 @@
     {#if $$slots.header}
       <div class="header-row between">
         {#if $$slots.header}<slot name="header" />{/if}
-        <div class="buttons-group xsmall-gap ml-4" style:align-self={'flex-end'}>
+        <div class="buttons-group xsmall-gap ml-4" style:align-self={'flex-start'}>
           <slot name="tools" />
         </div>
       </div>
     {/if}
     {#if $$slots['custom-attributes'] && isCustomAttr}
       {#if isSub}<div class="header-row"><slot name="custom-attributes" direction="row" /></div>{/if}
+    {/if}
+    {#if $$slots.subheader}
+      <slot name="subheader" />
     {/if}
   </svelte:fragment>
 
@@ -124,19 +129,19 @@
         <slot />
       </div>
     {:else}
-      <div class="popupPanel-body__main-content py-8 clear-mins">
+      <div class="popupPanel-body__main-content py-8 clear-mins" class:max={useMaxWidth}>
         <slot />
       </div>
     {/if}
   {:else if $deviceInfo.isMobile}
-    <div class="popupPanel-body__mobile-content clear-mins">
+    <div class="popupPanel-body__mobile-content clear-mins" class:max={useMaxWidth}>
       <Component is={activity.component.Activity} props={{ object, integrate: true }}>
         <slot />
       </Component>
     </div>
   {:else}
     <Scroller>
-      <div class="popupPanel-body__main-content py-8 clear-mins">
+      <div class="popupPanel-body__main-content py-8 clear-mins" class:max={useMaxWidth}>
         <Component is={activity.component.Activity} props={{ object, integrate: true }}>
           <slot />
         </Component>

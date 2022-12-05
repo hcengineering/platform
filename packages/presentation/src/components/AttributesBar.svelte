@@ -18,16 +18,17 @@
   import { KeyedAttribute } from '../attributes'
   import AttributeBarEditor from './AttributeBarEditor.svelte'
 
-  export let object: Doc
+  export let object: Doc | Record<string, any>
   export let _class: Ref<Class<Doc>>
   export let keys: (string | KeyedAttribute)[]
   export let showHeader: boolean = true
   export let readonly = false
+  export let draft = false
 </script>
 
 <div class="attributes-bar-container vertical">
   {#each keys as key (typeof key === 'string' ? key : key.key)}
-    <AttributeBarEditor {key} {_class} {object} {showHeader} {readonly} />
+    <AttributeBarEditor {key} {_class} {object} {showHeader} {readonly} {draft} on:update />
   {/each}
 </div>
 
