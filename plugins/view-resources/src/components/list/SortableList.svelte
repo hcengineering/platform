@@ -191,7 +191,7 @@
 
       {#if objectFactory?.component && isCreating}
         <!-- Important: the "close" event must be specified -->
-        <Component is={objectFactory.component} showLoading on:close={() => (isCreating = false)} />
+        <Component is={objectFactory.component} props={query} showLoading on:close={() => (isCreating = false)} />
       {/if}
     </div>
   {/if}
