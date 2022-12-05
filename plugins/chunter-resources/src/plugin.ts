@@ -15,7 +15,7 @@
 
 import chunter, { chunterId } from '@hcengineering/chunter'
 import type { Client, Space } from '@hcengineering/core'
-import type { IntlString, Resource } from '@hcengineering/platform'
+import type { IntlString, Metadata, Resource } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import type { AnyComponent } from '@hcengineering/ui'
 import { ViewAction } from '@hcengineering/view'
@@ -87,5 +87,8 @@ export default mergeIds(chunterId, chunter, {
     Messages: '' as IntlString,
     NoResults: '' as IntlString,
     CopyLink: '' as IntlString
+  },
+  metadata: {
+    Draft: '' as Metadata<Record<string, any>>
   }
 })
