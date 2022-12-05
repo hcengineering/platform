@@ -17,58 +17,63 @@
   import { Comment } from '@hcengineering/chunter'
   import { Doc, generateId, Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { fetchMetadataLocalStorage, setMetadataLocalStorage } from '@hcengineering/ui'
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
   import { createBacklinks } from '../backlinks'
+  import { draftStore, updateDraftStore } from '../drafts'
   import chunter from '../plugin'
 
   export let object: Doc
-  export let shouldSaveDraft: boolean = true
+  export let shouldUseDraft: boolean = false
 
   const client = getClient()
   const _class = chunter.class.Comment
+
   let _id: Ref<Comment> = generateId()
   let inputContent: string = ''
-  let draftComment: Comment | undefined
+  let commentInputBox: AttachmentRefInput
+  let draftComment: Comment | undefined = undefined
+  let saveTimer: number | undefined
 
   $: updateDraft(object)
+  $: updateCommentFromDraft(draftComment)
 
-  $: updateCommentInput(draftComment)
+  async function updateDraft (object: Doc) {
+    if (!shouldUseDraft) {
+      return
+    }
+    draftComment = $draftStore[object._id]
+    if (!draftComment) {
+      _id = generateId()
+    }
+  }
 
-  async function updateCommentInput (draftComment: Comment | undefined) {
+  async function updateCommentFromDraft (draftComment: Comment | undefined) {
+    if (!shouldUseDraft) {
+      return
+    }
     inputContent = draftComment ? draftComment.message : ''
+    _id = draftComment ? draftComment._id : _id
   }
 
   function commentIsEmpty (message: string, attachments: number): boolean {
-    return !(message.length > 0 || attachments > 0)
-  }
-
-  async function updateDraft (object: Doc) {
-    const drafts = fetchMetadataLocalStorage(chunter.metadata.CommentDrafts) ?? {}
-    draftComment = drafts[object._id]
-  }
-
-  async function removeDraft (object: Doc) {
-    const drafts = fetchMetadataLocalStorage(chunter.metadata.CommentDrafts)
-    if (drafts !== null && drafts[object._id]) {
-      delete drafts[object._id]
-      setMetadataLocalStorage(chunter.metadata.CommentDrafts, drafts)
-    }
+    return (message === '<p></p>' || message === '') && !(attachments > 0)
   }
 
   async function saveDraft (object: Doc) {
-    const drafts = fetchMetadataLocalStorage(chunter.metadata.CommentDrafts) ?? {}
     if (draftComment) {
-      drafts[object._id] = draftComment
-      setMetadataLocalStorage(chunter.metadata.CommentDrafts, drafts)
+      draftComment._id = _id
+      $draftStore[object._id] = draftComment
+    } else {
+      delete $draftStore[object._id]
     }
+    updateDraftStore(object._id, draftComment)
   }
 
-  async function onUpdate (event: CustomEvent) {
-    const { message, attachments } = event.detail
+  async function handleCommentUpdate (message: string, attachments: number) {
     if (commentIsEmpty(message, attachments)) {
-      removeDraft(object)
       draftComment = undefined
+      saveDraft(object)
+      _id = generateId()
       return
     }
     if (!draftComment) {
@@ -77,7 +82,21 @@
     draftComment.message = message
     draftComment.attachments = attachments
 
+    await commentInputBox.createAttachments()
     saveDraft(object)
+  }
+
+  async function onUpdate (event: CustomEvent) {
+    if (!shouldUseDraft) {
+      return
+    }
+    const { message, attachments } = event.detail
+    if (saveTimer) {
+      clearTimeout(saveTimer)
+    }
+    saveTimer = setTimeout(() => {
+      handleCommentUpdate(message, attachments)
+    }, 200)
   }
 
   function createDraftFromObject () {
@@ -110,15 +129,21 @@
 
     // Create an backlink to document
     await createBacklinks(client, object._id, object._class, _id, message)
+
+    // Remove draft from Local Storage
     _id = generateId()
+    draftComment = undefined
+    await saveDraft(object)
   }
 </script>
 
 <AttachmentRefInput
+  bind:this={commentInputBox}
   bind:content={inputContent}
   {_class}
   space={object.space}
-  objectId={_id}
+  bind:objectId={_id}
+  shouldUseDraft
   on:message={onMessage}
   on:update={onUpdate}
 />

@@ -48,7 +48,13 @@
       dispatch('content', content)
     }
   }
-
+  export function setContent (newContent: string): void {
+    if (content !== newContent) {
+      content = newContent
+      editor.commands.setContent(content)
+      isEmpty = editor.isEmpty
+    }
+  }
   export function clear (): void {
     content = ''
     editor.commands.clearContent(false)
@@ -181,6 +187,9 @@
           Placeholder.configure({ placeholder: placeHolderStr }),
           ...extensions
         ],
+        parseOptions: {
+          preserveWhitespace: 'full'
+        },
         onTransaction: () => {
           // force re-render so `editor.isActive` works as expected
           editor = editor
@@ -198,6 +207,9 @@
           isEmpty = editor.isEmpty
           dispatch('value', content)
           dispatch('update', content)
+        },
+        onCreate: () => {
+          isEmpty = editor.isEmpty
         },
         onSelectionUpdate: () => dispatch('selection-update')
       })

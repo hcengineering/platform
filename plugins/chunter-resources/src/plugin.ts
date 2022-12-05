@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import chunter, { chunterId, Comment } from '@hcengineering/chunter'
+import chunter, { chunterId } from '@hcengineering/chunter'
 import type { Client, Space } from '@hcengineering/core'
 import type { IntlString, Metadata, Resource } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
@@ -89,6 +89,6 @@ export default mergeIds(chunterId, chunter, {
     CopyLink: '' as IntlString
   },
   metadata: {
-    CommentDrafts: '' as Metadata<Record<string, Comment>>
+    Draft: '' as Metadata<Record<string, any>>
   }
 })

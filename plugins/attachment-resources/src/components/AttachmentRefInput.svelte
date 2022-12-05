@@ -28,6 +28,7 @@
   export let _class: Ref<Class<Doc>>
   export let content: string = ''
   export let showSend = true
+  export let shouldUseDraft: boolean = false
   export function submit (): void {
     refInput.submit()
   }
@@ -39,6 +40,7 @@
 
   const client = getClient()
   const query = createQuery()
+
   let attachments: Map<Ref<Attachment>, Attachment> = new Map<Ref<Attachment>, Attachment>()
   let originalAttachments: Set<Ref<Attachment>> = new Set<Ref<Attachment>>()
   const newAttachments: Set<Ref<Attachment>> = new Set<Ref<Attachment>>()
@@ -79,6 +81,9 @@
       })
       newAttachments.add(_id)
       attachments = attachments
+      if (shouldUseDraft) {
+        await createAttachments()
+      }
     } catch (err: any) {
       setPlatformStatus(unknownError(err))
     }
@@ -110,6 +115,9 @@
   async function removeAttachment (attachment: Attachment): Promise<void> {
     removedAttachments.add(attachment)
     attachments.delete(attachment._id)
+    if (shouldUseDraft) {
+      await createAttachments()
+    }
     attachments = attachments
   }
 
@@ -139,7 +147,7 @@
     }
   })
 
-  async function onMessage (event: CustomEvent) {
+  export function createAttachments (): Promise<void> {
     saved = true
     const promises: Promise<any>[] = []
     newAttachments.forEach((p) => {
@@ -151,7 +159,11 @@
     removedAttachments.forEach((p) => {
       promises.push(deleteAttachment(p))
     })
-    await Promise.all(promises)
+    return Promise.all(promises).then()
+  }
+
+  async function onMessage (event: CustomEvent) {
+    await createAttachments()
     dispatch('message', { message: event.detail, attachments: attachments.size })
   }
 

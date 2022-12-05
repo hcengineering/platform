@@ -54,6 +54,11 @@
   let isSelectionEmpty = true
   let isEmpty = true
 
+  $: setContent(content)
+
+  function setContent (content: string) {
+    textEditor?.setContent(content)
+  }
   interface RefAction {
     label: IntlString
     icon: Asset | AnySvelteComponent
