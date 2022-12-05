@@ -27,7 +27,7 @@
         "ts-node/register"
       ],
       "sourceMaps": true,
-      "cwd": "${workspaceRoot}/server/server",
+      "cwd": "${workspaceRoot}/pods/server",
       "protocol": "inspector"
     },
     {

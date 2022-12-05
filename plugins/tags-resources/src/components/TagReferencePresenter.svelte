@@ -50,9 +50,8 @@
       }}
     >
       <div class="color" style:background-color={getPlatformColor(value.color ?? 0)} />
-      <span class="overflow-label ml-1-5 caption-color"
-        >{value.title}-
-        <Icon icon={tagIcon} size={'small'} />
+      <span class="overflow-label ml-1-5 caption-color">
+        {value.title}
       </span>
       {#if isEditable}
         <button class="btn-close" on:click|stopPropagation={() => dispatch('remove', value.tag)}>

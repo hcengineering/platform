@@ -176,7 +176,7 @@ class ElasticDataAdapter implements DbAdapter {
       )
 
       const operations = part.flatMap((doc) => [
-        { index: { _index: this.workspaceId, _id: doc._id } },
+        { index: { _index: toWorkspaceString(this.workspaceId), _id: doc._id } },
         (doc as FullTextData).data
       ])
 

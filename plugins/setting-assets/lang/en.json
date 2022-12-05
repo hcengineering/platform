@@ -62,6 +62,10 @@
     "ImportEnumCopy": "Copy enum values from clipboard",
     "CreateMixin": "Create Mixin",
     "OldNames": "Old values",
-    "NewClassName": "Type new class name or select from previous values..."
+    "NewClassName": "Type new class name or select from previous values...",
+    "ShowAttribute": "Show attribute",
+    "HideAttribute": "Hide attribute",
+    "Visibility": "Visibility",
+    "Hidden": "Hidden"
   }
 }

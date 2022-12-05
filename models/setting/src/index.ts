@@ -305,6 +305,9 @@ export function createModel (builder: Builder): void {
   builder.mixin(core.class.Class, core.class.Class, view.mixin.IgnoreActions, {
     actions: [view.action.Delete]
   })
+  builder.mixin(core.class.Attribute, core.class.Class, view.mixin.IgnoreActions, {
+    actions: [view.action.Delete]
+  })
 
   createAction(builder, {
     action: view.actionImpl.ShowPopup,
@@ -341,6 +344,46 @@ export function createModel (builder: Builder): void {
   )
 
   // builder.mixin(core.class.Space, core.class.Class, setting.mixin.Editable, {})
+
+  createAction(builder, {
+    action: view.actionImpl.UpdateDocument,
+    actionProps: {
+      key: 'hidden',
+      value: true
+    },
+    query: {
+      hidden: { $in: [false, undefined, null] }
+    },
+    label: setting.string.HideAttribute,
+    input: 'any',
+    icon: view.icon.Setting,
+    category: setting.category.Settings,
+    target: core.class.Attribute,
+    context: {
+      mode: ['context', 'browser'],
+      group: 'edit'
+    }
+  })
+
+  createAction(builder, {
+    action: view.actionImpl.UpdateDocument,
+    actionProps: {
+      key: 'hidden',
+      value: false
+    },
+    query: {
+      hidden: true
+    },
+    label: setting.string.ShowAttribute,
+    input: 'any',
+    icon: view.icon.Setting,
+    category: setting.category.Settings,
+    target: core.class.Attribute,
+    context: {
+      mode: ['context', 'browser'],
+      group: 'edit'
+    }
+  })
 }
 
 export { settingOperation } from './migration'

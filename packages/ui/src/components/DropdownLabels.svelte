@@ -36,6 +36,7 @@
   export let labelDirection: TooltipAlignment | undefined = undefined
   export let focusIndex = -1
   export let autoSelect: boolean = true
+  export let useFlexGrow = false
 
   let container: HTMLElement
   let opened: boolean = false
@@ -52,7 +53,7 @@
   const mgr = getFocusManager()
 </script>
 
-<div bind:this={container} class="min-w-0">
+<div bind:this={container} class="min-w-0" class:flex-grow={useFlexGrow}>
   <Button
     {focusIndex}
     {icon}
@@ -75,7 +76,7 @@
       }
     }}
   >
-    <span slot="content" class="overflow-label disabled">
+    <span slot="content" class="overflow-label disabled" class:dark-color={selectedItem === undefined}>
       {#if selectedItem}{selectedItem.label}{:else}<Label label={label ?? ui.string.NotSelected} />{/if}
     </span>
   </Button>

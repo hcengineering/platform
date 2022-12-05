@@ -51,6 +51,7 @@
   export let allowDeselect = false
   export let component: AnySvelteComponent | undefined = undefined
   export let componentProps: any | undefined = undefined
+  export let autoSelect = true
 
   let selected: Space | undefined
 
@@ -61,10 +62,10 @@
   async function updateSelected (value: Ref<Space> | undefined) {
     selected = value !== undefined ? await client.findOne(_class, { ...(spaceQuery ?? {}), _id: value }) : undefined
 
-    if (selected === undefined) {
+    if (selected === undefined && autoSelect) {
       selected = await client.findOne(_class, { ...(spaceQuery ?? {}) })
       if (selected !== undefined) {
-        value = selected._id
+        value = selected._id ?? undefined
         dispatch('change', value)
         dispatch('space', selected)
       }
@@ -89,8 +90,8 @@
       },
       !$$slots.content ? eventToHTMLElement(ev) : getEventPositionElement(ev),
       (result) => {
-        if (result) {
-          value = result._id
+        if (result !== undefined) {
+          value = result?._id ?? undefined
           dispatch('change', value)
           mgr?.setFocusPos(focusIndex)
         }
@@ -100,6 +101,7 @@
 </script>
 
 {#if $$slots.content}
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div id="space.selector" class="w-full h-full flex-streatch" on:click={showSpacesPopup}>
     <slot name="content" />
   </div>
@@ -116,7 +118,7 @@
     showTooltip={{ label, direction: labelDirection }}
     on:click={showSpacesPopup}
   >
-    <span slot="content" class="overflow-label disabled text-sm">
+    <span slot="content" class="overflow-label disabled text-sm" class:dark-color={value == null}>
       {#if selected}{selected.name}{:else}<Label {label} />{/if}
     </span>
   </Button>

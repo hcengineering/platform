@@ -37,6 +37,7 @@
   {justify}
   allowDeselect
   {width}
+  autoSelect={false}
   focus={false}
   bind:space={value}
   on:change={(e) => onChange(e.detail)}
