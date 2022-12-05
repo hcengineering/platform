@@ -88,11 +88,15 @@
   function getMixins (parentClass: Ref<Class<Doc>>, object: Doc, showAllMixins: boolean): void {
     if (object === undefined || parentClass === undefined) return
     const descendants = hierarchy.getDescendants(parentClass).map((p) => hierarchy.getClass(p))
+
     mixins = descendants.filter(
       (m) =>
         m.kind === ClassifierKind.MIXIN &&
         !ignoreMixins.has(m._id) &&
-        (hierarchy.hasMixin(object, m._id) || showAllMixins)
+        (hierarchy.hasMixin(object, m._id) ||
+          (showAllMixins &&
+            // hierarchy.isDerived(hierarchy.getBaseClass(m._id), realObjectClass)
+            hierarchy.isDerived(realObjectClass, hierarchy.getBaseClass(m._id))))
     )
   }
 

@@ -26,7 +26,7 @@
     RefTo,
     Type
   } from '@hcengineering/core'
-  import { IntlString } from '@hcengineering/platform'
+  import { getResource, IntlString } from '@hcengineering/platform'
   import presentation, { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
   import {
     Action,
@@ -44,10 +44,12 @@
     showPopup
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
+  import { getContextActions } from '@hcengineering/view-resources/src/actions'
   import settings from '../plugin'
   import CreateAttribute from './CreateAttribute.svelte'
   import EditAttribute from './EditAttribute.svelte'
   import EditClassLabel from './EditClassLabel.svelte'
+
   export let _class: Ref<Class<Doc>>
 
   const client = getClient()
@@ -65,9 +67,15 @@
   function getCustomAttributes (_class: Ref<Class<Doc>>): AnyAttribute[] {
     const cl = hierarchy.getClass(_class)
     const attributes = Array.from(hierarchy.getAllAttributes(_class, cl.extends).values())
-    const filtred = attributes.filter((p) => !p.hidden)
-    return filtred
+    // const filtred = attributes.filter((p) => !p.hidden)
+    return attributes
   }
+
+  const attrQuery = createQuery()
+
+  $: attrQuery.query(core.class.Attribute, { attributeOf: _class }, () => {
+    attributes = getCustomAttributes(_class)
+  })
 
   function update () {
     attributes = getCustomAttributes(_class)
@@ -108,15 +116,28 @@
         action: async () => {
           editAttribute(attribute, exist)
         }
-      },
-      {
+      }
+    ]
+    if (attribute.isCustom) {
+      actions.push({
         label: presentation.string.Remove,
         icon: IconDelete,
         action: async () => {
           removeAttribute(attribute, exist)
         }
-      }
-    ]
+      })
+    }
+    const extra = await getContextActions(client, attribute, { mode: 'context' })
+    actions.push(
+      ...extra.map((it) => ({
+        label: it.label,
+        icon: it.icon,
+        action: async (_: any, evt: Event) => {
+          const r = await getResource(it.action)
+          r(attribute, evt, it.actionProps)
+        }
+      }))
+    )
     showPopup(Menu, { actions }, getEventPositionElement(ev), () => {})
   }
 
@@ -181,6 +202,11 @@
       </th>
       <th>
         <div class="antiTable-cells">
+          <Label label={settings.string.Visibility} />
+        </div>
+      </th>
+      <th>
+        <div class="antiTable-cells">
           <Label label={settings.string.Custom} />
         </div>
       </th>
@@ -192,23 +218,17 @@
       <tr
         class="antiTable-body__row"
         on:contextmenu={(ev) => {
-          if (attr.isCustom) {
-            ev.preventDefault()
-            showMenu(ev, attr)
-          }
+          ev.preventDefault()
+          showMenu(ev, attr)
         }}
       >
-        <!-- <td class='select-text'>
-          {attr.name}
-        </td> -->
         <td>
           <div class="antiTable-cells__firstCell">
             <Label label={attr.label} />
-            {#if attr.isCustom}
-              <div id="context-menu" class="antiTable-cells__firstCell-menuRow" on:click={(ev) => showMenu(ev, attr)}>
-                <IconMoreV size={'small'} />
-              </div>
-            {/if}
+            <!-- svelte-ignore a11y-click-events-have-key-events -->
+            <div id="context-menu" class="antiTable-cells__firstCell-menuRow" on:click={(ev) => showMenu(ev, attr)}>
+              <IconMoreV size={'small'} />
+            </div>
           </div>
         </td>
         <td class="select-text">
@@ -222,6 +242,11 @@
                 : {name}
               {/if}
             {/await}
+          {/if}
+        </td>
+        <td>
+          {#if attr.hidden}
+            <Label label={settings.string.Hidden} />
           {/if}
         </td>
         <td>

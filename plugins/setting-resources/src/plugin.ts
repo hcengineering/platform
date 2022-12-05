@@ -56,6 +56,10 @@ export default mergeIds(settingId, setting, {
     ImportEnumCopy: '' as IntlString,
     CreateMixin: '' as IntlString,
     OldNames: '' as IntlString,
-    NewClassName: '' as IntlString
+    NewClassName: '' as IntlString,
+    HideAttribute: '' as IntlString,
+    ShowAttribute: '' as IntlString,
+    Visibility: '' as IntlString,
+    Hidden: '' as IntlString
   }
 })

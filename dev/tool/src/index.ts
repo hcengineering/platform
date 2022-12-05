@@ -266,9 +266,9 @@ export function devTool (
   program
     .command('backup-restore <dirName> <workspace> [date]')
     .description('dump workspace transactions and minio resources')
-    .action(async (dirName, workspace, date, cmd) => {
+    .action(async (dirName: string, workspace: string, date, cmd) => {
       const storage = await createFileBackupStorage(dirName)
-      return await restore(transactorUrl, workspace, storage, parseInt(date ?? '-1'))
+      return await restore(transactorUrl, getWorkspaceId(workspace, productId), storage, parseInt(date ?? '-1'))
     })
 
   program

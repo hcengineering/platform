@@ -118,6 +118,7 @@
   $: hideIcon = size === 'x-large' || (size === 'large' && kind !== 'link')
 </script>
 
+<!-- svelte-ignore a11y-click-events-have-key-events -->
 <div {id} bind:this={container} class="min-w-0" class:w-full={width === '100%'} class:h-full={$$slots.content}>
   {#if $$slots.content}
     <div
@@ -129,7 +130,12 @@
     </div>
   {:else}
     <Button {focusIndex} width={width ?? 'min-content'} {size} {kind} {justify} {showTooltip} on:click={_click}>
-      <span slot="content" class="overflow-label flex-grow" class:flex-between={showNavigate && selected}>
+      <span
+        slot="content"
+        class="overflow-label flex-grow"
+        class:flex-between={showNavigate && selected}
+        class:dark-color={value == null}
+      >
         <div
           class="disabled"
           style:width={showNavigate && selected

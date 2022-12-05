@@ -41,6 +41,7 @@
 </div>
 <div class="flex-col overflow-y-auto">
   {#each folders as f (f._id)}
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div class="flex-between item" class:selected={f._id === folder?._id} on:click={() => select(f)}>
       <div class="icon flex-no-shrink mr-4">
         <Component is={f.icon} />

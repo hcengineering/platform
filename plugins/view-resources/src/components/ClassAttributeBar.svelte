@@ -15,7 +15,7 @@
 <script lang="ts">
   import core, { Class, Doc, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { AttributesBar, getClient, KeyedAttribute } from '@hcengineering/presentation'
+  import { AttributesBar, getAttribute, getClient, KeyedAttribute } from '@hcengineering/presentation'
   import setting, { settingId } from '@hcengineering/setting'
   import { Button, getCurrentLocation, Label, navigate } from '@hcengineering/ui'
   import { getFiltredKeys, isCollectionAttr } from '../utils'
@@ -27,7 +27,6 @@
   export let allowedCollections: string[] = []
   export let readonly = false
   export let showLabel: IntlString | undefined = undefined
-  export let defaultCollapsed = false
   export let draft = false
   export let showHeader: boolean = true
 
@@ -35,7 +34,6 @@
   const hierarchy = client.getHierarchy()
 
   let keys: KeyedAttribute[] = []
-  let collapsed: boolean = defaultCollapsed
 
   function updateKeys (_class: Ref<Class<Doc>>, ignoreKeys: string[], to: Ref<Class<Doc>> | undefined): void {
     const filtredKeys = getFiltredKeys(hierarchy, _class, ignoreKeys, to)
@@ -44,7 +42,15 @@
 
   $: updateKeys(_class, ignoreKeys, to)
 
+  $: nonEmpty = keys.find((it) => getAttribute(client, object, it) != null)
+
   $: label = showLabel ?? hierarchy.getClass(_class).label
+
+  function getCollapsed (_class: Ref<Class<Doc>>, nonEmpty?: KeyedAttribute): boolean {
+    return nonEmpty === undefined
+  }
+
+  $: collapsed = getCollapsed(_class, nonEmpty)
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->

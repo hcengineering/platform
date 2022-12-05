@@ -112,6 +112,7 @@
 </div>
 <div id="templates" class="flex-col overflow-y-auto">
   {#each templates as t (t._id)}
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div class="ac-column__list-item" class:selected={t._id === template?._id} on:click={() => select(t)}>
       <AttributeEditor maxWidth={'15rem'} _class={task.class.KanbanTemplate} object={t} key="title" />
       {#if templates.length > 1}

@@ -33,6 +33,7 @@
   }
 </script>
 
+<!-- svelte-ignore a11y-click-events-have-key-events -->
 {#if kind === 'link'}
   <div
     class="link-container"
@@ -74,9 +75,9 @@
     border: 1px solid transparent;
     border-radius: 0.25rem;
     cursor: pointer;
+    color: var(--caption-color);
 
     &:hover {
-      color: var(--caption-color);
       background-color: var(--body-color);
       border-color: var(--divider-color);
     }

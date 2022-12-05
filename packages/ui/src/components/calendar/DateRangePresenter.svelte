@@ -272,6 +272,7 @@
   adaptValue()
 </script>
 
+<!-- svelte-ignore a11y-no-noninteractive-tabindex -->
 <button
   bind:this={datePresenter}
   class="datetime-button {kind}"
@@ -292,7 +293,7 @@
     >
       {#if edits[0].value > -1}
         {edits[0].value.toString().padStart(2, '0')}
-      {:else}ДД{/if}
+      {:else}DD{/if}
     </span>
     <span class="separator">.</span>
     <span
@@ -305,7 +306,7 @@
     >
       {#if edits[1].value > -1}
         {edits[1].value.toString().padStart(2, '0')}
-      {:else}ММ{/if}
+      {:else}MM{/if}
     </span>
     <span class="separator">.</span>
     <span
@@ -318,7 +319,7 @@
     >
       {#if edits[2].value > -1}
         {edits[2].value.toString().padStart(4, '0')}
-      {:else}ГГГГ{/if}
+      {:else}YYYY{/if}
     </span>
     {#if withTime}
       <div class="time-divider" />
@@ -332,7 +333,7 @@
       >
         {#if edits[3].value > -1}
           {edits[3].value.toString().padStart(2, '0')}
-        {:else}ЧЧ{/if}
+        {:else}HH{/if}
       </span>
       <span class="separator">:</span>
       <span
@@ -345,10 +346,11 @@
       >
         {#if edits[4].value > -1}
           {edits[4].value.toString().padStart(2, '0')}
-        {:else}ММ{/if}
+        {:else}MM{/if}
       </span>
     {/if}
     {#if value}
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
       <div
         bind:this={closeBtn}
         class="close-btn"
@@ -388,7 +390,9 @@
         {/if}
       {/if}
     {:else}
-      <Label label={labelNull} />
+      <div class="dark-color">
+        <Label label={labelNull} />
+      </div>
     {/if}
   {/if}
 </button>
@@ -502,8 +506,8 @@
       padding: 0 0.875rem;
       width: 100%;
       height: 2rem;
+      color: var(--caption-color);
       &:hover {
-        color: var(--caption-color);
         background-color: var(--body-color);
         border-color: var(--divider-color);
         .btn-icon {

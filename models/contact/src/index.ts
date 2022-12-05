@@ -113,7 +113,7 @@ export class TChannel extends TAttachedDoc implements Channel {
 @Model(contact.class.Person, contact.class.Contact)
 @UX(contact.string.Person, contact.icon.Person, undefined, 'name')
 export class TPerson extends TContact implements Person {
-  @Prop(TypeDate(), contact.string.Birthday)
+  @Prop(TypeDate(false, false), contact.string.Birthday)
     birthday?: Timestamp
 }
 

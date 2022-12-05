@@ -32,6 +32,7 @@
   export let focus = true
   export let component: AnySvelteComponent | undefined = undefined
   export let componentProps: any | undefined = undefined
+  export let autoSelect = true
 
   export let create: ObjectCreate | undefined = undefined
 </script>
@@ -51,6 +52,7 @@
   {width}
   {component}
   {componentProps}
+  {autoSelect}
   bind:value={space}
   on:change={(evt) => {
     space = evt.detail
