@@ -44,6 +44,7 @@
   export let isNew: boolean = false
   export let isNextNew: boolean = false
   // export let showDocument = false
+  export let compareValue: string | undefined = undefined
 
   let ptx: DisplayTx | undefined
 
@@ -74,6 +75,7 @@
     if (result.id === tx.tx._id) {
       viewlet = result.viewlet
       model = result.model
+      // console.log('[ACTIVITY] Update - model: ', result.model)
       modelIcon = result.modelIcon
       props = getProps(result.props, edit)
     }
@@ -248,7 +250,7 @@
                   {/if}
                   {#if isMessageType(m.attribute)}
                     <div class="strong message emphasized">
-                      <svelte:component this={m.presenter} value={value.set} />
+                      <svelte:component this={m.presenter} value={value.set} {compareValue} />
                     </div>
                   {:else}
                     <div class="strong">
@@ -273,7 +275,7 @@
                   </span>
                   {#if isMessageType(m.attribute)}
                     <div class="strong message emphasized">
-                      <svelte:component this={m.presenter} value={value.set} />
+                      <svelte:component this={m.presenter} value={value.set} {compareValue} />
                     </div>
                   {:else}
                     <div class="strong">

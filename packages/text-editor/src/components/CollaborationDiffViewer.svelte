@@ -33,7 +33,9 @@
 
   export let content: Markup
   export let buttonSize: IconSize = 'small'
+  export let noButton: boolean = false
   export let comparedVersion: Markup | undefined = undefined
+  export let readonly = false
 
   let element: HTMLElement
   let editor: Editor
@@ -41,8 +43,8 @@
   let _decoration = DecorationSet.empty
   let oldContent = ''
 
-  function updateEditor (editor?: Editor, comparedVersion?: Markup): void {
-    const r = calculateDecorations(editor, oldContent, comparedVersion)
+  function updateEditor (editor?: Editor, comparedVersion?: Markup | ArrayBuffer): void {
+    const r = calculateDecorations(editor, oldContent, undefined, comparedVersion)
     if (r !== undefined) {
       oldContent = r.oldContent
       _decoration = r.decorations
@@ -87,6 +89,7 @@
         editor = editor
       }
     })
+    editor.setEditable(!readonly)
   })
 
   onDestroy(() => {
@@ -98,7 +101,7 @@
 </script>
 
 <div class="ref-container">
-  {#if comparedVersion !== undefined}
+  {#if comparedVersion !== undefined && !noButton}
     <div class="flex">
       <div class="flex-grow" />
       <div class="formatPanel buttons-group xsmall-gap mb-4">

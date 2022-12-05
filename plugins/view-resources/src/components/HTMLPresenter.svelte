@@ -14,12 +14,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { MessageViewer } from '@hcengineering/presentation'
+  import { CollaborationDiffViewer } from '@hcengineering/text-editor'
   import { ShowMore } from '@hcengineering/ui'
 
   export let value: string
+  export let compareValue: string | undefined = undefined
 </script>
 
 <ShowMore>
-  <MessageViewer message={value} />
+  {#key [value, compareValue]}
+    <CollaborationDiffViewer content={value} comparedVersion={compareValue} noButton readonly />
+  {/key}
 </ShowMore>

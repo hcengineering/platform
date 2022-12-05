@@ -22,11 +22,12 @@
   import { Component, Grid, IconActivity, Label, Scroller, Button, showPopup } from '@hcengineering/ui'
   import { ActivityKey, activityKey, DisplayTx, newActivity } from '../activity'
   import TxView from './TxView.svelte'
-  import { filterCollectionTxes } from './utils'
+  import { filterCollectionTxes, updateViewlet, getValue } from './utils'
   import { Writable } from 'svelte/store'
-  import view from '@hcengineering/view'
+  import view, { AttributeModel } from '@hcengineering/view'
   import activityPlg from '../plugin'
   import FilterPopup from './FilterPopup.svelte'
+  import { IconObjects } from '@hcengineering/text-editor'
 
   export let object: Doc
   export let integrate: boolean = false
@@ -45,6 +46,9 @@
   let selectedFilter: Ref<Doc> | 'All' = saved !== null && saved !== undefined ? JSON.parse(saved) : 'All'
   $: localStorage.setItem('activity-filter', JSON.stringify(selectedFilter))
   client.findAll(activity.class.ActivityFilter, {}).then((res) => res.map((it) => filters.push(it)))
+  const sd = localStorage.getItem('activity-show-diff')
+  let shownDiffs: boolean = sd !== null && sd !== undefined ? JSON.parse(sd) : true
+  $: localStorage.setItem('activity-show-diff', JSON.stringify(shownDiffs))
 
   const activityQuery = newActivity(client, attrs)
   getResource(notification.function.GetNotificationClient).then((res) => {
@@ -102,15 +106,72 @@
     })
   }
 
+  interface IDiffs {
+    id: string
+    value: string | undefined
+  }
+  let compareValue: IDiffs[]
+  let compares: IDiffs[]
+  let cloneCompares: IDiffs[]
+  let checked: boolean = false
+  let checking: boolean = false
+
   $: if (selectedFilter || txes) {
+    checked = false
+    checking = false
+    compareValue = []
+    compares = []
     const filter = filters.find((it) => it._id === selectedFilter)
     if (filter) {
       filterLabel = filter.label
-      getResource(filter.filter).then((result) => (txesF = result(txes)))
+      getResource(filter.filter).then((result) => {
+        txesF = result(txes)
+        checkCompare(txesF)
+      })
     } else {
       filterLabel = activityPlg.string.All
       txesF = txes
+      checkCompare(txesF)
     }
+  }
+
+  function checkCompare (dtxes: DisplayTx[]): void {
+    let model: AttributeModel[]
+    compares = dtxes.map((tx) => {
+      return { id: tx.tx._id, value: undefined } as IDiffs
+    })
+    dtxes.forEach((tx) =>
+      updateViewlet(client, viewlets, tx).then((result) => {
+        if (result.id === tx.tx._id) {
+          model = result.model
+          checking = true
+          model.forEach((m) => {
+            if (m._class === core.class.TypeMarkup) {
+              getValue(client, m, tx).then((value) => {
+                compareValue = [...compareValue, { id: result.id, value: value.set }]
+                const i = compares.find((f) => f.id === result.id)
+                if (i) i.value = value.set
+                checking = true
+              })
+            }
+          })
+        }
+      })
+    )
+  }
+  $: if (compares.length === txesF.length && txesF.length > 0 && checking) {
+    checking = false
+    let replacer: string | undefined = undefined
+    cloneCompares = []
+    if (compares.length > 0) {
+      for (let i = compares.length - 1; i >= 0; i--) {
+        if (compares[i].value !== undefined) {
+          cloneCompares = [{ id: compares[i].id, value: replacer }, ...cloneCompares]
+          replacer = compares[i].value
+        } else cloneCompares = [{ id: compares[i].id, value: undefined }, ...cloneCompares]
+      }
+    } else cloneCompares = compares
+    checked = true
   }
 </script>
 
@@ -161,6 +222,14 @@
       shape={'circle'}
       on:click={handleOptions}
     />
+    <div class="w-2 min-w-2 max-w-2" />
+    <Button
+      icon={IconObjects}
+      kind={'transparent'}
+      shape={'circle'}
+      selected={shownDiffs}
+      on:click={() => (shownDiffs = !shownDiffs)}
+    />
   </div>
   {#if showCommenInput}
     <div class="ref-input">
@@ -168,16 +237,19 @@
     </div>
   {/if}
   <div class="p-activity select-text" id={activity.string.Activity}>
-    {#if txesF}
+    {#if txesF && cloneCompares && txesF.length === cloneCompares.length}
       <Grid column={1} rowGap={1.5}>
-        {#each txesF as tx, i}
-          <TxView
-            {tx}
-            {viewlets}
-            isNew={newTxPos >= i && newTxPos !== -1}
-            isNextNew={newTxPos > i && newTxPos !== -1}
-          />
-        {/each}
+        {#key cloneCompares}
+          {#each txesF as tx, i}
+            <TxView
+              {tx}
+              compareValue={shownDiffs ? cloneCompares[i].value : undefined}
+              {viewlets}
+              isNew={newTxPos >= i && newTxPos !== -1}
+              isNextNew={newTxPos > i && newTxPos !== -1}
+            />
+          {/each}
+        {/key}
       </Grid>
     {/if}
   </div>

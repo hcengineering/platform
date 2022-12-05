@@ -27,6 +27,8 @@ export { default as EmojiPopup } from './components/EmojiPopup.svelte'
 export { default as FullDescriptionBox } from './components/FullDescriptionBox.svelte'
 export { default as CollaboratorEditor } from './components/CollaboratorEditor.svelte'
 export { default as CollaborationDiffViewer } from './components/CollaborationDiffViewer.svelte'
+
+export { default as IconObjects } from './components/icons/Objects.svelte'
 export { default } from './plugin'
 export * from './types'
 export { default as Collaboration } from './components/Collaboration.svelte'
