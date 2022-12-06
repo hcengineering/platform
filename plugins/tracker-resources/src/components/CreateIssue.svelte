@@ -54,16 +54,13 @@
     Menu,
     setMetadataLocalStorage,
     showPopup,
-    Spinner,
-    NotificationPosition,
-    NotificationSeverity,
-    Notification,
-    notificationsStore
+    Spinner
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { ObjectBox } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import { activeProject, activeSprint, updateIssueRelation } from '../issues'
+  import { addNotification } from '../utils'
   import tracker from '../plugin'
   import AssigneeEditor from './issues/AssigneeEditor.svelte'
   import ParentIssue from './issues/ParentIssue.svelte'
@@ -518,21 +515,10 @@
       }
     }
 
-    const notification: Notification = {
-      id: generateId(),
-      title: tracker.string.IssueCreated,
-      subTitle: getTitle(object.title),
-      severity: NotificationSeverity.Success,
-      position: NotificationPosition.BottomRight,
-      component: IssueNotification,
-      closeTimeout: 10000,
-      params: {
-        issueId: objectId,
-        subTitlePostfix: (await translate(tracker.string.Created, { value: 1 })).toLowerCase()
-      }
-    }
-
-    notificationsStore.addNotification(notification)
+    addNotification(generateId(), tracker.string.IssueCreated, getTitle(object.title), IssueNotification, {
+      issueId: objectId,
+      subTitlePostfix: (await translate(tracker.string.Created, { value: 1 })).toLowerCase()
+    })
 
     objectId = generateId()
     resetObject()

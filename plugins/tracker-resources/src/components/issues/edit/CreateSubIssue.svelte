@@ -18,16 +18,9 @@
   import presentation, { getClient, KeyedAttribute } from '@hcengineering/presentation'
   import { StyledTextArea } from '@hcengineering/text-editor'
   import { IssueStatus, IssuePriority, Issue, Team, calcRank } from '@hcengineering/tracker'
-  import {
-    Button,
-    Component,
-    EditBox,
-    Notification,
-    NotificationPosition,
-    NotificationSeverity,
-    notificationsStore
-  } from '@hcengineering/ui'
+  import { Button, Component, EditBox } from '@hcengineering/ui'
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
+  import { addNotification } from '../../../utils'
   import tracker from '../../../plugin'
   import AssigneeEditor from '../AssigneeEditor.svelte'
   import StatusEditor from '../StatusEditor.svelte'
@@ -134,21 +127,10 @@
         })
       }
 
-      const notification: Notification = {
-        id: generateId(),
-        title: tracker.string.IssueCreated,
-        subTitle: getTitle(newIssue.title),
-        severity: NotificationSeverity.Success,
-        position: NotificationPosition.BottomRight,
-        component: IssueNotification,
-        closeTimeout: 10000,
-        params: {
-          issueId: objectId,
-          subTitlePostfix: (await translate(tracker.string.Created, { value: 1 })).toLowerCase()
-        }
-      }
-
-      notificationsStore.addNotification(notification)
+      addNotification(generateId(), tracker.string.IssueCreated, getTitle(newIssue.title), IssueNotification, {
+        issueId: objectId,
+        subTitlePostfix: (await translate(tracker.string.Created, { value: 1 })).toLowerCase()
+      })
     } finally {
       resetToDefaults()
       loading = false
