@@ -18,13 +18,15 @@
   import presentation, { getClient, KeyedAttribute } from '@hcengineering/presentation'
   import { StyledTextArea } from '@hcengineering/text-editor'
   import { IssueStatus, IssuePriority, Issue, Team, calcRank } from '@hcengineering/tracker'
-  import { Button, Component, EditBox } from '@hcengineering/ui'
+  import { addNotification, Button, Component, EditBox } from '@hcengineering/ui'
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
   import tracker from '../../../plugin'
   import AssigneeEditor from '../AssigneeEditor.svelte'
   import StatusEditor from '../StatusEditor.svelte'
   import PriorityEditor from '../PriorityEditor.svelte'
   import EstimationEditor from '../timereport/EstimationEditor.svelte'
+  import IssueNotification from '../IssueNotification.svelte'
+  import { translate } from '@hcengineering/platform'
 
   export let parentIssue: Issue
   export let issueStatuses: WithLookup<IssueStatus>[]
@@ -123,6 +125,11 @@
           tag: label.tag
         })
       }
+
+      addNotification(tracker.string.IssueCreated, getTitle(newIssue.title), IssueNotification, {
+        issueId: objectId,
+        subTitlePostfix: (await translate(tracker.string.Created, { value: 1 })).toLowerCase()
+      })
     } finally {
       resetToDefaults()
       loading = false

@@ -13,8 +13,11 @@
 // limitations under the License.
 //
 
+import { generateId } from '@hcengineering/core'
 import type { Metadata } from '@hcengineering/platform'
 import { setMetadata } from '@hcengineering/platform'
+import { Notification, notificationsStore, NotificationPosition, NotificationSeverity } from '.'
+import { AnyComponent, AnySvelteComponent } from './types'
 
 export function setMetadataLocalStorage<T> (id: Metadata<T>, value: T | null): void {
   if (value != null) {
@@ -46,4 +49,24 @@ export function checkMobile (): boolean {
 
 export function floorFractionDigits (n: number | string, amount: number): number {
   return Number(Number(n).toFixed(amount))
+}
+
+export function addNotification (
+  title: string,
+  subTitle: string,
+  component: AnyComponent | AnySvelteComponent,
+  params?: { [key: string]: any }
+): void {
+  const notification: Notification = {
+    id: generateId(),
+    title,
+    subTitle,
+    severity: NotificationSeverity.Success,
+    position: NotificationPosition.BottomRight,
+    component,
+    closeTimeout: 10000,
+    params
+  }
+
+  notificationsStore.addNotification(notification)
 }
