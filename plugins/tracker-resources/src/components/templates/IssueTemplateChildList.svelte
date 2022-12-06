@@ -108,6 +108,7 @@
 />
 
 {#each issues as issue, index (issue.id)}
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div
     class="flex-between row"
     class:is-dragging={index === draggingIndex}
@@ -139,6 +140,7 @@
           issue.priority = evt.detail
         }}
       />
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
       <span class="issuePresenter" on:click={(evt) => openIssue(evt, issue)}>
         <FixedColumn
           width={propsWidth.issue}
@@ -156,7 +158,7 @@
     <div class="flex-center flex-no-shrink">
       <EstimationEditor
         kind={'link'}
-        size={'small'}
+        size={'large'}
         bind:value={issue}
         on:change={(evt) => {
           dispatch('update-issue', { id: issue.id, estimation: evt.detail })

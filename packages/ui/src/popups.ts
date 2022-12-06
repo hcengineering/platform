@@ -243,6 +243,7 @@ export function fitPopupElement (
     } else if (element === 'top') {
       newProps.top = '15vh'
       newProps.left = '50%'
+      newProps.maxHeight = '75vh'
       newProps.transform = 'translateX(-50%)'
       show = true
     } else if (element === 'float') {
