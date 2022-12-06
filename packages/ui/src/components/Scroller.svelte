@@ -310,7 +310,7 @@
 <svelte:window on:resize={_resize} />
 
 <div class="scroller-container {invertScroll ? 'invert' : 'normal'}">
-  <div bind:this={divHScroll} class="horizontalBox flex-shrink">
+  <div bind:this={divHScroll} class="horizontalBox flex-col flex-shrink">
     <div
       bind:this={divScroll}
       use:resizeObserver={(element) => {

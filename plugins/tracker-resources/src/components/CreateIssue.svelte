@@ -713,18 +713,11 @@
     space={_space}
     alwaysEdit
     showButtons={false}
-    maxHeight={'20vh'}
     bind:content={object.description}
     placeholder={tracker.string.IssueDescriptionPlaceholder}
     on:changeSize={() => dispatch('changeContent')}
   />
-  <IssueTemplateChilds
-    bind:children={subIssues}
-    sprint={object.sprint}
-    project={object.project}
-    isScrollable
-    maxHeight={'20vh'}
-  />
+  <IssueTemplateChilds bind:children={subIssues} sprint={object.sprint} project={object.project} isScrollable />
   <svelte:fragment slot="pool">
     <div class="flex flex-wrap" style:gap={'0.2vw'}>
       {#if issueStatuses}
