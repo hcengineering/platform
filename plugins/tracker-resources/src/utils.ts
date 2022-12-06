@@ -36,11 +36,7 @@ import {
   areDatesEqual,
   getMillisecondsInMonth,
   isWeekend,
-  MILLISECONDS_IN_WEEK,
-  Notification,
-  NotificationPosition,
-  NotificationSeverity,
-  notificationsStore
+  MILLISECONDS_IN_WEEK
 } from '@hcengineering/ui'
 import tracker from './plugin'
 import {
@@ -677,25 +673,4 @@ export function getWorkDayType (timestamp: number): WorkDaysType | undefined {
   } else if (areDatesEqual(date, previousWorkDate)) {
     return WorkDaysType.PREVIOUS
   }
-}
-
-export function addNotification (
-  id: string,
-  title: string,
-  subTitle: string,
-  component: AnyComponent | AnySvelteComponent,
-  params?: { [key: string]: any }
-): void {
-  const notification: Notification = {
-    id,
-    title,
-    subTitle,
-    severity: NotificationSeverity.Success,
-    position: NotificationPosition.BottomRight,
-    component,
-    closeTimeout: 10000,
-    params
-  }
-
-  notificationsStore.addNotification(notification)
 }

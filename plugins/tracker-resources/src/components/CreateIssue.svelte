@@ -44,6 +44,7 @@
   } from '@hcengineering/tracker'
   import {
     ActionIcon,
+    addNotification,
     Button,
     Component,
     DatePresenter,
@@ -60,7 +61,6 @@
   import { ObjectBox } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import { activeProject, activeSprint, updateIssueRelation } from '../issues'
-  import { addNotification } from '../utils'
   import tracker from '../plugin'
   import AssigneeEditor from './issues/AssigneeEditor.svelte'
   import ParentIssue from './issues/ParentIssue.svelte'
@@ -515,7 +515,7 @@
       }
     }
 
-    addNotification(generateId(), tracker.string.IssueCreated, getTitle(object.title), IssueNotification, {
+    addNotification(tracker.string.IssueCreated, getTitle(object.title), IssueNotification, {
       issueId: objectId,
       subTitlePostfix: (await translate(tracker.string.Created, { value: 1 })).toLowerCase()
     })
