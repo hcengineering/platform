@@ -77,10 +77,10 @@
   </svelte:fragment>
   <svelte:fragment slot="extra">
     <Button
-      size="small"
+      size={'small'}
       icon={IconAdd}
       label={tracker.string.IssueTemplate}
-      kind="secondary"
+      kind={'primary'}
       on:click={showCreateDialog}
     />
 

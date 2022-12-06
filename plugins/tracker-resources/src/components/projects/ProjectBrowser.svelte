@@ -74,105 +74,100 @@
   }
 </script>
 
-<div>
-  <div class="fs-title flex-between header">
-    <div class="flex-center">
-      <Label {label} />
-      <div class="projectTitle">
-        › <Label label={title} />
-      </div>
+<div class="fs-title flex-between header">
+  <div class="flex-center">
+    <Label {label} />
+    <div class="projectTitle">
+      › <Label label={title} />
     </div>
-    <Button size="small" icon={IconAdd} label={tracker.string.Project} kind="secondary" on:click={showCreateDialog} />
   </div>
-  <div class="itemsContainer">
+  <Button size="small" icon={IconAdd} label={tracker.string.Project} kind={'primary'} on:click={showCreateDialog} />
+</div>
+<div class="itemsContainer">
+  <div class="flex-center">
     <div class="flex-center">
-      <div class="flex-center">
-        <div class="buttonWrapper">
-          <Button
-            size="small"
-            shape="rectangle-right"
-            selected={mode === 'all'}
-            label={tracker.string.AllProjects}
-            on:click={() => handleViewModeChanged('all')}
-          />
-        </div>
-        <div class="buttonWrapper">
-          <Button
-            size="small"
-            shape="rectangle"
-            selected={mode === 'backlog'}
-            label={tracker.string.BacklogProjects}
-            on:click={() => handleViewModeChanged('backlog')}
-          />
-        </div>
-        <div class="buttonWrapper">
-          <Button
-            size="small"
-            shape="rectangle"
-            selected={mode === 'active'}
-            label={tracker.string.ActiveProjects}
-            on:click={() => handleViewModeChanged('active')}
-          />
-        </div>
-        <div class="buttonWrapper">
-          <Button
-            size="small"
-            shape="rectangle-left"
-            selected={mode === 'closed'}
-            label={tracker.string.ClosedProjects}
-            on:click={() => handleViewModeChanged('closed')}
-          />
-        </div>
-      </div>
-      <!-- <div class="ml-3 filterButton">
+      <div class="buttonWrapper">
         <Button
           size="small"
-          icon={IconAdd}
-          kind={'link-bordered'}
-          borderStyle={'dashed'}
-          label={tracker.string.Filter}
-          on:click={() => {}}
+          shape="rectangle-right"
+          selected={mode === 'all'}
+          label={tracker.string.AllProjects}
+          on:click={() => handleViewModeChanged('all')}
         />
-      </div> -->
+      </div>
+      <div class="buttonWrapper">
+        <Button
+          size="small"
+          shape="rectangle"
+          selected={mode === 'backlog'}
+          label={tracker.string.BacklogProjects}
+          on:click={() => handleViewModeChanged('backlog')}
+        />
+      </div>
+      <div class="buttonWrapper">
+        <Button
+          size="small"
+          shape="rectangle"
+          selected={mode === 'active'}
+          label={tracker.string.ActiveProjects}
+          on:click={() => handleViewModeChanged('active')}
+        />
+      </div>
+      <div class="buttonWrapper">
+        <Button
+          size="small"
+          shape="rectangle-left"
+          selected={mode === 'closed'}
+          label={tracker.string.ClosedProjects}
+          on:click={() => handleViewModeChanged('closed')}
+        />
+      </div>
     </div>
-    <!-- <div class="flex-center">
-      <div class="flex-center">
-        <div class="buttonWrapper">
-          <Button selected size="small" shape="rectangle-right" icon={tracker.icon.ProjectsList} />
-        </div>
-        <div class="buttonWrapper">
-          <Button size="small" shape="rectangle-left" icon={tracker.icon.ProjectsTimeline} />
-        </div>
-      </div>
-      <div class="ml-3">
-        <Button size="small" icon={IconOptions} />
-      </div>
+    <!-- <div class="ml-3 filterButton">
+      <Button
+        size="small"
+        icon={IconAdd}
+        kind={'link-bordered'}
+        borderStyle={'dashed'}
+        label={tracker.string.Filter}
+        on:click={() => {}}
+      />
     </div> -->
   </div>
-  <ProjectsListBrowser
-    _class={tracker.class.Project}
-    itemsConfig={[
-      { key: '', presenter: tracker.component.IconPresenter },
-      { key: '', presenter: tracker.component.ProjectPresenter, props: { kind: 'list' } },
-      {
-        key: '$lookup.lead',
-        presenter: tracker.component.LeadPresenter,
-        props: { _class: tracker.class.Project, defaultClass: contact.class.Employee, shouldShowLabel: false }
-      },
-      { key: '', presenter: tracker.component.ProjectMembersPresenter, props: { kind: 'link' } },
-      { key: '', presenter: tracker.component.TargetDatePresenter },
-      { key: '', presenter: tracker.component.ProjectStatusPresenter }
-    ]}
-    projects={resultProjects}
-  />
+  <!-- <div class="flex-center">
+    <div class="flex-center">
+      <div class="buttonWrapper">
+        <Button selected size="small" shape="rectangle-right" icon={tracker.icon.ProjectsList} />
+      </div>
+      <div class="buttonWrapper">
+        <Button size="small" shape="rectangle-left" icon={tracker.icon.ProjectsTimeline} />
+      </div>
+    </div>
+    <div class="ml-3">
+      <Button size="small" icon={IconOptions} />
+    </div>
+  </div> -->
 </div>
+<ProjectsListBrowser
+  _class={tracker.class.Project}
+  itemsConfig={[
+    { key: '', presenter: tracker.component.IconPresenter },
+    { key: '', presenter: tracker.component.ProjectPresenter, props: { kind: 'list' } },
+    {
+      key: '$lookup.lead',
+      presenter: tracker.component.LeadPresenter,
+      props: { _class: tracker.class.Project, defaultClass: contact.class.Employee, shouldShowLabel: false }
+    },
+    { key: '', presenter: tracker.component.ProjectMembersPresenter, props: { kind: 'link' } },
+    { key: '', presenter: tracker.component.TargetDatePresenter },
+    { key: '', presenter: tracker.component.ProjectStatusPresenter }
+  ]}
+  projects={resultProjects}
+/>
 
 <style lang="scss">
   .header {
-    min-height: 3.5rem;
-    padding-left: 2.25rem;
-    padding-right: 1.35rem;
-    border-bottom: 1px solid var(--theme-button-border-hovered);
+    padding: 0.5rem 0.75rem 0.5rem 2.25rem;
   }
 
   .projectTitle {

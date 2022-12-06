@@ -16,7 +16,7 @@
 <script lang="ts">
   import { Account, generateId, Ref, Doc } from '@hcengineering/core'
   import { Card, createQuery, getClient } from '@hcengineering/presentation'
-  import { DropdownLabels, EditBox, Grid } from '@hcengineering/ui'
+  import { DropdownLabels, EditBox, Button } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import inventory from '../plugin'
   import { Category, Product } from '@hcengineering/inventory'
@@ -76,19 +76,18 @@
     dispatch('close')
   }}
 >
-  <Grid column={1} rowGap={1.75}>
-    <EditBox
-      label={inventory.string.Product}
-      icon={inventory.icon.Products}
-      bind:value={doc.name}
-      placeholder={inventory.string.Product}
-      focus
-    />
+  <div class="flex-row-center clear-mins">
+    <div class="mr-3">
+      <Button focusIndex={1} icon={inventory.icon.Products} size={'medium'} kind={'link-bordered'} disabled />
+    </div>
+    <EditBox bind:value={doc.name} placeholder={inventory.string.Product} kind={'large-style'} focus />
+  </div>
+  <svelte:fragment slot="pool">
     <DropdownLabels
       items={categories}
       bind:selected={doc.attachedTo}
       placeholder={inventory.string.Categories}
       label={inventory.string.Category}
     />
-  </Grid>
+  </svelte:fragment>
 </Card>

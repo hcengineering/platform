@@ -6,19 +6,20 @@
   import StyledTextEditor from './StyledTextEditor.svelte'
 
   export let label: IntlString | undefined = undefined
-  export let content: string
+  export let content: string | undefined
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
 
   export let showButtons = true
   export let buttonSize: IconSize = 'small'
   export let focus = false
+  export let emphasized: boolean = false
   export let isScrollable: boolean = false
   export let maxHeight: 'max' | 'card' | 'limited' | string | undefined = undefined
 
   let rawValue: string
   let oldContent = ''
 
-  $: if (oldContent !== content) {
+  $: if (content && oldContent !== content) {
     oldContent = content
     rawValue = content
   }
@@ -42,10 +43,9 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div
   class="antiComponent styled-box clear-mins"
+  class:antiEmphasized={emphasized}
   on:click={() => {
-    if (focused) {
-      textEditor?.focus()
-    }
+    textEditor?.focus()
   }}
 >
   {#if label}
@@ -81,7 +81,7 @@
     .label {
       padding-bottom: 0.25rem;
       font-size: 0.75rem;
-      color: var(--theme-caption-color);
+      color: var(--caption-color);
       opacity: 0.3;
       transition: top 200ms;
       pointer-events: none;

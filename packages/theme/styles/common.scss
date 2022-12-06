@@ -342,3 +342,21 @@
 
 // Replacing the background of a text editor in Activity
 .activity-content .ref-container .textInput { background-color: var(--body-color) !important; }
+
+// Emphasized
+.antiEmphasized {
+  padding: .75rem;
+  background-color: var(--body-accent);
+  border: 1px solid var(--button-border-color);
+  border-radius: .5rem;
+  transition-property: border, background-color;
+  transition-duration: .15s;
+  transition-timing-function: var(--timing-main);
+
+  &:hover,
+  &:focus-within {
+    background-color: var(--body-color);
+    border-color: var(--button-border-hover);
+  }
+}
+

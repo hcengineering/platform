@@ -136,32 +136,20 @@
   createMore={false}
 >
   <svelte:fragment slot="header">
-    <div class="flex-row-center">
-      <SpaceSelector
-        _class={tracker.class.Team}
-        label={tracker.string.Team}
-        bind:space={_space}
-        on:space={(evt) => {
-          spaceRef = evt.detail
-        }}
-      />
-    </div>
+    <SpaceSelector
+      _class={tracker.class.Team}
+      label={tracker.string.Team}
+      bind:space={_space}
+      on:space={(evt) => {
+        spaceRef = evt.detail
+      }}
+    />
   </svelte:fragment>
   <svelte:fragment slot="title" let:label>
-    <div class="flex-row-center gap-1">
-      <div class="mr-2">
-        <Label {label} />
-      </div>
-    </div>
+    <Label {label} />
   </svelte:fragment>
 
-  <EditBox
-    bind:value={object.title}
-    placeholder={tracker.string.IssueTitlePlaceholder}
-    maxWidth={'37.5rem'}
-    kind={'large-style'}
-    focus
-  />
+  <EditBox bind:value={object.title} placeholder={tracker.string.IssueTitlePlaceholder} kind={'large-style'} focus />
   <AttachmentStyledBox
     bind:this={descriptionBox}
     {objectId}
@@ -169,7 +157,7 @@
     space={_space}
     alwaysEdit
     showButtons={false}
-    maxHeight={'card'}
+    emphasized
     bind:content={object.description}
     placeholder={tracker.string.IssueDescriptionPlaceholder}
   />
@@ -180,42 +168,40 @@
     teamId={spaceRef?.identifier ?? 'TSK'}
   />
   <svelte:fragment slot="pool">
-    <div class="flex flex-wrap" style:gap={'0.2vw'}>
-      <PriorityEditor
-        value={object}
-        shouldShowLabel
-        isEditable
-        kind="no-border"
-        size="small"
-        justify="center"
-        on:change={({ detail }) => (object.priority = detail)}
-      />
-      <AssigneeEditor
-        value={object}
-        size="small"
-        kind="no-border"
-        width={'min-content'}
-        on:change={({ detail }) => (object.assignee = detail)}
-      />
-      <Component
-        is={tags.component.TagsDropdownEditor}
-        props={{
-          items: labels,
-          key,
-          targetClass: tracker.class.Issue,
-          countLabel: tracker.string.NumberLabels
-        }}
-        on:open={(evt) => {
-          addTagRef(evt.detail)
-        }}
-        on:delete={(evt) => {
-          labels = labels.filter((it) => it._id !== evt.detail)
-        }}
-      />
-      <EstimationEditor kind={'no-border'} size={'small'} value={object} />
-      <ProjectSelector value={object.project} onChange={handleProjectIdChanged} />
-      <SprintSelector value={object.sprint} onChange={handleSprintIdChanged} useProject={object.project ?? undefined} />
-    </div>
+    <PriorityEditor
+      value={object}
+      shouldShowLabel
+      isEditable
+      kind="no-border"
+      size="small"
+      justify="center"
+      on:change={({ detail }) => (object.priority = detail)}
+    />
+    <AssigneeEditor
+      value={object}
+      size="small"
+      kind="no-border"
+      width={'min-content'}
+      on:change={({ detail }) => (object.assignee = detail)}
+    />
+    <Component
+      is={tags.component.TagsDropdownEditor}
+      props={{
+        items: labels,
+        key,
+        targetClass: tracker.class.Issue,
+        countLabel: tracker.string.NumberLabels
+      }}
+      on:open={(evt) => {
+        addTagRef(evt.detail)
+      }}
+      on:delete={(evt) => {
+        labels = labels.filter((it) => it._id !== evt.detail)
+      }}
+    />
+    <EstimationEditor kind={'no-border'} size={'small'} value={object} />
+    <ProjectSelector value={object.project} onChange={handleProjectIdChanged} />
+    <SprintSelector value={object.sprint} onChange={handleSprintIdChanged} useProject={object.project ?? undefined} />
   </svelte:fragment>
   <svelte:fragment slot="footer">
     <Button

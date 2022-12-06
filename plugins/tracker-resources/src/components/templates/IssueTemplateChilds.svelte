@@ -76,7 +76,7 @@
     labelParams={{ subIssues: 0 }}
     kind={'transparent'}
     size={'small'}
-    showTooltip={{ label: tracker.string.AddSubIssues, props: { subIssues: 1 }, direction: 'bottom' }}
+    showTooltip={{ label: tracker.string.AddSubIssues, props: { subIssues: 1 } }}
     on:click={() => {
       closeTooltip()
       isCreating = true

@@ -22,6 +22,7 @@
   import tracker from '../../plugin'
   import ProjectSelector from '../ProjectSelector.svelte'
   import SprintStatusSelector from './SprintStatusSelector.svelte'
+  import { StyledTextArea } from '@hcengineering/text-editor'
 
   export let space: Ref<Team>
   const dispatch = createEventDispatcher()
@@ -71,17 +72,13 @@
   <svelte:fragment slot="header">
     <SpaceSelector _class={tracker.class.Team} label={tracker.string.Team} bind:space />
   </svelte:fragment>
-  <div class="label">
-    <EditBox bind:value={object.label} placeholder={tracker.string.SprintNamePlaceholder} kind="large-style" focus />
-  </div>
-  <div class="description">
-    <EditBox
-      bind:value={object.description}
-      placeholder={tracker.string.ProjectDescriptionPlaceholder}
-      kind="editbox"
-    />
-  </div>
-  <div slot="pool" class="flex-row-center text-sm gap-1-5">
+  <EditBox bind:value={object.label} placeholder={tracker.string.SprintNamePlaceholder} kind={'large-style'} focus />
+  <StyledTextArea
+    bind:content={object.description}
+    placeholder={tracker.string.ProjectDescriptionPlaceholder}
+    emphasized
+  />
+  <svelte:fragment slot="pool">
     <SprintStatusSelector selectedSprintStatus={object.status} onSprintStatusChange={handleProjectStatusChanged} />
     <ProjectSelector value={object.project} onChange={handleProjectIdChanged} />
     <EmployeeBox
@@ -105,7 +102,7 @@
       label={tracker.string.TargetDate}
       detail={ui.string.SelectDate}
     />
-  </div>
+  </svelte:fragment>
 </Card>
 
 <style>

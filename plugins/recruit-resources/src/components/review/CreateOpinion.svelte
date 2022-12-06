@@ -19,8 +19,8 @@
   import { Card, getClient } from '@hcengineering/presentation'
   import type { Opinion, Review } from '@hcengineering/recruit'
   import task, { SpaceWithStates } from '@hcengineering/task'
-  import { StyledTextEditor } from '@hcengineering/text-editor'
-  import { EditBox, Grid, Label, Status as StatusControl } from '@hcengineering/ui'
+  import { StyledTextArea } from '@hcengineering/text-editor'
+  import { EditBox, Status as StatusControl } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../../plugin'
 
@@ -88,27 +88,11 @@
   }}
 >
   <StatusControl slot="error" {status} />
-  <Grid column={1} rowGap={1.75}>
-    <EditBox
-      bind:value={doc.value}
-      label={recruit.string.OpinionValue}
-      placeholder={recruit.string.OpinionValuePlaceholder}
-      focus
-    />
-    <div class="mt-1 mb-1">
-      <Label label={recruit.string.Description} />:
-    </div>
-    <div class="description flex">
-      <StyledTextEditor bind:content={doc.description} />
-    </div>
-  </Grid>
+  <EditBox
+    bind:value={doc.value}
+    label={recruit.string.OpinionValue}
+    placeholder={recruit.string.OpinionValuePlaceholder}
+    focus
+  />
+  <StyledTextArea placeholder={recruit.string.Description} bind:content={doc.description} emphasized />
 </Card>
-
-<style lang="scss">
-  .description {
-    height: 10rem;
-    padding: 0.5rem;
-    border: 1px solid var(--theme-menu-divider);
-    border-radius: 8px;
-  }
-</style>

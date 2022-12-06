@@ -180,7 +180,7 @@
     />
   </svelte:fragment>
   {#if targetClass._id === contact.class.Person}
-    <div class="flex-between flex-row-top mt-2 mb-2">
+    <div class="flex-between flex-row-top">
       <div class="flex-col flex-grow">
         <EditBox
           placeholder={contact.string.PersonFirstNamePlaceholder}
@@ -221,7 +221,7 @@
       </div>
     </div>
   {:else}
-    <div class="flex-row-center clear-mins mt-2 mb-2">
+    <div class="flex-row-center clear-mins">
       <div class="mr-3">
         <Button icon={contact.icon.Company} size={'medium'} kind={'link-bordered'} disabled />
       </div>
