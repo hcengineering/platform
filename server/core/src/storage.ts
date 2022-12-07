@@ -271,19 +271,24 @@ class TServerStorage implements ServerStorage {
   }
 
   private async buildRemovedDoc (ctx: MeasureContext, tx: TxRemoveDoc<Doc>): Promise<Doc | undefined> {
-    const txes = await this.findAll(ctx, core.class.TxCUD, { objectId: tx.objectId }, { sort: { modifiedOn: 1 } })
-    let doc: Doc
-    let createTx = txes.find((tx) => tx._class === core.class.TxCreateDoc)
-    if (createTx === undefined) {
-      const collectionTxes = txes.filter((tx) => tx._class === core.class.TxCollectionCUD) as TxCollectionCUD<
-      Doc,
-      AttachedDoc
-      >[]
-      createTx = collectionTxes.find((p) => p.tx._class === core.class.TxCreateDoc)
-    }
+    const isAttached = this.hierarchy.isDerived(tx.objectClass, core.class.AttachedDoc)
+    const txes = await this.findAll<TxCUD<Doc>>(
+      ctx,
+      isAttached ? core.class.TxCollectionCUD : core.class.TxCUD,
+      isAttached
+        ? { 'tx.objectId': tx.objectId as Ref<AttachedDoc> }
+        : {
+            objectId: tx.objectId
+          },
+      { sort: { modifiedOn: 1 } }
+    )
+    const createTx = isAttached
+      ? txes.find((tx) => (tx as TxCollectionCUD<Doc, AttachedDoc>).tx._class === core.class.TxCreateDoc)
+      : txes.find((tx) => tx._class === core.class.TxCreateDoc)
     if (createTx === undefined) return
-    doc = TxProcessor.createDoc2Doc(createTx as TxCreateDoc<Doc>)
-    for (const tx of txes) {
+    let doc = TxProcessor.createDoc2Doc(createTx as TxCreateDoc<Doc>)
+    for (let tx of txes) {
+      tx = TxProcessor.extractTx(tx) as TxCUD<Doc>
       if (tx._class === core.class.TxUpdateDoc) {
         doc = TxProcessor.updateDoc2Doc(doc, tx as TxUpdateDoc<Doc>)
       } else if (tx._class === core.class.TxMixin) {

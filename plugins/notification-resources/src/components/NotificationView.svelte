@@ -15,8 +15,8 @@
 -->
 <script lang="ts">
   import { TxViewlet } from '@hcengineering/activity'
-  import { ActivityKey, DisplayTx, getCollectionTx, newDisplayTx, TxView } from '@hcengineering/activity-resources'
-  import core, { AttachedDoc, Doc, TxCollectionCUD, WithLookup } from '@hcengineering/core'
+  import { ActivityKey, DisplayTx, newDisplayTx, TxView } from '@hcengineering/activity-resources'
+  import core, { Doc, TxCUD, TxProcessor, WithLookup } from '@hcengineering/core'
   import { Notification, NotificationStatus } from '@hcengineering/notification'
   import { getClient } from '@hcengineering/presentation'
   import { ActionIcon, Component, getPlatformColor, IconBack, IconCheck, IconDelete } from '@hcengineering/ui'
@@ -32,7 +32,7 @@
     let tx = notification.$lookup?.tx
     if (tx) {
       if (hierarchy.isDerived(tx._class, core.class.TxCollectionCUD)) {
-        tx = getCollectionTx(tx as TxCollectionCUD<Doc, AttachedDoc>)
+        tx = TxProcessor.extractTx(tx) as TxCUD<Doc>
       }
       return newDisplayTx(tx, hierarchy)
     }

@@ -200,7 +200,7 @@
           {#if viewlet === undefined && model.length > 0 && tx.updateTx}
             {#each model as m, i}
               {#await getValue(client, m, tx) then value}
-                {#if value.set === null}
+                {#if value.set === null || value.set === undefined}
                   <span class="lower"><Label label={activity.string.Unset} /> <Label label={m.label} /></span>
                 {:else if value.added.length}
                   <span class="lower" class:flex-grow={hasMessageType}>

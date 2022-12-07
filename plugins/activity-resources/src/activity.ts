@@ -96,24 +96,29 @@ export interface Activity {
 }
 
 class ActivityImpl implements Activity {
-  private readonly txQuery1: LiveQuery
-  private readonly txQuery2: LiveQuery
+  private readonly ownTxQuery: LiveQuery
+  private readonly attachedTxQuery: LiveQuery
+  private readonly attachedChangeTxQuery: LiveQuery
   private readonly hiddenAttributes: Set<string>
   private editable: Map<Ref<Class<Doc>>, boolean> | undefined
 
-  private txes1: Array<TxCUD<Doc>> = []
-  private txes2: Array<TxCUD<Doc>> = []
+  private ownTxes: Array<TxCUD<Doc>> = []
+  private attachedTxes: Array<TxCollectionCUD<Doc, AttachedDoc>> = []
+  private attacheChangedTxes: Array<TxCollectionCUD<Doc, AttachedDoc>> = []
+  private readonly hierarchy: Hierarchy
   constructor (readonly client: Client, attributes: Map<string, AnyAttribute>) {
+    this.hierarchy = client.getHierarchy()
     this.hiddenAttributes = new Set(
       [...attributes.entries()].filter(([, value]) => value.hidden === true).map(([key]) => key)
     )
-    this.txQuery1 = createQuery()
-    this.txQuery2 = createQuery()
+    this.ownTxQuery = createQuery()
+    this.attachedTxQuery = createQuery()
+    this.attachedChangeTxQuery = createQuery()
   }
 
   private notify (object: Doc, listener: DisplayTxListener, sort: SortingOrder): void {
     if (this.editable != null) {
-      this.combineTransactions(object, this.txes1, this.txes2, this.editable).then(
+      this.combineTransactions(object, this.ownTxes, this.attachedTxes, this.attacheChangedTxes, this.editable).then(
         (result) => {
           const sorted = result.sort((a, b) => (a.tx.modifiedOn - b.tx.modifiedOn) * sort)
           listener(sorted)
@@ -128,11 +133,11 @@ class ActivityImpl implements Activity {
   update (object: Doc, listener: DisplayTxListener, sort: SortingOrder, editable: Map<Ref<Class<Doc>>, boolean>): void {
     let isAttached = false
 
-    isAttached = this.client.getHierarchy().isDerived(object._class, core.class.AttachedDoc)
+    isAttached = this.hierarchy.isDerived(object._class, core.class.AttachedDoc)
 
     this.editable = editable
 
-    this.txQuery1.query<TxCollectionCUD<Doc, AttachedDoc>>(
+    this.ownTxQuery.query<TxCUD<Doc>>(
       isAttached ? core.class.TxCollectionCUD : core.class.TxCUD,
       isAttached
         ? { 'tx.objectId': object._id as Ref<AttachedDoc> }
@@ -143,54 +148,106 @@ class ActivityImpl implements Activity {
             }
           },
       (result) => {
-        this.txes1 = result
+        this.ownTxes = result
         this.notify(object, listener, sort)
       },
-      { sort: { modifiedOn: SortingOrder.Descending } }
+      { sort: { modifiedOn: SortingOrder.Ascending } }
     )
 
-    this.txQuery2.query<TxCUD<Doc>>(
+    this.attachedTxQuery.query<TxCollectionCUD<Doc, AttachedDoc>>(
       core.class.TxCollectionCUD,
       {
         objectId: object._id,
         'tx._class': { $in: [core.class.TxCreateDoc, core.class.TxUpdateDoc, core.class.TxRemoveDoc] }
       },
       (result) => {
-        this.txes2 = result
+        this.attachedTxes = result
         this.notify(object, listener, sort)
       },
-      { sort: { modifiedOn: SortingOrder.Descending } }
+      { sort: { modifiedOn: SortingOrder.Ascending } }
+    )
+
+    this.attachedChangeTxQuery.query<TxCollectionCUD<Doc, AttachedDoc>>(
+      core.class.TxCollectionCUD,
+      {
+        'tx.operations.attachedTo': object._id,
+        'tx._class': core.class.TxUpdateDoc
+      },
+      (result) => {
+        this.attacheChangedTxes = result
+        this.notify(object, listener, sort)
+      },
+      { sort: { modifiedOn: SortingOrder.Ascending } }
     )
     // In case editable is changed
     this.notify(object, listener, sort)
   }
 
   async combineTransactions (
-    object: Doc,
-    txes1: Array<TxCUD<Doc>>,
-    txes2: Array<TxCUD<Doc>>,
+    doc: Doc,
+    ownTxes: Array<TxCUD<Doc>>,
+    attachedTxes: Array<TxCollectionCUD<Doc, AttachedDoc>>,
+    attachedChangeTxes: Array<TxCollectionCUD<Doc, AttachedDoc>>,
     editable: Map<Ref<Class<Doc>>, boolean>
   ): Promise<DisplayTx[]> {
-    const hierarchy = this.client.getHierarchy()
-
-    // We need to sort with with natural order, to build a proper doc values.
-    const allTx = Array.from(txes1).concat(txes2).sort(this.sortByLastModified)
-    const txCUD: Array<TxCUD<Doc>> = this.filterTxCUD(allTx, hierarchy)
-
     const parents = new Map<Ref<Doc>, DisplayTx>()
 
-    let results: DisplayTx[] = []
+    let ownResults: DisplayTx[] = []
+    let attachedResults: DisplayTx[] = []
 
-    for (const tx of txCUD) {
-      const { collectionCUD, updateCUD, mixinCUD, result, tx: ntx } = this.createDisplayTx(tx, parents)
-      // We do not need collection object updates, in main list of displayed transactions.
-      if (this.isDisplayTxRequired(collectionCUD, updateCUD || mixinCUD, ntx, object)) {
+    for (const tx of ownTxes) {
+      if (!this.filterUpdateTx(tx)) continue
+      const result = this.createDisplayTx(tx, parents)
+      // Combine previous update transaction for same field and if same operation and time treshold is ok
+      ownResults = this.integrateTxWithResults(ownResults, result, editable)
+      this.updateRemovedState(result, ownResults)
+    }
+
+    for (let tx of Array.from(attachedTxes)
+      .concat(attachedChangeTxes)
+      .sort((a, b) => a.modifiedOn - b.modifiedOn)) {
+      if (!this.filterUpdateTx(tx)) continue
+      const changeAttached = this.isChangeAttachedTx(tx)
+      if (changeAttached || this.isDisplayTxRequired(tx)) {
+        if (changeAttached) {
+          tx = await this.createFakeTx(doc, tx)
+        }
+        const result = this.createDisplayTx(tx, parents)
         // Combine previous update transaction for same field and if same operation and time treshold is ok
-        results = this.integrateTxWithResults(results, result, editable)
-        this.updateRemovedState(result, results)
+        attachedResults = this.integrateTxWithResults(attachedResults, result, editable)
+        this.updateRemovedState(result, attachedResults)
       }
     }
-    return Array.from(results)
+    return Array.from(ownResults).concat(attachedResults)
+  }
+
+  private async createFakeTx (
+    doc: Doc,
+    cltx: TxCollectionCUD<Doc, AttachedDoc>
+  ): Promise<TxCollectionCUD<Doc, AttachedDoc>> {
+    if (doc._id === cltx.objectId) {
+      cltx.tx._class = core.class.TxRemoveDoc
+    } else {
+      const createTx = await this.client.findOne(core.class.TxCollectionCUD, {
+        'tx.objectId': cltx.tx.objectId,
+        'tx._class': core.class.TxCreateDoc
+      })
+      if (createTx !== undefined) {
+        cltx.tx = createTx.tx
+        cltx.tx.modifiedBy = cltx.modifiedBy
+        cltx.tx.modifiedOn = cltx.modifiedOn
+      }
+    }
+    return cltx
+  }
+
+  private isChangeAttachedTx (cltx: TxCollectionCUD<Doc, AttachedDoc>): boolean {
+    const tx = TxProcessor.extractTx(cltx)
+    if (this.hierarchy.isDerived(tx._class, core.class.TxUpdateDoc)) {
+      const utx = tx as TxUpdateDoc<AttachedDoc>
+      return utx.operations.attachedTo !== undefined
+    }
+    return false
   }
 
   private updateRemovedState (result: DisplayTx, results: DisplayTx[]): void {
@@ -204,73 +261,55 @@ class ActivityImpl implements Activity {
     }
   }
 
-  sortByLastModified (a: TxCUD<Doc>, b: TxCUD<Doc>): number {
-    return a.modifiedOn - b.modifiedOn
-  }
-
-  isDisplayTxRequired (collectionCUD: boolean, cudOp: boolean, ntx: TxCUD<Doc>, object: Doc): boolean {
-    return !(collectionCUD && cudOp) || ntx.objectId === object._id
+  private isDisplayTxRequired (cltx: TxCollectionCUD<Doc, AttachedDoc>): boolean {
+    // Check if collection attribute is hidden
+    if (this.hiddenAttributes.has(cltx.collection)) {
+      return false
+    }
+    const tx = TxProcessor.extractTx(cltx)
+    if ([core.class.TxCreateDoc, core.class.TxRemoveDoc].includes(tx._class)) return true
+    return false
   }
 
   private readonly getUpdateTx = (tx: TxCUD<Doc>): TxUpdateDoc<Doc> | undefined => {
-    if (tx._class !== core.class.TxCollectionCUD) {
-      return undefined
-    }
-
-    const colTx = tx as TxCollectionCUD<Doc, any>
-
-    if (colTx.tx._class !== core.class.TxUpdateDoc) {
-      return undefined
-    }
-
-    return colTx.tx as TxUpdateDoc<Doc>
-  }
-
-  filterTxCUD (allTx: Array<TxCUD<Doc>>, hierarchy: Hierarchy): Array<TxCUD<Doc>> {
-    return allTx
-      .filter((tx) => hierarchy.isDerived(tx._class, core.class.TxCUD))
-      .filter((tx) => {
-        const utx = this.getUpdateTx(tx)
-
-        if (hierarchy.isDerived(tx._class, core.class.TxCollectionCUD)) {
-          // Check if collection attribute is hidden
-          const txColl = tx as TxCollectionCUD<Doc, AttachedDoc>
-          if (this.hiddenAttributes.has(txColl.collection)) {
-            return false
-          }
-        }
-
-        if (utx === undefined) {
-          return true
-        }
-
-        const ops = Object.keys(utx.operations)
-
-        if (ops.length > 1) {
-          return true
-        }
-
-        return !this.hiddenAttributes.has(ops[0])
-      })
-  }
-
-  createDisplayTx (
-    tx: TxCUD<Doc>,
-    parents: Map<Ref<Doc>, DisplayTx>
-  ): { collectionCUD: boolean, updateCUD: boolean, mixinCUD: boolean, result: DisplayTx, tx: TxCUD<Doc> } {
-    let collectionCUD = false
-    let updateCUD = false
-    let mixinCUD = false
-    const hierarchy = this.client.getHierarchy()
-    let collectionAttribute: Attribute<Collection<AttachedDoc>> | undefined
-    if (hierarchy.isDerived(tx._class, core.class.TxCollectionCUD)) {
+    if (this.hierarchy.isDerived(tx._class, core.class.TxCollectionCUD)) {
       const cltx = tx as TxCollectionCUD<Doc, AttachedDoc>
-      tx = getCollectionTx(cltx)
+      tx = TxProcessor.extractTx(cltx) as TxCUD<Doc>
+    }
+
+    if (tx._class !== core.class.TxUpdateDoc) {
+      return undefined
+    }
+
+    return tx as TxUpdateDoc<Doc>
+  }
+
+  filterUpdateTx (tx: TxCUD<Doc>): boolean {
+    const utx = this.getUpdateTx(tx)
+
+    if (utx === undefined) {
+      return true
+    }
+
+    const ops = Object.keys(utx.operations)
+
+    if (ops.length > 1) {
+      return true
+    }
+
+    return !this.hiddenAttributes.has(ops[0])
+  }
+
+  createDisplayTx (tx: TxCUD<Doc>, parents: Map<Ref<Doc>, DisplayTx>): DisplayTx {
+    let collectionAttribute: Attribute<Collection<AttachedDoc>> | undefined
+    if (this.hierarchy.isDerived(tx._class, core.class.TxCollectionCUD)) {
+      const cltx = tx as TxCollectionCUD<Doc, AttachedDoc>
+      tx = TxProcessor.extractTx(cltx) as TxCUD<Doc>
 
       // Check mixin classes for desired attribute
-      for (const cl of hierarchy.getDescendants(cltx.objectClass)) {
+      for (const cl of this.hierarchy.getDescendants(cltx.objectClass)) {
         try {
-          collectionAttribute = hierarchy.getAttribute(cl, cltx.collection) as Attribute<Collection<AttachedDoc>>
+          collectionAttribute = this.hierarchy.getAttribute(cl, cltx.collection) as Attribute<Collection<AttachedDoc>>
           if (collectionAttribute !== undefined) {
             break
           }
@@ -278,10 +317,9 @@ class ActivityImpl implements Activity {
           // Ignore
         }
       }
-      collectionCUD = cltx.tx._class === core.class.TxUpdateDoc || cltx.tx._class === core.class.TxMixin
     }
     let firstTx = parents.get(tx.objectId)
-    const result: DisplayTx = newDisplayTx(tx, hierarchy)
+    const result: DisplayTx = newDisplayTx(tx, this.hierarchy)
     result.collectionAttribute = collectionAttribute
 
     result.doc = firstTx?.doc ?? result.doc
@@ -290,22 +328,22 @@ class ActivityImpl implements Activity {
     parents.set(tx.objectId, firstTx)
 
     // If we have updates also apply them all.
-    updateCUD = this.checkUpdateState(result, firstTx)
-    mixinCUD = this.checkMixinState(result, firstTx)
+    this.checkUpdateState(result, firstTx)
+    this.checkMixinState(result, firstTx)
 
-    this.checkRemoveState(hierarchy, tx, firstTx, result)
-    return { collectionCUD, updateCUD, mixinCUD, result, tx }
+    this.checkRemoveState(tx, firstTx, result)
+    return result
   }
 
-  private checkRemoveState (hierarchy: Hierarchy, tx: TxCUD<Doc>, firstTx: DisplayTx, result: DisplayTx): void {
-    if (hierarchy.isDerived(tx._class, core.class.TxRemoveDoc)) {
+  private checkRemoveState (tx: TxCUD<Doc>, firstTx: DisplayTx, result: DisplayTx): void {
+    if (this.hierarchy.isDerived(tx._class, core.class.TxRemoveDoc)) {
       firstTx.removed = true
       result.removed = true
     }
   }
 
   checkUpdateState (result: DisplayTx, firstTx: DisplayTx): boolean {
-    if (this.client.getHierarchy().isDerived(result.tx._class, core.class.TxUpdateDoc) && result.doc !== undefined) {
+    if (this.hierarchy.isDerived(result.tx._class, core.class.TxUpdateDoc) && result.doc !== undefined) {
       firstTx.doc = TxProcessor.updateDoc2Doc(result.doc, result.tx as TxUpdateDoc<Doc>)
       firstTx.updated = true
       result.updated = true
@@ -315,7 +353,7 @@ class ActivityImpl implements Activity {
   }
 
   checkMixinState (result: DisplayTx, firstTx: DisplayTx): boolean {
-    if (this.client.getHierarchy().isDerived(result.tx._class, core.class.TxMixin) && result.doc !== undefined) {
+    if (this.hierarchy.isDerived(result.tx._class, core.class.TxMixin) && result.doc !== undefined) {
       const mix = result.tx as TxMixin<Doc, Doc>
       firstTx.doc = TxProcessor.updateMixin4Doc(result.doc, mix)
       firstTx.mixin = true
@@ -339,7 +377,7 @@ class ActivityImpl implements Activity {
     const newResult = results.filter((prevTx) => {
       const prevUpdate: any = getCombineOpFromTx(prevTx)
       // If same tx or same collection
-      if (this.isSameKindTx(prevTx, result, result.tx._class) || prevUpdate === curUpdate) {
+      if (this.isSameKindTx(prevTx, result) || prevUpdate === curUpdate) {
         if (result.tx.modifiedOn - prevTx.tx.modifiedOn < combineThreshold && isEqualOps(prevUpdate, curUpdate)) {
           // we have same keys,
           // Remember previous transactions
@@ -363,11 +401,10 @@ class ActivityImpl implements Activity {
     return newResult
   }
 
-  isSameKindTx (prevTx: DisplayTx, result: DisplayTx, _class: Ref<Class<Doc>>): boolean {
+  isSameKindTx (prevTx: DisplayTx, result: DisplayTx): boolean {
     return (
       prevTx.tx.objectId === result.tx.objectId && // Same document id
       prevTx.tx._class === result.tx._class && // Same transaction class
-      result.tx._class === _class &&
       prevTx.tx.modifiedBy === result.tx.modifiedBy // Same user
     )
   }
@@ -400,18 +437,6 @@ export function newDisplayTx (tx: TxCUD<Doc>, hierarchy: Hierarchy): DisplayTx {
     mixinTx: hierarchy.isDerived(tx._class, core.class.TxMixin) ? (tx as TxMixin<Doc, Doc>) : undefined,
     doc: createTx !== undefined ? TxProcessor.createDoc2Doc(createTx) : undefined
   }
-}
-
-export function getCollectionTx (cltx: TxCollectionCUD<Doc, AttachedDoc>): TxCUD<Doc> {
-  if (cltx.tx._class === core.class.TxCreateDoc) {
-    // We need to update tx to contain attachedDoc, attachedClass & collection
-    const create = cltx.tx as TxCreateDoc<AttachedDoc>
-    create.attributes.attachedTo = cltx.objectId
-    create.attributes.attachedToClass = cltx.objectClass
-    create.attributes.collection = cltx.collection
-    return create
-  }
-  return cltx.tx
 }
 
 /**
