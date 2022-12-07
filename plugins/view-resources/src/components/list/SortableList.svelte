@@ -42,6 +42,8 @@
   export let presenterProps: Record<string, any> = {}
   export let direction: 'row' | 'column' = 'column'
   export let flipDuration = 200
+  export let isAddButtonHidden = false
+  export let isAddButtonDisabled = false
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -140,7 +142,7 @@
 </script>
 
 <div class="flex-col">
-  {#if label}
+  {#if label || !isAddButtonHidden}
     <div class="flex mb-4">
       {#if label}
         <div class="title-wrapper">
@@ -149,11 +151,11 @@
           </span>
         </div>
       {/if}
-      {#if objectFactory}
+      {#if !isAddButtonHidden}
         <div class="ml-auto">
           <Button
             showTooltip={{ label: presentation.string.Add }}
-            disabled={isLoading}
+            disabled={isAddButtonDisabled || isLoading || !objectFactory}
             width="min-content"
             icon={IconAdd}
             size="small"
