@@ -16,19 +16,13 @@
   import contact from '@hcengineering/contact'
   import { Doc, Ref, Space, WithLookup } from '@hcengineering/core'
   import UserBox from '@hcengineering/presentation/src/components/UserBox.svelte'
-  import { Team, TimeSpendReport } from '@hcengineering/tracker'
-  import {
-    eventToHTMLElement,
-    floorFractionDigits,
-    getEventPositionElement,
-    ListView,
-    showPopup
-  } from '@hcengineering/ui'
+  import { Team, TimeReportDayType, TimeSpendReport } from '@hcengineering/tracker'
+  import { eventToHTMLElement, getEventPositionElement, ListView, showPopup } from '@hcengineering/ui'
   import DatePresenter from '@hcengineering/ui/src/components/calendar/DatePresenter.svelte'
   import { ContextMenu, FixedColumn, ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
   import { getIssueId } from '../../../issues'
   import tracker from '../../../plugin'
-  import EstimationPresenter from './EstimationPresenter.svelte'
+  import TimePresenter from './TimePresenter.svelte'
   import TimeSpendReportPopup from './TimeSpendReportPopup.svelte'
 
   export let reports: WithLookup<TimeSpendReport>[]
@@ -52,10 +46,20 @@
   }
   const toTeamId = (ref: Ref<Space>) => ref as Ref<Team>
 
-  function editSpendReport (event: MouseEvent, value: TimeSpendReport): void {
+  function editSpendReport (
+    event: MouseEvent,
+    value: TimeSpendReport,
+    defaultTimeReportDay: TimeReportDayType | undefined
+  ): void {
     showPopup(
       TimeSpendReportPopup,
-      { issue: value.attachedTo, issueClass: value.attachedToClass, value, assignee: value.employee },
+      {
+        issue: value.attachedTo,
+        issueClass: value.attachedToClass,
+        value,
+        assignee: value.employee,
+        defaultTimeReportDay
+      },
       eventToHTMLElement(event)
     )
   }
@@ -75,7 +79,7 @@
       on:focus={() => {
         listProvider.updateFocus(report)
       }}
-      on:click={(evt) => editSpendReport(evt, report)}
+      on:click={(evt) => editSpendReport(evt, report, currentTeam?.defaultTimeReportDay)}
     >
       <div class="flex-row-center clear-mins gap-2 p-2">
         <span class="issuePresenter">
@@ -104,7 +108,7 @@
           readonly
           showNavigate={false}
         />
-        <EstimationPresenter value={floorFractionDigits(report.value, 3)} />
+        <TimePresenter value={report.value} workDayLength={currentTeam?.workDayLength} />
         <DatePresenter value={report.date} />
       </div>
     </div>

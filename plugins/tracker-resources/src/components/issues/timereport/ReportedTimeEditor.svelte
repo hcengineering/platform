@@ -19,6 +19,7 @@
   import { ActionIcon, eventToHTMLElement, floorFractionDigits, IconAdd, Label, showPopup } from '@hcengineering/ui'
   import ReportsPopup from './ReportsPopup.svelte'
   import TimeSpendReportPopup from './TimeSpendReportPopup.svelte'
+  import TimePresenter from './TimePresenter.svelte'
 
   // export let label: IntlString
   export let placeholder: IntlString
@@ -26,10 +27,19 @@
   export let value: number
   export let kind: 'no-border' | 'link' = 'no-border'
 
+  $: defaultTimeReportDay = object.defaultTimeReportDay
+  $: workDayLength = object.workDayLength
+
   function addTimeReport (event: MouseEvent): void {
     showPopup(
       TimeSpendReportPopup,
-      { issueId: object._id, issueClass: object._class, space: object.space, assignee: object.assignee },
+      {
+        issueId: object._id,
+        defaultTimeReportDay,
+        issueClass: object._class,
+        space: object.space,
+        assignee: object.assignee
+      },
       eventToHTMLElement(event)
     )
   }
@@ -46,9 +56,9 @@
   <div id="ReportedTimeEditor" class="link-container flex-between" on:click={showReports}>
     {#if value !== undefined}
       <span class="overflow-label">
-        {floorFractionDigits(value, 3)}
+        <TimePresenter {value} {workDayLength} />
         {#if childTime !== 0}
-          / {childTime}
+          / <TimePresenter value={childTime} {workDayLength} />
         {/if}
       </span>
     {:else}
@@ -60,9 +70,9 @@
   </div>
 {:else if value !== undefined}
   <span class="overflow-label">
-    {floorFractionDigits(value, 3)}
+    <TimePresenter {value} {workDayLength} />
     {#if childTime !== 0}
-      / {childTime}
+      / <TimePresenter value={childTime} {workDayLength} />
     {/if}
   </span>
 {:else}

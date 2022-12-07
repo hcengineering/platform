@@ -13,75 +13,40 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Employee } from '@hcengineering/contact'
   import { WithLookup } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import type { TimeSpendReport } from '@hcengineering/tracker'
-  import { eventToHTMLElement, floorFractionDigits, Label, showPopup, tooltip } from '@hcengineering/ui'
-  import view, { AttributeModel } from '@hcengineering/view'
-  import { getObjectPresenter } from '@hcengineering/view-resources'
-  import tracker from '../../../plugin'
+  import { Issue, TimeSpendReport } from '@hcengineering/tracker'
+  import { eventToHTMLElement, showPopup } from '@hcengineering/ui'
+  import TimePresenter from './TimePresenter.svelte'
   import TimeSpendReportPopup from './TimeSpendReportPopup.svelte'
 
   export let value: WithLookup<TimeSpendReport>
   const client = getClient()
-  let presenter: AttributeModel
 
-  getObjectPresenter(client, contact.class.Employee, { key: '' }).then((p) => {
-    presenter = p
-  })
+  $: issue = value.$lookup?.attachedTo
+  $: if (!issue) {
+    client.findOne(value.attachedToClass, { _id: value.attachedTo }).then((r) => {
+      issue = r as Issue
+    })
+  }
+  $: workDayLength = issue?.workDayLength
+  $: defaultTimeReportDay = issue?.defaultTimeReportDay
 
   function editSpendReport (event: MouseEvent): void {
     showPopup(
       TimeSpendReportPopup,
-      { issue: value.attachedTo, issueClass: value.attachedToClass, value, assignee: value.employee },
+      {
+        issue: value.attachedTo,
+        issueClass: value.attachedToClass,
+        value,
+        assignee: value.employee,
+        defaultTimeReportDay
+      },
       eventToHTMLElement(event)
     )
-  }
-
-  let employee: Employee | undefined | null = value.$lookup?.employee ?? null
-  $: if (employee === undefined) {
-    client.findOne(value.attachedToClass, { _id: value.attachedTo }).then((r) => {
-      employee = r as Employee
-    })
   }
 </script>
 
 {#if value && value.value}
-  <span
-    id="TimeSpendReportValue"
-    class="issuePresenterRoot flex-row-center"
-    on:click={editSpendReport}
-    use:tooltip={value.employee
-      ? {
-          label: tracker.string.TimeSpendReport,
-          component: view.component.ObjectPresenter,
-          props: {
-            objectId: value.employee,
-            _class: contact.class.Employee,
-            value: value.$lookup?.employee
-          }
-        }
-      : undefined}
-  >
-    <Label label={tracker.string.TimeSpendValue} params={{ value: floorFractionDigits(value.value, 3) }} />
-  </span>
+  <TimePresenter id="TimeSpendReportValue" kind="link" value={value.value} {workDayLength} on:click={editSpendReport} />
 {/if}
-
-<style lang="scss">
-  .issuePresenterRoot {
-    white-space: nowrap;
-
-    font-size: 0.8125rem;
-    color: var(--content-color);
-    cursor: pointer;
-
-    &:hover {
-      color: var(--caption-color);
-      text-decoration: underline;
-    }
-    &:active {
-      color: var(--accent-color);
-    }
-  }
-</style>

@@ -27,7 +27,8 @@ import {
   ProjectStatus,
   Sprint,
   SprintStatus,
-  Team
+  Team,
+  TimeReportDayType
 } from '@hcengineering/tracker'
 import { ViewOptionModel } from '@hcengineering/view-resources'
 import {
@@ -39,13 +40,7 @@ import {
   MILLISECONDS_IN_WEEK
 } from '@hcengineering/ui'
 import tracker from './plugin'
-import {
-  defaultPriorities,
-  defaultProjectStatuses,
-  defaultSprintStatuses,
-  issuePriorities,
-  WorkDaysType
-} from './types'
+import { defaultPriorities, defaultProjectStatuses, defaultSprintStatuses, issuePriorities } from './types'
 
 export * from './types'
 
@@ -649,13 +644,14 @@ export async function moveIssuesToAnotherSprint (
   }
 }
 
-export function getWorkDate (type: WorkDaysType): number {
+export function getTimeReportDate (type: TimeReportDayType): number {
   const date = new Date(Date.now())
-  if (type === WorkDaysType.PREVIOUS) {
+
+  if (type === TimeReportDayType.PreviousWorkDay) {
     date.setDate(date.getDate() - 1)
   }
 
-  // if currentDate is day off then set date to last working day
+  // if date is day off then set date to last working day
   while (isWeekend(date)) {
     date.setDate(date.getDate() - 1)
   }
@@ -663,14 +659,14 @@ export function getWorkDate (type: WorkDaysType): number {
   return date.valueOf()
 }
 
-export function getWorkDayType (timestamp: number): WorkDaysType | undefined {
+export function getTimeReportDayType (timestamp: number): TimeReportDayType | undefined {
   const date = new Date(timestamp)
-  const currentWorkDate = new Date(getWorkDate(WorkDaysType.CURRENT))
-  const previousWorkDate = new Date(getWorkDate(WorkDaysType.PREVIOUS))
+  const currentWorkDate = new Date(getTimeReportDate(TimeReportDayType.CurrentWorkDay))
+  const previousWorkDate = new Date(getTimeReportDate(TimeReportDayType.PreviousWorkDay))
 
   if (areDatesEqual(date, currentWorkDate)) {
-    return WorkDaysType.CURRENT
+    return TimeReportDayType.CurrentWorkDay
   } else if (areDatesEqual(date, previousWorkDate)) {
-    return WorkDaysType.PREVIOUS
+    return TimeReportDayType.PreviousWorkDay
   }
 }

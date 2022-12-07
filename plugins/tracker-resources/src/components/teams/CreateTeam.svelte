@@ -14,25 +14,56 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { Button, EditBox, eventToHTMLElement, Label, showPopup, ToggleWithLabel } from '@hcengineering/ui'
-  import { getClient, SpaceCreateCard } from '@hcengineering/presentation'
+  import {
+    Button,
+    DropdownIntlItem,
+    DropdownLabelsIntl,
+    EditBox,
+    eventToHTMLElement,
+    Label,
+    showPopup,
+    ToggleWithLabel
+  } from '@hcengineering/ui'
+  import presentation, { Card, getClient } from '@hcengineering/presentation'
   import core, { getCurrentAccount, Ref } from '@hcengineering/core'
-  import { IssueStatus } from '@hcengineering/tracker'
+  import { IssueStatus, Team, TimeReportDayType, WorkDayLength } from '@hcengineering/tracker'
   import { StyledTextBox } from '@hcengineering/text-editor'
   import { Asset } from '@hcengineering/platform'
   import tracker from '../../plugin'
   import TeamIconChooser from './TeamIconChooser.svelte'
+  import TimeReportDayDropdown from '../issues/timereport/TimeReportDayDropdown.svelte'
 
-  let name: string = ''
-  let description: string = ''
-  let isPrivate: boolean = false
-  let icon: Asset | undefined = undefined
+  export let team: Team | undefined = undefined
+
+  let name: string = team?.name ?? ''
+  let description: string = team?.description ?? ''
+  let isPrivate: boolean = team?.private ?? false
+  let icon: Asset | undefined = team?.icon ?? undefined
+  let selectedWorkDayType: TimeReportDayType | undefined =
+    team?.defaultTimeReportDay ?? TimeReportDayType.PreviousWorkDay
+  let selectedWorkDayLength: WorkDayLength | undefined = team?.workDayLength ?? WorkDayLength.EIGHT_HOURS
 
   const dispatch = createEventDispatcher()
   const client = getClient()
+  const workDayLengthItems: DropdownIntlItem[] = [
+    {
+      id: WorkDayLength.SEVEN_HOURS,
+      label: tracker.string.SevenHoursLength
+    },
+    {
+      id: WorkDayLength.EIGHT_HOURS,
+      label: tracker.string.EightHoursLength
+    }
+  ]
 
-  async function createTeam () {
-    await client.createDoc(tracker.class.Team, core.space.Space, {
+  $: isNew = !team
+
+  async function handleSave () {
+    isNew ? createTeam() : updateTeam()
+  }
+
+  function getTeamData () {
+    return {
       name,
       description,
       private: isPrivate,
@@ -42,8 +73,31 @@
       sequence: 0,
       issueStatuses: 0,
       defaultIssueStatus: '' as Ref<IssueStatus>,
-      icon
-    })
+      icon,
+      defaultTimeReportDay: selectedWorkDayType ?? TimeReportDayType.PreviousWorkDay,
+      workDayLength: selectedWorkDayLength ?? WorkDayLength.EIGHT_HOURS
+    }
+  }
+
+  async function updateTeam () {
+    const teamData = getTeamData()
+    // update team doc
+    await client.update(team!, teamData)
+
+    // update issues related to team
+    const issuesByTeam = await client.findAll(tracker.class.Issue, { space: team!._id })
+    await Promise.all(
+      issuesByTeam.map((issue) =>
+        client.update(issue, {
+          defaultTimeReportDay: teamData.defaultTimeReportDay,
+          workDayLength: teamData.workDayLength
+        })
+      )
+    )
+  }
+
+  async function createTeam () {
+    await client.createDoc(tracker.class.Team, core.space.Space, getTeamData())
   }
 
   function chooseIcon (ev: MouseEvent) {
@@ -55,10 +109,11 @@
   }
 </script>
 
-<SpaceCreateCard
-  label={tracker.string.NewTeam}
-  okAction={createTeam}
-  canSave={name.length > 0}
+<Card
+  label={isNew ? tracker.string.NewTeam : tracker.string.EditTeam}
+  okLabel={isNew ? presentation.string.Create : presentation.string.Edit}
+  okAction={handleSave}
+  canSave={name.length > 0 && !!selectedWorkDayType && !!selectedWorkDayLength}
   on:close={() => {
     dispatch('close')
   }}
@@ -81,4 +136,24 @@
     </div>
     <Button icon={icon ?? tracker.icon.Home} kind="no-border" size="medium" on:click={chooseIcon} />
   </div>
-</SpaceCreateCard>
+
+  <div class="flex-between">
+    <div class="caption">
+      <Label label={tracker.string.DefaultTimeReportDay} />
+    </div>
+    <TimeReportDayDropdown bind:selected={selectedWorkDayType} label={tracker.string.DefaultTimeReportDay} />
+  </div>
+
+  <div class="flex-between">
+    <div class="caption">
+      <Label label={tracker.string.WorkDayLength} />
+    </div>
+    <DropdownLabelsIntl
+      kind="link-bordered"
+      label={tracker.string.WorkDayLength}
+      items={workDayLengthItems}
+      shouldUpdateUndefined={false}
+      bind:selected={selectedWorkDayLength}
+    />
+  </div>
+</Card>

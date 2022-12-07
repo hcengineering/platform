@@ -40,7 +40,9 @@
     IssueTemplateChild,
     Project,
     Sprint,
-    Team
+    Team,
+    TimeReportDayType,
+    WorkDayLength
   } from '@hcengineering/tracker'
   import {
     ActionIcon,
@@ -91,6 +93,7 @@
   let issueStatuses: WithLookup<IssueStatus>[] | undefined
   let labels: TagReference[] = draft?.labels || []
   let objectId: Ref<Issue> = draft?.issueId || generateId()
+  let currentTeam: Team | undefined
 
   function toIssue (initials: AttachedData<Issue>, draft: IssueDraft | null): AttachedData<Issue> {
     if (draft == null) {
@@ -100,7 +103,29 @@
     return { ...initials, ...issue }
   }
 
-  let object: AttachedData<Issue> = originalIssue
+  const defaultIssue = {
+    title: '',
+    description: '',
+    assignee,
+    project,
+    sprint,
+    number: 0,
+    rank: '',
+    status: '' as Ref<IssueStatus>,
+    priority,
+    dueDate: null,
+    comments: 0,
+    subIssues: 0,
+    parents: [],
+    reportedTime: 0,
+    estimation: 0,
+    reports: 0,
+    childInfo: [],
+    workDayLength: currentTeam?.workDayLength ?? WorkDayLength.EIGHT_HOURS,
+    defaultTimeReportDay: currentTeam?.defaultTimeReportDay ?? TimeReportDayType.PreviousWorkDay
+  }
+
+  let object = originalIssue
     ? {
         ...originalIssue,
         title: `${originalIssue.title} (copy)`,
@@ -110,51 +135,19 @@
         reports: 0,
         childInfo: []
       }
-    : toIssue(
-      {
-        title: '',
-        description: '',
-        assignee,
-        project,
-        sprint,
-        number: 0,
-        rank: '',
-        status: '' as Ref<IssueStatus>,
-        priority,
-        dueDate: null,
-        comments: 0,
-        subIssues: 0,
-        parents: [],
-        reportedTime: 0,
-        estimation: 0,
-        reports: 0,
-        childInfo: []
-      },
-      draft
-    )
+    : toIssue(defaultIssue, draft)
+
+  $: {
+    defaultIssue.workDayLength = currentTeam?.workDayLength ?? WorkDayLength.EIGHT_HOURS
+    defaultIssue.defaultTimeReportDay = currentTeam?.defaultTimeReportDay ?? TimeReportDayType.PreviousWorkDay
+    object.workDayLength = defaultIssue.workDayLength
+    object.defaultTimeReportDay = defaultIssue.defaultTimeReportDay
+  }
 
   function resetObject (): void {
     templateId = undefined
     template = undefined
-    object = {
-      title: '',
-      description: '',
-      assignee,
-      project,
-      sprint,
-      number: 0,
-      rank: '',
-      status: '' as Ref<IssueStatus>,
-      priority,
-      dueDate: null,
-      comments: 0,
-      subIssues: 0,
-      parents: [],
-      reportedTime: 0,
-      estimation: 0,
-      reports: 0,
-      childInfo: []
-    }
+    object = { ...defaultIssue }
     subIssues = []
   }
 
@@ -221,6 +214,7 @@
   const dispatch = createEventDispatcher()
   const client = getClient()
   const statusesQuery = createQuery()
+  const spaceQuery = createQuery()
 
   let descriptionBox: AttachmentStyledBox
 
@@ -244,6 +238,9 @@
       sort: { rank: SortingOrder.Ascending }
     }
   )
+  $: spaceQuery.query(tracker.class.Team, { _id: _space }, (res) => {
+    currentTeam = res.shift()
+  })
 
   async function setPropsFromOriginalIssue () {
     if (!originalIssue) {
@@ -418,7 +415,9 @@
       estimation: object.estimation,
       reports: 0,
       relations: relatedTo !== undefined ? [{ _id: relatedTo._id, _class: relatedTo._class }] : [],
-      childInfo: []
+      childInfo: [],
+      workDayLength: object.workDayLength,
+      defaultTimeReportDay: object.defaultTimeReportDay
     }
 
     await client.addCollection(
@@ -490,7 +489,9 @@
         estimation: subIssue.estimation,
         reports: 0,
         relations: [],
-        childInfo: []
+        childInfo: [],
+        workDayLength: object.workDayLength,
+        defaultTimeReportDay: object.defaultTimeReportDay
       }
 
       await client.addCollection(

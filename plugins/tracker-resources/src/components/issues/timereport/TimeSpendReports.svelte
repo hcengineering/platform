@@ -18,6 +18,7 @@
   import { Issue, Team, TimeSpendReport } from '@hcengineering/tracker'
   import { floorFractionDigits, Label, Scroller, Spinner } from '@hcengineering/ui'
   import tracker from '../../../plugin'
+  import TimePresenter from './TimePresenter.svelte'
   import TimeSpendReportsList from './TimeSpendReportsList.svelte'
 
   export let issue: Issue
@@ -28,6 +29,7 @@
 
   let reports: TimeSpendReport[] | undefined
 
+  $: workDayLength = issue.workDayLength
   $: subIssuesQuery.query(tracker.class.TimeSpendReport, query, async (result) => (reports = result), {
     sort: { modifiedOn: SortingOrder.Descending },
     lookup: {
@@ -40,8 +42,10 @@
 </script>
 
 {#if reports}
-  <Label label={tracker.string.ReportedTime} />: {reportedTime}
-  <Label label={tracker.string.TimeSpendReports} />: {total}
+  <span class="overflow-label flex-nowrap">
+    <Label label={tracker.string.ReportedTime} />: <TimePresenter value={reportedTime} {workDayLength} />
+    <Label label={tracker.string.TimeSpendReports} />: <TimePresenter value={total} {workDayLength} />
+  </span>
   <div class="h-50">
     <Scroller>
       <TimeSpendReportsList {reports} {teams} />

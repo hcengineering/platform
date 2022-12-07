@@ -16,7 +16,7 @@
   import { Ref, WithLookup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Issue, IssueStatus, IssueTemplate, Sprint } from '@hcengineering/tracker'
+  import { Issue, IssueStatus, IssueTemplate, Sprint, Team } from '@hcengineering/tracker'
   import { ButtonKind, ButtonSize, ButtonShape, floorFractionDigits } from '@hcengineering/ui'
   import { Label, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
   import DatePresenter from '@hcengineering/ui/src/components/calendar/DatePresenter.svelte'
@@ -24,6 +24,7 @@
   import tracker from '../../plugin'
   import { getDayOfSprint } from '../../utils'
   import EstimationProgressCircle from '../issues/timereport/EstimationProgressCircle.svelte'
+  import TimePresenter from '../issues/timereport/TimePresenter.svelte'
   import SprintSelector from './SprintSelector.svelte'
 
   export let value: Issue | IssueTemplate
@@ -42,6 +43,13 @@
   export let enlargedText: boolean = false
 
   const client = getClient()
+  const spaceQuery = createQuery()
+
+  let currentTeam: Team | undefined
+  $: spaceQuery.query(tracker.class.Team, { _id: value.space }, (res) => {
+    currentTeam = res.shift()
+  })
+  $: workDayLength = currentTeam?.workDayLength
 
   const handleSprintIdChanged = async (newSprintId: Ref<Sprint> | null | undefined) => {
     if (!isEditable || newSprintId === undefined || value.sprint === newSprintId) {
@@ -157,23 +165,21 @@
     <div class="flex-row-center" class:minus-margin-space={kind === 'list-header'} class:text-sm={twoRows}>
       {#if sprint}
         {@const now = Date.now()}
+        {@const sprintDaysFrom =
+          now < sprint.startDate
+            ? 0
+            : now > sprint.targetDate
+            ? getDayOfSprint(sprint.startDate, sprint.targetDate)
+            : getDayOfSprint(sprint.startDate, now)}
+        {@const sprintDaysTo = getDayOfSprint(sprint.startDate, sprint.targetDate)}
         <DatePresenter value={sprint.startDate} kind={'transparent'} />
         <span class="p-1"> / </span>
         <DatePresenter value={sprint.targetDate} kind={'transparent'} />
         <div class="w-2 min-w-2" />
         <!-- Active sprint in time -->
-        <Label
-          label={tracker.string.SprintPassed}
-          params={{
-            from:
-              now < sprint.startDate
-                ? 0
-                : now > sprint.targetDate
-                ? getDayOfSprint(sprint.startDate, sprint.targetDate)
-                : getDayOfSprint(sprint.startDate, now),
-            to: getDayOfSprint(sprint.startDate, sprint.targetDate)
-          }}
-        />
+        <TimePresenter value={sprintDaysFrom} {workDayLength} />
+        /
+        <TimePresenter value={sprintDaysTo} {workDayLength} />
       {/if}
       {#if issues}
         <!-- <Label label={tracker.string.SprintDay} value={}/> -->
@@ -186,10 +192,10 @@
           <EstimationProgressCircle value={totalReported} max={totalEstimation} />
           <div class="w-2 min-w-2" />
           {#if totalReported > 0}
-            <Label label={tracker.string.TimeSpendValue} params={{ value: totalReported }} />
+            <TimePresenter value={totalReported} {workDayLength} />
             /
           {/if}
-          <Label label={tracker.string.TimeSpendValue} params={{ value: totalEstimation }} />
+          <TimePresenter value={totalEstimation} {workDayLength} />
           {#if sprint?.capacity}
             <Label label={tracker.string.CapacityValue} params={{ value: sprint?.capacity }} />
           {/if}
