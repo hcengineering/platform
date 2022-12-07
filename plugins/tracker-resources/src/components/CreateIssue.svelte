@@ -44,6 +44,7 @@
   } from '@hcengineering/tracker'
   import {
     ActionIcon,
+    addNotification,
     Button,
     Component,
     DatePresenter,
@@ -54,11 +55,7 @@
     Menu,
     setMetadataLocalStorage,
     showPopup,
-    Spinner,
-    NotificationPosition,
-    NotificationSeverity,
-    Notification,
-    notificationsStore
+    Spinner
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { ObjectBox } from '@hcengineering/view-resources'
@@ -518,21 +515,10 @@
       }
     }
 
-    const notification: Notification = {
-      id: generateId(),
-      title: tracker.string.IssueCreated,
-      subTitle: getTitle(object.title),
-      severity: NotificationSeverity.Success,
-      position: NotificationPosition.BottomRight,
-      component: IssueNotification,
-      closeTimeout: 10000,
-      params: {
-        issueId: objectId,
-        subTitlePostfix: (await translate(tracker.string.Created, { value: 1 })).toLowerCase()
-      }
-    }
-
-    notificationsStore.addNotification(notification)
+    addNotification(tracker.string.IssueCreated, getTitle(object.title), IssueNotification, {
+      issueId: objectId,
+      subTitlePostfix: (await translate(tracker.string.Created, { value: 1 })).toLowerCase()
+    })
 
     objectId = generateId()
     resetObject()
@@ -713,18 +699,11 @@
     space={_space}
     alwaysEdit
     showButtons={false}
-    maxHeight={'20vh'}
     bind:content={object.description}
     placeholder={tracker.string.IssueDescriptionPlaceholder}
     on:changeSize={() => dispatch('changeContent')}
   />
-  <IssueTemplateChilds
-    bind:children={subIssues}
-    sprint={object.sprint}
-    project={object.project}
-    isScrollable
-    maxHeight={'20vh'}
-  />
+  <IssueTemplateChilds bind:children={subIssues} sprint={object.sprint} project={object.project} isScrollable />
   <svelte:fragment slot="pool">
     <div class="flex flex-wrap" style:gap={'0.2vw'}>
       {#if issueStatuses}
