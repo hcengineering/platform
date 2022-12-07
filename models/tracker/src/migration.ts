@@ -209,7 +209,7 @@ async function upgradeIssueTimeReportSettings (tx: TxOperations): Promise<void> 
     workDayLength: { $exists: false }
   })
 
-  const teams = await tx.findAll(tracker.class.Team, { $in: new Set(issues.map((issue) => issue.space)) })
+  const teams = await tx.findAll(tracker.class.Team, { $in: Array.from(new Set(issues.map((issue) => issue.space))) })
   const teamsById = new Map(teams.map((team) => [team._id, team]))
 
   await Promise.all(
