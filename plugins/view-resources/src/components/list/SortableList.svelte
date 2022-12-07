@@ -60,10 +60,10 @@
 
   let isCreating = false
 
-  async function updateModel (modelClassRef: Ref<Class<Doc>>) {
+  async function updateModel (modelClassRef: Ref<Class<Doc>>, props: Record<string, any>) {
     try {
       isModelLoading = true
-      model = await getObjectPresenter(client, modelClassRef, { key: '', props: presenterProps })
+      model = await getObjectPresenter(client, modelClassRef, { key: '', props })
     } finally {
       isModelLoading = false
     }
@@ -131,7 +131,7 @@
     hoveringIndex = null
   }
 
-  $: updateModel(_class)
+  $: updateModel(_class, presenterProps)
   $: updateObjectFactory(_class)
   $: itemsQuery.query(_class, query, updateItems, { ...queryOptions, limit: Math.max(queryOptions?.limit ?? 0, 200) })
 
