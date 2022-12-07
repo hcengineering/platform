@@ -26,8 +26,8 @@
     "typescript": "^4.3.5"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.6.17",
-    "@hcengineering/platform": "^0.6.7",
+    "@hcengineering/core": "^0.6.19",
+    "@hcengineering/platform": "^0.6.8",
     "@hcengineering/server-core": "~0.6.1",
     "@hcengineering/server-preference": "~0.6.0"
   }

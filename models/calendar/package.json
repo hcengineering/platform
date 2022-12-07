@@ -25,7 +25,7 @@
     "@rushstack/heft": "^0.47.9"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.6.17",
+    "@hcengineering/core": "^0.6.19",
     "@hcengineering/model": "~0.6.0",
     "@hcengineering/ui": "^0.6.2",
     "@hcengineering/view": "^0.6.1",
@@ -33,7 +33,7 @@
     "@hcengineering/model-task": "~0.6.0",
     "@hcengineering/calendar": "~0.6.1",
     "@hcengineering/calendar-resources": "~0.6.0",
-    "@hcengineering/platform": "^0.6.7",
+    "@hcengineering/platform": "^0.6.8",
     "@hcengineering/notification": "~0.6.4",
     "@hcengineering/model-core": "~0.6.0",
     "@hcengineering/model-view": "~0.6.0",

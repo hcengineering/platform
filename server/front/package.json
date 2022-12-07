@@ -36,8 +36,8 @@
     "@types/sharp": "~0.30.4"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.6.17",
-    "@hcengineering/platform": "^0.6.7",
+    "@hcengineering/core": "^0.6.19",
+    "@hcengineering/platform": "^0.6.8",
     "express": "^4.17.1",
     "express-fileupload": "^1.2.1",
     "uuid": "^8.3.2",

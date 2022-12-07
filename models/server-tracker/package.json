@@ -25,7 +25,7 @@
     "@rushstack/heft": "^0.47.9"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.6.17",
+    "@hcengineering/core": "^0.6.19",
     "@hcengineering/model": "~0.6.0",
     "@hcengineering/tracker": "^0.6.1",
     "@hcengineering/server-core": "~0.6.1",
