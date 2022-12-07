@@ -49,7 +49,12 @@
 
   $: hasSubIssues = issue.subIssues > 0
   $: subIssuesQuery.query(tracker.class.Issue, { attachedTo: issue._id }, async (result) => (subIssues = result), {
-    sort: { rank: SortingOrder.Ascending }
+    sort: { rank: SortingOrder.Ascending },
+    lookup: {
+      _id: {
+        subIssues: tracker.class.Issue
+      }
+    }
   })
 </script>
 
