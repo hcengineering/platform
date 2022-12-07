@@ -29,7 +29,7 @@
   let draftExists: boolean = isUserDraftExists(tracker.class.IssueDraft)
 
   const handleDraftChanged = () => {
-    draftExists = space ? isUserDraftExists(tracker.class.IssueDraft) : false
+    draftExists = isUserDraftExists(tracker.class.IssueDraft)
   }
 
   async function updateSpace (spaceId: Ref<Space> | undefined): Promise<void> {
