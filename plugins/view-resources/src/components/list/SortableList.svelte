@@ -44,6 +44,7 @@
   export let flipDuration = 200
   export let isAddButtonHidden = false
   export let isAddButtonDisabled = false
+  export let itemsCount = 0
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -139,6 +140,7 @@
 
   $: isLoading = isModelLoading || areItemsloading
   $: isSortable = hierarchy.getAllAttributes(_class).has('rank')
+  $: itemsCount = items?.length ?? 0
 </script>
 
 <div class="flex-col">
