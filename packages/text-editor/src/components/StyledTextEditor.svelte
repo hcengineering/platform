@@ -492,13 +492,13 @@
           <slot name="right" />
         </div>
       </div>
-      {:else}
-        <div class="buttons-group xsmall-gap mt-4">
-          {#each defActions.filter((it) => it.hidden === undefined || it.hidden === true) as a}
-            <StyleButton icon={a.icon} size={buttonSize} on:click={(evt) => handleAction(a, evt)} />
-          {/each}
-          <slot />
-        </div>
+    {:else}
+      <div class="buttons-group xsmall-gap mt-4">
+        {#each defActions.filter((it) => it.hidden === undefined || it.hidden === true) as a}
+          <StyleButton icon={a.icon} size={buttonSize} on:click={(evt) => handleAction(a, evt)} />
+        {/each}
+        <slot />
+      </div>
     {/if}
   {/if}
 </div>
