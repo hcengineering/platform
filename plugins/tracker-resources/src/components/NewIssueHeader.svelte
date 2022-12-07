@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Ref, Space } from '@hcengineering/core'
-  import { getClient, isDraftExists } from '@hcengineering/presentation'
+  import { getClient, isUserDraftExists } from '@hcengineering/presentation'
   import { Button, showPopup } from '@hcengineering/ui'
   import tracker from '../plugin'
   import CreateIssue from './CreateIssue.svelte'
@@ -26,10 +26,10 @@
   let space: Ref<Space> | undefined
   $: updateSpace(currentSpace)
 
-  let draftExists: boolean = isDraftExists(tracker.class.IssueDraft, client.user)
+  let draftExists: boolean = isUserDraftExists(tracker.class.IssueDraft)
 
   const handleDraftChanged = () => {
-    draftExists = space ? isDraftExists(tracker.class.IssueDraft, client.user) : false
+    draftExists = space ? isUserDraftExists(tracker.class.IssueDraft) : false
   }
 
   async function updateSpace (spaceId: Ref<Space> | undefined): Promise<void> {

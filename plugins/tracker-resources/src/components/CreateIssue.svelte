@@ -32,11 +32,11 @@
     Card,
     createQuery,
     getClient,
-    getDraft,
+    getUserDraft,
     KeyedAttribute,
     MessageBox,
     SpaceSelector,
-    updateDraftRecord
+    updateUserDraft
   } from '@hcengineering/presentation'
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
   import {
@@ -98,10 +98,9 @@
   export let originalIssue: Issue | undefined
   export let onDraftChanged: () => void
 
-  const client = getClient()
+  const draft: IssueDraft | undefined = getUserDraft(tracker.class.IssueDraft)
 
   let issueStatuses: WithLookup<IssueStatus>[] | undefined
-  const draft: IssueDraft | undefined = getDraft(tracker.class.IssueDraft, client.user)
   let labels: TagReference[] = draft?.labels || []
   let objectId: Ref<Issue> = draft?.issueId || generateId()
   let saveTimer: number | undefined
@@ -233,6 +232,7 @@
   $: updateTemplate(template)
 
   const dispatch = createEventDispatcher()
+  const client = getClient()
   const statusesQuery = createQuery()
 
   let descriptionBox: AttachmentStyledBox
@@ -309,8 +309,11 @@
     if (isEmpty) {
       newDraft = undefined
     }
+    updateUserDraft(tracker.class.IssueDraft, newDraft)
 
-    updateDraftRecord(tracker.class.IssueDraft, client.user, newDraft)
+    if (onDraftChanged) {
+      return onDraftChanged()
+    }
   }
 
   async function updateIssueStatusId (teamId: Ref<Team>, issueStatusId?: Ref<IssueStatus>) {
@@ -362,13 +365,17 @@
       return false
     }
 
+    if (draft.status === '') {
+      return true
+    }
+
     const team = await client.findOne(tracker.class.Team, { _id: _space })
 
     if (team?.defaultIssueStatus) {
       return draft.status === team.defaultIssueStatus
     }
 
-    return status === ''
+    return false
   }
 
   export function canClose (): boolean {
@@ -560,6 +567,7 @@
 
     objectId = generateId()
     resetObject()
+    saveDraft()
   }
 
   async function showMoreActions (ev: Event) {
@@ -667,11 +675,9 @@
         'top',
         (result?: boolean) => {
           if (result === true) {
-            updateDraftRecord(tracker.class.IssueDraft, client.user, undefined)
             dispatch('close')
-            if (onDraftChanged) {
-              return onDraftChanged()
-            }
+            resetObject()
+            saveDraft()
           }
         }
       )

@@ -1,5 +1,6 @@
 import { fetchMetadataLocalStorage, setMetadataLocalStorage } from '@hcengineering/ui'
 import { writable, get } from 'svelte/store'
+import { getClient } from '.'
 import presentation from './plugin'
 
 /**
@@ -22,12 +23,13 @@ export function updateDraftStore (id: string, draft: any): void {
 /**
  * @public
  */
-export function updateDraftRecord (id: string, userId: string, draft: any): void {
+export function updateUserDraft (id: string, draft: any): void {
+  const client = getClient()
   draftStore.update((drafts) => {
     // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-    const userDrafts: Record<string, any> = drafts[userId] || {}
+    const userDrafts: Record<string, any> = drafts[client.user] || {}
     userDrafts[id] = draft
-    drafts[userId] = userDrafts
+    drafts[client.user] = userDrafts
     setMetadataLocalStorage(presentation.metadata.Draft, drafts)
     return drafts
   })
@@ -36,10 +38,11 @@ export function updateDraftRecord (id: string, userId: string, draft: any): void
 /**
  * @public
  */
-export function getDraft (id: string, userId: string): any {
+export function getUserDraft (id: string): any {
+  const client = getClient()
   const drafts: Record<string, any> = get(draftStore)
   // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-  const userDrafts: Record<string, any> = drafts[userId] || {}
+  const userDrafts: Record<string, any> = drafts[client.user] || {}
   const draft: Record<string, any> = userDrafts[id]
   return draft
 }
@@ -47,9 +50,10 @@ export function getDraft (id: string, userId: string): any {
 /**
  * @public
  */
-export function isDraftExists (id: string, userId: string): boolean {
+export function isUserDraftExists (id: string): boolean {
+  const client = getClient()
   const drafts: Record<string, any> = get(draftStore)
-  const userDrafts: Record<string, any> = drafts[userId]
+  const userDrafts: Record<string, any> = drafts[client.user]
   // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
   if (!userDrafts) {
     return false
