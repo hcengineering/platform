@@ -512,30 +512,33 @@
       }}
     />
     {#if skills.length > 0}
-      <Component
-        is={tags.component.TagsEditor}
-        props={{
-          disabled: loading,
-          focusIndex: 102,
-          items: skills,
-          key,
-          targetClass: recruit.mixin.Candidate,
-          showTitle: false,
-          elements,
-          newElements,
-          countLabel: recruit.string.NumberSkills
-        }}
-        on:open={(evt) => {
-          addTagRef(evt.detail)
-        }}
-        on:delete={(evt) => {
-          skills = skills.filter((it) => it._id !== evt.detail)
-        }}
-        on:change={(evt) => {
-          evt.detail.tag.weight = evt.detail.weight
-          skills = skills
-        }}
-      />
+      <div class="flex-break" />
+      <div class="antiComponent antiEmphasized flex-grow mt-2">
+        <Component
+          is={tags.component.TagsEditor}
+          props={{
+            disabled: loading,
+            focusIndex: 102,
+            items: skills,
+            key,
+            targetClass: recruit.mixin.Candidate,
+            showTitle: false,
+            elements,
+            newElements,
+            countLabel: recruit.string.NumberSkills
+          }}
+          on:open={(evt) => {
+            addTagRef(evt.detail)
+          }}
+          on:delete={(evt) => {
+            skills = skills.filter((it) => it._id !== evt.detail)
+          }}
+          on:change={(evt) => {
+            evt.detail.tag.weight = evt.detail.weight
+            skills = skills
+          }}
+        />
+      </div>
     {/if}
   </svelte:fragment>
 

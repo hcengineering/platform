@@ -36,21 +36,41 @@
   const dispatch = createEventDispatcher()
 
   let asideFloat: boolean = false
-  let asideShown: boolean = false
-  let fullSize: boolean = false
+  let asideShown: boolean = true
   $: twoRows = $deviceInfo.minWidth
 
+  let oldWidth = ''
+  let hideTimer: number | undefined
+
   const checkPanel = (): void => {
+    const k = `${panelWidth}-${asideFloat}`
+    if (oldWidth === k) {
+      return
+    }
+    oldWidth = k
     if (floatAside) {
       asideFloat = true
-    } else if (panelWidth <= 900 && !asideFloat) asideFloat = true
-    else if (panelWidth > 900 && asideFloat) {
-      asideFloat = false
-      asideShown = false
+    } else if (panelWidth <= 900 && !asideFloat) {
+      asideFloat = true
+      if (asideShown) {
+        asideShown = false
+      }
+    } else if (panelWidth > 900) {
+      if (asideFloat) {
+        asideFloat = false
+      }
+      if (!asideShown) {
+        asideShown = true
+      }
     }
   }
   afterUpdate(() => {
-    checkPanel()
+    if (hideTimer) {
+      clearTimeout(hideTimer)
+    }
+    hideTimer = setTimeout(() => {
+      checkPanel()
+    }, 500)
   })
 </script>
 
@@ -80,7 +100,7 @@
       <div class="buttons-group xsmall-gap">
         <slot name="utils" />
         {#if isFullSize || (asideFloat && $$slots.aside && isAside)}<div class="buttons-divider" />{/if}
-        {#if asideFloat && $$slots.aside && isAside}
+        {#if $$slots.aside && isAside}
           <Button
             icon={IconDetails}
             kind={'transparent'}
@@ -93,12 +113,12 @@
         {/if}
         {#if isFullSize}
           <Button
-            icon={fullSize ? IconScale : IconScaleFull}
+            icon={useMaxWidth ? IconScale : IconScaleFull}
             kind={'transparent'}
             size={'medium'}
-            selected={fullSize}
+            selected={useMaxWidth}
             on:click={() => {
-              fullSize = !fullSize
+              useMaxWidth = !useMaxWidth
               dispatch('fullsize')
             }}
           />
@@ -141,7 +161,7 @@
         <slot />
       </div>
     {/if}
-    {#if $$slots.aside && isAside}
+    {#if $$slots.aside && isAside && asideShown}
       <div class="popupPanel-body__aside" class:float={asideFloat} class:shown={asideShown}>
         <slot name="aside" />
       </div>

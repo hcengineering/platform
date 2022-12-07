@@ -41,7 +41,7 @@
   let labels: TagReference[] = []
   let descriptionBox: AttachmentStyledBox
 
-  const objectId: Ref<Issue> = generateId()
+  let objectId: Ref<Issue> = generateId()
   const key: KeyedAttribute = {
     key: 'labels',
     attr: client.getHierarchy().getAttribute(tracker.class.Issue, 'labels')
@@ -73,6 +73,7 @@
     newIssue = getIssueDefaults()
     labels = []
     focusIssueTitle?.()
+    objectId = generateId()
   }
 
   function getTitle (value: string) {
@@ -191,19 +192,21 @@
         focus
       />
       <div class="mt-4">
-        <AttachmentStyledBox
-          bind:this={descriptionBox}
-          {objectId}
-          refContainer={thisRef}
-          _class={tracker.class.Issue}
-          space={currentTeam._id}
-          alwaysEdit
-          showButtons
-          maxHeight={'20vh'}
-          bind:content={newIssue.description}
-          placeholder={tracker.string.IssueDescriptionPlaceholder}
-          on:changeSize={() => dispatch('changeContent')}
-        />
+        {#key objectId}
+          <AttachmentStyledBox
+            bind:this={descriptionBox}
+            {objectId}
+            refContainer={thisRef}
+            _class={tracker.class.Issue}
+            space={currentTeam._id}
+            alwaysEdit
+            showButtons
+            maxHeight={'20vh'}
+            bind:content={newIssue.description}
+            placeholder={tracker.string.IssueDescriptionPlaceholder}
+            on:changeSize={() => dispatch('changeContent')}
+          />
+        {/key}
       </div>
     </div>
   </div>

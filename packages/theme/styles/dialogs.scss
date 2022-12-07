@@ -84,6 +84,7 @@
     flex-direction: column;
     margin: 0 1rem .75rem;
     color: var(--theme-caption-color);
+    flex-wrap: wrap;
 
     &__separator {
       margin: 1rem 0;

@@ -231,6 +231,11 @@ input.search {
 .flex-gap-2 { gap: .5rem; }
 .flex-gap-1 { gap: .25rem; }
 
+.flex-break {  
+  flex-basis: 100%;
+  height: 0;
+}
+
 .flex-presenter, .inline-presenter {
   flex-wrap: nowrap;
   cursor: pointer;

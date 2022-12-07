@@ -105,8 +105,14 @@
     </div>
   {/if}
   <ShowMore ignore={!showTitle}>
-    <div class:tags-container={showTitle} class:mt-3={showTitle} class:empty={items.length === 0}>
-      <div class="tag-items-container" class:tag-items-scroll={!showTitle}>
+    <div
+      class:tags-container={showTitle}
+      class:antiComponent={showTitle}
+      class:antiEmphasized={showTitle}
+      class:mt-3={showTitle}
+      class:empty={items.length === 0}
+    >
+      <div class="flex flex-grow flex-col" class:tag-items-scroll={!showTitle}>
         {#if items.length === 0}
           {#if keyLabel}
             <div class="text-sm dark-color w-full flex-center">
@@ -120,7 +126,7 @@
               <Label label={cat.label} />
             </div>
           {/if}
-          <div class="tag-items">
+          <div class="flex flex-grow flex-wrap">
             {#each cat.items as tag}
               <TagItem
                 {tag}
@@ -154,25 +160,9 @@
 
 <style lang="scss">
   .tags-container {
-    padding: 0.5rem;
-    color: var(--accent-color);
-    background-color: var(--board-bg-color);
-    border: 1px solid var(--divider-color);
-    border-radius: 0.75rem;
-
     &.empty {
       background-color: transparent;
     }
-  }
-  .tag-items-container {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-  }
-  .tag-items {
-    flex-grow: 1;
-    display: flex;
-    flex-wrap: wrap;
   }
   .tag-items-scroll {
     overflow-y: scroll;
