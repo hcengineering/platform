@@ -27,6 +27,7 @@
   import PriorityEditor from '../PriorityEditor.svelte'
   import StatusEditor from '../StatusEditor.svelte'
   import EstimationEditor from '../timereport/EstimationEditor.svelte'
+  import SubIssuesSelector from './SubIssuesSelector.svelte'
 
   export let issues: Issue[]
 
@@ -134,6 +135,9 @@
       <span class="text name" title={issue.title} on:click={openIssueCall}>
         {issue.title}
       </span>
+      {#if issue.subIssues > 0}
+        <SubIssuesSelector value={issue} {currentTeam} statuses={issueStatuses.get(issue.space)} />
+      {/if}
     </div>
     <div class="flex-center flex-no-shrink">
       <EstimationEditor value={issue} kind={'list'} />
