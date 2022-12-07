@@ -117,38 +117,32 @@
     />
   </div>
   <svelte:fragment slot="pool">
-    <div class="flex flex-wrap" style:gap={'0.2vw'}>
-      <UserBoxList
-        items={object.authors}
-        size="small"
-        label={document.string.Authors}
-        emptyLabel={document.string.Authors}
-        kind="no-border"
-        width={'min-content'}
-        on:update={({ detail }) => (object.authors = detail)}
-      />
-    </div>
-    <div class="flex flex-wrap" style:gap={'0.2vw'}>
-      <UserBoxList
-        items={object.approvers}
-        size="small"
-        label={document.string.Approvers}
-        emptyLabel={document.string.Approvers}
-        kind="no-border"
-        width={'min-content'}
-        on:update={({ detail }) => (object.approvers = detail)}
-      />
-    </div>
-    <div class="flex flex-wrap" style:gap={'0.2vw'}>
-      <UserBoxList
-        items={object.reviewers}
-        size="small"
-        label={document.string.Reviewers}
-        emptyLabel={document.string.Reviewers}
-        kind="no-border"
-        width={'min-content'}
-        on:update={({ detail }) => (object.reviewers = detail)}
-      />
-    </div>
+    <UserBoxList
+      items={object.authors}
+      size="small"
+      label={document.string.Authors}
+      emptyLabel={document.string.Authors}
+      kind="no-border"
+      width={'min-content'}
+      on:update={({ detail }) => (object.authors = detail)}
+    />
+    <UserBoxList
+      items={object.approvers}
+      size="small"
+      label={document.string.Approvers}
+      emptyLabel={document.string.Approvers}
+      kind="no-border"
+      width={'min-content'}
+      on:update={({ detail }) => (object.approvers = detail)}
+    />
+    <UserBoxList
+      items={object.reviewers}
+      size="small"
+      label={document.string.Reviewers}
+      emptyLabel={document.string.Reviewers}
+      kind="no-border"
+      width={'min-content'}
+      on:update={({ detail }) => (object.reviewers = detail)}
+    />
   </svelte:fragment>
 </Card>

@@ -699,69 +699,68 @@
     space={_space}
     alwaysEdit
     showButtons={false}
+    emphasized
     bind:content={object.description}
     placeholder={tracker.string.IssueDescriptionPlaceholder}
     on:changeSize={() => dispatch('changeContent')}
   />
   <IssueTemplateChilds bind:children={subIssues} sprint={object.sprint} project={object.project} isScrollable />
   <svelte:fragment slot="pool">
-    <div class="flex flex-wrap" style:gap={'0.2vw'}>
-      {#if issueStatuses}
-        <div id="status-editor">
-          <StatusEditor
-            value={object}
-            statuses={issueStatuses}
-            kind="no-border"
-            size="small"
-            shouldShowLabel={true}
-            on:change={({ detail }) => (object.status = detail)}
-          />
-        </div>
-        <PriorityEditor
+    {#if issueStatuses}
+      <div id="status-editor">
+        <StatusEditor
           value={object}
-          shouldShowLabel
-          isEditable
+          statuses={issueStatuses}
           kind="no-border"
           size="small"
-          justify="center"
-          on:change={({ detail }) => (object.priority = detail)}
+          shouldShowLabel={true}
+          on:change={({ detail }) => (object.status = detail)}
         />
-        <AssigneeEditor
-          value={object}
-          size="small"
-          kind="no-border"
-          width={'min-content'}
-          on:change={({ detail }) => (object.assignee = detail)}
-        />
-        <Component
-          is={tags.component.TagsDropdownEditor}
-          props={{
-            items: labels,
-            key,
-            targetClass: tracker.class.Issue,
-            countLabel: tracker.string.NumberLabels
-          }}
-          on:open={(evt) => {
-            addTagRef(evt.detail)
-          }}
-          on:delete={(evt) => {
-            labels = labels.filter((it) => it._id !== evt.detail)
-          }}
-        />
-        <EstimationEditor kind={'no-border'} size={'small'} value={object} />
-        <ProjectSelector value={object.project} onChange={handleProjectIdChanged} />
-        <SprintSelector
-          value={object.sprint}
-          onChange={handleSprintIdChanged}
-          useProject={(!originalIssue && object.project) || undefined}
-        />
-        {#if object.dueDate !== null}
-          <DatePresenter bind:value={object.dueDate} editable />
-        {/if}
-      {:else}
-        <Spinner size="small" />
+      </div>
+      <PriorityEditor
+        value={object}
+        shouldShowLabel
+        isEditable
+        kind="no-border"
+        size="small"
+        justify="center"
+        on:change={({ detail }) => (object.priority = detail)}
+      />
+      <AssigneeEditor
+        value={object}
+        size="small"
+        kind="no-border"
+        width={'min-content'}
+        on:change={({ detail }) => (object.assignee = detail)}
+      />
+      <Component
+        is={tags.component.TagsDropdownEditor}
+        props={{
+          items: labels,
+          key,
+          targetClass: tracker.class.Issue,
+          countLabel: tracker.string.NumberLabels
+        }}
+        on:open={(evt) => {
+          addTagRef(evt.detail)
+        }}
+        on:delete={(evt) => {
+          labels = labels.filter((it) => it._id !== evt.detail)
+        }}
+      />
+      <EstimationEditor kind={'no-border'} size={'small'} value={object} />
+      <ProjectSelector value={object.project} onChange={handleProjectIdChanged} />
+      <SprintSelector
+        value={object.sprint}
+        onChange={handleSprintIdChanged}
+        useProject={(!originalIssue && object.project) || undefined}
+      />
+      {#if object.dueDate !== null}
+        <DatePresenter bind:value={object.dueDate} editable />
       {/if}
-    </div>
+    {:else}
+      <Spinner size="small" />
+    {/if}
     <ActionIcon icon={IconMoreH} size={'medium'} action={showMoreActions} />
   </svelte:fragment>
   <svelte:fragment slot="footer">

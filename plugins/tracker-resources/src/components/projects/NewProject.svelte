@@ -21,6 +21,7 @@
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
   import ProjectStatusSelector from './ProjectStatusSelector.svelte'
+  import { StyledTextArea } from '@hcengineering/text-editor'
 
   export let space: Ref<Team>
   const dispatch = createEventDispatcher()
@@ -63,17 +64,13 @@
   <svelte:fragment slot="header">
     <SpaceSelector _class={tracker.class.Team} label={tracker.string.Team} bind:space />
   </svelte:fragment>
-  <div class="label">
-    <EditBox bind:value={object.label} placeholder={tracker.string.ProjectNamePlaceholder} kind="large-style" focus />
-  </div>
-  <div class="description">
-    <EditBox
-      bind:value={object.description}
-      placeholder={tracker.string.ProjectDescriptionPlaceholder}
-      kind="editbox"
-    />
-  </div>
-  <div slot="pool" class="flex-row-center text-sm gap-1-5">
+  <EditBox bind:value={object.label} placeholder={tracker.string.ProjectNamePlaceholder} kind={'large-style'} focus />
+  <StyledTextArea
+    bind:content={object.description}
+    placeholder={tracker.string.ProjectDescriptionPlaceholder}
+    emphasized
+  />
+  <svelte:fragment slot="pool">
     <ProjectStatusSelector selectedProjectStatus={object.status} onProjectStatusChange={handleProjectStatusChanged} />
     <EmployeeBox
       label={tracker.string.ProjectLead}
@@ -87,7 +84,7 @@
     <!-- TODO: add labels after customize IssueNeedsToBeCompletedByThisDate -->
     <DatePresenter bind:value={object.startDate} labelNull={tracker.string.StartDate} editable />
     <DatePresenter bind:value={object.targetDate} labelNull={tracker.string.TargetDate} editable />
-  </div>
+  </svelte:fragment>
 </Card>
 
 <style>

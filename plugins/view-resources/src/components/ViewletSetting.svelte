@@ -258,10 +258,10 @@
     dispatch('close')
   }}
 >
-  <div class="flex flex-wrap flex-row">
+  <div class="flex-row-stretch flex-wrap">
     {#each attributes as attribute, i}
       <div
-        class="mr-2 mb-2"
+        class="m-0-5 border-radius-1 overflow-label"
         style={getStyle(attribute)}
         bind:this={elements[i]}
         draggable={true}

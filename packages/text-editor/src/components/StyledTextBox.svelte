@@ -83,8 +83,8 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div
   class="antiComponent styled-box clear-mins"
-  class:emphasized
-  class:emphasized-focus={(mode === Mode.Edit || alwaysEdit) && focused}
+  class:antiEmphasized={emphasized}
+  class:antiEmphasized-focus={(mode === Mode.Edit || alwaysEdit) && focused}
   on:click={() => {
     if (alwaysEdit && focused) {
       textEditor?.focus()
@@ -180,16 +180,6 @@
       transition: top 200ms;
       pointer-events: none;
       user-select: none;
-    }
-  }
-  .emphasized {
-    padding: 1rem;
-    background-color: var(--theme-bg-accent-color);
-    border: 1px solid var(--theme-bg-accent-hover);
-    border-radius: 0.5rem;
-    &.emphasized-focus {
-      background-color: var(--theme-bg-focused-color);
-      border-color: var(--theme-bg-focused-border);
     }
   }
 </style>

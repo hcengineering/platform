@@ -143,6 +143,7 @@
     color: var(--accent-color);
     background-color: transparent;
     border: 1px solid transparent;
+    border-radius: 0.125rem;
     transition-property: border, background-color, color, box-shadow;
     transition-duration: 0.15s;
 

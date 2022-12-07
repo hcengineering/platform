@@ -150,6 +150,21 @@
       />
     </div>
   </div>
+  {#key template?.description}
+    <AttachmentStyledBox
+      bind:this={descriptionBox}
+      {objectId}
+      _class={recruit.class.Vacancy}
+      space={objectId}
+      alwaysEdit
+      showButtons={false}
+      maxHeight={'card'}
+      content={template?.description ?? ''}
+      placeholder={recruit.string.FullDescription}
+      emphasized
+    />
+  {/key}
+
   <svelte:fragment slot="header">
     <UserBox
       focusIndex={3}
@@ -179,19 +194,6 @@
       }}
     />
   </svelte:fragment>
-  {#key template?.description}
-    <AttachmentStyledBox
-      bind:this={descriptionBox}
-      {objectId}
-      _class={recruit.class.Vacancy}
-      space={objectId}
-      alwaysEdit
-      showButtons={false}
-      maxHeight={'card'}
-      content={template?.description ?? ''}
-      placeholder={recruit.string.FullDescription}
-    />
-  {/key}
   <svelte:fragment slot="footer">
     <Button
       icon={IconAttachment}

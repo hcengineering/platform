@@ -71,12 +71,12 @@
       />
     </div>
   </div>
-  <Scroller autoscroll>
+  <Scroller>
     <div class="antiCard-content">
       <slot />
     </div>
   </Scroller>
-  {#if $$slots.header || $$slots.pool}
+  {#if $$slots.pool}
     <div class="antiCard-pool">
       <slot name="pool" />
     </div>

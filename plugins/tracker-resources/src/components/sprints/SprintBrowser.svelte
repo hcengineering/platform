@@ -86,7 +86,7 @@
       › <Label label={title} />
     </div>
   </div>
-  <Button size="small" icon={IconAdd} label={tracker.string.Sprint} kind="secondary" on:click={showCreateDialog} />
+  <Button size="small" icon={IconAdd} label={tracker.string.Sprint} kind={'primary'} on:click={showCreateDialog} />
 </div>
 <div class="itemsContainer">
   <div class="flex-center">
@@ -183,10 +183,7 @@
 
 <style lang="scss">
   .header {
-    min-height: 3.5rem;
-    padding-left: 2.25rem;
-    padding-right: 1.35rem;
-    border-bottom: 1px solid var(--theme-button-border-hovered);
+    padding: 0.5rem 0.75rem 0.5rem 2.25rem;
   }
 
   .projectTitle {

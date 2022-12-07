@@ -24,8 +24,8 @@
 
   export let opinions: number
 
-  const createApp = (ev: MouseEvent): void => {
-    showPopup(CreateOpinion, { review: objectId }, ev.target as HTMLElement)
+  const createApp = (): void => {
+    showPopup(CreateOpinion, { review: objectId }, 'top')
   }
 </script>
 

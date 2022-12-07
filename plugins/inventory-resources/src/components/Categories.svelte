@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import { DocumentQuery } from '@hcengineering/core'
-  import { Button, Icon, Label, Scroller, SearchEdit, showPopup, IconAdd, eventToHTMLElement } from '@hcengineering/ui'
+  import { Button, Icon, Label, Scroller, SearchEdit, showPopup, IconAdd } from '@hcengineering/ui'
   import type { Category } from '@hcengineering/inventory'
   import inventory from '../plugin'
   import CreateCategory from './CreateCategory.svelte'
@@ -29,8 +29,8 @@
     resultQuery = search === '' ? {} : { $search: search }
   }
 
-  function showCreateDialog (ev: MouseEvent) {
-    showPopup(CreateCategory, { space: inventory.space.Category }, eventToHTMLElement(ev))
+  function showCreateDialog () {
+    showPopup(CreateCategory, { space: inventory.space.Category }, 'top')
   }
 
   $: twoRows = $deviceInfo.twoRows

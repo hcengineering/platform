@@ -107,28 +107,26 @@
   $: labelRefs = labels.map((it) => ({ ...(it as unknown as TagReference), _id: generateId(), tag: it._id }))
 </script>
 
-<div bind:this={thisRef} class="flex-col root clear-mins" class:antiPopup={showBorder}>
-  <div class="flex-row-top clear-mins">
-    <div class="w-full flex-col content">
-      <EditBox
-        bind:value={newIssue.title}
-        bind:focusInput={focusIssueTitle}
-        maxWidth="33rem"
-        placeholder={tracker.string.IssueTitlePlaceholder}
-        focus
-      />
-      <div class="mt-4 clear-mins">
-        {#key newIssue.description}
-          <StyledTextArea
-            bind:content={newIssue.description}
-            placeholder={tracker.string.IssueDescriptionPlaceholder}
-            showButtons={false}
-            {isScrollable}
-            {maxHeight}
-            on:changeContent
-          />
-        {/key}
-      </div>
+<div bind:this={thisRef} class="flex-col antiEmphasized clear-mins" class:antiPopup={showBorder}>
+  <div class="flex-col w-full clear-mins">
+    <EditBox
+      bind:value={newIssue.title}
+      bind:focusInput={focusIssueTitle}
+      kind={'large-style'}
+      placeholder={tracker.string.SubIssueTitlePlaceholder}
+      focus
+    />
+    <div class="mt-4 clear-mins">
+      {#key newIssue.description}
+        <StyledTextArea
+          bind:content={newIssue.description}
+          placeholder={tracker.string.SubIssueDescriptionPlaceholder}
+          showButtons={false}
+          {isScrollable}
+          {maxHeight}
+          on:changeContent
+        />
+      {/key}
     </div>
   </div>
   <div class="mt-4 flex-between">
@@ -186,17 +184,3 @@
     </div>
   </div>
 </div>
-
-<style lang="scss">
-  .root {
-    padding: 0.5rem 1.5rem;
-    background-color: var(--theme-bg-accent-color);
-    border: 1px solid var(--theme-button-border-enabled);
-    border-radius: 0.5rem;
-    overflow: hidden;
-
-    .content {
-      padding-top: 0.3rem;
-    }
-  }
-</style>

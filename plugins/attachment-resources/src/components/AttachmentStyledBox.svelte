@@ -31,6 +31,7 @@
   export let placeholder: IntlString | undefined = undefined
   export let alwaysEdit = false
   export let showButtons = false
+  export let emphasized: boolean = false
   export let buttonSize: IconSize = 'small'
   export let maxHeight: 'max' | 'card' | 'limited' | string = 'max'
   export let focusable: boolean = false
@@ -204,6 +205,7 @@
     {buttonSize}
     {maxHeight}
     {focusable}
+    {emphasized}
     on:changeSize
     on:attach={() => attach()}
   />
