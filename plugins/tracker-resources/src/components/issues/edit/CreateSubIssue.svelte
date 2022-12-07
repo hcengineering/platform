@@ -16,7 +16,6 @@
   import { createEventDispatcher } from 'svelte'
   import core, { Account, AttachedData, Doc, generateId, Ref, SortingOrder, WithLookup } from '@hcengineering/core'
   import presentation, { getClient, KeyedAttribute } from '@hcengineering/presentation'
-  import { StyledTextArea } from '@hcengineering/text-editor'
   import { IssueStatus, IssuePriority, Issue, Team, calcRank } from '@hcengineering/tracker'
   import { addNotification, Button, Component, EditBox } from '@hcengineering/ui'
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
@@ -25,6 +24,7 @@
   import StatusEditor from '../StatusEditor.svelte'
   import PriorityEditor from '../PriorityEditor.svelte'
   import EstimationEditor from '../timereport/EstimationEditor.svelte'
+  import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
   import IssueNotification from '../IssueNotification.svelte'
   import { translate } from '@hcengineering/platform'
 
@@ -39,7 +39,9 @@
   let thisRef: HTMLDivElement
   let focusIssueTitle: () => void
   let labels: TagReference[] = []
+  let descriptionBox: AttachmentStyledBox
 
+  const objectId: Ref<Issue> = generateId()
   const key: KeyedAttribute = {
     key: 'labels',
     attr: client.getHierarchy().getAttribute(tracker.class.Issue, 'labels')
@@ -110,14 +112,18 @@
         parents: [{ parentId: parentIssue._id, parentTitle: parentIssue.title }, ...parentIssue.parents]
       }
 
-      const objectId = await client.addCollection(
+      await client.addCollection(
         tracker.class.Issue,
         space,
         parentIssue._id,
         parentIssue._class,
         'subIssues',
-        value
+        value,
+        objectId
       )
+
+      await descriptionBox.createAttachments()
+
       for (const label of labels) {
         await client.addCollection(label._class, label.space, objectId, tracker.class.Issue, 'labels', {
           title: label.title,
@@ -185,13 +191,19 @@
         focus
       />
       <div class="mt-4">
-        {#key newIssue.description}
-          <StyledTextArea
-            bind:content={newIssue.description}
-            placeholder={tracker.string.IssueDescriptionPlaceholder}
-            showButtons={false}
-          />
-        {/key}
+        <AttachmentStyledBox
+          bind:this={descriptionBox}
+          {objectId}
+          refContainer={thisRef}
+          _class={tracker.class.Issue}
+          space={currentTeam._id}
+          alwaysEdit
+          showButtons
+          maxHeight={'20vh'}
+          bind:content={newIssue.description}
+          placeholder={tracker.string.IssueDescriptionPlaceholder}
+          on:changeSize={() => dispatch('changeContent')}
+        />
       </div>
     </div>
   </div>
