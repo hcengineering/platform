@@ -28,7 +28,16 @@
     WithLookup
   } from '@hcengineering/core'
   import { getResource, translate } from '@hcengineering/platform'
-  import { Card, createQuery, getClient, KeyedAttribute, MessageBox, SpaceSelector } from '@hcengineering/presentation'
+  import {
+    Card,
+    createQuery,
+    getClient,
+    getDraft,
+    KeyedAttribute,
+    MessageBox,
+    SpaceSelector,
+    updateDraftRecord
+  } from '@hcengineering/presentation'
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
   import {
     calcRank,
@@ -52,7 +61,6 @@
     IconMoreH,
     Label,
     Menu,
-    setMetadataLocalStorage,
     showPopup,
     Spinner,
     NotificationPosition,
@@ -86,16 +94,19 @@
   export let sprint: Ref<Sprint> | null = $activeSprint ?? null
   export let relatedTo: Doc | undefined
   export let shouldSaveDraft: boolean = false
-  export let draft: IssueDraft | null
   export let parentIssue: Issue | undefined
   export let originalIssue: Issue | undefined
-  export let onDraftChanged: (draft: Data<IssueDraft>) => void
+  export let onDraftChanged: () => void
+
+  const client = getClient()
 
   let issueStatuses: WithLookup<IssueStatus>[] | undefined
+  const draft: IssueDraft | undefined = getDraft(tracker.class.IssueDraft, client.user)
   let labels: TagReference[] = draft?.labels || []
   let objectId: Ref<Issue> = draft?.issueId || generateId()
+  let saveTimer: number | undefined
 
-  function toIssue (initials: AttachedData<Issue>, draft: IssueDraft | null): AttachedData<Issue> {
+  function toIssue (initials: AttachedData<Issue>, draft: IssueDraft | undefined): AttachedData<Issue> {
     if (draft == null) {
       return { ...initials }
     }
@@ -222,7 +233,6 @@
   $: updateTemplate(template)
 
   const dispatch = createEventDispatcher()
-  const client = getClient()
   const statusesQuery = createQuery()
 
   let descriptionBox: AttachmentStyledBox
@@ -275,6 +285,33 @@
 
   $: originalIssue && setPropsFromOriginalIssue()
   $: draft && setPropsFromDraft()
+  $: object && updateDraft()
+
+  async function updateDraft () {
+    if (saveTimer) {
+      clearTimeout(saveTimer)
+    }
+    saveTimer = setTimeout(() => {
+      saveDraft()
+    }, 200)
+  }
+
+  async function saveDraft () {
+    if (!shouldSaveDraft) {
+      return
+    }
+
+    await descriptionBox?.createAttachments()
+
+    let newDraft: Data<IssueDraft> | undefined = createDraftFromObject()
+    const isEmpty = await isDraftEmpty(newDraft)
+
+    if (isEmpty) {
+      newDraft = undefined
+    }
+
+    updateDraftRecord(tracker.class.IssueDraft, client.user, newDraft)
+  }
 
   async function updateIssueStatusId (teamId: Ref<Team>, issueStatusId?: Ref<IssueStatus>) {
     if (issueStatusId !== undefined) {
@@ -342,7 +379,7 @@
     const newDraft: Data<IssueDraft> = {
       issueId: objectId,
       title: getTitle(object.title),
-      description: object.description,
+      description: (object.description as string).replaceAll('<p></p>', ''),
       assignee: object.assignee,
       project: object.project,
       sprint: object.sprint,
@@ -361,23 +398,10 @@
   }
 
   export async function onOutsideClick () {
-    if (!shouldSaveDraft) {
-      return
-    }
-
-    await descriptionBox?.createAttachments()
-
-    const newDraft = createDraftFromObject()
-    const isEmpty = await isDraftEmpty(newDraft)
-
-    if (isEmpty) {
-      return
-    }
-
-    setMetadataLocalStorage(tracker.metadata.CreateIssueDraft, newDraft)
+    saveDraft()
 
     if (onDraftChanged) {
-      return onDraftChanged(newDraft)
+      return onDraftChanged()
     }
   }
 
