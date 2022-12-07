@@ -37,6 +37,7 @@
   export let floatAside = false
   export let allowClose = true
   export let useMaxWidth = false
+  export let isFullSize = false
 </script>
 
 <Panel
@@ -48,7 +49,8 @@
   on:close
   {allowClose}
   {floatAside}
-  {useMaxWidth}
+  bind:useMaxWidth
+  {isFullSize}
 >
   <svelte:fragment slot="navigator">
     {#if $$slots.navigator}

@@ -220,7 +220,7 @@
   $: updateStatusCategories()
 </script>
 
-<Panel isHeader={false} isAside={false} isFullSize on:fullsize on:close={() => dispatch('close')}>
+<Panel isHeader={false} isAside={false} on:fullsize on:close={() => dispatch('close')}>
   <svelte:fragment slot="title">
     <div class="antiTitle icon-wrapper">
       <div class="wrapped-icon">

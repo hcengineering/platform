@@ -692,18 +692,20 @@
     <ParentIssue issue={parentIssue} on:close={clearParentIssue} />
   {/if}
   <EditBox bind:value={object.title} placeholder={tracker.string.IssueTitlePlaceholder} kind={'large-style'} focus />
-  <AttachmentStyledBox
-    bind:this={descriptionBox}
-    {objectId}
-    _class={tracker.class.Issue}
-    space={_space}
-    alwaysEdit
-    showButtons={false}
-    emphasized
-    bind:content={object.description}
-    placeholder={tracker.string.IssueDescriptionPlaceholder}
-    on:changeSize={() => dispatch('changeContent')}
-  />
+  {#key objectId}
+    <AttachmentStyledBox
+      bind:this={descriptionBox}
+      {objectId}
+      _class={tracker.class.Issue}
+      space={_space}
+      alwaysEdit
+      showButtons={false}
+      emphasized
+      bind:content={object.description}
+      placeholder={tracker.string.IssueDescriptionPlaceholder}
+      on:changeSize={() => dispatch('changeContent')}
+    />
+  {/key}
   <IssueTemplateChilds bind:children={subIssues} sprint={object.sprint} project={object.project} isScrollable />
   <svelte:fragment slot="pool">
     {#if issueStatuses}

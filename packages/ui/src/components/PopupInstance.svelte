@@ -135,6 +135,7 @@
     on:close={(ev) => _close(ev?.detail)}
     on:fullsize={() => {
       fullSize = !fullSize
+      fitPopup()
     }}
     on:changeContent={() => {
       fitPopup()
