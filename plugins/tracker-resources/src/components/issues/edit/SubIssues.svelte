@@ -90,7 +90,13 @@
     <ExpandCollapse isExpanded={!isCollapsed} duration={400}>
       {#if hasSubIssues}
         <div class="list" class:collapsed={isCollapsed}>
-          <SubIssueList issues={subIssues} {issueStatuses} {teams} on:move={handleIssueSwap} />
+          <SubIssueList
+            issues={subIssues}
+            {issueStatuses}
+            {teams}
+            on:issue-focus={() => (isCreating = false)}
+            on:move={handleIssueSwap}
+          />
         </div>
       {/if}
     </ExpandCollapse>
