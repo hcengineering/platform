@@ -59,6 +59,7 @@ export default plugin(presentationId, {
     GravatarsManaged: '' as IntlString
   },
   metadata: {
-    RequiredVersion: '' as Metadata<string>
+    RequiredVersion: '' as Metadata<string>,
+    Draft: '' as Metadata<Record<string, any>>
   }
 })
