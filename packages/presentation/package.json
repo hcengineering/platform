@@ -32,8 +32,8 @@
   },
   "dependencies": {
     "@hcengineering/attachment": "~0.6.1",
-    "@hcengineering/platform": "^0.6.7",
-    "@hcengineering/core": "^0.6.17",
+    "@hcengineering/platform": "^0.6.8",
+    "@hcengineering/core": "^0.6.19",
     "@hcengineering/query": "~0.6.1",
     "@hcengineering/ui": "^0.6.2",
     "@hcengineering/view": "^0.6.1",
@@ -41,7 +41,7 @@
     "@hcengineering/contact": "~0.6.8",
     "@hcengineering/login": "~0.6.1",
     "@hcengineering/image-cropper": "~0.6.0",
-    "@hcengineering/client": "^0.6.3",
+    "@hcengineering/client": "^0.6.6",
     "@hcengineering/setting": "~0.6.1",
     "fast-equals": "^2.0.3"
   }

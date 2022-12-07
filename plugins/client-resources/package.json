@@ -1,7 +1,9 @@
 {
   "name": "@hcengineering/client-resources",
-  "version": "0.6.8",
+  "version": "0.6.10",
   "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "files": ["lib/**/*", "src/**/*", "tsconfig.json"],
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
   "scripts": {
@@ -26,9 +28,9 @@
     "typescript": "^4.3.5"
   },
   "dependencies": {
-    "@hcengineering/platform": "^0.6.7",
-    "@hcengineering/core": "^0.6.17",
-    "@hcengineering/client": "^0.6.3"
+    "@hcengineering/platform": "^0.6.8",
+    "@hcengineering/core": "^0.6.19",
+    "@hcengineering/client": "^0.6.6"
   },
   "repository": "https://github.com/hcengineering/anticrm",
   "publishConfig": {

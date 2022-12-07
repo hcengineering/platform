@@ -30,7 +30,7 @@
     "@types/node": "~16.11.12"
   },
   "dependencies": {
-    "@hcengineering/platform": "^0.6.7",
+    "@hcengineering/platform": "^0.6.8",
     "@hcengineering/gmail": "~0.6.0"
   }
 }

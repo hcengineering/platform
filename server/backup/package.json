@@ -28,11 +28,11 @@
     "@types/node": "~16.11.12"
   },
   "dependencies": {
-    "@hcengineering/platform": "^0.6.7",
-    "@hcengineering/core": "^0.6.17",
+    "@hcengineering/platform": "^0.6.8",
+    "@hcengineering/core": "^0.6.19",
     "@hcengineering/contact": "~0.6.8",
     "@hcengineering/client-resources": "~0.6.4",
-    "@hcengineering/client": "^0.6.3",
+    "@hcengineering/client": "^0.6.6",
     "@hcengineering/model": "~0.6.0",
     "tar-stream": "^2.2.0",
     "@hcengineering/server-tool": "~0.6.0",

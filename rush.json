@@ -1413,6 +1413,6 @@
       "packageName": "@hcengineering/minio",
       "projectFolder": "server/minio",
       "shouldPublish": true
-    }
+    }  
   ]
 }
