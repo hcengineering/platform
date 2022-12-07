@@ -667,7 +667,11 @@
         'top',
         (result?: boolean) => {
           if (result === true) {
+            updateDraftRecord(tracker.class.IssueDraft, client.user, undefined)
             dispatch('close')
+            if (onDraftChanged) {
+              return onDraftChanged()
+            }
           }
         }
       )
