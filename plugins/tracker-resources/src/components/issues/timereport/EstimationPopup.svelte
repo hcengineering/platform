@@ -46,6 +46,7 @@
   let currentTeam: Team | undefined
   let issueStatuses: WithLookup<IssueStatus>[] | undefined
 
+  $: defaultTimeReportDay = object.defaultTimeReportDay
   $: query.query(
     object._class,
     { _id: object._id },
@@ -140,7 +141,13 @@
       on:click={(event) => {
         showPopup(
           TimeSpendReportPopup,
-          { issueId: object._id, issueClass: object._class, space: object.space, assignee: object.assignee },
+          {
+            issueId: object._id,
+            issueClass: object._class,
+            space: object.space,
+            assignee: object.assignee,
+            defaultTimeReportDay
+          },
           eventToHTMLElement(event)
         )
       }}

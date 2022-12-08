@@ -49,7 +49,12 @@
 
   $: hasSubIssues = issue.subIssues > 0
   $: subIssuesQuery.query(tracker.class.Issue, { attachedTo: issue._id }, async (result) => (subIssues = result), {
-    sort: { rank: SortingOrder.Ascending }
+    sort: { rank: SortingOrder.Ascending },
+    lookup: {
+      _id: {
+        subIssues: tracker.class.Issue
+      }
+    }
   })
 </script>
 
@@ -90,7 +95,13 @@
     <ExpandCollapse isExpanded={!isCollapsed} duration={400}>
       {#if hasSubIssues}
         <div class="list" class:collapsed={isCollapsed}>
-          <SubIssueList issues={subIssues} {issueStatuses} {teams} on:move={handleIssueSwap} />
+          <SubIssueList
+            issues={subIssues}
+            {issueStatuses}
+            {teams}
+            on:issue-focus={() => (isCreating = false)}
+            on:move={handleIssueSwap}
+          />
         </div>
       {/if}
     </ExpandCollapse>

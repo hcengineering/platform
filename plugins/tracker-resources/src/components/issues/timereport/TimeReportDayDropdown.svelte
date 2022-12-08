@@ -13,34 +13,32 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { TimeReportDayType } from '@hcengineering/tracker'
   import { DropdownIntlItem, DropdownLabelsIntl } from '@hcengineering/ui'
   import tracker from '../../../plugin'
-  import { WorkDaysType } from '../../../types'
-  import { getWorkDate, getWorkDayType } from '../../../utils'
-  import WorkDaysIcon from './WorkDaysIcon.svelte'
+  import TimeReportDayIcon from './TimeReportDayIcon.svelte'
 
-  export let dateTimestamp: number
+  export let label = tracker.string.TimeReportDayTypeLabel
+  export let selected: TimeReportDayType | undefined
 
   const workDaysDropdownItems: DropdownIntlItem[] = [
     {
-      id: WorkDaysType.CURRENT,
-      label: tracker.string.WorkDayCurrent
+      id: TimeReportDayType.CurrentWorkDay,
+      label: tracker.string.CurrentWorkDay
     },
     {
-      id: WorkDaysType.PREVIOUS,
-      label: tracker.string.WorkDayPrevious
+      id: TimeReportDayType.PreviousWorkDay,
+      label: tracker.string.PreviousWorkDay
     }
   ]
-
-  $: selectedWorkDayType = dateTimestamp ? getWorkDayType(dateTimestamp) : undefined
 </script>
 
 <DropdownLabelsIntl
   kind="link-bordered"
-  icon={WorkDaysIcon}
+  icon={TimeReportDayIcon}
   shouldUpdateUndefined={false}
-  label={tracker.string.WorkDayLabel}
+  {label}
   items={workDaysDropdownItems}
-  bind:selected={selectedWorkDayType}
-  on:selected={({ detail }) => (dateTimestamp = getWorkDate(detail))}
+  bind:selected
+  on:selected
 />

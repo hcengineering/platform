@@ -42,6 +42,9 @@
   export let presenterProps: Record<string, any> = {}
   export let direction: 'row' | 'column' = 'column'
   export let flipDuration = 200
+  export let isAddButtonHidden = false
+  export let isAddButtonDisabled = false
+  export let itemsCount = 0
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -60,10 +63,10 @@
 
   let isCreating = false
 
-  async function updateModel (modelClassRef: Ref<Class<Doc>>) {
+  async function updateModel (modelClassRef: Ref<Class<Doc>>, props: Record<string, any>) {
     try {
       isModelLoading = true
-      model = await getObjectPresenter(client, modelClassRef, { key: '', props: presenterProps })
+      model = await getObjectPresenter(client, modelClassRef, { key: '', props })
     } finally {
       isModelLoading = false
     }
@@ -131,16 +134,17 @@
     hoveringIndex = null
   }
 
-  $: updateModel(_class)
+  $: updateModel(_class, presenterProps)
   $: updateObjectFactory(_class)
   $: itemsQuery.query(_class, query, updateItems, { ...queryOptions, limit: Math.max(queryOptions?.limit ?? 0, 200) })
 
   $: isLoading = isModelLoading || areItemsloading
   $: isSortable = hierarchy.getAllAttributes(_class).has('rank')
+  $: itemsCount = items?.length ?? 0
 </script>
 
 <div class="flex-col">
-  {#if label}
+  {#if label || !isAddButtonHidden}
     <div class="flex mb-4">
       {#if label}
         <div class="title-wrapper">
@@ -149,11 +153,11 @@
           </span>
         </div>
       {/if}
-      {#if objectFactory}
+      {#if !isAddButtonHidden}
         <div class="ml-auto">
           <Button
             showTooltip={{ label: presentation.string.Add }}
-            disabled={isLoading}
+            disabled={isAddButtonDisabled || isLoading || !objectFactory}
             width="min-content"
             icon={IconAdd}
             size="small"

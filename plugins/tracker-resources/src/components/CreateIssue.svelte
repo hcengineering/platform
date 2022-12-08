@@ -49,10 +49,13 @@
     IssueTemplateChild,
     Project,
     Sprint,
-    Team
+    Team,
+    TimeReportDayType,
+    WorkDayLength
   } from '@hcengineering/tracker'
   import {
     ActionIcon,
+    addNotification,
     Button,
     Component,
     DatePresenter,
@@ -62,11 +65,7 @@
     Label,
     Menu,
     showPopup,
-    Spinner,
-    NotificationPosition,
-    NotificationSeverity,
-    Notification,
-    notificationsStore
+    Spinner
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { ObjectBox } from '@hcengineering/view-resources'
@@ -104,6 +103,7 @@
   let labels: TagReference[] = draft?.labels || []
   let objectId: Ref<Issue> = draft?.issueId || generateId()
   let saveTimer: number | undefined
+  let currentTeam: Team | undefined
 
   function toIssue (initials: AttachedData<Issue>, draft: IssueDraft | undefined): AttachedData<Issue> {
     if (draft == null) {
@@ -113,7 +113,29 @@
     return { ...initials, ...issue }
   }
 
-  let object: AttachedData<Issue> = originalIssue
+  const defaultIssue = {
+    title: '',
+    description: '',
+    assignee,
+    project,
+    sprint,
+    number: 0,
+    rank: '',
+    status: '' as Ref<IssueStatus>,
+    priority,
+    dueDate: null,
+    comments: 0,
+    subIssues: 0,
+    parents: [],
+    reportedTime: 0,
+    estimation: 0,
+    reports: 0,
+    childInfo: [],
+    workDayLength: currentTeam?.workDayLength ?? WorkDayLength.EIGHT_HOURS,
+    defaultTimeReportDay: currentTeam?.defaultTimeReportDay ?? TimeReportDayType.PreviousWorkDay
+  }
+
+  let object = originalIssue
     ? {
         ...originalIssue,
         title: `${originalIssue.title} (copy)`,
@@ -123,51 +145,19 @@
         reports: 0,
         childInfo: []
       }
-    : toIssue(
-      {
-        title: '',
-        description: '',
-        assignee,
-        project,
-        sprint,
-        number: 0,
-        rank: '',
-        status: '' as Ref<IssueStatus>,
-        priority,
-        dueDate: null,
-        comments: 0,
-        subIssues: 0,
-        parents: [],
-        reportedTime: 0,
-        estimation: 0,
-        reports: 0,
-        childInfo: []
-      },
-      draft
-    )
+    : toIssue(defaultIssue, draft)
+
+  $: {
+    defaultIssue.workDayLength = currentTeam?.workDayLength ?? WorkDayLength.EIGHT_HOURS
+    defaultIssue.defaultTimeReportDay = currentTeam?.defaultTimeReportDay ?? TimeReportDayType.PreviousWorkDay
+    object.workDayLength = defaultIssue.workDayLength
+    object.defaultTimeReportDay = defaultIssue.defaultTimeReportDay
+  }
 
   function resetObject (): void {
     templateId = undefined
     template = undefined
-    object = {
-      title: '',
-      description: '',
-      assignee,
-      project,
-      sprint,
-      number: 0,
-      rank: '',
-      status: '' as Ref<IssueStatus>,
-      priority,
-      dueDate: null,
-      comments: 0,
-      subIssues: 0,
-      parents: [],
-      reportedTime: 0,
-      estimation: 0,
-      reports: 0,
-      childInfo: []
-    }
+    object = { ...defaultIssue }
     subIssues = []
   }
 
@@ -234,6 +224,7 @@
   const dispatch = createEventDispatcher()
   const client = getClient()
   const statusesQuery = createQuery()
+  const spaceQuery = createQuery()
 
   let descriptionBox: AttachmentStyledBox
 
@@ -257,6 +248,9 @@
       sort: { rank: SortingOrder.Ascending }
     }
   )
+  $: spaceQuery.query(tracker.class.Team, { _id: _space }, (res) => {
+    currentTeam = res.shift()
+  })
 
   async function setPropsFromOriginalIssue () {
     if (!originalIssue) {
@@ -452,7 +446,9 @@
       estimation: object.estimation,
       reports: 0,
       relations: relatedTo !== undefined ? [{ _id: relatedTo._id, _class: relatedTo._class }] : [],
-      childInfo: []
+      childInfo: [],
+      workDayLength: object.workDayLength,
+      defaultTimeReportDay: object.defaultTimeReportDay
     }
 
     await client.addCollection(
@@ -524,7 +520,9 @@
         estimation: subIssue.estimation,
         reports: 0,
         relations: [],
-        childInfo: []
+        childInfo: [],
+        workDayLength: object.workDayLength,
+        defaultTimeReportDay: object.defaultTimeReportDay
       }
 
       await client.addCollection(
@@ -549,21 +547,10 @@
       }
     }
 
-    const notification: Notification = {
-      id: generateId(),
-      title: tracker.string.IssueCreated,
-      subTitle: getTitle(object.title),
-      severity: NotificationSeverity.Success,
-      position: NotificationPosition.BottomRight,
-      component: IssueNotification,
-      closeTimeout: 10000,
-      params: {
-        issueId: objectId,
-        subTitlePostfix: (await translate(tracker.string.Created, { value: 1 })).toLowerCase()
-      }
-    }
-
-    notificationsStore.addNotification(notification)
+    addNotification(tracker.string.IssueCreated, getTitle(object.title), IssueNotification, {
+      issueId: objectId,
+      subTitlePostfix: (await translate(tracker.string.Created, { value: 1 })).toLowerCase()
+    })
 
     objectId = generateId()
     resetObject()
@@ -740,83 +727,77 @@
     <ParentIssue issue={parentIssue} on:close={clearParentIssue} />
   {/if}
   <EditBox bind:value={object.title} placeholder={tracker.string.IssueTitlePlaceholder} kind={'large-style'} focus />
-  <AttachmentStyledBox
-    bind:this={descriptionBox}
-    {objectId}
-    _class={tracker.class.Issue}
-    space={_space}
-    alwaysEdit
-    showButtons={false}
-    maxHeight={'20vh'}
-    bind:content={object.description}
-    placeholder={tracker.string.IssueDescriptionPlaceholder}
-    on:changeSize={() => dispatch('changeContent')}
-  />
-  <IssueTemplateChilds
-    bind:children={subIssues}
-    sprint={object.sprint}
-    project={object.project}
-    isScrollable
-    maxHeight={'20vh'}
-  />
+  {#key objectId}
+    <AttachmentStyledBox
+      bind:this={descriptionBox}
+      {objectId}
+      _class={tracker.class.Issue}
+      space={_space}
+      alwaysEdit
+      showButtons={false}
+      emphasized
+      bind:content={object.description}
+      placeholder={tracker.string.IssueDescriptionPlaceholder}
+      on:changeSize={() => dispatch('changeContent')}
+    />
+  {/key}
+  <IssueTemplateChilds bind:children={subIssues} sprint={object.sprint} project={object.project} isScrollable />
   <svelte:fragment slot="pool">
-    <div class="flex flex-wrap" style:gap={'0.2vw'}>
-      {#if issueStatuses}
-        <div id="status-editor">
-          <StatusEditor
-            value={object}
-            statuses={issueStatuses}
-            kind="no-border"
-            size="small"
-            shouldShowLabel={true}
-            on:change={({ detail }) => (object.status = detail)}
-          />
-        </div>
-        <PriorityEditor
+    {#if issueStatuses}
+      <div id="status-editor">
+        <StatusEditor
           value={object}
-          shouldShowLabel
-          isEditable
+          statuses={issueStatuses}
           kind="no-border"
           size="small"
-          justify="center"
-          on:change={({ detail }) => (object.priority = detail)}
+          shouldShowLabel={true}
+          on:change={({ detail }) => (object.status = detail)}
         />
-        <AssigneeEditor
-          value={object}
-          size="small"
-          kind="no-border"
-          width={'min-content'}
-          on:change={({ detail }) => (object.assignee = detail)}
-        />
-        <Component
-          is={tags.component.TagsDropdownEditor}
-          props={{
-            items: labels,
-            key,
-            targetClass: tracker.class.Issue,
-            countLabel: tracker.string.NumberLabels
-          }}
-          on:open={(evt) => {
-            addTagRef(evt.detail)
-          }}
-          on:delete={(evt) => {
-            labels = labels.filter((it) => it._id !== evt.detail)
-          }}
-        />
-        <EstimationEditor kind={'no-border'} size={'small'} value={object} />
-        <ProjectSelector value={object.project} onChange={handleProjectIdChanged} />
-        <SprintSelector
-          value={object.sprint}
-          onChange={handleSprintIdChanged}
-          useProject={(!originalIssue && object.project) || undefined}
-        />
-        {#if object.dueDate !== null}
-          <DatePresenter bind:value={object.dueDate} editable />
-        {/if}
-      {:else}
-        <Spinner size="small" />
+      </div>
+      <PriorityEditor
+        value={object}
+        shouldShowLabel
+        isEditable
+        kind="no-border"
+        size="small"
+        justify="center"
+        on:change={({ detail }) => (object.priority = detail)}
+      />
+      <AssigneeEditor
+        value={object}
+        size="small"
+        kind="no-border"
+        width={'min-content'}
+        on:change={({ detail }) => (object.assignee = detail)}
+      />
+      <Component
+        is={tags.component.TagsDropdownEditor}
+        props={{
+          items: labels,
+          key,
+          targetClass: tracker.class.Issue,
+          countLabel: tracker.string.NumberLabels
+        }}
+        on:open={(evt) => {
+          addTagRef(evt.detail)
+        }}
+        on:delete={(evt) => {
+          labels = labels.filter((it) => it._id !== evt.detail)
+        }}
+      />
+      <EstimationEditor kind={'no-border'} size={'small'} value={object} />
+      <ProjectSelector value={object.project} onChange={handleProjectIdChanged} />
+      <SprintSelector
+        value={object.sprint}
+        onChange={handleSprintIdChanged}
+        useProject={(!originalIssue && object.project) || undefined}
+      />
+      {#if object.dueDate !== null}
+        <DatePresenter bind:value={object.dueDate} editable />
       {/if}
-    </div>
+    {:else}
+      <Spinner size="small" />
+    {/if}
     <ActionIcon icon={IconMoreH} size={'medium'} action={showMoreActions} />
   </svelte:fragment>
   <svelte:fragment slot="footer">

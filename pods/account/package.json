@@ -41,8 +41,8 @@
   },
   "dependencies": {
     "@hcengineering/account": "~0.6.0",
-    "@hcengineering/platform": "^0.6.7",
-    "@hcengineering/core": "^0.6.17",
+    "@hcengineering/platform": "^0.6.8",
+    "@hcengineering/core": "^0.6.19",
     "mongodb": "^4.11.0",
     "koa": "^2.13.1",
     "koa-router": "^10.1.1",

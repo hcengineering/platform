@@ -191,7 +191,7 @@ export interface DropdownTextItem {
 }
 
 export interface DropdownIntlItem {
-  id: string
+  id: string | number
   label: IntlString
 }
 

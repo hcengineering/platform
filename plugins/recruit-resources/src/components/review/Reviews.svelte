@@ -27,8 +27,8 @@
   export let reviews: number
   export let label: IntlString = recruit.string.Reviews
 
-  const createApp = (ev: MouseEvent): void => {
-    showPopup(CreateReview, { candidate: objectId, preserveCandidate: true }, ev.target as HTMLElement)
+  const createApp = (): void => {
+    showPopup(CreateReview, { candidate: objectId, preserveCandidate: true }, 'top')
   }
   let wSection: number
 </script>

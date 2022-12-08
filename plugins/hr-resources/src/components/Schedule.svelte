@@ -27,6 +27,7 @@
     deviceOptionsStore as deviceInfo,
     TabList
   } from '@hcengineering/ui'
+  import type { TabItem } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import hr from '../plugin'
   import ScheduleMonthView from './ScheduleView.svelte'
@@ -83,6 +84,11 @@
       else if (res.id === 'ModeYear') mode = CalendarMode.Year
     }
   }
+
+  const viewslist: TabItem[] = [
+    { id: 'chart', icon: view.icon.Views },
+    { id: 'stats', icon: view.icon.Table }
+  ]
 </script>
 
 <div class="ac-header divide {twoRows ? 'flex-col-reverse' : 'full'} withSettings">
@@ -151,20 +157,14 @@
     {/if}
     <div class="flex-row-center gap-2">
       {#if mode === CalendarMode.Month}
-        <Button
-          icon={view.icon.Views}
-          selected={display === 'chart'}
+        <TabList
+          items={viewslist}
+          multiselect={false}
+          selected={display}
+          kind={'secondary'}
           size={'small'}
-          on:click={() => {
-            display = 'chart'
-          }}
-        />
-        <Button
-          size={'small'}
-          icon={view.icon.Table}
-          selected={display === 'stats'}
-          on:click={() => {
-            display = 'stats'
+          on:select={(result) => {
+            if (result.detail !== undefined) display = result.detail.id
           }}
         />
       {/if}

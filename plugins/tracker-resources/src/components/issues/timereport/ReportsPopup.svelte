@@ -25,6 +25,8 @@
   import TimeSpendReportPopup from './TimeSpendReportPopup.svelte'
   export let issue: Issue
 
+  $: defaultTimeReportDay = issue.defaultTimeReportDay
+
   export function canClose (): boolean {
     return true
   }
@@ -37,7 +39,13 @@
   function addReport (event: MouseEvent): void {
     showPopup(
       TimeSpendReportPopup,
-      { issueId: issue._id, issueClass: issue._class, space: issue.space, assignee: issue.assignee },
+      {
+        issueId: issue._id,
+        issueClass: issue._class,
+        space: issue.space,
+        assignee: issue.assignee,
+        defaultTimeReportDay
+      },
       eventToHTMLElement(event)
     )
   }

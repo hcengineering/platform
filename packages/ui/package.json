@@ -33,9 +33,9 @@
     "@types/jest": "~28.1.0"
   },
   "dependencies": {
-    "@hcengineering/platform": "^0.6.7",
+    "@hcengineering/platform": "^0.6.8",
     "@hcengineering/theme": "^0.6.1",
-    "@hcengineering/core": "^0.6.17",
+    "@hcengineering/core": "^0.6.19",
     "svelte": "^3.47",
     "fast-equals": "^2.0.3"
   },

@@ -21,7 +21,7 @@
   import { Card, getClient, UserBox, UserBoxList } from '@hcengineering/presentation'
   import type { Candidate, Review } from '@hcengineering/recruit'
   import task from '@hcengineering/task'
-  import { StyledTextBox } from '@hcengineering/text-editor'
+  import { StyledTextArea } from '@hcengineering/text-editor'
   import { DateRangePresenter, EditBox, Status as StatusControl } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
@@ -150,14 +150,7 @@
   <StatusControl slot="error" {status} />
   <EditBox placeholder={recruit.string.Title} bind:value={title} kind={'large-style'} focus />
   <EditBox placeholder={recruit.string.Location} bind:value={location} kind={'small-style'} />
-  <StyledTextBox
-    emphasized
-    showButtons={false}
-    bind:content={description}
-    label={recruit.string.Description}
-    alwaysEdit
-    placeholder={recruit.string.AddDescription}
-  />
+  <StyledTextArea bind:content={description} placeholder={recruit.string.AddDescription} emphasized />
   <svelte:fragment slot="pool">
     {#if !preserveCandidate}
       <UserBox

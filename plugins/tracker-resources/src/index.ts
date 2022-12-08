@@ -164,6 +164,12 @@ async function editWorkflowStatuses (team: Team | undefined): Promise<void> {
   }
 }
 
+async function editTeam (team: Team | undefined): Promise<void> {
+  if (team !== undefined) {
+    showPopup(CreateTeam, { team })
+  }
+}
+
 async function moveAndDeleteSprint (client: TxOperations, oldSprint: Sprint, newSprint?: Sprint): Promise<void> {
   const noSprintLabel = await translate(tracker.string.NoSprint, {})
 
@@ -282,6 +288,7 @@ export default async (): Promise<Resources> => ({
   },
   actionImpl: {
     EditWorkflowStatuses: editWorkflowStatuses,
+    EditTeam: editTeam,
     DeleteSprint: deleteSprint
   },
   resolver: {

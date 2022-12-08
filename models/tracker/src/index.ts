@@ -68,8 +68,10 @@ import {
   Sprint,
   SprintStatus,
   Team,
+  TimeReportDayType,
   TimeSpendReport,
-  trackerId
+  trackerId,
+  WorkDayLength
 } from '@hcengineering/tracker'
 import { KeyBinding } from '@hcengineering/view'
 import tracker from './plugin'
@@ -173,6 +175,9 @@ export class TTeam extends TSpace implements Team {
 
   @Prop(TypeRef(tracker.class.IssueStatus), tracker.string.DefaultIssueStatus)
     defaultIssueStatus!: Ref<IssueStatus>
+
+  declare workDayLength: WorkDayLength
+  declare defaultTimeReportDay: TimeReportDayType
 }
 
 /**
@@ -188,6 +193,9 @@ export function TypeReportedTime (): Type<number> {
 @Model(tracker.class.Issue, core.class.AttachedDoc, DOMAIN_TRACKER)
 @UX(tracker.string.Issue, tracker.icon.Issue, tracker.string.Issue)
 export class TIssue extends TAttachedDoc implements Issue {
+  @Prop(TypeRef(tracker.class.Issue), tracker.string.Parent)
+  declare attachedTo: Ref<Issue>
+
   @Prop(TypeString(), tracker.string.Title)
   @Index(IndexKind.FullText)
     title!: string
@@ -255,6 +263,9 @@ export class TIssue extends TAttachedDoc implements Issue {
     reports!: number
 
   declare childInfo: IssueChildInfo[]
+
+  declare workDayLength: WorkDayLength
+  declare defaultTimeReportDay: TimeReportDayType
 }
 
 /**
@@ -856,6 +867,26 @@ export function createModel (builder: Builder): void {
       }
     },
     tracker.action.EditWorkflowStatuses
+  )
+
+  createAction(
+    builder,
+    {
+      action: tracker.actionImpl.EditTeam,
+      label: tracker.string.EditTeam,
+      icon: contact.icon.Edit,
+      input: 'focus',
+      category: tracker.category.Tracker,
+      target: tracker.class.Team,
+      query: {
+        archived: false
+      },
+      context: {
+        mode: ['context', 'browser'],
+        group: 'edit'
+      }
+    },
+    tracker.action.EditTeam
   )
 
   builder.createDoc(

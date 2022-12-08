@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import type { IntlString } from '@hcengineering/platform'
-  import { Button, IconClose, Label, MiniToggle } from '@hcengineering/ui'
+  import { Button, IconClose, Label, MiniToggle, Scroller } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation from '..'
   import { deviceOptionsStore as deviceInfo, resizeObserver } from '@hcengineering/ui'
@@ -71,8 +71,12 @@
       />
     </div>
   </div>
-  <div class="antiCard-content"><slot /></div>
-  {#if $$slots.header || $$slots.pool}
+  <Scroller>
+    <div class="antiCard-content">
+      <slot />
+    </div>
+  </Scroller>
+  {#if $$slots.pool}
     <div class="antiCard-pool">
       <slot name="pool" />
     </div>

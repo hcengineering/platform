@@ -30,14 +30,14 @@
     "svelte-check": "^2.8.0"
   },
   "dependencies": {
-    "@hcengineering/platform": "^0.6.7",
+    "@hcengineering/platform": "^0.6.8",
     "svelte": "^3.47",
     "@hcengineering/task": "~0.6.0",
     "@hcengineering/ui": "^0.6.2",
     "@hcengineering/presentation": "~0.6.2",
     "@hcengineering/text-editor": "~0.6.0",
     "@hcengineering/contact": "~0.6.8",
-    "@hcengineering/core": "^0.6.17",
+    "@hcengineering/core": "^0.6.19",
     "@hcengineering/chunter": "~0.6.1",
     "@hcengineering/attachment": "~0.6.1",
     "@hcengineering/panel": "~0.6.0",

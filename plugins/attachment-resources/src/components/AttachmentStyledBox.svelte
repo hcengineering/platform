@@ -31,9 +31,11 @@
   export let placeholder: IntlString | undefined = undefined
   export let alwaysEdit = false
   export let showButtons = false
+  export let emphasized: boolean = false
   export let buttonSize: IconSize = 'small'
   export let maxHeight: 'max' | 'card' | 'limited' | string = 'max'
   export let focusable: boolean = false
+  export let refContainer: HTMLElement | undefined = undefined
 
   export function attach (): void {
     inputFile.click()
@@ -162,7 +164,28 @@
     return Promise.all(promises).then()
   }
 
+  function isAllowedPaste (evt: ClipboardEvent) {
+    let t: HTMLElement | null = evt.target as HTMLElement
+
+    if (!refContainer) {
+      return true
+    }
+
+    while (t != null) {
+      t = t.parentElement
+      if (t === refContainer) {
+        return true
+      }
+    }
+
+    return false
+  }
+
   function pasteAction (evt: ClipboardEvent): void {
+    if (!isAllowedPaste(evt)) {
+      return
+    }
+
     const items = evt.clipboardData?.items ?? []
     for (const index in items) {
       const item = items[index]
@@ -204,6 +227,7 @@
     {buttonSize}
     {maxHeight}
     {focusable}
+    {emphasized}
     on:changeSize
     on:attach={() => attach()}
   />

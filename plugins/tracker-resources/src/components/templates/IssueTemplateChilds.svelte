@@ -76,7 +76,7 @@
     labelParams={{ subIssues: 0 }}
     kind={'transparent'}
     size={'small'}
-    showTooltip={{ label: tracker.string.AddSubIssues, props: { subIssues: 1 }, direction: 'bottom' }}
+    showTooltip={{ label: tracker.string.AddSubIssues, props: { subIssues: 1 } }}
     on:click={() => {
       closeTooltip()
       isCreating = true
@@ -86,7 +86,7 @@
 </div>
 {#if hasSubIssues}
   <ExpandCollapse isExpanded={!isCollapsed} duration={400} on:changeContent>
-    <div class="list" class:collapsed={isCollapsed}>
+    <div class="flex-col flex-no-shrink list clear-mins" class:collapsed={isCollapsed}>
       <IssueTemplateChildList
         {project}
         {sprint}

@@ -192,19 +192,28 @@ function getModifiedAttributes (tx: DisplayTx): any[] {
   return [{}]
 }
 
-async function buildRemovedDoc (client: TxOperations, objectId: Ref<Doc>): Promise<Doc | undefined> {
-  const txes = await client.findAll(core.class.TxCUD, { objectId }, { sort: { modifiedOn: 1 } })
-  let doc: Doc
-  let createTx = txes.find((tx) => tx._class === core.class.TxCreateDoc)
-  if (createTx === undefined) {
-    const collectionTxes = txes.filter((tx) => tx._class === core.class.TxCollectionCUD) as Array<
-    TxCollectionCUD<Doc, AttachedDoc>
-    >
-    createTx = collectionTxes.find((p) => p.tx._class === core.class.TxCreateDoc)
-  }
+async function buildRemovedDoc (
+  client: TxOperations,
+  objectId: Ref<Doc>,
+  _class: Ref<Class<Doc>>
+): Promise<Doc | undefined> {
+  const isAttached = client.getHierarchy().isDerived(_class, core.class.AttachedDoc)
+  const txes = await client.findAll<TxCUD<Doc>>(
+    isAttached ? core.class.TxCollectionCUD : core.class.TxCUD,
+    isAttached
+      ? { 'tx.objectId': objectId as Ref<AttachedDoc> }
+      : {
+          objectId
+        },
+    { sort: { modifiedOn: 1 } }
+  )
+  const createTx = isAttached
+    ? txes.find((tx) => (tx as TxCollectionCUD<Doc, AttachedDoc>).tx._class === core.class.TxCreateDoc)
+    : txes.find((tx) => tx._class === core.class.TxCreateDoc)
   if (createTx === undefined) return
-  doc = TxProcessor.createDoc2Doc(createTx as TxCreateDoc<Doc>)
-  for (const tx of txes) {
+  let doc = TxProcessor.createDoc2Doc(createTx as TxCreateDoc<Doc>)
+  for (let tx of txes) {
+    tx = TxProcessor.extractTx(tx) as TxCUD<Doc>
     if (tx._class === core.class.TxUpdateDoc) {
       doc = TxProcessor.updateDoc2Doc(doc, tx as TxUpdateDoc<Doc>)
     } else if (tx._class === core.class.TxMixin) {
@@ -216,7 +225,8 @@ async function buildRemovedDoc (client: TxOperations, objectId: Ref<Doc>): Promi
 }
 
 async function getAllRealValues (client: TxOperations, values: any[], _class: Ref<Class<Doc>>): Promise<any[]> {
-  if (!client.getHierarchy().isDerived(_class, core.class.Doc) || values.some((value) => typeof value !== 'string')) {
+  if (values.length === 0) return []
+  if (values.some((value) => typeof value !== 'string')) {
     return values
   }
   const realValues = await client.findAll(_class, { _id: { $in: values } })
@@ -226,21 +236,22 @@ async function getAllRealValues (client: TxOperations, values: any[], _class: Re
     ...(await Promise.all(
       values
         .filter((value) => !realValuesIds.includes(value))
-        .map(async (value) => await buildRemovedDoc(client, value))
+        .map(async (value) => await buildRemovedDoc(client, value, _class))
     ))
   ].filter((v) => v != null)
 }
 
-export async function getValue (client: TxOperations, m: AttributeModel, tx: DisplayTx): Promise<any> {
-  function combineAttributes (attributes: any[], key: string, operator: string, arrayKey: string): any[] {
-    return Array.from(
-      new Set(
-        attributes.flatMap((attr) =>
-          Array.isArray(attr[operator]?.[key]?.[arrayKey]) ? attr[operator]?.[key]?.[arrayKey] : attr[operator]?.[key]
-        )
+function combineAttributes (attributes: any[], key: string, operator: string, arrayKey: string): any[] {
+  return Array.from(
+    new Set(
+      attributes.flatMap((attr) =>
+        Array.isArray(attr[operator]?.[key]?.[arrayKey]) ? attr[operator]?.[key]?.[arrayKey] : attr[operator]?.[key]
       )
-    ).filter((v) => v != null)
-  }
+    )
+  ).filter((v) => v != null)
+}
+
+export async function getValue (client: TxOperations, m: AttributeModel, tx: DisplayTx): Promise<any> {
   const utxs = getModifiedAttributes(tx)
   const value = {
     set: utxs[0][m.key],

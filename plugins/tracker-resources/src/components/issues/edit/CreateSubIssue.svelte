@@ -16,15 +16,17 @@
   import { createEventDispatcher } from 'svelte'
   import core, { Account, AttachedData, Doc, generateId, Ref, SortingOrder, WithLookup } from '@hcengineering/core'
   import presentation, { getClient, KeyedAttribute } from '@hcengineering/presentation'
-  import { StyledTextArea } from '@hcengineering/text-editor'
   import { IssueStatus, IssuePriority, Issue, Team, calcRank } from '@hcengineering/tracker'
-  import { Button, Component, EditBox } from '@hcengineering/ui'
+  import { addNotification, Button, Component, EditBox } from '@hcengineering/ui'
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
   import tracker from '../../../plugin'
   import AssigneeEditor from '../AssigneeEditor.svelte'
   import StatusEditor from '../StatusEditor.svelte'
   import PriorityEditor from '../PriorityEditor.svelte'
   import EstimationEditor from '../timereport/EstimationEditor.svelte'
+  import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
+  import IssueNotification from '../IssueNotification.svelte'
+  import { translate } from '@hcengineering/platform'
 
   export let parentIssue: Issue
   export let issueStatuses: WithLookup<IssueStatus>[]
@@ -37,7 +39,9 @@
   let thisRef: HTMLDivElement
   let focusIssueTitle: () => void
   let labels: TagReference[] = []
+  let descriptionBox: AttachmentStyledBox
 
+  let objectId: Ref<Issue> = generateId()
   const key: KeyedAttribute = {
     key: 'labels',
     attr: client.getHierarchy().getAttribute(tracker.class.Issue, 'labels')
@@ -61,7 +65,9 @@
       estimation: 0,
       reportedTime: 0,
       reports: 0,
-      childInfo: []
+      childInfo: [],
+      workDayLength: currentTeam.workDayLength,
+      defaultTimeReportDay: currentTeam.defaultTimeReportDay
     }
   }
 
@@ -69,6 +75,7 @@
     newIssue = getIssueDefaults()
     labels = []
     focusIssueTitle?.()
+    objectId = generateId()
   }
 
   function getTitle (value: string) {
@@ -108,14 +115,18 @@
         parents: [{ parentId: parentIssue._id, parentTitle: parentIssue.title }, ...parentIssue.parents]
       }
 
-      const objectId = await client.addCollection(
+      await client.addCollection(
         tracker.class.Issue,
         space,
         parentIssue._id,
         parentIssue._class,
         'subIssues',
-        value
+        value,
+        objectId
       )
+
+      await descriptionBox.createAttachments()
+
       for (const label of labels) {
         await client.addCollection(label._class, label.space, objectId, tracker.class.Issue, 'labels', {
           title: label.title,
@@ -123,6 +134,11 @@
           tag: label.tag
         })
       }
+
+      addNotification(tracker.string.IssueCreated, getTitle(newIssue.title), IssueNotification, {
+        issueId: objectId,
+        subTitlePostfix: (await translate(tracker.string.Created, { value: 1 })).toLowerCase()
+      })
     } finally {
       resetToDefaults()
       loading = false
@@ -178,11 +194,19 @@
         focus
       />
       <div class="mt-4">
-        {#key newIssue.description}
-          <StyledTextArea
+        {#key objectId}
+          <AttachmentStyledBox
+            bind:this={descriptionBox}
+            {objectId}
+            refContainer={thisRef}
+            _class={tracker.class.Issue}
+            space={currentTeam._id}
+            alwaysEdit
+            showButtons
+            maxHeight={'20vh'}
             bind:content={newIssue.description}
             placeholder={tracker.string.IssueDescriptionPlaceholder}
-            showButtons={false}
+            on:changeSize={() => dispatch('changeContent')}
           />
         {/key}
       </div>

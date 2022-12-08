@@ -18,6 +18,7 @@
   import { createEventDispatcher } from 'svelte'
   import Circles from '../icons/Circles.svelte'
 
+  export let style = ''
   export let isDraggable = false
   export let isEditable = false
   export let isDeletable = false
@@ -32,6 +33,7 @@
 
 <div
   class="root flex background-button-bg-color border-radius-1"
+  {style}
   on:dblclick|preventDefault={isEditable && !isEditing ? () => dispatch('edit') : undefined}
 >
   <div class="flex-center ml-2">

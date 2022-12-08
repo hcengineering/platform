@@ -94,9 +94,7 @@
         m.kind === ClassifierKind.MIXIN &&
         !ignoreMixins.has(m._id) &&
         (hierarchy.hasMixin(object, m._id) ||
-          (showAllMixins &&
-            // hierarchy.isDerived(hierarchy.getBaseClass(m._id), realObjectClass)
-            hierarchy.isDerived(realObjectClass, hierarchy.getBaseClass(m._id))))
+          (showAllMixins && hierarchy.isDerived(realObjectClass, hierarchy.getBaseClass(m._id))))
     )
   }
 

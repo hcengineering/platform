@@ -19,7 +19,7 @@
   import { OK, Status } from '@hcengineering/platform'
   import { Card, getClient } from '@hcengineering/presentation'
   import type { Category } from '@hcengineering/inventory'
-  import { EditBox, Grid, Status as StatusControl } from '@hcengineering/ui'
+  import { EditBox, Button, Status as StatusControl } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import inventory from '../plugin'
 
@@ -64,13 +64,10 @@
   }}
 >
   <StatusControl slot="error" {status} />
-  <Grid column={1} rowGap={1.5}>
-    <EditBox
-      label={inventory.string.Category}
-      icon={inventory.icon.Categories}
-      bind:value={name}
-      placeholder={inventory.string.Category}
-      focus
-    />
-  </Grid>
+  <div class="flex-row-center clear-mins">
+    <div class="mr-3">
+      <Button focusIndex={1} icon={inventory.icon.Categories} size={'medium'} kind={'link-bordered'} disabled />
+    </div>
+    <EditBox bind:value={name} placeholder={inventory.string.Category} kind={'large-style'} focus />
+  </div>
 </Card>

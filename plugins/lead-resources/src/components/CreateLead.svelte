@@ -20,7 +20,7 @@
   import { OK, Status } from '@hcengineering/platform'
   import { Card, getClient, SpaceSelector, UserBox } from '@hcengineering/presentation'
   import task, { calcRank } from '@hcengineering/task'
-  import { createFocusManager, EditBox, FocusHandler, Label, Status as StatusControl } from '@hcengineering/ui'
+  import { createFocusManager, EditBox, FocusHandler, Label, Status as StatusControl, Button } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import lead from '../plugin'
 
@@ -135,15 +135,15 @@
       <Label label={lead.string.CreateLead} />
     </div>
   </svelte:fragment>
+
   <StatusControl slot="error" {status} />
-  <EditBox
-    focusIndex={1}
-    label={lead.string.LeadName}
-    bind:value={title}
-    icon={lead.icon.Lead}
-    placeholder={lead.string.LeadPlaceholder}
-    focus
-  />
+  <div class="flex-row-center clear-mins">
+    <div class="mr-3">
+      <Button focusIndex={1} icon={lead.icon.Lead} size={'medium'} kind={'link-bordered'} disabled />
+    </div>
+    <EditBox focusIndex={1} bind:value={title} placeholder={lead.string.LeadPlaceholder} kind={'large-style'} focus />
+  </div>
+
   <svelte:fragment slot="pool">
     {#if !preserveCustomer}
       <UserBox

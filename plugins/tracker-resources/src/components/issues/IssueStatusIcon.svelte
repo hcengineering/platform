@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { WithLookup, SortingOrder } from '@hcengineering/core'
-  import { getClient } from '@hcengineering/presentation'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import { IssueStatus, IssueStatusCategory } from '@hcengineering/tracker'
   import { getPlatformColor, IconSize } from '@hcengineering/ui'
   import tracker from '../../plugin'
@@ -24,38 +24,45 @@
   export let size: IconSize
   export let fill: string | undefined = undefined
 
+  const dynamicFillCategories = [tracker.issueStatusCategory.Started]
+
   const client = getClient()
 
   let category: IssueStatusCategory | undefined
-  let categories: IssueStatus[] | undefined
-  let statusIcon: {
+  let statuses: IssueStatus[] = []
+  const statusIcon: {
     index: number | undefined
     count: number | undefined
   } = { index: undefined, count: undefined }
 
-  async function updateCategory (status: WithLookup<IssueStatus>) {
+  const categoriesQuery = createQuery()
+  categoriesQuery.query(
+    tracker.class.IssueStatus,
+    { category: tracker.issueStatusCategory.Started },
+    (res) => (statuses = res),
+    { sort: { rank: SortingOrder.Ascending } }
+  )
+
+  async function updateCategory (status: WithLookup<IssueStatus>, statuses: IssueStatus[]) {
     if (status.$lookup?.category) {
       category = status.$lookup.category
     }
     if (category === undefined) {
       category = await client.findOne(tracker.class.IssueStatusCategory, { _id: value.category })
     }
-    if (value.category === tracker.issueStatusCategory.Started) {
-      categories = await client.findAll(
-        tracker.class.IssueStatus,
-        { category: tracker.issueStatusCategory.Started },
-        { sort: { rank: SortingOrder.Ascending } }
-      )
-      if (categories) {
-        categories.map((cat, i) => {
-          if (cat._id === value._id) statusIcon = { index: i + 1, count: categories ? categories.length + 1 : 0 }
-          return true
-        })
+    if (dynamicFillCategories.includes(value.category)) {
+      const index = statuses.findIndex((p) => p._id === value._id)
+      if (index !== -1) {
+        statusIcon.index = index + 1
+        statusIcon.count = statuses.length + 1
+      } else {
+        statusIcon.index = undefined
+        statusIcon.count = undefined
       }
     }
   }
 
-  $: updateCategory(value)
+  $: updateCategory(value, statuses)
   $: icon = category?.icon
   $: color =
     fill ??

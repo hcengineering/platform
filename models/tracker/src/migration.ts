@@ -15,7 +15,15 @@
 
 import core, { Doc, DocumentUpdate, generateId, Ref, SortingOrder, TxOperations, TxResult } from '@hcengineering/core'
 import { createOrUpdate, MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
-import { IssueStatus, IssueStatusCategory, Team, genRanks, Issue } from '@hcengineering/tracker'
+import {
+  IssueStatus,
+  IssueStatusCategory,
+  Team,
+  genRanks,
+  Issue,
+  TimeReportDayType,
+  WorkDayLength
+} from '@hcengineering/tracker'
 import tags from '@hcengineering/tags'
 import { DOMAIN_TRACKER } from '.'
 import tracker from './plugin'
@@ -99,7 +107,9 @@ async function createDefaultTeam (tx: TxOperations): Promise<void> {
         identifier: 'TSK',
         sequence: 0,
         issueStatuses: 0,
-        defaultIssueStatus: defaultStatusId
+        defaultIssueStatus: defaultStatusId,
+        defaultTimeReportDay: TimeReportDayType.PreviousWorkDay,
+        workDayLength: WorkDayLength.EIGHT_HOURS
       },
       tracker.team.DefaultTeam
     )
@@ -125,6 +135,21 @@ async function fixTeamIssueStatusesOrder (tx: TxOperations, team: Team): Promise
 async function fixTeamsIssueStatusesOrder (tx: TxOperations): Promise<void> {
   const teams = await tx.findAll(tracker.class.Team, {})
   await Promise.all(teams.map((team) => fixTeamIssueStatusesOrder(tx, team)))
+}
+
+async function upgradeTeamSettings (tx: TxOperations): Promise<void> {
+  const teams = await tx.findAll(tracker.class.Team, {
+    defaultTimeReportDay: { $exists: false },
+    workDayLength: { $exists: false }
+  })
+  await Promise.all(
+    teams.map((team) =>
+      tx.update(team, {
+        defaultTimeReportDay: TimeReportDayType.PreviousWorkDay,
+        workDayLength: WorkDayLength.EIGHT_HOURS
+      })
+    )
+  )
 }
 
 async function upgradeTeamIssueStatuses (tx: TxOperations): Promise<void> {
@@ -176,6 +201,25 @@ async function upgradeIssueStatuses (tx: TxOperations): Promise<void> {
       await tx.update(issue, { status: statusByDeprecatedStatus.get(deprecatedStatus) })
     }
   }
+}
+
+async function upgradeIssueTimeReportSettings (tx: TxOperations): Promise<void> {
+  const issues = await tx.findAll(tracker.class.Issue, {
+    defaultTimeReportDay: { $exists: false },
+    workDayLength: { $exists: false }
+  })
+
+  const teams = await tx.findAll(tracker.class.Team, {
+    _id: { $in: Array.from(new Set(issues.map((issue) => issue.space))) }
+  })
+  const teamsById = new Map(teams.map((team) => [team._id, team]))
+
+  await Promise.all(
+    issues.map((issue) => {
+      const team = teamsById.get(issue.space)
+      return tx.update(issue, { defaultTimeReportDay: team?.defaultTimeReportDay, workDayLength: team?.workDayLength })
+    })
+  )
 }
 
 async function migrateParentIssues (client: MigrationClient): Promise<void> {
@@ -305,10 +349,12 @@ async function createDefaults (tx: TxOperations): Promise<void> {
 async function upgradeTeams (tx: TxOperations): Promise<void> {
   await upgradeTeamIssueStatuses(tx)
   await fixTeamsIssueStatusesOrder(tx)
+  await upgradeTeamSettings(tx)
 }
 
 async function upgradeIssues (tx: TxOperations): Promise<void> {
   await upgradeIssueStatuses(tx)
+  await upgradeIssueTimeReportSettings(tx)
 
   const issues = await tx.findAll(tracker.class.Issue, {
     $or: [{ blockedBy: { $exists: true } }, { relatedIssue: { $exists: true } }]

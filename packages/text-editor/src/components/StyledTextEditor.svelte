@@ -480,14 +480,26 @@
     </div>
   </div>
   {#if showButtons}
-    <div class="buttons-group xsmall-gap my-4">
-      {#each defActions.filter((it) => it.hidden === undefined || it.hidden === true) as a}
-        <StyleButton icon={a.icon} size={buttonSize} on:click={(evt) => handleAction(a, evt)} />
-      {/each}
-      <div class="flex-grow">
+    {#if $$slots.right}
+      <div class="flex-between">
+        <div class="buttons-group xsmall-gap mt-4">
+          {#each defActions.filter((it) => it.hidden === undefined || it.hidden === true) as a}
+            <StyleButton icon={a.icon} size={buttonSize} on:click={(evt) => handleAction(a, evt)} />
+          {/each}
+          <slot />
+        </div>
+        <div class="buttons-group xsmall-gap mt-4">
+          <slot name="right" />
+        </div>
+      </div>
+    {:else}
+      <div class="buttons-group xsmall-gap mt-4">
+        {#each defActions.filter((it) => it.hidden === undefined || it.hidden === true) as a}
+          <StyleButton icon={a.icon} size={buttonSize} on:click={(evt) => handleAction(a, evt)} />
+        {/each}
         <slot />
       </div>
-    </div>
+    {/if}
   {/if}
 </div>
 
@@ -535,6 +547,16 @@
           border-color: var(--primary-edit-border-color);
         }
       }
+    }
+    .formatPanel {
+      position: sticky;
+      top: 1.25rem;
+      margin: -0.5rem -0.5rem 0.25rem;
+      padding: 0.5rem;
+      background-color: var(--body-accent);
+      border-radius: 0.5rem;
+      box-shadow: var(--button-shadow);
+      z-index: 1;
     }
   }
 </style>

@@ -471,30 +471,51 @@
     </div>
   </div>
   <svelte:fragment slot="pool">
-    <div class="flex-col flex-grow">
-      <div class="flex flex-wrap">
-        <ChannelsDropdown
-          editable={!loading}
-          focusIndex={10}
-          bind:value={channels}
-          highlighted={matchedChannels.map((it) => it.provider)}
-        />
-        <YesNo
-          disabled={loading}
-          focusIndex={100}
-          label={recruit.string.Onsite}
-          tooltip={recruit.string.WorkLocationPreferences}
-          bind:value={object.onsite}
-        />
-        <YesNo
-          disabled={loading}
-          focusIndex={101}
-          label={recruit.string.Remote}
-          tooltip={recruit.string.WorkLocationPreferences}
-          bind:value={object.remote}
-        />
+    <ChannelsDropdown
+      editable={!loading}
+      focusIndex={10}
+      bind:value={channels}
+      highlighted={matchedChannels.map((it) => it.provider)}
+    />
+    <YesNo
+      disabled={loading}
+      focusIndex={100}
+      label={recruit.string.Onsite}
+      tooltip={recruit.string.WorkLocationPreferences}
+      bind:value={object.onsite}
+    />
+    <YesNo
+      disabled={loading}
+      focusIndex={101}
+      label={recruit.string.Remote}
+      tooltip={recruit.string.WorkLocationPreferences}
+      bind:value={object.remote}
+    />
+    <Component
+      is={tags.component.TagsDropdownEditor}
+      props={{
+        disabled: loading,
+        focusIndex: 102,
+        items: skills,
+        key,
+        targetClass: recruit.mixin.Candidate,
+        showTitle: false,
+        elements,
+        newElements,
+        countLabel: recruit.string.NumberSkills
+      }}
+      on:open={(evt) => {
+        addTagRef(evt.detail)
+      }}
+      on:delete={(evt) => {
+        skills = skills.filter((it) => it._id !== evt.detail)
+      }}
+    />
+    {#if skills.length > 0}
+      <div class="flex-break" />
+      <div class="antiComponent antiEmphasized flex-grow mt-2">
         <Component
-          is={tags.component.TagsDropdownEditor}
+          is={tags.component.TagsEditor}
           props={{
             disabled: loading,
             focusIndex: 102,
@@ -512,37 +533,13 @@
           on:delete={(evt) => {
             skills = skills.filter((it) => it._id !== evt.detail)
           }}
+          on:change={(evt) => {
+            evt.detail.tag.weight = evt.detail.weight
+            skills = skills
+          }}
         />
       </div>
-      {#if skills.length > 0}
-        <div class="skills-box p-1 mt-2">
-          <Component
-            is={tags.component.TagsEditor}
-            props={{
-              disabled: loading,
-              focusIndex: 102,
-              items: skills,
-              key,
-              targetClass: recruit.mixin.Candidate,
-              showTitle: false,
-              elements,
-              newElements,
-              countLabel: recruit.string.NumberSkills
-            }}
-            on:open={(evt) => {
-              addTagRef(evt.detail)
-            }}
-            on:delete={(evt) => {
-              skills = skills.filter((it) => it._id !== evt.detail)
-            }}
-            on:change={(evt) => {
-              evt.detail.tag.weight = evt.detail.weight
-              skills = skills
-            }}
-          />
-        </div>
-      {/if}
-    </div>
+    {/if}
   </svelte:fragment>
 
   <svelte:fragment slot="footer">
@@ -606,7 +603,8 @@
 
 <style lang="scss">
   .resume {
-    padding: 0.5rem 0.75rem;
+    margin: -0.375rem 0rem -0.375rem -0.375rem;
+    padding: 0.375rem;
     background: var(--accent-bg-color);
     border: 1px dashed var(--divider-color);
     border-radius: 0.5rem;
