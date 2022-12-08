@@ -28,7 +28,16 @@
     WithLookup
   } from '@hcengineering/core'
   import { getResource, translate } from '@hcengineering/platform'
-  import { Card, createQuery, getClient, KeyedAttribute, MessageBox, SpaceSelector } from '@hcengineering/presentation'
+  import {
+    Card,
+    createQuery,
+    getClient,
+    getUserDraft,
+    KeyedAttribute,
+    MessageBox,
+    SpaceSelector,
+    updateUserDraft
+  } from '@hcengineering/presentation'
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
   import {
     calcRank,
@@ -55,7 +64,6 @@
     IconMoreH,
     Label,
     Menu,
-    setMetadataLocalStorage,
     showPopup,
     Spinner
   } from '@hcengineering/ui'
@@ -85,17 +93,19 @@
   export let sprint: Ref<Sprint> | null = $activeSprint ?? null
   export let relatedTo: Doc | undefined
   export let shouldSaveDraft: boolean = false
-  export let draft: IssueDraft | null
   export let parentIssue: Issue | undefined
   export let originalIssue: Issue | undefined
-  export let onDraftChanged: (draft: Data<IssueDraft>) => void
+  export let onDraftChanged: () => void
+
+  const draft: IssueDraft | undefined = getUserDraft(tracker.class.IssueDraft)
 
   let issueStatuses: WithLookup<IssueStatus>[] | undefined
   let labels: TagReference[] = draft?.labels || []
   let objectId: Ref<Issue> = draft?.issueId || generateId()
+  let saveTimer: number | undefined
   let currentTeam: Team | undefined
 
-  function toIssue (initials: AttachedData<Issue>, draft: IssueDraft | null): AttachedData<Issue> {
+  function toIssue (initials: AttachedData<Issue>, draft: IssueDraft | undefined): AttachedData<Issue> {
     if (draft == null) {
       return { ...initials }
     }
@@ -269,6 +279,36 @@
 
   $: originalIssue && setPropsFromOriginalIssue()
   $: draft && setPropsFromDraft()
+  $: object && updateDraft()
+
+  async function updateDraft () {
+    if (saveTimer) {
+      clearTimeout(saveTimer)
+    }
+    saveTimer = setTimeout(() => {
+      saveDraft()
+    }, 200)
+  }
+
+  async function saveDraft () {
+    if (!shouldSaveDraft) {
+      return
+    }
+
+    await descriptionBox?.createAttachments()
+
+    let newDraft: Data<IssueDraft> | undefined = createDraftFromObject()
+    const isEmpty = await isDraftEmpty(newDraft)
+
+    if (isEmpty) {
+      newDraft = undefined
+    }
+    updateUserDraft(tracker.class.IssueDraft, newDraft)
+
+    if (onDraftChanged) {
+      return onDraftChanged()
+    }
+  }
 
   async function updateIssueStatusId (teamId: Ref<Team>, issueStatusId?: Ref<IssueStatus>) {
     if (issueStatusId !== undefined) {
@@ -319,13 +359,17 @@
       return false
     }
 
+    if (draft.status === '') {
+      return true
+    }
+
     const team = await client.findOne(tracker.class.Team, { _id: _space })
 
     if (team?.defaultIssueStatus) {
       return draft.status === team.defaultIssueStatus
     }
 
-    return status === ''
+    return false
   }
 
   export function canClose (): boolean {
@@ -336,7 +380,7 @@
     const newDraft: Data<IssueDraft> = {
       issueId: objectId,
       title: getTitle(object.title),
-      description: object.description,
+      description: (object.description as string).replaceAll('<p></p>', ''),
       assignee: object.assignee,
       project: object.project,
       sprint: object.sprint,
@@ -355,23 +399,10 @@
   }
 
   export async function onOutsideClick () {
-    if (!shouldSaveDraft) {
-      return
-    }
-
-    await descriptionBox?.createAttachments()
-
-    const newDraft = createDraftFromObject()
-    const isEmpty = await isDraftEmpty(newDraft)
-
-    if (isEmpty) {
-      return
-    }
-
-    setMetadataLocalStorage(tracker.metadata.CreateIssueDraft, newDraft)
+    saveDraft()
 
     if (onDraftChanged) {
-      return onDraftChanged(newDraft)
+      return onDraftChanged()
     }
   }
 
@@ -523,6 +554,7 @@
 
     objectId = generateId()
     resetObject()
+    saveDraft()
   }
 
   async function showMoreActions (ev: Event) {
@@ -631,6 +663,8 @@
         (result?: boolean) => {
           if (result === true) {
             dispatch('close')
+            resetObject()
+            saveDraft()
           }
         }
       )

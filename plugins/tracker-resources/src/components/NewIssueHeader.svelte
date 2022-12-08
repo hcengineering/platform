@@ -13,10 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Data, Ref, Space } from '@hcengineering/core'
-  import { getClient } from '@hcengineering/presentation'
-  import { IssueDraft } from '@hcengineering/tracker'
-  import { Button, fetchMetadataLocalStorage, setMetadataLocalStorage, showPopup } from '@hcengineering/ui'
+  import { Ref, Space } from '@hcengineering/core'
+  import { getClient, isUserDraftExists } from '@hcengineering/presentation'
+  import { Button, showPopup } from '@hcengineering/ui'
   import tracker from '../plugin'
   import CreateIssue from './CreateIssue.svelte'
 
@@ -27,10 +26,10 @@
   let space: Ref<Space> | undefined
   $: updateSpace(currentSpace)
 
-  let issueDraft: Data<IssueDraft> | null = fetchMetadataLocalStorage(tracker.metadata.CreateIssueDraft)
+  let draftExists: boolean = isUserDraftExists(tracker.class.IssueDraft)
 
-  const handleDraftChanged = (draft: Data<IssueDraft>) => {
-    issueDraft = draft
+  const handleDraftChanged = () => {
+    draftExists = isUserDraftExists(tracker.class.IssueDraft)
   }
 
   async function updateSpace (spaceId: Ref<Space> | undefined): Promise<void> {
@@ -49,14 +48,7 @@
       space = team?._id
     }
 
-    showPopup(
-      CreateIssue,
-      { space, shouldSaveDraft: true, draft: issueDraft, onDraftChanged: handleDraftChanged },
-      'top'
-    )
-
-    setMetadataLocalStorage(tracker.metadata.CreateIssueDraft, null)
-    issueDraft = null
+    showPopup(CreateIssue, { space, shouldSaveDraft: true, onDraftChanged: handleDraftChanged }, 'top')
   }
 </script>
 
@@ -64,13 +56,13 @@
   <div class="flex-grow text-md">
     <Button
       icon={tracker.icon.NewIssue}
-      label={issueDraft ? tracker.string.ResumeDraft : tracker.string.NewIssue}
+      label={draftExists ? tracker.string.ResumeDraft : tracker.string.NewIssue}
       justify={'left'}
       width={'100%'}
       on:click={newIssue}
     >
       <div slot="content" class="draft-circle-container">
-        {#if issueDraft}
+        {#if draftExists}
           <div class="draft-circle" />
         {/if}
       </div>

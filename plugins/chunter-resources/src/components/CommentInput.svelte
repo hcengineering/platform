@@ -16,10 +16,9 @@
 <script lang="ts">
   import { Comment } from '@hcengineering/chunter'
   import { Doc, generateId, Ref } from '@hcengineering/core'
-  import { getClient } from '@hcengineering/presentation'
+  import { getClient, draftStore, updateDraftStore } from '@hcengineering/presentation'
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
   import { createBacklinks } from '../backlinks'
-  import { draftStore, updateDraftStore } from '../drafts'
   import chunter from '../plugin'
 
   export let object: Doc
