@@ -17,6 +17,9 @@ specifiers:
   '@rush-temp/automation': file:./projects/automation.tgz
   '@rush-temp/automation-assets': file:./projects/automation-assets.tgz
   '@rush-temp/automation-resources': file:./projects/automation-resources.tgz
+  '@rush-temp/bitrix': file:./projects/bitrix.tgz
+  '@rush-temp/bitrix-assets': file:./projects/bitrix-assets.tgz
+  '@rush-temp/bitrix-resources': file:./projects/bitrix-resources.tgz
   '@rush-temp/board': file:./projects/board.tgz
   '@rush-temp/board-assets': file:./projects/board-assets.tgz
   '@rush-temp/board-resources': file:./projects/board-resources.tgz
@@ -70,6 +73,7 @@ specifiers:
   '@rush-temp/model-all': file:./projects/model-all.tgz
   '@rush-temp/model-attachment': file:./projects/model-attachment.tgz
   '@rush-temp/model-automation': file:./projects/model-automation.tgz
+  '@rush-temp/model-bitrix': file:./projects/model-bitrix.tgz
   '@rush-temp/model-board': file:./projects/model-board.tgz
   '@rush-temp/model-calendar': file:./projects/model-calendar.tgz
   '@rush-temp/model-chunter': file:./projects/model-chunter.tgz
@@ -238,6 +242,7 @@ specifiers:
   '@types/minio': ~7.0.11
   '@types/node': ~16.11.12
   '@types/pdfkit': ~0.12.3
+  '@types/qs': ~6.9.7
   '@types/request': ~2.48.8
   '@types/sharp': ~0.30.4
   '@types/tar-stream': ^2.2.2
@@ -296,6 +301,7 @@ specifiers:
   mini-css-extract-plugin: ^2.2.0
   minio: ^7.0.26
   mongodb: ^4.11.0
+  p-queue: ~7.3.0
   pdfkit: ~0.13.0
   postcss: ^8.3.4
   postcss-load-config: ^3.1.0
@@ -308,6 +314,7 @@ specifiers:
   prosemirror-state: ~1.4.1
   prosemirror-transform: ~1.7.0
   prosemirror-view: ~1.29.0
+  qs: ~6.11.0
   rfc6902: ~5.0.1
   sass: ^1.53.0
   sass-loader: ^12.1.0
@@ -354,6 +361,9 @@ dependencies:
   '@rush-temp/automation': file:projects/automation.tgz
   '@rush-temp/automation-assets': file:projects/automation-assets.tgz_typescript@4.8.4
   '@rush-temp/automation-resources': file:projects/automation-resources.tgz_49b4785992daa3b61a639b2b31601e76
+  '@rush-temp/bitrix': file:projects/bitrix.tgz
+  '@rush-temp/bitrix-assets': file:projects/bitrix-assets.tgz_typescript@4.8.4
+  '@rush-temp/bitrix-resources': file:projects/bitrix-resources.tgz_49b4785992daa3b61a639b2b31601e76
   '@rush-temp/board': file:projects/board.tgz
   '@rush-temp/board-assets': file:projects/board-assets.tgz_typescript@4.8.4
   '@rush-temp/board-resources': file:projects/board-resources.tgz_49b4785992daa3b61a639b2b31601e76
@@ -407,6 +417,7 @@ dependencies:
   '@rush-temp/model-all': file:projects/model-all.tgz_typescript@4.8.4
   '@rush-temp/model-attachment': file:projects/model-attachment.tgz_typescript@4.8.4
   '@rush-temp/model-automation': file:projects/model-automation.tgz_typescript@4.8.4
+  '@rush-temp/model-bitrix': file:projects/model-bitrix.tgz_typescript@4.8.4
   '@rush-temp/model-board': file:projects/model-board.tgz_typescript@4.8.4
   '@rush-temp/model-calendar': file:projects/model-calendar.tgz_typescript@4.8.4
   '@rush-temp/model-chunter': file:projects/model-chunter.tgz_typescript@4.8.4
@@ -575,6 +586,7 @@ dependencies:
   '@types/minio': 7.0.14
   '@types/node': 16.11.68
   '@types/pdfkit': 0.12.8
+  '@types/qs': 6.9.7
   '@types/request': 2.48.8
   '@types/sharp': 0.30.5
   '@types/tar-stream': 2.2.2
@@ -633,6 +645,7 @@ dependencies:
   mini-css-extract-plugin: 2.6.1_webpack@5.75.0
   minio: 7.0.32
   mongodb: 4.11.0
+  p-queue: 7.3.0
   pdfkit: 0.13.0
   postcss: 8.4.19
   postcss-load-config: 3.1.4_postcss@8.4.19+ts-node@10.9.1
@@ -645,6 +658,7 @@ dependencies:
   prosemirror-state: 1.4.2
   prosemirror-transform: 1.7.0
   prosemirror-view: 1.29.0
+  qs: 6.11.0
   rfc6902: 5.0.1
   sass: 1.56.1
   sass-loader: 12.6.0_sass@1.56.1+webpack@5.75.0
@@ -675,6 +689,21 @@ dependencies:
   yjs: 13.5.42
 
 packages:
+
+  /@2bad/bitrix/2.5.0:
+    resolution: {integrity: sha512-AXlbCsn5NV1x8H982JHk2yyNU/vtTBx34a6DdtqqgHQEYd6nfEVnHEhUF/yAmElV1/rtjubOtKVxwVdFUrwLDA==}
+    dependencies:
+      '@types/lodash.chunk': 4.2.7
+      '@types/lodash.frompairs': 4.0.7
+      '@types/lodash.range': 3.2.7
+      '@types/qs': 6.9.7
+      got: 11.8.2
+      lodash.chunk: 4.2.0
+      lodash.frompairs: 4.0.1
+      lodash.range: 3.2.0
+      p-queue: 6.6.2
+      qs: 6.11.0
+    dev: false
 
   /@_ueberdosis/prosemirror-tables/1.1.3:
     resolution: {integrity: sha512-su3pbFi1DT89g6Cuh72TE0MWWKHmWgHcQJ3ODRkm6XfIppWaGpU49t02ur3sgJc7hUhfQXjB93aSkDgOmIii2w==}
@@ -3089,6 +3118,28 @@ packages:
     resolution: {integrity: sha512-FUN8YxcBakIs+walVe3+HcNP+Bxd0SB8BJHBWkglZ5C1XQWljlKcEFDG/dPiCIqwVCUbc5X0nYDlH62uEhdHMA==}
     dependencies:
       '@types/koa': 2.13.5
+    dev: false
+
+  /@types/lodash.chunk/4.2.7:
+    resolution: {integrity: sha512-//tmaWHiANgToom/YYYKKqiCtlNz11fwYtMUUbaemNSbWTI+2zHtYW5nt1PHNCRWHPAJHHhn4UVFD9LKUFvatA==}
+    dependencies:
+      '@types/lodash': 4.14.191
+    dev: false
+
+  /@types/lodash.frompairs/4.0.7:
+    resolution: {integrity: sha512-7UeH2+GF9yop4AqnPwae5/2TE+eY0WRDy0RRQtNGHjzIgdUhilRskMXvXqUcCSazvbkxasjqydXrIE1OB6bPKA==}
+    dependencies:
+      '@types/lodash': 4.14.191
+    dev: false
+
+  /@types/lodash.range/3.2.7:
+    resolution: {integrity: sha512-sq3eRZWspMKGAE0QLH+tIE/EWeSEVKlFqaUoqmgR/c4keXiTP8ob24TUzclYKihw/ojftz6vBb632NRmxR4qrQ==}
+    dependencies:
+      '@types/lodash': 4.14.191
+    dev: false
+
+  /@types/lodash/4.14.191:
+    resolution: {integrity: sha512-BdZ5BCCvho3EIXw6wUCXHe7rS53AIDPLE+JzwgT+OsJk53oBfbSmZZ7CX4VaRoN78N+TJpFi9QPlfIVNmJYWxQ==}
     dev: false
 
   /@types/mime-types/2.1.1:
@@ -6354,6 +6405,23 @@ packages:
       get-intrinsic: 1.1.3
     dev: false
 
+  /got/11.8.2:
+    resolution: {integrity: sha512-D0QywKgIe30ODs+fm8wMZiAcZjypcCodPNuMz5H9Mny7RJ+IjJ10BdmGW7OM7fHXP+O7r6ZwapQ/YQmMSvB0UQ==}
+    engines: {node: '>=10.19.0'}
+    dependencies:
+      '@sindresorhus/is': 4.6.0
+      '@szmarczak/http-timer': 4.0.6
+      '@types/cacheable-request': 6.0.3
+      '@types/responselike': 1.0.0
+      cacheable-lookup: 5.0.4
+      cacheable-request: 7.0.2
+      decompress-response: 6.0.0
+      http2-wrapper: 1.0.3
+      lowercase-keys: 2.0.0
+      p-cancelable: 2.1.1
+      responselike: 2.0.1
+    dev: false
+
   /got/11.8.5:
     resolution: {integrity: sha512-o0Je4NvQObAuZPHLFoRSkdG2lTgtcynqymzg2Vupdx6PorhaT5MCbIyXG6d4D94kk8ZG57QeosgdiqfJWhEhlQ==}
     engines: {node: '>=10.19.0'}
@@ -7994,8 +8062,16 @@ packages:
       p-locate: 5.0.0
     dev: false
 
+  /lodash.chunk/4.2.0:
+    resolution: {integrity: sha512-ZzydJKfUHJwHa+hF5X66zLFCBrWn5GeF28OHEr4WVWtNDXlQ/IjWKPBiikqKo2ne0+v6JgCgJ0GzJp8k8bHC7w==}
+    dev: false
+
   /lodash.debounce/4.0.8:
     resolution: {integrity: sha512-FT1yDzDYEoYWhnSGnpE/4Kj1fLZkDFyqRb7fNt6FdYOSxlUWAtp42Eh6Wb0rGIv/m9Bgo7x4GhQbm5Ys4SG5ow==}
+    dev: false
+
+  /lodash.frompairs/4.0.1:
+    resolution: {integrity: sha512-dvqe2I+cO5MzXCMhUnfYFa9MD+/760yx2aTAN1lqEcEkf896TxgrX373igVdqSJj6tQd0jnSLE1UMuKufqqxFw==}
     dev: false
 
   /lodash.get/4.4.2:
@@ -8008,6 +8084,10 @@ packages:
 
   /lodash.merge/4.6.2:
     resolution: {integrity: sha512-0KpjqXRVvrYyCsX1swR/XTK0va6VQkQM6MNo7PqW77ByjAhoARA8EfrP1N4+KlKj8YS0ZUCtRT/YUuhyYDujIQ==}
+    dev: false
+
+  /lodash.range/3.2.0:
+    resolution: {integrity: sha512-Fgkb7SinmuzqgIhNhAElo0BL/R1rHCnhwSZf78omqSwvWqD0kD2ssOAutQonDKH/ldS8BxA72ORYI09qAY9CYg==}
     dev: false
 
   /lodash/4.17.21:
@@ -8595,6 +8675,11 @@ packages:
     engines: {node: '>=8'}
     dev: false
 
+  /p-finally/1.0.0:
+    resolution: {integrity: sha512-LICb2p9CB7FS+0eR1oqWnHhp0FljGLZCWBE9aix0Uye9W8LTQPwMTYVGWQWIw9RdQiDg4+epXQODwIYJtSJaow==}
+    engines: {node: '>=4'}
+    dev: false
+
   /p-limit/2.3.0:
     resolution: {integrity: sha512-//88mFWSJx8lxCzwdAABTJL2MyWB12+eIY7MDL2SqLmAkeKU9qxRvWuSyTjm3FUmpBEMuFfckAIqEaVGUDxb6w==}
     engines: {node: '>=6'}
@@ -8623,12 +8708,40 @@ packages:
       p-limit: 3.1.0
     dev: false
 
+  /p-queue/6.6.2:
+    resolution: {integrity: sha512-RwFpb72c/BhQLEXIZ5K2e+AhgNVmIejGlTgiB9MzZ0e93GRvqZ7uSi0dvRF7/XIXDeNkra2fNHBxTyPDGySpjQ==}
+    engines: {node: '>=8'}
+    dependencies:
+      eventemitter3: 4.0.7
+      p-timeout: 3.2.0
+    dev: false
+
+  /p-queue/7.3.0:
+    resolution: {integrity: sha512-5fP+yVQ0qp0rEfZoDTlP2c3RYBgxvRsw30qO+VtPPc95lyvSG+x6USSh1TuLB4n96IO6I8/oXQGsTgtna4q2nQ==}
+    engines: {node: '>=12'}
+    dependencies:
+      eventemitter3: 4.0.7
+      p-timeout: 5.1.0
+    dev: false
+
   /p-retry/4.6.2:
     resolution: {integrity: sha512-312Id396EbJdvRONlngUx0NydfrIQ5lsYu0znKVUzVvArzEIt08V1qhtyESbGVd1FGX7UKtiFp5uwKZdM8wIuQ==}
     engines: {node: '>=8'}
     dependencies:
       '@types/retry': 0.12.0
       retry: 0.13.1
+    dev: false
+
+  /p-timeout/3.2.0:
+    resolution: {integrity: sha512-rhIwUycgwwKcP9yTOOFK/AKsAopjjCakVqLHePO3CC6Mir1Z99xT+R63jZxAT5lFZLa2inS5h+ZS2GvR99/FBg==}
+    engines: {node: '>=8'}
+    dependencies:
+      p-finally: 1.0.0
+    dev: false
+
+  /p-timeout/5.1.0:
+    resolution: {integrity: sha512-auFDyzzzGZZZdHz3BtET9VEz0SE/uMEAx7uWfGPucfzEwwe/xH0iVeZibQmANYE/hp9T2+UUZT5m+BKyrDp3Ew==}
+    engines: {node: '>=12'}
     dev: false
 
   /p-try/2.2.0:
@@ -11139,7 +11252,7 @@ packages:
     dev: false
 
   file:projects/account.tgz:
-    resolution: {integrity: sha512-QSlfOq1M5zdpWg0tNGWBu3VegEZkkPLQG2gim+GXAC7vEQd7vRsWXTMbKntwOdkovV29NDNsIcUWp6G5DUfFRg==, tarball: file:projects/account.tgz}
+    resolution: {integrity: sha512-Cu4HQ37cZjY4LU7x7/btaVEfxIjb+rKA9hll64ZloH41F54jembIyQHHufIMatcMOnPFivsRZ4P9oj7WMyvOsA==, tarball: file:projects/account.tgz}
     name: '@rush-temp/account'
     version: 0.0.0
     dependencies:
@@ -11417,6 +11530,89 @@ packages:
       eslint-plugin-promise: 6.1.1_eslint@8.27.0
       prettier: 2.7.1
       simplytyped: 3.3.0_typescript@4.8.4
+      typescript: 4.8.4
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
+  file:projects/bitrix-assets.tgz_typescript@4.8.4:
+    resolution: {integrity: sha512-Hod/zdxq3gCpr1vfwff7eAusB6KTImLvny1hk3x5Rcn9Rri0SMTJKm3NY0Ds+XTCnnOFZQscD81EfIpaeQPITw==, tarball: file:projects/bitrix-assets.tgz}
+    id: file:projects/bitrix-assets.tgz
+    name: '@rush-temp/bitrix-assets'
+    version: 0.0.0
+    dependencies:
+      '@rushstack/heft': 0.47.11
+      '@types/heft-jest': 1.0.3
+      '@types/node': 16.11.68
+      '@typescript-eslint/eslint-plugin': 5.42.1_d506b9be61cb4ac2646ecbc6e0680464
+      '@typescript-eslint/parser': 5.42.1_eslint@8.27.0+typescript@4.8.4
+      eslint: 8.27.0
+      eslint-config-standard-with-typescript: 23.0.0_c9fe9619f50f4e82337a86c3af25e566
+      eslint-plugin-import: 2.26.0_eslint@8.27.0
+      eslint-plugin-n: 15.5.1_eslint@8.27.0
+      eslint-plugin-promise: 6.1.1_eslint@8.27.0
+      prettier: 2.7.1
+    transitivePeerDependencies:
+      - supports-color
+      - typescript
+    dev: false
+
+  file:projects/bitrix-resources.tgz_49b4785992daa3b61a639b2b31601e76:
+    resolution: {integrity: sha512-QQs9ffRu6ZbMcDsIHbbqwEnqlVIFPT5SOemp5PMLCfLcAhJn4arE89dCCuVLZ6p/JMYF3g7SCy/dgUllg4nNxA==, tarball: file:projects/bitrix-resources.tgz}
+    id: file:projects/bitrix-resources.tgz
+    name: '@rush-temp/bitrix-resources'
+    version: 0.0.0
+    dependencies:
+      '@2bad/bitrix': 2.5.0
+      '@types/qs': 6.9.7
+      '@typescript-eslint/eslint-plugin': 5.42.1_d506b9be61cb4ac2646ecbc6e0680464
+      '@typescript-eslint/parser': 5.42.1_eslint@8.27.0+typescript@4.8.4
+      eslint: 8.27.0
+      eslint-config-standard-with-typescript: 23.0.0_c9fe9619f50f4e82337a86c3af25e566
+      eslint-plugin-import: 2.26.0_eslint@8.27.0
+      eslint-plugin-n: 15.5.1_eslint@8.27.0
+      eslint-plugin-promise: 6.1.1_eslint@8.27.0
+      eslint-plugin-svelte3: 4.0.0_eslint@8.27.0+svelte@3.53.1
+      fast-equals: 2.0.4
+      p-queue: 7.3.0
+      prettier: 2.7.1
+      prettier-plugin-svelte: 2.8.0_prettier@2.7.1+svelte@3.53.1
+      qs: 6.11.0
+      sass: 1.56.1
+      svelte: 3.53.1
+      svelte-check: 2.9.2_911be9570a99ae2f9e069a41b9f14a00
+      svelte-loader: 3.1.4_svelte@3.53.1
+      svelte-preprocess: 4.10.7_1cd24d71cb02643c0a6ca17ff2edd158
+      typescript: 4.8.4
+    transitivePeerDependencies:
+      - '@babel/core'
+      - coffeescript
+      - less
+      - node-sass
+      - postcss
+      - postcss-load-config
+      - pug
+      - stylus
+      - sugarss
+      - supports-color
+    dev: false
+
+  file:projects/bitrix.tgz:
+    resolution: {integrity: sha512-fLYL3iRRLeMJbRIjfkylukQ/uDZ/OfDuzAvrVHW/dCu2RIEFSpbYDvTlH4Cu0CR6adruVNSP4E3F+yAZSIHmQg==, tarball: file:projects/bitrix.tgz}
+    name: '@rush-temp/bitrix'
+    version: 0.0.0
+    dependencies:
+      '@2bad/bitrix': 2.5.0
+      '@rushstack/heft': 0.47.11
+      '@types/heft-jest': 1.0.3
+      '@typescript-eslint/eslint-plugin': 5.42.1_d506b9be61cb4ac2646ecbc6e0680464
+      '@typescript-eslint/parser': 5.42.1_eslint@8.27.0+typescript@4.8.4
+      eslint: 8.27.0
+      eslint-config-standard-with-typescript: 23.0.0_c9fe9619f50f4e82337a86c3af25e566
+      eslint-plugin-import: 2.26.0_eslint@8.27.0
+      eslint-plugin-n: 15.5.1_eslint@8.27.0
+      eslint-plugin-promise: 6.1.1_eslint@8.27.0
+      prettier: 2.7.1
       typescript: 4.8.4
     transitivePeerDependencies:
       - supports-color
@@ -11841,7 +12037,7 @@ packages:
     dev: false
 
   file:projects/dev-client-resources.tgz:
-    resolution: {integrity: sha512-Bf1K9DyTyiKCNSXwfDfnMEQvyTpwTKLxtermBHCAtH/X07jkRTQR78TityPmMY13qEP29GzVbiLdcYwMStLuoA==, tarball: file:projects/dev-client-resources.tgz}
+    resolution: {integrity: sha512-aBdWjVRiHsvyjb4ZVwV3CcoYF+LnWbnBtZjvQh0JbVTBZOZfOcXUiDjw73dugHlSu0EqemahiIpKl0B8H40f2g==, tarball: file:projects/dev-client-resources.tgz}
     name: '@rush-temp/dev-client-resources'
     version: 0.0.0
     dependencies:
@@ -11907,7 +12103,7 @@ packages:
     dev: false
 
   file:projects/devmodel-resources.tgz_5536a2d3219f8677582bfc0330dae14a:
-    resolution: {integrity: sha512-ipNVydhF5HfLSsx/TEb3G3Zo1Cag6f/yyDcWDXZfI73extFwzmdObyiPFPvXeSm5yjdu0EsEJH/TSSyxk3QJtA==, tarball: file:projects/devmodel-resources.tgz}
+    resolution: {integrity: sha512-4ZrlsE0DJ62seKCcvfHeMqCc/JI7gix7sw7G31SBZ5oJbm/4Uz62BplxJ+Gt57wbAzC6X1wTozIPHQI+ksaaZg==, tarball: file:projects/devmodel-resources.tgz}
     id: file:projects/devmodel-resources.tgz
     name: '@rush-temp/devmodel-resources'
     version: 0.0.0
@@ -11942,7 +12138,7 @@ packages:
     dev: false
 
   file:projects/devmodel.tgz_typescript@4.8.4:
-    resolution: {integrity: sha512-PgNRY82kL7qujBpgY/LHg52igSugdIOfpunDxUE7zq7R9TGU5rAyCdnZvTvfnQ4ZztcC0ICzJ9z0YoqpFjctRQ==, tarball: file:projects/devmodel.tgz}
+    resolution: {integrity: sha512-eQP4GWVA+cCkwjFfcFy0r+/m/u8acg6ts/YBxVDX36+FmiOuHVvHE7aAciR7uZ0Zhz/SS3rEcW19L7ol9/BVnQ==, tarball: file:projects/devmodel.tgz}
     id: file:projects/devmodel.tgz
     name: '@rush-temp/devmodel'
     version: 0.0.0
@@ -12107,7 +12303,7 @@ packages:
     dev: false
 
   file:projects/generator.tgz:
-    resolution: {integrity: sha512-9WrSXJKYs18Mv/42PcUJ93qVi9iOCFRVwm6/WMtgeSiZHUwE7EExXtlnMlB7RcpH6H6F8LRLBQ28xTC59duCMg==, tarball: file:projects/generator.tgz}
+    resolution: {integrity: sha512-MBL1q/ENOolYC7S4zK/F93ToETBseT2NO4sb2uvmw+hVok93zZdGt+L3sX6WZvQSGkIv/GV/Rd5ochzNYvYPcg==, tarball: file:projects/generator.tgz}
     name: '@rush-temp/generator'
     version: 0.0.0
     dependencies:
@@ -12683,7 +12879,7 @@ packages:
     dev: false
 
   file:projects/model-all.tgz_typescript@4.8.4:
-    resolution: {integrity: sha512-TZENWGRR6McuiodV3kw5TsRolcDNGyj9/oe7KaS98cElBPKtK5+0xmVMsQjCkxkelSS5XU5acxy0F13IVKS+LQ==, tarball: file:projects/model-all.tgz}
+    resolution: {integrity: sha512-ypjI0QqQeCCDYXOlHjJqJ4Xpq/KaUIvpYqHoCz3kjRHqR3IuW+nOgxCNYfk5oB5kY2MDhWym0KQ5m05WjVfyGA==, tarball: file:projects/model-all.tgz}
     id: file:projects/model-all.tgz
     name: '@rush-temp/model-all'
     version: 0.0.0
@@ -12732,6 +12928,27 @@ packages:
     resolution: {integrity: sha512-VUE6oW26ur+/1zC20AaqwrgCqAay6OVo/f/aG+WE9OnoFaNnACp/jl6iXq6FvbZmyaq67IoyYDDh+9n/XCyY3A==, tarball: file:projects/model-automation.tgz}
     id: file:projects/model-automation.tgz
     name: '@rush-temp/model-automation'
+    version: 0.0.0
+    dependencies:
+      '@rushstack/heft': 0.47.11
+      '@types/heft-jest': 1.0.3
+      '@typescript-eslint/eslint-plugin': 5.42.1_d506b9be61cb4ac2646ecbc6e0680464
+      '@typescript-eslint/parser': 5.42.1_eslint@8.27.0+typescript@4.8.4
+      eslint: 8.27.0
+      eslint-config-standard-with-typescript: 23.0.0_c9fe9619f50f4e82337a86c3af25e566
+      eslint-plugin-import: 2.26.0_eslint@8.27.0
+      eslint-plugin-n: 15.5.1_eslint@8.27.0
+      eslint-plugin-promise: 6.1.1_eslint@8.27.0
+      prettier: 2.7.1
+    transitivePeerDependencies:
+      - supports-color
+      - typescript
+    dev: false
+
+  file:projects/model-bitrix.tgz_typescript@4.8.4:
+    resolution: {integrity: sha512-8dZO37adBNzvRYUR8UsawVY1GPRN9F4g4IZj2viQyCZBx0z5vtY+Y+xfoDbHhY23D6pFSBMEz7O0vSCrH2jPSQ==, tarball: file:projects/model-bitrix.tgz}
+    id: file:projects/model-bitrix.tgz
+    name: '@rush-temp/model-bitrix'
     version: 0.0.0
     dependencies:
       '@rushstack/heft': 0.47.11
@@ -13869,7 +14086,7 @@ packages:
     dev: false
 
   file:projects/pod-backup.tgz:
-    resolution: {integrity: sha512-aYuP6b79VLRNZxzds3pAkI3pU7nnflvilszNFThWoIUxrMF6UToUJJZsYWH41PIXprpXJqRIsYGBZhMTQobg0w==, tarball: file:projects/pod-backup.tgz}
+    resolution: {integrity: sha512-HE0Z8soW6YkoYXsUW6c/sx2ZE9I7T7KHfXtxzNuAbyokYYfaH0vGRUE4y8NZt+bDDAfzzzDOivhu2TPeJUQCYw==, tarball: file:projects/pod-backup.tgz}
     name: '@rush-temp/pod-backup'
     version: 0.0.0
     dependencies:
@@ -14050,7 +14267,7 @@ packages:
     dev: false
 
   file:projects/presentation.tgz_49b4785992daa3b61a639b2b31601e76:
-    resolution: {integrity: sha512-Nry3q2egydTo0b3dfhd/ejmLBKBROZ6rpyn7943+PJe5vcriJMOazi/OQur0J3LmFl8ozg2IVqeW+A2STDOt+Q==, tarball: file:projects/presentation.tgz}
+    resolution: {integrity: sha512-s/CjB7oBP/pwiNFtVjC7R1Rs0Ejth0XA+1QgbgYZ3qDqnybD0jbwbXFwnZK8xyCWAK+HSvnzrxI9+SbqGE0p3g==, tarball: file:projects/presentation.tgz}
     id: file:projects/presentation.tgz
     name: '@rush-temp/presentation'
     version: 0.0.0
@@ -14086,7 +14303,7 @@ packages:
     dev: false
 
   file:projects/prod.tgz_b3a81ceaadec606c0eb174aef12a6049:
-    resolution: {integrity: sha512-xW0K2fEEkHycO18ZB6wSk6u5Qm5X8VLVss47tsS2KHIEwWgLHAIasxhL/SA1DJClWW+kS0o42U2fj76DjLhWJw==, tarball: file:projects/prod.tgz}
+    resolution: {integrity: sha512-HF6aMWOyjHsQ6STxaZz0/dFY3zb6o4J+tz/NZYcSTdspxgHb+yuyqvfm+/RPItDiTTDO6GHVogJ8i/WYIkSyhQ==, tarball: file:projects/prod.tgz}
     id: file:projects/prod.tgz
     name: '@rush-temp/prod'
     version: 0.0.0
@@ -14297,7 +14514,7 @@ packages:
     dev: false
 
   file:projects/server-backup.tgz:
-    resolution: {integrity: sha512-+Sxk2DeLDmhbuG/OMQMwfEJRl/atZE9ZXzdiZotTpd+Et1q9w4WH3h34RWdiCOTiInZyJZXjXF5xDF375VAzpQ==, tarball: file:projects/server-backup.tgz}
+    resolution: {integrity: sha512-mOaBUJaifcxXZ6AqSpdIiI19QTCADyT/565qkkfja5HI02gLLNdrmyRKoc65YN3UAZbM2C1l+JXMBU8r58St1A==, tarball: file:projects/server-backup.tgz}
     name: '@rush-temp/server-backup'
     version: 0.0.0
     dependencies:
@@ -14923,7 +15140,7 @@ packages:
     dev: false
 
   file:projects/server-tool.tgz:
-    resolution: {integrity: sha512-sdJKsx2tdPWOmolw3blM7QpXlkN+WUikx/uRmofKYuS/Y1HZkY8UHCYLYzWoDmf2/VplseccWe6HatjkLG6c8Q==, tarball: file:projects/server-tool.tgz}
+    resolution: {integrity: sha512-5WEO5W7xOR+BMCgmj9G6+cfEtU+FSGcz7Mfb+apZ24IXhwCrn2eVh/YgDGwSRzQV4W3yeIcO0sUbvowKwLhIDQ==, tarball: file:projects/server-tool.tgz}
     name: '@rush-temp/server-tool'
     version: 0.0.0
     dependencies:
@@ -15556,7 +15773,7 @@ packages:
     dev: false
 
   file:projects/tool.tgz:
-    resolution: {integrity: sha512-otLw170db0pwKQJWhEYqLlU29LqXHyjuS6V/oYcOPxYCvWXe7Nu1NT82TtVD4DgVE4ecgsS1iR1tVfyPwWjeYQ==, tarball: file:projects/tool.tgz}
+    resolution: {integrity: sha512-eV5BJ5aZRslw3lgvX7imSH6m5EBU8wCOPmZUl4tuKxZAnpjSJA9pHyUivn6EFaJ3r+pdu+ZVSjZ3D/DEbwzAKw==, tarball: file:projects/tool.tgz}
     name: '@rush-temp/tool'
     version: 0.0.0
     dependencies:
@@ -15624,7 +15841,7 @@ packages:
     dev: false
 
   file:projects/tracker-resources.tgz_49b4785992daa3b61a639b2b31601e76:
-    resolution: {integrity: sha512-IcoVWcO8DdlZyXbAml4GE9UlmPBzihwEzKWq9+Xs8H1U7cDcHhNwGgF+qv8N+gH5mgBHSziEBQrKfnvF+iz5vw==, tarball: file:projects/tracker-resources.tgz}
+    resolution: {integrity: sha512-z547GvQvHWfDkFJs1VvW4xJKZEzr4O7cICzIfB/lbxZt8uVrbXMVWHxWqfLHrlHxGEalqDeSRdkZ59EQ64cveA==, tarball: file:projects/tracker-resources.tgz}
     id: file:projects/tracker-resources.tgz
     name: '@rush-temp/tracker-resources'
     version: 0.0.0
@@ -15817,7 +16034,7 @@ packages:
     dev: false
 
   file:projects/workbench-resources.tgz_49b4785992daa3b61a639b2b31601e76:
-    resolution: {integrity: sha512-aZ25sMEnPTO2r84j+DL2Ej0KWk71wnvPdmJSntkdrWZH3HhLYVEd+xY0kYoDB+zm4yxLPvr94hrkoo+IG+LCFA==, tarball: file:projects/workbench-resources.tgz}
+    resolution: {integrity: sha512-hyxyGITfGafwcakPTdjJ7iQkwz25QiBIWF/QK0/sdPYTqSlxDHxkzvwBh2bKNXGuAPuqKS7aykvhrhHXqZsFXQ==, tarball: file:projects/workbench-resources.tgz}
     id: file:projects/workbench-resources.tgz
     name: '@rush-temp/workbench-resources'
     version: 0.0.0

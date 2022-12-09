@@ -31,8 +31,8 @@
   import view from '@hcengineering/view-resources/src/plugin'
 
   export let value: Enum | undefined
-  let name: string = value?.name ?? ''
-  let values: string[] = value?.enumValues ?? []
+  export let name: string = value?.name ?? ''
+  export let values: string[] = value?.enumValues ?? []
   const client = getClient()
   const dispatch = createEventDispatcher()
 

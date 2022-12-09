@@ -74,6 +74,7 @@
     "@hcengineering/model-preference": "~0.6.0",
     "@hcengineering/model-hr": "~0.6.0",
     "@hcengineering/model-server-hr": "~0.6.0",
-    "@hcengineering/model-document": "~0.6.0"
+    "@hcengineering/model-document": "~0.6.0",
+    "@hcengineering/model-bitrix": "~0.6.0"
   }
 }

@@ -64,12 +64,14 @@
 
   const dispatch = createEventDispatcher()
   const query = createQuery()
+
+  $: _idExtra = typeof docQuery?._id === 'object' ? docQuery?._id : {}
   $: query.query<Doc>(
     _class,
     {
       ...(docQuery ?? {}),
       [searchField]: { $like: '%' + search + '%' },
-      _id: { $nin: ignoreObjects }
+      _id: { $nin: ignoreObjects, ..._idExtra }
     },
     (result) => {
       result.sort((a, b) => {

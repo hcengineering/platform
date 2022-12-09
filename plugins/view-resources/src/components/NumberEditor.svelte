@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import type { IntlString } from '@hcengineering/platform'
-  import { EditBox, Label, showPopup, eventToHTMLElement } from '@hcengineering/ui'
+  import { EditBox, Label, showPopup, eventToHTMLElement, Button } from '@hcengineering/ui'
   import EditBoxPopup from './EditBoxPopup.svelte'
 
   // export let label: IntlString
@@ -24,7 +24,7 @@
   export let focus: boolean
   // export let maxWidth: string = '10rem'
   export let onChange: (value: number | undefined) => void
-  export let kind: 'no-border' | 'link' = 'no-border'
+  export let kind: 'no-border' | 'link' | 'button' = 'no-border'
   export let readonly = false
 
   let shown: boolean = false
@@ -38,6 +38,7 @@
 </script>
 
 {#if kind === 'link'}
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div
     class="link-container"
     on:click={(ev) => {
@@ -58,6 +59,30 @@
       <span class="dark-color"><Label label={placeholder} /></span>
     {/if}
   </div>
+{:else if kind === 'button'}
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <Button
+    size={'small'}
+    on:click={(ev) => {
+      if (!shown && !readonly) {
+        showPopup(EditBoxPopup, { value, format: 'number' }, eventToHTMLElement(ev), (res) => {
+          if (Number.isFinite(res)) {
+            value = res
+            onChange(value)
+          }
+          shown = false
+        })
+      }
+    }}
+  >
+    <svelte:fragment slot="content">
+      {#if value !== undefined}
+        <span class="overflow-label">{value}</span>
+      {:else}
+        <span class="dark-color"><Label label={placeholder} /></span>
+      {/if}
+    </svelte:fragment>
+  </Button>
 {:else if readonly}
   {#if value !== undefined}
     <span class="overflow-label">{value}</span>

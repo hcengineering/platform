@@ -37,6 +37,7 @@
   export let focusIndex = -1
   export let autoSelect: boolean = true
   export let useFlexGrow = false
+  export let minW0 = true
 
   let container: HTMLElement
   let opened: boolean = false
@@ -53,7 +54,7 @@
   const mgr = getFocusManager()
 </script>
 
-<div bind:this={container} class="min-w-0" class:flex-grow={useFlexGrow}>
+<div bind:this={container} class:min-w-0={minW0} class:flex-grow={useFlexGrow}>
   <Button
     {focusIndex}
     {icon}

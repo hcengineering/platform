@@ -229,6 +229,15 @@ async function getAllRealValues (client: TxOperations, values: any[], _class: Re
   if (values.some((value) => typeof value !== 'string')) {
     return values
   }
+  if (
+    _class === core.class.TypeString ||
+    _class === core.class.EnumOf ||
+    _class === core.class.TypeNumber ||
+    _class === core.class.TypeDate
+  ) {
+    return values
+  }
+
   const realValues = await client.findAll(_class, { _id: { $in: values } })
   const realValuesIds = realValues.map(({ _id }) => _id)
   return [

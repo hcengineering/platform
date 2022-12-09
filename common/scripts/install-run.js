@@ -42,6 +42,7 @@ const os = __importStar(require("os"));
 const path = __importStar(require("path"));
 exports.RUSH_JSON_FILENAME = 'rush.json';
 const RUSH_TEMP_FOLDER_ENV_VARIABLE_NAME = 'RUSH_TEMP_FOLDER';
+const INSTALL_RUN_LOCKFILE_PATH_VARIABLE = 'INSTALL_RUN_LOCKFILE_PATH';
 const INSTALLED_FLAG_FILENAME = 'installed.flag';
 const NODE_MODULES_FOLDER_NAME = 'node_modules';
 const PACKAGE_JSON_FILENAME = 'package.json';
@@ -82,6 +83,9 @@ function _parsePackageSpecifier(rawPackageSpecifier) {
  * home directory.
  *
  * IMPORTANT: THIS CODE SHOULD BE KEPT UP TO DATE WITH Utilities.copyAndTrimNpmrcFile()
+ *
+ * @returns
+ * The text of the the .npmrc.
  */
 function _copyAndTrimNpmrcFile(logger, sourceNpmrcPath, targetNpmrcPath) {
     logger.info(`Transforming ${sourceNpmrcPath}`); // Verbose
@@ -121,20 +125,25 @@ function _copyAndTrimNpmrcFile(logger, sourceNpmrcPath, targetNpmrcPath) {
             resultLines.push(line);
         }
     }
-    fs.writeFileSync(targetNpmrcPath, resultLines.join(os.EOL));
+    const combinedNpmrc = resultLines.join(os.EOL);
+    fs.writeFileSync(targetNpmrcPath, combinedNpmrc);
+    return combinedNpmrc;
 }
 /**
  * syncNpmrc() copies the .npmrc file to the target folder, and also trims unusable lines from the .npmrc file.
  * If the source .npmrc file not exist, then syncNpmrc() will delete an .npmrc that is found in the target folder.
  *
  * IMPORTANT: THIS CODE SHOULD BE KEPT UP TO DATE WITH Utilities._syncNpmrc()
+ *
+ * @returns
+ * The text of the the synced .npmrc, if one exists. If one does not exist, then undefined is returned.
  */
 function _syncNpmrc(logger, sourceNpmrcFolder, targetNpmrcFolder, useNpmrcPublish) {
     const sourceNpmrcPath = path.join(sourceNpmrcFolder, !useNpmrcPublish ? '.npmrc' : '.npmrc-publish');
     const targetNpmrcPath = path.join(targetNpmrcFolder, '.npmrc');
     try {
         if (fs.existsSync(sourceNpmrcPath)) {
-            _copyAndTrimNpmrcFile(logger, sourceNpmrcPath, targetNpmrcPath);
+            return _copyAndTrimNpmrcFile(logger, sourceNpmrcPath, targetNpmrcPath);
         }
         else if (fs.existsSync(targetNpmrcPath)) {
             // If the source .npmrc doesn't exist and there is one in the target, delete the one in the target
@@ -307,25 +316,40 @@ function _isPackageAlreadyInstalled(packageInstallFolder) {
     }
 }
 /**
+ * Delete a file. Fail silently if it does not exist.
+ */
+function _deleteFile(file) {
+    try {
+        fs.unlinkSync(file);
+    }
+    catch (err) {
+        if (err.code !== 'ENOENT' && err.code !== 'ENOTDIR') {
+            throw err;
+        }
+    }
+}
+/**
  * Removes the following files and directories under the specified folder path:
  *  - installed.flag
  *  -
  *  - node_modules
  */
-function _cleanInstallFolder(rushTempFolder, packageInstallFolder) {
+function _cleanInstallFolder(rushTempFolder, packageInstallFolder, lockFilePath) {
     try {
         const flagFile = path.resolve(packageInstallFolder, INSTALLED_FLAG_FILENAME);
-        if (fs.existsSync(flagFile)) {
-            fs.unlinkSync(flagFile);
-        }
+        _deleteFile(flagFile);
         const packageLockFile = path.resolve(packageInstallFolder, 'package-lock.json');
-        if (fs.existsSync(packageLockFile)) {
-            fs.unlinkSync(packageLockFile);
+        if (lockFilePath) {
+            fs.copyFileSync(lockFilePath, packageLockFile);
         }
-        const nodeModulesFolder = path.resolve(packageInstallFolder, NODE_MODULES_FOLDER_NAME);
-        if (fs.existsSync(nodeModulesFolder)) {
-            const rushRecyclerFolder = _ensureAndJoinPath(rushTempFolder, 'rush-recycler');
-            fs.renameSync(nodeModulesFolder, path.join(rushRecyclerFolder, `install-run-${Date.now().toString()}`));
+        else {
+            // Not running `npm ci`, so need to cleanup
+            _deleteFile(packageLockFile);
+            const nodeModulesFolder = path.resolve(packageInstallFolder, NODE_MODULES_FOLDER_NAME);
+            if (fs.existsSync(nodeModulesFolder)) {
+                const rushRecyclerFolder = _ensureAndJoinPath(rushTempFolder, 'rush-recycler');
+                fs.renameSync(nodeModulesFolder, path.join(rushRecyclerFolder, `install-run-${Date.now().toString()}`));
+            }
         }
     }
     catch (e) {
@@ -354,17 +378,17 @@ function _createPackageJson(packageInstallFolder, name, version) {
 /**
  * Run "npm install" in the package install folder.
  */
-function _installPackage(logger, packageInstallFolder, name, version) {
+function _installPackage(logger, packageInstallFolder, name, version, command) {
     try {
         logger.info(`Installing ${name}...`);
         const npmPath = getNpmPath();
-        const result = childProcess.spawnSync(npmPath, ['install'], {
+        const result = childProcess.spawnSync(npmPath, [command], {
             stdio: 'inherit',
             cwd: packageInstallFolder,
             env: process.env
         });
         if (result.status !== 0) {
-            throw new Error('"npm install" encountered an error');
+            throw new Error(`"npm ${command}" encountered an error`);
         }
         logger.info(`Successfully installed ${name}@${version}`);
     }
@@ -392,18 +416,19 @@ function _writeFlagFile(packageInstallFolder) {
         throw new Error(`Unable to create installed.flag file in ${packageInstallFolder}`);
     }
 }
-function installAndRun(logger, packageName, packageVersion, packageBinName, packageBinArgs) {
+function installAndRun(logger, packageName, packageVersion, packageBinName, packageBinArgs, lockFilePath = process.env[INSTALL_RUN_LOCKFILE_PATH_VARIABLE]) {
     const rushJsonFolder = findRushJsonFolder();
     const rushCommonFolder = path.join(rushJsonFolder, 'common');
     const rushTempFolder = _getRushTempFolder(rushCommonFolder);
     const packageInstallFolder = _ensureAndJoinPath(rushTempFolder, 'install-run', `${packageName}@${packageVersion}`);
     if (!_isPackageAlreadyInstalled(packageInstallFolder)) {
         // The package isn't already installed
-        _cleanInstallFolder(rushTempFolder, packageInstallFolder);
+        _cleanInstallFolder(rushTempFolder, packageInstallFolder, lockFilePath);
         const sourceNpmrcFolder = path.join(rushCommonFolder, 'config', 'rush');
         _syncNpmrc(logger, sourceNpmrcFolder, packageInstallFolder);
         _createPackageJson(packageInstallFolder, packageName, packageVersion);
-        _installPackage(logger, packageInstallFolder, packageName, packageVersion);
+        const command = lockFilePath ? 'ci' : 'install';
+        _installPackage(logger, packageInstallFolder, packageName, packageVersion, command);
         _writeFlagFile(packageInstallFolder);
     }
     const statusMessage = `Invoking "${packageBinName} ${packageBinArgs.join(' ')}"`;

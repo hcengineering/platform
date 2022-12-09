@@ -13,10 +13,10 @@
 // limitations under the License.
 //
 
-import { Asset, IntlString, plugin, Resource } from '@hcengineering/platform'
-import type { Plugin } from '@hcengineering/platform'
-import { AnyComponent } from '@hcengineering/ui'
 import type { Class, Doc, Mixin, Ref } from '@hcengineering/core'
+import type { Plugin } from '@hcengineering/platform'
+import { Asset, IntlString, plugin, Resource } from '@hcengineering/platform'
+import { AnyComponent } from '@hcengineering/ui'
 
 /**
  * @public
@@ -30,9 +30,12 @@ export interface IntegrationType extends Doc {
   label: IntlString
   description: IntlString
   icon: AnyComponent
-  createComponent: AnyComponent
-  onDisconnect: Handler
+
+  createComponent?: AnyComponent
+  onDisconnect?: Handler
   reconnectComponent?: AnyComponent
+
+  configureComponent?: AnyComponent
 }
 
 /**
@@ -143,7 +146,8 @@ export default plugin(settingId, {
     SelectWorkspace: '' as IntlString,
     Reconnect: '' as IntlString,
     ClassSetting: '' as IntlString,
-    Owners: '' as IntlString
+    Owners: '' as IntlString,
+    Configure: '' as IntlString
   },
   icon: {
     EditProfile: '' as Asset,

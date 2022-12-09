@@ -35,6 +35,7 @@
   export let width: string | undefined = undefined
   export let labelDirection: TooltipAlignment | undefined = undefined
   export let shouldUpdateUndefined: boolean = true
+  export let minW0 = true
 
   let container: HTMLElement
   let opened: boolean = false
@@ -72,7 +73,7 @@
   }
 </script>
 
-<div bind:this={container} class="min-w-0">
+<div bind:this={container} class:min-w-0={minW0}>
   <Button
     {icon}
     width={width ?? 'min-content'}

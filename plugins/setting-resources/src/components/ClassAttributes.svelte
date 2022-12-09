@@ -31,6 +31,7 @@
   import {
     Action,
     ActionIcon,
+    AnySvelteComponent,
     CircleButton,
     Component,
     getEventPositionElement,
@@ -51,6 +52,15 @@
   import EditClassLabel from './EditClassLabel.svelte'
 
   export let _class: Ref<Class<Doc>>
+  export let ofClass: Ref<Class<Doc>> | undefined
+
+  export let attributeMapper:
+    | {
+        component: AnySvelteComponent
+        label: IntlString
+        props: Record<string, any>
+      }
+    | undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -66,7 +76,9 @@
 
   function getCustomAttributes (_class: Ref<Class<Doc>>): AnyAttribute[] {
     const cl = hierarchy.getClass(_class)
-    const attributes = Array.from(hierarchy.getAllAttributes(_class, cl.extends).values())
+    const attributes = Array.from(
+      hierarchy.getAllAttributes(_class, _class === ofClass ? core.class.Doc : cl.extends).values()
+    )
     // const filtred = attributes.filter((p) => !p.hidden)
     return attributes
   }
@@ -210,6 +222,11 @@
           <Label label={settings.string.Custom} />
         </div>
       </th>
+      {#if attributeMapper}
+        <th>
+          <Label label={attributeMapper.label} />
+        </th>
+      {/if}
     </tr>
   </thead>
   <tbody>
@@ -223,7 +240,7 @@
         }}
       >
         <td>
-          <div class="antiTable-cells__firstCell">
+          <div class="antiTable-cells__firstCell whitespace-nowrap">
             <Label label={attr.label} />
             <!-- svelte-ignore a11y-click-events-have-key-events -->
             <div id="context-menu" class="antiTable-cells__firstCell-menuRow" on:click={(ev) => showMenu(ev, attr)}>
@@ -231,7 +248,7 @@
             </div>
           </div>
         </td>
-        <td class="select-text">
+        <td class="select-text whitespace-nowrap">
           <Label label={attr.type.label} />
           {#if attrType !== undefined}
             : <Label label={attrType} />
@@ -252,6 +269,11 @@
         <td>
           <Component is={view.component.BooleanTruePresenter} props={{ value: attr.isCustom ?? false }} />
         </td>
+        {#if attributeMapper}
+          <td>
+            <svelte:component this={attributeMapper.component} {...attributeMapper.props} attribute={attr} />
+          </td>
+        {/if}
       </tr>
     {/each}
   </tbody>

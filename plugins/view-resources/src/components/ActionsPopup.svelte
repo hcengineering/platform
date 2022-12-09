@@ -26,6 +26,7 @@
   import { ListView, resizeObserver } from '@hcengineering/ui'
   import ObjectPresenter from './ObjectPresenter.svelte'
   import { tick } from 'svelte'
+  import { createEventDispatcher } from 'svelte'
 
   export let viewContext: ViewContext
 
@@ -171,6 +172,7 @@
     }
     return result
   }
+  const dispatch = createEventDispatcher()
 </script>
 
 <ActionContext
