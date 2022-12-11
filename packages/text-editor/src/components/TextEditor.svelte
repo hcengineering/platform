@@ -17,6 +17,7 @@
   import { IntlString, translate } from '@hcengineering/platform'
 
   import { AnyExtension, Editor, Extension, HTMLContent } from '@tiptap/core'
+  import type { FocusPosition } from '@tiptap/core'
   // import Typography from '@tiptap/extension-typography'
   import Placeholder from '@tiptap/extension-placeholder'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
@@ -42,6 +43,12 @@
 
   const dispatch = createEventDispatcher()
 
+  export function isEditable (): boolean {
+    return editor.isEditable
+  }
+  export function setEditable (editable: boolean): void {
+    if (editor) editor.setEditable(editable)
+  }
   export function submit (): void {
     if (!editor.isEmpty) {
       content = editor.getHTML()
@@ -135,14 +142,17 @@
 
   let needFocus = false
   let focused = false
+  let posFocus: FocusPosition | undefined = undefined
 
-  export function focus (): void {
+  export function focus (position?: FocusPosition): void {
+    posFocus = position
     needFocus = true
   }
 
   $: if (editor && needFocus) {
     if (!focused) {
-      editor.commands.focus()
+      editor.commands.focus(posFocus)
+      posFocus = undefined
     }
     needFocus = false
   }

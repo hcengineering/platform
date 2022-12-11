@@ -67,7 +67,7 @@
       })
   }
 
-  function showCreateDialog (ev: MouseEvent) {
+  function showCreateDialog () {
     if (createComponent === undefined) return
     showPopup(createComponent, createComponentProps, 'top')
   }
@@ -91,13 +91,7 @@
   </div>
   <div class="ac-header-full" class:secondRow={twoRows}>
     {#if createLabel && createComponent}
-      <Button
-        label={createLabel}
-        icon={IconAdd}
-        kind={'primary'}
-        size={'small'}
-        on:click={(ev) => showCreateDialog(ev)}
-      />
+      <Button label={createLabel} icon={IconAdd} kind={'primary'} size={'small'} on:click={() => showCreateDialog()} />
     {/if}
     <ViewletSettingButton viewlet={descr} />
   </div>

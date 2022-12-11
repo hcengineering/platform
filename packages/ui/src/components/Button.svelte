@@ -45,7 +45,7 @@
 
   let iconSize: ButtonSize
   $: iconSize = size === 'inline' ? 'inline' : 'small'
-  $: iconOnly = label === undefined && $$slots.content === undefined
+  $: iconOnly = label === undefined && ($$slots.content === undefined || $$slots.icon !== undefined)
 
   onMount(() => {
     if (focus && input) {
@@ -114,9 +114,8 @@
       <Label {label} params={labelParams} />
     </span>
   {/if}
-  {#if $$slots.content}
-    <slot name="content" />
-  {/if}
+  {#if $$slots.icon}<slot name="icon" />{/if}
+  {#if $$slots.content}<slot name="content" />{/if}
 </button>
 
 <style lang="scss">
@@ -353,6 +352,9 @@
       }
       &:hover {
         background-color: var(--primary-bg-hover);
+      }
+      &:focus {
+        border-color: var(--primary-edit-border-color);
       }
       &:disabled {
         background-color: #5e6ad255;

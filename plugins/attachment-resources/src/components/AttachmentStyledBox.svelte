@@ -37,6 +37,18 @@
   export let focusable: boolean = false
   export let refContainer: HTMLElement | undefined = undefined
 
+  export function focus (): void {
+    refInput.focus()
+  }
+  export function isEditable (): boolean {
+    return refInput.isEditable()
+  }
+  export function setEditable (editable: boolean): void {
+    refInput.setEditable(editable)
+  }
+  export function setContent (data: string): void {
+    refInput.setContent(data)
+  }
   export function attach (): void {
     inputFile.click()
   }
@@ -229,6 +241,7 @@
     {focusable}
     {emphasized}
     on:changeSize
+    on:changeContent
     on:attach={() => attach()}
   />
   {#if attachments.size}
@@ -250,6 +263,7 @@
 
 <style lang="scss">
   .list {
+    margin-top: 0.5rem;
     padding: 0.5rem;
     min-width: 0;
     color: var(--theme-caption-color);

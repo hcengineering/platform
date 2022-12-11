@@ -76,6 +76,18 @@
   export function focus (): void {
     textEditor.focus()
   }
+  export function isEditable (): boolean {
+    return textEditor.isEditable()
+  }
+  export function setEditable (editable: boolean): void {
+    textEditor.setEditable(editable)
+  }
+  export function getContent (): string {
+    return content
+  }
+  export function setContent (data: string): void {
+    textEditor.setContent(data)
+  }
 
   $: varsStyle =
     maxHeight === 'card'
@@ -344,7 +356,8 @@
   }
 </script>
 
-<div class="ref-container clear-mins">
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<div class="ref-container clear-mins" tabindex="-1" on:click|preventDefault|stopPropagation={() => (needFocus = true)}>
   {#if isFormatting}
     <div class="formatPanel buttons-group xsmall-gap mb-4" class:withoutTopBorder>
       <StyleButton
@@ -551,8 +564,8 @@
     .formatPanel {
       position: sticky;
       top: 1.25rem;
-      margin: -0.5rem -0.5rem 0.25rem;
-      padding: 0.5rem;
+      margin: -0.5rem -0.25rem 0.5rem;
+      padding: 0.375rem;
       background-color: var(--body-accent);
       border-radius: 0.5rem;
       box-shadow: var(--button-shadow);

@@ -14,7 +14,7 @@
 //
 
 import attachment, { Attachment } from '@hcengineering/attachment'
-import { ObjQueryType, SortingOrder, SortingQuery } from '@hcengineering/core'
+import { ObjQueryType, SortingOrder, SortingQuery, Markup } from '@hcengineering/core'
 import { IntlString, Resources } from '@hcengineering/platform'
 import preference from '@hcengineering/preference'
 import { getClient } from '@hcengineering/presentation'
@@ -32,6 +32,7 @@ import FileBrowser from './components/FileBrowser.svelte'
 import FileDownload from './components/icons/FileDownload.svelte'
 import Photos from './components/Photos.svelte'
 import AttachmentStyledBox from './components/AttachmentStyledBox.svelte'
+import AccordionEditor from './components/AccordionEditor.svelte'
 import { deleteFile, uploadFile } from './utils'
 import { DisplayTx } from '@hcengineering/activity'
 
@@ -47,7 +48,8 @@ export {
   AttachmentDocList,
   FileDownload,
   FileBrowser,
-  AttachmentStyledBox
+  AttachmentStyledBox,
+  AccordionEditor
 }
 
 export enum FileBrowserSortMode {
@@ -251,3 +253,12 @@ export default async (): Promise<Resources> => ({
     DeleteAttachment
   }
 })
+
+export interface AccordionItem {
+  id: string
+  label: IntlString
+  tooltip: IntlString
+  content: Markup
+  state: 'opened' | 'closed'
+  placeholder?: IntlString
+}
