@@ -1,0 +1,109 @@
+<!--
+// Copyright © 2022 Hardcore Engineering Inc.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+-->
+<script lang="ts">
+  import { createEventDispatcher } from 'svelte'
+  import { Doc, Ref, Space, Class } from '@hcengineering/core'
+  import { Button, Label, IconDownOutline, tooltip } from '@hcengineering/ui'
+  import textEditorPlugin, { TextEditor } from '@hcengineering/text-editor'
+  import type { AccordionItem } from '..'
+  import AttachmentStyledBox from './AttachmentStyledBox.svelte'
+
+  export let items: AccordionItem[]
+  export let objectId: Ref<Doc>
+  export let space: Ref<Space>
+  export let _class: Ref<Class<Doc>>
+
+  export function createAttachments (): void {
+    attachments.forEach((at) => at.createAttachments())
+  }
+
+  const dispatch = createEventDispatcher()
+
+  const attachments: AttachmentStyledBox[] = []
+  const edits: TextEditor[] = []
+
+  const flip = (index: number, ev?: MouseEvent): void => {
+    ev?.stopPropagation()
+    const cont = items[index].content
+    switch (items[index].state) {
+      case 'opened':
+        attachments[index].setEditable(false)
+        items[index].state = 'closed'
+        setTimeout(() => edits[index].focus('end'), 0)
+        break
+      case 'closed':
+        items[index].state = 'opened'
+        attachments[index].setEditable(true)
+        attachments[index].setContent(cont)
+        attachments[index].focus()
+        break
+    }
+  }
+</script>
+
+<div class="antiAccordion">
+  {#each items as item, i}
+    <div class="description {item.state}">
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <div
+        class="caption"
+        use:tooltip={{ label: item.tooltip }}
+        tabindex="-1"
+        on:click={() => {
+          if (item.state === 'closed') edits[i].focus()
+          else attachments[i].focus()
+        }}
+      >
+        <span class="label"><Label label={item.label} /></span>
+        <div class="value">
+          {#if item.state === 'closed'}
+            <TextEditor
+              bind:content={item.content}
+              bind:this={edits[i]}
+              on:value={(ev) => {
+                dispatch('update', { item, value: ev.detail })
+              }}
+              on:content={(ev) => {
+                items[i].content = ev.detail
+                dispatch('update', { item, value: ev.detail })
+                flip(i)
+              }}
+            />
+          {/if}
+        </div>
+        <Button size={'medium'} kind={'transparent'} on:click={(ev) => flip(i, ev)}>
+          <svelte:fragment slot="icon">
+            <div class="rotated-icon {item.state}">
+              <IconDownOutline size={'medium'} />
+            </div>
+          </svelte:fragment>
+        </Button>
+      </div>
+      <div class="expand-collapse">
+        <AttachmentStyledBox
+          bind:this={attachments[i]}
+          alwaysEdit
+          showButtons
+          bind:content={item.content}
+          placeholder={textEditorPlugin.string.EditorPlaceholder}
+          {objectId}
+          {_class}
+          {space}
+          on:changeContent={(ev) => dispatch('update', { item, value: ev.detail })}
+        />
+      </div>
+    </div>
+  {/each}
+</div>

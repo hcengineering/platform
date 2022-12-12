@@ -69,6 +69,18 @@
   export function submit (): void {
     textEditor.submit()
   }
+  export function focus (): void {
+    textEditor.focus()
+  }
+  export function isEditable (): boolean {
+    return textEditor.isEditable()
+  }
+  export function setEditable (editable: boolean): void {
+    textEditor.setEditable(editable)
+  }
+  export function setContent (data: string): void {
+    textEditor.setContent(data)
+  }
   const dispatch = createEventDispatcher()
   let focused = false
 
@@ -124,7 +136,7 @@
         if (alwaysEdit) {
           content = evt.detail
         }
-        dispatch('changeContent')
+        dispatch('changeContent', evt.detail)
       }}
     >
       {#if !alwaysEdit && !hideExtraButtons}

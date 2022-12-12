@@ -29,6 +29,12 @@
   export function submit (): void {
     textEditor.submit()
   }
+  export function isEditable (): boolean {
+    return textEditor.isEditable()
+  }
+  export function setEditable (editable: boolean): void {
+    textEditor.setEditable(editable)
+  }
   const dispatch = createEventDispatcher()
   let focused = false
 

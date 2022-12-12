@@ -69,6 +69,7 @@
   --font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto;
   --timing-shadow: cubic-bezier(0,.65,.35,1);
   --timing-main: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --timing-rotate: cubic-bezier(.28,1.92,.39,.56);
   // transition-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 :root {
