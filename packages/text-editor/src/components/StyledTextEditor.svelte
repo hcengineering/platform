@@ -60,7 +60,7 @@
   export let content: string = ''
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
   export let showButtons: boolean = true
-  export let showAttach: boolean = false
+  export let hideAttachments: boolean = false
   export let buttonSize: IconSize = 'large'
   export let isScrollable: boolean = true
   export let focusable: boolean = false
@@ -118,7 +118,7 @@
         dispatch('attach')
       },
       order: 1000,
-      hidden: showAttach
+      hidden: hideAttachments
     },
     {
       label: textEditorPlugin.string.TextStyle,
@@ -496,7 +496,7 @@
     {#if $$slots.right}
       <div class="flex-between">
         <div class="buttons-group xsmall-gap mt-4">
-          {#each defActions.filter((it) => it.hidden === undefined || it.hidden === true) as a}
+          {#each defActions.filter((it) => it.hidden === undefined || it.hidden === false) as a}
             <StyleButton icon={a.icon} size={buttonSize} on:click={(evt) => handleAction(a, evt)} />
           {/each}
           <slot />
@@ -507,7 +507,7 @@
       </div>
     {:else}
       <div class="buttons-group xsmall-gap mt-4">
-        {#each defActions.filter((it) => it.hidden === undefined || it.hidden === true) as a}
+        {#each defActions.filter((it) => it.hidden === undefined || it.hidden === false) as a}
           <StyleButton icon={a.icon} size={buttonSize} on:click={(evt) => handleAction(a, evt)} />
         {/each}
         <slot />

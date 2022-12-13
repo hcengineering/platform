@@ -21,18 +21,20 @@
   import AttachmentStyledBox from './AttachmentStyledBox.svelte'
 
   export let items: AccordionItem[]
-  export let objectId: Ref<Doc>
-  export let space: Ref<Space>
-  export let _class: Ref<Class<Doc>>
+  export let objectId: Ref<Doc> | undefined = undefined
+  export let space: Ref<Space> | undefined = undefined
+  export let _class: Ref<Class<Doc>> | undefined = undefined
+  export let withoutAttach: boolean = false
 
   export function createAttachments (): void {
-    attachments.forEach((at) => at.createAttachments())
+    attachments[attachments.length - 1].createAttachments()
   }
 
   const dispatch = createEventDispatcher()
 
   const attachments: AttachmentStyledBox[] = []
   const edits: TextEditor[] = []
+  let hasAttachments: boolean = false
 
   const flip = (index: number, ev?: MouseEvent): void => {
     ev?.stopPropagation()
@@ -41,7 +43,7 @@
       case 'opened':
         attachments[index].setEditable(false)
         items[index].state = 'closed'
-        setTimeout(() => edits[index].focus('end'), 0)
+        setTimeout(() => edits[index].focus(), 0)
         break
       case 'closed':
         items[index].state = 'opened'
@@ -59,6 +61,7 @@
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <div
         class="caption"
+        class:hasAttachments={hasAttachments && i === items.length - 1}
         use:tooltip={{ label: item.tooltip }}
         tabindex="-1"
         on:click={() => {
@@ -80,6 +83,7 @@
                 dispatch('update', { item, value: ev.detail })
                 flip(i)
               }}
+              on:blur={() => dispatch('blur', item)}
             />
           {/if}
         </div>
@@ -91,17 +95,26 @@
           </svelte:fragment>
         </Button>
       </div>
-      <div class="expand-collapse">
+      <div class="expand-collapse" class:hasAttachments={hasAttachments && i === items.length - 1}>
         <AttachmentStyledBox
           bind:this={attachments[i]}
           alwaysEdit
           showButtons
+          fakeAttach={withoutAttach ? 'hidden' : i < items.length - 1 ? 'fake' : 'normal'}
           bind:content={item.content}
           placeholder={textEditorPlugin.string.EditorPlaceholder}
           {objectId}
           {_class}
           {space}
           on:changeContent={(ev) => dispatch('update', { item, value: ev.detail })}
+          on:attach={(ev) => {
+            if (ev && ev.detail.action === 'drop') attachments[attachments.length - 1].fileDrop(ev.detail.event)
+            else if (ev.detail.action === 'add') attachments[attachments.length - 1].attach()
+            else if (ev.detail.action === 'saved') {
+              if (ev.detail.value !== hasAttachments) hasAttachments = ev.detail.value
+            }
+          }}
+          on:blur={() => dispatch('blur', item)}
         />
       </div>
     </div>

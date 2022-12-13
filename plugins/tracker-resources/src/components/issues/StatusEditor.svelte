@@ -87,10 +87,12 @@
       }
     )
   }
+  $: smallgap = size === 'inline' || size === 'small'
 </script>
 
 {#if value && statuses}
   {#if kind === 'list' || kind === 'list-header'}
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div class="flex-row-center flex-no-shrink" class:cursor-pointer={isEditable} on:click={handleStatusEditorOpened}>
       <div class="flex-center flex-no-shrink square-4">
         {#if selectedStatus}<IssueStatusIcon value={selectedStatus} size={kind === 'list' ? 'inline' : 'medium'} />{/if}
@@ -98,8 +100,8 @@
       {#if selectedStatusLabel}
         <span
           class="{kind === 'list'
-            ? 'ml-2 text-md'
-            : 'ml-3 text-base'} overflow-label disabled fs-bold content-accent-color"
+            ? 'ml-1 text-md'
+            : 'ml-2 text-base'} overflow-label disabled fs-bold content-accent-color"
         >
           {selectedStatusLabel}
         </span>
@@ -115,12 +117,18 @@
       {width}
       on:click={handleStatusEditorOpened}
     >
-      <span slot="content" class="inline-flex pointer-events-none">
+      <span slot="content" class="flex-row-center pointer-events-none">
         {#if selectedStatus}
           <IssueStatusIcon value={selectedStatus} size="inline" />
         {/if}
         {#if selectedStatusLabel}
-          <span class="overflow-label disabled" class:ml-2={selectedStatus}>{selectedStatusLabel}</span>
+          <span
+            class="overflow-label disabled"
+            class:ml-1={selectedStatus && smallgap}
+            class:ml-2={selectedStatus && !smallgap}
+          >
+            {selectedStatusLabel}
+          </span>
         {/if}
       </span>
     </Button>

@@ -19,14 +19,14 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { StyledTextBox } from '@hcengineering/text-editor'
   import { IconSize } from '@hcengineering/ui'
-  import { onDestroy } from 'svelte'
+  import { createEventDispatcher, onDestroy } from 'svelte'
   import attachment from '../plugin'
   import { deleteFile, uploadFile } from '../utils'
   import AttachmentPresenter from './AttachmentPresenter.svelte'
 
-  export let objectId: Ref<Doc>
-  export let space: Ref<Space>
-  export let _class: Ref<Class<Doc>>
+  export let objectId: Ref<Doc> | undefined = undefined
+  export let space: Ref<Space> | undefined = undefined
+  export let _class: Ref<Class<Doc>> | undefined = undefined
   export let content: string = ''
   export let placeholder: IntlString | undefined = undefined
   export let alwaysEdit = false
@@ -35,7 +35,10 @@
   export let buttonSize: IconSize = 'small'
   export let maxHeight: 'max' | 'card' | 'limited' | string = 'max'
   export let focusable: boolean = false
+  export let fakeAttach: 'fake' | 'hidden' | 'normal' = 'normal'
   export let refContainer: HTMLElement | undefined = undefined
+
+  const dispatch = createEventDispatcher()
 
   export function focus (): void {
     refInput.focus()
@@ -81,6 +84,7 @@
     )
 
   async function createAttachment (file: File) {
+    if (space === undefined || objectId === undefined || _class === undefined) return
     try {
       const uuid = await uploadFile(file, { space, attachedTo: objectId })
       const _id: Ref<Attachment> = generateId()
@@ -107,6 +111,7 @@
   }
 
   async function saveAttachment (doc: Attachment): Promise<void> {
+    if (space === undefined || objectId === undefined || _class === undefined) return
     await client.addCollection(attachment.class.Attachment, space, objectId, _class, 'attachments', doc, doc._id)
   }
 
@@ -120,12 +125,13 @@
     inputFile.value = ''
   }
 
-  function fileDrop (e: DragEvent) {
+  export function fileDrop (e: DragEvent) {
     const list = e.dataTransfer?.files
-    if (list === undefined || list.length === 0) return
-    for (let index = 0; index < list.length; index++) {
-      const file = list.item(index)
-      if (file !== null) createAttachment(file)
+    if (list !== undefined && list.length !== 0) {
+      for (let index = 0; index < list.length; index++) {
+        const file = list.item(index)
+        if (file !== null) createAttachment(file)
+      }
     }
   }
 
@@ -176,6 +182,10 @@
     return Promise.all(promises).then()
   }
 
+  $: if (attachments.size || newAttachments.size || removedAttachments.size) {
+    dispatch('attach', { action: 'saved', value: attachments.size })
+  }
+
   function isAllowedPaste (evt: ClipboardEvent) {
     let t: HTMLElement | null = evt.target as HTMLElement
 
@@ -193,7 +203,7 @@
     return false
   }
 
-  function pasteAction (evt: ClipboardEvent): void {
+  export function pasteAction (evt: ClipboardEvent): void {
     if (!isAllowedPaste(evt)) {
       return
     }
@@ -211,7 +221,7 @@
   }
 </script>
 
-<svelte:window on:paste={pasteAction} />
+<svelte:window on:paste={(ev) => (fakeAttach === 'normal' ? pasteAction(ev) : undefined)} />
 
 <input
   bind:this={inputFile}
@@ -227,24 +237,33 @@
   class="flex-col clear-mins"
   on:dragover|preventDefault={() => {}}
   on:dragleave={() => {}}
-  on:drop|preventDefault|stopPropagation={fileDrop}
+  on:drop|preventDefault|stopPropagation={(ev) => {
+    if (fakeAttach === 'fake') dispatch('attach', { action: 'drop', event: ev })
+    else if (fakeAttach === 'normal') fileDrop(ev)
+  }}
 >
-  <StyledTextBox
-    bind:this={refInput}
-    bind:content
-    {placeholder}
-    {alwaysEdit}
-    {showButtons}
-    showAttach
-    {buttonSize}
-    {maxHeight}
-    {focusable}
-    {emphasized}
-    on:changeSize
-    on:changeContent
-    on:attach={() => attach()}
-  />
-  {#if attachments.size}
+  <div class="expand-collapse">
+    <StyledTextBox
+      bind:this={refInput}
+      bind:content
+      {placeholder}
+      {alwaysEdit}
+      {showButtons}
+      hideAttachments={fakeAttach === 'hidden'}
+      {buttonSize}
+      {maxHeight}
+      {focusable}
+      {emphasized}
+      on:changeSize
+      on:changeContent
+      on:blur
+      on:attach={() => {
+        if (fakeAttach === 'fake') dispatch('attach', { action: 'add' })
+        else if (fakeAttach === 'normal') attach()
+      }}
+    />
+  </div>
+  {#if attachments.size && fakeAttach === 'normal'}
     <div class="flex-row-center list scroll-divider-color">
       {#each Array.from(attachments.values()) as attachment}
         <div class="item flex">

@@ -241,7 +241,6 @@ input.search {
   cursor: pointer;
 
   .icon {
-    margin-right: .5rem;
     color: var(--dark-color);
 
     &.circle {
@@ -249,6 +248,8 @@ input.search {
       background-color: var(--avatar-bg-color);
       border-radius: 50%;
     }
+    &:not(.small-gap) { margin-right: .5rem; }
+    &.small-gap { margin-right: .25rem; }
   }
   .label {
     min-width: 0;
@@ -275,10 +276,11 @@ input.search {
     margin-left: .75rem;
   }
   &:hover {
-    .icon { color: var(--theme-caption-color); }
+    .icon { color: var(--caption-color); }
     .label {
-      text-decoration: underline;
-      color: var(--theme-caption-color);
+      color: var(--caption-color);
+
+      &:not(.no-underline) { text-decoration: underline; }
     }
     .action { visibility: visible; }
   }
@@ -356,17 +358,17 @@ input.search {
   flex-wrap: nowrap;
   white-space: nowrap;
   width: fit-content;
-  color: var(--theme-caption-color);
+  color: var(--caption-color);
   cursor: pointer;
   .icon {
     margin-right: .25rem;
-    color: var(--theme-content-dark-color);
+    color: var(--dark-color);
     &.small-size {
       width: 1.5rem;
       height: 1.5rem;
     }
   }
-  &:hover .icon { color: var(--theme-caption-color); }
+  &:hover .icon { color: var(--caption-color); }
 }
 
 /* Margins & Paddings */
