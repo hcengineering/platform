@@ -43,7 +43,7 @@ test.describe('recruit tests', () => {
     // Click :nth-match(:text("Cancel"), 2)
     // await page.click('button:has-text("Cancel")')
     await page.keyboard.press('Escape')
-    await page.keyboard.press('Escape')
+    // await page.keyboard.press('Escape')
     // Click button:has-text("Create")
     await page.click('button:has-text("Create")')
     await page.waitForSelector('form.antiCard', { state: 'detached' })
