@@ -76,7 +76,7 @@
   {#each model as attributeModel}
     {#if attributeModel.props?.type === 'grow'}
       <svelte:component this={attributeModel.presenter} />
-    {:else if attributeModel.props?.excludeByKey !== groupByKey && !(attributeModel.props?.optional && compactMode)}
+    {:else if (!groupByKey || attributeModel.props?.excludeByKey !== groupByKey) && !(attributeModel.props?.optional && compactMode)}
       {#if attributeModel.props?.fixed}
         <FixedColumn
           width={propsWidth[attributeModel.key]}
