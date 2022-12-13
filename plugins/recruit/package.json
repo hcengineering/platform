@@ -32,6 +32,7 @@
     "@hcengineering/chunter": "~0.6.1",
     "@hcengineering/task": "~0.6.0",
     "@hcengineering/calendar": "~0.6.1",
-    "@hcengineering/ui": "^0.6.2"
+    "@hcengineering/ui": "^0.6.2",
+    "@hcengineering/tags": "~0.6.2"
   }
 }
