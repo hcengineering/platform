@@ -55,6 +55,7 @@ export default mergeIds(tagsId, tags, {
   },
   function: {
     FilterTagsInResult: '' as Resource<(filter: Filter, onUpdate: () => void) => Promise<ObjQueryType<any>>>,
-    FilterTagsNinResult: '' as Resource<(filter: Filter, onUpdate: () => void) => Promise<ObjQueryType<any>>>
+    FilterTagsNinResult: '' as Resource<(filter: Filter, onUpdate: () => void) => Promise<ObjQueryType<any>>>,
+    CreateTagElement: '' as Resource<(props?: Record<string, any>) => Promise<void>>
   }
 })

@@ -122,7 +122,7 @@
   async function create () {
     if (objectFactory?.create) {
       const createFn = await getResource(objectFactory.create)
-      await createFn()
+      await createFn(query)
       return
     }
 

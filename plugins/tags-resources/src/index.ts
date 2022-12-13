@@ -30,6 +30,7 @@ import TagsFilter from './components/TagsFilter.svelte'
 import TagsAttributeEditor from './components/TagsAttributeEditor.svelte'
 import TagsEditorPopup from './components/TagsEditorPopup.svelte'
 import LabelsPresenter from './components/LabelsPresenter.svelte'
+import CreateTagElement from './components/CreateTagElement.svelte'
 import { ObjQueryType } from '@hcengineering/core'
 import { getRefs } from './utils'
 import { Filter } from '@hcengineering/view'
@@ -42,6 +43,10 @@ export async function tagsInResult (filter: Filter, onUpdate: () => void): Promi
 export async function tagsNinResult (filter: Filter, onUpdate: () => void): Promise<ObjQueryType<any>> {
   const result = await getRefs(filter, onUpdate)
   return { $nin: result }
+}
+
+export async function createTagElement (props: Record<string, any> = {}): Promise<void> {
+  showPopup(CreateTagElement, props, 'top')
 }
 
 export default async (): Promise<Resources> => ({
@@ -69,6 +74,7 @@ export default async (): Promise<Resources> => ({
   },
   function: {
     FilterTagsInResult: tagsInResult,
-    FilterTagsNinResult: tagsNinResult
+    FilterTagsNinResult: tagsNinResult,
+    CreateTagElement: createTagElement
   }
 })
