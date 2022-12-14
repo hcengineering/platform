@@ -191,7 +191,7 @@
           on:dragend={resetDrag}
         >
           {#if presenter}
-            <Component is={presenter} props={{isDraggable, ...presenterProps, value: item}} />
+            <Component is={presenter} props={{ isDraggable, ...presenterProps, value: item }} />
           {:else if model}
             <svelte:component this={model.presenter} {isDraggable} {...model.props ?? {}} value={item} />
           {/if}
