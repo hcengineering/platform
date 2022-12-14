@@ -150,11 +150,13 @@
               {getName(selected)}
             {/if}
           {:else}
-            <div class="flex-row-center">
+            <div class="flex-presenter">
               {#if icon}
-                <Icon {icon} size={kind === 'link' ? 'small' : size} />
+                <div class="icon" class:small-gap={size === 'inline' || size === 'small'}>
+                  <Icon {icon} size={kind === 'link' ? 'small' : size} />
+                </div>
               {/if}
-              <div class="ml-2">
+              <div class="label no-underline">
                 <Label {label} />
               </div>
             </div>

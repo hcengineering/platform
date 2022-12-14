@@ -22,7 +22,7 @@
   export let emphasized: boolean = false
   export let alwaysEdit: boolean = false
   export let showButtons: boolean = true
-  export let showAttach: boolean = false
+  export let hideAttachments: boolean = false
   export let buttonSize: IconSize = 'small'
   export let hideExtraButtons: boolean = false
   export let maxHeight: 'max' | 'card' | 'limited' | string = 'max'
@@ -113,7 +113,7 @@
     <StyledTextEditor
       {placeholder}
       {showButtons}
-      {showAttach}
+      {hideAttachments}
       {buttonSize}
       {maxHeight}
       {focusable}
@@ -126,6 +126,7 @@
       }}
       on:blur={() => {
         focused = false
+        dispatch('blur', rawValue)
         if (alwaysEdit) {
           dispatch('value', rawValue)
           content = rawValue

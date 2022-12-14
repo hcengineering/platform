@@ -414,6 +414,9 @@
         max-height: 1.5rem;
         font-weight: 400;
         transition: opacity .15s var(--timing-main);
+
+        &::-webkit-scrollbar:vertical { width: 0; }
+        &::-webkit-scrollbar:horizontal { height: 0; }
       }
       .rotated-icon {
         transform-origin: center;
@@ -426,6 +429,7 @@
 
     &.opened {
       .caption .value { opacity: 0; }
+      .expand-collapse .expand-collapse,
       .expand-collapse {
         visibility: visible;
         max-height: max-content;
@@ -436,13 +440,19 @@
         margin-bottom: -.5rem;
 
         .value { opacity: 1; }
+        &.hasAttachments { margin-bottom: 0; }
       }
-      .expand-collapse {
+      .expand-collapse .expand-collapse,
+      .expand-collapse:not(.hasAttachments) {
         overflow: hidden;
         visibility: hidden;
         max-height: 0;
       }
-      &:hover .caption { margin-bottom: 0rem; }
+      &:hover .caption {
+        margin-bottom: 0rem;
+
+        &.hasAttachments { margin-bottom: .5rem; }
+      }
     }
     
     &:first-child {

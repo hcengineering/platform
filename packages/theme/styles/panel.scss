@@ -214,8 +214,8 @@
         height: 100%;
         min-width: 0;
         background-color: var(--board-card-bg-color);
-        border: 1px solid var(--divider-color);
-        border-top: 1px solid var(--board-card-bg-color);
+        border-left: 1px solid var(--divider-color);
+        border-bottom-right-radius: .45rem;
         box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
         transition: box-shadow 150ms ease 0s, transform 150ms cubic-bezier(0.175, 0.885, 0.32, 1.275);
         transform: translateX(0);
@@ -241,10 +241,10 @@
       }
     }
 
-    &.asideShown .popupPanel-body__main {
-      border: 1px solid var(--divider-color);
-      border-radius: 0 0 .5rem .5rem;
-    }
+    // &.asideShown .popupPanel-body__main {
+    //   border: 1px solid var(--divider-color);
+    //   border-radius: 0 0 .5rem .5rem;
+    // }
   }
 }
 

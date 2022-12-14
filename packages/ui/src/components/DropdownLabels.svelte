@@ -76,7 +76,7 @@
       }
     }}
   >
-    <span slot="content" class="overflow-label disabled" class:dark-color={selectedItem === undefined}>
+    <span slot="content" class="overflow-label disabled" class:content-accent-color={selectedItem === undefined}>
       {#if selectedItem}{selectedItem.label}{:else}<Label label={label ?? ui.string.NotSelected} />{/if}
     </span>
   </Button>
