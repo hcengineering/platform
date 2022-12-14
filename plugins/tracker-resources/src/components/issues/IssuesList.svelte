@@ -27,6 +27,7 @@
     getEventPositionElement,
     IconAdd,
     IconMoreH,
+    Label,
     showPopup,
     Spinner
   } from '@hcengineering/ui'
@@ -215,6 +216,10 @@
               enlargedText
               {currentSpace}
             />
+          {:else if !groupByKey}
+            <span class="text-base fs-bold overflow-label content-accent-color pointer-events-none">
+              <Label label={tracker.string.NoGrouping} />
+            </span>
           {:else if headerComponent}
             <Component
               is={headerComponent}
