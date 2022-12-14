@@ -35,7 +35,7 @@
     {/if}
   {:then Ctor}
     <ErrorBoundary>
-      <Ctor {...props} on:change on:close on:open on:click on:delete>
+      <Ctor {...props} on:change on:close on:open on:click on:delete on:action>
         {#if $$slots.default}
           <slot />
         {/if}

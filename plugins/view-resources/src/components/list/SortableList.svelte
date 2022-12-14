@@ -17,7 +17,7 @@
   import { getResource, IntlString } from '@hcengineering/platform'
   import presentation, { createQuery, getClient } from '@hcengineering/presentation'
   import { calcRank, DocWithRank } from '@hcengineering/task'
-  import { Button, Component, IconAdd, Label, Loading } from '@hcengineering/ui'
+  import { AnyComponent, Button, Component, IconAdd, Label, Loading } from '@hcengineering/ui'
   import view, { AttributeModel, ObjectFactory } from '@hcengineering/view'
   import { flip } from 'svelte/animate'
   import { getObjectPresenter } from '../../utils'
@@ -26,7 +26,7 @@
   How to use:
   
   We must add presenter for the "_class" via "AttributePresenter" mixin
-  to be able display the rows list.
+  or pass it through "presenter" prop to be able display the rows list.
 
   To create a new items, we should add "ObjectFactory" mixin also.
 
@@ -39,6 +39,7 @@
   export let label: IntlString | undefined = undefined
   export let query: DocumentQuery<Doc> = {}
   export let queryOptions: FindOptions<Doc> | undefined = undefined
+  export let presenter: AnyComponent | undefined = undefined
   export let presenterProps: Record<string, any> = {}
   export let direction: 'row' | 'column' = 'column'
   export let flipDuration = 200
@@ -134,7 +135,7 @@
     hoveringIndex = null
   }
 
-  $: updateModel(_class, presenterProps)
+  $: !presenter && updateModel(_class, presenterProps)
   $: updateObjectFactory(_class)
   $: itemsQuery.query(_class, query, updateItems, { ...queryOptions, limit: Math.max(queryOptions?.limit ?? 0, 200) })
 
@@ -171,7 +172,7 @@
 
   {#if isLoading}
     <Loading />
-  {:else if model && items}
+  {:else if (presenter || model) && items}
     {@const isVertical = direction === 'column'}
     <div class="flex-gap-1" class:flex-col={isVertical} class:flex={!isVertical} class:flex-wrap={!isVertical}>
       {#each items as item, index (item._id)}
@@ -189,7 +190,11 @@
           on:drop={() => handleDrop(index)}
           on:dragend={resetDrag}
         >
-          <svelte:component this={model.presenter} {isDraggable} {...model.props ?? {}} value={item} />
+          {#if presenter}
+            <Component is={presenter} props={{ isDraggable, ...presenterProps, value: item }} />
+          {:else if model}
+            <svelte:component this={model.presenter} {isDraggable} {...model.props ?? {}} value={item} />
+          {/if}
         </div>
       {/each}
 
