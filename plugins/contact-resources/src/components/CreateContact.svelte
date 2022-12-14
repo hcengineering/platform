@@ -22,7 +22,7 @@
         if (component) {
           action = async () => {
             closePopup()
-            showPopup(component, {}, 'top')
+            showPopup(component, { shouldSaveDraft: true }, 'top')
           }
         } else if (create) {
           action = await getResource(create)

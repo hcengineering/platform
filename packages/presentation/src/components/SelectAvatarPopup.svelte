@@ -35,6 +35,9 @@
   const [schema, uri] = avatar?.split('://') || []
 
   const initialSelectedType = (() => {
+    if (file) {
+      return AvatarType.IMAGE
+    }
     if (!avatar) {
       return AvatarType.COLOR
     }
@@ -117,6 +120,7 @@
         selectedFile = undefined
       } else {
         selectedFile = blob
+        selectedAvatarType = AvatarType.IMAGE
       }
     })
   }

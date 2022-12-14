@@ -64,7 +64,7 @@
 
   async function showSelectionPopup (e: MouseEvent) {
     if (!disabled) {
-      showPopup(SelectAvatarPopup, { avatar, email, id, icon, onSubmit: handlePopupSubmit })
+      showPopup(SelectAvatarPopup, { avatar, email, id, file: direct, icon, onSubmit: handlePopupSubmit })
     }
   }
 </script>

@@ -14,6 +14,7 @@
 -->
 <script lang="ts">
   import attachment from '@hcengineering/attachment'
+  import { deleteFile } from '@hcengineering/attachment-resources/src/utils'
   import contact, { Channel, ChannelProvider, combineName, findContacts, Person } from '@hcengineering/contact'
   import { ChannelsDropdown } from '@hcengineering/contact-resources'
   import PersonPresenter from '@hcengineering/contact-resources/src/components/PersonPresenter.svelte'
@@ -36,10 +37,13 @@
     EditableAvatar,
     getClient,
     getFileUrl,
+    getUserDraft,
     KeyedAttribute,
-    PDFViewer
+    MessageBox,
+    PDFViewer,
+    updateUserDraft
   } from '@hcengineering/presentation'
-  import type { Candidate } from '@hcengineering/recruit'
+  import type { Candidate, CandidateDraft } from '@hcengineering/recruit'
   import { recognizeDocument } from '@hcengineering/rekoni'
   import tags, { findTagCategory, TagElement, TagReference } from '@hcengineering/tags'
   import {
@@ -56,24 +60,24 @@
     showPopup,
     Spinner
   } from '@hcengineering/ui'
+  import deepEqual from 'deep-equal'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
   import FileUpload from './icons/FileUpload.svelte'
   import YesNo from './YesNo.svelte'
 
-  let firstName = ''
-  let lastName = ''
-  let createMore: boolean = false
+  export let shouldSaveDraft: boolean = false
+  export let onDraftChanged: () => void
 
-  export function canClose (): boolean {
-    return firstName === '' && lastName === '' && resume.uuid === undefined
+  const draft: CandidateDraft | undefined = shouldSaveDraft ? getUserDraft(recruit.mixin.Candidate) : undefined
+  const emptyObject = {
+    title: '',
+    city: '',
+    avatar: undefined,
+    onsite: undefined,
+    remote: undefined
   }
-
-  let avatarEditor: EditableAvatar
-
-  let object: Candidate = {} as Candidate
-
-  const resume = {} as {
+  type resumeFile = {
     name: string
     uuid: string
     size: number
@@ -81,21 +85,58 @@
     lastModified: number
   }
 
+  let candidateId = draft ? draft.candidateId : generateId()
+  let firstName = draft?.firstName || ''
+  let lastName = draft?.lastName || ''
+  let createMore: boolean = false
+  let saveTimer: number | undefined
+
+  export function canClose (): boolean {
+    return true
+  }
+
+  let avatarEditor: EditableAvatar
+
+  function toCandidate (draft: CandidateDraft | undefined): Candidate {
+    if (!draft) {
+      return emptyObject as Candidate
+    }
+    return {
+      title: draft?.title || '',
+      city: draft?.city || '',
+      onsite: draft?.onsite,
+      remote: draft?.remote
+    } as Candidate
+  }
+
+  let object: Candidate = toCandidate(draft)
+
+  function resumeDraft () {
+    return {
+      uuid: draft?.resumeUuid,
+      name: draft?.resumeName,
+      size: draft?.resumeSize,
+      type: draft?.resumeType,
+      lastModified: draft?.resumeLastModified
+    }
+  }
+
+  let resume = resumeDraft() as resumeFile
+
   const dispatch = createEventDispatcher()
   const client = getClient()
-  let candidateId = generateId()
 
   let inputFile: HTMLInputElement
   let loading = false
   let dragover = false
 
-  let avatar: File | undefined
-  let channels: AttachedData<Channel>[] = []
+  let avatar: File | undefined = draft?.avatar
+  let channels: AttachedData<Channel>[] = draft?.channels || []
 
   let matches: WithLookup<Person>[] = []
   let matchedChannels: AttachedData<Channel>[] = []
 
-  let skills: TagReference[] = []
+  let skills: TagReference[] = draft?.skills || []
   const key: KeyedAttribute = {
     key: 'skills',
     attr: client.getHierarchy().getAttribute(recruit.mixin.Candidate, 'skills')
@@ -121,6 +162,85 @@
       resolve()
     })
   })
+
+  $: updateDraft(object, firstName, lastName, avatar, channels, skills, resume)
+
+  async function updateDraft (...param: any) {
+    if (saveTimer) {
+      clearTimeout(saveTimer)
+    }
+    saveTimer = setTimeout(() => {
+      saveDraft()
+    }, 200)
+  }
+
+  async function saveDraft () {
+    if (!shouldSaveDraft) {
+      return
+    }
+
+    let newDraft: Data<CandidateDraft> | undefined = createDraftFromObject()
+    const isEmpty = await isDraftEmpty(newDraft)
+
+    if (isEmpty) {
+      newDraft = undefined
+    }
+
+    updateUserDraft(recruit.mixin.Candidate, newDraft)
+
+    if (onDraftChanged) {
+      return onDraftChanged()
+    }
+  }
+
+  function createDraftFromObject () {
+    const newDraft: Data<CandidateDraft> = {
+      candidateId: candidateId as Ref<Candidate>,
+      firstName,
+      lastName,
+      title: object.title,
+      city: object.city,
+      resumeUuid: resume?.uuid,
+      resumeName: resume?.name,
+      resumeType: resume?.type,
+      resumeSize: resume?.size,
+      resumeLastModified: resume?.lastModified,
+      avatar,
+      channels,
+      onsite: object.onsite,
+      remote: object.remote,
+      skills
+    }
+
+    return newDraft
+  }
+
+  async function isDraftEmpty (draft: Data<CandidateDraft>): Promise<boolean> {
+    const emptyDraft: Partial<CandidateDraft> = {
+      firstName: '',
+      lastName: '',
+      title: '',
+      city: '',
+      resumeUuid: undefined,
+      resumeName: undefined,
+      resumeType: undefined,
+      resumeSize: undefined,
+      resumeLastModified: undefined,
+      avatar: undefined,
+      channels: [],
+      onsite: undefined,
+      remote: undefined,
+      skills: []
+    }
+
+    for (const key of Object.keys(emptyDraft)) {
+      if (!deepEqual((emptyDraft as any)[key], (draft as any)[key])) {
+        return false
+      }
+    }
+
+    return true
+  }
 
   async function createCandidate () {
     const candidate: Data<Person> = {
@@ -202,17 +322,11 @@
       })
     }
 
-    if (createMore) {
-      // Prepare for next
-      object = {} as Candidate
-      candidateId = generateId()
-      avatar = undefined
-      firstName = ''
-      lastName = ''
-      channels = []
-    } else {
+    if (!createMore) {
       dispatch('close', id)
     }
+    resetObject()
+    saveDraft()
   }
 
   function isUndef (value?: string): boolean {
@@ -327,6 +441,12 @@
     }
   }
 
+  async function deleteResume (): Promise<void> {
+    if (resume.uuid) {
+      await deleteFile(resume.uuid)
+    }
+  }
+
   async function createAttachment (file: File) {
     loading = true
     try {
@@ -398,6 +518,52 @@
   })
 
   const manager = createFocusManager()
+
+  function resetObject (): void {
+    object = emptyObject as Candidate
+    candidateId = generateId()
+    avatar = undefined
+    firstName = ''
+    lastName = ''
+    channels = []
+    skills = []
+    resume = {} as resumeFile
+  }
+
+  export async function onOutsideClick () {
+    saveDraft()
+
+    if (onDraftChanged) {
+      return onDraftChanged()
+    }
+  }
+
+  async function showConfirmationDialog () {
+    const newDraft = createDraftFromObject()
+    const isFormEmpty = await isDraftEmpty(newDraft)
+
+    if (isFormEmpty) {
+      console.log('isFormEmpty')
+      dispatch('close')
+    } else {
+      showPopup(
+        MessageBox,
+        {
+          label: recruit.string.CreateTalentDialogClose,
+          message: recruit.string.CreateTalentDialogCloseNote
+        },
+        'top',
+        (result?: boolean) => {
+          if (result === true) {
+            dispatch('close')
+            deleteResume()
+            resetObject()
+            saveDraft()
+          }
+        }
+      )
+    }
+  }
 </script>
 
 <FocusHandler {manager} />
@@ -409,6 +575,7 @@
   on:close={() => {
     dispatch('close')
   }}
+  onCancel={showConfirmationDialog}
   bind:createMore
 >
   <svelte:fragment slot="header">

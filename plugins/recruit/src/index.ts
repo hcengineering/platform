@@ -14,12 +14,13 @@
 //
 
 import { Event } from '@hcengineering/calendar'
-import type { Organization, Person } from '@hcengineering/contact'
-import type { AttachedDoc, Class, Doc, Mixin, Ref, Space, Timestamp } from '@hcengineering/core'
+import type { Channel, Organization, Person } from '@hcengineering/contact'
+import type { AttachedData, AttachedDoc, Class, Doc, Mixin, Ref, Space, Timestamp } from '@hcengineering/core'
 import type { Asset, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { KanbanTemplateSpace, SpaceWithStates, Task } from '@hcengineering/task'
 import { AnyComponent } from '@hcengineering/ui'
+import { TagReference } from '@hcengineering/tags'
 
 /**
  * @public
@@ -56,6 +57,27 @@ export interface Candidate extends Person {
   source?: string
   skills?: number
   reviews?: number
+}
+
+/**
+ * @public
+ */
+export interface CandidateDraft extends Doc {
+  candidateId: Ref<Candidate>
+  firstName?: string
+  lastName?: string
+  title?: string
+  city: string
+  resumeUuid?: string
+  resumeName?: string
+  resumeSize?: number
+  resumeType?: string
+  resumeLastModified?: number
+  avatar?: File | undefined
+  channels: AttachedData<Channel>[]
+  onsite?: boolean
+  remote?: boolean
+  skills: TagReference[]
 }
 
 /**

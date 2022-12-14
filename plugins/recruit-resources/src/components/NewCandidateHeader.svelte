@@ -13,12 +13,19 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { isUserDraftExists } from '@hcengineering/presentation'
   import { Button, showPopup } from '@hcengineering/ui'
   import recruit from '../plugin'
   import CreateCandidate from './CreateCandidate.svelte'
 
-  async function newIssue (): Promise<void> {
-    showPopup(CreateCandidate, {}, 'top')
+  let draftExists: boolean = isUserDraftExists(recruit.mixin.Candidate)
+
+  const handleDraftChanged = () => {
+    draftExists = isUserDraftExists(recruit.mixin.Candidate)
+  }
+
+  async function newCandidate (): Promise<void> {
+    showPopup(CreateCandidate, { shouldSaveDraft: true, onDraftChanged: handleDraftChanged }, 'top')
   }
 </script>
 
@@ -26,10 +33,29 @@
   <div class="flex-grow text-md">
     <Button
       icon={recruit.icon.CreateCandidate}
-      label={recruit.string.CreateTalent}
+      label={draftExists ? recruit.string.ResumeDraft : recruit.string.CreateTalent}
       justify={'left'}
       width={'100%'}
-      on:click={newIssue}
-    />
+      on:click={newCandidate}
+    >
+      <div slot="content" class="draft-circle-container">
+        {#if draftExists}
+          <div class="draft-circle" />
+        {/if}
+      </div>
+    </Button>
   </div>
 </div>
+
+<style lang="scss">
+  .draft-circle-container {
+    margin-left: auto;
+  }
+
+  .draft-circle {
+    height: 6px;
+    width: 6px;
+    background-color: var(--primary-bg-color);
+    border-radius: 50%;
+  }
+</style>

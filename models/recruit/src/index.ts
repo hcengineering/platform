@@ -224,7 +224,8 @@ export function createModel (builder: Builder): void {
               icon: contact.icon.Person,
               label: recruit.string.Talents,
               createLabel: recruit.string.TalentCreateLabel,
-              createComponent: recruit.component.CreateCandidate
+              createComponent: recruit.component.CreateCandidate,
+              createComponentProps: { shouldSaveDraft: true }
             },
             position: 'vacancy'
           },
