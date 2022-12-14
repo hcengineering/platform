@@ -29,14 +29,18 @@
 
   export let workspaces: Workspace[]
 
+  let _workspaces: Workspace[] = []
+
   onMount(() => {
     if (workspaces.length === 0) {
-      getWorkspaces().then((ws: Workspace[]) => (workspaces = ws))
+      getWorkspaces().then((ws: Workspace[]) => (_workspaces = ws))
+    } else {
+      _workspaces = workspaces
     }
   })
 
   $: actions = [
-    ...workspaces.map((w) => ({
+    ..._workspaces.map((w) => ({
       label: getEmbeddedLabel(w.workspace),
       action: async () => {
         const loginInfo = (await selectWorkspace(w.workspace))[1]
