@@ -13,12 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Asset } from '@hcengineering/platform'
   import { TagElement } from '@hcengineering/tags'
-  import { eventToHTMLElement, showPopup } from '@hcengineering/ui'
+  import { AnySvelteComponent, eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import EditTagElement from './EditTagElement.svelte'
   import TagItem from './TagItem.svelte'
 
   export let value: TagElement
+  export let action: Asset | AnySvelteComponent | undefined = undefined
   export let edit: boolean = false
   export let keyTitle: string = ''
 </script>
@@ -31,9 +33,9 @@
         showPopup(EditTagElement, { value, keyTitle }, eventToHTMLElement(evt))
       }}
     >
-      <TagItem element={value} />
+      <TagItem element={value} {action} on:action />
     </div>
   {:else}
-    <TagItem element={value} />
+    <TagItem element={value} {action} on:action />
   {/if}
 {/if}

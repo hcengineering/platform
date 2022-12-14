@@ -19,7 +19,6 @@ import { Filter } from '@hcengineering/view'
 
 export default mergeIds(tagsId, tags, {
   component: {
-    TagElementPresenter: '' as AnyComponent,
     CategoryPresenter: '' as AnyComponent,
     TagElementCountPresenter: '' as AnyComponent
   },
