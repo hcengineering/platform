@@ -357,11 +357,11 @@
       return false
     }
 
-    if ((draft.project) && (draft.project !== defaultIssue.project)) {
+    if (draft.project && draft.project !== defaultIssue.project) {
       return false
     }
-    
-    if ((draft.sprint) && (draft.sprint !== defaultIssue.sprint)) {
+
+    if (draft.sprint && draft.sprint !== defaultIssue.sprint) {
       return false
     }
 
