@@ -30,12 +30,14 @@ a {
   }
   &:visited { color: var(--theme-caption-color); }
 
+  &.stealth,
+  &.no-underline {
+    &:hover, &:active { text-decoration: none; }
+  }
   &.stealth {
     display: inline-flex;
     align-items: center;
     width: 100%;
-
-    &:hover, &:active { text-decoration: none; }
   }
 }
 button {
