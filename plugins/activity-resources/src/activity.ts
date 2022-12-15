@@ -267,7 +267,7 @@ class ActivityImpl implements Activity {
       return false
     }
     const tx = TxProcessor.extractTx(cltx)
-    if ([core.class.TxCreateDoc, core.class.TxRemoveDoc].includes(tx._class)) return true
+    if ([core.class.TxCreateDoc, core.class.TxUpdateDoc, core.class.TxRemoveDoc].includes(tx._class)) return true
     return false
   }
 
