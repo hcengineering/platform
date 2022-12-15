@@ -49,6 +49,7 @@
         items[index].state = 'opened'
         attachments[index].setEditable(true)
         attachments[index].setContent(cont)
+        items[index].content = cont
         attachments[index].focus()
         break
     }

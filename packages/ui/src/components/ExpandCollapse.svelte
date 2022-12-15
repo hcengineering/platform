@@ -31,7 +31,7 @@
   $: tweenedHeight.set(isExpanded ? height : 0, { duration, easing })
 </script>
 
-<div class="root" style="height: {$tweenedHeight}px">
+<div class="root" style="height: {$tweenedHeight}px" style:overflow={isExpanded ? 'visible' : 'hidden'}>
   <div bind:offsetHeight={height} class="flex-no-shrink clear-mins">
     <slot />
   </div>
@@ -39,8 +39,14 @@
 
 <style lang="scss">
   .root {
-    overflow: hidden;
     min-height: 0;
     flex-shrink: 0;
+
+    &::-webkit-scrollbar:vertical {
+      width: 0;
+    }
+    &::-webkit-scrollbar:horizontal {
+      height: 0;
+    }
   }
 </style>

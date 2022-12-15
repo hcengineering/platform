@@ -122,7 +122,7 @@
     <Button {focusIndex} width={width ?? 'min-content'} {size} {kind} {justify} {showTooltip} on:click={_click}>
       <span slot="content" class="overflow-label flex-grow" class:flex-between={showNavigate && selected}>
         <div
-          class="disabled"
+          class="disabled flex-row-center"
           style:width={showNavigate && selected
             ? `calc(${width ?? 'min-content'} - 1.5rem)`
             : `${width ?? 'min-content'}`}
