@@ -340,8 +340,6 @@
       labels: [],
       parentIssue: undefined,
       priority: 0,
-      project: null,
-      sprint: null,
       subIssues: [],
       template: undefined,
       title: ''
@@ -356,6 +354,14 @@
     const attachmentResult = await client.findOne(attachment.class.Attachment, { attachedTo: objectId })
 
     if (attachmentResult) {
+      return false
+    }
+
+    if ((draft.project) && (draft.project !== defaultIssue.project)) {
+      return false
+    }
+    
+    if ((draft.sprint) && (draft.sprint !== defaultIssue.sprint)) {
       return false
     }
 
