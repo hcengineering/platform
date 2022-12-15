@@ -70,7 +70,7 @@
   import view from '@hcengineering/view'
   import { ObjectBox } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
-  import { activeProject, activeSprint, updateIssueRelation } from '../issues'
+  import { activeProject, activeSprint, generateIssueShortLink, getIssueId, updateIssueRelation } from '../issues'
   import tracker from '../plugin'
   import AssigneeEditor from './issues/AssigneeEditor.svelte'
   import ParentIssue from './issues/ParentIssue.svelte'
@@ -549,7 +549,8 @@
 
     addNotification(tracker.string.IssueCreated, getTitle(object.title), IssueNotification, {
       issueId: objectId,
-      subTitlePostfix: (await translate(tracker.string.Created, { value: 1 })).toLowerCase()
+      subTitlePostfix: (await translate(tracker.string.Created, { value: 1 })).toLowerCase(),
+      issueUrl: currentTeam && generateIssueShortLink(getIssueId(currentTeam, value as Issue))
     })
 
     objectId = generateId()

@@ -11,7 +11,7 @@
     Label,
     showPanel
   } from '@hcengineering/ui'
-  import { createQuery } from '@hcengineering/presentation'
+  import { copyTextToClipboard, createQuery } from '@hcengineering/presentation'
   import { Issue, IssueStatus } from '@hcengineering/tracker'
 
   import IssueStatusIcon from './IssueStatusIcon.svelte'
@@ -79,6 +79,11 @@
 
     onRemove()
   }
+  const handleCopyUrl = () => {
+    if (issue) {
+      copyTextToClipboard(params?.issueUrl)
+    }
+  }
 </script>
 
 <div class="root" in:fade out:fade>
@@ -104,8 +109,18 @@
         </div>
       </div>
     </div>
-    <div class="view-issue-button">
-      <Button label={tracker.string.ViewIssue} kind="link" size="medium" on:click={handleIssueOpened} />
+    <div class="row">
+      <div class="view-issue-button">
+        <Button label={tracker.string.ViewIssue} kind="link" size="medium" on:click={handleIssueOpened} />
+      </div>
+      <div class="copy-link-button">
+        <Button
+          icon={tracker.icon.CopyURL}
+          kind={'link'}
+          label={tracker.string.CopyIssueUrl}
+          on:click={handleCopyUrl}
+        />
+      </div>
     </div>
   </div>
 
@@ -150,6 +165,11 @@
   .view-issue-button {
     margin-top: 10px;
     margin-left: -5px;
+  }
+
+  .copy-link-button {
+    margin-top: 10px;
+    margin-left: 5px;
   }
 
   .title {
