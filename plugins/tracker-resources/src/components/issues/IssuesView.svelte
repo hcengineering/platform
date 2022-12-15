@@ -3,13 +3,14 @@
   import { IntlString, translate } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { Issue } from '@hcengineering/tracker'
-  import { Button, IconDetails, IconDetailsFilled } from '@hcengineering/ui'
+  import { Button, IconDetails, IconDetailsFilled, location } from '@hcengineering/ui'
   import view, { Viewlet } from '@hcengineering/view'
   import { FilterBar, ViewOptionModel, ViewOptionsButton, getActiveViewletId } from '@hcengineering/view-resources'
   import IssuesContent from './IssuesContent.svelte'
   import IssuesHeader from './IssuesHeader.svelte'
   import { getDefaultViewOptionsConfig } from '../../utils'
   import tracker from '../../plugin'
+  import { onDestroy } from 'svelte'
 
   export let query: DocumentQuery<Issue> = {}
   export let title: IntlString | undefined = undefined
@@ -63,6 +64,12 @@
   let docSize: boolean = false
   $: if (docWidth <= 900 && !docSize) docSize = true
   $: if (docWidth > 900 && docSize) docSize = false
+
+  onDestroy(
+    location.subscribe(() => {
+      viewOptionsConfig = viewOptionsConfig
+    })
+  )
 </script>
 
 <IssuesHeader {viewlets} {label} bind:viewlet bind:search showLabelSelector={$$slots.label_selector}>
