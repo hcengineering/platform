@@ -277,7 +277,6 @@ export async function selectWorkspace (workspace: string): Promise<[Status, Work
 }
 
 export function setLoginInfo (loginInfo: WorkspaceLoginInfo): void {
-  setMetadata(login.metadata.LoginToken, loginInfo.token)
   const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
   tokens[loginInfo.workspace] = loginInfo.token
 
@@ -290,6 +289,7 @@ export function navigateToWorkspace (workspace: string, loginInfo?: WorkspaceLog
   if (loginInfo == null) {
     return
   }
+  setMetadata(login.metadata.LoginToken, loginInfo.token)
   setLoginInfo(loginInfo)
 
   if (navigateUrl !== undefined) {

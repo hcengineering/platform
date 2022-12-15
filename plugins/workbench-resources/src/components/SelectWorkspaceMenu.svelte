@@ -15,32 +15,17 @@
 <script lang="ts">
   import login from '@hcengineering/login'
   import {
-    getWorkspaces,
-    selectWorkspace,
-    Workspace,
-    navigateToWorkspace,
-    setLoginInfo
+    navigateToWorkspace, selectWorkspace, setLoginInfo, Workspace
   } from '@hcengineering/login-resources'
   import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { navigate, Menu, locationToUrl } from '@hcengineering/ui'
+  import { Loading, locationToUrl, Menu, navigate } from '@hcengineering/ui'
   import { workbenchId } from '@hcengineering/workbench'
-  import { onMount } from 'svelte'
   import workbench from '../plugin'
 
   export let workspaces: Workspace[]
 
-  let _workspaces: Workspace[] = []
-
-  onMount(() => {
-    if (workspaces.length === 0) {
-      getWorkspaces().then((ws: Workspace[]) => (_workspaces = ws))
-    } else {
-      _workspaces = workspaces
-    }
-  })
-
   $: actions = [
-    ..._workspaces.map((w) => ({
+    ...workspaces.map((w) => ({
       label: getEmbeddedLabel(w.workspace),
       action: async () => {
         const loginInfo = (await selectWorkspace(w.workspace))[1]
@@ -76,4 +61,8 @@
   ]
 </script>
 
-<Menu {actions} on:close />
+{#if workspaces.length}
+  <Menu {actions} on:close />
+{:else}
+  <Loading />
+{/if}
