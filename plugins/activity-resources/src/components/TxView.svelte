@@ -56,9 +56,11 @@
   let edit = false
 
   $: if (tx.tx._id !== ptx?.tx._id) {
+    if (tx.tx.modifiedBy !== employee?._id) {
+      employee = undefined
+    }
     viewlet = undefined
     props = undefined
-    employee = undefined
     model = []
     ptx = tx
   }
