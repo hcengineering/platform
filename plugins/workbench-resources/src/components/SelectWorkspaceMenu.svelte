@@ -14,9 +14,7 @@
 -->
 <script lang="ts">
   import login from '@hcengineering/login'
-  import {
-    navigateToWorkspace, selectWorkspace, setLoginInfo, Workspace
-  } from '@hcengineering/login-resources'
+  import { navigateToWorkspace, selectWorkspace, setLoginInfo, Workspace } from '@hcengineering/login-resources'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { Loading, locationToUrl, Menu, navigate } from '@hcengineering/ui'
   import { workbenchId } from '@hcengineering/workbench'
