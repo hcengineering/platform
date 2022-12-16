@@ -26,6 +26,7 @@
   export let placeholder: IntlString = plugin.string.EditBoxPlaceholder
   export let placeholderParam: any | undefined = undefined
   export let noFocusBorder: boolean = false
+  export let disabled: boolean = false
 
   let input: HTMLTextAreaElement
   let phTraslate: string = ''
@@ -47,7 +48,7 @@
 
 <div class="textarea" class:no-focus-border={noFocusBorder} style:width style:height>
   {#if label}<div class="label"><Label {label} /></div>{/if}
-  <textarea bind:value bind:this={input} on:keydown={onKeydown} placeholder={phTraslate} />
+  <textarea bind:value bind:this={input} on:keydown={onKeydown} {disabled} placeholder={phTraslate} />
 </div>
 
 <style lang="scss">
