@@ -517,8 +517,13 @@ class TServerStorage implements ServerStorage {
           ;({ passed, onEnd } = await this.verifyApplyIf(ctx, applyIf))
           result = passed
           if (passed) {
-            // Store apply if transaction
-            await ctx.with('domain-tx', { _class, objClass }, async () => await this.getAdapter(DOMAIN_TX).tx(tx))
+            // Store apply if transaction's
+            await ctx.with('domain-tx', { _class, objClass }, async () => {
+              const atx = await this.getAdapter(DOMAIN_TX)
+              for (const ctx of applyIf.txes) {
+                await atx.tx(ctx)
+              }
+            })
             derived = await this.processDerivedTxes(applyIf.txes, ctx, triggerFx)
           }
         } else {

@@ -139,6 +139,10 @@
     height: auto;
     max-width: 60rem;
     max-height: inherit;
+    &.full {
+      width: max-content;
+      // max-width: 100%;
+    }
   }
   &.mobile {
     width: 90vw;

@@ -66,6 +66,7 @@
     "ShowAttribute": "Show attribute",
     "HideAttribute": "Hide attribute",
     "Visibility": "Visibility",
-    "Hidden": "Hidden"
+    "Hidden": "Hidden",
+    "Configure": "Configure"
   }
 }

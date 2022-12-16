@@ -59,6 +59,7 @@ import { createModel as preferenceModel } from '@hcengineering/model-preference'
 import { createModel as hrModel } from '@hcengineering/model-hr'
 import { createModel as serverHrModel } from '@hcengineering/model-server-hr'
 import { createModel as documentModel } from '@hcengineering/model-document'
+import { createModel as bitrixModel } from '@hcengineering/model-bitrix'
 
 export const version: Data<Version> = jsonVersion as Data<Version>
 
@@ -90,6 +91,7 @@ const builders: [(b: Builder) => void, string][] = [
   [trackerModel, 'tracker'],
   [boardModel, 'board'],
   [calendarModel, 'calendar'],
+  [bitrixModel, 'bitrix'],
 
   [serverCoreModel, 'server-core'],
   [serverAttachmentModel, 'server-attachment'],

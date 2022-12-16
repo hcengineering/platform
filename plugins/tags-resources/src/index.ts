@@ -34,7 +34,9 @@ import CreateTagElement from './components/CreateTagElement.svelte'
 import { ObjQueryType } from '@hcengineering/core'
 import { getRefs } from './utils'
 import { Filter } from '@hcengineering/view'
+import WeightPopup from './components/WeightPopup.svelte'
 
+export { WeightPopup }
 export async function tagsInResult (filter: Filter, onUpdate: () => void): Promise<ObjQueryType<any>> {
   const result = await getRefs(filter, onUpdate)
   return { $in: result }

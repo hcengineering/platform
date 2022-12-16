@@ -36,6 +36,7 @@
   export let focus: boolean = false
   export let focusable: boolean = false
   export let disabled: boolean = false
+  export let fullSize = false
 
   const dispatch = createEventDispatcher()
 
@@ -74,7 +75,7 @@
     } else if (kind === 'underline') {
       target.style.width = `calc(${text.clientWidth}px + 1.125rem)`
     } else {
-      target.style.width = text.clientWidth + 'px'
+      target.style.width = Math.max(text.clientWidth, 50) + 'px'
     }
     dispatch('input')
   }
@@ -118,7 +119,8 @@
 
 <div
   class="editbox-container"
-  class:w-full={focusable}
+  class:flex-grow={fullSize}
+  class:w-full={focusable || fullSize}
   on:click={() => {
     input.focus()
   }}

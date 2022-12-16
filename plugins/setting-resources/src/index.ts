@@ -36,12 +36,14 @@ import Terms from './components/Terms.svelte'
 import BooleanTypeEditor from './components/typeEditors/BooleanTypeEditor.svelte'
 import DateTypeEditor from './components/typeEditors/DateTypeEditor.svelte'
 import EnumTypeEditor from './components/typeEditors/EnumTypeEditor.svelte'
+import HyperlinkTypeEditor from './components/typeEditors/HyperlinkTypeEditor.svelte'
 import NumberTypeEditor from './components/typeEditors/NumberTypeEditor.svelte'
 import RefEditor from './components/typeEditors/RefEditor.svelte'
 import StringTypeEditor from './components/typeEditors/StringTypeEditor.svelte'
-import HyperlinkTypeEditor from './components/typeEditors/HyperlinkTypeEditor.svelte'
 import WorkspaceSettings from './components/WorkspaceSettings.svelte'
 import setting from './plugin'
+
+export { ClassSetting }
 
 async function DeleteMixin (object: Mixin<Class<Doc>>): Promise<void> {
   const docs = await getClient().findAll(object._id, {}, { limit: 1 })

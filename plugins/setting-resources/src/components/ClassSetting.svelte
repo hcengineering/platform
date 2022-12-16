@@ -13,20 +13,32 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Class, Doc, Ref } from '@hcengineering/core'
+  import core, { Class, Doc, Obj, Ref } from '@hcengineering/core'
+  import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { getCurrentLocation, Icon, Label, navigate } from '@hcengineering/ui'
+  import { AnySvelteComponent, getCurrentLocation, Icon, Label, navigate } from '@hcengineering/ui'
   import setting from '../plugin'
+  import { filterDescendants } from '../utils'
   import ClassAttributes from './ClassAttributes.svelte'
   import ClassHierarchy from './ClassHierarchy.svelte'
+
+  export let ofClass: Ref<Class<Obj>> | undefined
+  export let attributeMapper:
+    | {
+        component: AnySvelteComponent
+        label: IntlString
+        props: Record<string, any>
+      }
+    | undefined
+  export let withoutHeader = false
 
   const loc = getCurrentLocation()
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  let _class: Ref<Class<Doc>> | undefined = loc.query?._class as Ref<Class<Doc>> | undefined
+  let _class: Ref<Class<Doc>> | undefined = ofClass ?? (loc.query?._class as Ref<Class<Doc>> | undefined)
 
-  $: if (_class !== undefined) {
+  $: if (_class !== undefined && ofClass === undefined) {
     const loc = getCurrentLocation()
     loc.query = undefined
     navigate(loc)
@@ -36,28 +48,24 @@
 
   let classes: Ref<Class<Doc>>[] = []
   clQuery.query(core.class.Class, {}, (res) => {
-    classes = res
-      .filter(
-        (p) =>
-          hierarchy.hasMixin(p, setting.mixin.Editable) &&
-          hierarchy.as(p, setting.mixin.Editable).value &&
-          !hierarchy.hasMixin(p, setting.mixin.UserMixin)
-      )
-      .map((p) => p._id)
+    classes = filterDescendants(hierarchy, ofClass, res)
   })
 </script>
 
 <div class="antiComponent">
-  <div class="ac-header short divide">
-    <div class="ac-header__icon"><Icon icon={setting.icon.Clazz} size={'medium'} /></div>
-    <div class="ac-header__title"><Label label={setting.string.ClassSetting} /></div>
-  </div>
+  {#if !withoutHeader}
+    <div class="ac-header short divide">
+      <div class="ac-header__icon"><Icon icon={setting.icon.Clazz} size={'medium'} /></div>
+      <div class="ac-header__title"><Label label={setting.string.ClassSetting} /></div>
+    </div>
+  {/if}
   <div class="ac-body columns hScroll">
     <div class="ac-column">
       <div class="overflow-y-auto">
         <ClassHierarchy
           {classes}
           {_class}
+          {ofClass}
           on:select={(e) => {
             _class = e.detail
           }}
@@ -66,7 +74,7 @@
     </div>
     <div class="ac-column max">
       {#if _class !== undefined}
-        <ClassAttributes {_class} />
+        <ClassAttributes {_class} {ofClass} {attributeMapper} />
       {/if}
     </div>
   </div>

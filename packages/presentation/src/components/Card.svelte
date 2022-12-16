@@ -27,6 +27,7 @@
   export let createMore: boolean | undefined = undefined
   export let okLabel: IntlString = presentation.string.Create
   export let onCancel: Function | undefined = undefined
+  export let fullSize = false
 
   const dispatch = createEventDispatcher()
 
@@ -36,6 +37,7 @@
 <form
   id={label}
   class="antiCard {$deviceInfo.isMobile ? 'mobile' : 'dialog'}"
+  class:full={fullSize}
   on:submit|preventDefault={() => {}}
   use:resizeObserver={() => {
     dispatch('changeContent')

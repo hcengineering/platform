@@ -16,7 +16,7 @@
    * path segment in the "$schema" field for all your Rush config files.  This will ensure
    * correct error-underlining and tab-completion for editors such as VS Code.
    */
-  "rushVersion": "5.78.0",
+  "rushVersion": "5.86.0",
 
   /**
    * The next field selects which package manager should be installed and determines its version.
@@ -176,7 +176,7 @@
    * and set projectFolderMaxDepth to a large number.
    */
   // "projectFolderMinDepth": 2,
-  // "projectFolderMaxDepth": 2,
+  "projectFolderMaxDepth": 3,
 
   /**
    * Today the npmjs.com registry enforces fairly strict naming rules for packages, but in the early
@@ -1413,6 +1413,27 @@
       "packageName": "@hcengineering/minio",
       "projectFolder": "server/minio",
       "shouldPublish": true
-    }  
+    },
+
+    {
+      "packageName": "@hcengineering/bitrix",
+      "projectFolder": "plugins/bitrix",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/bitrix-assets",
+      "projectFolder": "plugins/bitrix-assets",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/bitrix-resources",
+      "projectFolder": "plugins/bitrix-resources",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/model-bitrix",
+      "projectFolder": "models/bitrix",
+      "shouldPublish": true
+    },    
   ]
 }

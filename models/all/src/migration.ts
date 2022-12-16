@@ -35,6 +35,7 @@ import { boardOperation } from '@hcengineering/model-board'
 import { demoOperation } from '@hcengineering/model-demo'
 import { hrOperation } from '@hcengineering/model-hr'
 import { documentOperation } from '@hcengineering/model-document'
+import { bitrixOperation } from '@hcengineering/model-bitrix'
 
 export const migrateOperations: MigrateOperation[] = [
   coreOperation,
@@ -56,5 +57,6 @@ export const migrateOperations: MigrateOperation[] = [
   trackerOperation,
   boardOperation,
   hrOperation,
-  documentOperation
+  documentOperation,
+  bitrixOperation
 ]

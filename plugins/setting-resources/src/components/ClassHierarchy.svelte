@@ -22,6 +22,7 @@
 
   export let classes: Ref<Class<Doc>>[] = ['contact:class:Contact' as Ref<Class<Doc>>]
   export let _class: Ref<Class<Doc>> | undefined
+  export let ofClass: Ref<Class<Doc>> | undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -30,12 +31,16 @@
   function getDescendants (_class: Ref<Class<Doc>>): Ref<Class<Doc>>[] {
     const result: Ref<Class<Doc>>[] = []
     const desc = hierarchy.getDescendants(_class)
+    const vars = [ClassifierKind.MIXIN]
+    if (ofClass === undefined) {
+      vars.push(ClassifierKind.CLASS)
+    }
     for (const clazz of desc) {
       const cls = hierarchy.getClass(clazz)
       if (
         cls.extends === _class &&
         !cls.hidden &&
-        [ClassifierKind.CLASS, ClassifierKind.MIXIN].includes(cls.kind) &&
+        vars.includes(cls.kind) &&
         cls.label !== undefined &&
         (!hierarchy.hasMixin(cls, settings.mixin.Editable) || hierarchy.as(cls, settings.mixin.Editable).value)
       ) {

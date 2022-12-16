@@ -13,25 +13,30 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Button, Component, eventToHTMLElement, Label, Link } from '@hcengineering/ui'
-  import { getResource } from '@hcengineering/platform'
-  import { showPopup } from '@hcengineering/ui'
-  import type { Integration, IntegrationType } from '@hcengineering/setting'
-  import setting from '../plugin'
-  import { getClient } from '@hcengineering/presentation'
   import { getCurrentAccount, Ref, Space } from '@hcengineering/core'
+  import { getResource } from '@hcengineering/platform'
+  import { getClient } from '@hcengineering/presentation'
+  import type { Integration, IntegrationType } from '@hcengineering/setting'
+  import {
+    AnyComponent,
+    Button,
+    Component,
+    eventToHTMLElement,
+    Label,
+    PopupPosAlignment,
+    showPopup
+  } from '@hcengineering/ui'
+  import setting from '../plugin'
 
   export let integrationType: IntegrationType
   export let integration: Integration | undefined
   const accountId = getCurrentAccount()._id
   const client = getClient()
-  const onDisconnectP = getResource(integrationType.onDisconnect)
   const space = accountId as string as Ref<Space>
 
   async function close (res: any): Promise<void> {
-    if (res?.value) {
-      await client.createDoc(setting.class.Integration, space, {
-        type: integrationType._id,
+    if (res?.value && integration !== undefined) {
+      await client.update(integration, {
         value: res.value,
         disabled: false
       })
@@ -52,18 +57,28 @@
   }
 
   async function disconnect (): Promise<void> {
-    if (integration !== undefined) {
-      await (
-        await onDisconnectP
-      )()
+    if (integration !== undefined && integrationType.onDisconnect !== undefined) {
+      const disconnect = await getResource(integrationType.onDisconnect)
+      await disconnect()
     }
   }
-  const handleAdd = (e: any) => {
-    showPopup(integrationType.createComponent, {}, eventToHTMLElement(e), close)
+  const handleConfigure = async (e: any, component?: AnyComponent, pos?: PopupPosAlignment): Promise<void> => {
+    if (component === undefined) {
+      return
+    }
+    if (integration === undefined) {
+      const id = await client.createDoc(setting.class.Integration, space, {
+        type: integrationType._id,
+        value: '',
+        disabled: false
+      })
+      integration = await client.findOne(setting.class.Integration, { _id: id })
+    }
+    showPopup(component, { integration }, pos ?? eventToHTMLElement(e), close)
   }
   const handleReconnect = (e: any) => {
     if (integrationType.reconnectComponent) {
-      showPopup(integrationType.reconnectComponent, {}, eventToHTMLElement(e), reconnect)
+      showPopup(integrationType.reconnectComponent, { integration }, eventToHTMLElement(e), reconnect)
     }
   }
 </script>
@@ -72,23 +87,34 @@
   <div class="flex-row-center header">
     <div class="icon mr-4"><Component is={integrationType.icon} /></div>
     <div class="flex-grow flex-col">
-      <div class="fs-title max-label overflow-label"><Label label={integrationType.label} /></div>
-      <div class="text-sm content-dark-color max-label overflow-label">
-        <Label label={integrationType.description} />
-      </div>
+      <div class="fs-title overflow-label"><Label label={integrationType.label} /></div>
     </div>
   </div>
-  <div class="content">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod temp</div>
+  <div class="content">
+    <Label label={integrationType.description} />
+  </div>
   <div class="footer">
-    {#if integration}
-      {#if integration.disabled && integrationType.reconnectComponent}
-        <Button label={setting.string.Reconnect} kind={'primary'} on:click={handleReconnect} />
-      {:else}
+    {#if (integration?.value ?? '') === ''}
+      {#if integrationType.createComponent}
+        <Button
+          label={setting.string.Add}
+          kind={'primary'}
+          on:click={(ev) => handleConfigure(ev, integrationType.createComponent)}
+        />
+      {/if}
+    {:else if (integration?.disabled ?? false) && integrationType.reconnectComponent}
+      <Button label={setting.string.Reconnect} kind={'primary'} on:click={handleReconnect} />
+    {:else if integration?.value !== ''}
+      {#if integrationType.onDisconnect}
         <Button label={setting.string.Disconnect} on:click={disconnect} />
       {/if}
-    {:else}
-      <Button label={setting.string.Add} kind={'primary'} on:click={handleAdd} />
-      <Link label={'Learn more'} />
+      {#if integrationType.configureComponent !== undefined}
+        <Button
+          label={setting.string.Configure}
+          kind={'primary'}
+          on:click={(ev) => handleConfigure(ev, integrationType.configureComponent, 'top')}
+        />
+      {/if}
     {/if}
   </div>
 </div>
@@ -107,8 +133,8 @@
   }
   .icon {
     flex-shrink: 0;
-    width: 2.25rem;
-    height: 2.25rem;
+    min-width: 2.25rem;
+    min-height: 2.25rem;
   }
   .content {
     margin: 0 1.5rem 0.25rem;

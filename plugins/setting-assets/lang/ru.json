@@ -67,6 +67,7 @@
     "ShowAttribute": "Hide",
     "HideAttribute": "Show",
     "Visibility": "Видимость",
-    "Hidden": "Спрятанный"
+    "Hidden": "Спрятанный",
+    "Configure": "Настроить..."
   }
 }

@@ -14,7 +14,20 @@
 //
 
 import type { KeysByType } from 'simplytyped'
-import type { Account, Arr, AttachedDoc, Class, Data, Doc, Domain, Mixin, PropertyType, Ref, Space } from './classes'
+import type {
+  Account,
+  Arr,
+  AttachedDoc,
+  Class,
+  Data,
+  Doc,
+  Domain,
+  Mixin,
+  PropertyType,
+  Ref,
+  Space,
+  Timestamp
+} from './classes'
 import core from './component'
 import { setObjectValue } from './objvalue'
 import { _getOperator } from './operator'
@@ -398,7 +411,9 @@ export class TxFactory {
     _class: Ref<Class<T>>,
     space: Ref<Space>,
     attributes: Data<T>,
-    objectId?: Ref<T>
+    objectId?: Ref<T>,
+    modifiedOn?: Timestamp,
+    modifiedBy?: Ref<Account>
   ): TxCreateDoc<T> {
     return {
       _id: generateId(),
@@ -407,8 +422,8 @@ export class TxFactory {
       objectId: objectId ?? generateId(),
       objectClass: _class,
       objectSpace: space,
-      modifiedOn: Date.now(),
-      modifiedBy: this.account,
+      modifiedOn: modifiedOn ?? Date.now(),
+      modifiedBy: modifiedBy ?? this.account,
       attributes
     }
   }
@@ -418,7 +433,9 @@ export class TxFactory {
     objectId: Ref<T>,
     space: Ref<Space>,
     collection: string,
-    tx: TxCUD<P>
+    tx: TxCUD<P>,
+    modifiedOn?: Timestamp,
+    modifiedBy?: Ref<Account>
   ): TxCollectionCUD<T, P> {
     return {
       _id: generateId(),
@@ -427,8 +444,8 @@ export class TxFactory {
       objectId,
       objectClass: _class,
       objectSpace: space,
-      modifiedOn: Date.now(),
-      modifiedBy: this.account,
+      modifiedOn: modifiedOn ?? Date.now(),
+      modifiedBy: modifiedBy ?? this.account,
       collection,
       tx
     }
@@ -439,14 +456,16 @@ export class TxFactory {
     space: Ref<Space>,
     objectId: Ref<T>,
     operations: DocumentUpdate<T>,
-    retrieve?: boolean
+    retrieve?: boolean,
+    modifiedOn?: Timestamp,
+    modifiedBy?: Ref<Account>
   ): TxUpdateDoc<T> {
     return {
       _id: generateId(),
       _class: core.class.TxUpdateDoc,
       space: core.space.Tx,
-      modifiedBy: this.account,
-      modifiedOn: Date.now(),
+      modifiedBy: modifiedBy ?? this.account,
+      modifiedOn: modifiedOn ?? Date.now(),
       objectId,
       objectClass: _class,
       objectSpace: space,
@@ -455,13 +474,19 @@ export class TxFactory {
     }
   }
 
-  createTxRemoveDoc<T extends Doc>(_class: Ref<Class<T>>, space: Ref<Space>, objectId: Ref<T>): TxRemoveDoc<T> {
+  createTxRemoveDoc<T extends Doc>(
+    _class: Ref<Class<T>>,
+    space: Ref<Space>,
+    objectId: Ref<T>,
+    modifiedOn?: Timestamp,
+    modifiedBy?: Ref<Account>
+  ): TxRemoveDoc<T> {
     return {
       _id: generateId(),
       _class: core.class.TxRemoveDoc,
       space: core.space.Tx,
-      modifiedBy: this.account,
-      modifiedOn: Date.now(),
+      modifiedBy: modifiedBy ?? this.account,
+      modifiedOn: modifiedOn ?? Date.now(),
       objectId,
       objectClass: _class,
       objectSpace: space
@@ -473,14 +498,16 @@ export class TxFactory {
     objectClass: Ref<Class<D>>,
     objectSpace: Ref<Space>,
     mixin: Ref<Mixin<M>>,
-    attributes: MixinUpdate<D, M>
+    attributes: MixinUpdate<D, M>,
+    modifiedOn?: Timestamp,
+    modifiedBy?: Ref<Account>
   ): TxMixin<D, M> {
     return {
       _id: generateId(),
       _class: core.class.TxMixin,
       space: core.space.Tx,
-      modifiedBy: this.account,
-      modifiedOn: Date.now(),
+      modifiedBy: modifiedBy ?? this.account,
+      modifiedOn: modifiedOn ?? Date.now(),
       objectId,
       objectClass,
       objectSpace,
@@ -489,13 +516,20 @@ export class TxFactory {
     }
   }
 
-  createTxApplyIf (space: Ref<Space>, scope: string, match: DocumentClassQuery<Doc>[], txes: TxCUD<Doc>[]): TxApplyIf {
+  createTxApplyIf (
+    space: Ref<Space>,
+    scope: string,
+    match: DocumentClassQuery<Doc>[],
+    txes: TxCUD<Doc>[],
+    modifiedOn?: Timestamp,
+    modifiedBy?: Ref<Account>
+  ): TxApplyIf {
     return {
       _id: generateId(),
       _class: core.class.TxApplyIf,
       space: core.space.Tx,
-      modifiedBy: this.account,
-      modifiedOn: Date.now(),
+      modifiedBy: modifiedBy ?? this.account,
+      modifiedOn: modifiedOn ?? Date.now(),
       objectSpace: space,
       scope,
       match,

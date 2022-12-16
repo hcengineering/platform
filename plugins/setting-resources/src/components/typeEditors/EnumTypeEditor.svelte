@@ -23,14 +23,13 @@
 
   export let type: EnumOf | undefined
   export let editable: boolean = true
+  export let value: Enum | undefined
 
   const client = getClient()
   const dispatch = createEventDispatcher()
 
-  let value: Enum | undefined
-
   $: value && dispatch('change', { type: TypeEnum(value._id) })
-  $: ref = type?.of
+  $: ref = value?._id ?? type?.of
 
   const create = {
     label: setting.string.CreateEnum,

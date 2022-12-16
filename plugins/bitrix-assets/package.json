@@ -1,0 +1,35 @@
+{
+  "name": "@hcengineering/bitrix-assets",
+  "version": "0.6.0",
+  "main": "lib/index.js",
+  "author": "Anticrm Platform Contributors",
+  "template": "@hcengineering/assets-package",
+  "license": "EPL-2.0",
+  "scripts": {
+    "build": "heft build",
+    "test": "heft test",
+    "build:docs": "",
+    "lint": "eslint src",
+    "lint:fix": "eslint --fix src",
+    "format": "prettier --write src && eslint --fix src",
+    "build:watch": "tsc"
+  },
+  "devDependencies": {
+    "@hcengineering/platform-rig": "~0.6.0",
+    "@types/heft-jest": "^1.0.3",
+    "@typescript-eslint/eslint-plugin": "^5.41.0",
+    "@typescript-eslint/parser": "^5.41.0",
+    "eslint-config-standard-with-typescript": "^23.0.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-n": "^15.4.0",
+    "eslint-plugin-promise": "^6.1.1",
+    "eslint": "^8.26.0",
+    "prettier": "^2.7.1",
+    "@rushstack/heft": "^0.47.9",
+    "@types/node": "~16.11.12"
+  },
+  "dependencies": {
+    "@hcengineering/platform": "^0.6.8",
+    "@hcengineering/bitrix": "^0.6.0"
+  }
+}

@@ -214,13 +214,19 @@
         margin: 2.5rem;
       }
     }
+    &.vScroll {
+      overflow-y: auto;
+      &::-webkit-scrollbar-track {
+        margin: 2.5rem;
+      }
+    }
 
     .ac-column {
       display: flex;
       flex-direction: column;
       overflow-y: auto;
-      padding: 1.75rem 2.5rem;
-      min-width: 25rem;
+      padding: 0.75rem 0.5rem;
+      min-width: 15rem;
       max-width: 25rem;
       height: 100%;
       border-right: 1px solid var(--theme-menu-divider);

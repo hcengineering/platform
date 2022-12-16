@@ -40,6 +40,7 @@ const fs = __importStar(require("fs"));
 const install_run_1 = require("./install-run");
 const PACKAGE_NAME = '@microsoft/rush';
 const RUSH_PREVIEW_VERSION = 'RUSH_PREVIEW_VERSION';
+const INSTALL_RUN_RUSH_LOCKFILE_PATH_VARIABLE = 'INSTALL_RUN_RUSH_LOCKFILE_PATH';
 function _getRushVersion(logger) {
     const rushPreviewVersion = process.env[RUSH_PREVIEW_VERSION];
     if (rushPreviewVersion !== undefined) {
@@ -104,7 +105,11 @@ function _run() {
     (0, install_run_1.runWithErrorAndStatusCode)(logger, () => {
         const version = _getRushVersion(logger);
         logger.info(`The rush.json configuration requests Rush version ${version}`);
-        return (0, install_run_1.installAndRun)(logger, PACKAGE_NAME, version, bin, packageBinArgs);
+        const lockFilePath = process.env[INSTALL_RUN_RUSH_LOCKFILE_PATH_VARIABLE];
+        if (lockFilePath) {
+            logger.info(`Found ${INSTALL_RUN_RUSH_LOCKFILE_PATH_VARIABLE}="${lockFilePath}", installing with lockfile.`);
+        }
+        return (0, install_run_1.installAndRun)(logger, PACKAGE_NAME, version, bin, packageBinArgs, lockFilePath);
     });
 }
 _run();
