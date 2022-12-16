@@ -13,6 +13,7 @@
   export let height: string | undefined = undefined
   export let submitLabel: IntlString = ui.string.Save
   export let placeholder: IntlString | undefined = undefined
+  export let disabled: boolean = false
 
   const dispatch = createEventDispatcher()
   let isEditing = false
@@ -57,16 +58,19 @@
       {placeholder}
       {height}
       {width}
+      {disabled}
       bind:this={inputRef}
       bind:value
       on:keydown={onKeydown}
       noFocusBorder={true}
     />
   </div>
-  <div class="flex-row-center mt-3">
-    <Button label={submitLabel} kind="no-border" size="medium" on:click={submit} />
-    <div class="ml-2" on:click={cancel}>
-      <ActionIcon icon={IconClose} size="medium" action={cancel} />
+  {#if !disabled}
+    <div class="flex-row-center mt-3">
+      <Button label={submitLabel} kind="no-border" size="medium" on:click={submit} />
+      <div class="ml-2" on:click={cancel}>
+        <ActionIcon icon={IconClose} size="medium" action={cancel} />
+      </div>
     </div>
-  </div>
+  {/if}
 </div>
