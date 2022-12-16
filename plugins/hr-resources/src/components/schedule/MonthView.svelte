@@ -66,14 +66,22 @@
   }
 
   function createRequest (e: MouseEvent, date: Date, staff: Staff): void {
-    if (!isEditable(staff)) return
+    const readonly: boolean = teamLead !== currentEmployee
+    let editStaff: Staff | undefined = staff
+    if (readonly) {
+      editStaff = departmentStaff.find((p) => p._id === currentEmployee)
+      if (!editStaff) {
+        return
+      }
+    }
     e.preventDefault()
     e.stopPropagation()
     showPopup(
       CreateRequest,
       {
-        staff,
-        date
+        staff: editStaff,
+        date,
+        readonly
       },
       eventToHTMLElement(e)
     )

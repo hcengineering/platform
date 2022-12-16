@@ -17,6 +17,7 @@
     "Departments": "Departments",
     "ShowEmployees": "Show employees",
     "AddEmployee": "Add employee",
+    "SelectEmployee": "Select employee",
     "Schedule": "Schedule",
     "RequestType": "Type",
     "CreateRequest": "Create {type}",

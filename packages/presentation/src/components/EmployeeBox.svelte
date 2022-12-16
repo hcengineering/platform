@@ -39,6 +39,7 @@
   export let focusIndex = -1
   export let showTooltip: LabelAndProps | undefined = undefined
   export let showNavigate = true
+  export let readonly = false
 </script>
 
 <UserBox
@@ -58,5 +59,6 @@
   {focusIndex}
   {showTooltip}
   {showNavigate}
+  {readonly}
   on:change
 />

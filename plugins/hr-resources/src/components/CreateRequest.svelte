@@ -15,10 +15,11 @@
 <script lang="ts">
   import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
   import calendar from '@hcengineering/calendar'
+  import { Employee } from '@hcengineering/contact'
   import core, { generateId, Ref } from '@hcengineering/core'
   import { Request, RequestType, Staff } from '@hcengineering/hr'
   import { translate } from '@hcengineering/platform'
-  import { Card, createQuery, getClient } from '@hcengineering/presentation'
+  import { Card, createQuery, EmployeeBox, getClient } from '@hcengineering/presentation'
   import ui, { Button, DateRangePresenter, DropdownLabelsIntl, IconAttachment } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import hr from '../plugin'
@@ -26,7 +27,10 @@
 
   export let staff: Staff
   export let date: Date
+  export let readonly: boolean
+
   let description: string = ''
+  let employee: Ref<Employee> = staff._id
 
   const objectId: Ref<Request> = generateId()
   let descriptionBox: AttachmentStyledBox
@@ -59,7 +63,8 @@
     if (value != null) date = value
     if (date === undefined) return
     if (type === undefined) return
-    await client.addCollection(hr.class.Request, staff.department, staff._id, staff._class, 'requests', {
+    if (employee === null) return
+    await client.addCollection(hr.class.Request, staff.department, employee, staff._class, 'requests', {
       type: type._id,
       tzDate: toTzDate(new Date(date)),
       tzDueDate: toTzDate(new Date(dueDate)),
@@ -82,6 +87,15 @@
     dispatch('close')
   }}
 >
+  <svelte:fragment slot="header">
+    <EmployeeBox
+      label={hr.string.SelectEmployee}
+      placeholder={hr.string.SelectEmployee}
+      bind:value={employee}
+      {readonly}
+      showNavigate={false}
+    />
+  </svelte:fragment>
   <DropdownLabelsIntl
     items={types.map((p) => {
       return { id: p._id, label: p.label }

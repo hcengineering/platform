@@ -17,6 +17,7 @@
     "Departments": "Департаменты",
     "ShowEmployees": "Просмотреть сотрудников",
     "AddEmployee": "Добавить сотрудника",
+    "SelectEmployee": "Выберите сотрудника",
     "Schedule": "График",
     "RequestType": "Тип",
     "CreateRequest": "Создать {type}",

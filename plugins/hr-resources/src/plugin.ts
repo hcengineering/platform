@@ -25,6 +25,7 @@ export default mergeIds(hrId, hr, {
     CreateDepartmentLabel: '' as IntlString,
     DepartmentPlaceholder: '' as IntlString,
     TeamLead: '' as IntlString,
+    SelectEmployee: '' as IntlString,
     UnAssignLead: '' as IntlString,
     MemberCount: '' as IntlString,
     AssignLead: '' as IntlString,
