@@ -44,6 +44,7 @@ import type {
   ObjectTitle,
   ObjectValidator,
   PreviewPresenter,
+  ListItemPresenter,
   SpaceHeader,
   SpaceName,
   ViewAction,
@@ -130,6 +131,11 @@ export class TArrayEditor extends TClass implements ArrayEditor {
 
 @Mixin(view.mixin.AttributePresenter, core.class.Class)
 export class TAttributePresenter extends TClass implements AttributePresenter {
+  presenter!: AnyComponent
+}
+
+@Mixin(view.mixin.ListItemPresenter, core.class.Class)
+export class TListItemPresenter extends TClass implements ListItemPresenter {
   presenter!: AnyComponent
 }
 
@@ -269,6 +275,7 @@ export function createModel (builder: Builder): void {
     TAttributeFilter,
     TAttributeEditor,
     TAttributePresenter,
+    TListItemPresenter,
     TCollectionEditor,
     TCollectionPresenter,
     TObjectEditor,
