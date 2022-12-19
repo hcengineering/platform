@@ -35,11 +35,12 @@ import { createInMemoryTxAdapter } from '@hcengineering/dev-storage'
 import devmodel from '@hcengineering/devmodel'
 import { protoDeserialize, protoSerialize, setMetadata } from '@hcengineering/platform'
 import {
+  ContentTextAdapter,
   createInMemoryAdapter,
   createServerStorage,
   DbConfiguration,
-  FullTextAdapter,
-  IndexedDoc
+  DummyFullTextAdapter,
+  FullTextAdapter
 } from '@hcengineering/server-core'
 
 class ServerStorageWrapper implements ClientConnection {
@@ -81,26 +82,18 @@ class ServerStorageWrapper implements ClientConnection {
   async clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {}
 }
 
-class NullFullTextAdapter implements FullTextAdapter {
-  async index (doc: IndexedDoc): Promise<TxResult> {
-    return {}
-  }
-
-  async update (id: Ref<Doc>, update: Record<string, any>): Promise<TxResult> {
-    return {}
-  }
-
-  async search (query: any): Promise<IndexedDoc[]> {
-    return []
-  }
-
-  async remove (id: Ref<Doc>): Promise<void> {}
-
-  async close (): Promise<void> {}
-}
-
 async function createNullFullTextAdapter (): Promise<FullTextAdapter> {
-  return new NullFullTextAdapter()
+  return new DummyFullTextAdapter()
+}
+async function createNullContentTextAdapter (): Promise<ContentTextAdapter> {
+  return {
+    async fetch (name: string, type: string, doc) {
+      return ''
+    },
+    metrics () {
+      return new MeasureMetricsContext('', {})
+    }
+  }
 }
 
 export async function connect (handler: (tx: Tx) => void): Promise<ClientConnection> {
@@ -121,7 +114,13 @@ export async function connect (handler: (tx: Tx) => void): Promise<ClientConnect
     },
     fulltextAdapter: {
       factory: createNullFullTextAdapter,
-      url: ''
+      url: '',
+      metrics: new MeasureMetricsContext('', {})
+    },
+    contentAdapter: {
+      url: '',
+      factory: createNullContentTextAdapter,
+      metrics: new MeasureMetricsContext('', {})
     },
     workspace: getWorkspaceId('')
   }

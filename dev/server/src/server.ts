@@ -14,37 +14,28 @@
 // limitations under the License.
 //
 
-import { Doc, DOMAIN_TX, getWorkspaceId, MeasureMetricsContext, Ref, TxResult } from '@hcengineering/core'
+import { DOMAIN_TX, getWorkspaceId, MeasureMetricsContext } from '@hcengineering/core'
 import { createInMemoryTxAdapter } from '@hcengineering/dev-storage'
 import {
+  ContentTextAdapter,
   createInMemoryAdapter,
   createPipeline,
   DbConfiguration,
-  FullTextAdapter,
-  IndexedDoc
+  DummyFullTextAdapter,
+  FullTextAdapter
 } from '@hcengineering/server-core'
 import { ClientSession, start as startJsonRpc } from '@hcengineering/server-ws'
 
-class NullFullTextAdapter implements FullTextAdapter {
-  async index (doc: IndexedDoc): Promise<TxResult> {
-    return {}
-  }
-
-  async update (id: Ref<Doc>, update: Record<string, any>): Promise<TxResult> {
-    return {}
-  }
-
-  async search (query: any): Promise<IndexedDoc[]> {
-    return []
-  }
-
-  async remove (id: Ref<Doc>): Promise<void> {}
-
-  async close (): Promise<void> {}
-}
-
 async function createNullFullTextAdapter (): Promise<FullTextAdapter> {
-  return new NullFullTextAdapter()
+  return new DummyFullTextAdapter()
+}
+async function createNullContentTextAdapter (): Promise<ContentTextAdapter> {
+  return {
+    async fetch (name: string, type: string, doc) {
+      return ''
+    },
+    metrics: () => new MeasureMetricsContext('', {})
+  }
 }
 
 /**
@@ -71,11 +62,17 @@ export async function start (port: number, host?: string): Promise<void> {
         },
         fulltextAdapter: {
           factory: createNullFullTextAdapter,
-          url: ''
+          url: '',
+          metrics: new MeasureMetricsContext('', {})
+        },
+        contentAdapter: {
+          url: '',
+          factory: createNullContentTextAdapter,
+          metrics: new MeasureMetricsContext('', {})
         },
         workspace: getWorkspaceId('')
       }
-      return createPipeline(conf, [])
+      return createPipeline(conf, [], false)
     },
     (token, pipeline, broadcast) => new ClientSession(broadcast, token, pipeline),
     port,

@@ -225,7 +225,7 @@ export function createModel (builder: Builder): void {
               label: recruit.string.Talents,
               createLabel: recruit.string.TalentCreateLabel,
               createComponent: recruit.component.CreateCandidate,
-              createComponentProps: { shouldSaveDraft: true }
+              createComponentProps: { shouldSaveDraft: false }
             },
             position: 'vacancy'
           },

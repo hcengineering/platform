@@ -19,9 +19,9 @@ import { migrateOperations } from '@hcengineering/model-all'
 import { connect } from './connection'
 import clientPlugin from '@hcengineering/client'
 
+let client: Client
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => {
-  let client: Client
   return {
     function: {
       GetClient: async (): Promise<Client> => {

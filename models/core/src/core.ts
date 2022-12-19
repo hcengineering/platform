@@ -15,6 +15,7 @@
 
 import {
   Account,
+  AISearchContext,
   AnyAttribute,
   ArrOf,
   AttachedDoc,
@@ -23,8 +24,10 @@ import {
   ClassifierKind,
   Collection,
   Doc,
+  DocIndexState,
   Domain,
   DOMAIN_BLOB,
+  DOMAIN_DOC_INDEX_STATE,
   DOMAIN_FULLTEXT_BLOB,
   DOMAIN_MODEL,
   Enum,
@@ -51,7 +54,8 @@ import {
   TypeRef,
   TypeString,
   TypeTimestamp,
-  UX
+  UX,
+  Mixin as MMixin
 } from '@hcengineering/model'
 import type { IntlString } from '@hcengineering/platform'
 import core from './component'
@@ -143,6 +147,10 @@ export class TType extends TObj implements Type<any> {
 @Model(core.class.TypeString, core.class.Type)
 export class TTypeString extends TType {}
 
+@UX(core.string.String)
+@Model(core.class.TypeAttachment, core.class.Type)
+export class TTypeAttachment extends TType {}
+
 @UX(core.string.Hyperlink)
 @Model(core.class.TypeHyperlink, core.class.Type)
 export class TTypeHyperlink extends TType {}
@@ -224,4 +232,25 @@ export class TBlobData extends TDoc implements BlobData {
 @Model(core.class.FulltextData, core.class.Doc, DOMAIN_FULLTEXT_BLOB)
 export class TFulltextData extends TDoc implements FullTextData {
   data!: any
+}
+
+@Model(core.class.DocIndexState, core.class.Doc, DOMAIN_DOC_INDEX_STATE)
+export class TDocIndexState extends TDoc implements DocIndexState {
+  objectClass!: Ref<Class<Doc>>
+
+  attachedTo?: Ref<Doc>
+  attachedToClass?: Ref<Class<Doc>>
+
+  // Indexable attributes of document.
+  attributes!: Record<string, any>
+
+  removed!: boolean
+
+  // States for diffetent stages
+  stages!: Record<string, boolean>
+}
+
+@MMixin(core.mixin.AISearchContext, core.class.Class)
+export class TAISearchContext extends TClass implements AISearchContext {
+  index!: boolean
 }

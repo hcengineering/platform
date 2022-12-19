@@ -19,16 +19,20 @@ import {
   DOMAIN_MODEL,
   DOMAIN_TRANSIENT,
   DOMAIN_TX,
+  MeasureContext,
   WorkspaceId
 } from '@hcengineering/core'
 import { createElasticAdapter, createElasticBackupDataAdapter } from '@hcengineering/elastic'
 import { ModifiedMiddleware, PrivateMiddleware } from '@hcengineering/middleware'
+import { MinioService } from '@hcengineering/minio'
 import { createMongoAdapter, createMongoTxAdapter } from '@hcengineering/mongo'
+import { OpenAIEmbeddingsStage } from '@hcengineering/openai'
 import { addLocation } from '@hcengineering/platform'
 import {
   BackupClientSession,
   createMinioDataAdapter,
   createNullAdapter,
+  createRekoniAdapter,
   getMetricsContext,
   MinioConfig
 } from '@hcengineering/server'
@@ -40,6 +44,7 @@ import {
   createInMemoryAdapter,
   createPipeline,
   DbConfiguration,
+  FullTextPipelineStageFactory,
   MiddlewareCreator,
   Pipeline
 } from '@hcengineering/server-core'
@@ -49,15 +54,15 @@ import { serverInventoryId } from '@hcengineering/server-inventory'
 import { serverLeadId } from '@hcengineering/server-lead'
 import { serverNotificationId } from '@hcengineering/server-notification'
 import { serverRecruitId } from '@hcengineering/server-recruit'
+import { serverRequestId } from '@hcengineering/server-request'
 import { serverSettingId } from '@hcengineering/server-setting'
 import { serverTagsId } from '@hcengineering/server-tags'
 import { serverTaskId } from '@hcengineering/server-task'
-import { serverRequestId } from '@hcengineering/server-request'
 import { serverTelegramId } from '@hcengineering/server-telegram'
 import { Token } from '@hcengineering/server-token'
 import { serverTrackerId } from '@hcengineering/server-tracker'
 import { BroadcastCall, ClientSession, start as startJsonRpc } from '@hcengineering/server-ws'
-import { MinioService } from '@hcengineering/minio'
+import { LibRetranslateStage } from '@hcengineering/translate'
 
 /**
  * @public
@@ -66,10 +71,16 @@ export function start (
   dbUrl: string,
   fullTextUrl: string,
   minioConf: MinioConfig,
+  services: {
+    rekoniUrl: string
+    openAIToken?: string
+    retranslateUrl?: string
+    retranslateToken?: string
+  },
   port: number,
   productId: string,
   host?: string
-): () => void {
+): () => Promise<void> {
   addLocation(serverAttachmentId, () => import('@hcengineering/server-attachment-resources'))
   addLocation(serverContactId, () => import('@hcengineering/server-contact-resources'))
   addLocation(serverNotificationId, () => import('@hcengineering/server-notification-resources'))
@@ -89,9 +100,48 @@ export function start (
 
   const middlewares: MiddlewareCreator[] = [ModifiedMiddleware.create, PrivateMiddleware.create]
 
+  const fullText = getMetricsContext().newChild('fulltext', {})
+  function createIndexStages (fullText: MeasureContext, workspace: WorkspaceId): FullTextPipelineStageFactory[] {
+    const stages: FullTextPipelineStageFactory[] = []
+
+    if (services.retranslateUrl !== undefined && services.retranslateUrl !== '') {
+      // Add translation stage
+      stages.push((adapter, stages) => {
+        const stage = new LibRetranslateStage(
+          fullText.newChild('retranslate', {}),
+          services.retranslateUrl as string,
+          services.retranslateToken ?? '',
+          workspace
+        )
+        for (const st of stages) {
+          // Clear retranslation on content change.
+          st.updateFields.push((doc, upd, el) => stage.update(doc, upd, el))
+        }
+        return stage
+      })
+    }
+    if (services.openAIToken !== undefined) {
+      const token = services.openAIToken
+      stages.push((adapter, stages) => {
+        const stage = new OpenAIEmbeddingsStage(adapter, fullText.newChild('embeddings', {}), token, workspace)
+        for (const st of stages) {
+          // Clear embeddings in case of any changes.
+          st.updateFields.push((doc, upd, el) => stage.update(doc, upd, el))
+        }
+        // We depend on all available stages.
+        stage.require = stages.map((it) => it.stageId)
+
+        // Do not clear anything
+        stage.clearExcept = [...stages.map((it) => it.stageId), stage.stageId]
+        return stage
+      })
+    }
+    return stages
+  }
+
   return startJsonRpc(
     getMetricsContext(),
-    (workspace: WorkspaceId) => {
+    (workspace: WorkspaceId, upgrade: boolean) => {
       const conf: DbConfiguration = {
         domains: {
           [DOMAIN_TX]: 'MongoTx',
@@ -129,7 +179,14 @@ export function start (
         },
         fulltextAdapter: {
           factory: createElasticAdapter,
-          url: fullTextUrl
+          url: fullTextUrl,
+          metrics: fullText,
+          stages: createIndexStages(fullText, workspace)
+        },
+        contentAdapter: {
+          factory: createRekoniAdapter,
+          url: services.rekoniUrl,
+          metrics: getMetricsContext().newChild('content', {})
         },
         storageFactory: () =>
           new MinioService({
@@ -139,7 +196,7 @@ export function start (
           }),
         workspace
       }
-      return createPipeline(conf, middlewares)
+      return createPipeline(conf, middlewares, upgrade)
     },
     (token: Token, pipeline: Pipeline, broadcast: BroadcastCall) => {
       if (token.extra?.mode === 'backup') {

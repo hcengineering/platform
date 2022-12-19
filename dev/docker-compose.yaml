@@ -115,6 +115,7 @@ services:
       - mongodb
       - elastic
       - minio
+      - rekoni
       # - apm-server
     ports:
       - 3333:3333
@@ -126,8 +127,18 @@ services:
       - METRICS_CONSOLE=true
       - MINIO_ENDPOINT=minio
       - MINIO_ACCESS_KEY=minioadmin
-      - MINIO_SECRET_KEY=minioadmin  
+      - MINIO_SECRET_KEY=minioadmin
+      - REKONI_URL=http://rekoni:4004
       # - APM_SERVER_URL=http://apm-server:8200
+  rekoni:
+    image: hardcoreeng/rekoni-service
+    restart: on-failure
+    ports:
+      - 4004:4004
+    deploy:
+      resources:
+        limits:
+          memory: 1024M
   # apm-server:
   #   image: docker.elastic.co/apm/apm-server:7.14.2
   #   depends_on:

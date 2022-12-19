@@ -262,6 +262,12 @@ export const DOMAIN_BLOB = 'blob' as Domain
  */
 export const DOMAIN_FULLTEXT_BLOB = 'fulltext-blob' as Domain
 
+/**
+ * Special domain to access s3 blob data.
+ * @public
+ */
+export const DOMAIN_DOC_INDEX_STATE = 'doc-index-state' as Domain
+
 // S P A C E
 
 /**
@@ -325,6 +331,35 @@ export interface BlobData extends Doc {
  */
 export interface FullTextData extends Doc {
   data: any
+}
+
+/**
+ * @public
+ *
+ * Define status for full text indexing
+ */
+export interface DocIndexState extends Doc {
+  objectClass: Ref<Class<Doc>>
+
+  attachedTo?: Ref<Doc>
+  attachedToClass?: Ref<Class<Doc>>
+
+  // States for stages
+  stages: Record<string, boolean>
+
+  removed: boolean
+
+  // Indexable attributes, including child ones.
+  attributes: Record<string, any>
+}
+
+/**
+ * @public
+ *
+ * If defined for class, this class will be enabled for embedding search like openai.
+ */
+export interface AISearchContext extends Class<Doc> {
+  index: boolean
 }
 
 /**

@@ -19,13 +19,19 @@
         "MINIO_ENDPOINT": "localhost",
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
-        "SERVER_SECRET": "secret"
+        "SERVER_SECRET": "secret",
+        "REKONI_URL": "http://localhost:4004",
+        "OPENAI_TOKEN": "",
+        // "RETRANSLATE_URL": "http://127.0.0.1:4500",
+        //"RETRANSLATE_URL": "https://208.167.249.201",
+        // "RETRANSLATE_TOKEN": ""
       },
       "runtimeArgs": [
         "--nolazy",
         "-r",
         "ts-node/register"
       ],
+      "showAsyncStacks": true,
       "sourceMaps": true,
       "cwd": "${workspaceRoot}/pods/server",
       "protocol": "inspector"

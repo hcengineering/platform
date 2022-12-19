@@ -3,7 +3,7 @@ import { stringify as toQuery } from 'qs'
 import { BitrixResult } from './types'
 
 const queue = new PQueue({
-  intervalCap: 1,
+  intervalCap: 2,
   interval: 1000
 })
 export class BitrixClient {

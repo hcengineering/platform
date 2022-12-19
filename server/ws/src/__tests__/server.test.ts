@@ -56,7 +56,7 @@ describe('server', () => {
     return modelDb
   }
 
-  start(
+  const cancelOp = start(
     new MeasureMetricsContext('test', {}),
     async () => ({
       modelDb: await getModelDb(),
@@ -87,6 +87,10 @@ describe('server', () => {
     const token: string = generateToken('', getWorkspaceId('latest', ''))
     return new WebSocket(`ws://localhost:3335/${token}`)
   }
+
+  afterAll(async () => {
+    await cancelOp()
+  })
 
   it('should connect to server', (done) => {
     const conn = connect()

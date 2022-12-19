@@ -13,8 +13,9 @@
 // limitations under the License.
 //
 
-import type { Account, Doc, Ref } from './classes'
+import { Account, AnyAttribute, Class, Doc, DocIndexState, IndexKind, Obj, Ref } from './classes'
 import { FindResult } from './storage'
+import core from './component'
 
 function toHex (value: number, chars: number): string {
   const result = value.toString(16)
@@ -102,4 +103,73 @@ export function getWorkspaceId (workspace: string, productId: string = ''): Work
  */
 export function toWorkspaceString (id: WorkspaceId, sep = '@'): string {
   return id.name + (id.productId === '' ? '' : sep + id.productId)
+}
+
+const attributesPrefix = 'attributes.'
+
+/**
+ * @public
+ */
+export interface IndexKeyOptions {
+  _class?: Ref<Class<Obj>>
+  docId?: Ref<DocIndexState>
+  extra?: string[]
+}
+/**
+ * @public
+ */
+
+export function docUpdKey (name: string, opt?: IndexKeyOptions): string {
+  return attributesPrefix + docKey(name, opt)
+}
+/**
+ * @public
+ */
+export function docKey (name: string, opt?: IndexKeyOptions): string {
+  const extra = opt?.extra !== undefined && opt?.extra?.length > 0 ? `#${opt.extra?.join('#') ?? ''}` : ''
+  return (
+    (opt?.docId !== undefined ? opt.docId.split('.').join('_') + '|' : '') +
+    (opt?._class === undefined ? name : `${opt?._class}%${name}${extra}`)
+  )
+}
+
+/**
+ * @public
+ */
+export function extractDocKey (key: string): {
+  _class?: Ref<Class<Doc>>
+  attr: string
+  docId?: Ref<DocIndexState>
+  extra: string[]
+} {
+  let k = key
+  if (k.startsWith(attributesPrefix)) {
+    k = k.slice(attributesPrefix.length)
+  }
+  let docId: Ref<DocIndexState> | undefined
+  let _class: Ref<Class<Doc>> | undefined
+  let attr = ''
+  const docSepPos = k.indexOf('|')
+  if (docSepPos !== -1) {
+    docId = k.substring(0, docSepPos).replace('_', '.') as Ref<DocIndexState>
+    k = k.substring(docSepPos + 1)
+  }
+  const clPos = k.indexOf('%')
+  if (clPos !== -1) {
+    _class = k.substring(0, clPos) as Ref<Class<Doc>>
+    attr = k.substring(clPos + 1)
+  } else {
+    attr = k
+  }
+  const extra = attr.split('#')
+  attr = extra.splice(0, 1)[0]
+
+  return { docId, attr, _class, extra }
+}
+
+/**
+ * @public
+ */
+export function isFullTextAttribute (attr: AnyAttribute): boolean {
+  return attr.index === IndexKind.FullText || attr.type._class === core.class.TypeAttachment
 }

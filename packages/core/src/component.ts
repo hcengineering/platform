@@ -24,6 +24,8 @@ import type {
   Class,
   Collection,
   Doc,
+  DocIndexState,
+  AISearchContext,
   Enum,
   EnumOf,
   FullTextData,
@@ -78,6 +80,7 @@ export default plugin(coreId, {
     Account: '' as Ref<Class<Account>>,
     Type: '' as Ref<Class<Type<any>>>,
     TypeString: '' as Ref<Class<Type<string>>>,
+    TypeAttachment: '' as Ref<Class<Type<string>>>,
     TypeIntlString: '' as Ref<Class<Type<IntlString>>>,
     TypeHyperlink: '' as Ref<Class<Type<Hyperlink>>>,
     TypeNumber: '' as Ref<Class<Type<number>>>,
@@ -95,7 +98,11 @@ export default plugin(coreId, {
     UserStatus: '' as Ref<Class<UserStatus>>,
     BlobData: '' as Ref<Class<BlobData>>,
     FulltextData: '' as Ref<Class<FullTextData>>,
-    TypeRelatedDocument: '' as Ref<Class<Type<RelatedDocument>>>
+    TypeRelatedDocument: '' as Ref<Class<Type<RelatedDocument>>>,
+    DocIndexState: '' as Ref<Class<DocIndexState>>
+  },
+  mixin: {
+    AISearchContext: '' as Ref<Mixin<AISearchContext>>
   },
   space: {
     Tx: '' as Ref<Space>,

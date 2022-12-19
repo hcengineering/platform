@@ -32,6 +32,8 @@ export class Hierarchy {
   private readonly ancestors = new Map<Ref<Classifier>, Ref<Classifier>[]>()
   private readonly proxies = new Map<Ref<Mixin<Doc>>, ProxyHandler<Doc>>()
 
+  private readonly classifierProperties = new Map<Ref<Classifier>, Record<string, any>>()
+
   private createMixinProxyHandler (mixin: Ref<Mixin<Doc>>): ProxyHandler<Doc> {
     const value = this.getClass(mixin)
     const ancestor = this.getClass(value.extends as Ref<Class<Obj>>)
@@ -109,23 +111,28 @@ export class Hierarchy {
   }
 
   getDomain (_class: Ref<Class<Obj>>): Domain {
+    const domain = this.findDomain(_class)
+    if (domain === undefined) {
+      throw new Error(`domain not found: ${_class} `)
+    }
+    return domain
+  }
+
+  public findDomain (_class: Ref<Class<Doc>>): Domain | undefined {
     const klazz = this.getClass(_class)
     if (klazz.domain !== undefined) {
       return klazz.domain
     }
-    klazz.domain = this.findDomain(klazz)
-    return klazz.domain
-  }
 
-  private findDomain (klazz: Class<Doc>): Domain {
     let _klazz = klazz
     while (_klazz.extends !== undefined) {
       _klazz = this.getClass(_klazz.extends)
       if (_klazz.domain !== undefined) {
+        // Cache for next requests
+        klazz.domain = _klazz.domain
         return _klazz.domain
       }
     }
-    throw new Error(`domain not found: ${klazz._id} `)
   }
 
   tx (tx: Tx): void {
@@ -166,11 +173,14 @@ export class Hierarchy {
       const doc = this.attributesById.get(updateTx.objectId)
       if (doc === undefined) return
       this.addAttribute(TxProcessor.updateDoc2Doc(doc, updateTx))
+
+      this.classifierProperties.delete(doc.attributeOf)
     } else if (tx.objectClass === core.class.Mixin || tx.objectClass === core.class.Class) {
       const updateTx = tx as TxUpdateDoc<Mixin<Class<Doc>>>
       const doc = this.classifiers.get(updateTx.objectId)
       if (doc === undefined) return
       TxProcessor.updateDoc2Doc(doc, updateTx)
+      this.classifierProperties.delete(doc._id)
     }
   }
 
@@ -351,6 +361,7 @@ export class Hierarchy {
     }
     attributes.set(attribute.name, attribute)
     this.attributesById.set(attribute._id, attribute)
+    this.classifierProperties.delete(attribute.attributeOf)
   }
 
   getAllAttributes (clazz: Ref<Classifier>, to?: Ref<Classifier>): Map<string, AnyAttribute> {
@@ -390,7 +401,7 @@ export class Hierarchy {
     return attr
   }
 
-  private findAttribute (classifier: Ref<Classifier>, name: string): AnyAttribute | undefined {
+  public findAttribute (classifier: Ref<Classifier>, name: string): AnyAttribute | undefined {
     const list = [classifier]
     const visited = new Set<Ref<Classifier>>()
     while (list.length > 0) {
@@ -479,6 +490,15 @@ export class Hierarchy {
     return (classes.map((it) => it.domain).filter((it) => it !== undefined) as Domain[]).filter(
       (it, idx, array) => array.findIndex((pt) => pt === it) === idx
     )
+  }
+
+  getClassifierProp (cl: Ref<Class<Doc>>, prop: string): any | undefined {
+    return this.classifierProperties.get(cl)?.[prop]
+  }
+
+  setClassifierProp (cl: Ref<Class<Doc>>, prop: string, value: any): void {
+    const cur = this.classifierProperties.get(cl)
+    this.classifierProperties.set(cl, { ...cur, [prop]: value })
   }
 }
 

@@ -23,20 +23,21 @@ export * from './types'
 /**
  * @public
  */
-export async function recognizeDocument (token: string, url: string): Promise<ReconiDocument> {
+export async function recognizeDocument (token: string, url: string, contentType: string): Promise<ReconiDocument> {
   const rekoniUrl = getMetadata(plugin.metadata.RekoniUrl)
   if (rekoniUrl === undefined) {
     // We could try use recognition service to find some document properties.
     throw new PlatformError(unknownError('recognition framework is not configured'))
   }
   return (await (
-    await fetch(rekoniUrl + '/recognize?format=pdf', {
+    await fetch(rekoniUrl + '/recognize', {
       method: 'POST',
       headers: {
         Authorization: 'Bearer ' + token,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
+        contentType,
         fileUrl: url
       })
     })

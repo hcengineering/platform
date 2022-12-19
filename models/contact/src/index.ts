@@ -16,13 +16,13 @@
 import {
   AvatarProvider,
   AvatarType,
-  GetAvatarUrl,
   Channel,
   ChannelProvider,
   Contact,
   contactId,
   Employee,
   EmployeeAccount,
+  GetAvatarUrl,
   Member,
   Organization,
   Organizations,
@@ -506,6 +506,11 @@ export function createModel (builder: Builder): void {
     },
     contact.action.KickEmployee
   )
+
+  // Allow to use fuzzy search for mixins
+  builder.mixin(contact.class.Contact, core.class.Class, core.mixin.AISearchContext, {
+    index: true
+  })
 }
 
 export { contactOperation } from './migration'
