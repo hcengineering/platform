@@ -25,7 +25,8 @@
     { limit: 1 }
   )
 
-  const approvable = value.requested.includes(me) && !value.approved.includes(me) && value.status === RequestStatus.Active
+  const approvable =
+    value.requested.includes(me) && !value.approved.includes(me) && value.status === RequestStatus.Active
 
   async function approve () {
     await client.update(value, {
