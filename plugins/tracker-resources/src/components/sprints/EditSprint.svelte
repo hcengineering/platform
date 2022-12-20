@@ -4,6 +4,7 @@
   import { Sprint } from '@hcengineering/tracker'
   import { Button, DatePresenter, EditBox, Icon, IconMoreH, Label, showPopup } from '@hcengineering/ui'
   import { ContextMenu, DocAttributeBar } from '@hcengineering/view-resources'
+  import { createEventDispatcher } from 'svelte'
   import { onDestroy } from 'svelte'
   import { activeSprint } from '../../issues'
   import tracker from '../../plugin'
@@ -15,6 +16,7 @@
   export let sprint: Sprint
 
   const client = getClient()
+  const dispatch = createEventDispatcher()
 
   async function change (field: string, value: any) {
     await client.update(sprint, { [field]: value })
@@ -24,6 +26,7 @@
     showPopup(SprintPopup, { _class: tracker.class.Sprint }, container, (value) => {
       if (value != null) {
         sprint = value
+        dispatch('sprint', sprint._id)
       }
     })
   }
