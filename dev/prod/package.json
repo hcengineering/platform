@@ -155,9 +155,13 @@
     "@hcengineering/document": "^0.6.0",
     "@hcengineering/document-assets": "^0.6.0",
     "@hcengineering/document-resources": "^0.6.0",
-
     "@hcengineering/bitrix": "^0.6.0",
     "@hcengineering/bitrix-assets": "^0.6.0",
-    "@hcengineering/bitrix-resources": "^0.6.0"
+    "@hcengineering/bitrix-resources": "^0.6.0",
+    "@hcengineering/request": "^0.6.0",
+    "@hcengineering/request-assets": "~0.6.0",
+    "@hcengineering/request-resources": "~0.6.0",
+    "@hcengineering/server-request": "~0.6.0",
+    "@hcengineering/server-request-resources": "~0.6.0"
   }
 }

@@ -41,6 +41,7 @@
     "@hcengineering/login": "~0.6.1",
     "@hcengineering/setting": "~0.6.1",
     "@hcengineering/calendar": "~0.6.1",
+    "@hcengineering/request": "~0.6.0",
     "@hcengineering/notification": "~0.6.4",
     "@hcengineering/notification-resources": "~0.6.0",
     "@hcengineering/preference": "^0.6.1",

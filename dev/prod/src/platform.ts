@@ -41,6 +41,7 @@ import { calendarId } from '@hcengineering/calendar'
 import { trackerId } from '@hcengineering/tracker'
 import { boardId } from '@hcengineering/board'
 import { hrId } from '@hcengineering/hr'
+import { requestId } from '@hcengineering/request'
 import rekoni from '@hcengineering/rekoni'
 import document, { documentId } from '@hcengineering/document'
 
@@ -71,6 +72,7 @@ import '@hcengineering/preference-assets'
 import '@hcengineering/hr-assets'
 import '@hcengineering/document-assets'
 import '@hcengineering/bitrix-assets'
+import '@hcengineering/request-assets'
 
 import presentation, { presentationId } from '@hcengineering/presentation'
 import { coreId } from '@hcengineering/core'
@@ -136,8 +138,10 @@ export async function configurePlatform() {
   addLocation(boardId, () => import(/* webpackChunkName: "board" */ '@hcengineering/board-resources'))
   addLocation(automationId, () => import(/* webpackChunkName: "automation" */ '@hcengineering/automation-resources'))
   addLocation(hrId, () => import(/* webpackChunkName: "hr" */ '@hcengineering/hr-resources'))
-  addLocation(documentId, () => import(/* webpackChunkName: "hr" */ '@hcengineering/document-resources'))
+  addLocation(documentId, () => import(/* webpackChunkName: "document" */ '@hcengineering/document-resources'))
   addLocation(bitrixId, () => import(/* webpackChunkName: "bitrix" */ '@hcengineering/bitrix-resources'))
+  addLocation(requestId, () => import(/* webpackChunkName: "request" */ '@hcengineering/request-resources'))
+
 
   setMetadata(workbench.metadata.PlatformTitle, 'Platform')
 }

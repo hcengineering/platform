@@ -1,0 +1,13 @@
+{
+  "string": {
+    "Requests": "Запросы",
+    "Request": "Запрос",
+    "Approve": "Одобрить",
+    "Approved": "Одобрил",
+    "CreatedRequest": "Создал запрос",
+    "For": "Для",
+    "Change": "Изменить",
+    "Add": "Добавить",
+    "Remove": "Удалить"
+  }
+}

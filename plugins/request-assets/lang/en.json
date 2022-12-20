@@ -1,0 +1,13 @@
+{
+  "string": {
+    "Requests": "Reqests",
+    "Request": "Request",
+    "Approve": "Approve",
+    "Approved": "Approved",
+    "CreatedRequest": "Created a request",
+    "For": "For",
+    "Change": "Change",
+    "Add": "Add",
+    "Remove": "Remove"
+  }
+}

@@ -20,6 +20,7 @@ import TxView from './components/TxView.svelte'
 export { TxView }
 
 export * from './activity'
+export * from './utils'
 
 export default async (): Promise<Resources> => ({
   component: {

@@ -3,7 +3,11 @@
   "version": "0.6.10",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
-  "files": ["lib/**/*", "src/**/*", "tsconfig.json"],
+  "files": [
+    "lib/**/*",
+    "src/**/*",
+    "tsconfig.json"
+  ],
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
   "scripts": {
