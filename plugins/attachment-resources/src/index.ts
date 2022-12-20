@@ -33,6 +33,8 @@ import FileDownload from './components/icons/FileDownload.svelte'
 import Photos from './components/Photos.svelte'
 import AttachmentStyledBox from './components/AttachmentStyledBox.svelte'
 import AccordionEditor from './components/AccordionEditor.svelte'
+import IconUploadDuo from './components/icons/UploadDuo.svelte'
+import IconAttachment from './components/icons/Attachment.svelte'
 import { deleteFile, uploadFile } from './utils'
 import { DisplayTx } from '@hcengineering/activity'
 
@@ -49,7 +51,9 @@ export {
   FileDownload,
   FileBrowser,
   AttachmentStyledBox,
-  AccordionEditor
+  AccordionEditor,
+  IconUploadDuo,
+  IconAttachment
 }
 
 export enum FileBrowserSortMode {

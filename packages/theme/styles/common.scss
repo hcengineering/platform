@@ -306,6 +306,7 @@
       color: var(--caption-color);  
     }
   }
+  .invisible { display: none; }
   &-empty {
     display: flex;
     justify-content: center;
@@ -420,7 +421,7 @@
       }
       .rotated-icon {
         transform-origin: center;
-        transition: transform .3s var(--timing-rotate);
+        transition: transform .15s var(--timing-main);
 
         &.opened { transform: rotate(0deg); }
         &.closed { transform: rotate(90deg); }
@@ -448,11 +449,7 @@
         visibility: hidden;
         max-height: 0;
       }
-      &:hover .caption {
-        margin-bottom: 0rem;
-
-        &.hasAttachments { margin-bottom: .5rem; }
-      }
+      &:hover .caption.hasAttachments { margin-bottom: .5rem; }
     }
     
     &:first-child {
@@ -464,7 +461,6 @@
       border-top-right-radius: .65rem;
     }
     &:last-child {
-      border-top: none;
       border-bottom-left-radius: .75rem;
       border-bottom-right-radius: .75rem;
     }
@@ -472,6 +468,7 @@
       border-bottom-left-radius: .65rem;
       border-bottom-right-radius: .65rem;
     }
+    &:last-child:not(:first-child),
     &:not(:first-child):not(:last-child) { border-top: none; }
 
     &:hover,

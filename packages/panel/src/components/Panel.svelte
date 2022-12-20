@@ -36,7 +36,7 @@
   export let isCustomAttr: boolean = true
   export let floatAside = false
   export let allowClose = true
-  export let useMaxWidth = false
+  export let useMaxWidth: boolean | undefined = undefined
   export let isFullSize = false
 </script>
 
