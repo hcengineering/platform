@@ -15,7 +15,6 @@
   import tracker from '../../../tracker-resources/src/plugin'
 
   export let element: Doc
-  export let showBackButton: boolean = false
 
   async function next (evt: Event, pn: boolean): Promise<void> {
     select(evt, pn ? 1 : -1, element, 'vertical')
@@ -32,10 +31,8 @@
   }
 
   function goBack () {
-    if (showBackButton) {
-      closeTooltip()
-      history.back()
-    }
+    closeTooltip()
+    history.back()
   }
 
   $: select(undefined, 0, element, 'vertical')
@@ -43,13 +40,10 @@
 
 <Button icon={IconDownOutline} kind={'secondary'} size={'medium'} on:click={(evt) => next(evt, true)} />
 <Button icon={IconUpOutline} kind={'secondary'} size={'medium'} on:click={(evt) => next(evt, false)} />
-
-{#if showBackButton}
-  <Button
-    showTooltip={{ label: tracker.string.Back, direction: 'bottom' }}
-    icon={IconNavPrev}
-    kind={'secondary'}
-    size={'medium'}
-    on:click={goBack}
-  />
-{/if}
+<Button
+  showTooltip={{ label: tracker.string.Back, direction: 'bottom' }}
+  icon={IconNavPrev}
+  kind={'secondary'}
+  size={'medium'}
+  on:click={goBack}
+/>
