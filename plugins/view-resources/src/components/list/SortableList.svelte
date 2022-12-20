@@ -17,16 +17,17 @@
   import { getResource, IntlString } from '@hcengineering/platform'
   import presentation, { createQuery, getClient } from '@hcengineering/presentation'
   import { calcRank, DocWithRank } from '@hcengineering/task'
-  import { AnyComponent, Button, Component, IconAdd, Label, Loading } from '@hcengineering/ui'
-  import view, { AttributeModel, ObjectFactory } from '@hcengineering/view'
+  import { Button, Component, IconAdd, Label, Loading } from '@hcengineering/ui'
+  import view, { ObjectFactory } from '@hcengineering/view'
   import { flip } from 'svelte/animate'
-  import { getObjectPresenter } from '../../utils'
+  import { SvelteComponentDev } from 'svelte/internal'
+  import { getListItemPresenter, getObjectPresenter } from '../../utils'
 
   /*
   How to use:
   
-  We must add presenter for the "_class" via "AttributePresenter" mixin
-  or pass it through "presenter" prop to be able display the rows list.
+  We must add presenter for the "_class" via "ListItemPresenter" / "AttributePresenter"
+  mixins or render the "object" slot to be able display the rows list.
 
   To create a new items, we should add "ObjectFactory" mixin also.
 
@@ -39,7 +40,6 @@
   export let label: IntlString | undefined = undefined
   export let query: DocumentQuery<Doc> = {}
   export let queryOptions: FindOptions<Doc> | undefined = undefined
-  export let presenter: AnyComponent | undefined = undefined
   export let presenterProps: Record<string, any> = {}
   export let direction: 'row' | 'column' = 'column'
   export let flipDuration = 200
@@ -51,11 +51,11 @@
   const hierarchy = client.getHierarchy()
   const itemsQuery = createQuery()
 
-  let isModelLoading = false
+  let isPresenterLoading = false
   let areItemsloading = true
   let areItemsSorting = false
 
-  let model: AttributeModel | undefined
+  let presenter: typeof SvelteComponentDev | undefined
   let objectFactory: ObjectFactory | undefined
   let items: FindResult<Doc> | undefined
 
@@ -64,12 +64,22 @@
 
   let isCreating = false
 
-  async function updateModel (modelClassRef: Ref<Class<Doc>>, props: Record<string, any>) {
+  async function updatePresenter (classRef: Ref<Class<Doc>>) {
     try {
-      isModelLoading = true
-      model = await getObjectPresenter(client, modelClassRef, { key: '', props })
+      isPresenterLoading = true
+
+      const listItemPresenter = await getListItemPresenter(client, classRef)
+      if (listItemPresenter) {
+        presenter = await getResource(listItemPresenter)
+        return
+      }
+
+      const objectModel = await getObjectPresenter(client, classRef, { key: '' })
+      if (objectModel?.presenter) {
+        presenter = objectModel.presenter
+      }
     } finally {
-      isModelLoading = false
+      isPresenterLoading = false
     }
   }
 
@@ -135,11 +145,11 @@
     hoveringIndex = null
   }
 
-  $: !presenter && updateModel(_class, presenterProps)
+  $: !$$slots.object && updatePresenter(_class)
   $: updateObjectFactory(_class)
   $: itemsQuery.query(_class, query, updateItems, { ...queryOptions, limit: Math.max(queryOptions?.limit ?? 0, 200) })
 
-  $: isLoading = isModelLoading || areItemsloading
+  $: isLoading = isPresenterLoading || areItemsloading
   $: isSortable = hierarchy.getAllAttributes(_class).has('rank')
   $: itemsCount = items?.length ?? 0
 </script>
@@ -172,7 +182,7 @@
 
   {#if isLoading}
     <Loading />
-  {:else if (presenter || model) && items}
+  {:else if ($$slots.object ?? presenter) && items}
     {@const isVertical = direction === 'column'}
     <div class="flex-gap-1" class:flex-col={isVertical} class:flex={!isVertical} class:flex-wrap={!isVertical}>
       {#each items as item, index (item._id)}
@@ -190,10 +200,10 @@
           on:drop={() => handleDrop(index)}
           on:dragend={resetDrag}
         >
-          {#if presenter}
-            <Component is={presenter} props={{ isDraggable, ...presenterProps, value: item }} />
-          {:else if model}
-            <svelte:component this={model.presenter} {isDraggable} {...model.props ?? {}} value={item} />
+          {#if $$slots.object}
+            <slot name="object" value={item} {isDraggable} />
+          {:else if presenter}
+            <svelte:component this={presenter} {isDraggable} {...presenterProps} value={item} />
           {/if}
         </div>
       {/each}

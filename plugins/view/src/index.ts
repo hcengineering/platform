@@ -131,6 +131,13 @@ export interface AttributePresenter extends Class<Doc> {
 /**
  * @public
  */
+export interface ListItemPresenter extends Class<Doc> {
+  presenter: AnyComponent
+}
+
+/**
+ * @public
+ */
 export interface ObjectEditor extends Class<Doc> {
   editor: AnyComponent
   pinned?: boolean
@@ -401,6 +408,7 @@ const view = plugin(viewId, {
     InlineAttributEditor: '' as Ref<Mixin<InlineAttributEditor>>,
     ArrayEditor: '' as Ref<Mixin<ArrayEditor>>,
     AttributePresenter: '' as Ref<Mixin<AttributePresenter>>,
+    ListItemPresenter: '' as Ref<Mixin<ListItemPresenter>>,
     ObjectEditor: '' as Ref<Mixin<ObjectEditor>>,
     ObjectEditorHeader: '' as Ref<Mixin<ObjectEditorHeader>>,
     ObjectValidator: '' as Ref<Mixin<ObjectValidator>>,

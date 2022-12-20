@@ -94,6 +94,20 @@ export async function getObjectPresenter (
 /**
  * @public
  */
+export async function getListItemPresenter (client: Client, _class: Ref<Class<Obj>>): Promise<AnyComponent | undefined> {
+  const clazz = client.getHierarchy().getClass(_class)
+  const presenterMixin = client.getHierarchy().as(clazz, view.mixin.ListItemPresenter)
+  if (presenterMixin.presenter === undefined) {
+    if (clazz.extends !== undefined) {
+      return await getListItemPresenter(client, clazz.extends)
+    }
+  }
+  return presenterMixin?.presenter
+}
+
+/**
+ * @public
+ */
 export async function getObjectPreview (client: Client, _class: Ref<Class<Obj>>): Promise<AnyComponent | undefined> {
   const clazz = client.getHierarchy().getClass(_class)
   const presenterMixin = client.getHierarchy().as(clazz, view.mixin.PreviewPresenter)
