@@ -16,7 +16,6 @@
   import contact, { Employee, EmployeeAccount, formatName } from '@hcengineering/contact'
   import { AccountRole, getCurrentAccount } from '@hcengineering/core'
   import login from '@hcengineering/login'
-  import { getWorkspaces, Workspace } from '@hcengineering/login-resources'
   import { setMetadata } from '@hcengineering/platform'
   import { Avatar, createQuery } from '@hcengineering/presentation'
   import setting, { settingId, SettingsCategory } from '@hcengineering/setting'
@@ -34,15 +33,9 @@
   import view from '@hcengineering/view'
   import HelpAndSupport from './HelpAndSupport.svelte'
   import workbench from '../plugin'
-  import { onMount } from 'svelte'
   import SelectWorkspaceMenu from './SelectWorkspaceMenu.svelte'
 
   let items: SettingsCategory[] = []
-  let workspaces: Workspace[] = []
-
-  onMount(() => {
-    getWorkspaces().then((ws: Workspace[]) => (workspaces = ws))
-  })
 
   const settingsQuery = createQuery()
   settingsQuery.query(
@@ -152,7 +145,6 @@
         label: setting.string.SelectWorkspace,
         action: async () => {},
         component: SelectWorkspaceMenu,
-        props: { workspaces },
         group: 'end'
       },
       {
