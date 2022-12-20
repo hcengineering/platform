@@ -16,7 +16,7 @@
   import { Attachment } from '@hcengineering/attachment'
   import { Account, Class, Doc, generateId, Ref, Space } from '@hcengineering/core'
   import { IntlString, setPlatformStatus, unknownError } from '@hcengineering/platform'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { createQuery, getClient, draftStore, updateDraftStore } from '@hcengineering/presentation'
   import { StyledTextBox } from '@hcengineering/text-editor'
   import { IconSize } from '@hcengineering/ui'
   import { createEventDispatcher, onDestroy } from 'svelte'
@@ -37,6 +37,7 @@
   export let focusable: boolean = false
   export let fakeAttach: 'fake' | 'hidden' | 'normal' = 'normal'
   export let refContainer: HTMLElement | undefined = undefined
+  export let shouldSaveDraft: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -62,6 +63,7 @@
   let refInput: StyledTextBox
 
   let inputFile: HTMLInputElement
+  let draftAttachments: Record<Ref<Attachment>, Attachment> | undefined = undefined
   let saved = false
 
   const client = getClient()
@@ -71,17 +73,41 @@
   const newAttachments: Set<Ref<Attachment>> = new Set<Ref<Attachment>>()
   const removedAttachments: Set<Attachment> = new Set<Attachment>()
 
-  $: objectId &&
-    query.query(
-      attachment.class.Attachment,
-      {
-        attachedTo: objectId
-      },
-      (res) => {
-        originalAttachments = new Set(res.map((p) => p._id))
-        attachments = new Map(res.map((p) => [p._id, p]))
-      }
-    )
+  $: objectId && updateAttachments(objectId)
+
+  async function updateAttachments (objectId: Ref<Doc>) {
+    draftAttachments = $draftStore[objectId]
+    if (draftAttachments && shouldSaveDraft) {
+      attachments.clear()
+      newAttachments.clear()
+      Object.entries(draftAttachments).map((file) => {
+        return attachments.set(file[0] as Ref<Attachment>, file[1])
+      })
+      Object.entries(draftAttachments).map((file) => {
+        return newAttachments.add(file[0] as Ref<Attachment>)
+      })
+      originalAttachments.clear()
+      removedAttachments.clear()
+    } else {
+      query.query(
+        attachment.class.Attachment,
+        {
+          attachedTo: objectId
+        },
+        (res) => {
+          originalAttachments = new Set(res.map((p) => p._id))
+          attachments = new Map(res.map((p) => [p._id, p]))
+        }
+      )
+    }
+  }
+
+  async function saveDraft () {
+    if (objectId && shouldSaveDraft) {
+      draftAttachments = Object.fromEntries(attachments)
+      updateDraftStore(objectId, draftAttachments)
+    }
+  }
 
   async function createAttachment (file: File) {
     if (space === undefined || objectId === undefined || _class === undefined) return
@@ -105,6 +131,7 @@
       })
       newAttachments.add(_id)
       attachments = attachments
+      saveDraft()
     } catch (err: any) {
       setPlatformStatus(unknownError(err))
     }
@@ -139,6 +166,7 @@
     removedAttachments.add(attachment)
     attachments.delete(attachment._id)
     attachments = attachments
+    saveDraft()
   }
 
   async function deleteAttachment (attachment: Attachment): Promise<void> {
@@ -157,7 +185,7 @@
   }
 
   onDestroy(() => {
-    if (!saved) {
+    if (!saved && !shouldSaveDraft) {
       newAttachments.forEach(async (p) => {
         const attachment = attachments.get(p)
         if (attachment !== undefined) {
@@ -166,6 +194,20 @@
       })
     }
   })
+
+  export function removeDraft (removeFiles: boolean) {
+    if (objectId) {
+      updateDraftStore(objectId, undefined)
+    }
+    if (removeFiles) {
+      newAttachments.forEach(async (p) => {
+        const attachment = attachments.get(p)
+        if (attachment !== undefined) {
+          await deleteFile(attachment.file)
+        }
+      })
+    }
+  }
 
   export function createAttachments (): Promise<void> {
     saved = true

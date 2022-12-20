@@ -222,6 +222,7 @@ export interface IssueDraft extends Doc {
   // Estimation in man days
   estimation: number
   parentIssue?: string
+  attachments?: number
   labels?: TagReference[]
   subIssues?: IssueTemplateChild[]
   template?: {

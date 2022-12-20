@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { createQuery, getClient, draftStore, updateDraftStore } from '@hcengineering/presentation'
   import { ReferenceInput } from '@hcengineering/text-editor'
   import { deleteFile, uploadFile } from '../utils'
   import attachment from '../plugin'
@@ -28,7 +28,8 @@
   export let _class: Ref<Class<Doc>>
   export let content: string = ''
   export let showSend = true
-  export let shouldUseDraft: boolean = false
+  export let shouldSaveDraft: boolean = false
+  export let attachments: Map<Ref<Attachment>, Attachment> = new Map<Ref<Attachment>, Attachment>()
   export function submit (): void {
     refInput.submit()
   }
@@ -41,24 +42,48 @@
   const client = getClient()
   const query = createQuery()
 
-  let attachments: Map<Ref<Attachment>, Attachment> = new Map<Ref<Attachment>, Attachment>()
+  let draftAttachments: Record<Ref<Attachment>, Attachment> | undefined = undefined
   let originalAttachments: Set<Ref<Attachment>> = new Set<Ref<Attachment>>()
   const newAttachments: Set<Ref<Attachment>> = new Set<Ref<Attachment>>()
   const removedAttachments: Set<Attachment> = new Set<Attachment>()
 
   let refContainer: HTMLElement
 
-  $: objectId &&
-    query.query(
-      attachment.class.Attachment,
-      {
-        attachedTo: objectId
-      },
-      (res) => {
-        originalAttachments = new Set(res.map((p) => p._id))
-        attachments = new Map(res.map((p) => [p._id, p]))
-      }
-    )
+  $: objectId && updateAttachments(objectId)
+
+  async function updateAttachments (objectId: Ref<Doc>) {
+    draftAttachments = $draftStore[objectId]
+    if (draftAttachments && shouldSaveDraft) {
+      attachments.clear()
+      newAttachments.clear()
+      Object.entries(draftAttachments).map((file) => {
+        return attachments.set(file[0] as Ref<Attachment>, file[1])
+      })
+      Object.entries(draftAttachments).map((file) => {
+        return newAttachments.add(file[0] as Ref<Attachment>)
+      })
+      originalAttachments.clear()
+      removedAttachments.clear()
+    } else {
+      query.query(
+        attachment.class.Attachment,
+        {
+          attachedTo: objectId
+        },
+        (res) => {
+          originalAttachments = new Set(res.map((p) => p._id))
+          attachments = new Map(res.map((p) => [p._id, p]))
+        }
+      )
+    }
+  }
+
+  async function saveDraft () {
+    if (objectId && shouldSaveDraft) {
+      draftAttachments = Object.fromEntries(attachments)
+      updateDraftStore(objectId, draftAttachments)
+    }
+  }
 
   async function createAttachment (file: File) {
     try {
@@ -81,9 +106,7 @@
       })
       newAttachments.add(_id)
       attachments = attachments
-      if (shouldUseDraft) {
-        await createAttachments()
-      }
+      saveDraft()
     } catch (err: any) {
       setPlatformStatus(unknownError(err))
     }
@@ -115,10 +138,11 @@
   async function removeAttachment (attachment: Attachment): Promise<void> {
     removedAttachments.add(attachment)
     attachments.delete(attachment._id)
-    if (shouldUseDraft) {
+    if (shouldSaveDraft) {
       await createAttachments()
     }
     attachments = attachments
+    saveDraft()
   }
 
   async function deleteAttachment (attachment: Attachment): Promise<void> {
@@ -137,7 +161,7 @@
   }
 
   onDestroy(() => {
-    if (!saved) {
+    if (!saved && !shouldSaveDraft) {
       newAttachments.forEach(async (p) => {
         const attachment = attachments.get(p)
         if (attachment !== undefined) {
@@ -146,6 +170,20 @@
       })
     }
   })
+
+  export function removeDraft (removeFiles: boolean) {
+    if (objectId) {
+      updateDraftStore(objectId, undefined)
+    }
+    if (removeFiles) {
+      newAttachments.forEach(async (p) => {
+        const attachment = attachments.get(p)
+        if (attachment !== undefined) {
+          await deleteFile(attachment.file)
+        }
+      })
+    }
+  }
 
   export function createAttachments (): Promise<void> {
     saved = true

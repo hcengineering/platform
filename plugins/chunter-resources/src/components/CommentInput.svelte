@@ -22,7 +22,7 @@
   import chunter from '../plugin'
 
   export let object: Doc
-  export let shouldUseDraft: boolean = false
+  export let shouldSaveDraft: boolean = false
 
   const client = getClient()
   const _class = chunter.class.Comment
@@ -37,7 +37,7 @@
   $: updateCommentFromDraft(draftComment)
 
   async function updateDraft (object: Doc) {
-    if (!shouldUseDraft) {
+    if (!shouldSaveDraft) {
       return
     }
     draftComment = $draftStore[object._id]
@@ -47,7 +47,7 @@
   }
 
   async function updateCommentFromDraft (draftComment: Comment | undefined) {
-    if (!shouldUseDraft) {
+    if (!shouldSaveDraft) {
       return
     }
     inputContent = draftComment ? draftComment.message : ''
@@ -59,12 +59,6 @@
   }
 
   async function saveDraft (object: Doc) {
-    if (draftComment) {
-      draftComment._id = _id
-      $draftStore[object._id] = draftComment
-    } else {
-      delete $draftStore[object._id]
-    }
     updateDraftStore(object._id, draftComment)
   }
 
@@ -86,7 +80,7 @@
   }
 
   async function onUpdate (event: CustomEvent) {
-    if (!shouldUseDraft) {
+    if (!shouldSaveDraft) {
       return
     }
     const { message, attachments } = event.detail
@@ -133,6 +127,7 @@
     _id = generateId()
     draftComment = undefined
     await saveDraft(object)
+    commentInputBox.removeDraft(false)
   }
 </script>
 
@@ -142,7 +137,7 @@
   {_class}
   space={object.space}
   bind:objectId={_id}
-  shouldUseDraft
+  {shouldSaveDraft}
   on:message={onMessage}
   on:update={onUpdate}
 />
