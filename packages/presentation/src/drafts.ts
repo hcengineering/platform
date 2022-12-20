@@ -14,7 +14,12 @@ export const draftStore = writable<Record<string, any>>(fetchMetadataLocalStorag
  */
 export function updateDraftStore (id: string, draft: any): void {
   draftStore.update((drafts) => {
-    drafts[id] = draft
+    if (draft === undefined) {
+      drafts[id] = draft
+    } else {
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+      delete drafts[id]
+    }
     setMetadataLocalStorage(presentation.metadata.Draft, drafts)
     return drafts
   })

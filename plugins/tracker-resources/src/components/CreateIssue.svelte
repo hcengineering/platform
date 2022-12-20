@@ -82,7 +82,6 @@
   import SetParentIssueActionPopup from './SetParentIssueActionPopup.svelte'
   import SprintSelector from './sprints/SprintSelector.svelte'
   import IssueTemplateChilds from './templates/IssueTemplateChilds.svelte'
-  import attachment from '@hcengineering/attachment-resources/src/plugin'
   import IssueNotification from './issues/IssueNotification.svelte'
 
   export let space: Ref<Team>
@@ -97,7 +96,7 @@
   export let originalIssue: Issue | undefined
   export let onDraftChanged: () => void
 
-  const draft: IssueDraft | undefined = getUserDraft(tracker.class.IssueDraft)
+  const draft: IssueDraft | undefined = shouldSaveDraft ? getUserDraft(tracker.class.IssueDraft) : undefined
 
   let issueStatuses: WithLookup<IssueStatus>[] | undefined
   let labels: TagReference[] = draft?.labels || []
@@ -106,7 +105,7 @@
   let currentTeam: Team | undefined
 
   function toIssue (initials: AttachedData<Issue>, draft: IssueDraft | undefined): AttachedData<Issue> {
-    if (draft == null) {
+    if (draft === undefined) {
       return { ...initials }
     }
     const { labels, subIssues, ...issue } = draft
@@ -125,6 +124,7 @@
     priority,
     dueDate: null,
     comments: 0,
+    attachments: 0,
     subIssues: 0,
     parents: [],
     reportedTime: 0,
@@ -295,8 +295,6 @@
       return
     }
 
-    await descriptionBox?.createAttachments()
-
     let newDraft: Data<IssueDraft> | undefined = createDraftFromObject()
     const isEmpty = await isDraftEmpty(newDraft)
 
@@ -337,6 +335,7 @@
       description: '',
       dueDate: null,
       estimation: 0,
+      attachments: 0,
       labels: [],
       parentIssue: undefined,
       priority: 0,
@@ -351,11 +350,9 @@
       }
     }
 
-    const attachmentResult = await client.findOne(attachment.class.Attachment, { attachedTo: objectId })
-
-    if (attachmentResult) {
-      return false
-    }
+    // if (object.attachments && object.attachments > 0) {
+    //   return false
+    // }
 
     if (draft.project && draft.project !== defaultIssue.project) {
       return false
@@ -395,6 +392,7 @@
       dueDate: object.dueDate,
       estimation: object.estimation,
       template: object.template,
+      attachments: object.attachments,
       labels,
       parentIssue: parentIssue?._id,
       team: _space,
@@ -562,6 +560,7 @@
     objectId = generateId()
     resetObject()
     saveDraft()
+    descriptionBox?.removeDraft(false)
   }
 
   async function showMoreActions (ev: Event) {
@@ -672,6 +671,7 @@
             dispatch('close')
             resetObject()
             saveDraft()
+            descriptionBox?.removeDraft(true)
           }
         }
       )
@@ -738,6 +738,7 @@
     <AttachmentStyledBox
       bind:this={descriptionBox}
       {objectId}
+      {shouldSaveDraft}
       _class={tracker.class.Issue}
       space={_space}
       alwaysEdit
@@ -746,6 +747,11 @@
       bind:content={object.description}
       placeholder={tracker.string.IssueDescriptionPlaceholder}
       on:changeSize={() => dispatch('changeContent')}
+      on:attach={(ev) => {
+        if (ev.detail.action === 'saved') {
+          object.attachments = ev.detail.value
+        }
+      }}
     />
   {/key}
   <IssueTemplateChilds bind:children={subIssues} sprint={object.sprint} project={object.project} isScrollable />
