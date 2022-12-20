@@ -467,9 +467,9 @@
 </script>
 
 <div class="ref-container" class:autoOverflow>
-  <div class="flex">
+  <div class="formatPanel flex-between clear-mins" class:focused>
     {#if isFormatting && !readonly}
-      <div class="formatPanel buttons-group xsmall-gap mb-4">
+      <div class="flex-row-center buttons-group xsmall-gap">
         <StyleButton
           icon={Header}
           size={buttonSize}
@@ -567,7 +567,7 @@
     {/if}
     <div class="flex-grow" />
     {#if comparedVersion !== undefined}
-      <div class="formatPanel buttons-group xsmall-gap mb-4">
+      <div class="flex-row-center buttons-group xsmall-gap">
         <StyleButton
           icon={Objects}
           size={buttonSize}
@@ -581,7 +581,7 @@
         <slot name="tools" />
       </div>
     {:else}
-      <div class="formatPanel buttons-group xsmall-gap mb-4">
+      <div class="formatPanel buttons-group xsmall-gap">
         <slot name="tools" />
       </div>
     {/if}
@@ -713,5 +713,19 @@
   }
   .autoOverflow {
     overflow: auto;
+  }
+
+  .ref-container .formatPanel {
+    margin: -0.5rem -0.25rem 0.5rem;
+    padding: 0.375rem;
+    background-color: var(--body-accent);
+    border-radius: 0.5rem;
+    box-shadow: var(--button-shadow);
+    z-index: 1;
+
+    &.focused {
+      position: sticky;
+      top: 1.25rem;
+    }
   }
 </style>

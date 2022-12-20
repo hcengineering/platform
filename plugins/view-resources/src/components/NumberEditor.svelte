@@ -15,6 +15,7 @@
 -->
 <script lang="ts">
   import type { IntlString } from '@hcengineering/platform'
+  import type { ButtonSize } from '@hcengineering/ui'
   import { EditBox, Label, showPopup, eventToHTMLElement, Button } from '@hcengineering/ui'
   import EditBoxPopup from './EditBoxPopup.svelte'
 
@@ -26,6 +27,9 @@
   export let onChange: (value: number | undefined) => void
   export let kind: 'no-border' | 'link' | 'button' = 'no-border'
   export let readonly = false
+  export let size: ButtonSize = 'small'
+  export let justify: 'left' | 'center' = 'center'
+  export let width: string | undefined = 'fit-content'
 
   let shown: boolean = false
 
@@ -37,32 +41,12 @@
   }
 </script>
 
-{#if kind === 'link'}
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <div
-    class="link-container"
-    on:click={(ev) => {
-      if (!shown && !readonly) {
-        showPopup(EditBoxPopup, { value, format: 'number' }, eventToHTMLElement(ev), (res) => {
-          if (Number.isFinite(res)) {
-            value = res
-            onChange(value)
-          }
-          shown = false
-        })
-      }
-    }}
-  >
-    {#if value !== undefined}
-      <span class="overflow-label">{value}</span>
-    {:else}
-      <span class="dark-color"><Label label={placeholder} /></span>
-    {/if}
-  </div>
-{:else if kind === 'button'}
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
+{#if kind === 'button' || kind === 'link'}
   <Button
-    size={'small'}
+    kind={kind === 'button' ? 'secondary' : kind}
+    {size}
+    {justify}
+    {width}
     on:click={(ev) => {
       if (!shown && !readonly) {
         showPopup(EditBoxPopup, { value, format: 'number' }, eventToHTMLElement(ev), (res) => {
@@ -92,22 +76,3 @@
 {:else}
   <EditBox {placeholder} bind:value format={'number'} {focus} on:change={_onchange} />
 {/if}
-
-<style lang="scss">
-  .link-container {
-    display: flex;
-    align-items: center;
-    padding: 0 0.875rem;
-    width: 100%;
-    height: 2rem;
-    border: 1px solid transparent;
-    border-radius: 0.25rem;
-    cursor: pointer;
-
-    &:hover {
-      color: var(--caption-color);
-      background-color: var(--body-color);
-      border-color: var(--divider-color);
-    }
-  }
-</style>

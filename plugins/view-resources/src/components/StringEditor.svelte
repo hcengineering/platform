@@ -15,7 +15,8 @@
 -->
 <script lang="ts">
   import type { IntlString } from '@hcengineering/platform'
-  import { EditBox, Label, showPopup, eventToHTMLElement } from '@hcengineering/ui'
+  import type { ButtonSize } from '@hcengineering/ui'
+  import { EditBox, Label, showPopup, eventToHTMLElement, Button } from '@hcengineering/ui'
   import EditBoxPopup from './EditBoxPopup.svelte'
 
   // export let label: IntlString
@@ -25,6 +26,9 @@
   export let onChange: (value: string) => void
   export let kind: 'no-border' | 'link' = 'no-border'
   export let readonly = false
+  export let size: ButtonSize = 'small'
+  export let justify: 'left' | 'center' = 'center'
+  export let width: string | undefined = 'fit-content'
 
   let shown: boolean = false
 
@@ -33,10 +37,12 @@
   }
 </script>
 
-<!-- svelte-ignore a11y-click-events-have-key-events -->
 {#if kind === 'link'}
-  <div
-    class="link-container"
+  <Button
+    {kind}
+    {size}
+    {justify}
+    {width}
     on:click={(ev) => {
       if (!shown && !readonly) {
         showPopup(EditBoxPopup, { value }, eventToHTMLElement(ev), (res) => {
@@ -49,12 +55,14 @@
       }
     }}
   >
-    {#if value}
-      <span class="overflow-label">{value}</span>
-    {:else}
-      <span class="dark-color"><Label label={placeholder} /></span>
-    {/if}
-  </div>
+    <svelte:fragment slot="content">
+      {#if value}
+        <span class="overflow-label">{value}</span>
+      {:else}
+        <span class="dark-color"><Label label={placeholder} /></span>
+      {/if}
+    </svelte:fragment>
+  </Button>
 {:else if readonly}
   {#if value}
     <span class="overflow-label">{value}</span>
@@ -64,22 +72,3 @@
 {:else}
   <EditBox {placeholder} bind:value {focus} on:change={_onchange} />
 {/if}
-
-<style lang="scss">
-  .link-container {
-    display: flex;
-    align-items: center;
-    padding: 0 0.875rem;
-    width: 100%;
-    height: 2rem;
-    border: 1px solid transparent;
-    border-radius: 0.25rem;
-    cursor: pointer;
-    color: var(--caption-color);
-
-    &:hover {
-      background-color: var(--body-color);
-      border-color: var(--divider-color);
-    }
-  }
-</style>

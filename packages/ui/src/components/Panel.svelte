@@ -20,6 +20,8 @@
   import IconDetails from './icons/Details.svelte'
   import IconScale from './icons/Scale.svelte'
   import IconScaleFull from './icons/ScaleFull.svelte'
+  import IconMinWidth from './icons/MinWidth.svelte'
+  import IconMaxWidth from './icons/MaxWidth.svelte'
   import Scroller from './Scroller.svelte'
   import { deviceOptionsStore as deviceInfo } from '../../'
 
@@ -31,12 +33,13 @@
   export let withoutTitle: boolean = false
   export let floatAside = false
   export let allowClose = true
-  export let useMaxWidth = false
+  export let useMaxWidth: boolean | undefined = undefined
 
   const dispatch = createEventDispatcher()
 
   let asideFloat: boolean = false
   let asideShown: boolean = true
+  let fullSize: boolean = false
   $: twoRows = $deviceInfo.minWidth
 
   let oldWidth = ''
@@ -99,7 +102,9 @@
       </div>
       <div class="buttons-group xsmall-gap">
         <slot name="utils" />
-        {#if isFullSize || (asideFloat && $$slots.aside && isAside)}<div class="buttons-divider" />{/if}
+        {#if isFullSize || useMaxWidth !== undefined || ($$slots.aside && isAside)}
+          <div class="buttons-divider" />
+        {/if}
         {#if $$slots.aside && isAside}
           <Button
             icon={IconDetails}
@@ -111,14 +116,26 @@
             }}
           />
         {/if}
-        {#if isFullSize}
+        {#if useMaxWidth !== undefined}
           <Button
-            icon={useMaxWidth ? IconScale : IconScaleFull}
+            icon={useMaxWidth ? IconMaxWidth : IconMinWidth}
             kind={'transparent'}
             size={'medium'}
             selected={useMaxWidth}
             on:click={() => {
               useMaxWidth = !useMaxWidth
+              dispatch('maxWidth', useMaxWidth)
+            }}
+          />
+        {/if}
+        {#if isFullSize}
+          <Button
+            icon={fullSize ? IconScale : IconScaleFull}
+            kind={'transparent'}
+            size={'medium'}
+            selected={fullSize}
+            on:click={() => {
+              fullSize = !fullSize
               dispatch('fullsize')
             }}
           />
