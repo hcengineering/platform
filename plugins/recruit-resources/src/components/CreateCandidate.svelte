@@ -71,7 +71,7 @@
 
   const draft: CandidateDraft | undefined = shouldSaveDraft ? getUserDraft(recruit.mixin.Candidate) : undefined
   const emptyObject = {
-    title: '',
+    title: undefined,
     city: '',
     avatar: undefined,
     onsite: undefined,
@@ -109,7 +109,7 @@
     } as Candidate
   }
 
-  let object: Candidate = toCandidate(draft)
+  const object: Candidate = toCandidate(draft)
 
   function resumeDraft () {
     return {
@@ -219,7 +219,7 @@
     const emptyDraft: Partial<CandidateDraft> = {
       firstName: '',
       lastName: '',
-      title: '',
+      title: undefined,
       city: '',
       resumeUuid: undefined,
       resumeName: undefined,
@@ -520,7 +520,6 @@
   const manager = createFocusManager()
 
   function resetObject (): void {
-    object = emptyObject as Candidate
     candidateId = generateId()
     avatar = undefined
     firstName = ''
@@ -528,6 +527,11 @@
     channels = []
     skills = []
     resume = {} as resumeFile
+    object.title = undefined
+    object.city = ''
+    object.avatar = undefined
+    object.onsite = undefined
+    object.remote = undefined
   }
 
   export async function onOutsideClick () {
@@ -543,7 +547,6 @@
     const isFormEmpty = await isDraftEmpty(newDraft)
 
     if (isFormEmpty) {
-      console.log('isFormEmpty')
       dispatch('close')
     } else {
       showPopup(
