@@ -31,7 +31,11 @@
   $: tweenedHeight.set(isExpanded ? height : 0, { duration, easing })
 </script>
 
-<div class="root" style="height: {$tweenedHeight}px" style:overflow={isExpanded ? 'visible' : 'hidden'}>
+<div
+  class="root"
+  style="height: {$tweenedHeight}px;"
+  style:overflow={$tweenedHeight < height ? 'auto' : $tweenedHeight === 0 ? 'hidden' : 'visible'}
+>
   <div bind:offsetHeight={height} class="flex-no-shrink clear-mins">
     <slot />
   </div>

@@ -561,9 +561,11 @@
         }
       }
     }
-    .formatPanel {
+    &:focus-within .formatPanel {
       position: sticky;
       top: 1.25rem;
+    }
+    .formatPanel {
       margin: -0.5rem -0.25rem 0.5rem;
       padding: 0.375rem;
       background-color: var(--body-accent);
