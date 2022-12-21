@@ -17,7 +17,7 @@
   import { IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import { Sprint, Team } from '@hcengineering/tracker'
-  import { closePopup, closeTooltip, location } from '@hcengineering/ui'
+  import { closePopup, closeTooltip, getCurrentLocation, location, navigate } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import tracker from '../../plugin'
   import { SprintViewMode } from '../../utils'
@@ -53,7 +53,14 @@
 </script>
 
 {#if sprint}
-  <EditSprint {sprint} />
+  <EditSprint
+    {sprint}
+    on:sprint={(evt) => {
+      const loc = getCurrentLocation()
+      loc.path[5] = evt.detail
+      navigate(loc)
+    }}
+  />
 {:else}
   <SprintBrowser {label} query={{ space: currentSpace }} {search} {mode} />
 {/if}
