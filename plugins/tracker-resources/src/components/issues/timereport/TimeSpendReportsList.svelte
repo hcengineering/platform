@@ -65,6 +65,7 @@
   }
 </script>
 
+<!-- svelte-ignore a11y-click-events-have-key-events -->
 <ListView count={reports.length}>
   <svelte:fragment slot="item" let:item>
     {@const report = reports[item]}
@@ -100,7 +101,7 @@
           </span>
         {/if}
       </div>
-      <div class="flex-center flex-no-shrink">
+      <div class="flex-center flex-no-shrink gap-2">
         <UserBox
           label={tracker.string.Assignee}
           _class={contact.class.Employee}
