@@ -76,6 +76,10 @@
     query.unsubscribe()
   }
 
+  $: if (_class) {
+    mainEditor = undefined
+  }
+
   let keys: KeyedAttribute[] = []
   let fieldEditors: { key: KeyedAttribute; editor: AnyComponent; category: AttributeCategory }[] = []
 
