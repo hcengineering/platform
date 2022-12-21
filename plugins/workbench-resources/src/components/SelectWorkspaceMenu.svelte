@@ -14,13 +14,26 @@
 -->
 <script lang="ts">
   import login from '@hcengineering/login'
-  import { navigateToWorkspace, selectWorkspace, setLoginInfo, Workspace } from '@hcengineering/login-resources'
+  import {
+    getWorkspaces,
+    navigateToWorkspace,
+    selectWorkspace,
+    setLoginInfo,
+    Workspace
+  } from '@hcengineering/login-resources'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { Loading, locationToUrl, Menu, navigate } from '@hcengineering/ui'
   import { workbenchId } from '@hcengineering/workbench'
+  import { onMount } from 'svelte'
   import workbench from '../plugin'
 
-  export let workspaces: Workspace[]
+  let workspaces: Workspace[] = []
+
+  onMount(() => {
+    getWorkspaces().then((ws: Workspace[]) => {
+      workspaces = ws
+    })
+  })
 
   $: actions = [
     ...workspaces.map((w) => ({
