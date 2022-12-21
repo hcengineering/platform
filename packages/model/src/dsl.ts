@@ -50,8 +50,6 @@ import core, {
 import type { Asset, IntlString } from '@hcengineering/platform'
 import toposort from 'toposort'
 
-type NoIDs<T extends Tx> = Omit<T, '_id' | 'objectId'>
-
 const targets = new Map<any, Map<string, IndexKind>>()
 
 function setIndex (target: any, property: string, index: IndexKind): void {
@@ -74,7 +72,7 @@ interface ClassTxes {
   domain?: Domain
   label: IntlString
   icon?: Asset
-  txes: Array<NoIDs<Tx>>
+  txes: Array<Tx>
   kind: ClassifierKind
   shortLabel?: IntlString
   sortingKey?: string
@@ -125,12 +123,14 @@ function getAttrs (target: any, prop: string): Record<string, any> {
 export function Prop (type: Type<PropertyType>, label: IntlString, icon?: Asset, shortLabel?: IntlString) {
   return function (target: any, propertyKey: string): void {
     const txes = getTxes(target)
-    const tx: NoIDs<TxCreateDoc<Attribute<PropertyType>>> = {
+    const tx: TxCreateDoc<Attribute<PropertyType>> = {
+      _id: generateId(),
       _class: core.class.TxCreateDoc,
       space: core.space.Tx,
       modifiedBy: core.account.System,
       modifiedOn: Date.now(),
       objectSpace: core.space.Model,
+      objectId: propertyKey as Ref<Attribute<PropertyType>>,
       objectClass: core.class.Attribute,
       attributes: {
         name: propertyKey,
@@ -236,12 +236,11 @@ export function UX<T extends Obj> (label: IntlString, icon?: Asset, shortLabel?:
   }
 }
 
-function generateIds (objectId: Ref<Doc>, txes: NoIDs<TxCreateDoc<Attribute<PropertyType>>>[]): Tx[] {
+function generateIds (objectId: Ref<Doc>, txes: TxCreateDoc<Attribute<PropertyType>>[]): Tx[] {
   return txes.map((tx) => {
     const withId = {
-      _id: generateId<Tx>(),
-      objectId: generateId(),
-      ...tx
+      ...tx,
+      objectId: `${objectId}_${tx.objectId}`
     }
     withId.attributes.attributeOf = objectId as Ref<Class<Obj>>
     return withId
@@ -273,7 +272,7 @@ function _generateTx (tx: ClassTxes): Tx[] {
     },
     objectId
   )
-  return [createTx, ...generateIds(objectId, tx.txes as NoIDs<TxCreateDoc<Attribute<PropertyType>>>[])]
+  return [createTx, ...generateIds(objectId, tx.txes as TxCreateDoc<Attribute<PropertyType>>[])]
 }
 
 /**
