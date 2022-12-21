@@ -316,9 +316,9 @@ export function getCategories (
   if (key === undefined) {
     return [undefined] // No grouping
   }
-  const defaultStatuses = listIssueStatusOrder.map(
-    (category) => statuses.find((status) => status.category === category)?._id
-  )
+  const defaultStatuses = listIssueStatusOrder
+    .map((category) => statuses.filter((status) => status.category === category).map((item) => item._id))
+    .flat()
 
   const existingCategories = Array.from(new Set(elements.map((x: any) => x[key] ?? undefined)))
 
