@@ -1,130 +1,32 @@
-import { test, expect, Page } from '@playwright/test'
-import { generateId, PlatformSetting, PlatformURI } from './utils'
+import { test, expect } from '@playwright/test'
+import {
+  checkIssue,
+  createIssue,
+  createLabel,
+  createSubissue,
+  DEFAULT_STATUSES,
+  DEFAULT_USER,
+  navigate,
+  openIssue,
+  ViewletSelectors
+} from './tracker.utils'
+import { generateId, PlatformSetting } from './utils'
 test.use({
   storageState: PlatformSetting
 })
-
-async function navigate (page: Page): Promise<void> {
-  await page.goto(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/sanity-ws`)
-  await page.click('[id="app-tracker\\:string\\:TrackerApplication"]')
-  await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/sanity-ws/tracker`)
-}
-
-interface IssueProps {
-  name: string
-  description?: string
-  status?: string
-  labels?: string[]
-  priority?: string
-  assignee?: string
-}
-
-async function fillIssueForm (
-  page: Page,
-  { name, description, status, assignee, labels, priority }: IssueProps
-): Promise<void> {
-  await page.fill('[placeholder="Issue\\ title"]', name)
-  if (description !== undefined) {
-    await page.fill('.ProseMirror', description)
-  }
-  if (status !== undefined) {
-    await page.click('#status-editor')
-    await page.click(`.menu-item:has-text("${status}")`)
-  }
-  if (priority !== undefined) {
-    await page.click('button:has-text("No priority")')
-    await page.click(`.selectPopup button:has-text("${priority}")`)
-  }
-  if (labels !== undefined) {
-    await page.click('.button:has-text("Labels")')
-    for (const label of labels) {
-      await page.click(`.selectPopup button:has-text("${label}") >> nth=0`)
-    }
-    await page.keyboard.press('Escape')
-  }
-  if (assignee !== undefined) {
-    await page.click('.button:has-text("Assignee")')
-    await page.click(`.selectPopup button:has-text("${assignee}")`)
-  }
-}
-
-async function createIssue (page: Page, props: IssueProps): Promise<void> {
-  await page.waitForSelector('span:has-text("Default")')
-  await page.click('button:has-text("New issue")')
-  await fillIssueForm(page, props)
-  await page.click('button:has-text("Save issue")')
-  await page.waitForSelector('form.antiCard', { state: 'detached' })
-}
-
-async function createSubissue (page: Page, props: IssueProps): Promise<void> {
-  await page.click('button:has-text("Add sub-issue")')
-  await fillIssueForm(page, props)
-  await page.click('button:has-text("Save")')
-}
-
-interface LabelProps {
-  label: string
-}
-async function createLabel (page: Page, { label }: LabelProps): Promise<void> {
-  await page.click('button:has-text("New issue")')
-  await page.click('button:has-text("Labels")')
-  await page.click('.buttons-group >> button >> nth=-1')
-  await page.fill('[id="tags:string:AddTag"] >> input >> nth=0', label)
-  await page.click('[id="tags:string:AddTag"] >> button:has-text("Create")')
-  await page.waitForSelector('form.antiCard[id="tags:string:AddTag"]', { state: 'detached' })
-  await page.keyboard.press('Escape')
-  await page.waitForTimeout(100)
-  await page.keyboard.press('Escape')
-}
-
-async function checkIssue (
-  page: Page,
-  { name, description, status, assignee, labels, priority }: IssueProps
-): Promise<void> {
-  if (name !== undefined) {
-    await expect(page.locator('.popupPanel')).toContainText(name)
-  }
-  if (description !== undefined) {
-    await expect(page.locator('.popupPanel')).toContainText(description)
-  }
-  const asideLocator = page.locator('.popupPanel-body__aside')
-  if (status !== undefined) {
-    await expect(asideLocator).toContainText(status)
-  }
-  if (labels !== undefined) {
-    await expect(asideLocator).toContainText(labels)
-  }
-  if (priority !== undefined) {
-    await expect(asideLocator).toContainText(priority)
-  }
-  if (assignee !== undefined) {
-    await expect(asideLocator).toContainText(assignee)
-  }
-}
-
-async function openIssue (page: Page, name: string): Promise<void> {
-  await page.click(`.antiList__row:has-text("${name}") .issuePresenterRoot`)
-}
-
-const defaultStatuses = ['Backlog', 'Todo', 'In Progress', 'Done', 'Canceled']
-const defaultUser = 'Appleseed John'
-enum viewletSelectors {
-  Table = '.tablist-container >> div.button:nth-child(1)',
-  Board = '.tablist-container >> div.button:nth-child(2)'
-}
 
 test('create-issue-and-sub-issue', async ({ page }) => {
   const props = {
     name: getIssueName(),
     description: 'description',
     labels: ['label', 'another-label'],
-    status: defaultStatuses[0],
+    status: DEFAULT_STATUSES[0],
     priority: 'Urgent',
-    assignee: defaultUser
+    assignee: DEFAULT_USER
   }
   await navigate(page)
   for (const label of props.labels) {
-    await createLabel(page, { label })
+    await createLabel(page, label)
   }
   await createIssue(page, props)
   await page.click('text="Issues"')
@@ -140,22 +42,22 @@ const getIssueName = (postfix: string = generateId(5)): string => `issue-${postf
 
 test('issues-status-display', async ({ page }) => {
   const panelStatusMap = new Map([
-    ['Issues', defaultStatuses],
+    ['Issues', DEFAULT_STATUSES],
     ['Active', ['Todo', 'In Progress']],
     ['Backlog', ['Backlog']]
   ])
   const locator = page.locator('.issueslist-container')
   await navigate(page)
-  for (const status of defaultStatuses) {
+  for (const status of DEFAULT_STATUSES) {
     await createIssue(page, { name: getIssueName(status), status })
   }
   for (const [panel, statuses] of panelStatusMap) {
-    const excluded = defaultStatuses.filter((status) => !statuses.includes(status))
+    const excluded = DEFAULT_STATUSES.filter((status) => !statuses.includes(status))
     await page.locator(`text="${panel}"`).click()
-    await page.click(viewletSelectors.Table)
+    await page.click(ViewletSelectors.Table)
     await expect(locator).toContainText(statuses)
     if (excluded.length > 0) await expect(locator).not.toContainText(excluded)
-    await page.click(viewletSelectors.Board)
+    await page.click(ViewletSelectors.Board)
     if (excluded.length > 0) await expect(locator).not.toContainText(excluded)
     for (const status of statuses) {
       await expect(page.locator(`.panel-container:has-text("${status}")`)).toContainText(getIssueName(status))
@@ -166,7 +68,7 @@ test('issues-status-display', async ({ page }) => {
 test('save-view-options', async ({ page }) => {
   const panels = ['Issues', 'Active', 'Backlog']
   await navigate(page)
-  for (const viewletSelector of [viewletSelectors.Board, viewletSelectors.Table]) {
+  for (const viewletSelector of [ViewletSelectors.Board, ViewletSelectors.Table]) {
     for (const panel of panels) {
       await page.click(`text="${panel}"`)
       await page.click(viewletSelector)

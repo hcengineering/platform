@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test'
+import { navigate } from './tracker.utils'
 import { generateId, PlatformSetting, PlatformURI } from './utils'
 
 test.use({
@@ -13,6 +14,7 @@ test.describe('project tests', () => {
   test('create-project-issue', async ({ page }) => {
     await page.click('[id="app-tracker\\:string\\:TrackerApplication"]')
 
+    await navigate(page)
     // Click text=Projects
     await page.click('text=Projects')
     await expect(page).toHaveURL(
