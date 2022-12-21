@@ -23,6 +23,7 @@
     day as getDay,
     daysInMonth,
     eventToHTMLElement,
+    floorFractionDigits,
     getWeekDayName,
     isWeekend,
     Label,
@@ -113,9 +114,12 @@
 
   function findReports (employee: Employee, date: Date, timeReports: Map<Ref<Employee>, EmployeeReports>): number {
     const wday = date.getDate()
-    return (timeReports.get(employee._id)?.reports ?? [])
-      .filter((it) => new Date(it.date ?? 0).getDate() === wday)
-      .reduce((a, b) => a + b.value, 0)
+    return floorFractionDigits(
+      (timeReports.get(employee._id)?.reports ?? [])
+        .filter((it) => new Date(it.date ?? 0).getDate() === wday)
+        .reduce((a, b) => a + b.value, 0),
+      3
+    )
   }
 </script>
 
