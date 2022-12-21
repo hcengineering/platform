@@ -21,19 +21,33 @@
 <div class="spinner spinner-{size}">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
     <linearGradient id="a" gradientUnits="userSpaceOnUse" x1="0" y1="22" x2="0" y2="2">
-      <stop offset="0" stop-color={'var(--theme-caption-color)'} />
-      <stop offset="1" stop-color={'var(--theme-caption-color)'} stop-opacity="0" />
+      <stop offset="0" stop-color={'var(--caption-color)'} />
+      <stop offset="1" stop-color={'var(--caption-color)'} stop-opacity="0" />
     </linearGradient>
-    <path d="M12 0v1c6.1 0 11 4.9 11 11s-4.9 11-11 11v1c6.6 0 12-5.4 12-12S18.6 0 12 0z" fill="url(#a)" />
-    <path d="M12 23C5.9 23 1 18.1 1 12S5.9 1 12 1V0C5.4 0 0 5.4 0 12s5.4 12 12 12v-1z" fill="#fff" />
+    <g>
+      <animateTransform
+        attributeName="transform"
+        attributeType="XML"
+        type="rotate"
+        from="0 12 12"
+        to="360 12 12"
+        dur="1s"
+        repeatCount="indefinite"
+      />
+      <path
+        d="M12,22.5C6.2,22.5,1.5,17.8,1.5,12C1.5,6.2,6.2,1.5,12,1.5v-1C5.6,0.5,0.5,5.6,0.5,12c0,6.4,5.1,11.5,11.5,11.5V22.5z"
+        fill="var(--caption-color)"
+      />
+      <path
+        d="M12,0.5v1c5.8,0,10.5,4.7,10.5,10.5c0,5.8-4.7,10.5-10.5,10.5v1c6.4,0,11.5-5.1,11.5-11.5C23.5,5.6,18.4,0.5,12,0.5z"
+        fill="url(#a)"
+      />
+    </g>
   </svg>
 </div>
 
 <style lang="scss">
   .spinner {
-    -webkit-animation: spinCircle 1s infinite linear;
-    animation: spinCircle 1s infinite linear;
-
     &-inline {
       width: 0.75rem;
       height: 0.75rem;
@@ -53,22 +67,6 @@
     &-x-large {
       width: 3rem;
       height: 3rem;
-    }
-  }
-  @-webkit-keyframes spinCircle {
-    from {
-      -webkit-transform: rotate(0deg);
-    }
-    to {
-      -webkit-transform: rotate(359deg);
-    }
-  }
-  @keyframes spinCircle {
-    from {
-      transform: rotate(0deg);
-    }
-    to {
-      transform: rotate(359deg);
     }
   }
 </style>

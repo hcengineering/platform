@@ -107,7 +107,9 @@
     </div>
   {/if}
   {#if loading}
-    <Spinner size={iconSize} />
+    <div class="btn-icon pointer-events-none caption-color spinner" class:resetIconSize>
+      <Spinner size={iconSize} />
+    </div>
   {/if}
   {#if label}
     <span class="overflow-label disabled pointer-events-none" class:ml-2={loading}>
@@ -172,7 +174,7 @@
       transition: color 0.15s;
       pointer-events: none;
     }
-    &:not(.only-icon) .btn-icon {
+    &:not(.only-icon) .btn-icon:not(.spinner) {
       margin-right: 0.5rem;
     }
     &.no-border:not(.only-icon) .btn-icon,
