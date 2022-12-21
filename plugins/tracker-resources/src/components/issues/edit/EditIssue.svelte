@@ -265,7 +265,7 @@
     on:close={() => dispatch('close')}
   >
     <svelte:fragment slot="navigator">
-      <UpDownNavigator element={issue} showBackButton={!!parentIssue} />
+      <UpDownNavigator element={issue} />
     </svelte:fragment>
     <svelte:fragment slot="header">
       <span class="fs-title">
