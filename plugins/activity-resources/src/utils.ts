@@ -17,8 +17,8 @@ import { Asset, IntlString, translate } from '@hcengineering/platform'
 import { AnyComponent, AnySvelteComponent } from '@hcengineering/ui'
 import { AttributeModel } from '@hcengineering/view'
 import { buildModel, getObjectPresenter } from '@hcengineering/view-resources'
-import { ActivityKey, activityKey, DisplayTx } from '../activity'
-import activity from '../plugin'
+import { ActivityKey, activityKey, DisplayTx } from './activity'
+import activity from './plugin'
 
 export type TxDisplayViewlet =
   | (Pick<TxViewlet, 'icon' | 'label' | 'display' | 'editable' | 'hideOnRemove' | 'labelComponent' | 'labelParams'> & {

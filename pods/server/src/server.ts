@@ -52,6 +52,7 @@ import { serverRecruitId } from '@hcengineering/server-recruit'
 import { serverSettingId } from '@hcengineering/server-setting'
 import { serverTagsId } from '@hcengineering/server-tags'
 import { serverTaskId } from '@hcengineering/server-task'
+import { serverRequestId } from '@hcengineering/server-request'
 import { serverTelegramId } from '@hcengineering/server-telegram'
 import { Token } from '@hcengineering/server-token'
 import { serverTrackerId } from '@hcengineering/server-tracker'
@@ -83,6 +84,7 @@ export function start (
   addLocation(serverCalendarId, () => import('@hcengineering/server-calendar-resources'))
   addLocation(serverGmailId, () => import('@hcengineering/server-gmail-resources'))
   addLocation(serverTelegramId, () => import('@hcengineering/server-telegram-resources'))
+  addLocation(serverRequestId, () => import('@hcengineering/server-request-resources'))
   addLocation(serverHrId, () => import('@hcengineering/server-hr-resources'))
 
   const middlewares: MiddlewareCreator[] = [ModifiedMiddleware.create, PrivateMiddleware.create]

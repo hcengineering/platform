@@ -197,7 +197,7 @@ class ActivityImpl implements Activity {
 
     for (const tx of ownTxes) {
       if (!this.filterUpdateTx(tx)) continue
-      const result = this.createDisplayTx(tx, parents)
+      const [result] = this.createDisplayTx(tx, parents)
       // Combine previous update transaction for same field and if same operation and time treshold is ok
       ownResults = this.integrateTxWithResults(ownResults, result, editable)
       this.updateRemovedState(result, ownResults)
@@ -212,10 +212,12 @@ class ActivityImpl implements Activity {
         if (changeAttached) {
           tx = await this.createFakeTx(doc, tx)
         }
-        const result = this.createDisplayTx(tx, parents)
-        // Combine previous update transaction for same field and if same operation and time treshold is ok
-        attachedResults = this.integrateTxWithResults(attachedResults, result, editable)
-        this.updateRemovedState(result, attachedResults)
+        const [result, isUpdated, isMixin] = this.createDisplayTx(tx, parents)
+        if (!(isUpdated || isMixin)) {
+          // Combine previous update transaction for same field and if same operation and time treshold is ok
+          attachedResults = this.integrateTxWithResults(attachedResults, result, editable)
+          this.updateRemovedState(result, attachedResults)
+        }
       }
     }
     return Array.from(ownResults).concat(attachedResults)
@@ -267,7 +269,11 @@ class ActivityImpl implements Activity {
       return false
     }
     const tx = TxProcessor.extractTx(cltx)
-    if ([core.class.TxCreateDoc, core.class.TxUpdateDoc, core.class.TxRemoveDoc].includes(tx._class)) return true
+    if (
+      [core.class.TxCreateDoc, core.class.TxUpdateDoc, core.class.TxRemoveDoc, core.class.TxMixin].includes(tx._class)
+    ) {
+      return true
+    }
     return false
   }
 
@@ -300,7 +306,7 @@ class ActivityImpl implements Activity {
     return !this.hiddenAttributes.has(ops[0])
   }
 
-  createDisplayTx (tx: TxCUD<Doc>, parents: Map<Ref<Doc>, DisplayTx>): DisplayTx {
+  createDisplayTx (tx: TxCUD<Doc>, parents: Map<Ref<Doc>, DisplayTx>): [DisplayTx, boolean, boolean] {
     let collectionAttribute: Attribute<Collection<AttachedDoc>> | undefined
     if (this.hierarchy.isDerived(tx._class, core.class.TxCollectionCUD)) {
       const cltx = tx as TxCollectionCUD<Doc, AttachedDoc>
@@ -328,11 +334,11 @@ class ActivityImpl implements Activity {
     parents.set(tx.objectId, firstTx)
 
     // If we have updates also apply them all.
-    this.checkUpdateState(result, firstTx)
-    this.checkMixinState(result, firstTx)
+    const isUpdated = this.checkUpdateState(result, firstTx)
+    const isMixin = this.checkMixinState(result, firstTx)
 
     this.checkRemoveState(tx, firstTx, result)
-    return result
+    return [result, isUpdated, isMixin]
   }
 
   private checkRemoveState (tx: TxCUD<Doc>, firstTx: DisplayTx, result: DisplayTx): void {

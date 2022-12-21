@@ -32,6 +32,7 @@ import { serverCalendarId } from '@hcengineering/server-calendar'
 import { serverGmailId } from '@hcengineering/server-gmail'
 import { serverTelegramId } from '@hcengineering/server-telegram'
 import { serverHrId } from '@hcengineering/server-hr'
+import { serverRequestId } from '@hcengineering/server-request'
 
 import { setMetadata } from '@hcengineering/platform'
 
@@ -58,7 +59,8 @@ export function configurePlatformDev() {
     addLocation(serverCalendarId, () => import/* webpackChunkName: "server-calendar" */ ('@hcengineering/server-calendar-resources'))
     addLocation(serverGmailId, () => import/* webpackChunkName: "server-gmail" */ ('@hcengineering/server-gmail-resources'))
     addLocation(serverTelegramId, () => import/* webpackChunkName: "server-telegram" */ ('@hcengineering/server-telegram-resources'))
-    addLocation(serverHrId, () => import(/* webpackChunkName: "server-attachment" */ '@hcengineering/server-hr-resources'))
+    addLocation(serverHrId, () => import(/* webpackChunkName: "server-hr" */ '@hcengineering/server-hr-resources'))
+    addLocation(serverRequestId, () => import(/* webpackChunkName: "server-request" */ '@hcengineering/server-request-resources'))
     // Set devmodel to hook client to be able to present all activity
     enableDevModel()
 }

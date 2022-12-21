@@ -1414,7 +1414,6 @@
       "projectFolder": "server/minio",
       "shouldPublish": true
     },
-
     {
       "packageName": "@hcengineering/bitrix",
       "projectFolder": "plugins/bitrix",
@@ -1434,6 +1433,41 @@
       "packageName": "@hcengineering/model-bitrix",
       "projectFolder": "models/bitrix",
       "shouldPublish": true
-    },    
+    },
+    {
+      "packageName": "@hcengineering/request",
+      "projectFolder": "plugins/request",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/request-assets",
+      "projectFolder": "plugins/request-assets",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/request-resources",
+      "projectFolder": "plugins/request-resources",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/model-request",
+      "projectFolder": "models/request",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/server-request",
+      "projectFolder": "server-plugins/request",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/model-server-request",
+      "projectFolder": "models/server-request",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/server-request-resources",
+      "projectFolder": "server-plugins/request-resources",
+      "shouldPublish": true
+    },
   ]
 }

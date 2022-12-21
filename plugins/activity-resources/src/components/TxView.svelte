@@ -36,7 +36,7 @@
   import { ActivityKey, DisplayTx } from '../activity'
   import activity from '../plugin'
   import TxViewTx from './TxViewTx.svelte'
-  import { getValue, TxDisplayViewlet, updateViewlet } from './utils'
+  import { getValue, TxDisplayViewlet, updateViewlet } from '../utils'
 
   export let tx: DisplayTx
   export let viewlets: Map<ActivityKey, TxViewlet>
@@ -451,5 +451,9 @@
 
   .message {
     flex-basis: 100%;
+  }
+
+  .lower {
+    text-transform: lowercase;
   }
 </style>

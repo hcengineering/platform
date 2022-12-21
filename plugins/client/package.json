@@ -5,7 +5,11 @@
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
   "typings": "lib/index.d.ts",
-  "files": ["lib/**/*", "src/**/*", "tsconfig.json"],
+  "files": [
+    "lib/**/*",
+    "src/**/*",
+    "tsconfig.json"
+  ],
   "scripts": {
     "build": "heft build",
     "build:watch": "tsc",

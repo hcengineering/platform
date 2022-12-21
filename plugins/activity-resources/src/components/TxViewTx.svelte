@@ -2,7 +2,7 @@
   import core, { Class, Doc, Ref } from '@hcengineering/core'
   import { Component, IconAdd, IconDelete } from '@hcengineering/ui'
   import { DisplayTx } from '../activity'
-  import { getDTxProps, TxDisplayViewlet } from './utils'
+  import { getDTxProps, TxDisplayViewlet } from '../utils'
 
   export let tx: DisplayTx
   export let viewlet: TxDisplayViewlet

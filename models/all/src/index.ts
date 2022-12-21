@@ -60,6 +60,8 @@ import { createModel as hrModel } from '@hcengineering/model-hr'
 import { createModel as serverHrModel } from '@hcengineering/model-server-hr'
 import { createModel as documentModel } from '@hcengineering/model-document'
 import { createModel as bitrixModel } from '@hcengineering/model-bitrix'
+import { createModel as requestModel } from '@hcengineering/model-request'
+import { createModel as serverRequestModel } from '@hcengineering/model-server-request'
 
 export const version: Data<Version> = jsonVersion as Data<Version>
 
@@ -92,6 +94,7 @@ const builders: [(b: Builder) => void, string][] = [
   [boardModel, 'board'],
   [calendarModel, 'calendar'],
   [bitrixModel, 'bitrix'],
+  [requestModel, 'request'],
 
   [serverCoreModel, 'server-core'],
   [serverAttachmentModel, 'server-attachment'],
@@ -109,6 +112,7 @@ const builders: [(b: Builder) => void, string][] = [
   [serverTelegramModel, 'server-telegram'],
   [serverHrModel, 'server-hr'],
   [serverNotificationModel, 'server-notification'],
+  [serverRequestModel, 'server-request'],
   [automationModel, 'automation']
 ]
 

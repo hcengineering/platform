@@ -22,7 +22,7 @@
   import { Component, Grid, IconActivity, Label, Scroller, Button, showPopup } from '@hcengineering/ui'
   import { ActivityKey, activityKey, DisplayTx, newActivity } from '../activity'
   import TxView from './TxView.svelte'
-  import { filterCollectionTxes } from './utils'
+  import { filterCollectionTxes } from '../utils'
   import { Writable } from 'svelte/store'
   import view from '@hcengineering/view'
   import activityPlg from '../plugin'
