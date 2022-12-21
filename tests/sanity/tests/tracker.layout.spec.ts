@@ -77,6 +77,7 @@ async function initIssues (page: Page): Promise<IssueProps[]> {
 
 test.describe('tracker layout tests', () => {
   test.beforeEach(async ({ page }) => {
+    test.setTimeout(60000)
     await navigate(page)
     issuesProps = await initIssues(page)
   })
