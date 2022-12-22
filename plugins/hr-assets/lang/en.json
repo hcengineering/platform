@@ -22,6 +22,7 @@
     "RequestType": "Type",
     "CreateRequest": "Create {type}",
     "Today": "Today",
+    "Summary": "Total",
     "NoEmployeesInDepartment": "There are no employees in the selected department",
     "Vacation": "Vacation",
     "Sick": "Sick",

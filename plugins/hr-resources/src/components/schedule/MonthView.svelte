@@ -52,8 +52,13 @@
 
   const todayDate = new Date()
 
-  function getRequests (employee: Ref<Staff>, date: Date): Request[] {
-    const requests = employeeRequests.get(employee)
+  function getRequests (date: Date, employee?: Ref<Staff>): Request[] {
+    let requests = undefined
+    if (employee) {
+      requests = employeeRequests.get(employee)
+    } else {
+      requests = Array.from(employeeRequests.values()).flat()
+    }
     if (requests === undefined) return []
     const res: Request[] = []
     const time = date.getTime()
@@ -176,7 +181,7 @@
             </td>
             {#each values as value, i}
               {@const date = getDay(startDate, value)}
-              {@const requests = getRequests(employee._id, date)}
+              {@const requests = getRequests(date, employee._id)}
               {@const editable = isEditable(employee)}
               {@const tooltipValue = getTooltip(requests)}
               {@const ww = findReports(employee, date, timeReports)}
@@ -208,6 +213,40 @@
             {/each}
           </tr>
         {/each}
+        <tr>
+          <td class="summary">
+            <Label label={hr.string.Summary} />
+          </td>
+          <td class="flex-center p-1 whitespace-nowrap text-center summary">
+            {getTotal(Array.from(employeeRequests.values()).flat(), startDate.getMonth(), types)}
+          </td>
+          <td class="p-1 text-center summary">
+            {floorFractionDigits(
+              Array.from(timeReports.values())
+                .flat()
+                .reduce((a, b) => a + b.value, 0),
+              3
+            )}
+          </td>
+          {#each values as value, i}
+            {@const date = getDay(startDate, value)}
+            {@const requests = getRequests(date)}
+            <td
+              class="p-1 text-center summary"
+              class:hovered={i === hoveredIndex}
+              class:weekend={isWeekend(date)}
+              class:today={areDatesEqual(todayDate, date)}
+              on:mousemove={() => {
+                hoveredColumn = i
+              }}
+              on:mouseleave={() => {
+                hoveredColumn = -1
+              }}
+            >
+              {getTotal(requests, startDate.getMonth(), types)}
+            </td>
+          {/each}
+        </tr>
       </tbody>
     </table>
   </Scroller>
@@ -268,6 +307,9 @@
       color: var(--caption-color);
       &.today {
         background-color: var(--theme-bg-accent-hover);
+      }
+      &.summary {
+        font-weight: 600;
       }
       &.weekend:not(.today) {
         background-color: var(--theme-bg-accent-color);
