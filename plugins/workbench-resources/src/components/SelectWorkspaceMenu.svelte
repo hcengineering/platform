@@ -73,7 +73,7 @@
 </script>
 
 {#if workspaces.length}
-  <Menu {actions} on:close />
+  <Menu {actions} on:update on:close />
 {:else}
   <Loading />
 {/if}

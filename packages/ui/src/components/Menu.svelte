@@ -69,6 +69,7 @@
   }
 
   onMount(() => {
+    dispatch('update')
     if (btns[0]) {
       btns[0].focus()
     }
