@@ -31,8 +31,13 @@
 
   const todayDate = new Date()
 
-  function getRequests (employeeRequests: Map<Ref<Staff>, Request[]>, employee: Ref<Staff>, date: Date): Request[] {
-    const requests = employeeRequests.get(employee)
+  function getRequests (employeeRequests: Map<Ref<Staff>, Request[]>, date: Date, employee?: Ref<Staff>): Request[] {
+    let requests = undefined
+    if (employee) {
+      requests = employeeRequests.get(employee)
+    } else {
+      requests = Array.from(employeeRequests.values()).flat()
+    }
     if (requests === undefined) return []
     const res: Request[] = []
     const time = date.getTime()
@@ -117,7 +122,7 @@
             </td>
             {#each values as value, i}
               {@const month = getMonth(currentDate, value)}
-              {@const requests = getRequests(employeeRequests, employee._id, month)}
+              {@const requests = getRequests(employeeRequests, month, employee._id)}
               {@const tooltipValue = getTooltip(requests)}
               {#key tooltipValue}
                 <td
@@ -134,6 +139,23 @@
             {/each}
           </tr>
         {/each}
+        <tr class="tr-body">
+          <td class="fixed td-body summary">
+            <Label label={hr.string.Summary} />
+          </td>
+          {#each values as value, i}
+            {@const month = getMonth(currentDate, value)}
+            {@const requests = getRequests(employeeRequests, month)}
+            <td
+              class:today={month.getFullYear() === todayDate.getFullYear() && month.getMonth() === todayDate.getMonth()}
+              class="fixed td-body summary"
+            >
+              <div class="flex-center">
+                {getTotal(requests, value, types)}
+              </div>
+            </td>
+          {/each}
+        </tr>
       </tbody>
     </table>
   </Scroller>
@@ -195,6 +217,9 @@
       color: var(--caption-color);
       &.today {
         background-color: var(--theme-bg-accent-hover);
+      }
+      &.summary {
+        font-weight: 600;
       }
       &.td-body {
         border-bottom: 1px solid var(--divider-color);

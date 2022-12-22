@@ -39,6 +39,7 @@ export default mergeIds(hrId, hr, {
     CreateRequest: '' as IntlString,
     Today: '' as IntlString,
     NoEmployeesInDepartment: '' as IntlString,
+    Summary: '' as IntlString,
     Staff: '' as IntlString,
     Members: '' as IntlString,
     NoMembers: '' as IntlString,

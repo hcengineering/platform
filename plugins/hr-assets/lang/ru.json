@@ -22,6 +22,7 @@
     "RequestType": "Тип",
     "CreateRequest": "Создать {type}",
     "Today": "Сегодня",
+    "Summary": "Итого",
     "NoEmployeesInDepartment": "Нет сотрудников в выбранном департаменте",
     "Vacation": "Отпуск",
     "Sick": "Больничный",

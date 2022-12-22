@@ -92,7 +92,9 @@
         for (const request of res) {
           const requests = employeeRequests.get(request.attachedTo) ?? []
           requests.push(request)
-          employeeRequests.set(request.attachedTo, requests)
+          if (request.attachedTo) {
+            employeeRequests.set(request.attachedTo, requests)
+          }
         }
         employeeRequests = employeeRequests
       }
