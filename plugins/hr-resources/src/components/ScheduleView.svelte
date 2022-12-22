@@ -32,12 +32,12 @@
   export let display: 'chart' | 'stats'
 
   $: startDate = new Date(
-    new Date(mode === CalendarMode.Year ? new Date(currentDate).setMonth(1) : currentDate).setDate(1)
+    new Date(mode === CalendarMode.Year ? new Date(currentDate).setMonth(0) : currentDate).setDate(1)
   )
   $: endDate = new Date(
     mode === CalendarMode.Year
-      ? new Date(new Date(startDate).setFullYear(new Date(startDate).getFullYear() + 1)).setDate(-1)
-      : new Date(new Date(startDate).setMonth(new Date(startDate).getMonth() + 1)).setDate(-1)
+      ? new Date(new Date(startDate).setFullYear(new Date(startDate).getFullYear() + 1)).setDate(0)
+      : new Date(new Date(startDate).setMonth(new Date(startDate).getMonth() + 1)).setDate(0)
   )
   $: departments = [department, ...getDescendants(department, descendants)]
 
