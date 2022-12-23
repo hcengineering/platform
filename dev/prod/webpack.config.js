@@ -34,6 +34,13 @@ module.exports = {
       ...(dev ? ['./src/main-dev.ts']: ['./src/main.ts'] ),
     ]
   },
+  ignoreWarnings: [
+    {
+      message: /a11y-/,
+    },
+    /warning from compiler/,
+    (warning) => true,
+  ],
   resolve: {
     symlinks: true,
     alias: {
