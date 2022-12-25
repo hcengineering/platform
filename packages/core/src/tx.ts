@@ -34,6 +34,7 @@ import { _getOperator } from './operator'
 import { _toDoc } from './proxy'
 import type { DocumentQuery, TxResult } from './storage'
 import { generateId } from './utils'
+import justClone from 'just-clone'
 
 /**
  * @public
@@ -292,7 +293,7 @@ export abstract class TxProcessor implements WithTx {
   static createDoc2Doc<T extends Doc>(tx: TxCreateDoc<T>): T {
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     return {
-      ...tx.attributes,
+      ...justClone(tx.attributes),
       _id: tx.objectId,
       _class: tx.objectClass,
       space: tx.objectSpace,

@@ -202,9 +202,7 @@
           {#if viewlet === undefined && model.length > 0 && tx.updateTx}
             {#each model as m, i}
               {#await getValue(client, m, tx) then value}
-                {#if value.set === null || value.set === undefined}
-                  <span class="lower"><Label label={activity.string.Unset} /> <Label label={m.label} /></span>
-                {:else if value.added.length}
+                {#if value.added.length}
                   <span class="lower" class:flex-grow={hasMessageType}>
                     <Label label={activity.string.Added} />
                     <Label label={activity.string.To} />
@@ -239,6 +237,8 @@
                       {/each}
                     </div>
                   </div>
+                {:else if value.set === null || value.set === undefined}
+                  <span class="lower"><Label label={activity.string.Unset} /> <Label label={m.label} /></span>
                 {:else}
                   <span class="lower" class:flex-grow={hasMessageType}>
                     <Label label={activity.string.Changed} />

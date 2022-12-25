@@ -13,18 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { EmployeeAccount, formatName } from '@hcengineering/contact'
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
+  import chunter, { Comment } from '@hcengineering/chunter'
+  import { updateBacklinks } from '@hcengineering/chunter-resources/src/backlinks'
+  import contact, { EmployeeAccount } from '@hcengineering/contact'
   import { AttachedData, getCurrentAccount, Ref } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Request, RequestStatus } from '@hcengineering/request'
-  import { Button, Label, TimeSince } from '@hcengineering/ui'
-  import { ObjectPresenter } from '@hcengineering/view-resources'
-  import chunter, { Comment } from '@hcengineering/chunter'
+  import { Button } from '@hcengineering/ui'
   import request from '../plugin'
-  import RequestPresenter from './RequestPresenter.svelte'
-  import { updateBacklinks } from '@hcengineering/chunter-resources/src/backlinks'
-  import RequestActions from './RequestActions.svelte'
 
   export let value: Request
 
@@ -93,61 +90,22 @@
   let refInput: AttachmentRefInput
 </script>
 
-<div class="container">
-  <div class="flex-between">
-    <div class="label">
-      <div class="bold">
-        {#if employee}
-          {formatName(employee.name)}
-        {/if}
-      </div>
-      <span class="lower">
-        <Label label={request.string.CreatedRequest} />
-        <Label label={request.string.For} />
-      </span>
-      <ObjectPresenter objectId={value.tx.objectId} _class={value.tx.objectClass} />
-    </div>
-    <div class="time"><TimeSince value={value.tx.modifiedOn} /></div>
+{#if value.status === RequestStatus.Active}
+  <div class="mt-2">
+    <AttachmentRefInput
+      bind:this={refInput}
+      space={value.space}
+      _class={value._class}
+      objectId={value._id}
+      showSend={false}
+      on:update={onUpdate}
+    />
   </div>
-  <RequestPresenter {value} />
-  
-  <RequestActions {value} />
-</div>
-
-<style lang="scss">
-  .container {
-    background-color: var(--body-color);
-    margin: 0.5rem;
-    padding: 0.75rem;
-    border-radius: 0.5rem;
-    border: 1px solid var(--divider-color);
-  }
-
-  .label {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-
-    & > * {
-      margin-right: 0.25rem;
-    }
-    & > *:last-child {
-      margin-right: 0;
-    }
-  }
-
-  .lower {
-    text-transform: lowercase;
-  }
-
-  .bold {
-    font-weight: 500;
-    color: var(--caption-color);
-  }
-
-  .time {
-    align-self: baseline;
-    margin-left: 1rem;
-    color: var(--dark-color);
-  }
-</style>
+  <div class="mt-2 flex gap-2">
+    <Button label={request.string.Comment} {disabled} on:click={saveComment} />
+    {#if approvable}
+      <Button label={request.string.Approve} {disabled} on:click={approve} />
+      <Button label={request.string.Reject} {disabled} on:click={reject} />
+    {/if}
+  </div>
+{/if}

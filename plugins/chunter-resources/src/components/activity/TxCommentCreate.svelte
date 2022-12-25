@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import type { Comment } from '@hcengineering/chunter'
-  import type { TxCreateDoc } from '@hcengineering/core'
+  import type { AttachedData, TxCreateDoc } from '@hcengineering/core'
   import { getClient, MessageViewer } from '@hcengineering/presentation'
   import { AttachmentDocList } from '@hcengineering/attachment-resources'
   import { Button } from '@hcengineering/ui'
@@ -32,7 +32,7 @@
 
   const editing = false
 
-  async function onMessage (event: CustomEvent) {
+  async function onMessage (event: CustomEvent<AttachedData<Comment>>) {
     const { message, attachments } = event.detail
     await client.updateCollection(
       tx.objectClass,
@@ -47,7 +47,7 @@
       }
     )
     // We need to update backlinks before and after.
-    await updateBacklinks(client, value.attachedTo, value.attachedToClass, value._id, event.detail)
+    await updateBacklinks(client, value.attachedTo, value.attachedToClass, value._id, message)
 
     dispatch('close', false)
   }

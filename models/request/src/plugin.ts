@@ -23,15 +23,17 @@ import type { TxViewlet } from '@hcengineering/activity'
 
 export default mergeIds(requestId, request, {
   activity: {
-    TxCreateRequest: '' as AnyComponent
+    TxCreateRequest: '' as AnyComponent,
+    RequestLabel: '' as AnyComponent
+  },
+  component: {
+    EditRequest: '' as AnyComponent
   },
   ids: {
     TxRequestCreate: '' as Ref<TxViewlet>
   },
   string: {
-    Request: '' as IntlString,
     Status: '' as IntlString,
-    Approved: '' as IntlString,
     Requested: '' as IntlString
   }
 })

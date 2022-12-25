@@ -409,6 +409,10 @@ export function createModel (builder: Builder): void {
     inlineEditor: contact.component.AccountArrayEditor
   })
 
+  builder.mixin(contact.class.EmployeeAccount, core.class.Class, view.mixin.ArrayEditor, {
+    inlineEditor: contact.component.AccountArrayEditor
+  })
+
   builder.mixin(core.class.Account, core.class.Class, view.mixin.AttributePresenter, {
     presenter: contact.component.EmployeeAccountPresenter
   })

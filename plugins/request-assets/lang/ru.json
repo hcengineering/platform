@@ -3,11 +3,17 @@
     "Requests": "Запросы",
     "Request": "Запрос",
     "Approve": "Одобрить",
-    "Approved": "Одобрил",
+    "Approved": "Одобрено",
     "CreatedRequest": "Создал запрос",
     "For": "Для",
     "Change": "Изменить",
     "Add": "Добавить",
-    "Remove": "Удалить"
+    "Remove": "Удалить",
+    "Status": "Статус",
+    "Requested": "Запрошено",
+    "Completed": "Выполнен",
+    "Reject": "Отклонить",
+    "Rejected": "Отклонен",
+    "Comment": "Комментировать"
   }
 }

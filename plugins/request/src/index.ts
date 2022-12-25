@@ -36,7 +36,8 @@ export interface Request extends AttachedDoc {
  */
 export enum RequestStatus {
   Active = 'Active',
-  Completed = 'Completed'
+  Completed = 'Completed',
+  Rejected = 'Rejected'
 }
 
 /**
