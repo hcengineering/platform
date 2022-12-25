@@ -14,25 +14,20 @@
 -->
 <script lang="ts">
   import contact, { EmployeeAccount, formatName } from '@hcengineering/contact'
-  import { AttachmentRefInput } from '@hcengineering/attachment-resources'
-  import { AttachedData, getCurrentAccount, Ref } from '@hcengineering/core'
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Request, RequestStatus } from '@hcengineering/request'
-  import { Button, Label, TimeSince } from '@hcengineering/ui'
+  import { Ref } from '@hcengineering/core'
+  import { createQuery } from '@hcengineering/presentation'
+  import { Request } from '@hcengineering/request'
+  import { Label, TimeSince } from '@hcengineering/ui'
   import { ObjectPresenter } from '@hcengineering/view-resources'
-  import chunter, { Comment } from '@hcengineering/chunter'
   import request from '../plugin'
-  import RequestPresenter from './RequestPresenter.svelte'
-  import { updateBacklinks } from '@hcengineering/chunter-resources/src/backlinks'
   import RequestActions from './RequestActions.svelte'
+  import RequestPresenter from './RequestPresenter.svelte'
 
   export let value: Request
 
   let employee: EmployeeAccount | undefined
 
   const query = createQuery()
-  const client = getClient()
-  const me = getCurrentAccount()._id as Ref<EmployeeAccount>
 
   $: query.query(
     contact.class.EmployeeAccount,
@@ -42,55 +37,6 @@
     },
     { limit: 1 }
   )
-
-  const approvable = value.requested.includes(me) && !value.approved.includes(me)
-
-  async function approve () {
-    await saveComment()
-    await client.update(value, {
-      $push: {
-        approved: me
-      }
-    })
-  }
-
-  $: disabled = commentIsEmpty(message, attachments)
-
-  async function reject () {
-    await saveComment()
-    await client.update(value, {
-      status: RequestStatus.Rejected
-    })
-  }
-
-  let message: string = ''
-  let attachments: number | undefined = 0
-
-  async function onUpdate (event: CustomEvent<AttachedData<Comment>>) {
-    message = event.detail.message
-    attachments = event.detail.attachments
-  } 
-
-  async function saveComment () {
-    await client.addCollection(
-      chunter.class.Comment,
-      value.space,
-      value._id,
-      value._class,
-      'comments',
-      { message, attachments }
-    )
-
-    // We need to update backlinks before and after.
-    await updateBacklinks(client, value.attachedTo, value.attachedToClass, value._id, message)
-    refInput.submit()
-  }
-
-  function commentIsEmpty (message: string, attachments: number | undefined): boolean {
-    return (message === '<p></p>' || message.trim().length === 0) && !((attachments ?? 0) > 0)
-  }
-
-  let refInput: AttachmentRefInput
 </script>
 
 <div class="container">
@@ -110,7 +56,7 @@
     <div class="time"><TimeSince value={value.tx.modifiedOn} /></div>
   </div>
   <RequestPresenter {value} />
-  
+
   <RequestActions {value} />
 </div>
 

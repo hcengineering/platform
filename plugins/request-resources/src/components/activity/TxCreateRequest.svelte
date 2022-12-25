@@ -13,11 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { TxCreateDoc } from '@hcengineering/core'
   import { Request } from '@hcengineering/request'
   import RequestPresenter from '../RequestPresenter.svelte'
 
   export let value: Request
 </script>
 
-<RequestPresenter value={value} />
+<RequestPresenter {value} />

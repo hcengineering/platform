@@ -66,17 +66,13 @@
   async function onUpdate (event: CustomEvent<AttachedData<Comment>>) {
     message = event.detail.message
     attachments = event.detail.attachments
-  } 
+  }
 
   async function saveComment () {
-    await client.addCollection(
-      chunter.class.Comment,
-      value.space,
-      value._id,
-      value._class,
-      'comments',
-      { message, attachments }
-    )
+    await client.addCollection(chunter.class.Comment, value.space, value._id, value._class, 'comments', {
+      message,
+      attachments
+    })
 
     // We need to update backlinks before and after.
     await updateBacklinks(client, value.attachedTo, value.attachedToClass, value._id, message)

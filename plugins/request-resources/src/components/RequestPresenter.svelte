@@ -28,12 +28,12 @@
 
 <div class="flex">
   <a
-      class="flex-presenter mr-1"
-      class:inline-presenter={inline}
-      href="#{getPanelURI(view.component.EditDoc, value._id, value._class, 'content')}"
-    >
+    class="flex-presenter mr-1"
+    class:inline-presenter={inline}
+    href="#{getPanelURI(view.component.EditDoc, value._id, value._class, 'content')}"
+  >
     <span class="label nowrap">
-      <Label label={label}/>
+      <Label {label} />
     </span>
   </a>
   <TxView tx={value.tx} />

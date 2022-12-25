@@ -25,6 +25,6 @@
   {#if value.status !== RequestStatus.Active}
     <RequestStatusPresenter value={value.status === RequestStatus.Completed} />
   {:else}
-    <Label label={request.string.Approved}/>: {value.approved.length}/{value.requiredApprovesCount}
+    <Label label={request.string.Approved} />: {value.approved.length}/{value.requiredApprovesCount}
   {/if}
 </div>
