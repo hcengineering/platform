@@ -45,7 +45,7 @@ class DeferredPromise {
 }
 
 class Connection implements ClientConnection {
-  private websocket: ClientSocket | null = null
+  private websocket: ClientSocket | Promise<ClientSocket> | null = null
   private readonly requests = new Map<ReqId, DeferredPromise>()
   private lastId = 0
   private readonly interval: number
@@ -65,7 +65,12 @@ class Connection implements ClientConnection {
 
   async close (): Promise<void> {
     clearInterval(this.interval)
-    this.websocket?.close()
+    if (this.websocket !== null) {
+      if (this.websocket instanceof Promise) {
+        this.websocket = await this.websocket
+      }
+      this.websocket.close()
+    }
   }
 
   delay = 1
@@ -76,6 +81,11 @@ class Connection implements ClientConnection {
         this.delay = 1
         return conn
       } catch (err: any) {
+        console.log('failed to connect', err)
+        if (err.code === UNAUTHORIZED.code) {
+          this.onUnauthorized?.()
+          throw err
+        }
         await new Promise((resolve) => {
           setTimeout(() => {
             console.log(`delay ${this.delay} second`)
@@ -84,17 +94,6 @@ class Connection implements ClientConnection {
               this.delay++
             }
           }, this.delay * 1000)
-        })
-        console.log('failed to connect', err)
-        if (err.code === UNAUTHORIZED.code) {
-          this.onUnauthorized?.()
-          throw err
-        }
-
-        await new Promise((resolve) => {
-          setTimeout(() => {
-            resolve(null)
-          }, 1000)
         })
       }
     }
@@ -139,7 +138,9 @@ class Connection implements ClientConnection {
       websocket.onclose = () => {
         console.log('client websocket closed')
         // clearInterval(interval)
-        this.websocket = null
+        if (!(this.websocket instanceof Promise)) {
+          this.websocket = null
+        }
         reject(new Error('websocket error'))
       }
       websocket.onopen = () => {
@@ -160,8 +161,12 @@ class Connection implements ClientConnection {
   }
 
   private async sendRequest (method: string, ...params: any[]): Promise<any> {
+    if (this.websocket instanceof Promise) {
+      this.websocket = await this.websocket
+    }
     if (this.websocket === null) {
-      this.websocket = await this.waitOpenConnection()
+      this.websocket = this.waitOpenConnection()
+      this.websocket = await this.websocket
     }
     const id = this.lastId++
     this.websocket.send(
