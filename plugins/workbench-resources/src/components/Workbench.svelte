@@ -17,7 +17,7 @@
   import contact, { Employee, EmployeeAccount } from '@hcengineering/contact'
   import core, { Class, Client, Doc, getCurrentAccount, Ref, setCurrentAccount, Space } from '@hcengineering/core'
   import notification, { NotificationStatus } from '@hcengineering/notification'
-  import request from '@hcengineering/request'
+  import request, { RequestStatus } from '@hcengineering/request'
   import { BrowserNotificatator, NotificationClientImpl } from '@hcengineering/notification-resources'
   import { getMetadata, getResource, IntlString } from '@hcengineering/platform'
   import { Avatar, createQuery, setClient } from '@hcengineering/presentation'
@@ -136,6 +136,18 @@
     (res) => {
       hasNotification = res.length > 0
     }
+  )
+
+  let hasRequests = false
+  const requestQuery = createQuery()
+
+  $: requestQuery.query(
+    request.class.Request,
+    {
+      requested: account._id,
+      status: RequestStatus.Active
+    },
+    (res) => (hasRequests = res.filter((p) => !p.approved.includes(account._id)).length > 0)
   )
 
   onDestroy(
@@ -452,7 +464,7 @@
           action={async () => {
             showPopup(request.component.RequestsPopup, {}, popupPosition)
           }}
-          notify={false}
+          notify={hasRequests}
         />
         <AppItem
           icon={calendar.icon.Reminder}

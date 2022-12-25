@@ -1,4 +1,4 @@
-//
+<!--
 // Copyright © 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -11,21 +11,21 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+-->
+<script lang="ts">
+  import { createQuery } from '@hcengineering/presentation'
+  import { Request } from '@hcengineering/request'
+  import RequestLabel from '../RequestLabel.svelte'
 
-import { Resources } from '@hcengineering/platform'
-import RequestsPopup from './components/RequestsPopup.svelte'
-import TxCreateRequest from './components/activity/TxCreateRequest.svelte'
-import RequestLabel from './components/activity/TxRequestLabel.svelte'
-import EditRequest from './components/EditRequest.svelte'
+  export let value: Request
+  let request: Request | undefined = undefined
 
-export default async (): Promise<Resources> => ({
-  activity: {
-    RequestLabel,
-    TxCreateRequest
-  },
-  component: {
-    RequestsPopup,
-    EditRequest
-  }
-})
+  const query = createQuery()
+  query.query(value._class, { _id: value._id }, (res) => ([request] = res))
+</script>
+
+{#if request}
+  <div class="mr-2">
+    <RequestLabel value={request} />
+  </div>
+{/if}

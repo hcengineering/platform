@@ -7,6 +7,7 @@
   export let label: IntlString
   export let value: Ref<Account>[]
   export let onChange: (refs: Ref<Account>[]) => void
+  export let readonly = false
 
   let timer: any
   const client = getClient()
@@ -33,6 +34,7 @@
 <UserBoxList
   items={employess}
   {label}
+  {readonly}
   on:update={onUpdate}
   kind={'link'}
   size={'medium'}

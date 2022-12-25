@@ -1,4 +1,4 @@
-//
+<!--
 // Copyright © 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -11,21 +11,20 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+-->
+<script lang="ts">
+  import { Request, RequestStatus } from '@hcengineering/request'
+  import { Label } from '@hcengineering/ui'
+  import RequestStatusPresenter from './RequestStatusPresenter.svelte'
+  import request from '../plugin'
 
-import { Resources } from '@hcengineering/platform'
-import RequestsPopup from './components/RequestsPopup.svelte'
-import TxCreateRequest from './components/activity/TxCreateRequest.svelte'
-import RequestLabel from './components/activity/TxRequestLabel.svelte'
-import EditRequest from './components/EditRequest.svelte'
+  export let value: Request
+</script>
 
-export default async (): Promise<Resources> => ({
-  activity: {
-    RequestLabel,
-    TxCreateRequest
-  },
-  component: {
-    RequestsPopup,
-    EditRequest
-  }
-})
+<div class="flex gap-2">
+  {#if value.status !== RequestStatus.Active}
+    <RequestStatusPresenter value={value.status === RequestStatus.Completed} />
+  {:else}
+    <Label label={request.string.Approved} />: {value.approved.length}/{value.requiredApprovesCount}
+  {/if}
+</div>

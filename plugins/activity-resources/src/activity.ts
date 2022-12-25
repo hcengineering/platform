@@ -326,13 +326,13 @@ class ActivityImpl implements Activity {
     }
     let firstTx = parents.get(tx.objectId)
     const result: DisplayTx = newDisplayTx(tx, this.hierarchy)
+
     result.collectionAttribute = collectionAttribute
 
     result.doc = firstTx?.doc ?? result.doc
 
     firstTx = firstTx ?? result
     parents.set(tx.objectId, firstTx)
-
     // If we have updates also apply them all.
     const isUpdated = this.checkUpdateState(result, firstTx)
     const isMixin = this.checkMixinState(result, firstTx)

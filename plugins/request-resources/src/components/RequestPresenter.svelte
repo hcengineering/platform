@@ -13,10 +13,28 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { getClient } from '@hcengineering/presentation'
   import { Request } from '@hcengineering/request'
+  import { getPanelURI, Label } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
   import TxView from './TxView.svelte'
 
   export let value: Request
+  export let inline: boolean = false
+
+  const client = getClient()
+  $: label = client.getHierarchy().getClass(value._class).label
 </script>
 
-<TxView tx={value.tx} />
+<div class="flex">
+  <a
+    class="flex-presenter mr-1"
+    class:inline-presenter={inline}
+    href="#{getPanelURI(view.component.EditDoc, value._id, value._class, 'content')}"
+  >
+    <span class="label nowrap">
+      <Label {label} />
+    </span>
+  </a>
+  <TxView tx={value.tx} />
+</div>

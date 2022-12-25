@@ -13,8 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import activity, { TxViewlet } from '@hcengineering/activity'
+  import { TxViewlet } from '@hcengineering/activity'
   import { ActivityKey, DisplayTx, newDisplayTx, getValue, updateViewlet } from '@hcengineering/activity-resources'
+  import activity from '@hcengineering/activity-resources/src/plugin'
   import contact, { EmployeeAccount } from '@hcengineering/contact'
   import core, { AnyAttribute, Ref, Tx } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
@@ -91,7 +92,7 @@
     <div class="flex-grow flex-col clear-mins" class:mention={isMessageType(model[0]?.attribute)}>
       <div class="flex-between">
         <div class="flex-row-center flex-grow label">
-          {#if ptx.updateTx}
+          {#if ptx?.updateTx}
             {#each model as m}
               {#await getValue(client, m, ptx) then value}
                 {#if value.set === null || value.set === undefined}
@@ -140,7 +141,7 @@
                 {/if}
               {/await}
             {/each}
-          {:else if ptx.mixinTx}
+          {:else if ptx?.mixinTx}
             {#each model as m}
               {#await getValue(client, m, ptx) then value}
                 {#if value.set === null}
@@ -221,10 +222,7 @@
     & > *:last-child {
       margin-right: 0;
     }
-    .bold {
-      font-weight: 500;
-      color: var(--caption-color);
-    }
+
     .strong {
       font-weight: 500;
       color: var(--accent-color);

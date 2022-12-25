@@ -20,10 +20,16 @@ import request, { requestId } from '@hcengineering/request'
 export default mergeIds(requestId, request, {
   string: {
     Approve: '' as IntlString,
+    Approved: '' as IntlString,
     CreatedRequest: '' as IntlString,
     For: '' as IntlString,
     Change: '' as IntlString,
     Add: '' as IntlString,
-    Remove: '' as IntlString
+    Remove: '' as IntlString,
+    Completed: '' as IntlString,
+    Reject: '' as IntlString,
+    Request: '' as IntlString,
+    Rejected: '' as IntlString,
+    Comment: '' as IntlString
   }
 })

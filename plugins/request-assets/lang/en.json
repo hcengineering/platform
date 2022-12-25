@@ -8,6 +8,12 @@
     "For": "For",
     "Change": "Change",
     "Add": "Add",
-    "Remove": "Remove"
+    "Remove": "Remove",
+    "Status": "Status",
+    "Requested": "Requested",
+    "Completed": "Completed",
+    "Reject": "Reject",
+    "Rejected": "Rejected",
+    "Comment": "Comment"
   }
 }
