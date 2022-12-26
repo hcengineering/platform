@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Employee, EmployeeAccount } from '@hcengineering/contact'
+  import { Employee } from '@hcengineering/contact'
   import { EmployeePresenter } from '@hcengineering/contact-resources'
   import contact from '@hcengineering/contact-resources/src/plugin'
-  import { getCurrentAccount, Ref } from '@hcengineering/core'
+  import { Ref } from '@hcengineering/core'
   import type { Request, RequestType, Staff } from '@hcengineering/hr'
   import {
     areDatesEqual,
@@ -46,13 +46,13 @@
   export let departmentStaff: Staff[]
 
   export let employeeRequests: Map<Ref<Staff>, Request[]>
-  export let teamLead: Ref<Employee> | undefined
+  export let editableList: Ref<Employee>[]
   export let types: Map<Ref<RequestType>, RequestType>
   export let timeReports: Map<Ref<Employee>, EmployeeReports>
 
   const todayDate = new Date()
 
-  function getRequests (date: Date, employee?: Ref<Staff>): Request[] {
+  function getRequests (employeeRequests: Map<Ref<Staff>, Request[]>, date: Date, employee?: Ref<Staff>): Request[] {
     let requests = undefined
     if (employee) {
       requests = employeeRequests.get(employee)
@@ -72,32 +72,25 @@
   }
 
   function createRequest (e: MouseEvent, date: Date, staff: Staff): void {
-    const readonly: boolean = teamLead !== currentEmployee
-    let editStaff: Staff | undefined = staff
-    if (readonly) {
-      editStaff = departmentStaff.find((p) => p._id === currentEmployee)
-      if (!editStaff) {
-        return
-      }
-    }
+    if (!isEditable(staff)) return
+    const readonly = editableList.length === 1
+
     e.preventDefault()
     e.stopPropagation()
     showPopup(
       CreateRequest,
       {
-        staff: editStaff,
+        staff,
         date,
-        readonly
+        readonly,
+        docQuery: { active: true, $search: editableList.join(' | ') }
       },
       eventToHTMLElement(e)
     )
   }
 
-  const currentEmployee = (getCurrentAccount() as EmployeeAccount).employee
-
   function isEditable (employee: Staff): boolean {
-    if (employee._id === currentEmployee) return true
-    return teamLead === currentEmployee
+    return editableList.includes(employee._id)
   }
 
   function getEndDate (date: Date): number {
@@ -181,7 +174,7 @@
             </td>
             {#each values as value, i}
               {@const date = getDay(startDate, value)}
-              {@const requests = getRequests(date, employee._id)}
+              {@const requests = getRequests(employeeRequests, date, employee._id)}
               {@const editable = isEditable(employee)}
               {@const tooltipValue = getTooltip(requests)}
               {@const ww = findReports(employee, date, timeReports)}
@@ -230,7 +223,7 @@
           </td>
           {#each values as value, i}
             {@const date = getDay(startDate, value)}
-            {@const requests = getRequests(date)}
+            {@const requests = getRequests(employeeRequests, date)}
             <td
               class="p-1 text-center summary"
               class:hovered={i === hoveredIndex}

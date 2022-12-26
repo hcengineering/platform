@@ -14,8 +14,8 @@
 -->
 <script lang="ts">
   import { CalendarMode } from '@hcengineering/calendar-resources'
-  import { Employee } from '@hcengineering/contact'
-  import { Ref } from '@hcengineering/core'
+  import { Employee, EmployeeAccount } from '@hcengineering/contact'
+  import { getCurrentAccount, Ref } from '@hcengineering/core'
   import type { Department, Request, RequestType, Staff } from '@hcengineering/hr'
   import { createQuery } from '@hcengineering/presentation'
   import { Label } from '@hcengineering/ui'
@@ -44,6 +44,8 @@
   const lq = createQuery()
   const typeQuery = createQuery()
   const staffQuery = createQuery()
+  const currentEmployee = (getCurrentAccount() as EmployeeAccount).employee
+
   let staff: Staff[] = []
   let types: Map<Ref<RequestType>, RequestType> = new Map<Ref<RequestType>, RequestType>()
 
@@ -77,6 +79,9 @@
     return res
   }
 
+  let departmentStaff: Staff[]
+  let editableList: Ref<Employee>[] = []
+
   function update (departments: Ref<Department>[], startDate: Date, endDate: Date) {
     lq.query(
       hr.class.Request,
@@ -103,14 +108,33 @@
 
   $: update(departments, startDate, endDate)
 
-  function getTeamLead (_id: Ref<Department>): Ref<Employee> | undefined {
-    const department = departmentById.get(_id)
-    if (department === undefined) return
-    if (department.teamLead != null) return department.teamLead
-    return getTeamLead(department.space)
+  function updateEditableList () {
+    editableList = []
+    departmentById.forEach((department) => {
+      if (department.teamLead === currentEmployee) {
+        const departmentIds = [department._id]
+        departmentIds.concat(getDescendants(department._id, descendants)).forEach((id) => {
+          editableList.push(
+            ...Array.from(
+              departmentStaff.filter((p) => p.department === id),
+              (s) => s._id
+            )
+          )
+        })
+      }
+    })
+    if (departmentStaff.filter((p) => p._id === currentEmployee).length > 0) {
+      editableList.push(currentEmployee)
+    }
+    editableList = [...new Set(editableList)]
   }
 
-  $: departmentStaff = staff.filter((p) => departments.includes(p.department) || employeeRequests.has(p._id))
+  function updateStaff (staff: Staff[], departments: Ref<Department>[], employeeRequests: Map<Ref<Staff>, Request[]>) {
+    departmentStaff = staff.filter((p) => departments.includes(p.department) || employeeRequests.has(p._id))
+    updateEditableList()
+  }
+
+  $: updateStaff(staff, departments, employeeRequests)
 
   const reportQuery = createQuery()
 
@@ -150,15 +174,7 @@
     <YearView {departmentStaff} {employeeRequests} {types} {currentDate} />
   {:else if mode === CalendarMode.Month}
     {#if display === 'chart'}
-      <MonthView
-        {departmentStaff}
-        {employeeRequests}
-        {types}
-        {startDate}
-        teamLead={getTeamLead(department)}
-        {currentDate}
-        {timeReports}
-      />
+      <MonthView {departmentStaff} {employeeRequests} {types} {startDate} {editableList} {currentDate} {timeReports} />
     {:else if display === 'stats'}
       <MonthTableView {departmentStaff} {employeeRequests} {types} {currentDate} {timeReports} />
     {/if}

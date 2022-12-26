@@ -16,7 +16,7 @@
   import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
   import calendar from '@hcengineering/calendar'
   import { Employee } from '@hcengineering/contact'
-  import core, { generateId, Ref } from '@hcengineering/core'
+  import core, { DocumentQuery, generateId, Ref } from '@hcengineering/core'
   import { Request, RequestType, Staff } from '@hcengineering/hr'
   import { translate } from '@hcengineering/platform'
   import { Card, createQuery, EmployeeBox, getClient } from '@hcengineering/presentation'
@@ -28,6 +28,7 @@
   export let staff: Staff
   export let date: Date
   export let readonly: boolean
+  export let docQuery: DocumentQuery<Employee> | undefined
 
   let description: string = ''
   let employee: Ref<Employee> = staff._id
@@ -94,6 +95,7 @@
       bind:value={employee}
       {readonly}
       showNavigate={false}
+      {docQuery}
     />
   </svelte:fragment>
   <DropdownLabelsIntl
