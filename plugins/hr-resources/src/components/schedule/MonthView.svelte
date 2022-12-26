@@ -174,7 +174,7 @@
             </td>
             <td class="p-1 text-center">
               {#if rTime !== undefined}
-                {rTime.value}
+                {floorFractionDigits(rTime.value, 3)}
               {:else}
                 0
               {/if}
