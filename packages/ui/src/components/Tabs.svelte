@@ -45,7 +45,7 @@
   .container {
     flex-shrink: 0;
     flex-wrap: nowrap;
-    margin-bottom: 2.5rem;
+    margin-bottom: 0.5rem;
     width: 100%;
     height: 4.5rem;
     border-bottom: 1px solid var(--theme-menu-divider);
