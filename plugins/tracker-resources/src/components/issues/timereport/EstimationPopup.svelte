@@ -17,7 +17,7 @@
   import { SortingOrder, WithLookup } from '@hcengineering/core'
   import presentation, { Card, createQuery } from '@hcengineering/presentation'
   import { Issue, IssueStatus, Team } from '@hcengineering/tracker'
-  import { Button, EditBox, EditStyle, eventToHTMLElement, IconAdd, Label, showPopup } from '@hcengineering/ui'
+  import { Button, EditBox, EditStyle, IconAdd, Label, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../../plugin'
   import IssuePresenter from '../IssuePresenter.svelte'
@@ -139,17 +139,13 @@
       icon={IconAdd}
       size={'small'}
       on:click={(event) => {
-        showPopup(
-          TimeSpendReportPopup,
-          {
-            issueId: object._id,
-            issueClass: object._class,
-            space: object.space,
-            assignee: object.assignee,
-            defaultTimeReportDay
-          },
-          eventToHTMLElement(event)
-        )
+        showPopup(TimeSpendReportPopup, {
+          issueId: object._id,
+          issueClass: object._class,
+          space: object.space,
+          assignee: object.assignee,
+          defaultTimeReportDay
+        })
       }}
       label={tracker.string.TimeSpendReportAdd}
     />
