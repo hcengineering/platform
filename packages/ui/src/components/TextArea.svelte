@@ -15,7 +15,6 @@
 <script lang="ts">
   import type { IntlString } from '@hcengineering/platform'
   import { translate } from '@hcengineering/platform'
-  import { createEventDispatcher } from 'svelte'
   import plugin from '../plugin'
   import Label from './Label.svelte'
 
@@ -38,17 +37,21 @@
   export function focus () {
     input.focus()
   }
-
-  const dispatch = createEventDispatcher()
-
-  const onKeydown = (e: any) => {
-    dispatch('keydown', e)
-  }
 </script>
 
 <div class="textarea" class:no-focus-border={noFocusBorder} style:width style:height>
   {#if label}<div class="label"><Label {label} /></div>{/if}
-  <textarea bind:value bind:this={input} on:keydown={onKeydown} {disabled} placeholder={phTraslate} />
+  <textarea
+    bind:value
+    bind:this={input}
+    {disabled}
+    placeholder={phTraslate}
+    on:keydown
+    on:change
+    on:keydown
+    on:keypress
+    on:blur
+  />
 </div>
 
 <style lang="scss">
