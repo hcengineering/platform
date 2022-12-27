@@ -293,8 +293,8 @@ export function navigateToWorkspace (workspace: string, loginInfo?: WorkspaceLog
   setLoginInfo(loginInfo)
 
   if (navigateUrl !== undefined) {
-    const url = JSON.parse(decodeURIComponent(navigateUrl)) as Location
-
+    const loc = JSON.parse(decodeURIComponent(navigateUrl)) as Location
+    const url = JSON.parse(decodeURIComponent(loc.query?.navigateUrl ?? '')) as Location
     if (url.path[1] === workspace) {
       navigate(url)
 
