@@ -390,7 +390,7 @@
         {/if}
       {/if}
     {:else}
-      <div class="dark-color">
+      <div class="content-color">
         <Label label={labelNull} />
       </div>
     {/if}

@@ -73,12 +73,15 @@
   async function removeTag (id: Ref<TagReference>): Promise<void> {
     dispatch('delete', id)
   }
+  $: console.log('[!!!] items: ', items)
+  $: console.log('[!!!] items - count: ', items.length)
 </script>
 
 <Button
   {disabled}
   icon={key.attr.icon ?? tags.icon.Tags}
   label={items.length > 0 ? undefined : key.attr.label}
+  notSelected={items.length === 0}
   width={width ?? 'min-content'}
   {kind}
   {size}
@@ -88,11 +91,11 @@
 >
   <svelte:fragment slot="content">
     {#if items.length > 0}
-      <div class="flex-row-center flex-nowrap overflow-label disabled">
+      <span class="flex-row-center flex-nowrap overflow-label disabled">
         {#await translate(countLabel, { count: items.length }) then text}
           {text}
         {/await}
-      </div>
+      </span>
     {/if}
   </svelte:fragment>
 </Button>

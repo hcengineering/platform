@@ -106,7 +106,7 @@
       {/if}
     {/if}
   {:else if shouldShowLabel}
-    <Label label={labelNull} />
+    <span class="not-selected"><Label label={labelNull} /></span>
   {/if}
 </button>
 
@@ -161,10 +161,17 @@
         color: var(--error-color);
       }
     }
+    .not-selected {
+      color: var(--content-color);
+    }
 
     &:hover {
       color: var(--caption-color);
       transition-duration: 0;
+
+      .not-selected {
+        color: var(--accent-color);
+      }
     }
     &.editable {
       cursor: pointer;
