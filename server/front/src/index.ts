@@ -15,7 +15,7 @@
 //
 
 import attachment from '@hcengineering/attachment'
-import { Account, Doc, Ref, Space, WorkspaceId } from '@hcengineering/core'
+import { Account, Class, Doc, Ref, Space, WorkspaceId } from '@hcengineering/core'
 import { createElasticAdapter } from '@hcengineering/elastic'
 import { MinioService } from '@hcengineering/minio'
 import type { IndexedDoc } from '@hcengineering/server-core'
@@ -317,6 +317,7 @@ export function start (
       const url = req.query.url as string
       const cookie = req.query.cookie as string | undefined
       const attachedTo = req.query.attachedTo as Ref<Doc> | undefined
+      const attachedToClass = req.query.attachedToClass as Ref<Class<Doc>> | undefined
       if (url === undefined) {
         res.status(500).send('URL param is not defined')
         return
@@ -361,7 +362,6 @@ export function start (
                 if (attachedTo !== undefined) {
                   const space = req.query.space as Ref<Space>
                   const elastic = await createElasticAdapter(config.elasticUrl, payload.workspace)
-
                   const indexedDoc: IndexedDoc = {
                     id: id as Ref<Doc>,
                     _class: attachment.class.Attachment,
@@ -369,9 +369,10 @@ export function start (
                     modifiedOn: Date.now(),
                     modifiedBy: 'core:account:System' as Ref<Account>,
                     attachedTo,
+                    attachedToClass,
                     data: buffer.toString('base64')
                   }
-
+                  console.log('indexing doc', id)
                   await elastic.index(indexedDoc)
                 }
 
