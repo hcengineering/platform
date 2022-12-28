@@ -32,12 +32,20 @@
     Spinner
   } from '@hcengineering/ui'
   import { AttributeModel, BuildModelKey } from '@hcengineering/view'
-  import { buildModel, filterStore, getObjectPresenter, LoadingProps, Menu } from '@hcengineering/view-resources'
+  import {
+    buildModel,
+    filterStore,
+    FixedColumn,
+    getObjectPresenter,
+    LoadingProps,
+    Menu
+  } from '@hcengineering/view-resources'
   import { onDestroy } from 'svelte'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
   import { IssuesGroupByKeys, issuesGroupEditorMap, IssuesOrderByKeys, issuesSortOrderMap } from '../../utils'
   import CreateIssue from '../CreateIssue.svelte'
+  import IssueStatistics from '../sprints/IssueStatistics.svelte'
   import IssuesListItem from './IssuesListItem.svelte'
 
   export let _class: Ref<Class<Doc>>
@@ -79,7 +87,7 @@
   let personPresenter: AttributeModel
   let isCollapsedMap: Record<any, boolean> = {}
   let varsStyle: string = ''
-  let propsWidth: Record<string, number> = {}
+  let propsWidth: Record<string, number> = { groupBy: 0 }
   let itemModels: AttributeModel[]
   let isFilterUpdate = false
   let groupedIssuesBeforeFilter = groupedIssues
@@ -122,7 +130,7 @@
   }
 
   function toCat (category: any): any {
-    return category ?? noCategory
+    return 'cat-' + (category ?? noCategory)
   }
 
   const handleCollapseCategory = (category: any) => {
@@ -155,7 +163,7 @@
   onDestroy(unsubscribeFilter)
 
   $: {
-    if (isFilterUpdate && groupedIssuesBeforeFilter !== groupedIssues) {
+    if (isFilterUpdate && groupedIssuesBeforeFilter !== groupedIssues && groupByKey) {
       isCollapsedMap = {}
 
       categories.forEach((category) => (isCollapsedMap[toCat(category)] = getInitCollapseValue(category)))
@@ -195,6 +203,10 @@
     varsStyle = ''
     for (const key in propsWidth) varsStyle += `--fixed-${key}: ${propsWidth[key]}px;`
   }
+
+  const checkWidth = (key: string, result: CustomEvent): void => {
+    if (result !== undefined) propsWidth[key] = result.detail
+  }
 </script>
 
 <div class="issueslist-container" style={varsStyle}>
@@ -202,40 +214,56 @@
     {@const items = groupedIssues[category] ?? []}
     {@const limited = limitGroup(category, groupedIssues, categoryLimit) ?? []}
     {#if headerComponent || groupByKey === 'assignee' || category === undefined}
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
       <div class="flex-between categoryHeader row" on:click={() => handleCollapseCategory(toCat(category))}>
         <div class="flex-row-center gap-2 clear-mins">
-          {#if groupByKey === 'assignee' && personPresenter}
-            <svelte:component
-              this={personPresenter.presenter}
-              shouldShowLabel={true}
-              value={employees.find((x) => x?._id === category)}
-              defaultName={tracker.string.NoAssignee}
-              shouldShowPlaceholder={true}
-              isInteractive={false}
-              avatarSize={'small'}
-              enlargedText
-              {currentSpace}
-            />
-          {:else if !groupByKey}
-            <span class="text-base fs-bold overflow-label content-accent-color pointer-events-none">
-              <Label label={tracker.string.NoGrouping} />
-            </span>
-          {:else if headerComponent}
-            <Component
-              is={headerComponent}
-              props={{
-                isEditable: false,
-                shouldShowLabel: true,
-                value: groupByKey ? { [groupByKey]: category } : {},
-                statuses: groupByKey === 'status' ? statuses : undefined,
-                issues: groupedIssues[category],
-                width: 'min-content',
-                kind: 'list-header',
-                enlargedText: true,
-                currentSpace
-              }}
-            />
-          {/if}
+          <FixedColumn
+            width={propsWidth.groupBy}
+            key={'groupBy'}
+            justify={'left'}
+            on:update={(result) => checkWidth('groupBy', result)}
+          >
+            {#if groupByKey === 'assignee' && personPresenter}
+              <svelte:component
+                this={personPresenter.presenter}
+                shouldShowLabel={true}
+                value={employees.find((x) => x?._id === category)}
+                defaultName={tracker.string.NoAssignee}
+                shouldShowPlaceholder={true}
+                isInteractive={false}
+                avatarSize={'small'}
+                enlargedText
+                {currentSpace}
+              />
+            {:else if !groupByKey}
+              <span class="text-base fs-bold overflow-label content-accent-color pointer-events-none">
+                <Label label={tracker.string.NoGrouping} />
+              </span>
+            {:else if headerComponent}
+              <Component
+                is={headerComponent}
+                props={{
+                  isEditable: false,
+                  shouldShowLabel: true,
+                  value: groupByKey ? { [groupByKey]: category } : {},
+                  statuses: groupByKey === 'status' ? statuses : undefined,
+                  issues: groupedIssues[category],
+                  width: 'min-content',
+                  kind: 'list-header',
+                  enlargedText: true,
+                  currentSpace
+                }}
+              />
+            {/if}
+          </FixedColumn>
+          <FixedColumn
+            width={propsWidth.statistics}
+            key={'statistics'}
+            justify={'left'}
+            on:update={(result) => checkWidth('statistics', result)}
+          >
+            <IssueStatistics issues={groupedIssues[category]} />
+          </FixedColumn>
           {#if limited.length < items.length}
             <div class="counter">
               {limited.length}

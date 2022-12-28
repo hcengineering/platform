@@ -130,7 +130,16 @@
       <slot name="content" />
     </div>
   {:else}
-    <Button {focusIndex} width={width ?? 'min-content'} {size} {kind} {justify} {showTooltip} on:click={_click}>
+    <Button
+      {focusIndex}
+      disabled={readonly}
+      width={width ?? 'min-content'}
+      {size}
+      {kind}
+      {justify}
+      {showTooltip}
+      on:click={_click}
+    >
       <div
         slot="content"
         class="overflow-label flex-row-center"

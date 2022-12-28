@@ -36,7 +36,7 @@
   const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {})
 
   let varsStyle: string = ''
-  const propsWidth: Record<string, number> = { issue: 0 }
+  const propsWidth: Record<string, number> = { issue: 0, assignee: 0, reported: 0, date: 0 }
   $: if (propsWidth) {
     varsStyle = ''
     for (const key in propsWidth) varsStyle += `--fixed-${key}: ${propsWidth[key]}px;`
@@ -82,7 +82,7 @@
       }}
       on:click={(evt) => editSpendReport(evt, report, currentTeam?.defaultTimeReportDay)}
     >
-      <div class="flex-row-center clear-mins gap-2 p-2">
+      <div class="flex-row-center clear-mins gap-2 p-2 flex-grow">
         <span class="issuePresenter">
           <FixedColumn
             width={propsWidth.issue}
@@ -101,17 +101,40 @@
           </span>
         {/if}
       </div>
-      <div class="flex-center flex-no-shrink gap-2">
+      <FixedColumn
+        width={propsWidth.assignee}
+        key={'assignee'}
+        justify={'left'}
+        on:update={(result) => checkWidth('assignee', result)}
+      >
         <UserBox
+          width={'100%'}
           label={tracker.string.Assignee}
           _class={contact.class.Employee}
           value={report.employee}
           readonly
           showNavigate={false}
         />
-        <TimePresenter value={report.value} workDayLength={currentTeam?.workDayLength} />
+      </FixedColumn>
+
+      <FixedColumn
+        width={propsWidth.reported}
+        key={'reported'}
+        justify={'center'}
+        on:update={(result) => checkWidth('reported', result)}
+      >
+        <div class="p-1">
+          <TimePresenter value={report.value} workDayLength={currentTeam?.workDayLength} />
+        </div>
+      </FixedColumn>
+      <FixedColumn
+        width={propsWidth.date}
+        key={'date'}
+        justify={'left'}
+        on:update={(result) => checkWidth('date', result)}
+      >
         <DatePresenter value={report.date} />
-      </div>
+      </FixedColumn>
     </div>
   </svelte:fragment>
 </ListView>

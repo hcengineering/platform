@@ -21,6 +21,9 @@
   import TimePresenter from './TimePresenter.svelte'
 
   export let value: Issue | AttachedData<Issue>
+  export let estimation: number | undefined = undefined
+
+  $: _estimation = estimation ?? value.estimation
 
   $: workDayLength = value.workDayLength
   $: childReportTime = floorFractionDigits(
@@ -30,11 +33,12 @@
   $: childEstimationTime = (value.childInfo ?? []).map((it) => it.estimation).reduce((a, b) => a + b, 0)
 </script>
 
+<!-- svelte-ignore a11y-click-events-have-key-events -->
 <div class="estimation-container" on:click>
   <div class="icon">
     <EstimationProgressCircle
       value={Math.max(value.reportedTime, childReportTime)}
-      max={childEstimationTime || value.estimation}
+      max={childEstimationTime || _estimation}
     />
   </div>
   <span class="overflow-label label flex-row-center flex-nowrap text-md">
@@ -61,21 +65,21 @@
     {/if}
     {#if childEstimationTime}
       {@const childEstTime = Math.round(childEstimationTime)}
-      {@const estimationDiff = childEstTime - Math.round(value.estimation)}
+      {@const estimationDiff = childEstTime - Math.round(_estimation)}
       {#if estimationDiff !== 0}
         <div class="flex flex-nowrap mr-1" class:showWarning={estimationDiff !== 0}>
           <TimePresenter value={childEstTime} {workDayLength} />
         </div>
-        {#if value.estimation !== 0}
+        {#if _estimation !== 0}
           <div class="romColor">
-            (<TimePresenter value={value.estimation} {workDayLength} />)
+            (<TimePresenter value={_estimation} {workDayLength} />)
           </div>
         {/if}
       {:else}
-        <TimePresenter value={value.estimation} {workDayLength} />
+        <TimePresenter value={_estimation} {workDayLength} />
       {/if}
     {:else}
-      <TimePresenter value={value.estimation} {workDayLength} />
+      <TimePresenter value={_estimation} {workDayLength} />
     {/if}
   </span>
 </div>

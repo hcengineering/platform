@@ -41,6 +41,7 @@
     </div>
     <span class="an-element__label title">
       {#if label}<Label {label} />{/if}
+      <slot name="title" />
     </span>
   </div>
   <slot name="tools" />
