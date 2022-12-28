@@ -184,14 +184,14 @@ export function fitPopupPositionedElement (
     direction = alignment.position.v + '|' + alignment.position.h
   } else {
     // Vertical
-    if (rect.bottom + rectPopup.height + 28 <= document.body.clientHeight) {
+    if (rect.bottom + rectPopup.height + 28 <= docHeight) {
       newProps.top = `${rect.bottom + 1}px`
       direction = 'bottom'
     } else if (rectPopup.height + 28 < rect.top) {
-      newProps.bottom = `${document.body.clientHeight - rect.top + 1}px`
+      newProps.bottom = `${docHeight - rect.top + 1}px`
       direction = 'top'
     } else {
-      newProps.top = modalHTML.style.bottom = '16px'
+      newProps.top = newProps.bottom = '16px'
       direction = 'top'
     }
 

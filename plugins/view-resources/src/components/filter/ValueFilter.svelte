@@ -16,7 +16,7 @@
   import { Class, Doc, FindResult, getObjectValue, Ref, SortingOrder } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
   import presentation, { getClient } from '@hcengineering/presentation'
-  import ui, { Button, CheckBox, Label, Loading, resizeObserver } from '@hcengineering/ui'
+  import ui, { Button, CheckBox, Label, Loading, resizeObserver, deviceOptionsStore } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
   import { onMount } from 'svelte'
   import { getPresenter } from '../../utils'
@@ -111,7 +111,7 @@
   const dispatch = createEventDispatcher()
 
   onMount(() => {
-    if (searchInput) searchInput.focus()
+    if (searchInput && !$deviceOptionsStore.isMobile) searchInput.focus()
   })
   getValues(search)
 </script>
