@@ -108,7 +108,7 @@
     <iframe
       class="pdfviewer-content"
       style:margin={$deviceInfo.minWidth ? '.5rem' : '1.5rem'}
-      src={getFileUrl(file)}
+      src={getFileUrl(file) + '#view=fitH'}
       title=""
     />
   {/if}
