@@ -19,7 +19,7 @@
   import type { Request, RequestType, Staff } from '@hcengineering/hr'
   import { Label, LabelAndProps, Scroller, tableHRscheduleY, tooltip } from '@hcengineering/ui'
   import hr from '../../plugin'
-  import { fromTzDate, getMonth, getTotal, weekDays } from '../../utils'
+  import { getEndDate, getRequests, getStartDate, getTotal, isToday, weekDays } from '../../utils'
   import RequestsPopup from '../RequestsPopup.svelte'
 
   export let currentDate: Date = new Date()
@@ -28,31 +28,6 @@
   export let types: Map<Ref<RequestType>, RequestType>
 
   export let employeeRequests: Map<Ref<Staff>, Request[]>
-
-  const todayDate = new Date()
-
-  function getRequests (employeeRequests: Map<Ref<Staff>, Request[]>, date: Date, employee?: Ref<Staff>): Request[] {
-    let requests = undefined
-    if (employee) {
-      requests = employeeRequests.get(employee)
-    } else {
-      requests = Array.from(employeeRequests.values()).flat()
-    }
-    if (requests === undefined) return []
-    const res: Request[] = []
-    const time = date.getTime()
-    const endTime = getEndDate(date)
-    for (const request of requests) {
-      if (fromTzDate(request.tzDate) <= endTime && fromTzDate(request.tzDueDate) > time) {
-        res.push(request)
-      }
-    }
-    return res
-  }
-
-  function getEndDate (date: Date): number {
-    return new Date(date).setMonth(date.getMonth() + 1)
-  }
 
   function getTooltip (requests: Request[]): LabelAndProps | undefined {
     if (requests.length === 0) return
@@ -80,10 +55,10 @@
             <Label label={contact.string.Employee} />
           </th>
           {#each values as value, i}
-            {@const month = getMonth(currentDate, value)}
+            {@const startDate = getStartDate(currentDate.getFullYear(), value)}
             <th
               class="fixed first-row"
-              class:today={month.getFullYear() === todayDate.getFullYear() && month.getMonth() === todayDate.getMonth()}
+              class:today={isToday(startDate)}
               on:mousemove={() => {
                 hoveredIndex = i
               }}
@@ -91,7 +66,7 @@
                 hoveredIndex = -1
               }}
             >
-              {getMonthName(month)}
+              {getMonthName(startDate)}
             </th>
           {/each}
         </tr>
@@ -102,13 +77,10 @@
             </span>
           </th>
           {#each values as value, i}
-            {@const month = getMonth(currentDate, value)}
-            <th
-              class="fixed last-row"
-              class:today={month.getFullYear() === todayDate.getFullYear() && month.getMonth() === todayDate.getMonth()}
-            >
+            {@const startDate = getStartDate(currentDate.getFullYear(), value)}
+            <th class="fixed last-row" class:today={isToday(startDate)}>
               <span class="flex-center">
-                {weekDays(month.getUTCFullYear(), month.getUTCMonth())}
+                {weekDays(startDate.getUTCFullYear(), startDate.getUTCMonth())}
               </span>
             </th>
           {/each}
@@ -121,18 +93,14 @@
               <EmployeePresenter value={employee} />
             </td>
             {#each values as value, i}
-              {@const month = getMonth(currentDate, value)}
-              {@const requests = getRequests(employeeRequests, month, employee._id)}
+              {@const startDate = getStartDate(currentDate.getFullYear(), value)}
+              {@const endDate = getEndDate(currentDate.getFullYear(), value)}
+              {@const requests = getRequests(employeeRequests, startDate, endDate, employee._id)}
               {@const tooltipValue = getTooltip(requests)}
               {#key tooltipValue}
-                <td
-                  class:today={month.getFullYear() === todayDate.getFullYear() &&
-                    month.getMonth() === todayDate.getMonth()}
-                  class="fixed td-body"
-                  use:tooltip={tooltipValue}
-                >
+                <td class:today={isToday(startDate)} class="fixed td-body" use:tooltip={tooltipValue}>
                   <div class="flex-center">
-                    {getTotal(requests, value, types)}
+                    {getTotal(requests, startDate, endDate, types)}
                   </div>
                 </td>
               {/key}
@@ -144,14 +112,12 @@
             <Label label={hr.string.Summary} />
           </td>
           {#each values as value, i}
-            {@const month = getMonth(currentDate, value)}
-            {@const requests = getRequests(employeeRequests, month)}
-            <td
-              class:today={month.getFullYear() === todayDate.getFullYear() && month.getMonth() === todayDate.getMonth()}
-              class="fixed td-body summary"
-            >
+            {@const startDate = getStartDate(currentDate.getFullYear(), value)}
+            {@const endDate = getEndDate(currentDate.getFullYear(), value)}
+            {@const requests = getRequests(employeeRequests, startDate, endDate)}
+            <td class:today={isToday(startDate)} class="fixed td-body summary">
               <div class="flex-center">
-                {getTotal(requests, value, types)}
+                {getTotal(requests, startDate, endDate, types)}
               </div>
             </td>
           {/each}

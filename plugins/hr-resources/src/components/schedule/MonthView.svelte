@@ -34,7 +34,7 @@
     tooltip
   } from '@hcengineering/ui'
   import hr from '../../plugin'
-  import { EmployeeReports, fromTzDate, getTotal } from '../../utils'
+  import { EmployeeReports, getRequests, getTotal } from '../../utils'
   import CreateRequest from '../CreateRequest.svelte'
   import RequestsPopup from '../RequestsPopup.svelte'
   import ScheduleRequests from '../ScheduleRequests.svelte'
@@ -42,6 +42,7 @@
   export let currentDate: Date = new Date()
 
   export let startDate: Date
+  export let endDate: Date
 
   export let departmentStaff: Staff[]
 
@@ -51,25 +52,6 @@
   export let timeReports: Map<Ref<Employee>, EmployeeReports>
 
   const todayDate = new Date()
-
-  function getRequests (employeeRequests: Map<Ref<Staff>, Request[]>, date: Date, employee?: Ref<Staff>): Request[] {
-    let requests = undefined
-    if (employee) {
-      requests = employeeRequests.get(employee)
-    } else {
-      requests = Array.from(employeeRequests.values()).flat()
-    }
-    if (requests === undefined) return []
-    const res: Request[] = []
-    const time = date.getTime()
-    const endTime = getEndDate(date)
-    for (const request of requests) {
-      if (fromTzDate(request.tzDate) <= endTime && fromTzDate(request.tzDueDate) > time) {
-        res.push(request)
-      }
-    }
-    return res
-  }
 
   function createRequest (e: MouseEvent, date: Date, staff: Staff): void {
     if (!isEditable(staff)) return
@@ -91,10 +73,6 @@
 
   function isEditable (employee: Staff): boolean {
     return editableList.includes(employee._id)
-  }
-
-  function getEndDate (date: Date): number {
-    return new Date(date).setDate(date.getDate() + 1)
   }
 
   function getTooltip (requests: Request[]): LabelAndProps | undefined {
@@ -163,7 +141,7 @@
               class:firstLine={row === 0}
               class:lastLine={row === departmentStaff.length - 1}
             >
-              {getTotal(requests, startDate.getMonth(), types)}
+              {getTotal(requests, startDate, endDate, types)}
             </td>
             <td class="p-1 text-center">
               {#if rTime !== undefined}
@@ -173,22 +151,22 @@
               {/if}
             </td>
             {#each values as value, i}
-              {@const date = getDay(startDate, value)}
-              {@const requests = getRequests(employeeRequests, date, employee._id)}
+              {@const day = getDay(startDate, value)}
+              {@const requests = getRequests(employeeRequests, day, day, employee._id)}
               {@const editable = isEditable(employee)}
               {@const tooltipValue = getTooltip(requests)}
-              {@const ww = findReports(employee, date, timeReports)}
+              {@const ww = findReports(employee, day, timeReports)}
               {#key [tooltipValue, editable]}
                 <td
                   class="w-9 max-w-9 min-w-9"
-                  class:today={areDatesEqual(todayDate, date)}
-                  class:weekend={isWeekend(date)}
+                  class:today={areDatesEqual(todayDate, day)}
+                  class:weekend={isWeekend(day)}
                   class:cursor-pointer={editable}
                   class:hovered={i === hoveredIndex}
                   class:firstLine={row === 0}
                   class:lastLine={row === departmentStaff.length - 1}
                   use:tooltip={tooltipValue}
-                  on:click={(e) => createRequest(e, date, employee)}
+                  on:click={(e) => createRequest(e, day, employee)}
                   on:mousemove={() => {
                     hoveredColumn = i
                   }}
@@ -211,7 +189,7 @@
             <Label label={hr.string.Summary} />
           </td>
           <td class="flex-center p-1 whitespace-nowrap text-center summary">
-            {getTotal(Array.from(employeeRequests.values()).flat(), startDate.getMonth(), types)}
+            {getTotal(Array.from(employeeRequests.values()).flat(), startDate, endDate, types)}
           </td>
           <td class="p-1 text-center summary">
             {floorFractionDigits(
@@ -222,13 +200,13 @@
             )}
           </td>
           {#each values as value, i}
-            {@const date = getDay(startDate, value)}
-            {@const requests = getRequests(employeeRequests, date)}
+            {@const day = getDay(startDate, value)}
+            {@const requests = getRequests(employeeRequests, day)}
             <td
               class="p-1 text-center summary"
               class:hovered={i === hoveredIndex}
-              class:weekend={isWeekend(date)}
-              class:today={areDatesEqual(todayDate, date)}
+              class:weekend={isWeekend(day)}
+              class:today={areDatesEqual(todayDate, day)}
               on:mousemove={() => {
                 hoveredColumn = i
               }}
@@ -236,11 +214,11 @@
                 hoveredColumn = -1
               }}
             >
-              {getTotal(requests, startDate.getMonth(), types)}
+              {getTotal(requests, day, day, types)}
             </td>
           {/each}
         </tr>
-      </tbody>
+      </tbody>getTotal
     </table>
   </Scroller>
 {:else}
