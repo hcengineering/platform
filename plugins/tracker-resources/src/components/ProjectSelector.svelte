@@ -75,11 +75,12 @@
     }
 
     const projectsInfo = [
-      { id: null, icon: tracker.icon.Projects, label: tracker.string.NoProject },
+      { id: null, icon: tracker.icon.Projects, label: tracker.string.NoProject, isSelected: !selectedProject },
       ...rawProjects.map((p) => ({
         id: p._id,
         icon: p.icon,
-        text: p.label
+        text: p.label,
+        isSelected: selectedProject ? p._id === selectedProject._id : false
       }))
     ]
 
