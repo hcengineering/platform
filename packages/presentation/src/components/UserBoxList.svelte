@@ -73,6 +73,7 @@
 <Button
   icon={persons.length === 0 ? Members : undefined}
   label={persons.length === 0 ? emptyLabel : undefined}
+  notSelected={persons.length === 0}
   width={width ?? 'min-content'}
   {kind}
   {size}

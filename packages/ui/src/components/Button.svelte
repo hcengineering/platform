@@ -35,6 +35,7 @@
   export let resetIconSize: boolean = false
   export let highlight: boolean = false
   export let selected: boolean = false
+  export let notSelected: boolean = false
   export let focus: boolean = false
   export let click: boolean = false
   export let title: string | undefined = undefined
@@ -90,6 +91,7 @@
   class:only-icon={iconOnly}
   class:highlight
   class:selected
+  class:notSelected
   disabled={disabled || loading}
   style:width
   {title}
@@ -361,6 +363,15 @@
       &:disabled {
         background-color: #5e6ad255;
         border-color: #5e6ad255;
+      }
+    }
+
+    &.notSelected {
+      color: var(--content-color);
+
+      &:hover,
+      &:hover .btn-icon {
+        color: var(--accent-color);
       }
     }
 

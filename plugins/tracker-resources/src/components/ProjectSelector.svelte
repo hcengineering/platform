@@ -117,9 +117,9 @@
     on:click={handleProjectEditorOpened}
     ><svelte:fragment slot="content">
       <span
-        class="{enlargedText
-          ? 'ml-1 text-base fs-bold'
-          : 'text-md'} overflow-label content-accent-color pointer-events-none"
+        class="{enlargedText ? 'ml-1 text-base fs-bold' : 'text-md'} overflow-label {!value
+          ? 'content-color'
+          : 'content-accent-color'} pointer-events-none"
       >
         <Label label={getEmbeddedLabel(projectText)} />
       </span>

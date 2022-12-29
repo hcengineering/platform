@@ -79,6 +79,7 @@
     <Button
       showTooltip={isEditable ? { label: tracker.string.Estimation } : undefined}
       label={tracker.string.TimeSpendValue}
+      notSelected={value.estimation === 0}
       labelParams={{ value: value.estimation }}
       icon={tracker.icon.Estimation}
       {justify}

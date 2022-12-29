@@ -286,6 +286,13 @@ input.search {
     }
     .action { visibility: visible; }
   }
+  &.not-selected {
+    .label { color: var(--content-color); }
+    &:hover .label,
+    &:hover .icon {
+      color: var(--accent-color);
+    }
+  }
 }
 .flex-presenter {
   display: flex;
