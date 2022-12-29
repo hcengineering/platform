@@ -34,7 +34,7 @@
   const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {})
 
   let varsStyle: string = ''
-  const propsWidth: Record<string, number> = { issue: 0 }
+  const propsWidth: Record<string, number> = { issue: 0, estimation: 0, assignee: 0 }
   $: if (propsWidth) {
     varsStyle = ''
     for (const key in propsWidth) varsStyle += `--fixed-${key}: ${propsWidth[key]}px;`
@@ -59,7 +59,7 @@
         listProvider.updateFocus(issue)
       }}
     >
-      <div class="flex-row-center clear-mins gap-2 p-2">
+      <div class="flex-row-center clear-mins gap-2 p-2 flex-grow">
         <span class="issuePresenter">
           <FixedColumn
             width={propsWidth.issue}
@@ -76,16 +76,30 @@
           {issue.title}
         </span>
       </div>
-      <div class="flex-center flex-no-shrink gap-2">
+
+      <FixedColumn
+        width={propsWidth.assignee}
+        key={'assignee'}
+        justify={'right'}
+        on:update={(result) => checkWidth('assignee', result)}
+      >
         <UserBox
+          width={'100%'}
           label={tracker.string.Assignee}
           _class={contact.class.Employee}
           value={issue.assignee}
           readonly
           showNavigate={false}
         />
+      </FixedColumn>
+      <FixedColumn
+        width={propsWidth.estimation}
+        key={'estimation'}
+        justify={'left'}
+        on:update={(result) => checkWidth('estimation', result)}
+      >
         <EstimationEditor value={issue} kind={'list'} />
-      </div>
+      </FixedColumn>
     </div>
   </svelte:fragment>
 </ListView>

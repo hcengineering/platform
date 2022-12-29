@@ -17,14 +17,14 @@
   import { resizeObserver } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
-  export let width: number = 0
+  export let width: number | undefined = 0
   export let key: string
   export let justify: string = ''
 
   const dispatch = createEventDispatcher()
 
-  let cWidth: number
-  $: if (cWidth > width) {
+  let cWidth: number = 0
+  $: if (cWidth > (width ?? 0)) {
     width = cWidth
     dispatch('update', cWidth)
   }
@@ -34,7 +34,9 @@
   class="flex-no-shrink"
   style="{justify !== '' ? `text-align: ${justify}; ` : ''} min-width: var(--fixed-{key});"
   use:resizeObserver={(element) => {
-    cWidth = element.clientWidth
+    if (element.clientWidth > cWidth) {
+      cWidth = element.clientWidth
+    }
   }}
 >
   <slot />

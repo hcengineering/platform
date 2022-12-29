@@ -21,7 +21,7 @@
 
   export let value: WithLookup<Issue>
   export let disableClick = false
-  export let onClick: () => void
+  export let onClick: (() => void) | undefined = undefined
 
   function handleIssueEditorOpened () {
     if (disableClick) {
