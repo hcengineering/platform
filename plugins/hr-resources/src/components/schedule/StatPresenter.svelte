@@ -20,9 +20,9 @@
   export let value: Staff
   export let display: (requests: Request[]) => number | string
   export let month: Date
-  export let getRequests: (employee: Ref<Staff>, date: Date) => Request[]
+  export let getStatRequests: (employee: Ref<Staff>, date: Date) => Request[]
 
-  $: reqs = getRequests(value._id, month)
+  $: reqs = getStatRequests(value._id, month)
   $: _value = display(reqs)
 </script>
 
