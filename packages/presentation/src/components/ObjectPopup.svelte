@@ -87,11 +87,11 @@
   $: showCategories =
     objects.map((it) => (it as any)[groupBy]).filter((it, index, arr) => arr.indexOf(it) === index).length > 1
 
-  const checkSelected = (person: Doc, objects: Doc[]): void => {
-    if (selectedElements.has(person._id)) {
-      selectedElements.delete(person._id)
+  const checkSelected = (item: Doc): void => {
+    if (selectedElements.has(item._id)) {
+      selectedElements.delete(item._id)
     } else {
-      selectedElements.add(person._id)
+      selectedElements.add(item._id)
     }
 
     selectedObjects = Array.from(selectedElements)
@@ -105,17 +105,17 @@
   let list: ListView
 
   async function handleSelection (evt: Event | undefined, objects: Doc[], selection: number): Promise<void> {
-    const person = objects[selection]
+    const item = objects[selection]
 
     if (!multiSelect) {
       if (allowDeselect) {
-        selected = person._id === selected ? undefined : person._id
+        selected = item._id === selected ? undefined : item._id
       } else {
-        selected = person._id
+        selected = item._id
       }
-      dispatch(closeAfterSelect ? 'close' : 'update', selected !== undefined ? person : undefined)
+      dispatch(closeAfterSelect ? 'close' : 'update', selected !== undefined ? item : undefined)
     } else {
-      checkSelected(person, objects)
+      checkSelected(item)
     }
   }
 
@@ -222,7 +222,7 @@
   {#if cHeight === 1}
     <div class="background-theme-content-accent" style:height={'2px'} />
   {/if}
-  <div class="scroll" on:scroll={() => updateLocation(scrollDiv, selectedDiv)} bind:this={scrollDiv}>
+  <div class="scroll" on:scroll={() => updateLocation(scrollDiv, selectedDiv, objects, selected)} bind:this={scrollDiv}>
     <div class="box">
       <ListView bind:this={list} count={objects.length} bind:selection>
         <svelte:fragment slot="category" let:item>
