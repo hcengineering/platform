@@ -19,27 +19,45 @@
     navigateToWorkspace,
     selectWorkspace,
     setLoginInfo,
-    Workspace
+    Workspace,
+    WorkspaceLoginInfo
   } from '@hcengineering/login-resources'
   import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { Loading, locationToUrl, Menu, navigate } from '@hcengineering/ui'
+  import { fetchMetadataLocalStorage, Loading, locationToUrl, Menu, navigate } from '@hcengineering/ui'
   import { workbenchId } from '@hcengineering/workbench'
   import { onMount } from 'svelte'
   import workbench from '../plugin'
-
-  let workspaces: Workspace[] = []
+  import { workspacesStore } from '../utils'
 
   onMount(() => {
     getWorkspaces().then((ws: Workspace[]) => {
-      workspaces = ws
+      $workspacesStore = ws
     })
   })
 
+  async function getLoginIngo (ws: string): Promise<WorkspaceLoginInfo | undefined> {
+    const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
+    const endpoint = fetchMetadataLocalStorage(login.metadata.LoginEndpoint)
+    const email = fetchMetadataLocalStorage(login.metadata.LoginEmail)
+    const token = tokens[ws]
+    if (token && email && endpoint) {
+      return {
+        token,
+        endpoint,
+        email,
+        workspace: ws
+      }
+    } else {
+      const loginInfo = (await selectWorkspace(ws))[1]
+      return loginInfo
+    }
+  }
+
   $: actions = [
-    ...workspaces.map((w) => ({
+    ...$workspacesStore.map((w) => ({
       label: getEmbeddedLabel(w.workspace),
       action: async () => {
-        const loginInfo = (await selectWorkspace(w.workspace))[1]
+        const loginInfo = await getLoginIngo(w.workspace)
         navigateToWorkspace(w.workspace, loginInfo)
       },
       isSubmenuRightClicking: true,
@@ -49,7 +67,7 @@
           {
             label: workbench.string.OpenInNewTab,
             action: async () => {
-              const loginInfo = (await selectWorkspace(w.workspace))[1]
+              const loginInfo = await getLoginIngo(w.workspace)
 
               if (!loginInfo) {
                 return
@@ -72,8 +90,8 @@
   ]
 </script>
 
-{#if workspaces.length}
+{#if $workspacesStore.length}
   <Menu {actions} on:update on:close />
 {:else}
-  <Loading />
+  <div class="antiPopup"><Loading /></div>
 {/if}
