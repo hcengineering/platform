@@ -101,7 +101,7 @@
   }
 
   const alignment: PopupPositionElement = element as PopupPositionElement
-  let showing: boolean | undefined = alignment.kind === 'submenu' ? undefined : false
+  let showing: boolean | undefined = alignment?.kind === 'submenu' ? undefined : false
 
   onMount(() => {
     fitPopup()
