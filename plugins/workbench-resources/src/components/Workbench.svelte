@@ -47,7 +47,7 @@
   import { getContext, onDestroy, onMount, tick } from 'svelte'
   import { subscribeMobile } from '../mobile'
   import workbench from '../plugin'
-  import { doNavigate } from '../utils'
+  import { doNavigate, workspacesStore } from '../utils'
   import AccountPopup from './AccountPopup.svelte'
   import AppItem from './AppItem.svelte'
   import Applications from './Applications.svelte'
@@ -55,6 +55,7 @@
   import NavHeader from './NavHeader.svelte'
   import Navigator from './Navigator.svelte'
   import SpaceView from './SpaceView.svelte'
+  import { getWorkspaces, Workspace } from '@hcengineering/login-resources'
 
   export let client: Client
   let contentPanel: HTMLElement
@@ -82,6 +83,10 @@
   const query = createQuery()
   $: query.query(workbench.class.Application, { hidden: false, _id: { $nin: excludedApps } }, (result) => {
     apps = result
+  })
+
+  getWorkspaces().then((ws: Workspace[]) => {
+    $workspacesStore = ws
   })
 
   let panelInstance: PanelInstance

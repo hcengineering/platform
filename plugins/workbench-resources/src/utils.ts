@@ -24,6 +24,8 @@ import { closePanel, getCurrentLocation, navigate } from '@hcengineering/ui'
 import { getClient } from '@hcengineering/presentation'
 import type { Application } from '@hcengineering/workbench'
 import preference from '@hcengineering/preference'
+import { writable } from 'svelte/store'
+import { Workspace } from '@hcengineering/login-resources'
 
 export function classIcon (client: Client, _class: Ref<Class<Obj>>): Asset | undefined {
   return client.getHierarchy().getClass(_class).icon
@@ -135,3 +137,5 @@ export async function showApplication (app: Application): Promise<void> {
     await client.remove(current)
   }
 }
+
+export const workspacesStore = writable<Workspace[]>([])
