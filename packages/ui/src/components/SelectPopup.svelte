@@ -90,8 +90,8 @@
   let scrollDiv: HTMLElement | undefined
   let cHeight = 0
 
-  const updateLocation = (scrollDiv?: HTMLElement, selectedDiv?: HTMLElement) => {
-    const objIt = filteredObjects?.find((it) => it.isSelected)
+  const updateLocation = (scrollDiv?: HTMLElement, selectedDiv?: HTMLElement, objects?: ValueType[]) => {
+    const objIt = objects?.find((it) => it.isSelected)
     if (objIt === undefined) {
       cHeight = 0
       return
@@ -113,7 +113,7 @@
     }
   }
 
-  $: updateLocation(scrollDiv, selectedDiv)
+  $: updateLocation(scrollDiv, selectedDiv, filteredObjects)
 </script>
 
 <FocusHandler {manager} />
@@ -143,7 +143,7 @@
   {#if cHeight === 1}
     <div class="background-theme-content-accent" style:height={'2px'} />
   {/if}
-  <div class="scroll" on:scroll={() => updateLocation(scrollDiv, selectedDiv)} bind:this={scrollDiv}>
+  <div class="scroll" on:scroll={() => updateLocation(scrollDiv, selectedDiv, filteredObjects)} bind:this={scrollDiv}>
     <div class="box">
       <ListView
         bind:this={list}

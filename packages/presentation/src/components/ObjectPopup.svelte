@@ -166,7 +166,7 @@
   let scrollDiv: HTMLElement | undefined
   let cHeight = 0
 
-  const updateLocation = (scrollDiv?: HTMLElement, selectedDiv?: HTMLElement) => {
+  const updateLocation = (scrollDiv?: HTMLElement, selectedDiv?: HTMLElement, objects?: Doc[], selected?: Ref<Doc>) => {
     const objIt = objects?.find((it) => it._id === selected)
     if (objIt === undefined) {
       cHeight = 0
@@ -189,7 +189,7 @@
     }
   }
 
-  $: updateLocation(scrollDiv, selectedDiv)
+  $: updateLocation(scrollDiv, selectedDiv, objects, selected)
 </script>
 
 <FocusHandler {manager} />
@@ -222,7 +222,7 @@
   {#if cHeight === 1}
     <div class="background-theme-content-accent" style:height={'2px'} />
   {/if}
-  <div class="scroll" on:scroll={() => updateLocation(scrollDiv, selectedDiv)} bind:this={scrollDiv}>
+  <div class="scroll" on:scroll={() => updateLocation(scrollDiv, selectedDiv, objects, selected)} bind:this={scrollDiv}>
     <div class="box">
       <ListView bind:this={list} count={objects.length} bind:selection>
         <svelte:fragment slot="category" let:item>
