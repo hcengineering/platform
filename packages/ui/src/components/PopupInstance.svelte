@@ -16,7 +16,7 @@
 <script lang="ts">
   import { onMount } from 'svelte'
   import { fitPopupElement } from '../popups'
-  import type { AnyComponent, AnySvelteComponent, PopupAlignment, PopupOptions } from '../types'
+  import type { AnyComponent, AnySvelteComponent, PopupAlignment, PopupOptions, PopupPositionElement } from '../types'
   import { deviceOptionsStore as deviceInfo } from '..'
 
   export let is: AnyComponent | AnySvelteComponent
@@ -100,7 +100,16 @@
     escapeClose()
   }
 
-  onMount(() => fitPopup())
+  const alignment: PopupPositionElement = element as PopupPositionElement
+  let showing: boolean | undefined = alignment.kind === 'submenu' ? undefined : false
+
+  onMount(() => {
+    fitPopup()
+    setTimeout(() => {
+      modalHTML.addEventListener('transitionend', () => (showing = undefined), { once: true })
+      showing = true
+    }, 0)
+  })
   $: if ($deviceInfo.docWidth <= 900 && !docSize) docSize = true
   $: if ($deviceInfo.docWidth > 900 && docSize) docSize = false
 </script>
@@ -108,7 +117,7 @@
 <svelte:window on:resize={fitPopup} on:keydown={handleKeydown} />
 
 <div
-  class="popup"
+  class="popup {showing === undefined ? 'endShow' : showing === false ? 'preShow' : 'startShow'}"
   class:anim={element === 'float'}
   bind:this={modalHTML}
   style={`z-index: ${zIndex + 1};`}
@@ -161,6 +170,22 @@
     // justify-content: center;
     max-height: calc(100vh - 32px);
     background-color: transparent;
+    transform-origin: center;
+    opacity: 0;
+
+    &.preShow {
+      transform: scale(0.9);
+    }
+    &.endShow {
+      opacity: 1;
+    }
+    &.startShow {
+      transform: scale(1);
+      opacity: 1;
+      transition-property: transform, opacity;
+      transition-timing-function: cubic-bezier(0, 1.59, 0.26, 1.01), ease-in-out;
+      transition-duration: 0.3s;
+    }
 
     &.anim {
       transition-property: top, bottom, left, right, width, height;
