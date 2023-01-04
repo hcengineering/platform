@@ -39,6 +39,7 @@ import {
 } from '@hcengineering/ui'
 import type { BuildModelOptions, Viewlet } from '@hcengineering/view'
 import view, { AttributeModel, BuildModelKey } from '@hcengineering/view'
+import { writable } from 'svelte/store'
 import plugin from './plugin'
 
 /**
@@ -492,3 +493,7 @@ export function getActiveViewletId (): Ref<Viewlet> | null {
   const key = makeViewletKey()
   return localStorage.getItem(key) as Ref<Viewlet> | null
 }
+
+export type FixedWidthStore = Record<string, number>
+
+export const fixedWidthStore = writable<FixedWidthStore>({})

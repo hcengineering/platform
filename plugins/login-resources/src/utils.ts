@@ -220,7 +220,6 @@ export async function getWorkspaces (): Promise<Workspace[]> {
       body: serialize(request)
     })
     const result: Response<any> = await response.json()
-    console.log(result)
     if (result.error != null) {
       throw new PlatformError(result.error)
     }

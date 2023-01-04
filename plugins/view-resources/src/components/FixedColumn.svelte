@@ -15,24 +15,34 @@
 -->
 <script lang="ts">
   import { resizeObserver } from '@hcengineering/ui'
-  import { createEventDispatcher } from 'svelte'
+  import { afterUpdate, onDestroy } from 'svelte'
+  import { fixedWidthStore } from '../utils'
 
-  export let width: number | undefined = 0
   export let key: string
   export let justify: string = ''
-
-  const dispatch = createEventDispatcher()
+  let prevKey = key
 
   let cWidth: number = 0
-  $: if (cWidth > (width ?? 0)) {
-    width = cWidth
-    dispatch('update', cWidth)
+
+  afterUpdate(() => {
+    if (prevKey !== key) {
+      $fixedWidthStore[prevKey] = 0
+      prevKey = key
+    }
+  })
+
+  $: if (cWidth > ($fixedWidthStore[key] ?? 0)) {
+    $fixedWidthStore[key] = cWidth
   }
+
+  onDestroy(() => {
+    $fixedWidthStore[key] = 0
+  })
 </script>
 
 <div
   class="flex-no-shrink"
-  style="{justify !== '' ? `text-align: ${justify}; ` : ''} min-width: var(--fixed-{key});"
+  style="{justify !== '' ? `text-align: ${justify}; ` : ''} min-width: {$fixedWidthStore[key] ?? 0}px;"
   use:resizeObserver={(element) => {
     if (element.clientWidth > cWidth) {
       cWidth = element.clientWidth

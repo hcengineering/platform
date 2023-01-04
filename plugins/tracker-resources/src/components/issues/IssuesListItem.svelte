@@ -32,16 +32,8 @@
   export let selected: boolean
   export let statuses: WithLookup<IssueStatus>[]
   export let currentTeam: Team | undefined
-  export let propsWidth: Record<string, number>
 
   const dispatch = createEventDispatcher()
-
-  const checkWidth = (key: string, result: CustomEvent): void => {
-    if (result !== undefined) {
-      propsWidth[key] = result.detail
-      dispatch('fitting', propsWidth)
-    }
-  }
 
   $: compactMode = $deviceInfo.twoRows
 </script>
@@ -78,12 +70,7 @@
       <svelte:component this={attributeModel.presenter} />
     {:else if (!groupByKey || attributeModel.props?.excludeByKey !== groupByKey) && !(attributeModel.props?.optional && compactMode)}
       {#if attributeModel.props?.fixed}
-        <FixedColumn
-          width={propsWidth[attributeModel.key]}
-          key={attributeModel.key}
-          justify={attributeModel.props.fixed}
-          on:update={(result) => checkWidth(attributeModel.key, result)}
-        >
+        <FixedColumn key={`issue_${attributeModel.key}`} justify={attributeModel.props.fixed}>
           <svelte:component
             this={attributeModel.presenter}
             value={getObjectValue(attributeModel.key, docObject) ?? ''}

@@ -32,16 +32,6 @@
   }
 
   const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {})
-
-  let varsStyle: string = ''
-  const propsWidth: Record<string, number> = { issue: 0, estimation: 0, assignee: 0 }
-  $: if (propsWidth) {
-    varsStyle = ''
-    for (const key in propsWidth) varsStyle += `--fixed-${key}: ${propsWidth[key]}px;`
-  }
-  const checkWidth = (key: string, result: CustomEvent): void => {
-    if (result !== undefined) propsWidth[key] = result.detail
-  }
 </script>
 
 <ListView count={issues.length}>
@@ -50,7 +40,6 @@
     {@const currentTeam = teams.get(issue.space)}
     <div
       class="flex-between row"
-      style={varsStyle}
       on:contextmenu|preventDefault={(ev) => showContextMenu(ev, issue)}
       on:mouseover={() => {
         listProvider.updateFocus(issue)
@@ -61,12 +50,7 @@
     >
       <div class="flex-row-center clear-mins gap-2 p-2 flex-grow">
         <span class="issuePresenter">
-          <FixedColumn
-            width={propsWidth.issue}
-            key={'issue'}
-            justify={'left'}
-            on:update={(result) => checkWidth('issue', result)}
-          >
+          <FixedColumn key={'estimation_issue'} justify={'left'}>
             {#if currentTeam}
               {getIssueId(currentTeam, issue)}
             {/if}
@@ -77,12 +61,7 @@
         </span>
       </div>
 
-      <FixedColumn
-        width={propsWidth.assignee}
-        key={'assignee'}
-        justify={'right'}
-        on:update={(result) => checkWidth('assignee', result)}
-      >
+      <FixedColumn key={'estimation_issue_assignee'} justify={'right'}>
         <UserBox
           width={'100%'}
           label={tracker.string.Assignee}
@@ -92,12 +71,7 @@
           showNavigate={false}
         />
       </FixedColumn>
-      <FixedColumn
-        width={propsWidth.estimation}
-        key={'estimation'}
-        justify={'left'}
-        on:update={(result) => checkWidth('estimation', result)}
-      >
+      <FixedColumn key={'estimation'} justify={'left'}>
         <EstimationEditor value={issue} kind={'list'} />
       </FixedColumn>
     </div>
