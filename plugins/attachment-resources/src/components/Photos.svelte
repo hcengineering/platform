@@ -47,7 +47,7 @@
     if (!file.type.startsWith('image/')) return
     loading++
     try {
-      const uuid = await uploadFile(file, { space, attachedTo: objectId })
+      const uuid = await uploadFile(file)
       client.addCollection(attachment.class.Photo, space, objectId, _class, 'photos', {
         name: file.name,
         file: uuid,

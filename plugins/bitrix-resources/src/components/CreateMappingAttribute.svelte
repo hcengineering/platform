@@ -7,6 +7,7 @@
   import CopyMapping from './mappings/CopyMapping.svelte'
   import CreateChannelMapping from './mappings/CreateChannelMapping.svelte'
   import CreateTagMapping from './mappings/CreateTagMapping.svelte'
+  import DownloadAttachmentMapping from './mappings/DownloadAttachmentMapping.svelte'
 
   export let mapping: BitrixEntityMapping
   export let fields: Fields = {}
@@ -16,7 +17,7 @@
 
   $: _kind = kind ?? field?.operation.kind
 
-  let op: CopyMapping | CreateTagMapping | CreateChannelMapping
+  let op: CopyMapping | CreateTagMapping | CreateChannelMapping | DownloadAttachmentMapping
 
   async function save (): Promise<void> {
     op.save()
@@ -39,5 +40,7 @@
     <CreateTagMapping {mapping} {fields} {attribute} {field} bind:this={op} />
   {:else if _kind === MappingOperation.CreateChannel}
     <CreateChannelMapping {mapping} {fields} {attribute} {field} bind:this={op} />
+  {:else if _kind === MappingOperation.DownloadAttachment}
+    <DownloadAttachmentMapping {mapping} {fields} {attribute} {field} bind:this={op} />
   {/if}
 </Card>

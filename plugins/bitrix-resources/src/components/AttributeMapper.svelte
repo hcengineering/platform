@@ -56,6 +56,12 @@
       action: (_: any, evt: MouseEvent) => {
         addMapping(evt, MappingOperation.CreateChannel)
       }
+    },
+    {
+      label: getEmbeddedLabel('Add Download Attachment mapping'),
+      action: (_: any, evt: MouseEvent) => {
+        addMapping(evt, MappingOperation.DownloadAttachment)
+      }
     }
   ] as Action[]
 </script>
