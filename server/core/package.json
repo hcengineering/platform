@@ -29,6 +29,7 @@
   "dependencies": {
     "@hcengineering/core": "^0.6.19",
     "@hcengineering/platform": "^0.6.8",
-    "@hcengineering/minio": "^0.6.0"
+    "@hcengineering/minio": "^0.6.0",
+    "fast-equals": "^2.0.3"
   }
 }

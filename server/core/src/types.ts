@@ -13,15 +13,17 @@
 // limitations under the License.
 //
 
-import type {
+import {
   Account,
   Class,
   Doc,
   DocumentQuery,
   FindOptions,
   FindResult,
+  Hierarchy,
   LowLevelStorage,
   MeasureContext,
+  MeasureMetricsContext,
   ModelDb,
   Obj,
   Ref,
@@ -30,12 +32,13 @@ import type {
   Storage,
   Timestamp,
   Tx,
+  TxFactory,
   TxResult,
   WorkspaceId
 } from '@hcengineering/core'
-import { Hierarchy, TxFactory } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
 import type { Resource } from '@hcengineering/platform'
+import { Readable } from 'stream'
 
 /**
  * @public
@@ -133,8 +136,20 @@ export interface IndexedDoc {
   modifiedBy: Ref<Account>
   attachedTo?: Ref<Doc>
   attachedToClass?: Ref<Class<Doc>>
-
   [key: string]: any
+}
+
+/**
+ * @public
+ */
+export interface EmbeddingSearchOption {
+  field: string
+  field_enable: string
+  size?: number
+  from?: number
+  embeddingBoost?: number // default 100
+  fulltextBoost?: number // default 10
+  minScore?: number // 75 for example.
 }
 
 /**
@@ -143,20 +158,99 @@ export interface IndexedDoc {
 export interface FullTextAdapter {
   index: (doc: IndexedDoc) => Promise<TxResult>
   update: (id: Ref<Doc>, update: Record<string, any>) => Promise<TxResult>
-  remove: (id: Ref<Doc>) => Promise<void>
+  remove: (id: Ref<Doc>[]) => Promise<void>
+  updateMany: (docs: IndexedDoc[]) => Promise<TxResult[]>
   search: (
     _classes: Ref<Class<Doc>>[],
     search: DocumentQuery<Doc>,
     size: number | undefined,
     from?: number
   ) => Promise<IndexedDoc[]>
+
+  searchEmbedding: (
+    _classes: Ref<Class<Doc>>[],
+    search: DocumentQuery<Doc>,
+    embedding: number[],
+    options: EmbeddingSearchOption
+  ) => Promise<IndexedDoc[]>
+
   close: () => Promise<void>
+  metrics: () => MeasureContext
+
+  initMapping: (field: string, dims: number) => Promise<void>
+
+  load: (docs: Ref<Doc>[]) => Promise<IndexedDoc[]>
 }
 
 /**
  * @public
  */
-export type FullTextAdapterFactory = (url: string, workspace: WorkspaceId) => Promise<FullTextAdapter>
+export class DummyFullTextAdapter implements FullTextAdapter {
+  async initMapping (field: string, dims: number): Promise<void> {}
+
+  async index (doc: IndexedDoc): Promise<TxResult> {
+    return {}
+  }
+
+  async load (docs: Ref<Doc>[]): Promise<IndexedDoc[]> {
+    return []
+  }
+
+  async update (id: Ref<Doc>, update: Record<string, any>): Promise<TxResult> {
+    return {}
+  }
+
+  async updateMany (docs: IndexedDoc[]): Promise<TxResult[]> {
+    return []
+  }
+
+  async search (query: any): Promise<IndexedDoc[]> {
+    return []
+  }
+
+  async searchEmbedding (
+    _classes: Ref<Class<Doc>>[],
+    search: DocumentQuery<Doc>,
+    embedding: number[],
+    options: EmbeddingSearchOption
+  ): Promise<IndexedDoc[]> {
+    return []
+  }
+
+  async remove (id: Ref<Doc>[]): Promise<void> {}
+
+  async close (): Promise<void> {}
+
+  metrics (): MeasureContext {
+    return new MeasureMetricsContext('', {})
+  }
+}
+
+/**
+ * @public
+ */
+export interface ContentTextAdapter {
+  fetch: (name: string, type: string, doc: Readable | Buffer | string) => Promise<string>
+  metrics: () => MeasureContext
+}
+
+/**
+ * @public
+ */
+export type FullTextAdapterFactory = (
+  url: string,
+  workspace: WorkspaceId,
+  context: MeasureContext
+) => Promise<FullTextAdapter>
+
+/**
+ * @public
+ */
+export type ContentAdapterFactory = (
+  url: string,
+  workspace: WorkspaceId,
+  context: MeasureContext
+) => Promise<ContentTextAdapter>
 
 /**
  * @public

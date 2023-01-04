@@ -24,6 +24,7 @@ import core, {
   DocumentQuery,
   DocumentUpdate,
   Domain,
+  DOMAIN_DOC_INDEX_STATE,
   DOMAIN_MODEL,
   DOMAIN_TX,
   FindOptions,
@@ -52,10 +53,28 @@ import { MinioService } from '@hcengineering/minio'
 import { getResource } from '@hcengineering/platform'
 import { DbAdapter, DbAdapterConfiguration, TxAdapter } from './adapter'
 import { FullTextIndex } from './fulltext'
+import { FullTextIndexPipeline } from './indexer'
+import { ContentRetrievalStage } from './indexer/content'
+import { IndexedFieldStage } from './indexer/field'
+import { FullTextPipelineStage } from './indexer/types'
 import serverCore from './plugin'
 import { Triggers } from './triggers'
-import type { FullTextAdapter, FullTextAdapterFactory, ObjectDDParticipant } from './types'
+import type {
+  ContentAdapterFactory,
+  ContentTextAdapter,
+  FullTextAdapter,
+  FullTextAdapterFactory,
+  ObjectDDParticipant
+} from './types'
 
+/**
+ * @public
+ */
+
+export type FullTextPipelineStageFactory = (
+  adapter: FullTextAdapter,
+  stages: FullTextPipelineStage[]
+) => FullTextPipelineStage
 /**
  * @public
  */
@@ -67,6 +86,13 @@ export interface DbConfiguration {
   fulltextAdapter: {
     factory: FullTextAdapterFactory
     url: string
+    metrics: MeasureContext
+    stages?: FullTextPipelineStageFactory[]
+  }
+  contentAdapter: {
+    factory: ContentAdapterFactory
+    url: string
+    metrics: MeasureContext
   }
   storageFactory?: () => MinioService
 }
@@ -87,13 +113,16 @@ class TServerStorage implements ServerStorage {
     readonly storageAdapter: MinioService | undefined,
     readonly modelDb: ModelDb,
     private readonly workspace: WorkspaceId,
+    private readonly contentAdapter: ContentTextAdapter,
+    readonly indexFactory: (storage: ServerStorage) => FullTextIndex,
     options?: ServerStorageOptions
   ) {
     this.hierarchy = hierarchy
-    this.fulltext = new FullTextIndex(hierarchy, fulltextAdapter, this, options?.skipUpdateAttached ?? false)
+    this.fulltext = indexFactory(this)
   }
 
   async close (): Promise<void> {
+    await this.fulltext.close()
     for (const o of this.adapters.values()) {
       await o.close()
     }
@@ -599,6 +628,9 @@ function txClass (tx: Tx): Ref<Class<Tx>> {
 export interface ServerStorageOptions {
   // If defined, will skip update of attached documents on document update.
   skipUpdateAttached?: boolean
+
+  // Indexing is not required to be started for upgrade mode.
+  upgrade: boolean
 }
 /**
  * @public
@@ -646,7 +678,45 @@ export async function createServerStorage (
     await adapter.init(model)
   }
 
-  const fulltextAdapter = await conf.fulltextAdapter.factory(conf.fulltextAdapter.url, conf.workspace)
+  const fulltextAdapter = await conf.fulltextAdapter.factory(
+    conf.fulltextAdapter.url,
+    conf.workspace,
+    conf.fulltextAdapter.metrics
+  )
+
+  const contentAdapter = await conf.contentAdapter.factory(
+    conf.contentAdapter.url,
+    conf.workspace,
+    conf.contentAdapter.metrics
+  )
+
+  const docIndexState = adapters.get(conf.defaultAdapter)
+  if (docIndexState === undefined) {
+    throw new Error(`No Adapter for ${DOMAIN_DOC_INDEX_STATE}`)
+  }
+
+  const indexFactory = (storage: ServerStorage): FullTextIndex => {
+    const stages: FullTextPipelineStage[] = [
+      new IndexedFieldStage(storage, fulltextAdapter.metrics().newChild('fields', {})),
+      new ContentRetrievalStage(
+        storageAdapter,
+        conf.workspace,
+        fulltextAdapter.metrics().newChild('content', {}),
+        contentAdapter
+      )
+    ]
+    ;(conf.fulltextAdapter.stages ?? []).forEach((it) => stages.push(it(fulltextAdapter, stages)))
+    const indexer = new FullTextIndexPipeline(docIndexState, stages, fulltextAdapter, hierarchy, conf.workspace)
+    return new FullTextIndex(
+      hierarchy,
+      fulltextAdapter,
+      storage,
+      storageAdapter,
+      conf.workspace,
+      indexer,
+      options?.upgrade ?? false
+    )
+  }
 
   return new TServerStorage(
     conf.domains,
@@ -658,6 +728,8 @@ export async function createServerStorage (
     storageAdapter,
     modelDb,
     conf.workspace,
+    contentAdapter,
+    indexFactory,
     options
   )
 }

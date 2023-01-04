@@ -14,12 +14,22 @@
 -->
 <script lang="ts">
   import { Class, Doc, DocumentQuery, Ref } from '@hcengineering/core'
-  import { Asset, IntlString } from '@hcengineering/platform'
+  import { Asset, getEmbeddedLabel, IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { AnyComponent, Button, Icon, IconAdd, Label, Loading, SearchEdit, showPopup } from '@hcengineering/ui'
+  import {
+    AnyComponent,
+    Button,
+    deviceOptionsStore as deviceInfo,
+    Icon,
+    IconAdd,
+    Label,
+    Loading,
+    SearchEdit,
+    showPopup
+  } from '@hcengineering/ui'
   import view, { Viewlet, ViewletDescriptor, ViewletPreference } from '@hcengineering/view'
   import { FilterButton, TableBrowser, ViewletSettingButton } from '@hcengineering/view-resources'
-  import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
+  import SourcePresenter from './search/SourcePresenter.svelte'
 
   export let _class: Ref<Class<Doc>>
   export let icon: Asset
@@ -103,7 +113,20 @@
   {:else}
     <TableBrowser
       {_class}
-      config={preference?.config ?? descr.config}
+      config={[
+        ...(search !== ''
+          ? [
+              {
+                key: '',
+                presenter: SourcePresenter,
+                label: getEmbeddedLabel('#'),
+                sortingKey: '#score',
+                props: { search }
+              }
+            ]
+          : []),
+        ...(preference?.config ?? descr.config)
+      ]}
       options={descr.options}
       query={resultQuery}
       showNotification

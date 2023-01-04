@@ -106,8 +106,8 @@ export function matchQuery<T extends Doc> (
 export function checkMixinKey<T extends Doc> (key: string, clazz: Ref<Class<T>>, hierarchy: Hierarchy): string {
   if (!key.includes('.')) {
     try {
-      const attr = hierarchy.getAttribute(clazz, key)
-      if (hierarchy.isMixin(attr.attributeOf)) {
+      const attr = hierarchy.findAttribute(clazz, key)
+      if (attr !== undefined && hierarchy.isMixin(attr.attributeOf)) {
         // It is mixin
         key = attr.attributeOf + '.' + key
       }

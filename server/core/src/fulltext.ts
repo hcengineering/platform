@@ -1,6 +1,6 @@
 //
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -15,107 +15,104 @@
 //
 
 import core, {
-  AnyAttribute,
   AttachedDoc,
   Class,
-  ClassifierKind,
-  Collection,
   Doc,
+  DocIndexState,
   DocumentQuery,
   FindOptions,
   FindResult,
   Hierarchy,
-  IndexKind,
   MeasureContext,
-  Obj,
   ObjQueryType,
   Ref,
+  ServerStorage,
   toFindResult,
   Tx,
   TxCollectionCUD,
-  TxCreateDoc,
-  TxMixin,
-  TxProcessor,
-  TxRemoveDoc,
+  TxCUD,
+  TxFactory,
   TxResult,
-  TxUpdateDoc
+  WorkspaceId
 } from '@hcengineering/core'
+import { MinioService } from '@hcengineering/minio'
+import { FullTextIndexPipeline } from './indexer'
+import { createStateDoc, isClassIndexable } from './indexer/utils'
 import type { FullTextAdapter, IndexedDoc, WithFind } from './types'
 
 /**
  * @public
  */
 export class FullTextIndex implements WithFind {
+  txFactory = new TxFactory(core.account.System)
+  closed = false
+
+  consistency: Promise<void> | undefined
+
   constructor (
     private readonly hierarchy: Hierarchy,
     private readonly adapter: FullTextAdapter,
-    private readonly dbStorage: WithFind,
-    private readonly skipUpdateAttached: boolean
-  ) {}
+    private readonly dbStorage: ServerStorage,
+    readonly storageAdapter: MinioService | undefined,
+    readonly workspace: WorkspaceId,
+    readonly indexer: FullTextIndexPipeline,
+    private readonly upgrade: boolean
+  ) {
+    if (!upgrade) {
+      this.consistency = this.indexer.checkIndexConsistency(dbStorage)
 
-  protected async txRemoveDoc (ctx: MeasureContext, tx: TxRemoveDoc<Doc>): Promise<TxResult> {
-    // console.log('FullTextIndex.txRemoveDoc: Method not implemented.')
-    await this.adapter.remove(tx.objectId)
-    return {}
+      // Schedule indexing after consistency check
+      void this.consistency.then(() => {
+        void this.indexer.startIndexing()
+      })
+    }
   }
 
-  protected async txMixin (ctx: MeasureContext, tx: TxMixin<Doc, Doc>): Promise<TxResult> {
-    const attributes = this.getFullTextAttributes(tx.mixin)
-    let result = {}
-    if (attributes === undefined) return result
-    const ops: any = tx.attributes
-    const update: any = {}
-    let shouldUpdate = false
-    for (const attr of attributes) {
-      if (ops[attr.name] !== undefined) {
-        update[(tx.mixin as string) + '.' + attr.name] = ops[attr.name]
-        shouldUpdate = true
-      }
-    }
-    if (shouldUpdate) {
-      result = await this.adapter.update(tx.objectId, update)
-      if (!this.skipUpdateAttached) {
-        await this.updateAttachedDocs(ctx, tx, update)
-      }
-    }
-    return result
+  async close (): Promise<void> {
+    this.closed = true
+    await this.consistency
+    await this.indexer.cancel()
   }
 
   async tx (ctx: MeasureContext, tx: Tx): Promise<TxResult> {
-    switch (tx._class) {
-      case core.class.TxCreateDoc:
-        return await this.txCreateDoc(ctx, tx as TxCreateDoc<Doc>)
-      case core.class.TxCollectionCUD:
-        return await this.txCollectionCUD(ctx, tx as TxCollectionCUD<Doc, AttachedDoc>)
-      case core.class.TxUpdateDoc:
-        return await this.txUpdateDoc(ctx, tx as TxUpdateDoc<Doc>)
-      case core.class.TxRemoveDoc:
-        return await this.txRemoveDoc(ctx, tx as TxRemoveDoc<Doc>)
-      case core.class.TxMixin:
-        return await this.txMixin(ctx, tx as TxMixin<Doc, Doc>)
-      case core.class.TxApplyIf:
-        // Apply if processed on server
-        return await Promise.resolve({})
+    let attachedTo: Ref<DocIndexState> | undefined
+    let attachedToClass: Ref<Class<Doc>> | undefined
+    if (tx._class === core.class.TxCollectionCUD) {
+      const txcol = tx as TxCollectionCUD<Doc, AttachedDoc>
+      attachedTo = txcol.objectId as Ref<DocIndexState>
+      attachedToClass = txcol.objectClass
+      tx = txcol.tx
     }
-    throw new Error('TxProcessor: unhandled transaction class: ' + tx._class)
-  }
+    if (this.hierarchy.isDerived(tx._class, core.class.TxCUD)) {
+      const cud = tx as TxCUD<Doc>
 
-  protected txCollectionCUD (ctx: MeasureContext, tx: TxCollectionCUD<Doc, AttachedDoc>): Promise<TxResult> {
-    // We need update only create transactions to contain attached, attachedToClass.
-    if (tx.tx._class === core.class.TxCreateDoc) {
-      const createTx = tx.tx as TxCreateDoc<AttachedDoc>
-      const d: TxCreateDoc<AttachedDoc> = {
-        ...createTx,
-        attributes: {
-          ...createTx.attributes,
-          attachedTo: tx.objectId,
-          attachedToClass: tx.objectClass,
-          collection: tx.collection
-        }
+      if (!isClassIndexable(this.hierarchy, cud.objectClass)) {
+        // No need, since no indixable fields or attachments.
+        return {}
       }
-      return this.txCreateDoc(ctx, d)
+
+      let stDoc: DocIndexState | undefined
+      if (cud._class === core.class.TxCreateDoc) {
+        // Add doc for indexing
+        stDoc = createStateDoc(cud.objectId, cud.objectClass, {
+          attributes: {},
+          stages: {},
+          attachedTo,
+          attachedToClass,
+          space: tx.objectSpace,
+          removed: false
+        })
+      }
+      await this.indexer.queue(
+        cud.objectId as Ref<DocIndexState>,
+        cud._class === core.class.TxCreateDoc,
+        cud._class === core.class.TxRemoveDoc,
+        stDoc
+      )
+
+      this.indexer.triggerIndexing()
     }
-    return this.tx(ctx, tx.tx)
+    return {}
   }
 
   async findAll<T extends Doc>(
@@ -130,188 +127,87 @@ export class FullTextIndex implements WithFind {
 
     const ids: Set<Ref<Doc>> = new Set<Ref<Doc>>()
     const baseClass = this.hierarchy.getBaseClass(_class)
-    const classes = this.hierarchy.getDescendants(baseClass)
+    let classes = this.hierarchy.getDescendants(baseClass)
+
+    const attrs = this.hierarchy.getAllAttributes(_class)
+    try {
+      for (const attr of attrs.values()) {
+        if (attr.type._class === core.class.Collection) {
+          // we need attached documents to be in clases
+          const dsc = this.hierarchy.getDescendants(attr.attributeOf)
+          classes = classes.concat(dsc)
+        }
+      }
+    } catch (err: any) {
+      console.error(err)
+    }
+
+    classes = classes.filter((it, idx, arr) => arr.indexOf(it) === idx)
+
     const fullTextLimit = 10000
-    const docs = await this.adapter.search(classes, query, fullTextLimit)
+    let { docs, pass } = await this.indexer.search(classes, query, fullTextLimit)
+
+    if (docs.length === 0 && pass) {
+      docs = [...docs, ...(await this.adapter.search(classes, query, fullTextLimit))]
+    }
+    const indexedDocMap = new Map<Ref<Doc>, IndexedDoc>()
 
     for (const doc of docs) {
       if (this.hierarchy.isDerived(doc._class, baseClass)) {
         ids.add(doc.id)
+        indexedDocMap.set(doc.id, doc)
       }
-      if (doc.attachedTo !== undefined) {
-        if (doc.attachedToClass !== undefined && this.hierarchy.isDerived(doc.attachedToClass, baseClass)) {
+      if (doc.attachedTo != null) {
+        if (doc.attachedToClass != null && this.hierarchy.isDerived(doc.attachedToClass, baseClass)) {
           if (this.hierarchy.isDerived(doc.attachedToClass, baseClass)) {
             ids.add(doc.attachedTo)
+            indexedDocMap.set(doc.attachedTo, doc)
           }
         } else {
           ids.add(doc.attachedTo)
+          indexedDocMap.set(doc.attachedTo, doc)
         }
       }
     }
+    if (docs.length === 0) {
+      return toFindResult([], 0)
+    }
+    const scoreSearch: number | undefined = (options?.sort as any)['#score']
+
     const resultIds = Array.from(getResultIds(ids, _id))
-    return await this.dbStorage.findAll(ctx, _class, { _id: { $in: resultIds }, ...mainQuery }, options)
-  }
-
-  private getFullTextAttributes (clazz: Ref<Class<Obj>>, parentDoc?: Doc): AnyAttribute[] {
-    const allAttributes = this.hierarchy.getAllAttributes(clazz)
-    const result: AnyAttribute[] = []
-    for (const [, attr] of allAttributes) {
-      if (isFullTextAttribute(attr)) {
-        result.push(attr)
+    let result = await this.dbStorage.findAll(
+      ctx,
+      _class,
+      { _id: { $in: resultIds }, ...mainQuery },
+      {
+        ...options,
+        limit: scoreSearch !== undefined ? docs.length : options?.limit
       }
-    }
+    )
 
-    // We also need to add all mixin attribues if parent is specified.
-    if (parentDoc !== undefined) {
-      this.hierarchy
-        .getDescendants(clazz)
-        .filter((m) => this.hierarchy.getClass(m).kind === ClassifierKind.MIXIN)
-        .forEach((m) => {
-          for (const [, v] of this.hierarchy.getAllAttributes(m, clazz)) {
-            if (isFullTextAttribute(v) && this.hierarchy.hasMixin(parentDoc, m)) {
-              result.push(v)
-            }
-          }
-        })
-    }
-    return result
-  }
-
-  protected async txCreateDoc (ctx: MeasureContext, tx: TxCreateDoc<Doc>): Promise<TxResult> {
-    const attributes = this.getFullTextAttributes(tx.objectClass)
-    const doc = TxProcessor.createDoc2Doc(tx)
-    let parentContent: Record<string, string> = {}
-    if (this.hierarchy.isDerived(doc._class, core.class.AttachedDoc)) {
-      const attachedDoc = doc as AttachedDoc
-      if (attachedDoc.attachedToClass !== undefined && attachedDoc.attachedTo !== undefined) {
-        const parentDoc = (
-          await this.dbStorage.findAll(ctx, attachedDoc.attachedToClass, { _id: attachedDoc.attachedTo }, { limit: 1 })
-        )[0]
-        if (parentDoc !== undefined) {
-          const parentAttributes = this.getFullTextAttributes(parentDoc._class, parentDoc)
-
-          if (parentAttributes.length > 0) {
-            parentContent = this.getContent(parentAttributes, parentDoc)
-          }
-        }
+    // Just assign scores based on idex
+    result.forEach((it) => {
+      const idDoc = indexedDocMap.get(it._id)
+      const { _score, id, _class, ...extra } = idDoc as any
+      it.$source = {
+        ...extra,
+        $score: _score
       }
+    })
+    if (scoreSearch !== undefined) {
+      result.sort((a, b) => scoreSearch * ((a.$source?.$score ?? 0) - (b.$source?.$score ?? 0)))
     }
-    if (attributes.length === 0 && Object.keys(parentContent).length === 0) return {}
-
-    let content = this.getContent(attributes, doc)
-    content = { ...parentContent, ...content }
-    const indexedDoc: IndexedDoc = {
-      id: doc._id,
-      _class: doc._class,
-      modifiedBy: doc.modifiedBy,
-      modifiedOn: doc.modifiedOn,
-      space: doc.space,
-      attachedTo: (doc as AttachedDoc).attachedTo,
-      attachedToClass: (doc as AttachedDoc).attachedToClass,
-      ...content
-    }
-    return await this.adapter.index(indexedDoc)
-  }
-
-  protected async txUpdateDoc (ctx: MeasureContext, tx: TxUpdateDoc<Doc>): Promise<TxResult> {
-    const attributes = this.getFullTextAttributes(tx.objectClass)
-    let result = {}
-    if (attributes.length === 0) return result
-    const ops: any = tx.operations
-    const update: any = {}
-    let shouldUpdate = false
-    for (const attr of attributes) {
-      if (ops[attr.name] !== undefined) {
-        update[attr.name] = ops[attr.name]
-        shouldUpdate = true
-      }
-    }
-    if (tx.operations.space !== undefined) {
-      update.space = tx.operations.space
-      shouldUpdate = true
-    }
-    if (shouldUpdate) {
-      result = await this.adapter.update(tx.objectId, update)
-      if (!this.skipUpdateAttached) {
-        await this.updateAttachedDocs(ctx, tx, update)
+    if (scoreSearch !== undefined) {
+      if (options?.limit !== undefined && options?.limit < result.length) {
+        result = toFindResult(result.slice(0, options?.limit), result.total)
       }
     }
     return result
   }
 
-  private getContent (attributes: AnyAttribute[], doc: Doc): Record<string, string> {
-    const attrs: Record<string, string> = {}
+  submitting: Promise<void> | undefined
 
-    for (const attr of attributes) {
-      const isMixinAttr = this.hierarchy.isMixin(attr.attributeOf)
-      if (isMixinAttr) {
-        attrs[(attr.attributeOf as string) + '.' + attr.name] =
-          (doc as any)[attr.attributeOf]?.[attr.name]?.toString() ?? ''
-      } else {
-        attrs[attr.name] = (doc as any)[attr.name]?.toString() ?? ''
-      }
-    }
-    return attrs
-  }
-
-  private async updateAttachedDocs (
-    ctx: MeasureContext,
-    tx: { objectId: Ref<Doc>, objectClass: Ref<Class<Doc>> },
-    update: any
-  ): Promise<void> {
-    const doc = (await this.dbStorage.findAll(ctx, tx.objectClass, { _id: tx.objectId }, { limit: 1 }))[0]
-    if (doc === undefined) return
-    const attributes = this.hierarchy.getAllAttributes(doc._class)
-
-    // Find all mixin atttibutes for document.
-    this.hierarchy
-      .getDescendants(doc._class)
-      .filter((m) => this.hierarchy.getClass(m).kind === ClassifierKind.MIXIN && this.hierarchy.hasMixin(doc, m))
-      .forEach((m) => {
-        for (const [k, v] of this.hierarchy.getAllAttributes(m, doc._class)) {
-          attributes.set(k, v)
-        }
-      })
-
-    for (const attribute of attributes.values()) {
-      if (this.hierarchy.isDerived(attribute.type._class, core.class.Collection)) {
-        const collection = attribute.type as Collection<AttachedDoc>
-        const allAttached = await this.dbStorage.findAll(ctx, collection.of, { attachedTo: tx.objectId })
-        if (allAttached.length === 0) continue
-        const docUpdate: any = {}
-        for (const key in update) {
-          docUpdate[key] = update[key]
-        }
-        for (const attached of allAttached) {
-          try {
-            await this.adapter.update(attached._id, docUpdate)
-          } catch (err: any) {
-            if (((err.message as string) ?? '').includes('document_missing_exception:')) {
-              console.error(
-                'missing document in elastic for',
-                tx.objectId,
-                'attached',
-                attached._id,
-                'collection',
-                attached.collection
-              )
-              // We have no document for attached object, so ignore for now. it is probable rebuild of elastic DB.
-              continue
-            }
-            throw err
-          }
-        }
-      }
-    }
-  }
-}
-function isFullTextAttribute (attr: AnyAttribute): boolean {
-  return (
-    attr.index === IndexKind.FullText &&
-    (attr.type._class === core.class.TypeNumber ||
-      attr.type._class === core.class.TypeString ||
-      attr.type._class === core.class.TypeMarkup)
-  )
+  timeout: any
 }
 
 function getResultIds (ids: Set<Ref<Doc>>, _id: ObjQueryType<Ref<Doc>> | undefined): Set<Ref<Doc>> {

@@ -16,6 +16,7 @@
 import { Builder } from '@hcengineering/model'
 import core from './component'
 import {
+  TAISearchContext,
   TArrOf,
   TAttachedDoc,
   TAttribute,
@@ -23,6 +24,7 @@ import {
   TClass,
   TCollection,
   TDoc,
+  TDocIndexState,
   TEnum,
   TEnumOf,
   TFulltextData,
@@ -32,15 +34,16 @@ import {
   TPluginConfiguration,
   TRefTo,
   TType,
+  TTypeAttachment,
   TTypeBoolean,
   TTypeDate,
+  TTypeHyperlink,
   TTypeIntlString,
   TTypeMarkup,
   TTypeNumber,
-  TTypeString,
-  TTypeHyperlink,
-  TTypeTimestamp,
   TTypeRelatedDocument,
+  TTypeString,
+  TTypeTimestamp,
   TVersion
 } from './core'
 import { TAccount, TSpace } from './security'
@@ -82,6 +85,7 @@ export function createModel (builder: Builder): void {
     TTypeNumber,
     TTypeBoolean,
     TTypeString,
+    TTypeAttachment,
     TTypeHyperlink,
     TCollection,
     TVersion,
@@ -91,6 +95,8 @@ export function createModel (builder: Builder): void {
     TEnum,
     TBlobData,
     TFulltextData,
-    TTypeRelatedDocument
+    TTypeRelatedDocument,
+    TDocIndexState,
+    TAISearchContext
   )
 }

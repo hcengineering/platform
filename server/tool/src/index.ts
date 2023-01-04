@@ -15,6 +15,7 @@
 
 import contact from '@hcengineering/contact'
 import core, {
+  BackupClient,
   Client as CoreClient,
   Domain,
   DOMAIN_MODEL,
@@ -109,7 +110,9 @@ export async function initModel (
     console.log(`${result.insertedCount} model transactions inserted.`)
 
     console.log('creating data...')
-    const connection = await connect(transactorUrl, workspaceId, undefined, { model: 'upgrade' })
+    const connection = (await connect(transactorUrl, workspaceId, undefined, {
+      model: 'upgrade'
+    })) as unknown as CoreClient & BackupClient
     try {
       for (const op of migrateOperations) {
         await op.upgrade(connection)
@@ -173,7 +176,7 @@ export async function upgradeModel (
 
     console.log('Apply upgrade operations')
 
-    const connection = await connect(transactorUrl, workspaceId, undefined, { model: 'upgrade' })
+    const connection = await connect(transactorUrl, workspaceId, undefined, { mode: 'backup', model: 'upgrade' })
 
     // Create update indexes
     await createUpdateIndexes(connection, db)

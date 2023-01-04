@@ -14,15 +14,72 @@
 // limitations under the License.
 //
 
-import { Class, Doc, DocumentQuery, Ref, toWorkspaceString, TxResult, WorkspaceId } from '@hcengineering/core'
-import type { FullTextAdapter, IndexedDoc } from '@hcengineering/server-core'
+import {
+  Class,
+  Doc,
+  DocumentQuery,
+  MeasureContext,
+  Ref,
+  toWorkspaceString,
+  TxResult,
+  WorkspaceId
+} from '@hcengineering/core'
+import type { EmbeddingSearchOption, FullTextAdapter, IndexedDoc } from '@hcengineering/server-core'
 
 import { Client, errors as esErr } from '@elastic/elasticsearch'
 class ElasticAdapter implements FullTextAdapter {
-  constructor (private readonly client: Client, private readonly workspaceId: WorkspaceId) {}
+  constructor (
+    private readonly client: Client,
+    private readonly workspaceId: WorkspaceId,
+    private readonly _metrics: MeasureContext
+  ) {}
+
+  async initMapping (embedding: string, dims: number): Promise<void> {
+    // const current = await this.client.indices.getMapping({})
+    // console.log('Mappings', current)
+    // const mappings = current.body[toWorkspaceString(this.workspaceId)]
+    try {
+      const existsIndex = await this.client.indices.exists({
+        index: toWorkspaceString(this.workspaceId)
+      })
+      if (!existsIndex.body) {
+        const createIndex = await this.client.indices.create({
+          index: toWorkspaceString(this.workspaceId)
+        })
+        console.log(createIndex)
+      }
+
+      const mappings = await this.client.indices.getMapping({
+        index: toWorkspaceString(this.workspaceId)
+      })
+      console.log('Mapping', mappings.body)
+      const wsMappings = mappings.body[toWorkspaceString(this.workspaceId)]
+      if (!(wsMappings?.mappings?.properties?.[embedding]?.type === 'dense_vector')) {
+        await this.client.indices.putMapping({
+          index: toWorkspaceString(this.workspaceId),
+          allow_no_indices: true,
+          body: {
+            properties: {
+              [embedding]: {
+                type: 'dense_vector',
+                dims
+              }
+            }
+          }
+        })
+      }
+      console.log('Index created ok.')
+    } catch (err: any) {
+      console.error(err)
+    }
+  }
 
   async close (): Promise<void> {
     await this.client.close()
+  }
+
+  metrics (): MeasureContext {
+    return this._metrics
   }
 
   async search (
@@ -38,33 +95,19 @@ class ElasticAdapter implements FullTextAdapter {
           {
             simple_query_string: {
               query: query.$search,
-              flags: 'OR|PREFIX|PHRASE',
+              analyze_wildcard: true,
+              flags: 'OR|PREFIX|PHRASE|FUZZY|NOT|ESCAPE',
               default_operator: 'and'
             }
           }
         ],
-        should: [
-          {
-            terms: {
-              _class: _classes.map((c) => c.toLowerCase()),
-              boost: 50.0
-            }
-          }
-        ],
+        should: [{ terms: this.getTerms(_classes, '_class', { boost: 10.0 }) }],
         filter: [
           {
             bool: {
               should: [
-                {
-                  terms: {
-                    _class: _classes.map((c) => c.toLowerCase())
-                  }
-                },
-                {
-                  terms: {
-                    attachedToClass: _classes.map((c) => c.toLowerCase())
-                  }
-                }
+                { terms: this.getTerms(_classes, '_class') }
+                // { terms: this.getTerms(_classes, 'attachedToClass') }
               ]
             }
           }
@@ -103,7 +146,87 @@ class ElasticAdapter implements FullTextAdapter {
         }
       })
       const hits = result.body.hits.hits as any[]
-      return hits.map((hit) => hit._source)
+      return hits.map((hit) => ({ ...hit._source, _score: hit._score }))
+    } catch (err) {
+      console.error(JSON.stringify(err, null, 2))
+      return []
+    }
+  }
+
+  private getTerms (_classes: Ref<Class<Doc>>[], field: string, extra: any = {}): any {
+    return {
+      [field]: _classes.map((c) => c.toLowerCase()),
+      ...extra
+    }
+  }
+
+  async searchEmbedding (
+    _classes: Ref<Class<Doc>>[],
+    search: DocumentQuery<Doc>,
+    embedding: number[],
+    options: EmbeddingSearchOption
+  ): Promise<IndexedDoc[]> {
+    if (embedding.length === 0) return []
+    const request: any = {
+      bool: {
+        should: [
+          {
+            script_score: {
+              query: {
+                bool: {
+                  filter: {
+                    term: {
+                      [options.field_enable]: true
+                    }
+                  }
+                }
+              },
+              script: {
+                source: `Math.abs(cosineSimilarity(params.queryVector, '${options.field}'))`,
+                params: {
+                  queryVector: embedding
+                }
+              },
+              boost: options.embeddingBoost ?? 100.0
+            }
+          } //,
+          // {
+          //   simple_query_string: {
+          //     query: search.$search,
+          //     flags: 'OR|PREFIX|PHRASE',
+          //     default_operator: 'and',
+          //     boost: options.fulltextBoost ?? 1
+          //   }
+          // }
+        ],
+        filter: [
+          {
+            bool: {
+              should: [
+                { terms: this.getTerms(_classes, '_class') },
+                { terms: this.getTerms(_classes, 'attachedToClass') }
+              ]
+            }
+          }
+        ]
+      }
+    }
+
+    try {
+      const result = await this.client.search({
+        index: toWorkspaceString(this.workspaceId),
+        body: {
+          query: request,
+          size: options?.size ?? 200,
+          from: options?.from ?? 0
+        }
+      })
+      const sourceHits = result.body.hits.hits
+
+      const min = options?.minScore ?? 75
+      const hits: any[] = sourceHits.filter((it: any) => it._score > min)
+
+      return hits.map((hit) => ({ ...hit._source, _score: hit._score }))
     } catch (err) {
       console.error(JSON.stringify(err, null, 2))
       return []
@@ -142,19 +265,68 @@ class ElasticAdapter implements FullTextAdapter {
     return {}
   }
 
-  async remove (id: Ref<Doc>): Promise<void> {
+  async updateMany (docs: IndexedDoc[]): Promise<TxResult[]> {
+    const parts = Array.from(docs)
+    while (parts.length > 0) {
+      const part = parts.splice(0, 10000)
+
+      const operations = part.flatMap((doc) => [
+        { index: { _index: toWorkspaceString(this.workspaceId), _id: doc.id } },
+        { ...doc, type: '_doc' }
+      ])
+
+      const response = await this.client.bulk({ refresh: true, body: operations })
+      if ((response as any).body.errors === true) {
+        throw new Error(`Failed to process bulk request: ${JSON.stringify((response as any).body)}`)
+      }
+    }
+    return []
+  }
+
+  async remove (docs: Ref<Doc>[]): Promise<void> {
     try {
-      await this.client.delete({
-        index: toWorkspaceString(this.workspaceId),
-        id
-      })
+      while (docs.length > 0) {
+        const part = docs.splice(0, 10000)
+        await this.client.deleteByQuery(
+          {
+            type: '_doc',
+            index: toWorkspaceString(this.workspaceId),
+            body: {
+              query: {
+                terms: {
+                  _id: part,
+                  boost: 1.0
+                }
+              },
+              size: part.length
+            }
+          },
+          undefined
+        )
+      }
     } catch (e: any) {
       if (e instanceof esErr.ResponseError && e.meta.statusCode === 404) {
         return
       }
-
       throw e
     }
+  }
+
+  async load (docs: Ref<Doc>[]): Promise<IndexedDoc[]> {
+    const resp = await this.client.search({
+      index: toWorkspaceString(this.workspaceId),
+      type: '_doc',
+      body: {
+        query: {
+          terms: {
+            _id: docs,
+            boost: 1.0
+          }
+        },
+        size: docs.length
+      }
+    })
+    return Array.from(resp.body.hits.hits.map((hit: any) => ({ ...hit._source, id: hit._id })))
   }
 }
 
@@ -163,11 +335,12 @@ class ElasticAdapter implements FullTextAdapter {
  */
 export async function createElasticAdapter (
   url: string,
-  workspaceId: WorkspaceId
+  workspaceId: WorkspaceId,
+  metrics: MeasureContext
 ): Promise<FullTextAdapter & { close: () => Promise<void> }> {
   const client = new Client({
     node: url
   })
 
-  return new ElasticAdapter(client, workspaceId)
+  return new ElasticAdapter(client, workspaceId, metrics)
 }

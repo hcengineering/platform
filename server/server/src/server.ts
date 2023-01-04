@@ -13,55 +13,8 @@
 // limitations under the License.
 //
 
-import {
-  Class,
-  Doc,
-  DocumentQuery,
-  Domain,
-  FindOptions,
-  FindResult,
-  Hierarchy,
-  ModelDb,
-  Ref,
-  StorageIterator,
-  toFindResult,
-  Tx,
-  TxResult,
-  WorkspaceId
-} from '@hcengineering/core'
-import { DbAdapter } from '@hcengineering/server-core'
-
-class NullDbAdapter implements DbAdapter {
-  async init (model: Tx[]): Promise<void> {}
-  async findAll<T extends Doc>(
-    _class: Ref<Class<T>>,
-    query: DocumentQuery<T>,
-    options?: FindOptions<T> | undefined
-  ): Promise<FindResult<T>> {
-    return toFindResult([])
-  }
-
-  async tx (tx: Tx): Promise<TxResult> {
-    return {}
-  }
-
-  async close (): Promise<void> {}
-
-  find (domain: Domain): StorageIterator {
-    return {
-      next: async () => undefined,
-      close: async () => {}
-    }
-  }
-
-  async load (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
-    return []
-  }
-
-  async upload (domain: Domain, docs: Doc[]): Promise<void> {}
-
-  async clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {}
-}
+import { Hierarchy, ModelDb, WorkspaceId } from '@hcengineering/core'
+import { DbAdapter, DummyDbAdapter } from '@hcengineering/server-core'
 
 /**
  * @public
@@ -72,7 +25,7 @@ export async function createNullAdapter (
   workspaceId: WorkspaceId,
   modelDb: ModelDb
 ): Promise<DbAdapter> {
-  return new NullDbAdapter()
+  return new DummyDbAdapter()
 }
 
 /**

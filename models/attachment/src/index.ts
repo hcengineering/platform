@@ -16,7 +16,18 @@
 import activity from '@hcengineering/activity'
 import type { Attachment, Photo, SavedAttachments } from '@hcengineering/attachment'
 import { Domain, IndexKind, Ref } from '@hcengineering/core'
-import { Builder, Index, Model, Prop, TypeBoolean, TypeRef, TypeString, TypeTimestamp, UX } from '@hcengineering/model'
+import {
+  Builder,
+  Index,
+  Model,
+  Prop,
+  TypeAttachment,
+  TypeBoolean,
+  TypeRef,
+  TypeString,
+  TypeTimestamp,
+  UX
+} from '@hcengineering/model'
 import core, { TAttachedDoc } from '@hcengineering/model-core'
 import preference, { TPreference } from '@hcengineering/model-preference'
 import view, { createAction } from '@hcengineering/model-view'
@@ -33,7 +44,7 @@ export class TAttachment extends TAttachedDoc implements Attachment {
   @Index(IndexKind.FullText)
     name!: string
 
-  @Prop(TypeString(), attachment.string.File)
+  @Prop(TypeAttachment(), attachment.string.File)
     file!: string
 
   @Prop(TypeString(), attachment.string.Size)

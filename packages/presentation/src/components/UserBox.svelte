@@ -143,6 +143,7 @@
       <div
         slot="content"
         class="overflow-label flex-row-center"
+        class:w-full={width === '100%'}
         class:flex-between={showNavigate && selected}
         class:content-color={value == null}
       >

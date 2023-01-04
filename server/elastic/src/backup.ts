@@ -18,6 +18,7 @@ import core, {
   Class,
   Doc,
   DocumentQuery,
+  DocumentUpdate,
   Domain,
   FindOptions,
   FindResult,
@@ -182,6 +183,10 @@ class ElasticDataAdapter implements DbAdapter {
 
       await this.client.bulk({ refresh: true, body: operations })
     }
+  }
+
+  async update (domain: Domain, operations: Map<Ref<Doc>, DocumentUpdate<Doc>>): Promise<void> {
+    throw new Error('Method not implemented.')
   }
 
   async clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {

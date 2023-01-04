@@ -14,13 +14,17 @@
 // limitations under the License.
 //
 
-import { Account, Class, Doc, getWorkspaceId, Ref, Space } from '@hcengineering/core'
+import { Account, Class, Doc, getWorkspaceId, MeasureMetricsContext, Ref, Space } from '@hcengineering/core'
 import type { IndexedDoc } from '@hcengineering/server-core'
 import { createElasticAdapter } from '../adapter'
 
 describe('client', () => {
   it('should create document', async () => {
-    const adapter = await createElasticAdapter('http://localhost:9200/', getWorkspaceId('ws1', ''))
+    const adapter = await createElasticAdapter(
+      'http://localhost:9200/',
+      getWorkspaceId('ws1', ''),
+      new MeasureMetricsContext('-', {})
+    )
     const doc: IndexedDoc = {
       id: 'doc1' as Ref<Doc>,
       _class: 'class1' as Ref<Class<Doc>>,

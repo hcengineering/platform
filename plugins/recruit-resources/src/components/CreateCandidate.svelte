@@ -349,12 +349,12 @@
     }
   }
 
-  async function recognize (): Promise<void> {
+  async function recognize (contentType: string): Promise<void> {
     const token = getMetadata(login.metadata.LoginToken) ?? ''
     const fileUrl = window.location.origin + getFileUrl(resume.uuid)
 
     try {
-      const doc = await recognizeDocument(token, fileUrl)
+      const doc = await recognizeDocument(token, fileUrl, contentType)
 
       if (isUndef(object.title) && doc.title !== undefined) {
         object.title = doc.title
@@ -443,7 +443,11 @@
 
   async function deleteResume (): Promise<void> {
     if (resume.uuid) {
-      await deleteFile(resume.uuid)
+      try {
+        await deleteFile(resume.uuid)
+      } catch (err) {
+        console.error(err)
+      }
     }
   }
 
@@ -461,9 +465,7 @@
       resume.type = file.type
       resume.lastModified = file.lastModified
 
-      if (file.type.includes('application/pdf')) {
-        await recognize()
-      }
+      await recognize(file.type)
     } catch (err: any) {
       setPlatformStatus(unknownError(err))
     } finally {

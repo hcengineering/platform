@@ -20,6 +20,8 @@ import { connect } from './connection'
 
 export { connect }
 
+let client: Promise<Client> | Client | undefined
+
 /*!
  * Anticrm Platform™ Client Plugin
  * © 2020, 2021 Anticrm Platform Contributors. All Rights Reserved.
@@ -28,7 +30,6 @@ export { connect }
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => {
   let _token: string | undefined
-  let client: Client | undefined
 
   return {
     function: {
@@ -38,13 +39,16 @@ export default async () => {
         onUpgrade?: () => void,
         onUnauthorized?: () => void
       ): Promise<Client> => {
-        if (token !== _token && client !== undefined) {
+        if (client instanceof Promise) {
+          client = await client
           await client.close()
+        }
+        if (token !== _token && client !== undefined) {
           client = undefined
         }
         if (client === undefined) {
           const filterModel = getMetadata(clientPlugin.metadata.FilterModel) ?? false
-          client = await createClient(
+          client = createClient(
             (handler: TxHander) => {
               const url = new URL(`/${token}`, endpoint)
               console.log('connecting to', url.href)
@@ -58,10 +62,17 @@ export default async () => {
           const hook = getMetadata(clientPlugin.metadata.ClientHook)
           if (hook !== undefined) {
             const hookProc = await getResource(hook)
-            client = await hookProc(client)
+            const _client = client
+            client = new Promise((resolve, reject) => {
+              _client
+                .then((res) => {
+                  resolve(hookProc(res))
+                })
+                .catch((err) => reject(err))
+            })
           }
         }
-        return client
+        return await client
       }
     }
   }
