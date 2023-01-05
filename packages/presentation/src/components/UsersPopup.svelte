@@ -37,6 +37,7 @@
   export let shadows: boolean = true
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let create: ObjectCreate | undefined = undefined
+  export let readonly = false
 
   const hierarchy = getClient().getHierarchy()
 
@@ -69,6 +70,7 @@
   on:update
   on:close
   on:changeContent
+  {readonly}
 >
   <svelte:fragment slot="item" let:item={person}>
     <div class="flex flex-grow overflow-label">

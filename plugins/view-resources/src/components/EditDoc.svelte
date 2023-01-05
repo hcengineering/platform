@@ -105,6 +105,7 @@
   $: getMixins(parentClass, object, showAllMixins)
 
   let ignoreKeys: string[] = []
+  let activityOptions = { enabled: true, showInput: true }
   let allowedCollections: string[] = []
   let collectionArrays: string[] = []
   let inplaceAttributes: string[] = []
@@ -251,6 +252,15 @@
       showPopup(ContextMenu, { object }, (ev as MouseEvent).target as HTMLElement)
     }
   }
+  function handleOpen (ev: CustomEvent): void {
+    ignoreKeys = ev.detail.ignoreKeys
+    activityOptions = ev.detail.activityOptions ?? activityOptions
+    ignoreMixins = new Set(ev.detail.ignoreMixins)
+    allowedCollections = ev.detail.allowedCollections ?? []
+    collectionArrays = ev.detail.collectionArrays ?? []
+    getMixins(parentClass, object, showAllMixins)
+    updateKeys(showAllMixins)
+  }
 </script>
 
 <ActionContext
@@ -272,6 +282,8 @@
     on:close={() => {
       dispatch('close')
     }}
+    withoutActivity={!activityOptions.enabled}
+    withoutInput={!activityOptions.showInput}
   >
     <svelte:fragment slot="navigator">
       <UpDownNavigator element={object} />
@@ -322,36 +334,14 @@
     <svelte:fragment slot="subheader">
       {#if mainEditor && mainEditor.pinned}
         <div class="flex-col flex-grow step-tb-6">
-          <Component
-            is={mainEditor.editor}
-            props={{ object }}
-            on:open={(ev) => {
-              ignoreKeys = ev.detail.ignoreKeys
-              ignoreMixins = new Set(ev.detail.ignoreMixins)
-              allowedCollections = ev.detail.allowedCollections ?? []
-              collectionArrays = ev.detail.collectionArrays ?? []
-              getMixins(parentClass, object, showAllMixins)
-              updateKeys(showAllMixins)
-            }}
-          />
+          <Component is={mainEditor.editor} props={{ object }} on:open={handleOpen} />
         </div>
       {/if}
     </svelte:fragment>
 
     {#if mainEditor && !mainEditor.pinned}
       <div class="flex-col flex-grow flex-no-shrink step-tb-6">
-        <Component
-          is={mainEditor.editor}
-          props={{ object }}
-          on:open={(ev) => {
-            ignoreKeys = ev.detail.ignoreKeys
-            ignoreMixins = new Set(ev.detail.ignoreMixins)
-            allowedCollections = ev.detail.allowedCollections ?? []
-            collectionArrays = ev.detail.collectionArrays ?? []
-            getMixins(parentClass, object, showAllMixins)
-            updateKeys(showAllMixins)
-          }}
-        />
+        <Component is={mainEditor.editor} props={{ object }} on:open={handleOpen} />
       </div>
     {/if}
 

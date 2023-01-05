@@ -30,6 +30,7 @@ export default mergeIds(requestId, request, {
     Reject: '' as IntlString,
     Request: '' as IntlString,
     Rejected: '' as IntlString,
-    Comment: '' as IntlString
+    Comment: '' as IntlString,
+    PleaseTypeMessage: '' as IntlString
   }
 })

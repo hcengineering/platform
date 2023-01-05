@@ -95,6 +95,7 @@
       objectId={value._id}
       showSend={false}
       on:update={onUpdate}
+      placeholder={request.string.PleaseTypeMessage}
     />
   </div>
   <div class="mt-2 flex gap-2">
