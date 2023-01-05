@@ -86,8 +86,6 @@
   let currentTeam: Team | undefined
   let personPresenter: AttributeModel
   let isCollapsedMap: Record<any, boolean> = {}
-  let varsStyle: string = ''
-  let propsWidth: Record<string, number> = { groupBy: 0 }
   let itemModels: AttributeModel[]
   let isFilterUpdate = false
   let groupedIssuesBeforeFilter = groupedIssues
@@ -196,20 +194,9 @@
     personPresenter = p
   })
   $: buildModel({ client, _class, keys: itemsConfig, lookup: options.lookup }).then((res) => (itemModels = res))
-  $: if (itemModels) {
-    for (const item of itemModels) if (item.props?.fixed !== undefined) propsWidth[item.key] = 0
-  }
-  $: if (propsWidth) {
-    varsStyle = ''
-    for (const key in propsWidth) varsStyle += `--fixed-${key}: ${propsWidth[key]}px;`
-  }
-
-  const checkWidth = (key: string, result: CustomEvent): void => {
-    if (result !== undefined) propsWidth[key] = result.detail
-  }
 </script>
 
-<div class="issueslist-container" style={varsStyle}>
+<div class="issueslist-container">
   {#each categories as category}
     {@const items = groupedIssues[category] ?? []}
     {@const limited = limitGroup(category, groupedIssues, categoryLimit) ?? []}
@@ -217,12 +204,7 @@
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <div class="flex-between categoryHeader row" on:click={() => handleCollapseCategory(toCat(category))}>
         <div class="flex-row-center gap-2 clear-mins">
-          <FixedColumn
-            width={propsWidth.groupBy}
-            key={'groupBy'}
-            justify={'left'}
-            on:update={(result) => checkWidth('groupBy', result)}
-          >
+          <FixedColumn key={'issuelist_groupBy'} justify={'left'}>
             {#if groupByKey === 'assignee' && personPresenter}
               <svelte:component
                 this={personPresenter.presenter}
@@ -256,12 +238,7 @@
               />
             {/if}
           </FixedColumn>
-          <FixedColumn
-            width={propsWidth.statistics}
-            key={'statistics'}
-            justify={'left'}
-            on:update={(result) => checkWidth('statistics', result)}
-          >
+          <FixedColumn key={'issuelist_statistics'} justify={'left'}>
             <IssueStatistics issues={groupedIssues[category]} />
           </FixedColumn>
           {#if limited.length < items.length}
@@ -303,10 +280,6 @@
               checked={selectedObjectIdsSet.has(docObject._id)}
               {statuses}
               {currentTeam}
-              {propsWidth}
-              on:fitting={(ev) => {
-                if (ev.detail !== undefined) propsWidth = ev.detail
-              }}
               on:check={(ev) => dispatch('check', { docs: ev.detail.docs, value: ev.detail.value })}
               on:contextmenu={(event) =>
                 handleMenuOpened(
