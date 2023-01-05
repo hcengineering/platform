@@ -21,7 +21,7 @@ import { getMetadata, setPlatformStatus, unknownError } from '@hcengineering/pla
 
 import attachment from './plugin'
 
-export async function uploadFile (file: File, opts?: { space: Ref<Space>, attachedTo: Ref<Doc> }): Promise<string> {
+export async function uploadFile (file: File): Promise<string> {
   const uploadUrl = getMetadata(login.metadata.UploadUrl)
 
   if (uploadUrl === undefined) {
@@ -31,20 +31,7 @@ export async function uploadFile (file: File, opts?: { space: Ref<Space>, attach
   const data = new FormData()
   data.append('file', file)
 
-  const params =
-    opts !== undefined
-      ? [
-          ['space', opts.space],
-          ['attachedTo', opts.attachedTo]
-        ]
-          .filter((x): x is [string, Ref<any>] => x[1] !== undefined)
-          .map(([name, value]) => `${name}=${value}`)
-          .join('&')
-      : ''
-  const suffix = params === '' ? params : `?${params}`
-
-  const url = `${uploadUrl}${suffix}`
-  const resp = await fetch(url, {
+  const resp = await fetch(uploadUrl, {
     method: 'POST',
     headers: {
       Authorization: 'Bearer ' + (getMetadata(login.metadata.LoginToken) as string)
@@ -87,7 +74,7 @@ export async function createAttachments (
     for (let index = 0; index < list.length; index++) {
       const file = list.item(index)
       if (file !== null) {
-        const uuid = await uploadFile(file, { space, attachedTo: objectId })
+        const uuid = await uploadFile(file)
         await client.addCollection(attachmentClass, space, objectId, objectClass, 'attachments', {
           ...extraData,
           name: file.name,

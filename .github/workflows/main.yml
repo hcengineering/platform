@@ -250,6 +250,11 @@ jobs:
         run: node common/scripts/install-run-rush.js bundle --verbose
       - name: Docker build
         run: node common/scripts/install-run-rush.js docker:build --verbose
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: hardcoreeng
+          password: ${{ secrets.DOCKER_ACCESS_TOKEN }}        
       - name: Prepare server
         run: |
           cd ./tests

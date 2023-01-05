@@ -17,23 +17,22 @@ import type {
   Class,
   Doc,
   DocumentQuery,
-  Domain,
   FindOptions,
   FindResult,
   Ref,
-  StorageIterator,
   Tx,
   TxResult,
   WorkspaceId
 } from '@hcengineering/core'
 import { Hierarchy, TxDb } from '@hcengineering/core'
 import builder from '@hcengineering/model-all'
-import type { TxAdapter } from '@hcengineering/server-core'
+import { DummyDbAdapter, TxAdapter } from '@hcengineering/server-core'
 
-class InMemoryTxAdapter implements TxAdapter {
+class InMemoryTxAdapter extends DummyDbAdapter implements TxAdapter {
   private readonly txdb: TxDb
 
   constructor (hierarchy: Hierarchy) {
+    super()
     this.txdb = new TxDb(hierarchy)
   }
 
@@ -58,23 +57,6 @@ class InMemoryTxAdapter implements TxAdapter {
   async getModel (): Promise<Tx[]> {
     return builder.getTxes()
   }
-
-  async close (): Promise<void> {}
-
-  find (domain: Domain): StorageIterator {
-    return {
-      next: async () => await Promise.reject(new Error('Not implemented')),
-      close: async () => {}
-    }
-  }
-
-  async load (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
-    return []
-  }
-
-  async upload (domain: Domain, docs: Doc[]): Promise<void> {}
-
-  async clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {}
 }
 
 /**

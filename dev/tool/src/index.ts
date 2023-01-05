@@ -42,21 +42,13 @@ import toolPlugin from '@hcengineering/server-tool'
 
 import { program } from 'commander'
 import { Db, MongoClient } from 'mongodb'
-import { exit } from 'process'
-import { removeDuplicates } from './csv/duplicates'
-import { importLead } from './csv/lead-importer'
-import { importLead2 } from './csv/lead-importer2'
-import { importOrgs } from './csv/org-importer'
-import { importTalants } from './csv/talant-importer'
-import { rebuildElastic } from './elastic'
-import { importXml } from './importer'
-import { updateCandidates } from './recruit'
 import { clearTelegramHistory } from './telegram'
 import { diffWorkspace, dumpWorkspace, restoreWorkspace } from './workspace'
 
 import { Data, getWorkspaceId, Tx, Version } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
 import { MigrateOperation } from '@hcengineering/model'
+import { rebuildElastic } from './elastic'
 
 /**
  * @public
@@ -391,61 +383,6 @@ export function devTool (
     })
 
   program
-    .command('import-xml <workspace> <fileName>')
-    .description('Import Talants.')
-    .action(async (workspace: string, fileName: string, cmd) => {
-      const { mongodbUri, minio } = prepareTools()
-      return await importXml(
-        transactorUrl,
-        getWorkspaceId(workspace, productId),
-        minio,
-        fileName,
-        mongodbUri,
-        getElasticUrl()
-      )
-    })
-
-  program
-    .command('import-lead-csv <workspace> <fileName>')
-    .description('Import LEAD csv customer organizations')
-    .action(async (workspace: string, fileName: string, cmd) => {
-      return await importLead(transactorUrl, getWorkspaceId(workspace, productId), fileName)
-    })
-
-  program
-    .command('import-lead-csv2 <workspace> <fileName>')
-    .description('Import LEAD csv customer organizations')
-    .action(async (workspace: string, fileName: string, cmd) => {
-      return await importLead2(transactorUrl, getWorkspaceId(workspace, productId), fileName)
-    })
-
-  program
-    .command('import-talant-csv <workspace> <fileName>')
-    .description('Import Talant csv')
-    .action(async (workspace: string, fileName: string, cmd) => {
-      const rekoniUrl = process.env.REKONI_URL
-      if (rekoniUrl === undefined) {
-        console.log('Please provide REKONI_URL environment variable')
-        exit(1)
-      }
-      return await importTalants(transactorUrl, getWorkspaceId(workspace, productId), fileName, rekoniUrl)
-    })
-
-  program
-    .command('import-org-csv <workspace> <fileName>')
-    .description('Import Organizations csv')
-    .action(async (workspace: string, fileName: string, cmd) => {
-      return await importOrgs(transactorUrl, getWorkspaceId(workspace, productId), fileName)
-    })
-
-  program
-    .command('lead-duplicates <workspace>')
-    .description('Find and remove duplicate organizations.')
-    .action(async (workspace: string, cmd) => {
-      return await removeDuplicates(transactorUrl, getWorkspaceId(workspace, productId))
-    })
-
-  program
     .command('generate-token <name> <workspace> <productId>')
     .description('generate token')
     .action(async (name: string, workspace: string, productId) => {
@@ -456,25 +393,6 @@ export function devTool (
     .description('decode token')
     .action(async (token) => {
       console.log(decodeToken(token))
-    })
-  program
-    .command('update-recruit <workspace>')
-    .description('process pdf documents inside minio and update resumes with skills, etc.')
-    .action(async (workspace: string) => {
-      const rekoniUrl = process.env.REKONI_URL
-      if (rekoniUrl === undefined) {
-        console.log('Please provide REKONI_URL environment variable')
-        exit(1)
-      }
-      const { mongodbUri, minio } = prepareTools()
-      return await updateCandidates(
-        transactorUrl,
-        getWorkspaceId(workspace, productId),
-        minio,
-        mongodbUri,
-        getElasticUrl(),
-        rekoniUrl
-      )
     })
 
   program.parse(process.argv)

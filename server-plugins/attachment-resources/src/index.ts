@@ -70,7 +70,7 @@ export async function OnAttachmentDelete (
   const attach = TxProcessor.createDoc2Doc(createTx)
 
   fulltextFx(async (adapter) => {
-    await adapter.remove(attach.file as Ref<Doc>)
+    await adapter.remove([attach.file as Ref<Doc>])
   })
 
   storageFx(async (adapter, bucket) => {

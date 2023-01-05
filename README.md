@@ -93,3 +93,11 @@ rushx uitest
 npm login --registry=https://npm.pkg.github.com --scope=@hcengineering/anticrm
 npm publish
 ```
+
+
+### Libretranslate
+
+```bash
+pip install libretranslate
+libretranslate --ssl --host 0.0.0.0 --port 4500 --load-only en,ru --update-models
+```

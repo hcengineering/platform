@@ -29,7 +29,7 @@
   let items: any[] = []
   function loadItems (order: boolean): void {
     bitrixClient
-      .call(mapping.type + '.list', { select: ['*', 'UF_*'], order: { ID: order ? 'ASC' : 'DSC' } })
+      .call(mapping.type + '.list', { select: ['*', 'UF_*', 'EMAIL', 'IM'], order: { ID: order ? 'ASC' : 'DSC' } })
       .then((res) => {
         items = res.result
       })

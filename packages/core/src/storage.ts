@@ -24,6 +24,7 @@ import type { Tx } from './tx'
 export type QuerySelector<T> = {
   $in?: T[]
   $nin?: T[]
+  $ne?: T
   $gt?: T extends number ? number : never
   $gte?: T extends number ? number : never
   $lt?: T extends number ? number : never
@@ -153,6 +154,10 @@ export type LookupData<T extends Doc> = Partial<RefsAsDocs<T>>
  */
 export type WithLookup<T extends Doc> = T & {
   $lookup?: LookupData<T>
+  $source?: {
+    $score: number // Score for document result
+    [key: string]: any
+  }
 }
 
 /**

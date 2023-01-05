@@ -6,6 +6,7 @@
   import CopyMappingPresenter from './mappings/CopyMappingPresenter.svelte'
   import CreateChannelMappingPresenter from './mappings/CreateChannelMappingPresenter.svelte'
   import CreateTagMappingPresenter from './mappings/CreateTagMappingPresenter.svelte'
+  import DownloadAttachmentPresenter from './mappings/DownloadAttachmentPresenter.svelte'
 
   export let mapping: BitrixEntityMapping
   export let value: BitrixFieldMapping
@@ -29,6 +30,8 @@
       <CreateTagMappingPresenter {mapping} {value} />
     {:else if kind === MappingOperation.CreateChannel}
       <CreateChannelMappingPresenter {mapping} {value} />
+    {:else if kind === MappingOperation.DownloadAttachment}
+      <DownloadAttachmentPresenter {mapping} {value} />
     {/if}
   {/if}
 </div>

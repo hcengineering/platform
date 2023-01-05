@@ -13,20 +13,23 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Button, Panel, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
-  import type { PopupOptions } from '@hcengineering/ui'
+  import { PopupOptions } from '@hcengineering/ui'
+  import { Button, deviceOptionsStore as deviceInfo, Panel } from '@hcengineering/ui'
+  import Attachment from '@hcengineering/ui/src/components/icons/Attachment.svelte'
   import { createEventDispatcher } from 'svelte'
   import presentation from '..'
   import { getFileUrl } from '../utils'
-  import MaximizeH from './icons/MaximizeH.svelte'
-  import MaximizeV from './icons/MaximizeV.svelte'
-  import MaximizeO from './icons/MaximizeO.svelte'
   import Download from './icons/Download.svelte'
+  import MaximizeH from './icons/MaximizeH.svelte'
+  import MaximizeO from './icons/MaximizeO.svelte'
+  import MaximizeV from './icons/MaximizeV.svelte'
+  import IndexedDocumentPreview from './IndexedDocumentPreview.svelte'
 
   export let file: string
   export let name: string
   export let contentType: string | undefined
   export let options: PopupOptions
+  export let value: Attachment
 
   const dispatch = createEventDispatcher()
   let imgView: 'img-horizontal-fit' | 'img-vertical-fit' | 'img-original-fit' = 'img-original-fit'
@@ -36,6 +39,10 @@
     const ext = parts[parts.length - 1]
     return ext.substring(0, 4).toUpperCase()
   }
+  // onMount(() => {
+  //   dispatch('fullsize')
+  // })
+  let download: HTMLAnchorElement
 </script>
 
 <Panel
@@ -89,11 +96,14 @@
       />
       <div class="buttons-divider" />
     {/if}
-    <a class="no-line" href={getFileUrl(file)} download={name}>
+    <a class="no-line" href={getFileUrl(file)} download={name} bind:this={download}>
       <Button
         icon={Download}
         kind={'transparent'}
         shape={'circle'}
+        on:click={() => {
+          download.click()
+        }}
         showTooltip={{ label: presentation.string.Download }}
       />
     </a>
@@ -104,11 +114,13 @@
       <img class={imgView} src={getFileUrl(file)} alt="" />
     </div>
     <div class="space" />
+  {:else if contentType && contentType.startsWith('application/msword')}
+    <IndexedDocumentPreview objectId={value._id} />
   {:else}
     <iframe
       class="pdfviewer-content"
       style:margin={$deviceInfo.minWidth ? '.5rem' : '1.5rem'}
-      src={getFileUrl(file) + '#view=fitH'}
+      src={getFileUrl(file) + '#view=FitH'}
       title=""
     />
   {/if}

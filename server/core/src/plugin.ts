@@ -17,7 +17,7 @@
 import type { Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 
-import type { Ref, Class } from '@hcengineering/core'
+import type { Class, Ref, Space } from '@hcengineering/core'
 import type { ObjectDDParticipant, Trigger } from './types'
 
 /**
@@ -34,6 +34,9 @@ const serverCore = plugin(serverCoreId, {
   },
   mixin: {
     ObjectDDParticipant: '' as Ref<ObjectDDParticipant>
+  },
+  space: {
+    DocIndexState: '' as Ref<Space>
   }
 })
 

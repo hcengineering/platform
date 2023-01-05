@@ -13,7 +13,15 @@
 // limitations under the License.
 //
 
-import core, { MeasureContext, Ref, Space, toWorkspaceString, TxFactory, WorkspaceId } from '@hcengineering/core'
+import core, {
+  generateId,
+  MeasureContext,
+  Ref,
+  Space,
+  toWorkspaceString,
+  TxFactory,
+  WorkspaceId
+} from '@hcengineering/core'
 import { readRequest, Response, serialize, UNAUTHORIZED, unknownError } from '@hcengineering/platform'
 import type { Pipeline } from '@hcengineering/server-core'
 import { decodeToken, Token } from '@hcengineering/server-token'
@@ -28,9 +36,11 @@ export function disableLogging (): void {
 }
 
 interface Workspace {
-  pipeline: Pipeline
+  id: string
+  pipeline: Promise<Pipeline>
   sessions: [Session, WebSocket][]
   upgrade: boolean
+  closing?: Promise<void>
 }
 
 class SessionManager {
@@ -46,43 +56,67 @@ class SessionManager {
     ctx: MeasureContext,
     ws: WebSocket,
     token: Token,
-    pipelineFactory: (ws: WorkspaceId) => Promise<Pipeline>,
+    pipelineFactory: (ws: WorkspaceId, upgrade: boolean) => Promise<Pipeline>,
     productId: string
   ): Promise<Session> {
     const wsString = toWorkspaceString(token.workspace, '@')
-    const workspace = this.workspaces.get(wsString)
+
+    let workspace = this.workspaces.get(wsString)
+    await workspace?.closing
+    workspace = this.workspaces.get(wsString)
+
     if (workspace === undefined) {
-      return await this.createWorkspace(ctx, pipelineFactory, token, ws)
-    } else {
-      if (token.extra?.model === 'upgrade') {
-        console.log('reloading workspace', JSON.stringify(token))
-        // If upgrade client is used.
-        // Drop all existing clients
-        if (workspace.sessions.length > 0) {
-          for (const s of workspace.sessions) {
-            s[1].send(
-              serialize({
-                result: {
-                  _class: core.class.TxModelUpgrade
-                }
-              })
-            )
-            await this.close(ctx, s[1], token.workspace, 0, 'upgrade')
-          }
-        }
-        return await this.createWorkspace(ctx, pipelineFactory, token, ws)
-      }
+      workspace = this.createWorkspace(pipelineFactory, token)
+    }
 
-      if (workspace.upgrade) {
-        ws.close()
-        throw new Error('Upgrade in progress....')
+    if (token.extra?.model === 'upgrade') {
+      console.log('reloading workspace', JSON.stringify(token))
+      // If upgrade client is used.
+      // Drop all existing clients
+      await this.closeAll(ctx, wsString, workspace, 0, 'upgrade')
+      // Wipe workspace and update values.
+      if (!workspace.upgrade) {
+        // This is previous workspace, intended to be closed.
+        workspace.id = generateId()
+        workspace.sessions = []
+        workspace.upgrade = token.extra?.model === 'upgrade'
       }
+      if (LOGGING_ENABLED) console.log('no sessions for workspace', wsString)
+      // Re-create pipeline.
+      workspace.pipeline = pipelineFactory(token.workspace, true)
 
-      const session = this.createSession(token, workspace.pipeline)
+      const pipeline = await workspace.pipeline
+      const session = this.createSession(token, pipeline)
       workspace.sessions.push([session, ws])
-      await this.setStatus(ctx, session, true)
       return session
     }
+
+    if (workspace.upgrade) {
+      ws.close()
+      throw new Error('Upgrade in progress....')
+    }
+
+    const pipeline = await workspace.pipeline
+    const session = this.createSession(token, pipeline)
+    workspace.sessions.push([session, ws])
+    await this.setStatus(ctx, session, true)
+    return session
+  }
+
+  private createWorkspace (
+    pipelineFactory: (ws: WorkspaceId, upgrade: boolean) => Promise<Pipeline>,
+    token: Token
+  ): Workspace {
+    const upgrade = token.extra?.model === 'upgrade'
+    const workspace = {
+      id: generateId(),
+      pipeline: pipelineFactory(token.workspace, upgrade),
+      sessions: [],
+      upgrade
+    }
+    console.log('Creating Workspace:', workspace.id)
+    this.workspaces.set(toWorkspaceString(token.workspace), workspace)
+    return workspace
   }
 
   private async setStatus (ctx: MeasureContext, session: Session, online: boolean): Promise<void> {
@@ -115,24 +149,6 @@ class SessionManager {
     } catch {}
   }
 
-  private async createWorkspace (
-    ctx: MeasureContext,
-    pipelineFactory: (ws: WorkspaceId) => Promise<Pipeline>,
-    token: Token,
-    ws: WebSocket
-  ): Promise<Session> {
-    const pipeline = await pipelineFactory(token.workspace)
-    const session = this.createSession(token, pipeline)
-    const workspace: Workspace = {
-      pipeline,
-      sessions: [[session, ws]],
-      upgrade: token.extra?.model === 'upgrade'
-    }
-    this.workspaces.set(toWorkspaceString(token.workspace), workspace)
-    await this.setStatus(ctx, session, true)
-    return session
-  }
-
   async close (
     ctx: MeasureContext,
     ws: WebSocket,
@@ -158,10 +174,63 @@ class SessionManager {
         await this.setStatus(ctx, session[0], false)
       }
       if (workspace.sessions.length === 0) {
-        if (LOGGING_ENABLED) console.log('no sessions for workspace', wsid)
-        this.workspaces.delete(wsid)
-        await workspace.pipeline.close().catch((err) => console.error(err))
+        const workspaceId = workspace.id
+        if (LOGGING_ENABLED) console.log('no sessions for workspace', wsid, workspaceId)
+
+        async function waitAndClose (workspace: Workspace): Promise<void> {
+          const pipeline = await workspace.pipeline
+          await pipeline.close()
+        }
+        workspace.closing = waitAndClose(workspace).then(() => {
+          if (this.workspaces.get(wsid)?.id === workspaceId) {
+            this.workspaces.delete(wsid)
+          }
+          console.log('Closed workspace', workspaceId)
+        })
+        workspace.closing.catch((err) => {
+          this.workspaces.delete(wsid)
+          console.error(err)
+        })
+        await workspace.closing
       }
+    }
+  }
+
+  async closeAll (ctx: MeasureContext, wsId: string, workspace: Workspace, code: number, reason: string): Promise<void> {
+    console.log(`closing workspace ${wsId} - ${workspace.id}, code: ${code}, reason: ${reason}`)
+
+    const sessions = Array.from(workspace.sessions)
+    workspace.sessions = []
+
+    for (const s of sessions) {
+      // await for message to go to client.
+      await new Promise((resolve) => {
+        // Override message handler, to wait for upgrading response from clients.
+        s[1].on('close', () => {
+          resolve(null)
+        })
+        s[1].send(
+          serialize({
+            result: {
+              _class: core.class.TxModelUpgrade
+            }
+          })
+        )
+        setTimeout(resolve, 5000)
+      })
+      s[1].close()
+      await this.setStatus(ctx, s[0], false)
+    }
+    try {
+      await (await workspace.pipeline).close()
+    } catch (err: any) {
+      console.error(err)
+    }
+  }
+
+  async closeWorkspaces (ctx: MeasureContext): Promise<void> {
+    for (const w of this.workspaces) {
+      await this.closeAll(ctx, w[0], w[1], 1, 'shutdown')
     }
   }
 
@@ -196,6 +265,10 @@ async function handleRequest<S extends Session> (
     ws.send(serialize({ id: -1, result: 'hello' }))
     return
   }
+  if (request.id === -1 && request.method === '#upgrade') {
+    ws.close(0, 'upgrade')
+    return
+  }
   const f = (service as any)[request.method]
   try {
     const params = [ctx, ...request.params]
@@ -219,12 +292,12 @@ async function handleRequest<S extends Session> (
  */
 export function start (
   ctx: MeasureContext,
-  pipelineFactory: (workspace: WorkspaceId) => Promise<Pipeline>,
+  pipelineFactory: (workspace: WorkspaceId, upgrade: boolean) => Promise<Pipeline>,
   sessionFactory: (token: Token, pipeline: Pipeline, broadcast: BroadcastCall) => Session,
   port: number,
   productId: string,
   host?: string
-): () => void {
+): () => Promise<void> {
   console.log(`starting server on port ${port} ...`)
 
   const sessions = new SessionManager(sessionFactory)
@@ -249,10 +322,10 @@ export function start (
   })
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
   wss.on('connection', async (ws: WebSocket, request: any, token: Token) => {
-    const buffer: string[] = []
+    let buffer: string[] | undefined = []
 
     ws.on('message', (msg: string) => {
-      buffer.push(msg)
+      buffer?.push(msg)
     })
     const session = await sessions.addSession(ctx, ws, token, pipelineFactory, productId)
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
@@ -261,7 +334,9 @@ export function start (
     ws.on('close', (code: number, reason: string) => {
       void sessions.close(ctx, ws, token.workspace, code, reason)
     })
-    for (const msg of buffer) {
+    const b = buffer
+    buffer = undefined
+    for (const msg of b) {
       await handleRequest(ctx, session, ws, msg)
     }
   })
@@ -298,7 +373,8 @@ export function start (
   })
 
   server.listen(port, host)
-  return () => {
+  return async () => {
     server.close()
+    await sessions.closeWorkspaces(ctx)
   }
 }

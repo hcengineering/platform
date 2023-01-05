@@ -18,6 +18,8 @@ import type { Doc } from './classes'
 import { getObjectValue } from './objvalue'
 import { escapeLikeForRegexp } from './utils'
 
+import { deepEqual } from 'fast-equals'
+
 type Predicate = (docs: Doc[]) => Doc[]
 type PredicateFactory = (pred: any, propertyKey: string) => Predicate
 
@@ -78,6 +80,10 @@ const predicates: Record<string, PredicateFactory> = {
   },
   $exists: (o, propertyKey) => {
     return (docs) => execPredicate(docs, propertyKey, (value) => (value !== undefined) === o)
+  },
+  $ne: (o, propertyKey) => {
+    // eslint-disable-next-line eqeqeq
+    return (docs) => execPredicate(docs, propertyKey, (value) => !deepEqual(o, value))
   }
 }
 

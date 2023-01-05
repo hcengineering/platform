@@ -14,39 +14,34 @@
 // limitations under the License.
 //
 import core, {
-  Class,
   Client,
   ClientConnection,
   createClient,
   Doc,
   DocChunk,
-  DocumentQuery,
   Domain,
   DOMAIN_MODEL,
   DOMAIN_TX,
-  FindOptions,
-  FindResult,
   generateId,
   getWorkspaceId,
   Hierarchy,
+  MeasureContext,
   MeasureMetricsContext,
   ModelDb,
   Ref,
   SortingOrder,
   Space,
-  StorageIterator,
-  toFindResult,
-  Tx,
   TxOperations,
-  TxResult,
   WorkspaceId
 } from '@hcengineering/core'
 import {
+  ContentTextAdapter,
   createServerStorage,
   DbAdapter,
   DbConfiguration,
-  FullTextAdapter,
-  IndexedDoc
+  DummyDbAdapter,
+  DummyFullTextAdapter,
+  FullTextAdapter
 } from '@hcengineering/server-core'
 import { MongoClient } from 'mongodb'
 import { createMongoAdapter, createMongoTxAdapter } from '..'
@@ -58,68 +53,28 @@ const txes = genMinModel()
 
 createTaskModel(txes)
 
-class NullDbAdapter implements DbAdapter {
-  async init (model: Tx[]): Promise<void> {}
-  async findAll<T extends Doc>(
-    _class: Ref<Class<T>>,
-    query: DocumentQuery<T>,
-    options?: FindOptions<T> | undefined
-  ): Promise<FindResult<T>> {
-    return toFindResult([])
-  }
-
-  async tx (tx: Tx): Promise<TxResult> {
-    return {}
-  }
-
-  async close (): Promise<void> {}
-
-  find (domain: Domain): StorageIterator {
-    return {
-      next: async () => undefined,
-      close: async () => {}
-    }
-  }
-
-  async load (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
-    return []
-  }
-
-  async upload (domain: Domain, docs: Doc[]): Promise<void> {}
-
-  async clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {}
-}
-
 async function createNullAdapter (
   hierarchy: Hierarchy,
   url: string,
   db: WorkspaceId,
   modelDb: ModelDb
 ): Promise<DbAdapter> {
-  return new NullDbAdapter()
-}
-
-class NullFullTextAdapter implements FullTextAdapter {
-  async index (doc: IndexedDoc): Promise<TxResult> {
-    console.log('noop full text indexer: ', doc)
-    return {}
-  }
-
-  async update (id: Ref<Doc>, update: Record<string, any>): Promise<TxResult> {
-    return {}
-  }
-
-  async search (query: any): Promise<IndexedDoc[]> {
-    return []
-  }
-
-  async remove (id: Ref<Doc>): Promise<void> {}
-
-  async close (): Promise<void> {}
+  return new DummyDbAdapter()
 }
 
 async function createNullFullTextAdapter (): Promise<FullTextAdapter> {
-  return new NullFullTextAdapter()
+  return new DummyFullTextAdapter()
+}
+
+async function createNullContentTextAdapter (): Promise<ContentTextAdapter> {
+  return {
+    async fetch (name: string, type: string, doc) {
+      return ''
+    },
+    metrics (): MeasureContext {
+      return new MeasureMetricsContext('', {})
+    }
+  }
 }
 
 describe('mongo operations', () => {
@@ -189,7 +144,13 @@ describe('mongo operations', () => {
       },
       fulltextAdapter: {
         factory: createNullFullTextAdapter,
-        url: ''
+        url: '',
+        metrics: new MeasureMetricsContext('', {})
+      },
+      contentAdapter: {
+        factory: createNullContentTextAdapter,
+        url: '',
+        metrics: new MeasureMetricsContext('', {})
       },
       workspace: getWorkspaceId(dbId, '')
     }

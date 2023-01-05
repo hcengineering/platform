@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import type { AttachedDoc, Class, Doc, Ref, Space } from '@hcengineering/core'
+import type { AttachedDoc, Class, Ref } from '@hcengineering/core'
 import type { Asset, Plugin } from '@hcengineering/platform'
 import { IntlString, plugin, Resource } from '@hcengineering/platform'
 import type { Preference } from '@hcengineering/preference'
@@ -66,7 +66,7 @@ export default plugin(attachmentId, {
     SavedAttachments: '' as Ref<Class<SavedAttachments>>
   },
   helper: {
-    UploadFile: '' as Resource<(file: File, opts?: { space: Ref<Space>, attachedTo: Ref<Doc> }) => Promise<string>>,
+    UploadFile: '' as Resource<(file: File) => Promise<string>>,
     DeleteFile: '' as Resource<(id: string) => Promise<void>>
   },
   string: {
