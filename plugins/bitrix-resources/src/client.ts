@@ -19,7 +19,7 @@ export class BitrixClient {
         await fetch(`${this.url}/${method}${query}`, {
           method: 'get',
           headers: {
-            'user-agent': 'anticrm'
+            'Content-Type': 'application/json'
           }
         })
       ).json()

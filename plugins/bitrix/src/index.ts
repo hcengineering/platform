@@ -97,7 +97,8 @@ export interface BitrixEntityMapping extends Doc {
 export enum MappingOperation {
   CopyValue,
   CreateTag, // Create tag
-  CreateChannel // Create channel
+  CreateChannel, // Create channel
+  DownloadAttachment
 }
 /**
  * @public
@@ -152,11 +153,20 @@ export interface CreateChannelOperation {
 /**
  * @public
  */
+export interface DownloadAttachmentOperation {
+  kind: MappingOperation.DownloadAttachment
+
+  fields: { field: string }[]
+}
+
+/**
+ * @public
+ */
 export interface BitrixFieldMapping extends AttachedDoc {
   ofClass: Ref<Class<Doc>> // Specify mixin if applicable
   attributeName: string
 
-  operation: CopyValueOperation | CreateTagOperation | CreateChannelOperation
+  operation: CopyValueOperation | CreateTagOperation | CreateChannelOperation | DownloadAttachmentOperation
 }
 
 /**

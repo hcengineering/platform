@@ -243,26 +243,6 @@ export function start (
       const token = authHeader.split(' ')[1]
       const payload = decodeToken(token)
       const uuid = await minioUpload(config.minio, payload.workspace, file)
-      // console.log('uploaded uuid', uuid)
-
-      // const space = req.query.space as Ref<Space> | undefined
-      // const attachedTo = req.query.attachedTo as Ref<Doc> | undefined
-
-      // if (space !== undefined && attachedTo !== undefined) {
-      //   const elastic = await createElasticAdapter(config.elasticUrl, payload.workspace)
-
-      //   const indexedDoc: IndexedDoc = {
-      //     id: uuid as Ref<Doc>,
-      //     _class: attachment.class.Attachment,
-      //     space,
-      //     modifiedOn: Date.now(),
-      //     modifiedBy: 'core:account:System' as Ref<Account>,
-      //     attachedTo,
-      //     data: file.data.toString('base64')
-      //   }
-
-      //   await elastic.index(indexedDoc)
-      // }
 
       res.status(200).send(uuid)
     } catch (error) {
