@@ -56,6 +56,10 @@ export function createModel (builder: Builder): void {
     editor: request.component.EditRequest
   })
 
+  builder.mixin(request.class.Request, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: request.component.RequestPresenter
+  })
+
   builder.createDoc(
     activity.class.TxViewlet,
     core.space.Model,

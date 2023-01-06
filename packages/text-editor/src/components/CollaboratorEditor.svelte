@@ -467,8 +467,8 @@
 </script>
 
 <div class="ref-container" class:autoOverflow>
-  <div class="formatPanel flex-between clear-mins" class:focused>
-    {#if isFormatting && !readonly}
+  {#if isFormatting && !readonly}
+    <div class="formatPanel flex-between clear-mins" class:focused>
       <div class="flex-row-center buttons-group xsmall-gap">
         <StyleButton
           icon={Header}
@@ -564,28 +564,42 @@
           />
         {/if}
       </div>
-    {/if}
-    <div class="flex-grow" />
-    {#if comparedVersion !== undefined}
-      <div class="flex-row-center buttons-group xsmall-gap">
-        <StyleButton
-          icon={Objects}
-          size={buttonSize}
-          selected={showDiff}
-          showTooltip={{ label: textEditorPlugin.string.EnableDiffMode }}
-          on:click={() => {
-            showDiff = !showDiff
-            editor.chain().focus()
-          }}
-        />
-        <slot name="tools" />
-      </div>
-    {:else}
-      <div class="formatPanel buttons-group xsmall-gap">
-        <slot name="tools" />
-      </div>
-    {/if}
-  </div>
+      <div class="flex-grow" />
+      {#if comparedVersion !== undefined}
+        <div class="flex-row-center buttons-group xsmall-gap">
+          <StyleButton
+            icon={Objects}
+            size={buttonSize}
+            selected={showDiff}
+            showTooltip={{ label: textEditorPlugin.string.EnableDiffMode }}
+            on:click={() => {
+              showDiff = !showDiff
+              editor.chain().focus()
+            }}
+          />
+          <slot name="tools" />
+        </div>
+      {:else}
+        <div class="formatPanel buttons-group xsmall-gap">
+          <slot name="tools" />
+        </div>
+      {/if}
+    </div>
+  {:else if comparedVersion !== undefined}
+    <div class="formatPanel flex flex-grow flex-reverse">
+      <StyleButton
+        icon={Objects}
+        size={buttonSize}
+        selected={showDiff}
+        showTooltip={{ label: textEditorPlugin.string.EnableDiffMode }}
+        on:click={() => {
+          showDiff = !showDiff
+          editor.chain().focus()
+        }}
+      />
+      <slot name="tools" />
+    </div>
+  {/if}
   <div class="textInput" class:focusable>
     <div class="select-text" style="width: 100%;" bind:this={element} />
   </div>

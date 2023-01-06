@@ -46,6 +46,7 @@
   export let showSend = true
   export let haveAttachment = false
   export let withoutTopBorder = false
+  export let placeholder: IntlString | undefined = undefined
   const client = getClient()
 
   let textEditor: TextEditor
@@ -292,6 +293,7 @@
         extensions={editorExtensions}
         on:selection-update={updateFormattingState}
         on:update
+        placeholder={placeholder ?? textEditorPlugin.string.EditorPlaceholder}
       />
     </div>
     {#if showSend}

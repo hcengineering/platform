@@ -23,7 +23,7 @@
     "eslint-plugin-n": "^15.4.0",
     "eslint": "^8.26.0",
     "ts-node": "^10.8.0",
-    "esbuild": "^0.15.13",
+    "esbuild": "^0.16.14",
     "@types/node": "~16.11.12",
     "@typescript-eslint/parser": "^5.41.0",
     "eslint-config-standard-with-typescript": "^23.0.0",

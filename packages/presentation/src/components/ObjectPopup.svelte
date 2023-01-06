@@ -56,6 +56,7 @@
   export let groupBy = '_class'
 
   export let create: ObjectCreate | undefined = undefined
+  export let readonly = false
 
   let search: string = ''
   let objects: Doc[] = []
@@ -215,6 +216,7 @@
           icon={IconAdd}
           showTooltip={{ label: create.label }}
           on:click={onCreate}
+          disabled={readonly}
         />
       </div>
     {/if}
@@ -239,15 +241,16 @@
         <svelte:fragment slot="item" let:item>
           {@const obj = objects[item]}
           <button
-            class="menu-item w-full"
+            class="menu-item w-full flex-row-center"
             class:background-bg-focused={!allowDeselect && obj._id === selected}
             class:border-radius-1={!allowDeselect && obj._id === selected}
+            disabled={readonly}
             on:click={() => {
               handleSelection(undefined, objects, item)
             }}
           >
             {#if allowDeselect && selected}
-              <div class="icon">
+              <div class="icon" class:disabled={readonly}>
                 {#if obj._id === selected}
                   <div bind:this={selectedDiv}>
                     {#if titleDeselect}
@@ -262,7 +265,7 @@
               </div>
             {/if}
 
-            <span class="label">
+            <span class="label" class:disabled={readonly}>
               {#if obj._id === selected}
                 <div bind:this={selectedDiv}>
                   <slot name="item" item={obj} />

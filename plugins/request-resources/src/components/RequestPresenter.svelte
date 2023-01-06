@@ -13,9 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import contact, { EmployeeAccount } from '@hcengineering/contact'
+  import { WithLookup } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { Request } from '@hcengineering/request'
-  import { getPanelURI, Label } from '@hcengineering/ui'
+  import { Request, RequestStatus } from '@hcengineering/request'
+  import { getPanelURI, Icon, IconCheck, IconClose, IconInfo } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import TxView from './TxView.svelte'
 
@@ -23,18 +25,36 @@
   export let inline: boolean = false
 
   const client = getClient()
-  $: label = client.getHierarchy().getClass(value._class).label
+
+  $: cl = client.getHierarchy().getClass(value._class)
+  $: label = cl.shortLabel
+
+  let accounts: WithLookup<EmployeeAccount>[] = []
+
+  $: client.findAll(contact.class.EmployeeAccount, { _id: { $in: value.requested } }).then((res) => {
+    accounts = res
+  })
+  $: dte = new Date(value.tx.modifiedOn)
 </script>
 
 <div class="flex">
   <a
-    class="flex-presenter mr-1"
+    class="flex-presenter"
     class:inline-presenter={inline}
     href="#{getPanelURI(view.component.EditDoc, value._id, value._class, 'content')}"
   >
-    <span class="label nowrap">
-      <Label {label} />
-    </span>
+    <div class="flex flex-row-center">
+      <div class="mr-2">
+        {#if value.status === RequestStatus.Completed || value.status === RequestStatus.Rejected}
+          <Icon icon={value.status === RequestStatus.Completed ? IconCheck : IconClose} size={'small'} />
+        {:else}
+          <Icon icon={IconInfo} size={'small'} />
+        {/if}
+      </div>
+      <span class="label nowrap">
+        {dte.getMonth() + 1}/{dte.getDay() + 1}-{(dte.getHours() * 60 + dte.getMinutes()).toString(7)}
+      </span>
+    </div>
   </a>
   <TxView tx={value.tx} />
 </div>

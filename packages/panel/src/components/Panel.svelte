@@ -26,6 +26,7 @@
   export let subtitle: string | undefined = undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let withoutActivity: boolean = false
+  export let withoutInput: boolean = false
   export let withoutTitle: boolean = false
   export let object: Doc
   export let panelWidth: number = 0
@@ -137,14 +138,14 @@
     {/if}
   {:else if $deviceInfo.isMobile}
     <div class="popupPanel-body__mobile-content clear-mins" class:max={useMaxWidth}>
-      <Component is={activity.component.Activity} props={{ object, integrate: true }}>
+      <Component is={activity.component.Activity} props={{ object, integrate: true, showCommenInput: !withoutInput }}>
         <slot />
       </Component>
     </div>
   {:else}
     <Scroller>
       <div class="popupPanel-body__main-content py-8 clear-mins" class:max={useMaxWidth}>
-        <Component is={activity.component.Activity} props={{ object, integrate: true }}>
+        <Component is={activity.component.Activity} props={{ object, integrate: true, showCommenInput: !withoutInput }}>
           <slot />
         </Component>
       </div>

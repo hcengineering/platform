@@ -17,7 +17,7 @@
   import { ReferenceInput } from '@hcengineering/text-editor'
   import { deleteFile, uploadFile } from '../utils'
   import attachment from '../plugin'
-  import { setPlatformStatus, unknownError } from '@hcengineering/platform'
+  import { IntlString, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import { Account, Class, Doc, generateId, Ref, Space } from '@hcengineering/core'
   import { Attachment } from '@hcengineering/attachment'
@@ -33,6 +33,8 @@
   export function submit (): void {
     refInput.submit()
   }
+  export let placeholder: IntlString | undefined = undefined
+
   let refInput: ReferenceInput
 
   let inputFile: HTMLInputElement
@@ -279,6 +281,7 @@
         inputFile.click()
       }}
       on:update={onUpdate}
+      {placeholder}
     />
   </div>
 </div>
