@@ -37,7 +37,11 @@
 </div>
 {#each model as tab, i}
   {#if selected === i}
-    <Component is={tab.component} props={tab.props} />
+    {#if typeof tab.component === 'string'}
+      <Component is={tab.component} props={tab.props} />
+    {:else}
+      <svelte:component this={tab.component} {...tab.props} />
+    {/if}
   {/if}
 {/each}
 

@@ -89,7 +89,7 @@ export interface IPopupItem {
 export interface Tab {
   label: IntlString
   icon?: Asset
-  component: AnyComponent
+  component: AnyComponent | AnySvelteComponent
   props: any
 }
 
