@@ -59,11 +59,6 @@ module.exports = {
     chunkFilename: '[name].[contenthash].js',
     publicPath: '/'
   },
-  cache: {
-    type: 'filesystem',
-    allowCollectingMemory: true,
-    cacheLocation: path.resolve(__dirname, '../../common/temp/webpack_cache'),
-  },
   module: {
     rules: [
       {
