@@ -151,6 +151,13 @@ export class ContentRetrievalStage implements FullTextPipelineStage {
         }
       }
     } catch (err: any) {
+      const wasError = (doc as any).error !== undefined
+
+      await pipeline.update(doc._id, false, { [docKey('error')]: JSON.stringify({ message: err.message, err }) }, {})
+      if (wasError) {
+        return
+      }
+      // Print error only first time, and update it in doc index
       console.error(err)
       return
     }

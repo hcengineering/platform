@@ -238,6 +238,13 @@ export class OpenAIEmbeddingsStage implements FullTextPipelineStage {
         if (err.message === 'Response code 401 (Unauthorized)') {
           this.unauthorized = true
         }
+        const wasError = doc.attributes.error !== undefined
+
+        await pipeline.update(doc._id, false, { [docKey('error')]: JSON.stringify(err) }, {})
+        if (wasError) {
+          continue
+        }
+        // Print error only first time, and update it in doc index
         console.error(err)
         continue
       }
