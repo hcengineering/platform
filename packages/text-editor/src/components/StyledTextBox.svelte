@@ -123,6 +123,7 @@
       on:attach
       on:focus={() => {
         focused = true
+        dispatch('focus')
       }}
       on:blur={() => {
         focused = false
