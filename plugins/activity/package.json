@@ -12,7 +12,7 @@
     "lint": "eslint src"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "~0.6.0",
+    "@hcengineering/platform-rig": "^0.6.0",
     "@types/heft-jest": "^1.0.3",
     "@typescript-eslint/eslint-plugin": "^5.41.0",
     "@typescript-eslint/parser": "^5.41.0",
@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@hcengineering/platform": "^0.6.8",
-    "@hcengineering/core": "^0.6.19",
-    "@hcengineering/ui": "^0.6.2"
+    "@hcengineering/core": "^0.6.20",
+    "@hcengineering/ui": "^0.6.3"
   }
 }

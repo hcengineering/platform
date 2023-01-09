@@ -26,10 +26,10 @@
     "prettier": "^2.7.1",
     "@rushstack/heft": "^0.47.9",
     "@types/node": "~16.11.12",
-    "@hcengineering/platform-rig": "~0.6.0"
+    "@hcengineering/platform-rig": "^0.6.0"
   },
   "dependencies": {
     "@hcengineering/platform": "^0.6.8",
-    "@hcengineering/attachment": "~0.6.1"
+    "@hcengineering/attachment": "^0.6.1"
   }
 }

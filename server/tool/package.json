@@ -12,7 +12,7 @@
     "format": "prettier --write src && eslint --fix src"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "~0.6.0",
+    "@hcengineering/platform-rig": "^0.6.0",
     "@types/heft-jest": "^1.0.3",
     "@typescript-eslint/eslint-plugin": "^5.41.0",
     "eslint-plugin-import": "^2.26.0",
@@ -29,14 +29,14 @@
   "dependencies": {
     "mongodb": "^4.11.0",
     "@hcengineering/platform": "^0.6.8",
-    "@hcengineering/core": "^0.6.19",
-    "@hcengineering/contact": "~0.6.8",
-    "@hcengineering/client-resources": "~0.6.4",
+    "@hcengineering/core": "^0.6.20",
+    "@hcengineering/contact": "^0.6.9",
+    "@hcengineering/client-resources": "^0.6.4",
     "@hcengineering/client": "^0.6.6",
     "ws": "^8.10.0",
-    "@hcengineering/model": "~0.6.0",
-    "@hcengineering/server-token": "~0.6.0",
-    "@hcengineering/mongo": "~0.6.1",
+    "@hcengineering/model": "^0.6.0",
+    "@hcengineering/server-token": "^0.6.0",
+    "@hcengineering/mongo": "^0.6.1",
     "@hcengineering/minio": "^0.6.0"
   }
 }

@@ -12,7 +12,7 @@
     "format": "prettier --write src && eslint --fix src"
   },
   "devDependencies": {
-    "@hcengineering/model-rig": "~0.6.0",
+    "@hcengineering/model-rig": "^0.6.0",
     "@typescript-eslint/eslint-plugin": "^5.41.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.1",
@@ -25,11 +25,11 @@
     "@rushstack/heft": "^0.47.9"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.6.19",
-    "@hcengineering/model": "~0.6.0",
+    "@hcengineering/core": "^0.6.20",
+    "@hcengineering/model": "^0.6.0",
     "@hcengineering/platform": "^0.6.8",
-    "@hcengineering/ui": "^0.6.2",
-    "@hcengineering/presentation": "~0.6.2",
-    "@hcengineering/model-core": "~0.6.0"
+    "@hcengineering/ui": "^0.6.3",
+    "@hcengineering/presentation": "^0.6.2",
+    "@hcengineering/model-core": "^0.6.0"
   }
 }

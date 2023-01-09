@@ -19,7 +19,7 @@
   },
   "devDependencies": {
     "cross-env": "~7.0.3",
-    "@hcengineering/platform-rig": "~0.6.0",
+    "@hcengineering/platform-rig": "^0.6.0",
     "@types/heft-jest": "^1.0.3",
     "@types/node": "~16.11.12",
     "@typescript-eslint/eslint-plugin": "^5.41.0",
@@ -37,12 +37,12 @@
     "@types/ws": "^8.5.3"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.6.19",
-    "@hcengineering/account": "~0.6.0",
+    "@hcengineering/core": "^0.6.20",
+    "@hcengineering/account": "^0.6.0",
     "@hcengineering/platform": "^0.6.8",
-    "@hcengineering/server-tool": "~0.6.0",
-    "@hcengineering/server-token": "~0.6.0",
-    "@hcengineering/server-core": "~0.6.1",
+    "@hcengineering/server-tool": "^0.6.0",
+    "@hcengineering/server-token": "^0.6.0",
+    "@hcengineering/server-core": "^0.6.1",
     "lib0": "~0.2.52",
     "lodash.debounce": "~4.0.8",
     "y-protocols": "~1.0.5",

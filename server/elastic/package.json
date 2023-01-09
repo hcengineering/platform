@@ -13,7 +13,7 @@
     "format": "prettier --write src && eslint --fix src"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "~0.6.0",
+    "@hcengineering/platform-rig": "^0.6.0",
     "@types/heft-jest": "^1.0.3",
     "@typescript-eslint/eslint-plugin": "^5.41.0",
     "eslint-plugin-import": "^2.26.0",
@@ -28,9 +28,9 @@
     "typescript": "^4.3.5"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.6.19",
+    "@hcengineering/core": "^0.6.20",
     "@hcengineering/platform": "^0.6.8",
-    "@hcengineering/server-core": "~0.6.1",
+    "@hcengineering/server-core": "^0.6.1",
     "@elastic/elasticsearch": "^7.14.0"
   }
 }
