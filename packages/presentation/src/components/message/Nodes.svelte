@@ -107,6 +107,8 @@
       <th><svelte:self nodes={node.childNodes} /></th>
     {:else if node.nodeName === 'TD'}
       <td><svelte:self nodes={node.childNodes} /></td>
+    {:else if node.nodeName === 'S'}
+      <s><svelte:self nodes={node.childNodes} /></s>
     {:else}
       Unknown {node.nodeName}
     {/if}
