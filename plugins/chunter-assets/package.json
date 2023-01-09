@@ -15,7 +15,7 @@
     "build:watch": "tsc"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "~0.6.0",
+    "@hcengineering/platform-rig": "^0.6.0",
     "@types/heft-jest": "^1.0.3",
     "@typescript-eslint/eslint-plugin": "^5.41.0",
     "@typescript-eslint/parser": "^5.41.0",
@@ -30,6 +30,6 @@
   },
   "dependencies": {
     "@hcengineering/platform": "^0.6.8",
-    "@hcengineering/chunter": "~0.6.1"
+    "@hcengineering/chunter": "^0.6.2"
   }
 }
