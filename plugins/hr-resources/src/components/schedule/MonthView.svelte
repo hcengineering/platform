@@ -218,7 +218,7 @@
             </td>
           {/each}
         </tr>
-      </tbody>getTotal
+      </tbody>
     </table>
   </Scroller>
 {:else}
