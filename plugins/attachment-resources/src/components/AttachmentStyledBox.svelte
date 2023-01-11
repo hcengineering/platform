@@ -299,6 +299,7 @@
       on:changeSize
       on:changeContent
       on:blur
+      on:focus
       on:attach={() => {
         if (fakeAttach === 'fake') dispatch('attach', { action: 'add' })
         else if (fakeAttach === 'normal') attach()
