@@ -67,7 +67,7 @@
   $: if (docWidth > 900 && docSize) docSize = false
 
   const showCreateDialog = async () => {
-    showPopup(CreateIssueTemplate, { targetElement: null }, null)
+    showPopup(CreateIssueTemplate, { targetElement: null }, 'top')
   }
 </script>
 

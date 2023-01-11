@@ -73,8 +73,6 @@
   async function removeTag (id: Ref<TagReference>): Promise<void> {
     dispatch('delete', id)
   }
-  $: console.log('[!!!] items: ', items)
-  $: console.log('[!!!] items - count: ', items.length)
 </script>
 
 <Button

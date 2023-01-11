@@ -16,35 +16,52 @@
 <script lang="ts">
   import { AttachmentDocList } from '@hcengineering/attachment-resources'
   import type { Comment } from '@hcengineering/chunter'
+  import chunter from '@hcengineering/chunter'
   import { formatName } from '@hcengineering/contact'
   import { Avatar, getClient, MessageViewer } from '@hcengineering/presentation'
-  import { TimeSince, ShowMore } from '@hcengineering/ui'
+  import { TimeSince, ShowMore, Icon } from '@hcengineering/ui'
   import { getUser } from '../utils'
 
   export let value: Comment
+  export let inline: boolean = false
+  export let disableClick = false
 
   const client = getClient()
+
+  const cutId = (str: string): string => {
+    return str.slice(0, 4) + '...' + str.slice(-4)
+  }
 </script>
 
-<div class="flex-row-top">
-  <div class="avatar">
-    <Avatar size={'medium'} />
-  </div>
-  <div class="flex-grow flex-col">
-    <div class="header">
-      <div class="fs-title">
-        {#await getUser(client, value.modifiedBy) then user}
-          {#if user}{formatName(user.name)}{/if}
-        {/await}
-      </div>
-      <div class="content-trans-color ml-4"><TimeSince value={value.modifiedOn} /></div>
+{#if inline}
+  <a class="flex-presenter inline-presenter" href="#{disableClick ? null : ''}">
+    <div class="icon">
+      <Icon icon={chunter.icon.Thread} size={'small'} />
     </div>
-    <ShowMore limit={126} fixed>
-      <MessageViewer message={value.message} />
-      <AttachmentDocList {value} />
-    </ShowMore>
+    <span class="label nowrap">Message</span>
+  </a>
+  &nbsp;<span class="content-dark-color">#{cutId(value._id.toString())}</span>
+{:else}
+  <div class="flex-row-top">
+    <div class="avatar">
+      <Avatar size={'medium'} />
+    </div>
+    <div class="flex-grow flex-col">
+      <div class="header">
+        <div class="fs-title">
+          {#await getUser(client, value.modifiedBy) then user}
+            {#if user}{formatName(user.name)}{/if}
+          {/await}
+        </div>
+        <div class="content-trans-color ml-4"><TimeSince value={value.modifiedOn} /></div>
+      </div>
+      <ShowMore limit={126} fixed>
+        <MessageViewer message={value.message} />
+        <AttachmentDocList {value} />
+      </ShowMore>
+    </div>
   </div>
-</div>
+{/if}
 
 <style lang="scss">
   .avatar {
