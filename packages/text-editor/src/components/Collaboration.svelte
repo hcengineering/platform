@@ -45,14 +45,15 @@
     setContext(CollaborationIds.Doc, ydoc)
     setContext(CollaborationIds.Provider, wsProvider)
     wsProvider.on('status', (event: any) => {
-      console.log(documentId, event.status) // logs "connected" or "disconnected"
+      console.log('Collaboration:', documentId, event.status) // logs "connected" or "disconnected"
+    })
+    wsProvider.on('synched', (event: any) => {
+      console.log('Collaboration:', event) // logs "connected" or "disconnected"
     })
   }
 
   onDestroy(() => {
-    setTimeout(() => {
-      wsProvider?.disconnect()
-    }, 100)
+    wsProvider?.disconnect()
   })
 </script>
 

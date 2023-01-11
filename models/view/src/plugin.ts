@@ -47,7 +47,7 @@ export default mergeIds(viewId, view, {
     IntlStringPresenter: '' as AnyComponent,
     NumberEditor: '' as AnyComponent,
     NumberPresenter: '' as AnyComponent,
-    HTMLPresenter: '' as AnyComponent,
+    MarkupPresenter: '' as AnyComponent,
     BooleanPresenter: '' as AnyComponent,
     BooleanEditor: '' as AnyComponent,
     TimestampPresenter: '' as AnyComponent,
@@ -59,7 +59,9 @@ export default mergeIds(viewId, view, {
     GithubPresenter: '' as AnyComponent,
     ClassPresenter: '' as AnyComponent,
     EnumEditor: '' as AnyComponent,
-    HTMLEditor: '' as AnyComponent
+    HTMLEditor: '' as AnyComponent,
+    MarkupEditor: '' as AnyComponent,
+    MarkupEditorPopup: '' as AnyComponent
   },
   string: {
     Table: '' as IntlString,

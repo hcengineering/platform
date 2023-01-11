@@ -67,6 +67,7 @@
   export let maxHeight: 'max' | 'card' | 'limited' | string | undefined = undefined
   export let withoutTopBorder = false
   export let enableFormatting = false
+  export let autofocus = false
 
   let textEditor: TextEditor
 
@@ -201,7 +202,7 @@
     a.action(evt?.target as HTMLElement, editorHandler)
   }
 
-  let needFocus = false
+  let needFocus = autofocus
   const focused = false
 
   $: if (textEditor && needFocus) {

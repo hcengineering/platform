@@ -47,7 +47,7 @@
     "lodash.debounce": "~4.0.8",
     "y-protocols": "~1.0.5",
     "ws": "^8.10.0",
-    "yjs": "^13.5.42",
+    "yjs": "^13.5.44",
     "@hcengineering/minio": "^0.6.0"
   }
 }

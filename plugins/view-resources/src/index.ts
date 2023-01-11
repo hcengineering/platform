@@ -54,6 +54,8 @@ import UpDownNavigator from './components/UpDownNavigator.svelte'
 import ViewletSettingButton from './components/ViewletSettingButton.svelte'
 import ValueSelector from './components/ValueSelector.svelte'
 import HTMLEditor from './components/HTMLEditor.svelte'
+import MarkupEditor from './components/MarkupEditor.svelte'
+import MarkupEditorPopup from './components/MarkupEditorPopup.svelte'
 import SortableList from './components/list/SortableList.svelte'
 import SortableListItem from './components/list/SortableListItem.svelte'
 import {
@@ -118,7 +120,8 @@ export {
   NumberPresenter,
   TimestampPresenter,
   SortableList,
-  SortableListItem
+  SortableListItem,
+  MarkupEditor
 }
 
 export default async (): Promise<Resources> => ({
@@ -149,6 +152,8 @@ export default async (): Promise<Resources> => ({
     YoutubePresenter,
     ActionsPopup,
     StringEditorPopup: EditBoxPopup,
+    MarkupEditor,
+    MarkupEditorPopup,
     BooleanTruePresenter,
     EnumEditor,
     FilterTypePopup,

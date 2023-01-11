@@ -419,6 +419,7 @@ input.search {
 .mt-9 { margin-top: 2.25rem; }
 .mt-10 { margin-top: 2.5rem; }
 .mt-14 { margin-top: 3.5rem; }
+.mb-0 { margin-bottom: 0 !important; }
 .mb-1 { margin-bottom: .25rem; }
 .mb-2 { margin-bottom: .5rem; }
 .mb-3 { margin-bottom: .75rem; }
@@ -452,7 +453,7 @@ input.search {
 .pt-3 { padding-top: .75rem; }
 .pt-4 { padding-top: 1rem; }
 .pt-6 { padding-top: 1.5rem; }
-.pb-1 { padding-bottom: .25rem; }
+.pb-1 { padding-bottom: .25rem !important; }
 .pb-2 { padding-bottom: .5rem; }
 .pb-3 { padding-bottom: .75rem; }
 .pb-4 { padding-bottom: 1rem; }

@@ -48,6 +48,7 @@
     "AllFilters": "all filters",
     "MatchCriteria": "Match criteria",
     "DontMatchCriteria": "Don't match criteria",
-    "View": "View"
+    "View": "View",
+    "MarkupEditor": "Edit of rich content field"
   }
 }

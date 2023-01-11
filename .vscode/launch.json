@@ -21,7 +21,7 @@
         "MINIO_SECRET_KEY": "minioadmin",
         "SERVER_SECRET": "secret",
         "REKONI_URL": "http://localhost:4004",
-        "OPENAI_TOKEN": "",
+        // "OPENAI_TOKEN": "",
         // "RETRANSLATE_URL": "http://127.0.0.1:4500",
         //"RETRANSLATE_URL": "https://208.167.249.201",
         // "RETRANSLATE_TOKEN": ""

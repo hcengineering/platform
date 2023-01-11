@@ -317,13 +317,15 @@ export function createModel (builder: Builder): void {
   classPresenter(
     builder,
     core.class.TypeMarkup,
-    view.component.HTMLPresenter,
-    view.component.StringEditor,
-    view.component.StringEditorPopup
+    view.component.MarkupPresenter,
+    view.component.MarkupEditor,
+    view.component.MarkupEditorPopup
   )
+
   builder.mixin(core.class.TypeMarkup, core.class.Class, view.mixin.InlineAttributEditor, {
     editor: view.component.HTMLEditor
   })
+
   classPresenter(builder, core.class.TypeBoolean, view.component.BooleanPresenter, view.component.BooleanEditor)
   classPresenter(builder, core.class.TypeTimestamp, view.component.TimestampPresenter)
   classPresenter(builder, core.class.TypeDate, view.component.DatePresenter, view.component.DateEditor)

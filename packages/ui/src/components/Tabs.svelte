@@ -16,6 +16,7 @@
   import type { TabModel } from '../types'
   import Label from './Label.svelte'
   import Component from './Component.svelte'
+  import { Icon } from '..'
 
   export let model: TabModel
   export let selected = 0
@@ -23,6 +24,7 @@
 
 <div class="flex-stretch container">
   {#each model as tab, i}
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div
       class="flex-row-center tab"
       class:selected={i === selected}
@@ -30,6 +32,11 @@
         selected = i
       }}
     >
+      {#if tab.icon !== undefined}
+        <div class="mr-2">
+          <Icon icon={tab.icon} size={'small'} />
+        </div>
+      {/if}
       <Label label={tab.label} />
     </div>
   {/each}
