@@ -18,7 +18,7 @@
   import { createEventDispatcher, onMount } from 'svelte'
   import { getPlatformColor } from '../colors'
   import ListView from './ListView.svelte'
-  import { resizeObserver } from '..'
+  import { resizeObserver, deviceOptionsStore } from '..'
 
   export let placeholder: IntlString | undefined = undefined
   export let placeholderParam: any | undefined = undefined
@@ -70,7 +70,7 @@
   }
   let input: HTMLElement
   onMount(() => {
-    if (input) input.focus()
+    if (input && !$deviceOptionsStore.isMobile) input.focus()
   })
 </script>
 

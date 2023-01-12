@@ -17,7 +17,7 @@
   import { translate } from '@hcengineering/platform'
   import { createEventDispatcher, onMount } from 'svelte'
   import core, { Class, getCurrentAccount, Ref, Space } from '@hcengineering/core'
-  import { tooltip, CheckBox, resizeObserver } from '@hcengineering/ui'
+  import { tooltip, CheckBox, resizeObserver, deviceOptionsStore } from '@hcengineering/ui'
   import { createQuery } from '../utils'
   import presentation from '..'
   import SpaceInfo from './SpaceInfo.svelte'
@@ -85,7 +85,7 @@
   }
 
   onMount(() => {
-    if (input) input.focus()
+    if (input && !$deviceOptionsStore.isMobile) input.focus()
   })
 </script>
 

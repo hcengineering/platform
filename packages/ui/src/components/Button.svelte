@@ -28,6 +28,7 @@
   export let size: ButtonSize = 'medium'
   export let shape: ButtonShape = undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
+  export let iconProps: any | undefined = undefined
   export let justify: 'left' | 'center' = 'center'
   export let disabled: boolean = false
   export let loading: boolean = false
@@ -105,7 +106,7 @@
 >
   {#if icon && !loading}
     <div class="btn-icon pointer-events-none" class:resetIconSize>
-      <Icon bind:icon size={iconSize} />
+      <Icon bind:icon size={iconSize} {iconProps} />
     </div>
   {/if}
   {#if loading}

@@ -23,7 +23,7 @@
   import Label from './Label.svelte'
   import ListView from './ListView.svelte'
   import type { AnySvelteComponent } from '../types'
-  import { resizeObserver } from '../resize'
+  import { resizeObserver, deviceOptionsStore } from '..'
 
   interface ValueType {
     id: number | string | null
@@ -132,7 +132,7 @@
       <EditBox
         kind={'search-style'}
         focusIndex={1}
-        focus
+        focus={!$deviceOptionsStore.isMobile}
         bind:value={search}
         {placeholder}
         {placeholderParam}

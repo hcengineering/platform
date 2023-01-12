@@ -43,6 +43,7 @@
   export let showIcon: boolean = true
   export let isNew: boolean = false
   export let isNextNew: boolean = false
+  export let contentHidden: boolean = false
   // export let showDocument = false
 
   let ptx: DisplayTx | undefined
@@ -305,7 +306,7 @@
       </div>
 
       {#if viewlet && viewlet.component && viewlet.display !== 'inline'}
-        <div class="activity-content {viewlet.display}">
+        <div class="activity-content {viewlet.display}" class:contentHidden>
           <ShowMore ignore={edit}>
             {#if tx.collectionAttribute !== undefined && (tx.txDocIds?.size ?? 0) > 1}
               <div class="flex-row-center flex-grow flex-wrap clear-mins">
@@ -455,5 +456,22 @@
 
   .lower {
     text-transform: lowercase;
+  }
+  .activity-content {
+    overflow: hidden;
+    visibility: visible;
+    max-height: max-content;
+    opacity: 1;
+    transition-property: max-height, opacity;
+    transition-timing-function: ease-in-out;
+    transition-duration: 0.15s;
+
+    &.contentHidden {
+      visibility: hidden;
+      padding: 0;
+      margin-top: -0.5rem;
+      max-height: 0;
+      opacity: 0;
+    }
   }
 </style>

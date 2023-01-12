@@ -27,7 +27,8 @@
     ListView,
     showPopup,
     tooltip,
-    resizeObserver
+    resizeObserver,
+    deviceOptionsStore
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation from '..'
@@ -206,7 +207,13 @@
   }}
 >
   <div class="header flex-between">
-    <EditBox kind={'search-style'} focusIndex={1} focus bind:value={search} {placeholder} />
+    <EditBox
+      kind={'search-style'}
+      focusIndex={1}
+      focus={!$deviceOptionsStore.isMobile}
+      bind:value={search}
+      {placeholder}
+    />
     {#if create !== undefined}
       <div class="mx-2">
         <Button

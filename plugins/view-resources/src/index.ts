@@ -91,6 +91,7 @@ export {
   buildModel,
   getCollectionCounter,
   getObjectPresenter,
+  getObjectPreview,
   LoadingProps,
   setActiveViewletId,
   getActiveViewletId,

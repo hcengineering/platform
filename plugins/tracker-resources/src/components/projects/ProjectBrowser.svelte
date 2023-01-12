@@ -62,7 +62,7 @@
 
   const space = typeof query.space === 'string' ? query.space : tracker.team.DefaultTeam
   const showCreateDialog = async () => {
-    showPopup(NewProject, { space, targetElement: null }, null)
+    showPopup(NewProject, { space, targetElement: null }, 'top')
   }
 
   const handleViewModeChanged = (newMode: ProjectsViewMode) => {

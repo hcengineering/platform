@@ -419,27 +419,30 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  width: max-content;
-  height: max-content;
-  padding-bottom: 0.5rem;
-  min-width: 42rem;
-  max-width: 42rem;
-  height: 22rem;
+  padding: .5rem;
   min-height: 22rem;
-  max-height: 22rem;
   background: var(--popup-bg-color);
-  border-radius: 0.5rem;
+  border-radius: .5rem;
   box-shadow: var(--popup-shadow);
 
   .header {
     display: flex;
     align-items: center;
     flex-shrink: 0;
-    padding: 0 1rem;
+    padding: 0 .75rem .5rem 1rem;
     height: 3rem;
-    border-bottom: 1px solid var(--popup-divider);
+    min-height: 0;
+  }
+  .space {
+    flex-shrink: 0;
+    height: .25rem;
+    &.x2 { height: .5rem; }
+    &.x3 { height: .75rem; }
   }
 }
+.notifyPopup .comment::after,
+.notifyPopup .mention::after { content: none !important; }
+.notifyPopup .content .mention { margin-top: 0 !important; }
 
 .helpAndSupportPopup {
   min-height: 100%;

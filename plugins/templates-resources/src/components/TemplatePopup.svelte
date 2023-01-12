@@ -17,7 +17,7 @@
   import { createQuery } from '@hcengineering/presentation'
   import { MessageTemplate } from '@hcengineering/templates'
   import { TextEditorHandler } from '@hcengineering/text-editor'
-  import { closePopup, EditWithIcon, IconSearch, Label } from '@hcengineering/ui'
+  import { closePopup, EditWithIcon, IconSearch, Label, deviceOptionsStore } from '@hcengineering/ui'
   import templates from '../plugin'
 
   export let editor: TextEditorHandler
@@ -67,7 +67,12 @@
 <svelte:window on:keydown={onKeyDown} />
 <div class="antiPopup template-popup">
   <div class="mt-4 mb-4">
-    <EditWithIcon icon={IconSearch} bind:value={query} placeholder={templates.string.SearchTemplate} />
+    <EditWithIcon
+      icon={IconSearch}
+      bind:value={query}
+      placeholder={templates.string.SearchTemplate}
+      focus={!$deviceOptionsStore.isMobile}
+    />
   </div>
   <Label label={templates.string.Suggested} />
   <div class="scroll mt-2">

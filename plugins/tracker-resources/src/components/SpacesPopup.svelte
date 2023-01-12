@@ -15,7 +15,7 @@
 <script lang="ts">
   import { afterUpdate, createEventDispatcher } from 'svelte'
 
-  import ui, { Label, EditWithIcon, IconSearch } from '@hcengineering/ui'
+  import ui, { Label, EditWithIcon, IconSearch, deviceOptionsStore } from '@hcengineering/ui'
   import SpaceInfo from './SpaceInfo.svelte'
 
   import type { Ref, Class, Space, DocumentQuery } from '@hcengineering/core'
@@ -40,7 +40,12 @@
 <div class="antiPopup antiPopup-withHeader">
   <div class="ap-space" />
   <div class="ap-header">
-    <EditWithIcon icon={IconSearch} bind:value={search} placeholder={ui.string.SearchDots} focus />
+    <EditWithIcon
+      icon={IconSearch}
+      bind:value={search}
+      placeholder={ui.string.SearchDots}
+      focus={!$deviceOptionsStore.isMobile}
+    />
     <div class="ap-caption"><Label label={ui.string.Suggested} /></div>
   </div>
   <div class="ap-space" />

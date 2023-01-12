@@ -20,7 +20,7 @@
   import core, { getCurrentAccount, WithLookup } from '@hcengineering/core'
   import { Notification, NotificationStatus } from '@hcengineering/notification'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { ActionIcon, IconCheck, IconDelete, Scroller } from '@hcengineering/ui'
+  import { Button, IconCheckAll, IconDelete, Scroller } from '@hcengineering/ui'
   import Label from '@hcengineering/ui/src/components/Label.svelte'
   import notification from '../plugin'
   import NotificationView from './NotificationView.svelte'
@@ -80,29 +80,32 @@
 <div class="notifyPopup" class:justify-center={notifications.length === 0}>
   <div class="header flex-between">
     <span class="fs-title overflow-label"><Label label={notification.string.Notifications} /></span>
-    <div class="flex flex-gap-2">
-      <ActionIcon
-        icon={IconCheck}
-        label={notification.string.MarkAllAsRead}
-        size={'medium'}
-        action={markAsReadNotifications}
-      />
-      <ActionIcon
-        icon={IconDelete}
-        label={notification.string.RemoveAll}
-        size={'medium'}
-        action={deleteNotifications}
-      />
-    </div>
+    {#if notifications.length > 0}
+      <div class="buttons-group xxsmall-gap">
+        <Button
+          icon={IconCheckAll}
+          kind={'list'}
+          showTooltip={{ label: notification.string.MarkAllAsRead }}
+          size={'medium'}
+          on:click={markAsReadNotifications}
+        />
+        <Button
+          icon={IconDelete}
+          kind={'list'}
+          showTooltip={{ label: notification.string.RemoveAll }}
+          size={'medium'}
+          on:click={deleteNotifications}
+        />
+      </div>
+    {/if}
   </div>
   {#if notifications.length > 0}
-    <Scroller>
-      <div class="px-2 clear-mins">
-        {#each notifications as n}
-          <NotificationView notification={n} {viewlets} />
-        {/each}
-      </div>
+    <Scroller padding={'0 .5rem'}>
+      {#each notifications as n}
+        <NotificationView notification={n} {viewlets} />
+      {/each}
     </Scroller>
+    <div class="space x3" />
   {:else}
     <div class="flex-grow flex-center">
       <Label label={notification.string.NoNotifications} />
