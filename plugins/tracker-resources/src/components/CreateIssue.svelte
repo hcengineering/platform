@@ -159,6 +159,9 @@
     template = undefined
     object = { ...defaultIssue }
     subIssues = []
+    if (!originalIssue && !draft) {
+      updateIssueStatusId(_space, status)
+    }
   }
 
   let templateId: Ref<IssueTemplate> | undefined = draft?.template?.template
