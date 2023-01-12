@@ -160,7 +160,7 @@
     object = { ...defaultIssue }
     subIssues = []
     if (!originalIssue && !draft) {
-      updateIssueStatusId(draft?.team || space, status)
+      updateIssueStatusId(_space, status)
     }
   }
 
