@@ -122,7 +122,7 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    padding: 0.75rem;
+    padding: 0.5rem 0.75rem 0.75rem;
     min-height: 0;
     border: 1px solid var(--button-border-color);
     border-radius: 0.75rem;

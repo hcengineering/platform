@@ -20,7 +20,7 @@
   import plugin from '../plugin'
   import Icon from './Icon.svelte'
   import ListView from './ListView.svelte'
-  import { resizeObserver } from '..'
+  import { resizeObserver, deviceOptionsStore } from '..'
 
   export let icon: Asset | AnySvelteComponent
   export let placeholder: IntlString = plugin.string.SearchDots
@@ -37,7 +37,7 @@
   let searchInput: HTMLInputElement
 
   onMount(() => {
-    if (searchInput) searchInput.focus()
+    if (searchInput && !$deviceOptionsStore.isMobile) searchInput.focus()
   })
 
   let selection = 0

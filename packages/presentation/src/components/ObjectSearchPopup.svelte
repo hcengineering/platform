@@ -25,7 +25,8 @@
     IconSearch,
     Label,
     ListView,
-    resizeObserver
+    resizeObserver,
+    deviceOptionsStore
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation from '../plugin'
@@ -171,7 +172,7 @@
       {/each}
     </div>
     <EditBox
-      focus
+      focus={!$deviceOptionsStore.isMobile}
       icon={IconSearch}
       kind={'search-style'}
       focusIndex={0}

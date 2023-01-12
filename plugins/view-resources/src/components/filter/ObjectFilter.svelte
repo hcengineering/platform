@@ -18,7 +18,7 @@
   import presentation, { getClient } from '@hcengineering/presentation'
   import type { State } from '@hcengineering/task'
   import task from '@hcengineering/task'
-  import ui, { Button, CheckBox, Label, Loading, resizeObserver } from '@hcengineering/ui'
+  import ui, { Button, CheckBox, Label, Loading, resizeObserver, deviceOptionsStore } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
   import { createEventDispatcher, onMount } from 'svelte'
   import view from '../../plugin'
@@ -127,7 +127,7 @@
   })
 
   onMount(() => {
-    if (searchInput) searchInput.focus()
+    if (searchInput && !$deviceOptionsStore.isMobile) searchInput.focus()
   })
 
   const dispatch = createEventDispatcher()

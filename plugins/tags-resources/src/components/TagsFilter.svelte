@@ -25,7 +25,8 @@
     Label,
     Loading,
     resizeObserver,
-    showPopup
+    showPopup,
+    deviceOptionsStore
   } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
   import { FilterQuery } from '@hcengineering/view-resources'
@@ -80,7 +81,7 @@
   })
 
   onMount(() => {
-    if (searchInput) searchInput.focus()
+    if (searchInput && !$deviceOptionsStore.isMobile) searchInput.focus()
   })
 
   const toggleGroup = (ev: MouseEvent): void => {

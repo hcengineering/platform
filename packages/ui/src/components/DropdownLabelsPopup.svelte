@@ -20,7 +20,7 @@
   import plugin from '../plugin'
   import CheckBox from './CheckBox.svelte'
   import ListView from './ListView.svelte'
-  import { resizeObserver } from '..'
+  import { resizeObserver, deviceOptionsStore } from '..'
 
   export let placeholder: IntlString = plugin.string.SearchDots
   export let items: DropdownTextItem[]
@@ -35,7 +35,7 @@
   let searchInput: HTMLInputElement
 
   onMount(() => {
-    if (searchInput) searchInput.focus()
+    if (searchInput && !$deviceOptionsStore.isMobile) searchInput.focus()
   })
 
   let selection = 0

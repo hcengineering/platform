@@ -27,7 +27,8 @@
     IconClose,
     Label,
     showPopup,
-    resizeObserver
+    resizeObserver,
+    deviceOptionsStore
   } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import tags from '../plugin'
@@ -98,7 +99,7 @@
     return ''
   }
   onMount(() => {
-    if (searchElement) searchElement.focus()
+    if (searchElement && !$deviceOptionsStore.isMobile) searchElement.focus()
   })
   const tagSort = (a: TagElement, b: TagElement) => {
     const r = (b.refCount ?? 0) - (a.refCount ?? 0)
