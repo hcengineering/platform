@@ -33,6 +33,7 @@
   export let disabled: boolean = false
   export let loading: boolean = false
   export let width: string | undefined = undefined
+  export let height: string | undefined = undefined
   export let resetIconSize: boolean = false
   export let highlight: boolean = false
   export let selected: boolean = false
@@ -95,6 +96,7 @@
   class:notSelected
   disabled={disabled || loading}
   style:width
+  style:height
   {title}
   type={kind === 'primary' ? 'submit' : 'button'}
   on:click|stopPropagation|preventDefault

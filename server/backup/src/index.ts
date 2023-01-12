@@ -172,75 +172,112 @@ export async function backup (transactorUrl: string, workspaceId: WorkspaceId, s
       let addedDocuments = 0
 
       // update digest tar
+      const needRetrieveChunks: Ref<Doc>[][] = []
+
+      // Load all digest from collection.
       while (true) {
-        const it = await connection.loadChunk(c, idx)
-        idx = it.idx
+        try {
+          const it = await connection.loadChunk(c, idx)
+          idx = it.idx
+          console.log(needRetrieveChunks.length)
 
-        const needRetrieve: Ref<Doc>[] = []
+          const needRetrieve: Ref<Doc>[] = []
 
-        for (const [k, v] of Object.entries(it.docs)) {
-          const kHash = digest.get(k as Ref<Doc>)
-          if (kHash !== undefined) {
-            digest.delete(k as Ref<Doc>)
-            if (kHash !== v) {
-              changes.updated[k as Ref<Doc>] = v
+          for (const [k, v] of Object.entries(it.docs)) {
+            const kHash = digest.get(k as Ref<Doc>)
+            if (kHash !== undefined) {
+              digest.delete(k as Ref<Doc>)
+              if (kHash !== v) {
+                changes.updated[k as Ref<Doc>] = v
+                needRetrieve.push(k as Ref<Doc>)
+                changed++
+              }
+            } else {
+              changes.added[k as Ref<Doc>] = v
               needRetrieve.push(k as Ref<Doc>)
               changed++
             }
+          }
+          if (needRetrieve.length > 0) {
+            needRetrieveChunks.push(needRetrieve)
+          }
+          if (it.finished) {
+            await connection.closeChunk(idx)
+            break
+          }
+        } catch (err: any) {
+          console.error(err)
+          if (idx !== undefined) {
+            await connection.closeChunk(idx)
+          }
+          // Try again
+          idx = undefined
+        }
+      }
+      while (needRetrieveChunks.length > 0) {
+        const needRetrieve = needRetrieveChunks.shift() as Ref<Doc>[]
+
+        console.log('Retrieve chunk:', needRetrieve.length)
+        let docs: Doc[] = []
+        try {
+          docs = await connection.loadDocs(c, needRetrieve)
+        } catch (err: any) {
+          console.log(err)
+          // Put back.
+          needRetrieveChunks.push(needRetrieve)
+          continue
+        }
+
+        // Chunk data into small pieces
+        if (addedDocuments > dataBlobSize && _pack !== undefined) {
+          _pack.finalize()
+          _pack = undefined
+          addedDocuments = 0
+
+          if (changed > 0) {
+            snapshot.domains[c] = domainInfo
+            domainInfo.added = Object.keys(changes.added).length
+            domainInfo.updated = Object.keys(changes.updated).length
+            domainInfo.removed = changes.removed.length
+            await storage.writeFile(domainInfo.snapshot, gzipSync(JSON.stringify(changes)))
+            // This will allow to retry in case of critical error.
+            await storage.writeFile(infoFile, gzipSync(JSON.stringify(backupInfo, undefined, 2)))
+          }
+        }
+        if (_pack === undefined) {
+          _pack = pack()
+          stIndex++
+          const storageFile = join(backupIndex, `${c}-data-${snapshot.date}-${stIndex}.tar.gz`)
+          console.log('storing from domain', c, storageFile)
+          domainInfo.storage.push(storageFile)
+          const dataStream = await storage.write(storageFile)
+          const storageZip = createGzip()
+
+          _pack.pipe(storageZip)
+          storageZip.pipe(dataStream)
+        }
+
+        for (const d of docs) {
+          if (d._class === core.class.BlobData) {
+            const blob = d as BlobData
+            const data = Buffer.from(blob.base64Data, 'base64')
+            blob.base64Data = ''
+            const descrJson = JSON.stringify(d)
+            addedDocuments += descrJson.length
+            addedDocuments += data.length
+            _pack.entry({ name: d._id + '.json' }, descrJson, function (err) {
+              if (err != null) throw err
+            })
+            _pack.entry({ name: d._id }, data, function (err) {
+              if (err != null) throw err
+            })
           } else {
-            changes.added[k as Ref<Doc>] = v
-            needRetrieve.push(k as Ref<Doc>)
-            changed++
+            const data = JSON.stringify(d)
+            addedDocuments += data.length
+            _pack.entry({ name: d._id + '.json' }, data, function (err) {
+              if (err != null) throw err
+            })
           }
-        }
-        if (needRetrieve.length > 0) {
-          const docs = await connection.loadDocs(c, needRetrieve)
-
-          // Chunk data into small pieces
-          if (addedDocuments > dataBlobSize && _pack !== undefined) {
-            _pack.finalize()
-            _pack = undefined
-            addedDocuments = 0
-          }
-          if (_pack === undefined) {
-            _pack = pack()
-            stIndex++
-            const storageFile = join(backupIndex, `${c}-data-${snapshot.date}-${stIndex}.tar.gz`)
-            console.log('storing from domain', c, storageFile)
-            domainInfo.storage.push(storageFile)
-            const dataStream = await storage.write(storageFile)
-            const storageZip = createGzip()
-
-            _pack.pipe(storageZip)
-            storageZip.pipe(dataStream)
-          }
-
-          for (const d of docs) {
-            if (d._class === core.class.BlobData) {
-              const blob = d as BlobData
-              const data = Buffer.from(blob.base64Data, 'base64')
-              blob.base64Data = ''
-              const descrJson = JSON.stringify(d)
-              addedDocuments += descrJson.length
-              addedDocuments += data.length
-              _pack.entry({ name: d._id + '.json' }, descrJson, function (err) {
-                if (err != null) throw err
-              })
-              _pack.entry({ name: d._id }, data, function (err) {
-                if (err != null) throw err
-              })
-            } else {
-              const data = JSON.stringify(d)
-              addedDocuments += data.length
-              _pack.entry({ name: d._id + '.json' }, data, function (err) {
-                if (err != null) throw err
-              })
-            }
-          }
-        }
-
-        if (it.finished) {
-          break
         }
       }
       changes.removed = Array.from(digest.keys())
@@ -255,6 +292,8 @@ export async function backup (transactorUrl: string, workspaceId: WorkspaceId, s
         domainInfo.removed = changes.removed.length
         await storage.writeFile(domainInfo.snapshot, gzipSync(JSON.stringify(changes)))
         _pack?.finalize()
+        // This will allow to retry in case of critical error.
+        await storage.writeFile(infoFile, gzipSync(JSON.stringify(backupInfo, undefined, 2)))
       }
     }
 
