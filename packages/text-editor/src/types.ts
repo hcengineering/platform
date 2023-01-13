@@ -1,5 +1,6 @@
 import { Asset, IntlString, Resource } from '@hcengineering/platform'
 import { Doc } from '@hcengineering/core'
+import type { AnySvelteComponent } from '@hcengineering/ui'
 
 /**
  * @public
@@ -53,4 +54,13 @@ export type FormatMode = typeof FORMAT_MODES[number]
 export const CollaborationIds = {
   Doc: 'text-editor.collaborator.document',
   Provider: 'text-editor.collaborator.provider'
+}
+
+export interface RefAction {
+  label: IntlString
+  icon: Asset | AnySvelteComponent
+  action: RefInputAction
+  order: number
+  fill?: string
+  disabled?: boolean
 }

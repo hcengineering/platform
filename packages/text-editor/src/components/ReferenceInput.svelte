@@ -13,14 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Asset, getResource, IntlString } from '@hcengineering/platform'
+  import { getResource, IntlString, Asset } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
-  import { AnySvelteComponent, Button, Icon, showPopup } from '@hcengineering/ui'
+  import { Button, Icon, showPopup, tooltip } from '@hcengineering/ui'
+  import type { AnySvelteComponent } from '@hcengineering/ui'
   import { AnyExtension } from '@tiptap/core'
   import { createEventDispatcher } from 'svelte'
   import { Completion } from '../Completion'
   import textEditorPlugin from '../plugin'
-  import { FormatMode, FORMAT_MODES, RefInputAction, RefInputActionItem, TextEditorHandler } from '../types'
+  import { FormatMode, FORMAT_MODES, RefAction, RefInputActionItem, TextEditorHandler } from '../types'
   import EmojiPopup from './EmojiPopup.svelte'
   import Attach from './icons/Attach.svelte'
   import Bold from './icons/Bold.svelte'
@@ -44,9 +45,12 @@
   const dispatch = createEventDispatcher()
   export let content: string = ''
   export let showSend = true
+  export let iconSend: Asset | AnySvelteComponent | undefined = undefined
+  export let labelSend: IntlString | undefined = undefined
   export let haveAttachment = false
   export let withoutTopBorder = false
   export let placeholder: IntlString | undefined = undefined
+  export let extraActions: RefAction[] | undefined = undefined
   const client = getClient()
 
   let textEditor: TextEditor
@@ -59,12 +63,6 @@
 
   function setContent (content: string) {
     textEditor?.setContent(content)
-  }
-  interface RefAction {
-    label: IntlString
-    icon: Asset | AnySvelteComponent
-    action: RefInputAction
-    order: number
   }
   const defActions: RefAction[] = [
     {
@@ -200,7 +198,7 @@
 
 <div class="ref-container">
   {#if isFormatting}
-    <div class="formatPanel buttons-group xsmall-gap" class:withoutTopBorder>
+    <div class="formatPanelRef buttons-group xsmall-gap" class:withoutTopBorder>
       <Button
         icon={Bold}
         kind={'transparent'}
@@ -297,18 +295,40 @@
       />
     </div>
     {#if showSend}
-      <button class="sendButton" on:click={submit} disabled={isEmpty && !haveAttachment}>
-        <div class="icon"><Send size={'medium'} /></div>
+      <button
+        class="sendButton"
+        on:click={submit}
+        use:tooltip={{ label: labelSend ?? textEditorPlugin.string.Send }}
+        disabled={isEmpty && !haveAttachment}
+      >
+        <div class="icon"><Icon icon={iconSend ?? Send} size={'medium'} /></div>
       </button>
     {/if}
   </div>
-  <div class="buttons-group large-gap ml-4 mt-2">
-    {#each actions as a}
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <div class="icon-button" on:click={(evt) => handleAction(a, evt)}>
-        <Icon icon={a.icon} size={'medium'} />
+  <div class="flex-between clear-mins" style:margin={'.5rem 1rem 0'}>
+    <div class="buttons-group large-gap">
+      {#each actions as a}
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <div class="icon-button" use:tooltip={{ label: a.label }} on:click={(evt) => handleAction(a, evt)}>
+          <Icon icon={a.icon} size={'medium'} fill={a.fill} />
+        </div>
+      {/each}
+    </div>
+    {#if extraActions && extraActions.length > 0}
+      <div class="buttons-group large-gap">
+        {#each extraActions as a}
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
+          <div
+            class="icon-button"
+            class:disabled={a.disabled}
+            use:tooltip={{ label: a.label }}
+            on:click={(evt) => handleAction(a, evt)}
+          >
+            <Icon icon={a.icon} size={'medium'} fill={a.fill} />
+          </div>
+        {/each}
       </div>
-    {/each}
+    {/if}
   </div>
 </div>
 
@@ -319,11 +339,19 @@
     align-items: center;
     width: 1rem;
     height: 1rem;
-    color: var(--dark-color);
+    color: var(--caption-color);
+    opacity: 0.6;
     cursor: pointer;
 
     &:hover {
-      color: var(--accent-color);
+      opacity: 1;
+    }
+    &.disabled {
+      opacity: 0.3;
+      &:hover {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
     }
   }
   .ref-container {
@@ -331,7 +359,7 @@
     flex-direction: column;
     min-height: 4.5rem;
 
-    .formatPanel {
+    .formatPanelRef {
       padding: 0.5rem;
       background-color: var(--body-accent);
       border: 1px solid var(--divider-color);

@@ -388,6 +388,7 @@
     display: flex;
     flex-direction: column;
     flex-shrink: 1;
+    flex-grow: 1;
     height: 100%;
     min-width: 0;
     min-height: 0;
@@ -414,6 +415,7 @@
     }
   }
   .horizontalBox {
+    flex-grow: 1;
     min-width: 0;
     min-height: 0;
     width: 100%;

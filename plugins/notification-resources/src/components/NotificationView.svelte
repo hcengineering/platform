@@ -122,6 +122,7 @@
     position: relative;
     display: flex;
     flex-direction: column;
+    margin-bottom: 0.75rem;
     padding: 0.5rem 0.75rem 0.75rem;
     min-height: 0;
     border: 1px solid var(--button-border-color);
@@ -130,9 +131,6 @@
     transition-duration: 0.3s, 0.15s, 0.15s;
     transition-timing-function: ease-in-out;
 
-    &:not(:last-child) {
-      margin-bottom: 0.75rem;
-    }
     &.new {
       background-color: var(--popup-bg-hover);
     }

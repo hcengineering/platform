@@ -105,7 +105,6 @@
         <NotificationView notification={n} {viewlets} />
       {/each}
     </Scroller>
-    <div class="space x3" />
   {:else}
     <div class="flex-grow flex-center">
       <Label label={notification.string.NoNotifications} />
