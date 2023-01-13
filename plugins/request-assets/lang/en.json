@@ -15,6 +15,7 @@
     "Reject": "Reject",
     "Rejected": "Rejected",
     "Comment": "Comment",
-    "PleaseTypeMessage": "Please type comment message to continue..."
+    "PleaseTypeMessage": "Please type comment message to continue...",
+    "NoRequests": "No requests"
   }
 }

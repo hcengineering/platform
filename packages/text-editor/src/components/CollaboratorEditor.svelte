@@ -468,7 +468,7 @@
 
 <div class="ref-container" class:autoOverflow>
   {#if isFormatting && !readonly}
-    <div class="formatPanel flex-between clear-mins" class:focused>
+    <div class="formatPanelRef formatPanel flex-between clear-mins" class:focused>
       <div class="flex-row-center buttons-group xsmall-gap">
         <StyleButton
           icon={Header}
@@ -580,13 +580,13 @@
           <slot name="tools" />
         </div>
       {:else}
-        <div class="formatPanel buttons-group xsmall-gap">
+        <div class="formatPanelRef formatPanel buttons-group xsmall-gap">
           <slot name="tools" />
         </div>
       {/if}
     </div>
   {:else if comparedVersion !== undefined}
-    <div class="formatPanel flex flex-grow flex-reverse">
+    <div class="formatPanelRef formatPanel flex flex-grow flex-reverse">
       <StyleButton
         icon={Objects}
         size={buttonSize}

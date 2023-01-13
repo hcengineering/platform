@@ -34,7 +34,7 @@
   $: if (bigger && !ignore) crop = true
 </script>
 
-<div class="relative clear-mins">
+<div class="clear-mins">
   <div
     use:resizeObserver={(element) => {
       cHeight = element.clientHeight
@@ -71,7 +71,7 @@
   .showMore {
     position: absolute;
     left: 50%;
-    bottom: 0;
+    bottom: 0.25rem;
     padding: 0.5rem 1rem;
     transform: translateX(-50%);
 
@@ -82,11 +82,12 @@
     border: 0.5px solid var(--popup-divider);
     box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
     border-radius: 2.5rem;
+    // z-index: 1;
     user-select: none;
     cursor: pointer;
 
     &.outter {
-      bottom: -2.75rem;
+      bottom: 0;
       transform: translateX(-50%);
     }
     &:hover {

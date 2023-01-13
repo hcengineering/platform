@@ -47,6 +47,7 @@ export default plugin(textEditorId, {
     Code: '' as IntlString,
     CodeBlock: '' as IntlString,
     GettingWorkDone: '' as IntlString,
+    Send: '' as IntlString,
     Smileys: '' as IntlString,
     Nature: '' as IntlString,
     Symbols: '' as IntlString,
