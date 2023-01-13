@@ -87,7 +87,7 @@
             _id: { $in: Array.from(targets.keys()) }
           }
     const options = clazz.sortingKey !== undefined ? { sort: { [clazz.sortingKey]: SortingOrder.Ascending } } : {}
-    objectsPromise = client.findAll(targetClass, { ...resultQuery, ...(space ? { space } : {}) }, options)
+    objectsPromise = client.findAll(targetClass, resultQuery, options)
     values = await objectsPromise
     if (targets.has(undefined)) {
       values.unshift(undefined)
