@@ -23,4 +23,4 @@
   const query: DocumentQuery<IssueTemplate> = { space: currentSpace }
 </script>
 
-<IssueTemplatesView {query} title={tracker.string.IssueTemplates} />
+<IssueTemplatesView {query} space={currentSpace} title={tracker.string.IssueTemplates} />

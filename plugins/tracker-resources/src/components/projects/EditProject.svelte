@@ -34,7 +34,7 @@
   })
 </script>
 
-<IssuesView query={{ project: project._id, space: project.space }} label={project.label}>
+<IssuesView query={{ project: project._id, space: project.space }} space={project.space} label={project.label}>
   <svelte:fragment slot="label_selector">
     <Button size={'small'} kind={'link'} on:click={selectProject}>
       <svelte:fragment slot="content">

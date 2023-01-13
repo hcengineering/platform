@@ -44,7 +44,7 @@
   })
 </script>
 
-<IssuesView query={{ sprint: sprint._id, space: sprint.space }} label={sprint.label}>
+<IssuesView query={{ sprint: sprint._id, space: sprint.space }} space={sprint.space} label={sprint.label}>
   <svelte:fragment slot="label_selector">
     <div bind:this={container}>
       <Button size={'small'} kind={'link'} on:click={selectSprint}>

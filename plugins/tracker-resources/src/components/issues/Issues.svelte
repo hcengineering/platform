@@ -23,4 +23,4 @@
   $: query = { space: currentSpace }
 </script>
 
-<IssuesView {query} title={tracker.string.AllIssues} />
+<IssuesView {query} space={currentSpace} title={tracker.string.AllIssues} />

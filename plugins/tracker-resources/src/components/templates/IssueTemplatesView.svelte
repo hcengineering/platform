@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { DocumentQuery, WithLookup } from '@hcengineering/core'
+  import { DocumentQuery, WithLookup, Ref, Space } from '@hcengineering/core'
   import { IntlString, translate } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { IssueTemplate } from '@hcengineering/tracker'
@@ -12,6 +12,7 @@
   import CreateIssueTemplate from './CreateIssueTemplate.svelte'
   import IssueTemplatesContent from './IssueTemplatesContent.svelte'
 
+  export let space: Ref<Space> | undefined = undefined
   export let query: DocumentQuery<IssueTemplate> = {}
   export let title: IntlString | undefined = undefined
   export let label: string = ''
@@ -71,7 +72,7 @@
   }
 </script>
 
-<IssuesHeader {viewlets} {label} bind:viewlet bind:search showLabelSelector={$$slots.label_selector}>
+<IssuesHeader {space} {viewlets} {label} bind:viewlet bind:search showLabelSelector={$$slots.label_selector}>
   <svelte:fragment slot="label_selector">
     <slot name="label_selector" />
   </svelte:fragment>
