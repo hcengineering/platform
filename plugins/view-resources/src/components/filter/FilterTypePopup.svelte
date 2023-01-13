@@ -13,7 +13,18 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { AnyAttribute, ArrOf, AttachedDoc, Class, Collection, Doc, Ref, RefTo, Type } from '@hcengineering/core'
+  import core, {
+    AnyAttribute,
+    ArrOf,
+    AttachedDoc,
+    Class,
+    Collection,
+    Doc,
+    Ref,
+    RefTo,
+    Type,
+    Space
+  } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { closePopup, closeTooltip, Icon, Label, showPopup, Submenu, resizeObserver } from '@hcengineering/ui'
   import { Filter, KeyFilter } from '@hcengineering/view'
@@ -22,6 +33,7 @@
   import view from '../../plugin'
 
   export let _class: Ref<Class<Doc>>
+  export let space: Ref<Space> | undefined = undefined
   export let target: HTMLElement
   export let filter: Filter | undefined
   export let index: number
@@ -144,6 +156,7 @@
       type.component,
       {
         _class,
+        space,
         filter: filter || {
           key: type,
           value: [],
@@ -183,6 +196,7 @@
     const targetClass = (hierarchy.getAttribute(_class, type.key).type as RefTo<Doc>).to
     return {
       _class: targetClass,
+      space,
       index,
       target,
       onChange: (e: Filter | undefined) => {

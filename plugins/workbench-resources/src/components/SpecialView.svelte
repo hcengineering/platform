@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, DocumentQuery, Ref } from '@hcengineering/core'
+  import { Class, Doc, DocumentQuery, Ref, Space } from '@hcengineering/core'
   import { Asset, getEmbeddedLabel, IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import {
@@ -32,6 +32,7 @@
   import SourcePresenter from './search/SourcePresenter.svelte'
 
   export let _class: Ref<Class<Doc>>
+  export let space: Ref<Space> | undefined = undefined
   export let icon: Asset
   export let label: IntlString
   export let createLabel: IntlString | undefined
@@ -94,7 +95,7 @@
     <div class="ac-header__wrap-title mr-3">
       <span class="ac-header__icon"><Icon {icon} size={'small'} /></span>
       <span class="ac-header__title"><Label {label} /></span>
-      <div class="ml-4"><FilterButton {_class} /></div>
+      <div class="ml-4"><FilterButton {_class} {space} /></div>
     </div>
 
     <SearchEdit bind:value={search} />

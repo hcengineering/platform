@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, FindResult, getObjectValue, RefTo, SortingOrder } from '@hcengineering/core'
+  import { Doc, FindResult, getObjectValue, RefTo, SortingOrder, Ref, Space } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
   import presentation, { getClient } from '@hcengineering/presentation'
   import type { State } from '@hcengineering/task'
@@ -25,6 +25,7 @@
   import { buildConfigLookup, getPresenter } from '../../utils'
 
   export let filter: Filter
+  export let space: Ref<Space> | undefined = undefined
   export let onChange: (e: Filter) => void
 
   const client = getClient()
@@ -68,7 +69,9 @@
       await objectsPromise
     }
     targets.clear()
-    const baseObjects = await client.findAll(filter.key._class, {}, { projection: { [filter.key.key]: 1 } })
+    const baseObjects = await client.findAll(filter.key._class, space ? { space } : {}, {
+      projection: { [filter.key.key]: 1 }
+    })
     for (const object of baseObjects) {
       const value = getObjectValue(filter.key.key, object) ?? undefined
       targets.set(value, (targets.get(value) ?? 0) + 1)
@@ -84,7 +87,7 @@
             _id: { $in: Array.from(targets.keys()) }
           }
     const options = clazz.sortingKey !== undefined ? { sort: { [clazz.sortingKey]: SortingOrder.Ascending } } : {}
-    objectsPromise = client.findAll(targetClass, resultQuery, options)
+    objectsPromise = client.findAll(targetClass, { ...resultQuery, ...(space ? { space } : {}) }, options)
     values = await objectsPromise
     if (targets.has(undefined)) {
       values.unshift(undefined)

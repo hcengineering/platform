@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, FindResult, getObjectValue, Ref, SortingOrder } from '@hcengineering/core'
+  import { Class, Doc, FindResult, getObjectValue, Ref, SortingOrder, Space } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
   import presentation, { getClient } from '@hcengineering/presentation'
   import ui, { Button, CheckBox, Label, Loading, resizeObserver, deviceOptionsStore } from '@hcengineering/ui'
@@ -24,6 +24,7 @@
   import { createEventDispatcher } from 'svelte'
 
   export let _class: Ref<Class<Doc>>
+  export let space: Ref<Space> | undefined = undefined
   export let filter: Filter
   export let onChange: (e: Filter) => void
 
@@ -59,10 +60,14 @@
       prefix = attr.attributeOf + '.'
       console.log('prefix', prefix)
     }
-    objectsPromise = client.findAll(_class, resultQuery, {
-      sort: { [filter.key.key]: SortingOrder.Ascending },
-      projection: { [prefix + filter.key.key]: 1 }
-    })
+    objectsPromise = client.findAll(
+      _class,
+      { ...resultQuery, ...(space ? { space } : {}) },
+      {
+        sort: { [filter.key.key]: SortingOrder.Ascending },
+        projection: { [prefix + filter.key.key]: 1 }
+      }
+    )
     const res = await objectsPromise
 
     for (const object of res) {
