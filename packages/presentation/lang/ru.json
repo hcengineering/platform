@@ -27,6 +27,7 @@
     "Add": "Добавить",
     "Edit": "Редактировать",
     "SelectAvatar": "Выбрать аватар",
-    "GravatarsManaged": "Граватары управляются через"
+    "GravatarsManaged": "Граватары управляются через",
+    "InltPropsValue": "{value}"
   }
 }

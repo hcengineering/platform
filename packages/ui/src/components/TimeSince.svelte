@@ -32,7 +32,7 @@
 
   let time: string = ''
 
-  async function formatTime (now: number) {
+  async function formatTime (now: number, value: number) {
     let passed = now - value
     if (passed < 0) passed = 0
     if (passed < HOUR) {
@@ -48,7 +48,7 @@
     }
   }
 
-  $: formatTime($ticker)
+  $: formatTime($ticker, value)
 
   $: tooltipValue = new Date(value).toLocaleString('default', {
     minute: '2-digit',

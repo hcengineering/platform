@@ -39,6 +39,8 @@ import TodoItemsPopup from './components/todos/TodoItemsPopup.svelte'
 import Todos from './components/todos/Todos.svelte'
 import TodoStatePresenter from './components/todos/TodoStatePresenter.svelte'
 import Dashboard from './components/Dashboard.svelte'
+import DoneStateRefPresenter from './components/state/DoneStateRefPresenter.svelte'
+import StateRefPresenter from './components/state/StateRefPresenter.svelte'
 
 export { default as AssigneePresenter } from './components/AssigneePresenter.svelte'
 
@@ -70,6 +72,8 @@ export default async (): Promise<Resources> => ({
     KanbanTemplateEditor,
     KanbanTemplateSelector,
     AssignedTasks,
+    DoneStateRefPresenter,
+    StateRefPresenter,
     TodoItemsPopup
   },
   actionImpl: {

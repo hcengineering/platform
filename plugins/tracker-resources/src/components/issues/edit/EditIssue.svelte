@@ -20,7 +20,7 @@
   import { getResource } from '@hcengineering/platform'
   import presentation, { createQuery, getClient, MessageViewer } from '@hcengineering/presentation'
   import setting, { settingId } from '@hcengineering/setting'
-  import type { Issue, IssuesGrouping, IssuesOrdering, IssueStatus, Team } from '@hcengineering/tracker'
+  import type { Issue, IssueStatus, Team } from '@hcengineering/tracker'
   import {
     Button,
     EditBox,
@@ -33,14 +33,7 @@
     showPopup,
     Spinner
   } from '@hcengineering/ui'
-  import {
-    ContextMenu,
-    focusStore,
-    ListSelectionProvider,
-    SelectDirection,
-    UpDownNavigator,
-    viewOptionsStore
-  } from '@hcengineering/view-resources'
+  import { ContextMenu, UpDownNavigator } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import { generateIssueShortLink, getIssueId } from '../../../issues'
   import tracker from '../../../plugin'
@@ -49,8 +42,6 @@
   import CopyToClipboard from './CopyToClipboard.svelte'
   import SubIssues from './SubIssues.svelte'
   import SubIssueSelector from './SubIssueSelector.svelte'
-  import { groupBy as groupByFunc, issuesOrderKeyMap, issuesSortOrderMap } from '../../../utils'
-  import contact from '@hcengineering/contact'
 
   export let _id: Ref<Issue>
   export let _class: Ref<Class<Issue>>
@@ -70,14 +61,6 @@
   let innerWidth: number
   let isEditing = false
   let descriptionBox: AttachmentStyledBox
-
-  let groupBy: IssuesGrouping
-  let orderBy: IssuesOrdering
-  let shouldShowSubIssues: boolean
-  $: ({ groupBy, orderBy, shouldShowSubIssues } = $viewOptionsStore)
-  $: orderByKey = issuesOrderKeyMap[orderBy]
-  $: subIssuesQuery = shouldShowSubIssues ? {} : { attachedTo: tracker.ids.NoParent }
-  $: query = { space: issue?.space }
 
   const notificationClient = getResource(notification.function.GetNotificationClient).then((res) => res())
 
@@ -125,72 +108,6 @@
   $: canSave = title.trim().length > 0
   $: isDescriptionEmpty = !new DOMParser().parseFromString(description, 'text/html').documentElement.innerText?.trim()
   $: parentIssue = issue?.$lookup?.attachedTo
-
-  let issues: WithLookup<Issue>[] = []
-  let neighbourIssues: Issue[] = []
-  const issuesQuery = createQuery()
-  const subIssuesQueryClient = createQuery()
-
-  $: if (parentIssue) {
-    subIssuesQueryClient.query(
-      tracker.class.Issue,
-      { attachedTo: parentIssue?._id },
-      async (result) => (neighbourIssues = result ?? []),
-      {
-        sort: { rank: SortingOrder.Descending }
-      }
-    )
-  } else {
-    issuesQuery.query(
-      tracker.class.Issue,
-      { ...subIssuesQuery, ...query },
-      (result) => {
-        issues = result
-      },
-      {
-        sort: { [orderByKey]: issuesSortOrderMap[orderByKey] },
-        lookup: {
-          assignee: contact.class.Employee,
-          status: tracker.class.IssueStatus,
-          space: tracker.class.Team,
-          sprint: tracker.class.Sprint,
-          _id: {
-            subIssues: tracker.class.Issue
-          }
-        }
-      }
-    )
-  }
-
-  $: groupedIssues = groupByFunc(issues, groupBy)
-  $: flatGroupedIssues = Object.values(groupedIssues ?? {}).flat(1)
-  $: issuesToNavigate = parentIssue ? neighbourIssues : flatGroupedIssues
-
-  const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
-    if (dir === 'vertical') {
-      if (groupedIssues) {
-        const selectedRowIndex = listProvider.current($focusStore)
-        let position =
-          (of !== undefined ? issuesToNavigate.findIndex((x) => x._id === of?._id) : selectedRowIndex) ?? -1
-
-        position -= offset
-
-        if (position < 0) {
-          position = 0
-        }
-
-        if (position >= issuesToNavigate.length) {
-          position = issuesToNavigate.length - 1
-        }
-
-        listProvider.updateFocus(issuesToNavigate[position])
-      }
-    }
-  })
-
-  $: if (issue) listProvider.updateFocus(issue)
-
-  $: listProvider.update(issuesToNavigate)
 
   function edit (ev: MouseEvent) {
     ev.preventDefault()

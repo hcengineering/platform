@@ -30,6 +30,7 @@
     "Description": "Description",
     "FullDescription": "Full description",
     "FunnelPlaceholder": "The simple funnel",
-    "Members": "Members"
+    "Members": "Members",
+    "UnAssign": "Unassign"
   }
 }

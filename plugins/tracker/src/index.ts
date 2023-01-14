@@ -93,7 +93,7 @@ export enum IssuesGrouping {
   Priority = 'priority',
   Project = 'project',
   Sprint = 'sprint',
-  NoGrouping = 'noGrouping'
+  NoGrouping = '#no_category'
 }
 
 /**

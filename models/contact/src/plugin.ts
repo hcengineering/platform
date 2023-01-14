@@ -25,6 +25,7 @@ import { Action, ActionCategory, ViewAction } from '@hcengineering/view'
 export default mergeIds(contactId, contact, {
   component: {
     PersonPresenter: '' as AnyComponent,
+    ContactRefPresenter: '' as AnyComponent,
     ContactPresenter: '' as AnyComponent,
     EditPerson: '' as AnyComponent,
     EditOrganization: '' as AnyComponent,
@@ -35,6 +36,8 @@ export default mergeIds(contactId, contact, {
     EmployeeAccountPresenter: '' as AnyComponent,
     OrganizationEditor: '' as AnyComponent,
     EmployeePresenter: '' as AnyComponent,
+    EmployeeRefPresenter: '' as AnyComponent,
+    PersonRefPresenter: '' as AnyComponent,
     PersonEditor: '' as AnyComponent,
     Members: '' as AnyComponent,
     MemberPresenter: '' as AnyComponent,

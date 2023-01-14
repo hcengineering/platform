@@ -19,10 +19,8 @@
   import type { IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import type { Issue } from '@hcengineering/tracker'
-  import { ViewOptionModel } from '@hcengineering/view-resources'
 
   import tracker from '../../plugin'
-  import { getDefaultViewOptionsConfig } from '../../utils'
   import IssuesView from '../issues/IssuesView.svelte'
   import ModeSelector from '../ModeSelector.svelte'
 
@@ -35,8 +33,6 @@
   const assigned = { assignee: currentUser.employee }
   let created = { _id: { $in: [] as Ref<Issue>[] } }
   let subscribed = { _id: { $in: [] as Ref<Issue>[] } }
-
-  const viewOptionsConfig: ViewOptionModel[] = getDefaultViewOptionsConfig(true)
 
   const createdQuery = createQuery()
   $: createdQuery.query<TxCollectionCUD<Issue, Issue>>(
@@ -79,7 +75,7 @@
   $: query = getQuery(mode, { assigned, created, subscribed })
 </script>
 
-<IssuesView {query} title={tracker.string.MyIssues} {viewOptionsConfig}>
+<IssuesView {query} space={undefined} title={tracker.string.MyIssues}>
   <svelte:fragment slot="afterHeader">
     <ModeSelector {config} {mode} onChange={handleChangeMode} />
   </svelte:fragment>

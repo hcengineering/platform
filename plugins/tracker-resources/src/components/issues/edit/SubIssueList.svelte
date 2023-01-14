@@ -21,6 +21,7 @@
   import { flip } from 'svelte/animate'
   import { getIssueId } from '../../../issues'
   import tracker from '../../../plugin'
+  import { subIssueListProvider } from '../../../utils'
   import Circles from '../../icons/Circles.svelte'
   import AssigneeEditor from '../AssigneeEditor.svelte'
   import DueDateEditor from '../DueDateEditor.svelte'
@@ -41,6 +42,7 @@
 
   function openIssue (target: Issue) {
     dispatch('issue-focus', target)
+    subIssueListProvider(issues, target._id)
     showPanel(tracker.component.EditIssue, target._id, target._class, 'content')
   }
 
@@ -120,7 +122,7 @@
         {issue.title}
       </span>
       {#if issue.subIssues > 0}
-        <SubIssuesSelector value={issue} {currentTeam} statuses={issueStatuses.get(issue.space)} />
+        <SubIssuesSelector value={issue} {currentTeam} />
       {/if}
     </div>
     <div class="flex-center flex-no-shrink">

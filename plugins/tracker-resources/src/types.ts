@@ -102,5 +102,5 @@ export const issuesGroupBySorting: Record<IssuesGrouping, SortingQuery<Issue>> =
   [IssuesGrouping.Priority]: { priority: SortingOrder.Ascending },
   [IssuesGrouping.Project]: { '$lookup.project.label': SortingOrder.Ascending },
   [IssuesGrouping.Sprint]: { '$lookup.sprint.label': SortingOrder.Ascending },
-  [IssuesGrouping.NoGrouping]: {}
+  [IssuesGrouping.NoGrouping]: { rank: SortingOrder.Ascending }
 }

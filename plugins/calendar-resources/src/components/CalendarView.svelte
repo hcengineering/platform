@@ -40,7 +40,6 @@
   export let options: FindOptions<Event> | undefined = undefined
   export let baseMenuClass: Ref<Class<Event>> | undefined = undefined
   export let config: (string | BuildModelKey)[]
-  export let search: string = ''
   export let createComponent: AnyComponent | undefined = undefined
 
   const mondayStart = true
@@ -48,10 +47,6 @@
   // Current selected day
   let currentDate: Date = new Date()
   let selectedDate: Date = new Date()
-
-  let resultQuery: DocumentQuery<Event>
-  $: spaceOpt = space ? { space } : {}
-  $: resultQuery = search === '' ? { ...query, ...spaceOpt } : { ...query, $search: search, ...spaceOpt }
 
   let objects: Event[] = []
 
@@ -67,7 +62,7 @@
       { sort: { date: SortingOrder.Ascending }, ...options }
     )
   }
-  $: update(_class, resultQuery, options)
+  $: update(_class, query, options)
 
   function areDatesLess (firstDate: Date, secondDate: Date): boolean {
     return (
@@ -256,7 +251,7 @@
             {today}
             {selected}
             {wrongMonth}
-            query={resultQuery}
+            {query}
           />
         </svelte:fragment>
       </YearCalendar>
@@ -276,7 +271,7 @@
             {today}
             {selected}
             {wrongMonth}
-            query={resultQuery}
+            {query}
             on:select={(e) => {
               currentDate = e.detail
               if (areDatesEqual(selectedDate, currentDate)) {

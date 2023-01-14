@@ -21,18 +21,24 @@
   export let key: string
   export let justify: string = ''
   let prevKey = key
+  let element: HTMLDivElement | undefined
 
   let cWidth: number = 0
 
   afterUpdate(() => {
     if (prevKey !== key) {
       $fixedWidthStore[prevKey] = 0
+      $fixedWidthStore[key] = 0
       prevKey = key
+      cWidth = 0
     }
   })
 
-  $: if (cWidth > ($fixedWidthStore[key] ?? 0)) {
-    $fixedWidthStore[key] = cWidth
+  function resize (element: Element) {
+    cWidth = element.clientWidth
+    if (cWidth > ($fixedWidthStore[key] ?? 0)) {
+      $fixedWidthStore[key] = cWidth
+    }
   }
 
   onDestroy(() => {
@@ -41,13 +47,10 @@
 </script>
 
 <div
+  bind:this={element}
   class="flex-no-shrink"
   style="{justify !== '' ? `text-align: ${justify}; ` : ''} min-width: {$fixedWidthStore[key] ?? 0}px;"
-  use:resizeObserver={(element) => {
-    if (element.clientWidth > cWidth) {
-      cWidth = element.clientWidth
-    }
-  }}
+  use:resizeObserver={resize}
 >
   <slot />
 </div>

@@ -35,7 +35,7 @@
 <div class="popup-table">
   <Table
     _class={recruit.class.Applicant}
-    config={['', '$lookup.attachedTo', '$lookup.state', '$lookup.doneState', 'modifiedOn']}
+    config={['', 'attachedTo', 'state', 'doneState', 'modifiedOn']}
     {options}
     query={{ ...(resultQuery ?? {}), space: value }}
     loadingProps={{ length: 0 }}

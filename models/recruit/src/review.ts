@@ -60,11 +60,11 @@ export function createReviewModel (builder: Builder): void {
     editor: recruit.component.EditReview
   })
 
-  builder.mixin(recruit.class.Review, core.class.Class, view.mixin.AttributePresenter, {
+  builder.mixin(recruit.class.Review, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: recruit.component.ReviewPresenter
   })
 
-  builder.mixin(recruit.class.Opinion, core.class.Class, view.mixin.AttributePresenter, {
+  builder.mixin(recruit.class.Opinion, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: recruit.component.OpinionPresenter
   })
 

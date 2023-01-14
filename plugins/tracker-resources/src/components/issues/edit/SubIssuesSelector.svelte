@@ -13,17 +13,26 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, Ref, WithLookup } from '@hcengineering/core'
+  import { Ref, SortingOrder, WithLookup } from '@hcengineering/core'
+  import { createQuery } from '@hcengineering/presentation'
   import { Issue, IssueStatus, Team } from '@hcengineering/tracker'
-  import { ButtonKind, ButtonSize, getPlatformColor } from '@hcengineering/ui'
-  import { Button, closeTooltip, ProgressCircle, SelectPopup, showPanel, showPopup } from '@hcengineering/ui'
-  import { updateFocus } from '@hcengineering/view-resources'
-  import tracker from '../../../plugin'
+  import {
+    Button,
+    ButtonKind,
+    ButtonSize,
+    closeTooltip,
+    getPlatformColor,
+    ProgressCircle,
+    SelectPopup,
+    showPanel,
+    showPopup
+  } from '@hcengineering/ui'
   import { getIssueId } from '../../../issues'
+  import tracker from '../../../plugin'
+  import { subIssueListProvider } from '../../../utils'
 
   export let value: WithLookup<Issue>
   export let currentTeam: Team | undefined
-  export let statuses: WithLookup<IssueStatus>[] | undefined
 
   export let kind: ButtonKind = 'link-bordered'
   export let size: ButtonSize = 'inline'
@@ -32,21 +41,35 @@
 
   let btn: HTMLElement
 
-  let subIssues: Issue[] | undefined
-  let doneStatus: Ref<Doc> | undefined
+  let subIssues: Issue[] = []
   let countComplate: number = 0
 
+  const query = createQuery()
+  const statusesQuery = createQuery()
+
+  let statuses: WithLookup<IssueStatus>[] = []
+
   $: if (value.$lookup?.subIssues !== undefined) {
+    query.unsubscribe()
     subIssues = value.$lookup.subIssues as Issue[]
     subIssues.sort((a, b) => (a.rank ?? '').localeCompare(b.rank ?? ''))
+  } else {
+    query.query(tracker.class.Issue, { attachedTo: value._id }, (res) => (subIssues = res), {
+      sort: { rank: SortingOrder.Ascending }
+    })
   }
+
+  statusesQuery.query(tracker.class.IssueStatus, {}, (res) => (statuses = res), {
+    lookup: { category: tracker.class.IssueStatusCategory }
+  })
+
   $: if (statuses && subIssues) {
-    doneStatus = statuses.find((s) => s.category === tracker.issueStatusCategory.Completed)?._id ?? undefined
-    if (doneStatus) countComplate = subIssues.filter((si) => si.status === doneStatus).length
+    const doneStatuses = statuses.filter((s) => s.category === tracker.issueStatusCategory.Completed).map((p) => p._id)
+    countComplate = subIssues.filter((si) => doneStatuses.includes(si.status)).length
   }
   $: hasSubIssues = (subIssues?.length ?? 0) > 0
 
-  function getIssueStatusIcon (issue: Issue) {
+  function getIssueStatusIcon (issue: Issue, statuses: WithLookup<IssueStatus>[] | undefined) {
     const status = statuses?.find((s) => issue.status === s._id)
     const category = status?.$lookup?.category
     const color = status?.color ?? category?.color
@@ -59,9 +82,11 @@
 
   function openIssue (target: Ref<Issue>) {
     if (target !== value._id) {
+      subIssueListProvider(subIssues, target)
       showPanel(tracker.component.EditIssue, target, value._class, 'content')
     }
   }
+
   function showSubIssues () {
     if (subIssues) {
       closeTooltip()
@@ -71,7 +96,7 @@
           value: subIssues.map((iss) => {
             const text = currentTeam ? `${getIssueId(currentTeam, iss)} ${iss.title}` : iss.title
 
-            return { id: iss._id, text, isSelected: iss._id === value._id, ...getIssueStatusIcon(iss) }
+            return { id: iss._id, text, isSelected: iss._id === value._id, ...getIssueStatusIcon(iss, statuses) }
           }),
           width: 'large'
         },
@@ -86,12 +111,6 @@
         },
         (selectedIssue) => {
           selectedIssue !== undefined && openIssue(selectedIssue)
-        },
-        (selectedIssue) => {
-          const focus = subIssues?.find((it) => it._id === selectedIssue.id)
-          if (focus !== undefined) {
-            updateFocus({ focus })
-          }
         }
       )
     }
