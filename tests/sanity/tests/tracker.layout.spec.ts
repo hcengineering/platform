@@ -24,8 +24,9 @@ async function createIssues (page: Page, projects?: string[], sprints?: string[]
   const issuesProps = []
   for (let index = 0; index < 5; index++) {
     const shiftedIndex = 4 - index
+    const name = sprints !== undefined ? getIssueName(`layout-${shiftedIndex}-${sprints[index % sprints.length]}`) : getIssueName(`layout-${shiftedIndex}`)
     const issueProps = {
-      name: getIssueName(`layout-${shiftedIndex}`),
+      name,
       status: DEFAULT_STATUSES[shiftedIndex],
       assignee: shiftedIndex % 2 === 0 ? DEFAULT_USER : 'Chen Rosamund',
       priority: PRIORITIES[shiftedIndex],
