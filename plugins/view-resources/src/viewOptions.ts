@@ -1,10 +1,16 @@
-import { IntlString } from '@hcengineering/platform'
+import { SortingOrder } from '@hcengineering/core'
 import { getCurrentLocation, locationToUrl } from '@hcengineering/ui'
+import { DropdownViewOption, ToggleViewOption, ViewOptionModel, ViewOptions } from '@hcengineering/view'
 import { writable } from 'svelte/store'
 
-export type ViewOptions = Record<string, any>
+export const noCategory = '#no_category'
 
-export const viewOptionsStore = writable<ViewOptions>({})
+export const defaulOptions: ViewOptions = {
+  groupBy: noCategory,
+  orderBy: ['modifiedBy', SortingOrder.Descending]
+}
+
+export const viewOptionsStore = writable<ViewOptions>(defaulOptions)
 
 export function isToggleType (viewOption: ViewOptionModel): viewOption is ToggleViewOption {
   return viewOption.type === 'toggle'
@@ -32,25 +38,3 @@ export function getViewOptions (prefix: string): ViewOptions | null {
   if (options === null) return null
   return JSON.parse(options)
 }
-
-export interface ViewOption {
-  type: string
-  key: string
-  defaultValue: any
-  label: IntlString
-  group?: string
-  hidden?: (viewOptions: ViewOptions) => boolean
-}
-
-export interface ToggleViewOption extends ViewOption {
-  type: 'toggle'
-  defaultValue: boolean
-}
-
-export interface DropdownViewOption extends ViewOption {
-  type: 'dropdown'
-  defaultValue: string
-  values: Array<{ label: IntlString, id: string, hidden?: (viewOptions: ViewOptions) => boolean }>
-}
-
-export type ViewOptionModel = ToggleViewOption | DropdownViewOption

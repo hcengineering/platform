@@ -190,11 +190,11 @@ export function createModel (builder: Builder, options = { addApplication: true 
     getName: chunter.function.GetDmName
   })
 
-  builder.mixin(chunter.class.DirectMessage, core.class.Class, view.mixin.AttributePresenter, {
+  builder.mixin(chunter.class.DirectMessage, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: chunter.component.DmPresenter
   })
 
-  builder.mixin(chunter.class.Channel, core.class.Class, view.mixin.AttributePresenter, {
+  builder.mixin(chunter.class.Channel, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: chunter.component.ChannelPresenter
   })
 
@@ -404,7 +404,7 @@ export function createModel (builder: Builder, options = { addApplication: true 
     )
   }
 
-  builder.mixin(chunter.class.Comment, core.class.Class, view.mixin.AttributePresenter, {
+  builder.mixin(chunter.class.Comment, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: chunter.component.CommentPresenter
   })
 

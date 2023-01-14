@@ -58,10 +58,13 @@ export default mergeIds(viewId, view, {
     YoutubePresenter: '' as AnyComponent,
     GithubPresenter: '' as AnyComponent,
     ClassPresenter: '' as AnyComponent,
+    ClassRefPresenter: '' as AnyComponent,
     EnumEditor: '' as AnyComponent,
     HTMLEditor: '' as AnyComponent,
     MarkupEditor: '' as AnyComponent,
-    MarkupEditorPopup: '' as AnyComponent
+    MarkupEditorPopup: '' as AnyComponent,
+    ListView: '' as AnyComponent,
+    GrowPresenter: '' as AnyComponent
   },
   string: {
     Table: '' as IntlString,
@@ -84,7 +87,8 @@ export default mergeIds(viewId, view, {
     General: '' as IntlString,
     Navigation: '' as IntlString,
     Editor: '' as IntlString,
-    MarkdownFormatting: '' as IntlString
+    MarkdownFormatting: '' as IntlString,
+    List: '' as IntlString
   },
   function: {
     FilterObjectInResult: '' as Resource<(filter: Filter, onUpdate: () => void) => Promise<ObjQueryType<any>>>,

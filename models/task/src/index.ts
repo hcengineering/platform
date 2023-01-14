@@ -366,29 +366,20 @@ export function createModel (builder: Builder): void {
     {
       attachTo: task.class.Issue,
       descriptor: task.viewlet.StatusTable,
-      config: [
-        '',
-        'name',
-        '$lookup.assignee',
-        '$lookup.state',
-        '$lookup.doneState',
-        'attachments',
-        'comments',
-        'modifiedOn'
-      ]
+      config: ['', 'name', 'assignee', 'state', 'doneState', 'attachments', 'comments', 'modifiedOn']
     },
     task.viewlet.TableIssue
   )
 
-  builder.mixin(task.class.Task, core.class.Class, view.mixin.AttributePresenter, {
+  builder.mixin(task.class.Task, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: view.component.ObjectPresenter
   })
 
-  builder.mixin(task.class.Issue, core.class.Class, view.mixin.AttributePresenter, {
+  builder.mixin(task.class.Issue, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: task.component.TaskPresenter
   })
 
-  builder.mixin(task.class.KanbanTemplate, core.class.Class, view.mixin.AttributePresenter, {
+  builder.mixin(task.class.KanbanTemplate, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: task.component.KanbanTemplatePresenter
   })
 
@@ -462,8 +453,12 @@ export function createModel (builder: Builder): void {
     inlineEditor: task.component.StateEditor
   })
 
-  builder.mixin(task.class.State, core.class.Class, view.mixin.AttributePresenter, {
+  builder.mixin(task.class.State, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: task.component.StatePresenter
+  })
+
+  builder.mixin(task.class.State, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: task.component.StateRefPresenter
   })
 
   builder.mixin(task.class.State, core.class.Class, view.mixin.IgnoreActions, {
@@ -474,8 +469,12 @@ export function createModel (builder: Builder): void {
     inlineEditor: task.component.DoneStateEditor
   })
 
-  builder.mixin(task.class.DoneState, core.class.Class, view.mixin.AttributePresenter, {
+  builder.mixin(task.class.DoneState, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: task.component.DoneStatePresenter
+  })
+
+  builder.mixin(task.class.DoneState, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: task.component.DoneStateRefPresenter
   })
 
   builder.createDoc(
@@ -504,7 +503,7 @@ export function createModel (builder: Builder): void {
     editor: task.component.Todos
   })
 
-  builder.mixin(task.class.TodoItem, core.class.Class, view.mixin.AttributePresenter, {
+  builder.mixin(task.class.TodoItem, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: task.component.TodoItemPresenter
   })
 

@@ -27,6 +27,7 @@
     "Add": "Add",
     "Edit": "Edit",
     "SelectAvatar": "Select avatar",
-    "GravatarsManaged": "Gravatars are managed through"
+    "GravatarsManaged": "Gravatars are managed through",
+    "InltPropsValue": "{value}"
   }
 }

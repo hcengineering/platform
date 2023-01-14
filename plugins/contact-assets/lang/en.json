@@ -72,6 +72,7 @@
     "Birthday": "Birthday",
     "UseImage": "Upload an image",
     "UseGravatar": "Use Gravatar",
-    "UseColor": "Use color"
+    "UseColor": "Use color",
+    "NotSpecified": "Not specified"
   }
 }

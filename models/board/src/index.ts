@@ -212,15 +212,15 @@ export function createModel (builder: Builder): void {
     editor: board.component.EditCard
   })
 
-  builder.mixin(board.class.Card, core.class.Class, view.mixin.AttributePresenter, {
+  builder.mixin(board.class.Card, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: board.component.CardPresenter
   })
 
-  builder.mixin(board.class.Board, core.class.Class, view.mixin.AttributePresenter, {
+  builder.mixin(board.class.Board, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: board.component.BoardPresenter
   })
 
-  builder.mixin(board.class.CardCover, core.class.Class, view.mixin.AttributePresenter, {
+  builder.mixin(board.class.CardCover, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: board.component.CardCoverPresenter
   })
 

@@ -24,9 +24,6 @@
   export let options: FindOptions<Doc> | undefined = undefined
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
   export let config: string[]
-  export let search: string = ''
-
-  $: resultQuery = search === '' ? { space, ...query } : { $search: search, space, ...query }
 </script>
 
 <ActionContext
@@ -34,4 +31,4 @@
     mode: 'browser'
   }}
 />
-<TableBrowser {_class} {config} {options} query={resultQuery} {baseMenuClass} showNotification />
+<TableBrowser {_class} {config} {options} {query} {baseMenuClass} showNotification />

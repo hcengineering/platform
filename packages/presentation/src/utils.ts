@@ -200,7 +200,7 @@ export async function copyTextToClipboard (text: string): Promise<void> {
 /**
  * @public
  */
-export type AttributeCategory = 'attribute' | 'inplace' | 'collection' | 'array'
+export type AttributeCategory = 'object' | 'attribute' | 'inplace' | 'collection' | 'array'
 
 /**
  * @public
@@ -215,7 +215,7 @@ export function getAttributePresenterClass (
   attribute: AnyAttribute
 ): { attrClass: Ref<Class<Doc>>, category: AttributeCategory } {
   let attrClass = attribute.type._class
-  let category: AttributeCategory = 'attribute'
+  let category: AttributeCategory = 'object'
   if (hierarchy.isDerived(attrClass, core.class.RefTo)) {
     attrClass = (attribute.type as RefTo<Doc>).to
     category = 'attribute'

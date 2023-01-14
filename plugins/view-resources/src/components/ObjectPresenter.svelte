@@ -41,7 +41,7 @@
     (value as Doc)?.space === undefined
   ) {
     docQuery.query(value._class, { _id: value._id }, (r) => {
-      doc = r.shift()
+      ;[doc] = r
     })
   } else if (value?._id !== undefined && value?._class !== undefined && (value as Doc).space !== undefined) {
     docQuery.unsubscribe()

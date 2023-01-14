@@ -224,10 +224,10 @@ export function createModel (builder: Builder): void {
     editor: document.component.EditDoc
   })
 
-  builder.mixin(document.class.Document, core.class.Class, view.mixin.AttributePresenter, {
+  builder.mixin(document.class.Document, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: document.component.DocumentPresenter
   })
-  builder.mixin(document.class.DocumentVersion, core.class.Class, view.mixin.AttributePresenter, {
+  builder.mixin(document.class.DocumentVersion, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: document.component.DocumentVersionPresenter
   })
 

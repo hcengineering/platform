@@ -41,6 +41,7 @@ import type { BuildModelOptions, Viewlet } from '@hcengineering/view'
 import view, { AttributeModel, BuildModelKey } from '@hcengineering/view'
 import { writable } from 'svelte/store'
 import plugin from './plugin'
+import { noCategory } from './viewOptions'
 
 /**
  * Define some properties to be used to show component until data is properly loaded.
@@ -59,7 +60,7 @@ export async function getObjectPresenter (
   isCollectionAttr: boolean = false
 ): Promise<AttributeModel> {
   const hierarchy = client.getHierarchy()
-  const mixin = isCollectionAttr ? view.mixin.CollectionPresenter : view.mixin.AttributePresenter
+  const mixin = isCollectionAttr ? view.mixin.CollectionPresenter : view.mixin.ObjectPresenter
   const clazz = hierarchy.getClass(_class)
   let mixinClazz = hierarchy.getClass(_class)
   let presenterMixin = hierarchy.as(clazz, mixin)
@@ -157,7 +158,7 @@ async function getAttributePresenter (
     _class: presenterClass.attrClass,
     label: preserveKey.label ?? attribute.shortLabel ?? attribute.label,
     presenter,
-    props: {},
+    props: preserveKey.props,
     icon: presenterMixin.icon,
     attribute,
     collectionAttr: isCollectionAttr
@@ -180,7 +181,7 @@ export async function getPresenter<T extends Doc> (
       _class,
       label: label as IntlString,
       presenter: typeof presenter === 'string' ? await getResource(presenter) : presenter,
-      props: key.props,
+      props: preserveKey.props,
       collectionAttr: isCollectionAttr
     }
   }
@@ -497,3 +498,54 @@ export function getActiveViewletId (): Ref<Viewlet> | null {
 export type FixedWidthStore = Record<string, number>
 
 export const fixedWidthStore = writable<FixedWidthStore>({})
+
+export const groupBy = (docs: Doc[], key: string): { [key: string]: Doc[] } => {
+  return docs.reduce((storage: { [key: string]: Doc[] }, item: Doc) => {
+    const group = (item as any)[key] ?? undefined
+
+    storage[group] = storage[group] ?? []
+
+    storage[group].push(item)
+
+    return storage
+  }, {})
+}
+
+export async function getCategories (
+  client: TxOperations,
+  _class: Ref<Class<Doc>>,
+  docs: Doc[],
+  key: string
+): Promise<any[]> {
+  if (key === noCategory) return [undefined]
+  const hierarchy = client.getHierarchy()
+  const existingCategories = Array.from(new Set(docs.map((x: any) => x[key] ?? undefined)))
+  const attr = hierarchy.getAttribute(_class, key)
+  console.log(attr)
+  if (attr === undefined) return existingCategories
+  const attrClass = getAttributePresenterClass(hierarchy, attr).attrClass
+  console.log(attrClass)
+  const clazz = hierarchy.getClass(attrClass)
+  const sortFunc = hierarchy.as(clazz, view.mixin.SortFuncs)
+  if (sortFunc?.func === undefined) return existingCategories
+  const f = await getResource(sortFunc.func)
+
+  return await f(existingCategories)
+}
+
+export function getKeyLabel<T extends Doc> (
+  client: TxOperations,
+  _class: Ref<Class<T>>,
+  key: string,
+  lookup: Lookup<T> | undefined
+): IntlString {
+  if (key.startsWith('$lookup') && lookup !== undefined) {
+    const lookupClass = getLookupClass(key, lookup, _class)
+    const lookupProperty = getLookupProperty(key)
+    const lookupKey = { key: lookupProperty[0] }
+    return getLookupLabel(client, lookupClass[1], lookupClass[0], lookupKey, lookupProperty[1])
+  } else {
+    const attribute = client.getHierarchy().getAttribute(_class, key)
+    return attribute.label
+  }
+}

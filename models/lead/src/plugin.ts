@@ -30,7 +30,6 @@ export default mergeIds(leadId, lead, {
     LeadApplication: '' as IntlString,
     Lead: '' as IntlString,
     Title: '' as IntlString,
-    Assignee: '' as IntlString,
     ManageFunnelStatuses: '' as IntlString,
     FunnelBrowser: '' as IntlString,
     GotoLeadApplication: '' as IntlString
@@ -52,7 +51,8 @@ export default mergeIds(leadId, lead, {
   },
   viewlet: {
     TableCustomer: '' as Ref<Viewlet>,
-    TableLead: '' as Ref<Viewlet>
+    TableLead: '' as Ref<Viewlet>,
+    ListLead: '' as Ref<Viewlet>
   },
   category: {
     Lead: '' as Ref<ActionCategory>

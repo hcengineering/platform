@@ -14,19 +14,27 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Class, Doc, Ref, Space, WithLookup } from '@hcengineering/core'
+  import type { Class, Doc, DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
+  import { IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
-  import { Component, Loading } from '@hcengineering/ui'
+  import { AnyComponent, Component, Loading } from '@hcengineering/ui'
   import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
+  import { FilterBar } from '@hcengineering/view-resources'
 
   export let _class: Ref<Class<Doc>>
   export let space: Ref<Space>
-  export let search: string
+  export let search: string = ''
   export let viewlet: WithLookup<Viewlet> | undefined
+  export let createItemDialog: AnyComponent | undefined
+  export let createItemLabel: IntlString | undefined
 
   const preferenceQuery = createQuery()
   let preference: ViewletPreference | undefined
   let loading = true
+
+  let resultQuery: DocumentQuery<Doc> = {}
+
+  $: searchQuery = search === '' ? { space } : { $search: search, space }
 
   $: viewlet &&
     preferenceQuery.query(
@@ -48,6 +56,7 @@
       {#if loading}
         <Loading />
       {:else}
+        <FilterBar {_class} query={searchQuery} on:change={(e) => (resultQuery = e.detail)} />
         <Component
           is={viewlet.$lookup?.descriptor?.component}
           props={{
@@ -56,7 +65,9 @@
             options: viewlet.options,
             config: preference?.config ?? viewlet.config,
             viewlet,
-            search
+            createItemDialog,
+            createItemLabel,
+            query: resultQuery
           }}
         />
       {/if}

@@ -387,7 +387,7 @@ export function createModel (builder: Builder): void {
     }
   })
 
-  builder.mixin(hr.class.Request, core.class.Class, view.mixin.AttributePresenter, {
+  builder.mixin(hr.class.Request, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: hr.component.RequestPresenter
   })
 }

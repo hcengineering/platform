@@ -351,10 +351,10 @@ export function createModel (builder: Builder): void {
       descriptor: task.viewlet.StatusTable,
       config: [
         '',
-        '$lookup.attachedTo',
-        '$lookup.assignee',
-        '$lookup.state',
-        '$lookup.doneState',
+        'attachedTo',
+        'assignee',
+        'state',
+        'doneState',
         'attachments',
         'comments',
         'modifiedOn',
@@ -415,7 +415,7 @@ export function createModel (builder: Builder): void {
     editor: recruit.component.EditVacancy
   })
 
-  builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.AttributePresenter, {
+  builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: recruit.component.ApplicationPresenter
   })
 
@@ -423,7 +423,7 @@ export function createModel (builder: Builder): void {
     presenter: recruit.component.ApplicationsPresenter
   })
 
-  builder.mixin(recruit.class.Vacancy, core.class.Class, view.mixin.AttributePresenter, {
+  builder.mixin(recruit.class.Vacancy, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: recruit.component.VacancyPresenter
   })
 

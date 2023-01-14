@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Doc } from '@hcengineering/core'
-  import {
+  import ui, {
     Button,
     IconNavPrev,
     IconDownOutline,
@@ -12,7 +12,6 @@
   import { tick } from 'svelte'
   import { select } from '../actionImpl'
   import { focusStore } from '../selection'
-  import tracker from '../../../tracker-resources/src/plugin'
 
   export let element: Doc
 
@@ -41,7 +40,7 @@
 <Button icon={IconDownOutline} kind={'secondary'} size={'medium'} on:click={(evt) => next(evt, true)} />
 <Button icon={IconUpOutline} kind={'secondary'} size={'medium'} on:click={(evt) => next(evt, false)} />
 <Button
-  showTooltip={{ label: tracker.string.Back, direction: 'bottom' }}
+  showTooltip={{ label: ui.string.Back, direction: 'bottom' }}
   icon={IconNavPrev}
   kind={'secondary'}
   size={'medium'}

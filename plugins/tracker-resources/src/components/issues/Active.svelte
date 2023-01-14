@@ -35,4 +35,4 @@
   )
 </script>
 
-<IssuesView {query} title={tracker.string.ActiveIssues} />
+<IssuesView {query} space={currentSpace} title={tracker.string.ActiveIssues} />

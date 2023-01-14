@@ -31,6 +31,7 @@
   import tracker from '../../../plugin'
   import { getIssueId } from '../../../issues'
   import IssueStatusIcon from '../IssueStatusIcon.svelte'
+  import { ListSelectionProvider } from '@hcengineering/view-resources'
 
   export let issue: WithLookup<Issue>
 
@@ -48,6 +49,7 @@
   function openParentIssue () {
     if (parentIssue) {
       closeTooltip()
+      ListSelectionProvider.Pop()
       openIssue(parentIssue._id)
     }
   }
@@ -138,7 +140,7 @@
           bind:this={subIssuesElement}
           class="flex-center sub-issues cursor-pointer"
           use:tooltip={{ label: tracker.string.OpenSubIssues, direction: 'bottom' }}
-          on:click|preventDefault={areSubIssuesLoading ? undefined : showSubIssues}
+          on:click|preventDefault={showSubIssues}
         >
           <span class="overflow-label">{subIssues?.length}</span>
           <div class="ml-2">

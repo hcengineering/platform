@@ -17,9 +17,9 @@
 import { Channel, Contact, Employee, formatName, getGravatarUrl } from '@hcengineering/contact'
 import { Class, Client, DocumentQuery, Ref, RelatedDocument, WithLookup } from '@hcengineering/core'
 import { leaveWorkspace } from '@hcengineering/login-resources'
-import { Resources } from '@hcengineering/platform'
+import { IntlString, Resources } from '@hcengineering/platform'
 import { Avatar, getClient, MessageBox, ObjectSearchResult, UserInfo, getFileUrl } from '@hcengineering/presentation'
-import { showPopup } from '@hcengineering/ui'
+import { AnyComponent, AnySvelteComponent, showPopup } from '@hcengineering/ui'
 import Channels from './components/Channels.svelte'
 import ChannelsDropdown from './components/ChannelsDropdown.svelte'
 import ChannelsEditor from './components/ChannelsEditor.svelte'
@@ -48,7 +48,11 @@ import OrganizationPresenter from './components/OrganizationPresenter.svelte'
 import PersonEditor from './components/PersonEditor.svelte'
 import PersonPresenter from './components/PersonPresenter.svelte'
 import SocialEditor from './components/SocialEditor.svelte'
+import ContactRefPresenter from './components/ContactRefPresenter.svelte'
+import PersonRefPresenter from './components/PersonRefPresenter.svelte'
+import EmployeeRefPresenter from './components/EmployeeRefPresenter.svelte'
 import contact from './plugin'
+import { employeeSort } from './utils'
 
 export {
   Channels,
@@ -117,6 +121,13 @@ async function openChannelURL (doc: Channel): Promise<void> {
   }
 }
 
+export interface PersonLabelTooltip {
+  personLabel?: IntlString
+  placeholderLabel?: IntlString
+  component?: AnySvelteComponent | AnyComponent
+  props?: any
+}
+
 export default async (): Promise<Resources> => ({
   actionImpl: {
     KickEmployee: kickEmployee,
@@ -126,6 +137,8 @@ export default async (): Promise<Resources> => ({
     PersonEditor,
     OrganizationEditor,
     ContactPresenter,
+    ContactRefPresenter,
+    PersonRefPresenter,
     PersonPresenter,
     OrganizationPresenter,
     ChannelsPresenter,
@@ -139,6 +152,7 @@ export default async (): Promise<Resources> => ({
     Contacts,
     EmployeeAccountPresenter,
     EmployeePresenter,
+    EmployeeRefPresenter,
     Members,
     MemberPresenter,
     EditMember,
@@ -164,6 +178,7 @@ export default async (): Promise<Resources> => ({
   function: {
     GetFileUrl: getFileUrl,
     GetGravatarUrl: getGravatarUrl,
-    GetColorUrl: (uri: string) => uri
+    GetColorUrl: (uri: string) => uri,
+    EmployeeSort: employeeSort
   }
 })

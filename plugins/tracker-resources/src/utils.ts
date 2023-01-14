@@ -13,24 +13,23 @@
 // limitations under the License.
 //
 
-import { Employee, formatName } from '@hcengineering/contact'
-import { DocumentQuery, Ref, SortingOrder, TxOperations, WithLookup } from '@hcengineering/core'
+import { Doc, DocumentQuery, Ref, SortingOrder, TxOperations, WithLookup } from '@hcengineering/core'
 import { TypeState } from '@hcengineering/kanban'
 import { Asset, IntlString, translate } from '@hcengineering/platform'
+import { createQuery } from '@hcengineering/presentation'
 import {
   Issue,
+  IssuePriority,
   IssuesDateModificationPeriod,
   IssuesGrouping,
   IssuesOrdering,
   IssueStatus,
-  IssueTemplate,
   ProjectStatus,
   Sprint,
   SprintStatus,
   Team,
   TimeReportDayType
 } from '@hcengineering/tracker'
-import { ViewOptionModel } from '@hcengineering/view-resources'
 import {
   AnyComponent,
   AnySvelteComponent,
@@ -39,6 +38,8 @@ import {
   isWeekend,
   MILLISECONDS_IN_WEEK
 } from '@hcengineering/ui'
+import { ViewOptionModel } from '@hcengineering/view'
+import { ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
 import tracker from './plugin'
 import { defaultPriorities, defaultProjectStatuses, defaultSprintStatuses, issuePriorities } from './types'
 
@@ -306,92 +307,36 @@ const listIssueStatusOrder = [
   tracker.issueStatusCategory.Canceled
 ] as const
 
-export function getCategories (
-  key: IssuesGroupByKeys | undefined,
-  elements: Array<WithLookup<Issue | IssueTemplate>>,
-  shouldShowAll: boolean,
-  statuses: IssueStatus[],
-  employees: Employee[]
-): any[] {
-  if (key === undefined) {
-    return [undefined] // No grouping
-  }
-  const defaultStatuses = listIssueStatusOrder
-    .map((category) => statuses.filter((status) => status.category === category).map((item) => item._id))
-    .flat()
-
-  const existingCategories = Array.from(new Set(elements.map((x: any) => x[key] ?? undefined)))
-
-  if (shouldShowAll) {
-    if (key === 'status') {
-      return defaultStatuses
-    }
-
-    if (key === 'priority') {
-      return defaultPriorities
-    }
-  }
-
-  if (key === 'status') {
-    existingCategories.sort((s1, s2) => {
-      const i1 = defaultStatuses.findIndex((x) => x === s1)
-      const i2 = defaultStatuses.findIndex((x) => x === s2)
-
-      return i1 - i2
+export async function issueStatusSort (value: Array<Ref<IssueStatus>>): Promise<Array<Ref<IssueStatus>>> {
+  return await new Promise((resolve) => {
+    const query = createQuery(true)
+    query.query(tracker.class.IssueStatus, { _id: { $in: value } }, (res) => {
+      res.sort((a, b) => listIssueStatusOrder.indexOf(a.category) - listIssueStatusOrder.indexOf(b.category))
+      resolve(res.map((p) => p._id))
+      query.unsubscribe()
     })
-  }
+  })
+}
 
-  if (key === 'priority') {
-    existingCategories.sort((p1, p2) => {
-      const i1 = defaultPriorities.findIndex((x) => x === p1)
-      const i2 = defaultPriorities.findIndex((x) => x === p2)
+export async function issuePrioritySort (value: IssuePriority[]): Promise<IssuePriority[]> {
+  value.sort((a, b) => {
+    const i1 = defaultPriorities.indexOf(a)
+    const i2 = defaultPriorities.indexOf(b)
 
-      return i1 - i2
+    return i1 - i2
+  })
+  return value
+}
+
+export async function sprintSort (value: Array<Ref<Sprint>>): Promise<Array<Ref<Sprint>>> {
+  return await new Promise((resolve) => {
+    const query = createQuery(true)
+    query.query(tracker.class.Sprint, { _id: { $in: value } }, (res) => {
+      res.sort((a, b) => (b?.startDate ?? 0) - (a?.startDate ?? 0))
+      resolve(res.map((p) => p._id))
+      query.unsubscribe()
     })
-  }
-
-  if (key === 'sprint') {
-    const sprints = new Map(elements.map((x) => [x.sprint, x.$lookup?.sprint]))
-
-    existingCategories.sort((p1, p2) => {
-      const i1 = sprints.get(p1 as Ref<Sprint>)
-      const i2 = sprints.get(p2 as Ref<Sprint>)
-
-      return (i2?.startDate ?? 0) - (i1?.startDate ?? 0)
-    })
-  }
-
-  if (key === 'assignee') {
-    existingCategories.sort((a1, a2) => {
-      const employeeId1 = a1 as Ref<Employee> | null
-      const employeeId2 = a2 as Ref<Employee> | null
-
-      if (employeeId1 === null && employeeId2 !== null) {
-        return 1
-      }
-
-      if (employeeId1 !== null && employeeId2 === null) {
-        return -1
-      }
-
-      if (employeeId1 !== null && employeeId2 !== null) {
-        const name1 = formatName(employees.find((x) => x?._id === employeeId1)?.name ?? '')
-        const name2 = formatName(employees.find((x) => x?._id === employeeId2)?.name ?? '')
-
-        if (name1 > name2) {
-          return 1
-        } else if (name2 > name1) {
-          return -1
-        }
-
-        return 0
-      }
-
-      return 0
-    })
-  }
-
-  return existingCategories
+  })
 }
 
 export async function getKanbanStatuses (
@@ -506,55 +451,6 @@ export async function getPriorityStates (): Promise<TypeState[]> {
   )
 }
 
-export function getDefaultViewOptionsConfig (subIssuesValue = false): ViewOptionModel[] {
-  const groupByCategory: ViewOptionModel = {
-    key: 'groupBy',
-    label: tracker.string.Grouping,
-    defaultValue: 'status',
-    values: [
-      { id: 'status', label: tracker.string.Status },
-      { id: 'assignee', label: tracker.string.Assignee },
-      { id: 'priority', label: tracker.string.Priority },
-      { id: 'project', label: tracker.string.Project },
-      { id: 'sprint', label: tracker.string.Sprint },
-      { id: 'noGrouping', label: tracker.string.NoGrouping }
-    ],
-    type: 'dropdown'
-  }
-  const orderByCategory: ViewOptionModel = {
-    key: 'orderBy',
-    label: tracker.string.Ordering,
-    defaultValue: 'status',
-    values: [
-      { id: 'status', label: tracker.string.Status },
-      { id: 'modifiedOn', label: tracker.string.LastUpdated },
-      { id: 'priority', label: tracker.string.Priority },
-      { id: 'dueDate', label: tracker.string.DueDate },
-      { id: 'rank', label: tracker.string.Manual }
-    ],
-    type: 'dropdown'
-  }
-  const showSubIssuesCategory: ViewOptionModel = {
-    key: 'shouldShowSubIssues',
-    label: tracker.string.SubIssues,
-    defaultValue: subIssuesValue,
-    type: 'toggle'
-  }
-  const showEmptyGroups: ViewOptionModel = {
-    key: 'shouldShowEmptyGroups',
-    label: tracker.string.ShowEmptyGroups,
-    defaultValue: false,
-    type: 'toggle',
-    hidden: ({ groupBy }) => !['status', 'priority'].includes(groupBy)
-  }
-  const result: ViewOptionModel[] = [groupByCategory, orderByCategory]
-
-  result.push(showSubIssuesCategory)
-
-  result.push(showEmptyGroups)
-  return result
-}
-
 export function getDefaultViewOptionsTemplatesConfig (): ViewOptionModel[] {
   const groupByCategory: ViewOptionModel = {
     key: 'groupBy',
@@ -565,7 +461,7 @@ export function getDefaultViewOptionsTemplatesConfig (): ViewOptionModel[] {
       { id: 'priority', label: tracker.string.Priority },
       { id: 'project', label: tracker.string.Project },
       { id: 'sprint', label: tracker.string.Sprint },
-      { id: 'noGrouping', label: tracker.string.NoGrouping }
+      { id: '#no_category', label: tracker.string.NoGrouping }
     ],
     type: 'dropdown'
   }
@@ -668,5 +564,30 @@ export function getTimeReportDayType (timestamp: number): TimeReportDayType | un
     return TimeReportDayType.CurrentWorkDay
   } else if (areDatesEqual(date, previousWorkDate)) {
     return TimeReportDayType.PreviousWorkDay
+  }
+}
+
+export function subIssueQuery (value: boolean, query: DocumentQuery<Issue>): DocumentQuery<Issue> {
+  return value ? query : { ...query, attachedTo: tracker.ids.NoParent }
+}
+
+export function subIssueListProvider (subIssues: Issue[], target: Ref<Issue>): void {
+  const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
+    if (dir === 'vertical') {
+      let pos = subIssues.findIndex((p) => p._id === of?._id)
+      pos += offset
+      if (pos < 0) {
+        pos = 0
+      }
+      if (pos >= subIssues.length) {
+        pos = subIssues.length - 1
+      }
+      listProvider.updateFocus(subIssues[pos])
+    }
+  }, false)
+  listProvider.update(subIssues)
+  const selectedIssue = subIssues.find((p) => p._id === target)
+  if (selectedIssue != null) {
+    listProvider.updateFocus(selectedIssue)
   }
 }

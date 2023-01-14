@@ -55,6 +55,11 @@ export default mergeIds(viewId, view, {
     AllFilters: '' as IntlString,
     MatchCriteria: '' as IntlString,
     DontMatchCriteria: '' as IntlString,
-    MarkupEditor: '' as IntlString
+    MarkupEditor: '' as IntlString,
+    Select: '' as IntlString,
+    NoGrouping: '' as IntlString,
+    Grouping: '' as IntlString,
+    Ordering: '' as IntlString,
+    Manual: '' as IntlString
   }
 })

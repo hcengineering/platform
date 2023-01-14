@@ -88,16 +88,7 @@
 
 <TableBrowser
   {_class}
-  config={[
-    '',
-    '$lookup.attachedTo',
-    '$lookup.assignee',
-    '$lookup.state',
-    '$lookup.doneState',
-    'attachments',
-    'comments',
-    'modifiedOn'
-  ]}
+  config={['', 'attachedTo', 'assignee', 'state', 'doneState', 'attachments', 'comments', 'modifiedOn']}
   query={resultQuery}
   showNotification
 />
