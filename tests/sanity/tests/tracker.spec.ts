@@ -46,7 +46,7 @@ test('issues-status-display', async ({ page }) => {
     ['Active', ['Todo', 'In Progress']],
     ['Backlog', ['Backlog']]
   ])
-  const locator = page.locator('.issueslist-container')
+  const locator = page.locator('.list-container')
   await navigate(page)
   for (const status of DEFAULT_STATUSES) {
     await createIssue(page, { name: getIssueName(status), status })

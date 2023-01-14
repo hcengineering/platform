@@ -83,7 +83,7 @@ test.describe('tracker layout tests', () => {
   })
 
   let issuesProps: IssueProps[] = []
-  const orders = ['Status', 'Last updated', 'Priority'] as const
+  const orders = ['Status', 'Modified', 'Priority'] as const
   const groups = ['Status', 'Assignee', 'Priority', 'Project', 'Sprint', 'No grouping'] as const
   const groupsLabels: { [key in typeof groups[number]]?: string[] } = {
     Status: DEFAULT_STATUSES,
@@ -94,7 +94,7 @@ test.describe('tracker layout tests', () => {
 
   for (const group of groups) {
     test(`issues-${group.toLowerCase()}-grouping-layout`, async ({ page }) => {
-      const locator = page.locator('.issueslist-container')
+      const locator = page.locator('.list-container')
       await setViewGroup(page, group)
 
       let groupLabels: any[]
