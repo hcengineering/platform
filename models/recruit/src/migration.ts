@@ -25,6 +25,7 @@ import { Vacancy } from '@hcengineering/recruit'
 import { getCategories } from '@anticrm/skillset'
 import { KanbanTemplate } from '@hcengineering/task'
 import recruit from './plugin'
+import view from '@hcengineering/view'
 
 async function fixImportedTitle (client: MigrationClient): Promise<void> {
   await client.update(
@@ -82,6 +83,29 @@ export const recruitOperation: MigrateOperation = {
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)
     await createDefaults(tx)
+    await migrateViewletPreference(tx)
+  }
+}
+
+async function migrateViewletPreference (client: TxOperations): Promise<void> {
+  const preferences = await client.findAll(view.class.ViewletPreference, {
+    attachedTo: recruit.viewlet.TableApplicant
+  })
+  for (const pref of preferences) {
+    let needUpdate = false
+    const keys = ['attachedTo', 'assignee', 'state', 'doneState']
+    for (const key of keys) {
+      const index = pref.config.findIndex((p) => p === `$lookup.${key}`)
+      if (index !== -1) {
+        pref.config.splice(index, 1, key)
+        needUpdate = true
+      }
+    }
+    if (needUpdate) {
+      await client.update(pref, {
+        config: pref.config
+      })
+    }
   }
 }
 

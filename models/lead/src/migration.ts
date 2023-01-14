@@ -18,6 +18,7 @@ import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcen
 import core from '@hcengineering/model-core'
 import { createKanbanTemplate, createSequence } from '@hcengineering/model-task'
 import task, { KanbanTemplate, createKanban } from '@hcengineering/task'
+import view from '@hcengineering/view'
 import lead from './plugin'
 
 async function createSpace (tx: TxOperations): Promise<void> {
@@ -80,10 +81,46 @@ async function createDefaults (tx: TxOperations): Promise<void> {
   await createDefaultKanban(tx)
 }
 
+async function migrateViewletPreference (client: TxOperations): Promise<void> {
+  const customerTablePreferences = await client.findAll(view.class.ViewletPreference, {
+    attachedTo: lead.viewlet.TableCustomer,
+    config: '$lookup._class'
+  })
+  for (const pref of customerTablePreferences) {
+    const index = pref.config.findIndex((p) => p === '$lookup._class')
+    if (index !== -1) {
+      pref.config.splice(index, 1, '_class')
+      await client.update(pref, {
+        config: pref.config
+      })
+    }
+  }
+  const preferences = await client.findAll(view.class.ViewletPreference, {
+    attachedTo: lead.viewlet.TableLead
+  })
+  for (const pref of preferences) {
+    let needUpdate = false
+    const keys = ['attachedTo', 'state', 'doneState']
+    for (const key of keys) {
+      const index = pref.config.findIndex((p) => p === `$lookup.${key}`)
+      if (index !== -1) {
+        pref.config.splice(index, 1, key)
+        needUpdate = true
+      }
+    }
+    if (needUpdate) {
+      await client.update(pref, {
+        config: pref.config
+      })
+    }
+  }
+}
+
 export const leadOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {},
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const ops = new TxOperations(client, core.account.System)
     await createDefaults(ops)
+    await migrateViewletPreference(ops)
   }
 }
