@@ -33,8 +33,6 @@
   // If defined, will show a number of dummy items before real data will appear.
   export let loadingProps: LoadingProps | undefined = undefined
 
-  let resultQuery = query
-
   let table: Table
   const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
     if (dir === 'vertical') {
@@ -61,7 +59,7 @@
     {_class}
     {config}
     {options}
-    bind:query={resultQuery}
+    {query}
     {showNotification}
     {baseMenuClass}
     {loadingProps}
