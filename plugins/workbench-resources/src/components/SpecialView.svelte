@@ -43,7 +43,7 @@
   let search = ''
   let viewlet: WithLookup<Viewlet> | undefined
 
-  $: query = baseQuery ? baseQuery : {}
+  $: query = baseQuery || {}
 
   $: searchQuery = search === '' ? query : { $search: search, ...query }
 
