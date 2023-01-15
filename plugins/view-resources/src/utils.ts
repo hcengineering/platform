@@ -521,10 +521,8 @@ export async function getCategories (
   const hierarchy = client.getHierarchy()
   const existingCategories = Array.from(new Set(docs.map((x: any) => x[key] ?? undefined)))
   const attr = hierarchy.getAttribute(_class, key)
-  console.log(attr)
   if (attr === undefined) return existingCategories
   const attrClass = getAttributePresenterClass(hierarchy, attr).attrClass
-  console.log(attrClass)
   const clazz = hierarchy.getClass(attrClass)
   const sortFunc = hierarchy.as(clazz, view.mixin.SortFuncs)
   if (sortFunc?.func === undefined) return existingCategories

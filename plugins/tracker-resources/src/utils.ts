@@ -332,8 +332,9 @@ export async function sprintSort (value: Array<Ref<Sprint>>): Promise<Array<Ref<
   return await new Promise((resolve) => {
     const query = createQuery(true)
     query.query(tracker.class.Sprint, { _id: { $in: value } }, (res) => {
-      res.sort((a, b) => (b?.startDate ?? 0) - (a?.startDate ?? 0))
-      resolve(res.map((p) => p._id))
+      const sprints = new Map(res.map((x) => [x._id, x]))
+      value.sort((a, b) => (sprints.get(b)?.startDate ?? 0) - (sprints.get(a)?.startDate ?? 0))
+      resolve(value)
       query.unsubscribe()
     })
   })
