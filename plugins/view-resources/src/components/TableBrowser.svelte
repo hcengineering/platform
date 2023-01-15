@@ -20,7 +20,6 @@
   import { ActionContext } from '..'
   import { focusStore, ListSelectionProvider, SelectDirection, selectionStore } from '../selection'
   import { LoadingProps } from '../utils'
-  import FilterBar from './filter/FilterBar.svelte'
   import Table from './Table.svelte'
 
   export let _class: Ref<Class<Doc>>
@@ -56,9 +55,6 @@
     mode: 'browser'
   }}
 />
-{#if showFilterBar}
-  <FilterBar {_class} {query} on:change={(e) => (resultQuery = e.detail)} />
-{/if}
 <Scroller fade={tableSP} horizontal={true}>
   <Table
     bind:this={table}

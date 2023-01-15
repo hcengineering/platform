@@ -44,7 +44,8 @@
   let viewlet: WithLookup<Viewlet> | undefined
 
   $: searchQuery = search === '' ? baseQuery : { $search: search, ...baseQuery }
-  let resultQuery: DocumentQuery<Doc> = {}
+
+  $: resultQuery = searchQuery
 
   const preferenceQuery = createQuery()
   let preference: ViewletPreference | undefined
@@ -111,7 +112,13 @@
 {#if loading}
   <Loading />
 {:else if viewlet?.$lookup?.descriptor?.component}
-  <FilterBar {_class} query={searchQuery} on:change={(e) => (resultQuery = e.detail)} />
+  <FilterBar
+    {_class}
+    query={searchQuery}
+    on:change={(e) => {
+      resultQuery = e.detail
+    }}
+  />
   <Component
     is={viewlet.$lookup.descriptor.component}
     props={{

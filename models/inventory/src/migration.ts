@@ -13,38 +13,9 @@
 // limitations under the License.
 //
 
-import { TxOperations } from '@hcengineering/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
-import core from '@hcengineering/model-core'
-import view from '@hcengineering/view'
-import inventory from './plugin'
 
 export const inventoryOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {},
-  async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    const tx = new TxOperations(client, core.account.System)
-    await migrateViewletPreference(tx)
-  }
-}
-
-async function migrateViewletPreference (client: TxOperations): Promise<void> {
-  const preferences = await client.findAll(view.class.ViewletPreference, {
-    attachedTo: inventory.viewlet.TableProduct
-  })
-  for (const pref of preferences) {
-    let needUpdate = false
-    const keys = ['attachedTo']
-    for (const key of keys) {
-      const index = pref.config.findIndex((p) => p === `$lookup.${key}`)
-      if (index !== -1) {
-        pref.config.splice(index, 1, key)
-        needUpdate = true
-      }
-    }
-    if (needUpdate) {
-      await client.update(pref, {
-        config: pref.config
-      })
-    }
-  }
+  async upgrade (client: MigrationUpgradeClient): Promise<void> {}
 }

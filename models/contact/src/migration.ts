@@ -27,7 +27,6 @@ import { AccountRole, DOMAIN_TX, TxCreateDoc, TxOperations } from '@hcengineerin
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
 import contact from './index'
-import view from '@hcengineering/view'
 
 async function createSpace (tx: TxOperations): Promise<void> {
   const current = await tx.findOne(core.class.Space, {
@@ -117,22 +116,6 @@ async function updateEmployeeAvatar (tx: TxOperations): Promise<void> {
   await Promise.all(promises)
 }
 
-async function migrateViewletPreference (client: TxOperations): Promise<void> {
-  const contactTablePreferences = await client.findAll(view.class.ViewletPreference, {
-    attachedTo: contact.viewlet.TableContact,
-    config: '$lookup._class'
-  })
-  for (const pref of contactTablePreferences) {
-    const index = pref.config.findIndex((p) => p === '$lookup._class')
-    if (index !== -1) {
-      pref.config.splice(index, 1, '_class')
-      await client.update(pref, {
-        config: pref.config
-      })
-    }
-  }
-}
-
 export const contactOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await setActiveEmployeeTx(client)
@@ -142,6 +125,5 @@ export const contactOperation: MigrateOperation = {
     const tx = new TxOperations(client, core.account.System)
     await createSpace(tx)
     await updateEmployeeAvatar(tx)
-    await migrateViewletPreference(tx)
   }
 }

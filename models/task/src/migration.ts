@@ -20,7 +20,6 @@ import { KanbanTemplate, StateTemplate, DoneStateTemplate, genRanks, createKanba
 import { DOMAIN_TASK } from '.'
 import task from './plugin'
 import tags from '@hcengineering/model-tags'
-import view from '@hcengineering/view'
 
 /**
  * @public
@@ -216,28 +215,5 @@ export const taskOperation: MigrateOperation = {
       },
       task.category.TaskTag
     )
-    await migrateViewletPreference(tx)
-  }
-}
-
-async function migrateViewletPreference (client: TxOperations): Promise<void> {
-  const preferences = await client.findAll(view.class.ViewletPreference, {
-    attachedTo: task.viewlet.TableIssue
-  })
-  for (const pref of preferences) {
-    let needUpdate = false
-    const keys = ['assignee', 'state', 'doneState']
-    for (const key of keys) {
-      const index = pref.config.findIndex((p) => p === `$lookup.${key}`)
-      if (index !== -1) {
-        pref.config.splice(index, 1, key)
-        needUpdate = true
-      }
-    }
-    if (needUpdate) {
-      await client.update(pref, {
-        config: pref.config
-      })
-    }
   }
 }
