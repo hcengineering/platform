@@ -13,9 +13,52 @@
 // limitations under the License.
 //
 
+import { Ref } from '@hcengineering/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
+import { Viewlet, ViewletPreference } from '@hcengineering/view'
+import { DOMAIN_PREFERENCE } from '@hcengineering/preference'
+
+async function migrateViewletPreference (client: MigrationClient): Promise<void> {
+  const targets: Record<string, string[]> = {
+    'inventory:viewlet:TableProduct': ['attachedTo'],
+    'lead:viewlet:TableCustomer': ['_class'],
+    'lead:viewlet:TableLead': ['attachedTo', 'state', 'doneState'],
+    'recruit.viewlet.TableApplicant': ['attachedTo', 'assignee', 'state', 'doneState'],
+    'task.viewlet.TableIssue': ['assignee', 'state', 'doneState']
+  }
+  for (const target in targets) {
+    const keys = targets[target]
+    const preferences = await client.find<ViewletPreference>(DOMAIN_PREFERENCE, {
+      attachedTo: target as Ref<Viewlet>
+    })
+    for (const pref of preferences) {
+      let needUpdate = false
+
+      for (const key of keys) {
+        const index = pref.config.findIndex((p) => p === `$lookup.${key}`)
+        if (index !== -1) {
+          pref.config.splice(index, 1, key)
+          needUpdate = true
+        }
+      }
+      if (needUpdate) {
+        await client.update<ViewletPreference>(
+          DOMAIN_PREFERENCE,
+          {
+            _id: pref._id
+          },
+          {
+            config: pref.config
+          }
+        )
+      }
+    }
+  }
+}
 
 export const viewOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {},
+  async migrate (client: MigrationClient): Promise<void> {
+    await migrateViewletPreference(client)
+  },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {}
 }

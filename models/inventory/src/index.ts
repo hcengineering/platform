@@ -176,4 +176,5 @@ export function createModel (builder: Builder): void {
   })
 }
 
+export { inventoryOperation } from './migration'
 export { default } from './plugin'

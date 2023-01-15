@@ -27,6 +27,7 @@ import { settingOperation } from '@hcengineering/model-setting'
 import { recruitOperation } from '@hcengineering/model-recruit'
 import { tagsOperation } from '@hcengineering/model-tags'
 import { taskOperation } from '@hcengineering/model-task'
+import { inventoryOperation } from '@hcengineering/model-inventory'
 import { telegramOperation } from '@hcengineering/model-telegram'
 import { templatesOperation } from '@hcengineering/model-templates'
 import { viewOperation } from '@hcengineering/model-view'
@@ -58,5 +59,6 @@ export const migrateOperations: MigrateOperation[] = [
   boardOperation,
   hrOperation,
   documentOperation,
-  bitrixOperation
+  bitrixOperation,
+  inventoryOperation
 ]
