@@ -19,26 +19,29 @@
 
   import Workbench from './Workbench.svelte'
   import workbench from '../plugin'
+  import { workbenchId } from '@hcengineering/workbench'
 </script>
 
-{#key $location.path[1]}
-  {#await connect(getMetadata(workbench.metadata.PlatformTitle) ?? 'Platform')}
-    <Loading />
-  {:then client}
-    {#if !client && versionError}
-      <div class="antiPopup version-popup">
-        <h1>Server is under maintenance.</h1>
-        {versionError}
-      </div>
-    {:else if client}
-      <Notifications>
-        <Workbench {client} />
-      </Notifications>
-    {/if}
-  {:catch error}
-    <div>{error} -- {error.stack}</div>
-  {/await}
-{/key}
+{#if $location.path[0] === workbenchId}
+  {#key $location.path[1]}
+    {#await connect(getMetadata(workbench.metadata.PlatformTitle) ?? 'Platform')}
+      <Loading />
+    {:then client}
+      {#if !client && versionError}
+        <div class="antiPopup version-popup">
+          <h1>Server is under maintenance.</h1>
+          {versionError}
+        </div>
+      {:else if client}
+        <Notifications>
+          <Workbench {client} />
+        </Notifications>
+      {/if}
+    {:catch error}
+      <div>{error} -- {error.stack}</div>
+    {/await}
+  {/key}
+{/if}
 
 <style lang="scss">
   .version-popup {

@@ -11,6 +11,7 @@ export let versionError: string | undefined = ''
 export async function connect (title: string): Promise<Client | undefined> {
   const loc = getCurrentLocation()
   const ws = loc.path[1]
+  if (ws === undefined) return
   const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
   const token = tokens[ws]
   setMetadata(login.metadata.LoginToken, token)
