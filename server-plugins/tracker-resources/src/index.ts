@@ -300,8 +300,7 @@ async function doIssueUpdate (
   if (Object.prototype.hasOwnProperty.call(updateTx.operations, 'project')) {
     res.push(
       ...(await updateSubIssues(updateTx, control, {
-        project: updateTx.operations.project,
-        sprint: updateTx.operations.sprint
+        project: updateTx.operations.project
       }))
     )
   }
@@ -315,9 +314,6 @@ async function doIssueUpdate (
     issue.reportedTime = updateTx.operations.reportedTime ?? issue.reportedTime
 
     updateIssueParentEstimations(issue, res, control, issue.parents, issue.parents)
-  }
-  if (Object.prototype.hasOwnProperty.call(updateTx.operations, 'sprint')) {
-    res.push(...(await updateSubIssues(updateTx, control, { sprint: updateTx.operations.sprint })))
   }
 
   if (Object.prototype.hasOwnProperty.call(updateTx.operations, 'title')) {
