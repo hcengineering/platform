@@ -17,51 +17,62 @@
   import ExpandCollapse from './ExpandCollapse.svelte'
   import Icon from './Icon.svelte'
   import Label from './Label.svelte'
+  import Chevron from './Chevron.svelte'
 
   export let icon: Asset | undefined = undefined
   export let label: IntlString | undefined = undefined
   export let expanded: boolean = false
+  export let bordered: boolean = false
   export let expandable = true
+  export let contentColor = false
 </script>
 
-<!-- svelte-ignore a11y-mouse-events-have-key-events -->
-<!-- svelte-ignore a11y-click-events-have-key-events -->
-<div class="flex-grow flex" class:expanded class:expandable>
-  <div
-    class="fs-title flex-row-center mr-4"
-    on:click|stopPropagation={() => {
-      expanded = !expanded
-    }}
-  >
-    <div class="chevron" class:expanded>▶</div>
-    <div class="an-element__icon">
+<div class="flex-col">
+  <div class="expandable-header flex-between" class:expanded class:bordered>
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <div
+      class="flex-row-center mr-4"
+      class:cursor-pointer={expandable}
+      on:click|stopPropagation={() => {
+        if (expandable) expanded = !expanded
+      }}
+    >
+      <Chevron {expanded} marginRight={'.5rem'} />
       {#if icon}
-        <Icon {icon} size={'small'} />
+        <div class="min-w-4 mr-2">
+          <Icon {icon} size={'small'} />
+        </div>
       {/if}
+      <span class="fs-title overflow-label" class:content-color={contentColor}>
+        {#if label}<Label {label} />{/if}<slot name="title" />
+      </span>
     </div>
-    <span class="an-element__label title">
-      {#if label}<Label {label} />{/if}
-      <slot name="title" />
-    </span>
+    {#if $$slots.tools}
+      <div class="buttons-group small-gap">
+        <slot name="tools" />
+      </div>
+    {/if}
   </div>
-  <slot name="tools" />
-</div>
-<ExpandCollapse isExpanded={expanded}>
-  <div class="antiComponent p-2">
+  <ExpandCollapse isExpanded={expanded}>
     <slot />
-  </div>
-</ExpandCollapse>
+  </ExpandCollapse>
+</div>
 
 <style lang="scss">
-  .expandable {
-    .chevron {
-      content: '▶';
-      margin-right: 0.5rem;
-      font-size: 0.75rem;
-      color: var(--dark-color);
-      &.expanded {
-        transform: rotateZ(90deg);
-      }
+  .expandable-header {
+    transition: margin-bottom 0.15s var(--timing-main);
+
+    &:not(.expanded) {
+      margin-bottom: 0;
+    }
+    &.expanded {
+      margin-bottom: 0.75rem;
+    }
+    &.bordered {
+      padding: 0.25rem 0.5rem;
+      background-color: var(--body-accent);
+      border: 1px solid var(--divider-color);
+      border-radius: 0.25rem;
     }
   }
 </style>

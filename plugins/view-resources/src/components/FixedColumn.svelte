@@ -20,6 +20,7 @@
 
   export let key: string
   export let justify: string = ''
+  export let addClass: string | undefined = undefined
   let prevKey = key
   let element: HTMLDivElement | undefined
 
@@ -48,7 +49,7 @@
 
 <div
   bind:this={element}
-  class="flex-no-shrink"
+  class="flex-no-shrink{addClass ? ` ${addClass}` : ''}"
   style="{justify !== '' ? `text-align: ${justify}; ` : ''} min-width: {$fixedWidthStore[key] ?? 0}px;"
   use:resizeObserver={resize}
 >

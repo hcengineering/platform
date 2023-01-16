@@ -173,10 +173,10 @@
     .antiCard-pool {
       flex-direction: row;
       align-items: center;
-      margin: 0 .75rem .75rem;
+      margin: 0 .5rem .25rem;
       font-size: .75rem;
 
-      & > *:not(:last-child) { margin-right: .375rem; }
+      & > * { margin: 0 .25rem .5rem; }
     }
     .antiCard-footer {
       direction: ltr;
