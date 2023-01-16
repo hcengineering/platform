@@ -21,6 +21,7 @@
     FindOptions,
     getCurrentAccount,
     Ref,
+    TxCollectionCUD,
     TxUpdateDoc
   } from '@hcengineering/core'
   import type { Asset, IntlString } from '@hcengineering/platform'
@@ -131,10 +132,13 @@
         'tx.operations.assignee': { $exists: true }
       },
       (res) => {
-        prevAssigned = res.map((t) => (t as TxUpdateDoc<Doc>).tx.operations.assignee)
-      },
-      { sort: { name: 1 } }
+        prevAssigned = res
+          .map((t) => ((t as TxCollectionCUD<Doc, Issue>).tx as TxUpdateDoc<Issue>).operations.assignee)
+          .filter((p) => !!p)
+          .filter((p) => !!p) as Ref<Person>[]
+      }
     )
+
     if (issue.project) {
       const project = await client.findOne(tracker.class.Project, { _id: issue.project })
       projectLead = project?.lead || undefined
