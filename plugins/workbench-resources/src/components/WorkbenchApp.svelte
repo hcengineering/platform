@@ -22,7 +22,7 @@
   import { workbenchId } from '@hcengineering/workbench'
 </script>
 
-{#if $location.path[0] === workbenchId}
+{#if $location.path[0] === workbenchId || $location.path[0] === workbench.component.WorkbenchApp}
   {#key $location.path[1]}
     {#await connect(getMetadata(workbench.metadata.PlatformTitle) ?? 'Platform')}
       <Loading />

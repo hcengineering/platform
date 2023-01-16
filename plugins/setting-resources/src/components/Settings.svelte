@@ -27,7 +27,7 @@
   } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import CategoryElement from './CategoryElement.svelte'
-  import login from '@hcengineering/login'
+  import login, { loginId } from '@hcengineering/login'
   import { AccountRole, getCurrentAccount } from '@hcengineering/core'
   import { EmployeeAccount } from '@hcengineering/contact'
   import { setMetadata } from '@hcengineering/platform'
@@ -76,10 +76,10 @@
     setMetadata(login.metadata.LoginToken, null)
     setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
     setMetadataLocalStorage(login.metadata.LoginEmail, null)
-    navigate({ path: [login.component.LoginApp] })
+    navigate({ path: [loginId] })
   }
   function selectWorkspace (): void {
-    navigate({ path: [login.component.LoginApp, 'selectWorkspace'] })
+    navigate({ path: [loginId, 'selectWorkspace'] })
   }
   function inviteWorkspace (): void {
     showPopup(login.component.InviteLink, {})

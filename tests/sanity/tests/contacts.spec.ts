@@ -8,7 +8,7 @@ test.use({
 test.describe('contact tests', () => {
   test.beforeEach(async ({ page }) => {
     // Create user and workspace
-    await page.goto(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/sanity-ws`)
+    await page.goto(`${PlatformURI}/workbench/sanity-ws`)
   })
   test('create-contact', async ({ page }) => {
     // Create a new context with the saved storage state.

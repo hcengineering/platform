@@ -1,7 +1,7 @@
 import client from '@hcengineering/client'
 import contact from '@hcengineering/contact'
 import core, { Client, setCurrentAccount, Version } from '@hcengineering/core'
-import login from '@hcengineering/login'
+import login, { loginId } from '@hcengineering/login'
 import { getMetadata, getResource, setMetadata } from '@hcengineering/platform'
 import { fetchMetadataLocalStorage, getCurrentLocation, navigate, setMetadataLocalStorage } from '@hcengineering/ui'
 import presentation from './plugin'
@@ -20,7 +20,7 @@ export async function connect (title: string): Promise<Client | undefined> {
 
   if (token === undefined || endpoint === null || email === null) {
     navigate({
-      path: [login.component.LoginApp],
+      path: [loginId],
       query: { navigateUrl: encodeURIComponent(JSON.stringify(loc)) }
     })
     return
@@ -36,7 +36,7 @@ export async function connect (title: string): Promise<Client | undefined> {
     () => {
       clearMetadata(ws)
       navigate({
-        path: [login.component.LoginApp],
+        path: [loginId],
         query: {}
       })
     }
@@ -51,7 +51,7 @@ export async function connect (title: string): Promise<Client | undefined> {
     console.error('WARNING: no employee account found.')
     clearMetadata(ws)
     navigate({
-      path: [login.component.LoginApp],
+      path: [loginId],
       query: { navigateUrl: encodeURIComponent(JSON.stringify(getCurrentLocation())) }
     })
     return
