@@ -322,7 +322,11 @@
             class="icon-button"
             class:disabled={a.disabled}
             use:tooltip={{ label: a.label }}
-            on:click={(evt) => handleAction(a, evt)}
+            on:click={(evt) => {
+              if (!a.disabled) {
+                handleAction(a, evt)
+              }
+            }}
           >
             <Icon icon={a.icon} size={'medium'} fill={a.fill} />
           </div>
