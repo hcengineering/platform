@@ -41,9 +41,9 @@ export default async () => {
       ): Promise<Client> => {
         if (client instanceof Promise) {
           client = await client
-          await client.close()
         }
         if (token !== _token && client !== undefined) {
+          await client.close()
           client = undefined
         }
         if (client === undefined) {

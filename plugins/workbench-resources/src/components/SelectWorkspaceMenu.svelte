@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import login from '@hcengineering/login'
+  import login, { loginId } from '@hcengineering/login'
   import {
     getWorkspaces,
     navigateToWorkspace,
@@ -83,7 +83,7 @@
     {
       label: getEmbeddedLabel('...'),
       action: async () => {
-        navigate({ path: [login.component.LoginApp, 'selectWorkspace'] })
+        navigate({ path: [loginId, 'selectWorkspace'] })
       },
       isSubmenuRightClicking: false
     }

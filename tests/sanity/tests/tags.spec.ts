@@ -8,17 +8,17 @@ test.use({
 test.describe('recruit tests', () => {
   test.beforeEach(async ({ page }) => {
     // Create user and workspace
-    await page.goto(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/sanity-ws`)
+    await page.goto(`${PlatformURI}/workbench/sanity-ws`)
   })
   test('create-candidate-with-skill', async ({ page }) => {
-    // Go to http://localhost:8083/workbench%3Acomponent%3AWorkbenchApp/sanity-ws
-    await page.goto(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/sanity-ws`)
+    // Go to http://localhost:8083/workbench/sanity-ws
+    await page.goto(`${PlatformURI}/workbench/sanity-ws`)
     // Click [id="app-recruit\:string\:RecruitApplication"]
     await page.click('[id="app-recruit\\:string\\:RecruitApplication"]')
-    await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/sanity-ws/recruit`)
+    await expect(page).toHaveURL(`${PlatformURI}/workbench/sanity-ws/recruit`)
     // Click text=Talents
     await page.click('text=Talents')
-    await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/sanity-ws/recruit/talents`)
+    await expect(page).toHaveURL(`${PlatformURI}/workbench/sanity-ws/recruit/talents`)
     // Click button:has-text("Talent")
     await page.click('button:has-text("Talent")')
     // Fill [placeholder="John"]
@@ -50,14 +50,14 @@ test.describe('recruit tests', () => {
   })
 
   test('create-tag-candidate', async ({ page }) => {
-    // Go to http://localhost:8083/workbench%3Acomponent%3AWorkbenchApp/sanity-ws
-    await page.goto(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/sanity-ws`)
+    // Go to http://localhost:8083/workbench/sanity-ws
+    await page.goto(`${PlatformURI}/workbench/sanity-ws`)
     // Click [id="app-recruit\:string\:RecruitApplication"]
     await page.click('[id="app-recruit\\:string\\:RecruitApplication"]')
-    await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/sanity-ws/recruit`)
+    await expect(page).toHaveURL(`${PlatformURI}/workbench/sanity-ws/recruit`)
     // Click text=Skills
     await page.click('text=Skills')
-    await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/sanity-ws/recruit/skills`)
+    await expect(page).toHaveURL(`${PlatformURI}/workbench/sanity-ws/recruit/skills`)
     // Click button:has-text("Skill")
     await page.click('button:has-text("Skill")')
     // Click [placeholder="Please\ type\ skill\ title"]
@@ -81,7 +81,7 @@ test.describe('recruit tests', () => {
     await page.waitForSelector('form.antiCard', { state: 'detached' })
     // Click text=Talents
     await page.click('text=Talents')
-    await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/sanity-ws/recruit/talents`)
+    await expect(page).toHaveURL(`${PlatformURI}/workbench/sanity-ws/recruit/talents`)
     // Click button:has-text("Talent")
     await page.click('button:has-text("Talent")')
     // Click #add-tag div div

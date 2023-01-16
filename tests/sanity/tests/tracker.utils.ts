@@ -22,9 +22,9 @@ export const DEFAULT_STATUSES = ['Backlog', 'Todo', 'In Progress', 'Done', 'Canc
 export const DEFAULT_USER = 'Appleseed John'
 
 export async function navigate (page: Page): Promise<void> {
-  await page.goto(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/sanity-ws`)
+  await page.goto(`${PlatformURI}/workbench/sanity-ws`)
   await page.click('[id="app-tracker\\:string\\:TrackerApplication"]')
-  await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/sanity-ws/tracker`)
+  await expect(page).toHaveURL(`${PlatformURI}/workbench/sanity-ws/tracker`)
 }
 
 export async function setViewGroup (page: Page, groupName: string): Promise<void> {
@@ -90,9 +90,7 @@ export async function createIssue (page: Page, props: IssueProps): Promise<void>
 
 export async function createProject (page: Page, projectName: string): Promise<void> {
   await page.click('text=Projects')
-  await expect(page).toHaveURL(
-    `${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/sanity-ws/tracker/tracker%3Ateam%3ADefaultTeam/projects`
-  )
+  await expect(page).toHaveURL(`${PlatformURI}/workbench/sanity-ws/tracker/tracker%3Ateam%3ADefaultTeam/projects`)
   await page.click('button:has-text("Project")')
   await page.click('[placeholder="Project\\ name"]')
   await page.fill('[placeholder="Project\\ name"]', projectName)
@@ -101,9 +99,7 @@ export async function createProject (page: Page, projectName: string): Promise<v
 
 export async function createSprint (page: Page, sprintName: string): Promise<void> {
   await page.click('text=Sprints')
-  await expect(page).toHaveURL(
-    `${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/sanity-ws/tracker/tracker%3Ateam%3ADefaultTeam/sprints`
-  )
+  await expect(page).toHaveURL(`${PlatformURI}/workbench/sanity-ws/tracker/tracker%3Ateam%3ADefaultTeam/sprints`)
   await page.click('button:has-text("Sprint")')
   await page.click('[placeholder="Sprint\\ name"]')
   await page.fill('[placeholder="Sprint\\ name"]', sprintName)

@@ -8,13 +8,13 @@ test.use({
 test.describe('actions tests', () => {
   test.beforeEach(async ({ page }) => {
     // Create user and workspace
-    await page.goto(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/sanity-ws/sanity-ws`)
+    await page.goto(`${PlatformURI}/workbench/sanity-ws/sanity-ws`)
   })
   test('action-new-candidate', async ({ page }) => {
     await page.click('[id="app-recruit\\:string\\:RecruitApplication"]')
 
     await page.click('text=Talents')
-    await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/sanity-ws/recruit/talents`)
+    await expect(page).toHaveURL(`${PlatformURI}/workbench/sanity-ws/recruit/talents`)
 
     await page.click('td:has-text("Frontend Engineer")')
 
@@ -29,26 +29,26 @@ test.describe('actions tests', () => {
     await page.click('[id="app-recruit\\:string\\:RecruitApplication"]')
 
     await page.click('text=Talents')
-    await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/sanity-ws/recruit/talents`)
+    await expect(page).toHaveURL(`${PlatformURI}/workbench/sanity-ws/recruit/talents`)
 
     await page.press('body', 'Meta+k')
     await page.fill('[placeholder="type\\ to\\ filter\\.\\.\\."]', 'go to')
     expect(await page.locator('div.selectPopup :text("Go To Vacancies")').count()).toBe(1)
     await page.click('div.selectPopup :text("Go To Vacancies")')
 
-    await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/sanity-ws/recruit/vacancies`)
+    await expect(page).toHaveURL(`${PlatformURI}/workbench/sanity-ws/recruit/vacancies`)
   })
   test('action-switch-applications', async ({ page }) => {
     await page.click('[id="app-recruit\\:string\\:RecruitApplication"]')
 
     await page.click('text=Talents')
-    await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/sanity-ws/recruit/talents`)
+    await expect(page).toHaveURL(`${PlatformURI}/workbench/sanity-ws/recruit/talents`)
 
     await page.press('body', 'Meta+k')
     await page.fill('[placeholder="type\\ to\\ filter\\.\\.\\."]', 'go to')
     expect(await page.locator('div.selectPopup :text("Go To Applications")').count()).toBe(1)
     await page.click('div.selectPopup :text("Go To Applications")')
 
-    await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/sanity-ws/recruit/candidates`)
+    await expect(page).toHaveURL(`${PlatformURI}/workbench/sanity-ws/recruit/candidates`)
   })
 })
