@@ -12,7 +12,7 @@
     "format": "prettier --write src && eslint --fix src"
   },
   "devDependencies": {
-    "@hcengineering/model-rig": "~0.6.0",
+    "@hcengineering/model-rig": "^0.6.0",
     "@typescript-eslint/eslint-plugin": "^5.41.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.1",
@@ -25,17 +25,17 @@
     "@rushstack/heft": "^0.47.9"
   },
   "dependencies": {
-    "@hcengineering/activity": "~0.6.0",
-    "@hcengineering/model": "~0.6.0",
-    "@hcengineering/core": "^0.6.19",
+    "@hcengineering/activity": "^0.6.0",
+    "@hcengineering/model": "^0.6.0",
+    "@hcengineering/core": "^0.6.20",
     "@hcengineering/platform": "^0.6.8",
-    "@hcengineering/model-core": "~0.6.0",
-    "@hcengineering/model-attachment": "~0.6.0",
-    "@hcengineering/model-contact": "~0.6.1",
-    "@hcengineering/contact": "~0.6.8",
-    "@hcengineering/telegram": "~0.6.2",
-    "@hcengineering/telegram-resources": "~0.6.0",
-    "@hcengineering/setting": "~0.6.1",
-    "@hcengineering/ui": "^0.6.2"
+    "@hcengineering/model-core": "^0.6.0",
+    "@hcengineering/model-attachment": "^0.6.0",
+    "@hcengineering/model-contact": "^0.6.1",
+    "@hcengineering/contact": "^0.6.9",
+    "@hcengineering/telegram": "^0.6.2",
+    "@hcengineering/telegram-resources": "^0.6.0",
+    "@hcengineering/setting": "^0.6.2",
+    "@hcengineering/ui": "^0.6.3"
   }
 }

@@ -28,13 +28,16 @@
   export let size: ButtonSize = 'medium'
   export let shape: ButtonShape = undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
+  export let iconProps: any | undefined = undefined
   export let justify: 'left' | 'center' = 'center'
   export let disabled: boolean = false
   export let loading: boolean = false
   export let width: string | undefined = undefined
+  export let height: string | undefined = undefined
   export let resetIconSize: boolean = false
   export let highlight: boolean = false
   export let selected: boolean = false
+  export let notSelected: boolean = false
   export let focus: boolean = false
   export let click: boolean = false
   export let title: string | undefined = undefined
@@ -90,8 +93,10 @@
   class:only-icon={iconOnly}
   class:highlight
   class:selected
+  class:notSelected
   disabled={disabled || loading}
   style:width
+  style:height
   {title}
   type={kind === 'primary' ? 'submit' : 'button'}
   on:click|stopPropagation|preventDefault
@@ -103,7 +108,7 @@
 >
   {#if icon && !loading}
     <div class="btn-icon pointer-events-none" class:resetIconSize>
-      <Icon bind:icon size={iconSize} />
+      <Icon bind:icon size={iconSize} {iconProps} />
     </div>
   {/if}
   {#if loading}
@@ -361,6 +366,15 @@
       &:disabled {
         background-color: #5e6ad255;
         border-color: #5e6ad255;
+      }
+    }
+
+    &.notSelected {
+      color: var(--content-color);
+
+      &:hover,
+      &:hover .btn-icon {
+        color: var(--accent-color);
       }
     }
 

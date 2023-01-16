@@ -45,7 +45,10 @@ module.exports = {
     symlinks: true,
     alias: {
       svelte: path.resolve('./node_modules', 'svelte'),
-      '@hcengineering/platform-rig/profiles/ui/svelte': path.resolve('./node_modules', 'svelte')
+      '@hcengineering/platform-rig/profiles/ui/svelte': path.resolve('./node_modules', 'svelte'),
+    },
+    fallback: { 
+      crypto: false 
     },
     extensions: ['.mjs', '.js', '.svelte', '.ts'],
     mainFields: ['svelte', 'browser', 'module', 'main']
@@ -203,7 +206,7 @@ module.exports = {
     hot: true,
     client: {
       logging: "info",
-      overlay: false,
+      overlay: true,
       progress: false,
     },
     proxy: devServer ? {

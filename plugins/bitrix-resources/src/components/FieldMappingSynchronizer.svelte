@@ -252,8 +252,13 @@
       let added = 0
 
       while (added <= limit) {
+        const sel = ['*', 'UF_*']
+        if (mapping.type === BitrixEntityType.Lead) {
+          sel.push('EMAIL')
+          sel.push('IM')
+        }
         const result = await bitrixClient.call(mapping.type + '.list', {
-          select: ['*', 'UF_*'],
+          select: sel,
           order: { ID: direction },
           start: processed
         })
@@ -261,18 +266,11 @@
         const extraDocs: Doc[] = []
 
         const convertResults: ConvertResult[] = []
+        const fields = mapping.$lookup?.fields as BitrixFieldMapping[]
+
         for (const r of result.result) {
           // Convert documents.
-          const res = await convert(
-            client,
-            mapping,
-            space,
-            mapping.$lookup?.fields as BitrixFieldMapping[],
-            r,
-            extraDocs,
-            tagElements,
-            userList
-          )
+          const res = await convert(client, mapping, space, fields, r, extraDocs, tagElements, userList)
           if (mapping.comments) {
             res.comments = bitrixClient
               .call(BitrixEntityType.Comment + '.list', {

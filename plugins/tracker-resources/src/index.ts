@@ -32,8 +32,8 @@ import IssuePreview from './components/issues/IssuePreview.svelte'
 import Issues from './components/issues/Issues.svelte'
 import IssuesView from './components/issues/IssuesView.svelte'
 import KanbanView from './components/issues/KanbanView.svelte'
-import ListView from './components/issues/ListView.svelte'
 import ModificationDatePresenter from './components/issues/ModificationDatePresenter.svelte'
+import PriorityRefPresenter from './components/issues/PriorityRefPresenter.svelte'
 import PriorityEditor from './components/issues/PriorityEditor.svelte'
 import PriorityPresenter from './components/issues/PriorityPresenter.svelte'
 import StatusEditor from './components/issues/StatusEditor.svelte'
@@ -79,7 +79,6 @@ import SprintStatusPresenter from './components/sprints/SprintStatusPresenter.sv
 import SprintTitlePresenter from './components/sprints/SprintTitlePresenter.svelte'
 
 import SubIssuesSelector from './components/issues/edit/SubIssuesSelector.svelte'
-import GrowPresenter from './components/issues/GrowPresenter.svelte'
 import EstimationEditor from './components/issues/timereport/EstimationEditor.svelte'
 import ReportedTimeEditor from './components/issues/timereport/ReportedTimeEditor.svelte'
 import TimeSpendReport from './components/issues/timereport/TimeSpendReport.svelte'
@@ -95,11 +94,14 @@ import IssueTemplates from './components/templates/IssueTemplates.svelte'
 import EditIssueTemplate from './components/templates/EditIssueTemplate.svelte'
 import TemplateEstimationEditor from './components/templates/EstimationEditor.svelte'
 import MoveAndDeleteSprintPopup from './components/sprints/MoveAndDeleteSprintPopup.svelte'
-import { moveIssuesToAnotherSprint } from './utils'
+import { moveIssuesToAnotherSprint, issueStatusSort, issuePrioritySort, sprintSort, subIssueQuery } from './utils'
 import { deleteObject } from '@hcengineering/view-resources/src/utils'
 
 import CreateTeam from './components/teams/CreateTeam.svelte'
 import TeamPresenter from './components/teams/TeamPresenter.svelte'
+import IssueStatistics from './components/sprints/IssueStatistics.svelte'
+import StatusRefPresenter from './components/issues/StatusRefPresenter.svelte'
+import SprintRefPresenter from './components/sprints/SprintRefPresenter.svelte'
 
 export async function queryIssue<D extends Issue> (
   _class: Ref<Class<D>>,
@@ -229,6 +231,8 @@ export default async (): Promise<Resources> => ({
     ModificationDatePresenter,
     PriorityPresenter,
     PriorityEditor,
+    PriorityRefPresenter,
+    SprintRefPresenter,
     ProjectEditor,
     StatusPresenter,
     StatusEditor,
@@ -246,7 +250,6 @@ export default async (): Promise<Resources> => ({
     SetParentIssueActionPopup,
     EditProject,
     IssuesView,
-    ListView,
     KanbanView,
     TeamProjects,
     Roadmap,
@@ -265,7 +268,6 @@ export default async (): Promise<Resources> => ({
     TimeSpendReport,
     EstimationEditor,
     SubIssuesSelector,
-    GrowPresenter,
     RelatedIssues,
     RelatedIssueTemplates,
     ProjectSelector,
@@ -274,7 +276,9 @@ export default async (): Promise<Resources> => ({
     EditIssueTemplate,
     TemplateEstimationEditor,
     CreateTeam,
-    TeamPresenter
+    TeamPresenter,
+    IssueStatistics,
+    StatusRefPresenter
   },
   completion: {
     IssueQuery: async (client: Client, query: string, filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }) =>
@@ -284,7 +288,11 @@ export default async (): Promise<Resources> => ({
     IssueTitleProvider: getIssueTitle,
     GetIssueId: issueIdProvider,
     GetIssueLink: issueLinkProvider,
-    GetIssueTitle: issueTitleProvider
+    GetIssueTitle: issueTitleProvider,
+    IssueStatusSort: issueStatusSort,
+    IssuePrioritySort: issuePrioritySort,
+    SprintSort: sprintSort,
+    SubIssueQuery: subIssueQuery
   },
   actionImpl: {
     EditWorkflowStatuses: editWorkflowStatuses,

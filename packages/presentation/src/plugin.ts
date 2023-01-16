@@ -62,7 +62,8 @@ export default plugin(presentationId, {
     CategoryPreviousAssigned: '' as IntlString,
     CategoryProjectLead: '' as IntlString,
     CategoryProjectMembers: '' as IntlString,
-    CategoryOther: '' as IntlString
+    CategoryOther: '' as IntlString,
+    InltPropsValue: '' as IntlString
   },
   metadata: {
     RequiredVersion: '' as Metadata<string>,

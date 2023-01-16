@@ -31,14 +31,16 @@
   export let mode: CalendarMode
   export let display: 'chart' | 'stats'
 
-  $: startDate = new Date(
-    new Date(mode === CalendarMode.Year ? new Date(currentDate).setMonth(0) : currentDate).setDate(1)
-  )
-  $: endDate = new Date(
+  $: startDate =
     mode === CalendarMode.Year
-      ? new Date(new Date(startDate).setFullYear(new Date(startDate).getFullYear() + 1)).setDate(0)
-      : new Date(new Date(startDate).setMonth(new Date(startDate).getMonth() + 1)).setDate(0)
-  )
+      ? getStartDate(currentDate.getFullYear(), 0)
+      : getStartDate(currentDate.getFullYear(), currentDate.getMonth())
+
+  $: endDate =
+    mode === CalendarMode.Year
+      ? getEndDate(currentDate.getFullYear(), 11)
+      : getEndDate(currentDate.getFullYear(), currentDate.getMonth())
+
   $: departments = [department, ...getDescendants(department, descendants)]
 
   const lq = createQuery()
@@ -47,6 +49,7 @@
   const currentEmployee = (getCurrentAccount() as EmployeeAccount).employee
 
   let staff: Staff[] = []
+  let reqests: Request[] = []
   let types: Map<Ref<RequestType>, RequestType> = new Map<Ref<RequestType>, RequestType>()
 
   typeQuery.query(hr.class.RequestType, {}, (res) => {
@@ -87,26 +90,33 @@
       hr.class.Request,
       {
         'tzDueDate.year': { $gte: startDate.getFullYear() },
-        'tzDueDate.month': { $gte: startDate.getMonth() },
         'tzDate.year': { $lte: endDate.getFullYear() },
-        'tzDate.month': { $lte: endDate.getMonth() },
         space: { $in: departments }
       },
       (res) => {
-        employeeRequests.clear()
-        for (const request of res) {
-          const requests = employeeRequests.get(request.attachedTo) ?? []
-          requests.push(request)
-          if (request.attachedTo) {
-            employeeRequests.set(request.attachedTo, requests)
-          }
-        }
-        employeeRequests = employeeRequests
+        reqests = res
       }
     )
   }
 
   $: update(departments, startDate, endDate)
+
+  function updateRequest (reqests: Request[], startDate: Date, endDate: Date) {
+    const res = reqests.filter(
+      (r) => fromTzDate(r.tzDueDate) >= startDate.getTime() && fromTzDate(r.tzDate) <= endDate.getTime()
+    )
+    employeeRequests.clear()
+    for (const request of res) {
+      const requests = employeeRequests.get(request.attachedTo) ?? []
+      requests.push(request)
+      if (request.attachedTo) {
+        employeeRequests.set(request.attachedTo, requests)
+      }
+    }
+    employeeRequests = employeeRequests
+  }
+
+  $: updateRequest(reqests, startDate, endDate)
 
   function updateEditableList () {
     editableList = []
@@ -139,7 +149,7 @@
   const reportQuery = createQuery()
 
   import tracker from '@hcengineering/tracker'
-  import { EmployeeReports } from '../utils'
+  import { EmployeeReports, fromTzDate, getEndDate, getStartDate } from '../utils'
 
   let timeReports: Map<Ref<Employee>, EmployeeReports> = new Map()
 
@@ -174,7 +184,16 @@
     <YearView {departmentStaff} {employeeRequests} {types} {currentDate} />
   {:else if mode === CalendarMode.Month}
     {#if display === 'chart'}
-      <MonthView {departmentStaff} {employeeRequests} {types} {startDate} {editableList} {currentDate} {timeReports} />
+      <MonthView
+        {departmentStaff}
+        {employeeRequests}
+        {types}
+        {startDate}
+        {endDate}
+        {editableList}
+        {currentDate}
+        {timeReports}
+      />
     {:else if display === 'stats'}
       <MonthTableView {departmentStaff} {employeeRequests} {types} {currentDate} {timeReports} />
     {/if}

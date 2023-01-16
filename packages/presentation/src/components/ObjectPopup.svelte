@@ -27,7 +27,8 @@
     ListView,
     showPopup,
     tooltip,
-    resizeObserver
+    resizeObserver,
+    deviceOptionsStore
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation from '..'
@@ -56,6 +57,7 @@
   export let groupBy = '_class'
 
   export let create: ObjectCreate | undefined = undefined
+  export let readonly = false
 
   let search: string = ''
   let objects: Doc[] = []
@@ -87,11 +89,11 @@
   $: showCategories =
     objects.map((it) => (it as any)[groupBy]).filter((it, index, arr) => arr.indexOf(it) === index).length > 1
 
-  const checkSelected = (person: Doc, objects: Doc[]): void => {
-    if (selectedElements.has(person._id)) {
-      selectedElements.delete(person._id)
+  const checkSelected = (item: Doc): void => {
+    if (selectedElements.has(item._id)) {
+      selectedElements.delete(item._id)
     } else {
-      selectedElements.add(person._id)
+      selectedElements.add(item._id)
     }
 
     selectedObjects = Array.from(selectedElements)
@@ -105,17 +107,17 @@
   let list: ListView
 
   async function handleSelection (evt: Event | undefined, objects: Doc[], selection: number): Promise<void> {
-    const person = objects[selection]
+    const item = objects[selection]
 
     if (!multiSelect) {
       if (allowDeselect) {
-        selected = person._id === selected ? undefined : person._id
+        selected = item._id === selected ? undefined : item._id
       } else {
-        selected = person._id
+        selected = item._id
       }
-      dispatch(closeAfterSelect ? 'close' : 'update', selected !== undefined ? person : undefined)
+      dispatch(closeAfterSelect ? 'close' : 'update', selected !== undefined ? item : undefined)
     } else {
-      checkSelected(person, objects)
+      checkSelected(item)
     }
   }
 
@@ -205,7 +207,13 @@
   }}
 >
   <div class="header flex-between">
-    <EditBox kind={'search-style'} focusIndex={1} focus bind:value={search} {placeholder} />
+    <EditBox
+      kind={'search-style'}
+      focusIndex={1}
+      focus={!$deviceOptionsStore.isMobile}
+      bind:value={search}
+      {placeholder}
+    />
     {#if create !== undefined}
       <div class="mx-2">
         <Button
@@ -215,6 +223,7 @@
           icon={IconAdd}
           showTooltip={{ label: create.label }}
           on:click={onCreate}
+          disabled={readonly}
         />
       </div>
     {/if}
@@ -222,7 +231,7 @@
   {#if cHeight === 1}
     <div class="background-theme-content-accent" style:height={'2px'} />
   {/if}
-  <div class="scroll" on:scroll={() => updateLocation(scrollDiv, selectedDiv)} bind:this={scrollDiv}>
+  <div class="scroll" on:scroll={() => updateLocation(scrollDiv, selectedDiv, objects, selected)} bind:this={scrollDiv}>
     <div class="box">
       <ListView bind:this={list} count={objects.length} bind:selection>
         <svelte:fragment slot="category" let:item>
@@ -239,15 +248,16 @@
         <svelte:fragment slot="item" let:item>
           {@const obj = objects[item]}
           <button
-            class="menu-item w-full"
+            class="menu-item w-full flex-row-center"
             class:background-bg-focused={!allowDeselect && obj._id === selected}
             class:border-radius-1={!allowDeselect && obj._id === selected}
+            disabled={readonly}
             on:click={() => {
               handleSelection(undefined, objects, item)
             }}
           >
             {#if allowDeselect && selected}
-              <div class="icon">
+              <div class="icon" class:disabled={readonly}>
                 {#if obj._id === selected}
                   <div bind:this={selectedDiv}>
                     {#if titleDeselect}
@@ -262,7 +272,7 @@
               </div>
             {/if}
 
-            <span class="label">
+            <span class="label" class:disabled={readonly}>
               {#if obj._id === selected}
                 <div bind:this={selectedDiv}>
                   <slot name="item" item={obj} />

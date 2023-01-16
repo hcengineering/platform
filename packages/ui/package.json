@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/ui",
-  "version": "0.6.2",
+  "version": "0.6.4",
   "main": "src/index.ts",
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
@@ -18,7 +18,7 @@
     "sass": "^1.53.0",
     "svelte-preprocess": "^4.10.7",
     "svelte-check": "^2.8.0",
-    "@hcengineering/platform-rig": "~0.6.0",
+    "@hcengineering/platform-rig": "^0.6.0",
     "@typescript-eslint/eslint-plugin": "^5.41.0",
     "@typescript-eslint/parser": "^5.41.0",
     "eslint-config-standard-with-typescript": "^23.0.0",
@@ -34,8 +34,8 @@
   },
   "dependencies": {
     "@hcengineering/platform": "^0.6.8",
-    "@hcengineering/theme": "^0.6.1",
-    "@hcengineering/core": "^0.6.19",
+    "@hcengineering/theme": "^0.6.2",
+    "@hcengineering/core": "^0.6.20",
     "svelte": "^3.47",
     "fast-equals": "^2.0.3"
   },

@@ -33,6 +33,7 @@
     "CategoryPreviousAssigned": "Previously assigned",
     "CategoryProjectLead": "Project lead",
     "CategoryProjectMembers": "Project members",
-    "CategoryOther": "Other"
+    "CategoryOther": "Other",
+    "InltPropsValue": "{value}"
   }
 }

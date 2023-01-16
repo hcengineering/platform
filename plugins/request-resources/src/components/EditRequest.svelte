@@ -27,7 +27,7 @@
   const dispatch = createEventDispatcher()
 
   onMount(() => {
-    dispatch('open', { ignoreKeys: ['comments', 'status'] })
+    dispatch('open', { ignoreKeys: ['comments', 'status'], activityOptions: { enabled: true, showInput: false } })
   })
 </script>
 

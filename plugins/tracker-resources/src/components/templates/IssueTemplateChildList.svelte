@@ -86,16 +86,6 @@
     // showPopup(ContextMenu, { object }, getEventPositionElement(ev))
   }
 
-  let varsStyle: string = ''
-  const propsWidth: Record<string, number> = { issue: 0 }
-  $: if (propsWidth) {
-    varsStyle = ''
-    for (const key in propsWidth) varsStyle += `--fixed-${key}: ${propsWidth[key]}px;`
-  }
-  const checkWidth = (key: string, result: CustomEvent): void => {
-    if (result !== undefined) propsWidth[key] = result.detail
-  }
-
   export function getIssueTemplateId (team: string, issue: IssueTemplateChild): string {
     return `${team}-${issues.findIndex((it) => it.id === issue.id)}`
   }
@@ -114,7 +104,6 @@
     class:is-dragging={index === draggingIndex}
     class:is-dragged-over-up={draggingIndex !== null && index < draggingIndex && index === hoveringIndex}
     class:is-dragged-over-down={draggingIndex !== null && index > draggingIndex && index === hoveringIndex}
-    style={varsStyle}
     animate:flip={{ duration: 400 }}
     draggable={true}
     on:click|self={(evt) => openIssue(evt, issue)}
@@ -142,12 +131,7 @@
       />
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <span class="issuePresenter" on:click={(evt) => openIssue(evt, issue)}>
-        <FixedColumn
-          width={propsWidth.issue}
-          key={'issue'}
-          justify={'left'}
-          on:update={(result) => checkWidth('issue', result)}
-        >
+        <FixedColumn key={'issue_template_issue'} justify={'left'}>
           {getIssueTemplateId(teamId, issue)}
         </FixedColumn>
       </span>

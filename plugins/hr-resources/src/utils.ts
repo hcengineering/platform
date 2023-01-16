@@ -1,10 +1,12 @@
 import { Employee, formatName } from '@hcengineering/contact'
 import { Ref, TxOperations } from '@hcengineering/core'
-import { Department, Request, RequestType, TzDate } from '@hcengineering/hr'
+import { Department, Request, RequestType, Staff, TzDate } from '@hcengineering/hr'
 import { MessageBox } from '@hcengineering/presentation'
 import { TimeSpendReport } from '@hcengineering/tracker'
-import { isWeekend, showPopup } from '@hcengineering/ui'
+import { isWeekend, MILLISECONDS_IN_DAY, showPopup } from '@hcengineering/ui'
 import hr from './plugin'
+
+const todayDate = new Date()
 
 export async function addMember (client: TxOperations, employee?: Employee, value?: Department): Promise<void> {
   if (employee === null || employee === undefined || value === undefined) {
@@ -99,14 +101,69 @@ export function getMonth (date: Date, m: number): Date {
   return date
 }
 
-export function getRequestDays (request: Request, types: Map<Ref<RequestType>, RequestType>, month: number): number[] {
+/**
+ * @public
+ */
+export function getStartDate (year: number, month?: number): Date {
+  return new Date(new Date(year, month !== undefined ? month : 0).setHours(0, 0, 0, 0))
+}
+
+/**
+ * @public
+ */
+export function getEndDate (year: number, month?: number): Date {
+  return new Date(
+    new Date(
+      new Date(
+        month !== undefined && month === 11 ? year + 1 : year,
+        month !== undefined ? (month + 1) % 12 : 11
+      ).setDate(0)
+    ).setHours(23, 59, 59, 999)
+  )
+}
+
+/**
+ * @public
+ */
+export function isToday (date: Date): boolean {
+  return date.getFullYear() === todayDate.getFullYear() && date.getMonth() === todayDate.getMonth()
+}
+
+/**
+ * @public
+ */
+export function getRequests (
+  employeeRequests: Map<Ref<Staff>, Request[]>,
+  startDate: Date,
+  endDate?: Date,
+  employee?: Ref<Staff>
+): Request[] {
+  const startTime = new Date(startDate).setHours(0, 0, 0, 0)
+  const endTime =
+    endDate != null ? new Date(endDate).setHours(23, 59, 59, 999) : new Date(startDate).setHours(23, 59, 59, 999)
+  let requests
+  if (employee != null) {
+    requests = employeeRequests.get(employee)
+  } else {
+    requests = Array.from(employeeRequests.values()).flat()
+  }
+  if (requests === undefined) return []
+
+  return requests.filter(
+    (request) => fromTzDate(request.tzDate) <= endTime && fromTzDate(request.tzDueDate) > startTime
+  )
+}
+
+export function getRequestDates (
+  request: Request,
+  types: Map<Ref<RequestType>, RequestType>,
+  year: number,
+  month: number
+): number[] {
   const type = types.get(request.type)
-  const startDate =
-    request.tzDate.month === month ? fromTzDate(request.tzDate) : fromTzDate({ ...request.tzDate, month, day: 1 })
+  const startDate = request.tzDate.month === month ? fromTzDate(request.tzDate) : new Date().setFullYear(year, month, 1)
   const endDate =
-    request.tzDueDate.month === month
-      ? fromTzDate(request.tzDueDate)
-      : fromTzDate({ ...request.tzDueDate, month: month + 1, day: 0 })
+    request.tzDueDate.month === month ? fromTzDate(request.tzDueDate) : new Date().setFullYear(year, month + 1, 0)
   const days = Math.floor(Math.abs((1 + endDate - startDate) / 1000 / 60 / 60 / 24)) + 1
   const stDate = new Date(startDate)
   const stDateDate = stDate.getDate()
@@ -117,17 +174,43 @@ export function getRequestDays (request: Request, types: Map<Ref<RequestType>, R
   return ds
 }
 
+export function getRequestDays (
+  request: Request,
+  types: Map<Ref<RequestType>, RequestType>,
+  startDate: Date,
+  endDate: Date
+): number {
+  const type = types.get(request.type)
+  const startTime = new Date(fromTzDate(request.tzDate)).setHours(0, 0, 0, 0)
+  const endTime = new Date(fromTzDate(request.tzDueDate)).setHours(23, 59, 59, 999)
+  const end = endDate.getTime()
+  let current = startDate.getTime()
+  let days = 0
+  while (current <= end) {
+    if (
+      current >= startTime &&
+      current <= endTime &&
+      ((type?.value ?? -1) > 0 || ((type?.value ?? -1) < 0 && !isWeekend(new Date(current))))
+    ) {
+      days++
+    }
+    current += MILLISECONDS_IN_DAY
+  }
+  return days
+}
+
 export function getTotal (
   requests: Request[],
-  month: number,
+  startDate: Date,
+  endDate: Date,
   types: Map<Ref<RequestType>, RequestType>,
   f: (v: number) => number = (f) => f
 ): number {
   let total = 0
   for (const request of requests) {
-    const ds = getRequestDays(request, types, month)
+    const ds = getRequestDays(request, types, startDate, endDate)
     const type = types.get(request.type)
-    const val = Math.ceil(ds.length) * (type?.value ?? 0)
+    const val = ds * (type?.value ?? 0)
     total += f(val)
   }
   return total

@@ -33,8 +33,14 @@ import { Middleware, MiddlewareCreator, Pipeline, SessionContext } from './types
 /**
  * @public
  */
-export async function createPipeline (conf: DbConfiguration, constructors: MiddlewareCreator[]): Promise<Pipeline> {
-  const storage = await createServerStorage(conf)
+export async function createPipeline (
+  conf: DbConfiguration,
+  constructors: MiddlewareCreator[],
+  upgrade: boolean
+): Promise<Pipeline> {
+  const storage = await createServerStorage(conf, {
+    upgrade
+  })
   return new TPipeline(storage, constructors)
 }
 

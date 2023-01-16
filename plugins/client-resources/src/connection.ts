@@ -15,7 +15,7 @@
 //
 
 import client, { ClientSocket } from '@hcengineering/client'
-import type {
+import core, {
   Class,
   ClientConnection,
   Doc,
@@ -29,7 +29,6 @@ import type {
   TxHander,
   TxResult
 } from '@hcengineering/core'
-import core from '@hcengineering/core'
 import { getMetadata, PlatformError, readResponse, ReqId, serialize, UNAUTHORIZED } from '@hcengineering/platform'
 
 class DeferredPromise {
@@ -78,7 +77,7 @@ class Connection implements ClientConnection {
     while (true) {
       try {
         const conn = await this.openConnection()
-        this.delay = 1
+        this.delay = 5
         return conn
       } catch (err: any) {
         console.log('failed to connect', err)
@@ -90,7 +89,7 @@ class Connection implements ClientConnection {
           setTimeout(() => {
             console.log(`delay ${this.delay} second`)
             resolve(null)
-            if (this.delay !== 5) {
+            if (this.delay !== 15) {
               this.delay++
             }
           }, this.delay * 1000)
@@ -99,6 +98,8 @@ class Connection implements ClientConnection {
     }
   }
 
+  sockets = 0
+
   private openConnection (): Promise<ClientSocket> {
     return new Promise((resolve, reject) => {
       // Use defined factory or browser default one.
@@ -106,6 +107,7 @@ class Connection implements ClientConnection {
         getMetadata(client.metadata.ClientSocketFactory) ?? ((url: string) => new WebSocket(url) as ClientSocket)
 
       const websocket = clientSocketFactory(this.url)
+      const socketId = this.sockets++
       websocket.onmessage = (event: MessageEvent) => {
         const resp = readResponse(event.data)
         if (resp.id === -1 && resp.result === 'hello') {
@@ -129,14 +131,22 @@ class Connection implements ClientConnection {
           }
         } else {
           const tx = resp.result as Tx
-          if (tx._class === core.class.TxModelUpgrade) {
+          if (tx?._class === core.class.TxModelUpgrade) {
+            console.log('Processing upgrade')
+            websocket.send(
+              serialize({
+                method: '#upgrading',
+                params: [],
+                id: -1
+              })
+            )
             this.onUpgrade?.()
           }
           this.handler(tx)
         }
       }
       websocket.onclose = () => {
-        console.log('client websocket closed')
+        console.log('client websocket closed', socketId)
         // clearInterval(interval)
         if (!(this.websocket instanceof Promise)) {
           this.websocket = null
@@ -144,7 +154,7 @@ class Connection implements ClientConnection {
         reject(new Error('websocket error'))
       }
       websocket.onopen = () => {
-        console.log('connection opened...')
+        console.log('connection opened...', socketId)
         websocket.send(
           serialize({
             method: 'hello',
@@ -154,8 +164,8 @@ class Connection implements ClientConnection {
         )
       }
       websocket.onerror = (event: any) => {
-        console.log('client websocket error', JSON.stringify(event))
-        reject(new Error('websocket error'))
+        console.log('client websocket error:', socketId, JSON.stringify(event))
+        reject(new Error(`websocket error:${socketId}`))
       }
     })
   }

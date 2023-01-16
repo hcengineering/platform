@@ -124,17 +124,28 @@
     <div
       class="w-full h-full flex-streatch"
       on:click={_click}
+      class:content-color={selected === undefined}
       use:tooltip={selected !== undefined ? { label: getEmbeddedLabel(getName(selected)) } : undefined}
     >
       <slot name="content" />
     </div>
   {:else}
-    <Button {focusIndex} width={width ?? 'min-content'} {size} {kind} {justify} {showTooltip} on:click={_click}>
-      <span
+    <Button
+      {focusIndex}
+      disabled={readonly}
+      width={width ?? 'min-content'}
+      {size}
+      {kind}
+      {justify}
+      {showTooltip}
+      on:click={_click}
+    >
+      <div
         slot="content"
-        class="overflow-label flex-grow"
+        class="overflow-label flex-row-center"
+        class:w-full={width === '100%'}
         class:flex-between={showNavigate && selected}
-        class:dark-color={value == null}
+        class:content-color={value == null}
       >
         <div
           class="disabled"
@@ -150,7 +161,7 @@
               {getName(selected)}
             {/if}
           {:else}
-            <div class="flex-presenter">
+            <div class="flex-presenter not-selected">
               {#if icon}
                 <div class="icon" class:small-gap={size === 'inline' || size === 'small'}>
                   <Icon {icon} size={kind === 'link' ? 'small' : size} />
@@ -163,6 +174,7 @@
           {/if}
         </div>
         {#if selected && showNavigate}
+          <div class="min-w-2" />
           <ActionIcon
             icon={IconOpen}
             size={'small'}
@@ -173,7 +185,7 @@
             }}
           />
         {/if}
-      </span>
+      </div>
     </Button>
   {/if}
 </div>

@@ -18,7 +18,7 @@
   import type { IntlString } from '@hcengineering/platform'
   import { Button, ButtonKind, ButtonSize, Label, showPopup, TooltipAlignment } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import presentation, { CombineAvatars, UsersPopup } from '..'
+  import presentation, { CombineAvatars, UserInfo, UsersPopup } from '..'
   import { createQuery } from '../utils'
   import Members from './icons/Members.svelte'
 
@@ -56,7 +56,8 @@
         docQuery,
         multiSelect: true,
         allowDeselect: false,
-        selectedUsers: items
+        selectedUsers: items,
+        readonly
       },
       evt.target as HTMLElement,
       undefined,
@@ -73,21 +74,25 @@
 <Button
   icon={persons.length === 0 ? Members : undefined}
   label={persons.length === 0 ? emptyLabel : undefined}
+  notSelected={persons.length === 0}
   width={width ?? 'min-content'}
   {kind}
   {size}
   {justify}
   showTooltip={{ label, direction: labelDirection }}
   on:click={addPerson}
-  disabled={readonly}
 >
   <svelte:fragment slot="content">
     {#if persons.length > 0}
       <div class="flex-row-center flex-nowrap pointer-events-none">
-        <CombineAvatars {_class} bind:items size={'inline'} />
-        <span class="overflow-label ml-1-5">
-          <Label label={presentation.string.NumberMembers} params={{ count: persons.length }} />
-        </span>
+        {#if persons.length === 1}
+          <UserInfo value={persons[0]} size={'inline'} />
+        {:else}
+          <CombineAvatars {_class} bind:items size={'inline'} />
+          <span class="overflow-label ml-1-5">
+            <Label label={presentation.string.NumberMembers} params={{ count: persons.length }} />
+          </span>
+        {/if}
       </div>
     {/if}
   </svelte:fragment>

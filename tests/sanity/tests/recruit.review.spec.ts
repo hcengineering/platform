@@ -18,7 +18,7 @@ test.describe('recruit review tests', () => {
     const reviewId = 'review-' + generateId()
     await page.fill('[placeholder="Title"]', reviewId)
 
-    await page.click('button:has-text("1 member")')
+    await page.click('button:has-text("Appleseed John")')
 
     await page.click('button:has-text("Chen Rosamund")')
 
@@ -35,6 +35,6 @@ test.describe('recruit review tests', () => {
     await page.click('button:has-text("2 members")')
     await page.click('.popup button:has-text("Chen Rosamund")')
     await page.press('[placeholder="Search\\.\\.\\."]', 'Escape')
-    await page.click('button:has-text("1 member")')
+    await page.click('button:has-text("Appleseed John")')
   })
 })

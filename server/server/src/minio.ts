@@ -18,6 +18,7 @@ import core, {
   Class,
   Doc,
   DocumentQuery,
+  DocumentUpdate,
   Domain,
   FindOptions,
   FindResult,
@@ -123,6 +124,10 @@ class MinioBlobAdapter implements DbAdapter {
 
   async clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {
     await this.client.remove(this.workspaceId, docs)
+  }
+
+  async update (domain: Domain, operations: Map<Ref<Doc>, DocumentUpdate<Doc>>): Promise<void> {
+    throw new Error('Method not implemented.')
   }
 }
 

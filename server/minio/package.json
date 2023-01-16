@@ -13,7 +13,7 @@
     "format": "prettier --write src && eslint --fix src"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "~0.6.0",
+    "@hcengineering/platform-rig": "^0.6.0",
     "@types/heft-jest": "^1.0.3",
     "@typescript-eslint/eslint-plugin": "^5.41.0",
     "eslint-plugin-import": "^2.26.0",
@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "@types/minio": "~7.0.11",
-    "@hcengineering/core": "^0.6.19",
+    "@hcengineering/core": "^0.6.20",
     "minio": "^7.0.26"
   }
 }

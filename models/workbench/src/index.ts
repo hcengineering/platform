@@ -48,7 +48,7 @@ export class TSpaceView extends TClass implements SpaceView {
 
 export function createModel (builder: Builder): void {
   builder.createModel(TApplication, TSpaceView, THiddenApplication)
-  builder.mixin(workbench.class.Application, core.class.Class, view.mixin.AttributePresenter, {
+  builder.mixin(workbench.class.Application, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: workbench.component.ApplicationPresenter
   })
 }

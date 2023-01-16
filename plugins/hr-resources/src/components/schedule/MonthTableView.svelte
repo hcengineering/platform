@@ -22,7 +22,17 @@
   import view, { BuildModelKey, Viewlet, ViewletPreference } from '@hcengineering/view'
   import { Table, ViewletSettingButton } from '@hcengineering/view-resources'
   import hr from '../../plugin'
-  import { EmployeeReports, fromTzDate, getMonth, getRequestDays, getTotal, tableToCSV, weekDays } from '../../utils'
+  import {
+    EmployeeReports,
+    getEndDate,
+    getMonth,
+    getRequestDates,
+    getRequests,
+    getStartDate,
+    getTotal,
+    tableToCSV,
+    weekDays
+  } from '../../utils'
   import StatPresenter from './StatPresenter.svelte'
   import ReportPresenter from './ReportPresenter.svelte'
 
@@ -34,30 +44,18 @@
   export let employeeRequests: Map<Ref<Staff>, Request[]>
   export let timeReports: Map<Ref<Employee>, EmployeeReports>
 
-  $: month = getMonth(currentDate, currentDate.getMonth())
+  $: month = getStartDate(currentDate.getFullYear(), currentDate.getMonth()) // getMonth(currentDate, currentDate.getMonth())
   $: wDays = weekDays(month.getUTCFullYear(), month.getUTCMonth())
 
   function getDateRange (request: Request): string {
-    const ds = getRequestDays(request, types, month.getMonth())
+    const ds = getRequestDates(request, types, month.getFullYear(), month.getMonth())
     return ds.join(' ')
   }
 
-  function getEndDate (date: Date): number {
-    return new Date(date).setMonth(date.getMonth() + 1)
-  }
+  function getStatRequests (employee: Ref<Staff>, date: Date): Request[] {
+    const endDate = getEndDate(date.getFullYear(), date.getMonth())
 
-  function getRequests (employee: Ref<Staff>, date: Date): Request[] {
-    const requests = employeeRequests.get(employee)
-    if (requests === undefined) return []
-    const res: Request[] = []
-    const time = date.getTime()
-    const endTime = getEndDate(date)
-    for (const request of requests) {
-      if (fromTzDate(request.tzDate) <= endTime && fromTzDate(request.tzDueDate) > time) {
-        res.push(request)
-      }
-    }
-    return res
+    return getRequests(employeeRequests, date, endDate, employee)
   }
 
   function getTypeVals (month: Date): Map<string, BuildModelKey> {
@@ -69,21 +67,22 @@
           label: it.label,
           presenter: StatPresenter,
           props: {
-            month: month ?? getMonth(currentDate, currentDate.getMonth()),
+            month: month ?? getStartDate(currentDate.getFullYear(), currentDate.getMonth()),
             display: (req: Request[]) =>
               req
                 .filter((r) => r.type === it._id)
                 .map((it) => getDateRange(it))
                 .join(' '),
-            getRequests
+            getStatRequests
           }
         }
       ])
     )
   }
 
-  function getOverrideConfig (month: Date): Map<string, BuildModelKey> {
-    const typevals = getTypeVals(month)
+  function getOverrideConfig (startDate: Date): Map<string, BuildModelKey> {
+    const typevals = getTypeVals(startDate)
+    const endDate = getEndDate(startDate.getFullYear(), startDate.getMonth())
     return new Map<string, BuildModelKey>([
       [
         '@wdCount',
@@ -92,14 +91,14 @@
           label: getEmbeddedLabel('Working days'),
           presenter: StatPresenter,
           props: {
-            month: month ?? getMonth(currentDate, currentDate.getMonth()),
-            display: (req: Request[]) => wDays + getTotal(req, month.getMonth(), types),
-            getRequests
+            month: startDate ?? getStartDate(currentDate.getFullYear(), currentDate.getMonth()),
+            display: (req: Request[]) => wDays + getTotal(req, startDate, endDate, types),
+            getStatRequests
           },
           sortingKey: '@wdCount',
           sortingFunction: (a: Doc, b: Doc) =>
-            getTotal(getRequests(b._id as Ref<Staff>, month), month.getMonth(), types) -
-            getTotal(getRequests(a._id as Ref<Staff>, month), month.getMonth(), types)
+            getTotal(getStatRequests(b._id as Ref<Staff>, startDate), startDate, endDate, types) -
+            getTotal(getStatRequests(a._id as Ref<Staff>, startDate), startDate, endDate, types)
         }
       ],
       [
@@ -109,13 +108,13 @@
           label: getEmbeddedLabel('Reported days'),
           presenter: ReportPresenter,
           props: {
-            month: month ?? getMonth(currentDate, currentDate.getMonth()),
+            month: startDate ?? getStartDate(currentDate.getFullYear(), currentDate.getMonth()),
             display: (staff: Staff) => (timeReports.get(staff._id) ?? { value: 0 }).value
           },
           sortingKey: '@wdCount',
           sortingFunction: (a: Doc, b: Doc) =>
-            getTotal(getRequests(b._id as Ref<Staff>, month), month.getMonth(), types) -
-            getTotal(getRequests(a._id as Ref<Staff>, month), month.getMonth(), types)
+            getTotal(getStatRequests(b._id as Ref<Staff>, startDate), startDate, endDate, types) -
+            getTotal(getStatRequests(a._id as Ref<Staff>, startDate), startDate, endDate, types)
         }
       ],
       [
@@ -125,16 +124,18 @@
           label: getEmbeddedLabel('PTOs'),
           presenter: StatPresenter,
           props: {
-            month: month ?? getMonth(currentDate, currentDate.getMonth()),
-            display: (req: Request[]) => getTotal(req, month.getMonth(), types, (a) => (a < 0 ? Math.abs(a) : 0)),
-            getRequests
+            month: startDate ?? getMonth(currentDate, currentDate.getMonth()),
+            display: (req: Request[]) => getTotal(req, startDate, endDate, types, (a) => (a < 0 ? Math.abs(a) : 0)),
+            getStatRequests
           },
           sortingKey: '@ptoCount',
           sortingFunction: (a: Doc, b: Doc) =>
-            getTotal(getRequests(b._id as Ref<Staff>, month), month.getMonth(), types, (a) =>
+            getTotal(getStatRequests(b._id as Ref<Staff>, startDate), startDate, endDate, types, (a) =>
               a < 0 ? Math.abs(a) : 0
             ) -
-            getTotal(getRequests(a._id as Ref<Staff>, month), month.getMonth(), types, (a) => (a < 0 ? Math.abs(a) : 0))
+            getTotal(getStatRequests(a._id as Ref<Staff>, startDate), startDate, endDate, types, (a) =>
+              a < 0 ? Math.abs(a) : 0
+            )
         }
       ],
       [
@@ -144,16 +145,18 @@
           label: getEmbeddedLabel('EXTRa'),
           presenter: StatPresenter,
           props: {
-            month: month ?? getMonth(currentDate, currentDate.getMonth()),
-            display: (req: Request[]) => getTotal(req, month.getMonth(), types, (a) => (a > 0 ? Math.abs(a) : 0)),
-            getRequests
+            month: startDate ?? getMonth(currentDate, currentDate.getMonth()),
+            display: (req: Request[]) => getTotal(req, startDate, endDate, types, (a) => (a > 0 ? Math.abs(a) : 0)),
+            getStatRequests
           },
           sortingKey: '@extraCount',
           sortingFunction: (a: Doc, b: Doc) =>
-            getTotal(getRequests(b._id as Ref<Staff>, month), month.getMonth(), types, (a) =>
+            getTotal(getStatRequests(b._id as Ref<Staff>, startDate), startDate, endDate, types, (a) =>
               a > 0 ? Math.abs(a) : 0
             ) -
-            getTotal(getRequests(a._id as Ref<Staff>, month), month.getMonth(), types, (a) => (a > 0 ? Math.abs(a) : 0))
+            getTotal(getStatRequests(a._id as Ref<Staff>, startDate), startDate, endDate, types, (a) =>
+              a > 0 ? Math.abs(a) : 0
+            )
         }
       ],
       ...typevals

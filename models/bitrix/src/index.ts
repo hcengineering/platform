@@ -87,7 +87,7 @@ export function createModel (builder: Builder): void {
       },
       label: bitrix.string.BitrixImport,
       icon: bitrix.icon.Bitrix,
-      input: 'any',
+      input: 'none',
       category: view.category.General,
       target: core.class.Doc,
       context: { mode: ['workbench', 'browser', 'editor', 'panel', 'popup'], group: 'create' }

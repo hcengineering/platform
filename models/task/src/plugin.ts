@@ -58,7 +58,9 @@ export default mergeIds(taskId, task, {
     TodoItemPresenter: '' as AnyComponent,
     StatusTableView: '' as AnyComponent,
     TaskHeader: '' as AnyComponent,
-    Dashboard: '' as AnyComponent
+    Dashboard: '' as AnyComponent,
+    StateRefPresenter: '' as AnyComponent,
+    DoneStateRefPresenter: '' as AnyComponent
   },
   space: {
     TasksPublic: '' as Ref<Space>

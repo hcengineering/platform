@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import { Class, DocumentQuery, FindOptions, Ref, SortingOrder } from '@hcengineering/core'
-  import { createQuery } from '@hcengineering/presentation'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import { DoneState, SpaceWithStates, State, Task } from '@hcengineering/task'
   import { TabList } from '@hcengineering/ui'
   import type { TabItem } from '@hcengineering/ui'
@@ -27,26 +27,26 @@
 
   export let _class: Ref<Class<Task>>
   export let space: Ref<SpaceWithStates>
+  export let query: DocumentQuery<Task>
   export let options: FindOptions<Task> | undefined
   export let config: string[]
-  export let search: string
 
   let doneStatusesView: boolean = false
   let state: Ref<State> | undefined = undefined
   const selectedDoneStates: Set<Ref<DoneState>> = new Set<Ref<DoneState>>()
   $: resConfig = updateConfig(config)
-  let query = {}
   let doneStates: DoneState[] = []
   let itemsDS: TabItem[] = []
   let selectedDS: string[] = []
   let withoutDone: boolean = false
+  let resultQuery: DocumentQuery<Task>
 
   function updateConfig (config: string[]): string[] {
     if (state !== undefined) {
-      return config.filter((p) => p !== '$lookup.state')
+      return config.filter((p) => p !== 'state')
     }
     if (selectedDoneStates.size === 1) {
-      return config.filter((p) => p !== '$lookup.doneState')
+      return config.filter((p) => p !== 'doneState')
     }
     return config
   }
@@ -77,12 +77,11 @@
     }
   )
 
-  async function updateQuery (search: string, selectedDoneStates: Set<Ref<DoneState>>): Promise<void> {
+  const client = getClient()
+
+  async function updateQuery (query: DocumentQuery<Task>, selectedDoneStates: Set<Ref<DoneState>>): Promise<void> {
     resConfig = updateConfig(config)
-    const result = {} as DocumentQuery<Task>
-    if (search !== '') {
-      result.$search = search
-    }
+    const result = client.getHierarchy().clone(query)
     result.space = space
     if (state) {
       result.state = state
@@ -94,7 +93,7 @@
     } else if (withoutDone) {
       result.doneState = null
     }
-    query = result
+    resultQuery = result
   }
 
   function doneStateClick (id: Ref<DoneState>): void {
@@ -108,17 +107,17 @@
       selectedDS = ['NoDoneState']
       withoutDone = true
     }
-    updateQuery(search, selectedDoneStates)
+    updateQuery(query, selectedDoneStates)
   }
 
   function noDoneClick (): void {
     withoutDone = true
     selectedDS = ['NoDoneState']
     selectedDoneStates.clear()
-    updateQuery(search, selectedDoneStates)
+    updateQuery(query, selectedDoneStates)
   }
 
-  $: updateQuery(search, selectedDoneStates)
+  $: updateQuery(query, selectedDoneStates)
   const handleSelect = (result: any) => {
     if (result.type === 'select') {
       const res = result.detail
@@ -127,12 +126,12 @@
         state = undefined
         withoutDone = false
         selectedDoneStates.clear()
-        updateQuery(search, selectedDoneStates)
+        updateQuery(query, selectedDoneStates)
       } else if (res.id === 'DoneStates') {
         doneStatusesView = true
         state = undefined
         selectedDoneStates.clear()
-        updateQuery(search, selectedDoneStates)
+        updateQuery(query, selectedDoneStates)
       }
     }
   }
@@ -158,11 +157,11 @@
   {#if doneStatusesView}
     <TabList items={itemsDS} bind:selected={selectedDS} multiselect on:select={handleDoneSelect} size={'small'} />
   {:else}
-    <StatesBar bind:state {space} gap={'none'} on:change={() => updateQuery(search, selectedDoneStates)} />
+    <StatesBar bind:state {space} gap={'none'} on:change={() => updateQuery(query, selectedDoneStates)} />
   {/if}
 </div>
 <div class="statustableview-container">
-  <TableBrowser {_class} bind:query config={resConfig} {options} showNotification />
+  <TableBrowser {_class} bind:query={resultQuery} config={resConfig} {options} showNotification />
 </div>
 
 <style lang="scss">

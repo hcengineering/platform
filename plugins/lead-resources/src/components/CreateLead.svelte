@@ -14,11 +14,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Contact } from '@hcengineering/contact'
+  import contact, { Contact, Employee } from '@hcengineering/contact'
   import { AttachedData, generateId, Ref, SortingOrder, Space } from '@hcengineering/core'
-  import type { Customer, Lead } from '@hcengineering/lead'
+  import type { Customer, Funnel, Lead } from '@hcengineering/lead'
   import { OK, Status } from '@hcengineering/platform'
-  import { Card, getClient, SpaceSelector, UserBox } from '@hcengineering/presentation'
+  import { Card, createQuery, EmployeeBox, getClient, SpaceSelector, UserBox } from '@hcengineering/presentation'
   import task, { calcRank } from '@hcengineering/task'
   import { createFocusManager, EditBox, FocusHandler, Label, Status as StatusControl, Button } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
@@ -41,14 +41,20 @@
     return (preserveCustomer || customer === undefined) && title === ''
   }
 
-  $: client.findAll(lead.class.Funnel, {}).then((r) => {
-    if (r.find((it) => it._id === _space) === undefined) {
-      _space = r.shift()?._id as Ref<Space>
+  let funnels: Funnel[] = []
+  const funnelQuery = createQuery()
+  funnelQuery.query(lead.class.Funnel, {}, (res) => (funnels = res))
+
+  $: {
+    if (funnels.find((it) => it._id === _space) === undefined) {
+      _space = funnels[0]?._id
     }
-  })
+  }
+
+  let assignee: Ref<Employee> | undefined = undefined
 
   async function createLead () {
-    const state = await client.findOne(task.class.State, { space: _space })
+    const state = await client.findOne(task.class.State, { space: _space }, { sort: { rank: SortingOrder.Ascending } })
     if (state === undefined) {
       throw new Error('create application: state not found')
     }
@@ -145,6 +151,13 @@
   </div>
 
   <svelte:fragment slot="pool">
+    <EmployeeBox
+      focusIndex={2}
+      label={lead.string.Assignee}
+      bind:value={assignee}
+      allowDeselect
+      titleDeselect={lead.string.UnAssign}
+    />
     {#if !preserveCustomer}
       <UserBox
         focusIndex={2}

@@ -42,7 +42,7 @@
       <Scroller horizontal>
         <Table
           _class={lead.class.Lead}
-          config={['', '$lookup.state', '$lookup.doneState']}
+          config={['', 'state', 'doneState']}
           query={{ attachedTo: objectId }}
           {loadingProps}
         />
@@ -50,7 +50,7 @@
     {:else}
       <Table
         _class={lead.class.Lead}
-        config={['', '$lookup.state', '$lookup.doneState']}
+        config={['', 'state', 'doneState']}
         query={{ attachedTo: objectId }}
         {loadingProps}
       />

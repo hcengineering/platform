@@ -23,7 +23,7 @@
   {_class}
   config={[
     'title',
-    '$lookup.state',
+    'state',
     {
       key: '',
       presenter: tags.component.TagsPresenter,

@@ -20,8 +20,11 @@
   import { AttachedData, getCurrentAccount, Ref } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Request, RequestStatus } from '@hcengineering/request'
-  import { Button } from '@hcengineering/ui'
   import request from '../plugin'
+  import type { RefAction } from '@hcengineering/text-editor'
+  import DocFail from './icons/DocFail.svelte'
+  import DocSuccess from './icons/DocSuccess.svelte'
+  import Comments from './icons/Comments.svelte'
 
   export let value: Request
 
@@ -84,6 +87,25 @@
   }
 
   let refInput: AttachmentRefInput
+  let extraActions: RefAction[]
+  $: extraActions = [
+    {
+      label: request.string.Approve,
+      icon: DocSuccess,
+      action: () => approve(),
+      order: 1000,
+      fill: 'var(--won-color)',
+      disabled
+    },
+    {
+      label: request.string.Reject,
+      icon: DocFail,
+      action: () => reject(),
+      order: 2000,
+      fill: 'var(--lost-color)',
+      disabled
+    }
+  ]
 </script>
 
 {#if value.status === RequestStatus.Active}
@@ -93,15 +115,11 @@
       space={value.space}
       _class={value._class}
       objectId={value._id}
-      showSend={false}
+      iconSend={Comments}
+      labelSend={request.string.Comment}
       on:update={onUpdate}
+      placeholder={request.string.PleaseTypeMessage}
+      extraActions={approvable ? extraActions : undefined}
     />
-  </div>
-  <div class="mt-2 flex gap-2">
-    <Button label={request.string.Comment} {disabled} on:click={saveComment} />
-    {#if approvable}
-      <Button label={request.string.Approve} {disabled} on:click={approve} />
-      <Button label={request.string.Reject} {disabled} on:click={reject} />
-    {/if}
   </div>
 {/if}

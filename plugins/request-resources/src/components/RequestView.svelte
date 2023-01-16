@@ -63,10 +63,14 @@
 <style lang="scss">
   .container {
     background-color: var(--body-color);
-    margin: 0.5rem;
-    padding: 0.75rem;
-    border-radius: 0.5rem;
+    padding: 0.5rem 0.75rem 0.75rem;
+    min-height: 0;
+    border-radius: 0.75rem;
     border: 1px solid var(--divider-color);
+
+    &:not(:last-child) {
+      margin-bottom: 0.75rem;
+    }
   }
 
   .label {

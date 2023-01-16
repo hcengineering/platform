@@ -24,29 +24,21 @@
   export let model: NavigatorModel | undefined
 </script>
 
-<div class="flex-col h-full">
-  <div class="flex-row-center header">
-    <div class="content-color mr-3"><Icon icon={view.icon.Archive} size={'medium'} /></div>
-    <div class="fs-title"><Label label={workbench.string.Archived} /></div>
+<div class="ac-header">
+  <div class="ac-header__wrap-title">
+    <div class="ac-header__icon"><Icon icon={view.icon.Archive} size={'small'} /></div>
+    <div class="ac-header__title"><Label label={workbench.string.Archived} /></div>
   </div>
-  {#if model}
-    <TableBrowser
-      _class={core.class.Space}
-      config={['', '$lookup._class', 'modifiedOn']}
-      showNotification
-      baseMenuClass={core.class.Space}
-      query={{
-        _class: { $in: getSpecialSpaceClass(model) },
-        archived: true
-      }}
-    />
-  {/if}
 </div>
-
-<style lang="scss">
-  .header {
-    padding: 0 1.75rem 0 2.5rem;
-    height: 4rem;
-    min-height: 4rem;
-  }
-</style>
+{#if model}
+  <TableBrowser
+    _class={core.class.Space}
+    config={['', '_class', 'modifiedOn']}
+    showNotification
+    baseMenuClass={core.class.Space}
+    query={{
+      _class: { $in: getSpecialSpaceClass(model) },
+      archived: true
+    }}
+  />
+{/if}

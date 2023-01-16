@@ -70,7 +70,7 @@
         config={[
           '$lookup.attachedTo',
           '',
-          '$lookup.employee',
+          'employee',
           {
             key: '$lookup.attachedTo',
             presenter: ParentNamesPresenter,

@@ -17,7 +17,7 @@
     "Leads": "Сделки",
     "SelectCustomer": "Выбрать клиента",
     "Lead": "Сделка",
-    "Assignee": "Назначена",
+    "Assignee": "Исполнитель",
     "Title": "Загаловок",
     "LeadPlaceholder": "Простая сделка",
     "ManageFunnelStatuses": "Управление статусами воронки",
@@ -30,6 +30,7 @@
     "Description": "Описание",
     "FullDescription": "Детальное описание",
     "FunnelPlaceholder": "Простая воронка",
-    "Members": "Пользователи"
+    "Members": "Пользователи",
+    "UnAssign": "Отменить назначение"
   }
 }

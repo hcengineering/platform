@@ -35,8 +35,8 @@
     '',
     '$lookup.space.name',
     '$lookup.space.$lookup.company',
-    '$lookup.state',
-    '$lookup.doneState'
+    'state',
+    'doneState'
   ]
   let wSection: number
 </script>

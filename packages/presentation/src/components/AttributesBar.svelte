@@ -34,6 +34,7 @@
 
 <style lang="scss">
   .attributes-bar-container {
+    flex-shrink: 0;
     display: grid;
     grid-template-columns: 1fr 2fr;
     grid-auto-flow: row;

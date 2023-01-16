@@ -16,11 +16,13 @@
 <script lang="ts">
   import { TxViewlet } from '@hcengineering/activity'
   import { ActivityKey, DisplayTx, newDisplayTx, TxView } from '@hcengineering/activity-resources'
-  import core, { Doc, TxCUD, TxProcessor, WithLookup } from '@hcengineering/core'
+  import core, { Doc, TxCUD, TxProcessor, WithLookup, Ref, Class } from '@hcengineering/core'
   import { Notification, NotificationStatus } from '@hcengineering/notification'
   import { getClient } from '@hcengineering/presentation'
-  import { ActionIcon, Component, getPlatformColor, IconBack, IconCheck, IconDelete } from '@hcengineering/ui'
+  import { Button, Component, getPlatformColor, IconBack, IconCheck, IconDelete } from '@hcengineering/ui'
+  import type { AnyComponent } from '@hcengineering/ui'
   import view from '@hcengineering/view'
+  import { getObjectPreview } from '@hcengineering/view-resources'
   import plugin from '../plugin'
 
   export let notification: WithLookup<Notification>
@@ -46,72 +48,166 @@
   }
 
   $: displayTx = getDisplayTx(notification)
+
+  let presenter: AnyComponent | undefined
+  let doc: Doc | undefined
+  let visible: boolean = false
+  async function updatePreviewPresenter (ref?: Ref<Class<Doc>>): Promise<void> {
+    presenter = ref !== undefined ? await getObjectPreview(client, ref) : undefined
+  }
+  $: if (displayTx) updatePreviewPresenter(displayTx.tx.objectClass)
+  $: if (presenter !== undefined && displayTx) {
+    client.findOne(displayTx.tx.objectClass, { _id: displayTx.tx.objectId }).then((res) => (doc = res))
+  }
 </script>
 
 {#if displayTx}
   {@const isNew = notification.status !== NotificationStatus.Read}
-  <!-- svelte-ignore a11y-mouse-events-have-key-events -->
-  <div class="content">
-    <div class="flex-row">
-      <div class="bottom-divider mb-2">
-        <div class="flex-row-center mb-2 mt-2">
-          <div class="notify mr-4" style:color={isNew ? getPlatformColor(11) : '#555555'} />
-          <div
-            class="flex-shrink"
-            on:click={() => {
-              changeState(notification, NotificationStatus.Read)
-            }}
-          >
-            <Component
-              is={view.component.ObjectPresenter}
-              props={{
-                objectId: displayTx.tx.objectId,
-                _class: displayTx.tx.objectClass,
-                value: displayTx.doc,
-                inline: true
-              }}
-            />
-          </div>
-          <div class="flex flex-reverse flex-gap-3 flex-grow">
-            <ActionIcon
-              icon={IconDelete}
-              label={plugin.string.Remove}
-              size={'medium'}
-              action={() => {
-                client.remove(notification)
-              }}
-            />
-            <ActionIcon
-              icon={isNew ? IconCheck : IconBack}
-              iconProps={!isNew ? { kind: 'curve' } : {}}
-              label={plugin.string.MarkAsRead}
-              size={'medium'}
-              action={() => {
-                changeState(notification, isNew ? NotificationStatus.Read : NotificationStatus.Notified)
-              }}
-            />
-          </div>
-        </div>
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <div
+    class="content {isNew ? 'new' : 'readed'} with-document"
+    class:visible
+    style:--color={isNew ? getPlatformColor(11) : '#555555'}
+    on:click|preventDefault|stopPropagation={() => {
+      changeState(notification, NotificationStatus.Read)
+      visible = !visible
+    }}
+  >
+    <div class="subheader">
+      <div class="flex-grow">
+        <Component
+          is={view.component.ObjectPresenter}
+          props={{
+            objectId: displayTx.tx.objectId,
+            _class: displayTx.tx.objectClass,
+            value: displayTx.doc,
+            inline: true
+          }}
+        />
       </div>
-      <TxView tx={displayTx} {viewlets} showIcon={false} />
+      <div class="buttons-group xsmall-gap">
+        <Button
+          icon={isNew ? IconCheck : IconBack}
+          iconProps={!isNew ? { kind: 'curve' } : {}}
+          kind={'transparent'}
+          showTooltip={{ label: plugin.string.MarkAsRead }}
+          size={'medium'}
+          on:click={() => {
+            if (!isNew && visible) visible = false
+            changeState(notification, isNew ? NotificationStatus.Read : NotificationStatus.Notified)
+          }}
+        />
+        <Button
+          icon={IconDelete}
+          kind={'transparent'}
+          showTooltip={{ label: plugin.string.Remove }}
+          size={'medium'}
+          on:click={() => {
+            client.remove(notification)
+          }}
+        />
+      </div>
     </div>
+    <TxView tx={displayTx} {viewlets} showIcon={false} contentHidden={!visible} />
+    {#if presenter && doc}
+      <div class="document-preview">
+        <Component is={presenter} props={{ object: doc }} />
+      </div>
+    {/if}
   </div>
 {/if}
 
 <style lang="scss">
   .content {
-    padding: 0.5rem;
-    border-radius: 0.5rem;
-    border: 1px solid transparent;
-  }
-  .notify {
-    width: 0.5rem;
-    height: 0.5rem;
-    border-radius: 0.25rem;
-    outline: 1px solid transparent;
-    outline-offset: 2px;
-    transition: all 0.1s ease-in-out;
-    z-index: -1;
-    background-color: currentColor;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0.75rem;
+    padding: 0.5rem 0.75rem 0.75rem;
+    min-height: 0;
+    border: 1px solid var(--button-border-color);
+    border-radius: 0.75rem;
+    transition-property: border-color, background-color, height;
+    transition-duration: 0.3s, 0.15s, 0.15s;
+    transition-timing-function: ease-in-out;
+
+    &.new {
+      background-color: var(--popup-bg-hover);
+    }
+    &.readed {
+      background-color: var(--body-accent);
+    }
+    &:hover {
+      border-color: var(--button-border-hover);
+    }
+    &.with-document {
+      cursor: pointer;
+
+      &::before {
+        content: '';
+        position: absolute;
+        bottom: -0.25rem;
+        left: 1rem;
+        right: 1rem;
+        width: calc(100% - 2rem);
+        height: 0.75rem;
+        background-color: var(--body-accent);
+        border: 1px solid var(--divider-color);
+        border-radius: 0.5rem;
+        z-index: -1;
+        transition: bottom 0.15s ease-in-out;
+        box-shadow: var(--primary-shadow);
+      }
+      &:hover::before {
+        bottom: -0.4rem;
+      }
+      &.visible::before {
+        bottom: 0.25rem;
+      }
+    }
+
+    .subheader {
+      position: relative;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 0 0.5rem 1.75rem;
+      margin-bottom: 0.5rem;
+      min-height: 0;
+      border-bottom: 1px solid var(--divider-color);
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0.5rem;
+        width: 0.5rem;
+        height: 0.5rem;
+        background-color: var(--color);
+        transform: translateY(calc(-50% - 0.25rem));
+        border-radius: 50%;
+      }
+    }
+    .document-preview {
+      overflow: hidden;
+      visibility: hidden;
+      margin-top: -0.5rem;
+      padding: 0;
+      max-height: 0;
+      background-color: var(--body-color);
+      border: 1px solid var(--divider-color);
+      border-radius: 0.5rem;
+      opacity: 0;
+      transition-property: margin-top, max-height, opacity;
+      transition-timing-function: ease-in-out;
+      transition-duration: 0.15s;
+    }
+    &.visible .document-preview {
+      visibility: visible;
+      margin-top: 0.5rem;
+      padding: 0.75rem 1rem;
+      max-height: max-content;
+      opacity: 1;
+    }
   }
 </style>

@@ -30,6 +30,7 @@
   export let previewUnlimit: boolean = false
   export let focusable: boolean = false
   export let enableFormatting = false
+  export let autofocus = false
 
   const Mode = {
     View: 1,
@@ -118,11 +119,13 @@
       {maxHeight}
       {focusable}
       {enableFormatting}
+      {autofocus}
       bind:content={rawValue}
       bind:this={textEditor}
       on:attach
       on:focus={() => {
         focused = true
+        dispatch('focus')
       }}
       on:blur={() => {
         focused = false

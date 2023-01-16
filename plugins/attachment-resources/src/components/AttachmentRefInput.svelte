@@ -15,11 +15,13 @@
 <script lang="ts">
   import { createQuery, getClient, draftStore, updateDraftStore } from '@hcengineering/presentation'
   import { ReferenceInput } from '@hcengineering/text-editor'
+  import type { RefAction } from '@hcengineering/text-editor'
   import { deleteFile, uploadFile } from '../utils'
   import attachment from '../plugin'
-  import { setPlatformStatus, unknownError } from '@hcengineering/platform'
+  import { IntlString, setPlatformStatus, unknownError, Asset } from '@hcengineering/platform'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import { Account, Class, Doc, generateId, Ref, Space } from '@hcengineering/core'
+  import type { AnySvelteComponent } from '@hcengineering/ui'
   import { Attachment } from '@hcengineering/attachment'
   import AttachmentPresenter from './AttachmentPresenter.svelte'
 
@@ -27,12 +29,17 @@
   export let space: Ref<Space>
   export let _class: Ref<Class<Doc>>
   export let content: string = ''
+  export let iconSend: Asset | AnySvelteComponent | undefined = undefined
+  export let labelSend: IntlString | undefined = undefined
   export let showSend = true
   export let shouldSaveDraft: boolean = false
   export let attachments: Map<Ref<Attachment>, Attachment> = new Map<Ref<Attachment>, Attachment>()
   export function submit (): void {
     refInput.submit()
   }
+  export let placeholder: IntlString | undefined = undefined
+  export let extraActions: RefAction[] | undefined = undefined
+
   let refInput: ReferenceInput
 
   let inputFile: HTMLInputElement
@@ -87,7 +94,7 @@
 
   async function createAttachment (file: File) {
     try {
-      const uuid = await uploadFile(file, { space, attachedTo: objectId })
+      const uuid = await uploadFile(file)
       const _id: Ref<Attachment> = generateId()
       attachments.set(_id, {
         _id,
@@ -271,6 +278,8 @@
     <ReferenceInput
       bind:this={refInput}
       {content}
+      {iconSend}
+      {labelSend}
       {showSend}
       on:message={onMessage}
       haveAttachment={attachments.size > 0}
@@ -279,6 +288,8 @@
         inputFile.click()
       }}
       on:update={onUpdate}
+      {placeholder}
+      {extraActions}
     />
   </div>
 </div>

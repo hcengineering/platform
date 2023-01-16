@@ -75,11 +75,12 @@
     }
 
     const projectsInfo = [
-      { id: null, icon: tracker.icon.Projects, label: tracker.string.NoProject },
+      { id: null, icon: tracker.icon.Projects, label: tracker.string.NoProject, isSelected: !selectedProject },
       ...rawProjects.map((p) => ({
         id: p._id,
         icon: p.icon,
-        text: p.label
+        text: p.label,
+        isSelected: selectedProject ? p._id === selectedProject._id : false
       }))
     ]
 
@@ -117,9 +118,9 @@
     on:click={handleProjectEditorOpened}
     ><svelte:fragment slot="content">
       <span
-        class="{enlargedText
-          ? 'ml-1 text-base fs-bold'
-          : 'text-md'} overflow-label content-accent-color pointer-events-none"
+        class="{enlargedText ? 'ml-1 text-base fs-bold' : 'text-md'} overflow-label {!value
+          ? 'content-color'
+          : 'content-accent-color'} pointer-events-none"
       >
         <Label label={getEmbeddedLabel(projectText)} />
       </span>

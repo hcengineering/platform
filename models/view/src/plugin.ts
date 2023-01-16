@@ -47,7 +47,7 @@ export default mergeIds(viewId, view, {
     IntlStringPresenter: '' as AnyComponent,
     NumberEditor: '' as AnyComponent,
     NumberPresenter: '' as AnyComponent,
-    HTMLPresenter: '' as AnyComponent,
+    MarkupPresenter: '' as AnyComponent,
     BooleanPresenter: '' as AnyComponent,
     BooleanEditor: '' as AnyComponent,
     TimestampPresenter: '' as AnyComponent,
@@ -58,8 +58,13 @@ export default mergeIds(viewId, view, {
     YoutubePresenter: '' as AnyComponent,
     GithubPresenter: '' as AnyComponent,
     ClassPresenter: '' as AnyComponent,
+    ClassRefPresenter: '' as AnyComponent,
     EnumEditor: '' as AnyComponent,
-    HTMLEditor: '' as AnyComponent
+    HTMLEditor: '' as AnyComponent,
+    MarkupEditor: '' as AnyComponent,
+    MarkupEditorPopup: '' as AnyComponent,
+    ListView: '' as AnyComponent,
+    GrowPresenter: '' as AnyComponent
   },
   string: {
     Table: '' as IntlString,
@@ -82,7 +87,8 @@ export default mergeIds(viewId, view, {
     General: '' as IntlString,
     Navigation: '' as IntlString,
     Editor: '' as IntlString,
-    MarkdownFormatting: '' as IntlString
+    MarkdownFormatting: '' as IntlString,
+    List: '' as IntlString
   },
   function: {
     FilterObjectInResult: '' as Resource<(filter: Filter, onUpdate: () => void) => Promise<ObjQueryType<any>>>,

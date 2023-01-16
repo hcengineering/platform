@@ -16,7 +16,7 @@
 <script lang="ts">
   import type { IntlString } from '@hcengineering/platform'
   import { createEventDispatcher } from 'svelte'
-  import { EditBox, resizeObserver } from '@hcengineering/ui'
+  import { Button, EditBox, IconCheck, resizeObserver } from '@hcengineering/ui'
   import type { EditStyle } from '@hcengineering/ui'
 
   export let value: string | number | undefined
@@ -32,7 +32,12 @@
 </script>
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
-  <div class="header no-border">
-    <EditBox bind:value {placeholder} {format} {kind} focus on:keypress={_onkeypress} />
+  <div class="header no-border flex-row-center">
+    <div class="flex-grow">
+      <EditBox bind:value {placeholder} {format} {kind} focus on:keypress={_onkeypress} />
+    </div>
+    <div class="p-1">
+      <Button icon={IconCheck} size={'small'} on:click={() => dispatch('close', value)} />
+    </div>
   </div>
 </div>

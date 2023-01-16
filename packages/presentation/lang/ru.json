@@ -33,6 +33,7 @@
     "CategoryPreviousAssigned": "Ранее назначенные",
     "CategoryProjectLead": "Руководитель проекта",
     "CategoryProjectMembers": "Участники проекта",
-    "CategoryOther": "Прочие"
+    "CategoryOther": "Прочие",
+    "InltPropsValue": "{value}"
   }
 }

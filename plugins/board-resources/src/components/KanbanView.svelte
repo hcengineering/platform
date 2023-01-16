@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import board, { Card } from '@hcengineering/board'
-  import { Class, Doc, FindOptions, Ref, SortingOrder, WithLookup } from '@hcengineering/core'
+  import { Class, Doc, DocumentQuery, FindOptions, Ref, SortingOrder, WithLookup } from '@hcengineering/core'
   import { Kanban as KanbanUI } from '@hcengineering/kanban'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import type { Kanban, SpaceWithStates, State } from '@hcengineering/task'
@@ -37,7 +37,7 @@
 
   export let _class: Ref<Class<Card>>
   export let space: Ref<SpaceWithStates>
-  export let search: string
+  export let query: DocumentQuery<Card>
   export let options: FindOptions<Card> | undefined
 
   let kanban: Kanban
@@ -95,6 +95,8 @@
 
     showPopup(ContextMenu, { object }, getEventPositionElement(ev))
   }
+
+  $: resultQuery = { ...query, doneState: null, isArchived: { $nin: [true] }, space }
 </script>
 
 <ActionContext
@@ -105,12 +107,10 @@
 <KanbanUI
   bind:this={kanbanUI}
   {_class}
-  {search}
   {options}
-  query={{ doneState: null, isArchived: { $nin: [true] }, space }}
+  query={resultQuery}
   {states}
   fieldName={'state'}
-  rankFieldName={'rank'}
   on:content={(evt) => {
     listProvider.update(evt.detail)
   }}

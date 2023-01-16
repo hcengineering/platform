@@ -19,7 +19,7 @@
   },
   "devDependencies": {
     "cross-env": "~7.0.3",
-    "@hcengineering/platform-rig": "~0.6.0",
+    "@hcengineering/platform-rig": "^0.6.0",
     "@types/heft-jest": "^1.0.3",
     "@types/node": "~16.11.12",
     "@typescript-eslint/eslint-plugin": "^5.41.0",
@@ -27,7 +27,7 @@
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-n": "^15.4.0",
     "eslint": "^8.26.0",
-    "esbuild": "^0.15.13",
+    "esbuild": "^0.16.14",
     "@types/koa-bodyparser": "^4.3.3",
     "@types/koa-router": "^7.4.4",
     "@types/koa": "^2.13.4",
@@ -40,16 +40,16 @@
     "typescript": "^4.3.5"
   },
   "dependencies": {
-    "@hcengineering/account": "~0.6.0",
+    "@hcengineering/account": "^0.6.0",
     "@hcengineering/platform": "^0.6.8",
-    "@hcengineering/core": "^0.6.19",
+    "@hcengineering/core": "^0.6.20",
     "mongodb": "^4.11.0",
     "koa": "^2.13.1",
     "koa-router": "^10.1.1",
     "koa-bodyparser": "^4.3.0",
     "@koa/cors": "^3.1.0",
-    "@hcengineering/server-tool": "~0.6.0",
-    "@hcengineering/server-token": "~0.6.0",
-    "@hcengineering/model-all": "~0.6.0"
+    "@hcengineering/server-tool": "^0.6.0",
+    "@hcengineering/server-token": "^0.6.0",
+    "@hcengineering/model-all": "^0.6.0"
   }
 }

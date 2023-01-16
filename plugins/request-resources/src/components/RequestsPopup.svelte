@@ -34,15 +34,19 @@
   )
 </script>
 
-<div class="notifyPopup">
-  <div class="header">
+<div class="notifyPopup" class:justify-center={requests.length === 0}>
+  <div class="header flex-between">
     <span class="fs-title overflow-label"><Label label={request.string.Requests} /></span>
   </div>
-  <Scroller>
-    <div class="px-4 clear-mins">
+  {#if requests.length > 0}
+    <Scroller padding={'0 .5rem'}>
       {#each requests as request (request._id)}
         <RequestView value={request} />
       {/each}
+    </Scroller>
+  {:else}
+    <div class="flex-grow flex-center">
+      <Label label={request.string.NoRequests} />
     </div>
-  </Scroller>
+  {/if}
 </div>

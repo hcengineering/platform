@@ -161,7 +161,7 @@
     "Relations": "Relations",
     "RemoveRelation": "Remove relation...",
     "AddBlockedBy": "Mark as blocked by...",
-    "AddIsBlocking": "Mark as bloking...",
+    "AddIsBlocking": "Mark as blocking...",
     "AddRelatedIssue": "Reference another issue...",
     "RelatedIssue": "Related issue {id} - {title}",
     "BlockedIssue": "Blocked issue {id} - {title}",

@@ -1,7 +1,7 @@
 import { Doc } from '@hcengineering/core'
 import { panelstore } from '@hcengineering/ui'
 import { onDestroy } from 'svelte'
-import { writable } from 'svelte/store'
+import { Unsubscriber, writable } from 'svelte/store'
 
 /**
  * @public
@@ -85,22 +85,52 @@ export function updateFocus (selection?: FocusSelection): void {
   }
 }
 
+const providers: ListSelectionProvider[] = []
+
 /**
  * @public
  *
  * List selection provider
  */
 export class ListSelectionProvider implements SelectionFocusProvider {
-  _docs: Doc[] = []
+  private _docs: Doc[] = []
   _current?: FocusSelection
-  constructor (private readonly delegate: (offset: 1 | -1 | 0, of?: Doc, direction?: SelectDirection) => void) {
-    const unsubscribe = focusStore.subscribe((doc) => {
+  private readonly unsubscribe: Unsubscriber
+  constructor (
+    private readonly delegate: (offset: 1 | -1 | 0, of?: Doc, direction?: SelectDirection) => void,
+    autoDestroy = true
+  ) {
+    this.unsubscribe = focusStore.subscribe((doc) => {
       this._current = doc
     })
-    onDestroy(() => {
-      unsubscribe()
-      updateFocus(undefined)
-    })
+    providers.push(this)
+    if (autoDestroy) {
+      onDestroy(() => {
+        this.destroy()
+      })
+    }
+  }
+
+  static Pop (): void {
+    if (providers.length === 0) return
+    const last = providers[providers.length - 1]
+    last.destroy()
+  }
+
+  destroy (): void {
+    const thisIndex = providers.findIndex((p) => p === this)
+    providers.splice(thisIndex, 1)
+    if (thisIndex === providers.length) {
+      if (providers.length > 0) {
+        const current = providers[providers.length - 1]
+        const index = current.current()
+        const target = index !== undefined ? current.docs()[index] : undefined
+        updateFocus({ focus: target, provider: current })
+      } else {
+        updateFocus()
+      }
+    }
+    this.unsubscribe()
   }
 
   select (offset: 1 | -1 | 0, of?: Doc, direction?: SelectDirection): void {
@@ -143,6 +173,7 @@ export class ListSelectionProvider implements SelectionFocusProvider {
   }
 
   current (doc?: FocusSelection): number | undefined {
-    return this._docs.findIndex((it) => it._id === doc?.focus?._id)
+    const index = this._docs.findIndex((it) => it._id === (doc?.focus?._id ?? this._current?.focus?._id))
+    return index === -1 ? undefined : index
   }
 }

@@ -94,6 +94,7 @@ services:
       - mongodb
       - elastic
       - minio
+      - rekoni
     ports:
       - 3334:3334
     environment:
@@ -105,3 +106,13 @@ services:
       - MINIO_ENDPOINT=minio
       - MINIO_ACCESS_KEY=minioadmin
       - MINIO_SECRET_KEY=minioadmin  
+      - REKONI_URL=http://rekoni:4005
+  rekoni:
+    image: hardcoreeng/rekoni-service
+    restart: on-failure
+    ports:
+      - 4004:4005
+    deploy:
+      resources:
+        limits:
+          memory: 1024M

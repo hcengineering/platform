@@ -4,7 +4,7 @@
   import { getResource, IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Issue } from '@hcengineering/tracker'
-  import { Component, Icon, IconClose } from '@hcengineering/ui'
+  import { Component, Icon, IconClose, showPanel } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { getIssueId, updateIssueRelation } from '../../issues'
   import tracker from '../../plugin'
@@ -70,6 +70,11 @@
     }
     await update(value, type, docs, label)
   }
+
+  async function handleRedirect (issue: Issue) {
+    showPanel(tracker.component.EditIssue, issue._id, issue._class, 'content')
+  }
+
   const asIssue = (x: Doc) => x as WithLookup<Issue>
 </script>
 
@@ -80,7 +85,9 @@
       <div class="tag-container">
         <Icon {icon} size={'small'} />
         <div class="flex-grow">
-          <span class="overflow-label ml-1-5 caption-color">{getIssueId(issue.$lookup.space, issue)}</span>
+          <button on:click|stopPropagation={() => handleRedirect(issue)}>
+            <span class="overflow-label ml-1-5 caption-color">{getIssueId(issue.$lookup.space, issue)}</span>
+          </button>
         </div>
         <button class="btn-close" on:click|stopPropagation={() => handleClick(issue)}>
           <Icon icon={IconClose} size={'x-small'} />

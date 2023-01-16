@@ -90,7 +90,7 @@
   async function createAttachment (file: File) {
     try {
       const uploadFile = await getResource(attachmentP.helper.UploadFile)
-      const uuid = await uploadFile(file, { space: plugin.space.Gmail, attachedTo: objectId })
+      const uuid = await uploadFile(file)
       await client.addCollection(
         attachmentP.class.Attachment,
         plugin.space.Gmail,

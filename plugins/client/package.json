@@ -18,7 +18,7 @@
     "format": "prettier --write src && eslint --fix src"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "~0.6.0",
+    "@hcengineering/platform-rig": "^0.6.0",
     "@types/heft-jest": "^1.0.3",
     "@typescript-eslint/eslint-plugin": "^5.41.0",
     "eslint-plugin-import": "^2.26.0",
@@ -33,7 +33,7 @@
   },
   "dependencies": {
     "@hcengineering/platform": "^0.6.8",
-    "@hcengineering/core": "^0.6.19"
+    "@hcengineering/core": "^0.6.20"
   },
   "repository": "https://github.com/hcengineering/anticrm",
   "publishConfig": {

@@ -184,14 +184,14 @@ export function fitPopupPositionedElement (
     direction = alignment.position.v + '|' + alignment.position.h
   } else {
     // Vertical
-    if (rect.bottom + rectPopup.height + 28 <= document.body.clientHeight) {
+    if (rect.bottom + rectPopup.height + 28 <= docHeight) {
       newProps.top = `${rect.bottom + 1}px`
       direction = 'bottom'
     } else if (rectPopup.height + 28 < rect.top) {
-      newProps.bottom = `${document.body.clientHeight - rect.top + 1}px`
+      newProps.bottom = `${docHeight - rect.top + 1}px`
       direction = 'top'
     } else {
-      newProps.top = modalHTML.style.bottom = '16px'
+      newProps.top = newProps.bottom = '16px'
       direction = 'top'
     }
 
@@ -255,12 +255,21 @@ export function fitPopupElement (
     } else if (element === 'account') {
       newProps.bottom = '2.75rem'
       newProps.left = '5rem'
+      newProps.minWidth = newProps.maxWidth = '42rem'
+      newProps.maxHeight = 'calc(100vh - 5.5rem)'
+      show = true
     } else if (element === 'account-portrait') {
       newProps.bottom = 'calc(var(--app-panel-width) + .75rem)'
       newProps.right = '.5rem'
+      newProps.minWidth = newProps.maxWidth = 'calc(100vw - 1rem)'
+      newProps.maxHeight = 'calc(100vh - var(--app-panel-width) - 1.5rem)'
+      show = true
     } else if (element === 'account-mobile') {
       newProps.bottom = '.5rem'
       newProps.left = 'calc(var(--app-panel-width) + .5rem)'
+      newProps.minWidth = newProps.maxWidth = 'calc(100vw - var(--app-panel-width) - 1rem)'
+      newProps.maxHeight = 'calc(100vh - 1rem)'
+      show = true
     } else if (element === 'full' && contentPanel === undefined) {
       newProps.top = '0'
       newProps.bottom = '0'

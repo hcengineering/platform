@@ -18,14 +18,20 @@
   import ExpandRightDouble from '@hcengineering/contact-resources/src/components/icons/ExpandRightDouble.svelte'
   import { Account, Class, Client, Doc, FindOptions, generateId, Ref, SortingOrder, Space } from '@hcengineering/core'
   import { getResource, OK, Resource, Severity, Status } from '@hcengineering/platform'
-  import { Card, createQuery, EmployeeBox, getClient, SpaceSelect, UserBox } from '@hcengineering/presentation'
+  import presentation, {
+    Card,
+    createQuery,
+    EmployeeBox,
+    getClient,
+    SpaceSelect,
+    UserBox
+  } from '@hcengineering/presentation'
   import type { Applicant, Candidate, Vacancy } from '@hcengineering/recruit'
   import task, { calcRank, SpaceWithStates, State } from '@hcengineering/task'
   import ui, {
     Button,
     ColorPopup,
     createFocusManager,
-    eventToHTMLElement,
     FocusHandler,
     getPlatformColor,
     Label,
@@ -249,6 +255,7 @@
   }
   let verticalContent: boolean = false
   $: verticalContent = $deviceInfo.isMobile && $deviceInfo.isPortrait
+  let btn: HTMLButtonElement
 </script>
 
 <FocusHandler {manager} />
@@ -333,11 +340,12 @@
           width="min-content"
           size="small"
           kind="no-border"
-          on:click={(ev) => {
+          bind:input={btn}
+          on:click={() => {
             showPopup(
               ColorPopup,
               { value: states, searchable: true, placeholder: ui.string.SearchDots },
-              eventToHTMLElement(ev),
+              btn,
               (result) => {
                 if (result && result.id) {
                   selectedState = { ...result, _id: result.id, title: result.label }
@@ -347,10 +355,13 @@
             )
           }}
         >
-          <div slot="content" class="flex-row-center pointer-events-none">
+          <div slot="content" class="flex-row-center" class:empty={!selectedState}>
             {#if selectedState}
               <div class="color" style="background-color: {getPlatformColor(selectedState.color)}" />
               <span class="label overflow-label">{selectedState.title}</span>
+            {:else}
+              <div class="color" />
+              <span class="label overflow-label"><Label label={presentation.string.NotSelected} /></span>
             {/if}
           </div>
         </Button>
@@ -381,5 +392,20 @@
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
+  }
+
+  .empty {
+    .color {
+      border-color: var(--content-color);
+    }
+    .label {
+      color: var(--content-color);
+    }
+    &:hover .color {
+      border-color: var(--accent-color);
+    }
+    &:hover .label {
+      color: var(--accent-color);
+    }
   }
 </style>

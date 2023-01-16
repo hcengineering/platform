@@ -13,16 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { AnyAttribute, ArrOf, Class, Doc, Lookup, Ref, Type } from '@hcengineering/core'
+  import core, { AnyAttribute, ArrOf, Class, Doc, Ref, Type } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import preferencePlugin from '@hcengineering/preference'
   import presentation, { Card, createQuery, getAttributePresenterClass, getClient } from '@hcengineering/presentation'
   import { Button, getPlatformColorForText, ToggleButton } from '@hcengineering/ui'
-  import { BuildModelKey, Viewlet, ViewletPreference } from '@hcengineering/view'
+  import { Viewlet, ViewletPreference } from '@hcengineering/view'
   import { deepEqual } from 'fast-equals'
   import { createEventDispatcher } from 'svelte'
   import view from '../plugin'
-  import { buildConfigLookup, getLookupClass, getLookupLabel, getLookupProperty } from '../utils'
+  import { buildConfigLookup, getKeyLabel } from '../utils'
 
   export let viewlet: Viewlet
 
@@ -53,7 +53,7 @@
   interface AttributeConfig {
     enabled: boolean
     label: IntlString
-    value: string | BuildModelKey
+    value: string
     _class: Ref<Class<Doc>>
   }
 
@@ -78,17 +78,21 @@
           result.push({
             value: param,
             enabled: true,
-            label: getKeyLabel(viewlet.attachTo, param, lookup),
+            label: getKeyLabel(client, viewlet.attachTo, param, lookup),
             _class: viewlet.attachTo
           })
         }
       } else {
-        result.push({
-          value: param,
-          label: param.label as IntlString,
-          enabled: true,
-          _class: viewlet.attachTo
-        })
+        if (param.key.length === 0) {
+          result.push(getObjectConfig(viewlet.attachTo, param.key))
+        } else {
+          result.push({
+            value: param.key,
+            label: param.label ?? getKeyLabel(client, viewlet.attachTo, param.key, lookup),
+            enabled: true,
+            _class: viewlet.attachTo
+          })
+        }
       }
     }
     return result
@@ -110,13 +114,19 @@
     if (hierarchy.isDerived(attribute.type._class, core.class.Collection)) return
     const value = getValue(attribute.name, attribute.type)
     if (result.findIndex((p) => p.value === value) !== -1) return
-    const typeClassId = getAttributePresenterClass(hierarchy, attribute).attrClass
-    const typeClass = hierarchy.getClass(typeClassId)
-    let presenter = hierarchy.as(typeClass, view.mixin.AttributePresenter).presenter
+    const { attrClass, category } = getAttributePresenterClass(hierarchy, attribute)
+    const typeClass = hierarchy.getClass(attrClass)
+    const mixin =
+      category === 'object'
+        ? view.mixin.ObjectPresenter
+        : category === 'collection'
+          ? view.mixin.CollectionPresenter
+          : view.mixin.AttributePresenter
+    let presenter = hierarchy.as(typeClass, mixin).presenter
     let parent = typeClass.extends
     while (presenter === undefined && parent !== undefined) {
       const pclazz = hierarchy.getClass(parent)
-      presenter = hierarchy.as(pclazz, view.mixin.AttributePresenter).presenter
+      presenter = hierarchy.as(pclazz, mixin).presenter
       parent = pclazz.extends
     }
     if (presenter === undefined) return
@@ -128,7 +138,7 @@
         enabled: false,
         _class: attribute.attributeOf
       }
-      if (result.find((it) => it._class === newValue._class && it.value === newValue.value) === undefined) {
+      if (!isExist(result, newValue)) {
         result.push(newValue)
       }
     } else {
@@ -138,11 +148,22 @@
         enabled: false,
         _class: attribute.attributeOf
       }
-      if (result.find((it) => it._class === newValue._class && it.value === newValue.value) === undefined) {
+      if (!isExist(result, newValue)) {
         result.push(newValue)
       }
     }
   }
+
+  function isExist (result: AttributeConfig[], newValue: AttributeConfig): boolean {
+    for (const res of result) {
+      if (res._class !== newValue._class) continue
+      if (typeof res.value === 'string') {
+        if (res.value === newValue.value) return true
+      }
+    }
+    return false
+  }
+
   function getConfig (viewlet: Viewlet, preference: ViewletPreference | undefined): AttributeConfig[] {
     const result = getBaseConfig(viewlet)
 
@@ -179,18 +200,6 @@
 
   function restoreDefault (): void {
     attributes = getConfig(viewlet, undefined)
-  }
-
-  function getKeyLabel<T extends Doc> (_class: Ref<Class<T>>, key: string, lookup: Lookup<T> | undefined): IntlString {
-    if (key.startsWith('$lookup') && lookup !== undefined) {
-      const lookupClass = getLookupClass(key, lookup, _class)
-      const lookupProperty = getLookupProperty(key)
-      const lookupKey = { key: lookupProperty[0] }
-      return getLookupLabel(client, lookupClass[1], lookupClass[0], lookupKey, lookupProperty[1])
-    } else {
-      const attribute = hierarchy.getAttribute(_class, key)
-      return attribute.label
-    }
   }
 
   function setStatus (result: AttributeConfig[], preference: ViewletPreference): AttributeConfig[] {

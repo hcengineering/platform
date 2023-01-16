@@ -271,7 +271,6 @@ async function doIssueUpdate (
     )
 
     const updatedProject = newParent !== undefined ? newParent.project : null
-    const updatedSprint = newParent !== undefined ? newParent.sprint : null
     const updatedParents =
       newParent !== undefined ? [{ parentId: newParent._id, parentTitle: newParent.title }, ...newParent.parents] : []
 
@@ -282,14 +281,13 @@ async function doIssueUpdate (
           ? {}
           : { parents: [...issue.parents].slice(0, parentInfoIndex + 1).concat(updatedParents) }
 
-      return { ...parentsUpdate, project: updatedProject, sprint: updatedSprint }
+      return { ...parentsUpdate, project: updatedProject }
     }
 
     res.push(
       control.txFactory.createTxUpdateDoc(updateTx.objectClass, updateTx.objectSpace, updateTx.objectId, {
         parents: updatedParents,
-        project: updatedProject,
-        sprint: updatedSprint
+        project: updatedProject
       }),
       ...(await updateSubIssues(updateTx, control, update))
     )

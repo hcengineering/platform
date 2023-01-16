@@ -112,7 +112,7 @@
   async function createAttachment (file: File) {
     if (space === undefined || objectId === undefined || _class === undefined) return
     try {
-      const uuid = await uploadFile(file, { space, attachedTo: objectId })
+      const uuid = await uploadFile(file)
       const _id: Ref<Attachment> = generateId()
       attachments.set(_id, {
         _id,
@@ -299,6 +299,7 @@
       on:changeSize
       on:changeContent
       on:blur
+      on:focus
       on:attach={() => {
         if (fakeAttach === 'fake') dispatch('attach', { action: 'add' })
         else if (fakeAttach === 'normal') attach()

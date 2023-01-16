@@ -14,11 +14,8 @@
 // limitations under the License.
 //
 
-import attachment from '@hcengineering/attachment'
-import { Account, Doc, Ref, Space, WorkspaceId } from '@hcengineering/core'
-import { createElasticAdapter } from '@hcengineering/elastic'
+import { WorkspaceId } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
-import type { IndexedDoc } from '@hcengineering/server-core'
 import { decodeToken, Token } from '@hcengineering/server-token'
 import bp from 'body-parser'
 import compression from 'compression'
@@ -246,26 +243,6 @@ export function start (
       const token = authHeader.split(' ')[1]
       const payload = decodeToken(token)
       const uuid = await minioUpload(config.minio, payload.workspace, file)
-      console.log('uploaded uuid', uuid)
-
-      const space = req.query.space as Ref<Space> | undefined
-      const attachedTo = req.query.attachedTo as Ref<Doc> | undefined
-
-      if (space !== undefined && attachedTo !== undefined) {
-        const elastic = await createElasticAdapter(config.elasticUrl, payload.workspace)
-
-        const indexedDoc: IndexedDoc = {
-          id: uuid as Ref<Doc>,
-          _class: attachment.class.Attachment,
-          space,
-          modifiedOn: Date.now(),
-          modifiedBy: 'core:account:System' as Ref<Account>,
-          attachedTo,
-          data: file.data.toString('base64')
-        }
-
-        await elastic.index(indexedDoc)
-      }
 
       res.status(200).send(uuid)
     } catch (error) {
@@ -316,7 +293,7 @@ export function start (
       const payload = decodeToken(token)
       const url = req.query.url as string
       const cookie = req.query.cookie as string | undefined
-      const attachedTo = req.query.attachedTo as Ref<Doc> | undefined
+      // const attachedTo = req.query.attachedTo as Ref<Doc> | undefined
       if (url === undefined) {
         res.status(500).send('URL param is not defined')
         return
@@ -356,24 +333,7 @@ export function start (
             config.minio
               .put(payload.workspace, id, buffer, 0, meta)
               .then(async (objInfo) => {
-                console.log('uploaded uuid', id)
-
-                if (attachedTo !== undefined) {
-                  const space = req.query.space as Ref<Space>
-                  const elastic = await createElasticAdapter(config.elasticUrl, payload.workspace)
-
-                  const indexedDoc: IndexedDoc = {
-                    id: id as Ref<Doc>,
-                    _class: attachment.class.Attachment,
-                    space,
-                    modifiedOn: Date.now(),
-                    modifiedBy: 'core:account:System' as Ref<Account>,
-                    attachedTo,
-                    data: buffer.toString('base64')
-                  }
-
-                  await elastic.index(indexedDoc)
-                }
+                console.log('uploaded uuid', id, objInfo.etag)
 
                 res.status(200).send({
                   id,
@@ -407,7 +367,7 @@ export function start (
       }
       const token = authHeader.split(' ')[1]
       const payload = decodeToken(token)
-      const { url, cookie, attachedTo, space } = req.body
+      const { url, cookie } = req.body
       if (url === undefined) {
         res.status(500).send('URL param is not defined')
         return
@@ -450,21 +410,21 @@ export function start (
               .then(async () => {
                 console.log('uploaded uuid', id)
 
-                if (attachedTo !== undefined) {
-                  const elastic = await createElasticAdapter(config.elasticUrl, payload.workspace)
+                // if (attachedTo !== undefined) {
+                //   const elastic = await createElasticAdapter(config.elasticUrl, payload.workspace)
 
-                  const indexedDoc: IndexedDoc = {
-                    id: id as Ref<Doc>,
-                    _class: attachment.class.Attachment,
-                    space,
-                    modifiedOn: Date.now(),
-                    modifiedBy: 'core:account:System' as Ref<Account>,
-                    attachedTo,
-                    data: buffer.toString('base64')
-                  }
+                //   const indexedDoc: IndexedDoc = {
+                //     id: id as Ref<Doc>,
+                //     _class: attachment.class.Attachment,
+                //     space,
+                //     modifiedOn: Date.now(),
+                //     modifiedBy: 'core:account:System' as Ref<Account>,
+                //     attachedTo,
+                //     data: buffer.toString('base64')
+                //   }
 
-                  await elastic.index(indexedDoc)
-                }
+                //   await elastic.index(indexedDoc)
+                // }
 
                 res.status(200).send({
                   id,

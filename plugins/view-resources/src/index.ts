@@ -22,6 +22,7 @@ import BooleanPresenter from './components/BooleanPresenter.svelte'
 import BooleanTruePresenter from './components/BooleanTruePresenter.svelte'
 import ClassAttributeBar from './components/ClassAttributeBar.svelte'
 import ClassPresenter from './components/ClassPresenter.svelte'
+import ClassRefPresenter from './components/ClassRefPresenter.svelte'
 import ColorsPopup from './components/ColorsPopup.svelte'
 import DateEditor from './components/DateEditor.svelte'
 import DatePresenter from './components/DatePresenter.svelte'
@@ -54,8 +55,13 @@ import UpDownNavigator from './components/UpDownNavigator.svelte'
 import ViewletSettingButton from './components/ViewletSettingButton.svelte'
 import ValueSelector from './components/ValueSelector.svelte'
 import HTMLEditor from './components/HTMLEditor.svelte'
+import MarkupEditor from './components/MarkupEditor.svelte'
+import MarkupEditorPopup from './components/MarkupEditorPopup.svelte'
 import SortableList from './components/list/SortableList.svelte'
 import SortableListItem from './components/list/SortableListItem.svelte'
+import ListView from './components/list/ListView.svelte'
+import GrowPresenter from './components/list/GrowPresenter.svelte'
+
 import {
   afterResult,
   beforeResult,
@@ -79,7 +85,6 @@ export { default as LinkPresenter } from './components/LinkPresenter.svelte'
 export { default as ContextMenu } from './components/Menu.svelte'
 export { default as TableBrowser } from './components/TableBrowser.svelte'
 export { default as FixedColumn } from './components/FixedColumn.svelte'
-export { default as ViewOptionsButton } from './components/ViewOptionsButton.svelte'
 export { default as ValueSelector } from './components/ValueSelector.svelte'
 export { default as ObjectBox } from './components/ObjectBox.svelte'
 export { default as ObjectPresenter } from './components/ObjectPresenter.svelte'
@@ -91,6 +96,7 @@ export {
   buildModel,
   getCollectionCounter,
   getObjectPresenter,
+  getObjectPreview,
   LoadingProps,
   setActiveViewletId,
   getActiveViewletId,
@@ -117,13 +123,15 @@ export {
   NumberPresenter,
   TimestampPresenter,
   SortableList,
-  SortableListItem
+  SortableListItem,
+  MarkupEditor
 }
 
 export default async (): Promise<Resources> => ({
   actionImpl,
   component: {
     ClassPresenter,
+    ClassRefPresenter,
     ObjectFilter,
     ValueFilter,
     TimestampFilter,
@@ -148,11 +156,15 @@ export default async (): Promise<Resources> => ({
     YoutubePresenter,
     ActionsPopup,
     StringEditorPopup: EditBoxPopup,
+    MarkupEditor,
+    MarkupEditorPopup,
     BooleanTruePresenter,
     EnumEditor,
     FilterTypePopup,
     ValueSelector,
-    HTMLEditor
+    HTMLEditor,
+    ListView,
+    GrowPresenter
   },
   popup: {
     PositionElementAlignment

@@ -17,7 +17,8 @@
   import { Class, Doc, DocumentQuery, Lookup, Ref, SortingOrder, WithLookup } from '@hcengineering/core'
   import { Kanban, TypeState } from '@hcengineering/kanban'
   import notification from '@hcengineering/notification'
-  import { createQuery } from '@hcengineering/presentation'
+  import { getResource } from '@hcengineering/platform'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import tags from '@hcengineering/tags'
   import { Issue, IssuesGrouping, IssuesOrdering, IssueStatus, Team } from '@hcengineering/tracker'
   import {
@@ -30,18 +31,20 @@
     showPopup,
     tooltip
   } from '@hcengineering/ui'
-  import { focusStore, ListSelectionProvider, SelectDirection, selectionStore } from '@hcengineering/view-resources'
+  import { ViewOptionModel, ViewOptions, ViewQueryOption } from '@hcengineering/view'
+  import {
+    focusStore,
+    ListSelectionProvider,
+    noCategory,
+    SelectDirection,
+    selectionStore,
+    viewOptionsStore
+  } from '@hcengineering/view-resources'
   import ActionContext from '@hcengineering/view-resources/src/components/ActionContext.svelte'
   import Menu from '@hcengineering/view-resources/src/components/Menu.svelte'
   import { onMount } from 'svelte'
   import tracker from '../../plugin'
-  import {
-    getIssueStatusStates,
-    getKanbanStatuses,
-    getPriorityStates,
-    issuesGroupBySorting,
-    issuesSortOrderMap
-  } from '../../utils'
+  import { getIssueStatusStates, getKanbanStatuses, getPriorityStates, issuesGroupBySorting } from '../../utils'
   import CreateIssue from '../CreateIssue.svelte'
   import ProjectEditor from '../projects/ProjectEditor.svelte'
   import AssigneePresenter from './AssigneePresenter.svelte'
@@ -53,24 +56,16 @@
   import StatusEditor from './StatusEditor.svelte'
   import EstimationEditor from './timereport/EstimationEditor.svelte'
 
-  export let currentSpace: Ref<Team> = tracker.team.DefaultTeam
+  export let space: Ref<Team> | undefined = undefined
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
   export let query: DocumentQuery<Issue> = {}
-  export let viewOptions: {
-    groupBy: IssuesGrouping
-    orderBy: IssuesOrdering
-    shouldShowEmptyGroups: boolean
-    shouldShowSubIssues: boolean
-  }
+  export let viewOptions: ViewOptionModel[] | undefined
 
-  $: currentSpace = typeof query.space === 'string' ? query.space : tracker.team.DefaultTeam
-  $: ({ groupBy, orderBy, shouldShowEmptyGroups, shouldShowSubIssues } = viewOptions)
-  $: sort = { [orderBy]: issuesSortOrderMap[orderBy] }
-  $: rankFieldName = orderBy === IssuesOrdering.Manual ? orderBy : undefined
-  $: resultQuery = {
-    ...(shouldShowSubIssues ? {} : { attachedTo: tracker.ids.NoParent }),
-    ...query
-  } as any
+  $: currentSpace = space || tracker.team.DefaultTeam
+  $: groupBy = ($viewOptionsStore.groupBy ?? noCategory) as IssuesGrouping
+  $: orderBy = $viewOptionsStore.orderBy
+  $: sort = { [orderBy[0]]: orderBy[1] }
+  $: dontUpdateRank = orderBy[0] !== IssuesOrdering.Manual
 
   const spaceQuery = createQuery()
   const statusesQuery = createQuery()
@@ -79,6 +74,28 @@
   $: spaceQuery.query(tracker.class.Team, { _id: currentSpace }, (res) => {
     currentTeam = res.shift()
   })
+
+  let resultQuery: DocumentQuery<any> = query
+  $: getResultQuery(query, viewOptions, $viewOptionsStore).then((p) => (resultQuery = p))
+
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+
+  async function getResultQuery (
+    query: DocumentQuery<Issue>,
+    viewOptions: ViewOptionModel[] | undefined,
+    viewOptionsStore: ViewOptions
+  ): Promise<DocumentQuery<Issue>> {
+    if (viewOptions === undefined) return query
+    let result = hierarchy.clone(query)
+    for (const viewOption of viewOptions) {
+      if (viewOption.actionTartget !== 'query') continue
+      const queryOption = viewOption as ViewQueryOption
+      const f = await getResource(queryOption.action)
+      result = f(viewOptionsStore[queryOption.key] ?? queryOption.defaultValue, query)
+    }
+    return result
+  }
 
   let issueStatuses: WithLookup<IssueStatus>[] | undefined
   $: issueStatusStates = getIssueStatusStates(issueStatuses)
@@ -122,6 +139,12 @@
   }
   const issuesQuery = createQuery()
   let issueStates: TypeState[] = []
+  const lookupIssue: Lookup<Issue> = {
+    status: [tracker.class.IssueStatus, { category: tracker.class.IssueStatusCategory }],
+    project: tracker.class.Project,
+    sprint: tracker.class.Sprint,
+    assignee: contact.class.Employee
+  }
   $: issuesQuery.query(
     tracker.class.Issue,
     resultQuery,
@@ -129,12 +152,7 @@
       issueStates = await getKanbanStatuses(groupBy, result)
     },
     {
-      lookup: {
-        status: [tracker.class.IssueStatus, { category: tracker.class.IssueStatusCategory }],
-        project: tracker.class.Project,
-        sprint: tracker.class.Sprint,
-        assignee: contact.class.Employee
-      },
+      lookup: lookupIssue,
       sort: issuesGroupBySorting[groupBy]
     }
   )
@@ -145,17 +163,16 @@
   })
   function getIssueStates (
     groupBy: IssuesGrouping,
-    showEmptyGroups: boolean,
     states: TypeState[],
     statusStates: TypeState[],
     priorityStates: TypeState[]
   ) {
-    if (!showEmptyGroups && states.length > 0) return states
+    if (states.length > 0) return states
     if (groupBy === IssuesGrouping.Status) return statusStates
     if (groupBy === IssuesGrouping.Priority) return priorityStates
     return []
   }
-  $: states = getIssueStates(groupBy, shouldShowEmptyGroups, issueStates, issueStatusStates, priorityStates)
+  $: states = getIssueStates(groupBy, issueStates, issueStatusStates, priorityStates)
 
   const fullFilled: { [key: string]: boolean } = {}
   const getState = (state: any): WithLookup<IssueStatus> | undefined => {
@@ -174,12 +191,11 @@
   <Kanban
     bind:this={kanbanUI}
     _class={tracker.class.Issue}
-    search=""
     {states}
+    {dontUpdateRank}
     options={{ sort, lookup }}
     query={resultQuery}
     fieldName={groupBy}
-    {rankFieldName}
     on:content={(evt) => {
       listProvider.update(evt.detail)
     }}
@@ -202,18 +218,16 @@
             <span class="lines-limit-2 ml-2">{state.title}</span>
             <span class="counter ml-2 text-md">{count}</span>
           </div>
-          {#if groupBy === IssuesGrouping.Status}
-            <div class="flex gap-1">
-              <Button
-                icon={IconAdd}
-                kind={'transparent'}
-                showTooltip={{ label: tracker.string.AddIssueTooltip, direction: 'left' }}
-                on:click={() => {
-                  showPopup(CreateIssue, { space: currentSpace, status: state._id }, 'top')
-                }}
-              />
-            </div>
-          {/if}
+          <div class="flex gap-1">
+            <Button
+              icon={IconAdd}
+              kind={'transparent'}
+              showTooltip={{ label: tracker.string.AddIssueTooltip, direction: 'left' }}
+              on:click={() => {
+                showPopup(CreateIssue, { space: currentSpace, [groupBy]: state._id }, 'top')
+              }}
+            />
+          </div>
         </div>
       </div>
     </svelte:fragment>
@@ -244,7 +258,7 @@
           <AssigneePresenter
             value={issue.$lookup?.assignee}
             defaultClass={contact.class.Employee}
-            issueId={issue._id}
+            object={issue}
             isEditable={true}
           />
           <div class="flex-center mt-2">
@@ -252,8 +266,8 @@
           </div>
         </div>
         <div class="buttons-group xsmall-gap states-bar">
-          {#if issue && issueStatuses && issue.subIssues > 0}
-            <SubIssuesSelector value={issue} {currentTeam} statuses={issueStatuses} />
+          {#if issue && issue.subIssues > 0}
+            <SubIssuesSelector value={issue} {currentTeam} />
           {/if}
           <PriorityEditor value={issue} isEditable={true} kind={'link-bordered'} size={'inline'} justify={'center'} />
           <ProjectEditor

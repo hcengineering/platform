@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { AttachedDoc, Class, Doc, DocumentQuery, DocumentUpdate, FindOptions, Ref } from '@hcengineering/core'
+  import { Class, Doc, DocumentQuery, DocumentUpdate, FindOptions, Ref, SortingOrder } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { getPlatformColor, ScrollBox, Scroller } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
@@ -22,14 +22,13 @@
   import KanbanRow from './KanbanRow.svelte'
 
   export let _class: Ref<Class<Item>>
-  export let search: string
   export let options: FindOptions<Item> | undefined = undefined
   export let states: TypeState[] = []
   export let query: DocumentQuery<Item> = {}
   export let fieldName: string
-  export let rankFieldName: string | undefined
   export let selection: number | undefined = undefined
   export let checked: Doc[] = []
+  export let dontUpdateRank: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -38,15 +37,13 @@
   const objsQ = createQuery()
   $: objsQ.query(
     _class,
-    {
-      ...query,
-      ...(search !== '' ? { $search: search } : {})
-    },
+    query,
     (result) => {
       objects = result
       dispatch('content', objects)
     },
     {
+      sort: { rank: SortingOrder.Ascending },
       ...options
     }
   )
@@ -57,33 +54,12 @@
     dragItem?: Item // required for svelte to properly recalculate state.
   ): ExtItem[] {
     const stateCards = objects.filter((it) => (it as any)[fieldName] === state._id)
-    if (rankFieldName !== undefined) {
-      const sortField = rankFieldName
-      stateCards.sort((a, b) => (a as any)[sortField]?.localeCompare((b as any)[sortField]))
-    }
     return stateCards.map((it, idx, arr) => ({
       it,
       prev: arr[idx - 1],
       next: arr[idx + 1],
       pos: objects.findIndex((pi) => pi._id === it._id)
     }))
-  }
-
-  async function updateItem (item: Item, update: DocumentUpdate<Item>) {
-    if (client.getHierarchy().isDerived(_class, core.class.AttachedDoc)) {
-      const adoc: AttachedDoc = item as Doc as AttachedDoc
-      await client.updateCollection(
-        _class,
-        adoc.space,
-        adoc._id as Ref<Doc> as Ref<AttachedDoc>,
-        adoc.attachedTo,
-        adoc.attachedToClass,
-        adoc.collection,
-        update
-      )
-    } else {
-      await client.updateDoc(item._class, item.space, item._id, update)
-    }
   }
 
   async function move (state: StateType) {
@@ -99,15 +75,15 @@
       }
     }
 
-    if (rankFieldName !== undefined && dragCardInitialRank !== (dragCard as any)[rankFieldName]) {
-      const dragCardRank = (dragCard as any)[rankFieldName]
+    if (!dontUpdateRank && dragCardInitialRank !== dragCard.rank) {
+      const dragCardRank = dragCard.rank
       updates = {
         ...updates,
-        [rankFieldName]: dragCardRank
+        rank: dragCardRank
       }
     }
     if (Object.keys(updates).length > 0) {
-      await updateItem(dragCard, updates)
+      await client.update(dragCard, updates)
     }
     dragCard = undefined
   }
@@ -125,7 +101,7 @@
     if (dragCard === undefined) {
       return
     }
-    await updateItem(dragCard, query)
+    await client.update(dragCard, query)
   }
   function doCalcRank (
     object: { prev?: Item; it: Item; next?: Item },
@@ -146,26 +122,28 @@
     if (card !== undefined && card[fieldName] !== state._id) {
       card[fieldName] = state._id
       const objs = getStateObjects(objects, state)
-      if (rankFieldName !== undefined) card[rankFieldName] = calcRank(objs[objs.length - 1]?.it, undefined)
+      if (!dontUpdateRank) {
+        card.rank = calcRank(objs[objs.length - 1]?.it, undefined)
+      }
     }
   }
   function cardDragOver (evt: CardDragEvent, object: ExtItem): void {
     if (dragCard !== undefined) {
       ;(dragCard as any)[fieldName] = (dragCard as any)[fieldName]
-      if (rankFieldName !== undefined) {
-        ;(dragCard as any)[rankFieldName] = doCalcRank(object, evt)
+      if (!dontUpdateRank) {
+        dragCard.rank = doCalcRank(object, evt)
       }
     }
   }
   function cardDrop (evt: CardDragEvent, object: ExtItem): void {
-    if (dragCard !== undefined && rankFieldName !== undefined) {
-      ;(dragCard as any)[rankFieldName] = doCalcRank(object, evt)
+    if (!dontUpdateRank && dragCard !== undefined) {
+      dragCard.rank = doCalcRank(object, evt)
     }
     isDragging = false
   }
   function onDragStart (object: ExtItem, state: TypeState): void {
     dragCardInitialState = state._id
-    dragCardInitialRank = rankFieldName === undefined ? undefined : (object.it as any)[rankFieldName]
+    dragCardInitialRank = object.it.rank
     dragCard = object.it
     isDragging = true
     dispatch('obj-focus', object.it)

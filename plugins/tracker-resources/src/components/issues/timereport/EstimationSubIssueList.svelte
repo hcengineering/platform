@@ -32,16 +32,6 @@
   }
 
   const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {})
-
-  let varsStyle: string = ''
-  const propsWidth: Record<string, number> = { issue: 0 }
-  $: if (propsWidth) {
-    varsStyle = ''
-    for (const key in propsWidth) varsStyle += `--fixed-${key}: ${propsWidth[key]}px;`
-  }
-  const checkWidth = (key: string, result: CustomEvent): void => {
-    if (result !== undefined) propsWidth[key] = result.detail
-  }
 </script>
 
 <ListView count={issues.length}>
@@ -50,7 +40,6 @@
     {@const currentTeam = teams.get(issue.space)}
     <div
       class="flex-between row"
-      style={varsStyle}
       on:contextmenu|preventDefault={(ev) => showContextMenu(ev, issue)}
       on:mouseover={() => {
         listProvider.updateFocus(issue)
@@ -59,14 +48,9 @@
         listProvider.updateFocus(issue)
       }}
     >
-      <div class="flex-row-center clear-mins gap-2 p-2">
+      <div class="flex-row-center clear-mins gap-2 p-2 flex-grow">
         <span class="issuePresenter">
-          <FixedColumn
-            width={propsWidth.issue}
-            key={'issue'}
-            justify={'left'}
-            on:update={(result) => checkWidth('issue', result)}
-          >
+          <FixedColumn key={'estimation_issue'} justify={'left'}>
             {#if currentTeam}
               {getIssueId(currentTeam, issue)}
             {/if}
@@ -76,8 +60,10 @@
           {issue.title}
         </span>
       </div>
-      <div class="flex-center flex-no-shrink gap-2">
+
+      <FixedColumn key={'estimation_issue_assignee'} justify={'right'}>
         <AssigneeBox
+          width={'100%'}
           label={tracker.string.Assignee}
           _class={contact.class.Employee}
           value={issue.assignee}
@@ -85,8 +71,10 @@
           readonly
           showNavigate={false}
         />
+      </FixedColumn>
+      <FixedColumn key={'estimation'} justify={'left'}>
         <EstimationEditor value={issue} kind={'list'} />
-      </div>
+      </FixedColumn>
     </div>
   </svelte:fragment>
 </ListView>

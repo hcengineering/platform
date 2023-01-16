@@ -21,6 +21,7 @@
   import { flip } from 'svelte/animate'
   import { getIssueId } from '../../../issues'
   import tracker from '../../../plugin'
+  import { subIssueListProvider } from '../../../utils'
   import Circles from '../../icons/Circles.svelte'
   import AssigneeEditor from '../AssigneeEditor.svelte'
   import DueDateEditor from '../DueDateEditor.svelte'
@@ -41,6 +42,7 @@
 
   function openIssue (target: Issue) {
     dispatch('issue-focus', target)
+    subIssueListProvider(issues, target._id)
     showPanel(tracker.component.EditIssue, target._id, target._class, 'content')
   }
 
@@ -70,16 +72,6 @@
   function showContextMenu (ev: MouseEvent, object: Issue) {
     showPopup(ContextMenu, { object }, getEventPositionElement(ev))
   }
-
-  let varsStyle: string = ''
-  const propsWidth: Record<string, number> = { issue: 0 }
-  $: if (propsWidth) {
-    varsStyle = ''
-    for (const key in propsWidth) varsStyle += `--fixed-${key}: ${propsWidth[key]}px;`
-  }
-  const checkWidth = (key: string, result: CustomEvent): void => {
-    if (result !== undefined) propsWidth[key] = result.detail
-  }
 </script>
 
 <ActionContext
@@ -96,7 +88,6 @@
     class:is-dragging={index === draggingIndex}
     class:is-dragged-over-up={draggingIndex !== null && index < draggingIndex && index === hoveringIndex}
     class:is-dragged-over-down={draggingIndex !== null && index > draggingIndex && index === hoveringIndex}
-    style={varsStyle}
     animate:flip={{ duration: 400 }}
     draggable={true}
     on:click|self={openIssueCall}
@@ -113,12 +104,7 @@
     <div class="flex-row-center ml-6 clear-mins gap-2">
       <PriorityEditor value={issue} isEditable kind={'list'} size={'small'} justify={'center'} />
       <span class="issuePresenter" on:click={openIssueCall}>
-        <FixedColumn
-          width={propsWidth.issue}
-          key={'issue'}
-          justify={'left'}
-          on:update={(result) => checkWidth('issue', result)}
-        >
+        <FixedColumn key={'subissue_issue'} justify={'left'}>
           {#if currentTeam}
             {getIssueId(currentTeam, issue)}
           {/if}
@@ -136,7 +122,7 @@
         {issue.title}
       </span>
       {#if issue.subIssues > 0}
-        <SubIssuesSelector value={issue} {currentTeam} statuses={issueStatuses.get(issue.space)} />
+        <SubIssuesSelector value={issue} {currentTeam} />
       {/if}
     </div>
     <div class="flex-center flex-no-shrink">

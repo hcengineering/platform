@@ -12,12 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { Client, Doc, Ref } from '@hcengineering/core'
+import { Client, Doc, DocumentQuery, Ref } from '@hcengineering/core'
 import type { IntlString, Metadata, Resource } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import { AnyComponent } from '@hcengineering/ui'
 import tracker, { trackerId } from '../../tracker/lib'
 import { IssueDraft } from '@hcengineering/tracker'
+import { SortFunc } from '@hcengineering/view'
 
 export default mergeIds(trackerId, tracker, {
   string: {
@@ -292,9 +293,11 @@ export default mergeIds(trackerId, tracker, {
     ModificationDatePresenter: '' as AnyComponent,
     PriorityPresenter: '' as AnyComponent,
     PriorityEditor: '' as AnyComponent,
+    PriorityRefPresenter: '' as AnyComponent,
     ProjectEditor: '' as AnyComponent,
     SprintEditor: '' as AnyComponent,
     StatusPresenter: '' as AnyComponent,
+    StatusRefPresenter: '' as AnyComponent,
     StatusEditor: '' as AnyComponent,
     AssigneePresenter: '' as AnyComponent,
     DueDatePresenter: '' as AnyComponent,
@@ -312,13 +315,12 @@ export default mergeIds(trackerId, tracker, {
     SetParentIssueActionPopup: '' as AnyComponent,
     EditProject: '' as AnyComponent,
     IssuesView: '' as AnyComponent,
-    ListView: '' as AnyComponent,
     KanbanView: '' as AnyComponent,
     Roadmap: '' as AnyComponent,
     TeamProjects: '' as AnyComponent,
     IssuePreview: '' as AnyComponent,
     RelationsPopup: '' as AnyComponent,
-
+    SprintRefPresenter: '' as AnyComponent,
     Sprints: '' as AnyComponent,
     SprintPresenter: '' as AnyComponent,
     SprintStatusPresenter: '' as AnyComponent,
@@ -328,7 +330,6 @@ export default mergeIds(trackerId, tracker, {
     TimeSpendReport: '' as AnyComponent,
     EstimationEditor: '' as AnyComponent,
     TemplateEstimationEditor: '' as AnyComponent,
-    GrowPresenter: '' as AnyComponent,
 
     ProjectSelector: '' as AnyComponent,
 
@@ -342,6 +343,10 @@ export default mergeIds(trackerId, tracker, {
     IssueTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>) => Promise<string>>,
     GetIssueId: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>,
     GetIssueLink: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>,
-    GetIssueTitle: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>
+    GetIssueTitle: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>,
+    IssueStatusSort: '' as SortFunc,
+    IssuePrioritySort: '' as SortFunc,
+    SprintSort: '' as SortFunc,
+    SubIssueQuery: '' as Resource<(value: any, query: DocumentQuery<Doc>) => DocumentQuery<Doc>>
   }
 })

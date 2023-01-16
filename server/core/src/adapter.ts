@@ -17,6 +17,7 @@ import {
   Class,
   Doc,
   DocumentQuery,
+  DocumentUpdate,
   Domain,
   FindOptions,
   FindResult,
@@ -24,6 +25,7 @@ import {
   ModelDb,
   Ref,
   StorageIterator,
+  toFindResult,
   Tx,
   TxResult,
   WorkspaceId
@@ -51,6 +53,9 @@ export interface DbAdapter {
   load: (domain: Domain, docs: Ref<Doc>[]) => Promise<Doc[]>
   upload: (domain: Domain, docs: Doc[]) => Promise<void>
   clean: (domain: Domain, docs: Ref<Doc>[]) => Promise<void>
+
+  // Bulk update operations
+  update: (domain: Domain, operations: Map<Ref<Doc>, DocumentUpdate<Doc>>) => Promise<void>
 }
 
 /**
@@ -79,10 +84,48 @@ export interface DbAdapterConfiguration {
   url: string
 }
 
-class InMemoryAdapter implements DbAdapter {
+/**
+ * @public
+ */
+export class DummyDbAdapter implements DbAdapter {
+  async init (model: Tx[]): Promise<void> {}
+  async findAll<T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T> | undefined
+  ): Promise<FindResult<T>> {
+    return toFindResult([])
+  }
+
+  async tx (tx: Tx): Promise<TxResult> {
+    return {}
+  }
+
+  async close (): Promise<void> {}
+
+  find (domain: Domain): StorageIterator {
+    return {
+      next: async () => undefined,
+      close: async () => {}
+    }
+  }
+
+  async load (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
+    return []
+  }
+
+  async upload (domain: Domain, docs: Doc[]): Promise<void> {}
+
+  async clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {}
+
+  async update (domain: Domain, operations: Map<Ref<Doc>, DocumentUpdate<Doc>>): Promise<void> {}
+}
+
+class InMemoryAdapter extends DummyDbAdapter implements DbAdapter {
   private readonly modeldb: ModelDb
 
   constructor (hierarchy: Hierarchy) {
+    super()
     this.modeldb = new ModelDb(hierarchy)
   }
 
@@ -107,24 +150,6 @@ class InMemoryAdapter implements DbAdapter {
       }
     }
   }
-
-  async close (): Promise<void> {}
-
-  find (domain: Domain): StorageIterator {
-    // Not required for in memory
-    return {
-      next: async () => undefined,
-      close: async () => {}
-    }
-  }
-
-  async load (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
-    return []
-  }
-
-  async upload (domain: Domain, docs: Doc[]): Promise<void> {}
-
-  async clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {}
 }
 
 /**

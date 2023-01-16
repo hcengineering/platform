@@ -15,17 +15,16 @@
 <script lang="ts">
   import contact, { Employee } from '@hcengineering/contact'
   import { Class, Doc, Ref } from '@hcengineering/core'
-  import { Issue, IssueTemplate } from '@hcengineering/tracker'
-  import { UsersPopup, getClient } from '@hcengineering/presentation'
-  import { AttributeModel } from '@hcengineering/view'
-  import { eventToHTMLElement, showPopup } from '@hcengineering/ui'
-  import { getObjectPresenter } from '@hcengineering/view-resources'
   import { IntlString } from '@hcengineering/platform'
+  import { getClient, UsersPopup } from '@hcengineering/presentation'
+  import { Issue, IssueTemplate } from '@hcengineering/tracker'
+  import { eventToHTMLElement, showPopup } from '@hcengineering/ui'
+  import { AttributeModel } from '@hcengineering/view'
+  import { getObjectPresenter } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
 
   export let value: Employee | null | undefined
-  export let issueId: Ref<Issue>
-  export let issueClass: Ref<Class<Issue | IssueTemplate>> = tracker.class.Issue
+  export let object: Issue | IssueTemplate
   export let defaultClass: Ref<Class<Doc>> | undefined = undefined
   export let isEditable: boolean = true
   export let shouldShowLabel: boolean = false
@@ -52,15 +51,9 @@
       return
     }
 
-    const currentIssue = await client.findOne(issueClass, { _id: issueId })
-
-    if (currentIssue === undefined) {
-      return
-    }
-
     const newAssignee = result === null ? null : result._id
 
-    await client.update(currentIssue, { assignee: newAssignee })
+    await client.update(object, { assignee: newAssignee })
   }
 
   const handleAssigneeEditorOpened = async (event: MouseEvent) => {

@@ -357,6 +357,13 @@ export function TypeString (): Type<string> {
 /**
  * @public
  */
+export function TypeAttachment (): Type<string> {
+  return { _class: core.class.TypeAttachment, label: core.string.String }
+}
+
+/**
+ * @public
+ */
 export function TypeHyperlink (): Type<Hyperlink> {
   return { _class: core.class.TypeHyperlink, label: core.string.Hyperlink }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/core",
-  "version": "0.6.19",
+  "version": "0.6.20",
   "main": "lib/index.js",
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
@@ -13,7 +13,7 @@
     "format": "prettier --write src && eslint --fix src"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "~0.6.0",
+    "@hcengineering/platform-rig": "^0.6.0",
     "@types/heft-jest": "^1.0.3",
     "@typescript-eslint/eslint-plugin": "^5.41.0",
     "eslint-plugin-import": "^2.26.0",
@@ -29,7 +29,8 @@
   },
   "dependencies": {
     "@hcengineering/platform": "^0.6.8",
-    "just-clone": "~6.2.0"
+    "just-clone": "~6.2.0",
+    "fast-equals": "^2.0.3"
   },
   "repository": "https://github.com/hcengineering/anticrm",
   "publishConfig": {

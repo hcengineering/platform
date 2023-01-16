@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, FindOptions, Ref, SortingOrder } from '@hcengineering/core'
+  import { Class, Doc, DocumentQuery, FindOptions, Ref, SortingOrder } from '@hcengineering/core'
   import { Kanban as KanbanUI } from '@hcengineering/kanban'
   import { getResource } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
@@ -23,7 +23,6 @@
   import { getEventPositionElement, showPopup } from '@hcengineering/ui'
   import {
     ActionContext,
-    FilterBar,
     focusStore,
     ListSelectionProvider,
     SelectDirection,
@@ -35,8 +34,7 @@
 
   export let _class: Ref<Class<Task>>
   export let space: Ref<SpaceWithStates>
-  // export let open: AnyComponent
-  export let search: string
+  export let query: DocumentQuery<Task>
   export let options: FindOptions<Task> | undefined
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
   // export let config: string[]
@@ -96,7 +94,8 @@
     listProvider.updateSelection(evt.detail.docs, evt.detail.value)
   }
   const onContextMenu = (evt: any) => showMenu(evt.detail.evt, evt.detail.objects)
-  let resultQuery = { doneState: null, space }
+
+  $: resultQuery = { ...query, doneState: null }
 </script>
 
 {#await cardPresenter then presenter}
@@ -105,22 +104,13 @@
       mode: 'browser'
     }}
   />
-  <FilterBar
-    {_class}
-    query={{ doneState: null, space }}
-    on:change={(e) => {
-      resultQuery = e.detail
-    }}
-  />
   <KanbanUI
     bind:this={kanbanUI}
     {_class}
-    {search}
     {options}
     query={resultQuery}
     {states}
     fieldName={'state'}
-    rankFieldName={'rank'}
     on:content={onContent}
     on:obj-focus={onObjFocus}
     checked={$selectionStore ?? []}

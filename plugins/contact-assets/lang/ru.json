@@ -72,6 +72,7 @@
     "Birthday": "День рождения",
     "UseImage": "Загрузить фото",
     "UseGravatar": "Использовать Gravatar",
-    "UseColor": "Использовать цвет"
+    "UseColor": "Использовать цвет",
+    "NotSpecified": "Не указан"
   }
 }

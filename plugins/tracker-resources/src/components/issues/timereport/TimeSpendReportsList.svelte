@@ -35,15 +35,6 @@
 
   const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {})
 
-  let varsStyle: string = ''
-  const propsWidth: Record<string, number> = { issue: 0 }
-  $: if (propsWidth) {
-    varsStyle = ''
-    for (const key in propsWidth) varsStyle += `--fixed-${key}: ${propsWidth[key]}px;`
-  }
-  const checkWidth = (key: string, result: CustomEvent): void => {
-    if (result !== undefined) propsWidth[key] = result.detail
-  }
   const toTeamId = (ref: Ref<Space>) => ref as Ref<Team>
 
   function editSpendReport (
@@ -72,7 +63,6 @@
     {@const currentTeam = teams.get(toTeamId(report.space))}
     <div
       class="flex-between row"
-      style={varsStyle}
       on:contextmenu|preventDefault={(ev) => showContextMenu(ev, report)}
       on:mouseover={() => {
         listProvider.updateFocus(report)
@@ -82,14 +72,9 @@
       }}
       on:click={(evt) => editSpendReport(evt, report, currentTeam?.defaultTimeReportDay)}
     >
-      <div class="flex-row-center clear-mins gap-2 p-2">
+      <div class="flex-row-center clear-mins gap-2 p-2 flex-grow">
         <span class="issuePresenter">
-          <FixedColumn
-            width={propsWidth.issue}
-            key={'issue'}
-            justify={'left'}
-            on:update={(result) => checkWidth('issue', result)}
-          >
+          <FixedColumn key={'tmiespend_issue'} justify={'left'}>
             {#if currentTeam && report.$lookup?.attachedTo}
               {getIssueId(currentTeam, report.$lookup?.attachedTo)}
             {/if}
@@ -101,17 +86,25 @@
           </span>
         {/if}
       </div>
-      <div class="flex-center flex-no-shrink gap-2">
+      <FixedColumn key={'timespend_assignee'} justify={'left'}>
         <UserBox
+          width={'100%'}
           label={tracker.string.Assignee}
           _class={contact.class.Employee}
           value={report.employee}
           readonly
           showNavigate={false}
         />
-        <TimePresenter value={report.value} workDayLength={currentTeam?.workDayLength} />
+      </FixedColumn>
+
+      <FixedColumn key={'timespend_reported'} justify={'center'}>
+        <div class="p-1">
+          <TimePresenter value={report.value} workDayLength={currentTeam?.workDayLength} />
+        </div>
+      </FixedColumn>
+      <FixedColumn key={'timespend_date'} justify={'left'}>
         <DatePresenter value={report.date} />
-      </div>
+      </FixedColumn>
     </div>
   </svelte:fragment>
 </ListView>

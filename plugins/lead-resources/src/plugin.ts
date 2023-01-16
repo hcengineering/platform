@@ -41,7 +41,9 @@ export default mergeIds(leadId, lead, {
     Description: '' as IntlString,
     FullDescription: '' as IntlString,
     FunnelPlaceholder: '' as IntlString,
-    Members: '' as IntlString
+    Members: '' as IntlString,
+    Assignee: '' as IntlString,
+    UnAssign: '' as IntlString
   },
   component: {
     CreateCustomer: '' as AnyComponent,

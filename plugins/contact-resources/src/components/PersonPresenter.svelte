@@ -15,8 +15,10 @@
 <script lang="ts">
   import { formatName, Person } from '@hcengineering/contact'
   import { IntlString } from '@hcengineering/platform'
+  import presentation from '@hcengineering/presentation'
+  import { LabelAndProps } from '@hcengineering/ui'
+  import { PersonLabelTooltip } from '..'
   import PersonContent from './PersonContent.svelte'
-  import type { AnyComponent, AnySvelteComponent } from '@hcengineering/ui'
 
   export let value: Person | null | undefined
   export let inline = false
@@ -26,27 +28,40 @@
   export let shouldShowName = true
   export let shouldShowPlaceholder = false
   export let defaultName: IntlString | undefined = undefined
-  export let tooltipLabels:
-    | {
-        personLabel?: IntlString
-        placeholderLabel?: IntlString
-        component?: AnySvelteComponent | AnyComponent
-        props?: any
-      }
-    | undefined = undefined
+  export let tooltipLabels: PersonLabelTooltip | undefined = undefined
   export let avatarSize: 'inline' | 'tiny' | 'x-small' | 'small' | 'medium' | 'large' | 'x-large' = 'x-small'
   export let onEdit: ((event: MouseEvent) => void) | undefined = undefined
+
+  function getTooltip (
+    tooltipLabels: PersonLabelTooltip | undefined,
+    value: Person | null | undefined
+  ): LabelAndProps | undefined {
+    if (!tooltipLabels) {
+      return !value
+        ? undefined
+        : {
+            label: presentation.string.InltPropsValue,
+            props: { value: formatName(value.name) }
+          }
+    }
+    const component = value ? tooltipLabels.component : undefined
+    const label = value
+      ? tooltipLabels.personLabel
+        ? tooltipLabels.personLabel
+        : presentation.string.InltPropsValue
+      : undefined
+    const props = tooltipLabels.props ? tooltipLabels.props : value ? { value: formatName(value.name) } : undefined
+    return {
+      component,
+      label,
+      props
+    }
+  }
 </script>
 
 {#if value || shouldShowPlaceholder}
   <PersonContent
-    showTooltip={tooltipLabels
-      ? {
-          label: value ? tooltipLabels.personLabel : undefined,
-          component: value ? tooltipLabels.component : undefined,
-          props: value && tooltipLabels.personLabel ? { value: formatName(value.name) } : tooltipLabels.props
-        }
-      : undefined}
+    showTooltip={getTooltip(tooltipLabels, value)}
     {value}
     {inline}
     {onEdit}

@@ -17,6 +17,7 @@ import core, {
   Class,
   Doc,
   DocumentQuery,
+  DocumentUpdate,
   Domain,
   DOMAIN_MODEL,
   DOMAIN_TX,
@@ -409,8 +410,8 @@ abstract class MongoAdapterBase extends TxProcessor {
   private checkMixinKey<T extends Doc>(key: string, clazz: Ref<Class<T>>): string {
     if (!key.includes('.')) {
       try {
-        const attr = this.hierarchy.getAttribute(clazz, key)
-        if (this.hierarchy.isMixin(attr.attributeOf)) {
+        const attr = this.hierarchy.findAttribute(clazz, key)
+        if (attr !== undefined && this.hierarchy.isMixin(attr.attributeOf)) {
           // It is mixin
           key = attr.attributeOf + '.' + key
         }
@@ -498,8 +499,43 @@ abstract class MongoAdapterBase extends TxProcessor {
     const docMap = new Map(docs.map((it) => [it._id, it]))
 
     // remove old and insert new ones
-    await coll.deleteMany({ _id: { $in: Array.from(docMap.keys()) } })
-    await coll.insertMany(Array.from(docMap.values()) as Document[])
+    const keys = Array.from(docMap.keys())
+    if (keys.length > 0) {
+      await coll.bulkWrite(
+        docs.map((it) => ({
+          replaceOne: {
+            filter: { _id: it._id },
+            replacement: it,
+            upsert: true
+          }
+        }))
+      )
+
+      // await coll.deleteMany({ _id: { $in: keys } })
+      // await coll.insertMany(Array.from(docMap.values()) as Document[])
+    }
+  }
+
+  async update (domain: Domain, operations: Map<Ref<Doc>, DocumentUpdate<Doc>>): Promise<void> {
+    const coll = this.db.collection(domain)
+
+    try {
+      // remove old and insert new ones
+      if (operations.size > 0) {
+        await coll.bulkWrite(
+          Array.from(operations.entries()).map((it) => ({
+            updateOne: {
+              filter: { _id: it[0] },
+              update: {
+                $set: it[1]
+              }
+            }
+          }))
+        )
+      }
+    } catch (err: any) {
+      console.error(err)
+    }
   }
 
   async clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {

@@ -2,21 +2,14 @@
   import { Employee } from '@hcengineering/contact'
   import { WithLookup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import type { AnyComponent, AnySvelteComponent } from '@hcengineering/ui'
   import { showPopup } from '@hcengineering/ui'
+  import { PersonLabelTooltip } from '..'
   import PersonPresenter from '../components/PersonPresenter.svelte'
   import EmployeePreviewPopup from './EmployeePreviewPopup.svelte'
   import EmployeeStatusPresenter from './EmployeeStatusPresenter.svelte'
 
   export let value: WithLookup<Employee> | null | undefined
-  export let tooltipLabels:
-    | {
-        personLabel?: IntlString
-        placeholderLabel?: IntlString
-        component?: AnySvelteComponent | AnyComponent
-        props?: any
-      }
-    | undefined = undefined
+  export let tooltipLabels: PersonLabelTooltip | undefined = undefined
   export let shouldShowAvatar: boolean = true
   export let shouldShowName: boolean = true
   export let shouldShowPlaceholder = false
@@ -25,6 +18,7 @@
   export let isInteractive = true
   export let inline = false
   export let disableClick = false
+  export let defaultName: IntlString | undefined = undefined
 
   let container: HTMLElement
 
@@ -48,7 +42,7 @@
   $: handlePersonEdit = onEmployeeEdit ?? onEdit
 </script>
 
-<div bind:this={container} class:over-underline={!inline}>
+<div bind:this={container}>
   <PersonPresenter
     {value}
     {tooltipLabels}
@@ -59,6 +53,7 @@
     {shouldShowPlaceholder}
     {isInteractive}
     {inline}
+    {defaultName}
   />
 </div>
 {#if value?.$lookup?.statuses?.length}

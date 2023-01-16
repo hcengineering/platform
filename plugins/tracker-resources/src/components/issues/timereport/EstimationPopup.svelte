@@ -17,7 +17,8 @@
   import { SortingOrder, WithLookup } from '@hcengineering/core'
   import presentation, { Card, createQuery } from '@hcengineering/presentation'
   import { Issue, IssueStatus, Team } from '@hcengineering/tracker'
-  import { Button, EditBox, EditStyle, IconAdd, Label, showPopup } from '@hcengineering/ui'
+  import { Button, EditStyle, eventToHTMLElement, IconAdd, Label, showPopup } from '@hcengineering/ui'
+  import EditBoxPopup from '@hcengineering/view-resources/src/components/EditBoxPopup.svelte'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../../plugin'
   import IssuePresenter from '../IssuePresenter.svelte'
@@ -26,7 +27,7 @@
   import TimeSpendReportPopup from './TimeSpendReportPopup.svelte'
   import TimeSpendReports from './TimeSpendReports.svelte'
 
-  export let value: string | number | undefined
+  export let value: number
   export let format: 'text' | 'password' | 'number'
   export let kind: EditStyle = 'search-style'
   export let object: Issue
@@ -34,10 +35,6 @@
   let _value = value
 
   const dispatch = createEventDispatcher()
-
-  function _onkeypress (ev: KeyboardEvent) {
-    if (ev.key === 'Enter') dispatch('close', _value)
-  }
 
   $: childIds = Array.from((object.childInfo ?? []).map((it) => it.childId))
 
@@ -78,13 +75,14 @@
     )
 </script>
 
+<!-- svelte-ignore a11y-click-events-have-key-events -->
 <Card
   label={tracker.string.Estimation}
   canSave={true}
   okAction={() => {
     dispatch('close', _value)
   }}
-  okLabel={presentation.string.Save}
+  okLabel={_value !== value ? presentation.string.Save : presentation.string.Close}
   on:close={() => {
     dispatch('close', null)
   }}
@@ -92,8 +90,28 @@
   <svelte:fragment slot="title">
     <div class="flex-row-center">
       <Label label={tracker.string.Estimation} />
-      <div class="ml-2">
-        <EstimationStatsPresenter value={object} />
+      <div
+        class="ml-2 mr-4"
+        on:click={(evt) => {
+          showPopup(
+            EditBoxPopup,
+            {
+              value: _value === 0 ? undefined : _value,
+              format,
+              kind,
+              placeholder: tracker.string.Estimation,
+              maxDigitsAfterPoint: 3
+            },
+            eventToHTMLElement(evt),
+            (res) => {
+              if (typeof res === 'number') {
+                _value = res
+              }
+            }
+          )
+        }}
+      >
+        <EstimationStatsPresenter value={object} estimation={_value} />
       </div>
     </div>
   </svelte:fragment>
@@ -101,23 +119,9 @@
   <svelte:fragment slot="header">
     <IssuePresenter value={object} disableClick />
   </svelte:fragment>
+
   <div class="header no-border flex-col p-1">
-    <div class="flex-row-center flex-between">
-      <EditBox
-        bind:value={_value}
-        {format}
-        {kind}
-        placeholder={tracker.string.Estimation}
-        focus
-        maxDigitsAfterPoint={3}
-        on:keypress={_onkeypress}
-        on:change={() => {
-          if (typeof _value === 'number') {
-            object.estimation = _value
-          }
-        }}
-      />
-    </div>
+    <div class="flex-row-center flex-between" />
   </div>
   {#if currentTeam && issueStatuses}
     <SubIssuesEstimations

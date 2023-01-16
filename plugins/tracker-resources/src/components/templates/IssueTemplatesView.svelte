@@ -4,8 +4,9 @@
   import { getClient } from '@hcengineering/presentation'
   import { IssueTemplate } from '@hcengineering/tracker'
   import { Button, IconAdd, IconDetails, IconDetailsFilled, showPopup } from '@hcengineering/ui'
-  import view, { Viewlet } from '@hcengineering/view'
-  import { FilterBar, getActiveViewletId, ViewOptionModel, ViewOptionsButton } from '@hcengineering/view-resources'
+  import view, { Viewlet, ViewOptionModel } from '@hcengineering/view'
+  import { FilterBar, getActiveViewletId } from '@hcengineering/view-resources'
+  import ViewletSettingButton from '@hcengineering/view-resources/src/components/ViewletSettingButton.svelte'
   import tracker from '../../plugin'
   import { getDefaultViewOptionsTemplatesConfig } from '../../utils'
   import IssuesHeader from '../issues/IssuesHeader.svelte'
@@ -67,7 +68,7 @@
   $: if (docWidth > 900 && docSize) docSize = false
 
   const showCreateDialog = async () => {
-    showPopup(CreateIssueTemplate, { targetElement: null }, null)
+    showPopup(CreateIssueTemplate, { targetElement: null }, 'top')
   }
 </script>
 
@@ -85,7 +86,7 @@
     />
 
     {#if viewlet}
-      <ViewOptionsButton viewOptionsKey={viewlet._id} config={viewOptionsConfig} />
+      <ViewletSettingButton {viewlet} />
     {/if}
 
     {#if asideFloat && $$slots.aside}

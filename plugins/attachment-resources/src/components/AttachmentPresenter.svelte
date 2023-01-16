@@ -36,7 +36,11 @@
   }
 
   function openEmbedded (contentType: string) {
-    return contentType.includes('application/pdf') || contentType.startsWith('image/')
+    return (
+      contentType.includes('application/pdf') ||
+      contentType.startsWith('image/') ||
+      contentType.startsWith('application/msword')
+    )
   }
 </script>
 
@@ -46,7 +50,7 @@
       class="flex-center icon"
       on:click={() => {
         closeTooltip()
-        showPopup(PDFViewer, { file: value.file, name: value.name, contentType: value.type }, 'float')
+        showPopup(PDFViewer, { file: value.file, name: value.name, contentType: value.type, value }, 'float')
       }}
     >
       {iconLabel(value.name)}
@@ -86,7 +90,7 @@
         class="name"
         on:click={() => {
           closeTooltip()
-          showPopup(PDFViewer, { file: value.file, name: value.name, contentType: value.type }, 'float')
+          showPopup(PDFViewer, { file: value.file, name: value.name, contentType: value.type, value }, 'float')
         }}
       >
         {trimFilename(value.name)}

@@ -11,11 +11,10 @@ on:
   # Triggers the workflow on push or pull request events but only for the main branch
   push:
     branches: [main, develop]
-  pull_request:
-    branches: [main, develop]
-  create:
     tags:
       - v*
+  pull_request:
+    branches: [main, develop]   
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -250,6 +249,11 @@ jobs:
         run: node common/scripts/install-run-rush.js bundle --verbose
       - name: Docker build
         run: node common/scripts/install-run-rush.js docker:build --verbose
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: hardcoreeng
+          password: ${{ secrets.DOCKER_ACCESS_TOKEN }}        
       - name: Prepare server
         run: |
           cd ./tests

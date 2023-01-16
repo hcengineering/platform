@@ -23,7 +23,6 @@ test.describe('login test', () => {
     expect(await button.isEnabled()).toBe(true)
 
     await button.click()
-    await page.waitForNavigation()
 
     await page.click('text=sanity-ws')
   })

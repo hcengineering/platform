@@ -2,7 +2,7 @@
   import { Employee, EmployeeAccount, formatName, Status } from '@hcengineering/contact'
   import { getCurrentAccount, Ref, Hierarchy, WithLookup } from '@hcengineering/core'
   import { Avatar, createQuery, getClient } from '@hcengineering/presentation'
-  import { Button, getPanelURI, Label, showPopup } from '@hcengineering/ui'
+  import { Button, getPanelURI, Label, showPopup, resizeObserver } from '@hcengineering/ui'
   import EmployeeSetStatusPopup from './EmployeeSetStatusPopup.svelte'
   import contact from '../plugin'
   import EmployeeStatusPresenter from './EmployeeStatusPresenter.svelte'
@@ -55,7 +55,12 @@
   }
 </script>
 
-<div class="antiPopup p-4 flex-col">
+<div
+  class="antiPopup p-4 flex-col"
+  use:resizeObserver={() => {
+    dispatch('changeContent')
+  }}
+>
   {#if employee}
     <div class="flex-col-center pb-2">
       <Avatar size="x-large" avatar={employee?.avatar} />
