@@ -32,7 +32,7 @@
     TimeSince
   } from '@hcengineering/ui'
   import type { AttributeModel } from '@hcengineering/view'
-  import { getActions } from '@hcengineering/view-resources'
+  import { getActions, ObjectPresenter } from '@hcengineering/view-resources'
   import { ActivityKey, DisplayTx } from '../activity'
   import activity from '../plugin'
   import TxViewTx from './TxViewTx.svelte'
@@ -215,7 +215,11 @@
                   <div class="strong">
                     <div class="flex flex-wrap gap-2" class:emphasized={value.added.length > 1}>
                       {#each value.added as cvalue}
-                        <svelte:component this={m.presenter} value={cvalue} />
+                        {#if value.isObjectAdded}
+                          <ObjectPresenter value={cvalue} />
+                        {:else}
+                          <svelte:component this={m.presenter} value={cvalue} />
+                        {/if}
                       {/each}
                     </div>
                   </div>
@@ -234,11 +238,15 @@
                   <div class="strong">
                     <div class="flex flex-wrap gap-2 flex-grow" class:emphasized={value.removed.length > 1}>
                       {#each value.removed as cvalue}
-                        <svelte:component this={m.presenter} value={cvalue} />
+                        {#if value.isObjectRemoved}
+                          <ObjectPresenter value={cvalue} />
+                        {:else}
+                          <svelte:component this={m.presenter} value={cvalue} />
+                        {/if}
                       {/each}
                     </div>
                   </div>
-                {:else if value.set === null || value.set === undefined}
+                {:else if value.set === null || value.set === undefined || value.set === ''}
                   <span class="lower"><Label label={activity.string.Unset} /> <Label label={m.label} /></span>
                 {:else}
                   <span class="lower" class:flex-grow={hasMessageType}>
@@ -251,11 +259,19 @@
                   {/if}
                   {#if isMessageType(m.attribute)}
                     <div class="strong message emphasized">
-                      <svelte:component this={m.presenter} value={value.set} />
+                      {#if value.isObjectSet}
+                        <ObjectPresenter value={value.set} />
+                      {:else}
+                        <svelte:component this={m.presenter} value={value.set} />
+                      {/if}
                     </div>
                   {:else}
                     <div class="strong">
-                      <svelte:component this={m.presenter} value={value.set} />
+                      {#if value.isObjectSet}
+                        <ObjectPresenter value={value.set} />
+                      {:else}
+                        <svelte:component this={m.presenter} value={value.set} />
+                      {/if}
                     </div>
                   {/if}
                 {/if}
@@ -264,7 +280,7 @@
           {:else if viewlet === undefined && model.length > 0 && tx.mixinTx}
             {#each model as m}
               {#await getValue(client, m, tx) then value}
-                {#if value.set === null}
+                {#if value.set === null || value.set === ''}
                   <span>
                     <Label label={activity.string.Unset} /> <span class="lower"><Label label={m.label} /></span>
                   </span>
@@ -276,11 +292,19 @@
                   </span>
                   {#if isMessageType(m.attribute)}
                     <div class="strong message emphasized">
-                      <svelte:component this={m.presenter} value={value.set} />
+                      {#if value.isObjectSet}
+                        <ObjectPresenter value={value.set} />
+                      {:else}
+                        <svelte:component this={m.presenter} value={value.set} />
+                      {/if}
                     </div>
                   {:else}
                     <div class="strong">
-                      <svelte:component this={m.presenter} value={value.set} />
+                      {#if value.isObjectSet}
+                        <ObjectPresenter value={value.set} />
+                      {:else}
+                        <svelte:component this={m.presenter} value={value.set} />
+                      {/if}
                     </div>
                   {/if}
                 {/if}
