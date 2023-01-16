@@ -17,6 +17,7 @@
 import { addStringsLoader } from '@hcengineering/platform'
 import { presentationId } from './plugin'
 export * from './attributes'
+export { default as AssigneeBox } from './components/AssigneeBox.svelte'
 export { default as AttributeBarEditor } from './components/AttributeBarEditor.svelte'
 export { default as AttributeEditor } from './components/AttributeEditor.svelte'
 export { default as AttributesBar } from './components/AttributesBar.svelte'

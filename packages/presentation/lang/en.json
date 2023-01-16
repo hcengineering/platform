@@ -27,6 +27,12 @@
     "Add": "Add",
     "Edit": "Edit",
     "SelectAvatar": "Select avatar",
-    "GravatarsManaged": "Gravatars are managed through"
+    "GravatarsManaged": "Gravatars are managed through",
+    "CategoryCurrentUser": "Current user",
+    "Assigned": "Assigned",
+    "CategoryPreviousAssigned": "Previously assigned",
+    "CategoryProjectLead": "Project lead",
+    "CategoryProjectMembers": "Project members",
+    "CategoryOther": "Other"
   }
 }

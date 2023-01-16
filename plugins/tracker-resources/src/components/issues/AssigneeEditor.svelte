@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Employee } from '@hcengineering/contact'
   import { AttachedData, Ref } from '@hcengineering/core'
-  import { EmployeeBox, getClient } from '@hcengineering/presentation'
+  import { AssigneeBox, getClient } from '@hcengineering/presentation'
   import { Issue, IssueTemplateData } from '@hcengineering/tracker'
   import { ButtonKind, ButtonSize, TooltipAlignment } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
@@ -44,11 +44,11 @@
 </script>
 
 {#if value}
-  <EmployeeBox
+  <AssigneeBox
     label={tracker.string.Assignee}
     placeholder={tracker.string.Assignee}
     value={value.assignee}
-    allowDeselect
+    assignedTo={value}
     titleDeselect={tracker.string.Unassigned}
     {size}
     {kind}

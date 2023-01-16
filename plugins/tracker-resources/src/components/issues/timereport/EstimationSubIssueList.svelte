@@ -15,7 +15,7 @@
 <script lang="ts">
   import contact from '@hcengineering/contact'
   import { Doc, Ref } from '@hcengineering/core'
-  import { UserBox } from '@hcengineering/presentation'
+  import { AssigneeBox } from '@hcengineering/presentation'
   import { Issue, Team } from '@hcengineering/tracker'
   import { getEventPositionElement, ListView, showPopup } from '@hcengineering/ui'
   import { ContextMenu, FixedColumn, ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
@@ -77,10 +77,11 @@
         </span>
       </div>
       <div class="flex-center flex-no-shrink gap-2">
-        <UserBox
+        <AssigneeBox
           label={tracker.string.Assignee}
           _class={contact.class.Employee}
           value={issue.assignee}
+          assignedTo={issue}
           readonly
           showNavigate={false}
         />

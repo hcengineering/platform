@@ -22,11 +22,17 @@
     "NumberSpaces": "{count, plural, =0 {В} =1 {В 1 месте} other {В # местах}}",
     "InThis": "В этом {space}",
     "NoMatchesInThis": "В этом {space} совпадения не обнаружены",
-    "NoMatchesFound": "Не найдено соответсвий",
+    "NoMatchesFound": "Не найдено соответствий",
     "NotInThis": "Не в этом {space}",
     "Add": "Добавить",
     "Edit": "Редактировать",
     "SelectAvatar": "Выбрать аватар",
-    "GravatarsManaged": "Граватары управляются через"
+    "GravatarsManaged": "Граватары управляются через",
+    "CategoryCurrentUser": "Текущий пользователь",
+    "Assigned": "Назначен",
+    "CategoryPreviousAssigned": "Ранее назначенные",
+    "CategoryProjectLead": "Руководитель проекта",
+    "CategoryProjectMembers": "Участники проекта",
+    "CategoryOther": "Прочие"
   }
 }
