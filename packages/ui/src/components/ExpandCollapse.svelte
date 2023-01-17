@@ -18,7 +18,7 @@
   import { tweened } from 'svelte/motion'
 
   export let isExpanded = false
-  export let duration = 200
+  export let duration = 150
   export let easing: (t: number) => number = quintOut
 
   const dispatch = createEventDispatcher()

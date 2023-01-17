@@ -7,28 +7,28 @@ test.use({
 test.describe('workbench tests', () => {
   test.beforeEach(async ({ page }) => {
     // Create user and workspace
-    await page.goto(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/sanity-ws`)
+    await page.goto(`${PlatformURI}/workbench/sanity-ws`)
   })
   test('navigator', async ({ page }) => {
     // Click [id="app-recruit\:string\:RecruitApplication"]
     await page.click('[id="app-recruit\\:string\\:RecruitApplication"]')
-    await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/sanity-ws/recruit`)
+    await expect(page).toHaveURL(`${PlatformURI}/workbench/sanity-ws/recruit`)
     // Click text=Applications
     await page.click('text=Applications')
-    await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/sanity-ws/recruit/candidates`)
+    await expect(page).toHaveURL(`${PlatformURI}/workbench/sanity-ws/recruit/candidates`)
     // Click text=Applications Application >> span
     await expect(page.locator('text=Applications Filter')).toBeVisible()
     await expect(page.locator('text="APP-1')).toBeDefined()
 
     // Click text=Talents
     await page.click('text=Talents')
-    await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/sanity-ws/recruit/talents`)
+    await expect(page).toHaveURL(`${PlatformURI}/workbench/sanity-ws/recruit/talents`)
 
     await expect(page.locator('text=P. Andrey')).toBeVisible()
 
     // Click text=Vacancies
     await page.click('text=Vacancies')
-    await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/sanity-ws/recruit/vacancies`)
+    await expect(page).toHaveURL(`${PlatformURI}/workbench/sanity-ws/recruit/vacancies`)
     // Click text=Software Engineer
     await page.click('text=Software Engineer')
     await expect(page.locator('text=Software Engineer')).toBeVisible()
@@ -38,7 +38,7 @@ test.describe('workbench tests', () => {
 
     // Click [id="app-chunter\:string\:ApplicationLabelChunter"]
     await page.click('[id="app-chunter\\:string\\:ApplicationLabelChunter"]')
-    await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/sanity-ws/chunter`)
+    await expect(page).toHaveURL(`${PlatformURI}/workbench/sanity-ws/chunter`)
 
     await page.click('text=general')
 
@@ -46,7 +46,7 @@ test.describe('workbench tests', () => {
     await expect(page.locator('.textInput')).toBeVisible()
 
     await page.click('[id="app-contact\\:string\\:Contacts"]')
-    await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/sanity-ws/contact`)
+    await expect(page).toHaveURL(`${PlatformURI}/workbench/sanity-ws/contact`)
     // Click text=John Appleseed
     await expect(page.locator('text=Appleseed John')).toBeVisible()
   })

@@ -381,11 +381,6 @@ input.search {
 }
 
 /* Margins & Paddings */
-.step-lr25 + .step-lr25 { margin-left: .25rem; }
-.step-lr75 + .step-lr75 { margin-left: .75rem; }
-.step-tb75 + .step-tb75 { margin-top: .75rem; }
-.step-tb-6 + .step-tb-6 { margin-top: 1.5rem; }
-
 .ml-0-5 { margin-left: .125rem; }
 .ml-1 { margin-left: .25rem; }
 .ml-1-5 { margin-left: .375rem; }
@@ -475,6 +470,28 @@ input.search {
 .p-4 { padding: 1rem; }
 .p-6 { padding: 1.5rem; }
 .p-10 { padding: 2.5rem; }
+
+.p-text { padding: .125rem .25rem; }
+.p-text-2 { padding: .25rem .5rem; }
+
+.step-lr25 + .step-lr25 { margin-left: .25rem; }
+.step-lr75 + .step-lr75 { margin-left: .75rem; }
+.step-tb75 + .step-tb75 { margin-top: .75rem; }
+.step-tb-6 + .step-tb-6 { margin-top: 1.5rem; }
+
+.step-tb-2-accent + .step-tb-2-accent {
+  position: relative;
+  margin-top: .5rem;
+  &::before {
+    content: '';
+    position: absolute;
+    top: -.25rem;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background-color: var(--popup-bg-hover);
+  }
+}
 
 /* --------- */
 .no-word-wrap { word-wrap: none; }

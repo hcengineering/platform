@@ -7,18 +7,18 @@ test.use({
 test.describe('contact tests', () => {
   test.beforeEach(async ({ page }) => {
     // Create user and workspace
-    await page.goto(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/sanity-ws`)
+    await page.goto(`${PlatformURI}/workbench/sanity-ws`)
   })
   test('update-profile', async ({ page, context }) => {
-    // Go to http://localhost:8083/workbench%3Acomponent%3AWorkbenchApp/sanity-ws
-    await page.goto(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/sanity-ws`)
+    // Go to http://localhost:8083/workbench/sanity-ws
+    await page.goto(`${PlatformURI}/workbench/sanity-ws`)
     // Click #profile-button
     await page.click('#profile-button')
     await page.click('text=Appleseed John')
-    // await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/sanity-ws/setting/setting`)
+    // await expect(page).toHaveURL(`${PlatformURI}/workbench/sanity-ws/setting/setting`)
     // Click text=Edit profile
     // await page.click('text=Edit profile')
-    await expect(page).toHaveURL(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/sanity-ws/setting/profile`)
+    await expect(page).toHaveURL(`${PlatformURI}/workbench/sanity-ws/setting/profile`)
     // Click [placeholder="Location"]
     await page.click('[placeholder="Location"]')
     // Fill [placeholder="Location"]
@@ -37,8 +37,8 @@ test.describe('contact tests', () => {
     await page.click('.editor-container button:nth-child(3)')
   })
   test('create-template', async ({ page }) => {
-    // Go to http://localhost:8083/workbench%3Acomponent%3AWorkbenchApp/sanity-ws
-    await page.goto(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/sanity-ws`)
+    // Go to http://localhost:8083/workbench/sanity-ws
+    await page.goto(`${PlatformURI}/workbench/sanity-ws`)
     // Click #profile-button
     await page.click('#profile-button')
     // Click button:has-text("Settings")
@@ -70,8 +70,8 @@ test.describe('contact tests', () => {
   })
 
   test('manage-templates', async ({ page }) => {
-    // Go to http://localhost:8083/workbench%3Acomponent%3AWorkbenchApp/sanity-ws
-    await page.goto(`${PlatformURI}/workbench%3Acomponent%3AWorkbenchApp/sanity-ws`)
+    // Go to http://localhost:8083/workbench/sanity-ws
+    await page.goto(`${PlatformURI}/workbench/sanity-ws`)
     // Click #profile-button
     await page.click('#profile-button')
     // await page.click('text=Workspace')

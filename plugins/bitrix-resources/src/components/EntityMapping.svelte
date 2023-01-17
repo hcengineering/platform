@@ -75,9 +75,7 @@
 <div class="antiComponent max-w-240 flex-grow p-1">
   <Expandable icon={ofClass?.icon} label={getEmbeddedLabel(typeTitle?.label ?? '')}>
     <svelte:fragment slot="tools">
-      <div class="flex flex-reverse flex-grow">
-        <Button icon={IconDelete} on:click={() => client.remove(mapping)} size={'small'} />
-      </div>
+      <Button icon={IconDelete} on:click={() => client.remove(mapping)} size={'small'} />
     </svelte:fragment>
     <Expandable label={getEmbeddedLabel('Options')}>
       <div class="flex-col">

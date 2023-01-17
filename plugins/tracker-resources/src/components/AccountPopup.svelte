@@ -15,7 +15,7 @@
 <script lang="ts">
   import contact, { Employee, EmployeeAccount, formatName } from '@hcengineering/contact'
   import { getCurrentAccount } from '@hcengineering/core'
-  import login from '@hcengineering/login'
+  import login, { loginId } from '@hcengineering/login'
   import { setMetadata } from '@hcengineering/platform'
   import { Avatar, createQuery } from '@hcengineering/presentation'
   import setting, { settingId, SettingsCategory } from '@hcengineering/setting'
@@ -68,11 +68,11 @@
     setMetadata(login.metadata.LoginToken, null)
     setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
     setMetadataLocalStorage(login.metadata.LoginEmail, null)
-    navigate({ path: [login.component.LoginApp] })
+    navigate({ path: [loginId] })
   }
 
   function selectWorkspace (): void {
-    navigate({ path: [login.component.LoginApp, 'selectWorkspace'] })
+    navigate({ path: [loginId, 'selectWorkspace'] })
   }
 
   function filterItems (items: SettingsCategory[]): SettingsCategory[] {

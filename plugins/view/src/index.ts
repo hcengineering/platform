@@ -562,6 +562,7 @@ const view = plugin(viewId, {
   },
   icon: {
     Table: '' as Asset,
+    List: '' as Asset,
     Card: '' as Asset,
     Delete: '' as Asset,
     MoreH: '' as Asset,

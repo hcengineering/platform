@@ -20,13 +20,14 @@
   import { createEventDispatcher } from 'svelte'
   import login from '../plugin'
   import InviteWorkspace from './icons/InviteWorkspace.svelte'
+  import { loginId } from '@hcengineering/login'
 
   const dispatch = createEventDispatcher()
 
   async function getLink (): Promise<string> {
     const inviteId = await getInviteLink()
     const loc = getCurrentLocation()
-    loc.path[0] = login.component.LoginApp
+    loc.path[0] = loginId
     loc.path[1] = 'join'
     loc.path.length = 2
     loc.query = {

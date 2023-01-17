@@ -224,10 +224,14 @@ async function buildRemovedDoc (
   return doc
 }
 
-async function getAllRealValues (client: TxOperations, values: any[], _class: Ref<Class<Doc>>): Promise<any[]> {
-  if (values.length === 0) return []
+async function getAllRealValues (
+  client: TxOperations,
+  values: any[],
+  _class: Ref<Class<Doc>>
+): Promise<[any[], boolean]> {
+  if (values.length === 0) return [[], false]
   if (values.some((value) => typeof value !== 'string')) {
-    return values
+    return [values, false]
   }
   if (
     _class === core.class.TypeString ||
@@ -235,12 +239,12 @@ async function getAllRealValues (client: TxOperations, values: any[], _class: Re
     _class === core.class.TypeNumber ||
     _class === core.class.TypeDate
   ) {
-    return values
+    return [values, false]
   }
 
   const realValues = await client.findAll(_class, { _id: { $in: values } })
   const realValuesIds = realValues.map(({ _id }) => _id)
-  return [
+  const res = [
     ...realValues,
     ...(await Promise.all(
       values
@@ -248,6 +252,7 @@ async function getAllRealValues (client: TxOperations, values: any[], _class: Re
         .map(async (value) => await buildRemovedDoc(client, value, _class))
     ))
   ].filter((v) => v != null)
+  return [res, true]
 }
 
 function combineAttributes (attributes: any[], key: string, operator: string, arrayKey: string): any[] {
@@ -260,15 +265,31 @@ function combineAttributes (attributes: any[], key: string, operator: string, ar
   ).filter((v) => v != null)
 }
 
-export async function getValue (client: TxOperations, m: AttributeModel, tx: DisplayTx): Promise<any> {
+interface TxAttributeValue {
+  set: any
+  isObjectSet: boolean
+  added: any[]
+  isObjectAdded: boolean
+  removed: any[]
+  isObjectRemoved: boolean
+}
+
+export async function getValue (client: TxOperations, m: AttributeModel, tx: DisplayTx): Promise<TxAttributeValue> {
   const utxs = getModifiedAttributes(tx)
-  const value = {
+  const added = await getAllRealValues(client, combineAttributes(utxs, m.key, '$push', '$each'), m._class)
+  const removed = await getAllRealValues(client, combineAttributes(utxs, m.key, '$pull', '$in'), m._class)
+  const value: TxAttributeValue = {
     set: utxs[0][m.key],
-    added: await getAllRealValues(client, combineAttributes(utxs, m.key, '$push', '$each'), m._class),
-    removed: await getAllRealValues(client, combineAttributes(utxs, m.key, '$pull', '$in'), m._class)
+    isObjectSet: false,
+    added: added[0],
+    isObjectAdded: added[1],
+    removed: removed[0],
+    isObjectRemoved: removed[1]
   }
   if (value.set !== undefined) {
-    ;[value.set] = await getAllRealValues(client, [value.set], m._class)
+    const res = await getAllRealValues(client, [value.set], m._class)
+    value.set = res[0][0]
+    value.isObjectSet = res[1]
   }
   return value
 }

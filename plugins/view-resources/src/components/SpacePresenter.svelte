@@ -19,4 +19,6 @@
   export let value: Space
 </script>
 
-{value.name}
+{#if value}
+  {value.name}
+{/if}

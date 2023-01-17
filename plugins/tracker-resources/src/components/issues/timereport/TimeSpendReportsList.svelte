@@ -18,6 +18,7 @@
   import UserBox from '@hcengineering/presentation/src/components/UserBox.svelte'
   import { Team, TimeReportDayType, TimeSpendReport } from '@hcengineering/tracker'
   import { eventToHTMLElement, getEventPositionElement, ListView, showPopup } from '@hcengineering/ui'
+  import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
   import DatePresenter from '@hcengineering/ui/src/components/calendar/DatePresenter.svelte'
   import { ContextMenu, FixedColumn, ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
   import { getIssueId } from '../../../issues'
@@ -51,18 +52,19 @@
         assignee: value.employee,
         defaultTimeReportDay
       },
-      eventToHTMLElement(event)
+      $deviceInfo.isMobile ? 'top' : eventToHTMLElement(event)
     )
   }
+  $: twoRows = $deviceInfo.twoRows
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<ListView count={reports.length}>
+<ListView count={reports.length} addClass={'step-tb-2-accent'}>
   <svelte:fragment slot="item" let:item>
     {@const report = reports[item]}
     {@const currentTeam = teams.get(toTeamId(report.space))}
     <div
-      class="flex-between row"
+      class="{twoRows ? 'flex-col' : 'flex-between'} p-text-2"
       on:contextmenu|preventDefault={(ev) => showContextMenu(ev, report)}
       on:mouseover={() => {
         listProvider.updateFocus(report)
@@ -72,62 +74,36 @@
       }}
       on:click={(evt) => editSpendReport(evt, report, currentTeam?.defaultTimeReportDay)}
     >
-      <div class="flex-row-center clear-mins gap-2 p-2 flex-grow">
-        <span class="issuePresenter">
-          <FixedColumn key={'tmiespend_issue'} justify={'left'}>
-            {#if currentTeam && report.$lookup?.attachedTo}
-              {getIssueId(currentTeam, report.$lookup?.attachedTo)}
-            {/if}
-          </FixedColumn>
-        </span>
+      <div class="flex-row-center clear-mins gap-2 flex-grow mr-4" class:p-text={twoRows}>
+        <FixedColumn key={'tmiespend_issue'} justify={'left'} addClass={'fs-bold'}>
+          {#if currentTeam && report.$lookup?.attachedTo}
+            {getIssueId(currentTeam, report.$lookup?.attachedTo)}
+          {/if}
+        </FixedColumn>
         {#if report.$lookup?.attachedTo?.title}
-          <span class="text name" title={report.$lookup?.attachedTo?.title}>
+          <span class="overflow-label fs-bold caption-color" title={report.$lookup?.attachedTo?.title}>
             {report.$lookup?.attachedTo?.title}
           </span>
         {/if}
       </div>
-      <FixedColumn key={'timespend_assignee'} justify={'left'}>
-        <UserBox
-          width={'100%'}
-          label={tracker.string.Assignee}
-          _class={contact.class.Employee}
-          value={report.employee}
-          readonly
-          showNavigate={false}
-        />
-      </FixedColumn>
-
-      <FixedColumn key={'timespend_reported'} justify={'center'}>
-        <div class="p-1">
+      <div class="flex-row-center clear-mins gap-2 self-end" class:p-text={twoRows}>
+        <FixedColumn key={'timespend_assignee'} justify={'left'}>
+          <UserBox
+            width={'100%'}
+            label={tracker.string.Assignee}
+            _class={contact.class.Employee}
+            value={report.employee}
+            readonly
+            showNavigate={false}
+          />
+        </FixedColumn>
+        <FixedColumn key={'timespend_reported'} justify={'center'}>
           <TimePresenter value={report.value} workDayLength={currentTeam?.workDayLength} />
-        </div>
-      </FixedColumn>
-      <FixedColumn key={'timespend_date'} justify={'left'}>
-        <DatePresenter value={report.date} />
-      </FixedColumn>
-    </div>
-  </svelte:fragment>
+        </FixedColumn>
+        <FixedColumn key={'timespend_date'} justify={'left'}>
+          <DatePresenter value={report.date} />
+        </FixedColumn>
+      </div>
+    </div></svelte:fragment
+  >
 </ListView>
-
-<style lang="scss">
-  .row {
-    .text {
-      font-weight: 500;
-      color: var(--caption-color);
-    }
-
-    .issuePresenter {
-      flex-shrink: 0;
-      min-width: 0;
-      min-height: 0;
-      font-weight: 500;
-      color: var(--content-color);
-    }
-
-    .name {
-      white-space: nowrap;
-      text-overflow: ellipsis;
-      overflow: hidden;
-    }
-  }
-</style>

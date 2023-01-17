@@ -16,7 +16,7 @@
   import { Ref, SortingOrder, WithLookup } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { Issue, IssueStatus, Team } from '@hcengineering/tracker'
-  import { Scroller, Spinner } from '@hcengineering/ui'
+  import { Spinner } from '@hcengineering/ui'
   import Expandable from '@hcengineering/ui/src/components/Expandable.svelte'
   import tracker from '../../../plugin'
   import EstimationSubIssueList from './EstimationSubIssueList.svelte'
@@ -38,15 +38,9 @@
 
 {#if subIssues && issueStatuses}
   {#if hasSubIssues}
-    <Expandable label={tracker.string.ChildEstimation}>
-      <svelte:fragment slot="title">
-        : {total}
-      </svelte:fragment>
-      <div class="h-50">
-        <Scroller>
-          <EstimationSubIssueList issues={subIssues} {teams} />
-        </Scroller>
-      </div>
+    <Expandable label={tracker.string.ChildEstimation} contentColor bordered>
+      <svelte:fragment slot="title">: <span class="caption-color">{total}</span></svelte:fragment>
+      <EstimationSubIssueList issues={subIssues} {teams} />
     </Expandable>
   {/if}
 {:else}

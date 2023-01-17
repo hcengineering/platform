@@ -17,7 +17,7 @@
   import { Doc, Ref } from '@hcengineering/core'
   import { AssigneeBox } from '@hcengineering/presentation'
   import { Issue, Team } from '@hcengineering/tracker'
-  import { getEventPositionElement, ListView, showPopup } from '@hcengineering/ui'
+  import { getEventPositionElement, ListView, showPopup, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
   import { ContextMenu, FixedColumn, ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
   import { getIssueId } from '../../../issues'
   import tracker from '../../../plugin'
@@ -28,18 +28,19 @@
   export let teams: Map<Ref<Team>, Team>
 
   function showContextMenu (ev: MouseEvent, object: Issue) {
-    showPopup(ContextMenu, { object }, getEventPositionElement(ev))
+    showPopup(ContextMenu, { object }, $deviceInfo.isMobile ? 'top' : getEventPositionElement(ev))
   }
 
   const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {})
+  $: twoRows = $deviceInfo.twoRows
 </script>
 
-<ListView count={issues.length}>
+<ListView count={issues.length} addClass={'step-tb-2-accent'}>
   <svelte:fragment slot="item" let:item>
     {@const issue = issues[item]}
     {@const currentTeam = teams.get(issue.space)}
     <div
-      class="flex-between row"
+      class="{twoRows ? 'flex-col' : 'flex-between'} p-text-2"
       on:contextmenu|preventDefault={(ev) => showContextMenu(ev, issue)}
       on:mouseover={() => {
         listProvider.updateFocus(issue)
@@ -48,15 +49,13 @@
         listProvider.updateFocus(issue)
       }}
     >
-      <div class="flex-row-center clear-mins gap-2 p-2 flex-grow">
-        <span class="issuePresenter">
-          <FixedColumn key={'estimation_issue'} justify={'left'}>
-            {#if currentTeam}
-              {getIssueId(currentTeam, issue)}
-            {/if}
-          </FixedColumn>
-        </span>
-        <span class="text name" title={issue.title}>
+      <div class="flex-row-center clear-mins gap-2 flex-grow mr-4" class:p-text={twoRows}>
+        <FixedColumn key={'estimation_issue'} justify={'left'} addClass={'fs-bold'}>
+          {#if currentTeam}
+            {getIssueId(currentTeam, issue)}
+          {/if}
+        </FixedColumn>
+        <span class="overflow-label fs-bold caption-color" title={issue.title}>
           {issue.title}
         </span>
       </div>
@@ -67,7 +66,6 @@
           label={tracker.string.Assignee}
           _class={contact.class.Employee}
           value={issue.assignee}
-          assignedTo={issue}
           readonly
           showNavigate={false}
         />
@@ -78,26 +76,3 @@
     </div>
   </svelte:fragment>
 </ListView>
-
-<style lang="scss">
-  .row {
-    .text {
-      font-weight: 500;
-      color: var(--caption-color);
-    }
-
-    .issuePresenter {
-      flex-shrink: 0;
-      min-width: 0;
-      min-height: 0;
-      font-weight: 500;
-      color: var(--content-color);
-    }
-
-    .name {
-      white-space: nowrap;
-      text-overflow: ellipsis;
-      overflow: hidden;
-    }
-  }
-</style>

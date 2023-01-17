@@ -275,6 +275,9 @@
   min-height: 1px;
   height: 1px;
   background-color: var(--divider-color);
+
+  &.dark { background-color: var(--body-accent); }
+  &.noMargin { margin: 0; }
 }
 
 .antiSection {
