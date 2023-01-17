@@ -19,7 +19,12 @@
   import presentation, { createQuery, getClient } from '@hcengineering/presentation'
   import { AnyComponent, Button, IconAdd, SearchEdit, showPanel, showPopup, TabList } from '@hcengineering/ui'
   import view, { Viewlet } from '@hcengineering/view'
-  import { getActiveViewletId, setActiveViewletId, ViewletSettingButton } from '@hcengineering/view-resources'
+  import {
+    getActiveViewletId,
+    getViewOptions,
+    setActiveViewletId,
+    ViewletSettingButton
+  } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../plugin'
   import { classIcon } from '../utils'
@@ -84,6 +89,8 @@
   })
 
   $: twoRows = $deviceInfo.twoRows
+
+  $: viewOptions = getViewOptions(viewlet)
 </script>
 
 <div class="ac-header withSettings" class:full={!twoRows} class:mini={twoRows}>
@@ -128,7 +135,7 @@
           }}
         />
       {/if}
-      <ViewletSettingButton {viewlet} />
+      <ViewletSettingButton bind:viewOptions {viewlet} />
     </div>
   {/if}
 </div>

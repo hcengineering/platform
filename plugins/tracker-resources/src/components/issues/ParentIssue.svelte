@@ -38,6 +38,7 @@
     <Spinner size="small" />
   {/if}
   <span class="overflow-label issue-title">{issue.title}</span>
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div
     class="button-close"
     use:tooltip={{ label: tracker.string.RemoveParent, direction: 'bottom' }}

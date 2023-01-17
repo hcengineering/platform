@@ -25,9 +25,9 @@
   import ModeSelector from '../ModeSelector.svelte'
 
   const config: [string, IntlString, object][] = [
-    ['assigned', tracker.string.Assigned],
+    ['assigned', tracker.string.Assigned, {}],
     ['created', tracker.string.Created, { value: 0 }],
-    ['subscribed', tracker.string.Subscribed]
+    ['subscribed', tracker.string.Subscribed, {}]
   ]
   const currentUser = getCurrentAccount() as EmployeeAccount
   const assigned = { assignee: currentUser.employee }

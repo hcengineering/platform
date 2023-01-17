@@ -27,6 +27,7 @@
 </script>
 
 {#if value}
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div class="flex-presenter flex-grow" on:click={navigateToProject}>
     <span title={value.label} class="projectLabel flex-grow">{value.label}</span>
   </div>

@@ -23,7 +23,6 @@ export default mergeIds(attachmentId, attachment, {
   string: {
     NoAttachments: '' as IntlString,
     UploadDropFilesHere: '' as IntlString,
-    Attachments: '' as IntlString,
     Photos: '' as IntlString,
     FileBrowser: '' as IntlString,
     FileBrowserFileCounter: '' as IntlString,

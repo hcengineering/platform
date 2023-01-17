@@ -15,7 +15,7 @@
 <script lang="ts">
   import { AttachedData, Ref, SortingOrder, WithLookup } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Issue, IssueStatus } from '@hcengineering/tracker'
+  import { Issue, IssueStatus, Team } from '@hcengineering/tracker'
   import type { ButtonKind, ButtonSize } from '@hcengineering/ui'
   import { Button, eventToHTMLElement, SelectPopup, showPopup, TooltipAlignment } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
@@ -33,6 +33,9 @@
   export let size: ButtonSize = 'large'
   export let justify: 'left' | 'center' = 'left'
   export let width: string | undefined = undefined
+
+  // Extra properties
+  export let issueStatuses: Map<Ref<Team>, WithLookup<IssueStatus>[]> | undefined = undefined
 
   const client = getClient()
   const statusesQuery = createQuery()
@@ -65,7 +68,7 @@
 
   $: selectedStatus = statuses?.find((status) => status._id === value.status) ?? statuses?.[0]
   $: selectedStatusLabel = shouldShowLabel ? selectedStatus?.name : undefined
-  $: statusesInfo = statuses?.map((s, i) => {
+  $: statusesInfo = statuses?.map((s) => {
     return {
       id: s._id,
       component: StatusPresenter,
@@ -74,18 +77,23 @@
     }
   })
   $: if (!statuses) {
-    const query = '_id' in value ? { attachedTo: value.space } : {}
-    statusesQuery.query(
-      tracker.class.IssueStatus,
-      query,
-      (result) => {
-        statuses = result
-      },
-      {
-        lookup: { category: tracker.class.IssueStatusCategory },
-        sort: { rank: SortingOrder.Ascending }
-      }
-    )
+    statuses = '_id' in value ? issueStatuses?.get(value.space) : undefined
+    if (statuses === undefined) {
+      const query = '_id' in value ? { attachedTo: value.space } : {}
+      statusesQuery.query(
+        tracker.class.IssueStatus,
+        query,
+        (result) => {
+          statuses = result
+        },
+        {
+          lookup: { category: tracker.class.IssueStatusCategory },
+          sort: { rank: SortingOrder.Ascending }
+        }
+      )
+    } else {
+      statusesQuery.unsubscribe()
+    }
   }
   $: smallgap = size === 'inline' || size === 'small'
 </script>
@@ -95,7 +103,11 @@
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div class="flex-row-center flex-no-shrink" class:cursor-pointer={isEditable} on:click={handleStatusEditorOpened}>
       <div class="flex-center flex-no-shrink square-4">
-        {#if selectedStatus}<IssueStatusIcon value={selectedStatus} size={kind === 'list' ? 'inline' : 'medium'} />{/if}
+        {#if selectedStatus}<IssueStatusIcon
+            value={selectedStatus}
+            issueStatuses={statuses}
+            size={kind === 'list' ? 'inline' : 'medium'}
+          />{/if}
       </div>
       {#if selectedStatusLabel}
         <span

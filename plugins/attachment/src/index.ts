@@ -86,6 +86,7 @@ export default plugin(attachmentId, {
     FileBrowserTypeFilterAudio: '' as IntlString,
     FileBrowserTypeFilterVideos: '' as IntlString,
     FileBrowserTypeFilterPDFs: '' as IntlString,
-    DeleteFile: '' as IntlString
+    DeleteFile: '' as IntlString,
+    Attachments: '' as IntlString
   }
 })

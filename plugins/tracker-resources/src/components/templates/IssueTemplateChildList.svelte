@@ -82,10 +82,6 @@
     resetDrag()
   }
 
-  function showContextMenu (ev: MouseEvent, object: IssueTemplateChild) {
-    // showPopup(ContextMenu, { object }, getEventPositionElement(ev))
-  }
-
   export function getIssueTemplateId (team: string, issue: IssueTemplateChild): string {
     return `${team}-${issues.findIndex((it) => it.id === issue.id)}`
   }
@@ -107,7 +103,6 @@
     animate:flip={{ duration: 400 }}
     draggable={true}
     on:click|self={(evt) => openIssue(evt, issue)}
-    on:contextmenu|preventDefault={(ev) => showContextMenu(ev, issue)}
     on:dragstart={(ev) => handleDragStart(ev, index)}
     on:dragover|preventDefault={() => false}
     on:dragenter={() => (hoveringIndex = index)}

@@ -12,11 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
+<script lang="ts" context="module">
+  const providers = new Map<string, AvatarProvider | null>()
+
+  async function getProvider (client: Client, providerId: Ref<AvatarProvider>): Promise<AvatarProvider | undefined> {
+    const p = providers.get(providerId)
+    if (p !== undefined) {
+      return p ?? undefined
+    }
+    const res = await getClient().findOne(contact.class.AvatarProvider, { _id: providerId })
+    providers.set(providerId, res ?? null)
+    return res
+  }
+</script>
+
 <script lang="ts">
-  import contact, { AvatarType, AvatarProvider } from '@hcengineering/contact'
+  import contact, { AvatarProvider, AvatarType } from '@hcengineering/contact'
+  import { Client, Ref } from '@hcengineering/core'
   import { Asset, getResource } from '@hcengineering/platform'
   import { AnySvelteComponent, Icon, IconSize } from '@hcengineering/ui'
-  import { getBlobURL, getAvatarProviderId, getClient } from '../utils'
+  import { getAvatarProviderId, getBlobURL, getClient } from '../utils'
   import AvatarIcon from './icons/Avatar.svelte'
 
   export let avatar: string | null | undefined = undefined
@@ -35,8 +50,7 @@
       })
     } else if (avatar) {
       const avatarProviderId = getAvatarProviderId(avatar)
-      avatarProvider =
-        avatarProviderId && (await getClient().findOne(contact.class.AvatarProvider, { _id: avatarProviderId }))
+      avatarProvider = avatarProviderId && (await getProvider(getClient(), avatarProviderId))
 
       if (!avatarProvider || avatarProvider.type === AvatarType.COLOR) {
         url = undefined

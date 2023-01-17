@@ -295,6 +295,7 @@
                       editingStatus = { ...detail, color: detail.color ?? category.color }
                     }}
                     on:delete={deleteStatus}
+                    issueStatuses={workflowStatuses}
                   />
                 {/if}
               </div>

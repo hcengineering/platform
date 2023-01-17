@@ -26,7 +26,7 @@
   } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import { buildConfigLookup, buildModel, getCategories, getPresenter, groupBy, LoadingProps } from '../../utils'
-  import { noCategory, viewOptionsStore } from '../../viewOptions'
+  import { noCategory } from '../../viewOptions'
   import ListCategory from './ListCategory.svelte'
 
   export let _class: Ref<Class<Doc>>
@@ -38,33 +38,48 @@
   export let selectedObjectIds: Doc[] = []
   export let selectedRowIndex: number | undefined = undefined
   export let loadingProps: LoadingProps | undefined = undefined
-  export let createItemDialog: AnyComponent | undefined
-  export let createItemLabel: IntlString | undefined
-  export let viewOptions: ViewOptionModel[] | undefined
+  export let createItemDialog: AnyComponent | undefined = undefined
+  export let createItemLabel: IntlString | undefined = undefined
+  export let viewOptionsConfig: ViewOptionModel[] | undefined
+  export let viewOptions: ViewOptions
+  export let flatHeaders = false
+  export let props: Record<string, any> = {}
+
+  export let documents: Doc[] | undefined = undefined
 
   const objectRefs: HTMLElement[] = []
   let docs: Doc[] = []
-  $: groupByKey = $viewOptionsStore.groupBy ?? noCategory
-  $: orderBy = $viewOptionsStore.orderBy
+
+  $: groupByKey = viewOptions.groupBy ?? noCategory
+  $: orderBy = viewOptions.orderBy
   $: groupedDocs = groupBy(docs, groupByKey)
   let categories: any[] = []
-  $: getCategories(client, _class, docs, groupByKey).then((p) => (categories = p))
+  $: getCategories(client, _class, docs, groupByKey).then((p) => {
+    categories = p
+  })
 
   const docsQuery = createQuery()
   $: resultOptions = { lookup, ...options, sort: { [orderBy[0]]: orderBy[1] } }
 
   let resultQuery: DocumentQuery<Doc> = query
-  $: getResultQuery(query, viewOptions, $viewOptionsStore).then((p) => (resultQuery = p))
+  $: getResultQuery(query, viewOptionsConfig, viewOptions).then((p) => {
+    resultQuery = { ...p, ...query }
+  })
 
-  $: docsQuery.query(
-    _class,
-    resultQuery,
-    (res) => {
-      docs = res
-      dispatch('content', docs)
-    },
-    resultOptions
-  )
+  $: if (documents === undefined) {
+    docsQuery.query(
+      _class,
+      resultQuery,
+      (res) => {
+        docs = res
+        dispatch('content', docs)
+      },
+      resultOptions
+    )
+  } else {
+    docsQuery.unsubscribe()
+    docs = documents
+  }
 
   const dispatch = createEventDispatcher()
 
@@ -117,7 +132,9 @@
 
   let headerComponent: AttributeModel | undefined
   $: getHeader(_class, groupByKey)
-  $: buildModel({ client, _class, keys: config, lookup }).then((res) => (itemModels = res))
+  $: buildModel({ client, _class, keys: config, lookup }).then((res) => {
+    itemModels = res
+  })
 
   function getInitIndex (categories: any, i: number): number {
     let res = 0
@@ -194,6 +211,8 @@
       on:check
       on:uncheckAll={uncheckAll}
       on:row-focus
+      {flatHeaders}
+      {props}
     />
   {/each}
 </div>

@@ -45,7 +45,10 @@
         selected={viewOptions.groupBy}
         width="10rem"
         justify="left"
-        on:selected={(e) => dispatch('update', { key: 'groupBy', value: e.detail })}
+        on:selected={(e) => {
+          viewOptions.groupBy = e.detail
+          dispatch('update', { key: 'groupBy', value: e.detail })
+        }}
       />
     </div>
     <span class="label"><Label label={view.string.Ordering} /></span>
@@ -60,6 +63,7 @@
           const key = e.detail
           const value = config.orderBy.find((p) => p[0] === key)
           if (value !== undefined) {
+            viewOptions.orderBy = value
             dispatch('update', { key: 'orderBy', value })
           }
         }}
@@ -71,7 +75,10 @@
         {#if isToggleType(model)}
           <MiniToggle
             on={viewOptions[model.key]}
-            on:change={() => dispatch('update', { key: model.key, value: !viewOptions[model.key] })}
+            on:change={() => {
+              viewOptions[model.key] = !viewOptions[model.key]
+              dispatch('update', { key: model.key, value: viewOptions[model.key] })
+            }}
           />
         {:else if isDropdownType(model)}
           {@const items = model.values.filter(({ hidden }) => !hidden?.(viewOptions))}
@@ -81,7 +88,10 @@
             selected={viewOptions[model.key]}
             width="10rem"
             justify="left"
-            on:selected={(e) => dispatch('update', { key: model.key, value: e.detail })}
+            on:selected={(e) => {
+              viewOptions[model.key] = e.detail
+              dispatch('update', { key: model.key, value: e.detail })
+            }}
           />
         {/if}
       </div>

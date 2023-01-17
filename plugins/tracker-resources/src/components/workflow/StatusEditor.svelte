@@ -41,6 +41,7 @@
     <div class="flex-no-shrink draggable-mark">
       {#if !isSingle}<Circles />{/if}
     </div>
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div class="flex-no-shrink ml-2 color" on:click={pickColor}>
       <div class="dot" style="background-color: {getPlatformColor(value.color ?? 0)}" />
     </div>

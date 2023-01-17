@@ -33,6 +33,7 @@
 </script>
 
 {#if value}
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
   <span class="issuePresenterRoot flex" class:noPointer={disableClick} on:click={handleIssueEditorOpened}>
     <Icon icon={tracker.icon.Issues} size={'small'} />
     <span class="ml-2">

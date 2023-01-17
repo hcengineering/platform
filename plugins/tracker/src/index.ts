@@ -399,6 +399,7 @@ export default plugin(trackerId, {
     Tracker: '' as AnyComponent,
     TrackerApp: '' as AnyComponent,
     RelatedIssues: '' as AnyComponent,
+    RelatedIssuesSection: '' as AnyComponent,
     RelatedIssueTemplates: '' as AnyComponent,
     EditIssue: '' as AnyComponent,
     CreateIssue: '' as AnyComponent,

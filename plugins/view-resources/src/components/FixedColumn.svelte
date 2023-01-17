@@ -24,14 +24,16 @@
   let prevKey = key
   let element: HTMLDivElement | undefined
 
-  let cWidth: number = 0
+  let cWidth: number | undefined = undefined
 
   afterUpdate(() => {
-    if (prevKey !== key) {
-      $fixedWidthStore[prevKey] = 0
-      $fixedWidthStore[key] = 0
-      prevKey = key
-      cWidth = 0
+    if (cWidth !== undefined) {
+      if (prevKey !== key) {
+        $fixedWidthStore[prevKey] = 0
+        $fixedWidthStore[key] = 0
+        prevKey = key
+        cWidth = undefined
+      }
     }
   })
 
@@ -43,14 +45,18 @@
   }
 
   onDestroy(() => {
-    $fixedWidthStore[key] = 0
+    if (cWidth === $fixedWidthStore[key]) {
+      // If we are longest element
+      $fixedWidthStore[key] = 0
+    }
   })
 </script>
 
 <div
   bind:this={element}
   class="flex-no-shrink{addClass ? ` ${addClass}` : ''}"
-  style="{justify !== '' ? `text-align: ${justify}; ` : ''} min-width: {$fixedWidthStore[key] ?? 0}px;"
+  style:text-align={justify !== '' ? justify : ''}
+  style:min-width={`${$fixedWidthStore[key] ?? 0}}px;`}
   use:resizeObserver={resize}
 >
   <slot />

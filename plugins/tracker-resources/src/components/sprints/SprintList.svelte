@@ -119,6 +119,7 @@
   <div class="listRoot">
     {#if sprints}
       {#each Array.from(byProject?.entries() ?? []) as e}
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div class="flex-between categoryHeader row" on:click={() => handleCollapseCategory(e[0])}>
           <div class="flex-row-center gap-2 clear-mins">
             <SprintProjectEditor

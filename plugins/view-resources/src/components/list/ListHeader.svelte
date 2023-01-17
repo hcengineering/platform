@@ -41,6 +41,8 @@
   export let limited: number
   export let items: Doc[]
   export let extraHeaders: AnyComponent[] | undefined
+  export let flat = false
+  export let props: Record<string, any> = {}
 
   const dispatch = createEventDispatcher()
 
@@ -52,7 +54,7 @@
 
 {#if headerComponent || groupByKey === noCategory}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <div class="flex-between categoryHeader row" on:click={() => dispatch('collapse')}>
+  <div class="flex-between categoryHeader row" class:flat on:click={() => dispatch('collapse')}>
     <div class="flex-row-center gap-2 clear-mins caption-color">
       <FixedColumn key={`list_groupBy_${groupByKey}`} justify={'left'}>
         {#if groupByKey === noCategory}
@@ -66,7 +68,7 @@
       {#if extraHeaders}
         {#each extraHeaders as extra}
           <FixedColumn key={`list_groupBy_${groupByKey}_extra_${extra}`} justify={'left'}>
-            <Component is={extra} props={{ value: category, docs: items }} />
+            <Component is={extra} props={{ ...props, value: category, docs: items }} />
           </FixedColumn>
         {/each}
       {/if}
@@ -109,6 +111,14 @@
     min-width: 0;
     background: var(--header-bg-color);
     z-index: 5;
+
+    &.flat {
+      background: var(--header-bg-color);
+      background-blend-mode: darken;
+      min-height: 2.25rem;
+      height: 2.25rem;
+      padding: 0 0.25rem 0 0.25rem;
+    }
   }
 
   .row:not(:last-child) {

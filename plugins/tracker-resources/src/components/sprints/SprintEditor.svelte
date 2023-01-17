@@ -123,9 +123,6 @@
 </div>
 
 <style lang="scss">
-  .showWarning {
-    color: var(--warning-color) !important;
-  }
   .minus-margin {
     margin-left: -0.5rem;
     &-vSpace {

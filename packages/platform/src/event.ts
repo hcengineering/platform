@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { Status, OK, unknownError } from './status'
+import { Status, OK, unknownError, Severity } from './status'
 
 /**
  * @public
@@ -68,7 +68,9 @@ async function broadcastEvent (event: string, data: any): Promise<void> {
  * @returns
  */
 export async function setPlatformStatus (status: Status): Promise<void> {
-  // console.log(await translate(status.code, status.params))
+  if (status.severity === Severity.ERROR) {
+    console.trace('Platform Error Status', status)
+  }
   return await broadcastEvent(PlatformEvent, status)
 }
 
