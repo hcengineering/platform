@@ -16,10 +16,8 @@
   import { Ref, SortingOrder, WithLookup } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { calcRank, Issue, IssueStatus, Team } from '@hcengineering/tracker'
-  import { Button, Spinner, ExpandCollapse, closeTooltip, IconAdd } from '@hcengineering/ui'
+  import { Button, Spinner, ExpandCollapse, closeTooltip, IconAdd, Chevron, Label } from '@hcengineering/ui'
   import tracker from '../../../plugin'
-  import Collapsed from '../../icons/Collapsed.svelte'
-  import Expanded from '../../icons/Expanded.svelte'
   import CreateSubIssue from './CreateSubIssue.svelte'
   import SubIssueList from './SubIssueList.svelte'
 
@@ -62,16 +60,18 @@
   {#if hasSubIssues}
     <Button
       width="min-content"
-      icon={isCollapsed ? Collapsed : Expanded}
       size="small"
       kind="transparent"
-      label={tracker.string.SubIssuesList}
-      labelParams={{ subIssues: issue.subIssues }}
       on:click={() => {
         isCollapsed = !isCollapsed
         isCreating = false
       }}
-    />
+    >
+      <svelte:fragment slot="content">
+        <Chevron size={'small'} expanded={!isCollapsed} outline fill={'var(--caption-color)'} marginRight={'.375rem'} />
+        <Label label={tracker.string.SubIssuesList} params={{ subIssues: issue.subIssues }} />
+      </svelte:fragment>
+    </Button>
   {/if}
 
   <Button

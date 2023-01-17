@@ -18,6 +18,7 @@
 
   export let selection: number = 0
   export let count: number
+  export let addClass: string | undefined = undefined
 
   const refs: HTMLElement[] = []
 
@@ -66,8 +67,9 @@
   >
     {#each Array(count) as _, row}
       <slot name="category" item={row} />
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
       <div
-        class="list-item"
+        class="list-item{addClass ? ` ${addClass}` : ''}"
         class:selection={row === selection}
         on:mouseover={() => onRow(row)}
         on:focus={() => {}}

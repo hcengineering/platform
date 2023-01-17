@@ -16,7 +16,7 @@
   import { DocumentQuery, Ref, SortingOrder } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { Issue, Team, TimeSpendReport } from '@hcengineering/tracker'
-  import { Expandable, floorFractionDigits, Label, Scroller, Spinner } from '@hcengineering/ui'
+  import { Expandable, floorFractionDigits, Label, Spinner } from '@hcengineering/ui'
   import tracker from '../../../plugin'
   import TimePresenter from './TimePresenter.svelte'
   import TimeSpendReportsList from './TimeSpendReportsList.svelte'
@@ -42,21 +42,19 @@
 </script>
 
 {#if reports}
-  <Expandable expanded={true}>
+  <Expandable expanded={true} contentColor bordered>
     <svelte:fragment slot="title">
       <span class="overflow-label flex-nowrap">
-        <Label label={tracker.string.ReportedTime} />: <TimePresenter value={reportedTime} {workDayLength} />
-        <Label label={tracker.string.TimeSpendReports} />: <TimePresenter value={total} {workDayLength} />
+        <Label label={tracker.string.ReportedTime} />:
+        <span class="caption-color"><TimePresenter value={reportedTime} {workDayLength} /></span>.
+        <Label label={tracker.string.TimeSpendReports} />:
+        <span class="caption-color"><TimePresenter value={total} {workDayLength} /></span>
       </span>
     </svelte:fragment>
-    <div class="h-50">
-      <Scroller>
-        <TimeSpendReportsList {reports} {teams} />
-      </Scroller>
-    </div>
+    <TimeSpendReportsList {reports} {teams} />
   </Expandable>
 {:else}
-  <div class="flex-center pt-3">
+  <div class="flex-center">
     <Spinner />
   </div>
 {/if}
