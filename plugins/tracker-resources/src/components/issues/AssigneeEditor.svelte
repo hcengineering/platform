@@ -15,11 +15,12 @@
 <script lang="ts">
   import { Employee } from '@hcengineering/contact'
   import { AttachedData, Ref } from '@hcengineering/core'
-  import { AssigneeBox, getClient } from '@hcengineering/presentation'
+  import { getClient } from '@hcengineering/presentation'
   import { Issue, IssueTemplateData } from '@hcengineering/tracker'
   import { ButtonKind, ButtonSize, TooltipAlignment } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
+  import AssigneeBox from './AssigneeBox.svelte'
 
   export let value: Issue | AttachedData<Issue> | IssueTemplateData
   export let size: ButtonSize = 'large'

@@ -38,9 +38,14 @@
     Label,
     tooltip
   } from '@hcengineering/ui'
-  import presentation from '..'
-  import { AssigneeCategory, assigneeCategoryOrder, createQuery, getCategorytitle, getClient } from '../utils'
-  import UserInfo from './UserInfo.svelte'
+  import presentation, {
+    AssigneeCategory,
+    UserInfo,
+    assigneeCategoryOrder,
+    createQuery,
+    getCategorytitle,
+    getClient
+  } from '@hcengineering/presentation'
   import { createEventDispatcher } from 'svelte'
 
   export let options: FindOptions<Contact> | undefined = undefined

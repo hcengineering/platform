@@ -34,9 +34,7 @@
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
-  import presentation, { getClient } from '..'
-  import IconPerson from './icons/Person.svelte'
-  import UserInfo from './UserInfo.svelte'
+  import presentation, { IconPerson, UserInfo, getClient } from '@hcengineering/presentation'
   import AssigneePopup from './AssigneePopup.svelte'
 
   export let _class: Ref<Class<Employee>> = contact.class.Employee

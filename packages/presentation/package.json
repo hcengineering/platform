@@ -42,7 +42,6 @@
     "@hcengineering/login": "^0.6.1",
     "@hcengineering/image-cropper": "^0.6.0",
     "@hcengineering/client": "^0.6.6",
-    "@hcengineering/tracker": "^0.6.1",
     "@hcengineering/setting": "^0.6.2",
     "fast-equals": "^2.0.3"
   }
