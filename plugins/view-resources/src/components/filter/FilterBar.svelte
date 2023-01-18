@@ -16,14 +16,7 @@
   import { Class, Doc, DocumentQuery, Ref } from '@hcengineering/core'
   import { getResource } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
-  import {
-    Button,
-    eventToHTMLElement,
-    getCurrentLocation,
-    IconAdd,
-    locationToUrl,
-    showPopup
-  } from '@hcengineering/ui'
+  import { Button, eventToHTMLElement, getCurrentLocation, IconAdd, locationToUrl, showPopup } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import { filterStore } from '../../filter'
@@ -223,13 +216,13 @@
         <div class="buttons-divider" />
       {/if} -->
     <!--</div>-->
-      <Button
-        icon={view.icon.Views}
-        label={view.string.Save}
-        size={'small'}
-        width={'fit-content'}
-        on:click={() => saveFilteredView()}
-      />
+    <Button
+      icon={view.icon.Views}
+      label={view.string.Save}
+      size={'small'}
+      width={'fit-content'}
+      on:click={() => saveFilteredView()}
+    />
   </div>
 {/if}
 
