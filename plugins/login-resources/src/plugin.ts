@@ -48,7 +48,7 @@ export default mergeIds(loginId, login, {
     WantAnotherWorkspace: '' as IntlString,
     NotSeeingWorkspace: '' as IntlString,
     ChangeAccount: '' as IntlString,
-    WorksaceNameRule: '' as IntlString,
+    WorkspaceNameRule: '' as IntlString,
     LinkValidHours: '' as IntlString,
     GetLink: '' as IntlString
   }
