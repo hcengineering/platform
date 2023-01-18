@@ -13,19 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Contact, EmployeeAccount, Person } from '@hcengineering/contact'
-  import core, {
-    AttachedData,
-    Doc,
-    DocumentQuery,
-    FindOptions,
-    getCurrentAccount,
-    Ref,
-    TxCollectionCUD,
-    TxUpdateDoc
-  } from '@hcengineering/core'
+  import contact, { Contact, Employee, EmployeeAccount, Person } from '@hcengineering/contact'
+  import { Doc, DocumentQuery, FindOptions, getCurrentAccount, Ref } from '@hcengineering/core'
   import type { Asset, IntlString } from '@hcengineering/platform'
-  import tracker, { Issue, IssueTemplateData } from '@hcengineering/tracker'
   import {
     createFocusManager,
     EditBox,
@@ -45,13 +35,15 @@
     createQuery,
     getCategorytitle,
     getClient
-  } from '@hcengineering/presentation'
+  } from '..'
   import { createEventDispatcher } from 'svelte'
 
   export let options: FindOptions<Contact> | undefined = undefined
   export let selected: Ref<Person> | undefined
   export let docQuery: DocumentQuery<Contact> | undefined = undefined
-  export let assignedTo: Issue | AttachedData<Issue> | IssueTemplateData
+  export let prevAssigned: Ref<Employee>[] | undefined = []
+  export let projectLead: Ref<Employee> | undefined = undefined
+  export let projectMembers: Ref<Employee>[] | undefined = []
   export let titleDeselect: IntlString | undefined
   export let placeholder: IntlString = presentation.string.Search
   export let ignoreUsers: Ref<Person>[] = []
@@ -72,13 +64,8 @@
 
   let categorizedPersons: Map<Ref<Person>, AssigneeCategory>
 
-  let prevAssigned: Ref<Person>[] = []
-  let projectLead: Ref<Person> | undefined = undefined
-  let projectMembers: Ref<Person>[] = []
-
   const dispatch = createEventDispatcher()
   const query = createQuery()
-  const txQuery = createQuery()
 
   $: query.query<Contact>(
     contact.class.Employee,
@@ -98,18 +85,18 @@
   function updateCategories (
     objects: Contact[],
     currentEmployee: Ref<Person>,
-    prevAssigned: Ref<Person>[],
+    prevAssigned: Ref<Person>[] | undefined,
     projectLead: Ref<Person> | undefined,
-    projectMembers: Ref<Person>[]
+    projectMembers: Ref<Person>[] | undefined
   ) {
     const persons = new Map<Ref<Person>, AssigneeCategory>(objects.map((t) => [t._id, 'Other']))
     if (projectLead) {
       persons.set(projectLead, 'ProjectLead')
     }
-    projectMembers.forEach((p) => persons.set(p, 'ProjectMembers'))
-    prevAssigned.forEach((p) => persons.set(p, 'PreviouslyAssigned'))
-    if (assignedTo.assignee) {
-      persons.set(assignedTo.assignee, 'Assigned')
+    projectMembers?.forEach((p) => persons.set(p, 'ProjectMembers'))
+    prevAssigned?.forEach((p) => persons.set(p, 'PreviouslyAssigned'))
+    if (selected) {
+      persons.set(selected, 'Assigned')
     }
     persons.set(currentEmployee, 'CurrentUser')
 
@@ -124,37 +111,6 @@
       }
     })
   }
-
-  async function updatePrevAssigned (issue: Issue | AttachedData<Issue> | IssueTemplateData) {
-    if ((issue as Issue) === undefined) {
-      prevAssigned = []
-      return
-    }
-    txQuery.query(
-      core.class.Tx,
-      {
-        'tx.objectId': (issue as Issue)._id,
-        'tx.operations.assignee': { $exists: true }
-      },
-      (res) => {
-        prevAssigned = res
-          .map((t) => ((t as TxCollectionCUD<Doc, Issue>).tx as TxUpdateDoc<Issue>).operations.assignee)
-          .filter((p) => !!p)
-          .filter((p) => !!p) as Ref<Person>[]
-      }
-    )
-
-    if (issue.project) {
-      const project = await client.findOne(tracker.class.Project, { _id: issue.project })
-      projectLead = project?.lead || undefined
-      projectMembers = project?.members || []
-    } else {
-      projectLead = undefined
-      projectMembers = []
-    }
-  }
-
-  $: updatePrevAssigned(assignedTo)
 
   let selection = 0
   let list: ListView

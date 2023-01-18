@@ -15,13 +15,13 @@
 <script lang="ts">
   import contact from '@hcengineering/contact'
   import { Doc, Ref } from '@hcengineering/core'
+  import { AssigneeBox } from '@hcengineering/presentation'
   import { Issue, Team } from '@hcengineering/tracker'
   import { getEventPositionElement, ListView, showPopup, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
   import { ContextMenu, FixedColumn, ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
   import { getIssueId } from '../../../issues'
   import tracker from '../../../plugin'
   import EstimationEditor from './EstimationEditor.svelte'
-  import AssigneeBox from '../AssigneeBox.svelte'
 
   export let issues: Issue[]
 
@@ -66,7 +66,6 @@
           label={tracker.string.Assignee}
           _class={contact.class.Employee}
           value={issue.assignee}
-          assignedTo={issue}
           readonly
           showNavigate={false}
         />

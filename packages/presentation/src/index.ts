@@ -21,6 +21,7 @@ export { default as AttributeBarEditor } from './components/AttributeBarEditor.s
 export { default as AttributeEditor } from './components/AttributeEditor.svelte'
 export { default as AttributesBar } from './components/AttributesBar.svelte'
 export { default as Avatar } from './components/Avatar.svelte'
+export { default as AssigneeBox } from './components/AssigneeBox.svelte'
 export { default as Card } from './components/Card.svelte'
 export { default as CombineAvatars } from './components/CombineAvatars.svelte'
 export { default as EditableAvatar } from './components/EditableAvatar.svelte'

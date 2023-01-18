@@ -14,9 +14,8 @@
 -->
 <script lang="ts">
   import contact, { Contact, Employee, formatName } from '@hcengineering/contact'
-  import { AttachedData, Class, DocumentQuery, FindOptions, Ref } from '@hcengineering/core'
+  import { Class, DocumentQuery, FindOptions, Ref } from '@hcengineering/core'
   import { getEmbeddedLabel, IntlString } from '@hcengineering/platform'
-  import { Issue, IssueTemplateData } from '@hcengineering/tracker'
   import {
     ActionIcon,
     Button,
@@ -34,7 +33,7 @@
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
-  import presentation, { IconPerson, UserInfo, getClient } from '@hcengineering/presentation'
+  import presentation, { IconPerson, UserInfo, getClient } from '..'
   import AssigneePopup from './AssigneePopup.svelte'
 
   export let _class: Ref<Class<Employee>> = contact.class.Employee
@@ -46,9 +45,10 @@
   export let label: IntlString
   export let placeholder: IntlString = presentation.string.Search
   export let value: Ref<Employee> | null | undefined
+  export let prevAssigned: Ref<Employee>[] | undefined = []
+  export let projectLead: Ref<Employee> | undefined = undefined
+  export let projectMembers: Ref<Employee>[] | undefined = []
   export let titleDeselect: IntlString | undefined = undefined
-
-  export let assignedTo: Issue | AttachedData<Issue> | IssueTemplateData
   export let readonly = false
   export let kind: ButtonKind = 'no-border'
   export let size: ButtonSize = 'small'
@@ -88,7 +88,9 @@
           _class,
           options,
           docQuery,
-          assignedTo,
+          prevAssigned,
+          projectLead,
+          projectMembers,
           ignoreUsers: excluded ?? [],
           icon,
           selected: value,

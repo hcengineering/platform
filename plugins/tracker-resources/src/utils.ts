@@ -13,7 +13,18 @@
 // limitations under the License.
 //
 
-import { Doc, DocumentQuery, Ref, SortingOrder, TxOperations, WithLookup } from '@hcengineering/core'
+import { Employee } from '@hcengineering/contact'
+import core, {
+  AttachedData,
+  Doc,
+  DocumentQuery,
+  Ref,
+  SortingOrder,
+  TxCollectionCUD,
+  TxOperations,
+  TxUpdateDoc,
+  WithLookup
+} from '@hcengineering/core'
 import { TypeState } from '@hcengineering/kanban'
 import { Asset, IntlString, translate } from '@hcengineering/platform'
 import { createQuery } from '@hcengineering/presentation'
@@ -24,6 +35,7 @@ import {
   IssuesGrouping,
   IssuesOrdering,
   IssueStatus,
+  IssueTemplateData,
   ProjectStatus,
   Sprint,
   SprintStatus,
@@ -591,4 +603,26 @@ export function subIssueListProvider (subIssues: Issue[], target: Ref<Issue>): v
   if (selectedIssue != null) {
     listProvider.updateFocus(selectedIssue)
   }
+}
+
+export async function getPreviousAssignees (
+  issue: Issue | AttachedData<Issue> | IssueTemplateData
+): Promise<Array<Ref<Employee>>> {
+  return await new Promise((resolve) => {
+    const query = createQuery(true)
+    query.query(
+      core.class.Tx,
+      {
+        'tx.objectId': (issue as Issue)._id,
+        'tx.operations.assignee': { $exists: true }
+      },
+      (res) => {
+        const prevAssignee = res
+          .map((t) => ((t as TxCollectionCUD<Doc, Issue>).tx as TxUpdateDoc<Issue>).operations.assignee)
+          .filter((p) => !(p == null)) as Array<Ref<Employee>>
+        resolve(prevAssignee)
+        query.unsubscribe()
+      }
+    )
+  })
 }

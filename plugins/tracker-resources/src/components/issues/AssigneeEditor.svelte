@@ -15,12 +15,12 @@
 <script lang="ts">
   import { Employee } from '@hcengineering/contact'
   import { AttachedData, Ref } from '@hcengineering/core'
-  import { getClient } from '@hcengineering/presentation'
+  import { AssigneeBox, getClient } from '@hcengineering/presentation'
   import { Issue, IssueTemplateData } from '@hcengineering/tracker'
   import { ButtonKind, ButtonSize, TooltipAlignment } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
-  import AssigneeBox from './AssigneeBox.svelte'
+  import { getPreviousAssignees } from '../../utils'
 
   export let value: Issue | AttachedData<Issue> | IssueTemplateData
   export let size: ButtonSize = 'large'
@@ -30,6 +30,27 @@
 
   const client = getClient()
   const dispatch = createEventDispatcher()
+
+  let prevAssigned: Ref<Employee>[] = []
+  let projectLead: Ref<Employee> | undefined = undefined
+  let projectMembers: Ref<Employee>[] = []
+
+  $: getPreviousAssignees(value).then((res) => {
+    prevAssigned = res
+  })
+
+  async function updateProjectMembers (issue: Issue | AttachedData<Issue> | IssueTemplateData) {
+    if (issue.project) {
+      const project = await client.findOne(tracker.class.Project, { _id: issue.project })
+      projectLead = project?.lead || undefined
+      projectMembers = project?.members || []
+    } else {
+      projectLead = undefined
+      projectMembers = []
+    }
+  }
+
+  $: updateProjectMembers(value)
 
   const handleAssigneeChanged = async (newAssignee: Ref<Employee> | undefined) => {
     if (newAssignee === undefined || value.assignee === newAssignee) {
@@ -49,7 +70,9 @@
     label={tracker.string.Assignee}
     placeholder={tracker.string.Assignee}
     value={value.assignee}
-    assignedTo={value}
+    {prevAssigned}
+    {projectLead}
+    {projectMembers}
     titleDeselect={tracker.string.Unassigned}
     {size}
     {kind}
