@@ -2,11 +2,12 @@
   import { DocumentQuery, WithLookup } from '@hcengineering/core'
   import { IssueTemplate } from '@hcengineering/tracker'
   import { Component } from '@hcengineering/ui'
-  import { Viewlet } from '@hcengineering/view'
+  import { Viewlet, ViewOptions } from '@hcengineering/view'
   import tracker from '../../plugin'
   import CreateIssueTemplate from './CreateIssueTemplate.svelte'
 
   export let viewlet: WithLookup<Viewlet>
+  export let viewOptions: ViewOptions
   export let query: DocumentQuery<IssueTemplate> = {}
 
   const createItemDialog = CreateIssueTemplate
@@ -22,7 +23,8 @@
       options: viewlet.options,
       createItemDialog,
       createItemLabel,
-      viewOptions: viewlet.viewOptions?.other,
+      viewOptions,
+      viewOptionsConfig: viewlet.viewOptions?.other,
       viewlet,
       query
     }}
