@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, Ref } from '@hcengineering/core'
+  import { Class, Doc, Ref, Space } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Button, eventToHTMLElement, IconAdd, IconClose, Icon, showPopup, Label } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
@@ -22,6 +22,7 @@
   import FilterTypePopup from './FilterTypePopup.svelte'
 
   export let _class: Ref<Class<Doc>> | undefined
+  export let space: Ref<Space> | undefined = undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -36,6 +37,7 @@
       FilterTypePopup,
       {
         _class,
+        space,
         target,
         index: 1,
         onChange

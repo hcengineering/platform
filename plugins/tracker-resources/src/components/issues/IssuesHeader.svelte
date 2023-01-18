@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { Ref, Space } from '@hcengineering/core'
   import { Icon, TabList, SearchEdit } from '@hcengineering/ui'
   import { Viewlet } from '@hcengineering/view'
   import { FilterButton, setActiveViewletId } from '@hcengineering/view-resources'
@@ -6,6 +7,7 @@
   import { WithLookup } from '@hcengineering/core'
   import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
 
+  export let space: Ref<Space> | undefined = undefined
   export let viewlet: WithLookup<Viewlet> | undefined
   export let viewlets: WithLookup<Viewlet>[] = []
   export let label: string
@@ -32,7 +34,7 @@
         <div class="ac-header__icon"><Icon icon={tracker.icon.Issues} size={'small'} /></div>
         <span class="ac-header__title">{label}</span>
       {/if}
-      <div class="ml-4"><FilterButton _class={tracker.class.Issue} /></div>
+      <div class="ml-4"><FilterButton _class={tracker.class.Issue} {space} /></div>
     </div>
     <SearchEdit bind:value={search} on:change={() => {}} />
   </div>
