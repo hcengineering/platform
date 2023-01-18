@@ -19,7 +19,7 @@
   import { createQuery, getClient, UsersPopup } from '@hcengineering/presentation'
   import { Button, eventToHTMLElement, IconAdd, Label, Scroller, showPopup } from '@hcengineering/ui'
   import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
-  import { Table, ViewletSettingButton } from '@hcengineering/view-resources'
+  import { getViewOptions, Table, ViewletSettingButton } from '@hcengineering/view-resources'
   import hr from '../plugin'
   import { addMember } from '../utils'
 
@@ -91,6 +91,8 @@
         }
       })
   }
+
+  $: viewOptions = getViewOptions(descr)
 </script>
 
 <div class="antiSection">
@@ -99,7 +101,7 @@
       <Label label={hr.string.Members} />
     </span>
     <div class="buttons-group xsmall-gap">
-      <ViewletSettingButton viewlet={descr} />
+      <ViewletSettingButton bind:viewOptions viewlet={descr} />
       <Button id={hr.string.AddEmployee} icon={IconAdd} kind={'transparent'} shape={'circle'} on:click={add} />
     </div>
   </div>

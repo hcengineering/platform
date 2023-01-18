@@ -24,6 +24,8 @@
   export let size: IconSize
   export let fill: string | undefined = undefined
 
+  export let issueStatuses: IssueStatus[] | undefined = undefined
+
   const dynamicFillCategories = [tracker.issueStatusCategory.Started]
 
   const client = getClient()
@@ -36,12 +38,19 @@
   } = { index: undefined, count: undefined }
 
   const categoriesQuery = createQuery()
-  categoriesQuery.query(
-    tracker.class.IssueStatus,
-    { category: tracker.issueStatusCategory.Started },
-    (res) => (statuses = res),
-    { sort: { rank: SortingOrder.Ascending } }
-  )
+
+  $: if (issueStatuses === undefined) {
+    categoriesQuery.query(
+      tracker.class.IssueStatus,
+      { category: tracker.issueStatusCategory.Started },
+      (res) => (statuses = res),
+      { sort: { rank: SortingOrder.Ascending } }
+    )
+  } else {
+    const _s = [...issueStatuses.filter((it) => it.category === tracker.issueStatusCategory.Started)]
+    _s.sort((a, b) => a.rank.localeCompare(b.rank))
+    categoriesQuery.unsubscribe()
+  }
 
   async function updateCategory (status: WithLookup<IssueStatus>, statuses: IssueStatus[]) {
     if (status.$lookup?.category) {

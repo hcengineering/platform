@@ -14,12 +14,13 @@
 -->
 <script lang="ts">
   import type { Issue } from '@hcengineering/tracker'
-  import ParentNamesPresenter from './ParentNamesPresenter.svelte'
-  import tracker from '../../plugin'
   import { showPanel } from '@hcengineering/ui'
+  import tracker from '../../plugin'
+  import ParentNamesPresenter from './ParentNamesPresenter.svelte'
 
   export let value: Issue
   export let shouldUseMargin: boolean = false
+  export let showParent = true
 
   function handleIssueEditorOpened () {
     showPanel(tracker.component.EditIssue, value._id, value._class, 'content')
@@ -28,12 +29,15 @@
 
 {#if value}
   <span class="titlePresenter-container" class:with-margin={shouldUseMargin} title={value.title}>
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
     <span
       class="name overflow-label cursor-pointer"
-      style={`max-width: ${value.parents.length !== 0 ? 95 : 100}%`}
+      style:max-width={showParent ? `${value.parents.length !== 0 ? 95 : 100}%` : '100%'}
       on:click={handleIssueEditorOpened}>{value.title}</span
     >
-    <ParentNamesPresenter {value} />
+    {#if showParent}
+      <ParentNamesPresenter {value} />
+    {/if}
   </span>
 {/if}
 

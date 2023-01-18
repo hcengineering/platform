@@ -27,7 +27,7 @@
     refDocument: Doc,
     type: keyof typeof relations,
     operation: '$push' | '$pull',
-    placeholder: IntlString
+    _: IntlString
   ) {
     const prop = type === 'isBlocking' ? 'blockedBy' : type
     if (type !== 'isBlocking') {
@@ -69,7 +69,7 @@
     await update(value, type, docs, label)
   }
 
-  const makeAddAction = (type: keyof typeof relations, placeholder: IntlString) => async (props: any, evt: Event) => {
+  const makeAddAction = (type: keyof typeof relations, placeholder: IntlString) => async () => {
     closePopup('popup')
     showPopup(
       ObjectSearchPopup,
@@ -81,7 +81,7 @@
       }
     )
   }
-  async function removeRelation (evt: MouseEvent) {
+  async function removeRelation () {
     closePopup('popup')
     showPopup(
       ObjectSearchPopup,

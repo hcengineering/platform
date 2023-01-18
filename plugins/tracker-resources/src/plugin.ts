@@ -15,12 +15,15 @@
 import { Client, Doc, DocumentQuery, Ref } from '@hcengineering/core'
 import type { IntlString, Metadata, Resource } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
-import { AnyComponent } from '@hcengineering/ui'
-import tracker, { trackerId } from '../../tracker/lib'
 import { IssueDraft } from '@hcengineering/tracker'
-import { SortFunc } from '@hcengineering/view'
+import { AnyComponent } from '@hcengineering/ui'
+import { SortFunc, Viewlet } from '@hcengineering/view'
+import tracker, { trackerId } from '../../tracker/lib'
 
 export default mergeIds(trackerId, tracker, {
+  viewlet: {
+    SubIssues: '' as Ref<Viewlet>
+  },
   string: {
     More: '' as IntlString,
     Delete: '' as IntlString,

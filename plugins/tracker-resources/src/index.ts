@@ -60,6 +60,7 @@ import SetDueDateActionPopup from './components/SetDueDateActionPopup.svelte'
 import SetParentIssueActionPopup from './components/SetParentIssueActionPopup.svelte'
 import Views from './components/views/Views.svelte'
 import Statuses from './components/workflow/Statuses.svelte'
+import RelatedIssuesSection from './components/issues/related/RelatedIssuesSection.svelte'
 import {
   getIssueId,
   getIssueTitle,
@@ -278,7 +279,8 @@ export default async (): Promise<Resources> => ({
     CreateTeam,
     TeamPresenter,
     IssueStatistics,
-    StatusRefPresenter
+    StatusRefPresenter,
+    RelatedIssuesSection
   },
   completion: {
     IssueQuery: async (client: Client, query: string, filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }) =>

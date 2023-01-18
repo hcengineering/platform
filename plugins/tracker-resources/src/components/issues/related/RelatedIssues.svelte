@@ -17,10 +17,13 @@
   import presentation, { createQuery, getClient } from '@hcengineering/presentation'
   import { calcRank, Issue, IssueStatus, Team } from '@hcengineering/tracker'
   import { Label, Spinner } from '@hcengineering/ui'
+  import { Viewlet, ViewOptions } from '@hcengineering/view'
   import tracker from '../../../plugin'
   import SubIssueList from '../edit/SubIssueList.svelte'
 
   export let object: Doc
+  export let viewlet: Viewlet
+  export let viewOptions: ViewOptions
 
   let query: DocumentQuery<Issue>
   $: query = { 'relations._id': object._id, 'relations._class': object._class }
@@ -75,9 +78,9 @@
 </script>
 
 <div class="mt-1">
-  {#if subIssues !== undefined}
+  {#if subIssues !== undefined && viewlet !== undefined}
     {#if issueStatuses.size > 0 && teams}
-      <SubIssueList issues={subIssues} {teams} {issueStatuses} on:move={handleIssueSwap} />
+      <SubIssueList bind:viewOptions {viewlet} issues={subIssues} {teams} {issueStatuses} on:move={handleIssueSwap} />
     {:else}
       <div class="p-1">
         <Label label={presentation.string.NoMatchesFound} />

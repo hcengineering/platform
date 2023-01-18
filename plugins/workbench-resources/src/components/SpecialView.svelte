@@ -29,7 +29,7 @@
     showPopup
   } from '@hcengineering/ui'
   import view, { Viewlet, ViewletDescriptor, ViewletPreference } from '@hcengineering/view'
-  import { FilterBar, FilterButton, ViewletSettingButton } from '@hcengineering/view-resources'
+  import { FilterBar, FilterButton, getViewOptions, ViewletSettingButton } from '@hcengineering/view-resources'
 
   export let _class: Ref<Class<Doc>>
   export let icon: Asset
@@ -91,6 +91,8 @@
   }
 
   $: twoRows = $deviceInfo.twoRows
+
+  $: viewOptions = getViewOptions(viewlet)
 </script>
 
 <div class="ac-header withSettings" class:full={!twoRows} class:mini={twoRows}>
@@ -107,7 +109,7 @@
     {#if createLabel && createComponent}
       <Button label={createLabel} icon={IconAdd} kind={'primary'} size={'small'} on:click={() => showCreateDialog()} />
     {/if}
-    <ViewletSettingButton {viewlet} />
+    <ViewletSettingButton bind:viewOptions {viewlet} />
   </div>
 </div>
 

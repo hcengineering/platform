@@ -14,10 +14,10 @@
 -->
 <script lang="ts">
   import { Class, Doc, DocumentQuery, FindOptions, FindResult, Ref } from '@hcengineering/core'
-  import { getResource, IntlString } from '@hcengineering/platform'
+  import { Asset, getResource, IntlString } from '@hcengineering/platform'
   import presentation, { createQuery, getClient } from '@hcengineering/presentation'
   import { calcRank, DocWithRank } from '@hcengineering/task'
-  import { Button, Component, IconAdd, Label, Loading } from '@hcengineering/ui'
+  import { Button, Component, Icon, IconAdd, IconSize, Label, Loading } from '@hcengineering/ui'
   import view, { ObjectFactory } from '@hcengineering/view'
   import { flip } from 'svelte/animate'
   import { SvelteComponentDev } from 'svelte/internal'
@@ -46,6 +46,8 @@
   export let isAddButtonHidden = false
   export let isAddButtonDisabled = false
   export let itemsCount = 0
+  export let icon: Asset | undefined = undefined
+  export let iconSize: IconSize = 'small'
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -157,6 +159,11 @@
 <div class="flex-col">
   {#if label || !isAddButtonHidden}
     <div class="flex mb-4">
+      {#if icon}
+        <div class="mr-2 flex-center">
+          <Icon {icon} size={iconSize} />
+        </div>
+      {/if}
       {#if label}
         <div class="title-wrapper">
           <span class="wrapped-title text-base content-accent-color">

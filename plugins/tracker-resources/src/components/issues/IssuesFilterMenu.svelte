@@ -45,7 +45,7 @@
   $: groupedByProject = getGroupedIssues('project', issues)
   $: groupedBySprint = getGroupedIssues('sprint', issues)
 
-  const handleStatusFilterMenuSectionOpened = (event: MouseEvent | KeyboardEvent) => {
+  const handleStatusFilterMenuSectionOpened = () => {
     const statusGroups: { [key: string]: number } = {}
 
     for (const status of defaultStatuses) {
@@ -66,7 +66,7 @@
     )
   }
 
-  const handlePriorityFilterMenuSectionOpened = (event: MouseEvent | KeyboardEvent) => {
+  const handlePriorityFilterMenuSectionOpened = () => {
     const priorityGroups: { [key: string]: number } = {}
 
     for (const priority of defaultPriorities) {
@@ -86,7 +86,7 @@
     )
   }
 
-  const handleProjectFilterMenuSectionOpened = (event: MouseEvent | KeyboardEvent) => {
+  const handleProjectFilterMenuSectionOpened = () => {
     const projectGroups: { [key: string]: number } = {}
 
     for (const [project, value] of Object.entries(groupedByProject)) {
@@ -105,7 +105,7 @@
     )
   }
 
-  const handleSprintFilterMenuSectionOpened = (event: MouseEvent | KeyboardEvent) => {
+  const handleSprintFilterMenuSectionOpened = () => {
     const sprintGroups: { [key: string]: number } = {}
 
     for (const [project, value] of Object.entries(groupedBySprint)) {

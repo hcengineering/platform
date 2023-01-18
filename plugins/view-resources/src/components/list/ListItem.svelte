@@ -28,6 +28,7 @@
   export let groupByKey: string | undefined
   export let checked: boolean
   export let selected: boolean
+  export let props: Record<string, any> = {}
 
   const dispatch = createEventDispatcher()
 
@@ -69,6 +70,7 @@
         <FixedColumn key={`list_item_${attributeModel.key}`} justify={attributeModel.props.fixed}>
           <svelte:component
             this={attributeModel.presenter}
+            {...props}
             value={getObjectValue(attributeModel.key, docObject) ?? ''}
             object={docObject}
             kind={'list'}
@@ -78,6 +80,7 @@
       {:else}
         <svelte:component
           this={attributeModel.presenter}
+          {...props}
           value={getObjectValue(attributeModel.key, docObject) ?? ''}
           object={docObject}
           kind={'list'}
@@ -104,6 +107,7 @@
           {#if attributeModel.props?.optional && attributeModel.props?.excludeByKey !== groupByKey && value !== undefined}
             <svelte:component
               this={attributeModel.presenter}
+              {...props}
               value={value ?? ''}
               objectId={docObject._id}
               groupBy={groupByKey}

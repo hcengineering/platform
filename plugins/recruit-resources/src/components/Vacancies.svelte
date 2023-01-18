@@ -18,7 +18,7 @@
   import { Vacancy } from '@hcengineering/recruit'
   import { Button, Icon, IconAdd, Label, Loading, SearchEdit, showPopup } from '@hcengineering/ui'
   import view, { BuildModelKey, Viewlet, ViewletPreference } from '@hcengineering/view'
-  import { FilterButton, TableBrowser, ViewletSettingButton } from '@hcengineering/view-resources'
+  import { FilterButton, getViewOptions, TableBrowser, ViewletSettingButton } from '@hcengineering/view-resources'
   import recruit from '../plugin'
   import CreateVacancy from './CreateVacancy.svelte'
   import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
@@ -132,6 +132,8 @@
   }
 
   $: twoRows = $deviceInfo.twoRows
+
+  $: viewOptions = getViewOptions(descr)
 </script>
 
 <div class="ac-header withSettings" class:full={!twoRows} class:mini={twoRows}>
@@ -156,7 +158,7 @@
       kind={'primary'}
       on:click={showCreateDialog}
     />
-    <ViewletSettingButton viewlet={descr} />
+    <ViewletSettingButton bind:viewOptions viewlet={descr} />
   </div>
 </div>
 

@@ -14,13 +14,18 @@
 -->
 <script lang="ts">
   import contact from '@hcengineering/contact'
-  import { Doc, Ref, Space, WithLookup } from '@hcengineering/core'
+  import { Ref, Space, WithLookup } from '@hcengineering/core'
   import UserBox from '@hcengineering/presentation/src/components/UserBox.svelte'
   import { Team, TimeReportDayType, TimeSpendReport } from '@hcengineering/tracker'
-  import { eventToHTMLElement, getEventPositionElement, ListView, showPopup } from '@hcengineering/ui'
-  import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
+  import {
+    deviceOptionsStore as deviceInfo,
+    eventToHTMLElement,
+    getEventPositionElement,
+    ListView,
+    showPopup
+  } from '@hcengineering/ui'
   import DatePresenter from '@hcengineering/ui/src/components/calendar/DatePresenter.svelte'
-  import { ContextMenu, FixedColumn, ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
+  import { ContextMenu, FixedColumn, ListSelectionProvider } from '@hcengineering/view-resources'
   import { getIssueId } from '../../../issues'
   import tracker from '../../../plugin'
   import TimePresenter from './TimePresenter.svelte'
@@ -34,7 +39,7 @@
     showPopup(ContextMenu, { object }, getEventPositionElement(ev))
   }
 
-  const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {})
+  const listProvider = new ListSelectionProvider(() => {})
 
   const toTeamId = (ref: Ref<Space>) => ref as Ref<Team>
 

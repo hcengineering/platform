@@ -139,7 +139,7 @@
     <Button
       icon={IconAdd}
       size={'small'}
-      on:click={(event) => {
+      on:click={() => {
         showPopup(
           TimeSpendReportPopup,
           {

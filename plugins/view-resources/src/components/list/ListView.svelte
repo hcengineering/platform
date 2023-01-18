@@ -2,7 +2,7 @@
   import { Class, Doc, DocumentQuery, FindOptions, Ref, Space } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { AnyComponent, issueSP, Scroller } from '@hcengineering/ui'
-  import { BuildModelKey, Viewlet } from '@hcengineering/view'
+  import { BuildModelKey, Viewlet, ViewOptions } from '@hcengineering/view'
   import { onMount } from 'svelte'
   import {
     ActionContext,
@@ -24,6 +24,8 @@
   export let loadingProps: LoadingProps | undefined = undefined
   export let createItemDialog: AnyComponent | undefined
   export let createItemLabel: IntlString | undefined
+  export let viewOptions: ViewOptions
+  export let props: Record<string, any> = {}
 
   let list: List
 
@@ -57,7 +59,9 @@
       {loadingProps}
       {createItemDialog}
       {createItemLabel}
-      viewOptions={viewlet.viewOptions?.other}
+      {viewOptions}
+      {props}
+      viewOptionsConfig={viewlet.viewOptions?.other}
       selectedObjectIds={$selectionStore ?? []}
       selectedRowIndex={listProvider.current($focusStore)}
       on:row-focus={(event) => {

@@ -1,22 +1,22 @@
 <script lang="ts">
-  import { fade } from 'svelte/transition'
-  import {
-    NotificationSeverity,
-    Notification,
-    Button,
-    Icon,
-    IconClose,
-    IconInfo,
-    IconCheckCircle,
-    Label,
-    showPanel
-  } from '@hcengineering/ui'
   import { copyTextToClipboard, createQuery } from '@hcengineering/presentation'
   import { Issue, IssueStatus } from '@hcengineering/tracker'
+  import {
+    AnySvelteComponent,
+    Button,
+    Icon,
+    IconCheckCircle,
+    IconClose,
+    IconInfo,
+    Notification,
+    NotificationSeverity,
+    showPanel
+  } from '@hcengineering/ui'
+  import { fade } from 'svelte/transition'
 
-  import IssueStatusIcon from './IssueStatusIcon.svelte'
-  import IssuePresenter from './IssuePresenter.svelte'
   import tracker from '../../plugin'
+  import IssuePresenter from './IssuePresenter.svelte'
+  import IssueStatusIcon from './IssueStatusIcon.svelte'
 
   export let notification: Notification
   export let onRemove: () => void
@@ -31,7 +31,7 @@
 
   $: issueQuery.query(
     tracker.class.Issue,
-    { _id: params.issueId },
+    { _id: params?.issueId },
     (res) => {
       issue = res[0]
     },
@@ -49,7 +49,7 @@
     )
   }
 
-  const getIcon = () => {
+  const getIcon = (): AnySvelteComponent | undefined => {
     switch (severity) {
       case NotificationSeverity.Success:
         return IconCheckCircle
@@ -84,14 +84,17 @@
       copyTextToClipboard(params?.issueUrl)
     }
   }
+  $: icon = getIcon()
 </script>
 
 <div class="root" in:fade out:fade>
-  <Icon icon={getIcon()} size="medium" fill={getIconColor()} />
+  {#if icon}
+    <Icon {icon} size="medium" fill={getIconColor()} />
+  {/if}
 
   <div class="content">
     <div class="title">
-      <Label label={title} />
+      {title}
     </div>
     <div class="row">
       <div class="issue">
@@ -105,7 +108,7 @@
           {subTitle}
         </div>
         <div class="postfix">
-          {params.subTitlePostfix}
+          {params?.subTitlePostfix}
         </div>
       </div>
     </div>

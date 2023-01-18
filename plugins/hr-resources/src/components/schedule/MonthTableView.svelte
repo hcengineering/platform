@@ -20,7 +20,7 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Button, Label, Loading, Scroller, tableSP } from '@hcengineering/ui'
   import view, { BuildModelKey, Viewlet, ViewletPreference } from '@hcengineering/view'
-  import { Table, ViewletSettingButton } from '@hcengineering/view-resources'
+  import { getViewOptions, Table, ViewletSettingButton } from '@hcengineering/view-resources'
   import hr from '../../plugin'
   import {
     EmployeeReports,
@@ -215,6 +215,8 @@
     }
     return result
   }
+
+  $: viewOptions = getViewOptions(descr)
 </script>
 
 {#if departmentStaff.length}
@@ -226,7 +228,7 @@
         {:else}
           <div class="flex-row-center flex-reverse">
             <div class="ml-1">
-              <ViewletSettingButton viewlet={descr} />
+              <ViewletSettingButton bind:viewOptions viewlet={descr} />
             </div>
             <Button
               label={getEmbeddedLabel('Export')}

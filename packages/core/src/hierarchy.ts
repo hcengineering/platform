@@ -20,6 +20,7 @@ import core from './component'
 import { _createMixinProxy, _mixinClass, _toDoc } from './proxy'
 import type { Tx, TxCreateDoc, TxMixin, TxRemoveDoc, TxUpdateDoc } from './tx'
 import { TxProcessor } from './tx'
+import getTypeOf from './typeof'
 
 /**
  * @public
@@ -463,11 +464,12 @@ export class Hierarchy {
     if (typeof obj === 'function') {
       return obj
     }
-    const result: any = Array.isArray(obj) ? [] : {}
+    const isArray = Array.isArray(obj)
+    const result: any = isArray ? [] : Object.assign({}, obj)
     for (const key in obj) {
       // include prototype properties
       const value = obj[key]
-      const type = {}.toString.call(value).slice(8, -1)
+      const type = getTypeOf(value)
       if (type === 'Array') {
         result[key] = this.clone(value)
       } else if (type === 'Object') {
@@ -477,7 +479,9 @@ export class Hierarchy {
       } else if (type === 'Date') {
         result[key] = new Date(value.getTime())
       } else {
-        result[key] = value
+        if (isArray) {
+          result[key] = value
+        }
       }
     }
     return result
