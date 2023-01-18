@@ -173,3 +173,15 @@ export function extractDocKey (key: string): {
 export function isFullTextAttribute (attr: AnyAttribute): boolean {
   return attr.index === IndexKind.FullText || attr.type._class === core.class.TypeAttachment
 }
+
+/**
+ * @public
+ */
+export interface IdMap<T extends Doc> extends Map<Ref<T>, T> {}
+
+/**
+ * @public
+ */
+export function toIdMap<T extends Doc> (arr: T[]): IdMap<T> {
+  return new Map(arr.map((p) => [p._id, p]))
+}

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { DocumentQuery, Ref, SortingOrder, Space, WithLookup } from '@hcengineering/core'
+  import { DocumentQuery, Ref, SortingOrder, Space, toIdMap, WithLookup } from '@hcengineering/core'
   import { IntlString, translate } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Issue, IssueStatus, Team } from '@hcengineering/tracker'
@@ -70,12 +70,7 @@
   let _result: any
   $: teamQuery.query(tracker.class.Team, {}, (result) => {
     _result = JSON.stringify(result, undefined, 2)
-    console.log('#RESULT 124', _result)
-    const t = new Map<Ref<Team>, Team>()
-    for (const r of result) {
-      t.set(r._id, r)
-    }
-    _teams = t
+    _teams = toIdMap(result)
   })
 
   let issueStatuses: Map<Ref<Team>, WithLookup<IssueStatus>[]>

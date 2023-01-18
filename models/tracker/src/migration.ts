@@ -13,7 +13,16 @@
 // limitations under the License.
 //
 
-import core, { Doc, DocumentUpdate, generateId, Ref, SortingOrder, TxOperations, TxResult } from '@hcengineering/core'
+import core, {
+  Doc,
+  DocumentUpdate,
+  generateId,
+  Ref,
+  SortingOrder,
+  toIdMap,
+  TxOperations,
+  TxResult
+} from '@hcengineering/core'
 import { createOrUpdate, MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
 import {
   IssueStatus,
@@ -212,7 +221,7 @@ async function upgradeIssueTimeReportSettings (tx: TxOperations): Promise<void> 
   const teams = await tx.findAll(tracker.class.Team, {
     _id: { $in: Array.from(new Set(issues.map((issue) => issue.space))) }
   })
-  const teamsById = new Map(teams.map((team) => [team._id, team]))
+  const teamsById = toIdMap(teams)
 
   await Promise.all(
     issues.map((issue) => {

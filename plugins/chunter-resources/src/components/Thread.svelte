@@ -17,7 +17,16 @@
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
   import type { ChunterSpace, Message, ThreadMessage } from '@hcengineering/chunter'
   import contact, { Employee, EmployeeAccount, formatName } from '@hcengineering/contact'
-  import core, { FindOptions, generateId, getCurrentAccount, Ref, SortingOrder, TxFactory } from '@hcengineering/core'
+  import core, {
+    FindOptions,
+    generateId,
+    getCurrentAccount,
+    IdMap,
+    Ref,
+    SortingOrder,
+    toIdMap,
+    TxFactory
+  } from '@hcengineering/core'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Label } from '@hcengineering/ui'
@@ -93,24 +102,15 @@
     )
   }
 
-  let employees: Map<Ref<Employee>, Employee> = new Map<Ref<Employee>, Employee>()
+  let employees: IdMap<Employee> = new Map()
   const employeeQuery = createQuery()
 
-  employeeQuery.query(
-    contact.class.Employee,
-    {},
-    (res) =>
-      (employees = new Map(
-        res.map((r) => {
-          return [r._id, r]
-        })
-      ))
-  )
+  employeeQuery.query(contact.class.Employee, {}, (res) => (employees = toIdMap(res)))
 
   async function getParticipants (
     comments: ThreadMessage[],
     parent: Message | undefined,
-    employees: Map<Ref<Employee>, Employee>
+    employees: IdMap<Employee>
   ): Promise<string[]> {
     const refs = new Set(comments.map((p) => p.createBy))
     if (parent !== undefined) {

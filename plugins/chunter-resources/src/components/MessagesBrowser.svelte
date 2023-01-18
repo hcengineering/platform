@@ -2,7 +2,7 @@
   import attachment, { Attachment } from '@hcengineering/attachment'
   import chunter, { ChunterMessage } from '@hcengineering/chunter'
   import contact, { Employee } from '@hcengineering/contact'
-  import core, { DocumentQuery, Ref, SortingOrder } from '@hcengineering/core'
+  import core, { DocumentQuery, Ref, SortingOrder, toIdMap } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Label, Scroller, SearchEdit } from '@hcengineering/ui'
   import { FilterBar } from '@hcengineering/view-resources'
@@ -50,19 +50,9 @@
   let employees: Map<Ref<Employee>, Employee> = new Map<Ref<Employee>, Employee>()
   const employeeQuery = createQuery()
 
-  employeeQuery.query(
-    contact.class.Employee,
-    {},
-    (res) =>
-      (employees = new Map(
-        res.map((r) => {
-          return [r._id, r]
-        })
-      )),
-    {
-      lookup: { _id: { statuses: contact.class.Status } }
-    }
-  )
+  employeeQuery.query(contact.class.Employee, {}, (res) => (employees = toIdMap(res)), {
+    lookup: { _id: { statuses: contact.class.Status } }
+  })
 
   const pinnedQuery = createQuery()
   const pinnedIds: Ref<ChunterMessage>[] = []

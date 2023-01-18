@@ -15,7 +15,7 @@
 <script lang="ts">
   import contact, { Employee, EmployeeAccount, formatName } from '@hcengineering/contact'
   import { PersonPresenter } from '@hcengineering/contact-resources'
-  import { AccountRole, getCurrentAccount, Ref, SortingOrder } from '@hcengineering/core'
+  import { AccountRole, getCurrentAccount, IdMap, SortingOrder, toIdMap } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { DropdownIntlItem, DropdownLabelsIntl, Icon, Label } from '@hcengineering/ui'
   import setting from '../plugin'
@@ -35,7 +35,7 @@
 
   let accounts: EmployeeAccount[] = []
   $: owners = accounts.filter((p) => p.role === AccountRole.Owner)
-  let employees: Map<Ref<Employee>, Employee> = new Map<Ref<Employee>, Employee>()
+  let employees: IdMap<Employee> = new Map()
 
   query.query(
     contact.class.EmployeeAccount,
@@ -49,11 +49,7 @@
   )
 
   employeeQuery.query(contact.class.Employee, {}, (res) => {
-    employees = new Map(
-      res.map((p) => {
-        return [p._id, p]
-      })
-    )
+    employees = toIdMap(res)
   })
 
   async function change (account: EmployeeAccount, value: AccountRole): Promise<void> {

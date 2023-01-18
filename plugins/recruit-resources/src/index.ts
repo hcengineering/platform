@@ -13,7 +13,16 @@
 // limitations under the License.
 //
 
-import type { Client, Doc, DocumentQuery, FindResult, ObjQueryType, Ref, RelatedDocument } from '@hcengineering/core'
+import {
+  Client,
+  Doc,
+  DocumentQuery,
+  FindResult,
+  ObjQueryType,
+  Ref,
+  RelatedDocument,
+  toIdMap
+} from '@hcengineering/core'
 import { IntlString, OK, Resources, Severity, Status, translate } from '@hcengineering/platform'
 import { ObjectSearchResult } from '@hcengineering/presentation'
 import { Applicant, Candidate, Vacancy } from '@hcengineering/recruit'
@@ -151,7 +160,7 @@ export async function queryVacancy (
       q._id.$nin = filter.nin?.map((it) => it._id as Ref<Vacancy>)
     }
   }
-  const named = new Map((await client.findAll(_class, q, { limit: 200 })).map((e) => [e._id, e]))
+  const named = toIdMap(await client.findAll(_class, q, { limit: 200 }))
 
   if (named.size === 0) {
     const q2: DocumentQuery<Vacancy> = {}

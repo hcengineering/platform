@@ -17,11 +17,20 @@
   import { DocumentQuery, Ref, WithLookup } from '@hcengineering/core'
   import type { Department, Staff } from '@hcengineering/hr'
   import { createQuery } from '@hcengineering/presentation'
-  import { Button, eventToHTMLElement, Icon, IconAdd, Label, Scroller, SearchEdit, showPopup } from '@hcengineering/ui'
+  import {
+    Button,
+    deviceOptionsStore as deviceInfo,
+    eventToHTMLElement,
+    Icon,
+    IconAdd,
+    Label,
+    Scroller,
+    SearchEdit,
+    showPopup
+  } from '@hcengineering/ui'
   import hr from '../plugin'
   import CreateDepartment from './CreateDepartment.svelte'
   import DepartmentCard from './DepartmentCard.svelte'
-  import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
 
   let search = ''
   let resultQuery: DocumentQuery<Department> = {}

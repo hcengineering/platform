@@ -20,7 +20,7 @@
   import attachment from '../plugin'
   import { IntlString, setPlatformStatus, unknownError, Asset } from '@hcengineering/platform'
   import { createEventDispatcher, onDestroy } from 'svelte'
-  import { Account, Class, Doc, generateId, Ref, Space } from '@hcengineering/core'
+  import { Account, Class, Doc, generateId, IdMap, Ref, Space, toIdMap } from '@hcengineering/core'
   import type { AnySvelteComponent } from '@hcengineering/ui'
   import { Attachment } from '@hcengineering/attachment'
   import AttachmentPresenter from './AttachmentPresenter.svelte'
@@ -33,7 +33,7 @@
   export let labelSend: IntlString | undefined = undefined
   export let showSend = true
   export let shouldSaveDraft: boolean = false
-  export let attachments: Map<Ref<Attachment>, Attachment> = new Map<Ref<Attachment>, Attachment>()
+  export let attachments: IdMap<Attachment> = new Map()
   export function submit (): void {
     refInput.submit()
   }
@@ -79,7 +79,7 @@
         },
         (res) => {
           originalAttachments = new Set(res.map((p) => p._id))
-          attachments = new Map(res.map((p) => [p._id, p]))
+          attachments = toIdMap(res)
         }
       )
     }

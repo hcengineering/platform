@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Attachment } from '@hcengineering/attachment'
-  import { Account, Class, Doc, generateId, Ref, Space } from '@hcengineering/core'
+  import { Account, Class, Doc, generateId, Ref, Space, toIdMap } from '@hcengineering/core'
   import { IntlString, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import { createQuery, getClient, draftStore, updateDraftStore } from '@hcengineering/presentation'
   import { StyledTextBox } from '@hcengineering/text-editor'
@@ -96,7 +96,7 @@
         },
         (res) => {
           originalAttachments = new Set(res.map((p) => p._id))
-          attachments = new Map(res.map((p) => [p._id, p]))
+          attachments = toIdMap(res)
         }
       )
     }

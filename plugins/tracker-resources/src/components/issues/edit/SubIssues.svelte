@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, SortingOrder, WithLookup } from '@hcengineering/core'
+  import { Ref, SortingOrder, toIdMap, WithLookup } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { Issue, IssueStatus, Team } from '@hcengineering/tracker'
   import { Button, Chevron, closeTooltip, ExpandCollapse, IconAdd, Label } from '@hcengineering/ui'
@@ -46,7 +46,7 @@
 
   $: if (teams === undefined) {
     teamsQuery.query(tracker.class.Team, {}, async (result) => {
-      _teams = new Map(result.map((it) => [it._id, it]))
+      _teams = toIdMap(result)
     })
   } else {
     teamsQuery.unsubscribe()

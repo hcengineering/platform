@@ -32,7 +32,7 @@
 </script>
 
 {#if object !== undefined}
-  <div class="flex gap-1 mb-2">
+  <div class="flex-row-center gap-1 mb-2">
     <span class="mr-1"><Label label={request.string.For} /></span>
     <ObjectPresenter objectId={object.tx.objectId} _class={object.tx.objectClass} />
     <TxView tx={object.tx} />
