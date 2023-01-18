@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Class, Doc, DocumentQuery, Ref, WithLookup, Space } from '@hcengineering/core'
-  import { Asset, IntlString, getEmbeddedLabel } from '@hcengineering/platform'
+  import { Asset, IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import {
     AnyComponent,
