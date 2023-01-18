@@ -107,8 +107,8 @@
 <slot name="afterHeader" />
 <FilterBar _class={tracker.class.IssueTemplate} query={searchQuery} on:change={(e) => (resultQuery = e.detail)} />
 <div class="flex w-full h-full clear-mins">
-  {#if viewlet}
-    <IssueTemplatesContent {viewlet} query={resultQuery} />
+  {#if viewlet && viewOptions}
+    <IssueTemplatesContent {viewOptions} {viewlet} query={resultQuery} />
   {/if}
   {#if $$slots.aside !== undefined && asideShown}
     <div class="popupPanel-body__aside flex" class:float={asideFloat} class:shown={asideShown}>
