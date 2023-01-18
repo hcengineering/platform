@@ -56,7 +56,7 @@
   bind:this={element}
   class="flex-no-shrink{addClass ? ` ${addClass}` : ''}"
   style:text-align={justify !== '' ? justify : ''}
-  style:min-width={`${$fixedWidthStore[key] ?? 0}}px;`}
+  style="min-width: {$fixedWidthStore[key] ?? 0}px;"
   use:resizeObserver={resize}
 >
   <slot />
