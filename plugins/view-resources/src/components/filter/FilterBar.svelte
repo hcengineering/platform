@@ -16,13 +16,21 @@
   import { Class, Doc, DocumentQuery, Ref } from '@hcengineering/core'
   import { getResource } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
-  import { Button, eventToHTMLElement, getCurrentLocation, IconAdd, locationToUrl, showPopup } from '@hcengineering/ui'
+  import {
+    Button,
+    eventToHTMLElement,
+    getCurrentLocation,
+    IconAdd,
+    locationToUrl,
+    showPopup
+  } from '@hcengineering/ui'
   import { Filter } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import { filterStore } from '../../filter'
   import view from '../../plugin'
   import FilterSection from './FilterSection.svelte'
   import FilterTypePopup from './FilterTypePopup.svelte'
+  import FilterSave from './FilterSave.svelte'
 
   export let _class: Ref<Class<Doc>>
   export let query: DocumentQuery<Doc>
@@ -76,6 +84,10 @@
     } else {
       localStorage.removeItem(key)
     }
+  }
+
+  async function saveFilteredView () {
+    showPopup(FilterSave, {})
   }
 
   let loading = false
@@ -209,9 +221,15 @@
           </button>
         </div>
         <div class="buttons-divider" />
-      {/if}
-      <Button icon={view.icon.Views} label={view.string.Save} size={'small'} width={'fit-content'} />
-    </div> -->
+      {/if} -->
+    <!--</div>-->
+      <Button
+        icon={view.icon.Views}
+        label={view.string.Save}
+        size={'small'}
+        width={'fit-content'}
+        on:click={() => saveFilteredView()}
+      />
   </div>
 {/if}
 

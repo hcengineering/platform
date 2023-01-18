@@ -33,7 +33,13 @@ import type {
 } from '@hcengineering/core'
 import { Asset, IntlString, Plugin, plugin, Resource, Status } from '@hcengineering/platform'
 import type { Preference } from '@hcengineering/preference'
-import type { AnyComponent, AnySvelteComponent, PopupAlignment, PopupPosAlignment } from '@hcengineering/ui'
+import type {
+  AnyComponent,
+  AnySvelteComponent,
+  PopupAlignment,
+  PopupPosAlignment,
+  Location as PlatformLocation
+} from '@hcengineering/ui'
 
 /**
  * @public
@@ -67,6 +73,15 @@ export interface Filter {
   props?: Record<string, any>
   index: number
   onRemove?: () => void
+}
+
+/**
+ * @public
+ */
+export interface FilteredView extends Preference {
+  name: string
+  location: PlatformLocation
+  filters: string
 }
 
 /**
@@ -523,7 +538,8 @@ const view = plugin(viewId, {
     Action: '' as Ref<Class<Action>>,
     ActionCategory: '' as Ref<Class<ActionCategory>>,
     LinkPresenter: '' as Ref<Class<LinkPresenter>>,
-    FilterMode: '' as Ref<Class<FilterMode>>
+    FilterMode: '' as Ref<Class<FilterMode>>,
+    FilteredView: '' as Ref<Class<FilteredView>>
   },
   action: {
     Delete: '' as Ref<Action>,
@@ -560,7 +576,10 @@ const view = plugin(viewId, {
   string: {
     CustomizeView: '' as IntlString,
     LabelNA: '' as IntlString,
-    View: '' as IntlString
+    View: '' as IntlString,
+    FilteredViews: '' as IntlString,
+    NewFilteredView: '' as IntlString,
+    FilteredViewName: '' as IntlString
   },
   icon: {
     Table: '' as Asset,

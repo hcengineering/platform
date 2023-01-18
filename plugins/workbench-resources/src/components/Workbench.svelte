@@ -526,6 +526,7 @@
             {currentSpace}
             {currentSpecial}
             model={navigatorModel}
+            {currentApplication}
             on:special={(evt) => selectSpecial(evt.detail)}
             on:space={(evt) => selectSpace(evt.detail.space, evt.detail.spaceSpecial)}
             on:open={checkOnHide}
