@@ -46,11 +46,11 @@
   export let createItemLabel: IntlString = presentation.string.Create
   export let withHeader: boolean = true
   export let withFilterButton: boolean = true
+  export let search: string = ''
 
   const me = getCurrentAccount()._id
   const client = getClient()
   const spaceQuery = createQuery()
-  export let search: string = ''
   const sort: SortingQuery<Space> = {
     name: SortingOrder.Ascending
   }

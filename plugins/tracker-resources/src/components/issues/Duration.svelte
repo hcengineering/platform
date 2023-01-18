@@ -44,14 +44,6 @@
     }
   }
 
-  $: tooltipValue = new Date(value).toLocaleString('default', {
-    minute: '2-digit',
-    hour: 'numeric',
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric'
-  })
-
   $: formatTime(value)
 </script>
 

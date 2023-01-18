@@ -18,11 +18,11 @@
   import type { DoneState, SpaceWithStates, State, Task } from '@hcengineering/task'
   import task from '@hcengineering/task'
   import { BarDashboard, DashboardItem } from '@hcengineering/ui'
-  import { FilterBar } from '@hcengineering/view-resources'
   import CreateFilter from './CreateFilter.svelte'
 
   export let _class: Ref<Class<Task>>
   export let space: Ref<SpaceWithStates>
+  export let query: DocumentQuery<Task>
 
   const client = getClient()
   const hieararchy = client.getHierarchy()
@@ -85,15 +85,12 @@
 
   const docQuery = createQuery()
 
-  $: query = modified
+  $: resultQuery = modified
     ? {
-        space,
-        _id: { $in: ids }
+        _id: { $in: ids },
+        ...query
       }
-    : { space }
-  let resultQuery = {
-    space
-  }
+    : query
 
   function updateDocs (_class: Ref<Class<Task>>, states: State[], query: DocumentQuery<Task>): void {
     if (states.length === 0) {
@@ -146,7 +143,6 @@
 </script>
 
 <CreateFilter bind:value={modified} />
-<FilterBar {_class} {query} on:change={(e) => (resultQuery = e.detail)} />
 
 <div class="ml-10 mt-4">
   <BarDashboard {items} />

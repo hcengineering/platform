@@ -19,6 +19,7 @@ import { Resources } from '@hcengineering/platform'
 import { showPopup } from '@hcengineering/ui'
 import Categories from './components/Categories.svelte'
 import CategoryPresenter from './components/CategoryPresenter.svelte'
+import CategoryRefPresenter from './components/CategoryRefPresenter.svelte'
 import CreateCategory from './components/CreateCategory.svelte'
 import EditProduct from './components/EditProduct.svelte'
 import ProductPresenter from './components/ProductPresenter.svelte'
@@ -37,6 +38,7 @@ export default async (): Promise<Resources> => ({
   component: {
     Categories,
     CategoryPresenter,
+    CategoryRefPresenter,
     ProductPresenter,
     EditProduct,
     Variants,

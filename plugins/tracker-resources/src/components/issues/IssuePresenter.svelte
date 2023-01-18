@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { WithLookup } from '@hcengineering/core'
+  import { Ref, WithLookup } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import type { Issue, Team } from '@hcengineering/tracker'
   import { showPanel } from '@hcengineering/ui'
@@ -22,6 +22,9 @@
   export let value: WithLookup<Issue>
   export let disableClick = false
   export let onClick: (() => void) | undefined = undefined
+
+  // Extra properties
+  export let teams: Map<Ref<Team>, Team> | undefined = undefined
 
   function handleIssueEditorOpened () {
     if (disableClick) {
@@ -38,16 +41,21 @@
   const spaceQuery = createQuery()
   let currentTeam: Team | undefined = value?.$lookup?.space
 
-  $: if (value && value?.$lookup?.space === undefined) {
-    spaceQuery.query(tracker.class.Team, { _id: value.space }, (res) => ([currentTeam] = res))
+  $: if (teams === undefined) {
+    if (value && value?.$lookup?.space === undefined) {
+      spaceQuery.query(tracker.class.Team, { _id: value.space }, (res) => ([currentTeam] = res))
+    } else {
+      spaceQuery.unsubscribe()
+    }
   } else {
-    spaceQuery.unsubscribe()
+    currentTeam = teams.get(value.space)
   }
 
   $: title = currentTeam ? `${currentTeam.identifier}-${value?.number}` : `${value?.number}`
 </script>
 
 {#if value}
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
   <span
     class="issuePresenterRoot"
     class:noPointer={disableClick}

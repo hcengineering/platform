@@ -77,7 +77,7 @@ export class TSavedAttachments extends TPreference implements SavedAttachments {
 export function createModel (builder: Builder): void {
   builder.createModel(TAttachment, TPhoto, TSavedAttachments)
 
-  builder.mixin(attachment.class.Attachment, core.class.Class, view.mixin.AttributePresenter, {
+  builder.mixin(attachment.class.Attachment, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: attachment.component.AttachmentPresenter
   })
 

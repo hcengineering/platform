@@ -13,12 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, DocumentQuery, Ref, Space } from '@hcengineering/core'
-  import { Asset, getEmbeddedLabel, IntlString } from '@hcengineering/platform'
+  import { Class, Doc, DocumentQuery, Ref, WithLookup, Space } from '@hcengineering/core'
+  import { Asset, IntlString, getEmbeddedLabel } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import {
     AnyComponent,
     Button,
+    Component,
     deviceOptionsStore as deviceInfo,
     Icon,
     IconAdd,
@@ -28,8 +29,7 @@
     showPopup
   } from '@hcengineering/ui'
   import view, { Viewlet, ViewletDescriptor, ViewletPreference } from '@hcengineering/view'
-  import { FilterButton, TableBrowser, ViewletSettingButton } from '@hcengineering/view-resources'
-  import SourcePresenter from './search/SourcePresenter.svelte'
+  import { FilterBar, FilterButton, getViewOptions, ViewletSettingButton } from '@hcengineering/view-resources'
 
   export let _class: Ref<Class<Doc>>
   export let space: Ref<Space> | undefined = undefined
@@ -42,9 +42,13 @@
   export let baseQuery: DocumentQuery<Doc> = {}
 
   let search = ''
-  let descr: Viewlet | undefined
+  let viewlet: WithLookup<Viewlet> | undefined
 
-  $: resultQuery = updateResultQuery(search, baseQuery)
+  $: query = baseQuery || {}
+
+  $: searchQuery = search === '' ? query : { $search: search, ...query }
+
+  $: resultQuery = searchQuery
 
   const preferenceQuery = createQuery()
   let preference: ViewletPreference | undefined
@@ -56,12 +60,16 @@
   function updateDescriptor (_class: Ref<Class<Doc>>, descriptor: Ref<ViewletDescriptor> = view.viewlet.Table) {
     loading = true
     client
-      .findOne<Viewlet>(view.class.Viewlet, {
-        attachTo: _class,
-        descriptor
-      })
+      .findOne<Viewlet>(
+        view.class.Viewlet,
+        {
+          attachTo: _class,
+          descriptor
+        },
+        { lookup: { descriptor: view.class.ViewletDescriptor } }
+      )
       .then((res) => {
-        descr = res
+        viewlet = res
         if (res !== undefined) {
           preferenceQuery.query(
             view.class.ViewletPreference,
@@ -83,11 +91,9 @@
     showPopup(createComponent, createComponentProps, 'top')
   }
 
-  function updateResultQuery (search: string, baseQuery: DocumentQuery<Doc> = {}): DocumentQuery<Doc> {
-    return search === '' ? baseQuery : { ...baseQuery, $search: search }
-  }
-
   $: twoRows = $deviceInfo.twoRows
+
+  $: viewOptions = getViewOptions(viewlet)
 </script>
 
 <div class="ac-header withSettings" class:full={!twoRows} class:mini={twoRows}>
@@ -104,33 +110,31 @@
     {#if createLabel && createComponent}
       <Button label={createLabel} icon={IconAdd} kind={'primary'} size={'small'} on:click={() => showCreateDialog()} />
     {/if}
-    <ViewletSettingButton viewlet={descr} />
+    <ViewletSettingButton bind:viewOptions {viewlet} />
   </div>
 </div>
 
-{#if descr}
-  {#if loading}
-    <Loading />
-  {:else}
-    <TableBrowser
-      {_class}
-      config={[
-        ...(search !== ''
-          ? [
-              {
-                key: '',
-                presenter: SourcePresenter,
-                label: getEmbeddedLabel('#'),
-                sortingKey: '#score',
-                props: { search }
-              }
-            ]
-          : []),
-        ...(preference?.config ?? descr.config)
-      ]}
-      options={descr.options}
-      query={resultQuery}
-      showNotification
-    />
-  {/if}
+{#if loading}
+  <Loading />
+{:else if viewlet?.$lookup?.descriptor?.component}
+  <FilterBar
+    {_class}
+    query={searchQuery}
+    on:change={(e) => {
+      resultQuery = e.detail
+    }}
+  />
+  <Component
+    is={viewlet.$lookup.descriptor.component}
+    props={{
+      _class,
+      options: viewlet.options,
+      config: preference?.config ?? viewlet.config,
+      viewlet,
+      viewOptions,
+      createItemDialog: createComponent,
+      createItemLabel: createLabel,
+      query: resultQuery
+    }}
+  />
 {/if}

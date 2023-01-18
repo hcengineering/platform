@@ -20,13 +20,13 @@
   import tracker from '../../plugin'
   import EstimationProgressCircle from '../issues/timereport/EstimationProgressCircle.svelte'
   import TimePresenter from '../issues/timereport/TimePresenter.svelte'
-  export let issues: Issue[] | undefined = undefined
+  export let docs: Issue[] | undefined = undefined
   export let capacity: number | undefined = undefined
   export let workDayLength: WorkDayLength = WorkDayLength.EIGHT_HOURS
 
-  $: ids = new Set(issues?.map((it) => it._id) ?? [])
+  $: ids = new Set(docs?.map((it) => it._id) ?? [])
 
-  $: noParents = issues?.filter((it) => !ids.has(it.attachedTo as Ref<Issue>))
+  $: noParents = docs?.filter((it) => !ids.has(it.attachedTo as Ref<Issue>))
 
   $: rootNoBacklogIssues = noParents?.filter(
     (it) => issueStatuses.get(it.status)?.category !== tracker.issueStatusCategory.Backlog
@@ -86,12 +86,12 @@
       })
       .reduce((it, cur) => {
         return it + cur
-      }),
+      }, 0),
     3
   )
 </script>
 
-{#if issues}
+{#if docs}
   <!-- <Label label={tracker.string.SprintDay} value={}/> -->
   <div class="flex-row-center flex-no-shrink h-6" class:showWarning={totalEstimation > (capacity ?? 0)}>
     <EstimationProgressCircle value={totalReported} max={totalEstimation} />

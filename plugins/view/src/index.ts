@@ -26,6 +26,7 @@ import type {
   Obj,
   ObjQueryType,
   Ref,
+  SortingOrder,
   Space,
   Type,
   UXObject
@@ -131,6 +132,13 @@ export interface AttributePresenter extends Class<Doc> {
 /**
  * @public
  */
+export interface ObjectPresenter extends Class<Doc> {
+  presenter: AnyComponent
+}
+
+/**
+ * @public
+ */
 export interface ListItemPresenter extends Class<Doc> {
   presenter: AnyComponent
 }
@@ -188,12 +196,33 @@ export interface ViewletDescriptor extends Doc, UXObject {
 /**
  * @public
  */
+export interface ListHeaderExtra extends Class<Doc> {
+  presenters: AnyComponent[]
+}
+
+/**
+ * @public
+ */
+export type SortFunc = Resource<(values: any[]) => Promise<any[]>>
+
+/**
+ * @public
+ */
+export interface ClassSortFuncs extends Class<Doc> {
+  func: SortFunc
+}
+
+/**
+ * @public
+ */
 export interface Viewlet extends Doc {
-  attachTo: Ref<Class<Space>>
+  attachTo: Ref<Class<Doc>>
   descriptor: Ref<ViewletDescriptor>
   options?: FindOptions<Doc>
   config: (BuildModelKey | string)[]
   hiddenKeys?: string[]
+  viewOptions?: ViewOptionsModel
+  variant?: string
 }
 
 /**
@@ -398,6 +427,71 @@ export interface ViewletPreference extends Preference {
 /**
  * @public
  */
+export type ViewOptions = {
+  groupBy: string
+  orderBy: OrderOption
+} & Record<string, any>
+
+/**
+ * @public
+ */
+export interface ViewOption {
+  type: string
+  key: string
+  defaultValue: any
+  label: IntlString
+  hidden?: (viewOptions: ViewOptions) => boolean
+  actionTartget?: 'query'
+  action?: Resource<(value: any, ...params: any) => any>
+}
+
+/**
+ * @public
+ */
+export interface ViewQueryOption extends ViewOption {
+  actionTartget: 'query'
+  action: Resource<(value: any, query: DocumentQuery<Doc>) => DocumentQuery<Doc>>
+}
+
+/**
+ * @public
+ */
+export interface ToggleViewOption extends ViewOption {
+  type: 'toggle'
+  defaultValue: boolean
+}
+
+/**
+ * @public
+ */
+export interface DropdownViewOption extends ViewOption {
+  type: 'dropdown'
+  defaultValue: string
+  values: Array<{ label: IntlString, id: string, hidden?: (viewOptions: ViewOptions) => boolean }>
+}
+
+/**
+ * @public
+ */
+export type ViewOptionModel = ToggleViewOption | DropdownViewOption
+
+/**
+ * @public
+ */
+export type OrderOption = [string, SortingOrder]
+
+/**
+ * @public
+ */
+export interface ViewOptionsModel {
+  groupBy: string[]
+  orderBy: OrderOption[]
+  other: ViewOptionModel[]
+}
+
+/**
+ * @public
+ */
 const view = plugin(viewId, {
   mixin: {
     ClassFilters: '' as Ref<Mixin<ClassFilters>>,
@@ -410,6 +504,7 @@ const view = plugin(viewId, {
     AttributePresenter: '' as Ref<Mixin<AttributePresenter>>,
     ListItemPresenter: '' as Ref<Mixin<ListItemPresenter>>,
     ObjectEditor: '' as Ref<Mixin<ObjectEditor>>,
+    ObjectPresenter: '' as Ref<Mixin<ObjectPresenter>>,
     ObjectEditorHeader: '' as Ref<Mixin<ObjectEditorHeader>>,
     ObjectValidator: '' as Ref<Mixin<ObjectValidator>>,
     ObjectFactory: '' as Ref<Mixin<ObjectFactory>>,
@@ -417,7 +512,9 @@ const view = plugin(viewId, {
     SpaceHeader: '' as Ref<Mixin<SpaceHeader>>,
     SpaceName: '' as Ref<Mixin<SpaceName>>,
     IgnoreActions: '' as Ref<Mixin<IgnoreActions>>,
-    PreviewPresenter: '' as Ref<Mixin<PreviewPresenter>>
+    PreviewPresenter: '' as Ref<Mixin<PreviewPresenter>>,
+    ListHeaderExtra: '' as Ref<Mixin<ListHeaderExtra>>,
+    SortFuncs: '' as Ref<Mixin<ClassSortFuncs>>
   },
   class: {
     ViewletPreference: '' as Ref<Class<ViewletPreference>>,
@@ -449,14 +546,16 @@ const view = plugin(viewId, {
     Open: '' as Ref<Action>
   },
   viewlet: {
-    Table: '' as Ref<ViewletDescriptor>
+    Table: '' as Ref<ViewletDescriptor>,
+    List: '' as Ref<ViewletDescriptor>
   },
   component: {
     ObjectPresenter: '' as AnyComponent,
     EditDoc: '' as AnyComponent,
     SpacePresenter: '' as AnyComponent,
     BooleanTruePresenter: '' as AnyComponent,
-    ValueSelector: '' as AnyComponent
+    ValueSelector: '' as AnyComponent,
+    GrowPresenter: '' as AnyComponent
   },
   string: {
     CustomizeView: '' as IntlString,
@@ -465,6 +564,7 @@ const view = plugin(viewId, {
   },
   icon: {
     Table: '' as Asset,
+    List: '' as Asset,
     Card: '' as Asset,
     Delete: '' as Asset,
     MoreH: '' as Asset,

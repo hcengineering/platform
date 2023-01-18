@@ -14,12 +14,12 @@
 -->
 <script lang="ts">
   import { Ref, SortingOrder, WithLookup } from '@hcengineering/core'
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import { calcRank, Issue, IssueStatus, Team } from '@hcengineering/tracker'
-  import { Button, Spinner, ExpandCollapse, closeTooltip, IconAdd } from '@hcengineering/ui'
+  import { createQuery } from '@hcengineering/presentation'
+  import { Issue, IssueStatus, Team } from '@hcengineering/tracker'
+  import { Button, Chevron, closeTooltip, ExpandCollapse, IconAdd, Label } from '@hcengineering/ui'
+  import view, { Viewlet } from '@hcengineering/view'
+  import { getViewOptions, ViewletSettingButton } from '@hcengineering/view-resources'
   import tracker from '../../../plugin'
-  import Collapsed from '../../icons/Collapsed.svelte'
-  import Expanded from '../../icons/Expanded.svelte'
   import CreateSubIssue from './CreateSubIssue.svelte'
   import SubIssueList from './SubIssueList.svelte'
 
@@ -27,84 +27,109 @@
   export let teams: Map<Ref<Team>, Team>
   export let issueStatuses: Map<Ref<Team>, WithLookup<IssueStatus>[]>
 
-  const subIssuesQuery = createQuery()
-  const client = getClient()
-
-  let subIssues: Issue[] | undefined
   let isCollapsed = false
   let isCreating = false
 
-  async function handleIssueSwap (ev: CustomEvent<{ fromIndex: number; toIndex: number }>) {
-    if (subIssues) {
-      const { fromIndex, toIndex } = ev.detail
-      const [prev, next] = [
-        subIssues[fromIndex < toIndex ? toIndex : toIndex - 1],
-        subIssues[fromIndex < toIndex ? toIndex + 1 : toIndex]
-      ]
-      const issue = subIssues[fromIndex]
+  $: hasSubIssues = issue.subIssues > 0
 
-      await client.update(issue, { rank: calcRank(prev, next) })
-    }
+  let viewlet: Viewlet | undefined
+
+  const query = createQuery()
+  $: query.query(view.class.Viewlet, { _id: tracker.viewlet.SubIssues }, (res) => {
+    ;[viewlet] = res
+  })
+
+  let _teams = teams
+  let _issueStatuses = issueStatuses
+
+  const teamsQuery = createQuery()
+
+  $: if (teams === undefined) {
+    teamsQuery.query(tracker.class.Team, {}, async (result) => {
+      _teams = new Map(result.map((it) => [it._id, it]))
+    })
+  } else {
+    teamsQuery.unsubscribe()
   }
 
-  $: hasSubIssues = issue.subIssues > 0
-  $: subIssuesQuery.query(tracker.class.Issue, { attachedTo: issue._id }, async (result) => (subIssues = result), {
-    sort: { rank: SortingOrder.Ascending },
-    lookup: {
-      _id: {
-        subIssues: tracker.class.Issue
+  const statusesQuery = createQuery()
+  $: if (issueStatuses === undefined) {
+    statusesQuery.query(
+      tracker.class.IssueStatus,
+      {},
+      (statuses) => {
+        const st = new Map<Ref<Team>, WithLookup<IssueStatus>[]>()
+        for (const s of statuses) {
+          const id = s.attachedTo as Ref<Team>
+          st.set(id, [...(st.get(id) ?? []), s])
+        }
+        _issueStatuses = st
+      },
+      {
+        lookup: { category: tracker.class.IssueStatusCategory },
+        sort: { rank: SortingOrder.Ascending }
       }
-    }
-  })
+    )
+  } else {
+    statusesQuery.unsubscribe()
+  }
+
+  $: viewOptions = viewlet !== undefined ? getViewOptions(viewlet) : undefined
 </script>
 
 <div class="flex-between">
   {#if hasSubIssues}
     <Button
       width="min-content"
-      icon={isCollapsed ? Collapsed : Expanded}
       size="small"
       kind="transparent"
-      label={tracker.string.SubIssuesList}
-      labelParams={{ subIssues: issue.subIssues }}
       on:click={() => {
         isCollapsed = !isCollapsed
         isCreating = false
       }}
-    />
+    >
+      <svelte:fragment slot="content">
+        <Chevron size={'small'} expanded={!isCollapsed} outline fill={'var(--caption-color)'} marginRight={'.375rem'} />
+        <Label label={tracker.string.SubIssuesList} params={{ subIssues: issue.subIssues }} />
+      </svelte:fragment>
+    </Button>
   {/if}
-
-  <Button
-    id="add-sub-issue"
-    width="min-content"
-    icon={hasSubIssues ? IconAdd : undefined}
-    label={hasSubIssues ? undefined : tracker.string.AddSubIssues}
-    labelParams={{ subIssues: 0 }}
-    kind={'transparent'}
-    size={'small'}
-    showTooltip={{ label: tracker.string.AddSubIssues, props: { subIssues: 1 }, direction: 'bottom' }}
-    on:click={() => {
-      closeTooltip()
-      isCreating = true
-      isCollapsed = false
-    }}
-  />
+  <div class="flex-row-center">
+    {#if viewlet && hasSubIssues && viewOptions}
+      <ViewletSettingButton bind:viewOptions {viewlet} kind={'transparent'} />
+    {/if}
+    <Button
+      id="add-sub-issue"
+      width="min-content"
+      icon={hasSubIssues ? IconAdd : undefined}
+      label={hasSubIssues ? undefined : tracker.string.AddSubIssues}
+      labelParams={{ subIssues: 0 }}
+      kind={'transparent'}
+      size={'small'}
+      showTooltip={{ label: tracker.string.AddSubIssues, props: { subIssues: 1 }, direction: 'bottom' }}
+      on:click={() => {
+        closeTooltip()
+        isCreating = true
+        isCollapsed = false
+      }}
+    />
+  </div>
 </div>
 <div class="mt-1">
-  {#if subIssues && issueStatuses}
-    <ExpandCollapse isExpanded={!isCollapsed} duration={400}>
-      {#if hasSubIssues}
+  {#if issueStatuses}
+    {#if hasSubIssues && viewOptions && viewlet}
+      <ExpandCollapse isExpanded={!isCollapsed} duration={400}>
         <div class="list" class:collapsed={isCollapsed}>
           <SubIssueList
-            issues={subIssues}
-            {issueStatuses}
-            {teams}
-            on:issue-focus={() => (isCreating = false)}
-            on:move={handleIssueSwap}
+            teams={_teams}
+            {viewlet}
+            {viewOptions}
+            issueStatuses={_issueStatuses}
+            query={{ attachedTo: issue._id }}
           />
         </div>
-      {/if}
-    </ExpandCollapse>
+      </ExpandCollapse>
+    {/if}
     <ExpandCollapse isExpanded={!isCollapsed} duration={400}>
       {#if isCreating}
         {@const team = teams.get(issue.space)}
@@ -121,10 +146,6 @@
         {/if}
       {/if}
     </ExpandCollapse>
-  {:else}
-    <div class="flex-center pt-3">
-      <Spinner />
-    </div>
   {/if}
 </div>
 

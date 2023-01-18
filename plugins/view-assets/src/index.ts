@@ -19,6 +19,7 @@ import view, { viewId } from '@hcengineering/view'
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(view.icon, {
   Table: `${icons}#table`,
+  List: `${icons}#list`,
   Card: `${icons}#card`,
   Delete: `${icons}#delete`,
   Move: `${icons}#move`,

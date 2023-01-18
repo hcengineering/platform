@@ -5,9 +5,9 @@
   import { IssueTemplate } from '@hcengineering/tracker'
   import { Button, IconAdd, IconDetails, IconDetailsFilled, showPopup } from '@hcengineering/ui'
   import view, { Viewlet } from '@hcengineering/view'
-  import { FilterBar, getActiveViewletId, ViewOptionModel, ViewOptionsButton } from '@hcengineering/view-resources'
+  import { FilterBar, getActiveViewletId, getViewOptions } from '@hcengineering/view-resources'
+  import ViewletSettingButton from '@hcengineering/view-resources/src/components/ViewletSettingButton.svelte'
   import tracker from '../../plugin'
-  import { getDefaultViewOptionsTemplatesConfig } from '../../utils'
   import IssuesHeader from '../issues/IssuesHeader.svelte'
   import CreateIssueTemplate from './CreateIssueTemplate.svelte'
   import IssueTemplatesContent from './IssueTemplatesContent.svelte'
@@ -16,7 +16,6 @@
   export let query: DocumentQuery<IssueTemplate> = {}
   export let title: IntlString | undefined = undefined
   export let label: string = ''
-  export let viewOptionsConfig: ViewOptionModel[] = getDefaultViewOptionsTemplatesConfig()
 
   export let panelWidth: number = 0
 
@@ -70,6 +69,8 @@
   const showCreateDialog = async () => {
     showPopup(CreateIssueTemplate, { targetElement: null }, 'top')
   }
+
+  $: viewOptions = getViewOptions(viewlet)
 </script>
 
 <IssuesHeader {space} {viewlets} {label} bind:viewlet bind:search showLabelSelector={$$slots.label_selector}>
@@ -86,7 +87,7 @@
     />
 
     {#if viewlet}
-      <ViewOptionsButton viewOptionsKey={viewlet._id} config={viewOptionsConfig} />
+      <ViewletSettingButton bind:viewOptions {viewlet} />
     {/if}
 
     {#if asideFloat && $$slots.aside}

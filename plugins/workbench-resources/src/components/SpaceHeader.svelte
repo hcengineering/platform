@@ -19,7 +19,12 @@
   import presentation, { createQuery, getClient } from '@hcengineering/presentation'
   import { AnyComponent, Button, IconAdd, SearchEdit, showPanel, showPopup, TabList } from '@hcengineering/ui'
   import view, { Viewlet } from '@hcengineering/view'
-  import { ViewletSettingButton } from '@hcengineering/view-resources'
+  import {
+    getActiveViewletId,
+    getViewOptions,
+    setActiveViewletId,
+    ViewletSettingButton
+  } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../plugin'
   import { classIcon } from '../utils'
@@ -71,7 +76,8 @@
   }
 
   function updateViewlets (viewlets: WithLookup<Viewlet>[]) {
-    const index = viewlets.findIndex((p) => p.descriptor === viewlet?.descriptor)
+    const _id = getActiveViewletId()
+    const index = viewlets.findIndex((p) => p._id === (viewlet?._id ?? _id))
     viewlet = index === -1 ? viewlets[0] : viewlets[index]
   }
   $: viewslist = viewlets.map((views) => {
@@ -83,6 +89,8 @@
   })
 
   $: twoRows = $deviceInfo.twoRows
+
+  $: viewOptions = getViewOptions(viewlet)
 </script>
 
 <div class="ac-header withSettings" class:full={!twoRows} class:mini={twoRows}>
@@ -120,11 +128,14 @@
           kind={'secondary'}
           size={'small'}
           on:select={(result) => {
-            if (result.detail !== undefined) viewlet = viewlets.find((vl) => vl._id === result.detail.id)
+            if (result.detail !== undefined) {
+              viewlet = viewlets.find((vl) => vl._id === result.detail.id)
+              if (viewlet) setActiveViewletId(viewlet._id)
+            }
           }}
         />
       {/if}
-      <ViewletSettingButton {viewlet} />
+      <ViewletSettingButton bind:viewOptions {viewlet} />
     </div>
   {/if}
 </div>

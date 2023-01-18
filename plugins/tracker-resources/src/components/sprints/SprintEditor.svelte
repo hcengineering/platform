@@ -17,8 +17,13 @@
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Issue, IssueTemplate, Sprint, Team } from '@hcengineering/tracker'
-  import { ButtonKind, ButtonShape, ButtonSize, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
-  import DatePresenter from '@hcengineering/ui/src/components/calendar/DatePresenter.svelte'
+  import {
+    ButtonKind,
+    ButtonShape,
+    ButtonSize,
+    DatePresenter,
+    deviceOptionsStore as deviceInfo
+  } from '@hcengineering/ui'
   import { activeSprint } from '../../issues'
   import tracker from '../../plugin'
   import { getDayOfSprint } from '../../utils'
@@ -118,9 +123,6 @@
 </div>
 
 <style lang="scss">
-  .showWarning {
-    color: var(--warning-color) !important;
-  }
   .minus-margin {
     margin-left: -0.5rem;
     &-vSpace {

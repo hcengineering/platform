@@ -120,9 +120,6 @@
     <IssuePresenter value={object} disableClick />
   </svelte:fragment>
 
-  <div class="header no-border flex-col p-1">
-    <div class="flex-row-center flex-between" />
-  </div>
   {#if currentTeam && issueStatuses}
     <SubIssuesEstimations
       issue={object}
@@ -142,14 +139,18 @@
     <Button
       icon={IconAdd}
       size={'small'}
-      on:click={(event) => {
-        showPopup(TimeSpendReportPopup, {
-          issueId: object._id,
-          issueClass: object._class,
-          space: object.space,
-          assignee: object.assignee,
-          defaultTimeReportDay
-        })
+      on:click={() => {
+        showPopup(
+          TimeSpendReportPopup,
+          {
+            issueId: object._id,
+            issueClass: object._class,
+            space: object.space,
+            assignee: object.assignee,
+            defaultTimeReportDay
+          },
+          'top'
+        )
       }}
       label={tracker.string.TimeSpendReportAdd}
     />

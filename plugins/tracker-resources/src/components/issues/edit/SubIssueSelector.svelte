@@ -31,6 +31,7 @@
   import tracker from '../../../plugin'
   import { getIssueId } from '../../../issues'
   import IssueStatusIcon from '../IssueStatusIcon.svelte'
+  import { ListSelectionProvider } from '@hcengineering/view-resources'
 
   export let issue: WithLookup<Issue>
 
@@ -48,6 +49,7 @@
   function openParentIssue () {
     if (parentIssue) {
       closeTooltip()
+      ListSelectionProvider.Pop()
       openIssue(parentIssue._id)
     }
   }
@@ -90,7 +92,7 @@
 
   $: areSubIssuesLoading = !subIssues
   $: parentIssue = issue.$lookup?.attachedTo ? (issue.$lookup?.attachedTo as Issue) : null
-  $: if (parentIssue) {
+  $: if (parentIssue && parentIssue.subIssues > 0) {
     subIssuesQeury.query(
       tracker.class.Issue,
       { space: issue.space, attachedTo: parentIssue._id },
@@ -111,6 +113,7 @@
 {#if parentIssue}
   <div class="flex root">
     <div class="item clear-mins">
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
       <div
         class="flex-center parent-issue cursor-pointer"
         use:tooltip={{ label: tracker.string.OpenParent, direction: 'bottom' }}
@@ -134,11 +137,12 @@
           <Spinner size="small" />
         </div>
       {:else}
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div
           bind:this={subIssuesElement}
           class="flex-center sub-issues cursor-pointer"
           use:tooltip={{ label: tracker.string.OpenSubIssues, direction: 'bottom' }}
-          on:click|preventDefault={areSubIssuesLoading ? undefined : showSubIssues}
+          on:click|preventDefault={showSubIssues}
         >
           <span class="overflow-label">{subIssues?.length}</span>
           <div class="ml-2">

@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, generateId, Ref, WithLookup } from '@hcengineering/core'
-  import { AttributeBarEditor, createQuery, getClient, KeyedAttribute } from '@hcengineering/presentation'
+  import { generateId, Ref, WithLookup } from '@hcengineering/core'
+  import { AttributeBarEditor, getClient, KeyedAttribute } from '@hcengineering/presentation'
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
   import type { IssueTemplate } from '@hcengineering/tracker'
   import { Component, Label } from '@hcengineering/ui'
@@ -26,14 +26,6 @@
   import SprintEditor from '../sprints/SprintEditor.svelte'
 
   export let issue: WithLookup<IssueTemplate>
-
-  const query = createQuery()
-  let showIsBlocking = false
-  let blockedBy: Doc[]
-  $: query.query(tracker.class.Issue, { blockedBy: { _id: issue._id, _class: issue._class } }, (result) => {
-    blockedBy = result
-    showIsBlocking = result.length > 0
-  })
 
   const client = getClient()
   const hierarchy = client.getHierarchy()

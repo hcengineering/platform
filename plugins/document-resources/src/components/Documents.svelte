@@ -20,7 +20,13 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { deviceOptionsStore as deviceInfo, Icon, Label, Loading, SearchEdit } from '@hcengineering/ui'
   import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
-  import { ActionContext, FilterButton, TableBrowser, ViewletSettingButton } from '@hcengineering/view-resources'
+  import {
+    ActionContext,
+    FilterButton,
+    getViewOptions,
+    TableBrowser,
+    ViewletSettingButton
+  } from '@hcengineering/view-resources'
   import document from '../plugin'
 
   export let query: DocumentQuery<Document> = {}
@@ -63,6 +69,8 @@
 
   let twoRows: boolean
   $: twoRows = $deviceInfo.docWidth <= 680
+
+  $: viewOptions = getViewOptions(viewlet)
 </script>
 
 <ActionContext
@@ -87,7 +95,7 @@
       />
     </div>
     <div class="ac-header-full" class:secondRow={twoRows}>
-      <ViewletSettingButton {viewlet} />
+      <ViewletSettingButton bind:viewOptions {viewlet} />
     </div>
   </div>
 

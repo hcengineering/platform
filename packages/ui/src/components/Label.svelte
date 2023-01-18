@@ -19,11 +19,19 @@
   export let label: IntlString
   export let params: Record<string, any> = {}
 
-  $: translation = translate(label, params)
+  let _value: string | undefined = undefined
+
+  $: if (label !== undefined) {
+    translate(label, params ?? {}).then((r) => {
+      _value = r
+    })
+  } else {
+    _value = label
+  }
 </script>
 
-{#await translation}
+{#if _value}
+  {_value}
+{:else}
   {label}
-{:then text}
-  {text}
-{/await}
+{/if}

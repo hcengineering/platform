@@ -48,7 +48,7 @@ import attachment from '@hcengineering/model-attachment'
 import chunter from '@hcengineering/model-chunter'
 import core, { TAccount, TAttachedDoc, TDoc, TSpace } from '@hcengineering/model-core'
 import presentation from '@hcengineering/model-presentation'
-import view, { actionTemplates, createAction, ViewAction } from '@hcengineering/model-view'
+import view, { actionTemplates, createAction, ViewAction, Viewlet } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import type { Asset, IntlString, Resource } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
@@ -204,7 +204,7 @@ export function createModel (builder: Builder): void {
     contact.app.Contacts
   )
 
-  builder.createDoc(
+  builder.createDoc<Viewlet>(
     view.class.Viewlet,
     core.space.Model,
     {
@@ -229,7 +229,7 @@ export function createModel (builder: Builder): void {
     pinned: true
   })
 
-  builder.createDoc(
+  builder.createDoc<Viewlet>(
     view.class.Viewlet,
     core.space.Model,
     {
@@ -237,7 +237,7 @@ export function createModel (builder: Builder): void {
       descriptor: view.viewlet.Table,
       config: [
         '',
-        '$lookup._class',
+        '_class',
         'city',
         'attachments',
         'modifiedOn',
@@ -280,7 +280,7 @@ export function createModel (builder: Builder): void {
     inlineEditor: contact.component.EmployeeArrayEditor
   })
 
-  builder.mixin(contact.class.Member, core.class.Class, view.mixin.AttributePresenter, {
+  builder.mixin(contact.class.Member, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: contact.component.MemberPresenter
   })
 
@@ -292,7 +292,7 @@ export function createModel (builder: Builder): void {
     inlineEditor: contact.component.EmployeeEditor
   })
 
-  builder.mixin(contact.class.Channel, core.class.Class, view.mixin.AttributePresenter, {
+  builder.mixin(contact.class.Channel, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: contact.component.ChannelsPresenter
   })
 
@@ -401,7 +401,7 @@ export function createModel (builder: Builder): void {
     contact.avatarProvider.Gravatar
   )
 
-  builder.mixin(contact.class.Person, core.class.Class, view.mixin.AttributePresenter, {
+  builder.mixin(contact.class.Person, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: contact.component.PersonPresenter
   })
 
@@ -413,20 +413,36 @@ export function createModel (builder: Builder): void {
     inlineEditor: contact.component.AccountArrayEditor
   })
 
-  builder.mixin(core.class.Account, core.class.Class, view.mixin.AttributePresenter, {
+  builder.mixin(core.class.Account, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: contact.component.EmployeeAccountPresenter
   })
 
-  builder.mixin(contact.class.Organization, core.class.Class, view.mixin.AttributePresenter, {
+  builder.mixin(contact.class.Organization, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: contact.component.OrganizationPresenter
   })
 
-  builder.mixin(contact.class.Contact, core.class.Class, view.mixin.AttributePresenter, {
+  builder.mixin(contact.class.Contact, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: contact.component.ContactPresenter
   })
 
-  builder.mixin(contact.class.Employee, core.class.Class, view.mixin.AttributePresenter, {
+  builder.mixin(contact.class.Employee, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: contact.component.EmployeePresenter
+  })
+
+  builder.mixin(contact.class.Employee, core.class.Class, view.mixin.SortFuncs, {
+    func: contact.function.EmployeeSort
+  })
+
+  builder.mixin(contact.class.Person, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: contact.component.PersonRefPresenter
+  })
+
+  builder.mixin(contact.class.Contact, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: contact.component.ContactRefPresenter
+  })
+
+  builder.mixin(contact.class.Employee, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: contact.component.EmployeeRefPresenter
   })
 
   builder.mixin(contact.class.Employee, core.class.Class, view.mixin.IgnoreActions, {

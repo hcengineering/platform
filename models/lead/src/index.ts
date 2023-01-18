@@ -189,7 +189,7 @@ export function createModel (builder: Builder): void {
       descriptor: view.viewlet.Table,
       config: [
         '',
-        '$lookup._class',
+        '_class',
         'leads',
         'modifiedOn',
         {
@@ -212,9 +212,9 @@ export function createModel (builder: Builder): void {
       config: [
         '',
         'title',
-        '$lookup.attachedTo',
-        '$lookup.state',
-        '$lookup.doneState',
+        'attachedTo',
+        'state',
+        'doneState',
         'attachments',
         'comments',
         'modifiedOn',
@@ -225,6 +225,36 @@ export function createModel (builder: Builder): void {
       ]
     },
     lead.viewlet.TableLead
+  )
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: lead.class.Lead,
+      descriptor: view.viewlet.List,
+      config: [
+        { key: '', props: { fixed: 'left' } },
+        { key: 'title', props: { fixed: 'left' } },
+        { key: 'state', props: { fixed: 'left' } },
+        { key: 'doneState', props: { fixed: 'left' } },
+        { key: '', presenter: view.component.GrowPresenter },
+        'attachments',
+        'comments',
+        'assignee'
+      ],
+      viewOptions: {
+        groupBy: ['assignee', 'state', 'attachedTo'],
+        orderBy: [
+          ['assignee', -1],
+          ['state', 1],
+          ['attachedTo', 1],
+          ['modifiedOn', -1]
+        ],
+        other: []
+      }
+    },
+    lead.viewlet.ListLead
   )
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {
@@ -254,7 +284,7 @@ export function createModel (builder: Builder): void {
     editor: lead.component.EditLead
   })
 
-  builder.mixin(lead.class.Lead, core.class.Class, view.mixin.AttributePresenter, {
+  builder.mixin(lead.class.Lead, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: lead.component.LeadPresenter
   })
 

@@ -20,34 +20,44 @@
 
   export let key: string
   export let justify: string = ''
+  export let addClass: string | undefined = undefined
   let prevKey = key
+  let element: HTMLDivElement | undefined
 
-  let cWidth: number = 0
+  let cWidth: number | undefined = undefined
 
   afterUpdate(() => {
-    if (prevKey !== key) {
-      $fixedWidthStore[prevKey] = 0
-      prevKey = key
+    if (cWidth !== undefined) {
+      if (prevKey !== key) {
+        $fixedWidthStore[prevKey] = 0
+        $fixedWidthStore[key] = 0
+        prevKey = key
+        cWidth = undefined
+      }
     }
   })
 
-  $: if (cWidth > ($fixedWidthStore[key] ?? 0)) {
-    $fixedWidthStore[key] = cWidth
+  function resize (element: Element) {
+    cWidth = element.clientWidth
+    if (cWidth > ($fixedWidthStore[key] ?? 0)) {
+      $fixedWidthStore[key] = cWidth
+    }
   }
 
   onDestroy(() => {
-    $fixedWidthStore[key] = 0
+    if (cWidth === $fixedWidthStore[key]) {
+      // If we are longest element
+      $fixedWidthStore[key] = 0
+    }
   })
 </script>
 
 <div
-  class="flex-no-shrink"
-  style="{justify !== '' ? `text-align: ${justify}; ` : ''} min-width: {$fixedWidthStore[key] ?? 0}px;"
-  use:resizeObserver={(element) => {
-    if (element.clientWidth > cWidth) {
-      cWidth = element.clientWidth
-    }
-  }}
+  bind:this={element}
+  class="flex-no-shrink{addClass ? ` ${addClass}` : ''}"
+  style:text-align={justify !== '' ? justify : ''}
+  style:min-width={`${$fixedWidthStore[key] ?? 0}}px;`}
+  use:resizeObserver={resize}
 >
   <slot />
 </div>

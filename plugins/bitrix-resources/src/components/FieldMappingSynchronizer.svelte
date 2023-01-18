@@ -323,44 +323,43 @@
 
 <Expandable label={getEmbeddedLabel(mapping.type)}>
   <svelte:fragment slot="tools">
-    <div class="flex-row-center">
-      <SpaceSelect
-        _class={core.class.Space}
-        label={core.string.Space}
-        bind:value={space}
-        on:change={(evt) => {
-          space = evt.detail
+    <SpaceSelect
+      _class={core.class.Space}
+      label={core.string.Space}
+      bind:value={space}
+      on:change={(evt) => {
+        space = evt.detail
+      }}
+      autoSelect
+      spaceQuery={{ _id: { $in: [contact.space.Contacts] } }}
+    />
+    <DropdownLabels
+      label={getEmbeddedLabel('Direction')}
+      items={[
+        { id: 'ASC', label: 'Ascending' },
+        { id: 'DSC', label: 'Descending' }
+      ]}
+      bind:selected={direction}
+    />
+    <div class="fs-title">
+      <NumberEditor
+        kind={'button'}
+        value={limit}
+        focus={false}
+        placeholder={getEmbeddedLabel('Limit')}
+        onChange={(val) => {
+          if (val) {
+            limit = val
+          }
         }}
-        autoSelect
-        spaceQuery={{ _id: { $in: [contact.space.Contacts] } }}
       />
-      <DropdownLabels
-        label={getEmbeddedLabel('Direction')}
-        items={[
-          { id: 'ASC', label: 'Ascending' },
-          { id: 'DSC', label: 'Descending' }
-        ]}
-        bind:selected={direction}
-      />
-      <div class="fs-title flex-row-center">
-        <NumberEditor
-          kind={'button'}
-          value={limit}
-          focus={false}
-          placeholder={getEmbeddedLabel('Limit')}
-          onChange={(val) => {
-            if (val) {
-              limit = val
-            }
-          }}
-        />
+    </div>
+    <div class="buttons-divider" />
+    <div class="flex-row-center">
+      <div class="p-1">
+        {state}
       </div>
-      <div class="ml-2 flex-row-center">
-        <div class="p-1">
-          {state}
-        </div>
-        <Button size={'large'} label={getEmbeddedLabel('Synchronize')} {loading} on:click={doSync} />
-      </div>
+      <Button size={'large'} label={getEmbeddedLabel('Synchronize')} {loading} on:click={doSync} />
     </div>
   </svelte:fragment>
   <div class="flex-row flex-grow bottom-divider p-2">

@@ -31,6 +31,7 @@
   <div class="root" style:max-width={maxWidth}>
     <span class="names">
       {#each value.parents as parentInfo}
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <span class="name cursor-pointer" on:click={() => handleIssueEditorOpened(parentInfo)}
           >{parentInfo.parentTitle}</span
         >

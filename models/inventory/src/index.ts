@@ -22,8 +22,7 @@ import { createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
 import setting from '@hcengineering/setting'
-import type {} from '@hcengineering/view'
-import view from '@hcengineering/view'
+import view, { Viewlet } from '@hcengineering/view'
 import inventory from './plugin'
 
 export const DOMAIN_INVENTORY = 'inventory' as Domain
@@ -75,15 +74,19 @@ export class TVariant extends TAttachedDoc implements Variant {
 export function createModel (builder: Builder): void {
   builder.createModel(TCategory, TProduct, TVariant)
 
-  builder.mixin(inventory.class.Category, core.class.Class, view.mixin.AttributePresenter, {
+  builder.mixin(inventory.class.Category, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: inventory.component.CategoryPresenter
   })
 
-  builder.mixin(inventory.class.Product, core.class.Class, view.mixin.AttributePresenter, {
+  builder.mixin(inventory.class.Category, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: inventory.component.CategoryRefPresenter
+  })
+
+  builder.mixin(inventory.class.Product, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: inventory.component.ProductPresenter
   })
 
-  builder.mixin(inventory.class.Variant, core.class.Class, view.mixin.AttributePresenter, {
+  builder.mixin(inventory.class.Variant, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: inventory.component.VariantPresenter
   })
 
@@ -99,13 +102,13 @@ export function createModel (builder: Builder): void {
     value: true
   })
 
-  builder.createDoc(
+  builder.createDoc<Viewlet>(
     view.class.Viewlet,
     core.space.Model,
     {
       attachTo: inventory.class.Product,
       descriptor: view.viewlet.Table,
-      config: ['', '$lookup.attachedTo', 'modifiedOn']
+      config: ['', 'attachedTo', 'modifiedOn']
     },
     inventory.viewlet.TableProduct
   )
@@ -173,4 +176,5 @@ export function createModel (builder: Builder): void {
   })
 }
 
+export { inventoryOperation } from './migration'
 export { default } from './plugin'

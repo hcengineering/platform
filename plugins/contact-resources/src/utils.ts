@@ -14,9 +14,9 @@
 // limitations under the License.
 //
 
-import contact, { ChannelProvider } from '@hcengineering/contact'
+import contact, { ChannelProvider, Employee, formatName } from '@hcengineering/contact'
 import { Ref, Timestamp } from '@hcengineering/core'
-import { getClient } from '@hcengineering/presentation'
+import { createQuery, getClient } from '@hcengineering/presentation'
 
 const client = getClient()
 const channelProviders = client.findAll(contact.class.ChannelProvider, {})
@@ -36,5 +36,37 @@ export function formatDate (dueDateMs: Timestamp): string {
     day: 'numeric',
     hour: '2-digit',
     minute: '2-digit'
+  })
+}
+
+export async function employeeSort (value: Array<Ref<Employee>>): Promise<Array<Ref<Employee>>> {
+  return await new Promise((resolve) => {
+    const query = createQuery(true)
+    query.query(contact.class.Employee, { _id: { $in: value } }, (res) => {
+      const employees = new Map(res.map((x) => [x._id, x]))
+      value.sort((a, b) => {
+        const employeeId1 = a as Ref<Employee> | null | undefined
+        const employeeId2 = b as Ref<Employee> | null | undefined
+
+        if (employeeId1 == null && employeeId2 != null) {
+          return 1
+        }
+
+        if (employeeId1 != null && employeeId2 == null) {
+          return -1
+        }
+
+        if (employeeId1 != null && employeeId2 != null) {
+          const name1 = formatName(employees.get(employeeId1)?.name ?? '')
+          const name2 = formatName(employees.get(employeeId2)?.name ?? '')
+
+          return name1.localeCompare(name2)
+        }
+
+        return 0
+      })
+      resolve(value)
+      query.unsubscribe()
+    })
   })
 }

@@ -13,26 +13,52 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Button, showPopup, IconDownOutline, Label } from '@hcengineering/ui'
-  import { Viewlet } from '@hcengineering/view'
-  import ViewletSetting from './ViewletSetting.svelte'
+  import { Button, ButtonKind, eventToHTMLElement, IconDownOutline, Label, showPopup } from '@hcengineering/ui'
+  import { Viewlet, ViewOptions } from '@hcengineering/view'
+  import { createEventDispatcher } from 'svelte'
   import view from '../plugin'
+  import { setViewOptions } from '../viewOptions'
+  import ViewletSetting from './ViewletSetting.svelte'
+  import ViewOptionsEditor from './ViewOptions.svelte'
 
   export let viewlet: Viewlet | undefined
+  export let kind: ButtonKind = 'secondary'
+  export let viewOptions: ViewOptions
+
+  const dispatch = createEventDispatcher()
 
   let btn: HTMLButtonElement
+
+  function clickHandler (event: MouseEvent) {
+    if (viewlet?.viewOptions !== undefined) {
+      showPopup(
+        ViewOptionsEditor,
+        { viewlet, config: viewlet.viewOptions, viewOptions },
+        eventToHTMLElement(event),
+        undefined,
+        (result) => {
+          if (result?.key === undefined) return
+          if (viewlet) {
+            viewOptions = { ...viewOptions, [result.key]: result.value }
+            dispatch('viewOptions', viewOptions)
+            setViewOptions(viewlet, viewOptions)
+          }
+        }
+      )
+    } else {
+      showPopup(ViewletSetting, { viewlet }, btn)
+    }
+  }
 </script>
 
 {#if viewlet}
   <Button
     icon={view.icon.ViewButton}
-    kind={'secondary'}
+    {kind}
     size={'small'}
     showTooltip={{ label: view.string.CustomizeView }}
     bind:input={btn}
-    on:click={() => {
-      showPopup(ViewletSetting, { viewlet }, btn)
-    }}
+    on:click={clickHandler}
   >
     <svelte:fragment slot="content">
       <div class="flex-row-center clear-mins pointer-events-none">

@@ -36,6 +36,7 @@ export default mergeIds(inventoryId, inventory, {
     CreateProduct: '' as AnyComponent,
     EditProduct: '' as AnyComponent,
     CategoryPresenter: '' as AnyComponent,
+    CategoryRefPresenter: '' as AnyComponent,
     Variants: '' as AnyComponent,
     ProductPresenter: '' as AnyComponent,
     VariantPresenter: '' as AnyComponent

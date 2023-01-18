@@ -29,6 +29,7 @@ import type {
   AttributePresenter,
   BuildModelKey,
   ClassFilters,
+  ClassSortFuncs,
   CollectionEditor,
   CollectionPresenter,
   Filter,
@@ -38,13 +39,16 @@ import type {
   KeyBinding,
   KeyFilter,
   LinkPresenter,
+  ListHeaderExtra,
+  ListItemPresenter,
   ObjectEditor,
   ObjectEditorHeader,
   ObjectFactory,
+  ObjectPresenter,
   ObjectTitle,
   ObjectValidator,
   PreviewPresenter,
-  ListItemPresenter,
+  SortFunc,
   SpaceHeader,
   SpaceName,
   ViewAction,
@@ -52,7 +56,8 @@ import type {
   ViewContext,
   Viewlet,
   ViewletDescriptor,
-  ViewletPreference
+  ViewletPreference,
+  ViewOptionsModel
 } from '@hcengineering/view'
 import view from './plugin'
 
@@ -134,6 +139,11 @@ export class TAttributePresenter extends TClass implements AttributePresenter {
   presenter!: AnyComponent
 }
 
+@Mixin(view.mixin.ObjectPresenter, core.class.Class)
+export class TObjectPresenter extends TClass implements ObjectPresenter {
+  presenter!: AnyComponent
+}
+
 @Mixin(view.mixin.ListItemPresenter, core.class.Class)
 export class TListItemPresenter extends TClass implements ListItemPresenter {
   presenter!: AnyComponent
@@ -176,6 +186,16 @@ export class TObjectTitle extends TClass implements ObjectTitle {
   titleProvider!: Resource<<T extends Doc>(client: Client, ref: Ref<T>) => Promise<string>>
 }
 
+@Mixin(view.mixin.ListHeaderExtra, core.class.Class)
+export class TListHeaderExtra extends TClass implements ListHeaderExtra {
+  presenters!: AnyComponent[]
+}
+
+@Mixin(view.mixin.SortFuncs, core.class.Class)
+export class TSortFuncs extends TClass implements ClassSortFuncs {
+  func!: SortFunc
+}
+
 @Model(view.class.ViewletPreference, preference.class.Preference)
 export class TViewletPreference extends TPreference implements ViewletPreference {
   attachedTo!: Ref<Viewlet>
@@ -190,11 +210,12 @@ export class TViewletDescriptor extends TDoc implements ViewletDescriptor {
 
 @Model(view.class.Viewlet, core.class.Doc, DOMAIN_MODEL)
 export class TViewlet extends TDoc implements Viewlet {
-  attachTo!: Ref<Class<Space>>
+  attachTo!: Ref<Class<Doc>>
   descriptor!: Ref<ViewletDescriptor>
   open!: AnyComponent
   config!: (BuildModelKey | string)[]
   hiddenKeys?: string[]
+  viewOptions?: ViewOptionsModel
 }
 
 @Model(view.class.Action, core.class.Doc, DOMAIN_MODEL)
@@ -279,6 +300,9 @@ export function createModel (builder: Builder): void {
     TCollectionEditor,
     TCollectionPresenter,
     TObjectEditor,
+    TObjectPresenter,
+    TSortFuncs,
+    TListHeaderExtra,
     TViewletPreference,
     TViewletDescriptor,
     TViewlet,
@@ -330,7 +354,14 @@ export function createModel (builder: Builder): void {
   classPresenter(builder, core.class.TypeTimestamp, view.component.TimestampPresenter)
   classPresenter(builder, core.class.TypeDate, view.component.DatePresenter, view.component.DateEditor)
   classPresenter(builder, core.class.Space, view.component.ObjectPresenter)
-  classPresenter(builder, core.class.Class, view.component.ClassPresenter)
+  classPresenter(builder, core.class.Class, view.component.ClassRefPresenter)
+  builder.mixin(core.class.Space, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: view.component.SpacePresenter
+  })
+
+  builder.mixin(core.class.Class, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: view.component.ClassPresenter
+  })
 
   classPresenter(builder, core.class.TypeRelatedDocument, view.component.ObjectPresenter)
 
@@ -374,6 +405,17 @@ export function createModel (builder: Builder): void {
       component: view.component.TableBrowser
     },
     view.viewlet.Table
+  )
+
+  builder.createDoc(
+    view.class.ViewletDescriptor,
+    core.space.Model,
+    {
+      label: view.string.List,
+      icon: view.icon.List,
+      component: view.component.ListView
+    },
+    view.viewlet.List
   )
 
   createAction(

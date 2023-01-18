@@ -18,6 +18,7 @@
   import { getClient } from '@hcengineering/presentation'
   import { AnyComponent, Component } from '@hcengineering/ui'
   import view, { Viewlet } from '@hcengineering/view'
+  import { getActiveViewletId } from '@hcengineering/view-resources'
   import type { ViewConfiguration } from '@hcengineering/workbench'
   import SpaceContent from './SpaceContent.svelte'
   import SpaceHeader from './SpaceHeader.svelte'
@@ -61,7 +62,8 @@
         }
       )
       if (header !== undefined) {
-        viewlet = viewlets[0]
+        const _id = getActiveViewletId()
+        viewlet = viewlets.find((viewlet) => viewlet._id === _id) || viewlets[0]
       }
       _class = attachTo
     }
@@ -97,5 +99,5 @@
       bind:viewlet
     />
   {/if}
-  <SpaceContent space={space._id} {_class} bind:search {viewlet} />
+  <SpaceContent space={space._id} {_class} {createItemDialog} {createItemLabel} bind:search {viewlet} />
 {/if}

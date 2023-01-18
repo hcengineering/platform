@@ -187,7 +187,7 @@ export function createModel (builder: Builder): void {
     calendar.action.SaveEventReminder
   )
 
-  builder.mixin(calendar.mixin.Reminder, core.class.Class, view.mixin.AttributePresenter, {
+  builder.mixin(calendar.mixin.Reminder, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: calendar.component.ReminderPresenter
   })
 
@@ -195,7 +195,7 @@ export function createModel (builder: Builder): void {
     editor: calendar.component.EditEvent
   })
 
-  builder.mixin(calendar.class.Event, core.class.Class, view.mixin.AttributePresenter, {
+  builder.mixin(calendar.class.Event, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: calendar.component.EventPresenter
   })
 }

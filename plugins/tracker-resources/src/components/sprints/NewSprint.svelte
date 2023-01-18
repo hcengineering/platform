@@ -104,12 +104,3 @@
     />
   </svelte:fragment>
 </Card>
-
-<style>
-  .label {
-    margin-bottom: 10px;
-  }
-  .description {
-    margin-bottom: 10px;
-  }
-</style>

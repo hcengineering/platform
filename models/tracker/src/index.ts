@@ -73,7 +73,7 @@ import {
   trackerId,
   WorkDayLength
 } from '@hcengineering/tracker'
-import { KeyBinding } from '@hcengineering/view'
+import { KeyBinding, ViewOptionsModel } from '@hcengineering/view'
 import tracker from './plugin'
 
 import presentation from '@hcengineering/model-presentation'
@@ -467,9 +467,31 @@ export function createModel (builder: Builder): void {
     TTypeReportedTime
   )
 
+  const issuesOptions: ViewOptionsModel = {
+    groupBy: ['status', 'assignee', 'priority', 'project', 'sprint'],
+    orderBy: [
+      ['status', SortingOrder.Ascending],
+      ['priority', SortingOrder.Ascending],
+      ['modifiedOn', SortingOrder.Descending],
+      ['dueDate', SortingOrder.Descending],
+      ['rank', SortingOrder.Ascending]
+    ],
+    other: [
+      {
+        key: 'shouldShowSubIssues',
+        type: 'toggle',
+        defaultValue: false,
+        actionTartget: 'query',
+        action: tracker.function.SubIssueQuery,
+        label: tracker.string.SubIssues
+      }
+    ]
+  }
+
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: tracker.class.Issue,
-    descriptor: tracker.viewlet.List,
+    descriptor: view.viewlet.List,
+    viewOptions: issuesOptions,
     config: [
       {
         key: '',
@@ -484,7 +506,7 @@ export function createModel (builder: Builder): void {
       },
       { key: '', presenter: tracker.component.TitlePresenter, props: { shouldUseMargin: true } },
       { key: '', presenter: tracker.component.SubIssuesSelector, props: {} },
-      { key: '', presenter: tracker.component.GrowPresenter, props: { type: 'grow' } },
+      { key: '', presenter: view.component.GrowPresenter, props: { type: 'grow' } },
       { key: '', presenter: tracker.component.DueDatePresenter, props: { kind: 'list' } },
       {
         key: '',
@@ -528,13 +550,91 @@ export function createModel (builder: Builder): void {
     ]
   })
 
+  const subIssuesOptions: ViewOptionsModel = {
+    groupBy: ['status', 'assignee', 'priority', 'sprint'],
+    orderBy: [
+      ['status', SortingOrder.Ascending],
+      ['priority', SortingOrder.Ascending],
+      ['modifiedOn', SortingOrder.Descending],
+      ['dueDate', SortingOrder.Descending],
+      ['rank', SortingOrder.Ascending]
+    ],
+    other: []
+  }
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: tracker.class.Issue,
+      descriptor: view.viewlet.List,
+      viewOptions: subIssuesOptions,
+      variant: 'subissue',
+      config: [
+        {
+          key: '',
+          presenter: tracker.component.PriorityEditor,
+          props: { type: 'priority', kind: 'list', size: 'small' }
+        },
+        { key: '', presenter: tracker.component.IssuePresenter, props: { type: 'issue', fixed: 'left' } },
+        {
+          key: '',
+          presenter: tracker.component.StatusEditor,
+          props: { kind: 'list', size: 'small', justify: 'center' }
+        },
+        { key: '', presenter: tracker.component.TitlePresenter, props: { shouldUseMargin: true, showParent: false } },
+        { key: '', presenter: tracker.component.SubIssuesSelector, props: {} },
+        { key: '', presenter: view.component.GrowPresenter, props: { type: 'grow' } },
+        { key: '', presenter: tracker.component.DueDatePresenter, props: { kind: 'list' } },
+        {
+          key: '',
+          presenter: tracker.component.SprintEditor,
+          props: {
+            kind: 'list',
+            size: 'small',
+            shape: 'round',
+            shouldShowPlaceholder: false,
+            excludeByKey: 'sprint',
+            optional: true
+          }
+        },
+        {
+          key: '',
+          presenter: tracker.component.EstimationEditor,
+          props: { kind: 'list', size: 'small', optional: true }
+        },
+        {
+          key: 'modifiedOn',
+          presenter: tracker.component.ModificationDatePresenter,
+          props: { fixed: 'right', optional: true }
+        },
+        {
+          key: '$lookup.assignee',
+          presenter: tracker.component.AssigneePresenter,
+          props: { issueClass: tracker.class.Issue, defaultClass: contact.class.Employee, shouldShowLabel: false }
+        }
+      ]
+    },
+    tracker.viewlet.SubIssues
+  )
+
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: tracker.class.IssueTemplate,
-    descriptor: tracker.viewlet.List,
+    descriptor: view.viewlet.List,
+    viewOptions: {
+      groupBy: ['assignee', 'priority', 'project', 'sprint'],
+      orderBy: [
+        ['priority', SortingOrder.Ascending],
+        ['modifiedOn', SortingOrder.Descending],
+        ['dueDate', SortingOrder.Descending],
+        ['rank', SortingOrder.Ascending]
+      ],
+      other: []
+    },
     config: [
       // { key: '', presenter: tracker.component.PriorityEditor, props: { kind: 'list', size: 'small' } },
       { key: '', presenter: tracker.component.IssueTemplatePresenter, props: { type: 'issue', shouldUseMargin: true } },
-      { key: '', presenter: tracker.component.GrowPresenter, props: { type: 'grow' } },
+      { key: '', presenter: view.component.GrowPresenter, props: { type: 'grow' } },
       // { key: '', presenter: tracker.component.DueDatePresenter, props: { kind: 'list' } },
       {
         key: '',
@@ -556,20 +656,10 @@ export function createModel (builder: Builder): void {
     ]
   })
 
-  builder.createDoc(
-    view.class.ViewletDescriptor,
-    core.space.Model,
-    {
-      label: tracker.string.List,
-      icon: view.icon.Table,
-      component: tracker.component.ListView
-    },
-    tracker.viewlet.List
-  )
-
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: tracker.class.Issue,
     descriptor: tracker.viewlet.Kanban,
+    viewOptions: issuesOptions,
     config: []
   })
 
@@ -657,11 +747,11 @@ export function createModel (builder: Builder): void {
   const sprintsId = 'sprints'
   const templatesId = 'templates'
 
-  builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.AttributePresenter, {
+  builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: tracker.component.IssuePresenter
   })
 
-  builder.mixin(tracker.class.IssueTemplate, core.class.Class, view.mixin.AttributePresenter, {
+  builder.mixin(tracker.class.IssueTemplate, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: tracker.component.IssueTemplatePresenter
   })
 
@@ -669,7 +759,7 @@ export function createModel (builder: Builder): void {
     presenter: tracker.component.IssuePreview
   })
 
-  builder.mixin(tracker.class.TimeSpendReport, core.class.Class, view.mixin.AttributePresenter, {
+  builder.mixin(tracker.class.TimeSpendReport, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: tracker.component.TimeSpendReport
   })
 
@@ -677,7 +767,23 @@ export function createModel (builder: Builder): void {
     titleProvider: tracker.function.IssueTitleProvider
   })
 
-  builder.mixin(tracker.class.TypeIssuePriority, core.class.Class, view.mixin.AttributePresenter, {
+  builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.ListHeaderExtra, {
+    presenters: [tracker.component.IssueStatistics]
+  })
+
+  builder.mixin(tracker.class.IssueStatus, core.class.Class, view.mixin.SortFuncs, {
+    func: tracker.function.IssueStatusSort
+  })
+
+  builder.mixin(tracker.class.TypeIssuePriority, core.class.Class, view.mixin.SortFuncs, {
+    func: tracker.function.IssuePrioritySort
+  })
+
+  builder.mixin(tracker.class.Sprint, core.class.Class, view.mixin.SortFuncs, {
+    func: tracker.function.SprintSort
+  })
+
+  builder.mixin(tracker.class.TypeIssuePriority, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: tracker.component.PriorityPresenter
   })
 
@@ -685,31 +791,38 @@ export function createModel (builder: Builder): void {
     component: view.component.ValueFilter
   })
 
-  builder.mixin(tracker.class.IssueStatus, core.class.Class, view.mixin.AttributePresenter, {
+  builder.mixin(tracker.class.IssueStatus, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: tracker.component.StatusPresenter
   })
 
-  builder.mixin(tracker.class.Project, core.class.Class, view.mixin.AttributePresenter, {
+  builder.mixin(tracker.class.IssueStatus, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: tracker.component.StatusRefPresenter
+  })
+
+  builder.mixin(tracker.class.TypeIssuePriority, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: tracker.component.PriorityRefPresenter
+  })
+
+  builder.mixin(tracker.class.Project, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: tracker.component.ProjectTitlePresenter
   })
 
-  builder.mixin(tracker.class.Team, core.class.Class, view.mixin.AttributePresenter, {
+  builder.mixin(tracker.class.Team, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: tracker.component.TeamPresenter
   })
 
-  classPresenter(
-    builder,
-    tracker.class.Project,
-    tracker.component.ProjectTitlePresenter,
-    tracker.component.ProjectSelector
-  )
+  classPresenter(builder, tracker.class.Project, tracker.component.ProjectSelector, tracker.component.ProjectSelector)
 
   builder.mixin(tracker.class.Project, core.class.Class, view.mixin.AttributeEditor, {
     inlineEditor: tracker.component.ProjectSelector
   })
 
-  builder.mixin(tracker.class.Sprint, core.class.Class, view.mixin.AttributePresenter, {
+  builder.mixin(tracker.class.Sprint, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: tracker.component.SprintTitlePresenter
+  })
+
+  builder.mixin(tracker.class.Sprint, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: tracker.component.SprintRefPresenter
   })
 
   builder.mixin(tracker.class.Issue, core.class.Class, setting.mixin.Editable, {
