@@ -73,7 +73,6 @@
 
   let link: string | undefined
   let loading = false
-
 </script>
 
 <div class="antiPopup popup">
@@ -82,7 +81,13 @@
     <InviteWorkspace size="large" />
   </div>
   <div class="mt-2">
-    <EditBox label={login.string.LinkValidHours} value={expHours} format={'number'} on:keypress={() => link = undefined} on:change={_onchange} />
+    <EditBox
+      label={login.string.LinkValidHours}
+      value={expHours}
+      format={'number'}
+      on:keypress={() => (link = undefined)}
+      on:change={_onchange}
+    />
   </div>
   {#if loading}
     <Loading />
@@ -90,11 +95,7 @@
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div class="over-underline link" on:click={copy}>{link}</div>
     <div class="buttons flex">
-      <Button
-        label={copied ? login.string.Copied : login.string.Copy}
-        size={'medium'}
-        on:click={copy}
-      />
+      <Button label={copied ? login.string.Copied : login.string.Copy} size={'medium'} on:click={copy} />
       <Button
         label={login.string.Close}
         size={'medium'}
