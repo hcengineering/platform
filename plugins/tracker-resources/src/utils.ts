@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Doc, DocumentQuery, Ref, SortingOrder, TxOperations, WithLookup } from '@hcengineering/core'
+import { Doc, DocumentQuery, Ref, SortingOrder, toIdMap, TxOperations, WithLookup } from '@hcengineering/core'
 import { TypeState } from '@hcengineering/kanban'
 import { Asset, IntlString, translate } from '@hcengineering/platform'
 import { createQuery } from '@hcengineering/presentation'
@@ -332,7 +332,7 @@ export async function sprintSort (value: Array<Ref<Sprint>>): Promise<Array<Ref<
   return await new Promise((resolve) => {
     const query = createQuery(true)
     query.query(tracker.class.Sprint, { _id: { $in: value } }, (res) => {
-      const sprints = new Map(res.map((x) => [x._id, x]))
+      const sprints = toIdMap(res)
       value.sort((a, b) => (sprints.get(b)?.startDate ?? 0) - (sprints.get(a)?.startDate ?? 0))
       resolve(value)
       query.unsubscribe()

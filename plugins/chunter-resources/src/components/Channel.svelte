@@ -16,7 +16,7 @@
   import attachment, { Attachment } from '@hcengineering/attachment'
   import type { ChunterMessage, Message } from '@hcengineering/chunter'
   import contact, { Employee } from '@hcengineering/contact'
-  import core, { Doc, Ref, Space, Timestamp, WithLookup } from '@hcengineering/core'
+  import core, { Doc, Ref, Space, Timestamp, toIdMap, WithLookup } from '@hcengineering/core'
   import { NotificationClientImpl } from '@hcengineering/notification-resources'
   import { createQuery } from '@hcengineering/presentation'
   import { location as locationStore } from '@hcengineering/ui'
@@ -77,19 +77,9 @@
   const notificationClient = NotificationClientImpl.getClient()
   const lastViews = notificationClient.getLastViews()
 
-  employeeQuery.query(
-    contact.class.Employee,
-    {},
-    (res) =>
-      (employees = new Map(
-        res.map((r) => {
-          return [r._id, r]
-        })
-      )),
-    {
-      lookup: { _id: { statuses: contact.class.Status } }
-    }
-  )
+  employeeQuery.query(contact.class.Employee, {}, (res) => (employees = toIdMap(res)), {
+    lookup: { _id: { statuses: contact.class.Status } }
+  })
 
   $: updateQuery(space)
 

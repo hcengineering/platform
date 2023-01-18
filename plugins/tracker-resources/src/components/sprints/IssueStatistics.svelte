@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, WithLookup } from '@hcengineering/core'
+  import { IdMap, Ref, toIdMap } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { Issue, IssueStatus, WorkDayLength } from '@hcengineering/tracker'
   import { floorFractionDigits, Label } from '@hcengineering/ui'
@@ -33,10 +33,10 @@
   )
 
   const statuses = createQuery()
-  let issueStatuses: Map<Ref<IssueStatus>, WithLookup<IssueStatus>> = new Map()
+  let issueStatuses: IdMap<IssueStatus> = new Map()
   $: if (noParents !== undefined) {
     statuses.query(tracker.class.IssueStatus, { _id: { $in: Array.from(noParents.map((it) => it.status)) } }, (res) => {
-      issueStatuses = new Map(res.map((it) => [it._id, it]))
+      issueStatuses = toIdMap(res)
     })
   } else {
     statuses.unsubscribe()

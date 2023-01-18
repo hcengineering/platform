@@ -23,7 +23,7 @@ import {
   checkHasGravatar,
   getAvatarColorForId
 } from '@hcengineering/contact'
-import { AccountRole, DOMAIN_TX, TxCreateDoc, TxOperations } from '@hcengineering/core'
+import { AccountRole, DOMAIN_TX, toIdMap, TxCreateDoc, TxOperations } from '@hcengineering/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
 import contact from './index'
@@ -96,7 +96,7 @@ async function setRole (client: MigrationClient): Promise<void> {
 async function updateEmployeeAvatar (tx: TxOperations): Promise<void> {
   const accounts = await tx.findAll(contact.class.EmployeeAccount, {})
   const employees = await tx.findAll(contact.class.Employee, { _id: { $in: accounts.map((a) => a.employee) } })
-  const employeesById = new Map(employees.map((it) => [it._id, it]))
+  const employeesById = toIdMap(employees)
 
   // set gravatar for users without avatar
   const promises = accounts.map(async (account) => {

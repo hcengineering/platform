@@ -15,7 +15,7 @@
 //
 
 import contact, { ChannelProvider, Employee, formatName } from '@hcengineering/contact'
-import { Ref, Timestamp } from '@hcengineering/core'
+import { Ref, Timestamp, toIdMap } from '@hcengineering/core'
 import { createQuery, getClient } from '@hcengineering/presentation'
 
 const client = getClient()
@@ -43,7 +43,7 @@ export async function employeeSort (value: Array<Ref<Employee>>): Promise<Array<
   return await new Promise((resolve) => {
     const query = createQuery(true)
     query.query(contact.class.Employee, { _id: { $in: value } }, (res) => {
-      const employees = new Map(res.map((x) => [x._id, x]))
+      const employees = toIdMap(res)
       value.sort((a, b) => {
         const employeeId1 = a as Ref<Employee> | null | undefined
         const employeeId2 = b as Ref<Employee> | null | undefined

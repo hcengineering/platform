@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Doc, Ref, Space } from '@hcengineering/core'
+  import { Doc, Ref, Space, toIdMap } from '@hcengineering/core'
   import { AttributeEditor, createQuery, getClient } from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
   import task, { genRanks, KanbanTemplate, KanbanTemplateSpace } from '@hcengineering/task'
@@ -40,7 +40,7 @@
     selectedId = templates[0]._id
   }
 
-  $: templateMap = new Map(templates.map((x) => [x._id, x]))
+  $: templateMap = toIdMap(templates)
   $: template = selectedId !== undefined ? templateMap.get(selectedId) : undefined
 
   const client = getClient()

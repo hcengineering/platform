@@ -14,15 +14,16 @@
 -->
 <script lang="ts">
   import { TxViewlet } from '@hcengineering/activity'
-  import { ActivityKey, DisplayTx, newDisplayTx, getValue, updateViewlet } from '@hcengineering/activity-resources'
+  import { ActivityKey, DisplayTx, getValue, newDisplayTx, updateViewlet } from '@hcengineering/activity-resources'
   import activity from '@hcengineering/activity-resources/src/plugin'
   import contact, { EmployeeAccount } from '@hcengineering/contact'
   import core, { AnyAttribute, Ref, Tx } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Label } from '@hcengineering/ui'
-  import request from '../plugin'
   import type { AttributeModel } from '@hcengineering/view'
+  import { ObjectPresenter } from '@hcengineering/view-resources'
+  import request from '../plugin'
 
   export let tx: Tx
   const viewlets: Map<ActivityKey, TxViewlet> = new Map<ActivityKey, TxViewlet>()
@@ -106,7 +107,11 @@
                   <div class="strong">
                     <div class="flex flex-wrap gap-2" class:emphasized={value.added.length > 1}>
                       {#each value.added as cvalue}
-                        <svelte:component this={m.presenter} value={cvalue} />
+                        {#if value.isObjectAdded}
+                          <ObjectPresenter value={cvalue} />
+                        {:else}
+                          <svelte:component this={m.presenter} value={cvalue} />
+                        {/if}
                       {/each}
                     </div>
                   </div>
@@ -119,7 +124,11 @@
                   <div class="strong">
                     <div class="flex flex-wrap gap-2 flex-grow" class:emphasized={value.removed.length > 1}>
                       {#each value.removed as cvalue}
-                        <svelte:component this={m.presenter} value={cvalue} />
+                        {#if value.isObjectRemoved}
+                          <ObjectPresenter value={cvalue} />
+                        {:else}
+                          <svelte:component this={m.presenter} value={cvalue} />
+                        {/if}
                       {/each}
                     </div>
                   </div>
@@ -129,15 +138,18 @@
                     <Label label={m.label} />
                     <Label label={activity.string.To} />
                   </span>
-                  {#if isMessageType(m.attribute)}
-                    <div class="strong message emphasized">
+                  <div
+                    class="strong message emphasized"
+                    class:message={isMessageType(m.attribute)}
+                    class:emphasized={isMessageType(m.attribute)}
+                  >
+                    {#if value.isObjectSet}
+                      <ObjectPresenter value={value.set} />
+                    {:else}
                       <svelte:component this={m.presenter} value={value.set} />
-                    </div>
-                  {:else}
-                    <div class="strong">
-                      <svelte:component this={m.presenter} value={value.set} />
-                    </div>
-                  {/if}
+                    {/if}
+                    <svelte:component this={m.presenter} value={value.set} />
+                  </div>
                 {/if}
               {/await}
             {/each}
