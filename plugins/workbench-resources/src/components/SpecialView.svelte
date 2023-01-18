@@ -130,6 +130,7 @@
       options: viewlet.options,
       config: preference?.config ?? viewlet.config,
       viewlet,
+      viewOptions,
       createItemDialog: createComponent,
       createItemLabel: createLabel,
       query: resultQuery

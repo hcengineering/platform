@@ -104,6 +104,8 @@ import IssueStatistics from './components/sprints/IssueStatistics.svelte'
 import StatusRefPresenter from './components/issues/StatusRefPresenter.svelte'
 import SprintRefPresenter from './components/sprints/SprintRefPresenter.svelte'
 
+export { default as SubIssueList } from './components/issues/edit/SubIssueList.svelte'
+
 export async function queryIssue<D extends Issue> (
   _class: Ref<Class<D>>,
   client: Client,
