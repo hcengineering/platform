@@ -241,6 +241,7 @@
       <span class="title select-text">{title}</span>
       <div class="mt-6 description-preview select-text">
         {#if isDescriptionEmpty}
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
           <div class="placeholder" on:click={edit}>
             <Label label={tracker.string.IssueDescriptionPlaceholder} />
           </div>

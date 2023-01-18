@@ -550,6 +550,74 @@ export function createModel (builder: Builder): void {
     ]
   })
 
+  const subIssuesOptions: ViewOptionsModel = {
+    groupBy: ['status', 'assignee', 'priority', 'sprint'],
+    orderBy: [
+      ['status', SortingOrder.Ascending],
+      ['priority', SortingOrder.Ascending],
+      ['modifiedOn', SortingOrder.Descending],
+      ['dueDate', SortingOrder.Descending],
+      ['rank', SortingOrder.Ascending]
+    ],
+    other: []
+  }
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: tracker.class.Issue,
+      descriptor: view.viewlet.List,
+      viewOptions: subIssuesOptions,
+      variant: 'subissue',
+      config: [
+        {
+          key: '',
+          presenter: tracker.component.PriorityEditor,
+          props: { type: 'priority', kind: 'list', size: 'small' }
+        },
+        { key: '', presenter: tracker.component.IssuePresenter, props: { type: 'issue', fixed: 'left' } },
+        {
+          key: '',
+          presenter: tracker.component.StatusEditor,
+          props: { kind: 'list', size: 'small', justify: 'center' }
+        },
+        { key: '', presenter: tracker.component.TitlePresenter, props: { shouldUseMargin: true, showParent: false } },
+        { key: '', presenter: tracker.component.SubIssuesSelector, props: {} },
+        { key: '', presenter: view.component.GrowPresenter, props: { type: 'grow' } },
+        { key: '', presenter: tracker.component.DueDatePresenter, props: { kind: 'list' } },
+        {
+          key: '',
+          presenter: tracker.component.SprintEditor,
+          props: {
+            kind: 'list',
+            size: 'small',
+            shape: 'round',
+            shouldShowPlaceholder: false,
+            excludeByKey: 'sprint',
+            optional: true
+          }
+        },
+        {
+          key: '',
+          presenter: tracker.component.EstimationEditor,
+          props: { kind: 'list', size: 'small', optional: true }
+        },
+        {
+          key: 'modifiedOn',
+          presenter: tracker.component.ModificationDatePresenter,
+          props: { fixed: 'right', optional: true }
+        },
+        {
+          key: '$lookup.assignee',
+          presenter: tracker.component.AssigneePresenter,
+          props: { issueClass: tracker.class.Issue, defaultClass: contact.class.Employee, shouldShowLabel: false }
+        }
+      ]
+    },
+    tracker.viewlet.SubIssues
+  )
+
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: tracker.class.IssueTemplate,
     descriptor: view.viewlet.List,

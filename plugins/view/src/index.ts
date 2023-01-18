@@ -222,6 +222,7 @@ export interface Viewlet extends Doc {
   config: (BuildModelKey | string)[]
   hiddenKeys?: string[]
   viewOptions?: ViewOptionsModel
+  variant?: string
 }
 
 /**
@@ -553,7 +554,8 @@ const view = plugin(viewId, {
     EditDoc: '' as AnyComponent,
     SpacePresenter: '' as AnyComponent,
     BooleanTruePresenter: '' as AnyComponent,
-    ValueSelector: '' as AnyComponent
+    ValueSelector: '' as AnyComponent,
+    GrowPresenter: '' as AnyComponent
   },
   string: {
     CustomizeView: '' as IntlString,

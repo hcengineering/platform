@@ -48,7 +48,7 @@
   async function updateStatus (
     txes: Tx[],
     statuses: Map<Ref<IssueStatus>, WithLookup<IssueStatus>>,
-    now: number
+    _: number
   ): Promise<void> {
     const result: WithTime[] = []
 

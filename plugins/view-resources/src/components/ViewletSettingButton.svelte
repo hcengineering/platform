@@ -13,36 +13,36 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Button, eventToHTMLElement, IconDownOutline, Label, showPopup } from '@hcengineering/ui'
-  import { Viewlet, ViewOptionsModel } from '@hcengineering/view'
+  import { Button, ButtonKind, eventToHTMLElement, IconDownOutline, Label, showPopup } from '@hcengineering/ui'
+  import { Viewlet, ViewOptions } from '@hcengineering/view'
+  import { createEventDispatcher } from 'svelte'
   import view from '../plugin'
-  import { defaulOptions, getViewOptions, setViewOptions, viewOptionsStore } from '../viewOptions'
+  import { setViewOptions } from '../viewOptions'
   import ViewletSetting from './ViewletSetting.svelte'
-  import ViewOptions from './ViewOptions.svelte'
+  import ViewOptionsEditor from './ViewOptions.svelte'
 
   export let viewlet: Viewlet | undefined
+  export let kind: ButtonKind = 'secondary'
+  export let viewOptions: ViewOptions
+
+  const dispatch = createEventDispatcher()
 
   let btn: HTMLButtonElement
-
-  $: viewlet && loadViewOptionsStore(viewlet.viewOptions, viewlet._id)
-
-  function loadViewOptionsStore (config: ViewOptionsModel | undefined, key: string) {
-    if (!config) return
-    viewOptionsStore.set(getViewOptions(key) ?? defaulOptions)
-  }
 
   function clickHandler (event: MouseEvent) {
     if (viewlet?.viewOptions !== undefined) {
       showPopup(
-        ViewOptions,
-        { viewlet, config: viewlet.viewOptions, viewOptions: $viewOptionsStore },
+        ViewOptionsEditor,
+        { viewlet, config: viewlet.viewOptions, viewOptions },
         eventToHTMLElement(event),
         undefined,
         (result) => {
           if (result?.key === undefined) return
-          $viewOptionsStore[result.key] = result.value
-          viewOptionsStore.set($viewOptionsStore)
-          setViewOptions(viewlet?._id ?? '', $viewOptionsStore)
+          if (viewlet) {
+            viewOptions = { ...viewOptions, [result.key]: result.value }
+            dispatch('viewOptions', viewOptions)
+            setViewOptions(viewlet, viewOptions)
+          }
         }
       )
     } else {
@@ -54,7 +54,7 @@
 {#if viewlet}
   <Button
     icon={view.icon.ViewButton}
-    kind={'secondary'}
+    {kind}
     size={'small'}
     showTooltip={{ label: view.string.CustomizeView }}
     bind:input={btn}

@@ -53,6 +53,7 @@
 </script>
 
 {#if kind === 'link'}
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div id="ReportedTimeEditor" class="link-container flex-between" on:click={showReports}>
     {#if value !== undefined}
       <span class="overflow-label">

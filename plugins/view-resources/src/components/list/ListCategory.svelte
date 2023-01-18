@@ -45,6 +45,8 @@
   export let selectedRowIndex: number | undefined
   export let extraHeaders: AnyComponent[] | undefined
   export let objectRefs: HTMLElement[] = []
+  export let flatHeaders = false
+  export let props: Record<string, any> = {}
 
   const autoFoldLimit = 20
   const defaultLimit = 20
@@ -92,6 +94,8 @@
   {createItemDialog}
   {createItemLabel}
   {extraHeaders}
+  flat={flatHeaders}
+  {props}
   on:more={() => {
     limit += 20
   }}
@@ -114,6 +118,7 @@
           on:contextmenu={(event) => handleMenuOpened(event, docObject, initIndex + i)}
           on:focus={() => {}}
           on:mouseover={() => handleRowFocused(docObject)}
+          {props}
         />
       {/each}
     {/if}

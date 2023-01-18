@@ -510,6 +510,7 @@
     />
     <div class="workbench-container">
       {#if currentApplication && navigatorModel && navigator && visibileNav}
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         {#if visibileNav && navFloat}<div class="cover shown" on:click={() => (visibileNav = false)} />{/if}
         <div
           class="antiPanel-navigator {appsDirection === 'horizontal' ? 'portrait' : 'landscape'}"

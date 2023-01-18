@@ -14,11 +14,11 @@
 -->
 <script lang="ts">
   import contact from '@hcengineering/contact'
-  import { Doc, Ref } from '@hcengineering/core'
+  import { Ref } from '@hcengineering/core'
   import { UserBox } from '@hcengineering/presentation'
   import { Issue, Team } from '@hcengineering/tracker'
-  import { getEventPositionElement, ListView, showPopup, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
-  import { ContextMenu, FixedColumn, ListSelectionProvider, SelectDirection } from '@hcengineering/view-resources'
+  import { deviceOptionsStore as deviceInfo, getEventPositionElement, ListView, showPopup } from '@hcengineering/ui'
+  import { ContextMenu, FixedColumn, ListSelectionProvider } from '@hcengineering/view-resources'
   import { getIssueId } from '../../../issues'
   import tracker from '../../../plugin'
   import EstimationEditor from './EstimationEditor.svelte'
@@ -31,7 +31,7 @@
     showPopup(ContextMenu, { object }, $deviceInfo.isMobile ? 'top' : getEventPositionElement(ev))
   }
 
-  const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {})
+  const listProvider = new ListSelectionProvider(() => {})
   $: twoRows = $deviceInfo.twoRows
 </script>
 

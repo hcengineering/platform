@@ -18,7 +18,7 @@
   import { createQuery, getClient, UsersPopup, IconMembersOutline } from '@hcengineering/presentation'
   import { Button, IconAdd, Label, showPopup, Icon } from '@hcengineering/ui'
   import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
-  import { Table, ViewletSettingButton } from '@hcengineering/view-resources'
+  import { getViewOptions, Table, ViewletSettingButton } from '@hcengineering/view-resources'
   import contact from '../plugin'
 
   export let objectId: Ref<Doc>
@@ -90,6 +90,7 @@
         }
       })
   }
+  $: viewOptions = getViewOptions(descr)
 </script>
 
 <div class="antiSection">
@@ -101,7 +102,7 @@
       <Label label={contact.string.Members} />
     </span>
     <div class="buttons-group xsmall-gap">
-      <ViewletSettingButton viewlet={descr} />
+      <ViewletSettingButton bind:viewOptions viewlet={descr} />
       <Button id={contact.string.AddMember} icon={IconAdd} kind={'transparent'} shape={'circle'} on:click={createApp} />
     </div>
   </div>
@@ -118,6 +119,7 @@
       <span class="dark-color">
         <Label label={contact.string.NoMembers} />
       </span>
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
       <span class="over-underline content-accent-color" on:click={createApp}>
         <Label label={contact.string.AddMember} />
       </span>

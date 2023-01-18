@@ -18,7 +18,13 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Button, Icon, IconAdd, Label, Loading, SearchEdit, showPopup } from '@hcengineering/ui'
   import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
-  import { ActionContext, FilterButton, TableBrowser, ViewletSettingButton } from '@hcengineering/view-resources'
+  import {
+    ActionContext,
+    FilterButton,
+    getViewOptions,
+    TableBrowser,
+    ViewletSettingButton
+  } from '@hcengineering/view-resources'
   import contact from '../plugin'
   import CreateContact from './CreateContact.svelte'
   import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
@@ -64,6 +70,8 @@
   }
 
   $: twoRows = $deviceInfo.twoRows
+
+  $: viewOptions = getViewOptions(viewlet)
 </script>
 
 <ActionContext
@@ -95,7 +103,7 @@
         size={'small'}
         on:click={(ev) => showCreateDialog(ev)}
       />
-      <ViewletSettingButton {viewlet} />
+      <ViewletSettingButton bind:viewOptions {viewlet} />
     </div>
   </div>
 

@@ -88,6 +88,8 @@ export { default as FixedColumn } from './components/FixedColumn.svelte'
 export { default as ValueSelector } from './components/ValueSelector.svelte'
 export { default as ObjectBox } from './components/ObjectBox.svelte'
 export { default as ObjectPresenter } from './components/ObjectPresenter.svelte'
+
+export { default as List } from './components/list/List.svelte'
 export * from './context'
 export * from './filter'
 export * from './selection'

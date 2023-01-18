@@ -37,8 +37,7 @@
     ListSelectionProvider,
     noCategory,
     SelectDirection,
-    selectionStore,
-    viewOptionsStore
+    selectionStore
   } from '@hcengineering/view-resources'
   import ActionContext from '@hcengineering/view-resources/src/components/ActionContext.svelte'
   import Menu from '@hcengineering/view-resources/src/components/Menu.svelte'
@@ -59,11 +58,12 @@
   export let space: Ref<Team> | undefined = undefined
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
   export let query: DocumentQuery<Issue> = {}
-  export let viewOptions: ViewOptionModel[] | undefined
+  export let viewOptionsConfig: ViewOptionModel[] | undefined
+  export let viewOptions: ViewOptions
 
   $: currentSpace = space || tracker.team.DefaultTeam
-  $: groupBy = ($viewOptionsStore.groupBy ?? noCategory) as IssuesGrouping
-  $: orderBy = $viewOptionsStore.orderBy
+  $: groupBy = (viewOptions.groupBy ?? noCategory) as IssuesGrouping
+  $: orderBy = viewOptions.orderBy
   $: sort = { [orderBy[0]]: orderBy[1] }
   $: dontUpdateRank = orderBy[0] !== IssuesOrdering.Manual
 
@@ -76,7 +76,7 @@
   })
 
   let resultQuery: DocumentQuery<any> = query
-  $: getResultQuery(query, viewOptions, $viewOptionsStore).then((p) => (resultQuery = p))
+  $: getResultQuery(query, viewOptionsConfig, viewOptions).then((p) => (resultQuery = p))
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -188,6 +188,7 @@
       mode: 'browser'
     }}
   />
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
   <Kanban
     bind:this={kanbanUI}
     _class={tracker.class.Issue}

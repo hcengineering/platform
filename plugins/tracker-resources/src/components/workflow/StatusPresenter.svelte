@@ -23,6 +23,7 @@
   export let value: IssueStatus
   export let isDefault = false
   export let isSingle = true
+  export let issueStatuses: IssueStatus[] | undefined = undefined
 
   const dispatch = createEventDispatcher()
 
@@ -37,7 +38,7 @@
       <Circles />
     </div>
     <div class="flex-no-shrink ml-2">
-      <IssueStatusIcon {value} size="small" />
+      <IssueStatusIcon {value} size="small" {issueStatuses} />
     </div>
     <span class="content-accent-color ml-2">{value.name}</span>
     {#if value.description}
@@ -48,10 +49,12 @@
     {#if isDefault}
       <Label label={tracker.string.Default} />
     {:else if value.category === tracker.issueStatusCategory.Backlog || value.category === tracker.issueStatusCategory.Unstarted}
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
       <div class="btn" on:click|preventDefault={() => dispatch('default-update', value._id)}>
         <Label label={tracker.string.MakeDefault} />
       </div>
     {/if}
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div
       class="btn"
       use:tooltip={{ label: tracker.string.EditWorkflowStatus, direction: 'bottom' }}
@@ -60,6 +63,7 @@
       <Icon icon={IconEdit} size="small" />
     </div>
     {#if !isSingle}
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
       <div
         class="btn"
         use:tooltip={{ label: tracker.string.DeleteWorkflowStatus, direction: 'bottom' }}

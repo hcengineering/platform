@@ -30,7 +30,7 @@
     TabList
   } from '@hcengineering/ui'
   import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
-  import { FilterButton, ViewletSettingButton } from '@hcengineering/view-resources'
+  import { FilterButton, getViewOptions, ViewletSettingButton } from '@hcengineering/view-resources'
   import calendar from '../plugin'
   import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
 
@@ -101,6 +101,8 @@
   })
 
   $: twoRows = $deviceInfo.twoRows
+
+  $: viewOptions = getViewOptions(selectedViewlet)
 </script>
 
 <div class="ac-header withSettings" class:full={!twoRows} class:mini={twoRows}>
@@ -133,7 +135,7 @@
         }}
       />
     {/if}
-    <ViewletSettingButton viewlet={selectedViewlet} />
+    <ViewletSettingButton bind:viewOptions viewlet={selectedViewlet} />
   </div>
 </div>
 
@@ -148,6 +150,7 @@
         space,
         options: selectedViewlet.options,
         config: preference?.config ?? selectedViewlet.config,
+        viewOptions,
         viewlet: selectedViewlet,
         query: resultQuery,
         search,

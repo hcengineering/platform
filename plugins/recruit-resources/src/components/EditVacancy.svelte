@@ -22,7 +22,7 @@
   import { Vacancy } from '@hcengineering/recruit'
   import { FullDescriptionBox } from '@hcengineering/text-editor'
   import tracker from '@hcengineering/tracker'
-  import { Button, Component, EditBox, Grid, Icon, IconAdd, IconMoreH, Label, showPopup } from '@hcengineering/ui'
+  import { Button, Component, EditBox, Grid, IconMoreH, showPopup } from '@hcengineering/ui'
   import { ClassAttributeBar, ContextMenu } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
@@ -131,33 +131,7 @@
       />
       <!-- <MembersBox label={recruit.string.Members} space={object} /> -->
 
-      <div class="antiSection">
-        <div class="antiSection-header">
-          <div class="antiSection-header__icon">
-            <Icon icon={tracker.icon.Issue} size={'small'} />
-          </div>
-          <span class="antiSection-header__title">
-            <Label label={recruit.string.RelatedIssues} />
-          </span>
-          <div class="buttons-group small-gap">
-            <Button
-              id="add-sub-issue"
-              width="min-content"
-              icon={IconAdd}
-              label={undefined}
-              labelParams={{ subIssues: 0 }}
-              kind={'transparent'}
-              size={'small'}
-              on:click={() => {
-                showPopup(tracker.component.CreateIssue, { relatedTo: object, space: object.space }, 'top')
-              }}
-            />
-          </div>
-        </div>
-        <div class="flex-row">
-          <Component is={tracker.component.RelatedIssues} props={{ object }} />
-        </div>
-      </div></Grid
-    >
+      <Component is={tracker.component.RelatedIssuesSection} props={{ object, label: recruit.string.RelatedIssues }} />
+    </Grid>
   </Panel>
 {/if}

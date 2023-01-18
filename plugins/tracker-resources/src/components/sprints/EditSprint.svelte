@@ -22,7 +22,8 @@
     await client.update(sprint, { [field]: value })
   }
   let container: HTMLElement
-  function selectSprint (evt: MouseEvent): void {
+
+  function selectSprint (): void {
     showPopup(SprintPopup, { _class: tracker.class.Sprint }, container, (value) => {
       if (value != null) {
         sprint = value

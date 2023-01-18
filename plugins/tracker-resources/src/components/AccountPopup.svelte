@@ -91,6 +91,7 @@
   <div class="ap-scroll">
     <div class="ap-box">
       {#await getItems() then items}
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div
           class="ap-menuItem flex-row-center"
           on:click={() => {

@@ -18,8 +18,8 @@
   import { getClient } from '@hcengineering/presentation'
   import { Issue, Project } from '@hcengineering/tracker'
   import { CheckBox, Spinner, tooltip } from '@hcengineering/ui'
-  import { AttributeModel, BuildModelKey } from '@hcengineering/view'
-  import { buildModel, getObjectPresenter, LoadingProps } from '@hcengineering/view-resources'
+  import { BuildModelKey } from '@hcengineering/view'
+  import { buildModel, LoadingProps } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
 
@@ -42,15 +42,9 @@
     }
   }
 
-  let personPresenter: AttributeModel
-
   $: options = { ...baseOptions } as FindOptions<Project>
   $: selectedObjectIdsSet = new Set<Ref<Doc>>(selectedObjectIds.map((it) => it._id))
   $: objectRefs.length = projects?.length ?? 0
-
-  $: getObjectPresenter(client, contact.class.Person, { key: '' }).then((p) => {
-    personPresenter = p
-  })
 
   export const onObjectChecked = (docs: Doc[], value: boolean) => {
     dispatch('check', { docs, value })
