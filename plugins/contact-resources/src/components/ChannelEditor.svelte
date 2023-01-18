@@ -35,7 +35,7 @@
   export let placeholder: IntlString
   export let editable: boolean | undefined = undefined
   export let openable: boolean = false
-  export let options: PopupOptions
+  export let popupOptions: PopupOptions
 
   const dispatch = createEventDispatcher()
   let input: HTMLInputElement
@@ -79,9 +79,9 @@
   let dir: string = 'bottom'
   const vDir = (d: string): string => d.split('|')[0]
   const fitEditor = (): void => {
-    if (options) dir = vDir(options.direction)
+    if (popupOptions) dir = vDir(popupOptions.direction)
   }
-  $: if (options) dir = vDir(options.direction)
+  $: if (popupOptions) dir = vDir(popupOptions.direction)
   afterUpdate(() => {
     fitEditor()
   })

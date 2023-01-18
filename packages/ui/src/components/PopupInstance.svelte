@@ -137,7 +137,7 @@
     this={is}
     bind:this={componentInstance}
     {...props}
-    bind:options
+    bind:popupOptions={options}
     on:update={(ev) => {
       _update(ev.detail)
     }}
