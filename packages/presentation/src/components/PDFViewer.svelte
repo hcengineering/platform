@@ -28,7 +28,7 @@
   export let file: string
   export let name: string
   export let contentType: string | undefined
-  export let options: PopupOptions
+  export let popupOptions: PopupOptions
   export let value: Attachment
 
   const dispatch = createEventDispatcher()
@@ -47,7 +47,7 @@
 
 <Panel
   isHeader={false}
-  isAside={options && options.fullSize}
+  isAside={popupOptions && popupOptions.fullSize}
   isFullSize
   on:fullsize
   on:close={() => {

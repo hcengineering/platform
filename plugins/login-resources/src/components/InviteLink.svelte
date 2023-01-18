@@ -15,17 +15,18 @@
 <script lang="ts">
   import { Timestamp } from '@hcengineering/core'
   import { copyTextToClipboard } from '@hcengineering/presentation'
-  import { Button, getCurrentLocation, Label, locationToUrl, ticker } from '@hcengineering/ui'
+  import { Button, EditBox, getCurrentLocation, Label, Loading, locationToUrl, ticker } from '@hcengineering/ui'
   import { getInviteLink } from '../utils'
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, onMount } from 'svelte'
   import login from '../plugin'
   import InviteWorkspace from './icons/InviteWorkspace.svelte'
   import { loginId } from '@hcengineering/login'
 
   const dispatch = createEventDispatcher()
 
-  async function getLink (): Promise<string> {
-    const inviteId = await getInviteLink()
+  async function getLink (expHours: number): Promise<void> {
+    loading = true
+    const inviteId = await getInviteLink(expHours)
     const loc = getCurrentLocation()
     loc.path[0] = loginId
     loc.path[1] = 'join'
@@ -35,8 +36,9 @@
     }
     loc.fragment = undefined
 
-    const link = locationToUrl(loc)
-    return document.location.origin + link
+    const url = locationToUrl(loc)
+    link = document.location.origin + url
+    loading = false
   }
 
   let copiedTime: Timestamp | undefined
@@ -48,11 +50,29 @@
       }
     }
   }
-  function copy (link: string): void {
+  function copy (): void {
+    if (link === undefined) return
     copyTextToClipboard(link)
     copied = true
     copiedTime = Date.now()
   }
+
+  let expHours = 1
+
+  function _onchange (ev: Event) {
+    const value = (ev.target as HTMLInputElement).valueAsNumber
+    if (Number.isFinite(value)) {
+      expHours = value
+      getLink(expHours)
+    }
+  }
+
+  onMount(() => {
+    getLink(expHours)
+  })
+
+  let link: string | undefined
+  let loading = false
 </script>
 
 <div class="antiPopup popup">
@@ -61,18 +81,21 @@
     <InviteWorkspace size="large" />
   </div>
   <div class="mt-2">
-    <Label label={login.string.InviteNote} />
+    <EditBox
+      label={login.string.LinkValidHours}
+      value={expHours}
+      format={'number'}
+      on:keypress={() => (link = undefined)}
+      on:change={_onchange}
+    />
   </div>
-  {#await getLink() then link}
-    <div class="over-underline link" on:click={() => copy(link)}>{link}</div>
+  {#if loading}
+    <Loading />
+  {:else if link !== undefined}
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <div class="over-underline link" on:click={copy}>{link}</div>
     <div class="buttons flex">
-      <Button
-        label={copied ? login.string.Copied : login.string.Copy}
-        size={'medium'}
-        on:click={() => {
-          copy(link)
-        }}
-      />
+      <Button label={copied ? login.string.Copied : login.string.Copy} size={'medium'} on:click={copy} />
       <Button
         label={login.string.Close}
         size={'medium'}
@@ -82,7 +105,18 @@
         }}
       />
     </div>
-  {/await}
+  {:else}
+    <div class="buttons flex">
+      <Button
+        label={login.string.GetLink}
+        size={'medium'}
+        kind={'primary'}
+        on:click={() => {
+          getLink(expHours)
+        }}
+      />
+    </div>
+  {/if}
 </div>
 
 <style lang="scss">

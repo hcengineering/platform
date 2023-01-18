@@ -24,10 +24,11 @@
     "Copied": "Copied",
     "Close": "Close",
     "InviteDescription": "Share this link to invite other users",
-    "InviteNote": "Link is valid for 1 hour",
     "WantAnotherWorkspace": "Want to create another workspace?",
     "ChangeAccount": "Change account",
     "NotSeeingWorkspace": "Not seeing your workspace?",
-    "WorksaceNameRule": "The workspace name can contains lowercase letters, numbers, and symbols !@#%&^-"
+    "WorkspaceNameRule": "The workspace name can contains lowercase letters, numbers, and symbols !@#%&^-",
+    "LinkValidHours": "Link valid (hours):",
+    "GetLink": "Get invite link"
   }
 }

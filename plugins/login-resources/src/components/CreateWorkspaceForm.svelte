@@ -34,7 +34,7 @@
       name: 'workspace',
       i18n: login.string.Workspace,
       rule: /^[0-9a-z#%&^\-!)(]{3,63}$/,
-      ruleDescr: login.string.WorksaceNameRule
+      ruleDescr: login.string.WorkspaceNameRule
     }
   ]
 
