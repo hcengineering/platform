@@ -77,7 +77,6 @@
     }
     _teams = t
   })
-  $: console.log('#RESULT 123', _result, _teams)
 
   let issueStatuses: Map<Ref<Team>, WithLookup<IssueStatus>[]>
 
