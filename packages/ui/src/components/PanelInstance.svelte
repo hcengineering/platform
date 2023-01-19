@@ -136,7 +136,7 @@
           _class={props._class}
           rightSection={props.rightSection}
           position={props.element}
-          bind:options
+          bind:popupOptions={options}
           on:close={_close}
           on:update={_update}
         />

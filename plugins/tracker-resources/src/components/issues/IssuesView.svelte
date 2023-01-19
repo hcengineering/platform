@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { DocumentQuery, Ref, SortingOrder, Space, WithLookup } from '@hcengineering/core'
+  import { DocumentQuery, Ref, SortingOrder, Space, toIdMap, WithLookup } from '@hcengineering/core'
   import { IntlString, translate } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Issue, IssueStatus, Team } from '@hcengineering/tracker'
@@ -11,10 +11,10 @@
   import IssuesContent from './IssuesContent.svelte'
   import IssuesHeader from './IssuesHeader.svelte'
 
+  export let space: Ref<Space> | undefined = undefined
   export let query: DocumentQuery<Issue> = {}
   export let title: IntlString | undefined = undefined
   export let label: string = ''
-  export let space: Ref<Space> | undefined
 
   export let panelWidth: number = 0
 
@@ -70,12 +70,7 @@
   let _result: any
   $: teamQuery.query(tracker.class.Team, {}, (result) => {
     _result = JSON.stringify(result, undefined, 2)
-    console.log('#RESULT 124', _result)
-    const t = new Map<Ref<Team>, Team>()
-    for (const r of result) {
-      t.set(r._id, r)
-    }
-    _teams = t
+    _teams = toIdMap(result)
   })
 
   let issueStatuses: Map<Ref<Team>, WithLookup<IssueStatus>[]>
@@ -100,7 +95,7 @@
   $: viewOptions = getViewOptions(viewlet)
 </script>
 
-<IssuesHeader {viewlets} {label} bind:viewlet bind:search showLabelSelector={$$slots.label_selector}>
+<IssuesHeader {viewlets} {label} {space} bind:viewlet bind:search showLabelSelector={$$slots.label_selector}>
   <svelte:fragment slot="label_selector">
     <slot name="label_selector" />
   </svelte:fragment>

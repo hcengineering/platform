@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Class, Doc, Ref } from '@hcengineering/core'
+  import { Class, Doc, IdMap, Ref, toIdMap } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { TagElement, TagReference } from '@hcengineering/tags'
   import tags from '../plugin'
@@ -24,11 +24,11 @@
   export let object: Doc
   export let _class: Ref<Class<Doc>>
 
-  let elements: Map<Ref<TagElement>, TagElement> = new Map()
+  let elements: IdMap<TagElement> = new Map()
   const elementQuery = createQuery()
 
   $: elementQuery.query(tags.class.TagElement, { _id: { $in: items.map((it) => it.tag) } }, (result) => {
-    elements = new Map(result.map((it) => [it._id, it]))
+    elements = toIdMap(result)
   })
 
   let items: TagReference[] = []

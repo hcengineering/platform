@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { DocumentQuery, WithLookup } from '@hcengineering/core'
+  import { DocumentQuery, WithLookup, Ref, Space } from '@hcengineering/core'
   import { IntlString, translate } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { IssueTemplate } from '@hcengineering/tracker'
@@ -12,6 +12,7 @@
   import CreateIssueTemplate from './CreateIssueTemplate.svelte'
   import IssueTemplatesContent from './IssueTemplatesContent.svelte'
 
+  export let space: Ref<Space> | undefined = undefined
   export let query: DocumentQuery<IssueTemplate> = {}
   export let title: IntlString | undefined = undefined
   export let label: string = ''
@@ -72,7 +73,7 @@
   $: viewOptions = getViewOptions(viewlet)
 </script>
 
-<IssuesHeader {viewlets} {label} bind:viewlet bind:search showLabelSelector={$$slots.label_selector}>
+<IssuesHeader {space} {viewlets} {label} bind:viewlet bind:search showLabelSelector={$$slots.label_selector}>
   <svelte:fragment slot="label_selector">
     <slot name="label_selector" />
   </svelte:fragment>
@@ -106,8 +107,8 @@
 <slot name="afterHeader" />
 <FilterBar _class={tracker.class.IssueTemplate} query={searchQuery} on:change={(e) => (resultQuery = e.detail)} />
 <div class="flex w-full h-full clear-mins">
-  {#if viewlet}
-    <IssueTemplatesContent {viewlet} query={resultQuery} />
+  {#if viewlet && viewOptions}
+    <IssueTemplatesContent {viewOptions} {viewlet} query={resultQuery} />
   {/if}
   {#if $$slots.aside !== undefined && asideShown}
     <div class="popupPanel-body__aside flex" class:float={asideFloat} class:shown={asideShown}>

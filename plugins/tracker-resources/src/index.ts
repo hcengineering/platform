@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Class, Client, DocumentQuery, Ref, RelatedDocument, TxOperations } from '@hcengineering/core'
+import { Class, Client, DocumentQuery, Ref, RelatedDocument, toIdMap, TxOperations } from '@hcengineering/core'
 import { Resources, translate } from '@hcengineering/platform'
 import { getClient, MessageBox, ObjectSearchResult } from '@hcengineering/presentation'
 import { Issue, Sprint, Team } from '@hcengineering/tracker'
@@ -104,6 +104,8 @@ import IssueStatistics from './components/sprints/IssueStatistics.svelte'
 import StatusRefPresenter from './components/issues/StatusRefPresenter.svelte'
 import SprintRefPresenter from './components/sprints/SprintRefPresenter.svelte'
 
+export { default as SubIssueList } from './components/issues/edit/SubIssueList.svelte'
+
 export async function queryIssue<D extends Issue> (
   _class: Ref<Class<D>>,
   client: Client,
@@ -123,13 +125,11 @@ export async function queryIssue<D extends Issue> (
     }
   }
 
-  const named = new Map(
-    (
-      await client.findAll<Issue>(_class, q, {
-        limit: 200,
-        lookup: { space: tracker.class.Team }
-      })
-    ).map((e) => [e._id, e])
+  const named = toIdMap(
+    await client.findAll<Issue>(_class, q, {
+      limit: 200,
+      lookup: { space: tracker.class.Team }
+    })
   )
   for (const currentTeam of teams) {
     const nids: number[] = []

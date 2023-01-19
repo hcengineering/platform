@@ -46,7 +46,6 @@
   .yesno-container {
     max-width: fit-content;
     user-select: none;
-    cursor: pointer;
 
     fill: #77818e;
     &.yes {

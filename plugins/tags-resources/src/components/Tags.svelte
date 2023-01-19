@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Class, Doc, Ref } from '@hcengineering/core'
+  import { Class, Doc, IdMap, Ref, toIdMap } from '@hcengineering/core'
   import { createQuery, getClient, KeyedAttribute } from '@hcengineering/presentation'
   import { TagElement, TagReference } from '@hcengineering/tags'
   import tags from '../plugin'
@@ -53,10 +53,10 @@
     await client.update(tag, { weight })
   }
 
-  let elements: Map<Ref<TagElement>, TagElement> = new Map()
+  let elements: IdMap<TagElement> = new Map()
   const elementQuery = createQuery()
   $: elementQuery.query(tags.class.TagElement, {}, (result) => {
-    elements = new Map(result.map((it) => [it._id, it]))
+    elements = toIdMap(result)
   })
 </script>
 
