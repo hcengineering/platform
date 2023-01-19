@@ -23,6 +23,7 @@
   import view from '../../plugin'
   import FilterSection from './FilterSection.svelte'
   import FilterTypePopup from './FilterTypePopup.svelte'
+  import FilterSave from './FilterSave.svelte'
 
   export let _class: Ref<Class<Doc>>
   export let query: DocumentQuery<Doc>
@@ -32,7 +33,6 @@
   const dispatch = createEventDispatcher()
 
   let maxIndex = 1
-  // const allFilters: boolean = true
 
   function onChange (e: Filter | undefined) {
     if (e === undefined) return
@@ -76,6 +76,10 @@
     } else {
       localStorage.removeItem(key)
     }
+  }
+
+  async function saveFilteredView () {
+    showPopup(FilterSave, {})
   }
 
   let loading = false
@@ -192,26 +196,13 @@
       </div>
     </div>
 
-    <!-- SAVE BUTTON -->
-    <!-- <div class="buttons-group small-gap ml-4">
-      {#if filters.length > 1}
-        <div class="flex-baseline">
-          <span class="overflow-label">
-            <Label label={view.string.IncludeItemsThatMatch} />
-          </span>
-          <button
-            class="filter-button"
-            on:click={() => {
-              allFilters = !allFilters
-            }}
-          >
-            <Label label={allFilters ? view.string.AllFilters : view.string.AnyFilter} />
-          </button>
-        </div>
-        <div class="buttons-divider" />
-      {/if}
-      <Button icon={view.icon.Views} label={view.string.Save} size={'small'} width={'fit-content'} />
-    </div> -->
+    <Button
+      icon={view.icon.Views}
+      label={view.string.Save}
+      size={'small'}
+      width={'fit-content'}
+      on:click={() => saveFilteredView()}
+    />
   </div>
 {/if}
 

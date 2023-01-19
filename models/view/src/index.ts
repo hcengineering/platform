@@ -19,7 +19,7 @@ import { Builder, Mixin, Model } from '@hcengineering/model'
 import core, { TClass, TDoc } from '@hcengineering/model-core'
 import preference, { TPreference } from '@hcengineering/model-preference'
 import type { Asset, IntlString, Resource, Status } from '@hcengineering/platform'
-import type { AnyComponent } from '@hcengineering/ui'
+import type { AnyComponent, Location } from '@hcengineering/ui'
 import type {
   Action,
   ActionCategory,
@@ -57,9 +57,11 @@ import type {
   Viewlet,
   ViewletDescriptor,
   ViewletPreference,
-  ViewOptionsModel
+  ViewOptionsModel,
+  FilteredView
 } from '@hcengineering/view'
 import view from './plugin'
+import { DOMAIN_PREFERENCE } from '@hcengineering/preference'
 
 export { viewOperation } from './migration'
 export { ViewAction, Viewlet }
@@ -89,6 +91,13 @@ export function classPresenter (
       popup
     })
   }
+}
+
+@Model(view.class.FilteredView, core.class.Doc, DOMAIN_PREFERENCE)
+export class TFilteredView extends TPreference implements FilteredView {
+  name!: string
+  location!: Location
+  filters!: string
 }
 
 @Model(view.class.FilterMode, core.class.Doc, DOMAIN_MODEL)
@@ -318,7 +327,8 @@ export function createModel (builder: Builder): void {
     TPreviewPresenter,
     TLinkPresenter,
     TArrayEditor,
-    TInlineAttributEditor
+    TInlineAttributEditor,
+    TFilteredView
   )
 
   classPresenter(

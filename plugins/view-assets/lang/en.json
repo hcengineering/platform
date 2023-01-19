@@ -55,6 +55,10 @@
     "NoGrouping": "No grouping",
     "Grouping": "Grouping",
     "Ordering": "Ordering",
-    "Manual": "Manual"
+    "Manual": "Manual",
+
+    "FilteredViews": "Filtered views",
+    "NewFilteredView": "New filtered view",
+    "FilteredViewName": "Filtered view name"
   }
 }
