@@ -2,7 +2,7 @@
   import { Card, getClient } from '@hcengineering/presentation'
   import view from '../../plugin'
   import { EditBox, getCurrentLocation } from '@hcengineering/ui'
-  import core from '@hcengineering/core'
+  import preference from '@hcengineering/preference'
   import { createEventDispatcher } from 'svelte'
   import { filterStore } from '../../filter'
 
@@ -23,7 +23,7 @@
   }
 
   async function saveFilter () {
-    await client.createDoc(view.class.FilteredView, core.space.Space, getFilteredViewData())
+    await client.createDoc(view.class.FilteredView, preference.space.Preference, getFilteredViewData())
   }
 
   const dispatch = createEventDispatcher()

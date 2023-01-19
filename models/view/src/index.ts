@@ -95,9 +95,9 @@ export function classPresenter (
 
 @Model(view.class.FilteredView, core.class.Doc, DOMAIN_PREFERENCE)
 export class TFilteredView extends TPreference implements FilteredView {
-  name!: IntlString
+  name!: string
   location!: Location
-  filters!: IntlString
+  filters!: string
 }
 
 @Model(view.class.FilterMode, core.class.Doc, DOMAIN_MODEL)
