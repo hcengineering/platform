@@ -128,6 +128,7 @@
     is={viewlet.$lookup.descriptor.component}
     props={{
       _class,
+      space,
       options: viewlet.options,
       config: preference?.config ?? viewlet.config,
       viewlet,
