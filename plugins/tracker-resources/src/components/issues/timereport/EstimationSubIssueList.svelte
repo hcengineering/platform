@@ -15,7 +15,7 @@
 <script lang="ts">
   import contact from '@hcengineering/contact'
   import { Ref } from '@hcengineering/core'
-  import { UserBox } from '@hcengineering/presentation'
+  import { AssigneeBox } from '@hcengineering/presentation'
   import { Issue, Team } from '@hcengineering/tracker'
   import { deviceOptionsStore as deviceInfo, getEventPositionElement, ListView, showPopup } from '@hcengineering/ui'
   import { ContextMenu, FixedColumn, ListSelectionProvider } from '@hcengineering/view-resources'
@@ -60,21 +60,19 @@
         </span>
       </div>
 
-      <div class="flex-row-center clear-mins gap-2 self-end" class:p-text={twoRows}>
-        <FixedColumn key={'estimation_issue_assignee'} justify={'right'}>
-          <UserBox
-            width={'100%'}
-            label={tracker.string.Assignee}
-            _class={contact.class.Employee}
-            value={issue.assignee}
-            readonly
-            showNavigate={false}
-          />
-        </FixedColumn>
-        <FixedColumn key={'estimation'} justify={'left'}>
-          <EstimationEditor value={issue} kind={'list'} />
-        </FixedColumn>
-      </div>
+      <FixedColumn key={'estimation_issue_assignee'} justify={'right'}>
+        <AssigneeBox
+          width={'100%'}
+          label={tracker.string.Assignee}
+          _class={contact.class.Employee}
+          value={issue.assignee}
+          readonly
+          showNavigate={false}
+        />
+      </FixedColumn>
+      <FixedColumn key={'estimation'} justify={'left'}>
+        <EstimationEditor value={issue} kind={'list'} />
+      </FixedColumn>
     </div>
   </svelte:fragment>
 </ListView>

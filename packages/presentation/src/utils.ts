@@ -34,12 +34,13 @@ import core, {
   TxResult
 } from '@hcengineering/core'
 import login from '@hcengineering/login'
-import { getMetadata } from '@hcengineering/platform'
+import { getMetadata, IntlString } from '@hcengineering/platform'
 import { LiveQuery as LQ } from '@hcengineering/query'
 import { onDestroy } from 'svelte'
 import { deepEqual } from 'fast-equals'
 import { IconSize, DropdownIntlItem } from '@hcengineering/ui'
 import contact, { AvatarType, AvatarProvider } from '@hcengineering/contact'
+import presentation from '..'
 
 let liveQuery: LQ
 let client: TxOperations
@@ -271,4 +272,44 @@ export function getAvatarProviderId (avatar?: string | null): Ref<AvatarProvider
     case AvatarType.COLOR:
       return contact.avatarProvider.Color
   }
+}
+
+/**
+ * @public
+ */
+export type AssigneeCategory =
+  | 'CurrentUser'
+  | 'Assigned'
+  | 'PreviouslyAssigned'
+  | 'ProjectLead'
+  | 'ProjectMembers'
+  | 'Other'
+
+const assigneeCategoryTitleMap: Record<AssigneeCategory, IntlString> = Object.freeze({
+  CurrentUser: presentation.string.CategoryCurrentUser,
+  Assigned: presentation.string.Assigned,
+  PreviouslyAssigned: presentation.string.CategoryPreviousAssigned,
+  ProjectLead: presentation.string.CategoryProjectLead,
+  ProjectMembers: presentation.string.CategoryProjectMembers,
+  Other: presentation.string.CategoryOther
+})
+
+/**
+ * @public
+ */
+export const assigneeCategoryOrder: AssigneeCategory[] = [
+  'CurrentUser',
+  'Assigned',
+  'PreviouslyAssigned',
+  'ProjectLead',
+  'ProjectMembers',
+  'Other'
+]
+
+/**
+ * @public
+ */
+export function getCategorytitle (category: AssigneeCategory | undefined): IntlString {
+  const cat: AssigneeCategory = category ?? 'Other'
+  return assigneeCategoryTitleMap[cat]
 }

@@ -57,6 +57,12 @@ export default plugin(presentationId, {
     Edit: '' as IntlString,
     SelectAvatar: '' as IntlString,
     GravatarsManaged: '' as IntlString,
+    CategoryCurrentUser: '' as IntlString,
+    Assigned: '' as IntlString,
+    CategoryPreviousAssigned: '' as IntlString,
+    CategoryProjectLead: '' as IntlString,
+    CategoryProjectMembers: '' as IntlString,
+    CategoryOther: '' as IntlString,
     InltPropsValue: '' as IntlString
   },
   metadata: {
