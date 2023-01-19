@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Card, getClient } from '@hcengineering/presentation'
-  import view from '../../../../view/'
+  import view from '../../plugin'
   import { EditBox, getCurrentLocation } from '@hcengineering/ui'
   import core from '@hcengineering/core'
   import { createEventDispatcher } from 'svelte'

@@ -33,7 +33,6 @@
   const dispatch = createEventDispatcher()
 
   let maxIndex = 1
-  // const allFilters: boolean = true
 
   function onChange (e: Filter | undefined) {
     if (e === undefined) return
@@ -197,25 +196,6 @@
       </div>
     </div>
 
-    <!-- SAVE BUTTON -->
-    <!-- <div class="buttons-group small-gap ml-4">
-      {#if filters.length > 1}
-        <div class="flex-baseline">
-          <span class="overflow-label">
-            <Label label={view.string.IncludeItemsThatMatch} />
-          </span>
-          <button
-            class="filter-button"
-            on:click={() => {
-              allFilters = !allFilters
-            }}
-          >
-            <Label label={allFilters ? view.string.AllFilters : view.string.AnyFilter} />
-          </button>
-        </div>
-        <div class="buttons-divider" />
-      {/if} -->
-    <!--</div>-->
     <Button
       icon={view.icon.Views}
       label={view.string.Save}

@@ -31,9 +31,8 @@
   import workbench from '../plugin'
   import TreeNode from './navigator/TreeNode.svelte'
   import TreeItem from './navigator/TreeItem.svelte'
-  import view from '../../../view'
+  import view, { FilteredView } from '@hcengineering/view'
   import { filterStore } from '@hcengineering/view-resources'
-  import { FilteredView } from '@hcengineering/view'
 
   export let model: NavigatorModel | undefined
   export let currentSpace: Ref<Space> | undefined
@@ -143,7 +142,7 @@
   }
   const dispatch = createEventDispatcher()
   const filteredViewsQuery = createQuery()
-  let filteredViews
+  let filteredViews: FilteredView[] | undefined
   $: filteredViewsQuery.query(view.class.FilteredView, { attachedTo: currentApplication?.alias }, (result) => {
     filteredViews = result
   })
@@ -173,8 +172,8 @@
           <TreeItem
             title={fV.name}
             on:click={() => {
-              $filterStore = JSON.parse(fV.filters)
               navigate(fV.location)
+              $filterStore = JSON.parse(fV.filters)
             }}
             actions={() => removeAction(fV)}
           />

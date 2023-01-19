@@ -61,7 +61,7 @@ import type {
   FilteredView
 } from '@hcengineering/view'
 import view from './plugin'
-import { DOMAIN_PREFERENCE } from '../../../plugins/preference'
+import { DOMAIN_PREFERENCE } from '@hcengineering/preference'
 
 export { viewOperation } from './migration'
 export { ViewAction, Viewlet }
