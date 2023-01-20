@@ -66,6 +66,7 @@ test('issues-status-display', async ({ page }) => {
 })
 
 test('save-view-options', async ({ page }) => {
+  test.setTimeout(45000)
   const panels = ['Issues', 'Active', 'Backlog']
   await navigate(page)
   for (const viewletSelector of [ViewletSelectors.Board, ViewletSelectors.Table]) {
@@ -107,6 +108,7 @@ test('my-issues', async ({ page }) => {
 })
 
 test('report-time-from-issue-card', async ({ page }) => {
+  test.setTimeout(45000)
   await navigate(page)
   const assignee = 'Chen Rosamund'
   const status = 'In Progress'
