@@ -87,7 +87,7 @@
         acc[val] = sortOrder
         return acc
       }, {})
-      : { [sortKey]: sortOrder }
+      : { ...(options?.sort ?? {}), [sortKey]: sortOrder }
     const update = q.query(
       _class,
       query,

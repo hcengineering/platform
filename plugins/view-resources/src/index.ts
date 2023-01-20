@@ -74,6 +74,8 @@ import {
   nestedDontMatchResult
 } from './filter'
 
+import { IndexedDocumentPreview } from '@hcengineering/presentation'
+
 function PositionElementAlignment (e?: Event): PopupAlignment | undefined {
   return getEventPopupPositionElement(e)
 }
@@ -168,7 +170,8 @@ export default async (): Promise<Resources> => ({
     ValueSelector,
     HTMLEditor,
     ListView,
-    GrowPresenter
+    GrowPresenter,
+    IndexedDocumentPreview
   },
   popup: {
     PositionElementAlignment

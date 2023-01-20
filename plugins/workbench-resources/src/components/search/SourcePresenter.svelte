@@ -15,12 +15,15 @@
 <script lang="ts">
   import { Doc, WithLookup } from '@hcengineering/core'
   import { IndexedDocumentPreview } from '@hcengineering/presentation'
-  import { tooltip } from '@hcengineering/ui'
+  import { showPopup } from '@hcengineering/ui'
 
   export let value: WithLookup<Doc>
   export let search: string
 </script>
 
-<span use:tooltip={{ component: IndexedDocumentPreview, props: { objectId: value._id, search } }}
-  >{value.$source?.$score}</span
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<span
+  on:click={() => {
+    showPopup(IndexedDocumentPreview, { objectId: value._id, search })
+  }}>{value.$source?.$score}</span
 >

@@ -94,10 +94,6 @@ export function isClassIndexable (hierarchy: Hierarchy, c: Ref<Class<Doc>>): boo
   if (indexed !== undefined) {
     return indexed as boolean
   }
-  if (hierarchy.isMixin(c)) {
-    // No need for mixins.
-    return false
-  }
   const domain = hierarchy.findDomain(c)
   if (domain === undefined) {
     hierarchy.setClassifierProp(c, 'class_indexed', false)

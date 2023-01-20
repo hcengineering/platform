@@ -51,14 +51,6 @@ if (minioSecretKey === undefined) {
   process.exit(1)
 }
 
-const openAIToken = process.env.OPENAI_TOKEN
-if (openAIToken === undefined || openAIToken === '') {
-  console.info('OpenAI: Not enabled, please specify OPENAI_TOKEN.')
-  // process.exit(1)
-} else {
-  console.info('OpenAI: Enabled.')
-}
-
 const minioConf = {
   endPoint: minioEndpoint,
   accessKey: minioAccessKey,
@@ -77,33 +69,11 @@ if (rekoniUrl === undefined) {
   process.exit(1)
 }
 
-const retranslateUrl = process.env.RETRANSLATE_URL
-if (rekoniUrl === undefined) {
-  console.log('Please provide RETRANSLATE_URL url for translations')
-}
-
-const retranslateToken = process.env.RETRANSLATE_TOKEN
-if (retranslateToken === undefined) {
-  console.log('Please provide retranslateToken url for translations token')
-}
-
 setMetadata(serverToken.metadata.Secret, serverSecret)
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 console.log(`starting server on ${serverPort}`)
-const shutdown = start(
-  url,
-  elasticUrl,
-  minioConf,
-  {
-    rekoniUrl,
-    openAIToken,
-    retranslateUrl,
-    retranslateToken
-  },
-  serverPort,
-  ''
-)
+const shutdown = start(url, elasticUrl, minioConf, rekoniUrl, serverPort, '')
 
 const close = (): void => {
   console.trace('Exiting from server')

@@ -16,3 +16,4 @@
 export * from './base'
 export * from './modified'
 export * from './private'
+export * from './configuration'

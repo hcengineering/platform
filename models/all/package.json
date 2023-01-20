@@ -77,6 +77,8 @@
     "@hcengineering/model-document": "^0.6.0",
     "@hcengineering/model-bitrix": "^0.6.0",
     "@hcengineering/model-request": "^0.6.0",
-    "@hcengineering/model-server-request": "^0.6.0"
+    "@hcengineering/model-server-request": "^0.6.0",
+    "@hcengineering/model-server-openai": "^0.6.0",
+    "@hcengineering/model-server-translate": "^0.6.0"
   }
 }

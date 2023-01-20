@@ -36,6 +36,7 @@ import core, {
 } from '@hcengineering/core'
 import {
   ContentTextAdapter,
+  createNullStorageFactory,
   createServerStorage,
   DbAdapter,
   DbConfiguration,
@@ -145,6 +146,7 @@ describe('mongo operations', () => {
       fulltextAdapter: {
         factory: createNullFullTextAdapter,
         url: '',
+        stages: () => [],
         metrics: new MeasureMetricsContext('', {})
       },
       contentAdapter: {
@@ -152,7 +154,8 @@ describe('mongo operations', () => {
         url: '',
         metrics: new MeasureMetricsContext('', {})
       },
-      workspace: getWorkspaceId(dbId, '')
+      workspace: getWorkspaceId(dbId, ''),
+      storageFactory: () => createNullStorageFactory()
     }
     const serverStorage = await createServerStorage(conf)
     const ctx = new MeasureMetricsContext('client', {})
@@ -194,6 +197,7 @@ describe('mongo operations', () => {
   })
 
   it('check find by criteria', async () => {
+    jest.setTimeout(20000)
     for (let i = 0; i < 50; i++) {
       await operations.createDoc(taskPlugin.class.Task, '' as Ref<Space>, {
         name: `my-task-${i}`,

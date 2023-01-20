@@ -111,6 +111,8 @@ export interface TriggerControl {
   // Later can be replaced with generic one with bucket encapsulated inside.
   storageFx: (f: (adapter: MinioService, workspaceId: WorkspaceId) => Promise<void>) => void
   fx: (f: () => Promise<void>) => void
+
+  txFx: (f: (storage: Storage) => Promise<void>) => Promise<void>
 }
 
 /**
@@ -177,7 +179,8 @@ export interface FullTextAdapter {
   close: () => Promise<void>
   metrics: () => MeasureContext
 
-  initMapping: (field: string, dims: number) => Promise<void>
+  // If no field is provided, will return existing mapping of all dimms.
+  initMapping: (field?: { key: string, dims: number }) => Promise<Record<string, number>>
 
   load: (docs: Ref<Doc>[]) => Promise<IndexedDoc[]>
 }
@@ -186,7 +189,9 @@ export interface FullTextAdapter {
  * @public
  */
 export class DummyFullTextAdapter implements FullTextAdapter {
-  async initMapping (field: string, dims: number): Promise<void> {}
+  async initMapping (field?: { key: string, dims: number }): Promise<Record<string, number>> {
+    return {}
+  }
 
   async index (doc: IndexedDoc): Promise<TxResult> {
     return {}

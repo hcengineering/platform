@@ -115,7 +115,8 @@ export async function connect (handler: (tx: Tx) => void): Promise<ClientConnect
     fulltextAdapter: {
       factory: createNullFullTextAdapter,
       url: '',
-      metrics: new MeasureMetricsContext('', {})
+      metrics: new MeasureMetricsContext('', {}),
+      stages: () => []
     },
     contentAdapter: {
       url: '',

@@ -66,6 +66,7 @@ export class TCollaboratorDocument extends TAttachment implements CollaboratorDo
 @UX(document.string.Version)
 export class TDocumentVersion extends TAttachedDoc implements DocumentVersion {
   @Prop(TypeNumber(), document.string.Version)
+  @Index(IndexKind.FullText)
   @ReadOnly()
     version!: number
 

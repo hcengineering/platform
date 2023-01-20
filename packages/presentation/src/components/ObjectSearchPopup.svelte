@@ -20,13 +20,13 @@
   import ui, {
     Button,
     createFocusManager,
+    deviceOptionsStore,
     EditBox,
     FocusHandler,
     IconSearch,
     Label,
     ListView,
-    resizeObserver,
-    deviceOptionsStore
+    resizeObserver
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation from '../plugin'

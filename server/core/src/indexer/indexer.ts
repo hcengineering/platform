@@ -22,6 +22,7 @@ import core, {
   DocumentUpdate,
   DOMAIN_DOC_INDEX_STATE,
   Hierarchy,
+  MeasureContext,
   Ref,
   ServerStorage,
   setObjectValue,
@@ -29,14 +30,27 @@ import core, {
   _getOperator
 } from '@hcengineering/core'
 import { DbAdapter } from '../adapter'
-import type { FullTextAdapter, IndexedDoc } from '../types'
-import { fieldStateId, FullTextPipeline, FullTextPipelineStage } from './types'
-import { createStateDoc, docKey, extractDocKey, isClassIndexable } from './utils'
+import type { IndexedDoc } from '../types'
+import { RateLimitter } from './limitter'
+import { FullTextPipeline, FullTextPipelineStage } from './types'
+import { createStateDoc, isClassIndexable } from './utils'
 
 export * from './content'
 export * from './field'
 export * from './types'
 export * from './utils'
+
+// Global Memory management configuration
+
+/**
+ * @public
+ */
+export const globalIndexer = {
+  allowParallel: 2,
+  processingSize: 1000
+}
+
+const rateLimitter = new RateLimitter(() => ({ rate: globalIndexer.allowParallel }))
 
 /**
  * @public
@@ -46,8 +60,6 @@ export class FullTextIndexPipeline implements FullTextPipeline {
   toIndex: Map<Ref<DocIndexState>, DocIndexState> = new Map()
   toIndexParents: Map<Ref<DocIndexState>, DocIndexState> = new Map()
   stageChanged = 0
-
-  pendingElastic: Map<Ref<DocIndexState>, IndexedDoc> = new Map()
 
   cancelling: boolean = false
 
@@ -63,9 +75,9 @@ export class FullTextIndexPipeline implements FullTextPipeline {
   constructor (
     private readonly storage: DbAdapter,
     private readonly stages: FullTextPipelineStage[],
-    private readonly adapter: FullTextAdapter,
     readonly hierarchy: Hierarchy,
-    readonly workspace: WorkspaceId
+    readonly workspace: WorkspaceId,
+    readonly metrics: MeasureContext
   ) {
     this.readyStages = stages.map((it) => it.stageId)
     this.readyStages.sort()
@@ -101,35 +113,8 @@ export class FullTextIndexPipeline implements FullTextPipeline {
   async flush (force = false): Promise<void> {
     if (this.pending.size > 0 && (this.pending.size >= 50 || force)) {
       // Push all pending changes to storage.
-      // We need convert elastic update to a proper document.
-      const toUpdate: IndexedDoc[] = []
-      for (const o of this.pendingElastic.values()) {
-        const doc: IndexedDoc = {
-          _class: o._class,
-          id: o.id,
-          space: o.space,
-          modifiedBy: o.modifiedBy,
-          modifiedOn: o.modifiedOn
-        }
-        updateDoc2Elastic(o, doc)
-        toUpdate.push(doc)
-      }
-      const promises: Promise<void>[] = []
-      if (toUpdate.length > 0) {
-        promises.push(
-          this.adapter.updateMany(toUpdate).then(() => {
-            this.pendingElastic.clear()
-          })
-        )
-      }
-
-      // Push all pending changes to storage.
-      promises.push(
-        this.storage.update(DOMAIN_DOC_INDEX_STATE, this.pending).then(() => {
-          this.pending.clear()
-        })
-      )
-      await Promise.all(promises)
+      await this.storage.update(DOMAIN_DOC_INDEX_STATE, this.pending)
+      this.pending.clear()
     }
   }
 
@@ -156,7 +141,11 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
     if (!create) {
       const ops = new Map<Ref<DocIndexState>, DocumentUpdate<DocIndexState>>()
-      ops.set(docId, { ['stages.' + fieldStateId]: false, removed })
+      const upd: DocumentUpdate<DocIndexState> = { removed }
+      for (const st of this.stages) {
+        ;(upd as any)['stages.' + st.stageId] = false
+      }
+      ops.set(docId, upd)
       await this.storage.update(DOMAIN_DOC_INDEX_STATE, ops)
     }
     this.triggerIndexing()
@@ -167,22 +156,20 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     docId: Ref<DocIndexState>,
     mark: boolean,
     update: DocumentUpdate<DocIndexState>,
-    elasticUpdate: Partial<IndexedDoc>,
     flush?: boolean
   ): Promise<void> {
     let udoc = this.toIndex.get(docId)
     if (udoc !== undefined) {
-      await this.stageUpdate(udoc, update, elasticUpdate)
+      await this.stageUpdate(udoc, update)
 
       udoc = this.updateDoc(udoc, update, mark)
       this.toIndex.set(docId, udoc)
     }
 
-    // For Elastic we also need to check parent
     if (udoc === undefined) {
       udoc = this.toIndexParents.get(docId)
       if (udoc !== undefined) {
-        await this.stageUpdate(udoc, update, elasticUpdate)
+        await this.stageUpdate(udoc, update)
         udoc = this.updateDoc(udoc, update, mark)
         this.toIndexParents.set(docId, udoc)
       }
@@ -199,9 +186,11 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       update.stages = { ...(udoc.stages ?? {}) }
       update.stages[stageId] = mark
 
-      for (const [k] of Object.entries(update.stages)) {
-        if (!this.currentStage.clearExcept.includes(k)) {
-          update.stages[k] = false
+      if (this.currentStage.clearExcept !== undefined) {
+        for (const [k] of Object.entries(update.stages)) {
+          if (k !== this.currentStage.stageId && !this.currentStage.clearExcept.includes(k)) {
+            update.stages[k] = false
+          }
         }
       }
 
@@ -210,13 +199,6 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
       this.stats[stageId] = (this.stats[stageId] ?? 0) + 1
       this.stageChanged++
-    }
-
-    // Collect elastic update
-    if (udoc !== undefined && Object.keys(elasticUpdate).length !== 0) {
-      const currentElastic = await this.getElastic(udoc)
-      currentElastic.modifiedOn = Date.now()
-      this.pendingElastic.set(docId, { ...currentElastic, ...elasticUpdate })
     }
 
     const current = this.pending.get(docId)
@@ -229,31 +211,24 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     await this.flush(flush ?? false)
   }
 
-  async getElastic (doc: DocIndexState): Promise<IndexedDoc> {
-    let current = this.pendingElastic.get(doc._id)
-    if (current === undefined) {
-      current = createElasticDoc(doc)
-      this.pendingElastic.set(doc._id, current)
-    }
-    return current
-  }
-
   triggerIndexing = (): void => {}
   waitTimeout: any
   stats: Record<string, number> = {}
 
-  private async stageUpdate (
-    udoc: DocIndexState,
-    update: DocumentUpdate<DocIndexState>,
-    elasticUpdate: Partial<IndexedDoc>
-  ): Promise<void> {
+  private async stageUpdate (udoc: DocIndexState, update: DocumentUpdate<DocIndexState>): Promise<void> {
     for (const u of this.currentStage?.updateFields ?? []) {
-      await u(udoc, update, elasticUpdate)
+      await u(udoc, update)
     }
   }
 
   async startIndexing (): Promise<void> {
     this.indexing = this.doIndexing()
+  }
+
+  async initializeStages (): Promise<void> {
+    for (const st of this.stages) {
+      await st.initialize(this.storage, this)
+    }
   }
 
   async doIndexing (): Promise<void> {
@@ -267,8 +242,11 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     }
     await this.initStates()
     while (!this.cancelling) {
+      await this.initializeStages()
       await this.processRemove()
-      await this.processIndex()
+
+      console.log('Indexing:', this.workspace)
+      await rateLimitter.exec(() => this.processIndex())
 
       if (this.toIndex.size === 0 || this.stageChanged === 0) {
         if (this.toIndex.size === 0) {
@@ -297,11 +275,16 @@ export class FullTextIndexPipeline implements FullTextPipeline {
   }
 
   private async processIndex (): Promise<void> {
+    let idx = 0
     for (const st of this.stages) {
+      idx++
       while (true) {
         try {
           if (this.cancelling) {
             return
+          }
+          if (!st.enabled) {
+            break
           }
           await this.flush(true)
           const toSkip = Array.from(this.skipped.entries())
@@ -316,7 +299,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
               removed: false
             },
             {
-              limit: st.limit,
+              limit: globalIndexer.processingSize,
               sort: {
                 modifiedOn: 1
               }
@@ -347,6 +330,16 @@ export class FullTextIndexPipeline implements FullTextPipeline {
             // Do Indexing
             this.currentStage = st
             await st.collect(toIndex, this)
+
+            // go with next stages if they accept it
+
+            for (const nst of this.stages.slice(idx)) {
+              const toIndex2 = this.matchStates(nst)
+              if (toIndex2.length > 0) {
+                this.currentStage = nst
+                await nst.collect(toIndex2, this)
+              }
+            }
           } else {
             break
           }
@@ -374,12 +367,13 @@ export class FullTextIndexPipeline implements FullTextPipeline {
           removed: true
         },
         {
-          limit: 1000,
           sort: {
             modifiedOn: 1
           },
-          lookup: {
-            attachedTo: core.class.DocIndexState
+          projection: {
+            _id: 1,
+            stages: 1,
+            objectClass: 1
           }
         }
       )
@@ -388,10 +382,9 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
       this.toIndexParents.clear()
 
-      const toRemoveIds = Array.from(this.toIndex.keys())
-
+      const toIndex = Array.from(this.toIndex.values())
+      const toRemoveIds = []
       for (const st of this.stages) {
-        const toIndex = Array.from(this.toIndex.values())
         if (toIndex.length > 0) {
           // Do Indexing
           this.currentStage = st
@@ -400,11 +393,17 @@ export class FullTextIndexPipeline implements FullTextPipeline {
           break
         }
       }
+      // If all stages are complete, remove document
+      const allStageIds = this.stages.map((it) => it.stageId)
+      for (const doc of toIndex) {
+        if (allStageIds.every((it) => doc.stages[it])) {
+          toRemoveIds.push(doc._id)
+        }
+      }
 
       await this.flush(true)
       if (toRemoveIds.length > 0) {
         await this.storage.clean(DOMAIN_DOC_INDEX_STATE, toRemoveIds)
-        await this.adapter.remove(toRemoveIds)
       } else {
         break
       }
@@ -414,12 +413,14 @@ export class FullTextIndexPipeline implements FullTextPipeline {
   private async initStates (): Promise<void> {
     const statistics = await this.storage.findAll(core.class.DocIndexState, {}, { projection: { stages: 1 } })
     this.stats = {}
+    const allStageIds = new Set(this.stages.map((it) => it.stageId))
+
     for (const st of this.stages) {
       this.stats[st.stageId] = 0
     }
     for (const st of statistics) {
       for (const [s, v] of Object.entries(st.stages ?? {})) {
-        if (v) {
+        if (v && allStageIds.has(s)) {
           this.stats[s] = (this.stats[s] ?? 0) + 1
         }
       }
@@ -428,9 +429,10 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
   private matchStates (st: FullTextPipelineStage): DocIndexState[] {
     const toIndex: DocIndexState[] = []
+    const require = [...st.require].filter((it) => this.stages.find((q) => q.stageId === it && q.enabled))
     for (const o of this.toIndex.values()) {
       // We need to contain all state values
-      if (st.require.every((it) => o.stages?.[it])) {
+      if (require.every((it) => o.stages?.[it])) {
         toIndex.push(o)
       }
     }
@@ -439,7 +441,6 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
   async checkIndexConsistency (dbStorage: ServerStorage): Promise<void> {
     this.hierarchy.domains()
-    // await this.rebuildElastic()
     const allClasses = this.hierarchy.getDescendants(core.class.Doc)
     for (const c of allClasses) {
       if (this.cancelling) {
@@ -459,7 +460,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       while (true) {
         const newDocs: DocIndexState[] = (
           await dbStorage.findAll<Doc>(
-            this.adapter.metrics(),
+            this.metrics,
             c,
             { _class: c, _id: { $nin: states } },
             { limit: 1000, projection: { _id: 1, attachedTo: 1, attachedToClass: 1 } as any }
@@ -490,75 +491,10 @@ export class FullTextIndexPipeline implements FullTextPipeline {
         console.log('Updated state for: ', c, newDocs.length)
       }
       const statesSet = new Set(states)
-      const docIds = (
-        await dbStorage.findAll<Doc>(this.adapter.metrics(), c, { _class: c }, { projection: { _id: 1 } })
-      )
+      const docIds = (await dbStorage.findAll<Doc>(this.metrics, c, { _class: c }, { projection: { _id: 1 } }))
         .filter((it) => !statesSet.has(it._id as Ref<DocIndexState>))
         .map((it) => it._id)
       await this.storage.clean(DOMAIN_DOC_INDEX_STATE, docIds)
     }
   }
-
-  async rebuildElastic (): Promise<void> {
-    // rebuild elastic
-    const allDocs = await this.storage.findAll(core.class.DocIndexState, {})
-    const toUpdate: DocIndexState[] = allDocs.filter((it) => it.attributes.openai_embedding_use)
-    while (toUpdate.length > 0) {
-      this.toIndex = new Map<Ref<DocIndexState>, DocIndexState>(toUpdate.splice(0, 500).map((it) => [it._id, it]))
-      const elasticDocs = await this.adapter.load(Array.from(this.toIndex.keys()))
-      let hasUpdates = false
-      for (const o of elasticDocs) {
-        const odoc = this.toIndex.get(o.id as Ref<DocIndexState>) as DocIndexState
-        if (odoc.attributes.openai_embedding_use as boolean) {
-          hasUpdates = true
-          odoc.attributes.openai_embedding = o.openai_embedding
-          o.openai_embedding_use = true
-        }
-      }
-      if (hasUpdates) {
-        try {
-          await this.storage.upload(DOMAIN_DOC_INDEX_STATE, Array.from(this.toIndex.values()))
-          await this.adapter.updateMany(elasticDocs)
-        } catch (err: any) {
-          console.error(err)
-        }
-      }
-    }
-  }
-}
-
-/**
- * @public
- */
-export function createElasticDoc (upd: DocIndexState): IndexedDoc {
-  const doc = {
-    ...upd.attributes,
-    id: upd._id,
-    _class: upd.objectClass,
-    modifiedBy: upd.modifiedBy,
-    modifiedOn: upd.modifiedOn,
-    space: upd.space,
-    attachedTo: upd.attachedTo,
-    attachedToClass: upd.attachedToClass
-  }
-  return doc
-}
-function updateDoc2Elastic (attributes: Record<string, any>, doc: IndexedDoc): IndexedDoc {
-  for (const [k, v] of Object.entries(attributes)) {
-    const { _class, attr, docId, extra } = extractDocKey(k)
-    let vv: any = v
-    if (extra.includes('base64')) {
-      vv = Buffer.from(v, 'base64').toString()
-    }
-    if (docId === undefined) {
-      doc[k] = vv
-      continue
-    }
-    const docIdAttr = '|' + docKey(attr, { _class, extra: extra.filter((it) => it !== 'base64') })
-    if (vv !== null) {
-      // Since we replace array of values, we could ignore null
-      doc[docIdAttr] = [...(doc[docIdAttr] ?? []), vv]
-    }
-  }
-  return doc
 }

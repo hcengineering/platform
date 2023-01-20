@@ -34,10 +34,11 @@ class ElasticAdapter implements FullTextAdapter {
     private readonly _metrics: MeasureContext
   ) {}
 
-  async initMapping (embedding: string, dims: number): Promise<void> {
+  async initMapping (field?: { key: string, dims: number }): Promise<Record<string, number>> {
     // const current = await this.client.indices.getMapping({})
     // console.log('Mappings', current)
     // const mappings = current.body[toWorkspaceString(this.workspaceId)]
+    const result: Record<string, number> = {}
     try {
       const existsIndex = await this.client.indices.exists({
         index: toWorkspaceString(this.workspaceId)
@@ -54,24 +55,36 @@ class ElasticAdapter implements FullTextAdapter {
       })
       console.log('Mapping', mappings.body)
       const wsMappings = mappings.body[toWorkspaceString(this.workspaceId)]
-      if (!(wsMappings?.mappings?.properties?.[embedding]?.type === 'dense_vector')) {
-        await this.client.indices.putMapping({
-          index: toWorkspaceString(this.workspaceId),
-          allow_no_indices: true,
-          body: {
-            properties: {
-              [embedding]: {
-                type: 'dense_vector',
-                dims
+
+      // Collect old values.
+      for (const [k, v] of Object.entries(wsMappings?.mappings?.properties)) {
+        const va = v as any
+        if (va?.type === 'dense_vector') {
+          result[k] = va?.dims as number
+        }
+      }
+      if (field?.key !== undefined) {
+        if (!(wsMappings?.mappings?.properties?.[field.key]?.type === 'dense_vector')) {
+          result[field.key] = field.dims
+          await this.client.indices.putMapping({
+            index: toWorkspaceString(this.workspaceId),
+            allow_no_indices: true,
+            body: {
+              properties: {
+                [field.key]: {
+                  type: 'dense_vector',
+                  dims: field.dims
+                }
               }
             }
-          }
-        })
+          })
+        }
       }
       console.log('Index created ok.')
     } catch (err: any) {
       console.error(err)
     }
+    return result
   }
 
   async close (): Promise<void> {
@@ -189,8 +202,8 @@ class ElasticAdapter implements FullTextAdapter {
               },
               boost: options.embeddingBoost ?? 100.0
             }
-          } //,
-          // {
+          }
+          // ,{
           //   simple_query_string: {
           //     query: search.$search,
           //     flags: 'OR|PREFIX|PHRASE',
@@ -277,6 +290,7 @@ class ElasticAdapter implements FullTextAdapter {
 
       const response = await this.client.bulk({ refresh: true, body: operations })
       if ((response as any).body.errors === true) {
+        // Collect only errors
         throw new Error(`Failed to process bulk request: ${JSON.stringify((response as any).body)}`)
       }
     }

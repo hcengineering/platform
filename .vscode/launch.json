@@ -5,12 +5,22 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Python: Embeddings",
+      "type": "python",
+      "request": "launch",
+      "program": "./pods/embeddings/server.py",
+      "args": ["--model", "sentence-transformers/all-MiniLM-L6-v2", "--device", "cpu"],
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "env": {
+        "PYTORCH_ENABLE_MPS_FALLBACK":"1"
+      }
+    },
+    {
       "name": "Debug server",
       "type": "node",
       "request": "launch",
-      "args": [
-        "src/__start.ts"
-      ],
+      "args": ["src/__start.ts"],
       "env": {
         "ELASTIC_URL": "http://localhost:9200",
         "MONGO_URL": "mongodb://localhost:27017",
@@ -21,16 +31,11 @@
         "MINIO_SECRET_KEY": "minioadmin",
         "SERVER_SECRET": "secret",
         "REKONI_URL": "http://localhost:4004",
-        // "OPENAI_TOKEN": "",
         // "RETRANSLATE_URL": "http://127.0.0.1:4500",
         //"RETRANSLATE_URL": "https://208.167.249.201",
         // "RETRANSLATE_TOKEN": ""
       },
-      "runtimeArgs": [
-        "--nolazy",
-        "-r",
-        "ts-node/register"
-      ],
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "showAsyncStacks": true,
       "sourceMaps": true,
       "cwd": "${workspaceRoot}/pods/server",
@@ -40,20 +45,14 @@
       "name": "Debug Account",
       "type": "node",
       "request": "launch",
-      "args": [
-        "src/__start.ts"
-      ],
+      "args": ["src/__start.ts"],
       "env": {
         "MONGO_URL": "mongodb://localhost:27018",
         "SERVER_SECRET": "secret",
         "TRANSACTOR_URL": "ws:/localhost:3333",
         "ACCOUNT_PORT": "3000"
       },
-      "runtimeArgs": [
-        "--nolazy",
-        "-r",
-        "ts-node/register"
-      ],
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,
       "cwd": "${workspaceRoot}/pods/account",
       "protocol": "inspector"
@@ -64,13 +63,7 @@
       "name": "Debug Jest tests",
       "program": "${fileDirname}/../../node_modules/@rushstack/heft/lib/start.js",
       "cwd": "${fileDirname}/../../",
-      "args": [
-        "--debug",
-        "test",
-        "--clean",
-        "--test-path-pattern",
-        "${file}"
-      ],
+      "args": ["--debug", "test", "--clean", "--test-path-pattern", "${file}"],
       "console": "integratedTerminal",
       "sourceMaps": true,
       "protocol": "inspector"
@@ -79,23 +72,14 @@
       "name": "Debug generator",
       "type": "node",
       "request": "launch",
-      "args": [
-        "src/index.ts",
-        "gen-recruit",
-        "ws1",
-        "20"
-      ],
+      "args": ["src/index.ts", "gen-recruit", "ws1", "20"],
       "env": {
         "TRANSACTOR_URL": "ws:/localhost:3333",
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
         "MINIO_ENDPOINT": "localhost"
       },
-      "runtimeArgs": [
-        "--nolazy",
-        "-r",
-        "ts-node/register"
-      ],
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,
       "cwd": "${workspaceRoot}/dev/generator",
       "protocol": "inspector"
@@ -104,12 +88,7 @@
       "name": "Debug tool import-lead-csv",
       "type": "node",
       "request": "launch",
-      "args": [
-        "src/index.ts",
-        "import-lead-csv",
-        "ws1",
-        "../../../suho/COMPANIES_Agency_of_AlexeyS.csv"
-      ],
+      "args": ["src/index.ts", "import-lead-csv", "ws1", "../../../suho/COMPANIES_Agency_of_AlexeyS.csv"],
       "env": {
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
@@ -119,11 +98,7 @@
         "TELEGRAM_DATABASE": "telegram-service",
         "ELASTIC_URL": "http://localhost:9200"
       },
-      "runtimeArgs": [
-        "--nolazy",
-        "-r",
-        "ts-node/register"
-      ],
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,
       "cwd": "${workspaceRoot}/dev/tool"
     },
@@ -131,10 +106,7 @@
       "name": "Debug tool upgrade",
       "type": "node",
       "request": "launch",
-      "args": [
-        "src/index.ts",
-        "upgrade"
-      ],
+      "args": ["src/index.ts", "upgrade"],
       "env": {
         "SERVER_SECRET": "secret",
         "MINIO_ACCESS_KEY": "minioadmin",
@@ -146,11 +118,7 @@
         "ELASTIC_URL": "http://localhost:9200",
         "REKONI_URL": "http://localhost:4004"
       },
-      "runtimeArgs": [
-        "--nolazy",
-        "-r",
-        "ts-node/register"
-      ],
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,
       "cwd": "${workspaceRoot}/dev/tool"
     },
@@ -158,23 +126,17 @@
       "name": "Debug Collaborator",
       "type": "node",
       "request": "launch",
-      "args": [
-        "src/__start.ts"
-      ],
+      "args": ["src/__start.ts"],
       "env": {
         "SECRET": "secret",
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
-        "MINIO_ENDPOINT": "localhost",
+        "MINIO_ENDPOINT": "localhost"
       },
-      "runtimeArgs": [
-        "--nolazy",
-        "-r",
-        "ts-node/register"
-      ],
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,
       "cwd": "${workspaceRoot}/pods/collaborator",
       "protocol": "inspector"
-    },
+    }
   ]
 }

@@ -1,6 +1,7 @@
 <script lang="ts">
   import core, { AnyAttribute, Doc, DocIndexState, extractDocKey, isFullTextAttribute, Ref } from '@hcengineering/core'
-  import { EditBox, Label } from '@hcengineering/ui'
+
+  import { EditBox, Label, Panel } from '@hcengineering/ui'
   import Icon from '@hcengineering/ui/src/components/Icon.svelte'
   import { createQuery, getClient } from '../utils'
 
@@ -25,6 +26,8 @@
   }
   let search = ''
 
+  $: summary = (indexDoc?.attributes as any).summary
+
   $: attributes =
     indexDoc !== undefined
       ? Object.entries(indexDoc.attributes).reduce<[AnyAttribute, string[][]][]>((a, b) => {
@@ -47,46 +50,54 @@
       : []
 </script>
 
-<EditBox bind:value={search} kind="search-style" />
-<div class="indexed-background">
-  <div class="indexed-doc flex-row text-base">
-    {#if indexDoc}
-      {#each attributes as attr}
-        {@const clOf = client.getHierarchy().getClass(attr[0].attributeOf)}
-        <div class="flex-row-center">
-          {#if clOf.icon}
-            <div class="mr-1">
-              <Icon size={'medium'} icon={clOf.icon} />
-            </div>
-          {/if}
-          <Label label={clOf.label} />.<Label label={attr[0].label} />
-        </div>
-        <div class="p-1 flex-row flex-wrap">
-          {#each attr[1] as doc}
-            <div class="p-1" class:flex-col={doc.length > 1}>
-              {#each doc as line}
-                {@const hl = search.length > 0 && line.toLowerCase().includes(search.toLowerCase())}
-                <span class:text-md={!hl} class:highlight={hl}>{line}</span>
-              {/each}
-            </div>
-          {/each}
-        </div>
-      {/each}
-    {/if}
+<Panel on:changeContent on:close>
+  <EditBox bind:value={search} kind="search-style" />
+  <div class="indexed-background">
+    <div class="indexed-doc text-base max-h-125">
+      {#if summary}
+        Summary:
+        {#each summary.split('\n') as line}
+          {@const hl = search.length > 0 && line.toLowerCase().includes(search.toLowerCase())}
+          <span class:text-md={!hl} class:highlight={hl}>{line}</span>
+        {/each}
+      {:else if indexDoc}
+        {#each attributes as attr}
+          {@const clOf = client.getHierarchy().getClass(attr[0].attributeOf)}
+          <div class="flex-row-center">
+            {#if clOf.icon}
+              <div class="mr-1">
+                <Icon size={'medium'} icon={clOf.icon} />
+              </div>
+            {/if}
+            <Label label={clOf.label} />.<Label label={attr[0].label} />
+          </div>
+          <div class="p-1 flex-row flex-wrap">
+            {#each attr[1] as doc}
+              <div class="p-1" class:flex-col={doc.length > 1}>
+                {#each doc as line}
+                  {@const hl = search.length > 0 && line.toLowerCase().includes(search.toLowerCase())}
+                  <span class:text-md={!hl} class:highlight={hl}>{line}</span>
+                {/each}
+              </div>
+            {/each}
+          </div>
+        {/each}
+      {/if}
+    </div>
   </div>
-</div>
+</Panel>
 
 <style lang="scss">
   .indexed-doc {
     padding: 2.5rem;
+    display: grid;
+    overflow: auto;
+    min-width: 50rem;
+    max-width: 200rem;
   }
   .indexed-background {
-    overflow: auto;
-    height: 80rem !important;
-    min-width: 120rem;
     background-color: white;
     color: black;
-    height: 100%;
     user-select: text;
     .highlight {
       color: red;

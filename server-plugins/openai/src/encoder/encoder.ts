@@ -184,6 +184,30 @@ export function encode (text: string): number[] {
   return bpeTokens
 }
 
+export function chunks (text: string, limit: number): string[] {
+  const result: string[] = []
+  let bpeTokens: number[] = []
+  const matches = Array.from(text.matchAll(pat)).map((x) => x[0])
+  for (const token of matches) {
+    const tkn = encodeStr(token)
+      .map((x) => {
+        return byteEncoder[x]
+      })
+      .join('')
+
+    const newTokens: Array<any> = (bpe(tkn) ?? '').split(' ').map((x: any) => (encoder as any)[x] as number)
+    if (bpeTokens.length + newTokens.length > limit) {
+      result.push(decode(bpeTokens))
+      bpeTokens = []
+    }
+    bpeTokens = bpeTokens.concat(newTokens)
+  }
+  if (bpeTokens.length > 0) {
+    result.push(decode(bpeTokens))
+  }
+  return result
+}
+
 export function decode (tokens: number[]) {
   let text = tokens.map((x) => decoder[x]).join('')
   text = decodeStr(text.split('').map((x) => byteDecoder[x]))

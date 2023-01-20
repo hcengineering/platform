@@ -63,6 +63,9 @@ import { createModel as bitrixModel } from '@hcengineering/model-bitrix'
 import { createModel as requestModel } from '@hcengineering/model-request'
 import { createModel as serverRequestModel } from '@hcengineering/model-server-request'
 
+import { createModel as serverTranslate } from '@hcengineering/model-server-translate'
+import { createModel as serverOpenAI } from '@hcengineering/model-server-openai'
+
 export const version: Data<Version> = jsonVersion as Data<Version>
 
 const builder = new Builder()
@@ -113,7 +116,9 @@ const builders: [(b: Builder) => void, string][] = [
   [serverHrModel, 'server-hr'],
   [serverNotificationModel, 'server-notification'],
   [serverRequestModel, 'server-request'],
-  [automationModel, 'automation']
+  [automationModel, 'automation'],
+  [serverTranslate, 'translate'],
+  [serverOpenAI, 'openai']
 ]
 
 for (const [b, id] of builders) {

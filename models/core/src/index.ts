@@ -16,13 +16,15 @@
 import { Builder } from '@hcengineering/model'
 import core from './component'
 import {
-  TAISearchContext,
+  TFullTextSearchContext,
   TArrOf,
   TAttachedDoc,
   TAttribute,
   TBlobData,
   TClass,
   TCollection,
+  TConfiguration,
+  TConfigurationElement,
   TDoc,
   TDocIndexState,
   TEnum,
@@ -97,6 +99,8 @@ export function createModel (builder: Builder): void {
     TFulltextData,
     TTypeRelatedDocument,
     TDocIndexState,
-    TAISearchContext
+    TFullTextSearchContext,
+    TConfiguration,
+    TConfigurationElement
   )
 }

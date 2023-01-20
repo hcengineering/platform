@@ -21,6 +21,7 @@ import core, {
   DocumentUpdate,
   MeasureContext,
   Ref,
+  Storage,
   WorkspaceId
 } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
@@ -38,12 +39,14 @@ export class ContentRetrievalStage implements FullTextPipelineStage {
   extra = ['content', 'base64']
   digest = '^digest'
 
+  enabled = true
+
   // Clear all except following.
   clearExcept: string[] = [fieldStateId, contentStageId]
 
   updateFields: DocUpdateHandler[] = []
 
-  limit = 100
+  textLimit = 100 * 1024
 
   constructor (
     readonly storageAdapter: MinioService | undefined,
@@ -52,10 +55,14 @@ export class ContentRetrievalStage implements FullTextPipelineStage {
     private readonly contentAdapter: ContentTextAdapter
   ) {}
 
+  async initialize (storage: Storage, pipeline: FullTextPipeline): Promise<void> {
+    // Just do nothing
+  }
+
   async search (
     _classes: Ref<Class<Doc>>[],
     search: DocumentQuery<Doc>,
-    size: number | undefined,
+    size?: number,
     from?: number
   ): Promise<{ docs: IndexedDoc[], pass: boolean }> {
     return { docs: [], pass: true }
@@ -74,7 +81,6 @@ export class ContentRetrievalStage implements FullTextPipelineStage {
     const attributes = getFullTextAttributes(pipeline.hierarchy, doc.objectClass)
     // Copy content attributes as well.
     const update: DocumentUpdate<DocIndexState> = {}
-    const elasticUpdate: Partial<IndexedDoc> = {}
 
     if (pipeline.cancelling) {
       return
@@ -92,13 +98,15 @@ export class ContentRetrievalStage implements FullTextPipelineStage {
             } catch (err: any) {
               // not found.
             }
-            if (docInfo !== undefined) {
+            if (docInfo !== undefined && docInfo.size < 30 * 1024 * 1024) {
               // We have blob, we need to decode it to string.
-              const contentType = (docInfo.metaData['content-type'] as string) ?? ''
+              const contentType = ((docInfo.metaData['content-type'] as string) ?? '').split(';')[0]
+
               if (!contentType.includes('image')) {
                 const digest = docInfo.etag
-                if (doc.attributes[docKey(val.name + this.digest, { _class: val.attributeOf })] !== digest) {
-                  ;(update as any)[docUpdKey(val.name + this.digest, { _class: val.attributeOf })] = digest
+                const digestKey = docKey(val.name + '.' + val.attributeOf + this.digest)
+                if (doc.attributes[digestKey] !== digest) {
+                  ;(update as any)[docUpdKey(digestKey)] = digest
 
                   const readable = await this.storageAdapter?.get(this.workspace, ref)
 
@@ -110,38 +118,28 @@ export class ContentRetrievalStage implements FullTextPipelineStage {
                     )
 
                     textContent = textContent
-                      .split(/ |\t|\f/)
+                      .split(/ +|\t+|\f+/)
                       .filter((it) => it)
                       .join(' ')
-                      .split(/\n+/)
+                      .split(/\n\n+/)
                       .join('\n')
 
-                    // if (textContent.length > 100 * 1024) {
-                    //   textContent = textContent.substring(0, 100 * 1024) // Allow only first 128kb of data.
-                    // }
-
+                    // trim to large content
+                    if (textContent.length > this.textLimit) {
+                      textContent = textContent.slice(0, this.textLimit)
+                    }
                     textContent = Buffer.from(textContent).toString('base64')
                     ;(update as any)[docUpdKey(val.name, { _class: val.attributeOf, extra: this.extra })] = textContent
-                    elasticUpdate[docKey(val.name, { _class: val.attributeOf, extra: this.extra })] = textContent
 
                     if (doc.attachedTo != null) {
                       const parentUpdate: DocumentUpdate<DocIndexState> = {}
-                      const parentElasticUpdate: Partial<IndexedDoc> = {}
 
                       ;(parentUpdate as any)[
                         docUpdKey(val.name, { _class: val.attributeOf, docId: doc._id, extra: this.extra })
                       ] = textContent
-                      parentElasticUpdate[
-                        docKey(val.name, { _class: val.attributeOf, docId: doc._id, extra: this.extra })
-                      ] = textContent
 
                       // We do not need to pull stage, just update elastic with document.
-                      await pipeline.update(
-                        doc.attachedTo as Ref<DocIndexState>,
-                        true,
-                        parentUpdate,
-                        parentElasticUpdate
-                      )
+                      await pipeline.update(doc.attachedTo as Ref<DocIndexState>, true, parentUpdate)
                     }
                   }
                 }
@@ -153,7 +151,7 @@ export class ContentRetrievalStage implements FullTextPipelineStage {
     } catch (err: any) {
       const wasError = (doc as any).error !== undefined
 
-      await pipeline.update(doc._id, false, { [docKey('error')]: JSON.stringify({ message: err.message, err }) }, {})
+      await pipeline.update(doc._id, false, { [docKey('error')]: JSON.stringify({ message: err.message, err }) })
       if (wasError) {
         return
       }
@@ -162,10 +160,13 @@ export class ContentRetrievalStage implements FullTextPipelineStage {
       return
     }
 
-    await pipeline.update(doc._id, true, update, elasticUpdate)
+    await pipeline.update(doc._id, true, update)
   }
 
   async remove (docs: DocIndexState[], pipeline: FullTextPipeline): Promise<void> {
     // will be handled by field processor
+    for (const doc of docs) {
+      await pipeline.update(doc._id, true, {})
+    }
   }
 }

@@ -54,7 +54,7 @@
   let refInput: AttachmentRefInput
 </script>
 
-<div class:editing>
+<div class:editing class="content-accent-color">
   {#if edit}
     <AttachmentRefInput
       bind:this={refInput}

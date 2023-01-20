@@ -32,5 +32,9 @@
     "@hcengineering/platform": "^0.6.8",
     "@hcengineering/server-core": "^0.6.1",
     "@elastic/elasticsearch": "^7.14.0"
+  },
+  "repository": "https://github.com/hcengineering/anticrm",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
   }
 }

@@ -1471,13 +1471,23 @@
     },
     {
       "packageName": "@hcengineering/openai",
-      "projectFolder": "server/openai",
+      "projectFolder": "server-plugins/openai",
       "shouldPublish": true
     },
     {
       "packageName": "@hcengineering/translate",
       "projectFolder": "server/translate",
       "shouldPublish": true
-    }
+    },
+    {
+      "packageName": "@hcengineering/model-server-translate",
+      "projectFolder": "models/server-translate",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/model-server-openai",
+      "projectFolder": "models/server-openai",
+      "shouldPublish": true
+    },
   ]
 }

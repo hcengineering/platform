@@ -248,6 +248,11 @@ export const DOMAIN_MODEL = 'model' as Domain
 /**
  * @public
  */
+export const DOMAIN_CONFIGURATION = '_configuration' as Domain
+
+/**
+ * @public
+ */
 export const DOMAIN_TRANSIENT = 'transient' as Domain
 
 /**
@@ -351,6 +356,10 @@ export interface DocIndexState extends Doc {
 
   // Indexable attributes, including child ones.
   attributes: Record<string, any>
+
+  // Full Summary
+  fullSummary?: Markup | null
+  shortSummary?: Markup | null
 }
 
 /**
@@ -358,8 +367,29 @@ export interface DocIndexState extends Doc {
  *
  * If defined for class, this class will be enabled for embedding search like openai.
  */
-export interface AISearchContext extends Class<Doc> {
-  index: boolean
+export interface FullTextSearchContext extends Class<Doc> {
+  fullTextSummary: boolean
+}
+
+/**
+ * @public
+ */
+export interface ConfigurationElement extends Class<Doc> {
+  // Title will be presented to owner.
+  title: IntlString
+  // Group for groupping.
+  group: IntlString
+}
+
+/**
+ * @public
+ *
+ * Define configuration value configuration for workspace.
+ *
+ * Configuration is accessble only for owners of workspace and underhood services.
+ */
+export interface Configuration extends Doc {
+  enabled: boolean
 }
 
 /**

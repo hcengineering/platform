@@ -58,6 +58,7 @@ export class TAttachment extends TAttachedDoc implements Attachment {
     lastModified!: number
 
   @Prop(TypeString(), attachment.string.Description)
+  @Index(IndexKind.FullText)
     description!: string
 
   @Prop(TypeBoolean(), attachment.string.Pinned)

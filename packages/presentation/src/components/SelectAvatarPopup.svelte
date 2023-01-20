@@ -15,14 +15,14 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
 
-  import { DropdownLabelsIntl, AnySvelteComponent, showPopup, Label } from '@hcengineering/ui'
   import { AvatarType, buildGravatarId, checkHasGravatar, getAvatarColorForId } from '@hcengineering/contact'
   import { Asset } from '@hcengineering/platform'
+  import { AnySvelteComponent, DropdownLabelsIntl, Label, showPopup } from '@hcengineering/ui'
 
   import presentation from '..'
   import { getAvatarTypeDropdownItems, getFileUrl } from '../utils'
-  import Card from './Card.svelte'
   import AvatarComponent from './Avatar.svelte'
+  import Card from './Card.svelte'
   import EditAvatarPopup from './EditAvatarPopup.svelte'
 
   export let avatar: string | undefined
