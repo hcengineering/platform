@@ -55,6 +55,7 @@ import UpDownNavigator from './components/UpDownNavigator.svelte'
 import ViewletSettingButton from './components/ViewletSettingButton.svelte'
 import ValueSelector from './components/ValueSelector.svelte'
 import HTMLEditor from './components/HTMLEditor.svelte'
+import MarkupPresenter from './components/MarkupPresenter.svelte'
 import MarkupEditor from './components/MarkupEditor.svelte'
 import MarkupEditorPopup from './components/MarkupEditorPopup.svelte'
 import SortableList from './components/list/SortableList.svelte'
@@ -158,6 +159,7 @@ export default async (): Promise<Resources> => ({
     YoutubePresenter,
     ActionsPopup,
     StringEditorPopup: EditBoxPopup,
+    MarkupPresenter,
     MarkupEditor,
     MarkupEditorPopup,
     BooleanTruePresenter,

@@ -20,6 +20,14 @@ import { buildModel, getObjectPresenter } from '@hcengineering/view-resources'
 import { ActivityKey, activityKey, DisplayTx } from './activity'
 import activity from './plugin'
 
+const valueTypes: ReadonlyArray<Ref<Class<Doc>>> = [
+  core.class.TypeString,
+  core.class.EnumOf,
+  core.class.TypeNumber,
+  core.class.TypeDate,
+  core.class.TypeMarkup
+]
+
 export type TxDisplayViewlet =
   | (Pick<TxViewlet, 'icon' | 'label' | 'display' | 'editable' | 'hideOnRemove' | 'labelComponent' | 'labelParams'> & {
     component?: AnyComponent | AnySvelteComponent
@@ -233,12 +241,8 @@ async function getAllRealValues (
   if (values.some((value) => typeof value !== 'string')) {
     return [values, false]
   }
-  if (
-    _class === core.class.TypeString ||
-    _class === core.class.EnumOf ||
-    _class === core.class.TypeNumber ||
-    _class === core.class.TypeDate
-  ) {
+
+  if (valueTypes.includes(_class)) {
     return [values, false]
   }
 
