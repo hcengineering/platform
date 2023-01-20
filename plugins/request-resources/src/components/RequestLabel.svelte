@@ -14,17 +14,31 @@
 -->
 <script lang="ts">
   import { Request, RequestStatus } from '@hcengineering/request'
-  import { Label } from '@hcengineering/ui'
+  import { Button, eventToHTMLElement, ProgressCircle, showPopup } from '@hcengineering/ui'
   import RequestStatusPresenter from './RequestStatusPresenter.svelte'
-  import request from '../plugin'
+  import RequestDetailPopup from './RequestDetailPopup.svelte'
 
   export let value: Request
 </script>
 
 <div class="flex gap-2">
-  {#if value.status !== RequestStatus.Active}
-    <RequestStatusPresenter value={value.status === RequestStatus.Completed} />
-  {:else}
-    <Label label={request.string.Approved} />: {value.approved.length}/{value.requiredApprovesCount}
-  {/if}
+  <Button
+    on:click={(ev) => {
+      ev.stopPropagation()
+      showPopup(RequestDetailPopup, { value }, eventToHTMLElement(ev))
+    }}
+  >
+    <svelte:fragment slot="content">
+      {#if value.status !== RequestStatus.Active}
+        <RequestStatusPresenter value={value.status === RequestStatus.Completed} />
+      {:else}
+        <div class="flex-row-center content-color text-sm pointer-events-none">
+          <div class="mr-1">
+            <ProgressCircle max={value.requiredApprovesCount} value={value.approved.length} size={'inline'} primary />
+          </div>
+          {value.approved.length}/{value.requiredApprovesCount}
+        </div>
+      {/if}
+    </svelte:fragment>
+  </Button>
 </div>

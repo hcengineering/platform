@@ -14,10 +14,11 @@
 //
 
 import { EmployeeAccount } from '@hcengineering/contact'
-import type { AttachedDoc, Class, Doc, Ref, TxCUD } from '@hcengineering/core'
+import type { AttachedDoc, Class, Doc, Mixin, Ref, TxCUD } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { AnyComponent } from '@hcengineering/ui'
+import { Comment } from '@hcengineering/chunter'
 
 /**
  * @public
@@ -26,10 +27,16 @@ export interface Request extends AttachedDoc {
   requested: Ref<EmployeeAccount>[]
   approved: Ref<EmployeeAccount>[]
   requiredApprovesCount: number
+  rejected?: Ref<EmployeeAccount>
   status: RequestStatus
   tx: TxCUD<Doc>
   comments?: number
 }
+
+/**
+ * @public
+ */
+export interface RequestDecisionComment extends Comment {}
 
 /**
  * @public
@@ -51,6 +58,9 @@ export const requestId = 'request' as Plugin
 const request = plugin(requestId, {
   class: {
     Request: '' as Ref<Class<Request>>
+  },
+  mixin: {
+    RequestDecisionComment: '' as Ref<Mixin<RequestDecisionComment>>
   },
   component: {
     RequestsPopup: '' as AnyComponent

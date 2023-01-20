@@ -16,7 +16,7 @@
 <script lang="ts">
   import { Employee, EmployeeAccount, formatName } from '@hcengineering/contact'
   import { Account } from '@hcengineering/core'
-  import { Avatar, getClient } from '@hcengineering/presentation'
+  import { Avatar, createQuery } from '@hcengineering/presentation'
   import { showPopup } from '@hcengineering/ui'
   import { EditDoc } from '@hcengineering/view-resources'
   import contact from '../plugin'
@@ -30,12 +30,10 @@
       showPopup(EditDoc, { _id: employee._id, _class: employee._class }, 'content')
     }
   }
-  const client = getClient()
+  const query = createQuery()
 
   $: if (value._class === contact.class.EmployeeAccount) {
-    client.findOne(contact.class.Employee, { _id: (value as EmployeeAccount).employee }).then((r) => {
-      employee = r
-    })
+    query.query(contact.class.Employee, { _id: (value as EmployeeAccount).employee }, (r) => ([employee] = r))
   }
 </script>
 
