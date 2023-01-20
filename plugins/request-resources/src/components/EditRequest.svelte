@@ -19,7 +19,7 @@
   import { createEventDispatcher, onMount } from 'svelte'
   import request from '../plugin'
   import RequestActions from './RequestActions.svelte'
-  import RequestLabel from './RequestLabel.svelte'
+  import RequestDetail from './RequestDetail.svelte'
   import TxView from './TxView.svelte'
 
   export let object: Request
@@ -27,16 +27,19 @@
   const dispatch = createEventDispatcher()
 
   onMount(() => {
-    dispatch('open', { ignoreKeys: ['comments', 'status'], activityOptions: { enabled: true, showInput: false } })
+    dispatch('open', {
+      ignoreKeys: ['comments', 'status', 'rejected', 'approved', 'requested'],
+      activityOptions: { enabled: true, showInput: false }
+    })
   })
 </script>
 
 {#if object !== undefined}
   <div class="flex-row-center gap-1 mb-2">
     <span class="mr-1"><Label label={request.string.For} /></span>
-    <ObjectPresenter objectId={object.tx.objectId} _class={object.tx.objectClass} />
+    <span class="mr-1"><ObjectPresenter objectId={object.tx.objectId} _class={object.tx.objectClass} /></span>
     <TxView tx={object.tx} />
   </div>
-  <RequestLabel value={object} />
+  <RequestDetail value={object} />
   <RequestActions value={object} />
 {/if}

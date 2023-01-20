@@ -26,9 +26,6 @@
 
   const client = getClient()
 
-  $: cl = client.getHierarchy().getClass(value._class)
-  $: label = cl.shortLabel
-
   let accounts: WithLookup<EmployeeAccount>[] = []
 
   $: client.findAll(contact.class.EmployeeAccount, { _id: { $in: value.requested } }).then((res) => {
@@ -39,7 +36,7 @@
 
 <div class="flex">
   <a
-    class="flex-presenter"
+    class="flex-presenter mr-1"
     class:inline-presenter={inline}
     href="#{getPanelURI(view.component.EditDoc, value._id, value._class, 'content')}"
   >

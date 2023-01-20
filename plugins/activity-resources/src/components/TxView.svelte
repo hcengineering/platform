@@ -257,23 +257,17 @@
                   {#if hasMessageType}
                     <div class="time"><TimeSince value={tx.tx.modifiedOn} /></div>
                   {/if}
-                  {#if isMessageType(m.attribute)}
-                    <div class="strong message emphasized">
-                      {#if value.isObjectSet}
-                        <ObjectPresenter value={value.set} />
-                      {:else}
-                        <svelte:component this={m.presenter} value={value.set} />
-                      {/if}
-                    </div>
-                  {:else}
-                    <div class="strong">
-                      {#if value.isObjectSet}
-                        <ObjectPresenter value={value.set} />
-                      {:else}
-                        <svelte:component this={m.presenter} value={value.set} />
-                      {/if}
-                    </div>
-                  {/if}
+                  <div
+                    class="strong"
+                    class:message={isMessageType(m.attribute)}
+                    class:emphasized={isMessageType(m.attribute)}
+                  >
+                    {#if value.isObjectSet}
+                      <ObjectPresenter value={value.set} />
+                    {:else}
+                      <svelte:component this={m.presenter} value={value.set} />
+                    {/if}
+                  </div>
                 {/if}
               {/await}
             {/each}
@@ -290,23 +284,17 @@
                     <span class="lower"><Label label={m.label} /></span>
                     <Label label={activity.string.To} />
                   </span>
-                  {#if isMessageType(m.attribute)}
-                    <div class="strong message emphasized">
-                      {#if value.isObjectSet}
-                        <ObjectPresenter value={value.set} />
-                      {:else}
-                        <svelte:component this={m.presenter} value={value.set} />
-                      {/if}
-                    </div>
-                  {:else}
-                    <div class="strong">
-                      {#if value.isObjectSet}
-                        <ObjectPresenter value={value.set} />
-                      {:else}
-                        <svelte:component this={m.presenter} value={value.set} />
-                      {/if}
-                    </div>
-                  {/if}
+                  <div
+                    class="strong"
+                    class:message={isMessageType(m.attribute)}
+                    class:emphasized={isMessageType(m.attribute)}
+                  >
+                    {#if value.isObjectSet}
+                      <ObjectPresenter value={value.set} />
+                    {:else}
+                      <svelte:component this={m.presenter} value={value.set} />
+                    {/if}
+                  </div>
                 {/if}
               {/await}
             {/each}

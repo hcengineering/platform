@@ -30,7 +30,10 @@
       requested: me,
       status: RequestStatus.Active
     },
-    (res) => (requests = res.filter((p) => !p.approved.includes(me)))
+    (res) =>
+      (requests = res.filter(
+        (p) => p.requested.filter((a) => a === me).length > p.approved.filter((a) => a === me).length
+      ))
   )
 </script>
 

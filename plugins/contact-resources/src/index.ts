@@ -36,6 +36,7 @@ import EditMember from './components/EditMember.svelte'
 import EditOrganization from './components/EditOrganization.svelte'
 import EditPerson from './components/EditPerson.svelte'
 import EmployeeAccountPresenter from './components/EmployeeAccountPresenter.svelte'
+import EmployeeAccountRefPresenter from './components/EmployeeAccountRefPresenter.svelte'
 import EmployeeArrayEditor from './components/EmployeeArrayEditor.svelte'
 import AccountArrayEditor from './components/AccountArrayEditor.svelte'
 import EmployeeBrowser from './components/EmployeeBrowser.svelte'
@@ -65,7 +66,8 @@ export {
   OrganizationPresenter,
   EmployeeBrowser,
   MemberPresenter,
-  EmployeeEditor
+  EmployeeEditor,
+  EmployeeAccountRefPresenter
 }
 
 const toObjectSearchResult = (e: WithLookup<Contact>): ObjectSearchResult => ({

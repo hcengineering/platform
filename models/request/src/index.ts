@@ -18,11 +18,24 @@ import chunter from '@hcengineering/chunter'
 import type { EmployeeAccount } from '@hcengineering/contact'
 import contact from '@hcengineering/contact'
 import { Doc, Domain, IndexKind, Ref, TxCUD } from '@hcengineering/core'
-import { ArrOf, Builder, Collection, Index, Model, Prop, ReadOnly, TypeRef, TypeString, UX } from '@hcengineering/model'
+import {
+  ArrOf,
+  Builder,
+  Collection,
+  Index,
+  Mixin,
+  Model,
+  Prop,
+  ReadOnly,
+  TypeRef,
+  TypeString,
+  UX
+} from '@hcengineering/model'
 import core, { TAttachedDoc } from '@hcengineering/model-core'
-import { Request, RequestStatus } from '@hcengineering/request'
+import { Request, RequestDecisionComment, RequestStatus } from '@hcengineering/request'
 import request from './plugin'
 import view from '@hcengineering/model-view'
+import { TComment } from '@hcengineering/model-chunter'
 
 export const DOMAIN_REQUEST = 'request' as Domain
 
@@ -45,12 +58,19 @@ export class TRequest extends TAttachedDoc implements Request {
 
   tx!: TxCUD<Doc>
 
+  @Prop(TypeRef(contact.class.EmployeeAccount), request.string.Rejected)
+  @ReadOnly()
+    rejected?: Ref<EmployeeAccount>
+
   @Prop(Collection(chunter.class.Comment), chunter.string.Comments)
     comments?: number
 }
 
+@Mixin(request.mixin.RequestDecisionComment, chunter.class.Comment)
+export class TRequestDecisionComment extends TComment implements RequestDecisionComment {}
+
 export function createModel (builder: Builder): void {
-  builder.createModel(TRequest)
+  builder.createModel(TRequest, TRequestDecisionComment)
 
   builder.mixin(request.class.Request, core.class.Class, view.mixin.ObjectEditor, {
     editor: request.component.EditRequest

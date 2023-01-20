@@ -13,19 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createQuery } from '@hcengineering/presentation'
   import { Request } from '@hcengineering/request'
-  import RequestLabel from '../RequestLabel.svelte'
+  import RequestDetail from './RequestDetail.svelte'
 
   export let value: Request
-  let request: Request | undefined = undefined
-
-  const query = createQuery()
-  query.query(value._class, { _id: value._id }, (res) => ([request] = res))
 </script>
 
-{#if request}
-  <div class="ml-1">
-    <RequestLabel value={request} />
-  </div>
-{/if}
+<div class="antiPopup popup p-4">
+  <RequestDetail {value} />
+</div>

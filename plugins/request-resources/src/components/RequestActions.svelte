@@ -16,34 +16,22 @@
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
   import chunter, { Comment } from '@hcengineering/chunter'
   import { updateBacklinks } from '@hcengineering/chunter-resources/src/backlinks'
-  import contact, { EmployeeAccount } from '@hcengineering/contact'
+  import { EmployeeAccount } from '@hcengineering/contact'
   import { AttachedData, getCurrentAccount, Ref } from '@hcengineering/core'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { getClient } from '@hcengineering/presentation'
   import { Request, RequestStatus } from '@hcengineering/request'
-  import request from '../plugin'
   import type { RefAction } from '@hcengineering/text-editor'
+  import request from '../plugin'
+  import Comments from './icons/Comments.svelte'
   import DocFail from './icons/DocFail.svelte'
   import DocSuccess from './icons/DocSuccess.svelte'
-  import Comments from './icons/Comments.svelte'
 
   export let value: Request
 
-  let employee: EmployeeAccount | undefined
-
-  const query = createQuery()
   const client = getClient()
   const me = getCurrentAccount()._id as Ref<EmployeeAccount>
 
-  $: query.query(
-    contact.class.EmployeeAccount,
-    { _id: value.tx.modifiedBy as Ref<EmployeeAccount> },
-    (account) => {
-      ;[employee] = account
-    },
-    { limit: 1 }
-  )
-
-  const approvable = value.requested.includes(me) && !value.approved.includes(me)
+  const approvable = value.requested.filter((a) => a === me).length > value.approved.filter((a) => a === me).length
 
   async function approve () {
     await saveComment()
@@ -59,6 +47,7 @@
   async function reject () {
     await saveComment()
     await client.update(value, {
+      rejected: me,
       status: RequestStatus.Rejected
     })
   }
@@ -71,11 +60,13 @@
     attachments = event.detail.attachments
   }
 
-  async function saveComment () {
-    await client.addCollection(chunter.class.Comment, value.space, value._id, value._class, 'comments', {
+  async function saveComment (): Promise<void> {
+    const _id = await client.addCollection(chunter.class.Comment, value.space, value._id, value._class, 'comments', {
       message,
       attachments
     })
+
+    await client.createMixin(_id, chunter.class.Comment, value.space, request.mixin.RequestDecisionComment, {})
 
     // We need to update backlinks before and after.
     await updateBacklinks(client, value.attachedTo, value.attachedToClass, value._id, message)

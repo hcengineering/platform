@@ -152,7 +152,12 @@
       requested: account._id,
       status: RequestStatus.Active
     },
-    (res) => (hasRequests = res.filter((p) => !p.approved.includes(account._id)).length > 0)
+    (res) =>
+      (hasRequests =
+        res.filter(
+          (p) =>
+            p.requested.filter((a) => a === account._id).length > p.approved.filter((a) => a === account._id).length
+        ).length > 0)
   )
 
   onDestroy(
