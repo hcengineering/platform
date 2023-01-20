@@ -29,6 +29,7 @@ import core, {
   Lookup,
   Mixin,
   ModelDb,
+  Projection,
   QueryUpdate,
   Ref,
   ReverseLookups,
@@ -349,7 +350,12 @@ abstract class MongoAdapterBase extends TxProcessor {
       }
     }
     if (options?.projection !== undefined) {
-      resultPipeline.push({ $project: options.projection })
+      const projection: Projection<T> = {}
+      for (const key in options.projection) {
+        const ckey = this.checkMixinKey<T>(key, clazz) as keyof T
+        projection[ckey] = options.projection[key]
+      }
+      resultPipeline.push({ $project: projection })
     }
     pipeline.push({
       $facet: {
@@ -438,7 +444,12 @@ abstract class MongoAdapterBase extends TxProcessor {
     let cursor = coll.find<T>(this.translateQuery(_class, query))
 
     if (options?.projection !== undefined) {
-      cursor = cursor.project(options.projection)
+      const projection: Projection<T> = {}
+      for (const key in options.projection) {
+        const ckey = this.checkMixinKey<T>(key, _class) as keyof T
+        projection[ckey] = options.projection[key]
+      }
+      cursor = cursor.project(projection)
     }
     let total: number | undefined
     if (options !== null && options !== undefined) {

@@ -108,14 +108,19 @@ export type Lookup<T extends Doc> = Refs<T> | ReverseLookups | (Refs<T> & Revers
 /**
  * @public
  */
+export type Projection<T extends Doc> = {
+  [P in keyof T]?: 0 | 1
+}
+
+/**
+ * @public
+ */
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 export type FindOptions<T extends Doc> = {
   limit?: number
   sort?: SortingQuery<T>
   lookup?: Lookup<T>
-  projection?: {
-    [P in keyof T]?: 0 | 1
-  }
+  projection?: Projection<T>
 }
 
 /**
