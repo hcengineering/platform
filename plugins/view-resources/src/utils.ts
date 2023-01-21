@@ -34,6 +34,7 @@ import {
   AnyComponent,
   ErrorPresenter,
   getCurrentLocation,
+  Location,
   getPlatformColorForText,
   locationToUrl
 } from '@hcengineering/ui'
@@ -474,16 +475,16 @@ export function isCollectionAttr (hierarchy: Hierarchy, key: KeyedAttribute): bo
   return hierarchy.isDerived(key.attr.type._class, core.class.Collection)
 }
 
-function makeViewletKey (): string {
-  const loc = getCurrentLocation()
+function makeViewletKey (loc?: Location): string {
+  loc = loc ?? getCurrentLocation()
   loc.fragment = undefined
   loc.query = undefined
   return 'viewlet' + locationToUrl(loc)
 }
 
-export function setActiveViewletId (viewletId: Ref<Viewlet> | null): void {
-  const key = makeViewletKey()
-  if (viewletId !== null) {
+export function setActiveViewletId (viewletId: Ref<Viewlet> | null, loc?: Location): void {
+  const key = makeViewletKey(loc)
+  if (viewletId !== null && viewletId !== undefined) {
     localStorage.setItem(key, viewletId)
   } else {
     localStorage.removeItem(key)

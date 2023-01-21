@@ -17,7 +17,7 @@
   import { getResource } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { Button, eventToHTMLElement, getCurrentLocation, IconAdd, locationToUrl, showPopup } from '@hcengineering/ui'
-  import { Filter } from '@hcengineering/view'
+  import { Filter, ViewOptions } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import { filterStore } from '../../filter'
   import view from '../../plugin'
@@ -27,6 +27,7 @@
 
   export let _class: Ref<Class<Doc>>
   export let query: DocumentQuery<Doc>
+  export let viewOptions: ViewOptions | undefined = undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -79,7 +80,7 @@
   }
 
   async function saveFilteredView () {
-    showPopup(FilterSave, {})
+    showPopup(FilterSave, { viewOptions })
   }
 
   let loading = false

@@ -18,7 +18,13 @@
   import { Vacancy } from '@hcengineering/recruit'
   import { Button, Icon, IconAdd, Label, Loading, SearchEdit, showPopup } from '@hcengineering/ui'
   import view, { BuildModelKey, Viewlet, ViewletPreference } from '@hcengineering/view'
-  import { FilterButton, getViewOptions, TableBrowser, ViewletSettingButton } from '@hcengineering/view-resources'
+  import {
+    FilterButton,
+    getViewOptions,
+    setActiveViewletId,
+    TableBrowser,
+    ViewletSettingButton
+  } from '@hcengineering/view-resources'
   import recruit from '../plugin'
   import CreateVacancy from './CreateVacancy.svelte'
   import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
@@ -104,6 +110,7 @@
     .then((res) => {
       descr = res
       if (res !== undefined) {
+        setActiveViewletId(res._id)
         preferenceQuery.query(
           view.class.ViewletPreference,
           {

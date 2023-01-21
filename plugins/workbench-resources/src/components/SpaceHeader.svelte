@@ -17,19 +17,22 @@
   import core, { WithLookup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import presentation, { createQuery, getClient } from '@hcengineering/presentation'
-  import { AnyComponent, Button, IconAdd, SearchEdit, showPanel, showPopup, TabList } from '@hcengineering/ui'
-  import view, { Viewlet } from '@hcengineering/view'
   import {
-    getActiveViewletId,
-    getViewOptions,
-    setActiveViewletId,
-    ViewletSettingButton
-  } from '@hcengineering/view-resources'
+    AnyComponent,
+    Button,
+    deviceOptionsStore as deviceInfo,
+    IconAdd,
+    SearchEdit,
+    showPanel,
+    showPopup,
+    TabList
+  } from '@hcengineering/ui'
+  import view, { Viewlet, ViewOptions } from '@hcengineering/view'
+  import { getActiveViewletId, setActiveViewletId, ViewletSettingButton } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../plugin'
   import { classIcon } from '../utils'
   import Header from './Header.svelte'
-  import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
 
   export let spaceId: Ref<Space> | undefined
   export let createItemDialog: AnyComponent | undefined
@@ -38,6 +41,7 @@
   export let viewlet: WithLookup<Viewlet> | undefined
   export let viewlets: WithLookup<Viewlet>[] = []
   export let _class: Ref<Class<Doc>> | undefined = undefined
+  export let viewOptions: ViewOptions
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -79,6 +83,7 @@
     const _id = getActiveViewletId()
     const index = viewlets.findIndex((p) => p._id === (viewlet?._id ?? _id))
     viewlet = index === -1 ? viewlets[0] : viewlets[index]
+    setActiveViewletId(viewlet._id)
   }
   $: viewslist = viewlets.map((views) => {
     return {
@@ -89,8 +94,6 @@
   })
 
   $: twoRows = $deviceInfo.twoRows
-
-  $: viewOptions = getViewOptions(viewlet)
 </script>
 
 <div class="ac-header withSettings" class:full={!twoRows} class:mini={twoRows}>
@@ -130,6 +133,7 @@
           on:select={(result) => {
             if (result.detail !== undefined) {
               viewlet = viewlets.find((vl) => vl._id === result.detail.id)
+              console.log('set viewlet by space headed')
               if (viewlet) setActiveViewletId(viewlet._id)
             }
           }}

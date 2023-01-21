@@ -20,7 +20,7 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Button, Label, Loading, Scroller, tableSP } from '@hcengineering/ui'
   import view, { BuildModelKey, Viewlet, ViewletPreference } from '@hcengineering/view'
-  import { getViewOptions, Table, ViewletSettingButton } from '@hcengineering/view-resources'
+  import { getViewOptions, setActiveViewletId, Table, ViewletSettingButton } from '@hcengineering/view-resources'
   import hr from '../../plugin'
   import {
     EmployeeReports,
@@ -182,6 +182,7 @@
       .then((res) => {
         descr = res
         if (res !== undefined) {
+          setActiveViewletId(res._id)
           preferenceQuery.query(
             view.class.ViewletPreference,
             {

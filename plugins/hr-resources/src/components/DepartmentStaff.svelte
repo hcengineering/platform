@@ -19,7 +19,7 @@
   import { createQuery, getClient, UsersPopup } from '@hcengineering/presentation'
   import { Button, eventToHTMLElement, IconAdd, Label, Scroller, showPopup } from '@hcengineering/ui'
   import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
-  import { getViewOptions, Table, ViewletSettingButton } from '@hcengineering/view-resources'
+  import { getViewOptions, setActiveViewletId, Table, ViewletSettingButton } from '@hcengineering/view-resources'
   import hr from '../plugin'
   import { addMember } from '../utils'
 
@@ -77,6 +77,7 @@
       .then((res) => {
         descr = res
         if (res !== undefined) {
+          setActiveViewletId(res._id)
           preferenceQuery.query(
             view.class.ViewletPreference,
             {

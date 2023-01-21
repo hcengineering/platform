@@ -13,26 +13,22 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Doc, Ref, SortingOrder, Space, getCurrentAccount } from '@hcengineering/core'
+  import core, { Doc, getCurrentAccount, Ref, SortingOrder, Space } from '@hcengineering/core'
   import { getResource } from '@hcengineering/platform'
+  import preference, { SpacePreference } from '@hcengineering/preference'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Button, IconEdit, navigate, Scroller, showPopup } from '@hcengineering/ui'
-  import type { Application, NavigatorModel, SpecialNavModel } from '@hcengineering/workbench'
   import setting from '@hcengineering/setting'
+  import { Button, Scroller, showPopup } from '@hcengineering/ui'
+  import type { Application, NavigatorModel, SpecialNavModel } from '@hcengineering/workbench'
   import { createEventDispatcher } from 'svelte'
-  import preferece, { SpacePreference } from '@hcengineering/preference'
+  import workbench from '../plugin'
   import { getSpecialSpaceClass } from '../utils'
-  import preference from '@hcengineering/preference'
+  import HelpAndSupport from './HelpAndSupport.svelte'
   import SpacesNav from './navigator/SpacesNav.svelte'
   import SpecialElement from './navigator/SpecialElement.svelte'
   import StarredNav from './navigator/StarredNav.svelte'
   import TreeSeparator from './navigator/TreeSeparator.svelte'
-  import HelpAndSupport from './HelpAndSupport.svelte'
-  import workbench from '../plugin'
-  import TreeNode from './navigator/TreeNode.svelte'
-  import TreeItem from './navigator/TreeItem.svelte'
-  import view, { FilteredView } from '@hcengineering/view'
-  import { filterStore } from '@hcengineering/view-resources'
+  import SavedView from './SavedView.svelte'
 
   export let model: NavigatorModel | undefined
   export let currentSpace: Ref<Space> | undefined
@@ -69,7 +65,7 @@
 
   const preferenceQuery = createQuery()
 
-  preferenceQuery.query(preferece.class.SpacePreference, {}, (res) => {
+  preferenceQuery.query(preference.class.SpacePreference, {}, (res) => {
     preferences = new Map(
       res.map((r) => {
         return [r.attachedTo, r]
@@ -106,18 +102,6 @@
 
   $: if (model) update(model, spaces, preferences)
 
-  function removeAction (filteredView: FilteredView) {
-    return [
-      {
-        icon: view.icon.Archive ?? IconEdit,
-        label: setting.string.Delete,
-        action: async (ctx: any, evt: Event) => {
-          await client.removeDoc(view.class.FilteredView, currentSpace, filteredView._id)
-        }
-      }
-    ]
-  }
-
   async function updateSpecials (
     specials: SpecialNavModel[],
     spaces: Space[],
@@ -141,11 +125,6 @@
     return [result, requestIndex]
   }
   const dispatch = createEventDispatcher()
-  const filteredViewsQuery = createQuery()
-  let filteredViews: FilteredView[] | undefined
-  $: filteredViewsQuery.query(view.class.FilteredView, { attachedTo: currentApplication?.alias }, (result) => {
-    filteredViews = result
-  })
 </script>
 
 {#if model}
@@ -166,20 +145,7 @@
     {/if}
 
     {#if specials.length > 0}<TreeSeparator />{/if}
-    {#if filteredViews && filteredViews.length > 0}
-      <TreeNode label={view.string.FilteredViews}>
-        {#each filteredViews as fV}
-          <TreeItem
-            title={fV.name}
-            on:click={() => {
-              navigate(fV.location)
-              $filterStore = JSON.parse(fV.filters)
-            }}
-            actions={() => removeAction(fV)}
-          />
-        {/each}
-      </TreeNode>
-    {/if}
+    <SavedView {currentApplication} />
     {#if starred.length}
       <StarredNav label={preference.string.Starred} spaces={starred} on:space {currentSpace} />
     {/if}

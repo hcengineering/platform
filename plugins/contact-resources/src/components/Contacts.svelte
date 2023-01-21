@@ -22,6 +22,7 @@
     ActionContext,
     FilterButton,
     getViewOptions,
+    setActiveViewletId,
     TableBrowser,
     ViewletSettingButton
   } from '@hcengineering/view-resources'
@@ -51,6 +52,7 @@
     .then((res) => {
       viewlet = res
       if (res !== undefined) {
+        setActiveViewletId(res._id)
         preferenceQuery.query(
           view.class.ViewletPreference,
           {

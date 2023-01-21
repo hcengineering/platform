@@ -5,7 +5,7 @@
   import { Issue, IssueStatus, Team } from '@hcengineering/tracker'
   import { Button, IconDetails, IconDetailsFilled } from '@hcengineering/ui'
   import view, { Viewlet } from '@hcengineering/view'
-  import { FilterBar, getActiveViewletId, getViewOptions } from '@hcengineering/view-resources'
+  import { FilterBar, getActiveViewletId, getViewOptions, setActiveViewletId } from '@hcengineering/view-resources'
   import ViewletSettingButton from '@hcengineering/view-resources/src/components/ViewletSettingButton.svelte'
   import tracker from '../../plugin'
   import IssuesContent from './IssuesContent.svelte'
@@ -45,6 +45,7 @@
     )
     const _id = getActiveViewletId()
     viewlet = viewlets.find((viewlet) => viewlet._id === _id) || viewlets[0]
+    setActiveViewletId(viewlet._id)
   }
   $: if (!label && title) {
     translate(title, {}).then((res) => {
@@ -118,7 +119,7 @@
   </svelte:fragment>
 </IssuesHeader>
 <slot name="afterHeader" />
-<FilterBar _class={tracker.class.Issue} query={searchQuery} on:change={(e) => (resultQuery = e.detail)} />
+<FilterBar _class={tracker.class.Issue} query={searchQuery} {viewOptions} on:change={(e) => (resultQuery = e.detail)} />
 <div class="flex w-full h-full clear-mins">
   {#if viewlet && _teams && issueStatuses}
     <IssuesContent {viewlet} query={resultQuery} {space} teams={_teams} {issueStatuses} {viewOptions} />

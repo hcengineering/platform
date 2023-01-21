@@ -30,7 +30,7 @@
     TabList
   } from '@hcengineering/ui'
   import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
-  import { FilterButton, getViewOptions, ViewletSettingButton } from '@hcengineering/view-resources'
+  import { FilterButton, getViewOptions, setActiveViewletId, ViewletSettingButton } from '@hcengineering/view-resources'
   import calendar from '../plugin'
   import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
 
@@ -56,6 +56,7 @@
       viewlets = res
       if (selectedViewlet === undefined || res.findIndex((p) => p._id === selectedViewlet?._id) === -1) {
         selectedViewlet = res[0]
+        setActiveViewletId(selectedViewlet._id)
       }
     },
     { lookup: { descriptor: view.class.ViewletDescriptor } }
