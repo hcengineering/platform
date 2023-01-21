@@ -18,7 +18,7 @@
   import { getClient } from '@hcengineering/presentation'
   import { AnyComponent, Component } from '@hcengineering/ui'
   import view, { Viewlet } from '@hcengineering/view'
-  import { getActiveViewletId } from '@hcengineering/view-resources'
+  import { getActiveViewletId, getViewOptions } from '@hcengineering/view-resources'
   import type { ViewConfiguration } from '@hcengineering/workbench'
   import SpaceContent from './SpaceContent.svelte'
   import SpaceHeader from './SpaceHeader.svelte'
@@ -79,6 +79,8 @@
   function setViewlet (e: CustomEvent<WithLookup<Viewlet>>) {
     viewlet = e.detail
   }
+
+  $: viewOptions = getViewOptions(viewlet)
 </script>
 
 {#if _class && space}
@@ -95,9 +97,10 @@
       {viewlets}
       {createItemDialog}
       {createItemLabel}
+      {viewOptions}
       bind:search
       bind:viewlet
     />
   {/if}
-  <SpaceContent space={space._id} {_class} {createItemDialog} {createItemLabel} bind:search {viewlet} />
+  <SpaceContent space={space._id} {_class} {createItemDialog} {viewOptions} {createItemLabel} bind:search {viewlet} />
 {/if}

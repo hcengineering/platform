@@ -82,6 +82,8 @@ export interface FilteredView extends Preference {
   name: string
   location: PlatformLocation
   filters: string
+  viewOptions?: ViewOptions
+  viewletId?: Ref<Viewlet> | null
 }
 
 /**

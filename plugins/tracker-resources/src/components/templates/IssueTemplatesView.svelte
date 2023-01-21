@@ -5,7 +5,7 @@
   import { IssueTemplate } from '@hcengineering/tracker'
   import { Button, IconAdd, IconDetails, IconDetailsFilled, showPopup } from '@hcengineering/ui'
   import view, { Viewlet } from '@hcengineering/view'
-  import { FilterBar, getActiveViewletId, getViewOptions } from '@hcengineering/view-resources'
+  import { FilterBar, getActiveViewletId, getViewOptions, setActiveViewletId } from '@hcengineering/view-resources'
   import ViewletSettingButton from '@hcengineering/view-resources/src/components/ViewletSettingButton.svelte'
   import tracker from '../../plugin'
   import IssuesHeader from '../issues/IssuesHeader.svelte'
@@ -47,6 +47,7 @@
     )
     const _id = getActiveViewletId()
     viewlet = viewlets.find((viewlet) => viewlet._id === _id) || viewlets[0]
+    setActiveViewletId(viewlet._id)
   }
   $: if (!label && title) {
     translate(title, {}).then((res) => {
@@ -105,7 +106,12 @@
   </svelte:fragment>
 </IssuesHeader>
 <slot name="afterHeader" />
-<FilterBar _class={tracker.class.IssueTemplate} query={searchQuery} on:change={(e) => (resultQuery = e.detail)} />
+<FilterBar
+  _class={tracker.class.IssueTemplate}
+  {viewOptions}
+  query={searchQuery}
+  on:change={(e) => (resultQuery = e.detail)}
+/>
 <div class="flex w-full h-full clear-mins">
   {#if viewlet && viewOptions}
     <IssueTemplatesContent {viewOptions} {viewlet} query={resultQuery} />

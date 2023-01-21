@@ -29,7 +29,13 @@
     showPopup
   } from '@hcengineering/ui'
   import view, { Viewlet, ViewletDescriptor, ViewletPreference } from '@hcengineering/view'
-  import { FilterBar, FilterButton, getViewOptions, ViewletSettingButton } from '@hcengineering/view-resources'
+  import {
+    FilterBar,
+    FilterButton,
+    getViewOptions,
+    setActiveViewletId,
+    ViewletSettingButton
+  } from '@hcengineering/view-resources'
 
   export let _class: Ref<Class<Doc>>
   export let space: Ref<Space> | undefined = undefined
@@ -71,6 +77,7 @@
       .then((res) => {
         viewlet = res
         if (res !== undefined) {
+          setActiveViewletId(res._id)
           preferenceQuery.query(
             view.class.ViewletPreference,
             {
@@ -120,6 +127,7 @@
   <FilterBar
     {_class}
     query={searchQuery}
+    {viewOptions}
     on:change={(e) => {
       resultQuery = e.detail
     }}

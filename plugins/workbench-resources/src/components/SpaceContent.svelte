@@ -18,7 +18,7 @@
   import { IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import { AnyComponent, Component, Loading } from '@hcengineering/ui'
-  import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
+  import view, { Viewlet, ViewletPreference, ViewOptions } from '@hcengineering/view'
   import { FilterBar } from '@hcengineering/view-resources'
 
   export let _class: Ref<Class<Doc>>
@@ -27,6 +27,7 @@
   export let viewlet: WithLookup<Viewlet> | undefined
   export let createItemDialog: AnyComponent | undefined
   export let createItemLabel: IntlString | undefined
+  export let viewOptions: ViewOptions
 
   const preferenceQuery = createQuery()
   let preference: ViewletPreference | undefined
@@ -56,7 +57,7 @@
       {#if loading}
         <Loading />
       {:else}
-        <FilterBar {_class} query={searchQuery} on:change={(e) => (resultQuery = e.detail)} />
+        <FilterBar {_class} query={searchQuery} {viewOptions} on:change={(e) => (resultQuery = e.detail)} />
         <Component
           is={viewlet.$lookup?.descriptor?.component}
           props={{

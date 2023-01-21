@@ -5,25 +5,28 @@
   import preference from '@hcengineering/preference'
   import { createEventDispatcher } from 'svelte'
   import { filterStore } from '../../filter'
+  import { ViewOptions } from '@hcengineering/view'
+  import { Doc, Ref } from '@hcengineering/core'
+  import { getActiveViewletId } from '../../utils'
+
+  export let viewOptions: ViewOptions | undefined = undefined
 
   let filterName = ''
   const client = getClient()
 
-  function getFilteredViewData () {
+  async function saveFilter () {
     const loc = getCurrentLocation()
     loc.fragment = undefined
     loc.query = undefined
     const filters = JSON.stringify($filterStore)
-    return {
+    await client.createDoc(view.class.FilteredView, preference.space.Preference, {
       name: filterName,
       location: loc,
       filters,
-      attachedTo: loc.path[2]
-    }
-  }
-
-  async function saveFilter () {
-    await client.createDoc(view.class.FilteredView, preference.space.Preference, getFilteredViewData())
+      attachedTo: loc.path[2] as Ref<Doc>,
+      viewOptions,
+      viewletId: getActiveViewletId()
+    })
   }
 
   const dispatch = createEventDispatcher()
