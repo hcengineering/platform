@@ -214,11 +214,13 @@
               <!--Category for first item-->
               <div class="category-box">
                 <div class="flex flex-grow overflow-label">
-                  <span class="fs-medium flex-center gap-2 mt-2 mb-2 ml-2">
+                  <span class="fs-medium flex-center mt-2 mb-2 ml-2">
                     {#if cl.icon}
                       <Icon icon={cl.icon} size={'small'} />
                     {/if}
-                    <Label label={getCategorytitle(category)} />
+                    <div class="ml-1">
+                      <Label label={getCategorytitle(category)} />
+                    </div>
                   </span>
                 </div>
               </div>
