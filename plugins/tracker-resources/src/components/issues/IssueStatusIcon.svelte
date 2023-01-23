@@ -39,17 +39,20 @@
 
   const categoriesQuery = createQuery()
 
-  $: if (issueStatuses === undefined) {
-    categoriesQuery.query(
-      tracker.class.IssueStatus,
-      { category: tracker.issueStatusCategory.Started },
-      (res) => (statuses = res),
-      { sort: { rank: SortingOrder.Ascending } }
-    )
-  } else {
-    const _s = [...issueStatuses.filter((it) => it.category === tracker.issueStatusCategory.Started)]
-    _s.sort((a, b) => a.rank.localeCompare(b.rank))
-    categoriesQuery.unsubscribe()
+  $: if (value.category === tracker.issueStatusCategory.Started) {
+    if (issueStatuses === undefined) {
+      categoriesQuery.query(
+        tracker.class.IssueStatus,
+        { category: tracker.issueStatusCategory.Started },
+        (res) => (statuses = res),
+        { sort: { rank: SortingOrder.Ascending } }
+      )
+    } else {
+      const _s = [...issueStatuses.filter((it) => it.category === tracker.issueStatusCategory.Started)]
+      _s.sort((a, b) => a.rank.localeCompare(b.rank))
+      statuses = _s
+      categoriesQuery.unsubscribe()
+    }
   }
 
   async function updateCategory (status: WithLookup<IssueStatus>, statuses: IssueStatus[]) {
