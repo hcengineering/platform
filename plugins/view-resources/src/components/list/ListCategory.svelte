@@ -54,11 +54,19 @@
   $: initialLimit = singleCat ? singleCategoryLimit : defaultLimit
   $: limit = initialLimit
 
+  let collapsed = true
+
   const dispatch = createEventDispatcher()
 
   function limitGroup (items: Doc[], limit: number): Doc[] {
     return items.slice(0, limit)
   }
+
+  function initCollapsed (singleCat: boolean, category: any): void {
+    collapsed = !singleCat && items.length > autoFoldLimit
+  }
+
+  $: initCollapsed(singleCat, category)
 
   const handleRowFocused = (object: Doc) => {
     dispatch('row-focus', object)
@@ -79,7 +87,6 @@
     })
   }
 
-  $: collapsed = !singleCat && items.length > autoFoldLimit
   $: limited = limitGroup(items, limit)
   $: selectedObjectIdsSet = new Set<Ref<Doc>>(selectedObjectIds.map((it) => it._id))
 </script>
