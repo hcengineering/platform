@@ -32,7 +32,7 @@
   {@const to = !hierarchy.hasMixin(mixin, setting.mixin.UserMixin) ? object._class : mixin.extends}
   {#if !hierarchy.hasMixin(mixin, setting.mixin.Editable) || hierarchy.as(mixin, setting.mixin.Editable).value}
     {#key mixin._id}
-      <ClassAttributeBar _class={mixin._id} {object} {ignoreKeys} {to} {allowedCollections} on:update />
+      <ClassAttributeBar _class={mixin._id} object={hierarchy.as(object, mixin._id)} {ignoreKeys} {to} {allowedCollections} on:update />
     {/key}
   {/if}
 {/each}
