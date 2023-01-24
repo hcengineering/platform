@@ -16,12 +16,9 @@
 
 import { createApp } from '@hcengineering/ui'
 import { configurePlatform } from './platform'
-import { configurePlatformDev, configurePlatformDevServer } from './platform-dev'
+import { configurePlatformDevServer } from './platform-dev'
 
 configurePlatform().then(() => {
-  if (process.env.CLIENT_TYPE === 'dev') {
-    configurePlatformDev()
-  } 
   if (process.env.CLIENT_TYPE === 'dev-server') {
     configurePlatformDevServer()
   }

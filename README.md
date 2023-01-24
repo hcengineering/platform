@@ -17,9 +17,6 @@ rush build    # Will build all required packages.
 rush bundle   # Will prepare bundles.
 rush docker:build   # Will build docker containers for all applications.
 docker-compose up -d --force-recreate # Will setup all containers
-
-# wait a few seconds delay, to be sure elastic is up and running.
-../deploy/setup-es-attachment-pipeline.sh    # Setup elastic search plugin configuration.
 ```
 
 By default docker volumes `dev_db` `dev_elastic` `dev_files` will be created for mongo/elastic/minio instances.
