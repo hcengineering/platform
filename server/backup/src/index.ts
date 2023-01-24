@@ -179,7 +179,6 @@ export async function backup (transactorUrl: string, workspaceId: WorkspaceId, s
         try {
           const it = await connection.loadChunk(c, idx)
           idx = it.idx
-          console.log(needRetrieveChunks.length)
 
           const needRetrieve: Ref<Doc>[] = []
 

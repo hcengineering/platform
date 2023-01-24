@@ -120,6 +120,7 @@ export class TTask extends TAttachedDoc implements Task {
     doneState!: Ref<DoneState> | null
 
   @Prop(TypeString(), task.string.TaskNumber)
+  @Index(IndexKind.FullText)
     number!: number
 
   // @Prop(TypeRef(contact.class.Employee), task.string.TaskAssignee)

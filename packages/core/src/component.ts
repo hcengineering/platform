@@ -25,7 +25,7 @@ import type {
   Collection,
   Doc,
   DocIndexState,
-  AISearchContext,
+  FullTextSearchContext,
   Enum,
   EnumOf,
   FullTextData,
@@ -39,7 +39,9 @@ import type {
   Space,
   Timestamp,
   Type,
-  UserStatus
+  UserStatus,
+  Configuration,
+  ConfigurationElement
 } from './classes'
 import type {
   Tx,
@@ -99,16 +101,20 @@ export default plugin(coreId, {
     BlobData: '' as Ref<Class<BlobData>>,
     FulltextData: '' as Ref<Class<FullTextData>>,
     TypeRelatedDocument: '' as Ref<Class<Type<RelatedDocument>>>,
-    DocIndexState: '' as Ref<Class<DocIndexState>>
+    DocIndexState: '' as Ref<Class<DocIndexState>>,
+
+    Configuration: '' as Ref<Class<Configuration>>
   },
   mixin: {
-    AISearchContext: '' as Ref<Mixin<AISearchContext>>
+    FullTextSearchContext: '' as Ref<Mixin<FullTextSearchContext>>,
+    ConfigurationElement: '' as Ref<Mixin<ConfigurationElement>>
   },
   space: {
     Tx: '' as Ref<Space>,
     DerivedTx: '' as Ref<Space>,
     Model: '' as Ref<Space>,
-    Space: '' as Ref<Space>
+    Space: '' as Ref<Space>,
+    Configuration: '' as Ref<Space>
   },
   account: {
     System: '' as Ref<Account>

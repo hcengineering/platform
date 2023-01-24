@@ -18,7 +18,9 @@ import { DOMAIN_MODEL } from '@hcengineering/core'
 import { Builder, Mixin, Model } from '@hcengineering/model'
 import core, { TClass, TDoc } from '@hcengineering/model-core'
 import preference, { TPreference } from '@hcengineering/model-preference'
+import presenation from '@hcengineering/model-presentation'
 import type { Asset, IntlString, Resource, Status } from '@hcengineering/platform'
+import { DOMAIN_PREFERENCE } from '@hcengineering/preference'
 import type { AnyComponent, Location } from '@hcengineering/ui'
 import type {
   Action,
@@ -33,6 +35,7 @@ import type {
   CollectionEditor,
   CollectionPresenter,
   Filter,
+  FilteredView,
   FilterMode,
   IgnoreActions,
   InlineAttributEditor,
@@ -57,11 +60,9 @@ import type {
   Viewlet,
   ViewletDescriptor,
   ViewletPreference,
-  ViewOptionsModel,
-  FilteredView
+  ViewOptionsModel
 } from '@hcengineering/view'
 import view from './plugin'
-import { DOMAIN_PREFERENCE } from '@hcengineering/preference'
 
 export { viewOperation } from './migration'
 export { ViewAction, Viewlet }
@@ -700,6 +701,23 @@ export function createModel (builder: Builder): void {
   )
 
   classPresenter(builder, core.class.EnumOf, view.component.StringPresenter, view.component.EnumEditor)
+
+  createAction(builder, {
+    action: view.actionImpl.ShowPopup,
+    actionProps: {
+      component: view.component.IndexedDocumentPreview,
+      fillProps: {
+        _id: 'objectId'
+      }
+    },
+    label: presenation.string.DocumentPreview,
+    keyBinding: [''],
+    input: 'focus',
+    icon: view.icon.Open,
+    category: view.category.GeneralNavigation,
+    target: core.class.Doc,
+    context: { mode: ['context', 'browser', 'editor'] }
+  })
 }
 
 export default view

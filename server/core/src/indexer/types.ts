@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Class, Doc, DocIndexState, DocumentQuery, DocumentUpdate, Hierarchy, Ref } from '@hcengineering/core'
+import { Class, Doc, DocIndexState, DocumentQuery, DocumentUpdate, Hierarchy, Ref, Storage } from '@hcengineering/core'
 import type { IndexedDoc } from '../types'
 
 /**
@@ -25,7 +25,6 @@ export interface FullTextPipeline {
     docId: Ref<DocIndexState>,
     mark: boolean,
     update: DocumentUpdate<DocIndexState>,
-    elasticUpdate: Partial<IndexedDoc>,
     flush?: boolean
   ) => Promise<void>
 
@@ -42,11 +41,7 @@ export interface FullTextPipeline {
 /**
  * @public
  */
-export type DocUpdateHandler = (
-  doc: DocIndexState,
-  update: DocumentUpdate<DocIndexState>,
-  elastic: Partial<IndexedDoc>
-) => Promise<void>
+export type DocUpdateHandler = (doc: DocIndexState, update: DocumentUpdate<DocIndexState>) => Promise<void>
 
 /**
  * @public
@@ -58,13 +53,15 @@ export interface FullTextPipelineStage {
   // State to be updated
   stageId: string
 
-  // Clear all stages except following.
-  clearExcept: string[]
+  // If specified, will clear all stages except specified + current
+  clearExcept?: string[]
 
   // Will propogate some changes for both mark values.
   updateFields: DocUpdateHandler[]
 
-  limit: number
+  enabled: boolean
+
+  initialize: (storage: Storage, pipeline: FullTextPipeline) => Promise<void>
 
   // Collect all changes related to bulk of document states
   collect: (docs: DocIndexState[], pipeline: FullTextPipeline) => Promise<void>
@@ -84,8 +81,13 @@ export interface FullTextPipelineStage {
 /**
  * @public
  */
-export const contentStageId = 'cnt-v1'
+export const contentStageId = 'cnt-v2b'
 /**
  * @public
  */
 export const fieldStateId = 'fld-v1'
+
+/**
+ * @public
+ */
+export const fullTextPushStageId = 'fts-v1'

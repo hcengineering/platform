@@ -79,3 +79,4 @@ ingest-attachment-*.zip
 tsdoc-metadata.json
 pods/front/dist
 *.cpuprofile
+*.pyc

@@ -15,7 +15,6 @@
 
 import {
   Account,
-  AISearchContext,
   AnyAttribute,
   ArrOf,
   AttachedDoc,
@@ -23,16 +22,20 @@ import {
   Class,
   ClassifierKind,
   Collection,
+  Configuration,
+  ConfigurationElement,
   Doc,
   DocIndexState,
   Domain,
   DOMAIN_BLOB,
+  DOMAIN_CONFIGURATION,
   DOMAIN_DOC_INDEX_STATE,
   DOMAIN_FULLTEXT_BLOB,
   DOMAIN_MODEL,
   Enum,
   EnumOf,
   FullTextData,
+  FullTextSearchContext,
   IndexKind,
   Interface,
   Mixin,
@@ -48,14 +51,15 @@ import {
 import {
   Hidden,
   Index,
+  Mixin as MMixin,
   Model,
   Prop,
+  TypeBoolean,
   TypeIntlString,
   TypeRef,
   TypeString,
   TypeTimestamp,
-  UX,
-  Mixin as MMixin
+  UX
 } from '@hcengineering/model'
 import type { IntlString } from '@hcengineering/platform'
 import core from './component'
@@ -250,7 +254,22 @@ export class TDocIndexState extends TDoc implements DocIndexState {
   stages!: Record<string, boolean>
 }
 
-@MMixin(core.mixin.AISearchContext, core.class.Class)
-export class TAISearchContext extends TClass implements AISearchContext {
-  index!: boolean
+@MMixin(core.mixin.FullTextSearchContext, core.class.Class)
+export class TFullTextSearchContext extends TClass implements FullTextSearchContext {
+  fullTextSummary!: boolean
+}
+
+@MMixin(core.mixin.ConfigurationElement, core.class.Class)
+export class TConfigurationElement extends TClass implements ConfigurationElement {
+  @Prop(TypeIntlString(), core.string.Private)
+    title!: IntlString
+
+  @Prop(TypeIntlString(), core.string.Private)
+    group!: IntlString
+}
+
+@Model(core.class.Configuration, core.class.Doc, DOMAIN_CONFIGURATION)
+export class TConfiguration extends TDoc implements Configuration {
+  @Prop(TypeBoolean(), core.string.Private)
+    enabled!: boolean
 }

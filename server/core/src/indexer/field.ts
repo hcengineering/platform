@@ -22,7 +22,8 @@ import {
   extractDocKey,
   MeasureContext,
   Ref,
-  ServerStorage
+  ServerStorage,
+  Storage
 } from '@hcengineering/core'
 import { IndexedDoc } from '../types'
 import {
@@ -40,20 +41,25 @@ import { docKey, docUpdKey, getContent, getFullTextAttributes, isFullTextAttribu
 export class IndexedFieldStage implements FullTextPipelineStage {
   require = []
   stageId = fieldStageId
-  clearExcept: string[] = [fieldStageId, contentStageId]
+  // Do not clear downloaded content
+  clearExcept: string[] = [contentStageId]
 
   clearField: string[] = []
 
   updateFields: DocUpdateHandler[] = []
 
-  limit = 1000
+  enabled = true
 
-  constructor (readonly dbStorage: ServerStorage, readonly metrics: MeasureContext) {}
+  constructor (private readonly dbStorage: ServerStorage, readonly metrics: MeasureContext) {}
+
+  async initialize (storage: Storage, pipeline: FullTextPipeline): Promise<void> {
+    // Just do nothing
+  }
 
   async search (
     _classes: Ref<Class<Doc>>[],
     search: DocumentQuery<Doc>,
-    size: number | undefined,
+    size?: number,
     from?: number
   ): Promise<{ docs: IndexedDoc[], pass: boolean }> {
     return { docs: [], pass: true }
@@ -88,10 +94,8 @@ export class IndexedFieldStage implements FullTextPipelineStage {
           const content = getContent(pipeline.hierarchy, attributes, doc)
 
           const docUpdate: DocumentUpdate<DocIndexState> = {}
-          const elasticUpdate: Partial<IndexedDoc> = {}
 
           const parentDocUpdate: DocumentUpdate<DocIndexState> = {}
-          const parentDocElasticUpdate: Partial<IndexedDoc> = {}
 
           for (const [, v] of Object.entries(content)) {
             // Check for content changes and collect update
@@ -99,28 +103,19 @@ export class IndexedFieldStage implements FullTextPipelineStage {
             const dUKey = docUpdKey(v.attr.name, { _class: v.attr.attributeOf })
             if (docState.attributes[dKey] !== v.value) {
               ;(docUpdate as any)[dUKey] = v.value
-              elasticUpdate[dKey] = v.value
 
               // Aswell I need to update my parent with my attributes.
               if (docState.attachedTo != null) {
                 ;(parentDocUpdate as any)[docUpdKey(v.attr.name, { _class: v.attr.attributeOf, docId: docState._id })] =
                   v.value
-                ;(parentDocElasticUpdate as any)[
-                  docKey(v.attr.name, { _class: v.attr.attributeOf, docId: docState._id })
-                ] = v.value
               }
             }
           }
           if (docState.attachedTo != null) {
             // We need to clear field stage from parent, so it will be re indexed.
-            await pipeline.update(
-              docState.attachedTo as Ref<DocIndexState>,
-              false,
-              parentDocUpdate,
-              parentDocElasticUpdate
-            )
+            await pipeline.update(docState.attachedTo as Ref<DocIndexState>, false, parentDocUpdate)
           }
-          await pipeline.update(docState._id, true, docUpdate, elasticUpdate)
+          await pipeline.update(docState._id, true, docUpdate)
         } catch (err: any) {
           console.error(err)
           continue
@@ -134,7 +129,6 @@ export class IndexedFieldStage implements FullTextPipelineStage {
       if (doc.attachedTo !== undefined) {
         const attachedTo = doc.attachedTo as Ref<DocIndexState>
         const parentDocUpdate: DocumentUpdate<DocIndexState> = {}
-        const parentDocElasticUpdate: Partial<IndexedDoc> = {}
 
         for (const [k] of Object.entries(doc.attributes)) {
           const { _class, attr, extra, docId } = extractDocKey(k)
@@ -143,15 +137,15 @@ export class IndexedFieldStage implements FullTextPipelineStage {
             const keyAttr = pipeline.hierarchy.getAttribute(_class, attr)
             if (isFullTextAttribute(keyAttr)) {
               ;(parentDocUpdate as any)[docUpdKey(attr, { _class, docId: doc._id, extra })] = null
-              ;(parentDocElasticUpdate as any)[docKey(attr, { _class, docId: doc._id, extra })] = null
             }
           }
         }
 
         if (Object.keys(parentDocUpdate).length > 0) {
-          await pipeline.update(attachedTo, false, parentDocUpdate, parentDocElasticUpdate)
+          await pipeline.update(attachedTo, false, parentDocUpdate)
         }
       }
+      await pipeline.update(doc._id, true, {})
     }
   }
 }

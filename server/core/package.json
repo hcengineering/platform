@@ -24,12 +24,14 @@
     "eslint-config-standard-with-typescript": "^23.0.0",
     "prettier": "^2.7.1",
     "@rushstack/heft": "^0.47.9",
-    "typescript": "^4.3.5"
+    "typescript": "^4.3.5",
+    "@types/html-to-text": "^8.1.1"
   },
   "dependencies": {
     "@hcengineering/core": "^0.6.20",
     "@hcengineering/platform": "^0.6.8",
     "@hcengineering/minio": "^0.6.0",
-    "fast-equals": "^2.0.3"
+    "fast-equals": "^2.0.3",    
+    "html-to-text": "^9.0.3"
   }
 }

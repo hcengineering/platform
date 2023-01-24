@@ -54,8 +54,6 @@ import { getResource } from '@hcengineering/platform'
 import { DbAdapter, DbAdapterConfiguration, TxAdapter } from './adapter'
 import { FullTextIndex } from './fulltext'
 import { FullTextIndexPipeline } from './indexer'
-import { ContentRetrievalStage } from './indexer/content'
-import { IndexedFieldStage } from './indexer/field'
 import { FullTextPipelineStage } from './indexer/types'
 import serverCore from './plugin'
 import { Triggers } from './triggers'
@@ -73,8 +71,10 @@ import type {
 
 export type FullTextPipelineStageFactory = (
   adapter: FullTextAdapter,
-  stages: FullTextPipelineStage[]
-) => FullTextPipelineStage
+  storage: ServerStorage,
+  storageAdapter: MinioService,
+  contentAdapter: ContentTextAdapter
+) => FullTextPipelineStage[]
 /**
  * @public
  */
@@ -87,7 +87,7 @@ export interface DbConfiguration {
     factory: FullTextAdapterFactory
     url: string
     metrics: MeasureContext
-    stages?: FullTextPipelineStageFactory[]
+    stages: FullTextPipelineStageFactory
   }
   contentAdapter: {
     factory: ContentAdapterFactory
@@ -456,7 +456,10 @@ class TServerStorage implements ServerStorage {
           },
           findAll: fAll(ctx),
           modelDb: this.modelDb,
-          hierarchy: this.hierarchy
+          hierarchy: this.hierarchy,
+          txFx: async (f) => {
+            await f(this.getAdapter(DOMAIN_TX))
+          }
         })
       ))
     ]
@@ -690,23 +693,23 @@ export async function createServerStorage (
     conf.contentAdapter.metrics
   )
 
-  const docIndexState = adapters.get(conf.defaultAdapter)
-  if (docIndexState === undefined) {
+  const defaultAdapter = adapters.get(conf.defaultAdapter)
+  if (defaultAdapter === undefined) {
     throw new Error(`No Adapter for ${DOMAIN_DOC_INDEX_STATE}`)
   }
 
   const indexFactory = (storage: ServerStorage): FullTextIndex => {
-    const stages: FullTextPipelineStage[] = [
-      new IndexedFieldStage(storage, fulltextAdapter.metrics().newChild('fields', {})),
-      new ContentRetrievalStage(
-        storageAdapter,
-        conf.workspace,
-        fulltextAdapter.metrics().newChild('content', {}),
-        contentAdapter
-      )
-    ]
-    ;(conf.fulltextAdapter.stages ?? []).forEach((it) => stages.push(it(fulltextAdapter, stages)))
-    const indexer = new FullTextIndexPipeline(docIndexState, stages, fulltextAdapter, hierarchy, conf.workspace)
+    if (storageAdapter === undefined) {
+      throw new Error('No storage adapter')
+    }
+    const stages = conf.fulltextAdapter.stages(fulltextAdapter, storage, storageAdapter, contentAdapter)
+    const indexer = new FullTextIndexPipeline(
+      defaultAdapter,
+      stages,
+      hierarchy,
+      conf.workspace,
+      fulltextAdapter.metrics()
+    )
     return new FullTextIndex(
       hierarchy,
       fulltextAdapter,
@@ -732,4 +735,25 @@ export async function createServerStorage (
     indexFactory,
     options
   )
+}
+
+/**
+ * @public
+ */
+export function createNullStorageFactory (): MinioService {
+  return {
+    client: '' as any,
+    exists: async (workspaceId: WorkspaceId) => {
+      return false
+    },
+    make: async (workspaceId: WorkspaceId) => {},
+    remove: async (workspaceId: WorkspaceId, objectNames: string[]) => {},
+    delete: async (workspaceId: WorkspaceId) => {},
+    list: async (workspaceId: WorkspaceId, prefix?: string) => [],
+    stat: async (workspaceId: WorkspaceId, objectName: string) => ({} as any),
+    get: async (workspaceId: WorkspaceId, objectName: string) => ({} as any),
+    put: async (workspaceId: WorkspaceId, objectName: string, stream: any, size?: number, qwe?: any) => ({} as any),
+    read: async (workspaceId: WorkspaceId, name: string) => ({} as any),
+    partial: async (workspaceId: WorkspaceId, objectName: string, offset: number, length?: number) => ({} as any)
+  }
 }

@@ -63,7 +63,8 @@ export async function start (port: number, host?: string): Promise<void> {
         fulltextAdapter: {
           factory: createNullFullTextAdapter,
           url: '',
-          metrics: new MeasureMetricsContext('', {})
+          metrics: new MeasureMetricsContext('', {}),
+          stages: () => []
         },
         contentAdapter: {
           url: '',

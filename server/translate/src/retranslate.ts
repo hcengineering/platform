@@ -21,6 +21,7 @@ import {
   DocumentUpdate,
   MeasureContext,
   Ref,
+  Storage,
   WorkspaceId
 } from '@hcengineering/core'
 import {
@@ -35,6 +36,7 @@ import {
 } from '@hcengineering/server-core'
 
 import got from 'got'
+import translatePlugin from './plugin'
 import { translateStateId, TranslationStage } from './types'
 
 /**
@@ -45,18 +47,34 @@ export class LibRetranslateStage implements TranslationStage {
   stageId = translateStateId
 
   updateFields: DocUpdateHandler[] = []
-  clearExcept: string[] = [fieldStateId, contentStageId, translateStateId]
 
   langExtra = 'en'
 
-  limit = 100
+  clearExcept?: string[] = undefined
 
-  constructor (
-    readonly metrics: MeasureContext,
-    private readonly url: string,
-    private readonly token: string,
-    readonly workspaceId: WorkspaceId
-  ) {}
+  enabled = false
+
+  token: string = ''
+  endpoint: string = ''
+
+  constructor (readonly metrics: MeasureContext, readonly workspaceId: WorkspaceId) {}
+
+  async initialize (storage: Storage, pipeline: FullTextPipeline): Promise<void> {
+    // Just do nothing
+    try {
+      const config = await storage.findAll(translatePlugin.class.TranslateConfiguration, {})
+      if (config.length > 0) {
+        this.enabled = config[0].enabled
+        this.token = config[0].token
+        this.endpoint = config[0].endpoint
+      } else {
+        this.enabled = false
+      }
+    } catch (err: any) {
+      console.error(err)
+      this.enabled = false
+    }
+  }
 
   async search (
     _classes: Ref<Class<Doc>>[],
@@ -67,7 +85,7 @@ export class LibRetranslateStage implements TranslationStage {
     return { docs: [], pass: true }
   }
 
-  async update (doc: DocIndexState, update: DocumentUpdate<DocIndexState>, elastic: Partial<IndexedDoc>): Promise<void> {
+  async update (doc: DocIndexState, update: DocumentUpdate<DocIndexState>): Promise<void> {
     for (const [k] of Array.from(Object.keys(update))) {
       const { _class, attr, docId, extra } = extractDocKey(k)
       if (!extra.includes('en')) {
@@ -78,6 +96,9 @@ export class LibRetranslateStage implements TranslationStage {
   }
 
   async collect (toIndex: DocIndexState[], pipeline: FullTextPipeline): Promise<void> {
+    if (!this.enabled) {
+      return
+    }
     for (const doc of toIndex) {
       if (pipeline.cancelling) {
         return
@@ -90,7 +111,7 @@ export class LibRetranslateStage implements TranslationStage {
     let english = false
     try {
       if (text.length > 0) {
-        const langResponse = await got.post(this.url + '/detect', {
+        const langResponse = await got.post(this.endpoint + '/detect', {
           headers: {
             'Content-Type': 'application/json'
           },
@@ -158,7 +179,7 @@ export class LibRetranslateStage implements TranslationStage {
               try {
                 const st = Date.now()
                 console.log('retranslate:begin: ', doc._id, attr)
-                const translation = await got.post(this.url + '/translate', {
+                const translation = await got.post(this.endpoint + '/translate', {
                   headers: {
                     'Content-Type': 'application/json'
                   },
@@ -187,14 +208,11 @@ export class LibRetranslateStage implements TranslationStage {
 
             if (doc.attachedTo != null) {
               const parentUpdate: DocumentUpdate<DocIndexState> = {}
-              const parentElasticUpdate: Partial<IndexedDoc> = {}
 
               ;(parentUpdate as any)[docUpdKey(attr, { _class, docId: doc._id, extra: [...extra, this.langExtra] })] =
                 base64Content
-              parentElasticUpdate[docKey(attr, { _class, docId: doc._id, extra: [...extra, ...this.langExtra] })] =
-                base64Content
 
-              await pipeline.update(doc.attachedTo as Ref<DocIndexState>, false, parentUpdate, parentElasticUpdate)
+              await pipeline.update(doc.attachedTo as Ref<DocIndexState>, false, parentUpdate)
             }
           }
         }
@@ -202,7 +220,7 @@ export class LibRetranslateStage implements TranslationStage {
     } catch (err: any) {
       const wasError = doc.attributes.error !== undefined
 
-      await pipeline.update(doc._id, false, { [docKey('error')]: JSON.stringify(err) }, {})
+      await pipeline.update(doc._id, false, { [docKey('error')]: JSON.stringify(err) })
       if (wasError) {
         return
       }
@@ -211,10 +229,13 @@ export class LibRetranslateStage implements TranslationStage {
       return
     }
 
-    await pipeline.update(doc._id, true, update, elasticUpdate, true)
+    await pipeline.update(doc._id, true, update, true)
   }
 
   async remove (docs: DocIndexState[], pipeline: FullTextPipeline): Promise<void> {
     // will be handled by field processor
+    for (const doc of docs) {
+      await pipeline.update(doc._id, true, {})
+    }
   }
 }

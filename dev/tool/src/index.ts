@@ -48,7 +48,9 @@ import { diffWorkspace, dumpWorkspace, restoreWorkspace } from './workspace'
 import { Data, getWorkspaceId, Tx, Version } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
 import { MigrateOperation } from '@hcengineering/model'
+import { openAIConfigDefaults } from '@hcengineering/openai'
 import { rebuildElastic } from './elastic'
+import { openAIConfig } from './openai'
 
 /**
  * @public
@@ -135,6 +137,30 @@ export function devTool (
         await assignWorkspace(db, productId, email, workspace)
       })
     })
+
+  program
+    .command('openai <workspace>')
+    .description('assign workspace')
+    .requiredOption('-t, --token <token>', 'OpenAI token')
+    .option('-h, --host <host>', 'OpenAI API Host', openAIConfigDefaults.endpoint)
+    .option('--enable <value>', 'Enable or disable', true)
+    .option('--embeddings <embeddings>', 'Enable or disable embeddings generation', true)
+    .option('--tokenLimit <tokenLimit>', 'Acceptable token limit', `${openAIConfigDefaults.tokenLimit}`)
+    .action(
+      async (
+        workspace: string,
+        cmd: { token: string, host: string, enable: string, tokenLimit: string, embeddings: string }
+      ) => {
+        console.log(`enabling OpenAI for workspace ${workspace}...`)
+        await openAIConfig(transactorUrl, workspace, productId, {
+          token: cmd.token,
+          endpoint: cmd.host,
+          enabled: cmd.enable === 'true',
+          tokenLimit: parseInt(cmd.tokenLimit),
+          embeddings: cmd.embeddings === 'true'
+        })
+      }
+    )
 
   program
     .command('show-user <email>')

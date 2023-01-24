@@ -30,5 +30,9 @@
     "@hcengineering/core": "^0.6.20",
     "@hcengineering/platform": "^0.6.8",
     "jwt-simple": "~0.5.6"
+  },
+  "repository": "https://github.com/hcengineering/anticrm",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
   }
 }
