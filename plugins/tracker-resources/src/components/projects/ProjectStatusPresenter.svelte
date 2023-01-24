@@ -40,28 +40,15 @@
 </script>
 
 {#if value}
-  {#if isEditable}
-    <ProjectStatusSelector
-      {kind}
-      {size}
-      {width}
-      {justify}
-      {isEditable}
-      {shouldShowLabel}
-      showTooltip={{ label: tracker.string.SetStatus }}
-      selectedProjectStatus={value.status}
-      onProjectStatusChange={handleProjectStatusChanged}
-    />
-  {:else}
-    <ProjectStatusSelector
-      {kind}
-      {size}
-      {width}
-      {justify}
-      {isEditable}
-      {shouldShowLabel}
-      selectedProjectStatus={value.status}
-      onProjectStatusChange={handleProjectStatusChanged}
-    />
-  {/if}
+  <ProjectStatusSelector
+    {kind}
+    {size}
+    {width}
+    {justify}
+    {isEditable}
+    {shouldShowLabel}
+    showTooltip={isEditable ? { label: tracker.string.SetStatus } : undefined}
+    selectedProjectStatus={value.status}
+    onProjectStatusChange={handleProjectStatusChanged}
+  />
 {/if}

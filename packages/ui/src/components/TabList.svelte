@@ -43,6 +43,7 @@
 {#if items.length > 0}
   <div class="tablist-container {kind} {size}">
     {#each items as item, i}
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
       <div
         bind:this={tabs[i]}
         class="button"

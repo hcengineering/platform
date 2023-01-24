@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 import type { Asset, IntlString } from '@hcengineering/platform'
+import { Timestamp } from '@hcengineering/core'
 import { /* Metadata, Plugin, plugin, */ Resource /*, Service */ } from '@hcengineering/platform'
 import { /* getContext, */ SvelteComponent } from 'svelte'
 
@@ -102,6 +103,7 @@ export interface TabItem {
   icon?: Asset | AnySvelteComponent
   color?: string
   tooltip?: IntlString
+  action?: () => void
 }
 
 export type ButtonKind =
@@ -237,4 +239,44 @@ export interface DeviceOptions {
   minWidth: boolean
   twoRows: boolean
   theme?: any
+}
+
+export interface TimelineItem {
+  icon?: Asset | AnySvelteComponent
+  iconSize?: IconSize
+  iconProps?: Record<string, any>
+  presenter?: AnySvelteComponent
+  props?: Record<string, any>
+  label?: string
+
+  startDate: Timestamp
+  targetDate: Timestamp | undefined
+}
+export interface TimelineRow {
+  items: TimelineItem[] | undefined
+}
+export interface TimelinePoint {
+  date: Date
+  x: number
+  label?: string
+}
+export interface TimelineMinMax {
+  min: TimelinePoint
+  max: TimelinePoint
+}
+export type TTimelineRow = TimelineMinMax | null
+export interface TimelineState {
+  todayMarker: TimelinePoint
+  cursorMarker?: TimelinePoint
+  offsetView: number
+  renderedRange: {
+    left: TimelinePoint
+    right: TimelinePoint
+    firstDays: number[]
+  }
+  rows: TTimelineRow[] | undefined
+  months: TimelinePoint[]
+  days: TimelinePoint[]
+  timelineBox: DOMRect
+  viewBox: DOMRect
 }

@@ -467,7 +467,9 @@ export default plugin(trackerId, {
     Duplicate: '' as Asset,
 
     TimeReport: '' as Asset,
-    Estimation: '' as Asset
+    Estimation: '' as Asset,
+
+    Timeline: '' as Asset
   },
   category: {
     Other: '' as Ref<TagCategory>,

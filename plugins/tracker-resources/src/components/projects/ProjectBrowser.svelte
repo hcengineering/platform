@@ -18,8 +18,10 @@
   import { IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import { Project } from '@hcengineering/tracker'
-  import { Button, IconAdd, Label, showPopup } from '@hcengineering/ui'
+  import { Button, IconAdd, Label, showPopup, TabList } from '@hcengineering/ui'
+  import type { TabItem } from '@hcengineering/ui'
   import tracker from '../../plugin'
+  import view from '@hcengineering/view'
   import { getIncludedProjectStatuses, projectsTitleMap, ProjectsViewMode } from '../../utils'
   import NewProject from './NewProject.svelte'
   import ProjectsListBrowser from './ProjectsListBrowser.svelte'
@@ -28,6 +30,7 @@
   export let query: DocumentQuery<Project> = {}
   export let search: string = ''
   export let mode: ProjectsViewMode = 'all'
+  export let viewMode: 'list' | 'timeline' = 'list'
 
   const ENTRIES_LIMIT = 200
   const resultProjectsQuery = createQuery()
@@ -72,6 +75,17 @@
 
     mode = newMode
   }
+
+  const modeList: TabItem[] = [
+    { id: 'all', labelIntl: tracker.string.AllProjects, action: () => handleViewModeChanged('all') },
+    { id: 'backlog', labelIntl: tracker.string.BacklogProjects, action: () => handleViewModeChanged('backlog') },
+    { id: 'active', labelIntl: tracker.string.ActiveProjects, action: () => handleViewModeChanged('active') },
+    { id: 'closed', labelIntl: tracker.string.ClosedProjects, action: () => handleViewModeChanged('closed') }
+  ]
+  const viewList: TabItem[] = [
+    { id: 'list', icon: view.icon.List, tooltip: view.string.List },
+    { id: 'timeline', icon: view.icon.Timeline, tooltip: view.string.Timeline }
+  ]
 </script>
 
 <div class="fs-title flex-between header">
@@ -84,45 +98,15 @@
   <Button size="small" icon={IconAdd} label={tracker.string.Project} kind={'primary'} on:click={showCreateDialog} />
 </div>
 <div class="itemsContainer">
-  <div class="flex-center">
-    <div class="flex-center">
-      <div class="buttonWrapper">
-        <Button
-          size="small"
-          shape="rectangle-right"
-          selected={mode === 'all'}
-          label={tracker.string.AllProjects}
-          on:click={() => handleViewModeChanged('all')}
-        />
-      </div>
-      <div class="buttonWrapper">
-        <Button
-          size="small"
-          shape="rectangle"
-          selected={mode === 'backlog'}
-          label={tracker.string.BacklogProjects}
-          on:click={() => handleViewModeChanged('backlog')}
-        />
-      </div>
-      <div class="buttonWrapper">
-        <Button
-          size="small"
-          shape="rectangle"
-          selected={mode === 'active'}
-          label={tracker.string.ActiveProjects}
-          on:click={() => handleViewModeChanged('active')}
-        />
-      </div>
-      <div class="buttonWrapper">
-        <Button
-          size="small"
-          shape="rectangle-left"
-          selected={mode === 'closed'}
-          label={tracker.string.ClosedProjects}
-          on:click={() => handleViewModeChanged('closed')}
-        />
-      </div>
-    </div>
+  <div class="flex-row-center">
+    <TabList
+      items={modeList}
+      selected={mode}
+      kind={'normal'}
+      on:select={(result) => {
+        if (result.detail !== undefined && result.detail.action) result.detail.action()
+      }}
+    />
     <!-- <div class="ml-3 filterButton">
       <Button
         size="small"
@@ -134,19 +118,15 @@
       />
     </div> -->
   </div>
-  <!-- <div class="flex-center">
-    <div class="flex-center">
-      <div class="buttonWrapper">
-        <Button selected size="small" shape="rectangle-right" icon={tracker.icon.ProjectsList} />
-      </div>
-      <div class="buttonWrapper">
-        <Button size="small" shape="rectangle-left" icon={tracker.icon.ProjectsTimeline} />
-      </div>
-    </div>
-    <div class="ml-3">
-      <Button size="small" icon={IconOptions} />
-    </div>
-  </div> -->
+  <TabList
+    items={viewList}
+    selected={viewMode}
+    kind={'secondary'}
+    size={'small'}
+    on:select={(result) => {
+      if (result.detail !== undefined && result.detail.id !== viewMode) viewMode = result.detail.id
+    }}
+  />
 </div>
 <ProjectsListBrowser
   _class={tracker.class.Project}
@@ -163,6 +143,7 @@
     { key: '', presenter: tracker.component.ProjectStatusPresenter }
   ]}
   projects={resultProjects}
+  {viewMode}
 />
 
 <style lang="scss">
@@ -182,16 +163,10 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.65rem 1.35rem 0.65rem 2.25rem;
-    border-bottom: 1px solid var(--theme-button-border-hovered);
-  }
-
-  .buttonWrapper {
-    margin-right: 1px;
-
-    &:last-child {
-      margin-right: 0;
-    }
+    padding: 0.65rem 0.75rem 0.65rem 2.25rem;
+    background-color: var(--board-bg-color);
+    border-top: 1px solid var(--divider-color);
+    border-bottom: 1px solid var(--divider-color);
   }
 
   // .filterButton {
