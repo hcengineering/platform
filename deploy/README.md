@@ -4,8 +4,6 @@
 We need [MongoDb](https://www.mongodb.com), [Elastic Search](https://www.elastic.co), and [MinIO](https://www.min.io) servers installed on the network/cloud.
 You should have credentials to access these servers to continue deployment.
 
-ElasticSearch should have `ingest` plugin installed.
-
 ## Secrets
 
 `secret.yaml` provide exemplary configuration values to access data storage servers. Provide correct values and
