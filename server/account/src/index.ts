@@ -660,14 +660,12 @@ export async function changeName (db: Db, productId: string, token: string, firs
 
   const workspaces = await db
     .collection<Workspace>(WORKSPACE_COLLECTION)
-    .find({ _id: { $in: account.workspaces } })
+    .find(withProductId(productId, { _id: { $in: account.workspaces } }))
     .toArray()
 
   const promises: Promise<void>[] = []
   for (const ws of workspaces) {
-    if (ws.productId === productId) {
-      promises.push(updateEmployeeAccount(account, ws.workspace, ws.productId))
-    }
+    promises.push(updateEmployeeAccount(account, ws.workspace, ws.productId))
   }
   await Promise.all(promises)
 }
