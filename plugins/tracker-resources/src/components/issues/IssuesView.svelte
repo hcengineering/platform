@@ -68,9 +68,8 @@
   const teamQuery = createQuery()
 
   let _teams: Map<Ref<Team>, Team> | undefined = undefined
-  let _result: any
+
   $: teamQuery.query(tracker.class.Team, {}, (result) => {
-    _result = JSON.stringify(result, undefined, 2)
     _teams = toIdMap(result)
   })
 

@@ -162,7 +162,7 @@ export async function OnGPTRequest (tx: Tx, tc: TriggerControl): Promise<Tx[]> {
 
           for (const choices of response.choices) {
             const msgTx = tc.txFactory.createTxCreateDoc(chunter.class.Comment, tx.objectSpace, {
-              message: 'gpt Answer:\n<br/>' + (choices.text as string),
+              message: 'gpt Answer:\n<br/>' + (choices.text as string).replace('\n', '\n<br/>'),
               attachedTo: parentTx.objectId,
               attachedToClass: parentTx.objectClass,
               collection: parentTx.collection
