@@ -108,26 +108,33 @@
     return newDraft
   }
 
+  let loading = false
+
   async function onMessage (event: CustomEvent) {
-    const { message, attachments } = event.detail
-    await client.addCollection<Doc, Comment>(
-      _class,
-      object.space,
-      object._id,
-      object._class,
-      'comments',
-      { message, attachments },
-      _id
-    )
+    loading = true
+    try {
+      const { message, attachments } = event.detail
+      await client.addCollection<Doc, Comment>(
+        _class,
+        object.space,
+        object._id,
+        object._class,
+        'comments',
+        { message, attachments },
+        _id
+      )
 
-    // Create an backlink to document
-    await createBacklinks(client, object._id, object._class, _id, message)
+      // Create an backlink to document
+      await createBacklinks(client, object._id, object._class, _id, message)
 
-    // Remove draft from Local Storage
-    _id = generateId()
-    draftComment = undefined
-    await saveDraft(object)
-    commentInputBox.removeDraft(false)
+      // Remove draft from Local Storage
+      _id = generateId()
+      draftComment = undefined
+      await saveDraft(object)
+      commentInputBox.removeDraft(false)
+    } finally {
+      loading = false
+    }
   }
 </script>
 
@@ -140,4 +147,5 @@
   {shouldSaveDraft}
   on:message={onMessage}
   on:update={onUpdate}
+  {loading}
 />
