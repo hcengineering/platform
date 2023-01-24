@@ -12,7 +12,6 @@
     "*docker:push": "../../common/scripts/docker_tag.sh hardcoreeng/tracker-front",
     "analyze": "cross-env NODE_ENV=production webpack --json > stats.json",
     "show": "webpack-bundle-analyzer stats.json dist",
-    "dev": "cross-env CLIENT_TYPE=dev webpack serve",
     "dev-server": "cross-env CLIENT_TYPE=dev-server webpack serve",
     "start": "cross-env NODE_ENV=production webpack serve",
     "preformat-svelte": "prettier -w src/**/*.svelte",

@@ -7,7 +7,6 @@
     "build": "rm -rf ./dist && cross-env NODE_ENV=production webpack --stats-error-details && echo 'done'",
     "analyze": "cross-env NODE_ENV=production webpack --json > stats.json",
     "show": "webpack-bundle-analyzer stats.json dist",
-    "dev": "cross-env CLIENT_TYPE=dev webpack serve",
     "dev-server": "cross-env CLIENT_TYPE=dev-server webpack serve",
     "start": "cross-env NODE_ENV=production webpack serve",
     "preformat-svelte": "prettier -w src/**/*.svelte",
