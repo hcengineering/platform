@@ -20,13 +20,14 @@
   import { toIntl } from '..'
   import ContentPopup from './ContentPopup.svelte'
 
-  let txes: (TxCUD<Doc> & { index: number })[] = []
+  type TxCUDIndex = TxCUD<Doc> & { index: number }
+  let txes: TxCUDIndex[] = []
 
   const activityQuery = createQuery()
 
-  $: activityQuery.query(core.class.TxCUD, { objectSpace: core.space.Model }, (result) => {
+  $: activityQuery.query<TxCUD<Doc>>(core.class.TxCUD, { objectSpace: core.space.Model }, (result) => {
     let c = 0
-    txes = result.map((t) => ({ ...t, index: c++ }))
+    txes = result.map((t) => ({ ...t, index: c++ } as TxCUDIndex))
   })
 </script>
 

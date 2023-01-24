@@ -19,7 +19,7 @@
   import { Issue, Project } from '@hcengineering/tracker'
   import { CheckBox, Spinner, Timeline, TimelineRow } from '@hcengineering/ui'
   import { AttributeModel, BuildModelKey } from '@hcengineering/view'
-  import { buildModel, getObjectPresenter, LoadingProps } from '@hcengineering/view-resources'
+  import { buildModel, LoadingProps } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
   import ProjectPresenter from './ProjectPresenter.svelte'
@@ -42,8 +42,6 @@
     }
   }
 
-  let personPresenter: AttributeModel
-
   $: options = { ...baseOptions } as FindOptions<Project>
   $: selectedObjectIdsSet = new Set<Ref<Doc>>(selectedObjectIds.map((it) => it._id))
   let selectedRows: number[] = []
@@ -55,10 +53,6 @@
     })
     selectedRows = tRows
   } else selectedRows = []
-
-  $: getObjectPresenter(client, contact.class.Person, { key: '' }).then((p) => {
-    personPresenter = p
-  })
 
   export const onObjectChecked = (docs: Doc[], value: boolean) => {
     dispatch('check', { docs, value })
@@ -174,20 +168,20 @@
 {/if}
 
 <style lang="scss">
-  .timeline-container {
-    overflow: hidden;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    height: 100%;
-    min-width: 0;
-    min-height: 0;
+  // .timeline-container {
+  //   overflow: hidden;
+  //   position: relative;
+  //   display: flex;
+  //   flex-direction: column;
+  //   width: 100%;
+  //   height: 100%;
+  //   min-width: 0;
+  //   min-height: 0;
 
-    & > * {
-      overscroll-behavior-x: contain;
-    }
-  }
+  //   & > * {
+  //     overscroll-behavior-x: contain;
+  //   }
+  // }
   .timeline-header {
     display: flex;
     align-items: center;

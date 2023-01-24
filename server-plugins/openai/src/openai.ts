@@ -47,7 +47,7 @@ import openaiPlugin, { openAIRatelimitter } from './plugin'
 /**
  * @public
  */
-export const openAIstage = 'emb-v3'
+export const openAIstage = 'emb-v3a'
 
 /**
  * @public
@@ -78,7 +78,7 @@ export class OpenAIEmbeddingsStage implements FullTextPipelineStage {
 
   summary_field = 'summary'
 
-  enabled = true
+  enabled = false
 
   clearExcept?: string[] = undefined
   updateFields: DocUpdateHandler[] = []

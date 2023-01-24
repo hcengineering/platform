@@ -36,7 +36,7 @@ import { convert } from 'html-to-text'
 /**
  * @public
  */
-export const summaryStageId = 'sum-v1_1'
+export const summaryStageId = 'sum-v2'
 
 /**
  * @public
