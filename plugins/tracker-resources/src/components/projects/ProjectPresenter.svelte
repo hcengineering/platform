@@ -28,20 +28,7 @@
 
 {#if value}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <div class="flex-presenter flex-grow" on:click={navigateToProject}>
-    <span title={value.label} class="projectLabel flex-grow">{value.label}</span>
-  </div>
+  <span title={value.label} class="fs-bold caption-color overflow-label clear-mins" on:click={navigateToProject}>
+    {value.label}
+  </span>
 {/if}
-
-<style lang="scss">
-  .projectLabel {
-    display: block;
-    min-width: 0;
-    font-weight: 500;
-    text-align: left;
-    color: var(--theme-caption-color);
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-  }
-</style>

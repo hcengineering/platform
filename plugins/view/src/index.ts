@@ -581,12 +581,15 @@ const view = plugin(viewId, {
     View: '' as IntlString,
     FilteredViews: '' as IntlString,
     NewFilteredView: '' as IntlString,
-    FilteredViewName: '' as IntlString
+    FilteredViewName: '' as IntlString,
+    List: '' as IntlString,
+    Timeline: '' as IntlString
   },
   icon: {
     Table: '' as Asset,
     List: '' as Asset,
     Card: '' as Asset,
+    Timeline: '' as Asset,
     Delete: '' as Asset,
     MoreH: '' as Asset,
     Move: '' as Asset,

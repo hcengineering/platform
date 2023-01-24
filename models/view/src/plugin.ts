@@ -87,8 +87,7 @@ export default mergeIds(viewId, view, {
     General: '' as IntlString,
     Navigation: '' as IntlString,
     Editor: '' as IntlString,
-    MarkdownFormatting: '' as IntlString,
-    List: '' as IntlString
+    MarkdownFormatting: '' as IntlString
   },
   function: {
     FilterObjectInResult: '' as Resource<(filter: Filter, onUpdate: () => void) => Promise<ObjQueryType<any>>>,

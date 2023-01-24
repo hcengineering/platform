@@ -21,6 +21,7 @@ loadMetadata(view.icon, {
   Table: `${icons}#table`,
   List: `${icons}#list`,
   Card: `${icons}#card`,
+  Timeline: `${icons}#timeline`,
   Delete: `${icons}#delete`,
   Move: `${icons}#move`,
   MoreH: `${icons}#more-h`,

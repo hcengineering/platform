@@ -30,6 +30,19 @@
   export let noStretch: boolean = false
   export let divScroll: HTMLElement | undefined = undefined
 
+  export function scroll (top: number, left?: number, behavior: 'auto' | 'smooth' = 'auto') {
+    if (divScroll && divHScroll) {
+      if (top !== 0) divScroll.scroll({ top, left: 0, behavior })
+      if (left !== 0 || left !== undefined) divHScroll.scroll({ top: 0, left, behavior })
+    }
+  }
+  export function scrollBy (top: number, left?: number, behavior: 'auto' | 'smooth' = 'auto') {
+    if (divScroll && divHScroll) {
+      if (top !== 0) divScroll.scrollBy({ top, left: 0, behavior })
+      if (left !== 0 || left !== undefined) divHScroll.scrollBy({ top: 0, left, behavior })
+    }
+  }
+
   const dispatch = createEventDispatcher()
 
   let mask: 'top' | 'bottom' | 'both' | 'none' = 'none'
