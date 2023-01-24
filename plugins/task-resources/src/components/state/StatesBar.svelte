@@ -34,7 +34,7 @@
   const statesQuery = createQuery()
   statesQuery.query(
     task.class.State,
-    { space },
+    space != null ? { space } : {},
     (res) => {
       states = res
     },

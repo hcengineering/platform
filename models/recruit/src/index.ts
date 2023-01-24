@@ -207,7 +207,6 @@ export function createModel (builder: Builder): void {
               label: recruit.string.Applications,
               createLabel: recruit.string.ApplicationCreateLabel,
               createComponent: recruit.component.CreateApplication,
-              descriptor: task.viewlet.StatusTable,
               baseQuery: {
                 doneState: null
               }
@@ -363,6 +362,29 @@ export function createModel (builder: Builder): void {
           sortingKey: ['$lookup.attachedTo.$lookup.channels.lastMessage', '$lookup.attachedTo.channels']
         }
       ]
+    },
+    recruit.viewlet.StatusTableApplicant
+  )
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: recruit.class.Applicant,
+      descriptor: view.viewlet.Table,
+      config: [
+        '',
+        'attachedTo',
+        'assignee',
+        'state',
+        'comments',
+        'attachments',
+        'modifiedOn',
+        {
+          key: '$lookup.attachedTo.$lookup.channels',
+          sortingKey: ['$lookup.attachedTo.$lookup.channels.lastMessage', '$lookup.attachedTo.channels']
+        }
+      ],
+      hiddenKeys: ['name']
     },
     recruit.viewlet.TableApplicant
   )
