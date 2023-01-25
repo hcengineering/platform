@@ -17,7 +17,7 @@
   import { getCurrentAccount, Ref } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { Request, RequestStatus } from '@hcengineering/request'
-  import { Label, Scroller } from '@hcengineering/ui'
+  import { Label, Scroller, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
   import request from '../plugin'
   import RequestView from './RequestView.svelte'
 
@@ -37,7 +37,7 @@
   )
 </script>
 
-<div class="notifyPopup" class:justify-center={requests.length === 0}>
+<div class="notifyPopup" class:justify-center={requests.length === 0} class:min-w-168={!$deviceInfo.isMobile}>
   <div class="header flex-between">
     <span class="fs-title overflow-label"><Label label={request.string.Requests} /></span>
   </div>

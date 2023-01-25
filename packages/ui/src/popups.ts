@@ -255,7 +255,8 @@ export function fitPopupElement (
     } else if (element === 'account') {
       newProps.bottom = '2.75rem'
       newProps.left = '5rem'
-      newProps.minWidth = newProps.maxWidth = '42rem'
+      newProps.minWidth = '0'
+      newProps.maxWidth = '42rem'
       newProps.maxHeight = 'calc(100vh - 5.5rem)'
       show = true
     } else if (element === 'account-portrait') {
@@ -267,7 +268,8 @@ export function fitPopupElement (
     } else if (element === 'account-mobile') {
       newProps.bottom = '.5rem'
       newProps.left = 'calc(var(--app-panel-width) + .5rem)'
-      newProps.minWidth = newProps.maxWidth = 'calc(100vw - var(--app-panel-width) - 1rem)'
+      newProps.minWidth = '0'
+      newProps.maxWidth = 'calc(100vw - var(--app-panel-width) - 1rem)'
       newProps.maxHeight = 'calc(100vh - 1rem)'
       show = true
     } else if (element === 'full' && contentPanel === undefined) {

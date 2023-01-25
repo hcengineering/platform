@@ -17,7 +17,7 @@
   import { getCurrentAccount } from '@hcengineering/core'
   import { Table } from '@hcengineering/view-resources'
   import { createQuery } from '@hcengineering/presentation'
-  import { Label, Scroller } from '@hcengineering/ui'
+  import { Label, Scroller, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
   import calendar from '../plugin'
 
   const currentUser = getCurrentAccount() as EmployeeAccount
@@ -29,7 +29,7 @@
   })
 </script>
 
-<div class="notifyPopup" class:justify-center={!remindersCount}>
+<div class="notifyPopup" class:justify-center={!remindersCount} class:min-w-168={!$deviceInfo.isMobile}>
   <div class="header">
     <span class="fs-title overflow-label"><Label label={calendar.string.Reminders} /></span>
   </div>

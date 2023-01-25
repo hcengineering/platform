@@ -15,7 +15,7 @@
 <script lang="ts">
   import { EmployeeAccount } from '@hcengineering/contact'
   import { Class, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
-  import { Button, showPopup, Label, Scroller, IconAdd } from '@hcengineering/ui'
+  import { Button, showPopup, Label, Scroller, IconAdd, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
   import { Table } from '@hcengineering/view-resources'
   import calendar from '../plugin'
   import CreateReminder from './CreateReminder.svelte'
@@ -31,7 +31,7 @@
   const currentUser = getCurrentAccount() as EmployeeAccount
 </script>
 
-<div class="notifyPopup">
+<div class="notifyPopup" class:min-w-168={!$deviceInfo.isMobile}>
   <div class="header flex-between">
     <span class="fs-title overflow-label"><Label label={calendar.string.Reminders} /></span>
     <Button icon={IconAdd} size={'medium'} kind={'transparent'} on:click={(e) => click(e)} />
