@@ -28,7 +28,8 @@
     setMetadataLocalStorage,
     showPopup,
     Menu,
-    locationToUrl
+    locationToUrl,
+    deviceOptionsStore as deviceInfo
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import HelpAndSupport from './HelpAndSupport.svelte'
@@ -168,9 +169,11 @@
     )
   }
   let menu: Menu
+  $: addClass = $deviceInfo.isMobile && $deviceInfo.isPortrait ? 'self-end' : undefined
 </script>
 
-<svelte:component this={Menu} bind:this={menu} {actions} on:close>
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<svelte:component this={Menu} bind:this={menu} {actions} {addClass} on:close>
   <svelte:fragment slot="header">
     <div class="p-1 ml-2 overflow-label fs-bold caption-color">{getCurrentLocation().path[1]}</div>
     <div

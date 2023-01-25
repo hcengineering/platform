@@ -20,7 +20,7 @@
   import core, { getCurrentAccount, WithLookup } from '@hcengineering/core'
   import { Notification, NotificationStatus } from '@hcengineering/notification'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Button, IconCheckAll, IconDelete, Scroller } from '@hcengineering/ui'
+  import { Button, IconCheckAll, IconDelete, Scroller, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
   import Label from '@hcengineering/ui/src/components/Label.svelte'
   import notification from '../plugin'
   import NotificationView from './NotificationView.svelte'
@@ -77,7 +77,7 @@
   }
 </script>
 
-<div class="notifyPopup" class:justify-center={notifications.length === 0}>
+<div class="notifyPopup" class:justify-center={notifications.length === 0} class:min-w-168={!$deviceInfo.isMobile}>
   <div class="header flex-between">
     <span class="fs-title overflow-label"><Label label={notification.string.Notifications} /></span>
     {#if notifications.length > 0}

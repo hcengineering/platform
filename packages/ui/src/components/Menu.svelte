@@ -26,6 +26,7 @@
   export let actions: Action[] = []
   export let ctx: any = undefined
   export let popupCategory: Ref<Doc> | undefined = undefined
+  export let addClass: string | undefined = undefined
 
   const dispatch = createEventDispatcher()
   const btns: HTMLElement[] = []
@@ -113,7 +114,7 @@
 </script>
 
 <div
-  class="antiPopup"
+  class="antiPopup{addClass ? ` ${addClass}` : ''}"
   use:resizeObserver={() => {
     dispatch('changeContent')
   }}
