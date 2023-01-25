@@ -445,7 +445,7 @@ export interface ViewletPreference extends Preference {
  * @public
  */
 export type ViewOptions = {
-  groupBy: string
+  groupBy: string[]
   orderBy: OrderOption
 } & Record<string, any>
 

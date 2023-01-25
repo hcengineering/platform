@@ -42,7 +42,7 @@
     TooltipInstance
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import { ActionContext, ActionHandler } from '@hcengineering/view-resources'
+  import { ActionContext, ActionHandler, migrateViewOpttions } from '@hcengineering/view-resources'
   import type { Application, NavigatorModel, SpecialNavModel, ViewConfiguration } from '@hcengineering/workbench'
   import { getContext, onDestroy, onMount, tick } from 'svelte'
   import { subscribeMobile } from '../mobile'
@@ -77,6 +77,7 @@
   let createItemLabel: IntlString | undefined
 
   let apps: Application[] = []
+  migrateViewOpttions()
 
   const excludedApps = getMetadata(workbench.metadata.ExcludedApplications) ?? []
 

@@ -35,7 +35,7 @@
   const statuses = createQuery()
   let issueStatuses: IdMap<IssueStatus> = new Map()
   $: if (noParents !== undefined) {
-    statuses.query(tracker.class.IssueStatus, { _id: { $in: Array.from(noParents.map((it) => it.status)) } }, (res) => {
+    statuses.query(tracker.class.IssueStatus, {}, (res) => {
       issueStatuses = toIdMap(res)
     })
   } else {

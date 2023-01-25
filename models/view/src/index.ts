@@ -60,7 +60,8 @@ import type {
   Viewlet,
   ViewletDescriptor,
   ViewletPreference,
-  ViewOptionsModel
+  ViewOptionsModel,
+  ViewOptions
 } from '@hcengineering/view'
 import view from './plugin'
 
@@ -99,6 +100,8 @@ export class TFilteredView extends TPreference implements FilteredView {
   name!: string
   location!: Location
   filters!: string
+  viewOptions?: ViewOptions
+  viewletId?: Ref<Viewlet> | null
 }
 
 @Model(view.class.FilterMode, core.class.Doc, DOMAIN_MODEL)

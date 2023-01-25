@@ -43,18 +43,26 @@
   export let extraHeaders: AnyComponent[] | undefined
   export let flat = false
   export let props: Record<string, any> = {}
+  export let level: number
+  export let newObjectProps: Record<string, any>
 
   const dispatch = createEventDispatcher()
 
-  const handleCreateItem = (event: MouseEvent, category: string) => {
+  const handleCreateItem = (event: MouseEvent) => {
     if (createItemDialog === undefined) return
-    showPopup(createItemDialog, { space, ...(groupByKey ? { [groupByKey]: category } : {}) }, eventToHTMLElement(event))
+    showPopup(createItemDialog, newObjectProps, eventToHTMLElement(event))
   }
 </script>
 
 {#if headerComponent || groupByKey === noCategory}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <div class="flex-between categoryHeader row" class:flat on:click={() => dispatch('collapse')}>
+  <div
+    class="flex-between categoryHeader row"
+    class:flat
+    class:subLevel={level !== 0}
+    style="padding-left: {level * 2 + 2.25}rem;"
+    on:click={() => dispatch('collapse')}
+  >
     <div class="flex-row-center gap-2 clear-mins caption-color">
       <FixedColumn key={`list_groupBy_${groupByKey}`} justify={'left'}>
         {#if groupByKey === noCategory}
@@ -95,7 +103,7 @@
         icon={IconAdd}
         kind={'transparent'}
         showTooltip={{ label: createItemLabel }}
-        on:click={(event) => handleCreateItem(event, category)}
+        on:click={handleCreateItem}
       />
     {/if}
   </div>
@@ -111,6 +119,12 @@
     min-width: 0;
     background: var(--header-bg-color);
     z-index: 5;
+
+    &.subLevel {
+      min-height: 2.25rem;
+      height: 2.25rem;
+      padding: 0 0.75rem 0 2.25rem;
+    }
 
     &.flat {
       background: var(--header-bg-color);

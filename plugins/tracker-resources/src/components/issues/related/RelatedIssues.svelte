@@ -14,8 +14,8 @@
 -->
 <script lang="ts">
   import { Doc, DocumentQuery, Ref, SortingOrder, WithLookup } from '@hcengineering/core'
-  import presentation, { createQuery, getClient } from '@hcengineering/presentation'
-  import { calcRank, Issue, IssueStatus, Team } from '@hcengineering/tracker'
+  import presentation, { createQuery } from '@hcengineering/presentation'
+  import { Issue, IssueStatus, Team } from '@hcengineering/tracker'
   import { Label, Spinner } from '@hcengineering/ui'
   import { Viewlet, ViewOptions } from '@hcengineering/view'
   import tracker from '../../../plugin'
@@ -29,22 +29,10 @@
   $: query = { 'relations._id': object._id, 'relations._class': object._class }
 
   const subIssuesQuery = createQuery()
-  const client = getClient()
 
   let subIssues: Issue[] = []
 
   let teams: Map<Ref<Team>, Team> | undefined
-
-  async function handleIssueSwap (ev: CustomEvent<{ fromIndex: number; toIndex: number }>) {
-    const { fromIndex, toIndex } = ev.detail
-    const [prev, next] = [
-      subIssues[fromIndex < toIndex ? toIndex : toIndex - 1],
-      subIssues[fromIndex < toIndex ? toIndex + 1 : toIndex]
-    ]
-    const issue = subIssues[fromIndex]
-
-    await client.update(issue, { rank: calcRank(prev, next) })
-  }
 
   $: subIssuesQuery.query(tracker.class.Issue, query, async (result) => (subIssues = result), {
     sort: { rank: SortingOrder.Ascending }
@@ -80,7 +68,7 @@
 <div class="mt-1">
   {#if subIssues !== undefined && viewlet !== undefined}
     {#if issueStatuses.size > 0 && teams}
-      <SubIssueList bind:viewOptions {viewlet} issues={subIssues} {teams} {issueStatuses} on:move={handleIssueSwap} />
+      <SubIssueList bind:viewOptions {viewlet} issues={subIssues} {teams} {issueStatuses} />
     {:else}
       <div class="p-1">
         <Label label={presentation.string.NoMatchesFound} />

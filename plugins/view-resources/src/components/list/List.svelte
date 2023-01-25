@@ -13,21 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Class, Doc, DocumentQuery, FindOptions, Ref, Space } from '@hcengineering/core'
+  import { Class, Doc, DocumentQuery, FindOptions, Ref, Space } from '@hcengineering/core'
   import { getResource, IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { AnyComponent } from '@hcengineering/ui'
-  import view, {
-    AttributeModel,
-    BuildModelKey,
-    ViewOptionModel,
-    ViewOptions,
-    ViewQueryOption
-  } from '@hcengineering/view'
+  import { BuildModelKey, ViewOptionModel, ViewOptions, ViewQueryOption } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
-  import { buildConfigLookup, buildModel, getCategories, getPresenter, groupBy, LoadingProps } from '../../utils'
-  import { noCategory } from '../../viewOptions'
-  import ListCategory from './ListCategory.svelte'
+  import { buildConfigLookup, LoadingProps } from '../../utils'
+  import ListCategories from './ListCategories.svelte'
 
   export let _class: Ref<Class<Doc>>
   export let space: Ref<Space> | undefined = undefined
@@ -36,7 +29,6 @@
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
   export let config: (string | BuildModelKey)[]
   export let selectedObjectIds: Doc[] = []
-  export let selectedRowIndex: number | undefined = undefined
   export let loadingProps: LoadingProps | undefined = undefined
   export let createItemDialog: AnyComponent | undefined = undefined
   export let createItemLabel: IntlString | undefined = undefined
@@ -47,18 +39,16 @@
 
   export let documents: Doc[] | undefined = undefined
 
-  const objectRefs: HTMLElement[] = []
+  const elementByIndex: Map<number, HTMLDivElement> = new Map()
+  const docByIndex: Map<number, Doc> = new Map()
+  const indexById: Map<Ref<Doc>, number> = new Map()
+
   let docs: Doc[] = []
 
-  $: groupByKey = viewOptions.groupBy ?? noCategory
   $: orderBy = viewOptions.orderBy
-  $: groupedDocs = groupBy(docs, groupByKey)
-  let categories: any[] = []
-  $: getCategories(client, _class, docs, groupByKey).then((p) => {
-    categories = p
-  })
 
   const docsQuery = createQuery()
+  $: lookup = options?.lookup ?? buildConfigLookup(client.getHierarchy(), _class, config)
   $: resultOptions = { lookup, ...options, sort: { [orderBy[0]]: orderBy[1] } }
 
   let resultQuery: DocumentQuery<Doc> = query
@@ -86,13 +76,6 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  $: lookup = options?.lookup ?? buildConfigLookup(client.getHierarchy(), _class, config)
-
-  const spaceQuery = createQuery()
-
-  let currentSpace: Space | undefined
-  let itemModels: AttributeModel[]
-
   async function getResultQuery (
     query: DocumentQuery<Doc>,
     viewOptions: ViewOptionModel[] | undefined,
@@ -109,6 +92,34 @@
     return result
   }
 
+  function uncheckAll () {
+    dispatch('check', { docs, value: false })
+    selectedObjectIds = []
+  }
+
+  export function select (offset: 1 | -1 | 0, of?: Doc): void {
+    let pos = (of !== undefined ? indexById.get(of._id) : -1) ?? -1
+    pos += offset
+    if (pos < 0) {
+      pos = 0
+    }
+    if (pos >= docs.length) {
+      pos = docs.length - 1
+    }
+    const target = docByIndex.get(pos)
+    if (target !== undefined) {
+      onRow(target)
+    }
+    const r = elementByIndex.get(pos)
+    if (r !== undefined) {
+      r.scrollIntoView({ behavior: 'auto', block: 'nearest' })
+    }
+  }
+
+  function onRow (object: Doc): void {
+    dispatch('row-focus', object)
+  }
+
   const getLoadingElementsLength = (props: LoadingProps | undefined, options?: FindOptions<Doc>) => {
     if (!props) return undefined
     if (options?.limit && options.limit > 0) {
@@ -117,104 +128,34 @@
 
     return props.length
   }
-
-  $: spaceQuery.query(core.class.Space, { _id: space }, (res) => {
-    ;[currentSpace] = res
-  })
-
-  function getHeader (_class: Ref<Class<Doc>>, groupByKey: string): void {
-    if (groupByKey === noCategory) {
-      headerComponent = undefined
-    } else {
-      getPresenter(client, _class, { key: groupByKey }, { key: groupByKey }).then((p) => (headerComponent = p))
-    }
-  }
-
-  let headerComponent: AttributeModel | undefined
-  $: getHeader(_class, groupByKey)
-  $: buildModel({ client, _class, keys: config, lookup }).then((res) => {
-    itemModels = res
-  })
-
-  function getInitIndex (categories: any, i: number): number {
-    let res = 0
-    for (let index = 0; index < i; index++) {
-      const cat = categories[index]
-      res += groupedDocs[cat].length
-    }
-    return res
-  }
-
-  function uncheckAll () {
-    dispatch('check', { docs, value: false })
-    selectedObjectIds = []
-  }
-
-  $: extraHeaders = getAdditionalHeader(_class)
-
-  function getAdditionalHeader (_class: Ref<Class<Doc>>): AnyComponent[] | undefined {
-    const clazz = hierarchy.getClass(_class)
-    let mixinClazz = hierarchy.getClass(_class)
-    let presenterMixin = hierarchy.as(clazz, view.mixin.ListHeaderExtra)
-    while (presenterMixin.presenters === undefined && mixinClazz.extends !== undefined) {
-      presenterMixin = hierarchy.as(mixinClazz, view.mixin.ListHeaderExtra)
-      mixinClazz = hierarchy.getClass(mixinClazz.extends)
-    }
-    return presenterMixin.presenters
-  }
-
-  $: flat = Object.values(groupedDocs).flat(1)
-
-  export function select (offset: 1 | -1 | 0, of?: Doc): void {
-    let pos = (of !== undefined ? flat.findIndex((it) => it._id === of._id) : selectedRowIndex) ?? -1
-    pos += offset
-    if (pos < 0) {
-      pos = 0
-    }
-    if (pos >= flat.length) {
-      pos = flat.length - 1
-    }
-    const r = objectRefs[pos]
-    selectedRowIndex = pos
-    onRow(flat[pos])
-    if (r !== undefined) {
-      r?.scrollIntoView({ behavior: 'auto', block: 'nearest' })
-    }
-  }
-
-  function onRow (object: Doc): void {
-    dispatch('row-focus', object)
-  }
-
-  $: objectRefs.length = flat.length
 </script>
 
 <div class="list-container">
-  {#each categories as category, i}
-    {@const items = groupedDocs[category] ?? []}
-    <ListCategory
-      bind:selectedRowIndex
-      {extraHeaders}
-      {space}
-      {selectedObjectIds}
-      {headerComponent}
-      initIndex={getInitIndex(categories, i)}
-      {baseMenuClass}
-      {groupByKey}
-      {itemModels}
-      singleCat={categories.length === 1}
-      {category}
-      {items}
-      {createItemDialog}
-      {createItemLabel}
-      loadingPropsLength={getLoadingElementsLength(loadingProps, options)}
-      on:check
-      on:uncheckAll={uncheckAll}
-      on:row-focus
-      {flatHeaders}
-      {props}
-    />
-  {/each}
+  <ListCategories
+    newObjectProps={space ? { space } : {}}
+    {elementByIndex}
+    {indexById}
+    {docs}
+    {_class}
+    {space}
+    {lookup}
+    loadingPropsLength={getLoadingElementsLength(loadingProps, options)}
+    {baseMenuClass}
+    {config}
+    {viewOptions}
+    {docByIndex}
+    {viewOptionsConfig}
+    {selectedObjectIds}
+    level={0}
+    {createItemDialog}
+    {createItemLabel}
+    {loadingProps}
+    on:check
+    on:uncheckAll={uncheckAll}
+    on:row-focus
+    {flatHeaders}
+    {props}
+  />
 </div>
 
 <style lang="scss">

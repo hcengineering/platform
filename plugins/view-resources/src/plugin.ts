@@ -60,6 +60,7 @@ export default mergeIds(viewId, view, {
     NoGrouping: '' as IntlString,
     Grouping: '' as IntlString,
     Ordering: '' as IntlString,
-    Manual: '' as IntlString
+    Manual: '' as IntlString,
+    Than: '' as IntlString
   }
 })

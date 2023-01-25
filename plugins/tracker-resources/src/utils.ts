@@ -494,8 +494,7 @@ export function getDefaultViewOptionsTemplatesConfig (): ViewOptionModel[] {
     key: 'shouldShowEmptyGroups',
     label: tracker.string.ShowEmptyGroups,
     defaultValue: false,
-    type: 'toggle',
-    hidden: ({ groupBy }) => !['status', 'priority'].includes(groupBy)
+    type: 'toggle'
   }
   const result: ViewOptionModel[] = [groupByCategory, orderByCategory]
   result.push(showEmptyGroups)

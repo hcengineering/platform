@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, getObjectValue } from '@hcengineering/core'
+  import { Doc, getObjectValue, Ref } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { CheckBox, Component, deviceOptionsStore as deviceInfo, tooltip } from '@hcengineering/ui'
   import { AttributeModel } from '@hcengineering/view'
@@ -22,21 +22,38 @@
   import view from '../../plugin'
   import Circles from '../icons/Circles.svelte'
 
-  export let use: HTMLElement
   export let docObject: Doc
+  export let index: number
   export let model: AttributeModel[]
   export let groupByKey: string | undefined
   export let checked: boolean
   export let selected: boolean
   export let props: Record<string, any> = {}
+  export let elementByIndex: Map<number, HTMLDivElement>
+  export let indexById: Map<Ref<Doc>, number>
+  export let docByIndex: Map<number, Doc>
+
+  let elem: HTMLDivElement
 
   const dispatch = createEventDispatcher()
 
+  export function getDoc () {
+    return docObject
+  }
+
+  export function getElement () {
+    return elem
+  }
+
   $: compactMode = $deviceInfo.twoRows
+
+  $: elem && elementByIndex.set(index, elem)
+  $: indexById.set(docObject._id, index)
+  $: docByIndex.set(index, docObject)
 </script>
 
 <div
-  bind:this={use}
+  bind:this={elem}
   class="listGrid antiList__row row gap-2 flex-grow"
   class:checking={checked}
   class:mListGridFixed={selected}
