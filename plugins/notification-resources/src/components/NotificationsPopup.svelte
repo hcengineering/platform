@@ -75,9 +75,10 @@
       }
     }
   }
+  $: isMobile = $deviceInfo.isMobile
 </script>
 
-<div class="notifyPopup" class:justify-center={notifications.length === 0} class:min-w-168={!$deviceInfo.isMobile}>
+<div class="notifyPopup" class:justify-center={notifications.length === 0} class:min-w-168={!isMobile}>
   <div class="header flex-between">
     <span class="fs-title overflow-label"><Label label={notification.string.Notifications} /></span>
     {#if notifications.length > 0}

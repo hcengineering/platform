@@ -29,9 +29,10 @@
   }
 
   const currentUser = getCurrentAccount() as EmployeeAccount
+  $: isMobile = $deviceInfo.isMobile
 </script>
 
-<div class="notifyPopup" class:min-w-168={!$deviceInfo.isMobile}>
+<div class="notifyPopup" class:min-w-168={!isMobile}>
   <div class="header flex-between">
     <span class="fs-title overflow-label"><Label label={calendar.string.Reminders} /></span>
     <Button icon={IconAdd} size={'medium'} kind={'transparent'} on:click={(e) => click(e)} />

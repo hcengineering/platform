@@ -140,9 +140,7 @@
       />
     </div>
   {/if}
-  {#if cHeight === 1}
-    <div class="background-theme-content-accent" style:height={'2px'} />
-  {/if}
+  <div class:background-accent-bg-color={cHeight === 1} style:height={'2px'} />
   <div class="scroll" on:scroll={() => updateLocation(scrollDiv, selectedDiv, filteredObjects)} bind:this={scrollDiv}>
     <div class="box">
       <ListView
@@ -204,7 +202,5 @@
       </ListView>
     </div>
   </div>
-  {#if cHeight === -1}
-    <div class="background-theme-content-accent" style:height={'2px'} />
-  {/if}
+  <div class:background-accent-bg-color={cHeight === -1} style:height={'2px'} />
 </div>
