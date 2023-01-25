@@ -73,9 +73,9 @@ class TPipeline implements Pipeline {
   }
 
   async tx (ctx: SessionContext, tx: Tx): Promise<[TxResult, Tx[], string | undefined]> {
-    const [session, resTx] = this.head === undefined ? [ctx, tx] : await this.head.tx(ctx, tx)
+    const [session, resTx, target] = this.head === undefined ? [ctx, tx] : await this.head.tx(ctx, tx)
     const res = await this.storage.tx(session, resTx)
-    return [...res, undefined]
+    return [res[0], res[1], target]
   }
 
   async close (): Promise<void> {
