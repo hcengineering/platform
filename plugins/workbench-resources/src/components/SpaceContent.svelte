@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Class, Doc, DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
+  import type { Class, Doc, Ref, Space, WithLookup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import { AnyComponent, Component, Loading } from '@hcengineering/ui'
@@ -33,9 +33,8 @@
   let preference: ViewletPreference | undefined
   let loading = true
 
-  let resultQuery: DocumentQuery<Doc> = {}
-
   $: searchQuery = search === '' ? { space } : { $search: search, space }
+  $: resultQuery = searchQuery
 
   $: viewlet &&
     preferenceQuery.query(

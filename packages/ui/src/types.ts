@@ -205,6 +205,7 @@ export interface PopupOptions {
 }
 
 export interface DashboardItem {
+  _id: string
   label: string
   values: DashboardGroup[]
   tooltip?: LabelAndProps

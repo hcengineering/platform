@@ -22,7 +22,7 @@
 </script>
 
 <div class="grid">
-  {#each items as item (item.label)}
+  {#each items as item (item._id)}
     <div>
       {item.label}
     </div>

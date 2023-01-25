@@ -105,6 +105,7 @@
             return [
               p._id,
               {
+                _id: p._id,
                 label: p.title,
                 values: [
                   { color: 10, value: 0 },
