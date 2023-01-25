@@ -20,23 +20,24 @@ import core, {
   DocIndexState,
   DocumentQuery,
   DocumentUpdate,
-  docUpdKey,
   extractDocKey,
   FullTextSearchContext,
   Hierarchy,
+  IndexStageState,
   isFullTextAttribute,
   Ref,
   Storage
 } from '@hcengineering/core'
 import { translate } from '@hcengineering/platform'
+import { convert } from 'html-to-text'
 import { IndexedDoc } from '../types'
 import { contentStageId, DocUpdateHandler, fieldStateId, FullTextPipeline, FullTextPipelineStage } from './types'
-import { convert } from 'html-to-text'
+import { loadIndexStageStage } from './utils'
 
 /**
  * @public
  */
-export const summaryStageId = 'sum-v2'
+export const summaryStageId = 'sum-v3a'
 
 /**
  * @public
@@ -54,11 +55,22 @@ export class FullSummaryStage implements FullTextPipelineStage {
   // If specified, index only fields with content speciffied.
   matchExtra: string[] = [] // 'content', 'base64'] // '#en'
 
-  summaryField = 'summary'
-
   fieldFilter: ((attr: AnyAttribute, value: string) => boolean)[] = []
 
-  async initialize (storage: Storage, pipeline: FullTextPipeline): Promise<void> {}
+  stageValue: boolean | string = true
+
+  indexState?: IndexStageState
+
+  async initialize (storage: Storage, pipeline: FullTextPipeline): Promise<void> {
+    const indexable = (
+      await pipeline.model.findAll(core.class.Class, { [core.mixin.FullTextSearchContext + '.fullTextSummary']: true })
+    ).map((it) => it._id)
+    indexable.sort()
+    ;[this.stageValue, this.indexState] = await loadIndexStageStage(storage, this.indexState, this.stageId, 'config', {
+      classes: indexable,
+      matchExtra: this.matchExtra
+    })
+  }
 
   async search (
     _classes: Ref<Class<Doc>>[],
@@ -79,7 +91,7 @@ export class FullSummaryStage implements FullTextPipelineStage {
 
       // No need to index this class, mark embeddings as empty ones.
       if (!needIndex) {
-        await pipeline.update(doc._id, true, {})
+        await pipeline.update(doc._id, this.stageValue, {})
         continue
       }
 
@@ -89,16 +101,16 @@ export class FullSummaryStage implements FullTextPipelineStage {
         matchExtra: this.matchExtra,
         fieldFilter: this.fieldFilter
       })
-      ;(update as any)[docUpdKey(this.summaryField)] = embeddingText
+      update.fullSummary = embeddingText
 
-      await pipeline.update(doc._id, true, update)
+      await pipeline.update(doc._id, this.stageValue, update)
     }
   }
 
   async remove (docs: DocIndexState[], pipeline: FullTextPipeline): Promise<void> {
     // will be handled by field processor
     for (const doc of docs) {
-      await pipeline.update(doc._id, true, {})
+      await pipeline.update(doc._id, this.stageValue, {})
     }
   }
 }
@@ -183,6 +195,10 @@ export async function extractIndexedValues (
       }
 
       if (!isFullTextAttribute(keyAttr)) {
+        continue
+      }
+      if (keyAttr.type._class === core.class.TypeAttachment && extra.length === 0) {
+        // Skipt attachment id values.
         continue
       }
 

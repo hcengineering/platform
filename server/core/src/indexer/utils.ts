@@ -28,12 +28,17 @@ import core, {
   DOMAIN_MODEL,
   DOMAIN_TRANSIENT,
   DOMAIN_TX,
+  generateId,
   Hierarchy,
+  IndexStageState,
   isFullTextAttribute,
   Obj,
   Ref,
-  Space
+  Space,
+  Storage,
+  TxFactory
 } from '@hcengineering/core'
+import { deepEqual } from 'fast-equals'
 import plugin from '../plugin'
 /**
  * @public
@@ -154,4 +159,53 @@ export function createStateDoc (
     modifiedOn: Date.now(),
     ...data
   }
+}
+
+/**
+ * @public
+ */
+export async function loadIndexStageStage (
+  storage: Storage,
+  state: IndexStageState | undefined,
+  stageId: string,
+  field: string,
+  newValue: any
+): Promise<[boolean | string, IndexStageState]> {
+  if (state === undefined) {
+    ;[state] = await storage.findAll(core.class.IndexStageState, { stageId })
+  }
+  const attributes: Record<string, any> = state?.attributes ?? {}
+
+  let result: boolean | string | undefined = attributes?.index !== undefined ? `${attributes?.index as number}` : true
+
+  if (!deepEqual(attributes[field], newValue)) {
+    // Not match,
+    const newIndex = ((attributes.index as number) ?? 0) + 1
+    result = `${newIndex}`
+
+    const ops = new TxFactory(core.account.System)
+    const data = {
+      stageId,
+      attributes: {
+        [field]: newValue,
+        index: newIndex
+      }
+    }
+    if (state === undefined) {
+      const id: Ref<IndexStageState> = generateId()
+      await storage.tx(ops.createTxCreateDoc(core.class.IndexStageState, plugin.space.DocIndexState, data, id))
+      state = {
+        ...data,
+        _class: core.class.IndexStageState,
+        _id: id,
+        space: plugin.space.DocIndexState,
+        modifiedBy: core.account.System,
+        modifiedOn: Date.now()
+      }
+    } else {
+      await storage.tx(ops.createTxUpdateDoc(core.class.IndexStageState, plugin.space.DocIndexState, state._id, data))
+      state = { ...state, ...data, modifiedOn: Date.now() }
+    }
+  }
+  return [result, state]
 }

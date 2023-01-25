@@ -13,10 +13,23 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
+  import chunter from '@hcengineering/chunter'
   import type { Contact, Employee, Person } from '@hcengineering/contact'
   import contact from '@hcengineering/contact'
   import ExpandRightDouble from '@hcengineering/contact-resources/src/components/icons/ExpandRightDouble.svelte'
-  import { Account, Class, Client, Doc, FindOptions, generateId, Ref, SortingOrder, Space } from '@hcengineering/core'
+  import {
+    Account,
+    Class,
+    Client,
+    Doc,
+    FindOptions,
+    generateId,
+    Markup,
+    Ref,
+    SortingOrder,
+    Space
+  } from '@hcengineering/core'
   import { getResource, OK, Resource, Severity, Status } from '@hcengineering/platform'
   import presentation, {
     Card,
@@ -32,6 +45,7 @@
     Button,
     ColorPopup,
     createFocusManager,
+    deviceOptionsStore as deviceInfo,
     FocusHandler,
     getPlatformColor,
     Label,
@@ -44,13 +58,16 @@
   import CandidateCard from './CandidateCard.svelte'
   import VacancyCard from './VacancyCard.svelte'
   import VacancyOrgPresenter from './VacancyOrgPresenter.svelte'
-  import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
 
   export let space: Ref<SpaceWithStates>
   export let candidate: Ref<Candidate>
   export let assignee: Ref<Employee>
+  export let comment: Markup = ''
+
+  $: _comment = comment
 
   export let preserveCandidate = false
+  export let preserveVacancy = false
 
   let status: Status = OK
   let createMore: boolean = false
@@ -133,12 +150,22 @@
         rank: calcRank(lastOne, undefined),
         startDate: null,
         dueDate: null
-      }
+      },
+      doc._id
     )
+
+    await descriptionBox.createAttachments()
+
+    if (_comment.trim().length > 0) {
+      await client.addCollection(chunter.class.Comment, _space, doc._id, recruit.class.Applicant, 'comments', {
+        message: _comment
+      })
+    }
 
     if (createMore) {
       // Prepare for next
       _candidate = '' as Ref<Candidate>
+      _comment = ''
       doc = {
         state: selectedState?._id as Ref<State>,
         doneState: null,
@@ -256,6 +283,8 @@
   let verticalContent: boolean = false
   $: verticalContent = $deviceInfo.isMobile && $deviceInfo.isPortrait
   let btn: HTMLButtonElement
+
+  let descriptionBox: AttachmentStyledBox
 </script>
 
 <FocusHandler {manager} />
@@ -306,6 +335,7 @@
         _class={recruit.class.Vacancy}
         spaceQuery={{ archived: false }}
         spaceOptions={orgOptions}
+        readonly={preserveVacancy}
         label={recruit.string.Vacancy}
         create={{
           component: recruit.component.CreateVacancy,
@@ -324,6 +354,27 @@
       </SpaceSelect>
     </div>
   </div>
+
+  {#key doc._id}
+    <AttachmentStyledBox
+      bind:this={descriptionBox}
+      objectId={doc._id}
+      shouldSaveDraft={false}
+      _class={recruit.class.Applicant}
+      space={_space}
+      alwaysEdit
+      showButtons={false}
+      emphasized
+      bind:content={_comment}
+      placeholder={recruit.string.Description}
+      on:changeSize={() => dispatch('changeContent')}
+      on:attach={(ev) => {
+        if (ev.detail.action === 'saved') {
+          doc.attachments = ev.detail.value
+        }
+      }}
+    />
+  {/key}
   <svelte:fragment slot="pool">
     {#key doc}
       <EmployeeBox

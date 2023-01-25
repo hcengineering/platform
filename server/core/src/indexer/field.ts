@@ -50,6 +50,8 @@ export class IndexedFieldStage implements FullTextPipelineStage {
 
   enabled = true
 
+  stageValue: boolean | string = true
+
   constructor (private readonly dbStorage: ServerStorage, readonly metrics: MeasureContext) {}
 
   async initialize (storage: Storage, pipeline: FullTextPipeline): Promise<void> {

@@ -708,7 +708,8 @@ export async function createServerStorage (
       stages,
       hierarchy,
       conf.workspace,
-      fulltextAdapter.metrics()
+      fulltextAdapter.metrics(),
+      modelDb
     )
     return new FullTextIndex(
       hierarchy,

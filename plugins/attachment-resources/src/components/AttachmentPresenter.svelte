@@ -46,6 +46,7 @@
 
 <div class="flex-row-center attachment-container">
   {#if openEmbedded(value.type)}
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div
       class="flex-center icon"
       on:click={() => {
@@ -71,6 +72,7 @@
       <div class="flex-center icon">
         {iconLabel(value.name)}
         {#if removable}
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
           <div
             class="remove-btn"
             on:click={(ev) => {
@@ -86,6 +88,7 @@
   {/if}
   <div class="flex-col info">
     {#if openEmbedded(value.type)}
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
       <div
         class="name"
         on:click={() => {

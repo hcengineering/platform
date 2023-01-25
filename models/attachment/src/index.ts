@@ -51,7 +51,6 @@ export class TAttachment extends TAttachedDoc implements Attachment {
     size!: number
 
   @Prop(TypeString(), attachment.string.Type)
-  @Index(IndexKind.FullText)
     type!: string
 
   @Prop(TypeTimestamp(), attachment.string.Date)

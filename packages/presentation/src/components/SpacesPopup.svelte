@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import type { Class, Doc, DocumentQuery, FindOptions, Ref, Space } from '@hcengineering/core'
-  import { AnySvelteComponent } from '@hcengineering/ui'
+  import { AnySvelteComponent, ButtonSize } from '@hcengineering/ui'
   import { ObjectCreate } from '../types'
   import ObjectPopup from './ObjectPopup.svelte'
   import SpaceInfo from './SpaceInfo.svelte'
@@ -24,6 +24,7 @@
   export let spaceQuery: DocumentQuery<Space> | undefined
   export let spaceOptions: FindOptions<Space> | undefined = {}
   export let create: ObjectCreate | undefined = undefined
+  export let size: ButtonSize = 'large'
   export let allowDeselect = false
   export let component: AnySvelteComponent | undefined = undefined
   export let componentProps: any | undefined = undefined
@@ -51,9 +52,9 @@
 >
   <svelte:fragment slot="item" let:item={space}>
     {#if component}
-      <svelte:component this={component} {...componentProps} size={'large'} value={space} />
+      <svelte:component this={component} {...componentProps} {size} value={space} />
     {:else}
-      <SpaceInfo size={'large'} value={space} />
+      <SpaceInfo {size} value={space} />
     {/if}
   </svelte:fragment>
 </ObjectPopup>

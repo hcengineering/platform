@@ -45,13 +45,14 @@
   export let create: ObjectCreate | undefined = undefined
   export let labelDirection: TooltipAlignment | undefined = undefined
   export let kind: ButtonKind = 'no-border'
-  export let size: ButtonSize = 'small'
+  export let size: ButtonSize = 'large'
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = undefined
   export let allowDeselect = false
   export let component: AnySvelteComponent | undefined = undefined
   export let componentProps: any | undefined = undefined
   export let autoSelect = true
+  export let readonly = false
 
   let selected: Space | undefined
 
@@ -75,11 +76,15 @@
   $: updateSelected(value)
 
   const showSpacesPopup = (ev: MouseEvent) => {
+    if (readonly) {
+      return
+    }
     showPopup(
       SpacesPopup,
       {
         _class,
         label,
+        size,
         allowDeselect,
         spaceOptions: { ...(spaceOptions ?? {}), sort: { ...(spaceOptions?.sort ?? {}), modifiedOn: -1 } },
         selected: selected?._id,
@@ -109,6 +114,7 @@
   <Button
     id="space.selector"
     {focus}
+    disabled={readonly}
     {focusIndex}
     icon={IconFolder}
     {size}
@@ -118,7 +124,7 @@
     showTooltip={{ label, direction: labelDirection }}
     on:click={showSpacesPopup}
   >
-    <span slot="content" class="overflow-label disabled text-sm" class:dark-color={value == null}>
+    <span slot="content" class="overflow-label disabled text" class:dark-color={value == null}>
       {#if selected}{selected.name}{:else}<Label {label} />{/if}
     </span>
   </Button>

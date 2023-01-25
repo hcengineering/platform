@@ -13,18 +13,18 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { IconFolder, Label } from '@hcengineering/ui'
+  import { IconFolder, IconSize, Label } from '@hcengineering/ui'
 
   import type { Space } from '@hcengineering/core'
   import presentation from '..'
 
   export let value: Space
   export let subtitle: string | undefined = undefined
-  export let size: 'medium' | 'large'
+  export let size: IconSize
 </script>
 
 <div class="flex-row-center">
-  <div class="flex-center {size} caption-color flex-no-shrink"><IconFolder size={'small'} /></div>
+  <div class="flex-center caption-color flex-no-shrink"><IconFolder {size} /></div>
   <div class="flex-col ml-2 min-w-0">
     {#if subtitle}<div class="content-dark-color text-sm">{subtitle}</div>{/if}
     <div class="content-accent-color overflow-label">

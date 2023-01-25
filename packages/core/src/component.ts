@@ -41,7 +41,8 @@ import type {
   Type,
   UserStatus,
   Configuration,
-  ConfigurationElement
+  ConfigurationElement,
+  IndexStageState
 } from './classes'
 import type {
   Tx,
@@ -102,6 +103,7 @@ export default plugin(coreId, {
     FulltextData: '' as Ref<Class<FullTextData>>,
     TypeRelatedDocument: '' as Ref<Class<Type<RelatedDocument>>>,
     DocIndexState: '' as Ref<Class<DocIndexState>>,
+    IndexStageState: '' as Ref<Class<IndexStageState>>,
 
     Configuration: '' as Ref<Class<Configuration>>
   },

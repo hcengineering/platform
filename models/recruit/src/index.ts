@@ -23,6 +23,7 @@ import {
   Mixin,
   Model,
   Prop,
+  ReadOnly,
   TypeBoolean,
   TypeDate,
   TypeMarkup,
@@ -34,14 +35,22 @@ import attachment from '@hcengineering/model-attachment'
 import calendar from '@hcengineering/model-calendar'
 import chunter from '@hcengineering/model-chunter'
 import contact, { TOrganization, TPerson } from '@hcengineering/model-contact'
-import core, { TSpace } from '@hcengineering/model-core'
+import core, { TAttachedDoc, TSpace } from '@hcengineering/model-core'
 import presentation from '@hcengineering/model-presentation'
 import tags from '@hcengineering/model-tags'
-import task, { actionTemplates, TSpaceWithStates, TTask } from '@hcengineering/model-task'
+import task, { actionTemplates, DOMAIN_TASK, TSpaceWithStates, TTask } from '@hcengineering/model-task'
 import view, { actionTemplates as viewTemplates, createAction } from '@hcengineering/model-view'
 import workbench, { Application, createNavigateAction } from '@hcengineering/model-workbench'
-import { IntlString } from '@hcengineering/platform'
-import { Applicant, Candidate, Candidates, recruitId, Vacancy, VacancyList } from '@hcengineering/recruit'
+import { getEmbeddedLabel, IntlString } from '@hcengineering/platform'
+import {
+  Applicant,
+  ApplicantMatch,
+  Candidate,
+  Candidates,
+  recruitId,
+  Vacancy,
+  VacancyList
+} from '@hcengineering/recruit'
 import setting from '@hcengineering/setting'
 import { KeyBinding } from '@hcengineering/view'
 import recruit from './plugin'
@@ -104,6 +113,12 @@ export class TCandidate extends TPerson implements Candidate {
 
   @Prop(Collection(recruit.class.Review, recruit.string.Review), recruit.string.Reviews)
     reviews?: number
+
+  @Prop(
+    Collection(recruit.class.ApplicantMatch, getEmbeddedLabel('Vacancy match')),
+    getEmbeddedLabel('Vacancy Matches')
+  )
+    vacancyMatch?: number
 }
 
 @Mixin(recruit.mixin.VacancyList, contact.class.Organization)
@@ -136,8 +151,33 @@ export class TApplicant extends TTask implements Applicant {
   declare assignee: Ref<Employee> | null
 }
 
+@Model(recruit.class.ApplicantMatch, core.class.AttachedDoc, DOMAIN_TASK)
+@UX(recruit.string.Application, recruit.icon.Application, recruit.string.ApplicationShort, 'number')
+export class TApplicantMatch extends TAttachedDoc implements ApplicantMatch {
+  // We need to declare, to provide property with label
+  @Prop(TypeRef(recruit.mixin.Candidate), recruit.string.Talent)
+  @Index(IndexKind.Indexed)
+  declare attachedTo: Ref<Candidate>
+
+  @Prop(TypeBoolean(), getEmbeddedLabel('Complete'))
+  @ReadOnly()
+    complete!: boolean
+
+  @Prop(TypeString(), getEmbeddedLabel('Vacancy'))
+  @ReadOnly()
+    vacancy!: string
+
+  @Prop(TypeString(), getEmbeddedLabel('Summary'))
+  @ReadOnly()
+    summary!: string
+
+  @Prop(TypeMarkup(), getEmbeddedLabel('Response'))
+  @ReadOnly()
+    response!: string
+}
+
 export function createModel (builder: Builder): void {
-  builder.createModel(TVacancy, TCandidates, TCandidate, TApplicant, TReview, TOpinion, TVacancyList)
+  builder.createModel(TVacancy, TCandidates, TCandidate, TApplicant, TReview, TOpinion, TVacancyList, TApplicantMatch)
 
   builder.mixin(recruit.class.Vacancy, core.class.Class, workbench.mixin.SpaceView, {
     view: {
@@ -363,7 +403,7 @@ export function createModel (builder: Builder): void {
         }
       ]
     },
-    recruit.viewlet.StatusTableApplicant
+    recruit.viewlet.TableApplicant
   )
   builder.createDoc(
     view.class.Viewlet,
@@ -386,7 +426,19 @@ export function createModel (builder: Builder): void {
       ],
       hiddenKeys: ['name']
     },
-    recruit.viewlet.TableApplicant
+    recruit.viewlet.ApplicantTable
+  )
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: recruit.class.ApplicantMatch,
+      descriptor: view.viewlet.Table,
+      config: ['', 'response', 'attachedTo', 'space', 'modifiedOn'],
+      hiddenKeys: []
+    },
+    recruit.viewlet.TableApplicantMatch
   )
 
   const applicantKanbanLookup: Lookup<Applicant> = {
@@ -443,6 +495,14 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.CollectionPresenter, {
     presenter: recruit.component.ApplicationsPresenter
+  })
+
+  builder.mixin(recruit.class.ApplicantMatch, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: recruit.component.ApplicationMatchPresenter
+  })
+
+  builder.mixin(recruit.class.ApplicantMatch, core.class.Class, view.mixin.CollectionPresenter, {
+    presenter: recruit.component.ApplicationMatchPresenter
   })
 
   builder.mixin(recruit.class.Vacancy, core.class.Class, view.mixin.ObjectPresenter, {
@@ -643,6 +703,15 @@ export function createModel (builder: Builder): void {
     }
   })
 
+  createAction(builder, {
+    ...viewTemplates.open,
+    target: recruit.class.ApplicantMatch,
+    context: {
+      mode: ['browser', 'context'],
+      group: 'create'
+    }
+  })
+
   function createGotoSpecialAction (builder: Builder, id: string, key: KeyBinding, label: IntlString): void {
     createNavigateAction(builder, key, label, recruit.app.Recruit as Ref<Application>, {
       application: recruitId,
@@ -822,6 +891,32 @@ export function createModel (builder: Builder): void {
     },
     recruit.filter.None
   )
+
+  // Allow to use fuzzy search for mixins
+  builder.mixin(recruit.class.Vacancy, core.class.Class, core.mixin.FullTextSearchContext, {
+    fullTextSummary: true
+  })
+
+  createAction(builder, {
+    label: recruit.string.MatchVacancy,
+    icon: recruit.icon.Vacancy,
+    action: view.actionImpl.ShowPopup,
+    actionProps: {
+      component: recruit.component.MatchVacancy,
+      element: 'top',
+      fillProps: {
+        _objects: 'objects'
+      }
+    },
+    input: 'any',
+    category: recruit.category.Recruit,
+    keyBinding: [],
+    target: recruit.mixin.Candidate,
+    context: {
+      mode: ['context', 'browser'],
+      group: 'create'
+    }
+  })
 }
 
 export { recruitOperation } from './migration'

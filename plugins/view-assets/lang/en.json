@@ -61,6 +61,7 @@
     "FilteredViews": "Filtered views",
     "NewFilteredView": "New filtered view",
     "FilteredViewName": "Filtered view name",
-    "Than": "Than"
+    "Than": "Than",
+    "ShowPreviewOnClick": "Please click to show document index preview..."
   }
 }

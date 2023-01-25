@@ -23,6 +23,7 @@ import core, {
   DOMAIN_DOC_INDEX_STATE,
   Hierarchy,
   MeasureContext,
+  ModelDb,
   Ref,
   ServerStorage,
   setObjectValue,
@@ -77,7 +78,8 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     private readonly stages: FullTextPipelineStage[],
     readonly hierarchy: Hierarchy,
     readonly workspace: WorkspaceId,
-    readonly metrics: MeasureContext
+    readonly metrics: MeasureContext,
+    readonly model: ModelDb
   ) {
     this.readyStages = stages.map((it) => it.stageId)
     this.readyStages.sort()
@@ -101,6 +103,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
   ): Promise<{ docs: IndexedDoc[], pass: boolean }> {
     const result: IndexedDoc[] = []
     for (const st of this.stages) {
+      await st.initialize(this.storage, this)
       const docs = await st.search(_classes, search, size, from)
       result.push(...docs.docs)
       if (!docs.pass) {
@@ -154,7 +157,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
   // Update are commulative
   async update (
     docId: Ref<DocIndexState>,
-    mark: boolean,
+    mark: boolean | string,
     update: DocumentUpdate<DocIndexState>,
     flush?: boolean
   ): Promise<void> {
@@ -162,7 +165,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     if (udoc !== undefined) {
       await this.stageUpdate(udoc, update)
 
-      udoc = this.updateDoc(udoc, update, mark)
+      udoc = this.updateDoc(udoc, update, mark !== false)
       this.toIndex.set(docId, udoc)
     }
 
@@ -170,7 +173,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       udoc = this.toIndexParents.get(docId)
       if (udoc !== undefined) {
         await this.stageUpdate(udoc, update)
-        udoc = this.updateDoc(udoc, update, mark)
+        udoc = this.updateDoc(udoc, update, mark !== false)
         this.toIndexParents.set(docId, udoc)
       }
     }
@@ -294,7 +297,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
           const result = await this.storage.findAll(
             core.class.DocIndexState,
             {
-              [`stages.${st.stageId}`]: { $nin: [true] },
+              [`stages.${st.stageId}`]: { $nin: [st.stageValue] },
               _id: { $nin: toSkip },
               removed: false
             },
@@ -346,7 +349,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
           // Check items with not updated state.
           for (const d of toIndex) {
-            if (!d.stages?.[st.stageId]) {
+            if (d.stages?.[st.stageId] === false) {
               this.skipped.set(d._id, (this.skipped.get(d._id) ?? 0) + 1)
             } else {
               this.skipped.delete(d._id)
@@ -420,7 +423,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     }
     for (const st of statistics) {
       for (const [s, v] of Object.entries(st.stages ?? {})) {
-        if (v && allStageIds.has(s)) {
+        if (v !== false && allStageIds.has(s)) {
           this.stats[s] = (this.stats[s] ?? 0) + 1
         }
       }

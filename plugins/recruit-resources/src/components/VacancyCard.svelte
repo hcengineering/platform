@@ -79,6 +79,7 @@
     </div>
   {/if}
   {#if vacancy}
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div
       class="name lines-limit-2"
       class:over-underline={!disabled}
@@ -95,22 +96,24 @@
         }
       }}
     >
-      {#if inline}
-        <div class="flex-row-center">
-          <VacancyIcon size={'small'} />
-          <span class="ml-1">
-            {vacancy.name}
-          </span>
-        </div>
-      {:else}
-        {vacancy.name}
-      {/if}
+      <div class="text-md">
+        {#if inline}
+          <div class="flex-row-center">
+            <VacancyIcon size={'small'} />
+            <span class="ml-1">
+              {vacancy.name}
+            </span>
+          </div>
+        {:else}
+          {vacancy.name}
+        {/if}
+      </div>
     </div>
     {#if company}
       <span class="label">{company.name}</span>
     {/if}
     {#if !inline || vacancy.description}
-      <div class="description lines-limit-2">{vacancy.description ?? ''}</div>
+      <div class="description lines-limit-2 text-md">{vacancy.description ?? ''}</div>
     {/if}
 
     <div class="footer flex flex-reverse flex-grow">

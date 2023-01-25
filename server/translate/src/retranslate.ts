@@ -19,6 +19,7 @@ import {
   DocIndexState,
   DocumentQuery,
   DocumentUpdate,
+  IndexStageState,
   MeasureContext,
   Ref,
   Storage,
@@ -32,7 +33,8 @@ import {
   extractDocKey,
   fieldStateId,
   FullTextPipeline,
-  IndexedDoc
+  IndexedDoc,
+  loadIndexStageStage
 } from '@hcengineering/server-core'
 
 import got from 'got'
@@ -57,6 +59,10 @@ export class LibRetranslateStage implements TranslationStage {
   token: string = ''
   endpoint: string = ''
 
+  stageValue: boolean | string = true
+
+  indexState?: IndexStageState
+
   constructor (readonly metrics: MeasureContext, readonly workspaceId: WorkspaceId) {}
 
   async initialize (storage: Storage, pipeline: FullTextPipeline): Promise<void> {
@@ -74,6 +80,11 @@ export class LibRetranslateStage implements TranslationStage {
       console.error(err)
       this.enabled = false
     }
+
+    ;[this.stageValue, this.indexState] = await loadIndexStageStage(storage, this.indexState, this.stageId, 'config', {
+      enabled: this.enabled,
+      endpoint: this.endpoint
+    })
   }
 
   async search (
@@ -229,13 +240,13 @@ export class LibRetranslateStage implements TranslationStage {
       return
     }
 
-    await pipeline.update(doc._id, true, update, true)
+    await pipeline.update(doc._id, this.stageValue, update, true)
   }
 
   async remove (docs: DocIndexState[], pipeline: FullTextPipeline): Promise<void> {
     // will be handled by field processor
     for (const doc of docs) {
-      await pipeline.update(doc._id, true, {})
+      await pipeline.update(doc._id, this.stageValue, {})
     }
   }
 }
