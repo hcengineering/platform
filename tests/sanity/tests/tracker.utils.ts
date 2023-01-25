@@ -29,18 +29,18 @@ export async function navigate (page: Page): Promise<void> {
 
 export async function setViewGroup (page: Page, groupName: string): Promise<void> {
   await page.click('button:has-text("View")')
-  await page.click('.antiCard >> button >> nth=0')
+  await page.click('.antiCard >> .grouping >> button >> nth=0')
   await page.click(`.menu-item:has-text("${groupName}")`)
-  await expect(page.locator('.antiCard >> button >> nth=0')).toContainText(groupName)
+  await expect(page.locator('.antiCard >> .grouping >> button >> nth=0')).toContainText(groupName)
 
   await page.keyboard.press('Escape')
 }
 
 export async function setViewOrder (page: Page, orderName: string): Promise<void> {
   await page.click('button:has-text("View")')
-  await page.click('.antiCard >> button >> nth=1')
+  await page.click('.antiCard >> .ordering >> button')
   await page.click(`.menu-item:has-text("${orderName}")`)
-  await expect(page.locator('.antiCard >> button >> nth=1')).toContainText(orderName)
+  await expect(page.locator('.antiCard >> .ordering >> button')).toContainText(orderName)
 
   await page.keyboard.press('Escape')
 }

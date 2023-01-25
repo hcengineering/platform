@@ -58,9 +58,9 @@
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div
     class="flex-between categoryHeader row"
+    style:z-index={10-level}
     class:flat
     class:subLevel={level !== 0}
-    style="padding-left: {level * 2 + 2.25}rem;"
     on:click={() => dispatch('collapse')}
   >
     <div class="flex-row-center gap-2 clear-mins caption-color">
@@ -118,13 +118,12 @@
     min-height: 3rem;
     min-width: 0;
     background: var(--header-bg-color);
-    z-index: 5;
 
     &.subLevel {
       min-height: 2.25rem;
       height: 2.25rem;
-      top: 3rem;
       padding: 0 0.75rem 0 2.25rem;
+      // here shoul be top 3rem for sticky, but with ExpandCollapse it gives strange behavior
     }
 
     &.flat {

@@ -131,6 +131,7 @@
 />
 <ExpandCollapse isExpanded={!collapsed} duration={400}>
   {#if !lastLevel}
+  <div class="p-2">
     <ListCategories
       {elementByIndex}
       {indexById}
@@ -155,6 +156,7 @@
       on:uncheckAll
       on:row-focus
     />
+  </div>
   {:else if itemModels}
     {#if limited}
       {#each limited as docObject, i (docObject._id)}

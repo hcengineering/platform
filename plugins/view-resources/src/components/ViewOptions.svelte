@@ -61,7 +61,7 @@
   <div class="antiCard-group grid">
     {#each groups as group, i}
       <span class="label"><Label label={i === 0 ? view.string.Grouping : view.string.Than} /></span>
-      <div class="value">
+      <div class="value grouping">
         <DropdownLabelsIntl
           label={view.string.Grouping}
           items={groupBy.filter((p) => !viewOptions.groupBy.includes(p.id) || [group, noCategory].includes(p.id))}
@@ -73,7 +73,7 @@
       </div>
     {/each}
     <span class="label"><Label label={view.string.Ordering} /></span>
-    <div class="value">
+    <div class="value ordering">
       <DropdownLabelsIntl
         label={view.string.Ordering}
         items={orderBy}
