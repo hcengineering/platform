@@ -15,7 +15,7 @@
 <script lang="ts">
   import { getResource, IntlString, Asset } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
-  import { Button, Icon, showPopup, tooltip } from '@hcengineering/ui'
+  import { Button, Icon, showPopup, Spinner, tooltip } from '@hcengineering/ui'
   import type { AnySvelteComponent } from '@hcengineering/ui'
   import { AnyExtension } from '@tiptap/core'
   import { createEventDispatcher } from 'svelte'
@@ -51,6 +51,7 @@
   export let withoutTopBorder = false
   export let placeholder: IntlString | undefined = undefined
   export let extraActions: RefAction[] | undefined = undefined
+  export let loading: boolean = false
   const client = getClient()
 
   let textEditor: TextEditor
@@ -299,9 +300,17 @@
         class="sendButton"
         on:click={submit}
         use:tooltip={{ label: labelSend ?? textEditorPlugin.string.Send }}
-        disabled={isEmpty && !haveAttachment}
+        disabled={(isEmpty && !haveAttachment) || loading}
       >
-        <div class="icon"><Icon icon={iconSend ?? Send} size={'medium'} /></div>
+        <div class="icon">
+          {#if loading}
+            <div class="pointer-events-none spinner">
+              <Spinner size={'medium'} />
+            </div>
+          {:else}
+            <Icon icon={iconSend ?? Send} size={'medium'} />
+          {/if}
+        </div>
       </button>
     {/if}
   </div>

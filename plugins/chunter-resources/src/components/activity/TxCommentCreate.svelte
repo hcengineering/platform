@@ -33,30 +33,36 @@
   const editing = false
 
   async function onMessage (event: CustomEvent<AttachedData<Comment>>) {
-    const { message, attachments } = event.detail
-    await client.updateCollection(
-      tx.objectClass,
-      tx.objectSpace,
-      tx.objectId,
-      value.attachedTo,
-      value.attachedToClass,
-      value.collection,
-      {
-        message,
-        attachments
-      }
-    )
-    // We need to update backlinks before and after.
-    await updateBacklinks(client, value.attachedTo, value.attachedToClass, value._id, message)
-
+    loading = true
+    try {
+      const { message, attachments } = event.detail
+      await client.updateCollection(
+        tx.objectClass,
+        tx.objectSpace,
+        tx.objectId,
+        value.attachedTo,
+        value.attachedToClass,
+        value.collection,
+        {
+          message,
+          attachments
+        }
+      )
+      // We need to update backlinks before and after.
+      await updateBacklinks(client, value.attachedTo, value.attachedToClass, value._id, message)
+    } finally {
+      loading = false
+    }
     dispatch('close', false)
   }
   let refInput: AttachmentRefInput
+  let loading = false
 </script>
 
 <div class:editing class="content-accent-color">
   {#if edit}
     <AttachmentRefInput
+      {loading}
       bind:this={refInput}
       _class={value._class}
       objectId={value._id}

@@ -34,6 +34,7 @@
   export let showSend = true
   export let shouldSaveDraft: boolean = false
   export let attachments: IdMap<Attachment> = new Map()
+  export let loading = false
   export function submit (): void {
     refInput.submit()
   }
@@ -208,6 +209,7 @@
   }
 
   async function onMessage (event: CustomEvent) {
+    loading = true
     await createAttachments()
     dispatch('message', { message: event.detail, attachments: attachments.size })
   }
@@ -281,6 +283,7 @@
       {iconSend}
       {labelSend}
       {showSend}
+      {loading}
       on:message={onMessage}
       haveAttachment={attachments.size > 0}
       withoutTopBorder={attachments.size > 0}
