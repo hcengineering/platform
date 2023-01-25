@@ -420,12 +420,13 @@
   display: flex;
   flex-direction: column;
   padding: .5rem;
-  min-width: 22rem;
   min-height: 22rem;
   background: var(--popup-bg-color);
   border-radius: .5rem;
   box-shadow: var(--popup-shadow);
-
+  
+  &:not(.min-w-168) { min-width: 22rem; }
+  
   .header {
     display: flex;
     align-items: center;

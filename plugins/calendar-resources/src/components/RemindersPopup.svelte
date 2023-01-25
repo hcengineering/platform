@@ -27,9 +27,10 @@
   $: query.query(calendar.mixin.Reminder, { state: 'active', participants: currentUser.employee }, (res) => {
     remindersCount = res.length
   })
+  $: isMobile = $deviceInfo.isMobile
 </script>
 
-<div class="notifyPopup" class:justify-center={!remindersCount} class:min-w-168={!$deviceInfo.isMobile}>
+<div class="notifyPopup" class:justify-center={!remindersCount} class:min-w-168={!isMobile}>
   <div class="header">
     <span class="fs-title overflow-label"><Label label={calendar.string.Reminders} /></span>
   </div>

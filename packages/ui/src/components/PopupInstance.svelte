@@ -54,7 +54,6 @@
 
   function _update (result: any): void {
     if (onUpdate !== undefined) onUpdate(result)
-    fitPopup()
   }
 
   function _close (result: any): void {

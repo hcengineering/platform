@@ -35,9 +35,10 @@
         (p) => p.requested.filter((a) => a === me).length > p.approved.filter((a) => a === me).length
       ))
   )
+  $: isMobile = $deviceInfo.isMobile
 </script>
 
-<div class="notifyPopup" class:justify-center={requests.length === 0} class:min-w-168={!$deviceInfo.isMobile}>
+<div class="notifyPopup" class:justify-center={requests.length === 0} class:min-w-168={!isMobile}>
   <div class="header flex-between">
     <span class="fs-title overflow-label"><Label label={request.string.Requests} /></span>
   </div>
