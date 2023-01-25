@@ -123,6 +123,7 @@
     &.subLevel {
       min-height: 2.25rem;
       height: 2.25rem;
+      top: 3rem;
       padding: 0 0.75rem 0 2.25rem;
     }
 
