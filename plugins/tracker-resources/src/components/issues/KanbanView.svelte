@@ -62,7 +62,7 @@
   export let viewOptions: ViewOptions
 
   $: currentSpace = space || tracker.team.DefaultTeam
-  $: groupBy = (viewOptions.groupBy ?? noCategory) as IssuesGrouping
+  $: groupBy = (viewOptions.groupBy[0] ?? noCategory) as IssuesGrouping
   $: orderBy = viewOptions.orderBy
   $: sort = { [orderBy[0]]: orderBy[1] }
   $: dontUpdateRank = orderBy[0] !== IssuesOrdering.Manual

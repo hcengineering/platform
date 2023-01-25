@@ -15,8 +15,9 @@
 
 import { Ref } from '@hcengineering/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
-import { Viewlet, ViewletPreference } from '@hcengineering/view'
+import { FilteredView, Viewlet, ViewletPreference } from '@hcengineering/view'
 import { DOMAIN_PREFERENCE } from '@hcengineering/preference'
+import view from './plugin'
 
 async function migrateViewletPreference (client: MigrationClient): Promise<void> {
   const targets: Record<string, string[]> = {
@@ -56,9 +57,31 @@ async function migrateViewletPreference (client: MigrationClient): Promise<void>
   }
 }
 
+async function migrateSavedFilters (client: MigrationClient): Promise<void> {
+  const preferences = await client.find<FilteredView>(DOMAIN_PREFERENCE, {
+    _class: view.class.FilteredView,
+    viewOptions: { $exists: true }
+  })
+  for (const pref of preferences) {
+    if (pref.viewOptions === undefined) continue
+    if (Array.isArray(pref.viewOptions.groupBy)) continue
+    pref.viewOptions.groupBy = [pref.viewOptions.groupBy]
+    await client.update<FilteredView>(
+      DOMAIN_PREFERENCE,
+      {
+        _id: pref._id
+      },
+      {
+        viewOptions: pref.viewOptions
+      }
+    )
+  }
+}
+
 export const viewOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await migrateViewletPreference(client)
+    await migrateSavedFilters(client)
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {}
 }

@@ -43,18 +43,26 @@
   export let extraHeaders: AnyComponent[] | undefined
   export let flat = false
   export let props: Record<string, any> = {}
+  export let level: number
+  export let newObjectProps: Record<string, any>
 
   const dispatch = createEventDispatcher()
 
-  const handleCreateItem = (event: MouseEvent, category: string) => {
+  const handleCreateItem = (event: MouseEvent) => {
     if (createItemDialog === undefined) return
-    showPopup(createItemDialog, { space, ...(groupByKey ? { [groupByKey]: category } : {}) }, eventToHTMLElement(event))
+    showPopup(createItemDialog, newObjectProps, eventToHTMLElement(event))
   }
 </script>
 
 {#if headerComponent || groupByKey === noCategory}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <div class="flex-between categoryHeader row" class:flat on:click={() => dispatch('collapse')}>
+  <div
+    class="flex-between categoryHeader row"
+    style:z-index={10 - level}
+    class:flat
+    class:subLevel={level !== 0}
+    on:click={() => dispatch('collapse')}
+  >
     <div class="flex-row-center gap-2 clear-mins caption-color">
       <FixedColumn key={`list_groupBy_${groupByKey}`} justify={'left'}>
         {#if groupByKey === noCategory}
@@ -95,7 +103,7 @@
         icon={IconAdd}
         kind={'transparent'}
         showTooltip={{ label: createItemLabel }}
-        on:click={(event) => handleCreateItem(event, category)}
+        on:click={handleCreateItem}
       />
     {/if}
   </div>
@@ -110,7 +118,13 @@
     min-height: 3rem;
     min-width: 0;
     background: var(--header-bg-color);
-    z-index: 5;
+
+    &.subLevel {
+      min-height: 2.25rem;
+      height: 2.25rem;
+      padding: 0 0.75rem 0 2.25rem;
+      // here shoul be top 3rem for sticky, but with ExpandCollapse it gives strange behavior
+    }
 
     &.flat {
       background: var(--header-bg-color);

@@ -47,21 +47,30 @@
   const query = createQuery()
   const statusesQuery = createQuery()
 
-  let statuses: WithLookup<IssueStatus>[] = []
+  $: update(value)
 
-  $: if (value.$lookup?.subIssues !== undefined) {
-    query.unsubscribe()
-    subIssues = value.$lookup.subIssues as Issue[]
-    subIssues.sort((a, b) => (a.rank ?? '').localeCompare(b.rank ?? ''))
-  } else {
-    query.query(tracker.class.Issue, { attachedTo: value._id }, (res) => (subIssues = res), {
-      sort: { rank: SortingOrder.Ascending }
-    })
+  function update (value: WithLookup<Issue>): void {
+    if (value.$lookup?.subIssues !== undefined) {
+      query.unsubscribe()
+      subIssues = value.$lookup.subIssues as Issue[]
+      subIssues.sort((a, b) => (a.rank ?? '').localeCompare(b.rank ?? ''))
+    } else if (value.subIssues > 0) {
+      query.query(tracker.class.Issue, { attachedTo: value._id }, (res) => (subIssues = res), {
+        sort: { rank: SortingOrder.Ascending }
+      })
+    } else {
+      query.unsubscribe()
+    }
+    if (value.subIssues > 0 || value.$lookup?.subIssues !== undefined) {
+      statusesQuery.query(tracker.class.IssueStatus, {}, (res) => (statuses = res), {
+        lookup: { category: tracker.class.IssueStatusCategory }
+      })
+    } else {
+      statusesQuery.unsubscribe()
+    }
   }
 
-  statusesQuery.query(tracker.class.IssueStatus, {}, (res) => (statuses = res), {
-    lookup: { category: tracker.class.IssueStatusCategory }
-  })
+  let statuses: WithLookup<IssueStatus>[] = []
 
   $: if (statuses && subIssues) {
     const doneStatuses = statuses.filter((s) => s.category === tracker.issueStatusCategory.Completed).map((p) => p._id)

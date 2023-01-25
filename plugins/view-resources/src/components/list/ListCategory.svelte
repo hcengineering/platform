@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, Ref, Space } from '@hcengineering/core'
+  import { Class, Doc, Lookup, Ref, Space } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import {
     AnyComponent,
@@ -23,9 +23,11 @@
     showPopup,
     Spinner
   } from '@hcengineering/ui'
-  import { AttributeModel } from '@hcengineering/view'
+  import { AttributeModel, BuildModelKey, ViewOptions } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
+  import { FocusSelection, focusStore } from '../../selection'
   import Menu from '../Menu.svelte'
+  import ListCategories from './ListCategories.svelte'
   import ListHeader from './ListHeader.svelte'
   import ListItem from './ListItem.svelte'
 
@@ -42,17 +44,26 @@
   export let loadingPropsLength: number | undefined
   export let selectedObjectIds: Doc[]
   export let itemModels: AttributeModel[]
-  export let selectedRowIndex: number | undefined
   export let extraHeaders: AnyComponent[] | undefined
-  export let objectRefs: HTMLElement[] = []
   export let flatHeaders = false
   export let props: Record<string, any> = {}
+  export let level: number
+  export let elementByIndex: Map<number, HTMLDivElement>
+  export let indexById: Map<Ref<Doc>, number>
+  export let lookup: Lookup<Doc>
+  export let _class: Ref<Class<Doc>>
+  export let config: (string | BuildModelKey)[]
+  export let viewOptions: ViewOptions
+  export let newObjectProps: Record<string, any>
+  export let docByIndex: Map<number, Doc>
+
+  $: lastLevel = level + 1 >= viewOptions.groupBy.length
 
   const autoFoldLimit = 20
   const defaultLimit = 20
   const singleCategoryLimit = 200
   $: initialLimit = singleCat ? singleCategoryLimit : defaultLimit
-  $: limit = initialLimit
+  $: limit = !lastLevel ? items.length : initialLimit
 
   let collapsed = true
 
@@ -62,11 +73,11 @@
     return items.slice(0, limit)
   }
 
-  function initCollapsed (singleCat: boolean, category: any): void {
-    collapsed = !singleCat && items.length > autoFoldLimit
+  function initCollapsed (singleCat: boolean, lastLevel: boolean, category: any): void {
+    collapsed = !singleCat && items.length > (lastLevel ? autoFoldLimit : singleCategoryLimit)
   }
 
-  $: initCollapsed(singleCat, category)
+  $: initCollapsed(singleCat, lastLevel, category)
 
   const handleRowFocused = (object: Doc) => {
     dispatch('row-focus', object)
@@ -74,7 +85,7 @@
 
   const handleMenuOpened = async (event: MouseEvent, object: Doc, rowIndex: number) => {
     event.preventDefault()
-    selectedRowIndex = rowIndex
+    handleRowFocused(object)
 
     if (!selectedObjectIdsSet.has(object._id)) {
       dispatch('uncheckAll')
@@ -83,24 +94,32 @@
     const items = selectedObjectIds.length > 0 ? selectedObjectIds : object
 
     showPopup(Menu, { object: items, baseMenuClass }, getEventPositionElement(event), () => {
-      selectedRowIndex = undefined
+      dispatch('row-focus')
     })
   }
 
   $: limited = limitGroup(items, limit)
   $: selectedObjectIdsSet = new Set<Ref<Doc>>(selectedObjectIds.map((it) => it._id))
+
+  $: newObjectProps = { [groupByKey]: category, ...newObjectProps }
+
+  function isSelected (doc: Doc, focusStore: FocusSelection): boolean {
+    return focusStore.focus?._id === doc._id
+  }
 </script>
 
 <ListHeader
   {groupByKey}
   {category}
   {space}
+  {level}
   limited={limited.length}
   {items}
   {headerComponent}
   {createItemDialog}
   {createItemLabel}
   {extraHeaders}
+  {newObjectProps}
   flat={flatHeaders}
   {props}
   on:more={() => {
@@ -111,15 +130,45 @@
   }}
 />
 <ExpandCollapse isExpanded={!collapsed} duration={400}>
-  {#if itemModels}
+  {#if !lastLevel}
+    <div class="p-2">
+      <ListCategories
+        {elementByIndex}
+        {indexById}
+        docs={items}
+        {_class}
+        {space}
+        {lookup}
+        {loadingPropsLength}
+        {baseMenuClass}
+        {config}
+        {selectedObjectIds}
+        {createItemDialog}
+        {createItemLabel}
+        {viewOptions}
+        {newObjectProps}
+        {flatHeaders}
+        {props}
+        level={level + 1}
+        {initIndex}
+        {docByIndex}
+        on:check
+        on:uncheckAll
+        on:row-focus
+      />
+    </div>
+  {:else if itemModels}
     {#if limited}
       {#each limited as docObject, i (docObject._id)}
         <ListItem
-          bind:use={objectRefs[initIndex + i]}
           {docObject}
+          {elementByIndex}
+          {docByIndex}
+          {indexById}
           model={itemModels}
+          index={initIndex + i}
           {groupByKey}
-          selected={selectedRowIndex === initIndex + i}
+          selected={isSelected(docObject, $focusStore)}
           checked={selectedObjectIdsSet.has(docObject._id)}
           on:check={(ev) => dispatch('check', { docs: ev.detail.docs, value: ev.detail.value })}
           on:contextmenu={(event) => handleMenuOpened(event, docObject, initIndex + i)}
@@ -131,7 +180,7 @@
     {/if}
   {:else if loadingPropsLength !== undefined}
     {#each Array(Math.max(loadingPropsLength, limit)) as _, rowIndex}
-      <div class="listGrid row" class:fixed={rowIndex === selectedRowIndex}>
+      <div class="listGrid row">
         <div class="flex-center clear-mins h-full">
           <div class="gridElement">
             <CheckBox checked={false} />

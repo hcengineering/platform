@@ -33,26 +33,47 @@
       label: key === 'rank' ? view.string.Manual : getKeyLabel(client, viewlet.attachTo, key, lookup)
     }
   })
+
+  $: groups =
+    viewOptions.groupBy[viewOptions.groupBy.length - 1] === noCategory
+      ? viewOptions.groupBy
+      : [...viewOptions.groupBy, noCategory]
+
+  function selectGrouping (value: string, i: number) {
+    viewOptions.groupBy[i] = value
+    if (value !== noCategory) {
+      if (i + 1 === viewOptions.groupBy.length) {
+        viewOptions.groupBy[i + 1] = noCategory
+        viewOptions.groupBy = viewOptions.groupBy
+      }
+    } else {
+      viewOptions.groupBy.length = i + 1
+      viewOptions.groupBy = viewOptions.groupBy
+    }
+    dispatch('update', {
+      key: 'groupBy',
+      value: viewOptions.groupBy.length > 1 ? viewOptions.groupBy.filter((p) => p !== noCategory) : viewOptions.groupBy
+    })
+  }
 </script>
 
 <div class="antiCard">
   <div class="antiCard-group grid">
-    <span class="label"><Label label={view.string.Grouping} /></span>
-    <div class="value">
-      <DropdownLabelsIntl
-        label={view.string.Grouping}
-        items={groupBy}
-        selected={viewOptions.groupBy}
-        width="10rem"
-        justify="left"
-        on:selected={(e) => {
-          viewOptions.groupBy = e.detail
-          dispatch('update', { key: 'groupBy', value: e.detail })
-        }}
-      />
-    </div>
+    {#each groups as group, i}
+      <span class="label"><Label label={i === 0 ? view.string.Grouping : view.string.Than} /></span>
+      <div class="value grouping">
+        <DropdownLabelsIntl
+          label={view.string.Grouping}
+          items={groupBy.filter((p) => !viewOptions.groupBy.includes(p.id) || [group, noCategory].includes(p.id))}
+          selected={group}
+          width="10rem"
+          justify="left"
+          on:selected={(e) => selectGrouping(e.detail, i)}
+        />
+      </div>
+    {/each}
     <span class="label"><Label label={view.string.Ordering} /></span>
-    <div class="value">
+    <div class="value ordering">
       <DropdownLabelsIntl
         label={view.string.Ordering}
         items={orderBy}
