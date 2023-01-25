@@ -41,7 +41,6 @@ export class ModifiedMiddleware extends BaseMiddleware implements Middleware {
       const coltx = tx as TxCollectionCUD<Doc, AttachedDoc>
       coltx.tx.modifiedOn = tx.modifiedOn
     }
-    const res = await this.provideTx(ctx, tx)
-    return [res[0], res[1], res[2]]
+    return await this.provideTx(ctx, tx)
   }
 }

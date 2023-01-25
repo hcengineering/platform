@@ -46,7 +46,6 @@ export class ConfigurationMiddleware extends BaseMiddleware implements Middlewar
   }
 
   async tx (ctx: SessionContext, tx: Tx): Promise<TxMiddlewareResult> {
-    let target: string | undefined
     if (this.storage.hierarchy.isDerived(tx._class, core.class.TxCUD)) {
       const txCUD = tx as TxCUD<Doc>
       const domain = this.storage.hierarchy.getDomain(txCUD.objectClass)
@@ -59,8 +58,7 @@ export class ConfigurationMiddleware extends BaseMiddleware implements Middlewar
         }
       }
     }
-    const res = await this.provideTx(ctx, tx)
-    return [res[0], res[1], res[2] ?? target]
+    return await this.provideTx(ctx, tx)
   }
 
   override async findAll<T extends Doc>(
