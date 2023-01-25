@@ -14,16 +14,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, DocumentQuery, FindOptions, Ref, SortingOrder, Space } from '@hcengineering/core'
+  import { Class, DocumentQuery, FindOptions, Ref, SortingOrder } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { DoneState, SpaceWithStates, State, Task } from '@hcengineering/task'
-  import { TabList } from '@hcengineering/ui'
   import type { TabItem } from '@hcengineering/ui'
+  import { TabList } from '@hcengineering/ui'
   import { TableBrowser } from '@hcengineering/view-resources'
   import task from '../plugin'
-  import StatesBar from './state/StatesBar.svelte'
-  import Won from './icons/Won.svelte'
   import Lost from './icons/Lost.svelte'
+  import Won from './icons/Won.svelte'
+  import StatesBar from './state/StatesBar.svelte'
 
   export let _class: Ref<Class<Task>>
   export let space: Ref<SpaceWithStates>
@@ -81,16 +81,9 @@
 
   const client = getClient()
 
-  async function updateQuery (
-    query: DocumentQuery<Task>,
-    selectedDoneStates: Set<Ref<DoneState>>,
-    space?: Ref<Space>
-  ): Promise<void> {
+  async function updateQuery (query: DocumentQuery<Task>, selectedDoneStates: Set<Ref<DoneState>>): Promise<void> {
     resConfig = updateConfig(config)
     const result = client.getHierarchy().clone(query)
-    if (result.space) {
-      result.space = space
-    }
     if (state) {
       result.state = state
     }
@@ -115,17 +108,17 @@
       selectedDS = ['NoDoneState']
       withoutDone = true
     }
-    updateQuery(query, selectedDoneStates, space)
+    updateQuery(query, selectedDoneStates)
   }
 
   function noDoneClick (): void {
     withoutDone = true
     selectedDS = ['NoDoneState']
     selectedDoneStates.clear()
-    updateQuery(query, selectedDoneStates, space)
+    updateQuery(query, selectedDoneStates)
   }
 
-  $: updateQuery(query, selectedDoneStates, space)
+  $: updateQuery(query, selectedDoneStates)
   const handleSelect = (result: any) => {
     if (result.type === 'select') {
       const res = result.detail
@@ -134,12 +127,12 @@
         state = undefined
         withoutDone = false
         selectedDoneStates.clear()
-        updateQuery(query, selectedDoneStates, space)
+        updateQuery(query, selectedDoneStates)
       } else if (res.id === 'DoneStates') {
         doneStatusesView = true
         state = undefined
         selectedDoneStates.clear()
-        updateQuery(query, selectedDoneStates, space)
+        updateQuery(query, selectedDoneStates)
       }
     }
   }
@@ -165,7 +158,7 @@
   {#if doneStatusesView}
     <TabList items={itemsDS} bind:selected={selectedDS} multiselect on:select={handleDoneSelect} size={'small'} />
   {:else}
-    <StatesBar bind:state {space} gap={'none'} on:change={() => updateQuery(query, selectedDoneStates, space)} />
+    <StatesBar bind:state {space} gap={'none'} on:change={() => updateQuery(query, selectedDoneStates)} />
   {/if}
 </div>
 <div class="statustableview-container">
