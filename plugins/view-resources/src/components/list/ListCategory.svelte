@@ -131,32 +131,32 @@
 />
 <ExpandCollapse isExpanded={!collapsed} duration={400}>
   {#if !lastLevel}
-  <div class="p-2">
-    <ListCategories
-      {elementByIndex}
-      {indexById}
-      docs={items}
-      {_class}
-      {space}
-      {lookup}
-      {loadingPropsLength}
-      {baseMenuClass}
-      {config}
-      {selectedObjectIds}
-      {createItemDialog}
-      {createItemLabel}
-      {viewOptions}
-      {newObjectProps}
-      {flatHeaders}
-      {props}
-      level={level + 1}
-      {initIndex}
-      {docByIndex}
-      on:check
-      on:uncheckAll
-      on:row-focus
-    />
-  </div>
+    <div class="p-2">
+      <ListCategories
+        {elementByIndex}
+        {indexById}
+        docs={items}
+        {_class}
+        {space}
+        {lookup}
+        {loadingPropsLength}
+        {baseMenuClass}
+        {config}
+        {selectedObjectIds}
+        {createItemDialog}
+        {createItemLabel}
+        {viewOptions}
+        {newObjectProps}
+        {flatHeaders}
+        {props}
+        level={level + 1}
+        {initIndex}
+        {docByIndex}
+        on:check
+        on:uncheckAll
+        on:row-focus
+      />
+    </div>
   {:else if itemModels}
     {#if limited}
       {#each limited as docObject, i (docObject._id)}

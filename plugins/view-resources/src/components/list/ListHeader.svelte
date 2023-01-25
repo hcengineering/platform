@@ -58,7 +58,7 @@
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div
     class="flex-between categoryHeader row"
-    style:z-index={10-level}
+    style:z-index={10 - level}
     class:flat
     class:subLevel={level !== 0}
     on:click={() => dispatch('collapse')}
