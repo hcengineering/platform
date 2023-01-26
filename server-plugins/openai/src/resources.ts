@@ -50,7 +50,8 @@ async function performCompletion (
 ): Promise<any> {
   const ep = config.endpoint + '/completions'
 
-  const tokens = encode(prompt).length
+  const chunkedPrompt = chunks(prompt, options.max_tokens - 250)[0]
+  const tokens = encode(chunkedPrompt).length
 
   let response: any
   while (true) {
@@ -65,7 +66,7 @@ async function performCompletion (
               },
               json: {
                 model,
-                prompt,
+                prompt: chunkedPrompt,
                 max_tokens: options.max_tokens - tokens,
                 temperature: options.temperature,
                 top_p: options.top_p,
