@@ -46,5 +46,9 @@
     "filesize": "^8.0.3",
     "@hcengineering/preference": "^0.6.2",
     "@hcengineering/activity": "^0.6.0"
+  },
+  "repository": "https://github.com/hcengineering/anticrm",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
   }
 }

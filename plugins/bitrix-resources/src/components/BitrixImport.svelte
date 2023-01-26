@@ -1,12 +1,12 @@
 <script lang="ts">
-  import { BitrixEntityMapping } from '@hcengineering/bitrix'
+  import { BitrixClient, BitrixEntityMapping } from '@hcengineering/bitrix'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { Card, createQuery } from '@hcengineering/presentation'
   import setting, { Integration } from '@hcengineering/setting'
   import { Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import { BitrixClient } from '../client'
   import bitrix from '../plugin'
+  import { bitrixQueue } from '../queue'
   import FieldMappingSynchronizer from './FieldMappingSynchronizer.svelte'
 
   const mappingQuery = createQuery()
@@ -37,7 +37,8 @@
     integration = res.shift()
   })
 
-  $: bitrixClient = integration !== undefined ? new BitrixClient(integration.value) : undefined
+  $: bitrixClient =
+    integration !== undefined ? new BitrixClient(integration.value, (op) => bitrixQueue.add(op)) : undefined
   let loading = false
 </script>
 

@@ -20,18 +20,18 @@
   import { createEventDispatcher, onMount } from 'svelte'
   import bitrix from '../plugin'
 
-  import { BitrixEntityMapping } from '@hcengineering/bitrix'
+  import { BitrixClient, BitrixEntityMapping, BitrixProfile, StatusValue } from '@hcengineering/bitrix'
   import { Button, eventToHTMLElement, IconAdd, Label, showPopup } from '@hcengineering/ui'
-  import { BitrixClient } from '../client'
-  import { BitrixProfile, StatusValue } from '../types'
+
   import CreateMapping from './CreateMapping.svelte'
   import EntiryMapping from './EntityMapping.svelte'
+  import { bitrixQueue } from '../queue'
 
   export let integration: Integration
 
   const dispatch = createEventDispatcher()
 
-  const bitrixClient = new BitrixClient(integration.value)
+  const bitrixClient = new BitrixClient(integration.value, (op) => bitrixQueue.add(op))
 
   let profile: BitrixProfile | undefined
 

@@ -76,7 +76,10 @@
     query.unsubscribe()
   }
 
-  $: if (_class) {
+  let oldClass: Ref<Class<Doc>>
+
+  $: if (_class !== oldClass) {
+    oldClass = _class
     mainEditor = undefined
   }
 
@@ -152,9 +155,9 @@
   }
 
   let mainEditor: MixinEditor | undefined
-  $: getEditorOrDefault(realObjectClass, showAllMixins)
+  $: getEditorOrDefault(realObjectClass, showAllMixins, _id)
 
-  async function getEditorOrDefault (_class: Ref<Class<Doc>>, showAllMixins: boolean): Promise<void> {
+  async function getEditorOrDefault (_class: Ref<Class<Doc>>, showAllMixins: boolean, _id: Ref<Doc>): Promise<void> {
     parentClass = getParentClass(_class)
     mainEditor = await getEditor(_class)
     updateKeys(showAllMixins)
@@ -167,11 +170,16 @@
       array: view.mixin.ArrayEditor,
       collection: view.mixin.CollectionEditor,
       inplace: view.mixin.InlineAttributEditor,
-      attribute: view.mixin.AttributeEditor
+      attribute: view.mixin.AttributeEditor,
+      object: undefined
     }
     const mixinRef = mix[attrClass.category]
-    const editorMixin = hierarchy.as(clazz, mixinRef)
-    return editorMixin.editor
+    if (mixinRef) {
+      const editorMixin = hierarchy.as(clazz, mixinRef)
+      return editorMixin.editor
+    } else {
+      return undefined
+    }
   }
 
   function getIcon (_class: Ref<Class<Obj>> | undefined): Asset | undefined {

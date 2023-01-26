@@ -28,7 +28,11 @@
 
 {#if value}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <span title={value.label} class="fs-bold caption-color overflow-label clear-mins" on:click={navigateToProject}>
+  <span
+    title={value.label}
+    class="cursor-pointer fs-bold caption-color overflow-label clear-mins"
+    on:click={navigateToProject}
+  >
     {value.label}
   </span>
 {/if}

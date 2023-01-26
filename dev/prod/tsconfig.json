@@ -3,7 +3,7 @@
     "outDir": "./dist/",
     "noImplicitAny": true,
     "module": "esnext",
-    "target": "es2016",
+    "target": "es2021",
     "allowJs": true,
     "sourceMap": true,
     "skipLibCheck": true,
@@ -11,7 +11,8 @@
     "allowSyntheticDefaultImports": true,
     "lib": [
       "es2016",
-      "dom"
+      "dom",
+      "ES2021.String"
     ]
   }
 }
