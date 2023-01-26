@@ -26,12 +26,14 @@
 </script>
 
 {#if value && value > 0}
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div
     use:tooltip={{
       label: chunter.string.Comments,
       component: CommentPopup,
       props: { objectId: object._id }
     }}
+    on:click|preventDefault|stopPropagation={() => {}}
     class="sm-tool-icon ml-1 mr-1"
   >
     <span class="icon"><IconThread {size} /></span>

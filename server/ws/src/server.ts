@@ -202,30 +202,43 @@ class SessionManager {
     const sessions = Array.from(workspace.sessions)
     workspace.sessions = []
 
-    for (const s of sessions) {
+    const closeS = async (s: Session, webSocket: WebSocket): Promise<void> => {
       // await for message to go to client.
       await new Promise((resolve) => {
         // Override message handler, to wait for upgrading response from clients.
-        s[1].on('close', () => {
+        webSocket.on('close', () => {
           resolve(null)
         })
-        s[1].send(
+        webSocket.send(
           serialize({
             result: {
               _class: core.class.TxModelUpgrade
             }
           })
         )
-        setTimeout(resolve, 5000)
+        setTimeout(resolve, 1000)
       })
-      s[1].close()
-      await this.setStatus(ctx, s[0], false)
+      webSocket.close()
+      await this.setStatus(ctx, s, false)
     }
-    try {
-      await (await workspace.pipeline).close()
-    } catch (err: any) {
-      console.error(err)
+
+    console.log(workspace.id, 'Clients disconnected. Closing Workspace...')
+    await Promise.all(sessions.map((s) => closeS(s[0], s[1])))
+
+    const closePipeline = async (): Promise<void> => {
+      try {
+        await (await workspace.pipeline).close()
+      } catch (err: any) {
+        console.error(err)
+      }
     }
+    await Promise.race([
+      closePipeline,
+      new Promise((resolve) => {
+        setTimeout(resolve, 15000)
+      })
+    ])
+    console.log(workspace.id, 'Workspace closed...')
   }
 
   async closeWorkspaces (ctx: MeasureContext): Promise<void> {

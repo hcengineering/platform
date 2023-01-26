@@ -46,7 +46,8 @@ import {
   TTypeRelatedDocument,
   TTypeString,
   TTypeTimestamp,
-  TVersion
+  TVersion,
+  TIndexStageState
 } from './core'
 import { TAccount, TSpace } from './security'
 import { TUserStatus } from './transient'
@@ -99,6 +100,7 @@ export function createModel (builder: Builder): void {
     TFulltextData,
     TTypeRelatedDocument,
     TDocIndexState,
+    TIndexStageState,
     TFullTextSearchContext,
     TConfiguration,
     TConfigurationElement

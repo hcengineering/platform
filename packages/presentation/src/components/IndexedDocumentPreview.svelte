@@ -26,7 +26,7 @@
   }
   let search = ''
 
-  $: summary = (indexDoc?.attributes as any).summary
+  $: summary = indexDoc?.fullSummary ?? undefined
 
   $: attributes =
     indexDoc !== undefined
@@ -51,10 +51,17 @@
 </script>
 
 <Panel on:changeContent on:close>
-  <EditBox bind:value={search} kind="search-style" />
+  <EditBox focus bind:value={search} kind="search-style" />
   <div class="indexed-background">
     <div class="indexed-doc text-base max-h-125">
       {#if summary}
+        {#if search.length > 0}
+          Result:
+          {#each summary.split('\n').filter((line) => line.toLowerCase().includes(search.toLowerCase())) as line}
+            <span class:highlight={true}>{line}</span>
+          {/each}
+          <br />
+        {/if}
         Summary:
         {#each summary.split('\n') as line}
           {@const hl = search.length > 0 && line.toLowerCase().includes(search.toLowerCase())}
@@ -74,6 +81,13 @@
           <div class="p-1 flex-row flex-wrap">
             {#each attr[1] as doc}
               <div class="p-1" class:flex-col={doc.length > 1}>
+                {#if search.length > 0}
+                  Result:
+                  {#each doc.filter((line) => line.toLowerCase().includes(search.toLowerCase())) as line}
+                    <span class:highlight={true}>{line}</span>
+                  {/each}
+                  <br />
+                {/if}
                 {#each doc as line}
                   {@const hl = search.length > 0 && line.toLowerCase().includes(search.toLowerCase())}
                   <span class:text-md={!hl} class:highlight={hl}>{line}</span>
@@ -100,7 +114,7 @@
     color: black;
     user-select: text;
     .highlight {
-      color: red;
+      color: blue;
     }
   }
 </style>

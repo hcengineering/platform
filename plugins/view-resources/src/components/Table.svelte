@@ -46,6 +46,8 @@
   export let tableId: string | undefined = undefined
   export let readonly = false
 
+  export let prefferedSorting: string = 'modifiedOn'
+
   // If defined, will show a number of dummy items before real data will appear.
   export let loadingProps: LoadingProps | undefined = undefined
 
@@ -57,9 +59,15 @@
 
   $: lookup = options?.lookup ?? buildConfigLookup(hierarchy, _class, config)
 
-  let sortKey = 'modifiedOn'
+  let _sortKey = prefferedSorting
+  $: if (!userSorting) {
+    _sortKey = prefferedSorting
+  }
+
   let sortOrder = SortingOrder.Descending
   let loading = 0
+
+  let userSorting = false
 
   let objects: Doc[] = []
   let objectsRecieved = false
@@ -71,7 +79,7 @@
 
   const dispatch = createEventDispatcher()
 
-  $: sortingFunction = (config.find((it) => typeof it !== 'string' && it.sortingKey === sortKey) as BuildModelKey)
+  $: sortingFunction = (config.find((it) => typeof it !== 'string' && it.sortingKey === _sortKey) as BuildModelKey)
     ?.sortingFunction
 
   async function update (
@@ -107,7 +115,7 @@
       objects = []
     }
   }
-  $: update(_class, query, sortKey, sortOrder, lookup, options)
+  $: update(_class, query, _sortKey, sortOrder, lookup, options)
 
   const showMenu = async (ev: MouseEvent, object: Doc, row: number): Promise<void> => {
     selection = row
@@ -121,12 +129,13 @@
     })
   }
 
-  function changeSorting (key: string): void {
+  function changeSorting (key: string | string[]): void {
     if (key === '') {
       return
     }
-    if (key !== sortKey) {
-      sortKey = key
+    userSorting = true
+    if (key !== _sortKey) {
+      _sortKey = Array.isArray(key) ? key[0] : key
       sortOrder = SortingOrder.Ascending
     } else {
       sortOrder = sortOrder === SortingOrder.Ascending ? SortingOrder.Descending : SortingOrder.Ascending
@@ -211,14 +220,14 @@
           {#each model as attribute}
             <th
               class:sortable={attribute.sortingKey}
-              class:sorted={attribute.sortingKey === sortKey}
+              class:sorted={attribute.sortingKey === _sortKey}
               on:click={() => changeSorting(attribute.sortingKey)}
             >
               <div class="antiTable-cells">
                 {#if attribute.label}
                   <Label label={attribute.label} />
                 {/if}
-                {#if attribute.sortingKey === sortKey}
+                {#if attribute.sortingKey === _sortKey}
                   <div class="icon">
                     {#if sortOrder === SortingOrder.Ascending}
                       <IconUp size={'small'} />

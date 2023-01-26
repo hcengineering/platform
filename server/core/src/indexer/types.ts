@@ -13,7 +13,17 @@
 // limitations under the License.
 //
 
-import { Class, Doc, DocIndexState, DocumentQuery, DocumentUpdate, Hierarchy, Ref, Storage } from '@hcengineering/core'
+import {
+  Class,
+  Doc,
+  DocIndexState,
+  DocumentQuery,
+  DocumentUpdate,
+  Hierarchy,
+  ModelDb,
+  Ref,
+  Storage
+} from '@hcengineering/core'
 import type { IndexedDoc } from '../types'
 
 /**
@@ -21,9 +31,10 @@ import type { IndexedDoc } from '../types'
  */
 export interface FullTextPipeline {
   hierarchy: Hierarchy
+  model: ModelDb
   update: (
     docId: Ref<DocIndexState>,
-    mark: boolean,
+    mark: boolean | string,
     update: DocumentUpdate<DocIndexState>,
     flush?: boolean
   ) => Promise<void>
@@ -60,6 +71,8 @@ export interface FullTextPipelineStage {
   updateFields: DocUpdateHandler[]
 
   enabled: boolean
+
+  stageValue: boolean | string
 
   initialize: (storage: Storage, pipeline: FullTextPipeline) => Promise<void>
 

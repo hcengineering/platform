@@ -5,7 +5,7 @@ import { Configuration } from '@hcengineering/core'
 /**
  * @public
  */
-export const translateStateId = 'trn-v1a'
+export const translateStateId = 'trn-v2'
 
 /**
  * @public

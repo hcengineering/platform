@@ -31,14 +31,23 @@ import EditBoxPopup from './components/EditBoxPopup.svelte'
 import EditDoc from './components/EditDoc.svelte'
 import EnumEditor from './components/EnumEditor.svelte'
 import FilterBar from './components/filter/FilterBar.svelte'
+import FilterTypePopup from './components/filter/FilterTypePopup.svelte'
 import ObjectFilter from './components/filter/ObjectFilter.svelte'
 import TimestampFilter from './components/filter/TimestampFilter.svelte'
 import ValueFilter from './components/filter/ValueFilter.svelte'
-import FilterTypePopup from './components/filter/FilterTypePopup.svelte'
+import HTMLEditor from './components/HTMLEditor.svelte'
 import HTMLPresenter from './components/HTMLPresenter.svelte'
+import HyperlinkPresenter from './components/HyperlinkPresenter.svelte'
 import IntlStringPresenter from './components/IntlStringPresenter.svelte'
 import GithubPresenter from './components/linkPresenters/GithubPresenter.svelte'
 import YoutubePresenter from './components/linkPresenters/YoutubePresenter.svelte'
+import GrowPresenter from './components/list/GrowPresenter.svelte'
+import ListView from './components/list/ListView.svelte'
+import SortableList from './components/list/SortableList.svelte'
+import SortableListItem from './components/list/SortableListItem.svelte'
+import MarkupEditor from './components/MarkupEditor.svelte'
+import MarkupEditorPopup from './components/MarkupEditorPopup.svelte'
+import MarkupPresenter from './components/MarkupPresenter.svelte'
 import Menu from './components/Menu.svelte'
 import NumberEditor from './components/NumberEditor.svelte'
 import NumberPresenter from './components/NumberPresenter.svelte'
@@ -47,31 +56,22 @@ import RolePresenter from './components/RolePresenter.svelte'
 import SpacePresenter from './components/SpacePresenter.svelte'
 import StringEditor from './components/StringEditor.svelte'
 import StringPresenter from './components/StringPresenter.svelte'
-import HyperlinkPresenter from './components/HyperlinkPresenter.svelte'
 import Table from './components/Table.svelte'
 import TableBrowser from './components/TableBrowser.svelte'
 import TimestampPresenter from './components/TimestampPresenter.svelte'
 import UpDownNavigator from './components/UpDownNavigator.svelte'
-import ViewletSettingButton from './components/ViewletSettingButton.svelte'
 import ValueSelector from './components/ValueSelector.svelte'
-import HTMLEditor from './components/HTMLEditor.svelte'
-import MarkupPresenter from './components/MarkupPresenter.svelte'
-import MarkupEditor from './components/MarkupEditor.svelte'
-import MarkupEditorPopup from './components/MarkupEditorPopup.svelte'
-import SortableList from './components/list/SortableList.svelte'
-import SortableListItem from './components/list/SortableListItem.svelte'
-import ListView from './components/list/ListView.svelte'
-import GrowPresenter from './components/list/GrowPresenter.svelte'
+import ViewletSettingButton from './components/ViewletSettingButton.svelte'
 
 import {
   afterResult,
   beforeResult,
+  nestedDontMatchResult,
+  nestedMatchResult,
   objectInResult,
   objectNinResult,
   valueInResult,
-  valueNinResult,
-  nestedMatchResult,
-  nestedDontMatchResult
+  valueNinResult
 } from './filter'
 
 import { IndexedDocumentPreview } from '@hcengineering/presentation'
@@ -84,30 +84,31 @@ export { getActions, invokeAction } from './actions'
 export { default as ActionContext } from './components/ActionContext.svelte'
 export { default as ActionHandler } from './components/ActionHandler.svelte'
 export { default as FilterButton } from './components/filter/FilterButton.svelte'
-export { default as LinkPresenter } from './components/LinkPresenter.svelte'
-export { default as ContextMenu } from './components/Menu.svelte'
-export { default as TableBrowser } from './components/TableBrowser.svelte'
 export { default as FixedColumn } from './components/FixedColumn.svelte'
-export { default as ValueSelector } from './components/ValueSelector.svelte'
+export { default as SourcePresenter } from './components/inference/SourcePresenter.svelte'
+export { default as LinkPresenter } from './components/LinkPresenter.svelte'
+export { default as List } from './components/list/List.svelte'
+export { default as ContextMenu } from './components/Menu.svelte'
 export { default as ObjectBox } from './components/ObjectBox.svelte'
 export { default as ObjectPresenter } from './components/ObjectPresenter.svelte'
-
-export { default as List } from './components/list/List.svelte'
+export { default as TableBrowser } from './components/TableBrowser.svelte'
+export { default as ValueSelector } from './components/ValueSelector.svelte'
+export { default as MarkupPreviewPopup } from './components/MarkupPreviewPopup.svelte'
 export * from './context'
 export * from './filter'
 export * from './selection'
-export * from './viewOptions'
 export {
   buildModel,
+  getActiveViewletId,
   getCollectionCounter,
+  getFiltredKeys,
   getObjectPresenter,
   getObjectPreview,
+  isCollectionAttr,
   LoadingProps,
-  setActiveViewletId,
-  getActiveViewletId,
-  getFiltredKeys,
-  isCollectionAttr
+  setActiveViewletId
 } from './utils'
+export * from './viewOptions'
 export {
   HTMLPresenter,
   Table,

@@ -88,7 +88,10 @@ export default mergeIds(recruitId, recruit, {
     NewCandidateHeader: '' as AnyComponent,
     ApplicantFilter: '' as AnyComponent,
     VacancyList: '' as AnyComponent,
-    VacancyTemplateEditor: '' as AnyComponent
+    VacancyTemplateEditor: '' as AnyComponent,
+    ApplicationMatchPresenter: '' as AnyComponent,
+
+    MatchVacancy: '' as AnyComponent
   },
   template: {
     DefaultVacancy: '' as Ref<KanbanTemplate>,
@@ -103,8 +106,9 @@ export default mergeIds(recruitId, recruit, {
   viewlet: {
     TableCandidate: '' as Ref<Viewlet>,
     TableVacancy: '' as Ref<Viewlet>,
-    StatusTableApplicant: '' as Ref<Viewlet>,
+    ApplicantTable: '' as Ref<Viewlet>,
     TableApplicant: '' as Ref<Viewlet>,
+    TableApplicantMatch: '' as Ref<Viewlet>,
     CalendarReview: '' as Ref<Viewlet>,
     TableReview: '' as Ref<Viewlet>
   }

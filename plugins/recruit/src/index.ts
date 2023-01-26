@@ -92,6 +92,18 @@ export interface Applicant extends Task {
 /**
  * @public
  */
+export interface ApplicantMatch extends AttachedDoc {
+  attachedTo: Ref<Candidate>
+
+  complete: boolean
+  vacancy: string
+  summary: string
+  response: string
+}
+
+/**
+ * @public
+ */
 export interface Review extends Event {
   attachedTo: Ref<Candidate>
   number: number
@@ -129,6 +141,7 @@ const recruit = plugin(recruitId, {
   },
   class: {
     Applicant: '' as Ref<Class<Applicant>>,
+    ApplicantMatch: '' as Ref<Class<ApplicantMatch>>,
     Candidates: '' as Ref<Class<Candidates>>,
     Vacancy: '' as Ref<Class<Vacancy>>,
     Review: '' as Ref<Class<Review>>,

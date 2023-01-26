@@ -99,7 +99,12 @@
     "HasNoActiveApplicant": "No Active",
     "NoneApplications": "None",
     "RelatedIssues": "Related issues",
-    "VacancyList": "Vacancies"
+    "VacancyList": "Vacancies",
+    "MatchVacancy": "Match to vacancy",
+    "VacancyMatching": "Match Talents to vacancy",
+    "Score": "Score",
+    "Match": "Match",
+    "PerformMatch": "Match"
   },
   "status": {
     "TalentRequired": "Please select talent",

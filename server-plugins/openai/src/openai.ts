@@ -20,6 +20,7 @@ import core, {
   DocumentQuery,
   DocumentUpdate,
   docUpdKey,
+  IndexStageState,
   MeasureContext,
   Ref,
   Storage,
@@ -36,6 +37,7 @@ import {
   FullTextPipelineStage,
   IndexedDoc,
   isIndexingRequired,
+  loadIndexStageStage,
   RateLimitter
 } from '@hcengineering/server-core'
 
@@ -47,7 +49,7 @@ import openaiPlugin, { openAIRatelimitter } from './plugin'
 /**
  * @public
  */
-export const openAIstage = 'emb-v3a'
+export const openAIstage = 'emb-v5'
 
 /**
  * @public
@@ -76,23 +78,27 @@ export class OpenAIEmbeddingsStage implements FullTextPipelineStage {
   field = 'openai_embedding'
   field_enabled = '_use'
 
-  summary_field = 'summary'
-
   enabled = false
 
   clearExcept?: string[] = undefined
   updateFields: DocUpdateHandler[] = []
 
-  model = process.env.OPENAI_MODEL ?? 'text-embedding-ada-002'
+  copyToState = true
+
+  model = 'text-embedding-ada-002'
 
   tokenLimit = 8191
 
-  endpoint = process.env.OPENAI_HOST ?? 'https://api.openai.com/v1/embeddings'
+  endpoint = 'https://api.openai.com/v1/embeddings'
   token = ''
 
   rate = 5
 
+  stageValue: boolean | string = true
+
   limitter = new RateLimitter(() => ({ rate: this.rate }))
+
+  indexState?: IndexStageState
 
   async update (doc: DocIndexState, update: DocumentUpdate<DocIndexState>): Promise<void> {}
 
@@ -100,10 +106,9 @@ export class OpenAIEmbeddingsStage implements FullTextPipelineStage {
 
   updateSummary (summary: FullSummaryStage): void {
     summary.fieldFilter.push((attr, value) => {
-      if (
-        attr.type._class === core.class.TypeMarkup &&
-        (value.toLocaleLowerCase().startsWith('gpt:') || value.toLocaleLowerCase().startsWith('gpt Answer:'))
-      ) {
+      const tMarkup = attr.type._class === core.class.TypeMarkup
+      const lowerCase = value.toLocaleLowerCase()
+      if (tMarkup && (lowerCase.includes('gpt:') || lowerCase.includes('gpt Answer:'))) {
         return false
       }
       return true
@@ -150,6 +155,15 @@ export class OpenAIEmbeddingsStage implements FullTextPipelineStage {
       console.error(err)
       this.enabled = false
     }
+
+    ;[this.stageValue, this.indexState] = await loadIndexStageStage(storage, this.indexState, this.stageId, 'config', {
+      enabled: this.enabled,
+      endpoint: this.endpoint,
+      field: this.field,
+      mode: this.model,
+      copyToState: this.copyToState,
+      stripNewLines: true
+    })
   }
 
   async getEmbedding (text: string): Promise<OpenAIEmbeddingResponse> {
@@ -232,17 +246,18 @@ export class OpenAIEmbeddingsStage implements FullTextPipelineStage {
       }
     }
     if (query.$search === undefined) return { docs: [], pass: true }
-    const embeddingData = await this.getEmbedding(query.$search)
+    const queryString = query.$search.replace('\n ', ' ')
+    const embeddingData = await this.getEmbedding(queryString)
     const embedding = embeddingData.data[0].embedding
     console.log('search embedding', embedding)
     const docs = await this.adapter.searchEmbedding(_classes, query, embedding, {
       size,
       from,
-      minScore: 0,
+      minScore: -100,
       embeddingBoost: 100,
       field: this.field,
       field_enable: this.field_enabled,
-      fulltextBoost: 1
+      fulltextBoost: 10
     })
     return {
       docs,
@@ -251,6 +266,9 @@ export class OpenAIEmbeddingsStage implements FullTextPipelineStage {
   }
 
   async collect (toIndex: DocIndexState[], pipeline: FullTextPipeline): Promise<void> {
+    if (!this.enabled) {
+      return
+    }
     for (const doc of toIndex) {
       if (pipeline.cancelling) {
         return
@@ -274,13 +292,7 @@ export class OpenAIEmbeddingsStage implements FullTextPipelineStage {
 
     // No need to index this class, mark embeddings as empty ones.
     if (!needIndex) {
-      await pipeline.update(doc._id, true, {})
-      return
-    }
-
-    if (this.token === '') {
-      // No token, just do nothing.
-      await pipeline.update(doc._id, true, {})
+      await pipeline.update(doc._id, this.stageValue, {})
       return
     }
 
@@ -288,10 +300,11 @@ export class OpenAIEmbeddingsStage implements FullTextPipelineStage {
       if (this.unauthorized) {
         return
       }
-      const embeddingText = (doc.attributes[this.summary_field] as string) ?? ''
+      const embeddingText = doc.fullSummary ?? ''
 
       if (embeddingText.length > this.treshold) {
-        const embeddText = embeddingText
+        //  replace newlines, which can negatively affect performance. Based on OpenAI examples.
+        const embeddText = embeddingText.replace('\n ', ' ')
 
         console.log('calculate embeddings:', doc.objectClass, doc._id)
 
@@ -322,7 +335,11 @@ export class OpenAIEmbeddingsStage implements FullTextPipelineStage {
           [this.field]: embedding,
           [this.field_enabled]: true
         })
-        ;(update as any)[docUpdKey(this.field)] = embedding.length
+        if (this.copyToState) {
+          ;(update as any)[docUpdKey(this.field)] = embedding
+        } else {
+          ;(update as any)[docUpdKey(this.field)] = embedding.length
+        }
         ;(update as any)[docUpdKey(this.field_enabled)] = true
       }
     } catch (err: any) {
@@ -337,18 +354,15 @@ export class OpenAIEmbeddingsStage implements FullTextPipelineStage {
       }
       // Print error only first time, and update it in doc index
       console.error(err)
-      return
     }
 
-    // We need to collect all fields and prepare embedding document.
-
-    await pipeline.update(doc._id, true, update)
+    await pipeline.update(doc._id, this.stageValue, update)
   }
 
   async remove (docs: DocIndexState[], pipeline: FullTextPipeline): Promise<void> {
     // will be handled by field processor
     for (const doc of docs) {
-      await pipeline.update(doc._id, true, {})
+      await pipeline.update(doc._id, this.stageValue, {})
     }
   }
 }

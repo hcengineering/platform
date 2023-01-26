@@ -48,6 +48,8 @@ export class ContentRetrievalStage implements FullTextPipelineStage {
 
   textLimit = 100 * 1024
 
+  stageValue: boolean | string = true
+
   constructor (
     readonly storageAdapter: MinioService | undefined,
     readonly workspace: WorkspaceId,

@@ -98,45 +98,60 @@ import { trackerId } from '@hcengineering/tracker'
 import { viewId } from '@hcengineering/view'
 import { workbenchId } from '@hcengineering/workbench'
 
-addStringsLoader(loginId, async (lang: string) => await import(`@hcengineering/login-assets/lang/${lang}.json`))
-addStringsLoader(taskId, async (lang: string) => await import(`@hcengineering/task-assets/lang/${lang}.json`))
-addStringsLoader(viewId, async (lang: string) => await import(`@hcengineering/view-assets/lang/${lang}.json`))
-addStringsLoader(chunterId, async (lang: string) => await import(`@hcengineering/chunter-assets/lang/${lang}.json`))
-addStringsLoader(
-  attachmentId,
-  async (lang: string) => await import(`@hcengineering/attachment-assets/lang/${lang}.json`)
-)
-addStringsLoader(contactId, async (lang: string) => await import(`@hcengineering/contact-assets/lang/${lang}.json`))
-addStringsLoader(recruitId, async (lang: string) => await import(`@hcengineering/recruit-assets/lang/${lang}.json`))
-addStringsLoader(activityId, async (lang: string) => await import(`@hcengineering/activity-assets/lang/${lang}.json`))
-addStringsLoader(
-  automationId,
-  async (lang: string) => await import(`@hcengineering/automation-assets/lang/${lang}.json`)
-)
-addStringsLoader(settingId, async (lang: string) => await import(`@hcengineering/setting-assets/lang/${lang}.json`))
-addStringsLoader(telegramId, async (lang: string) => await import(`@hcengineering/telegram-assets/lang/${lang}.json`))
-addStringsLoader(leadId, async (lang: string) => await import(`@hcengineering/lead-assets/lang/${lang}.json`))
-addStringsLoader(gmailId, async (lang: string) => await import(`@hcengineering/gmail-assets/lang/${lang}.json`))
-addStringsLoader(workbenchId, async (lang: string) => await import(`@hcengineering/workbench-assets/lang/${lang}.json`))
-addStringsLoader(inventoryId, async (lang: string) => await import(`@hcengineering/inventory-assets/lang/${lang}.json`))
-addStringsLoader(templatesId, async (lang: string) => await import(`@hcengineering/templates-assets/lang/${lang}.json`))
-addStringsLoader(
-  notificationId,
-  async (lang: string) => await import(`@hcengineering/notification-assets/lang/${lang}.json`)
-)
-addStringsLoader(tagsId, async (lang: string) => await import(`@hcengineering/tags-assets/lang/${lang}.json`))
-addStringsLoader(calendarId, async (lang: string) => await import(`@hcengineering/calendar-assets/lang/${lang}.json`))
-addStringsLoader(trackerId, async (lang: string) => await import(`@hcengineering/tracker-assets/lang/${lang}.json`))
-addStringsLoader(boardId, async (lang: string) => await import(`@hcengineering/board-assets/lang/${lang}.json`))
-addStringsLoader(
-  preferenceId,
-  async (lang: string) => await import(`@hcengineering/preference-assets/lang/${lang}.json`)
-)
-addStringsLoader(hrId, async (lang: string) => await import(`@hcengineering/hr-assets/lang/${lang}.json`))
-addStringsLoader(documentId, async (lang: string) => await import(`@hcengineering/document-assets/lang/${lang}.json`))
-addStringsLoader(bitrixId, async (lang: string) => await import(`@hcengineering/bitrix-assets/lang/${lang}.json`))
-addStringsLoader(requestId, async (lang: string) => await import(`@hcengineering/request-assets/lang/${lang}.json`))
+import loginEng from '@hcengineering/login-assets/lang/en.json'
 
+import taskEn from '@hcengineering/task-assets/lang/en.json'
+import viewEn from '@hcengineering/view-assets/lang/en.json'
+import chunterEn from '@hcengineering/chunter-assets/lang/en.json'
+import attachmentEn from '@hcengineering/attachment-assets/lang/en.json'
+import contactEn from '@hcengineering/contact-assets/lang/en.json'
+import recruitEn from '@hcengineering/recruit-assets/lang/en.json'
+import activityEn from '@hcengineering/activity-assets/lang/en.json'
+import automationEn from '@hcengineering/automation-assets/lang/en.json'
+import settingEn from '@hcengineering/setting-assets/lang/en.json'
+import telegramEn from '@hcengineering/telegram-assets/lang/en.json'
+import leadEn from '@hcengineering/lead-assets/lang/en.json'
+import gmailEn from '@hcengineering/gmail-assets/lang/en.json'
+import workbenchEn from '@hcengineering/workbench-assets/lang/en.json'
+import inventoryEn from '@hcengineering/inventory-assets/lang/en.json'
+import templatesEn from '@hcengineering/templates-assets/lang/en.json'
+import notificationEn from '@hcengineering/notification-assets/lang/en.json'
+import tagsEn from '@hcengineering/tags-assets/lang/en.json'
+import calendarEn from '@hcengineering/calendar-assets/lang/en.json'
+import trackerEn from '@hcengineering/tracker-assets/lang/en.json'
+import boardEn from '@hcengineering/board-assets/lang/en.json'
+import preferenceEn from '@hcengineering/preference-assets/lang/en.json'
+import hrEn from '@hcengineering/hr-assets/lang/en.json'
+import documentEn from '@hcengineering/document-assets/lang/en.json'
+import bitrixEn from '@hcengineering/bitrix-assets/lang/en.json'
+import requestEn from '@hcengineering/request-assets/lang/en.json'
+addStringsLoader(loginId, async (lang: string) => loginEng)
+
+addStringsLoader(taskId, async (lang: string) => taskEn)
+addStringsLoader(viewId, async (lang: string) => viewEn)
+addStringsLoader(chunterId, async (lang: string) => chunterEn)
+addStringsLoader(attachmentId, async (lang: string) => attachmentEn)
+addStringsLoader(contactId, async (lang: string) => contactEn)
+addStringsLoader(recruitId, async (lang: string) => recruitEn)
+addStringsLoader(activityId, async (lang: string) => activityEn)
+addStringsLoader(automationId, async (lang: string) => automationEn)
+addStringsLoader(settingId, async (lang: string) => settingEn)
+addStringsLoader(telegramId, async (lang: string) => telegramEn)
+addStringsLoader(leadId, async (lang: string) => leadEn)
+addStringsLoader(gmailId, async (lang: string) => gmailEn)
+addStringsLoader(workbenchId, async (lang: string) => workbenchEn)
+addStringsLoader(inventoryId, async (lang: string) => inventoryEn)
+addStringsLoader(templatesId, async (lang: string) => templatesEn)
+addStringsLoader(notificationId, async (lang: string) => notificationEn)
+addStringsLoader(tagsId, async (lang: string) => tagsEn)
+addStringsLoader(calendarId, async (lang: string) => calendarEn)
+addStringsLoader(trackerId, async (lang: string) => trackerEn)
+addStringsLoader(boardId, async (lang: string) => boardEn)
+addStringsLoader(preferenceId, async (lang: string) => preferenceEn)
+addStringsLoader(hrId, async (lang: string) => hrEn)
+addStringsLoader(documentId, async (lang: string) => documentEn)
+addStringsLoader(bitrixId, async (lang: string) => bitrixEn)
+addStringsLoader(requestId, async (lang: string) => requestEn)
 /**
  * @public
  */

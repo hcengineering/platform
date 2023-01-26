@@ -53,7 +53,9 @@ class ElasticAdapter implements FullTextAdapter {
       const mappings = await this.client.indices.getMapping({
         index: toWorkspaceString(this.workspaceId)
       })
-      console.log('Mapping', mappings.body)
+      if (field !== undefined) {
+        console.log('Mapping', mappings.body)
+      }
       const wsMappings = mappings.body[toWorkspaceString(this.workspaceId)]
 
       // Collect old values.
@@ -80,7 +82,6 @@ class ElasticAdapter implements FullTextAdapter {
           })
         }
       }
-      console.log('Index created ok.')
     } catch (err: any) {
       console.error(err)
     }
@@ -195,7 +196,7 @@ class ElasticAdapter implements FullTextAdapter {
                 }
               },
               script: {
-                source: `Math.abs(cosineSimilarity(params.queryVector, '${options.field}'))`,
+                source: `Math.abs(cosineSimilarity(params.queryVector, '${options.field}')) + 1`,
                 params: {
                   queryVector: embedding
                 }
@@ -215,10 +216,7 @@ class ElasticAdapter implements FullTextAdapter {
         filter: [
           {
             bool: {
-              should: [
-                { terms: this.getTerms(_classes, '_class') },
-                { terms: this.getTerms(_classes, 'attachedToClass') }
-              ]
+              must: [{ terms: this.getTerms(_classes, '_class') }]
             }
           }
         ]
@@ -239,7 +237,7 @@ class ElasticAdapter implements FullTextAdapter {
       const min = options?.minScore ?? 75
       const hits: any[] = sourceHits.filter((it: any) => it._score > min)
 
-      return hits.map((hit) => ({ ...hit._source, _score: hit._score }))
+      return hits.map((hit) => ({ ...hit._source, _score: hit._score - (options.embeddingBoost ?? 100.0) }))
     } catch (err) {
       console.error(JSON.stringify(err, null, 2))
       return []

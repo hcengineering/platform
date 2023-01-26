@@ -101,7 +101,12 @@
     "HasNoActiveApplicant": "Не активные",
     "NoneApplications": "Отсутствуют",
     "RelatedIssues": "Связанные задачи",
-    "VacancyList": "Вакансии"
+    "VacancyList": "Вакансии",
+    "MatchVacancy": "Проверить на вакансию",
+    "VacancyMatching": "Подбор кандидатов на вакансию",
+    "Score": "Оценка",
+    "Match": "Совпадение",
+    "PerformMatch": "Сопоставить"
   },
   "status": {
     "TalentRequired": "Пожалуйста выберите таланта",

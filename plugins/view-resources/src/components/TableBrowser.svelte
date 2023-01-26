@@ -14,12 +14,14 @@
 -->
 <script lang="ts">
   import type { Class, Doc, DocumentQuery, FindOptions, Ref } from '@hcengineering/core'
+  import { getEmbeddedLabel } from '@hcengineering/platform'
   import { Scroller, tableSP } from '@hcengineering/ui'
   import { BuildModelKey } from '@hcengineering/view'
   import { onMount } from 'svelte'
   import { ActionContext } from '..'
   import { focusStore, ListSelectionProvider, SelectDirection, selectionStore } from '../selection'
   import { LoadingProps } from '../utils'
+  import SourcePresenter from './inference/SourcePresenter.svelte'
   import Table from './Table.svelte'
 
   export let _class: Ref<Class<Doc>>
@@ -44,6 +46,32 @@
   onMount(() => {
     ;(document.activeElement as HTMLElement)?.blur()
   })
+
+  // Search config
+  let _config = config
+
+  let prefferedSorting: string = 'modifiedOn'
+
+  function updateConfig (config: (BuildModelKey | string)[], search?: string): void {
+    const useSearch = search !== '' && search != null
+    _config = [
+      ...(useSearch
+        ? [
+            {
+              key: '',
+              presenter: SourcePresenter,
+              label: getEmbeddedLabel('#'),
+              sortingKey: '#score',
+              props: { search }
+            }
+          ]
+        : []),
+      ...config
+    ]
+    prefferedSorting = !useSearch ? 'modifiedOn' : '#score'
+  }
+
+  $: updateConfig(config, query.$search)
 </script>
 
 <svelte:window />
@@ -57,7 +85,7 @@
   <Table
     bind:this={table}
     {_class}
-    {config}
+    config={_config}
     {options}
     {query}
     {showNotification}
@@ -66,6 +94,7 @@
     highlightRows={true}
     enableChecking
     checked={$selectionStore ?? []}
+    {prefferedSorting}
     selection={listProvider.current($focusStore)}
     on:row-focus={(evt) => {
       listProvider.updateFocus(evt.detail)

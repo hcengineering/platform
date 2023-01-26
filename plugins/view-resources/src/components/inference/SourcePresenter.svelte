@@ -15,7 +15,8 @@
 <script lang="ts">
   import { Doc, WithLookup } from '@hcengineering/core'
   import { IndexedDocumentPreview } from '@hcengineering/presentation'
-  import { showPopup } from '@hcengineering/ui'
+  import { showPopup, tooltip } from '@hcengineering/ui'
+  import plugin from '../../plugin'
 
   export let value: WithLookup<Doc>
   export let search: string
@@ -23,7 +24,14 @@
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <span
+  use:tooltip={{ label: plugin.string.ShowPreviewOnClick }}
   on:click={() => {
     showPopup(IndexedDocumentPreview, { objectId: value._id, search })
-  }}>{value.$source?.$score}</span
+  }}
 >
+  {#if value.$source?.$score}
+    {Math.round(value.$source?.$score * 100) / 100}
+  {:else}
+    *
+  {/if}
+</span>

@@ -54,6 +54,8 @@ export class FullTextPushStage implements FullTextPipelineStage {
 
   field_enabled = '_use'
 
+  stageValue: boolean | string = true
+
   constructor (
     readonly fulltextAdapter: FullTextAdapter,
     readonly workspace: WorkspaceId,

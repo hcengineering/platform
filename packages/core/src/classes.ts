@@ -350,7 +350,7 @@ export interface DocIndexState extends Doc {
   attachedToClass?: Ref<Class<Doc>>
 
   // States for stages
-  stages: Record<string, boolean>
+  stages: Record<string, boolean | string>
 
   removed: boolean
 
@@ -360,6 +360,14 @@ export interface DocIndexState extends Doc {
   // Full Summary
   fullSummary?: Markup | null
   shortSummary?: Markup | null
+}
+
+/**
+ * @public
+ */
+export interface IndexStageState extends Doc {
+  stageId: string
+  attributes: Record<string, any>
 }
 
 /**

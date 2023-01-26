@@ -37,6 +37,7 @@ import {
   FullTextData,
   FullTextSearchContext,
   IndexKind,
+  IndexStageState,
   Interface,
   Mixin,
   Obj,
@@ -251,7 +252,13 @@ export class TDocIndexState extends TDoc implements DocIndexState {
   removed!: boolean
 
   // States for diffetent stages
-  stages!: Record<string, boolean>
+  stages!: Record<string, boolean | string>
+}
+
+@Model(core.class.IndexStageState, core.class.Doc, DOMAIN_DOC_INDEX_STATE)
+export class TIndexStageState extends TDoc implements IndexStageState {
+  stageId!: string
+  attributes!: Record<string, any>
 }
 
 @MMixin(core.mixin.FullTextSearchContext, core.class.Class)

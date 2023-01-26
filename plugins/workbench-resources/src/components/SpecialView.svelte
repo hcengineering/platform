@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Class, Doc, DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
-  import { Asset, getEmbeddedLabel, IntlString } from '@hcengineering/platform'
+  import { Asset, IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import {
     AnyComponent,
@@ -36,7 +36,6 @@
     setActiveViewletId,
     ViewletSettingButton
   } from '@hcengineering/view-resources'
-  import SourcePresenter from './search/SourcePresenter.svelte'
 
   export let _class: Ref<Class<Doc>>
   export let space: Ref<Space> | undefined = undefined
@@ -139,20 +138,7 @@
       _class,
       space,
       options: viewlet.options,
-      config: [
-        ...(search !== ''
-          ? [
-              {
-                key: '',
-                presenter: SourcePresenter,
-                label: getEmbeddedLabel('#'),
-                sortingKey: '#score',
-                props: { search }
-              }
-            ]
-          : []),
-        ...(preference?.config ?? viewlet.config)
-      ],
+      config: preference?.config ?? viewlet.config,
       viewlet,
       viewOptions,
       createItemDialog: createComponent,
