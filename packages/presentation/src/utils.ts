@@ -216,10 +216,10 @@ export function getAttributePresenterClass (
   attribute: AnyAttribute
 ): { attrClass: Ref<Class<Doc>>, category: AttributeCategory } {
   let attrClass = attribute.type._class
-  let category: AttributeCategory = 'object'
+  let category: AttributeCategory = 'attribute'
   if (hierarchy.isDerived(attrClass, core.class.RefTo)) {
     attrClass = (attribute.type as RefTo<Doc>).to
-    category = 'attribute'
+    category = 'object'
   }
   if (hierarchy.isDerived(attrClass, core.class.TypeMarkup)) {
     category = 'inplace'

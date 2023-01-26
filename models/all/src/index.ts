@@ -62,6 +62,7 @@ import { createModel as documentModel } from '@hcengineering/model-document'
 import { createModel as bitrixModel } from '@hcengineering/model-bitrix'
 import { createModel as requestModel } from '@hcengineering/model-request'
 import { createModel as serverRequestModel } from '@hcengineering/model-server-request'
+import { createModel as serverViewModel } from '@hcengineering/model-server-view'
 
 import { createModel as serverTranslate } from '@hcengineering/model-server-translate'
 import { createModel as serverOpenAI } from '@hcengineering/model-server-openai'
@@ -116,6 +117,7 @@ const builders: [(b: Builder) => void, string][] = [
   [serverHrModel, 'server-hr'],
   [serverNotificationModel, 'server-notification'],
   [serverRequestModel, 'server-request'],
+  [serverViewModel, 'server-view'],
   [automationModel, 'automation'],
   [serverTranslate, 'translate'],
   [serverOpenAI, 'openai']

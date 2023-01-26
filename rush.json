@@ -1489,5 +1489,20 @@
       "projectFolder": "models/server-openai",
       "shouldPublish": true
     },
+    {
+      "packageName": "@hcengineering/server-view",
+      "projectFolder": "server-plugins/view",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/model-server-view",
+      "projectFolder": "models/server-view",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/server-view-resources",
+      "projectFolder": "server-plugins/view-resources",
+      "shouldPublish": true
+    },
   ]
 }

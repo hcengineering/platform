@@ -13,9 +13,9 @@
 // limitations under the License.
 //
 
-import { Ref } from '@hcengineering/core'
+import core, { AnyAttribute, DOMAIN_TX, Ref, TxCreateDoc, TxCUD, TxProcessor, TxRemoveDoc } from '@hcengineering/core'
 import { MigrateOperation, MigrationClient, MigrationUpgradeClient } from '@hcengineering/model'
-import { FilteredView, Viewlet, ViewletPreference } from '@hcengineering/view'
+import { BuildModelKey, FilteredView, Viewlet, ViewletPreference } from '@hcengineering/view'
 import { DOMAIN_PREFERENCE } from '@hcengineering/preference'
 import view from './plugin'
 
@@ -78,10 +78,78 @@ async function migrateSavedFilters (client: MigrationClient): Promise<void> {
   }
 }
 
+async function fixViewletPreferenceRemovedAttributes (client: MigrationClient): Promise<void> {
+  const removeTxes = await client.find<TxRemoveDoc<AnyAttribute>>(DOMAIN_TX, {
+    _class: core.class.TxRemoveDoc,
+    objectClass: core.class.Attribute
+  })
+  for (const removeTx of removeTxes) {
+    const createTx = (
+      await client.find<TxCreateDoc<AnyAttribute>>(DOMAIN_TX, {
+        _class: core.class.TxCreateDoc,
+        objectId: removeTx.objectId
+      })
+    )[0]
+    const key = createTx.attributes.name
+    await client.update<ViewletPreference>(
+      DOMAIN_PREFERENCE,
+      { config: key },
+      {
+        $pull: { config: key }
+      }
+    )
+  }
+}
+
+async function fixPreferenceObjectKey (client: MigrationClient): Promise<void> {
+  const preferences = await client.find<ViewletPreference>(DOMAIN_PREFERENCE, { _class: view.class.ViewletPreference })
+  for (const preference of preferences) {
+    let index = preference.config.indexOf('')
+    if (index === -1) continue
+    index = preference.config.indexOf('', index + 1)
+    if (index === -1) continue
+    const descTxes = await client.find<TxCUD<Viewlet>>(DOMAIN_TX, { objectId: preference.attachedTo })
+    const desc = TxProcessor.buildDoc2Doc<Viewlet>(descTxes)
+    if (desc === undefined) continue
+    const targets = desc.config.filter((p) => (p as BuildModelKey).key === '')
+    let i = 0
+    while (index !== -1) {
+      const target = targets[i++]
+      if (target !== undefined) {
+        await client.update(
+          DOMAIN_PREFERENCE,
+          {
+            _id: preference._id
+          },
+          { $set: { [`config.${index}`]: target } }
+        )
+      } else {
+        await client.update(
+          DOMAIN_PREFERENCE,
+          {
+            _id: preference._id
+          },
+          { $unset: { [`config.${index}`]: 1 } }
+        )
+        await client.update(
+          DOMAIN_PREFERENCE,
+          {
+            _id: preference._id
+          },
+          { $pull: { config: null } }
+        )
+      }
+      index = preference.config.indexOf('', index + 1)
+    }
+  }
+}
+
 export const viewOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await migrateViewletPreference(client)
     await migrateSavedFilters(client)
+    await fixViewletPreferenceRemovedAttributes(client)
+    await fixPreferenceObjectKey(client)
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {}
 }
