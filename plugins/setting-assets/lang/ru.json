@@ -64,8 +64,8 @@
     "OldNames": "Предыдушие значения",
     "NewClassName": "Введите новое имя класса или выберете прошлое значение...",
 
-    "ShowAttribute": "Hide",
-    "HideAttribute": "Show",
+    "ShowAttribute": "Показать",
+    "HideAttribute": "Спрятать",
     "Visibility": "Видимость",
     "Hidden": "Спрятанный",
     "Configure": "Настроить..."

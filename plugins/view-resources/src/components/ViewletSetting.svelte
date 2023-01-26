@@ -18,7 +18,7 @@
   import preferencePlugin from '@hcengineering/preference'
   import presentation, { Card, createQuery, getAttributePresenterClass, getClient } from '@hcengineering/presentation'
   import { Button, getPlatformColorForText, ToggleButton } from '@hcengineering/ui'
-  import { Viewlet, ViewletPreference } from '@hcengineering/view'
+  import { BuildModelKey, Viewlet, ViewletPreference } from '@hcengineering/view'
   import { deepEqual } from 'fast-equals'
   import { createEventDispatcher } from 'svelte'
   import view from '../plugin'
@@ -53,7 +53,7 @@
   interface AttributeConfig {
     enabled: boolean
     label: IntlString
-    value: string
+    value: string | BuildModelKey
     _class: Ref<Class<Doc>>
   }
 
@@ -83,16 +83,12 @@
           })
         }
       } else {
-        if (param.key.length === 0) {
-          result.push(getObjectConfig(viewlet.attachTo, param.key))
-        } else {
-          result.push({
-            value: param.key,
-            label: param.label ?? getKeyLabel(client, viewlet.attachTo, param.key, lookup),
-            enabled: true,
-            _class: viewlet.attachTo
-          })
-        }
+        result.push({
+          value: param,
+          label: param.label as IntlString,
+          enabled: true,
+          _class: viewlet.attachTo
+        })
       }
     }
     return result

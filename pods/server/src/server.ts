@@ -63,6 +63,7 @@ import { serverLeadId } from '@hcengineering/server-lead'
 import { serverNotificationId } from '@hcengineering/server-notification'
 import { serverRecruitId } from '@hcengineering/server-recruit'
 import { serverRequestId } from '@hcengineering/server-request'
+import { serverViewId } from '@hcengineering/server-view'
 import { serverSettingId } from '@hcengineering/server-setting'
 import { serverTagsId } from '@hcengineering/server-tags'
 import { serverTaskId } from '@hcengineering/server-task'
@@ -179,6 +180,7 @@ export function start (
   addLocation(serverGmailId, () => import('@hcengineering/server-gmail-resources'))
   addLocation(serverTelegramId, () => import('@hcengineering/server-telegram-resources'))
   addLocation(serverRequestId, () => import('@hcengineering/server-request-resources'))
+  addLocation(serverViewId, () => import('@hcengineering/server-view-resources'))
   addLocation(serverHrId, () => import('@hcengineering/server-hr-resources'))
   addLocation(openAIId, () => Promise.resolve({ default: openAIPluginImpl }))
 
