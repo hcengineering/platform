@@ -150,7 +150,7 @@
       return
     }
     const c = create
-    showPopup(c.component, {}, 'top', async (res) => {
+    showPopup(c.component, c.props ?? {}, 'top', async (res) => {
       if (res != null) {
         // We expect reference to new object.
         const newPerson = await client.findOne(_class, { _id: res })
