@@ -432,6 +432,17 @@ export function createModel (builder: Builder): void {
     view.viewlet.List
   )
 
+  builder.createDoc(
+    view.class.ViewletDescriptor,
+    core.space.Model,
+    {
+      label: view.string.Timeline,
+      icon: view.icon.Timeline,
+      component: view.component.Timeline
+    },
+    view.viewlet.Timeline
+  )
+
   createAction(
     builder,
     {

@@ -103,6 +103,8 @@ import TeamPresenter from './components/teams/TeamPresenter.svelte'
 import IssueStatistics from './components/sprints/IssueStatistics.svelte'
 import StatusRefPresenter from './components/issues/StatusRefPresenter.svelte'
 import SprintRefPresenter from './components/sprints/SprintRefPresenter.svelte'
+import ProjectsListBrowser from './components/projects/ProjectsListBrowser.svelte'
+import ProjectsTimelineBrowser from './components/projects/ProjectsTimelineBrowser.svelte'
 
 export { default as SubIssueList } from './components/issues/edit/SubIssueList.svelte'
 
@@ -280,7 +282,9 @@ export default async (): Promise<Resources> => ({
     TeamPresenter,
     IssueStatistics,
     StatusRefPresenter,
-    RelatedIssuesSection
+    RelatedIssuesSection,
+    ProjectsListBrowser,
+    ProjectsTimelineBrowser
   },
   completion: {
     IssueQuery: async (client: Client, query: string, filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }) =>

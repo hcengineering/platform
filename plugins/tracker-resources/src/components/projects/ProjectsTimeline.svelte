@@ -17,9 +17,9 @@
   import { Class, Doc, FindOptions, getObjectValue, Ref, Timestamp } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Issue, Project } from '@hcengineering/tracker'
-  import { CheckBox, Spinner, Timeline, TimelineRow } from '@hcengineering/ui'
-  import { AttributeModel, BuildModelKey } from '@hcengineering/view'
-  import { buildModel, LoadingProps } from '@hcengineering/view-resources'
+  import { CheckBox, Spinner } from '@hcengineering/ui'
+  import type { AttributeModel, BuildModelKey } from '@hcengineering/view'
+  import { buildModel, LoadingProps, Timeline, TimelineRow } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
   import ProjectPresenter from './ProjectPresenter.svelte'
@@ -121,7 +121,7 @@
     <svelte:fragment let:row>
       {#each itemModels as attributeModel, attributeModelIndex}
         {#if attributeModelIndex === 0}
-          <div class="gridElement">
+          <div class="timeline-row__header-item">
             <div class="iconPresenter">
               <svelte:component
                 this={attributeModel.presenter}
@@ -140,7 +140,7 @@
           </div>
           <div class="filler" />
         {:else}
-          <div class="gridElement">
+          <div class="timeline-row__header-item">
             <svelte:component
               this={attributeModel.presenter}
               value={getObjectValue(attributeModel.key, projects[row]) ?? ''}
@@ -154,13 +154,11 @@
   </Timeline>
 {:else if loadingProps !== undefined}
   {#each Array(getLoadingElementsLength(loadingProps, options)) as _, rowIndex}
-    <div class="listGrid" class:fixed={rowIndex === selectedRowIndex}>
-      <div class="contentWrapper">
-        <div class="gridElement">
-          <CheckBox checked={false} />
-          <div class="ml-4">
-            <Spinner size="small" />
-          </div>
+    <div class="timeline-row__container" class:fixed={rowIndex === selectedRowIndex}>
+      <div class="timeline-row__header-item">
+        <CheckBox checked={false} />
+        <div class="ml-4">
+          <Spinner size="small" />
         </div>
       </div>
     </div>
@@ -168,337 +166,12 @@
 {/if}
 
 <style lang="scss">
-  // .timeline-container {
-  //   overflow: hidden;
-  //   position: relative;
-  //   display: flex;
-  //   flex-direction: column;
-  //   width: 100%;
-  //   height: 100%;
-  //   min-width: 0;
-  //   min-height: 0;
-
-  //   & > * {
-  //     overscroll-behavior-x: contain;
-  //   }
-  // }
-  .timeline-header {
-    display: flex;
-    align-items: center;
-    min-height: 4rem;
-    border-bottom: 1px solid var(--divider-color);
-  }
-  .timeline-header__title {
-    display: flex;
-    align-items: center;
-    flex-shrink: 0;
-    padding: 0 2.25rem;
-    height: 100%;
-    background-color: var(--body-accent);
-    box-shadow: var(--accent-shadow);
-    // z-index: 2;
-  }
-  .timeline-header__time {
-    // overflow: hidden;
-    position: relative;
-    flex-grow: 1;
-    height: 100%;
-    background-color: var(--body-color);
-    mask-image: linear-gradient(
-      90deg,
-      rgba(0, 0, 0, 0) 0,
-      rgba(0, 0, 0, 1) 2rem,
-      rgba(0, 0, 0, 1) calc(100% - 2rem),
-      rgba(0, 0, 0, 0) 100%
-    );
-
-    &-content {
-      width: 100%;
-      height: 100%;
-      will-change: transform;
-
-      .day,
-      .month {
-        position: absolute;
-        pointer-events: none;
-      }
-      .month {
-        width: max-content;
-        top: 0.25rem;
-        font-size: 1rem;
-        color: var(--accent-color);
-
-        &:first-letter {
-          text-transform: uppercase;
-        }
-      }
-      .day {
-        bottom: 0.5rem;
-        font-size: 1rem;
-        color: var(--content-color);
-        transform: translateX(-50%);
-      }
-      .cursor {
-        position: absolute;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding-bottom: 1px;
-        width: 1.75rem;
-        height: 1.75rem;
-        bottom: 0.375rem;
-        font-size: 1rem;
-        font-weight: 600;
-        color: #fff;
-        background-color: var(--primary-bg-color);
-        border-radius: 50%;
-        transform: translateX(-50%);
-        pointer-events: none;
-      }
-    }
-  }
-  .todayMarker,
-  .monthMarker {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 0;
-    height: 100%;
-    pointer-events: none;
-  }
-  .monthMarker {
-    border-left: 1px dashed var(--highlight-select);
-  }
-  .todayMarker {
-    border-left: 1px solid var(--primary-bg-color);
-  }
-
-  .timeline-background__headers,
-  .timeline-background__viewbox,
-  .timeline-foreground__viewbox {
-    overflow: hidden;
-    position: absolute;
-    top: 4rem;
-    bottom: 0;
-    height: 100%;
-    z-index: -1;
-  }
-  .timeline-background__headers {
-    left: 0;
-    background-color: var(--body-accent);
-  }
-  .timeline-background__viewbox,
-  .timeline-foreground__viewbox {
-    right: 0;
-    mask-image: linear-gradient(
-      90deg,
-      rgba(0, 0, 0, 0) 0,
-      rgba(0, 0, 0, 1) 2rem,
-      rgba(0, 0, 0, 1) calc(100% - 2rem),
-      rgba(0, 0, 0, 0) 100%
-    );
-  }
-  .timeline-foreground__viewbox {
-    z-index: 1;
-    pointer-events: none;
-  }
-
-  .timeline-splitter,
-  .timeline-splitter::before {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    height: 100%;
-    transform: translateX(-50%);
-  }
-  .timeline-splitter {
-    width: 1px;
-    background-color: var(--divider-color);
-    cursor: col-resize;
-    z-index: 3;
-    transition-property: width, background-color;
-    transition-timing-function: var(--timing-main);
-    transition-duration: 0.1s;
-    transition-delay: 0s;
-
-    &:hover {
-      width: 3px;
-      background-color: var(--button-border-hover);
-      transition-duration: 0.15s;
-      transition-delay: 0.3s;
-    }
-    &::before {
-      content: '';
-      width: 10px;
-      left: 50%;
-    }
-    &.moving {
-      width: 2px;
-      background-color: var(--primary-edit-border-color);
-      transition-duration: 0.1s;
-      transition-delay: 0s;
-    }
-  }
-
-  .headerWrapper {
-    display: flex;
-    align-items: center;
-    height: 100%;
-    min-width: 0;
-    padding-left: 0.75rem;
-    padding-right: 1.15rem;
-    // border-bottom: 1px solid var(--accent-bg-color);
-  }
-  .contentWrapper {
-    overflow: hidden;
-    position: relative;
-    display: flex;
-    align-items: center;
-    flex-grow: 1;
-    height: 100%;
-    min-width: 0;
-    min-height: 0;
-    mask-image: linear-gradient(
-      90deg,
-      rgba(0, 0, 0, 0) 0,
-      rgba(0, 0, 0, 1) 2rem,
-      rgba(0, 0, 0, 1) calc(100% - 2rem),
-      rgba(0, 0, 0, 0) 100%
-    );
-
-    &.nullRow {
-      cursor: pointer;
-    }
-  }
-  .timeline-wrapped_content {
-    width: 100%;
-    height: 100%;
-    min-width: 0;
-    min-height: 0;
-    will-change: transform;
-  }
-
-  .timeline-action__button,
-  .project-item {
-    position: absolute;
-    display: flex;
-    align-items: center;
-    padding: 0.5rem;
-    box-shadow: var(--button-shadow);
-  }
-  .project-item {
-    top: 0.25rem;
-    bottom: 0.25rem;
-    background-color: var(--button-bg-color);
-    border: 1px solid var(--button-border-color);
-    border-radius: 0.75rem;
-
-    &:hover {
-      background-color: var(--button-bg-hover);
-      border-color: var(--button-border-hover);
-    }
-    &.noTarget {
-      mask-image: linear-gradient(to left, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 1) 2rem);
-      border-right-color: transparent;
-    }
-
-    .project-presenter {
-      display: flex;
-      align-items: center;
-
-      .space {
-        flex-shrink: 0;
-        width: 0.25rem;
-        min-width: 0.25rem;
-        max-width: 0.25rem;
-      }
-    }
-  }
-  .timeline-action__button {
-    top: 0.625rem;
-    bottom: 0.625rem;
-    width: 2rem;
-    color: var(--content-color);
-    background-color: var(--button-bg-color);
-    border: 1px solid var(--button-border-color);
-    border-radius: 0.5rem;
-
-    &:hover {
-      color: var(--accent-color);
-      background-color: var(--button-bg-hover);
-      border-color: var(--button-border-hover);
-    }
-
-    &.left {
-      left: 1rem;
-    }
-    &.right {
-      right: 1rem;
-    }
-    &.add {
-      transform: translateX(-50%);
-      pointer-events: none;
-    }
-  }
-
-  .listGrid {
-    display: flex;
-    justify-content: stretch;
-    align-items: center;
-    flex-shrink: 0;
-    width: 100%;
-    height: 3.25rem;
-    min-height: 0;
-    color: var(--caption-color);
-    z-index: 2;
-
-    &.mListGridChecked {
-      .headerWrapper {
-        background-color: var(--highlight-select);
-      }
-      .contentWrapper {
-        background-color: var(--trans-content-05);
-      }
-      .eListGridCheckBox {
-        opacity: 1;
-      }
-    }
-
-    &.mListGridSelected {
-      .headerWrapper {
-        background-color: var(--highlight-select-hover);
-      }
-      .contentWrapper {
-        background-color: var(--trans-content-10);
-      }
-    }
-
-    .eListGridCheckBox {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-    }
-
-    &:hover .eListGridCheckBox {
-      opacity: 1;
-    }
-  }
-
   .filler {
     display: flex;
     flex-grow: 1;
   }
-
-  .gridElement {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    margin-left: 0.5rem;
-
-    &:first-child {
-      margin-left: 0;
-    }
+  .iconPresenter {
+    padding-left: 0.45rem;
   }
   .projectPresenter {
     display: flex;

@@ -25,7 +25,7 @@
   } from '@hcengineering/view-resources'
   import { Project } from '@hcengineering/tracker'
   import { onMount } from 'svelte'
-  import ProjectsList from './ProjectsList.svelte'
+  import ProjectsTimeline from './ProjectsTimeline.svelte'
 
   export let _class: Ref<Class<Doc>>
   export let loadingProps: LoadingProps | undefined = undefined
@@ -38,7 +38,7 @@
     }
   })
 
-  let projectsComponent: ProjectsList
+  let projectsComponent: ProjectsTimeline
 
   $: if (projectsComponent !== undefined) {
     listProvider.update(projects)
@@ -55,7 +55,7 @@
   }}
 />
 
-<ProjectsList
+<ProjectsTimeline
   bind:this={projectsComponent}
   {_class}
   itemsConfig={viewlet.config}

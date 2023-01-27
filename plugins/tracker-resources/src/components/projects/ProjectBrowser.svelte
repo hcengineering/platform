@@ -14,26 +14,54 @@
 -->
 <script lang="ts">
   import contact from '@hcengineering/contact'
-  import { DocumentQuery, FindOptions, SortingOrder } from '@hcengineering/core'
+  import { DocumentQuery, FindOptions, SortingOrder, WithLookup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { createQuery } from '@hcengineering/presentation'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import { Project } from '@hcengineering/tracker'
-  import { Button, IconAdd, Label, showPopup, TabList } from '@hcengineering/ui'
+  import { Button, IconAdd, Label, showPopup, TabList, Component } from '@hcengineering/ui'
   import type { TabItem } from '@hcengineering/ui'
   import tracker from '../../plugin'
-  import view from '@hcengineering/view'
+  import view, { Viewlet } from '@hcengineering/view'
+  import { setActiveViewletId, getActiveViewletId } from '@hcengineering/view-resources'
   import { getIncludedProjectStatuses, projectsTitleMap, ProjectsViewMode } from '../../utils'
   import NewProject from './NewProject.svelte'
-  import ProjectsListBrowser from './ProjectsListBrowser.svelte'
 
   export let label: IntlString
   export let query: DocumentQuery<Project> = {}
   export let search: string = ''
   export let mode: ProjectsViewMode = 'all'
-  export let viewMode: 'list' | 'timeline' = 'list'
 
   const ENTRIES_LIMIT = 200
   const resultProjectsQuery = createQuery()
+  const client = getClient()
+
+  let viewlets: WithLookup<Viewlet>[] = []
+  let selectedViewlet: WithLookup<Viewlet> | undefined = undefined
+
+  $: update()
+
+  async function update (): Promise<void> {
+    viewlets = await client.findAll(
+      view.class.Viewlet,
+      { attachTo: tracker.class.Project },
+      {
+        lookup: {
+          descriptor: view.class.ViewletDescriptor
+        }
+      }
+    )
+    const _id = getActiveViewletId()
+    selectedViewlet = viewlets.find((viewlet) => viewlet._id === _id) || viewlets[0]
+    setActiveViewletId(selectedViewlet._id)
+  }
+
+  $: viewslist = viewlets.map((views) => {
+    return {
+      id: views._id,
+      icon: views.$lookup?.descriptor?.icon,
+      tooltip: views.$lookup?.descriptor?.label
+    }
+  })
 
   const projectOptions: FindOptions<Project> = {
     sort: { modifiedOn: SortingOrder.Descending },
@@ -82,10 +110,6 @@
     { id: 'active', labelIntl: tracker.string.ActiveProjects, action: () => handleViewModeChanged('active') },
     { id: 'closed', labelIntl: tracker.string.ClosedProjects, action: () => handleViewModeChanged('closed') }
   ]
-  const viewList: TabItem[] = [
-    { id: 'list', icon: view.icon.List, tooltip: view.string.List },
-    { id: 'timeline', icon: view.icon.Timeline, tooltip: view.string.Timeline }
-  ]
 </script>
 
 <div class="fs-title flex-between header">
@@ -118,33 +142,31 @@
       />
     </div> -->
   </div>
-  <TabList
-    items={viewList}
-    selected={viewMode}
-    kind={'secondary'}
-    size={'small'}
-    on:select={(result) => {
-      if (result.detail !== undefined && result.detail.id !== viewMode) viewMode = result.detail.id
+  {#if viewslist && selectedViewlet}
+    <TabList
+      items={viewslist}
+      selected={selectedViewlet?._id}
+      kind={'secondary'}
+      size={'small'}
+      on:select={(result) => {
+        if (result.detail !== undefined) {
+          selectedViewlet = viewlets.find((vl) => vl._id === result.detail.id)
+          if (selectedViewlet) setActiveViewletId(selectedViewlet._id)
+        }
+      }}
+    />
+  {/if}
+</div>
+{#if selectedViewlet && selectedViewlet.$lookup?.descriptor?.component}
+  <Component
+    is={selectedViewlet.$lookup?.descriptor?.component}
+    props={{
+      _class: tracker.class.Project,
+      viewlet: selectedViewlet,
+      projects: resultProjects
     }}
   />
-</div>
-<ProjectsListBrowser
-  _class={tracker.class.Project}
-  itemsConfig={[
-    { key: '', presenter: tracker.component.IconPresenter },
-    { key: '', presenter: tracker.component.ProjectPresenter, props: { kind: 'list' } },
-    {
-      key: '$lookup.lead',
-      presenter: tracker.component.LeadPresenter,
-      props: { _class: tracker.class.Project, defaultClass: contact.class.Employee, shouldShowLabel: false }
-    },
-    { key: '', presenter: tracker.component.ProjectMembersPresenter, props: { kind: 'link' } },
-    { key: '', presenter: tracker.component.TargetDatePresenter },
-    { key: '', presenter: tracker.component.ProjectStatusPresenter }
-  ]}
-  projects={resultProjects}
-  {viewMode}
-/>
+{/if}
 
 <style lang="scss">
   .header {

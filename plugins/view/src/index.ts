@@ -565,7 +565,8 @@ const view = plugin(viewId, {
   },
   viewlet: {
     Table: '' as Ref<ViewletDescriptor>,
-    List: '' as Ref<ViewletDescriptor>
+    List: '' as Ref<ViewletDescriptor>,
+    Timeline: '' as Ref<ViewletDescriptor>
   },
   component: {
     ObjectPresenter: '' as AnyComponent,
@@ -573,7 +574,8 @@ const view = plugin(viewId, {
     SpacePresenter: '' as AnyComponent,
     BooleanTruePresenter: '' as AnyComponent,
     ValueSelector: '' as AnyComponent,
-    GrowPresenter: '' as AnyComponent
+    GrowPresenter: '' as AnyComponent,
+    Timeline: '' as AnyComponent
   },
   string: {
     CustomizeView: '' as IntlString,

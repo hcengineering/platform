@@ -62,6 +62,7 @@ import TimestampPresenter from './components/TimestampPresenter.svelte'
 import UpDownNavigator from './components/UpDownNavigator.svelte'
 import ValueSelector from './components/ValueSelector.svelte'
 import ViewletSettingButton from './components/ViewletSettingButton.svelte'
+import Timeline from './components/Timeline.svelte'
 
 import {
   afterResult,
@@ -97,6 +98,8 @@ export { default as MarkupPreviewPopup } from './components/MarkupPreviewPopup.s
 export * from './context'
 export * from './filter'
 export * from './selection'
+export * from './viewOptions'
+export * from './types'
 export {
   buildModel,
   getActiveViewletId,
@@ -130,7 +133,8 @@ export {
   TimestampPresenter,
   SortableList,
   SortableListItem,
-  MarkupEditor
+  MarkupEditor,
+  Timeline
 }
 
 export default async (): Promise<Resources> => ({
@@ -172,7 +176,8 @@ export default async (): Promise<Resources> => ({
     HTMLEditor,
     ListView,
     GrowPresenter,
-    IndexedDocumentPreview
+    IndexedDocumentPreview,
+    Timeline
   },
   popup: {
     PositionElementAlignment

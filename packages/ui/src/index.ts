@@ -100,7 +100,6 @@ export { default as Scroller } from './components/Scroller.svelte'
 export { default as ScrollerBar } from './components/ScrollerBar.svelte'
 export { default as TabList } from './components/TabList.svelte'
 export { default as Chevron } from './components/Chevron.svelte'
-export { default as Timeline } from './components/Timeline.svelte'
 
 export { default as IconAdd } from './components/icons/Add.svelte'
 export { default as IconBack } from './components/icons/Back.svelte'

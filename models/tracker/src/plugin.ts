@@ -42,14 +42,18 @@ export default mergeIds(trackerId, tracker, {
     Nope: '' as AnyComponent,
     SprintSelector: '' as AnyComponent,
     SubIssuesSelector: '' as AnyComponent,
-    IssueStatistics: '' as AnyComponent
+    IssueStatistics: '' as AnyComponent,
+    ProjectsListBrowser: '' as AnyComponent,
+    ProjectsTimelineBrowser: '' as AnyComponent
   },
   app: {
     Tracker: '' as Ref<Application>
   },
   viewlet: {
     List: '' as Ref<ViewletDescriptor>,
-    Kanban: '' as Ref<ViewletDescriptor>
+    Kanban: '' as Ref<ViewletDescriptor>,
+    ProjectsListBrowser: '' as Ref<ViewletDescriptor>,
+    ProjectsTimelineBrowser: '' as Ref<ViewletDescriptor>
   },
   completion: {
     IssueQuery: '' as Resource<ObjectSearchFactory>,

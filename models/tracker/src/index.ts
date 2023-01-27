@@ -73,7 +73,7 @@ import {
   trackerId,
   WorkDayLength
 } from '@hcengineering/tracker'
-import { KeyBinding, ViewOptionsModel } from '@hcengineering/view'
+import { KeyBinding, ViewOptionsModel, BuildModelKey } from '@hcengineering/view'
 import tracker from './plugin'
 
 import presentation from '@hcengineering/model-presentation'
@@ -672,6 +672,53 @@ export function createModel (builder: Builder): void {
       component: tracker.component.KanbanView
     },
     tracker.viewlet.Kanban
+  )
+
+  const projectsConfig: BuildModelKey[] = [
+    { key: '', presenter: tracker.component.IconPresenter },
+    { key: '', presenter: tracker.component.ProjectPresenter, props: { kind: 'list' } },
+    {
+      key: '$lookup.lead',
+      presenter: tracker.component.LeadPresenter,
+      props: { _class: tracker.class.Project, defaultClass: contact.class.Employee, shouldShowLabel: false }
+    },
+    { key: '', presenter: tracker.component.ProjectMembersPresenter, props: { kind: 'link' } },
+    { key: '', presenter: tracker.component.TargetDatePresenter },
+    { key: '', presenter: tracker.component.ProjectStatusPresenter }
+  ]
+
+  builder.createDoc(view.class.Viewlet, core.space.Model, {
+    attachTo: tracker.class.Project,
+    descriptor: tracker.viewlet.ProjectsListBrowser,
+    config: projectsConfig
+  })
+
+  builder.createDoc(
+    view.class.ViewletDescriptor,
+    core.space.Model,
+    {
+      label: view.string.List,
+      icon: view.icon.List,
+      component: tracker.component.ProjectsListBrowser
+    },
+    tracker.viewlet.ProjectsListBrowser
+  )
+
+  builder.createDoc(view.class.Viewlet, core.space.Model, {
+    attachTo: tracker.class.Project,
+    descriptor: tracker.viewlet.ProjectsTimelineBrowser,
+    config: projectsConfig
+  })
+
+  builder.createDoc(
+    view.class.ViewletDescriptor,
+    core.space.Model,
+    {
+      label: view.string.Timeline,
+      icon: view.icon.Timeline,
+      component: tracker.component.ProjectsTimelineBrowser
+    },
+    tracker.viewlet.ProjectsTimelineBrowser
   )
 
   builder.createDoc(
