@@ -15,10 +15,11 @@
 -->
 <script lang="ts">
   import { MessageViewer } from '@hcengineering/presentation'
+  import { ShowMore } from '@hcengineering/ui'
 
   export let value: string
 </script>
 
-<div class="lines-limit-4">
+<ShowMore>
   <MessageViewer message={value} />
-</div>
+</ShowMore>
