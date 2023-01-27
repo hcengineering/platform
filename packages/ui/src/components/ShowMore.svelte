@@ -48,6 +48,7 @@
   </div>
 
   {#if !ignore && bigger && !fixed}
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div class="showMore" class:outter={cHeight > limit} on:click={toggle}>
       <Label label={cHeight > limit ? ui.string.ShowLess : ui.string.ShowMore} />
     </div>
@@ -64,7 +65,7 @@
       mask: linear-gradient(to top, rgba(0, 0, 0, 0) 0, black 5rem);
     }
     &.full {
-      margin-bottom: 2.75rem;
+      margin-bottom: 2.25rem;
     }
   }
 
@@ -87,7 +88,7 @@
     cursor: pointer;
 
     &.outter {
-      bottom: 0;
+      bottom: 0.5rem;
       transform: translateX(-50%);
     }
     &:hover {
