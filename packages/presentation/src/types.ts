@@ -19,6 +19,7 @@ export interface ObjectSearchResult {
  */
 export interface ObjectCreate {
   component: AnyComponent
+  props?: Record<string, any>
   label: IntlString
   update?: (doc: Doc) => string
 }
