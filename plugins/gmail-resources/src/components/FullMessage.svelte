@@ -49,7 +49,7 @@
 </script>
 
 <div class="popupPanel-body__main-header bottom-divider">
-  <div class="flex-between">
+  <div class="flex-between p-2">
     <div class="buttons-group">
       <Button
         icon={IconArrowLeft}
@@ -79,7 +79,7 @@
   </div>
 </div>
 <Scroller>
-  <div class="popupPanel-body__main-content py-4">
+  <div class="popupPanel-body__main-content py-4 h-full">
     <Label label={currentMessage.incoming ? gmail.string.To : gmail.string.From} />
     {user}
     {#if currentMessage.copy?.length}
@@ -94,7 +94,7 @@
         {/each}
       </div>
     {/if}
-    <div class="flex-col content clear-mins">
+    <div class="flex-col content clear-mins h-full">
       <FullMessageContent content={currentMessage.content} />
     </div>
   </div>

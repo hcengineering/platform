@@ -14,18 +14,33 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import attachment, { Attachment } from '@hcengineering/attachment'
+  import { AttachmentPresenter } from '@hcengineering/attachment-resources'
   import { SharedMessage } from '@hcengineering/gmail'
+  import { createQuery } from '@hcengineering/presentation'
   import { Label } from '@hcengineering/ui'
   import gmail from '../plugin'
   import FullMessageContent from './FullMessageContent.svelte'
 
   export let message: SharedMessage
 
+  const query = createQuery()
+  let attachments: Attachment[] = []
+
+  $: message._id &&
+    query.query(
+      attachment.class.Attachment,
+      {
+        attachedTo: message._id
+      },
+      (res) => (attachments = res)
+    )
+
   $: title = message.incoming ? message.sender : message.receiver
   $: user = message.incoming ? message.receiver : message.sender
 </script>
 
-<div class="popup flex-col">
+<div class="popup h-full w-full flex-col">
   <div class="fs-title mb-4">
     {message.subject}
   </div>
@@ -40,6 +55,15 @@
   {#if message.copy?.length}
     <Label label={gmail.string.Copy} />: {message.copy.join(', ')}
   {/if}
+  {#if attachments.length}
+    <div class="flex-row-center list mt-2">
+      {#each attachments as attachment}
+        <div class="item flex">
+          <AttachmentPresenter value={attachment} />
+        </div>
+      {/each}
+    </div>
+  {/if}
   <div class="flex-col h-full clear-mins mt-5">
     <FullMessageContent content={message.content} />
   </div>
@@ -48,7 +72,7 @@
 <style lang="scss">
   .popup {
     padding: 1rem;
-    max-height: 500px;
+    max-height: calc(100vh - 4rem);
     background-color: var(--theme-button-bg-focused);
     border: 1px solid var(--theme-button-border-enabled);
     border-radius: 0.75rem;

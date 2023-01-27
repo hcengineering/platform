@@ -146,7 +146,7 @@
   style="display: none"
   on:change={fileSelected}
 />
-<div class="popupPanel-body__main-header bottom-divider">
+<div class="popupPanel-body__main-header bottom-divider p-2">
   <div class="flex-between">
     <div class="buttons-group">
       <Button
@@ -169,13 +169,13 @@
           inputFile.click()
         }}
       />
-      <Button label={plugin.string.Send} kind={'primary'} on:click={sendMsg} />
+      <Button label={plugin.string.Send} size={'small'} kind={'primary'} on:click={sendMsg} />
     </div>
   </div>
 </div>
 <Scroller>
   <div
-    class="popupPanel-body__main-content py-4"
+    class="popupPanel-body__main-content py-4 h-full"
     on:dragover|preventDefault={() => {}}
     on:dragleave={() => {}}
     on:drop|preventDefault|stopPropagation={fileDrop}
