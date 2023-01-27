@@ -51,7 +51,8 @@
       })
       if (current === undefined) return
       await client.update(current, {
-        disabled: false
+        disabled: false,
+        value: res.value
       })
     }
   }
