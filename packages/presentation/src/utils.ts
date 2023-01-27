@@ -206,7 +206,7 @@ export type AttributeCategory = 'object' | 'attribute' | 'inplace' | 'collection
 /**
  * @public
  */
-export const AttributeCategoryOrder = { attribute: 0, inplace: 1, collection: 2, array: 2 }
+export const AttributeCategoryOrder = { attribute: 0, inplace: 1, collection: 2, array: 2, object: 3 }
 
 /**
  * @public

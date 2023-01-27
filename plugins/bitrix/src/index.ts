@@ -13,161 +13,10 @@
 // limitations under the License.
 //
 
-import { ChannelProvider } from '@hcengineering/contact'
-import type { AttachedDoc, Class, Doc, Mixin, Ref, Space } from '@hcengineering/core'
-import type { Plugin } from '@hcengineering/platform'
+import type { Class, Mixin, Ref, Space } from '@hcengineering/core'
+import type { Plugin, Resource } from '@hcengineering/platform'
 import { Asset, plugin } from '@hcengineering/platform'
-import { ExpertKnowledge, InitialKnowledge, MeaningfullKnowledge } from '@hcengineering/tags'
-import { AnyComponent } from '@hcengineering/ui'
-
-/**
- * @public
- */
-export interface BitrixSyncDoc extends Doc {
-  type: string
-  bitrixId: string
-}
-
-/**
- * @public
- */
-export enum BitrixEntityType {
-  Comment = 'crm.timeline.comment',
-  Binding = 'crm.timeline.bindings',
-  Lead = 'crm.lead',
-  Activity = 'crm.activity',
-  Company = 'crm.company'
-}
-
-/**
- * @public
- */
-export const mappingTypes = [
-  { label: 'Leads', id: BitrixEntityType.Lead },
-  // { label: 'Comments', id: BitrixEntityType.Comment },
-  { label: 'Company', id: BitrixEntityType.Company }
-  // { label: 'Activity', id: BitrixEntityType.Activity }
-]
-
-/**
- * @public
- */
-export interface FieldValue {
-  type: string
-  statusType?: string
-  isRequired: boolean
-  isReadOnly: boolean
-  isImmutable: boolean
-  isMultiple: boolean
-  isDynamic: boolean
-  title: string
-
-  formLabel?: string
-  filterLabel?: string
-  items?: Array<{
-    ID: string
-    VALUE: string
-  }>
-}
-
-/**
- * @public
- */
-export interface Fields {
-  [key: string]: FieldValue
-}
-
-/**
- * @public
- */
-export interface BitrixEntityMapping extends Doc {
-  ofClass: Ref<Class<Doc>>
-  type: string
-  bitrixFields: Fields
-
-  fields: number
-
-  comments: boolean
-  activity: boolean
-  attachments: boolean
-}
-/**
- * @public
- */
-export enum MappingOperation {
-  CopyValue,
-  CreateTag, // Create tag
-  CreateChannel, // Create channel
-  DownloadAttachment
-}
-/**
- * @public
- */
-export interface CopyPattern {
-  text: string
-  field?: string
-  alternatives?: string[]
-}
-/**
- * @public
- */
-export interface CopyValueOperation {
-  kind: MappingOperation.CopyValue
-  patterns: CopyPattern[]
-}
-
-/**
- * @public
- */
-export interface TagField {
-  weight: InitialKnowledge | MeaningfullKnowledge | ExpertKnowledge
-
-  field: string
-  split: string // If defined values from field will be split to check for multiple values.
-}
-/**
- * @public
- */
-export interface CreateTagOperation {
-  kind: MappingOperation.CreateTag
-
-  fields: TagField[]
-}
-
-/**
- * @public
- */
-export interface ChannelFieldMapping {
-  provider: Ref<ChannelProvider>
-  field: string
-}
-
-/**
- * @public
- */
-export interface CreateChannelOperation {
-  kind: MappingOperation.CreateChannel
-  fields: ChannelFieldMapping[]
-}
-
-/**
- * @public
- */
-export interface DownloadAttachmentOperation {
-  kind: MappingOperation.DownloadAttachment
-
-  fields: { field: string }[]
-}
-
-/**
- * @public
- */
-export interface BitrixFieldMapping extends AttachedDoc {
-  ofClass: Ref<Class<Doc>> // Specify mixin if applicable
-  attributeName: string
-
-  operation: CopyValueOperation | CreateTagOperation | CreateChannelOperation | DownloadAttachmentOperation
-}
+import { BitrixEntityMapping, BitrixFieldMapping, BitrixSyncDoc } from './types'
 
 /**
  * @public
@@ -183,7 +32,7 @@ export default plugin(bitrixId, {
     FieldMapping: '' as Ref<Class<BitrixFieldMapping>>
   },
   component: {
-    BitrixIntegration: '' as AnyComponent
+    BitrixIntegration: '' as Resource<any>
   },
   icon: {
     Bitrix: '' as Asset
@@ -192,3 +41,8 @@ export default plugin(bitrixId, {
     Mappings: '' as Ref<Space>
   }
 })
+
+export * from './client'
+export * from './sync'
+export * from './types'
+export * from './utils'

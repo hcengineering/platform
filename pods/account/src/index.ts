@@ -101,6 +101,15 @@ export function serveAccount (methods: Record<string, AccountMethod>, productId 
   const close = (): void => {
     server.close()
   }
+
+  process.on('uncaughtException', (e) => {
+    console.error(e)
+  })
+
+  process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason)
+  })
+
   process.on('SIGINT', close)
   process.on('SIGTERM', close)
   process.on('exit', close)

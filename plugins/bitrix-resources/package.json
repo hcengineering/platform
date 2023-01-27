@@ -27,7 +27,8 @@
     "prettier-plugin-svelte": "^2.8.0",
     "prettier": "^2.7.1",
     "svelte-check": "^2.8.0",
-    "typescript": "^4.3.5"
+    "typescript": "^4.3.5",
+    "@types/qs": "~6.9.7"
   },
   "dependencies": {
     "@hcengineering/platform": "^0.6.8",
@@ -38,6 +39,7 @@
     "@hcengineering/text-editor": "^0.6.0",
     "@hcengineering/contact": "^0.6.9",
     "@hcengineering/lead": "^0.6.0",
+    "@hcengineering/login": "^0.6.1",
     "@hcengineering/setting": "^0.6.2",
     "@hcengineering/core": "^0.6.20",
     "@hcengineering/attachment": "^0.6.1",
@@ -48,9 +50,12 @@
     "@hcengineering/chunter": "^0.6.2",
     "p-queue": "~7.3.0",
     "qs": "~6.11.0",
-    "@types/qs": "~6.9.7",
     "@hcengineering/tags": "^0.6.3",
     "@hcengineering/tags-resources": "^0.6.0",
     "fast-equals": "^2.0.3"
+  },
+  "repository": "https://github.com/hcengineering/anticrm",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
   }
 }

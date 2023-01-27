@@ -1,3 +1,7 @@
+import { Comment } from '@hcengineering/chunter'
+import contact, { Channel, EmployeeAccount } from '@hcengineering/contact'
+import core, { AnyAttribute, Class, Client, Data, Doc, generateId, Mixin, Ref, Space } from '@hcengineering/core'
+import tags, { TagCategory, TagElement, TagReference } from '@hcengineering/tags'
 import {
   BitrixEntityMapping,
   BitrixFieldMapping,
@@ -5,14 +9,14 @@ import {
   CopyValueOperation,
   CreateChannelOperation,
   CreateTagOperation,
+  DownloadAttachmentOperation,
   MappingOperation
-} from '@hcengineering/bitrix'
-import { Comment } from '@hcengineering/chunter'
-import contact, { Channel, EmployeeAccount } from '@hcengineering/contact'
-import core, { AnyAttribute, Class, Client, Data, Doc, generateId, Mixin, Ref, Space } from '@hcengineering/core'
-import tags, { TagElement, TagReference } from '@hcengineering/tags'
-import { getColorNumberByText } from '@hcengineering/ui'
+} from '.'
+import bitrix from './index'
 
+/**
+ * @public
+ */
 export function collectFields (fieldMapping: BitrixFieldMapping[]): string[] {
   const fields: string[] = ['ID']
   for (const f of fieldMapping) {
@@ -33,14 +37,20 @@ export function collectFields (fieldMapping: BitrixFieldMapping[]): string[] {
   return fields
 }
 
+/**
+ * @public
+ */
 export interface ConvertResult {
   document: BitrixSyncDoc // Document we should achive
   mixins: Record<Ref<Mixin<Doc>>, Data<Doc>> // Mixins of document we will achive
   extraDocs: Doc[] // Extra documents we will achive, comments etc.
   blobs: File[] //
-  comments?: Promise<Array<BitrixSyncDoc & Comment>>
+  comments?: Array<BitrixSyncDoc & Comment>
 }
 
+/**
+ * @public
+ */
 export async function convert (
   client: Client,
   entity: BitrixEntityMapping,
@@ -49,18 +59,25 @@ export async function convert (
   rawDocument: any,
   prevExtra: Doc[], // <<-- a list of previous extra documents, so for example TagElement will be reused, if present for more what one item and required to be created
   tagElements: Map<Ref<Class<Doc>>, TagElement[]>, // TagElement cache.
-  userList: Map<string, Ref<EmployeeAccount>>
+  userList: Map<string, Ref<EmployeeAccount>>,
+  existingDocuments: Doc[],
+  defaultCategories: TagCategory[],
+  blobProvider?: (blobRef: any) => Promise<Blob | undefined>
 ): Promise<ConvertResult> {
   const hierarchy = client.getHierarchy()
+  const bitrixId = `${rawDocument.ID as string}`
   const document: BitrixSyncDoc = {
     _id: generateId(),
     type: entity.type,
-    bitrixId: `${rawDocument.ID as string}`,
+    bitrixId,
     _class: entity.ofClass,
     space,
     modifiedOn: new Date(rawDocument.DATE_CREATE).getTime(),
     modifiedBy: userList.get(rawDocument.CREATED_BY_ID) ?? core.account.System
   }
+
+  const existingId = existingDocuments.find((it) => (it as any)[bitrix.mixin.BitrixSyncDoc].bitrixId === bitrixId)
+    ?._id as Ref<BitrixSyncDoc>
 
   // Obtain a proper modified by for document
 
@@ -90,6 +107,10 @@ export async function convert (
       } else if (bfield.type === 'crm_multifield') {
         if (Array.isArray(lval)) {
           return lval.map((it) => it.VALUE)
+        }
+      } else if (bfield.type === 'file') {
+        if (Array.isArray(lval)) {
+          return lval.map((it) => ({ id: it.id, file: it.downloadUrl }))
         }
       } else if (bfield.type === 'string' || bfield.type === 'url') {
         if (bfield.isMultiple && Array.isArray(lval)) {
@@ -135,6 +156,26 @@ export async function convert (
     }
     return r.join('').trim()
   }
+  const getDownloadValue = async (attr: AnyAttribute, operation: DownloadAttachmentOperation): Promise<any> => {
+    const r: Array<string | number | boolean | Date> = []
+    for (const o of operation.fields) {
+      const lval = extractValue(o.field)
+      if (lval != null) {
+        if (Array.isArray(lval)) {
+          r.push(...lval)
+        } else {
+          r.push(lval)
+        }
+      }
+    }
+    if (r.length === 1) {
+      return r[0]
+    }
+    if (r.length === 0) {
+      return
+    }
+    return r.join('').trim()
+  }
 
   const getChannelValue = async (attr: AnyAttribute, operation: CreateChannelOperation): Promise<any> => {
     for (const f of operation.fields) {
@@ -164,21 +205,22 @@ export async function convert (
   const getTagValue = async (attr: AnyAttribute, operation: CreateTagOperation): Promise<any> => {
     const elements =
       tagElements.get(attr.attributeOf) ??
-      (await client.findAll(tags.class.TagElement, {
+      (await client.findAll<TagElement>(tags.class.TagElement, {
         targetClass: attr.attributeOf
       }))
 
-    const references = await client.findAll(tags.class.TagReference, {
-      attachedTo: document._id
-    })
+    const references =
+      existingId !== undefined
+        ? await client.findAll<TagReference>(tags.class.TagReference, {
+          attachedTo: existingId
+        })
+        : []
     // Add tags creation requests from previous conversions.
     elements.push(...prevExtra.filter((it) => it._class === tags.class.TagElement).map((it) => it as TagElement))
 
     tagElements.set(attr.attributeOf, elements)
-    const defaultCategory = await client.findOne(tags.class.TagCategory, {
-      targetClass: attr.attributeOf,
-      default: true
-    })
+    const defaultCategory = defaultCategories.find((it) => it.targetClass === attr.attributeOf)
+
     if (defaultCategory === undefined) {
       console.error('could not proceed tags without default category')
       return
@@ -206,7 +248,7 @@ export async function convert (
             _id: generateId(),
             _class: tags.class.TagElement,
             category: defaultCategory._id,
-            color: getColorNumberByText(vv),
+            color: 1,
             description: '',
             title: vv,
             targetClass: attr.attributeOf,
@@ -218,12 +260,12 @@ export async function convert (
         }
         const ref: TagReference = {
           _id: generateId(),
-          attachedTo: document._id,
+          attachedTo: existingId ?? document._id,
           attachedToClass: attr.attributeOf,
           collection: attr.name,
           _class: tags.class.TagReference,
           tag: tag._id,
-          color: getColorNumberByText(vv),
+          color: 1,
           title: vv,
           weight: o.weight,
           modifiedBy: document.modifiedBy,
@@ -256,10 +298,32 @@ export async function convert (
       case MappingOperation.CreateTag:
         value = await getTagValue(attr, f.operation)
         break
+      case MappingOperation.DownloadAttachment: {
+        const blobRef: { file: string, id: string } = await getDownloadValue(attr, f.operation)
+        if (blobRef !== undefined) {
+          const response = await blobProvider?.(blobRef)
+          if (response !== undefined) {
+            let fname = blobRef.id
+            switch (response.type) {
+              case 'application/pdf':
+                fname += '.pdf'
+                break
+              case 'application/msword':
+                fname += '.doc'
+                break
+            }
+            blobs.push(new File([response], fname, { type: response.type }))
+          }
+        }
+        break
+      }
     }
     if (value !== undefined) {
       if (hierarchy.isMixin(attr.attributeOf)) {
-        mixins[attr.attributeOf] = { ...mixins[attr.attributeOf], [attr.name]: value }
+        mixins[attr.attributeOf] = {
+          ...mixins[attr.attributeOf],
+          [attr.name]: value
+        }
       } else {
         ;(document as any)[attr.name] = value
       }

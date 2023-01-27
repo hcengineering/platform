@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { BitrixEntityMapping, Fields, FieldValue } from '@hcengineering/bitrix'
+  import { BitrixClient, BitrixEntityMapping, Fields, FieldValue } from '@hcengineering/bitrix'
   import core, { Enum, Ref } from '@hcengineering/core'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
@@ -16,7 +16,6 @@
     showPopup
   } from '@hcengineering/ui'
   import Grid from '@hcengineering/ui/src/components/Grid.svelte'
-  import { BitrixClient } from '../client'
 
   import EnumPopup from './EnumPopup.svelte'
 

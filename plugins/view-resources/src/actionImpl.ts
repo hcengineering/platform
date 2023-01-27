@@ -16,7 +16,7 @@ import MoveView from './components/Move.svelte'
 import { contextStore } from './context'
 import view from './plugin'
 import { FocusSelection, focusStore, previewDocument, SelectDirection, selectionStore } from './selection'
-import { deleteObject } from './utils'
+import { deleteObjects } from './utils'
 
 /**
  * Action to be used for copying text to clipboard.
@@ -53,23 +53,19 @@ async function CopyTextToClipboard (
   }
 }
 
-function Delete (object: Doc): void {
+function Delete (object: Doc | Doc[]): void {
   showPopup(
     MessageBox,
     {
       label: view.string.DeleteObject,
       message: view.string.DeleteObjectConfirm,
-      params: { count: Array.isArray(object) ? object.length : 1 }
-    },
-    undefined,
-    (result?: boolean) => {
-      if (result === true) {
+      params: { count: Array.isArray(object) ? object.length : 1 },
+      action: async () => {
         const objs = Array.isArray(object) ? object : [object]
-        for (const o of objs) {
-          deleteObject(getClient(), o).catch((err) => console.error(err))
-        }
+        await deleteObjects(getClient(), objs).catch((err) => console.error(err))
       }
-    }
+    },
+    undefined
   )
 }
 

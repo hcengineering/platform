@@ -11768,7 +11768,7 @@ packages:
     dev: false
 
   file:projects/bitrix-resources.tgz_a1d864769aaf53d09b76fe134ab55e60:
-    resolution: {integrity: sha512-Wv/ATljkeBewaCxRNMoYjoX07HOl1PniT0kkDZUrqkxPW+fjqMSB2DrU0D/5CS39UAC4jOtTPV1yMCqz7r5smw==, tarball: file:projects/bitrix-resources.tgz}
+    resolution: {integrity: sha512-vXwCwfcCLy3cb6Dj8p8+XWglgI6aTUdr4sN5xzKqaL5soj1JwmEyWhHvafBJMWDpk8UsJUEGNB5Jpiw24n+q9A==, tarball: file:projects/bitrix-resources.tgz}
     id: file:projects/bitrix-resources.tgz
     name: '@rush-temp/bitrix-resources'
     version: 0.0.0
@@ -11807,13 +11807,14 @@ packages:
     dev: false
 
   file:projects/bitrix.tgz:
-    resolution: {integrity: sha512-LKlmOtIMjMgNCPKafSUsJm10okaehcJvYA4mrIrmNR9lHnbldRg3GlaglyOtXQR1fK3/KY/HTlOKzgP4xFnzpw==, tarball: file:projects/bitrix.tgz}
+    resolution: {integrity: sha512-DdNHQSCosOfpZzQR2nd3BOx33UVHTggxpLaGcJh0Jd4yW7FoKISS7xwBnQbHGtUNczHM9R0pNvKoVdpNNBHhnQ==, tarball: file:projects/bitrix.tgz}
     name: '@rush-temp/bitrix'
     version: 0.0.0
     dependencies:
       '@2bad/bitrix': 2.5.0
       '@rushstack/heft': 0.47.11
       '@types/heft-jest': 1.0.3
+      '@types/qs': 6.9.7
       '@typescript-eslint/eslint-plugin': 5.42.1_d506b9be61cb4ac2646ecbc6e0680464
       '@typescript-eslint/parser': 5.42.1_eslint@8.27.0+typescript@4.8.4
       eslint: 8.27.0
@@ -11821,7 +11822,9 @@ packages:
       eslint-plugin-import: 2.26.0_eslint@8.27.0
       eslint-plugin-n: 15.5.1_eslint@8.27.0
       eslint-plugin-promise: 6.1.1_eslint@8.27.0
+      fast-equals: 2.0.4
       prettier: 2.7.1
+      qs: 6.11.0
       typescript: 4.8.4
     transitivePeerDependencies:
       - supports-color
@@ -13090,7 +13093,7 @@ packages:
     dev: false
 
   file:projects/model-all.tgz_typescript@4.8.4:
-    resolution: {integrity: sha512-AejnJ5pKXrdrHEdXX2AoOtbSX2mx0ceRbISCPyuvr1O9w8VKnmp43TGLOZEKVY3D+dmnjKj1+2+A+bAxMCUsQQ==, tarball: file:projects/model-all.tgz}
+    resolution: {integrity: sha512-KExZMGU3rzrjnf1pAwSlS4n0IEYrCONE9uXtbBQMokbcfQ/3YbeDGcDrvRdl7okj89wE47sUS088LY/22UzUMw==, tarball: file:projects/model-all.tgz}
     id: file:projects/model-all.tgz
     name: '@rush-temp/model-all'
     version: 0.0.0
@@ -14284,7 +14287,7 @@ packages:
     dev: false
 
   file:projects/openai.tgz:
-    resolution: {integrity: sha512-nplFlMK8VBiE2EBm11HhSpX74sZapWZ30sEWOHZfAv8AZqCINY0FOHP0Jwc+AVFtMzClx8NTCo6pgaNTLs0ixA==, tarball: file:projects/openai.tgz}
+    resolution: {integrity: sha512-O+mwmpb/LfabOFEsid8hIWuJpSombaoFJf3xTlH+pmi47h54Pwn8CsSjY3aZ2PdtvVjY5TK5vIQxKHxGNe3YiQ==, tarball: file:projects/openai.tgz}
     name: '@rush-temp/openai'
     version: 0.0.0
     dependencies:
@@ -14539,7 +14542,7 @@ packages:
     dev: false
 
   file:projects/pod-server.tgz:
-    resolution: {integrity: sha512-4IjhfCueH7UYdgcWfpeiciOQADpXCKj1C41rP6ZgHaIWzUErhMl2X/T5C2SQfp0nnbvpPWqWeqSPYYK2GGGkdw==, tarball: file:projects/pod-server.tgz}
+    resolution: {integrity: sha512-1gSQAnD3H3VvnxG3bDk/x+MKlmiR+dk1730YE7SjA0AmWcIaa40QqKPgCLpdhCrtDT/fwr0TFVjr3Bo8Z/vCHQ==, tarball: file:projects/pod-server.tgz}
     name: '@rush-temp/pod-server'
     version: 0.0.0
     dependencies:
@@ -14646,7 +14649,7 @@ packages:
     dev: false
 
   file:projects/prod.tgz_a9366fc5abe1de81e350f3e9b2acb628:
-    resolution: {integrity: sha512-wfzTNxTVOW15y2ZLXjebNfstBDQSIdSevMj0AorZ1SUWUVqQ8ZkO8XOI2wFwQdiGJplBTG0zVIDpZFdYBWF6mg==, tarball: file:projects/prod.tgz}
+    resolution: {integrity: sha512-oHJixn8gWZB93sHdI2epzD4DeR9Ff8y8njVa9Kr+QFk2p7IGH68FCTTA90Q61ysV7k07e/OED1ClxZ5hAthtgA==, tarball: file:projects/prod.tgz}
     id: file:projects/prod.tgz
     name: '@rush-temp/prod'
     version: 0.0.0
@@ -16286,7 +16289,7 @@ packages:
     dev: false
 
   file:projects/tool.tgz:
-    resolution: {integrity: sha512-VVNc6+f2BssTik3I3y+lBrBVkMz6sHygnom2/PvO/ZwEVKeWDN2rwpzZxj6n+RlPeCCvvcII9sXpPOAoJAnxnA==, tarball: file:projects/tool.tgz}
+    resolution: {integrity: sha512-OqWoKCsumcmAHkfsi+zF+Lt6uoamsg5W+/K3SGlPwovAIeo/Tyc+F0Sm9EKUe1OKX0FT9+dcQstcHRigNFSNQA==, tarball: file:projects/tool.tgz}
     name: '@rush-temp/tool'
     version: 0.0.0
     dependencies:

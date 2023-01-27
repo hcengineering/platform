@@ -210,6 +210,7 @@ async function getAccountInfo (db: Db, email: string, password: string): Promise
  * @returns
  */
 export async function login (db: Db, productId: string, email: string, password: string): Promise<LoginInfo> {
+  console.log(`login attempt:${email}`)
   await getAccountInfo(db, email, password)
   const result = {
     endpoint: getEndpoint(),

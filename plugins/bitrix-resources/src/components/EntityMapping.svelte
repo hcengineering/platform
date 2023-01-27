@@ -1,11 +1,18 @@
 <script lang="ts">
-  import { BitrixEntityMapping, BitrixFieldMapping, Fields, mappingTypes } from '@hcengineering/bitrix'
+  import {
+    BitrixClient,
+    BitrixEntityMapping,
+    BitrixFieldMapping,
+    Fields,
+    mappingTypes,
+    StatusValue,
+    toClassRef
+  } from '@hcengineering/bitrix'
   import { Class, Doc, Ref } from '@hcengineering/core'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { ClassSetting } from '@hcengineering/setting-resources'
   import { Button, Expandable, Icon, IconDelete, IconEdit, Label, showPopup } from '@hcengineering/ui'
-  import { BitrixClient } from '../client'
   import bitrix from '../plugin'
 
   import AttributeMapper from './AttributeMapper.svelte'
@@ -13,8 +20,6 @@
 
   import CheckBox from '@hcengineering/ui/src/components/CheckBox.svelte'
   import { deepEqual } from 'fast-equals'
-  import { StatusValue } from '../types'
-  import { toClassRef } from '../utils'
   import BitrixFieldLookup from './BitrixFieldLookup.svelte'
   import CreateMappingAttribute from './CreateMappingAttribute.svelte'
 

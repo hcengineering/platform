@@ -301,6 +301,21 @@ export async function deleteObject (client: TxOperations, object: Doc): Promise<
   }
 }
 
+export async function deleteObjects (client: TxOperations, objects: Doc[]): Promise<void> {
+  const ops = client.apply('delete')
+  for (const object of objects) {
+    if (client.getHierarchy().isDerived(object._class, core.class.AttachedDoc)) {
+      const adoc = object as AttachedDoc
+      await ops
+        .removeCollection(object._class, object.space, adoc._id, adoc.attachedTo, adoc.attachedToClass, adoc.collection)
+        .catch((err) => console.error(err))
+    } else {
+      await ops.removeDoc(object._class, object.space, object._id).catch((err) => console.error(err))
+    }
+  }
+  await ops.commit()
+}
+
 export function getMixinStyle (id: Ref<Class<Doc>>, selected: boolean): string {
   const color = getPlatformColorForText(id as string)
   return `

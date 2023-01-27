@@ -23,8 +23,10 @@
   export let message: IntlString
   export let params: Record<string, any> = {}
   export let canSubmit = true
+  export let action: (() => Promise<void>) | undefined = undefined
 
   const dispatch = createEventDispatcher()
+  let processing = false
 </script>
 
 <div class="msgbox-container">
@@ -36,10 +38,28 @@
       label={presentation.string.Ok}
       size={'small'}
       kind={'primary'}
-      on:click={() => dispatch('close', true)}
+      loading={processing}
+      on:click={() => {
+        processing = true
+        if (action !== undefined) {
+          action().then(() => {
+            processing = false
+            dispatch('close', true)
+          })
+        } else {
+          dispatch('close', true)
+          processing = false
+        }
+      }}
     />
     {#if canSubmit}
-      <Button label={presentation.string.Cancel} size={'small'} on:click={() => dispatch('close', false)} />
+      <Button
+        label={presentation.string.Cancel}
+        size={'small'}
+        on:click={() => {
+          dispatch('close', false)
+        }}
+      />
     {/if}
   </div>
 </div>
