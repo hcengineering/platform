@@ -15,6 +15,7 @@
 //
 
 // Add this to the VERY top of the first file loaded in your app
+import login from '@hcengineering/login'
 import { setMetadata } from '@hcengineering/platform'
 import serverToken from '@hcengineering/server-token'
 import { start } from '.'
@@ -69,6 +70,13 @@ if (rekoniUrl === undefined) {
   process.exit(1)
 }
 
+const frontUrl = process.env.FRONT_URL
+if (frontUrl === undefined) {
+  console.log('Please provide REKONI_URL url')
+  process.exit(1)
+}
+
+setMetadata(login.metadata.FrontUrl, frontUrl)
 setMetadata(serverToken.metadata.Secret, serverSecret)
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
