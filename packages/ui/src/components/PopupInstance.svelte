@@ -171,7 +171,6 @@
     background-color: transparent;
     transform-origin: center;
     opacity: 0;
-    max-width: 95%;
 
     &.preShow {
       transform: scale(0.9);
