@@ -39,6 +39,7 @@ import core, { TAttachedDoc, TSpace } from '@hcengineering/model-core'
 import presentation from '@hcengineering/model-presentation'
 import tags from '@hcengineering/model-tags'
 import task, { actionTemplates, DOMAIN_TASK, TSpaceWithStates, TTask } from '@hcengineering/model-task'
+import tracker from '@hcengineering/model-tracker'
 import view, { actionTemplates as viewTemplates, createAction } from '@hcengineering/model-view'
 import workbench, { Application, createNavigateAction } from '@hcengineering/model-workbench'
 import { getEmbeddedLabel, IntlString } from '@hcengineering/platform'
@@ -331,6 +332,11 @@ export function createModel (builder: Builder): void {
         'city',
         'applications',
         'attachments',
+        {
+          key: '',
+          presenter: tracker.component.RelatedIssueSelector,
+          label: tracker.string.Relations
+        },
         'comments',
         {
           // key: '$lookup.skills', // Required, since presenter require list of tag references or '' and TagsPopupPresenter
@@ -351,7 +357,14 @@ export function createModel (builder: Builder): void {
           sortingKey: ['$lookup.channels.lastMessage', 'channels']
         }
       ],
-      hiddenKeys: ['name']
+      hiddenKeys: ['name'],
+      options: {
+        lookup: {
+          _id: {
+            related: [tracker.class.Issue, 'relations._id']
+          }
+        }
+      }
     },
     recruit.viewlet.TableCandidate
   )
@@ -390,8 +403,21 @@ export function createModel (builder: Builder): void {
       descriptor: task.viewlet.StatusTable,
       config: [
         '',
-        'attachedTo',
+        {
+          key: 'attachedTo',
+          presenter: contact.component.PersonRefPresenter,
+          sortingKey: 'attachedTo',
+          label: recruit.string.Talent,
+          props: {
+            _class: recruit.mixin.Candidate
+          }
+        },
         'assignee',
+        {
+          key: '',
+          presenter: tracker.component.RelatedIssueSelector,
+          label: tracker.string.Issues
+        },
         'state',
         'doneState',
         'attachments',
@@ -399,9 +425,18 @@ export function createModel (builder: Builder): void {
         'modifiedOn',
         {
           key: '$lookup.attachedTo.$lookup.channels',
+          label: contact.string.ContactInfo,
           sortingKey: ['$lookup.attachedTo.$lookup.channels.lastMessage', '$lookup.attachedTo.channels']
         }
-      ]
+      ],
+      hiddenKeys: ['name', 'attachedTo'],
+      options: {
+        lookup: {
+          _id: {
+            related: [tracker.class.Issue, 'relations._id']
+          }
+        }
+      }
     },
     recruit.viewlet.TableApplicant
   )
@@ -413,18 +448,40 @@ export function createModel (builder: Builder): void {
       descriptor: view.viewlet.Table,
       config: [
         '',
-        'attachedTo',
+        {
+          key: 'attachedTo',
+          presenter: contact.component.PersonRefPresenter,
+          label: recruit.string.Talent,
+          sortingKey: 'attachedTo',
+          props: {
+            _class: recruit.mixin.Candidate
+          }
+        },
         'assignee',
+        {
+          key: '',
+          presenter: tracker.component.RelatedIssueSelector,
+          label: tracker.string.Issues
+        },
         'state',
         'comments',
         'attachments',
         'modifiedOn',
+        '$lookup.space.company',
         {
           key: '$lookup.attachedTo.$lookup.channels',
+          label: contact.string.ContactInfo,
           sortingKey: ['$lookup.attachedTo.$lookup.channels.lastMessage', '$lookup.attachedTo.channels']
         }
       ],
-      hiddenKeys: ['name']
+      options: {
+        lookup: {
+          _id: {
+            related: [tracker.class.Issue, 'relations._id']
+          }
+        }
+      },
+      hiddenKeys: ['name', 'attachedTo']
     },
     recruit.viewlet.ApplicantTable
   )
@@ -452,7 +509,7 @@ export function createModel (builder: Builder): void {
     ],
     assignee: contact.class.Employee,
     _id: {
-      todoItems: task.class.TodoItem
+      related: [tracker.class.Issue, 'relations._id']
     }
   }
 
@@ -672,7 +729,7 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.ClassFilters, {
-    filters: ['attachedTo', 'assignee', 'state', 'doneState', 'modifiedOn']
+    filters: ['attachedTo', 'space', 'assignee', 'state', 'doneState', 'modifiedOn']
   })
 
   builder.mixin(recruit.class.Vacancy, core.class.Class, view.mixin.ClassFilters, {
@@ -915,6 +972,25 @@ export function createModel (builder: Builder): void {
     context: {
       mode: ['context', 'browser'],
       group: 'create'
+    }
+  })
+
+  builder.mixin(recruit.mixin.Candidate, core.class.Class, view.mixin.ObjectEditorFooter, {
+    editor: tracker.component.RelatedIssuesSection,
+    props: {
+      label: recruit.string.RelatedIssues
+    }
+  })
+  builder.mixin(recruit.class.Vacancy, core.class.Class, view.mixin.ObjectEditorFooter, {
+    editor: tracker.component.RelatedIssuesSection,
+    props: {
+      label: recruit.string.RelatedIssues
+    }
+  })
+  builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.ObjectEditorFooter, {
+    editor: tracker.component.RelatedIssuesSection,
+    props: {
+      label: recruit.string.RelatedIssues
     }
   })
 }

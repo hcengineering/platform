@@ -16,6 +16,7 @@
 <script lang="ts">
   import calendar from '@hcengineering/calendar'
   import contact, { Contact } from '@hcengineering/contact'
+  import { Hierarchy } from '@hcengineering/core'
   import { getClient, UserBox } from '@hcengineering/presentation'
   import type { Review } from '@hcengineering/recruit'
   import { FullDescriptionBox } from '@hcengineering/text-editor'
@@ -70,7 +71,7 @@
         class="clear-mins"
         on:click={() => {
           if (candidate !== undefined) {
-            showPanel(view.component.EditDoc, candidate._id, candidate._class, 'content')
+            showPanel(view.component.EditDoc, candidate._id, Hierarchy.mixinOrClass(candidate), 'content')
           }
         }}
       >

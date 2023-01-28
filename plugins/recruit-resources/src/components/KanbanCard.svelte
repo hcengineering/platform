@@ -16,13 +16,13 @@
   import { AttachmentsPresenter } from '@hcengineering/attachment-resources'
   import { CommentsPresenter } from '@hcengineering/chunter-resources'
   import contact, { formatName } from '@hcengineering/contact'
-  import type { WithLookup } from '@hcengineering/core'
+  import { Hierarchy, WithLookup } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { Avatar } from '@hcengineering/presentation'
   import type { Applicant, Candidate } from '@hcengineering/recruit'
-  import task, { TodoItem } from '@hcengineering/task'
   import { AssigneePresenter } from '@hcengineering/task-resources'
-  import { Component, showPanel, tooltip } from '@hcengineering/ui'
+  import tracker from '@hcengineering/tracker'
+  import { Component, showPanel } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import ApplicationPresenter from './ApplicationPresenter.svelte'
 
@@ -30,15 +30,13 @@
   export let dragged: boolean
 
   function showCandidate () {
-    showPanel(view.component.EditDoc, object._id, object._class, 'content')
+    showPanel(view.component.EditDoc, object._id, Hierarchy.mixinOrClass(object), 'content')
   }
-
-  $: todoItems = (object.$lookup?.todoItems as TodoItem[]) ?? []
-  $: doneTasks = todoItems.filter((it) => it.done)
 
   $: channels = (object.$lookup?.attachedTo as WithLookup<Candidate>)?.$lookup?.channels
 </script>
 
+<!-- svelte-ignore a11y-click-events-have-key-events -->
 <div class="flex-col pt-2 pb-2 pr-4 pl-4 cursor-pointer" on:click={showCandidate}>
   <div class="flex-between mb-3">
     <div class="flex-row-center">
@@ -72,18 +70,7 @@
     <div class="flex-row-center">
       <div class="sm-tool-icon step-lr75">
         <ApplicationPresenter value={object} />
-        {#if todoItems.length > 0}
-          <div
-            class="ml-2"
-            use:tooltip={{
-              label: task.string.TodoItems,
-              component: task.component.TodoItemsPopup,
-              props: { value: object }
-            }}
-          >
-            ({doneTasks?.length}/{todoItems.length})
-          </div>
-        {/if}
+        <Component is={tracker.component.RelatedIssueSelector} props={{ object }} />
       </div>
       {#if (object.attachments ?? 0) > 0}
         <div class="step-lr75">

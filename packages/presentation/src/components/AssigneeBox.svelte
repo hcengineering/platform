@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import contact, { Contact, Employee, formatName } from '@hcengineering/contact'
-  import { Class, DocumentQuery, FindOptions, Ref } from '@hcengineering/core'
+  import { Class, DocumentQuery, FindOptions, Hierarchy, Ref } from '@hcengineering/core'
   import { getEmbeddedLabel, IntlString } from '@hcengineering/platform'
   import {
     ActionIcon,
@@ -166,7 +166,7 @@
             size={'small'}
             action={() => {
               if (selected) {
-                showPanel(view.component.EditDoc, selected._id, selected._class, 'content')
+                showPanel(view.component.EditDoc, selected._id, Hierarchy.mixinOrClass(selected), 'content')
               }
             }}
           />

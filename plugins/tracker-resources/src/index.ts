@@ -61,6 +61,7 @@ import SetParentIssueActionPopup from './components/SetParentIssueActionPopup.sv
 import Views from './components/views/Views.svelte'
 import Statuses from './components/workflow/Statuses.svelte'
 import RelatedIssuesSection from './components/issues/related/RelatedIssuesSection.svelte'
+import RelatedIssueSelector from './components/issues/related/RelatedIssueSelector.svelte'
 import {
   getIssueId,
   getIssueTitle,
@@ -280,7 +281,8 @@ export default async (): Promise<Resources> => ({
     TeamPresenter,
     IssueStatistics,
     StatusRefPresenter,
-    RelatedIssuesSection
+    RelatedIssuesSection,
+    RelatedIssueSelector
   },
   completion: {
     IssueQuery: async (client: Client, query: string, filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }) =>

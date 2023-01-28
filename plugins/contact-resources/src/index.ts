@@ -67,7 +67,8 @@ export {
   EmployeeBrowser,
   MemberPresenter,
   EmployeeEditor,
-  EmployeeAccountRefPresenter
+  EmployeeAccountRefPresenter,
+  EditPerson
 }
 
 const toObjectSearchResult = (e: WithLookup<Contact>): ObjectSearchResult => ({

@@ -25,7 +25,9 @@ import core, {
   Obj,
   Ref,
   RefTo,
-  TxOperations
+  TxOperations,
+  ReverseLookup,
+  ReverseLookups
 } from '@hcengineering/core'
 import type { IntlString } from '@hcengineering/platform'
 import { getResource } from '@hcengineering/platform'
@@ -234,7 +236,8 @@ function getKeyLookup<T extends Doc> (
 export function buildConfigLookup<T extends Doc> (
   hierarchy: Hierarchy,
   _class: Ref<Class<T>>,
-  config: Array<BuildModelKey | string>
+  config: Array<BuildModelKey | string>,
+  existingLookup?: Lookup<T>
 ): Lookup<T> {
   let res: Lookup<T> = {}
   for (const key of config) {
@@ -243,6 +246,14 @@ export function buildConfigLookup<T extends Doc> (
     } else {
       res = getKeyLookup(hierarchy, _class, key.key, res)
     }
+  }
+  if (existingLookup !== undefined) {
+    // Let's merg
+    const _id: ReverseLookup = {
+      ...((existingLookup as ReverseLookups)._id ?? {}),
+      ...((res as ReverseLookups)._id ?? {})
+    }
+    res = { ...existingLookup, ...res, _id }
   }
   return res
 }

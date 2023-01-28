@@ -68,7 +68,7 @@
   }
 
   function getBaseConfig (viewlet: Viewlet): AttributeConfig[] {
-    const lookup = buildConfigLookup(hierarchy, viewlet.attachTo, viewlet.config)
+    const lookup = buildConfigLookup(hierarchy, viewlet.attachTo, viewlet.config, viewlet.options?.lookup)
     const result: AttributeConfig[] = []
     for (const param of viewlet.config) {
       if (typeof param === 'string') {

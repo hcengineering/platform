@@ -14,13 +14,14 @@
 -->
 <script lang="ts">
   import contact, { Person } from '@hcengineering/contact'
-  import { Ref } from '@hcengineering/core'
+  import { Class, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import { PersonLabelTooltip } from '..'
   import PersonPresenter from './PersonPresenter.svelte'
 
   export let value: Ref<Person> | null | undefined
+  export let _class: Ref<Class<Person>> = contact.class.Person
   export let inline = false
   export let enlargedText = false
   export let isInteractive = true
@@ -34,7 +35,7 @@
 
   let person: Person | undefined
   const query = createQuery()
-  $: value && query.query(contact.class.Person, { _id: value }, (res) => ([person] = res), { limit: 1 })
+  $: value && query.query(_class, { _id: value }, (res) => ([person] = res), { limit: 1 })
 
   function getValue (person: Person | undefined, value: Ref<Person> | null | undefined): Person | null | undefined {
     if (value === undefined || value === null) {

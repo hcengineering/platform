@@ -15,7 +15,7 @@
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
-  const lookup = buildConfigLookup(hierarchy, viewlet.attachTo, viewlet.config)
+  const lookup = buildConfigLookup(hierarchy, viewlet.attachTo, viewlet.config, viewlet.options?.lookup)
 
   const groupBy = config.groupBy
     .map((p) => {

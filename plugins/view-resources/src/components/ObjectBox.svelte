@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Class, Doc, DocumentQuery, FindOptions, Ref } from '@hcengineering/core'
+  import { Class, Doc, DocumentQuery, FindOptions, Hierarchy, Ref } from '@hcengineering/core'
   import { Asset, IntlString } from '@hcengineering/platform'
   import presentation, { getClient, ObjectCreate } from '@hcengineering/presentation'
   import {
@@ -151,7 +151,7 @@
             size={'small'}
             action={() => {
               if (selected) {
-                showPanel(view.component.EditDoc, selected._id, selected._class, 'content')
+                showPanel(view.component.EditDoc, selected._id, Hierarchy.mixinOrClass(selected), 'content')
               }
             }}
           />

@@ -400,6 +400,7 @@ export default plugin(trackerId, {
     TrackerApp: '' as AnyComponent,
     RelatedIssues: '' as AnyComponent,
     RelatedIssuesSection: '' as AnyComponent,
+    RelatedIssueSelector: '' as AnyComponent,
     RelatedIssueTemplates: '' as AnyComponent,
     EditIssue: '' as AnyComponent,
     CreateIssue: '' as AnyComponent,

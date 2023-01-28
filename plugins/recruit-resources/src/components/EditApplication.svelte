@@ -14,16 +14,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher, onMount } from 'svelte'
   import { createQuery } from '@hcengineering/presentation'
-  import type { Candidate, Applicant, Vacancy } from '@hcengineering/recruit'
+  import type { Applicant, Candidate, Vacancy } from '@hcengineering/recruit'
   import { Scroller } from '@hcengineering/ui'
+  import { createEventDispatcher, onMount } from 'svelte'
   import CandidateCard from './CandidateCard.svelte'
-  import VacancyCard from './VacancyCard.svelte'
   import ExpandRightDouble from './icons/ExpandRightDouble.svelte'
+  import VacancyCard from './VacancyCard.svelte'
 
-  import recruit from '../plugin'
   import { Ref } from '@hcengineering/core'
+  import recruit from '../plugin'
   import Reviews from './review/Reviews.svelte'
 
   export let object: Applicant

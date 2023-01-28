@@ -71,7 +71,14 @@
             {#if icon}<div class="wrapped-icon"><Icon {icon} size={'medium'} /></div>{/if}
             <div class="title-wrapper">
               {#if title}<span class="wrapped-title">{title}</span>{/if}
-              {#if subtitle}<span class="wrapped-subtitle">{subtitle}</span>{/if}
+              {#if subtitle || $$slots.subtitle}
+                <span class="wrapped-subtitle">
+                  {#if subtitle}
+                    {subtitle}
+                  {/if}
+                  <slot name="subtitle" />
+                </span>
+              {/if}
             </div>
           </div>
         {/if}

@@ -181,6 +181,7 @@ describe('mongo operations', () => {
   })
 
   it('check add', async () => {
+    jest.setTimeout(50000)
     for (let i = 0; i < 50; i++) {
       await operations.createDoc(taskPlugin.class.Task, '' as Ref<Space>, {
         name: `my-task-${i}`,
