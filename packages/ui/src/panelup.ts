@@ -34,13 +34,7 @@ location.subscribe((loc) => {
   }
 })
 
-export function getPanelURI (
-  component: AnyComponent,
-  _id: string,
-  _class: string,
-  element?: PopupAlignment,
-  rightSection?: AnyComponent
-): string {
+export function getPanelURI (component: AnyComponent, _id: string, _class: string, element?: PopupAlignment): string {
   const panelProps = [component, _id, _class]
   if (typeof element === 'string') {
     panelProps.push(element)
@@ -55,7 +49,7 @@ export function showPanel (
   element?: PopupAlignment,
   rightSection?: AnyComponent
 ): void {
-  const newLoc = getPanelURI(component, _id, _class, element, rightSection)
+  const newLoc = getPanelURI(component, _id, _class, element)
   if (currentLocation === newLoc) {
     return
   }
